@@ -27,8 +27,7 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { useDesignerStore, useCutoutSelection } from '@/features/bin-designer/store';
 import { useLineMaterialResolution } from '../useLineMaterialResolution';
-import { binLipTopWorldZ, lidAnchorZ } from '../LidMesh/lidAnchorZ';
-import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
+import { lidGroupPosition } from '../LidMesh/lidAnchorZ';
 import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import type { Cutout } from '@/features/bin-designer/types';
 import { buildCutoutGeometry } from '../GhostCutouts/ghostCutoutGeometry';
@@ -60,10 +59,11 @@ export function GhostLidCutouts({ lidOffsetMm }: GhostLidCutoutsProps) {
   // the memo below on every frame.
   const cutouts = useMemo(() => params.lid.cutouts ?? [], [params.lid.cutouts]);
 
-  // Same lid-local Z the mesh is placed at, from the same helpers.
-  const lidGroupZ =
-    binLipTopWorldZ(params) -
-    lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
+  // The SAME placement the mesh uses, from the same helper — including the
+  // explode translation, which for a sliding lid runs along its entry axis
+  // rather than upward. Re-deriving it here is how a ghost ends up drawn
+  // somewhere the part is not.
+  const lidPosition = lidGroupPosition(params, lidOffsetMm);
 
   const isGenerating = generationStatus === 'generating';
   const hasSelection = selectedIds.size > 0;
@@ -133,6 +133,10 @@ export function GhostLidCutouts({ lidOffsetMm }: GhostLidCutoutsProps) {
   if (!lineSegments) return null;
 
   return (
-    <primitive ref={lineRef} object={lineSegments} position={[0, 0, lidGroupZ + lidOffsetMm]} />
+    <primitive
+      ref={lineRef}
+      object={lineSegments}
+      position={[lidPosition[0], lidPosition[1], lidPosition[2]]}
+    />
   );
 }

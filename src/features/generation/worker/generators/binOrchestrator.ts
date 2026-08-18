@@ -19,6 +19,7 @@ import { translateStage } from './pipeline/stages/translateStage';
 import { trayBottomStage } from './pipeline/stages/trayBottomStage';
 import { lidInteriorReliefStage } from './pipeline/stages/lidInteriorReliefStage';
 import { lidRetentionStage } from './pipeline/stages/lidRetentionStage';
+import { slideLidChannelStage } from './pipeline/stages/slideLidChannelStage';
 import { lidGripDipStage } from './pipeline/stages/lidGripDipStage';
 import { tessellateStage } from './pipeline/stages/tessellateStage';
 import { meshImprintStage } from './pipeline/stages/meshImprintStage';
@@ -54,6 +55,7 @@ const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   lidInteriorReliefStage,
   trayBottomStage,
   lidRetentionStage,
+  slideLidChannelStage,
   lidGripDipStage,
   tessellateStage,
   meshImprintStage,

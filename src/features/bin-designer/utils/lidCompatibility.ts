@@ -44,8 +44,12 @@ import { isUndersideRelief } from '../types/base';
 import {
   LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
   LID_MAGNET_LIP_CLEARANCE,
+  isSlideLid,
   resolveLidCavityExtraMm,
+  resolveLidSlide,
 } from '../types/lid';
+import { SLIDE_SAG_SPAN_MM } from '@/shared/utils/slideLidPlan';
+import { slideLidPlanForParams } from './slideLidPlanForParams';
 import { compartmentHasTiltedEdge, getCompartmentBounds } from './compartments';
 import { binDimensions } from './binDimensions';
 
@@ -76,7 +80,20 @@ export type LidCompatibilityId =
   // Magnetic-retention specific:
   | 'magnetsPolygonUnsupported'
   | 'magnetTooDeepForBin'
-  | 'magnetBinTooSmall';
+  | 'magnetBinTooSmall'
+  // Sliding-lid specific:
+  /** The rim placement has no room for a stacking lip. Carries a one-click fix. */
+  | 'slideFlushNeedsNoLip'
+  /** The plan refused this design outright; the message names the reason. */
+  | 'slideUnbuildable'
+  /** The plate's travel is blocked because the interior relief is switched off. */
+  | 'slideInteriorBlocked'
+  /** The plate is wide enough to bow between its two bearing edges. */
+  | 'slideLongSpan'
+  /** The entry wall loses its stacking lip across the opening. */
+  | 'slideRimInterrupted'
+  /** A wall pattern perforates the walls the channel welds to. */
+  | 'slideWallPattern';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -204,7 +221,94 @@ const SEVERITY_RANK: Record<LidCompatibilitySeverity, number> = {
   warning: 1,
 };
 
+/**
+ * Everything a SLIDING lid has to say about a design.
+ *
+ * A separate list rather than extra cases in the main one, because almost
+ * nothing carries over: every check below the cutouts in `checkLidCompatibility`
+ * is about a shell gripping a lip, and a plate in a channel grips nothing. What
+ * replaces them is the set of ways a plate can fail to travel.
+ */
+function checkSlideLidCompatibility(params: BinParams): LidCompatibilityIssue[] {
+  const issues: LidCompatibilityIssue[] = [];
+  const { placement, entrySide } = resolveLidSlide(params.lid);
+
+  // The rim placement puts the plate where the lip lives. Reported rather than
+  // forced: turning the lip off changes a printed part the user did not ask
+  // about, and the panel offers it as one click instead.
+  if (placement === 'flush' && params.base.stackingLip) {
+    issues.push({ id: 'slideFlushNeedsNoLip', severity: 'blocker' });
+    // The plan is resolved against the design as it stands, so it would answer
+    // for a joint the user is about to change. Nothing below is worth saying
+    // until the lip question is settled.
+    return issues;
+  }
+
+  const { geometry, rejection } = slideLidPlanForParams(params);
+  if (!geometry) {
+    // `not-slide` cannot reach here; every other rejection is a real refusal.
+    if (rejection !== null && rejection !== 'not-slide') {
+      issues.push({ id: 'slideUnbuildable', severity: 'blocker' });
+    }
+    return issues;
+  }
+
+  // The plate sweeps the whole opening, so anything standing in the cavity
+  // stops it dead — and neither solid shows it. `relieveInterior` cuts the
+  // travel envelope and makes the question moot; with it off, the features that
+  // reach the band are the user's to resolve.
+  if (!interiorReliefActive(params)) {
+    const hasDividers = params.compartments.cols * params.compartments.rows > 1;
+    const blockers = hasDividers || params.label.enabled || params.scoop.enabled;
+    if (blockers) {
+      issues.push({ id: 'slideInteriorBlocked', severity: 'warning' });
+    }
+  }
+
+  // A plate is a beam on two edges. Past the threshold it bows out of its own
+  // channel, and the panel names the thickness that would carry it.
+  if (geometry.freeSpanMm > SLIDE_SAG_SPAN_MM) {
+    issues.push({ id: 'slideLongSpan', severity: 'warning' });
+  }
+
+  // The entry window has to break the rim — see the note on the notch in
+  // `slideLidChannel`. Worth stating once: the bin is still stackable on its
+  // other three walls and its corners, but not across this one.
+  if (params.base.stackingLip) {
+    issues.push({ id: 'slideRimInterrupted', severity: 'warning', sides: [entrySide] });
+  }
+
+  // The channel welds to the two walls perpendicular to the entry, and a
+  // pattern perforates exactly the material it welds to. Unlike the cap-lid
+  // case this is about the weld rather than the lip, so it survives on a
+  // lipless bin — which the `flush` placement always is.
+  if (
+    params.wallPattern.enabled &&
+    hasAnyPatternedWall(params.wallPattern) &&
+    !isPolygonMask(params)
+  ) {
+    issues.push({ id: 'slideWallPattern', severity: 'warning' });
+  }
+
+  return issues;
+}
+
+/** Local alias so the slide branch reads the same predicate the main one does. */
+function isPolygonMask(params: BinParams): boolean {
+  return isPartialMask(params.cellMask);
+}
+
 export function checkLidCompatibility(params: BinParams): readonly LidCompatibilityIssue[] {
+  // A sliding lid answers a different set of questions entirely. Branching
+  // here — rather than threading `isSlide` through fifteen checks — is what
+  // keeps each list readable and stops a cap-lid rule quietly applying to a
+  // part that has no shell, no cavity and no seam.
+  if (isSlideLid(params.lid)) {
+    return checkSlideLidCompatibility(params).sort(
+      (a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]
+    );
+  }
+
   const issues: LidCompatibilityIssue[] = [];
   // Custom-shape bins still auto-disable the WALL PATTERN via `FeatureGate`,
   // so warning about it would be a false positive. Cutouts and handles are a
@@ -481,7 +585,12 @@ export function hasLidBlocker(issues: readonly LidCompatibilityIssue[]): boolean
  */
 export function shouldGenerateLid(params: BinParams): boolean {
   if (!params.lid.enabled) return false;
-  if (!params.base.stackingLip) return false;
+  // A CAPPING lid grips the stacking lip and cannot exist without one. A
+  // SLIDING lid is held by a channel of its own — the `flush` placement
+  // requires the lip to be absent — so the precondition follows the attachment.
+  // Whether the channel can actually be built is a blocker in
+  // `checkLidCompatibility` below, so there is still one gate rather than two.
+  if (!isSlideLid(params.lid) && !params.base.stackingLip) return false;
   // A base-only bin keeps its lip, so the usual lip precondition passes and a
   // lid would be emitted for a plate with no cavity to close. Gated here rather
   // than in the constraint engine because the lid is not a `FeatureKey`.
@@ -497,12 +606,14 @@ export function shouldGenerateLid(params: BinParams): boolean {
  * Only blocker IDs need entries here — `isLidBlockedBySection` filters
  * by `severity === 'blocker'`. Warning-only IDs are intentionally absent.
  */
-export type LidConflictSection = 'walls' | 'dividerPieces' | 'handles';
+export type LidConflictSection = 'walls' | 'dividerPieces' | 'handles' | 'base';
 
 const ID_TO_SECTION: Partial<Record<LidCompatibilityId, LidConflictSection>> = {
   wallCutoutsAllSides: 'walls',
   tallDividerPieces: 'dividerPieces',
   handlesAllSides: 'handles',
+  // The stacking lip is a Base control, so that is where the badge belongs.
+  slideFlushNeedsNoLip: 'base',
 };
 
 /**
@@ -512,7 +623,8 @@ const ID_TO_SECTION: Partial<Record<LidCompatibilityId, LidConflictSection>> = {
  * lid-conflict badges if the user isn't trying to use the lid.
  */
 export function isLidBlockedBySection(params: BinParams, section: LidConflictSection): boolean {
-  if (!params.lid.enabled || !params.base.stackingLip) return false;
+  if (!params.lid.enabled) return false;
+  if (!isSlideLid(params.lid) && !params.base.stackingLip) return false;
   return checkLidCompatibility(params).some(
     (i) => i.severity === 'blocker' && ID_TO_SECTION[i.id] === section
   );
@@ -546,6 +658,11 @@ const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set([
   'compartmentDividers',
   'wallCutouts',
   'handles',
+  // The entry wall is where the plate goes IN, not a wall to switch anything
+  // off on. A sliding lid has no rails for this set to govern, so listing it is
+  // belt and braces — but the alternative is a side name in a set whose whole
+  // meaning is "do not give this wall a rail", which is not what it says.
+  'slideRimInterrupted',
 ]);
 
 /**

@@ -240,4 +240,8 @@ export const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibi
   'handles',
   'handlesAllSides',
   'tallDividerPieces',
+  // The rim placement's one blocker, and the cleanest fix in the set: the lip
+  // is a single Base switch, and the placement the user just chose is what
+  // makes it impossible.
+  'slideFlushNeedsNoLip',
 ]);

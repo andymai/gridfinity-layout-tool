@@ -1982,6 +1982,35 @@ const en: Record<string, string> = {
   'binDesigner.lid.attachment.friction': 'Friction',
   'binDesigner.lid.attachment.clickRails': 'Click rails',
   'binDesigner.lid.attachment.magnetic': 'Magnetic',
+  'binDesigner.lid.attachment.slide': 'Sliding',
+  'binDesigner.lid.slide.placement': 'Channel position',
+  'binDesigner.lid.slide.placement.recessed': 'Under the lip',
+  'binDesigner.lid.slide.placement.flush': 'At the rim',
+  'binDesigner.lid.slide.placement.recessedHint':
+    'The channel hangs just below the stacking lip, so the bin keeps its lip and other bins still stack on it.',
+  'binDesigner.lid.slide.placement.flushHint':
+    'The channel sits at the very top of the wall, leaving the deepest interior. Needs the stacking lip turned off, so nothing can stack on this bin.',
+  'binDesigner.lid.slide.entrySide': 'Opens toward',
+  'binDesigner.lid.slide.entrySideHint':
+    'The wall the lid slides out of. The two walls either side of it carry the runners.',
+  'binDesigner.lid.slide.pull': 'Pull',
+  'binDesigner.lid.slide.pull.none': 'None',
+  'binDesigner.lid.slide.pull.notch': 'Finger notch',
+  'binDesigner.lid.slide.pull.tab': 'Tab',
+  'binDesigner.lid.slide.pull.noneHint':
+    'A plain edge. Draw a hole with the cutout editor below if you need somewhere to hook a finger.',
+  'binDesigner.lid.slide.pull.notchHint':
+    'A rounded bite out of the lid’s outer edge. Keeps the lid flush with the bin.',
+  'binDesigner.lid.slide.pull.tabHint':
+    'A lug reaching out past the bin’s face, in the lid’s own plane. Easiest to grab with gloves on.',
+  'binDesigner.lid.slide.detent': 'Click shut',
+  'binDesigner.lid.slide.detentHint':
+    'A small ramp on each runner that the lid clicks past, so a knock or a tipped drawer can’t slide it open. You can still pull it straight out.',
+  'binDesigner.lid.slide.clearance': 'Sliding clearance',
+  'binDesigner.lid.slide.clearanceAria': 'Sliding clearance per side in millimeters',
+  'binDesigner.lid.slide.clearanceHint':
+    'Gap between the lid and its channel, per side. Raise it if the lid binds, lower it if it rattles — this is the one number that depends on your printer.',
+  'binDesigner.lid.slide.spanReadout': 'Unsupported span: {span} mm',
   'binDesigner.lid.retentionMagnetDiameter': 'Magnet diameter',
   'binDesigner.lid.retentionMagnetDiameterAria': 'Retention magnet diameter in millimeters',
   'binDesigner.lid.retentionMagnetDepth': 'Magnet depth',
@@ -2049,6 +2078,19 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.fix.wallCutoutsAllSides': 'disable some wall cutouts',
   'binDesigner.lid.compat.fix.tallDividerPieces': 'reduce divider piece height',
   'binDesigner.lid.compat.fix.handlesAllSides': 'disable some handles',
+  'binDesigner.lid.compat.slideFlushNeedsNoLip':
+    'A rim-height channel leaves no room for the stacking lip — turn the lip off, or move the channel under it.',
+  'binDesigner.lid.compat.fix.slideFlushNeedsNoLip': 'turn off the stacking lip',
+  'binDesigner.lid.compat.slideUnbuildable':
+    'This bin can’t take a sliding lid — it’s too small or too shallow for the channel, or its style has no cavity to cover.',
+  'binDesigner.lid.compat.slideInteriorBlocked':
+    'Dividers, label tabs or a scoop reach into the lid’s path and will stop it sliding. Turn on “Relieve interior” under Advanced to cut them clear.',
+  'binDesigner.lid.compat.slideLongSpan':
+    'The lid is wide enough to bow between its runners. Increase its thickness under Advanced.',
+  'binDesigner.lid.compat.slideRimInterrupted':
+    'The stacking lip is cut away on the {sides} wall so the lid can slide in. Bins still stack on the other three.',
+  'binDesigner.lid.compat.slideWallPattern':
+    'The wall pattern perforates the walls the runners weld to, which weakens them.',
   'binDesigner.lid.compat.fixButton': 'Fix',
   'binDesigner.lid.compat.fixAriaLabel': 'Fix: {detail}',
   'binDesigner.lid.clickRailDisabledBySide':

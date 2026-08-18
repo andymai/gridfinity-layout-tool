@@ -1903,3 +1903,98 @@ describe('slide (sliding tray)', () => {
     }
   });
 });
+
+/**
+ * The sliding LID's config — a different object from `params.slide`, which is
+ * the sliding TRAY's. Both exist; only this one hangs off `lid`.
+ *
+ * The bounds are what a crafted payload could otherwise smuggle straight into
+ * the geometry. Everything else the joint depends on is DERIVED by
+ * `resolveSlideLidPlan` from measurements the payload does not carry, and that
+ * resolver refuses rather than clamps, so there is nothing else to guard here.
+ */
+describe('validateDesignerShare — lid.slide', () => {
+  const withLidSlide = (slide: unknown, attachment = 'slide') => {
+    const p = validPayload();
+    const payload = {
+      ...p,
+      params: { ...p.params, lid: { enabled: true, attachment, slide } },
+    };
+    return validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8'));
+  };
+
+  it('accepts the full config', () => {
+    expect(
+      withLidSlide({
+        placement: 'flush',
+        entrySide: 'left',
+        clearanceMm: 0.35,
+        pull: 'tab',
+        detent: false,
+      }).valid
+    ).toBe(true);
+  });
+
+  it('accepts an absent slide, which is what most designs carry', () => {
+    const p = validPayload();
+    const payload = { ...p, params: { ...p.params, lid: { enabled: true } } };
+    expect(
+      validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8')).valid
+    ).toBe(true);
+  });
+
+  it('accepts the new attachment on the lid', () => {
+    const p = validPayload();
+    const payload = { ...p, params: { ...p.params, lid: { attachment: 'slide' } } };
+    expect(
+      validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8')).valid
+    ).toBe(true);
+  });
+
+  it('refuses the slide attachment on a tray bottom', () => {
+    // A tray bottom is lid mating geometry on a bin's UNDERSIDE — a shell that
+    // wraps another bin's lip. A plate captive in a channel is not a thing an
+    // underside can be, which is why the two enum lists are separate.
+    const p = validPayload();
+    const payload = {
+      ...p,
+      params: {
+        ...p.params,
+        base: { ...p.params.base, style: 'lid', trayBottom: { attachment: 'slide' } },
+      },
+    };
+    expect(
+      validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8')).valid
+    ).toBe(false);
+  });
+
+  it.each([
+    ['placement', { placement: 'sideways' }],
+    ['entrySide', { entrySide: 'top' }],
+    ['pull', { pull: 'handle' }],
+  ])('rejects an unknown %s', (_name, slide) => {
+    expect(withLidSlide(slide).valid).toBe(false);
+  });
+
+  it('rejects an unknown key', () => {
+    expect(withLidSlide({ railProtrusionMm: 4 }).valid).toBe(false);
+  });
+
+  it('rejects a clearance outside the printable range', () => {
+    expect(withLidSlide({ clearanceMm: 0 }).valid).toBe(false);
+    expect(withLidSlide({ clearanceMm: 5 }).valid).toBe(false);
+    expect(withLidSlide({ clearanceMm: '0.25' }).valid).toBe(false);
+  });
+
+  it('rejects a non-boolean detent and a non-object slide', () => {
+    expect(withLidSlide({ detent: 'yes' }).valid).toBe(false);
+    expect(withLidSlide('flush').valid).toBe(false);
+  });
+
+  it('does NOT reject the rim placement on a lipped bin', () => {
+    // That combination is a compatibility blocker, not an invalid document: a
+    // design can carry both while the user decides, exactly as one can carry a
+    // click-rail selection a wall cutout currently disables.
+    expect(withLidSlide({ placement: 'flush' }).valid).toBe(true);
+  });
+});

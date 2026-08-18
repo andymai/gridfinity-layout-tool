@@ -30,7 +30,9 @@
 import { draw, cut, fuseAll, translate, unwrap } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
-import { interiorReliefActive } from '@/shared/types/bin';
+import { interiorReliefActive, isSlideLid, slideLidPlanForParams } from '@/shared/types/bin';
+import { slideTravelsAlongX } from '@/shared/utils/slideLidPlan';
+import { slideLidPlateTopZ } from '../../slideLidChannel';
 import { lidKeepoutRing, lidKeepoutSlabs } from '@/shared/constants/lidKeepout';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { checkCancelled } from '../../utils/abort';
@@ -125,6 +127,60 @@ function buildPolygonRing(
   return { solid: unwrap(fuseAll(parts as ValidSolid[])), scratch: parts };
 }
 
+/**
+ * Cut the sliding plate's travel envelope out of the cavity.
+ *
+ * A slab spanning the whole opening, because that is what the plate sweeps —
+ * a divider in the middle of the grid stops the plate exactly as dead as one
+ * against a wall, and neither is visible to any check on either solid alone.
+ *
+ * Its TOP is the retainer's top plane, deliberately not the wall top. On the
+ * recessed placement everything above that belongs to the stacking lip, and a
+ * cutter reaching into the lip's angled support would back-fill the taper a
+ * foot has to seat in — a bin that looks perfect and will not sit in a
+ * baseplate (CLAUDE.md gotcha #10).
+ */
+function relieveSlideTravel(ctx: PipelineContext): PipelineContext {
+  if (!ctx.solid) return ctx;
+  const { params, dimensions: dim } = ctx;
+  const { geometry } = slideLidPlanForParams(params);
+  if (!geometry) return ctx;
+
+  const env = geometry.travelEnvelope;
+  const plateTopZ = slideLidPlateTopZ(dim, geometry);
+  const height = env.zMax - env.zMin;
+  if (height <= 0) return ctx;
+
+  const travelsX = slideTravelsAlongX(geometry.entrySide);
+  // The plan is canonical (travel along X); the envelope is an axis-aligned box
+  // and its only orientation-dependent property is which extent belongs to
+  // which axis, so swapping them is the whole rotation.
+  const halfX = (travelsX ? env.xMax - env.xMin : env.yMax - env.yMin) / 2;
+  const halfY = (travelsX ? env.yMax - env.yMin : env.xMax - env.xMin) / 2;
+
+  const slab = draw([-halfX, -halfY])
+    .lineTo([halfX, -halfY])
+    .lineTo([halfX, halfY])
+    .lineTo([-halfX, halfY])
+    .close()
+    .sketchOnPlane('XY', plateTopZ + env.zMin)
+    .extrude(height);
+
+  const positioned: Shape3D =
+    dim.innerOffsetX === 0 && dim.innerOffsetY === 0
+      ? slab
+      : translate(slab, [dim.innerOffsetX, dim.innerOffsetY, 0]);
+
+  collectOrigins(positioned, FeatureTag.LID_RELIEF, ctx.originToTag);
+
+  const result = unwrap(cut(ctx.solid as ValidSolid, positioned as ValidSolid));
+  if (positioned !== slab) positioned.delete();
+  slab.delete();
+  if (result !== ctx.solid) ctx.solid.delete();
+
+  return { ...ctx, solid: result };
+}
+
 export const lidInteriorReliefStage: PipelineStage = {
   name: 'merge',
   progressValue: 0.82,
@@ -141,6 +197,12 @@ export const lidInteriorReliefStage: PipelineStage = {
     checkCancelled(ctx.signal);
 
     const { params, dimensions: dim } = ctx;
+    // A sliding plate sweeps the whole opening, not a band at the walls, so its
+    // envelope is a slab rather than a ring and there is no inset to compute.
+    // Same placement in the pipeline and the same guarantee: a feature added
+    // later is trimmed without its author knowing the lid exists.
+    if (isSlideLid(params.lid)) return relieveSlideTravel(ctx);
+
     const ring = lidKeepoutRing(dim.innerW, dim.innerD, params.wallThickness);
     if (ring.width <= 0) return ctx;
 

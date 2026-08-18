@@ -39,6 +39,8 @@ import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
+import { isSlideLid, slideLidPlanForParams } from '@/shared/types/bin';
+import type { SlideLidGeometry } from '@/shared/utils/slideLidPlan';
 
 /**
  * Resolved lid-top text: the trimmed string plus the effective
@@ -269,6 +271,20 @@ export interface LidInputs {
    */
   readonly cutouts: LidCutoutInputs | null;
   /**
+   * Resolved sliding-lid geometry, or null for every other attachment.
+   *
+   * Present means the lid IS a plate: `buildLid` takes the slide branch, and
+   * every field above that describes a cap — `stackableTop`, `magnetHoles`,
+   * `retentionMagnets`, `tray.enabled`, `grip.mode`, `cavityExtraMm` — has
+   * already been forced to its inert value here. The stored config survives
+   * untouched, exactly as `clickRails` survives a magnetic lid, so switching
+   * attachment back restores what the user had.
+   *
+   * Null with `attachment === 'slide'` means the plan refused the design; the
+   * panel reports the rejection and no lid is built.
+   */
+  readonly slide: SlideLidGeometry | null;
+  /**
    * Outer-perimeter shift (mm) caused by asymmetric overhang. The lid's
    * perimeter, mating shell, floor, click rails, and retention magnets
    * translate by this amount so they wrap the bin's overhang-shifted outer
@@ -340,6 +356,13 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // modes force the persisted per-side flags off so switching modes keeps the
   // user's rail selection without generating it.
   const attachment = params.lid.attachment;
+  // Resolved once, and it is what every gate below branches on. A sliding lid
+  // is the one attachment that replaces the lid rather than its retention, so
+  // the fields describing a cap are forced inert here — the same treatment
+  // `clickRails` gets outside click mode, and for the same reason: the stored
+  // config survives so switching back restores it.
+  const slide = isSlideLid(params.lid) ? slideLidPlanForParams(params).geometry : null;
+  const isSlide = isSlideLid(params.lid);
   // Mirror the bin-side `usesMagneticLid` predicate exactly (magnetic + lip +
   // rectangular). Without the `stackingLip` guard the lid would grow bosses in
   // a state where the bin skips its matching posts, so the pair couldn't mate.
@@ -347,7 +370,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
 
   // Tray recess only exists when the lid isn't stackable (a stack grid owns
   // the top surface otherwise).
-  const trayEnabled = params.lid.tray.enabled && !params.lid.stackableTop;
+  const trayEnabled = params.lid.tray.enabled && !params.lid.stackableTop && !isSlide;
 
   // Lid-top text. Shared surface style = design textDefaults
   // merged with the surface-text override; polygon lids are excluded
@@ -355,7 +378,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   //
   // A full stack grid leaves no flat surface to write on; the lip-only variant
   // does — its recessed floor is one clear face.
-  const stackGridOwnsTop = params.lid.stackableTop && !params.lid.stackLipOnly;
+  const stackGridOwnsTop = params.lid.stackableTop && !params.lid.stackLipOnly && !isSlide;
   const lidTextValue = params.surfaceText?.lidText?.trim() ?? '';
   let text: LidTextInputs | null = null;
   if (lidTextValue !== '' && !stackGridOwnsTop && !cellMask) {
@@ -422,17 +445,17 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     topThickness,
     cavityExtraMm: cavityExtra,
     cavityInset,
-    stackableTop: params.lid.stackableTop,
+    stackableTop: params.lid.stackableTop && !isSlide,
     // Gate here so buildStackGrid can trust the flag without re-checking.
-    stackLipOnly: params.lid.stackLipOnly && params.lid.stackableTop,
+    stackLipOnly: params.lid.stackLipOnly && params.lid.stackableTop && !isSlide,
     // Splitting the stack grid off only means anything when there IS a stack
     // grid — gate on stackableTop so buildLid/buildStackPlate can trust the
     // flag directly without re-checking stackableTop.
-    separateStackPlate: params.lid.separateStackPlate && params.lid.stackableTop,
+    separateStackPlate: params.lid.separateStackPlate && params.lid.stackableTop && !isSlide,
     // Magnets only have a stack-grid neighbour to mate with when
     // `stackableTop` is on. Off ⇒ skip the pockets even if the user
     // last toggled magnets on.
-    magnetHoles: params.lid.magnetHoles && params.lid.stackableTop,
+    magnetHoles: params.lid.magnetHoles && params.lid.stackableTop && !isSlide,
     magnetDiameter: params.base.magnetDiameter,
     magnetDepth: params.base.magnetDepth,
     magnetAnchor: params.magnetAnchor,
@@ -497,6 +520,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     cellMask,
     text,
     cutouts,
+    slide,
     outerOffsetX,
     overhangAddW: addW,
     overhangAddD: addD,

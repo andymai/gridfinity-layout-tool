@@ -27,6 +27,11 @@
  *    lid, the recessed floor under a tray. Same datum `resolveTextHostFace`
  *    picks, and for the same reason — the recess owns the visible surface once
  *    it exists.
+ *
+ * A SLIDING lid answers all three differently and takes an early branch in each:
+ * it has no mating cavity, no stack grid and no tray, so the window is the
+ * plate's own footprint less the bearing its running edges rest on, the host
+ * face is that plate, and the gate is simply whether a plate was resolved.
  */
 
 import type { BinParams } from '@/shared/types/bin';
@@ -42,6 +47,9 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import type { OverhangExpansion } from '@/shared/utils/overhang';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
+import { isSlideLid } from '@/features/bin-designer/types/lid';
+import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
+import { SLIDE_BEARING_MM, slideTravelsAlongX } from '@/shared/utils/slideLidPlan';
 
 /**
  * Margin (mm) held between a cutout and the mating cavity's wall.
@@ -129,7 +137,11 @@ export interface LidCutoutHostFace {
  */
 export function lidCutoutsAllowed(params: BinParams): boolean {
   if (!params.lid.enabled) return false;
-  // A lid needs a lip to grip.
+  // A sliding lid is a plate and nothing else: no stack grid, no tray, no
+  // magnet pockets, so none of the gates below can apply to it. Its own gate is
+  // simply whether the plan produced a plate to cut.
+  if (isSlideLid(params.lid)) return slideLidPlanForParams(params).geometry !== null;
+  // A CAPPING lid needs a lip to grip.
   if (!params.base.stackingLip) return false;
   // A full stack grid owns the top face; the lip-only variant leaves the
   // recessed floor inside the lip, which is one clear face.
@@ -164,6 +176,9 @@ export function lidCutoutsAllowed(params: BinParams): boolean {
  */
 export function lidCutoutHostFace(params: BinParams): LidCutoutHostFace {
   const plate = resolveLidPlateThickness(params);
+  // A sliding lid's whole body IS the plate: no recess above it and nothing
+  // below, so the cut starts at its top face and goes all the way through.
+  if (isSlideLid(params.lid)) return { topZ: 0, thickness: plate };
   const tray = params.lid.tray;
   if (tray.enabled && !params.lid.stackableTop) {
     return { topZ: -tray.depthMm, thickness: plate - tray.depthMm };
@@ -182,6 +197,7 @@ export function lidCutoutHostFace(params: BinParams): LidCutoutHostFace {
  */
 export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
   if (!lidCutoutsAllowed(params)) return null;
+  if (isSlideLid(params.lid)) return slideCutoutWindow(params);
 
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const fitClearance = resolveLidFootprintClearance(params);
@@ -259,6 +275,62 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
       expansion.offsetX,
       expansion.offsetY
     ),
+  };
+}
+
+/**
+ * The drawable window on a SLIDING lid: the plate itself, less what the joint
+ * needs.
+ *
+ * Not the mating cavity — a sliding lid has none. Three insets, and only the
+ * first is cosmetic:
+ *
+ * - Across the travel axis, the plate's two running edges are the bearing. A
+ *   hole there removes the material that rests on the shelf, and the failure is
+ *   invisible: the plate is still watertight, it just falls through its own
+ *   channel. Inset by the full bearing overlap plus the printability margin.
+ * - Along the travel axis, the leading edge seats against the far wall and the
+ *   trailing edge carries the pull. The margin alone is enough at both ends —
+ *   the pull is subtracted from the plate AFTER the cutouts, so a hole drawn
+ *   over it simply meets it.
+ * - No keep-outs: a sliding lid never has retention bosses.
+ *
+ * The window is centred on the PLATE, which is centred on the cavity across the
+ * travel axis but offset along it — the plate reaches the bin's outer face at
+ * the entry and stops a clearance short at the far end. Rotating that centre
+ * onto the chosen wall is the whole difference between the four entry sides.
+ */
+function slideCutoutWindow(params: BinParams): LidCutoutWindow | null {
+  const { geometry } = slideLidPlanForParams(params);
+  if (!geometry) return null;
+  const { plate } = geometry;
+
+  const acrossInset = SLIDE_BEARING_MM + LID_CUTOUT_WALL_MARGIN_MM;
+  const alongInset = LID_CUTOUT_WALL_MARGIN_MM;
+  const acrossSpan = plate.spanMm - 2 * acrossInset;
+  const alongSpan = plate.lengthMm - 2 * alongInset;
+  if (acrossSpan <= 0 || alongSpan <= 0) return null;
+
+  // Canonical: the plate travels along X, so its centre is offset in X only.
+  const centreAlong = (plate.leadingX + plate.trailingX) / 2;
+  const travelsX = slideTravelsAlongX(geometry.entrySide);
+  // `rotationDeg` carries the canonical +X entry onto the chosen wall; applied
+  // to the single point that is not on the axis, it is two sign lookups rather
+  // than a matrix.
+  const sign = geometry.entrySide === 'left' || geometry.entrySide === 'front' ? -1 : 1;
+
+  // Asymmetric overhang moves the cavity, and the plate rides with it.
+  const expansion = overhangExpansion(resolveOverhang(params.overhang));
+
+  return {
+    spanW: travelsX ? alongSpan : acrossSpan,
+    spanD: travelsX ? acrossSpan : alongSpan,
+    offsetX: (travelsX ? sign * centreAlong : 0) + expansion.offsetX,
+    offsetY: (travelsX ? 0 : sign * centreAlong) + expansion.offsetY,
+    // Square, matching the plate: its only radii are on the two leading
+    // corners, and the window is already inset well clear of them.
+    cornerRadius: 0,
+    keepouts: [],
   };
 }
 

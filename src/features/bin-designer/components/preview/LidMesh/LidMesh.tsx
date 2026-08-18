@@ -24,10 +24,9 @@ import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
-import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
 import { getZoneColor } from '@/features/bin-designer/types/featureColors';
 import { buildLidColorGroups } from '@/features/bin-designer/utils/lidColorGroups';
-import { binLipTopWorldZ, lidAnchorZ } from './lidAnchorZ';
+import { lidGroupPosition } from './lidAnchorZ';
 
 /** Opacity bands for closed vs exploded views. */
 const OPACITY_CLOSED = 0.7;
@@ -65,37 +64,33 @@ interface LidMeshProps {
 export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }: LidMeshProps) {
   const { invalidate } = useThree();
 
-  const { lidMesh, lidGroupZ, featureColors } = useDesignerStore(
-    useShallow((s) => {
-      const { heightUnitMm } = s.params;
-      const lipTopZ = binLipTopWorldZ(s.params);
-      // The cavity deepens for the extraHeightMm knob AND for any
-      // floor plate thicker than the baseline; both raise the lid
-      // floor above the lip. Resolved centrally so this matches the worker.
-      const anchorZ = lidAnchorZ(
-        heightUnitMm,
-        LID_FIT_CLEARANCE,
-        resolveLidCavityExtraMm(s.params)
-      );
-      return {
-        lidMesh: s.generation.mesh?.lidMesh ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-        featureColors: s.params.featureColors ?? null,
-        // Mated position: lid local Z = anchorZ aligns with the bin's
-        // lip top. The lid group (where local Z=0 lands) is then
-        // lipTopZ - anchorZ; anchorZ is negative, so the lid floor sits
-        // ~2.1mm above the lip with the mating cavity wrapping the lip
-        // from outside — true closed state.
-        lidGroupZ: lipTopZ - anchorZ,
-      };
-    })
+  const { lidMesh, params, featureColors } = useDesignerStore(
+    useShallow((s) => ({
+      lidMesh: s.generation.mesh?.lidMesh ?? null,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
+      featureColors: s.params.featureColors ?? null,
+      params: s.params,
+    }))
   );
+
+  // Seated placement AND the explode direction, in one call: a capping lid mates
+  // its `anchorZ` onto the lip top and lifts straight off, a sliding one hangs
+  // under the wall top and withdraws through its entry wall, and the helper owns
+  // both so this component never has to know which.
+  //
+  // Memoised OUTSIDE the selector rather than returned from it. The helper
+  // returns a fresh tuple every call, and `useShallow` compares a nested array
+  // by reference — so selecting it re-rendered on every store read, forever
+  // ("Maximum update depth exceeded"). `params` is a stable reference between
+  // edits, which is what makes this both correct and cheaper.
+  const lidPosition = useMemo(() => lidGroupPosition(params, lidOffsetMm), [params, lidOffsetMm]);
 
   // The lid's own top lip can differ from the rest of the lid. Classified by
   // exactly the rule the 3MF assembler uses, so the preview keeps predicting
   // the print (the invariant GH established).
   const lidColorData = useMemo(
     () =>
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
       featureColors?.enabled
         ? buildLidColorGroups(
             lidMesh?.faceGroups,
@@ -169,8 +164,6 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
 
   if (!geometry) return null;
 
-  const positionZ = lidGroupZ + lidOffsetMm;
-
   // Distinct keys force unmount/remount across the multi<->single switch, for
   // the same reason BinMesh does it: reusing one <mesh> lets R3F's prop-diff
   // clobber the attached material array.
@@ -183,7 +176,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
   );
 
   return (
-    <group position={[0, 0, positionZ]}>
+    <group position={[lidPosition[0], lidPosition[1], lidPosition[2]]}>
       {lidMeshNode}
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>

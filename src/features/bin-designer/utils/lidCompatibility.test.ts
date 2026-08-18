@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '../constants';
-import type { BinParams } from '../types';
+import type { BinParams, LidSlideConfig } from '../types';
+import { DEFAULT_LID_SLIDE_CONFIG } from '../types/lid';
 import type { CellMask } from '@/shared/utils/cellMask';
 import {
   checkLidCompatibility,
@@ -1001,5 +1002,126 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
     );
     const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetTooDeepForBin');
     expect(issue?.severity).toBe('warning');
+  });
+});
+
+/**
+ * A sliding lid answers a different set of questions entirely: it has no
+ * mating shell, so nothing about a lip's grip applies to it. What replaces
+ * those checks is the set of ways a plate can fail to travel.
+ */
+describe('checkLidCompatibility — sliding attachment', () => {
+  // `slide` is spread onto DEFAULT_LID_SLIDE_CONFIG, never onto
+  // `DEFAULT_BIN_PARAMS.lid.slide` — that field is deliberately ABSENT on a
+  // design that has never used a sliding lid, so spreading it would build a
+  // half-filled config whose missing keys read as NaN in the plan.
+  const slideParams = (
+    overrides: Partial<BinParams> = {},
+    slide: Partial<LidSlideConfig> = {}
+  ): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 2,
+    height: 6,
+    ...overrides,
+    lid: {
+      ...DEFAULT_BIN_PARAMS.lid,
+      ...overrides.lid,
+      enabled: true,
+      attachment: 'slide',
+      relieveInterior: overrides.lid?.relieveInterior ?? true,
+      slide: { ...DEFAULT_LID_SLIDE_CONFIG, ...slide },
+    },
+  });
+
+  const ids = (p: BinParams): string[] => checkLidCompatibility(p).map((i) => i.id);
+
+  it('drops every cap-lid check', () => {
+    // Wall cutouts on all four sides is a BLOCKER for a click lid — its rails
+    // have nothing to grip. A sliding plate grips nothing, so the same bin is
+    // fine and must not inherit the verdict.
+    const p = slideParams({ walls: allFourCutouts(100) });
+    expect(ids(p)).not.toContain('wallCutoutsAllSides');
+    expect(hasLidBlocker(checkLidCompatibility(p))).toBe(false);
+  });
+
+  it('blocks the rim placement on a lipped bin, and offers the fix', () => {
+    const issues = checkLidCompatibility(slideParams({}, { placement: 'flush' }));
+    expect(issues.map((i) => i.id)).toContain('slideFlushNeedsNoLip');
+    expect(hasLidBlocker(issues)).toBe(true);
+    expect(isLidBlockedBySection(slideParams({}, { placement: 'flush' }), 'base')).toBe(true);
+  });
+
+  it('clears the rim placement once the lip is off', () => {
+    const p = slideParams(
+      { base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } },
+      { placement: 'flush' }
+    );
+    expect(ids(p)).not.toContain('slideFlushNeedsNoLip');
+    expect(hasLidBlocker(checkLidCompatibility(p))).toBe(false);
+  });
+
+  it('says nothing else while the lip question is open', () => {
+    // The plan would be resolved against a design the user is about to change,
+    // so every downstream verdict would be about a joint that will not exist.
+    const issues = checkLidCompatibility(slideParams({}, { placement: 'flush' }));
+    expect(issues.map((i) => i.id)).toEqual(['slideFlushNeedsNoLip']);
+  });
+
+  it('blocks a bin the channel cannot be built in', () => {
+    // 1U: the joint needs more depth than the whole interior has.
+    const p = slideParams({ height: 1 });
+    expect(ids(p)).toContain('slideUnbuildable');
+    expect(hasLidBlocker(checkLidCompatibility(p))).toBe(true);
+  });
+
+  it('blocks a solid bin, which has no cavity to cover', () => {
+    expect(ids(slideParams({ style: 'solid' }))).toContain('slideUnbuildable');
+  });
+
+  it('reports the interrupted rim on the entry wall only', () => {
+    const issues = checkLidCompatibility(slideParams({}, { entrySide: 'right' }));
+    const rim = issues.find((i) => i.id === 'slideRimInterrupted');
+    expect(rim).toBeDefined();
+    expect(rim?.severity).toBe('warning');
+    expect(rim?.sides).toEqual(['right']);
+  });
+
+  it('says nothing about the rim on a lipless bin', () => {
+    const p = slideParams({ base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } });
+    expect(ids(p)).not.toContain('slideRimInterrupted');
+  });
+
+  it('warns when the interior relief is off and something stands in the way', () => {
+    const blocked = slideParams({
+      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
+      lid: { ...DEFAULT_BIN_PARAMS.lid, relieveInterior: false },
+    });
+    expect(ids(blocked)).toContain('slideInteriorBlocked');
+  });
+
+  it('stays quiet once the relief is on', () => {
+    const relieved = slideParams({
+      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
+    });
+    expect(ids(relieved)).not.toContain('slideInteriorBlocked');
+  });
+
+  it('warns about a span wide enough to bow', () => {
+    // Entered from a short wall, a 5-wide bin spans ~200mm between its runners.
+    expect(ids(slideParams({ width: 5, depth: 2 }, { entrySide: 'front' }))).toContain(
+      'slideLongSpan'
+    );
+    // Entered from the long wall instead, the same bin spans its depth and is fine.
+    expect(ids(slideParams({ width: 5, depth: 2 }, { entrySide: 'left' }))).not.toContain(
+      'slideLongSpan'
+    );
+  });
+
+  it('warns when a wall pattern perforates the walls the runners weld to', () => {
+    const patterned = slideParams({
+      wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+    });
+    expect(ids(patterned)).toContain('slideWallPattern');
   });
 });

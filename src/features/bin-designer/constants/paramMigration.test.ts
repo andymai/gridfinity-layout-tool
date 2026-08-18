@@ -1064,7 +1064,14 @@ describe('migrateParams', () => {
       },
       // Explicitly stored, which is what a design created holds.
       relieveInterior: true,
-    };
+      slide: {
+        placement: 'flush' as const,
+        entrySide: 'left' as const,
+        clearanceMm: 0.35,
+        pull: 'tab' as const,
+        detent: false,
+      },
+    } as const;
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
   });

@@ -113,10 +113,19 @@ function trayFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: LidConfig)
   return trayBottomSkirtDepth(
     heightUnitMm,
     LID_FIT_CLEARANCE,
-    // `resolveLidCavityExtraMm` reads only these two fields; the tray's own lip
-    // is irrelevant to the joint (see `trayBottomInputs`).
+    // The TRAY's own attachment, not the top lid's. `resolveLidCavityExtraMm`
+    // now branches on it — a sliding lid has no cavity, so it answers 0 — and
+    // the tray bottom is a different joint that happens to reuse the formula.
+    // Inheriting `attachment` from the spread would collapse a tray bin's skirt
+    // to nothing the moment its owner chose a sliding lid for the TOP, moving
+    // the floor of every ghost overlay and editor that reads this.
+    // `trayBottomInputs` scopes it the same way on the worker side.
     resolveLidCavityExtraMm({
-      lid: { ...lid, extraHeightMm: trayBottom.extraHeightMm },
+      lid: {
+        ...lid,
+        attachment: trayBottom.attachment,
+        extraHeightMm: trayBottom.extraHeightMm,
+      },
       base: { stackingLip: true, magnetDepth: 0 },
     }),
     trayBottom.attachment === 'clickRails' &&

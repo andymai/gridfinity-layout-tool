@@ -41,6 +41,16 @@ export const FeatureTag = {
    * the top of the cavity's perimeter so a seated lid's rails run unbroken.
    */
   LID_RELIEF: 18,
+  /**
+   * The sliding lid's channel on the BIN — both shelves, both retainers, the
+   * detent bumps and the entry notch. One tag rather than four: the joint is a
+   * single thing to a user hovering it, and a shelf on its own is not a feature
+   * anyone reasons about.
+   *
+   * Distinct from {@link SLIDE_RAIL}, which is the sliding TRAY's track: a
+   * different part, on different walls, at a different height.
+   */
+  SLIDE_LID_CHANNEL: 19,
   UNKNOWN: 255,
 } as const;
 
