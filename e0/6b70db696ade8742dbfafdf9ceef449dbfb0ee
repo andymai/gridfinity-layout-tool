@@ -1,0 +1,144 @@
+src/shared/generation/meshPersistence.ts
+  s_6534366e4e760e::t_85566c22d0bb81 45-47,66
+src/features/bin-designer/components/panel/CutoutsSection/cutoutSectionVisibility.ts
+  s_6534366e4e760e::t_79819d26a0148d 39-88
+src/features/bin-designer/components/preview/LidExplodeSlider/index.ts
+  s_6534366e4e760e::t_3d6fc1387f180b 7
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_6534366e4e760e::t_9a4e6889bd87c4 233,238,244
+  s_6534366e4e760e::t_0faa0d3c5d3caf 234-237,239-243,245-247,262
+src/features/bin-designer/components/panel/KnifeRestSection/useKnifeRestSection.test.ts
+  s_6534366e4e760e::t_812d2c5519ccc8 1-8,10,19-31,33-98
+  s_6534366e4e760e::t_8e5f36d1a21bf8 9,11-18
+  s_6534366e4e760e::t_a2ee11ef074418 32
+src/features/bin-designer/components/preview/GhostKnives/knifeGhostGeometry.ts
+  s_6534366e4e760e::t_8c1ff78cddb902 1-17,19-43,56-95,101-188
+  s_6534366e4e760e::t_27bb251f606576 96-100
+  s_6534366e4e760e::t_cb13a034891cb3 18
+  s_6534366e4e760e::t_321356e311062e 44-55
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.tsx
+  s_6534366e4e760e::t_9d9baeb0eff052 109
+  s_6534366e4e760e::t_beb9a641017ddb 1-23,30-88,91-108,110-233
+  s_6534366e4e760e::t_25f76afd9354d7 89-90
+  s_6534366e4e760e::t_aa9a7dad64f181 24-29
+src/features/bin-designer/components/panel/KnifeRestSection/index.ts
+  s_6534366e4e760e::t_4820d042dd0cd0 1
+src/features/bin-designer/components/preview/GhostKnives/GhostKnives.test.tsx
+  s_6534366e4e760e::t_2d205841d53d32 1-144,150-151,158-159
+  s_6534366e4e760e::t_227af7208cb345 145-149,152-157
+src/features/bin-designer/components/preview/index.ts
+  s_6534366e4e760e::t_14a923a7c7c323 6
+  s_6534366e4e760e::t_4817743ed1abeb 38
+  s_6534366e4e760e::t_5ba68f7edc7d19 15
+src/features/bin-designer/hooks/useGeneration.ts
+  s_6534366e4e760e::t_232cfcd219c5e3 50,80
+src/features/bin-designer/components/preview/KnifeRestMesh/knifeRestPlacement.test.ts
+  s_6534366e4e760e::t_afc159d68d1520 1-126
+src/features/generation/bridge/meshData.ts
+  s_6534366e4e760e::t_78508645c967fc 31-35
+  s_6534366e4e760e::t_c230acd0dfbe94 30
+src/features/bin-designer/components/preview/LidExplodeSlider/LidExplodeSlider.tsx
+  s_6534366e4e760e::t_68c6fce108b5e3 156
+  s_6534366e4e760e::t_9ff15436516d2d 59-62,64
+  s_6534366e4e760e::t_95ca04015cf55a 19-20
+src/features/bin-designer/components/preview/LidExplodeSlider/explodeSliderSlots.ts
+  s_6534366e4e760e::t_786ef6a9f9ad61 1-17
+src/features/bin-designer/components/preview/KnifeRestMesh/KnifeRestMesh.test.tsx
+  s_6534366e4e760e::t_b21f24083a8872 1-176
+  s_6534366e4e760e::t_360c3d7e525172 177-179
+src/features/generation/bridge/responses.ts
+  s_6534366e4e760e::t_76359ba4678832 173-179
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_6534366e4e760e::t_4d4179b8861887 251-253,255-256
+  s_6534366e4e760e::t_85e844fab809dc 519-524
+  s_6534366e4e760e::t_4518c56b91dd36 29,35
+  s_6534366e4e760e::t_4cc0ca88409aef 230-231,233-237,254,257
+  s_6534366e4e760e::t_6e8d2a4997062d 54
+  s_6534366e4e760e::t_e33f7d4a206c58 645,653-666
+  s_6534366e4e760e::t_6ed42a474f41c4 561
+  s_6534366e4e760e::t_4672b5bf80ec6d 147-150
+  s_6534366e4e760e::t_e83a18ad85fa5b 71
+  s_6534366e4e760e::t_883ccea0baa61f 258
+  s_6534366e4e760e::t_f931e14dd17670 525-527
+  s_6534366e4e760e::t_80ffcb1324a83c 667-669
+src/features/bin-designer/components/panel/KnifeRestSection/KnifeRestSection.tsx
+  s_6534366e4e760e::t_cd2aee45298915 1-116
+src/features/bin-designer/components/preview/GhostKnives/knifeGhostGeometry.test.ts
+  s_6534366e4e760e::t_feb5f9b7072058 1-229
+src/features/generation/worker/handlers/workerContext.ts
+  s_6534366e4e760e::t_c7190573ebc2c0 210-219,299-307,348-353
+  s_6534366e4e760e::t_dabc43e6009814 354-355
+src/features/bin-designer/components/preview/GhostKnives/index.ts
+  s_6534366e4e760e::t_140c805955c682 1
+src/features/bin-designer/components/preview/KnifeRestMesh/KnifeRestMesh.tsx
+  s_6534366e4e760e::t_becdb72d87e249 1-101
+src/features/bin-designer/components/panel/KnifeRestSection/useKnifeRestSection.ts
+  s_6534366e4e760e::t_1c6d48a705dc40 1-52,55-58,60-76
+  s_6534366e4e760e::t_f0f05312b01034 53-54,59
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_6534366e4e760e::t_4715549ec709b8 38
+  s_6534366e4e760e::t_6fcea84a25dd1b 31
+  s_6534366e4e760e::t_10ad37f478b047 244-260
+  s_6534366e4e760e::t_804620c9015ec6 261
+src/features/bin-designer/components/panel/CutoutsSection/cutoutSectionVisibility.test.ts
+  s_6534366e4e760e::t_7e4e4359af3a31 5-6
+  s_6534366e4e760e::t_d18a3ce469062c 48-89
+  s_6534366e4e760e::t_a18f116f288cd7 90
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_6534366e4e760e::t_cce16527c37c2b 25
+  s_6534366e4e760e::t_3b755ada70b338 269-270
+  s_6534366e4e760e::t_ab840ece1ff717 271
+src/features/bin-designer/components/preview/KnifeRestMesh/knifeRestPlacement.ts
+  s_6534366e4e760e::t_582000c13e1766 1-37
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.test.tsx
+  s_6534366e4e760e::t_8589362c5281f4 30-38
+  s_6534366e4e760e::t_64e6ab40e10b12 1-29,39-136,143-219
+  s_6534366e4e760e::t_bdc937dd9caef2 137-142
+src/features/bin-designer/utils/thumbnailRegenerator.ts
+  s_6534366e4e760e::t_3316b63b36324b 73-74
+  s_6534366e4e760e::t_9f5f0dfa5678b1 313-318,320-328,330-331
+  s_6534366e4e760e::t_3a1e432f80a240 269-277
+  s_6534366e4e760e::t_9d3fc4a14e0060 22-23
+  s_6534366e4e760e::t_c22153897faf93 128-160,278-279
+  s_6534366e4e760e::t_f7382d12c7414d 319
+  s_6534366e4e760e::t_b3184d9a211072 198-199
+  s_6534366e4e760e::t_4c09053a620b49 376-377
+  s_6534366e4e760e::t_aee310820beab4 280
+src/features/bin-designer/components/preview/KnifeRestMesh/index.ts
+  s_6534366e4e760e::t_e0710d7961d6ae 1
+src/features/bin-designer/components/ParameterPanel/groupModified.ts
+  s_6534366e4e760e::t_893aa5a8319211 32
+src/features/bin-designer/components/panel/KnifeRestSection/KnifeRestSection.test.tsx
+  s_6534366e4e760e::t_71661e002f85c2 5
+  s_6534366e4e760e::t_43bd08c4df4012 18-25
+  s_6534366e4e760e::t_f8b7f0665c16a6 39
+  s_6534366e4e760e::t_1cbb5050ebaf00 8-16
+  s_6534366e4e760e::t_8a697745bccb4e 123-124,126
+  s_6534366e4e760e::t_77ec34a6a3b7dc 70
+  s_6534366e4e760e::t_17d10fb1961b93 1-4,6-7,17,26-38,40-69,71-122,125,127-129
+src/features/bin-designer/types/generation.ts
+  s_6534366e4e760e::t_f0703c4e774452 56-60
+src/features/generation/worker/handlers/generateHandler.ts
+  s_6534366e4e760e::t_b35d29378ed81e 20,101-111,120,128
+src/shared/generation/meshBytes.ts
+  s_6534366e4e760e::t_232cfcd219c5e3 40
+src/features/bin-designer/components/preview/GhostKnives/GhostKnives.tsx
+  s_6534366e4e760e::t_d37bc01204bab0 1-36,38-88
+  s_6534366e4e760e::t_8d83c4d0064091 37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e06b70db696ade8742dbfafdf9ceef449dbfb0ee",
+  "prompts": {},
+  "sessions": {
+    "s_6534366e4e760e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7455028-0bd9-441e-aa9c-44e0e5502087",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
