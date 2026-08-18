@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.6...gridfinity-layout-tool-v4.424.7) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep the relief escape hatch reachable and stop silent batch drops ([#3593](https://github.com/andymai/gridfinity-layout-tool/issues/3593)) ([a77a48e](https://github.com/andymai/gridfinity-layout-tool/commit/a77a48e7bc3d480813d21d575e3a0097afab1758))
+
 ## [4.424.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.5...gridfinity-layout-tool-v4.424.6) (2026-08-18)
 
 
