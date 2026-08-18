@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.426.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.425.0...gridfinity-layout-tool-v4.426.0) (2026-08-18)
+
+
+### Features
+
+* **bin-designer:** a type system for engraved text ([#3608](https://github.com/andymai/gridfinity-layout-tool/issues/3608)) ([ddc4c9a](https://github.com/andymai/gridfinity-layout-tool/commit/ddc4c9a827468cf16a804b1bc6e96b60e76eeb9c))
+
 ## [4.425.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.12...gridfinity-layout-tool-v4.425.0) (2026-08-18)
 
 
