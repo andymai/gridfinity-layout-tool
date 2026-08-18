@@ -6,6 +6,7 @@ import { Collapsible, IconButton, PlusIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { CONSTRAINTS } from '@/core/constants';
 import type { LayerId } from '@/core/types';
+import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { HeightCrossSectionDiagram } from './HeightCrossSectionDiagram';
 import { useLayerListController } from '../../hooks/useLayerListController';
 
@@ -53,6 +54,7 @@ export function LayerPanel() {
     return stats;
   }, [layers, layout.bins, totalCells]);
 
+  const ceiling = useDrawerCeiling();
   const allPlacedBins = getGridBins(layout.bins);
   const totalBinCount = allPlacedBins.length;
   const totalCoveredCells = allPlacedBins.reduce((sum, b) => sum + b.width * b.depth, 0);
@@ -113,6 +115,14 @@ export function LayerPanel() {
             layerStats={layerStats}
           />
         </div>
+
+        {ceiling !== null && !ceiling.fits && (
+          <p className="mb-1.5 text-xxs text-status-warning tabular-nums">
+            {t('drawerCeiling.layerOverflow', {
+              over: String(Math.round(-ceiling.slackMm * 10) / 10),
+            })}
+          </p>
+        )}
 
         <div className="h-1 rounded-full overflow-hidden bg-surface-elevated mb-1.5">
           <div

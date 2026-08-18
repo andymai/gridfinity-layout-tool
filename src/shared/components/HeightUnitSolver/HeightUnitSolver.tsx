@@ -1,152 +1,95 @@
-import { useId, useState } from 'react';
-import { CONSTRAINTS } from '@/core/constants';
-import { Button, Input } from '@/design-system';
+import { useMemo } from 'react';
 import { useTranslation } from '@/i18n';
 import {
-  solveHeightUnitMm,
+  solveUnitsUnderCeiling,
   stackedTotalMm,
   LIP_PROTRUSION_MM,
   STACK_JUNCTION_MM,
 } from '@/shared/utils/heightUnits';
-// Relative, not via the '@/shared/components' barrel — this file is inside it.
-import { SettingsRow } from '../SettingsRow';
 
 interface HeightUnitSolverProps {
-  /** Current height unit in mm — the value Apply overwrites. */
+  /** The layout's height unit in mm. Held fixed — this solver never rewrites it. */
   heightUnitMm: number;
-  /** Called with the solved unit value when the user applies a suggestion. */
-  onApply: (heightUnitMm: number) => void;
+  /** Measured internal drawer height in mm, or undefined when unmeasured. */
+  ceilingMm: number | undefined;
   variant?: 'desktop' | 'mobile';
 }
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
-/** Example target height shown as input placeholder (a number, not UI copy). */
-const TARGET_PLACEHOLDER_MM = '75.6';
+/** Stack depths offered. Past three the bins are too short to be useful. */
+const STACK_COUNTS = [1, 2, 3] as const;
 
 /**
- * Back-solves `heightUnitMm` from a target stack height. Bins nest when stacked
- * (pitch = body height), so a stack of `bins`, each `unitsPerBin` tall, prints
- * to `bins × unitsPerBin × unit + one lip`. This inverts that to answer the
- * reporter's ask: "what unit size fills my drawer with N bins?".
+ * Which bin heights fit under the drawer, at the unit the layout already uses.
+ *
+ * Deliberately not the inverse of a target height. Solving for `heightUnitMm`
+ * lands on the ceiling exactly but yields a non-standard unit, so the bins stop
+ * stacking with stock Gridfinity — and it rewrites a global that every bin in
+ * the layout reads. Holding the unit and reporting the tallest whole-unit bin
+ * per stack depth answers the question without either cost; the leftover is
+ * shown so dead space is a choice rather than a surprise.
  */
 export function HeightUnitSolver({
   heightUnitMm,
-  onApply,
+  ceilingMm,
   variant = 'desktop',
 }: HeightUnitSolverProps) {
   const t = useTranslation();
-  const uid = useId();
-  const [target, setTarget] = useState('');
-  const [bins, setBins] = useState(2);
-  const [unitsPerBin, setUnitsPerBin] = useState(2);
 
-  const targetMm = Number.parseFloat(target);
-  const solved =
-    Number.isFinite(targetMm) && targetMm > 0
-      ? solveHeightUnitMm(targetMm, unitsPerBin, bins)
-      : null;
-  // Range-check the value we actually apply (`suggested`), not the unrounded
-  // solve — otherwise 20.004 hides Apply though it rounds to an in-range 20.00.
-  const suggested = solved !== null ? round2(solved) : null;
-  const inRange =
-    suggested !== null &&
-    suggested >= CONSTRAINTS.HEIGHT_UNIT_MM_MIN &&
-    suggested <= CONSTRAINTS.HEIGHT_UNIT_MM_MAX;
-  const stackTotalMm =
-    suggested !== null ? round2(stackedTotalMm(unitsPerBin, suggested, bins)) : 0;
+  const rows = useMemo(
+    () =>
+      ceilingMm === undefined
+        ? []
+        : STACK_COUNTS.map((count) => {
+            const units = solveUnitsUnderCeiling(ceilingMm, heightUnitMm, count);
+            if (units === null) return { count, units: null, totalMm: 0, slackMm: 0 };
+            const totalMm = stackedTotalMm(units, heightUnitMm, count);
+            return { count, units, totalMm, slackMm: ceilingMm - totalMm };
+          }),
+    [ceilingMm, heightUnitMm]
+  );
 
-  // Split across the component's slots: the box is the wrapper, the alignment
-  // belongs to the inner input.
-  const inputSize = variant === 'mobile' ? 'md' : 'sm';
-  const inputWrapperClass = variant === 'mobile' ? 'w-20 h-10' : 'w-14';
-  const inputTextClass = variant === 'mobile' ? 'text-center' : 'text-right';
+  const labelClass = variant === 'mobile' ? 'text-sm' : 'text-xs';
 
-  // Raw inputs rather than DeferredNumberInput: the solve previews live as you
-  // type, and `target` starts empty (no suggestion until asked), neither of
-  // which a commit-on-blur numeric input can express.
+  if (ceilingMm === undefined) {
+    return <p className={`text-content-tertiary ${labelClass}`}>{t('stackSolver.unmeasured')}</p>;
+  }
+
   return (
-    <div className="space-y-2 text-xs">
+    <div className={`space-y-2 ${labelClass}`}>
       <p className="text-content-tertiary">
         {t('stackSolver.description', {
           junction: round2(STACK_JUNCTION_MM),
           shortfall: round2(STACK_JUNCTION_MM - LIP_PROTRUSION_MM),
         })}
       </p>
-      <SettingsRow label={t('stackSolver.targetLabel')} htmlFor={`${uid}-target`} variant={variant}>
-        <Input
-          id={`${uid}-target`}
-          type="number"
-          inputMode="decimal"
-          step="any"
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-          placeholder={TARGET_PLACEHOLDER_MM}
-          size={inputSize}
-          wrapperClassName={inputWrapperClass}
-          className={inputTextClass}
-          aria-label={t('stackSolver.targetLabel')}
-        />
-      </SettingsRow>
-      <SettingsRow label={t('stackSolver.binsLabel')} htmlFor={`${uid}-bins`} variant={variant}>
-        <Input
-          id={`${uid}-bins`}
-          type="number"
-          min={1}
-          step={1}
-          value={bins}
-          onChange={(e) => setBins(Math.max(1, Math.round(Number(e.target.value) || 1)))}
-          size={inputSize}
-          wrapperClassName={inputWrapperClass}
-          className={inputTextClass}
-          aria-label={t('stackSolver.binsLabel')}
-        />
-      </SettingsRow>
-      <SettingsRow
-        label={t('stackSolver.unitsPerBinLabel')}
-        htmlFor={`${uid}-units`}
-        variant={variant}
-      >
-        <Input
-          id={`${uid}-units`}
-          type="number"
-          min={1}
-          step={1}
-          value={unitsPerBin}
-          onChange={(e) => setUnitsPerBin(Math.max(1, Math.round(Number(e.target.value) || 1)))}
-          size={inputSize}
-          wrapperClassName={inputWrapperClass}
-          className={inputTextClass}
-          aria-label={t('stackSolver.unitsPerBinLabel')}
-        />
-      </SettingsRow>
-
-      {suggested !== null && (
-        <div className="space-y-1 pt-1">
-          <div className="text-content-secondary">
-            {t('stackSolver.result', { total: stackTotalMm })}
-          </div>
-          {inRange ? (
-            <Button
-              variant="secondary"
-              fullWidth
-              type="button"
-              onClick={() => onApply(suggested)}
-              disabled={Math.abs(suggested - heightUnitMm) < 1e-9}
-              className="text-[11px] py-1.5 px-2"
-            >
-              {t('stackSolver.apply', { unit: suggested })}
-            </Button>
-          ) : (
-            <div className="text-warning">
-              {t('stackSolver.outOfRange', {
-                min: CONSTRAINTS.HEIGHT_UNIT_MM_MIN,
-                max: CONSTRAINTS.HEIGHT_UNIT_MM_MAX,
-              })}
-            </div>
-          )}
-        </div>
-      )}
+      <p className="text-content-tertiary">
+        {t('stackSolver.ceiling', {
+          ceiling: round2(ceilingMm),
+          unit: round2(heightUnitMm),
+        })}
+      </p>
+      <ul className="space-y-1">
+        {rows.map((row) => (
+          <li key={row.count} className="flex items-baseline justify-between gap-2">
+            <span className="text-content-secondary">
+              {row.count === 1
+                ? t('stackSolver.rowSingle')
+                : t('stackSolver.rowStacked', { count: row.count })}
+            </span>
+            <span className={row.units === null ? 'text-content-disabled' : 'text-content-primary'}>
+              {row.units === null
+                ? t('stackSolver.rowNoFit')
+                : t('stackSolver.rowFit', {
+                    units: row.units,
+                    total: round2(row.totalMm),
+                    slack: round2(row.slackMm),
+                  })}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

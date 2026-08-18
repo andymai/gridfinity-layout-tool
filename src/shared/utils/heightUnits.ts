@@ -70,6 +70,29 @@ export function solveHeightUnitMm(
 }
 
 /**
+ * The tallest WHOLE-unit bin height that lets `count` identical bins stack
+ * under `ceilingMm`, at the layout's existing `heightUnitMm`.
+ *
+ * The inverse of {@link solveHeightUnitMm} for the question users actually
+ * ask: not "what unit fills this exactly" — which yields a non-standard unit
+ * and breaks compatibility with stock bins — but "how tall can my bins be and
+ * still let the lid close". Returns null when even a 1u bin overflows.
+ */
+export function solveUnitsUnderCeiling(
+  ceilingMm: number,
+  heightUnitMm: number,
+  count: number
+): number | null {
+  if (count <= 0 || heightUnitMm <= 0 || !Number.isFinite(ceilingMm)) return null;
+  // Invert `stackedTotalMm`, then take the whole unit below it. The epsilon
+  // absorbs binary error on an exact fit, so a ceiling of exactly 4 x 7mm + lip
+  // reports 4u rather than 3u.
+  const bodyMm = (ceilingMm - STACK_JUNCTION_MM) / count - LIP_PROTRUSION_MM + STACK_JUNCTION_MM;
+  const units = Math.floor(bodyMm / heightUnitMm + 1e-9);
+  return units >= 1 ? units : null;
+}
+
+/**
  * Format a (possibly fractional) height-unit value for display: up to two
  * decimals with trailing zeros stripped, so 5 -> "5", 4.37 -> "4.37".
  */

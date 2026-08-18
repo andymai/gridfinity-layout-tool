@@ -32,6 +32,7 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
 vi.mock('../store/customBinRegistry', () => ({
   upsertRegistryEntry: vi.fn(),
   registryEdgeFields: vi.fn(() => ({})),
+  registryHeightFields: vi.fn(() => ({})),
 }));
 
 vi.mock('./useDesignThumbnail', () => ({

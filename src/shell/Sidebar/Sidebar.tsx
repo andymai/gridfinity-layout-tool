@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
+import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
@@ -106,6 +107,7 @@ export function Sidebar() {
     setShowHalfBinBlockedModal,
     halfBinViolation,
   } = useDrawerSettings();
+  const drawerCeiling = useDrawerCeiling();
 
   // Onboarding — sidebar gallery pulse for low-engagement users
   const { shouldPulseGallery, dismissGalleryPulse } = useOnboarding();
@@ -401,6 +403,7 @@ export function Sidebar() {
                     onAcceptSuggestion={acceptDrawerFitSuggestion}
                     onDismissSuggestion={dismissDrawerFitSuggestion}
                     onClearMeasurement={clearMeasurement}
+                    ceiling={drawerCeiling}
                   />
 
                   {/* Half-bin mode toggle */}
@@ -531,7 +534,10 @@ export function Sidebar() {
                   </Button>
                   <div className="mt-2 pl-3 border-l-2 border-stroke-subtle">
                     <Collapsible title={t('stackSolver.title')} size="md" defaultExpanded={false}>
-                      <HeightUnitSolver heightUnitMm={heightUnitMm} onApply={setHeightUnitMm} />
+                      <HeightUnitSolver
+                        heightUnitMm={heightUnitMm}
+                        ceilingMm={measuredMm?.height}
+                      />
                     </Collapsible>
                   </div>
                 </div>

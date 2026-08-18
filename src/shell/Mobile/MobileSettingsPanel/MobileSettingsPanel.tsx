@@ -1,6 +1,7 @@
 import { useCallback, useState, Suspense } from 'react';
 import { GITHUB_RELEASES_URL, GITHUB_REPO_URL } from '@/shared/constants/links';
 // Import stores directly to avoid circular dependency via barrel export
+import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useSettingsStore } from '@/core/store/settings';
 import { CONSTRAINTS } from '@/core/constants';
@@ -79,6 +80,7 @@ export function MobileSettingsPanel() {
     setShowHalfBinBlockedModal,
     halfBinViolation,
   } = useDrawerSettings();
+  const drawerCeiling = useDrawerCeiling();
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
   const setNozzleSizeMm = useCallback((value: number) => {
@@ -168,6 +170,7 @@ export function MobileSettingsPanel() {
             onAcceptSuggestion={acceptDrawerFitSuggestion}
             onDismissSuggestion={dismissDrawerFitSuggestion}
             onClearMeasurement={clearMeasurement}
+            ceiling={drawerCeiling}
             variant="mobile"
           />
         </div>
@@ -250,7 +253,7 @@ export function MobileSettingsPanel() {
             </div>
             <HeightUnitSolver
               heightUnitMm={heightUnitMm}
-              onApply={setHeightUnitMm}
+              ceilingMm={measuredMm?.height}
               variant="mobile"
             />
           </div>
