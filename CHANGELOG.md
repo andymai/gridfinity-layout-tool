@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.1...gridfinity-layout-tool-v4.424.2) (2026-08-18)
+
+
+### Bug Fixes
+
+* **generation:** harden the sliding lid against corners, crowns, cutouts and phantom relief ([#3583](https://github.com/andymai/gridfinity-layout-tool/issues/3583)) ([1cd0812](https://github.com/andymai/gridfinity-layout-tool/commit/1cd08122454e55fae4db7ff22918f58627e67b63))
+
 ## [4.424.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.0...gridfinity-layout-tool-v4.424.1) (2026-08-18)
 
 
