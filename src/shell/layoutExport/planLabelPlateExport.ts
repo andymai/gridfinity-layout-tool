@@ -153,18 +153,16 @@ export function planLabelPlateExport(
   for (const [id, design] of designById) {
     const params = design?.params;
     if (!design || !params) continue;
-    if (!params.label.enabled || (params.label.mode ?? 'text') !== 'socket') continue;
-
     const linkedBins = bins.filter((b) => b.linkedDesignId === id);
     if (linkedBins.length === 0) continue;
 
     const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
     const dims = binDimensions(params);
     const planned = planLabelPlates({
-      compartments: params.compartments,
-      label: params.label,
+      params,
       innerWmm: dims.innerW,
       innerDmm: dims.innerD,
+      wallHeightMm: dims.wallHeight,
       clearanceMm,
       fallbackText: '',
     });

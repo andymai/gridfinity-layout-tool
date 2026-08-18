@@ -7,10 +7,15 @@
 import type {
   Cutout,
   CutoutArrayConfig,
+  CutoutLabelMode,
   CutoutTextAnchor,
   TextMode,
 } from '@/features/bin-designer/types';
-import { TEXT_MAX_LENGTH, withFontSizeOverride } from '@/features/bin-designer/types';
+import {
+  CUTOUT_LABEL_MODES,
+  TEXT_MAX_LENGTH,
+  withFontSizeOverride,
+} from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { resolveCutoutTextAnchor } from '@/shared/utils/cutoutLabel';
 import { useTranslation } from '@/i18n';
@@ -32,6 +37,8 @@ import { CutoutColorControls } from './CutoutColorControls';
 import { LabelSizeControl } from '../controls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { Button, Collapsible, Input, SliderInput } from '@/design-system';
+import { CutoutSocketControls } from './CutoutSocketControls';
+import { useCutoutSocketPlan } from '@/features/bin-designer/hooks/useCutoutSocketPlan';
 
 /** 3×3 anchor grid in reading order; the glyph hints the position, the
  *  i18n'd aria-label names it. `center` = label sits over the cutout face. */
@@ -322,12 +329,16 @@ interface CutoutEngraveLabelControlsProps {
 }
 
 /**
- * Compact label controls: text input, style (engrave/emboss) picker, 9-point
- * anchor grid, free X/Y nudge, and label angle. Style + font + depth use the
- * design-level `textDefaults`; placement (anchor/offset/angle) is per-cutout and
- * flows through `cutoutLabelPlacement` to the engraved geometry. Through-cut is
- * omitted — it would punch bin-top text through the floor, so the generator
- * degrades it to engrave.
+ * Compact label controls: how the label is realised (engraved into the board
+ * or carried on a swappable plate), the caption, the 9-point anchor grid and a
+ * free X/Y nudge.
+ *
+ * Anchor and nudge are shared by both modes: they place the label either way.
+ * The rest is mode-specific: engraving takes style, angle and font size from
+ * the design-level `textDefaults`, while a socket takes plate width, icon and
+ * a horizontal/vertical toggle. Through-cut is offered for neither: it would
+ * punch bin-top text through the floor, so the generator degrades it to
+ * engrave.
  */
 function CutoutEngraveLabelControls({
   cutout,
@@ -337,8 +348,11 @@ function CutoutEngraveLabelControls({
   onUpdate,
 }: CutoutEngraveLabelControlsProps) {
   const t = useTranslation();
+  const socketPlan = useCutoutSocketPlan();
   const anchor = resolveCutoutTextAnchor(cutout);
   const offset = cutout.textOffset ?? { x: 0, y: 0 };
+  const labelMode: CutoutLabelMode = cutout.labelMode === 'socket' ? 'socket' : 'engrave';
+  const isSocket = labelMode === 'socket';
   const textMode = useDesignerStore((s) => s.params.textDefaults.mode);
   const minFontSize = useDesignerStore((s) => s.params.textDefaults.minFontSize);
   const maxFontSize = useDesignerStore((s) => s.params.textDefaults.maxFontSize);
@@ -352,12 +366,40 @@ function CutoutEngraveLabelControls({
   // reflects what the generator will actually produce.
   const effectiveMode: 'engrave' | 'emboss' = textMode === 'emboss' ? 'emboss' : 'engrave';
 
+  // Only the engraved path keys off an empty caption: a blank plate is a
+  // legitimate design (print the socket now, letter the plate later), so
+  // clearing the text must not take the pocket away with it.
   const handleTextChange = (text: string) => {
-    onUpdate({ label: text, engraveLabel: text.length > 0 });
+    onUpdate(isSocket ? { label: text } : { label: text, engraveLabel: text.length > 0 });
+  };
+
+  // Switching to socket mode asserts the label switch too: the section is
+  // reachable from a cutout that never had an engraving.
+  const handleModeChange = (mode: CutoutLabelMode) => {
+    onUpdate(mode === 'socket' ? { labelMode: 'socket', engraveLabel: true } : { labelMode: mode });
   };
 
   return (
     <div className="space-y-2">
+      <div
+        role="group"
+        aria-label={t('binDesigner.cutoutLabelMode')}
+        className={SEGMENT_GROUP_CLASS}
+      >
+        {CUTOUT_LABEL_MODES.map((opt) => (
+          <Button
+            key={opt}
+            type="button"
+            variant="ghost"
+            disabled={disabled}
+            onClick={() => handleModeChange(opt)}
+            aria-pressed={labelMode === opt}
+            className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(labelMode === opt)}`}
+          >
+            {t(`binDesigner.cutoutLabelMode.${opt}`)}
+          </Button>
+        ))}
+      </div>
       <Input
         type="text"
         size="sm"
@@ -368,21 +410,31 @@ function CutoutEngraveLabelControls({
         placeholder={t('binDesigner.cutoutEngraveLabelPlaceholder')}
         aria-label={t('binDesigner.cutoutEngraveLabel')}
       />
-      <div role="group" aria-label={t('binDesigner.textMode')} className={SEGMENT_GROUP_CLASS}>
-        {CUTOUT_TEXT_MODES.map((opt) => (
-          <Button
-            key={opt}
-            type="button"
-            variant="ghost"
-            disabled={disabled}
-            onClick={() => setTextDefaults({ mode: opt })}
-            aria-pressed={effectiveMode === opt}
-            className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(effectiveMode === opt)}`}
-          >
-            {t(`binDesigner.textMode.${opt}`)}
-          </Button>
-        ))}
-      </div>
+      {isSocket && (
+        <CutoutSocketControls
+          cutout={cutout}
+          plan={socketPlan}
+          disabled={disabled}
+          onUpdate={onUpdate}
+        />
+      )}
+      {!isSocket && (
+        <div role="group" aria-label={t('binDesigner.textMode')} className={SEGMENT_GROUP_CLASS}>
+          {CUTOUT_TEXT_MODES.map((opt) => (
+            <Button
+              key={opt}
+              type="button"
+              variant="ghost"
+              disabled={disabled}
+              onClick={() => setTextDefaults({ mode: opt })}
+              aria-pressed={effectiveMode === opt}
+              className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(effectiveMode === opt)}`}
+            >
+              {t(`binDesigner.textMode.${opt}`)}
+            </Button>
+          ))}
+        </div>
+      )}
       <div className="space-y-1">
         <span className="text-[10px] text-text-muted">{t('binDesigner.cutoutTextAnchor')}</span>
         <div
@@ -395,7 +447,9 @@ function CutoutEngraveLabelControls({
               key={opt}
               type="button"
               variant="ghost"
-              disabled={disabled}
+              // A socket sits over solid material, and `center` sits over the
+              // cutout's own cavity, so there would be nothing to cut it into.
+              disabled={disabled || (isSocket && opt === 'center')}
               onClick={() => onUpdate({ textAnchor: opt })}
               aria-pressed={anchor === opt}
               aria-label={t(`binDesigner.cutoutTextAnchor.${opt}`)}
@@ -427,24 +481,28 @@ function CutoutEngraveLabelControls({
           unit="mm"
           disabled={disabled}
         />
-        <CompactNumberInput
-          label={t('binDesigner.cutoutTextAngle')}
-          value={cutout.textAngle ?? 0}
-          onChange={(angle) => onUpdate({ textAngle: ((angle % 360) + 360) % 360 })}
-          min={0}
-          max={359}
-          step={1}
-          unit="°"
+        {!isSocket && (
+          <CompactNumberInput
+            label={t('binDesigner.cutoutTextAngle')}
+            value={cutout.textAngle ?? 0}
+            onChange={(angle) => onUpdate({ textAngle: ((angle % 360) + 360) % 360 })}
+            min={0}
+            max={359}
+            step={1}
+            unit="°"
+            disabled={disabled}
+          />
+        )}
+      </div>
+      {!isSocket && (
+        <LabelSizeControl
+          value={fontSizeOverride}
+          onChange={setFontSizeOverride}
+          min={minFontSize}
+          max={maxFontSize}
           disabled={disabled}
         />
-      </div>
-      <LabelSizeControl
-        value={fontSizeOverride}
-        onChange={setFontSizeOverride}
-        min={minFontSize}
-        max={maxFontSize}
-        disabled={disabled}
-      />
+      )}
     </div>
   );
 }

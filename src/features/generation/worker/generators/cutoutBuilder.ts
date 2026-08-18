@@ -35,6 +35,7 @@ import {
 import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
+import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
 import {
   MIN_PATH_POINTS,
   DEFAULT_GROUP_OP,
@@ -1114,7 +1115,7 @@ export function buildCutoutCuts(
 
   const rawFuseShapes: Shape3D[] = [];
   for (const cutout of params.cutouts) {
-    if (cutout.engraveLabel !== true) continue;
+    if (!isCutoutEngraveMode(cutout)) continue;
     const label = cutout.label.trim();
     if (label === '') continue;
     // Non-union groups (subtract/intersect/exclude) can hollow a member's

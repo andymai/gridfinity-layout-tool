@@ -10,8 +10,12 @@ import { LabelIconGlyph } from './LabelIconGlyph';
 export interface LabelIconPickerProps {
   readonly value: LabelPlateIconId | null;
   readonly onChange: (icon: LabelPlateIconId | null) => void;
-  /** Compartment this picker belongs to, for the accessible name. */
-  readonly compartmentNumber: number;
+  /**
+   * What this picker labels, for the accessible name: a compartment number
+   * on a gridded bin, a cutout's name on a shadow board. Passed in rather
+   * than derived so the picker stays agnostic about what hosts its socket.
+   */
+  readonly ownerName: string;
 }
 
 /** Stand-in for the empty state — an outlined slot rather than a blank button. */
@@ -42,7 +46,7 @@ function NoIconMark() {
  * passed a handful of entries — "Wood screw" and "Self-tapping screw" are not
  * distinguishable as words at a glance, but they are as shapes.
  */
-export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIconPickerProps) {
+export function LabelIconPicker({ value, onChange, ownerName }: LabelIconPickerProps) {
   const t = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -57,7 +61,7 @@ export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIco
 
   const label = (icon: LabelPlateIconId): string => t(`binDesigner.plateIcon.${icon}`);
   const currentName = value ? label(value) : t('binDesigner.plateIcon.none');
-  const dialogLabel = t('binDesigner.plateIconAria', { n: compartmentNumber });
+  const dialogLabel = t('binDesigner.plateIconAria', { owner: ownerName });
 
   // Match the localized name as well as the id, so a Swedish user searching
   // "insex" finds the socket cap screw and a contributor searching the id does
@@ -101,7 +105,7 @@ export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIco
         size="sm"
         className="h-7 w-9 shrink-0 justify-center px-0"
         aria-label={t('binDesigner.plateIconAriaValue', {
-          n: compartmentNumber,
+          owner: ownerName,
           icon: currentName,
         })}
         aria-haspopup="dialog"

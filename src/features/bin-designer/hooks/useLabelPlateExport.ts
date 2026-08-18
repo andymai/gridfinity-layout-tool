@@ -49,10 +49,9 @@ interface UseLabelPlateExportReturn {
 
 export function useLabelPlateExport(): UseLabelPlateExportReturn {
   const t = useTranslation();
-  const { params, compartments, label, textDefaults } = useDesignerStore(
+  const { params, label, textDefaults } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
-      compartments: s.params.compartments,
       label: s.params.label,
       textDefaults: s.params.textDefaults,
     }))
@@ -64,20 +63,19 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
 
   const plates = useMemo(() => {
-    if (!label.enabled || (label.mode ?? 'text') !== 'socket') return [];
-    const { innerW, innerD } = binDimensions(params);
+    const { innerW, innerD, wallHeight } = binDimensions(params);
     // Same nozzle-scaled clearance the worker cuts with, so the widths planned
     // here match the sockets — never offer a plate the widened pocket rejects.
     const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, label.plateFitOffset);
     return planLabelPlates({
-      compartments,
-      label,
+      params,
       innerWmm: innerW,
       innerDmm: innerD,
+      wallHeightMm: wallHeight,
       clearanceMm,
       fallbackText: '',
     });
-  }, [params, compartments, label, nozzleSizeMm]);
+  }, [params, label, nozzleSizeMm]);
 
   const buildRequest = useCallback((): {
     specs: LabelPlateExportSpec[];

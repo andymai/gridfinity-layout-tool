@@ -301,7 +301,9 @@ export function LabelTextList({
                       <LabelIconPicker
                         value={row.plate.icon}
                         onChange={(icon) => onPlateIconChange(row.index, icon)}
-                        compartmentNumber={row.displayNumber}
+                        ownerName={t('binDesigner.plateIconOwnerCompartment', {
+                          n: row.displayNumber,
+                        })}
                       />
                     </>
                   )}

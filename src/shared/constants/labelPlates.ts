@@ -392,6 +392,28 @@ export function labelSocketOuterWidthMm(widthU: LabelPlateWidthU, clearanceMm: n
   return labelPlateWidthMm(widthU) + clearanceMm + 2 * LABEL_SOCKET_WALL_MM;
 }
 
+/** Outer span across the plate's short axis a socket needs (pocket + walls). */
+export function labelSocketOuterDepthMm(clearanceMm: number): number {
+  return LABEL_PLATE_HEIGHT_MM + clearanceMm + 2 * LABEL_SOCKET_WALL_MM;
+}
+
+/**
+ * How far a socket cut into a shadow board's fill surface must sink below it
+ * (mm).
+ *
+ * A plate stopped on the retention ribs instead of clicked home, carrying
+ * max-depth embossed text, stands `LABEL_SOCKET_STACK_RELIEF_MM` proud of the
+ * pocket's own top plane, enough to perch the bin stacked above on the plate
+ * rather than on the rim. A board that has already lowered its fill surface
+ * has spent that headroom in advance, so only the shortfall is taken. Without
+ * a stacking lip nothing locates on top and nothing needs to sink.
+ */
+export function cutoutSocketSinkMm(stackingLip: boolean, topOffsetMm: number): number {
+  if (!stackingLip) return 0;
+  const spent = Number.isFinite(topOffsetMm) ? Math.max(0, topOffsetMm) : 0;
+  return Math.max(0, LABEL_SOCKET_STACK_RELIEF_MM - spent);
+}
+
 /**
  * Largest standard plate width whose socket fits in `availableWidthMm`,
  * or null when even 1U does not fit.

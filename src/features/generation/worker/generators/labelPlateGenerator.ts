@@ -23,6 +23,20 @@ import { labelPlateWidthMm } from '@/shared/constants/labelPlates';
 import { buildLabelPlate, resolveUniformPlateTextSize } from './labelPlateBuilder';
 import type { LabelPlateSpec } from './labelPlateBuilder';
 import { planLabelPlateSeats } from './labelTabBuilder';
+import type { LabelPlateSeat } from './labelTabBuilder';
+import { LABEL_SOCKET_CLICK_POCKET_DEPTH_MM } from '@/shared/constants/labelPlates';
+import { cutoutSocketTopZ, planCutoutSocketsForParams } from '@/shared/utils/cutoutLabelSocketPlan';
+
+/**
+ * A seat the preview can draw, from either mechanism. `slideY: 0` is the board
+ * case (the plate leaves along `slideZ` instead of over a compartment), which
+ * a wall-hung `LabelPlateSeat` never produces.
+ */
+type PreviewPlateSeat = Omit<LabelPlateSeat, 'slideY'> & {
+  readonly slideY: 1 | -1 | 0;
+  readonly slideZ?: 1;
+  readonly yawDeg?: number;
+};
 import { deriveDimensions } from './pipeline/context';
 
 /**
@@ -37,6 +51,65 @@ import { deriveDimensions } from './pipeline/context';
 export const MAX_PREVIEW_LABEL_PLATES = 12;
 
 /**
+ * Every plate seat a design has, from whichever mechanism produced it.
+ *
+ * The two are mutually exclusive by construction (the label-tab feature is
+ * unavailable on a solid bin, and a shadow board's sockets hang off cutouts
+ * rather than walls), but reading both here keeps the preview's entry point
+ * from having to know which kind of design it was handed.
+ */
+function planPlateSeats(
+  params: BinParams,
+  dim: ReturnType<typeof deriveDimensions>
+): PreviewPlateSeat[] {
+  if (params.label.enabled && (params.label.mode ?? 'text') === 'socket') {
+    return planLabelPlateSeats(
+      params,
+      dim.innerW,
+      dim.innerD,
+      dim.interiorHeight,
+      params.wallThickness
+    );
+  }
+  // `wallHeight`, not `interiorHeight`: a board's fill surface hangs from the
+  // raw wall top less its own top offset, which is the plane `buildCutoutCuts`
+  // places every cavity against. Measuring from the lip-relieved interior
+  // would seat every plate the lip taper's depth below its own pocket.
+  return planCutoutPlateSeats(params, dim.innerW, dim.innerD, dim.wallHeight);
+}
+
+/**
+ * Seats for a shadow board's sockets.
+ *
+ * A board socket is a pocket in a flat surface, so its plate leaves along +Z
+ * rather than sliding over a compartment, and a 90° socket carries its yaw
+ * through to the seated draw.
+ */
+function planCutoutPlateSeats(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): PreviewPlateSeat[] {
+  const { sockets } = planCutoutSocketsForParams(params, innerW, innerD, wallHeight);
+  if (sockets.length === 0) return [];
+  const seatZ = cutoutSocketTopZ(params, wallHeight) - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
+  return sockets.map((socket, index) => ({
+    x: socket.centerX,
+    y: socket.centerY,
+    z: seatZ,
+    slideY: 0 as const,
+    slideZ: 1 as const,
+    ...(socket.vertical ? { yawDeg: 90 } : {}),
+    plateWidthU: socket.widthU,
+    text: socket.text,
+    ...(socket.icon !== undefined ? { icon: socket.icon } : {}),
+    scope: 'compartment' as const,
+    index,
+  }));
+}
+
+/**
  * Build preview meshes for a bin's swappable label plates.
  *
  * Returns null when the design has no sockets — text-mode tabs, labels off, or
@@ -46,18 +119,9 @@ export function generateLabelPlates(
   params: BinParams,
   signal?: AbortSignal
 ): LabelPlatesMeshData | null {
-  if (!params.label.enabled) return null;
-  if ((params.label.mode ?? 'text') !== 'socket') return null;
-
   checkCancelled(signal);
   const dim = deriveDimensions(params, false);
-  const seats = planLabelPlateSeats(
-    params,
-    dim.innerW,
-    dim.innerD,
-    dim.interiorHeight,
-    params.wallThickness
-  );
+  const seats = planPlateSeats(params, dim);
   if (seats.length === 0) return null;
 
   const shown = seats.slice(0, MAX_PREVIEW_LABEL_PLATES);
@@ -109,8 +173,15 @@ export function generateLabelPlates(
         triangleCount: indexed.triangleCount,
         seatX: seat.x,
         seatY: seat.y,
-        seatZ: seat.z,
+        // Both planners answer in the BODY frame, which `translateStage` then
+        // lifts by `baseOffsetZ`: a Gridfinity socket, a tray bin's lid skirt,
+        // or nothing under a flat base. A pose handed to the preview is world
+        // coordinates, so the lift is applied here rather than in either
+        // planner, where two copies of it could drift.
+        seatZ: seat.z + dim.baseOffsetZ,
         slideY: seat.slideY,
+        ...(seat.slideZ !== undefined ? { slideZ: seat.slideZ } : {}),
+        ...(seat.yawDeg !== undefined ? { yawDeg: seat.yawDeg } : {}),
         widthMm: labelPlateWidthMm(seat.plateWidthU),
       });
     } finally {

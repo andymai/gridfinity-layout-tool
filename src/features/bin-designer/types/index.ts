@@ -161,6 +161,7 @@ export type {
   CutoutColorScope,
   CutoutArrayMode,
   CutoutArrayConfig,
+  CutoutLabelMode,
 } from './cutout';
 export {
   DEFAULT_GROUP_OP,
@@ -181,6 +182,7 @@ export {
   CUTOUT_ARRAY_MODES,
   MAX_ARRAY_INSTANCES,
   MAX_ARRAY_COUNT,
+  CUTOUT_LABEL_MODES,
 } from './cutout';
 
 // Generation Types

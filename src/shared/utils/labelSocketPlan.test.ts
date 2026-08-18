@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { planLabelSockets, planLabelPlates } from './labelSocketPlan';
-import type { CompartmentConfig, LabelTabConfig } from '@/shared/types/bin';
+import type { BinParams, CompartmentConfig, LabelTabConfig } from '@/shared/types/bin';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 const CLEARANCE = 0.3;
 
@@ -37,11 +38,17 @@ function plates(
     fallbackText?: string;
   }
 ): ReturnType<typeof planLabelPlates> {
-  return planLabelPlates({
+  const params: BinParams = {
+    ...DEFAULT_BIN_PARAMS,
     compartments,
     label: label(extra?.label),
+    cutouts: [],
+  };
+  return planLabelPlates({
+    params,
     innerWmm,
     innerDmm: extra?.innerDmm ?? INNER_D,
+    wallHeightMm: 40,
     clearanceMm: CLEARANCE,
     fallbackText: extra?.fallbackText ?? '',
   });
@@ -316,5 +323,76 @@ describe('planLabelSockets width percentage (#3402)', () => {
   it('leaves no plate fitting once the tab is too narrow for even 1u', () => {
     const plan = planLabelSockets(grid, 123.1, 0.3, 10);
     expect(plan.compartments[0].plateWidthU).toBeNull();
+  });
+});
+
+describe('planLabelPlates for a shadow board', () => {
+  const boardParams = (cutouts: BinParams['cutouts']): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 2,
+    height: 4,
+    style: 'solid',
+    base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
+    // Label tabs are unavailable on a solid bin, so a board reaching this
+    // function always arrives with the tab feature off.
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: false },
+    cutouts,
+  });
+
+  const boardCutout = (over: Partial<BinParams['cutouts'][number]> = {}) => ({
+    id: 'c1',
+    shape: 'rectangle' as const,
+    x: 40,
+    y: 8,
+    width: 25,
+    depth: 18,
+    cutDepth: 8,
+    rotation: 0,
+    cornerRadius: 0,
+    label: 'M4',
+    groupId: null,
+    labelMode: 'socket' as const,
+    textAnchor: 'top' as const,
+    ...over,
+  });
+
+  function boardPlates(cutouts: BinParams['cutouts']) {
+    return planLabelPlates({
+      params: boardParams(cutouts),
+      innerWmm: 123.1,
+      innerDmm: 81.1,
+      wallHeightMm: 28,
+      clearanceMm: CLEARANCE,
+      fallbackText: '',
+    });
+  }
+
+  // The gate lives inside this function precisely so a caller that checks
+  // `label.enabled` first cannot leave a board's sockets without plates.
+  it('plans a plate for a board whose label tabs are off', () => {
+    const plates = boardPlates([boardCutout()]);
+
+    expect(plates).toHaveLength(1);
+    expect(plates[0]).toMatchObject({ scope: 'cutout', cutoutId: 'c1', text: 'M4' });
+  });
+
+  it('captions each plate from its own cutout', () => {
+    const plates = boardPlates([
+      boardCutout({ id: 'a', label: 'M3', x: 25, y: 8 }),
+      boardCutout({ id: 'b', label: 'M5', x: 70, y: 8 }),
+    ]);
+
+    expect(plates.map((p) => p.text).sort()).toEqual(['M3', 'M5']);
+  });
+
+  it('carries an icon onto the plate', () => {
+    const [plate] = boardPlates([boardCutout({ labelIcon: 'hexKey' })]);
+
+    expect(plate.icon).toBe('hexKey');
+  });
+
+  it('plans nothing for a board whose cutouts are all engraved', () => {
+    expect(boardPlates([boardCutout({ labelMode: 'engrave', engraveLabel: true })])).toEqual([]);
   });
 });

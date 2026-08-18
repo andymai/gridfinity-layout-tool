@@ -45,6 +45,9 @@ function makeSocketDesign(params: Partial<Record<string, unknown>> = {}): SavedD
     params: {
       label: { enabled: true, mode: 'socket', depth: 12 },
       compartments: { cols: 1, rows: 1, cells: [0], thickness: 1.2 },
+      // A gridded bin, so no shadow-board sockets to plan. Present because
+      // the plate plan reads it: `migrateParams` fills it on every real load.
+      cutouts: [],
       ...params,
     } as unknown as BinParams,
     thumbnail: null,

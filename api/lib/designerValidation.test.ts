@@ -12,7 +12,8 @@ import {
   DESIGN_TAG_MAX_COUNT,
   DESIGN_TAG_MAX_LENGTH,
 } from './designerValidation.js';
-import { CONSTRAINTS } from './designerValidationConstants.js';
+import { CONSTRAINTS, VALID_LABEL_PLATE_ICONS } from './designerValidationConstants.js';
+import { LABEL_PLATE_ICONS } from '../../src/shared/constants/labelPlates.js';
 
 function validPayload() {
   return {
@@ -1389,6 +1390,53 @@ describe('validateDesignerShare', () => {
 
     it('rejects a non-object cutout entry', () => {
       expect(withCutouts([{ id: 'a', color: '#ef4444' }, 'oops']).valid).toBe(false);
+    });
+  });
+
+  describe('cutout label socket validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+
+    it('accepts a socket-mode cutout with a standard width and a known icon', () => {
+      expect(
+        withCutouts([{ id: 'a', labelMode: 'socket', labelPlateWidthU: 2, labelIcon: 'hexKey' }])
+          .valid
+      ).toBe(true);
+    });
+
+    it('accepts cutouts without any socket fields (existing designs)', () => {
+      expect(withCutouts([{ id: 'a', x: 10, y: 10 }]).valid).toBe(true);
+    });
+
+    it('rejects an unknown label mode', () => {
+      expect(withCutouts([{ id: 'a', labelMode: 'stencil' }]).valid).toBe(false);
+    });
+
+    // Every distinct width is a pocket the worker would try to cut; only the
+    // three interchange sizes have a plate that fits them.
+    it('rejects a plate width outside the standard set', () => {
+      expect(withCutouts([{ id: 'a', labelPlateWidthU: 4 }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', labelPlateWidthU: 1.5 }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', labelPlateWidthU: '2' }]).valid).toBe(false);
+    });
+
+    // An icon names a silhouette the worker builds geometry from, so it is
+    // checked against the catalogue rather than trusted as a string.
+    it('rejects an icon that is not in the catalogue', () => {
+      expect(withCutouts([{ id: 'a', labelIcon: 'notAnIcon' }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', labelIcon: 42 }]).valid).toBe(false);
+    });
+
+    // An icon the designer offers but this list omits makes the whole design
+    // 400 on sync, so the mirror has to be exact rather than a subset.
+    it('accepts every icon the designer can set', () => {
+      for (const icon of LABEL_PLATE_ICONS) {
+        expect(withCutouts([{ id: 'a', labelIcon: icon }]).valid, icon).toBe(true);
+      }
+      expect(VALID_LABEL_PLATE_ICONS).toEqual([...LABEL_PLATE_ICONS]);
     });
   });
 
