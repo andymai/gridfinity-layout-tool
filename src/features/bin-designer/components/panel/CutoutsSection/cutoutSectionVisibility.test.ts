@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   hasShapeControls,
   hasFitControls,
+  hasKnifeControls,
+  knifeDepthClamp,
   formatFitSummary,
   canArray,
 } from './cutoutSectionVisibility';
@@ -40,6 +42,49 @@ describe('hasFitControls', () => {
     expect(hasFitControls(c({ shape: 'circle' }))).toBe(true);
     expect(hasFitControls(c({ shape: 'rectangle' }))).toBe(true);
     expect(hasFitControls(c({ shape: 'path' }))).toBe(true);
+  });
+});
+
+describe('hasKnifeControls', () => {
+  it('is true only for knife slots', () => {
+    expect(hasKnifeControls(c({ shape: 'knifeSlot' }))).toBe(true);
+    expect(hasKnifeControls(c({ shape: 'slot' }))).toBe(false);
+    expect(hasKnifeControls(c({ shape: 'rectangle' }))).toBe(false);
+  });
+});
+
+describe('knifeDepthClamp', () => {
+  // A 8u bin at the shipped units: 56mm total, 51mm of wall once the socket
+  // comes off, 50mm of cut once the 1mm top offset does.
+  const bin = { wallHeight: 51, totalHeight: 56, topOffset: 1, heightUnitMm: 7 };
+
+  it('says nothing while the fill surface takes the whole slot', () => {
+    expect(knifeDepthClamp({ ...bin, cutDepth: 50 })).toBeNull();
+  });
+
+  it('reports the depth reached and the height that would fit', () => {
+    // 51mm of blade needs 51 + 5 (socket) + 1 (top offset) = 57mm of part.
+    const clamp = knifeDepthClamp({ ...bin, cutDepth: 51 });
+    expect(clamp).toEqual({ availableMm: 50, neededHeightUnits: 9 });
+  });
+
+  it('counts only the top offset on a socketless base', () => {
+    // Flat base: `wallHeight` is the whole height, so nothing but the offset
+    // stands between the height units and the cut.
+    const clamp = knifeDepthClamp({
+      wallHeight: 56,
+      totalHeight: 56,
+      topOffset: 1,
+      heightUnitMm: 7,
+      cutDepth: 60,
+    });
+    expect(clamp).toEqual({ availableMm: 55, neededHeightUnits: 9 });
+  });
+
+  it('stays quiet when there is no cutting surface at all', () => {
+    // A base-only bin has no wall, so every cutout is dropped — a different
+    // problem than a slot that is merely too deep.
+    expect(knifeDepthClamp({ ...bin, wallHeight: 0, cutDepth: 20 })).toBeNull();
   });
 });
 

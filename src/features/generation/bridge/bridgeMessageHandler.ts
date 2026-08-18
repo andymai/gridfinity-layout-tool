@@ -230,6 +230,21 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
                   triangleCount: response.detachableFeetTriangleCount,
                 }
               : undefined;
+          // The knife rest is optional; all five fields arrive together.
+          const knifeRestMesh =
+            response.knifeRestVertices &&
+            response.knifeRestNormals &&
+            response.knifeRestIndices &&
+            response.knifeRestEdgeVertices &&
+            response.knifeRestTriangleCount !== undefined
+              ? {
+                  vertices: response.knifeRestVertices,
+                  normals: response.knifeRestNormals,
+                  indices: response.knifeRestIndices,
+                  edgeVertices: response.knifeRestEdgeVertices,
+                  triangleCount: response.knifeRestTriangleCount,
+                }
+              : undefined;
           const result: GenerationResult = {
             mesh: {
               vertices: response.vertices,
@@ -244,6 +259,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               slideTrayMesh,
               connectorKeyMesh,
               detachableFeetMesh,
+              knifeRestMesh,
               labelPlates: response.labelPlates,
               labelTextOverflow: response.labelTextOverflow,
             },

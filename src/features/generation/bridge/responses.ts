@@ -170,6 +170,13 @@ export interface MeshResultResponse {
   readonly detachableFeetIndices?: Uint32Array;
   readonly detachableFeetEdgeVertices?: Float32Array;
   readonly detachableFeetTriangleCount?: number;
+  /** Knife-block handle rest — present only when the design's rest is a
+   *  companion block. All five fields land or are absent together. */
+  readonly knifeRestVertices?: Float32Array;
+  readonly knifeRestNormals?: Float32Array;
+  readonly knifeRestIndices?: Uint32Array;
+  readonly knifeRestEdgeVertices?: Float32Array;
+  readonly knifeRestTriangleCount?: number;
   /**
    * Swappable label plates with their seated poses (preview only). A set
    * rather than flat fields because the count varies with the design; the

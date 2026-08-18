@@ -42,6 +42,9 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
+ * `v12`: `MeshData` gained `knifeRestMesh`, which entries written before it
+ * cannot carry — a knife block would pre-paint without its companion rest
+ * until the LRU happened to evict the entry.
  * `v11`: detachable feet changed shape (blind 3mm pins, taper-floored arms)
  * and the layout preview began reading `detachableFeetMesh` off the persisted
  * entry — which pre-change entries cannot carry, and their bodies still have
@@ -60,7 +63,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v11';
+const MESH_CACHE_VERSION = 'v12';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

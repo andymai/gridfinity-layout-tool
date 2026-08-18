@@ -22,6 +22,7 @@ import { InteriorSection } from '../panel/InteriorSection';
 import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { ScoopSection } from '../panel/ScoopSection';
+import { KnifeRestSection } from '../panel/KnifeRestSection';
 import { WallsSection } from '../panel/WallsSection';
 import { OverhangSection } from '../panel/OverhangSection';
 import { LidSection } from '../panel/LidSection';
@@ -264,6 +265,9 @@ function BinParameterPanel() {
               <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
                 <ScoopSection />
               </FeatureGate>
+            </PanelSection>
+            <PanelSection helpTarget="bd-knife-rest">
+              <KnifeRestSection />
             </PanelSection>
           </div>
         </StickyGroupHeader>

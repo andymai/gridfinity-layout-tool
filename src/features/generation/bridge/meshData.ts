@@ -28,6 +28,12 @@ export interface MeshData {
    */
   readonly detachableFeetMesh?: MeshData;
   /**
+   * Optional knife-block handle rest, meshed printable-side-down like the part
+   * it exports as. Present only when the design's rest is a companion block;
+   * an integrated rest is a shelf carved out of the bin itself.
+   */
+  readonly knifeRestMesh?: MeshData;
+  /**
    * Optional seated snap-clip connector mesh — the exact relieved part the
    * baseplate ships, so the preview can render it instead of an approximation.
    * Present only for split snap-clip baseplates.

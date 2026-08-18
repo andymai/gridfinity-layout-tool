@@ -28,12 +28,14 @@ import { CutoutFitControls } from '../panel/CutoutsSection/CutoutFitControls';
 import { CutoutShapeBadge } from '../panel/CutoutsSection/CutoutShapeBadge';
 import {
   hasFitControls,
+  hasKnifeControls,
   formatFitSummary,
   repeatBlockedReason,
 } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
 import { CutoutColorControls } from './CutoutColorControls';
+import { CutoutKnifeControls } from './CutoutKnifeControls';
 import { LabelSizeControl } from '../controls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { Button, Collapsible, Input, SliderInput } from '@/design-system';
@@ -238,6 +240,24 @@ export function SingleCutoutInspector({
           </div>
         </Collapsible>
       </div>
+
+      {/* Directly under Shape: for a knife slot these measurements ARE the
+          shape — width, thickness and depth are all derived from them. */}
+      {hasKnifeControls(cutout) && (
+        <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
+          <Collapsible title={t('binDesigner.cutouts.section.knife')} size="sm">
+            <CutoutKnifeControls
+              key={cutout.id}
+              cutout={cutout}
+              binWidth={binWidth}
+              binDepth={binDepth}
+              throughOnly={throughOnly}
+              disabled={disabled}
+              onUpdate={(patch) => onUpdate(cutout.id, patch)}
+            />
+          </Collapsible>
+        </div>
+      )}
 
       {/* Above Color and Fit: repeating a shape is a placement decision, so it
           belongs next to the two sections used while placing one. */}

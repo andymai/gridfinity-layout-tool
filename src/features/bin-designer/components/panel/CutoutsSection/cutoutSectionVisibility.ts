@@ -36,6 +36,56 @@ export function repeatBlockedReason(
   return null;
 }
 
+/** True when a cutout carries knife measurements (the Knife section's gate). */
+export function hasKnifeControls(cutout: Pick<Cutout, 'shape'>): boolean {
+  return cutout.shape === 'knifeSlot';
+}
+
+/** Inputs for {@link knifeDepthClamp}, all in mm except the height unit. */
+export interface KnifeDepthInputs {
+  /** Cut depth the knife's heel height asks for. */
+  readonly cutDepth: number;
+  /** Interior wall height for the current bin height (socket already removed). */
+  readonly wallHeight: number;
+  /** `height × heightUnitMm` — the whole part, socket included. */
+  readonly totalHeight: number;
+  /** Global cutout top offset: how far the fill surface sits below the rim. */
+  readonly topOffset: number;
+  readonly heightUnitMm: number;
+}
+
+/** How far a knife slot overshoots the fill surface, and the bin that would hold it. */
+export interface KnifeDepthClamp {
+  /** Depth the generator can actually cut (the fill surface's height). */
+  readonly availableMm: number;
+  /** Bin height, in height units, whose fill surface takes the whole slot. */
+  readonly neededHeightUnits: number;
+}
+
+/**
+ * The clamp a knife slot is about to hit, or null when the bin takes it whole.
+ *
+ * The generator cuts from `wallHeight - topOffset` (`cutoutBuilder`'s
+ * `solidSurfaceZ`), so a slot deeper than that silently stops short — the blade
+ * sits proud and nothing in the mesh says why. The height needed is derived
+ * from the gap between the total height and the wall height rather than from
+ * `SOCKET_HEIGHT`, so a flat or tray base (which has no socket to subtract)
+ * answers with its own overhead instead of a Gridfinity constant.
+ *
+ * Null when there is no cutting surface at all: `solidSurfaceZ <= 0` makes the
+ * generator drop every cutout, which is a different problem than a deep one.
+ */
+export function knifeDepthClamp(input: KnifeDepthInputs): KnifeDepthClamp | null {
+  const availableMm = input.wallHeight - input.topOffset;
+  if (availableMm <= 0) return null;
+  if (input.cutDepth <= availableMm) return null;
+  const overheadMm = input.totalHeight - input.wallHeight + input.topOffset;
+  return {
+    availableMm,
+    neededHeightUnits: Math.ceil((input.cutDepth + overheadMm) / input.heightUnitMm),
+  };
+}
+
 /** True when a shape exposes any insertion-fit control (clearance / chamfer). */
 export function hasFitControls(cutout: Pick<Cutout, 'shape' | 'cutDepth'>): boolean {
   const isClearance = CLEARANCE_SHAPES.includes(cutout.shape);

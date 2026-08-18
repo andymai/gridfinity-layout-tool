@@ -17,6 +17,7 @@ import { generateMargin } from '../generators/baseplateMargin';
 import { generateLid, generateStackPlate } from '../generators/lidOrchestrator';
 import { generateSlideTray } from '../generators/slideOrchestrator';
 import { generateDetachableFeetMesh } from '../generators/detachableFeetOrchestrator';
+import { generateKnifeRest } from '../generators/knifeRestBuilder';
 import { generateLabelPlates } from '../generators/labelPlateGenerator';
 import { planLabelTextOverflow } from '../generators/labelTextFit';
 import type { BinParams } from '@/shared/types/bin';
@@ -97,6 +98,17 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
         console.warn('[BinGen] Detachable feet failed; skipping feet:', e);
       }
 
+      // The knife rest is a companion block beside the bin, not a lid part, so
+      // it too is resolved before the bin-only early return.
+      let knifeRestMesh: MeshData | null = null;
+      try {
+        knifeRestMesh = generateKnifeRest(params, onProgress, false, signal);
+      } catch (e) {
+        if (isAbortError(e)) throw e;
+
+        console.warn('[BinGen] Knife rest generation failed; skipping rest:', e);
+      }
+
       if (!lidMesh) {
         // Lid generation failed (or is disabled) → bin-only. The baseplate is a
         // companion to the lid, so emitting it here would leave a lone
@@ -105,6 +117,7 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
           ...binMesh,
           ...(slideTrayMesh ? { slideTrayMesh } : {}),
           ...(detachableFeetMesh ? { detachableFeetMesh } : {}),
+          ...(knifeRestMesh ? { knifeRestMesh } : {}),
         };
       }
       let result: MeshData = {
@@ -112,6 +125,7 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
         lidMesh,
         ...(slideTrayMesh ? { slideTrayMesh } : {}),
         ...(detachableFeetMesh ? { detachableFeetMesh } : {}),
+        ...(knifeRestMesh ? { knifeRestMesh } : {}),
       };
       // Separate stack-grid baseplate (glue-on companion). Same secondary-
       // feature contract as the lid: a build failure degrades to lid+bin, but
