@@ -1,0 +1,52 @@
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_6534366e4e760e::t_0f1b49a0fa6ba8 690
+  s_6534366e4e760e::t_7576eb1c348034 69
+  s_6534366e4e760e::t_fc2f9b8a5045ad 372-382
+src/shared/types/bin.ts
+  s_6534366e4e760e::t_371b53ffe8d3e5 103-112
+  s_6534366e4e760e::t_97ab2d55aa1491 95-98
+src/features/generation/worker/generators/binGenerator.scenario.knifeBlock.test.ts
+  s_6534366e4e760e::t_9e0fef141b3df5 1-5
+src/shared/utils/lipGapPlan.test.ts
+  s_6534366e4e760e::t_ecc23271a748aa 14
+  s_6534366e4e760e::t_f9e5a7479d6f85 3
+  s_6534366e4e760e::t_154e254d451fa6 433-541
+src/features/generation/worker/generators/scenarios/knifeBlock.ts
+  s_6534366e4e760e::t_35424c9d63e070 86,93-98,100
+  s_6534366e4e760e::t_2e2a5cbf7bde50 44-47,49-58
+  s_6534366e4e760e::t_622dae02fb5d9e 1-5,7-43,48,59-71,83-85,108-109,111-116,118,120-147,159-161
+  s_6534366e4e760e::t_799e6fddd7c063 6
+  s_6534366e4e760e::t_8326be995766b8 107,110,117,119
+  s_6534366e4e760e::t_e0603005c704be 148-158
+  s_6534366e4e760e::t_c1afd42e9b6350 72-82
+  s_6534366e4e760e::t_633ea0cae7566a 87-92,99,101-106
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_6534366e4e760e::t_86a2cc3065ba8e 1166-1179
+  s_6534366e4e760e::t_81b8182c1a8774 1194-1256
+  s_6534366e4e760e::t_ac6e66295eb45b 38-39
+src/shared/utils/lipGapPlan.ts
+  s_6534366e4e760e::t_54d9caec039bb8 272-274
+  s_6534366e4e760e::t_8c652fd438e08f 141-152
+  s_6534366e4e760e::t_caaae63352876e 37-38
+  s_6534366e4e760e::t_df84d78d33074a 74-75
+  s_6534366e4e760e::t_360ef15d2ed07b 153-195
+  s_6534366e4e760e::t_eaf857dab65951 263-271
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.knifeBlock.test.ts.snap
+  s_6534366e4e760e::t_92d09d44e09a24 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "138821788d160906406f09455dbe9edc0a9b78c3",
+  "prompts": {},
+  "sessions": {
+    "s_6534366e4e760e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7455028-0bd9-441e-aa9c-44e0e5502087",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
