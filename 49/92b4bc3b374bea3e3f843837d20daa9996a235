@@ -1,0 +1,20 @@
+src/features/bin-designer/data/examples/knifeBlock.ts
+  s_6534366e4e760e::t_72b79c0cd77b07 53,57-59,61-63,67
+  s_6534366e4e760e::t_e2739144116269 48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4992b4bc3b374bea3e3f843837d20daa9996a235",
+  "prompts": {},
+  "sessions": {
+    "s_6534366e4e760e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7455028-0bd9-441e-aa9c-44e0e5502087",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
