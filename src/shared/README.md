@@ -62,22 +62,23 @@ behaviour and `InlineEditText` for the styled preset over it, both from
 
 ## Key Utilities (`utils/`)
 
-| File                      | Purpose                                                                                                                         |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `collision.ts`            | 3D spatial collision: `binsCollideResult()`, `getBlockedZones()`, `getDisplayLayers()`                                          |
-| `validation.ts`           | Type guards (`isValidBin`), `canPlaceBin()`, `validateImport()`                                                                 |
-| `bins.ts`                 | Bin filtering: `getGridBins()`, `getStagingBins()`, `getLayerBins()`, `splitBinsByLocation()`                                   |
-| `fill.ts`                 | Auto-fill algorithms: `fillAllWithSize()`, `fillGaps()`                                                                         |
-| `expandToFit.ts`          | `resolveExpandToFit()` — positions + overhangs that tile a span with no gaps                                                    |
-| `compression.ts`          | LZ-string compression for layout storage                                                                                        |
-| `color.ts`                | `getContrastColor()`, `getBinTextColors()` for bin rendering                                                                    |
-| `uuid.ts`                 | Layout ID generation and validation                                                                                             |
-| `wallPatternSides.ts`     | `resolveWallPatternSides()` — which outer walls a pattern covers; absent side means ON                                          |
-| `throttle.ts` / `idle.ts` | RAF throttle, idle scheduling utilities                                                                                         |
-| `svg/`                    | SVG units, transforms and viewBox framing — shared by every importer so they agree on scale                                     |
-| `communityReturnPath.ts`  | One-shot OAuth return record (`saveAuthReturnPath`); allowlisted PATHS only, never a URL                                        |
-| `cutoutArray.ts`          | Cutout repeat placement: `arrayInstances()` → offsets, `expandCutoutArray()` → instances, `arrayFieldBounds()` → per-field caps |
-| `cutoutRepeatDetect.ts`   | The inverse: `detectRepeatPattern()` recovers a master + config from hand-placed cutouts, within a 0.5mm fit tolerance          |
+| File                       | Purpose                                                                                                                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `collision.ts`             | 3D spatial collision: `binsCollideResult()`, `getBlockedZones()`, `getDisplayLayers()`                                                                                                                        |
+| `validation.ts`            | Type guards (`isValidBin`), `canPlaceBin()`, `validateImport()`                                                                                                                                               |
+| `bins.ts`                  | Bin filtering: `getGridBins()`, `getStagingBins()`, `getLayerBins()`, `splitBinsByLocation()`                                                                                                                 |
+| `fill.ts`                  | Auto-fill algorithms: `fillAllWithSize()`, `fillGaps()`                                                                                                                                                       |
+| `expandToFit.ts`           | `resolveExpandToFit()` — positions + overhangs that tile a span with no gaps                                                                                                                                  |
+| `compression.ts`           | LZ-string compression for layout storage                                                                                                                                                                      |
+| `color.ts`                 | `getContrastColor()`, `getBinTextColors()` for bin rendering                                                                                                                                                  |
+| `uuid.ts`                  | Layout ID generation and validation                                                                                                                                                                           |
+| `wallPatternSides.ts`      | `resolveWallPatternSides()` — which outer walls a pattern covers; absent side means ON                                                                                                                        |
+| `throttle.ts` / `idle.ts`  | RAF throttle, idle scheduling utilities                                                                                                                                                                       |
+| `svg/`                     | SVG units, transforms and viewBox framing — shared by every importer so they agree on scale                                                                                                                   |
+| `communityReturnPath.ts`   | One-shot OAuth return record (`saveAuthReturnPath`); allowlisted PATHS only, never a URL                                                                                                                      |
+| `cutoutArray.ts`           | Cutout repeat placement: `arrayInstances()` → offsets, `expandCutoutArray()` → instances, `arrayFieldBounds()` → per-field caps                                                                               |
+| `cutoutRepeatDetect.ts`    | The inverse: `detectRepeatPattern()` recovers a master + config from hand-placed cutouts, within a 0.5mm fit tolerance                                                                                        |
+| `cutoutLabelSocketPlan.ts` | Where a shadow board's swappable-label sockets go: `planCutoutLabelSockets()` holds the anchor fixed and gives up plate WIDTH to a neighbouring cavity, standing a socket down with a reason when none clears |
 
 ## Contexts (`contexts/`)
 

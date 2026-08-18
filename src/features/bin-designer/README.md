@@ -250,7 +250,21 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   rebuilds nothing for a collector to watch. Each plate is meshed once in plate-local
   coords and drawn twice (seated + reference row) via `platePoses`. Capped at
   `MAX_PREVIEW_LABEL_PLATES`; the remainder is surfaced in the label panel rather than
-  silently truncated. Preview only — export packs its own bed-sized sheet.
+  silently truncated. Preview only — export packs its own bed-sized sheet. A SHADOW BOARD's
+  plates come from `planCutoutSocketsForParams` instead and seat in a flat surface, so they
+  withdraw along +Z rather than sliding over a compartment, and a 90° socket carries a yaw.
+  Both planners answer in the BODY frame, which `translateStage` then lifts by
+  `baseOffsetZ`. The lift is applied once where seats become poses, so neither planner
+  carries a copy of it.
+- **Cutout label sockets**: a cutout's label has a mode, engrave (text cut into the fill)
+  or socket (a click-in pocket for a standard swappable plate). The plan is where the work
+  is: a cutout sits in free space beside arbitrary neighbours, and a pocket that strays over
+  one loses its floor and interrupts the rib run, so the plate stops clicking in while every
+  bounding-box, triangle-count and watertight assertion still passes. `planCutoutLabelSockets`
+  holds the anchor fixed and gives up plate WIDTH, and grows its obstruction set with each
+  accepted pocket so two cutouts anchored into the same gap cannot merge theirs into one
+  cavity with no retention left. Arrays anchor to their FULL extent, unlike the engraved
+  label: 0.4mm of glyph lands harmlessly over a sibling hole, a pocket does not.
 - **Full-width label tabs (#2897)**: `label.span` swaps per-compartment tabs for one
   shelf per ROW. A row only gets one where a divider runs the full inner width behind it
   (`rowHasFullWidthWall`) — a shelf needs something to hang from. Captions live in
