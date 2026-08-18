@@ -34,7 +34,8 @@
  */
 
 import type { BinParams, HandleConfig, LidCompatibilitySide } from '@/shared/types/bin';
-import { LID_MIN_RAIL_LENGTH } from '@/shared/types/bin';
+import { LID_MIN_RAIL_LENGTH, DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
+import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import {
@@ -70,8 +71,8 @@ const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
  */
 export const LIP_GAP_RAIL_MARGIN = 1;
 
-/** What removed the lip. The compatibility panel reports the two separately. */
-export type LipGapSource = 'cutout' | 'handle';
+/** What removed the lip. The compatibility panel reports each separately. */
+export type LipGapSource = 'cutout' | 'handle' | 'knifeSlot';
 
 /** One stretch of one wall where the stacking lip has been cut away. */
 export interface LipGap {
@@ -132,6 +133,61 @@ export function lipGaps(params: BinParams): readonly LipGap[] {
         hi: g.centre + g.width / 2,
         wallSpan,
       });
+    }
+  }
+  return out;
+}
+
+/**
+ * Which wall a knife slot's open end exits through. The builder rotates the
+ * tool by `-rotation` about Z, so the local +X end ('end') sweeps
+ * right → front → left → back as rotation steps through 0/90/180/270;
+ * 'start' is the opposite end.
+ */
+function knifeExitSide(rotation: number, openEnd: 'start' | 'end'): LidCompatibilitySide {
+  const steps = ((Math.round(rotation / 90) % 4) + 4) % 4;
+  const dirs: readonly LidCompatibilitySide[] = ['right', 'front', 'left', 'back'];
+  return dirs[openEnd === 'end' ? steps : (steps + 2) % 4];
+}
+
+/** One knife-slot breach through a perimeter wall. */
+export interface KnifeSlotExit {
+  readonly side: LidCompatibilitySide;
+  /** Along-wall centre, in the bin's centred interior frame. */
+  readonly centre: number;
+  /** Opening width along the wall: the slot's thickness (mm). */
+  readonly width: number;
+}
+
+/**
+ * Every wall opening the design's knife slots cut, mirroring
+ * `buildKnifeBreachChannels` gate for gate: solid hosts only, ungrouped,
+ * unhidden, axis-aligned, an open end on the knife spec. Shared by the
+ * lip-gap plan (which rails yield) and the wall-pattern border clip (gotcha
+ * #5), so the two can never disagree about where an exit is.
+ */
+export function knifeSlotWallExits(
+  params: BinParams,
+  innerW: number,
+  innerD: number
+): readonly KnifeSlotExit[] {
+  if (!params.base.solid) return [];
+  const out: KnifeSlotExit[] = [];
+  for (const master of params.cutouts) {
+    if (master.shape !== 'knifeSlot' || master.groupId !== null || master.hidden === true) {
+      continue;
+    }
+    const openEnd = (master.knife ?? DEFAULT_KNIFE_SPEC).openEnd;
+    if (openEnd === undefined) continue;
+    const instances = master.array ? expandCutoutArray(master) : [master];
+    for (const inst of instances) {
+      if (inst.rotation % 90 !== 0) continue;
+      const side = knifeExitSide(inst.rotation, openEnd);
+      const centre =
+        side === 'left' || side === 'right'
+          ? inst.y + inst.depth / 2 - innerD / 2
+          : inst.x + inst.width / 2 - innerW / 2;
+      out.push({ side, centre, width: inst.depth });
     }
   }
   return out;
@@ -201,6 +257,18 @@ function wallGaps(
         centre: centre + (round.topRight - round.topLeft) / 2,
         width,
       });
+    }
+  }
+
+  // Knife-slot exits. The channel has straight sides all the way up through
+  // the lip, so the opening AT the lip is exactly the slot's thickness — no
+  // shoulder flare to widen it. This block must run before the handle gates
+  // below: those return early, and a wall with no handles can still carry a
+  // knife exit.
+  if (wallHeight - params.cutoutConfig.topOffset > 0) {
+    for (const exit of knifeSlotWallExits(params, dims.innerW, dims.innerD)) {
+      if (exit.side !== side) continue;
+      out.push({ source: 'knifeSlot', centre: exit.centre, width: exit.width });
     }
   }
 

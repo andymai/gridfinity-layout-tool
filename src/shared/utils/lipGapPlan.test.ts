@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import type { BinParams, HandleConfig, WallCutout } from '@/features/bin-designer/types';
+import type { BinParams, Cutout, HandleConfig, WallCutout } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
@@ -11,6 +11,7 @@ import {
   lipGaps,
   polygonLipGaps,
   railSegmentsClearOfPolygonGaps,
+  knifeSlotWallExits,
 } from './lipGapPlan';
 
 /**
@@ -427,5 +428,114 @@ describe('railSegmentsClearOfPolygonGaps', () => {
     expect(railSegmentsClearOfPolygonGaps([{ lo: -30, hi: 30 }], 'back', -40, [gap])).toEqual([
       { lo: -30, hi: 30 },
     ]);
+  });
+});
+
+describe('knifeSlotWallExits', () => {
+  const CHEF = {
+    bladeLengthMm: 205,
+    heelHeightMm: 47,
+    spineThicknessMm: 2.3,
+    handleDiameterMm: 23,
+    openEnd: 'end' as const,
+  };
+
+  function knifeSlot(overrides: Partial<Cutout> = {}): Cutout {
+    return {
+      id: 'k1',
+      shape: 'knifeSlot',
+      x: 5,
+      y: 10,
+      width: 60,
+      depth: 3.8,
+      cutDepth: 12,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+      knife: CHEF,
+      ...overrides,
+    };
+  }
+
+  function solidBin(cutouts: Cutout[]): BinParams {
+    return bin({
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts,
+    });
+  }
+
+  it('maps rotation and openEnd to the exit wall', () => {
+    const at = (rotation: number, openEnd: 'start' | 'end') =>
+      knifeSlotWallExits(
+        solidBin([knifeSlot({ rotation, knife: { ...CHEF, openEnd } })]),
+        INNER,
+        INNER
+      )[0]?.side;
+    expect(at(0, 'end')).toBe('right');
+    expect(at(0, 'start')).toBe('left');
+    expect(at(90, 'end')).toBe('front');
+    expect(at(180, 'end')).toBe('left');
+    expect(at(270, 'end')).toBe('back');
+  });
+
+  it('centres the exit on the slot centerline and reports the slot thickness', () => {
+    const [exit] = knifeSlotWallExits(solidBin([knifeSlot()]), INNER, INNER);
+    expect(exit.centre).toBeCloseTo(10 + 3.8 / 2 - INNER / 2, 5);
+    expect(exit.width).toBe(3.8);
+  });
+
+  it('expands repeat arrays into one exit per instance', () => {
+    const exits = knifeSlotWallExits(
+      solidBin([
+        knifeSlot({
+          array: {
+            mode: 'grid',
+            cols: 1,
+            rows: 3,
+            pitchX: 12,
+            pitchY: 12,
+            count: 1,
+            radius: 20,
+            startAngle: 0,
+            rotateToCenter: false,
+          },
+        }),
+      ]),
+      INNER,
+      INNER
+    );
+    expect(exits).toHaveLength(3);
+    expect(new Set(exits.map((e) => e.side))).toEqual(new Set(['right']));
+  });
+
+  it('mirrors the builder gates: non-solid, grouped, hidden, rotated, enclosed', () => {
+    const nonSolid = bin({ cutouts: [knifeSlot()] });
+    expect(knifeSlotWallExits(nonSolid, INNER, INNER)).toHaveLength(0);
+    expect(knifeSlotWallExits(solidBin([knifeSlot({ groupId: 'g1' })]), INNER, INNER)).toHaveLength(
+      0
+    );
+    expect(knifeSlotWallExits(solidBin([knifeSlot({ hidden: true })]), INNER, INNER)).toHaveLength(
+      0
+    );
+    expect(knifeSlotWallExits(solidBin([knifeSlot({ rotation: 30 })]), INNER, INNER)).toHaveLength(
+      0
+    );
+    expect(
+      knifeSlotWallExits(
+        solidBin([knifeSlot({ knife: { ...CHEF, openEnd: undefined } })]),
+        INNER,
+        INNER
+      )
+    ).toHaveLength(0);
+  });
+
+  it('feeds lipGaps a knifeSlot-source gap the rail plan yields to', () => {
+    const gaps = lipGaps(solidBin([knifeSlot()]));
+    const knife = gaps.filter((g) => g.source === 'knifeSlot');
+    expect(knife).toHaveLength(1);
+    expect(knife[0].side).toBe('right');
+    expect(knife[0].hi - knife[0].lo).toBeCloseTo(3.8, 5);
+    expect(lipGapSides(gaps, 'knifeSlot')).toEqual(['right']);
   });
 });

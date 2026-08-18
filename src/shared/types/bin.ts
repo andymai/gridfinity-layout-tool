@@ -92,10 +92,24 @@ export type {
   DividerOverride,
   OverhangConfig,
   WallTaperConfig,
+  KnifeSpec,
+  KnifeSlotOpenEnd,
+  KnifeRestConfig,
+  KnifeRestStyle,
 } from '@/features/bin-designer/types';
 
 export {
   MIN_PATH_POINTS,
+  DEFAULT_KNIFE_SPEC,
+  knifeSlotDimensions,
+  knifeRestStyle,
+  knifeRestGrooveWidthMm,
+  knifeRestSaddleZMm,
+  knifeRestBodyTopZMm,
+  KNIFE_SLOT_EDGE_FLOAT,
+  KNIFE_REST_DEFAULT_GAP_MM,
+  KNIFE_REST_GROOVE_DEPTH_MM,
+  KNIFE_REST_HANDLE_DROP_MM,
   // Tray-bin mating defaults: the worker synthesises a lid config from
   // `base.trayBottom`, so it needs both baselines on this side of the boundary.
   DEFAULT_TRAY_BOTTOM,
