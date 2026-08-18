@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.425.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.12...gridfinity-layout-tool-v4.425.0) (2026-08-18)
+
+
+### Features
+
+* **bin-designer:** knife blocks with blade slots and handle rests ([#3606](https://github.com/andymai/gridfinity-layout-tool/issues/3606)) ([7c1babc](https://github.com/andymai/gridfinity-layout-tool/commit/7c1babca54d6ef111693477da10c1b40b641d3d7))
+
 ## [4.424.12](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.11...gridfinity-layout-tool-v4.424.12) (2026-08-18)
 
 
