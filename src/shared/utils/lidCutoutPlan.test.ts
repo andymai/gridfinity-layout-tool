@@ -103,6 +103,18 @@ describe('lidCutoutWindow', () => {
     expect(lidCutoutWindow(params({ stackableTop: true, stackLipOnly: false }))).toBeNull();
   });
 
+  it('keeps the cavity’s own near-square corner, not one invented from the inset', () => {
+    // The cavity outline's radius collapses to the 0.1mm safety floor
+    // (`buildOutlineDrawing`: max(lidCornerR − cavityInset, floor) with the
+    // two insets equal), and the window pulls in a further wall margin — so
+    // its corner is square. A ~3mm radius here would refuse legal holes near
+    // every corner and round the ends of full-width slots against a cavity
+    // whose corners are solid pillars.
+    const w = lidCutoutWindow(params());
+    expect(w).not.toBeNull();
+    expect(w!.cornerRadius).toBe(0);
+  });
+
   it('spans the mating cavity, not the lid plate', () => {
     const p = params({}, { width: 2, depth: 3 });
     const w = lidCutoutWindow(p);

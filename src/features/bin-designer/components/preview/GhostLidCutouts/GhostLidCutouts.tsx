@@ -70,13 +70,15 @@ export function GhostLidCutouts({ lidOffsetMm }: GhostLidCutoutsProps) {
 
   const cutoutsToRender = useMemo(() => {
     if (!window || cutouts.length === 0) return [];
+    // Same rule as the bin ghosts: no outline for a shape the worker drops.
+    const visible = cutouts.filter((c) => c.hidden !== true);
     let result: readonly Cutout[];
     if (isGenerating) {
-      result = cutouts;
+      result = visible;
     } else if (hasSelection) {
       // Selection is shared with the bin's board, and ids are UUIDs, so this
       // matches nothing unless the lid is the one being edited.
-      result = cutouts.filter((c) => selectedIds.has(c.id));
+      result = visible.filter((c) => selectedIds.has(c.id));
     } else {
       return [];
     }

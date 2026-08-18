@@ -420,14 +420,20 @@ export function InspectorContent({
               />
             )}
           </div>
-          <div className="pt-1">
-            <CutoutColorControls
-              ids={selectedCutouts.map((c) => c.id)}
-              color={getSharedField(selectedCutouts, preview, 'color')}
-              colorScope={getSharedField(selectedCutouts, preview, 'colorScope')}
-              disabled={disabled}
-            />
-          </div>
+          {/* Gated exactly as the single-select inspector gates it: a lid hole
+              is tagged with the flat CUTOUT tag and takes no colour, so the
+              swatch would only flip the whole design into multi-colour mode
+              for a zone nothing paints. */}
+          {!throughOnly && (
+            <div className="pt-1">
+              <CutoutColorControls
+                ids={selectedCutouts.map((c) => c.id)}
+                color={getSharedField(selectedCutouts, preview, 'color')}
+                colorScope={getSharedField(selectedCutouts, preview, 'colorScope')}
+                disabled={disabled}
+              />
+            </div>
+          )}
         </>
       )}
 

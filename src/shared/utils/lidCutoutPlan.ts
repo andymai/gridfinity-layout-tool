@@ -47,7 +47,7 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import type { OverhangExpansion } from '@/shared/utils/overhang';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
-import { isSlideLid } from '@/features/bin-designer/types/lid';
+import { isSlideLid, LID_MIN_CORNER_RADIUS } from '@/features/bin-designer/types/lid';
 import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { SLIDE_BEARING_MM, slideTravelsAlongX } from '@/shared/utils/slideLidPlan';
 
@@ -266,7 +266,15 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
     spanD,
     offsetX: expansion.offsetX,
     offsetY: expansion.offsetY,
-    cornerRadius: Math.max(cavityInset - LID_CUTOUT_WALL_MARGIN_MM, 0),
+    // The window's corner follows the CAVITY's, derived exactly as
+    // `buildOutlineDrawing` derives it: the cavity outline sits `cavityInset`
+    // inside an outer profile whose corner radius is also `cavityInset`, so
+    // the cavity corner collapses to the safety floor — square but for 0.1mm —
+    // and pulling the window in by the wall margin leaves nothing of it.
+    // Deriving from the inset instead claimed a ~3mm radius the mating cavity
+    // does not have, making ~1.9mm² of legal area per corner unreachable and
+    // rounding the ends of full-width slots for nothing.
+    cornerRadius: Math.max(LID_MIN_CORNER_RADIUS - LID_CUTOUT_WALL_MARGIN_MM, 0),
     keepouts: resolveKeepouts(
       params,
       spanW,

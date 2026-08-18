@@ -95,11 +95,16 @@ export function GhostCutouts() {
   // Apply live preview overrides (drag/resize/rotate) for real-time 3D feedback
   const cutoutsToRender = useMemo(() => {
     if (!isSolid || cutouts.length === 0) return [];
+    // Hidden cutouts are dropped for the reason the builder drops them
+    // (#3568): a ghost for a shape the export will not cut is the exact
+    // preview-vs-export divergence the hidden flag's epoch bump exists to
+    // prevent. `OffBoardFrames3D` applies the same filter.
+    const visible = cutouts.filter((c) => c.hidden !== true);
     let result: readonly Cutout[];
     if (isGenerating) {
-      result = cutouts;
+      result = visible;
     } else if (hasSelection) {
-      result = cutouts.filter((c) => selectedIds.has(c.id));
+      result = visible.filter((c) => selectedIds.has(c.id));
     } else {
       return [];
     }

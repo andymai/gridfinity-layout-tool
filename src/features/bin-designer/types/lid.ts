@@ -47,6 +47,14 @@ export interface LidGeometrySource {
 export const LID_FIT_CLEARANCE = 0.25;
 
 /**
+ * Tiny safety floor for rounded rectangle corner radii (avoids OCCT
+ * degeneracy when an inner inset equals the outer corner radius). Lives here
+ * rather than in the worker's `lidConstants` because the lid cutout window
+ * derives its corner radius from the same floor on the main thread.
+ */
+export const LID_MIN_CORNER_RADIUS = 0.1;
+
+/**
  * Additional per-side footprint clearance (mm) given to a magnetic lid
  *. Magnets supply all the retention, so the mating shell only
  * needs to locate the lid — any residual friction fights the magnets and makes

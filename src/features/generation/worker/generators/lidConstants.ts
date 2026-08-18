@@ -121,6 +121,6 @@ export const LID_COPLANAR_MARGIN = 0.1;
 /** Retaining floor kept below a bin-post magnet pocket (mm). */
 export const LID_MAGNET_POST_FLOOR = 0.6;
 
-/** Tiny safety floor for rounded rectangle corner radii (avoids OCCT
- *  degeneracy when an inner inset equals the outer corner radius). */
-export const LID_MIN_CORNER_RADIUS = 0.1;
+// Re-exported from the shared types module: the lid cutout window derives its
+// corner radius from the same floor on the main thread.
+export { LID_MIN_CORNER_RADIUS } from '@/shared/types/bin';
