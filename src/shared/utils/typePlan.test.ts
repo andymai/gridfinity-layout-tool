@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadFont, getFont } from 'brepjs/text';
 import {
   createTypeMeasurer,
@@ -12,7 +13,7 @@ import {
 import { DEFAULT_TEXT_STYLE_DEFAULTS, TEXT_PRESETS } from '@/shared/types/bin';
 import type { TextStyleDefaults } from '@/shared/types/bin';
 
-const FONT_DIR = 'src/shared/fonts/assets';
+const FONT_DIR = resolve(import.meta.dirname, '..', 'fonts', 'assets');
 const FONT_FILES: Record<string, string> = {
   atkinson: `${FONT_DIR}/AtkinsonHyperlegible-Regular.ttf`,
   'atkinson-bold': `${FONT_DIR}/AtkinsonHyperlegible-Bold.ttf`,

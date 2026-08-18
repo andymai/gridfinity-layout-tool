@@ -41,6 +41,18 @@ describe('designer type font registry', () => {
     expect(getTypeMeasurer()).toBeNull();
   });
 
+  it('retries a family whose fetch failed rather than marking it in flight forever', async () => {
+    const fetchMock = vi.fn(() => Promise.reject(new Error('offline')));
+    vi.stubGlobal('fetch', fetchMock);
+    ensureTypeFonts(['atkinson']);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    // One flaky fetch must not cost the preview for the rest of the session:
+    // `loads` tracks what is in flight, not what has been attempted.
+    ensureTypeFonts(['atkinson']);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+  });
+
   it('notifies subscribers so a preview can redraw when a face lands', () => {
     const listener = vi.fn();
     const unsubscribe = subscribeTypeFonts(listener);

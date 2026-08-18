@@ -99,14 +99,23 @@ function loadFontFamily(family: TextFontFamily): Promise<void> {
   const load = (async (): Promise<void> => {
     try {
       const response = await fetch(url);
-      if (!response.ok) return;
+      if (!response.ok) {
+        console.warn(`Failed to fetch ${family} font asset: HTTP ${response.status}`);
+        fontLoads.delete(family);
+        return;
+      }
       const buffer = await response.arrayBuffer();
       const result = await loadFont(buffer, family);
       if (isErr(result)) {
         console.warn(`Failed to register ${family} font:`, result.error.message);
+        fontLoads.delete(family);
       }
     } catch (err) {
       console.warn(`Failed to load ${family} font asset:`, err);
+      // Dropped rather than left resolved, or one flaky fetch would mark the
+      // family permanently in-flight and every later generation would silently
+      // build no text at all.
+      fontLoads.delete(family);
     }
   })();
   fontLoads.set(family, load);

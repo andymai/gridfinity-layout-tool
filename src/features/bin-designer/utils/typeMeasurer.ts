@@ -56,6 +56,11 @@ async function loadFamily(family: TextFontFamily): Promise<void> {
   } catch {
     // A preview is optional. Leaving the family unloaded makes callers fall
     // back to drawing nothing, which is honest; guessing metrics is not.
+  } finally {
+    // `loads` tracks what is IN FLIGHT, not what has been attempted: a family
+    // that failed has to stay retryable, or one flaky fetch costs the preview
+    // for the rest of the session. `loaded` is what records success.
+    if (!loaded.has(family)) loads.delete(family);
   }
 }
 

@@ -22,7 +22,8 @@ import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDim
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import { computeWallTextLayouts, wallTextReadingSign } from '@/shared/utils/wallTextPlan';
 import { resolveEffectiveFont } from '@/shared/utils/typePlan';
-import type { OutlineCommand, TypeMeasurer } from '@/shared/utils/typePlan';
+import type { TypeMeasurer } from '@/shared/utils/typePlan';
+import { contourSegments, outlineToContours } from './ghostTextGeometry';
 import type { WallTextSide } from '@/shared/types/bin';
 import { resolveTextStyle, WALL_TEXT_SIDES } from '@/shared/types/bin';
 import { useTypeMeasurer } from '@/features/bin-designer/hooks/useTypeMeasurer';
@@ -31,8 +32,6 @@ const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.75;
 /** Lift off the wall face so the outline never z-fights the solid behind it. */
 const FACE_LIFT_MM = 0.06;
-/** Segments per curve. A ghost needs the shape, not the tolerance. */
-const CURVE_STEPS = 6;
 
 /** Yaw (degrees about +Z) turning a front-facing glyph run toward each wall. */
 const WALL_YAW: Record<WallTextSide, number> = { front: 0, back: 180, left: -90, right: 90 };
@@ -54,78 +53,6 @@ function wallFaceTranslation(
     case 'right':
       return [innerW / 2 + outward, 0];
   }
-}
-
-/** Flatten one glyph's outline into closed polylines in the reading frame. */
-function outlineToContours(
-  commands: readonly OutlineCommand[],
-  scale: number,
-  originX: number,
-  originY: number
-): number[][] {
-  const contours: number[][] = [];
-  let current: number[] = [];
-  let cx = 0;
-  let cy = 0;
-  const push = (x: number, y: number): void => {
-    current.push(originX + x * scale, originY + y * scale);
-    cx = x;
-    cy = y;
-  };
-  const quad = (x1: number, y1: number, x: number, y: number): void => {
-    const sx = cx;
-    const sy = cy;
-    for (let i = 1; i <= CURVE_STEPS; i++) {
-      const t = i / CURVE_STEPS;
-      const u = 1 - t;
-      push(u * u * sx + 2 * u * t * x1 + t * t * x, u * u * sy + 2 * u * t * y1 + t * t * y);
-    }
-  };
-  const cubic = (x1: number, y1: number, x2: number, y2: number, x: number, y: number): void => {
-    const sx = cx;
-    const sy = cy;
-    for (let i = 1; i <= CURVE_STEPS; i++) {
-      const t = i / CURVE_STEPS;
-      const u = 1 - t;
-      push(
-        u * u * u * sx + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x,
-        u * u * u * sy + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y
-      );
-    }
-  };
-
-  for (const cmd of commands) {
-    if (cmd.type === 'M' && cmd.x !== undefined && cmd.y !== undefined) {
-      if (current.length >= 4) contours.push(current);
-      current = [];
-      push(cmd.x, cmd.y);
-    } else if (cmd.type === 'L' && cmd.x !== undefined && cmd.y !== undefined) {
-      push(cmd.x, cmd.y);
-    } else if (
-      cmd.type === 'Q' &&
-      cmd.x !== undefined &&
-      cmd.y !== undefined &&
-      cmd.x1 !== undefined &&
-      cmd.y1 !== undefined
-    ) {
-      quad(cmd.x1, cmd.y1, cmd.x, cmd.y);
-    } else if (
-      cmd.type === 'C' &&
-      cmd.x !== undefined &&
-      cmd.y !== undefined &&
-      cmd.x1 !== undefined &&
-      cmd.y1 !== undefined &&
-      cmd.x2 !== undefined &&
-      cmd.y2 !== undefined
-    ) {
-      cubic(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);
-    } else if (cmd.type === 'Z') {
-      if (current.length >= 4) contours.push(current);
-      current = [];
-    }
-  }
-  if (current.length >= 4) contours.push(current);
-  return contours;
 }
 
 function buildGeometry(positions: number[]): THREE.BufferGeometry | null {
@@ -245,14 +172,11 @@ function buildWallTextOutline(
           originZ + line.baselineY
         );
         for (const contour of contours) {
-          // Emit as segments so one buffer covers every wall in one draw.
-          for (let i = 0; i + 3 < contour.length; i += 2) {
-            for (const [px, py] of [
-              [contour[i], contour[i + 1]],
-              [contour[i + 2], contour[i + 3]],
-            ]) {
-              positions.push(px * cos + tx, px * sin + ty, floorZ + py);
-            }
+          const segments = contourSegments(contour);
+          for (let i = 0; i + 1 < segments.length; i += 2) {
+            const px = segments[i];
+            const py = segments[i + 1];
+            positions.push(px * cos + tx, px * sin + ty, floorZ + py);
           }
         }
       }

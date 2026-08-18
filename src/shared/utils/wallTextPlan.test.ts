@@ -11,6 +11,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadFont, getFont } from 'brepjs/text';
 import { computeWallTextLayouts } from './wallTextPlan';
 import type { WallTextDims } from './wallTextPlan';
@@ -19,10 +20,12 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import type { BinParams } from '@/shared/types/bin';
 
+const FONT_DIR = resolve(import.meta.dirname, '..', 'fonts', 'assets');
+
 let measurer: TypeMeasurer;
 
 beforeAll(async () => {
-  const buf = readFileSync('src/shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf');
+  const buf = readFileSync(resolve(FONT_DIR, 'AtkinsonHyperlegible-Regular.ttf'));
   await loadFont(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), 'atkinson');
   measurer = createTypeMeasurer((f) => getFont(f) as GlyphFont | undefined);
 });
