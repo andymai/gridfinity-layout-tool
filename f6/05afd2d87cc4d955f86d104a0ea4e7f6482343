@@ -1,0 +1,65 @@
+src/shared/components/HeightUnitSolver/HeightUnitSolver.tsx
+  s_5882a47eb73dff::t_cd6e82bb7ff7b8 15-21
+  s_5882a47eb73dff::t_a13f13fa65d1d1 43,53-54,57
+  s_5882a47eb73dff::t_de5a455c6a835f 59
+src/shared/printSettings/assembledHeight.test.ts
+  s_5882a47eb73dff::t_f57b4a14e1c977 215-225
+src/features/grid-editor/components/Grid/IsometricPreview/CeilingPlane/CeilingPlane.test.tsx
+  s_5882a47eb73dff::t_36044c2050534c 16-28,30-32,34-35,43-44,48,52,56-73
+src/features/bin-designer/store/customBinRegistry.ts
+  s_5882a47eb73dff::t_70b48ae13d00a4 131,135
+  s_5882a47eb73dff::t_a458068ec7cdaf 197
+  s_5882a47eb73dff::t_79931b6ffb5036 163
+  s_5882a47eb73dff::t_0f9e08bae40fdc 83-90
+  s_5882a47eb73dff::t_4ff8ed9408f476 266
+src/features/grid-editor/components/Grid/IsometricPreview/CeilingPlane/CeilingPlane.tsx
+  s_5882a47eb73dff::t_d929e4a806a2dc 14-25,43-44,54,56,66-67
+src/features/generation/worker/generators/binStackSeating.kernel.test.ts
+  s_5882a47eb73dff::t_336d2310b88605 167
+src/shell/Sidebar/Sidebar.tsx
+  s_5882a47eb73dff::t_6e9171a1a9d92a 81
+  s_5882a47eb73dff::t_078bcd70f5e8ad 541
+src/shared/utils/drawerCeiling.test.ts
+  s_5882a47eb73dff::t_8456e1e5e6e454 127-180
+src/shared/hooks/useDrawerSettings.ts
+  s_5882a47eb73dff::t_17eacc94b0175e 16,21
+  s_5882a47eb73dff::t_42b21247752210 70-75
+  s_5882a47eb73dff::t_a2cec270821245 675
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_5882a47eb73dff::t_d57ab3dafb7b99 258
+  s_5882a47eb73dff::t_6e9171a1a9d92a 51
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_5882a47eb73dff::t_3f53dbbf789a21 352-353
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_5882a47eb73dff::t_05fa68dfca441c 152-153
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.test.tsx
+  s_5882a47eb73dff::t_8e84ff5c51e312 170-182
+src/shared/hooks/useDrawerCeiling.ts
+  s_5882a47eb73dff::t_30f75e5ef01950 44-48
+src/shared/printSettings/assembledHeight.ts
+  s_5882a47eb73dff::t_c68fb37f1197fa 31
+  s_5882a47eb73dff::t_9427d25a28be45 130-135
+src/shared/utils/drawerCeiling.ts
+  s_5882a47eb73dff::t_4f70c57b8657d3 97,99-103,105-109
+  s_5882a47eb73dff::t_95ed316c776256 22
+  s_5882a47eb73dff::t_536ad0030395f4 175,179
+  s_5882a47eb73dff::t_903a319f885cd5 40-45
+  s_5882a47eb73dff::t_e96a21801c08f8 147,151,153-155,157,160-163
+  s_5882a47eb73dff::t_2f6a7e39b19f5e 167-171,174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f605afd2d87cc4d955f86d104a0ea4e7f6482343",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
