@@ -1,0 +1,111 @@
+src/features/bin-designer/store/customBinRegistry.ts
+  s_6534366e4e760e::t_0e787940b5759c 20-21
+  s_6534366e4e760e::t_d5c5a63b1c2893 238-254
+  s_6534366e4e760e::t_4a4328115b4554 324-330
+  s_6534366e4e760e::t_3b54692f468563 93-108
+  s_6534366e4e760e::t_aee0f7335863c7 158-177
+  s_6534366e4e760e::t_311cf003574cd6 203
+  s_6534366e4e760e::t_3016bcb83a28bc 157
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
+  s_6534366e4e760e::t_59283d2321e6a2 219
+  s_6534366e4e760e::t_5797a6b2f1e98e 36
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_6534366e4e760e::t_59283d2321e6a2 228
+  s_6534366e4e760e::t_545c522ad9e86f 25
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/placement.ts
+  s_6534366e4e760e::t_966a0d04cc9d43 52-55
+src/core/cqrs/v2/domain/bin/duplicateBin.ts
+  s_6534366e4e760e::t_bbe36f5fbd4388 94-96
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.ts
+  s_6534366e4e760e::t_59283d2321e6a2 94,119
+  s_6534366e4e760e::t_b8e1814cdae7c8 23
+src/core/types/layout.ts
+  s_6534366e4e760e::t_745126090b1ffb 146-156
+  s_6534366e4e760e::t_aabd1c9f458870 166,168-169
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_6534366e4e760e::t_9f3ba3526d2c95 61-63
+  s_6534366e4e760e::t_b6f5a17d312cf6 98-99
+src/core/cqrs/validation/schemas.ts
+  s_6534366e4e760e::t_c8b86fc7899040 125-126
+  s_6534366e4e760e::t_40955959bb4140 87-88
+src/shared/hooks/keyboard/handlers.ts
+  s_6534366e4e760e::t_2bbe8b4b2767f5 391
+  s_6534366e4e760e::t_e2a26456a87959 20
+  s_6534366e4e760e::t_062a2182334b94 56
+  s_6534366e4e760e::t_04f40ada988afb 335,337,339
+  s_6534366e4e760e::t_622dc0f9a0fb1e 35-37,42
+  s_6534366e4e760e::t_2fef01ae0c220f 350,353
+  s_6534366e4e760e::t_a2c1e4a5eea020 214-252
+src/core/cqrs/v2/domain/bin/addBin.ts
+  s_6534366e4e760e::t_97164e627db01e 35-36
+src/features/design-linking/hooks/useKnifeRestPairing.ts
+  s_6534366e4e760e::t_82a0f3f74a7389 68
+  s_6534366e4e760e::t_6c25a7e54b0459 1-67,69-113
+src/features/bin-designer/hooks/useThumbnailRegeneration.ts
+  s_6534366e4e760e::t_59283d2321e6a2 89
+  s_6534366e4e760e::t_8662b524a8ea0a 20
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/LinkedBinMesh.tsx
+  s_6534366e4e760e::t_782086243b9a8b 41-45
+  s_6534366e4e760e::t_126b0bba73f243 40,46-47,55
+src/shared/utils/validationGuards.ts
+  s_6534366e4e760e::t_89d0f1611c61e0 123-126
+  s_6534366e4e760e::t_8e6953bc305a43 36-37
+src/shared/utils/validationSalvage.ts
+  s_6534366e4e760e::t_1ac6c224e8aa10 121-122
+  s_6534366e4e760e::t_212b7b949d8159 17
+  s_6534366e4e760e::t_f80c51e1ca4f38 182-183,186
+src/shared/hooks/useSelectionActions.ts
+  s_6534366e4e760e::t_6567873aac6b6b 278-282,285
+  s_6534366e4e760e::t_466aba62a709ae 82-84
+  s_6534366e4e760e::t_686ceb4355b477 10
+  s_6534366e4e760e::t_187d0d75928bb4 299-303,306
+api/lib/validation.ts
+  s_6534366e4e760e::t_8a693031781b68 352-355
+  s_6534366e4e760e::t_078e4f26762303 127-128
+src/features/bin-designer/hooks/useDesignerInit.ts
+  s_6534366e4e760e::t_59283d2321e6a2 141
+  s_6534366e4e760e::t_406cf182650020 33
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_6534366e4e760e::t_a3dd513c320b54 23
+  s_6534366e4e760e::t_61c704beca511e 327-328,330-333,336-337
+  s_6534366e4e760e::t_cafd6d5aeda608 353-358,360-361
+src/features/design-linking/components/DesignLinkingDialogs/DesignLinkingDialogs.tsx
+  s_6534366e4e760e::t_fef0e8cc7109f8 16,22
+src/shared/utils/validationImport.ts
+  s_6534366e4e760e::t_70e1dd23a0783d 231-232,234-236,241
+  s_6534366e4e760e::t_678e552644ebf1 233,237-240
+  s_6534366e4e760e::t_092767e7230c3b 187-188
+  s_6534366e4e760e::t_212b7b949d8159 15
+src/shared/utils/binPairs.test.ts
+  s_6534366e4e760e::t_3e8179ee892dab 1-67
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.ts
+  s_6534366e4e760e::t_756a0e3fb89b5b 159-168,174
+  s_6534366e4e760e::t_17041c4029bf57 17-26
+  s_6534366e4e760e::t_973051f42f2f6a 102-125
+src/shared/utils/binPairs.ts
+  s_6534366e4e760e::t_1f1f38c632ac83 1-56
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_6534366e4e760e::t_59283d2321e6a2 147
+  s_6534366e4e760e::t_e01ada5e3dbfed 22
+src/features/design-linking/hooks/index.ts
+  s_6534366e4e760e::t_2fcb651bae81e5 11
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_6534366e4e760e::t_24d82e3b0824cd 133-141
+  s_6534366e4e760e::t_1381a993046895 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "62f58a0998cc17e71da3aae2b3e6587f65b16911",
+  "prompts": {},
+  "sessions": {
+    "s_6534366e4e760e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7455028-0bd9-441e-aa9c-44e0e5502087",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
