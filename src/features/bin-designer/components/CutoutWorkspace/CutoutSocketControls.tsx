@@ -43,26 +43,61 @@ export function CutoutSocketControls({
   const t = useTranslation();
   const socket = plan.byCutoutId.get(cutout.id);
   const skipReason = plan.skippedByCutoutId.get(cutout.id);
+  // Read through the planner's own predicate rather than re-deriving it: the
+  // toggle must show the orientation the pocket was actually cut at.
+  const vertical = isCutoutSocketVertical(cutout);
+
+  const orientationGroup = (
+    <div
+      role="group"
+      aria-label={t('binDesigner.cutoutSocket.orientation')}
+      className={SEGMENT_GROUP_CLASS}
+    >
+      <Button
+        type="button"
+        variant="ghost"
+        disabled={disabled}
+        onClick={() => onUpdate({ textAngle: 0 })}
+        aria-pressed={!vertical}
+        className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(!vertical)}`}
+      >
+        {t('binDesigner.cutoutSocket.horizontal')}
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        disabled={disabled}
+        onClick={() => onUpdate({ textAngle: 90 })}
+        aria-pressed={vertical}
+        className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(vertical)}`}
+      >
+        {t('binDesigner.cutoutSocket.vertical')}
+      </Button>
+    </div>
+  );
 
   if (!socket) {
+    // The no-room message advises trying the other orientation, so the one
+    // control that can unblock the plan has to stay mounted with it. The other
+    // refusals are not orientation's to fix and keep the bare warning.
     return (
-      <p role="status" className="text-[10px] text-status-warning">
-        {skipReason === 'centerAnchor'
-          ? t('binDesigner.cutoutSocket.blockedCenterAnchor')
-          : skipReason === 'tooShallow'
-            ? t('binDesigner.cutoutSocket.blockedTooShallow')
-            : skipReason === 'capped'
-              ? t('binDesigner.cutoutSocket.blockedCapped', { max: MAX_CUTOUT_LABEL_SOCKETS })
-              : t('binDesigner.cutoutSocket.blockedNoRoom')}
-      </p>
+      <div className="space-y-2">
+        <p role="status" className="text-[10px] text-status-warning">
+          {skipReason === 'centerAnchor'
+            ? t('binDesigner.cutoutSocket.blockedCenterAnchor')
+            : skipReason === 'tooShallow'
+              ? t('binDesigner.cutoutSocket.blockedTooShallow')
+              : skipReason === 'capped'
+                ? t('binDesigner.cutoutSocket.blockedCapped', { max: MAX_CUTOUT_LABEL_SOCKETS })
+                : t('binDesigner.cutoutSocket.blockedNoRoom')}
+        </p>
+        {(skipReason === 'noRoom' || skipReason === undefined) && orientationGroup}
+      </div>
     );
   }
 
   const override = cutout.labelPlateWidthU;
   const pinned = isLabelPlateWidthU(override) && socket.fittingWidthsU.includes(override);
-  // Read through the planner's own predicate rather than re-deriving it: the
-  // toggle must show the orientation the pocket was actually cut at.
-  const vertical = isCutoutSocketVertical(cutout);
 
   const setWidth = (widthU: LabelPlateWidthU | null) => {
     onUpdate(widthU === null ? { labelPlateWidthU: undefined } : { labelPlateWidthU: widthU });
@@ -114,32 +149,7 @@ export function CutoutSocketControls({
         />
       </div>
 
-      <div
-        role="group"
-        aria-label={t('binDesigner.cutoutSocket.orientation')}
-        className={SEGMENT_GROUP_CLASS}
-      >
-        <Button
-          type="button"
-          variant="ghost"
-          disabled={disabled}
-          onClick={() => onUpdate({ textAngle: 0 })}
-          aria-pressed={!vertical}
-          className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(!vertical)}`}
-        >
-          {t('binDesigner.cutoutSocket.horizontal')}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          disabled={disabled}
-          onClick={() => onUpdate({ textAngle: 90 })}
-          aria-pressed={vertical}
-          className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(vertical)}`}
-        >
-          {t('binDesigner.cutoutSocket.vertical')}
-        </Button>
-      </div>
+      {orientationGroup}
     </div>
   );
 }

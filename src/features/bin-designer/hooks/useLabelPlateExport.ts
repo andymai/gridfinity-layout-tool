@@ -24,7 +24,7 @@ import {
   FORMAT_EXTENSIONS,
   triggerDownload,
 } from '@/shared/generation/exportUtils';
-import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { buildLabelPlateColorConfig } from '@/features/bin-designer/utils/labelPlateColors';
 import {
   effectiveLabelSocketClearance,
@@ -63,7 +63,10 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
 
   const plates = useMemo(() => {
-    const { innerW, innerD, wallHeight } = binDimensions(params);
+    // Expanded interior, matching the worker's socket frame (see
+    // `useCutoutSocketPlan`).
+    const { innerW, innerD } = cutoutInterior(params);
+    const { wallHeight } = binDimensions(params);
     // Same nozzle-scaled clearance the worker cuts with, so the widths planned
     // here match the sockets — never offer a plate the widened pocket rejects.
     const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, label.plateFitOffset);

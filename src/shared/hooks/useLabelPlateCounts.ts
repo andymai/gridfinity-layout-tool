@@ -14,6 +14,7 @@ import type { Bin, DesignId } from '@/core/types';
 import { isOk } from '@/core/result';
 import {
   binDimensions,
+  cutoutInterior,
   loadDesign,
   useCustomBins,
   type SavedDesign,
@@ -86,10 +87,13 @@ function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlate
   if (!params) return null;
   const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
   const dims = binDimensions(params);
+  // Expanded interior, matching the worker's socket frame (see
+  // `useCutoutSocketPlan`).
+  const inner = cutoutInterior(params);
   const planned = planLabelPlates({
     params,
-    innerWmm: dims.innerW,
-    innerDmm: dims.innerD,
+    innerWmm: inner.innerW,
+    innerDmm: inner.innerD,
     wallHeightMm: dims.wallHeight,
     clearanceMm,
     fallbackText: '',

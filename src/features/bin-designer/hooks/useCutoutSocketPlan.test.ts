@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCutoutSocketPlan } from './useCutoutSocketPlan';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import type { Cutout } from '@/features/bin-designer/types';
 
 const cutout = (o: Partial<Cutout> = {}): Cutout => ({
@@ -45,6 +46,27 @@ describe('useCutoutSocketPlan', () => {
 
     expect(result.current.socketCount).toBe(0);
     expect(result.current.skippedCount).toBe(0);
+  });
+
+  it('plans against the overhang-expanded interior, exactly as the worker cuts', () => {
+    // The worker sizes sockets against `dim.innerW` (overhang folded in). A
+    // plan measured on the nominal interior under-reports the room beside a
+    // cutout on an overhung board, so the panel would offer a narrower plate
+    // than the pocket the worker cuts. The plan's own frame must therefore be
+    // `cutoutInterior`, and it reports the frame it used.
+    board([cutout({ labelMode: 'socket', textAnchor: 'top' })]);
+    const { params } = useDesignerStore.getState();
+    useDesignerStore.setState({
+      params: { ...params, overhang: { left: 0, right: 10, front: 0, back: 0 } },
+    });
+    const { result } = renderHook(() => useCutoutSocketPlan());
+    expect(result.current.innerW).toBeCloseTo(
+      cutoutInterior(useDesignerStore.getState().params).innerW,
+      5
+    );
+    expect(result.current.innerW).toBeGreaterThan(
+      binDimensions(useDesignerStore.getState().params).innerW + 9
+    );
   });
 
   it('keys a planned socket by its cutout', () => {

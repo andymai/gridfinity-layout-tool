@@ -22,7 +22,9 @@ const BORDER_MM = 0.5;
 interface CutoutSocketFootprintProps {
   readonly centerX: number;
   readonly centerY: number;
+  /** Plate-frame long axis (mm) — NOT world-swapped; `vertical` rotates. */
   readonly widthMm: number;
+  /** Plate-frame short axis (mm). */
   readonly depthMm: number;
   readonly cornerRadiusMm: number;
   readonly text: string;
@@ -61,9 +63,10 @@ export function CutoutSocketFootprint({
     [widthMm, depthMm, cornerRadiusMm]
   );
 
-  // The caption always reads along the plate's LONG axis, so a vertical socket
-  // turns its text with the plate rather than wrapping across the short one.
-  const plateLength = vertical ? depthMm : widthMm;
+  // Extents arrive in the PLATE's own frame (width = long axis); the group
+  // rotation below is the single place orientation is applied, so the caption
+  // always lays out along local X.
+  const plateLength = widthMm;
   const { fontSize, captionSpan, captionCenter, iconCenter } = socketCaptionLayout(
     plateLength,
     hasIcon,

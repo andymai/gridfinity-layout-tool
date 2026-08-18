@@ -17,7 +17,7 @@ import type { Bin } from '@/core/types';
 import type { FeatureColorConfig, TextStyleDefaults } from '@/shared/types/bin';
 // Deep import (not the barrel): this code only runs inside the lazy
 // layout-export chunk (same rationale as planLayoutBinExport's deep imports).
-import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import {
   LABEL_PLATE_HEIGHT_MM,
   effectiveLabelSocketClearance,
@@ -158,10 +158,13 @@ export function planLabelPlateExport(
 
     const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
     const dims = binDimensions(params);
+    // Expanded interior, matching the worker's socket frame (see
+    // `useCutoutSocketPlan`).
+    const inner = cutoutInterior(params);
     const planned = planLabelPlates({
       params,
-      innerWmm: dims.innerW,
-      innerDmm: dims.innerD,
+      innerWmm: inner.innerW,
+      innerDmm: inner.innerD,
       wallHeightMm: dims.wallHeight,
       clearanceMm,
       fallbackText: '',

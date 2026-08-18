@@ -18,6 +18,8 @@ vi.mock('@/features/bin-designer', () => ({
   loadDesign: vi.fn(),
   useCustomBins: vi.fn(() => []),
   binDimensions: vi.fn(() => ({ innerW: 100, innerD: 80 })),
+  // Overhang-free fixtures: the expanded interior equals the nominal one.
+  cutoutInterior: vi.fn(() => ({ innerW: 100, innerD: 80, offsetX: 0, offsetY: 0 })),
 }));
 
 const mockLoadDesign = vi.mocked(loadDesign);
