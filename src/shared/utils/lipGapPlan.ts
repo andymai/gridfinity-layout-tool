@@ -33,7 +33,7 @@
  * latter two run on the main thread, which cannot import brepjs.
  */
 
-import type { BinParams, HandleConfig, LidCompatibilitySide } from '@/shared/types/bin';
+import type { BinParams, HandleConfig, KnifeSpec, LidCompatibilitySide } from '@/shared/types/bin';
 import { LID_MIN_RAIL_LENGTH, DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -157,6 +157,8 @@ export interface KnifeSlotExit {
   readonly centre: number;
   /** Opening width along the wall: the slot's thickness (mm). */
   readonly width: number;
+  /** The knife the slot was sized for — drives the rest's saddle derivation. */
+  readonly knife: KnifeSpec;
 }
 
 /**
@@ -177,17 +179,17 @@ export function knifeSlotWallExits(
     if (master.shape !== 'knifeSlot' || master.groupId !== null || master.hidden === true) {
       continue;
     }
-    const openEnd = (master.knife ?? DEFAULT_KNIFE_SPEC).openEnd;
-    if (openEnd === undefined) continue;
+    const knife = master.knife ?? DEFAULT_KNIFE_SPEC;
+    if (knife.openEnd === undefined) continue;
     const instances = master.array ? expandCutoutArray(master) : [master];
     for (const inst of instances) {
       if (inst.rotation % 90 !== 0) continue;
-      const side = knifeExitSide(inst.rotation, openEnd);
+      const side = knifeExitSide(inst.rotation, knife.openEnd);
       const centre =
         side === 'left' || side === 'right'
           ? inst.y + inst.depth / 2 - innerD / 2
           : inst.x + inst.width / 2 - innerW / 2;
-      out.push({ side, centre, width: inst.depth });
+      out.push({ side, centre, width: inst.depth, knife });
     }
   }
   return out;

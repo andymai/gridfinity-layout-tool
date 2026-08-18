@@ -102,6 +102,7 @@ export {
   MIN_PATH_POINTS,
   DEFAULT_KNIFE_SPEC,
   knifeSlotDimensions,
+  knifeBlockTopZMm,
   knifeRestStyle,
   knifeRestGrooveWidthMm,
   knifeRestSaddleZMm,

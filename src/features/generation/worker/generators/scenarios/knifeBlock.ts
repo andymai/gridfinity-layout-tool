@@ -1,7 +1,8 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, KnifeSpec } from '@/shared/types/bin';
-import { defineScenario, makeCutout } from '../__kernel-tests__/scenarioTypes';
+import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
+import { defineScenario, makeCutout, buildParams } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import { boundingBox, columnCrossings } from '../__kernel-tests__/meshAssertions';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -101,6 +102,36 @@ export const knifeBlock: ScenarioCase[] = [
         const bb = boundingBox(patterned.vertices);
         const px = bb.maxX - 0.6;
         expect(wallTops(patterned, px, -3, 3, 0.5).some((top) => top < bb.maxZ - 40)).toBe(true);
+      },
+    },
+  }),
+  defineScenario('knife block', '6x1x8 chef slot with integrated rear rest shelf', {
+    params: {
+      ...chefBlock(true),
+      knifeRest: { enabled: true, style: 'integrated' },
+    },
+    compareWith: {
+      params: chefBlock(true),
+      assert: (withRest, plain) => {
+        const plan = planKnifeRest(
+          buildParams({ ...chefBlock(true), knifeRest: { enabled: true, style: 'integrated' } })
+        );
+        expect(plan).not.toBeNull();
+        if (!plan) return;
+        // Front (slotted) section untouched: full fill height either way.
+        expect(columnTopZ(withRest, 0, 10)).toBeCloseTo(columnTopZ(plain, 0, 10), 1);
+        // Rear section dropped to the shelf, with the blade slit still open
+        // through it and the cradle sunk between shelf and saddle. The flat
+        // shelf is probed OUTSIDE the groove's half-width (~14.5mm for a chef
+        // handle) — y=16 clears it while staying inside the interior.
+        const rearX = 115;
+        expect(columnTopZ(withRest, rearX, 16)).toBeCloseTo(plan.bodyTopZMm, 0.5);
+        expect(columnTopZ(plain, rearX, 16)).toBeGreaterThan(plan.bodyTopZMm + 10);
+        const grooveY = plan.grooves[0].centre;
+        expect(columnTopZ(withRest, rearX, grooveY)).toBeLessThan(6);
+        const cradle = columnTopZ(withRest, rearX, grooveY + 4);
+        expect(cradle).toBeLessThan(plan.bodyTopZMm - 1);
+        expect(cradle).toBeGreaterThan(plan.bodyTopZMm - plan.grooves[0].depthMm - 0.5);
       },
     },
   }),

@@ -115,6 +115,20 @@ export function knifeRestStyle(rest: KnifeRestConfig): KnifeRestStyle {
   return rest.style ?? 'companion';
 }
 
+/**
+ * The solid fill surface's height above the print bottom (= the baseplate
+ * seat both the block and its rest stand on). `height × heightUnitMm` already
+ * spans the base socket (gotcha #14), so the fill top is simply that total
+ * minus the global top offset.
+ */
+export function knifeBlockTopZMm(params: {
+  readonly height: number;
+  readonly heightUnitMm: number;
+  readonly cutoutConfig: { readonly topOffset: number };
+}): number {
+  return params.height * params.heightUnitMm - params.cutoutConfig.topOffset;
+}
+
 /** Saddle groove width for a knife's handle (mm). */
 export function knifeRestGrooveWidthMm(knife: KnifeSpec): number {
   return knife.handleDiameterMm + KNIFE_REST_GROOVE_EXTRA_WIDTH_MM;

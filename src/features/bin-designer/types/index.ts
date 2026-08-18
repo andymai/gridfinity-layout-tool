@@ -210,6 +210,7 @@ export {
   knifeRestGrooveWidthMm,
   knifeRestSaddleZMm,
   knifeRestBodyTopZMm,
+  knifeBlockTopZMm,
 } from './knifeBlock';
 
 // Generation Types
