@@ -596,7 +596,7 @@ export class GenerationBridge {
     format: ExportFormat,
     options?: {
       thicknessMm?: number;
-      stamp?: { designName?: string; pieceLabel?: string };
+      stamp?: { designName?: string };
       bed?: { width: number; depth: number };
     }
   ): Promise<FitTestExportResult> {

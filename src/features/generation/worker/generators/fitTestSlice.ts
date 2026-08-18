@@ -46,6 +46,7 @@ import {
   fitTestStampLines,
   planFitTestSplit,
   planFitTestStampArea,
+  type FitTestSplitPlan,
   type FitTestStampContext,
 } from '@/shared/utils/fitTestPlan';
 import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
@@ -105,6 +106,7 @@ function stampLine(
   scope: DisposalScope,
   card: Shape3D,
   line: string,
+  centerX: number,
   centerY: number,
   availW: number,
   bottomZ: number,
@@ -118,7 +120,10 @@ function stampLine(
     mode: 'emboss',
     availW,
     availD: STAMP_LINE_MM,
-    centerX: 0,
+    // Negated: the glyphs are pre-mirrored across x=0 below, which carries a
+    // solid centred at -c to +c. The card itself is never mirrored, so its
+    // own centre (offset by asymmetric overhang) is where the run must land.
+    centerX: -centerX,
     centerY,
     topZ: bottomZ,
     depth: STAMP_DEPTH_MM,
@@ -147,7 +152,8 @@ function buildCard(
   solid: Shape3D,
   params: BinParams,
   thicknessMm: number,
-  stamp: FitTestStampContext
+  stamp: FitTestStampContext,
+  split: FitTestSplitPlan
 ): Shape3D {
   const dims = deriveDimensions(params, true);
   // The rim is NOT the fill surface. `wallTopZ` is
@@ -183,31 +189,30 @@ function buildCard(
   let card: Shape3D = scope.register(unwrap(intersect(solid, bandBox)));
 
   const lines = fitTestStampLines(params, thicknessMm, stamp);
+  // The split plan is passed in so the stamp lands whole on one piece rather
+  // than being bisected by a seam — the same plan the cuts below use.
   const area = planFitTestStampArea(
     params,
     thicknessMm,
     lines.length * STAMP_LINE_MM,
-    STAMP_DEPTH_MM
+    STAMP_DEPTH_MM,
+    split
   );
   if (!area) return card;
 
   lines.forEach((line, i) => {
-    // Lines run front to back, so the first reads nearest the front edge.
+    // First line at the LARGEST Y: turning the printed card over to read its
+    // underside flips left-right and keeps Y, so the back-most line is the
+    // top one and the lines read top-down.
     const centerY = area.centerY + (lines.length / 2 - 0.5 - i) * STAMP_LINE_MM;
-    card = stampLine(scope, card, line, centerY, area.availW, bottomZ, thicknessMm);
+    card = stampLine(scope, card, line, area.centerX, centerY, area.availW, bottomZ, thicknessMm);
   });
   return card;
 }
 
 /** Cut the card into bed-fitting pieces, using the same plan the export dialog
  *  warns from — so the two cannot disagree about where the seams land. */
-function splitCard(
-  scope: DisposalScope,
-  card: Shape3D,
-  params: BinParams,
-  bed: { readonly width: number; readonly depth: number }
-): FitTestPieces {
-  const plan = planFitTestSplit(params, bed, getSplitPlanePositionsMm);
+function splitCard(scope: DisposalScope, card: Shape3D, plan: FitTestSplitPlan): FitTestPieces {
   if (plan.pieceCount <= 1) return { pieces: [{ solid: card, label: '' }], blockedSeams: 0 };
 
   const bounds = getBounds(card);
@@ -225,10 +230,14 @@ function splitCard(
         })
       );
       const piece = intersect(card, cutter);
-      if (!piece.ok) continue;
+      // A failed cut must not quietly shorten the set: the ZIP would carry a
+      // card with a chunk missing that looks like a normal split. The named
+      // throw surfaces as a toast, exactly as the bin splitter's does.
+      const label = `${String.fromCharCode(65 + col)}${row + 1}`;
+      if (!piece.ok) throw new Error(`Fit-test piece ${label} failed to cut`);
       pieces.push({
         solid: scope.register(piece.value),
-        label: `${String.fromCharCode(65 + row)}${col + 1}`,
+        label,
       });
     }
   }
@@ -246,7 +255,10 @@ function buildFitTestPieces(
   const solid = getLastSolid();
   if (!solid) throw new Error('Failed to generate solid for the fit test card');
 
-  const card = buildCard(scope, solid, params, thicknessMm, options.stamp ?? {});
+  // One plan for both halves of the job: the stamp keeps clear of the seams
+  // the split will cut, so the two cannot disagree.
+  const plan = planFitTestSplit(params, options.bed, getSplitPlanePositionsMm);
+  const card = buildCard(scope, solid, params, thicknessMm, options.stamp ?? {}, plan);
   if (!options.bed) return { pieces: [{ solid: card, label: '' }], blockedSeams: 0 };
 
   const bounds = getBounds(card);
@@ -255,7 +267,7 @@ function buildFitTestPieces(
     bounds.yMax - bounds.yMin <= options.bed.depth;
   if (fits) return { pieces: [{ solid: card, label: '' }], blockedSeams: 0 };
 
-  return splitCard(scope, card, params, options.bed);
+  return splitCard(scope, card, plan);
 }
 
 /** One tessellated piece of the card. */

@@ -81,12 +81,21 @@ export function defaultFitTestThicknessMm(params: BinParams): number {
 /**
  * Legal thickness range. The ceiling is the deepest cut plus a floor under it:
  * past that every pocket already has its real bottom and more thickness only
- * re-prints bin.
+ * re-prints bin — and it is additionally bounded by the material the body
+ * actually offers below the fill surface. The editor lets `cutDepth` reach
+ * the full `wallHeight`, and the builder clamps such a pocket to the solid
+ * surface; a card sliced past that plane reaches into the Gridfinity socket,
+ * whose feet are separate islands (CLAUDE.md gotcha #10) — an underside of
+ * stubs that will not lie flat, with the stamp cut into mostly air.
  */
 export function fitTestThicknessRangeMm(params: BinParams): { min: number; max: number } {
+  const usable = Math.max(
+    0,
+    binDimensions(params).wallHeight - Math.max(0, params.cutoutConfig.topOffset)
+  );
   const max = Math.max(
     FIT_TEST_MIN_THICKNESS_MM,
-    deepestCutoutDepthMm(params) + params.wallThickness
+    Math.min(usable, Math.min(deepestCutoutDepthMm(params), usable) + params.wallThickness)
   );
   return { min: FIT_TEST_MIN_THICKNESS_MM, max };
 }
@@ -103,25 +112,48 @@ export function clampFitTestThicknessMm(params: BinParams, thicknessMm: number):
 }
 
 /**
+ * Per-side growth of a cutout's opening, split by cause, matching
+ * `buildCutoutCuts`' own arithmetic:
+ * - `clearance` grows each DIMENSION by the whole value (half per side); a
+ *   polygon scales anisotropically so it stays a regular N-gon, which grows
+ *   its width by `width·clearance/depth` instead.
+ * - the entry chamfer flares each SIDE by its own width at the rim, clamped so
+ *   a straight wall survives below the bevel, and is skipped entirely under
+ *   the builder's 0.05mm floor.
+ *
+ * Gated exactly as the builder gates them: a cutout switched from circle to
+ * rectangle keeps its stale `clearance`, and the builder ignores it —
+ * counting it here would reserve seam margin, and subtract volume, for
+ * material that is never removed.
+ */
+function openingGrowthMm(cutout: Cutout): {
+  clearanceW: number;
+  clearanceD: number;
+  chamfer: number;
+} {
+  const clearance = CLEARANCE_SHAPES.includes(cutout.shape)
+    ? Math.max(0, cutout.clearance ?? 0)
+    : 0;
+  const clearanceW =
+    cutout.shape === 'polygon' && cutout.depth > 0
+      ? (cutout.width * clearance) / cutout.depth / 2
+      : clearance / 2;
+  const clearanceD = clearance / 2;
+  const chamferRaw = CHAMFER_SHAPES.includes(cutout.shape) ? (cutout.chamferWidth ?? 0) : 0;
+  const chamferClamped = Math.max(0, Math.min(chamferRaw, cutout.cutDepth - 0.2));
+  return { clearanceW, clearanceD, chamfer: chamferClamped > 0.05 ? chamferClamped : 0 };
+}
+
+/**
  * Axis-aligned half-extents of a cutout's opening, rotation folded in.
  *
  * Clearance and the entry chamfer both widen the OPENING, which is the face the
  * card is measured at, so both count toward the footprint a seam has to miss.
  */
-function openingGrowthMm(cutout: Cutout): number {
-  // Gated exactly as `buildCutoutCuts` gates them. A cutout switched from
-  // circle to rectangle keeps its stale `clearance`, and the builder ignores it
-  // — counting it here would reserve seam margin, and subtract volume, for
-  // material that is never removed.
-  const clearance = CLEARANCE_SHAPES.includes(cutout.shape) ? (cutout.clearance ?? 0) : 0;
-  const chamfer = CHAMFER_SHAPES.includes(cutout.shape) ? (cutout.chamferWidth ?? 0) : 0;
-  return clearance + chamfer;
-}
-
 function openingHalfExtents(cutout: Cutout): { hx: number; hy: number } {
   const grow = openingGrowthMm(cutout);
-  const hw = cutout.width / 2 + grow;
-  const hd = cutout.depth / 2 + grow;
+  const hw = cutout.width / 2 + grow.clearanceW + grow.chamfer;
+  const hd = cutout.depth / 2 + grow.clearanceD + grow.chamfer;
   const rad = (cutout.rotation * Math.PI) / 180;
   const cos = Math.abs(Math.cos(rad));
   const sin = Math.abs(Math.sin(rad));
@@ -173,6 +205,12 @@ export function fitTestCutoutBoxes(params: BinParams): CutoutBox2D[] {
 
 /** Where the underside stamp fits, in the bin-centred model frame. */
 export interface StampArea {
+  /**
+   * X centre of the strip — the card body's own centre, which asymmetric
+   * overhang shifts off the model origin. A stamp centred at 0 on such a card
+   * hangs its glyphs past one wall.
+   */
+  readonly centerX: number;
   readonly centerY: number;
   readonly availW: number;
   readonly availD: number;
@@ -202,23 +240,55 @@ export function planFitTestStampArea(
   params: BinParams,
   thicknessMm: number,
   neededDepthMm: number,
-  stampDepthMm = 0
+  stampDepthMm = 0,
+  split?: Pick<FitTestSplitPlan, 'planesX' | 'planesY'>
 ): StampArea | null {
   const { width, depth } = fitTestFootprintMm(params);
-  const availW = width - 2 * (params.wallThickness + STAMP_MARGIN_MM);
-  if (availW <= 0 || neededDepthMm <= 0) return null;
+  if (neededDepthMm <= 0) return null;
+
+  // Asymmetric overhang shifts the card body off the model origin — the same
+  // offsets the cutout boxes below already carry — so the windows and the
+  // strip's X centre follow the body, not the origin.
+  const { offsetX, offsetY } = overhangExpansion(
+    resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang)
+  );
+
+  // On a split card the stamp lands WHOLE on the widest X piece rather than
+  // being bisected across a seam — the design name and fit line are the whole
+  // point of the card, and half a glyph run on each piece reads as neither.
+  const xEdges = [
+    -width / 2 + offsetX,
+    ...(split?.planesX ?? []).slice().sort((a, b) => a - b),
+    width / 2 + offsetX,
+  ];
+  let window: { lo: number; hi: number } = { lo: xEdges[0], hi: xEdges[1] };
+  for (let i = 1; i + 1 < xEdges.length; i++) {
+    if (xEdges[i + 1] - xEdges[i] > window.hi - window.lo) {
+      window = { lo: xEdges[i], hi: xEdges[i + 1] };
+    }
+  }
+  const availW = window.hi - window.lo - 2 * (params.wallThickness + STAMP_MARGIN_MM);
+  if (availW <= 0) return null;
+  const centerX = (window.lo + window.hi) / 2;
 
   const cutouts = fitTestCutouts(params);
   const boxes = fitTestCutoutBoxes(params);
   const floorLimit = thicknessMm - stampDepthMm;
   const throughBoxes = boxes.filter((_, i) => cutouts[i].cutDepth >= floorLimit);
+  // A horizontal seam blocks a strip the same way a through-hole does: glyphs
+  // cut across the kerf are lost on both pieces.
+  const seamBoxes = (split?.planesY ?? []).map((plane) => ({ minY: plane, maxY: plane }));
 
   const half = depth / 2 - params.wallThickness - STAMP_MARGIN_MM;
-  for (let y = -half; y + neededDepthMm <= half; y += STAMP_SCAN_STEP_MM) {
+  for (let y = -half + offsetY; y + neededDepthMm <= half + offsetY; y += STAMP_SCAN_STEP_MM) {
     const lo = y - STAMP_MARGIN_MM;
     const hi = y + neededDepthMm + STAMP_MARGIN_MM;
-    const clear = throughBoxes.every((b) => b.maxY <= lo || b.minY >= hi);
-    if (clear) return { centerY: y + neededDepthMm / 2, availW, availD: neededDepthMm };
+    const clear =
+      throughBoxes.every((b) => b.maxY <= lo || b.minY >= hi) &&
+      seamBoxes.every((b) => b.maxY <= lo || b.minY >= hi);
+    if (clear) {
+      return { centerX, centerY: y + neededDepthMm / 2, availW, availD: neededDepthMm };
+    }
   }
   return null;
 }
@@ -380,21 +450,27 @@ export function planFitTestSplit(
   if (rawX.length === 0 && rawY.length === 0) return whole;
 
   // A seam may travel only as far as the bed slack allows: moving a plane into
-  // a clear gap still has to leave both neighbouring pieces printable.
+  // a clear gap still has to leave both neighbouring pieces printable. The
+  // card's REAL bounds follow the overhang offset (the body spans
+  // [-outerW/2 - left, outerW/2 + right]); symmetric bounds would let a nudged
+  // seam step past one edge and build a cutter that intersects nothing.
   const spans = fitTestCutoutSpans(params);
+  const { offsetX, offsetY } = overhangExpansion(
+    resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang)
+  );
   const halfW = footprint.width / 2;
   const halfD = footprint.depth / 2;
   const planX = nudgeSeamsClearOfCutouts(
     rawX,
     spans.x,
     Math.max(0, bed.width - (params.width * pitchX) / (rawX.length + 1)),
-    { min: -halfW, max: halfW }
+    { min: -halfW + offsetX, max: halfW + offsetX }
   );
   const planY = nudgeSeamsClearOfCutouts(
     rawY,
     spans.y,
     Math.max(0, bed.depth - (params.depth * pitchY) / (rawY.length + 1)),
-    { min: -halfD, max: halfD }
+    { min: -halfD + offsetY, max: halfD + offsetY }
   );
 
   return {
@@ -419,9 +495,12 @@ function polygonArea(points: readonly { readonly x: number; readonly y: number }
 
 /** Area (mm²) a cutout's opening removes from the card's top face. */
 function openingAreaMm2(cutout: Cutout): number {
+  // Clearance only: the chamfer's flare reaches its full width exactly at the
+  // rim, so charging the flared area for the whole depth would overstate the
+  // displaced volume by the flare times nearly the full cut.
   const grow = openingGrowthMm(cutout);
-  const w = cutout.width + 2 * grow;
-  const d = cutout.depth + 2 * grow;
+  const w = cutout.width + 2 * grow.clearanceW;
+  const d = cutout.depth + 2 * grow.clearanceD;
   switch (cutout.shape) {
     case 'circle':
       return Math.PI * (w / 2) ** 2;
@@ -504,12 +583,10 @@ export function estimateFitTestVolumeMm3(params: BinParams, thicknessMm: number)
   return Math.max(0, slabArea * thicknessMm - cutoutDisplacementMm3(params, thicknessMm));
 }
 
-/** What the underside stamp needs beyond the params: the design's name (which
- *  lives on the designer store, not in `BinParams`) and, on a split card, which
- *  piece this is. */
+/** What the underside stamp needs beyond the params: the design's name, which
+ *  lives on the designer store, not in `BinParams`. */
 export interface FitTestStampContext {
   readonly designName?: string;
-  readonly pieceLabel?: string;
 }
 
 /**
@@ -532,7 +609,5 @@ export function fitTestStampLines(
   const hi = clearances.length > 0 ? Math.max(...clearances) : 0;
   const fit = lo === hi ? lo.toFixed(2) : `${lo.toFixed(2)}-${hi.toFixed(2)}`;
 
-  const lines = [context.designName?.trim() || 'Fit test', `fit ${fit} · ${thicknessMm}mm`];
-  if (context.pieceLabel) lines.push(context.pieceLabel);
-  return lines;
+  return [context.designName?.trim() || 'Fit test', `fit ${fit} · ${thicknessMm}mm`];
 }

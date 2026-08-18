@@ -102,6 +102,21 @@ describe('thickness', () => {
     });
   });
 
+  // The editor lets cutDepth reach the full wallHeight, and the builder clamps
+  // such a pocket to the solid surface — so "deepest cut plus a floor" can
+  // exceed the material the body offers, and a card sliced past it reaches
+  // into the base socket, whose feet are separate islands.
+  it('never offers more thickness than the material below the fill surface', () => {
+    // 2x2x4u solid: wallHeight = 28 - 5 = 23. A through cut at the full 23.
+    const params = board({}, [cutout({ cutDepth: 23 })]);
+    expect(fitTestThicknessRangeMm(params).max).toBe(23);
+  });
+
+  it('charges the top offset against the usable material', () => {
+    const params = board({ cutoutConfig: { topOffset: 6 } }, [cutout({ cutDepth: 23 })]);
+    expect(fitTestThicknessRangeMm(params).max).toBe(17);
+  });
+
   it('clamps an out-of-range value and falls back to the default on a non-number', () => {
     const params = board({}, [cutout({ cutDepth: 8 })]);
     expect(clampFitTestThicknessMm(params, 100)).toBe(8 + params.wallThickness);
@@ -119,14 +134,17 @@ describe('fitTestCutoutSpans', () => {
     expect(x[0].max).toBeCloseTo(-30.55, 2);
   });
 
-  it('grows the footprint by clearance and chamfer, which widen the opening', () => {
+  it('grows the footprint by clearance and chamfer, as the builder applies them', () => {
     // A circle takes both; a rectangle takes only the chamfer (see the
-    // stale-clearance regression below).
+    // stale-clearance regression below). The builder grows the DIMENSION by
+    // the clearance (half per side) and flares each SIDE by the chamfer, so
+    // 0.5 clearance + 1 chamfer widens the opening by 0.5 + 2·1 = 2.5 — not
+    // the 3 a per-side clearance model would claim.
     const plain = fitTestCutoutSpans(board({}, [cutout({ shape: 'circle', width: 10 })])).x[0];
     const grown = fitTestCutoutSpans(
       board({}, [cutout({ shape: 'circle', width: 10, clearance: 0.5, chamferWidth: 1 })])
     ).x[0];
-    expect(grown.max - grown.min).toBeCloseTo(plain.max - plain.min + 3, 5);
+    expect(grown.max - grown.min).toBeCloseTo(plain.max - plain.min + 2.5, 5);
   });
 
   it('takes a rotated cutout by its axis-aligned bounds', () => {
@@ -205,6 +223,30 @@ describe('planFitTestStampArea', () => {
     expect(planFitTestStampArea(shallow, 4, 8)).not.toBeNull();
   });
 
+  it('lands the stamp whole on the widest piece of a split card', () => {
+    // A vertical seam at x=10 splits the footprint into a wider left window
+    // and a narrower right one; the strip must centre in the left rather than
+    // stay at 0 and be bisected.
+    const params = board({}, [cutout({ cutDepth: 20 })]);
+    const half = fitTestFootprintMm(params).width / 2;
+    const area = planFitTestStampArea(params, 4, 8, 0, { planesX: [10], planesY: [] });
+    expect(area).not.toBeNull();
+    expect(area?.centerX).toBeCloseTo((-half + 10) / 2, 5);
+    expect(area?.availW ?? 0).toBeLessThan(half + 10);
+  });
+
+  it('keeps the strip clear of a horizontal seam', () => {
+    const params = board({}, [cutout({ cutDepth: 20 })]);
+    const unsplit = planFitTestStampArea(params, 4, 8);
+    expect(unsplit).not.toBeNull();
+    const seamY = unsplit?.centerY ?? 0;
+    const area = planFitTestStampArea(params, 4, 8, 0, { planesX: [], planesY: [seamY] });
+    expect(area).not.toBeNull();
+    const lo = (area?.centerY ?? 0) - 4;
+    const hi = (area?.centerY ?? 0) + 4;
+    expect(seamY <= lo || seamY >= hi).toBe(true);
+  });
+
   it('refuses when every strip is broken by a through cut', () => {
     const dense = board({}, [
       cutout({ shape: 'rectangle', x: 0, y: 0, width: 81, depth: 81, cutDepth: 20 }),
@@ -229,9 +271,8 @@ describe('fitTestStampLines', () => {
     expect(fitTestStampLines(params, 4, {})[1]).toBe('fit 0.10-0.30 · 4mm');
   });
 
-  it('adds the piece label only when the card is split', () => {
+  it('stamps exactly the name and the fit line', () => {
     expect(fitTestStampLines(board(), 4, {})).toHaveLength(2);
-    expect(fitTestStampLines(board(), 4, { pieceLabel: 'A1' })).toHaveLength(3);
   });
 
   it('falls back to a name when the design is untitled', () => {
