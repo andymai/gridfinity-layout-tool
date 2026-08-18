@@ -110,11 +110,24 @@ export function CutoutEditor() {
   const handleFlattenArray = useCallback(
     (id: string) => {
       const capacity = remainingCutoutCapacity(cutoutTarget, params.lid.cutouts);
-      if (applyFlattenArray(id, cutouts, updateCutout, addCutout, capacity) === 'no-room') {
+      const transaction = { start: startTransaction, commit: commitTransaction };
+      if (
+        applyFlattenArray(id, cutouts, updateCutout, addCutout, capacity, transaction) === 'no-room'
+      ) {
         addToast(t('toast.flattenNoRoom', { max: MAX_LID_CUTOUTS }), 'error');
       }
     },
-    [cutouts, updateCutout, addCutout, cutoutTarget, params.lid.cutouts, addToast, t]
+    [
+      cutouts,
+      updateCutout,
+      addCutout,
+      cutoutTarget,
+      params.lid.cutouts,
+      addToast,
+      t,
+      startTransaction,
+      commitTransaction,
+    ]
   );
 
   const {

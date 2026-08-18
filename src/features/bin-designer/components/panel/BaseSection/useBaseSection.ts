@@ -178,7 +178,30 @@ export function useBaseSection() {
   const showMounting = applies(magnetStatus) || applies(screwStatus);
   const showFeet =
     hasFeet && (applies(detachableFeetStatus) || applies(halfSocketsStatus) || !footLatticeInert);
-  const showFloor = applies(lightweightStatus) || applies(floorPatternStatusForApplies);
+  /**
+   * Whether the underside relief would lift the block the toggle is reporting.
+   *
+   * Asked of the engine against a hypothetical `underside` selection rather
+   * than matched against a list of fixable reasons. The mode-split pairs
+   * (`scoop`, `cutouts`) already read `undersideReliefSelected` while the
+   * feature is OFF, and a list would have to be revisited every time one is
+   * added. Inserts stay mutual across both modes, so they correctly answer
+   * false here and no fix is offered for them.
+   */
+  const undersideReliefUnblocks =
+    !lightweightStatus.available &&
+    !feetSupersedeReason &&
+    getFeatureStatus(
+      { ...params, base: { ...params.base, lightweightMode: 'underside' } },
+      'base.lightweight'
+    ).available;
+
+  // The escape hatch has to keep the family on screen: on a tile or a solid
+  // board BOTH floor features are disabled, and hiding the section unmounts
+  // the one control that can lift the block — the exact trap the pre-#3571
+  // layout avoided by rendering the mode picker unconditionally.
+  const showFloor =
+    applies(lightweightStatus) || applies(floorPatternStatusForApplies) || undersideReliefUnblocks;
 
   /**
    * Why a family is not on offer, kept next to the heading rather than removing
@@ -233,8 +256,8 @@ export function useBaseSection() {
       // Off must end up ABSENT, not `false`. `resolveConstraints` writes
       // `tile: false` whenever a rule auto-disables base-only mode (switching to a
       // flat or lid base, enabling the spacer), and EVERY base toggle commits
-      // through here — so stripping only inside `toggleTile` would still leave
-      // the key behind on those paths and fingerprint an ordinary bin
+      // through here — so stripping only on the tile card's own path would
+      // still leave the key behind on the others and fingerprint an ordinary bin
       // differently from an identical one that never tried the mode.
       const withoutTile =
         'tile' in resolved.base ? { ...resolved, base: omitTile(resolved.base) } : resolved;
@@ -268,24 +291,6 @@ export function useBaseSection() {
     : lightweightStatus.reason
       ? t(lightweightStatus.reason)
       : undefined;
-
-  /**
-   * Whether the underside relief would lift the block the toggle is reporting.
-   *
-   * Asked of the engine against a hypothetical `underside` selection rather
-   * than matched against a list of fixable reasons. The mode-split pairs
-   * (`scoop`, `cutouts`) already read `undersideReliefSelected` while the
-   * feature is OFF, and a list would have to be revisited every time one is
-   * added. Inserts stay mutual across both modes, so they correctly answer
-   * false here and no fix is offered for them.
-   */
-  const undersideReliefUnblocks =
-    !lightweightStatus.available &&
-    !feetSupersedeReason &&
-    getFeatureStatus(
-      { ...params, base: { ...params.base, lightweightMode: 'underside' } },
-      'base.lightweight'
-    ).available;
 
   const toggleMagnet = useCallback(() => {
     // Only block enabling — allow disabling so users can recover from invalid states

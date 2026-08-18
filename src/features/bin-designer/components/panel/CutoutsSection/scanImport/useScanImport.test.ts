@@ -13,14 +13,24 @@ const mockAddCutout = vi.fn((_cutout: Cutout) => true);
 const mockStartTransaction = vi.fn();
 const mockCommitTransaction = vi.fn();
 
-vi.mock('@/features/bin-designer/store', () => ({
-  useDesignerStore: (selector: (s: Record<string, unknown>) => unknown) =>
+vi.mock('@/features/bin-designer/store', async () => {
+  const { remainingCutoutCapacity } = await vi.importActual<{
+    remainingCutoutCapacity: (target: unknown, cutouts: unknown) => number;
+  }>('@/features/bin-designer/store/slices/cutoutSlice');
+  const useDesignerStore = (selector: (s: Record<string, unknown>) => unknown) =>
     selector({
       addCutout: mockAddCutout,
       startTransaction: mockStartTransaction,
       commitTransaction: mockCommitTransaction,
-    }),
-}));
+    });
+  // The capacity gate reads committed state imperatively; a bin-target board
+  // has no cap, which is the fixture every case here describes.
+  useDesignerStore.getState = () => ({
+    ui: { cutoutTarget: 'bin' },
+    params: { lid: { cutouts: [] } },
+  });
+  return { useDesignerStore, remainingCutoutCapacity };
+});
 
 vi.mock('zustand/react/shallow', () => ({
   useShallow: (fn: unknown) => fn,

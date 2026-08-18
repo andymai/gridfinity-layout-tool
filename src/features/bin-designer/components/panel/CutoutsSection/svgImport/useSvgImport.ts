@@ -7,7 +7,7 @@
 
 import { useCallback, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import { useDesignerStore, remainingCutoutCapacity } from '@/features/bin-designer/store';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
@@ -83,6 +83,22 @@ export function useSvgImport(): UseSvgImportReturn {
           cutDepth: DEFAULT_CUT_DEPTH,
           idFactory: () => crypto.randomUUID(),
         };
+
+        // Checked before the history push, the same rule the store's own batch
+        // paths state: a batch that cannot land a single shape must not spend
+        // an undo slot or bump the generation epoch for unchanged geometry.
+        const { ui, params } = useDesignerStore.getState();
+        if (remainingCutoutCapacity(ui.cutoutTarget, params.lid.cutouts) < 1) {
+          addToast(
+            t('toast.cutoutsClipped', {
+              added: 0,
+              requested: specs.length,
+              max: MAX_LID_CUTOUTS,
+            }),
+            'error'
+          );
+          return;
+        }
 
         // Wrap all additions in a single undo transaction
         let added = 0;

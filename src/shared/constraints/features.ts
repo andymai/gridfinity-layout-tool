@@ -92,8 +92,8 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     isEnabled: (p) => p.base.tile === true,
     // Sets the flag rather than omitting it: `mergeParams` spreads `base`, so a
     // patch cannot delete a key. Off must end up ABSENT, not `false`, or the
-    // params fingerprint of every design that has no tray shifts — `toggleTile`
-    // strips it on the way out, the same way `toggleLidBottom` strips
+    // params fingerprint of every design that has no tray shifts — the
+    // body-type commit path strips it on the way out, the same way it strips
     // `trayBottom`.
     apply: (p, enabled) => ({ base: { ...p.base, tile: enabled } }),
   },

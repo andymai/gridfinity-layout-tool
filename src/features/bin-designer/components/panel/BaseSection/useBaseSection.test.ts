@@ -92,7 +92,7 @@ describe('useBaseSection', () => {
     expect(result.current.state.hasLightweight).toBe(true);
   });
 
-  it('toggleSpacer flips the boolean and clears the magnet it cannot hold', () => {
+  it('the spacer card flips the boolean and clears the magnet it cannot hold', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } },
     });
@@ -642,6 +642,17 @@ describe('useBaseSection — base-only bin residue', () => {
     const base = useDesignerStore.getState().params.base;
     expect(base.style).toBe('flat');
     expect('tile' in base).toBe(false);
+  });
+
+  // On a tile both floor features are engine-disabled, but the underside
+  // relief lifts the block — so the family must stay on screen or the one
+  // control that can unblock it is unmounted (the pre-restructure layout
+  // rendered the mode picker unconditionally for exactly this reason).
+  it('keeps the Floor family on screen when only the underside relief can unblock it', () => {
+    const { result } = renderHook(() => useBaseSection());
+    act(() => result.current.handlers.setBodyType('tile'));
+    expect(result.current.state.undersideReliefUnblocks).toBe(true);
+    expect(result.current.state.showFloor).toBe(true);
   });
 
   it('drops the inert collar when entering base-only mode', () => {

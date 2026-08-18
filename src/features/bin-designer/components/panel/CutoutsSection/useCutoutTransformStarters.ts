@@ -12,6 +12,9 @@
 
 import { useCallback } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
+import { useToastStore } from '@/core/store/toast';
+import { useTranslation } from '@/i18n';
 import { computeBounds } from './geometry';
 import { addClonedCutouts } from './cutoutHelpers';
 import type { InteractionMode, ResizeHandle } from './cutoutInteractionTypes';
@@ -42,6 +45,18 @@ export function useCutoutTransformStarters({
   setMode,
   pastDeadZoneRef,
 }: UseCutoutTransformStartersOptions): CutoutTransformStarters {
+  const addToast = useToastStore((s) => s.addToast);
+  const t = useTranslation();
+  const reportClipped = useCallback(
+    (landed: number, requested: number) => {
+      addToast({
+        message: t('toast.cutoutsClipped', { added: landed, requested, max: MAX_LID_CUTOUTS }),
+        type: 'error',
+      });
+    },
+    [addToast, t]
+  );
+
   const startDrag = useCallback(
     (id: string, mmX: number, mmY: number, altKey?: boolean) => {
       // Locked cutouts cannot be dragged
@@ -75,7 +90,7 @@ export function useCutoutTransformStarters({
       let cloneOriginMap: ReadonlyMap<string, string> | null = null;
       if (altKey) {
         const selected = cutouts.filter((c) => effectiveSelection.has(c.id));
-        const clones = addClonedCutouts(selected, onAdd, setSelection);
+        const clones = addClonedCutouts(selected, onAdd, setSelection, undefined, reportClipped);
         cloneOriginMap = new Map(clones.map((c) => [c.id, c.originalId]));
         dragSelection = new Set(clones.map((c) => c.id));
       }
@@ -93,7 +108,7 @@ export function useCutoutTransformStarters({
       pastDeadZoneRef.current = false;
       setMode({ type: 'dragging', startX: mmX, startY: mmY, offsets });
     },
-    [selection, cutouts, onAdd, setSelection, setMode, pastDeadZoneRef]
+    [selection, cutouts, onAdd, setSelection, setMode, pastDeadZoneRef, reportClipped]
   );
 
   const startLabelDrag = useCallback(

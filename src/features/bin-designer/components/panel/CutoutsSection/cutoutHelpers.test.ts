@@ -154,15 +154,37 @@ describe('applyFlattenArray', () => {
     };
   }
 
+  const inertTransaction = { start: () => {}, commit: () => {} };
+
   it('bakes every instance when there is room', () => {
     const s = spy(Infinity);
     const master = gridMaster(3);
 
-    expect(applyFlattenArray('m', [master], s.updateCutout, s.addCutout, Infinity)).toBe(
-      'flattened'
-    );
+    expect(
+      applyFlattenArray('m', [master], s.updateCutout, s.addCutout, Infinity, inertTransaction)
+    ).toBe('flattened');
     expect(s.patched).toEqual([{ array: undefined }]);
     expect(s.added).toHaveLength(2);
+  });
+
+  it('wraps the whole flatten in one undo step, even when an add throws', () => {
+    const s = spy(Infinity);
+    const master = gridMaster(3);
+    const calls: string[] = [];
+    const transaction = {
+      start: () => calls.push('start'),
+      commit: () => calls.push('commit'),
+    };
+    applyFlattenArray('m', [master], s.updateCutout, s.addCutout, Infinity, transaction);
+    expect(calls).toEqual(['start', 'commit']);
+
+    const throwing = () => {
+      throw new Error('boom');
+    };
+    expect(() =>
+      applyFlattenArray('m', [gridMaster(3)], s.updateCutout, throwing, Infinity, transaction)
+    ).toThrow('boom');
+    expect(calls).toEqual(['start', 'commit', 'start', 'commit']);
   });
 
   it('declines whole rather than stripping the repeat it cannot replace', () => {
@@ -171,7 +193,9 @@ describe('applyFlattenArray', () => {
     const s = spy(1);
     const master = gridMaster(3);
 
-    expect(applyFlattenArray('m', [master], s.updateCutout, s.addCutout, 1)).toBe('no-room');
+    expect(applyFlattenArray('m', [master], s.updateCutout, s.addCutout, 1, inertTransaction)).toBe(
+      'no-room'
+    );
     expect(s.patched).toEqual([]);
     expect(s.added).toEqual([]);
   });
@@ -180,7 +204,9 @@ describe('applyFlattenArray', () => {
     const s = spy(0);
     const master = gridMaster(3);
 
-    expect(applyFlattenArray('m', [master], s.updateCutout, s.addCutout, 0)).toBe('no-room');
+    expect(applyFlattenArray('m', [master], s.updateCutout, s.addCutout, 0, inertTransaction)).toBe(
+      'no-room'
+    );
     expect(s.patched).toEqual([]);
   });
 
@@ -188,9 +214,9 @@ describe('applyFlattenArray', () => {
     const s = spy(Infinity);
     const plain = { ...gridMaster(3), array: undefined };
 
-    expect(applyFlattenArray('m', [plain], s.updateCutout, s.addCutout, Infinity)).toBe(
-      'not-an-array'
-    );
+    expect(
+      applyFlattenArray('m', [plain], s.updateCutout, s.addCutout, Infinity, inertTransaction)
+    ).toBe('not-an-array');
     expect(s.patched).toEqual([]);
   });
 });

@@ -12,6 +12,7 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type { MaskCellSize } from './maskFit';
 import { useShallow } from 'zustand/react/shallow';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
@@ -79,6 +80,16 @@ export function useCutoutClipboard({
 }: UseCutoutClipboardOptions): CutoutClipboard {
   const addToast = useToastStore((s) => s.addToast);
   const t = useTranslation();
+
+  const reportClipped = useCallback(
+    (landed: number, requested: number) => {
+      addToast({
+        message: t('toast.cutoutsClipped', { added: landed, requested, max: MAX_LID_CUTOUTS }),
+        type: 'error',
+      });
+    },
+    [addToast, t]
+  );
   const [clipboard, setClipboard] = useState<readonly Cutout[]>([]);
   const pasteCountRef = useRef(0);
   const stepChainRef = useRef<StepChain | undefined>(undefined);
@@ -118,10 +129,24 @@ export function useCutoutClipboard({
         : clipboard;
     if (placeable.length === 0) return;
 
-    addClonedCutouts(placeable, onAdd, setSelection, (original) =>
-      clampedOffset(original, offset, binWidth, binDepth)
+    addClonedCutouts(
+      placeable,
+      onAdd,
+      setSelection,
+      (original) => clampedOffset(original, offset, binWidth, binDepth),
+      reportClipped
     );
-  }, [clipboard, onAdd, setSelection, binWidth, binDepth, cellMask, maskCellSize, meshAssets]);
+  }, [
+    clipboard,
+    onAdd,
+    setSelection,
+    binWidth,
+    binDepth,
+    cellMask,
+    maskCellSize,
+    meshAssets,
+    reportClipped,
+  ]);
 
   const duplicateSelected = useCallback(() => {
     const selected = cutouts.filter((c) => selection.has(c.id));
@@ -159,8 +184,12 @@ export function useCutoutClipboard({
         : selected;
     if (placeable.length === 0) return;
 
-    const clones = addClonedCutouts(placeable, onAdd, setSelection, (original) =>
-      clampedDelta(original, dx, dy, binWidth, binDepth)
+    const clones = addClonedCutouts(
+      placeable,
+      onAdd,
+      setSelection,
+      (original) => clampedDelta(original, dx, dy, binWidth, binDepth),
+      reportClipped
     );
 
     const anchorClone = clones.at(0);
@@ -202,6 +231,7 @@ export function useCutoutClipboard({
     updateSettings,
     addToast,
     t,
+    reportClipped,
   ]);
 
   return { clipboard, copySelected, pasteFromClipboard, duplicateSelected };
