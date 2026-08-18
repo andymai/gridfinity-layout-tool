@@ -12,6 +12,7 @@
 
 import type { Bin, Layout, ValidationReason } from '@/core/types';
 import { normalizeDrawerOutline } from './drawerOutline';
+import { dropOrphanedPairs } from './binPairs';
 import {
   binId as toBinId,
   layerId as toLayerId,
@@ -183,6 +184,8 @@ export function validateImport(data: unknown): ImportValidationResult {
       notes: bin.notes || '',
       customProperties: bin.customProperties,
       linkedDesignId: bin.linkedDesignId ? toDesignId(bin.linkedDesignId) : undefined,
+      pairId: bin.pairId,
+      pairRole: bin.pairRole,
     });
 
     // Validate custom properties if present
@@ -225,6 +228,15 @@ export function validateImport(data: unknown): ImportValidationResult {
 
   // Never trust a stored outline: crop it to the current drawer extent (an
   // old client may have resized the drawer without adapting the shape) and
-  // drop it when invalid or rectangle-equivalent.
-  return { valid: true, errors: [], layout: normalizeDrawerOutline(data as Layout) };
+  // drop it when invalid or rectangle-equivalent. Half-pairs are unpaired for
+  // the same reason: a dangling pairId makes every pair expansion a no-op.
+  const typedLayout = data as Layout;
+  return {
+    valid: true,
+    errors: [],
+    layout: normalizeDrawerOutline({
+      ...typedLayout,
+      bins: [...dropOrphanedPairs<Bin>(typedLayout.bins)],
+    }),
+  };
 }

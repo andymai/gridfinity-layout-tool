@@ -14,6 +14,7 @@
 
 import type { Bin, Layout } from '@/core/types';
 import { normalizeDrawerOutline } from './drawerOutline';
+import { dropOrphanedPairs } from './binPairs';
 import {
   binId as toBinId,
   layerId as toLayerId,
@@ -117,6 +118,8 @@ export function salvageImport(data: unknown): SalvageResult {
       notes: bin.notes || '',
       customProperties: bin.customProperties,
       linkedDesignId: bin.linkedDesignId ? toDesignId(bin.linkedDesignId) : undefined,
+      pairId: bin.pairId,
+      pairRole: bin.pairRole,
     };
 
     // Staging bins pass through
@@ -176,10 +179,11 @@ export function salvageImport(data: unknown): SalvageResult {
     resultBins.push(typedBin);
   });
 
-  // Build salvaged layout
+  // Build salvaged layout. A salvage that dropped one half of a pair must
+  // unpair the survivor, or its pair expansion dangles forever.
   const salvageLayout: Layout = {
     ...(data as Layout),
-    bins: resultBins,
+    bins: [...dropOrphanedPairs(resultBins)],
   };
 
   return { valid: true, layout: normalizeDrawerOutline(salvageLayout), salvaged };

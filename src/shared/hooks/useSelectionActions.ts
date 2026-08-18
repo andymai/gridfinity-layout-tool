@@ -7,6 +7,7 @@ import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { isBinLocked } from '@/shared/utils/binLocation';
+import { expandPairIds } from '@/shared/utils/binPairs';
 import { STAGING_ID } from '@/core/constants';
 import type { CategoryId, LayerId, HeightUnits } from '@/core/types';
 import { batch } from '@/core/cqrs';
@@ -78,6 +79,9 @@ export function useSelectionActions() {
       if (bin.width === bin.depth) return false;
       // Locked bins count as skipped, so the partial toast still reports them
       if (isBinLocked(bin)) return false;
+      // Paired bins rotate only as a unit (the single-bin R shortcut does
+      // that); rotating one in place would collapse the pair onto its gap.
+      if (bin.pairId !== undefined) return false;
 
       const validation = canPlaceBin(
         {
@@ -271,11 +275,14 @@ export function useSelectionActions() {
   );
 
   const moveToStash = useCallback(() => {
-    const count = selectedBinIds.length;
-    if (count === 0) return;
+    if (selectedBinIds.length === 0) return;
+    const stashIds = [
+      ...expandPairIds(new Set(selectedBinIds), useLayoutStore.getState().layout.bins),
+    ];
+    const count = stashIds.length;
 
     batch(() => {
-      for (const id of selectedBinIds) {
+      for (const id of stashIds) {
         moveBinToStaging(id);
       }
     });
@@ -289,11 +296,14 @@ export function useSelectionActions() {
   }, [selectedBinIds, moveBinToStaging, clearSelection, addToast, t]);
 
   const deleteAll = useCallback(() => {
-    const count = selectedBinIds.length;
-    if (count === 0) return;
+    if (selectedBinIds.length === 0) return;
+    const deleteIds = [
+      ...expandPairIds(new Set(selectedBinIds), useLayoutStore.getState().layout.bins),
+    ];
+    const count = deleteIds.length;
 
     batch(() => {
-      deleteBins([...selectedBinIds]);
+      deleteBins(deleteIds);
     });
 
     clearSelection();

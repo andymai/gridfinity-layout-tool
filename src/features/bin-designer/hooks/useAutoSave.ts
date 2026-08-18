@@ -19,6 +19,7 @@ import {
   upsertRegistryEntry,
   registryEdgeFields,
   registryHeightFields,
+  registryKnifeRestFields,
 } from '../store/customBinRegistry';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { designId as toDesignId } from '@/core/types';
@@ -143,6 +144,7 @@ export function useAutoSave(): void {
         height: paramsToSave.height,
         ...registryEdgeFields(paramsToSave),
         ...registryHeightFields(paramsToSave),
+        ...registryKnifeRestFields(paramsToSave),
         updatedAt: result.value.updatedAt,
       });
       // Notify design-linking to auto-sync linked bins

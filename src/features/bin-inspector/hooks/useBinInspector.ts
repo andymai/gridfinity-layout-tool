@@ -20,6 +20,7 @@ import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
+import { expandPairIds } from '@/shared/utils/binPairs';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { GridUnits, HeightUnits, Bin, LayerId } from '@/core/types';
 import { layerId as toLayerId, categoryId as toCategoryId, roundHeightUnits } from '@/core/types';
@@ -323,12 +324,17 @@ export function useBinInspector(): UseBinInspectorReturn {
   const confirmDeleteAction = useCallback(() => {
     if (selectedBins.length === 0) return;
 
+    const allBins = useLayoutStore.getState().layout.bins;
+    const deleteIds = [...expandPairIds(new Set(selectedBins.map((b) => b.id)), allBins)];
     // Track deletion BEFORE executing (need bin data)
-    mlTracking.trackBinsDeletion(selectedBins, 'inspector');
+    mlTracking.trackBinsDeletion(
+      allBins.filter((b) => deleteIds.includes(b.id)),
+      'inspector'
+    );
 
     batch(() => {
-      for (const b of selectedBins) {
-        deleteBin(b.id);
+      for (const id of deleteIds) {
+        deleteBin(id);
       }
     });
 
@@ -344,9 +350,15 @@ export function useBinInspector(): UseBinInspectorReturn {
   const moveToStaging = useCallback(() => {
     if (selectedBins.length === 0) return;
 
+    const stashIds = [
+      ...expandPairIds(
+        new Set(selectedBins.map((b) => b.id)),
+        useLayoutStore.getState().layout.bins
+      ),
+    ];
     batch(() => {
-      for (const b of selectedBins) {
-        moveBinToStaging(b.id);
+      for (const id of stashIds) {
+        moveBinToStaging(id);
       }
     });
 

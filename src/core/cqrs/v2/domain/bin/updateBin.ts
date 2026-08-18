@@ -58,6 +58,9 @@ const updatesSchema = z
     }),
     overhang: overhangSchema,
     locked: z.boolean(),
+    // `null` unpairs (the wire form of "clear", like overhang).
+    pairId: z.string().min(1).nullable(),
+    pairRole: z.enum(['block', 'rest']).nullable(),
   })
   .partial();
 
@@ -92,6 +95,8 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   // `null` is the wire form of "clear it"; the field itself is just optional.
   if (updates.overhang !== undefined) result.overhang = updates.overhang ?? undefined;
   if (updates.locked !== undefined) result.locked = updates.locked;
+  if (updates.pairId !== undefined) result.pairId = updates.pairId ?? undefined;
+  if (updates.pairRole !== undefined) result.pairRole = updates.pairRole ?? undefined;
   return result;
 }
 
