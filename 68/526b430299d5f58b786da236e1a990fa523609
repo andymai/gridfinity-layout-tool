@@ -1,0 +1,194 @@
+api/lib/designerValidation.ts
+  s_368953f679b7f8::t_b11731a97c3ee4 1133-1143,1145-1147,1149-1150
+  s_368953f679b7f8::t_ff441e01473b23 20-21
+  s_368953f679b7f8::t_4ef3cdc7572160 124-128,1144,1148
+  s_368953f679b7f8::t_25eeabd5028e71 123
+src/features/bin-designer/components/panel/CutoutsSection/renderer/cutoutSocketFootprintLayout.test.ts
+  s_368953f679b7f8::t_7ca10aac277aeb 1-23,25-85
+  s_368953f679b7f8::t_a4e8b780b9ca78 24
+  s_368953f679b7f8::t_3d2f18e378ddbf 86-87
+src/i18n/locales/fr.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/shared/hooks/useLabelPlateCounts.ts
+  s_368953f679b7f8::t_45279e04a11b93 86,90,93
+src/i18n/locales/pt-BR.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/shared/utils/labelSocketPlan.test.ts
+  s_368953f679b7f8::t_ce9da7934af7c2 382
+  s_368953f679b7f8::t_a54f28ec66c5ca 3-4,41-42,45-48,51
+  s_368953f679b7f8::t_a5a10f0085c2f2 328-381,383-398
+src/i18n/locales/it.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutSocketFootprint.test.tsx
+  s_368953f679b7f8::t_7ca10aac277aeb 1-5,7-16
+  s_368953f679b7f8::t_a4e8b780b9ca78 6
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutLabel3D.tsx
+  s_368953f679b7f8::t_a631e7cee39841 4-6,22-29,62,75-103
+src/features/bin-designer/hooks/useLabelPlateExport.test.ts
+  s_368953f679b7f8::t_a54f28ec66c5ca 88-90
+src/features/generation/worker/generators/cutoutLabelSocketBuilder.ts
+  s_368953f679b7f8::t_3911315419b756 1-3,6-16,28-36,38-40,44-57,59-70,72-148,174
+  s_368953f679b7f8::t_a4e8b780b9ca78 4-5,58,71
+  s_368953f679b7f8::t_99870a349b43f7 17-27
+  s_368953f679b7f8::t_1629b368086f14 37,42-43
+  s_368953f679b7f8::t_cb849b81374fdd 41,149-165,167-168
+  s_368953f679b7f8::t_9673c5cd674ff0 166,169-173
+src/features/bin-designer/components/panel/LabelIconPicker/LabelIconPicker.test.tsx
+  s_368953f679b7f8::t_cbb9aed8954a6f 9
+src/i18n/locales/nl.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+api/lib/designerValidationConstants.ts
+  s_368953f679b7f8::t_b087b89d8721fb 96,98-102,111-136
+  s_368953f679b7f8::t_a4e8b780b9ca78 97
+src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.tsx
+  s_368953f679b7f8::t_102934b4625a5c 9,98-99
+src/i18n/locales/zh-CN.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/features/bin-designer/components/preview/LabelPlateMeshes/platePoses.test.ts
+  s_368953f679b7f8::t_587191a8035426 22,28-29,33,39-50,71,77-78,88,99-106,111
+src/features/bin-designer/components/panel/LabelIconPicker/LabelIconPicker.tsx
+  s_368953f679b7f8::t_a4e8b780b9ca78 14
+  s_368953f679b7f8::t_26566d157b2c73 13,15-18,49,64,108
+src/i18n/locales/en.ts
+  s_368953f679b7f8::t_60387141fa56e1 1763-1764
+  s_368953f679b7f8::t_c9d9030dec30d9 1908-1929
+src/features/bin-designer/components/CutoutWorkspace/CutoutSocketControls.tsx
+  s_368953f679b7f8::t_a4e8b780b9ca78 6
+  s_368953f679b7f8::t_428e991ce4348f 1-5,7-142
+src/features/generation/worker/handlers/workerContext.ts
+  s_368953f679b7f8::t_5eacfe8804f3a8 223-224
+src/i18n/locales/de.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/i18n/locales/ko.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/i18n/locales/sv.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/i18n/locales/ja.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.tsx
+  s_368953f679b7f8::t_59f285af4e5b15 64-71
+src/shell/layoutExport/planLabelPlateExport.ts
+  s_368953f679b7f8::t_45279e04a11b93 162,165
+src/shared/utils/cutoutLabelSocketPlan.ts
+  s_368953f679b7f8::t_70925d5281af64 1-7,9-16,18-33,36-47,49-64,66-157,159-203,209-245,247,249-253,258-278,280-293
+  s_368953f679b7f8::t_a4e8b780b9ca78 8,48,65,158,207
+  s_368953f679b7f8::t_1ab1b9527600bc 204-206,208,246,248,254-257,279
+  s_368953f679b7f8::t_d9928b35e1d644 17,34-35,294-310,317,319-329
+  s_368953f679b7f8::t_739b8b7f4e9acc 311-312,314-315,330
+  s_368953f679b7f8::t_f274ae9ae25533 313,316,318
+src/features/bin-designer/types/cutout.ts
+  s_368953f679b7f8::t_27a2e7279a8cc0 7,220-222,224,226-235,395-403,405-411
+  s_368953f679b7f8::t_a4e8b780b9ca78 223,225,404
+src/features/bin-designer/components/CutoutWorkspace/CutoutPlateSettings.test.tsx
+  s_368953f679b7f8::t_02e52a3bc8fd9f 1-91
+src/i18n/locales/es.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/features/generation/worker/generators/scenarios/cutoutLabelSockets.ts
+  s_368953f679b7f8::t_a4e8b780b9ca78 4-5,36,73,180,190,216,243
+  s_368953f679b7f8::t_14315b801f6b98 28,126-129,131-133,146-152,155-159,164-171,173-175
+  s_368953f679b7f8::t_789018e43ae570 1-3,6-27,29-35,37-72,74-125,130,134-145,153-154,160-163,172,176-179,181-189,191-215,217-242,244-259
+api/lib/designerValidation.test.ts
+  s_368953f679b7f8::t_b087b89d8721fb 15-16,1404-1407,1431-1439
+  s_368953f679b7f8::t_5ceedfb3b35d45 1396-1403,1408-1430,1440-1442
+src/shared/utils/cutoutLabel.ts
+  s_368953f679b7f8::t_a4e8b780b9ca78 143
+  s_368953f679b7f8::t_29ca83e149830a 9,130-142,144-165,192-200
+src/shared/constants/labelPlates.ts
+  s_368953f679b7f8::t_a4e8b780b9ca78 406
+  s_368953f679b7f8::t_2eac81c66949ae 395-405,407-416
+src/features/bin-designer/hooks/useCutoutSocketPlan.ts
+  s_368953f679b7f8::t_a59e4fb2d599b5 26-33,43-44,62-63
+  s_368953f679b7f8::t_decfb4364e45a4 1-25,34-42,45-61,64-69
+src/features/bin-designer/types/index.ts
+  s_368953f679b7f8::t_27a2e7279a8cc0 164,185
+src/features/generation/worker/generators/cutoutSocketSeating.kernel.test.ts
+  s_368953f679b7f8::t_ecdf0fdffc7c41 1-23,29-31,34-48,50-57,91-125,134-135,138,146-157,160-172,174-175,177-186,188-189,191-194
+  s_368953f679b7f8::t_a4e8b780b9ca78 49,176,187
+  s_368953f679b7f8::t_f373c0d4a7e4f2 24-28,126-133,136-137,139-145,158,173,190
+  s_368953f679b7f8::t_7467eee9465e1e 32-33,58-90,159
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.tsx
+  s_368953f679b7f8::t_e4ed33f88fcea1 304-306
+src/features/bin-designer/components/preview/LabelPlateMeshes/platePoses.ts
+  s_368953f679b7f8::t_0332e01d85ab7c 23-27,35,39-46,65-67
+  s_368953f679b7f8::t_a4e8b780b9ca78 34
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_368953f679b7f8::t_e7228f983e5930 38,1118
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_368953f679b7f8::t_e7228f983e5930 19,69-72
+  s_368953f679b7f8::t_e11995e0be1577 73
+src/features/bin-designer/components/CutoutWorkspace/CutoutSocketControls.test.tsx
+  s_368953f679b7f8::t_bbd299dac91b75 1-174
+  s_368953f679b7f8::t_7322d538c23794 175-178
+src/i18n/locales/nb.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_368953f679b7f8::t_426c3522129802 10,14-18,40-41,332-335,337-341,351,354-355,369-371,373-379,384-402,413-437,484-502,505
+  s_368953f679b7f8::t_a4e8b780b9ca78 336,451
+  s_368953f679b7f8::t_be28b5b6ad37bd 450,452
+src/i18n/locales/uk.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_368953f679b7f8::t_a54f28ec66c5ca 52
+  s_368953f679b7f8::t_45279e04a11b93 66,71,74,78
+src/features/generation/worker/generators/labelPlateGenerator.ts
+  s_368953f679b7f8::t_b1f25457d4eb1c 179,181,183-184
+  s_368953f679b7f8::t_be65d5e9941cc4 77-81
+  s_368953f679b7f8::t_e4ff19705a951b 26-32,53,55-58,60,62-76,82-111
+  s_368953f679b7f8::t_1521e893f6722e 33-34,36-39
+  s_368953f679b7f8::t_a4e8b780b9ca78 35,59,61,180
+  s_368953f679b7f8::t_efa26801d77c95 54,124,176-178
+scripts/i18n-values-allowlist.json
+  s_368953f679b7f8::t_5b78e171f84836 50-52
+src/shared/utils/cutoutLabelSocketPlan.test.ts
+  s_368953f679b7f8::t_a4e8b780b9ca78 124,282
+  s_368953f679b7f8::t_e8d2497bb0c38a 206
+  s_368953f679b7f8::t_1ab1b9527600bc 125-126,133,136-138,199-200,202-205,207-210,212,217-228
+  s_368953f679b7f8::t_0116dbe723342c 1-123,127-132,134-135,139-198,201,211,213-216,229-281,283-287
+  s_368953f679b7f8::t_34680feb2f234f 288-294
+src/i18n/locales/pl.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/features/generation/worker/generators/binGenerator.scenario.cutoutLabelSockets.test.ts
+  s_368953f679b7f8::t_789018e43ae570 1-5
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutSocketFootprint.tsx
+  s_368953f679b7f8::t_20d5c2f62a7108 1-6,9-14,16-66,72-112
+  s_368953f679b7f8::t_3a06c8b4799dd0 15,67-71
+  s_368953f679b7f8::t_a4e8b780b9ca78 7-8
+src/shared/hooks/useLabelPlateCounts.test.ts
+  s_368953f679b7f8::t_739b8b7f4e9acc 48-50
+src/features/bin-designer/components/CutoutWorkspace/CutoutPlateSettings.tsx
+  s_368953f679b7f8::t_3220dd19d3ddad 1-5,7-22,25-89
+  s_368953f679b7f8::t_a4e8b780b9ca78 6
+  s_368953f679b7f8::t_102934b4625a5c 23-24
+  s_368953f679b7f8::t_ca1c9191e0b0ce 90-92
+src/i18n/locales/cs.json
+  s_368953f679b7f8::t_fca55c71768e38 1276-1277,3984-4002
+src/shared/utils/labelSocketPlan.ts
+  s_368953f679b7f8::t_02cfebaf758b07 28-30,32-48,77,81-86,89-91,94-97,100-105,111,130-142
+  s_368953f679b7f8::t_a4e8b780b9ca78 31,110
+  s_368953f679b7f8::t_2cc80a0ee7ee72 14
+src/features/bin-designer/hooks/useCutoutSocketPlan.test.ts
+  s_368953f679b7f8::t_5baf7deca695fe 1-80
+src/features/bin-designer/components/panel/CutoutsSection/renderer/cutoutSocketFootprintLayout.ts
+  s_368953f679b7f8::t_a4e8b780b9ca78 8-9
+  s_368953f679b7f8::t_3a06c8b4799dd0 1-7,10-76
+src/features/generation/bridge/meshData.ts
+  s_368953f679b7f8::t_0332e01d85ab7c 81-91
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.cutoutLabelSockets.test.ts.snap
+  s_368953f679b7f8::t_43182fdb8444bd 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "68526b430299d5f58b786da236e1a990fa523609",
+  "prompts": {},
+  "sessions": {
+    "s_368953f679b7f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3923dd34-776a-4f11-a3db-e1223c06c35d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
