@@ -85,7 +85,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
  *
  * @example
  * // Status chip
- * <Badge tone="warning">Experimental</Badge>
+ * <Badge tone="info">Experimental</Badge>
  *
  * @example
  * // Count pill

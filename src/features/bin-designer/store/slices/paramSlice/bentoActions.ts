@@ -160,7 +160,9 @@ export function createBentoActions(set: Set, get: Get) {
         !compartments.labelPlateWidths &&
         !compartments.labelIcons &&
         !compartments.dividerOverrides &&
-        !compartments.drawnUnitCells
+        !compartments.drawnUnitCells &&
+        !compartments.compartmentColors &&
+        !compartments.compartmentColorScopes
       ) {
         return;
       }

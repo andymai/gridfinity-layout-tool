@@ -22,6 +22,7 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { binDimensions, cutoutInterior } from './binDimensions';
+import { buildOverrideLookup, findPairAwareRuns, overrideKey } from './compartments';
 import { DEFAULT_COMPARTMENT_COLOR_SCOPE } from '../types/compartments';
 import type { CompartmentColorScope } from '../types/compartments';
 
@@ -126,6 +127,54 @@ export function planCompartmentColors(params: BinParams): CompartmentColorPlan |
   const originX = -innerW / 2 + offsetX;
   const originY = -innerD / 2 + offsetY;
 
+  // A `dividerOverride` moves the compartment wall, so the grid line is not
+  // the compartment edge (gotcha 9) — a rect left on the nominal line hands a
+  // shifted strip of floor to the wrong compartment's colour, or to none.
+  // Each interior boundary is walked in pair-aware runs (the same grouping
+  // the wall builder and rail plan use), and a cell's edge takes the wall's
+  // interpolated displacement at that cell's own midpoint along the run —
+  // exact for a straight shift, and within half a cell's tilt for an angled
+  // one, which is as much as an axis-aligned rect can express.
+  const lookup = buildOverrideLookup(params.compartments.dividerOverrides);
+  const boundaryShifts = (count: number, key: (i: number) => string | null): number[] => {
+    const shifts = new Array<number>(count).fill(0);
+    if (lookup.size === 0) return shifts;
+    for (const run of findPairAwareRuns(count, key)) {
+      const ov = lookup.get(run.pairKey);
+      if (!ov) continue;
+      const span = run.end - run.start;
+      for (let i = run.start; i < run.end; i++) {
+        const t = span <= 1 ? 0.5 : (i - run.start + 0.5) / span;
+        shifts[i] = ov.offsetStart + (ov.offsetEnd - ov.offsetStart) * t;
+      }
+    }
+    return shifts;
+  };
+  // shiftX[b][row] = displacement of the vertical boundary at column index b
+  // (between col b-1 and col b) evaluated at `row`; shiftY mirrors it.
+  const shiftX = new Map<number, number[]>();
+  for (let b = 1; b < cols; b++) {
+    shiftX.set(
+      b,
+      boundaryShifts(rows, (r) => {
+        const left = cellIds[r * cols + (b - 1)];
+        const right = cellIds[r * cols + b];
+        return left === right ? null : overrideKey(Math.min(left, right), Math.max(left, right));
+      })
+    );
+  }
+  const shiftY = new Map<number, number[]>();
+  for (let b = 1; b < rows; b++) {
+    shiftY.set(
+      b,
+      boundaryShifts(cols, (c) => {
+        const below = cellIds[(b - 1) * cols + c];
+        const above = cellIds[b * cols + c];
+        return below === above ? null : overrideKey(Math.min(below, above), Math.max(below, above));
+      })
+    );
+  }
+
   const cells: CompartmentCellRect[] = [];
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -133,10 +182,10 @@ export function planCompartmentColors(params: BinParams): CompartmentColorPlan |
       if (!byId.has(id)) continue;
       cells.push({
         id,
-        x0: originX + col * cellW,
-        x1: originX + (col + 1) * cellW,
-        y0: originY + row * cellH,
-        y1: originY + (row + 1) * cellH,
+        x0: originX + col * cellW + (shiftX.get(col)?.[row] ?? 0),
+        x1: originX + (col + 1) * cellW + (shiftX.get(col + 1)?.[row] ?? 0),
+        y0: originY + row * cellH + (shiftY.get(row)?.[col] ?? 0),
+        y1: originY + (row + 1) * cellH + (shiftY.get(row + 1)?.[col] ?? 0),
       });
     }
   }

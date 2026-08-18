@@ -74,6 +74,52 @@ describe('planCompartmentColors', () => {
     expect(plan.cells[0].x1).toBeLessThanOrEqual(0.0001);
   });
 
+  // Gotcha 9: a dividerOverride moves the compartment wall, so the grid line
+  // is not the compartment edge. A rect left on the nominal line hands the
+  // shifted strip of floor to the wrong compartment's colour.
+  it('follows a straight divider shift, so the shifted strip keeps its colour', () => {
+    const plan = planOf(
+      twoUp({
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: -5, offsetEnd: -5 }],
+      })
+    );
+    const left = plan.cells.find((c) => c.id === 0);
+    const right = plan.cells.find((c) => c.id === 1);
+    if (!left || !right) throw new Error('expected both rects');
+    // The shared boundary moved 5mm toward compartment 0 on both rects.
+    expect(left.x1).toBeCloseTo(-5, 5);
+    expect(right.x0).toBeCloseTo(-5, 5);
+    // Outer edges stay where the unshifted plan puts them.
+    const plain = planOf(twoUp());
+    expect(left.x0).toBeCloseTo(plain.cells[0].x0, 5);
+  });
+
+  it('evaluates a tilted divider at each cell’s own midpoint along the run', () => {
+    // 2x2 grid, compartments as two full-height columns; tilt the shared wall
+    // from -4 at the bottom to +4 at the top. Row 0's boundary midpoint sits a
+    // quarter up the run (-2), row 1's three quarters (+2).
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      depth: 2,
+      height: 5,
+      compartments: {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 0, 1],
+        compartmentColors: [LEFT, RIGHT],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: -4, offsetEnd: 4 }],
+      },
+    };
+    const plan = planOf(params);
+    const bottomLeft = plan.cells.find((c) => c.id === 0 && c.y0 < 0);
+    const topLeft = plan.cells.find((c) => c.id === 0 && c.y0 >= 0);
+    if (!bottomLeft || !topLeft) throw new Error('expected both rows');
+    expect(bottomLeft.x1).toBeCloseTo(-2, 5);
+    expect(topLeft.x1).toBeCloseTo(2, 5);
+  });
+
   it('splits an L-shaped compartment into its own cells, not its bounding box', () => {
     // 2x2 grid; compartment 0 owns three cells in an L, compartment 1 the
     // remaining corner. A bounding-box rect for 0 would swallow that corner.
