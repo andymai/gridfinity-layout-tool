@@ -1,0 +1,402 @@
+src/features/generation/worker/generators/labelPlateBuilder.test.ts
+  s_246d227b341569::t_23b08d1682ddcb 243-246
+  s_246d227b341569::t_a62f41f362b54c 1
+  s_246d227b341569::t_73030a797c0575 247-250
+  s_246d227b341569::t_6e7455bfbb15f5 172-179,181-188,230
+  s_246d227b341569::t_96ef414950f270 227-229,252
+  s_246d227b341569::t_00187eaef114ff 16-18
+  s_246d227b341569::t_7d1745c0cdf6d9 19-21,87,89,190-191,231-232,238,251,253,255
+src/features/bin-designer/components/panel/LabelTabsSection/CompartmentTextInput.test.tsx
+  s_246d227b341569::t_4607623c52f8f7 94-158
+  s_246d227b341569::t_120e1a211fb15d 2
+src/features/bin-designer/types/index.ts
+  s_246d227b341569::t_e35d1ee01a7554 21-26,39-40,42-62
+  s_246d227b341569::t_b29e40c209c203 37
+src/features/generation/bridge/responses.ts
+  s_246d227b341569::t_a5c8b82f869f53 11,188-189
+src/i18n/locales/cs.json
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+src/features/bin-designer/components/preview/GhostSurfaceText/index.ts
+  s_246d227b341569::t_4473f8384aa1c5 1
+src/features/generation/worker/generators/labelPlateGenerator.test.ts
+  s_246d227b341569::t_349fc69e90adf8 21
+  s_246d227b341569::t_a62f41f362b54c 10
+  s_246d227b341569::t_feac297c0f85f0 19
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_246d227b341569::t_349fc69e90adf8 1097
+  s_246d227b341569::t_a62f41f362b54c 1
+  s_246d227b341569::t_feac297c0f85f0 70
+  s_246d227b341569::t_6006e737b23cee 1150-1159,1258-1261
+  s_246d227b341569::t_1e85e28c40f03a 1137-1142,1148,1165,1172,1175-1182
+src/features/bin-designer/components/controls/AnchorPicker/index.ts
+  s_246d227b341569::t_f0d8b73bdab75c 1
+src/features/generation/worker/generators/textSolidCache.test.ts
+  s_246d227b341569::t_349fc69e90adf8 40
+  s_246d227b341569::t_1884b1c9e3ace2 20,26
+src/features/generation/worker/generators/binGenerator.scenario.hiddenCutouts.test.ts
+  s_246d227b341569::t_a62f41f362b54c 30
+  s_246d227b341569::t_349fc69e90adf8 81
+  s_246d227b341569::t_feac297c0f85f0 76
+src/shared/constants/wallBands.ts
+  s_246d227b341569::t_c6a9e87a06a133 17-26
+  s_246d227b341569::t_37a83e83f7487f 1-16,27
+src/features/bin-designer/constants/paramMigration.ts
+  s_246d227b341569::t_fb49f39c9a4e19 952-954
+  s_246d227b341569::t_52eea09a38b0ca 105-110
+  s_246d227b341569::t_1eea7508a88a0e 801,812-815,817-818,826-849,862-874,922,927-928,932,942,948-951,955-956,959-960,963-987,992
+  s_246d227b341569::t_a7b069823f8a80 993
+src/i18n/locales/es.json
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+src/features/generation/worker/generators/wallPatterns.ts
+  s_246d227b341569::t_5a0823efe14776 9,57
+  s_246d227b341569::t_a2a04edba4af10 10-14,62
+  s_246d227b341569::t_077bbd31fab4c5 58
+  s_246d227b341569::t_37a83e83f7487f 59-61
+  s_246d227b341569::t_2a4cf023289b2d 54-56
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_246d227b341569::t_a5c8b82f869f53 265
+CLAUDE.md
+  s_246d227b341569::t_f779f7a6907bf3 59-60
+src/features/generation/worker/wasmInstantiator.ts
+  s_246d227b341569::t_b6e5cd4b7b311e 15,98
+  s_246d227b341569::t_a8edd137402ca5 16-17,88-93,95-97,99-106,108-131
+src/features/bin-designer/components/panel/CutoutsSection/renderer/cutoutLabelFit.test.ts
+  s_246d227b341569::t_61f5bea51856c9 4,9
+src/features/bin-designer/components/preview/GhostSurfaceText/GhostSurfaceText.tsx
+  s_246d227b341569::t_4473f8384aa1c5 1-174,177-178,188-190,192-198,200-262
+  s_246d227b341569::t_1ab58bdc285146 175-176,179-187,191,199
+src/features/generation/worker/generators/typeStemGuard.test.ts
+  s_246d227b341569::t_58e60ba23a32c3 1-77
+src/i18n/locales/zh-CN.json
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_1ab58bdc285146 1657
+package.json
+  s_246d227b341569::t_8cc80228b0b382 112
+src/features/bin-designer/components/panel/TypeSection/TypeSection.test.tsx
+  s_246d227b341569::t_fcc0d56cc6d702 1,3-36,41-54
+  s_246d227b341569::t_684c18da19845d 2,37-40
+src/features/generation/worker/generators/textBuilder.scenario.test.ts
+  s_246d227b341569::t_5c9a954aed9358 65-68
+  s_246d227b341569::t_e719f7da764b40 15-25,175-215
+  s_246d227b341569::t_9747d8052b1f42 3,5-11,29-30,49-50,53,63-64,69-79,84-93,95-110,112,119,129-130,135-137,146,152,154-157,160-163,166-171,216-240,242,257,259-286,292-293,295-298,302-313,319,321-322,325-328,331-333,335,343-347,349-351,353-356,359-361,367-388,390-391
+  s_246d227b341569::t_1dec81fdbaf88b 141-145,147-148,287-290,299,301
+  s_246d227b341569::t_578af35a9a8daa 243-250,252-256
+  s_246d227b341569::t_349fc69e90adf8 33
+  s_246d227b341569::t_92bf43c399c9f1 291,389
+src/features/generation/worker/generators/binGenerator.scenario.wallText.test.ts
+  s_246d227b341569::t_349fc69e90adf8 33
+  s_246d227b341569::t_a62f41f362b54c 15
+  s_246d227b341569::t_feac297c0f85f0 28
+src/test/loadTestFonts.ts
+  s_246d227b341569::t_a62f41f362b54c 1-44
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_246d227b341569::t_74c016c19d6222 31,43,206-207
+  s_246d227b341569::t_987fa887d42b28 7,208-209,238-239,279,292
+src/features/generation/worker/generators/connectorSample.ts
+  s_246d227b341569::t_67bda04abd6f2e 80,217-221,224-234
+src/shared/fonts/assets/OFL-BarlowCondensed.txt
+  s_246d227b341569::t_a61d9db9813991 1-93
+src/features/generation/worker/generators/wallTextBuilder.ts
+  s_246d227b341569::t_346d61b9a86fe3 25,69-74,77-80,124-140,150-153,175,185
+src/features/generation/worker/generators/wallTextLayout.test.ts
+  s_246d227b341569::t_61f5bea51856c9 96,98-100,102-127,129-132,140-148,150-159,163-165,167,171-174
+  s_246d227b341569::t_349fc69e90adf8 37
+  s_246d227b341569::t_09ade924639839 72-79,133-135,139,149,175
+  s_246d227b341569::t_feac297c0f85f0 32
+  s_246d227b341569::t_a62f41f362b54c 12
+  s_246d227b341569::t_708e599fbcf771 84-91,136-138
+src/features/generation/worker/generators/binGenerator.scenario.cutout-floor-label.test.ts
+  s_246d227b341569::t_feac297c0f85f0 22
+  s_246d227b341569::t_349fc69e90adf8 24
+  s_246d227b341569::t_a62f41f362b54c 14
+api/lib/designerValidation.test.ts
+  s_246d227b341569::t_e7f441e750a90a 1275-1280,1282-1291,1319-1365
+api/lib/designerValidation.ts
+  s_246d227b341569::t_2e307e952937f2 119-127,129-142,693-705,752-810,837-864,886-887,897-898,911-927
+src/features/generation/worker/generators/textSolidCache.ts
+  s_246d227b341569::t_d471798e3a1c1e 10-14,47-49,58,65
+src/features/bin-designer/store/slices/paramSlice/surfaceTextActions.ts
+  s_246d227b341569::t_951fe26e887b4c 8-9,40-43,66,72,89-92,98,100,105-118,120-127,129,132,135-137,143,146-151,154
+src/i18n/locales/uk.json
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+src/features/generation/worker/generators/lidInputs.ts
+  s_246d227b341569::t_d94027f8a6504c 53-58,384-385,388-392
+  s_246d227b341569::t_4f8398752e3c5a 16,29
+api/lib/communityExampleParamHashes.ts
+  s_246d227b341569::t_763f43063237e4 15-26
+src/i18n/locales/nb.json
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+src/shared/utils/wallTextPlan.test.ts
+  s_246d227b341569::t_26df4c3b9d5ea8 1-84
+src/i18n/locales/fr.json
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_e14813d8aa615f 1680
+src/shared/utils/textFonts.ts
+  s_246d227b341569::t_c1bf0feab7b007 1-33
+src/features/bin-designer/components/panel/TypeSection/index.ts
+  s_246d227b341569::t_c91d138b2625c4 1
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_246d227b341569::t_0a76be66ef393e 20,42-51,169-170,172-180,190,195,200,229,232-233,235-245,247-257,259-267,278,285-287,289
+  s_246d227b341569::t_a17c695733f6fc 171,234,246,258,280
+  s_246d227b341569::t_83bd01c3cbfddd 98,104-112,114
+  s_246d227b341569::t_c91d138b2625c4 1-9,21-41,52-73,75-76,78-80,82,84-87,89-97,119,146-168,181-189,191-194,196-199,201-228,230-231,268-277,279,281-284,288,290-295
+  s_246d227b341569::t_18da93e554d332 120-145
+  s_246d227b341569::t_fda1d086ff03c8 74,77,81,83,88
+  s_246d227b341569::t_b4480dd124847c 10-19,99-100,102-103,113,115-118
+  s_246d227b341569::t_f0c1845ca8b71b 101
+src/features/generation/worker/generators/labelFitSample.ts
+  s_246d227b341569::t_67bda04abd6f2e 44,71,126-136
+src/features/bin-designer/hooks/useGeneration.ts
+  s_246d227b341569::t_6d6584a8518b82 53,84
+src/features/bin-designer/constants/defaults.ts
+  s_246d227b341569::t_52eea09a38b0ca 253-256
+  s_246d227b341569::t_7df86f2a83bbf7 33
+src/shared/types/bin.ts
+  s_246d227b341569::t_b29e40c209c203 204
+  s_246d227b341569::t_4d43454b297b18 84-89,206-228
+src/features/generation/bridge/meshData.ts
+  s_246d227b341569::t_a5c8b82f869f53 58-59,69-83
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_246d227b341569::t_fb49f39c9a4e19 280-284,287-288,291,293-294,299,302,304-314
+scripts/i18n-values-allowlist.json
+  s_246d227b341569::t_d0ada8e5f5f560 128
+  s_246d227b341569::t_328a111a377a62 129-135
+src/i18n/locales/it.json
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_e14813d8aa615f 1680
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_246d227b341569::t_5574e2e97362b1 325
+src/shared/README.md
+  s_246d227b341569::t_31f29edc792dfa 24-30,67-88
+  s_246d227b341569::t_f17d47fee77782 19-23
+src/features/bin-designer/components/controls/AnchorPicker/AnchorPicker.test.tsx
+  s_246d227b341569::t_2e08a23711c7ce 1-31
+  s_246d227b341569::t_54183add021270 32-33
+src/features/bin-designer/hooks/useTypeMeasurer.ts
+  s_246d227b341569::t_500b89ba5c8b15 1-32
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_246d227b341569::t_4f8398752e3c5a 1510,1526-1533
+  s_246d227b341569::t_f740d386573d71 66
+src/features/generation/worker/generators/lidTextBuilder.ts
+  s_246d227b341569::t_4f8398752e3c5a 114-115,122
+src/shared/types/generation.ts
+  s_246d227b341569::t_8efba201031cb1 17
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_246d227b341569::t_ae9174fe805fb2 54,562
+src/features/generation/worker/generators/textEngraving.scenario.test.ts
+  s_246d227b341569::t_349fc69e90adf8 31,40
+  s_246d227b341569::t_a62f41f362b54c 18
+  s_246d227b341569::t_feac297c0f85f0 29
+  s_246d227b341569::t_3a8e09198d690e 41-42
+src/features/bin-designer/components/panel/TypeSection/useTypeSection.ts
+  s_246d227b341569::t_975a6ba5e3544a 1-18,20-34,48-59,62-64,71-72,94-121,155-158,164-173,175-188
+  s_246d227b341569::t_b4480dd124847c 19,35-41,67-70,122-132,139-154,159,174
+  s_246d227b341569::t_83bd01c3cbfddd 42-47,60-61,65-66,73-93,133-138,160-163
+src/shared/fonts/assets/OFL-Poppins.txt
+  s_246d227b341569::t_944769ace479f8 1-93
+src/features/generation/worker/generators/labelTextFit.test.ts
+  s_246d227b341569::t_f2b32297e9717a 88-105
+  s_246d227b341569::t_1e85e28c40f03a 81,117,134
+  s_246d227b341569::t_67715f27becaac 9,34-39,42
+  s_246d227b341569::t_349fc69e90adf8 23
+  s_246d227b341569::t_a62f41f362b54c 11
+  s_246d227b341569::t_feac297c0f85f0 21
+src/shared/utils/wallTextPlan.ts
+  s_246d227b341569::t_5a391e4b38a49f 1-392
+  s_246d227b341569::t_46aa9a153823db 393-400
+src/features/generation/worker/generators/typeStemGuard.ts
+  s_246d227b341569::t_c7fa2b094b0c0b 27-28
+  s_246d227b341569::t_67d11dc8e41d35 38,40-60
+  s_246d227b341569::t_8f0691e004958f 1-26,29-37,39,61-80
+src/shared/utils/typePlan.ts
+  s_246d227b341569::t_168ddd223f13d1 440-441,576-589,591-601,759
+  s_246d227b341569::t_6999b217ca6cc9 94-108,113-119,148,279-295,298-352
+  s_246d227b341569::t_4af1cc9a39ca7a 769,777-779
+  s_246d227b341569::t_6c48004a962e34 767-768,774-776
+  s_246d227b341569::t_b024dd868eb850 482-493,499,523
+  s_246d227b341569::t_e915b408c64cab 606-608,655-663,772,806,808
+  s_246d227b341569::t_e3d28292e8399e 1-93,109-112,120-147,149-278,296-297,353-439,442-481,494-496,500-522,524-557,569,572,574-575,590,602-605,609-654,664-758,760-766,770-771,773,780-805,807,809-865
+  s_246d227b341569::t_a6971550a65a45 497-498,558-568,570-571,573
+  s_246d227b341569::t_76dee9914fc721 866
+src/i18n/locales/en.ts
+  s_246d227b341569::t_f94a8b91bacbe0 2897-2901
+  s_246d227b341569::t_1ab58bdc285146 2879
+  s_246d227b341569::t_b5b4d48fcecb9a 2844-2878,2880-2884,2887-2896
+  s_246d227b341569::t_e14813d8aa615f 2885-2886
+  s_246d227b341569::t_ef99c15a79ff0b 2908
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_246d227b341569::t_111739d2adf1e8 507-510,513,517-519
+src/i18n/locales/ko.json
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_1ab58bdc285146 1657
+src/features/bin-designer/utils/typeMeasurer.ts
+  s_246d227b341569::t_500b89ba5c8b15 1-18,26-96
+  s_246d227b341569::t_78d5ad75ace25b 19-25
+src/features/generation/worker/generators/labelPlateBuilder.ts
+  s_246d227b341569::t_168ddd223f13d1 400
+  s_246d227b341569::t_c0b95ad171963c 52,89-107,146-154,241,243-244,246,248,388,396-399
+  s_246d227b341569::t_96ef414950f270 218,220,222-230
+src/features/generation/worker/generators/textBuilder.ts
+  s_246d227b341569::t_168ddd223f13d1 40,93-94,117
+  s_246d227b341569::t_f062a9a428fa1a 2,4-8,10-13,15-19,26,34-39,41-42,45,47-48,51-55,57,59,62-64,66-68,71-74,76,79-92,98-99,101-104,106-116,118-120,123-125,137-138,141-142,145,147,155-157,160-162,166-167,173-174,176,184,186,188,192-208,214,217-223,225-231,234-243,247-250,252-263,265,267,269-275,279-305,330-341,343-351,353-382,384-392,394,399-404
+  s_246d227b341569::t_47037892ced765 32-33,306-323,325,328-329,342,352,383,393,395-398
+src/features/generation/worker/generators/featureBuilder.test.ts
+  s_246d227b341569::t_aa23d8d7f18993 63,65-66
+  s_246d227b341569::t_a62f41f362b54c 6
+  s_246d227b341569::t_349fc69e90adf8 68
+src/features/generation/worker/handlers/generateHandler.ts
+  s_246d227b341569::t_c43a5e49db6396 24,200-210
+  s_246d227b341569::t_6c6f66101e03e8 148-149
+  s_246d227b341569::t_c1bf0feab7b007 22-23,58-61
+  s_246d227b341569::t_f819dd3447e3cd 211-214
+  s_246d227b341569::t_7b0e8ff8f8279b 150-152,215-217
+src/i18n/locales/nl.json
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_1ab58bdc285146 1657
+src/i18n/locales/ja.json
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+src/features/bin-designer/components/preview/index.ts
+  s_246d227b341569::t_ae9174fe805fb2 38
+src/shared/utils/textFonts.test.ts
+  s_246d227b341569::t_ac14d35cc3bc61 1-66
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_246d227b341569::t_1eeb4ccbe585d3 51,364,366,370,471,475,477,481,946-950,953,961
+  s_246d227b341569::t_f740d386573d71 25
+  s_246d227b341569::t_168ddd223f13d1 962
+src/features/bin-designer/components/controls/TypeSpecimen/index.ts
+  s_246d227b341569::t_372cb6257eb5d5 1
+src/features/bin-designer/components/controls/TypeSpecimen/TypeSpecimen.test.tsx
+  s_246d227b341569::t_372cb6257eb5d5 1-16
+src/features/generation/worker/generators/fitTestSlice.ts
+  s_246d227b341569::t_67bda04abd6f2e 58,120-128
+src/i18n/locales/de.json
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+src/shared/fonts/fontAssets.ts
+  s_246d227b341569::t_b6e5cd4b7b311e 1-30
+src/features/bin-designer/components/panel/LabelTabsSection/CompartmentTextInput.tsx
+  s_246d227b341569::t_e4f0ff958e5206 16-22,52-61,74,79,150-191
+  s_246d227b341569::t_7116dc92fc9d5a 192-196
+src/i18n/locales/pt-BR.json
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_1ab58bdc285146 1657
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_246d227b341569::t_a62f41f362b54c 10
+  s_246d227b341569::t_1eee93564d82c9 523-531,561-564,566-567
+  s_246d227b341569::t_349fc69e90adf8 22
+  s_246d227b341569::t_feac297c0f85f0 18
+  s_246d227b341569::t_b58f24fe5b3100 7,463-468,471
+src/features/generation/worker/generators/textBuilder.test.ts
+  s_246d227b341569::t_d26e12fb2dca2a 4-7,9-10,13-14,17-24,37,40-41,43-46,49-51,53,55-59,62-64,67-75,78-81,85-89,92-95,99-100,102
+  s_246d227b341569::t_349fc69e90adf8 27
+  s_246d227b341569::t_0b808868310baf 28-30,101,103
+src/features/bin-designer/components/controls/AnchorPicker/AnchorPicker.tsx
+  s_246d227b341569::t_2e08a23711c7ce 29,46,53
+  s_246d227b341569::t_f0d8b73bdab75c 1-10,12-28,30-33,35-36,38-44,48-52,54-56,58-62
+  s_246d227b341569::t_fda1d086ff03c8 11,34,37,45,47,57
+src/features/bin-designer/store/designer.scenario.lid.test.ts
+  s_246d227b341569::t_9498d07ef14520 232-233,235-239,243-244,250-251,254,259,265-267,292-295,297
+src/features/bin-designer/components/panel/WallsSection/WallsSection.test.tsx
+  s_246d227b341569::t_05cb79e6c3a6d6 96-99,107,111,122,125
+  s_246d227b341569::t_fbe7bdf2e98c70 131-135
+src/features/bin-designer/types/designerState.ts
+  s_246d227b341569::t_e3f117bf842450 199,202-205
+  s_246d227b341569::t_bcf88f3447a1f8 8
+src/i18n/locales/pl.json
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+  s_246d227b341569::t_e14813d8aa615f 1680
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_246d227b341569::t_ee8ca7a545c4db 25,303-305
+src/shared/utils/slotFreeWalls.ts
+  s_246d227b341569::t_5a391e4b38a49f 1-25
+src/features/generation/worker/generators/wallTextLayout.ts
+  s_246d227b341569::t_5a391e4b38a49f 2,4-7,10,12-23,26
+src/features/generation/worker/generators/fitTestSlice.scenario.test.ts
+  s_246d227b341569::t_349fc69e90adf8 41
+  s_246d227b341569::t_57ae1c56dce992 42-43
+src/features/bin-designer/components/panel/TypeSection/useTypeSection.test.ts
+  s_246d227b341569::t_5676ac178d64b1 94-143
+  s_246d227b341569::t_78d5ad75ace25b 1
+  s_246d227b341569::t_fcc0d56cc6d702 2-93
+  s_246d227b341569::t_0653048d925adf 144-145
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_246d227b341569::t_c972db3a5f2e85 121,140,508-513,522-525,528,530
+src/i18n/locales/sv.json
+  s_246d227b341569::t_328a111a377a62 578-594,855,1088,1186,1198,1335,1641-1656,1658-1679,1681-1687,1692-1694,1771,1775,2599-2604,3835,3840-3841,3843,4110
+  s_246d227b341569::t_e14813d8aa615f 1680
+  s_246d227b341569::t_1ab58bdc285146 1657
+  s_246d227b341569::t_f94a8b91bacbe0 1688-1691
+src/features/bin-designer/README.md
+  s_246d227b341569::t_c0cc7c8b01a491 60-68
+src/features/bin-designer/components/panel/WallsSection/WallsSection.tsx
+  s_246d227b341569::t_49dc8f4596a206 190
+  s_246d227b341569::t_4282d97d536868 22,175-184
+  s_246d227b341569::t_5574e2e97362b1 144,188-189
+  s_246d227b341569::t_b406c0b61208bf 13
+src/features/bin-designer/components/controls/TypeSpecimen/TypeSpecimen.tsx
+  s_246d227b341569::t_372cb6257eb5d5 1-64
+  s_246d227b341569::t_411486716d5f65 65-66
+src/features/bin-designer/components/preview/GhostSurfaceText/GhostSurfaceText.test.tsx
+  s_246d227b341569::t_e0e2da43fa68c7 1-39
+src/features/bin-designer/types/generation.ts
+  s_246d227b341569::t_a5c8b82f869f53 9,69
+src/features/bin-designer/types/text.ts
+  s_246d227b341569::t_45f1fdbe25d39c 222-231,233,426,458,473,487,507
+  s_246d227b341569::t_20c7293c4dc86b 2-3,5-15,24-27,29-46,49-51,53-67,70-81,83,94-110,113,120-196,202-206,212-221,232,234-254,257-263,268-278,290-293,309,312-350,356-359,368-373,375-377,379,385,392-395,398,402-405,408-413,421-425,427-457,459-472,474-486,488-494,496-506,508-549
+  s_246d227b341569::t_b024dd868eb850 279-289
+src/shared/utils/typePlan.test.ts
+  s_246d227b341569::t_0cf0cb7ca1687f 200-240
+  s_246d227b341569::t_61ab06d59548a4 165-168
+  s_246d227b341569::t_b6e5cd4b7b311e 15
+  s_246d227b341569::t_eafbb4a4bc137d 1-14,16,21-164,169-177,179-199,241-265,267,280-294
+  s_246d227b341569::t_6c48004a962e34 178
+  s_246d227b341569::t_77a2897caa9fc8 17-20,266,268-279
+  s_246d227b341569::t_d62f9325858a73 295-317
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ada131bf792d3cf5be14b9c0c82b810657a37881",
+  "prompts": {},
+  "sessions": {
+    "s_246d227b341569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b81c5fc2-4438-44d4-9d54-2f5366f1cde5",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
