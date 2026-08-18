@@ -1,0 +1,66 @@
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_5882a47eb73dff::t_bbffe342c63fa7 11
+  s_5882a47eb73dff::t_8e913d581c1a86 38-43
+src/shared/constraints/rules.ts
+  s_5882a47eb73dff::t_0051aed8e525a0 319
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.test.tsx
+  s_5882a47eb73dff::t_37edd7e7f30964 59-60
+  s_5882a47eb73dff::t_e9993e90ddf134 45,48-52,54-58,61-62
+src/shared/constraints/features.ts
+  s_5882a47eb73dff::t_0ec3f8152c94b2 95-96
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.test.ts
+  s_5882a47eb73dff::t_a0eb6e796ead46 157-158,163-165,170-189,196-198,207-209
+  s_5882a47eb73dff::t_dc10657be586c2 217-219
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutTransformStarters.ts
+  s_5882a47eb73dff::t_c190febc88910f 15-17,93
+  s_5882a47eb73dff::t_53d2d8d775bac7 48-59
+  s_5882a47eb73dff::t_ed2578d565f6d8 111
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_5882a47eb73dff::t_088dd04a62db28 647-657
+  s_5882a47eb73dff::t_0051aed8e525a0 95
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_5882a47eb73dff::t_841bf6108bb0f1 113-116,120-130
+src/features/bin-designer/README.md
+  s_5882a47eb73dff::t_6fe01b43d52fa1 76,116-117
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/useSvgImport.ts
+  s_5882a47eb73dff::t_b58c8083d53fc3 87-102
+  s_5882a47eb73dff::t_a368beb97ef680 10
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutClipboard.ts
+  s_5882a47eb73dff::t_444910eab370f2 234
+  s_5882a47eb73dff::t_9f5074091ae323 15,83-92,132-137,139-149,187-192
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_5882a47eb73dff::t_a33569f4e2735f 198-199,205-214
+  s_5882a47eb73dff::t_1a928d013e1bfd 114-115,122-124
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_5882a47eb73dff::t_cfdcc72478bb8f 181-204
+  s_5882a47eb73dff::t_0051aed8e525a0 259-260
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/useSvgImport.test.ts
+  s_5882a47eb73dff::t_b857a9e936d669 12-14
+  s_5882a47eb73dff::t_0fe9a46a09ccce 11,15,20-28
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_5882a47eb73dff::t_c1669fc15c9dde 73-79
+  s_5882a47eb73dff::t_b67143f9745a0a 16
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.test.ts
+  s_5882a47eb73dff::t_b857a9e936d669 17-19
+  s_5882a47eb73dff::t_efc52f74eeae47 16,20,25-33
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_5882a47eb73dff::t_841bf6108bb0f1 247-250
+  s_5882a47eb73dff::t_91421f5e92f74f 65-66,264-274
+  s_5882a47eb73dff::t_619510ad0a60dc 93-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4b369c988557287fd08f4d8eda72a7e66ea73faf",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
