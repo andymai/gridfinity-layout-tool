@@ -45,7 +45,7 @@
  * the example to follow.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { mesh } from 'brepjs';
+import { box, mesh } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { IMPLICATION_RULES } from '@/shared/constraints';
@@ -58,6 +58,7 @@ import { ALL_SCENARIOS } from '../scenarios';
 import { createInitialContext } from './context';
 import { BIN_FEATURE_BUILDERS } from './featureComposition';
 import type { FeatureBuilder } from './featureBuilder';
+import { FeatureTag } from '../featureTags';
 
 /** Scenarios swept per builder. Two is enough to reach both branches of the
  *  gates that vary by bin (lipped/lipless, rectangular/polygon) without paying
@@ -287,17 +288,20 @@ function buildFingerprint(builder: FeatureBuilder, params: BinParams): string {
   return printed;
 }
 
+function binVolume(params: BinParams): number {
+  return meshVolume(getGenerateBin()(params));
+}
+
 /**
  * Whether generating `b` with caches warmed by `a` differs from generating `b`
  * cold — the only statement of the defect a user would ever see.
  */
 function servesStaleBin(a: BinParams, b: BinParams): boolean {
-  const generateBin = getGenerateBin();
   clearAllCaches();
-  const cold = meshVolume(generateBin(b));
+  const cold = binVolume(b);
   clearAllCaches();
-  generateBin(a);
-  const warm = meshVolume(generateBin(b));
+  binVolume(a);
+  const warm = binVolume(b);
   clearAllCaches();
   return Math.abs(warm - cold) > 1e-6;
 }
@@ -469,4 +473,42 @@ describe('FeatureBuilder cache-key discipline', () => {
     },
     240_000
   );
+});
+
+/**
+ * The sweep above reports nothing on a healthy tree, so nothing it depends on
+ * is exercised by a green run — the recording Proxy could stop seeing reads,
+ * or the confirmation could stop discriminating, and the result would still be
+ * a pass. These two pin the detector against that.
+ */
+describe('the detector itself', () => {
+  it('reports a builder whose key ignores an input its build reads', () => {
+    const miskeyed: FeatureBuilder = {
+      name: 'miskeyedProbe',
+      tag: FeatureTag.SLOT,
+      target: 'cut',
+      shouldBuild: () => true,
+      cacheKey: () => 'constant',
+      build: (ctx) => [box(ctx.params.wallThickness * 4, 10, 10)],
+    };
+
+    const [fixture] = fixturesFor(miskeyed);
+    expect(fixture, 'the probe builds on every bin, so it must find a fixture').toBeDefined();
+    if (!fixture) return;
+
+    const { collisions } = sweep(miskeyed, fixture);
+    expect(collisions.map((c) => c.path)).toEqual(['wallThickness']);
+  }, 60_000);
+
+  it('measures a bin finely enough to separate two of them', () => {
+    // If the confirmation's measure went blind, every candidate would be
+    // dismissed as benign and the sweep could never fail again.
+    const base = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 3 };
+    clearAllCaches();
+    const thin = binVolume({ ...base, wallThickness: 1.2 });
+    clearAllCaches();
+    const thick = binVolume({ ...base, wallThickness: 1.6 });
+    clearAllCaches();
+    expect(Math.abs(thick - thin)).toBeGreaterThan(1e-6);
+  }, 60_000);
 });
