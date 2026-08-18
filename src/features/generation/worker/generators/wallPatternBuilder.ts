@@ -357,6 +357,12 @@ export function computeWallClips(
     }
   }
 
+  // The same resolver call the clip solid consumes (line above), so the key
+  // and the geometry read one answer — a corner-radius edit reshapes the
+  // clip's flared top, and a key without the radii served the square-corner
+  // clip and left pattern prisms standing in the flare (gotcha 5's jagged
+  // edges, one slider drag away).
+  const clipRadii = clip?.radii;
   const cutoutKeyPart = cutoutCfg?.enabled
     ? buildCacheKey(
         'clip',
@@ -366,6 +372,8 @@ export function computeWallClips(
         quantize(cutoutCfg.depth),
         cutoutCfg.alignment,
         quantize(cutoutCfg.offset),
+        quantize(clipRadii?.top ?? 0),
+        quantize(clipRadii?.bottom ?? 0),
         hasLip,
         quantize(params.compartments.thickness),
         quantize(params.wallThickness)

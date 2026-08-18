@@ -28,6 +28,24 @@ function withCompartments(partial: Partial<BinParams['compartments']>): BinParam
 }
 
 describe('labelTabsFeature.cacheKey', () => {
+  // The shelf datum follows the lid: `labelShelfKeepoutMm` sinks it under an
+  // interior-relieving (or sliding) lid. A key without that input served the
+  // un-sunk shelf after the lid toggled on, and the relief ring then cut
+  // straight through the shelf's wall weld.
+  it('changes when the lid the shelf must duck under toggles', () => {
+    const base = withCompartments({});
+    const lidded: BinParams = {
+      ...base,
+      base: { ...base.base, stackingLip: true },
+      lid: { ...base.lid, enabled: true },
+    };
+    const lidless: BinParams = {
+      ...lidded,
+      lid: { ...lidded.lid, enabled: false },
+    };
+    expect(keyFor(lidded)).not.toBe(keyFor(lidless));
+  });
+
   it('changes when divider thickness changes', () => {
     // Thickness drives gusset width and per-group divider deductions (and
     // the discrete socket plate width); a thickness-only edit must never
