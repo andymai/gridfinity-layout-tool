@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.422.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.421.0...gridfinity-layout-tool-v4.422.0) (2026-08-18)
+
+
+### Features
+
+* **bin-designer:** add sliding lids ([#3575](https://github.com/andymai/gridfinity-layout-tool/issues/3575)) ([b38310a](https://github.com/andymai/gridfinity-layout-tool/commit/b38310a50d84bb561c9d8682f900b54374a5d2c3))
+
 ## [4.421.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.420.0...gridfinity-layout-tool-v4.421.0) (2026-08-17)
 
 
