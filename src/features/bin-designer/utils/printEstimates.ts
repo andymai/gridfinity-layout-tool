@@ -165,13 +165,23 @@ function computeBinVolume(params: BinParams): number {
   );
   let volume = shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
 
+  // The geometry follows the PLAN, not the flag: with detachable feet
+  // requested but no pocket-aligned whole cell to anchor one (a half-lattice
+  // 1-wide bin), the plan places nothing, the pipeline keeps the integral
+  // socket, and every estimate branch below has to agree — or a bin whose
+  // socket is fully present loses its whole foot volume from the readout.
+  const detachablePlacements = hasDetachableFeet(params.base)
+    ? resolveDetachableFeet(params).placements
+    : [];
+  const feetDetach = detachablePlacements.length > 0;
+
   // A lightweight base shells the feet, which is a per-cell saving on the
   // `base` component and nothing else. Applied before the base-only return
   // below, because that mode is almost entirely base — it is where the relief
   // pays off most. A spacer is deliberately not modelled here: it removes the
   // floor as well as shelling the feet, so it is a different figure that no
   // measurement in this file covers.
-  // NOT `|| hasDetachableFeet`: the two are mutually exclusive in the geometry
+  // NOT `|| feetDetach`: the two are mutually exclusive in the geometry
   // (`deriveDimensions` makes lightweight inert when the feet detach) but both
   // flags can be STORED at once, because the panel locks lightweight rather
   // than clearing it. Subtracting both took the base term negative and reported
@@ -180,7 +190,7 @@ function computeBinVolume(params: BinParams): number {
     params.base.lightweight &&
     !params.base.spacer &&
     !isSocketlessBase(params.base.style) &&
-    !hasDetachableFeet(params.base)
+    !feetDetach
   ) {
     volume -= lightweightBaseSaving(
       params.width,
@@ -197,10 +207,10 @@ function computeBinVolume(params: BinParams): number {
   // what each one actually is. A bar clipped against a cell edge and one centred
   // mid-run are both bars and are different volumes, which is why the count
   // alone would not do.
-  if (hasDetachableFeet(params.base)) {
+  if (feetDetach) {
     volume -= integralFeetVolume(params.width, params.depth, params.gridUnitMm, gridUnitMmY);
     volume += detachableFeetVolume(
-      resolveDetachableFeet(params).placements.map(footKind),
+      detachablePlacements.map(footKind),
       params.gridUnitMm,
       gridUnitMmY
     );
@@ -243,7 +253,7 @@ function computeBinVolume(params: BinParams): number {
   }
 
   // Floor pattern: drainage holes remove floor slab AND foot material.
-  volume -= computeFloorPatternReduction(params, wallThickness, shell.base);
+  volume -= computeFloorPatternReduction(params, wallThickness, shell.base, feetDetach);
 
   // Exterior-wall collar: a walled ring raised above the nominal
   // body — perimeter wall material only, no floor/interior. Ring cross-section
@@ -768,15 +778,16 @@ function dividerPatternReduction(
 /**
  * Volume removed by the floor pattern.
  *
- * Expressed as a SHARE of the shell's base component rather than as a raw
- * `area x depth` prism, because the two numbers are not in the same units:
- * `standardBinSolidComponents.base` is calibrated to filament actually extruded
- * (~2202mm³ per 42mm cell), while the solid geometry it stands for is several
- * times that — a foot is a solid loft the slicer fills with infill. Subtracting
- * true prism volume from a filament-calibrated total over-reported the saving by
- * roughly 4x, enough to zero out a short bin's estimate. The holes remove the
- * base straight through, so the share of its plan area they take is the share of
- * its material they take.
+ * Two cut depths, priced two ways. A SOCKETED integral base is cut straight
+ * through feet and slab, so the removal is the open share of the base
+ * component (`standardBinSolidComponents.base`, solid-calibrated per #3528 —
+ * a foot is not a prism, so a share of the measured term beats an area×depth
+ * model). Every SLAB-ONLY base — flat, the underside relief (whose cavity is
+ * already open below the slab) and detachable feet (whose body floor sits at
+ * Z=0) — only loses `wallThickness` of material under each hole, so the
+ * removal is the open area times the slab, priced directly. Booking the
+ * full-socket share for those cut a 3x3 estimate roughly in half for a
+ * pattern that removes ~4mm³ per cm² of window.
  *
  * Open area is measured from the real element placement rather than a
  * fraction-of-area model: a per-foot window is only ~33mm across, and over a box
@@ -788,7 +799,8 @@ function dividerPatternReduction(
 function computeFloorPatternReduction(
   params: BinParams,
   wallThickness: number,
-  baseVolume: number
+  baseVolume: number,
+  feetDetach: boolean
 ): number {
   const floorPattern = params.floorPattern;
   if (floorPattern?.enabled !== true) return 0;
@@ -846,10 +858,13 @@ function computeFloorPatternReduction(
   if (totalOpenArea <= 0) return 0;
 
   const planArea = params.width * params.depth * params.gridUnitMm * gridUnitMmY;
-  // A flat bin's "base" is floor slab only, so the holes reach through a
-  // proportionally smaller share of what the shell model booked for it.
-  const depthShare = isFlat ? wallThickness / (wallThickness + GRIDFINITY.SOCKET_HEIGHT) : 1;
-  return baseVolume * Math.min(1, totalOpenArea / planArea) * depthShare;
+  // See the docstring: slab-only cuts are priced as the direct prism, the
+  // socketed full-depth cut as a share of the measured base term.
+  const slabOnly = isFlat || isUndersideRelief(params.base) || feetDetach;
+  if (slabOnly) {
+    return Math.min(totalOpenArea, planArea) * wallThickness;
+  }
+  return baseVolume * Math.min(1, totalOpenArea / planArea);
 }
 
 export interface WallPatternSavings {

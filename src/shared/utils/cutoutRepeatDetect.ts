@@ -18,6 +18,7 @@
 import type { Cutout, CutoutArrayConfig, CutoutArrayMode } from '@/features/bin-designer/types';
 import { MAX_ARRAY_INSTANCES } from '@/features/bin-designer/types';
 import { arrayFieldBounds, arrayInstanceCount, canArray, defaultArrayConfig } from './cutoutArray';
+import { isCutoutSocketMode } from './cutoutLabelSocketPlan';
 
 /**
  * Position slack (mm) allowed when fitting centers to a lattice. Matches the
@@ -85,7 +86,26 @@ function geometryFingerprint(c: Cutout): string {
     c.scoopEdges ? JSON.stringify(c.scoopEdges) : '-',
     c.meshId ?? '-',
     c.hidden === true ? 'h' : '-',
+    // Socket-mode labels are GEOMETRY: the plan cuts one pocket per cutout
+    // ROW, so collapsing rows into an array deletes every absorbed pocket and
+    // its plate. The mode, pinned width and icon must all match, or the merge
+    // silently reshapes the board.
+    c.labelMode ?? '-',
+    c.labelPlateWidthU ?? '-',
+    c.labelIcon ?? '-',
   ].join('|');
+}
+
+/**
+ * True when merging would delete socket pockets from the board. The socket
+ * plan cuts one pocket per cutout ROW (`planCutoutLabelSockets` filters raw
+ * cutouts, not expanded instances), so absorbing more than one socket-mode
+ * row into an array keeps a single pocket and silently drops the rest — five
+ * plates gone on a six-cutout merge, with the suggestion's copy mentioning
+ * only drift and colour.
+ */
+function wouldDropSocketPockets(cutouts: readonly Cutout[]): boolean {
+  return cutouts.filter((c) => isCutoutSocketMode(c)).length > 1;
 }
 
 /**
@@ -426,6 +446,7 @@ export function detectRepeatPattern(
   if (cutouts.some((c) => !canArray(c) || c.locked === true || c.array !== undefined)) return null;
   if (new Set(cutouts.map(geometryFingerprint)).size > 1) return null;
   if (wouldDropEngravedText(cutouts)) return null;
+  if (wouldDropSocketPockets(cutouts)) return null;
 
   const centers = centersOf(cutouts);
   return (

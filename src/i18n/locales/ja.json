@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "一体型の脚より材料を{percent}%節約します",
   "binDesigner.detachableFeet.summary": "脚{count}個、ø{diameter}mmピン",
   "binDesigner.detachableFeet.supersedes": "取り外し式の脚では使用しません",
+  "binDesigner.detachableFeet.savingSuperseded": "軽量ベースで既にこの節約は実現されています",
   "binDesigner.detachableFeet.unplaceable": "このサイズでは脚を置けるグリッドのマス目がありません",
   "binDesigner.detachableFeetNeedsThickerWall": "これほど薄い壁ではピンを保持する床が足りません",
   "binDesigner.dimensions": "寸法",

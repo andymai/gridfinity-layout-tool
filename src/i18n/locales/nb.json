@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Bruker {percent} % mindre materiale enn innebygde føtter",
   "binDesigner.detachableFeet.summary": "{count} føtter, ø{diameter} mm pinner",
   "binDesigner.detachableFeet.supersedes": "Brukes ikke med avtakbare føtter",
+  "binDesigner.detachableFeet.savingSuperseded": "Den lette bunnen dekker allerede denne besparelsen",
   "binDesigner.detachableFeet.unplaceable": "Ingen hel rutenettcelle å sette en fot i ved denne størrelsen",
   "binDesigner.detachableFeetNeedsThickerWall": "Så tynne vegger gir for lite gulv til å holde en pinne",
   "binDesigner.dimensions": "Dimensjoner",

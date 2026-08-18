@@ -235,12 +235,13 @@ export function BaseSection() {
         <section className="space-y-3">
           <SubHeader>{t('binDesigner.base.section.feet')}</SubHeader>
 
-          {/* Heads the foot cluster: half sockets, the foot lattice and the
-              lightweight modes below all describe where INTEGRAL feet fall,
-              which this mode answers its own way. They are locked rather than
-              cleared, so the reason sits directly under the thing that caused
-              it and a lightweight setting survives a round trip through the
-              toggle. */}
+          {/* Heads the foot cluster. Half sockets and the lightweight modes
+              below describe INTEGRAL feet, which this mode answers its own way
+              — they are locked rather than cleared, so the reason sits under
+              the thing that caused it and the setting survives a round trip
+              through the toggle. The foot LATTICE stays live: the detachable
+              plan consumes it, and the half lattice is the only layout that
+              seats a half-offset detachable bin. */}
           <FeatureToggle
             label={t('binDesigner.detachableFeet')}
             checked={state.hasDetachableFeet}
@@ -254,9 +255,15 @@ export function BaseSection() {
               <Hint>
                 {state.detachableUnplaceable
                   ? t('binDesigner.detachableFeet.unplaceable')
-                  : t('binDesigner.detachableFeet.saving', {
-                      percent: state.detachableSavingPercent,
-                    })}
+                  : state.detachableSavingPercent > 0
+                    ? t('binDesigner.detachableFeet.saving', {
+                        percent: state.detachableSavingPercent,
+                      })
+                    : /* The counterfactual bin keeps its stored lightweight
+                         saving while the detachable one supersedes it, so the
+                         delta can go negative — a true number the "uses less
+                         material" copy would misstate. */
+                      t('binDesigner.detachableFeet.savingSuperseded')}
               </Hint>
             }
           >

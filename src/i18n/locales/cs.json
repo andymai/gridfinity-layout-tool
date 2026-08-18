@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Spotřebuje o {percent} % méně materiálu než pevné nožičky",
   "binDesigner.detachableFeet.summary": "{count} nožiček, kolíky ø{diameter} mm",
   "binDesigner.detachableFeet.supersedes": "Nepoužívá se s odnímatelnými nožičkami",
+  "binDesigner.detachableFeet.savingSuperseded": "Odlehčená základna už tuto úsporu pokrývá",
   "binDesigner.detachableFeet.unplaceable": "V této velikosti není celá buňka mřížky pro nožičku",
   "binDesigner.detachableFeetNeedsThickerWall": "Tak tenké stěny nenechají dost podlahy pro udržení kolíku",
   "binDesigner.dimensions": "Rozměry",

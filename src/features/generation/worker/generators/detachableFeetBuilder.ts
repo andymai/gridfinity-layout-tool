@@ -101,14 +101,19 @@ export interface DetachableFeetGeometry {
 function coveredCorners(
   positions: ReadonlyArray<readonly [number, number]>,
   p: FootPlacement,
-  centre: { x: number; y: number }
+  centre: { x: number; y: number },
+  armMm: number
 ): Array<readonly [number, number]> {
+  // Bounds mirror `buildClip`'s footprint per axis, not the cell's: a centred
+  // interior filler is only `armMm` wide across its spanned axis, so testing
+  // against the CELL would claim all four corners and drill attachment bores
+  // through the floor where no foot stands beneath them.
+  const halfX = p.dirX === 0 && p.interiorX ? armMm / 2 : p.cellW / 2;
+  const halfY = p.dirY === 0 && p.interiorY ? armMm / 2 : p.cellD / 2;
   return positions.filter(([mx, my]) => {
     const inX = p.dirX === 0 || Math.sign(mx - centre.x) === p.dirX;
     const inY = p.dirY === 0 || Math.sign(my - centre.y) === p.dirY;
-    return (
-      inX && inY && Math.abs(mx - centre.x) <= p.cellW / 2 && Math.abs(my - centre.y) <= p.cellD / 2
-    );
+    return inX && inY && Math.abs(mx - centre.x) <= halfX && Math.abs(my - centre.y) <= halfY;
   });
 }
 
@@ -279,7 +284,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // construction — four on a rectangular bin against four per cell today.
       const magnet = opts.magnet;
       if (magnet) {
-        const covered = coveredCorners(magnet.positions, p, centre);
+        const covered = coveredCorners(magnet.positions, p, centre, armMm);
         // Open at the underside, exactly as an integral foot drills it: the
         // magnet is inserted from below, so a retaining floor under it would
         // seal it out rather than in.
@@ -304,7 +309,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // pocket, exactly as an integral foot does.
       const screw = opts.screw;
       if (screw) {
-        const bores = coveredCorners(screw.positions, p, centre).map(([mx, my]) =>
+        const bores = coveredCorners(screw.positions, p, centre, armMm).map(([mx, my]) =>
           scope.register(
             translate(
               scope.register(
@@ -322,7 +327,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
           if (bored !== foot) foot.delete();
           foot = bored;
         }
-        for (const [mx, my] of coveredCorners(screw.positions, p, centre)) {
+        for (const [mx, my] of coveredCorners(screw.positions, p, centre, armMm)) {
           holes.push(
             translate(
               scope.register(

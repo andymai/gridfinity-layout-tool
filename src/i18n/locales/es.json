@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Usa un {percent} % menos de material que las patas integradas",
   "binDesigner.detachableFeet.summary": "{count} patas, pasadores de ø{diameter} mm",
   "binDesigner.detachableFeet.supersedes": "No se usa con patas desmontables",
+  "binDesigner.detachableFeet.savingSuperseded": "La base aligerada ya cubre este ahorro",
   "binDesigner.detachableFeet.unplaceable": "No hay ninguna celda completa de la rejilla para una pata a este tamaño",
   "binDesigner.detachableFeetNeedsThickerWall": "Con paredes tan finas queda muy poco suelo para sujetar un pasador",
   "binDesigner.dimensions": "Dimensiones",
