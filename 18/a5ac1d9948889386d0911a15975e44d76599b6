@@ -1,0 +1,23 @@
+src/features/bin-designer/utils/typeMeasurer.test.ts
+  s_246d227b341569::t_eba998931b9d5f 1-60
+src/features/bin-designer/hooks/useTypeMeasurer.test.ts
+  s_246d227b341569::t_eba998931b9d5f 1-50
+src/features/generation/README.md
+  s_246d227b341569::t_b8d349b2305423 46,55,59-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "18a5ac1d9948889386d0911a15975e44d76599b6",
+  "prompts": {},
+  "sessions": {
+    "s_246d227b341569": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b81c5fc2-4438-44d4-9d54-2f5366f1cde5",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
