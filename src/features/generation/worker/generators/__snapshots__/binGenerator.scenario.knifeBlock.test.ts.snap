@@ -8,6 +8,4 @@ exports[`knife block > 6x1x8 chef slot with integrated rear rest shelf 1`] = `26
 
 exports[`knife block > 6x1x8 open chef slot ignores wall patterns (solid host) 1`] = `2728`;
 
-exports[`knife block > 6x1x8 open chef slot with honeycomb walls (exit clip) 1`] = `2728`;
-
 exports[`knife block > 6x1x8 solid with enclosed chef knife slot 1`] = `2736`;
