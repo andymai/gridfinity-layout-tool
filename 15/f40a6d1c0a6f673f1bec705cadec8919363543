@@ -1,0 +1,40 @@
+src/features/bin-designer/utils/compartmentColorUnits.test.ts
+  s_5882a47eb73dff::t_6d47bd94688300 77-91,95-122
+  s_5882a47eb73dff::t_0f51f1c3ec160c 92-94
+src/shared/components/ExperimentalBadge/ExperimentalBadge.tsx
+  s_5882a47eb73dff::t_8268d7aa3446b8 4-6,14
+src/features/bin-designer/utils/bentoDraw.test.ts
+  s_5882a47eb73dff::t_d97ba0a3b61be4 237-252,386-399
+src/features/bin-designer/utils/bentoDraw.ts
+  s_5882a47eb73dff::t_9da1e6e5b5b2b2 491-494,507-508
+  s_5882a47eb73dff::t_6373b7d2998215 350-365
+src/design-system/Badge/Badge.tsx
+  s_5882a47eb73dff::t_220901bd16b9bb 88
+src/features/bin-designer/utils/compartmentColorUnits.ts
+  s_5882a47eb73dff::t_6dcbbbd57b5248 139-141,148,151,159-163,170-174
+  s_5882a47eb73dff::t_b28ca05dd21111 25
+  s_5882a47eb73dff::t_f0582843151893 130-138,142-147,149-150,152-158,164-169,175-177,185-188
+src/features/design-linking/components/Dialogs/MakeBentoDialog/MakeBentoDialog.tsx
+  s_5882a47eb73dff::t_e285587c8dd331 15
+  s_5882a47eb73dff::t_8268d7aa3446b8 148-153
+src/shared/components/ExperimentalBadge/ExperimentalBadge.test.tsx
+  s_5882a47eb73dff::t_edf3cf9bb5a55a 12-18
+src/features/bin-designer/store/slices/paramSlice/bentoActions.ts
+  s_5882a47eb73dff::t_5a276a69829fe1 163-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "15f40a6d1c0a6f673f1bec705cadec8919363543",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
