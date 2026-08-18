@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.11](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.10...gridfinity-layout-tool-v4.424.11) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** close the cross-feature seams the iteration-3 probes surfaced ([#3601](https://github.com/andymai/gridfinity-layout-tool/issues/3601)) ([8ae2a7b](https://github.com/andymai/gridfinity-layout-tool/commit/8ae2a7be5c615acdd552c9241c93bb5f057a475b))
+
 ## [4.424.10](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.9...gridfinity-layout-tool-v4.424.10) (2026-08-18)
 
 
