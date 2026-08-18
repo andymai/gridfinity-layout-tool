@@ -957,16 +957,24 @@ const en: Record<string, string> = {
   'settings.defaultGridUnit': 'Grid Unit',
   'settings.gridfinityStandardMm': 'Standard Gridfinity: {value}mm',
   'settings.resetGridfinityStandard': 'Reset to Gridfinity Standard',
-  'stackSolver.title': 'Fit unit to stack',
+  'stackSolver.title': 'Fit bins to your drawer',
   'stackSolver.description':
     'Stacked bins nest {junction}mm into each other, so each one adds {shortfall}mm less than its body height.',
-  'stackSolver.targetLabel': 'Target height (mm)',
-  'stackSolver.binsLabel': 'Bins in stack',
-  'stackSolver.unitsPerBinLabel': 'Units per bin',
-  'stackSolver.result': 'Stacks to {total}mm',
-  'stackSolver.apply': 'Use {unit}mm/unit',
-  'stackSolver.outOfRange': 'Unit would fall outside {min}–{max}mm',
+  'stackSolver.unmeasured': 'Measure your drawer height to see which bin heights fit.',
+  'stackSolver.ceiling': 'Tallest bins that fit under {ceiling}mm at {unit}mm per unit',
+  'stackSolver.rowSingle': 'One bin',
+  'stackSolver.rowStacked': '{count} stacked',
+  'stackSolver.rowFit': '{units}u · {total}mm · {slack}mm spare',
+  'stackSolver.rowNoFit': 'Nothing fits',
   'stackSolver.overlayPitch': 'stacks +{pitch}mm',
+
+  // Drawer ceiling: does the printed layout clear the lid?
+  'drawerCeiling.overflow': 'Tallest stack stands {over}mm above your measured drawer',
+  'drawerCeiling.fits': 'Tallest stack fits, {slack}mm to spare',
+  'drawerCeiling.measurePrompt': 'Add a height measurement to check the lid closes',
+  'drawerCeiling.binOverflow': 'Stands {over}mm above your measured drawer',
+  'drawerCeiling.layerOverflow': 'Stack stands {over}mm above your measured drawer',
+  'drawerCeiling.planeLabel': 'Measured drawer height',
 
   // Assembled height breakdown
   'assembledHeight.title': 'Assembled height',

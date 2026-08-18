@@ -19,6 +19,7 @@ import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { ExtendToMarginToggle } from '../ExtendToMarginToggle';
 import { ExpandedFootprint } from '../ExpandedFootprint';
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
+import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
@@ -68,9 +69,14 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const binRecommenderEnabled = useFeatureFlag('bin_recommender');
+  const ceiling = useDrawerCeiling();
   const t = useTranslation();
 
   if (!bin) return null;
+
+  // Only the bins actually standing proud are listed, so a miss is a fit.
+  const ceilingOverflowMm =
+    ceiling?.overflowing.find((entry) => entry.binId === bin.id)?.overflowMm ?? null;
 
   const isMobile = variant === 'mobile';
   const locationContext = getBinLocationContext(bin);
@@ -302,6 +308,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             </div>
             {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (
               <div className="text-warning">{t('inspector.nonStandardStackWarning')}</div>
+            )}
+            {ceilingOverflowMm !== null && (
+              <div className="text-warning">
+                {t('drawerCeiling.binOverflow', {
+                  over: formatMmValue(ceilingOverflowMm),
+                })}
+              </div>
             )}
           </div>
         </div>

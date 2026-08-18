@@ -14,10 +14,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import {
-  assembledHeight,
-  type AssembledHeight,
-} from '@/features/bin-designer/utils/assembledHeight';
+import { assembledHeight, type AssembledHeight } from '@/shared/printSettings/assembledHeight';
 
 export interface DrawerClearance {
   /** The user's measured internal drawer height, in mm. */

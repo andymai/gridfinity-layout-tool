@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BinDimensions } from './BinDimensions';
-import type { AssembledSegment } from '@/features/bin-designer/utils/assembledHeight';
+import type { AssembledSegment } from '@/shared/printSettings/assembledHeight';
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,

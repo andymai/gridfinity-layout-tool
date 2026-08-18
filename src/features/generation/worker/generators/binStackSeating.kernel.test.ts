@@ -30,6 +30,10 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { STACK_JUNCTION_MM, stackPitchMm, stackedTotalMm } from '@/shared/utils/heightUnits';
 import { initTestKernel } from '@/test/initTestKernel';
 import { stackSeat } from './__kernel-tests__/binStacking';
+import { drawerCeilingFit } from '@/shared/utils/drawerCeiling';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Bin, Layer } from '@/core/types';
+import { createTestBin } from '@/test/testUtils';
 
 let generateBin: (params: BinParams, onProgress: undefined, forExport: boolean) => MeshData;
 
@@ -150,5 +154,74 @@ describe('bin-on-bin stacking (#2374)', () => {
   it('does not make that joint without a lip to nest into', () => {
     // Control: the probe reads the joint rather than returning a constant.
     expect(junctionOf({ stackingLip: false })).toBeLessThan(JUNCTION_MM - 0.5);
+  }, 180000);
+});
+
+/**
+ * The layout's drawer-ceiling check answers the same question one level up:
+ * how tall does a COLUMN of these stand in the drawer. Its arithmetic is the
+ * same family as the readouts above, so asserting it against `stackedTotalMm`
+ * would only prove two copies agree. These cases measure the assembled solids
+ * and compare the ceiling model to that.
+ */
+describe('drawer ceiling against mated solids (#2374)', () => {
+  const LAYERS: Layer[] = [
+    { id: layerId('l1'), name: 'l1', height: heightUnits(3) },
+    { id: layerId('l2'), name: 'l2', height: heightUnits(3) },
+    { id: layerId('l3'), name: 'l3', height: heightUnits(3) },
+  ];
+  const PLAIN_PLATE = { magnetHoles: false, magnetDepth: 2.4 };
+
+  /** A column of `count` identical 2x2x3u bins, bottom layer first. */
+  function column(count: number): Bin[] {
+    return LAYERS.slice(0, count).map((layer, i) =>
+      createTestBin({
+        id: binId(`stack-${String(i)}`),
+        layerId: layer.id,
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+      })
+    );
+  }
+
+  function modelTallestMm(count: number): number {
+    const fit = drawerCeilingFit({
+      bins: column(count),
+      layers: LAYERS,
+      heightUnitMm: 7,
+      plate: PLAIN_PLATE,
+      // Well clear of the stack: the ceiling only has to admit a measurement,
+      // and `tallestMm` is what is under test, not the verdict.
+      ceilingMm: 1000,
+    });
+    if (fit === null) throw new Error('ceiling model returned null for a measured drawer');
+    return fit.tallestMm;
+  }
+
+  it('measures a two-bin column at the height the solids come to rest at', () => {
+    const seat = stackSeat(bin(), bin());
+    expect(modelTallestMm(2)).toBeCloseTo(seat.totalMm, 1);
+    expect(Math.abs(modelTallestMm(2) - seat.totalMm)).toBeLessThan(TOLERANCE_MM);
+  }, 180000);
+
+  it('keeps agreeing as the column grows', () => {
+    // Each further bin adds exactly the measured pitch, so a model that summed
+    // printed heights would drift by one junction per bin and this is where it
+    // shows. Chaining the measured pitch rather than re-mating three solids
+    // keeps the case inside the shard's budget.
+    const seat = stackSeat(bin(), bin());
+    const measuredThree = seat.totalMm + seat.pitchMm;
+    expect(modelTallestMm(3)).toBeCloseTo(measuredThree, 1);
+    // The naive sum is wrong by two junction shortfalls — comfortably outside
+    // the tolerance above, which is what makes the agreement meaningful.
+    const naive = 3 * (3 * 7 + 4.3);
+    expect(Math.abs(naive - measuredThree)).toBeGreaterThan(TOLERANCE_MM * 10);
+  }, 180000);
+
+  it('reports a single bin at its printed height', () => {
+    const seat = stackSeat(bin(), bin());
+    // One bin adds a whole printed height; the pair adds one pitch on top.
+    expect(modelTallestMm(1)).toBeCloseTo(seat.totalMm - seat.pitchMm, 1);
   }, 180000);
 });

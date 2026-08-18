@@ -34,9 +34,11 @@ vi.mock('@/features/bin-designer/hooks/useCommunityPublish', () => ({
 
 const upsertRegistryEntry = vi.fn();
 const registryEdgeFields = vi.fn((_params: unknown) => ({}));
+const registryHeightFields = vi.fn((_params: unknown) => ({}));
 vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
   upsertRegistryEntry: (...a: unknown[]) => upsertRegistryEntry(...a),
   registryEdgeFields: (params: unknown) => registryEdgeFields(params),
+  registryHeightFields: (params: unknown) => registryHeightFields(params),
 }));
 
 import {
@@ -164,6 +166,8 @@ describe('communityDesignerBridge', () => {
       upsertRegistryEntry.mockReset();
       registryEdgeFields.mockReset();
       registryEdgeFields.mockReturnValue({});
+      registryHeightFields.mockReset();
+      registryHeightFields.mockReturnValue({});
       const layout = createDefaultLayout();
       useLayoutStore.setState({ layout });
       useSelectionStore.setState({

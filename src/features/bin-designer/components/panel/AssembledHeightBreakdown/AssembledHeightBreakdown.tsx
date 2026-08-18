@@ -12,7 +12,7 @@ import { Button } from '@/design-system';
 import { ChevronDownIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { useAssembledHeight } from '@/features/bin-designer/hooks/useAssembledHeight';
-import { ASSEMBLED_SEGMENT_LABEL_KEYS } from '@/features/bin-designer/utils/assembledHeight';
+import { ASSEMBLED_SEGMENT_LABEL_KEYS } from '@/shared/printSettings/assembledHeight';
 
 /** Nearest 0.1mm, no trailing zeros — matches the drawer summary's formatting. */
 function fmt(mm: number): string {

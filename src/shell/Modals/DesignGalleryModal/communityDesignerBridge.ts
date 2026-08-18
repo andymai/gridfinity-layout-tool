@@ -151,7 +151,7 @@ export async function placeCommunityDesignInLayout(
     // counter fired), so any failure must say so rather than pretend
     // nothing happened.
     try {
-      const { upsertRegistryEntry, registryEdgeFields } =
+      const { upsertRegistryEntry, registryEdgeFields, registryHeightFields } =
         await import('@/features/bin-designer/store/customBinRegistry');
       // saveDesign never registers a design (only the mounted Designer page's
       // auto-save hooks do), so register explicitly or the placed bin would
@@ -163,6 +163,7 @@ export async function placeCommunityDesignInLayout(
         depth,
         height,
         ...registryEdgeFields(design.params),
+        ...registryHeightFields(design.params),
         updatedAt: saved.value.updatedAt,
       });
 

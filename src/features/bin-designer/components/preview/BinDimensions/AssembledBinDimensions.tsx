@@ -17,7 +17,7 @@ import { useAssembledHeight } from '@/features/bin-designer/hooks/useAssembledHe
 import {
   ASSEMBLED_SEGMENT_LABEL_KEYS,
   type AssembledSegment,
-} from '@/features/bin-designer/utils/assembledHeight';
+} from '@/shared/printSettings/assembledHeight';
 import { BinDimensions } from './BinDimensions';
 
 interface AssembledBinDimensionsProps {

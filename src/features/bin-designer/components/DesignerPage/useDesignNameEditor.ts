@@ -19,6 +19,7 @@ import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
 import {
   upsertRegistryEntry,
   registryEdgeFields,
+  registryHeightFields,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { binId, designId } from '@/core/types';
 import { useTranslation } from '@/i18n';
@@ -88,6 +89,7 @@ export function useDesignNameEditor(): DesignNameEditor {
             depth: params.depth,
             height: params.height,
             ...registryEdgeFields(params),
+            ...registryHeightFields(params),
             updatedAt: result.value.updatedAt,
           });
         }
@@ -111,6 +113,7 @@ export function useDesignNameEditor(): DesignNameEditor {
             depth: params.depth,
             height: params.height,
             ...registryEdgeFields(params),
+            ...registryHeightFields(params),
             updatedAt: result.value.updatedAt,
           });
 

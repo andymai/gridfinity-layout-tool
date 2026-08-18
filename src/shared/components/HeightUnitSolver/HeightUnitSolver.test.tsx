@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { HeightUnitSolver } from './HeightUnitSolver';
+import { stackedTotalMm } from '@/shared/utils/heightUnits';
 
 vi.mock('@/i18n', () => ({
   useTranslation:
@@ -10,66 +11,45 @@ vi.mock('@/i18n', () => ({
 }));
 
 describe('HeightUnitSolver', () => {
-  it('suggests the unit that fills the target and applies it', () => {
-    const onApply = vi.fn();
-    render(<HeightUnitSolver heightUnitMm={7} onApply={onApply} />);
-
-    // Default: 2 bins × 2 units/bin. Target 75.6mm, in the 3–20mm range.
-    fireEvent.change(screen.getByLabelText('stackSolver.targetLabel'), {
-      target: { value: '75.6' },
-    });
-
-    const applyBtn = screen.getByRole('button');
-    // One 4.75mm junction off the target, then each bin's 0.45mm shortfall back:
-    // ((75.6 − 4.75) / 2 + 0.45) / 2 = 17.9375 → rounded 17.94.
-    expect(applyBtn.textContent).toContain('17.94');
-    fireEvent.click(applyBtn);
-    expect(onApply).toHaveBeenCalledWith(17.94);
+  it('prompts for a measurement rather than guessing a ceiling', () => {
+    render(<HeightUnitSolver heightUnitMm={7} ceilingMm={undefined} />);
+    expect(screen.getByText('stackSolver.unmeasured')).toBeInTheDocument();
   });
 
-  it('flags a suggestion outside the allowed unit range', () => {
-    render(<HeightUnitSolver heightUnitMm={7} onApply={vi.fn()} />);
-    // 1 bin, 1 unit, target 200mm → 195.7mm/unit, far above the 20mm max.
-    fireEvent.change(screen.getByLabelText('stackSolver.binsLabel'), { target: { value: '1' } });
-    fireEvent.change(screen.getByLabelText('stackSolver.unitsPerBinLabel'), {
-      target: { value: '1' },
-    });
-    fireEvent.change(screen.getByLabelText('stackSolver.targetLabel'), {
-      target: { value: '200' },
-    });
-    expect(screen.getByText(/stackSolver\.outOfRange/)).toBeInTheDocument();
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  it('reports the tallest bin that fits at each stack depth', () => {
+    render(<HeightUnitSolver heightUnitMm={7} ceilingMm={55} />);
+
+    // 55mm at 7mm/unit: one 7u bin (53.3mm), two 3u (46.55mm), three 2u (46.75mm).
+    expect(screen.getByText(/stackSolver\.rowFit.*"units":7/)).toBeInTheDocument();
+    expect(screen.getByText(/stackSolver\.rowFit.*"units":3/)).toBeInTheDocument();
+    expect(screen.getByText(/stackSolver\.rowFit.*"units":2/)).toBeInTheDocument();
   });
 
-  it('shows nothing to apply until a target is entered', () => {
-    render(<HeightUnitSolver heightUnitMm={7} onApply={vi.fn()} />);
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  it('never proposes a stack that overflows the ceiling', () => {
+    render(<HeightUnitSolver heightUnitMm={7} ceilingMm={55} />);
+    for (const node of screen.getAllByText(/stackSolver\.rowFit/)) {
+      const vars = JSON.parse(node.textContent?.split('stackSolver.rowFit:')[1] ?? '{}') as {
+        total: number;
+      };
+      expect(vars.total).toBeLessThanOrEqual(55);
+    }
   });
 
-  it('disables Apply when the suggestion already equals the current unit', () => {
-    // 2 bins × 2 units, target 75.6 → 17.94. Current unit already 17.94.
-    render(<HeightUnitSolver heightUnitMm={17.94} onApply={vi.fn()} />);
-    fireEvent.change(screen.getByLabelText('stackSolver.targetLabel'), {
-      target: { value: '75.6' },
-    });
-    expect(screen.getByRole('button')).toBeDisabled();
+  // The unit is the layout's, not something this component solves for: a
+  // custom unit must change the answer without being rewritten.
+  it('holds the height unit fixed and answers in whole units of it', () => {
+    render(<HeightUnitSolver heightUnitMm={4.37} ceilingMm={55} />);
+    const first = screen.getAllByText(/stackSolver\.rowFit/)[0];
+    const vars = JSON.parse(first?.textContent?.split('stackSolver.rowFit:')[1] ?? '{}') as {
+      units: number;
+      total: number;
+    };
+    expect(Number.isInteger(vars.units)).toBe(true);
+    expect(vars.total).toBeCloseTo(stackedTotalMm(vars.units, 4.37, 1), 2);
   });
 
-  it('keeps Apply enabled when the stored value differs beyond 2 decimals', () => {
-    // Suggestion rounds to 17.94; stored 17.941 → applying is a real change.
-    render(<HeightUnitSolver heightUnitMm={17.941} onApply={vi.fn()} />);
-    fireEvent.change(screen.getByLabelText('stackSolver.targetLabel'), {
-      target: { value: '75.6' },
-    });
-    expect(screen.getByRole('button')).toBeEnabled();
-  });
-
-  it('gives each instance unique input ids so two can mount at once', () => {
-    const { container: a } = render(<HeightUnitSolver heightUnitMm={7} onApply={vi.fn()} />);
-    const { container: b } = render(<HeightUnitSolver heightUnitMm={7} onApply={vi.fn()} />);
-    const idsA = [...a.querySelectorAll('input')].map((el) => el.id);
-    const idsB = [...b.querySelectorAll('input')].map((el) => el.id);
-    expect(idsA.every((id) => id.length > 0)).toBe(true);
-    expect(idsA.some((id) => idsB.includes(id))).toBe(false);
+  it('says so when nothing fits', () => {
+    render(<HeightUnitSolver heightUnitMm={7} ceilingMm={8} />);
+    expect(screen.getAllByText('stackSolver.rowNoFit').length).toBeGreaterThan(0);
   });
 });

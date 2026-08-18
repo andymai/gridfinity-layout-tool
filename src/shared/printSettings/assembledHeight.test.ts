@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_BIN_PARAMS } from '../constants';
-import { GRIDFINITY } from '../constants/gridfinity';
-import type { BinParams } from '../types';
-import type { BaseplateHeightParams } from '@/shared/printSettings/baseplateHeight';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { GRIDFINITY_SPEC as GRIDFINITY } from '@/shared/printSettings/gridfinityGeometry';
+import type { BinParams } from '@/features/bin-designer/types';
+import type { BaseplateHeightParams } from './baseplateHeight';
 import { assembledHeight, hasSeatedLid, type AssembledSegmentKind } from './assembledHeight';
 
 function params(overrides: Partial<BinParams> = {}): BinParams {

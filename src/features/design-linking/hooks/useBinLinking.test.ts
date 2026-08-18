@@ -29,6 +29,7 @@ vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
   removeRegistryEntry: vi.fn(),
   upsertRegistryEntry: vi.fn(),
   registryEdgeFields: vi.fn(() => ({})),
+  registryHeightFields: vi.fn(() => ({})),
 }));
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({

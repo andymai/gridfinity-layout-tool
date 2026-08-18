@@ -15,7 +15,11 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { captureThumbnailAtPreset } from '../utils/thumbnail';
-import { upsertRegistryEntry, registryEdgeFields } from '../store/customBinRegistry';
+import {
+  upsertRegistryEntry,
+  registryEdgeFields,
+  registryHeightFields,
+} from '../store/customBinRegistry';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { designId as toDesignId } from '@/core/types';
 import type { BinParams, ExportFileNameConfig, GenerationStatus } from '../types';
@@ -138,6 +142,7 @@ export function useAutoSave(): void {
         depth: paramsToSave.depth,
         height: paramsToSave.height,
         ...registryEdgeFields(paramsToSave),
+        ...registryHeightFields(paramsToSave),
         updatedAt: result.value.updatedAt,
       });
       // Notify design-linking to auto-sync linked bins

@@ -7,6 +7,7 @@ import {
   stackPitchMm,
   stackedTotalMm,
   solveHeightUnitMm,
+  solveUnitsUnderCeiling,
 } from './heightUnits';
 
 describe('formatHeightUnits', () => {
@@ -97,5 +98,50 @@ describe('solveHeightUnitMm', () => {
     expect(solveHeightUnitMm(STACK_JUNCTION_MM - 4 * SHORTFALL_MM, 2, 4)).toBeNull();
     expect(solveHeightUnitMm(75.6, 0, 4)).toBeNull();
     expect(solveHeightUnitMm(75.6, 2, 0)).toBeNull();
+  });
+});
+
+describe('solveUnitsUnderCeiling', () => {
+  it('never returns a height that overflows the ceiling', () => {
+    for (const ceiling of [40, 55, 63.5, 84, 100.2]) {
+      for (const count of [1, 2, 3, 4]) {
+        const units = solveUnitsUnderCeiling(ceiling, 7, count);
+        if (units === null) continue;
+        expect(stackedTotalMm(units, 7, count)).toBeLessThanOrEqual(ceiling);
+      }
+    }
+  });
+
+  it('returns the largest unit that fits, not one below it', () => {
+    for (const ceiling of [40, 55, 63.5, 84, 100.2]) {
+      for (const count of [1, 2, 3, 4]) {
+        const units = solveUnitsUnderCeiling(ceiling, 7, count);
+        const next = (units ?? 0) + 1;
+        expect(stackedTotalMm(next, 7, count)).toBeGreaterThan(ceiling);
+      }
+    }
+  });
+
+  it('takes the exact fit rather than the unit below it', () => {
+    // A ceiling landing exactly on a 4u stack must report 4u, not 3u.
+    const exact = stackedTotalMm(4, 7, 2);
+    expect(solveUnitsUnderCeiling(exact, 7, 2)).toBe(4);
+  });
+
+  it('returns null when even a single unit overflows', () => {
+    expect(solveUnitsUnderCeiling(5, 7, 1)).toBeNull();
+    expect(solveUnitsUnderCeiling(40, 7, 6)).toBeNull();
+  });
+
+  it('rejects degenerate inputs', () => {
+    expect(solveUnitsUnderCeiling(100, 7, 0)).toBeNull();
+    expect(solveUnitsUnderCeiling(100, 0, 2)).toBeNull();
+    expect(solveUnitsUnderCeiling(Number.NaN, 7, 2)).toBeNull();
+  });
+
+  it('honours a custom height unit', () => {
+    const units = solveUnitsUnderCeiling(55, 4.37, 1);
+    expect(units).not.toBeNull();
+    expect(stackedTotalMm(units ?? 0, 4.37, 1)).toBeLessThanOrEqual(55);
   });
 });

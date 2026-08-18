@@ -11,10 +11,17 @@
  *
  * Bands are disjoint and measured from the underside of the plate upward, so
  * they sum to `totalMm` exactly and can be drawn as a segmented dimension line.
+ *
+ * Lives in `shared/` rather than beside the designer because three consumers
+ * outside it need the same answer and cannot reach `features/bin-designer`:
+ * the layout's drawer ceiling, the bin inspector's height hint, and the layers
+ * panel's budget. `AssembledHeightSource` is structural, so a layout bin
+ * resolved from `linkedDesignId` measures through the identical derivation the
+ * designer draws.
  */
 
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { baseFloorZ } from './binDimensions';
+import { GRIDFINITY_SPEC as GRIDFINITY } from '@/shared/printSettings/gridfinityGeometry';
+import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import {
   isSocketlessBase,
   resolveTileFloorThickness,

@@ -34,6 +34,8 @@ import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion'
 import { useBinTransitions } from './useBinTransitions';
 import { AnimatedBinMesh } from './AnimatedBinMesh';
 import { BinTransitionTicker } from './BinTransitionTicker';
+import { CeilingPlane } from './CeilingPlane';
+import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 
 interface IsometricPreviewProps {
   inline?: boolean; // When true, fills container instead of using fixed sizing
@@ -121,6 +123,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       layoutName: state.layout.name,
     }))
   );
+
+  const ceiling = useDrawerCeiling();
 
   // Calculate height-to-grid scale from user settings
   const heightToGridScale = heightUnitMm / gridUnitMm;
@@ -341,6 +345,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           fractionalEdgeX={drawer.fractionalEdgeX}
           fractionalEdgeY={drawer.fractionalEdgeY}
         >
+          {ceiling !== null && (
+            <CeilingPlane
+              ceilingMm={ceiling.ceilingMm}
+              drawerWidth={drawer.width}
+              scaledDepth={drawer.depth * (gridUnitMmY / gridUnitMm)}
+              gridUnitMm={gridUnitMm}
+              fits={ceiling.fits}
+            />
+          )}
           {/* Bins: exploded per-layer groups or normal flat rendering */}
           {explodedGroupsWithSelection ? (
             explodedGroupsWithSelection.map((group) => (

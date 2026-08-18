@@ -18,6 +18,7 @@ describe('DrawerDimensionsSummary', () => {
     onAcceptSuggestion: vi.fn(),
     onDismissSuggestion: vi.fn(),
     onClearMeasurement: vi.fn(),
+    ceiling: null,
   };
 
   beforeEach(() => {
@@ -148,5 +149,46 @@ describe('DrawerDimensionsSummary', () => {
     render(<DrawerDimensionsSummary {...defaultProps} />);
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  describe('drawer ceiling', () => {
+    const ceiling = (over: { fits: boolean; slackMm: number }) => ({
+      ceilingMm: 55,
+      tallestMm: 55 - over.slackMm,
+      slackMm: over.slackMm,
+      fits: over.fits,
+      overflowing: [],
+    });
+
+    it('prompts for a height measurement when the drawer is unmeasured', () => {
+      render(<DrawerDimensionsSummary {...defaultProps} ceiling={null} />);
+      expect(
+        screen.getByText('Add a height measurement to check the lid closes')
+      ).toBeInTheDocument();
+    });
+
+    it('reports the spare headroom when the layout fits', () => {
+      render(
+        <DrawerDimensionsSummary
+          {...defaultProps}
+          ceiling={ceiling({ fits: true, slackMm: 8.7 })}
+        />
+      );
+      expect(screen.getByText('Tallest stack fits, 8.7mm to spare')).toBeInTheDocument();
+    });
+
+    // The reported failure: the app says the drawer is full, the print is proud
+    // of it by the stacking lip, and the lid does not close.
+    it('warns with the overshoot when the layout stands proud', () => {
+      render(
+        <DrawerDimensionsSummary
+          {...defaultProps}
+          ceiling={ceiling({ fits: false, slackMm: -4.25 })}
+        />
+      );
+      expect(
+        screen.getByText('Tallest stack stands 4.3mm above your measured drawer')
+      ).toBeInTheDocument();
+    });
   });
 });

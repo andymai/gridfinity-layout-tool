@@ -4,6 +4,7 @@ import { RulerIcon, SparklesIcon, XIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import type { MeasuredDrawerMm } from '@/core/types';
 import type { DrawerFitSuggestion } from '@/shared/hooks/useDrawerSettings';
+import type { DrawerCeilingFit } from '@/shared/utils/drawerCeiling';
 import { EditableDimensions } from '../EditableDimensions';
 
 /** Format mm for display: nearest 0.1, no trailing zeros. */
@@ -29,6 +30,13 @@ interface DrawerDimensionsSummaryProps {
   readonly onAcceptSuggestion: () => void;
   readonly onDismissSuggestion: () => void;
   readonly onClearMeasurement: () => void;
+  /**
+   * Height fit for the whole layout, or null when the drawer height is
+   * unmeasured. Separate from the width/depth overflow above it because a
+   * printed stack is not a grid dimension: it carries the lip and the plate,
+   * neither of which `gridHeightMm` knows about.
+   */
+  readonly ceiling: DrawerCeilingFit | null;
   /** Platform variant: mobile enlarges tap targets. */
   readonly variant?: 'desktop' | 'mobile';
 }
@@ -53,6 +61,7 @@ export function DrawerDimensionsSummary({
   onAcceptSuggestion,
   onDismissSuggestion,
   onClearMeasurement,
+  ceiling,
   variant = 'desktop',
 }: DrawerDimensionsSummaryProps) {
   const t = useTranslation();
@@ -135,6 +144,20 @@ export function DrawerDimensionsSummary({
             })}
           </p>
         ))}
+
+      {ceiling === null ? (
+        <p className="text-center text-xxs text-content-tertiary">
+          {t('drawerCeiling.measurePrompt')}
+        </p>
+      ) : ceiling.fits ? (
+        <p className="text-center text-xxs text-content-tertiary tabular-nums">
+          {t('drawerCeiling.fits', { slack: fmt(ceiling.slackMm) })}
+        </p>
+      ) : (
+        <p className="text-center text-xxs text-status-warning tabular-nums">
+          {t('drawerCeiling.overflow', { over: fmt(-ceiling.slackMm) })}
+        </p>
+      )}
 
       {suggestion !== null && suggestion !== undefined && (
         <div
