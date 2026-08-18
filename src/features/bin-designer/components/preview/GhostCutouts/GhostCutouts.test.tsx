@@ -171,6 +171,47 @@ describe('GhostCutouts', () => {
     expect(container.firstChild).not.toBeNull();
   });
 
+  // The builder drops hidden cutouts (#3568), so an outline for one would be
+  // the exact preview-vs-export divergence the hidden flag exists to prevent.
+  it('renders no ghost for a hidden cutout, even mid-generation', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [{ ...SOLID_CUTOUT, hidden: true }],
+      },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'generating',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    const { container } = render(<GhostCutouts />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders no ghost for a hidden cutout selected in the list', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [{ ...SOLID_CUTOUT, hidden: true }],
+      },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'complete',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    useCutoutSelection.setState({ selectedIds: new Set(['c1']) });
+    const { container } = render(<GhostCutouts />);
+    expect(container.firstChild).toBeNull();
+  });
+
   it('renders nothing when selection has no matching cutouts', () => {
     useDesignerStore.setState({
       params: {
