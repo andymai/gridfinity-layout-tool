@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "比一体式底脚少用 {percent}% 的材料",
   "binDesigner.detachableFeet.summary": "{count} 个底脚，ø{diameter}mm 销钉",
   "binDesigner.detachableFeet.supersedes": "可拆卸底脚不使用此项",
+  "binDesigner.detachableFeet.savingSuperseded": "轻量化底座已经实现了这部分节省",
   "binDesigner.detachableFeet.unplaceable": "此尺寸下没有可容纳底脚的完整网格单元",
   "binDesigner.detachableFeetNeedsThickerWall": "这么薄的壁面剩下的底板不足以固定销钉",
   "binDesigner.dimensions": "尺寸",

@@ -39,7 +39,7 @@ const FRAME_FILL = 0.65;
 /** Minimum change in distance to trigger auto-frame animation */
 const REFRAME_THRESHOLD = 0.1; // 10% change
 /** Perspective FOV (degrees) used for framing math — shared by CameraController and usePresetTransition */
-const CAMERA_FOV = 45;
+export const CAMERA_FOV = 45;
 
 /**
  * Calculate ideal camera distance to frame a bin of the given dimensions.

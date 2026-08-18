@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Gebruikt {percent}% minder materiaal dan vaste voetjes",
   "binDesigner.detachableFeet.summary": "{count} voetjes, pennen van ø{diameter} mm",
   "binDesigner.detachableFeet.supersedes": "Wordt niet gebruikt bij afneembare voetjes",
+  "binDesigner.detachableFeet.savingSuperseded": "De lichtgewicht bodem dekt deze besparing al",
   "binDesigner.detachableFeet.unplaceable": "Geen hele rastercel waar een voetje in past bij dit formaat",
   "binDesigner.detachableFeetNeedsThickerWall": "Zulke dunne wanden laten te weinig bodem over om een pen vast te houden",
   "binDesigner.dimensions": "Afmetingen",

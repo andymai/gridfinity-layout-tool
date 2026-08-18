@@ -20,6 +20,47 @@ describe('printEstimates', () => {
       expect(est.costUSD).toBeGreaterThan(0);
     });
 
+    // The estimate follows the PLAN, not the request: a half-lattice 1-wide
+    // bin places no detachable feet, so the pipeline keeps the integral socket
+    // and the readout must keep its volume (it under-reported by ~60%).
+    it('prices an unplaceable detachable request as the integral bin it builds', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 1,
+        depth: 3,
+        base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half' },
+      };
+      const integral = estimatePrint(base);
+      const requested = estimatePrint({
+        ...base,
+        base: { ...base.base, feet: 'detachable' },
+      });
+      expect(requested.volumeMm3).toBe(integral.volumeMm3);
+    });
+
+    // A slab-only base (underside relief, detachable feet) loses only
+    // wallThickness of material under each hole; booking the full-socket
+    // share roughly halved a 3x3 estimate for a few cm³ of real removal.
+    it('prices a floor pattern on a slab-only base as the slab prism it cuts', () => {
+      const relief: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 3,
+        base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true, lightweightMode: 'underside' },
+      };
+      const plain = estimatePrint(relief).volumeMm3;
+      const patterned = estimatePrint({
+        ...relief,
+        floorPattern: { enabled: true, pattern: 'honeycomb' },
+      }).volumeMm3;
+      const removed = plain - patterned;
+      expect(removed).toBeGreaterThan(0);
+      // The whole slab inside the walls is planArea-ish x 1.2mm ≈ 19cm³; the
+      // pattern's open share of it can only be a fraction of that. The old
+      // full-socket share booked ~25cm³ — more than the slab itself.
+      expect(removed).toBeLessThan(10_000);
+    });
+
     it('larger bins have more volume', () => {
       const small = estimatePrint({ ...DEFAULT_BIN_PARAMS, width: 1, depth: 1 });
       const large = estimatePrint({ ...DEFAULT_BIN_PARAMS, width: 4, depth: 4 });

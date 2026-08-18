@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Zużywa o {percent}% mniej materiału niż nóżki wbudowane",
   "binDesigner.detachableFeet.summary": "Nóżki: {count}, kołki ø{diameter} mm",
   "binDesigner.detachableFeet.supersedes": "Nieużywane przy odczepianych nóżkach",
+  "binDesigner.detachableFeet.savingSuperseded": "Odchudzona podstawa już zapewnia tę oszczędność",
   "binDesigner.detachableFeet.unplaceable": "Przy tym rozmiarze nie ma całej komórki siatki na nóżkę",
   "binDesigner.detachableFeetNeedsThickerWall": "Tak cienkie ścianki zostawiają za mało dna, by utrzymać kołek",
   "binDesigner.dimensions": "Wymiary",

@@ -172,13 +172,27 @@ export function footArmMm(opts: {
   readonly pinDiameterMm: number;
   readonly magnetDiameterMm?: number;
   readonly magnetInsetFromEdgeMm?: number;
+  readonly screwDiameterMm?: number;
+  readonly screwInsetFromEdgeMm?: number;
 }): number {
   const pinReach = opts.pinDiameterMm + 2 * FOOT_EMBED_MARGIN_MM;
   const magnetReach =
     opts.magnetDiameterMm === undefined || opts.magnetInsetFromEdgeMm === undefined
       ? 0
       : opts.magnetInsetFromEdgeMm + opts.magnetDiameterMm / 2 + FOOT_EMBED_MARGIN_MM;
-  return Math.max(pinReach, magnetReach, SOCKET_TAPER_WIDTH_MM + FOOT_MIN_BOTTOM_FACE_MM);
+  // Screws sit on the same spec corners as magnets, so a screw-only base needs
+  // the same reach — without this term its bores land 0.8mm outside the arm
+  // and drill open air through the bin floor instead of the foot.
+  const screwReach =
+    opts.screwDiameterMm === undefined || opts.screwInsetFromEdgeMm === undefined
+      ? 0
+      : opts.screwInsetFromEdgeMm + opts.screwDiameterMm / 2 + FOOT_EMBED_MARGIN_MM;
+  return Math.max(
+    pinReach,
+    magnetReach,
+    screwReach,
+    SOCKET_TAPER_WIDTH_MM + FOOT_MIN_BOTTOM_FACE_MM
+  );
 }
 
 /**
@@ -502,18 +516,22 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
 
   // The arm is sized against the SHORTER pitch: a foot deep enough for the
   // magnet on one axis is not automatically deep enough on the other, and a
-  // single arm value serves both.
-  const magnetInsetFromEdgeMm = carriesMagnet
-    ? Math.min(
-        magnetInsetFromCellEdgeMm(pitchX, params.magnetAnchor ?? 'edge'),
-        magnetInsetFromCellEdgeMm(pitchY, params.magnetAnchor ?? 'edge')
-      )
-    : undefined;
+  // single arm value serves both. Screws share the magnets' spec corners, so
+  // one inset serves both attachments.
+  const cornerInsetFromEdgeMm =
+    carriesMagnet || carriesScrew
+      ? Math.min(
+          magnetInsetFromCellEdgeMm(pitchX, params.magnetAnchor ?? 'edge'),
+          magnetInsetFromCellEdgeMm(pitchY, params.magnetAnchor ?? 'edge')
+        )
+      : undefined;
 
   const armMm = footArmMm({
     pinDiameterMm,
     magnetDiameterMm: carriesMagnet ? params.base.magnetDiameter : undefined,
-    magnetInsetFromEdgeMm,
+    magnetInsetFromEdgeMm: carriesMagnet ? cornerInsetFromEdgeMm : undefined,
+    screwDiameterMm: carriesScrew ? params.base.screwDiameter : undefined,
+    screwInsetFromEdgeMm: carriesScrew ? cornerInsetFromEdgeMm : undefined,
   });
 
   const placed = detachableFeetPlacements({

@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Витрачає на {percent}% менше матеріалу, ніж вбудовані ніжки",
   "binDesigner.detachableFeet.summary": "Ніжок: {count}, штифти ø{diameter} мм",
   "binDesigner.detachableFeet.supersedes": "Не використовується зі знімними ніжками",
+  "binDesigner.detachableFeet.savingSuperseded": "Полегшена основа вже забезпечує цю економію",
   "binDesigner.detachableFeet.unplaceable": "За цього розміру немає цілої комірки сітки для ніжки",
   "binDesigner.detachableFeetNeedsThickerWall": "Такі тонкі стінки залишають замало дна, щоб утримати штифт",
   "binDesigner.dimensions": "Розміри",

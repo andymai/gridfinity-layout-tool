@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Usa il {percent}% di materiale in meno rispetto ai piedini integrati",
   "binDesigner.detachableFeet.summary": "{count} piedini, perni ø{diameter} mm",
   "binDesigner.detachableFeet.supersedes": "Non si usa con i piedini staccabili",
+  "binDesigner.detachableFeet.savingSuperseded": "La base alleggerita copre già questo risparmio",
   "binDesigner.detachableFeet.unplaceable": "Nessuna cella intera della griglia può ospitare un piedino a questa misura",
   "binDesigner.detachableFeetNeedsThickerWall": "Pareti così sottili lasciano troppo poco fondo per trattenere un perno",
   "binDesigner.dimensions": "Dimensioni",

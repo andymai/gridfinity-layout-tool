@@ -290,4 +290,30 @@ describe('half-offset placement', () => {
       expect(resolveFor(makeMask(3, 3, () => true)).placements).toHaveLength(4);
     });
   });
+
+  describe('arm reach for attachment hardware', () => {
+    const resolveStyle = (style: 'standard' | 'screw' | 'magnet' | 'magnet_and_screw') =>
+      resolveDetachableFeet({
+        width: 2,
+        depth: 2,
+        gridUnitMm: 42,
+        fractionalEdgeX: 'end',
+        fractionalEdgeY: 'end',
+        base: { style, magnetDiameter: 6.5, magnetDepth: 2, screwDiameter: 3 },
+      });
+
+    // Screws sit on the same spec corners as magnets (8mm in from the cell
+    // edge at 42mm pitch). Without a screw term the arm stopped short of the
+    // bore: the shank could not pass through the foot, and the companion floor
+    // bore was a through-hole with no foot beneath it.
+    it('sizes the arm to reach the screw corners on a screw-only base', () => {
+      const std = resolveStyle('standard').armMm;
+      const screwArm = resolveStyle('screw').armMm;
+      const magnetArm = resolveStyle('magnet').armMm;
+      expect(screwArm).toBeGreaterThan(std);
+      // Same corners, so the two attachments differ only by their own radii.
+      expect(magnetArm - screwArm).toBeCloseTo((6.5 - 3) / 2, 5);
+      expect(resolveStyle('magnet_and_screw').armMm).toBe(Math.max(screwArm, magnetArm));
+    });
+  });
 });

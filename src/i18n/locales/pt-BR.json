@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Usa {percent}% menos material do que pés integrados",
   "binDesigner.detachableFeet.summary": "{count} pés, pinos de ø{diameter} mm",
   "binDesigner.detachableFeet.supersedes": "Não usado com pés destacáveis",
+  "binDesigner.detachableFeet.savingSuperseded": "A base leve já cobre essa economia",
   "binDesigner.detachableFeet.unplaceable": "Não há célula inteira da grade para um pé neste tamanho",
   "binDesigner.detachableFeetNeedsThickerWall": "Paredes tão finas deixam pouco piso para segurar um pino",
   "binDesigner.dimensions": "Dimensões",

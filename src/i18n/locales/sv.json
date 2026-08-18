@@ -818,6 +818,7 @@
   "binDesigner.detachableFeet.saving": "Använder {percent} % mindre material än inbyggda fötter",
   "binDesigner.detachableFeet.summary": "{count} fötter, ø{diameter} mm stift",
   "binDesigner.detachableFeet.supersedes": "Används inte med avtagbara fötter",
+  "binDesigner.detachableFeet.savingSuperseded": "Den lätta basen täcker redan denna besparing",
   "binDesigner.detachableFeet.unplaceable": "Ingen hel rutnätscell att sätta en fot i vid den här storleken",
   "binDesigner.detachableFeetNeedsThickerWall": "Så tunna väggar lämnar för lite golv för att hålla ett stift",
   "binDesigner.dimensions": "Mått",

@@ -67,7 +67,13 @@ import { useTranslation } from '@/i18n';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
-import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
+import {
+  CameraController,
+  usePresetTransition,
+  SceneLighting,
+  calculateIdealDistance,
+  CAMERA_FOV,
+} from './previewCanvasCamera';
 import { CameraRig } from '@/shared/components/preview/CameraRig';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
@@ -405,6 +411,24 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 projection={projection}
                 initialPosition={[100, -100, 80]}
                 target={[0, 0, totalH / 2]}
+                // The default 2000mm far plane sits INSIDE the framing
+                // distance for the largest bins (a 16x16x50 frames at
+                // ~2040mm), clipping the rear half and the target itself.
+                // 1.6x the ideal distance clears the far side of the bounding
+                // sphere (ideal ≈ 2.4x the radius at this fov).
+                far={Math.max(
+                  2000,
+                  1.6 *
+                    calculateIdealDistance(
+                      width,
+                      depth,
+                      height,
+                      CAMERA_FOV,
+                      params.gridUnitMm,
+                      params.heightUnitMm,
+                      params.gridUnitMmY ?? params.gridUnitMm
+                    )
+                )}
               />
               <PreviewContextSync />
 
