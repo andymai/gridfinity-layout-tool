@@ -1,0 +1,59 @@
+src/features/generation/worker/generators/binGenerator.scenario.paramDifferential.test.ts
+  s_5882a47eb73dff::t_1f6ed2134b76fc 78-142
+src/features/generation/worker/generators/baseplateDirectMesh.test.ts
+  s_5882a47eb73dff::t_5661b81e835744 2,726-729,777-809
+  s_5882a47eb73dff::t_16a56f51f91a14 810
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_5882a47eb73dff::t_0e9aabe48363cf 185-226
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_5882a47eb73dff::t_6c9cce6c7addbc 52-66
+src/shared/utils/fractionalEdge.test.ts
+  s_5882a47eb73dff::t_073f7b74d1a202 307-316
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_5882a47eb73dff::t_a3c70d70d3e438 813-818,1073-1074
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_5882a47eb73dff::t_c8e402d5eb553c 377-391,399
+  s_5882a47eb73dff::t_6c9cce6c7addbc 430-432
+  s_5882a47eb73dff::t_08d0e19058c7b6 441-445
+src/shared/utils/heightUnits.ts
+  s_5882a47eb73dff::t_3fb4ff61e5f08b 58
+src/shared/utils/fractionalEdge.ts
+  s_5882a47eb73dff::t_c3c3894721ab42 260-264
+  s_5882a47eb73dff::t_f1158c1610e45d 42-47
+src/features/generation/worker/generators/baseplateScrews.ts
+  s_5882a47eb73dff::t_c8e402d5eb553c 168
+  s_5882a47eb73dff::t_e5a4804f205173 128-134
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
+  s_5882a47eb73dff::t_f27f595bdb5b00 26,49,85,98
+  s_5882a47eb73dff::t_f1158c1610e45d 65
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_5882a47eb73dff::t_66d0b1d32ea43d 230-233,248-252
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutLabel3D.tsx
+  s_5882a47eb73dff::t_7e96ddd9efb49a 21-27
+  s_5882a47eb73dff::t_6dc2d0485224ff 90-94,97-103
+  s_5882a47eb73dff::t_0da6607345f898 28-30
+  s_5882a47eb73dff::t_5949d4378520fe 104-106
+src/features/generation/worker/generators/detachableFeetBuilder.ts
+  s_5882a47eb73dff::t_3fb4ff61e5f08b 107,110-116
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_5882a47eb73dff::t_5fd7b115265975 100-109
+  s_5882a47eb73dff::t_feedbce0eaa00e 99
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_5882a47eb73dff::t_9ca57c0729015a 311
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cc49b8e9716523824813eca083c496d54d374d2b",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
