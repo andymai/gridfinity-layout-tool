@@ -16,17 +16,17 @@ graph TB
 
 ## Subdirectories
 
-| Directory        | Purpose                                                                                                                                                                                                  |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `components/`    | Domain-agnostic UI primitives (no feature coupling)                                                                                                                                                      |
-| `contexts/`      | React contexts for mutations and collaborative presence                                                                                                                                                  |
-| `hooks/`         | Custom hooks for auto-save, responsiveness, grid math, PWA                                                                                                                                               |
-| `utils/`         | Pure functions — collision detection, validation, bin filtering, compression                                                                                                                             |
-| `analytics/`     | ML telemetry pipeline and PostHog product metrics                                                                                                                                                        |
-| `printSettings/` | Print time/filament estimation constants and scaling                                                                                                                                                     |
-| `types/`         | Re-exports `BinParams` types from `bin-designer` to avoid circular deps                                                                                                                                  |
-| `constants/`     | Re-exports `DEFAULT_BIN_PARAMS`, `GRIDFINITY` from `bin-designer`; owns label plate geometry (`labelPlates`) and the label icon SVG catalog (`labelIconPaths`) so the worker and the UI share one source |
-| `generation/`    | Re-exports `GenerationBridge`, the direct-mesh drafts, and the brepjs-free pattern metrics (wall element sizes + `stampPatternOpenArea`, and the floor pattern's window rule) for cross-feature use      |
+| Directory        | Purpose                                                                                                                                                                                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components/`    | Domain-agnostic UI primitives (no feature coupling)                                                                                                                                                                                       |
+| `contexts/`      | React contexts for mutations and collaborative presence                                                                                                                                                                                   |
+| `hooks/`         | Custom hooks for auto-save, responsiveness, grid math, PWA                                                                                                                                                                                |
+| `utils/`         | Pure functions — collision detection, validation, bin filtering, compression                                                                                                                                                              |
+| `analytics/`     | ML telemetry pipeline and PostHog product metrics                                                                                                                                                                                         |
+| `printSettings/` | Print time/filament estimation constants and scaling; `assembledHeight.ts` (how tall a design stands seated on a plate with its lid on) lives here so the layout, inspector and layers panel can read it without importing `bin-designer` |
+| `types/`         | Re-exports `BinParams` types from `bin-designer` to avoid circular deps                                                                                                                                                                   |
+| `constants/`     | Re-exports `DEFAULT_BIN_PARAMS`, `GRIDFINITY` from `bin-designer`; owns label plate geometry (`labelPlates`) and the label icon SVG catalog (`labelIconPaths`) so the worker and the UI share one source                                  |
+| `generation/`    | Re-exports `GenerationBridge`, the direct-mesh drafts, and the brepjs-free pattern metrics (wall element sizes + `stampPatternOpenArea`, and the floor pattern's window rule) for cross-feature use                                       |
 
 ## Key Components (`components/`)
 
@@ -44,16 +44,17 @@ graph TB
 
 ## Key Hooks (`hooks/`)
 
-| Hook                  | Purpose                                                               |
-| --------------------- | --------------------------------------------------------------------- |
-| `useAutoSave()`       | Debounced save (1s) with idle scheduling, retry, status tracking      |
-| `useResponsive()`     | Breakpoint detection: mobile (<768), tablet (768-899), desktop (≥900) |
-| `useGridTemplate()`   | CSS Grid template computation with half-bin fractional support        |
-| `useCrossTabSync()`   | Sync layout/library across browser tabs via StorageEvent              |
-| `usePWAUpdate()`      | Detect and prompt for service worker updates                          |
-| `usePrefetchChunks()` | Idle-time code chunk preloading (desktop only)                        |
-| `useIntentPrefetch()` | Warm a lazy destination on pointer-enter / pointer-down / focus       |
-| `useSharedWithMe()`   | Fetch and track layouts shared via Liveblocks                         |
+| Hook                  | Purpose                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| `useAutoSave()`       | Debounced save (1s) with idle scheduling, retry, status tracking                   |
+| `useResponsive()`     | Breakpoint detection: mobile (<768), tablet (768-899), desktop (≥900)              |
+| `useGridTemplate()`   | CSS Grid template computation with half-bin fractional support                     |
+| `useCrossTabSync()`   | Sync layout/library across browser tabs via StorageEvent                           |
+| `usePWAUpdate()`      | Detect and prompt for service worker updates                                       |
+| `usePrefetchChunks()` | Idle-time code chunk preloading (desktop only)                                     |
+| `useIntentPrefetch()` | Warm a lazy destination on pointer-enter / pointer-down / focus                    |
+| `useSharedWithMe()`   | Fetch and track layouts shared via Liveblocks                                      |
+| `useDrawerCeiling()`  | Whether the printed layout clears the measured drawer height; null when unmeasured |
 
 Inline rename lives in the design system: `useInlineEdit` for the headless
 behaviour and `InlineEditText` for the styled preset over it, both from
@@ -73,6 +74,8 @@ behaviour and `InlineEditText` for the styled preset over it, both from
 | `color.ts`                 | `getContrastColor()`, `getBinTextColors()` for bin rendering                                                                                                                                                  |
 | `uuid.ts`                  | Layout ID generation and validation                                                                                                                                                                           |
 | `wallPatternSides.ts`      | `resolveWallPatternSides()` — which outer walls a pattern covers; absent side means ON                                                                                                                        |
+| `drawerCeiling.ts`         | `drawerCeilingFit()` — printed height of every column against the measured drawer. Columns resolve by footprint overlap, not layer z: a bin falls until something stops it                                    |
+| `heightUnits.ts`           | Stack arithmetic: `stackPitchMm()`, `stackedTotalMm()`, `solveUnitsUnderCeiling()`. A stacked bin nests `STACK_JUNCTION_MM` (4.75), not `LIP_PROTRUSION_MM` (4.3)                                             |
 | `throttle.ts` / `idle.ts`  | RAF throttle, idle scheduling utilities                                                                                                                                                                       |
 | `svg/`                     | SVG units, transforms and viewBox framing — shared by every importer so they agree on scale                                                                                                                   |
 | `communityReturnPath.ts`   | One-shot OAuth return record (`saveAuthReturnPath`); allowlisted PATHS only, never a URL                                                                                                                      |
