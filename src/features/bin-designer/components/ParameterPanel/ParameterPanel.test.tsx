@@ -42,16 +42,24 @@ describe('ParameterPanel', () => {
       expect(shapeButton).toHaveAttribute('aria-expanded', 'false');
     });
 
-    it('all three groups render expanded by default', () => {
+    it('every group renders expanded by default', () => {
       render(<ParameterPanel />);
 
-      const shapeBtn = screen.getByText('Shape').closest('button');
-      const interiorBtn = screen.getByText('Interior').closest('button');
-      const baseGroupBtn = screen.getByText('Base').closest('button');
+      for (const title of ['Shape', 'Interior', 'Base', 'Lid', 'Finishing']) {
+        const btn = screen.getByText(title).closest('button');
+        expect(btn, title).toHaveAttribute('aria-expanded', 'true');
+      }
+    });
 
-      expect(shapeBtn).toHaveAttribute('aria-expanded', 'true');
-      expect(interiorBtn).toHaveAttribute('aria-expanded', 'true');
-      expect(baseGroupBtn).toHaveAttribute('aria-expanded', 'true');
+    it('marks a group whose params moved off the defaults', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } },
+      });
+      render(<ParameterPanel />);
+      const interiorBtn = screen.getByText('Interior').closest('button');
+      expect(interiorBtn?.querySelector('[data-testid="group-modified-dot"]')).not.toBeNull();
+      const shapeBtn = screen.getByText('Shape').closest('button');
+      expect(shapeBtn?.querySelector('[data-testid="group-modified-dot"]')).toBeNull();
     });
   });
 

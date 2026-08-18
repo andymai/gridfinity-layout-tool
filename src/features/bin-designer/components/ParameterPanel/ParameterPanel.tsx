@@ -13,7 +13,7 @@
  * - Finishing: Multi-color, Physical Units
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/design-system';
 import { DimensionsSection } from '../panel/DimensionsSection';
@@ -70,8 +70,13 @@ function BinParameterPanel() {
   const finishingSummary = useFinishingGroupSummary();
   // A dot on the groups holding an edit, so a collapsed panel still says where
   // the work is. `modifiedLabel` is the accessible name, not a second flag.
-  const params = useDesignerStore((s) => s.params);
-  const modified = useMemo(() => modifiedGroups(params), [params]);
+  // Selected through `useShallow` over the derived flags rather than
+  // subscribing to `params` wholesale: this is the panel ROOT, and an
+  // `Object.is` subscription on an immer object re-renders every section on
+  // every params write — dragging the scoop slider re-ran the whole tree per
+  // frame. The selector still runs per write; the render only happens when a
+  // group's flag flips.
+  const modified = useDesignerStore(useShallow((s) => modifiedGroups(s.params)));
   const modifiedLabel = t('binDesigner.group.modified');
   const markIf = (isModified: boolean): string | undefined =>
     isModified ? modifiedLabel : undefined;

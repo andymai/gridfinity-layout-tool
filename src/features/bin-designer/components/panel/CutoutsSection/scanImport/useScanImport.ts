@@ -8,7 +8,7 @@
 
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import { useDesignerStore, remainingCutoutCapacity } from '@/features/bin-designer/store';
 import { defaultEntryChamfer } from '@/features/bin-designer/types';
 import { specToCutout, DEFAULT_CUT_DEPTH } from '../svgImport/specToCutout';
 import type { ParsedCutoutSpec } from '../svgImport/types';
@@ -34,6 +34,12 @@ export function useScanImport(): UseScanImportReturn {
   const addScanCutouts = useCallback(
     (specs: readonly ParsedCutoutSpec[], cutDepth: number = DEFAULT_CUT_DEPTH): number => {
       const hydrationOptions = { cutDepth, idFactory: () => crypto.randomUUID() };
+
+      // Checked before the history push, the same rule the store's own batch
+      // paths state: a batch that cannot land a single shape must not spend an
+      // undo slot or bump the generation epoch for unchanged geometry.
+      const { ui, params } = useDesignerStore.getState();
+      if (remainingCutoutCapacity(ui.cutoutTarget, params.lid.cutouts) < 1) return 0;
 
       let added = 0;
       startTransaction();

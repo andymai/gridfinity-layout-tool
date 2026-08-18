@@ -111,13 +111,17 @@ export function addClonedCutouts(
   originals: readonly Cutout[],
   onAdd: (cutout: Cutout) => boolean,
   setSelection: (sel: ReadonlySet<string>) => void,
-  offsetFn?: (original: Cutout) => { x: number; y: number }
+  offsetFn?: (original: Cutout) => { x: number; y: number },
+  onClipped?: (landed: number, requested: number) => void
 ): readonly ClonedCutout[] {
   const landed = cloneCutoutsWithGroups(originals, offsetFn).filter((clone) => {
     const { originalId: _, ...cutout } = clone;
     return onAdd(cutout);
   });
   setSelection(new Set(landed.map((c) => c.id)));
+  // A cap refusal that only clears the selection reads as the command doing
+  // nothing — the same silent truncation the SVG import already reports.
+  if (landed.length < originals.length) onClipped?.(landed.length, originals.length);
   return landed;
 }
 
@@ -191,14 +195,23 @@ export function applyFlattenArray(
   cutouts: readonly Cutout[],
   updateCutout: (id: string, patch: Partial<Cutout>) => void,
   addCutout: (cutout: Cutout) => boolean,
-  capacity: number
+  capacity: number,
+  transaction: { readonly start: () => void; readonly commit: () => void }
 ): 'flattened' | 'not-an-array' | 'no-room' {
   const master = cutouts.find((c) => c.id === id);
   if (!master?.array) return 'not-an-array';
   const { masterPatch, added } = flattenCutoutArray(master);
   if (added.length > capacity) return 'no-room';
-  updateCutout(id, masterPatch);
-  for (const cutout of added) addCutout(cutout);
+  // One undo step for the whole flatten: outside a transaction each addCutout
+  // pushes its own history entry, so reversing a 4x4 repeat took 17 presses
+  // where the SVG import of the same shapes takes one.
+  transaction.start();
+  try {
+    updateCutout(id, masterPatch);
+    for (const cutout of added) addCutout(cutout);
+  } finally {
+    transaction.commit();
+  }
   return 'flattened';
 }
 

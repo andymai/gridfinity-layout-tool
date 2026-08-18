@@ -316,7 +316,7 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     // are `base.style` VALUES, where one replacing the other is not a conflict
     // to resolve.) One rule covers both directions anyway: enabling base-only
     // clears the spacer, and while it is on this same rule reports
-    // `base.spacer` unavailable so `toggleSpacer` refuses to turn it back on.
+    // `base.spacer` unavailable so the spacer body-type card refuses to turn it back on.
     description: 'Base-only bin incompatible with a spacer (nothing would remain)',
     source: 'base.tile',
     when: (p) => p.base.tile === true,

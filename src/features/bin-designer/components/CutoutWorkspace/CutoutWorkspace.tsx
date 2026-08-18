@@ -62,6 +62,8 @@ export function CutoutWorkspace() {
   const {
     params,
     addCutout,
+    startTransaction,
+    commitTransaction,
     updateCutout,
     removeCutout,
     clearCutouts,
@@ -88,6 +90,8 @@ export function CutoutWorkspace() {
     useShallow((s) => ({
       params: s.params,
       addCutout: s.addCutout,
+      startTransaction: s.startTransaction,
+      commitTransaction: s.commitTransaction,
       updateCutout: s.updateCutout,
       removeCutout: s.removeCutout,
       clearCutouts: s.clearCutouts,
@@ -240,7 +244,10 @@ export function CutoutWorkspace() {
     (id: string) => {
       const master = cutouts.find((c) => c.id === id);
       const capacity = remainingCutoutCapacity(cutoutTarget, params.lid.cutouts);
-      const outcome = applyFlattenArray(id, cutouts, updateCutout, addCutout, capacity);
+      const outcome = applyFlattenArray(id, cutouts, updateCutout, addCutout, capacity, {
+        start: startTransaction,
+        commit: commitTransaction,
+      });
       if (outcome === 'no-room') {
         addToast(t('toast.flattenNoRoom', { max: MAX_LID_CUTOUTS }), 'error');
         return;
@@ -254,7 +261,17 @@ export function CutoutWorkspace() {
         });
       }
     },
-    [cutouts, updateCutout, addCutout, cutoutTarget, params.lid.cutouts, addToast, t]
+    [
+      cutouts,
+      updateCutout,
+      addCutout,
+      cutoutTarget,
+      params.lid.cutouts,
+      addToast,
+      t,
+      startTransaction,
+      commitTransaction,
+    ]
   );
 
   const handleMergeIntoRepeat = useCallback(
