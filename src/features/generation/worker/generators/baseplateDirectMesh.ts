@@ -308,6 +308,7 @@ export function generateBaseplateDirect(
   const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
   if (screwParams !== undefined) {
     const screwHoles = planBaseplateScrewHoles(screwParams, params, {
+      resolvedCornerRadii: resolved,
       totalWidthMm: totalW,
       totalDepthMm: totalD,
       gridW: width,

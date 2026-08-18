@@ -96,11 +96,17 @@ export function useBaseSection() {
   //    `half` lattice moves every interior boundary off it.
   //  - fractional axis: it already carries a half cell, and `fractionalEdge`
   //    decides which end that sits on, which covers both placements on its own.
-  const bothAxesLockReason = hasHalfSockets
-    ? 'binDesigner.footLattice.halfSocketsHint'
-    : isPartialMask(params.cellMask)
-      ? 'binDesigner.footLattice.customShapeHint'
-      : null;
+  const hasDetachableFeet = hasDetachableFeetFor(base);
+  // Half sockets only exempt the lattice while the SOCKET is what seats the
+  // bin. With detachable feet the socket is never built, the plan reads the
+  // lattice regardless, and locking here hid the one control that seats a
+  // half-offset detachable bin (the stored halfSockets value is inert then).
+  const bothAxesLockReason =
+    hasHalfSockets && !hasDetachableFeet
+      ? 'binDesigner.footLattice.halfSocketsHint'
+      : isPartialMask(params.cellMask)
+        ? 'binDesigner.footLattice.customShapeHint'
+        : null;
   const axisLocked = (units: number): boolean => bothAxesLockReason !== null || isFractional(units);
   const footLatticeLockedX = axisLocked(params.width);
   const footLatticeLockedY = axisLocked(params.depth);
@@ -129,7 +135,6 @@ export function useBaseSection() {
   // The shared predicate, not `base.feet === 'detachable'`: it also refuses a
   // socketless base and a spacer, which is what the geometry does. The local
   // copy left a flat-base bin reading "4 feet" over a bin that builds none.
-  const hasDetachableFeet = hasDetachableFeetFor(base);
   const detachablePlan = hasDetachableFeet ? resolveDetachableFeet(params) : null;
   // No pocket-aligned whole cell to stand a foot on. Reachable for a 1-wide bin
   // under the `half` lattice, and the panel has to say so: the alternative is a

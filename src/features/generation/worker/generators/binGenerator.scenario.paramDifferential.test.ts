@@ -75,6 +75,71 @@ describe('bin parameter differentials (dead-control guard)', () => {
     expect(Math.abs(small - large)).toBeGreaterThan(50);
   }, 60_000);
 
+  it('a grouped Repeat master still cuts every instance', async () => {
+    // The editor, the fit-test card and the estimate all count instances
+    // whatever the group state, so the exported bin must too — a grouped
+    // master collapsed to one pocket ships a board missing every derived
+    // cutout while every other layer promises them.
+    const board: BinParams = {
+      ...BASE,
+      style: 'solid',
+      base: { ...BASE.base, solid: true, stackingLip: false },
+    };
+    const grouped = (withArray: boolean): BinParams => ({
+      ...board,
+      cutouts: [
+        {
+          id: 'master',
+          shape: 'rectangle' as const,
+          x: 6,
+          y: 6,
+          width: 10,
+          depth: 10,
+          cutDepth: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: 'g1',
+          groupOp: 'union' as const,
+          ...(withArray
+            ? {
+                array: {
+                  mode: 'grid' as const,
+                  cols: 3,
+                  rows: 1,
+                  pitchX: 22,
+                  pitchY: 22,
+                  count: 1,
+                  radius: 10,
+                  startAngle: 0,
+                  rotateToCenter: false,
+                },
+              }
+            : {}),
+        },
+        {
+          id: 'partner',
+          shape: 'rectangle' as const,
+          x: 6,
+          y: 24,
+          width: 10,
+          depth: 10,
+          cutDepth: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: 'g1',
+          groupOp: 'union' as const,
+        },
+      ],
+    });
+    const single = await exportVolume(grouped(false));
+    const repeated = await exportVolume(grouped(true));
+    // Two extra 10x10x5 instances: ~1000mm3 of extra removal, minus nothing —
+    // the instances sit on clear board. Well above any tessellation noise.
+    expect(single - repeated).toBeGreaterThan(800);
+  }, 120_000);
+
   it('divider thickness changes the solid volume (thicker divider = more material)', async () => {
     const withDivider = (thickness: number): BinParams => ({
       ...BASE,

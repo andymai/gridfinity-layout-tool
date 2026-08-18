@@ -810,7 +810,12 @@ export function buildGroupedCutouts(
   const memberShapes: Shape3D[] = [];
   const builtMembers: Cutout[] = [];
   const builtDepths: number[] = [];
-  for (const cutout of groupMembers) {
+  // A member carrying a Repeat expands into its instances first, exactly as
+  // the ungrouped path does: the editor, the fit-test card and the estimate
+  // all count instances whatever the group state, so a master collapsed to
+  // one cut here would ship a bin missing every derived pocket. The editing
+  // rules refuse to CREATE the pairing, but a stored design can carry it.
+  for (const cutout of groupMembers.flatMap(expandCutoutArray)) {
     const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
     if (effectiveDepth <= 0) continue;
 
@@ -1065,7 +1070,8 @@ export function buildCutoutCuts(
   };
 
   // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected.
-  // Array masters (always ungrouped) expand into one cut per instance first.
+  // Array masters expand into one cut per instance first — the grouped path
+  // expands its own members inside `buildGroupedCutouts`.
   const groups = new Map<string, typeof params.cutouts>();
   for (const cutout of params.cutouts) {
     if (cutout.groupId === null) {

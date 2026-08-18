@@ -49,6 +49,21 @@ export function slabPocketsCacheKey(
     quantize(params.screwHoles?.headDiameter ?? 0),
     quantize(params.screwHoles?.counterboreDepth ?? 0),
     params.screwHoles?.screwsPerPiece ?? 0,
+    // Corner radii and the magnet lattice ALSO move the per-cell screw
+    // decision: radii flip a margin anchor to a floor site, and the anchor/
+    // diameter shift the snap lattice the floor sites land on. Keyed only
+    // while screws are on, so non-screw plates keep their cache hits.
+    ...(params.screwHoles?.enabled === true
+      ? [
+          quantize(params.cornerRadius ?? -1),
+          quantize(params.cornerRadii?.tl ?? -1),
+          quantize(params.cornerRadii?.tr ?? -1),
+          quantize(params.cornerRadii?.bl ?? -1),
+          quantize(params.cornerRadii?.br ?? -1),
+          params.magnetAnchor ?? '',
+          quantize(params.magnetDiameter),
+        ]
+      : []),
     quantize(params.paddingLeft),
     quantize(params.paddingRight),
     quantize(params.paddingFront),

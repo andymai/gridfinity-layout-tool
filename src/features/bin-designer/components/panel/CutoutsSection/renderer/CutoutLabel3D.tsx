@@ -18,8 +18,16 @@ import { Text } from '@react-three/drei';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
-import { isCutoutEngraveMode, isCutoutSocketMode } from '@/shared/utils/cutoutLabelSocketPlan';
+import {
+  cutoutLabelPlacement,
+  labelPlacementForAabb,
+  resolveCutoutTextAnchor,
+} from '@/shared/utils/cutoutLabel';
+import {
+  cutoutSocketAnchorAabb,
+  isCutoutEngraveMode,
+  isCutoutSocketMode,
+} from '@/shared/utils/cutoutLabelSocketPlan';
 import {
   LABEL_PLATE_CORNER_RADIUS_MM,
   LABEL_PLATE_HEIGHT_MM,
@@ -79,22 +87,31 @@ export function CutoutLabel3D({
           if (!socket) return null;
           const plateW = labelPlateWidthMm(socket.widthU);
           // The plan is memoised on committed params, so mid-drag it still
-          // describes the grab-point position. Follow the live override by the
-          // same delta the cutout (or its label nudge) has moved — both feed
-          // the plan's placement 1:1, and the exact re-plan lands on release.
+          // describes the grab-point position. Recompute the placement from
+          // the live override through the SAME anchor math the plan uses — a
+          // raw position delta is not 1:1 on the anchor's gap axis, whose band
+          // midpoint moves at half the cutout's rate, so a delta-followed
+          // ghost led the cursor and snapped back on release.
           const overrides = preview.get(cutout.id);
           const effective = overrides ? { ...cutout, ...overrides } : cutout;
-          const dragX =
-            effective.x - cutout.x + (effective.textOffset?.x ?? 0) - (cutout.textOffset?.x ?? 0);
-          const dragY =
-            effective.y - cutout.y + (effective.textOffset?.y ?? 0) - (cutout.textOffset?.y ?? 0);
+          const live = overrides
+            ? labelPlacementForAabb(
+                cutoutSocketAnchorAabb(effective, -socketPlan.innerW / 2, -socketPlan.innerD / 2),
+                resolveCutoutTextAnchor(effective),
+                effective.textOffset,
+                socketPlan.innerW,
+                socketPlan.innerD,
+                -socketPlan.innerW / 2,
+                -socketPlan.innerD / 2
+              )
+            : null;
           return (
             <CutoutSocketFootprint
               key={`socket-${cutout.id}`}
               // Plan centres are bin-centred; the editor's origin is the
               // interior corner, so shift by half the box the plan measured.
-              centerX={socket.centerX + socketPlan.innerW / 2 + dragX}
-              centerY={socket.centerY + socketPlan.innerD / 2 + dragY}
+              centerX={(live?.centerX ?? socket.centerX) + socketPlan.innerW / 2}
+              centerY={(live?.centerY ?? socket.centerY) + socketPlan.innerD / 2}
               // PLATE-frame extents, always: the footprint applies the
               // vertical rotation itself, so world-swapped extents here would
               // be rotated back and draw the plate on the wrong axis.

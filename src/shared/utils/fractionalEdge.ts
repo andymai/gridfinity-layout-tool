@@ -39,6 +39,12 @@ export interface FractionalEdgeDesign {
    * on a uniform array). Warning about it would be noise.
    */
   readonly halfSockets?: boolean;
+  /**
+   * Detachable-feet mode, if known. It cancels the half-socket exemption:
+   * the socket is never built, and the feet plan reads the lattice whatever
+   * `halfSockets` stores.
+   */
+  readonly detachableFeet?: boolean;
   /** Foot lattice per axis. Missing = `'grid'`, the documented default. */
   readonly footLatticeX?: FootLattice;
   readonly footLatticeY?: FootLattice;
@@ -251,7 +257,11 @@ export function computeMatchedFootLattice(
   drawer: FractionalEdgeDrawer,
   placements: readonly FractionalEdgePlacement[]
 ): FootLatticePatch {
-  if (design.halfSockets || design.hasCellMask) return {};
+  // Half sockets seat at either offset ONLY when the socket is actually
+  // built: with detachable feet the socket never is, the plan reads the
+  // lattice regardless (`resolveDetachableFeet`), and skipping here closed
+  // the one auto-repair for a half-offset detachable bin.
+  if ((design.halfSockets && design.detachableFeet !== true) || design.hasCellMask) return {};
 
   const axis = (
     size: number,

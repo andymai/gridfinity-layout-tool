@@ -227,7 +227,10 @@ export function SupportersPage() {
     async (patch: SupporterProfilePatch) => {
       const prevName = supporter.status.name;
       const error = await supporter.save(patch);
-      if (error === null) setProfileEdit({ prevName });
+      // Keep the ORIGINAL handle across repeated renames: after the first
+      // save `status.name` is already the new name, which the public list
+      // has never carried — recording it would strand the overlay.
+      if (error === null) setProfileEdit((prev) => prev ?? { prevName });
       return error;
     },
     [supporter]
@@ -242,13 +245,14 @@ export function SupportersPage() {
       profileEdit.prevName !== null
         ? records.findIndex((r) => r.name === profileEdit.prevName)
         : records.findIndex((r) => r.name === null);
-    const patched = {
-      ...(idx >= 0 ? records[idx] : {}),
+    // Renames an existing record, never adds one: a push would double the
+    // user's bin on the wall while the headline count reads the raw list.
+    if (idx < 0) return supporters;
+    records[idx] = {
+      ...records[idx],
       name: status.name,
       ...(status.message ? { message: status.message } : { message: undefined }),
     };
-    if (idx >= 0) records[idx] = patched;
-    else records.push(patched);
     return { ...supporters, supporters: records };
   }, [supporters, supporter.status, profileEdit]);
   const bins = useMemo(() => buildSupporterBins(effectiveSupporters), [effectiveSupporters]);
