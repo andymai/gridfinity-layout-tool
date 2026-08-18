@@ -1,0 +1,55 @@
+src/shell/layoutExport/planLabelPlateExport.ts
+  s_5882a47eb73dff::t_bbe4ad2a9d9d10 20,161-163,166-167
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_5882a47eb73dff::t_bbe4ad2a9d9d10 27,66-69
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutSocketFootprint.tsx
+  s_5882a47eb73dff::t_5d782b418dd4cb 66-69
+  s_5882a47eb73dff::t_0edb4a60fbaf08 25,27
+src/shared/hooks/useLabelPlateCounts.ts
+  s_5882a47eb73dff::t_bbe4ad2a9d9d10 17,90-92,95-96
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutLabel3D.tsx
+  s_5882a47eb73dff::t_058a826773a341 98-102
+  s_5882a47eb73dff::t_aa80c28cf26bcd 81-90,96-97
+src/features/bin-designer/components/CutoutWorkspace/CutoutSocketControls.tsx
+  s_5882a47eb73dff::t_97de77c93d2a64 46-77,80-82,84-95
+  s_5882a47eb73dff::t_6d0a0450db1e4d 152
+src/features/bin-designer/hooks/useCutoutSocketPlan.test.ts
+  s_5882a47eb73dff::t_4a61aab8eaee76 5,51-64,68-69
+  s_5882a47eb73dff::t_6cc5a0afccb421 65-67
+  s_5882a47eb73dff::t_862eb05eddc508 70-71
+src/features/bin-designer/components/CutoutWorkspace/CutoutSocketControls.test.tsx
+  s_5882a47eb73dff::t_db1fa181b64ed8 178-206
+  s_f7654670ddf29a::t_c0b30bc8d72d80 207-208
+src/features/bin-designer/hooks/useCutoutSocketPlan.ts
+  s_5882a47eb73dff::t_bbe4ad2a9d9d10 12,57-63
+src/features/generation/worker/generators/labelPlateGenerator.ts
+  s_5882a47eb73dff::t_de710fa29fac07 56-62,68-73,83
+src/shared/hooks/useLabelPlateCounts.test.ts
+  s_5882a47eb73dff::t_ed1decee55b8e6 21-22
+src/features/bin-designer/index.ts
+  s_5882a47eb73dff::t_bbe4ad2a9d9d10 67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9c62f4f5ae86313c374778c0d39b20a4b2a67ad1",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f7654670ddf29a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef413640-f9cc-478d-adba-06a438ff96e2",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
