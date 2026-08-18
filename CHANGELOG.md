@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.12](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.11...gridfinity-layout-tool-v4.424.12) (2026-08-18)
+
+
+### Bug Fixes
+
+* **generation:** key every cache on what its builder actually reads ([#3603](https://github.com/andymai/gridfinity-layout-tool/issues/3603)) ([5522916](https://github.com/andymai/gridfinity-layout-tool/commit/552291630e813d93fd282ff56ca5131a7a98e7c4))
+
 ## [4.424.11](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.10...gridfinity-layout-tool-v4.424.11) (2026-08-18)
 
 
