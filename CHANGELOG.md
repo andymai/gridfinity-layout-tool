@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.426.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.0...gridfinity-layout-tool-v4.426.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **generation:** key slot cuts on the divider they accept ([#3610](https://github.com/andymai/gridfinity-layout-tool/issues/3610)) ([ea53364](https://github.com/andymai/gridfinity-layout-tool/commit/ea53364449b924bb62e24452f816d3362b7a3b84))
+
 ## [4.426.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.425.0...gridfinity-layout-tool-v4.426.0) (2026-08-18)
 
 
