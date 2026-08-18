@@ -20,6 +20,10 @@ interface StickyGroupHeaderBaseProps {
    *  Typed as `string` so the badge can't accidentally hold an interactive element
    *  inside the collapse `<Button>`. */
   badge?: string;
+  /** Accessible name for the "changed from defaults" dot. Setting it shows the
+   *  dot; there is no separate boolean, so the mark cannot exist unlabelled:
+   *  the dot itself is aria-hidden and would otherwise be visual-only. */
+  modifiedLabel?: string;
   children: ReactNode;
 }
 
@@ -38,6 +42,7 @@ export function StickyGroupHeader({
   onExpandedChange,
   summary,
   badge,
+  modifiedLabel,
   children,
 }: StickyGroupHeaderProps) {
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
@@ -71,6 +76,20 @@ export function StickyGroupHeader({
         <span className="text-[11px] font-bold text-content-tertiary uppercase tracking-widest">
           {title}
         </span>
+        {modifiedLabel && (
+          <>
+            {/* `title` as well as the sr-only text: a bare dot is unexplained
+                for anyone who can see it, and "changed" reads as "unsaved"
+                without the wording to correct it. */}
+            <span
+              title={modifiedLabel}
+              aria-hidden="true"
+              data-testid="group-modified-dot"
+              className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+            />
+            <span className="sr-only">{modifiedLabel}</span>
+          </>
+        )}
         {badge && (
           <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-info">
             {badge}

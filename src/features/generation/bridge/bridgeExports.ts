@@ -35,6 +35,7 @@ import type {
   SplitExportResult,
   SplitPreviewResult,
   BaseplateExportResult,
+  FitTestExportResult,
   ExportSlot,
   PendingExportMap,
 } from './bridgeTypes';
@@ -436,6 +437,39 @@ export function exportSlideFitSample(
     (requestId) => ({
       type: 'EXPORT_SLIDE_FIT_SAMPLE',
       payload: { requestId, format, slide },
+    })
+  );
+}
+
+/**
+ * Export the cutout fit-test card. The card is a slice of the real bin solid,
+ * so it costs a full export-quality generation and takes the bin's own
+ * params-derived timeout rather than the fixed coupon ceiling.
+ */
+export function exportFitTest(
+  ctx: BridgeExportContext,
+  params: BinParams,
+  format: ExportFormat,
+  options?: {
+    thicknessMm?: number;
+    stamp?: { designName?: string; pieceLabel?: string };
+    bed?: { width: number; depth: number };
+  }
+): Promise<FitTestExportResult> {
+  return runExport<FitTestExportResult>(
+    ctx,
+    'fitTest',
+    computeExportTimeoutMs(params),
+    (requestId) => ({
+      type: 'EXPORT_FIT_TEST',
+      payload: {
+        requestId,
+        params,
+        format,
+        thicknessMm: options?.thicknessMm,
+        stamp: options?.stamp,
+        bed: options?.bed,
+      },
     })
   );
 }

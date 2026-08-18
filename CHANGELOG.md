@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.421.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.420.0...gridfinity-layout-tool-v4.421.0) (2026-08-17)
+
+
+### Features
+
+* **bin-designer:** print a fit test for cutouts ([#3572](https://github.com/andymai/gridfinity-layout-tool/issues/3572)) ([95c610f](https://github.com/andymai/gridfinity-layout-tool/commit/95c610f94be492ceba0004456dbe4d0ace8be067)), closes [#3541](https://github.com/andymai/gridfinity-layout-tool/issues/3541)
+
+## [4.420.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.419.1...gridfinity-layout-tool-v4.420.0) (2026-08-17)
+
+
+### Features
+
+* **bin-designer:** show lid cutout keep-outs instead of clipping silently ([#3570](https://github.com/andymai/gridfinity-layout-tool/issues/3570)) ([ed720c1](https://github.com/andymai/gridfinity-layout-tool/commit/ed720c10059df55cc8fc580602ed9fef7c7cf5f9)), closes [#3563](https://github.com/andymai/gridfinity-layout-tool/issues/3563)
+
 ## [4.419.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.419.0...gridfinity-layout-tool-v4.419.1) (2026-08-17)
 
 

@@ -23,7 +23,7 @@ import { SnappingSlider } from '../../controls/SnappingSlider';
 import { LidGripControls } from '../LidGripControls';
 import { SlideControls } from '../SlideControls';
 import { StepperField } from '../shared/StepperField';
-import { Hint, Readout } from '../shared';
+import { Hint, Readout, SubHeader } from '../shared';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -39,15 +39,6 @@ import { useLidSection, LID_TOP_SURFACES } from './useLidSection';
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
 
 type Translator = ReturnType<typeof useTranslation>;
-
-/** Uppercase subsection label separating the lid's mental-model groups. */
-function SubHeader({ children }: { children: string }) {
-  return (
-    <span className="block text-[11px] font-semibold uppercase tracking-wider text-content-tertiary">
-      {children}
-    </span>
-  );
-}
 
 /** Render a single compatibility issue as a colored bullet line with an
  *  optional one-click Fix button. The button is only shown for issues

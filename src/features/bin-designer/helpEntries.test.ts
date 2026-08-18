@@ -8,7 +8,7 @@ describe('bin-designer helpEntries', () => {
         id: 'feature/bin-designer/print-bed-size',
         kind: 'feature',
         routes: ['designer'],
-        target: { surface: 'binDesigner:base', controlId: 'bd-physical-units' },
+        target: { surface: 'binDesigner:finishing', controlId: 'bd-physical-units' },
       })
     );
   });

@@ -2179,9 +2179,9 @@ const en: Record<string, string> = {
   'binDesigner.wallThickness.2.6': 'Maximum rigidity for large bins',
   'binDesigner.wallThickness.nozzleTip':
     'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
-  'binDesigner.flatFloor': 'Flat base (no socket)',
+  'binDesigner.flatFloor': 'Flat base',
   'binDesigner.flatFloorDisablesAttachment': 'Not available with flat base',
-  'binDesigner.lidBottom': 'Lid-compatible bottom',
+  'binDesigner.lidBottom': 'Lid base',
   'binDesigner.lid.section.grip': 'Lid grip',
   'binDesigner.lid.gripHint':
     'A well-fitting lid can be hard to get off again. This removes a little material where the lid meets the bin, so there is something to get a nail or a fingertip under.',
@@ -2211,15 +2211,15 @@ const en: Record<string, string> = {
     'Removes the stacking lip across the same span so a fingertip gets under the lid, and eases the click rails there. A bin stacked on top has nothing to locate against along that stretch.',
   'binDesigner.lid.section.tray': 'Organiser tray',
   'binDesigner.lid.matchingTrayHint':
-    'A lid keeps dust out; a tray keeps things from sliding. This starts a new design sized to this bin, with a lid-compatible bottom already set up.',
+    'A lid keeps dust out; a tray keeps things from sliding. This starts a new design sized to this bin, with a lid base already set up.',
   'binDesigner.lid.createMatchingTray': 'Create matching tray…',
   'binDesigner.lid.matchingTrayName': 'Organiser tray',
   'binDesigner.lidBottom.hint':
     'The underside becomes a lid instead of a Gridfinity base, so this bin sits on top of another one as an organiser tray. Match its width, depth and grid to the bin below.',
   'binDesigner.lidBottom.extraHeight': 'Clearance above the bin below',
-  'binDesigner.lidBaseDisablesAttachment': 'Not available with a lid-compatible bottom',
-  'binDesigner.lidBaseDisablesHalfSockets': 'A lid-compatible bottom has no sockets',
-  'binDesigner.lidBaseDisablesShelling': 'Nothing to shell through on a lid-compatible bottom',
+  'binDesigner.lidBaseDisablesAttachment': 'Not available on a lid base',
+  'binDesigner.lidBaseDisablesHalfSockets': 'A lid base has no sockets',
+  'binDesigner.lidBaseDisablesShelling': 'Nothing to shell through on a lid base',
   'binDesigner.halfSocketsDisablesLidBase': 'Not available with half sockets',
   'binDesigner.lightweightDisablesLidBase': 'Not available with a lightweight base',
   'binDesigner.spacerDisablesLidBase': 'Not available on a spacer',
@@ -2496,6 +2496,33 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.gap': 'Gap',
   'binDesigner.cutouts.staggered': 'Stagger rows',
   'binDesigner.cutouts.clearAll': 'Clear all',
+  'binDesigner.cutouts.fitTest.button': 'Print fit test',
+  'binDesigner.cutouts.fitTest.dialogTitle': 'Cutout fit test',
+  'binDesigner.cutouts.fitTest.dialogDescription':
+    'A thin slice of this bin’s top, with every cutout at its real size, position and spacing. Print it, try your parts, and adjust Clearance until they drop in.',
+  'binDesigner.cutouts.fitTest.thickness': 'Card thickness',
+  'binDesigner.cutouts.fitTest.thicknessInfo':
+    'How deep the slice is taken from the top of the bin.',
+  'binDesigner.cutouts.fitTest.thicknessHint':
+    'Cutouts shallower than the card keep their floor; deeper ones go all the way through, so the part pushes back out.',
+  'binDesigner.cutouts.fitTest.estimatesTitle': 'What it costs',
+  'binDesigner.cutouts.fitTest.estimateCard': 'Fit test',
+  'binDesigner.cutouts.fitTest.estimateBin': 'Whole bin',
+  'binDesigner.cutouts.fitTest.tipsTitle': 'How to use',
+  'binDesigner.cutouts.fitTest.tip1':
+    'Print it flat, the way it comes out. The openings then print exactly as they do on the bin.',
+  'binDesigner.cutouts.fitTest.tip2':
+    'Too tight? Raise Clearance on that cutout. Rattles? Lower it. Then export a new card.',
+  'binDesigner.cutouts.fitTest.tip3':
+    'The design name, clearance and thickness are engraved underneath, so a stack of cards stays readable.',
+  'binDesigner.cutouts.fitTest.exportComplete': 'Fit test exported',
+  'binDesigner.cutouts.fitTest.exportFailed': 'Fit test export failed',
+  'binDesigner.cutouts.fitTest.stepUnavailable':
+    'STEP cannot carry imported mesh cutouts. Use STL or 3MF.',
+  'binDesigner.cutouts.fitTest.warnSplit':
+    'Bigger than your print bed, so the card exports as {count} pieces in a ZIP.',
+  'binDesigner.cutouts.fitTest.warnSeamThroughCutout':
+    'The card is too big for your print bed and there is no clear gap to cut through, so a seam crosses a cutout. That cutout cannot be measured on this card.',
   'binDesigner.cutouts.group': 'Group',
   'binDesigner.cutouts.ungroup': 'Ungroup',
   'binDesigner.cutouts.pathfinder.title': 'Pathfinder',
@@ -2737,7 +2764,7 @@ const en: Record<string, string> = {
   'binDesigner.walls.text.disabledSolid': 'Not available for solid bins.',
   'binDesigner.walls.text.hint':
     'Text auto-fits into the clear area of each wall, avoiding cutouts and handles. Wall patterns are cleared behind it.',
-  'binDesigner.slideTray.fitSample.button': 'Print a fit test',
+  'binDesigner.slideTray.fitSample.button': 'Print fit test',
   'binDesigner.slideTray.fitSample.dialogTitle': 'Sliding tray fit test',
   'binDesigner.slideTray.fitSample.dialogDescription':
     'Five rail stubs at different clearances, plus one tray stub that runs in all of them.',
@@ -2981,13 +3008,40 @@ const en: Record<string, string> = {
     'Hollows each foot from the inside, so the grid shape shows through the bin floor. Saves the most filament, but small or flat items can settle into the recesses.',
   'binDesigner.lightweightMode.underside.hint':
     'Hollows each foot from below and leaves the bin floor flat, so nothing can fall into it. Finger scoops and drainage holes still work.',
-  'binDesigner.spacer': 'Spacer (no floor)',
+  'binDesigner.spacer': 'Spacer',
   'binDesigner.spacerHint':
     'Turns the bin into an open riser you stack under another bin, so bins of different heights finish flush. Its height counts like a bin of the same size — a 2u spacer under a 2u bin reaches the top of a 4u one.',
   'binDesigner.tile': 'Base only',
   'binDesigner.tileHint':
     'Removes the walls and keeps the feet and the floor, so the bin is just its Gridfinity base. It still locks into a baseplate. Keep the stacking lip for a raised edge that still stacks and takes the colours, or clear it for a flat plate.',
   'binDesigner.base.floorPattern': 'Drainage holes',
+  'binDesigner.base.bodyType': 'Body type',
+  'binDesigner.base.bodyType.standard': 'Standard',
+  'binDesigner.base.bodyType.standard.description':
+    'Feet, floor and walls: the ordinary Gridfinity bin',
+  'binDesigner.base.bodyType.flat.description': 'Sits flat instead of locking into a baseplate',
+  'binDesigner.base.bodyType.spacer.description':
+    'An open riser with no floor, to bring a bin up flush',
+  'binDesigner.base.bodyType.tile.description':
+    'Just the Gridfinity base: feet and floor, no walls',
+  'binDesigner.base.bodyType.tray.description': 'Its underside is a lid, so it sits on another bin',
+  'binDesigner.base.section.stacking': 'Stacking',
+  'binDesigner.base.section.mounting': 'Mounting',
+  'binDesigner.base.section.feet': 'Feet',
+  'binDesigner.base.section.floor': 'Floor',
+  'binDesigner.base.stackingLip.hint': "Lets another bin's feet sit on top of this one",
+  'binDesigner.base.magnetHoles': 'Magnet holes',
+  'binDesigner.base.magnetDiameter': 'Magnet diameter',
+  'binDesigner.base.magnetDepth': 'Magnet depth',
+  'binDesigner.base.magnetSummary': 'ø{diameter}mm × {depth}mm deep',
+  'binDesigner.base.screwHoles': 'Screw holes',
+  'binDesigner.base.screwDiameter': 'Screw diameter',
+  'binDesigner.base.summary.magnets': '{diameter}mm magnets',
+  'binDesigner.base.summary.screws': 'M{diameter} screws',
+  'binDesigner.lightweight.useUnderside': 'Use underside relief',
+  'binDesigner.group.finishing': 'Finishing',
+  'binDesigner.group.modified': 'Changed from defaults',
+  'binDesigner.finishing.summary.units': '{grid}mm grid · {height}mm height',
   'binDesigner.base.floorPattern.shape': 'Hole shape',
   'binDesigner.base.floorPattern.hint':
     'Perforates the floor and the feet below it, so water and dust fall straight through',
@@ -3301,7 +3355,7 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',
   'baseplate.stackPrint.hint':
     'Prints all drawer plates as a vertical stack with gaps between them. Plates snap apart after printing.',
-  'baseplate.stackPrint.sampleButton': 'Print fit sample',
+  'baseplate.stackPrint.sampleButton': 'Print fit test',
   'baseplate.stackPrint.sampleExportComplete': 'Stack fit sample exported',
   'baseplate.stackPrint.sampleTitle': 'Stack fit sample',
   'baseplate.stackPrint.sampleDescription':
@@ -3351,7 +3405,7 @@ const en: Record<string, string> = {
   'baseplate.connectorSlotsAllEdgesHint':
     'Also cuts the slots into the outer edges, so every piece is a standard tile that keys onto plates you print later. Edges with a drawer-fit margin are skipped.',
   'baseplate.preferIdenticalPieces': 'Fewer unique parts',
-  'baseplate.connectorSample.button': 'Print fit sample',
+  'baseplate.connectorSample.button': 'Print fit test',
   'baseplate.connectorSample.dialogTitle': 'Connector fit sample',
   'baseplate.connectorSample.dialogDescription':
     'A small calibration print of all three connector styles across a range of fit offsets. Print it, find the fit that clicks, then set Connector fit to that value before printing the full baseplate.',

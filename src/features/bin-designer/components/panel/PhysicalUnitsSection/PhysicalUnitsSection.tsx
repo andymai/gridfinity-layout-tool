@@ -25,7 +25,7 @@ export function PhysicalUnitsSection() {
 
   useEffect(() => {
     const handler = () => setExpanded(true);
-    const eventName = helpJumpEventName('binDesigner:base');
+    const eventName = helpJumpEventName('binDesigner:finishing');
     window.addEventListener(eventName, handler);
     return () => window.removeEventListener(eventName, handler);
   }, []);

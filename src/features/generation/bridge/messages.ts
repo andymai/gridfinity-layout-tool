@@ -40,6 +40,7 @@ export type WorkerMessage =
   | ExportLabelPlatesMessage
   | ExportLabelFitSampleMessage
   | ExportSlideFitSampleMessage
+  | ExportFitTestMessage
   | ExportDividersMessage
   | ExportCombinedMessage
   | ExportSplitMessage
@@ -292,6 +293,30 @@ export interface ExportLabelFitSamplePayload {
   readonly format: ExportFormat;
   /** Live print nozzle (mm) so coupons scale like the sockets they calibrate. */
   readonly nozzleSizeMm?: number;
+}
+
+/**
+ * Export the cutout fit-test card: a horizontal slice of this design's own top.
+ * Carries the whole `BinParams` because the card is cut from the generated
+ * solid, not rebuilt from the cutout list. Answers with its own result type
+ * rather than BASEPLATE_EXPORT_RESULT: an oversize card comes back as pieces,
+ * and the seam nudge has something to report.
+ */
+export interface ExportFitTestMessage {
+  readonly type: 'EXPORT_FIT_TEST';
+  readonly payload: ExportFitTestPayload;
+}
+
+export interface ExportFitTestPayload {
+  readonly requestId: string;
+  readonly params: BinParams;
+  readonly format: ExportFormat;
+  /** Card thickness (mm). Clamped worker-side to the design's legal range. */
+  readonly thicknessMm?: number;
+  /** Design name and piece label for the underside stamp. */
+  readonly stamp?: { readonly designName?: string; readonly pieceLabel?: string };
+  /** Print bed (mm). Omitted leaves an oversize card whole. */
+  readonly bed?: { readonly width: number; readonly depth: number };
 }
 
 export interface ExportMessage {

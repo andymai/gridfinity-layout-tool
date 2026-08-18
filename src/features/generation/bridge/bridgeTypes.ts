@@ -9,6 +9,7 @@ import type {
   ExportFormat,
   ExportErrorCode,
   SplitExportPiece,
+  FitTestExportPiece,
   SplitPreviewPiece,
   CombinedExportPiece,
   FaceGroupData,
@@ -81,6 +82,14 @@ export interface SplitExportResult {
   readonly pieces: readonly SplitExportPiece[];
 }
 
+/** Result from a successful fit-test card export. */
+export interface FitTestExportResult {
+  readonly pieces: readonly FitTestExportPiece[];
+  readonly fileName: string;
+  /** Seams that had to cross an opening; the caller warns when non-zero. */
+  readonly blockedSeams: number;
+}
+
 /** Result from a successful split preview generation (mesh data per piece) */
 export interface SplitPreviewResult {
   readonly pieces: readonly SplitPreviewPiece[];
@@ -109,7 +118,7 @@ export interface ThreadingInfo {
 }
 
 /** Keys for the pending export request slots */
-export type ExportSlot = 'export' | 'dividers' | 'combined' | 'split' | 'splitPreview';
+export type ExportSlot = 'export' | 'dividers' | 'combined' | 'split' | 'splitPreview' | 'fitTest';
 
 /** A pending export request: resolve/reject callbacks + request ID + timeout timer */
 export interface PendingExport<T> {

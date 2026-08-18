@@ -48,13 +48,13 @@ describe('PhysicalUnitsSection', () => {
     expect(screen.getByLabelText('Print bed width')).toBeInTheDocument();
   });
 
-  it('expands when a help-jump targets binDesigner:base so the print-bed marker is reachable', () => {
+  it('expands when a help-jump targets binDesigner:finishing so the print-bed marker is reachable', () => {
     render(<PhysicalUnitsSection />);
     const toggle = screen.getByRole('button', { name: /physical units/i });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
     act(() => {
-      window.dispatchEvent(new CustomEvent(helpJumpEventName('binDesigner:base')));
+      window.dispatchEvent(new CustomEvent(helpJumpEventName('binDesigner:finishing')));
     });
 
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
