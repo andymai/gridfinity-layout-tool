@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.0...gridfinity-layout-tool-v4.424.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **layout:** correct the drawer-ceiling model for slide lids, plates and lipless stacks ([#3581](https://github.com/andymai/gridfinity-layout-tool/issues/3581)) ([d3872ff](https://github.com/andymai/gridfinity-layout-tool/commit/d3872ffa44670a312828221500fbc4dcae6de199))
+
 ## [4.424.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.423.0...gridfinity-layout-tool-v4.424.0) (2026-08-18)
 
 
