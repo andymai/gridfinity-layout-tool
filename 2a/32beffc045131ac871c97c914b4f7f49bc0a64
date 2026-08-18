@@ -1,0 +1,52 @@
+src/features/generation/worker/generators/pipeline/context.test.ts
+  s_5882a47eb73dff::t_aae9e82eb977db 244-275
+src/shared/generation/meshPersistence.ts
+  s_5882a47eb73dff::t_2f23becf6e5cae 45-49
+  s_5882a47eb73dff::t_0c505a5cff7d6d 63
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.ts
+  s_5882a47eb73dff::t_fac0f6cab82389 66-70,72-76
+  s_5882a47eb73dff::t_d62c5ba3e5d488 8
+src/features/bin-designer/constants/paramMigration.ts
+  s_5882a47eb73dff::t_1b362ef2036e9a 34-38
+  s_5882a47eb73dff::t_a8e2023399aaf8 995-1004
+src/features/bin-designer/types/featureColors.ts
+  s_5882a47eb73dff::t_f714b1577390d8 13
+  s_5882a47eb73dff::t_65033787504cfc 564-567
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.test.ts
+  s_5882a47eb73dff::t_d0dacdcf5d7a55 52-79
+src/features/generation/worker/generators/detachableFeetOrchestrator.ts
+  s_5882a47eb73dff::t_8ac4e9b6e31ac8 47-48,50
+  s_5882a47eb73dff::t_0d142a3c706abb 51-53
+src/features/bin-designer/components/preview/LidExplodeSlider/LidExplodeSlider.tsx
+  s_5882a47eb73dff::t_e23b142a94b647 52-53
+  s_5882a47eb73dff::t_d5d249e1c1ea4c 123-127,131,134,137,140,144
+src/features/generation/worker/generators/floorPatterns.ts
+  s_5882a47eb73dff::t_670fd180bb08ed 119-125
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_5882a47eb73dff::t_b984552196528b 655-672
+src/features/bin-designer/components/preview/FeetDetachSlider/FeetDetachSlider.test.tsx
+  s_5882a47eb73dff::t_38c1d702ba7669 2
+  s_5882a47eb73dff::t_67977dc862285e 40-51,53-56
+  s_5882a47eb73dff::t_3ffd204cc9044c 52
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_5882a47eb73dff::t_cd00cd821287ed 216-219
+src/features/generation/worker/generators/pipeline/context.ts
+  s_5882a47eb73dff::t_1de57f7952c873 15
+  s_5882a47eb73dff::t_c129fb396b655f 75-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "2a32beffc045131ac871c97c914b4f7f49bc0a64",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
