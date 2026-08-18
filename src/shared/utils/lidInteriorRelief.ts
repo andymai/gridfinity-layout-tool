@@ -32,6 +32,19 @@ export function interiorReliefActive(params: BinParams): boolean {
   // its own and works on a lipless bin — which is the whole of the `flush`
   // placement — so the precondition follows the attachment rather than the bin.
   if (!isSlideLid(params.lid) && !params.base.stackingLip) return false;
+  // A flush plate on a lipped bin is a compatibility BLOCKER with a one-click
+  // fix (`slideFlushNeedsNoLip`), and no channel or lid is built while it
+  // stands. Relieving would gut the whole mouth of the cavity for a lid that
+  // is not coming. Stated as the pure param test rather than through
+  // `shouldGenerateLid`, which reaches `checkLidCompatibility` and would
+  // recurse back into this predicate.
+  if (
+    isSlideLid(params.lid) &&
+    params.base.stackingLip &&
+    resolveLidSlide(params.lid).placement === 'flush'
+  ) {
+    return false;
+  }
   // A base-only tile has no cavity to relieve.
   if (params.base.tile === true) return false;
   // Custom shapes are relieved too. Their ring follows the mask

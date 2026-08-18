@@ -1,4 +1,5 @@
 import {
+  isSlideLid,
   LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
   LID_MIN_RAIL_LENGTH,
@@ -42,6 +43,10 @@ export const LID_TOP_SURFACES: readonly LidTopSurface[] = ['flat', 'stackable', 
  */
 export function lidValueSummary(lid: LidConfig, t: ReturnType<typeof useTranslation>): string {
   if (lid.attachment === 'friction') return t('binDesigner.lid.summaryFriction');
+  // Before the rail fall-through: a slide config KEEPS its inert per-side rail
+  // selection across an attachment switch, so falling through would caption a
+  // sliding lid "{coverage}% rails".
+  if (isSlideLid(lid)) return t('binDesigner.lid.summarySlide');
   if (lid.attachment === 'magnetic') {
     return t('binDesigner.lid.summaryMagnetic', {
       diameter: lid.retentionMagnet.diameter.toFixed(1),

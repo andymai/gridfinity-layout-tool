@@ -17,6 +17,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
+  binWallTopZ,
   entryLipRemnantMm,
   entryOpeningMm,
   newCrossingsAbovePlate,
@@ -25,8 +26,12 @@ import {
   travelInterferenceMm3,
   type SlidePair,
 } from './__kernel-tests__/slideLidSeating';
+import { columnCrossings, isSolidThrough } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { slideLidPlanForParams } from '@/shared/types/bin';
 import type { BinParams, LidSlideConfig } from '@/features/bin-designer/types';
 import type { MeshData } from '@/features/generation/bridge/types';
 
@@ -250,5 +255,65 @@ describe('sliding lid seating', () => {
     expect(lipped.geometry.plateTopBelowWallTopMm).toBeGreaterThan(
       flush.geometry.plateTopBelowWallTopMm + 2
     );
+  }, 600000);
+
+  it('leaves the corner wall solid through the relief band', async () => {
+    // The cavity's corners are ARCS; a square travel-envelope cutter reaches
+    // √2·r from the arc centre and thins the corner wall to ~0.14mm at the
+    // default thickness (through it below ~1.1mm). Probed on the EXPORT mesh:
+    // the preview mesh concatenates the base socket and its coincident faces
+    // flip span parity (see `binStackSeating`'s cache note). Stated against
+    // the lidless bin, which must read solid through the same window.
+    const params = slideParams();
+    const bin = getGenerateBin()(params, undefined, true);
+    const bare = getGenerateBin()(
+      { ...params, lid: { ...params.lid, enabled: false } },
+      undefined,
+      true
+    );
+    const dims = binDimensions(params);
+    const wallTop = binWallTopZ(params);
+    const r = GRIDFINITY_SPEC.BOX_CORNER_RADIUS;
+    const midAnnulus = (r - params.wallThickness / 2) / Math.SQRT2;
+
+    // The two BACK corners — clear of the entry notch on the front wall.
+    for (const sx of [-1, 1] as const) {
+      const x = sx * (dims.outerW / 2 - r + midAnnulus);
+      const y = dims.outerD / 2 - r + midAnnulus;
+      expect(isSolidThrough(bare, x, y, 10, wallTop - 0.2), `bare corner sx=${sx}`).toBe(true);
+      expect(isSolidThrough(bin, x, y, 10, wallTop - 0.2), `corner sx=${sx}`).toBe(true);
+    }
+  }, 600000);
+
+  it('cuts divider crowns to the wall top instead of leaving them bridging the plate', async () => {
+    // Dividers are built to the interior ceiling, 0.7mm below the wall top;
+    // the travel envelope tops out a lip-taper lower. Without the crown cut,
+    // each divider keeps a ~2mm slab floating over the plate, welded only to
+    // the perimeter — unprintable and pointless. After it, a divider column
+    // holds NOTHING between the envelope's top and the wall top.
+    const params = slideParams({
+      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
+    });
+    const bin = getGenerateBin()(params, undefined, true);
+    const { geometry } = slideLidPlanForParams(params);
+    if (!geometry) throw new Error('expected slide geometry');
+    const wallTop = binWallTopZ(params);
+    const envTopZ = wallTop - geometry.plateTopBelowWallTopMm + geometry.travelEnvelope.zMax;
+    // This case exists because the gap is real; if the placements ever close
+    // it, the probe below would pass vacuously.
+    expect(wallTop - envTopZ).toBeGreaterThan(1);
+
+    const dims = binDimensions(params);
+    // One column on each divider's centre plane, clear of the cross junction.
+    const columns: ReadonlyArray<readonly [number, number]> = [
+      [0, dims.innerD / 4],
+      [dims.innerW / 4, 0],
+    ];
+    for (const [x, y] of columns) {
+      const inBand = columnCrossings(bin, x, y).filter(
+        (z) => z > envTopZ + 0.05 && z < wallTop + 1
+      );
+      expect(inBand, `column (${x.toFixed(1)}, ${y.toFixed(1)})`).toHaveLength(0);
+    }
   }, 600000);
 });

@@ -15,6 +15,7 @@
 import { SegmentedControl } from '@/design-system';
 import { Switch } from '@/design-system/Switch';
 import { Hint, Readout } from '../shared';
+import { SLIDE_SAG_SPAN_MM } from '@/shared/utils/slideLidPlan';
 import type { useTranslation } from '@/i18n';
 import type { useLidSection } from '../LidSection/useLidSection';
 
@@ -106,6 +107,17 @@ export function SlideControls({
           })}
         </Readout>
       )}
+      {/* Same gate as the `slideLongSpan` warning, so the number that answers
+          it appears exactly when the warning does. */}
+      {state.slideFreeSpanMm !== null &&
+        state.slideFreeSpanMm > SLIDE_SAG_SPAN_MM &&
+        state.slideSagThicknessMm !== null && (
+          <Readout>
+            {t('binDesigner.lid.slide.sagThicknessReadout', {
+              thickness: state.slideSagThicknessMm.toFixed(1),
+            })}
+          </Readout>
+        )}
     </div>
   );
 }
