@@ -4,3 +4,4 @@ export {
   LID_OFFSET_MAX,
   LID_OFFSET_DEFAULT,
 } from './LidExplodeSlider';
+export { EXPLODE_SLIDER_SLOTS, type ExplodeSliderSlot } from './explodeSliderSlots';

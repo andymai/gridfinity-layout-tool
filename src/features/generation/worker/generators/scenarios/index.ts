@@ -48,6 +48,7 @@ import { kumikoPatterns } from './kumikoPatterns';
 import { kumikoWrapping } from './kumikoWrapping';
 import { dividerPatterns } from './dividerPatterns';
 import { floorPatterns } from './floorPatterns';
+import { knifeBlock } from './knifeBlock';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -99,4 +100,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...tile,
   ...trayBottom,
   ...slideTray,
+  ...knifeBlock,
 ];

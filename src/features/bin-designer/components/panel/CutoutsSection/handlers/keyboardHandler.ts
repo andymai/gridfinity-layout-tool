@@ -281,6 +281,15 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
+    // K: switch to knife-slot tool
+    case 'k':
+      if (!mod) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ctx.setMode({ type: 'placing', shape: 'knifeSlot' });
+      }
+      break;
+
     // M: switch to ruler/measure tool
     case 'm':
       if (!mod) {

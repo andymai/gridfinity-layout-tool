@@ -91,8 +91,9 @@ export const duplicateBin = defineCommand({
           });
 
     // The size lock marks one placement as settled, so it doesn't ride along to
-    // a copy the user is most likely about to resize.
-    const { locked: _locked, ...copyable } = source;
+    // a copy the user is most likely about to resize. Pairing stays behind
+    // too: copying one half must not mint a third member of the pair.
+    const { locked: _locked, pairId: _pairId, pairRole: _pairRole, ...copyable } = source;
 
     const newBin: Bin = {
       ...copyable,

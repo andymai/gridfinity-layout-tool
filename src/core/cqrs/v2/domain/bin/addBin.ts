@@ -32,6 +32,8 @@ const payloadSchema = z.object({
   notes: z.string().max(CONSTRAINTS.NOTES_MAX_LENGTH),
   customProperties: z.record(z.string(), z.string()).optional(),
   linkedDesignId: z.string().optional(),
+  pairId: z.string().min(1).optional(),
+  pairRole: z.enum(['block', 'rest']).optional(),
 });
 
 export const addBin = defineCommand({

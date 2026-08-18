@@ -30,6 +30,7 @@ import {
   upsertRegistryEntry,
   registryEdgeFields,
   registryHeightFields,
+  registryKnifeRestFields,
 } from '../store/customBinRegistry';
 import { isBinDesign } from '../utils/designKind';
 import type { BinParams, SavedDesign } from '../types';
@@ -137,6 +138,7 @@ function syncToRegistry(design: SavedDesign & { params: BinParams }): void {
     height: design.params.height,
     ...registryEdgeFields(design.params),
     ...registryHeightFields(design.params),
+    ...registryKnifeRestFields(design.params),
     updatedAt: design.updatedAt,
   });
 }

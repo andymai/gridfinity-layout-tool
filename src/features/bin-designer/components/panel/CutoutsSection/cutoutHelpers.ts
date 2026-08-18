@@ -12,6 +12,8 @@ import {
 } from '@/features/bin-designer/types';
 import { polygonBoxFromAcrossFlats } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { DEFAULT_KNIFE_PRESET } from './knifeSlotPresets';
+import { KNIFE_SLOT_DEFAULT_CHAMFER, knifeSlotDimensions } from '@/features/bin-designer/types';
 import { translatePathPoints } from './pathGeometry';
 import {
   DEFAULT_RECT_SIZE,
@@ -134,6 +136,10 @@ export function defaultPlaceSize(shape: CutoutShape): { width: number; depth: nu
       return polygonBoxFromAcrossFlats(DEFAULT_POLYGON_SIDES, DEFAULT_POLYGON_ACROSS_FLATS);
     case 'slot':
       return { width: DEFAULT_SLOT_WIDTH, depth: DEFAULT_SLOT_DEPTH };
+    case 'knifeSlot': {
+      const dims = knifeSlotDimensions(DEFAULT_KNIFE_PRESET.knife);
+      return { width: dims.widthMm, depth: dims.depthMm };
+    }
     default:
       return { width: DEFAULT_RECT_SIZE, depth: DEFAULT_RECT_SIZE };
   }
@@ -245,6 +251,15 @@ export function createDefaultCutout(
       ? {
           clearance: DEFAULT_CUTOUT_CLEARANCE,
           chamferWidth: defaultEntryChamfer(Math.min(width, depth), cutDepth),
+        }
+      : {}),
+    // Knife slots carry their knife's measurements (clearance is baked into
+    // the slot dims, so no `clearance` field) and a wide drop-in flare.
+    ...(shape === 'knifeSlot'
+      ? {
+          cutDepth: knifeSlotDimensions(DEFAULT_KNIFE_PRESET.knife).cutDepthMm,
+          knife: DEFAULT_KNIFE_PRESET.knife,
+          chamferWidth: KNIFE_SLOT_DEFAULT_CHAMFER,
         }
       : {}),
   };

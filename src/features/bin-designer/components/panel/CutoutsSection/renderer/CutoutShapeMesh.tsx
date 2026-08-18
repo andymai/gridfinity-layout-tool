@@ -158,7 +158,7 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   const shapeType = effective.shape === 'circle' ? 1 : 0;
   // Slot = rounded box with fully-rounded ends; its radius is derived, not stored.
   const effectiveCornerRadius =
-    effective.shape === 'slot'
+    effective.shape === 'slot' || effective.shape === 'knifeSlot'
       ? slotCornerRadius(effective.width, effective.depth)
       : effective.cornerRadius;
 

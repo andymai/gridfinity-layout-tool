@@ -17,6 +17,7 @@ import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import { getLayerBins } from '@/shared/utils/bins';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById, findBinsByIds } from '@/shared/utils/entity';
+import { expandPairIds, pairPartner } from '@/shared/utils/binPairs';
 import { findNearestBin } from '@/features/grid-editor/utils/navigation';
 import { isOk, isErr } from '@/core/result';
 import type { BinId, GridUnits } from '@/core/types';
@@ -31,12 +32,14 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
 export function handleDelete(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (!isShortcut(e.key, SHORTCUTS.DELETE) || ctx.selectedBinIds.length === 0) return false;
   e.preventDefault();
-  mlTracking.trackBinsDeletion(findBinsByIds(ctx.layout, ctx.selectedBinIds), 'key');
+  // A paired bin takes its partner with it — half a knife block is not a thing.
+  const deleteIds = [...expandPairIds(new Set(ctx.selectedBinIds), ctx.layout.bins)];
+  mlTracking.trackBinsDeletion(findBinsByIds(ctx.layout, deleteIds), 'key');
 
   // If the keyboard-focused bin is among those being deleted, relocate focus to
   // the nearest survivor so screen-reader/keyboard users aren't dropped to the
   // document body. Computed before deletion while the focused bin still exists.
-  const deletedIds = new Set(ctx.selectedBinIds);
+  const deletedIds = new Set(deleteIds);
   const focusedBin =
     ctx.focusedBinId !== null && deletedIds.has(ctx.focusedBinId)
       ? findBinById(ctx.layout, ctx.focusedBinId)
@@ -50,7 +53,7 @@ export function handleDelete(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     : null;
 
   ctx.batch(() => {
-    for (const binId of ctx.selectedBinIds) {
+    for (const binId of deleteIds) {
       ctx.deleteBin(binId);
     }
   });
@@ -208,6 +211,45 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     return true;
   }
 
+  // A paired bin rotates as a unit: both rectangles turn a quarter about the
+  // pair's combined footprint so block, gap and rest keep their arrangement.
+  const partner = pairPartner(bin, ctx.layout.bins);
+  if (partner) {
+    if (isBinLocked(partner)) {
+      ctx.addToast(ctx.t('toast.binSizeLocked'), 'info');
+      return true;
+    }
+    const pieces = [bin, partner];
+    const cx =
+      (Math.min(...pieces.map((p) => p.x)) + Math.max(...pieces.map((p) => p.x + p.width))) / 2;
+    const cy =
+      (Math.min(...pieces.map((p) => p.y)) + Math.max(...pieces.map((p) => p.y + p.depth))) / 2;
+    // Clockwise quarter about (cx, cy); half-unit snap keeps an odd combined
+    // span on the grid.
+    const rotated = pieces.map((p) => ({
+      id: p.id,
+      x: (Math.round((cx + (p.y - cy)) * 2) / 2) as GridUnits,
+      y: (Math.round((cy - (p.x + p.width - cx)) * 2) / 2) as GridUnits,
+      width: p.depth,
+      depth: p.width,
+      height: p.height,
+    }));
+    const excludeIds = new Set(pieces.map((p) => p.id));
+    const allValid = rotated.every(
+      (r) => r.x >= 0 && r.y >= 0 && canPlaceBin(r, bin.layerId, ctx.layout, r.id, excludeIds).valid
+    );
+    if (!allValid) {
+      ctx.addToast(ctx.t('toast.pairRotateBlocked'), 'error');
+      return true;
+    }
+    ctx.batch(() => {
+      for (const r of rotated) {
+        ctx.updateBin(r.id, { x: r.x, y: r.y, width: r.width, depth: r.depth });
+      }
+    });
+    return true;
+  }
+
   const result = validateBinRotation(bin, ctx.layout);
   if (!result.valid) {
     ctx.addToast(result.message, 'error');
@@ -290,10 +332,11 @@ export function handleNudge(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     return true;
   }
 
-  // Nudge selected bins
+  // Nudge selected bins (paired bins bring their partner along)
   if (ctx.selectedBinIds.length === 0) return true;
+  const nudgeIds = [...expandPairIds(new Set(ctx.selectedBinIds), ctx.layout.bins)];
 
-  const selectedBins = findBinsByIds(ctx.layout, ctx.selectedBinIds);
+  const selectedBins = findBinsByIds(ctx.layout, nudgeIds);
   const increment = selectedBins.some((bin) => hasFractionalDimensions(bin)) ? 0.5 : 1;
 
   let dx = 0,
@@ -304,10 +347,10 @@ export function handleNudge(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (e.key === SHORTCUTS.NUDGE_RIGHT) dx = increment;
 
   // Validate all bins can move
-  const excludeIds = new Set(ctx.selectedBinIds);
+  const excludeIds = new Set(nudgeIds);
   let allValid = true;
 
-  for (const binId of ctx.selectedBinIds) {
+  for (const binId of nudgeIds) {
     const bin = findBinById(ctx.layout, binId);
     if (!bin || bin.layerId === STAGING_ID) {
       allValid = false;
@@ -345,7 +388,7 @@ export function handleNudge(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     mlTracking.trackMove(newFirstBin, oldPosition, 'nudge', selectedBins.length);
 
     ctx.batch(() => {
-      for (const binId of ctx.selectedBinIds) {
+      for (const binId of nudgeIds) {
         const bin = findBinById(ctx.layout, binId);
         if (!bin) continue;
         ctx.updateBin(binId, { x: (bin.x + dx) as GridUnits, y: (bin.y + dy) as GridUnits });

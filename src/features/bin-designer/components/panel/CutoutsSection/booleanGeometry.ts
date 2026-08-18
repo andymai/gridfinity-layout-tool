@@ -161,7 +161,7 @@ export function cutoutToPolygon(c: Cutout): Polygon | null {
     const ring = polygonRing(c);
     return ring ? [ring] : null;
   }
-  if (c.shape === 'slot') {
+  if (c.shape === 'slot' || c.shape === 'knifeSlot') {
     // Stadium = rounded rect with fully-rounded ends (radius = half short side).
     return [rectangleRing({ ...c, cornerRadius: slotCornerRadius(c.width, c.depth) })];
   }

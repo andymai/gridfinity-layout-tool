@@ -26,11 +26,13 @@ import {
   StackPlateMesh,
   SlideTrayMesh,
   DetachableFeetMesh,
+  KnifeRestMesh,
   LabelPlateMeshes,
   LidGuideLine,
   LidExplodeSlider,
   FeetDetachSlider,
   LID_OFFSET_DEFAULT,
+  EXPLODE_SLIDER_SLOTS,
   BinAxisLabels,
   AssembledBinDimensions,
   CompartmentDimensions,
@@ -49,6 +51,7 @@ import {
   GhostLidCutouts,
   GhostWallCutouts,
   GhostHandles,
+  GhostKnives,
   OverhangHighlight,
   BinSplitLines,
   SplitBinMeshes,
@@ -65,6 +68,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { stackPitchMm } from '@/shared/utils/heightUnits';
 import { useTranslation } from '@/i18n';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
+import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import {
@@ -140,6 +144,10 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // stranded them 30mm down on a bin with no lid, where the slider that set it
   // is never rendered.
   const [feetOffsetMm, setFeetOffsetMm] = useState<number>(0);
+  // The knife rest starts mated at its planned gap: that gap IS the design
+  // decision the preview is showing, so opening it by default would show a
+  // spacing nobody chose.
+  const [restOffsetMm, setRestOffsetMm] = useState<number>(0);
 
   // Preview color persisted in localStorage
   const [previewColor, setPreviewColor] = useState(() => {
@@ -219,9 +227,14 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // can recolor multiple zones in one session.
   const handleClosePicker = useCallback(() => setPickerOverlay(null), [setPickerOverlay]);
 
-  // A bin can carry both sliders, and the two share one anchor on the right
-  // edge — so the feet's takes the second slot whenever the lid's is on screen.
+  // A bin can carry several sliders, and they share one anchor on the right
+  // edge — so each takes the next free slot down the list.
   const showLidSlider = params.lid.enabled && params.base.stackingLip;
+  const showFeetSlider = hasDetachableFeet(params.base);
+  // Companion only: an integrated rest is part of the block, so there is
+  // nothing to separate from it.
+  const showRestSlider = useMemo(() => planKnifeRest(params)?.style === 'companion', [params]);
+  const restSliderSlot = EXPLODE_SLIDER_SLOTS[(showLidSlider ? 1 : 0) + (showFeetSlider ? 1 : 0)];
 
   // Reset the explode slider to its default whenever the lid transitions
   // off → on. Without this, a stale value (e.g. 80mm from a previous session)
@@ -234,6 +247,14 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
     }
     wasLidEnabledRef.current = params.lid.enabled;
   }, [params.lid.enabled]);
+
+  // Same stale-value problem the lid has: the rest's slider unmounts with the
+  // rest, but the offset it set is parent-owned and outlives it.
+  const wasRestEnabledRef = useRef(showRestSlider);
+  useEffect(() => {
+    if (showRestSlider && !wasRestEnabledRef.current) setRestOffsetMm(0);
+    wasRestEnabledRef.current = showRestSlider;
+  }, [showRestSlider]);
 
   const { defaultPrintBedSize: bedSize, defaultPrintBedDepth: bedDepth } = useSettingsStore(
     useShallow((s) => ({
@@ -495,6 +516,15 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 wireframe={wireframe}
                 xray={xray}
               />
+              {/* Knife-block handle rest, standing beside the block on the same
+                ground plane (renders only when the design's rest is a
+                companion and the worker produced it). */}
+              <KnifeRestMesh
+                color={previewColor}
+                offsetMm={restOffsetMm}
+                wireframe={wireframe}
+                xray={xray}
+              />
               {/* Swappable label plates (socket mode): seated in their sockets
                 and again in a reference row beside the bin. Shares the explode
                 slider — it withdraws the seated ones, the row stays put. */}
@@ -528,6 +558,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                   <GhostCutouts />
                   <GhostWallCutouts />
                   <GhostHandles />
+                  <GhostKnives />
                 </>
               )}
 
@@ -611,11 +642,28 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               its stacking lip is on (lid won't render/export without lip). */}
           {showLidSlider && <LidExplodeSlider value={lidOffsetMm} onChange={setLidOffsetMm} />}
 
-          {hasDetachableFeet(params.base) && (
+          {showFeetSlider && (
             <FeetDetachSlider
               value={feetOffsetMm}
               onChange={setFeetOffsetMm}
               showsBesideLid={showLidSlider}
+            />
+          )}
+
+          {/* Slides the handle rest further from the block along the exit axis.
+              Not inverted: the rest travels sideways, so neither end of the
+              track is the way the part moves, and "up = further apart" is the
+              reading the lid's slider already established. */}
+          {showRestSlider && (
+            <LidExplodeSlider
+              value={restOffsetMm}
+              onChange={setRestOffsetMm}
+              slot={restSliderSlot}
+              labels={{
+                open: t('binDesigner.preview.knifeRestApart'),
+                closed: t('binDesigner.preview.knifeRestMated'),
+                aria: t('binDesigner.preview.knifeRestSlider'),
+              }}
             />
           )}
 

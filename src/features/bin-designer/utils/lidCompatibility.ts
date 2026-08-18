@@ -66,6 +66,7 @@ export type LidCompatibilitySeverity = 'blocker' | 'warning';
 export type LidCompatibilityId =
   | 'wallCutouts'
   | 'wallCutoutsAllSides'
+  | 'knifeSlots'
   | 'wallPattern'
   | 'shortBin'
   | 'tallLidShortBin'
@@ -365,6 +366,17 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
       issues.push({ id: 'wallCutoutsAllSides', severity: 'blocker', sides: cutSides });
     } else if (cutSides.length > 0) {
       issues.push({ id: 'wallCutouts', severity: 'warning', sides: cutSides });
+    }
+  }
+
+  // 1b. Knife-slot exits. Each open end takes a slot's-thickness notch out of
+  //    the lip where the blade channel leaves the block; the rails segment
+  //    around it exactly as they do for a cutout window. A few millimetres per
+  //    exit can never clear a whole wall, so this never escalates to a blocker.
+  if (!isMagnetic && !isPolygon) {
+    const knifeSides = lipGapSides(gaps, 'knifeSlot');
+    if (knifeSides.length > 0) {
+      issues.push({ id: 'knifeSlots', severity: 'warning', sides: knifeSides });
     }
   }
 
@@ -675,6 +687,7 @@ const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set([
   'labelTabs',
   'compartmentDividers',
   'wallCutouts',
+  'knifeSlots',
   'handles',
   // The entry wall is where the plate goes IN, not a wall to switch anything
   // off on. A sliding lid has no rails for this set to govern, so listing it is

@@ -20,8 +20,13 @@ import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labe
  *    contoured pocket. The 2D editor shows its silhouette footprint
  *    (move/rotate only; the outline is derived from the mesh, never
  *    point-edited).
+ *  - `knifeSlot` — a blade slot for an in-drawer knife block: a deep stadium
+ *    groove (long axis = local X) whose {@link Cutout.knife} spec records the
+ *    knife it was sized for. One end may open through the perimeter wall so
+ *    the bolster stops at the block face and the handle lies level beyond it.
  */
-export type CutoutShape = 'rectangle' | 'circle' | 'path' | 'polygon' | 'slot' | 'mesh';
+export type CutoutShape =
+  'rectangle' | 'circle' | 'path' | 'polygon' | 'slot' | 'mesh' | 'knifeSlot';
 
 /**
  * Which surfaces of a colored cutout take its {@link Cutout.color}:
@@ -119,7 +124,41 @@ export const CHAMFER_SHAPES: readonly CutoutShape[] = [
   'slot',
   'path',
   'mesh',
+  'knifeSlot',
 ];
+
+/** Which end of a knife slot's long (local X) axis opens through the wall. */
+export type KnifeSlotOpenEnd = 'start' | 'end';
+
+/**
+ * The knife a {@link CutoutShape} `knifeSlot` was sized for. The slot's cut
+ * geometry lives in the shared `width`/`depth`/`cutDepth` fields (so all
+ * bounds/resize/array math is inherited); this spec carries the source
+ * measurements that sized them, read by the handle-rest derivation (saddle
+ * height needs the handle diameter) and the preview's ghost knife. Clearance
+ * is baked into the slot dimensions at creation — these are nominal knife
+ * measurements, not cut sizes.
+ */
+export interface KnifeSpec {
+  /** Preset this spec came from (provenance only; absent for custom knives). */
+  readonly presetId?: string;
+  /** Blade length, heel to tip (mm). */
+  readonly bladeLengthMm: number;
+  /** Blade height at the heel, edge to spine (mm) — sizes the slot depth. */
+  readonly heelHeightMm: number;
+  /** Spine thickness at the heel (mm) — sizes the slot width. */
+  readonly spineThicknessMm: number;
+  /** Handle diameter at its thickest (mm) — sizes the rest saddle height. */
+  readonly handleDiameterMm: number;
+  /**
+   * Which end of the slot opens through the perimeter wall so the handle can
+   * lie level past the block face. The cut extends from that end to just
+   * beyond the nearest wall along the slot's long axis (axis-aligned
+   * rotations only; a tapered interior falls back to an enclosed slot).
+   * Absent = enclosed on both ends.
+   */
+  readonly openEnd?: KnifeSlotOpenEnd;
+}
 
 /** Layout mode for a parametric cutout array. */
 export type CutoutArrayMode = 'grid' | 'staggered' | 'radial';
@@ -418,4 +457,24 @@ export interface Cutout {
    * disabled) and `cutDepth` is the pocket depth the mesh is sunk to.
    */
   readonly meshId?: string;
+  /**
+   * Knife measurements for `knifeSlot` cutouts (required at creation for that
+   * shape, ignored otherwise). Optional on the type so existing designs'
+   * fingerprints are untouched; a knife slot missing it falls back to
+   * {@link DEFAULT_KNIFE_SPEC} at read time.
+   */
+  readonly knife?: KnifeSpec;
 }
+
+/**
+ * Fallback knife measurements for a `knifeSlot` whose spec was stripped (an
+ * imported design edited by hand). An 8" chef knife — the preset the creation
+ * flow also defaults to.
+ */
+export const DEFAULT_KNIFE_SPEC: KnifeSpec = {
+  bladeLengthMm: 205,
+  heelHeightMm: 47,
+  spineThicknessMm: 2.3,
+  handleDiameterMm: 23,
+  openEnd: 'end',
+};

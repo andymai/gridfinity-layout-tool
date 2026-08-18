@@ -16,6 +16,8 @@ import { useTranslation } from '@/i18n';
 import { cn } from '@/design-system/cn';
 import { interactiveTransition } from '@/design-system/variants';
 import { SliderThumb } from '@/design-system/Slider';
+import type { ExplodeSliderSlot } from './explodeSliderSlots';
+import { EXPLODE_SLIDER_SLOT_POSITION } from './explodeSliderSlots';
 
 /**
  * Slider range in mm. Closed position is exactly the lid's mated
@@ -54,11 +56,12 @@ interface LidExplodeSliderProps {
    */
   invert?: boolean;
   /**
-   * Which slot on the right edge this occupies. Two sliders are shown together
-   * whenever a bin has both a lid and detachable feet, and they would otherwise
-   * sit exactly on top of each other.
+   * Which slot on the right edge this occupies. Sliders stack up whenever one
+   * bin carries several separable parts — a lid, detachable feet and a knife
+   * rest can all be on at once — and they would otherwise sit exactly on top
+   * of each other.
    */
-  slot?: 'first' | 'second';
+  slot?: ExplodeSliderSlot;
 }
 
 export function LidExplodeSlider({
@@ -150,7 +153,7 @@ export function LidExplodeSlider({
     <div
       className={cn(
         'absolute top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-1.5 rounded-lg bg-surface-elevated/80 px-2 py-2.5 shadow-sm backdrop-blur',
-        slot === 'second' ? 'right-16' : 'right-2'
+        EXPLODE_SLIDER_SLOT_POSITION[slot]
       )}
       onPointerEnter={() => setIsHovering(true)}
       onPointerLeave={() => setIsHovering(false)}

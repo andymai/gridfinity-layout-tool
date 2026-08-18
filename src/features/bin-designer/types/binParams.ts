@@ -13,6 +13,7 @@ import type { SplitConnectorConfig } from './splitConnector';
 import type { FeatureColorConfig } from './featureColors';
 import type { SurfaceTextConfig, TextStyleDefaults } from './text';
 import type { LidConfig } from './lid';
+import type { KnifeRestConfig } from './knifeBlock';
 import type { Cutout, CutoutConfig } from './cutout';
 
 /** Complete bin parameter set for generation */
@@ -103,6 +104,13 @@ export interface BinParams {
   readonly surfaceText?: SurfaceTextConfig;
   /** Click-lock lid configuration. Lid is generated as a separate companion solid. */
   readonly lid: LidConfig;
+  /**
+   * Handle rest for a knife block: a saddle-topped companion solid (or an
+   * integrated rear section) that carries knife handles at the height the
+   * `knifeSlot` cutouts imply. Absent for designs without one so they
+   * serialize byte-identically.
+   */
+  readonly knifeRest?: KnifeRestConfig;
   /**
    * Optional custom footprint mask (non-rectangular bins).
    *

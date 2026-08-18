@@ -207,6 +207,16 @@ export function runGeneration(
         }
       : undefined;
 
+    const knifeRest = meshData.knifeRestMesh
+      ? {
+          vertices: maybeCopy(meshData.knifeRestMesh.vertices),
+          normals: maybeCopy(meshData.knifeRestMesh.normals),
+          indices: maybeCopy(meshData.knifeRestMesh.indices),
+          edgeVertices: maybeCopy(meshData.knifeRestMesh.edgeVertices),
+          triangleCount: meshData.knifeRestMesh.triangleCount,
+        }
+      : undefined;
+
     // Plates are a variable-length set, unlike the fixed lid/stack/connector
     // companions — each carries its own buffers plus its seated pose.
     const labelPlates = meshData.labelPlates
@@ -286,6 +296,15 @@ export function runGeneration(
             detachableFeetTriangleCount: feet.triangleCount,
           }
         : {}),
+      ...(knifeRest
+        ? {
+            knifeRestVertices: knifeRest.vertices,
+            knifeRestNormals: knifeRest.normals,
+            knifeRestIndices: knifeRest.indices,
+            knifeRestEdgeVertices: knifeRest.edgeVertices,
+            knifeRestTriangleCount: knifeRest.triangleCount,
+          }
+        : {}),
       ...(labelPlates ? { labelPlates } : {}),
       ...(meshData.labelTextOverflow ? { labelTextOverflow: meshData.labelTextOverflow } : {}),
     };
@@ -324,6 +343,14 @@ export function runGeneration(
         feet.normals.buffer,
         feet.indices.buffer,
         feet.edgeVertices.buffer
+      );
+    }
+    if (knifeRest) {
+      transfer.push(
+        knifeRest.vertices.buffer,
+        knifeRest.normals.buffer,
+        knifeRest.indices.buffer,
+        knifeRest.edgeVertices.buffer
       );
     }
     if (connectorKey) {

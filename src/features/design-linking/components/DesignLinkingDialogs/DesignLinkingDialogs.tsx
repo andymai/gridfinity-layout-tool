@@ -13,12 +13,13 @@ import { DeleteDesignWarningDialog } from '../Dialogs/DeleteDesignWarningDialog'
 import { LinkDesignDialog } from '../Dialogs/LinkDesignDialog';
 import { BlockedResizeDialog } from '../Dialogs/BlockedResizeDialog';
 import { DesignerUpdatedDialog } from '../Dialogs/DesignerUpdatedDialog';
-import { useDesignSavedListener, useBinResizedListener } from '../../hooks';
+import { useDesignSavedListener, useBinResizedListener, useKnifeRestPairing } from '../../hooks';
 
 export function DesignLinkingDialogs() {
   // Auto-sync listeners (design→bins and bin→design cascade)
   useDesignSavedListener();
   useBinResizedListener();
+  useKnifeRestPairing();
 
   return (
     <>

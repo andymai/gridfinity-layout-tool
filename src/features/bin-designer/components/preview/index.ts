@@ -3,6 +3,7 @@ export { LidMesh } from './LidMesh';
 export { StackPlateMesh } from './StackPlateMesh';
 export { SlideTrayMesh } from './SlideTrayMesh';
 export { DetachableFeetMesh } from './DetachableFeetMesh';
+export { KnifeRestMesh } from './KnifeRestMesh';
 export { FeetDetachSlider } from './FeetDetachSlider';
 export { LabelPlateMeshes } from './LabelPlateMeshes';
 export { LidGuideLine } from './LidGuideLine';
@@ -11,6 +12,7 @@ export {
   LID_OFFSET_MIN,
   LID_OFFSET_MAX,
   LID_OFFSET_DEFAULT,
+  EXPLODE_SLIDER_SLOTS,
 } from './LidExplodeSlider';
 export { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 export { BinDimensions, AssembledBinDimensions } from './BinDimensions';
@@ -33,6 +35,7 @@ export { GhostCutouts } from './GhostCutouts';
 export { GhostLidCutouts } from './GhostLidCutouts';
 export { GhostWallCutouts } from './GhostWallCutouts';
 export { GhostHandles } from './GhostHandles';
+export { GhostKnives } from './GhostKnives';
 export { OverhangHighlight } from './OverhangHighlight';
 export { BinSplitLines } from './BinSplitLines';
 export { SplitBinMeshes } from './SplitBinMeshes/SplitBinMeshes';

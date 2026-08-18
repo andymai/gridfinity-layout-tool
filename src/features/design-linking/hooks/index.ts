@@ -8,3 +8,4 @@ export { useLinkedBins } from './useLinkedBins';
 export { useQuickExport } from './useQuickExport';
 export { useDesignSavedListener } from './useDesignSavedListener';
 export { useBinResizedListener } from './useBinResizedListener';
+export { useKnifeRestPairing } from './useKnifeRestPairing';

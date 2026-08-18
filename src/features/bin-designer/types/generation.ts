@@ -53,6 +53,11 @@ export interface GenerationResult {
    * are one part in one colour, so the shared readonly shape is ingested as is.
    */
   readonly detachableFeetMesh?: StackPlateMeshData;
+  /**
+   * Optional knife-block handle rest, present only when the design's rest is a
+   * companion block. One part in one colour, so no face groups.
+   */
+  readonly knifeRestMesh?: StackPlateMeshData;
   /** Optional sliding-tray mesh — the companion part that rides the bin's rail. */
   readonly slideTrayMesh?: SlideTrayMeshData;
   /** Swappable label plates with their seated poses (socket mode, preview only). */

@@ -50,7 +50,7 @@ function buildOutlinePoints2D(
     return pts;
   }
 
-  if (shape === 'slot') {
+  if (shape === 'slot' || shape === 'knifeSlot') {
     const r = slotCornerRadius(width, depth);
     const quad = 12;
     const pts: THREE.Vector2[] = [];

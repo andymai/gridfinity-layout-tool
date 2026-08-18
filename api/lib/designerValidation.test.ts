@@ -2046,3 +2046,53 @@ describe('validateDesignerShare — lid.slide', () => {
     expect(withLidSlide({ placement: 'flush' }).valid).toBe(true);
   });
 });
+
+describe('knifeRest validation', () => {
+  function withKnifeRest(kr: unknown) {
+    const payload = validPayload() as ReturnType<typeof validPayload> & {
+      params: { knifeRest?: unknown };
+    };
+    payload.params.knifeRest = kr;
+    return validateDesignerShare(payload, JSON.stringify(payload).length);
+  }
+
+  it('accepts a full companion config and round-trips it through the allowlist', () => {
+    const kr = {
+      enabled: true,
+      style: 'companion',
+      gapMm: 21,
+      depthU: 1,
+      grooveDepthMm: 6,
+      color: '#aabbcc',
+    };
+    const result = withKnifeRest(kr);
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect((result.payload.params as { knifeRest?: unknown }).knifeRest).toEqual(kr);
+    }
+  });
+
+  it('accepts the minimal enabled object and the integrated style', () => {
+    expect(withKnifeRest({ enabled: true }).valid).toBe(true);
+    expect(withKnifeRest({ enabled: false, style: 'integrated' }).valid).toBe(true);
+  });
+
+  it('rejects non-object, missing enabled, and unknown keys', () => {
+    expect(withKnifeRest('yes').valid).toBe(false);
+    expect(withKnifeRest({ style: 'companion' }).valid).toBe(false);
+    expect(withKnifeRest({ enabled: true, saddle: 5 }).valid).toBe(false);
+  });
+
+  it('rejects out-of-range numerics and off-step depthU (crafted-share guard)', () => {
+    expect(withKnifeRest({ enabled: true, gapMm: 1e9 }).valid).toBe(false);
+    expect(withKnifeRest({ enabled: true, gapMm: -1 }).valid).toBe(false);
+    expect(withKnifeRest({ enabled: true, depthU: 0.3 }).valid).toBe(false);
+    expect(withKnifeRest({ enabled: true, depthU: 1.25 }).valid).toBe(false);
+    expect(withKnifeRest({ enabled: true, grooveDepthMm: 99 }).valid).toBe(false);
+  });
+
+  it('rejects a bad style and a non-hex color', () => {
+    expect(withKnifeRest({ enabled: true, style: 'floating' }).valid).toBe(false);
+    expect(withKnifeRest({ enabled: true, color: 'red' }).valid).toBe(false);
+  });
+});

@@ -14,6 +14,7 @@
 export const COMMUNITY_EXAMPLE_PARAM_HASHES: ReadonlySet<string> = new Set<string>([
   '0a0fa497c469dc0e7f63f25fc80a343e',
   '23c6f60c459567e863d53c729762897c',
+  '2da4351a17e8289cbdf3b1d78266b70c',
   '48c710e85f3cfa1a918c77746b3096cf',
   '5131201b62649b29e599f7dcdc670f55',
   '907f2ec62157e1cd8171eedbcd116d63',

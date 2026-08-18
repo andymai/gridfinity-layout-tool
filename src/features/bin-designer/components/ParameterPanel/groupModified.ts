@@ -29,6 +29,7 @@ const GROUP_OF: Partial<Record<keyof BinParams, PanelGroup>> = {
   inserts: 'interior',
   cutouts: 'interior',
   cutoutConfig: 'interior',
+  knifeRest: 'interior',
   meshAssets: 'interior',
   base: 'base',
   floorPattern: 'base',

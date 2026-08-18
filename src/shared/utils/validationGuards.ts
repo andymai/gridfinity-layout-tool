@@ -33,6 +33,8 @@ export interface BinShape {
   notes?: string;
   customProperties?: Record<string, string>;
   linkedDesignId?: string;
+  pairId?: string;
+  pairRole?: 'block' | 'rest';
 }
 
 export interface CategoryShape {
@@ -118,6 +120,10 @@ export function isValidBin(value: unknown): value is BinShape {
   if (obj.label !== undefined && typeof obj.label !== 'string') return false;
   if (obj.notes !== undefined && typeof obj.notes !== 'string') return false;
   if (obj.linkedDesignId !== undefined && typeof obj.linkedDesignId !== 'string') return false;
+  if (obj.pairId !== undefined && typeof obj.pairId !== 'string') return false;
+  if (obj.pairRole !== undefined && obj.pairRole !== 'block' && obj.pairRole !== 'rest') {
+    return false;
+  }
   // customProperties (when present) must be a plain object of string values.
   if (obj.customProperties !== undefined) {
     if (

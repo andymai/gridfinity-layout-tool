@@ -84,6 +84,8 @@ const binAddSchema = z.object({
   notes: notesStr,
   customProperties: z.record(z.string(), z.string()).optional(),
   linkedDesignId: z.string().optional(),
+  pairId: z.string().min(1).optional(),
+  pairRole: z.enum(['block', 'rest']).optional(),
 });
 
 /** Partial bin fields for updates */
@@ -120,6 +122,8 @@ const binPartialSchema = z
       })
       .nullable(),
     locked: z.boolean(),
+    pairId: z.string().min(1).nullable(),
+    pairRole: z.enum(['block', 'rest']).nullable(),
     id: binIdSchema,
   })
   .partial();

@@ -250,6 +250,35 @@ export function CutoutShapeToolbar({
       )}
 
       {wrap(
+        t('binDesigner.cutouts.addKnifeSlot'),
+        'K',
+        <Button
+          type="button"
+          variant="ghost"
+          touchTarget={false}
+          className={`${btnBase} ${activeShape === 'knifeSlot' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('knifeSlot')}
+          aria-label={t('binDesigner.cutouts.addKnifeSlot')}
+          title={!vertical ? t('binDesigner.cutouts.addKnifeSlot') : undefined}
+        >
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          >
+            {/* Chef knife: curved-edge blade pointing left, stub handle right */}
+            <path d="M9.5 4.8H1.3c.2 2.2 2 3.9 4.2 3.9h4z" />
+            <path d="M9.5 6.8H13" strokeWidth="1.9" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.addKnifeSlot')}
+        </Button>
+      )}
+
+      {wrap(
         t('binDesigner.cutouts.penTool'),
         'P',
         <Button

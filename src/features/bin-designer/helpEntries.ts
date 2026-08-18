@@ -103,6 +103,16 @@ export const helpEntries: FeatureHelpEntry[] = [
     target: { surface: 'binDesigner:interior', controlId: 'bd-scoop' },
   },
   {
+    id: 'feature/bin-designer/knife-block',
+    kind: 'feature',
+    titleKey: 'help.target.binDesigner.knifeBlock.title',
+    descriptionKey: 'help.target.binDesigner.knifeBlock.description',
+    keywordsKey: 'help.target.binDesigner.knifeBlock.keywords',
+    category: 'interior',
+    routes: ['designer'],
+    target: { surface: 'binDesigner:interior', controlId: 'bd-knife-rest' },
+  },
+  {
     id: 'feature/bin-designer/base',
     kind: 'feature',
     titleKey: 'help.target.binDesigner.base.title',

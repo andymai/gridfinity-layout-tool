@@ -124,6 +124,8 @@ interface BinShape {
   customProperties?: Record<string, string>;
   linkedDesignId?: string;
   locked?: boolean;
+  pairId?: string;
+  pairRole?: 'block' | 'rest';
 }
 
 interface CategoryShape {
@@ -347,6 +349,10 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       // The size lock is authoring intent, so a shared drawer arrives with the
       // same bins frozen the sender froze.
       locked: bin.locked === true ? true : undefined,
+      // Pairing travels too, or a shared knife block arrives divorced from its
+      // rest and every pair-expanding operation stops working on it.
+      pairId: typeof bin.pairId === 'string' ? sanitizeString(bin.pairId, 64) : undefined,
+      pairRole: bin.pairRole === 'block' || bin.pairRole === 'rest' ? bin.pairRole : undefined,
     });
   }
 

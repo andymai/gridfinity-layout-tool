@@ -36,6 +36,12 @@ import {
   exportDetachableFeet,
 } from '../generators/detachableFeetOrchestrator';
 import { exportSlideTray } from '../generators/slideOrchestrator';
+import { buildKnifeRestSolid, exportKnifeRest } from '../generators/knifeRestBuilder';
+import {
+  knifeRestMatedOffset,
+  planKnifeRest,
+  shouldGenerateKnifeRest,
+} from '@/shared/utils/knifeRestPlan';
 import { exportSlideFitSample } from '../generators/slideFitSample';
 import { exportFitTestSlice } from '../generators/fitTestSlice';
 import type { FaceGroupData } from '@/shared/types/generation';
@@ -292,8 +298,12 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       // detachable feet takes the bin-only early return and its feet are
       // silently dropped from the export.
       const hasFeet = hasDetachableFeet(params.base);
+      // A knife block's handle rest is a second solid printed beside the block,
+      // so it belongs in this gate for the same reason the feet do — without it
+      // the block takes the bin-only return and the rest never ships.
+      const hasKnifeRest = shouldGenerateKnifeRest(params);
 
-      if (!hasDividers && !hasLid && !hasFeet) {
+      if (!hasDividers && !hasLid && !hasFeet && !hasKnifeRest) {
         reportProgress(requestId, 'merge', 1);
         return {
           pieces: [{ data: binResult.data, label: 'bin' }] as CombinedExportPiece[],
@@ -345,6 +355,11 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // Separate solids inside the compound, never fused into the bin — they
         // are pressed on after printing.
         const feetSolids = buildAssembledFeetSolids(params) ?? [];
+        // The rest is built in its own print frame, centred on itself, so the
+        // assembly has to step it out past the exit wall — left where it is, it
+        // would sit inside the block it stands next to.
+        const restPlan = hasKnifeRest ? planKnifeRest(params) : null;
+        let restSolid = restPlan ? buildKnifeRestSolid(params, restPlan, true) : null;
         try {
           if (lidSolid) {
             const positioned = translate(lidSolid, [0, 0, lidZ]);
@@ -356,12 +371,19 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
             stackPlateSolid.delete();
             stackPlateSolid = positioned;
           }
+          if (restSolid && restPlan) {
+            const offset = knifeRestMatedOffset(params, restPlan);
+            const positioned = translate(restSolid, [offset.x, offset.y, 0]);
+            restSolid.delete();
+            restSolid = positioned;
+          }
           const assembly = compound([
             binSolid,
             ...dividerSolids,
             ...(lidSolid ? [lidSolid] : []),
             ...(stackPlateSolid ? [stackPlateSolid] : []),
             ...feetSolids,
+            ...(restSolid ? [restSolid] : []),
           ]);
           const blob = unwrap(exportSTEP(assembly));
 
@@ -377,6 +399,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
           for (const f of feetSolids) f.delete();
           lidSolid?.delete();
           stackPlateSolid?.delete();
+          restSolid?.delete();
         }
       }
 
@@ -421,6 +444,13 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       const trayExport = await exportSlideTray(params, format, tolerance, angularTolerance);
       if (trayExport) {
         pieces.push({ data: trayExport.data, label: 'slide-tray' });
+      }
+
+      // The knife block's handle rest, in its own print frame. Returns null for
+      // every design without a companion rest, so no gate here either.
+      const restExport = await exportKnifeRest(params, format, tolerance, angularTolerance);
+      if (restExport) {
+        pieces.push({ data: restExport.data, label: 'knife-rest' });
       }
 
       reportProgress(requestId, 'merge', 1);

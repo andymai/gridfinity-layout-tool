@@ -19,6 +19,8 @@ import {
   binLipTopWorldZ,
   lidAnchorZ,
 } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
+import { knifeRestGroupPosition } from '@/features/bin-designer/components/preview/KnifeRestMesh/knifeRestPlacement';
+import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
 
 /** Thumbnail size matching the main capture utility */
 const THUMBNAIL_SIZE = 384;
@@ -68,7 +70,8 @@ export async function regenerateThumbnail(
     const result = await bridge.generateImmediate(params);
     if (signal?.aborted) return null;
 
-    const { vertices, normals, indices, edgeVertices, lidMesh, detachableFeetMesh } = result.mesh;
+    const { vertices, normals, indices, edgeVertices, lidMesh, detachableFeetMesh, knifeRestMesh } =
+      result.mesh;
     if (vertices.length === 0) return null;
 
     // Build geometry. The worker emits an indexed mesh (deduplicated vertices
@@ -122,6 +125,39 @@ export async function regenerateThumbnail(
       }
     }
 
+    // Knife handle rest, standing beside the block. It arrives in its own
+    // print frame, so unlike the feet it needs the mated step — from the same
+    // helper the live preview places it with.
+    const restPlan = knifeRestMesh ? planKnifeRest(params) : null;
+    const restPosition = restPlan ? knifeRestGroupPosition(params, restPlan, 0) : null;
+    let restGeometry: BufferGeometry | null = null;
+    let restEdgesGeometry: BufferGeometry | null = null;
+    if (knifeRestMesh && restPosition && knifeRestMesh.vertices.length > 0) {
+      restGeometry = new THREE.BufferGeometry();
+      restGeometry.setAttribute(
+        'position',
+        new THREE.Float32BufferAttribute(knifeRestMesh.vertices, 3)
+      );
+      if (knifeRestMesh.indices.length > 0) {
+        restGeometry.setIndex(new THREE.BufferAttribute(knifeRestMesh.indices, 1));
+      }
+      if (knifeRestMesh.normals.length > 0) {
+        restGeometry.setAttribute(
+          'normal',
+          new THREE.Float32BufferAttribute(knifeRestMesh.normals, 3)
+        );
+      } else {
+        restGeometry.computeVertexNormals();
+      }
+      if (knifeRestMesh.edgeVertices.length > 0) {
+        restEdgesGeometry = new THREE.BufferGeometry();
+        restEdgesGeometry.setAttribute(
+          'position',
+          new THREE.Float32BufferAttribute(knifeRestMesh.edgeVertices, 3)
+        );
+      }
+    }
+
     // Lid mesh + edges (rendered at closed position when params.lid.enabled
     // and the worker produced a lid). Matches LidMesh.tsx's mated formula.
     let lidGeometry: BufferGeometry | null = null;
@@ -159,6 +195,8 @@ export async function regenerateThumbnail(
       lidEdgesGeometry?.dispose();
       feetGeometry?.dispose();
       feetEdgesGeometry?.dispose();
+      restGeometry?.dispose();
+      restEdgesGeometry?.dispose();
       return null;
     }
 
@@ -228,6 +266,18 @@ export async function regenerateThumbnail(
       }
     }
 
+    if (restGeometry && restPosition) {
+      const rest = new THREE.Mesh(restGeometry, material);
+      rest.position.set(restPosition[0], restPosition[1], restPosition[2]);
+      scene.add(rest);
+      if (restEdgesGeometry) {
+        const restEdges = new THREE.LineSegments(restEdgesGeometry, edgeMaterial);
+        restEdges.position.set(restPosition[0], restPosition[1], restPosition[2]);
+        restEdges.renderOrder = 1;
+        scene.add(restEdges);
+      }
+    }
+
     if (lidGeometry && lidGroupZ !== null) {
       lidMaterial = new THREE.MeshStandardMaterial({
         color,
@@ -260,9 +310,25 @@ export async function regenerateThumbnail(
     const { width, depth, height, gridUnitMm, gridUnitMmY, heightUnitMm } = params;
     const totalH = height * heightUnitMm;
     const binCenter = new THREE.Vector3(0, 0, totalH / 2);
+    // The rest stands OUTSIDE the block's footprint, so framing the block
+    // alone crops the companion off the card. Framed as if the block were wide
+    // enough to reach the rest's far edge, since the camera still targets the
+    // block's centre.
+    const restAlongX = restPlan !== null && (restPlan.side === 'left' || restPlan.side === 'right');
+    const restReachMm =
+      restPlan && restPosition && restGeometry
+        ? Math.abs(restAlongX ? restPosition[0] : restPosition[1]) +
+          (restPlan.alongU * (restAlongX ? gridUnitMm : (gridUnitMmY ?? gridUnitMm))) / 2
+        : 0;
+    const framedWidth =
+      restAlongX && restReachMm > 0 ? Math.max(width, (2 * restReachMm) / gridUnitMm) : width;
+    const framedDepth =
+      !restAlongX && restReachMm > 0
+        ? Math.max(depth, (2 * restReachMm) / (gridUnitMmY ?? gridUnitMm))
+        : depth;
     const idealDistance = calculateIdealDistance(
-      width,
-      depth,
+      framedWidth,
+      framedDepth,
       height,
       fov,
       gridUnitMm,
@@ -307,6 +373,8 @@ export async function regenerateThumbnail(
     lidEdgesGeometry?.dispose();
     feetGeometry?.dispose();
     feetEdgesGeometry?.dispose();
+    restGeometry?.dispose();
+    restEdgesGeometry?.dispose();
     material.dispose();
     lidMaterial?.dispose();
     edgeMaterial.dispose();

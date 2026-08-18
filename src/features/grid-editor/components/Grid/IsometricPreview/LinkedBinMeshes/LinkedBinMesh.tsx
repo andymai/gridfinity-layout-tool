@@ -37,7 +37,14 @@ export const LinkedBinMesh = memo(function LinkedBinMesh({
 
   const { bin } = binData;
   const scale = 1 / gridUnitMm;
-  const rotated = isRotatedPlacement(bin.width, bin.depth, entry.width, entry.depth);
+  const isRest = bin.pairRole === 'rest' && entry.rest !== undefined;
+  // Rest mesh extents carry the 0.5mm body clearance; snap to the half-unit
+  // grid or the rotation comparison (epsilon 1e-6) can never match.
+  const toHalfUnits = (mm: number): number => Math.round((mm / gridUnitMm) * 2) / 2;
+  const designW = isRest && entry.rest ? toHalfUnits(entry.rest.widthMm) : entry.width;
+  const designD = isRest && entry.rest ? toHalfUnits(entry.rest.depthMm) : entry.depth;
+  const rotated = isRotatedPlacement(bin.width, bin.depth, designW, designD);
+  const geometry = isRest && entry.rest ? entry.rest.geometry : entry.geometry;
 
   return (
     <group
@@ -45,7 +52,7 @@ export const LinkedBinMesh = memo(function LinkedBinMesh({
       rotation={[0, 0, rotated ? Math.PI / 2 : 0]}
       scale={[scale, scale, scale]}
     >
-      <mesh geometry={entry.geometry}>
+      <mesh geometry={geometry}>
         <meshStandardMaterial
           ref={materialRef}
           color={binData.color}

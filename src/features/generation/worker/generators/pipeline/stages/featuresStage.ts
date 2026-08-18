@@ -17,6 +17,7 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PipelineContext, PipelineStage } from '../types';
 import { buildCutoutCuts } from '../../featureBuilder';
 import { buildCutoutLabelSocketTools } from '../../cutoutLabelSocketBuilder';
+import { buildIntegratedKnifeRestTools } from '../../knifeRestBuilder';
 import { runFeatureBuilders } from '../featureRunner';
 import { BIN_FEATURE_BUILDERS } from '../featureComposition';
 import { buildWallPatterns } from '../../wallPatternBuilder';
@@ -71,6 +72,19 @@ export const featuresStage: PipelineStage = {
       // clip the cavity tools go through, whose box would shear the margin
       // that keeps the pocket's mouth off a coincident face.
       cutTools.push(...buildCutoutLabelSocketTools(params, dim.innerW, dim.innerD, dim.wallHeight));
+      // Integrated knife rest: the rear shelf + saddle grooves carve the block
+      // itself. Skipped under a tapered wall along with the breach channels —
+      // a shelf whose exit stayed enclosed would be a cradle behind a wall.
+      if (!taper) {
+        cutTools.push(
+          ...buildIntegratedKnifeRestTools(params, {
+            innerW: dim.innerW,
+            innerD: dim.innerD,
+            wallHeight: dim.wallHeight,
+            collarHeight: dim.collarHeight,
+          })
+        );
+      }
       const { innerOffsetX, innerOffsetY } = dim;
       const shiftToInterior = (tool: (typeof cutTools)[number]): (typeof cutTools)[number] => {
         if (innerOffsetX === 0 && innerOffsetY === 0) return tool;

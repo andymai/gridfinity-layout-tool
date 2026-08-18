@@ -42,6 +42,7 @@ import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-desi
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
+import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { exportWithResilience } from '@/features/bin-designer/utils/exportWithResilience';
 import {
   buildBinDownloadPayload,
@@ -160,6 +161,7 @@ export function useExport(): UseExportReturn {
     params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
   const hasLid = shouldGenerateLid(params);
   const hasFeet = hasDetachableFeet(params.base);
+  const hasKnifeRest = shouldGenerateKnifeRest(params);
 
   const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
 
@@ -525,8 +527,9 @@ export function useExport(): UseExportReturn {
         // Feet belong in this gate for the same reason dividers and the lid do.
         // Third copy of it in the codebase; the other two are the worker's
         // combined export and the layout planner, and all three dropped the
-        // feet the same way — an archive of bins that cannot stand.
-        if (hasDividers || hasLid || hasFeet) {
+        // feet the same way — an archive of bins that cannot stand. The knife
+        // block's handle rest is in all three for the same reason.
+        if (hasDividers || hasLid || hasFeet || hasKnifeRest) {
           const combined = await exportWithResilience(() => {
             const bridge = getActiveBridge();
             if (!bridge) throw new Error('Bridge not available');
@@ -608,6 +611,7 @@ export function useExport(): UseExportReturn {
       hasDividers,
       hasLid,
       hasFeet,
+      hasKnifeRest,
       engineReady,
       buildExportTelemetry,
       handleExportError,

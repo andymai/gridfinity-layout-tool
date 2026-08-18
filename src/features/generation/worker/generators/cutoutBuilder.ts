@@ -35,6 +35,8 @@ import {
 import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
+import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
+import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
 import {
   MIN_PATH_POINTS,
@@ -138,6 +140,7 @@ function cutoutProfileDrawing(p: {
       return pen.close();
     }
     case 'slot':
+    case 'knifeSlot':
       return drawRoundedRectangle(p.w, p.d, Math.max(0.01, slotCornerRadius(p.w, p.d) - 0.01));
     case 'rectangle':
     default: {
@@ -283,7 +286,8 @@ function buildUnrotatedCutoutShape(cutout: {
       for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
       return sketch(pen.close(), 'XY').extrude(cutout.cutDepth);
     }
-    case 'slot': {
+    case 'slot':
+    case 'knifeSlot': {
       // Back the radius off the exact half-short-side by a hair: an exact
       // half-height radius makes drawRoundedRectangle emit a degenerate
       // zero-length straight segment on the short edges, which OCCT rejects.
@@ -1159,6 +1163,20 @@ export function buildCutoutCuts(
   // the top, so its clip box must be tall enough to keep the raised geometry —
   // an interior-height box would shear it off.
   const cutTools = clipToInterior(rawShapes, innerW, innerD, solidSurfaceZ, rawTags, interiorTaper);
+  if (!interiorTaper) {
+    cutTools.push(
+      ...buildKnifeBreachChannels(
+        params,
+        innerW,
+        innerD,
+        solidSurfaceZ,
+        wallHeight,
+        originX,
+        originY,
+        cavityTag
+      )
+    );
+  }
   const fuseTools =
     rawFuseShapes.length > 0
       ? clipToInterior(
@@ -1171,6 +1189,69 @@ export function buildCutoutCuts(
         )
       : [];
   return { cutTools, fuseTools };
+}
+
+/** Extra reach past any wall so a breach channel always exits the body (mm). */
+const KNIFE_BREACH_REACH_MARGIN = 50;
+
+/**
+ * Open-end channels for `knifeSlot` cutouts: a straight continuation of the
+ * slot from its open end out through the perimeter wall, floor-level up
+ * through the rim, collar and stacking lip, so the bolster stops at the block
+ * face and the handle lies level past it.
+ *
+ * Deliberately NOT passed through `clipToInterior` — breaching the wall is the
+ * point. Restricted to ungrouped, axis-aligned, untapered hosts: a boolean
+ * group makes the final cavity unknowable here, a rotated exit would need an
+ * angled lip-gap plan the lid machinery doesn't model (gotcha #19), and the
+ * tapered envelope has no straight wall to exit square through.
+ */
+function buildKnifeBreachChannels(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  solidSurfaceZ: number,
+  wallHeight: number,
+  originX: number,
+  originY: number,
+  cavityTag: (cutout: Cutout) => number
+): Shape3D[] {
+  const channels: Shape3D[] = [];
+  const collar = params.extraWallHeightMm ?? 0;
+  for (const master of params.cutouts) {
+    if (master.shape !== 'knifeSlot' || master.groupId !== null) continue;
+    const openEnd = (master.knife ?? DEFAULT_KNIFE_SPEC).openEnd;
+    if (openEnd === undefined) continue;
+    const instances = master.array ? expandCutoutArray(master) : [master];
+    for (const cutout of instances) {
+      if (cutout.rotation % 90 !== 0) continue;
+      const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+      if (effectiveDepth <= 0) continue;
+      const r = slotCornerRadius(cutout.width, cutout.depth);
+      const reach = innerW + innerD + KNIFE_BREACH_REACH_MARGIN;
+      // Overlap the stadium's end cap (start at width/2 - r) so the union has
+      // no seam; the cap's semicircle lies inside the channel's square end.
+      const nearEdge = cutout.width / 2 - r;
+      const centerX = (nearEdge + reach / 2) * (openEnd === 'end' ? 1 : -1);
+      const height =
+        effectiveDepth + (wallHeight - solidSurfaceZ) + collar + LIP_HEIGHT + CUT_RIM_CLEARANCE;
+      let shape: Shape3D = box(reach, cutout.depth, height, { at: [centerX, 0, height / 2] });
+      if (cutout.rotation !== 0) {
+        const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
+        shape.delete();
+        shape = rotated;
+      }
+      const positioned = translate(shape, [
+        originX + cutout.x + cutout.width / 2,
+        originY + cutout.y + cutout.depth / 2,
+        solidSurfaceZ - effectiveDepth,
+      ]);
+      shape.delete();
+      setShapeOrigin(positioned, cavityTag(master));
+      channels.push(positioned);
+    }
+  }
+  return channels;
 }
 
 /**
@@ -1289,6 +1370,7 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
       return pointInPolyline(pts, lx, ly);
     }
     case 'slot':
+    case 'knifeSlot':
       return roundedRectContains(lx, ly, hw, hd, slotCornerRadius(cutout.width, cutout.depth));
     case 'path': {
       const outline = pathOutline(cutout);

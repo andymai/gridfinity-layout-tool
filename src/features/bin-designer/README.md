@@ -81,6 +81,22 @@ graph TB
   `@/shared/generation/floorPatternMetrics` rather than mirroring it: that rule is what keeps holes
   off the baseplate-mating taper, so a drifted copy would mispredict exactly the bins the geometry
   refuses to pattern
+- **Knife block** — a solid bin whose `knifeSlot` cutouts hold kitchen knives lying flat
+  (in-drawer style): a stadium groove sized from the knife's measurements
+  (`knifeSlotDimensions` in `types/knifeBlock.ts` — spine + clearance wide, heel + float deep,
+  blade + margin long) whose open end breaches the perimeter wall so the bolster stops at the
+  block face (`buildKnifeBreachChannels` in the worker's `cutoutBuilder.ts`, deliberately
+  unclipped). The physical model: spine flush with the fill top, edge floating above the slot
+  floor, handle carried by a rest. The rest is planned once in
+  `@/shared/utils/knifeRestPlan.ts` (worker, preview, panel and layout all read it):
+  `companion` builds a separate socketed solid with one circular-segment saddle groove per
+  knife (`knifeRestBuilder.ts`, exported as the `knife-rest` piece), `integrated` drops the
+  block's own rear section to the same saddle heights. Wall breaches register as
+  `knifeSlot`-source lip gaps via `knifeSlotWallExits` (one source of truth for the lid rail
+  plan and any future pattern clip), and in the layout the block and its companion place as a
+  PAIR of bins sharing a `pairId` (`@/shared/utils/binPairs.ts` + the
+  `useKnifeRestPairing` reconciler in design-linking) — moving, stashing, deleting and
+  rotating act on the unit while the gap between them stays free grid space
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, top-surface picker with its magnet / lip-only / separate-baseplate sub-toggles, thickness sliders
 - `components/panel/SlideControls/` — the sliding lid's own knobs: channel placement (`recessed` under the stacking lip, so the bin still stacks / `flush` at the rim for the deepest interior, which needs the lip off and says so as a blocker with a one-click fix), which wall it opens through, the pull (none / finger notch / in-plane tab), and the click-shut detent. The sliding clearance is deliberately NOT here — it lives under the panel's Advanced disclosure with the other millimetre knobs, because it is the one number with a right answer per printer and none in general. Everything it renders comes from `slideLidPlanForParams`, so a readout can never disagree with the geometry
 - `components/panel/LidGripControls/` — grip relief (#3272): the chamfer / shadow-line / scallop cut at the lid↔bin seam that gives a fingernail somewhere to go, plus the opt-in bin lip dip. Height is a knob on the shadow line and the scallop (`grip.heightMm`; `null` = the mode's own request, and a chamfer has none, since its 45° section is its depth). Its readout reports the depth, the height and the lid left ABOVE the cut, plus which dimension ran out, because the requested values are bounded by the design's own tray / magnet / skirt geometry and a shortened relief otherwise reads as a defect. The shadow line is unavailable on a stackable top — it moves the face an upper bin registers against; `lidGripModeAllowed` is the rule, mirrored server-side

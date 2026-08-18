@@ -17,6 +17,8 @@ import {
   assembledHeight,
   type AssembledHeightSource,
 } from '@/shared/printSettings/assembledHeight';
+import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
+import type { BinParams } from '../types';
 import { isSocketlessBase } from '../types/base';
 
 const REGISTRY_KEY = 'gridfinity-custom-bins-v1';
@@ -88,6 +90,22 @@ export interface CustomBinRef {
    * which errs toward reporting the column shorter (the pre-field behaviour).
    */
   readonly hasLip?: boolean;
+  /**
+   * Companion handle-rest footprint for a knife-block design, so the layout
+   * can place (and keep) the paired rest bin without loading the full params
+   * out of IndexedDB. Absent = the design has no companion rest.
+   */
+  readonly knifeRest?: {
+    readonly side: 'front' | 'back' | 'left' | 'right';
+    /** Along the knife axis, grid units. */
+    readonly alongU: number;
+    /** Across the knives, grid units (matches the block's cross size). */
+    readonly crossU: number;
+    /** Rest body height in Gridfinity height units. */
+    readonly heightU: number;
+    /** Free drawer space between block face and rest (mm). */
+    readonly gapMm: number;
+  };
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -137,6 +155,27 @@ export function registryHeightFields(
 }
 
 /**
+ * Project the companion handle-rest footprint out of a full `BinParams`.
+ * Spread wherever {@link registryHeightFields} is, so the layout's paired
+ * placement never drifts from what the design would actually generate.
+ * Explicitly `undefined` when there is no companion, so a re-save that
+ * disabled the rest clears the stale field instead of carrying it.
+ */
+export function registryKnifeRestFields(params: BinParams): Pick<CustomBinRef, 'knifeRest'> {
+  const plan = planKnifeRest(params);
+  if (!plan || plan.style !== 'companion') return { knifeRest: undefined };
+  return {
+    knifeRest: {
+      side: plan.side,
+      alongU: plan.alongU,
+      crossU: plan.crossU,
+      heightU: plan.heightUnits,
+      gapMm: plan.gapMm,
+    },
+  };
+}
+
+/**
  * Validate one raw localStorage entry and project it onto the `CustomBinRef`
  * shape. Returns `null` for anything that does not match so malformed or
  * legacy records are dropped rather than trusted. Building the object
@@ -161,6 +200,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     assembledRiseMm,
     socketless,
     hasLip,
+    knifeRest,
   } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
@@ -195,6 +235,23 @@ function parseEntry(raw: unknown): CustomBinRef | null {
       : {}),
     ...(typeof socketless === 'boolean' ? { socketless } : {}),
     ...(typeof hasLip === 'boolean' ? { hasLip } : {}),
+    ...(() => {
+      if (typeof knifeRest !== 'object' || knifeRest === null) return {};
+      const kr = knifeRest as Record<string, unknown>;
+      const validSide =
+        kr.side === 'front' || kr.side === 'back' || kr.side === 'left' || kr.side === 'right';
+      const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0;
+      if (!validSide || !num(kr.alongU) || !num(kr.crossU) || !num(kr.heightU)) return {};
+      return {
+        knifeRest: {
+          side: kr.side as 'front' | 'back' | 'left' | 'right',
+          alongU: kr.alongU,
+          crossU: kr.crossU,
+          heightU: kr.heightU,
+          gapMm: typeof kr.gapMm === 'number' && Number.isFinite(kr.gapMm) ? kr.gapMm : 21,
+        },
+      };
+    })(),
     updatedAt,
   };
 }
@@ -264,6 +321,13 @@ function withCarriedGeometry(next: CustomBinRef, prev: CustomBinRef): CustomBinR
       ? { socketless: prev.socketless }
       : {}),
     ...(next.hasLip === undefined && prev.hasLip !== undefined ? { hasLip: prev.hasLip } : {}),
+    // Key-presence, not value: `registryKnifeRestFields` writes an explicit
+    // `knifeRest: undefined` when a re-save DISABLED the rest, which must
+    // clear the field — while a thumbnail/rename writer omits the key
+    // entirely and must not erase it.
+    ...(!('knifeRest' in next) && prev.knifeRest !== undefined
+      ? { knifeRest: prev.knifeRest }
+      : {}),
   };
 }
 

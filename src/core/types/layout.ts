@@ -143,6 +143,17 @@ export interface Bin {
   // Expand to Fit). Position, layer and every descriptive field stay editable —
   // a locked bin still moves.
   locked?: boolean;
+  // Two-piece designs (a knife block and its handle rest) place as a PAIR of
+  // bins sharing one pairId: selection-affecting operations expand to the
+  // partner so the two move, stash, delete and duplicate together, while
+  // collision/snapping still see two ordinary rectangles and the gap between
+  // them stays free grid space. An orphaned pairId (partner deleted by an
+  // older client, import salvage) is dropped on validation rather than left
+  // dangling.
+  pairId?: string;
+  // Which piece of the pair this bin is — drives which part mesh the linked
+  // preview renders and which piece the export planner emits for it.
+  pairRole?: 'block' | 'rest';
 }
 /**
  * Update payload for a bin.
@@ -152,8 +163,10 @@ export interface Bin {
  * field can't express "clear" — `{ overhang: undefined }` is indistinguishable
  * from omission once it crosses the command boundary.
  */
-export type BinUpdates = Partial<Omit<Bin, 'overhang'>> & {
+export type BinUpdates = Partial<Omit<Bin, 'overhang' | 'pairId' | 'pairRole'>> & {
   overhang?: OverhangConfig | null;
+  pairId?: string | null;
+  pairRole?: 'block' | 'rest' | null;
 };
 
 /** Grid coordinate (0-based, origin at bottom-left). */

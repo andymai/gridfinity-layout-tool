@@ -511,7 +511,8 @@ function openingAreaMm2(cutout: Cutout): number {
       // aspect is not 1 (a hexagon is ~1.1547 wide per unit tall), so an
       // inscribed-circle formula is wrong even when width equals depth.
       return polygonArea(regularPolygonPoints(cutout.sides ?? DEFAULT_POLYGON_SIDES, w, d));
-    case 'slot': {
+    case 'slot':
+    case 'knifeSlot': {
       // Stadium: a rectangle with a semicircle on each short end.
       const r = Math.min(w, d) / 2;
       return (Math.max(w, d) - 2 * r) * 2 * r + Math.PI * r * r;

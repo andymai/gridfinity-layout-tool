@@ -14,6 +14,16 @@ export interface DesignGeometryEntry {
   /** Design footprint in grid units — detects rotated (w↔d) placement. */
   readonly width: number;
   readonly depth: number;
+  /**
+   * Companion handle-rest geometry for a knife-block design. A layout bin
+   * with `pairRole: 'rest'` renders THIS instead of the block body; footprint
+   * carried in mm because the grid-unit conversion belongs to the renderer.
+   */
+  readonly rest?: {
+    readonly geometry: THREE.BufferGeometry;
+    readonly widthMm: number;
+    readonly depthMm: number;
+  };
 }
 
 /**
@@ -89,6 +99,30 @@ export function buildDesignGeometry(mesh: MeshData): THREE.BufferGeometry {
   return geo;
 }
 
+/**
+ * Rest geometries share the body's LRU (keyed `sig:rest`) so both age out
+ * together when a design re-save mints a new sig.
+ */
+function getCachedRestGeometry(sig: string, restMesh: MeshData): THREE.BufferGeometry {
+  const key = `${sig}:rest`;
+  let geometry = designGeometryCache.get(key);
+  if (geometry) {
+    designGeometryCache.delete(key);
+    designGeometryCache.set(key, geometry);
+    return geometry;
+  }
+  geometry = buildDesignGeometry(restMesh);
+  if (designGeometryCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = designGeometryCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      designGeometryCache.get(oldestKey)?.dispose();
+      designGeometryCache.delete(oldestKey);
+    }
+  }
+  designGeometryCache.set(key, geometry);
+  return geometry;
+}
+
 function getCachedDesignGeometry(designMesh: LinkedDesignMesh): THREE.BufferGeometry {
   let geometry = designGeometryCache.get(designMesh.sig);
   if (geometry) {
@@ -122,11 +156,22 @@ export function useDesignGeometries(
   const entries = useMemo(() => {
     const map = new Map<DesignId, DesignGeometryEntry>();
     for (const [id, designMesh] of designMeshes) {
+      const restMesh = designMesh.mesh.knifeRestMesh;
+      let rest: DesignGeometryEntry['rest'];
+      if (restMesh && restMesh.vertices.length > 0) {
+        const geometry = getCachedRestGeometry(designMesh.sig, restMesh);
+        geometry.computeBoundingBox();
+        const bb = geometry.boundingBox;
+        if (bb) {
+          rest = { geometry, widthMm: bb.max.x - bb.min.x, depthMm: bb.max.y - bb.min.y };
+        }
+      }
       map.set(id, {
         sig: designMesh.sig,
         geometry: getCachedDesignGeometry(designMesh),
         width: designMesh.width,
         depth: designMesh.depth,
+        ...(rest !== undefined ? { rest } : {}),
       });
     }
     return map;

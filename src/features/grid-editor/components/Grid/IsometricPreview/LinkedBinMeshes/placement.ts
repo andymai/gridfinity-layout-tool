@@ -49,7 +49,10 @@ export function partitionByDesignMesh(
   const plainBins: BinRenderData[] = [];
   for (const binData of bins) {
     const entry = designEntryFor(binData, designGeometries);
-    if (entry) {
+    // A rest-role bin renders its design's companion geometry; when the
+    // design's mesh predates the rest (stale cache), the stylized box is more
+    // honest than drawing the whole block at the rest's footprint.
+    if (entry && (binData.bin.pairRole !== 'rest' || entry.rest !== undefined)) {
       designMeshBins.push({ binData, entry });
     } else {
       plainBins.push(binData);

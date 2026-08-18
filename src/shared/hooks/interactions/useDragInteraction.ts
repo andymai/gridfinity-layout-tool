@@ -7,6 +7,7 @@ import { snapGroupDelta } from '@/shared/utils/snap';
 import { constrainGroupDelta } from './selection';
 import { capturePointer } from './interaction';
 import { findBinById, findBinsByIds } from '@/shared/utils/entity';
+import { expandPairIds } from '@/shared/utils/binPairs';
 import { STAGING_ID, getBaseCellSize } from '@/core/constants';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -129,6 +130,15 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
         binIds = [binId];
         setSelectedBin(binId);
       }
+      // Paired bins (a knife block and its rest) move as one unit — but only
+      // partners on the same layer join the drag; a partner parked in staging
+      // would otherwise be teleported onto the grid at a stale position.
+      const requested = new Set(binIds);
+      binIds = [...expandPairIds(requested, layout.bins)].filter((id) => {
+        if (requested.has(id)) return true;
+        const partner = findBinById(layout, id);
+        return partner !== undefined && partner.layerId === bin.layerId;
+      });
 
       setInteraction({
         type: 'drag',

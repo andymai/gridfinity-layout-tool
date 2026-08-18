@@ -24,8 +24,18 @@ import type {
   WallCutout,
   WallConfig,
   WallCutoutShape,
+  KnifeRestConfig,
 } from '../types';
 import { DEFAULT_PATTERN_SCALE } from '../types';
+import {
+  KNIFE_REST_DEFAULT_GAP_MM,
+  KNIFE_REST_GROOVE_DEPTH_MM,
+  KNIFE_REST_MAX_GAP_MM,
+  KNIFE_REST_MIN_DEPTH_U,
+  KNIFE_REST_MAX_DEPTH_U,
+  KNIFE_REST_MIN_GROOVE_DEPTH_MM,
+  KNIFE_REST_MAX_GROOVE_DEPTH_MM,
+} from '../types';
 import type { FeatureColorConfig, LipAxisCount, TopAccentConfig } from '../types/featureColors';
 import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
 import type { SlideConfig, SlideRailMount } from '../types/slide';
@@ -823,6 +833,47 @@ function migrateTextStyleOverride(raw: unknown): TextStyleOverride | undefined {
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
+/**
+ * Normalize a persisted `knifeRest`. Invalid shapes drop to `undefined`
+ * (pre-feature designs stay byte-identical); numeric fields are clamped to the
+ * editor bounds so a hand-edited share can't drive runaway rest geometry.
+ * Fields at their defaults are dropped rather than persisted.
+ */
+function migrateKnifeRest(raw: unknown): KnifeRestConfig | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const value = raw as Record<string, unknown>;
+  if (typeof value.enabled !== 'boolean') return undefined;
+  const style = value.style === 'integrated' ? ('integrated' as const) : undefined;
+  const gapMm =
+    value.gapMm !== undefined
+      ? clampNumber(value.gapMm, 0, KNIFE_REST_MAX_GAP_MM, KNIFE_REST_DEFAULT_GAP_MM)
+      : undefined;
+  const depthU =
+    value.depthU !== undefined
+      ? Math.round(
+          clampNumber(value.depthU, KNIFE_REST_MIN_DEPTH_U, KNIFE_REST_MAX_DEPTH_U, 1) * 2
+        ) / 2
+      : undefined;
+  const grooveDepthMm =
+    value.grooveDepthMm !== undefined
+      ? clampNumber(
+          value.grooveDepthMm,
+          KNIFE_REST_MIN_GROOVE_DEPTH_MM,
+          KNIFE_REST_MAX_GROOVE_DEPTH_MM,
+          KNIFE_REST_GROOVE_DEPTH_MM
+        )
+      : undefined;
+  const color = typeof value.color === 'string' ? value.color : undefined;
+  return {
+    enabled: value.enabled,
+    ...(style !== undefined ? { style } : {}),
+    ...(gapMm !== undefined ? { gapMm } : {}),
+    ...(depthU !== undefined ? { depthU } : {}),
+    ...(grooveDepthMm !== undefined ? { grooveDepthMm } : {}),
+    ...(color !== undefined ? { color } : {}),
+  };
+}
+
 function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
   const { lidText, walls, wallAlign, style } = raw as {
@@ -1281,6 +1332,8 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     // `...rest` carried the raw value through; this overrides it with the
     // normalized form (or strips it entirely when empty/invalid).
     surfaceText: migrateSurfaceText(params.surfaceText),
+    // Same contract as surfaceText: normalized or stripped, never raw.
+    knifeRest: migrateKnifeRest(params.knifeRest),
     // Clamp the exterior-wall collar so a corrupt design can't drive a runaway
     // box/lip height. `...rest` carried the raw value through; this overrides it.
     extraWallHeightMm: migrateExtraWallHeightMm(
@@ -1313,6 +1366,8 @@ export const STYLE_DEFAULT_OMIT_KEYS = [
   // STL data) — carrying them into "default for new bins" would bloat every
   // subsequent design.
   'meshAssets',
+  // A handle rest belongs to one block's knives, not to a reusable style.
+  'knifeRest',
   'inserts',
   'handles',
   'walls',
