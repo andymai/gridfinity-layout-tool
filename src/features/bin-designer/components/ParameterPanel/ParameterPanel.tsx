@@ -22,6 +22,7 @@ import { InteriorSection } from '../panel/InteriorSection';
 import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { ScoopSection } from '../panel/ScoopSection';
+import { TypeSection } from '../panel/TypeSection';
 import { KnifeRestSection } from '../panel/KnifeRestSection';
 import { WallsSection } from '../panel/WallsSection';
 import { OverhangSection } from '../panel/OverhangSection';
@@ -299,6 +300,9 @@ function BinParameterPanel() {
           modifiedLabel={markIf(modified.finishing)}
         >
           <div className="divide-y divide-stroke-subtle/50">
+            <PanelSection helpTarget="bd-type">
+              <TypeSection />
+            </PanelSection>
             <PanelSection helpTarget="bd-colors">
               <ColorsSection />
             </PanelSection>

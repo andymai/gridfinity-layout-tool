@@ -27,6 +27,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont, isErr } from 'brepjs';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
@@ -72,11 +73,12 @@ function expectSameSolid(actual: number, expected: number, tolerance: number): v
 
 beforeAll(async () => {
   await initBrepjs();
+  await loadTestFonts();
   // Without the font, `buildTextSolid` returns null and the engraved-label case
   // below measures nothing while still going green — the same trap
   // `textEngraving.scenario` documents for its stencil font.
   const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+    resolve(__dirname, '../../../../shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf')
   );
   const loaded = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),

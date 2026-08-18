@@ -13,8 +13,7 @@ import type {
   LidCompatibilitySide,
   LidGripMode,
   LidGripSides,
-  TextFontFamily,
-  TextMode,
+  TextStyleDefaults,
 } from '@/shared/types/bin';
 import type { MagnetAnchor } from '@/core/types';
 import {
@@ -27,6 +26,7 @@ import {
   resolveLidGripHeightPlan,
   hasLidGrip,
   hasBinLipDip,
+  resolveTextStyle,
 } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
@@ -50,13 +50,12 @@ import type { SlideLidGeometry } from '@/shared/utils/slideLidPlan';
  */
 export interface LidTextInputs {
   readonly value: string;
-  readonly font: TextFontFamily;
-  readonly mode: TextMode;
-  readonly depth: number;
-  readonly margin: number;
-  readonly minFontSize: number;
-  readonly maxFontSize: number;
-  readonly fontSizeOverride?: number;
+  /**
+   * The whole resolved style, not a copy of the fields the builder happens to
+   * read today. Anchoring, tracking, case and cut profile all reach the lid
+   * through it, and a field added later needs no change here.
+   */
+  readonly style: TextStyleDefaults & { readonly fontSizeOverride?: number };
 }
 
 /**
@@ -382,16 +381,15 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const lidTextValue = params.surfaceText?.lidText?.trim() ?? '';
   let text: LidTextInputs | null = null;
   if (lidTextValue !== '' && !stackGridOwnsTop && !cellMask) {
-    const style = { ...params.textDefaults, ...params.surfaceText?.style };
+    // Three layers: the design defaults, the style shared by every surface,
+    // then the lid's own refinement.
     text = {
       value: lidTextValue,
-      font: style.font,
-      mode: style.mode,
-      depth: style.depth,
-      margin: style.margin,
-      minFontSize: style.minFontSize,
-      maxFontSize: style.maxFontSize,
-      ...(style.fontSizeOverride !== undefined ? { fontSizeOverride: style.fontSizeOverride } : {}),
+      style: resolveTextStyle(
+        params.textDefaults,
+        params.surfaceText?.style,
+        params.surfaceText?.lidStyle
+      ),
     };
   }
 

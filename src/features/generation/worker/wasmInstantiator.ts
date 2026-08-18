@@ -12,9 +12,9 @@ import { registerKernel, BrepkitAdapter, loadFont, initFromManifold, getKernel }
 
 import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
 import { getManifoldModule } from './manifoldRuntime';
-import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url';
-import jetbrainsMonoFontUrl from './assets/fonts/JetBrainsMono-Regular.ttf?url';
-import allertaStencilFontUrl from './assets/fonts/AllertaStencil-Regular.ttf?url';
+import { TEXT_FONT_URLS } from '@/shared/fonts/fontAssets';
+import type { TextFontFamily } from '@/shared/types/bin';
+import { EAGER_TEXT_FONT_FAMILIES } from '@/shared/types/bin';
 import { isErr } from '@/core/result';
 import { stableAssetName } from '@/shared/generation/wasmLoadError';
 
@@ -85,28 +85,50 @@ function getHardwareConcurrency(): number {
  * font loading because it doesn't implement the topology operations
  * `textBuilder` needs.
  */
-const EMBEDDED_FONTS: readonly { readonly family: string; readonly url: string }[] = [
-  { family: 'atkinson', url: atkinsonFontUrl },
-  { family: 'jetbrains-mono', url: jetbrainsMonoFontUrl },
-  { family: 'allerta-stencil', url: allertaStencilFontUrl },
-];
+/**
+ * In-flight or settled load per family. Keyed on the family rather than a
+ * boolean so two features referencing the same face during one generation share
+ * a single fetch instead of racing two.
+ */
+const fontLoads = new Map<TextFontFamily, Promise<void>>();
+
+function loadFontFamily(family: TextFontFamily): Promise<void> {
+  const existing = fontLoads.get(family);
+  if (existing) return existing;
+  const url = TEXT_FONT_URLS[family];
+  const load = (async (): Promise<void> => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return;
+      const buffer = await response.arrayBuffer();
+      const result = await loadFont(buffer, family);
+      if (isErr(result)) {
+        console.warn(`Failed to register ${family} font:`, result.error.message);
+      }
+    } catch (err) {
+      console.warn(`Failed to load ${family} font asset:`, err);
+    }
+  })();
+  fontLoads.set(family, load);
+  return load;
+}
+
+/**
+ * Ensure the given families are registered before geometry that needs them is
+ * built. The generation handler awaits this for whichever faces the params
+ * reference; `buildTextSolid` is synchronous and returns null on a missing
+ * font, so a family that has not arrived silently loses its text.
+ *
+ * Only {@link EAGER_TEXT_FONT_FAMILIES} load at init. The four added faces
+ * total roughly 600kB, which is worth paying on the first design that asks for
+ * one rather than on every worker start.
+ */
+export async function ensureFontsLoaded(families: Iterable<TextFontFamily>): Promise<void> {
+  await Promise.all([...new Set(families)].map(loadFontFamily));
+}
 
 async function loadEmbeddedFonts(): Promise<void> {
-  await Promise.all(
-    EMBEDDED_FONTS.map(async ({ family, url }) => {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) return;
-        const buffer = await response.arrayBuffer();
-        const result = await loadFont(buffer, family);
-        if (isErr(result)) {
-          console.warn(`Failed to register ${family} font:`, result.error.message);
-        }
-      } catch (err) {
-        console.warn(`Failed to load ${family} font asset:`, err);
-      }
-    })
-  );
+  await ensureFontsLoaded(EAGER_TEXT_FONT_FAMILIES);
 }
 
 /**

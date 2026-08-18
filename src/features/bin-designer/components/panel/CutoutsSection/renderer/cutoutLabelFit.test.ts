@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { fitLabelFontSize } from './cutoutLabelFit';
 import type { TextStyleDefaults } from '@/features/bin-designer/types';
+import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/features/bin-designer/types';
 import type { CutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
 
 describe('fitLabelFontSize', () => {
   const defaults: TextStyleDefaults = {
+    ...DEFAULT_TEXT_STYLE_DEFAULTS,
     font: 'atkinson',
     mode: 'engrave',
     depth: 0.4,

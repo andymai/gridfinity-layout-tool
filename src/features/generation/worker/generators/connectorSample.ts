@@ -77,6 +77,7 @@ import {
   buildSnapClipForPrint,
 } from './baseplateConnectors';
 import { buildTextSolid } from './textBuilder';
+import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { sanitizeParams } from './baseplateSlab';
 
@@ -213,16 +214,24 @@ function buildCoupon(
       }
     }
 
-    // Emboss the offset on the top face (raised letters). Pinned to `fontMm` (min
-    // == max) so every coupon reads at the same nozzle-printable size, measured
-    // against the glyph ink (`inkBox`) — the digits have no descenders, so the
-    // full ascender→descender band would waste vertical room and shrink the font.
-    // Degrades to an unlabeled coupon if the font isn't loaded or auto-fit can't
-    // fit the pinned size — a single label must never tank the whole tray.
+    // Emboss the offset on the top face (raised letters). Pinned to `fontMm`
+    // (fixed size, floor and ceiling all equal) so every coupon reads at the
+    // same nozzle-printable size and none is silently rendered smaller.
+    // Degrades to an unlabeled coupon if the font isn't loaded or the pinned
+    // size does not fit: a single label must never tank the whole tray.
     const text = buildTextSolid(scope, {
       text: label,
-      fontFamily: 'jetbrains-mono',
-      mode: 'emboss',
+      style: {
+        ...DEFAULT_TEXT_STYLE_DEFAULTS,
+        font: 'jetbrains-mono',
+        mode: 'emboss',
+        depth: LABEL_DEPTH,
+        margin: LABEL_MARGIN,
+        sizeMode: 'fixed',
+        fixedSize: fontMm,
+        minFontSize: fontMm,
+        maxFontSize: fontMm,
+      },
       availW: couponX,
       availD: couponY,
       centerX: cx,
@@ -230,10 +239,6 @@ function buildCoupon(
       topZ: 0,
       depth: LABEL_DEPTH,
       hostThickness: totalHeight,
-      margin: LABEL_MARGIN,
-      minFontSize: fontMm,
-      maxFontSize: fontMm,
-      verticalFit: 'inkBox',
     });
     if (text) {
       try {

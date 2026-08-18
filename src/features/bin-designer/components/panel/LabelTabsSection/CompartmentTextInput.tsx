@@ -13,8 +13,13 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Input } from '@/design-system';
-import { TEXT_MAX_LENGTH } from '../../../types';
+import { Input, Textarea } from '@/design-system';
+import {
+  TEXT_MAX_LENGTH,
+  TEXT_MAX_LINES,
+  TEXT_MAX_TOTAL_LENGTH,
+  normalizeTextInput,
+} from '../../../types';
 
 /** Idle gap after the last keystroke before an edit commits (and regenerates).
  *  Long enough to skip intra-word keystrokes, short enough to feel responsive
@@ -44,6 +49,16 @@ interface CompartmentTextInputProps {
   readonly invalid?: boolean;
   /** Id of the element explaining {@link invalid}, for screen readers. */
   readonly describedBy?: string;
+  /**
+   * Accept line breaks, up to {@link TEXT_MAX_LINES}.
+   *
+   * Opt-in rather than the default because the two callers want different
+   * things: a compartment caption is one line on a small tab, while a wall or
+   * lid caption can carry a heading and a subheading (lines after the first
+   * render at `lineScale`). Without this the second line is unreachable, and a
+   * knob nobody can produce input for is worse than no knob.
+   */
+  readonly multiline?: boolean;
 }
 
 export function CompartmentTextInput({
@@ -56,10 +71,12 @@ export function CompartmentTextInput({
   focusToken,
   invalid = false,
   describedBy,
+  multiline = false,
 }: CompartmentTextInputProps) {
   const [draft, setDraft] = useState(committedValue);
   const focusedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const areaRef = useRef<HTMLTextAreaElement>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Stable as long as the store action and id are stable, so `onBlur`/`onChange`
@@ -130,9 +147,53 @@ export function CompartmentTextInput({
 
   useEffect(() => {
     if (focusToken === undefined) return;
-    inputRef.current?.focus();
-    inputRef.current?.select();
-  }, [focusToken]);
+    const field = multiline ? areaRef.current : inputRef.current;
+    field?.focus();
+    field?.select();
+  }, [focusToken, multiline]);
+
+  // Enter adds a line rather than committing, but only while one is left in the
+  // budget: swallowing it at the cap is what stops a paste-and-hold from
+  // silently losing the tail to the normaliser.
+  const handleAreaKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key !== 'Enter') return;
+      if (draft.split('\n').length >= TEXT_MAX_LINES) e.preventDefault();
+    },
+    [draft]
+  );
+
+  // Normalising on the way in keeps the field showing exactly what will be
+  // stored, rather than letting the store silently truncate a paste later.
+  const handleAreaChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      handleChange({
+        ...e,
+        target: { ...e.target, value: normalizeTextInput(e.target.value) },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    },
+    [handleChange]
+  );
+
+  if (multiline) {
+    return (
+      <Textarea
+        ref={areaRef}
+        rows={2}
+        resize="none"
+        value={draft}
+        maxLength={TEXT_MAX_TOTAL_LENGTH}
+        onChange={handleAreaChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={handleAreaKeyDown}
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+      />
+    );
+  }
 
   return (
     <Input

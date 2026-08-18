@@ -4,11 +4,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
-import type {
-  TextMode,
-  WallPatternType,
-  WallTextVerticalAlign,
-} from '@/features/bin-designer/types';
+import type { TextMode, WallPatternType, TextAnchor } from '@/features/bin-designer/types';
 import type { Side } from '../shared';
 import {
   DEFAULT_PATTERN_SCALE,
@@ -32,7 +28,7 @@ export function useWallsSection() {
     updateWallPattern,
     setWallText,
     clearWallText,
-    setWallTextAlign,
+    setSurfaceTextAnchor,
     setSurfaceTextStyle,
     currentDesignId,
   } = useDesignerStore(
@@ -44,7 +40,7 @@ export function useWallsSection() {
       updateWallPattern: s.updateWallPattern,
       setWallText: s.setWallText,
       clearWallText: s.clearWallText,
-      setWallTextAlign: s.setWallTextAlign,
+      setSurfaceTextAnchor: s.setSurfaceTextAnchor,
       setSurfaceTextStyle: s.setSurfaceTextStyle,
       currentDesignId: s.currentDesignId,
     }))
@@ -207,7 +203,10 @@ export function useWallsSection() {
   // Mirrors the worker gates in `wallTextLayout.ts`: polygon and solid-mode
   // bins skip wall text entirely.
   const wallTexts = params.surfaceText?.walls ?? {};
-  const wallTextAlign: WallTextVerticalAlign = params.surfaceText?.wallAlign ?? 'center';
+  // Anchor and mode both resolve through the shared surface style over the
+  // design defaults, the same layering the worker applies.
+  const wallTextAnchor: TextAnchor =
+    params.surfaceText?.style?.anchor ?? params.textDefaults.anchor;
   const wallTextMode: TextMode = params.surfaceText?.style?.mode ?? params.textDefaults.mode;
   const hasAnyWallText = Object.values(wallTexts).some(
     (text) => typeof text === 'string' && text.trim() !== ''
@@ -236,8 +235,8 @@ export function useWallsSection() {
   const isWallTextOpen = wallTextOpen || hasAnyWallText;
   const toggleWallText = useCallback(() => {
     if (isWallTextOpen) {
-      // Off clears every wall (and align) so the geometry matches the toggle —
-      // same semantics as the other FeatureToggle-gated sections.
+      // Off clears every wall (and its per-wall styles) so the geometry matches
+      // the toggle, the same semantics as the other FeatureToggle sections.
       clearWallText();
       setWallTextOpen(false);
     } else {
@@ -277,7 +276,7 @@ export function useWallsSection() {
       dividersAvailableReason,
       dividersNote,
       wallTexts,
-      wallTextAlign,
+      wallTextAnchor,
       wallTextMode,
       hasAnyWallText,
       wallTextDisabledReason,
@@ -290,7 +289,7 @@ export function useWallsSection() {
       togglePatternSide,
       handleDividersChange,
       commitWallTextAt,
-      setWallTextAlign,
+      setSurfaceTextAnchor,
       setTextMode,
       toggleWallText,
     },

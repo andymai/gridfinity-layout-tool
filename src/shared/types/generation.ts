@@ -14,6 +14,7 @@ export type {
   SlideTrayMeshData,
   LabelPlatesMeshData,
   LabelTextOverflow,
+  TypeStemWarning,
   LabelPlateMeshData,
   WorkerCacheStats,
   PerfSnapshot,

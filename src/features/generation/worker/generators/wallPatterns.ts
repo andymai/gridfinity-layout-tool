@@ -6,27 +6,21 @@
  * (binGenerator) builds actual 3D shapes to avoid WASM GC scope issues.
  */
 
+import { getSlotFreeWalls } from '@/shared/utils/slotFreeWalls';
+import {
+  TOP_KEEP_OUT,
+  CUTOUT_BORDER_WIDTH,
+  BOTTOM_SOLID_SKIRT,
+} from '@/shared/constants/wallBands';
 import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { MASK_CELL_SIZE, isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
-import { slottedWalls } from '@/shared/utils/slotMath';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { BOX_CORNER_RADIUS, CLEARANCE } from './generatorConstants';
 import { findPolygonEdgeForSide } from './maskPolygonEdges';
 import type { PatternCenter, StampPatternCalculator } from './patterns';
 import { getPatternCalculator, isStampCalculator, PATTERN_REGISTRY } from './patterns';
-
-/**
- * Identifies which walls are free of divider slot grooves.
- * Patterns can only be applied to slot-free walls.
- */
-export interface SlotFreeWalls {
-  readonly front: boolean;
-  readonly back: boolean;
-  readonly left: boolean;
-  readonly right: boolean;
-}
 
 /** Descriptor for a single wall's pattern element positions + transform. */
 export interface WallPatternDescriptor {
@@ -57,21 +51,15 @@ export interface WallPatternDescriptor {
   readonly allowClip: boolean;
 }
 
-/**
- * Determine which walls are free of slot grooves.
- */
-export function getSlotFreeWalls(params: BinParams): SlotFreeWalls {
-  if (params.style !== 'slotted') {
-    return { front: true, back: true, left: true, right: true };
-  }
-  const walls = slottedWalls(params.slotConfig);
-  return { front: !walls.front, back: !walls.back, left: !walls.left, right: !walls.right };
-}
-/** Keep-out from wall top edge (stacking lip interface). */
-export const TOP_KEEP_OUT = 1.5;
-
-/** Solid border width around wall cutouts in honeycomb pattern (mm). */
-export const CUTOUT_BORDER_WIDTH = 1.5;
+// Re-exported so this module keeps its historical surface; the definition
+// lives in `@/shared/utils/slotFreeWalls` because wall text and the panel both
+// ask the same question off the main thread.
+export { getSlotFreeWalls };
+export type { SlotFreeWalls } from '@/shared/utils/slotFreeWalls';
+// Re-exported so this module keeps its historical surface; the values live in
+// `@/shared/constants/wallBands` because wall TEXT resolves the same band on
+// the main thread, where the kernel is not available.
+export { TOP_KEEP_OUT, CUTOUT_BORDER_WIDTH, BOTTOM_SOLID_SKIRT };
 
 /**
  * Solid keep-out at each wall END (the shared corner), applied only when the bin
@@ -90,17 +78,6 @@ export const CUTOUT_BORDER_WIDTH = 1.5;
  * would otherwise fall below this width.
  */
 export const WALL_CORNER_KEEP_OUT = CUTOUT_BORDER_WIDTH;
-
-/**
- * Solid skirt left ABOVE the interior floor before the pattern starts (mm).
- * The bottom keep-out is `wallThickness + this`: one `wallThickness` clears the
- * floor slab, and the skirt is the actual solid band the lowest hex row anchors
- * to. Without it the lowest webs rise straight off the wall-floor seam as
- * unanchored fins and snap during FDM printing. Sized to match
- * `TOP_KEEP_OUT`/`CUTOUT_BORDER_WIDTH` (~7 layers at 0.2mm) — the minimum band
- * that prints reliably while preserving the most hex rows.
- */
-export const BOTTOM_SOLID_SKIRT = 1.5;
 
 /**
  * Calculate wall pattern descriptors for any pattern type.

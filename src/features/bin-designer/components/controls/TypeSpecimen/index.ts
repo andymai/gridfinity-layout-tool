@@ -1,0 +1,1 @@
+export { TypeSpecimen } from './TypeSpecimen';

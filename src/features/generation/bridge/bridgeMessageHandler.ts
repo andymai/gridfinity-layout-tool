@@ -262,6 +262,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               knifeRestMesh,
               labelPlates: response.labelPlates,
               labelTextOverflow: response.labelTextOverflow,
+              typeStemWarning: response.typeStemWarning,
             },
             timingMs: response.timingMs,
             perfSnapshot: response.perfSnapshot,

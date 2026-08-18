@@ -4,8 +4,10 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
+import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { DividerOverride } from '@/shared/types/bin';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont, measureVolume } from 'brepjs';
 import { isErr, isOk } from '@/core/result';
 import { readFileSync } from 'node:fs';
@@ -13,10 +15,11 @@ import { resolve } from 'node:path';
 
 beforeAll(async () => {
   await initBrepjs();
+  await loadTestFonts();
   // Engraved-text tests need the bundled Atkinson font; load from disk since
   // the test env has no `fetch` for `?url` assets.
   const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+    resolve(__dirname, '../../../../shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf')
   );
   const result = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
@@ -457,8 +460,15 @@ describe('slide-channel socket style (#2666 follow-up)', () => {
 
 describe('resolveUniformTabTextSize', () => {
   const TAB_DEPTH = 6;
+  /**
+   * Pinned to the NEUTRAL type style rather than the shipped default. What is
+   * under test is the tab's own sizing (does a row share one size, does the
+   * narrowest tab drive it), and inheriting the current look would re-tune
+   * every threshold here the next time that look changes.
+   */
   const LABEL_PARAMS = {
     ...DEFAULT_BIN_PARAMS,
+    textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,
     label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
   };
 
@@ -510,10 +520,15 @@ describe('resolveUniformTabTextSize', () => {
   };
 
   it('collapses a mismatched row to the smallest fitting size', async () => {
-    // "gjpqy" inks 0.907em against "KABEL"'s 0.669em, so it fits ~26% smaller
-    // in the same band. Sized independently the two tabs visibly disagree.
-    expect(await fitted('KABEL', 'gjpqy')).toBeLessThan(await fitted('KABEL', 'KABEL'));
-    expect(await fitted('KABEL', 'gjpqy')).toBeCloseTo(await fitted('gjpqy', 'gjpqy'), 6);
+    // A LONGER neighbour is the lever, not a descender: the cap-height datum
+    // makes the vertical box a constant of the face and size, so "KABEL" and
+    // "gjpqy" now fit identically and only width separates them. That is the
+    // point of the datum, and it is why this test measures width.
+    expect(await fitted('KABEL', 'KABEL WRENCH')).toBeLessThan(await fitted('KABEL', 'KABEL'));
+    expect(await fitted('KABEL', 'KABEL WRENCH')).toBeCloseTo(
+      await fitted('KABEL WRENCH', 'KABEL WRENCH'),
+      6
+    );
   });
 
   it('ignores blank slots and returns undefined when nothing carries text', async () => {
@@ -543,12 +558,13 @@ describe('resolveUniformTabTextSize', () => {
   it('is what the built geometry actually uses', async () => {
     const tabVolume = await tabVolumeFor({ cols: 2, rows: 1, cells: [0, 1] });
 
-    // A neighbour carrying a descender shrinks the shared size, so the first tab
-    // removes strictly less material than it does alone. Sized per-tab these two
-    // deltas are equal by construction, which is what makes this fail if the
-    // uniform pass is not wired into the build.
+    // A LONGER neighbour shrinks the shared size, so the first tab removes
+    // strictly less material than it does alone. Sized per-tab these two deltas
+    // are equal by construction, which is what makes this fail if the uniform
+    // pass is not wired into the build.
     const alone = tabVolume(['', '']) - tabVolume(['KABEL', '']);
-    const withNeighbour = tabVolume(['', 'gjpqy']) - tabVolume(['KABEL', 'gjpqy']);
+    const withNeighbour =
+      tabVolume(['', 'KABEL WRENCH SET']) - tabVolume(['KABEL', 'KABEL WRENCH SET']);
     expect(withNeighbour).toBeLessThan(alone * 0.9);
   });
 

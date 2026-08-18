@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { createEvent, fireEvent, render, screen } from '@testing-library/react';
 import { CompartmentTextInput } from './CompartmentTextInput';
 
 const COMMIT_IDLE_MS = 450;
@@ -89,5 +89,70 @@ describe('CompartmentTextInput', () => {
     );
     // The user's in-progress draft survives.
     expect(input).toHaveValue('TYPING');
+  });
+});
+
+describe('CompartmentTextInput multiline', () => {
+  it('is a single-line field by default, so a tab caption stays one line', () => {
+    render(
+      <CompartmentTextInput
+        committedValue=""
+        compartmentId={0}
+        placeholder="p"
+        ariaLabel="caption"
+        onCommit={vi.fn()}
+      />
+    );
+    expect(screen.getByRole('textbox', { name: 'caption' }).tagName).toBe('INPUT');
+  });
+
+  it('accepts line breaks when asked, which is the only way to reach a subheading', () => {
+    render(
+      <CompartmentTextInput
+        multiline
+        committedValue=""
+        compartmentId={0}
+        placeholder="p"
+        ariaLabel="caption"
+        onCommit={vi.fn()}
+      />
+    );
+    const field = screen.getByRole('textbox', { name: 'caption' });
+    expect(field.tagName).toBe('TEXTAREA');
+    fireEvent.change(field, { target: { value: 'M3 HEX NUTS\nDIN 934' } });
+    expect((field as HTMLTextAreaElement).value).toBe('M3 HEX NUTS\nDIN 934');
+  });
+
+  it('swallows Enter at the line cap rather than letting the tail be truncated later', () => {
+    render(
+      <CompartmentTextInput
+        multiline
+        committedValue={'a\nb\nc'}
+        compartmentId={0}
+        placeholder="p"
+        ariaLabel="caption"
+        onCommit={vi.fn()}
+      />
+    );
+    const field = screen.getByRole('textbox', { name: 'caption' });
+    const event = createEvent.keyDown(field, { key: 'Enter' });
+    fireEvent(field, event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('normalises a paste on the way in, so the field shows what will be stored', () => {
+    render(
+      <CompartmentTextInput
+        multiline
+        committedValue=""
+        compartmentId={0}
+        placeholder="p"
+        ariaLabel="caption"
+        onCommit={vi.fn()}
+      />
+    );
+    const field = screen.getByRole('textbox', { name: 'caption' });
+    fireEvent.change(field, { target: { value: 'a\r\nb\r\nc\r\nd\r\ne' } });
+    expect((field as HTMLTextAreaElement).value).toBe('a\nb\nc');
   });
 });

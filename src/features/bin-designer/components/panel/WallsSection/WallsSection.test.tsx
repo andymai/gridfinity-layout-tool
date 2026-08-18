@@ -93,7 +93,10 @@ describe('WallsSection', () => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
-          surfaceText: { walls: { front: 'Cables', left: 'USB' }, wallAlign: 'top' },
+          surfaceText: {
+            walls: { front: 'Cables', left: 'USB' },
+            wallStyles: { front: { mode: 'emboss' } },
+          },
         },
         ui: { ...DEFAULT_UI_STATE },
       });
@@ -101,11 +104,11 @@ describe('WallsSection', () => {
       // Auto-opened because text exists; toggling off clears every wall.
       fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
       expect(useDesignerStore.getState().params.surfaceText?.walls).toBeUndefined();
-      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBeUndefined();
+      expect(useDesignerStore.getState().params.surfaceText?.wallStyles).toBeUndefined();
       expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
     });
 
-    it('shows mode + alignment pickers only when text is present', () => {
+    it('shows mode + anchor pickers only when text is present', () => {
       const { unmount } = render(<WallsSection />);
       expect(screen.queryByRole('radio', { name: 'Emboss' })).not.toBeInTheDocument();
       unmount();
@@ -116,17 +119,20 @@ describe('WallsSection', () => {
       });
       render(<WallsSection />);
       expect(screen.getByRole('radio', { name: 'Emboss' })).toBeInTheDocument();
-      expect(screen.getByRole('radio', { name: 'Top' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Top left' })).toBeInTheDocument();
     });
 
-    it('alignment picker writes wallAlign', () => {
+    it('anchor picker writes the anchor onto the shared surface style', () => {
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
         ui: { ...DEFAULT_UI_STATE },
       });
       render(<WallsSection />);
-      fireEvent.click(screen.getByRole('radio', { name: 'Top' }));
-      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBe('top');
+      // Not 'Bottom left': the default preset already anchors there, so the
+      // setter's no-op guard would (correctly) swallow it and the test would
+      // pass without the picker being wired to anything.
+      fireEvent.click(screen.getByRole('radio', { name: 'Top right' }));
+      expect(useDesignerStore.getState().params.surfaceText?.style?.anchor).toBe('top-right');
     });
 
     it('mode picker writes the shared surface style', () => {

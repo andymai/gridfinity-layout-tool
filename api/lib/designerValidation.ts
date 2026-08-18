@@ -116,8 +116,30 @@ const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
 const ALLOWED_LID_GRIP_KEYS = new Set(['mode', 'sides', 'coverage', 'heightMm', 'binDip']);
 const ALLOWED_LID_GRIP_SIDE_KEYS = new Set(['front', 'back', 'left', 'right']);
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
-const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
+const VALID_TEXT_FONTS = [
+  'atkinson',
+  'atkinson-bold',
+  'jetbrains-mono',
+  'jetbrains-mono-bold',
+  'barlow-condensed',
+  'poppins',
+  'allerta-stencil',
+] as const;
 const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
+const VALID_TEXT_ANCHORS = [
+  'top-left',
+  'top',
+  'top-right',
+  'left',
+  'center',
+  'right',
+  'bottom-left',
+  'bottom',
+  'bottom-right',
+] as const;
+const VALID_TEXT_SIZE_MODES = ['auto', 'fixed'] as const;
+const VALID_TEXT_CASES = ['as-typed', 'upper', 'title'] as const;
+const VALID_TEXT_CUT_PROFILES = ['straight', 'drafted'] as const;
 const VALID_CUTOUT_COLOR_SCOPES = ['floor', 'floorAndWalls'] as const;
 
 /**
@@ -668,6 +690,19 @@ const ALLOWED_TEXT_DEFAULTS_KEYS = new Set([
   'margin',
   'minFontSize',
   'maxFontSize',
+  'anchor',
+  'offset',
+  'sizeMode',
+  'fixedSize',
+  'snapToScale',
+  'uniformAcrossWalls',
+  'tracking',
+  'autoTracking',
+  'textCase',
+  'lineScale',
+  'lineGap',
+  'cutProfile',
+  'draftAngleDeg',
 ]);
 
 /**
@@ -714,6 +749,65 @@ function validateTextDefaults(value: unknown, label = 'textDefaults'): string | 
   ) {
     return `${label}.maxFontSize must be 0.5-200`;
   }
+
+  const enumErr =
+    checkEnum(value, 'anchor', VALID_TEXT_ANCHORS, label) ??
+    checkEnum(value, 'sizeMode', VALID_TEXT_SIZE_MODES, label) ??
+    checkEnum(value, 'textCase', VALID_TEXT_CASES, label) ??
+    checkEnum(value, 'cutProfile', VALID_TEXT_CUT_PROFILES, label);
+  if (enumErr) return enumErr;
+
+  for (const key of ['snapToScale', 'uniformAcrossWalls', 'autoTracking'] as const) {
+    if (value[key] !== undefined && typeof value[key] !== 'boolean') {
+      return `${label}.${key} must be a boolean`;
+    }
+  }
+
+  // Every numeric bound exists because the value reaches the BREP worker.
+  // `tracking` is in em and multiplies the font size, so an unbounded value
+  // scatters glyphs across (and past) the host; `draftAngleDeg` drives a swept
+  // profile that collapses on itself as it approaches 90.
+  const numeric: readonly [string, number, number][] = [
+    ['fixedSize', 0.5, 200],
+    ['tracking', -0.5, 2],
+    ['lineScale', 0.1, 2],
+    ['lineGap', 0, 4],
+    ['draftAngleDeg', 0, 45],
+  ];
+  for (const [key, min, max] of numeric) {
+    const raw = value[key];
+    if (raw !== undefined && (!isNumber(raw) || !inRange(raw, min, max))) {
+      return `${label}.${key} must be ${min}-${max}`;
+    }
+  }
+
+  if (value.offset !== undefined) {
+    if (!isObject(value.offset)) return `${label}.offset must be an object`;
+    for (const key of Object.keys(value.offset)) {
+      if (key !== 'x' && key !== 'y') return `${label}.offset has unknown key: ${key}`;
+    }
+    for (const axis of ['x', 'y'] as const) {
+      const raw = value.offset[axis];
+      if (raw !== undefined && (!isNumber(raw) || !inRange(raw, -500, 500))) {
+        return `${label}.offset.${axis} must be -500-500`;
+      }
+    }
+  }
+  return null;
+}
+
+/** Shared enum guard: the new style fields are all small closed sets. */
+function checkEnum(
+  value: Record<string, unknown>,
+  key: string,
+  allowed: readonly string[],
+  label: string
+): string | null {
+  const raw = value[key];
+  if (raw === undefined) return null;
+  if (typeof raw !== 'string' || !allowed.includes(raw)) {
+    return `${label}.${key} must be one of: ${allowed.join(', ')}`;
+  }
   return null;
 }
 
@@ -740,7 +834,34 @@ function validateTextStyleOverride(value: unknown, label: string): string | null
   return null;
 }
 
-const ALLOWED_SURFACE_TEXT_KEYS = new Set(['lidText', 'walls', 'wallAlign', 'style']);
+const ALLOWED_SURFACE_TEXT_KEYS = new Set([
+  'lidText',
+  'walls',
+  'wallAlign',
+  'style',
+  'lidStyle',
+  'wallStyles',
+]);
+
+/**
+ * Mirrors the client `TEXT_MAX_TOTAL_LENGTH`. A caption may now hold explicit
+ * line breaks, so the budget covers the whole string including separators, and
+ * the client truncates to the same number rather than letting an honest
+ * oversized paste come back as a 400.
+ */
+const SURFACE_TEXT_MAX_LENGTH = 152;
+const SURFACE_TEXT_MAX_LINES = 3;
+
+/** A caption is within budget only if BOTH its length and its line count are. */
+function checkCaption(text: string, label: string): string | null {
+  if (text.length > SURFACE_TEXT_MAX_LENGTH) {
+    return `${label} must not exceed ${SURFACE_TEXT_MAX_LENGTH} characters`;
+  }
+  if (text.split('\n').length > SURFACE_TEXT_MAX_LINES) {
+    return `${label} must not exceed ${SURFACE_TEXT_MAX_LINES} lines`;
+  }
+  return null;
+}
 const VALID_WALL_TEXT_SIDES = ['front', 'back', 'left', 'right'] as const;
 const VALID_WALL_TEXT_ALIGNS = ['top', 'center', 'bottom'] as const;
 
@@ -762,9 +883,8 @@ function validateSurfaceText(value: unknown): string | null {
 
   if (value.lidText !== undefined) {
     if (typeof value.lidText !== 'string') return 'surfaceText.lidText must be a string';
-    if (value.lidText.length > 50) {
-      return 'surfaceText.lidText must not exceed 50 characters';
-    }
+    const err = checkCaption(value.lidText, 'surfaceText.lidText');
+    if (err) return err;
   }
   if (value.walls !== undefined) {
     if (!isObject(value.walls)) return 'surfaceText.walls must be an object';
@@ -774,9 +894,8 @@ function validateSurfaceText(value: unknown): string | null {
       }
       const text = value.walls[key];
       if (typeof text !== 'string') return `surfaceText.walls.${key} must be a string`;
-      if (text.length > 50) {
-        return `surfaceText.walls.${key} must not exceed 50 characters`;
-      }
+      const err = checkCaption(text, `surfaceText.walls.${key}`);
+      if (err) return err;
     }
   }
   if (
@@ -788,6 +907,23 @@ function validateSurfaceText(value: unknown): string | null {
   if (value.style !== undefined) {
     const styleErr = validateTextStyleOverride(value.style, 'surfaceText.style');
     if (styleErr) return styleErr;
+  }
+  if (value.lidStyle !== undefined) {
+    const styleErr = validateTextStyleOverride(value.lidStyle, 'surfaceText.lidStyle');
+    if (styleErr) return styleErr;
+  }
+  if (value.wallStyles !== undefined) {
+    if (!isObject(value.wallStyles)) return 'surfaceText.wallStyles must be an object';
+    for (const key of Object.keys(value.wallStyles)) {
+      if (!(VALID_WALL_TEXT_SIDES as readonly string[]).includes(key)) {
+        return `surfaceText.wallStyles has unknown key: ${key}`;
+      }
+      const styleErr = validateTextStyleOverride(
+        value.wallStyles[key],
+        `surfaceText.wallStyles.${key}`
+      );
+      if (styleErr) return styleErr;
+    }
   }
   return null;
 }

@@ -49,8 +49,7 @@ import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 import { COPLANAR_MARGIN } from './generatorConstants';
 import { FeatureTag } from './featureTags';
 import { sketch } from './meshUtils';
-import { buildTextSolid, fitTextToHost } from './textBuilder';
-import type { VerticalFit } from './textBuilder';
+import { buildTextSolid, fitTextSize, type ResolvedTextStyle } from './textBuilder';
 import { buildIconSolid, measureIconBox } from './labelPlateIcons';
 import { buildBaseplateSTL } from './baseplateSTL';
 
@@ -87,7 +86,25 @@ export const TEXT_BAND_MM = LABEL_PLATE_HEIGHT_MM - 2 * TEXT_MARGIN;
 /** The band between the latch flanges IS the readable area, so fill it with
  *  glyph ink rather than the font's ascender..descender band (~54% inked for an
  *  all-caps run). */
-const PLATE_TEXT_VERTICAL_FIT: VerticalFit = 'inkBox';
+/**
+ * A plate's readable band already excludes the latch flanges, so the design's
+ * margin would inset the caption a second time. Height is bound by the band and
+ * width by the plate, both handed over as the host box.
+ */
+const PLATE_TEXT_MARGIN = 0;
+
+/**
+ * Stand-in for "width is not the binding constraint" when resolving one size
+ * across a set. Finite so the plan's coordinates stay finite; only the size it
+ * returns is read.
+ */
+const UNBOUNDED_WIDTH_MM = 1e6;
+
+/** The plate's effective style: the design's type with the plate's own mode and
+ *  band inset. */
+function plateTextStyle(opts: LabelPlateBuildOptions): ResolvedTextStyle {
+  return { ...opts.textDefaults, mode: plateTextMode(opts), margin: PLATE_TEXT_MARGIN };
+}
 /**
  * Width ceiling for an icon (mm) and its gap to the text. Side-view fasteners
  * are ~1.5-1.9x wider than tall, so an uncapped fit to the band would spend a
@@ -126,17 +143,15 @@ function plateTextHostWidthMm(
  */
 export function plateTextFits(spec: LabelPlateSpec, opts: LabelPlateBuildOptions): boolean {
   if (!spec.text.trim()) return true;
-  return fitTextToHost({
-    text: spec.text,
-    fontFamily: opts.textDefaults.font,
-    mode: plateTextMode(opts),
-    availW: plateTextHostWidthMm(spec.widthU, spec.icon),
-    availD: TEXT_BAND_MM,
-    margin: 0,
-    minFontSize: opts.textDefaults.minFontSize,
-    maxFontSize: opts.textDefaults.maxFontSize,
-    verticalFit: PLATE_TEXT_VERTICAL_FIT,
-  }).fits;
+  return (
+    fitTextSize({
+      text: spec.text,
+      style: plateTextStyle(opts),
+      availW: plateTextHostWidthMm(spec.widthU, spec.icon),
+      availD: TEXT_BAND_MM,
+      allowWrap: false,
+    }) !== null
+  );
 }
 
 /**
@@ -200,13 +215,19 @@ function plateTextMode(opts: LabelPlateBuildOptions): 'emboss' | 'engrave' {
 
 /**
  * One text size for a set of plates, measured on the vertical axis only: the
- * smallest size at which any plate's glyph ink still fits the shared band.
+ * smallest size at which any plate's caption still fits the shared band.
  *
- * Only the band is common to the set — plate widths are 36/78/120mm, so folding
+ * Only the band is common to the set. Plate widths are 36/78/120mm, so folding
  * width in would shrink a 3U plate's text to whatever a 1U plate could hold.
- * Each plate's own width budget still caps it inside `buildTextSolid`, which
- * applies this as `min(auto-fit, override)`; a plate whose run cannot fit its
- * width renders blank rather than dragging the others down.
+ * Each plate's own width budget still caps it inside `buildTextSolid`; a plate
+ * whose run cannot fit its width shrinks alone rather than dragging the others
+ * down.
+ *
+ * Under the cap-height datum the vertical box is a constant of the face and
+ * size, so every caption in a set now resolves to the SAME value here and this
+ * pass reads as a no-op. It is kept because it is the thing that states the
+ * intent: a set shares one size. Were the band or the face ever to vary per
+ * plate, this is where that would be resolved rather than discovered.
  *
  * `undefined` when no plate carries text, leaving per-plate auto-fit.
  */
@@ -217,18 +238,14 @@ export function resolveUniformPlateTextSize(
   let smallest = Number.POSITIVE_INFINITY;
   for (const spec of specs) {
     if (!spec.text.trim()) continue;
-    const fit = fitTextToHost({
+    const fitted = fitTextSize({
       text: spec.text,
-      fontFamily: opts.textDefaults.font,
-      mode: plateTextMode(opts),
-      availW: Number.POSITIVE_INFINITY,
+      style: plateTextStyle(opts),
+      availW: UNBOUNDED_WIDTH_MM,
       availD: TEXT_BAND_MM,
-      margin: 0,
-      minFontSize: opts.textDefaults.minFontSize,
-      maxFontSize: opts.textDefaults.maxFontSize,
-      verticalFit: PLATE_TEXT_VERTICAL_FIT,
+      allowWrap: false,
     });
-    if (fit.fits) smallest = Math.min(smallest, fit.fontSize);
+    if (fitted !== null) smallest = Math.min(smallest, fitted);
   }
   return Number.isFinite(smallest) ? smallest : undefined;
 }
@@ -368,8 +385,7 @@ export function buildLabelPlate(
       const textRight = w / 2 - TEXT_MARGIN;
       const result = buildTextSolid(scope, {
         text: spec.text,
-        fontFamily: opts.textDefaults.font,
-        mode: plateTextMode(opts),
+        style: plateTextStyle(opts),
         availW: textRight - textLeft,
         availD: TEXT_BAND_MM,
         centerX: (textLeft + textRight) / 2,
@@ -377,11 +393,11 @@ export function buildLabelPlate(
         topZ: t,
         depth: opts.textDepthMm,
         hostThickness: t,
-        margin: 0,
-        minFontSize: opts.textDefaults.minFontSize,
-        maxFontSize: opts.textDefaults.maxFontSize,
-        verticalFit: PLATE_TEXT_VERTICAL_FIT,
-        fontSizeOverride: uniformTextSize,
+        // A plate caption is one field on a fixed-format part; a second line
+        // has nowhere to go beside the icon.
+        allowWrap: false,
+        ...(uniformTextSize !== undefined ? { sharedSizeMm: uniformTextSize } : {}),
+        hostKind: 'plaque',
       });
       if (result) {
         try {

@@ -63,6 +63,7 @@ import {
 } from './cutoutScoopHelpers';
 import { sketch } from './meshUtils';
 import { buildTextSolid } from './textBuilder';
+import { resolveTextStyle, ZERO_TEXT_OFFSET } from '@/shared/types/bin';
 import { offsetClosedPolygon } from './polygonOffset';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
@@ -1506,7 +1507,7 @@ function buildCutoutLabel(
   // Per-cutout style layers over the design-wide defaults (today the UI only
   // writes `fontSizeOverride`, but merging the whole override keeps this in step
   // with the label tab and future per-cutout fields).
-  const style = { ...textDefaults, ...cutout.textStyle };
+  const style = resolveTextStyle(textDefaults, cutout.textStyle);
 
   // Cutouts support engrave + emboss; through-cut would punch the floor, so it
   // degrades to engrave.
@@ -1522,8 +1523,14 @@ function buildCutoutLabel(
   return withScope((scope: DisposalScope): CutoutLabelShape | null => {
     const result = buildTextSolid(scope, {
       text: label,
-      fontFamily: style.font,
-      mode,
+      // A cutout label's position is decided by `cutoutLabelPlacement`, which
+      // already resolved this cutout's own anchor and offset into the band
+      // handed over as the host box. Letting the design-wide anchor apply again
+      // would push the caption into a corner of that band and double-count the
+      // nudge. The typographic fields (face, tracking, case, cut profile) DO
+      // apply: a design's type reads the same everywhere, only the placement
+      // mechanism differs.
+      style: { ...style, mode, anchor: 'center', offset: ZERO_TEXT_OFFSET },
       availW,
       availD,
       centerX,
@@ -1531,10 +1538,6 @@ function buildCutoutLabel(
       topZ: surfaceZ,
       depth: style.depth,
       hostThickness: surfaceZ,
-      margin: style.margin,
-      minFontSize: style.minFontSize,
-      maxFontSize: style.maxFontSize,
-      fontSizeOverride: cutout.textStyle?.fontSizeOverride,
       angleDeg: cutout.textAngle ?? 0,
     });
     if (!result) return null;

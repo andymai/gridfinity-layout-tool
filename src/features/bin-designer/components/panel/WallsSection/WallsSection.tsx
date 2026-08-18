@@ -10,11 +10,7 @@
 
 import { SliderInput, SegmentedControl, Checkbox } from '@/design-system';
 import type { TextMode } from '@/features/bin-designer/types';
-import {
-  WALL_PATTERN_SIDES,
-  WALL_TEXT_SIDES,
-  WALL_TEXT_ALIGNS,
-} from '@/features/bin-designer/types';
+import { WALL_PATTERN_SIDES, WALL_TEXT_SIDES } from '@/features/bin-designer/types';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
@@ -23,6 +19,7 @@ import { HandleSection } from '../HandleSection';
 import { SlideTraySection } from '../SlideTraySection';
 import { FeatureToggle } from '../FeatureToggle';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
+import { AnchorPicker } from '../../controls/AnchorPicker';
 import { SideSelector, type SideState } from '../shared';
 
 /** Mode options for the wall-text picker, in the shared textMode order. */
@@ -144,6 +141,7 @@ export function WallsSection() {
                     {t(`binDesigner.lid.side.${side}`)}
                   </span>
                   <CompartmentTextInput
+                    multiline
                     committedValue={state.wallTexts[side] ?? ''}
                     compartmentId={index}
                     placeholder={t('binDesigner.walls.text.placeholder')}
@@ -174,20 +172,21 @@ export function WallsSection() {
                     {t('binDesigner.textMode.throughCutStencilNote')}
                   </p>
                 )}
-                <SegmentedControl
-                  aria-label={t('binDesigner.walls.text.align')}
-                  activeStyle="accent"
-                  fullWidth
-                  size="sm"
-                  value={state.wallTextAlign}
-                  onChange={handlers.setWallTextAlign}
-                  options={WALL_TEXT_ALIGNS.map((align) => ({
-                    value: align,
-                    label: t(`binDesigner.walls.text.align.${align}`),
-                  }))}
-                />
+                <div className="space-y-1">
+                  <span className="block text-[11px] text-content-tertiary">
+                    {t('binDesigner.type.anchor')}
+                  </span>
+                  <AnchorPicker
+                    value={state.wallTextAnchor}
+                    onChange={handlers.setSurfaceTextAnchor}
+                    label={t('binDesigner.walls.text.anchor')}
+                  />
+                </div>
                 <p className="text-[11px] leading-relaxed text-content-tertiary">
                   {t('binDesigner.walls.text.hint')}
+                </p>
+                <p className="text-[11px] leading-relaxed text-content-tertiary">
+                  {t('binDesigner.type.secondLineHint')}
                 </p>
               </>
             )}

@@ -322,6 +322,7 @@ export function LidSection() {
                       typing doesn't regenerate the lid per keystroke; the id
                       slot is unused for the lid. */}
                   <CompartmentTextInput
+                    multiline
                     committedValue={state.lidText}
                     compartmentId={0}
                     placeholder={t('binDesigner.lid.text.placeholder')}
