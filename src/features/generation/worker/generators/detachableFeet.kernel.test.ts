@@ -182,6 +182,48 @@ describe('detachable foot geometry', () => {
     }
   });
 
+  it('keeps its magnet pockets on an edge bar crossing an interior station', () => {
+    // The 4x2 case: a mid-run edge bar has dirY = 1, dirX = 0, interiorX true.
+    // Its clip spans the FULL cell in X (`edgeY`), so the spec corners at
+    // (±13, 13) are real material — a bound that shrank X to the arm's width
+    // rejected both and shipped the foot with no pockets at all.
+    const interiorEdgeBar: FootPlacement = {
+      shape: 'bar',
+      x: 0,
+      y: PITCH / 2,
+      dirX: 0,
+      dirY: 1,
+      interiorX: true,
+      interiorY: false,
+      cellW: PITCH,
+      cellD: PITCH,
+    };
+    const withMagnet = feetOf({
+      placements: [interiorEdgeBar],
+      magnet: {
+        diameterMm: MAGNET_D,
+        depthMm: MAGNET_DEPTH,
+        positions: [
+          [-13, 13],
+          [13, 13],
+        ],
+      },
+    });
+    try {
+      const m = meshOf(withMagnet.feet[0]);
+      const { minZ } = boundingBox(m.vertices);
+      for (const x of [-13, 13]) {
+        expect(
+          isSolidThrough(m, x, 13, minZ + 0.05, minZ + MAGNET_DEPTH - 0.05),
+          `pocket at x=${x}`
+        ).toBe(false);
+      }
+    } finally {
+      withMagnet.feet.forEach((f) => f.delete());
+      withMagnet.pinHoles?.delete();
+    }
+  });
+
   it('leaves a plain foot solid where a magnet pocket would be', () => {
     const { feet, pinHoles } = feetOf();
     try {

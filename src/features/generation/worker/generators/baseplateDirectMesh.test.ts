@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { resolveCornerRadii } from './generatorConstants';
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
@@ -722,7 +723,10 @@ describe('direct mesh mount-down screw holes (#3425)', () => {
         widthMm: totalW,
         depthMm: totalD,
         bands: effectiveMarginBands(params),
-        cornerRadii: params.cornerRadii,
+        // The radii the rounding cut uses, not the raw per-corner field —
+        // in the linked mode that field is absent and the containment test
+        // would treat every uniform radius as square corners.
+        cornerRadii: resolveCornerRadii(params, Math.min(totalW, totalD) / 2 - 0.1),
         floorPadProvisioned: true,
       }),
       screwFloorCandidates(
@@ -769,6 +773,40 @@ describe('direct mesh mount-down screw holes (#3425)', () => {
 
   const keys = (points: ReadonlyArray<readonly [number, number]>): string[] =>
     points.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).sort();
+
+  it('sites margin screws off a LINKED corner radius, not just per-corner radii', () => {
+    // `cornerRadii` is only populated in the unlinked mode; the linked slider
+    // writes the scalar. Feeding the plan the raw field told it every linked
+    // radius was zero, so a 25mm uniform corner kept its margin screw at the
+    // square-corner position — 2.4mm outside the plate the arc actually cut.
+    const base = defaults({
+      width: 8,
+      depth: 5,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingFront: 12,
+      paddingBack: 12,
+      screwHoles: SCREWS,
+      screwPadThicknessMm: PAD,
+    });
+    const square = expectedHoles(base, SCREWS);
+    const rounded = expectedHoles({ ...base, cornerRadius: 25 }, SCREWS);
+    expect(keys(rounded.map((h) => [h.x, h.y] as const))).not.toEqual(
+      keys(square.map((h) => [h.x, h.y] as const))
+    );
+    // And every rounded-plate hole stays inside the arc: the corner centre is
+    // (±(halfW-25), ±(halfD-25)) with radius 25.
+    const halfW = (8 * 42 + 24) / 2;
+    const halfD = (5 * 42 + 24) / 2;
+    for (const hole of rounded) {
+      const cx = Math.sign(hole.x) * (halfW - 25);
+      const cy = Math.sign(hole.y) * (halfD - 25);
+      const inCornerZone = Math.abs(hole.x) > Math.abs(cx) && Math.abs(hole.y) > Math.abs(cy);
+      if (inCornerZone) {
+        expect(Math.hypot(hole.x - cx, hole.y - cy)).toBeLessThanOrEqual(25);
+      }
+    }
+  });
 
   it('adds geometry rather than silently rendering a solid plate', () => {
     const plain = defaults({ width: 3, depth: 3 });

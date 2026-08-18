@@ -374,6 +374,21 @@ export function buildBaseplateSolid(
     shapedPocketCells = [...nominalCells, ...overTileFrame];
     pocketDecisions = shapedPocketCells.map(pocketDecision);
   }
+  // Corner radii resolved ONCE, up here, because two consumers must agree on
+  // them: the rounding cut below, and the screw plan's containment test — the
+  // check that stops a margin screw being placed in material a large corner
+  // radius has already cut away. Feeding the plan the raw `params.cornerRadii`
+  // (populated only in the unlinked per-corner mode) told it every LINKED
+  // radius was zero, so a uniform 25mm corner shipped its screw hole in air.
+  const minPadding = Math.min(
+    Math.min(paddingLeft, paddingRight),
+    Math.min(paddingFront, paddingBack)
+  );
+  const cellLimit = gridUnitMm / 2 + minPadding;
+  const geomLimit = Math.min(totalW, totalD) / 2 - 0.1;
+  const maxRadius = Math.min(cellLimit, geomLimit);
+  const cornerRadii = resolveCornerRadii(params, maxRadius);
+
   // Mount-down screw holes. Planned here, before the slab is cached,
   // because which cells keep a floor is part of the pocket geometry.
   const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
@@ -381,6 +396,7 @@ export function buildBaseplateSolid(
   const screwHoles =
     screwParams !== undefined
       ? planBaseplateScrewHoles(screwParams, params, {
+          resolvedCornerRadii: cornerRadii,
           totalWidthMm: totalW,
           totalDepthMm: totalD,
           gridW: width,
@@ -411,7 +427,9 @@ export function buildBaseplateSolid(
   const pocketMaskHash = pocketDecisions ? hashPocketDecisions(pocketDecisions) : undefined;
 
   // Cached separately so that toggling magnets or connectors doesn't redo the
-  // pocket boolean cuts.
+  // pocket boolean cuts. Corner rounding is applied post-cache, but it is NOT
+  // independent of the cached slab when screws are on: radii move the per-cell
+  // screw-floor decision, which is why they join the key above.
   const spKey = slabPocketsCacheKey(params, forExport, pocketMaskHash);
   const cachedSlab = slabWithPocketsCache.get(spKey);
   let baseplate: Shape3D;
@@ -420,10 +438,11 @@ export function buildBaseplateSolid(
     baseplate = unwrap(clone(cachedSlab));
     onProgress?.(0.5);
   } else {
-    // Build solid slab with RECTANGULAR profile for caching — pocket cuts are
-    // independent of corner radius, so we cache the rectangular slab+pockets
-    // and apply corner rounding as a post-cache step. Avoids expensive pocket
-    // re-cuts when only corner radius changes.
+    // Build solid slab with RECTANGULAR profile for caching; corner rounding
+    // is applied as a post-cache step so a radius-only edit avoids the pocket
+    // re-cuts. With screws ON the pockets are NOT radius-independent — radii
+    // flip margin anchors to floor sites, changing which cells keep a floor —
+    // so the cache key carries the radii (and the magnet lattice) then.
     //
     // The slab is also the material bound for the outline intersect below, so
     // it spans the nominal extent WIDENED by the outline's overhang:
@@ -508,14 +527,6 @@ export function buildBaseplateSolid(
   // beyond this limit never reach the rounding path: buildFullParams converts
   // them to a radius-cut outline, whose cell classification above handles the
   // sockets the arc consumes.
-  const minPadding = Math.min(
-    Math.min(paddingLeft, paddingRight),
-    Math.min(paddingFront, paddingBack)
-  );
-  const cellLimit = gridUnitMm / 2 + minPadding;
-  const geomLimit = Math.min(totalW, totalD) / 2 - 0.1;
-  const maxRadius = Math.min(cellLimit, geomLimit);
-  const cornerRadii = resolveCornerRadii(params, maxRadius);
   const hasRounding =
     cornerRadii.tl > 0 || cornerRadii.tr > 0 || cornerRadii.bl > 0 || cornerRadii.br > 0;
   // Outline clip reuses the corner-rounding slot: one boolean against the

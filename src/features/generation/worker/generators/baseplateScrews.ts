@@ -125,6 +125,13 @@ export interface ScrewPlacementInput {
   /** Padded printed footprint of the piece in mm. */
   readonly totalWidthMm: number;
   readonly totalDepthMm: number;
+  /**
+   * The radii the rounding cut will actually use — `resolveCornerRadii`'s
+   * output, never the raw `params.cornerRadii` (absent in the linked mode, so
+   * the containment test would treat every uniform radius as square corners
+   * and site a margin screw in material the arc cuts away).
+   */
+  readonly resolvedCornerRadii: { tl: number; tr: number; bl: number; br: number };
   /** Grid extent in units, which is what the floor candidate lattice spans. */
   readonly gridW: number;
   readonly gridD: number;
@@ -158,7 +165,7 @@ export function planBaseplateScrewHoles(
       widthMm: input.totalWidthMm,
       depthMm: input.totalDepthMm,
       bands: effectiveMarginBands(params),
-      cornerRadii: params.cornerRadii,
+      cornerRadii: input.resolvedCornerRadii,
       floorPadProvisioned: true,
     }),
     screwFloorCandidates(

@@ -104,12 +104,16 @@ function coveredCorners(
   centre: { x: number; y: number },
   armMm: number
 ): Array<readonly [number, number]> {
-  // Bounds mirror `buildClip`'s footprint per axis, not the cell's: a centred
+  // Bounds mirror `buildClip`'s footprint per axis, not the cell's: a CENTRED
   // interior filler is only `armMm` wide across its spanned axis, so testing
   // against the CELL would claim all four corners and drill attachment bores
-  // through the floor where no foot stands beneath them.
-  const halfX = p.dirX === 0 && p.interiorX ? armMm / 2 : p.cellW / 2;
-  const halfY = p.dirY === 0 && p.interiorY ? armMm / 2 : p.cellD / 2;
+  // through the floor where no foot stands beneath them. The narrow bound
+  // applies to the centred fall-through cases ONLY, in `buildClip`'s own
+  // order — an edge bar that happens to sit on an interior station of the
+  // other axis still spans its full cell there and keeps its corners.
+  const centred = p.dirX === 0 && p.dirY === 0;
+  const halfX = centred && p.interiorX ? armMm / 2 : p.cellW / 2;
+  const halfY = centred && !p.interiorX && p.interiorY ? armMm / 2 : p.cellD / 2;
   return positions.filter(([mx, my]) => {
     const inX = p.dirX === 0 || Math.sign(mx - centre.x) === p.dirX;
     const inY = p.dirY === 0 || Math.sign(my - centre.y) === p.dirY;

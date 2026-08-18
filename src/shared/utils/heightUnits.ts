@@ -55,7 +55,7 @@ export function stackedTotalMm(heightUnits: number, heightUnitMm: number, count:
  * The tallest WHOLE-unit bin height that lets `count` identical bins stack
  * under `ceilingMm`, at the layout's existing `heightUnitMm`.
  *
- * The inverse of {@link solveHeightUnitMm} for the question users actually
+ * The inverse of {@link stackedTotalMm} for the question users actually
  * ask: not "what unit fills this exactly" — which yields a non-standard unit
  * and breaks compatibility with stock bins — but "how tall can my bins be and
  * still let the lid close". Returns null when even a 1u bin overflows.

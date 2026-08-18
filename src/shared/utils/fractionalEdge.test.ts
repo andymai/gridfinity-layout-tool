@@ -304,6 +304,16 @@ describe('foot lattice placement (#3467)', () => {
       ).toEqual({});
     });
 
+    // Half sockets only seat at either offset while the SOCKET is built —
+    // detachable feet never build one, and the plan reads the lattice.
+    it('still matches a half-socket design whose feet detach', () => {
+      expect(
+        computeMatchedFootLattice(design({ halfSockets: true, detachableFeet: true }), drawer, [
+          { x: 0.5, y: 0 },
+        ])
+      ).toEqual({ footLatticeX: 'half', footLatticeY: 'grid' });
+    });
+
     it('is empty for a custom shape — the generator pins it to the grid', () => {
       expect(
         computeMatchedFootLattice(design({ hasCellMask: true }), drawer, [{ x: 0.5, y: 0.5 }])

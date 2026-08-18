@@ -23,6 +23,7 @@ import {
   hasFootLatticeMismatch,
   computeMatchedFootLattice,
 } from '@/shared/utils/fractionalEdge';
+import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { isPartialMask } from '@/shared/utils/cellMask';
 
 interface FractionalEdgeMismatch {
@@ -45,6 +46,7 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
     fractionalEdgeManualY,
     base,
     halfSockets,
+    feetDetachable,
     footLatticeX,
     footLatticeY,
     cellMask,
@@ -60,6 +62,7 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
       fractionalEdgeManualY: s.params.fractionalEdgeManualY,
       base: s.params.base,
       halfSockets: s.params.base.halfSockets,
+      feetDetachable: hasDetachableFeet(s.params.base),
       footLatticeX: s.params.base.footLatticeX,
       footLatticeY: s.params.base.footLatticeY,
       cellMask: s.params.cellMask,
@@ -79,6 +82,7 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
       fractionalEdgeManualX,
       fractionalEdgeManualY,
       halfSockets,
+      detachableFeet: feetDetachable,
       footLatticeX,
       footLatticeY,
       hasCellMask: isPartialMask(cellMask),
@@ -91,6 +95,7 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
       fractionalEdgeManualX,
       fractionalEdgeManualY,
       halfSockets,
+      feetDetachable,
       footLatticeX,
       footLatticeY,
       cellMask,
