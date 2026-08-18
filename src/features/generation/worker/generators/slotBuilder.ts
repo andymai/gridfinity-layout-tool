@@ -405,11 +405,20 @@ export const slotCutsFeature: FeatureBuilder = {
     const lipInfo = dim.hasLip
       ? { wallHeight: dim.wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
       : undefined;
+    // The slot is sized to accept the divider piece, so `dividerPieces` is a
+    // geometry input — and it reaches no other segment: `slotConfig` describes
+    // the layout and `shellKey` the body. Keyed on the RESOLVED pair rather
+    // than the raw params so anything the formula grows is carried too, and
+    // `dividerPieces.height` (a property of the piece, not the slot) does not
+    // fragment the cache.
+    const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
     return compactKey(
       buildCacheKey(
-        'v1',
+        'v2',
         dim.shellKey,
         stableSerialize(params.slotConfig),
+        quantize(slotWidth),
+        quantize(slotDepth),
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.interiorHeight),
