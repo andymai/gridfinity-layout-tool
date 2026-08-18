@@ -1,0 +1,20 @@
+src/shared/README.md
+  s_e8ab06c629db83::t_381f13a0f67cee 57,78
+  s_e8ab06c629db83::t_0cb3d6bf42db6d 19-29,47-56,77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "19379b2c86bb2534f18bcbe85fcfe1afca422cb8",
+  "prompts": {},
+  "sessions": {
+    "s_e8ab06c629db83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474a1e6b-ec62-4a52-be8c-cc5262c82b90",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
