@@ -212,6 +212,17 @@ describe('assembledHeight', () => {
       expect(thick - base).toBeCloseTo(3 - 0.8, 6);
     });
 
+    it('adds no rise for a sliding lid, which rides at or below the wall top', () => {
+      const slide = lidded({ attachment: 'slide' });
+      expect(hasSeatedLid(slide)).toBe(false);
+      expect(assembledHeight(slide).segments.some((s) => s.kind === 'lid')).toBe(false);
+    });
+
+    it('books no stack grid for a sliding lid either', () => {
+      const slide = lidded({ attachment: 'slide', stackableTop: true });
+      expect(assembledHeight(slide).segments.some((s) => s.kind === 'lidStackGrid')).toBe(false);
+    });
+
     it('is omitted on a lip-less bin, which generates no lid', () => {
       const noLip = params({
         base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },

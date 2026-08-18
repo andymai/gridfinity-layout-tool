@@ -28,6 +28,7 @@ import {
   type BaseStyle,
 } from '@/features/bin-designer/types/base';
 import {
+  isSlideLid,
   LID_FIT_CLEARANCE,
   lidAnchorZ,
   resolveLidCavityExtraMm,
@@ -126,6 +127,12 @@ export function hasSeatedLid(params: AssembledHeightSource): boolean {
   // has no cavity to close, and the readout would count a band the worker never
   // builds.
   if (params.base.tile === true) return false;
+  // A sliding lid never seats over the lip: both placements put the plate AT or
+  // BELOW the wall top (`plateTopBelowWallTopMm >= 0`), so it adds no rise and
+  // the cap-lid `lidRiseMm` formula does not describe it. Without this gate the
+  // DEFAULT slide config (recessed, lip kept) books a phantom ~2.1mm lid band,
+  // and the drawer-ceiling check warns on layouts that fit.
+  if (isSlideLid(params.lid)) return false;
   return params.lid.enabled && params.base.stackingLip;
 }
 

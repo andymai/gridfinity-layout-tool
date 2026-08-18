@@ -41,7 +41,11 @@ export function useDrawerCeiling(): DrawerCeilingFit | null {
       // A registry entry saved before `assembledRiseMm` existed, or an imported
       // mesh that has no params to derive one from, measures as a plain bin.
       if (ref?.assembledRiseMm === undefined) return undefined;
-      return { riseMm: ref.assembledRiseMm, socketless: ref.socketless ?? false };
+      return {
+        riseMm: ref.assembledRiseMm,
+        socketless: ref.socketless ?? false,
+        hasLip: ref.hasLip,
+      };
     };
 
     return drawerCeilingFit({ bins, layers, heightUnitMm, plate, ceilingMm, linkedRise });

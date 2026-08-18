@@ -19,6 +19,7 @@ import { STAGING_ID } from '@/core/constants';
 import type { Bin, BinId, Layer } from '@/core/types';
 import {
   baseplateFloorDepth,
+  baseplateTotalHeight,
   type BaseplateHeightParams,
 } from '@/shared/printSettings/baseplateHeight';
 import { LIP_PROTRUSION_MM, STACK_JUNCTION_MM } from './heightUnits';
@@ -36,6 +37,12 @@ export interface LinkedDesignRise {
   readonly riseMm: number;
   /** A flat or tray base has no socket, so it neither nests nor seats. */
   readonly socketless: boolean;
+  /**
+   * Whether the design keeps its stacking lip — the junction a bin stacked ON
+   * TOP of it settles into. Absent (pre-field registry entries) reads as true,
+   * matching the plain-bin assumption.
+   */
+  readonly hasLip?: boolean;
 }
 
 export interface DrawerCeilingBin {
@@ -87,11 +94,19 @@ function binRise(
   bin: Bin,
   heightUnitMm: number,
   linked: LinkedDesignRise | undefined
-): { riseMm: number; nestMm: number } {
+): { riseMm: number; nestMm: number; hasLip: boolean } {
   if (linked) {
-    return { riseMm: linked.riseMm, nestMm: linked.socketless ? 0 : STACK_JUNCTION_MM };
+    return {
+      riseMm: linked.riseMm,
+      nestMm: linked.socketless ? 0 : STACK_JUNCTION_MM,
+      hasLip: linked.hasLip !== false,
+    };
   }
-  return { riseMm: bin.height * heightUnitMm + LIP_PROTRUSION_MM, nestMm: STACK_JUNCTION_MM };
+  return {
+    riseMm: bin.height * heightUnitMm + LIP_PROTRUSION_MM,
+    nestMm: STACK_JUNCTION_MM,
+    hasLip: true,
+  };
 }
 
 /**
@@ -129,29 +144,39 @@ export function drawerCeilingFit(input: DrawerCeilingInput): DrawerCeilingFit | 
     .sort((a, b) => (layerOrder.get(a.layerId) ?? 0) - (layerOrder.get(b.layerId) ?? 0));
 
   const measured: DrawerCeilingBin[] = [];
-  const supports: { bin: Bin; topMm: number }[] = [];
+  const supports: { bin: Bin; topMm: number; hasLip: boolean }[] = [];
 
   for (const bin of placed) {
     const linked = linkedRise?.(bin);
-    const { riseMm, nestMm } = binRise(bin, heightUnitMm, linked);
+    const { riseMm, nestMm, hasLip } = binRise(bin, heightUnitMm, linked);
 
+    // The junction credit needs both halves: the upper bin's socket to sink,
+    // and the SUPPORTER's lip to sink into. A bin resting on a lipless design
+    // sits on its flat top and nests nothing.
     let supportTopMm: number | undefined;
+    let supportHasLip = true;
     for (const under of supports) {
       if (!footprintsOverlap(bin, under.bin)) continue;
-      if (supportTopMm === undefined || under.topMm > supportTopMm) supportTopMm = under.topMm;
+      if (supportTopMm === undefined || under.topMm > supportTopMm) {
+        supportTopMm = under.topMm;
+        supportHasLip = under.hasLip;
+      }
     }
 
     // A socketless design has no foot to drop into the plate's pockets, so it
-    // stands on the drawer floor rather than being lifted by the plate — the
-    // same rule `assembledHeight` applies when it omits the plate band.
+    // rests on the plate's TOP FACE — the full printed height above the drawer
+    // floor, not zero. `assembledHeight` omits the plate band for these because
+    // the designer measures a bare bin with an OPTIONAL plate; here the model
+    // always has one (socketed columns are credited its pockets on the same
+    // assumption), so the two rules agree on the premise and differ on the face.
     const topMm =
       supportTopMm === undefined
-        ? (linked?.socketless === true ? 0 : plateRiseMm) + riseMm
-        : supportTopMm - nestMm + riseMm;
+        ? (linked?.socketless === true ? baseplateTotalHeight(plate) : plateRiseMm) + riseMm
+        : supportTopMm - (supportHasLip ? nestMm : 0) + riseMm;
 
     const clearanceMm = (bin.clearanceHeight ?? 0) * heightUnitMm;
     const contentsTopMm = topMm + clearanceMm;
-    supports.push({ bin, topMm });
+    supports.push({ bin, topMm, hasLip });
     measured.push({
       binId: bin.id,
       topMm,

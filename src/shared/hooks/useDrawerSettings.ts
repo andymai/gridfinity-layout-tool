@@ -13,10 +13,12 @@ import { useMutations } from '@/shared/contexts';
 import {
   calcMaxGridUnits,
   CONSTRAINTS,
+  DEFAULT_BASEPLATE_PARAMS,
   STAGING_ID,
   snapToHalf,
   isFractional,
 } from '@/core/constants';
+import { baseplateFloorDepth } from '@/shared/printSettings/baseplateHeight';
 import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
@@ -65,6 +67,12 @@ export interface UseDrawerSettingsReturn {
 
   // Measured physical drawer (mm-first entry)
   measuredMm: MeasuredDrawerMm | undefined;
+  /**
+   * Solid material the baseplate puts under a seated stack (its floor depth).
+   * The height budget any ceiling comparison uses is `measured − this`, the
+   * same charge `drawerCeilingFit` applies per column.
+   */
+  plateRiseMm: number;
   drawerFitSuggestion: DrawerFitSuggestion | null;
   handleMeasuredCommit: (widthMm: number, depthMm: number, heightMm?: number) => void;
   acceptDrawerFitSuggestion: () => void;
@@ -664,6 +672,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
     // Measured physical drawer
     measuredMm,
+    plateRiseMm: baseplateFloorDepth(layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS),
     drawerFitSuggestion,
     handleMeasuredCommit,
     acceptDrawerFitSuggestion,

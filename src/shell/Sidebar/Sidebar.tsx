@@ -78,6 +78,7 @@ export function Sidebar() {
     hasFractionalDepth,
     realWorldDimensions,
     measuredMm,
+    plateRiseMm,
     drawerFitSuggestion,
     handleMeasuredCommit,
     acceptDrawerFitSuggestion,
@@ -537,6 +538,7 @@ export function Sidebar() {
                       <HeightUnitSolver
                         heightUnitMm={heightUnitMm}
                         ceilingMm={measuredMm?.height}
+                        plateRiseMm={plateRiseMm}
                       />
                     </Collapsible>
                   </div>

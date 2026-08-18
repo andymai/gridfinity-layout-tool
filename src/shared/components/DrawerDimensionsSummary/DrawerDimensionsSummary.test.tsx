@@ -167,6 +167,19 @@ describe('DrawerDimensionsSummary', () => {
       ).toBeInTheDocument();
     });
 
+    it('makes no fit claim for an empty layout', () => {
+      render(
+        <DrawerDimensionsSummary
+          {...defaultProps}
+          ceiling={{ ceilingMm: 55, tallestMm: 0, slackMm: 55, fits: true, overflowing: [] }}
+        />
+      );
+      expect(screen.queryByText('Tallest stack fits, 55mm to spare')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Add a height measurement to check the lid closes')
+      ).not.toBeInTheDocument();
+    });
+
     it('reports the spare headroom when the layout fits', () => {
       render(
         <DrawerDimensionsSummary

@@ -164,7 +164,7 @@ describe('bin-on-bin stacking (#2374)', () => {
  * would only prove two copies agree. These cases measure the assembled solids
  * and compare the ceiling model to that.
  */
-describe('drawer ceiling against mated solids (#2374)', () => {
+describe('drawer ceiling against mated solids', () => {
   const LAYERS: Layer[] = [
     { id: layerId('l1'), name: 'l1', height: heightUnits(3) },
     { id: layerId('l2'), name: 'l2', height: heightUnits(3) },

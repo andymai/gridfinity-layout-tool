@@ -48,6 +48,7 @@ export function MobileSettingsPanel() {
     drawerMinDepth,
     realWorldDimensions,
     measuredMm,
+    plateRiseMm,
     drawerFitSuggestion,
     handleMeasuredCommit,
     acceptDrawerFitSuggestion,
@@ -254,6 +255,7 @@ export function MobileSettingsPanel() {
             <HeightUnitSolver
               heightUnitMm={heightUnitMm}
               ceilingMm={measuredMm?.height}
+              plateRiseMm={plateRiseMm}
               variant="mobile"
             />
           </div>

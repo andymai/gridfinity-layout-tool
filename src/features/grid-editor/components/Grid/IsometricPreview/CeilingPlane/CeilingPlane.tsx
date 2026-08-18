@@ -11,8 +11,18 @@ interface CeilingPlaneProps {
   readonly ceilingMm: number;
   /** Scene X extent, in grid units. */
   readonly drawerWidth: number;
-  /** Scene Y extent, already scaled for a non-square grid. */
-  readonly scaledDepth: number;
+  /**
+   * Scene Y extent in RAW grid units. This component renders inside the
+   * scene's depth-scaled group, which applies the non-square factor once —
+   * pre-scaling the value here would apply it twice and squash the plane.
+   */
+  readonly drawerDepth: number;
+  /**
+   * The scene group's depth scale (`gridUnitMmY / gridUnitMm`, 1 for a square
+   * grid). The mesh inherits it by design; the label counter-scales so its
+   * glyphs keep their aspect, per the scene's annotation rule.
+   */
+  readonly depthScale: number;
   /** mm per grid unit — the scene's X/Y unit, and so its mm-to-world divisor. */
   readonly gridUnitMm: number;
   readonly fits: boolean;
@@ -30,7 +40,8 @@ interface CeilingPlaneProps {
 export function CeilingPlane({
   ceilingMm,
   drawerWidth,
-  scaledDepth,
+  drawerDepth,
+  depthScale,
   gridUnitMm,
   fits,
 }: CeilingPlaneProps) {
@@ -40,9 +51,9 @@ export function CeilingPlane({
   const color = fits ? FITS_COLOR : OVERFLOW_COLOR;
 
   return (
-    <group position={[drawerWidth / 2, scaledDepth / 2, z]}>
+    <group position={[drawerWidth / 2, drawerDepth / 2, z]}>
       <mesh>
-        <planeGeometry args={[drawerWidth, scaledDepth]} />
+        <planeGeometry args={[drawerWidth, drawerDepth]} />
         {/* depthWrite off so bins standing through it still render in front. */}
         <meshBasicMaterial
           color={color}
@@ -52,7 +63,8 @@ export function CeilingPlane({
         />
       </mesh>
       <Text
-        position={[0, scaledDepth / 2 + 0.35, 0.01]}
+        position={[0, drawerDepth / 2 + 0.35 / depthScale, 0.01]}
+        scale={[1, 1 / depthScale, 1]}
         fontSize={0.28}
         color={colors.labelColor}
         anchorX="center"
