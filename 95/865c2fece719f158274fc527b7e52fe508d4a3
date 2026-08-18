@@ -1,0 +1,28 @@
+src/features/generation/README.md
+  s_368953f679b7f8::t_357ea4ec6bf46b 51
+src/shared/README.md
+  s_368953f679b7f8::t_3c794aacf281bd 81
+  s_368953f679b7f8::t_5a2dbcc68408fc 65-80
+src/features/generation/worker/generators/cutoutLabelSocketBuilder.test.ts
+  s_368953f679b7f8::t_2a8df0673775de 1-16,18,21-96,99-104,115-123
+  s_368953f679b7f8::t_6b28bff86ce47a 17,19-20,97-98,105-114
+src/features/bin-designer/README.md
+  s_368953f679b7f8::t_3c794aacf281bd 253-256,258,260-267
+  s_368953f679b7f8::t_357ea4ec6bf46b 257,259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "95865c2fece719f158274fc527b7e52fe508d4a3",
+  "prompts": {},
+  "sessions": {
+    "s_368953f679b7f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3923dd34-776a-4f11-a3db-e1223c06c35d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
