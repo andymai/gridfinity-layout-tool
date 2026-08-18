@@ -314,7 +314,7 @@ export interface ExportFitTestPayload {
   /** Card thickness (mm). Clamped worker-side to the design's legal range. */
   readonly thicknessMm?: number;
   /** Design name and piece label for the underside stamp. */
-  readonly stamp?: { readonly designName?: string; readonly pieceLabel?: string };
+  readonly stamp?: { readonly designName?: string };
   /** Print bed (mm). Omitted leaves an oversize card whole. */
   readonly bed?: { readonly width: number; readonly depth: number };
 }
