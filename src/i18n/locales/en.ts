@@ -1095,6 +1095,11 @@ const en: Record<string, string> = {
   'help.target.binDesigner.scoop.description':
     'Add a curved scoop cutout at the front of the bin so contents can be easily scooped or grabbed.',
   'help.target.binDesigner.scoop.keywords': 'scoop|finger scoop|fillet|grab|grip|access',
+  'help.target.binDesigner.knifeBlock.title': 'Knife block',
+  'help.target.binDesigner.knifeBlock.description':
+    'Hold kitchen knives lying flat: knife slots sized from blade measurements cut through a solid bin, and a handle rest carries each knife at the right height. Add slots with the knife tool in the cutout editor.',
+  'help.target.binDesigner.knifeBlock.keywords':
+    'knife|knife block|knife slot|blade|handle rest|kitchen|chef|drawer knife',
   'help.target.binDesigner.base.title': 'Base attachments',
   'help.target.binDesigner.base.description':
     'Configure the base of the bin: stacking lip, magnet holes, screw holes, and weight savings.',
@@ -1479,6 +1484,7 @@ const en: Record<string, string> = {
   'toast.alignComplete': 'Aligned {aligned} of {total} bins',
   'toast.alignSkipped': 'Aligned {aligned}/{total} bins ({skipped} skipped due to overlap)',
   'toast.rotateAllComplete': 'Rotated {rotated} bin(s)',
+  'toast.pairRotateBlocked': 'No room to rotate the knife block and its rest together',
   'toast.rotateAllPartial': 'Rotated {rotated}/{total} bins ({skipped} skipped due to collision)',
   'toast.expandToFitComplete': 'Expanded {count} bin(s) to fit',
   'toast.expandToFitNoSlack': 'Nothing to fill — the selection already meets its neighbours',
@@ -2062,6 +2068,8 @@ const en: Record<string, string> = {
     'Wall cutouts remove the lip they cut through. The click rail on {sides} stops short of each window and takes whatever wall is left.',
   'binDesigner.lid.compat.wallCutoutsAllSides':
     'The wall cutouts leave no lip on any wall — the lid has nothing to mate with. Narrow them, or turn some off.',
+  'binDesigner.lid.compat.knifeSlots':
+    'Each knife exit notches the lip where the blade leaves the block. The click rail on {sides} goes around every notch and takes the wall that is left.',
   'binDesigner.lid.compat.wallPattern':
     'Wall pattern can perforate the lip — the lid may sit loosely.',
   'binDesigner.lid.compat.shortBin':
@@ -2296,6 +2304,29 @@ const en: Record<string, string> = {
   'binDesigner.preview.feetDetached': 'Detached',
   'binDesigner.preview.feetAttached': 'Attached',
   'binDesigner.preview.feetDetachSlider': 'Detach feet',
+  'binDesigner.preview.knifeRestMated': 'Mated',
+  'binDesigner.preview.knifeRestApart': 'Apart',
+  'binDesigner.preview.knifeRestSlider': 'Separate handle rest',
+  'binDesigner.knifeRest.title': 'Handle rest',
+  'binDesigner.knifeRest.needsSlots':
+    'Needs a knife slot with an open end — the rest carries the handles that lie past the block.',
+  'binDesigner.knifeRest.summary': '{style}, {height}mm tall',
+  'binDesigner.knifeRest.style': 'Style',
+  'binDesigner.knifeRest.styleAria': 'Handle rest style',
+  'binDesigner.knifeRest.style.companion': 'Companion',
+  'binDesigner.knifeRest.style.integrated': 'Integrated',
+  'binDesigner.knifeRest.styleHint.companion':
+    'A separate part with its own Gridfinity foot, printed alongside the block and stood past its open end.',
+  'binDesigner.knifeRest.styleHint.integrated':
+    'The block’s own rear section drops to rest height, so the whole knife holder prints as one part.',
+  'binDesigner.knifeRest.gap': 'Gap',
+  'binDesigner.knifeRest.gapAria': 'Free space between block and rest in millimeters',
+  'binDesigner.knifeRest.depth': 'Rest depth',
+  'binDesigner.knifeRest.depthAria': 'Rest footprint along the knife axis in grid units',
+  'binDesigner.knifeRest.grooveDepth': 'Groove depth',
+  'binDesigner.knifeRest.grooveDepthAria': 'Saddle groove depth in millimeters',
+  'binDesigner.knifeRest.grooveDepthHint':
+    'How far each handle sinks into its saddle. Deeper grooves hold the knives more securely and make the rest taller.',
   'binDesigner.flatFloorDisablesSpacer': 'A spacer needs feet to open through',
   'binDesigner.tileDisablesWalls': 'A base-only bin has no walls to hold this',
   'binDesigner.tileDisablesInterior': 'A base-only bin has no depth to hold interior features',
@@ -2438,6 +2469,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.addCircle': 'Circle',
   'binDesigner.cutouts.addPolygon': 'Polygon',
   'binDesigner.cutouts.addSlot': 'Slot',
+  'binDesigner.cutouts.addKnifeSlot': 'Knife slot',
   'binDesigner.cutouts.sides': 'Sides',
   'binDesigner.cutouts.acrossFlats': 'Across flats',
   'binDesigner.cutouts.acrossFlatsInfo': 'Flat-to-flat width — matches hex bit / Allen specs',
@@ -2452,6 +2484,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.chamferInfo': 'Beveled rim so parts self-center',
   'binDesigner.cutouts.section.transform': 'Transform',
   'binDesigner.cutouts.section.shape': 'Shape',
+  'binDesigner.cutouts.section.knife': 'Knife',
   'binDesigner.cutouts.section.fit': 'Fit & insertion',
   'binDesigner.cutouts.section.label': 'Label',
   'binDesigner.cutouts.section.repeat': 'Repeat',
@@ -2501,6 +2534,25 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.positionY': 'Y Position',
   'binDesigner.cutouts.cutDepth': 'Cut depth',
   'binDesigner.cutouts.throughDepthHint': 'Cuts through all {depth}mm of the plate.',
+  'binDesigner.cutouts.knifePreset': 'Preset',
+  'binDesigner.cutouts.knifePreset.chef8': 'Chef 8"',
+  'binDesigner.cutouts.knifePreset.santoku7': 'Santoku 7"',
+  'binDesigner.cutouts.knifePreset.bread9': 'Bread 9"',
+  'binDesigner.cutouts.knifePreset.utility': 'Utility',
+  'binDesigner.cutouts.knifePreset.paring': 'Paring',
+  'binDesigner.cutouts.knifePreset.steak': 'Steak',
+  'binDesigner.cutouts.knifeBladeLength': 'Blade',
+  'binDesigner.cutouts.knifeHeelHeight': 'Heel',
+  'binDesigner.cutouts.knifeSpineThickness': 'Spine',
+  'binDesigner.cutouts.knifeHandleDiameter': 'Handle ⌀',
+  'binDesigner.cutouts.knifeOpenEnd': 'Handle side',
+  'binDesigner.cutouts.knifeOpenEnd.start': 'Start',
+  'binDesigner.cutouts.knifeOpenEnd.end': 'End',
+  'binDesigner.cutouts.knifeOpenEnd.enclosed': 'Enclosed',
+  'binDesigner.cutouts.knifeOpenEndHint':
+    'The end the slot opens through the wall, so the handle lies past the block. Enclosed keeps the whole knife inside.',
+  'binDesigner.cutouts.knifeDepthClamped':
+    'This blade is deeper than the bin can cut, so the slot stops at {depth}mm and the knife sits proud. A {needed}u bin takes the whole blade.',
   'binDesigner.cutouts.topOffset': 'Top Offset',
   'binDesigner.cutouts.cornerRadius': 'Corner radius',
   'binDesigner.cutouts.scoopRadius': 'Scoop radius',
@@ -2592,6 +2644,7 @@ const en: Record<string, string> = {
   'binDesigner.shapeList.derived.polygon': '{sides}-sided {w}',
   'binDesigner.shapeList.derived.path': 'Path {w}×{d}',
   'binDesigner.shapeList.derived.mesh': 'Imprint {w}×{d}',
+  'binDesigner.shapeList.derived.knifeSlot': 'Knife slot {w}×{d}mm',
 
   'binDesigner.cutouts.arrange.bringForward': 'Bring Forward',
   'binDesigner.cutouts.arrange.sendBackward': 'Send Backward',
@@ -3722,6 +3775,7 @@ const en: Record<string, string> = {
   'binExamples.technique.handles': 'Handles',
   'binExamples.technique.customShape': 'Custom shape',
   'binExamples.technique.wallPattern': 'Wall pattern',
+  'binExamples.technique.knifeSlots': 'Knife slots',
 
   // Bin example presets — wall cutouts
   'binExamples.wallCutout2x4Cable.name': '2×4 Cable Bin',
@@ -3750,6 +3804,11 @@ const en: Record<string, string> = {
   'binExamples.customLShape.name': 'L-Shaped Corner Bin',
   'binExamples.customLShape.description':
     'A 2×2 custom-shape bin with one quadrant removed to wrap around a drawer obstacle.',
+
+  // Bin example presets — knife blocks
+  'binExamples.knifeBlockChefTrio.name': 'Knife Block',
+  'binExamples.knifeBlockChefTrio.description':
+    'A 6×1 in-drawer knife block holding a chef, santoku, and paring knife, with a matching handle rest generated alongside.',
 
   // Bin example presets — hero showcases
   'binExamples.heroMulticolorOrganizer.name': 'Multicolor Organizer',
