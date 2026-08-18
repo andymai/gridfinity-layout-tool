@@ -741,8 +741,13 @@ export function useLidSection() {
         LID_SLIDE_CLEARANCE_MAX_MM,
         Math.max(LID_SLIDE_CLEARANCE_MIN_MM, value)
       );
-      // Snapped to the step so a stepper click cannot land on a value the
-      // server's range check accepts but no printer was ever tuned for.
+      // Rounded to a hundredth, NOT snapped to `LID_SLIDE_CLEARANCE_STEP_MM`.
+      // The step is the stepper's increment, not a lattice the value has to lie
+      // on: this is the one knob that exists because the right answer depends on
+      // the printer, and someone dialling a fit in from a test print wants 0.23
+      // rather than being pushed back to 0.25. The rounding is only there to
+      // keep float noise out of a typed value. `setTopThickness` treats its own
+      // step the same way.
       updateLid({ slide: { ...slide, clearanceMm: Math.round(clamped * 100) / 100 } });
     },
     [slide, updateLid]
