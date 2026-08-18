@@ -1,0 +1,25 @@
+api/lib/designerCompartmentValidation.test.ts
+  s_368953f679b7f8::t_288a62e53b24f2 414,418-427
+  s_368953f679b7f8::t_71fabc7c194180 7
+  s_368953f679b7f8::t_dc46776228306b 428-429
+src/features/generation/worker/generators/binGenerator.export.cutoutLabelSockets.test.ts
+  s_368953f679b7f8::t_cb1f20593ccb2c 1-5
+src/features/generation/worker/generators/scenarios/index.ts
+  s_368953f679b7f8::t_288a62e53b24f2 28,79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "55786904776a92ffd622f13a9949c86a677b9ec6",
+  "prompts": {},
+  "sessions": {
+    "s_368953f679b7f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3923dd34-776a-4f11-a3db-e1223c06c35d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
