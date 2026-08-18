@@ -7,8 +7,22 @@ import { resetAllStores } from '@/test/testUtils';
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 let activeBridge: unknown = null;
+const readyListeners = new Set<(ready: boolean) => void>();
+function broadcastReady(ready: boolean): void {
+  for (const listener of readyListeners) listener(ready);
+}
 vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => activeBridge,
+  bridgeManager: {
+    get engineReady() {
+      return activeBridge !== null;
+    },
+    subscribe: (listener: (ready: boolean) => void) => {
+      readyListeners.add(listener);
+      listener(activeBridge !== null);
+      return () => readyListeners.delete(listener);
+    },
+  },
 }));
 
 vi.mock('@/shared/generation/exportUtils', () => ({
@@ -40,12 +54,14 @@ describe('useConnectorSampleExport', () => {
     vi.mocked(triggerDownload).mockClear();
   });
 
-  it('reports canExport from the active bridge presence', () => {
-    const { result, rerender } = renderHook(() => useConnectorSampleExport());
+  it('follows engine readiness reactively, not the render-time bridge', () => {
+    // A refresh nulls the bridge before the replacement boots; the button must
+    // come back when readiness is broadcast, with nothing else re-rendering.
+    activeBridge = null;
+    const { result } = renderHook(() => useConnectorSampleExport());
     expect(result.current.canExport).toBe(false);
-
     activeBridge = {};
-    rerender();
+    act(() => broadcastReady(true));
     expect(result.current.canExport).toBe(true);
   });
 

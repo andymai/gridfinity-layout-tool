@@ -19,6 +19,7 @@ import {
 } from '../../utils/supportersData';
 import { useSupportersData } from '../../hooks/useSupportersData';
 import { useSupporterStatus } from '../../hooks/useSupporterStatus';
+import type { SupporterProfilePatch } from '../../api/supporterClient';
 import { getSupportersPalette } from '../../scene/palette';
 import { SupportersScene, type FlyToRequest } from '../SupportersScene';
 import { SupporterPanel } from '../SupporterPanel';
@@ -213,7 +214,44 @@ export function SupportersPage() {
 
   const accent = useSettingsStore((state) => state.settings.accentColor);
   const { data: supporters, settled } = useSupportersData();
-  const bins = useMemo(() => buildSupporterBins(supporters), [supporters]);
+  const supporter = useSupporterStatus();
+
+  // A profile save must show on the wall in the same session, but the list is
+  // fetched once and `/api/supporters` is edge-cached (s-maxage 60, SWR 600),
+  // so a refetch can keep serving the pre-edit payload for minutes. The rename
+  // is applied locally instead: the record is found by its pre-save name (the
+  // only handle the public list carries), or by the first anonymous slot for
+  // a supporter naming themself for the first time.
+  const [profileEdit, setProfileEdit] = useState<{ prevName: string | null } | null>(null);
+  const saveProfile = useCallback(
+    async (patch: SupporterProfilePatch) => {
+      const prevName = supporter.status.name;
+      const error = await supporter.save(patch);
+      if (error === null) setProfileEdit({ prevName });
+      return error;
+    },
+    [supporter]
+  );
+
+  const effectiveSupporters = useMemo(() => {
+    const status = supporter.status;
+    if (!profileEdit || !status.supporter || status.name === null) return supporters;
+    if (supporters.supporters.some((r) => r.name === status.name)) return supporters;
+    const records = supporters.supporters.slice();
+    const idx =
+      profileEdit.prevName !== null
+        ? records.findIndex((r) => r.name === profileEdit.prevName)
+        : records.findIndex((r) => r.name === null);
+    const patched = {
+      ...(idx >= 0 ? records[idx] : {}),
+      name: status.name,
+      ...(status.message ? { message: status.message } : { message: undefined }),
+    };
+    if (idx >= 0) records[idx] = patched;
+    else records.push(patched);
+    return { ...supporters, supporters: records };
+  }, [supporters, supporter.status, profileEdit]);
+  const bins = useMemo(() => buildSupporterBins(effectiveSupporters), [effectiveSupporters]);
   const total = getSupporterCount(supporters);
   const palette = useMemo(() => getSupportersPalette(theme, accent), [theme, accent]);
   // Gated on `settled` so the count-up starts when the scene actually appears,
@@ -236,7 +274,6 @@ export function SupportersPage() {
   const flyNonce = useRef(0);
   const [burst, setBurst] = useState<{ x: number; y: number; seed: number } | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
-  const supporter = useSupporterStatus();
 
   // Bins set document.body.cursor on hover; reset it if we unmount mid-hover.
   useEffect(() => () => void (document.body.style.cursor = ''), []);
@@ -540,7 +577,7 @@ export function SupportersPage() {
         onClose={() => setPanelOpen(false)}
         status={supporter.status}
         settled={supporter.settled}
-        save={supporter.save}
+        save={saveProfile}
         onFindMyBin={
           myBin
             ? () => {

@@ -151,9 +151,10 @@ export function useExport(): UseExportReturn {
     return unsubscribe;
   }, []);
 
-  // Export requires both a preview mesh (to show UI) and an active bridge (to regenerate)
-  const canExport =
-    mesh !== null && mesh.vertices !== null && mesh.error === null && getActiveBridge() !== null;
+  // Export requires both a preview mesh (to show UI) and a ready engine (to
+  // regenerate). `engineReady` rather than a render-time getActiveBridge():
+  // the subscription re-renders this hook when a refreshed worker comes back.
+  const canExport = mesh !== null && mesh.vertices !== null && mesh.error === null && engineReady;
 
   const hasDividers =
     params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);

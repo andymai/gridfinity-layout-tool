@@ -8,6 +8,7 @@
  * shelf this design would actually carry, not a generic one.
  */
 
+import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import { useCallback, useState } from 'react';
 import { useSettingsStore } from '@/core/store/settings';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -36,7 +37,7 @@ interface UseSlideFitSampleExportReturn {
 export function useSlideFitSampleExport(): UseSlideFitSampleExportReturn {
   const t = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
-  const canExport = getActiveBridge() !== null;
+  const canExport = useEngineReady();
 
   const downloadSample = useCallback(
     async (format: ExportFileFormat, baseName: string = SLIDE_FIT_SAMPLE_BASE_NAME) => {

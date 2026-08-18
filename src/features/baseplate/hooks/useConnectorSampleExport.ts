@@ -8,6 +8,7 @@
  * magnet settings so the coupon height matches the real plate.
  */
 
+import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
@@ -79,7 +80,7 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
   );
 
   const [isExporting, setIsExporting] = useState(false);
-  const canExport = getActiveBridge() !== null;
+  const canExport = useEngineReady();
 
   const downloadSample = useCallback(
     async (format: ExportFileFormat, baseName: string = CONNECTOR_SAMPLE_BASE_NAME) => {

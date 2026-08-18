@@ -42,8 +42,12 @@ interface Ink {
 }
 
 interface Measurement {
+  /** Keyed on what determines `naturalWidth` alone — text, size, spacing. */
   key: string;
-  fit: FloorLabelFit;
+  /** Unwrapped single-line width at the base font size, in scene units. */
+  naturalWidth: number;
+  /** Signature of the fit the stored ink was read under, or null when unread. */
+  inkKey: string | null;
   ink: Ink | null;
 }
 
@@ -83,10 +87,28 @@ export function FittedFloorLabel({
 }: FittedFloorLabelProps) {
   const [measurement, setMeasurement] = useState<Measurement | null>(null);
 
-  // letterSpacing belongs in the key too: it changes glyph layout, so a
-  // measurement taken at one value does not describe the text at another.
-  const key = [text, band, baseFontSize, minFontSize, maxLines, letterSpacing].join('\u0000');
+  // The measurement is keyed on what determines the natural width ALONE:
+  // text, base size and letter spacing. `band`/`minFontSize`/`maxLines` are
+  // deliberately NOT in the key — they only shape the FIT, which is computed
+  // from the stored width during render. Keying them in made a band change
+  // discard the measurement and wait for a re-sync troika never performs when
+  // the re-rendered props equal the settled layout it already has (`sync()`
+  // is a no-op without a syncable-prop change), leaving the label permanently
+  // transparent after a resize on a settled fit.
+  const key = [text, baseFontSize, letterSpacing].join('\u0000');
   const current = measurement?.key === key ? measurement : null;
+
+  const fit: FloorLabelFit | null = current
+    ? fitFloorLabel({
+        text,
+        naturalWidth: current.naturalWidth,
+        band,
+        baseFontSize,
+        minFontSize,
+        maxLines,
+      })
+    : null;
+  const fitKey = fit ? [fit.fontSize, fit.maxWidth ?? -1, fit.text].join('\u0000') : null;
 
   const handleSync = useCallback(
     (mesh: TroikaTextMesh) => {
@@ -95,15 +117,24 @@ export function FittedFloorLabel({
 
       setMeasurement((prev) => {
         if (prev?.key === key) {
-          if (prev.ink) return prev;
+          // The width is known; this sync is a (re)layout of some fit. Read
+          // the ink for it — the underline must track the layout actually on
+          // screen, so stale ink from an earlier fit is replaced.
+          if (prev.inkKey === fitKey && prev.ink) return prev;
           const ink = readInk(info);
-          return ink ? { ...prev, ink } : prev;
+          return ink ? { ...prev, ink, inkKey: fitKey } : prev;
         }
 
+        // First sync for this text/size/spacing: the render below used the
+        // bare base-size, unclamped props (current was null), so the block IS
+        // the natural single-line width.
         const naturalWidth = info.blockBounds[2] - info.blockBounds[0];
         if (!Number.isFinite(naturalWidth)) return prev;
 
-        const fit = fitFloorLabel({
+        // troika's sync() is a no-op when no layout input changed, so a fit
+        // that changes nothing will never call back a second time. Read the
+        // ink from this same pass or never get another chance at it.
+        const settledFit = fitFloorLabel({
           text,
           naturalWidth,
           band,
@@ -111,28 +142,34 @@ export function FittedFloorLabel({
           minFontSize,
           maxLines,
         });
-
-        // troika's sync() is a no-op when no layout input changed, so it will
-        // never call back a second time for a fit that changes nothing. Read
-        // the ink from this same pass or never get another chance at it.
         const settled =
-          fit.fontSize === baseFontSize && fit.maxWidth === undefined && fit.text === text;
+          settledFit.fontSize === baseFontSize &&
+          settledFit.maxWidth === undefined &&
+          settledFit.text === text;
+        const settledKey = [settledFit.fontSize, settledFit.maxWidth ?? -1, settledFit.text].join(
+          '\u0000'
+        );
 
-        return { key, fit, ink: settled ? readInk(info) : null };
+        return {
+          key,
+          naturalWidth,
+          ink: settled ? readInk(info) : null,
+          inkKey: settled ? settledKey : null,
+        };
       });
     },
-    [key, text, band, baseFontSize, minFontSize, maxLines]
+    [key, fitKey, text, band, baseFontSize, minFontSize, maxLines]
   );
 
   const topY = (baseFontSize * LINE_HEIGHT) / 2;
-  const ink = current?.ink;
+  const ink = current?.inkKey === fitKey ? current.ink : null;
 
   return (
     <group position={position}>
       <Text
         position={[0, topY, 0]}
-        fontSize={current?.fit.fontSize ?? baseFontSize}
-        maxWidth={current?.fit.maxWidth}
+        fontSize={fit?.fontSize ?? baseFontSize}
+        maxWidth={fit?.maxWidth}
         color={color}
         fillOpacity={current ? fillOpacity : 0}
         anchorX="center"
@@ -143,7 +180,7 @@ export function FittedFloorLabel({
         letterSpacing={letterSpacing}
         onSync={handleSync}
       >
-        {current?.fit.text ?? text}
+        {fit?.text ?? text}
       </Text>
 
       {underline && ink && (

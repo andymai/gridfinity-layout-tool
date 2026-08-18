@@ -137,13 +137,49 @@ describe('FittedFloorLabel', () => {
     expect(mocks.text?.fontSize).toBe(7);
   });
 
-  it('re-measures when the band changes', () => {
+  // The natural width does not depend on the band, so a band change re-fits
+  // synchronously from the stored measurement — no troika round trip, and
+  // never a transparent frame. Keying the measurement on the band made a
+  // settled fit permanently invisible after a resize: the re-rendered props
+  // equalled the layout troika already had, its sync() is a no-op without a
+  // syncable-prop change, and onSync never fired again.
+  it('re-fits from the stored measurement when the band changes', () => {
+    const { rerender } = render(<FittedFloorLabel {...baseProps()} />);
+    sync(mesh(145));
+    expect(mocks.text?.fillOpacity).toBe(0.6);
+    const shrunk = mocks.text?.fontSize as number;
+    expect(shrunk).toBeLessThan(7);
+
+    // A wider band relaxes the fit back to the base size, still visible.
+    rerender(<FittedFloorLabel {...baseProps()} band={252} />);
+    expect(mocks.text?.fillOpacity).toBe(0.6);
+    expect(mocks.text?.fontSize).toBe(7);
+  });
+
+  it('stays visible when the band changes on a settled fit', () => {
+    // The exact reported ordering: a short name settles at the base size,
+    // then the bin is widened. The re-render carries props identical to the
+    // settled layout, so no sync ever fires again — visibility must not
+    // depend on one.
+    const { rerender } = render(<FittedFloorLabel {...baseProps()} />);
+    sync(mesh(90));
+    expect(mocks.text?.fillOpacity).toBe(0.6);
+
+    rerender(<FittedFloorLabel {...baseProps()} band={189} />);
+    expect(mocks.text?.fillOpacity).toBe(0.6);
+    expect(mocks.text?.fontSize).toBe(7);
+    expect(mocks.text?.maxWidth).toBeUndefined();
+  });
+
+  it('re-measures when the text changes', () => {
     const { rerender } = render(<FittedFloorLabel {...baseProps()} />);
     sync(mesh(145));
     expect(mocks.text?.fillOpacity).toBe(0.6);
 
-    rerender(<FittedFloorLabel {...baseProps()} band={252} />);
+    rerender(<FittedFloorLabel {...baseProps()} text="NEW NAME" />);
     expect(mocks.text?.fillOpacity).toBe(0);
+    expect(mocks.text?.fontSize).toBe(7);
+    expect(mocks.text?.maxWidth).toBeUndefined();
   });
 
   it('draws no underline unless one is asked for', () => {

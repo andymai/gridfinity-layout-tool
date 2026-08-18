@@ -6,6 +6,7 @@
  * single download (one un-split plate) or a ZIP with a print guide.
  */
 
+import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
@@ -86,8 +87,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
   // until the plan is fixed or reset. Automatic plans never populate this except
   // when the bed cannot hold a single grid unit at all.
   const overBedPieceCount = tiling?.bedOverages.length ?? 0;
-  const canExport =
-    (hasSingleMesh || hasSplitMeshes) && getActiveBridge() !== null && overBedPieceCount === 0;
+  const engineReady = useEngineReady();
+  const canExport = (hasSingleMesh || hasSplitMeshes) && engineReady && overBedPieceCount === 0;
 
   const downloadBaseplate = useCallback(
     async (format: ExportFileFormat, splitEnabled = true) => {
