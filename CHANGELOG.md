@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.10](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.9...gridfinity-layout-tool-v4.424.10) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** reactive export readiness, resilient sample exports, live label refits ([#3599](https://github.com/andymai/gridfinity-layout-tool/issues/3599)) ([67faa17](https://github.com/andymai/gridfinity-layout-tool/commit/67faa173ec53d28f8f97c114100258042d464a79))
+
 ## [4.424.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.8...gridfinity-layout-tool-v4.424.9) (2026-08-18)
 
 
