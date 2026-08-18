@@ -22,13 +22,14 @@ import {
   withScope,
   mesh,
   meshEdges,
+  exportSTEP,
   getKernelCapabilities,
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { KnifeRestPlan } from '@/shared/utils/knifeRestPlan';
 import { planKnifeRest, knifeRestGrooveRadius } from '@/shared/utils/knifeRestPlan';
-import type { MeshData } from '../../bridge/types';
+import type { ExportFormat, MeshData } from '../../bridge/types';
 import { SOCKET_HEIGHT, toIndexedMeshData, checkCancelled } from './generatorTypes';
 import type { ProgressFn } from './generatorTypes';
 import { CLEARANCE, COPLANAR_OVERLAP } from './generatorConstants';
@@ -37,6 +38,8 @@ import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from './socketBuilder';
 import { creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import { computeTessellationTolerances } from './utils/tolerances';
+import { unwrapExportBlob } from './utils/exportUnwrap';
+import { exportSolidToStl } from './utils/stlMeshFallback';
 
 /** Groove cylinders overshoot the body so the cut opens both end faces. */
 const GROOVE_OVERSHOOT = 10;
@@ -195,6 +198,40 @@ export function generateKnifeRest(
         : meshEdges(solid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
     onProgress?.('merge', 1.0);
     return toIndexedMeshData(shapeMesh, edgeLines);
+  } finally {
+    solid.delete();
+  }
+}
+
+export interface KnifeRestExportResult {
+  readonly data: ArrayBuffer;
+  readonly fileName: string;
+}
+
+/**
+ * The companion rest as its own printable file, in its own print frame (Z=0
+ * bottom, XY centred on itself) — it is a separate part, so the mating step
+ * belongs to whatever assembles the two. Null for every design the plan
+ * rejects and for the integrated style, which is carved out of the block.
+ */
+export async function exportKnifeRest(
+  params: BinParams,
+  format: ExportFormat,
+  tolerance = 0.01,
+  angularTolerance = 5
+): Promise<KnifeRestExportResult | null> {
+  const plan = planKnifeRest(params);
+  if (!plan || plan.style !== 'companion') return null;
+
+  const solid = buildKnifeRestSolid(params, plan, true);
+  const name = `gridfinity-${params.width}x${params.depth}-knife-rest`;
+  try {
+    if (format === 'step') {
+      const blob = unwrapExportBlob(exportSTEP(solid), 'STEP');
+      return { data: await blob.arrayBuffer(), fileName: `${name}.step` };
+    }
+    const data = await exportSolidToStl(solid, name, tolerance, angularTolerance);
+    return { data, fileName: `${name}.stl` };
   } finally {
     solid.delete();
   }

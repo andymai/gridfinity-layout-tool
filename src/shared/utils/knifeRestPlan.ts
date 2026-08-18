@@ -122,6 +122,27 @@ export function shouldGenerateKnifeRest(params: BinParams): boolean {
 }
 
 /**
+ * Where the companion rest stands relative to the block, in the block's own
+ * centred frame (mm). Both parts are built Z=0-bottom, so mating them is a
+ * pure XY step: past the exit wall by half of each footprint plus the plan's
+ * gap. Shared so the preview's placement and the STEP assembly's translation
+ * are one answer rather than two.
+ */
+export function knifeRestMatedOffset(
+  params: BinParams,
+  plan: KnifeRestPlan
+): { readonly x: number; readonly y: number } {
+  const alongX = plan.side === 'left' || plan.side === 'right';
+  const unit = alongX ? params.gridUnitMm : (params.gridUnitMmY ?? params.gridUnitMm);
+  const blockU = alongX ? params.width : params.depth;
+  const blockOuterHalf = (blockU * unit - GRIDFINITY_SPEC.TOLERANCE) / 2;
+  const restOuterHalf = (plan.alongU * unit - GRIDFINITY_SPEC.TOLERANCE) / 2;
+  const outward = plan.side === 'right' || plan.side === 'back' ? 1 : -1;
+  const step = outward * (blockOuterHalf + plan.gapMm + restOuterHalf);
+  return alongX ? { x: step, y: 0 } : { x: 0, y: step };
+}
+
+/**
  * Circular-segment radius for a groove `widthMm` across cutting `depthMm`
  * deep: the cylinder that passes through both groove shoulders and the saddle
  * point. Shared so the worker's cutter and the preview's ghost agree.

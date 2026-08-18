@@ -21,6 +21,7 @@ import { generateFileName } from '@/features/bin-designer';
 // and this code only runs inside the lazy layout-export chunk.
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 import { hasDetachableFeet } from '@/shared/types/bin';
+import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { calcMaxGridUnits } from '@/core/constants';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { splitHasConnectors } from '@/shared/generation/splitUtils';
@@ -122,13 +123,16 @@ function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPla
   };
 }
 
-/** Printable companion parts (lid, dividers, feet) a bin design ships beyond its body. */
+/** Printable companion parts (lid, dividers, feet, handle rest) a bin design ships beyond its body. */
 function binCompanions(params: BinParams): string[] {
   const companions: string[] = [];
   if (shouldGenerateLid(params)) companions.push('lid');
   // The simple path exports one body through `exportBin`, so a bin listing no
   // companion here ships without its feet.
   if (hasDetachableFeet(params.base)) companions.push('feet');
+  // Same for a knife block's handle rest: a second solid the body-only path
+  // cannot produce.
+  if (shouldGenerateKnifeRest(params)) companions.push('knife-rest');
   if (params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled)) {
     companions.push('dividers');
   }
@@ -251,6 +255,10 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
   const imprintStepSkipped = new Set<DesignId>();
   for (const b of bins) {
     if (b.linkedDesignId === undefined) continue;
+    // The rest half of a knife-block pair is not its own part: the block's
+    // combined export already emits the 'knife-rest' companion piece, so
+    // planning the rest bin too would ship the whole design twice.
+    if (b.pairRole === 'rest') continue;
     const design = designById.get(b.linkedDesignId);
     if (!design?.params) continue; // missing/non-bin already tallied above
     if (format === 'step' && hasMeshImprints(design.params)) {

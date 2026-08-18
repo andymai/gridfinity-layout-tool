@@ -84,6 +84,8 @@ export function formatPieceDisplayName(
       return `Sliding Tray ${dims}`;
     case 'feet':
       return `Feet ${dims}`;
+    case 'knife-rest':
+      return `Handle Rest ${dims}`;
     case 'divider-horizontal':
       return 'Divider Horizontal';
     case 'divider-vertical':
@@ -257,8 +259,10 @@ function pieceZone(label: string): ColorZone | null {
   if (label === 'lid' || label === 'lid-baseplate') return 'lid';
   if (label === 'divider-horizontal' || label === 'divider-vertical') return 'dividers';
   // The feet are the bin's base, printed separately, so they take the Base
-  // colour rather than falling through to the default material.
-  if (label === 'feet') return 'base';
+  // colour rather than falling through to the default material. The knife
+  // block's handle rest has no zone of its own and stands on the same
+  // baseplate, so it takes Base too rather than the default material.
+  if (label === 'feet' || label === 'knife-rest') return 'base';
   return null;
 }
 
@@ -267,8 +271,15 @@ function isSideLaidOutPiece(label: string): boolean {
   // Every piece that is a separate PRINT is laid out beside the bin rather than
   // left in the frame it was built in. The tray would otherwise overlap the
   // cavity it rides in; the feet, whose export frame starts at the first foot's
-  // own origin, would sit inside the bin's floor band.
-  return label === 'lid' || label === 'lid-baseplate' || label === 'slide-tray' || label === 'feet';
+  // own origin, would sit inside the bin's floor band; the handle rest is
+  // exported centred on itself, so it would land inside the block.
+  return (
+    label === 'lid' ||
+    label === 'lid-baseplate' ||
+    label === 'slide-tray' ||
+    label === 'feet' ||
+    label === 'knife-rest'
+  );
 }
 
 /** Bounding box of a flat [x,y,z,x,y,z,...] STL vertex array. */
