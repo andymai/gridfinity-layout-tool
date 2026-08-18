@@ -75,6 +75,9 @@ export type {
   LidRailSide,
   LidGripDepthPlan,
   LidGripHeightPlan,
+  LidSlideConfig,
+  LidSlidePlacement,
+  LidSlidePull,
   FeatureColorConfig,
   TextMode,
   TextFontFamily,
@@ -97,6 +100,14 @@ export {
   // `base.trayBottom`, so it needs both baselines on this side of the boundary.
   DEFAULT_TRAY_BOTTOM,
   DEFAULT_LID_CONFIG,
+  DEFAULT_LID_SLIDE_CONFIG,
+  LID_SLIDE_PLACEMENTS,
+  LID_SLIDE_PULLS,
+  LID_SLIDE_CLEARANCE_MIN_MM,
+  LID_SLIDE_CLEARANCE_MAX_MM,
+  LID_SLIDE_CLEARANCE_DEFAULT_MM,
+  LID_SLIDE_CLEARANCE_STEP_MM,
+  isSlideLid,
   LID_FIT_CLEARANCE,
   LID_CLICK_RAIL_BUMP,
   LID_CLICK_RAIL_ENTRY_CHAMFER,
@@ -215,6 +226,17 @@ export {
   hasLidBlocker,
   computeDisabledRails,
 } from '@/features/bin-designer/utils/lidCompatibility';
+
+/**
+ * Re-export the sliding-lid plan's entry point for the same reason.
+ *
+ * ONE adapter, shared by the panel and the worker rather than one each: the
+ * channel fused onto the bin, the plate that runs in it, the travel envelope
+ * cut out of the cavity and the rejection the panel prints all come from this
+ * call, and a second derivation is how a plate and its track end up sized
+ * against different bins.
+ */
+export { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
 
 /**
  * Re-export compartment-edge predicates so worker-side feature builders

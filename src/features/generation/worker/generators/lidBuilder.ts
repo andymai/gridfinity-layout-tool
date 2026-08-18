@@ -40,6 +40,7 @@ import { addLidRetentionMagnets } from './lidRetentionMagnets';
 import { cutTrayRecess } from './lidTray';
 import { applyLidCutouts } from './lidCutoutBuilder';
 import { applyLidText } from './lidTextBuilder';
+import { buildSlideLidPlate } from './slideLidPlate';
 
 export { resolveLidInputs } from './lidInputs';
 export { chamferApexXForCavityWall } from './lidClickRail';
@@ -60,6 +61,20 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
   const inputs = resolveLidInputs(params);
 
   return withScope((scope: DisposalScope) => {
+    // 0. A sliding lid is not a cap: it has no mating shell to wrap a lip, no
+    //    cavity to deepen, no rails, no magnets and no stack grid — the
+    //    attachment forces every one of those off in `resolveLidInputs`. It is
+    //    a plate, and the only steps below that still apply to it are the
+    //    through-cuts and the text, which is why it rejoins the sequence there
+    //    rather than being a second `buildLid` with its own copy of them.
+    if (inputs.slide) {
+      let plate = buildSlideLidPlate(scope, inputs, inputs.slide);
+      if (originToTag) collectOrigins(plate, FeatureTag.LID_BODY, originToTag);
+      if (inputs.cutouts) plate = applyLidCutouts(scope, plate, inputs, originToTag);
+      if (inputs.text) plate = applyLidText(scope, plate, inputs, originToTag);
+      return plate as ValidSolid;
+    }
+
     // 1. Floor + mating shell — fused into the main body
     const floor = buildLidFloor(scope, inputs);
     const matingShell = scope.register(buildMatingShell(scope, inputs));

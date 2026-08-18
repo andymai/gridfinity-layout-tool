@@ -206,13 +206,155 @@ export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = Array.from(
  * - `magnetic`: press-fit magnets in corner bosses on both the lid and the
  *   bin's stacking lip bond the lid down. Independent of the
  *   lip's grip, so it survives wall cutouts a rail lid couldn't.
+ * - `slide`: a flat plate captive in a half-dovetail channel fused to two
+ *   opposite inner walls, entered from a third. The only mode that is not a
+ *   cap: it has no mating shell, no cavity and no seam, so the knobs that
+ *   describe those are forced off (see {@link LidSlideConfig}).
  */
-export type LidAttachment = 'friction' | 'clickRails' | 'magnetic';
+export type LidAttachment = 'friction' | 'clickRails' | 'magnetic' | 'slide';
 export const LID_ATTACHMENTS: readonly LidAttachment[] = [
   'friction',
   'clickRails',
   'magnetic',
+  'slide',
 ] as const;
+
+/**
+ * Where a sliding lid's channel sits relative to the bin's rim.
+ *
+ * - `recessed`: the channel hangs immediately under the stacking lip, so the
+ *   bin keeps the lip and stays stackable. The lip on the entry wall is
+ *   notched across the opening for the plate to pass.
+ * - `flush`: the plate's top face is level with the wall top and the wall's own
+ *   material is the retainer. There is no room for a stacking lip at that
+ *   height, so this placement requires `base.stackingLip: false` — enforced as
+ *   a compatibility blocker rather than silently forced, since turning the lip
+ *   off changes a part the user did not ask about.
+ */
+export type LidSlidePlacement = 'recessed' | 'flush';
+export const LID_SLIDE_PLACEMENTS: readonly LidSlidePlacement[] = ['recessed', 'flush'] as const;
+
+/**
+ * How the user gets a purchase on the plate to pull it open.
+ *
+ * - `none`: a bare edge. Only sensible alongside a cutout the user has drawn.
+ * - `notch`: a scallop bitten out of the plate's outer edge. Keeps a flush lid
+ *   flush and prints without support, since the plate lies flat on the bed.
+ * - `tab`: a lug standing proud of the outer edge, in the plate's own plane —
+ *   NOT above it, so the plate still prints flat and a flush lid still clears
+ *   anything stacked over it. It reaches out past the bin's face, which is what
+ *   makes it grabbable with gloves on.
+ */
+export type LidSlidePull = 'none' | 'notch' | 'tab';
+export const LID_SLIDE_PULLS: readonly LidSlidePull[] = ['none', 'notch', 'tab'] as const;
+
+/**
+ * Per-side sliding clearance (mm) between the plate and its channel.
+ *
+ * Exposed, unlike every other lid fit number, because a sliding fit is the one
+ * that varies with printer and material rather than with geometry: the same
+ * clearance that glides on one machine binds on the next. The half-dovetail
+ * absorbs a range of it (the wedge takes up slop instead of rattling), which is
+ * what makes a knob safe to offer at all.
+ *
+ * 0.25 matches {@link LID_FIT_CLEARANCE} and is the value the channel's bearing
+ * overlap is sized against.
+ */
+export const LID_SLIDE_CLEARANCE_MIN_MM = 0.1;
+export const LID_SLIDE_CLEARANCE_MAX_MM = 0.6;
+export const LID_SLIDE_CLEARANCE_DEFAULT_MM = 0.25;
+export const LID_SLIDE_CLEARANCE_STEP_MM = 0.05;
+
+/**
+ * Floor (mm) on a sliding lid's plate thickness.
+ *
+ * Eight layers at 0.2. A capping lid is held on all four sides by its own shell
+ * and can be the 0.8mm {@link LID_TOP_THICKNESS_BASE}; a sliding plate is a
+ * beam supported on two edges, and it also has to carry the retaining chamfer
+ * through its own section — at 0.8mm that chamfer resolves to 0.2mm and the
+ * joint barely engages. Lives here rather than in `slideLidPlan` because
+ * {@link resolveLidPlateThickness} applies it and the plan reads the result;
+ * the other direction would close an import cycle.
+ */
+export const LID_SLIDE_PLATE_MIN_MM = 1.6;
+
+/** Sliding-lid configuration. Read only when `attachment === 'slide'`. */
+export interface LidSlideConfig {
+  /** See {@link LidSlidePlacement}. */
+  readonly placement: LidSlidePlacement;
+  /**
+   * The wall the plate enters and leaves through. The two walls PERPENDICULAR
+   * to it carry the channel; this one carries the notch.
+   *
+   * Explicit rather than derived from the footprint's long axis: a dispenser
+   * faces a particular way in a drawer, and rotating the whole design to change
+   * which face opens is not a substitute for choosing.
+   */
+  readonly entrySide: LidRailSide;
+  /** Per-side sliding clearance (mm). See {@link LID_SLIDE_CLEARANCE_DEFAULT_MM}. */
+  readonly clearanceMm: number;
+  /** See {@link LidSlidePull}. */
+  readonly pull: LidSlidePull;
+  /**
+   * Ramped bump on the shelf that the plate's trailing edge clicks past, so a
+   * knocked or tipped bin does not shed its lid — the failure the feature
+   * request opens with.
+   *
+   * Ramped rather than square on both counts that matter: it prints without
+   * support (it grows out of the shelf at 45°), and it can be pushed past by
+   * hand, so the plate still comes all the way out. The end stop at the closed
+   * end is unconditional and has no flag — a plate that can overshoot its own
+   * seat has no defined closed position.
+   */
+  readonly detent: boolean;
+}
+
+/**
+ * Whether this lid is a sliding plate.
+ *
+ * Takes the config rather than the whole design so it can be used inside
+ * {@link resolveLidPlateThickness} and friends, which several modules reach
+ * before they have a full `BinParams`. Deliberately does NOT consult
+ * `lid.enabled`: the resolvers it gates are asked about the shape of the lid a
+ * design describes, not about whether one is being built today.
+ */
+export function isSlideLid(lid: Pick<LidConfig, 'attachment'>): boolean {
+  return lid.attachment === 'slide';
+}
+
+/**
+ * This design's sliding-lid config, or the factory one when it carries no
+ * opinion.
+ *
+ * The single reader for {@link LidConfig.slide}: the field is absent on every
+ * design that has never used a sliding lid, and every consumer would otherwise
+ * need its own fallback — which is one more place for the default to drift.
+ */
+export function resolveLidSlide(lid: Pick<LidConfig, 'slide'>): LidSlideConfig {
+  return lid.slide ?? DEFAULT_LID_SLIDE_CONFIG;
+}
+
+/** True when this config is the factory one, so migration can drop it. */
+export function isDefaultLidSlide(slide: LidSlideConfig): boolean {
+  return (
+    slide.placement === DEFAULT_LID_SLIDE_CONFIG.placement &&
+    slide.entrySide === DEFAULT_LID_SLIDE_CONFIG.entrySide &&
+    slide.clearanceMm === DEFAULT_LID_SLIDE_CONFIG.clearanceMm &&
+    slide.pull === DEFAULT_LID_SLIDE_CONFIG.pull &&
+    slide.detent === DEFAULT_LID_SLIDE_CONFIG.detent
+  );
+}
+
+/** Factory sliding-lid config. Only read when the attachment is `'slide'`. */
+export const DEFAULT_LID_SLIDE_CONFIG: LidSlideConfig = {
+  // Keeps the bin a Gridfinity bin: the lip survives and nothing else in the
+  // design has to change to try the feature out.
+  placement: 'recessed',
+  entrySide: 'front',
+  clearanceMm: LID_SLIDE_CLEARANCE_DEFAULT_MM,
+  pull: 'notch',
+  detent: true,
+} as const;
 
 /**
  * Bounds for the dedicated lid-retention magnet. Separate from
@@ -303,6 +445,11 @@ export interface LidTrayConfig {
  */
 export function resolveLidPlateThickness(params: LidGeometrySource): number {
   const { lid, base } = params;
+  // A sliding lid IS the plate — no stack grid over it, no recess in it, no
+  // magnet pocket under it, because `isSlideLid` forces all three off. Its
+  // thickness is therefore the knob alone, and every term below would be
+  // reading a field the geometry does not build.
+  if (isSlideLid(lid)) return Math.max(LID_SLIDE_PLATE_MIN_MM, lid.topThicknessMm);
   if (lid.tray.enabled && !lid.stackableTop) {
     // A tray forces `stackableTop` off, so magnet pockets can't also apply.
     return Math.max(
@@ -329,6 +476,7 @@ export function resolveLidTrayBreakdown(params: LidGeometrySource): {
   readonly overallMm: number;
 } | null {
   if (!params.lid.tray.enabled || params.lid.stackableTop) return null;
+  if (isSlideLid(params.lid)) return null;
   const overallMm = resolveLidPlateThickness(params);
   return {
     floorMm: overallMm - params.lid.tray.depthMm,
@@ -351,6 +499,11 @@ export function resolveLidTrayBreakdown(params: LidGeometrySource): {
  * the lid just gets taller (exactly what `extraHeightMm` already does).
  */
 export function resolveLidCavityExtraMm(params: LidGeometrySource): number {
+  // There is no cavity on a sliding lid, so there is nothing for either term to
+  // deepen. Returning the plate's growth anyway would feed `lidAnchorZ` a seam
+  // plane for a joint this lid does not have, and `tallLidShortBin` would warn
+  // about a lever arm that is not there.
+  if (isSlideLid(params.lid)) return 0;
   return params.lid.extraHeightMm + (resolveLidPlateThickness(params) - LID_TOP_THICKNESS_BASE);
 }
 
@@ -712,6 +865,20 @@ export interface LidConfig {
    * Got: those were features, and this is the resolution of a defect.
    */
   readonly relieveInterior: boolean;
+  /**
+   * Sliding-lid geometry. Read only when {@link attachment} is `'slide'`, so
+   * switching modes preserves it exactly as the per-side `clickRails` selection
+   * and the `retentionMagnet` dimensions are preserved.
+   *
+   * ABSENT rather than defaulted when it carries no opinion, and `migrateParams`
+   * collapses a default-valued object back to absent — the same treatment
+   * `cutouts` gets, for the same reason. `communityParamsFingerprint` hashes the
+   * whole params object and keys both the duplicate guard and the moderation
+   * tombstone (CLAUDE.md gotcha #13a), so a field that were always present would
+   * re-hash every design already published and stop old takedowns matching a
+   * re-publish. Read it through {@link resolveLidSlide}.
+   */
+  readonly slide?: LidSlideConfig;
   /**
    * Shapes cut clean through the lid's plate — a dispensing slot, a vent, a
    * pass-through for a cable. The same {@link Cutout} the interior uses, so the
@@ -1095,6 +1262,10 @@ export function hasAnyLidGripSide(sides: LidGripSides): boolean {
 
 /** Whether this design generates any grip relief at all. */
 export function hasLidGrip(params: LidGeometrySource): boolean {
+  // A grip relief treats the seam between a lid's skirt and the bin's rim. A
+  // sliding plate has neither, and the dedicated pull is what gives a finger
+  // somewhere to go — so the stored mode is preserved but never built.
+  if (isSlideLid(params.lid)) return false;
   const { mode, sides } = params.lid.grip;
   return (
     mode !== 'none' &&

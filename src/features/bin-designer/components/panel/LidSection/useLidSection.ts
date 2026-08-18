@@ -74,6 +74,19 @@ import {
   lidValueSummary,
   type LidTopSurface,
 } from './useLidSection.helpers';
+import {
+  isSlideLid,
+  LID_SLIDE_CLEARANCE_MIN_MM,
+  LID_SLIDE_CLEARANCE_MAX_MM,
+  LID_SLIDE_CLEARANCE_STEP_MM,
+  LID_SLIDE_PLACEMENTS,
+  LID_SLIDE_PULLS,
+  LID_RAIL_SIDES as LID_SLIDE_ENTRY_SIDES,
+  resolveLidSlide,
+} from '@/features/bin-designer/types/lid';
+import type { LidSlidePlacement, LidSlidePull } from '@/features/bin-designer/types/lid';
+import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
+import { slideSagSafeThicknessMm } from '@/shared/utils/slideLidPlan';
 
 export { LID_TOP_SURFACES, lidValueSummary };
 export type { LidTopSurface };
@@ -99,6 +112,7 @@ export function useLidSection() {
     base,
     params,
     updateLid,
+    updateBase,
     updateWalls,
     updateHandles,
     updateWallPattern,
@@ -117,6 +131,7 @@ export function useLidSection() {
       base: s.params.base,
       params: s.params,
       updateLid: s.updateLid,
+      updateBase: s.updateBase,
       updateWalls: s.updateWalls,
       updateHandles: s.updateHandles,
       updateWallPattern: s.updateWallPattern,
@@ -173,15 +188,30 @@ export function useLidSection() {
   // The toggle is disabled either because the bin has no stacking lip
   // (existing gate) or because a feature blocker prevents the lid from
   // working. Stacking-lip wins precedence — fix that first, then revisit.
-  const disabledReason = !base.stackingLip
-    ? t('binDesigner.lid.requiresStackingLip')
-    : (blockerReason ?? undefined);
+  // A sliding lid is held by a channel of its own, and its `flush` placement
+  // requires the lip to be ABSENT — so the precondition follows the attachment.
+  // `shouldGenerateLid` makes the same distinction; a second, differently-gated
+  // copy here is how a panel ends up refusing a lid the worker builds.
+  const isSlide = isSlideLid(lid);
+  const needsStackingLip = !isSlide;
+  // Resolved unconditionally: the adapter answers `'not-slide'` for any other
+  // attachment, so the panel can read it without guarding first.
+  const slidePlan = slideLidPlanForParams(params);
+  // The stored config, or the factory one when the design has never carried an
+  // opinion — see `LidConfig.slide`, which stays ABSENT so the params
+  // fingerprint of every already-published design is unchanged. Writing through
+  // the resolved value is what turns the first edit into a complete object.
+  const slide = resolveLidSlide(lid);
+  const disabledReason =
+    needsStackingLip && !base.stackingLip
+      ? t('binDesigner.lid.requiresStackingLip')
+      : (blockerReason ?? undefined);
 
   // Effective enabled: the lid only renders/exports when the persisted
   // flag is set AND the bin has a stacking lip AND there are no blocker
   // conflicts. Persisted state is preserved across all gating so the
   // user's intent is retained when conflicts are resolved.
-  const effectiveEnabled = lid.enabled && base.stackingLip && !blocked;
+  const effectiveEnabled = lid.enabled && (base.stackingLip || !needsStackingLip) && !blocked;
 
   // Bin has magnets when its base style includes them. Used as the smart
   // default for lid magnetHoles each time the lid is enabled (and as a
@@ -660,16 +690,67 @@ export function useLidSection() {
         case 'tallDividerPieces':
           setParam('dividerPieces', { ...params.dividerPieces, height: 'auto' });
           return;
+        case 'slideFlushNeedsNoLip':
+          updateBase({ stackingLip: false });
+          return;
         // Non-fixable issues fall through; LidSection hides the button.
         case 'shortBin':
         case 'tallLidShortBin':
         case 'cellMaskHoles':
         case 'compartmentDividers':
         case 'topDownCutoutsAtLip':
+        case 'slideUnbuildable':
+        case 'slideInteriorBlocked':
+        case 'slideLongSpan':
+        case 'slideRimInterrupted':
+        case 'slideWallPattern':
           return;
       }
     },
-    [params.dividerPieces, setParam, updateHandles, updateWalls, updateWallPattern]
+    [params.dividerPieces, setParam, updateBase, updateHandles, updateWalls, updateWallPattern]
+  );
+
+  const setSlidePlacement = useCallback(
+    (placement: LidSlidePlacement) => {
+      updateLid({ slide: { ...slide, placement } });
+    },
+    [slide, updateLid]
+  );
+
+  const setSlideEntrySide = useCallback(
+    (entrySide: LidRailSide) => {
+      updateLid({ slide: { ...slide, entrySide } });
+    },
+    [slide, updateLid]
+  );
+
+  const setSlidePull = useCallback(
+    (pull: LidSlidePull) => {
+      updateLid({ slide: { ...slide, pull } });
+    },
+    [slide, updateLid]
+  );
+
+  const toggleSlideDetent = useCallback(() => {
+    updateLid({ slide: { ...slide, detent: !slide.detent } });
+  }, [slide, updateLid]);
+
+  const setSlideClearance = useCallback(
+    (value: number) => {
+      const clamped = Math.min(
+        LID_SLIDE_CLEARANCE_MAX_MM,
+        Math.max(LID_SLIDE_CLEARANCE_MIN_MM, value)
+      );
+      // Rounded to a hundredth, NOT snapped to `LID_SLIDE_CLEARANCE_STEP_MM`.
+      // The step is the stepper's increment, not a lattice the value has to lie
+      // on: this is the one knob that exists because the right answer depends on
+      // the printer, and someone dialling a fit in from a test print wants 0.23
+      // rather than being pushed back to 0.25. The rounding is only there to
+      // keep float noise out of a typed value. `setTopThickness` treats its own
+      // step the same way.
+      updateLid({ slide: { ...slide, clearanceMm: Math.round(clamped * 100) / 100 } });
+    },
+    [slide, updateLid]
   );
 
   const createMatchingTray = useCallback(() => {
@@ -723,6 +804,23 @@ export function useLidSection() {
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
       relieveInterior: lid.relieveInterior,
+      // Sliding lid. `slidePlan` carries the resolver's own account of the
+      // joint — the free span the sag warning is about, the travel the preview
+      // animates, and the rejection when there is no geometry — so the panel
+      // never restates arithmetic the worker builds from.
+      isSlide,
+      slide,
+      slidePlacements: LID_SLIDE_PLACEMENTS,
+      slideEntrySides: LID_SLIDE_ENTRY_SIDES,
+      slidePulls: LID_SLIDE_PULLS,
+      slideClearanceMin: LID_SLIDE_CLEARANCE_MIN_MM,
+      slideClearanceMax: LID_SLIDE_CLEARANCE_MAX_MM,
+      slideClearanceStep: LID_SLIDE_CLEARANCE_STEP_MM,
+      slideFreeSpanMm: slidePlan.geometry?.freeSpanMm ?? null,
+      slideSagThicknessMm: slidePlan.geometry
+        ? slideSagSafeThicknessMm(slidePlan.geometry.freeSpanMm)
+        : null,
+      slideRejection: slidePlan.rejection,
       // Lid cutouts: whether the host can take them at all, and how many it has.
       // `allowed` is the plan's own gate rather than a restatement of it, so the
       // button cannot offer an editor the worker would refuse to cut.
@@ -804,6 +902,11 @@ export function useLidSection() {
       toggleClickRailSide,
       setClickRailCoverage,
       toggleRelieveInterior,
+      setSlidePlacement,
+      setSlideEntrySide,
+      setSlidePull,
+      toggleSlideDetent,
+      setSlideClearance,
       openLidCutoutEditor,
       setGripMode,
       toggleGripSide,

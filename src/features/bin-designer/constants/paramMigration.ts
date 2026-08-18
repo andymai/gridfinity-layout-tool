@@ -57,6 +57,12 @@ import {
   LID_GRIP_HEIGHT_MIN_MM,
   LID_GRIP_HEIGHT_MAX_MM,
   LID_RAIL_SIDES,
+  DEFAULT_LID_SLIDE_CONFIG,
+  isDefaultLidSlide,
+  LID_SLIDE_PLACEMENTS,
+  LID_SLIDE_PULLS,
+  LID_SLIDE_CLEARANCE_MIN_MM,
+  LID_SLIDE_CLEARANCE_MAX_MM,
 } from '../types/lid';
 import type {
   LidClickRails,
@@ -67,6 +73,9 @@ import type {
   LidGripConfig,
   LidGripMode,
   LidRailSide,
+  LidSlideConfig,
+  LidSlidePlacement,
+  LidSlidePull,
 } from '../types/lid';
 import type {
   SurfaceTextConfig,
@@ -431,6 +440,45 @@ function migrateGrip(raw: unknown): LidGripConfig {
         : null,
     binDip: obj.binDip === true,
   };
+}
+
+/**
+ * Clamp the sliding-lid config.
+ *
+ * Every design saved before the mode existed falls back to
+ * {@link DEFAULT_LID_SLIDE_CONFIG} wholesale, which is safe in a way the other
+ * lid sub-objects are not: no such design can carry `attachment: 'slide'`, so
+ * nothing reads these values and no published geometry moves. That is also why
+ * the defaults here are chosen for a good first experience rather than for
+ * byte-identity — there is nothing to be identical to.
+ */
+function migrateSlide(raw: unknown): LidSlideConfig | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const obj = raw as Partial<LidSlideConfig>;
+  const migrated: LidSlideConfig = {
+    placement: LID_SLIDE_PLACEMENTS.includes(obj.placement as LidSlidePlacement)
+      ? (obj.placement as LidSlidePlacement)
+      : DEFAULT_LID_SLIDE_CONFIG.placement,
+    entrySide: LID_RAIL_SIDES.includes(obj.entrySide as LidRailSide)
+      ? (obj.entrySide as LidRailSide)
+      : DEFAULT_LID_SLIDE_CONFIG.entrySide,
+    clearanceMm: clampNumber(
+      obj.clearanceMm,
+      LID_SLIDE_CLEARANCE_MIN_MM,
+      LID_SLIDE_CLEARANCE_MAX_MM,
+      DEFAULT_LID_SLIDE_CONFIG.clearanceMm
+    ),
+    pull: LID_SLIDE_PULLS.includes(obj.pull as LidSlidePull)
+      ? (obj.pull as LidSlidePull)
+      : DEFAULT_LID_SLIDE_CONFIG.pull,
+    // Only an explicit `false` turns the detent off, so a payload that omits
+    // the key keeps the lid that stays shut.
+    detent: obj.detent !== false,
+  };
+  // Collapsed back to absent when it says nothing a default would not, so a
+  // design that has never used a sliding lid keeps the params fingerprint it
+  // was published with. See `LidConfig.slide`.
+  return isDefaultLidSlide(migrated) ? undefined : migrated;
 }
 
 /**
@@ -1165,6 +1213,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         tray: rawTray,
         grip: rawGrip,
         relieveInterior: rawRelieveInterior,
+        slide: rawSlide,
         cutouts: rawLidCutouts,
         ...stored
       } = raw;
@@ -1202,6 +1251,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // NOT left to the `DEFAULT_LID_CONFIG` spread above: that defaults it
         // on, which is right for a new design and wrong for every old one.
         relieveInterior: rawRelieveInterior === true,
+        slide: migrateSlide(rawSlide),
         // Spread `undefined` deliberately: the key is present-but-undefined here,
         // which `stableStringify` and `JSON.stringify` both drop.
         cutouts: migrateLidCutouts(rawLidCutouts),

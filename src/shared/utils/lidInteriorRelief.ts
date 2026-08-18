@@ -13,13 +13,26 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { LID_KEEPOUT_BELOW_CEILING_MM } from '@/shared/constants/lidKeepout';
+import {
+  isSlideLid,
+  resolveLidPlateThickness,
+  resolveLidSlide,
+} from '@/features/bin-designer/types/lid';
+import {
+  SLIDE_KEEPOUT_CLEARANCE_MM,
+  slidePlateTopBelowWallTopMm,
+} from '@/shared/utils/slideLidPlan';
 
 export function interiorReliefActive(params: BinParams): boolean {
   if (!params.lid.relieveInterior) return false;
   if (!params.lid.enabled) return false;
-  // A lid needs a lip to grip, and a base-only tile has no cavity to relieve.
-  if (!params.base.stackingLip) return false;
+  // A CAPPING lid needs a lip to grip. A sliding one is held by a channel of
+  // its own and works on a lipless bin — which is the whole of the `flush`
+  // placement — so the precondition follows the attachment rather than the bin.
+  if (!isSlideLid(params.lid) && !params.base.stackingLip) return false;
+  // A base-only tile has no cavity to relieve.
   if (params.base.tile === true) return false;
   // Custom shapes are relieved too. Their ring follows the mask
   // outline as one band per edge (`lidKeepoutSlabs`) rather than as a rounded
@@ -41,5 +54,21 @@ export function interiorReliefActive(params: BinParams): boolean {
  * gotcha #9 describes.
  */
 export function labelShelfKeepoutMm(params: BinParams): number {
-  return interiorReliefActive(params) ? LID_KEEPOUT_BELOW_CEILING_MM : 0;
+  if (!interiorReliefActive(params)) return 0;
+  if (!isSlideLid(params.lid)) return LID_KEEPOUT_BELOW_CEILING_MM;
+  // A sliding plate claims a deeper band than a click rail does: everything
+  // from the retainer's top down past the plate's underside. The shelf has to
+  // clear ALL of it, and the number is stated below the interior ceiling to
+  // match the constant above — which sits `LIP_SMALL_TAPER` under the wall top
+  // on a lipped bin, and at the wall top on a lipless one.
+  const ceilingBelowWallTop = params.base.stackingLip ? GRIDFINITY_SPEC.LIP_SMALL_TAPER : 0;
+  const slide = resolveLidSlide(params.lid);
+  const plateTop = slidePlateTopBelowWallTopMm(
+    slide.placement,
+    slide.clearanceMm,
+    params.base.stackingLip
+  );
+  const sink =
+    plateTop + resolveLidPlateThickness(params) + SLIDE_KEEPOUT_CLEARANCE_MM - ceilingBelowWallTop;
+  return Math.max(sink, 0);
 }

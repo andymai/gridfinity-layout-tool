@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { binLipTopWorldZ } from '../LidMesh/lidAnchorZ';
+import { isSlideLid } from '@/features/bin-designer/types/lid';
 
 /** Below this lid offset, the guide line is hidden (avoids noise in snapped view). */
 const MIN_VISIBLE_OFFSET_MM = 2;
@@ -31,6 +32,7 @@ export function LidGuideLine({ lidOffsetMm, color = '#9ca3af' }: LidGuideLinePro
   // Bin lip top in world Z. The lid's mating-cavity opening sits at
   // (lipTopZ + lidOffsetMm) when the lid is lifted by lidOffsetMm.
   const lipTopZ = useDesignerStore((s) => binLipTopWorldZ(s.params));
+  const isSlide = useDesignerStore((s) => isSlideLid(s.params.lid));
   const lidBottomWorldZ = lipTopZ + lidOffsetMm;
 
   // Build the dashed line geometry: a single segment from bin lip top to
@@ -58,6 +60,10 @@ export function LidGuideLine({ lidOffsetMm, color = '#9ca3af' }: LidGuideLinePro
 
   // Hide when the lid is approximately snapped — avoids visual noise.
   if (lidOffsetMm < MIN_VISIBLE_OFFSET_MM) return null;
+  // And hide entirely for a sliding lid: the guide's whole job is to show the
+  // lid dropping onto the lip, and a plate in a channel does not dock downward.
+  // Drawing it anyway would depict a motion the printed part cannot make.
+  if (isSlide) return null;
 
   return (
     <lineSegments ref={lineRef} geometry={geometry} renderOrder={2}>

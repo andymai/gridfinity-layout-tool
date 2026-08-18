@@ -94,6 +94,20 @@ const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 const MAX_CUTOUT_CORNER_RADIUS = 25;
 // Mirrors `LidAttachment` in `src/features/bin-designer/types/lid.ts`.
 const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
+/**
+ * `lid.attachment` takes one more value than `base.trayBottom.attachment` does.
+ *
+ * A tray bottom is lid mating geometry on a bin's UNDERSIDE — a shell that
+ * wraps another bin's stacking lip. `'slide'` describes a plate captive in a
+ * channel, which is not a thing an underside can be, so the two lists are
+ * deliberately separate rather than one list the tray path also widens.
+ */
+const VALID_LID_ATTACHMENTS_TOP = [...VALID_LID_ATTACHMENTS, 'slide'] as const;
+const VALID_LID_SLIDE_PLACEMENTS = ['recessed', 'flush'] as const;
+const VALID_LID_SLIDE_PULLS = ['none', 'notch', 'tab'] as const;
+/** Wall sides `lid.slide.entrySide` may name. Mirrors `LID_RAIL_SIDES`. */
+const VALID_LID_RAIL_SIDES = ['front', 'back', 'left', 'right'] as const;
+const ALLOWED_LID_SLIDE_KEYS = new Set(['placement', 'entrySide', 'clearanceMm', 'pull', 'detent']);
 // Mirrors `LidGripMode` / `LidGripConfig` / `LidGripSides` in the same
 // module.
 const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
@@ -438,9 +452,11 @@ function validateLid(lid: unknown): string | null {
   if (!isObject(lid)) return 'lid must be an object';
   if (
     lid.attachment !== undefined &&
-    !VALID_LID_ATTACHMENTS.includes(lid.attachment as (typeof VALID_LID_ATTACHMENTS)[number])
+    !VALID_LID_ATTACHMENTS_TOP.includes(
+      lid.attachment as (typeof VALID_LID_ATTACHMENTS_TOP)[number]
+    )
   ) {
-    return `lid.attachment must be one of: ${VALID_LID_ATTACHMENTS.join(', ')}`;
+    return `lid.attachment must be one of: ${VALID_LID_ATTACHMENTS_TOP.join(', ')}`;
   }
   if (
     lid.extraHeightMm !== undefined &&
@@ -483,9 +499,68 @@ function validateLid(lid: unknown): string | null {
     const gripErr = validateLidGrip(lid.grip, lid);
     if (gripErr) return gripErr;
   }
+  if (lid.slide !== undefined) {
+    const slideErr = validateLidSlide(lid.slide);
+    if (slideErr) return slideErr;
+  }
   if (lid.cutouts !== undefined) {
     const cutoutsErr = validateLidCutouts(lid.cutouts);
     if (cutoutsErr) return cutoutsErr;
+  }
+  return null;
+}
+
+/**
+ * Sliding-lid config. Mirrors `LidSlideConfig` in
+ * `src/features/bin-designer/types/lid.ts`.
+ *
+ * Only the shape and the one numeric range are enforced here. Everything else
+ * the joint depends on — the bearing overlap, the wedge, the travel envelope —
+ * is DERIVED by `resolveSlideLidPlan` from measurements the payload does not
+ * carry, and that resolver refuses rather than clamps, so there is nothing for
+ * a crafted payload to smuggle past. The clearance is the exception: it feeds
+ * straight into the geometry, and an out-of-range value would produce a channel
+ * that either welds shut or has no bearing at all.
+ *
+ * The rim placement's incompatibility with a stacking lip is NOT enforced here.
+ * It is a compatibility blocker, not an invalid document: a design can carry
+ * both while the user decides, exactly as one can carry a click-rail selection
+ * that a wall cutout currently disables.
+ */
+function validateLidSlide(slide: unknown): string | null {
+  if (!isObject(slide)) return 'lid.slide must be an object';
+
+  for (const key of Object.keys(slide)) {
+    if (!ALLOWED_LID_SLIDE_KEYS.has(key)) return `lid.slide has unknown key: ${key}`;
+  }
+  if (
+    slide.placement !== undefined &&
+    !VALID_LID_SLIDE_PLACEMENTS.includes(
+      slide.placement as (typeof VALID_LID_SLIDE_PLACEMENTS)[number]
+    )
+  ) {
+    return `lid.slide.placement must be one of: ${VALID_LID_SLIDE_PLACEMENTS.join(', ')}`;
+  }
+  if (
+    slide.entrySide !== undefined &&
+    !VALID_LID_RAIL_SIDES.includes(slide.entrySide as (typeof VALID_LID_RAIL_SIDES)[number])
+  ) {
+    return `lid.slide.entrySide must be one of: ${VALID_LID_RAIL_SIDES.join(', ')}`;
+  }
+  if (
+    slide.pull !== undefined &&
+    !VALID_LID_SLIDE_PULLS.includes(slide.pull as (typeof VALID_LID_SLIDE_PULLS)[number])
+  ) {
+    return `lid.slide.pull must be one of: ${VALID_LID_SLIDE_PULLS.join(', ')}`;
+  }
+  if (
+    slide.clearanceMm !== undefined &&
+    (!isNumber(slide.clearanceMm) || !inRange(slide.clearanceMm, 0.1, 0.6))
+  ) {
+    return 'lid.slide.clearanceMm must be 0.1-0.6';
+  }
+  if (slide.detent !== undefined && !isBoolean(slide.detent)) {
+    return 'lid.slide.detent must be boolean';
   }
   return null;
 }

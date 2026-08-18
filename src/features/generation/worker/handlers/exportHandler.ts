@@ -30,6 +30,7 @@ import { exportDividers, exportDividerPiecesSeparately } from '../generators/div
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { pitchFromParams } from '../generators/gridPitch';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
+import { slideLidPlanForParams } from '@/shared/types/bin';
 import {
   buildAssembledFeetSolids,
   exportDetachableFeet,
@@ -327,9 +328,15 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // plane, so a second opinion here parts them.
         // try/finally releases divider + lid solids even if compound or
         // exportSTEP throws (binSolid is owned by shapeCache; don't free it).
-        const lidZ =
-          stepDims.lipTopZ -
-          lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
+        // A sliding lid does not mate onto the lip: it hangs in a channel a
+        // fixed depth under the WALL top, which is the plane its whole plan is
+        // stated against. Its XY placement is already baked into the plate, so
+        // the assembly only has to seat it in Z.
+        const slidePlan = slideLidPlanForParams(params).geometry;
+        const lidZ = slidePlan
+          ? stepDims.wallTopZ - slidePlan.plateTopBelowWallTopMm
+          : stepDims.lipTopZ -
+            lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
         let lidSolid = hasLid ? buildLid(params) : null;
         // Separate baseplate (glue-on) rides on top of the lid floor in the
         // assembly, at the same lift as the lid. buildStackPlate returns null

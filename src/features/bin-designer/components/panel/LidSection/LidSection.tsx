@@ -21,6 +21,7 @@ import { Button, SegmentedControl, Collapsible } from '@/design-system';
 import { Switch } from '@/design-system/Switch';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { LidGripControls } from '../LidGripControls';
+import { SlideControls } from '../SlideControls';
 import { StepperField } from '../shared/StepperField';
 import { Hint, Readout, SubHeader } from '../shared';
 import type {
@@ -152,7 +153,11 @@ export function LidSection() {
   // disclosure is always present now and never renders empty.
   const showMagnetAdvanced = state.attachment === 'magnetic';
   const showCoverageAdvanced = state.attachment === 'clickRails' && state.anyRail;
-  const showTrayAdvanced = state.topSurface === 'tray';
+  // A sliding lid has no top surface to recess, no cavity to deepen and no seam
+  // to relieve, so those three sections are hidden rather than shown inert. The
+  // stored values survive — `resolveLidInputs` forces the geometry off without
+  // touching the config — so switching attachment back restores them.
+  const showTrayAdvanced = state.topSurface === 'tray' && !state.isSlide;
 
   // On a tray lid the geometry holds the floor at LID_TRAY_FLOOR even if the
   // design stored something thinner, so the field reads back from the resolver
@@ -241,10 +246,12 @@ export function LidSection() {
             {state.attachment === 'clickRails' && (
               <RailSides state={state} onToggle={handlers.toggleClickRailSide} t={t} />
             )}
+
+            {state.isSlide && <SlideControls state={state} handlers={handlers} t={t} />}
           </section>
 
           {/* ── Top surface ──────────────────────────────────────────── */}
-          <section className="space-y-2">
+          <section className={`space-y-2 ${state.isSlide ? 'hidden' : ''}`}>
             <SubHeader>{t('binDesigner.lid.section.topSurface')}</SubHeader>
             <SegmentedControl
               aria-label={t('binDesigner.lid.section.topSurface')}
@@ -375,7 +382,7 @@ export function LidSection() {
           </div>
 
           {/* ── Extra height (folded in) ─────────────────────────────── */}
-          <div className="space-y-1">
+          <div className={`space-y-1 ${state.isSlide ? 'hidden' : ''}`}>
             <StepperField
               label={t('binDesigner.lid.extraHeight')}
               unit="mm"
@@ -462,6 +469,29 @@ export function LidSection() {
                       : t('binDesigner.lid.topThicknessHint')}
                 </Hint>
               </div>
+
+              {state.isSlide && (
+                <div className="space-y-1">
+                  <StepperField
+                    label={t('binDesigner.lid.slide.clearance')}
+                    unit="mm"
+                    value={state.slide.clearanceMm}
+                    onChange={handlers.setSlideClearance}
+                    onStep={(delta) =>
+                      handlers.setSlideClearance(
+                        state.slide.clearanceMm + delta * state.slideClearanceStep
+                      )
+                    }
+                    min={state.slideClearanceMin}
+                    max={state.slideClearanceMax}
+                    step={state.slideClearanceStep}
+                    size="md"
+                    aria-label={t('binDesigner.lid.slide.clearanceAria')}
+                    commitMode="deferred"
+                  />
+                  <Hint>{t('binDesigner.lid.slide.clearanceHint')}</Hint>
+                </div>
+              )}
 
               {showMagnetAdvanced && (
                 <div className="space-y-2">
@@ -586,7 +616,9 @@ export function LidSection() {
 
           <section
             data-help-target="bd-lid-grip"
-            className="space-y-2 border-t border-stroke-subtle pt-3"
+            className={`space-y-2 border-t border-stroke-subtle pt-3 ${
+              state.isSlide ? 'hidden' : ''
+            }`}
           >
             <SubHeader>{t('binDesigner.lid.section.grip')}</SubHeader>
             <p className="text-xs text-content-tertiary">{t('binDesigner.lid.gripHint')}</p>

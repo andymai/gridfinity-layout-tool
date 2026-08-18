@@ -82,6 +82,7 @@ graph TB
   off the baseplate-mating taper, so a drifted copy would mispredict exactly the bins the geometry
   refuses to pattern
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, top-surface picker with its magnet / lip-only / separate-baseplate sub-toggles, thickness sliders
+- `components/panel/SlideControls/` — the sliding lid's own knobs: channel placement (`recessed` under the stacking lip, so the bin still stacks / `flush` at the rim for the deepest interior, which needs the lip off and says so as a blocker with a one-click fix), which wall it opens through, the pull (none / finger notch / in-plane tab), and the click-shut detent. The sliding clearance is deliberately NOT here — it lives under the panel's Advanced disclosure with the other millimetre knobs, because it is the one number with a right answer per printer and none in general. Everything it renders comes from `slideLidPlanForParams`, so a readout can never disagree with the geometry
 - `components/panel/LidGripControls/` — grip relief (#3272): the chamfer / shadow-line / scallop cut at the lid↔bin seam that gives a fingernail somewhere to go, plus the opt-in bin lip dip. Height is a knob on the shadow line and the scallop (`grip.heightMm`; `null` = the mode's own request, and a chamfer has none, since its 45° section is its depth). Its readout reports the depth, the height and the lid left ABOVE the cut, plus which dimension ran out, because the requested values are bounded by the design's own tray / magnet / skirt geometry and a shortened relief otherwise reads as a defect. The shadow line is unavailable on a stackable top — it moves the face an upper bin registers against; `lidGripModeAllowed` is the rule, mirrored server-side
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit
@@ -92,8 +93,8 @@ graph TB
   positioning, opacity interpolation, and mutual hover highlight pairing with `BinMesh`. In
   multi-color mode it paints the lid with its zone color (`featureColors.lid`) to match the
   exporter, rather than the body color
-- `components/preview/LidGuideLine/` — visual cue connecting bin and lid in exploded views
-- `components/preview/LidExplodeSlider/` — slider that lifts the lid off the bin (replaces view-mode pills)
+- `components/preview/LidGuideLine/` — visual cue connecting bin and lid in exploded views. Hidden for a sliding lid, whose whole point is that it does NOT dock downward
+- `components/preview/LidExplodeSlider/` — slider that lifts the lid off the bin (replaces view-mode pills). For a sliding lid the same drag translates it along its entry axis instead — `lidGroupPosition` in `preview/LidMesh/lidAnchorZ.ts` owns BOTH the seated placement and the explode direction, so no consumer has to know which kind of lid it is
 - `store/designer.ts` — design state and parameter mutations (composed from slices)
 - `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
 - `store/cutoutSelection.ts` — cutout editor selection state

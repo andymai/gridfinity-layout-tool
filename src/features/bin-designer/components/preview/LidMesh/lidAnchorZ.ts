@@ -13,7 +13,14 @@
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
+import {
+  isSlideLid,
+  LID_FIT_CLEARANCE,
+  resolveLidCavityExtraMm,
+} from '@/features/bin-designer/types/lid';
+import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import type { BinParams } from '@/features/bin-designer/types';
+import type { LidRailSide } from '@/features/bin-designer/types/lid';
 
 /** The params {@link binLipTopWorldZ} reads — narrow so partial callers fit. */
 export type LidSeatSource = Pick<
@@ -25,7 +32,9 @@ export type LidSeatSource = Pick<
 // main-thread-safe module both this preview and the worker import, so the two
 // hand-synced copies this file used to hold can't drift. Re-exported here so
 // existing consumers keep their import path.
-export { LID_EXTRA_HEIGHT, lidAnchorZ, lidWallBottomZ } from '@/features/bin-designer/types/lid';
+export { LID_EXTRA_HEIGHT, lidWallBottomZ } from '@/features/bin-designer/types/lid';
+import { lidAnchorZ } from '@/features/bin-designer/types/lid';
+export { lidAnchorZ };
 
 export const PREVIEW_Z_OFFSET = 0.1;
 
@@ -47,13 +56,67 @@ export const PREVIEW_Z_OFFSET = 0.1;
  * fed inconsistent halves of the same bin.
  */
 export function binLipTopWorldZ(params: LidSeatSource): number {
+  return binWallTopWorldZ(params) + (params.base.stackingLip ? LIP_ABOVE_WALL_MM : 0);
+}
+
+/** How far the stacking lip's top face sits above the wall top. */
+const LIP_ABOVE_WALL_MM = GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP;
+
+/**
+ * World-Z of the bin's WALL TOP in the preview frame.
+ *
+ * Split out of {@link binLipTopWorldZ} because a sliding lid is placed against
+ * this plane rather than the lip's: `slideLidPlan` states its whole joint as a
+ * depth below the wall top, so a collar carries the channel up for free.
+ */
+export function binWallTopWorldZ(params: LidSeatSource): number {
   const { height, heightUnitMm, base, lid } = params;
   const wallTop =
     baseFloorZ(base, heightUnitMm, lid) +
     baseWallHeight(base, height * heightUnitMm) +
     Math.max(0, params.extraWallHeightMm ?? 0);
-  const lipTopZ = base.stackingLip
-    ? wallTop + GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP
-    : wallTop;
-  return lipTopZ + PREVIEW_Z_OFFSET;
+  return wallTop + PREVIEW_Z_OFFSET;
 }
+
+/**
+ * Where the lid group sits, and which way the explode slider moves it.
+ *
+ * A capping lid lifts straight up off its lip; a sliding one withdraws through
+ * its entry wall, and showing it lifting would depict a motion the printed part
+ * physically cannot make — as well as hiding whether the plate, the channel and
+ * the notch actually line up.
+ *
+ * Both cases return a full translation rather than a Z and a direction, so the
+ * consumer has one thing to apply and no branch of its own.
+ */
+export function lidGroupPosition(
+  params: BinParams,
+  offsetMm: number
+): readonly [number, number, number] {
+  if (!isSlideLid(params.lid)) {
+    const anchorZ = lidAnchorZ(
+      params.heightUnitMm,
+      LID_FIT_CLEARANCE,
+      resolveLidCavityExtraMm(params)
+    );
+    return [0, 0, binLipTopWorldZ(params) - anchorZ + offsetMm];
+  }
+
+  const { geometry } = slideLidPlanForParams(params);
+  const z = binWallTopWorldZ(params) - (geometry?.plateTopBelowWallTopMm ?? 0);
+  if (!geometry) return [0, 0, z];
+  // Outward normal of the entry wall, in the same convention the rest of the
+  // lid code uses: back is +Y, front is −Y, right is +X, left is −X.
+  const [dx, dy] = ENTRY_OUTWARD[geometry.entrySide];
+  // Clamped to the plate's own travel: past that it is clear of the bin and
+  // sliding it further only pushes it off screen.
+  const travel = Math.min(offsetMm, geometry.travelMm);
+  return [dx * travel, dy * travel, z];
+}
+
+const ENTRY_OUTWARD: Record<LidRailSide, readonly [number, number]> = {
+  right: [1, 0],
+  left: [-1, 0],
+  back: [0, 1],
+  front: [0, -1],
+};
