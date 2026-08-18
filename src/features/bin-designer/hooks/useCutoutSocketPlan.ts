@@ -9,7 +9,7 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import {
   MAX_CUTOUT_LABEL_SOCKETS,
   planCutoutSocketsForParams,
@@ -54,7 +54,13 @@ export function useCutoutSocketPlan(): CutoutSocketPlanView {
 
   return useMemo(() => {
     if (cutouts.length === 0) return EMPTY;
-    const { innerW, innerD, wallHeight } = binDimensions(params);
+    // The cutout frame is the overhang-EXPANDED interior (`cutoutInterior`),
+    // exactly as the generator places sockets against `dim.innerW`. The
+    // nominal `binDimensions` interior under-reports the room on an
+    // overhung board, so the panel and the worker would size different
+    // plates for the same pocket.
+    const { innerW, innerD } = cutoutInterior(params);
+    const { wallHeight } = binDimensions(params);
     const plan = planCutoutSocketsForParams(params, innerW, innerD, wallHeight);
     if (plan.sockets.length === 0 && plan.skipped.length === 0) return EMPTY;
     return {

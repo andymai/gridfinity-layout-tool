@@ -64,7 +64,7 @@ export { normalizeIdsWithRemap, remapCompartmentTexts } from './utils/compartmen
 export { validateBinParams } from './utils/validation';
 // Exposed for shared/hooks/useLabelPlateCounts (print-list plate counts) to
 // feed the same innerW into planLabelPlates that the worker uses.
-export { binDimensions } from './utils/binDimensions';
+export { binDimensions, cutoutInterior } from './utils/binDimensions';
 
 // Exposed for `shared/sync/` to wire into the sync engine without reaching
 // into the feature's internal path.

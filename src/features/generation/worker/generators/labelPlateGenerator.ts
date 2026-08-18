@@ -53,15 +53,24 @@ export const MAX_PREVIEW_LABEL_PLATES = 12;
 /**
  * Every plate seat a design has, from whichever mechanism produced it.
  *
- * The two are mutually exclusive by construction (the label-tab feature is
- * unavailable on a solid bin, and a shadow board's sockets hang off cutouts
- * rather than walls), but reading both here keeps the preview's entry point
- * from having to know which kind of design it was handed.
+ * Cutout seats are consulted FIRST, mirroring `planLabelPlates`' priority.
+ * The two mechanisms are mutually exclusive for a design edited through the
+ * constraint engine, but a share/community import can carry a solid board
+ * with stale `label.enabled` config (the engine only clears the flag when the
+ * style is switched THROUGH it) — and the wall-hung branch has no solid gate,
+ * so putting it first would preview tabs the build never cuts while hiding
+ * the board's real plates.
  */
 function planPlateSeats(
   params: BinParams,
   dim: ReturnType<typeof deriveDimensions>
 ): PreviewPlateSeat[] {
+  // `wallHeight`, not `interiorHeight`: a board's fill surface hangs from the
+  // raw wall top less its own top offset, which is the plane `buildCutoutCuts`
+  // places every cavity against. Measuring from the lip-relieved interior
+  // would seat every plate the lip taper's depth below its own pocket.
+  const cutoutSeats = planCutoutPlateSeats(params, dim.innerW, dim.innerD, dim.wallHeight);
+  if (cutoutSeats.length > 0) return cutoutSeats;
   if (params.label.enabled && (params.label.mode ?? 'text') === 'socket') {
     return planLabelPlateSeats(
       params,
@@ -71,11 +80,7 @@ function planPlateSeats(
       params.wallThickness
     );
   }
-  // `wallHeight`, not `interiorHeight`: a board's fill surface hangs from the
-  // raw wall top less its own top offset, which is the plane `buildCutoutCuts`
-  // places every cavity against. Measuring from the lip-relieved interior
-  // would seat every plate the lip taper's depth below its own pocket.
-  return planCutoutPlateSeats(params, dim.innerW, dim.innerD, dim.wallHeight);
+  return [];
 }
 
 /**

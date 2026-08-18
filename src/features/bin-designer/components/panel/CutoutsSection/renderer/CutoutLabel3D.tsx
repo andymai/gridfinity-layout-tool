@@ -78,15 +78,28 @@ export function CutoutLabel3D({
           const socket = socketPlan.byCutoutId.get(cutout.id);
           if (!socket) return null;
           const plateW = labelPlateWidthMm(socket.widthU);
+          // The plan is memoised on committed params, so mid-drag it still
+          // describes the grab-point position. Follow the live override by the
+          // same delta the cutout (or its label nudge) has moved — both feed
+          // the plan's placement 1:1, and the exact re-plan lands on release.
+          const overrides = preview.get(cutout.id);
+          const effective = overrides ? { ...cutout, ...overrides } : cutout;
+          const dragX =
+            effective.x - cutout.x + (effective.textOffset?.x ?? 0) - (cutout.textOffset?.x ?? 0);
+          const dragY =
+            effective.y - cutout.y + (effective.textOffset?.y ?? 0) - (cutout.textOffset?.y ?? 0);
           return (
             <CutoutSocketFootprint
               key={`socket-${cutout.id}`}
               // Plan centres are bin-centred; the editor's origin is the
               // interior corner, so shift by half the box the plan measured.
-              centerX={socket.centerX + socketPlan.innerW / 2}
-              centerY={socket.centerY + socketPlan.innerD / 2}
-              widthMm={socket.vertical ? LABEL_PLATE_HEIGHT_MM : plateW}
-              depthMm={socket.vertical ? plateW : LABEL_PLATE_HEIGHT_MM}
+              centerX={socket.centerX + socketPlan.innerW / 2 + dragX}
+              centerY={socket.centerY + socketPlan.innerD / 2 + dragY}
+              // PLATE-frame extents, always: the footprint applies the
+              // vertical rotation itself, so world-swapped extents here would
+              // be rotated back and draw the plate on the wrong axis.
+              widthMm={plateW}
+              depthMm={LABEL_PLATE_HEIGHT_MM}
               cornerRadiusMm={LABEL_PLATE_CORNER_RADIUS_MM}
               text={socket.text}
               hasIcon={socket.icon !== undefined}

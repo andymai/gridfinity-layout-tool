@@ -175,4 +175,35 @@ describe('CutoutSocketControls', () => {
     expect(screen.getByRole('status').textContent).toBe(message);
     expect(screen.queryByRole('button', { name: 'binDesigner.cutoutSocket.widthAuto' })).toBeNull();
   });
+
+  // The no-room copy advises trying the other orientation, so the one control
+  // that can unblock the plan must stay mounted with the warning. The other
+  // refusals are not orientation's to fix.
+  it('keeps the orientation toggle mounted on a no-room skip', () => {
+    render(
+      <CutoutSocketControls
+        cutout={cutout()}
+        plan={planSkipping('noRoom')}
+        disabled={false}
+        onUpdate={vi.fn()}
+      />
+    );
+    expect(
+      screen.getByRole('group', { name: 'binDesigner.cutoutSocket.orientation' })
+    ).toBeInTheDocument();
+  });
+
+  it('offers no orientation toggle for refusals orientation cannot fix', () => {
+    render(
+      <CutoutSocketControls
+        cutout={cutout()}
+        plan={planSkipping('tooShallow')}
+        disabled={false}
+        onUpdate={vi.fn()}
+      />
+    );
+    expect(
+      screen.queryByRole('group', { name: 'binDesigner.cutoutSocket.orientation' })
+    ).toBeNull();
+  });
 });
