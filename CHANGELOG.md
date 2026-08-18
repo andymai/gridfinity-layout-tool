@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.2...gridfinity-layout-tool-v4.424.3) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** make detachable feet honest about placement, preview frame and stale caches ([#3585](https://github.com/andymai/gridfinity-layout-tool/issues/3585)) ([9582069](https://github.com/andymai/gridfinity-layout-tool/commit/95820699d68de54973f900f5222927180ca94537))
+
 ## [4.424.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.1...gridfinity-layout-tool-v4.424.2) (2026-08-18)
 
 
