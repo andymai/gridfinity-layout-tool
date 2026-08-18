@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/pipeline/featureCacheKeyDiscipline.test.ts
+  s_82b6614dd1ca36::t_15f3d71d353df3 284-287,290-294
+  s_82b6614dd1ca36::t_734292f3fb8352 81-103
+  s_82b6614dd1ca36::t_2436066bd5a60b 113-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "2ad75589ecbe092c638192c23275d7c47a40fe74",
+  "prompts": {},
+  "sessions": {
+    "s_82b6614dd1ca36": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "135e0f31-4b1a-4ede-9312-c0a8a7050cab",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
