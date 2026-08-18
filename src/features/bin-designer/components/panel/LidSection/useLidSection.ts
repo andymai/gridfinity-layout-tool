@@ -703,6 +703,7 @@ export function useLidSection() {
         case 'slideInteriorBlocked':
         case 'slideLongSpan':
         case 'slideRimInterrupted':
+        case 'slideChannelInterrupted':
         case 'slideWallPattern':
           return;
       }
@@ -805,9 +806,9 @@ export function useLidSection() {
       clickRailCoverage: lid.clickRailCoverage,
       relieveInterior: lid.relieveInterior,
       // Sliding lid. `slidePlan` carries the resolver's own account of the
-      // joint — the free span the sag warning is about, the travel the preview
-      // animates, and the rejection when there is no geometry — so the panel
-      // never restates arithmetic the worker builds from.
+      // joint — the free span the sag warning is about and the thickness that
+      // would carry it — so the panel never restates arithmetic the worker
+      // builds from.
       isSlide,
       slide,
       slidePlacements: LID_SLIDE_PLACEMENTS,
@@ -820,7 +821,6 @@ export function useLidSection() {
       slideSagThicknessMm: slidePlan.geometry
         ? slideSagSafeThicknessMm(slidePlan.geometry.freeSpanMm)
         : null,
-      slideRejection: slidePlan.rejection,
       // Lid cutouts: whether the host can take them at all, and how many it has.
       // `allowed` is the plan's own gate rather than a restatement of it, so the
       // button cannot offer an editor the worker would refuse to cut.

@@ -92,6 +92,8 @@ export type LidCompatibilityId =
   | 'slideLongSpan'
   /** The entry wall loses its stacking lip across the opening. */
   | 'slideRimInterrupted'
+  /** A cutout or handle opens a window in a wall the channel runs along. */
+  | 'slideChannelInterrupted'
   /** A wall pattern perforates the walls the channel welds to. */
   | 'slideWallPattern';
 
@@ -276,6 +278,22 @@ function checkSlideLidCompatibility(params: BinParams): LidCompatibilityIssue[] 
   // other three walls and its corners, but not across this one.
   if (params.base.stackingLip) {
     issues.push({ id: 'slideRimInterrupted', severity: 'warning', sides: [entrySide] });
+  }
+
+  // A wall cutout or a high handle hole opens a window in the very band the
+  // channel occupies, on whichever wall it sits. On the two channel walls the
+  // shelf bar fuses straight across the opening — partially re-filling the
+  // window the user drew while losing its own weld over that stretch. Worse
+  // than the pattern warning below in both directions, and measured by the
+  // same plan the cap lid uses for its rails.
+  {
+    const channelSides: readonly LidCompatibilitySide[] =
+      entrySide === 'front' || entrySide === 'back' ? ['left', 'right'] : ['front', 'back'];
+    const gaps = lipGaps(params);
+    const interrupted = channelSides.filter((side) => gaps.some((gap) => gap.side === side));
+    if (interrupted.length > 0) {
+      issues.push({ id: 'slideChannelInterrupted', severity: 'warning', sides: interrupted });
+    }
   }
 
   // The channel welds to the two walls perpendicular to the entry, and a
@@ -663,6 +681,7 @@ const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set([
   // belt and braces — but the alternative is a side name in a set whose whole
   // meaning is "do not give this wall a rail", which is not what it says.
   'slideRimInterrupted',
+  'slideChannelInterrupted',
 ]);
 
 /**

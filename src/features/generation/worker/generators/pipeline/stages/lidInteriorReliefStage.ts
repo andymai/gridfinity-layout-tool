@@ -158,24 +158,48 @@ function relieveSlideTravel(ctx: PipelineContext): PipelineContext {
   const halfX = (travelsX ? env.xMax - env.xMin : env.yMax - env.yMin) / 2;
   const halfY = (travelsX ? env.yMax - env.yMin : env.xMax - env.xMin) / 2;
 
-  const slab = draw([-halfX, -halfY])
-    .lineTo([halfX, -halfY])
-    .lineTo([halfX, halfY])
-    .lineTo([-halfX, halfY])
-    .close()
+  // The envelope spans the cavity wall to wall, and the cavity's corners are
+  // ARCS of the plate's own corner radius. A square slab corner reaches
+  // `√2·r` from the arc centre and breaches the outer wall for every
+  // thickness below ~1.1mm — and leaves a 0.14mm sliver at the default 1.2mm
+  // — so the cutter must carry the same radius the cavity does.
+  const slab = roundedRect(halfX, halfY, geometry.plate.cornerRadiusMm)
     .sketchOnPlane('XY', plateTopZ + env.zMin)
     .extrude(height);
+  const scratch: Shape3D[] = [slab];
+  let cutter: Shape3D = slab;
+
+  // On the recessed-with-lip placement the envelope tops out a lip-taper below
+  // the wall top, but dividers are built to the interior ceiling above it —
+  // leaving each one a floating crown bridging the cavity over the plate. Cut
+  // the band above the envelope to the wall top too, bounded exactly as the
+  // click ring is (`lidKeepoutRing`): those bounds and that top are the ones
+  // the seating probes already prove leave the lip's support untouched. On a
+  // lipless or flush plate the envelope top IS the wall top and there is no
+  // band. The crown dips into the envelope so the fuse sees an overlap rather
+  // than two solids meeting on a shared plane.
+  const envTopZ = plateTopZ + env.zMax;
+  if (dim.wallTopZ - envTopZ > 0.01) {
+    const ring = lidKeepoutRing(dim.innerW, dim.innerD, ctx.params.wallThickness);
+    const crownBottomZ = envTopZ - 0.2;
+    const crown = roundedRect(ring.outerHalfX, ring.outerHalfY, ring.cornerRadius)
+      .sketchOnPlane('XY', crownBottomZ)
+      .extrude(dim.wallTopZ - crownBottomZ);
+    scratch.push(crown);
+    cutter = unwrap(fuseAll([slab, crown] as ValidSolid[]));
+    scratch.push(cutter);
+  }
 
   const positioned: Shape3D =
     dim.innerOffsetX === 0 && dim.innerOffsetY === 0
-      ? slab
-      : translate(slab, [dim.innerOffsetX, dim.innerOffsetY, 0]);
+      ? cutter
+      : translate(cutter, [dim.innerOffsetX, dim.innerOffsetY, 0]);
 
   collectOrigins(positioned, FeatureTag.LID_RELIEF, ctx.originToTag);
 
   const result = unwrap(cut(ctx.solid as ValidSolid, positioned as ValidSolid));
-  if (positioned !== slab) positioned.delete();
-  slab.delete();
+  if (positioned !== cutter) positioned.delete();
+  for (const part of new Set(scratch)) part.delete();
   if (result !== ctx.solid) ctx.solid.delete();
 
   return { ...ctx, solid: result };

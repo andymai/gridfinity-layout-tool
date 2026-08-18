@@ -1124,4 +1124,48 @@ describe('checkLidCompatibility — sliding attachment', () => {
     });
     expect(ids(patterned)).toContain('slideWallPattern');
   });
+
+  it('warns when a cutout opens a channel wall, naming only that wall', () => {
+    // Front entry: the runners live on left and right. A left cutout opens a
+    // window the shelf bar will fuse straight across.
+    const cutLeft = slideParams(
+      {
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
+        },
+      },
+      { entrySide: 'front' }
+    );
+    const issue = checkLidCompatibility(cutLeft).find((i) => i.id === 'slideChannelInterrupted');
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe('warning');
+    expect(issue?.sides).toEqual(['left']);
+  });
+
+  it('does not charge the channel for an opening on the entry axis', () => {
+    // A front cutout sits on the wall the notch opens anyway; the runners on
+    // left and right are untouched.
+    const cutFront = slideParams(
+      {
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true, width: 50, depth: 30 },
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
+        },
+      },
+      { entrySide: 'front' }
+    );
+    expect(ids(cutFront)).not.toContain('slideChannelInterrupted');
+  });
+
+  it('names both channel walls when both are opened', () => {
+    const p = slideParams({ walls: allFourCutouts(50) }, { entrySide: 'front' });
+    const issue = checkLidCompatibility(p).find((i) => i.id === 'slideChannelInterrupted');
+    expect(issue?.sides).toEqual(['left', 'right']);
+  });
 });

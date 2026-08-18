@@ -5,10 +5,10 @@
  * Lives in `shared` for the reason `labelTabPlan` and `dividerRailPlan` do:
  * five layers consume it and two of them cannot import brepjs. The worker
  * builds the channel and the plate from one call here, so the two cannot
- * disagree about where the bearing surfaces are; the panel explains a rejection
- * with the rule that produced it; `checkLidCompatibility` reports what the
- * travel envelope will trim; the cutout window measures the plate's own
- * footprint; and the preview slides the plate along the axis the plan names.
+ * disagree about where the bearing surfaces are; `checkLidCompatibility`
+ * blocks a design the resolver rejects and reports what the travel envelope
+ * will trim; the cutout window measures the plate's own footprint; and the
+ * preview slides the plate along the axis the plan names.
  *
  * ── THE JOINT ────────────────────────────────────────────────────────────
  *

@@ -2007,6 +2007,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.summaryPartialRails': '{coverage}% rails on {sides}/4',
   'binDesigner.lid.summaryNoRails': 'Friction-fit (no rails)',
   'binDesigner.lid.summaryFriction': 'Friction-fit',
+  'binDesigner.lid.summarySlide': 'Sliding',
   'binDesigner.lid.summaryMagnetic': 'Magnetic (⌀{diameter} × {depth} mm)',
   'binDesigner.lid.attachment': 'Attachment',
   'binDesigner.lid.attachment.friction': 'Friction',
@@ -2041,6 +2042,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.slide.clearanceHint':
     'Gap between the lid and its channel, per side. Raise it if the lid binds, lower it if it rattles — this is the one number that depends on your printer.',
   'binDesigner.lid.slide.spanReadout': 'Unsupported span: {span} mm',
+  'binDesigner.lid.slide.sagThicknessReadout': 'A {thickness} mm plate would carry this span',
   'binDesigner.lid.retentionMagnetDiameter': 'Magnet diameter',
   'binDesigner.lid.retentionMagnetDiameterAria': 'Retention magnet diameter in millimeters',
   'binDesigner.lid.retentionMagnetDepth': 'Magnet depth',
@@ -2119,6 +2121,8 @@ const en: Record<string, string> = {
     'The lid is wide enough to bow between its runners. Increase its thickness under Advanced.',
   'binDesigner.lid.compat.slideRimInterrupted':
     'The stacking lip is cut away on the {sides} wall so the lid can slide in. Bins still stack on the other three.',
+  'binDesigner.lid.compat.slideChannelInterrupted':
+    'A cutout or handle opens the {sides} wall the lid runs along. The runner will bridge that opening, blocking part of it and standing unsupported across it.',
   'binDesigner.lid.compat.slideWallPattern':
     'The wall pattern perforates the walls the runners weld to, which weakens them.',
   'binDesigner.lid.compat.fixButton': 'Fix',

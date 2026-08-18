@@ -46,8 +46,10 @@ export function slideLidPlateTopZ(dim: BinDimensions, geometry: SlideLidGeometry
  * bridge, and past a 1-wide bin that is tens of millimetres of unsupported
  * lintel. Breaking the rim leaves the stacking lip ending at two vertical
  * shoulders instead, which is where an upper bin catches as it slides on and
- * where a crack starts, so the cut runs out at 45° over this distance. Same
- * treatment, and the same reason, as `lidGripDipStage`'s ramped ends.
+ * where a crack starts, so the cut widens by this fixed run-out on each side
+ * as it climbs from the plate's clearance height to the rim (the slope varies
+ * with that rise). Same treatment, and the same reason, as `lidGripDipStage`'s
+ * ramped ends.
  */
 const NOTCH_RIM_RAMP_MM = 2.5;
 
@@ -87,8 +89,9 @@ function detentSolid(scope: DisposalScope, detent: SlideLidDetent): Shape3D {
 /**
  * The entry window, as a YZ elevation swept along X.
  *
- * Rectangular up to the plate's clearance height, then flaring 45° each side as
- * it climbs through the rim — see {@link NOTCH_RIM_RAMP_MM}.
+ * Rectangular up to the plate's clearance height, then flaring outward by a
+ * fixed run-out each side as it climbs through the rim — see
+ * {@link NOTCH_RIM_RAMP_MM}.
  */
 function notchSolid(scope: DisposalScope, notch: SlideLidBox, plateClearTopZ: number): Shape3D {
   // Guard the degenerate case where the flare would start above the cut's own
