@@ -38,7 +38,9 @@ beforeAll(async () => {
   await initBrepjs();
   // The worker loads fonts through `wasmInstantiator`; a test has to do it too,
   // or `buildTextSolid` returns null and the underside stamp silently no-ops.
-  const buffer = readFileSync(resolve(__dirname, '../assets/fonts/JetBrainsMono-Regular.ttf'));
+  const buffer = readFileSync(
+    resolve(__dirname, '../../../../shared/fonts/assets/JetBrainsMono-Regular.ttf')
+  );
   const font = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
     'jetbrains-mono'

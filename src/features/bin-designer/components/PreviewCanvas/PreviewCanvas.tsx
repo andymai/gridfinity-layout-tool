@@ -51,6 +51,7 @@ import {
   GhostLidCutouts,
   GhostWallCutouts,
   GhostHandles,
+  GhostSurfaceText,
   GhostKnives,
   OverhangHighlight,
   BinSplitLines,
@@ -558,6 +559,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                   <GhostCutouts />
                   <GhostWallCutouts />
                   <GhostHandles />
+                  <GhostSurfaceText />
                   <GhostKnives />
                 </>
               )}

@@ -277,22 +277,41 @@ describe('migrateParams', () => {
     } as any);
     // Kept sides are clamped AND trimmed, like the lid text.
     expect(result.surfaceText?.walls).toEqual({ front: 'Cables', left: 'x'.repeat(50) });
-    expect(result.surfaceText?.wallAlign).toBe('top');
+    // The legacy one-knob alignment folds into the style's anchor and the key
+    // is dropped. Horizontal was always centred back then, so the three values
+    // map exactly and nothing about the design moves.
+    expect(result.surfaceText?.wallAlign).toBeUndefined();
+    expect(result.surfaceText?.style?.anchor).toBe('top');
   });
 
-  it('drops wallAlign when it is the center default or no wall text remains', () => {
+  it('folds the legacy wallAlign only where it meant something', () => {
+    // 'center' was the implicit default, so it leaves no anchor behind.
     expect(
       migrateParams({ surfaceText: { walls: { front: 'ok' }, wallAlign: 'center' } } as any)
-        .surfaceText?.wallAlign
+        .surfaceText?.style?.anchor
     ).toBeUndefined();
+    // No wall text left: the whole config still collapses, so a pre-feature
+    // design serializes byte-identically to before the field existed.
     expect(
       migrateParams({ surfaceText: { walls: { front: '  ' }, wallAlign: 'top' } } as any)
         .surfaceText
     ).toBeUndefined();
+    // An unknown value is not an alignment at all.
     expect(
       migrateParams({ surfaceText: { walls: { front: 'ok' }, wallAlign: 'sideways' } } as any)
-        .surfaceText?.wallAlign
+        .surfaceText?.style?.anchor
     ).toBeUndefined();
+    // An anchor already on the style wins: it can only have come from the newer
+    // control, which supersedes the knob.
+    expect(
+      migrateParams({
+        surfaceText: {
+          walls: { front: 'ok' },
+          wallAlign: 'top',
+          style: { anchor: 'bottom-left' },
+        },
+      } as any).surfaceText?.style?.anchor
+    ).toBe('bottom-left');
   });
 
   it('defaults the exterior-wall collar to 0 for legacy designs', () => {

@@ -1,0 +1,1 @@
+export { TypeSection } from './TypeSection';

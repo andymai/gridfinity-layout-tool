@@ -30,7 +30,7 @@ import type { FeatureColorConfig } from '../types/featureColors';
 import { makeUniformLipCells, TOP_ACCENT_DEFAULT_MM } from '../types/featureColors';
 import { DEFAULT_LID_CONFIG } from '../types/lid';
 import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
-import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
+import { TEXT_PRESETS } from '../types/text';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -250,7 +250,10 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   featureColors: DEFAULT_FEATURE_COLOR_CONFIG,
   lid: DEFAULT_LID_CONFIG,
   slide: DEFAULT_SLIDE_CONFIG,
-  textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,
+  // New designs start on the curated look; a design saved before the type
+  // system existed is backfilled with the NEUTRAL defaults by `migrateParams`,
+  // so nothing already on a shelf changes.
+  textDefaults: TEXT_PRESETS.engineering,
   overhang: { left: 0, right: 0, front: 0, back: 0, feet: false },
   extraWallHeightMm: 0,
 } as const;

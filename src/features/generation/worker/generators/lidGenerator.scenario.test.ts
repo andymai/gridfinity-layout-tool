@@ -1,3 +1,4 @@
+import { loadTestFonts } from '@/test/loadTestFonts';
 /**
  * Lid generation scenario tests.
  *
@@ -66,6 +67,7 @@ function xRangeAtZ(
 
 beforeAll(async () => {
   await initBrepjs();
+  await loadTestFonts();
 }, 30_000);
 
 function makeParams(lid: Partial<LidConfig>, extra: Partial<BinParams> = {}): BinParams {
@@ -1092,7 +1094,7 @@ describe('lid generation and export scenarios', () => {
         // through-cut auto-swaps to the stencil font (resolveEffectiveFont).
         ['AllertaStencil-Regular.ttf', 'allerta-stencil'],
       ] as const) {
-        const buf = readFileSync(resolve(__dirname, `../assets/fonts/${file}`));
+        const buf = readFileSync(resolve(__dirname, `../../../../shared/fonts/assets/${file}`));
         const result = await loadFont(
           buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
           family
@@ -1132,37 +1134,52 @@ describe('lid generation and export scenarios', () => {
       expect(delta).toBeLessThan(0.5);
     });
 
-    // Guards the verticalFit: 'inkBox' opt-in at the lid level. The lid band is
-    // far larger than the text, so both boxes fit at maxFontSize and the SIZE is
-    // identical — what inkBox changes here is the centering, which lineBox
-    // derives from a per-font constant and so applies identically to every
-    // string. Under lineBox these two runs land at different heights; under
-    // inkBox both center their own ink on the lid.
-    it('centers embossed glyph ink on the lid whatever the glyphs are', async () => {
+    // Guards the cap-height datum at the lid level. Two runs in the same face at
+    // the same size must share a CAP LINE and a BASELINE, so a descender hangs
+    // below the baseline rather than pushing the whole run up to keep its own
+    // ink box centred. Centring each run's ink instead (what this did before)
+    // is what made `AB` and `Ay` sit at visibly different heights.
+    it('shares a cap line and baseline between runs, letting descenders hang', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       const plainTop = boundingBox(
         (generateLid(makeParams({}, BASE)) as NonNullable<ReturnType<typeof generateLid>>).vertices
       ).maxZ;
 
-      const inkCenterY = (text: string): number => {
+      const inkSpan = (text: string): { minY: number; maxY: number } => {
         const lid = generateLid(
-          makeParams({}, { ...BASE, surfaceText: { lidText: text, style: { mode: 'emboss' } } })
+          makeParams(
+            {},
+            {
+              ...BASE,
+              // Case pinned: the shipped default upper-cases, which would turn
+              // the descender run into caps and quietly delete the thing under
+              // test.
+              surfaceText: { lidText: text, style: { mode: 'emboss', textCase: 'as-typed' } },
+            }
+          )
         );
         if (!lid) throw new Error(`expected a lid for "${text}"`);
         let minY = Infinity;
         let maxY = -Infinity;
         for (let i = 0; i < lid.vertices.length; i += 3) {
-          // Raised glyphs only — everything at or below the plain top is lid body.
+          // Raised glyphs only: everything at or below the plain top is lid body.
           if (lid.vertices[i + 2] <= plainTop + 1e-3) continue;
           const y = lid.vertices[i + 1];
           if (y < minY) minY = y;
           if (y > maxY) maxY = y;
         }
         if (minY > maxY) throw new Error(`no raised glyphs for "${text}"`);
-        return (minY + maxY) / 2;
+        return { minY, maxY };
       };
 
-      expect(inkCenterY('AB')).toBeCloseTo(inkCenterY('gy'), 1);
+      const caps = inkSpan('AB');
+      const withDescender = inkSpan('Ay');
+      // Both runs lead with a capital, so their cap lines coincide. Under
+      // ink-box centring the descender would have lifted the whole second run.
+      expect(withDescender.maxY).toBeCloseTo(caps.maxY, 1);
+      // And the descender hangs BELOW the shared baseline rather than being
+      // squeezed into the same band.
+      expect(withDescender.minY).toBeLessThan(caps.minY - 0.5);
     });
 
     it('through-cut text produces a valid pierced mesh (stencil auto-swap)', async () => {
@@ -1238,7 +1255,10 @@ describe('lid generation and export scenarios', () => {
         const params = makeParams(LIP_ONLY, {
           ...BASE,
           overhang,
-          surfaceText: { lidText: 'ABC' },
+          // Anchor pinned to centred: this test is about WHICH FRAME the fit box
+          // comes from, and the shipped default anchors to a corner, which moves
+          // the glyphs for a reason that has nothing to do with the frame.
+          surfaceText: { lidText: 'ABC', style: { anchor: 'center' } },
         });
 
         // The perimeter frame really did move, so a fit box derived from it

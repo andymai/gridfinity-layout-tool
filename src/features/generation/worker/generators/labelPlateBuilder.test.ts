@@ -1,3 +1,4 @@
+import { loadTestFonts } from '@/test/loadTestFonts';
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -12,7 +13,12 @@ import {
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import { FeatureTag } from './featureTags';
-import { buildLabelPlate, buildLabelPlates, exportLabelPlates } from './labelPlateBuilder';
+import {
+  buildLabelPlate,
+  buildLabelPlates,
+  exportLabelPlates,
+  TEXT_BAND_MM,
+} from './labelPlateBuilder';
 import type { LabelPlateBuildOptions } from './labelPlateBuilder';
 
 const OPTS: LabelPlateBuildOptions = {
@@ -78,8 +84,9 @@ function volumeAndBBox(spec: Parameters<typeof buildLabelPlate>[0]) {
 
 beforeAll(async () => {
   await initBrepjs();
+  await loadTestFonts();
   const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+    resolve(__dirname, '../../../../shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf')
   );
   const result = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
@@ -162,16 +169,26 @@ describe('labelPlateBuilder', () => {
     }
   });
 
-  // Guards the verticalFit: 'inkBox' opt-in at the plate level — under the
-  // font's line box an all-caps run inks only ~54% of the 7.8mm band.
-  it('sizes embossed glyphs to fill the plate text band', () => {
-    const solid = buildLabelPlate({ widthU: 1, text: 'Kabel' }, { ...OPTS, textMode: 'emboss' });
+  // Guards the cap-height datum at the plate level. Two captions in the same
+  // face at the same size share a cap line and a baseline, so a row of plates
+  // lines up; a descender hangs into the space the datum reserves for it rather
+  // than pushing its own run up to stay centred.
+  it('shares a cap line between plates and lets a descender use the reserve', () => {
+    const embossed = { ...OPTS, textMode: 'emboss' as const };
+    const caps = buildLabelPlate({ widthU: 1, text: 'Kabel' }, embossed);
+    const descender = buildLabelPlate({ widthU: 1, text: 'Kabelg' }, embossed);
     try {
-      const [{ minY, maxY }] = raisedGlyphBands([solid]);
-      expect(maxY - minY).toBeGreaterThan(6);
-      expect((minY + maxY) / 2).toBeCloseTo(0, 1);
+      const [{ minY: capsMin, maxY: capsMax }] = raisedGlyphBands([caps]);
+      const [{ minY: descMin, maxY: descMax }] = raisedGlyphBands([descender]);
+      // Both lead with a capital K, so their cap lines coincide.
+      expect(descMax).toBeCloseTo(capsMax, 1);
+      // And the descender reaches below the shared baseline.
+      expect(descMin).toBeLessThan(capsMin - 0.5);
+      // Both stay inside the readable band.
+      expect(descMax - descMin).toBeLessThan(TEXT_BAND_MM);
     } finally {
-      solid.delete();
+      caps.delete();
+      descender.delete();
     }
   });
 
@@ -207,26 +224,35 @@ describe('labelPlateBuilder', () => {
     }
   });
 
-  it('sizes every plate in a set to one shared text size', () => {
-    // "gjpqy" inks taller per em than "KABEL", so it fits smaller in the shared
-    // band — sized per-plate the two runs differ; as a set they must match.
+  it('renders every caption in a set at one size, whatever the letters are', () => {
+    // The property the set is supposed to have, asserted directly rather than
+    // through a lever. Under the cap-height datum the vertical box is a
+    // constant of the face and size, so two captions of different lengths and
+    // different letterforms come out at the same cap height as long as both fit
+    // their own plate width.
     const embossed = { ...OPTS, textMode: 'emboss' as const };
-    const alone = buildLabelPlates([{ widthU: 1, text: 'KABEL' }], embossed);
     const set = buildLabelPlates(
       [
         { widthU: 1, text: 'KABEL' },
         { widthU: 1, text: 'gjpqy' },
+        { widthU: 1, text: 'HEX' },
       ],
       embossed
     );
     try {
-      const [kabelAlone] = raisedGlyphHeights(alone);
-      const [kabelInSet] = raisedGlyphHeights(set);
-      // The neighbour's taller ink shrinks the shared size, so KABEL's cap height
-      // in the set is strictly below what it reaches on its own.
-      expect(kabelInSet).toBeLessThan(kabelAlone * 0.95);
+      // Heights, not absolute bands: plates are laid out down a sheet, so each
+      // one's Y carries its own seat position.
+      const [caps, descenders, short] = raisedGlyphHeights(set);
+      // Two runs of flat-topped capitals ink to the same cap height whatever
+      // their length: the short one does not grow into its spare width. Letters
+      // rather than figures, because figures overshoot the cap line slightly in
+      // most faces and that overshoot is not a size difference.
+      expect(short).toBeCloseTo(caps, 1);
+      // The descender run is taller by the reserve it hangs into, rather than
+      // being shrunk to keep its own ink centred.
+      expect(descenders).toBeGreaterThan(caps + 0.5);
     } finally {
-      for (const p of [...alone, ...set]) p.delete();
+      for (const p of set) p.delete();
     }
   });
 

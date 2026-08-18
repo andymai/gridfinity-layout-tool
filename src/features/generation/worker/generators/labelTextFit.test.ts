@@ -6,7 +6,9 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
+import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont } from 'brepjs';
 import { isErr } from '@/core/result';
 import { readFileSync } from 'node:fs';
@@ -16,8 +18,9 @@ import type { BinParams } from '@/shared/types/bin';
 
 beforeAll(async () => {
   await initBrepjs();
+  await loadTestFonts();
   const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+    resolve(__dirname, '../../../../shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf')
   );
   const result = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
@@ -28,8 +31,15 @@ beforeAll(async () => {
 
 /** A narrow 1x2 bin: each compartment tab is ~19mm wide, so a long caption
  *  cannot reach `minFontSize` (3mm) and the builder drops it. */
+/**
+ * Fixtures pin the NEUTRAL type style rather than inheriting the shipped
+ * default. What is under test is the host math (does this caption fit this
+ * tab, this plate, this band), and reading the design's current look would
+ * re-tune every threshold here the next time that look changes.
+ */
 const params = (over: Partial<BinParams> = {}): BinParams => ({
   ...DEFAULT_BIN_PARAMS,
+  textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,
   width: 1,
   depth: 2,
   compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
@@ -68,11 +78,29 @@ describe('planLabelTextOverflow', () => {
           rows: 1,
           thickness: 1.2,
           cells: [0, 1],
-          compartmentTexts: ['M3', 'PHILLIPS PAN HEAD 1-1/4 STAINLESS'],
+          compartmentTexts: ['M3', 'PHILLIPSPANHEADSTAINLESS114'],
         },
       })
     );
     expect(overflow).toEqual([{ scope: 'compartment', index: 1 }]);
+  });
+
+  it('does not report a caption that wraps to fit, which used to print blank', () => {
+    // The same caption with spaces in it: auto-wrap breaks it across lines
+    // rather than dropping it, so there is nothing to report. Before wrapping
+    // existed this printed an empty tab and the mesh held no evidence of it.
+    const overflow = planLabelTextOverflow(
+      params({
+        compartments: {
+          cols: 1,
+          rows: 1,
+          thickness: 1.2,
+          cells: [0],
+          compartmentTexts: ['PHILLIPS PAN HEAD 1-1/4 STAINLESS'],
+        },
+      })
+    );
+    expect(overflow).toEqual([]);
   });
 
   it('reports each overflowing compartment once under edges: both', () => {
@@ -86,7 +114,7 @@ describe('planLabelTextOverflow', () => {
           rows: 1,
           thickness: 1.2,
           cells: [0],
-          compartmentTexts: ['PHILLIPS PAN HEAD 1-1/4 STAINLESS'],
+          compartmentTexts: ['PHILLIPSPANHEADSTAINLESS114'],
         },
       })
     );
@@ -103,7 +131,7 @@ describe('planLabelTextOverflow', () => {
           ...DEFAULT_BIN_PARAMS.label,
           enabled: true,
           span: true,
-          rowTexts: ['', 'PHILLIPS PAN HEAD 1-1/4 STAINLESS'],
+          rowTexts: ['', 'PHILLIPSPANHEADSTAINLESS114'],
         },
       })
     );

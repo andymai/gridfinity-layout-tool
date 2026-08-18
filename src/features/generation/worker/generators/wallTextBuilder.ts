@@ -22,6 +22,7 @@
 import { rotate, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallTextSide } from '@/shared/types/bin';
+import { WALL_TEXT_SIDES, resolveTextStyle } from '@/shared/types/bin';
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import type { PipelineContext } from './pipeline/types';
 import { FeatureTag } from './featureTags';
@@ -65,23 +66,21 @@ function buildOneWallText(
 ): Shape3D | null {
   const sign = wallTextReadingSign(layout.side);
   const result = buildTextSolid(scope, {
-    text: layout.text,
-    fontFamily: layout.font,
-    mode: layout.mode,
+    text: layout.plan.lines.map((line) => line.text).join('\n'),
+    style: layout.style,
+    // The solver already resolved the placement inside the chosen rect, so the
+    // plan travels with it: re-planning here against a different box is how a
+    // caption ends up somewhere other than where the pattern was cleared.
+    plan: layout.plan,
     availW: layout.availW,
     availD: layout.availD,
-    // Reading-frame horizontal center; local Y becomes world Z after the
-    // stand-up rotation, so the vertical center rides through centerY.
-    centerX: sign * layout.centerU,
-    centerY: layout.centerZ,
+    // Reading-frame centre of the chosen rect; local Y becomes world Z after
+    // the stand-up rotation, so the vertical centre rides through centerY.
+    centerX: sign * layout.rectCenterU,
+    centerY: layout.rectCenterZ,
     topZ: 0,
     depth: layout.depth,
     hostThickness: params.wallThickness,
-    margin: layout.margin,
-    minFontSize: layout.minFontSize,
-    maxFontSize: layout.maxFontSize,
-    verticalFit: layout.verticalFit,
-    ...(layout.fontSizeOverride !== undefined ? { fontSizeOverride: layout.fontSizeOverride } : {}),
   });
   if (!result) return null;
 
@@ -122,8 +121,23 @@ function hasAnyWallText(params: BinParams): boolean {
   return Object.values(walls).some((t) => typeof t === 'string' && t.trim() !== '');
 }
 
-function effectiveWallTextMode(params: BinParams): string {
-  return params.surfaceText?.style?.mode ?? params.textDefaults.mode;
+/**
+ * Whether any wall resolves to emboss. Per wall, not per design: a wall may
+ * carry its own style override, so asking the shared style would send an
+ * embossed wall to the cut builder and lose it.
+ */
+function hasWallTextMode(params: BinParams, wantEmboss: boolean): boolean {
+  const walls = params.surfaceText?.walls;
+  if (!walls) return false;
+  return WALL_TEXT_SIDES.some((side) => {
+    if ((walls[side]?.trim() ?? '') === '') return false;
+    const mode = resolveTextStyle(
+      params.textDefaults,
+      params.surfaceText?.style,
+      params.surfaceText?.wallStyles?.[side]
+    ).mode;
+    return (mode === 'emboss') === wantEmboss;
+  });
 }
 
 function wallTextCacheKey(ctx: PipelineContext): string {
@@ -133,9 +147,10 @@ function wallTextCacheKey(ctx: PipelineContext): string {
   // hit-rate: text edits are rare relative to their build cost.
   return compactKey(
     buildCacheKey(
-      // `v2`: wall text sizes against glyph ink, so the same params now cut
-      // larger glyphs at a different placement.
-      'v2',
+      // `v3`: wall text is placed by the shared type plan (anchor, tracking,
+      // case, cap-height datum), so the same params cut different glyphs in a
+      // different place.
+      'v3',
       dim.shellKey,
       stableSerialize(params.surfaceText ?? {}),
       stableSerialize(params.textDefaults),
@@ -157,9 +172,7 @@ export const wallTextCutFeature: FeatureBuilder = {
   tag: FeatureTag.TEXT,
   target: 'cut',
   shouldBuild: (ctx) =>
-    hasAnyWallText(ctx.params) &&
-    effectiveWallTextMode(ctx.params) !== 'emboss' &&
-    !ctx.dimensions.solid,
+    hasAnyWallText(ctx.params) && hasWallTextMode(ctx.params, false) && !ctx.dimensions.solid,
   cacheKey: wallTextCacheKey,
   build: (ctx) => buildWallTextShapes(ctx, false),
 };
@@ -169,9 +182,7 @@ export const wallTextEmbossFeature: FeatureBuilder = {
   tag: FeatureTag.TEXT,
   target: 'fuse',
   shouldBuild: (ctx) =>
-    hasAnyWallText(ctx.params) &&
-    effectiveWallTextMode(ctx.params) === 'emboss' &&
-    !ctx.dimensions.solid,
+    hasAnyWallText(ctx.params) && hasWallTextMode(ctx.params, true) && !ctx.dimensions.solid,
   cacheKey: wallTextCacheKey,
   build: (ctx) => buildWallTextShapes(ctx, true),
 };

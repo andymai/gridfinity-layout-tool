@@ -15,6 +15,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont, isErr, mesh } from 'brepjs';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
@@ -25,8 +26,9 @@ let buildLabelTabs: typeof LabelTabBuilderModule.buildLabelTabs;
 beforeAll(async () => {
   const { initBrepjs } = await import('./__kernel-tests__/wasmInit');
   await initBrepjs();
+  await loadTestFonts();
   const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+    resolve(__dirname, '../../../../shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf')
   );
   const result = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
@@ -35,7 +37,9 @@ beforeAll(async () => {
   if (isErr(result)) throw new Error(`Font load failed: ${result.error.message}`);
   // through-cut mode auto-swaps to 'allerta-stencil' (resolveEffectiveFont), so
   // it must be loaded or buildTextSolid returns null and the cut is a no-op.
-  const stencil = readFileSync(resolve(__dirname, '../assets/fonts/AllertaStencil-Regular.ttf'));
+  const stencil = readFileSync(
+    resolve(__dirname, '../../../../shared/fonts/assets/AllertaStencil-Regular.ttf')
+  );
   const stencilResult = await loadFont(
     stencil.buffer.slice(stencil.byteOffset, stencil.byteOffset + stencil.byteLength),
     'allerta-stencil'

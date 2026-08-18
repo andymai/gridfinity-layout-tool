@@ -12,6 +12,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont, isErr } from 'brepjs';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
@@ -24,11 +25,12 @@ import { WALL_TEXT_MAX_EMBOSS } from './wallTextLayout';
 
 beforeAll(async () => {
   await initBrepjs();
+  await loadTestFonts();
   for (const [file, family] of [
     ['AtkinsonHyperlegible-Regular.ttf', 'atkinson'],
     ['AllertaStencil-Regular.ttf', 'allerta-stencil'],
   ] as const) {
-    const buf = readFileSync(resolve(__dirname, `../assets/fonts/${file}`));
+    const buf = readFileSync(resolve(__dirname, `../../../../shared/fonts/assets/${file}`));
     const result = await loadFont(
       buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
       family

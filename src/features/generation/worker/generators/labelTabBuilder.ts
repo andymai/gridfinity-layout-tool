@@ -22,6 +22,7 @@ import {
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import { BOX_CORNER_RADIUS, COPLANAR_MARGIN, COPLANAR_OVERLAP } from './generatorConstants';
 import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
+import { resolveTextStyle } from '@/shared/types/bin';
 import {
   LABEL_PLATE_CORNER_RADIUS_MM,
   LABEL_PLATE_HEIGHT_MM,
@@ -47,14 +48,12 @@ import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
-import { buildTextSolid, fitTextToHost } from './textBuilder';
-import type { VerticalFit } from './textBuilder';
+import { buildTextSolid, fitTextSize } from './textBuilder';
 import type { LabelTextOverflow } from '../../bridge/types';
 
 /** Tab text fills its shelf band rather than the font's line box. Shared by the
  *  group size pass and the per-tab build — measuring different boxes would
  *  silently stop the uniform cap from applying. */
-const TAB_TEXT_VERTICAL_FIT: VerticalFit = 'inkBox';
 
 /**
  * Build a right-triangle profile for label tab gusset supports.
@@ -362,18 +361,13 @@ export function planTabTextOverflow(
       if (!slot.text.trim()) continue;
       if (seen.has(slot.cellId)) continue;
       seen.add(slot.cellId);
-      const fit = fitTextToHost({
+      const fitted = fitTextSize({
         text: slot.text,
-        fontFamily: style.font,
-        mode: style.mode,
+        style,
         availW: slot.tabWidth,
         availD: dims.tabDepth,
-        margin: style.margin,
-        minFontSize: style.minFontSize,
-        maxFontSize: style.maxFontSize,
-        verticalFit: TAB_TEXT_VERTICAL_FIT,
       });
-      if (!fit.fits) overflows.push({ scope, index: slot.cellId });
+      if (fitted === null) overflows.push({ scope, index: slot.cellId });
     }
   }
   return overflows;
@@ -474,22 +468,17 @@ export function resolveUniformTabTextSize(
   slots: readonly Pick<TabSlot, 'text' | 'tabWidth'>[],
   tabDepth: number
 ): number | undefined {
-  const style = { ...params.textDefaults, ...params.label.textStyle };
+  const style = resolveTextStyle(params.textDefaults, params.label.textStyle);
 
   let smallest = Number.POSITIVE_INFINITY;
   for (const slot of slots) {
-    const fit = fitTextToHost({
+    const fitted = fitTextSize({
       text: slot.text,
-      fontFamily: style.font,
-      mode: style.mode,
+      style,
       availW: slot.tabWidth,
       availD: tabDepth,
-      margin: style.margin,
-      minFontSize: style.minFontSize,
-      maxFontSize: style.maxFontSize,
-      verticalFit: TAB_TEXT_VERTICAL_FIT,
     });
-    if (fit.fits) smallest = Math.min(smallest, fit.fontSize);
+    if (fitted !== null) smallest = Math.min(smallest, fitted);
   }
 
   return Number.isFinite(smallest) ? smallest : undefined;
@@ -954,18 +943,14 @@ function applyTabText(
     uniformTextSize: number | undefined;
   }
 ): Shape3D {
-  const style = { ...ctx.textDefaults, ...ctx.labelTextStyle };
-  // Both caps ride through `fontSizeOverride`, applied as
-  // min(auto-fit, max(minFontSize, override)) — so neither cap can grow the text
-  // past what this tab holds, and both stay above the legibility floor.
-  const caps = [ctx.uniformTextSize, ctx.labelTextStyle?.fontSizeOverride].filter(
-    (cap) => cap !== undefined
-  );
-  const fontSizeOverride = caps.length > 0 ? Math.min(...caps) : undefined;
+  const style = resolveTextStyle(ctx.textDefaults, ctx.labelTextStyle);
+  // The row's shared size is the smallest every tab was shown to hold, so it is
+  // an instruction rather than a cap: passing it as the shared size renders the
+  // whole row at one size instead of letting a roomy tab drift larger. A user's
+  // own `fontSizeOverride` still rides on the style and can only shrink.
   const result = buildTextSolid(scope, {
     text: ctx.text,
-    fontFamily: style.font,
-    mode: style.mode,
+    style,
     availW: ctx.tabWidth,
     availD: ctx.tabDepth,
     centerX: ctx.tabWidth / 2,
@@ -973,11 +958,8 @@ function applyTabText(
     topZ: ctx.tabHeight,
     depth: style.depth,
     hostThickness: ctx.shelfThickness,
-    margin: style.margin,
-    minFontSize: style.minFontSize,
-    maxFontSize: style.maxFontSize,
-    verticalFit: TAB_TEXT_VERTICAL_FIT,
-    fontSizeOverride,
+    ...(ctx.uniformTextSize !== undefined ? { sharedSizeMm: ctx.uniformTextSize } : {}),
+    hostKind: 'plaque',
   });
   if (!result) return tabSolid;
 

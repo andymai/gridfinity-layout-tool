@@ -55,6 +55,7 @@ import { generateBin } from './binOrchestrator';
 import { getLastSolid } from './shapeCache';
 import { deriveDimensions } from './pipeline/context';
 import { buildTextSolid } from './textBuilder';
+import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { hasMeshImprints, imprintPieceArrays, prepareMeshImprints } from './meshImprint';
 import { buildSTLBufferFromIndexed } from '../../export/stlExporter';
 import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './utils/tolerances';
@@ -116,8 +117,15 @@ function stampLine(
   // which is exactly the material a deboss removes.
   const text = buildTextSolid(scope, {
     text: line,
-    fontFamily: 'jetbrains-mono',
-    mode: 'emboss',
+    style: {
+      ...DEFAULT_TEXT_STYLE_DEFAULTS,
+      font: 'jetbrains-mono',
+      mode: 'emboss',
+      depth: STAMP_DEPTH_MM,
+      margin: 0,
+      minFontSize: STAMP_MIN_FONT_MM,
+      maxFontSize: STAMP_MAX_FONT_MM,
+    },
     availW,
     availD: STAMP_LINE_MM,
     // Negated: the glyphs are pre-mirrored across x=0 below, which carries a
@@ -128,13 +136,6 @@ function stampLine(
     topZ: bottomZ,
     depth: STAMP_DEPTH_MM,
     hostThickness: thicknessMm,
-    margin: 0,
-    minFontSize: STAMP_MIN_FONT_MM,
-    maxFontSize: STAMP_MAX_FONT_MM,
-    // Against glyph ink, not the line box: at these sizes the line box overruns
-    // a 4mm band and auto-fit refuses the line outright, which silently costs
-    // the card its stamp. `labelFitSample` sizes its offsets the same way.
-    verticalFit: 'inkBox',
   });
   if (!text) return card;
 

@@ -17,13 +17,13 @@ import type { DisposalScope } from 'brepjs';
 import { buildTextSolid } from './textBuilder';
 import type { BuildTextSolidOptions } from './textBuilder';
 import { getTextSolidCacheStats, clearTextSolidCache } from './textSolidCache';
+import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 
 const MESH_OPTS = { tolerance: 0.5, angularTolerance: 15 };
 
 const baseOptions: BuildTextSolidOptions = {
   text: 'M8',
-  fontFamily: 'atkinson',
-  mode: 'engrave',
+  style: { ...DEFAULT_TEXT_STYLE_DEFAULTS, font: 'atkinson', mode: 'engrave', margin: 1 },
   availW: 30,
   availD: 12,
   centerX: 15,
@@ -31,16 +31,13 @@ const baseOptions: BuildTextSolidOptions = {
   topZ: 5,
   depth: 0.8,
   hostThickness: 1.2,
-  margin: 1,
-  minFontSize: 3,
-  maxFontSize: 20,
 };
 
 beforeAll(async () => {
   const { initBrepjs } = await import('./__kernel-tests__/wasmInit');
   await initBrepjs();
   const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+    resolve(__dirname, '../../../../shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf')
   );
   const result = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),

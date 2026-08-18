@@ -19,6 +19,9 @@ import { generateSlideTray } from '../generators/slideOrchestrator';
 import { generateDetachableFeetMesh } from '../generators/detachableFeetOrchestrator';
 import { generateKnifeRest } from '../generators/knifeRestBuilder';
 import { generateLabelPlates } from '../generators/labelPlateGenerator';
+import { collectTextFontFamilies } from '@/shared/utils/textFonts';
+import { ensureFontsLoaded } from '../wasmInstantiator';
+import { planTypeStemWarning } from '../generators/typeStemGuard';
 import { planLabelTextOverflow } from '../generators/labelTextFit';
 import type { BinParams } from '@/shared/types/bin';
 import { isAbortError } from '../generators/utils/abort';
@@ -52,6 +55,10 @@ export function handleWarm(message: WarmMessage): void {
 
 export async function handleGenerate(message: GenerateMessage): Promise<void> {
   const { params, requestId, withLabelPlates: wantPlates = false } = message.payload;
+  // Text geometry is built synchronously and drops silently when its face is
+  // missing, so every family the design references has to be registered before
+  // the pipeline runs, not merely requested.
+  await ensureFontsLoaded(collectTextFontFamilies(params));
   await prepareImprintsSafe(params);
   runGeneration(
     (signal, perf): MeshData => {
@@ -138,8 +145,11 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
 
         console.warn('[BinGen] Stack-plate generation failed; skipping baseplate:', e);
       }
-      return withLabelTextOverflow(
-        wantPlates ? withLabelPlates(result, params, signal) : result,
+      return withTypeStemWarning(
+        withLabelTextOverflow(
+          wantPlates ? withLabelPlates(result, params, signal) : result,
+          params
+        ),
         params
       );
     },
@@ -183,6 +193,24 @@ function withLabelTextOverflow(result: MeshData, params: BinParams): MeshData {
     if (isAbortError(e)) throw e;
 
     console.warn('[BinGen] Label text fit check failed; skipping overflow report:', e);
+    return result;
+  }
+}
+
+/**
+ * Attach the stem-width warning. Separate from the overflow report because the
+ * two answer different questions about the same captions: whether they render
+ * at all, and whether what renders will resolve on a nozzle. Best-effort for
+ * the same reason: a reporting failure must never cost the user their mesh.
+ */
+function withTypeStemWarning(result: MeshData, params: BinParams): MeshData {
+  try {
+    const typeStemWarning = planTypeStemWarning(params);
+    return typeStemWarning ? { ...result, typeStemWarning } : result;
+  } catch (e) {
+    if (isAbortError(e)) throw e;
+
+    console.warn('[BinGen] Type stem check failed; skipping the warning:', e);
     return result;
   }
 }

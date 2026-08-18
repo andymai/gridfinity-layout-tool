@@ -35,6 +35,7 @@ export { GhostCutouts } from './GhostCutouts';
 export { GhostLidCutouts } from './GhostLidCutouts';
 export { GhostWallCutouts } from './GhostWallCutouts';
 export { GhostHandles } from './GhostHandles';
+export { GhostSurfaceText } from './GhostSurfaceText';
 export { GhostKnives } from './GhostKnives';
 export { OverhangHighlight } from './OverhangHighlight';
 export { BinSplitLines } from './BinSplitLines';

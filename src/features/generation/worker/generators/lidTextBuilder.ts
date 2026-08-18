@@ -111,16 +111,15 @@ export function applyLidText(
 
   const { availW, availD, centerX, centerY, topZ, hostThickness } = resolveTextHostFace(inputs);
 
-  let depth = text.depth;
-  if (text.mode === 'engrave') {
+  let depth = text.style.depth;
+  if (text.style.mode === 'engrave') {
     depth = Math.min(depth, hostThickness - LID_TEXT_ENGRAVE_FLOOR);
     if (depth < MIN_ENGRAVE_DEPTH) return body;
   }
 
   const result = buildTextSolid(scope, {
     text: text.value,
-    fontFamily: text.font,
-    mode: text.mode,
+    style: text.style,
     availW,
     availD,
     centerX,
@@ -128,11 +127,6 @@ export function applyLidText(
     topZ,
     depth,
     hostThickness,
-    margin: text.margin,
-    minFontSize: text.minFontSize,
-    maxFontSize: text.maxFontSize,
-    verticalFit: 'inkBox',
-    ...(text.fontSizeOverride !== undefined ? { fontSizeOverride: text.fontSizeOverride } : {}),
   });
   if (!result) return body;
 

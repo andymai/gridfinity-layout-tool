@@ -1272,10 +1272,23 @@ describe('validateDesignerShare', () => {
       expect(withSurfaceText({ lidText: 42 }).valid).toBe(false);
     });
 
-    it('rejects lidText over 50 characters (mirrors TEXT_MAX_LENGTH)', () => {
-      const result = withSurfaceText({ lidText: 'x'.repeat(51) });
+    it('accepts a caption up to the multi-line budget and rejects past it', () => {
+      // A caption may now hold explicit line breaks, so the budget covers the
+      // whole string including separators. The client truncates to the same
+      // number, so an honest oversized paste arrives clamped rather than 400ing.
+      expect(withSurfaceText({ lidText: 'x'.repeat(152) }).valid).toBe(true);
+      const result = withSurfaceText({ lidText: 'x'.repeat(153) });
       expect(result.valid).toBe(false);
-      if (!result.valid) expect(result.error.message).toMatch(/50/);
+      if (!result.valid) expect(result.error.message).toMatch(/152/);
+    });
+
+    it('rejects a caption with more lines than the budget allows', () => {
+      // Length alone is not the cap: three short lines are within 152
+      // characters but a fourth is still a fourth line of geometry.
+      expect(withSurfaceText({ lidText: 'a\nb\nc' }).valid).toBe(true);
+      const result = withSurfaceText({ lidText: 'a\nb\nc\nd' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.error.message).toMatch(/lines/);
     });
 
     it('rejects a style with out-of-range depth (crafted-share guard)', () => {
@@ -1303,7 +1316,53 @@ describe('validateDesignerShare', () => {
 
     it('rejects non-string and overlong wall values', () => {
       expect(withSurfaceText({ walls: { front: 42 } }).valid).toBe(false);
-      expect(withSurfaceText({ walls: { front: 'x'.repeat(51) } }).valid).toBe(false);
+      expect(withSurfaceText({ walls: { front: 'x'.repeat(153) } }).valid).toBe(false);
+      expect(withSurfaceText({ walls: { front: 'a\nb\nc\nd' } }).valid).toBe(false);
+    });
+
+    it('bounds every new style field, so a crafted share cannot reach the worker', () => {
+      // Each of these drives geometry: tracking multiplies the font size and
+      // would scatter glyphs past the host, and a draft angle approaching 90
+      // collapses the swept profile on itself.
+      expect(withSurfaceText({ lidText: 'ok', style: { tracking: 99 } }).valid).toBe(false);
+      expect(withSurfaceText({ lidText: 'ok', style: { draftAngleDeg: 89 } }).valid).toBe(false);
+      expect(withSurfaceText({ lidText: 'ok', style: { fixedSize: 1e6 } }).valid).toBe(false);
+      expect(withSurfaceText({ lidText: 'ok', style: { lineScale: 0 } }).valid).toBe(false);
+      expect(withSurfaceText({ lidText: 'ok', style: { anchor: 'sideways' } }).valid).toBe(false);
+      expect(withSurfaceText({ lidText: 'ok', style: { textCase: 'shouty' } }).valid).toBe(false);
+      expect(withSurfaceText({ lidText: 'ok', style: { offset: { x: 1e6, y: 0 } } }).valid).toBe(
+        false
+      );
+      // And accepts the shipped values, or the preset itself would be rejected.
+      expect(
+        withSurfaceText({
+          lidText: 'ok',
+          style: {
+            anchor: 'bottom-left',
+            sizeMode: 'fixed',
+            fixedSize: 6,
+            tracking: 0.08,
+            textCase: 'upper',
+            lineScale: 0.6,
+            cutProfile: 'drafted',
+            draftAngleDeg: 12,
+            offset: { x: 0, y: 0 },
+          },
+        }).valid
+      ).toBe(true);
+    });
+
+    it('validates the per-surface refinements, not just the shared style', () => {
+      expect(withSurfaceText({ lidText: 'ok', lidStyle: { tracking: 99 } }).valid).toBe(false);
+      expect(
+        withSurfaceText({ walls: { front: 'ok' }, wallStyles: { front: { depth: -1 } } }).valid
+      ).toBe(false);
+      expect(withSurfaceText({ walls: { front: 'ok' }, wallStyles: { diagonal: {} } }).valid).toBe(
+        false
+      );
+      expect(
+        withSurfaceText({ walls: { front: 'ok' }, wallStyles: { front: { anchor: 'top' } } }).valid
+      ).toBe(true);
     });
 
     it('rejects an invalid wallAlign', () => {

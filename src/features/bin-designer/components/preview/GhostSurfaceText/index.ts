@@ -1,0 +1,1 @@
+export { GhostSurfaceText } from './GhostSurfaceText';

@@ -41,6 +41,7 @@ import type { ExportFormat } from '../../bridge/types';
 import { sketch } from './meshUtils';
 import { roundedRect, minPrintableLabelFontMm, JBM_DIGIT_INK_PER_FONT } from './couponHelpers';
 import { buildTextSolid } from './textBuilder';
+import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { cutLabelSocket } from './labelTabBuilder';
 import { buildLabelPlate } from './labelPlateBuilder';
@@ -67,6 +68,7 @@ const LABEL_FIT_SLACK = 0.4;
 
 /** The reference plate carries no text; the defaults only satisfy the type. */
 const PLATE_TEXT_DEFAULTS: TextStyleDefaults = {
+  ...DEFAULT_TEXT_STYLE_DEFAULTS,
   font: 'jetbrains-mono',
   mode: 'emboss',
   depth: 0.4,
@@ -121,8 +123,17 @@ function buildCoupon(cy: number, offset: number, nozzleSizeMm: number | undefine
     const bandD = Math.max(LABEL_ZONE_D_MIN, JBM_DIGIT_INK_PER_FONT * fontMm + LABEL_FIT_SLACK);
     const text = buildTextSolid(scope, {
       text: formatOffset(offset),
-      fontFamily: 'jetbrains-mono',
-      mode: 'emboss',
+      style: {
+        ...DEFAULT_TEXT_STYLE_DEFAULTS,
+        font: 'jetbrains-mono',
+        mode: 'emboss',
+        depth: LABEL_DEPTH,
+        margin: 0,
+        sizeMode: 'fixed',
+        fixedSize: fontMm,
+        minFontSize: fontMm,
+        maxFontSize: fontMm,
+      },
       availW: COUPON_W - 2 * LABEL_MARGIN_X,
       availD: bandD,
       centerX: 0,
@@ -130,10 +141,6 @@ function buildCoupon(cy: number, offset: number, nozzleSizeMm: number | undefine
       topZ: t,
       depth: LABEL_DEPTH,
       hostThickness: t,
-      margin: 0,
-      minFontSize: fontMm,
-      maxFontSize: fontMm,
-      verticalFit: 'inkBox',
     });
     if (text) {
       try {

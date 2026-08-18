@@ -504,14 +504,19 @@ describe('LidSection', () => {
       expect(screen.getByRole('radio', { name: 'Emboss' })).toBeInTheDocument();
     });
 
-    it('picking a mode writes the shared surface-text style', () => {
+    it("picking a mode writes the LID's own style, leaving the walls alone", () => {
+      // The control sits under the lid's caption and reads as being about the
+      // lid. Pointing it at the shared style changed all four walls to emboss
+      // because someone embossed their lid.
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
-        surfaceText: { lidText: 'Cables' },
+        surfaceText: { lidText: 'Cables', walls: { front: 'Cables' } },
       });
       render(<LidSection />);
       fireEvent.click(screen.getByRole('radio', { name: 'Emboss' }));
-      expect(useDesignerStore.getState().params.surfaceText?.style?.mode).toBe('emboss');
+      const { surfaceText } = useDesignerStore.getState().params;
+      expect(surfaceText?.lidStyle?.mode).toBe('emboss');
+      expect(surfaceText?.style?.mode).toBeUndefined();
     });
 
     it('shows the stencil note in through-cut mode', () => {

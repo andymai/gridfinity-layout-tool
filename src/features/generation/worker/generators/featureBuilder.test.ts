@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { Shape3D } from 'brepjs';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont } from 'brepjs';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -59,11 +60,12 @@ let shapeVolume: (shape: unknown) => number;
 beforeAll(async () => {
   const { mesh: meshFn, getBounds, measureVolume, unwrap } = await import('brepjs');
   await initTestKernel();
+  await loadTestFonts();
 
-  // Cutout-label tests need the bundled Atkinson font (the textDefaults default);
-  // load from disk since the test env has no `fetch` for `?url` assets.
+  // `loadTestFonts` above covers the faces a default design reaches; this
+  // keeps the file's own explicit load for the regular cut it asserts against.
   const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+    resolve(__dirname, '../../../../shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf')
   );
   const fontResult = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),

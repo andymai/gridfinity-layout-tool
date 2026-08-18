@@ -50,6 +50,7 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
     knifeRestMesh: result.mesh.knifeRestMesh,
     labelPlates: result.mesh.labelPlates,
     labelTextOverflow: result.mesh.labelTextOverflow,
+    typeStemWarning: result.mesh.typeStemWarning,
     error: null,
     timingMs: result.timingMs,
   };
@@ -80,6 +81,7 @@ function meshDataToPayload(mesh: MeshData): GenerationResult {
     knifeRestMesh: mesh.knifeRestMesh,
     labelPlates: mesh.labelPlates,
     labelTextOverflow: mesh.labelTextOverflow,
+    typeStemWarning: mesh.typeStemWarning,
     error: null,
     timingMs: 0,
   };

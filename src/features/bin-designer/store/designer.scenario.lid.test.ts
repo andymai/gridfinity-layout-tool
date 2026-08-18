@@ -229,41 +229,42 @@ describe('DesignerStore - lid actions', () => {
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
     });
 
-    it('setWallTextAlign stores non-center values and drops center as the default', () => {
-      const { setWallText, setWallTextAlign } = useDesignerStore.getState();
+    it('setSurfaceTextAnchor writes the anchor onto the shared surface style', () => {
+      const { setWallText, setSurfaceTextAnchor } = useDesignerStore.getState();
       setWallText('front', 'Cables');
-      setWallTextAlign('top');
-      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBe('top');
-      setWallTextAlign('center');
-      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBeUndefined();
-      // Text survives the alignment churn.
+      setSurfaceTextAnchor('top');
+      expect(useDesignerStore.getState().params.surfaceText?.style?.anchor).toBe('top');
+      setSurfaceTextAnchor('bottom-left');
+      expect(useDesignerStore.getState().params.surfaceText?.style?.anchor).toBe('bottom-left');
+      // Text survives the anchor churn.
       expect(useDesignerStore.getState().params.surfaceText?.walls?.front).toBe('Cables');
     });
 
-    it('clearing the last wall text drops the alignment with it', () => {
-      const { setWallText, setWallTextAlign } = useDesignerStore.getState();
+    it('clearing the last wall text drops the walls key with it', () => {
+      const { setWallText } = useDesignerStore.getState();
       setWallText('front', 'Cables');
-      setWallTextAlign('bottom');
       setWallText('front', '');
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
     });
 
-    it('clearWallText removes every wall and the alignment in one history entry', () => {
-      const { setWallText, setWallTextAlign, clearWallText, undo } = useDesignerStore.getState();
+    it('clearWallText removes every wall and its per-wall styles in one history entry', () => {
+      const { setWallText, setWallTextStyle, clearWallText, undo } = useDesignerStore.getState();
       setWallText('front', 'Cables');
       setWallText('left', 'Chargers');
-      setWallTextAlign('top');
+      setWallTextStyle('front', { mode: 'emboss' });
 
       clearWallText();
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
 
-      // A single undo restores all walls and the alignment together.
+      // A single undo restores the walls and their refinements together.
       undo();
       expect(useDesignerStore.getState().params.surfaceText?.walls).toEqual({
         front: 'Cables',
         left: 'Chargers',
       });
-      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBe('top');
+      expect(useDesignerStore.getState().params.surfaceText?.wallStyles?.front).toEqual({
+        mode: 'emboss',
+      });
     });
 
     it('clearWallText keeps lid text and shared style intact', () => {
@@ -288,17 +289,12 @@ describe('DesignerStore - lid actions', () => {
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
     });
 
-    it('clearWallText drops a dangling wallAlign even with no wall strings', () => {
-      const { setWallText, setWallTextAlign, clearWallText } = useDesignerStore.getState();
-      // Reach the walls-less-but-aligned state a programmatic/legacy caller can
-      // produce: set an alignment, then clear the only wall string.
-      setWallText('front', 'Cables');
-      setWallTextAlign('top');
-      setWallText('front', '');
-      // setWallText already dropped wallAlign with the last wall, so re-inject a
-      // dangling alignment directly to exercise the guard.
+    it('clearWallText drops per-wall styles even with no wall strings left', () => {
+      const { clearWallText } = useDesignerStore.getState();
+      // Reach the styles-without-strings state a programmatic caller can
+      // produce, and check the guard still finds something to clear.
       useDesignerStore.setState((s) => ({
-        params: { ...s.params, surfaceText: { wallAlign: 'top' } },
+        params: { ...s.params, surfaceText: { wallStyles: { front: { mode: 'emboss' } } } },
       }));
       clearWallText();
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();

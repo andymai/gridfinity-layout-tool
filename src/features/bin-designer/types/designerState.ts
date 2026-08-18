@@ -5,12 +5,7 @@ import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 import type { ColorZone, HoverableZone, LipColorConfig, TopAccentConfig } from './featureColors';
 import type { LidConfig } from './lid';
-import type {
-  TextStyleDefaults,
-  TextStyleOverride,
-  WallTextSide,
-  WallTextVerticalAlign,
-} from './text';
+import type { TextStyleDefaults, TextStyleOverride, WallTextSide, TextAnchor } from './text';
 import type {
   Cutout,
   CutoutArrayConfig,
@@ -201,10 +196,13 @@ export interface DesignerState {
   // Surface text actions (lid top + outer walls)
   setLidText: (text: string) => void;
   setWallText: (side: WallTextSide, text: string) => void;
-  /** Remove text from every wall in one history entry (drops `wallAlign` too). */
+  /** Remove text from every wall in one history entry (drops per-wall styles too). */
   clearWallText: () => void;
-  setWallTextAlign: (align: WallTextVerticalAlign) => void;
   setSurfaceTextStyle: (overrides: TextStyleOverride | null) => void;
+  /** Anchor for every surface, written onto the shared surface style. */
+  setSurfaceTextAnchor: (anchor: TextAnchor) => void;
+  setLidTextStyle: (overrides: TextStyleOverride | null) => void;
+  setWallTextStyle: (side: WallTextSide, overrides: TextStyleOverride | null) => void;
 
   // Wall pattern actions
   updateWallPattern: (partial: Partial<WallPatternConfig>) => void;

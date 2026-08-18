@@ -7,9 +7,11 @@
  * the entire label-tab assembly and rebuilds every label's glyph geometry, even
  * the unchanged ones.
  *
- * This caches the *canonical* glyph solid (sketch origin at Z=0, glyphs at their
- * natural XY) keyed by the inputs that shape it — text, font, mode, fit size,
- * and extrusion depth — independent of where it's later placed. Placement (the
+ * This caches the *canonical* glyph solid (sketch origin at Z=0, glyphs at
+ * positions relative to the first line's pen) keyed by the inputs that shape
+ * it: font, mode, extrusion depth, and a `layout` signature covering every
+ * per-line size, tracking and relative position the plan resolved. It is
+ * independent of where the block is later placed. Placement (the
  * XY centering and the Z lift onto the host face) is a cheap per-call translate,
  * so editing one label leaves the others' glyph solids reusable. Note the fit
  * size is part of the key: where a group shares one size (label tabs per row,
@@ -42,7 +44,9 @@ const textSolidCache = new LRUCache<Shape3D>('text-solid', 32, disposeShape);
 /**
  * Compose the cache key for a canonical text solid. `fontFamily` must already be
  * resolved (post `resolveEffectiveFont`) so through-cut's stencil swap collapses
- * onto one key. `depth` and `hostThickness` together pin the extrusion vector
+ * onto one key. `layout` must describe everything about the block's internal
+ * arrangement, INCLUDING the taper: two blocks that differ only in cut profile
+ * are different solids and must not share an entry. `depth` and `hostThickness` together pin the extrusion vector
  * across the three modes; only one is load-bearing per mode, but including both
  * is harmless and keeps the key mode-agnostic.
  *
@@ -51,15 +55,14 @@ const textSolidCache = new LRUCache<Shape3D>('text-solid', 32, disposeShape);
  * segment, and it sits last so the fixed-format prefix can't collide).
  */
 export function textSolidKey(
-  text: string,
+  layout: string,
   fontFamily: TextFontFamily,
   mode: TextMode,
-  fontSize: number,
   depth: number,
   hostThickness: number
 ): string {
   return compactKey(
-    `${fontFamily}|${mode}|${quantize(fontSize)}|${quantize(depth)}|${quantize(hostThickness)}|${text}`
+    `${fontFamily}|${mode}|${quantize(depth)}|${quantize(hostThickness)}|${layout}`
   );
 }
 

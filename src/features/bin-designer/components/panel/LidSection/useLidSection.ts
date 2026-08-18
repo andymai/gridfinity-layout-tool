@@ -118,7 +118,7 @@ export function useLidSection() {
     updateWallPattern,
     setParam,
     setLidText,
-    setSurfaceTextStyle,
+    setLidTextStyle,
     currentDesignId,
     designName,
     newDesign,
@@ -137,7 +137,7 @@ export function useLidSection() {
       updateWallPattern: s.updateWallPattern,
       setParam: s.setParam,
       setLidText: s.setLidText,
-      setSurfaceTextStyle: s.setSurfaceTextStyle,
+      setLidTextStyle: s.setLidTextStyle,
       currentDesignId: s.currentDesignId,
       designName: s.designName,
       newDesign: s.newDesign,
@@ -505,8 +505,12 @@ export function useLidSection() {
     : isPartialMask(params.cellMask)
       ? t('binDesigner.lid.text.disabledPolygon')
       : undefined;
-  // Effective mode: the shared surface-text override wins over textDefaults.
-  const textMode = params.surfaceText?.style?.mode ?? params.textDefaults.mode;
+  // Effective mode, resolved through the same three layers the worker uses: the
+  // design defaults, the style shared by every surface, then the lid's own.
+  const textMode =
+    params.surfaceText?.lidStyle?.mode ??
+    params.surfaceText?.style?.mode ??
+    params.textDefaults.mode;
 
   // Adapter so the deferred-commit input (shared with compartment labels) can
   // take the store action by reference; the id slot is unused for the lid.
@@ -515,11 +519,15 @@ export function useLidSection() {
     [setLidText]
   );
 
+  // Written as the LID's own override, not the shared style. This control sits
+  // under the lid's caption and reads as being about the lid, but the shared
+  // style also drives all four walls: pointing it there changed the walls to
+  // emboss because someone embossed their lid.
   const setTextMode = useCallback(
     (mode: TextMode) => {
-      setSurfaceTextStyle({ ...params.surfaceText?.style, mode });
+      setLidTextStyle({ ...params.surfaceText?.lidStyle, mode });
     },
-    [params.surfaceText, setSurfaceTextStyle]
+    [params.surfaceText, setLidTextStyle]
   );
 
   // Lid text is gated behind a toggle like wall text and the sibling feature

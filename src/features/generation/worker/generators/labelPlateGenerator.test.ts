@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { loadFont } from 'brepjs';
 import { isErr } from '@/core/result';
 import { readFileSync } from 'node:fs';
@@ -15,8 +16,9 @@ import { generateLabelPlates, MAX_PREVIEW_LABEL_PLATES } from './labelPlateGener
 
 beforeAll(async () => {
   await initBrepjs();
+  await loadTestFonts();
   const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+    resolve(__dirname, '../../../../shared/fonts/assets/AtkinsonHyperlegible-Regular.ttf')
   );
   const result = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
