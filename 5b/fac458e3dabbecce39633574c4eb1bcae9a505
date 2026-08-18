@@ -1,0 +1,60 @@
+src/shared/printSettings/assembledHeight.ts
+  s_e8ab06c629db83::t_8a285d312ffd35 1-197
+src/features/bin-designer/hooks/useDesignerInit.ts
+  s_e8ab06c629db83::t_fb6a53aac2e926 29-33,139
+  s_e8ab06c629db83::t_d189a25ce5ee9f 35
+  s_e8ab06c629db83::t_c2216dd796615d 131
+src/features/generation/worker/generators/assembledHeight.scenario.test.ts
+  s_e8ab06c629db83::t_087e44b44b68e2 23
+src/features/bin-designer/store/customBinRegistry.ts
+  s_e8ab06c629db83::t_b6738c3efb5e5d 16-20,181-183
+  s_e8ab06c629db83::t_1eae34807fa629 70-82,115-129,152-153,184-186
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.ts
+  s_e8ab06c629db83::t_fb6a53aac2e926 92,116
+  s_e8ab06c629db83::t_f47bfb2c50dc26 22
+src/features/bin-designer/components/preview/BinDimensions/BinDimensions.tsx
+  s_e8ab06c629db83::t_087e44b44b68e2 18
+src/shared/utils/drawerCeiling.ts
+  s_e8ab06c629db83::t_510fa99f0348fe 20-23
+  s_e8ab06c629db83::t_cc23ebe8f37c5c 123,130-132,135-137,145
+  s_e8ab06c629db83::t_b348c82a9d11da 1-19,24-122,124-129,133-134,138-144,146-166
+src/features/bin-designer/components/preview/BinDimensions/BinDimensions.test.tsx
+  s_e8ab06c629db83::t_087e44b44b68e2 5
+src/features/bin-designer/components/preview/BinDimensions/AssembledBinDimensions.tsx
+  s_e8ab06c629db83::t_087e44b44b68e2 20
+src/shared/printSettings/assembledHeight.test.ts
+  s_e8ab06c629db83::t_06cb087f122037 1-343
+src/features/bin-designer/components/panel/AssembledHeightBreakdown/AssembledHeightBreakdown.tsx
+  s_e8ab06c629db83::t_087e44b44b68e2 15
+src/shared/utils/drawerCeiling.test.ts
+  s_e8ab06c629db83::t_d0b93687558f31 19-23
+  s_e8ab06c629db83::t_f2994acca6847c 1-18,24-139
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
+  s_e8ab06c629db83::t_fb6a53aac2e926 32-36,217
+src/features/bin-designer/hooks/useAssembledHeight.ts
+  s_f7654670ddf29a::t_1bac31af0f0209 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5bfac458e3dabbecce39633574c4eb1bcae9a505",
+  "prompts": {},
+  "sessions": {
+    "s_e8ab06c629db83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474a1e6b-ec62-4a52-be8c-cc5262c82b90",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f7654670ddf29a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef413640-f9cc-478d-adba-06a438ff96e2",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
