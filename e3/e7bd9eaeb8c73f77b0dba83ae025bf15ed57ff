@@ -1,0 +1,41 @@
+src/shared/utils/lidCutoutPlan.ts
+  s_5882a47eb73dff::t_46ff788a735f57 269-270,274-276
+  s_5882a47eb73dff::t_9314e85cf26e86 271-273,277
+  s_5882a47eb73dff::t_a05cfe5cf52b8a 50
+src/shared/utils/lidCutoutPlan.test.ts
+  s_5882a47eb73dff::t_df53f43d4ed829 106-117
+src/features/bin-designer/types/index.ts
+  s_5882a47eb73dff::t_ceab21c0e9fb4e 65
+src/shared/types/bin.ts
+  s_5882a47eb73dff::t_ceab21c0e9fb4e 112
+src/features/bin-designer/components/preview/GhostLidCutouts/GhostLidCutouts.tsx
+  s_5882a47eb73dff::t_15c1f373fad667 73-74,77,81
+src/features/bin-designer/types/lid.ts
+  s_5882a47eb73dff::t_30de3d2f6a61d5 50-56
+  s_5882a47eb73dff::t_ed7f5e2163e542 49
+src/features/generation/worker/generators/lidConstants.ts
+  s_5882a47eb73dff::t_ceab21c0e9fb4e 126
+  s_5882a47eb73dff::t_40d8e2ead51a59 124-125
+src/features/bin-designer/components/preview/GhostCutouts/GhostCutouts.test.tsx
+  s_5882a47eb73dff::t_ccd597f43f8a90 174-214
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_5882a47eb73dff::t_00c06fd76ce971 423-436
+src/features/bin-designer/components/preview/GhostCutouts/GhostCutouts.tsx
+  s_5882a47eb73dff::t_15c1f373fad667 98-102,105,107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e3e7bd9eaeb8c73f77b0dba83ae025bf15ed57ff",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
