@@ -376,6 +376,58 @@ describe('useAutoSave', () => {
       unsubscribe();
     });
 
+    // The writer half of the registry's overhang field: a design edited in the
+    // designer has to carry its overhang into the registry, or the layout side
+    // reads "no overhang" for a bin that is far too wide to print.
+    it('records the design overhang on the registry entry', async () => {
+      mockUpdateDesignParams();
+      useDesignerStore.setState({ currentDesignId: 'existing-id' });
+
+      const { unmount } = renderHook(() => useAutoSave());
+      act(() => {
+        useDesignerStore
+          .getState()
+          .setParam('overhang', { left: 61.5, right: 42, front: 0, back: 0, enabled: true });
+      });
+      await act(async () => {
+        unmount();
+      });
+
+      expect(loadRegistry()).toContainEqual(
+        expect.objectContaining({
+          id: 'existing-id',
+          overhangMm: { left: 61.5, right: 42, front: 0, back: 0 },
+        })
+      );
+    });
+
+    it('clears a recorded overhang once the design no longer has one', async () => {
+      mockUpdateDesignParams();
+      useDesignerStore.setState({ currentDesignId: 'existing-id' });
+
+      const first = renderHook(() => useAutoSave());
+      act(() => {
+        useDesignerStore
+          .getState()
+          .setParam('overhang', { left: 61.5, right: 0, front: 0, back: 0, enabled: true });
+      });
+      await act(async () => {
+        first.unmount();
+      });
+
+      const second = renderHook(() => useAutoSave());
+      act(() => {
+        useDesignerStore
+          .getState()
+          .setParam('overhang', { left: 0, right: 0, front: 0, back: 0, enabled: false });
+      });
+      await act(async () => {
+        second.unmount();
+      });
+
+      expect(loadRegistry()[0]?.overhangMm).toBeUndefined();
+    });
+
     it('does not duplicate a write for the save already in flight', async () => {
       let resolveWrite: ((value: Result<SavedDesign, StorageError>) => void) | null = null;
       vi.mocked(DesignerStorage.updateDesignParams).mockReturnValue(

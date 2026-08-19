@@ -19,6 +19,7 @@ export {
   upsertRegistryEntry,
   registryEdgeFields,
   registryHeightFields,
+  registryOverhangFields,
 } from './store';
 
 // --- Storage ---

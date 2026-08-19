@@ -19,6 +19,7 @@ import {
   upsertRegistryEntry,
   registryEdgeFields,
   registryHeightFields,
+  registryOverhangFields,
 } from '@/features/bin-designer';
 import { computeMatchedEdges, edgeForPosition } from '@/shared/utils/fractionalEdge';
 import { isFractional } from '@/core/constants';
@@ -387,6 +388,7 @@ export function useBinLinking(): UseBinLinkingReturn {
         height: newParams.height,
         ...registryEdgeFields(newParams),
         ...registryHeightFields(newParams),
+        ...registryOverhangFields(newParams),
         updatedAt: updateResult.value.updatedAt,
       });
 

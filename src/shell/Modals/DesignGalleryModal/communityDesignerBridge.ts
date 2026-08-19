@@ -151,8 +151,12 @@ export async function placeCommunityDesignInLayout(
     // counter fired), so any failure must say so rather than pretend
     // nothing happened.
     try {
-      const { upsertRegistryEntry, registryEdgeFields, registryHeightFields } =
-        await import('@/features/bin-designer/store/customBinRegistry');
+      const {
+        upsertRegistryEntry,
+        registryEdgeFields,
+        registryHeightFields,
+        registryOverhangFields,
+      } = await import('@/features/bin-designer/store/customBinRegistry');
       // saveDesign never registers a design (only the mounted Designer page's
       // auto-save hooks do), so register explicitly or the placed bin would
       // link to an id the planner palette cannot resolve.
@@ -164,6 +168,7 @@ export async function placeCommunityDesignInLayout(
         height,
         ...registryEdgeFields(design.params),
         ...registryHeightFields(design.params),
+        ...registryOverhangFields(design.params),
         updatedAt: saved.value.updatedAt,
       });
 

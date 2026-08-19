@@ -22,6 +22,7 @@ import {
   upsertRegistryEntry,
   registryEdgeFields,
   registryHeightFields,
+  registryOverhangFields,
   registryKnifeRestFields,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
@@ -225,6 +226,7 @@ export function useCreateFromBin(): void {
           height: binParams.height,
           ...registryEdgeFields(binParams),
           ...registryHeightFields(binParams),
+          ...registryOverhangFields(binParams),
           ...registryKnifeRestFields(binParams),
           updatedAt: design.updatedAt,
         });

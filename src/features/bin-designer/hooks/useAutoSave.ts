@@ -19,6 +19,7 @@ import {
   upsertRegistryEntry,
   registryEdgeFields,
   registryHeightFields,
+  registryOverhangFields,
   registryKnifeRestFields,
 } from '../store/customBinRegistry';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
@@ -144,6 +145,7 @@ export function useAutoSave(): void {
         height: paramsToSave.height,
         ...registryEdgeFields(paramsToSave),
         ...registryHeightFields(paramsToSave),
+        ...registryOverhangFields(paramsToSave),
         ...registryKnifeRestFields(paramsToSave),
         updatedAt: result.value.updatedAt,
       });

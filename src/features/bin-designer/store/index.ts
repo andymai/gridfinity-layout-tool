@@ -7,6 +7,7 @@ export {
   upsertRegistryEntry,
   registryEdgeFields,
   registryHeightFields,
+  registryOverhangFields,
   removeRegistryEntry,
   rebuildRegistry,
 } from './customBinRegistry';

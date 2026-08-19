@@ -18,6 +18,8 @@ import {
   type AssembledHeightSource,
 } from '@/shared/printSettings/assembledHeight';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
+import { hasOverhang, resolveOverhang } from '@/shared/utils/overhang';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import type { BinParams } from '../types';
 import { isSocketlessBase } from '../types/base';
 
@@ -106,6 +108,24 @@ export interface CustomBinRef {
     /** Free drawer space between block face and rest (mm). */
     readonly gapMm: number;
   };
+  /**
+   * Per-side millimetres the design's own body extends past its grid
+   * footprint, already resolved outward-only. Carried for the same reason as
+   * {@link assembledRiseMm}: "does this bin fit the print bed" is asked in
+   * synchronous selectors that cannot await full params out of IndexedDB, and
+   * an overhang grows the part in mm without changing a single grid unit — so
+   * a design whose units fit can still be far too wide to print.
+   *
+   * A PLACED bin's own overhang (`extendToMargin`, "Expand to Fit") takes
+   * precedence over this; see `resolveBinOverhang`, whose third tier this is.
+   * Absent = no overhang, or an entry saved before the field.
+   */
+  readonly overhangMm?: {
+    readonly left: number;
+    readonly right: number;
+    readonly front: number;
+    readonly back: number;
+  };
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -176,6 +196,26 @@ export function registryKnifeRestFields(params: BinParams): Pick<CustomBinRef, '
 }
 
 /**
+ * Project the design's own overhang out of a full `BinParams`.
+ *
+ * Spread wherever {@link registryHeightFields} is. Explicitly `undefined` when
+ * there is none, so a re-save that turned the overhang off clears the stale
+ * field rather than carrying it — the same contract as
+ * {@link registryKnifeRestFields}, and the reason `withCarriedGeometry` tests
+ * key presence for both.
+ *
+ * Suppressed for a partial cell mask, matching `deriveDimensions`: a custom
+ * shape defines its own footprint and the overhang does not apply.
+ */
+export function registryOverhangFields(
+  params: Pick<BinParams, 'overhang' | 'cellMask'>
+): Pick<CustomBinRef, 'overhangMm'> {
+  const o = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+  if (!hasOverhang(o)) return { overhangMm: undefined };
+  return { overhangMm: { left: o.left, right: o.right, front: o.front, back: o.back } };
+}
+
+/**
  * Validate one raw localStorage entry and project it onto the `CustomBinRef`
  * shape. Returns `null` for anything that does not match so malformed or
  * legacy records are dropped rather than trusted. Building the object
@@ -201,6 +241,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     socketless,
     hasLip,
     knifeRest,
+    overhangMm,
   } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
@@ -235,6 +276,22 @@ function parseEntry(raw: unknown): CustomBinRef | null {
       : {}),
     ...(typeof socketless === 'boolean' ? { socketless } : {}),
     ...(typeof hasLip === 'boolean' ? { hasLip } : {}),
+    ...(() => {
+      if (typeof overhangMm !== 'object' || overhangMm === null) return {};
+      const o = overhangMm as Record<string, unknown>;
+      const side = (v: unknown): number =>
+        typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0;
+      const sides = {
+        left: side(o.left),
+        right: side(o.right),
+        front: side(o.front),
+        back: side(o.back),
+      };
+      // An all-zero record is the same as no record; dropping it keeps the
+      // "absent = nothing to charge" read at every consumer.
+      if (sides.left + sides.right + sides.front + sides.back <= 0) return {};
+      return { overhangMm: sides };
+    })(),
     ...(() => {
       if (typeof knifeRest !== 'object' || knifeRest === null) return {};
       const kr = knifeRest as Record<string, unknown>;
@@ -325,6 +382,11 @@ function withCarriedGeometry(next: CustomBinRef, prev: CustomBinRef): CustomBinR
     // `knifeRest: undefined` when a re-save DISABLED the rest, which must
     // clear the field — while a thumbnail/rename writer omits the key
     // entirely and must not erase it.
+    // Same key-presence rule as `knifeRest`: `registryOverhangFields` writes an
+    // explicit `overhangMm: undefined` when a re-save REMOVED the overhang.
+    ...(!('overhangMm' in next) && prev.overhangMm !== undefined
+      ? { overhangMm: prev.overhangMm }
+      : {}),
     ...(!('knifeRest' in next) && prev.knifeRest !== undefined
       ? { knifeRest: prev.knifeRest }
       : {}),

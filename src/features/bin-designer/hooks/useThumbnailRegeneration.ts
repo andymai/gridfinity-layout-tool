@@ -17,6 +17,7 @@ import {
   upsertRegistryEntry,
   registryEdgeFields,
   registryHeightFields,
+  registryOverhangFields,
   registryKnifeRestFields,
 } from '../store/customBinRegistry';
 import { updateThumbnailCache } from './useDesignThumbnail';
@@ -86,6 +87,7 @@ export function useThumbnailRegeneration(
             height: design.params.height,
             ...registryEdgeFields(design.params),
             ...registryHeightFields(design.params),
+            ...registryOverhangFields(design.params),
             ...registryKnifeRestFields(design.params),
             updatedAt: result.value.updatedAt,
           });
