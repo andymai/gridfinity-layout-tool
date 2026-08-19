@@ -18,6 +18,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button, Dialog } from '@/design-system';
 import type { OutlineVertex } from '@/core/types';
+import { outlineExtentMm } from '@/shared/utils/drawerOutline';
 import { effectiveGridUnitMmY, gridUnits } from '@/core/types';
 import { PenCanvas } from './PenCanvas';
 import { usePenSketch } from './usePenSketch';
@@ -85,10 +86,24 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   );
   const addToast = useToastStore((s) => s.addToast);
 
-  const widthMm = layout.drawer.width * layout.gridUnitMm;
-  const depthMm = layout.drawer.depth * gridUnitMmY;
   const pitchX = layout.gridUnitMm;
   const pitchY = gridUnitMmY;
+  const gridWidthMm = layout.drawer.width * pitchX;
+  const gridDepthMm = layout.drawer.depth * pitchY;
+  // The rectangle the sketch is traced AGAINST: the drawer as measured, since
+  // that is the physical thing a perimeter follows. The grid extent is only the
+  // fallback for a drawer nobody has measured — it is a lattice laid inside the
+  // drawer, and rounding it up to whole units does not move a drawer wall.
+  const widthMm = layout.drawer.measuredMm?.width ?? gridWidthMm;
+  const depthMm = layout.drawer.measuredMm?.depth ?? gridDepthMm;
+  // The box a perimeter may occupy before the grid has to grow to hold it.
+  // Wider than either alone, so a shape drawn to a measured drawer no longer
+  // drags the grid up with it — which is what left every surplus cell to be cut.
+  const { widthMm: boundWidthMm, depthMm: boundDepthMm } = outlineExtentMm(
+    layout.drawer,
+    pitchX,
+    pitchY
+  );
   // A point may be placed past the current grid extent, up to the product
   // ceiling; Apply grows the drawer to fit. Only the upper bound moves — points
   // stay in the >=0 quadrant.
@@ -136,8 +151,8 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const bounds = useMemo(() => (outline === null ? null : loopBounds(outline.vertices)), [outline]);
   const bboxMaxXMm = bounds === null ? widthMm : bounds.minX + bounds.widthMm;
   const bboxMaxYMm = bounds === null ? depthMm : bounds.minY + bounds.depthMm;
-  // The frame covers the union of the grid rect and the sketch, so a handle
-  // dragged past the grid stays visible and grabbable.
+  // The frame covers the union of the drawer rect and the sketch, so a handle
+  // dragged past the drawer stays visible and grabbable.
   const contentWidthMm = Math.max(widthMm, bboxMaxXMm);
   const contentDepthMm = Math.max(depthMm, bboxMaxYMm);
 
@@ -161,9 +176,13 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   // Validate against the bounds the drawer WILL have after Apply grows it, so a
   // growable overflow does not trip the out-of-bounds rule and disable Apply.
   // Coords are clamped to <= GRID_MAX*pitch, so these stay representable and
-  // there is no unreachable "too big" error to surface.
-  const effWmm = Math.max(widthMm, unitsFor(bboxMaxXMm, pitchX) * pitchX);
-  const effDmm = Math.max(depthMm, unitsFor(bboxMaxYMm, pitchY) * pitchY);
+  // there is no unreachable "too big" error to surface. A sketch inside the
+  // measured drawer needs no growth at all, which is why the floor is the
+  // permitted box rather than the grid extent.
+  const growsX = bboxMaxXMm > boundWidthMm;
+  const growsY = bboxMaxYMm > boundDepthMm;
+  const effWmm = growsX ? unitsFor(bboxMaxXMm, pitchX) * pitchX : boundWidthMm;
+  const effDmm = growsY ? unitsFor(bboxMaxYMm, pitchY) * pitchY : boundDepthMm;
   const error = useMemo(
     () =>
       outline === null
@@ -461,8 +480,10 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   );
 
   const importer = useOutlineImport({
-    drawerWidthMm: widthMm,
-    drawerDepthMm: depthMm,
+    // Grid extent, not the traced drawer: the oversize prompt converts back to
+    // whole grid units to offer a grow, which is a question about the lattice.
+    drawerWidthMm: gridWidthMm,
+    drawerDepthMm: gridDepthMm,
     gridUnitMm: layout.gridUnitMm,
     gridUnitMmY,
     onImported: handleImported,
@@ -482,8 +503,12 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     // bus is synchronous, so growing first lets setDrawerOutline validate
     // against the enlarged aggregate; batch() collapses the pair to one undo
     // step. When the sketch already fits, the single commit is kept.
-    const growW = Math.max(layout.drawer.width, unitsFor(bboxMaxXMm, pitchX));
-    const growD = Math.max(layout.drawer.depth, unitsFor(bboxMaxYMm, pitchY));
+    const growW = growsX
+      ? Math.max(layout.drawer.width, unitsFor(bboxMaxXMm, pitchX))
+      : layout.drawer.width;
+    const growD = growsY
+      ? Math.max(layout.drawer.depth, unitsFor(bboxMaxYMm, pitchY))
+      : layout.drawer.depth;
     const applied =
       growW > layout.drawer.width || growD > layout.drawer.depth
         ? batch(() => {
@@ -516,6 +541,8 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     onClose,
     bboxMaxXMm,
     bboxMaxYMm,
+    growsX,
+    growsY,
     pitchX,
     pitchY,
   ]);

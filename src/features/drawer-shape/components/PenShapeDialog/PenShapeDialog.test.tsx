@@ -37,6 +37,12 @@ function setOutline(vertices: DrawerOutline['vertices']): void {
   }));
 }
 
+function setMeasured(width: number, depth: number): void {
+  useLayoutStore.setState((state) => ({
+    layout: { ...state.layout, drawer: { ...state.layout.drawer, measuredMm: { width, depth } } },
+  }));
+}
+
 describe('PenShapeDialog', () => {
   beforeEach(() => {
     resetAllStores();
@@ -160,6 +166,69 @@ describe('PenShapeDialog', () => {
       expect(updateDrawer).not.toHaveBeenCalled();
       expect(batch).not.toHaveBeenCalled();
       expect(setDrawerOutline).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // The perimeter traces the drawer, and rounding the grid up to whole units
+  // does not move a drawer wall. Tracing against the grid rectangle produced a
+  // shape 14mm wider than the drawer on the reported layout.
+  describe('measured drawer', () => {
+    it('seeds the sketch from the measured drawer, not the grid extent', () => {
+      setMeasured(410, 327);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const path = document.querySelector('path');
+      expect(path?.getAttribute('d')).toBe('M 0 0 L 410 0 L 410 327 L 0 327 Z');
+    });
+
+    it('draws the reference rectangle at the measured size', () => {
+      setMeasured(410, 327);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const rect = document.querySelector('rect');
+      expect(rect?.getAttribute('width')).toBe('410');
+      expect(rect?.getAttribute('height')).toBe('327');
+    });
+
+    it('falls back to the grid extent when nothing has been measured', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const { w, d } = extent();
+      const rect = document.querySelector('rect');
+      expect(rect?.getAttribute('width')).toBe(String(w));
+      expect(rect?.getAttribute('height')).toBe(String(d));
+    });
+
+    // The whole point: the grid stays small and the perimeter trims it, rather
+    // than the grid growing to the shape and leaving surplus cells to be cut.
+    it('does not grow the grid for a sketch inside the measured drawer', () => {
+      const { d } = extent(); // 420 x 336
+      setMeasured(441, d);
+      setOutline([
+        { x: 0, y: 0 },
+        { x: 441, y: 0 },
+        { x: 420, y: d },
+        { x: 0, y: d },
+      ]);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+
+      expect(screen.getByText('drawerShape.editor.apply')).toBeEnabled();
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      expect(updateDrawer).not.toHaveBeenCalled();
+      expect(setDrawerOutline).toHaveBeenCalledTimes(1);
+    });
+
+    it('still grows the grid for a sketch past the measured drawer too', () => {
+      const { d } = extent();
+      setMeasured(430, d);
+      setOutline([
+        { x: 0, y: 0 },
+        { x: 441, y: 0 },
+        { x: 420, y: d },
+        { x: 0, y: d },
+      ]);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 10.5, depth: 8 });
     });
   });
 

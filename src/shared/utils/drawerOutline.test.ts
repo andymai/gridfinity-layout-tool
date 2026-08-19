@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { DrawerOutline, Layout } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
 import { createTestLayout } from '@/test/testUtils';
 import {
   canonicalStartOutline,
@@ -10,6 +11,7 @@ import {
   minDrawerUnitsForOutline,
   normalizeDrawerOutline,
   OUTLINE_MAX_VERTICES,
+  outlineExtentMm,
   quantizeOutline,
   rotateOutline180,
   snapOutlineToBounds,
@@ -443,6 +445,30 @@ describe('normalizeDrawerOutline', () => {
     expect(normalizeDrawerOutline(layout)).toBe(layout);
   });
 
+  it('keeps a shape past the grid extent when the drawer was measured larger', () => {
+    // 4-unit grid is 168mm; the drawer measures 200mm, so a perimeter reaching
+    // 200mm is the drawer's own wall, not stale geometry to crop back.
+    const wide: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 200, y: 0 },
+        { x: 200, y: 120 },
+        { x: 100, y: 120 },
+        { x: 100, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    const layout = layoutWith(wide);
+    layout.drawer.measuredMm = { width: 200, depth: 4 * U };
+    expect(normalizeDrawerOutline(layout)).toBe(layout);
+  });
+
+  it('still crops a shape past the measured drawer as well', () => {
+    const layout = layoutWith(L_SHAPE, 3, 4);
+    layout.drawer.measuredMm = { width: 3 * U, depth: 4 * U };
+    expect(normalizeDrawerOutline(layout)).not.toBe(layout);
+  });
+
   it('drops rectangle-equivalent outlines', () => {
     const rect: DrawerOutline = {
       vertices: [
@@ -504,5 +530,67 @@ describe('normalizeDrawerOutline', () => {
     };
     const normalized = normalizeDrawerOutline(layoutWith(bowtie));
     expect(normalized.drawer.outline).toBeUndefined();
+  });
+});
+
+describe('outlineExtentMm', () => {
+  const drawer = { width: gridUnits(4), depth: gridUnits(4) };
+
+  it('is the grid extent when nothing has been measured', () => {
+    expect(outlineExtentMm(drawer, U, U)).toEqual({ widthMm: 4 * U, depthMm: 4 * U });
+  });
+
+  it('widens to a measurement larger than the grid', () => {
+    expect(outlineExtentMm({ ...drawer, measuredMm: { width: 200, depth: 100 } }, U, U)).toEqual({
+      widthMm: 200,
+      depthMm: 4 * U,
+    });
+  });
+
+  // Never narrows: a shape authored against the grid extent has to stay valid
+  // when a smaller measurement is recorded afterwards.
+  it('keeps the grid extent when the measurement is smaller', () => {
+    expect(outlineExtentMm({ ...drawer, measuredMm: { width: 100, depth: 100 } }, U, U)).toEqual({
+      widthMm: 4 * U,
+      depthMm: 4 * U,
+    });
+  });
+
+  // `updateDrawer` clamps what it writes, but an imported, shared or synced
+  // layout never passes through it — `validateImport` grades width, depth and
+  // height and does not look at `measuredMm`. NaN is the one that matters:
+  // unguarded it makes the bound NaN, and every comparison against it is false,
+  // so the out-of-bounds rule stops rejecting anything at all.
+  it.each([NaN, Infinity, -Infinity])('ignores a non-finite measurement (%p)', (bad) => {
+    const extent = outlineExtentMm({ ...drawer, measuredMm: { width: bad, depth: bad } }, U, U);
+    expect(extent).toEqual({ widthMm: 4 * U, depthMm: 4 * U });
+
+    const past: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 10_000, y: 0 },
+        { x: 10_000, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    expect(validateOutline(past, extent.widthMm, extent.depthMm, U)?.kind).toBe('out_of_bounds');
+  });
+
+  it('caps the measurement at MEASURED_MM_MAX', () => {
+    expect(outlineExtentMm({ ...drawer, measuredMm: { width: 1e9, depth: 1e9 } }, U, U)).toEqual({
+      widthMm: CONSTRAINTS.MEASURED_MM_MAX,
+      depthMm: CONSTRAINTS.MEASURED_MM_MAX,
+    });
+  });
+
+  it('ignores a negative measurement rather than shrinking the extent', () => {
+    expect(outlineExtentMm({ ...drawer, measuredMm: { width: -500, depth: -500 } }, U, U)).toEqual({
+      widthMm: 4 * U,
+      depthMm: 4 * U,
+    });
+  });
+
+  it('uses the Y pitch for depth on a non-square grid', () => {
+    expect(outlineExtentMm(drawer, U, 21)).toEqual({ widthMm: 4 * U, depthMm: 84 });
   });
 });
