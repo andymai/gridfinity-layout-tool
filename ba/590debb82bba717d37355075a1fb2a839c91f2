@@ -1,0 +1,33 @@
+src/features/print-export/utils/split.ts
+  s_469d16e42f69d2::t_253d0345fd4bec 15,31-32,34-41,43-48,52-53,55-57,65-67
+  s_469d16e42f69d2::t_fe8e1e736c3ca3 13,16-17,136-183,186,192,212-213,219-225,244-245,253,255,342,350
+src/shell/Print/SplitPreview/SplitPreview.tsx
+  s_469d16e42f69d2::t_59f9feac4f8e81 22-26,29-35,38-39,41-44,49,51-67
+src/shell/Print/SplitPreview/SplitPreview.test.tsx
+  s_469d16e42f69d2::t_accfd86d187857 6,9,15-17,19-23,28,31,36-38,42-43,45,47-54,57,59,61-62,66-75,78-82,85-89
+src/features/print-export/hooks/usePrintList.ts
+  s_469d16e42f69d2::t_197a58d67aff29 12-13,105-107
+  s_469d16e42f69d2::t_d2878a0a9a2aea 114
+  s_469d16e42f69d2::t_9e8373d09c1a2d 11
+  s_469d16e42f69d2::t_48c558fc794f12 115-117
+src/features/print-export/utils/split.test.ts
+  s_469d16e42f69d2::t_dbc2b9b9941cbf 5,17-27,32-92,97-110,142,164,183,203,237,269,288,322,346,380,414,460,494,530,576,623,659,680,684
+  s_469d16e42f69d2::t_444fc91423f788 15,866-921
+  s_469d16e42f69d2::t_1bbd6d3193b47e 16,922
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ba590debb82bba717d37355075a1fb2a839c91f2",
+  "prompts": {},
+  "sessions": {
+    "s_469d16e42f69d2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d41b54c6-f302-41c8-8c3e-63d9beb24721",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
