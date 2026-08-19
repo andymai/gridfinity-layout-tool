@@ -19,77 +19,52 @@ interface SplitPreviewProps {
   gap?: number;
 }
 
+/** Pixel span of `units` grid units, laid out on the cell+gap pitch. */
+function span(units: number, cellSize: number, gap: number): number {
+  return units * cellSize + (units - 1) * gap;
+}
+
 /**
  * Visual preview of how a bin will be split for printing.
- * Shows a grid diagram with the split pieces.
+ *
+ * The split is a regular grid of equal pieces (see `splitBinSize`), so the
+ * diagram lays that grid out directly rather than packing pieces into whole
+ * cells. Packing could not draw this shape: an even split into 3 gives pieces
+ * of 3.33 units, and a scan that only ever tried whole-cell origins ran out of
+ * room before placing the last one — dropping a piece from the diagram while
+ * the count beside it still said three.
  */
 export function SplitPreview({ width, depth, pieces, cellSize = 16, gap = 2 }: SplitPreviewProps) {
-  // Half-grid bins yield fractional width/depth; allocate and scan whole cells so a
-  // fractional piece can't index a row/column the grid never allocated.
-  const cols = Math.max(0, Math.ceil(width));
-  const rows = Math.max(0, Math.ceil(depth));
+  const piece = pieces[0];
+  if (!piece || piece.width <= 0 || piece.depth <= 0) return null;
 
-  // Create a 2D grid to place pieces
-  const grid: (PrintPiece | null)[][] = Array.from({ length: rows }, () =>
-    Array.from({ length: cols }, () => null)
-  );
-
-  // Place pieces using greedy left-to-right, bottom-to-top
-  const placedPieces: Array<{ piece: PrintPiece; x: number; y: number }> = [];
-  const piecesToPlace = pieces.flatMap((p) =>
-    Array.from({ length: p.count }, () => ({ width: p.width, depth: p.depth, count: 1 }))
-  );
-
-  for (const piece of piecesToPlace) {
-    outer: for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        let fits = true;
-        if (x + piece.width > width || y + piece.depth > depth) {
-          fits = false;
-        } else {
-          for (let py = y; py < y + piece.depth && fits; py++) {
-            for (let px = x; px < x + piece.width && fits; px++) {
-              if (grid[py][px] !== null) fits = false;
-            }
-          }
-        }
-
-        if (fits) {
-          for (let py = y; py < y + piece.depth; py++) {
-            for (let px = x; px < x + piece.width; px++) {
-              grid[py][px] = piece;
-            }
-          }
-          placedPieces.push({ piece, x, y });
-          break outer;
-        }
-      }
-    }
-  }
+  // Recovered rather than passed: the pieces tile the bin exactly, so the grid
+  // is implied by one piece's size and cannot disagree with the row's count.
+  const cols = Math.max(1, Math.round(width / piece.width));
+  const rows = Math.max(1, Math.round(depth / piece.depth));
 
   return (
     <div
       className="relative"
-      style={{
-        width: width * cellSize + (width - 1) * gap,
-        height: depth * cellSize + (depth - 1) * gap,
-      }}
+      style={{ width: span(width, cellSize, gap), height: span(depth, cellSize, gap) }}
     >
-      {placedPieces.map((placed) => (
-        <div
-          key={`${placed.x}-${placed.y}-${placed.piece.width}x${placed.piece.depth}`}
-          className="absolute flex items-center justify-center"
-          style={{
-            left: placed.x * (cellSize + gap),
-            bottom: placed.y * (cellSize + gap),
-            width: placed.piece.width * cellSize + (placed.piece.width - 1) * gap,
-            height: placed.piece.depth * cellSize + (placed.piece.depth - 1) * gap,
-            ...STYLES.splitPiece,
-          }}
-        >
-          {placed.piece.width}×{placed.piece.depth}
-        </div>
-      ))}
+      {Array.from({ length: rows }, (_, row) =>
+        Array.from({ length: cols }, (_, col) => (
+          <div
+            key={`${col}-${row}`}
+            className="absolute flex items-center justify-center overflow-hidden"
+            style={{
+              left: col * (piece.width * (cellSize + gap)),
+              bottom: row * (piece.depth * (cellSize + gap)),
+              width: span(piece.width, cellSize, gap),
+              height: span(piece.depth, cellSize, gap),
+              ...STYLES.splitPiece,
+            }}
+          >
+            {piece.width}×{piece.depth}
+          </div>
+        ))
+      )}
     </div>
   );
 }
