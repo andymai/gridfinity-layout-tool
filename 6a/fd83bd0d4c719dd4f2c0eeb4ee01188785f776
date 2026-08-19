@@ -1,0 +1,19 @@
+src/shared/README.md
+  s_469d16e42f69d2::t_5155141def602b 73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6afd83bd0d4c719dd4f2c0eeb4ee01188785f776",
+  "prompts": {},
+  "sessions": {
+    "s_469d16e42f69d2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d41b54c6-f302-41c8-8c3e-63d9beb24721",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
