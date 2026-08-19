@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import type { PrintSplitFit } from '@/features/print-export/utils/split';
 import {
   splitBinSize,
   generatePrintList,
-  type PrintSplitFit,
   getTotalPieces,
   getTotalBins,
   getTotalFilament,

@@ -8,7 +8,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useSettingsStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { calcMaxGridUnits } from '@/core/constants';
-import { generateEnhancedPrintList, type PrintSplitFit } from '@/features/print-export/utils/split';
+import { generateEnhancedPrintList } from '@/features/print-export/utils/split';
+import type { PrintSplitFit } from '@/features/print-export/utils/split';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { effectiveGridUnitMmY } from '@/core/types';
 import {
