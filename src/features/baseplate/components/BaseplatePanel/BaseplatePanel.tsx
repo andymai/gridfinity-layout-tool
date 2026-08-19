@@ -43,7 +43,8 @@ export function BaseplatePanel() {
     (state) => (state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS).stackPrint
   );
   const printBedSize = useLayoutStore((state) => state.layout.printBedSize);
-  const { effectiveFractionalEdgeX, effectiveFractionalEdgeY } = useBaseplatePanelDerived();
+  const { effectiveFractionalEdgeX, effectiveFractionalEdgeY, gridUnitMm, gridUnitMmY } =
+    useBaseplatePanelDerived();
 
   const { tiling, hoveredPieceLabel, selectedPieceLabel } = useBaseplatePageStore(
     useShallow((s) => ({
@@ -96,6 +97,8 @@ export function BaseplatePanel() {
             onHoverPiece={setHoveredPieceLabel}
             onSelectPiece={setSelectedPieceLabel}
             printBedSize={printBedSize}
+            gridUnitMm={gridUnitMm}
+            gridUnitMmY={gridUnitMmY}
             fractionalEdgeX={effectiveFractionalEdgeX}
             fractionalEdgeY={effectiveFractionalEdgeY}
             onChangeSplit={setSplitOverride}
