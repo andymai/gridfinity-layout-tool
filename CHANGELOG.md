@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.426.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.1...gridfinity-layout-tool-v4.426.2) (2026-08-19)
+
+
+### Bug Fixes
+
+* **generation:** place a split bin's stacking lip on the collar-raised rim ([#3616](https://github.com/andymai/gridfinity-layout-tool/issues/3616)) ([7348d79](https://github.com/andymai/gridfinity-layout-tool/commit/7348d791fbafeca04271386aefeaed1d145e03f3)), closes [#3615](https://github.com/andymai/gridfinity-layout-tool/issues/3615)
+
 ## [4.426.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.0...gridfinity-layout-tool-v4.426.1) (2026-08-18)
 
 
