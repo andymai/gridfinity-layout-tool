@@ -78,6 +78,17 @@ describe('binSplitChunkUnits', () => {
     expect(widestPieceMm(p.width, max.width, p.gridUnitMm, 8, 8)).toBeLessThanOrEqual(BED);
   });
 
+  // A half-unit axis is the smallest there is, so "step the limit down" has to
+  // mean halving rather than a fixed 0.5 — subtracting a whole step from it
+  // leaves the same axis, and the caller gets "needs split" with no cut planes.
+  it('cuts a half-unit axis whose overhang overruns the bed', () => {
+    const p = params({ width: 0.5, depth: 1, overhang: overhang({ left: 100, right: 100 }) });
+    const max = binSplitChunkUnits(p, BED);
+    expect(p.width > max.width).toBe(true);
+    expect(getSplitPositions(p.width, max.width)).not.toHaveLength(0);
+    expect(widestPieceMm(p.width, max.width, p.gridUnitMm, 100, 100)).toBeLessThanOrEqual(BED);
+  });
+
   it('uses the per-axis pitch on a non-square grid', () => {
     const p = params({ width: 8, depth: 8, gridUnitMm: 42, gridUnitMmY: 21 });
     expect(binSplitChunkUnits(p, BED)).toEqual({ width: 4, depth: 8 });

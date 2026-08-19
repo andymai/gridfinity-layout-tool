@@ -36,13 +36,18 @@ function axisChunkUnits(
 ): number {
   if (sizeUnits * gridUnitMm + near + far <= bedMm) return sizeUnits;
   const cap = calcMaxGridUnitsForAxis(Math.max(0, bedMm - Math.max(near, far)), gridUnitMm);
-  // A symmetric overhang can leave `cap >= sizeUnits` on an axis that still
-  // overruns as one part — `bedMm - max(near, far)` gives back the side the sum
-  // charged. Reporting "needs split" while `getSplitPositions` returns no cut
-  // planes would build one oversized piece and call it a split, so the axis is
-  // forced below its own size. Halving is enough: the piece keeps one side's
-  // overhang against half the nominal span.
-  return Math.min(cap, Math.max(0.5, sizeUnits - 0.5));
+  if (cap < sizeUnits) return cap;
+  // Reached only when the cap alone would not cut: a symmetric overhang can
+  // leave `cap >= sizeUnits` on an axis that still overruns as one part,
+  // because `bedMm - max(near, far)` gives back the side the sum charged.
+  // Reporting "needs split" while `getSplitPositions` returns no cut planes
+  // would build one oversized piece and call it a split.
+  //
+  // Halving, not a fixed step down: the piece keeps one side's overhang against
+  // half the nominal span, and a step is only a step for an axis big enough to
+  // take one — a half-unit axis stepped down by half a unit is the same axis,
+  // and reports no cut at all.
+  return sizeUnits / 2;
 }
 
 /**
