@@ -33,6 +33,7 @@ import type {
 } from '@/core/types';
 import { categoryId as toCategoryId } from '@/core/types';
 import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
+import { useLinkedDesignOverhangs } from '@/shared/hooks/useLinkedDesignOverhangs';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { useTranslation } from '@/i18n';
 
@@ -116,6 +117,7 @@ export function usePrintList(): UsePrintListReturn {
   // listed pieces are the pieces the export actually writes. Memoized on
   // primitives: `baseRows` keys off this object, and a fresh identity every
   // render would rebuild the whole list on every render.
+  const designOverhangs = useLinkedDesignOverhangs();
   const gridUnitMmY = effectiveGridUnitMmY(layout);
   const { printBedSize, printBedDepth, gridUnitMm, baseplateParams } = layout;
   const drawerWidth = layout.drawer.width;
@@ -126,9 +128,11 @@ export function usePrintList(): UsePrintListReturn {
       bedDepthMm: printBedDepth ?? printBedSize,
       gridUnitMm,
       gridUnitMmY,
+      // A placed bin's own overhang wins; the design's is the fallback tier
+      // `resolveBinOverhang` leaves to its caller.
       overhangFor: (bin) =>
         resolveBinOverhang(bin, { width: drawerWidth, depth: drawerDepth }, baseplateParams) ??
-        undefined,
+        (bin.linkedDesignId === undefined ? undefined : designOverhangs.get(bin.linkedDesignId)),
     }),
     [
       printBedSize,
@@ -138,6 +142,7 @@ export function usePrintList(): UsePrintListReturn {
       drawerWidth,
       drawerDepth,
       baseplateParams,
+      designOverhangs,
     ]
   );
 

@@ -16,12 +16,20 @@ import {
 } from '@/core/types';
 import type { Layout, Bin } from '@/core/types';
 import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
+import { useLinkedDesignOverhangs } from '@/shared/hooks/useLinkedDesignOverhangs';
 
 vi.mock('@/shared/hooks/useLabelPlateCounts', () => ({
   useLabelPlateCounts: vi.fn(() => new Map()),
 }));
 
+// The registry read is exercised in `useLinkedDesignOverhangs.test.ts`; here it
+// is stubbed so the fallback wiring is what is under test.
+vi.mock('@/shared/hooks/useLinkedDesignOverhangs', () => ({
+  useLinkedDesignOverhangs: vi.fn(() => new Map()),
+}));
+
 const mockUseLabelPlateCounts = vi.mocked(useLabelPlateCounts);
+const mockUseLinkedDesignOverhangs = vi.mocked(useLinkedDesignOverhangs);
 
 // Helper to create test bins
 function createTestBin(overrides: Partial<Bin> = {}): Bin {
@@ -57,6 +65,7 @@ describe('usePrintList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseLabelPlateCounts.mockImplementation(() => new Map());
+    mockUseLinkedDesignOverhangs.mockImplementation(() => new Map());
 
     // Reset stores
     const layout = createTestLayout();
@@ -557,6 +566,56 @@ describe('usePrintList', () => {
       });
 
       expect(result.current.totalBins).toBe(0);
+    });
+  });
+
+  // The third tier of `resolveBinOverhang`: a bin with no PLACEMENT overhang
+  // inherits its linked design's, which the registry carries so a synchronous
+  // selector can reach it without loading params out of IndexedDB.
+  describe('linked design overhang', () => {
+    const DESIGN = designId('d-wide');
+
+    function withBed(bins: Bin[]): Layout {
+      // 180mm bed, 42mm grid: 4 units fit, so a 4-unit bin fits on paper.
+      return { ...createTestLayout(bins), printBedSize: mm(180) };
+    }
+
+    const linkedBin = (): Bin =>
+      createTestBin({
+        width: gridUnits(4),
+        depth: gridUnits(1),
+        linkedDesignId: DESIGN,
+      });
+
+    it('splits a bin whose design overhang overruns the bed', () => {
+      mockUseLinkedDesignOverhangs.mockImplementation(
+        () => new Map([[DESIGN, { left: 61.5, right: 42, front: 0, back: 0, enabled: true }]])
+      );
+      useLayoutStore.setState({ layout: withBed([linkedBin()]) });
+
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(true);
+      expect(result.current.rows[0].totalPieces).toBe(2);
+    });
+
+    it('leaves the same bin unsplit when the design carries no overhang', () => {
+      useLayoutStore.setState({ layout: withBed([linkedBin()]) });
+
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(false);
+      expect(result.current.rows[0].totalPieces).toBe(1);
+    });
+
+    it('ignores a design overhang for a bin that is not linked to it', () => {
+      mockUseLinkedDesignOverhangs.mockImplementation(
+        () => new Map([[DESIGN, { left: 61.5, right: 42, front: 0, back: 0, enabled: true }]])
+      );
+      useLayoutStore.setState({
+        layout: withBed([createTestBin({ width: gridUnits(4), depth: gridUnits(1) })]),
+      });
+
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(false);
     });
   });
 });

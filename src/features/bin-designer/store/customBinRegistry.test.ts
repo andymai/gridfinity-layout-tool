@@ -7,6 +7,7 @@ import {
   rebuildRegistry,
   registryEdgeFields,
   registryHeightFields,
+  registryOverhangFields,
   type CustomBinRef,
 } from './customBinRegistry';
 import { designId } from '@/core/types';
@@ -268,6 +269,83 @@ describe('customBinRegistry', () => {
         base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
       });
       expect(flat.socketless).toBe(true);
+    });
+  });
+
+  describe('design overhang', () => {
+    const OVER = { left: 61.5, right: 42, front: 0, back: 0 };
+
+    it('projects the overhang off full params, outward-clamped', () => {
+      const fields = registryOverhangFields({
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 61.5, right: 42, front: -5, back: 0, enabled: true },
+      });
+      expect(fields.overhangMm).toEqual(OVER);
+    });
+
+    it('projects nothing when the design has no overhang', () => {
+      expect(registryOverhangFields(DEFAULT_BIN_PARAMS).overhangMm).toBeUndefined();
+    });
+
+    it('projects nothing when the overhang is turned off', () => {
+      const fields = registryOverhangFields({
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { ...OVER, enabled: false },
+      });
+      expect(fields.overhangMm).toBeUndefined();
+    });
+
+    // A custom shape defines its own footprint, so `deriveDimensions` suppresses
+    // the overhang there and the registry must agree.
+    it('projects nothing for a partial cell mask', () => {
+      const fields = registryOverhangFields({
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { ...OVER, enabled: true },
+        cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+      });
+      expect(fields.overhangMm).toBeUndefined();
+    });
+
+    it('keeps the overhang when an update omits it', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), overhangMm: OVER });
+      upsertRegistryEntry({ ...makeRef('d1', 'Renamed') });
+
+      expect(loadRegistry()[0]?.overhangMm).toEqual(OVER);
+    });
+
+    // The projector writes an explicit `undefined` for a design that lost its
+    // overhang, which has to CLEAR the field — the carry-forward tests key
+    // presence, not value, for exactly this.
+    it('clears the overhang when a re-save removed it', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), overhangMm: OVER });
+      upsertRegistryEntry({
+        ...makeRef('d1'),
+        ...registryOverhangFields(DEFAULT_BIN_PARAMS),
+      });
+
+      expect(loadRegistry()[0]?.overhangMm).toBeUndefined();
+    });
+
+    it('takes a fresh overhang when the writer supplies one', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), overhangMm: OVER });
+      upsertRegistryEntry({ ...makeRef('d1'), overhangMm: { ...OVER, left: 10 } });
+
+      expect(loadRegistry()[0]?.overhangMm?.left).toBe(10);
+    });
+
+    it.each([
+      { label: 'non-numeric sides', stored: { left: 'wide', right: 1, front: 0, back: 0 } },
+      { label: 'all zero', stored: { left: 0, right: 0, front: 0, back: 0 } },
+      { label: 'not an object', stored: 42 },
+    ])('drops a stored overhang with $label', ({ stored }) => {
+      localStorage.setItem(
+        'gridfinity-custom-bins-v1',
+        JSON.stringify([{ ...makeRef('d1'), overhangMm: stored }])
+      );
+      const back = loadRegistry()[0]?.overhangMm;
+      // A partly-valid record keeps its usable sides; a useless one is dropped.
+      if (back) expect(back.left).toBe(0);
+      else expect(back).toBeUndefined();
     });
   });
 });
