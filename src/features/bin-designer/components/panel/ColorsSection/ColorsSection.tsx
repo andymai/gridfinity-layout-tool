@@ -10,8 +10,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useToastStore } from '@/core/store';
-import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
+import { useSettingsStore, useToastStore } from '@/core/store';
+import {
+  DEFAULT_ACCENT_BAND,
+  DEFAULT_FEATURE_COLOR_CONFIG,
+} from '@/features/bin-designer/constants/defaults';
 import {
   activeLipCells,
   computeActiveZones,
@@ -20,13 +23,16 @@ import {
   parseLidLipCell,
   makeUniformLipCells,
   normalizePaletteLip,
-  TOP_ACCENT_MIN_MM,
 } from '@/features/bin-designer/types/featureColors';
-import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
+import type {
+  AccentBandConfig,
+  ColorZone,
+  FeatureColorConfig,
+} from '@/features/bin-designer/types/featureColors';
 import type { SavedColorPalette } from '@/core/store/settings.types';
 import { useTranslation } from '@/i18n';
 import { PipetteIcon } from '@/design-system/Icon';
-import { Checkbox, IconButton, SliderInput } from '@/design-system';
+import { IconButton } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { FeatureToggle } from '../FeatureToggle';
@@ -36,6 +42,7 @@ import { ColorGroup } from './ColorGroup';
 import { ColorsHintBanner } from './ColorsHintBanner';
 import { ColorsActionsMenu } from './ColorsActionsMenu';
 import { LipColorEditor } from './LipColorEditor';
+import { AccentBandsEditor } from './AccentBandsEditor';
 
 const RECENT_COLORS_LIMIT = 8;
 
@@ -99,12 +106,21 @@ export function ColorsSection() {
   const multiColorEnabled = rawColors?.enabled ?? false;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy persisted configs may omit topAccent; migration backfills it but keep the runtime guard
   const topAccent = rawColors?.topAccent ?? DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
-  // Cap the band at the wall top — nominal height (units × mm/unit) plus any
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; preserve runtime fallback
+  const bottomAccent = rawColors?.bottomAccent;
+  // Cap a band at the wall top — nominal height (units × mm/unit) plus any
   // exterior-wall collar — so it can't exceed the bin yet still reaches the top
   // of a collared bin. Floor of 1mm keeps the slider usable; the finite guard
   // keeps a corrupt NaN param from poisoning the slider's max/clamp.
   const rawMaxMm = binHeight * heightUnitMm + Math.max(0, extraWallHeightMm ?? 0);
-  const topAccentMaxMm = Number.isFinite(rawMaxMm) ? Math.max(1, rawMaxMm) : 1;
+  const accentMaxMm = Number.isFinite(rawMaxMm) ? Math.max(1, rawMaxMm) : 1;
+  const { accentBandUnit, layerHeightMm, updateSetting } = useSettingsStore(
+    useShallow((s) => ({
+      accentBandUnit: s.settings.accentBandUnit,
+      layerHeightMm: s.settings.printSettings.layerHeightMm,
+      updateSetting: s.updateSetting,
+    }))
+  );
 
   const activeZones = useMemo(
     () =>
@@ -117,6 +133,9 @@ export function ColorsSection() {
         featureColors: {
           lip: { corners: lipCorners, bands: lipBands },
           topAccent: { enabled: topAccent.enabled, heightMm: topAccent.heightMm },
+          bottomAccent: bottomAccent
+            ? { enabled: bottomAccent.enabled, heightMm: bottomAccent.heightMm }
+            : undefined,
         },
       }),
     [
@@ -130,6 +149,7 @@ export function ColorsSection() {
       lipBands,
       topAccent.enabled,
       topAccent.heightMm,
+      bottomAccent,
     ]
   );
   const hasLip = activeZones.has(lipCellZone('frontLeft', 0));
@@ -161,11 +181,23 @@ export function ColorsSection() {
   // directly, so without this a stale over-cap value would recolor the whole bin
   // until the slider is touched. Guarded so it only fires when actually over-cap
   // (post-clamp the condition is false → no loop).
+  //
+  // This is a DIFFERENT clamp from the one in `accentCutPlanes`, and only this
+  // one writes back. The bin-height cap has to, because a band taller than its
+  // bin renders the same either way (it covers everything) and the slider would
+  // otherwise sit past its own max — so growing the bin again does not restore
+  // the authored height. The top/bottom OVERLAP clamp resolves at render time
+  // and never touches params, which is what makes that one reversible.
   useEffect(() => {
-    if (topAccent.enabled && topAccent.heightMm > topAccentMaxMm) {
-      updateFeatureColors({ topAccent: { heightMm: topAccentMaxMm } });
+    if (topAccent.enabled && topAccent.heightMm > accentMaxMm) {
+      updateFeatureColors({ topAccent: { heightMm: accentMaxMm } });
     }
-  }, [topAccent.enabled, topAccent.heightMm, topAccentMaxMm, updateFeatureColors]);
+  }, [topAccent.enabled, topAccent.heightMm, accentMaxMm, updateFeatureColors]);
+  useEffect(() => {
+    if (bottomAccent?.enabled === true && bottomAccent.heightMm > accentMaxMm) {
+      updateFeatureColors({ bottomAccent: { heightMm: accentMaxMm } });
+    }
+  }, [bottomAccent, accentMaxMm, updateFeatureColors]);
 
   // Local LRU of recently-committed colors so the picker can offer them
   // as quick-pick swatches even on a fresh, all-body design.
@@ -194,6 +226,7 @@ export function ColorsSection() {
     // this matches when the color row actually renders — otherwise an enabled
     // 0mm band shows a row whose otherColors filtering can't find its own color.
     if (topAccent.enabled) map.set('topAccent', topAccent.color);
+    if (bottomAccent?.enabled === true) map.set('bottomAccent', bottomAccent.color);
     return map;
   }, [
     featureColors,
@@ -205,6 +238,7 @@ export function ColorsSection() {
     hasLid,
     topAccent.enabled,
     topAccent.color,
+    bottomAccent,
     lipCorners,
     lipBands,
   ]);
@@ -301,9 +335,14 @@ export function ColorsSection() {
     updateFeatureColors({ enabled: !multiColorEnabled });
   }, [multiColorEnabled, updateFeatureColors]);
 
-  const handleToggleTopAccent = useCallback(() => {
-    updateFeatureColors({ topAccent: { enabled: !topAccent.enabled } });
-  }, [topAccent.enabled, updateFeatureColors]);
+  const handleChangeTopAccent = useCallback(
+    (patch: Partial<AccentBandConfig>) => updateFeatureColors({ topAccent: patch }),
+    [updateFeatureColors]
+  );
+  const handleChangeBottomAccent = useCallback(
+    (patch: Partial<AccentBandConfig>) => updateFeatureColors({ bottomAccent: patch }),
+    [updateFeatureColors]
+  );
 
   return (
     <div className="space-y-2">
@@ -377,63 +416,31 @@ export function ColorsSection() {
                 )}
             </ColorGroup>
 
-            {/* Top accent is a top-of-bin color band, independent of the lip.
-                It carries an enable toggle + a height (unlike the single-swatch
-                color zones), so it renders as its own delimited subsection right
-                after the exterior swatches rather than as another row. */}
-            <div className="border-t border-stroke-subtle pt-2">
-              <div
-                className="group flex cursor-pointer items-center justify-between py-1"
-                role="checkbox"
-                aria-checked={topAccent.enabled}
-                aria-label={t('binDesigner.colors.topAccent')}
-                tabIndex={0}
-                onClick={handleToggleTopAccent}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleToggleTopAccent();
-                  }
-                }}
-                onMouseEnter={
-                  topAccent.enabled ? () => setHoveredColorZone('topAccent') : undefined
-                }
-                onMouseLeave={topAccent.enabled ? () => setHoveredColorZone(null) : undefined}
-              >
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-content-secondary">
-                  {t('binDesigner.colors.topAccent')}
-                </span>
-                <Checkbox checked={topAccent.enabled} />
-              </div>
-              {topAccent.enabled ? (
-                <div className="space-y-2 pt-1">
-                  <SliderInput
-                    label={t('binDesigner.colors.topAccent.height')}
-                    // Clamp the displayed value: a persisted/legacy band can
-                    // exceed the current bin's wall height (e.g. saved tall, then
-                    // shrunk), and SliderInput fills straight from value with no
-                    // clamp — an out-of-range value would render a >100% fill.
-                    value={Math.min(topAccent.heightMm, topAccentMaxMm)}
-                    onChange={(v) => updateFeatureColors({ topAccent: { heightMm: v } })}
-                    min={TOP_ACCENT_MIN_MM}
-                    max={topAccentMaxMm}
-                    step={0.1}
-                    unit="mm"
-                  />
-                  {renderZone(
-                    'topAccent',
-                    t('binDesigner.colors.topAccent'),
-                    topAccent.color,
-                    DEFAULT_FEATURE_COLOR_CONFIG.topAccent.color,
-                    (hex) => updateFeatureColors({ topAccent: { color: hex } })
-                  )}
-                </div>
-              ) : (
-                <p className="text-[11px] leading-snug text-content-tertiary">
-                  {t('binDesigner.colors.topAccent.hint')}
-                </p>
-              )}
-            </div>
+            {/* Accent bands are plane cuts, not geometry: each recolours the
+                outermost N mm of the bin body at one end and wins over every
+                zone it covers. They carry a height as well as a colour, so they
+                render as their own delimited subsection right after the exterior
+                swatches rather than as two more rows. */}
+            <AccentBandsEditor
+              top={topAccent}
+              bottom={bottomAccent}
+              defaultBand={DEFAULT_ACCENT_BAND}
+              maxMm={accentMaxMm}
+              unit={accentBandUnit}
+              layerHeightMm={layerHeightMm}
+              recentColors={recentColors}
+              swapActive={swapActive}
+              otherColorsFor={(zone) => buildOtherColors(zone, colorsByZone)}
+              bodyColor={featureColors.body}
+              onUnitChange={(unit) => updateSetting('accentBandUnit', unit)}
+              onChangeTop={handleChangeTopAccent}
+              onChangeBottom={handleChangeBottomAccent}
+              onHover={setHoveredColorZone}
+              onGestureStart={startTransaction}
+              onGestureEnd={commitTransaction}
+              onSwap={(zone) => swapZoneWithToast(zone)}
+              onRememberColor={remember}
+            />
 
             <ColorGroup
               title={t('binDesigner.colors.group.interior')}

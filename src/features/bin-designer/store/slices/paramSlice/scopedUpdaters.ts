@@ -29,9 +29,12 @@ import {
   makeUniformLipCells,
   mergeLipConfig,
   type LipColorConfig,
-  type TopAccentConfig,
+  type AccentBandConfig,
 } from '@/features/bin-designer/types/featureColors';
-import { DEFAULT_FLOOR_PATTERN_CONFIG } from '@/features/bin-designer/constants';
+import {
+  DEFAULT_ACCENT_BAND,
+  DEFAULT_FLOOR_PATTERN_CONFIG,
+} from '@/features/bin-designer/constants';
 import { pushHistoryEntry } from '@/features/bin-designer/store/helpers';
 import type { Set } from './types';
 
@@ -187,12 +190,19 @@ export function createScopedUpdaters(set: Set) {
       text?: string;
       lid?: string;
       lidLip?: Partial<LipColorConfig>;
-      topAccent?: Partial<TopAccentConfig>;
+      topAccent?: Partial<AccentBandConfig>;
+      bottomAccent?: Partial<AccentBandConfig>;
     }) => {
       set((state) => {
         pushHistoryEntry(state);
         const current = state.params.featureColors;
-        const { lip: lipPatch, lidLip: lidLipPatch, topAccent: topAccentPatch, ...rest } = patch;
+        const {
+          lip: lipPatch,
+          lidLip: lidLipPatch,
+          topAccent: topAccentPatch,
+          bottomAccent: bottomAccentPatch,
+          ...rest
+        } = patch;
         const nextLip: LipColorConfig = lipPatch
           ? mergeLipConfig(current.lip, lipPatch)
           : current.lip;
@@ -206,15 +216,21 @@ export function createScopedUpdaters(set: Set) {
               lidLipPatch
             )
           : current.lidLip;
-        const nextTopAccent: TopAccentConfig = topAccentPatch
+        const nextTopAccent: AccentBandConfig = topAccentPatch
           ? { ...current.topAccent, ...topAccentPatch }
           : current.topAccent;
+        // Absent band → seed a full one before merging, so the first patch (the
+        // enable toggle) lands on a complete config rather than a partial.
+        const nextBottomAccent: AccentBandConfig | undefined = bottomAccentPatch
+          ? { ...(current.bottomAccent ?? DEFAULT_ACCENT_BAND), ...bottomAccentPatch }
+          : current.bottomAccent;
         state.params.featureColors = {
           ...current,
           ...rest,
           lip: nextLip,
           ...(nextLidLip ? { lidLip: nextLidLip } : {}),
           topAccent: nextTopAccent,
+          ...(nextBottomAccent ? { bottomAccent: nextBottomAccent } : {}),
         };
         // Multi-color toggle drives the color-tool overlay's visibility; if the
         // user disables multi-color while a tool is active, the overlay unmounts

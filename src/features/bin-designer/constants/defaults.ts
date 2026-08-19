@@ -26,8 +26,8 @@ import {
   FLOOR_PATTERN_TYPES,
   WALL_PATTERN_TYPES,
 } from '../types';
-import type { FeatureColorConfig } from '../types/featureColors';
-import { makeUniformLipCells, TOP_ACCENT_DEFAULT_MM } from '../types/featureColors';
+import type { AccentBandConfig, FeatureColorConfig } from '../types/featureColors';
+import { makeUniformLipCells, ACCENT_BAND_DEFAULT_MM } from '../types/featureColors';
 import { DEFAULT_LID_CONFIG } from '../types/lid';
 import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
 import { TEXT_PRESETS } from '../types/text';
@@ -166,8 +166,17 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   lid: '#d4d8dc',
   // `lidLip` is deliberately ABSENT — absent means "inherits `lid`". Adding it
   // unconditionally would shift every existing design's params fingerprint.
-  topAccent: { enabled: false, heightMm: TOP_ACCENT_DEFAULT_MM, color: '#d4d8dc' },
+  topAccent: { enabled: false, heightMm: ACCENT_BAND_DEFAULT_MM, color: '#d4d8dc' },
+  // `bottomAccent` is deliberately ABSENT — absent means "no band". Adding it
+  // unconditionally would shift every existing design's params fingerprint.
 } as const;
+
+/** Seed for an accent band the user is enabling for the first time. */
+export const DEFAULT_ACCENT_BAND: AccentBandConfig = {
+  enabled: true,
+  heightMm: ACCENT_BAND_DEFAULT_MM,
+  color: '#d4d8dc',
+};
 
 /** Starting color when a cutout is first colored: the shadow-board convention
  *  is a high-contrast red backing that shows through the moment a tool is

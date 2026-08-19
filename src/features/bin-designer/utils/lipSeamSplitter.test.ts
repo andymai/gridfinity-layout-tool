@@ -210,4 +210,82 @@ describe('top accent cut', () => {
     expect(positions).toBeNull();
     expect(triZones).toEqual(['body', 'topAccent']);
   });
+
+  it('cuts a bottom band up from the mesh floor, on the same wall', () => {
+    const bottomCutZ = 3;
+    const { triZones, positions } = computeLipColoredMesh({
+      triangleCount: BODY_QUAD.length,
+      faceGroups: BODY_FG,
+      getTriangle: (i) => BODY_QUAD[i],
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      bottomAccentCutZ: bottomCutZ,
+    });
+    expect(positions).not.toBeNull(); // the cut alone forces re-tessellation
+    for (let i = 0; i < triZones.length; i++) {
+      const t = positions!.subarray(i * 9, i * 9 + 9);
+      const cz = (t[2] + t[5] + t[8]) / 3;
+      expect(triZones[i]).toBe(cz <= bottomCutZ ? 'bottomAccent' : 'body');
+    }
+    expect(triZones).toContain('bottomAccent');
+    expect(triZones).toContain('body');
+  });
+
+  it('bottom accent wins over the socket zone it covers', () => {
+    // A socket-tagged skirt is what `base` would otherwise paint; the band
+    // overrides it, which is what makes the band "the bottom N mm of the part".
+    const socketFG: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.SOCKET }];
+    const { triZones } = computeLipColoredMesh({
+      triangleCount: BODY_QUAD.length,
+      faceGroups: socketFG,
+      getTriangle: (i) => BODY_QUAD[i],
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      bottomAccentCutZ: 4,
+      allowSplit: false,
+    });
+    // tri0 centroid z≈3.3 (inside the band), tri1 z≈6.7 (above it).
+    expect(triZones).toEqual(['bottomAccent', 'base']);
+  });
+
+  it('leaves no triangle unclaimed when the two bands tile a short wall', () => {
+    // `accentCutPlanes` clamps a colliding pair onto one plane; every piece must
+    // then land in exactly one band, with no body left between them.
+    const { triZones, positions } = computeLipColoredMesh({
+      triangleCount: BODY_QUAD.length,
+      faceGroups: BODY_FG,
+      getTriangle: (i) => BODY_QUAD[i],
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      topAccentCutZ: 6,
+      bottomAccentCutZ: 6,
+    });
+    expect(new Set(triZones)).toEqual(new Set(['topAccent', 'bottomAccent']));
+    // Area is conserved, so the tiling covers the wall rather than dropping it.
+    const inputArea = BODY_QUAD.reduce((sum, t) => sum + triArea(t), 0);
+    let outArea = 0;
+    for (let i = 0; i < triZones.length; i++) {
+      outArea += triArea(positions!.subarray(i * 9, i * 9 + 9));
+    }
+    expect(outArea).toBeCloseTo(inputArea, 4);
+  });
+
+  it('conserves area across both cuts at once', () => {
+    const inputArea = BODY_QUAD.reduce((sum, t) => sum + triArea(t), 0);
+    const { triZones, positions } = computeLipColoredMesh({
+      triangleCount: BODY_QUAD.length,
+      faceGroups: BODY_FG,
+      getTriangle: (i) => BODY_QUAD[i],
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      topAccentCutZ: 8.3,
+      bottomAccentCutZ: 2.1,
+    });
+    let outArea = 0;
+    for (let i = 0; i < triZones.length; i++) {
+      outArea += triArea(positions!.subarray(i * 9, i * 9 + 9));
+    }
+    expect(outArea).toBeCloseTo(inputArea, 4);
+    expect(new Set(triZones)).toEqual(new Set(['topAccent', 'body', 'bottomAccent']));
+  });
 });

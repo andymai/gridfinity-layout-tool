@@ -12,7 +12,7 @@ export type {
   FeatureColorConfig,
   HoverableZone,
   LipColorConfig,
-  TopAccentConfig,
+  AccentBandConfig,
 } from './featureColors';
 
 export type {

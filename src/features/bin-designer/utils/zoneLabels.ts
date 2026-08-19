@@ -53,6 +53,8 @@ export function zoneTranslationKey(zone: ColorZone): string {
       return 'binDesigner.colors.zone.lid';
     case 'topAccent':
       return 'binDesigner.colors.zone.topAccent';
+    case 'bottomAccent':
+      return 'binDesigner.colors.zone.bottomAccent';
     default: {
       // Compile-time exhaustiveness: a new non-lip zone must be handled above.
       const _exhaustive: never = nonLip;
@@ -87,6 +89,7 @@ export type ZoneColorPatch =
   | { text: string }
   | { lid: string }
   | { topAccent: Partial<FeatureColorConfig['topAccent']> }
+  | { bottomAccent: Partial<FeatureColorConfig['topAccent']> }
   | { lip: Partial<FeatureColorConfig['lip']> }
   | { lidLip: Partial<FeatureColorConfig['lidLip']> };
 
@@ -122,6 +125,8 @@ export function zoneColorPatch(zone: ColorZone, hex: string): ZoneColorPatch {
       return { lid: hex };
     case 'topAccent':
       return { topAccent: { color: hex } };
+    case 'bottomAccent':
+      return { bottomAccent: { color: hex } };
     default: {
       // Compile-time exhaustiveness: a new non-lip zone must be handled above.
       const _exhaustive: never = nonLip;

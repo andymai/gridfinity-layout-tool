@@ -1137,11 +1137,12 @@ const ALLOWED_FEATURE_COLOR_KEYS = new Set([
   'lid',
   'lidLip',
   'topAccent',
+  'bottomAccent',
 ]);
-const ALLOWED_TOP_ACCENT_KEYS = new Set<string>(['enabled', 'heightMm', 'color']);
+const ALLOWED_ACCENT_BAND_KEYS = new Set<string>(['enabled', 'heightMm', 'color']);
 /** Generous upper bound (mm) — the client clamps to wall height; this only
  *  rejects absurd values a crafted share could smuggle past the size cap. */
-const MAX_TOP_ACCENT_HEIGHT_MM = 1000;
+const MAX_ACCENT_BAND_HEIGHT_MM = 1000;
 const ALLOWED_LIP_CORNER_KEYS = new Set<string>(LIP_CORNERS);
 const ALLOWED_LIP_GRID_KEYS = new Set<string>(['corners', 'bands', 'cells']);
 const VALID_LIP_AXIS_COUNTS = new Set<number>([1, 2, 4]);
@@ -1176,25 +1177,26 @@ function validateLipGrid(lip: Record<string, unknown>, path: string): string | n
   return null;
 }
 
-/** Validate the top-accent band `{ enabled, heightMm, color }`. */
-function validateTopAccent(value: unknown): string | null {
-  if (!isObject(value)) return 'featureColors.topAccent must be an object';
+/** Validate one accent band `{ enabled, heightMm, color }`. `path` names the
+ *  field so the top and bottom bands report against themselves. */
+function validateAccentBand(value: unknown, path: string): string | null {
+  if (!isObject(value)) return `${path} must be an object`;
   for (const key of Object.keys(value)) {
-    if (!ALLOWED_TOP_ACCENT_KEYS.has(key)) {
-      return `featureColors.topAccent has unknown key: ${key}`;
+    if (!ALLOWED_ACCENT_BAND_KEYS.has(key)) {
+      return `${path} has unknown key: ${key}`;
     }
   }
   if (value.enabled !== undefined && !isBoolean(value.enabled)) {
-    return 'featureColors.topAccent.enabled must be boolean';
+    return `${path}.enabled must be boolean`;
   }
   if (
     value.heightMm !== undefined &&
-    (!isNumber(value.heightMm) || !inRange(value.heightMm, 0, MAX_TOP_ACCENT_HEIGHT_MM))
+    (!isNumber(value.heightMm) || !inRange(value.heightMm, 0, MAX_ACCENT_BAND_HEIGHT_MM))
   ) {
-    return `featureColors.topAccent.heightMm must be 0-${MAX_TOP_ACCENT_HEIGHT_MM}`;
+    return `${path}.heightMm must be 0-${MAX_ACCENT_BAND_HEIGHT_MM}`;
   }
   if (value.color !== undefined && !isValidColor(value.color)) {
-    return 'featureColors.topAccent.color must be a hex color';
+    return `${path}.color must be a hex color`;
   }
   return null;
 }
@@ -1260,9 +1262,11 @@ function validateFeatureColors(value: unknown): string | null {
     if (err) return err;
   }
 
-  if (value.topAccent !== undefined) {
-    const err = validateTopAccent(value.topAccent);
-    if (err) return err;
+  for (const key of ['topAccent', 'bottomAccent'] as const) {
+    if (value[key] !== undefined) {
+      const err = validateAccentBand(value[key], `featureColors.${key}`);
+      if (err) return err;
+    }
   }
 
   return null;

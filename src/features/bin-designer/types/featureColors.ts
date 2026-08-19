@@ -34,18 +34,21 @@ export const LIP_BANDS: readonly LipBand[] = [0, 1, 2, 3] as const;
 
 export const LIP_AXIS_COUNTS: readonly LipAxisCount[] = [1, 2, 4] as const;
 
-/** Default height (mm) of the top accent band when the user first enables it. */
-export const TOP_ACCENT_DEFAULT_MM = 2;
+/** Default height (mm) of an accent band when the user first enables it. */
+export const ACCENT_BAND_DEFAULT_MM = 2;
 /** Smallest band height the UI/slider allows (0 renders nothing). */
-export const TOP_ACCENT_MIN_MM = 0;
+export const ACCENT_BAND_MIN_MM = 0;
 /**
- * Top accent band — recolors the top `heightMm` of the bin (measured down from
- * the highest point of the body mesh) a single accent color, whether or not a
- * stacking lip is present. Geometry above the cut plane wins over every other
- * zone, including lip cells; the lid is a separate object and keeps its own
- * color. Height is absolute mm (slicer/layer-height agnostic).
+ * One accent band — recolors the outermost `heightMm` of the bin body at one
+ * end (measured in from the highest or lowest point of the body mesh) a single
+ * accent color, whether or not a stacking lip is present. Geometry past the cut
+ * plane wins over every other zone, including lip cells and the socket. Height
+ * is absolute mm (slicer/layer-height agnostic).
+ *
+ * Bin body only. The lid and separately-printed feet are their own objects with
+ * their own meshes, and each keeps its own zone color.
  */
-export interface TopAccentConfig {
+export interface AccentBandConfig {
   readonly enabled: boolean;
   readonly heightMm: number;
   readonly color: string;
@@ -104,7 +107,18 @@ export interface FeatureColorConfig {
    * design saved before this field existed should render.
    */
   readonly lidLip?: LipColorConfig;
-  readonly topAccent: TopAccentConfig;
+  readonly topAccent: AccentBandConfig;
+  /**
+   * Bottom accent band, measured UP from the body mesh's lowest point — the
+   * mirror of {@link topAccent}, and the reason both are described by one
+   * {@link AccentBandConfig}.
+   *
+   * OPTIONAL and ABSENT until used, for the same reason {@link lidLip} is:
+   * `communityParamsFingerprint` hashes `params` wholesale, so an
+   * always-present new field would shift the fingerprint of every already-
+   * published design and break the community duplicate guard.
+   */
+  readonly bottomAccent?: AccentBandConfig;
 }
 
 /** A lip cell zone id, `lip:${corner}:${band}`. */
@@ -139,7 +153,8 @@ export type ColorZone =
   | 'text'
   | 'lid'
   | LidLipCellZone
-  | 'topAccent';
+  | 'topAccent'
+  | 'bottomAccent';
 
 /** Hover target — accepts every ColorZone plus the lip group headers. */
 export type HoverableZone = ColorZone | 'lip' | 'lidLip';
@@ -287,6 +302,7 @@ export const ZONE_ORDER: readonly ColorZone[] = [
   // preview's per-zone material array index; inserting here would renumber
   // every zone after the insertion point and churn materials mid-session.
   ...LID_LIP_CELL_ZONES,
+  'bottomAccent',
 ] as const;
 
 /** Position of a zone in ZONE_ORDER. */
@@ -305,26 +321,103 @@ export function maxZOfVertices(vertices: ArrayLike<number>): number {
   return max;
 }
 
+/** Lowest Z across a flat xyz vertex buffer (stride 3) — the mirror of
+ *  {@link maxZOfVertices}. Returns Infinity for an empty buffer. */
+export function minZOfVertices(vertices: ArrayLike<number>): number {
+  let min = Infinity;
+  for (let i = 2; i < vertices.length; i += 3) {
+    if (vertices[i] < min) min = vertices[i];
+  }
+  return min;
+}
+
 /**
  * The Z plane above which geometry becomes the top-accent color, or null when
  * the accent is off (disabled, non-positive height, or an empty mesh). The
  * band hangs `heightMm` down from the mesh's highest point. Callers pass the
  * bin-body mesh top (the lid is a separate object and never contributes here).
  */
-export function topAccentCutZ(topAccent: TopAccentConfig, meshTopZ: number): number | null {
-  if (!topAccentActive(topAccent) || !Number.isFinite(meshTopZ)) return null;
+export function topAccentCutZ(topAccent: AccentBandConfig, meshTopZ: number): number | null {
+  if (!accentBandActive(topAccent) || !Number.isFinite(meshTopZ)) return null;
   return meshTopZ - topAccent.heightMm;
 }
 
-/** True when the top-accent band paints anything (enabled with positive height).
+/**
+ * The Z plane at or below which geometry becomes the bottom-accent color — the
+ * mirror of {@link topAccentCutZ}, rising `heightMm` from the mesh's lowest
+ * point. Null when the band is off or absent.
+ */
+export function bottomAccentCutZ(
+  bottomAccent: AccentBandConfig | undefined,
+  meshBottomZ: number
+): number | null {
+  if (!bottomAccent || !accentBandActive(bottomAccent) || !Number.isFinite(meshBottomZ)) {
+    return null;
+  }
+  return meshBottomZ + bottomAccent.heightMm;
+}
+
+/** True when an accent band paints anything (enabled with positive height).
  *  Fully determined by the config — unlike scoop/dividers, it needs no external
  *  feature flag — so preview/export can derive its activeness without relying on
  *  a caller-supplied active-zone set. */
-export function topAccentActive(topAccent: {
+export function accentBandActive(band: {
   readonly enabled: boolean;
   readonly heightMm: number;
 }): boolean {
-  return topAccent.enabled && topAccent.heightMm > 0;
+  return band.enabled && band.heightMm > 0;
+}
+
+/** The two accent cut planes, or null per band that paints nothing. */
+export interface AccentCutPlanes {
+  readonly topZ: number | null;
+  readonly bottomZ: number | null;
+}
+
+/**
+ * Resolve both accent cut planes against a mesh, in one place, so the preview,
+ * the 3MF exporter and the hit-test path can never disagree about them.
+ *
+ * Scans the vertex buffer only when a band is actually live — the common case
+ * is neither, and the scan is O(vertexCount) on every preview update.
+ *
+ * OVERLAP: on a bin shorter than the two bands combined the bottom plane is
+ * clamped UP to the top plane, so the bands meet and tile the body instead of
+ * fighting over the middle. Neither stored height is touched, so shrinking a
+ * bin and growing it back restores both bands at their authored sizes.
+ */
+export function accentCutPlanes(
+  c: FeatureColorConfig,
+  vertices: ArrayLike<number>
+): AccentCutPlanes {
+  const topLive = accentBandActive(c.topAccent);
+  const bottomLive = c.bottomAccent !== undefined && accentBandActive(c.bottomAccent);
+  if (!topLive && !bottomLive) return { topZ: null, bottomZ: null };
+
+  const topZ = topLive ? topAccentCutZ(c.topAccent, maxZOfVertices(vertices)) : null;
+  const rawBottomZ = bottomLive ? bottomAccentCutZ(c.bottomAccent, minZOfVertices(vertices)) : null;
+  if (rawBottomZ === null || topZ === null) return { topZ, bottomZ: rawBottomZ };
+  return { topZ, bottomZ: Math.min(rawBottomZ, topZ) };
+}
+
+/**
+ * `activeZones` with each live accent band unioned in. The bands are derived
+ * from the config rather than taken on trust, so a caller that assembled its
+ * zone set without them (the 3D preview does) still has `isSingleColor` account
+ * for the accent colors instead of short-circuiting the design to one material.
+ * Returns the input untouched when there is nothing to add.
+ */
+export function withAccentZones(
+  activeZones: ReadonlySet<ColorZone>,
+  cuts: AccentCutPlanes
+): ReadonlySet<ColorZone> {
+  const missing: ColorZone[] = [];
+  if (cuts.topZ !== null && !activeZones.has('topAccent')) missing.push('topAccent');
+  if (cuts.bottomZ !== null && !activeZones.has('bottomAccent')) missing.push('bottomAccent');
+  if (missing.length === 0) return activeZones;
+  const next = new Set(activeZones);
+  for (const zone of missing) next.add(zone);
+  return next;
 }
 
 export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
@@ -345,6 +438,10 @@ export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
       return c.lid;
     case 'topAccent':
       return c.topAccent.color;
+    case 'bottomAccent':
+      // Absent band → body, so an unused zone dedups into the body material
+      // rather than adding a slot nothing paints.
+      return c.bottomAccent?.color ?? c.body;
     default:
       // A lid-lip cell must be resolved BEFORE the bin-lip fallback below —
       // both are template-literal families reaching the same `default`, so
@@ -481,10 +578,12 @@ export interface ActiveZonesParams {
     /** Active lid-lip grid sizes. Absent → a uniform 1×1 grid. */
     readonly lidLip?: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
     /**
-     * Top accent band. Exposed as an active zone whenever it's enabled with a
-     * positive height — it's independent of the lip and every other feature.
+     * Accent bands. Each is exposed as an active zone whenever it's enabled
+     * with a positive height — they're independent of the lip and every other
+     * feature.
      */
     readonly topAccent?: { readonly enabled: boolean; readonly heightMm: number };
+    readonly bottomAccent?: { readonly enabled: boolean; readonly heightMm: number };
   };
 }
 
@@ -589,10 +688,12 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   }
   if (hasDividers) zones.add('dividers');
   if (hasTabText || hasCutoutText || hasWallText) zones.add('text');
-  // Top accent is independent of every other feature — a positive-height band
-  // recolors the top of the bin whether or not it has a lip.
+  // Accent bands are independent of every other feature — a positive-height
+  // band recolors an end of the bin whether or not it has a lip or a socket.
   const topAccent = p.featureColors?.topAccent;
-  if (topAccent && topAccentActive(topAccent)) zones.add('topAccent');
+  if (topAccent && accentBandActive(topAccent)) zones.add('topAccent');
+  const bottomAccent = p.featureColors?.bottomAccent;
+  if (bottomAccent && accentBandActive(bottomAccent)) zones.add('bottomAccent');
   return zones;
 }
 

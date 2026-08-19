@@ -2362,10 +2362,15 @@ const en: Record<string, string> = {
   'binDesigner.colors.scoop': 'Scoop',
   'binDesigner.colors.dividers': 'Dividers',
   'binDesigner.colors.lid': 'Lid',
-  'binDesigner.colors.topAccent': 'Top accent',
-  'binDesigner.colors.topAccent.height': 'Band height',
-  'binDesigner.colors.topAccent.hint':
-    'Colors the top of the bin a different color — no stacking lip required.',
+  'binDesigner.colors.accent.title': 'Accent bands',
+  'binDesigner.colors.accent.height': 'Band height',
+  'binDesigner.colors.accent.hint':
+    'Recolor the top or bottom of the bin — no stacking lip or socket required.',
+  'binDesigner.colors.accent.unitLabel': 'Band height unit',
+  'binDesigner.colors.accent.unit.mm': 'mm',
+  'binDesigner.colors.accent.unit.layers': 'layers',
+  'binDesigner.colors.accent.layersInfo': '≈ {layers} layers at {layerHeight}mm',
+  'binDesigner.colors.accent.mmInfo': '{mm}mm at {layerHeight}mm layers',
   'binDesigner.colors.group.exterior': 'Exterior',
   'binDesigner.colors.group.interior': 'Interior',
   'binDesigner.colors.group.addons': 'Add-ons',
@@ -2427,6 +2432,7 @@ const en: Record<string, string> = {
   'binDesigner.colors.zone.text': 'Engraved text',
   'binDesigner.colors.zone.lid': 'Lid',
   'binDesigner.colors.zone.topAccent': 'Top accent',
+  'binDesigner.colors.zone.bottomAccent': 'Bottom accent',
   'binDesigner.export.multiColor.formatDisabled':
     "{format} doesn't preserve color data. Use 3MF to keep your multi-color zones.",
   'binDesigner.export.meshImprint.stepDisabled':

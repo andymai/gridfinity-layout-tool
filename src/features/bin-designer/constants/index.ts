@@ -6,6 +6,7 @@ export {
   minHeightUnits,
 } from './gridfinity';
 export {
+  DEFAULT_ACCENT_BAND,
   DEFAULT_BIN_PARAMS,
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_GENERATION_STATE,
