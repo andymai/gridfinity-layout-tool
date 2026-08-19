@@ -9,7 +9,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
-import { initBrepjs, getGenerateSplitPreview } from './__kernel-tests__/wasmInit';
+import { initBrepjs, getGenerateBin, getGenerateSplitPreview } from './__kernel-tests__/wasmInit';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 
 beforeAll(async () => {
@@ -299,4 +299,57 @@ describe('stacking lip on split pieces', () => {
       expect(degenerateCount).toBeLessThan(MAX_DEGENERATE_TRIANGLES);
     }
   }, 60000);
+});
+
+// ─── Regression: exterior-wall collar ───────────────────────────────────────
+
+describe('stacking lip on split pieces of a collared bin', () => {
+  const COLLAR_MM = 15;
+
+  // A collar raises the rim by a different amount on each base — a socketed bin
+  // subtracts the socket from `wallHeight`, a flat one does not — so the fix has
+  // to come from the derived rim rather than from any one base's arithmetic.
+  it.each([
+    { label: 'standard base', style: 'standard' as const },
+    { label: 'flat base', style: 'flat' as const },
+  ])(
+    'places the lip at the same height as the unsplit bin ($label)',
+    ({ style }) => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 6,
+        depth: 1,
+        height: 3,
+        extraWallHeightMm: COLLAR_MM,
+        base: { ...DEFAULT_BIN_PARAMS.base, style },
+      };
+
+      // Stated as a delta against the same bin generated whole: the collar moves
+      // the rim, so a hardcoded Z here would just be a second copy of the
+      // arithmetic under test. The split path built its lip from `baseOffsetZ +
+      // wallHeight + tileFloorHeight`, which omits the collar — the lip landed
+      // COLLAR_MM down the outside of the wall and the piece's top face became
+      // the bare wall it should have been sitting on.
+      const whole = getGenerateBin()(params);
+      const split = getGenerateSplitPreview()(params, [0], [], DISABLED_CONNECTORS);
+      expect(split.pieces).toHaveLength(2);
+
+      const wholeTopZ = maxZ(whole.vertices);
+      for (const piece of split.pieces) {
+        expect(Math.abs(maxZ(piece.vertices) - wholeTopZ)).toBeLessThan(TESS_TOL);
+      }
+    },
+    120000
+  );
+
+  it('leaves an uncollared split unchanged', () => {
+    const params: BinParams = { ...DEFAULT_BIN_PARAMS, width: 6, depth: 1, height: 3 };
+    const whole = getGenerateBin()(params);
+    const split = getGenerateSplitPreview()(params, [0], [], DISABLED_CONNECTORS);
+
+    const wholeTopZ = maxZ(whole.vertices);
+    for (const piece of split.pieces) {
+      expect(Math.abs(maxZ(piece.vertices) - wholeTopZ)).toBeLessThan(TESS_TOL);
+    }
+  }, 120000);
 });

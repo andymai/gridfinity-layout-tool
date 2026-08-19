@@ -225,15 +225,20 @@ function splitSolidIntoPieces(
   const totalHeight = splitDims.totalHeight;
   const wallHeight = splitDims.wallHeight;
   const floorZ = splitDims.baseOffsetZ;
-  const wallTopZ = floorZ + wallHeight + splitDims.tileFloorHeight;
+  // Read, never restated: `baseOffsetZ + wallHeight + tileFloorHeight` looks
+  // like the rim and is one term short of it, because an `extraWallHeightMm`
+  // collar raises the outer box and the lip together while `wallHeight` stays
+  // nominal. The lip built at that Z fuses a collar's worth down the OUTSIDE of
+  // the wall, leaving the piece's top face bare — a split bin that cannot stack.
+  const wallTopZ = splitDims.wallTopZ;
   // Z extent a split piece of the body should retain. The body spans 0..wallTopZ,
-  // which equals `totalHeight` for socketed and flat bases, EXCEEDS it for a tray
-  // bottom (the skirt adds depth below the floor), and is far SHORTER for a
-  // base-only bin, whose wall is zero and whose body is the feet plus a
-  // `wallThickness` floor slab. Taking the lower of the two measures the
-  // base-only bin against its real body while leaving every other base on the
-  // exact threshold it had.
-  const expectedBodyZ = Math.min(totalHeight, wallTopZ);
+  // which equals `totalHeight` plus the collar for socketed and flat bases,
+  // EXCEEDS it for a tray bottom (the skirt adds depth below the floor), and is
+  // far SHORTER for a base-only bin, whose wall is zero and whose body is the
+  // feet plus a `wallThickness` floor slab. Taking the lower of the two measures
+  // the base-only bin against its real body while leaving every other base on
+  // the exact threshold it had.
+  const expectedBodyZ = Math.min(totalHeight + splitDims.collarHeight, wallTopZ);
 
   // An overhang grows the outer body past the nominal grid footprint;
   // both the lip and the outermost cutting boxes must track it. Suppressed for
