@@ -1,4 +1,5 @@
 import type { PrintPiece } from '@/core/types';
+import { formatPieceSize } from '@/features/print-export/utils/split';
 
 const STYLES = {
   splitPiece: {
@@ -61,7 +62,7 @@ export function SplitPreview({ width, depth, pieces, cellSize = 16, gap = 2 }: S
               ...STYLES.splitPiece,
             }}
           >
-            {piece.width}×{piece.depth}
+            {formatPieceSize(piece.width)}×{formatPieceSize(piece.depth)}
           </div>
         ))
       )}

@@ -42,10 +42,21 @@ import {
  */
 function axisPieces(size: number, maxSize: number): { size: number; count: number } {
   const count = getSplitPositions(size, maxSize).length + 1;
-  // An even split into 3 is a repeating fraction, which is a real piece size
-  // (the exporter cuts exactly there) but not one to print at float precision.
-  // The rounding is display-only: it moves a 10-unit third by 0.0014mm.
-  return { size: Math.round((size / count) * 100) / 100, count };
+  // Exact, not rounded: this size feeds the filament estimate and lets the
+  // diagram recover the piece grid by division. An even split into 3 really is
+  // a repeating fraction — the exporter cuts exactly there — so the rounding
+  // belongs at the label (`formatPieceSize`), where it changes nothing but the
+  // text.
+  return { size: size / count, count };
+}
+
+/**
+ * A piece dimension as text. The only place a piece size is rounded, so the
+ * number the estimate used and the number the user reads cannot drift: an even
+ * split into 3 gives 3.3333…, which is a real cut plane and an unreadable label.
+ */
+export function formatPieceSize(units: number): string {
+  return String(Math.round(units * 100) / 100);
 }
 
 /**

@@ -18,6 +18,7 @@ const LIST_SEPARATOR = ', ';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '../Print/SplitPreview';
+import { formatPieceSize } from '@/features/print-export/utils/split';
 import { getLinkedBins } from '@/features/design-linking';
 import {
   useBinInspector,
@@ -577,7 +578,8 @@ export function RightPanel() {
                                               key={`${piece.width}x${piece.depth}`}
                                               className="text-content-tertiary"
                                             >
-                                              {piece.count}× {piece.width}×{piece.depth}
+                                              {piece.count}× {formatPieceSize(piece.width)}×
+                                              {formatPieceSize(piece.depth)}
                                             </div>
                                           ))}
                                         </div>

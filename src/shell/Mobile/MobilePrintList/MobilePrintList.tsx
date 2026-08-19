@@ -5,6 +5,7 @@ import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useLayoutStore } from '@/core/store';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '@/shell/Print/SplitPreview';
+import { formatPieceSize } from '@/features/print-export/utils/split';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
@@ -242,7 +243,8 @@ export function MobilePrintList() {
                             key={`${piece.width}x${piece.depth}`}
                             className="text-content-tertiary"
                           >
-                            {piece.count}× {piece.width}×{piece.depth}
+                            {piece.count}× {formatPieceSize(piece.width)}×
+                            {formatPieceSize(piece.depth)}
                           </div>
                         ))}
                       </div>

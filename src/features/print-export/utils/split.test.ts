@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { PrintSplitFit } from '@/features/print-export/utils/split';
 import {
   splitBinSize,
+  formatPieceSize,
   generatePrintList,
   getTotalPieces,
   getTotalBins,
@@ -39,7 +40,6 @@ describe('splitBinSize', () => {
     { w: 5, d: 3, max: maxSize, piece: [2.5, 3], count: 2 },
     { w: 3, d: 5, max: maxSize, piece: [3, 2.5], count: 2 },
     { w: 9, d: 3, max: maxSize, piece: [3, 3], count: 3 },
-    { w: 10, d: 1, max: maxSize, piece: [3.33, 1], count: 3 },
     { w: 12, d: 1, max: maxSize, piece: [4, 1], count: 3 },
     { w: 5, d: 6, max: maxSize, piece: [2.5, 3], count: 4 },
     { w: 8, d: 2, max: maxSize, piece: [4, 2], count: 2 },
@@ -51,6 +51,15 @@ describe('splitBinSize', () => {
     expect(splitBinSize(w, d, max)).toEqual([
       { width: gridUnits(piece[0]), depth: gridUnits(piece[1]), count },
     ]);
+  });
+
+  // Exact, not rounded: the size feeds the filament estimate and the diagram's
+  // grid recovery. Only the label rounds it (`formatPieceSize`).
+  it('keeps an even three-way split exact', () => {
+    expect(splitBinSize(10, 1, maxSize)).toEqual([
+      { width: gridUnits(10 / 3), depth: gridUnits(1), count: 3 },
+    ]);
+    expect(formatPieceSize(10 / 3)).toBe('3.33');
   });
 
   it('never yields a zero-sized piece', () => {
