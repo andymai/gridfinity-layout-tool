@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.427.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.427.0...gridfinity-layout-tool-v4.427.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* **api:** accept a lid-lip colour grid on share and sync ([#3629](https://github.com/andymai/gridfinity-layout-tool/issues/3629)) ([60dbd03](https://github.com/andymai/gridfinity-layout-tool/commit/60dbd03a1d09cfa33b26ee3de367a4711bfa1b68))
+
 ## [4.427.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.6...gridfinity-layout-tool-v4.427.0) (2026-08-19)
 
 
