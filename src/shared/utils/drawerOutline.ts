@@ -5,10 +5,11 @@
  * Everything here is brepjs/WASM-free and pure. The geometry math (arcs,
  * flattening, classification) lives in `drawerOutlineGeometry.ts`; this module
  * owns the outline's invariants: single closed CCW simple loop, within the
- * drawer's grid extent, enclosing at least one grid cell.
+ * drawer's own extent ({@link outlineExtentMm} — NOT the grid's), enclosing at
+ * least one grid cell.
  */
 
-import type { DrawerOutline, Layout, OutlineVertex } from '@/core/types';
+import type { Drawer, DrawerOutline, Layout, OutlineVertex } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { clamp } from './math';
@@ -71,6 +72,37 @@ export function quantizeOutline(outline: DrawerOutline): DrawerOutline {
         ? { x: quantize(v.x), y: quantize(v.y) }
         : { x: quantize(v.x), y: quantize(v.y), bulge };
     }),
+  };
+}
+
+/**
+ * The box a drawer perimeter may occupy, in drawer-local mm.
+ *
+ * The grid extent is NOT the bound. A measured drawer is the physical thing the
+ * perimeter traces; the grid is a lattice laid inside it, which the user is
+ * free to make smaller and to position with padding. Bounding the perimeter by
+ * the grid made that combination impossible — shrinking the grid clipped the
+ * shape, or dropped it outright — which forced the grid up to the shape and
+ * left every surplus cell to be cut.
+ *
+ * Widened, never narrowed: a shape authored against a larger grid extent stays
+ * valid when a smaller measurement is recorded afterwards. `MEASURED_MM_MAX` is
+ * the ceiling on the measured half.
+ *
+ * This is the permitted box only. "Does this outline hug the grid" — the no-op
+ * rectangle test and the boundary snap — still measures the GRID extent, since
+ * a rectangle at the drawer's size on a smaller grid is real geometry that
+ * trims cells, not an absent outline.
+ */
+export function outlineExtentMm(
+  drawer: Pick<Drawer, 'width' | 'depth' | 'measuredMm'>,
+  gridUnitMm: number,
+  gridUnitMmY: number
+): { widthMm: number; depthMm: number } {
+  const measured = drawer.measuredMm;
+  return {
+    widthMm: Math.max((drawer.width as number) * gridUnitMm, measured?.width ?? 0),
+    depthMm: Math.max((drawer.depth as number) * gridUnitMmY, measured?.depth ?? 0),
   };
 }
 
@@ -151,8 +183,10 @@ export function isSelfIntersecting(pts: readonly OutlinePoint[]): boolean {
 
 /**
  * Check every outline invariant. Returns null when valid.
- * `widthMm`/`depthMm` are the drawer's grid extent; `gridUnitMm` sets the
- * minimum-area rule (one grid cell).
+ * `widthMm`/`depthMm` are the box the perimeter may occupy — pass
+ * {@link outlineExtentMm}, not the bare grid extent, or a grid smaller than the
+ * drawer rejects the drawer's own shape. `gridUnitMm` sets the minimum-area
+ * rule (one grid cell).
  */
 export function validateOutline(
   outline: DrawerOutline,
@@ -563,8 +597,13 @@ export function normalizeDrawerOutline(layout: Layout): Layout {
   if (outline === undefined) return layout;
 
   const gridUnitMmY = effectiveGridUnitMmY(layout) as number;
-  const widthMm = (layout.drawer.width as number) * (layout.gridUnitMm as number);
-  const depthMm = (layout.drawer.depth as number) * gridUnitMmY;
+  // Two boxes, deliberately: the perimeter is clipped and graded against the
+  // DRAWER (which may exceed the grid), while "hugs the boundary" and "is the
+  // full rectangle" stay grid questions — a rectangle at the drawer's size on a
+  // smaller grid trims cells and must survive as real geometry.
+  const gridWidthMm = (layout.drawer.width as number) * (layout.gridUnitMm as number);
+  const gridDepthMm = (layout.drawer.depth as number) * gridUnitMmY;
+  const { widthMm, depthMm } = outlineExtentMm(layout.drawer, layout.gridUnitMm, gridUnitMmY);
 
   const drop = (): Layout => {
     const drawer = { ...layout.drawer };
@@ -588,10 +627,10 @@ export function normalizeDrawerOutline(layout: Layout): Layout {
 
   const candidate = snapOutlineToBounds(
     quantizeOutline({ vertices: toVertices(verts), authoring: outline.authoring }),
-    widthMm,
-    depthMm
+    gridWidthMm,
+    gridDepthMm
   );
-  if (isOutlineFullRectangle(candidate, widthMm, depthMm)) return drop();
+  if (isOutlineFullRectangle(candidate, gridWidthMm, gridDepthMm)) return drop();
   if (validateOutline(candidate, widthMm, depthMm, layout.gridUnitMm, gridUnitMmY) !== null) {
     return drop();
   }

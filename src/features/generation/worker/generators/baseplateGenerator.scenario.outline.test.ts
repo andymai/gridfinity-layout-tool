@@ -148,6 +148,36 @@ describe('baseplate outline geometry', () => {
     }
   );
 
+  // A drawer measured wider than a whole number of cells leaves the grid
+  // smaller than the perimeter. The grid stays anchored and the perimeter
+  // overhangs it, so the slab has to widen by that overhang or the plate comes
+  // out the size of the GRID and the strip the drawer actually needs is gone.
+  it('builds the plate to a perimeter wider than the grid', { timeout: 240_000 }, () => {
+    const gen = getGenerateBaseplate();
+    const OVER = 8; // per side, from an 8mm-per-axis oversize perimeter
+    const wide: DrawerOutline = {
+      vertices: [
+        { x: -OVER, y: -OVER },
+        { x: 4 * U + OVER, y: -OVER },
+        { x: 4 * U + OVER, y: 4 * U + OVER },
+        { x: -OVER, y: 4 * U + OVER },
+      ],
+    };
+    const result = gen(
+      defaults({
+        outline: wide,
+        outlineOverhang: { left: OVER, right: OVER, front: OVER, back: OVER },
+      }),
+      NO_OP,
+      true
+    );
+    assertStructurallyValid(result, 'oversize perimeter');
+
+    const bb = boundingBox(result.vertices);
+    expect(bb.maxX - bb.minX).toBeCloseTo(4 * U + 2 * OVER, 0);
+    expect(bb.maxY - bb.minY).toBeCloseTo(4 * U + 2 * OVER, 0);
+  });
+
   it('cuts the ⊓ notch while keeping both prongs', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const result = gen(defaults({ outline: U_SHAPE }), NO_OP, true);

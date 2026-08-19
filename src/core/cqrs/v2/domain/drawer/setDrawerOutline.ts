@@ -16,6 +16,7 @@ import type { BinId, DrawerOutline } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import {
+  outlineExtentMm,
   quantizeOutline,
   snapOutlineToBounds,
   validateOutline,
@@ -76,17 +77,26 @@ export const setDrawerOutline = defineCommand({
     const layout = ctx.aggregate;
     const drawer = layout.drawer;
     const gridUnitMmY = effectiveGridUnitMmY(layout) as number;
-    const widthMm = (drawer.width as number) * (layout.gridUnitMm as number);
-    const depthMm = (drawer.depth as number) * gridUnitMmY;
+    // The perimeter traces the DRAWER, so that is what bounds it; the grid is a
+    // lattice inside it that the user may make smaller. "Hugs the boundary" and
+    // "is the full rectangle" stay grid questions — a rectangle at the drawer's
+    // size on a smaller grid trims cells rather than meaning "no outline".
+    const gridWidthMm = (drawer.width as number) * (layout.gridUnitMm as number);
+    const gridDepthMm = (drawer.depth as number) * gridUnitMmY;
+    const { widthMm, depthMm } = outlineExtentMm(drawer, layout.gridUnitMm, gridUnitMmY);
 
     let outline: DrawerOutline | undefined;
     if (payload.outline !== null) {
-      const cleaned = snapOutlineToBounds(quantizeOutline(payload.outline), widthMm, depthMm);
+      const cleaned = snapOutlineToBounds(
+        quantizeOutline(payload.outline),
+        gridWidthMm,
+        gridDepthMm
+      );
       const invalid = validateOutline(cleaned, widthMm, depthMm, layout.gridUnitMm, gridUnitMmY);
       if (invalid !== null) {
         return err(layoutInvalidOperation('setDrawerOutline', invalid.message));
       }
-      outline = isRectangleEquivalent(cleaned, widthMm, depthMm) ? undefined : cleaned;
+      outline = isRectangleEquivalent(cleaned, gridWidthMm, gridDepthMm) ? undefined : cleaned;
     }
 
     const displacedBinIds = computeDisplacedBins(

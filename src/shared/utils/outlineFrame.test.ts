@@ -83,6 +83,25 @@ describe('resolveOutlineFrame', () => {
     expect(frame.outline).toBe(REGISTERED);
   });
 
+  // Now reachable: the perimeter is bounded by the DRAWER, so a grid smaller
+  // than the drawer is a supported configuration rather than a stale one to be
+  // clipped back. The grid stays put and centres inside the perimeter, and the
+  // strip outside it is reported as overhang for the extent-bounded consumers.
+  it('centres a smaller grid inside a perimeter that exceeds it', () => {
+    const bigger: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U + 8, y: 0 },
+        { x: 4 * U + 8, y: 4 * U + 7 },
+        { x: 0, y: 4 * U + 7 },
+      ],
+    };
+    const frame = resolveOutlineFrame(bigger, frameParams());
+    expect(frame.shiftX).toBeCloseTo(-4, 9);
+    expect(frame.shiftY).toBeCloseTo(-3.5, 9);
+    expect(frame.overhang).toEqual({ left: 4, right: 4, front: 3.5, back: 3.5 });
+  });
+
   it('subtracts the manual grid shift from the registration', () => {
     const frame = resolveOutlineFrame(OFF_LATTICE, frameParams({ gridShiftX: 10, gridShiftY: -5 }));
     expect(frame.shiftX).toBeCloseTo(22, 9);

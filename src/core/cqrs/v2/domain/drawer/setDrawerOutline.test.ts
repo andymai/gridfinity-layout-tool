@@ -5,6 +5,7 @@ import { STAGING_ID } from '@/core/constants';
 import { binId, mm } from '@/core/types';
 import type { DrawerOutline } from '@/core/types';
 import { setDrawerOutline } from './setDrawerOutline';
+import { gridUnits, heightUnits } from '@/core/types';
 import { makeLayout, makeBin } from './_testHelpers';
 
 const U = 42;
@@ -164,5 +165,108 @@ describe('v2 drawer.setOutline', () => {
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
     expect(result.value.event.payload.outline?.vertices[0]).toEqual({ x: 0, y: 0 });
+  });
+
+  // A drawer measures what it measures; the grid is a lattice laid inside it
+  // that the user is free to make smaller and to position with padding.
+  // Bounding the perimeter by the grid forced the grid up to the shape.
+  describe('measured drawer bounds the perimeter', () => {
+    /** 6-unit grid (252mm) inside a 260 x 175mm measured drawer. */
+    const MEASURED = { width: 260, depth: 175 };
+    const PAST_GRID: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 260, y: 0 },
+        { x: 260, y: 100 },
+        { x: 180, y: 100 },
+        { x: 180, y: 175 },
+        { x: 0, y: 175 },
+      ],
+    };
+
+    it('accepts a shape past the grid extent but inside the measured drawer', () => {
+      const layout = makeLayout({
+        drawer: {
+          width: gridUnits(6),
+          depth: gridUnits(4),
+          height: heightUnits(7),
+          measuredMm: MEASURED,
+        },
+      });
+      const result = setDrawerOutline.handle({ outline: PAST_GRID }, { aggregate: layout });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.outline?.vertices[1].x).toBe(260);
+    });
+
+    it('still rejects a shape past the measured drawer too', () => {
+      const layout = makeLayout({
+        drawer: {
+          width: gridUnits(6),
+          depth: gridUnits(4),
+          height: heightUnits(7),
+          measuredMm: MEASURED,
+        },
+      });
+      const tooBig: DrawerOutline = {
+        vertices: PAST_GRID.vertices.map((v) => ({ ...v, x: v.x === 260 ? 400 : v.x })),
+      };
+      expect(isOk(setDrawerOutline.handle({ outline: tooBig }, { aggregate: layout }))).toBe(false);
+    });
+
+    it('rejects the same shape when nothing has been measured', () => {
+      const layout = makeLayout();
+      expect(isOk(setDrawerOutline.handle({ outline: PAST_GRID }, { aggregate: layout }))).toBe(
+        false
+      );
+    });
+
+    // The no-op test stays a GRID question: a rectangle at the drawer's size on
+    // a smaller grid trims cells, so it is real geometry, not an absent outline.
+    it('keeps a drawer-sized rectangle that is larger than the grid', () => {
+      const layout = makeLayout({
+        drawer: {
+          width: gridUnits(6),
+          depth: gridUnits(4),
+          height: heightUnits(7),
+          measuredMm: MEASURED,
+        },
+      });
+      const rect: DrawerOutline = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 260, y: 0 },
+          { x: 260, y: 175 },
+          { x: 0, y: 175 },
+        ],
+      };
+      const result = setDrawerOutline.handle({ outline: rect }, { aggregate: layout });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.outline).toBeDefined();
+    });
+
+    it('still drops a rectangle that traces the grid extent exactly', () => {
+      const layout = makeLayout({
+        drawer: {
+          width: gridUnits(6),
+          depth: gridUnits(4),
+          height: heightUnits(7),
+          measuredMm: MEASURED,
+        },
+      });
+      const rect: DrawerOutline = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 6 * U, y: 0 },
+          { x: 6 * U, y: 4 * U },
+          { x: 0, y: 4 * U },
+        ],
+      };
+      const result = setDrawerOutline.handle({ outline: rect }, { aggregate: layout });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.outline).toBeUndefined();
+    });
   });
 });
