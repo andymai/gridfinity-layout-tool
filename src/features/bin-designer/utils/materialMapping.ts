@@ -10,14 +10,13 @@
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { ThreeMFColorConfig } from '@/shared/generation/export';
 import {
+  accentCutPlanes,
   getZoneColor,
   isSingleColor,
   lipCellsUniform,
-  maxZOfVertices,
   normalizeHex,
   resolveColorMapping,
-  topAccentActive,
-  topAccentCutZ,
+  withAccentZones,
 } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
 import { computeLipGeom } from './lipCornerClassifier';
@@ -66,17 +65,11 @@ export function buildTriangleMaterialIndices(
   compartmentPlan: CompartmentColorPlan | null = null
 ): BinColorMapping | null {
   const coloredUnits = cutoutUnits.filter((u) => u.color !== undefined);
-  // Derive the top-accent cut from featureColors directly (see the matching note
-  // in multiColorGroups.ts) so it's honored even if a caller's activeZones omits
-  // it; union it in so isSingleColor accounts for the accent color. Gate the maxZ
-  // scan on `topAccentActive` to skip the traversal when the band is off.
-  const cutZ = topAccentActive(featureColors.topAccent)
-    ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
-    : null;
-  const zones =
-    cutZ !== null && !activeZones.has('topAccent')
-      ? new Set(activeZones).add('topAccent')
-      : activeZones;
+  // Derive the accent cuts from featureColors directly (see the matching note in
+  // multiColorGroups.ts) so they're honored even if a caller's activeZones omits
+  // them; union them in so isSingleColor accounts for the accent colors.
+  const cuts = accentCutPlanes(featureColors, vertices);
+  const zones = withAccentZones(activeZones, cuts);
   if (isSingleColor(featureColors, zones) && coloredUnits.length === 0 && !compartmentPlan) {
     return null;
   }
@@ -137,7 +130,8 @@ export function buildTriangleMaterialIndices(
     geom,
     counts,
     lipUniform: lipCellsUniform(featureColors.lip),
-    topAccentCutZ: cutZ,
+    topAccentCutZ: cuts.topZ,
+    bottomAccentCutZ: cuts.bottomZ,
   });
 
   const materialIndexForZone = (zone: ColorZone): number =>

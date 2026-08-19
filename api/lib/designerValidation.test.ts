@@ -232,6 +232,27 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('featureColors.bottomAccent', () => {
+    function withBand(bottomAccent: unknown) {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).featureColors = { enabled: true, bottomAccent };
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    }
+
+    // Unlisted keys 400 the whole design on share, sync and community publish.
+    it('accepts a valid bottom-accent band', () => {
+      expect(withBand({ enabled: true, heightMm: 2, color: '#112233' }).valid).toBe(true);
+    });
+
+    it('rejects an out-of-range height, an unknown key, and a non-hex colour', () => {
+      expect(withBand({ enabled: true, heightMm: 5000, color: '#112233' }).valid).toBe(false);
+      expect(withBand({ enabled: true, heightMm: 2, bogus: 1 }).valid).toBe(false);
+      expect(withBand({ enabled: true, heightMm: 2, color: 'blue' }).valid).toBe(false);
+      expect(withBand({ enabled: 'yes', heightMm: 2 }).valid).toBe(false);
+      expect(withBand('#112233').valid).toBe(false);
+    });
+  });
+
   describe('textStyle.fontSizeOverride', () => {
     it('accepts a cutout label size override in range', () => {
       const payload = validPayload();

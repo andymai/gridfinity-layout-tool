@@ -36,7 +36,7 @@ import {
   KNIFE_REST_MIN_GROOVE_DEPTH_MM,
   KNIFE_REST_MAX_GROOVE_DEPTH_MM,
 } from '../types';
-import type { FeatureColorConfig, LipAxisCount, TopAccentConfig } from '../types/featureColors';
+import type { AccentBandConfig, FeatureColorConfig, LipAxisCount } from '../types/featureColors';
 import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
 import type { SlideConfig, SlideRailMount } from '../types/slide';
 import { DEFAULT_SLIDE_CONFIG, SLIDE_RAIL_MOUNTS } from '../types/slide';
@@ -553,15 +553,16 @@ interface LegacyFeatureColorInput {
   lid?: string;
   lidLip?: string | LegacyLipCorners | GridLipInput;
   topAccent?: { enabled?: unknown; heightMm?: unknown; color?: unknown };
+  bottomAccent?: { enabled?: unknown; heightMm?: unknown; color?: unknown };
 }
 
-/** Coerce a persisted top-accent value (any era) into a full config, backfilling
+/** Coerce a persisted accent band (any era) into a full config, backfilling
  *  from the default when a field is missing or the wrong type. */
-function migrateTopAccent(
+function migrateAccentBand(
   raw: LegacyFeatureColorInput['topAccent'],
   body: string,
   maxHeightMm: number
-): TopAccentConfig {
+): AccentBandConfig {
   const fallback = DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
   if (!raw || typeof raw !== 'object') {
     return { enabled: false, heightMm: Math.min(fallback.heightMm, maxHeightMm), color: body };
@@ -665,7 +666,14 @@ function migrateFeatureColors(
     LIP_CELL_ZONES.some((id) => (lidLipRaw.cells[id] ?? lid).toLowerCase() !== lid.toLowerCase())
       ? lidLipRaw
       : undefined;
-  const topAccent = migrateTopAccent(raw.topAccent, body, maxTopAccentMm);
+  const topAccent = migrateAccentBand(raw.topAccent, body, maxTopAccentMm);
+  // Emitted ONLY when the design actually carries one, so a design that never
+  // touched the bottom band keeps its exact params fingerprint (see
+  // `FeatureColorConfig.bottomAccent`).
+  const bottomAccent =
+    raw.bottomAccent === undefined
+      ? undefined
+      : migrateAccentBand(raw.bottomAccent, body, maxTopAccentMm);
 
   // Pre-`enabled` design counts as multi-color if body or any zone diverges
   // from the default — zone editors only existed behind the old Labs flag, so
@@ -677,7 +685,8 @@ function migrateFeatureColors(
     [labelTab, base, scoop, dividers, text, lid].some(isCustom) ||
     LIP_CELL_ZONES.some((id) => isCustom(lip.cells[id] ?? body)) ||
     lidLip !== undefined ||
-    (topAccent.enabled && isCustom(topAccent.color));
+    (topAccent.enabled && isCustom(topAccent.color)) ||
+    (bottomAccent?.enabled === true && isCustom(bottomAccent.color));
 
   return {
     enabled: raw.enabled ?? hasCustomColor,
@@ -693,6 +702,7 @@ function migrateFeatureColors(
     // still serialises differently from an omitted key in some hashers.
     ...(lidLip ? { lidLip } : {}),
     topAccent,
+    ...(bottomAccent ? { bottomAccent } : {}),
   };
 }
 

@@ -16,7 +16,10 @@ import { Popover } from '@/design-system/Popover/Popover';
 import { XIcon } from '@/design-system/Icon';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store';
-import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
+import {
+  DEFAULT_ACCENT_BAND,
+  DEFAULT_FEATURE_COLOR_CONFIG,
+} from '@/features/bin-designer/constants/defaults';
 import {
   computeActiveZones,
   getZoneColor,
@@ -46,6 +49,8 @@ function defaultForZone(zone: ColorZone): string {
       return DEFAULT_FEATURE_COLOR_CONFIG.lid;
     case 'topAccent':
       return DEFAULT_FEATURE_COLOR_CONFIG.topAccent.color;
+    case 'bottomAccent':
+      return DEFAULT_ACCENT_BAND.color;
     default:
       return DEFAULT_FEATURE_COLOR_CONFIG.body;
   }
@@ -128,9 +133,24 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
         compartments: { cells },
         featureColors: {
           lip: { corners: featureColors.lip.corners, bands: featureColors.lip.bands },
+          // Both accent bands, so a live band's colour reaches the picker's
+          // "other colours" quick-picks. Without them a band is pickable on the
+          // canvas but its colour is missing from every other zone's swatches.
+          topAccent: featureColors.topAccent,
+          bottomAccent: featureColors.bottomAccent,
         },
       }),
-    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells, featureColors.lip]
+    [
+      baseStyle,
+      stackingLip,
+      labelEnabled,
+      scoopEnabled,
+      lidEnabled,
+      cells,
+      featureColors.lip,
+      featureColors.topAccent,
+      featureColors.bottomAccent,
+    ]
   );
 
   const otherColors = useMemo(() => {

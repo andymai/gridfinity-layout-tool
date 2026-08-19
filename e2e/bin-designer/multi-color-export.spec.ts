@@ -5,8 +5,11 @@
  * this regresses: `filament_colour` is missing a zone color, or every
  * `<triangle>` carries the same `paint_color` — i.e. one color for the bin.
  *
- * Exercises the lip color grid specifically: a single corner split into two Z
- * bands gives body + two distinct lip colors → three filaments.
+ * Exercises two mechanisms in one export, because the kernel warmup makes a
+ * second export prohibitively slow: the lip color grid (a single corner split
+ * into two Z bands) and the bottom accent band (a plane cut, classified by
+ * height rather than by face tag). Body + two lip bands + the accent gives
+ * four filaments.
  */
 
 import { test, expect } from '../fixtures';
@@ -18,6 +21,7 @@ const LAB_FLAG = 'multi_color_export';
 const BODY_HEX = '#00aaff';
 const BAND1_HEX = '#ff0066';
 const BAND2_HEX = '#22cc44';
+const BOTTOM_ACCENT_HEX = '#8811dd';
 
 test.describe('Bin Designer — multi-color 3MF export', () => {
   test.beforeEach(async ({ page }) => {
@@ -39,7 +43,7 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     );
   });
 
-  test('exports a 3MF with body + two lip-band materials', async ({ page }) => {
+  test('exports a 3MF with body, two lip-band, and accent-band materials', async ({ page }) => {
     // The export runs the OCCT kernel and writes a 3MF; with the kernel warmup
     // and download waits this can't fit Playwright's 30s default.
     test.setTimeout(120_000);
@@ -63,6 +67,18 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     await page.getByRole('radiogroup', { name: 'Bands' }).getByRole('radio', { name: '2' }).click();
     await setZoneColor(page, /^Stacking Lip · Band 1: /i, BAND1_HEX);
     await setZoneColor(page, /^Stacking Lip · Band 2: /i, BAND2_HEX);
+
+    // The bottom accent is a plane cut, not a face tag, so it reaches the
+    // exporter by a different route than every zone above — the band is absent
+    // from params until this click, which is what makes it worth pinning here.
+    await page.getByRole('checkbox', { name: 'Bottom accent' }).click();
+    // Entering the height in layers must still store mm; if it ever stored a
+    // layer count the band would resolve ~5x too small and vanish from the cut.
+    await page
+      .getByRole('radiogroup', { name: 'Band height unit' })
+      .getByRole('radio', { name: 'layers' })
+      .click();
+    await setZoneColor(page, /^Bottom accent: /i, BOTTOM_ACCENT_HEX);
 
     // Open the export dialog. The trigger is `disabled` whenever the preview
     // mesh is mid-regeneration — and the preview regenerates continuously — so
@@ -108,15 +124,18 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     // exporter's hex case is not part of the contract.
     const config = JSON.parse(strFromU8(entries['Metadata/project_settings.config']));
     const filamentColours = (config.filament_colour as string[]).map((c) => c.toLowerCase());
-    expect(filamentColours).toEqual(expect.arrayContaining([BODY_HEX, BAND1_HEX, BAND2_HEX]));
+    expect(filamentColours).toEqual(
+      expect.arrayContaining([BODY_HEX, BAND1_HEX, BAND2_HEX, BOTTOM_ACCENT_HEX])
+    );
 
     expect(xml).toMatch(/<metadata name="Application">BambuStudio-/);
     const triangleMatches = xml.match(/<triangle\b[^/]*paint_color="([^"]+)"/g) ?? [];
     expect(triangleMatches.length).toBeGreaterThan(0);
     const distinctCodes = new Set(triangleMatches.map((m) => /paint_color="([^"]+)"/.exec(m)?.[1]));
-    // Body + two lip bands paint distinctly (body may ride the base material,
-    // so ≥2 painted codes proves the lip grid split into separate materials).
-    expect(distinctCodes.size).toBeGreaterThanOrEqual(2);
+    // Body + two lip bands + the accent paint distinctly (body may ride the base
+    // material, so ≥3 painted codes proves the lip grid and the accent band each
+    // split into their own materials).
+    expect(distinctCodes.size).toBeGreaterThanOrEqual(3);
 
     // Build item must carry a centering transform so the bin opens on the
     // plate, not at the bed corner (regression introduced when we claimed

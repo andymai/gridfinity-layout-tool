@@ -171,6 +171,8 @@ function withColors(overrides: Partial<BinParams['featureColors']> = {}): BinPar
         heightMm: DEFAULT_BIN_PARAMS.featureColors.topAccent.heightMm,
         color: body,
       },
+      // Absent unless a test asks for it, matching the shipped default.
+      ...(overrides.bottomAccent ? { bottomAccent: overrides.bottomAccent } : {}),
     },
   };
 }
@@ -296,6 +298,84 @@ describe('multicolor 3MF round-trip', () => {
         expect(slot).toBeGreaterThanOrEqual(0);
         expect(slot).toBeLessThan(colors.length);
       }
+    });
+  });
+
+  describe('accent band round-trip', () => {
+    /** A wall triangle spanning z∈[z0, z0+1] at x=0, so the accent planes cut it. */
+    function wallTri(z0: number): number[] {
+      return [0, 0, z0, 0, 0, z0 + 1, 0.2, 0, z0 + 0.5];
+    }
+
+    it('paints each band its own filament and leaves the middle on body', async () => {
+      const params = withColors({
+        body: '#111111',
+        topAccent: { enabled: true, heightMm: 2, color: '#ff0000' },
+        bottomAccent: { enabled: true, heightMm: 2, color: '#0000ff' },
+      });
+      // Mesh spans z∈[0, 10]: the top band cuts at 8, the bottom at 2.
+      const triangles = [...wallTri(0), ...wallTri(4), ...wallTri(9)];
+      const faceGroups: FaceGroupData[] = [{ start: 0, count: 9, tag: FeatureTag.UNKNOWN }];
+      const blob = buildSinglePiece3MF(
+        buildBinarySTL(triangles),
+        faceGroups,
+        params,
+        'accent-bands',
+        PRINT_SETTINGS,
+        true
+      );
+      const slots = parseTriangleSlots(await blobToModelXml(blob));
+
+      // The cut re-tessellates, so assert per band rather than per input index.
+      expect(new Set(slots)).toEqual(
+        new Set([
+          slotFor(params, '#111111'),
+          slotFor(params, '#ff0000'),
+          slotFor(params, '#0000ff'),
+        ])
+      );
+    });
+
+    // The zone exists to override the socket, so this is the case that proves a
+    // band really does describe "the bottom N mm of the printed part".
+    it('the bottom band overrides the base zone on the socket it covers', async () => {
+      const params = withColors({
+        body: '#111111',
+        base: '#22ee22',
+        bottomAccent: { enabled: true, heightMm: 2, color: '#0000ff' },
+      });
+      const triangles = [...wallTri(0), ...wallTri(4)];
+      const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.SOCKET }];
+      const blob = buildSinglePiece3MF(
+        buildBinarySTL(triangles),
+        faceGroups,
+        params,
+        'bottom-over-base',
+        PRINT_SETTINGS,
+        true
+      );
+      const slots = parseTriangleSlots(await blobToModelXml(blob));
+      expect(slots).toContain(slotFor(params, '#0000ff'));
+      expect(slots).toContain(slotFor(params, '#22ee22'));
+      expect(slots).not.toContain(slotFor(params, '#111111'));
+    });
+
+    it('emits no paint_color for a band whose colour matches body', async () => {
+      const params = withColors({
+        body: '#111111',
+        bottomAccent: { enabled: true, heightMm: 2, color: '#111111' },
+      });
+      const triangles = [...wallTri(0), ...wallTri(4)];
+      const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.UNKNOWN }];
+      const blob = buildSinglePiece3MF(
+        buildBinarySTL(triangles),
+        faceGroups,
+        params,
+        'band-matches-body',
+        PRINT_SETTINGS,
+        true
+      );
+      expect(await blobToModelXml(blob)).not.toContain('paint_color');
     });
   });
 

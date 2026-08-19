@@ -77,6 +77,43 @@ describe('buildMultiColorGroups', () => {
     expect(result?.triZones).toContain('topAccent');
   });
 
+  it('applies the bottom accent on the same terms, overriding the socket zone', () => {
+    const low = [0, 0, 0, 0, 0, 1, 0.2, 0, 0.5]; // mesh bottom = 0, band 2mm → cut at 2
+    const high = [0, 0, 5, 0, 0, 6, 0.2, 0, 5.5];
+    const vertices = new Float32Array([...low, ...high]);
+    const indices = new Uint32Array([0, 1, 2, 3, 4, 5]);
+    // SOCKET is what the `base` zone paints; the band has to win over it.
+    const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.SOCKET }];
+    const c = colors({
+      enabled: true,
+      base: '#00ff00',
+      bottomAccent: { enabled: true, heightMm: 2, color: '#654321' },
+    });
+    const bodyOnly: ReadonlySet<ColorZone> = new Set(['body']); // omits 'bottomAccent'
+    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, bodyOnly);
+    expect(result?.zoneColors[zoneIndex('bottomAccent')]).toBe('#654321');
+    expect(result?.triZones).toContain('bottomAccent');
+    expect(result?.triZones).toContain('base');
+  });
+
+  it('hit-test zones classify against both accent planes without re-tessellating', () => {
+    // The eyedropper maps a clicked ORIGINAL triangle index to a zone, so the
+    // in-place path must agree with the split path about which band owns it.
+    const low = [0, 0, 0, 0, 0, 1, 0.2, 0, 0.5];
+    const mid = [0, 0, 3, 0, 0, 4, 0.2, 0, 3.5];
+    const high = [0, 0, 5, 0, 0, 6, 0.2, 0, 5.5];
+    const vertices = new Float32Array([...low, ...mid, ...high]);
+    const indices = new Uint32Array([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    const faceGroups: FaceGroupData[] = [{ start: 0, count: 9, tag: FeatureTag.UNKNOWN }];
+    const c = colors({
+      enabled: true,
+      topAccent: { enabled: true, heightMm: 1, color: '#ff0000' },
+      bottomAccent: { enabled: true, heightMm: 1, color: '#0000ff' },
+    });
+    const zones = buildHitTestZones(faceGroups, vertices, indices, c);
+    expect(zones).toEqual(['bottomAccent', 'body', 'topAccent']);
+  });
+
   it('places body at material index 0 and one slot per ColorZone (no hex dedup)', () => {
     const { vertices, indices } = meshFromCentroids([
       { x: 0, y: 0 },

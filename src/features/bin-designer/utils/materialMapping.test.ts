@@ -100,6 +100,51 @@ describe('buildTriangleMaterialIndices', () => {
     }
   });
 
+  it('colors geometry below the bottom-accent cut plane with the accent material', () => {
+    const featureColors = colors({
+      enabled: true,
+      bottomAccent: { enabled: true, heightMm: 2, color: '#654321' },
+    });
+    // Mesh bottom = 0, so a 2mm band cuts at z=2: the low triangle is accent.
+    const low = [0, 0, 0, 0, 0, 1, 0.2, 0, 0.5];
+    const high = [0, 0, 5, 0, 0, 6, 0.2, 0, 5.5];
+    const vertices = new Float32Array([...low, ...high]);
+    const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.UNKNOWN }];
+
+    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 2, vertices, allZones);
+    expect(result?.vertices).toBeDefined();
+    const mats = result?.config.materials.map((m) => m.color) ?? [];
+    const accentIdx = mats.indexOf('#654321');
+    const bodyIdx = mats.indexOf(SINGLE);
+    expect(accentIdx).toBeGreaterThanOrEqual(0);
+    const idxs = result?.config.triangleMaterialIndices ?? [];
+    const verts = result?.vertices;
+    for (let i = 0; i < idxs.length; i++) {
+      const cz = (verts![i * 9 + 2] + verts![i * 9 + 5] + verts![i * 9 + 8]) / 3;
+      expect(idxs[i]).toBe(cz <= 2 ? accentIdx : bodyIdx);
+    }
+  });
+
+  it('tiles the two bands rather than overlapping them on a short bin', () => {
+    // A 3mm-tall mesh with a 2mm top band and a 2mm bottom band: the bottom
+    // plane clamps up to the top's, so every triangle belongs to a band and
+    // none is left on body.
+    const featureColors = colors({
+      enabled: true,
+      topAccent: { enabled: true, heightMm: 2, color: '#ff0000' },
+      bottomAccent: { enabled: true, heightMm: 2, color: '#0000ff' },
+    });
+    const wall = [0, 0, 0, 0, 0, 3, 0.2, 0, 1.5];
+    const vertices = new Float32Array(wall);
+    const faceGroups: FaceGroupData[] = [{ start: 0, count: 3, tag: FeatureTag.UNKNOWN }];
+
+    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 1, vertices, allZones);
+    const mats = result?.config.materials.map((m) => m.color) ?? [];
+    const used = new Set(result?.config.triangleMaterialIndices ?? []);
+    expect(used).toEqual(new Set([mats.indexOf('#ff0000'), mats.indexOf('#0000ff')]));
+    expect(used.has(mats.indexOf(SINGLE))).toBe(false);
+  });
+
   it('splits a 4-corner lip and returns replacement geometry + normals', () => {
     const featureColors = colors({
       lip: lip(

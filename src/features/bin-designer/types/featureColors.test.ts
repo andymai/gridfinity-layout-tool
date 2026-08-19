@@ -13,11 +13,15 @@ import {
   lipCellZone,
   lipCellsUniform,
   makeUniformLipCells,
+  accentCutPlanes,
+  bottomAccentCutZ,
   maxZOfVertices,
+  minZOfVertices,
   normalizePaletteLip,
   parseLipCell,
   resolveColorMapping,
   topAccentCutZ,
+  withAccentZones,
   zoneIndex,
 } from './featureColors';
 import type { ActiveZonesParams, FeatureColorConfig, LipColorConfig } from './featureColors';
@@ -285,6 +289,18 @@ describe('computeActiveZones', () => {
     expect(zones.has('topAccent')).toBe(true);
   });
 
+  it('adds bottomAccent on the same terms, and omits it when absent', () => {
+    const params = (bottomAccent?: { enabled: boolean; heightMm: number }) =>
+      computeActiveZones({
+        ...baseParams,
+        featureColors: { lip: { corners: 1, bands: 1 }, bottomAccent },
+      });
+    expect(params({ enabled: true, heightMm: 3 }).has('bottomAccent')).toBe(true);
+    expect(params({ enabled: false, heightMm: 3 }).has('bottomAccent')).toBe(false);
+    expect(params({ enabled: true, heightMm: 0 }).has('bottomAccent')).toBe(false);
+    expect(params(undefined).has('bottomAccent')).toBe(false);
+  });
+
   it('omits topAccent when disabled or zero height', () => {
     const disabled = computeActiveZones({
       ...baseParams,
@@ -354,6 +370,104 @@ describe('topAccentCutZ', () => {
     expect(topAccentCutZ({ enabled: false, heightMm: 2, color: '#000' }, 25)).toBeNull();
     expect(topAccentCutZ({ enabled: true, heightMm: 0, color: '#000' }, 25)).toBeNull();
     expect(topAccentCutZ({ enabled: true, heightMm: 2, color: '#000' }, -Infinity)).toBeNull();
+  });
+});
+
+describe('minZOfVertices', () => {
+  it('reads the lowest z of an xyz buffer', () => {
+    expect(minZOfVertices(new Float32Array([0, 0, 4, 1, 1, -2, 2, 2, 9]))).toBe(-2);
+  });
+
+  it('returns Infinity for an empty buffer', () => {
+    expect(minZOfVertices(new Float32Array([]))).toBe(Infinity);
+  });
+});
+
+describe('bottomAccentCutZ', () => {
+  it('rises from the mesh bottom', () => {
+    expect(bottomAccentCutZ({ enabled: true, heightMm: 3, color: '#000' }, 0)).toBe(3);
+    // A tray skirt puts the mesh bottom below zero; the band follows it.
+    expect(bottomAccentCutZ({ enabled: true, heightMm: 3, color: '#000' }, -1.2)).toBeCloseTo(1.8);
+  });
+
+  it('returns null when absent, disabled, non-positive, or the bottom is not finite', () => {
+    expect(bottomAccentCutZ(undefined, 0)).toBeNull();
+    expect(bottomAccentCutZ({ enabled: false, heightMm: 3, color: '#000' }, 0)).toBeNull();
+    expect(bottomAccentCutZ({ enabled: true, heightMm: 0, color: '#000' }, 0)).toBeNull();
+    expect(bottomAccentCutZ({ enabled: true, heightMm: 3, color: '#000' }, Infinity)).toBeNull();
+  });
+});
+
+describe('accentCutPlanes', () => {
+  // A 0..20mm tall body.
+  const mesh = new Float32Array([0, 0, 0, 1, 1, 10, 2, 2, 20]);
+
+  it('is null on both planes when neither band is live, without scanning', () => {
+    expect(accentCutPlanes(colors(), mesh)).toEqual({ topZ: null, bottomZ: null });
+  });
+
+  it('resolves each band against its own end of the mesh', () => {
+    const cuts = accentCutPlanes(
+      colors({
+        topAccent: { enabled: true, heightMm: 2, color: '#ff0000' },
+        bottomAccent: { enabled: true, heightMm: 5, color: '#0000ff' },
+      }),
+      mesh
+    );
+    expect(cuts).toEqual({ topZ: 18, bottomZ: 5 });
+  });
+
+  it('clamps the bottom plane up to the top plane so the bands tile, never overlap', () => {
+    // 19mm of bottom band under a 2mm top band on a 20mm body: the bottom would
+    // reach z=19, past the top's plane at z=18. Both settle on 18 and tile.
+    const cuts = accentCutPlanes(
+      colors({
+        topAccent: { enabled: true, heightMm: 2, color: '#ff0000' },
+        bottomAccent: { enabled: true, heightMm: 19, color: '#0000ff' },
+      }),
+      mesh
+    );
+    expect(cuts).toEqual({ topZ: 18, bottomZ: 18 });
+  });
+
+  it('leaves an oversized lone bottom band unclamped — nothing to collide with', () => {
+    const cuts = accentCutPlanes(
+      colors({ bottomAccent: { enabled: true, heightMm: 19, color: '#0000ff' } }),
+      mesh
+    );
+    expect(cuts).toEqual({ topZ: null, bottomZ: 19 });
+  });
+});
+
+describe('withAccentZones', () => {
+  it('returns the input untouched when there is nothing to add', () => {
+    const zones = new Set<'body'>(['body']);
+    expect(withAccentZones(zones, { topZ: null, bottomZ: null })).toBe(zones);
+  });
+
+  it('unions in each live band a caller left out', () => {
+    const zones = withAccentZones(new Set(['body' as const]), { topZ: 18, bottomZ: 3 });
+    expect(zones.has('topAccent')).toBe(true);
+    expect(zones.has('bottomAccent')).toBe(true);
+  });
+});
+
+describe('bottomAccent zone', () => {
+  it('reads body when the band is absent, so an unused zone dedups away', () => {
+    expect(getZoneColor(colors(), 'bottomAccent')).toBe(SINGLE);
+    expect(resolveColorMapping(colors()).colors).toEqual([SINGLE]);
+  });
+
+  it('reads its own colour once present', () => {
+    const c = colors({ bottomAccent: { enabled: true, heightMm: 3, color: '#123456' } });
+    expect(getZoneColor(c, 'bottomAccent')).toBe('#123456');
+    expect(isSingleColor(c, ['body', 'bottomAccent'])).toBe(false);
+  });
+
+  it('takes the last ZONE_ORDER slot so no existing zone index moves', () => {
+    expect(ZONE_ORDER[ZONE_ORDER.length - 1]).toBe('bottomAccent');
+    expect(zoneIndex('body')).toBe(0);
+    expect(zoneIndex('topAccent')).toBe(ZONE_ORDER.indexOf('topAccent'));
   });
 });
 

@@ -196,6 +196,14 @@ export interface UserSettings {
   handlesLinked: boolean;
 
   /**
+   * Unit the bin designer's accent-band height sliders are entered in.
+   * An AUTHORING preference only: the design always stores absolute mm, so a
+   * change here never repaints a saved design. 'layers' resolves against
+   * `printSettings.layerHeightMm` and snaps entry to whole layers.
+   */
+  accentBandUnit: AccentBandUnit;
+
+  /**
    * Whether angled (diagonal) divider editing is exposed in the bin designer.
    * Off by default — it's an advanced feature, so the editing UI (the tilt list
    * and the on-grid hit targets) stays hidden until the user opts in. Existing
@@ -309,6 +317,9 @@ export interface SavedColorPalette {
   };
 }
 
+/** Entry unit for the bin designer's accent-band height sliders. */
+export type AccentBandUnit = 'mm' | 'layers';
+
 export const COLOR_PALETTE_CONSTRAINTS = {
   MAX_PALETTES: 20,
   NAME_MAX_LENGTH: 40,
@@ -338,6 +349,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   designListViewMode: 'grid',
   wallCutoutsLinked: true,
   handlesLinked: true,
+  accentBandUnit: 'mm',
   angledDividersEnabled: false,
 
   // Print view preferences

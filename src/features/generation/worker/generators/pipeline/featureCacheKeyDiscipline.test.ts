@@ -170,6 +170,7 @@ const PERTURBATIONS: Record<string, unknown> = {
   'featureColors.lid': false,
   'featureColors.lidLip': false,
   'featureColors.topAccent.color': false,
+  'featureColors.bottomAccent.color': false,
   'compartments.compartmentColors': false,
   'compartments.compartmentColorScopes': false,
   'compartments.stash': false,

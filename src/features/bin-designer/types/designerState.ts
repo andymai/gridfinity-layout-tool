@@ -3,7 +3,7 @@ import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
-import type { ColorZone, HoverableZone, LipColorConfig, TopAccentConfig } from './featureColors';
+import type { AccentBandConfig, ColorZone, HoverableZone, LipColorConfig } from './featureColors';
 import type { LidConfig } from './lid';
 import type { TextStyleDefaults, TextStyleOverride, WallTextSide, TextAnchor } from './text';
 import type {
@@ -115,7 +115,8 @@ export interface DesignerState {
     text?: string;
     lid?: string;
     lidLip?: Partial<LipColorConfig>;
-    topAccent?: Partial<TopAccentConfig>;
+    topAccent?: Partial<AccentBandConfig>;
+    bottomAccent?: Partial<AccentBandConfig>;
   }) => void;
   updateLid: (partial: Partial<LidConfig>) => void;
 

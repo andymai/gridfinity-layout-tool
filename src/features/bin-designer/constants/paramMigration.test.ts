@@ -851,6 +851,42 @@ describe('migrateParams', () => {
     expect(result.featureColors.topAccent.heightMm).toBe(15);
   });
 
+  // Absent means "no band". Emitting it unconditionally would shift the params
+  // fingerprint of every already-published design and break the community
+  // duplicate guard, which is why the key stays off until a design uses it.
+  it('leaves bottomAccent absent for a design that never set one', () => {
+    const legacy = {
+      enabled: true,
+      body: '#112233',
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    const result = migrateParams({ featureColors: legacy });
+    expect('bottomAccent' in result.featureColors).toBe(false);
+  });
+
+  it('preserves a persisted bottomAccent and clamps it to the same wall bound', () => {
+    const withBand = {
+      enabled: true,
+      bottomAccent: { enabled: true, heightMm: 3.5, color: '#0000ff' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    expect(migrateParams({ featureColors: withBand }).featureColors.bottomAccent).toEqual({
+      enabled: true,
+      heightMm: 3.5,
+      color: '#0000ff',
+    });
+    const tall = {
+      bottomAccent: { enabled: true, heightMm: 50, color: '#0000ff' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    const clamped = migrateParams({ height: 1, heightUnitMm: 7, featureColors: tall });
+    expect(clamped.featureColors.bottomAccent?.heightMm).toBe(7);
+  });
+
+  it('counts an enabled bottomAccent as multi-color intent on a pre-`enabled` design', () => {
+    const legacy = {
+      bottomAccent: { enabled: true, heightMm: 2, color: '#0000ff' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    expect(migrateParams({ featureColors: legacy }).featureColors.enabled).toBe(true);
+  });
+
   it('uses the clamped (not raw) collar for the top-accent bound', () => {
     // A persisted collar above MAX is normalized to MAX everywhere; the accent
     // bound must use that clamped value so the band can't exceed the bin's real

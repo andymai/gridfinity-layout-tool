@@ -23,12 +23,11 @@ import {
   LID_LIP_CELL_ZONES,
   LIP_CELL_ZONES,
   ZONE_ORDER,
+  accentCutPlanes,
   getZoneColor,
   isSingleColor,
   lipCellsUniform,
-  maxZOfVertices,
-  topAccentActive,
-  topAccentCutZ,
+  withAccentZones,
   zoneIndex,
 } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig, HoverableZone } from '../types/featureColors';
@@ -136,8 +135,9 @@ export function buildHitTestZones(
 ): ColorZone[] {
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
   const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
+  const cuts = accentCutPlanes(featureColors, vertices);
   // allowSplit:false keeps triZones 1:1 with the input triangles so a clicked
-  // original-triangle index resolves to a zone. The top-accent cut is applied
+  // original-triangle index resolves to a zone. The accent cuts are applied
   // in place (centroid-quantized), which is precise enough for hit-testing.
   return computeLipColoredMesh({
     triangleCount,
@@ -147,9 +147,8 @@ export function buildHitTestZones(
     counts,
     lipUniform: true,
     allowSplit: false,
-    topAccentCutZ: topAccentActive(featureColors.topAccent)
-      ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
-      : null,
+    topAccentCutZ: cuts.topZ,
+    bottomAccentCutZ: cuts.bottomZ,
   }).triZones;
 }
 
@@ -172,19 +171,13 @@ export function buildMultiColorGroups(
     .map((u, i) => (u.color !== undefined ? i : -1))
     .filter((i) => i >= 0);
 
-  // Derive the top-accent cut from featureColors directly rather than trusting
-  // the caller's activeZones — some callers (e.g. the 3D preview) build their
-  // zone set without it, which would otherwise make the accent silently vanish
-  // there. Union it in so isSingleColor sees the accent color too. Gate the
-  // maxZ scan on `topAccentActive` so a disabled band (the common case) doesn't
-  // pay an O(vertexCount) traversal on every preview update.
-  const cutZ = topAccentActive(featureColors.topAccent)
-    ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
-    : null;
-  const zones =
-    cutZ !== null && !activeZones.has('topAccent')
-      ? new Set(activeZones).add('topAccent')
-      : activeZones;
+  // Derive the accent cuts from featureColors directly rather than trusting the
+  // caller's activeZones — some callers (e.g. the 3D preview) build their zone
+  // set without them, which would otherwise make a band silently vanish there.
+  // Union them in so isSingleColor sees the accent colors too. `accentCutPlanes`
+  // skips its O(vertexCount) traversal when no band is live (the common case).
+  const cuts = accentCutPlanes(featureColors, vertices);
+  const zones = withAccentZones(activeZones, cuts);
   if (isSingleColor(featureColors, zones) && coloredOrdinals.length === 0 && !compartmentPlan) {
     return null;
   }
@@ -199,7 +192,8 @@ export function buildMultiColorGroups(
     geom,
     counts,
     lipUniform: lipCellsUniform(featureColors.lip),
-    topAccentCutZ: cutZ,
+    topAccentCutZ: cuts.topZ,
+    bottomAccentCutZ: cuts.bottomZ,
   });
   const meshOverride: MultiColorGroupsResult['meshOverride'] =
     positions && normals ? { vertices: positions, normals, indices: null } : null;

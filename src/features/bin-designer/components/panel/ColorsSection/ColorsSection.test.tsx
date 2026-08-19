@@ -209,4 +209,30 @@ describe('ColorsSection', () => {
       expect(after.labelTab).toBe('#22c55e');
     });
   });
+
+  // The band is absent on a fresh design; the store updater has to seed a full
+  // config so the first click never writes a partial into params.
+  it('seeds a complete bottom band the first time it is enabled', () => {
+    render(<ColorsSection />);
+    expect(useDesignerStore.getState().params.featureColors.bottomAccent).toBeUndefined();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Bottom accent' }));
+    expect(useDesignerStore.getState().params.featureColors.bottomAccent).toEqual({
+      enabled: true,
+      heightMm: 2,
+      color: SINGLE,
+    });
+  });
+
+  it('clamps a stored band taller than the bin down to the wall top', () => {
+    useDesignerStore.setState({
+      params: {
+        ...useDesignerStore.getState().params,
+        height: 1,
+        heightUnitMm: 7,
+        featureColors: colors({ bottomAccent: { enabled: true, heightMm: 50, color: '#0000ff' } }),
+      },
+    });
+    render(<ColorsSection />);
+    expect(useDesignerStore.getState().params.featureColors.bottomAccent?.heightMm).toBe(7);
+  });
 });
