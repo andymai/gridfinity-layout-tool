@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.427.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.6...gridfinity-layout-tool-v4.427.0) (2026-08-19)
+
+
+### Features
+
+* **bin-designer:** carry a design's overhang on its registry entry ([#3626](https://github.com/andymai/gridfinity-layout-tool/issues/3626)) ([f7b7fde](https://github.com/andymai/gridfinity-layout-tool/commit/f7b7fde4c01bde8fc5887b556f370316ebc87504))
+
 ## [4.426.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.5...gridfinity-layout-tool-v4.426.6) (2026-08-19)
 
 
