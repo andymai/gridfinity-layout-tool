@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.426.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.2...gridfinity-layout-tool-v4.426.3) (2026-08-19)
+
+
+### Bug Fixes
+
+* **bin-designer:** charge a bin's overhang against the print bed when planning a split ([#3618](https://github.com/andymai/gridfinity-layout-tool/issues/3618)) ([be48b26](https://github.com/andymai/gridfinity-layout-tool/commit/be48b268246ae425d8a7c66d0d2ee070e831bd4a))
+
 ## [4.426.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.1...gridfinity-layout-tool-v4.426.2) (2026-08-19)
 
 
