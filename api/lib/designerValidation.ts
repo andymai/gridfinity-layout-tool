@@ -1135,6 +1135,7 @@ const ALLOWED_FEATURE_COLOR_KEYS = new Set([
   'dividers',
   'text',
   'lid',
+  'lidLip',
   'topAccent',
 ]);
 const ALLOWED_TOP_ACCENT_KEYS = new Set<string>(['enabled', 'heightMm', 'color']);
@@ -1147,25 +1148,29 @@ const VALID_LIP_AXIS_COUNTS = new Set<number>([1, 2, 4]);
 const LIP_CELL_KEY_RE = /^lip:(frontLeft|frontRight|backRight|backLeft):[0-3]$/;
 
 /**
- * Validate the current quadrant×band lip grid shape `{ corners, bands, cells }`.
+ * Validate a quadrant×band lip grid shape `{ corners, bands, cells }`.
  * `cells` maps `lip:<corner>:<band>` ids to hex colors.
+ *
+ * `path` names the field under validation because both the bin lip and the
+ * lid's own top lip store this shape — and `lidLip.cells` is keyed by the same
+ * `lip:...` ids, so the two are structurally identical.
  */
-function validateLipGrid(lip: Record<string, unknown>): string | null {
+function validateLipGrid(lip: Record<string, unknown>, path: string): string | null {
   for (const key of Object.keys(lip)) {
-    if (!ALLOWED_LIP_GRID_KEYS.has(key)) return `featureColors.lip has unknown key: ${key}`;
+    if (!ALLOWED_LIP_GRID_KEYS.has(key)) return `${path} has unknown key: ${key}`;
   }
   for (const axis of ['corners', 'bands'] as const) {
     const v = lip[axis];
     if (v !== undefined && (!isNumber(v) || !VALID_LIP_AXIS_COUNTS.has(v))) {
-      return `featureColors.lip.${axis} must be 1, 2, or 4`;
+      return `${path}.${axis} must be 1, 2, or 4`;
     }
   }
   const cells = lip.cells;
   if (cells !== undefined) {
-    if (!isObject(cells)) return 'featureColors.lip.cells must be an object';
+    if (!isObject(cells)) return `${path}.cells must be an object`;
     for (const [id, color] of Object.entries(cells)) {
-      if (!LIP_CELL_KEY_RE.test(id)) return `featureColors.lip.cells has unknown cell: ${id}`;
-      if (!isValidColor(color)) return `featureColors.lip.cells.${id} must be a hex color`;
+      if (!LIP_CELL_KEY_RE.test(id)) return `${path}.cells has unknown cell: ${id}`;
+      if (!isValidColor(color)) return `${path}.cells.${id} must be a hex color`;
     }
   }
   return null;
@@ -1227,7 +1232,7 @@ function validateFeatureColors(value: unknown): string | null {
       // New grid shape if it carries any grid key; otherwise legacy 4-corner.
       const isGrid = 'corners' in lip || 'bands' in lip || 'cells' in lip;
       if (isGrid) {
-        const err = validateLipGrid(lip);
+        const err = validateLipGrid(lip, 'featureColors.lip');
         if (err) return err;
       } else {
         for (const key of Object.keys(lip)) {
@@ -1244,6 +1249,15 @@ function validateFeatureColors(value: unknown): string | null {
     } else {
       return 'featureColors.lip must be a hex color, 4-corner object, or grid';
     }
+  }
+
+  // The lid's own top lip carries the SAME grid shape as the bin lip and only
+  // ever the grid shape — it postdates both legacy lip forms, so no string or
+  // 4-corner fallback applies here.
+  if (value.lidLip !== undefined) {
+    if (!isObject(value.lidLip)) return 'featureColors.lidLip must be a grid';
+    const err = validateLipGrid(value.lidLip, 'featureColors.lidLip');
+    if (err) return err;
   }
 
   if (value.topAccent !== undefined) {
