@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.426.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.3...gridfinity-layout-tool-v4.426.4) (2026-08-19)
+
+
+### Bug Fixes
+
+* **baseplate:** draw the split mini-map in millimetres, on one shared box ([#3619](https://github.com/andymai/gridfinity-layout-tool/issues/3619)) ([ae3d51f](https://github.com/andymai/gridfinity-layout-tool/commit/ae3d51f67985a9b1bdac726af88e265860ecbba9)), closes [#3613](https://github.com/andymai/gridfinity-layout-tool/issues/3613)
+
 ## [4.426.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.2...gridfinity-layout-tool-v4.426.3) (2026-08-19)
 
 
