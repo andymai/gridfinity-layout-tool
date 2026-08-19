@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.426.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.5...gridfinity-layout-tool-v4.426.6) (2026-08-19)
+
+
+### Bug Fixes
+
+* **print-export:** list the pieces the exporter actually cuts ([#3624](https://github.com/andymai/gridfinity-layout-tool/issues/3624)) ([998a783](https://github.com/andymai/gridfinity-layout-tool/commit/998a7839d556149203822828b6d5849436acd53e))
+
 ## [4.426.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.426.4...gridfinity-layout-tool-v4.426.5) (2026-08-19)
 
 
