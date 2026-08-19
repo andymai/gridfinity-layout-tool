@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, OverhangConfig } from '@/shared/types/bin';
-import { binSplitMaxGridUnits } from './binSplitFit';
+import { binSplitChunkUnits } from './binSplitFit';
 import { getSplitPieceCount, getSplitPositions } from './splitPositions';
 
 const BED = 180;
@@ -28,9 +28,9 @@ function widestPieceMm(
   return cuts.length === 0 ? pieceMm + near + far : pieceMm + Math.max(near, far);
 }
 
-describe('binSplitMaxGridUnits', () => {
+describe('binSplitChunkUnits', () => {
   it('matches the nominal capacity when the bin has no overhang', () => {
-    expect(binSplitMaxGridUnits(params({ width: 8, depth: 8 }), BED)).toEqual({
+    expect(binSplitChunkUnits(params({ width: 8, depth: 8 }), BED)).toEqual({
       width: 4,
       depth: 4,
     });
@@ -38,7 +38,7 @@ describe('binSplitMaxGridUnits', () => {
 
   it('reports no split for a bin that fits whole', () => {
     const p = params();
-    const max = binSplitMaxGridUnits(p, BED);
+    const max = binSplitChunkUnits(p, BED);
     expect(p.width > max.width || p.depth > max.depth).toBe(false);
   });
 
@@ -46,7 +46,7 @@ describe('binSplitMaxGridUnits', () => {
     // 4 x 42mm = 168mm nominal, inside a 180mm bed. The overhang makes the real
     // part 271.5mm wide, which is the reported case (#3612).
     const p = params({ overhang: overhang({ left: 61.5, right: 42 }) });
-    const max = binSplitMaxGridUnits(p, BED);
+    const max = binSplitChunkUnits(p, BED);
 
     expect(p.width > max.width).toBe(true);
     expect(getSplitPieceCount(p.width, p.depth, max.width, max.depth)).toBe(2);
@@ -55,7 +55,7 @@ describe('binSplitMaxGridUnits', () => {
 
   it('leaves an axis with no overhang alone', () => {
     const p = params({ overhang: overhang({ left: 61.5, right: 42 }) });
-    const max = binSplitMaxGridUnits(p, BED);
+    const max = binSplitChunkUnits(p, BED);
     expect(p.depth > max.depth).toBe(false);
   });
 
@@ -63,7 +63,7 @@ describe('binSplitMaxGridUnits', () => {
     // 168mm + 10mm = 178mm. Charging the larger side against the bed up front
     // would have capped the axis at 2 units and split a part that fits.
     const p = params({ overhang: overhang({ left: 10 }) });
-    const max = binSplitMaxGridUnits(p, BED);
+    const max = binSplitChunkUnits(p, BED);
     expect(p.width > max.width).toBe(false);
   });
 
@@ -72,7 +72,7 @@ describe('binSplitMaxGridUnits', () => {
     // not — the axis must still come back below its own size or the caller
     // reports a split with no cut planes.
     const p = params({ overhang: overhang({ left: 8, front: 8, right: 8, back: 8 }) });
-    const max = binSplitMaxGridUnits(p, BED);
+    const max = binSplitChunkUnits(p, BED);
     expect(p.width > max.width).toBe(true);
     expect(getSplitPositions(p.width, max.width)).not.toHaveLength(0);
     expect(widestPieceMm(p.width, max.width, p.gridUnitMm, 8, 8)).toBeLessThanOrEqual(BED);
@@ -80,11 +80,11 @@ describe('binSplitMaxGridUnits', () => {
 
   it('uses the per-axis pitch on a non-square grid', () => {
     const p = params({ width: 8, depth: 8, gridUnitMm: 42, gridUnitMmY: 21 });
-    expect(binSplitMaxGridUnits(p, BED)).toEqual({ width: 4, depth: 8 });
+    expect(binSplitChunkUnits(p, BED)).toEqual({ width: 4, depth: 8 });
   });
 
   it('honours a separate bed depth', () => {
-    expect(binSplitMaxGridUnits(params({ width: 8, depth: 8 }), 180, 250)).toEqual({
+    expect(binSplitChunkUnits(params({ width: 8, depth: 8 }), 180, 250)).toEqual({
       width: 4,
       depth: 5.5,
     });
@@ -92,7 +92,7 @@ describe('binSplitMaxGridUnits', () => {
 
   it('ignores an overhang the config disables', () => {
     const p = params({ overhang: { ...overhang({ left: 61.5 }), enabled: false } });
-    expect(p.width > binSplitMaxGridUnits(p, BED).width).toBe(false);
+    expect(p.width > binSplitChunkUnits(p, BED).width).toBe(false);
   });
 
   it('ignores overhang on a partial cell mask, as the geometry pipeline does', () => {
@@ -100,6 +100,6 @@ describe('binSplitMaxGridUnits', () => {
       overhang: overhang({ left: 61.5, right: 42 }),
       cellMask: { cols: 4, rows: 4, cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] },
     });
-    expect(p.width > binSplitMaxGridUnits(p, BED).width).toBe(false);
+    expect(p.width > binSplitChunkUnits(p, BED).width).toBe(false);
   });
 });

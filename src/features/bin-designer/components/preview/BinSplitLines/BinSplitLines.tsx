@@ -14,7 +14,7 @@ import { Color } from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { binSplitMaxGridUnits } from '@/shared/utils/binSplitFit';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
@@ -58,7 +58,7 @@ export const BinSplitLines = memo(function BinSplitLines() {
   // edits that cannot move a split line.
   const maxGrid = useMemo(
     () =>
-      binSplitMaxGridUnits(
+      binSplitChunkUnits(
         { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask },
         defaultPrintBedSize,
         defaultPrintBedDepth

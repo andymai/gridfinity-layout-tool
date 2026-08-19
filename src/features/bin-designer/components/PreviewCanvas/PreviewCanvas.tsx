@@ -18,7 +18,7 @@ import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import type { Projection } from '../preview';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
-import { binSplitMaxGridUnits } from '@/shared/utils/binSplitFit';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
 import {
   BinMesh,
@@ -264,7 +264,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
     }))
   );
   const maxGrid = useMemo(
-    () => binSplitMaxGridUnits(params, bedSize, bedDepth),
+    () => binSplitChunkUnits(params, bedSize, bedDepth),
     [bedSize, bedDepth, params]
   );
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;

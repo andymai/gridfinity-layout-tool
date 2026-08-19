@@ -27,7 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { binSplitMaxGridUnits } from '@/shared/utils/binSplitFit';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { getActiveBridge, bridgeManager } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
@@ -95,8 +95,6 @@ interface UseExportReturn {
   readonly needsSplit: boolean;
   /** Number of pieces the bin would be split into */
   readonly splitPieceCount: number;
-  /** Maximum grid units that fit on the print bed */
-  readonly maxGridUnits: { width: number; depth: number };
   /**
    * Trigger split export download as ZIP via worker bridge.
    *
@@ -168,17 +166,19 @@ export function useExport(): UseExportReturn {
   // Split detection — reads the bin's own grid unit rather than
   // defaultGridUnitMm from settings, which may be stale, and charges the bin's
   // overhang against the bed.
-  const maxGrid = useMemo(
-    () => binSplitMaxGridUnits(params, defaultPrintBedSize, defaultPrintBedDepth),
+  const chunkLimit = useMemo(
+    () => binSplitChunkUnits(params, defaultPrintBedSize, defaultPrintBedDepth),
     [defaultPrintBedSize, defaultPrintBedDepth, params]
   );
 
-  const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
+  const needsSplit = params.width > chunkLimit.width || params.depth > chunkLimit.depth;
 
   const splitPieceCount = useMemo(
     () =>
-      needsSplit ? getSplitPieceCount(params.width, params.depth, maxGrid.width, maxGrid.depth) : 1,
-    [params.width, params.depth, maxGrid.width, maxGrid.depth, needsSplit]
+      needsSplit
+        ? getSplitPieceCount(params.width, params.depth, chunkLimit.width, chunkLimit.depth)
+        : 1,
+    [params.width, params.depth, chunkLimit.width, chunkLimit.depth, needsSplit]
   );
 
   // Forward declarations so the queued-export effect can call the downloads.
@@ -475,8 +475,8 @@ export function useExport(): UseExportReturn {
       try {
         const gridSizeMm = params.gridUnitMm;
         const gridSizeMmY = params.gridUnitMmY ?? params.gridUnitMm;
-        const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGrid.width, gridSizeMm);
-        const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGrid.depth, gridSizeMmY);
+        const cutPlanesX = getSplitPlanePositionsMm(params.width, chunkLimit.width, gridSizeMm);
+        const cutPlanesY = getSplitPlanePositionsMm(params.depth, chunkLimit.depth, gridSizeMmY);
         const connectorConfig = {
           ...(params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG),
           nozzleSizeMm: useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
@@ -487,8 +487,8 @@ export function useExport(): UseExportReturn {
         const totalPieceCount = getSplitPieceCount(
           params.width,
           params.depth,
-          maxGrid.width,
-          maxGrid.depth
+          chunkLimit.width,
+          chunkLimit.depth
         );
 
         // Wrap the split-export call in resilience. The pool/bridge fallback
@@ -602,7 +602,7 @@ export function useExport(): UseExportReturn {
     },
     [
       params,
-      maxGrid,
+      chunkLimit,
       hasDividers,
       hasLid,
       hasFeet,
@@ -635,7 +635,6 @@ export function useExport(): UseExportReturn {
     downloadBin,
     needsSplit,
     splitPieceCount,
-    maxGridUnits: maxGrid,
     downloadSplit,
   };
 }

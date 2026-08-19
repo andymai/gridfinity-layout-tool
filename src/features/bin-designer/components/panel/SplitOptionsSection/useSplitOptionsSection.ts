@@ -5,7 +5,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { getSplitPieceCount } from '@/shared/utils/splitPositions';
-import { binSplitMaxGridUnits } from '@/shared/utils/binSplitFit';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 
 export type SplitAxis = 'width' | 'depth' | 'both';
@@ -53,7 +53,7 @@ export function useSplitOptionsSection() {
   // far too wide to print.
   const maxGrid = useMemo(
     () =>
-      binSplitMaxGridUnits(
+      binSplitChunkUnits(
         { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask },
         defaultPrintBedSize,
         defaultPrintBedDepth

@@ -22,7 +22,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
-import { binSplitMaxGridUnits } from '@/shared/utils/binSplitFit';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import {
   getActiveBridge,
   workerPoolManager,
@@ -92,7 +92,7 @@ export function useSplitPreview(): void {
   // object each render would re-run the effects (and re-dispatch split work)
   // below.
   const maxGrid = useMemo(
-    () => binSplitMaxGridUnits(params, defaultPrintBedSize, defaultPrintBedDepth),
+    () => binSplitChunkUnits(params, defaultPrintBedSize, defaultPrintBedDepth),
     [defaultPrintBedSize, defaultPrintBedDepth, params]
   );
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;

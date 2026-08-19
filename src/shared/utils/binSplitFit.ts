@@ -20,18 +20,14 @@ import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
 
-/** The fields the fit depends on. Loose so a caller can pass a whole `BinParams`. */
+/** The fields the limit depends on. Loose so a caller can pass a whole `BinParams`. */
 export type BinSplitFitParams = Pick<
   BinParams,
   'width' | 'depth' | 'gridUnitMm' | 'gridUnitMmY' | 'overhang' | 'cellMask'
 >;
 
-/**
- * Largest chunk the axis may be cut into. Returns `sizeUnits` itself when the
- * whole part fits, which is what makes `getSplitPositions` yield no cuts and
- * every `size > max` gate read false.
- */
-function axisMaxUnits(
+/** One axis of {@link binSplitChunkUnits}. */
+function axisChunkUnits(
   sizeUnits: number,
   gridUnitMm: number,
   bedMm: number,
@@ -50,13 +46,18 @@ function axisMaxUnits(
 }
 
 /**
- * Per-axis grid capacity for splitting THIS bin, ready to hand to
- * `getSplitPositions` / `getSplitPieceCount` in place of `calcMaxGridUnits`.
+ * Largest chunk, per axis, that THIS bin may be cut into for one build plate.
+ *
+ * NOT the bed's capacity — deliberately named apart from `calcMaxGridUnits`,
+ * because it answers a different question and returns a different number for
+ * the same bed. It hands straight to `getSplitPositions` /
+ * `getSplitPieceCount`, and equals the axis's own size when nothing needs
+ * cutting, which is what makes every `size > limit` gate read false.
  *
  * Overhang is suppressed for a partial cell mask, matching the geometry
  * pipeline: a custom shape defines its own footprint.
  */
-export function binSplitMaxGridUnits(
+export function binSplitChunkUnits(
   params: BinSplitFitParams,
   printBedWidthMm: number,
   printBedDepthMm?: number
@@ -66,7 +67,7 @@ export function binSplitMaxGridUnits(
   const bedDepthMm = printBedDepthMm ?? printBedWidthMm;
   const o = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
   return {
-    width: axisMaxUnits(params.width, gridUnitMmX, printBedWidthMm, o.left, o.right),
-    depth: axisMaxUnits(params.depth, gridUnitMmY, bedDepthMm, o.front, o.back),
+    width: axisChunkUnits(params.width, gridUnitMmX, printBedWidthMm, o.left, o.right),
+    depth: axisChunkUnits(params.depth, gridUnitMmY, bedDepthMm, o.front, o.back),
   };
 }

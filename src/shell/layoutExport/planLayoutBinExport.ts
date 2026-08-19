@@ -23,7 +23,7 @@ import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibilit
 import { hasDetachableFeet } from '@/shared/types/bin';
 import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
-import { binSplitMaxGridUnits } from '@/shared/utils/binSplitFit';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { splitHasConnectors } from '@/shared/generation/splitUtils';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { overhangKey as resolvedOverhangKey, resolveOverhang } from '@/shared/utils/overhang';
@@ -100,7 +100,7 @@ export interface LayoutBinExportPlan {
  * fits whole. Mirrors the bin designer's `downloadSplit` so a bin exported from
  * the layout ZIP arrives in the same pieces it would from the designer.
  *
- * The bin's overhang is charged against the bed by `binSplitMaxGridUnits`,
+ * The bin's overhang is charged against the bed by `binSplitChunkUnits`,
  * shared with the designer so a bin exported from the layout ZIP arrives in the
  * same pieces the designer offered. Layout bins routinely carry an overhang
  * (`resolveBinOverhang` grows them into the drawer margin), which is why this
@@ -108,7 +108,7 @@ export interface LayoutBinExportPlan {
  */
 function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPlan | null {
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-  const maxGrid = binSplitMaxGridUnits(params, printBed.widthMm, printBed.depthMm);
+  const maxGrid = binSplitChunkUnits(params, printBed.widthMm, printBed.depthMm);
   if (params.width <= maxGrid.width && params.depth <= maxGrid.depth) return null;
   return {
     cutPlanesX: getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm),
