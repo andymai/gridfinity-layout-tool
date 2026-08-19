@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.428.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.427.1...gridfinity-layout-tool-v4.428.0) (2026-08-19)
+
+
+### Features
+
+* **bin-designer:** give the multi-color accent bands adjustable heights ([#3631](https://github.com/andymai/gridfinity-layout-tool/issues/3631)) ([8775b53](https://github.com/andymai/gridfinity-layout-tool/commit/8775b53c46d545fe84ef9078b12a17275be82507))
+
 ## [4.427.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.427.0...gridfinity-layout-tool-v4.427.1) (2026-08-19)
 
 
