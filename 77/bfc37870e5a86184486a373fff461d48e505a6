@@ -1,0 +1,37 @@
+src/shared/README.md
+  s_469d16e42f69d2::t_499cb4cf1a9c43 73
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.ts
+  s_469d16e42f69d2::t_499cb4cf1a9c43 8,56
+src/shared/utils/binSplitFit.ts
+  s_469d16e42f69d2::t_499cb4cf1a9c43 23,29-30,49-55,60,70-71
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_469d16e42f69d2::t_499cb4cf1a9c43 21,267
+src/features/bin-designer/components/preview/BinSplitLines/BinSplitLines.tsx
+  s_469d16e42f69d2::t_499cb4cf1a9c43 17,61
+src/features/bin-designer/hooks/useExport.ts
+  s_469d16e42f69d2::t_499cb4cf1a9c43 30,170
+  s_469d16e42f69d2::t_fec6d4c57dab45 490-491,605
+  s_469d16e42f69d2::t_bf84c209267638 169,174,178-181,478-479
+src/shared/utils/binSplitFit.test.ts
+  s_469d16e42f69d2::t_499cb4cf1a9c43 4,31,33,41,49,58,66,75,83,87,95,103
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_469d16e42f69d2::t_499cb4cf1a9c43 26,103,111
+src/features/bin-designer/hooks/useSplitPreview.ts
+  s_469d16e42f69d2::t_499cb4cf1a9c43 25,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "77bfc37870e5a86184486a373fff461d48e505a6",
+  "prompts": {},
+  "sessions": {
+    "s_469d16e42f69d2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d41b54c6-f302-41c8-8c3e-63d9beb24721",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
