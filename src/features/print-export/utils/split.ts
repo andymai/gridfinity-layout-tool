@@ -10,7 +10,11 @@ import type {
   CategoryId,
   DesignId,
 } from '@/core/types';
+import type { OverhangConfig } from '@/shared/types/bin';
 import { getGridBins } from '@/shared/utils';
+import { getSplitPositions } from '@/shared/utils/splitPositions';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
+import { overhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import {
   calcFilamentCost,
   calcSpoolPercentage,
@@ -24,35 +28,44 @@ import {
 } from '@/shared/printSettings';
 
 /**
- * Split a dimension in half, rounding appropriately.
- * - For integer dimensions: ceil gives larger piece (5→3), floor gives smaller (5→2)
- * - For fractional dimensions (half-bin mode): uses 0.5-aware rounding
+ * Piece size along one axis, in grid units — the SAME partition the exporter
+ * cuts, read from the same helper it uses.
  *
- * @param dimension The original dimension being split
- * @param useCeil If true, round up; if false, round down
+ * The print list used to derive its own by recursive uneven halving, which
+ * agreed with the exporter only by coincidence. A 5-unit bin was listed as a
+ * 3 plus a 2 where the exporter emits two 2.5s, and at 10 and 12 units the
+ * halving produced a whole EXTRA piece (4 against 3) — over-reporting the piece
+ * count, and with it the filament, cost and print-time totals built on top.
+ *
+ * Pieces are equal by construction, so an axis is fully described by one size
+ * and a count.
  */
-function splitHalf(dimension: number, useCeil: boolean): number {
-  const half = dimension / 2;
-
-  // If original dimension is a whole number, use integer rounding
-  if (Number.isInteger(dimension)) {
-    return useCeil ? Math.ceil(half) : Math.floor(half);
-  }
-
-  // For fractional dimensions (half-bin mode), use 0.5-aware rounding
-  return useCeil ? Math.ceil(half * 2) / 2 : Math.floor(half * 2) / 2;
+function axisPieces(size: number, maxSize: number): { size: number; count: number } {
+  const count = getSplitPositions(size, maxSize).length + 1;
+  // Exact, not rounded: this size feeds the filament estimate and lets the
+  // diagram recover the piece grid by division. An even split into 3 really is
+  // a repeating fraction — the exporter cuts exactly there — so the rounding
+  // belongs at the label (`formatPieceSize`), where it changes nothing but the
+  // text.
+  return { size: size / count, count };
 }
 
 /**
- * Recursively split a bin size until all pieces fit within maxSize.
- * Uses greedy halving strategy from PRD.
- * Supports fractional dimensions (0.5 increments) for half-bin mode.
+ * A piece dimension as text. The only place a piece size is rounded, so the
+ * number the estimate used and the number the user reads cannot drift: an even
+ * split into 3 gives 3.3333…, which is a real cut plane and an unreadable label.
+ */
+export function formatPieceSize(units: number): string {
+  return String(Math.round(units * 100) / 100);
+}
+
+/**
+ * The pieces a bin is cut into to fit the plate: a regular grid of equal
+ * pieces, `widthPieces x depthPieces`, matching what the exporter builds.
  *
- * Examples (maxSize = 4):
- * - 5×3 → [3×3, 2×3]
- * - 9×3 → [5×3, 4×3] → [3×3, 2×3, 4×3]
- * - 5×6 → [3×3, 2×3, 3×3, 2×3]
- * - 1.5×1.5 (maxSize=1) → [1×1, 0.5×1, 1×0.5, 0.5×0.5]
+ * `maxWidth`/`maxDepth` are the largest chunk each axis may be cut into — pass
+ * `binSplitChunkUnits`, which charges the bin's overhang, rather than a bare
+ * bed capacity.
  */
 export function splitBinSize(
   width: number,
@@ -60,43 +73,9 @@ export function splitBinSize(
   maxWidth: number,
   maxDepth: number = maxWidth
 ): PrintPiece[] {
-  if (width <= maxWidth && depth <= maxDepth) {
-    return [{ width: width as GridUnits, depth: depth as GridUnits, count: 1 }];
-  }
-
-  const pieces: PrintPiece[] = [];
-
-  if (width > maxWidth && depth <= maxDepth) {
-    // Split width only - preserves integer vs fractional behavior
-    const left = splitHalf(width, true);
-    const right = splitHalf(width, false);
-    pieces.push(...splitBinSize(left, depth, maxWidth, maxDepth));
-    if (right > 0) {
-      pieces.push(...splitBinSize(right, depth, maxWidth, maxDepth));
-    }
-  } else if (width <= maxWidth && depth > maxDepth) {
-    // Split depth only
-    const top = splitHalf(depth, true);
-    const bottom = splitHalf(depth, false);
-    pieces.push(...splitBinSize(width, top, maxWidth, maxDepth));
-    if (bottom > 0) {
-      pieces.push(...splitBinSize(width, bottom, maxWidth, maxDepth));
-    }
-  } else {
-    // Split both dimensions
-    const leftW = splitHalf(width, true);
-    const rightW = splitHalf(width, false);
-    const topD = splitHalf(depth, true);
-    const bottomD = splitHalf(depth, false);
-
-    pieces.push(...splitBinSize(leftW, topD, maxWidth, maxDepth));
-    if (rightW > 0) pieces.push(...splitBinSize(rightW, topD, maxWidth, maxDepth));
-    if (bottomD > 0) pieces.push(...splitBinSize(leftW, bottomD, maxWidth, maxDepth));
-    if (rightW > 0 && bottomD > 0)
-      pieces.push(...splitBinSize(rightW, bottomD, maxWidth, maxDepth));
-  }
-
-  return pieces.filter((p) => p.width > 0 && p.depth > 0);
+  const w = axisPieces(width, maxWidth);
+  const d = axisPieces(depth, maxDepth);
+  return [{ width: w.size as GridUnits, depth: d.size as GridUnits, count: w.count * d.count }];
 }
 
 /**
@@ -166,19 +145,65 @@ function mergeCustomProperties(
 }
 
 /**
+ * Everything the split plan needs, in the terms the exporter states it.
+ *
+ * The bed is in MILLIMETRES rather than pre-divided grid units on purpose: an
+ * overhang grows a bin's body in mm past its footprint, so a bin whose units fit
+ * can still overrun the plate, and a capacity already reduced to units has
+ * thrown away what that would be charged against.
+ */
+export interface PrintSplitFit {
+  readonly bedWidthMm: number;
+  readonly bedDepthMm: number;
+  readonly gridUnitMm: number;
+  readonly gridUnitMmY: number;
+  /**
+   * The overhang a placed bin carries, resolved the way the exporter resolves
+   * it (`resolveBinOverhang`). Two placements of one design with different
+   * overhangs are different printed parts, so this also keys the grouping —
+   * mirroring the layout export's `designId|overhangKey`.
+   *
+   * Omit for a plain capacity check.
+   */
+  readonly overhangFor?: (bin: Bin) => OverhangConfig | undefined;
+}
+
+/** Chunk limit and grouping key for one bin's split. */
+function fitForBin(
+  bin: Bin,
+  fit: PrintSplitFit
+): { maxWidth: number; maxDepth: number; key: string } {
+  const overhang = fit.overhangFor?.(bin);
+  const limit = binSplitChunkUnits(
+    {
+      width: bin.width,
+      depth: bin.depth,
+      gridUnitMm: fit.gridUnitMm,
+      gridUnitMmY: fit.gridUnitMmY,
+      overhang,
+    },
+    fit.bedWidthMm,
+    fit.bedDepthMm
+  );
+  return {
+    maxWidth: limit.width,
+    maxDepth: limit.depth,
+    key: overhangKey(resolveOverhang(overhang)),
+  };
+}
+
+/**
  * Generate the print list from bins.
- * Groups bins by size×height×label×category, calculates split pieces.
+ * Groups bins by size×height×label×category×overhang, calculates split pieces.
  * Bins with the same dimensions AND label AND category are consolidated with quantity counts.
  * Notes and custom properties are merged (unique values joined with "; ").
  */
 export function generatePrintList(
   bins: Bin[],
-  maxPrintSize: number | { width: number; depth: number },
+  fit: PrintSplitFit,
   printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS,
   layoutUnits?: { gridUnitMm: number; heightUnitMm: number }
 ): PrintRow[] {
-  const maxW = typeof maxPrintSize === 'number' ? maxPrintSize : maxPrintSize.width;
-  const maxD = typeof maxPrintSize === 'number' ? maxPrintSize : maxPrintSize.depth;
   const placedBins = getGridBins(bins);
 
   // Group by size, height, label, and category (consolidate same dimensions + label + category)
@@ -195,15 +220,20 @@ export function generatePrintList(
       binIds: BinId[];
       customPropertiesList: Array<Record<string, string> | undefined>; // Collect for merging
       linkedDesignId?: DesignId;
+      maxWidth: number;
+      maxDepth: number;
     }
   >();
 
   for (const bin of placedBins) {
     // Consolidate bins with same size + height + label + category + linked
-    // design. Link identity matters: two designs with identical dimensions
-    // (e.g. an imported mesh next to a parametric bin) are different printed
-    // parts and must not merge into one row.
-    const key = `${bin.width}×${bin.depth}×${bin.height}:${bin.category}:${bin.label || ''}:${bin.linkedDesignId ?? ''}`;
+    // design + overhang. Link identity matters: two designs with identical
+    // dimensions (e.g. an imported mesh next to a parametric bin) are different
+    // printed parts and must not merge into one row. So does the overhang: the
+    // same design against a padded drawer edge and away from it are two parts,
+    // and only one of them may need cutting.
+    const binFit = fitForBin(bin, fit);
+    const key = `${bin.width}×${bin.depth}×${bin.height}:${bin.category}:${bin.label || ''}:${bin.linkedDesignId ?? ''}:${binFit.key}`;
     const existing = groups.get(key);
     if (existing) {
       existing.count++;
@@ -222,6 +252,8 @@ export function generatePrintList(
         binIds: [bin.id],
         customPropertiesList: [bin.customProperties],
         linkedDesignId: bin.linkedDesignId,
+        maxWidth: binFit.maxWidth,
+        maxDepth: binFit.maxDepth,
       });
     }
   }
@@ -229,9 +261,9 @@ export function generatePrintList(
   const rows: PrintRow[] = [];
 
   for (const [, group] of groups) {
-    const pieces = splitBinSize(group.width, group.depth, maxW, maxD);
+    const pieces = splitBinSize(group.width, group.depth, group.maxWidth, group.maxDepth);
     const mergedPieces = mergePieces(pieces);
-    const needsSplit = group.width > maxW || group.depth > maxD;
+    const needsSplit = group.width > group.maxWidth || group.depth > group.maxDepth;
     const totalPieces = mergedPieces.reduce((sum, p) => sum + p.count, 0) * group.count;
 
     // Calculate filament for all pieces in this row (analytical volume model)
@@ -318,7 +350,7 @@ export function getSpoolEstimate(totalFilament: number): number {
  */
 export function generateEnhancedPrintList(
   bins: Bin[],
-  maxPrintSize: number | { width: number; depth: number },
+  fit: PrintSplitFit,
   printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS,
   config: PrintListConfig = {
     filamentCostPerKg: DEFAULT_COST_PER_KG,
@@ -326,7 +358,7 @@ export function generateEnhancedPrintList(
   },
   layoutUnits?: { gridUnitMm: number; heightUnitMm: number }
 ): EnhancedPrintRow[] {
-  const baseRows = generatePrintList(bins, maxPrintSize, printSettings, layoutUnits);
+  const baseRows = generatePrintList(bins, fit, printSettings, layoutUnits);
 
   return baseRows.map((row) => {
     const [width, depth] = row.size.split('×').map(Number);

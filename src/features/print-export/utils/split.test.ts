@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import type { PrintSplitFit } from '@/features/print-export/utils/split';
 import {
   splitBinSize,
+  formatPieceSize,
   generatePrintList,
   getTotalPieces,
   getTotalBins,
@@ -11,158 +13,110 @@ import type { Bin, PrintRow } from '@/core/types';
 import { binId, layerId, categoryId, designId, gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
+import type { OverhangConfig } from '@/shared/types/bin';
+
+/** A print-bed fit expressed as "N grid units fit each axis". */
+function fitAt(maxUnits: number, overhangFor?: PrintSplitFit['overhangFor']): PrintSplitFit {
+  const gridUnitMm = 42;
+  return {
+    bedWidthMm: maxUnits * gridUnitMm,
+    bedDepthMm: maxUnits * gridUnitMm,
+    gridUnitMm,
+    gridUnitMmY: gridUnitMm,
+    ...(overhangFor ? { overhangFor } : {}),
+  };
+}
 
 describe('splitBinSize', () => {
   const maxSize = 4;
 
-  it('returns single piece for small bins', () => {
-    const pieces = splitBinSize(3, 3, maxSize);
-    expect(pieces).toEqual([{ width: gridUnits(3), depth: gridUnits(3), count: 1 }]);
+  // Equal pieces, per axis, from the same helper the exporter cuts with. The
+  // old recursive halving listed sizes the exporter never emits (a 5 as 3 + 2
+  // rather than two 2.5s) and at 10 and 12 units a whole extra piece.
+  it.each([
+    { w: 3, d: 3, max: maxSize, piece: [3, 3], count: 1 },
+    { w: 4, d: 4, max: maxSize, piece: [4, 4], count: 1 },
+    { w: 1, d: 1, max: maxSize, piece: [1, 1], count: 1 },
+    { w: 5, d: 3, max: maxSize, piece: [2.5, 3], count: 2 },
+    { w: 3, d: 5, max: maxSize, piece: [3, 2.5], count: 2 },
+    { w: 9, d: 3, max: maxSize, piece: [3, 3], count: 3 },
+    { w: 12, d: 1, max: maxSize, piece: [4, 1], count: 3 },
+    { w: 5, d: 6, max: maxSize, piece: [2.5, 3], count: 4 },
+    { w: 8, d: 2, max: maxSize, piece: [4, 2], count: 2 },
+    { w: 2, d: 8, max: maxSize, piece: [2, 4], count: 2 },
+    { w: 8, d: 8, max: maxSize, piece: [4, 4], count: 4 },
+    { w: 6, d: 5, max: maxSize, piece: [3, 2.5], count: 4 },
+    { w: 3, d: 3, max: 2, piece: [1.5, 1.5], count: 4 },
+  ])('cuts $w x $d into $count equal pieces at max $max', ({ w, d, max, piece, count }) => {
+    expect(splitBinSize(w, d, max)).toEqual([
+      { width: gridUnits(piece[0]), depth: gridUnits(piece[1]), count },
+    ]);
   });
 
-  it('splits width only when needed', () => {
-    const pieces = splitBinSize(5, 3, maxSize);
-    // 5×3 → 3×3 + 2×3
-    expect(pieces).toHaveLength(2);
-    expect(pieces).toContainEqual({ width: gridUnits(3), depth: gridUnits(3), count: 1 });
-    expect(pieces).toContainEqual({ width: gridUnits(2), depth: gridUnits(3), count: 1 });
+  // Exact, not rounded: the size feeds the filament estimate and the diagram's
+  // grid recovery. Only the label rounds it (`formatPieceSize`).
+  it('keeps an even three-way split exact', () => {
+    expect(splitBinSize(10, 1, maxSize)).toEqual([
+      { width: gridUnits(10 / 3), depth: gridUnits(1), count: 3 },
+    ]);
+    expect(formatPieceSize(10 / 3)).toBe('3.33');
   });
 
-  it('splits depth only when needed', () => {
-    const pieces = splitBinSize(3, 5, maxSize);
-    // 3×5 → 3×3 + 3×2
-    expect(pieces).toHaveLength(2);
-    expect(pieces).toContainEqual({ width: gridUnits(3), depth: gridUnits(3), count: 1 });
-    expect(pieces).toContainEqual({ width: gridUnits(3), depth: gridUnits(2), count: 1 });
+  it('never yields a zero-sized piece', () => {
+    for (const [w, d] of [
+      [1, 5],
+      [5, 1],
+      [0.5, 9],
+    ]) {
+      expect(splitBinSize(w, d, maxSize).every((p) => p.width > 0 && p.depth > 0)).toBe(true);
+    }
   });
 
-  it('handles PRD example: 9×3 with max 4', () => {
-    const pieces = splitBinSize(9, 3, maxSize);
-    // 9×3 → 5×3 + 4×3 → 3×3 + 2×3 + 4×3
-    expect(pieces).toHaveLength(3);
-    const sizes = pieces.map((p) => `${p.width}×${p.depth}`).sort();
-    expect(sizes).toEqual(['2×3', '3×3', '4×3']);
+  it('keeps every piece inside the limit', () => {
+    for (const [w, d] of [
+      [5, 6],
+      [9, 9],
+      [13, 7],
+    ]) {
+      expect(
+        splitBinSize(w, d, maxSize).every((p) => p.width <= maxSize && p.depth <= maxSize)
+      ).toBe(true);
+    }
   });
 
-  it('handles both dimensions exceeding max', () => {
-    const pieces = splitBinSize(5, 6, maxSize);
-    // Should result in 4 pieces
-    expect(pieces.length).toBeGreaterThanOrEqual(4);
-    // All pieces should fit
-    pieces.forEach((p) => {
-      expect(p.width).toBeLessThanOrEqual(maxSize);
-      expect(p.depth).toBeLessThanOrEqual(maxSize);
-    });
-  });
-
-  it('handles exact max size', () => {
-    const pieces = splitBinSize(4, 4, maxSize);
-    expect(pieces).toEqual([{ width: gridUnits(4), depth: gridUnits(4), count: 1 }]);
-  });
-
-  it('splits width of 1 without creating zero-width pieces', () => {
-    // 1×5 with max 4: splits depth only → 1×3 + 1×2
-    const pieces = splitBinSize(1, 5, maxSize);
-    expect(pieces.every((p) => p.width > 0 && p.depth > 0)).toBe(true);
-    expect(pieces).toHaveLength(2);
-  });
-
-  it('splits depth of 1 without creating zero-depth pieces', () => {
-    // 5×1 with max 4: splits width only → 3×1 + 2×1
-    const pieces = splitBinSize(5, 1, maxSize);
-    expect(pieces.every((p) => p.width > 0 && p.depth > 0)).toBe(true);
-    expect(pieces).toHaveLength(2);
-  });
-
-  it('handles both dimensions being 1 and over max', () => {
-    // Edge case: 1×1 always fits
-    const pieces = splitBinSize(1, 1, maxSize);
-    expect(pieces).toEqual([{ width: gridUnits(1), depth: gridUnits(1), count: 1 }]);
-  });
-
-  it('handles odd splits correctly', () => {
-    // 3×3 with max 2: splits both → ceil(3/2)=2, floor(3/2)=1
-    // Results in 2×2, 1×2, 2×1, 1×1
-    const pieces = splitBinSize(3, 3, 2);
-    expect(pieces.length).toBe(4);
-    expect(pieces.every((p) => p.width <= 2 && p.depth <= 2)).toBe(true);
-  });
-
-  it('handles 8×2 with maxSize 4 (splits width only into equal halves)', () => {
-    // 8×2 → 4×2 + 4×2 (right half is exactly 4, not 0)
-    const pieces = splitBinSize(8, 2, 4);
-    expect(pieces.length).toBe(2);
-    expect(pieces.every((p) => p.width === 4 && p.depth === 2)).toBe(true);
-  });
-
-  it('handles 2×8 with maxSize 4 (splits depth only into equal halves)', () => {
-    // 2×8 → 2×4 + 2×4 (bottom half is exactly 4, not 0)
-    const pieces = splitBinSize(2, 8, 4);
-    expect(pieces.length).toBe(2);
-    expect(pieces.every((p) => p.width === 2 && p.depth === 4)).toBe(true);
-  });
-
-  it('handles 8×8 with maxSize 4 (splits both into equal halves)', () => {
-    // 8×8 → 4 pieces of 4×4
-    const pieces = splitBinSize(8, 8, 4);
-    expect(pieces.length).toBe(4);
-    expect(pieces.every((p) => p.width === 4 && p.depth === 4)).toBe(true);
-  });
-
-  it('handles 6×5 with maxSize 4 (both dimensions need splitting)', () => {
-    // 6×5 → leftW=3, rightW=3, topD=3, bottomD=2
-    // Results in: 3×3, 3×3, 3×2, 3×2
-    const pieces = splitBinSize(6, 5, 4);
-    expect(pieces.length).toBe(4);
-    expect(pieces.every((p) => p.width <= 4 && p.depth <= 4)).toBe(true);
+  // The pieces tile the bin: their spans must add back up to it, which is what
+  // lets the diagram recover the grid from one piece size.
+  it.each([
+    [5, 3],
+    [9, 3],
+    [12, 1],
+    [6, 5],
+    [7, 3],
+  ])('tiles %d x %d exactly', (w, d) => {
+    const [piece] = splitBinSize(w, d, maxSize);
+    const cols = Math.round(w / piece.width);
+    const rows = Math.round(d / piece.depth);
+    expect(cols * rows).toBe(piece.count);
+    expect(piece.width * cols).toBeCloseTo(w, 1);
+    expect(piece.depth * rows).toBeCloseTo(d, 1);
   });
 });
 
 describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
-  it('does not split 1.5×1.5 when maxSize is 2', () => {
-    const pieces = splitBinSize(1.5, 1.5, 2);
-    expect(pieces).toEqual([{ width: gridUnits(1.5), depth: gridUnits(1.5), count: 1 }]);
-  });
-
-  it('handles 1.5×1.5 with maxSize 1', () => {
-    const pieces = splitBinSize(1.5, 1.5, 1);
-    // Should split to: 1×1, 0.5×1, 1×0.5, 0.5×0.5
-    expect(pieces).toHaveLength(4);
-    expect(pieces.every((p) => p.width <= 1 && p.depth <= 1)).toBe(true);
-    expect(pieces.every((p) => p.width > 0 && p.depth > 0)).toBe(true);
-  });
-
-  it('handles 2.5×3 with maxSize 2', () => {
-    const pieces = splitBinSize(2.5, 3, 2);
-    expect(pieces.every((p) => p.width <= 2 && p.depth <= 2)).toBe(true);
-    expect(pieces.every((p) => p.width > 0 && p.depth > 0)).toBe(true);
-  });
-
-  it('handles 0.5×0.5 without creating zero-dimension pieces', () => {
-    // Smallest half-bin should not split further
-    const pieces = splitBinSize(0.5, 0.5, 1);
-    expect(pieces).toEqual([{ width: gridUnits(0.5), depth: gridUnits(0.5), count: 1 }]);
-  });
-
-  it('preserves fractional dimensions in output', () => {
-    // A 2.5×2 bin with max 2 should produce pieces with 0.5 dimensions
-    const pieces = splitBinSize(2.5, 2, 2);
-    // Should split width: 1.5 + 1 (uses 0.5-aware rounding for fractional input)
-    expect(pieces.some((p) => p.width === 1.5 || p.width === 1)).toBe(true);
-    expect(pieces.every((p) => p.width <= 2 && p.depth <= 2)).toBe(true);
-  });
-
-  it('does not split when bin fits with half-unit max (6.5 max)', () => {
-    // A 6.5-unit bin should not split when maxWidth is 6.5
-    const pieces = splitBinSize(6.5, 3, 6.5);
-    expect(pieces).toEqual([{ width: gridUnits(6.5), depth: gridUnits(3), count: 1 }]);
-  });
-
-  it('splits correctly when exceeding half-unit max', () => {
-    // A 7-unit bin with max 6.5 should split
-    const pieces = splitBinSize(7, 3, 6.5);
-    expect(pieces).toHaveLength(2);
-    expect(pieces.every((p) => p.width <= 6.5 && p.depth <= 6.5)).toBe(true);
+  it.each([
+    { w: 1.5, d: 1.5, max: 2, piece: [1.5, 1.5], count: 1 },
+    { w: 0.5, d: 0.5, max: 1, piece: [0.5, 0.5], count: 1 },
+    { w: 6.5, d: 3, max: 6.5, piece: [6.5, 3], count: 1 },
+    // Halving a half-unit axis lands on quarters — a real cut plane, since
+    // `getSplitPlanePositionsMm` puts the seam exactly there.
+    { w: 1.5, d: 1.5, max: 1, piece: [0.75, 0.75], count: 4 },
+    { w: 2.5, d: 3, max: 2, piece: [1.25, 1.5], count: 4 },
+    { w: 2.5, d: 2, max: 2, piece: [1.25, 2], count: 2 },
+    { w: 7, d: 3, max: 6.5, piece: [3.5, 3], count: 2 },
+  ])('cuts $w x $d into $count equal pieces at max $max', ({ w, d, max, piece, count }) => {
+    expect(splitBinSize(w, d, max)).toEqual([
+      { width: gridUnits(piece[0]), depth: gridUnits(piece[1]), count },
+    ]);
   });
 });
 
@@ -194,7 +148,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
     expect(rows[0].totalPieces).toBe(2);
@@ -216,7 +170,7 @@ describe('generatePrintList', () => {
       { ...base, id: binId('2'), x: gridUnits(2), linkedDesignId: designId('design-b') },
       { ...base, id: binId('3'), x: gridUnits(4) }, // unlinked
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     expect(rows).toHaveLength(3);
   });
 
@@ -235,7 +189,7 @@ describe('generatePrintList', () => {
       { ...base, id: binId('1'), x: gridUnits(0), linkedDesignId: designId('design-a') },
       { ...base, id: binId('2'), x: gridUnits(2), linkedDesignId: designId('design-a') },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
   });
@@ -255,7 +209,7 @@ describe('generatePrintList', () => {
       { ...base, id: binId('1'), x: gridUnits(0), linkedDesignId: designId('design-a') },
       { ...base, id: binId('2'), x: gridUnits(2) },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     const linked = rows.find((r) => r.linkedDesignId !== undefined);
     const unlinked = rows.find((r) => r.linkedDesignId === undefined);
     expect(linked?.linkedDesignId).toBe('design-a');
@@ -289,7 +243,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(1);
   });
@@ -321,7 +275,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     expect(rows).toHaveLength(2);
   });
 
@@ -340,7 +294,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     expect(rows[0].needsSplit).toBe(true);
     expect(rows[0].totalPieces).toBe(2); // 3×3 + 2×3
   });
@@ -374,7 +328,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // Both bins are identical, so they should be grouped into one row
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
@@ -398,7 +352,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     expect(rows[0].needsSplit).toBe(true);
     // 6x6 with max 4: splits to 4 pieces of 3x3
     expect(rows[0].pieces).toHaveLength(1); // All identical, merged
@@ -432,7 +386,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // Bins with different labels get separate rows
     expect(rows).toHaveLength(2);
     expect(rows[0].labels).toContain('Screws');
@@ -466,7 +420,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // Bins with same dimensions + label + category are consolidated
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
@@ -512,7 +466,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // Two unlabeled bins grouped, one labeled bin separate
     expect(rows).toHaveLength(2);
   });
@@ -546,7 +500,7 @@ describe('generatePrintList', () => {
         customProperties: { SKU: 'B2' },
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // Bins are consolidated, custom properties are merged with "; " separator
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
@@ -582,7 +536,7 @@ describe('generatePrintList', () => {
         customProperties: { Color: 'Red' },
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // Consolidated - duplicate values are deduplicated
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
@@ -628,7 +582,7 @@ describe('generatePrintList', () => {
         notes: 'Note 1', // Duplicate
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // All bins consolidated, notes merged (unique only)
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(3);
@@ -675,7 +629,7 @@ describe('generatePrintList', () => {
         customProperties: { SKU: 'C3' },
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // All 3 bins are consolidated (same dimensions + label + category)
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(3);
@@ -711,7 +665,7 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows = generatePrintList(bins, 4);
+    const rows = generatePrintList(bins, fitAt(4));
     // Empty customProperties should not cause separation
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
@@ -732,11 +686,11 @@ describe('generatePrintList', () => {
         notes: '',
       },
     ];
-    const rows04 = generatePrintList(bins, 4, {
+    const rows04 = generatePrintList(bins, fitAt(4), {
       ...DEFAULT_PRINT_SETTINGS,
       nozzleSizeMm: 0.4,
     });
-    const rows06 = generatePrintList(bins, 4, {
+    const rows06 = generatePrintList(bins, fitAt(4), {
       ...DEFAULT_PRINT_SETTINGS,
       nozzleSizeMm: 0.6,
     });
@@ -916,5 +870,62 @@ describe('getSpoolEstimate', () => {
   it('handles large amounts', () => {
     // 1000m → 1000/330 = 3.03 → 3.1
     expect(getSpoolEstimate(1000)).toBe(3.1);
+  });
+});
+
+// An overhang grows a bin's body in millimetres past its footprint, so a bin
+// whose grid units fit the bed can still be too wide to print. The exporter has
+// always charged it; the print list did not, and reported one uncut piece for a
+// part the export writes in two.
+describe('generatePrintList with overhang', () => {
+  function binAt(id: string, x: number, width = 4): Bin {
+    return {
+      id: binId(id),
+      layerId: layerId('l1'),
+      x: gridUnits(x),
+      y: gridUnits(0),
+      width: gridUnits(width),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: categoryId('c1'),
+      label: '',
+      notes: '',
+      linkedDesignId: designId('d1'),
+    };
+  }
+
+  const WIDE: OverhangConfig = { left: 61.5, right: 42, front: 0, back: 0, enabled: true };
+
+  it('splits a bin whose overhang overruns the bed', () => {
+    // 4 x 42mm is 168mm of grid, inside a 180mm bed; the overhang makes the
+    // real part 271.5mm wide.
+    const fit = fitAt(180 / 42, () => WIDE);
+    const rows = generatePrintList([binAt('1', 0)], fit);
+    expect(rows[0].needsSplit).toBe(true);
+    expect(rows[0].pieces[0].count).toBe(2);
+  });
+
+  it('leaves the same bin unsplit with no overhang', () => {
+    const rows = generatePrintList([binAt('1', 0)], fitAt(180 / 42));
+    expect(rows[0].needsSplit).toBe(false);
+    expect(rows[0].pieces[0].count).toBe(1);
+  });
+
+  // Two placements of one design with different overhangs are two printed
+  // parts, and only one of them may need cutting — the layout export keys on
+  // `designId|overhangKey` for the same reason.
+  it('keeps placements with different overhangs in separate rows', () => {
+    const fit = fitAt(180 / 42, (bin) => (bin.x === 0 ? WIDE : undefined));
+    const rows = generatePrintList([binAt('1', 0), binAt('2', 4)], fit);
+    expect(rows).toHaveLength(2);
+    expect(rows.filter((r) => r.needsSplit)).toHaveLength(1);
+  });
+
+  it('merges placements that resolve to the same overhang', () => {
+    const fit = fitAt(180 / 42, () => WIDE);
+    const rows = generatePrintList([binAt('1', 0), binAt('2', 4)], fit);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(2);
+    expect(rows[0].totalPieces).toBe(4);
   });
 });

@@ -9,6 +9,9 @@ import { useLayoutStore, useSettingsStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { calcMaxGridUnits } from '@/core/constants';
 import { generateEnhancedPrintList } from '@/features/print-export/utils/split';
+import type { PrintSplitFit } from '@/features/print-export/utils/split';
+import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
+import { effectiveGridUnitMmY } from '@/core/types';
 import {
   applyFiltersAndSort,
   groupByCategory,
@@ -100,20 +103,52 @@ export function usePrintList(): UsePrintListReturn {
 
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
 
+  // Bed capacity in whole grid units, for the per-plate job estimate below.
+  // NOT the split limit — that is per bin, because an overhang is charged
+  // against the bed before the capacity is derived (see `splitFit`).
   const maxGridUnits = calcMaxGridUnits(
     layout.printBedSize,
     layout.gridUnitMm,
     layout.printBedDepth
   );
 
+  // The bed in mm plus the same per-bin overhang the exporter resolves, so the
+  // listed pieces are the pieces the export actually writes. Memoized on
+  // primitives: `baseRows` keys off this object, and a fresh identity every
+  // render would rebuild the whole list on every render.
+  const gridUnitMmY = effectiveGridUnitMmY(layout);
+  const { printBedSize, printBedDepth, gridUnitMm, baseplateParams } = layout;
+  const drawerWidth = layout.drawer.width;
+  const drawerDepth = layout.drawer.depth;
+  const splitFit = useMemo(
+    (): PrintSplitFit => ({
+      bedWidthMm: printBedSize,
+      bedDepthMm: printBedDepth ?? printBedSize,
+      gridUnitMm,
+      gridUnitMmY,
+      overhangFor: (bin) =>
+        resolveBinOverhang(bin, { width: drawerWidth, depth: drawerDepth }, baseplateParams) ??
+        undefined,
+    }),
+    [
+      printBedSize,
+      printBedDepth,
+      gridUnitMm,
+      gridUnitMmY,
+      drawerWidth,
+      drawerDepth,
+      baseplateParams,
+    ]
+  );
+
   // Base enhanced rows (memoized - expensive operation)
   const baseRows = useMemo(
     () =>
-      generateEnhancedPrintList(layout.bins, maxGridUnits, printSettings, config, {
+      generateEnhancedPrintList(layout.bins, splitFit, printSettings, config, {
         gridUnitMm: layout.gridUnitMm,
         heightUnitMm: layout.heightUnitMm,
       }),
-    [layout.bins, maxGridUnits, printSettings, config, layout.gridUnitMm, layout.heightUnitMm]
+    [layout.bins, splitFit, printSettings, config, layout.gridUnitMm, layout.heightUnitMm]
   );
 
   // Label facts per linked design (async design loads; rows gain them as the
