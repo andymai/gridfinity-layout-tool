@@ -99,7 +99,7 @@ export const RESERVED_PROPERTY_KEYS = [
  * footprint is within the bed. Integer-only layouts are unaffected
  * because ⌊x⌋ === ⌊2x⌋/2 whenever x is already an integer.
  */
-function calcMaxGridUnitsForAxis(bedMm: number, gridUnitMm: number): number {
+export function calcMaxGridUnitsForAxis(bedMm: number, gridUnitMm: number): number {
   return Math.max(1, Math.floor((bedMm / gridUnitMm) * 2) / 2);
 }
 

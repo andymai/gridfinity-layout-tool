@@ -22,8 +22,8 @@ import { generateFileName } from '@/features/bin-designer';
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 import { hasDetachableFeet } from '@/shared/types/bin';
 import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
-import { calcMaxGridUnits } from '@/core/constants';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
+import { binSplitMaxGridUnits } from '@/shared/utils/binSplitFit';
 import { splitHasConnectors } from '@/shared/generation/splitUtils';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { overhangKey as resolvedOverhangKey, resolveOverhang } from '@/shared/utils/overhang';
@@ -100,21 +100,15 @@ export interface LayoutBinExportPlan {
  * fits whole. Mirrors the bin designer's `downloadSplit` so a bin exported from
  * the layout ZIP arrives in the same pieces it would from the designer.
  *
- * An overhang is charged against the bed before the grid capacity is derived.
- * It extends the part in millimetres beyond its nominal footprint, so a bin
- * that just fits on nominal dimensions can still overrun the plate — and unlike
- * the designer, layout bins routinely carry one (`resolveBinOverhang` grows
- * them into the drawer margin).
+ * The bin's overhang is charged against the bed by `binSplitMaxGridUnits`,
+ * shared with the designer so a bin exported from the layout ZIP arrives in the
+ * same pieces the designer offered. Layout bins routinely carry an overhang
+ * (`resolveBinOverhang` grows them into the drawer margin), which is why this
+ * path had its own accounting for it first.
  */
 function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPlan | null {
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-  const over = resolveOverhang(params.overhang ?? undefined);
-  const maxGrid = calcMaxGridUnits(
-    Math.max(0, printBed.widthMm - over.left - over.right),
-    params.gridUnitMm,
-    Math.max(0, printBed.depthMm - over.front - over.back),
-    gridUnitMmY
-  );
+  const maxGrid = binSplitMaxGridUnits(params, printBed.widthMm, printBed.depthMm);
   if (params.width <= maxGrid.width && params.depth <= maxGrid.depth) return null;
   return {
     cutPlanesX: getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm),

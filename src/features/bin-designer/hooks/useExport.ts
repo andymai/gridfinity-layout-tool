@@ -27,7 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { calcMaxGridUnits } from '@/core/constants';
+import { binSplitMaxGridUnits } from '@/shared/utils/binSplitFit';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { getActiveBridge, bridgeManager } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
@@ -165,17 +165,12 @@ export function useExport(): UseExportReturn {
 
   const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
 
-  // Split detection — use params.gridUnitMm (the bin's actual grid unit)
-  // rather than defaultGridUnitMm from settings, which may be stale
+  // Split detection — reads the bin's own grid unit rather than
+  // defaultGridUnitMm from settings, which may be stale, and charges the bin's
+  // overhang against the bed.
   const maxGrid = useMemo(
-    () =>
-      calcMaxGridUnits(
-        defaultPrintBedSize,
-        params.gridUnitMm,
-        defaultPrintBedDepth,
-        params.gridUnitMmY ?? params.gridUnitMm
-      ),
-    [defaultPrintBedSize, defaultPrintBedDepth, params.gridUnitMm, params.gridUnitMmY]
+    () => binSplitMaxGridUnits(params, defaultPrintBedSize, defaultPrintBedDepth),
+    [defaultPrintBedSize, defaultPrintBedDepth, params]
   );
 
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;

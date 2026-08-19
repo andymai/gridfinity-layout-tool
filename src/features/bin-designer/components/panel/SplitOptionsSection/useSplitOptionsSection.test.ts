@@ -37,6 +37,42 @@ describe('useSplitOptionsSection', () => {
     expect(result.current.pieceCount).toBe(2);
   });
 
+  it('offers a split for a bin whose overhang overruns the bed', () => {
+    // 4 x 42mm is 168mm of grid, inside a 180mm bed — but the overhang makes the
+    // real part 271.5mm wide, and the panel used to report no split at all.
+    useSettingsStore.setState({
+      settings: { ...useSettingsStore.getState().settings, defaultPrintBedSize: 180 },
+    });
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 4,
+        depth: 4,
+        overhang: { left: 61.5, right: 42, front: 0, back: 0, enabled: true },
+      },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.needsSplit).toBe(true);
+    expect(result.current.splitAxis).toBe('width');
+    expect(result.current.pieceCount).toBe(2);
+  });
+
+  it('leaves a bin the overhang still fits unsplit', () => {
+    useSettingsStore.setState({
+      settings: { ...useSettingsStore.getState().settings, defaultPrintBedSize: 180 },
+    });
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 4,
+        depth: 4,
+        overhang: { left: 10, right: 0, front: 0, back: 0, enabled: true },
+      },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.needsSplit).toBe(false);
+  });
+
   it('uses DEFAULT_SPLIT_CONNECTOR_CONFIG when params.splitConnectors is undefined', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 8 },
