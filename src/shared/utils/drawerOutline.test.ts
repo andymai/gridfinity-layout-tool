@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { DrawerOutline, Layout } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
 import { createTestLayout } from '@/test/testUtils';
 import {
   canonicalStartOutline,
@@ -550,6 +551,40 @@ describe('outlineExtentMm', () => {
   // when a smaller measurement is recorded afterwards.
   it('keeps the grid extent when the measurement is smaller', () => {
     expect(outlineExtentMm({ ...drawer, measuredMm: { width: 100, depth: 100 } }, U, U)).toEqual({
+      widthMm: 4 * U,
+      depthMm: 4 * U,
+    });
+  });
+
+  // `updateDrawer` clamps what it writes, but an imported, shared or synced
+  // layout never passes through it — `validateImport` grades width, depth and
+  // height and does not look at `measuredMm`. NaN is the one that matters:
+  // unguarded it makes the bound NaN, and every comparison against it is false,
+  // so the out-of-bounds rule stops rejecting anything at all.
+  it.each([NaN, Infinity, -Infinity])('ignores a non-finite measurement (%p)', (bad) => {
+    const extent = outlineExtentMm({ ...drawer, measuredMm: { width: bad, depth: bad } }, U, U);
+    expect(extent).toEqual({ widthMm: 4 * U, depthMm: 4 * U });
+
+    const past: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 10_000, y: 0 },
+        { x: 10_000, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    expect(validateOutline(past, extent.widthMm, extent.depthMm, U)?.kind).toBe('out_of_bounds');
+  });
+
+  it('caps the measurement at MEASURED_MM_MAX', () => {
+    expect(outlineExtentMm({ ...drawer, measuredMm: { width: 1e9, depth: 1e9 } }, U, U)).toEqual({
+      widthMm: CONSTRAINTS.MEASURED_MM_MAX,
+      depthMm: CONSTRAINTS.MEASURED_MM_MAX,
+    });
+  });
+
+  it('ignores a negative measurement rather than shrinking the extent', () => {
+    expect(outlineExtentMm({ ...drawer, measuredMm: { width: -500, depth: -500 } }, U, U)).toEqual({
       widthMm: 4 * U,
       depthMm: 4 * U,
     });

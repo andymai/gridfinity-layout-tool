@@ -86,14 +86,27 @@ export function quantizeOutline(outline: DrawerOutline): DrawerOutline {
  * left every surplus cell to be cut.
  *
  * Widened, never narrowed: a shape authored against a larger grid extent stays
- * valid when a smaller measurement is recorded afterwards. `MEASURED_MM_MAX` is
- * the ceiling on the measured half.
+ * valid when a smaller measurement is recorded afterwards.
+ *
+ * The measurement is clamped HERE rather than trusted. `updateDrawer` clamps
+ * what it writes, but an imported, shared or synced layout reaches the store
+ * without passing through it — `validateImport` grades the drawer's width,
+ * depth and height and never looks at `measuredMm`, which was inert until this
+ * function gave it authority over the perimeter. A non-finite value is the one
+ * that matters: `Math.max(extent, NaN)` is `NaN`, and every `point > NaN`
+ * comparison in `validateOutline` is false, so an unguarded read does not widen
+ * the bound — it removes it.
  *
  * This is the permitted box only. "Does this outline hug the grid" — the no-op
  * rectangle test and the boundary snap — still measures the GRID extent, since
  * a rectangle at the drawer's size on a smaller grid is real geometry that
  * trims cells, not an absent outline.
  */
+function safeMeasured(value: number | undefined): number {
+  if (value === undefined || !Number.isFinite(value)) return 0;
+  return clamp(value, 0, CONSTRAINTS.MEASURED_MM_MAX);
+}
+
 export function outlineExtentMm(
   drawer: Pick<Drawer, 'width' | 'depth' | 'measuredMm'>,
   gridUnitMm: number,
@@ -101,8 +114,8 @@ export function outlineExtentMm(
 ): { widthMm: number; depthMm: number } {
   const measured = drawer.measuredMm;
   return {
-    widthMm: Math.max((drawer.width as number) * gridUnitMm, measured?.width ?? 0),
-    depthMm: Math.max((drawer.depth as number) * gridUnitMmY, measured?.depth ?? 0),
+    widthMm: Math.max((drawer.width as number) * gridUnitMm, safeMeasured(measured?.width)),
+    depthMm: Math.max((drawer.depth as number) * gridUnitMmY, safeMeasured(measured?.depth)),
   };
 }
 
