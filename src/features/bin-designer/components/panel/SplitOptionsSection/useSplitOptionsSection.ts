@@ -3,9 +3,9 @@ import { isSocketlessBase } from '@/features/bin-designer/types/base';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
-import { calcMaxGridUnits } from '@/core/constants';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { getSplitPieceCount } from '@/shared/utils/splitPositions';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 
 export type SplitAxis = 'width' | 'depth' | 'both';
@@ -15,6 +15,9 @@ export function useSplitOptionsSection() {
     width,
     depth,
     gridUnitMm,
+    gridUnitMmY,
+    overhang,
+    cellMask,
     base,
     splitConnectors,
     splitViewMode,
@@ -25,6 +28,9 @@ export function useSplitOptionsSection() {
       width: s.params.width,
       depth: s.params.depth,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
+      overhang: s.params.overhang,
+      cellMask: s.params.cellMask,
       base: s.params.base,
       splitConnectors: s.params.splitConnectors,
       splitViewMode: s.ui.splitViewMode,
@@ -41,10 +47,27 @@ export function useSplitOptionsSection() {
     }))
   );
 
-  // Use the bin's actual grid unit rather than defaultGridUnitMm from settings
+  // Uses the bin's actual grid unit rather than defaultGridUnitMm from settings,
+  // and charges the bin's overhang against the bed: an overhang grows the outer
+  // body in mm past its grid footprint, so a bin whose units fit can still be
+  // far too wide to print.
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, gridUnitMm, defaultPrintBedDepth),
-    [defaultPrintBedSize, defaultPrintBedDepth, gridUnitMm]
+    () =>
+      binSplitChunkUnits(
+        { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask },
+        defaultPrintBedSize,
+        defaultPrintBedDepth
+      ),
+    [
+      width,
+      depth,
+      gridUnitMm,
+      gridUnitMmY,
+      overhang,
+      cellMask,
+      defaultPrintBedSize,
+      defaultPrintBedDepth,
+    ]
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;

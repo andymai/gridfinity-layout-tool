@@ -22,7 +22,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
-import { calcMaxGridUnits } from '@/core/constants';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import {
   getActiveBridge,
   workerPoolManager,
@@ -86,19 +86,14 @@ export function useSplitPreview(): void {
     }))
   );
 
-  // Use params.gridUnitMm (the bin's actual grid unit) rather than
-  // defaultGridUnitMm from settings, which may be stale. Memoized on its
-  // primitive inputs so it's stable across renders — otherwise a fresh object
-  // each render would re-run the effects (and re-dispatch split work) below.
+  // Reads the bin's own grid unit rather than defaultGridUnitMm from settings,
+  // which may be stale, and charges its overhang against the bed. Memoized on
+  // its primitive inputs so it's stable across renders — otherwise a fresh
+  // object each render would re-run the effects (and re-dispatch split work)
+  // below.
   const maxGrid = useMemo(
-    () =>
-      calcMaxGridUnits(
-        defaultPrintBedSize,
-        params.gridUnitMm,
-        defaultPrintBedDepth,
-        params.gridUnitMmY ?? params.gridUnitMm
-      ),
-    [defaultPrintBedSize, params.gridUnitMm, params.gridUnitMmY, defaultPrintBedDepth]
+    () => binSplitChunkUnits(params, defaultPrintBedSize, defaultPrintBedDepth),
+    [defaultPrintBedSize, defaultPrintBedDepth, params]
   );
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 

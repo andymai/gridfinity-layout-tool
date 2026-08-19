@@ -14,7 +14,7 @@ import { Color } from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { calcMaxGridUnits } from '@/core/constants';
+import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
@@ -30,16 +30,19 @@ const DASHED_LINE_SHARED = {
 } as const;
 
 export const BinSplitLines = memo(function BinSplitLines() {
-  const { width, depth, height, heightUnitMm, gridUnitMm, gridUnitMmY } = useDesignerStore(
-    useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
-      height: s.params.height,
-      heightUnitMm: s.params.heightUnitMm,
-      gridUnitMm: s.params.gridUnitMm,
-      gridUnitMmY: s.params.gridUnitMmY,
-    }))
-  );
+  const { width, depth, height, heightUnitMm, gridUnitMm, gridUnitMmY, overhang, cellMask } =
+    useDesignerStore(
+      useShallow((s) => ({
+        width: s.params.width,
+        depth: s.params.depth,
+        height: s.params.height,
+        heightUnitMm: s.params.heightUnitMm,
+        gridUnitMm: s.params.gridUnitMm,
+        gridUnitMmY: s.params.gridUnitMmY,
+        overhang: s.params.overhang,
+        cellMask: s.params.cellMask,
+      }))
+    );
   // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
   const gridUnitMmYEff = gridUnitMmY ?? gridUnitMm;
 
@@ -50,9 +53,26 @@ export const BinSplitLines = memo(function BinSplitLines() {
     }))
   );
 
+  // Built here rather than by selecting the whole `params`: this draws inside
+  // the R3F scene, and a subscription to every parameter would re-render it on
+  // edits that cannot move a split line.
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, gridUnitMm, defaultPrintBedDepth, gridUnitMmYEff),
-    [defaultPrintBedSize, defaultPrintBedDepth, gridUnitMm, gridUnitMmYEff]
+    () =>
+      binSplitChunkUnits(
+        { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask },
+        defaultPrintBedSize,
+        defaultPrintBedDepth
+      ),
+    [
+      width,
+      depth,
+      gridUnitMm,
+      gridUnitMmY,
+      overhang,
+      cellMask,
+      defaultPrintBedSize,
+      defaultPrintBedDepth,
+    ]
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
