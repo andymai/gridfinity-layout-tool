@@ -1414,6 +1414,50 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('featureColors.lidLip', () => {
+    function withLidLip(lidLip: unknown) {
+      const payload = validPayload();
+      payload.params = {
+        ...payload.params,
+        featureColors: { enabled: true, body: '#000000', lid: '#000000', lidLip },
+      } as typeof payload.params;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    }
+
+    // The designer writes this key whenever a lid-lip cell diverges from the lid
+    // colour, so an unlisted key here 400s share, cloud sync and community
+    // publish for the whole design.
+    it('accepts the lid lip grid', () => {
+      const result = withLidLip({
+        corners: 4,
+        bands: 2,
+        cells: { 'lip:frontLeft:0': '#ff0000', 'lip:backRight:1': '#00ff00' },
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects an out-of-range corner count', () => {
+      expect(withLidLip({ corners: 3, bands: 1, cells: {} }).valid).toBe(false);
+    });
+
+    // `lidLip.cells` is keyed by the bin lip's `lip:...` ids, not `lidLip:...`.
+    it('rejects an unknown cell id', () => {
+      expect(
+        withLidLip({ corners: 1, bands: 1, cells: { 'lidLip:frontLeft:0': '#fff' } }).valid
+      ).toBe(false);
+    });
+
+    it('rejects a non-hex cell color', () => {
+      expect(withLidLip({ corners: 1, bands: 1, cells: { 'lip:frontLeft:0': 'red' } }).valid).toBe(
+        false
+      );
+    });
+
+    it('rejects a non-object lid lip', () => {
+      expect(withLidLip('#ffffff').valid).toBe(false);
+    });
+  });
+
   describe('cutout color validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();
