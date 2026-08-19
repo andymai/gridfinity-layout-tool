@@ -72,6 +72,8 @@ describe('SplitViewStrip', () => {
     onHoverPiece: vi.fn(),
     onSelectPiece: vi.fn(),
     printBedSize: 256,
+    gridUnitMm: 42,
+    gridUnitMmY: 42,
     fractionalEdgeX: 'end' as const,
     fractionalEdgeY: 'end' as const,
     onChangeSplit: vi.fn(),
@@ -231,6 +233,61 @@ describe('SplitViewStrip', () => {
       render(<SplitViewStrip {...defaultProps} tiling={overBed} />);
       expect(screen.getByText('A1')).toHaveAttribute('aria-label', 'baseplate.pieceLabelOverBed');
       expect(screen.getByText('B1')).toHaveAttribute('aria-label', 'baseplate.pieceLabel');
+    });
+  });
+
+  // The map used to lay out its tracks in grid UNITS while padding is mm on the
+  // outermost pieces, so a padded plate's edge tracks were drawn the same width
+  // as its interior ones and every seam sat at the wrong fraction of the plate.
+  describe('padded plate', () => {
+    const paddedTiling: BaseplateTiling = {
+      ...baseTiling,
+      cols: 3,
+      colSizes: [3, 3, 3],
+      totalWidthUnits: 9,
+      pieces: [
+        { ...baseTiling.pieces[0], label: 'A1', col: 0, widthUnits: 3, paddingLeft: 20 },
+        { ...baseTiling.pieces[1], label: 'B1', col: 1, widthUnits: 3, gridOffsetX: 3 },
+        {
+          ...baseTiling.pieces[1],
+          label: 'C1',
+          col: 2,
+          widthUnits: 3,
+          gridOffsetX: 6,
+          paddingRight: 8,
+        },
+      ],
+    };
+
+    function mapGrid(): HTMLElement {
+      const view = screen.getByLabelText('baseplate.sectionView');
+      const grid = view.firstElementChild;
+      if (!(grid instanceof HTMLElement)) throw new Error('map grid not found');
+      return grid;
+    }
+
+    it('sizes the outer tracks by their real millimetres', () => {
+      render(<SplitViewStrip {...defaultProps} tiling={paddedTiling} />);
+      expect(mapGrid().style.gridTemplateColumns).toBe('146fr 126fr 134fr');
+    });
+
+    it('draws the seams and their ruler ticks at the same fraction of the plate', () => {
+      render(<SplitViewStrip {...defaultProps} tiling={paddedTiling} />);
+      // 20mm padding + 3 units of 42mm, over a 406mm plate.
+      const expected = `${(146 / 406) * 100}%`;
+      const seamLine = mapGrid().parentElement?.querySelector<HTMLElement>('span.bg-accent');
+      expect(seamLine?.style.left).toBe(expected);
+      const tick = lanes('Vertical').find((b) => b.getAttribute('aria-pressed') === 'true');
+      expect(tick?.style.left).toBe(expected);
+    });
+
+    it('gives the column ruler the same box as the map, so the two cannot drift', () => {
+      render(<SplitViewStrip {...defaultProps} tiling={paddedTiling} />);
+      const ruler = lanes('Vertical')[0].parentElement;
+      expect(ruler).toBeInstanceOf(HTMLElement);
+      const view = screen.getByLabelText('baseplate.sectionView');
+      expect((ruler as HTMLElement).style.width).toBe(view.style.width);
+      expect(view.style.width).not.toBe('');
     });
   });
 });

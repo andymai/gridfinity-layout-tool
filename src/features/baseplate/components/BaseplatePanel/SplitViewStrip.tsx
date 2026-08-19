@@ -2,8 +2,15 @@
  * Non-collapsible inline strip showing the split-baseplate piece mini-map, and
  * the editor for user-drawn split lines.
  *
- * The map is proportional: each piece region's grid track is sized by its real
- * unit span, so the mini-map reads as the plate rather than as a uniform table.
+ * The map is proportional in MILLIMETRES, not units: padding is mm carried by
+ * the outermost pieces only, so a padded plate's first and last tracks are
+ * genuinely wider than the rest. Sizing tracks by unit span drew them equal and
+ * put every seam at the wrong fraction of the plate (`splitMapLayout`).
+ *
+ * The aspect-fitted box is also the positioning context for the ruler ticks and
+ * the drawn seams. It has to be: `aspect-ratio` transfers a height cap into a
+ * width cap, so the map shrinks inside its grid area, and anything positioned
+ * as a percentage of the AREA instead lands wide of the track it marks.
  *
  * Cuts are placed from two rulers flanking the map (one tick per legal offset)
  * rather than from lanes drawn across it. Crossing sets of full-span hit
@@ -28,10 +35,22 @@ import {
   splitOverrideFromSeams,
   toggleSeam,
 } from '../../utils/splitOverride';
+import { seamFraction, splitMapLayout } from '../../utils/splitMapLayout';
 import type { BaseplateTiling, PaddingReductionHint } from '../../types/tiling';
 
 /** Seam offsets are half-unit-quantized; this only absorbs float drift. */
 const SEAM_EPSILON = 1e-6;
+
+/** Tallest the map may be, in rem — the width cap is derived from it. */
+const MAP_MAX_HEIGHT_REM = 14;
+
+/**
+ * How lopsided the map's own box may get. The tracks and seams stay true to the
+ * plate either way (they are fractions of the box, whatever its shape); this
+ * only stops a 20:1 plate rendering as an unreadable sliver, or as a strip so
+ * tall it pushes the rest of the panel off screen.
+ */
+const MAP_MAX_ASPECT = 6;
 
 const PADDING_HINT_AXIS_KEYS: Record<PaddingReductionHint['axis'], string> = {
   x: 'baseplate.paddingHintAxisX',
@@ -46,6 +65,8 @@ interface SplitViewStripProps {
   readonly onHoverPiece: (label: string | null) => void;
   readonly onSelectPiece: (label: string | null) => void;
   readonly printBedSize: number;
+  readonly gridUnitMm: number;
+  readonly gridUnitMmY: number;
   readonly fractionalEdgeX: FractionalEdge;
   readonly fractionalEdgeY: FractionalEdge;
   readonly onChangeSplit: (override: SplitOverride | undefined) => void;
@@ -58,6 +79,8 @@ export function SplitViewStrip({
   onHoverPiece,
   onSelectPiece,
   printBedSize,
+  gridUnitMm,
+  gridUnitMmY,
   fractionalEdgeX,
   fractionalEdgeY,
   onChangeSplit,
@@ -69,6 +92,17 @@ export function SplitViewStrip({
   const rowSeams = chunksToSeams(rowSizes);
   const colLanes = seamPositions(totalWidthUnits, fractionalEdgeX);
   const rowLanes = seamPositions(totalDepthUnits, fractionalEdgeY);
+
+  const map = splitMapLayout(tiling, gridUnitMm, gridUnitMmY);
+  const leftPercent = (offset: number): string =>
+    `${seamFraction(offset, gridUnitMm, map.padLeftMm, map.widthMm) * 100}%`;
+  const bottomPercent = (offset: number): string =>
+    `${seamFraction(offset, gridUnitMmY, map.padFrontMm, map.depthMm) * 100}%`;
+
+  // One box, shared by the map, both rulers and the seam overlay, so a
+  // percentage means the same place in all four.
+  const aspect = Math.min(MAP_MAX_ASPECT, Math.max(1 / MAP_MAX_ASPECT, map.widthMm / map.depthMm));
+  const mapBoxStyle = { width: `min(100%, ${MAP_MAX_HEIGHT_REM * aspect}rem)` } as const;
 
   const overageByLabel = new Map(tiling.bedOverages.map((o) => [o.label, o]));
   // Set, not a `pieces.some()` per cell: the map renders cols x rows cells and a
@@ -136,7 +170,7 @@ export function SplitViewStrip({
       <div className="grid grid-cols-[0.75rem_1fr] grid-rows-[0.75rem_1fr] gap-0.5 px-4 pb-2">
         <div aria-hidden="true" />
 
-        <div className="relative h-3">
+        <div className="relative h-3" style={mapBoxStyle}>
           {colLanes.map((offset) => {
             const active = colSeams.some((s) => Math.abs(s - offset) < SEAM_EPSILON);
             return (
@@ -148,7 +182,7 @@ export function SplitViewStrip({
                 className={`absolute top-0 !h-3 w-4 !min-w-0 -translate-x-1/2 rounded-none border-0 !px-0 !py-0 ${
                   active ? 'text-accent' : 'text-stroke-subtle hover:text-content-tertiary'
                 }`}
-                style={{ left: `${(offset / totalWidthUnits) * 100}%` }}
+                style={{ left: leftPercent(offset) }}
                 onClick={() => applySeams(toggleSeam(colSeams, offset), rowSeams)}
                 aria-pressed={active}
                 aria-label={t('baseplate.splitSeamVertical', { position: offset })}
@@ -176,7 +210,7 @@ export function SplitViewStrip({
                 }`}
                 // Offsets measure from the plate FRONT while the map draws front
                 // at the bottom, so the tick is positioned from the bottom edge.
-                style={{ bottom: `${(offset / totalDepthUnits) * 100}%` }}
+                style={{ bottom: bottomPercent(offset) }}
                 onClick={() => applySeams(colSeams, toggleSeam(rowSeams, offset))}
                 aria-pressed={active}
                 aria-label={t('baseplate.splitSeamHorizontal', { position: offset })}
@@ -190,25 +224,29 @@ export function SplitViewStrip({
           })}
         </div>
 
-        <div className="relative" aria-label={t('baseplate.sectionView')}>
+        <div
+          className="relative"
+          aria-label={t('baseplate.sectionView')}
+          // The aspect ratio lives HERE, on the box the ruler ticks and the seam
+          // overlay measure against, not on the grid inside it. On the grid it
+          // transferred the height cap into a width cap, leaving the map
+          // narrower than its own positioning context — which is what put the
+          // drawn seams a whole column away from the tracks they mark.
+          style={{ ...mapBoxStyle, aspectRatio: `${aspect}` }}
+        >
           <div
             // No gap: the ruler ticks and the drawn seam lines are positioned as
             // a percentage of this same box, so any gutter would offset every
             // line from the boundary it marks.
-            className="grid max-h-56 min-h-16"
+            className="grid h-full w-full"
             style={{
-              // `fr` rows only distribute proportionally against a definite
-              // height, which an auto-height grid does not have — without this
-              // every row would collapse to its content and a 1-unit row would
-              // look the same as a 6-unit one.
-              aspectRatio: `${totalWidthUnits} / ${totalDepthUnits}`,
-              gridTemplateColumns: colSizes.map((s) => `${s}fr`).join(' '),
+              gridTemplateColumns: map.colMm.map((mm) => `${mm}fr`).join(' '),
               // Row 1 is the front of the plate, which reads as the BOTTOM of a
               // top-down map — so the tracks are emitted back-to-front and each
               // piece is placed by explicit row index rather than in DOM order.
-              gridTemplateRows: [...rowSizes]
+              gridTemplateRows: [...map.rowMm]
                 .reverse()
-                .map((s) => `${s}fr`)
+                .map((mm) => `${mm}fr`)
                 .join(' '),
             }}
           >
@@ -270,14 +308,14 @@ export function SplitViewStrip({
               <span
                 key={`line-col-${offset}`}
                 className="absolute top-0 bottom-0 w-0.5 -translate-x-1/2 rounded-full bg-accent"
-                style={{ left: `${(offset / totalWidthUnits) * 100}%` }}
+                style={{ left: leftPercent(offset) }}
               />
             ))}
             {rowSeams.map((offset) => (
               <span
                 key={`line-row-${offset}`}
                 className="absolute right-0 left-0 h-0.5 translate-y-1/2 rounded-full bg-accent"
-                style={{ bottom: `${(offset / totalDepthUnits) * 100}%` }}
+                style={{ bottom: bottomPercent(offset) }}
               />
             ))}
           </div>
