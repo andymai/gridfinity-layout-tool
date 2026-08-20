@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Rozmieść",
   "binDesigner.cutouts.autoArrange": "Rozmieść automatycznie",
   "binDesigner.cutouts.centerInBin": "Wyśrodkuj w binie",
+  "binDesigner.cutouts.centerH": "Wyśrodkuj w poziomie",
+  "binDesigner.cutouts.centerV": "Wyśrodkuj w pionie",
   "binDesigner.cutouts.chamfer": "Faza wejściowa",
   "binDesigner.cutouts.chamferInfo": "Sfazowane obrzeże, aby części same się centrowały",
   "binDesigner.cutouts.clearAll": "Wyczyść wszystko",

@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Organizar",
   "binDesigner.cutouts.autoArrange": "Organizar automáticamente",
   "binDesigner.cutouts.centerInBin": "Centrar en bandeja",
+  "binDesigner.cutouts.centerH": "Centrar horizontalmente",
+  "binDesigner.cutouts.centerV": "Centrar verticalmente",
   "binDesigner.cutouts.chamfer": "Bisel de entrada",
   "binDesigner.cutouts.chamferInfo": "Borde biselado para que las piezas se autocentren",
   "binDesigner.cutouts.clearAll": "Borrar todo",

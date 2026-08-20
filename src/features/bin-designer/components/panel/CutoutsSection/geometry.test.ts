@@ -567,6 +567,39 @@ describe('geometry', () => {
       const result = centerInBin([], 100, 100);
       expect(result).toEqual({});
     });
+
+    it('leaves the other axis exactly where the user put it', () => {
+      // The whole point of the single-axis modes: centring both at once
+      // discards a position that was placed deliberately.
+      const cutouts = [createCutout({ id: 'a', x: 3, y: 7, width: 20, depth: 15 })];
+
+      const onX = centerInBin(cutouts, 100, 100, 'x');
+      expect(onX.a.x).toBe(40);
+      expect(onX.a.y).toBe(7);
+
+      const onY = centerInBin(cutouts, 100, 100, 'y');
+      expect(onY.a.x).toBe(3);
+      expect(onY.a.y).toBe(42.5);
+    });
+
+    it("defaults to both axes, so the existing callers' behaviour is unchanged", () => {
+      const cutouts = [createCutout({ id: 'a', x: 3, y: 7, width: 20, depth: 15 })];
+      expect(centerInBin(cutouts, 100, 100)).toEqual(centerInBin(cutouts, 100, 100, 'both'));
+    });
+
+    it('moves a multi-cutout selection by one shared delta on the chosen axis', () => {
+      // Relative offsets survive a single-axis centre exactly as they do a
+      // both-axis one — the selection moves as a unit or not at all.
+      const cutouts = [
+        createCutout({ id: 'a', x: 10, y: 10, width: 20, depth: 15 }),
+        createCutout({ id: 'b', x: 40, y: 30, width: 20, depth: 15 }),
+      ];
+      const result = centerInBin(cutouts, 100, 100, 'x');
+      expect(result.b.x - result.a.x).toBe(30);
+      expect(result.a.y).toBe(10);
+      expect(result.b.y).toBe(30);
+      expect(result.a.x).toBe(25);
+    });
   });
 
   describe('rotatePoint', () => {

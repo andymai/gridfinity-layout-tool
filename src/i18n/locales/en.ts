@@ -2587,6 +2587,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.distributeH': 'Distribute horizontally',
   'binDesigner.cutouts.distributeV': 'Distribute vertically',
   'binDesigner.cutouts.centerInBin': 'Center in bin',
+  'binDesigner.cutouts.centerH': 'Center horizontally',
+  'binDesigner.cutouts.centerV': 'Center vertically',
   'binDesigner.cutouts.autoArrange': 'Auto-arrange',
   'binDesigner.cutouts.gap': 'Gap',
   'binDesigner.cutouts.staggered': 'Stagger rows',

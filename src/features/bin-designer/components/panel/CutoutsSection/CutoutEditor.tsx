@@ -15,7 +15,12 @@ import {
   cutoutInterior,
   cutoutTaperBand,
 } from '@/features/bin-designer/utils/binDimensions';
-import { centerInBin, flipSelectionHorizontal, flipSelectionVertical } from './geometry';
+import {
+  CENTER_ACTIONS,
+  centerInBin,
+  flipSelectionHorizontal,
+  flipSelectionVertical,
+} from './geometry';
 import { useCutoutInteraction } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
 import { CutoutCanvas3D } from './renderer';
@@ -433,17 +438,19 @@ export function CutoutEditor() {
     }
 
     if (hasSelection) {
-      actions.push({
-        label: t('binDesigner.cutouts.centerInBin'),
-        onClick: () => {
-          const selected = cutouts.filter((c) => selection.has(c.id));
-          const positions = centerInBin(selected, binWidth, binDepth);
-          for (const [id, pos] of Object.entries(positions)) {
-            updateCutout(id, pos);
-          }
-        },
-        dividerAfter: true,
-      });
+      for (const { axis, key } of CENTER_ACTIONS) {
+        actions.push({
+          label: t(key),
+          onClick: () => {
+            const selected = cutouts.filter((c) => selection.has(c.id));
+            const positions = centerInBin(selected, binWidth, binDepth, axis);
+            for (const [id, pos] of Object.entries(positions)) {
+              updateCutout(id, pos);
+            }
+          },
+          dividerAfter: axis === 'y',
+        });
+      }
 
       const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
       const allLocked = selectedCutouts.every((c) => c.locked);

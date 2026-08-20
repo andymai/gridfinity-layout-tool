@@ -16,6 +16,7 @@ import {
   distributeHorizontally,
   distributeVertically,
   centerInBin,
+  type CenterAxis,
 } from '../panel/CutoutsSection/geometry';
 import {
   expandSelectionToGroups,
@@ -89,6 +90,34 @@ function AlignIcon({ type }: { readonly type: AlignType }) {
       );
   }
 }
+/**
+ * Centering is against the BIN, not against the rest of the selection, so
+ * these draw the bin outline where {@link AlignIcon} draws bare edges — the two
+ * groups sit side by side in the toolbar. The shape sits off-centre on the axis
+ * the action leaves alone, which is the whole distinction between the three.
+ */
+function CenterInBinIcon({ axis }: { readonly axis: CenterAxis }) {
+  const marks = {
+    both: { box: { x: 4.5, y: 5.5, w: 5, h: 3 }, vLine: true, hLine: true },
+    x: { box: { x: 4.5, y: 7.5, w: 5, h: 3 }, vLine: true, hLine: false },
+    y: { box: { x: 7.5, y: 4.5, w: 3, h: 5 }, vLine: false, hLine: true },
+  }[axis];
+  return (
+    <svg
+      className="h-3.5 w-3.5"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <rect x="1" y="1" width="12" height="12" rx="1.5" />
+      {marks.vLine && <line x1="7" y1="2" x2="7" y2="12" strokeDasharray="2 1" />}
+      {marks.hLine && <line x1="2" y1="7" x2="12" y2="7" strokeDasharray="2 1" />}
+      <rect x={marks.box.x} y={marks.box.y} width={marks.box.w} height={marks.box.h} />
+    </svg>
+  );
+}
+
 function DistributeHIcon() {
   return (
     <svg
@@ -341,9 +370,12 @@ export function WorkspaceHeader({
     applyPositions(distributeVertically(arrangeTargets, binDepth));
   }, [arrangeTargets, binDepth, applyPositions]);
 
-  const handleCenterInBin = useCallback(() => {
-    applyPositions(centerInBin(arrangeTargets, binWidth, binDepth));
-  }, [arrangeTargets, binWidth, binDepth, applyPositions]);
+  const handleCenterInBin = useCallback(
+    (axis: CenterAxis) => {
+      applyPositions(centerInBin(arrangeTargets, binWidth, binDepth, axis));
+    },
+    [arrangeTargets, binWidth, binDepth, applyPositions]
+  );
 
   const handleAutoArrange = useCallback(
     (gap: number, staggered: boolean) => {
@@ -487,7 +519,24 @@ export function WorkspaceHeader({
         <Separator />
         <ArrangeControls selectedIds={selectedIds} onReorder={onReorder} disabled={disabled} />
         <div className="flex-1" />
-        {textBtn(handleCenterInBin, t('binDesigner.cutouts.centerInBin'))}
+        {/* Three icons, not a text button plus two: the row is already at its
+            width budget, and the icon group is narrower than the label it
+            replaces while matching the align/distribute groups beside it. */}
+        {iconBtn(
+          () => handleCenterInBin('both'),
+          t('binDesigner.cutouts.centerInBin'),
+          <CenterInBinIcon axis="both" />
+        )}
+        {iconBtn(
+          () => handleCenterInBin('x'),
+          t('binDesigner.cutouts.centerH'),
+          <CenterInBinIcon axis="x" />
+        )}
+        {iconBtn(
+          () => handleCenterInBin('y'),
+          t('binDesigner.cutouts.centerV'),
+          <CenterInBinIcon axis="y" />
+        )}
         <AutoArrangePopover onArrange={handleAutoArrange} />
         {textBtn(() => onDuplicate(selectedIds), t('common.duplicate'))}
         {canGroup && textBtn(() => onGroup(selectedIds), t('binDesigner.cutouts.group'))}

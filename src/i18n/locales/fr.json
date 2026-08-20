@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Disposition",
   "binDesigner.cutouts.autoArrange": "Disposition automatique",
   "binDesigner.cutouts.centerInBin": "Centrer dans le bac",
+  "binDesigner.cutouts.centerH": "Centrer horizontalement",
+  "binDesigner.cutouts.centerV": "Centrer verticalement",
   "binDesigner.cutouts.chamfer": "Chanfrein d'entrée",
   "binDesigner.cutouts.chamferInfo": "Bord biseauté pour centrer les pièces",
   "binDesigner.cutouts.clearAll": "Tout effacer",

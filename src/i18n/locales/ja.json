@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "整列",
   "binDesigner.cutouts.autoArrange": "自動整列",
   "binDesigner.cutouts.centerInBin": "ビン内中央",
+  "binDesigner.cutouts.centerH": "水平方向に中央揃え",
+  "binDesigner.cutouts.centerV": "垂直方向に中央揃え",
   "binDesigner.cutouts.chamfer": "入口面取り",
   "binDesigner.cutouts.chamferInfo": "部品が中心に収まる面取り縁",
   "binDesigner.cutouts.clearAll": "すべてクリア",

@@ -39,7 +39,9 @@ export {
   distributeHorizontally,
   distributeVertically,
   centerInBin,
+  CENTER_ACTIONS,
   type AlignmentGuide,
+  type CenterAxis,
 } from './geometryAlignment';
 export {
   flipCutoutHorizontal,

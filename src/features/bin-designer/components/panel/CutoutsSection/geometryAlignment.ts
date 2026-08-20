@@ -144,15 +144,35 @@ export function distributeVertically(
 }
 
 /**
+ * Which axes a centering action moves. The single-axis modes exist because
+ * centering both at once throws away a position the user placed deliberately:
+ * a shape centred left-to-right often still belongs near the front or back.
+ */
+export type CenterAxis = 'both' | 'x' | 'y';
+
+/**
+ * The three centering entries in menu order, shared by the workspace and panel
+ * context menus so the two cannot drift apart.
+ */
+export const CENTER_ACTIONS: ReadonlyArray<{ readonly axis: CenterAxis; readonly key: string }> = [
+  { axis: 'both', key: 'binDesigner.cutouts.centerInBin' },
+  { axis: 'x', key: 'binDesigner.cutouts.centerH' },
+  { axis: 'y', key: 'binDesigner.cutouts.centerV' },
+];
+
+/**
  * Center a selection within the bin.
  *
  * One delta for the whole selection, so relative offsets are preserved; a
- * locked unit stays behind rather than riding along.
+ * locked unit stays behind rather than riding along. The untouched axis is
+ * still returned at its current value, so a caller can apply the result
+ * without knowing which axis moved.
  */
 export function centerInBin(
   cutouts: readonly Cutout[],
   binWidth: number,
-  binDepth: number
+  binDepth: number,
+  axis: CenterAxis = 'both'
 ): Record<string, { x: number; y: number }> {
   if (cutouts.length === 0) return {};
 
@@ -160,8 +180,8 @@ export function centerInBin(
   const bounds = unitsBounds(units);
   const groupW = bounds.maxX - bounds.minX;
   const groupH = bounds.maxY - bounds.minY;
-  const dx = (binWidth - groupW) / 2 - bounds.minX;
-  const dy = (binDepth - groupH) / 2 - bounds.minY;
+  const dx = axis === 'y' ? 0 : (binWidth - groupW) / 2 - bounds.minX;
+  const dy = axis === 'x' ? 0 : (binDepth - groupH) / 2 - bounds.minY;
 
   const result: Record<string, { x: number; y: number }> = {};
   for (const unit of units) {

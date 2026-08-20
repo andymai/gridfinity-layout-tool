@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Organizar",
   "binDesigner.cutouts.autoArrange": "Organizar automaticamente",
   "binDesigner.cutouts.centerInBin": "Centralizar no compartimento",
+  "binDesigner.cutouts.centerH": "Centralizar horizontalmente",
+  "binDesigner.cutouts.centerV": "Centralizar verticalmente",
   "binDesigner.cutouts.chamfer": "Chanfro de entrada",
   "binDesigner.cutouts.chamferInfo": "Borda chanfrada para as peças se centralizarem",
   "binDesigner.cutouts.clearAll": "Limpar tudo",

@@ -8,6 +8,7 @@
 
 import type { ContextMenuAction } from '../panel/CutoutsSection/CutoutContextMenu';
 import {
+  CENTER_ACTIONS,
   centerInBin,
   flipSelectionHorizontal,
   flipSelectionVertical,
@@ -261,17 +262,19 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
   }
 
   if (hasSelection) {
-    actions.push({
-      label: t('binDesigner.cutouts.centerInBin'),
-      onClick: () => {
-        const selected = cutouts.filter((c) => selection.has(c.id));
-        const positions = centerInBin(selected, binWidth, binDepth);
-        for (const [id, pos] of Object.entries(positions)) {
-          updateCutout(id, pos);
-        }
-      },
-      dividerAfter: true,
-    });
+    for (const { axis, key } of CENTER_ACTIONS) {
+      actions.push({
+        label: t(key),
+        onClick: () => {
+          const selected = cutouts.filter((c) => selection.has(c.id));
+          const positions = centerInBin(selected, binWidth, binDepth, axis);
+          for (const [id, pos] of Object.entries(positions)) {
+            updateCutout(id, pos);
+          }
+        },
+        dividerAfter: axis === 'y',
+      });
+    }
 
     // Lock/hide/layer ordering
     const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
