@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.433.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.432.0...gridfinity-layout-tool-v4.433.0) (2026-08-20)
+
+
+### Features
+
+* **cutout-editor:** fill the bin with a repeat in one click ([#3656](https://github.com/andymai/gridfinity-layout-tool/issues/3656)) ([b750851](https://github.com/andymai/gridfinity-layout-tool/commit/b750851e18ced60902f55bb4e2b04852c0c40a9f)), closes [#3641](https://github.com/andymai/gridfinity-layout-tool/issues/3641)
+
 ## [4.432.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.431.0...gridfinity-layout-tool-v4.432.0) (2026-08-20)
 
 
