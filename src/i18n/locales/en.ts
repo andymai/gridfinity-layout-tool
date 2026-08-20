@@ -2518,6 +2518,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.repeat.instances': '{count} instances',
   'binDesigner.cutouts.repeat.flatten': 'Flatten to cutouts',
   'binDesigner.cutouts.repeat.remove': 'Remove repeat',
+  'binDesigner.cutouts.repeat.overlapWarning':
+    'Repeats overlap. Their cuts will merge into one opening.',
   'binDesigner.cutouts.repeat.presetLabel': 'Start with',
   'binDesigner.cutouts.repeat.presetRing': 'Ring of {count}',
   'binDesigner.cutouts.repeat.presetNoFit': 'Not enough room from this position',

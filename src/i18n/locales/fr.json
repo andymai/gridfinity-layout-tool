@@ -723,6 +723,7 @@
   "binDesigner.cutouts.repeat.presetRing": "Anneau de {count}",
   "binDesigner.cutouts.repeat.radius": "Rayon",
   "binDesigner.cutouts.repeat.remove": "Supprimer le réseau",
+  "binDesigner.cutouts.repeat.overlapWarning": "Les répétitions se chevauchent. Leurs découpes fusionneront en une seule ouverture.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Orienter vers le centre",
   "binDesigner.cutouts.repeat.rows": "Lignes",
   "binDesigner.cutouts.repeat.startAngle": "Angle de départ",

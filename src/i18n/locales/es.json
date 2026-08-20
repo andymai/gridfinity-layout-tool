@@ -723,6 +723,7 @@
   "binDesigner.cutouts.repeat.presetRing": "Anillo de {count}",
   "binDesigner.cutouts.repeat.radius": "Radio",
   "binDesigner.cutouts.repeat.remove": "Quitar matriz",
+  "binDesigner.cutouts.repeat.overlapWarning": "Las repeticiones se solapan. Sus cortes se fusionarán en una sola abertura.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Girar al centro",
   "binDesigner.cutouts.repeat.rows": "Filas",
   "binDesigner.cutouts.repeat.startAngle": "Ángulo inicial",

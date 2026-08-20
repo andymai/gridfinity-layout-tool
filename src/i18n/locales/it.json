@@ -723,6 +723,7 @@
   "binDesigner.cutouts.repeat.presetRing": "Anello di {count}",
   "binDesigner.cutouts.repeat.radius": "Raggio",
   "binDesigner.cutouts.repeat.remove": "Rimuovi serie",
+  "binDesigner.cutouts.repeat.overlapWarning": "Le ripetizioni si sovrappongono. I loro tagli si fonderanno in un’unica apertura.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Ruota verso il centro",
   "binDesigner.cutouts.repeat.rows": "Righe",
   "binDesigner.cutouts.repeat.startAngle": "Angolo iniziale",

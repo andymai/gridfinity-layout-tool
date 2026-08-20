@@ -4,6 +4,7 @@ import {
   arrayInstanceCount,
   defaultArrayConfig,
   arrayFieldBounds,
+  arrayInstancesOverlap,
   expandCutoutArray,
   type ArrayInstance,
 } from './cutoutArray';
@@ -259,31 +260,95 @@ describe('arrayFieldBounds', () => {
     expect(b.maxCols).toBeLessThanOrEqual(5);
   });
 
-  it('minPitchX/Y are floorToHalf(dimension) + 1mm wall gap', () => {
-    // 15mm × 10mm: floorToHalf(15)=15 → minPitchX=16, floorToHalf(10)=10 → minPitchY=11
+  it('does not floor the pitch on the master box — overlap is allowed', () => {
+    // Deliberate overlap makes neighbouring cuts merge into one opening, which
+    // is a real thing to ask for, so the editor warns rather than clamps.
     const b = arrayFieldBounds(cut({ width: 15, depth: 10 }), 200, 200, cfg());
-    expect(b.minPitchX).toBe(16);
-    expect(b.minPitchY).toBe(11);
-  });
-
-  it('minPitchX rounds fractional width down to nearest 0.5 before adding gap', () => {
-    // 15.74mm width: floorToHalf(15.74)=15.5 → minPitchX=16.5
-    const b = arrayFieldBounds(cut({ width: 15.74, depth: 8 }), 200, 200, cfg());
-    expect(b.minPitchX).toBe(16.5);
-    expect(b.minPitchY).toBe(9);
-  });
-
-  it('minPitchX/Y floor to ARRAY_MIN_PITCH for tiny cutouts', () => {
-    // 0.1mm cutout: floorToHalf(0.1)=0 → 0+1=1, clamped to ARRAY_MIN_PITCH (=1).
-    const b = arrayFieldBounds(cut({ width: 0.1, depth: 0.1 }), 200, 200, cfg());
     expect(b.minPitchX).toBe(1);
     expect(b.minPitchY).toBe(1);
   });
 
-  it('minPitchX/Y are independent of bin size', () => {
-    const small = arrayFieldBounds(cut({ width: 15, depth: 10 }), 100, 100, cfg());
-    const large = arrayFieldBounds(cut({ width: 15, depth: 10 }), 10_000, 10_000, cfg());
-    expect(small.minPitchX).toBe(large.minPitchX);
-    expect(small.minPitchY).toBe(large.minPitchY);
+  it('reports where overlap begins on each axis', () => {
+    const b = arrayFieldBounds(cut({ width: 15, depth: 10 }), 200, 200, cfg({ cols: 3, rows: 2 }));
+    expect(b.clearPitchX).toBe(15);
+    expect(b.clearPitchY).toBe(10);
+  });
+
+  it('has no clear pitch to report on an axis with one instance', () => {
+    const b = arrayFieldBounds(cut({ width: 15, depth: 10 }), 200, 200, cfg({ cols: 1, rows: 1 }));
+    expect(b.clearPitchX).toBe(1);
+    expect(b.clearPitchY).toBe(1);
+  });
+
+  it('drops the Y clear pitch once a stagger separates the rows in X', () => {
+    // The reported case: rows half a pitch apart in X already miss each other,
+    // so they may nest arbitrarily close in Y. A per-axis floor read off the
+    // master's own box is what made that impossible.
+    const master = cut({ width: 10, depth: 10 });
+    const nested = cfg({ mode: 'staggered', cols: 3, rows: 3, pitchX: 20, pitchY: 4 });
+    expect(arrayFieldBounds(master, 200, 200, nested).clearPitchY).toBe(1);
+
+    // Same array without the stagger: the rows sit directly above each other.
+    expect(arrayFieldBounds(master, 200, 200, { ...nested, mode: 'grid' }).clearPitchY).toBe(10);
+  });
+
+  it('clear pitch is independent of bin size', () => {
+    const small = arrayFieldBounds(cut({ width: 15, depth: 10 }), 100, 100, cfg({ rows: 2 }));
+    const large = arrayFieldBounds(cut({ width: 15, depth: 10 }), 10_000, 10_000, cfg({ rows: 2 }));
+    expect(small.clearPitchX).toBe(large.clearPitchX);
+    expect(small.clearPitchY).toBe(large.clearPitchY);
+  });
+});
+
+describe('arrayInstancesOverlap', () => {
+  const master = (w = 10, d = 10): Pick<Cutout, 'width' | 'depth'> => ({ width: w, depth: d });
+  const base = {
+    mode: 'grid' as const,
+    cols: 3,
+    rows: 3,
+    pitchX: 20,
+    pitchY: 20,
+    count: 6,
+    radius: 20,
+    startAngle: 0,
+    rotateToCenter: false,
+  };
+
+  it('is false for a comfortably spaced grid', () => {
+    expect(arrayInstancesOverlap(master(), base)).toBe(false);
+  });
+
+  it('treats edge-to-edge as clear, not as overlap', () => {
+    // Flush neighbours share a boundary and still cut two openings. The
+    // threshold is where they start eating into each other.
+    expect(arrayInstancesOverlap(master(), { ...base, pitchX: 10, pitchY: 10 })).toBe(false);
+    expect(arrayInstancesOverlap(master(), { ...base, pitchX: 9.99, pitchY: 10 })).toBe(true);
+  });
+
+  it('is true when neighbouring columns run into each other', () => {
+    expect(arrayInstancesOverlap(master(), { ...base, pitchX: 6 })).toBe(true);
+  });
+
+  it('is true when neighbouring rows run into each other', () => {
+    expect(arrayInstancesOverlap(master(), { ...base, pitchY: 6 })).toBe(true);
+  });
+
+  it('needs BOTH axes to overlap, so a single row or column never does', () => {
+    expect(arrayInstancesOverlap(master(), { ...base, rows: 1, pitchY: 1 })).toBe(false);
+    expect(arrayInstancesOverlap(master(), { ...base, cols: 1, pitchX: 1 })).toBe(false);
+  });
+
+  it('lets a staggered array nest into the row below', () => {
+    // pitchX/2 = 10 clears the 10mm master, so a 4mm row pitch still misses.
+    const nested = { ...base, mode: 'staggered' as const, pitchX: 20, pitchY: 4 };
+    expect(arrayInstancesOverlap(master(), nested)).toBe(false);
+    // The same spacing without the stagger does overlap.
+    expect(arrayInstancesOverlap(master(), { ...nested, mode: 'grid' as const })).toBe(true);
+    // And a stagger too narrow to clear the master still overlaps.
+    expect(arrayInstancesOverlap(master(), { ...nested, pitchX: 12 })).toBe(true);
+  });
+
+  it('never reports overlap for a radial ring', () => {
+    expect(arrayInstancesOverlap(master(), { ...base, mode: 'radial', radius: 1 })).toBe(false);
   });
 });
