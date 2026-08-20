@@ -47,7 +47,7 @@ function assertValidMask(params: BinParams): void {
   if (err) throw new Error(`cellMask is invalid: ${err.message}`);
 }
 
-/** Default generation pipeline: shell -> features -> boolean -> translate -> lid-interior-relief -> tray-bottom -> lid-retention -> lid-grip-dip -> lid-hinge -> tessellate -> mesh imprint */
+/** Default generation pipeline: shell -> features -> boolean -> translate -> lid-interior-relief -> tray-bottom -> lid-retention -> slide-lid-channel -> lid-grip-dip -> lid-hinge -> tessellate -> mesh imprint */
 const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   shellStage,
   featuresStage,

@@ -16,9 +16,13 @@
  * It is the same argument that puts `lid.relieveInterior` last (CLAUDE.md
  * gotcha #18) — tree order enforcing a rule so nobody has to remember it.
  *
- * The bin needs its knuckles whether or not the lid is exported in the same
- * action, so this keys off the plan alone and not on the lid being emitted —
- * exactly as `lidRetentionStage` keys off `usesMagneticLid`.
+ * The bin needs its knuckles whether or not the lid is EXPORTED in the same
+ * action, so the gate is the design's configuration and never the current
+ * export. It is two conditions, not one: the plan has to produce a hinge, and
+ * `shouldGenerateLid` has to agree the lid will be built at all — a lid a
+ * compatibility blocker rejects is never generated, and without the second
+ * gate the bin would keep a barrel and a notched lip for a part that does not
+ * exist. `lidRetentionStage` takes exactly the same pair.
  */
 
 import { cutAll, fuseAll, unwrap } from 'brepjs';
