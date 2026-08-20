@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.428.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.428.0...gridfinity-layout-tool-v4.428.1) (2026-08-20)
+
+
+### Bug Fixes
+
+* **drawer-shape:** release the grid floor an axis's measurement already holds ([#3643](https://github.com/andymai/gridfinity-layout-tool/issues/3643)) ([434cba1](https://github.com/andymai/gridfinity-layout-tool/commit/434cba1fded2abcb507be1cc67c5f996fe8e4421)), closes [#3635](https://github.com/andymai/gridfinity-layout-tool/issues/3635)
+
 ## [4.428.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.427.1...gridfinity-layout-tool-v4.428.0) (2026-08-19)
 
 
