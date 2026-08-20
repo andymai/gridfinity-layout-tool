@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Rozumím",
   "binDesigner.cutoutEditor.quickstart.precision": "Chytrá vodítka — přichytávání k mřížce, pravítka a další výřezy",
   "binDesigner.cutoutEditor.quickstart.repeat": "Vyberte 3 a více shodných výřezů a spojte je do jednoho opakování",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Navigace — kolečkem přiblížíte, tažením s mezerníkem nebo prostředním tlačítkem posunete, Ctrl+0 přizpůsobí",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Nabídka pravým kliknutím — kopírovat, seskupit, uzamknout, zarovnat a další",
   "binDesigner.cutoutEditor.quickstart.select": "Vybrat (V) — táhni výběrový obdélník, Shift+klik pro rozšíření",
   "binDesigner.cutoutEditor.quickstart.shapes": "Tvary (R · C · G · S · P) — obdélníky, kruhy, polygony, drážky nebo Bézierovy cesty",

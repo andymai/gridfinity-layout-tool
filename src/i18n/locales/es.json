@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Entendido",
   "binDesigner.cutoutEditor.quickstart.precision": "Guías inteligentes — ajusta a la cuadrícula, reglas y otros recortes",
   "binDesigner.cutoutEditor.quickstart.repeat": "Selecciona 3 o más recortes iguales para convertirlos en una matriz",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Navegar — la rueda amplía, arrastra con Espacio o botón central para desplazar, Ctrl+0 encuadra",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Menú con clic derecho — copiar, agrupar, bloquear, alinear y más",
   "binDesigner.cutoutEditor.quickstart.select": "Seleccionar (V) — arrastra un marco o Mayús+clic para extender",
   "binDesigner.cutoutEditor.quickstart.shapes": "Formas (R · C · G · S · P) — rectángulos, círculos, polígonos, ranuras o trazados Bézier",

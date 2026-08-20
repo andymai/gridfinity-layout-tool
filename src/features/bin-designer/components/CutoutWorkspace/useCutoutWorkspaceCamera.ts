@@ -15,6 +15,39 @@ import {
   FIT_PADDING,
 } from '../panel/CutoutsSection/renderer/constants';
 
+/**
+ * One wheel notch on a traditional mouse, in CSS pixels. Browsers report ~100
+ * or 120 for a notch, so a mouse still moves one {@link ZOOM_STEP} per click.
+ */
+const WHEEL_PIXELS_PER_STEP = 120;
+
+/** A single event may not move more than this many steps, whatever it claims. */
+const MAX_WHEEL_STEPS = 2;
+
+/** Fallback line height (px) for `deltaMode: 'line'` — Firefox's default. */
+const WHEEL_LINE_HEIGHT_PX = 16;
+
+/**
+ * Zoom multiplier for one wheel event, PROPORTIONAL to how far the wheel
+ * actually moved.
+ *
+ * A fixed step per event is right for a mouse, whose notches are discrete, and
+ * badly wrong for a trackpad, which fires a stream of small deltas: a single
+ * two-finger flick became a dozen 1.25x multiplications and shot past whatever
+ * the user was aiming at. Normalising by {@link WHEEL_PIXELS_PER_STEP} leaves
+ * the mouse exactly where it was and makes the trackpad continuous.
+ *
+ * `deltaMode` has to be honoured or the normalisation inverts the problem:
+ * Firefox reports LINE units (~3 per notch), which as raw pixels would be
+ * almost no zoom at all.
+ */
+function wheelZoomFactor(e: React.WheelEvent<HTMLDivElement>, canvasHeight: number): number {
+  const perUnitPx = e.deltaMode === 1 ? WHEEL_LINE_HEIGHT_PX : e.deltaMode === 2 ? canvasHeight : 1;
+  const steps = (e.deltaY * perUnitPx) / WHEEL_PIXELS_PER_STEP;
+  const clamped = Math.max(-MAX_WHEEL_STEPS, Math.min(MAX_WHEEL_STEPS, steps));
+  return Math.pow(ZOOM_STEP, -clamped);
+}
+
 export interface CutoutWorkspaceCamera {
   canvasContainerRef: React.RefObject<HTMLDivElement | null>;
   containerSize: { width: number; height: number };
@@ -68,16 +101,43 @@ export function useCutoutWorkspaceCamera(
   }, [canvasWidth, canvasHeight, binWidth, binDepth]);
 
   const [zoom, setZoom] = useState(defaultZoom);
-  const [cameraCenter, setCameraCenter] = useState({ x: binWidth / 2, y: binDepth / 2 });
+  const [cameraCenter, setCameraCenterState] = useState({ x: binWidth / 2, y: binDepth / 2 });
 
-  // Re-fit camera when bin dimensions or container size change
-  /* eslint-disable react-hooks/set-state-in-effect -- syncing camera to external bin dimension changes from designer store */
+  /**
+   * Set once the user has framed the view themselves, and the reason the
+   * auto-fit below is conditional.
+   *
+   * `defaultZoom` is derived from the CONTAINER, so it moves whenever the
+   * container does — dragging the split divider beside the canvas, collapsing
+   * the inspector dock, resizing the window. Re-fitting on every one of those
+   * threw away the zoom and pan the user had just set up, which is the
+   * "zooming repositions the view" loop: you can never keep a corner of a
+   * large bin on screen while you work on it.
+   */
+  const userFramedRef = useRef(false);
+
+  const setCameraCenter = useCallback<CutoutWorkspaceCamera['setCameraCenter']>((next) => {
+    userFramedRef.current = true;
+    setCameraCenterState(next);
+  }, []);
+
+  // A different bin is a different subject: its old framing means nothing, so
+  // the view is handed back to the auto-fit. Runs before the fit effect below
+  // in the same commit, so a bin change re-fits in one pass.
   useEffect(() => {
-    setZoom(defaultZoom);
-    setCameraCenter({ x: binWidth / 2, y: binDepth / 2 });
-  }, [defaultZoom, binWidth, binDepth]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+    userFramedRef.current = false;
+  }, [binWidth, binDepth]);
 
+  // Auto-fit only while the user has not taken over.
+  useEffect(() => {
+    if (userFramedRef.current) return;
+    setZoom(defaultZoom);
+    setCameraCenterState({ x: binWidth / 2, y: binDepth / 2 });
+  }, [defaultZoom, binWidth, binDepth]);
+
+  // The explicit way back: hands the view to the auto-fit again, so a later
+  // container resize re-frames rather than preserving a framing the user has
+  // just discarded.
   const fitToView = useCallback(() => {
     const pad = 1 - 2 * FIT_PADDING;
     const newZoom = Math.min(
@@ -85,15 +145,18 @@ export function useCutoutWorkspaceCamera(
       (canvasHeight * pad) / binDepth,
       MAX_ZOOM
     );
+    userFramedRef.current = false;
     setZoom(newZoom);
-    setCameraCenter({ x: binWidth / 2, y: binDepth / 2 });
+    setCameraCenterState({ x: binWidth / 2, y: binDepth / 2 });
   }, [canvasWidth, canvasHeight, binWidth, binDepth]);
 
   const zoomIn = useCallback(() => {
+    userFramedRef.current = true;
     setZoom((z) => Math.min(MAX_ZOOM, z * ZOOM_STEP));
   }, []);
 
   const zoomOut = useCallback(() => {
+    userFramedRef.current = true;
     setZoom((z) => Math.max(MIN_ZOOM, z / ZOOM_STEP));
   }, []);
 
@@ -103,9 +166,10 @@ export function useCutoutWorkspaceCamera(
   const handleWheel = useCallback(
     (e: React.WheelEvent<HTMLDivElement>) => {
       e.preventDefault();
-      const factor = e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+      const factor = wheelZoomFactor(e, canvasHeight);
       const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
       if (newZoom === zoom) return;
+      userFramedRef.current = true;
 
       // Cursor position in screen pixels relative to the container
       const rect = e.currentTarget.getBoundingClientRect();
@@ -117,7 +181,7 @@ export function useCutoutWorkspaceCamera(
       const worldY = cameraCenter.y - (cy - canvasHeight / 2) / zoom;
 
       // After zoom, same screen pixel should map to same world point
-      setCameraCenter({
+      setCameraCenterState({
         x: worldX - (cx - canvasWidth / 2) / newZoom,
         y: worldY + (cy - canvasHeight / 2) / newZoom,
       });

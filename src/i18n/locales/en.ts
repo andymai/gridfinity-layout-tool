@@ -2795,6 +2795,8 @@ const en: Record<string, string> = {
     'Smart guides — snap to grid, rulers, and other cutouts',
   'binDesigner.cutoutEditor.quickstart.repeat':
     'Select 3 or more matching cutouts to turn them into one repeat',
+  'binDesigner.cutoutEditor.quickstart.navigate':
+    'Navigate — scroll to zoom, Space-drag or middle-drag to pan, Ctrl+0 to fit',
   'binDesigner.cutoutEditor.quickstart.dismiss': 'Got it',
   'binDesigner.quickstart.title': 'Design a custom bin',
   'binDesigner.quickstart.livePreview':

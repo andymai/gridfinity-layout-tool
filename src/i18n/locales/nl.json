@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Begrepen",
   "binDesigner.cutoutEditor.quickstart.precision": "Slimme hulplijnen — snap naar raster, linialen en andere uitsnijdingen",
   "binDesigner.cutoutEditor.quickstart.repeat": "Selecteer 3 of meer gelijke uitsparingen om er één reeks van te maken",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Navigeren — scrollen zoomt, slepen met spatie of middelste knop verschuift, Ctrl+0 past in",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Rechtsklikmenu — kopiëren, groeperen, vergrendelen, uitlijnen en meer",
   "binDesigner.cutoutEditor.quickstart.select": "Selecteren (V) — sleep een kader, Shift+klik om uit te breiden",
   "binDesigner.cutoutEditor.quickstart.shapes": "Vormen (R · C · G · S · P) — rechthoeken, cirkels, veelhoeken, sleuven of Bézier-paden",
