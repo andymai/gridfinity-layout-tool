@@ -338,6 +338,13 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   Distribute runs per anchor-to-anchor SEGMENT (extremes + every locked shape between them),
   not once across the whole span — spacing the full run and merely skipping locked shapes
   would place the rest as if the anchor had moved to its even-spacing slot.
+- **Center in bin takes an axis** (`CenterAxis`, `geometryAlignment.ts`): centering both
+  axes discards a position placed deliberately, so `'x'` and `'y'` exist alongside
+  `'both'`. The untouched axis is still returned at its current value, so no caller has to
+  know which one moved, and a multi-shape selection still moves by one shared delta. The
+  three entries are one list (`CENTER_ACTIONS`) so the workspace and panel context menus
+  cannot drift apart; both toolbars are gated at 2+ selected, which makes the context menu
+  the only route for a single shape.
 - **Lock covers transforms only**: `Cutout.locked` means "cannot be moved, resized, or
   rotated". Batch edits to cut depth, chamfer and colour still apply to locked shapes; X/Y,
   W/H and rotation skip them.
