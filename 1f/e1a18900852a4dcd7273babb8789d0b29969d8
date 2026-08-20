@@ -1,0 +1,39 @@
+src/core/cqrs/v2/domain/drawer/updateDrawer.test.ts
+  s_675623bf53b7f7::t_c3c5d0f99827fa 7,338-425
+  s_675623bf53b7f7::t_f89deaf36df672 426
+src/shared/utils/drawerOutline.test.ts
+  s_675623bf53b7f7::t_0638f130e7f665 437-443
+  s_675623bf53b7f7::t_b1137a8c3c9054 11-12,400-436,444-508,512
+  s_675623bf53b7f7::t_003f7d4d762c10 509-511
+src/core/store/layout/drawerActions.ts
+  s_675623bf53b7f7::t_b9ebe276fc7d05 19-20,22
+src/shared/hooks/useDrawerSettings.ts
+  s_675623bf53b7f7::t_0e532362b1d1d8 324-325,327,329-335
+src/shared/utils/drawerOutline.ts
+  s_675623bf53b7f7::t_158021873b35d6 571,574,576-577
+  s_675623bf53b7f7::t_9f1c250e904dd0 593-598,607-613
+  s_675623bf53b7f7::t_91d5e3dd598819 539-557,560,564,568,570,572-573
+  s_675623bf53b7f7::t_dc4cd1bf419c12 614-616
+  s_675623bf53b7f7::t_ccf320ceb3284f 617
+src/features/drawer-shape/README.md
+  s_675623bf53b7f7::t_5425ea31c0988a 103-107
+src/core/cqrs/v2/domain/drawer/updateDrawer.ts
+  s_675623bf53b7f7::t_65e38d071004ac 116-125,132-139
+  s_675623bf53b7f7::t_bd6882544d6f84 5-7,128-131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "1fe1a18900852a4dcd7273babb8789d0b29969d8",
+  "prompts": {},
+  "sessions": {
+    "s_675623bf53b7f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e42dafc8-e3c7-45ed-871d-df516f229e80",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
