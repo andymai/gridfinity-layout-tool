@@ -350,7 +350,15 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   id/placement); derived instances get ids `${master.id}::a${i}`. Total instances
   are capped at `MAX_ARRAY_INSTANCES`, and the editor clamps counts, pitch, and
   radius to feasible bounds (`arrayFieldBounds`) so an array can't be grown past
-  the bin footprint. Arrays are restricted to **ungrouped, non-path** cutouts;
+  the bin footprint. **Pitch is bounded by the bin, never by the master's own
+  box**: two instances overlap only when they overlap on BOTH axes, so a
+  staggered array whose half-pitch X offset already clears the master may nest
+  arbitrarily close in Y — a per-axis floor cannot see that, and read off the
+  box it also refused a deliberate overlap, which is how two shapes are made to
+  cut into each other as one opening. `arrayInstancesOverlap` asks the two-axis
+  question and the editor warns that the cuts will merge; `clearPitchX/Y` say
+  where that begins. Detection accepts what the editor warns about, since
+  nothing stops two independent cutouts from touching either. Arrays are restricted to **ungrouped, non-path** cutouts;
   `flattenCutoutArray` / `applyFlattenArray` bake instances into independent
   cutouts. Array controls (`+/-` steppers) appear in both the full-screen
   workspace and the sidebar editor (`CutoutArrayControls`). **A flatten declines
