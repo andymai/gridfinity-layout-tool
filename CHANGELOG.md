@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.429.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.428.2...gridfinity-layout-tool-v4.429.0) (2026-08-20)
+
+
+### Features
+
+* **bin-designer:** offer the design JSON from the export dialog ([#3649](https://github.com/andymai/gridfinity-layout-tool/issues/3649)) ([867a761](https://github.com/andymai/gridfinity-layout-tool/commit/867a76196bee3c6b1866c99dc133700ddd63312d)), closes [#3640](https://github.com/andymai/gridfinity-layout-tool/issues/3640)
+
 ## [4.428.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.428.1...gridfinity-layout-tool-v4.428.2) (2026-08-20)
 
 
