@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.433.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.433.0...gridfinity-layout-tool-v4.433.1) (2026-08-20)
+
+
+### Bug Fixes
+
+* **split:** cut a split bin's lip in the frame its body was built in ([#3659](https://github.com/andymai/gridfinity-layout-tool/issues/3659)) ([5729217](https://github.com/andymai/gridfinity-layout-tool/commit/57292170e172211a76605dba75853adaabcb2686)), closes [#3648](https://github.com/andymai/gridfinity-layout-tool/issues/3648)
+
 ## [4.433.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.432.0...gridfinity-layout-tool-v4.433.0) (2026-08-20)
 
 
