@@ -147,7 +147,11 @@ export interface ArrayFieldBounds {
   readonly maxRadius: number;
   /**
    * Smallest pitch on each axis at which no two instances' bounding boxes
-   * touch, given the other axis and the mode as they currently stand.
+   * OVERLAP, given the other axis and the mode as they currently stand.
+   *
+   * Edge to edge is not overlap and is exactly this value: instances packed
+   * flush share a boundary and still cut two openings, so the threshold is
+   * where they start eating into each other, not where they meet.
    *
    * Advisory, NOT a floor: overlap is a legitimate thing to ask for (two
    * shapes cutting into each other to make one opening), so the editor warns
@@ -163,7 +167,7 @@ export interface ArrayFieldBounds {
  * Two instances overlap only when they overlap on BOTH axes, which is what
  * makes a staggered array able to nest: adjacent rows sit half a pitch apart
  * in X, so once that half-pitch clears the master's width the rows may come
- * arbitrarily close in Y and still not touch. Reading the Y bound off the
+ * arbitrarily close in Y and still miss each other. Reading the Y bound off the
  * master's box alone — as a per-axis floor must — is what stopped round
  * shapes from nesting into the row below them.
  *

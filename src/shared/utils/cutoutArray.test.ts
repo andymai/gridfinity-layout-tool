@@ -301,7 +301,7 @@ describe('arrayFieldBounds', () => {
 });
 
 describe('arrayInstancesOverlap', () => {
-  const master = (w = 10, d = 10) => ({ width: w, depth: d });
+  const master = (w = 10, d = 10): Pick<Cutout, 'width' | 'depth'> => ({ width: w, depth: d });
   const base = {
     mode: 'grid' as const,
     cols: 3,
@@ -316,6 +316,13 @@ describe('arrayInstancesOverlap', () => {
 
   it('is false for a comfortably spaced grid', () => {
     expect(arrayInstancesOverlap(master(), base)).toBe(false);
+  });
+
+  it('treats edge-to-edge as clear, not as overlap', () => {
+    // Flush neighbours share a boundary and still cut two openings. The
+    // threshold is where they start eating into each other.
+    expect(arrayInstancesOverlap(master(), { ...base, pitchX: 10, pitchY: 10 })).toBe(false);
+    expect(arrayInstancesOverlap(master(), { ...base, pitchX: 9.99, pitchY: 10 })).toBe(true);
   });
 
   it('is true when neighbouring columns run into each other', () => {
