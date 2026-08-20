@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { cardToStyle, deriveInteriorCard, hasMovedWalls, INTERIOR_CARDS } from './interior';
+import {
+  cardToStyle,
+  deriveInteriorCard,
+  hasMovedWalls,
+  INTERIOR_CARDS,
+  resolveInteriorCard,
+} from './interior';
 import type { CompartmentConfig } from './compartments';
 
 const grid = (overrides?: Partial<CompartmentConfig>): CompartmentConfig => ({
@@ -58,5 +64,31 @@ describe('deriveInteriorCard', () => {
     // reroute them to Bento, which cannot represent either.
     expect(deriveInteriorCard('slotted', grid({ dividerOverrides: [movedWall] }))).toBe('slotted');
     expect(deriveInteriorCard('solid', grid({ dividerOverrides: [movedWall] }))).toBe('solid');
+  });
+});
+
+describe('resolveInteriorCard', () => {
+  it('lets the style answer whenever it can', () => {
+    // A card the style cannot back is a mode the params are not in — the
+    // Cutout editor over a hollow bin whose cutouts never get built.
+    expect(resolveInteriorCard('standard', 'solid')).toBe('standard');
+    expect(resolveInteriorCard('standard', 'slotted')).toBe('standard');
+    expect(resolveInteriorCard('solid', 'standard')).toBe('solid');
+    expect(resolveInteriorCard('slotted', 'bento')).toBe('slotted');
+  });
+
+  it('consults the preference only for the tie it exists to break', () => {
+    // Bento and Grid Dividers are two surfaces over `standard`, so nothing in
+    // the params can separate them.
+    expect(resolveInteriorCard('standard', 'bento')).toBe('bento');
+    expect(resolveInteriorCard('standard', 'standard')).toBe('standard');
+  });
+
+  it('agrees with the seed for every card a design can be loaded on', () => {
+    // deriveInteriorCard seeds the preference; resolving that seed against the
+    // same style must be a fixed point, or a design changes card on load.
+    for (const card of INTERIOR_CARDS) {
+      expect(resolveInteriorCard(cardToStyle(card), card)).toBe(card);
+    }
   });
 });

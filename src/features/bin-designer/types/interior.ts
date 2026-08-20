@@ -38,3 +38,26 @@ export function deriveInteriorCard(style: BinStyle, compartments: CompartmentCon
   if (style !== 'standard') return style;
   return hasMovedWalls(compartments) ? 'bento' : 'standard';
 }
+
+/**
+ * The card the panel actually shows as selected: the design's own style, with
+ * the stored preference consulted ONLY where the style cannot answer.
+ *
+ * `ui.interiorCard` has to be sticky (see above) but it is not free-floating —
+ * stickiness is owed entirely to the Bento/Grid Dividers ambiguity, where two
+ * cards share `style: 'standard'`. Slotted and Solid each ARE a style, so
+ * reading the preference for them lets the panel claim a mode the params are
+ * not in: `loadDesign` normalizes the field, but undo and reset-to-defaults
+ * restore params without it, and the constraint engine can refuse a style
+ * change after the card has already been recorded. Every one of those left the
+ * Cutout editor open over a `standard` bin — a hollow body with no fill for a
+ * pocket to sink into, whose cutouts the generator never builds, because they
+ * are gated on `base.solid`.
+ *
+ * Resolving here rather than patching each write path means a path added later
+ * cannot reintroduce the desync.
+ */
+export function resolveInteriorCard(style: BinStyle, preferred: InteriorCard): InteriorCard {
+  if (style !== 'standard') return style;
+  return preferred === 'bento' ? 'bento' : 'standard';
+}

@@ -80,7 +80,15 @@ export function DesignerPage() {
   useCommunityPublishLifecycle();
 
   const { isDesktop, isMobile, isLandscape } = useResponsive();
-  const cutoutEditorOpen = useDesignerStore((s) => s.ui.cutoutEditorOpen);
+  // Resolved against the style for the same reason the interior card is: the
+  // bin's cutouts are only built on a solid body, so an undo that walks the
+  // style back while the workspace is open leaves the user drawing pockets
+  // into a hollow bin that the generator will not cut. The lid's cutouts are a
+  // separate array with no such dependency. The flag itself is left alone, so
+  // redoing the style brings the workspace back.
+  const cutoutEditorOpen = useDesignerStore(
+    (s) => s.ui.cutoutEditorOpen && (s.ui.cutoutTarget === 'lid' || s.params.style === 'solid')
+  );
   const bentoWorkspaceOpen = useDesignerStore((s) => s.ui.bentoWorkspaceOpen);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
