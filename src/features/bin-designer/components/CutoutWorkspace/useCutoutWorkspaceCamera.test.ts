@@ -3,7 +3,7 @@ import { createElement, useEffect } from 'react';
 import { render as renderComponent, act } from '@testing-library/react';
 import { useCutoutWorkspaceCamera } from './useCutoutWorkspaceCamera';
 import type { CutoutWorkspaceCamera } from './useCutoutWorkspaceCamera';
-import { ZOOM_STEP } from '../panel/CutoutsSection/renderer/constants';
+import { ZOOM_STEP } from '@/features/bin-designer/components/panel/CutoutsSection/renderer/constants';
 
 /**
  * Drives the container size the hook measures. The global mock reports one
