@@ -1,6 +1,5 @@
 export { BinMesh } from './BinMesh';
 export { LidMesh } from './LidMesh';
-export { HingePin } from './HingePin';
 export { StackPlateMesh } from './StackPlateMesh';
 export { SlideTrayMesh } from './SlideTrayMesh';
 export { DetachableFeetMesh } from './DetachableFeetMesh';

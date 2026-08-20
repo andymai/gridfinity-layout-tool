@@ -57,7 +57,6 @@ import {
   BinSplitLines,
   SplitBinMeshes,
   type CameraPreset,
-  HingePin,
 } from '../preview';
 import { GradientBackground } from '../preview/GradientBackground';
 import { FootprintGrid } from '../preview/FootprintGrid';
@@ -492,10 +491,6 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
               {/* Click-lock lid (renders only when params.lid.enabled produced
                 a mesh). `lidOffsetMm` controls position + opacity in lockstep. */}
-              {/* Outside the lid's group on purpose: the pin stays on the
-                  axis at every opening angle, which is the one thing that
-                  makes the interleaved knuckles legible as a joint. */}
-              <HingePin />
               <LidMesh
                 color={previewColor}
                 lidOffsetMm={lidOffsetMm}

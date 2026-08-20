@@ -18,7 +18,6 @@ import {
   LID_FIT_CLEARANCE,
   resolveLidCavityExtraMm,
   resolveLidPlateThickness,
-  LID_HINGE_PIN_MM,
 } from '@/features/bin-designer/types/lid';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
@@ -171,46 +170,6 @@ export function lidHingePose(
     rotation: geometry.alongX ? [rad, 0, 0] : [0, rad, 0],
     inner: geometry.alongX ? [0, -axisCross, -axisLocalZ] : [-axisCross, 0, -axisLocalZ],
   };
-}
-
-/**
- * Where the filament pins sit, in the preview's world frame.
- *
- * One entry per RUN, because a cutout that splits the hinge wall leaves two
- * barrels that do not share an axis segment and so take two pins — the same
- * reason the panel and the export dialog quote a length per run.
- *
- * The pin does not move with the lid: it stays on the axis whatever the
- * opening angle, which is why this returns world coordinates rather than
- * something the rotating group would carry.
- */
-export function hingePinSegments(params: BinParams): ReadonlyArray<{
-  readonly centre: readonly [number, number, number];
-  readonly lengthMm: number;
-  readonly radiusMm: number;
-  readonly alongX: boolean;
-}> {
-  const pose = lidHingePose(params, 0);
-  const { geometry } = planHingeLid(params);
-  if (!pose || !geometry) return [];
-
-  const overhang = resolveOverhang(params.overhang);
-  const expansion = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
-  // Runs are stated in the cavity-centred frame; the preview draws in the
-  // footprint-centred one, and overhang is what separates them.
-  const alongShift = geometry.alongX ? (expansion?.offsetX ?? 0) : (expansion?.offsetY ?? 0);
-
-  return geometry.runs.map((run) => {
-    const mid = (run.lo + run.hi) / 2 + alongShift;
-    return {
-      centre: geometry.alongX
-        ? ([mid, pose.pivot[1], pose.pivot[2]] as const)
-        : ([pose.pivot[0], mid, pose.pivot[2]] as const),
-      lengthMm: run.pinLengthMm,
-      radiusMm: LID_HINGE_PIN_MM / 2,
-      alongX: geometry.alongX,
-    };
-  });
 }
 
 const ENTRY_OUTWARD: Record<LidRailSide, readonly [number, number]> = {
