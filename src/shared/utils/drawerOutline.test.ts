@@ -8,6 +8,8 @@ import {
   canonicalStartOutline,
   ceilHalfUnits,
   hashOutline,
+  drawerSizeFloors,
+  gridPitchFloors,
   minDrawerUnitsForOutline,
   normalizeDrawerOutline,
   OUTLINE_MAX_VERTICES,
@@ -392,6 +394,119 @@ describe('minDrawerUnitsForOutline', () => {
       ],
     };
     expect(minDrawerUnitsForOutline(exact, 48, 42)).toEqual({ width: 8.5, depth: 7.5 });
+  });
+});
+
+describe('drawerSizeFloors', () => {
+  // The reported drawer: measured 931 x 327mm, traced as a T on a 22 x 8 grid.
+  // 22u x 42 is 924mm, so the perimeter reaches 7mm PAST the grid's own edge.
+  const REPORTED: DrawerOutline = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 931, y: 0 },
+      { x: 931, y: 327 },
+      { x: 672, y: 327 },
+      { x: 672, y: 189 },
+      { x: 273, y: 189 },
+      { x: 273, y: 327 },
+      { x: 0, y: 327 },
+    ],
+  };
+
+  it('has no floor without an outline', () => {
+    expect(drawerSizeFloors({}, U)).toEqual({
+      width: CONSTRAINTS.GRID_MIN,
+      depth: CONSTRAINTS.GRID_MIN,
+    });
+  });
+
+  it('floors on the shape when nothing was measured', () => {
+    expect(drawerSizeFloors({ outline: L_SHAPE }, U)).toEqual({ width: 4, depth: 4 });
+  });
+
+  it('releases the floor on an axis the measurement already holds (#3635)', () => {
+    // What bounds the perimeter is outlineExtentMm, so a measurement that
+    // reaches the shape keeps holding it however small the grid gets — the
+    // grid slides out from under the perimeter and the strip is overhang.
+    expect(
+      drawerSizeFloors({ outline: REPORTED, measuredMm: { width: 931, depth: 327 } }, U)
+    ).toEqual({ width: CONSTRAINTS.GRID_MIN, depth: CONSTRAINTS.GRID_MIN });
+  });
+
+  it('never floors ABOVE the current size on a drawer measured wider than its grid (#3635)', () => {
+    // Stated against the shape's own bounding grid so the defect is visible:
+    // 931mm on a 42mm pitch needs 22.5 units, which is MORE than the 22 the
+    // drawer is set to, so a floor read off the shape could only move the "-"
+    // stepper UP. The measurement is what holds this perimeter, not the grid.
+    expect(minDrawerUnitsForOutline(REPORTED, U).width).toBe(22.5);
+    const floors = drawerSizeFloors(
+      { outline: REPORTED, measuredMm: { width: 931, depth: 327 } },
+      U
+    );
+    expect(floors.width).toBeLessThan(22);
+  });
+
+  it('floors per axis — an unmeasured axis keeps its bound', () => {
+    // Measured wide enough on X, nowhere near it on Y.
+    expect(
+      drawerSizeFloors({ outline: L_SHAPE, measuredMm: { width: 4 * U, depth: 1 } }, U)
+    ).toEqual({ width: CONSTRAINTS.GRID_MIN, depth: 4 });
+  });
+
+  it('keeps the floor when the measurement is short of the shape', () => {
+    // Authored against a larger grid, then a smaller drawer was recorded: the
+    // grid is still what holds the shape, so it may not shrink.
+    expect(
+      drawerSizeFloors({ outline: L_SHAPE, measuredMm: { width: 3 * U, depth: 3 * U } }, U)
+    ).toEqual({ width: 4, depth: 4 });
+  });
+
+  it('ignores a non-finite measurement rather than losing the floor', () => {
+    const bad = Number.NaN;
+    expect(
+      drawerSizeFloors({ outline: L_SHAPE, measuredMm: { width: bad, depth: bad } }, U)
+    ).toEqual({ width: 4, depth: 4 });
+  });
+
+  it('uses the per-axis pitch on a non-square grid', () => {
+    expect(drawerSizeFloors({ outline: L_SHAPE }, 48, 42)).toEqual({ width: 3.5, depth: 4 });
+  });
+});
+
+describe('gridPitchFloors', () => {
+  function layoutWithOutline(
+    outline: DrawerOutline | undefined,
+    measuredMm?: { width: number; depth: number }
+  ): Layout {
+    const layout = createTestLayout();
+    return {
+      ...layout,
+      gridUnitMm: mm(U),
+      drawer: {
+        ...layout.drawer,
+        width: gridUnits(4),
+        depth: gridUnits(4),
+        ...(outline ? { outline } : {}),
+        ...(measuredMm ? { measuredMm } : {}),
+      },
+    };
+  }
+
+  it('has no floor without an outline', () => {
+    expect(gridPitchFloors(layoutWithOutline(undefined))).toEqual({ x: 1, y: 1 });
+  });
+
+  it('floors the pitch on the shape when nothing was measured', () => {
+    expect(gridPitchFloors(layoutWithOutline(L_SHAPE))).toEqual({ x: U, y: U });
+  });
+
+  it('releases the pitch floor when the measurement already holds the shape (#3635)', () => {
+    // Same rule as drawerSizeFloors: shrinking the grid's mm extent cannot
+    // clip a perimeter the measurement is holding.
+    expect(gridPitchFloors(layoutWithOutline(L_SHAPE, { width: 4 * U, depth: 4 * U }))).toEqual({
+      x: 1,
+      y: 1,
+    });
   });
 });
 

@@ -4,6 +4,7 @@ import { isOk } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import type { DrawerOutline, Layout } from '@/core/types';
 import { binId, gridUnits, heightUnits, mm } from '@/core/types';
+import { normalizeDrawerOutline } from '@/shared/utils/drawerOutline';
 import { updateDrawer } from './updateDrawer';
 import { makeLayout, makeBin } from './_testHelpers';
 import { applyEvent } from '../../../projection/replay';
@@ -332,5 +333,94 @@ describe('v2 drawer.update with an outline', () => {
       } as never);
       expect('gridShiftX' in replayed.drawer).toBe(false);
     });
+  });
+});
+
+describe('v2 drawer.update with a measured drawer under the shape (#3635)', () => {
+  const U = 42;
+  // The reported layout: a T traced on a drawer measured 931 x 327mm, laid on
+  // a 22 x 8 grid. 22u is 924mm, so the perimeter reaches 7mm past the grid.
+  const MEASURED = { width: 931, depth: 327 };
+  const T_SHAPE: DrawerOutline = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 931, y: 0 },
+      { x: 931, y: 327 },
+      { x: 672, y: 327 },
+      { x: 672, y: 189 },
+      { x: 273, y: 189 },
+      { x: 273, y: 327 },
+      { x: 0, y: 327 },
+    ],
+  };
+  const reportedLayout = (): Layout => {
+    const base = makeLayout();
+    return {
+      ...base,
+      gridUnitMm: mm(U),
+      drawer: {
+        ...base.drawer,
+        width: gridUnits(22),
+        depth: gridUnits(8),
+        measuredMm: MEASURED,
+        outline: T_SHAPE,
+      },
+    };
+  };
+
+  it('shrinks the grid inside the measured perimeter', () => {
+    const layout = reportedLayout();
+    const result = updateDrawer.handle({ width: 21, depth: 7 }, { aggregate: layout });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const payload = result.value.event.payload;
+    expect(payload.changes.width).toBe(gridUnits(21));
+    expect(payload.changes.depth).toBe(gridUnits(7));
+    // The shape is the material; a smaller grid never touches it.
+    expect('outline' in payload.changes).toBe(false);
+    const next = produce(layout, (draft) => {
+      updateDrawer.apply({ type: 'drawer.updated', payload }, draft);
+    });
+    expect(next.drawer.outline).toBe(T_SHAPE);
+  });
+
+  it('survives the read-side normalizer after the shrink', () => {
+    // The floor exists to keep the normalizer from clipping the shape on the
+    // next load. Releasing it is only sound because outlineExtentMm reads the
+    // measurement — so prove the round trip, not just the clamp.
+    const layout = reportedLayout();
+    const result = updateDrawer.handle({ width: 12, depth: 4 }, { aggregate: layout });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const shrunk = produce(layout, (draft) => {
+      updateDrawer.apply({ type: 'drawer.updated', payload: result.value.event.payload }, draft);
+    });
+    expect(normalizeDrawerOutline(shrunk).drawer.outline).toEqual(T_SHAPE);
+  });
+
+  it('still floors on the shape once the measurement is cleared in the same command', () => {
+    // Floors read the measurement that LANDS, not the one being replaced.
+    const result = updateDrawer.handle(
+      { width: 12, measuredMm: null },
+      { aggregate: reportedLayout() }
+    );
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.changes.width).toBe(gridUnits(22.5));
+  });
+
+  it('releases the floor when the measurement is recorded in the same command', () => {
+    const base = reportedLayout();
+    const unmeasured: Layout = {
+      ...base,
+      drawer: { ...base.drawer, measuredMm: undefined },
+    };
+    const result = updateDrawer.handle(
+      { width: 12, measuredMm: MEASURED },
+      { aggregate: unmeasured }
+    );
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.changes.width).toBe(gridUnits(12));
   });
 });

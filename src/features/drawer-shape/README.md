@@ -100,7 +100,11 @@ by the frame (#3149).
 6. **The outline never changes implicitly** (#3149) — `drawer.update` clamps a
    shrink to the shape's bounding half-unit grid (`minDrawerUnitsForOutline`)
    and keeps the outline byte-identical on grow; the old crop/weld adaptation
-   is gone. The cell editor warns (`drawerShape.editor.replacesDrawnShape`)
+   is gone. That floor is per axis and only applies where the grid is what
+   holds the shape: what the read-side normalizer clips against is
+   `outlineExtentMm`, so an axis whose recorded measurement already contains
+   the perimeter has no floor at all (`drawerSizeFloors`, `gridPitchFloors`)
+   and the grid is free to shrink inside it as `outlineOverhang`. The cell editor warns (`drawerShape.editor.replacesDrawnShape`)
    when the stored perimeter would not survive rasterization
    (`isOutlineCellRepresentable`), since applying a cell paint replaces it.
 7. The corner-cut vertex geometry lives in

@@ -536,23 +536,45 @@ export function minDrawerUnitsForOutline(
 }
 
 /**
- * Drawer dims (grid units) a resize may clamp down to: the outline's bounding
- * half-unit grid while a custom shape is active, the plain grid minimum
- * without one. Shared by the CQRS command, the store mirror and the size
- * steppers so all three refuse the same shrinks.
+ * Drawer dims (grid units) a resize may clamp down to, per axis.
+ *
+ * The floor exists to keep a shrink from cropping the user's shape, and what
+ * holds the shape is {@link outlineExtentMm} — the grid extent OR a recorded
+ * measurement, whichever is larger. So an axis whose measurement already
+ * contains the shape has no floor at all: the grid slides out from under the
+ * perimeter, `outlineFrame` centres it and reports the strip as
+ * `outlineOverhang`, and nothing about the shape changes. Floors on the
+ * outline's own bounding grid only when the measurement is absent or too
+ * small to hold it, which is the case where the grid is all that keeps the
+ * shape in bounds.
+ *
+ * Reading the grid extent as the bound (its behaviour before the measurement
+ * gained that authority) put the floor ABOVE the current size on a drawer
+ * measured wider than its grid, so the "−" stepper could only move the value
+ * up.
+ *
+ * Shared by the CQRS command, the store mirror and the size steppers so all
+ * three refuse the same shrinks.
  */
 export function drawerSizeFloors(
-  outline: DrawerOutline | undefined,
+  drawer: Pick<Drawer, 'outline' | 'measuredMm'>,
   gridUnitMm: number,
   gridUnitMmY: number = gridUnitMm
 ): { readonly width: number; readonly depth: number } {
+  const outline = drawer.outline;
   if (outline === undefined) {
     return { width: CONSTRAINTS.GRID_MIN, depth: CONSTRAINTS.GRID_MIN };
   }
+  const b = outlineBounds(outline);
   const min = minDrawerUnitsForOutline(outline, gridUnitMm, gridUnitMmY);
+  const measured = drawer.measuredMm;
+  const floor = (boundMm: number, measuredMm: number, units: number): number =>
+    safeMeasured(measuredMm) >= boundMm
+      ? CONSTRAINTS.GRID_MIN
+      : clamp(units, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX);
   return {
-    width: clamp(min.width, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX),
-    depth: clamp(min.depth, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX),
+    width: floor(b.maxX, measured?.width ?? 0, min.width),
+    depth: floor(b.maxY, measured?.depth ?? 0, min.depth),
   };
 }
 
@@ -568,6 +590,12 @@ export const GRID_PITCH_MM_MAX = 200;
  * Floors round up to 0.01mm so `units × pitch ≥ bounds` survives float noise.
  * On a square grid the X pitch drives both axes, so its floor honours the Y
  * bound too. Shared by the CQRS commands and their store mirrors.
+ *
+ * The measurement releases the floor exactly as it does in
+ * {@link drawerSizeFloors}, and for the same reason: what the normalizer
+ * clips against is {@link outlineExtentMm}, so on an axis whose recorded
+ * measurement already holds the shape, shrinking the grid's own extent
+ * reaches nothing.
  */
 export function gridPitchFloors(layout: Pick<Layout, 'drawer' | 'gridUnitMm' | 'gridUnitMmY'>): {
   readonly x: number;
@@ -576,10 +604,17 @@ export function gridPitchFloors(layout: Pick<Layout, 'drawer' | 'gridUnitMm' | '
   const outline = layout.drawer.outline;
   if (outline === undefined) return { x: GRID_PITCH_MM_MIN, y: GRID_PITCH_MM_MIN };
   const b = outlineBounds(outline);
-  const floor = (extentMm: number, units: number): number =>
-    clamp(Math.ceil((extentMm / units) * 100 - 1e-6) / 100, GRID_PITCH_MM_MIN, GRID_PITCH_MM_MAX);
-  const x = floor(b.maxX, layout.drawer.width);
-  const y = floor(b.maxY, layout.drawer.depth);
+  const measured = layout.drawer.measuredMm;
+  const floor = (extentMm: number, measuredMm: number, units: number): number =>
+    safeMeasured(measuredMm) >= extentMm
+      ? GRID_PITCH_MM_MIN
+      : clamp(
+          Math.ceil((extentMm / units) * 100 - 1e-6) / 100,
+          GRID_PITCH_MM_MIN,
+          GRID_PITCH_MM_MAX
+        );
+  const x = floor(b.maxX, measured?.width ?? 0, layout.drawer.width);
+  const y = floor(b.maxY, measured?.depth ?? 0, layout.drawer.depth);
   return { x: layout.gridUnitMmY === undefined ? Math.max(x, y) : x, y };
 }
 

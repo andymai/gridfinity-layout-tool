@@ -16,9 +16,10 @@ export function createDrawerActions(setLocal: SetLocal) {
         const gridUnitMmY = effectiveGridUnitMmY(state.layout);
 
         // With a custom outline active the shrink floor rises to the
-        // outline's bounding half-unit grid — a resize must never mutate the
+        // outline's bounding half-unit grid on any axis the recorded
+        // measurement does not already hold — a resize must never mutate the
         // user's shape; same rule as the CQRS updateDrawer command.
-        const floors = drawerSizeFloors(drawer.outline, state.layout.gridUnitMm, gridUnitMmY);
+        const floors = drawerSizeFloors(drawer, state.layout.gridUnitMm, gridUnitMmY);
 
         if (updates.width !== undefined) {
           drawer.width = clamp(updates.width, floors.width, CONSTRAINTS.GRID_MAX) as GridUnits;
