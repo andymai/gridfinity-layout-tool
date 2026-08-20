@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.428.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.428.1...gridfinity-layout-tool-v4.428.2) (2026-08-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** resolve the interior card against the style it claims ([#3644](https://github.com/andymai/gridfinity-layout-tool/issues/3644)) ([344b673](https://github.com/andymai/gridfinity-layout-tool/commit/344b6738f35c86d29dd2523b77dae6d00e8a9f8d))
+
 ## [4.428.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.428.0...gridfinity-layout-tool-v4.428.1) (2026-08-20)
 
 
