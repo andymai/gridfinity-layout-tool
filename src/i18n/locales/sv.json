@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "Avdelartjocklek",
   "binDesigner.doubleTapToReset": "Dubbeltryck för att återställa",
   "binDesigner.downloadDesignJson": "Ladda ner design-JSON",
+  "binDesigner.export.jsonHint": "Den redigerbara designen, för ny import eller delning. Inte en utskrivbar modell.",
   "binDesigner.downloadFormat": "Ladda ner {format}",
   "binDesigner.downloadJSON": "Ladda ner JSON",
   "binDesigner.dragDropDesignFile": "Dra och släpp en design-JSON- eller STL-fil här",

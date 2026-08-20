@@ -99,6 +99,22 @@ export interface ExportDialogProps {
     visible: boolean;
   } | null;
 
+  /**
+   * Optional non-mesh export offered alongside the 3D formats — the design's
+   * own editable source.
+   *
+   * Deliberately NOT a fourth format chip: the chips drive the filename
+   * extension, the size estimate, the split banner and the multi-color
+   * gating, none of which a source file has. For the same reason it is not
+   * bound by `canExport` — the source exists before any mesh does, so this
+   * stays available while the 3D button is still waiting on geometry.
+   */
+  sourceDownload?: {
+    label: string;
+    hint?: string;
+    onClick: () => void;
+  } | null;
+
   /** Warning when no mesh is available */
   noMeshWarning?: string | null;
 
@@ -138,6 +154,7 @@ export function ExportDialog({
   estimatesTitle,
   estimatesDisclaimer,
   secondaryDownload,
+  sourceDownload,
   noMeshWarning,
   sectionTitle,
   sectionDescription,
@@ -377,6 +394,21 @@ export function ExportDialog({
 
             {noMeshWarning && !canExport && (
               <p className="mt-2 text-center text-xs text-warning">{noMeshWarning}</p>
+            )}
+
+            {sourceDownload && (
+              <div className="mt-3 border-t border-stroke-subtle pt-3 text-center">
+                <Button
+                  variant="ghost"
+                  onClick={sourceDownload.onClick}
+                  className="text-xs text-content-secondary underline-offset-2 hover:underline"
+                >
+                  {sourceDownload.label}
+                </Button>
+                {sourceDownload.hint && (
+                  <p className="mt-0.5 text-[10px] text-content-tertiary">{sourceDownload.hint}</p>
+                )}
+              </div>
             )}
 
             <MobileHandoffBanner />

@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "隔板厚度",
   "binDesigner.doubleTapToReset": "双击以重置",
   "binDesigner.downloadDesignJson": "下载设计 JSON",
+  "binDesigner.export.jsonHint": "可编辑的设计文件，用于重新导入或分享。不是可打印的模型。",
   "binDesigner.downloadFormat": "下载 {format}",
   "binDesigner.downloadJSON": "下载 JSON",
   "binDesigner.dragDropDesignFile": "将设计 JSON 或 STL 文件拖放到此处",

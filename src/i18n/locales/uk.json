@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "Товщина розділювача",
   "binDesigner.doubleTapToReset": "Подвійний тап для скидання",
   "binDesigner.downloadDesignJson": "Завантажити Design JSON",
+  "binDesigner.export.jsonHint": "Редагований дизайн для повторного імпорту або поширення. Це не модель для друку.",
   "binDesigner.downloadFormat": "Завантажити {format}",
   "binDesigner.downloadJSON": "Завантажити JSON",
   "binDesigner.dragDropDesignFile": "Перетягніть сюди JSON- або STL-файл дизайну",

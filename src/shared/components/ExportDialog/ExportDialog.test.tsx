@@ -232,3 +232,28 @@ describe('ExportDialog', () => {
     });
   });
 });
+
+describe('ExportDialog — source download', () => {
+  it('is absent unless a caller offers one', () => {
+    render(<ExportDialog {...defaultProps} />);
+    expect(screen.queryByRole('button', { name: /design json/i })).not.toBeInTheDocument();
+  });
+
+  it('stays available while the 3D formats are still waiting on a mesh', () => {
+    // The source file exists before any geometry does, so it must not be
+    // gated on canExport the way the format chips and the download are.
+    const onClick = vi.fn();
+    render(
+      <ExportDialog
+        {...defaultProps}
+        canExport={false}
+        sourceDownload={{ label: 'Download Design JSON', hint: 'The editable design', onClick }}
+      />
+    );
+    const link = screen.getByRole('button', { name: 'Download Design JSON' });
+    expect(link).not.toBeDisabled();
+    fireEvent.click(link);
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('The editable design')).toBeInTheDocument();
+  });
+});

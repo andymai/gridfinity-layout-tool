@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "仕切り板の厚さ",
   "binDesigner.doubleTapToReset": "ダブルタップでリセット",
   "binDesigner.downloadDesignJson": "デザインJSONをダウンロード",
+  "binDesigner.export.jsonHint": "再読み込みや共有のための編集可能なデザインです。印刷用モデルではありません。",
   "binDesigner.downloadFormat": "{format}をダウンロード",
   "binDesigner.downloadJSON": "JSONをダウンロード",
   "binDesigner.dragDropDesignFile": "デザインのJSONまたはSTLファイルをここにドラッグ＆ドロップ",

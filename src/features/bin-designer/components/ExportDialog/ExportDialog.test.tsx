@@ -56,6 +56,10 @@ vi.mock('@/shared/components/ExportDialog', async (importOriginal) => {
   };
 });
 
+vi.mock('@/features/bin-designer/utils/designJson', () => ({
+  downloadDesignAsFile: vi.fn(),
+}));
+
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({
   useExport: () => ({
     canExport: true,
@@ -624,5 +628,23 @@ describe('ExportDialog', () => {
         expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
       );
     });
+  });
+});
+
+describe('ExportDialog — design JSON', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+    setupStore();
+  });
+
+  it('offers the design JSON alongside the 3D formats', async () => {
+    const { downloadDesignAsFile } = await import('@/features/bin-designer/utils/designJson');
+    render(<ExportDialog />);
+    const link = screen.getByRole('button', { name: 'Download Design JSON' });
+    fireEvent.click(link);
+    expect(downloadDesignAsFile).toHaveBeenCalledTimes(1);
+    // Still open: the source file is usually taken alongside a 3D export.
+    expect(screen.getByText('Export')).toBeInTheDocument();
   });
 });

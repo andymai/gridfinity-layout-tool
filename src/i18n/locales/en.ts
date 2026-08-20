@@ -1678,6 +1678,8 @@ const en: Record<string, string> = {
   'binDesigner.dimensions': 'Dimensions',
   'binDesigner.downloadJSON': 'Download JSON',
   'binDesigner.downloadDesignJson': 'Download Design JSON',
+  'binDesigner.export.jsonHint':
+    'The editable design, for re-importing or sharing. Not a printable model.',
   'binDesigner.threeDModel': '3D Model',
   'binDesigner.threeDModelDescription': 'Export a printable 3D model file',
   'binDesigner.importDesignSuccess': 'Imported and loaded "{name}"',
