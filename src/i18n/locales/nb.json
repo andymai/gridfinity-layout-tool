@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Plassering",
   "binDesigner.cutouts.autoArrange": "Ordne automatisk",
   "binDesigner.cutouts.centerInBin": "Sentrer i boks",
+  "binDesigner.cutouts.centerH": "Sentrer horisontalt",
+  "binDesigner.cutouts.centerV": "Sentrer vertikalt",
   "binDesigner.cutouts.chamfer": "Innføringsfas",
   "binDesigner.cutouts.chamferInfo": "Skråkant så deler sentrerer seg selv",
   "binDesigner.cutouts.clearAll": "Fjern alle",

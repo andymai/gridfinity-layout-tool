@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Розташувати",
   "binDesigner.cutouts.autoArrange": "Авторозташування",
   "binDesigner.cutouts.centerInBin": "По центру біна",
+  "binDesigner.cutouts.centerH": "Центрувати горизонтально",
+  "binDesigner.cutouts.centerV": "Центрувати вертикально",
   "binDesigner.cutouts.chamfer": "Вхідна фаска",
   "binDesigner.cutouts.chamferInfo": "Скошений край для самоцентрування деталей",
   "binDesigner.cutouts.clearAll": "Очистити все",

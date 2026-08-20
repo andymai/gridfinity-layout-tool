@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "排列",
   "binDesigner.cutouts.autoArrange": "自动排列",
   "binDesigner.cutouts.centerInBin": "在收纳盒中居中",
+  "binDesigner.cutouts.centerH": "水平居中",
+  "binDesigner.cutouts.centerV": "垂直居中",
   "binDesigner.cutouts.chamfer": "入口倒角",
   "binDesigner.cutouts.chamferInfo": "带斜面的边沿，便于零件自动居中",
   "binDesigner.cutouts.clearAll": "全部清除",

@@ -10,7 +10,12 @@ import { useState } from 'react';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { Button, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { distributeHorizontally, distributeVertically, centerInBin } from './geometry';
+import {
+  distributeHorizontally,
+  distributeVertically,
+  centerInBin,
+  type CenterAxis,
+} from './geometry';
 import { expandSelectionToGroups, toArrangeUnits, unitsBounds } from './cutoutGroups';
 import { autoArrangeCutouts } from './autoArrange';
 import { PathfinderControls } from './PathfinderControls';
@@ -208,8 +213,8 @@ export function AlignmentToolbar({
     applyPositions(distributeVertically(arrangeTargets, binDepth));
   };
 
-  const handleCenterInBin = () => {
-    applyPositions(centerInBin(arrangeTargets, binWidth, binDepth));
+  const handleCenterInBin = (axis: CenterAxis) => {
+    applyPositions(centerInBin(arrangeTargets, binWidth, binDepth, axis));
   };
 
   const alignButton = (type: AlignType, label: string) => (
@@ -367,9 +372,29 @@ export function AlignmentToolbar({
           size="sm"
           touchTarget={false}
           className="text-content-secondary"
-          onClick={handleCenterInBin}
+          onClick={() => handleCenterInBin('both')}
         >
           {t('binDesigner.cutouts.centerInBin')}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          touchTarget={false}
+          className="text-content-secondary"
+          onClick={() => handleCenterInBin('x')}
+        >
+          {t('binDesigner.cutouts.centerH')}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          touchTarget={false}
+          className="text-content-secondary"
+          onClick={() => handleCenterInBin('y')}
+        >
+          {t('binDesigner.cutouts.centerV')}
         </Button>
         <Button
           type="button"

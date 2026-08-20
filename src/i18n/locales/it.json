@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Disponi",
   "binDesigner.cutouts.autoArrange": "Disposizione automatica",
   "binDesigner.cutouts.centerInBin": "Centra nel bin",
+  "binDesigner.cutouts.centerH": "Centra orizzontalmente",
+  "binDesigner.cutouts.centerV": "Centra verticalmente",
   "binDesigner.cutouts.chamfer": "Smusso d'ingresso",
   "binDesigner.cutouts.chamferInfo": "Bordo smussato così i pezzi si centrano da soli",
   "binDesigner.cutouts.clearAll": "Cancella tutto",

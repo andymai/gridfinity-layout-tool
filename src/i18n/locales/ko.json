@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "정돈",
   "binDesigner.cutouts.autoArrange": "자동 정렬",
   "binDesigner.cutouts.centerInBin": "수납통 가운데에 놓기",
+  "binDesigner.cutouts.centerH": "가로 가운데 정렬",
+  "binDesigner.cutouts.centerV": "세로 가운데 정렬",
   "binDesigner.cutouts.chamfer": "입구 모따기",
   "binDesigner.cutouts.chamferInfo": "부품이 스스로 중심을 잡도록 비스듬히 깎은 테두리",
   "binDesigner.cutouts.clearAll": "모두 지우기",

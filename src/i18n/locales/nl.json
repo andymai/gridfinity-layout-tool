@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Schikken",
   "binDesigner.cutouts.autoArrange": "Automatisch rangschikken",
   "binDesigner.cutouts.centerInBin": "Centreren in bak",
+  "binDesigner.cutouts.centerH": "Horizontaal centreren",
+  "binDesigner.cutouts.centerV": "Verticaal centreren",
   "binDesigner.cutouts.chamfer": "Invoerafschuining",
   "binDesigner.cutouts.chamferInfo": "Schuine rand zodat onderdelen zichzelf centreren",
   "binDesigner.cutouts.clearAll": "Alles wissen",

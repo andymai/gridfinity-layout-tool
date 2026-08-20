@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Anordnen",
   "binDesigner.cutouts.autoArrange": "Automatisch anordnen",
   "binDesigner.cutouts.centerInBin": "Im Fach zentrieren",
+  "binDesigner.cutouts.centerH": "Horizontal zentrieren",
+  "binDesigner.cutouts.centerV": "Vertikal zentrieren",
   "binDesigner.cutouts.chamfer": "Einführfase",
   "binDesigner.cutouts.chamferInfo": "Abgeschrägter Rand zum Selbstzentrieren der Teile",
   "binDesigner.cutouts.clearAll": "Alle löschen",

@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Ordna",
   "binDesigner.cutouts.autoArrange": "Auto-arrangera",
   "binDesigner.cutouts.centerInBin": "Centrera i fack",
+  "binDesigner.cutouts.centerH": "Centrera horisontellt",
+  "binDesigner.cutouts.centerV": "Centrera vertikalt",
   "binDesigner.cutouts.chamfer": "Insticksfas",
   "binDesigner.cutouts.chamferInfo": "Fasad kant så att delar centreras",
   "binDesigner.cutouts.clearAll": "Rensa alla",

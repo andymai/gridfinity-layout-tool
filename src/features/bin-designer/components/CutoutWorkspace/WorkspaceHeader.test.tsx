@@ -151,7 +151,10 @@ describe('WorkspaceHeader', () => {
     );
     expect(screen.getByTitle('binDesigner.cutouts.alignLeft')).toBeInTheDocument();
     expect(screen.getByTitle('binDesigner.cutouts.alignRight')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.centerInBin')).toBeInTheDocument();
+    // Centering is an icon group now, and all three axes are offered.
+    expect(screen.getByTitle('binDesigner.cutouts.centerInBin')).toBeInTheDocument();
+    expect(screen.getByTitle('binDesigner.cutouts.centerH')).toBeInTheDocument();
+    expect(screen.getByTitle('binDesigner.cutouts.centerV')).toBeInTheDocument();
     expect(screen.getByTitle('binDesigner.cutouts.pathfinder.union')).toBeInTheDocument();
   });
 

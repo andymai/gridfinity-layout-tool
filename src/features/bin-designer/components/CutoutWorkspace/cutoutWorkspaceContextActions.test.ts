@@ -182,3 +182,36 @@ describe('merge into repeat', () => {
     expect(labels(buildFor(pair))).not.toContain('binDesigner.cutouts.repeat.merge');
   });
 });
+
+describe('buildCutoutContextActions — centering', () => {
+  it('offers all three centering entries for a selection', () => {
+    expect(labels(build(makeCutout()))).toEqual(
+      expect.arrayContaining([
+        'binDesigner.cutouts.centerInBin',
+        'binDesigner.cutouts.centerH',
+        'binDesigner.cutouts.centerV',
+      ])
+    );
+  });
+
+  it('moves only the chosen axis, leaving the other where the user put it', () => {
+    const updateCutout = vi.fn();
+    const cutout = makeCutout({ x: 3, y: 7 });
+    const actions = build(cutout, { updateCutout });
+
+    const byLabel = (label: string) => {
+      const action = actions.find((a) => a.label === label);
+      if (!action) throw new Error(`no action ${label}`);
+      return action;
+    };
+
+    byLabel('binDesigner.cutouts.centerH').onClick?.();
+    expect(updateCutout).toHaveBeenLastCalledWith('c1', { x: 45, y: 7 });
+
+    byLabel('binDesigner.cutouts.centerV').onClick?.();
+    expect(updateCutout).toHaveBeenLastCalledWith('c1', { x: 3, y: 45 });
+
+    byLabel('binDesigner.cutouts.centerInBin').onClick?.();
+    expect(updateCutout).toHaveBeenLastCalledWith('c1', { x: 45, y: 45 });
+  });
+});

@@ -621,6 +621,8 @@
   "binDesigner.cutouts.arrange.title": "Uspořádat",
   "binDesigner.cutouts.autoArrange": "Automaticky uspořádat",
   "binDesigner.cutouts.centerInBin": "Vystředit v binu",
+  "binDesigner.cutouts.centerH": "Vystředit vodorovně",
+  "binDesigner.cutouts.centerV": "Vystředit svisle",
   "binDesigner.cutouts.chamfer": "Nájezdové zkosení",
   "binDesigner.cutouts.chamferInfo": "Zkosený okraj, aby se díly samy vystředily",
   "binDesigner.cutouts.clearAll": "Vyčistit vše",
