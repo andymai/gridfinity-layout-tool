@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/InteriorSection/useInteriorSection.ts
+  s_675623bf53b7f7::t_dd4061d4974d7b 5-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "61e1d79d7607af2617e052ba3ebdfb49b834c1e2",
+  "prompts": {},
+  "sessions": {
+    "s_675623bf53b7f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e42dafc8-e3c7-45ed-871d-df516f229e80",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
