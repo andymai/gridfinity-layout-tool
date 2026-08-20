@@ -721,6 +721,7 @@
   "binDesigner.cutouts.repeat.presetRing": "Pierścień z {count}",
   "binDesigner.cutouts.repeat.radius": "Promień",
   "binDesigner.cutouts.repeat.remove": "Usuń szyk",
+  "binDesigner.cutouts.repeat.overlapWarning": "Powtórzenia nachodzą na siebie. Ich wycięcia połączą się w jeden otwór.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Obróć do środka",
   "binDesigner.cutouts.repeat.rows": "Rzędy",
   "binDesigner.cutouts.repeat.startAngle": "Kąt początkowy",

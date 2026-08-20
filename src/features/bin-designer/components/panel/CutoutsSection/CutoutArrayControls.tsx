@@ -9,7 +9,12 @@
 
 import type { Cutout, CutoutArrayMode, CutoutArrayConfig } from '@/features/bin-designer/types';
 import { CUTOUT_ARRAY_MODES, MAX_ARRAY_COUNT } from '@/features/bin-designer/types';
-import { arrayInstanceCount, arrayFieldBounds, ARRAY_MIN_RADIUS } from '@/shared/utils/cutoutArray';
+import {
+  arrayInstanceCount,
+  arrayFieldBounds,
+  arrayInstancesOverlap,
+  ARRAY_MIN_RADIUS,
+} from '@/shared/utils/cutoutArray';
 import { useTranslation } from '@/i18n';
 import { Button, Checkbox, Stepper } from '@/design-system';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
@@ -133,6 +138,7 @@ export function CutoutArrayControls({
 
   const count = arrayInstanceCount(array);
   const bounds = arrayFieldBounds(cutout, binWidth, binDepth, array);
+  const overlaps = arrayInstancesOverlap(cutout, array);
 
   return (
     <div className="space-y-1.5">
@@ -253,6 +259,15 @@ export function CutoutArrayControls({
             disabled={disabled}
           />
         </div>
+      )}
+
+      {/* Advisory, not a block: a deliberate overlap is how two shapes are made
+          to cut into each other, so the user is told what will happen rather
+          than stopped. */}
+      {overlaps && (
+        <p className="pt-0.5 text-[11px] leading-snug text-warning">
+          {t('binDesigner.cutouts.repeat.overlapWarning')}
+        </p>
       )}
 
       <div className="flex items-center justify-between pt-0.5 text-[11px] text-content-tertiary">

@@ -25,9 +25,6 @@ export const ARRAY_MAX_PITCH = 200;
 export const ARRAY_MIN_RADIUS = 1;
 export const ARRAY_MAX_RADIUS = 200;
 
-/** Minimum printed wall between adjacent array instances (mm). */
-export const ARRAY_MIN_WALL_GAP = 1;
-
 export interface ArrayInstance {
   /** Center offset from the master center (mm). */
   readonly dx: number;
@@ -148,6 +145,42 @@ export interface ArrayFieldBounds {
   readonly maxPitchX: number;
   readonly maxPitchY: number;
   readonly maxRadius: number;
+  /**
+   * Smallest pitch on each axis at which no two instances' bounding boxes
+   * touch, given the other axis and the mode as they currently stand.
+   *
+   * Advisory, NOT a floor: overlap is a legitimate thing to ask for (two
+   * shapes cutting into each other to make one opening), so the editor warns
+   * rather than clamps. Below this the resulting cuts merge.
+   */
+  readonly clearPitchX: number;
+  readonly clearPitchY: number;
+}
+
+/**
+ * Whether any two instances of this array overlap, box against box.
+ *
+ * Two instances overlap only when they overlap on BOTH axes, which is what
+ * makes a staggered array able to nest: adjacent rows sit half a pitch apart
+ * in X, so once that half-pitch clears the master's width the rows may come
+ * arbitrarily close in Y and still not touch. Reading the Y bound off the
+ * master's box alone — as a per-axis floor must — is what stopped round
+ * shapes from nesting into the row below them.
+ *
+ * Measured on the nominal box, like every other bound here; a rotated master
+ * sweeps a different box and is not corrected for.
+ */
+export function arrayInstancesOverlap(
+  cutout: Pick<Cutout, 'width' | 'depth'>,
+  config: CutoutArrayConfig
+): boolean {
+  if (config.mode === 'radial') return false;
+  const cols = clampCount(config.cols);
+  const rows = clampCount(config.rows);
+  const staggered = config.mode === 'staggered';
+  if (cols > 1 && config.pitchX < cutout.width) return true;
+  const rowOffsetX = staggered ? config.pitchX / 2 : 0;
+  return rows > 1 && rowOffsetX < cutout.width && config.pitchY < cutout.depth;
 }
 
 const floorToHalf = (v: number): number => Math.floor(v * 2) / 2;
@@ -215,11 +248,30 @@ export function arrayFieldBounds(
   );
   const maxRadius = clamp(floorToHalf(edgeClearance), ARRAY_MIN_RADIUS, ARRAY_MAX_RADIUS);
 
-  // Minimum pitch that preserves at least ARRAY_MIN_WALL_GAP of material between instances.
-  const minPitchX = Math.max(ARRAY_MIN_PITCH, floorToHalf(w) + ARRAY_MIN_WALL_GAP);
-  const minPitchY = Math.max(ARRAY_MIN_PITCH, floorToHalf(d) + ARRAY_MIN_WALL_GAP);
+  // Pitch floors are the absolute editor cap only. A floor derived from the
+  // master's box refuses two things the user may genuinely want: a staggered
+  // array nesting into the row below (where the half-pitch X offset has
+  // already separated the boxes) and a deliberate overlap, where neighbouring
+  // cuts are meant to merge into one opening. `clearPitch*` says where overlap
+  // begins so the editor can warn instead.
+  const minPitchX = ARRAY_MIN_PITCH;
+  const minPitchY = ARRAY_MIN_PITCH;
+  const staggerOffsetX = config.mode === 'staggered' ? config.pitchX / 2 : 0;
+  const clearPitchX = cols > 1 ? Math.max(ARRAY_MIN_PITCH, w) : ARRAY_MIN_PITCH;
+  const clearPitchY =
+    rows > 1 && staggerOffsetX < w ? Math.max(ARRAY_MIN_PITCH, d) : ARRAY_MIN_PITCH;
 
-  return { maxCols, maxRows, minPitchX, minPitchY, maxPitchX, maxPitchY, maxRadius };
+  return {
+    maxCols,
+    maxRows,
+    minPitchX,
+    minPitchY,
+    maxPitchX,
+    maxPitchY,
+    maxRadius,
+    clearPitchX,
+    clearPitchY,
+  };
 }
 
 /** A sensible default config for a freshly-enabled array, sized off the master. */

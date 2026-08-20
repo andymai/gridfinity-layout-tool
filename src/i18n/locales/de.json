@@ -721,6 +721,7 @@
   "binDesigner.cutouts.repeat.presetRing": "Ring aus {count}",
   "binDesigner.cutouts.repeat.radius": "Radius",
   "binDesigner.cutouts.repeat.remove": "Anordnung entfernen",
+  "binDesigner.cutouts.repeat.overlapWarning": "Die Wiederholungen überlappen sich. Ihre Schnitte verschmelzen zu einer Öffnung.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Zur Mitte drehen",
   "binDesigner.cutouts.repeat.rows": "Reihen",
   "binDesigner.cutouts.repeat.startAngle": "Startwinkel",

@@ -250,11 +250,22 @@ describe('arrangements that are not a pattern', () => {
 
     expect(detectRepeatPattern(placed, BIN_W, BIN_D)).toBeNull();
   });
+});
 
-  it('declines spacing tighter than the minimum printable wall', () => {
+describe('spacing the user actually placed', () => {
+  it('accepts shapes packed edge to edge', () => {
+    // Detection is the way back from a flattened repeat, so it has to be able
+    // to describe what is on the board. Nothing stops two independent cutouts
+    // from touching, and an array is not held to a stricter rule.
     const placed = asPlacedCutouts(cutout({ width: 12 }), cfg({ cols: 3, rows: 1, pitchX: 12 }));
 
-    expect(detectRepeatPattern(placed, BIN_W, BIN_D)).toBeNull();
+    expect(detectRepeatPattern(placed, BIN_W, BIN_D)).not.toBeNull();
+  });
+
+  it('accepts shapes that deliberately overlap', () => {
+    const placed = asPlacedCutouts(cutout({ width: 12 }), cfg({ cols: 3, rows: 1, pitchX: 8 }));
+
+    expect(detectRepeatPattern(placed, BIN_W, BIN_D)).not.toBeNull();
   });
 });
 

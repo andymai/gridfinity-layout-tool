@@ -721,6 +721,7 @@
   "binDesigner.cutouts.repeat.presetRing": "Kruh z {count}",
   "binDesigner.cutouts.repeat.radius": "Poloměr",
   "binDesigner.cutouts.repeat.remove": "Odebrat opakování",
+  "binDesigner.cutouts.repeat.overlapWarning": "Opakování se překrývají. Jejich řezy splynou v jeden otvor.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Otočit ke středu",
   "binDesigner.cutouts.repeat.rows": "Řady",
   "binDesigner.cutouts.repeat.startAngle": "Počáteční úhel",

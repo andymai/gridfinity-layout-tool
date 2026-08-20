@@ -721,6 +721,7 @@
   "binDesigner.cutouts.repeat.presetRing": "Anel de {count}",
   "binDesigner.cutouts.repeat.radius": "Raio",
   "binDesigner.cutouts.repeat.remove": "Remover matriz",
+  "binDesigner.cutouts.repeat.overlapWarning": "As repetições se sobrepõem. Seus cortes vão se fundir em uma única abertura.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Girar para o centro",
   "binDesigner.cutouts.repeat.rows": "Linhas",
   "binDesigner.cutouts.repeat.startAngle": "Ângulo inicial",

@@ -100,3 +100,36 @@ describe('CutoutArrayControls', () => {
     expect(onUpdate).toHaveBeenCalledWith({ array: undefined });
   });
 });
+
+describe('CutoutArrayControls — overlap', () => {
+  const WARNING = 'binDesigner.cutouts.repeat.overlapWarning';
+
+  it('says nothing about a comfortably spaced array', () => {
+    renderControls(makeCutout({ array: arrayCfg }));
+    expect(screen.queryByText(WARNING)).not.toBeInTheDocument();
+  });
+
+  it('warns rather than blocks when the repeats run into each other', () => {
+    renderControls(makeCutout({ array: { ...arrayCfg, pitchX: 6 } }));
+    expect(screen.getByText(WARNING)).toBeInTheDocument();
+  });
+
+  it('lets the pitch go below the master box', () => {
+    // The floor was the master's own width; the field now bottoms out at the
+    // absolute editor cap, so a deliberate overlap is reachable.
+    renderControls(makeCutout({ width: 20, depth: 20, array: arrayCfg }));
+    const pitch = screen.getByRole('slider', { name: 'binDesigner.cutouts.repeat.pitchX' });
+    expect(pitch).toHaveAttribute('aria-valuemin', '1');
+  });
+
+  it('stays quiet when a stagger already separates the rows', () => {
+    // The reported nesting: a 4mm row pitch under a 10mm shape is fine once
+    // the rows sit half a pitch apart in X.
+    renderControls(
+      makeCutout({
+        array: { ...arrayCfg, mode: 'staggered', cols: 3, rows: 3, pitchX: 20, pitchY: 4 },
+      })
+    );
+    expect(screen.queryByText(WARNING)).not.toBeInTheDocument();
+  });
+});

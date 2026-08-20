@@ -721,6 +721,7 @@
   "binDesigner.cutouts.repeat.presetRing": "Ring van {count}",
   "binDesigner.cutouts.repeat.radius": "Straal",
   "binDesigner.cutouts.repeat.remove": "Reeks verwijderen",
+  "binDesigner.cutouts.repeat.overlapWarning": "De herhalingen overlappen. Hun uitsparingen vloeien samen tot één opening.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Naar midden draaien",
   "binDesigner.cutouts.repeat.rows": "Rijen",
   "binDesigner.cutouts.repeat.startAngle": "Starthoek",
