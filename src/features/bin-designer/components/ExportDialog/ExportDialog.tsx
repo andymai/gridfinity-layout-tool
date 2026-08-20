@@ -16,6 +16,8 @@ import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import { zoneLabel } from '@/features/bin-designer/utils/zoneLabels';
 import { SlicerHandoffPreview } from './SlicerHandoffPreview';
+import { hingePinLengths } from '@/shared/utils/hingeLidPlan';
+import { LID_HINGE_PIN_MM } from '@/features/bin-designer/types/lid';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import {
@@ -270,6 +272,11 @@ export function ExportDialog() {
     downloadLabel = t('binDesigner.downloadFormat', { format: activeFormat.toUpperCase() });
   }
 
+  const showHandoff = isMultiColor && activeFormat === '3mf' && !useSplitExport;
+  // Every offcut this design needs, longest first. Empty for any lid that is
+  // not hinged, so the row simply does not appear.
+  const hingePins = hingePinLengths(params);
+
   return (
     <SharedExportDialog
       open={exportDialogOpen}
@@ -312,12 +319,35 @@ export function ExportDialog() {
           : null
       }
       extras={
-        isMultiColor && activeFormat === '3mf' && !useSplitExport ? (
-          <SlicerHandoffPreview
-            featureColors={params.featureColors}
-            activeZones={computeActiveZones(params)}
-            zoneLabel={(zone) => zoneLabel(zone, t, params.featureColors.lip.bands)}
-          />
+        showHandoff || hingePins.length > 0 ? (
+          <>
+            {/* The pin is hardware the user supplies, so it is a PART of this
+                design and not a footnote — and the length changes every time
+                the bin is resized. Quoted from the same plan and the same
+                strings the panel uses, so the two cannot disagree about a
+                number someone is about to cut filament to. */}
+            {hingePins.length > 0 && (
+              <p className="text-xs text-content-secondary">
+                {hingePins.length === 1
+                  ? t('binDesigner.lid.hinge.pinOne', {
+                      diameter: LID_HINGE_PIN_MM.toFixed(2),
+                      length: hingePins[0].toFixed(1),
+                    })
+                  : t('binDesigner.lid.hinge.pinMany', {
+                      count: hingePins.length,
+                      diameter: LID_HINGE_PIN_MM.toFixed(2),
+                      lengths: hingePins.map((mm) => mm.toFixed(1)).join(' + '),
+                    })}
+              </p>
+            )}
+            {showHandoff && (
+              <SlicerHandoffPreview
+                featureColors={params.featureColors}
+                activeZones={computeActiveZones(params)}
+                zoneLabel={(zone) => zoneLabel(zone, t, params.featureColors.lip.bands)}
+              />
+            )}
+          </>
         ) : null
       }
       estimates={estimateRows}

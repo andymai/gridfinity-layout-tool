@@ -28,6 +28,9 @@ import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks, dividerRailSides } from '@/shared/utils/dividerRailPlan';
 import { unlippedSides, lipGaps, lipGapSides, polygonLipGaps } from '@/shared/utils/lipGapPlan';
+// Safe from the recursion CLAUDE.md gotcha #18 documents: `planHingeLid` is a
+// leaf — it never calls `shouldGenerateLid` or back into this module.
+import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 // Re-exported for callers that already reach for this module's lid policy;
 // defined in `lidInteriorRelief` because the divider planner and the label
 // shelf datum both need it and both are reached from here.
@@ -42,6 +45,7 @@ import {
 import type { BinParams, ScoopSide } from '../types';
 import { isUndersideRelief } from '../types/base';
 import {
+  isHingeLid,
   LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
   LID_MAGNET_LIP_CLEARANCE,
   isSlideLid,
@@ -96,7 +100,12 @@ export type LidCompatibilityId =
   /** A cutout or handle opens a window in a wall the channel runs along. */
   | 'slideChannelInterrupted'
   /** A wall pattern perforates the walls the channel welds to. */
-  | 'slideWallPattern';
+  | 'slideWallPattern'
+  // Hinged-lid specific:
+  /** The plan refused this design outright; the message names the reason. */
+  | 'hingeUnbuildable'
+  /** Knuckles stand proud of the lid's top, so nothing sits level on it. */
+  | 'hingeStackableTop';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -338,6 +347,15 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // seats fine even with cutouts on every wall. The magnetic branch adds its
   // own checks instead.
   const isMagnetic = params.lid.attachment === 'magnetic';
+  // A hinged lid has no click rails — the worker forces them off for every
+  // attachment but `clickRails` — so every warning below phrased as "the rail
+  // grips X" is false for it, exactly as it is for a magnetic lid. Gated
+  // through `lipHoldsLid` rather than by widening `isMagnetic`, whose name
+  // would then lie about what it tests.
+  const isHinge = isHingeLid(params.lid);
+  const hingeCatchMode = isHinge ? planHingeLid(params).geometry?.catchMode : undefined;
+  /** True when this lid's hold depends on the lip's rail grip at all. */
+  const lipHoldsLid = !isMagnetic && !isHinge;
 
   // The stretches of each wall where a cutout or a high handle has taken the
   // lip away. Resolved once and shared by checks 1 and 7 below, and by the rail
@@ -347,8 +365,8 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // wrong: `FeatureGate` only makes the CONTROLS inert, and both builders
   // declare `supportsCellMask`, so a polygon bin really is cut. Its gaps are
   // measured against resolved polygon edges and so come from a separate plan.
-  const gaps = isMagnetic ? [] : lipGaps(params);
-  const polyGaps = isMagnetic ? [] : polygonLipGaps(params);
+  const gaps = lipHoldsLid ? lipGaps(params) : [];
+  const polyGaps = lipHoldsLid ? polygonLipGaps(params) : [];
 
   // 1. Wall cutouts. Each one removes lip material along its OWN span, and
   // the rail keeps whatever the window leaves either side — so
@@ -360,7 +378,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    Only a rectangle can reach that blocker. "All four sides" does not
   //    describe a shape with six walls, and a custom shape's rails are clipped
   //    per EDGE, so it warns and keeps whatever each edge leaves.
-  if (!isMagnetic) {
+  if (lipHoldsLid) {
     const cutSides = isPolygon ? lipGapSides(polyGaps, 'cutout') : lipGapSides(gaps, 'cutout');
     if (!isPolygon && unlippedSides(gaps, 'cutout').length === WALL_SIDES.length) {
       issues.push({ id: 'wallCutoutsAllSides', severity: 'blocker', sides: cutSides });
@@ -373,7 +391,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    the lip where the blade channel leaves the block; the rails segment
   //    around it exactly as they do for a cutout window. A few millimetres per
   //    exit can never clear a whole wall, so this never escalates to a blocker.
-  if (!isMagnetic && !isPolygon) {
+  if (lipHoldsLid && !isPolygon) {
     const knifeSides = lipGapSides(gaps, 'knifeSlot');
     if (knifeSides.length > 0) {
       issues.push({ id: 'knifeSlots', severity: 'warning', sides: knifeSides });
@@ -388,7 +406,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     params.wallPattern.enabled &&
     hasAnyPatternedWall(params.wallPattern) &&
     !isPolygon &&
-    !isMagnetic
+    lipHoldsLid
   ) {
     issues.push({ id: 'wallPattern', severity: 'warning' });
   }
@@ -396,7 +414,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // 3. Very short bins (1U). The rail extends ~5.7mm below the lip top,
   //    leaving only ~1.3mm of overlap with the bin's main wall on a 1U
   //    bin (totalH=7mm). The lid still seats but the click is marginal.
-  if (params.height <= 1 && !isMagnetic) {
+  if (params.height <= 1 && lipHoldsLid) {
     issues.push({ id: 'shortBin', severity: 'warning' });
     // A tall lid on that already-marginal 1U grip adds a long
     // lever arm — the taller the cavity, the more a knock can pop the lid off
@@ -441,7 +459,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    No side is disabled outright: `railSegmentsClearOfLabelTabs` cuts each
   //    wall's run around the tabs and keeps whatever is left, which is what
   //    makes 75%/100% coverage usable with tabs at all.
-  if (params.label.enabled && !isPolygon && !isMagnetic) {
+  if (params.label.enabled && !isPolygon && lipHoldsLid) {
     const anchored: ReadonlySet<string> = new Set(
       railFoulingLabelFootprints(params).map((fp) => fp.anchor)
     );
@@ -457,7 +475,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    and don't warn; nor do the sides `handleBuilder` skips (a slotted bin,
   //    or the back wall of a bin with label tabs), which the plan mirrors.
   //    Interior handles pierce compartment dividers, not the outer lip.
-  if (!isMagnetic) {
+  if (lipHoldsLid) {
     const intrudingSides = isPolygon
       ? lipGapSides(polyGaps, 'handle')
       : lipGapSides(gaps, 'handle');
@@ -474,7 +492,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    removes lip material at the cutout footprint. Only solid bins
   //    apply top-down cutouts; normal-style bins use floor inserts and
   //    don't carve into the rim.
-  if (params.style === 'solid' && !isPolygon && !isMagnetic && params.cutouts.length > 0) {
+  if (params.style === 'solid' && !isPolygon && lipHoldsLid && params.cutouts.length > 0) {
     const interiorHeight = computeInteriorHeight(params);
     const lipBottom = lipBottomZ(interiorHeight);
     const topZ = interiorHeight - params.cutoutConfig.topOffset;
@@ -554,8 +572,12 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     }
   }
 
-  // 11. Magnetic retention.
-  if (isMagnetic) {
+  // 11. Magnetic retention — the attachment, or a hinged lid's magnet catch.
+  // Both place the same bosses from the same helper, so both are bounded by the
+  // same magnet-vs-bin size limits; gating this on the attachment alone would
+  // let a hinged lid cut a pocket through its own floor.
+  const magnetBosses = isMagnetic || hingeCatchMode === 'magnets';
+  if (magnetBosses) {
     // Corner magnet placement isn't defined on an arbitrary polygon outline,
     // so a magnetic custom-shape lid falls back to a plain friction lid with
     // no magnets. Warn so the user isn't surprised the magnets vanished.
@@ -590,6 +612,30 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
           issues.push({ id: 'magnetTooDeepForBin', severity: 'warning' });
         }
       }
+    }
+  }
+
+  // 12. Hinged retention.
+  if (isHinge) {
+    const { rejection } = planHingeLid(params);
+    // `disabled` is the resolver saying there is nothing to do, not a fault —
+    // and it cannot occur here anyway, since `isHinge` is how we got in.
+    if (rejection !== null && rejection !== 'disabled') {
+      issues.push({ id: 'hingeUnbuildable', severity: 'blocker' });
+    } else {
+      // The barrel reaches its own radius above the plate's underside while
+      // the plate reaches only its thickness, so the knuckles stand ~1.4mm
+      // proud of the lid's top face. A bin stacked on that rests on two rows
+      // of cylinders and rocks. A blocker rather than a warning because the
+      // two features are simply incompatible, and the fix is one click.
+      if (params.lid.stackableTop) {
+        issues.push({ id: 'hingeStackableTop', severity: 'blocker' });
+      }
+      // Nothing to warn about here any more: `detent` is a click rail on the
+      // wall opposite the axis, `magnets` is the corner-boss geometry filtered
+      // to that same wall, and `none` is a deliberate choice the panel's own
+      // hint already describes. The magnet SIZE limits are checked above,
+      // through the shared `magnetBosses` gate.
     }
   }
 

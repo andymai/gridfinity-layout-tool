@@ -72,6 +72,11 @@ import {
   LID_GRIP_HEIGHT_MAX_MM,
   LID_RAIL_SIDES,
   DEFAULT_LID_SLIDE_CONFIG,
+  DEFAULT_LID_HINGE_CONFIG,
+  LID_HINGE_CATCHES,
+  LID_HINGE_FIT_MIN_MM,
+  LID_HINGE_FIT_MAX_MM,
+  isDefaultLidHinge,
   isDefaultLidSlide,
   LID_SLIDE_PLACEMENTS,
   LID_SLIDE_PULLS,
@@ -88,6 +93,8 @@ import type {
   LidGripMode,
   LidRailSide,
   LidSlideConfig,
+  LidHingeConfig,
+  LidHingeCatch,
   LidSlidePlacement,
   LidSlidePull,
 } from '../types/lid';
@@ -472,6 +479,40 @@ function migrateGrip(raw: unknown): LidGripConfig {
  * the defaults here are chosen for a good first experience rather than for
  * byte-identity — there is nothing to be identical to.
  */
+/**
+ * Hinged-lid config, clamped and collapsed.
+ *
+ * Same contract as {@link migrateSlide}, for the same reasons: absent on every
+ * design that has never used a hinge, so a value the defaults would supply
+ * anyway is dropped rather than stored. `communityParamsFingerprint` hashes the
+ * whole params object and keys the moderation tombstone (CLAUDE.md gotcha
+ * #13a), so a field that were always present would re-hash every design already
+ * published and stop old takedowns matching a re-publish.
+ *
+ * The knuckle layout is deliberately not migrated because it is not stored —
+ * `@/shared/utils/hingeLidPlan` derives it from the wall every time. There is
+ * nothing here for a hand-edited payload to drive.
+ */
+function migrateHinge(raw: unknown): LidHingeConfig | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const obj = raw as Partial<LidHingeConfig>;
+  const migrated: LidHingeConfig = {
+    side: LID_RAIL_SIDES.includes(obj.side as LidRailSide)
+      ? (obj.side as LidRailSide)
+      : DEFAULT_LID_HINGE_CONFIG.side,
+    catchMode: LID_HINGE_CATCHES.includes(obj.catchMode as LidHingeCatch)
+      ? (obj.catchMode as LidHingeCatch)
+      : DEFAULT_LID_HINGE_CONFIG.catchMode,
+    fitClearanceMm: clampNumber(
+      obj.fitClearanceMm,
+      LID_HINGE_FIT_MIN_MM,
+      LID_HINGE_FIT_MAX_MM,
+      DEFAULT_LID_HINGE_CONFIG.fitClearanceMm
+    ),
+  };
+  return isDefaultLidHinge(migrated) ? undefined : migrated;
+}
+
 function migrateSlide(raw: unknown): LidSlideConfig | undefined {
   if (!raw || typeof raw !== 'object') return undefined;
   const obj = raw as Partial<LidSlideConfig>;
@@ -1363,6 +1404,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         grip: rawGrip,
         relieveInterior: rawRelieveInterior,
         slide: rawSlide,
+        hinge: rawHinge,
         cutouts: rawLidCutouts,
         ...stored
       } = raw;
@@ -1401,6 +1443,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // on, which is right for a new design and wrong for every old one.
         relieveInterior: rawRelieveInterior === true,
         slide: migrateSlide(rawSlide),
+        hinge: migrateHinge(rawHinge),
         // Spread `undefined` deliberately: the key is present-but-undefined here,
         // which `stableStringify` and `JSON.stringify` both drop.
         cutouts: migrateLidCutouts(rawLidCutouts),

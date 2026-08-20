@@ -28,10 +28,13 @@ import {
   type BaseStyle,
 } from '@/features/bin-designer/types/base';
 import {
+  isHingeLid,
   isSlideLid,
   LID_FIT_CLEARANCE,
+  LID_HINGE_BARREL_RADIUS_MM,
   lidAnchorZ,
   resolveLidCavityExtraMm,
+  resolveLidPlateThickness,
   type LidConfig,
 } from '@/features/bin-designer/types/lid';
 import {
@@ -113,7 +116,28 @@ export interface AssembledHeightSource {
  * thicker floor plate stands proportionally higher.
  */
 function lidRiseMm(params: AssembledHeightSource): number {
-  return -lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
+  const cap = -lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
+  return cap + hingeProudMm(params);
+}
+
+/**
+ * How far a hinge barrel stands above the lid's own top face, in mm.
+ *
+ * The axis sits on the plate's UNDERSIDE, so the barrel reaches its radius
+ * above that plane while the plate reaches only its own thickness — the
+ * difference is real material above the highest point `lidRiseMm` would
+ * otherwise report. It is ~1.4mm on a stock lid: small, invisible to the eye,
+ * and exactly the size of error that lets a drawer-ceiling check pass a
+ * layout that does not fit. Every restatement of the lid anchor chain that has
+ * gone wrong in this repo has gone wrong by less than this (CLAUDE.md gotcha
+ * #14).
+ *
+ * Zero once the plate is thicker than the barrel's radius, which is why it is
+ * a `max` and not an unconditional term.
+ */
+function hingeProudMm(params: AssembledHeightSource): number {
+  if (!isHingeLid(params.lid)) return 0;
+  return Math.max(0, LID_HINGE_BARREL_RADIUS_MM - resolveLidPlateThickness(params));
 }
 
 /**

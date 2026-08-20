@@ -104,12 +104,15 @@ const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
  * channel, which is not a thing an underside can be, so the two lists are
  * deliberately separate rather than one list the tray path also widens.
  */
-const VALID_LID_ATTACHMENTS_TOP = [...VALID_LID_ATTACHMENTS, 'slide'] as const;
+const VALID_LID_ATTACHMENTS_TOP = [...VALID_LID_ATTACHMENTS, 'slide', 'hinge'] as const;
 const VALID_LID_SLIDE_PLACEMENTS = ['recessed', 'flush'] as const;
 const VALID_LID_SLIDE_PULLS = ['none', 'notch', 'tab'] as const;
 /** Wall sides `lid.slide.entrySide` may name. Mirrors `LID_RAIL_SIDES`. */
 const VALID_LID_RAIL_SIDES = ['front', 'back', 'left', 'right'] as const;
 const ALLOWED_LID_SLIDE_KEYS = new Set(['placement', 'entrySide', 'clearanceMm', 'pull', 'detent']);
+/** Mirrors `LidHingeCatch` in the same module. */
+const VALID_LID_HINGE_CATCHES = ['none', 'detent', 'magnets'] as const;
+const ALLOWED_LID_HINGE_KEYS = new Set(['side', 'catchMode', 'fitClearanceMm']);
 // Mirrors `LidGripMode` / `LidGripConfig` / `LidGripSides` in the same
 // module.
 const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
@@ -534,9 +537,57 @@ function validateLid(lid: unknown): string | null {
     const slideErr = validateLidSlide(lid.slide);
     if (slideErr) return slideErr;
   }
+  if (lid.hinge !== undefined) {
+    const hingeErr = validateLidHinge(lid.hinge);
+    if (hingeErr) return hingeErr;
+  }
   if (lid.cutouts !== undefined) {
     const cutoutsErr = validateLidCutouts(lid.cutouts);
     if (cutoutsErr) return cutoutsErr;
+  }
+  return null;
+}
+
+/**
+ * Hinged-lid config. Mirrors `LidHingeConfig` in
+ * `src/features/bin-designer/types/lid.ts`.
+ *
+ * Validated whenever it is PRESENT, not only when the attachment is `'hinge'`:
+ * switching modes preserves the config, so a design can legitimately carry a
+ * hinge it is not currently using — exactly as it can carry a click-rail
+ * selection a wall cutout has disabled.
+ *
+ * The knuckle layout is deliberately absent from this list because it is
+ * derived, not stored (`@/shared/utils/hingeLidPlan`). A count arriving from a
+ * payload would be a second, unvalidatable opinion about geometry the server
+ * cannot check.
+ */
+function validateLidHinge(hinge: unknown): string | null {
+  if (!isObject(hinge)) return 'lid.hinge must be an object';
+
+  for (const key of Object.keys(hinge)) {
+    if (!ALLOWED_LID_HINGE_KEYS.has(key)) return `lid.hinge has unknown key: ${key}`;
+  }
+  if (
+    hinge.side !== undefined &&
+    !VALID_LID_RAIL_SIDES.includes(hinge.side as (typeof VALID_LID_RAIL_SIDES)[number])
+  ) {
+    return `lid.hinge.side must be one of: ${VALID_LID_RAIL_SIDES.join(', ')}`;
+  }
+  if (
+    hinge.catchMode !== undefined &&
+    !VALID_LID_HINGE_CATCHES.includes(hinge.catchMode as (typeof VALID_LID_HINGE_CATCHES)[number])
+  ) {
+    return `lid.hinge.catchMode must be one of: ${VALID_LID_HINGE_CATCHES.join(', ')}`;
+  }
+  // Range only, not a stop list: the client clamps a stored value into range on
+  // load, so an off-step number is legal input. What it cannot absorb is a
+  // value outside the range, or a non-number reaching the geometry.
+  if (
+    hinge.fitClearanceMm !== undefined &&
+    (!isNumber(hinge.fitClearanceMm) || !inRange(hinge.fitClearanceMm, 0.15, 0.4))
+  ) {
+    return 'lid.hinge.fitClearanceMm must be 0.15-0.4';
   }
   return null;
 }

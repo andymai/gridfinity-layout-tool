@@ -50,6 +50,7 @@ import {
   type LidRailSide,
   type TextMode,
 } from '@/features/bin-designer/types';
+import { planHingeLid, hingePinLengths } from '@/shared/utils/hingeLidPlan';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks } from '@/shared/utils/dividerRailPlan';
@@ -76,15 +77,28 @@ import {
 } from './useLidSection.helpers';
 import {
   isSlideLid,
+  isHingeLid,
+  resolveLidHinge,
+  hingeOppositeSide,
+  LID_HINGE_CATCHES,
+  LID_HINGE_FIT_MIN_MM,
+  LID_HINGE_FIT_MAX_MM,
+  LID_HINGE_FIT_STEP_MM,
+  LID_HINGE_PIN_MM,
   LID_SLIDE_CLEARANCE_MIN_MM,
   LID_SLIDE_CLEARANCE_MAX_MM,
   LID_SLIDE_CLEARANCE_STEP_MM,
   LID_SLIDE_PLACEMENTS,
   LID_SLIDE_PULLS,
+  LID_RAIL_SIDES,
   LID_RAIL_SIDES as LID_SLIDE_ENTRY_SIDES,
   resolveLidSlide,
 } from '@/features/bin-designer/types/lid';
-import type { LidSlidePlacement, LidSlidePull } from '@/features/bin-designer/types/lid';
+import type {
+  LidSlidePlacement,
+  LidSlidePull,
+  LidHingeCatch,
+} from '@/features/bin-designer/types/lid';
 import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { slideSagSafeThicknessMm } from '@/shared/utils/slideLidPlan';
 
@@ -193,6 +207,7 @@ export function useLidSection() {
   // `shouldGenerateLid` makes the same distinction; a second, differently-gated
   // copy here is how a panel ends up refusing a lid the worker builds.
   const isSlide = isSlideLid(lid);
+  const isHinge = isHingeLid(lid);
   const needsStackingLip = !isSlide;
   // Resolved unconditionally: the adapter answers `'not-slide'` for any other
   // attachment, so the panel can read it without guarding first.
@@ -202,6 +217,11 @@ export function useLidSection() {
   // fingerprint of every already-published design is unchanged. Writing through
   // the resolved value is what turns the first edit into a complete object.
   const slide = resolveLidSlide(lid);
+  const hinge = resolveLidHinge(lid);
+  // The plan's own account of the joint, so the panel never restates geometry
+  // the worker builds from: the pin lengths it quotes are the ones the barrel
+  // is actually bored for, and they change as the bin is resized.
+  const hingePlan = planHingeLid(params);
   const disabledReason =
     needsStackingLip && !base.stackingLip
       ? t('binDesigner.lid.requiresStackingLip')
@@ -260,9 +280,34 @@ export function useLidSection() {
 
   const setAttachment = useCallback(
     (attachment: LidAttachment) => {
+      // Switching TO a hinge seeds a thumb lift, once.
+      //
+      // A hinged lid must have somewhere to get a finger under, opposite the
+      // axis — and the default grip is `none`, so out of the box a hinged lid
+      // would be a flush plate with nothing to lift. `lidGripRelief` already
+      // builds exactly the right thing, so this points at it rather than
+      // inventing a second affordance.
+      //
+      // Only when the grip is still UNTOUCHED. Overwriting a configured relief
+      // would be silently rewriting a part the user did not ask about, which is
+      // the line the sliding lid's flush placement also refuses to cross — it
+      // reports a blocker instead of turning the stacking lip off for you.
+      if (attachment === 'hinge' && lid.grip.mode === 'none') {
+        const opposite = hingeOppositeSide(resolveLidHinge(lid).side);
+        updateLid({
+          attachment,
+          grip: {
+            ...lid.grip,
+            mode: 'scallop',
+            sides: { front: false, back: false, left: false, right: false, [opposite]: true },
+            binDip: true,
+          },
+        });
+        return;
+      }
       updateLid({ attachment });
     },
-    [updateLid]
+    [lid, updateLid]
   );
 
   // Three-way top-surface picker projected onto the two persisted booleans.
@@ -719,6 +764,32 @@ export function useLidSection() {
     [params.dividerPieces, setParam, updateBase, updateHandles, updateWalls, updateWallPattern]
   );
 
+  const setHingeSide = useCallback(
+    (side: LidRailSide) => {
+      updateLid({ hinge: { ...hinge, side } });
+    },
+    [hinge, updateLid]
+  );
+
+  const setHingeCatch = useCallback(
+    (catchMode: LidHingeCatch) => {
+      updateLid({ hinge: { ...hinge, catchMode } });
+    },
+    [hinge, updateLid]
+  );
+
+  const setHingeFit = useCallback(
+    (value: number) => {
+      const clamped = Math.min(LID_HINGE_FIT_MAX_MM, Math.max(LID_HINGE_FIT_MIN_MM, value));
+      // Rounded, not snapped to the step — same reasoning as
+      // `setSlideClearance`: this is the one hinge number whose right answer
+      // depends on the printer and the filament, so someone dialling a fit in
+      // from a test print keeps 0.23 instead of being pushed back to 0.25.
+      updateLid({ hinge: { ...hinge, fitClearanceMm: Math.round(clamped * 100) / 100 } });
+    },
+    [hinge, updateLid]
+  );
+
   const setSlidePlacement = useCallback(
     (placement: LidSlidePlacement) => {
       updateLid({ slide: { ...slide, placement } });
@@ -817,6 +888,19 @@ export function useLidSection() {
       // joint — the free span the sag warning is about and the thickness that
       // would carry it — so the panel never restates arithmetic the worker
       // builds from.
+      // Hinged lid. `hingePlan` carries the resolver's own account of the
+      // joint — the pins it needs and why it refused, if it did — so the panel
+      // cannot quote a length the barrel is not bored for.
+      isHinge,
+      hinge,
+      hingeCatches: LID_HINGE_CATCHES,
+      hingeSides: LID_RAIL_SIDES,
+      hingeFitMin: LID_HINGE_FIT_MIN_MM,
+      hingeFitMax: LID_HINGE_FIT_MAX_MM,
+      hingeFitStep: LID_HINGE_FIT_STEP_MM,
+      hingePinMm: LID_HINGE_PIN_MM,
+      hingePinLengths: hingePinLengths(params),
+      hingeRejection: hingePlan.rejection,
       isSlide,
       slide,
       slidePlacements: LID_SLIDE_PLACEMENTS,
@@ -910,6 +994,9 @@ export function useLidSection() {
       toggleClickRailSide,
       setClickRailCoverage,
       toggleRelieveInterior,
+      setHingeSide,
+      setHingeCatch,
+      setHingeFit,
       setSlidePlacement,
       setSlideEntrySide,
       setSlidePull,

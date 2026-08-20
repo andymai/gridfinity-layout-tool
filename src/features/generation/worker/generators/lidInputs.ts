@@ -16,6 +16,7 @@ import type {
   TextStyleDefaults,
 } from '@/shared/types/bin';
 import type { MagnetAnchor } from '@/core/types';
+import type { LidRailSide } from '@/shared/types/bin';
 import {
   checkLidCompatibility,
   computeDisabledRails,
@@ -40,6 +41,8 @@ import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { isSlideLid, slideLidPlanForParams } from '@/shared/types/bin';
+import { planHingeLid } from '@/shared/utils/hingeLidPlan';
+import { LID_HINGE_DETENT_COVERAGE } from '@/shared/types/bin';
 import type { SlideLidGeometry } from '@/shared/utils/slideLidPlan';
 
 /**
@@ -128,6 +131,12 @@ export interface LidInputs {
    * are excluded). Dedicated dims — independent of the stack `magnet*` fields.
    */
   readonly retentionMagnets: boolean;
+  /**
+   * The wall a hinged lid's magnet catch pins, or `null` for the four-corner
+   * placement a magnetic attachment asks for. Resolved here so the boss builder
+   * and the bin's pad stage filter through one call with the same answer.
+   */
+  readonly retentionMagnetSide: LidRailSide | null;
   readonly retentionMagnetDiameter: number;
   readonly retentionMagnetDepth: number;
   /** Extra magnets per long edge; 0 = the classic four-corner lid. */
@@ -365,7 +374,20 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // Mirror the bin-side `usesMagneticLid` predicate exactly (magnetic + lip +
   // rectangular). Without the `stackingLip` guard the lid would grow bosses in
   // a state where the bin skips its matching posts, so the pair couldn't mate.
-  const retentionMagnets = attachment === 'magnetic' && params.base.stackingLip && !cellMask;
+  const hingePlan = planHingeLid(params).geometry;
+  const hingeDetentSide =
+    hingePlan !== null && hingePlan.catchMode === 'detent' ? hingePlan.catchSide : null;
+  const hingeMagnetCatch = hingePlan !== null && hingePlan.catchMode === 'magnets';
+  const retentionMagnetSide = hingeMagnetCatch && hingePlan ? hingePlan.catchSide : null;
+  // Magnetic attachment OR a hinged lid's magnet catch. Both put the same
+  // bosses on the lid; only how many and on which wall differs, and
+  // `retentionMagnetPlacementsFor` owns that.
+  const retentionMagnets =
+    (attachment === 'magnetic' || hingeMagnetCatch) && params.base.stackingLip && !cellMask;
+  // The wall a hinged lid's detent catches on, or null when this lid has no
+  // detent. Resolved from the PLAN so the catch lands opposite whichever wall
+  // the hinge actually resolved to, rather than opposite the wall the config
+  // asked for — a hinge the plan refused has no opposite.
 
   // Tray recess only exists when the lid isn't stackable (a stack grid owns
   // the top surface otherwise).
@@ -459,6 +481,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     magnetAnchor: params.magnetAnchor,
     attachment,
     retentionMagnets,
+    retentionMagnetSide,
     retentionMagnetDiameter: params.lid.retentionMagnet.diameter,
     retentionMagnetDepth: params.lid.retentionMagnet.depth,
     retentionMagnetEdgeMagnets: params.lid.retentionMagnet.edgeMagnets,
@@ -487,13 +510,29 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // Rails only engage in clickRails mode; friction/magnetic force them off so
     // the builder's rail pass is a no-op while the user's per-side choice is
     // preserved on the persisted config.
+    //
+    // A hinged lid's DETENT is the exception, and it is not a new mechanism: a
+    // catch on the wall opposite the axis is exactly a click rail on one wall.
+    // Routing it through the rail pass rather than building a bespoke bump
+    // inherits everything that pass already gets right — clipping around label
+    // tabs, segmenting around cutouts and handles, splitting around a grip
+    // relief — none of which a second implementation would have on day one.
     clickRails:
       attachment === 'clickRails'
         ? params.lid.clickRails
-        : { front: false, back: false, left: false, right: false },
+        : hingeDetentSide
+          ? { front: false, back: false, left: false, right: false, [hingeDetentSide]: true }
+          : { front: false, back: false, left: false, right: false },
     // Coverage stored as 0–100 percentage on LidConfig; converted to
     // a 0–1 fraction here for direct multiplication against rail lengths.
-    clickRailCoverage: params.lid.clickRailCoverage / 100,
+    //
+    // A detent takes its own, shorter coverage: the user never sees the rail
+    // controls on a hinged lid, and a full-length rail opposite a hinge is a
+    // lid that has to be prised rather than flipped. Centred, so it pulls the
+    // middle of the free edge down where an unsupported span would lift first.
+    clickRailCoverage: hingeDetentSide
+      ? LID_HINGE_DETENT_COVERAGE
+      : params.lid.clickRailCoverage / 100,
     // Gate once, here: `hasLidGrip` folds in the mode, the per-side toggles and
     // the depth clamp, so no builder has to re-derive whether a relief exists.
     grip: {

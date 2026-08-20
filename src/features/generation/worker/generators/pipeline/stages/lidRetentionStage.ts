@@ -47,7 +47,9 @@ import {
   retentionMagnetInset,
   retentionMagnetPositions,
   retentionSeatPlanes,
-  usesMagneticLid,
+  usesRetentionMagnets,
+  retentionMagnetPlacementsFor,
+  retentionMagnetSide,
 } from '../../retentionMagnetGeometry';
 import { hasOverhang, overhangExpansion } from '../../overhang';
 
@@ -60,12 +62,13 @@ export const lidRetentionStage: PipelineStage = {
   progressValue: 0.82,
 
   shouldRun(ctx: PipelineContext): boolean {
-    // `usesMagneticLid` gates on the structural config (magnetic + lip +
+    // `usesRetentionMagnets` gates on the structural config (magnetic lid OR a
+    // hinged lid's magnet catch, plus lip + rectangular);
     // rectangular); `shouldGenerateLid` additionally rejects blocking
     // compatibility issues (e.g. `magnetTooDeepForBin`). Both are required so a
     // blocked lid — which is never generated/exported — doesn't leave the bin
     // with orphan pads, or cut a too-deep pocket through the floor.
-    return ctx.solid !== null && usesMagneticLid(ctx.params) && shouldGenerateLid(ctx.params);
+    return ctx.solid !== null && usesRetentionMagnets(ctx.params) && shouldGenerateLid(ctx.params);
   },
 
   execute(ctx: PipelineContext): PipelineContext {
@@ -80,7 +83,7 @@ export const lidRetentionStage: PipelineStage = {
     // Overhang moves the stacking lip the pads hug, so the pads move with it —
     // otherwise a one-sided overhang strands the gusset away from the interior
     // wall it welds into. The lid boss applies the same shift.
-    const positions = retentionMagnetPositions(
+    const allPositions = retentionMagnetPositions(
       params.width,
       params.depth,
       dim.gridUnitMmX,
@@ -89,6 +92,18 @@ export const lidRetentionStage: PipelineStage = {
       params.lid.retentionMagnet.edgeMagnets,
       bossRadius,
       hasOverhang(dim.overhang) ? overhangExpansion(dim.overhang) : null
+    );
+    // A hinged lid's magnet catch pins only the free edge — the hinge already
+    // holds the other one, and pads on the hinge wall would fight the knuckles
+    // for the same millimetres. Filtered here rather than in the placement
+    // helper so the lid's bosses and the bin's pads read the SAME list through
+    // the same call and cannot end up on different walls.
+    const expansion = hasOverhang(dim.overhang) ? overhangExpansion(dim.overhang) : null;
+    const positions = retentionMagnetPlacementsFor(
+      retentionMagnetSide(params),
+      allPositions,
+      expansion?.offsetX ?? 0,
+      expansion?.offsetY ?? 0
     );
 
     // Both magnet faces come from the shared seat-plane helper so the bin pad
