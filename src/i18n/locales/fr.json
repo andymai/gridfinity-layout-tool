@@ -722,6 +722,8 @@
   "binDesigner.cutouts.repeat.radius": "Rayon",
   "binDesigner.cutouts.repeat.remove": "Supprimer le réseau",
   "binDesigner.cutouts.repeat.overlapWarning": "Les répétitions se chevauchent. Leurs découpes fusionneront en une seule ouverture.",
+  "binDesigner.cutouts.repeat.fillBin": "Remplir le bac",
+  "binDesigner.cutouts.repeat.fillBinHint": "Règle lignes et colonnes pour remplir le bac au pas actuel",
   "binDesigner.cutouts.repeat.rotateToCenter": "Orienter vers le centre",
   "binDesigner.cutouts.repeat.rows": "Lignes",
   "binDesigner.cutouts.repeat.startAngle": "Angle de départ",
