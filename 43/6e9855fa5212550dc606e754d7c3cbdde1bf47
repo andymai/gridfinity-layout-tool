@@ -1,0 +1,19 @@
+src/features/bin-designer/components/CutoutWorkspace/useCutoutWorkspaceCamera.test.ts
+  s_675623bf53b7f7::t_6fa757c32a142b 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "436e9855fa5212550dc606e754d7c3cbdde1bf47",
+  "prompts": {},
+  "sessions": {
+    "s_675623bf53b7f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e42dafc8-e3c7-45ed-871d-df516f229e80",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
