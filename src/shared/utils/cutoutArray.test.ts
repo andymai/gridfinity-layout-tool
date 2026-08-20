@@ -5,6 +5,7 @@ import {
   defaultArrayConfig,
   arrayFieldBounds,
   arrayInstancesOverlap,
+  fillBinCounts,
   expandCutoutArray,
   type ArrayInstance,
 } from './cutoutArray';
@@ -350,5 +351,84 @@ describe('arrayInstancesOverlap', () => {
 
   it('never reports overlap for a radial ring', () => {
     expect(arrayInstancesOverlap(master(), { ...base, mode: 'radial', radius: 1 })).toBe(false);
+  });
+});
+
+describe('fillBinCounts', () => {
+  const cut = (overrides: Partial<Cutout> = {}): Cutout => ({
+    id: 'm',
+    shape: 'circle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+    ...overrides,
+  });
+  const master = (overrides: Partial<Cutout> = {}) => cut({ width: 10, depth: 10, ...overrides });
+
+  it('fills to the far edge at the current pitch', () => {
+    // Master 10mm at x=0 in a 100mm bin, 20mm pitch: 1 + floor(90/20) = 5.
+    expect(fillBinCounts(master(), 100, 100, cfg({ pitchX: 20, pitchY: 20 }))).toEqual({
+      cols: 5,
+      rows: 5,
+    });
+  });
+
+  it("treats the master's position as the leading margin", () => {
+    // At x=20 there is 70mm of room left, so one fewer column fits. The gap
+    // before the master is the margin the user set by placing it.
+    expect(fillBinCounts(master({ x: 20 }), 100, 100, cfg({ pitchX: 20, pitchY: 20 }))).toEqual({
+      cols: 4,
+      rows: 5,
+    });
+  });
+
+  it('counts columns against the rows the fill will produce, not the current one', () => {
+    // A staggered array only pays the half-pitch X offset once it has a second
+    // row. Counting columns against the single row it starts on fits one too
+    // many: at a 21mm pitch the 5th instance of an odd row would reach 104.5mm
+    // in a 100mm bin.
+    const staggered = cfg({ mode: 'staggered', cols: 1, rows: 1, pitchX: 21, pitchY: 20 });
+    const filled = fillBinCounts(master(), 100, 100, staggered);
+    expect(filled.rows).toBe(5);
+    expect(filled.cols).toBe(4);
+
+    // And what it produced actually fits: re-asking the bounds agrees.
+    const bounds = arrayFieldBounds(master(), 100, 100, { ...staggered, ...filled });
+    expect(filled.cols).toBeLessThanOrEqual(bounds.maxCols);
+    expect(filled.rows).toBeLessThanOrEqual(bounds.maxRows);
+  });
+
+  it('never exceeds the instance cap, and spends it on whole rows', () => {
+    const dense = fillBinCounts(
+      cut({ width: 1, depth: 1 }),
+      10_000,
+      10_000,
+      cfg({ pitchX: 2, pitchY: 2 })
+    );
+    expect(dense.cols * dense.rows).toBeLessThanOrEqual(400);
+    expect(dense.cols).toBeLessThanOrEqual(50);
+    expect(dense.rows).toBeLessThanOrEqual(50);
+  });
+
+  it('returns a single instance when nothing else fits', () => {
+    expect(
+      fillBinCounts(cut({ width: 40, depth: 40 }), 50, 50, cfg({ pitchX: 45, pitchY: 45 }))
+    ).toEqual({ cols: 1, rows: 1 });
+  });
+
+  it('agrees with the field bounds it will be clamped by', () => {
+    // Whatever the fill produces has to survive the editor's own clamping, or
+    // pressing the button would visibly undo part of itself.
+    const config = cfg({ pitchX: 17, pitchY: 13 });
+    const filled = fillBinCounts(master({ x: 3, y: 7 }), 137, 111, config);
+    const bounds = arrayFieldBounds(master({ x: 3, y: 7 }), 137, 111, { ...config, ...filled });
+    expect(filled.cols).toBeLessThanOrEqual(bounds.maxCols);
+    expect(filled.rows).toBeLessThanOrEqual(bounds.maxRows);
   });
 });

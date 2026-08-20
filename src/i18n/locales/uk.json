@@ -724,6 +724,8 @@
   "binDesigner.cutouts.repeat.radius": "Радіус",
   "binDesigner.cutouts.repeat.remove": "Вилучити масив",
   "binDesigner.cutouts.repeat.overlapWarning": "Повтори перекриваються. Їхні вирізи зіллються в один отвір.",
+  "binDesigner.cutouts.repeat.fillBin": "Заповнити бін",
+  "binDesigner.cutouts.repeat.fillBinHint": "Встановлює рядки та стовпці так, щоб заповнити бін із поточним кроком",
   "binDesigner.cutouts.repeat.rotateToCenter": "Повертати до центру",
   "binDesigner.cutouts.repeat.rows": "Рядки",
   "binDesigner.cutouts.repeat.startAngle": "Початковий кут",

@@ -724,6 +724,8 @@
   "binDesigner.cutouts.repeat.radius": "Promień",
   "binDesigner.cutouts.repeat.remove": "Usuń szyk",
   "binDesigner.cutouts.repeat.overlapWarning": "Powtórzenia nachodzą na siebie. Ich wycięcia połączą się w jeden otwór.",
+  "binDesigner.cutouts.repeat.fillBin": "Wypełnij bin",
+  "binDesigner.cutouts.repeat.fillBinHint": "Ustawia wiersze i kolumny tak, aby wypełnić bin przy bieżącym skoku",
   "binDesigner.cutouts.repeat.rotateToCenter": "Obróć do środka",
   "binDesigner.cutouts.repeat.rows": "Rzędy",
   "binDesigner.cutouts.repeat.startAngle": "Kąt początkowy",

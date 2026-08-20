@@ -724,6 +724,8 @@
   "binDesigner.cutouts.repeat.radius": "半径",
   "binDesigner.cutouts.repeat.remove": "移除阵列",
   "binDesigner.cutouts.repeat.overlapWarning": "重复图形重叠，切口将合并为一个开口。",
+  "binDesigner.cutouts.repeat.fillBin": "填满收纳盒",
+  "binDesigner.cutouts.repeat.fillBinHint": "按当前间距设置行数和列数以填满收纳盒",
   "binDesigner.cutouts.repeat.rotateToCenter": "旋转朝向中心",
   "binDesigner.cutouts.repeat.rows": "行",
   "binDesigner.cutouts.repeat.startAngle": "起始角度",

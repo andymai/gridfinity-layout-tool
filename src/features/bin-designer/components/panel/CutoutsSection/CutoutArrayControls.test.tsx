@@ -133,3 +133,44 @@ describe('CutoutArrayControls — overlap', () => {
     expect(screen.queryByText(WARNING)).not.toBeInTheDocument();
   });
 });
+
+describe('CutoutArrayControls — fill bin', () => {
+  const FILL = 'binDesigner.cutouts.repeat.fillBin';
+
+  it('sets rows and columns to what the bin holds at the current pitch', () => {
+    const onUpdate = vi.fn();
+    // 10mm master at 0,0 in a 300mm bin at a 12mm pitch: 1 + floor(290/12) = 25
+    // per axis. 25 x 25 is over the 400-instance cap, which columns win — so
+    // rows take the 16 that are left and every row is complete.
+    renderControls(makeCutout({ array: { ...arrayCfg, cols: 3, rows: 2 } }), { onUpdate });
+
+    fireEvent.click(screen.getByText(FILL));
+
+    expect(onUpdate).toHaveBeenCalledWith({
+      array: expect.objectContaining({ cols: 25, rows: 16, pitchX: 12, pitchY: 12 }),
+    });
+  });
+
+  it('leaves the rest of the config alone, so the result stays editable', () => {
+    const onUpdate = vi.fn();
+    renderControls(makeCutout({ array: { ...arrayCfg, mode: 'staggered' } }), { onUpdate });
+
+    fireEvent.click(screen.getByText(FILL));
+
+    const patched = onUpdate.mock.calls[0][0].array;
+    expect(patched.mode).toBe('staggered');
+    expect(patched.pitchX).toBe(arrayCfg.pitchX);
+    expect(patched.pitchY).toBe(arrayCfg.pitchY);
+  });
+
+  it('is inert once the bin is already full', () => {
+    const onUpdate = vi.fn();
+    renderControls(makeCutout({ array: { ...arrayCfg, cols: 25, rows: 16 } }), { onUpdate });
+    expect(screen.getByText(FILL).closest('button')).toBeDisabled();
+  });
+
+  it('is not offered for a radial ring, which has no rows or columns', () => {
+    renderControls(makeCutout({ array: { ...arrayCfg, mode: 'radial' } }));
+    expect(screen.queryByText(FILL)).not.toBeInTheDocument();
+  });
+});

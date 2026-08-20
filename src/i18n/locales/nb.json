@@ -724,6 +724,8 @@
   "binDesigner.cutouts.repeat.radius": "Radius",
   "binDesigner.cutouts.repeat.remove": "Fjern matrise",
   "binDesigner.cutouts.repeat.overlapWarning": "Gjentakelsene overlapper. Utskjæringene smelter sammen til én åpning.",
+  "binDesigner.cutouts.repeat.fillBin": "Fyll boksen",
+  "binDesigner.cutouts.repeat.fillBinHint": "Setter rader og kolonner slik at boksen fylles med gjeldende avstand",
   "binDesigner.cutouts.repeat.rotateToCenter": "Roter mot sentrum",
   "binDesigner.cutouts.repeat.rows": "Rader",
   "binDesigner.cutouts.repeat.startAngle": "Startvinkel",
