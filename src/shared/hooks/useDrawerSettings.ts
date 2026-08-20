@@ -321,10 +321,18 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // A custom drawer shape floors the size (the command clamps rather
   // than crop the shape); exposing the floor lets the steppers bound their
   // range so the "−" button disables instead of silently doing nothing.
+  // A recorded measurement that already holds the shape releases the floor —
+  // the grid is then free to shrink inside the perimeter.
   const drawerOutline = layout.drawer.outline;
+  const drawerMeasuredMm = layout.drawer.measuredMm;
   const { width: drawerMinWidth, depth: drawerMinDepth } = useMemo(
-    () => drawerSizeFloors(drawerOutline, gridUnitMm, gridUnitMmY),
-    [drawerOutline, gridUnitMm, gridUnitMmY]
+    () =>
+      drawerSizeFloors(
+        { outline: drawerOutline, measuredMm: drawerMeasuredMm },
+        gridUnitMm,
+        gridUnitMmY
+      ),
+    [drawerOutline, drawerMeasuredMm, gridUnitMm, gridUnitMmY]
   );
 
   const realWorldDimensions = useMemo(

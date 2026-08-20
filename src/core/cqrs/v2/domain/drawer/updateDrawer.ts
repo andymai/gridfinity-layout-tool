@@ -2,8 +2,9 @@
  * Update drawer dims and cascade out-of-bounds bins to staging.
  *
  * Clamping (width/depth in [GRID_MIN, GRID_MAX] and, with a custom outline
- * active, no smaller than the outline's bounding half-unit grid — a resize
- * must never mutate the user's shape,; height >= sum of layer heights)
+ * active, no smaller than the outline's bounding half-unit grid on an axis the
+ * recorded measurement does not already hold — a resize must never mutate the
+ * user's shape; height >= sum of layer heights)
  * happens in handle() so the event's `changes` always reflects the value
  * that lands. The displaced bin set is also precomputed in handle() and
  * goes into the event as `displacedBinIds`, so apply() applies the drawer
@@ -112,13 +113,30 @@ export const updateDrawer = defineCommand({
     const drawer = layout.drawer;
     const gridUnitMmY = effectiveGridUnitMmY(layout);
 
+    const changes: Partial<Drawer> = {};
+    // Resolved before the size floors read it: one command may record a
+    // measurement AND resize, and the floor the resize lands against is the
+    // one that lands with it (the same POST-change discipline the
+    // displacement below runs on).
+    if (payload.measuredMm !== undefined) {
+      changes.measuredMm =
+        payload.measuredMm === null ? undefined : clampMeasuredMm(payload.measuredMm);
+    }
+
     // Resolve clamped/derived values up-front so the event records
     // exactly what apply() will install. With a custom outline active the
-    // shrink floor rises to the outline's bounding half-unit grid: the shape
-    // is user-authored and a resize must never crop or extend it —
-    // to go smaller, the user edits the shape first.
-    const floors = drawerSizeFloors(drawer.outline, layout.gridUnitMm, gridUnitMmY);
-    const changes: Partial<Drawer> = {};
+    // shrink floor rises to the outline's bounding half-unit grid on any axis
+    // whose recorded measurement does not already hold the shape: the shape is
+    // user-authored and a resize must never crop or extend it — to go smaller
+    // there, the user edits the shape (or records the drawer) first.
+    const floors = drawerSizeFloors(
+      {
+        outline: drawer.outline,
+        measuredMm: 'measuredMm' in changes ? changes.measuredMm : drawer.measuredMm,
+      },
+      layout.gridUnitMm,
+      gridUnitMmY
+    );
     if (payload.width !== undefined) {
       changes.width = gridUnits(clamp(payload.width, floors.width, CONSTRAINTS.GRID_MAX));
     }
@@ -142,10 +160,6 @@ export const updateDrawer = defineCommand({
       const half = (gridUnitMmY as number) / 2;
       const v = clamp(payload.gridShiftY, -half, half);
       changes.gridShiftY = v === 0 ? undefined : mm(v);
-    }
-    if (payload.measuredMm !== undefined) {
-      changes.measuredMm =
-        payload.measuredMm === null ? undefined : clampMeasuredMm(payload.measuredMm);
     }
 
     const newWidth: GridUnits = changes.width ?? drawer.width;
