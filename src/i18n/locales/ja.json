@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "了解",
   "binDesigner.cutoutEditor.quickstart.precision": "スマートガイド — グリッド、ルーラー、他の切り欠きにスナップ",
   "binDesigner.cutoutEditor.quickstart.repeat": "同じ切り欠きを 3 つ以上選ぶと 1 つの配列にまとめられます",
+  "binDesigner.cutoutEditor.quickstart.navigate": "表示操作 — スクロールで拡大縮小、スペースまたは中ボタンのドラッグで移動、Ctrl+0 で全体表示",
   "binDesigner.cutoutEditor.quickstart.rightClick": "右クリックメニュー — コピー、グループ化、ロック、整列など",
   "binDesigner.cutoutEditor.quickstart.select": "選択(V) — マーキー選択、Shift+クリックで追加",
   "binDesigner.cutoutEditor.quickstart.shapes": "図形 (R · C · G · S · P) — 長方形、円、多角形、スロット、ベジェパス",

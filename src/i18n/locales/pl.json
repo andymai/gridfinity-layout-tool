@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Rozumiem",
   "binDesigner.cutoutEditor.quickstart.precision": "Inteligentne prowadnice — przyciąganie do siatki, linijek i innych wycięć",
   "binDesigner.cutoutEditor.quickstart.repeat": "Zaznacz 3 lub więcej identycznych wycięć, aby utworzyć z nich jeden szyk",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Nawigacja — kółko przybliża, przeciąganie ze spacją lub środkowym przyciskiem przesuwa, Ctrl+0 dopasowuje",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Menu prawym przyciskiem — kopiuj, grupuj, blokuj, wyrównuj i więcej",
   "binDesigner.cutoutEditor.quickstart.select": "Zaznaczanie (V) — przeciągnij zaznaczenie, Shift+kliknięcie, aby rozszerzyć",
   "binDesigner.cutoutEditor.quickstart.shapes": "Kształty (R · C · G · S · P) — prostokąty, koła, wielokąty, szczeliny lub ścieżki Béziera",

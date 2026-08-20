@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Compris",
   "binDesigner.cutoutEditor.quickstart.precision": "Repères intelligents — accrochage à la grille, aux règles et aux autres découpes",
   "binDesigner.cutoutEditor.quickstart.repeat": "Sélectionnez 3 découpes identiques ou plus pour en faire un réseau",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Naviguer — la molette zoome, glisser avec Espace ou le clic du milieu déplace, Ctrl+0 ajuste",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Menu clic droit — copier, grouper, verrouiller, aligner et plus",
   "binDesigner.cutoutEditor.quickstart.select": "Sélection (V) — glissez un cadre, Maj+clic pour étendre",
   "binDesigner.cutoutEditor.quickstart.shapes": "Formes (R · C · G · S · P) — rectangles, cercles, polygones, fentes ou courbes de Bézier",

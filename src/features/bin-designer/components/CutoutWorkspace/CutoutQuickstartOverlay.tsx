@@ -75,6 +75,14 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
             icon={<RepeatIcon />}
             text={t('binDesigner.cutoutEditor.quickstart.repeat')}
           />
+          {/* Pan and fit already existed and nothing said so, which reads as
+              their absence — the view controls are the one group a user cannot
+              discover by clicking around the canvas. */}
+          <FeatureRow
+            index={6}
+            icon={<NavigateIcon />}
+            text={t('binDesigner.cutoutEditor.quickstart.navigate')}
+          />
         </ul>
 
         <Button
@@ -169,6 +177,23 @@ function RepeatIcon() {
       <rect x="11" y="1.5" width="6" height="6" rx="1" />
       <rect x="1.5" y="11" width="6" height="6" rx="1" />
       <rect x="11" y="11" width="6" height="6" rx="1" />
+    </svg>
+  );
+}
+
+function NavigateIcon() {
+  return (
+    <svg
+      className="h-3.5 w-3.5"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.3}
+      aria-hidden="true"
+    >
+      <path d="M8 1.5v13M1.5 8h13" />
+      <path d="M8 1.5 6 3.5M8 1.5l2 2M8 14.5l-2-2M8 14.5l2-2" />
+      <path d="M1.5 8l2-2M1.5 8l2 2M14.5 8l-2-2M14.5 8l-2 2" />
     </svg>
   );
 }

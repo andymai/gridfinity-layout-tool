@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Capito",
   "binDesigner.cutoutEditor.quickstart.precision": "Guide intelligenti: aggancio alla griglia, ai righelli e agli altri ritagli",
   "binDesigner.cutoutEditor.quickstart.repeat": "Seleziona 3 o più intagli identici per trasformarli in una serie",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Naviga — la rotella ingrandisce, trascina con Spazio o tasto centrale per spostare, Ctrl+0 adatta",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Menu col tasto destro: copia, raggruppa, blocca, allinea e altro",
   "binDesigner.cutoutEditor.quickstart.select": "Seleziona (V): trascina un rettangolo di selezione, Shift+clic per estendere",
   "binDesigner.cutoutEditor.quickstart.shapes": "Forme (R · C · G · S · P): rettangoli, cerchi, poligoni, asole o tracciati Bézier",

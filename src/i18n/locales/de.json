@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Verstanden",
   "binDesigner.cutoutEditor.quickstart.precision": "Intelligente Hilfslinien — am Raster, an Linealen und an anderen Ausschnitten einrasten",
   "binDesigner.cutoutEditor.quickstart.repeat": "Wähle 3 oder mehr gleiche Ausschnitte, um daraus eine Anordnung zu machen",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Navigieren — Scrollen zoomt, Leertaste- oder Mittelklick-Ziehen verschiebt, Strg+0 passt ein",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Rechtsklick-Menü — Kopieren, Gruppieren, Sperren, Ausrichten und mehr",
   "binDesigner.cutoutEditor.quickstart.select": "Auswahl (V) — Auswahlrahmen ziehen, mit Umschalt+Klick erweitern",
   "binDesigner.cutoutEditor.quickstart.shapes": "Formen (R · C · G · S · P) — Rechtecke, Kreise, Polygone, Schlitze oder Bézierkurven",

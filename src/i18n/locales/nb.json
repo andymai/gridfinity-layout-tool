@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Forstått",
   "binDesigner.cutoutEditor.quickstart.precision": "Smarte hjelpelinjer — fest til rutenett, linjaler og andre utsnitt",
   "binDesigner.cutoutEditor.quickstart.repeat": "Velg 3 eller flere like utskjæringer for å gjøre dem til én matrise",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Naviger — rull for å zoome, dra med mellomrom eller midtknapp for å panorere, Ctrl+0 tilpasser",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Høyreklikkmeny — kopier, grupper, lås, juster med mer",
   "binDesigner.cutoutEditor.quickstart.select": "Velg (V) — dra et utvalg, Skift+klikk for å utvide",
   "binDesigner.cutoutEditor.quickstart.shapes": "Former (R · C · G · S · P) — rektangler, sirkler, polygoner, spor eller Bézier-baner",

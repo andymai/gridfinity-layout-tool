@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Förstått",
   "binDesigner.cutoutEditor.quickstart.precision": "Smarta hjälplinjer — fäst mot rutnät, linjaler och andra urtag",
   "binDesigner.cutoutEditor.quickstart.repeat": "Markera 3 eller fler likadana urtag för att göra dem till en matris",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Navigera — rulla för att zooma, dra med mellanslag eller mittenknapp för att panorera, Ctrl+0 anpassar",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Högerklicksmeny — kopiera, gruppera, lås, justera med mera",
   "binDesigner.cutoutEditor.quickstart.select": "Markera (V) — dra ett markeringsfönster, Shift+klick för att utöka",
   "binDesigner.cutoutEditor.quickstart.shapes": "Former (R · C · G · S · P) — rektanglar, cirklar, polygoner, skåror eller Bézier-banor",

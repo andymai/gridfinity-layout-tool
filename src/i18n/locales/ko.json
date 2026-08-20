@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "확인",
   "binDesigner.cutoutEditor.quickstart.precision": "스마트 가이드 — 그리드, 눈금자, 다른 컷아웃에 스냅",
   "binDesigner.cutoutEditor.quickstart.repeat": "같은 컷아웃을 3개 이상 선택하면 하나의 배열로 만들 수 있습니다",
+  "binDesigner.cutoutEditor.quickstart.navigate": "화면 이동 — 스크롤로 확대·축소, 스페이스 또는 가운데 버튼 드래그로 이동, Ctrl+0으로 맞춤",
   "binDesigner.cutoutEditor.quickstart.rightClick": "우클릭 메뉴 — 복사, 그룹, 잠금, 정렬 등",
   "binDesigner.cutoutEditor.quickstart.select": "선택 (V) — 마키로 드래그, Shift+클릭으로 확장",
   "binDesigner.cutoutEditor.quickstart.shapes": "도형 (R · C · G · S · P) — 직사각형, 원, 다각형, 슬롯, 베지어 경로",

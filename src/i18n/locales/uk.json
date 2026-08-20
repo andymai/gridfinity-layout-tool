@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "Зрозуміло",
   "binDesigner.cutoutEditor.quickstart.precision": "Розумні напрямні — прив’язка до сітки, лінійок та інших вирізів",
   "binDesigner.cutoutEditor.quickstart.repeat": "Виберіть 3 або більше однакових вирізів, щоб об'єднати їх у масив",
+  "binDesigner.cutoutEditor.quickstart.navigate": "Навігація — прокручування масштабує, перетягування з пробілом або середньою кнопкою зсуває, Ctrl+0 вписує",
   "binDesigner.cutoutEditor.quickstart.rightClick": "Контекстне меню — копіювати, групувати, заблокувати, вирівняти та інше",
   "binDesigner.cutoutEditor.quickstart.select": "Виділення (V) — перетягніть рамку або Shift+клік, щоб розширити",
   "binDesigner.cutoutEditor.quickstart.shapes": "Фігури (R · C · G · S · P) — прямокутники, кола, багатокутники, прорізи або криві Безьє",

@@ -566,6 +566,7 @@
   "binDesigner.cutoutEditor.quickstart.dismiss": "知道了",
   "binDesigner.cutoutEditor.quickstart.precision": "智能参考线 — 对齐到网格、标尺和其他挖槽",
   "binDesigner.cutoutEditor.quickstart.repeat": "选择 3 个或更多相同的挖槽，即可合并为一个阵列",
+  "binDesigner.cutoutEditor.quickstart.navigate": "视图操作 — 滚动缩放，按住空格或中键拖动平移，Ctrl+0 适应窗口",
   "binDesigner.cutoutEditor.quickstart.rightClick": "右键菜单 — 复制、编组、锁定、对齐等",
   "binDesigner.cutoutEditor.quickstart.select": "选择（V）— 拖出选框，Shift+单击可扩展",
   "binDesigner.cutoutEditor.quickstart.shapes": "形状（R · C · G · S · P）— 长方形、圆形、多边形、长圆槽或贝塞尔路径",
