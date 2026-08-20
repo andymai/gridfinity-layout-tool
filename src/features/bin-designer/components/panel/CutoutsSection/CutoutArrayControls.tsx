@@ -13,6 +13,7 @@ import {
   arrayInstanceCount,
   arrayFieldBounds,
   arrayInstancesOverlap,
+  fillBinCounts,
   ARRAY_MIN_RADIUS,
 } from '@/shared/utils/cutoutArray';
 import { useTranslation } from '@/i18n';
@@ -139,6 +140,9 @@ export function CutoutArrayControls({
   const count = arrayInstanceCount(array);
   const bounds = arrayFieldBounds(cutout, binWidth, binDepth, array);
   const overlaps = arrayInstancesOverlap(cutout, array);
+  const fill = fillBinCounts(cutout, binWidth, binDepth, array);
+  const fillIsNoOp = fill.cols === array.cols && fill.rows === array.rows;
+  const handleFillBin = () => setArray(fill);
 
   return (
     <div className="space-y-1.5">
@@ -275,6 +279,20 @@ export function CutoutArrayControls({
       </div>
 
       <div className="flex gap-1.5">
+        {/* Writes into cols/rows rather than becoming a mode of its own, so the
+            result stays editable — backing off a row does not undo the fill. */}
+        {array.mode !== 'radial' && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="flex-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
+            onClick={handleFillBin}
+            disabled={disabled || fillIsNoOp}
+            title={t('binDesigner.cutouts.repeat.fillBinHint')}
+          >
+            {t('binDesigner.cutouts.repeat.fillBin')}
+          </Button>
+        )}
         <Button
           type="button"
           variant="ghost"

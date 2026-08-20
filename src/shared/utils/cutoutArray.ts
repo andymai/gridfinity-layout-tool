@@ -136,6 +136,32 @@ export function expandCutoutArray(cutout: Cutout): Cutout[] {
   });
 }
 
+/**
+ * How many instances physically fit on each axis at the current pitch, master
+ * included and BEFORE the instance cap.
+ *
+ * The one statement of the "how many fit" arithmetic, so the field bounds and
+ * the fill action cannot disagree about where the bin ends. The grid grows in
+ * +X/+Y from the master, so the room to grow is measured from the master's far
+ * edge — the master's own position IS the leading margin.
+ */
+function spatialCounts(
+  cutout: Pick<Cutout, 'x' | 'y' | 'width' | 'depth'>,
+  binWidth: number,
+  binDepth: number,
+  config: CutoutArrayConfig
+): { readonly cols: number; readonly rows: number } {
+  const availX = Math.max(0, binWidth - cutout.x - cutout.width);
+  const availY = Math.max(0, binDepth - cutout.y - cutout.depth);
+  const rows = clampCount(config.rows);
+  // The half-pitch X shift only exists once there's an odd row to shift, so it
+  // only eats into the width when staggered AND rows > 1.
+  const stagger = config.mode === 'staggered' && rows > 1 ? config.pitchX / 2 : 0;
+  const stepsX = config.pitchX > 0 ? Math.floor((availX - stagger) / config.pitchX) : 0;
+  const stepsY = config.pitchY > 0 ? Math.floor(availY / config.pitchY) : 0;
+  return { cols: 1 + Math.max(0, stepsX), rows: 1 + Math.max(0, stepsY) };
+}
+
 /** Per-field bounds that keep an array within the bin's physical footprint. */
 export interface ArrayFieldBounds {
   readonly maxCols: number;
@@ -208,21 +234,16 @@ export function arrayFieldBounds(
   const availY = Math.max(0, binDepth - cutout.y - d);
   const cols = clampCount(config.cols);
   const rows = clampCount(config.rows);
-  // The half-pitch X shift only exists once there's an odd row to shift, so it
-  // only widens the footprint when staggered AND rows > 1.
-  const stagger = config.mode === 'staggered' && rows > 1 ? config.pitchX / 2 : 0;
   const colExtraSpan = config.mode === 'staggered' && rows > 1 ? 0.5 : 0;
+  const spatial = spatialCounts(cutout, binWidth, binDepth, config);
 
-  // How many extra steps fit at the current pitch, plus the master itself.
-  const stepsX = config.pitchX > 0 ? Math.floor((availX - stagger) / config.pitchX) : 0;
-  const stepsY = config.pitchY > 0 ? Math.floor(availY / config.pitchY) : 0;
   const maxCols = clamp(
-    Math.min(1 + Math.max(0, stepsX), Math.floor(MAX_ARRAY_INSTANCES / rows)),
+    Math.min(spatial.cols, Math.floor(MAX_ARRAY_INSTANCES / rows)),
     1,
     MAX_ARRAY_COUNT
   );
   const maxRows = clamp(
-    Math.min(1 + Math.max(0, stepsY), Math.floor(MAX_ARRAY_INSTANCES / cols)),
+    Math.min(spatial.rows, Math.floor(MAX_ARRAY_INSTANCES / cols)),
     1,
     MAX_ARRAY_COUNT
   );
@@ -276,6 +297,38 @@ export function arrayFieldBounds(
     clearPitchX,
     clearPitchY,
   };
+}
+
+/**
+ * Counts that fill the bin with the array's current pitch and mode.
+ *
+ * Deliberately expressed as counts on the existing config rather than as a
+ * mode of its own: the result lands in the same `cols`/`rows` fields, so it
+ * stays editable afterwards and the user can back off a row without undoing
+ * the fill. Spacing is whatever the pitch fields already say, and the master's
+ * position is the leading margin, so both are set the way the user is used to
+ * setting them rather than through a second set of controls that mean the same
+ * thing.
+ *
+ * The instance cap is spent on columns first and rows take what is left, so a
+ * fill that cannot have everything degrades to complete rows rather than a
+ * ragged final one.
+ */
+export function fillBinCounts(
+  cutout: Pick<Cutout, 'x' | 'y' | 'width' | 'depth'>,
+  binWidth: number,
+  binDepth: number,
+  config: CutoutArrayConfig
+): { readonly cols: number; readonly rows: number } {
+  // Rows first, and columns measured against the rows the fill will actually
+  // produce: a staggered array only pays the half-pitch X offset once it has a
+  // second row, so counting columns against the CURRENT single row would fit
+  // one column too many and hang it off the bin's edge.
+  const rowsFit = spatialCounts(cutout, binWidth, binDepth, config).rows;
+  const colsFit = spatialCounts(cutout, binWidth, binDepth, { ...config, rows: rowsFit }).cols;
+  const cols = clamp(colsFit, 1, MAX_ARRAY_COUNT);
+  const rows = clamp(Math.min(rowsFit, Math.floor(MAX_ARRAY_INSTANCES / cols)), 1, MAX_ARRAY_COUNT);
+  return { cols, rows };
 }
 
 /** A sensible default config for a freshly-enabled array, sized off the master. */

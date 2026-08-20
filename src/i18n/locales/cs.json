@@ -725,6 +725,8 @@
   "binDesigner.cutouts.repeat.radius": "Poloměr",
   "binDesigner.cutouts.repeat.remove": "Odebrat opakování",
   "binDesigner.cutouts.repeat.overlapWarning": "Opakování se překrývají. Jejich řezy splynou v jeden otvor.",
+  "binDesigner.cutouts.repeat.fillBin": "Vyplnit bin",
+  "binDesigner.cutouts.repeat.fillBinHint": "Nastaví řádky a sloupce tak, aby vyplnily bin při aktuální rozteči",
   "binDesigner.cutouts.repeat.rotateToCenter": "Otočit ke středu",
   "binDesigner.cutouts.repeat.rows": "Řady",
   "binDesigner.cutouts.repeat.startAngle": "Počáteční úhel",

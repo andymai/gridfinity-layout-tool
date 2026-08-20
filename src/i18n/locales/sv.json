@@ -725,6 +725,8 @@
   "binDesigner.cutouts.repeat.radius": "Radie",
   "binDesigner.cutouts.repeat.remove": "Ta bort matris",
   "binDesigner.cutouts.repeat.overlapWarning": "Upprepningarna överlappar. Deras urtag smälter samman till en öppning.",
+  "binDesigner.cutouts.repeat.fillBin": "Fyll facket",
+  "binDesigner.cutouts.repeat.fillBinHint": "Ställer in rader och kolumner så att facket fylls med nuvarande delning",
   "binDesigner.cutouts.repeat.rotateToCenter": "Rotera mot mitten",
   "binDesigner.cutouts.repeat.rows": "Rader",
   "binDesigner.cutouts.repeat.startAngle": "Startvinkel",

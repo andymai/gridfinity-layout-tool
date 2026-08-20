@@ -725,6 +725,8 @@
   "binDesigner.cutouts.repeat.radius": "반지름",
   "binDesigner.cutouts.repeat.remove": "배열 제거",
   "binDesigner.cutouts.repeat.overlapWarning": "반복 도형이 겹칩니다. 잘라낸 부분이 하나의 구멍으로 합쳐집니다.",
+  "binDesigner.cutouts.repeat.fillBin": "수납통 채우기",
+  "binDesigner.cutouts.repeat.fillBinHint": "현재 간격으로 행과 열을 수납통에 가득 차도록 설정합니다",
   "binDesigner.cutouts.repeat.rotateToCenter": "중심으로 회전",
   "binDesigner.cutouts.repeat.rows": "행",
   "binDesigner.cutouts.repeat.startAngle": "시작 각도",

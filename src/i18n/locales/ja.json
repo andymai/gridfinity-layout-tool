@@ -725,6 +725,8 @@
   "binDesigner.cutouts.repeat.radius": "半径",
   "binDesigner.cutouts.repeat.remove": "配列を削除",
   "binDesigner.cutouts.repeat.overlapWarning": "繰り返しが重なっています。切り抜きは1つの開口部として結合されます。",
+  "binDesigner.cutouts.repeat.fillBin": "ビンを埋める",
+  "binDesigner.cutouts.repeat.fillBinHint": "現在のピッチで行数と列数をビンいっぱいに設定します",
   "binDesigner.cutouts.repeat.rotateToCenter": "中心に向ける",
   "binDesigner.cutouts.repeat.rows": "行",
   "binDesigner.cutouts.repeat.startAngle": "開始角度",

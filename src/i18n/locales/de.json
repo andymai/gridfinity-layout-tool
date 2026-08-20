@@ -725,6 +725,8 @@
   "binDesigner.cutouts.repeat.radius": "Radius",
   "binDesigner.cutouts.repeat.remove": "Anordnung entfernen",
   "binDesigner.cutouts.repeat.overlapWarning": "Die Wiederholungen überlappen sich. Ihre Schnitte verschmelzen zu einer Öffnung.",
+  "binDesigner.cutouts.repeat.fillBin": "Fach füllen",
+  "binDesigner.cutouts.repeat.fillBinHint": "Setzt Zeilen und Spalten so, dass das Fach beim aktuellen Raster gefüllt wird",
   "binDesigner.cutouts.repeat.rotateToCenter": "Zur Mitte drehen",
   "binDesigner.cutouts.repeat.rows": "Reihen",
   "binDesigner.cutouts.repeat.startAngle": "Startwinkel",

@@ -725,6 +725,8 @@
   "binDesigner.cutouts.repeat.radius": "Straal",
   "binDesigner.cutouts.repeat.remove": "Reeks verwijderen",
   "binDesigner.cutouts.repeat.overlapWarning": "De herhalingen overlappen. Hun uitsparingen vloeien samen tot één opening.",
+  "binDesigner.cutouts.repeat.fillBin": "Bak vullen",
+  "binDesigner.cutouts.repeat.fillBinHint": "Stelt rijen en kolommen in om de bak te vullen met de huidige steek",
   "binDesigner.cutouts.repeat.rotateToCenter": "Naar midden draaien",
   "binDesigner.cutouts.repeat.rows": "Rijen",
   "binDesigner.cutouts.repeat.startAngle": "Starthoek",
