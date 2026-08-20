@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "Grubość przegródki",
   "binDesigner.doubleTapToReset": "Dotknij dwukrotnie, aby zresetować",
   "binDesigner.downloadDesignJson": "Pobierz JSON projektu",
+  "binDesigner.export.jsonHint": "Edytowalny projekt do ponownego importu lub udostępnienia. To nie jest model do druku.",
   "binDesigner.downloadFormat": "Pobierz {format}",
   "binDesigner.downloadJSON": "Pobierz JSON",
   "binDesigner.dragDropDesignFile": "Przeciągnij i upuść tutaj plik JSON projektu lub STL",

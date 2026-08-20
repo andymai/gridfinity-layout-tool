@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "Grosor del divisor",
   "binDesigner.doubleTapToReset": "Doble toque para restablecer",
   "binDesigner.downloadDesignJson": "Descargar JSON de diseño",
+  "binDesigner.export.jsonHint": "El diseño editable, para reimportar o compartir. No es un modelo imprimible.",
   "binDesigner.downloadFormat": "Descargar {format}",
   "binDesigner.downloadJSON": "Descargar JSON",
   "binDesigner.dragDropDesignFile": "Arrastra y suelta aquí un archivo JSON o STL de diseño",

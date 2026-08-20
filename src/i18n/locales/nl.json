@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "Scheidingsdikte",
   "binDesigner.doubleTapToReset": "Dubbeltik om te resetten",
   "binDesigner.downloadDesignJson": "Ontwerp-JSON downloaden",
+  "binDesigner.export.jsonHint": "Het bewerkbare ontwerp, om opnieuw te importeren of te delen. Geen printbaar model.",
   "binDesigner.downloadFormat": "{format} downloaden",
   "binDesigner.downloadJSON": "JSON downloaden",
   "binDesigner.dragDropDesignFile": "Sleep een ontwerp-JSON- of STL-bestand hierheen",

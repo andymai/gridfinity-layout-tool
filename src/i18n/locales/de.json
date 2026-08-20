@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "Trennwanddicke",
   "binDesigner.doubleTapToReset": "Doppeltippen zum Zurücksetzen",
   "binDesigner.downloadDesignJson": "Design-JSON herunterladen",
+  "binDesigner.export.jsonHint": "Das bearbeitbare Design zum erneuten Importieren oder Teilen. Kein druckbares Modell.",
   "binDesigner.downloadFormat": "{format} herunterladen",
   "binDesigner.downloadJSON": "JSON herunterladen",
   "binDesigner.dragDropDesignFile": "Design-JSON- oder STL-Datei hierher ziehen",

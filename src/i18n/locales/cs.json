@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "Tloušťka přepážky",
   "binDesigner.doubleTapToReset": "Dvojité klepnutí pro obnovení",
   "binDesigner.downloadDesignJson": "Stáhnout JSON návrhu",
+  "binDesigner.export.jsonHint": "Upravitelný návrh pro pozdější import nebo sdílení. Není tisknutelný model.",
   "binDesigner.downloadFormat": "Stáhnout {format}",
   "binDesigner.downloadJSON": "Stáhnout JSON",
   "binDesigner.dragDropDesignFile": "Přetáhni sem soubor JSON s návrhem nebo soubor STL",

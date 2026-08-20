@@ -27,6 +27,7 @@ import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { designId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
+import { downloadDesignAsFile } from '@/features/bin-designer/utils/designJson';
 import { hasMeshImprints } from '@/shared/generation/meshAsset';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
@@ -93,6 +94,13 @@ export function ExportDialog() {
     setJustExported(false);
     setExportDialogOpen(false);
   }, [setExportDialogOpen]);
+
+  // Deliberately leaves the dialog open: the source file is usually taken
+  // alongside a 3D export, not instead of it.
+  const handleDownloadJSON = useCallback(() => {
+    downloadDesignAsFile(designName, params);
+    addToast({ message: t('binDesigner.downloadDesignJson'), type: 'success', duration: 2000 });
+  }, [designName, params, addToast, t]);
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
   const useSplitExport = needsSplit && splitEnabled;
@@ -320,6 +328,11 @@ export function ExportDialog() {
         layerHeight: printSettings.layerHeightMm,
       })}
       noMeshWarning={t('binDesigner.generateAMeshFirstToEnableExport')}
+      sourceDownload={{
+        label: t('binDesigner.downloadDesignJson'),
+        hint: t('binDesigner.export.jsonHint'),
+        onClick: handleDownloadJSON,
+      }}
       sectionTitle={t('binDesigner.threeDModel')}
       sectionDescription={t('binDesigner.threeDModelDescription')}
       exported={justExported}

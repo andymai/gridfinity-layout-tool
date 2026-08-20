@@ -858,6 +858,7 @@
   "binDesigner.dividerThickness": "칸막이 두께",
   "binDesigner.doubleTapToReset": "더블 탭하여 초기화",
   "binDesigner.downloadDesignJson": "디자인 JSON 내려받기",
+  "binDesigner.export.jsonHint": "다시 불러오거나 공유할 수 있는 편집 가능한 디자인입니다. 출력용 모델이 아닙니다.",
   "binDesigner.downloadFormat": "{format} 내려받기",
   "binDesigner.downloadJSON": "JSON 내려받기",
   "binDesigner.dragDropDesignFile": "여기에 디자인 JSON 또는 STL 파일을 드래그 앤 드롭",
