@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.434.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.433.1...gridfinity-layout-tool-v4.434.0) (2026-08-20)
+
+
+### Features
+
+* **lid:** hinged lids with a filament pin ([#3661](https://github.com/andymai/gridfinity-layout-tool/issues/3661)) ([4111be2](https://github.com/andymai/gridfinity-layout-tool/commit/4111be2eac894bd845b256d37b2289a063337c8c))
+
 ## [4.433.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.433.0...gridfinity-layout-tool-v4.433.1) (2026-08-20)
 
 
