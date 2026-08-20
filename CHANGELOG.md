@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.432.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.431.0...gridfinity-layout-tool-v4.432.0) (2026-08-20)
+
+
+### Features
+
+* **cutout-editor:** make the canvas viewport hold still ([#3652](https://github.com/andymai/gridfinity-layout-tool/issues/3652)) ([8243e1b](https://github.com/andymai/gridfinity-layout-tool/commit/8243e1b4458a86e4ab49490e36cc868f39c76e55))
+
 ## [4.431.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.430.0...gridfinity-layout-tool-v4.431.0) (2026-08-20)
 
 
