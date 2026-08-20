@@ -1,0 +1,224 @@
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_8a117c9f1fa8b0::t_44a367bd3d6348 10
+  s_8a117c9f1fa8b0::t_da1634cb1cdfa5 568-596
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_8a117c9f1fa8b0::t_7ca20e1815ff81 72-110
+src/features/generation/worker/generators/pipeline/stages/lidHingeStage.ts
+  s_8a117c9f1fa8b0::t_1d13fb2b49d2f5 1-23,26-28,31,33-38,54-73,78-79,118-120
+  s_8a117c9f1fa8b0::t_e45a21aaa773a1 74,83,93-98,105-109,111
+  s_8a117c9f1fa8b0::t_a321bea8711e23 24-25,29-30,75-77,80-82,84-92,99-104,110,112-117
+  s_8a117c9f1fa8b0::t_cc570fb35efd99 32,39-53
+src/features/bin-designer/components/preview/LidMesh/lidAnchorZ.ts
+  s_8a117c9f1fa8b0::t_9de9d92a4e7f5a 21,173-213
+  s_8a117c9f1fa8b0::t_869b8dcfbca319 20,23-24,121-172
+  s_8a117c9f1fa8b0::t_f3d813db8e8bf4 214-215
+src/features/generation/worker/generators/__kernel-tests__/hingeSwing.ts
+  s_8a117c9f1fa8b0::t_4b38c9ea479cc5 125-148
+  s_8a117c9f1fa8b0::t_7b2e98ea60da39 1,3,11,13,22,27-29,31-32,34,36-41,43-46,48,53,59-61,63-64,66-71,73,83,103-105,122-124,169-170,172-173,178-179,182,190-194,196,200,204,211-215,217,224,226,230,232,250-251
+  s_8a117c9f1fa8b0::t_1a406ee505863c 2,4-10,12,14-21,23-26,30,33,35,42,47,49-52,54-58,62,65,72,74-82,84-102,106-121,171,174-177,180-181,183-189,195,197-199,201-203,205-210,216,218-223,225,227-229,231,233-249
+  s_8a117c9f1fa8b0::t_d76284cac108ab 149-168
+src/shared/printSettings/assembledHeight.ts
+  s_8a117c9f1fa8b0::t_cc570fb35efd99 31,34,37,119-140
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_8a117c9f1fa8b0::t_c3d49c23e4222a 323,327,330-331,340,342,344-352,354,360-362
+  s_8a117c9f1fa8b0::t_4fb5c4744251cf 230-252,276-309,390-398
+  s_8a117c9f1fa8b0::t_ee927e111bef15 196-198
+  s_8a117c9f1fa8b0::t_b7dc4064045afb 32-35,215-216
+  s_8a117c9f1fa8b0::t_0a21ece916ee80 61-68,70,225-229
+  s_8a117c9f1fa8b0::t_307ce84fc331a7 1-31,36-37,40-60,69,71-173,207-214,217-224,253-275,310-311,332-339,359,364-381,383-389,399,401-405,424-425
+  s_8a117c9f1fa8b0::t_e45a21aaa773a1 312-322,324-326,328-329,341,343,353,358,363
+  s_8a117c9f1fa8b0::t_56d636d3694ebd 39,406-418,423
+  s_8a117c9f1fa8b0::t_7b3080093bdeba 38,174-195,199-206,355-357,382,400,419-422
+src/i18n/locales/zh-CN.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_8a117c9f1fa8b0::t_4ed8aef83f54e3 665
+  s_8a117c9f1fa8b0::t_5a10742c5ea686 655-664,666-674
+  s_8a117c9f1fa8b0::t_57a7400348e054 60
+  s_8a117c9f1fa8b0::t_0107bd622ca802 74,240-243
+  s_8a117c9f1fa8b0::t_8fe26907ac286d 495-498
+src/i18n/locales/sv.json
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+src/features/bin-designer/components/panel/HingeControls/index.ts
+  s_8a117c9f1fa8b0::t_df8ee58c39bbfb 1
+src/i18n/locales/de.json
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+src/shared/utils/hingeLidPlan.ts
+  s_8a117c9f1fa8b0::t_ce6ecb5b5cdce7 1-16,29-50,70-77,79-87,102-116,118-127,130-214,251-259,261,267,269-393,398-416,418,428-433,435-450
+  s_8a117c9f1fa8b0::t_b7dc4064045afb 17-28,69,78
+  s_8a117c9f1fa8b0::t_ee56bbc35a023b 88-101,260,262-266,268,434
+  s_8a117c9f1fa8b0::t_c54d94f8df5c87 117,215-238,394-397,417,419-422
+  s_8a117c9f1fa8b0::t_765c6fc53ef8b5 51-68,128-129,239-250,423-427
+src/i18n/locales/nb.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/features/bin-designer/components/panel/HingeControls/HingeControls.test.tsx
+  s_8a117c9f1fa8b0::t_008194d95fd143 1-107,112,117-118
+  s_8a117c9f1fa8b0::t_dde0d763dda60f 108-111,113-116
+src/i18n/locales/ko.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_8a117c9f1fa8b0::t_fabc9f9cf337f6 19-20,275-279,322-350
+src/features/bin-designer/components/preview/HingePin/index.ts
+  s_8a117c9f1fa8b0::t_27c4a0003d80e5 1
+src/features/bin-designer/components/preview/LidMesh/LidMesh.test.tsx
+  s_8a117c9f1fa8b0::t_c9fe626c337b44 12-16,22-23
+  s_8a117c9f1fa8b0::t_a6fad5538a3718 150-204
+  s_8a117c9f1fa8b0::t_19cebfe44f4fb6 11
+src/i18n/locales/uk.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/i18n/locales/nl.json
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+src/i18n/locales/ja.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/features/generation/worker/generators/lidInputs.ts
+  s_8a117c9f1fa8b0::t_1dccac2b430832 44-45
+  s_8a117c9f1fa8b0::t_976720dbac08fd 19
+  s_8a117c9f1fa8b0::t_66bd4564b4fb6d 382-386
+  s_8a117c9f1fa8b0::t_cd514f1b3505ff 134-139,377-381,484
+  s_8a117c9f1fa8b0::t_4dc0cae7ede157 387-390,513-519,523-525,528-535
+src/features/bin-designer/constants/paramMigration.ts
+  s_8a117c9f1fa8b0::t_3aa23d24853472 96-97
+  s_8a117c9f1fa8b0::t_a11fc8feb03d8f 75-79,482-515,1407,1446
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_8a117c9f1fa8b0::t_d76284cac108ab 30,319-327,329-351,353-356,358,363-365
+  s_8a117c9f1fa8b0::t_b60768e12b932b 39,194-198
+  s_8a117c9f1fa8b0::t_607ed5301821b7 124,145,189,229,253,357,359-362,366-388,431
+  s_8a117c9f1fa8b0::t_4b38c9ea479cc5 26-28,31-34,305-313
+  s_8a117c9f1fa8b0::t_361526aa972eb8 328
+  s_8a117c9f1fa8b0::t_7eda73484cd641 352
+  s_8a117c9f1fa8b0::t_d32a1541471d09 389-418
+  s_8a117c9f1fa8b0::t_eed164ea6343ed 419-420
+  s_8a117c9f1fa8b0::t_8e74fa6e08c578 1,3-10,16,21-25,36-38,41-42,44-45,47,52,54,65-83,89-90,94,106-107,109-111,114-115,117-121,123,127,141,170,172
+  s_8a117c9f1fa8b0::t_d94534842ce9b7 55-64,132,421-425,427-430,435-436,438-440,446-447,449-452,457-479
+  s_8a117c9f1fa8b0::t_41f19daee85af3 292-302,304,314-316
+  s_8a117c9f1fa8b0::t_56191e6a7c39b5 173-188,190-193,199-228,230-244
+  s_8a117c9f1fa8b0::t_a2949f138be1e1 2,11-15,17-20,35,40,43,46,48-51,53,84-88,91-93,95-105,108,112-113,116,122,125-126,128-131,133-140,142-144,146-169,171,245-252,254-291,303,317-318,426,432-434,437,441-445,448,453-456
+  s_8a117c9f1fa8b0::t_10647f9b1c8f1f 29
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_8a117c9f1fa8b0::t_bf268c05895dc1 82,283-307,310
+  s_8a117c9f1fa8b0::t_19c13b3abcde13 80-81,83-87,210,220-224,767-792,891-903,997-999
+  s_8a117c9f1fa8b0::t_986710da4a3fe9 97-101
+  s_8a117c9f1fa8b0::t_1e428e11f4f9c9 53,93
+src/i18n/locales/fr.json
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+src/features/bin-designer/types/index.ts
+  s_8a117c9f1fa8b0::t_7f6865a75ed412 83-84,96-101,103,106-112,114-122
+  s_8a117c9f1fa8b0::t_1dccac2b430832 113
+  s_8a117c9f1fa8b0::t_765c6fc53ef8b5 104-105
+  s_8a117c9f1fa8b0::t_e7271467555d4b 102
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_8a117c9f1fa8b0::t_df8ee58c39bbfb 25,252-253,477-496
+  s_8a117c9f1fa8b0::t_e1be253e124138 497
+src/features/generation/worker/generators/binOrchestrator.ts
+  s_8a117c9f1fa8b0::t_c10f6d98c5d7b8 22,50,61-64
+src/features/bin-designer/types/lid.ts
+  s_8a117c9f1fa8b0::t_b22ebe7b9ceb66 222-227
+  s_8a117c9f1fa8b0::t_eb56b6db34bd6c 221,229,235,1150-1162
+  s_8a117c9f1fa8b0::t_1dccac2b430832 511-521
+  s_8a117c9f1fa8b0::t_e7271467555d4b 428-444
+  s_8a117c9f1fa8b0::t_765c6fc53ef8b5 457-479
+  s_8a117c9f1fa8b0::t_2361dc5d51fcc8 375-427,445-456,480-510,522-626
+src/features/bin-designer/components/preview/HingePin/HingePin.test.tsx
+  s_8a117c9f1fa8b0::t_27c4a0003d80e5 1-84
+src/features/generation/worker/generators/lidBuilder.ts
+  s_8a117c9f1fa8b0::t_6cd869bc8361cf 44-45,165-186
+  s_8a117c9f1fa8b0::t_b6a719e5493edd 187-188
+api/lib/designerValidation.ts
+  s_8a117c9f1fa8b0::t_5a1cd13d7b8b41 107,113-115,540-543,551-593
+  s_8a117c9f1fa8b0::t_a2432577255e5b 594
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_8a117c9f1fa8b0::t_d8bed109bca2e0 350-355,357-358,368-369,381,394,409,417,462,478,495
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 620
+  s_8a117c9f1fa8b0::t_8f5399ab664628 31-33,103-107,618-619,621-632
+  s_8a117c9f1fa8b0::t_e4cadec561960b 48
+  s_8a117c9f1fa8b0::t_87c78507c3c7f1 108,356,575-580,634-638
+  s_8a117c9f1fa8b0::t_8d0e966e70adff 633,639-641
+src/i18n/locales/es.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/i18n/locales/it.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/features/bin-designer/components/preview/HingePin/HingePin.tsx
+  s_8a117c9f1fa8b0::t_27c4a0003d80e5 45-50
+  s_8a117c9f1fa8b0::t_11330ed435427d 1-44,51-58
+src/features/bin-designer/components/preview/index.ts
+  s_8a117c9f1fa8b0::t_68e25a3361d134 3
+api/lib/designerValidation.test.ts
+  s_8a117c9f1fa8b0::t_de8ae40ffda9d3 1752-1754,1757-1763,1765-1768,1776-1780,1782-1784
+  s_8a117c9f1fa8b0::t_c79ef7036a39f3 1755-1756,1764,1769-1775,1781
+src/features/generation/worker/generators/pipeline/stages/lidRetentionStage.ts
+  s_8a117c9f1fa8b0::t_de688be83e451d 50-51,65-66,71,86
+  s_8a117c9f1fa8b0::t_6e38856c8a099e 52,103
+  s_8a117c9f1fa8b0::t_66bd4564b4fb6d 96-102,104-107
+src/features/bin-designer/components/preview/LidExplodeSlider/LidExplodeSlider.tsx
+  s_8a117c9f1fa8b0::t_2762ca27101b56 65-76,85-87,96-97,107-108,110,149,152,155,158,162,240-241,247-249
+src/shared/utils/hingeLidPlan.test.ts
+  s_8a117c9f1fa8b0::t_6bc4ee662dd4e3 121,134-138,144-151,153-154,156-158,160-167,169-171,173-187
+  s_8a117c9f1fa8b0::t_7817119ffec55c 122-133,139-143,152,155,159,168,172
+  s_8a117c9f1fa8b0::t_5a65df921ef9d5 13,46-54,59-61
+  s_8a117c9f1fa8b0::t_6d7d0c2783050e 1,3-12,14-45,55-58,62-120,188-301
+  s_8a117c9f1fa8b0::t_ee56bbc35a023b 2
+src/features/generation/worker/generators/lidRetentionMagnets.ts
+  s_8a117c9f1fa8b0::t_cd514f1b3505ff 75
+  s_8a117c9f1fa8b0::t_b14ef801dad399 30,71-74,76-78
+  s_8a117c9f1fa8b0::t_66bd4564b4fb6d 61
+  s_8a117c9f1fa8b0::t_3cc7d9352b0bd5 79
+src/shared/types/bin.ts
+  s_8a117c9f1fa8b0::t_d181eb8c091beb 81-82
+  s_8a117c9f1fa8b0::t_765c6fc53ef8b5 142-143
+  s_8a117c9f1fa8b0::t_1dccac2b430832 151
+  s_8a117c9f1fa8b0::t_e7271467555d4b 140
+  s_8a117c9f1fa8b0::t_3505658e247ae9 134-139,141,144-150,152-160
+src/features/bin-designer/components/panel/HingeControls/HingeControls.tsx
+  s_8a117c9f1fa8b0::t_f067b4f92329ab 1-100
+src/i18n/locales/pl.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/i18n/locales/cs.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/i18n/locales/pt-BR.json
+  s_8a117c9f1fa8b0::t_a2e305c4e0b6ec 4123-4132,4134-4143
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 4133
+src/i18n/locales/en.ts
+  s_8a117c9f1fa8b0::t_7ea2276f6ee124 2038
+  s_8a117c9f1fa8b0::t_8394e4319577c5 2160-2162
+  s_8a117c9f1fa8b0::t_10789429199ee3 2025-2037,2039-2044
+  s_8a117c9f1fa8b0::t_2cd6e82982794b 2158-2159,2175-2176
+src/features/generation/worker/generators/featureTags.ts
+  s_8a117c9f1fa8b0::t_c10f6d98c5d7b8 54-61
+src/features/bin-designer/components/preview/LidMesh/LidMesh.tsx
+  s_8a117c9f1fa8b0::t_890b5ae4cedcd8 29,88-95,186-187,199,201-218
+  s_8a117c9f1fa8b0::t_9f14f5cc6d0a56 219
+src/features/generation/worker/generators/retentionMagnetGeometry.ts
+  s_8a117c9f1fa8b0::t_63806f36af67f8 44,71-76,103-107,110,115-116
+  s_8a117c9f1fa8b0::t_55db75b92a1610 42,65-70,77-102,108-109,111-114,117-126
+  s_8a117c9f1fa8b0::t_dd4b75b1655d81 43
+  s_8a117c9f1fa8b0::t_da58ba24365455 127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "56b48e8ac4c99f2d23a30f966c267687d790fae8",
+  "prompts": {},
+  "sessions": {
+    "s_8a117c9f1fa8b0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f8a350b6-def3-44ce-883d-96bd8bb4e681",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
