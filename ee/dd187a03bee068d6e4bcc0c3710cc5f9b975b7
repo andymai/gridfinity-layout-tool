@@ -1,0 +1,61 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+  s_675623bf53b7f7::t_175bb2ef2fc7a9 16,143-145,282-295
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.test.tsx
+  s_675623bf53b7f7::t_8c44f153c35bb5 136-141,145-149,151-167,169-176
+  s_675623bf53b7f7::t_cc2e3004849104 142-144,150,168
+src/i18n/locales/en.ts
+  s_675623bf53b7f7::t_56f49781bcf143 2523-2525
+src/shared/utils/cutoutArray.ts
+  s_675623bf53b7f7::t_495430135c1e79 323-330
+  s_675623bf53b7f7::t_9f352880b8aaba 139-164,238,241,246
+  s_675623bf53b7f7::t_34dbe2239b6cb9 302-322,331-333
+src/shared/utils/cutoutArray.test.ts
+  s_675623bf53b7f7::t_2d2bf85ab80cea 8,356-357,372-392,397-433
+  s_675623bf53b7f7::t_5be99977e83a8b 393-396
+  s_675623bf53b7f7::t_9abcb2d68e4c28 358-371
+  s_675623bf53b7f7::t_4a8aaaebc14449 434
+src/i18n/locales/cs.json
+  s_675623bf53b7f7::t_bf57cd2b34b677 727-728
+src/i18n/locales/de.json
+  s_675623bf53b7f7::t_9c33233552a148 727-728
+src/i18n/locales/es.json
+  s_675623bf53b7f7::t_4e8defba22c59b 727-728
+src/i18n/locales/fr.json
+  s_675623bf53b7f7::t_2e42067d75bcaf 727-728
+src/i18n/locales/it.json
+  s_675623bf53b7f7::t_8fbfe4b83a4600 727-728
+src/i18n/locales/ja.json
+  s_675623bf53b7f7::t_145f0b83cc0fa3 727-728
+src/i18n/locales/ko.json
+  s_675623bf53b7f7::t_bea8b937c70d63 727-728
+src/i18n/locales/nb.json
+  s_675623bf53b7f7::t_6b0b5348d4b485 727-728
+src/i18n/locales/nl.json
+  s_675623bf53b7f7::t_8c81c5e1f0bd61 727-728
+src/i18n/locales/pl.json
+  s_675623bf53b7f7::t_526fdb60710020 727-728
+src/i18n/locales/pt-BR.json
+  s_675623bf53b7f7::t_50995cbb612d0f 727-728
+src/i18n/locales/sv.json
+  s_675623bf53b7f7::t_d72e4c916273c8 727-728
+src/i18n/locales/uk.json
+  s_675623bf53b7f7::t_bf9824cf94a1a2 727-728
+src/i18n/locales/zh-CN.json
+  s_675623bf53b7f7::t_83a9e32def76fa 727-728
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "eedd187a03bee068d6e4bcc0c3710cc5f9b975b7",
+  "prompts": {},
+  "sessions": {
+    "s_675623bf53b7f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e42dafc8-e3c7-45ed-871d-df516f229e80",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
