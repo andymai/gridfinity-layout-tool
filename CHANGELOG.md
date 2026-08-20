@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.430.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.429.0...gridfinity-layout-tool-v4.430.0) (2026-08-20)
+
+
+### Features
+
+* **cutout-editor:** center a selection on one axis at a time ([#3647](https://github.com/andymai/gridfinity-layout-tool/issues/3647)) ([4a6c5d6](https://github.com/andymai/gridfinity-layout-tool/commit/4a6c5d6edbe1f98643c745b647b055515c3e2cb5))
+
 ## [4.429.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.428.2...gridfinity-layout-tool-v4.429.0) (2026-08-20)
 
 
