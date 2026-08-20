@@ -2,16 +2,20 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { resolveConstraints } from '@/shared/constraints';
-import { cardToStyle } from '../../../types';
+import { cardToStyle, resolveInteriorCard } from '../../../types';
 import type { BinStyle, InteriorCard } from '../../../types';
 
 export function useInteriorSection() {
+  // The selected card is RESOLVED against the style, never read raw: the
+  // stored preference only breaks the Bento/Grid Dividers tie, and trusting it
+  // for Slotted or Solid lets the panel offer an editor for a mode the params
+  // are not in.
   const { style, params, setParams, card, setInteriorCard } = useDesignerStore(
     useShallow((s) => ({
       style: s.params.style,
       params: s.params,
       setParams: s.setParams,
-      card: s.ui.interiorCard,
+      card: resolveInteriorCard(s.params.style, s.ui.interiorCard),
       setInteriorCard: s.setInteriorCard,
     }))
   );

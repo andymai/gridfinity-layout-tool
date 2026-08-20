@@ -66,14 +66,18 @@ export interface DesignerUIState {
   /** Whether the full-workspace bento editor is open (desktop only) */
   readonly bentoWorkspaceOpen: boolean;
   /**
-   * Which interior card the panel shows as selected. Bento and Grid Dividers
-   * are both `style: 'standard'`, so the style alone cannot tell them apart.
+   * The panel's interior-card PREFERENCE — read through `resolveInteriorCard`,
+   * never raw. Bento and Grid Dividers are both `style: 'standard'`, so the
+   * style alone cannot tell those two apart and this breaks the tie; every
+   * other card IS a style, and the style wins.
    *
    * Seeded from `deriveInteriorCard` when a design loads and sticky thereafter:
    * `remapDividerOverrides` drops every override on a cell renumber, so a
    * continuously-derived card would flip to Grid Dividers the moment a bento's
-   * walls were reset by a merge. Never persisted — no `BinParams` field means
-   * no shift in `communityParamsFingerprint`.
+   * walls were reset by a merge. Stickiness is why it must be resolved on the
+   * way out — params can move under it (undo, reset, a refused style change)
+   * without ever touching it. Never persisted — no `BinParams` field means no
+   * shift in `communityParamsFingerprint`.
    */
   readonly interiorCard: InteriorCard;
   /** Preview compartments during drag-to-merge/split (shown as ghost in 3D view) */

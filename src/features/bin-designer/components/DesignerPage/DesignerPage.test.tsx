@@ -18,6 +18,14 @@ vi.mock('../PreviewCanvas', () => ({
   PreviewCanvas: () => <div data-testid="preview-canvas">Preview Canvas</div>,
 }));
 
+vi.mock('@/features/bin-designer/components/CutoutWorkspace', () => ({
+  CutoutWorkspace: () => <div data-testid="cutout-workspace">Cutout Workspace</div>,
+}));
+
+vi.mock('@/features/bin-designer/components/BentoWorkspace', () => ({
+  BentoWorkspace: () => <div data-testid="bento-workspace">Bento Workspace</div>,
+}));
+
 vi.mock('../ExportDialog', () => ({
   ExportDialog: () => <div data-testid="export-dialog">Export Dialog</div>,
 }));
@@ -168,5 +176,47 @@ describe('DesignerPage', () => {
     });
     render(<DesignerPage />);
     expect(screen.getByText(/save failed/i)).toBeInTheDocument();
+  });
+});
+
+describe('DesignerPage — the cutout workspace follows the style', () => {
+  beforeEach(() => {
+    resetAllStores();
+    vi.clearAllMocks();
+  });
+
+  it('opens the bin cutout workspace on a solid design', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      },
+      ui: { ...DEFAULT_UI_STATE, cutoutEditorOpen: true, cutoutTarget: 'bin' },
+    });
+    render(<DesignerPage />);
+    expect(screen.getByTestId('cutout-workspace')).toBeInTheDocument();
+  });
+
+  it('closes it when the style is walked back under an open workspace', () => {
+    // The generator builds a bin's cutouts only on a solid body, so a hollow
+    // bin behind the editor means every pocket drawn there is silently
+    // discarded. An undo can move the style with the workspace still open.
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, style: 'standard' },
+      ui: { ...DEFAULT_UI_STATE, cutoutEditorOpen: true, cutoutTarget: 'bin' },
+    });
+    render(<DesignerPage />);
+    expect(screen.queryByTestId('cutout-workspace')).not.toBeInTheDocument();
+    expect(screen.getByTestId('parameter-panel')).toBeInTheDocument();
+  });
+
+  it('leaves the lid cutout workspace open — the lid has its own array', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, style: 'standard' },
+      ui: { ...DEFAULT_UI_STATE, cutoutEditorOpen: true, cutoutTarget: 'lid' },
+    });
+    render(<DesignerPage />);
+    expect(screen.getByTestId('cutout-workspace')).toBeInTheDocument();
   });
 });
