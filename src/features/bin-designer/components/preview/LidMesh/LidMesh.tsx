@@ -26,7 +26,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { getZoneColor } from '@/features/bin-designer/types/featureColors';
 import { buildLidColorGroups } from '@/features/bin-designer/utils/lidColorGroups';
-import { lidGroupPosition } from './lidAnchorZ';
+import { lidGroupPosition, lidHingePose } from './lidAnchorZ';
 
 /** Opacity bands for closed vs exploded views. */
 const OPACITY_CLOSED = 0.7;
@@ -84,6 +84,14 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
   // ("Maximum update depth exceeded"). `params` is a stable reference between
   // edits, which is what makes this both correct and cheaper.
   const lidPosition = useMemo(() => lidGroupPosition(params, lidOffsetMm), [params, lidOffsetMm]);
+
+  // A hinged lid does not lift — it swings, and showing it rising straight up
+  // would depict the one motion the printed part cannot make while hiding the
+  // one thing worth looking at: whether the nose clears the rim through the
+  // arc. `lidOffsetMm` carries DEGREES for a hinged lid; the slider that owns
+  // it changes units to match, so the two never disagree about what the number
+  // means.
+  const hingePose = useMemo(() => lidHingePose(params, lidOffsetMm), [params, lidOffsetMm]);
 
   // The lid's own top lip can differ from the rest of the lid. Classified by
   // exactly the rule the 3MF assembler uses, so the preview keeps predicting
@@ -175,8 +183,8 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
     </mesh>
   );
 
-  return (
-    <group position={[lidPosition[0], lidPosition[1], lidPosition[2]]}>
+  const contents = (
+    <>
       {lidMeshNode}
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
@@ -188,6 +196,25 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
           />
         </lineSegments>
       )}
-    </group>
+    </>
   );
+
+  // Three nested groups, not one, and the nesting IS the pivot. A group turns
+  // about its own origin, and the hinge axis is out at the wall — so the lid is
+  // carried to the axis, turned there, and carried back. Collapsing this to a
+  // single rotated group looks identical at 0° and swings the lid through the
+  // bin at anything else.
+  if (hingePose) {
+    return (
+      <group position={[hingePose.pivot[0], hingePose.pivot[1], hingePose.pivot[2]]}>
+        <group rotation={[hingePose.rotation[0], hingePose.rotation[1], hingePose.rotation[2]]}>
+          <group position={[hingePose.inner[0], hingePose.inner[1], hingePose.inner[2]]}>
+            {contents}
+          </group>
+        </group>
+      </group>
+    );
+  }
+
+  return <group position={[lidPosition[0], lidPosition[1], lidPosition[2]]}>{contents}</group>;
 }

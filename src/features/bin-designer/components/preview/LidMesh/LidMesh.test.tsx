@@ -8,12 +8,19 @@ import {
   DEFAULT_GENERATION_STATE,
 } from '@/features/bin-designer/constants';
 import { LidMesh } from './LidMesh';
-import { lidAnchorZ as lidAnchorZMain, lidWallBottomZ as lidWallBottomZMain } from './lidAnchorZ';
+import {
+  lidAnchorZ as lidAnchorZMain,
+  lidWallBottomZ as lidWallBottomZMain,
+  lidGroupPosition,
+  lidHingePose,
+} from './lidAnchorZ';
 import {
   lidAnchorZ as lidAnchorZWorker,
   lidWallBottomZ as lidWallBottomZWorker,
 } from '@/features/generation/worker/generators/lidConstants';
 import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
+import { DEFAULT_LID_HINGE_CONFIG } from '@/features/bin-designer/types/lid';
+import type { BinParams, LidRailSide } from '@/features/bin-designer/types';
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
@@ -139,4 +146,59 @@ describe('lid Z formulas cross-thread agreement', () => {
       expect(main).toBe(worker);
     });
   }
+});
+
+describe('lidHingePose', () => {
+  const hinged = (side: LidRailSide): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 2,
+    lid: {
+      ...DEFAULT_BIN_PARAMS.lid,
+      enabled: true,
+      attachment: 'hinge',
+      hinge: { ...DEFAULT_LID_HINGE_CONFIG, side },
+    },
+  });
+
+  it('returns nothing for a lid that is not hinged', () => {
+    expect(lidHingePose(DEFAULT_BIN_PARAMS, 0)).toBeNull();
+  });
+
+  it('lands the mesh in exactly the seated place at 0°', () => {
+    // The pose replaces `lidGroupPosition` for a hinged lid, so at zero it has
+    // to agree with it to the micron. A pivot that is right at 0° and wrong
+    // elsewhere is the normal failure; this pins the half a static preview
+    // would show, and the rotation test below pins the half it would not.
+    const params = hinged('back');
+    const pose = lidHingePose(params, 0);
+    expect(pose).not.toBeNull();
+    if (!pose) return;
+    const net = [0, 1, 2].map((i) => pose.pivot[i] + pose.inner[i]);
+    const seated = lidGroupPosition(params, 0);
+    for (const i of [0, 1, 2]) expect(net[i]).toBeCloseTo(seated[i], 6);
+  });
+
+  it('turns about the wall it is hinged on, not about the lid centre', () => {
+    // The pivot sits out at the wall. If it collapsed to the lid's origin the
+    // 0° case above would still pass and the lid would sweep through the bin
+    // at every other angle.
+    const back = lidHingePose(hinged('back'), 0);
+    const left = lidHingePose(hinged('left'), 0);
+    expect(back?.pivot[1]).toBeGreaterThan(30);
+    expect(back?.pivot[0]).toBe(0);
+    expect(left?.pivot[0]).toBeLessThan(-30);
+    expect(left?.pivot[1]).toBe(0);
+  });
+
+  it('opens the front upward, whichever wall carries the hinge', () => {
+    // Opening lifts the material INBOARD of the axis, and which rotation does
+    // that flips with both the axis direction and which side the wall is on —
+    // the four-quadrant trap. Signs pinned against the kernel harness's own
+    // convention, which the four-wall swing test proves against real solids.
+    expect(lidHingePose(hinged('back'), 90)?.rotation[0]).toBeCloseTo(-Math.PI / 2, 6);
+    expect(lidHingePose(hinged('front'), 90)?.rotation[0]).toBeCloseTo(Math.PI / 2, 6);
+    expect(lidHingePose(hinged('right'), 90)?.rotation[1]).toBeCloseTo(Math.PI / 2, 6);
+    expect(lidHingePose(hinged('left'), 90)?.rotation[1]).toBeCloseTo(-Math.PI / 2, 6);
+  });
 });

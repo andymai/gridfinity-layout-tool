@@ -41,6 +41,8 @@ import { cutTrayRecess } from './lidTray';
 import { applyLidCutouts } from './lidCutoutBuilder';
 import { applyLidText } from './lidTextBuilder';
 import { buildSlideLidPlate } from './slideLidPlate';
+import { applyLidHinge } from './hingeBarrel';
+import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 
 export { resolveLidInputs } from './lidInputs';
 export { chamferApexXForCavityWall } from './lidClickRail';
@@ -158,6 +160,30 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     //    `inputs.text` is null for stackable/polygon lids.
     if (inputs.text) {
       body = applyLidText(scope, body, inputs, originToTag);
+    }
+
+    // 8. The hinge, LAST — and the position is the feature, not a preference.
+    //    Its trim is the one cut that keeps the lid clear of the bin through
+    //    the swing, so anything built above has to pass through it: the mating
+    //    shell on the hinge wall, the rear ends of the two side shells, a
+    //    cutout drawn near the nose, a glyph engraved over it. Run it earlier
+    //    and each of those would need its own clearance rule, which is the
+    //    per-feature checklist `lid.relieveInterior` exists to avoid
+    //    (CLAUDE.md gotcha #18). Run it here and a feature added next year is
+    //    trimmed correctly by an author who never heard of the hinge.
+    const hinge = planHingeLid(params).geometry;
+    if (hinge) {
+      const crossOuter = hinge.alongX ? inputs.lidOuterD / 2 : inputs.lidOuterW / 2;
+      const offset = hinge.alongX ? inputs.outerOffsetY : inputs.outerOffsetX;
+      const outward = hinge.side === 'back' || hinge.side === 'right' ? 1 : -1;
+      body = applyLidHinge(scope, body, hinge, {
+        outerFaceCrossMm: crossOuter + outward * offset,
+        // Lid-local: the plate's underside. `axisAboveLipTopMm` is the same
+        // plane stated in the bin's frame, so the two agree by construction
+        // rather than by two copies of the anchor chain (CLAUDE.md gotcha #14).
+        axisZ: -inputs.topThickness,
+        rotationDeg: hinge.rotationDeg,
+      });
     }
 
     return body as ValidSolid;

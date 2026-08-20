@@ -27,6 +27,7 @@ import {
   retentionInterfaceZ,
   retentionMagnetInset,
   retentionMagnetPositions,
+  retentionMagnetPlacementsFor,
 } from './retentionMagnetGeometry';
 import type { LidInputs } from './lidInputs';
 
@@ -57,7 +58,7 @@ export function addLidRetentionMagnets(
   // Same placement as the bin pads (edge magnets included), so every lid boss
   // lands coaxial with its mating bin post — overhang expansion included, since
   // both sides inset from the same overhang-shifted footprint.
-  const positions = retentionMagnetPositions(
+  const allPositions = retentionMagnetPositions(
     cellsX,
     cellsY,
     gridUnitMm,
@@ -66,6 +67,15 @@ export function addLidRetentionMagnets(
     retentionMagnetEdgeMagnets,
     bossRadius,
     { addW: overhangAddW, addD: overhangAddD, offsetX: outerOffsetX, offsetY: outerOffsetY }
+  );
+  // Filtered through the SAME call the bin's pads make, so the two halves of
+  // the joint cannot land on different walls. A magnetic lid keeps all four
+  // corners; a hinged lid's magnet catch keeps only the free edge's pair.
+  const positions = retentionMagnetPlacementsFor(
+    inputs.retentionMagnetSide,
+    allPositions,
+    outerOffsetX,
+    outerOffsetY
   );
 
   // The boss is anchored to the BOTTOM of the cavity, not to the floor plate,

@@ -69,6 +69,45 @@ describe('LidSection', () => {
       expect(useDesignerStore.getState().params.lid.attachment).toBe('magnetic');
     });
 
+    it('seeds a thumb lift opposite the hinge on the first switch to hinged', () => {
+      // A hinged lid must have somewhere to get a finger under, and the default
+      // grip is `none` — so out of the box it would be a flush plate with
+      // nothing to lift. Seeded once, from the geometry that already builds
+      // exactly this.
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Hinged' }));
+      const { lid } = useDesignerStore.getState().params;
+      expect(lid.attachment).toBe('hinge');
+      expect(lid.grip.mode).toBe('scallop');
+      // Hinge defaults to the back wall, so the lift belongs on the front.
+      expect(lid.grip.sides).toEqual({ front: true, back: false, left: false, right: false });
+      expect(lid.grip.binDip).toBe(true);
+    });
+
+    it('never overwrites a grip the user has already configured', () => {
+      // Silently rewriting a part nobody asked about is the line the sliding
+      // lid's flush placement also refuses to cross: it reports a blocker
+      // rather than turning the stacking lip off for you.
+      resetStore({
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          grip: {
+            ...DEFAULT_BIN_PARAMS.lid.grip,
+            mode: 'chamfer',
+            sides: { front: false, back: false, left: true, right: false },
+          },
+        },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Hinged' }));
+      const { lid } = useDesignerStore.getState().params;
+      expect(lid.attachment).toBe('hinge');
+      expect(lid.grip.mode).toBe('chamfer');
+      expect(lid.grip.sides.left).toBe(true);
+    });
+
     it('shows per-side rail chips only in click-rails mode', () => {
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'clickRails' },

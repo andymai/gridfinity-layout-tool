@@ -2022,6 +2022,26 @@ const en: Record<string, string> = {
   'binDesigner.lid.attachment.clickRails': 'Click rails',
   'binDesigner.lid.attachment.magnetic': 'Magnetic',
   'binDesigner.lid.attachment.slide': 'Sliding',
+  'binDesigner.lid.attachment.hinge': 'Hinged',
+  'binDesigner.lid.hinge.side': 'Hinge on',
+  'binDesigner.lid.hinge.sideHint':
+    'The lid swings up from this wall and stays open past vertical. Pick the wall furthest from you so the open lid falls away from your hand.',
+  'binDesigner.lid.hinge.catch': 'Holds shut with',
+  'binDesigner.lid.hinge.catch.none': 'Nothing',
+  'binDesigner.lid.hinge.catch.detent': 'Snap',
+  'binDesigner.lid.hinge.catch.magnets': 'Magnets',
+  'binDesigner.lid.hinge.catch.noneHint':
+    'The lid rests shut under its own weight. Fine for keeping dust out, and the right answer if you reach into this bin constantly.',
+  'binDesigner.lid.hinge.catch.detentHint':
+    'A short snap rail on the wall opposite the hinge. Clicks shut, opens with a thumb, needs no hardware.',
+  'binDesigner.lid.hinge.catch.magnetsHint':
+    'Press-fit magnets in bosses on the free edge and the bin’s lip. The strongest hold, and the only catch that survives a cutout opposite the hinge — at the cost of two magnets.',
+  'binDesigner.lid.hinge.pinOne': 'Needs one {diameter} mm filament offcut, cut to {length} mm',
+  'binDesigner.lid.hinge.pinMany': 'Needs {count} {diameter} mm filament offcuts: {lengths} mm',
+  'binDesigner.lid.hinge.fitClearance': 'Hinge fit',
+  'binDesigner.lid.hinge.fitClearanceAria': 'Hinge running clearance per side in millimeters',
+  'binDesigner.lid.hinge.fitClearanceHint':
+    'Gap between the knuckles and the pin. Raise it if the hinge binds, lower it if the lid rattles. Filament itself varies, so this is worth a test print.',
   'binDesigner.lid.slide.placement': 'Channel position',
   'binDesigner.lid.slide.placement.recessed': 'Under the lip',
   'binDesigner.lid.slide.placement.flush': 'At the rim',
@@ -2135,6 +2155,11 @@ const en: Record<string, string> = {
     'A cutout or handle opens the {sides} wall the lid runs along. The runner will bridge that opening, blocking part of it and standing unsupported across it.',
   'binDesigner.lid.compat.slideWallPattern':
     'The wall pattern perforates the walls the runners weld to, which weakens them.',
+  'binDesigner.lid.compat.hingeUnbuildable':
+    'This bin can’t take a hinged lid — the hinge wall is too short, or cutouts and handles have left no unbroken stretch of rim for the knuckles.',
+  'binDesigner.lid.compat.hingeStackableTop':
+    'The hinge knuckles stand proud of the lid’s top, so a bin stacked on it would rock. Turn off the stackable top.',
+  'binDesigner.lid.compat.fix.hingeStackableTop': 'turn off the stackable top',
   'binDesigner.lid.compat.fixButton': 'Fix',
   'binDesigner.lid.compat.fixAriaLabel': 'Fix: {detail}',
   'binDesigner.lid.clickRailDisabledBySide':
@@ -2147,6 +2172,8 @@ const en: Record<string, string> = {
   'binDesigner.lid.railsRange': 'Rails: {count} walls, {min}–{max} mm',
   'binDesigner.lid.railsNone': 'No rails (walls too short)',
   'binDesigner.preview.lidClosed': 'Closed',
+  'binDesigner.preview.lidHingeSlider': 'Swing the hinged lid open, in degrees',
+  'binDesigner.preview.degreeUnit': '°',
   'binDesigner.preview.lidOpen': 'Open',
   'binDesigner.preview.lidExplodeSlider': 'Lid open/close',
   'binDesigner.overhang.title': 'Overhang',

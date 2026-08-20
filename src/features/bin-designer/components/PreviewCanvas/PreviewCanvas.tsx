@@ -70,6 +70,7 @@ import { stackPitchMm } from '@/shared/utils/heightUnits';
 import { useTranslation } from '@/i18n';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
+import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import {
@@ -235,6 +236,10 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // Companion only: an integrated rest is part of the block, so there is
   // nothing to separate from it.
   const showRestSlider = useMemo(() => planKnifeRest(params)?.style === 'companion', [params]);
+  // The angle a hinged lid comes to rest at, or null when this lid is not
+  // hinged. Read from the PLAN, so the slider cannot offer an angle the
+  // geometry was not trimmed for.
+  const hingeStopDeg = useMemo(() => planHingeLid(params).geometry?.stopAngleDeg ?? null, [params]);
   const restSliderSlot = EXPLODE_SLIDER_SLOTS[(showLidSlider ? 1 : 0) + (showFeetSlider ? 1 : 0)];
 
   // Reset the explode slider to its default whenever the lid transitions
@@ -642,7 +647,26 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
           {/* Lid explode slider — only when the bin has a lid configured AND
               its stacking lip is on (lid won't render/export without lip). */}
-          {showLidSlider && <LidExplodeSlider value={lidOffsetMm} onChange={setLidOffsetMm} />}
+          {/* A hinged lid swings, so its slider carries DEGREES and stops where
+              the lid does. Same control, different units — see the slider's own
+              note on why this is a prop and not a second component. */}
+          {showLidSlider && (
+            <LidExplodeSlider
+              value={lidOffsetMm}
+              onChange={setLidOffsetMm}
+              {...(hingeStopDeg !== null
+                ? {
+                    max: hingeStopDeg,
+                    unit: t('binDesigner.preview.degreeUnit'),
+                    labels: {
+                      open: t('binDesigner.preview.lidOpen'),
+                      closed: t('binDesigner.preview.lidClosed'),
+                      aria: t('binDesigner.preview.lidHingeSlider'),
+                    },
+                  }
+                : {})}
+            />
+          )}
 
           {showFeetSlider && (
             <FeetDetachSlider

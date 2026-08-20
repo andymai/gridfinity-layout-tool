@@ -218,13 +218,21 @@ export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = Array.from(
  *   opposite inner walls, entered from a third. The only mode that is not a
  *   cap: it has no mating shell, no cavity and no seam, so the knobs that
  *   describe those are forced off (see {@link LidSlideConfig}).
+ * - `hinge`: interleaved knuckles on one wall carrying a 1.75mm filament pin,
+ *   so the lid stays captive and swings rather than lifting off. It is the one
+ *   mode whose name describes a CONSTRAINT rather than a hold: a hinge fixes
+ *   one edge and says nothing about the other three, so what keeps the lid
+ *   shut is its own sub-choice ({@link LidHingeCatch}). Mutual exclusion still
+ *   holds — a hinged lid is not also a rail lid — but the rule reads more
+ *   precisely as "exactly one mode owns the lid/bin interface".
  */
-export type LidAttachment = 'friction' | 'clickRails' | 'magnetic' | 'slide';
+export type LidAttachment = 'friction' | 'clickRails' | 'magnetic' | 'slide' | 'hinge';
 export const LID_ATTACHMENTS: readonly LidAttachment[] = [
   'friction',
   'clickRails',
   'magnetic',
   'slide',
+  'hinge',
 ] as const;
 
 /**
@@ -363,6 +371,258 @@ export const DEFAULT_LID_SLIDE_CONFIG: LidSlideConfig = {
   pull: 'notch',
   detent: true,
 } as const;
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Hinged lid
+ * ──────────────────────────────────────────────────────────────────── */
+
+/**
+ * How a hinged lid is held SHUT. The hinge itself only controls one edge —
+ * without a catch the lid is held closed by nothing but its own weight.
+ *
+ * - `none`: bare. Honest for a lid that only keeps dust out, and the right
+ *   answer when the design already has a cutout the user grabs instead.
+ * - `detent`: a ramped bump on the wall opposite the axis that the lid's edge
+ *   clicks past. Reuses the click-rail cross-section, prints without support,
+ *   and can be pushed past by hand.
+ * - `magnets`: a press-fit pair in bosses on the lid edge and the bin's lip.
+ *   The strongest hold and the only one that survives a wall cutout opposite
+ *   the hinge, at the cost of two magnets the user has to source.
+ */
+export type LidHingeCatch = 'none' | 'detent' | 'magnets';
+export const LID_HINGE_CATCHES: readonly LidHingeCatch[] = ['none', 'detent', 'magnets'] as const;
+
+/**
+ * Nominal diameter (mm) of the pin the hinge is designed around: a plain
+ * 1.75mm filament offcut, which every user of this app has by definition.
+ */
+export const LID_HINGE_PIN_MM = 1.75;
+
+/**
+ * Running bore (mm) through the knuckles. 0.25 over the pin, the same
+ * per-side working clearance a Gridfinity foot takes in its cell — loose
+ * enough to swing freely on a printer that already seats bins, tight enough
+ * that the lid does not rattle.
+ */
+export const LID_HINGE_BORE_MM = 2.0;
+
+/**
+ * Bore (mm) of the ENTRY knuckle only — undersized so the pin press-fits
+ * there and cannot walk out, while every other knuckle stays a running fit.
+ * The far end is left open on purpose: the hinge stays serviceable, because a
+ * second offcut drives the pin back out.
+ */
+export const LID_HINGE_ENTRY_BORE_MM = 1.85;
+
+/**
+ * Material (mm) around the bore. Sets the barrel radius, and with it both how
+ * far the knuckles stand proud of the rim and how much lip the notch eats —
+ * so it is a geometry constant, not a knob.
+ */
+export const LID_HINGE_KNUCKLE_WALL_MM = 1.2;
+
+/** Outer radius (mm) of the hinge barrel. Derived so the two cannot drift. */
+export const LID_HINGE_BARREL_RADIUS_MM = LID_HINGE_BORE_MM / 2 + LID_HINGE_KNUCKLE_WALL_MM;
+
+/**
+ * Gap (mm) between the barrel's outer surface and the wall's outer face.
+ *
+ * Sitting the barrel exactly TANGENT to that face is the obvious construction
+ * and the wrong one. Tangency means the cylinder meets the plane along a single
+ * line, and a boolean over a knife-edge contact is where kernels produce
+ * slivers and coincident faces: it showed up here as broken parity in the
+ * column probes — an odd crossing count, which `meshAssertions` warns reads a
+ * lower surface as an upper one — while every mesh statistic stayed plausible.
+ *
+ * A small deliberate relief removes the degeneracy, and it reads better: the
+ * barrel becomes a distinct element with its own shadow line instead of
+ * smearing into the wall face. The footprint is unaffected either way, since
+ * this only ever moves the barrel further INBOARD.
+ */
+export const LID_HINGE_FACE_RELIEF_MM = 0.2;
+
+/**
+ * Where the lid comes to rest, in degrees from shut.
+ *
+ * Past vertical on purpose: at 90° a lid balances and falls shut on the hand
+ * reaching into the bin, and every impact is taken by the pin. Past it, gravity
+ * holds the lid open and the load sits on two broad butting faces instead.
+ *
+ * It costs nothing to build — the faces that butt are the trim planes the
+ * swing clearance already requires, so this number IS that trim's angle.
+ */
+export const LID_HINGE_STOP_ANGLE_DEG = 105;
+
+/**
+ * Extra reach (mm) the stop lobe gets past the corner it lands on.
+ *
+ * The lobe only has to REACH the bin's lip-top outer corner — the stop angle is
+ * set by the trim plane's tilt, not by this, because a plane through the axis
+ * contains that corner at one angle whatever its radius. So this is margin
+ * against tessellation and print tolerance, and nothing more. Every millimetre
+ * of it is a millimetre the lobe sweeps outside the bin's footprint while the
+ * lid is open, which is why it is small.
+ */
+export const LID_HINGE_STOP_MARGIN_MM = 0.15;
+
+/**
+ * Angular width (deg) of the stop lobe on each lid knuckle.
+ *
+ * Wide enough to be a lug rather than a knife edge, narrow enough that the
+ * barrel still reads as one continuous cylinder: at this width the lobe adds
+ * ~0.7mm to the knuckle's silhouette at its peak, which looks like the cam it
+ * is. Its leading face is the trim plane itself, so widening it can only ever
+ * move the trailing edge — the stop angle cannot drift with this number.
+ */
+export const LID_HINGE_STOP_SECTOR_DEG = 24;
+
+/**
+ * Edge break (mm) on both lips of the hinge seam.
+ *
+ * The gap itself is constant for free (both faces are surfaces of revolution
+ * about the axis), but a bare 0.25mm hairline at FDM resolution reads as a
+ * part that did not quite fit. Chamfering both sides turns it into a shadow
+ * groove that reads as intent, breaks the two edges that would scuff first,
+ * and gives the nose's first layer somewhere to go when it spreads.
+ */
+export const LID_HINGE_SEAM_CHAMFER_MM = 0.4;
+
+/**
+ * Per-side running clearance (mm) between a knuckle and its neighbour, and
+ * between the barrel and the pocket it swings in.
+ *
+ * Exposed for the same reason {@link LID_SLIDE_CLEARANCE_DEFAULT_MM} is, and
+ * no other lid fit number: a running fit is the one that varies with printer
+ * and material rather than with geometry. Filament itself runs 1.70-1.80mm,
+ * so the pin this hinge is built around is not even a fixed diameter.
+ */
+export const LID_HINGE_FIT_MIN_MM = 0.15;
+export const LID_HINGE_FIT_MAX_MM = 0.4;
+export const LID_HINGE_FIT_DEFAULT_MM = 0.25;
+export const LID_HINGE_FIT_STEP_MM = 0.05;
+
+/**
+ * Target knuckle width (mm) the layout aims for before rounding to an odd
+ * count. Wide enough that a knuckle root is not a stress riser, narrow enough
+ * that a 1u wall still gets three.
+ */
+export const LID_HINGE_KNUCKLE_TARGET_MM = 11;
+
+/**
+ * Rail coverage a hinged lid's detent takes, as a fraction of its wall.
+ *
+ * Shorter than any coverage the click-rail control offers, and deliberately: a
+ * click-lock lid is meant to resist being lifted anywhere along its edge, while
+ * a hinged lid is meant to be FLIPPED. A full-length rail opposite a hinge is a
+ * lid that has to be prised. Centred, which is where an unsupported free edge
+ * lifts first.
+ */
+export const LID_HINGE_DETENT_COVERAGE = 0.4;
+
+/** Narrowest knuckle (mm) worth building. Below it the root snaps off. */
+export const LID_HINGE_KNUCKLE_MIN_MM = 5;
+
+/** Bounds on the knuckle count within one run. Always odd — see the plan. */
+export const LID_HINGE_MIN_KNUCKLES = 3;
+export const LID_HINGE_MAX_KNUCKLES = 15;
+
+/**
+ * How far (mm) the barrel stays clear of each corner of its wall.
+ *
+ * The corner is where the hinge wall and its neighbours meet, and it is also
+ * where the lid's side shells come down. Keeping the barrel out of it leaves
+ * the corner intact for both.
+ */
+export const LID_HINGE_CORNER_INSET_MM = 3;
+
+/**
+ * Shortest surviving stretch (mm) of wall that can carry a knuckle group.
+ *
+ * A run has to hold at least {@link LID_HINGE_MIN_KNUCKLES} at the minimum
+ * width to be worth anything; below that the stretch is skipped rather than
+ * filled with knuckles too small to hold.
+ */
+export const LID_HINGE_MIN_RUN_MM = LID_HINGE_MIN_KNUCKLES * LID_HINGE_KNUCKLE_MIN_MM;
+
+/**
+ * Hinged-lid configuration. Read only when `attachment === 'hinge'`.
+ *
+ * Deliberately three fields. The knuckle layout is derived from the wall
+ * (see `@/shared/utils/hingeLidPlan`) because a count is not a choice anyone
+ * has a basis to make, and the bore is fixed because the pin is fixed. What
+ * is left is the two things that are genuinely the user's: which way the bin
+ * opens, and what holds it shut — plus the one fit number that varies by
+ * machine.
+ */
+export interface LidHingeConfig {
+  /**
+   * The wall the axis runs along.
+   *
+   * Explicit rather than derived from the footprint, for the same reason
+   * {@link LidSlideConfig.entrySide} is: a bin faces a particular way in a
+   * drawer, and rotating the whole design to change which way the lid opens
+   * is not a substitute for choosing.
+   */
+  readonly side: LidRailSide;
+  /** See {@link LidHingeCatch}. */
+  readonly catchMode: LidHingeCatch;
+  /** Per-side running clearance (mm). See {@link LID_HINGE_FIT_DEFAULT_MM}. */
+  readonly fitClearanceMm: number;
+}
+
+/**
+ * Whether this lid is hinged.
+ *
+ * Takes the config rather than the whole design, and deliberately does NOT
+ * consult `lid.enabled` — both for the same reasons {@link isSlideLid} does
+ * not.
+ */
+export function isHingeLid(lid: Pick<LidConfig, 'attachment'>): boolean {
+  return lid.attachment === 'hinge';
+}
+
+/**
+ * This design's hinge config, or the factory one when it carries no opinion.
+ *
+ * The single reader for {@link LidConfig.hinge}: the field is absent on every
+ * design that has never used a hinge, and every consumer would otherwise need
+ * its own fallback — which is one more place for the default to drift.
+ */
+export function resolveLidHinge(lid: Pick<LidConfig, 'hinge'>): LidHingeConfig {
+  return lid.hinge ?? DEFAULT_LID_HINGE_CONFIG;
+}
+
+/** True when this config is the factory one, so migration can drop it. */
+export function isDefaultLidHinge(hinge: LidHingeConfig): boolean {
+  return (
+    hinge.side === DEFAULT_LID_HINGE_CONFIG.side &&
+    hinge.catchMode === DEFAULT_LID_HINGE_CONFIG.catchMode &&
+    hinge.fitClearanceMm === DEFAULT_LID_HINGE_CONFIG.fitClearanceMm
+  );
+}
+
+/** Factory hinge config. Only read when the attachment is `'hinge'`. */
+export const DEFAULT_LID_HINGE_CONFIG: LidHingeConfig = {
+  // The wall furthest from the user in a drawer, so the open lid falls away
+  // from the hand rather than across the opening.
+  side: 'back',
+  catchMode: 'detent',
+  fitClearanceMm: LID_HINGE_FIT_DEFAULT_MM,
+} as const;
+
+/** The wall opposite a hinge — where the catch and the thumb lift belong. */
+export function hingeOppositeSide(side: LidRailSide): LidRailSide {
+  switch (side) {
+    case 'front':
+      return 'back';
+    case 'back':
+      return 'front';
+    case 'left':
+      return 'right';
+    case 'right':
+      return 'left';
+  }
+}
 
 /**
  * Bounds for the dedicated lid-retention magnet. Separate from
@@ -887,6 +1147,19 @@ export interface LidConfig {
    * re-publish. Read it through {@link resolveLidSlide}.
    */
   readonly slide?: LidSlideConfig;
+  /**
+   * Hinge geometry. Read only when {@link attachment} is `'hinge'`, so
+   * switching modes preserves it exactly as `slide` and `retentionMagnet` are
+   * preserved.
+   *
+   * ABSENT rather than defaulted when it carries no opinion, and
+   * `migrateParams` collapses a default-valued object back to absent — the
+   * same treatment `slide` gets, for the same reason (CLAUDE.md gotcha #13a:
+   * `communityParamsFingerprint` hashes the whole params object and keys the
+   * moderation tombstone, so an always-present field would re-hash every
+   * design already published). Read it through {@link resolveLidHinge}.
+   */
+  readonly hinge?: LidHingeConfig;
   /**
    * Shapes cut clean through the lid's plate — a dispensing slot, a vent, a
    * pass-through for a cable. The same {@link Cutout} the interior uses, so the

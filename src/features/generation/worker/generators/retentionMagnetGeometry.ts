@@ -39,6 +39,9 @@ export {
   retentionMagnetPositions,
   type RetentionMagnetPlacement,
 } from '@/shared/utils/retentionMagnetPlacement';
+import { planHingeLid } from '@/shared/utils/hingeLidPlan';
+import type { RetentionMagnetPlacement } from '@/shared/utils/retentionMagnetPlacement';
+import type { LidRailSide } from '@/shared/types/bin';
 
 /**
  * True when the design's lid uses magnetic retention and the geometry is
@@ -57,6 +60,69 @@ export function usesMagneticLid(params: BinParams): boolean {
     params.base.stackingLip &&
     !isPartialMask(params.cellMask)
   );
+}
+
+/**
+ * True when a HINGED lid asks for the magnet catch, and the geometry supports
+ * it. The same structural preconditions as {@link usesMagneticLid}, decided by
+ * the hinge plan so a design whose hinge the plan refused never grows bosses
+ * for a joint it does not have.
+ */
+/** The wall a hinged lid's magnet catch pins, or `null` for all four corners. */
+export function retentionMagnetSide(params: BinParams): LidRailSide | null {
+  const { geometry } = planHingeLid(params);
+  return geometry !== null && geometry.catchMode === 'magnets' ? geometry.catchSide : null;
+}
+
+export function usesHingeMagnetCatch(params: BinParams): boolean {
+  const { geometry } = planHingeLid(params);
+  return geometry !== null && geometry.catchMode === 'magnets';
+}
+
+/**
+ * True when this design needs retention magnets at all, whichever mode asked.
+ *
+ * The gate every consumer should read. `usesMagneticLid` stays narrow because
+ * its name is a claim about the ATTACHMENT, and a hinged lid is not a magnetic
+ * one — it is a hinged lid whose catch happens to be magnetic. Widening that
+ * predicate instead of adding this one would have made every call site read as
+ * a lie.
+ */
+export function usesRetentionMagnets(params: BinParams): boolean {
+  return usesMagneticLid(params) || usesHingeMagnetCatch(params);
+}
+
+/**
+ * The magnet placements this design actually wants.
+ *
+ * A magnetic LID pins all four corners. A hinged lid's magnet CATCH pins only
+ * the free edge: the hinge already holds the other one absolutely, and magnets
+ * on the hinge wall would fight the knuckles for the same millimetres while
+ * adding nothing — the lid cannot lift there. So the catch is the same corner
+ * geometry, filtered to one wall.
+ *
+ * Takes the SIDE rather than the design, so the two builders can hand it the
+ * value they each already hold — the lid from its resolved inputs, the bin from
+ * the plan — without either needing the other's frame. `null` means all four
+ * corners, which is what a magnetic attachment asks for.
+ */
+export function retentionMagnetPlacementsFor(
+  side: LidRailSide | null,
+  all: ReadonlyArray<RetentionMagnetPlacement>,
+  centreX: number,
+  centreY: number
+): ReadonlyArray<RetentionMagnetPlacement> {
+  if (side === null) return all;
+  switch (side) {
+    case 'back':
+      return all.filter((p) => p.y > centreY);
+    case 'front':
+      return all.filter((p) => p.y < centreY);
+    case 'right':
+      return all.filter((p) => p.x > centreX);
+    case 'left':
+      return all.filter((p) => p.x < centreX);
+  }
 }
 
 /**

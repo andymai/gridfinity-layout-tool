@@ -62,6 +62,18 @@ interface LidExplodeSliderProps {
    * of each other.
    */
   slot?: ExplodeSliderSlot;
+  /**
+   * Range and unit of the value, defaulting to the lid's millimetre lift.
+   *
+   * A hinged lid does not lift — it swings — so its slider carries DEGREES and
+   * stops where the lid does. Parameterised rather than branched inside,
+   * because everything else about the control (the track, the drag mapping,
+   * the keyboard, the bubble) is identical whatever the number means, and a
+   * second slider would be a second place for the drag direction to go wrong.
+   */
+  min?: number;
+  max?: number;
+  unit?: string;
 }
 
 export function LidExplodeSlider({
@@ -70,6 +82,9 @@ export function LidExplodeSlider({
   labels,
   invert = false,
   slot = 'first',
+  min = LID_OFFSET_MIN,
+  max = LID_OFFSET_MAX,
+  unit = 'mm',
 }: LidExplodeSliderProps) {
   const t = useTranslation();
   const id = useId();
@@ -78,8 +93,8 @@ export function LidExplodeSlider({
   const [isDragging, setIsDragging] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
-  const range = LID_OFFSET_MAX - LID_OFFSET_MIN;
-  const percent = range === 0 ? 0 : ((value - LID_OFFSET_MIN) / range) * 100;
+  const range = max - min;
+  const percent = range === 0 ? 0 : ((value - min) / range) * 100;
 
   const pointerToValue = useCallback(
     (clientY: number): number => {
@@ -89,10 +104,10 @@ export function LidExplodeSlider({
       // so a downward drag detaches the feet downward.
       const fromEnd = invert ? clientY - rect.top : rect.bottom - clientY;
       const rawPercent = Math.max(0, Math.min(1, fromEnd / rect.height));
-      const raw = LID_OFFSET_MIN + rawPercent * range;
-      return Math.max(LID_OFFSET_MIN, Math.min(LID_OFFSET_MAX, Math.round(raw)));
+      const raw = min + rawPercent * range;
+      return Math.max(min, Math.min(max, Math.round(raw)));
     },
-    [range, value, invert]
+    [range, min, max, value, invert]
   );
 
   const handlePointerDown = useCallback(
@@ -131,20 +146,20 @@ export function LidExplodeSlider({
       let next: number | undefined;
       if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
         e.preventDefault();
-        next = Math.min(LID_OFFSET_MAX, Math.max(LID_OFFSET_MIN, value + step));
+        next = Math.min(max, Math.max(min, value + step));
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
         e.preventDefault();
-        next = Math.min(LID_OFFSET_MAX, Math.max(LID_OFFSET_MIN, value - step));
+        next = Math.min(max, Math.max(min, value - step));
       } else if (e.key === 'Home') {
         e.preventDefault();
-        next = invert ? LID_OFFSET_MAX : LID_OFFSET_MIN;
+        next = invert ? max : min;
       } else if (e.key === 'End') {
         e.preventDefault();
-        next = invert ? LID_OFFSET_MIN : LID_OFFSET_MAX;
+        next = invert ? min : max;
       }
       if (next !== undefined && next !== value) onChange(next);
     },
-    [value, onChange, invert]
+    [value, onChange, invert, min, max]
   );
 
   const thumbActive = isDragging || isHovering;
@@ -222,16 +237,16 @@ export function LidExplodeSlider({
             if (next !== value) onChange(next);
           }}
           onKeyDown={handleKeyDown}
-          min={LID_OFFSET_MIN}
-          max={LID_OFFSET_MAX}
+          min={min}
+          max={max}
           step={1}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           aria-label={labels?.aria ?? t('binDesigner.preview.lidExplodeSlider')}
           aria-orientation="vertical"
           aria-valuenow={value}
-          aria-valuemin={LID_OFFSET_MIN}
-          aria-valuemax={LID_OFFSET_MAX}
-          aria-valuetext={`${value}mm`}
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuetext={`${value}${unit}`}
         />
       </div>
 

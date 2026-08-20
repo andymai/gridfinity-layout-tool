@@ -51,6 +51,14 @@ export const FeatureTag = {
    * different part, on different walls, at a different height.
    */
   SLIDE_LID_CHANNEL: 19,
+  /**
+   * The hinge barrel — the bin's knuckles and the pockets the lid's turn in.
+   *
+   * One tag for both, because they are one feature: the pockets are only there
+   * to receive the other part's knuckles, and a hover that highlighted the
+   * material without the void would be describing half a joint.
+   */
+  LID_HINGE: 20,
   UNKNOWN: 255,
 } as const;
 

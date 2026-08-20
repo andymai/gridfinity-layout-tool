@@ -22,6 +22,7 @@ import { Switch } from '@/design-system/Switch';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { LidGripControls } from '../LidGripControls';
 import { SlideControls } from '../SlideControls';
+import { HingeControls } from '../HingeControls';
 import { StepperField } from '../shared/StepperField';
 import { Hint, Readout, SubHeader } from '../shared';
 import type {
@@ -248,6 +249,8 @@ export function LidSection() {
             )}
 
             {state.isSlide && <SlideControls state={state} handlers={handlers} t={t} />}
+
+            {state.isHinge && <HingeControls state={state} handlers={handlers} t={t} />}
           </section>
 
           {/* ── Top surface ──────────────────────────────────────────── */}
@@ -470,6 +473,27 @@ export function LidSection() {
                       : t('binDesigner.lid.topThicknessHint')}
                 </Hint>
               </div>
+
+              {state.isHinge && (
+                <div className="space-y-1">
+                  <StepperField
+                    label={t('binDesigner.lid.hinge.fitClearance')}
+                    unit="mm"
+                    value={state.hinge.fitClearanceMm}
+                    onChange={handlers.setHingeFit}
+                    onStep={(delta) =>
+                      handlers.setHingeFit(state.hinge.fitClearanceMm + delta * state.hingeFitStep)
+                    }
+                    min={state.hingeFitMin}
+                    max={state.hingeFitMax}
+                    step={state.hingeFitStep}
+                    size="md"
+                    aria-label={t('binDesigner.lid.hinge.fitClearanceAria')}
+                    commitMode="deferred"
+                  />
+                  <Hint>{t('binDesigner.lid.hinge.fitClearanceHint')}</Hint>
+                </div>
+              )}
 
               {state.isSlide && (
                 <div className="space-y-1">

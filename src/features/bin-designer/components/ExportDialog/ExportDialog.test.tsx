@@ -7,6 +7,7 @@ import {
   DEFAULT_GENERATION_STATE,
   DEFAULT_UI_STATE,
 } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_LID_HINGE_CONFIG } from '@/features/bin-designer/types/lid';
 import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 import { ok } from '@/core/result';
@@ -561,6 +562,35 @@ describe('ExportDialog', () => {
     it('names the download a ZIP — a split STEP is many files', () => {
       render(<ExportDialog />);
       expect(screen.getByText(/\.zip$/)).toBeInTheDocument();
+    });
+  });
+
+  describe('hinge hardware', () => {
+    it('quotes the pin the design needs, cut to length', () => {
+      // The pin is hardware the user supplies, so it is a part of this design
+      // and not a footnote — and it is the one number nobody can measure off
+      // the model. Someone exporting at 11pm should not have to go and find it.
+      setupStore({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 3,
+          depth: 2,
+          lid: {
+            ...DEFAULT_BIN_PARAMS.lid,
+            enabled: true,
+            attachment: 'hinge',
+            hinge: { ...DEFAULT_LID_HINGE_CONFIG },
+          },
+        },
+      });
+      render(<ExportDialog />);
+      expect(screen.getByText(/filament offcut, cut to/)).toBeInTheDocument();
+    });
+
+    it('says nothing about pins for a lid that is not hinged', () => {
+      setupStore();
+      render(<ExportDialog />);
+      expect(screen.queryByText(/filament offcut/)).not.toBeInTheDocument();
     });
   });
 

@@ -17,7 +17,10 @@ import {
   isSlideLid,
   LID_FIT_CLEARANCE,
   resolveLidCavityExtraMm,
+  resolveLidPlateThickness,
 } from '@/features/bin-designer/types/lid';
+import { planHingeLid } from '@/shared/utils/hingeLidPlan';
+import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
 import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { LidRailSide } from '@/features/bin-designer/types/lid';
@@ -112,6 +115,61 @@ export function lidGroupPosition(
   // sliding it further only pushes it off screen.
   const travel = Math.min(offsetMm, geometry.travelMm);
   return [dx * travel, dy * travel, z];
+}
+
+/**
+ * How a hinged lid is posed in the preview: pivot, rotation, and the shift that
+ * puts the mesh back where it belongs under them.
+ *
+ * Three transforms rather than one, because the pivot is NOT the lid's origin.
+ * A group rotates about its own origin, and the hinge axis sits out at the
+ * wall — so the mesh has to be carried to the axis, turned, and carried back.
+ * Returned as a triple so the component applies it without arithmetic of its
+ * own; getting a pivot wrong is invisible at 0° and obvious at 90°, which is
+ * exactly the kind of error a static preview would never surface.
+ *
+ * `null` when this design has no hinge, so the caller keeps its existing path.
+ */
+export function lidHingePose(
+  params: BinParams,
+  angleDeg: number
+): {
+  readonly pivot: readonly [number, number, number];
+  readonly rotation: readonly [number, number, number];
+  readonly inner: readonly [number, number, number];
+} | null {
+  const { geometry } = planHingeLid(params);
+  if (!geometry) return null;
+
+  const overhang = resolveOverhang(params.overhang);
+  const expansion = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
+  const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
+  const halfW =
+    (params.width * params.gridUnitMm - 2 * LID_FIT_CLEARANCE + (expansion?.addW ?? 0)) / 2;
+  const halfD = (params.depth * gridUnitMmY - 2 * LID_FIT_CLEARANCE + (expansion?.addD ?? 0)) / 2;
+
+  const outward = geometry.side === 'back' || geometry.side === 'right' ? 1 : -1;
+  // The axis, in the lid's own frame: inset from ITS outer face, which is the
+  // same statement the builders work from — so the preview cannot draw the lid
+  // turning about a line the geometry was not built around.
+  const half = geometry.alongX ? halfD : halfW;
+  const shift = geometry.alongX ? (expansion?.offsetY ?? 0) : (expansion?.offsetX ?? 0);
+  const axisCross = outward * (half - geometry.axisInsetMm) + shift;
+  const axisLocalZ = -resolveLidPlateThickness(params);
+  const axisWorldZ = binLipTopWorldZ(params) + geometry.axisAboveLipTopMm;
+
+  // Opening lifts the material INBOARD of the axis, and which rotation does
+  // that flips with both the axis direction and which side of the bin the wall
+  // is on. One expression for all four, matching the kernel harness exactly —
+  // a preview that turned the other way would be depicting a motion the printed
+  // part cannot make.
+  const rad = ((geometry.alongX ? -outward : outward) * angleDeg * Math.PI) / 180;
+
+  return {
+    pivot: geometry.alongX ? [0, axisCross, axisWorldZ] : [axisCross, 0, axisWorldZ],
+    rotation: geometry.alongX ? [rad, 0, 0] : [0, rad, 0],
+    inner: geometry.alongX ? [0, -axisCross, -axisLocalZ] : [-axisCross, 0, -axisLocalZ],
+  };
 }
 
 const ENTRY_OUTWARD: Record<LidRailSide, readonly [number, number]> = {

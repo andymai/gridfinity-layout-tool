@@ -19,6 +19,7 @@ import { translateStage } from './pipeline/stages/translateStage';
 import { trayBottomStage } from './pipeline/stages/trayBottomStage';
 import { lidInteriorReliefStage } from './pipeline/stages/lidInteriorReliefStage';
 import { lidRetentionStage } from './pipeline/stages/lidRetentionStage';
+import { lidHingeStage } from './pipeline/stages/lidHingeStage';
 import { slideLidChannelStage } from './pipeline/stages/slideLidChannelStage';
 import { lidGripDipStage } from './pipeline/stages/lidGripDipStage';
 import { tessellateStage } from './pipeline/stages/tessellateStage';
@@ -46,7 +47,7 @@ function assertValidMask(params: BinParams): void {
   if (err) throw new Error(`cellMask is invalid: ${err.message}`);
 }
 
-/** Default generation pipeline: shell -> features -> boolean -> translate -> lid-interior-relief -> tray-bottom -> lid-retention -> lid-grip-dip -> tessellate -> mesh imprint */
+/** Default generation pipeline: shell -> features -> boolean -> translate -> lid-interior-relief -> tray-bottom -> lid-retention -> slide-lid-channel -> lid-grip-dip -> lid-hinge -> tessellate -> mesh imprint */
 const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   shellStage,
   featuresStage,
@@ -57,6 +58,10 @@ const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   lidRetentionStage,
   slideLidChannelStage,
   lidGripDipStage,
+  // Last of the solid stages on purpose — see the stage's own note. Anything
+  // above is free to reshape the rim without knowing a hinge exists, and the
+  // knuckles weld onto whatever survives.
+  lidHingeStage,
   tessellateStage,
   meshImprintStage,
 ];

@@ -1749,6 +1749,39 @@ describe('validateDesignerShare', () => {
       ).toBe(true);
     });
 
+    it('accepts a hinged lid and its config', () => {
+      // The attachment list is a hand-maintained mirror of `LidAttachment`, so
+      // a new mode is silently rejected by the server until someone remembers
+      // to widen it — a 400 on share and sync for every design using it, and
+      // invisible until the UI ships.
+      expect(
+        validateDesignerShare(
+          withLid({
+            attachment: 'hinge',
+            hinge: { side: 'back', catchMode: 'detent', fitClearanceMm: 0.25 },
+          }),
+          1000
+        ).valid
+      ).toBe(true);
+    });
+
+    it('rejects an unknown key on the hinge config', () => {
+      // The knuckle layout is DERIVED, never stored. A count arriving from a
+      // payload would be a second opinion about geometry the server cannot
+      // check against anything.
+      expect(
+        validateDesignerShare(withLid({ attachment: 'hinge', hinge: { knuckleCount: 7 } }), 1000)
+          .valid
+      ).toBe(false);
+    });
+
+    it('rejects a hinge fit clearance outside the printable range', () => {
+      expect(
+        validateDesignerShare(withLid({ attachment: 'hinge', hinge: { fitClearanceMm: 5 } }), 1000)
+          .valid
+      ).toBe(false);
+    });
+
     it('rejects an unknown attachment mode', () => {
       const res = validateDesignerShare(withLid({ attachment: 'glue' }), 1000);
       expect(res.valid).toBe(false);
