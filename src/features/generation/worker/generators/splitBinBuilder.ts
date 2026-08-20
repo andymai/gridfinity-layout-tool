@@ -254,6 +254,26 @@ function splitSolidIntoPieces(
   // a plain rectangular bin with no overhang; for a custom shape (L/U) or any
   // overhang it avoids a full-rectangle, nominal-size lip that juts past or
   // falls short of the actual body edge once fused per-piece.
+  // Interior frame for anything cut INTO the freshly-built lip, taken from
+  // `deriveDimensions` for the same reason the Z terms above are: the body it
+  // has to line up with was built from those numbers.
+  //
+  // Recomputing them off the nominal footprint (`width * pitch - CLEARANCE`)
+  // silently drops the overhang, which the lip solid itself does carry — so a
+  // wall cutout was cut into the body at the overhang-expanded interior and
+  // into the lip at the nominal one, and the two openings did not line up. An
+  // asymmetric overhang also shifts the interior's centre, which is what
+  // `innerOffsetX/Y` carries; a symmetric one only mis-sizes the cutter.
+  // Invisible below a few mm, because the cutter overshoots its opening by
+  // more than that.
+  const { innerW, innerD, innerOffsetX, innerOffsetY } = splitDims;
+  const shiftToInterior = (tool: Shape3D, dz = 0): Shape3D => {
+    if (innerOffsetX === 0 && innerOffsetY === 0 && dz === 0) return tool;
+    const shifted = translate(tool, [innerOffsetX, innerOffsetY, dz]);
+    tool.delete();
+    return shifted;
+  };
+
   let lipSolid: Shape3D | undefined;
   if (hasLip) {
     const lipBase = buildTopShape(
@@ -280,14 +300,13 @@ function splitSolidIntoPieces(
     // stackingLip, so dim.hasLip=false in the pipeline). Pass the same inset
     // here to keep the lip cuts aligned with the body's wall slots.
     if (params.style === 'slotted') {
-      const innerW = outerW - 2 * params.wallThickness;
-      const innerD = outerD - 2 * params.wallThickness;
       const lipInfo = {
         wallHeight: wallTopZ,
         lipHeight: LIP_HEIGHT,
         lipTaperWidth: LIP_TAPER_WIDTH,
       };
-      const lipCuts = buildLipSlotCuts(params, innerW, innerD, lipInfo, 0);
+      const rawLipCuts = buildLipSlotCuts(params, innerW, innerD, lipInfo, 0);
+      const lipCuts = rawLipCuts === null ? null : shiftToInterior(rawLipCuts);
       if (lipCuts) {
         try {
           const newLip = unwrap(cut(lipSolid as ValidSolid, lipCuts as ValidSolid));
@@ -307,15 +326,9 @@ function splitSolidIntoPieces(
     // full lip zone, then shift them up by floorZ to convert body-local Z
     // (floor at Z=0) into absolute bin Z (socket bottom at Z=0).
     if (params.walls.enabled) {
-      const innerW = outerW - 2 * params.wallThickness;
-      const innerD = outerD - 2 * params.wallThickness;
       const wallCuts = buildWallCutoutCuts(params, innerW, innerD, wallHeight, true);
       if (wallCuts) {
-        let positioned = wallCuts;
-        if (floorZ !== 0) {
-          positioned = translate(wallCuts, [0, 0, floorZ]);
-          wallCuts.delete();
-        }
+        const positioned = shiftToInterior(wallCuts, floorZ);
         try {
           const newLip = unwrap(cut(lipSolid as ValidSolid, positioned as ValidSolid));
           lipSolid.delete();
