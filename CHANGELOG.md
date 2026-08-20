@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.431.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.430.0...gridfinity-layout-tool-v4.431.0) (2026-08-20)
+
+
+### Features
+
+* **cutout-editor:** let repeats nest and overlap ([#3650](https://github.com/andymai/gridfinity-layout-tool/issues/3650)) ([5872f86](https://github.com/andymai/gridfinity-layout-tool/commit/5872f86fb9237f05541eb1d3d15cd1991c682e90))
+
 ## [4.430.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.429.0...gridfinity-layout-tool-v4.430.0) (2026-08-20)
 
 
