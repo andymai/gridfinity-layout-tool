@@ -32,7 +32,7 @@ export const CONSTRAINTS = {
   // src/features/bin-designer/constants/gridfinity.ts (client refuses past it).
   MAX_STASH_ENTRIES: 36,
   MIN_LABEL_TAB_DEPTH: 8,
-  // Raised from 20 → 50 to enable tuck-under ledges for wire bins.
+  // Deep enough for tuck-under ledges on wire bins; mirrors DESIGNER_CONSTRAINTS.
   MAX_LABEL_TAB_DEPTH: 50,
   MIN_LABEL_TAB_WIDTH: 10, // %
   MAX_LABEL_TAB_WIDTH: 100, // %

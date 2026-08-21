@@ -57,8 +57,7 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_HEIGHT: 50,
   HEIGHT_STEP: 1, // height units
   MIN_COMPARTMENT_GRID: 1, // min rows/cols
-  // Max rows/cols. Bumped from 8 to 12 after measuring generation
-  // time across grid sizes (see
+  // Max rows/cols, set by measured generation time across grid sizes (see
   // `src/features/generation/worker/generators/__kernel-tests__/compartments.perf.test.ts`):
   // worst case (no label tabs) 12×12 finishes in ~14s, under the 30s base
   // timeout. 16×16 hits ~39s and risks timeout failures, so 12 is the safe
@@ -76,8 +75,8 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_COMPARTMENT_SIZE: 5, // mm (minimum viable compartment dimension)
   // Label tabs
   MIN_LABEL_TAB_DEPTH: 8, // mm
-  // Raised from 20 → 50 so tuck-under ledges for wire bins have
-  // enough material to actually retain springy contents. Runtime clamp in
+  // Deep enough that a tuck-under ledge for a wire bin has enough material
+  // to actually retain springy contents. Runtime clamp in
   // the UI tightens the stepper to `min(50, innerD - 1)` so the tab can't
   // span past the opposite wall on small bins.
   MAX_LABEL_TAB_DEPTH: 50, // mm
