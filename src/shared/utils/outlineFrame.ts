@@ -31,7 +31,7 @@ import type {
 } from '@/core/types';
 import { clamp } from './validation';
 import { padOutline } from './padOutline';
-import { translateOutline } from './drawerOutline';
+import { GRID_PITCH_MM_MAX, translateOutline } from './drawerOutline';
 import { clampCornerCuts, cornerCutVertices, cornerCutsMatchVertices } from './cornerCutOutline';
 import {
   outlineBounds,
@@ -90,6 +90,11 @@ export interface ResolvedOutlineFrame {
    * shift. Exactly 0 per axis when below {@link RECENTER_EPS_MM}. */
   readonly shiftX: number;
   readonly shiftY: number;
+  /** How far the manual grid shift may reach on each axis — see
+   * {@link manualShiftLimit}. The steppers and the command bound themselves by
+   * these, so what the UI offers is what the frame applies. */
+  readonly shiftLimitX: number;
+  readonly shiftLimitY: number;
   /**
    * How far the translated outline reaches past the padded grid extent, per
    * side.
@@ -179,6 +184,27 @@ function resolvePaddedOutline(
 }
 
 /**
+ * How far the manual grid shift may move the lattice on one axis, in mm.
+ *
+ * Half a pitch spans every distinct grid position while the lattice fills its
+ * extent — past that is the same registration relabelled, which is why the
+ * bound was a flat ±pitch/2. It stops spanning them once the perimeter is
+ * OVERSIZE: the lattice then has real room to slide inside the material, and
+ * half a pitch could not reach the edges of a drawer with 49mm of slack against
+ * a 42mm pitch, so corner alignment was unreachable.
+ *
+ * Half the slack is exactly the reach from the centred registration to either
+ * edge, so the wider of the two bounds covers both cases and leaves every
+ * non-oversize shape's range untouched. Capped at the static bound the
+ * `drawer.update` payload schema enforces, so the steppers can never offer a
+ * value the command would reject.
+ */
+function manualShiftLimit(spanMm: number, extentMm: number, pitchMm: number): number {
+  const slack = Math.max(0, spanMm - extentMm);
+  return Math.min(GRID_PITCH_MM_MAX / 2, Math.max(pitchMm / 2, slack / 2));
+}
+
+/**
  * Resolve the padded outline and the frame translation both sides consume.
  *
  * The registration is lattice-registered, never raw bbox centring: a
@@ -200,12 +226,21 @@ export function resolveOutlineFrame(
     x: latticeAxis(p.widthMm, p.gridUnitMm, padL, padR, p.fractionalEdgeX),
     y: latticeAxis(p.depthMm, p.gridUnitMmY, padF, padB, p.fractionalEdgeY),
   });
-  // A manual shift beyond ±half pitch is equivalent to a different whole-cell
-  // registration, so this range spans every distinct grid position; the
-  // clamp also defuses out-of-range values that bypassed the command layer
+  // The clamp also defuses out-of-range values that bypassed the command layer
   // (imported or hand-edited layouts).
-  const manualX = clamp(p.gridShiftX, -p.gridUnitMm / 2, p.gridUnitMm / 2);
-  const manualY = clamp(p.gridShiftY, -p.gridUnitMmY / 2, p.gridUnitMmY / 2);
+  const bounds = outlineBounds(resolved.outline);
+  const shiftLimitX = manualShiftLimit(
+    bounds.maxX - bounds.minX,
+    p.widthMm + padL + padR,
+    p.gridUnitMm
+  );
+  const shiftLimitY = manualShiftLimit(
+    bounds.maxY - bounds.minY,
+    p.depthMm + padF + padB,
+    p.gridUnitMmY
+  );
+  const manualX = clamp(p.gridShiftX, -shiftLimitX, shiftLimitX);
+  const manualY = clamp(p.gridShiftY, -shiftLimitY, shiftLimitY);
   const rawShiftX = registration.x - manualX;
   const rawShiftY = registration.y - manualY;
   const shiftX = Math.abs(rawShiftX) < RECENTER_EPS_MM ? 0 : rawShiftX;
@@ -215,6 +250,8 @@ export function resolveOutlineFrame(
     paddingOn: resolved.paddingOn,
     shiftX,
     shiftY,
+    shiftLimitX,
+    shiftLimitY,
     overhang: measureOverhang(
       resolved.outline,
       shiftX,
@@ -273,6 +310,8 @@ interface CachedFrame {
   readonly y: number;
   readonly overhang: OutlineOverhang;
   readonly extent: PlateExtentMm;
+  readonly shiftLimitX: number;
+  readonly shiftLimitY: number;
 }
 
 const shiftCache = new WeakMap<DrawerOutline, Map<string, CachedFrame>>();
@@ -338,6 +377,26 @@ export function drawerFrameExtent(
   return frameFor(drawer, baseplateParams, gridUnitMm, gridUnitMmY)?.extent;
 }
 
+/**
+ * How far the manual grid shift may reach on each axis, in mm.
+ *
+ * The steppers, the `drawer.update` clamp and the frame itself all bound
+ * themselves by this one answer, so the UI cannot offer a position the command
+ * refuses to store or the frame declines to apply. Falls back to ±half pitch
+ * when no shape reaches the plate — there is nothing to slide inside then.
+ */
+export function drawerFrameShiftLimits(
+  drawer: FrameDrawer,
+  baseplateParams: StoredBaseplateParams | undefined,
+  gridUnitMm: number,
+  gridUnitMmY: number = gridUnitMm
+): { readonly x: number; readonly y: number } {
+  const frame = frameFor(drawer, baseplateParams, gridUnitMm, gridUnitMmY);
+  return frame === undefined
+    ? { x: gridUnitMm / 2, y: gridUnitMmY / 2 }
+    : { x: frame.shiftLimitX, y: frame.shiftLimitY };
+}
+
 /** Resolved frame for a synced custom shape, memoized per outline + inputs.
  * `undefined` when there is no shared frame to speak of. */
 function frameFor(
@@ -393,6 +452,8 @@ function frameFor(
     y: frame.shiftY,
     overhang: frame.overhang,
     extent: { widthMm: b.maxX - b.minX, depthMm: b.maxY - b.minY },
+    shiftLimitX: frame.shiftLimitX,
+    shiftLimitY: frame.shiftLimitY,
   };
   byInputs.set(key, resolved);
   return resolved;

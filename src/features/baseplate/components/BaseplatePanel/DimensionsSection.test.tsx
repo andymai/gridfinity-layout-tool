@@ -6,6 +6,7 @@ import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { gridUnits, mm } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
+import { drawerFrameOverhang } from '@/shared/utils/outlineFrame';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -305,21 +306,62 @@ describe('DimensionsSection', () => {
         expect(shiftX()).toBeInTheDocument();
       });
 
-      it('moves the grid toward an edge and the readout keeps the shape size', () => {
+      //. Reaching this drawer's left edge needs 24.5mm, past the half pitch
+      // (21mm) the shift used to be bounded by — so corner alignment, the thing
+      // the control exists for, was the one position it could not express.
+      it('reaches the edge, and the readout keeps the shape size', () => {
         measuredDrawer();
         render(<DimensionsSection />);
         const input = shiftX();
         expect(input).not.toBeNull();
         if (input === null) return;
 
-        fireEvent.change(input, { target: { value: '-21' } });
+        fireEvent.change(input, { target: { value: '-24.5' } });
         fireEvent.blur(input);
 
-        expect(useLayoutStore.getState().layout.drawer.gridShiftX).toBe(-21);
+        const layout = useLayoutStore.getState().layout;
+        expect(layout.drawer.gridShiftX).toBe(-24.5);
+        // Flush against the left edge, with the whole 49mm of slack on the right.
+        const overhang = drawerFrameOverhang(
+          layout.drawer,
+          layout.baseplateParams,
+          layout.gridUnitMm
+        );
+        expect(overhang.left).toBe(0);
+        expect(overhang.right).toBeCloseTo(49, 9);
         // The plate is still cut to the shape, so its footprint is unchanged.
         expect(screen.getByLabelText('baseplate.editDimensions')).toHaveTextContent(
           /931\s*×\s*327\s*mm/
         );
+      });
+
+      it('leaves the half-pitch bound alone on a shape that fills its grid', () => {
+        const { width, depth } = useLayoutStore.getState().layout.drawer;
+        useLayoutStore.setState((state) => ({
+          layout: {
+            ...state.layout,
+            drawer: {
+              ...state.layout.drawer,
+              outline: {
+                vertices: [
+                  { x: 0, y: 0 },
+                  { x: width * 42, y: 0 },
+                  { x: width * 42, y: (depth * 42) / 2 },
+                  { x: 0, y: (depth * 42) / 2 },
+                ],
+              },
+            },
+          },
+        }));
+        render(<DimensionsSection />);
+        const input = shiftX();
+        expect(input).not.toBeNull();
+        if (input === null) return;
+
+        fireEvent.change(input, { target: { value: '-30' } });
+        fireEvent.blur(input);
+
+        expect(useLayoutStore.getState().layout.drawer.gridShiftX).toBe(-21);
       });
 
       it('disappears when the plate stops syncing with the layout', () => {

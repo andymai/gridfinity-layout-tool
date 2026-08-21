@@ -25,6 +25,7 @@ import {
   isOutlineFullRectangle,
   GRID_PITCH_MM_MAX,
 } from '@/shared/utils/drawerOutline';
+import { drawerFrameShiftLimits } from '@/shared/utils/outlineFrame';
 import type { BinId, Drawer, GridUnits, MeasuredDrawerMm } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits, heightUnits, mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
@@ -151,15 +152,30 @@ export const updateDrawer = defineCommand({
     if (payload.fractionalEdgeY !== undefined) changes.fractionalEdgeY = payload.fractionalEdgeY;
     // Zero offset is stored as an absent key (same dance as outline /
     // measuredMm) so untouched layouts stay byte-identical.
-    if (payload.gridShiftX !== undefined) {
-      const half = (layout.gridUnitMm as number) / 2;
-      const v = clamp(payload.gridShiftX, -half, half);
-      changes.gridShiftX = v === 0 ? undefined : mm(v);
-    }
-    if (payload.gridShiftY !== undefined) {
-      const half = (gridUnitMmY as number) / 2;
-      const v = clamp(payload.gridShiftY, -half, half);
-      changes.gridShiftY = v === 0 ? undefined : mm(v);
+    // Bounded by the frame's own limit, not a flat half pitch: an oversize
+    // perimeter gives the lattice real room to slide, and half a pitch cannot
+    // reach the edges of a drawer whose slack exceeds one cell. Resolved
+    // POST-change (the same discipline the size floors above run on) so a
+    // resize landing with the shift is bounded by the size it lands against.
+    if (payload.gridShiftX !== undefined || payload.gridShiftY !== undefined) {
+      const limits = drawerFrameShiftLimits(
+        {
+          ...drawer,
+          width: changes.width ?? drawer.width,
+          depth: changes.depth ?? drawer.depth,
+        },
+        layout.baseplateParams,
+        layout.gridUnitMm,
+        gridUnitMmY
+      );
+      if (payload.gridShiftX !== undefined) {
+        const v = clamp(payload.gridShiftX, -limits.x, limits.x);
+        changes.gridShiftX = v === 0 ? undefined : mm(v);
+      }
+      if (payload.gridShiftY !== undefined) {
+        const v = clamp(payload.gridShiftY, -limits.y, limits.y);
+        changes.gridShiftY = v === 0 ? undefined : mm(v);
+      }
     }
 
     const newWidth: GridUnits = changes.width ?? drawer.width;

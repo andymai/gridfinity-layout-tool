@@ -9,10 +9,10 @@ hatching, baseplate generation/splitting) derives from it.
 Consumers never read the stored outline directly for gating or rendering:
 they go through `@/shared/utils/outlineFrame` (#3157), which composes the
 plate's lattice registration with the user's manual grid shift
-(`Drawer.gridShiftX/Y`, ±half pitch) into one translation both the layout and
-the baseplate apply. Authoring surfaces are the exception — the editors show
-the shape at its raw authored anchor, and the stored outline is never mutated
-by the frame (#3149).
+(`Drawer.gridShiftX/Y`, bounded by `drawerFrameShiftLimits`) into one
+translation both the layout and the baseplate apply. Authoring surfaces are
+the exception — the editors show the shape at its raw authored anchor, and
+the stored outline is never mutated by the frame (#3149).
 
 ## Key Files
 

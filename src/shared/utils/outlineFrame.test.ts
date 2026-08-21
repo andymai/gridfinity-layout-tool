@@ -6,6 +6,7 @@ import {
   drawerFrameExtent,
   drawerFrameOutline,
   drawerFrameShift,
+  drawerFrameShiftLimits,
   resolveOutlineFrame,
   type OutlineFrameParams,
 } from './outlineFrame';
@@ -228,5 +229,65 @@ describe('drawerFrameExtent', () => {
       U
     );
     expect(extent).toEqual({ widthMm: 4 * U + 12, depthMm: 4 * U });
+  });
+});
+
+//. A drawer measured larger than its cells gives the lattice real room to
+// slide. A flat ±half-pitch bound could not reach the edges once the slack
+// exceeded one cell, so corner alignment was unreachable.
+describe('manual shift limits', () => {
+  /** 931 x 327mm over a 21 x 7 grid: 49mm of X slack against a 42mm pitch. */
+  const OVERSIZE: DrawerOutline = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 931, y: 0 },
+      { x: 931, y: 327 },
+      { x: 0, y: 327 },
+    ],
+  };
+  const oversizeDrawer = (): Parameters<typeof drawerFrameShiftLimits>[0] =>
+    frameDrawer(OVERSIZE, { width: gridUnits(21), depth: gridUnits(7) });
+
+  it('stays at half a pitch without a shape', () => {
+    expect(drawerFrameShiftLimits(frameDrawer(undefined), undefined, U)).toEqual({
+      x: U / 2,
+      y: U / 2,
+    });
+  });
+
+  it('stays at half a pitch for a shape that fills its extent', () => {
+    expect(drawerFrameShiftLimits(frameDrawer(REGISTERED), DEFAULT_BASEPLATE_PARAMS, U)).toEqual({
+      x: U / 2,
+      y: U / 2,
+    });
+  });
+
+  it('opens up to half the slack when the shape overruns the grid', () => {
+    // X slack 49 → 24.5 beats half a pitch; Y slack 33 → 16.5 does not.
+    expect(drawerFrameShiftLimits(oversizeDrawer(), DEFAULT_BASEPLATE_PARAMS, U)).toEqual({
+      x: 24.5,
+      y: U / 2,
+    });
+  });
+
+  it('lets the widened shift reach the edge the old bound fell short of', () => {
+    const frame = resolveOutlineFrame(
+      OVERSIZE,
+      frameParams({ widthMm: 21 * U, depthMm: 7 * U, gridShiftX: -24.5 })
+    );
+    // Registration centres the lattice at -24.5; cancelling it lands the grid
+    // flush against the left edge, with the whole 49mm of slack on the right.
+    expect(frame.shiftX).toBe(0);
+    expect(frame.overhang.left).toBe(0);
+    expect(frame.overhang.right).toBeCloseTo(49, 9);
+  });
+
+  it('still clamps a value past the widened limit', () => {
+    const frame = resolveOutlineFrame(
+      OVERSIZE,
+      frameParams({ widthMm: 21 * U, depthMm: 7 * U, gridShiftX: 500 })
+    );
+    // Clamped to +24.5: registration -24.5 minus 24.5 = -49, the far edge.
+    expect(frame.shiftX).toBeCloseTo(-49, 9);
   });
 });
