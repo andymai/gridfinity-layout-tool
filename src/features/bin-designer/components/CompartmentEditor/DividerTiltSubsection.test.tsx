@@ -59,9 +59,11 @@ describe('DividerTiltSubsection', () => {
     render(<DividerTiltSubsection />);
     openInspector();
     expect(screen.getByText('Vertical divider')).toBeInTheDocument();
-    expect(screen.getByRole('slider', { name: /angle/i })).toBeInTheDocument();
-    // Angle is the only visible numeric field (Shift lives in the collapsed Fine-tune).
-    expect(screen.getAllByRole('spinbutton')).toHaveLength(1);
+    expect(screen.getByRole('slider', { name: /^angle$/i })).toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: /^lean$/i })).toBeInTheDocument();
+    // Angle and Lean are the visible numeric fields; Shift stays in the
+    // collapsed Fine-tune, and the endpoint offsets are not exposed at all.
+    expect(screen.getAllByRole('spinbutton')).toHaveLength(2);
     expect(screen.queryByRole('spinbutton', { name: /Top|Bottom|Left|Right/i })).toBeNull();
   });
 
@@ -69,11 +71,53 @@ describe('DividerTiltSubsection', () => {
     setGrid(2, 1);
     render(<DividerTiltSubsection />);
     openInspector();
-    fireEvent.click(screen.getByRole('button', { name: '45°' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Angle 45°' }));
     const overrides = useDesignerStore.getState().params.compartments.dividerOverrides;
     expect(overrides).toHaveLength(1);
     // A positive angle pivots about centre → end > start.
     expect(overrides?.[0].offsetEnd).toBeGreaterThan(overrides?.[0].offsetStart ?? 0);
+  });
+
+  it('clicking a lean preset commits a rake without touching the offsets', () => {
+    setGrid(2, 1);
+    render(<DividerTiltSubsection />);
+    openInspector();
+    fireEvent.click(screen.getByRole('button', { name: 'Lean 30°' }));
+    const overrides = useDesignerStore.getState().params.compartments.dividerOverrides;
+    expect(overrides).toHaveLength(1);
+    expect(overrides?.[0].rakeDeg).toBeCloseTo(30, 1);
+    expect(overrides?.[0].offsetStart).toBe(0);
+    expect(overrides?.[0].offsetEnd).toBe(0);
+  });
+
+  it('bounds the lean control by the bin even before anything leans', () => {
+    // A tall bin whose compartments cannot take a 45 degree foot. At rest the
+    // control has no committed lean to describe, but its limits still have to
+    // come from the geometry: offering a preset the bin cannot reach and then
+    // clamping to something else is the exact surprise the limit exists to stop.
+    useDesignerStore.setState((st) => ({
+      params: { ...st.params, width: 2, depth: 2, height: 12 },
+    }));
+    setGrid(1, 2);
+    render(<DividerTiltSubsection />);
+    openInspector();
+    expect(screen.getByRole('button', { name: 'Lean 45°' })).toBeDisabled();
+    const slider = screen.getByRole('slider', { name: /^lean$/i });
+    expect(Number(slider.getAttribute('aria-valuemax'))).toBeLessThan(45);
+  });
+
+  it('applies a lean across every parallel divider in one history entry', () => {
+    setGrid(3, 1); // two vertical dividers
+    render(<DividerTiltSubsection />);
+    fireEvent.click(screen.getAllByRole('button', { name: /Edit divider between Comp/i })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Lean 30°' }));
+    fireEvent.click(screen.getByRole('button', { name: /apply lean to all parallel/i }));
+    const overrides = useDesignerStore.getState().params.compartments.dividerOverrides ?? [];
+    expect(overrides).toHaveLength(2);
+    for (const o of overrides) expect(o.rakeDeg).toBeCloseTo(30, 1);
+    useDesignerStore.getState().undo();
+    const after = useDesignerStore.getState().params.compartments.dividerOverrides ?? [];
+    expect(after.filter((o) => (o.rakeDeg ?? 0) !== 0)).toHaveLength(1);
   });
 
   it('tilted rows show an angle badge in the list', () => {

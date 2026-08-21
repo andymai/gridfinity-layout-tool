@@ -179,6 +179,10 @@ export interface StashedCompartment {
  * Setting both offsets equal translates the divider without tilting it.
  * Setting `offsetEnd = -offsetStart` produces a symmetric tilt around the
  * divider midpoint.
+ *
+ * The offsets turn the divider in PLAN; `rakeDeg` leans it in ELEVATION. Both
+ * describe one plane through two parallel lines: the top line at the offsets
+ * above, and the foot line at those offsets plus `height * tan(rakeDeg)`.
  */
 export interface DividerOverride {
   /** Lower of the two compartment IDs (canonical pair ordering). */
@@ -189,6 +193,18 @@ export interface DividerOverride {
   readonly offsetStart: number;
   /** Signed mm shift of the end endpoint perpendicular to the divider axis. */
   readonly offsetEnd: number;
+  /**
+   * Signed lean off vertical, in degrees, pivoting on the divider's own top
+   * edge (not the bin rim: a divider shortened by `dividerHeight` leans about
+   * its truncated top). Positive leans the foot the way a positive offset
+   * shifts an endpoint. Keeping the pivot at the top is what leaves the rim
+   * footprint alone, which every plan that reads a divider there depends on:
+   * click rails, label shelf datum, lip gaps.
+   *
+   * Absent when zero: an always-present default would shift every existing
+   * design's `communityParamsFingerprint`.
+   */
+  readonly rakeDeg?: number;
 }
 
 /** Profile shape of a finger-scoop ramp: concave fillet or flat chamfer. */

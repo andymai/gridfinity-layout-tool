@@ -107,3 +107,13 @@ export function overlayLineGeom(
   const y2 = yBase + dyEnd;
   return { x1: xStart, y1, x2: xEnd, y2, cx: (xStart + xEnd) / 2, cy: (y1 + y2) / 2 };
 }
+
+/**
+ * SVG polygon points for the strip a leaning divider sweeps in plan, from its
+ * top edge down to its foot. The plan view cannot show a lean any other way:
+ * the top edge alone is where an upright divider would be, so a leaning one
+ * would draw identically to a straight one in the view the user edits in.
+ */
+export function overlayLeanBandPoints(top: LineGeom, foot: LineGeom): string {
+  return `${top.x1},${top.y1} ${top.x2},${top.y2} ${foot.x2},${foot.y2} ${foot.x1},${foot.y1}`;
+}

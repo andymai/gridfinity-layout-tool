@@ -303,7 +303,11 @@ export function computeInteriorDividerCutouts(
 
   const interiorH = wallHeight - params.wallThickness;
   const out: InteriorDividerCutout[] = [];
-  for (const seg of interiorDividerSegments(params, innerW, innerD)) {
+  for (const seg of interiorDividerSegments(params, innerW, innerD, interiorH)) {
+    // `seg.x/y` is the wall's TOP edge. A leaning divider is a non-vertical
+    // plane, so a feature placed against that line lands in open air lower
+    // down; stand down until the placement can express the plane.
+    if (seg.leanDeg !== 0) continue;
     // Width and alignment are measured ALONG the wall, so use the true wall
     // length (`wallLen`), which exceeds the axis-projected `segLen` on tilted
     // dividers. Match outer walls: absolute mm override clamps to the span,

@@ -7,7 +7,10 @@ import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types/text';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { DEFAULT_COMPARTMENT_COLOR_SCOPE } from '@/features/bin-designer/types/compartments';
-import type { CompartmentColorScope } from '@/features/bin-designer/types/compartments';
+import type {
+  CompartmentColorScope,
+  DividerOverride,
+} from '@/features/bin-designer/types/compartments';
 import { isErr } from '@/core/result';
 import { getFeatureStatus } from '@/shared/constraints';
 import {
@@ -282,7 +285,8 @@ export function createCompartmentActions(set: Set, get: Get) {
       compartmentA: number,
       compartmentB: number,
       offsetStart: number,
-      offsetEnd: number
+      offsetEnd: number,
+      rakeDeg = 0
     ) => {
       // Enforce canonical pair ordering: the validator + worker lookup all
       // assume compartmentA < compartmentB, and silently allowing unordered
@@ -296,7 +300,12 @@ export function createCompartmentActions(set: Set, get: Get) {
       // No-op guard: dragging an endpoint to its current position fires this
       // action; an unchanged value would otherwise push a history entry per
       // pointer move and bloat the undo stack.
-      if (existing && existing.offsetStart === offsetStart && existing.offsetEnd === offsetEnd) {
+      if (
+        existing &&
+        existing.offsetStart === offsetStart &&
+        existing.offsetEnd === offsetEnd &&
+        (existing.rakeDeg ?? 0) === rakeDeg
+      ) {
         return;
       }
       set((state) => {
@@ -304,8 +313,14 @@ export function createCompartmentActions(set: Set, get: Get) {
         const next = prev.filter((o) => !(o.compartmentA === a && o.compartmentB === b));
         // Treat zero offsets as "remove" so the storage stays tidy and the
         // empty array can be omitted from persisted JSON.
-        if (offsetStart !== 0 || offsetEnd !== 0) {
-          next.push({ compartmentA: a, compartmentB: b, offsetStart, offsetEnd });
+        if (offsetStart !== 0 || offsetEnd !== 0 || rakeDeg !== 0) {
+          next.push({
+            compartmentA: a,
+            compartmentB: b,
+            offsetStart,
+            offsetEnd,
+            ...(rakeDeg !== 0 ? { rakeDeg } : {}),
+          });
         }
         state.params.compartments = {
           ...state.params.compartments,
@@ -326,6 +341,24 @@ export function createCompartmentActions(set: Set, get: Get) {
         state.params.compartments = {
           ...state.params.compartments,
           ...(next.length > 0 ? { dividerOverrides: next } : { dividerOverrides: undefined }),
+        };
+      });
+    },
+
+    // Whole-array write in one history entry. Applying a lean across an axis
+    // touches every divider on it, and a rack is one decision: undoing it a
+    // divider at a time is not what anybody means by undo.
+    setDividerOverrides: (overrides: readonly DividerOverride[]) => {
+      const kept = overrides.filter(
+        (o) => o.offsetStart !== 0 || o.offsetEnd !== 0 || (o.rakeDeg ?? 0) !== 0
+      );
+      const prev = get().params.compartments.dividerOverrides ?? [];
+      if (JSON.stringify(prev) === JSON.stringify(kept)) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.compartments = {
+          ...state.params.compartments,
+          ...(kept.length > 0 ? { dividerOverrides: kept } : { dividerOverrides: undefined }),
         };
       });
     },

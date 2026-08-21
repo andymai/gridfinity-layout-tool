@@ -5,13 +5,29 @@
  * Walls appear at boundaries between cells with different compartment IDs.
  */
 
-import { box, withScope, clone, unwrap, fuseAll, draw, intersect, cut } from 'brepjs';
+import {
+  box,
+  withScope,
+  clone,
+  unwrap,
+  fuseAll,
+  draw,
+  intersect,
+  cut,
+  rotate,
+  translate,
+} from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import type { BinParams, DividerOverride } from '@/shared/types/bin';
 // Pure grid helpers, kept in the compartment-grid util so the main thread can
 // reach them too — the lid's click rails notch around the same runs
 // and cannot import this module, which pulls in brepjs.
-import { buildOverrideLookup, findPairAwareRuns, overrideKey } from '@/shared/types/bin';
+import {
+  buildOverrideLookup,
+  dividerFootDrift,
+  findPairAwareRuns,
+  overrideKey,
+} from '@/shared/types/bin';
 
 export { buildOverrideLookup, findPairAwareRuns, overrideKey };
 import { buildCacheKey, compactKey, quantize, stableSerialize } from './cacheKeyUtils';
@@ -397,6 +413,23 @@ function buildWallSegment(w: number, d: number, height: number, x: number, y: nu
   return box(w, d, height, { at: [x, y, height / 2] });
 }
 
+/** One divider wall segment: its top line, how far its foot leans off that
+ *  line, and the interior it gets clipped to. */
+interface WallSegmentPlan {
+  readonly startX: number;
+  readonly startY: number;
+  readonly endX: number;
+  readonly endY: number;
+  /** Foot displacement from the top line, along the offset axis. Zero stands
+   *  the wall upright. */
+  readonly driftX: number;
+  readonly driftY: number;
+  readonly thickness: number;
+  readonly height: number;
+  readonly binInnerW: number;
+  readonly binInnerD: number;
+}
+
 /**
  * Build a tilted divider wall as a parallelogram prism whose long axis runs
  * from `(startX, startY)` to `(endX, endY)`. Thickness is applied
@@ -407,17 +440,8 @@ function buildWallSegment(w: number, d: number, height: number, x: number, y: nu
  * the bin wall (which happens whenever the tilt is non-zero) are sliced
  * cleanly at the wall plane.
  */
-function buildTiltedWallSegment(
-  scope: DisposalScope,
-  startX: number,
-  startY: number,
-  endX: number,
-  endY: number,
-  thickness: number,
-  height: number,
-  binInnerW: number,
-  binInnerD: number
-): Shape3D | null {
+function buildTiltedWallSegment(scope: DisposalScope, plan: WallSegmentPlan): Shape3D | null {
+  const { startX, startY, endX, endY, thickness, height, binInnerW, binInnerD } = plan;
   const dx = endX - startX;
   const dy = endY - startY;
   const len = Math.hypot(dx, dy);
@@ -430,12 +454,26 @@ function buildTiltedWallSegment(
   const py = dx / len;
   const half = thickness / 2;
 
-  const pen = draw([startX + px * half, startY + py * half])
-    .lineTo([endX + px * half, endY + py * half])
-    .lineTo([endX - px * half, endY - py * half])
-    .lineTo([startX - px * half, startY - py * half])
-    .close();
-  const prism = scope.register(sketch(pen, 'XY', 0).extrude(height));
+  // Component of the foot's drift across the wall. The along-run component is
+  // a slide of the foot line within its own plane, so it changes nothing but
+  // where the ears fall, and the interior clip takes those anyway.
+  const leanAcross = plan.driftX * px + plan.driftY * py;
+
+  let prism: Shape3D;
+  if (leanAcross === 0) {
+    const pen = draw([startX + px * half, startY + py * half])
+      .lineTo([endX + px * half, endY + py * half])
+      .lineTo([endX - px * half, endY - py * half])
+      .lineTo([startX - px * half, startY - py * half])
+      .close();
+    prism = scope.register(sketch(pen, 'XY', 0).extrude(height));
+  } else {
+    const canonical = scope.register(buildLeaningPrism(len, leanAcross, thickness, height));
+    const oriented = scope.register(
+      rotate(canonical, (Math.atan2(dy, dx) * 180) / Math.PI, { axis: [0, 0, 1] })
+    );
+    prism = scope.register(translate(oriented, [(startX + endX) / 2, (startY + endY) / 2, 0]));
+  }
   // Clip the parallelogram corners that overshoot the bin's perpendicular
   // wall. For zero-tilt segments the clip is a no-op; for tilted segments
   // it shears off the "ears" that would otherwise poke through the wall.
@@ -448,6 +486,32 @@ function buildTiltedWallSegment(
   } catch {
     return null;
   }
+}
+
+/**
+ * A leaning wall in canonical pose: run along +X centred on the origin, top
+ * edge on the X axis at `height`, foot displaced `leanAcross` in +Y.
+ *
+ * The section is a parallelogram with flat ends at z=0 and z=height and
+ * horizontal half-width `t/2 · L/height`, which is what keeps the distance
+ * between its two slanted faces at exactly `thickness` however far it leans.
+ * Sizing the section on the plan footprint instead thins the wall by
+ * cos(lean), taking a 1.6mm divider under two perimeters at 45°.
+ */
+function buildLeaningPrism(
+  len: number,
+  leanAcross: number,
+  thickness: number,
+  height: number
+): Shape3D {
+  const half = (thickness / 2) * (Math.hypot(leanAcross, height) / height);
+  // 2D sketch axes on YZ are (world Y, world Z); the extrude runs along +X.
+  const section = draw([-half, height])
+    .lineTo([half, height])
+    .lineTo([leanAcross + half, 0])
+    .lineTo([leanAcross - half, 0])
+    .close();
+  return section.sketchOnPlane('YZ', -len / 2).extrude(len);
 }
 
 /** One interior divider wall segment, resolved to mm in bin-centered coords. */
@@ -464,6 +528,13 @@ export interface InteriorDividerSegment {
   /** In-plane rotation (deg) aligned to the wall: 90 for straight vertical
    *  dividers, 0 for straight horizontal, tilted by the override otherwise. */
   readonly rotateZ: number;
+  /** Lean off vertical (deg). `x`/`y` describe the wall's TOP edge, so any
+   *  feature that reaches below the rim has to answer for this: on a leaning
+   *  divider the wall is simply not at `x`/`y` further down. */
+  readonly leanDeg: number;
+  /** Where the wall meets the FLOOR. Equals `x`/`y` when it stands upright. */
+  readonly footX: number;
+  readonly footY: number;
 }
 
 /**
@@ -475,7 +546,8 @@ export interface InteriorDividerSegment {
 export function interiorDividerSegments(
   params: BinParams,
   innerW: number,
-  innerD: number
+  innerD: number,
+  dividerHeight: number
 ): InteriorDividerSegment[] {
   const { cols, rows, cells } = params.compartments;
   const out: InteriorDividerSegment[] = [];
@@ -516,14 +588,29 @@ export function interiorDividerSegments(
       const ov = lookup.get(pairKey);
       out.push(
         ov
-          ? {
+          ? (() => {
+              const x = xPos + (ov.offsetStart + ov.offsetEnd) / 2;
+              return {
+                segLen,
+                wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
+                x,
+                y: midY,
+                rotateZ: Math.atan2(segLen, ov.offsetEnd - ov.offsetStart) * RAD2DEG,
+                leanDeg: ov.rakeDeg ?? 0,
+                footX: x + dividerFootDrift(ov, dividerHeight),
+                footY: midY,
+              };
+            })()
+          : {
               segLen,
-              wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
-              x: xPos + (ov.offsetStart + ov.offsetEnd) / 2,
+              wallLen: segLen,
+              x: xPos,
               y: midY,
-              rotateZ: Math.atan2(segLen, ov.offsetEnd - ov.offsetStart) * RAD2DEG,
+              rotateZ: 90,
+              leanDeg: 0,
+              footX: xPos,
+              footY: midY,
             }
-          : { segLen, wallLen: segLen, x: xPos, y: midY, rotateZ: 90 }
       );
     }
   }
@@ -542,14 +629,29 @@ export function interiorDividerSegments(
       const ov = lookup.get(pairKey);
       out.push(
         ov
-          ? {
+          ? (() => {
+              const y = yPos + (ov.offsetStart + ov.offsetEnd) / 2;
+              return {
+                segLen,
+                wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
+                x: midX,
+                y,
+                rotateZ: Math.atan2(ov.offsetEnd - ov.offsetStart, segLen) * RAD2DEG,
+                leanDeg: ov.rakeDeg ?? 0,
+                footX: midX,
+                footY: y + dividerFootDrift(ov, dividerHeight),
+              };
+            })()
+          : {
               segLen,
-              wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
+              wallLen: segLen,
               x: midX,
-              y: yPos + (ov.offsetStart + ov.offsetEnd) / 2,
-              rotateZ: Math.atan2(ov.offsetEnd - ov.offsetStart, segLen) * RAD2DEG,
+              y: yPos,
+              rotateZ: 0,
+              leanDeg: 0,
+              footX: midX,
+              footY: yPos,
             }
-          : { segLen, wallLen: segLen, x: midX, y: yPos, rotateZ: 0 }
       );
     }
   }
@@ -711,17 +813,18 @@ function buildCompartmentWallsInScope(
         // end = back edge (y = endY).
         const startY = -innerD / 2 + start * cellD;
         const endY = -innerD / 2 + end * cellD;
-        const tilted = buildTiltedWallSegment(
-          scope,
-          xPos + override.offsetStart,
+        const tilted = buildTiltedWallSegment(scope, {
+          startX: xPos + override.offsetStart,
           startY,
-          xPos + override.offsetEnd,
+          endX: xPos + override.offsetEnd,
           endY,
+          driftX: dividerFootDrift(override, wallHeight),
+          driftY: 0,
           thickness,
-          wallHeight,
-          innerW,
-          innerD
-        );
+          height: wallHeight,
+          binInnerW: innerW,
+          binInnerD: innerD,
+        });
         if (tilted) wallSegments.push(tilted);
       } else {
         const segLength = (end - start) * cellD;
@@ -749,17 +852,18 @@ function buildCompartmentWallsInScope(
         // end = right edge (x = endX).
         const startX = -innerW / 2 + start * cellW;
         const endX = -innerW / 2 + end * cellW;
-        const tilted = buildTiltedWallSegment(
-          scope,
+        const tilted = buildTiltedWallSegment(scope, {
           startX,
-          yPos + override.offsetStart,
+          startY: yPos + override.offsetStart,
           endX,
-          yPos + override.offsetEnd,
+          endY: yPos + override.offsetEnd,
+          driftX: 0,
+          driftY: dividerFootDrift(override, wallHeight),
           thickness,
-          wallHeight,
-          innerW,
-          innerD
-        );
+          height: wallHeight,
+          binInnerW: innerW,
+          binInnerD: innerD,
+        });
         if (tilted) wallSegments.push(tilted);
       } else {
         const segLength = (end - start) * cellW;

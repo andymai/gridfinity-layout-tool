@@ -17,6 +17,7 @@ const verticalDivider = (a = 0, b = 1, offsetStart = 0, offsetEnd = 0): Eligible
   axis: 'vertical',
   offsetStart,
   offsetEnd,
+  rakeDeg: 0,
 });
 
 const horizontalDivider = (a = 0, b = 1): EligibleDivider => ({
@@ -25,6 +26,7 @@ const horizontalDivider = (a = 0, b = 1): EligibleDivider => ({
   axis: 'horizontal',
   offsetStart: 0,
   offsetEnd: 0,
+  rakeDeg: 0,
 });
 
 const noop = (): void => {};
@@ -33,6 +35,7 @@ const rowLabel = (a: number, b: number): string => `Edit divider between Comp ${
 const baseProps = {
   interiorW: 80,
   interiorD: 40,
+  dividerHeightMm: 30,
   preview: null,
   selectedKey: null,
   hoveredKey: null,
@@ -111,7 +114,7 @@ describe('DividerHitTargets', () => {
         {...baseProps}
         compartments={baseCompartments(2, 1)}
         dividers={[verticalDivider(0, 1, 0, 0)]}
-        preview={{ key: '0-1', offsetStart: -6, offsetEnd: 6 }}
+        preview={{ key: '0-1', offsetStart: -6, offsetEnd: 6, rakeDeg: 0 }}
       />
     );
     // Straight committed override but an active preview → a tilt line appears.

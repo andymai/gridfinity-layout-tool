@@ -1855,11 +1855,20 @@ const en: Record<string, string> = {
   'binDesigner.angledDividers.shiftLabel': 'Shift',
   'binDesigner.angledDividers.fineTune': 'Fine-tune',
   'binDesigner.angledDividers.badgeAngle': '{angle}°',
+  'binDesigner.angledDividers.leanLabel': 'Lean',
+  'binDesigner.angledDividers.presetAngle': 'Angle {angle}°',
+  'binDesigner.angledDividers.presetLean': 'Lean {angle}°',
+  'binDesigner.angledDividers.badgeLean': '{angle}°',
+  'binDesigner.angledDividers.mmValue': '{mm} mm',
+  'binDesigner.angledDividers.clearOpening': 'Clear opening',
+  'binDesigner.angledDividers.footTravel': 'Foot travel',
+  'binDesigner.angledDividers.maxLean': 'Max lean',
+  'binDesigner.angledDividers.applyLeanToAxis': 'Apply lean to all parallel dividers',
   'binDesigner.angledDividers.conflictNotice':
     'Scoops, label tabs, and inserts are removed along tilted dividers.',
   'binDesigner.angledDividers.helpButtonLabel': 'About diagonal dividers',
   'binDesigner.angledDividers.infoBody':
-    'Tilt interior walls to create wedge-shaped compartments. Select a divider, then drag the angle slider or type an exact angle.',
+    'Tilt interior walls to create wedge-shaped compartments. Select a divider, then set Angle to turn it in plan, or Lean to stand it over so contents slide in at a slope.',
   'binDesigner.angledDividers.slotIncompatible':
     "Slots aren't supported on angled dividers — coming in v2.",
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',

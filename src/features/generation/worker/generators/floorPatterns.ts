@@ -27,6 +27,7 @@ import type { PatternPanelSpec } from './dividerPatterns';
 import type { WorldKeepOut } from './dividerPatterns';
 import { scoopKeepOuts } from './dividerPatterns';
 import { interiorDividerSegments } from './compartmentBuilder';
+import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { filledSocketCells } from './socketBuilder';
 import { magnetPositionsForCell } from './baseplateMagnets';
 import { footPinPositions, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
@@ -181,15 +182,21 @@ function standingFeatureKeepOuts(params: BinParams, dim: BinDimensions): WorldKe
 
   if (!dim.isSlotted && params.compartments.thickness > 0) {
     const half = params.compartments.thickness / 2;
-    for (const seg of interiorDividerSegments(params, innerW, innerD)) {
+    const dividerHeight = resolveCompartmentDividerHeight(
+      params.compartments.dividerHeight,
+      dim.interiorHeight
+    );
+    for (const seg of interiorDividerSegments(params, innerW, innerD, dividerHeight)) {
       const rad = (seg.rotateZ * Math.PI) / 180;
       const halfX = Math.abs(Math.cos(rad)) * (seg.wallLen / 2) + Math.abs(Math.sin(rad)) * half;
       const halfY = Math.abs(Math.sin(rad)) * (seg.wallLen / 2) + Math.abs(Math.cos(rad)) * half;
+      // Keyed to the FOOT, not the top edge: this keep-out is the floor
+      // footprint, and a leaning divider stands nowhere near `seg.x/y` there.
       out.push({
-        xMin: seg.x - halfX,
-        xMax: seg.x + halfX,
-        yMin: seg.y - halfY,
-        yMax: seg.y + halfY,
+        xMin: seg.footX - halfX,
+        xMax: seg.footX + halfX,
+        yMin: seg.footY - halfY,
+        yMax: seg.footY + halfY,
         zMin: 0,
         zMax: 0,
       });

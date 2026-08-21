@@ -18,7 +18,13 @@
 import { Button } from '@/design-system';
 import type { CompartmentConfig, DividerTiltPreview } from '@/features/bin-designer/types';
 import type { EligibleDivider } from '@/features/bin-designer/utils/compartments';
-import { computeSegmentSpan, overlayLineGeom, type SegmentSpan } from './dividerOverlayGeom';
+import {
+  computeSegmentSpan,
+  overlayLeanBandPoints,
+  overlayLineGeom,
+  type SegmentSpan,
+} from './dividerOverlayGeom';
+import { dividerFootDrift } from '@/features/bin-designer/utils/compartments';
 import { rowKeyOf } from './useDividerTiltSubsection';
 
 interface DividerHitTargetsProps {
@@ -40,6 +46,8 @@ interface DividerHitTargetsProps {
   readonly onDragStart?: (key: string, event: React.PointerEvent) => void;
   /** Key of the wall being dragged right now, so it can render as active. */
   readonly draggingKey?: string | null;
+  /** Divider wall height (mm), which is what turns a lean into foot travel. */
+  readonly dividerHeightMm: number;
 }
 
 export function DividerHitTargets({
@@ -55,6 +63,7 @@ export function DividerHitTargets({
   rowLabel,
   onDragStart,
   draggingKey = null,
+  dividerHeightMm,
 }: DividerHitTargetsProps) {
   return (
     <div className="pointer-events-none absolute inset-2 z-10">
@@ -71,23 +80,58 @@ export function DividerHitTargets({
           const key = rowKeyOf(d.compartmentA, d.compartmentB);
           const ov =
             preview && preview.key === key
-              ? { offsetStart: preview.offsetStart, offsetEnd: preview.offsetEnd }
-              : { offsetStart: d.offsetStart, offsetEnd: d.offsetEnd };
-          if (ov.offsetStart === 0 && ov.offsetEnd === 0) return null;
+              ? {
+                  offsetStart: preview.offsetStart,
+                  offsetEnd: preview.offsetEnd,
+                  rakeDeg: preview.rakeDeg,
+                }
+              : { offsetStart: d.offsetStart, offsetEnd: d.offsetEnd, rakeDeg: d.rakeDeg };
+          if (ov.offsetStart === 0 && ov.offsetEnd === 0 && ov.rakeDeg === 0) return null;
           const line = overlayLineGeom(span, ov.offsetStart, ov.offsetEnd, interiorW, interiorD);
           const isActive = selectedKey === key || hoveredKey === key;
+          const drift = dividerFootDrift(ov, dividerHeightMm);
+          const foot =
+            drift === 0
+              ? null
+              : overlayLineGeom(
+                  span,
+                  ov.offsetStart + drift,
+                  ov.offsetEnd + drift,
+                  interiorW,
+                  interiorD
+                );
           return (
-            <line
-              key={key}
-              x1={line.x1}
-              y1={line.y1}
-              x2={line.x2}
-              y2={line.y2}
-              className={isActive ? 'stroke-accent' : 'stroke-accent/60'}
-              strokeWidth={2}
-              strokeLinecap="round"
-              vectorEffect="non-scaling-stroke"
-            />
+            <g key={key}>
+              {foot && (
+                <>
+                  <polygon
+                    points={overlayLeanBandPoints(line, foot)}
+                    className={isActive ? 'fill-accent/20' : 'fill-accent/10'}
+                  />
+                  <line
+                    x1={foot.x1}
+                    y1={foot.y1}
+                    x2={foot.x2}
+                    y2={foot.y2}
+                    className={isActive ? 'stroke-accent/70' : 'stroke-accent/40'}
+                    strokeWidth={1.5}
+                    strokeDasharray="3 2"
+                    strokeLinecap="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </>
+              )}
+              <line
+                x1={line.x1}
+                y1={line.y1}
+                x2={line.x2}
+                y2={line.y2}
+                className={isActive ? 'stroke-accent' : 'stroke-accent/60'}
+                strokeWidth={2}
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
           );
         })}
       </svg>
@@ -96,7 +140,7 @@ export function DividerHitTargets({
         const span = computeSegmentSpan(compartments, d);
         if (!span) return null;
         const key = rowKeyOf(d.compartmentA, d.compartmentB);
-        const isTilted = d.offsetStart !== 0 || d.offsetEnd !== 0;
+        const isTilted = d.offsetStart !== 0 || d.offsetEnd !== 0 || d.rakeDeg !== 0;
         const ov =
           preview && preview.key === key
             ? { offsetStart: preview.offsetStart, offsetEnd: preview.offsetEnd }

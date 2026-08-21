@@ -124,6 +124,46 @@ describe('dividerRailBlocks', () => {
     expect((front?.hi ?? 0) - (front?.lo ?? 0)).toBeCloseTo(2 * (0.669 + DIVIDER_RAIL_MARGIN), 2);
   });
 
+  describe('a leaning divider sweeps across the rail band', () => {
+    // Divider top at the 15.3mm ceiling, band floor at 12.85mm: the rail sees
+    // 2.45mm of the wall, over which a lean travels 2.45 * tan(lean).
+    const BAND_DEPTH = 15.3 - 12.85;
+    const leaning = (rakeDeg: number): readonly DividerRailBlock[] =>
+      dividerRailBlocks(
+        bin({
+          ...TWO_COLUMNS,
+          dividerOverrides: [
+            { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg },
+          ],
+        })
+      );
+
+    it('widens the notch by the travel, on the side it leans toward', () => {
+      const front = leaning(45).find((b) => b.side === 'front');
+      const sweep = BAND_DEPTH * Math.tan(Math.PI / 4);
+      expect(front?.lo).toBeCloseTo(-0.6 - DIVIDER_RAIL_MARGIN, 2);
+      expect(front?.hi).toBeCloseTo(0.6 + sweep + DIVIDER_RAIL_MARGIN, 2);
+    });
+
+    it('widens the other side for a negative lean', () => {
+      const front = leaning(-45).find((b) => b.side === 'front');
+      const sweep = BAND_DEPTH * Math.tan(Math.PI / 4);
+      expect(front?.lo).toBeCloseTo(-0.6 - sweep - DIVIDER_RAIL_MARGIN, 2);
+      expect(front?.hi).toBeCloseTo(0.6 + DIVIDER_RAIL_MARGIN, 2);
+    });
+
+    it('outgrows the margin, which is the whole reason it is measured', () => {
+      const straight = dividerRailBlocks(bin(TWO_COLUMNS)).find((b) => b.side === 'front');
+      const leaned = leaning(45).find((b) => b.side === 'front');
+      const grew = (leaned?.hi ?? 0) - (straight?.hi ?? 0);
+      expect(grew).toBeGreaterThan(DIVIDER_RAIL_MARGIN);
+    });
+
+    it('costs nothing when the divider stands upright', () => {
+      expect(leaning(0)).toEqual(dividerRailBlocks(bin(TWO_COLUMNS)));
+    });
+  });
+
   // A rail reaches 3.35mm inboard of the inner wall face, so a boundary line
   // closer than that runs THROUGH the rail rather than across it and denies the
   // whole run. Only a small custom pitch gets a cell that narrow past the

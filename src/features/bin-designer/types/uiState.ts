@@ -181,6 +181,7 @@ export interface DividerTiltPreview {
   readonly key: string;
   readonly offsetStart: number;
   readonly offsetEnd: number;
+  readonly rakeDeg: number;
 }
 
 /** Undo/redo history for bin parameters with optional mesh cache */

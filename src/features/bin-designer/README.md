@@ -553,7 +553,31 @@ estimates), and the source file name.
     **UI-only**: `compartments.dividerOverrides` and the worker geometry path are
     untouched, so a saved design with tilts still renders and exports them while
     the toggle is off — only editing is hidden (#2044). Toggling off clears the
-    in-flight selection/hover/preview so the canvas overlay drops cleanly.
+    in-flight selection/hover/preview so the canvas overlay drops cleanly. The
+    same subsection hosts **Lean** (`DividerOverride.rakeDeg`), the rotation in
+    ELEVATION that the Angle control is in plan.
+    18b. **A leaning divider is one plane through two parallel lines** — the top
+    line at `{offsetStart, offsetEnd}` and a foot line at those offsets plus
+    `dividerHeight * tan(rakeDeg)` (`dividerFootDrift`, the one statement of that
+    conversion). Everything falls out of that. The two controls **compose**,
+    because both describe the same plane. The clamp needs no new machinery: run
+    the existing `clampOffsets` on the foot line, so `getLeanLimits` is
+    `atan((offsetMax - max(offsets)) / height)` and a divider already shifted
+    toward its neighbour leans less far. The limit is **floored to a whole
+    degree** — the control steps in degrees, so a limit of 24.2 only ever
+    surfaces as a clamped value nobody asked for sitting beside a readout that
+    rounded it to 24, and flooring also keeps the clamp strictly inside the
+    envelope where rounding would not. The pivot is the divider's **own top**,
+    not the bin rim, so a divider shortened by `dividerHeight` leans about its
+    truncated top; keeping it there is what leaves the rim footprint alone,
+    which the click-rail, label-shelf and lip-gap plans all read. The panel
+    reports the clear perpendicular opening (`pitch * cos(lean) - thickness`)
+    and the foot travel, because neither is readable off a plan view and the
+    compartment-size readout beside it measures the grid line the divider has
+    left. The 2D canvas draws the top edge solid, the foot dashed and shades the
+    swept band between them (`overlayLeanBandPoints`) — the plan view cannot
+    show a lean any other way, and without it a leaning divider draws
+    identically to a straight one in the view the user edits in.
 19. **WebGL context failure is terminal for the session, by design** — the
     `PreviewCanvas` `<Canvas>` is wrapped in `WebGLErrorBoundary` (inside
     `PanelErrorBoundary`). When three.js can't acquire a GL context (slot

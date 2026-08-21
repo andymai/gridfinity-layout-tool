@@ -20,6 +20,7 @@ import type {
   CellRect,
   CompartmentColorScope,
   CompartmentConfig,
+  DividerOverride,
   ScoopConfig,
 } from './compartments';
 import type { InteriorCard } from './interior';
@@ -185,8 +186,10 @@ export interface DesignerState {
     compartmentA: number,
     compartmentB: number,
     offsetStart: number,
-    offsetEnd: number
+    offsetEnd: number,
+    rakeDeg?: number
   ) => void;
+  setDividerOverrides: (overrides: readonly DividerOverride[]) => void;
   removeDividerOverride: (compartmentA: number, compartmentB: number) => void;
   clearDividerOverrides: () => void;
 
