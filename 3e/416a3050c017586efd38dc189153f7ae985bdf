@@ -1,0 +1,25 @@
+.claude/skills/testing/SKILL.md
+  s_c946fcd5b9e96b::t_8232dc70cf0ab2 33
+CLAUDE.md
+  s_c946fcd5b9e96b::t_8232dc70cf0ab2 8-9,85-86
+src/test/README.md
+  s_c946fcd5b9e96b::t_b446dbfae35e89 73
+scripts/doc-budget.json
+  s_c946fcd5b9e96b::t_fb6dfba192f1eb 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "3e416a3050c017586efd38dc189153f7ae985bdf",
+  "prompts": {},
+  "sessions": {
+    "s_c946fcd5b9e96b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "47e858d2-eb4c-4dcd-86f7-d298014dec6d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
