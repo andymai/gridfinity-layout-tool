@@ -1,0 +1,84 @@
+src/features/bin-designer/components/BentoWorkspace/BentoDock.tsx
+  s_95be7eee25f6b3::t_46043d0d425fbc 464,471
+  s_95be7eee25f6b3::t_7f2f3e03fabf0f 439,446
+src/features/bin-designer/types/designerState.ts
+  s_95be7eee25f6b3::t_d091ba4f1aedc8 189-190
+  s_95be7eee25f6b3::t_5925762e03c722 23
+  s_95be7eee25f6b3::t_20e69d1507ee9d 192
+src/features/bin-designer/components/CompartmentEditor/DividerHitTargets.test.tsx
+  s_95be7eee25f6b3::t_71b2301a4d109f 20
+  s_95be7eee25f6b3::t_3d52317b75fb76 29,116
+src/shared/utils/dividerRailPlan.ts
+  s_95be7eee25f6b3::t_8b56508009cf07 17,105-106
+  s_95be7eee25f6b3::t_c3c6ea4dd91eb9 23,123-136,157-159,186-188
+src/shared/types/bin.ts
+  s_95be7eee25f6b3::t_a5dc24606c5825 328,330
+src/features/generation/worker/generators/compartmentBuilder.ts
+  s_95be7eee25f6b3::t_1fe345fdd1a492 516
+  s_95be7eee25f6b3::t_b61ab1cdec0d7a 495-499
+  s_95be7eee25f6b3::t_3577b0b4e8b0f8 8-19,25-30,778-779,781,783-784,786-789,817,819,821-823,825-828
+  s_95be7eee25f6b3::t_289aade1bca34c 416-432,443-444,457-461,491-494,500-515
+  s_95be7eee25f6b3::t_c95ff2322ead97 462-476
+api/lib/designerCompartmentValidation.ts
+  s_95be7eee25f6b3::t_2e550852e53e46 281-283
+  s_95be7eee25f6b3::t_31e41afd82594c 284-286
+src/features/bin-designer/utils/dividerAngle.ts
+  s_95be7eee25f6b3::t_af43c4b0217c00 41-42,139-140,160-161,165-190,197,205,210,214-215
+  s_95be7eee25f6b3::t_57c7e44ea8eb46 11-16,51-55,59-60,66,76-81
+  s_95be7eee25f6b3::t_d4f53d07adfff1 37-40,108
+  s_95be7eee25f6b3::t_42a85219d93706 228,230,238,241
+  s_95be7eee25f6b3::t_848551f4a5cad5 43
+src/features/bin-designer/utils/compartments.ts
+  s_95be7eee25f6b3::t_afaa7e4d485979 1348
+  s_95be7eee25f6b3::t_e1bb5a3a2b934d 199
+  s_95be7eee25f6b3::t_dcca3dcf7fa111 240-243
+  s_95be7eee25f6b3::t_b73e1c8cf3edb7 228
+  s_95be7eee25f6b3::t_6eee2dd04cb2f8 347,352-367
+  s_95be7eee25f6b3::t_ffb352e19b086c 283-284
+  s_95be7eee25f6b3::t_97575375be33b8 201-202,210-211
+  s_95be7eee25f6b3::t_9ba3d75f65b1ce 348-351
+  s_95be7eee25f6b3::t_9eac82c0e34f24 321
+  s_95be7eee25f6b3::t_18ab1e86317d39 200
+src/features/generation/worker/generators/pipeline/context.ts
+  s_95be7eee25f6b3::t_739ae5fcbf3f6b 11
+  s_95be7eee25f6b3::t_752224cb8219e7 273-275
+src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  s_95be7eee25f6b3::t_5be483f820f910 348-365
+  s_95be7eee25f6b3::t_6a854c1dd787bf 288-289,303-308,316-323
+  s_95be7eee25f6b3::t_20e69d1507ee9d 10-13
+src/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection.ts
+  s_95be7eee25f6b3::t_ab93bff12a1b95 151,154-158,162-166,195,214-220,225
+  s_95be7eee25f6b3::t_8113f5368dec08 247-249,265,268,270,287,311,313
+  s_95be7eee25f6b3::t_e876fae814b7a4 11-12,18-19,36-37,47,69,88-95,97-98,104,106,109,113,117
+  s_95be7eee25f6b3::t_d4f53d07adfff1 15,96
+  s_95be7eee25f6b3::t_1381fd351cb13c 54,76,243-246,250-264,266-267,269,271-286
+src/features/bin-designer/types/uiState.ts
+  s_95be7eee25f6b3::t_71b2301a4d109f 184
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_95be7eee25f6b3::t_5d0841bc28e29e 288-291,302-303,320,344
+  s_95be7eee25f6b3::t_46043d0d425fbc 84,220,231
+  s_95be7eee25f6b3::t_6798eedc2bc604 346-350
+src/features/bin-designer/types/compartments.ts
+  s_95be7eee25f6b3::t_8ede27718d7f4e 199-200,204-205
+  s_95be7eee25f6b3::t_58db265ac34698 198,201-202
+  s_95be7eee25f6b3::t_f99a5aff8d929e 183-185
+  s_95be7eee25f6b3::t_3d4754059a7054 182,196-197,203,206-207
+src/features/bin-designer/components/CompartmentEditor/dividerOverlayGeom.test.ts
+  s_95be7eee25f6b3::t_0135b14654ea80 62,74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "eb33411576dbd85155be7059a6e285ace3707334",
+  "prompts": {},
+  "sessions": {
+    "s_95be7eee25f6b3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9582dcb1-4dfc-4a34-beb5-25c6d8d1badf",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
