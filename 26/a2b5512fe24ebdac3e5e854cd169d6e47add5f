@@ -1,0 +1,21 @@
+src/features/baseplate/utils/printGuide.ts
+  s_d7bee796da009a::t_91f4eef048da9f 395-399,404-405,409,412-413
+src/features/baseplate/utils/printGuide.test.ts
+  s_d7bee796da009a::t_96e7337f1b5e85 47-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "26a2b5512fe24ebdac3e5e854cd169d6e47add5f",
+  "prompts": {},
+  "sessions": {
+    "s_d7bee796da009a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "759374cb-7d0d-40a6-af85-fb8cfc3a8bf0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
