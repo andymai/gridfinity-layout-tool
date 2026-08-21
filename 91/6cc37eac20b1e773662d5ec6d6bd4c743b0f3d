@@ -1,0 +1,29 @@
+.claude/skills/testing/SKILL.md
+  s_c946fcd5b9e96b::t_8232dc70cf0ab2 33
+CLAUDE.md
+  s_c946fcd5b9e96b::t_8232dc70cf0ab2 8-9,70-71
+  s_c946fcd5b9e96b::t_eb1d6401bd637c 38,44-48
+src/test/README.md
+  s_c946fcd5b9e96b::t_b446dbfae35e89 73
+scripts/doc-budget.json
+  s_c946fcd5b9e96b::t_fb6dfba192f1eb 20
+  s_c946fcd5b9e96b::t_4748eb8e14da07 40-41,48,51
+  s_c946fcd5b9e96b::t_eed78441680eb1 52
+  s_c946fcd5b9e96b::t_01f3a12368b85a 22,58,62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "916cc37eac20b1e773662d5ec6d6bd4c743b0f3d",
+  "prompts": {},
+  "sessions": {
+    "s_c946fcd5b9e96b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "47e858d2-eb4c-4dcd-86f7-d298014dec6d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
