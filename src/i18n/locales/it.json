@@ -307,7 +307,7 @@
   "binDesigner.angledDividers.rowLabel": "Scomp. {a} ↔ Scomp. {b}",
   "binDesigner.angledDividers.shiftLabel": "Spostamento",
   "binDesigner.angledDividers.sideView": "Lato",
-  "binDesigner.angledDividers.slotIncompatible": "Le fessure non sono supportate sui divisori inclinati; in arrivo nella v2.",
+  "binDesigner.angledDividers.slotIncompatible": "Le fessure non sono supportate sui divisori diagonali; in arrivo nella v2.",
   "binDesigner.angledDividers.teaser": "Inclina le pareti interne per creare scomparti a cuneo. Fai clic su un divisore nella griglia per iniziare.",
   "binDesigner.angledDividers.topView": "Dall'alto",
   "binDesigner.angledDividers.title": "Divisori diagonali",
