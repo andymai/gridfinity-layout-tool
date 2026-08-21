@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.435.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.2...gridfinity-layout-tool-v4.435.3) (2026-08-21)
+
+
+### Bug Fixes
+
+* **split-bin:** keep the split body's own lip in its dimensions ([#3684](https://github.com/andymai/gridfinity-layout-tool/issues/3684)) ([e04e98b](https://github.com/andymai/gridfinity-layout-tool/commit/e04e98b9cd63d5e03e9bb277a6d75d58fcdb5050))
+
 ## [4.435.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.1...gridfinity-layout-tool-v4.435.2) (2026-08-21)
 
 
