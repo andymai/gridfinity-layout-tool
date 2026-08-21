@@ -37,6 +37,7 @@ interface DividerHitTargetsProps {
   readonly hoveredKey: string | null;
   readonly onSelect: (key: string) => void;
   readonly onHoverChange: (key: string | null) => void;
+  /** Builds the accessible name from the two compartment IDs (not display numbers). */
   readonly rowLabel: (a: number, b: number) => string;
   /**
    * Enables direct dragging of the wall. Omitted by the sidebar, where the hit
@@ -156,7 +157,7 @@ export function DividerHitTargets({
             isSelected={selectedKey === key}
             isDragging={draggingKey === key}
             isTilted={isTilted}
-            label={rowLabel(d.compartmentA + 1, d.compartmentB + 1)}
+            label={rowLabel(d.compartmentA, d.compartmentB)}
             onClick={() => onSelect(key)}
             onHoverEnter={() => onHoverChange(key)}
             onHoverLeave={() => onHoverChange(null)}

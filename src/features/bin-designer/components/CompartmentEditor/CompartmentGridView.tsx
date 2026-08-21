@@ -48,13 +48,12 @@ export function CompartmentGridView({
     gridDots,
     labeling,
     previewColor,
-    angledDividersEnabled,
     eligibleDividers,
     dividerHighlightCompartments,
     dividerTiltPreview,
     selectedDividerKey,
     hoveredDividerKey,
-    setSelectedDividerKey,
+    handleDividerSelect,
     setHoveredDividerKey,
     rowLabelForHitTarget,
     selection,
@@ -140,8 +139,11 @@ export function CompartmentGridView({
       </div>
       {/* Divider hit targets: clickable lines above the cells, transparent
           container with per-line pointer-events so cell drag-merge still
-          works. Hidden during cell-merge drag to keep the surface calm. */}
-      {!isDragging && angledDividersEnabled && eligibleDividers.length > 0 && (
+          works. Hidden during cell-merge drag to keep the surface calm.
+          Rendered even before diagonal-divider editing is enabled: committed
+          tilts must draw truthfully, and clicking a divider is the feature's
+          entry point (handleDividerSelect opts in and selects in one step). */}
+      {!isDragging && eligibleDividers.length > 0 && (
         <DividerHitTargets
           compartments={compartments}
           dividers={eligibleDividers}
@@ -150,7 +152,7 @@ export function CompartmentGridView({
           preview={dividerTiltPreview}
           selectedKey={selectedDividerKey}
           hoveredKey={hoveredDividerKey}
-          onSelect={setSelectedDividerKey}
+          onSelect={handleDividerSelect}
           onHoverChange={setHoveredDividerKey}
           rowLabel={rowLabelForHitTarget}
           draggingKey={null}

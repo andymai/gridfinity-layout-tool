@@ -30,6 +30,7 @@ import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
 import { labelTabInteriorDims } from '@/shared/utils/labelTabPlan';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { useTranslation } from '@/i18n';
+import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { useCompartmentLabeling } from './useCompartmentLabeling';
 import { rowKeyOf } from './useDividerTiltSubsection';
@@ -86,11 +87,24 @@ export function useCompartmentGrid() {
     }))
   );
 
-  // Angled dividers are an advanced opt-in (see DividerTiltSubsection). Keep the
-  // on-grid hit-target overlay hidden until the user enables editing so dense
-  // grids stay legible.
+  // Diagonal dividers are an advanced opt-in (see DividerTiltSubsection), but
+  // the overlay renders regardless: committed tilts must draw truthfully, and
+  // the hit targets double as the feature's discovery affordance — clicking a
+  // divider before opting in enables editing and selects it in one step.
   const angledDividersEnabled = useSettingsStore((s) => s.settings.angledDividersEnabled);
+  const updateSetting = useSettingsStore((s) => s.updateSetting);
   const addToast = useToastStore((s) => s.addToast);
+
+  const handleDividerSelect = useCallback(
+    (key: string) => {
+      if (!angledDividersEnabled) {
+        updateSetting('angledDividersEnabled', true);
+        trackEvent('divider_editing_toggled', { enabled: true, source: 'canvas' });
+      }
+      setSelectedDividerKey(key);
+    },
+    [angledDividersEnabled, updateSetting, setSelectedDividerKey]
+  );
 
   const { innerW: interiorW, innerD: interiorD } = getInteriorDims({
     width,
@@ -161,10 +175,15 @@ export function useCompartmentGrid() {
 
   // Stable label builder for hit-target aria-labels; uses the same wording as
   // the panel's "edit row" affordance so screen readers hear a consistent name.
+  // Takes compartment IDs and speaks display numbers — the "Comp. N" the grid
+  // draws comes from reading order, not the ID.
+  const { displayNumberOf } = labeling;
   const rowLabelForHitTarget = useCallback(
-    (a: number, b: number) =>
-      t('binDesigner.angledDividers.editRowLabel', { a: String(a), b: String(b) }),
-    [t]
+    (a: number, b: number) => {
+      const [lo, hi] = [displayNumberOf(a), displayNumberOf(b)].sort((x, y) => x - y);
+      return t('binDesigner.angledDividers.editRowLabel', { a: String(lo), b: String(hi) });
+    },
+    [t, displayNumberOf]
   );
 
   // Compute selection rectangle from drag start to current cell
@@ -402,6 +421,7 @@ export function useCompartmentGrid() {
     hoveredDividerKey,
     setSelectedDividerKey,
     setHoveredDividerKey,
+    handleDividerSelect,
     rowLabelForHitTarget,
     selection,
     isDragging,

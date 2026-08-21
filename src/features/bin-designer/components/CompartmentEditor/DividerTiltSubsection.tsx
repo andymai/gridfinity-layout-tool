@@ -6,6 +6,7 @@ import { Switch } from '@/design-system/Switch';
 import { Collapsible } from '@/design-system/Collapsible';
 import { Button, IconButton, Stepper } from '@/design-system';
 import { useSettingsStore } from '@/core/store/settings';
+import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import {
   ANGLE_PRESETS_DEG,
@@ -15,13 +16,21 @@ import {
   LEAN_UI_MAX_DEG,
   LEAN_UI_STEP_DEG,
   SHIFT_UI_STEP_MM,
+  applyAngleShift,
 } from '@/features/bin-designer/utils/dividerAngle';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
+import {
+  DividerMiniDiagram,
+  DividerPlanDiagram,
+  LeanSpecimen,
+  TeaserDiagram,
+} from './DividerDiagrams';
 import { useDividerTiltSubsection, type TiltRow } from './useDividerTiltSubsection';
 
 export function DividerTiltSubsection() {
   const {
     compartments,
+    interiorDims,
     rows,
     hasAnyOverride,
     activeConflicts,
@@ -39,12 +48,13 @@ export function DividerTiltSubsection() {
 
   if (rows.length === 0) return null;
 
-  // Advanced opt-in: angled dividers are off by default so dense grids don't
-  // drown the panel in per-divider rows (see). Toggling off also
-  // drops any in-flight selection/hover so the canvas overlay clears cleanly.
+  // Advanced opt-in: divider editing is off by default so dense grids don't
+  // drown the panel in per-divider rows. Toggling off also drops any in-flight
+  // selection/hover so the canvas overlay clears cleanly.
   const toggleEnabled = (): void => {
     const next = !enabled;
     updateSetting('angledDividersEnabled', next);
+    trackEvent('divider_editing_toggled', { enabled: next, source: 'switch' });
     if (!next) {
       handlers.selectDivider(null);
       handlers.hoverDivider(null);
@@ -60,31 +70,23 @@ export function DividerTiltSubsection() {
           </h3>
           <InfoPopoverButton t={t} />
         </div>
-        <div className="flex items-center gap-2">
-          {enabled && hasAnyOverride && (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handlers.resetAll}
-              className="px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
-            >
-              {t('binDesigner.angledDividers.resetAll')}
-            </Button>
-          )}
-          <Switch
-            checked={enabled}
-            onChange={toggleEnabled}
-            size="sm"
-            aria-label={t('binDesigner.angledDividers.toggleLabel')}
-          />
-        </div>
+        <Switch
+          checked={enabled}
+          onChange={toggleEnabled}
+          size="sm"
+          aria-label={t('binDesigner.angledDividers.toggleLabel')}
+        />
       </div>
+
+      {!enabled && <Teaser t={t} />}
 
       {enabled &&
         (selectedRow ? (
           <InspectorView
             row={selectedRow}
             compartments={compartments}
+            interiorW={interiorDims.innerW}
+            interiorD={interiorDims.innerD}
             angleDeg={selectedAngleShift.angleDeg}
             leanDeg={selectedAngleShift.leanDeg}
             leanLimits={leanLimits}
@@ -99,6 +101,7 @@ export function DividerTiltSubsection() {
             rows={rows}
             compartments={compartments}
             hoveredKey={hoveredKey}
+            hasAnyOverride={hasAnyOverride}
             handlers={handlers}
             t={t}
           />
@@ -112,27 +115,64 @@ type Handlers = Hook['handlers'];
 type Translate = Hook['t'];
 type Conflict = Hook['activeConflicts'][number];
 
+/**
+ * Off-state teaser: the section header alone doesn't say what the feature does,
+ * so the closed state carries a one-glance pitch — a wall drawn mid-tilt and
+ * one sentence naming the payoff and both entry points (grid click or switch).
+ */
+function Teaser({ t }: { readonly t: Translate }) {
+  return (
+    <div className="mt-2 flex items-start gap-2.5">
+      <TeaserDiagram />
+      <p className="flex-1 text-[11px] leading-relaxed text-content-tertiary">
+        {t('binDesigner.angledDividers.teaser')}
+      </p>
+    </div>
+  );
+}
+
 interface ListViewProps {
   readonly rows: readonly TiltRow[];
   readonly compartments: CompartmentConfig;
   readonly hoveredKey: string | null;
+  readonly hasAnyOverride: boolean;
   readonly handlers: Handlers;
   readonly t: Translate;
 }
 
-function ListView({ rows, compartments, hoveredKey, handlers, t }: ListViewProps) {
+function ListView({ rows, compartments, hoveredKey, hasAnyOverride, handlers, t }: ListViewProps) {
+  // Present in display-number order so the list scans like the numbers on the
+  // grid. Display-only: the hook's row order (stable ID pairs) is what the
+  // Bento dock and the hit targets key off, and stays untouched.
+  const sorted = [...rows].sort(
+    (a, b) =>
+      Math.min(a.numberA, a.numberB) - Math.min(b.numberA, b.numberB) ||
+      Math.max(a.numberA, a.numberB) - Math.max(b.numberA, b.numberB)
+  );
   return (
-    <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
-      {rows.map((row) => (
-        <DividerRow
-          key={row.key}
-          row={row}
-          compartments={compartments}
-          isHovered={hoveredKey === row.key}
-          handlers={handlers}
-          t={t}
-        />
-      ))}
+    <div className="flex flex-col gap-1">
+      <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
+        {sorted.map((row) => (
+          <DividerRow
+            key={row.key}
+            row={row}
+            compartments={compartments}
+            isHovered={hoveredKey === row.key}
+            handlers={handlers}
+            t={t}
+          />
+        ))}
+      </div>
+      {hasAnyOverride && (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handlers.resetAll}
+          className="self-end px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
+        >
+          {t('binDesigner.angledDividers.resetAll')}
+        </Button>
+      )}
     </div>
   );
 }
@@ -177,10 +217,13 @@ interface DividerRowProps {
 }
 
 function DividerRow({ row, compartments, isHovered, handlers, t }: DividerRowProps) {
-  const rowLabel = t('binDesigner.angledDividers.rowLabel', {
-    a: String(row.compartmentA + 1),
-    b: String(row.compartmentB + 1),
-  });
+  // Ascending display numbers: the ID-canonical pair order can put the higher
+  // number first (bottom-row IDs display as high numbers), which reads as noise.
+  const lo = String(Math.min(row.numberA, row.numberB));
+  const hi = String(Math.max(row.numberA, row.numberB));
+  const rowLabel = t('binDesigner.angledDividers.rowLabel', { a: lo, b: hi });
+  const hasPlanTilt = row.offsetStart !== 0 || row.offsetEnd !== 0;
+  const leanRounded = Math.round(row.leanDeg);
 
   return (
     <div
@@ -200,21 +243,25 @@ function DividerRow({ row, compartments, isHovered, handlers, t }: DividerRowPro
         type="button"
         variant="ghost"
         onClick={() => handlers.selectDivider(row.key)}
-        aria-label={t('binDesigner.angledDividers.editRowLabel', {
-          a: String(row.compartmentA + 1),
-          b: String(row.compartmentB + 1),
-        })}
+        aria-label={t('binDesigner.angledDividers.editRowLabel', { a: lo, b: hi })}
         className="flex flex-1 items-center gap-2 px-2 py-1.5 text-left hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px]"
       >
         <DividerMiniDiagram compartments={compartments} row={row} />
         <span className="text-xs font-medium text-content-secondary tabular-nums">{rowLabel}</span>
-        {row.hasTilt && (
-          <span className="ml-auto text-[11px] font-medium tabular-nums text-accent">
-            {t('binDesigner.angledDividers.badgeAngle', {
-              angle: String(Math.round(row.angleDeg)),
-            })}
-          </span>
-        )}
+        <span className="ml-auto flex items-center gap-1.5">
+          {row.hasTilt && hasPlanTilt && (
+            <span className="text-[11px] font-medium tabular-nums text-accent">
+              {t('binDesigner.angledDividers.badgeAngle', {
+                angle: String(Math.round(row.angleDeg)),
+              })}
+            </span>
+          )}
+          {leanRounded !== 0 && (
+            <span className="text-[11px] font-medium tabular-nums text-content-secondary">
+              {t('binDesigner.angledDividers.rowBadgeLean', { angle: String(leanRounded) })}
+            </span>
+          )}
+        </span>
       </Button>
     </div>
   );
@@ -223,6 +270,8 @@ function DividerRow({ row, compartments, isHovered, handlers, t }: DividerRowPro
 interface InspectorViewProps {
   readonly row: TiltRow;
   readonly compartments: CompartmentConfig;
+  readonly interiorW: number;
+  readonly interiorD: number;
   readonly angleDeg: number;
   readonly leanDeg: number;
   readonly shiftMm: number;
@@ -236,6 +285,8 @@ interface InspectorViewProps {
 function InspectorView({
   row,
   compartments,
+  interiorW,
+  interiorD,
   angleDeg,
   leanDeg,
   shiftMm,
@@ -245,18 +296,17 @@ function InspectorView({
   handlers,
   t,
 }: InspectorViewProps) {
-  const axisLabel = t(
-    row.axis === 'vertical'
-      ? 'binDesigner.angledDividers.axisVertical'
-      : 'binDesigner.angledDividers.axisHorizontal'
-  );
-  const rowLabel = t('binDesigner.angledDividers.rowLabel', {
-    a: String(row.compartmentA + 1),
-    b: String(row.compartmentB + 1),
-  });
   const angleLabel = t('binDesigner.angledDividers.angleLabel');
+  const leanLabel = t('binDesigner.angledDividers.leanLabel');
   const disabled = row.geometry === null;
   const shiftRange = row.geometry ?? { offsetMin: 0, offsetMax: 0 };
+  const leanBounds = leanLimits ?? { minDeg: -LEAN_UI_MAX_DEG, maxDeg: LEAN_UI_MAX_DEG };
+
+  // Live endpoint offsets: the same clamp the commit path runs, so the diagram
+  // draws exactly the wall the user would get, mid-drag included.
+  const liveOffsets = row.geometry
+    ? applyAngleShift({ angleDeg, shiftMm, leanDeg }, row.geometry)
+    : { offsetStart: row.offsetStart, offsetEnd: row.offsetEnd, rakeDeg: row.rakeDeg };
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -283,76 +333,104 @@ function InspectorView({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <DividerMiniDiagram compartments={compartments} row={row} />
-        <div className="flex flex-col">
-          <span className="text-xs font-medium text-content-primary tabular-nums">{rowLabel}</span>
-          <span className="text-[11px] text-content-tertiary">{axisLabel}</span>
-        </div>
+      <p className="text-xs font-medium text-content-primary">
+        {betweenLabel(row, compartments, t)}
+      </p>
+
+      <div className="flex items-center justify-evenly gap-3 rounded-md border border-stroke-subtle/60 bg-surface-elevated px-2 py-2">
+        <figure className="flex flex-col items-center gap-1">
+          <DividerPlanDiagram
+            compartments={compartments}
+            row={row}
+            offsets={liveOffsets}
+            interiorW={interiorW}
+            interiorD={interiorD}
+            dividerHeightMm={row.geometry?.dividerHeightMm ?? 0}
+          />
+          <figcaption className="text-[10px] text-content-tertiary">
+            {t('binDesigner.angledDividers.topView')}
+          </figcaption>
+        </figure>
+        <figure className="flex flex-col items-center gap-1">
+          <LeanSpecimen leanDeg={leanDeg} />
+          <figcaption className="text-[10px] text-content-tertiary">
+            {t('binDesigner.angledDividers.sideView')}
+          </figcaption>
+        </figure>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] text-content-tertiary">{angleLabel}</span>
-          <Stepper
-            value={angleDeg}
-            onChange={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm, leanDeg })}
-            onStep={(delta) =>
-              handlers.commitTilt(row, { angleDeg: angleDeg + delta, shiftMm, leanDeg })
-            }
-            min={-ANGLE_UI_MAX_DEG}
-            max={ANGLE_UI_MAX_DEG}
-            step={1}
-            size="md"
-            aria-label={angleLabel}
-            disabled={disabled}
+      <TiltControl
+        label={angleLabel}
+        value={angleDeg}
+        min={-ANGLE_UI_MAX_DEG}
+        max={ANGLE_UI_MAX_DEG}
+        sliderStep={ANGLE_UI_STEP_DEG}
+        presets={ANGLE_PRESETS_DEG}
+        presetText={(v) => t('binDesigner.angledDividers.badgeAngle', { angle: String(v) })}
+        presetAria={(v) => t('binDesigner.angledDividers.presetAngle', { angle: String(v) })}
+        valueText={t('binDesigner.angledDividers.badgeAngle', {
+          angle: String(Math.round(angleDeg)),
+        })}
+        disabled={disabled}
+        onPreview={(v) => handlers.previewTilt(row, { angleDeg: v, shiftMm, leanDeg })}
+        onCommit={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm, leanDeg })}
+        onStep={(delta) =>
+          handlers.commitTilt(row, { angleDeg: angleDeg + delta, shiftMm, leanDeg })
+        }
+      />
+
+      <TiltControl
+        label={leanLabel}
+        value={leanDeg}
+        min={leanBounds.minDeg}
+        max={leanBounds.maxDeg}
+        sliderStep={LEAN_UI_STEP_DEG}
+        presets={LEAN_PRESETS_DEG}
+        presetText={(v) => t('binDesigner.angledDividers.badgeLean', { angle: String(v) })}
+        presetAria={(v) => t('binDesigner.angledDividers.presetLean', { angle: String(v) })}
+        presetDisabled={(v) => v > leanBounds.maxDeg}
+        valueText={t('binDesigner.angledDividers.badgeLean', {
+          angle: String(Math.round(leanDeg)),
+        })}
+        disabled={disabled}
+        onPreview={(v) => handlers.previewTilt(row, { angleDeg, shiftMm, leanDeg: v })}
+        onCommit={(v) => handlers.commitTilt(row, { angleDeg, shiftMm, leanDeg: v })}
+        onStep={(delta) =>
+          handlers.commitTilt(row, { angleDeg, shiftMm, leanDeg: leanDeg + delta })
+        }
+      />
+
+      {leanReadout && (
+        <div className="flex flex-col gap-0.5 rounded border border-stroke-subtle/60 px-2 py-1.5">
+          <ReadoutRow
+            label={t('binDesigner.angledDividers.clearOpening')}
+            value={t('binDesigner.angledDividers.mmValue', {
+              mm: leanReadout.openingMm.toFixed(1),
+            })}
+          />
+          <ReadoutRow
+            label={t('binDesigner.angledDividers.footTravel')}
+            value={t('binDesigner.angledDividers.mmValue', { mm: leanReadout.travelMm.toFixed(1) })}
+          />
+          <ReadoutRow
+            label={t('binDesigner.angledDividers.maxLean')}
+            value={t('binDesigner.angledDividers.badgeLean', {
+              angle: String(leanBounds.maxDeg),
+            })}
           />
         </div>
-        <Slider
-          value={angleDeg}
-          onChange={(v) => handlers.previewTilt(row, { angleDeg: v, shiftMm, leanDeg })}
-          onCommit={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm, leanDeg })}
-          min={-ANGLE_UI_MAX_DEG}
-          max={ANGLE_UI_MAX_DEG}
-          step={ANGLE_UI_STEP_DEG}
-          disabled={disabled}
-          aria-label={angleLabel}
-          aria-valuetext={t('binDesigner.angledDividers.badgeAngle', {
-            angle: String(Math.round(angleDeg)),
-          })}
-        />
-        <div className="flex flex-wrap gap-1">
-          {ANGLE_PRESETS_DEG.map((preset) => (
-            <Button
-              key={preset}
-              type="button"
-              variant="ghost"
-              disabled={disabled}
-              onClick={() => handlers.commitTilt(row, { angleDeg: preset, shiftMm, leanDeg })}
-              aria-label={t('binDesigner.angledDividers.presetAngle', { angle: String(preset) })}
-              className={`rounded border px-1.5 py-0.5 text-[11px] font-medium tabular-nums transition-colors disabled:opacity-40 ${
-                Math.round(angleDeg) === preset
-                  ? 'border-accent bg-accent/10 text-accent'
-                  : 'border-stroke-subtle text-content-tertiary hover:border-stroke hover:text-content-secondary'
-              }`}
-            >
-              {t('binDesigner.angledDividers.badgeAngle', { angle: String(preset) })}
-            </Button>
-          ))}
-        </div>
-      </div>
+      )}
 
-      <LeanSection
-        row={row}
-        angleDeg={angleDeg}
-        leanDeg={leanDeg}
-        shiftMm={shiftMm}
-        limits={leanLimits}
-        readout={leanReadout}
-        disabled={disabled}
-        handlers={handlers}
-        t={t}
-      />
+      {leanDeg !== 0 && (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => handlers.applyLeanToAxis(row)}
+          className="self-start px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
+        >
+          {t('binDesigner.angledDividers.applyLeanToAxis')}
+        </Button>
+      )}
 
       <Collapsible
         title={t('binDesigner.angledDividers.fineTune')}
@@ -392,186 +470,129 @@ function InspectorView({
   );
 }
 
-interface MiniDiagramProps {
-  readonly compartments: CompartmentConfig;
-  readonly row: TiltRow;
-}
-
-const DIAGRAM_W = 16;
-const DIAGRAM_H = 12;
-
-function DividerMiniDiagram({ compartments, row }: MiniDiagramProps) {
-  const { cols, rows: gridRows } = compartments;
+/**
+ * Positional identity line: says which compartment sits on which side of the
+ * wall, so the label works without the user knowing compartment numbering.
+ * Compartment order in the pair is by ID, not position — the bounds decide
+ * which one is actually left/front.
+ */
+function betweenLabel(row: TiltRow, compartments: CompartmentConfig, t: Translate): string {
   const aBounds = getCompartmentBounds(compartments, row.compartmentA);
   const bBounds = getCompartmentBounds(compartments, row.compartmentB);
   if (!aBounds || !bBounds) {
-    return <svg width={DIAGRAM_W} height={DIAGRAM_H} aria-hidden="true" />;
+    return t('binDesigner.angledDividers.rowLabel', {
+      a: String(row.numberA),
+      b: String(row.numberB),
+    });
   }
-
-  const isVertical = row.axis === 'vertical';
-  // Shared boundary = far edge of the lower-indexed compartment on the
-  // perpendicular axis. SVG y is top-down so horizontal lines flip via H - y.
-  const boundary = isVertical
-    ? (Math.min(aBounds.maxCol, bBounds.maxCol) + 1) * (DIAGRAM_W / cols)
-    : DIAGRAM_H - (Math.min(aBounds.maxRow, bBounds.maxRow) + 1) * (DIAGRAM_H / gridRows);
-
-  // A small visual lean so tilted rows read as diagonal at a glance.
-  const lean = row.hasTilt ? Math.sign(row.angleDeg) * Math.min(4, Math.abs(row.angleDeg) / 12) : 0;
-
-  return (
-    <svg
-      width={DIAGRAM_W}
-      height={DIAGRAM_H}
-      viewBox={`0 0 ${DIAGRAM_W} ${DIAGRAM_H}`}
-      aria-hidden="true"
-    >
-      <rect
-        x={0.5}
-        y={0.5}
-        width={DIAGRAM_W - 1}
-        height={DIAGRAM_H - 1}
-        fill="none"
-        className="stroke-stroke-subtle"
-      />
-      <line
-        x1={isVertical ? boundary - lean : 0}
-        y1={isVertical ? 0 : boundary - lean}
-        x2={isVertical ? boundary + lean : DIAGRAM_W}
-        y2={isVertical ? DIAGRAM_H : boundary + lean}
-        strokeWidth={1.5}
-        className="stroke-accent"
-      />
-    </svg>
-  );
+  if (row.axis === 'vertical') {
+    const aIsFirst = aBounds.maxCol < bBounds.maxCol;
+    return t('binDesigner.angledDividers.betweenVertical', {
+      a: String(aIsFirst ? row.numberA : row.numberB),
+      b: String(aIsFirst ? row.numberB : row.numberA),
+    });
+  }
+  const aIsFirst = aBounds.maxRow < bBounds.maxRow;
+  return t('binDesigner.angledDividers.betweenHorizontal', {
+    a: String(aIsFirst ? row.numberA : row.numberB),
+    b: String(aIsFirst ? row.numberB : row.numberA),
+  });
 }
 
-type LeanLimits = Hook['leanLimits'];
-type LeanReadout = Hook['leanReadout'];
-
-interface LeanSectionProps {
-  readonly row: TiltRow;
-  readonly angleDeg: number;
-  readonly leanDeg: number;
-  readonly shiftMm: number;
-  readonly limits: LeanLimits;
-  readonly readout: LeanReadout;
+interface TiltControlProps {
+  readonly label: string;
+  readonly value: number;
+  readonly min: number;
+  readonly max: number;
+  readonly sliderStep: number;
+  readonly presets: readonly number[];
+  readonly presetText: (v: number) => string;
+  readonly presetAria: (v: number) => string;
+  readonly presetDisabled?: (v: number) => boolean;
+  readonly valueText: string;
   readonly disabled: boolean;
-  readonly handlers: Handlers;
-  readonly t: Translate;
+  readonly onPreview: (v: number) => void;
+  readonly onCommit: (v: number) => void;
+  readonly onStep: (delta: number) => void;
 }
 
 /**
- * Lean control: the divider's rotation in elevation, pivoting on its top edge.
- *
- * The track ends at the bin's own limit rather than a fixed 45, because the
- * foot travels `height · tan(lean)` and has to stay inside the neighbouring
- * compartment: the same angle that fits a shallow bin runs a tall one's divider
- * straight through its neighbour.
+ * One angle control: label + preset chips + stepper on a single row, slider
+ * under it. Angle and Lean are siblings and must look it, so both render
+ * through this — any layout change lands on both at once.
  */
-function LeanSection({
-  row,
-  angleDeg,
-  leanDeg,
-  shiftMm,
-  limits,
-  readout,
+function TiltControl({
+  label,
+  value,
+  min,
+  max,
+  sliderStep,
+  presets,
+  presetText,
+  presetAria,
+  presetDisabled,
+  valueText,
   disabled,
-  handlers,
-  t,
-}: LeanSectionProps) {
-  const label = t('binDesigner.angledDividers.leanLabel');
-  // Falls back to the track cap only when the bin has no geometry to measure at
-  // all, where the control is disabled anyway.
-  const bounds = limits ?? { minDeg: -LEAN_UI_MAX_DEG, maxDeg: LEAN_UI_MAX_DEG };
-  const commit = (v: number): void => handlers.commitTilt(row, { angleDeg, shiftMm, leanDeg: v });
-  const preview = (v: number): void => handlers.previewTilt(row, { angleDeg, shiftMm, leanDeg: v });
-
+  onPreview,
+  onCommit,
+  onStep,
+}: TiltControlProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] text-content-tertiary">{label}</span>
+        <span className="flex items-center gap-1">
+          {presets.map((preset) => (
+            <Button
+              key={preset}
+              type="button"
+              variant="ghost"
+              disabled={disabled || (presetDisabled?.(preset) ?? false)}
+              onClick={() => onCommit(preset)}
+              aria-label={presetAria(preset)}
+              className={`rounded border px-1.5 py-0.5 text-[10px] font-medium tabular-nums transition-colors disabled:opacity-40 ${
+                Math.round(value) === preset
+                  ? 'border-accent bg-accent/10 text-accent'
+                  : 'border-stroke-subtle text-content-tertiary hover:border-stroke hover:text-content-secondary'
+              }`}
+            >
+              {presetText(preset)}
+            </Button>
+          ))}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <Slider
+            value={value}
+            onChange={onPreview}
+            onCommit={onCommit}
+            min={min}
+            max={max}
+            step={sliderStep}
+            disabled={disabled}
+            aria-label={label}
+            aria-valuetext={valueText}
+          />
+        </div>
         <Stepper
-          value={leanDeg}
-          onChange={commit}
-          onStep={(delta) => commit(leanDeg + delta)}
-          min={bounds.minDeg}
-          max={bounds.maxDeg}
+          value={value}
+          onChange={onCommit}
+          onStep={onStep}
+          min={min}
+          max={max}
           step={1}
           size="md"
           aria-label={label}
           disabled={disabled}
         />
       </div>
-      {/* Same shape as the Angle control above: full-width slider, then presets.
-          The two are siblings and have to look it. */}
-      <Slider
-        value={leanDeg}
-        onChange={preview}
-        onCommit={commit}
-        min={bounds.minDeg}
-        max={bounds.maxDeg}
-        step={LEAN_UI_STEP_DEG}
-        disabled={disabled}
-        aria-label={label}
-        aria-valuetext={t('binDesigner.angledDividers.badgeLean', {
-          angle: String(Math.round(leanDeg)),
-        })}
-      />
-      <div className="flex flex-wrap gap-1">
-        {LEAN_PRESETS_DEG.map((preset) => (
-          <Button
-            key={preset}
-            type="button"
-            variant="ghost"
-            disabled={disabled || preset > bounds.maxDeg}
-            onClick={() => commit(preset)}
-            aria-label={t('binDesigner.angledDividers.presetLean', { angle: String(preset) })}
-            className={`rounded border px-1.5 py-0.5 text-[11px] font-medium tabular-nums transition-colors disabled:opacity-40 ${
-              Math.round(leanDeg) === preset
-                ? 'border-accent bg-accent/10 text-accent'
-                : 'border-stroke-subtle text-content-tertiary hover:border-stroke hover:text-content-secondary'
-            }`}
-          >
-            {t('binDesigner.angledDividers.badgeLean', { angle: String(preset) })}
-          </Button>
-        ))}
-      </div>
-
-      {readout && (
-        <div className="flex items-center gap-2 rounded border border-stroke-subtle/60 px-2 py-1.5">
-          <div className="flex flex-1 flex-col gap-0.5">
-            <ReadoutRow
-              label={t('binDesigner.angledDividers.clearOpening')}
-              value={t('binDesigner.angledDividers.mmValue', { mm: readout.openingMm.toFixed(1) })}
-            />
-            <ReadoutRow
-              label={t('binDesigner.angledDividers.footTravel')}
-              value={t('binDesigner.angledDividers.mmValue', { mm: readout.travelMm.toFixed(1) })}
-            />
-            <ReadoutRow
-              label={t('binDesigner.angledDividers.maxLean')}
-              value={t('binDesigner.angledDividers.badgeLean', {
-                angle: String(bounds.maxDeg),
-              })}
-            />
-          </div>
-          <LeanSpecimen leanDeg={leanDeg} />
-        </div>
-      )}
-
-      {leanDeg !== 0 && (
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => handlers.applyLeanToAxis(row)}
-          className="self-start px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
-        >
-          {t('binDesigner.angledDividers.applyLeanToAxis')}
-        </Button>
-      )}
     </div>
   );
 }
+
+type LeanLimits = Hook['leanLimits'];
+type LeanReadout = Hook['leanReadout'];
 
 function ReadoutRow({ label, value }: { readonly label: string; readonly value: string }) {
   return (
@@ -579,42 +600,5 @@ function ReadoutRow({ label, value }: { readonly label: string; readonly value: 
       <span className="text-[11px] text-content-tertiary">{label}</span>
       <span className="text-[11px] font-medium tabular-nums text-content-secondary">{value}</span>
     </div>
-  );
-}
-
-/**
- * Section through the bin showing the divider standing in it. The plan view the
- * user edits in cannot show a lean at all, so without this the angle has no
- * picture anywhere near the control that sets it.
- */
-function LeanSpecimen({ leanDeg }: { readonly leanDeg: number }) {
-  const w = 58;
-  const h = 46;
-  const inset = 5;
-  const floorY = h - inset;
-  const topY = inset + 2;
-  const foot = (floorY - topY) * Math.tan((leanDeg * Math.PI) / 180);
-  const pivotX = w / 2;
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true" className="shrink-0">
-      <path
-        d={`M ${inset} ${topY} L ${inset} ${floorY} L ${w - inset} ${floorY} L ${w - inset} ${topY}`}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1}
-        className="text-stroke-subtle"
-      />
-      <line
-        x1={pivotX}
-        y1={topY}
-        x2={pivotX + foot}
-        y2={floorY}
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        className="text-accent"
-      />
-      <circle cx={pivotX} cy={topY} r={1.5} fill="currentColor" className="text-accent" />
-    </svg>
   );
 }

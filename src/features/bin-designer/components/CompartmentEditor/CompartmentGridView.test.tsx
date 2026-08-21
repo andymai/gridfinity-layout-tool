@@ -59,6 +59,7 @@ function makeGrid(overrides: Partial<CompartmentGridApi> = {}): CompartmentGridA
     hoveredDividerKey: null,
     setSelectedDividerKey: vi.fn(),
     setHoveredDividerKey: vi.fn(),
+    handleDividerSelect: vi.fn(),
     rowLabelForHitTarget: () => 'divider',
     selection: new Set<number>(),
     isDragging: false,
@@ -126,20 +127,17 @@ describe('CompartmentGridView', () => {
     expect(screen.getByTestId('ghost-preview')).toBeInTheDocument();
   });
 
-  it('hides divider hit targets during a cell drag even when enabled', () => {
+  it('hides divider hit targets during a cell drag', () => {
     const dividers = [{ compartmentA: 0, compartmentB: 1 }] as never;
 
     const { rerender } = render(
-      <CompartmentGridView
-        grid={makeGrid({ angledDividersEnabled: true, eligibleDividers: dividers })}
-      />
+      <CompartmentGridView grid={makeGrid({ eligibleDividers: dividers })} />
     );
     expect(screen.getByTestId('divider-hit-targets')).toBeInTheDocument();
 
     rerender(
       <CompartmentGridView
         grid={makeGrid({
-          angledDividersEnabled: true,
           eligibleDividers: dividers,
           isDragging: true,
           selection: new Set([0]),
@@ -149,7 +147,7 @@ describe('CompartmentGridView', () => {
     expect(screen.queryByTestId('divider-hit-targets')).not.toBeInTheDocument();
   });
 
-  it('keeps divider handles hidden without dragging when the opt-in is off', () => {
+  it('shows divider handles even before the opt-in — they are the discovery affordance', () => {
     const dividers = [{ compartmentA: 0, compartmentB: 1 }] as never;
 
     render(
@@ -158,7 +156,7 @@ describe('CompartmentGridView', () => {
       />
     );
 
-    expect(screen.queryByTestId('divider-hit-targets')).not.toBeInTheDocument();
+    expect(screen.getByTestId('divider-hit-targets')).toBeInTheDocument();
   });
 
   it('ends the drag and clears hover when the pointer leaves the grid', () => {

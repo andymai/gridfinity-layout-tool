@@ -610,17 +610,20 @@ estimates), and the source file name.
     supersedes it. A monotonic token drops a draft once a newer edit starts or the
     exact for its edit has landed (covers the exact-resolves-before-draft race).
     Drafts skip the undo/redo mesh cache — history holds exact geometry only.
-18. **Angled dividers are an advanced opt-in, gating UI only** — the editing
-    surfaces (the `DividerTiltSubsection` tilt list/inspector and the on-grid
-    `DividerHitTargets` overlay in `CompartmentEditor`) are hidden unless
-    `settings.angledDividersEnabled` is on (default `false`, persisted; toggled
-    inline from the compact header in the Grid Dividers panel). The gate is
+18. **Diagonal dividers are an advanced opt-in gating the panel, not the canvas** —
+    the `DividerTiltSubsection` list/inspector renders only while
+    `settings.angledDividersEnabled` is on (default `false`, persisted); off, the
+    section shows a teaser instead. The on-grid `DividerHitTargets` overlay in
+    `CompartmentEditor` renders regardless: committed tilts must draw truthfully,
+    and clicking a divider before opting in flips the setting on and selects it
+    (`handleDividerSelect`) — the canvas is the discovery affordance. The gate is
     **UI-only**: `compartments.dividerOverrides` and the worker geometry path are
     untouched, so a saved design with tilts still renders and exports them while
     the toggle is off — only editing is hidden (#2044). Toggling off clears the
     in-flight selection/hover/preview so the canvas overlay drops cleanly. The
     same subsection hosts **Lean** (`DividerOverride.rakeDeg`), the rotation in
-    ELEVATION that the Angle control is in plan.
+    ELEVATION that the Angle control is in plan. Panel labels speak display
+    numbers (`getCompartmentReadingOrder`), never compartment IDs.
     18b. **A leaning divider is one plane through two parallel lines** — the top
     line at `{offsetStart, offsetEnd}` and a foot line at those offsets plus
     `dividerHeight * tan(rakeDeg)` (`dividerFootDrift`, the one statement of that
