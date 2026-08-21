@@ -5,7 +5,19 @@ Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organiz
 ## Git & Quality
 
 - **Main is protected** - all changes via PRs
-- Pre-commit hooks enforce lint-staged, module boundaries, i18n (4 checks), exhaustiveness, affected tests, component structure, missing tests, readme reminders
+- Pre-commit hooks enforce lint-staged, module boundaries, i18n (4 checks), exhaustiveness, affected tests, component structure, missing tests, readme reminders, doc drift
+
+## Docs
+
+Internal docs are agent context, so they are budgeted. `pnpm run check:doc-drift`
+(pre-commit on any staged `.md`, and in CI) blocks two things: a backticked
+reference to code that no longer exists, and growth past a doc's recorded size.
+
+The budget in `scripts/doc-budget.json` is a **ratchet**: it lowers by itself when
+a doc shrinks, so trimming never needs a config edit, but growth has to be
+justified by raising the number in the same commit. To add detail, prefer moving
+it into the matching `.claude/skills/*/SKILL.md`, which loads only for relevant
+tasks, over CLAUDE.md or a README, which are read far more often.
 
 ## Code Style (Enforced)
 

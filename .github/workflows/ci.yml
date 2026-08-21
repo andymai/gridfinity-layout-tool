@@ -391,6 +391,13 @@ jobs:
         continue-on-error: true
         run: pnpm run check:exhaustiveness -- --all
 
+      - name: Check doc drift
+        id: doc_drift
+        continue-on-error: true
+        # CI never rewrites the baseline (the script guards on $CI); a doc that
+        # shrank simply sits under budget until a local run ratchets it down.
+        run: pnpm run check:doc-drift
+
       - name: Fail if any check failed or was skipped
         # 'skipped' means a prior non-continue-on-error step (e.g. pnpm install) failed,
         # causing all downstream steps to be skipped. Treat skipped == failure here
@@ -410,6 +417,7 @@ jobs:
           check_step "i18n values"         "${{ steps.i18n_values.outcome }}"
           check_step "i18n interpolation"  "${{ steps.i18n_interpolation.outcome }}"
           check_step "i18n unused keys"    "${{ steps.i18n_unused.outcome }}"
+          check_step "doc drift"           "${{ steps.doc_drift.outcome }}"
           check_step "module boundaries"   "${{ steps.boundaries.outcome }}"
           check_step "union exhaustiveness" "${{ steps.exhaustiveness.outcome }}"
           if [ "$failed" = "1" ]; then

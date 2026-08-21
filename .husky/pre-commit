@@ -13,3 +13,11 @@ pnpm run check:exhaustiveness
 pnpm run check:component-structure
 pnpm run check:missing-tests
 pnpm run check:readme-reminders
+# Docs drift two ways: refs to deleted code, and unbounded growth. Only run
+# when a doc is actually staged — it walks every tracked file.
+if git diff --cached --name-only | grep -qE '\.md$'; then
+  pnpm run check:doc-drift
+  # A doc that shrank ratchets its baseline down as a side effect, so re-stage
+  # it rather than leaving the commit with a dirty tree behind it.
+  git add scripts/doc-budget.json
+fi
