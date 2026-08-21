@@ -1,0 +1,82 @@
+src/i18n/locales/ja.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/i18n/locales/nl.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_d7bee796da009a::t_2ed579f9023857 125
+  s_d7bee796da009a::t_29a6c994e98dbb 119-124,126-129,139-150
+src/i18n/locales/pt-BR.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/features/baseplate/components/BaseplatePreview/DimensionLabels.tsx
+  s_d7bee796da009a::t_90f9e6a8c2168a 4-5,22-28,39,49-50,57-82
+src/i18n/locales/en.ts
+  s_d7bee796da009a::t_d60433f0513b4a 3410-3411
+src/i18n/locales/nb.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/shared/utils/outlineFrame.test.ts
+  s_d7bee796da009a::t_036e567aae134c 3,6,171-231
+  s_d7bee796da009a::t_5b46434e19ac5b 232
+src/features/baseplate/components/BaseplatePreview/DimensionLabels.test.tsx
+  s_d7bee796da009a::t_b629422c42589a 44-46,91,93
+  s_d7bee796da009a::t_edfa199cd1c0da 1-3,16-43,47,50-90,92
+src/i18n/locales/sv.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/i18n/locales/ko.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/i18n/locales/it.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
+  s_d7bee796da009a::t_7487a10909ccd1 79-81,93,429
+  s_d7bee796da009a::t_7d9dac69d55269 21
+src/i18n/locales/pl.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/i18n/locales/es.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_d7bee796da009a::t_bac67faff7bc5b 166,327-328
+  s_d7bee796da009a::t_d8972ce3b3af4c 52-53,55,321-322,338-339
+  s_d7bee796da009a::t_a9e9092160687d 162-165,167-173
+src/shared/utils/outlineFrame.ts
+  s_d7bee796da009a::t_d97ccddfa57764 265-270,275
+  s_d7bee796da009a::t_fc08c7b8975165 319-340
+  s_d7bee796da009a::t_a81b3cca84c4dd 388-396
+src/i18n/locales/zh-CN.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_d7bee796da009a::t_7d9dac69d55269 254
+src/i18n/locales/de.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/i18n/locales/cs.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/i18n/locales/uk.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.test.tsx
+  s_d7bee796da009a::t_26498df4bb4af1 7,220-288
+  s_d7bee796da009a::t_0830b0ca9b72c8 289
+src/i18n/locales/fr.json
+  s_d7bee796da009a::t_904a12a5584d5c 115-116
+src/shared/components/EditableDimensions/EditableDimensions.test.tsx
+  s_d7bee796da009a::t_0f1d9932331e5d 177-204
+src/features/baseplate/components/BaseplatePanel/panelState.ts
+  s_d7bee796da009a::t_fcdcb54524db4f 63-66,68-69
+  s_d7bee796da009a::t_90e5242592f22f 98-99
+  s_d7bee796da009a::t_373936a906d4b8 86-87
+  s_d7bee796da009a::t_cd6b05d8e751f0 18,23-26,212-213,215
+  s_d7bee796da009a::t_d8eeef51787459 118-140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "9d935b882344f3a871505dabd627d0b1236e92a9",
+  "prompts": {},
+  "sessions": {
+    "s_d7bee796da009a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "759374cb-7d0d-40a6-af85-fb8cfc3a8bf0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
