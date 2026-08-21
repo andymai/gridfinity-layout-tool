@@ -1,0 +1,23 @@
+scripts/doc-budget.json
+  s_c946fcd5b9e96b::t_1e378822c93bd9 40
+  s_c946fcd5b9e96b::t_8ce09de358cf04 41,51
+scripts/check-doc-drift.ts
+  s_c946fcd5b9e96b::t_1e23744120cb52 21-27
+  s_c946fcd5b9e96b::t_0c524506a5a61b 67-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "da0681f45e54d3937856f81e21fb9d0acdfb6c99",
+  "prompts": {},
+  "sessions": {
+    "s_c946fcd5b9e96b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "47e858d2-eb4c-4dcd-86f7-d298014dec6d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
