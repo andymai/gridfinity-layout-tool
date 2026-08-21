@@ -162,6 +162,8 @@
   "baseplate.overTileKeptSolid": "Troppo piccolo, mantenuto pieno: {sides}",
   "baseplate.overTileTooSmall": "Il margine è troppo piccolo su ogni bordo per contenere una tessera di griglia.",
   "baseplate.padding": "Margine",
+  "baseplate.gridPosition": "Posizione della griglia",
+  "baseplate.gridPositionHint": "Sposta la griglia all'interno della forma del cassetto, ad esempio fino all'angolo anteriore sinistro. La piastra mantiene le dimensioni esterne della forma; cambia solo dove cadono le celle.",
   "baseplate.paddingAnchor.bc": "Ancora i bin al centro-fronte",
   "baseplate.paddingAnchor.bl": "Ancora i bin al fronte-sinistra",
   "baseplate.paddingAnchor.br": "Ancora i bin al fronte-destra",

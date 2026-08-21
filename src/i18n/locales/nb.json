@@ -162,6 +162,8 @@
   "baseplate.overTileKeptSolid": "For liten, forblir massiv: {sides}",
   "baseplate.overTileTooSmall": "Polstringen er for liten på hver kant for en ruteflis.",
   "baseplate.padding": "Polstring",
+  "baseplate.gridPosition": "Rutenettposisjon",
+  "baseplate.gridPositionHint": "Flytt rutenettet inne i skuffeformen, for eksempel helt inntil hjørnet foran til venstre. Platen beholder formens ytre mål; bare hvor cellene havner endrer seg.",
   "baseplate.paddingAnchor.bc": "Forankre bins foran-midten",
   "baseplate.paddingAnchor.bl": "Forankre bins foran-venstre",
   "baseplate.paddingAnchor.br": "Forankre bins foran-høyre",

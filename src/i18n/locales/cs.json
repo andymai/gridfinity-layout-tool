@@ -162,6 +162,8 @@
   "baseplate.overTileKeptSolid": "Příliš malé, ponecháno plné: {sides}",
   "baseplate.overTileTooSmall": "Odsazení je na každé hraně příliš malé, aby se vešla dlaždice mřížky.",
   "baseplate.padding": "Odsazení",
+  "baseplate.gridPosition": "Pozice mřížky",
+  "baseplate.gridPositionHint": "Posuňte mřížku uvnitř tvaru zásuvky, například až k přednímu levému rohu. Deska si zachová vnější rozměr tvaru; mění se jen umístění buněk.",
   "baseplate.paddingAnchor.bc": "Ukotvit biny vpředu na střed",
   "baseplate.paddingAnchor.bl": "Ukotvit biny vpředu vlevo",
   "baseplate.paddingAnchor.br": "Ukotvit biny vpředu vpravo",

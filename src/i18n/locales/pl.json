@@ -162,6 +162,8 @@
   "baseplate.overTileKeptSolid": "Za małe, pozostawiono lite: {sides}",
   "baseplate.overTileTooSmall": "Margines jest zbyt mały na każdej krawędzi, aby zmieścić kafelek siatki.",
   "baseplate.padding": "Margines",
+  "baseplate.gridPosition": "Pozycja siatki",
+  "baseplate.gridPositionHint": "Przesuń siatkę wewnątrz kształtu szuflady, na przykład do przedniego lewego narożnika. Płyta zachowuje zewnętrzny wymiar kształtu; zmienia się tylko położenie komórek.",
   "baseplate.paddingAnchor.bc": "Zakotwicz biny przód-środek",
   "baseplate.paddingAnchor.bl": "Zakotwicz biny przód-lewo",
   "baseplate.paddingAnchor.br": "Zakotwicz biny przód-prawo",

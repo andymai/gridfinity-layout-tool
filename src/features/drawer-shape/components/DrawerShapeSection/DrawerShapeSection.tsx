@@ -5,7 +5,7 @@ import { useLayoutStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { trackDrawerShapeEditorOpened, trackDrawerShapeReset } from '@/shared/analytics/posthog';
-import { GridAlignmentControls } from '../GridAlignmentControls/GridAlignmentControls';
+import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls';
 import { ShapeEditorDialog } from '../ShapeEditorDialog/ShapeEditorDialog';
 import { CornerCutsDialog } from '../CornerCutsDialog/CornerCutsDialog';
 import { PenShapeDialog } from '../PenShapeDialog/PenShapeDialog';

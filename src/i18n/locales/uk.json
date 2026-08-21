@@ -162,6 +162,8 @@
   "baseplate.overTileKeptSolid": "Замала, лишається суцільною: {sides}",
   "baseplate.overTileTooSmall": "Відступ замалий на кожному краю для плитки сітки.",
   "baseplate.padding": "Відступи",
+  "baseplate.gridPosition": "Положення сітки",
+  "baseplate.gridPositionHint": "Перемістіть сітку всередині форми шухляди, наприклад до переднього лівого кута. Пластина зберігає зовнішній розмір форми; змінюється лише розташування комірок.",
   "baseplate.paddingAnchor.bc": "Прив'язати бункери до передньої центральної",
   "baseplate.paddingAnchor.bl": "Прив'язати бункери до передньої лівої",
   "baseplate.paddingAnchor.br": "Прив'язати бункери до передньої правої",

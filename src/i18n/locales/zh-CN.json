@@ -162,6 +162,8 @@
   "baseplate.overTileKeptSolid": "太小，保持实心：{sides}",
   "baseplate.overTileTooSmall": "每条边的留边都太小，放不下一块网格拼块。",
   "baseplate.padding": "留边",
+  "baseplate.gridPosition": "网格位置",
+  "baseplate.gridPositionHint": "在抽屉形状内移动网格，例如靠到左前角。底板仍保持形状的外部尺寸，只是格子的落位发生变化。",
   "baseplate.paddingAnchor.bc": "将收纳盒锚定在前中",
   "baseplate.paddingAnchor.bl": "将收纳盒锚定在左前",
   "baseplate.paddingAnchor.br": "将收纳盒锚定在右前",

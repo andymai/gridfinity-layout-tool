@@ -16,6 +16,7 @@ import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { CheckboxRow, SegmentedControl } from '@/design-system';
 import { EditableDimensions } from '@/shared/components/EditableDimensions';
+import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls';
 import { PaddingSchematic } from './PaddingSchematic';
 import { GridDimensionStepper } from './GridDimensionStepper';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
@@ -339,6 +340,25 @@ export function DimensionsSection() {
             <span className="text-[11px] italic text-content-tertiary">{t(extentNoteKey)}</span>
           )}
         </div>
+
+        {/* Where the lattice sits inside the shape. Padding cannot express this:
+            on a synced shaped plate the outer size comes from the drawer, so the
+            slack between shape and cells is the only thing left to distribute,
+            and moving the grid is what distributes it. Gated on the outline
+            rather than on slack existing — a shape that exactly fills its extent
+            has none yet, and gating it away there would make the first nudge
+            unreachable. */}
+        {outlineActive && (
+          <div className="space-y-2 border-t border-stroke-subtle pt-3">
+            <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+              {t('baseplate.gridPosition')}
+            </div>
+            <p className="text-[11px] leading-relaxed text-content-tertiary">
+              {t('baseplate.gridPositionHint')}
+            </p>
+            <GridAlignmentControls />
+          </div>
+        )}
 
         {/* Padding — spatial schematic. Padding composes with every shape,
             so the controls stay live; a notice explains the shaped case. */}

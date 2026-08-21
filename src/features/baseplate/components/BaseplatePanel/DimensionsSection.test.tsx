@@ -286,5 +286,51 @@ describe('DimensionsSection', () => {
       });
       expect(useLayoutStore.getState().layout.baseplateParams?.syncWithLayout).not.toBe(false);
     });
+    //. Padding cannot express where the lattice sits inside a synced shape:
+    // the outer size comes from the drawer, so the slack between shape and cells
+    // is the only thing left to distribute.
+    describe('grid position', () => {
+      const shiftX = () => screen.queryByRole('spinbutton', { name: /gridAlignment.shiftX/ });
+
+      it('is absent on an unshaped plate', () => {
+        render(<DimensionsSection />);
+        expect(screen.queryByText('baseplate.gridPosition')).not.toBeInTheDocument();
+        expect(shiftX()).not.toBeInTheDocument();
+      });
+
+      it('offers the grid shift once the drawer has a shape', () => {
+        measuredDrawer();
+        render(<DimensionsSection />);
+        expect(screen.getByText('baseplate.gridPosition')).toBeInTheDocument();
+        expect(shiftX()).toBeInTheDocument();
+      });
+
+      it('moves the grid toward an edge and the readout keeps the shape size', () => {
+        measuredDrawer();
+        render(<DimensionsSection />);
+        const input = shiftX();
+        expect(input).not.toBeNull();
+        if (input === null) return;
+
+        fireEvent.change(input, { target: { value: '-21' } });
+        fireEvent.blur(input);
+
+        expect(useLayoutStore.getState().layout.drawer.gridShiftX).toBe(-21);
+        // The plate is still cut to the shape, so its footprint is unchanged.
+        expect(screen.getByLabelText('baseplate.editDimensions')).toHaveTextContent(
+          /931\s*×\s*327\s*mm/
+        );
+      });
+
+      it('disappears when the plate stops syncing with the layout', () => {
+        measuredDrawer();
+        const current =
+          useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+        useLayoutStore.getState().setBaseplateParams({ ...current, syncWithLayout: false });
+        render(<DimensionsSection />);
+        // The section header is gated on the outline reaching the plate too.
+        expect(screen.queryByText('baseplate.gridPosition')).not.toBeInTheDocument();
+      });
+    });
   });
 });

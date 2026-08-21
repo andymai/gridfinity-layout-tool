@@ -162,6 +162,8 @@
   "baseplate.overTileKeptSolid": "小さすぎてソリッドのまま：{sides}",
   "baseplate.overTileTooSmall": "すべての辺で余白が小さすぎて、グリッドタイルが入りません。",
   "baseplate.padding": "余白",
+  "baseplate.gridPosition": "グリッド位置",
+  "baseplate.gridPositionHint": "引き出しの形状の内側でグリッドを移動します（例: 左手前の角に寄せる）。プレートの外形寸法は形状のままで、セルの位置だけが変わります。",
   "baseplate.paddingAnchor.bc": "ビンを手前中央に配置",
   "baseplate.paddingAnchor.bl": "ビンを手前左に配置",
   "baseplate.paddingAnchor.br": "ビンを手前右に配置",

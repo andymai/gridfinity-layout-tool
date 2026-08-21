@@ -162,6 +162,8 @@
   "baseplate.overTileKeptSolid": "Zu klein, bleibt massiv: {sides}",
   "baseplate.overTileTooSmall": "Die Polsterung ist an jeder Kante zu klein für eine Rasterkachel.",
   "baseplate.padding": "Polsterung",
+  "baseplate.gridPosition": "Rasterposition",
+  "baseplate.gridPositionHint": "Verschieben Sie das Raster innerhalb der Schubladenform, etwa bis in die vordere linke Ecke. Die Platte behält das Außenmaß der Form; nur die Lage der Zellen ändert sich.",
   "baseplate.paddingAnchor.bc": "Bins vorne mittig verankern",
   "baseplate.paddingAnchor.bl": "Bins vorne-links verankern",
   "baseplate.paddingAnchor.br": "Bins vorne-rechts verankern",
