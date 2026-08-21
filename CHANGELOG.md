@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.435.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.434.0...gridfinity-layout-tool-v4.435.0) (2026-08-21)
+
+
+### Features
+
+* **bin-designer:** lean compartment dividers off vertical ([#3664](https://github.com/andymai/gridfinity-layout-tool/issues/3664)) ([544fc49](https://github.com/andymai/gridfinity-layout-tool/commit/544fc49e7c4961eccd3f6bf9abf8c79554d7a9fc))
+
 ## [4.434.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.433.1...gridfinity-layout-tool-v4.434.0) (2026-08-20)
 
 
