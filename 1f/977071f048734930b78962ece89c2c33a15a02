@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/pipeline/types.ts
+  s_dded4d5bb60438::t_257cc605aef9d6 174-176
+src/features/generation/worker/generators/pipeline/context.test.ts
+  s_dded4d5bb60438::t_257cc605aef9d6 455-458,460-466
+src/features/generation/worker/generators/pipeline/context.ts
+  s_dded4d5bb60438::t_4a8f3f40066e59 215-219,370,427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "1f977071f048734930b78962ece89c2c33a15a02",
+  "prompts": {},
+  "sessions": {
+    "s_dded4d5bb60438": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75f6b3ed-bac7-4e0e-ae7e-10bdcf79ce21",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
