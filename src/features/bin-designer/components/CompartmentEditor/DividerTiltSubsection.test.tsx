@@ -90,6 +90,22 @@ describe('DividerTiltSubsection', () => {
     expect(overrides?.[0].offsetEnd).toBe(0);
   });
 
+  it('bounds the lean control by the bin even before anything leans', () => {
+    // A tall bin whose compartments cannot take a 45 degree foot. At rest the
+    // control has no committed lean to describe, but its limits still have to
+    // come from the geometry: offering a preset the bin cannot reach and then
+    // clamping to something else is the exact surprise the limit exists to stop.
+    useDesignerStore.setState((st) => ({
+      params: { ...st.params, width: 2, depth: 2, height: 12 },
+    }));
+    setGrid(1, 2);
+    render(<DividerTiltSubsection />);
+    openInspector();
+    expect(screen.getByRole('button', { name: 'Lean 45°' })).toBeDisabled();
+    const slider = screen.getByRole('slider', { name: /^lean$/i });
+    expect(Number(slider.getAttribute('aria-valuemax'))).toBeLessThan(45);
+  });
+
   it('applies a lean across every parallel divider in one history entry', () => {
     setGrid(3, 1); // two vertical dividers
     render(<DividerTiltSubsection />);

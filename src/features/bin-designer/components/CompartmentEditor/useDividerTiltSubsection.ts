@@ -269,10 +269,21 @@ export function useDividerTiltSubsection() {
     [rows, setDividerOverrides, setDividerTiltPreview]
   );
 
+  // How far this divider can lean, whatever it is leaning right now. Kept apart
+  // from the readout below: the limits bound the CONTROL, so deriving them from
+  // a readout that hides itself at rest would leave a divider sitting at 0
+  // offering the full 60-degree track and every preset, then clamping whatever
+  // the user picked to an angle they did not ask for.
+  const leanLimits = useMemo(
+    () => (selectedRow?.geometry ? getLeanLimits(selectedRow.geometry, selectedRow) : null),
+    [selectedRow]
+  );
+
   // What the lean actually costs the user: how far the foot has travelled and
   // what perpendicular opening is left between this divider and its neighbour.
   // Neither is readable off a plan view, and the compartment-size readout beside
-  // it measures the grid line, which a leaning divider has left.
+  // it measures the grid line, which a leaning divider has left. Absent at rest,
+  // where there is nothing yet to describe.
   const leanReadout = useMemo(() => {
     const geom = selectedRow?.geometry;
     if (!geom || selectedAngleShift.leanDeg === 0) return null;
@@ -281,7 +292,6 @@ export function useDividerTiltSubsection() {
     return {
       travelMm: Math.round(Math.abs(travelMm) * 10) / 10,
       openingMm: Math.round(Math.max(0, geom.pitchMm * cos - compartments.thickness) * 10) / 10,
-      limits: getLeanLimits(geom, selectedRow),
     };
   }, [selectedRow, selectedAngleShift.leanDeg, compartments.thickness]);
 
@@ -310,6 +320,7 @@ export function useDividerTiltSubsection() {
       resetAll,
       applyLeanToAxis,
     },
+    leanLimits,
     leanReadout,
     t,
   };

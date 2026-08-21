@@ -27,6 +27,7 @@ export function DividerTiltSubsection() {
     activeConflicts,
     selectedRow,
     selectedAngleShift,
+    leanLimits,
     leanReadout,
     hoveredKey,
     handlers,
@@ -86,6 +87,7 @@ export function DividerTiltSubsection() {
             compartments={compartments}
             angleDeg={selectedAngleShift.angleDeg}
             leanDeg={selectedAngleShift.leanDeg}
+            leanLimits={leanLimits}
             leanReadout={leanReadout}
             shiftMm={selectedAngleShift.shiftMm}
             conflicts={activeConflicts}
@@ -224,6 +226,7 @@ interface InspectorViewProps {
   readonly angleDeg: number;
   readonly leanDeg: number;
   readonly shiftMm: number;
+  readonly leanLimits: LeanLimits;
   readonly leanReadout: LeanReadout;
   readonly conflicts: readonly Conflict[];
   readonly handlers: Handlers;
@@ -236,6 +239,7 @@ function InspectorView({
   angleDeg,
   leanDeg,
   shiftMm,
+  leanLimits,
   leanReadout,
   conflicts,
   handlers,
@@ -343,6 +347,7 @@ function InspectorView({
         angleDeg={angleDeg}
         leanDeg={leanDeg}
         shiftMm={shiftMm}
+        limits={leanLimits}
         readout={leanReadout}
         disabled={disabled}
         handlers={handlers}
@@ -440,6 +445,7 @@ function DividerMiniDiagram({ compartments, row }: MiniDiagramProps) {
   );
 }
 
+type LeanLimits = Hook['leanLimits'];
 type LeanReadout = Hook['leanReadout'];
 
 interface LeanSectionProps {
@@ -447,6 +453,7 @@ interface LeanSectionProps {
   readonly angleDeg: number;
   readonly leanDeg: number;
   readonly shiftMm: number;
+  readonly limits: LeanLimits;
   readonly readout: LeanReadout;
   readonly disabled: boolean;
   readonly handlers: Handlers;
@@ -466,13 +473,16 @@ function LeanSection({
   angleDeg,
   leanDeg,
   shiftMm,
+  limits,
   readout,
   disabled,
   handlers,
   t,
 }: LeanSectionProps) {
   const label = t('binDesigner.angledDividers.leanLabel');
-  const limits = readout?.limits ?? { minDeg: -LEAN_UI_MAX_DEG, maxDeg: LEAN_UI_MAX_DEG };
+  // Falls back to the track cap only when the bin has no geometry to measure at
+  // all, where the control is disabled anyway.
+  const bounds = limits ?? { minDeg: -LEAN_UI_MAX_DEG, maxDeg: LEAN_UI_MAX_DEG };
   const commit = (v: number): void => handlers.commitTilt(row, { angleDeg, shiftMm, leanDeg: v });
   const preview = (v: number): void => handlers.previewTilt(row, { angleDeg, shiftMm, leanDeg: v });
 
@@ -484,8 +494,8 @@ function LeanSection({
           value={leanDeg}
           onChange={commit}
           onStep={(delta) => commit(leanDeg + delta)}
-          min={limits.minDeg}
-          max={limits.maxDeg}
+          min={bounds.minDeg}
+          max={bounds.maxDeg}
           step={1}
           size="md"
           aria-label={label}
@@ -498,8 +508,8 @@ function LeanSection({
         value={leanDeg}
         onChange={preview}
         onCommit={commit}
-        min={limits.minDeg}
-        max={limits.maxDeg}
+        min={bounds.minDeg}
+        max={bounds.maxDeg}
         step={LEAN_UI_STEP_DEG}
         disabled={disabled}
         aria-label={label}
@@ -513,7 +523,7 @@ function LeanSection({
             key={preset}
             type="button"
             variant="ghost"
-            disabled={disabled || preset > limits.maxDeg}
+            disabled={disabled || preset > bounds.maxDeg}
             onClick={() => commit(preset)}
             aria-label={t('binDesigner.angledDividers.presetLean', { angle: String(preset) })}
             className={`rounded border px-1.5 py-0.5 text-[11px] font-medium tabular-nums transition-colors disabled:opacity-40 ${
@@ -541,7 +551,7 @@ function LeanSection({
             <ReadoutRow
               label={t('binDesigner.angledDividers.maxLean')}
               value={t('binDesigner.angledDividers.badgeLean', {
-                angle: String(limits.maxDeg),
+                angle: String(bounds.maxDeg),
               })}
             />
           </div>
