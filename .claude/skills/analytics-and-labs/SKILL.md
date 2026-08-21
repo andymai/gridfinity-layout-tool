@@ -25,21 +25,43 @@ description: 'PostHog event conventions (trackEvent, snake_case names, #1466 imp
 
 ### Add a PostHog event
 
-1. Check the catalog first: `rg "trackEvent\('" src/shared/analytics`. There is no CQRS analytics middleware, so a command emits nothing on its own — every event is an explicit `trackXxx()` call.
-2. Name it snake*case, past-tense or noun_action (`bin_created`, `labs_feature_toggle`), snake_case props, domain prefix for families (`labs*_`, `help\__`, `bin*export*\*`).
-3. Add a `trackXxx()` wrapper in the right module under `src/shared/analytics/posthog/`: `eventsCore.ts` (layout/bin), `events.ts` (app/session), `eventsErrors.ts` (failures), `binExportEvents.ts` (export), `eventsPerson.ts` (person props), `conversionEvents.ts` (tool activation/conversion). Use `trackEvent(name, props)` — props are `string|number|boolean|null` only and `device_type` is attached automatically. Arrays/objects need the lower-level `capture()` from `./init` (see `layout_snapshot` in `eventsCore.ts`).
-4. If the caller is a store or anything a store imports, deep-import `@/shared/analytics/posthog/trackEvent` (mental model #2).
-5. Re-export from `src/shared/analytics/posthog/events.ts` and `posthog/index.ts`, and wire the call site in the same PR — knip in `pnpm run quality` fails on exported-but-uncalled trackers.
-6. Add a sibling test mocking the leaf, copying the `vi.mock('./trackEvent', ...)` pattern from `eventsCore.test.ts` (pre-commit `check-missing-tests.sh` warns on files without sibling tests; repo convention still requires one).
-7. Once-only person properties (first-touch attribution) must use the two-arg form `setPersonProperties({}, onceProps)` in `eventsPerson.ts` — the one-arg form lets mutable values overwrite first-touch data.
+Traps, not steps. There is no CQRS analytics middleware, so a command emits
+nothing on its own; every event is an explicit `trackXxx()` call in
+`src/shared/analytics/posthog/`.
+
+- Props are `string|number|boolean|null` only, and `device_type` is attached
+  automatically. Arrays and objects need the lower-level `capture()` from
+  `./init` (see `layout_snapshot` in `eventsCore.ts`).
+- **If the caller is a store, or anything a store imports**, deep-import
+  `@/shared/analytics/posthog/trackEvent`. The barrel forms an import cycle
+  (mental model #2), and the symptom is a blank page in a production build.
+- Re-export from `posthog/events.ts` and `posthog/index.ts` **and wire the call
+  site in the same PR**: knip in `pnpm run quality` fails on an
+  exported-but-uncalled tracker.
+- Once-only person properties need the two-arg form
+  `setPersonProperties({}, onceProps)`. The one-arg form lets mutable values
+  overwrite first-touch attribution.
+
+Naming: snake_case, past-tense or noun_action (`bin_created`,
+`labs_feature_toggle`), with a domain prefix for families (`labs_*`, `help_*`,
+`bin_export_*`).
 
 ### Add a labs flag and gate a feature
 
-1. Append to `FEATURE_FLAGS` in `src/core/labs/features.ts`: snake_case `id`, user-facing `name`/`description` (rendered verbatim in the Labs drawer), `status: 'experimental'`, `risk`, `addedAt: 'YYYY-MM'`, `requiresRefresh`. The `FeatureId` type picks up the id automatically — pass only `FeatureId`-typed values; `getFeature(id)` accepts any string and silently returns undefined.
-2. Gate React UI with `useFeatureFlag('my_flag')` from `@/shared/hooks/useFeatureFlag`. Gate non-React code (workers, managers) with `useLabsStore.getState().isFeatureEnabled('my_flag')` **called at decision time** — caching the result at module or mount scope gives a value that never updates on toggle.
-3. No drawer wiring needed: `LabsDrawer.tsx` (`src/features/labs/components/LabsDrawer/`) renders everything from `getToggleableFeatures()`. `comingSoon: true` shows it unclickable, and toggles no-op returning OK.
-4. If the flag is read once at worker spawn (kernel selection — `brepkit_kernel` pattern), set `requiresRefresh: true` and say so in the flag's warning text.
-5. Update `src/core/labs/features.test.ts` and the flag table in `src/features/labs/README.md` (pre-commit `check-readme-reminders.sh` nags otherwise). Toggling already emits `labs_feature_toggle` via the store — no extra analytics needed.
+Append to `FEATURE_FLAGS` in `src/core/labs/features.ts`; `LabsDrawer` renders
+everything from `getToggleableFeatures()`, so there is no wiring step. The
+traps:
+
+- `FeatureId` picks up the id automatically, but `getFeature(id)` accepts any
+  string and silently returns undefined. Pass `FeatureId`-typed values.
+- Gate non-React code with `useLabsStore.getState().isFeatureEnabled(...)`
+  **called at decision time**. Caching at module or mount scope gives a value
+  that never updates on toggle.
+- A flag read once at worker spawn (kernel selection, the `brepkit_kernel`
+  pattern) needs `requiresRefresh: true` and a warning saying so.
+- `comingSoon: true` renders it unclickable and makes toggles no-op returning OK.
+
+Toggling already emits `labs_feature_toggle` from the store; no extra analytics.
 
 ### Graduate or remove a labs flag
 

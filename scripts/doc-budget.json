@@ -2,7 +2,7 @@
   "tolerance": "1.1",
   "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
   "words": {
-    ".claude/skills/analytics-and-labs/SKILL.md": 1366,
+    ".claude/skills/analytics-and-labs/SKILL.md": 1270,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
     ".claude/skills/bin-designer/SKILL.md": 1521,
     ".claude/skills/content-and-seo/SKILL.md": 1277,
