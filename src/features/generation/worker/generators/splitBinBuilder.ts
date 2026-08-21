@@ -344,8 +344,12 @@ function splitSolidIntoPieces(
         ...buildWallPatterns(patternCtx).shapes,
         ...buildKumikoWallPatterns(patternCtx),
       ];
-      // Lowest lip material anywhere: the bottom of the support wedge.
-      const lipReach = wallHeight - LIP_OVERLAP - LIP_TAPER_WIDTH;
+      // Lowest lip material anywhere: the bottom of the support wedge, in the
+      // cutters' own body-local frame. Read off `wallTopZ` (less the floor lift
+      // that converts to it) rather than restated from `wallHeight`, which is
+      // one term short of the rim on a bin carrying an `extraWallHeightMm`
+      // collar or a tray's floor.
+      const lipReach = wallTopZ - floorZ - LIP_OVERLAP - LIP_TAPER_WIDTH;
       // Asked of the built solids rather than recomputed from the layout, so it
       // cannot drift from where the stamps actually ended up. A bin whose top
       // row stops short of the wedge (the default scale does) skips the fuse and

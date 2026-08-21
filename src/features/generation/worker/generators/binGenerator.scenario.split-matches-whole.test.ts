@@ -108,20 +108,20 @@ function sweep(
   whole: MeshData,
   frames: readonly PieceFrame[],
   points: ReadonlyArray<readonly [number, number]>,
-  crossings: (mesh: MeshData, x: number, y: number) => number[],
-  edgeMargin: number
+  crossings: (mesh: MeshData, x: number, y: number) => number[]
 ): Sweep {
   let worst = 0;
   let worstAt = '';
   let sampled = 0;
 
   for (const [x, y] of points) {
+    // Whichever piece owns the column, to its own edges. Keeping a margin off
+    // those edges instead would drop every sample on the front and back outer
+    // walls, since those walls ARE the edge: the callers exclude the seam by
+    // where they put their points, which is the only place a piece legitimately
+    // differs.
     const frame = frames.find(
-      (f) =>
-        Math.abs(x - f.centerX) <= f.halfW - edgeMargin &&
-        // The seam is legitimately different whatever else is: the cut plane is
-        // nudged off any cell boundary and each piece ends in a fresh face.
-        Math.abs(y - f.centerY) <= f.halfD - 2
+      (f) => Math.abs(x - f.centerX) <= f.halfW + 0.2 && Math.abs(y - f.centerY) <= f.halfD + 0.2
     );
     if (!frame) continue;
 
@@ -198,7 +198,7 @@ describe('rim-anchored features sit where the unsplit bin puts them', () => {
         }
       }
 
-      const result = sweep(whole, pieceFrames(split.pieces, params), points, topSurface, 2);
+      const result = sweep(whole, pieceFrames(split.pieces, params), points, topSurface);
       expect(result.sampled).toBeGreaterThan(1000);
       expect(result.worst, `worst column at ${result.worstAt}`).toBeLessThanOrEqual(RIM_TOLERANCE);
     },
@@ -237,9 +237,9 @@ describe('a wall pattern is not plugged by the lip fused on after it', () => {
       points.push([outerW / 2 - WALL_THICKNESS / 2, y] as const);
     }
 
-    // The walls ARE the piece edge, so no margin on that axis.
-    const result = sweep(whole, pieceFrames(split.pieces, params), points, bodySurfaces, -0.2);
-    expect(result.sampled).toBeGreaterThan(500);
+    const result = sweep(whole, pieceFrames(split.pieces, params), points, bodySurfaces);
+    // Both axes' walls, or the sweep is only looking at half the bin.
+    expect(result.sampled).toBeGreaterThan(1200);
     expect(result.worst, `worst column at ${result.worstAt}`).toBeLessThanOrEqual(WALL_TOLERANCE);
   }, 120000);
 });
