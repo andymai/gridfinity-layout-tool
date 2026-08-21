@@ -1,0 +1,21 @@
+src/i18n/locales/ko.json
+  s_774baffa353088::t_be97cb5ab79908 310
+src/i18n/locales/it.json
+  s_774baffa353088::t_be97cb5ab79908 310
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "cf9e0c39292a7f1d5e765db634b68b487e9683de",
+  "prompts": {},
+  "sessions": {
+    "s_774baffa353088": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a067149-89fa-4828-9b1f-844e93daef7a",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
