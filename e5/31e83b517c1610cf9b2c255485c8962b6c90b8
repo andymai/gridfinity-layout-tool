@@ -1,0 +1,29 @@
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_dded4d5bb60438::t_b807d7b4bca34a 347-354,358,364,368
+  s_dded4d5bb60438::t_84bb98c91ac59c 44-47,328-346,355-357,359-363,365
+  s_dded4d5bb60438::t_d2444399e07824 366-367,369-370
+.claude/skills/geometry-debugging/SKILL.md
+  s_dded4d5bb60438::t_03c1deebb4324c 84-96
+src/features/generation/worker/generators/binGenerator.scenario.split-matches-whole.test.ts
+  s_dded4d5bb60438::t_7c70d6b5bf75e9 44-52,54-55,203,243
+  s_dded4d5bb60438::t_3722a7941d83f5 7-10,12-23,58,97-183,193,197,201-202,208-242,244
+  s_dded4d5bb60438::t_87bbea1821daa4 245
+scripts/doc-budget.json
+  s_dded4d5bb60438::t_f027a499bae445 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "e531e83b517c1610cf9b2c255485c8962b6c90b8",
+  "prompts": {},
+  "sessions": {
+    "s_dded4d5bb60438": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75f6b3ed-bac7-4e0e-ae7e-10bdcf79ce21",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
