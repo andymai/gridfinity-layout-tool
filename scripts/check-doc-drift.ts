@@ -18,6 +18,13 @@ const ROOT = process.cwd();
 const BASELINE_PATH = join(ROOT, 'scripts/doc-budget.json');
 const GROWTH_TOLERANCE = 1.1;
 const LONG_LINE_WORDS = 220;
+/**
+ * The allowlist file lists the very tokens it exempts, so leaving it in the
+ * haystack makes every entry satisfy itself and the staleness test can never
+ * fire. The script and its test stay IN: they legitimately define names the
+ * docs cite (`allowedMissingRefs`, `docFiles`).
+ */
+const SELF = new Set(['scripts/doc-budget.json']);
 
 export interface Baseline {
   readonly tolerance: string;
@@ -57,7 +64,13 @@ let haystackCache: string | null = null;
 export function haystack(): string {
   if (haystackCache !== null) return haystackCache;
   const files = tracked(/\.(ts|tsx|js|mjs|cjs|py|sh|json|yml|yaml)$|^\.env\.example$/).filter(
-    (f) => !f.endsWith('.md') && !f.startsWith('src/i18n/locales/')
+    (f) =>
+      !f.endsWith('.md') &&
+      !f.startsWith('src/i18n/locales/') &&
+      // This gate's own files name the very tokens it checks. Leaving them in
+      // makes every allowlist entry satisfy itself, so the staleness test can
+      // never fire, which is exactly what it exists to prevent.
+      !SELF.has(f)
   );
   const parts: string[] = [];
   for (const f of files) {
