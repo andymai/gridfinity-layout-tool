@@ -392,16 +392,25 @@ function generatePieceTable(
     const tongue = parentParams.connectorNubs && isIntegralTongue ? TONGUE_PROTRUSION : 0;
     const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
     const startMale = !parentParams.invertDovetails;
+    // An outermost piece of a shaped plate inherits the parent's overhang on
+    // its outer sides, and the generator widens its slab to match — so the strip
+    // past the nominal extent is material that lands on the bed. Interior pieces
+    // carry none, so this is zero for all of them.
+    const oh = params.outlineOverhang;
     const widthMm =
       params.width * params.gridUnitMm +
       params.paddingLeft +
       params.paddingRight +
+      (oh?.left ?? 0) +
+      (oh?.right ?? 0) +
       (params.edges?.left === 'join' && (isPaired || startMale) ? tongue : 0) +
       (params.edges?.right === 'join' && (isPaired || !startMale) ? tongue : 0);
     const depthMm =
-      params.depth * params.gridUnitMm +
+      params.depth * (params.gridUnitMmY ?? params.gridUnitMm) +
       params.paddingFront +
       params.paddingBack +
+      (oh?.front ?? 0) +
+      (oh?.back ?? 0) +
       (params.edges?.front === 'join' && (isPaired || startMale) ? tongue : 0) +
       (params.edges?.back === 'join' && (isPaired || !startMale) ? tongue : 0);
     // Via the shared derivation, never restated here: a local form had already
