@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.435.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.1...gridfinity-layout-tool-v4.435.2) (2026-08-21)
+
+
+### Bug Fixes
+
+* **split-bin:** seat a cutout's shoulder round-over on the lip, not the wall top ([#3681](https://github.com/andymai/gridfinity-layout-tool/issues/3681)) ([d7cc414](https://github.com/andymai/gridfinity-layout-tool/commit/d7cc414f1520eeca658274342558f1bc9122c612)), closes [#3680](https://github.com/andymai/gridfinity-layout-tool/issues/3680)
+
 ## [4.435.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.0...gridfinity-layout-tool-v4.435.1) (2026-08-21)
 
 
