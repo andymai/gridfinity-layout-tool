@@ -36,6 +36,16 @@ declare -A UNION_TYPES=(
   ["CommunityPrintStatus"]="live,hidden,removed"
 )
 
+# A bare `--` reaches here when someone writes `pnpm run ... -- --all`: pnpm
+# forwards the separator literally, the old code took it for a filename, and the
+# run "checked" one nonexistent path and exited 0. A gate that passes vacuously
+# is worse than one that fails, so an unknown flag is fatal.
+if [[ "$1" == "--" || ( "$1" == -* && "$1" != "--all" ) ]]; then
+  echo "check-union-exhaustiveness: unknown argument '$1'" >&2
+  echo "Usage: $0 [--all | <file>]   (note: no '--' separator)" >&2
+  exit 2
+fi
+
 # Get files to check
 get_files() {
   if [[ "$1" == "--all" ]]; then

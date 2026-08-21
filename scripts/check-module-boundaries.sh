@@ -39,6 +39,15 @@ ALLOWED_CROSS_FEATURE=(
 VIOLATIONS_FOUND=0
 
 # Get files to check
+# See check-union-exhaustiveness.sh: `pnpm run <script> -- --flag` forwards the
+# separator literally, and taking it for a filename makes the gate pass on
+# nothing. Fail instead.
+if [[ "$1" == "--" || ( "$1" == -* && "$1" != "--staged" ) ]]; then
+  echo "check-module-boundaries: unknown argument '$1'" >&2
+  echo "Usage: $0 [--staged | <file>]   (note: no '--' separator)" >&2
+  exit 2
+fi
+
 get_files() {
   if [[ "$1" == "--staged" ]]; then
     git diff --cached --name-only --diff-filter=ACM | grep -E '\.tsx?$' | grep '^src/' | grep -v '\.test\.' | grep -v '\.spec\.' || true
