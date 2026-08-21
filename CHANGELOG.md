@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.435.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.4...gridfinity-layout-tool-v4.435.5) (2026-08-21)
+
+
+### Bug Fixes
+
+* **baseplate:** report the plate the drawer shape is cut to, and let the grid move inside it ([#3688](https://github.com/andymai/gridfinity-layout-tool/issues/3688)) ([02ccc49](https://github.com/andymai/gridfinity-layout-tool/commit/02ccc498d7fe86300a3c370e230fd6dc778bdc00))
+
 ## [4.435.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.3...gridfinity-layout-tool-v4.435.4) (2026-08-21)
 
 
