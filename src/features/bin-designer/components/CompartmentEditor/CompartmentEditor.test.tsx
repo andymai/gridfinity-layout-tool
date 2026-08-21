@@ -198,10 +198,14 @@ describe('CompartmentEditor', () => {
     expect(screen.getByText(/drag to merge/i)).toBeInTheDocument();
   });
 
-  it('hides the angled-divider hit targets until the feature is opted into', () => {
+  it('clicking a divider hit target before opt-in enables editing and selects it', () => {
     useDesignerStore.setState({ params: TWO_BY_TWO });
     render(<CompartmentEditor />);
-    expect(screen.queryByRole('button', { name: /Edit divider between Comp/i })).toBeNull();
+    const targets = screen.getAllByRole('button', { name: /Edit divider between Comp/i });
+    expect(targets.length).toBeGreaterThan(0);
+    fireEvent.click(targets[0]);
+    expect(useSettingsStore.getState().settings.angledDividersEnabled).toBe(true);
+    expect(useDesignerStore.getState().ui.selectedDividerKey).not.toBeNull();
   });
 
   it('renders the angled-divider hit targets once the feature is enabled', () => {

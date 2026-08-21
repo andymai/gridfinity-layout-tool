@@ -3,11 +3,15 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
-import { getEligibleDividers } from '@/features/bin-designer/utils/compartments';
+import {
+  getCompartmentReadingOrder,
+  getEligibleDividers,
+} from '@/features/bin-designer/utils/compartments';
 import type { EligibleDivider } from '@/features/bin-designer/utils/compartments';
 import {
   applyAngleShift,
   getDividerGeometry,
+  getInteriorDims,
   getLeanLimits,
   leanToFootTravel,
   offsetsToAngleShift,
@@ -25,6 +29,14 @@ export const rowKeyOf = (a: number, b: number): string => (a < b ? `${a}-${b}` :
 
 export interface TiltRow extends EligibleDivider {
   readonly key: string;
+  /**
+   * Display numbers for the two compartments, from the same reading order the
+   * grid draws (`getCompartmentReadingOrder`). Raw IDs are renumbered in cell
+   * scan order (bottom row first), so on merged grids ID+1 disagrees with the
+   * "Comp. N" the user can see — labels must use these, never the IDs.
+   */
+  readonly numberA: number;
+  readonly numberB: number;
   /** True when either endpoint offset is non-zero (i.e. the divider is tilted/shifted). */
   readonly hasTilt: boolean;
   /** Segment length + offset envelope; null when the bin is too small to tilt. */
@@ -98,6 +110,19 @@ export function useDividerTiltSubsection() {
     [width, depth, gridUnitMm, gridUnitMmY, wallThickness, dividerHeightMm]
   );
 
+  // Interior footprint in mm, for projecting divider offsets into the panel's
+  // plan diagram the same way the canvas overlay does.
+  const interiorDims = useMemo(
+    () => getInteriorDims({ width, depth, gridUnitMm, gridUnitMmY, wallThickness }),
+    [width, depth, gridUnitMm, gridUnitMmY, wallThickness]
+  );
+
+  const displayNumbers = useMemo(() => {
+    const map = new Map<number, number>();
+    getCompartmentReadingOrder(compartments).forEach((id, idx) => map.set(id, idx + 1));
+    return map;
+  }, [compartments]);
+
   const rows: readonly TiltRow[] = useMemo(() => {
     return getEligibleDividers(compartments).map((d) => {
       const geometry = getDividerGeometry(dims, compartments, d);
@@ -110,6 +135,8 @@ export function useDividerTiltSubsection() {
       return {
         ...d,
         key: rowKeyOf(d.compartmentA, d.compartmentB),
+        numberA: displayNumbers.get(d.compartmentA) ?? d.compartmentA + 1,
+        numberB: displayNumbers.get(d.compartmentB) ?? d.compartmentB + 1,
         hasTilt: d.offsetStart !== 0 || d.offsetEnd !== 0 || d.rakeDeg !== 0,
         geometry,
         angleDeg,
@@ -117,7 +144,7 @@ export function useDividerTiltSubsection() {
         leanDeg,
       };
     });
-  }, [compartments, dims]);
+  }, [compartments, dims, displayNumbers]);
 
   const hasAnyOverride = useMemo(() => rows.some((r) => r.hasTilt), [rows]);
 
@@ -304,6 +331,7 @@ export function useDividerTiltSubsection() {
 
   return {
     compartments,
+    interiorDims,
     rows,
     hasAnyOverride,
     activeConflicts,

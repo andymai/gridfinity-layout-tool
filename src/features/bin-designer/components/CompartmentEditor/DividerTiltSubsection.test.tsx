@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { DividerTiltSubsection } from './DividerTiltSubsection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
@@ -58,7 +58,7 @@ describe('DividerTiltSubsection', () => {
     setGrid(2, 1); // side-by-side → vertical divider
     render(<DividerTiltSubsection />);
     openInspector();
-    expect(screen.getByText('Vertical divider')).toBeInTheDocument();
+    expect(screen.getByText('Between Comp 1 (left) and Comp 2 (right)')).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: /^angle$/i })).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: /^lean$/i })).toBeInTheDocument();
     // Angle and Lean are the visible numeric fields; Shift stays in the
@@ -129,6 +129,30 @@ describe('DividerTiltSubsection', () => {
     expect(screen.getByText('45°')).toBeInTheDocument();
   });
 
+  it('leaning rows show a lean badge in the list', () => {
+    setGrid(2, 1);
+    useDesignerStore.getState().setDividerOverride(0, 1, 0, 0, 20);
+    render(<DividerTiltSubsection />);
+    expect(screen.getByText('Lean 20°')).toBeInTheDocument();
+  });
+
+  it('list rows speak display numbers (reading order), not raw IDs', () => {
+    // 2x2 with the top row merged: reading order numbers the merged top
+    // compartment 1, and the bottom cells (ids 0, 1) display as 2 and 3.
+    useDesignerStore.setState((s) => ({
+      params: {
+        ...s.params,
+        compartments: { ...s.params.compartments, cols: 2, rows: 2, cells: [0, 1, 2, 2] },
+      },
+    }));
+    useDesignerStore.getState().setDividerOverride(0, 1, -5, 5);
+    render(<DividerTiltSubsection />);
+    // The tilted bottom pair must be named by display numbers (2 ↔ 3); an
+    // ID-based label would call it 1 ↔ 2 and point at the wrong on-grid pair.
+    const tilted = screen.getByRole('button', { name: 'Edit divider between Comp 2 and Comp 3' });
+    expect(within(tilted).getByText(/°/)).toBeInTheDocument();
+  });
+
   it('Back returns from inspector to the list', () => {
     setGrid(1, 2);
     render(<DividerTiltSubsection />);
@@ -144,7 +168,9 @@ describe('DividerTiltSubsection', () => {
     openInspector();
     fireEvent.click(screen.getByRole('button', { name: /Reset to straight/i }));
     expect(useDesignerStore.getState().params.compartments.dividerOverrides).toBeUndefined();
-    expect(screen.getByText('Horizontal divider')).toBeInTheDocument();
+    // Stacked 1x2: id 0 is the front (bottom) cell, but reading order numbers
+    // top-left first, so the front compartment displays as Comp 2.
+    expect(screen.getByText('Between Comp 2 (front) and Comp 1 (back)')).toBeInTheDocument();
   });
 
   it('Reset all clears every override and only renders when any exist', async () => {
@@ -191,6 +217,15 @@ describe('DividerTiltSubsection', () => {
         screen.getByRole('switch', { name: /enable diagonal divider editing/i })
       ).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Edit divider between Comp/i })).toBeNull();
+    });
+
+    it('shows the teaser copy while disabled, and drops it once enabled', () => {
+      disableAngledDividers();
+      setGrid(2, 2);
+      render(<DividerTiltSubsection />);
+      expect(screen.getByText(/wedge-shaped compartments/i)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('switch', { name: /enable diagonal divider editing/i }));
+      expect(screen.queryByText(/wedge-shaped compartments/i)).toBeNull();
     });
 
     it('enabling the toggle reveals the divider list and persists the preference', () => {
