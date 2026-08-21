@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.436.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.5...gridfinity-layout-tool-v4.436.0) (2026-08-21)
+
+
+### Features
+
+* **bin-designer:** make diagonal dividers discoverable from the grid ([#3690](https://github.com/andymai/gridfinity-layout-tool/issues/3690)) ([ed07ce3](https://github.com/andymai/gridfinity-layout-tool/commit/ed07ce3891e08b97b63b22f156f90045f1010ffd))
+
 ## [4.435.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.4...gridfinity-layout-tool-v4.435.5) (2026-08-21)
 
 
