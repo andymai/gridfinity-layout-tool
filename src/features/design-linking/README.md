@@ -19,23 +19,7 @@ graph TB
 
 ## Key Files
 
-- `domain/linkingRules.ts` — validation and eligibility checks
-- `domain/syncOperations.ts` — dimension extraction and update creation
-- `domain/linkageQueries.ts` — query bins/designs by link status
 - `domain/mergeBins.ts` — converts a set of layout bins into one divided `BinParams`
-- `hooks/useBinLinking.ts` — link/unlink/create actions
-- `hooks/useBento.ts` — the mergeable selection, save + navigate, optional bin replacement
-- `components/Dialogs/MakeBentoDialog/` — confirm step, options, trapped-bin block
-- `components/Dialogs/MakeBentoDialog/CompartmentPreview/` — plan view of the result
-- `hooks/useLinkedDesign.ts` — resolve linked design for a bin
-- `hooks/useLinkedBins.ts` — find all bins linked to a design
-- `hooks/useQuickExport.ts` — STL export for linked designs (internal)
-- `hooks/useBinResizedListener.ts` — listens for bin resize events, triggers sync logic
-- `hooks/useDesignSavedListener.ts` — listens for design save events, auto-syncs linked bins
-- `components/LinkedDesignSection.tsx` — inspector UI for link status
-- `components/DesignLinkingDialogs/` — dialog orchestrator
-- `components/Dialogs/` — CreateDesignDialog, SyncDimensionsDialog, DeleteDesignWarningDialog, LinkDesignDialog
-- `store/linkingStore.ts` — transient UI state
 
 ## Data Model
 
