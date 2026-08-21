@@ -1,0 +1,27 @@
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_d7bee796da009a::t_466be336d38ce1 127
+  s_d7bee796da009a::t_d06ca4bd570a0d 119,123-126,129-131,137
+src/core/cqrs/v2/domain/drawer/updateDrawer.ts
+  s_d7bee796da009a::t_52b4e3ff9ea5ba 48-49
+src/core/cqrs/validation/schemas.ts
+  s_d7bee796da009a::t_52b4e3ff9ea5ba 246-247
+src/shared/components/EditableDimensions/EditableDimensions.test.tsx
+  s_d7bee796da009a::t_d06ca4bd570a0d 192,205-215
+  s_d7bee796da009a::t_065084481d687c 216-217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "5af80aa8cd0c3f44bfd7e931a257654f76e056bc",
+  "prompts": {},
+  "sessions": {
+    "s_d7bee796da009a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "759374cb-7d0d-40a6-af85-fb8cfc3a8bf0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
