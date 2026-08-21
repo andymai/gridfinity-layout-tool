@@ -24,9 +24,11 @@ Read `src/features/generation/README.md` FIRST — it documents the pipeline sta
 6. **Cache keys and shape ownership**: `shapeCache.ts` owns originals; callers get `unwrap(clone(x))` and must `.delete()` shapes they replace. Every param that changes cached geometry must be `quantize()`d into the cache key (`cutoutKeyPart`/`handleKeyPart` pattern in `wallPatternBuilder.ts`); clip params go in the clipped key, NEVER the base compound key. `wallPatterns.ts` is deliberately brepjs-free — shapes crossing module boundaries risk WASM GC invalidation.
 7. **Exactly coplanar faces break OCCT booleans**: give mating solids `COPLANAR_OVERLAP` (0.01mm) volumetric overlap and extend cutters by `COPLANAR_MARGIN` (1mm), both in `generatorConstants.ts`. Slicers "repair" the resulting non-manifold topology as solid infill.
 
-## Wall-pattern border rule (depth beyond CLAUDE.md gotcha 5)
+## Wall-pattern border rule
 
-Clip geometry lives in `wallPatternClips.ts`, wired in `wallPatternBuilder.ts`. Clip extrusion must satisfy `clipExtrudeDepth ≥ cutDepth + 1` (see line ~100). A wall-penetrating feature needs matching cuts in THREE systems: the wall pattern clip, the interior dividers, and the stacking lip — forgetting any one produces jagged edges or blocked openings (`git show 2aebac7f9`). The bottom keep-out is `wallThickness + BOTTOM_SOLID_SKIRT`, not `max(...)` (wallPatterns.ts); `computeHoneycombWallReduction` in `src/features/bin-designer/utils/printEstimates.ts` re-declares `TOP_KEEP_OUT`/`BOTTOM_SOLID_SKIRT` inline — change them in lockstep.
+Clip geometry lives in `wallPatternClips.ts`, wired in `wallPatternBuilder.ts`. Clip extrusion must satisfy `clipExtrudeDepth ≥ cutDepth + 1` (see line ~100). A wall-penetrating feature needs matching cuts in THREE systems: the wall pattern clip, the interior dividers, and the stacking lip — forgetting any one produces jagged edges or blocked openings (`git show 2aebac7f9`). The bottom keep-out is `wallThickness + BOTTOM_SOLID_SKIRT`, not `max(...)` (wallPatterns.ts); `src/features/bin-designer/utils/printEstimates.ts` re-declares `TOP_KEEP_OUT`/`BOTTOM_SOLID_SKIRT` inline (and carries the `PATTERN_VOID_FRACTION` open-area table) — change them in lockstep.
+
+Clip widths differ by what is being cleared. Cutout and handle clips use `CUTOUT_BORDER_WIDTH` (1.5mm); divider junction clips use `max(CUTOUT_BORDER_WIDTH, shapeRadius)`, so the larger hex prisms on 4u+ bins cannot bleed into the divider walls.
 
 ## Test topology (not documented elsewhere)
 
@@ -99,3 +101,135 @@ Failure looks like: `toMatchSnapshot` triangleCount diffs (expected churn — ve
 | Kernel test "passes" instantly                                | File in `__kernel-tests__/` is invisible to normal vitest                                                                                                                                                       | Run via `vitest.profile.config.ts`, or move it into the generators project if it should gate CI                                                                          |
 
 Commit bodies here contain root-cause analyses and upstream references — `git log --follow -p <file>` before changing anything in the pipeline.
+
+## Construction invariants
+
+### The perimeter is the material; the grid extent is not its bound
+
+Never consume `drawer.outline` raw for gating, rendering or generation. Go through
+`@/shared/utils/outlineFrame` (lattice registration + `drawer.gridShiftX/Y`), or the
+layout's placeable cells and the plate's kept sockets diverge. Authoring editors are
+the exception (raw anchor); the frame never mutates the stored outline.
+
+The frame keeps the grid fixed and translates the perimeter, so a shift toward an edge
+the shape touches, or an imported oversize shape, puts the perimeter outside
+`[0, extent]`. Anything bounding material by the extent must widen by `outlineOverhang`:
+the generator's slab, split-piece windows, the layout overlay's canvas, the split
+planner's print-bed budget. Otherwise that strip is silently cut off, or the piece
+overshoots the bed.
+
+Split pieces are the exception. A piece's slab IS its clip window, so only the
+outermost pieces take their outer side's share, and a piece still frames its outline on
+its NOMINAL padded extent, never on the widened window, or the perimeter lands inside
+its own slab and the outer strip is truncated.
+
+### Standing a 2D elevation upright
+
+`rotate(-90, {axis:[1,0,0]})` maps `(x, y, z)` to `(x, z, -y)`, so a drawing's vertical
+axis comes out INVERTED: a profile built upward from a plane lands built downward from
+it. `+90` maps `(x, y, z)` to `(x, -z, y)`, so the drawing's vertical becomes `+Z` and
+the extrusion becomes `-Y`.
+
+The bug hides on any vertically symmetric profile (the lid's scallop tolerates `-90`
+for exactly this reason) and surfaces only on an asymmetric one, where it silently cuts
+the wrong part. The bin lip dip was built 3.8mm low, into the wall instead of the lip.
+
+Related and separate: `sketchOnPlane('XZ', pos)` negates its Y origin, which put split
+connector prisms 40mm off their wall and has its own regression test. Prefer the
+`sketchOnPlane('YZ', -len/2)` + `extrude(len)` idiom (`buildClickRailBar`) when a
+section is constant along the run.
+
+### A cut sized off the cell is not sized off the foot
+
+A foot's bottom face is `SOCKET_TAPER_WIDTH` (3.2mm) narrower than its cell on each
+side, so any underside pocket described as "leave an N mm border" breaches the
+baseplate-mating taper for every N below that.
+
+`base.lightweightMode: 'underside'` sidesteps the class by cutting a SCALED COPY of the
+socket profile rather than a prism: the profile's insets are absolute, so an inner foot
+built at `cell - 2k` is a uniform `k` wall at every depth and cannot reach the taper at
+any `k`. Prefer that construction wherever a foot is relieved. A clamp is an invariant
+someone has to remember; the scaled copy is one nobody can violate.
+
+Two traps around it:
+
+- The relief's open direction is `zShift 0` with NO floor opening. The `'down'`
+  direction leaves a `wallThickness` membrane under a floor that is already solid: a
+  slab of dead material across the whole footprint that does not even shorten the
+  bridge above it.
+- `dimensions.lightweight` conflates two questions. Use `liteFloorOpen` for "is the
+  interior floor gone" (false for the relief, false for a solid bin, true for a spacer),
+  because every gate reading the flag (scoop ramp, floor pattern, inserts, the lid's
+  click-rail check) is asking that second question.
+
+**Do not trust a calibration table you have not reproduced.** `BASE_VOL_PER_CELL_AREA`
+had been fitted to a ground-truth set that omitted the base socket, so every socketed
+bin's filament estimate read 1.7-3.0x low: a solid 1u foot is ~7300mm³, more than the
+entire volume a 1x1x3u bin was recorded at. The refit is 5.3785 against ten re-measured
+bins, worst residual 1.1%. Generate the bin and take `meshVolume`, which is also how the
+per-cell lite savings were established rather than derived (6398 interior, 5174
+underside, 4332 and 2458 on half sockets, constant to the millimetre across sizes).
+
+### A knife slot's open end is a wall breach with a plan
+
+`buildKnifeBreachChannels` (`cutoutBuilder.ts`) cuts the blade exit unclipped through
+wall, collar and stacking lip. `knifeSlotWallExits` (`lipGapPlan.ts`) is the ONE
+statement of where those exits are: the lid's rail plan reads it as the `knifeSlot`
+lip-gap source, and any future consumer must read it too, never re-derive sides from
+rotation. (A sentinel in `binGenerator.scenario.knifeBlock` pins that wall patterns do
+not reach solid hosts today.)
+
+The physical model lives in `types/knifeBlock.ts`: spine flush with the fill top, edge
+floating `KNIFE_SLOT_EDGE_FLOAT` above the slot floor, saddle = fill top − handle
+diameter − drop. `planKnifeRest` (`shared/utils/knifeRestPlan.ts`) turns that into the
+rest: companion top snapped UP to whole height units, each groove cut deeper to its own
+knife's saddle. The worker's solid, the preview placement
+(`knifeRestMatedOffset`), the STEP assembly translate, the registry footprint
+(`registryKnifeRestFields`) and the layout pairing all read it; none may restate it.
+
+In the layout a block and its rest are TWO bins sharing a `pairId` (`binPairs.ts`;
+set-expanding operations pull the partner in), never one bin with two rects. The layout
+export planner skips `pairRole: 'rest'` bins because the block's combined export
+already emits the `knife-rest` piece.
+
+Slot pitch is a physical constraint the geometry cannot see: handles are ~23mm wide, so
+slots closer than ~27mm hold blades whose knives cannot lie side by side, and the
+saddle cradles merge into one scallop.
+
+### Type is a plan
+
+`@/shared/utils/typePlan` is the one statement of where a caption's glyphs land: case,
+line splitting and wrapping, tracking, size resolution, the cap-height datum, optical
+centering, flush-to-margin. The worker's `textBuilder` turns it into solids,
+`wallTextPlan` chooses which clear region of a wall hosts it, the panel's specimen draws
+it, and the designer's ghost overlay draws it in 3D. Font access arrives through an
+injected `TypeMeasurer` (opentype via `brepjs/text`), which is what lets the main thread
+run the same solver the kernel does.
+
+Four traps, each invisible to the obvious check:
+
+1. `sketchText` NEGATES `startX` and does not negate `startY`, so every pen position is
+   handed over inverted through `sketchRunAtPen`. A single untracked line always
+   sketches at zero, so the fast path never shows it; the mirroring appears only once a
+   caption is tracked, wrapped or tapered, and it moves the whole run to the wrong side
+   of its host. Pinned by a kernel test against `sketchText` directly, so a brepjs bump
+   that fixes the negation fails loudly instead of silently restoring the bug.
+2. The fit and the placement must reserve the SAME vertical extent. The bottom anchor
+   sits the last BASELINE on the font's descender, never the string's own ink, or a
+   caption without descenders sits lower than its neighbour with one. `measureBlock`
+   budgets that same reserve. Budgeting the ink instead let a caption fit on paper and
+   then overflow the top of its host once anchored, into the stacking-lip keep-out.
+   Found by RENDERING a specimen sheet; every unit test passed.
+3. The cap-height datum makes the vertical box a constant of the face and size, so a
+   descender no longer changes the fitted size. Any test using a descender as a
+   "shrinks the shared size" lever is testing nothing. Use a longer caption: width is
+   what still separates two runs.
+4. `margin` is one design-wide number serving a 100mm wall and an 8mm label tab, so the
+   plan caps it at a fraction of the host's own smaller dimension. A `plaque` host (a
+   tab, a plate, which IS the caption's frame) collapses the anchor's vertical zone to
+   centred while keeping its horizontal intent.
+
+New designs start on `TEXT_PRESETS.engineering` while `migrateParams` backfills the
+NEUTRAL `DEFAULT_TEXT_STYLE_DEFAULTS`, so a design saved before the type system renders
+as it always did. Test fixtures measuring a host's own math must pin the neutral style
+too, or every threshold in them re-tunes the next time the shipped look changes.

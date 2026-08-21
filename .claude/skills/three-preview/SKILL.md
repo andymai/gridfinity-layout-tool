@@ -97,3 +97,22 @@ No headless test catches lighting/ordering/theme issues — in `pnpm run dev`, o
 Expensive per-frame helpers: copy the `ContactShadows` `frames={isInteracting ? 0 : Infinity}` pattern in `Scene.tsx` and keep OrbitControls `onStart`/`onEnd` wired. Never add per-frame React state — mutate refs in `useFrame` (`AnimatedBinMesh/AnimatedBinMesh.tsx`).
 
 Cross-scope: worker mesh generation/parity → geometry-generation skill; preview-vs-export divergence triage → geometry-debugging skill; 2D canvas interactions → grid-editor skill; designer compartment model/epoch sync → bin-designer skill.
+
+## Not every `Mesh` in the scene is model geometry
+
+`exportPreviewGlb` publishes the community GLB by walking the live designer scene and
+merging every visible `Mesh`. Drei's fat `<Line>` (the dimension drawings) and troika's
+`<Text>` (their labels, the bin name) are `Mesh` subclasses whose shape lives in
+per-instance attributes plus a custom shader, so merging into a plain `BufferGeometry`
+keeps only the base quad and bakes it in the model's own colour: stray white squares
+and slivers around every published design.
+
+Filter structurally on `isInstancedBufferGeometry`, never by library name. The
+`hideChrome` dev-thumbnail route does NOT exercise this path; the designer's real scene
+is the one that gets exported.
+
+The mirror-image defect: an absence must never be entered in an aggregate. Once a
+print's settings became optional, `Number('')` reading back as `0` and `modeOf` being
+generic over `T | null` each let an unreported value into the modes and medians as if
+someone had measured it. The second typechecks, because "no data" and "null won the
+vote" are the same return.

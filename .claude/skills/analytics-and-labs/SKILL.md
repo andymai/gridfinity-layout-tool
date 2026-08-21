@@ -25,12 +25,12 @@ description: 'PostHog event conventions (trackEvent, snake_case names, #1466 imp
 
 ### Add a PostHog event
 
-1. Check the catalog first: `rg "trackEvent\('" src/shared/analytics`. `src/core/cqrs/middleware/analytics.ts` already fires `cqrs_command_executed` for every successful command — only add a bespoke event for context the command lacks.
+1. Check the catalog first: `rg "trackEvent\('" src/shared/analytics`. There is no CQRS analytics middleware, so a command emits nothing on its own — every event is an explicit `trackXxx()` call.
 2. Name it snake*case, past-tense or noun_action (`bin_created`, `labs_feature_toggle`), snake_case props, domain prefix for families (`labs*_`, `help\__`, `bin*export*\*`).
-3. Add a `trackXxx()` wrapper in the right module under `src/shared/analytics/posthog/`: `eventsCore.ts` (layout/bin), `eventsPerformance.ts` (timing/kernel), `eventsErrors.ts` (failures), `binExportEvents.ts` (export), `eventsPerson.ts` (person props). Use `trackEvent(name, props)` — props are `string|number|boolean|null` only and `device_type` is attached automatically. Arrays/objects need the lower-level `capture()` from `./init` (see `layout_snapshot` in `eventsCore.ts`).
+3. Add a `trackXxx()` wrapper in the right module under `src/shared/analytics/posthog/`: `eventsCore.ts` (layout/bin), `events.ts` (app/session), `eventsErrors.ts` (failures), `binExportEvents.ts` (export), `eventsPerson.ts` (person props), `conversionEvents.ts` (tool activation/conversion). Use `trackEvent(name, props)` — props are `string|number|boolean|null` only and `device_type` is attached automatically. Arrays/objects need the lower-level `capture()` from `./init` (see `layout_snapshot` in `eventsCore.ts`).
 4. If the caller is a store or anything a store imports, deep-import `@/shared/analytics/posthog/trackEvent` (mental model #2).
 5. Re-export from `src/shared/analytics/posthog/events.ts` and `posthog/index.ts`, and wire the call site in the same PR — knip in `pnpm run quality` fails on exported-but-uncalled trackers.
-6. Add a sibling test mocking the leaf, copying the `vi.mock('./trackEvent', ...)` pattern from `eventsPerformance.test.ts` (pre-commit `check-missing-tests.sh` warns on files without sibling tests; repo convention still requires one).
+6. Add a sibling test mocking the leaf, copying the `vi.mock('./trackEvent', ...)` pattern from `eventsCore.test.ts` (pre-commit `check-missing-tests.sh` warns on files without sibling tests; repo convention still requires one).
 7. Once-only person properties (first-touch attribution) must use the two-arg form `setPersonProperties({}, onceProps)` in `eventsPerson.ts` — the one-arg form lets mutable values overwrite first-touch data.
 
 ### Add a labs flag and gate a feature

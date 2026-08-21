@@ -81,3 +81,29 @@ Run the `api/lib` suite after ANY touch of the validation mirrors — a green cl
 For divider-override structure: pairs are canonical (`compartmentA < compartmentB`), unique, adjacent — enforced in both `utils/compartments.ts` (`validateDividerOverride[s]`) and `api/lib/designerCompartmentValidation.ts`. Structural validity does not guarantee the tilt renders (geometric checks happen at drag-commit and generation). `getEligibleDividers` row order is deliberately stable so panel rows don't shuffle — don't replace its sort with grid-scan order.
 
 Designer shares have their own limits (`MAX_PAYLOAD_BYTES` 100KB in `api/lib/designerValidationConstants.ts`), smaller than the layout-share limits in `api/lib/validation.ts` — see the share-api-collab skill. Cloud-sync envelope rules live in `src/features/bin-designer/sync/designAdapter.ts`. For the placed-bin side panel (bin-inspector), read `src/features/bin-inspector/README.md`; custom-property keys must avoid `RESERVED_PROPERTY_KEYS` in `src/core/constants.ts`.
+
+## Compartment geometry and the size lock
+
+### A `dividerOverride` moves the compartment wall
+
+The grid line is not the compartment edge. Anything sized or placed against a
+compartment's X extent must go through `compartmentTabXSpan()` (`utils/compartments.ts`),
+never `-innerW/2 + col * cellW`. Three layers have to agree: the worker shelf
+(`labelTabBuilder`), the socket plate fit (`labelSocketPlan`) and the ghost overlay
+(`GhostLabelTabs`). Disagreement floats the shelf off its wall, overhanging the
+neighbour while its plate is sized for space it does not have.
+
+The eligibility predicates only guard a TILTED anchor wall. A straight `shift` passes
+them untouched, which is how this reaches production.
+
+### `bin.update` is the only thing enforcing the size lock
+
+A bin with `locked: true` rejects any change to `width`/`depth`/`height` there, and
+nothing else in the app is authoritative. Every flow that resizes on the user's behalf
+must skip locked bins BEFORE dispatching: the group resize, `rotateAll`,
+`updateMultiHeight`, the linked-design cascade and `resolveExpandToFit` each do, because
+a batch that stops at the first rejection strands the bins already written.
+
+Hiding the affordance is not enough, and neither is trusting the command. The guard
+compares against the bin's current values, so re-sending an unchanged dimension is
+deliberately allowed.

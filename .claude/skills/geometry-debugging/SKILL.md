@@ -45,7 +45,7 @@ description: Validate and debug bin/baseplate geometry changes — failing binGe
 
 ### Check export integrity / manifoldness
 
-1. Run the matrix: `pnpm run test:run src/features/generation/worker/generators/binGenerator.scenario.export-integrity` — every scenario through binary STL export, asserting parseable STL, watertight (no boundary edges), 2-manifold (minus the documented `MEASURE_ZERO_SELF_CONTACT_SCENARIOS` set), no NaN.
+1. Run the matrix: `pnpm run test:run src/features/generation/worker/generators/binGenerator.export` — every scenario through binary STL export, asserting parseable STL, watertight (no boundary edges), 2-manifold (minus the `MEASURE_ZERO_SELF_CONTACT_SCENARIOS` set in `__kernel-tests__/exportIntegrityRunner.ts`), no NaN.
 2. For honeycomb/pattern manifold checks and baseplate winding: `pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/honeycombManifoldCheck` (also `__kernel-tests__/diagnoseBaseplateWinding`).
 3. Pre-export sanity checks live in `src/features/generation/export/validation.ts` (`validateMeshData`); multi-shell collapse in `worker/generators/utils/outerShell.ts` (`keepOuterShell`); STL fallback for `STL_EXPORT_FAILED` in `worker/generators/utils/stlMeshFallback.ts`.
 
@@ -69,28 +69,179 @@ Any new geometry feature must be exercised at fractional sizes — the recurring
 
 ## Verification
 
-| Command                                                                                              | Proves                                                                     |
-| ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `pnpm run test:run src/features/generation/worker/generators/binGenerator.scenario`                  | All bin scenario domains pass on real OCCT (CLAUDE.md-mandated step)       |
-| `pnpm run test:run src/features/generation/worker/generators/binGenerator.scenario.export-integrity` | Exports are parseable, watertight, manifold, NaN-free                      |
-| `pnpm run test:run src/features/generation/worker/generators/baseplateGenerator.scenario`            | Baseplate geometry (sockets, margins, connectors, splits)                  |
-| `pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/<name>`                     | Any `__kernel-tests__` diagnostic (forks pool, 1 worker, long timeout)     |
-| `pnpm run bench`                                                                                     | Perf vs `worker/generators/__bench__/baseline.json` after hot-path changes |
+| Command                                                                                   | Proves                                                                     |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `pnpm run test:run src/features/generation/worker/generators/binGenerator.scenario`       | All bin scenario domains pass on real OCCT (CLAUDE.md-mandated step)       |
+| `pnpm run test:run src/features/generation/worker/generators/binGenerator.export`         | Exports are parseable, watertight, manifold, NaN-free                      |
+| `pnpm run test:run src/features/generation/worker/generators/baseplateGenerator.scenario` | Baseplate geometry (sockets, margins, connectors, splits)                  |
+| `pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/<name>`          | Any `__kernel-tests__` diagnostic (forks pool, 1 worker, long timeout)     |
+| `pnpm run bench`                                                                          | Perf vs `worker/generators/__bench__/baseline.json` after hot-path changes |
 
 Failure output to expect: structural failures name the scenario and axis (`<label>: width`); a hang followed by `ERROR` at 30 s+ is the watchdog, not a crash.
 
 ## Traps
 
-| Symptom                                                       | Cause                                                                                                                                      | Fix                                                                                                                                                     |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Kernel test "passes" instantly / never runs                   | File is in `__kernel-tests__/`, excluded from all normal vitest projects — plain `pnpm run test:run __kernel-tests__/foo` matches nothing  | Use `pnpm exec vitest run --config vitest.profile.config.ts <pattern>`; if it should gate CI, move it into the generators project                       |
-| Export matrix passes suspiciously fast / uniformly            | `exportBin`'s last-solid cache is param-blind — without a per-scenario reset every case re-exports the first solid, all assertions vacuous | `beforeEach(() => setLastSolid(null))` from `shapeCache.ts`, as `binGenerator.scenario.export-integrity.test.ts` does; background: `git show 7d935bc55` |
-| Snapshots pass but geometry looks wrong                       | Snapshot is triangleCount only                                                                                                             | Add `customAssert` using `meshAssertions.ts` helpers for positional/structural claims                                                                   |
-| Feature missing from output, no error                         | Silent-skip below printable thresholds (tiny cells, pattern height, handle height)                                                         | Check size thresholds before suspecting your code; see geometry-generation                                                                              |
-| Parameter edit doesn't change geometry                        | Param missing from a shape-cache key; stale solid served                                                                                   | Cache-key discipline lives in the geometry-generation skill                                                                                             |
-| Path cutout renders as a plain rectangle in 3D, 2D looks fine | Duplicate consecutive vertices → OCCT rejects the wire → silent bounding-box fallback                                                      | Dedup via `dropCoincidentPoints` (`src/shared/utils/polyline.ts`) in both editor and worker                                                             |
-| Bounding-box test "off by 0.5 mm"                             | Outer size is `units×42 − 0.5` clearance                                                                                                   | Assert with `assertBoundingBoxMatchesParams`, don't hand-roll expectations                                                                              |
-| Curved edges coarse despite tolerance plumbing                | brepkit angular tolerances are radians; a degrees-magnitude value silently disables refinement                                             | Pass `EDGE_ANGULAR_TOLERANCE_RAD` (`src/shared/constants/tessellation.ts`) at every `meshEdges` call site                                               |
-| Crash `a[e] is undefined` only at x.5 sizes                   | Integer assumption on fractional dims                                                                                                      | Half-grid recipe above                                                                                                                                  |
+| Symptom                                                       | Cause                                                                                                                                      | Fix                                                                                                                                  |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Kernel test "passes" instantly / never runs                   | File is in `__kernel-tests__/`, excluded from all normal vitest projects — plain `pnpm run test:run __kernel-tests__/foo` matches nothing  | Use `pnpm exec vitest run --config vitest.profile.config.ts <pattern>`; if it should gate CI, move it into the generators project    |
+| Export matrix passes suspiciously fast / uniformly            | `exportBin`'s last-solid cache is param-blind — without a per-scenario reset every case re-exports the first solid, all assertions vacuous | `beforeEach(() => setLastSolid(null))` from `shapeCache.ts`, as `binGenerator.export.test.ts` does; background: `git show 7d935bc55` |
+| Snapshots pass but geometry looks wrong                       | Snapshot is triangleCount only                                                                                                             | Add `customAssert` using `meshAssertions.ts` helpers for positional/structural claims                                                |
+| Feature missing from output, no error                         | Silent-skip below printable thresholds (tiny cells, pattern height, handle height)                                                         | Check size thresholds before suspecting your code; see geometry-generation                                                           |
+| Parameter edit doesn't change geometry                        | Param missing from a shape-cache key; stale solid served                                                                                   | Cache-key discipline lives in the geometry-generation skill                                                                          |
+| Path cutout renders as a plain rectangle in 3D, 2D looks fine | Duplicate consecutive vertices → OCCT rejects the wire → silent bounding-box fallback                                                      | Dedup via `dropCoincidentPoints` (`src/shared/utils/polyline.ts`) in both editor and worker                                          |
+| Bounding-box test "off by 0.5 mm"                             | Outer size is `units×42 − 0.5` clearance                                                                                                   | Assert with `assertBoundingBoxMatchesParams`, don't hand-roll expectations                                                           |
+| Curved edges coarse despite tolerance plumbing                | brepkit angular tolerances are radians; a degrees-magnitude value silently disables refinement                                             | Pass `EDGE_ANGULAR_TOLERANCE_RAD` (`src/shared/constants/tessellation.ts`) at every `meshEdges` call site                            |
+| Crash `a[e] is undefined` only at x.5 sizes                   | Integer assumption on fractional dims                                                                                                      | Half-grid recipe above                                                                                                               |
 
 When stuck, `git log --follow -p <file>` on the touched generator file — fix commits in this repo carry full root-cause analyses and are the best source of truth.
+
+## Seating and interference invariants
+
+These are the defects that pass every automatic check. A ring of feet joined by a lip
+is a closed surface; two solids that cannot be assembled are each individually fine.
+Bounding-box, triangle-count and watertight assertions all report clean. Probe inside
+the volume (`isSolidThrough`, `sectionHalfWidth` in `__kernel-tests__/meshAssertions`),
+or mate the pair and sweep (`__kernel-tests__/lidSeating.ts`, `binSeating.ts`).
+
+**State a whole-footprint result as a delta**, against the same bin with the feature
+off (for the lip half, against the same bin with `stackingLip: false`, where the lip is
+the only variable and no threshold has to be chosen). Thresholds hide sub-millimetre errors: `worstSeatInterference` has a 0.5mm floor
+on any bin (1.1mm under asymmetric overhang) that is the lip-in-cavity fit, not a
+defect, and the first `lipSupportSeating.kernel` passed against a 0.45mm real loss
+because it sat inside a chosen threshold's slack.
+
+### The feet never touch
+
+`buildBaseSocket` sizes each foot `CLEARANCE` narrower than its cell and rounds its
+top, so adjacent feet stop 0.5mm apart. The continuous floor comes from the box's
+`wallThickness` slab (`shell()` leaves it under the cavity), never from the feet. A
+base that skips the box must build that slab itself or it is one island per cell with
+a through-slot along every internal grid line.
+
+### A stacking lip is not self-contained
+
+`buildTopShapeLoft` extends the lip `LIP_TAPER_WIDTH` BELOW its own base plane for the
+angled support blending it into the wall. Fused onto a shorter wall, that lands inside
+the Gridfinity taper and back-fills it to full width, and the foot stops seating in a
+baseplate. `dim.lipHasSupport` (`pipeline/context.ts`) asks whether the material under
+the lip clears `LIP_TAPER_WIDTH + LIP_OVERLAP`; all three consumers read it. It fires
+below a 2.7mm wall: a 1u spacer at the default height unit, any 2u bin at a 3mm unit.
+
+### `totalHeight` already spans the socket
+
+`totalHeight` is `height * heightUnitMm` and `wallHeight` has the socket subtracted, so
+`baseOffsetZ + wallHeight` IS `totalHeight` on a socketed or flat base. Adding
+`baseOffsetZ` double-counts the 5mm socket and omits the `extraWallHeightMm` collar and
+the lip. It is right only for a tray bottom, whose skirt is the one underside
+`wallHeight` does not subtract. Read `dimensions.wallTopZ` (body top, where the lip
+fuses) or `dimensions.lipTopZ` (the plane a seated lid's `anchorZ` maps to). A 0.7mm
+slip put a magnetic lid's bin-side posts 0.5mm inside its own bosses; the same class in
+`lidGripDipStage` opens a slot through a 1.2mm wall while leaving the solid watertight.
+Verify by mating and probing, never by asserting the arithmetic against a copy of itself.
+
+### A magnetic lid's magnets meeting is not the lid closing
+
+Putting the two magnet faces exactly `LID_MAGNET_SEAT_GAP` apart still shipped a lid
+that could not shut: the plane that corrected them drove the bin's gusset pads 2.8mm
+into the lid's own mating skirt. The bin pad welds into the interior walls, so its
+footprint spans the whole band the skirt drops through, and `LID_MAGNET_LIP_CLEARANCE`
+does not help (that keeps the lid's BOSS clear of the bin's LIP, a different pair of
+parts). The mating plane is bounded by `wallBottomZ`, not the rim:
+`lidRetentionInterfaceZ` takes whichever of the pocket-fit and skirt bounds is deeper.
+Landing the boss ON that line keeps the part's lowest point the skirt, so
+`trayBottomSkirtDepth` still describes a magnetic tray without learning about bosses.
+`magnetSeatGap` probes a ring on the magnet axis and `worstRailInterference` probes the
+rail spines: both reported clean through 2.8mm of solid-on-solid overlap.
+`worstSeatInterference` sweeps the whole footprint, which is the shape the check needs.
+
+### A foot must land inside ONE pocket, per axis
+
+Baseplate pockets are cut from a solid slab, so the material between two is a ridge:
+a knife edge at the top face, widening going down. A full 1u foot centred on a cell
+boundary bottoms out 0.25mm into a 5mm pocket and leaves the bin resting 4.75mm proud.
+Half-bin mode places bins at 0.5u offsets independently per axis (`useGridCoords.ts`),
+so a layout applied to both at once perches on whichever one it got wrong.
+
+- `base.footLatticeX/Y`: `grid` is full cells; `half` is `0.5 + (N-1)·1 + 0.5`, exactly
+  `N`, and the only layout seating a half-offset bin without halving every cell
+  (16 feet against 36 on a 3x3).
+- `base.halfSockets` is placement-agnostic and overrides both lattices: uniform 0.5u
+  feet nest inside a pocket at either offset.
+- The lattice is exactly complementary to `fractionalEdgeX/Y`. A fractional axis
+  already carries a half cell, and putting it on the leading edge IS the seating-correct
+  layout, so each axis is answered by one mechanism or the other, never both.
+
+An analytic model of the profile is not verification; it is the arithmetic under test,
+restated. `__kernel-tests__/binSeating.ts` mates the bin to a generated plate and lets
+it fall: ~4.5-4.75mm seated against ~0-0.33mm perched.
+
+### The top ~3.15mm of a bin's cavity belongs to the lid
+
+A seated click rail hangs `LID_CLICK_RAIL_BAND_BELOW_WALL_TOP` under the bin's wall top
+and reaches ~2.8mm inboard of the inner wall face, so any interior feature reaching
+that band must be subtracted from the rail run. Compartment dividers are built to the
+interior ceiling, 0.7mm below the wall top, so every divider-to-perimeter junction was
+3.10mm of solid-on-solid overlap and no bin with a compartment grid could take the
+stock lid.
+
+- **The subtraction lives in ONE pure plan.** Three layers consume it: the worker that
+  places rails, `computeRailSummary` for the panel, and `checkLidCompatibility` for the
+  explanation. The latter two cannot import brepjs, which is why `dividerRailPlan`
+  mirrors `labelTabPlan`. They compose: `railSegmentsClearOfBlocks` takes segments, not
+  a bare span. Notching is never a whole-wall disable, so those ids go in
+  `SIDES_ARE_ADVISORY` or the gaps are discarded before anything measures them.
+- **`onOuterWall`-style reasoning is the trap.** An interior-row label tab cannot reach
+  the rail on the wall it faces, but it spans its compartment wall to wall and drives
+  1.25mm into the LEFT and RIGHT rails. Which walls an obstruction takes is a cross-axis
+  question about its footprint, never a property of its anchor.
+- Do not correct any of it for overhang: `innerOffsetX/Y` translates the cavity and the
+  lid's perimeter together.
+
+**The structural fix is `lid.relieveInterior`**, a ring carved out of the cavity's
+perimeter as the LAST pipeline stage, so tree order enforces the rule and a feature
+added later is trimmed without its author knowing the lid exists. Three things it must
+not do, each invisible if it does:
+
+1. It stops at the stacking lip's INNER face, never the wall's. The void under the
+   lip's jut IS the undercut the rail hooks; a cutter overshooting upward leaves a bin
+   that looks perfect and holds nothing. Assert the jut band is bit-identical to an
+   unrelieved bin, not merely within a threshold.
+2. It runs BEFORE `lidRetentionStage`: a magnetic lid's corner pads are interface, not
+   contents.
+3. Its gate must not consult `shouldGenerateLid`. `checkLidCompatibility` reaches the
+   gate through the divider planner and the label shelf datum, so that is unbounded
+   recursion.
+
+The label shelf is the one feature the ring must not cut: it hangs off the wall AT the
+rim, so trimming it removes the weld rather than the obstruction. Its datum sinks by
+`LID_KEEPOUT_BELOW_CEILING_MM` instead. Features reference the interface; they are not
+cut by it.
+
+### An absence is an obstruction the interference probes cannot see
+
+A wall cutout or high handle hole takes the lip a rail hooks, so a rail over one grips
+nothing while colliding with nothing. `worstSeatInterference` and
+`worstRailInterference` both report clean on a lid that does not hold. Ask the opposite
+question: wherever the LID has rail, does the BIN still have lip (`ungrippedRailMm`)?
+
+- It routes through the same `WallSpanBlock` fold as dividers and tabs. The
+  segmentation is identical, only the verification differs, so a cutout costs the rail
+  its own span plus a margin, never its wall. Its span is not `cutWidth` once
+  `cornerRadiusTop` rounds the shoulder: that flare reaches full radius exactly at the
+  rim, so measure through `safeCutoutCornerRadii`. `lipGaps` says how wide;
+  `wallCutouts` and `handles` sit in `SIDES_ARE_ADVISORY`.
+- `lid.relieveInterior` is no help: it carves back material that intrudes and cannot
+  restore material that was removed. The blocks apply with it on.
+- A plan saying "no rail here" must mirror the builder gate for gate. `handleBuilder`
+  skips handles on a slotted bin, on the BACK wall of a bin with label tabs, and on any
+  hole clamped under 1mm; `computeMultiHandleOffsets` reserves 3mm at each end so a
+  100%-wide handle is never cut at all. That also sets the bar for "no lip anywhere":
+  a literal zero is unreachable for handles and far too generous for cutouts (98%
+  leaves 0.8mm), so the blockers ask whether any surviving stretch reaches
+  `LID_MIN_RAIL_LENGTH`, the threshold the placement already uses.
+- Custom shapes are covered by a plan of their own: a polygon gap is matched to one
+  EDGE, never a side name, because a U faces front with two walls and a cutout sits on
+  exactly one. Do not trust "the gate disables it for polygons": `FeatureGate` only
+  makes the CONTROLS inert, both builders declare `supportsCellMask`, and `setCellMask`
+  never clears `walls.enabled`. That false premise is what left the defect live, and a
+  test asserted it.

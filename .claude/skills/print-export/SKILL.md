@@ -22,7 +22,7 @@ description: 3MF/STL/STEP file export, slicer compatibility (BambuStudio/OrcaSli
 | Whole-layout ZIP orchestration                                                | `src/shell/layoutExport/`                                                |
 | Baseplate plate tiling                                                        | `src/features/baseplate/utils/splitPlanner.ts`                           |
 
-Bed-capacity math (`calcMaxGridUnits`, `getEffectivePrintBedDepth`) lives in `src/core/constants.ts`. Main-thread packaging (STL→3MF, zone colors) is `src/features/bin-designer/utils/binDownloadHelpers.ts`. Shared helpers (ZIP, download, STL parse, winding repair) are in `src/shared/generation/`. `splitBinSize` only predicts counts — the geometric split is a separate worker system (`splitBinBuilder.ts`).
+Bed-capacity math (`calcMaxGridUnits`, `calcMaxGridUnitsForAxis`) lives in `src/core/constants.ts`. Main-thread packaging (STL→3MF, zone colors) is `src/features/bin-designer/utils/binDownloadHelpers.ts`. Shared helpers (ZIP, download, STL parse, winding repair) are in `src/shared/generation/`. `splitBinSize` only predicts counts — the geometric split is a separate worker system (`splitBinBuilder.ts`).
 
 ## Mental model
 
@@ -30,7 +30,7 @@ Bed-capacity math (`calcMaxGridUnits`, `getEffectivePrintBedDepth`) lives in `sr
 - Other features must import the writers via the barrel `src/shared/generation/export.ts`, or `pnpm run check:boundaries` fails.
 - The 3MF exporter never moves vertices — it centers via the build `<item>` transform (row-major 3x4; translation is the LAST three numbers), placing the bbox centroid at `PLATE_CENTER_MM` (128,128) and bbox min-z at 0. STL keeps raw coordinates. See `centeringTranslation` / `renderBuildItems` in `threemfExporter.ts`.
 - 3MF slicer compat is THREE coupled mechanisms that must change together: (1) explicit `paint_color` on every triangle, slot N → `FILAMENT_PAINT_CODES[N+1]`; (2) `Metadata/project_settings.config` + `Metadata/model_settings.config` sidecars; (3) `BAMBU_COMPAT_APPLICATION = 'BambuStudio-02.00.00.00'` — Bambu gates sidecar loading on the `BambuStudio-` prefix, and that exact version is the only one both BambuStudio 2.6.0 and Orca 2.3.1 CLIs accept (failure table in the JSDoc above the constant).
-- `printBedSize` is per-layout, stored in mm, never below `CONSTRAINTS.PRINT_BED_MM_MIN` (42) — the migration in `src/core/storage/LayoutService.ts` (search `maxPrintSize`) reinterprets any stored value < 42 as legacy grid units. `printBedDepth` undefined means square bed: resolve via `getEffectivePrintBedDepth()` or `calcMaxGridUnits()`, never read it directly.
+- `printBedSize` is per-layout, stored in mm, never below `CONSTRAINTS.PRINT_BED_MM_MIN` (42) — the migration in `src/core/storage/LayoutService.ts` (search `maxPrintSize`) reinterprets any stored value < 42 as legacy grid units. `printBedDepthMm` undefined means square bed: resolve via `calcMaxGridUnits()`, which falls back to the width, never read it directly.
 - Unit split: `print-export/utils/split.ts` works in grid units (pre-converted via `calcMaxGridUnits`); `splitPlanner.ts` works in mm. Passing mm into `splitBinSize` yields absurd "fits" results with no error. `calcMaxGridUnits` floors to 0.5 increments — integer `Math.floor` regresses half-bin mode.
 - ZIP packaging is fflate (JSZip needs `unsafe-eval`, blocked by the production CSP). `packageFilesAsZip` keys a plain object: duplicate paths silently drop the earlier file — route names through `dedupeFileNames` (`src/shell/layoutExport/`).
 
@@ -48,7 +48,7 @@ Bed-capacity math (`calcMaxGridUnits`, `getEffectivePrintBedDepth`) lives in `sr
 ### Change bed fitting or split behavior
 
 1. Pick the system: print-list prediction = `split.ts`; bed capacity = `calcMaxGridUnits`; baseplate tiling = `splitPlanner.ts`.
-2. Preserve: the 0.5-increment floor and width/depth asymmetry in `calcMaxGridUnits`; `splitHalf`'s dual rounding (integer for whole dims, 0.5-aware for fractional) in `split.ts`; the `TONGUE_PROTRUSION` bed budget in `makeAxisConfig`/`axisChunkMm` in `splitPlanner.ts`.
+2. Preserve: the 0.5-increment floor and width/depth asymmetry in `calcMaxGridUnits`; `axisPieces`'s dual rounding (integer for whole dims, 0.5-aware for fractional) in `split.ts`; the `TONGUE_PROTRUSION` bed budget in `makeAxisConfig`/`axisChunkMm` in `splitPlanner.ts`.
 3. Under `preferIdenticalPieces` the canonical piece is reused 180°-rotated — every positionally-indexed field must rotate with it in `pieceToBaseplateParams` (`splitPlanner.ts`): padding L↔R/F↔B, fractionalEdge start↔end, cornerRadii tl↔br/tr↔bl. A forgotten field silently puts dovetails/corners on the wrong world side of the printed piece; no test or type catches it.
 4. Update sibling tests, then `pnpm run test:run src/features/print-export && pnpm run typecheck`.
 
@@ -91,3 +91,26 @@ Bed-capacity math (`calcMaxGridUnits`, `getEffectivePrintBedDepth`) lives in `sr
 | Layout ZIP ignores custom name for inner files / baseplate errors vanish | Both deliberate: inner files force descriptive style (one custom name would collide), and baseplate failure degrades to a bins-only archive with a toast (`.catch(() => null)` in `useLayoutExport.ts`). Don't "fix" either.                                  |
 
 Other by-design facts that look like bugs: binary STL headers must not start with `solid` (`writeHeader` in `stlExporter.ts` prepends a space); `repairMeshWinding` is wired into baseplate STL only and is currently a no-op safety net (wire the same pass into bins if they show winding symptoms — don't write a new repair); in the STEP combined export, divider/lid solids are freed in `finally` but `binSolid` belongs to `shapeCache` and must NOT be freed (`exportHandler.ts`); print estimates use the calibrated shell-volume model in `src/shared/printSettings/standardBinVolume.ts` — don't re-derive its constants from first principles.
+
+## STEP is a different operation, not a flag
+
+The split path writes each piece's BREP solid (`exportSTEP`) where the STL path meshes
+it, so `format` forks at the piece. The mesh-imprint guard has to be restated:
+`exportBin`'s refusal does not cover the split route, and an imprint is subtracted
+post-tessellation, so no solid describes it.
+
+Two silent failures around it:
+
+- `EXPORT_COMBINED` under STEP returns ONE `'assembly'` compound holding bin + lid +
+  dividers, so a split export's companion pass (which filters `label !== 'bin'`) keeps
+  the whole bin a second time. `separatePieces` is what makes that pass emit per-part
+  files, and both the designer's `downloadSplit` and the layout ZIP's `splitFiles` need
+  it.
+- The ZIP extension is chosen separately from the worker format, so a `.stl`-named
+  archive of STEP bytes downloads perfectly happily.
+
+None of it is visible to a byte-length, header or piece-count assertion: a piece that
+quietly kept the whole bin is a valid STEP file of a plausible size. Re-import the
+buffer (`importSTEP`) and measure the solid it describes.
+`binGenerator.scenario.split-step.test.ts` asserts each half spans half the bin, which
+is the only check catching a cut that never reached the exported solid.
