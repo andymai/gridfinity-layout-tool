@@ -51,14 +51,12 @@ splitBinSize(w, d, maxUnits):
 | ------------ | -------------------------------- |
 | Filament (g) | shell volume × 1.24 g/cm³ + base |
 | Time (min)   | proportional to filament weight  |
-| Cost         | filament × $/gram setting        |
-| Spool %      | total / spool size               |
+| Cost         | filament × `filamentCostPerKg`   |
 
 ## Settings Dependencies
 
 - `printBedSize` - max bin size in mm
-- `filamentCostPerGram`
-- `spoolSize`
+- `filamentCostPerKg`
 
 ## Gotchas
 

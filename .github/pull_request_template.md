@@ -1,32 +1,24 @@
 ## Summary
 
-**Type**: feat | fix | refactor | test | docs | chore | perf
+## Why
 
-## Context
-
-Why this change? Link issue/task. If AI-generated, include the prompt or goal.
+What problem, and why this approach? Link the issue.
 
 ## Changes
 
 -
 
-## Architecture
+## Risk
 
-- **Stores**: layout | library | settings | history | selection | interaction | none
-- **Features**: bin-designer, grid-editor, layers, print-export, etc.
-- **New types**: or "none"
-- **i18n keys**: or "none"
-- **Storage/schema changes**: or "none"
+What could this break, and where should a reviewer look hardest? Note any
+manual verification done beyond CI (printed parts, slicer checks, a browser
+pass), since nothing automated covers those.
 
 ## Breaking changes
 
-Delete section if none. Include migration steps.
+Delete this section if none. Otherwise include migration steps.
 
-## Test plan
+---
 
-- [ ] `pnpm run test:coverage`
-- [ ] `pnpm run build`
-- [ ] New code has colocated sibling tests
-- [ ] i18n: `pnpm run check:i18n`
-- [ ] No `console.log`, `any`, `var`, `==`, `!` introduced
-- [ ] CLAUDE.md updated if conventions changed
+<sub>Title format, lint, types, i18n, tests, coverage and bundle size are gated by
+`pr-title.yml`, the pre-commit hooks and CI. No need to restate them here.</sub>

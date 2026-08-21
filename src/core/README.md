@@ -11,7 +11,7 @@ graph TB
     R[result/] --> S & ST & A
     C --> S & ST
     ST -->|persistence| S
-    S -->|layout, library, selection, history, interaction, view, settings| APP[App]
+    S -->|layout, library, selection, interaction, view, settings| APP[App]
     L[labs/] -->|feature flags| S
 ```
 
@@ -19,11 +19,11 @@ graph TB
 
 | Directory  | Purpose                                                                                                 |
 | ---------- | ------------------------------------------------------------------------------------------------------- |
-| `api/`     | Cloud sharing API client (`share.ts`, `suggestName.ts`)                                                 |
+| `api/`     | Cloud sharing + community API clients (`share.ts`, `communityClient.ts`, `mapApiError.ts`)              |
 | `labs/`    | Feature flag definitions and types (experimental/preview/graduated, plus `defaultEnabled`)              |
 | `result/`  | `Result<T, E>` type system — constructors, error catalog, combinators                                   |
 | `storage/` | Layout persistence — LayoutManager, LayoutService, ShareService, backends                               |
-| `store/`   | Zustand + Immer stores — layout, library, history, selection, interaction, view, settings               |
+| `store/`   | Zustand + Immer stores — layout, library, selection, interaction, view, settings, toast, labs           |
 | `sync/`    | Multi-device sync foundation: session, `outbox` (IDB queue), `status` store, `adapters/` (engine in 4b) |
 
 ## Key Files
@@ -35,14 +35,15 @@ graph TB
 
 | Store            | Purpose                                                         |
 | ---------------- | --------------------------------------------------------------- |
-| `layout.ts`      | Current layout data, bin/layer/category CRUD (returns `Result`) |
+| `layout/`        | Current layout data, bin/layer/category CRUD (returns `Result`) |
 | `library.ts`     | Multi-layout library index, active layout, cloud share metadata |
-| `history.ts`     | Undo/redo stack (max 100 states)                                |
 | `selection.ts`   | Selected bins, active layer/category, keyboard focus            |
 | `interaction.ts` | Current mode (draw/drag/resize/paint), drop targets, 3D preview |
 | `view.ts`        | Zoom, panel collapse, context menu, layer visibility            |
 | `settings.ts`    | User preferences (persisted to `gridfinity-settings-v1`)        |
 | `toast.ts`       | Ephemeral notifications (max 3, auto-dismiss)                   |
+
+Undo/redo is not a `store/` member: `cqrs/undo/historyStore.ts` owns it, captured by the CQRS undo middleware.
 
 ## Storage Architecture (`storage/`)
 
