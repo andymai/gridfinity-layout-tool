@@ -5,7 +5,8 @@ Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organiz
 ## Git & Quality
 
 - **Main is protected** - all changes via PRs
-- Pre-commit hooks enforce lint-staged, module boundaries, i18n (4 checks), exhaustiveness, affected tests, component structure, missing tests, readme reminders, doc drift
+- Pre-commit **blocks** on: lint-staged, module boundaries, design system, i18n (4 checks), exhaustiveness, component structure, doc drift
+- Pre-commit **warns only**: missing tests, readme reminders. `test:affected` is commented out of the hook, so **no tests run at commit time** — CI is the gate
 
 ## Docs
 
@@ -81,8 +82,8 @@ See `src/core/cqrs/README.md` for architecture details, adding new commands/even
 
 - **Convention:** Colocated sibling tests — `foo.ts` + `foo.test.ts` in the same directory
 - **Infrastructure (`src/test/`):** `setup.ts`, `testUtils.ts`, `mocks/` — shared test utilities (stays centralized)
-- Pre-commit **blocks** if edited component file has no sibling test
-- Run `pnpm run test:coverage` before commit
+- `check-component-structure.sh` **blocks** (exit 1) when a staged uppercase-named `.tsx`/`.ts` under `src/**/components/` lacks its named folder or a sibling test on disk. `check-missing-tests.sh` covers everything else and only **warns** (always exits 0)
+- Run `pnpm run test:coverage` before commit — nothing at commit time does
 - **Test files are type-checked.** `tsconfig.test.json` is in the root `tsconfig.json` references, so `pnpm run typecheck` covers every `*.test.ts(x)`, `src/test/**`, `scripts/**/*.test.ts` and `__kernel-tests__` file. Keep it that way — a test that does not type-check can assert against a property that does not exist and still pass.
 
 ## Debugging & Bug Fixing

@@ -30,7 +30,7 @@ description: Write and run tests — Vitest three-project routing (unit/dom/gene
 5. **Store reset is manual.** Setup files do RTL cleanup only. Any test touching Zustand stores needs `resetAllStores()` (or a targeted `reset*Store()`) from `@/test/testUtils` in `beforeEach`, or state leaks silently into later tests. `resetAllStores()` is a hand-maintained list in `src/test/testUtils.ts` — when adding a new Zustand store, register its reset there or it leaks into every subsequent store test.
 6. **E2E retries are 0 by policy** (`playwright.config.ts`, 6 projects: chromium/firefox/webkit/mobile-chrome/mobile-safari/tablet). A flake must be root-caused; known-unfixable interactions get `test.skip()` plus unit coverage, never retries or sleeps.
 
-Deeper docs: `src/test/README.md` and `e2e/README.md` — but its coverage numbers are stale; the enforced source of truth is the `thresholds` block in `vitest.config.ts` (lines 76 / branches 68 / functions 74 / statements 75). Also: despite CLAUDE.md, `scripts/check-missing-tests.sh` always exits 0 (warn-only) and `test:affected` is commented out of `.husky/pre-commit` — tests are NOT run at commit time; CI is the gate.
+Deeper docs: `src/test/README.md` and `e2e/README.md`. The enforced coverage numbers are the `thresholds` block in `vitest.config.ts`; read them there, since any copy drifts. Note that `scripts/check-missing-tests.sh` always exits 0 (warn-only) and `test:affected` is commented out of `.husky/pre-commit`, so tests are NOT run at commit time; CI is the gate.
 
 ## Recipes
 
