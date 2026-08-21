@@ -68,7 +68,7 @@ Identity is a line on the form (`Publishing as X · Change`), not a step. As a s
 
   **A size bound at the edge of the reachable window means "unset".** `DimensionFilters` drives three sliders (`RangeSlider` for width/depth, `Slider` for the height ceiling) over the stop values present in the index. An unset bound renders at the edge of what the other filters still leave reachable, and dragging back to that edge writes `null` — otherwise a full-extent track would either freeze a bound that excludes nothing or, worse, show thumbs pulled inward while no filter is applied. Travel is clamped to that window but widened to include any stored bound, so one left behind by a looser filter is never stranded off-track.
 
-- `components/CommunityCard/`: gallery card: lazy thumbnail with a neutral placeholder, author as plain text, dims-first footer with like/remix counts, corner remix glyph. Hover/long-press angle cycling is deferred until the list index exposes per-card angle URLs (it carries a single `thumbnailUrl` today).
+- `components/CommunityCard/`: gallery card: lazy thumbnail with a neutral placeholder, author as plain text, dims-first footer with like/remix counts, corner remix glyph. The list index carries a single `thumbnailUrl` per card, so a card shows one angle.
 
   **The card is a link, and nothing above the heart may claim button semantics.** The title is a real `<a href="/community/d/<id>">` whose stretched `::after` is the card's hit area; a plain click is intercepted and opens the overlay in place, a modified or middle click is left to the browser so a design opens in a new tab. It was a `div[role="button"]`, which is the `nested-interactive` axe violation as soon as the author and heart buttons sit inside it — the earlier note about avoiding button-in-button addressed the HTML but not the ARIA. The author and footer therefore sit on `z-10` above the stretched area, and each must `stopPropagation`.
 
@@ -156,7 +156,7 @@ A photo slot is either `kept` (a URL already on the record) or `new` (a fresh da
 
 `ReportDialog` takes an optional `submit` and `title`, so reporting a print reuses the same reason union, note field and error handling as reporting a design.
 
-Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`), `api/lib/communityPrintStore.ts`, and `api/lib/communityPrintValidation.ts`. The `community:index:prints` ZSET is maintained from the moment prints exist but is not yet a member of `COMMUNITY_INDEX_SORTS`: exposing the "most printed" sort is a separate change, so that when it lands its scores are already correct rather than needing a backfill.
+Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`), `api/lib/communityPrintStore.ts`, and `api/lib/communityPrintValidation.ts`. `prints` is a member of `COMMUNITY_INDEX_SORTS`, so the `community:index:prints` ZSET is maintained alongside the others and its scores need no backfill.
 
 ### Surfacing
 
