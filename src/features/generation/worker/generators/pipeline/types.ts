@@ -158,6 +158,22 @@ export interface BinDimensions {
   readonly isSlotted: boolean;
   readonly hasLip: boolean;
   /**
+   * The shell leaves the lip solid OUT, while every other dimension still
+   * describes a bin that has one.
+   *
+   * Set only by `splitSolidIntoPieces`, which builds the lip separately and
+   * fuses it per piece to dodge an OCCT crash at the lip-wall junction. It used
+   * to say so by clearing `base.stackingLip`, which also told every feature
+   * builder the bin was lipless: the interior ceiling rose by `LIP_SMALL_TAPER`,
+   * a scoop lost the inward offset that keeps its exit flush with the lip's
+   * inner face, and a cutout's shoulder round-over seated on the wall top. Each
+   * one made a split piece a different shape from the same region of the
+   * unsplit bin.
+   *
+   * `shellKey` carries it, because the shell is the one thing it changes.
+   */
+  readonly omitLipSolid: boolean;
+  /**
    * Whether the stacking lip gets its angled 45° support — the wedge that blends
    * the lip's inward jut down into the wall it sits on.
    *

@@ -165,6 +165,7 @@ export const shellStage: PipelineStage = {
       // exact-faithful fuse below. Draft-only: the export path is an exact kernel.
       const integratedLip =
         dim.hasLip &&
+        !dim.omitLipSolid &&
         !dim.solid &&
         !dim.compartmentsBakedIntoShell &&
         getKernelCapabilities().tessellationModel === 'build-time' &&
@@ -206,7 +207,7 @@ export const shellStage: PipelineStage = {
             dim.overhang
           );
           collectOrigins(floor, FeatureTag.BASE, originToTag);
-          if (!dim.hasLip) return floor;
+          if (!dim.hasLip || dim.omitLipSolid) return floor;
 
           // `includeLip: false` drops the angled support a lip normally hangs
           // BELOW its own base plane (to -LIP_TAPER_WIDTH) to blend into the
@@ -274,7 +275,7 @@ export const shellStage: PipelineStage = {
         );
         collectOrigins(binBody, FeatureTag.BASE, originToTag);
 
-        if (dim.hasLip) {
+        if (dim.hasLip && !dim.omitLipSolid) {
           try {
             const lipBase = scope.register(
               buildTopShape(

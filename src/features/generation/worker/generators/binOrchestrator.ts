@@ -77,16 +77,28 @@ const DEFAULT_PIPELINE: readonly PipelineStage[] = [
  * @param onProgress Optional progress callback
  * @param forExport If true, generates full-fidelity geometry for 3D printing.
  *                  Preview mode uses simplified geometry for faster rendering.
+ * @param omitLipSolid Build the shell without its stacking lip while every
+ *                  other dimension still describes a bin that has one. For
+ *                  `splitSolidIntoPieces`, which fuses a separately-built lip
+ *                  onto each piece — see {@link BinDimensions.omitLipSolid}.
  */
 export function generateBin(
   params: BinParams,
   onProgress?: ProgressFn,
   forExport = false,
   signal?: AbortSignal,
-  perfCollector?: PerfCollector
+  perfCollector?: PerfCollector,
+  omitLipSolid = false
 ): MeshData {
   assertValidMask(params);
-  const ctx = createInitialContext(params, onProgress, forExport, signal, perfCollector);
+  const ctx = createInitialContext(
+    params,
+    onProgress,
+    forExport,
+    signal,
+    perfCollector,
+    omitLipSolid
+  );
   const result = runPipeline(DEFAULT_PIPELINE, ctx);
 
   if (!result.mesh) {

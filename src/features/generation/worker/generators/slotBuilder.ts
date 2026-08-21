@@ -194,10 +194,9 @@ export function buildSlotCuts(
  * @param slotPositionsEdgeInset Edge inset (mm) used when computing slot
  *   positions along each axis. MUST match the value the caller's body used
  *   when generating its wall slots — otherwise lip cuts will misalign and
- *   dividers won't slide through. Split bin callers should pass 0 because
- *   bodyParams strips `stackingLip`, forcing the pipeline to compute body
- *   slot positions with edgeInset=0. Non-split callers wanting to use this
- *   helper would pass `lipOverhang` instead to match the normal pipeline.
+ *   dividers won't slide through. That is `lipOverhang`
+ *   (`lipTaperWidth - wallThickness`, floored at 0), the same value
+ *   `buildSlotCuts` derives from its own `lipInfo`.
  * @returns Fused compound of lip cutters, or null if not slotted / no cuts needed
  */
 export function buildLipSlotCuts(

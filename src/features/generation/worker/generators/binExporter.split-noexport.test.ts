@@ -4,9 +4,9 @@
  * "split pieces" checkbox is unchecked.
  *
  * Bug: When the split preview is generated (useSplitPreview fires on the
- * worker), splitSolidIntoPieces calls generateBin(bodyParams, …, true)
- * with bodyParams that may differ from the user's actual params (e.g.
- * stackingLip is stripped for the body pass). This leaves lastSolid set
+ * worker), splitSolidIntoPieces calls generateBin(params, …, true, omitLipSolid)
+ * and leaves behind a solid that differs from the user's actual bin (e.g.
+ * the lip solid is left out of the body pass). This leaves lastSolid set
  * to the body solid and marks isLastSolidExportQuality = true. If the user
  * then exports without split (unchecks the checkbox), exportBin sees the
  * export-quality flag, skips regeneration, and attempts to write the cached
@@ -85,7 +85,7 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     };
 
     // Simulate what useSplitPreview does: generate the split preview.
-    // Internally this calls generateBin(bodyParams, …, true) and leaves
+    // Internally this calls generateBin(…, omitLipSolid) and leaves
     // lastSolid pointing at the body solid.
     generateSplitPreview(params, CUT_PLANES_X, [], CONNECTORS_OFF);
 
@@ -102,9 +102,9 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
   }, 90000);
 
   it('exports successfully after split preview — with stacking lip', async () => {
-    // Bins with stackingLip=true are the primary affected case: bodyParams
-    // strips the lip, so lastSolid ends up as the lipless body, while the
-    // export should produce a bin WITH the lip.
+    // Bins with stackingLip=true are the primary affected case: the split body
+    // leaves the lip solid out, so lastSolid ends up as the lipless body, while
+    // the export should produce a bin WITH the lip.
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: SPLIT_WIDTH,

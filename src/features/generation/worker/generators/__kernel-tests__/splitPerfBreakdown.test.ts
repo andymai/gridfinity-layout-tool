@@ -110,11 +110,12 @@ describe('split preview per-stage breakdown', () => {
       const cy = cutPlanes(spanY, rowsCut);
       const total = colsCut * rowsCut;
 
-      // Body params mirror splitSolidIntoPieces: strip lip (it's split separately).
-      const bodyParams: BinParams = { ...params, base: { ...params.base, stackingLip: false } };
-
+      // Mirrors splitSolidIntoPieces: the lip solid is left out of the body
+      // (it is built and fused per piece instead). Via `omitLipSolid` rather
+      // than a lipless copy of the params, or this profiles a bin whose every
+      // rim-anchored feature sits somewhere else.
       const fullGen = timeMedian(() => {
-        getGenerateBin()(bodyParams, undefined, true);
+        getGenerateBin()(params, undefined, true, undefined, undefined, params.base.stackingLip);
       });
 
       // Each pool worker's round-robin share (worker 0 gets the most pieces, so
