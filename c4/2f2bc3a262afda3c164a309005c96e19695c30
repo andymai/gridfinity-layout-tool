@@ -1,0 +1,118 @@
+src/i18n/locales/en.ts
+  s_774baffa353088::t_41916583b99c97 1852-1853
+  s_774baffa353088::t_e0612dc3e5aa1b 1856-1857
+  s_774baffa353088::t_8c79808143ee72 1876-1878
+  s_774baffa353088::t_485f3093db6b9b 1863
+src/i18n/locales/ko.json
+  s_774baffa353088::t_55d1db142706d7 309,312
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+src/i18n/locales/it.json
+  s_774baffa353088::t_55d1db142706d7 309,312
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+src/features/bin-designer/components/CompartmentEditor/DividerHitTargets.tsx
+  s_774baffa353088::t_2d2034fb0a205b 40
+  s_774baffa353088::t_dbb442aea8b70c 160
+src/i18n/locales/pl.json
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+  s_774baffa353088::t_55d1db142706d7 309,312
+src/i18n/locales/es.json
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+  s_774baffa353088::t_55d1db142706d7 309,312
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_774baffa353088::t_6a520023617c93 104
+  s_774baffa353088::t_a6d36352e158dc 73-78
+  s_774baffa353088::t_97e2ac479d3d66 542,563-566,568-569,572,574-575,577,579-583
+  s_774baffa353088::t_8ba07f57d58251 9,19,33,51-53,57,81-82,88-89,118-132,225-226,251-264,273-274,288-289,300,303-309,336-338,340-348,350-359,362-394,396-397,403-406,410-434,473-479,483-486,488-499,502-512,514-516,520-522,524-534,536-539,544-562,567,570-571,573,576,594-595
+  s_774baffa353088::t_4db4a3429f8cc5 147-151
+  s_774baffa353088::t_ce479bf01f5216 22-27,398-400,407,409
+  s_774baffa353088::t_42e1c62af5a306 246
+  s_774baffa353088::t_7786e5027b3ec6 138,143-146,153-175
+  s_774baffa353088::t_0486d98f247e40 220-224
+  s_774baffa353088::t_71ef5448943a4d 133
+  s_774baffa353088::t_e9e35133312010 408
+  s_774baffa353088::t_266973f1f0cd4e 596
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.test.tsx
+  s_774baffa353088::t_d6592fc303417f 140-148,150-153
+  s_774baffa353088::t_6916025ef32ab0 222-230
+  s_774baffa353088::t_ed1994ae25e7a9 61
+  s_774baffa353088::t_c65c8249dd63e6 171-173
+  s_774baffa353088::t_d90b02f8604b77 132-139,149,154-155
+  s_774baffa353088::t_5fce2d3b121da6 2
+src/features/bin-designer/components/CompartmentEditor/DividerDiagrams.tsx
+  s_774baffa353088::t_5b49240feddeca 31-32
+  s_774baffa353088::t_8efd898de4e908 1-30,33-255
+src/i18n/locales/uk.json
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+  s_774baffa353088::t_55d1db142706d7 309,312
+src/features/bin-designer/components/CompartmentEditor/useCompartmentGrid.ts
+  s_774baffa353088::t_2229030c1aa555 424
+  s_774baffa353088::t_e97e2507f41849 178-179
+  s_774baffa353088::t_6e6399560607e7 90-93,95,98-107
+  s_774baffa353088::t_10a246b4cfef77 182-185
+  s_774baffa353088::t_00bf9d8f0d6ac4 33
+  s_774baffa353088::t_f56683c5599915 180,186
+  s_774baffa353088::t_bce09f934b9f0f 108
+src/features/bin-designer/components/CompartmentEditor/DividerDiagrams.test.tsx
+  s_774baffa353088::t_3e32dce90f23e7 1-146
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.test.tsx
+  s_774baffa353088::t_f754b2491eb28b 201,204-208
+src/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection.ts
+  s_774baffa353088::t_c05fd6ec60405d 14
+  s_774baffa353088::t_36c7a59c8e712a 6-9
+  s_774baffa353088::t_0406952d7b67ad 32-39
+  s_774baffa353088::t_92e378a4455fb5 113-119
+  s_774baffa353088::t_d81b80ddad7cc5 120-125
+  s_774baffa353088::t_3030724a7b9252 334
+  s_774baffa353088::t_1eb52149d7ffc3 138-139,147
+src/i18n/locales/fr.json
+  s_774baffa353088::t_55d1db142706d7 309,312
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+src/i18n/locales/ja.json
+  s_774baffa353088::t_55d1db142706d7 309,312
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+src/i18n/locales/nl.json
+  s_774baffa353088::t_55d1db142706d7 309,312
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+src/features/bin-designer/components/CompartmentEditor/CompartmentGridView.test.tsx
+  s_774baffa353088::t_5460a12d97977c 62
+  s_774baffa353088::t_c05e781f61f375 130,134,150,159
+src/features/bin-designer/components/CompartmentEditor/CompartmentGridView.tsx
+  s_774baffa353088::t_6bde7360faf512 56
+  s_774baffa353088::t_4f312693e1d98a 142-146,155
+src/i18n/locales/zh-CN.json
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+  s_774baffa353088::t_55d1db142706d7 309,312
+src/i18n/locales/de.json
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+  s_774baffa353088::t_55d1db142706d7 309,312
+src/i18n/locales/pt-BR.json
+  s_774baffa353088::t_55d1db142706d7 309,312
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+src/i18n/locales/cs.json
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+  s_774baffa353088::t_55d1db142706d7 309,312
+src/features/bin-designer/README.md
+  s_774baffa353088::t_f9386f7c67bc22 613-619,625-626
+src/i18n/locales/sv.json
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+  s_774baffa353088::t_55d1db142706d7 309,312
+src/i18n/locales/nb.json
+  s_774baffa353088::t_55d1db142706d7 309,312
+  s_774baffa353088::t_5995230d5d2622 290-291,306,311
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c42f2bc3a262afda3c164a309005c96e19695c30",
+  "prompts": {},
+  "sessions": {
+    "s_774baffa353088": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a067149-89fa-4828-9b1f-844e93daef7a",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
