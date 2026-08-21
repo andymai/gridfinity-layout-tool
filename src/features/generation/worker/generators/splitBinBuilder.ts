@@ -41,7 +41,10 @@ import { resolveOverhang } from './overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hasMeshImprints, imprintPieceArrays } from './meshImprint';
 import { unwrapExportBlob } from './utils/exportUnwrap';
-import { deriveDimensions } from './pipeline/context';
+import { createInitialContext, deriveDimensions } from './pipeline/context';
+import { buildWallPatterns } from './wallPatternBuilder';
+import { buildKumikoWallPatterns } from './kumikoWrapBuilder';
+import { fuseAllOrNull } from './utils/shapeOps';
 import { splitConnectorsSuppressedByBase } from '@/shared/generation/splitUtils';
 
 /** Result of a split export: array of piece buffers with grid labels */
@@ -320,6 +323,53 @@ function splitSolidIntoPieces(
           lipCuts.delete();
         }
       }
+    }
+
+    // Wall patterns cut the lip for the same reason, and it is easy to miss
+    // why: a hex sits well below the rim, so it looks like it could not reach
+    // the lip at all. The lip's angled support hangs `LIP_TAPER_WIDTH` BELOW
+    // its own base plane, down to `wallHeight - LIP_OVERLAP - LIP_TAPER_WIDTH`,
+    // and the pattern band's top always clears that by ~0.5mm. Whether any
+    // element actually lands in the overlap is down to how the stamp calculator
+    // laid the rows out, so a bin at one scale is untouched and the same bin one
+    // notch bolder has the top row of holes plugged flat by material fused on
+    // after the cut. An unsplit bin cuts body and lip in one pass and never has
+    // the chance.
+    //
+    // The standing rule this is the third instance of: anything that cuts the
+    // wall has to be handed to the lip here too.
+    if (params.wallPattern.enabled) {
+      const patternCtx = createInitialContext(params, undefined, true, undefined, undefined, true);
+      const patternShapes = [
+        ...buildWallPatterns(patternCtx).shapes,
+        ...buildKumikoWallPatterns(patternCtx),
+      ];
+      // Lowest lip material anywhere: the bottom of the support wedge, in the
+      // cutters' own body-local frame. Read off `wallTopZ` (less the floor lift
+      // that converts to it) rather than restated from `wallHeight`, which is
+      // one term short of the rim on a bin carrying an `extraWallHeightMm`
+      // collar or a tray's floor.
+      const lipReach = wallTopZ - floorZ - LIP_OVERLAP - LIP_TAPER_WIDTH;
+      // Asked of the built solids rather than recomputed from the layout, so it
+      // cannot drift from where the stamps actually ended up. A bin whose top
+      // row stops short of the wedge (the default scale does) skips the fuse and
+      // the boolean both, and is the common case.
+      const reachesLip = patternShapes.some((shape) => getBounds(shape).zMax > lipReach);
+      const fused = reachesLip ? fuseAllOrNull(patternShapes) : null;
+      if (fused) {
+        // Pattern cutters come out in body-local Z (floor at 0) already carrying
+        // the overhang's interior offset, so only the floor lift is left.
+        const positioned = floorZ === 0 ? fused : translate(fused, [0, 0, floorZ]);
+        try {
+          const newLip = unwrap(cut(lipSolid as ValidSolid, positioned as ValidSolid));
+          lipSolid.delete();
+          lipSolid = newLip;
+        } finally {
+          if (positioned !== fused) positioned.delete();
+          if (!patternShapes.includes(fused)) fused.delete();
+        }
+      }
+      for (const shape of patternShapes) shape.delete();
     }
 
     // Wall cutouts pass through wall and lip alike, and the body already has
