@@ -8,11 +8,15 @@ import type { EligibleDivider } from '@/features/bin-designer/utils/compartments
 import {
   applyAngleShift,
   getDividerGeometry,
+  getLeanLimits,
+  leanToFootTravel,
   offsetsToAngleShift,
   type AngleShift,
-  type BinInteriorParams,
+  type DividerEnvelopeParams,
   type DividerGeometry,
 } from '@/features/bin-designer/utils/dividerAngle';
+import { labelTabInteriorDims } from '@/shared/utils/labelTabPlan';
+import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 
 /** Canonical key for a divider between two compartments. Sorts inputs so
  *  callers can't desync the key by passing the pair in either order
@@ -29,6 +33,8 @@ export interface TiltRow extends EligibleDivider {
   readonly angleDeg: number;
   /** Committed parallel shift (mm) — derived from the offsets. */
   readonly shiftMm: number;
+  /** Committed lean off vertical (degrees). */
+  readonly leanDeg: number;
 }
 
 export function useDividerTiltSubsection() {
@@ -38,12 +44,14 @@ export function useDividerTiltSubsection() {
     gridUnitMm,
     gridUnitMmY,
     wallThickness,
+    params,
     compartments,
     scoopEnabled,
     labelEnabled,
     hasInserts,
     setDividerOverride,
     removeDividerOverride,
+    setDividerOverrides,
     clearDividerOverrides,
     selectedDividerKey,
     hoveredDividerKey,
@@ -58,12 +66,14 @@ export function useDividerTiltSubsection() {
       gridUnitMm: s.params.gridUnitMm,
       gridUnitMmY: s.params.gridUnitMmY,
       wallThickness: s.params.wallThickness,
+      params: s.params,
       compartments: s.params.compartments,
       scoopEnabled: s.params.scoop.enabled,
       labelEnabled: s.params.label.enabled,
       hasInserts: s.params.inserts.length > 0,
       setDividerOverride: s.setDividerOverride,
       removeDividerOverride: s.removeDividerOverride,
+      setDividerOverrides: s.setDividerOverrides,
       clearDividerOverrides: s.clearDividerOverrides,
       selectedDividerKey: s.ui.selectedDividerKey,
       hoveredDividerKey: s.ui.hoveredDividerKey,
@@ -75,27 +85,36 @@ export function useDividerTiltSubsection() {
   );
   const t = useTranslation();
 
-  const dims = useMemo<BinInteriorParams>(
-    () => ({ width, depth, gridUnitMm, gridUnitMmY, wallThickness }),
-    [width, depth, gridUnitMm, gridUnitMmY, wallThickness]
+  // The lean pivots on the divider's top, so its envelope needs the wall's real
+  // height. Resolved through the same pair the worker uses rather than restated.
+  const dividerHeightMm = useMemo(() => {
+    const interior = labelTabInteriorDims(params);
+    if (!interior) return 0;
+    return resolveCompartmentDividerHeight(compartments.dividerHeight, interior.interiorHeight);
+  }, [params, compartments.dividerHeight]);
+
+  const dims = useMemo<DividerEnvelopeParams>(
+    () => ({ width, depth, gridUnitMm, gridUnitMmY, wallThickness, dividerHeightMm }),
+    [width, depth, gridUnitMm, gridUnitMmY, wallThickness, dividerHeightMm]
   );
 
   const rows: readonly TiltRow[] = useMemo(() => {
     return getEligibleDividers(compartments).map((d) => {
       const geometry = getDividerGeometry(dims, compartments, d);
-      const { angleDeg, shiftMm } = geometry
+      const { angleDeg, shiftMm, leanDeg } = geometry
         ? offsetsToAngleShift(
-            { offsetStart: d.offsetStart, offsetEnd: d.offsetEnd },
+            { offsetStart: d.offsetStart, offsetEnd: d.offsetEnd, rakeDeg: d.rakeDeg },
             geometry.segmentLengthMm
           )
-        : { angleDeg: 0, shiftMm: 0 };
+        : { angleDeg: 0, shiftMm: 0, leanDeg: 0 };
       return {
         ...d,
         key: rowKeyOf(d.compartmentA, d.compartmentB),
-        hasTilt: d.offsetStart !== 0 || d.offsetEnd !== 0,
+        hasTilt: d.offsetStart !== 0 || d.offsetEnd !== 0 || d.rakeDeg !== 0,
         geometry,
         angleDeg,
         shiftMm,
+        leanDeg,
       };
     });
   }, [compartments, dims]);
@@ -129,14 +148,22 @@ export function useDividerTiltSubsection() {
   // Angle/shift shown in the inspector: the in-flight drag preview when it
   // targets the selected divider, otherwise the committed value.
   const selectedAngleShift = useMemo<AngleShift>(() => {
-    if (!selectedRow) return { angleDeg: 0, shiftMm: 0 };
+    if (!selectedRow) return { angleDeg: 0, shiftMm: 0, leanDeg: 0 };
     if (selectedRow.geometry && dividerTiltPreview && dividerTiltPreview.key === selectedRow.key) {
       return offsetsToAngleShift(
-        { offsetStart: dividerTiltPreview.offsetStart, offsetEnd: dividerTiltPreview.offsetEnd },
+        {
+          offsetStart: dividerTiltPreview.offsetStart,
+          offsetEnd: dividerTiltPreview.offsetEnd,
+          rakeDeg: dividerTiltPreview.rakeDeg,
+        },
         selectedRow.geometry.segmentLengthMm
       );
     }
-    return { angleDeg: selectedRow.angleDeg, shiftMm: selectedRow.shiftMm };
+    return {
+      angleDeg: selectedRow.angleDeg,
+      shiftMm: selectedRow.shiftMm,
+      leanDeg: selectedRow.leanDeg,
+    };
   }, [selectedRow, dividerTiltPreview]);
 
   const selectDivider = useCallback(
@@ -165,6 +192,7 @@ export function useDividerTiltSubsection() {
         key: row.key,
         offsetStart: result.offsetStart,
         offsetEnd: result.offsetEnd,
+        rakeDeg: result.rakeDeg,
       });
     },
     [setDividerTiltPreview]
@@ -183,11 +211,18 @@ export function useDividerTiltSubsection() {
       if (!row.geometry) return;
       const result = applyAngleShift(next, row.geometry);
       setDividerTiltPreview(null);
-      setDividerOverride(row.compartmentA, row.compartmentB, result.offsetStart, result.offsetEnd);
+      setDividerOverride(
+        row.compartmentA,
+        row.compartmentB,
+        result.offsetStart,
+        result.offsetEnd,
+        result.rakeDeg
+      );
       trackEvent('divider_offset_changed', {
         axis: row.axis,
         offset_start_mm: result.offsetStart,
         offset_end_mm: result.offsetEnd,
+        lean_deg: result.rakeDeg,
         source,
       });
     },
@@ -204,6 +239,51 @@ export function useDividerTiltSubsection() {
     },
     [removeDividerOverride, hoveredDividerKey, setHoveredDividerKey, setDividerTiltPreview]
   );
+
+  // Copy this divider's lean onto every divider running the same way, each
+  // clamped to its own envelope. Written as one array so it costs one history
+  // entry: a rack is one decision, and undoing it a divider at a time is not
+  // what anybody means by undo.
+  const applyLeanToAxis = useCallback(
+    (row: TiltRow) => {
+      setDividerTiltPreview(null);
+      const next = rows.map((other) => {
+        const lean = other.axis === row.axis ? row.leanDeg : other.leanDeg;
+        const result = other.geometry
+          ? applyAngleShift(
+              { angleDeg: other.angleDeg, shiftMm: other.shiftMm, leanDeg: lean },
+              other.geometry
+            )
+          : { offsetStart: other.offsetStart, offsetEnd: other.offsetEnd, rakeDeg: other.rakeDeg };
+        return {
+          compartmentA: other.compartmentA,
+          compartmentB: other.compartmentB,
+          offsetStart: result.offsetStart,
+          offsetEnd: result.offsetEnd,
+          ...(result.rakeDeg !== 0 ? { rakeDeg: result.rakeDeg } : {}),
+        };
+      });
+      setDividerOverrides(next);
+      trackEvent('divider_lean_applied_to_axis', { axis: row.axis, lean_deg: row.leanDeg });
+    },
+    [rows, setDividerOverrides, setDividerTiltPreview]
+  );
+
+  // What the lean actually costs the user: how far the foot has travelled and
+  // what perpendicular opening is left between this divider and its neighbour.
+  // Neither is readable off a plan view, and the compartment-size readout beside
+  // it measures the grid line, which a leaning divider has left.
+  const leanReadout = useMemo(() => {
+    const geom = selectedRow?.geometry;
+    if (!geom || selectedAngleShift.leanDeg === 0) return null;
+    const travelMm = leanToFootTravel(selectedAngleShift.leanDeg, geom.dividerHeightMm);
+    const cos = Math.cos((selectedAngleShift.leanDeg * Math.PI) / 180);
+    return {
+      travelMm: Math.round(Math.abs(travelMm) * 10) / 10,
+      openingMm: Math.round(Math.max(0, geom.pitchMm * cos - compartments.thickness) * 10) / 10,
+      limits: getLeanLimits(geom, selectedRow),
+    };
+  }, [selectedRow, selectedAngleShift.leanDeg, compartments.thickness]);
 
   const resetAll = useCallback(() => {
     clearDividerOverrides();
@@ -228,7 +308,9 @@ export function useDividerTiltSubsection() {
       cancelTilt,
       resetRow,
       resetAll,
+      applyLeanToAxis,
     },
+    leanReadout,
     t,
   };
 }

@@ -8,6 +8,7 @@
 import type { BinParams } from '@/shared/types/bin';
 import {
   hasDetachableFeet,
+  hasDividerLean,
   isUndersideRelief,
   resolveTileFloorThickness,
 } from '@/shared/types/bin';
@@ -269,6 +270,9 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     compartmentCornersRoundCleanly(params, innerW, innerD) &&
     overridesAllowCutPath &&
     dividerHeightIsFull &&
+    // A leaning divider is a plane, and a cut pocket is a Z-extrusion, so the
+    // cut path cannot express one at all. Same fallback a partial height takes.
+    !hasDividerLean(params.compartments) &&
     // A collar builds the shell taller than the interior; the multi-cavity cut
     // path would cut pockets to the raised rim, making dividers full-height to
     // the new top. Route to the additive path (short divider boxes from the

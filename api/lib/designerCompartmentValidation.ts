@@ -278,6 +278,12 @@ export function validateCompartments(compartments: unknown): string | null {
       if (!isNumber(o.offsetEnd) || !inRange(o.offsetEnd, -200, 200)) {
         return `compartments.dividerOverrides[${i}].offsetEnd must be -200..200`;
       }
+      // Absolute bound only; the client clamps to the bin's own envelope. Past
+      // +-80 the tangent runs away fast enough that a rounded value swings the
+      // foot metres, clipping the divider to nothing at generation.
+      if (o.rakeDeg !== undefined && (!isNumber(o.rakeDeg) || !inRange(o.rakeDeg, -80, 80))) {
+        return `compartments.dividerOverrides[${i}].rakeDeg must be -80..80`;
+      }
       const key = `${o.compartmentA}|${o.compartmentB}`;
       if (seenPairs.has(key)) {
         return `compartments.dividerOverrides has duplicate pair ${key}`;

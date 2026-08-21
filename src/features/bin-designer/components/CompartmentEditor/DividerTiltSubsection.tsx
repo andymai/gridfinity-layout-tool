@@ -81,6 +81,7 @@ export function DividerTiltSubsection() {
             row={selectedRow}
             compartments={compartments}
             angleDeg={selectedAngleShift.angleDeg}
+            leanDeg={selectedAngleShift.leanDeg}
             shiftMm={selectedAngleShift.shiftMm}
             conflicts={activeConflicts}
             handlers={handlers}
@@ -216,6 +217,7 @@ interface InspectorViewProps {
   readonly row: TiltRow;
   readonly compartments: CompartmentConfig;
   readonly angleDeg: number;
+  readonly leanDeg: number;
   readonly shiftMm: number;
   readonly conflicts: readonly Conflict[];
   readonly handlers: Handlers;
@@ -226,6 +228,7 @@ function InspectorView({
   row,
   compartments,
   angleDeg,
+  leanDeg,
   shiftMm,
   conflicts,
   handlers,
@@ -282,8 +285,10 @@ function InspectorView({
           <span className="text-[11px] text-content-tertiary">{angleLabel}</span>
           <Stepper
             value={angleDeg}
-            onChange={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm })}
-            onStep={(delta) => handlers.commitTilt(row, { angleDeg: angleDeg + delta, shiftMm })}
+            onChange={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm, leanDeg })}
+            onStep={(delta) =>
+              handlers.commitTilt(row, { angleDeg: angleDeg + delta, shiftMm, leanDeg })
+            }
             min={-ANGLE_UI_MAX_DEG}
             max={ANGLE_UI_MAX_DEG}
             step={1}
@@ -294,8 +299,8 @@ function InspectorView({
         </div>
         <Slider
           value={angleDeg}
-          onChange={(v) => handlers.previewTilt(row, { angleDeg: v, shiftMm })}
-          onCommit={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm })}
+          onChange={(v) => handlers.previewTilt(row, { angleDeg: v, shiftMm, leanDeg })}
+          onCommit={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm, leanDeg })}
           min={-ANGLE_UI_MAX_DEG}
           max={ANGLE_UI_MAX_DEG}
           step={ANGLE_UI_STEP_DEG}
@@ -312,7 +317,7 @@ function InspectorView({
               type="button"
               variant="ghost"
               disabled={disabled}
-              onClick={() => handlers.commitTilt(row, { angleDeg: preset, shiftMm })}
+              onClick={() => handlers.commitTilt(row, { angleDeg: preset, shiftMm, leanDeg })}
               className={`rounded border px-1.5 py-0.5 text-[11px] font-medium tabular-nums transition-colors disabled:opacity-40 ${
                 Math.round(angleDeg) === preset
                   ? 'border-accent bg-accent/10 text-accent'
@@ -336,9 +341,13 @@ function InspectorView({
           </span>
           <Stepper
             value={shiftMm}
-            onChange={(v) => handlers.commitTilt(row, { angleDeg, shiftMm: v })}
+            onChange={(v) => handlers.commitTilt(row, { angleDeg, shiftMm: v, leanDeg })}
             onStep={(delta) =>
-              handlers.commitTilt(row, { angleDeg, shiftMm: shiftMm + delta * SHIFT_UI_STEP_MM })
+              handlers.commitTilt(row, {
+                angleDeg,
+                shiftMm: shiftMm + delta * SHIFT_UI_STEP_MM,
+                leanDeg,
+              })
             }
             min={shiftRange.offsetMin}
             max={shiftRange.offsetMax}

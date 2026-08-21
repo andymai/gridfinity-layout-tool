@@ -59,6 +59,7 @@ describe('computeSegmentSpan', () => {
       axis: 'vertical',
       offsetStart: 0,
       offsetEnd: 0,
+      rakeDeg: 0,
     });
     expect(span).toMatchObject({ axis: 'vertical', axisCoord: 1, spanStart: 0, spanEnd: 1 });
   });
@@ -70,6 +71,7 @@ describe('computeSegmentSpan', () => {
       axis: 'vertical',
       offsetStart: 0,
       offsetEnd: 0,
+      rakeDeg: 0,
     });
     expect(span).toBeNull();
   });

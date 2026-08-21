@@ -436,12 +436,14 @@ export function BentoDock({
                                 tilt.handlers.commitTilt(wall, {
                                   angleDeg: wall.angleDeg,
                                   shiftMm: next,
+                                  leanDeg: wall.leanDeg,
                                 })
                               }
                               onStep={(delta: number) =>
                                 tilt.handlers.commitTilt(wall, {
                                   angleDeg: wall.angleDeg,
                                   shiftMm: wall.shiftMm + delta,
+                                  leanDeg: wall.leanDeg,
                                 })
                               }
                               min={wall.geometry.offsetMin}
@@ -459,12 +461,14 @@ export function BentoDock({
                                 tilt.handlers.commitTilt(wall, {
                                   angleDeg: next,
                                   shiftMm: wall.shiftMm,
+                                  leanDeg: wall.leanDeg,
                                 })
                               }
                               onStep={(delta: number) =>
                                 tilt.handlers.commitTilt(wall, {
                                   angleDeg: wall.angleDeg + delta,
                                   shiftMm: wall.shiftMm,
+                                  leanDeg: wall.leanDeg,
                                 })
                               }
                               min={-ANGLE_UI_MAX_DEG}

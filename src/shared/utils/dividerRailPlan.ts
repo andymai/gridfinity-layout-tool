@@ -14,12 +14,13 @@
  * latter two run on the main thread, which cannot import brepjs.
  */
 
-import type { BinParams, LidCompatibilitySide } from '@/shared/types/bin';
+import type { BinParams, DividerOverride, LidCompatibilitySide } from '@/shared/types/bin';
 // Imported from their own modules rather than the `@/shared/types/bin` barrel,
 // which re-exports `lidCompatibility` — the one consumer that has to import
 // this file. Type-only imports above are erased and carry no such edge.
 import {
   buildOverrideLookup,
+  dividerFootDrift,
   findPairAwareRuns,
   overrideKey,
 } from '@/features/bin-designer/utils/compartments';
@@ -101,7 +102,8 @@ export function dividerRailBlocks(params: BinParams): readonly DividerRailBlock[
     params.compartments.dividerHeight,
     interiorHeight
   );
-  if (dividerTopZ <= clickRailZBandAboveFloor(interiorHeight, collarHeight).lo) return [];
+  const railBandLo = clickRailZBandAboveFloor(interiorHeight, collarHeight).lo;
+  if (dividerTopZ <= railBandLo) return [];
 
   // Inboard-most reach of a rail on each axis, in the interior frame. Shared
   // with the keep-out ring so the two cannot disagree about where a rail ends.
@@ -118,8 +120,20 @@ export function dividerRailBlocks(params: BinParams): readonly DividerRailBlock[
   const blockSpan = (side: LidCompatibilitySide, lo: number, hi: number): void => {
     out.push({ side, lo: lo - DIVIDER_RAIL_MARGIN, hi: hi + DIVIDER_RAIL_MARGIN });
   };
-  const blockCrossing = (side: LidCompatibilitySide, at: number, halfSpan: number): void => {
-    blockSpan(side, at - halfSpan, at + halfSpan);
+  // A rail is a bar occupying a BAND below the wall top, not a line at the rim,
+  // so a leaning divider sweeps sideways across it. The notch has to cover the
+  // whole swept footprint: at 45 degrees that is 2.45mm on a stock bin, well
+  // past DIVIDER_RAIL_MARGIN, and a notch cut for the top edge alone leaves the
+  // rail driving into solid divider a couple of millimetres down.
+  const leanSweep = (ov: DividerOverride | undefined): number =>
+    dividerFootDrift(ov, Math.max(0, dividerTopZ - railBandLo));
+  const blockCrossing = (
+    side: LidCompatibilitySide,
+    at: number,
+    halfSpan: number,
+    sweep: number
+  ): void => {
+    blockSpan(side, at - halfSpan + Math.min(0, sweep), at + halfSpan + Math.max(0, sweep));
   };
 
   // Column boundaries run along Y and can terminate on the front and back
@@ -140,8 +154,9 @@ export function dividerRailBlocks(params: BinParams): readonly DividerRailBlock[
       const endX = xPos + (ov?.offsetEnd ?? 0);
       const segLen = (run.end - run.start) * cellD;
       const halfSpan = crossingHalfSpan(thickness, segLen, endX - startX);
-      if (run.start === 0) blockCrossing('front', startX, halfSpan);
-      if (run.end === rows) blockCrossing('back', endX, halfSpan);
+      const sweep = leanSweep(ov);
+      if (run.start === 0) blockCrossing('front', startX, halfSpan, sweep);
+      if (run.end === rows) blockCrossing('back', endX, halfSpan, sweep);
       // A boundary close enough to a side wall runs THROUGH that wall's rail
       // rather than across it, so it denies the whole run rather than a
       // crossing. It takes a cell narrower than the rail's 3.35mm inboard reach
@@ -168,8 +183,9 @@ export function dividerRailBlocks(params: BinParams): readonly DividerRailBlock[
       const endY = yPos + (ov?.offsetEnd ?? 0);
       const segLen = (run.end - run.start) * cellW;
       const halfSpan = crossingHalfSpan(thickness, segLen, endY - startY);
-      if (run.start === 0) blockCrossing('left', startY, halfSpan);
-      if (run.end === cols) blockCrossing('right', endY, halfSpan);
+      const sweep = leanSweep(ov);
+      if (run.start === 0) blockCrossing('left', startY, halfSpan, sweep);
+      if (run.end === cols) blockCrossing('right', endY, halfSpan, sweep);
       const xLo = -innerW / 2 + run.start * cellW;
       const xHi = -innerW / 2 + run.end * cellW;
       if (Math.max(startY, endY) + half > railInnerY) blockSpan('back', xLo, xHi);

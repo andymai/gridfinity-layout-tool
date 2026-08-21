@@ -196,6 +196,10 @@ export function validateCompartmentGrid(config: CompartmentConfig): number[] {
  *  generation time, but this stops absurd inputs before they hit storage. */
 export const DIVIDER_OFFSET_MAX_MM = 200;
 
+/** Absolute schema bound. The reachable lean is much smaller and bin-dependent
+ *  (see `getDividerGeometry`). */
+export const DIVIDER_RAKE_MAX_DEG = 80;
+
 export type DividerOverrideValidationError =
   | 'unordered-pair'
   | 'self-pair'
@@ -203,6 +207,8 @@ export type DividerOverrideValidationError =
   | 'non-adjacent-compartments'
   | 'offset-not-finite'
   | 'offset-out-of-bounds'
+  | 'rake-not-finite'
+  | 'rake-out-of-bounds'
   | 'duplicate-pair';
 
 /**
@@ -219,7 +225,7 @@ export function validateDividerOverride(
   config: CompartmentConfig,
   override: DividerOverride
 ): DividerOverrideValidationError | null {
-  const { compartmentA, compartmentB, offsetStart, offsetEnd } = override;
+  const { compartmentA, compartmentB, offsetStart, offsetEnd, rakeDeg } = override;
   if (compartmentA === compartmentB) return 'self-pair';
   if (compartmentA >= compartmentB) return 'unordered-pair';
   const ids = new Set(config.cells);
@@ -230,6 +236,10 @@ export function validateDividerOverride(
     Math.abs(offsetEnd) > DIVIDER_OFFSET_MAX_MM
   ) {
     return 'offset-out-of-bounds';
+  }
+  if (rakeDeg !== undefined) {
+    if (!Number.isFinite(rakeDeg)) return 'rake-not-finite';
+    if (Math.abs(rakeDeg) > DIVIDER_RAKE_MAX_DEG) return 'rake-out-of-bounds';
   }
   if (!compartmentsAreAdjacent(config, compartmentA, compartmentB)) {
     return 'non-adjacent-compartments';
@@ -270,6 +280,8 @@ export interface EligibleDivider {
   readonly axis: 'vertical' | 'horizontal';
   readonly offsetStart: number;
   readonly offsetEnd: number;
+  /** Lean off vertical in degrees; 0 when the divider stands upright. */
+  readonly rakeDeg: number;
 }
 
 /**
@@ -306,6 +318,7 @@ export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[
       axis,
       offsetStart: existing?.offsetStart ?? 0,
       offsetEnd: existing?.offsetEnd ?? 0,
+      rakeDeg: existing?.rakeDeg ?? 0,
     });
   };
   for (let row = 0; row < rows; row++) {
@@ -329,6 +342,27 @@ export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[
 /** Canonical-pair key for an override lookup map. */
 export function overrideKey(a: number, b: number): string {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+/**
+ * How far a leaning divider's foot travels from its top edge, signed like the
+ * endpoint offsets. The one statement of this conversion: the wall builder,
+ * the viability guard, the rail plan, the offset envelope, the canvas overlay
+ * and the panel readout all read it rather than restate it.
+ */
+export function dividerFootDrift(
+  override: DividerOverride | undefined,
+  dividerHeight: number
+): number {
+  const rake = override?.rakeDeg ?? 0;
+  if (rake === 0 || dividerHeight <= 0) return 0;
+  return dividerHeight * Math.tan((rake * Math.PI) / 180);
+}
+
+export function hasDividerLean(config: {
+  readonly dividerOverrides?: readonly DividerOverride[];
+}): boolean {
+  return (config.dividerOverrides ?? []).some((o) => (o.rakeDeg ?? 0) !== 0);
 }
 
 export function buildOverrideLookup(
@@ -1311,6 +1345,7 @@ export function remapDividerOverrides(
       compartmentB: b,
       offsetStart: o.offsetStart,
       offsetEnd: o.offsetEnd,
+      ...(o.rakeDeg ? { rakeDeg: o.rakeDeg } : {}),
     });
   }
   return out;
