@@ -19,14 +19,11 @@ import {
 /**
  * Regression test for stale closure bug in interaction handlers.
  *
- * Bug: PR #142 introduced empty dependency arrays on interaction wrapper functions
- * (startDrag, startDraw, startResize), causing them to capture mode handlers once
- * and never update when layout state changed.
- *
- * Symptom: Newly created bins couldn't be dragged because startDrag had stale
- * layout.bins that didn't include the new bin.
- *
- * Fix: PR #149 - Use refs to hold current mode handlers, updated via useLayoutEffect.
+ * An empty dependency array on an interaction wrapper (startDrag, startDraw,
+ * startResize) captures its mode handler once and never updates when layout
+ * state changes, so a newly created bin cannot be dragged: startDrag still
+ * holds a `layout.bins` that predates it. The handlers are held in refs and
+ * updated via useLayoutEffect to keep them current.
  */
 test.describe('Interaction Handler Freshness (Regression)', () => {
   test.beforeEach(async ({ page }) => {

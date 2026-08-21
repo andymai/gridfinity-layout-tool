@@ -163,8 +163,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // authorName is shown to every recipient in the "Shared with me" list, so
     // it gets the same treatment as every other recipient-facing field on this
-    // endpoint. It used to be stored with only a length truncation, skipping
-    // both control-character stripping and the blocklist.
+    // endpoint: length truncation alone would skip both control-character
+    // stripping and the blocklist.
     let cleanAuthorName: string | undefined;
     if (typeof authorName === 'string') {
       cleanAuthorName = sanitizeString(authorName, 64);

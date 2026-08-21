@@ -33,9 +33,9 @@ const ANONYMOUS_RESPONSE: MeResponse = { authenticated: false, user: null };
  * GET /api/auth/me
  *
  * Returns the current user's profile in a uniform 200 shape. Anonymous
- * callers get `{ authenticated: false, user: null }` — 401 used to be the
- * answer here but the browser logs every 4xx as a console error, which
- * trips the post-promote smoke check on every anonymous page load.
+ * callers get `{ authenticated: false, user: null }` rather than a 401: the
+ * browser logs every 4xx as a console error, which would trip the
+ * post-promote smoke check on every anonymous page load.
  *
  * Non-200 statuses are reserved for actual failures: 405 wrong method,
  * 403 CSRF/origin reject, 429 rate-limited, 503 Redis unavailable, 500
