@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createInitialContext } from './context';
+import { createInitialContext, deriveDimensions } from './context';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 
@@ -418,5 +418,54 @@ describe('createInitialContext', () => {
       expect(noCollar.shellKey).not.toContain('collar');
       expect(collared.shellKey).toContain('collar');
     });
+  });
+});
+
+describe('omitLipSolid', () => {
+  const lipped: BinParams = {
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 4,
+    height: 5,
+    base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+  };
+
+  // The whole point of the flag: it describes the SHELL and nothing else, so a
+  // split piece stays the shape of the bin it came from. Clearing
+  // `base.stackingLip` instead moved `interiorHeight`, `hasLip`, `lipTopZ` and
+  // `lipHasSupport` with it, and every rim-anchored feature followed.
+  it('changes only the shell key and its own flag', () => {
+    const whole = deriveDimensions(lipped, true);
+    const bodyOnly = deriveDimensions(lipped, true, true);
+
+    // Structural, not by reference: `overhang` and `socketCellPlan` are rebuilt
+    // on every call and would read as different from themselves.
+    const differing = (Object.keys(whole) as Array<keyof typeof whole>).filter(
+      (key) => JSON.stringify(whole[key]) !== JSON.stringify(bodyOnly[key])
+    );
+    expect(differing.sort()).toEqual(['omitLipSolid', 'shellKey']);
+  });
+
+  it('keeps the shell key off the lipped bin it would otherwise match', () => {
+    expect(deriveDimensions(lipped, true, true).shellKey).not.toBe(
+      deriveDimensions(lipped, true).shellKey
+    );
+  });
+
+  // A lipless bin has no lip solid to omit, so asking for it must be inert:
+  // otherwise one shape gets two shell-cache keys, and the dimensions claim a
+  // lip was left out of a bin that never had one.
+  it('is inert on a bin without a lip', () => {
+    const lipless: BinParams = { ...lipped, base: { ...lipped.base, stackingLip: false } };
+    const asked = deriveDimensions(lipless, true, true);
+
+    expect(asked.omitLipSolid).toBe(false);
+    expect(asked.shellKey).toBe(deriveDimensions(lipless, true, false).shellKey);
+  });
+
+  it('leaves a bin nobody asked about byte-identical', () => {
+    expect(deriveDimensions(lipped, true, false).shellKey).toBe(
+      deriveDimensions(lipped, true).shellKey
+    );
   });
 });

@@ -56,7 +56,8 @@ export type GenerateBinFn = (
   onProgress?: ProgressFn,
   forExport?: boolean,
   signal?: AbortSignal,
-  perfCollector?: PerfCollector
+  perfCollector?: PerfCollector,
+  omitLipSolid?: boolean
 ) => MeshData;
 
 // ─── Baseplate generation ────────────────────────────────────────────────────
