@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.435.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.0...gridfinity-layout-tool-v4.435.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* **ci:** exhaustiveness check was asserting on one file, not 2,382 ([#3676](https://github.com/andymai/gridfinity-layout-tool/issues/3676)) ([cf6ea72](https://github.com/andymai/gridfinity-layout-tool/commit/cf6ea72ffb3774f6f0105360feb06305e4745f6b))
+
 ## [4.435.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.434.0...gridfinity-layout-tool-v4.435.0) (2026-08-21)
 
 
