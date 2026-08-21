@@ -342,7 +342,11 @@ export function planDividerPatterns(
   if (bandHeight <= 0) return null;
   const bandTop = bandZ0 + bandHeight;
 
-  const segments = interiorDividerSegments(params, innerW, innerD);
+  const segments = interiorDividerSegments(params, innerW, innerD, dividerHeight).filter(
+    // A pattern is cut into the wall FACE, which a lean turns into a
+    // non-vertical plane the cutter cannot follow.
+    (seg) => seg.leanDeg === 0
+  );
   if (segments.length === 0) return null;
 
   const worldKeepOuts = [...scoopKeepOuts(params, dim), ...labelTabKeepOuts(params, dim)];

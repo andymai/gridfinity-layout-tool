@@ -131,6 +131,40 @@ const CASES: readonly Case[] = [
     expectFrontRails: 2,
   },
   {
+    // The lean pivots on the divider's TOP, so the notch would be identical to
+    // an upright divider's if it were measured at the rim. A rail is a bar in
+    // a 2.45mm band below that, over which the wall travels 2.45mm at 45
+    // degrees: past the 1mm margin, so a notch cut for the top edge alone
+    // leaves the rail driving into solid divider a couple of mm down.
+    name: 'a leaning divider',
+    width: 2,
+    depth: 2,
+    coverage: 100,
+    compartments: {
+      ...grid(2, 1),
+      dividerOverrides: [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg: 45 },
+      ],
+    },
+    expectFrontRails: 2,
+    fullSweep: true,
+  },
+  {
+    // Leaning AND diagonal in plan: the notch has to follow the tilt to the
+    // divider's real endpoints and widen for the lean on top of that.
+    name: 'a divider both tilted and leaning',
+    width: 2,
+    depth: 2,
+    coverage: 100,
+    compartments: {
+      ...grid(2, 1),
+      dividerOverrides: [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: -10, rakeDeg: 30 },
+      ],
+    },
+    expectFrontRails: 2,
+  },
+  {
     // Below the band, so the rails are whole — the notch must not be charged
     // for a divider the lid passes over.
     name: 'a divider shortened clear of the band',

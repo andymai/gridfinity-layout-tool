@@ -175,7 +175,7 @@ describe('BentoCanvas', () => {
     render(
       <BentoCanvas
         {...makeProps(config, {
-          dividerTiltPreview: { key: '0-1', offsetStart: 0, offsetEnd: 0 },
+          dividerTiltPreview: { key: '0-1', offsetStart: 0, offsetEnd: 0, rakeDeg: 0 },
         })}
       />
     );

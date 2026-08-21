@@ -43,6 +43,7 @@ export function CompartmentGridView({
     cells,
     interiorW,
     interiorD,
+    dividerHeightMm,
     aspectRatio,
     gridDots,
     labeling,
@@ -153,6 +154,7 @@ export function CompartmentGridView({
           onHoverChange={setHoveredDividerKey}
           rowLabel={rowLabelForHitTarget}
           draggingKey={null}
+          dividerHeightMm={dividerHeightMm}
         />
       )}
       {/* Per-compartment mm, hidden mid-drag so the ghost reads cleanly */}

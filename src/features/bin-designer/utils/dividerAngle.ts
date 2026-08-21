@@ -183,8 +183,12 @@ export function getLeanLimits(
   if (h <= 0) return { minDeg: 0, maxDeg: 0 };
   const headroom = geom.offsetMax - Math.max(offsets.offsetStart, offsets.offsetEnd);
   const footroom = Math.min(offsets.offsetStart, offsets.offsetEnd) - geom.offsetMin;
+  // Floored to a whole degree: the control steps in degrees, so a limit of
+  // 24.2 only ever surfaces as a clamped value nobody asked for, sitting next
+  // to a readout that rounded it to 24. Flooring also keeps the clamp strictly
+  // inside the envelope, which rounding would not.
   const toDeg = (travel: number): number =>
-    Math.min(LEAN_UI_MAX_DEG, (Math.atan2(Math.max(0, travel), h) * 180) / Math.PI);
+    Math.min(LEAN_UI_MAX_DEG, Math.floor((Math.atan2(Math.max(0, travel), h) * 180) / Math.PI));
   return { minDeg: -toDeg(footroom), maxDeg: toDeg(headroom) };
 }
 

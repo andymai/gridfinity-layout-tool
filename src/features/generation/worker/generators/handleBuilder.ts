@@ -247,7 +247,8 @@ function buildHandleHolesInScope(
       if (geom.effectiveHeight >= 1) {
         // Placement honours tilted dividers so handle holes distribute along the
         // angled wall, not the original grid line.
-        for (const seg of interiorDividerSegments(params, innerW, innerD)) {
+        for (const seg of interiorDividerSegments(params, innerW, innerD, interiorHeight)) {
+          if (seg.leanDeg !== 0) continue;
           const handleW = seg.segLen * (globalWidth / 100);
           const offsets = computeMultiHandleOffsets(count, seg.segLen, handleW);
           // Interior walls always use global config — `side` is unused for lookups.

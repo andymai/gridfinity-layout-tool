@@ -35,6 +35,7 @@ const rowLabel = (a: number, b: number): string => `Edit divider between Comp ${
 const baseProps = {
   interiorW: 80,
   interiorD: 40,
+  dividerHeightMm: 30,
   preview: null,
   selectedKey: null,
   hoveredKey: null,

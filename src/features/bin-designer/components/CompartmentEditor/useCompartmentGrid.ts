@@ -27,6 +27,8 @@ import {
   previewSplitCells,
 } from '@/features/bin-designer/utils/compartments';
 import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
+import { labelTabInteriorDims } from '@/shared/utils/labelTabPlan';
+import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { useTranslation } from '@/i18n';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { useCompartmentLabeling } from './useCompartmentLabeling';
@@ -58,6 +60,7 @@ export function useCompartmentGrid() {
     setSelectedDividerKey,
     setHoveredDividerKey,
     setHoveredCompartmentId,
+    params,
   } = useDesignerStore(
     useShallow((s) => ({
       compartments: s.params.compartments,
@@ -66,6 +69,7 @@ export function useCompartmentGrid() {
       gridUnitMm: s.params.gridUnitMm,
       gridUnitMmY: s.params.gridUnitMmY,
       wallThickness: s.params.wallThickness,
+      params: s.params,
       style: s.params.style,
       dividerTiltPreview: s.ui.dividerTiltPreview,
       selectedDividerKey: s.ui.selectedDividerKey,
@@ -95,6 +99,13 @@ export function useCompartmentGrid() {
     gridUnitMmY,
     wallThickness,
   });
+
+  // Height of the divider walls, which is what turns a lean angle into the foot
+  // travel the overlay draws. Resolved through the pair the worker uses.
+  const interior = labelTabInteriorDims(params);
+  const dividerHeightMm = interior
+    ? resolveCompartmentDividerHeight(compartments.dividerHeight, interior.interiorHeight)
+    : 0;
 
   const { cols, rows, thickness, cells } = compartments;
   const compartmentCount = getCompartmentCount(compartments);
@@ -375,6 +386,7 @@ export function useCompartmentGrid() {
     thickness,
     interiorW,
     interiorD,
+    dividerHeightMm,
     compartmentCount,
     compartmentCellCounts,
     hasMergedCompartments,

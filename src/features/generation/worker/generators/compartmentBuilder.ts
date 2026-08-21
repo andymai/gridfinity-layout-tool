@@ -528,6 +528,13 @@ export interface InteriorDividerSegment {
   /** In-plane rotation (deg) aligned to the wall: 90 for straight vertical
    *  dividers, 0 for straight horizontal, tilted by the override otherwise. */
   readonly rotateZ: number;
+  /** Lean off vertical (deg). `x`/`y` describe the wall's TOP edge, so any
+   *  feature that reaches below the rim has to answer for this: on a leaning
+   *  divider the wall is simply not at `x`/`y` further down. */
+  readonly leanDeg: number;
+  /** Where the wall meets the FLOOR. Equals `x`/`y` when it stands upright. */
+  readonly footX: number;
+  readonly footY: number;
 }
 
 /**
@@ -539,7 +546,8 @@ export interface InteriorDividerSegment {
 export function interiorDividerSegments(
   params: BinParams,
   innerW: number,
-  innerD: number
+  innerD: number,
+  dividerHeight: number
 ): InteriorDividerSegment[] {
   const { cols, rows, cells } = params.compartments;
   const out: InteriorDividerSegment[] = [];
@@ -580,14 +588,29 @@ export function interiorDividerSegments(
       const ov = lookup.get(pairKey);
       out.push(
         ov
-          ? {
+          ? (() => {
+              const x = xPos + (ov.offsetStart + ov.offsetEnd) / 2;
+              return {
+                segLen,
+                wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
+                x,
+                y: midY,
+                rotateZ: Math.atan2(segLen, ov.offsetEnd - ov.offsetStart) * RAD2DEG,
+                leanDeg: ov.rakeDeg ?? 0,
+                footX: x + dividerFootDrift(ov, dividerHeight),
+                footY: midY,
+              };
+            })()
+          : {
               segLen,
-              wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
-              x: xPos + (ov.offsetStart + ov.offsetEnd) / 2,
+              wallLen: segLen,
+              x: xPos,
               y: midY,
-              rotateZ: Math.atan2(segLen, ov.offsetEnd - ov.offsetStart) * RAD2DEG,
+              rotateZ: 90,
+              leanDeg: 0,
+              footX: xPos,
+              footY: midY,
             }
-          : { segLen, wallLen: segLen, x: xPos, y: midY, rotateZ: 90 }
       );
     }
   }
@@ -606,14 +629,29 @@ export function interiorDividerSegments(
       const ov = lookup.get(pairKey);
       out.push(
         ov
-          ? {
+          ? (() => {
+              const y = yPos + (ov.offsetStart + ov.offsetEnd) / 2;
+              return {
+                segLen,
+                wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
+                x: midX,
+                y,
+                rotateZ: Math.atan2(ov.offsetEnd - ov.offsetStart, segLen) * RAD2DEG,
+                leanDeg: ov.rakeDeg ?? 0,
+                footX: midX,
+                footY: y + dividerFootDrift(ov, dividerHeight),
+              };
+            })()
+          : {
               segLen,
-              wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
+              wallLen: segLen,
               x: midX,
-              y: yPos + (ov.offsetStart + ov.offsetEnd) / 2,
-              rotateZ: Math.atan2(ov.offsetEnd - ov.offsetStart, segLen) * RAD2DEG,
+              y: yPos,
+              rotateZ: 0,
+              leanDeg: 0,
+              footX: midX,
+              footY: yPos,
             }
-          : { segLen, wallLen: segLen, x: midX, y: yPos, rotateZ: 0 }
       );
     }
   }

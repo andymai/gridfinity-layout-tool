@@ -351,7 +351,7 @@ export function overrideKey(a: number, b: number): string {
  * and the panel readout all read it rather than restate it.
  */
 export function dividerFootDrift(
-  override: DividerOverride | undefined,
+  override: { readonly rakeDeg?: number } | undefined,
   dividerHeight: number
 ): number {
   const rake = override?.rakeDeg ?? 0;
