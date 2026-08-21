@@ -1,0 +1,23 @@
+src/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection.ts
+  s_95be7eee25f6b3::t_5719639a0d4e47 272-281,285-286,323
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_95be7eee25f6b3::t_90835a1b120279 30,90,229,242,350,448,456,476,483-485,497-498,511-512,526,554
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.test.tsx
+  s_95be7eee25f6b3::t_abcfe2d114e343 93-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "34c5594f4f97f28e60685c18067a80c225514ccd",
+  "prompts": {},
+  "sessions": {
+    "s_95be7eee25f6b3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9582dcb1-4dfc-4a34-beb5-25c6d8d1badf",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
