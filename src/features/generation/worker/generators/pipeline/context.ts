@@ -212,6 +212,11 @@ export function deriveDimensions(
   const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
   const hasLip = params.base.stackingLip;
+  // A bin with no lip has no lip solid to omit. Normalized here rather than
+  // trusted from the caller so the returned dimensions can never say
+  // `hasLip: false, omitLipSolid: true`, and so a lipless bin cannot be given
+  // two shell-cache keys for one shape.
+  const omitsLipSolid = omitLipSolid && hasLip;
   // Material actually under the lip. A base-only bin's lip bears on its floor
   // slab, not on a wall; every other base carries it on the collar-extended wall
   // the box is extruded to. See `lipHasSupport` for what the number decides.
@@ -362,7 +367,7 @@ export function deriveDimensions(
       // share a cache entry with the lipped shell it is otherwise identical to.
       // Appended only when set, so every ordinary bin keeps a byte-identical
       // key.
-      ...(omitLipSolid ? ['nolipsolid'] : []),
+      ...(omitsLipSolid ? ['nolipsolid'] : []),
       // A solid bin's fill surface is part of its BODY (shellStage folds it into
       // `cutoutTopOffset`), so two bins differing only in the top offset are two
       // different shells. Without this the second one silently reuses the first
@@ -419,7 +424,7 @@ export function deriveDimensions(
     interiorHeight,
     maxDimension,
     shellKey,
-    omitLipSolid,
+    omitLipSolid: omitsLipSolid,
     withMagnet,
     withScrew,
     compartmentsBakedIntoShell,

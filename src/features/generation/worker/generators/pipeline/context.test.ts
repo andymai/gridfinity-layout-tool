@@ -452,12 +452,18 @@ describe('omitLipSolid', () => {
     );
   });
 
-  // A lipless bin has no lip solid to omit, so its key must not move either.
-  it('leaves a bin without a lip byte-identical', () => {
+  // A lipless bin has no lip solid to omit, so asking for it must be inert:
+  // otherwise one shape gets two shell-cache keys, and the dimensions claim a
+  // lip was left out of a bin that never had one.
+  it('is inert on a bin without a lip', () => {
     const lipless: BinParams = { ...lipped, base: { ...lipped.base, stackingLip: false } };
-    expect(deriveDimensions(lipless, true, false).shellKey).toBe(
-      deriveDimensions(lipless, true, false).shellKey
-    );
+    const asked = deriveDimensions(lipless, true, true);
+
+    expect(asked.omitLipSolid).toBe(false);
+    expect(asked.shellKey).toBe(deriveDimensions(lipless, true, false).shellKey);
+  });
+
+  it('leaves a bin nobody asked about byte-identical', () => {
     expect(deriveDimensions(lipped, true, false).shellKey).toBe(
       deriveDimensions(lipped, true).shellKey
     );

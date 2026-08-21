@@ -171,6 +171,9 @@ export interface BinDimensions {
    * unsplit bin.
    *
    * `shellKey` carries it, because the shell is the one thing it changes.
+   * Never true without {@link hasLip}: a bin with no lip has no lip solid to
+   * omit, and `deriveDimensions` normalizes the caller's request against it so
+   * one shape can never get two shell-cache keys.
    */
   readonly omitLipSolid: boolean;
   /**
