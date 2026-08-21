@@ -5,12 +5,9 @@ description: 'OAuth sign-in (api/auth/: login, callback, me, logout, Arctic prov
 
 # Auth & Cloud Sync
 
-Read `api/auth/README.md` and `api/sync/README.md` first — they accurately document endpoints, cookies, session lifecycle, CSRF layers, LWW/tombstone rules, quotas, and the account-deletion cascade. This skill covers the client engine, operations, and what the READMEs get wrong. Shares and Liveblocks are a separate anonymous subsystem — see the **share-api-collab** skill.
+Read `api/auth/README.md` and `api/sync/README.md` first — they document endpoints, cookies, session lifecycle, CSRF layers, LWW/tombstone rules, quotas, and the account-deletion cascade. This skill covers the client engine and operations. Shares and Liveblocks are a separate anonymous subsystem — see the **share-api-collab** skill.
 
-**Stale README corrections (verified against source):**
-
-- Both "Status: not yet user-facing" banners are obsolete. The `VITE_ENABLE_SYNC_UI` build gate was replaced by the `cloud_sync` Labs flag (CHANGELOG #1605), which is `status: 'graduated'` in `src/core/labs/features.ts` — `useFeatureFlag('cloud_sync')` is always true, so sync is live in production. The `VITE_ENABLE_SYNC_UI` block in `.env.example` is dead too.
-- Auth README's manual-verification step 5 is wrong: `GET /api/auth/me` returns 200 `{ authenticated: false, user: null }` for anonymous callers, never 401 — a 4xx on every anonymous page load would trip the post-promote smoke check (comment in `api/auth/me.ts`).
+Sync is live in production: `cloud_sync` is `status: 'graduated'` in `src/core/labs/features.ts`, so `useFeatureFlag('cloud_sync')` is always true.
 
 ## When to use
 

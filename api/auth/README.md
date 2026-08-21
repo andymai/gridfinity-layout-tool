@@ -139,4 +139,4 @@ Sign-in now **fails closed without `TOKEN_SALT`** (503) rather than writing an u
   2. Complete the consent screen → land back at `/`.
   3. `GET /api/auth/me` returns `{ userId, provider, email, displayName, handle }`.
   4. `POST /api/auth/logout` (with `X-Requested-With: gflt`) returns 204.
-  5. `GET /api/auth/me` returns 401.
+  5. `GET /api/auth/me` returns 200 `{ authenticated: false, user: null }`.

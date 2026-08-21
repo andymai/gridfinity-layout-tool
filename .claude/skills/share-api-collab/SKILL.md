@@ -22,7 +22,7 @@ Read `api/README.md` first — it accurately documents the share lifecycle, Redi
 - Room permission comes solely from the share blob's `metadata.permission` (`'view'|'edit'`) — `api/liveblocks-auth.ts` maps edit→`['*:write']`, view→`['*:read']`. The client-supplied `userId` is NOT a privilege boundary. Scopes replaced deprecated `session.FULL_ACCESS`/`READ_ACCESS` (`git show 6cfb2160d`).
 - Delete tokens never enter Liveblocks storage — only the owner's local library holds the token, which is why cloud persistence is owner-only (`useCloudShareAutoSync.ts`, 1s debounce in collab; `useOwnedShareSync.ts`, 5s debounce outside; both gate on `lastEditSource === 'local'` to prevent echo loops).
 
-**Env reality (CLAUDE.md is stale here):** the code reads `REDIS_URL` (ioredis, `api/lib/rateLimit.ts:80`), NOT `KV_REST_API_URL`/`KV_REST_API_TOKEN`. Real server vars: `BLOB_READ_WRITE_TOKEN`, `REDIS_URL`, `TOKEN_SALT`, optional `LIVEBLOCKS_SECRET_KEY`; client needs `VITE_LIVEBLOCKS_PUBLIC_KEY` (unset → stub hooks, collab silently off).
+**Env:** rate limiting reads `REDIS_URL` via ioredis (`api/lib/rateLimit.ts`). Server vars: `BLOB_READ_WRITE_TOKEN`, `REDIS_URL`, `TOKEN_SALT`, optional `LIVEBLOCKS_SECRET_KEY`; client needs `VITE_LIVEBLOCKS_PUBLIC_KEY` (unset → stub hooks, collab silently off).
 
 **No local /api runtime:** `pnpm run dev` does not serve `/api` (no vite proxy). Verification = colocated vitest tests (`vi.mock` of `@vercel/blob` and ioredis) + Vercel preview deploys (or `npx vercel dev`; the CLI is not a project dep).
 
@@ -92,3 +92,31 @@ pnpm run typecheck                               # api/ has its own tsconfig.api
 | Auth userId ≠ presence userId                              | localStorage key `gridfinity-user-id` is read by BOTH `src/liveblocks.config.ts` and `CollabProvider.tsx` via separate implementations                                               | Keep the two in sync                                                                                                                                                                                                                        |
 
 Also: `isValidShareId` accepts three legacy formats — tightening it bricks old links. `getClientIP` trusts the leftmost `x-forwarded-for` (safe only because Vercel overwrites the header). `api/ml-telemetry.ts` deliberately duplicates `getRedis` and returns 200 even on storage errors so clients never retry-storm — don't unify it with `lib/rateLimit.ts`. `api/report/[id].ts` is intentionally toothless (manual-review logs at threshold 5, no automated takedown; its header comment requires CAPTCHA/unique-IP work first). ML telemetry event conventions belong to the analytics-and-labs skill.
+
+## Moderation binds to content, not to the account
+
+Three habits sit behind most of the API's security defects.
+
+**Moderation state on a design's card hash is state the owner can shed.** DELETE and PUT
+block a reset, but re-publishing the payload or deleting the account purges the card,
+the reports and the reasons, and the dedupe checks only match LIVE designs, so the
+hidden original is invisible to them. Every takedown path therefore writes a
+`communityModeratedContentKey()` tombstone keyed by CONTENT, with no user identifier so
+account deletion stays a real erasure. Only an admin restore lifts it. The same applies
+to prints.
+
+Relatedly, a response varying for a hidden vs. missing design is a takedown oracle even
+when both are 200s. `unlike` leaked the like count this way, because the Lua toggle
+reads the count off the card hash whatever the status.
+
+**A format check is not a cardinality check.** A strict-looking key regex still
+describes an infinite key space (`VALID_BIN_SIZE_REGEX` admits `1x1x1.1`, `1x1x1.11`,
+...), and every distinct key becomes a Redis hash field. Any map written to Redis needs
+a `MAX_*_ENTRIES` bound alongside its pattern, and a server cap that rejects needs a
+matching client cap that truncates, or honest oversized payloads are silently dropped.
+
+**A new text field is unmoderated until listed.** `collectDesignText` moderates a string
+only if its key is in `TEXT_BEARING_KEYS`, and the designer validators accept text
+fields whether or not they are listed, so adding a `BinParams` text field without adding
+its key ships an unmoderated public surface. Strings inside arrays carry their ARRAY's
+key, not an index.

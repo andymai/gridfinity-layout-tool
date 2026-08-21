@@ -75,7 +75,7 @@ ESLint flat config **replaces** per-rule values instead of merging: the React.la
 
 ## Pre-PR authoring checklist (defect classes no gate can catch)
 
-None of the four gate layers assert these; they recur as user-reported bugs because the suite proves geometry is _valid_, not that it is _manufacturable_ or that _controls move the output_ (see `project_test_gap_defect_classes` memory, and the geometry-debugging + testing recipes). Before opening a PR, if the diff touches:
+None of the four gate layers assert these; they recur as user-reported bugs because the suite proves geometry is _valid_, not that it is _manufacturable_ or that _controls move the output_ (see the geometry-debugging and testing recipes). Before opening a PR, if the diff touches:
 
 - **A connector / joint / retention / snap / pad feature** → add a fit test, not just a scenario snapshot: seat-with-clearance + bearing-volume-on-pull-apart (`connectorKeyFit.test.ts`), an insertion-stroke test if it snaps (`snapClipInsertion.test.ts`), undercut pinned above the FDM budget (`constants/connectors.test.ts`), and re-run fit at 0.6/0.8 mm nozzle. "Adds geometry beyond the floor joint" does NOT prove it locks.
 - **A geometry-affecting parameter** (tolerance, clearance, offset, size, a mode toggle) → add a differential test: generate at two values, assert the output differs on the axis the param moves AND the two cache keys differ (`baseplateGenerator.scenario.fit-offset.test.ts`). Check the param survives every field-by-field param reconstruction (`pieceToBaseplateParams`) and appears in the cache key.
