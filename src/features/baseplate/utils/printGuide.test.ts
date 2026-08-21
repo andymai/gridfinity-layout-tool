@@ -44,6 +44,36 @@ function buildGuide(
 }
 
 describe('generatePrintGuide', () => {
+  //. The Size line promises the STL bbox. The outermost pieces of a shaped
+  // plate inherit the parent's overhang and the generator widens their slab to
+  // match, so omitting it understated what actually lands on the bed.
+  it('counts the outline overhang in the piece size', () => {
+    const shaped = makeParams({
+      width: 8,
+      depth: 4,
+      outline: {
+        vertices: [
+          { x: -10, y: 0 },
+          { x: 8 * 42 + 10, y: 0 },
+          { x: 8 * 42 + 10, y: 4 * 42 },
+          { x: -10, y: 4 * 42 },
+        ],
+      },
+      outlineOverhang: { left: 10, right: 10, front: 0, back: 0 },
+    });
+    const guide = buildGuide(shaped, 200);
+
+    // Every piece is 4 units (168mm) or narrower at this bed size; only the two
+    // outer ones carry a 10mm strip, so 178 can only come from the overhang.
+    expect(guide).toMatch(/Size:\s+178\.0 ×/);
+  });
+
+  it('measures depth with the depth-axis pitch on a non-square grid', () => {
+    const guide = buildGuide(makeParams({ width: 2, depth: 2, gridUnitMmY: 21 }), 256);
+    // 2 x 21mm, not 2 x 42mm.
+    expect(guide).toMatch(/Size:\s+84\.0 × 42\.0 ×/);
+  });
+
   it('generates a guide with header, piece table, and grid map', () => {
     const params = makeParams({
       width: 18,

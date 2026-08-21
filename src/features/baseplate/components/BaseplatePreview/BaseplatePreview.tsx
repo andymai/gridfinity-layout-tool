@@ -18,6 +18,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
+import type { DrawerOutline } from '@/core/types';
 import { useLayoutStore } from '@/core/store/layout';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
@@ -75,6 +76,9 @@ interface BaseplatePreviewProps {
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
+  /** Resolved plate-local perimeter, when the plate has one. Only the dimension
+   * annotations read it — the meshes carry their own geometry. */
+  outline?: DrawerOutline;
 }
 
 export function BaseplatePreview({
@@ -86,6 +90,7 @@ export function BaseplatePreview({
   paddingRight,
   paddingFront,
   paddingBack,
+  outline,
 }: BaseplatePreviewProps) {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
@@ -421,6 +426,7 @@ export function BaseplatePreview({
                           depth={depth}
                           gridUnitMm={gridUnitMm}
                           gridUnitMmY={gridUnitMmY}
+                          outline={outline}
                           paddingLeft={paddingLeft}
                           paddingRight={paddingRight}
                           paddingFront={paddingFront}

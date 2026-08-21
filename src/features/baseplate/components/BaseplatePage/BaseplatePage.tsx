@@ -251,6 +251,7 @@ export function BaseplatePage() {
       paddingRight={paddingRight}
       paddingFront={paddingFront}
       paddingBack={paddingBack}
+      outline={fullParams.outline}
     />
   );
 

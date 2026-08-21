@@ -16,6 +16,7 @@ import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { CheckboxRow, SegmentedControl } from '@/design-system';
 import { EditableDimensions } from '@/shared/components/EditableDimensions';
+import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls';
 import { PaddingSchematic } from './PaddingSchematic';
 import { GridDimensionStepper } from './GridDimensionStepper';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
@@ -49,9 +50,10 @@ export function DimensionsSection() {
     synced,
     effectiveWidth,
     effectiveDepth,
-    totalWidthMm,
-    totalDepthMm,
+    outerWidthMm,
+    outerDepthMm,
     hasPadding,
+    shapeSetsExtent,
     outlineActive,
     perimeterShaped,
     cornerShaped,
@@ -157,6 +159,18 @@ export function DimensionsSection() {
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
   const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
+
+  // Names what the figure above the bare cells accounts for. The shape note
+  // matters most when padding is zero: a drawer wider than the cells it was
+  // given still prints a plate that spans it, and with nothing else to point at
+  // the extra millimetres read as a mistake.
+  const extentNoteKey = shapeSetsExtent
+    ? hasPadding
+      ? 'baseplate.inclPaddingShape'
+      : 'baseplate.inclShape'
+    : hasPadding
+      ? 'baseplate.inclPadding'
+      : undefined;
 
   /**
    * When the user enters target mm dimensions:
@@ -305,14 +319,14 @@ export function DimensionsSection() {
         )}
 
         {/* mm summary under steppers — matches the layout-mode drawer dimensions pattern.
-            When padding > 0, show a trailing 'incl. padding' note so users see the total
-            is grid + padding, not grid alone. */}
+            The figure is the plate's real footprint, so a trailing note names whatever
+            put it past the bare cells: padding, the drawer shape, or both. */}
         <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 pt-1 text-content-tertiary">
           <div className="flex items-center gap-1">
             <RulerIcon size="xs" className="flex-shrink-0" />
             <EditableDimensions
-              widthMm={totalWidthMm}
-              depthMm={totalDepthMm}
+              widthMm={outerWidthMm}
+              depthMm={outerDepthMm}
               minMm={minMm}
               maxMm={maxMm}
               onCommit={handleDimensionCommit}
@@ -322,12 +336,29 @@ export function DimensionsSection() {
               variant="secondary"
             />
           </div>
-          {hasPadding && (
-            <span className="text-[11px] italic text-content-tertiary">
-              {t('baseplate.inclPadding')}
-            </span>
+          {extentNoteKey !== undefined && (
+            <span className="text-[11px] italic text-content-tertiary">{t(extentNoteKey)}</span>
           )}
         </div>
+
+        {/* Where the lattice sits inside the shape. Padding cannot express this:
+            on a synced shaped plate the outer size comes from the drawer, so the
+            slack between shape and cells is the only thing left to distribute,
+            and moving the grid is what distributes it. Gated on the outline
+            rather than on slack existing — a shape that exactly fills its extent
+            has none yet, and gating it away there would make the first nudge
+            unreachable. */}
+        {outlineActive && (
+          <div className="space-y-2 border-t border-stroke-subtle pt-3">
+            <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+              {t('baseplate.gridPosition')}
+            </div>
+            <p className="text-[11px] leading-relaxed text-content-tertiary">
+              {t('baseplate.gridPositionHint')}
+            </p>
+            <GridAlignmentControls />
+          </div>
+        )}
 
         {/* Padding — spatial schematic. Padding composes with every shape,
             so the controls stay live; a notice explains the shaped case. */}

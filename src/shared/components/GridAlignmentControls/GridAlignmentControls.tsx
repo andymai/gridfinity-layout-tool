@@ -5,7 +5,7 @@ import { useLayoutStore } from '@/core/store';
 import { effectiveGridUnitMmY, mm } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
-import { drawerFrameShift } from '@/shared/utils/outlineFrame';
+import { drawerFrameShift, drawerFrameShiftLimits } from '@/shared/utils/outlineFrame';
 
 interface GridAlignmentControlsProps {
   /** Platform variant, matching the parent section's sizing. */
@@ -52,8 +52,13 @@ export function GridAlignmentControls({ variant = 'desktop' }: GridAlignmentCont
     }))
   );
 
-  const maxX = gridUnitMm / 2;
-  const maxY = gridUnitMmY / 2;
+  // The frame's own limit, so the steppers offer exactly the positions it
+  // applies and the command stores. Wider than half a pitch when the shape
+  // gives the lattice room to slide — which is what makes corner alignment
+  // reachable on a drawer measured larger than its cells.
+  const limits = drawerFrameShiftLimits(drawer, baseplateParams, gridUnitMm, gridUnitMmY);
+  const maxX = limits.x;
+  const maxY = limits.y;
   // Stored values can sit outside ±pitch/2 (imported/hand-edited layouts, or
   // a pitch change after the shift was set); the frame clamps them for
   // geometry, so clamp for display too or the control shows a shift the

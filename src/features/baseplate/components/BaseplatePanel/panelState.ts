@@ -15,9 +15,14 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { StoredBaseplateParams, DrawerOutline, FractionalEdge } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
+import { drawerFrameExtent } from '@/shared/utils/outlineFrame';
 import { hasEffectivePerimeter } from '../../utils/buildFullParams';
 import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
 import { dismissBaseplateQuickstartOnEdit } from '../../hooks/useBaseplateFirstRun';
+
+/** Below this a shape is treated as filling the padded extent exactly, so a
+ * shape drawn to its grid keeps the plain "grid + padding" reading. */
+const EXTENT_EPS_MM = 0.01;
 
 export function updateBaseplateParams(patch: Partial<StoredBaseplateParams>): void {
   const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -55,7 +60,13 @@ export interface BaseplatePanelDerived {
   gridDepthMm: number;
   totalWidthMm: number;
   totalDepthMm: number;
+  /** The plate's real footprint: the padded extent, or the drawer shape's own
+   * span when a synced shape overruns or undercuts it. */
+  outerWidthMm: number;
+  outerDepthMm: number;
   hasPadding: boolean;
+  /** The drawer shape moves the footprint off the padded grid extent. */
+  shapeSetsExtent: boolean;
   /** Export-format-aware: STEP never stacks (mirrors BaseplatePage). */
   stackEnabled: boolean;
   outlineActive: boolean;
@@ -72,6 +83,8 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
     drawerOutline,
     drawerFractionalEdgeX,
     drawerFractionalEdgeY,
+    drawerGridShiftX,
+    drawerGridShiftY,
     gridUnitMm,
     gridUnitMmY,
     baseplateParams,
@@ -82,6 +95,8 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
       drawerOutline: state.layout.drawer.outline,
       drawerFractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       drawerFractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
+      drawerGridShiftX: state.layout.drawer.gridShiftX,
+      drawerGridShiftY: state.layout.drawer.gridShiftY,
       gridUnitMm: state.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(state.layout),
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -100,6 +115,29 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
 
   const totalWidthMm = gridWidthMm + baseplateParams.paddingLeft + baseplateParams.paddingRight;
   const totalDepthMm = gridDepthMm + baseplateParams.paddingFront + baseplateParams.paddingBack;
+  // A synced drawer shape, not the lattice, decides how much material the plate
+  // ends up with — the generator intersects its slab with the framed perimeter.
+  // Asking the frame module rather than adding up cells keeps the readout on the
+  // plate the user gets, whichever way the two spans sit.
+  const plateExtent = drawerFrameExtent(
+    {
+      width: drawerWidth,
+      depth: drawerDepth,
+      outline: drawerOutline,
+      fractionalEdgeX: drawerFractionalEdgeX,
+      fractionalEdgeY: drawerFractionalEdgeY,
+      gridShiftX: drawerGridShiftX,
+      gridShiftY: drawerGridShiftY,
+    },
+    baseplateParams,
+    gridUnitMm,
+    gridUnitMmY
+  );
+  const outerWidthMm = plateExtent?.widthMm ?? totalWidthMm;
+  const outerDepthMm = plateExtent?.depthMm ?? totalDepthMm;
+  const shapeSetsExtent =
+    Math.abs(outerWidthMm - totalWidthMm) > EXTENT_EPS_MM ||
+    Math.abs(outerDepthMm - totalDepthMm) > EXTENT_EPS_MM;
   const hasPadding =
     baseplateParams.paddingLeft > 0 ||
     baseplateParams.paddingRight > 0 ||
@@ -171,7 +209,10 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
     gridDepthMm,
     totalWidthMm,
     totalDepthMm,
+    outerWidthMm,
+    outerDepthMm,
     hasPadding,
+    shapeSetsExtent,
     stackEnabled,
     outlineActive,
     cornerShaped,

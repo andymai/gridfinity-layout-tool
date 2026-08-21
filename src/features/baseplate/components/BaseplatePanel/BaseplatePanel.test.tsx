@@ -43,12 +43,19 @@ const { useLayoutStore } = await import('@/core/store/layout');
 
 // Mock settings store (for filament color picker)
 const mockUpdateSetting = vi.fn();
+// The barrel is stubbed wholesale, so anything the panel reaches through it
+// must be listed here. `useLayoutStore` is backed by the same fake state as the
+// `@/core/store/layout` mock above — a second, independent store would leave
+// barrel-importing children reading empty state while the panel renders a
+// shaped drawer.
 vi.mock('@/core/store', () => ({
   useSettingsStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       settings: { baseplateFilamentColor: '#d4d8dc' },
       updateSetting: mockUpdateSetting,
     }),
+  useLayoutStore: (selector: (state: typeof mockLayoutState) => unknown) =>
+    typeof selector === 'function' ? selector(mockLayoutState) : mockLayoutState,
 }));
 
 // Mock cloud_sync feature flag — these tests don't exercise the UserDock,

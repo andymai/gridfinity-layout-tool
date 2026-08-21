@@ -1,6 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
+import type { DrawerOutline } from '@/core/types';
+import { outlineBounds } from '@/shared/utils/drawerOutlineGeometry';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 const DIM_FONT_SIZE = 4;
@@ -17,7 +19,13 @@ function formatMm(v: number): string {
 
 /**
  * Width and depth dimension annotations along the baseplate edges.
- * Shows total mm including padding with leader lines and tick marks.
+ * Measures the material, so leader lines land on the plate's real edges and the
+ * figures match the panel's readout.
+ *
+ * With a perimeter the generator intersects its slab with the shape, so the
+ * shape's own bounds are the plate — wider than the padded grid extent when the
+ * drawer was measured larger than the cells it was given, narrower when the
+ * shape falls short of them.
  */
 export function DimensionLabels({
   width,
@@ -28,6 +36,7 @@ export function DimensionLabels({
   paddingRight,
   paddingFront,
   paddingBack,
+  outline,
 }: {
   width: number;
   depth: number;
@@ -37,19 +46,40 @@ export function DimensionLabels({
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
+  /** Resolved plate-local perimeter, when the plate has one. */
+  outline?: DrawerOutline;
 }) {
   const colors = useThreeColors();
 
   const gridW = width * gridUnitMm;
   const gridD = depth * gridUnitMmY;
-  const totalW = gridW + paddingLeft + paddingRight;
-  const totalD = gridD + paddingFront + paddingBack;
 
-  // Slab edges (pockets centered at origin, slab offset by padding asymmetry)
-  const slabLeft = -gridW / 2 - paddingLeft;
-  const slabRight = gridW / 2 + paddingRight;
-  const slabFront = -gridD / 2 - paddingFront;
-  const slabBack = gridD / 2 + paddingBack;
+  // Slab edges (pockets centered at origin, slab offset by padding asymmetry).
+  // Plate-local mm run from 0 at the padded extent's left/front edge, so the
+  // perimeter's bounds map into this frame by the same offset.
+  const edges = useMemo(() => {
+    const originX = -gridW / 2 - paddingLeft;
+    const originY = -gridD / 2 - paddingFront;
+    if (outline === undefined) {
+      return {
+        left: originX,
+        right: gridW / 2 + paddingRight,
+        front: originY,
+        back: gridD / 2 + paddingBack,
+      };
+    }
+    const b = outlineBounds(outline);
+    return {
+      left: originX + b.minX,
+      right: originX + b.maxX,
+      front: originY + b.minY,
+      back: originY + b.maxY,
+    };
+  }, [outline, gridW, gridD, paddingLeft, paddingRight, paddingFront, paddingBack]);
+
+  const { left: slabLeft, right: slabRight, front: slabFront, back: slabBack } = edges;
+  const totalW = slabRight - slabLeft;
+  const totalD = slabBack - slabFront;
 
   const widthY = slabFront - DIM_OFFSET;
   const depthX = slabLeft - DIM_OFFSET;

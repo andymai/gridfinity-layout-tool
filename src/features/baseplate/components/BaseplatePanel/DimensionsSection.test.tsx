@@ -4,8 +4,9 @@ import { DimensionsSection } from './DimensionsSection';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { mm } from '@/core/types';
+import { gridUnits, mm } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
+import { drawerFrameOverhang } from '@/shared/utils/outlineFrame';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -215,6 +216,163 @@ describe('DimensionsSection', () => {
       fireEvent.click(checkbox);
       // Undefined, not false: identical geometry keeps one stored identity.
       expect(useLayoutStore.getState().layout.baseplateParams?.wholeCellsOnly).toBeUndefined();
+    });
+  });
+  //. A drawer measured larger than the cells it was given still prints a
+  // plate that spans it: the generator widens its slab by the frame overhang and
+  // intersects it with the shape. The readout described the lattice instead, so a
+  // 931 x 327mm drawer carrying a 21 x 7 grid reported 882 x 294mm.
+  describe('shaped-plate readout', () => {
+    /** The reporter's drawer: a 931 x 327mm pen outline over a 21 x 7 grid. */
+    function measuredDrawer(): void {
+      useLayoutStore.setState((state) => ({
+        layout: {
+          ...state.layout,
+          drawer: {
+            ...state.layout.drawer,
+            width: gridUnits(21),
+            depth: gridUnits(7),
+            outline: {
+              vertices: [
+                { x: 0, y: 0 },
+                { x: 931, y: 0 },
+                { x: 931, y: 327 },
+                { x: 672, y: 327 },
+                { x: 672, y: 189 },
+                { x: 273, y: 189 },
+                { x: 273, y: 327 },
+                { x: 0, y: 327 },
+              ],
+              authoring: { kind: 'pen' as const },
+            },
+          },
+        },
+      }));
+    }
+
+    const readout = () => screen.getByLabelText('baseplate.editDimensions');
+
+    it('reports the shape the plate is cut to, not the bare cells', () => {
+      measuredDrawer();
+      render(<DimensionsSection />);
+      expect(readout()).toHaveTextContent(/931\s*×\s*327\s*mm/);
+      expect(screen.getByText('baseplate.inclShape')).toBeInTheDocument();
+    });
+
+    it('names padding too once both are in play', () => {
+      measuredDrawer();
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({ ...current, paddingLeft: mm(10) });
+      render(<DimensionsSection />);
+      expect(readout()).toHaveTextContent(/941\s*×\s*327\s*mm/);
+      expect(screen.getByText('baseplate.inclPaddingShape')).toBeInTheDocument();
+    });
+
+    it('keeps the plain grid + padding reading on an unshaped plate', () => {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({ ...current, paddingLeft: mm(10) });
+      render(<DimensionsSection />);
+      expect(screen.getByText('baseplate.inclPadding')).toBeInTheDocument();
+      expect(screen.queryByText('baseplate.inclShape')).not.toBeInTheDocument();
+    });
+
+    // Opening the field and clicking away is not an edit: committing it would
+    // snap to a grid and drop both the sync and the shape.
+    it('leaves the plate alone when the readout is opened and dismissed', () => {
+      measuredDrawer();
+      render(<DimensionsSection />);
+      fireEvent.click(readout());
+      fireEvent.blur(screen.getByLabelText('baseplate.editDimensionsDepth'), {
+        relatedTarget: document.body,
+      });
+      expect(useLayoutStore.getState().layout.baseplateParams?.syncWithLayout).not.toBe(false);
+    });
+    //. Padding cannot express where the lattice sits inside a synced shape:
+    // the outer size comes from the drawer, so the slack between shape and cells
+    // is the only thing left to distribute.
+    describe('grid position', () => {
+      const shiftX = () => screen.queryByRole('spinbutton', { name: /gridAlignment.shiftX/ });
+
+      it('is absent on an unshaped plate', () => {
+        render(<DimensionsSection />);
+        expect(screen.queryByText('baseplate.gridPosition')).not.toBeInTheDocument();
+        expect(shiftX()).not.toBeInTheDocument();
+      });
+
+      it('offers the grid shift once the drawer has a shape', () => {
+        measuredDrawer();
+        render(<DimensionsSection />);
+        expect(screen.getByText('baseplate.gridPosition')).toBeInTheDocument();
+        expect(shiftX()).toBeInTheDocument();
+      });
+
+      //. Reaching this drawer's left edge needs 24.5mm, past the half pitch
+      // (21mm) the shift used to be bounded by — so corner alignment, the thing
+      // the control exists for, was the one position it could not express.
+      it('reaches the edge, and the readout keeps the shape size', () => {
+        measuredDrawer();
+        render(<DimensionsSection />);
+        const input = shiftX();
+        expect(input).not.toBeNull();
+        if (input === null) return;
+
+        fireEvent.change(input, { target: { value: '-24.5' } });
+        fireEvent.blur(input);
+
+        const layout = useLayoutStore.getState().layout;
+        expect(layout.drawer.gridShiftX).toBe(-24.5);
+        // Flush against the left edge, with the whole 49mm of slack on the right.
+        const overhang = drawerFrameOverhang(
+          layout.drawer,
+          layout.baseplateParams,
+          layout.gridUnitMm
+        );
+        expect(overhang.left).toBe(0);
+        expect(overhang.right).toBeCloseTo(49, 9);
+        // The plate is still cut to the shape, so its footprint is unchanged.
+        expect(screen.getByLabelText('baseplate.editDimensions')).toHaveTextContent(
+          /931\s*×\s*327\s*mm/
+        );
+      });
+
+      it('leaves the half-pitch bound alone on a shape that fills its grid', () => {
+        const { width, depth } = useLayoutStore.getState().layout.drawer;
+        useLayoutStore.setState((state) => ({
+          layout: {
+            ...state.layout,
+            drawer: {
+              ...state.layout.drawer,
+              outline: {
+                vertices: [
+                  { x: 0, y: 0 },
+                  { x: width * 42, y: 0 },
+                  { x: width * 42, y: (depth * 42) / 2 },
+                  { x: 0, y: (depth * 42) / 2 },
+                ],
+              },
+            },
+          },
+        }));
+        render(<DimensionsSection />);
+        const input = shiftX();
+        expect(input).not.toBeNull();
+        if (input === null) return;
+
+        fireEvent.change(input, { target: { value: '-30' } });
+        fireEvent.blur(input);
+
+        expect(useLayoutStore.getState().layout.drawer.gridShiftX).toBe(-21);
+      });
+
+      it('disappears when the plate stops syncing with the layout', () => {
+        measuredDrawer();
+        const current =
+          useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+        useLayoutStore.getState().setBaseplateParams({ ...current, syncWithLayout: false });
+        render(<DimensionsSection />);
+        // The section header is gated on the outline reaching the plate too.
+        expect(screen.queryByText('baseplate.gridPosition')).not.toBeInTheDocument();
+      });
     });
   });
 });

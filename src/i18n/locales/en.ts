@@ -3407,6 +3407,8 @@ const en: Record<string, string> = {
     'Padding was clamped to the allowed range; the bin position may not match the selected anchor exactly.',
   'baseplate.editDimensions': 'Edit baseplate dimensions',
   'baseplate.inclPadding': 'incl. padding',
+  'baseplate.inclShape': 'incl. drawer shape',
+  'baseplate.inclPaddingShape': 'incl. padding + drawer shape',
   'baseplate.editDimensionsWidth': 'Baseplate width in mm',
   'baseplate.editDimensionsDepth': 'Baseplate depth in mm',
   'baseplate.reset': 'Reset to defaults',
@@ -3420,6 +3422,9 @@ const en: Record<string, string> = {
   'baseplate.sectionDimensions': 'Dimensions',
   'baseplate.syncWithLayout': 'Sync with layout',
   'baseplate.padding': 'Padding',
+  'baseplate.gridPosition': 'Grid position',
+  'baseplate.gridPositionHint':
+    "Move the grid inside the drawer shape — for example to sit it against the front-left corner. The plate keeps the shape's outer size; only where the cells land changes.",
   'baseplate.cornerShapedPaddingNotice':
     'Corner rounding comes from the drawer shape (Layout tab). Padding extends the plate outward around the shaped outline.',
   'baseplate.shapedPaddingNotice':
