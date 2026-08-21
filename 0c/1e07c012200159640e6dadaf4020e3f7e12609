@@ -1,0 +1,25 @@
+docs/design/sliding-tray.md
+  s_c946fcd5b9e96b::t_5e73b1ade667bc 7,39,47-56,90-91
+src/features/community/README.md
+  s_c946fcd5b9e96b::t_f7022cf3c5df9d 71,159
+src/features/layout-library/README.md
+  s_c946fcd5b9e96b::t_f7022cf3c5df9d 29
+scripts/doc-budget.json
+  s_c946fcd5b9e96b::t_594c0507369ec6 27,47,56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "0c1e07c012200159640e6dadaf4020e3f7e12609",
+  "prompts": {},
+  "sessions": {
+    "s_c946fcd5b9e96b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "47e858d2-eb4c-4dcd-86f7-d298014dec6d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
