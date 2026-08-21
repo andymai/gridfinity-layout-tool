@@ -87,7 +87,6 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
 - `utils/supportersLayout.ts` — pure layout math: bin seats on exact 42mm pitch,
   a one-socket empty margin ring, and `computeCameraFrame()` (aspect-aware
   auto-framing that scales with supporter count).
-- `utils/labelText.ts` — pure name word-wrap/truncation (unit-tested; feeds the tab texture).
 - `scene/palette.ts` — app-matched palette: `THREE_COLORS` backgrounds, uniform
   #d4d8dc bins/plate, and per-theme accent hexes mirroring
   `src/shell/styles/themes.css` (**keep in lockstep**). Accent follows

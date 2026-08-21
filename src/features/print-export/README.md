@@ -13,28 +13,11 @@ graph TB
 
 ## Key Files
 
-**Components:**
-
-- `components/PrintModal.tsx` — main print list dialog with settings
-- `components/PrintLayout.tsx` — renders print preview layout
-- `components/PrintBin.tsx` — individual bin display in print view
-- `components/PrintListSummary.tsx` — summary stats display
-- `components/PrintListEmpty.tsx` — empty state
-- `components/SortOrderConfig.tsx` — sort configuration UI
-- `components/printBinLayout.ts` — CSS grid calculations for bin positioning
-
 **Hooks:**
 
 - `hooks/usePrintList.ts` — aggregates bins into print rows, filtering/sorting; also
   surfaces swappable label plate counts per row and in the summary via
   `@/shared/hooks/useLabelPlateCounts` (socket-mode linked designs, #2666)
-
-**Utils:**
-
-- `utils/split.ts` — recursive bin splitting for print bed constraints
-- `utils/printEstimates.ts` — filament/time/cost calculations
-- `utils/printListOperations.ts` — filter, sort, and group operations
-- `utils/printLayout.ts` — bin/layer filtering and formatting for print
 
 ## Split Algorithm
 
@@ -55,7 +38,6 @@ splitBinSize(w, d, maxUnits):
 
 ## Settings Dependencies
 
-- `printBedSize` - max bin size in mm
 - `filamentCostPerKg`
 
 ## Gotchas

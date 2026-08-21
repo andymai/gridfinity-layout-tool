@@ -25,13 +25,10 @@ graph TB
 
 ## Key Files
 
-- `components/DesignerPage.tsx` — main UI entry point
 - `components/DesignerPage/DesignerQuickstartCard.tsx` — one-time orientation card for first-visit
   /designer landers (desktop/tablet only). Dismissed by "Got it", Escape, or the first edit;
   state in `hooks/useDesignerFirstRun.ts`. `hooks/usePlannerBridge.ts` shows the one-time
   post-export toast pointing at the layout editor.
-- `components/ParameterPanel.tsx` — parameter editing sidebar with collapsible sections
-- `components/PreviewCanvas.tsx` — 3D preview with Three.js (renders bin + optional lid + explode slider)
 - **Cutout editor targets** (#3542) — one editor serves the bin's interior floor AND the lid's
   plate. `ui.cutoutTarget` (`'bin' | 'lid'`) is set when the editor opens and reset when it
   closes; every action in `cutoutSlice` resolves its array through `cutoutOwner`, which returns
@@ -113,7 +110,6 @@ graph TB
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/panel/ColorsSection/AccentBandsEditor.tsx` — the top and bottom accent bands. These are the only PLANE-CUT zones: every other zone paints whatever geometry carries its `FeatureTag`, while a band recolors the outermost N mm of the body at one end and overrides each zone it covers (a bottom band paints the socket, a top band paints the lip). `accentCutPlanes` in `types/featureColors.ts` is the single resolver for both planes — it also owns the rule that a colliding pair tiles rather than overlaps — because the preview, the 3MF exporter and the eyedropper all read it
 - `utils/accentBandUnits.ts` — mm ↔ whole-layer conversion for the band height sliders. The design always stores absolute mm; `settings.accentBandUnit` is an authoring preference resolved against `printSettings.layerHeightMm`, so changing a printer profile never repaints a saved design
-- `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit
 - `utils/zoneResolver.ts` — pure raycast triangle → ColorZone mapping (reused across hit-test, preview, and 3MF export gating)
 - `utils/zoneLabels.ts` — ColorZone → i18n key + flat `updateFeatureColors` patch helpers
 - `hooks/useSwapZoneWithToast.ts` — wraps `pickSwapZone` with a localized success toast
@@ -124,18 +120,11 @@ graph TB
 - `components/preview/LidGuideLine/` — visual cue connecting bin and lid in exploded views. Hidden for a sliding lid, whose whole point is that it does NOT dock downward
 - `components/preview/LidExplodeSlider/` — lifts the lid off the bin. A sliding lid translates along its entry axis instead; a hinged one carries DEGREES and stops where the lid does, because it cannot lift and an exploded view would hide the one thing worth checking, whether the nose clears the rim through the arc. Range and unit are props rather than a second component, since track, drag mapping and keyboard are identical whatever the number means. `lidGroupPosition` (`preview/LidMesh/lidAnchorZ.ts`) owns BOTH the seated placement and the explode direction, so no consumer needs to know which kind of lid it is.
 - `components/preview/LidMesh/lidAnchorZ.ts` — `lidHingePose` poses a hinged lid as three nested groups, not one: a group turns about its own origin while the hinge axis is out at the wall, so collapsing them looks identical at 0° and swings the lid through the bin at anything else. There is deliberately NO pin rendered: a pin sits recessed inside a closed barrel, drawing 0 pixels shut and 334 of 2.4M fully open. The interleaved knuckles carry the joint; the cut length is quoted in the panel and the export dialog instead.
-- `store/designer.ts` — design state and parameter mutations (composed from slices)
-- `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
-- `store/cutoutSelection.ts` — cutout editor selection state
 - `store/tagAppearance.ts` — device-local per-tag icon/color (localStorage `gridfinity-tag-appearance-v1`), keyed by lowercased tag; rendered by `TagGlyph` in every tag chip and edited via `TagManagerDialog` (Saved Designs ⋯ menu → "Manage tags…")
-- `hooks/useGeneration.ts` — triggers geometry regeneration via bridge (bin + optional companion lid)
 - `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs (incl. optional `tags`; `updateDesignTags` replaces a design's tag set)
 - `storage/defaultParamsStorage.ts` — user's custom "default for new bins" (localStorage). Stores a style-only `Partial<BinParams>` (per-design geometry stripped via `extractStyleDefaults`/`STYLE_DEFAULT_OMIT_KEYS`); `loadDefaultParams` re-completes it via `migrateParams`. Read at the single `defaultsForNewDesign()` chokepoint so `newDesign`/`resetToDefaults` both honor it
 - `store/binDefaults.ts` — tiny reactive mirror of "is a custom default stored?" so every surface stays in sync (localStorage isn't reactive)
 - `hooks/useBinDefaults.ts` — single source of behavior (`setCurrentAsDefault` / `resetToFactory` / `hasCustomDefault` + toasts) shared by all four discoverability surfaces: the Saved Designs ⋯ menu, the `SetDefaultFooter` (parameter-panel footer), the Settings → Defaults tab, and the command palette. The palette can't import this feature (cross-feature boundary), so `set-bin-default`/`reset-bin-default` commands dispatch window events that `useBinDefaultCommandBridge` (mounted by `DesignerPage`) translates into hook calls
-- `constants/` — Gridfinity geometry constants, default params, designer constraints
-- `types/` — TypeScript types for designer state, cutouts, compartments, lid config
-- `utils/` — validation, print estimates, file naming, design JSON serialization
 - `utils/tags.ts` — `normalizeTags` (trim/strip-control-chars/dedupe/cap: 12 tags × 32 chars)
 - `@/shared/printSettings/assembledHeight` — how tall the design stands seated on a baseplate with its lid on, as disjoint bottom-to-top bands summing to the total. **A socketed bin nests `SOCKET_HEIGHT` into the plate**, so a plain no-magnet, no-solid-floor plate contributes 0mm; only `baseplateFloorDepth` (magnet retaining floor + optional solid floor) lifts the bin. **A flat base has no socket, so it gets no plate band at all**: counting one would overstate clearance by the plate's full height. Feeds the sidebar rows (`panel/AssembledHeightBreakdown`) and the 3D height dimension (`preview/BinDimensions`) through `hooks/useAssembledHeight`, so drawing and readout cannot disagree. The lid's rise is derived from `lidAnchorZ`/`resolveLidPlateThickness` rather than measured, so it is correct before generation finishes; `generation/.../assembledHeight.scenario.test.ts` runs the real kernel to pin the derivation to the meshes. It lives in `shared/` because the layout's drawer-ceiling check, the bin inspector and the layers panel all need the answer and cannot import this feature, reaching it via `assembledRiseMm` on the custom-bin registry.
 
@@ -739,7 +728,6 @@ Cards show a static thumbnail; the detail view loads a live, rotatable 3D previe
 - `components/ExampleGallery/` — tab content (`ExampleGalleryContent.tsx`, chrome-free; the dialog shell and Examples/Community tab bar live in `src/shell/Modals/DesignGalleryModal/`), `ExampleCard`, `ExamplePreviewOverlay`, `TechniqueFilterPills`, the live `Example3DViewer.tsx` (loads the bundled Draco GLB into a Three.js canvas), and the pure `useExampleGalleryFilters.ts` (`filterExamples` — search + technique only).
 - `data/examples/` — one file per technique group + `showcase.ts`, `heroes.ts`, and `palette.ts`, aggregated in `index.ts` (`EXAMPLE_DESIGNS`). Each preset spreads `DEFAULT_BIN_PARAMS` and overrides only the technique fields.
 - `data/examples/palette.ts` — the cohesive gallery color system: `PALETTE` (named swatches) + `coloredFeatures()`, which builds a `FeatureColorConfig` so showcase/hero presets carry consistent per-zone colors (`colored: true`).
-- `data/examples/thumbnails/*.png` — committed static thumbnails (one per example).
 - `data/examples/meshes/*.glb` — committed Draco-compressed GLB previews (one per example), resolved via `meshUrl(id)`. The decoder is self-hosted in `public/draco/` so the viewer needs no CDN.
 - `data/examples/catalog.test.ts` — integrity guard (unique ids, `validateBinParams` per preset, metrics==params, thumbnail-bundled, mesh-bundled, i18n keys resolve).
 - `utils/exampleToDesign.ts` — `saveDesign` (fresh id) + `setActiveDesignId`; relies on `saveDesign`'s `put` event to sync the custom-bin registry.

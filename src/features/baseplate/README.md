@@ -21,21 +21,15 @@ graph TB
 
 ## Key Files
 
-- `components/BaseplatePage.tsx` — responsive layout shell (desktop side-by-side, mobile stacked)
 - `components/BaseplatePage/BaseplateQuickstartCard.tsx` — one-time first-run orientation card
   (desktop/tablet only) over the shared `QuickstartCard` shell; flags + edit auto-dismiss in
   `hooks/useBaseplateFirstRun.ts`, one-time post-export planner toast in
   `hooks/useBaseplatePlannerBridge.ts`
-- `components/BaseplatePanel.tsx` — parameter controls: grid size, padding, magnets, split mini-map
-- `components/BaseplatePreview.tsx` — Three.js 3D preview with assembled/exploded split views
 - `hooks/useBaseplateGeneration.ts` — three-tier lifecycle: synchronous direct-mesh preview (~11ms), optional Manifold draft refinement, async BREP swap once the WASM bridge is ready; epoch-based stale detection
 - `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging. The unstacked split ZIP holds **one file per physical drawer slot**, named by grid label (`baseplate_A1.stl`, …), so importing the whole ZIP into a slicer drops in every piece with nothing to duplicate by hand. Identical shapes are still generated once (`groupPiecesByFingerprint`) and the single mesh buffer is reused for each slot — dedup is a generation optimization, not a user-visible artifact. When stack printing is on, bakes real stacked geometry per physical stack instead (see Stack printing)
-- `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
 - `components/BaseplateSelector.tsx` — header identity: the active design's name (click to rename) + a button opening the library. **No Save / Save As / New** — see "Design management" below
-- `hooks/useBaseplateLibraryInit.ts` — guarantees an active design exists
 - `hooks/useBaseplateAutoSave.ts` — debounced write-back to the active library design; also the source of the header's save status. After the mesh settles it captures a preview thumbnail (`utils/thumbnail.ts`) into the library entry — on every edit, plus a one-time backfill when an opened design has none yet
 - `utils/thumbnail.ts` — captures the live `BaseplatePreview` canvas at a canonical steep-isometric angle and downscales to a WebP data URL for the library cards. `BaseplatePreview` registers its renderer/scene/camera here (`setPreviewContext`) and needs `preserveDrawingBuffer` on its `<Canvas>` so the framebuffer stays readable
-- `components/BaseplatePanel/StackPrintSection.tsx` — "Stack for printing" panel section
 - `components/BaseplatePreview/StackedBaseplateMeshes.tsx` + `StackSeparationSlider.tsx` — flipped-tower preview + explode slider
 - `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces, minimizing **build-plate loads** (see Key Concepts)
 - `utils/bedPacking.ts` — `estimateBedLoads`: shelf First-Fit-Decreasing bin-packer (90° rotation) estimating how many bed loads a set of pieces needs
@@ -43,10 +37,7 @@ graph TB
 - `utils/splitOverride.ts` — conversions between a stored custom split plan (chunk sizes) and the seam offsets the mini-map editor draws, plus `normalizeSplitOverride` (the validity gate `buildFullParams` applies)
 - `utils/buildFullParams.ts` — resolves sync mode (drawer dims vs custom width/depth); strips connectors, magnet holes, and corner rounding when stack printing is on
 - `utils/stackPrint.ts` — stack planning (groups → capped physical stacks) + `planPlateFlip`/`buildTowerLayers` (bottom plate upright, the rest flipped, all XY-aligned)
-- `utils/stackExport.ts` — bakes a stack into export triangle soup (single material)
 - `utils/stackPreview.ts` — lays the towers out for the 3D preview. Two modes: when every tower carries its tiling `col`/`row` (the "no stacks" case — each split piece is its own single-plate tower, no fingerprint dedup), towers sit on their real tiling grid in the same orientation as the assembled split view (row 0 at the front) so the preview reads in baseplate order; otherwise (deduped or genuinely stacked towers, which no longer map 1:1 to positions) they fall back to a centered, roughly-square grid. `TOWER_GAP_UNITS` (1) is the whole-unit clearance between adjacent towers — one grid unit (~42mm) reads as "separate printed pieces" while keeping every cell on the scene's integer footprint grid
-- `utils/fileNaming.ts` — descriptive/compact/custom filename generation
-- `constants.ts` — MAX_BASEPLATE_DIMENSION (16), EXPLODE_GAP_MM (10), piece color palette
 
 ## Key Concepts
 
