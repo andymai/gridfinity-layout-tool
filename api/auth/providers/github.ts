@@ -35,9 +35,9 @@ function client(): GitHub {
  * Fetch the GitHub user's profile + every verified email on the account.
  *
  * `/user` omits `email` if the user has hidden it, so `/user/emails` is
- * fetched unconditionally. It used to be a fallback for that ~30% of users;
- * it is now always called because the full verified list is what lets a Ko-fi
- * donor record be matched to this account (`api/lib/supporterLink.ts`) when
+ * fetched unconditionally rather than as a fallback for those users: the full
+ * verified list is what lets a Ko-fi donor record be matched to this account
+ * (`api/lib/supporterLink.ts`) when
  * someone paid from a different address than their public one — which is the
  * common case, not the exotic one. A failure there is soft: sign-in still
  * succeeds on `/user`'s address alone, it just matches fewer supporters.
