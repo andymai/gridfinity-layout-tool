@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.435.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.3...gridfinity-layout-tool-v4.435.4) (2026-08-21)
+
+
+### Bug Fixes
+
+* **split-bin:** cut the rebuilt lip with the wall pattern ([#3686](https://github.com/andymai/gridfinity-layout-tool/issues/3686)) ([df710a3](https://github.com/andymai/gridfinity-layout-tool/commit/df710a30da41999d632962b6b3703d9f21cbea80))
+
 ## [4.435.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.2...gridfinity-layout-tool-v4.435.3) (2026-08-21)
 
 
