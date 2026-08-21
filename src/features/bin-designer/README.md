@@ -262,7 +262,8 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   adaptive fillet can't reason about. Empty results (e.g. Intersect of
   disjoint shapes) raise a toast so silent no-ops are debuggable.
 
-- **Cutout shapes**: beyond `rectangle` / `circle` / `path` (pen), the editor
+- **Cutout shapes** (`CutoutShape`, seven members): beyond `rectangle` / `circle` /
+  `path` (pen), `mesh` (below) and `knifeSlot` (knife block), the editor
   has two parametric primitives for bit/socket organizers — `polygon`
   (regular N-gon, `sides` 3–12, flat-top hex default) and `slot`
   (stadium/capsule = rounded-rect at half-short-side radius). A polygon's
