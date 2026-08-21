@@ -1,0 +1,108 @@
+src/i18n/locales/nb.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/i18n/locales/nl.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/i18n/locales/en.ts
+  s_95be7eee25f6b3::t_5bad26b9916ef7 1858,1861-1866
+  s_95be7eee25f6b3::t_948506c6932087 1871
+  s_95be7eee25f6b3::t_df8c7c8e38b096 1859-1860
+src/i18n/locales/pl.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/features/bin-designer/utils/dividerAngle.test.ts
+  s_95be7eee25f6b3::t_40fd9aa69e1a56 132-133,135-138
+  s_95be7eee25f6b3::t_685cd490e5062a 124-131,134,139-146,155-178
+  s_95be7eee25f6b3::t_26bc74889dd606 22-25,56-59,65-67,116-119
+  s_95be7eee25f6b3::t_325099d6e49582 10-11,13,19-21,26-29,35,48,73,84,93,99,108,148,179
+src/features/generation/worker/generators/floorPatterns.ts
+  s_95be7eee25f6b3::t_6a83a39bc4f4dd 185-189,193-194,196-199
+  s_95be7eee25f6b3::t_9e4f54aa86b45a 30
+src/i18n/locales/cs.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+scripts/i18n-values-allowlist.json
+  s_95be7eee25f6b3::t_368e04f2ef0d5a 32-33
+  s_95be7eee25f6b3::t_ae9911905193ae 34
+src/features/bin-designer/utils/compartments.ts
+  s_95be7eee25f6b3::t_1367bd24902d2f 354
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_95be7eee25f6b3::t_6a83a39bc4f4dd 306
+  s_95be7eee25f6b3::t_5d35e9426ff7ef 307-310
+src/i18n/locales/fr.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/i18n/locales/ko.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/features/generation/worker/generators/compartmentBuilder.ts
+  s_95be7eee25f6b3::t_47ed94d740e6a9 531-537,549-550,591-604,606-607,609-612,632-645,647,649-653
+src/features/bin-designer/utils/dividerAngle.ts
+  s_95be7eee25f6b3::t_93d12b31ce5ccb 186-189,191
+src/i18n/locales/zh-CN.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.test.tsx
+  s_95be7eee25f6b3::t_1aa06560296a18 62-66,74,81-95,97-105
+  s_95be7eee25f6b3::t_46244f2c31dcb4 96
+  s_95be7eee25f6b3::t_c37823ccba6b4c 106
+src/features/generation/worker/generators/handleBuilder.ts
+  s_95be7eee25f6b3::t_5d35e9426ff7ef 251
+  s_95be7eee25f6b3::t_6a83a39bc4f4dd 250
+src/i18n/locales/it.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/i18n/locales/ja.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/features/generation/worker/generators/__kernel-tests__/dividerRake.test.ts
+  s_95be7eee25f6b3::t_2f84271668a6ea 1-178,180-204,208-209
+  s_95be7eee25f6b3::t_faf345531acea4 179
+  s_95be7eee25f6b3::t_693d9e8ad9c47b 205-207
+src/features/bin-designer/components/CompartmentEditor/DividerHitTargets.tsx
+  s_95be7eee25f6b3::t_61b3e0a372e402 21-27,49-50,66,83-89,92-102,104-134,143
+src/shared/utils/dividerRailPlan.test.ts
+  s_95be7eee25f6b3::t_241d525ab221d3 127-166
+src/i18n/locales/sv.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/i18n/locales/es.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/i18n/locales/uk.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_95be7eee25f6b3::t_5d35e9426ff7ef 345-349
+src/features/bin-designer/components/CompartmentEditor/DividerHitTargets.test.tsx
+  s_95be7eee25f6b3::t_b06b1c61cca37f 38
+src/features/bin-designer/components/BentoWorkspace/BentoCanvas.test.tsx
+  s_95be7eee25f6b3::t_b692462e152b8c 178
+src/i18n/locales/pt-BR.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/features/bin-designer/components/CompartmentEditor/dividerOverlayGeom.ts
+  s_95be7eee25f6b3::t_276ab4ead90f41 110-119
+src/features/bin-designer/components/CompartmentEditor/useCompartmentGrid.ts
+  s_95be7eee25f6b3::t_a42516ed7fa3b8 103-109,389
+  s_95be7eee25f6b3::t_bfc0b29986c816 63
+  s_95be7eee25f6b3::t_522fce1cbeb881 30-31,72
+src/i18n/locales/de.json
+  s_95be7eee25f6b3::t_be2ea5cd12b45c 282,287-288,292,295-299,424-431,492,576,594-610,651,739-740,748,876,911,1080,1094,1105-1106,1114,1158-1171,1226,1238,1375,1390,1406,1683-1736,1813,2641-2646,3877,3882-3883,3885,4152
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_95be7eee25f6b3::t_cd7c08203bdefb 14-16
+  s_95be7eee25f6b3::t_df8c7c8e38b096 328
+  s_95be7eee25f6b3::t_c7d31d8a7e4c2a 30,89,227,239
+  s_95be7eee25f6b3::t_443bd495a9fb0e 341-351,442-494,528-530,549-580,584-607,609-610
+  s_95be7eee25f6b3::t_c74f59ac6c5255 495-527,531-548,581-583
+  s_95be7eee25f6b3::t_efe75095ed345b 608
+src/features/bin-designer/components/CompartmentEditor/CompartmentGridView.tsx
+  s_95be7eee25f6b3::t_bfc0b29986c816 157
+  s_95be7eee25f6b3::t_c15db00585fb52 46
+src/features/generation/worker/generators/lidDividerClearance.scenario.test.ts
+  s_95be7eee25f6b3::t_1688c2b0a2ba9b 133-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c8a7c3873585809a67d2aabc7e04c764c2a2ef5c",
+  "prompts": {},
+  "sessions": {
+    "s_95be7eee25f6b3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9582dcb1-4dfc-4a34-beb5-25c6d8d1badf",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
