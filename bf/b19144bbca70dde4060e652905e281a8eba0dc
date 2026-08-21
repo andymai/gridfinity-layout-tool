@@ -1,0 +1,21 @@
+.claude/skills/analytics-and-labs/SKILL.md
+  s_c946fcd5b9e96b::t_4630792c130cc8 28-47,51-64
+scripts/doc-budget.json
+  s_c946fcd5b9e96b::t_e90f3a136eb1af 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "bfb19144bbca70dde4060e652905e281a8eba0dc",
+  "prompts": {},
+  "sessions": {
+    "s_c946fcd5b9e96b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "47e858d2-eb4c-4dcd-86f7-d298014dec6d",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
