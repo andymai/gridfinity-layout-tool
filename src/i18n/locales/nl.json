@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Vult elke marge met halfraster-cellen van 21 mm; de rest onder 21 mm wordt als een bijgesneden tegel gevuld.",
   "baseplate.halfGridHintSolid": "Vult elke marge met halfraster-cellen van 21 mm; de rest onder 21 mm blijft massief.",
   "baseplate.inclPadding": "incl. marge",
+  "baseplate.inclShape": "incl. ladevorm",
+  "baseplate.inclPaddingShape": "incl. marge + ladevorm",
   "baseplate.increasePadding": "{label} vergroten",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Raster",

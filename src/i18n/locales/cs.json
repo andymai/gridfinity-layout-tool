@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Zaplní každý okraj buňkami poloviční mřížky 21 mm; zbytek pod 21 mm se vyplní jako oříznutá dlaždice mřížky.",
   "baseplate.halfGridHintSolid": "Zaplní každý okraj buňkami poloviční mřížky 21 mm; zbytek pod 21 mm zůstane plný.",
   "baseplate.inclPadding": "vč. odsazení",
+  "baseplate.inclShape": "vč. tvaru zásuvky",
+  "baseplate.inclPaddingShape": "vč. odsazení + tvaru zásuvky",
   "baseplate.increasePadding": "Zvětšit {label}",
   "baseplate.isoView": "Izo",
   "baseplate.leftoverGrid": "Mřížka",

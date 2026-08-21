@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Drawer, DrawerOutline } from '@/core/types';
-import { gridUnits } from '@/core/types';
+import { gridUnits, mm } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import {
+  drawerFrameExtent,
   drawerFrameOutline,
   drawerFrameShift,
   resolveOutlineFrame,
@@ -165,5 +166,67 @@ describe('drawerFrameShift / drawerFrameOutline', () => {
     expect(a).not.toBe(OFF_LATTICE);
     expect(b).toBe(a);
     expect(a?.vertices[0]).toEqual({ x: 42, y: 42 });
+  });
+});
+
+describe('drawerFrameExtent', () => {
+  it('is undefined without an outline and when the plate does not sync', () => {
+    expect(drawerFrameExtent(frameDrawer(undefined), undefined, U)).toBeUndefined();
+    expect(
+      drawerFrameExtent(
+        frameDrawer(OFF_LATTICE),
+        { ...DEFAULT_BASEPLATE_PARAMS, syncWithLayout: false },
+        U
+      )
+    ).toBeUndefined();
+  });
+
+  //. A drawer measured wider than the cells it was given still prints a
+  // plate that spans it, because the generator widens its slab by the overhang.
+  // Reporting the lattice instead read 882 x 294 for a 931 x 327 plate.
+  it('spans a perimeter that exceeds the grid', () => {
+    const measured: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 931, y: 0 },
+        { x: 931, y: 327 },
+        { x: 672, y: 327 },
+        { x: 672, y: 189 },
+        { x: 273, y: 189 },
+        { x: 273, y: 327 },
+        { x: 0, y: 327 },
+      ],
+      authoring: { kind: 'pen' },
+    };
+    const extent = drawerFrameExtent(
+      frameDrawer(measured, { width: gridUnits(21), depth: gridUnits(7) }),
+      DEFAULT_BASEPLATE_PARAMS,
+      U
+    );
+    expect(extent).toEqual({ widthMm: 931, depthMm: 327 });
+  });
+
+  it('spans a perimeter that falls short of the grid', () => {
+    const smaller: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 3 * U, y: 0 },
+        { x: 3 * U, y: 3 * U },
+        { x: 0, y: 3 * U },
+      ],
+    };
+    expect(drawerFrameExtent(frameDrawer(smaller), DEFAULT_BASEPLATE_PARAMS, U)).toEqual({
+      widthMm: 3 * U,
+      depthMm: 3 * U,
+    });
+  });
+
+  it('carries padding, which the perimeter is grown by', () => {
+    const extent = drawerFrameExtent(
+      frameDrawer(REGISTERED),
+      { ...DEFAULT_BASEPLATE_PARAMS, paddingLeft: mm(5), paddingRight: mm(7) },
+      U
+    );
+    expect(extent).toEqual({ widthMm: 4 * U + 12, depthMm: 4 * U });
   });
 });

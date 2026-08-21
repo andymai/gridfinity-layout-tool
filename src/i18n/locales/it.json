@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Riempie ogni margine con celle a mezza griglia da 21mm; il residuo sotto i 21mm viene riempito come tessera di griglia ritagliata.",
   "baseplate.halfGridHintSolid": "Riempie ogni margine con celle a mezza griglia da 21mm; il residuo sotto i 21mm resta pieno.",
   "baseplate.inclPadding": "incl. margine",
+  "baseplate.inclShape": "incl. forma del cassetto",
+  "baseplate.inclPaddingShape": "incl. margine + forma del cassetto",
   "baseplate.increasePadding": "Aumenta {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Griglia",

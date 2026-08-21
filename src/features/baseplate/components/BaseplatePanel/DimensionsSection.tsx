@@ -49,9 +49,10 @@ export function DimensionsSection() {
     synced,
     effectiveWidth,
     effectiveDepth,
-    totalWidthMm,
-    totalDepthMm,
+    outerWidthMm,
+    outerDepthMm,
     hasPadding,
+    shapeSetsExtent,
     outlineActive,
     perimeterShaped,
     cornerShaped,
@@ -157,6 +158,18 @@ export function DimensionsSection() {
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
   const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
+
+  // Names what the figure above the bare cells accounts for. The shape note
+  // matters most when padding is zero: a drawer wider than the cells it was
+  // given still prints a plate that spans it, and with nothing else to point at
+  // the extra millimetres read as a mistake.
+  const extentNoteKey = shapeSetsExtent
+    ? hasPadding
+      ? 'baseplate.inclPaddingShape'
+      : 'baseplate.inclShape'
+    : hasPadding
+      ? 'baseplate.inclPadding'
+      : undefined;
 
   /**
    * When the user enters target mm dimensions:
@@ -305,14 +318,14 @@ export function DimensionsSection() {
         )}
 
         {/* mm summary under steppers — matches the layout-mode drawer dimensions pattern.
-            When padding > 0, show a trailing 'incl. padding' note so users see the total
-            is grid + padding, not grid alone. */}
+            The figure is the plate's real footprint, so a trailing note names whatever
+            put it past the bare cells: padding, the drawer shape, or both. */}
         <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 pt-1 text-content-tertiary">
           <div className="flex items-center gap-1">
             <RulerIcon size="xs" className="flex-shrink-0" />
             <EditableDimensions
-              widthMm={totalWidthMm}
-              depthMm={totalDepthMm}
+              widthMm={outerWidthMm}
+              depthMm={outerDepthMm}
               minMm={minMm}
               maxMm={maxMm}
               onCommit={handleDimensionCommit}
@@ -322,10 +335,8 @@ export function DimensionsSection() {
               variant="secondary"
             />
           </div>
-          {hasPadding && (
-            <span className="text-[11px] italic text-content-tertiary">
-              {t('baseplate.inclPadding')}
-            </span>
+          {extentNoteKey !== undefined && (
+            <span className="text-[11px] italic text-content-tertiary">{t(extentNoteKey)}</span>
           )}
         </div>
 

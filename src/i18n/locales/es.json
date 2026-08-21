@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Rellena cada margen con celdas de media rejilla de 21 mm; el sobrante menor de 21 mm se rellena como una celda recortada.",
   "baseplate.halfGridHintSolid": "Rellena cada margen con celdas de media rejilla de 21 mm; el sobrante menor de 21 mm queda macizo.",
   "baseplate.inclPadding": "incl. margen",
+  "baseplate.inclShape": "incl. forma del cajón",
+  "baseplate.inclPaddingShape": "incl. margen + forma del cajón",
   "baseplate.increasePadding": "Aumentar {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Rejilla",

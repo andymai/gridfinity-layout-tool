@@ -116,6 +116,17 @@ export function EditableDimensions({
       setEditing(false);
       return;
     }
+    // Opening the field and clicking away is not an edit. Committing it anyway
+    // ran the caller's snap-to-grid on values the user never typed, which on a
+    // baseplate synced to a shaped drawer dropped the sync and the shape.
+    if (
+      localWidth === formatMm(widthMm) &&
+      localDepth === formatMm(depthMm) &&
+      (heightMm === undefined || localHeight === formatMm(heightMm))
+    ) {
+      setEditing(false);
+      return;
+    }
     if (hasHeight) {
       const h = parseFloat(localHeight);
       if (!Number.isNaN(h)) {
@@ -125,7 +136,18 @@ export function EditableDimensions({
       onCommit(clamp(w), clamp(d));
     }
     setEditing(false);
-  }, [localWidth, localDepth, localHeight, hasHeight, clamp, clampHeight, onCommit]);
+  }, [
+    localWidth,
+    localDepth,
+    localHeight,
+    hasHeight,
+    widthMm,
+    depthMm,
+    heightMm,
+    clamp,
+    clampHeight,
+    onCommit,
+  ]);
 
   const cancel = useCallback(() => {
     setEditing(false);

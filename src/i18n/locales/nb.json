@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Fyller hver marg med 21 mm halvrutenettceller; resten under 21 mm fylles som en beskåret flis.",
   "baseplate.halfGridHintSolid": "Fyller hver marg med 21 mm halvrutenettceller; resten under 21 mm forblir massiv.",
   "baseplate.inclPadding": "inkl. kantluft",
+  "baseplate.inclShape": "inkl. skuffeform",
+  "baseplate.inclPaddingShape": "inkl. kantluft + skuffeform",
   "baseplate.increasePadding": "Øk {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Rutenett",

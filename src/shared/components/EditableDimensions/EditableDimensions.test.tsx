@@ -174,4 +174,32 @@ describe('EditableDimensions', () => {
       expect(onCommit).not.toHaveBeenCalled();
     });
   });
+  //. The caller snaps a committed value to a grid, so committing values the
+  // user never typed silently resized the thing being measured — on a baseplate
+  // synced to a shaped drawer it dropped both the sync and the shape.
+  it('does not commit when opened and dismissed without an edit', () => {
+    const onCommit = vi.fn();
+    render(<EditableDimensions {...defaultProps} onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    const depthInput = screen.getByLabelText('Depth mm');
+    fireEvent.keyDown(depthInput, { key: 'Enter' });
+    fireEvent.blur(depthInput, { relatedTarget: document.body });
+
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('commits again once a value is edited back and forth', () => {
+    const onCommit = vi.fn();
+    render(<EditableDimensions {...defaultProps} onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    const widthInput = screen.getByLabelText('Width mm');
+    fireEvent.change(widthInput, { target: { value: '450' } });
+    fireEvent.change(widthInput, { target: { value: '441' } });
+    fireEvent.keyDown(widthInput, { key: 'Enter' });
+
+    // Back at the starting value: nothing to apply.
+    expect(onCommit).not.toHaveBeenCalled();
+  });
 });

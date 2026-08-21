@@ -262,10 +262,17 @@ type FrameDrawer = Pick<
 
 const ZERO_SHIFT = { x: 0, y: 0 } as const;
 
+/** Outer footprint of the plate, in mm. */
+export interface PlateExtentMm {
+  readonly widthMm: number;
+  readonly depthMm: number;
+}
+
 interface CachedFrame {
   readonly x: number;
   readonly y: number;
   readonly overhang: OutlineOverhang;
+  readonly extent: PlateExtentMm;
 }
 
 const shiftCache = new WeakMap<DrawerOutline, Map<string, CachedFrame>>();
@@ -307,6 +314,28 @@ export function drawerFrameOverhang(
   return (
     frameFor(drawer, baseplateParams, gridUnitMm, gridUnitMmY)?.overhang ?? NO_OUTLINE_OVERHANG
   );
+}
+
+/**
+ * Outer footprint of a plate whose grid comes from a shaped drawer, in mm.
+ *
+ * The generator widens its slab by the overhang precisely so the slab contains
+ * the framed perimeter, then intersects the two — so the perimeter's own bounds
+ * ARE the material, whether the shape reaches past the padded grid extent (a
+ * drawer measured wider than the cells it was given) or falls short of it.
+ * Reporting `width × gridUnitMm + padding` instead described the lattice rather
+ * than the plate, and a 21-cell grid in a 931mm drawer read as 882mm.
+ *
+ * `undefined` when no shape reaches the plate, leaving the padded grid extent
+ * as the footprint.
+ */
+export function drawerFrameExtent(
+  drawer: FrameDrawer,
+  baseplateParams: StoredBaseplateParams | undefined,
+  gridUnitMm: number,
+  gridUnitMmY: number = gridUnitMm
+): PlateExtentMm | undefined {
+  return frameFor(drawer, baseplateParams, gridUnitMm, gridUnitMmY)?.extent;
 }
 
 /** Resolved frame for a synced custom shape, memoized per outline + inputs.
@@ -356,7 +385,15 @@ function frameFor(
   const cached = byInputs.get(key);
   if (cached !== undefined) return cached;
   const frame = resolveOutlineFrame(outline, p);
-  const resolved: CachedFrame = { x: frame.shiftX, y: frame.shiftY, overhang: frame.overhang };
+  // Bounds of the pre-translation outline: the frame translation moves the
+  // perimeter without resizing it, so the untranslated span is the footprint.
+  const b = outlineBounds(frame.outline);
+  const resolved: CachedFrame = {
+    x: frame.shiftX,
+    y: frame.shiftY,
+    overhang: frame.overhang,
+    extent: { widthMm: b.maxX - b.minX, depthMm: b.maxY - b.minY },
+  };
   byInputs.set(key, resolved);
   return resolved;
 }

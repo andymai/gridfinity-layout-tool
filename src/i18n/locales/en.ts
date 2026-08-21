@@ -3407,6 +3407,8 @@ const en: Record<string, string> = {
     'Padding was clamped to the allowed range; the bin position may not match the selected anchor exactly.',
   'baseplate.editDimensions': 'Edit baseplate dimensions',
   'baseplate.inclPadding': 'incl. padding',
+  'baseplate.inclShape': 'incl. drawer shape',
+  'baseplate.inclPaddingShape': 'incl. padding + drawer shape',
   'baseplate.editDimensionsWidth': 'Baseplate width in mm',
   'baseplate.editDimensionsDepth': 'Baseplate depth in mm',
   'baseplate.reset': 'Reset to defaults',

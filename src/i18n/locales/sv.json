@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Fyller varje marginal med 21 mm halvrutnätsceller; resten under 21 mm fylls som en beskuren platta.",
   "baseplate.halfGridHintSolid": "Fyller varje marginal med 21 mm halvrutnätsceller; resten under 21 mm förblir massiv.",
   "baseplate.inclPadding": "inkl. utfyllnad",
+  "baseplate.inclShape": "inkl. lådans form",
+  "baseplate.inclPaddingShape": "inkl. utfyllnad + lådans form",
   "baseplate.increasePadding": "Öka {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Rutnät",

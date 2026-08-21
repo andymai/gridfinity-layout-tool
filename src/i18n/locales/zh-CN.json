@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "用 21mm 半网格单元填满每条留边；不足 21mm 的余量作为裁剪过的网格拼块填充。",
   "baseplate.halfGridHintSolid": "用 21mm 半网格单元填满每条留边；不足 21mm 的余量保持实心。",
   "baseplate.inclPadding": "含留边",
+  "baseplate.inclShape": "含抽屉形状",
+  "baseplate.inclPaddingShape": "含留边和抽屉形状",
   "baseplate.increasePadding": "增加 {label}",
   "baseplate.isoView": "等距",
   "baseplate.leftoverGrid": "网格",

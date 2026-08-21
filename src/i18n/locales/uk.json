@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Заповнює кожен відступ комірками півсітки 21 мм; залишок менше 21 мм заповнюється як обрізана плитка.",
   "baseplate.halfGridHintSolid": "Заповнює кожен відступ комірками півсітки 21 мм; залишок менше 21 мм лишається суцільним.",
   "baseplate.inclPadding": "вкл. відступи",
+  "baseplate.inclShape": "вкл. форму шухляди",
+  "baseplate.inclPaddingShape": "вкл. відступи + форму шухляди",
   "baseplate.increasePadding": "Збільшити {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Сітка",

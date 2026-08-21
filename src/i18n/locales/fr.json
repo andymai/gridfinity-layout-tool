@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Remplit chaque marge avec des demi-cases de 21 mm ; le reste inférieur à 21 mm est rempli comme une tuile rognée.",
   "baseplate.halfGridHintSolid": "Remplit chaque marge avec des demi-cases de 21 mm ; le reste inférieur à 21 mm reste plein.",
   "baseplate.inclPadding": "avec marge",
+  "baseplate.inclShape": "avec forme du tiroir",
+  "baseplate.inclPaddingShape": "avec marge + forme du tiroir",
   "baseplate.increasePadding": "Augmenter {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Grille",

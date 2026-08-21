@@ -4,7 +4,7 @@ import { DimensionsSection } from './DimensionsSection';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { mm } from '@/core/types';
+import { gridUnits, mm } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -215,6 +215,76 @@ describe('DimensionsSection', () => {
       fireEvent.click(checkbox);
       // Undefined, not false: identical geometry keeps one stored identity.
       expect(useLayoutStore.getState().layout.baseplateParams?.wholeCellsOnly).toBeUndefined();
+    });
+  });
+  //. A drawer measured larger than the cells it was given still prints a
+  // plate that spans it: the generator widens its slab by the frame overhang and
+  // intersects it with the shape. The readout described the lattice instead, so a
+  // 931 x 327mm drawer carrying a 21 x 7 grid reported 882 x 294mm.
+  describe('shaped-plate readout', () => {
+    /** The reporter's drawer: a 931 x 327mm pen outline over a 21 x 7 grid. */
+    function measuredDrawer(): void {
+      useLayoutStore.setState((state) => ({
+        layout: {
+          ...state.layout,
+          drawer: {
+            ...state.layout.drawer,
+            width: gridUnits(21),
+            depth: gridUnits(7),
+            outline: {
+              vertices: [
+                { x: 0, y: 0 },
+                { x: 931, y: 0 },
+                { x: 931, y: 327 },
+                { x: 672, y: 327 },
+                { x: 672, y: 189 },
+                { x: 273, y: 189 },
+                { x: 273, y: 327 },
+                { x: 0, y: 327 },
+              ],
+              authoring: { kind: 'pen' as const },
+            },
+          },
+        },
+      }));
+    }
+
+    const readout = () => screen.getByLabelText('baseplate.editDimensions');
+
+    it('reports the shape the plate is cut to, not the bare cells', () => {
+      measuredDrawer();
+      render(<DimensionsSection />);
+      expect(readout()).toHaveTextContent(/931\s*×\s*327\s*mm/);
+      expect(screen.getByText('baseplate.inclShape')).toBeInTheDocument();
+    });
+
+    it('names padding too once both are in play', () => {
+      measuredDrawer();
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({ ...current, paddingLeft: mm(10) });
+      render(<DimensionsSection />);
+      expect(readout()).toHaveTextContent(/941\s*×\s*327\s*mm/);
+      expect(screen.getByText('baseplate.inclPaddingShape')).toBeInTheDocument();
+    });
+
+    it('keeps the plain grid + padding reading on an unshaped plate', () => {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({ ...current, paddingLeft: mm(10) });
+      render(<DimensionsSection />);
+      expect(screen.getByText('baseplate.inclPadding')).toBeInTheDocument();
+      expect(screen.queryByText('baseplate.inclShape')).not.toBeInTheDocument();
+    });
+
+    // Opening the field and clicking away is not an edit: committing it would
+    // snap to a grid and drop both the sync and the shape.
+    it('leaves the plate alone when the readout is opened and dismissed', () => {
+      measuredDrawer();
+      render(<DimensionsSection />);
+      fireEvent.click(readout());
+      fireEvent.blur(screen.getByLabelText('baseplate.editDimensionsDepth'), {
+        relatedTarget: document.body,
+      });
+      expect(useLayoutStore.getState().layout.baseplateParams?.syncWithLayout).not.toBe(false);
     });
   });
 });

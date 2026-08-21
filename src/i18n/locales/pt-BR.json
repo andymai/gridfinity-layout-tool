@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Preenche cada margem com células de meia-grade de 21 mm; a sobra abaixo de 21 mm é preenchida como um bloco recortado.",
   "baseplate.halfGridHintSolid": "Preenche cada margem com células de meia-grade de 21 mm; a sobra abaixo de 21 mm permanece sólida.",
   "baseplate.inclPadding": "incl. margem",
+  "baseplate.inclShape": "incl. formato da gaveta",
+  "baseplate.inclPaddingShape": "incl. margem + formato da gaveta",
   "baseplate.increasePadding": "Aumentar {label}",
   "baseplate.isoView": "Iso",
   "baseplate.leftoverGrid": "Grade",

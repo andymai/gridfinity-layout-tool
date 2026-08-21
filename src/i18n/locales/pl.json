@@ -112,6 +112,8 @@
   "baseplate.halfGridHint": "Zapełnia każdy margines komórkami półsiatki 21 mm; resztka poniżej 21 mm wypełnia się jako przycięty kafelek siatki.",
   "baseplate.halfGridHintSolid": "Zapełnia każdy margines komórkami półsiatki 21 mm; resztka poniżej 21 mm pozostaje lita.",
   "baseplate.inclPadding": "wraz z marginesem",
+  "baseplate.inclShape": "wraz z kształtem szuflady",
+  "baseplate.inclPaddingShape": "wraz z marginesem i kształtem szuflady",
   "baseplate.increasePadding": "Zwiększ {label}",
   "baseplate.isoView": "Izo",
   "baseplate.leftoverGrid": "Siatka",
