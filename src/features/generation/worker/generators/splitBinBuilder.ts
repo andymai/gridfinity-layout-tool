@@ -19,7 +19,7 @@ import {
   getKernelCapabilities,
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
-import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type { BinParams, SplitConnectorConfig, WallCutout } from '@/shared/types/bin';
 import type { ExportFormat } from '../../bridge/types';
 
 import { CLEARANCE } from './generatorTypes';
@@ -39,6 +39,7 @@ import { buildWallCutoutCuts } from './wallCutoutBuilder';
 import { isAbortError } from './utils/abort';
 import { resolveOverhang } from './overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolveCutoutCornerRadii } from '@/shared/utils/wallCutoutPosition';
 import { hasMeshImprints, imprintPieceArrays } from './meshImprint';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { deriveDimensions } from './pipeline/context';
@@ -87,6 +88,51 @@ const LIP_FUSE_OVERLAP = 0.05;
 /** Preview tessellation tolerance: tightened for smooth normals on curved surfaces */
 const PREVIEW_TOLERANCE = 0.1;
 const PREVIEW_ANGULAR_TOLERANCE = 10;
+
+/** Every side a wall cutout can be configured on. */
+const CUTOUT_SIDES = ['front', 'back', 'left', 'right', 'interior'] as const;
+
+/**
+ * Whether any enabled cutout rounds the shoulder where it meets the rim.
+ *
+ * Gates the two halves of the fix below, so a design that leaves the control
+ * alone (square shoulders, the shape every design had before it existed) takes
+ * neither the reshaped `bodyParams` nor the extra boolean, and splits into
+ * byte-identical pieces.
+ */
+function hasShoulderRoundOver(walls: BinParams['walls']): boolean {
+  // `cutWidth` reaches only the BOTTOM fillet's automatic default, so any value
+  // answers the question being asked here.
+  return CUTOUT_SIDES.some(
+    (side) => walls[side].enabled && resolveCutoutCornerRadii(walls, walls[side], 0).top > 0
+  );
+}
+
+/**
+ * Square off every wall cutout's top round-over.
+ *
+ * The round-over is tangent to the top of the material the cut passes through,
+ * and for a piece of a lipped bin that plane is the LIP's top face. The body is
+ * generated lipless, so the pipeline would seat the curve on the wall top
+ * `LIP_HEIGHT` lower: a shoulder the separately-cut lip above it does not
+ * share, which is the lip left jutting over a wall rounded away beneath it.
+ *
+ * Squared here, the pipeline's opening is a strict subset of the real cutter at
+ * every height, so `splitSolidIntoPieces` can cut body and lip with that one
+ * tool and get back exactly the opening an unsplit bin has.
+ */
+function squareCutoutShoulders(walls: BinParams['walls']): BinParams['walls'] {
+  const square = (side: WallCutout): WallCutout => ({ ...side, cornerRadiusTop: 0 });
+  return {
+    ...walls,
+    cornerRadiusTop: 0,
+    front: square(walls.front),
+    back: square(walls.back),
+    left: square(walls.left),
+    right: square(walls.right),
+    interior: square(walls.interior),
+  };
+}
 
 /** Metadata for a single split piece within the grid */
 interface SplitPieceInfo {
@@ -186,13 +232,27 @@ function splitSolidIntoPieces(
   // Generate body solid. When the bin has a stacking lip, generate WITHOUT
   // the lip to avoid OCCT boolean intersection crashes. The lip is split
   // separately and fused onto each piece below.
-  const bodyParams = hasLip ? { ...params, base: { ...params.base, stackingLip: false } } : params;
+  //
+  // A cutout's rounded shoulder belongs to the assembled piece's rim, which is
+  // the lip's top face, so it is taken off the lipless body the pipeline builds
+  // and cut back into body and lip together further down, off one tool.
+  const recutShoulders = hasLip && params.walls.enabled && hasShoulderRoundOver(params.walls);
+  const bodyParams = hasLip
+    ? {
+        ...params,
+        base: { ...params.base, stackingLip: false },
+        ...(recutShoulders ? { walls: squareCutoutShoulders(params.walls) } : {}),
+      }
+    : params;
   generateBin(bodyParams, undefined, true);
 
-  const bodySolid = getLastSolid();
+  let bodySolid = getLastSolid();
   if (!bodySolid) {
     throw new Error('Failed to generate solid for splitting');
   }
+  // Body re-cut below. Owned here, unlike the `getLastSolid()` handle the shape
+  // cache still holds.
+  let recutBody: Shape3D | undefined;
 
   // Per-axis pitch: X scales width / vertical cut planes, Y scales depth /
   // horizontal cut planes. Equal for a square grid.
@@ -318,13 +378,16 @@ function splitSolidIntoPieces(
       }
     }
 
-    // Same situation for wall cutouts: the body got its wall cutouts via the
-    // normal pipeline on bodyParams (where dim.hasLip=false, so the cutters
-    // only overshoot the wall top by 2mm). The freshly-built lip would
-    // otherwise still seal off the opening that should pass cleanly through
-    // both wall and lip. Pass hasLip=true so the cutters extend through the
-    // full lip zone, then shift them up by floorZ to convert body-local Z
-    // (floor at Z=0) into absolute bin Z (socket bottom at Z=0).
+    // Wall cutouts are cut here for BOTH halves of the assembly, from one tool.
+    // The pipeline saw `bodyParams`, whose `dim.hasLip` is false: its cutters
+    // stop 2mm above the wall top, so the freshly-built lip would still seal
+    // off an opening meant to pass cleanly through wall and lip alike, and its
+    // shoulder round-over sits on the wall top rather than on the lip's (which
+    // is why `squareCutoutShoulders` took that curve off the body: it is one
+    // cut through both, and the halves cannot be allowed to disagree about
+    // where the rim is). Pass hasLip=true so the cutter spans the full lip
+    // zone, then shift it up by floorZ to convert body-local Z (floor at Z=0)
+    // into absolute bin Z (socket bottom at Z=0).
     if (params.walls.enabled) {
       const wallCuts = buildWallCutoutCuts(params, innerW, innerD, wallHeight, true);
       if (wallCuts) {
@@ -333,6 +396,16 @@ function splitSolidIntoPieces(
           const newLip = unwrap(cut(lipSolid as ValidSolid, positioned as ValidSolid));
           lipSolid.delete();
           lipSolid = newLip;
+          if (recutShoulders) {
+            const recut = unwrap(cut(bodySolid as ValidSolid, positioned as ValidSolid));
+            // Only a handle of our own goes in `recutBody`. A kernel that
+            // answers a no-op cut with its input would otherwise have the
+            // finally free the solid the shape cache is still holding.
+            if (recut !== bodySolid) {
+              recutBody = recut;
+              bodySolid = recut;
+            }
+          }
         } finally {
           positioned.delete();
         }
@@ -519,6 +592,7 @@ function splitSolidIntoPieces(
     }
   } finally {
     if (lipSolid) lipSolid.delete();
+    if (recutBody) recutBody.delete();
 
     // The solid cached in lastSolid was generated for bodyParams (which strips
     // the stacking lip to avoid OCCT boolean crashes). Mark it as NOT
