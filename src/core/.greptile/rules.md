@@ -14,13 +14,13 @@ The `Result<T, E>` pattern is the cornerstone of error handling in this codebase
 
 Each store owns a specific domain and must not reach into other stores' state directly:
 
-- `layout.ts` — layout data (bins, layers, categories, drawer)
+- `layout/` — layout data (bins, layers, categories, drawer)
 - `library.ts` — multi-layout index, active layout tracking
 - `selection.ts` — selected bins, active layer/category
 - `interaction.ts` — current tool, drop targets, layer view mode
-- `history.ts` — undo/redo stack (max 100 via `CONSTRAINTS.UNDO_LIMIT`)
+- `cqrs/undo/historyStore.ts` — undo/redo stack (max 100 via `CONSTRAINTS.UNDO_LIMIT`)
 
-Cross-store coordination happens through hooks (e.g., `useUndoableAction`), not direct store-to-store calls.
+Cross-store coordination happens through hooks and the CQRS command pipeline, not direct store-to-store calls.
 
 ## Storage Atomicity
 

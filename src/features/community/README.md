@@ -252,9 +252,3 @@ The estimator itself is bin-designer internal, so the wrapper lives in `shared/`
 Bed fit compares the footprint against the viewer's configured bed and allows rotation, since every slicer will rotate it for you.
 
 Note that `counts.exports` means file downloads, not prints. The two are different signals and the UI must not conflate them — the detail's stats row did exactly that, labelling `counts.exports` "Prints", which put a hard `Prints 0` beside a design whose own print list was rendering directly below it. It now reads "Downloads", and prints are a separate stat sourced from `counts.prints`, rendered only when someone has actually reported one: an absent count means the card snapshot predates the field, and must not read as a measured zero.
-
-## Deferred to later PRs
-
-- Mine/Liked filter chips: land with the Mine view (author filtering) PR alongside like/report actions.
-- Card hover/long-press angle cycling: needs angle URLs in the list index (`toListItem`).
-- Detail stats for deep links: the detail GET does not return counts, so the stats row only renders when the detail opens from a browse card.
