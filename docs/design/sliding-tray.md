@@ -4,7 +4,7 @@ A shallow tray that rides a rail on the bin and slides aside to reach what is un
 
 > One thing I'd love to do is have a cut out to be able to slide gridfinity inserts across different inserts (so you have 2 base, say, 5u height bins, and another on top that slides between them.
 
-The geometry is built and verified. What remains is the panel: nothing exposes `slide.enabled`, so today the feature is only reachable through a design payload that sets it directly.
+Built, verified and exposed. `SlideTraySection` (mounted from `WallsSection`) toggles `slide.enabled`, explains every rejection, and offers the fit coupon.
 
 ---
 
@@ -36,7 +36,7 @@ Both mounts are the **same L-section rail** at two heights: a shelf to carry the
 
 A rail spanning a bin's full length meets its neighbour's when two railed bins sit side by side, so the track is continuous on its own. Adjacent bins are a known `CLEARANCE` apart plus two corner radii — an ~8mm interruption any tray wider than a unit bridges.
 
-That is why `trayWidthUnits` is an ordinary number rather than something derived from placement. **Spanning is an emergent property of placing railed bins next to each other, not a feature.** An earlier draft of this document proposed design pairing and placement tracking to derive the tray's width; none of it was needed.
+That is why `trayWidthUnits` is an ordinary number rather than something derived from placement. **Spanning is an emergent property of placing railed bins next to each other, not a feature**, which is why no design pairing or placement tracking is involved.
 
 ---
 
@@ -44,13 +44,16 @@ That is why `trayWidthUnits` is an ordinary number rather than something derived
 
 Each returns a typed `SlideRejection` so the panel can explain a bin that produces nothing:
 
-| rejection           | why                                                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `no-cavity`         | A solid bin has nowhere for a tray to sit.                                                                                                             |
-| `slot-conflict`     | `slotBuilder` cuts divider slots into the front/back walls — the rail's walls — and cuts apply after fuses, so the slots would notch the bearing face. |
-| `unsupported-shape` | Custom-shape (cellMask) bins have no polygon-edge mapping yet.                                                                                         |
-| `no-bearing`        | A shelf reaching in less than the clearance carries nothing; the tray passes it.                                                                       |
-| `rail-below-floor`  | The drop puts the ledge in the floor slab. A 3u bin cannot give the default 21mm drop.                                                                 |
+| rejection           | why                                                                                                                                                  |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `no-cavity`         | A solid bin has nowhere for a tray to sit.                                                                                                           |
+| `slot-conflict`     | `slotBuilder` cuts divider slots into the front/back walls, the rail's walls, and cuts apply after fuses, so the slots would notch the bearing face. |
+| `unsupported-shape` | Custom-shape (cellMask) bins have no polygon-edge mapping.                                                                                           |
+| `no-bearing`        | A shelf reaching in less than the clearance carries nothing; the tray passes it.                                                                     |
+| `rail-below-floor`  | The drop puts the ledge in the floor slab. A 3u bin cannot give the default 21mm drop.                                                               |
+| `bin-too-narrow`    | `trayWidth` at or under `MIN_TRAY_INTERIOR_MM`, or a bin narrower than its own corner radii (`xEnd <= 0`).                                           |
+| `bin-too-shallow`   | The tray's depth leaves no floor between the two ledges it overlaps.                                                                                 |
+| `tray-too-thin`     | Walls consume the whole width, so the "tray" is the un-hollowed outer solid: a printable block the resolver would otherwise report as a tray.        |
 
 ---
 
@@ -84,7 +87,5 @@ Every one of these passed watertight, 2-manifold and bounding-box checks while b
 
 ## What is left
 
-- Panel UI, i18n, and surfacing `rejection` — a 3u bin silently produces nothing today.
-- A button for the fit coupon (`exportSlideFitSample` exists; nothing calls it).
-- Polygon bins, if wanted: `resolvePolygonSideGeometry` already maps wall cutouts onto polygon edges.
-- Nobody has printed one. The clearance default is reasoned, not measured.
+- Polygon bins, if wanted: `resolvePolygonSideGeometry` already maps wall cutouts onto polygon edges, which is what `unsupported-shape` is waiting on.
+- The clearance default is reasoned, not measured against a printed part. `SlideFitSampleButton` exports the coupon that would settle it.

@@ -26,7 +26,7 @@ graph TB
 - `components/LayoutManagerModal/ImportView.tsx` — JSON import UI
 - `components/LayoutManagerModal/NewLayoutCard.tsx` — "Create New" card
 - `components/LayoutManagerModal/ViewModeToggle.tsx` — grid/list toggle
-- `components/LayoutManagerModal/SharedWithMeList.tsx` — shared layouts (not yet integrated)
+- `components/LayoutManagerModal/SharedWithMeList/` — shared layouts. No surface mounts it, so it is unreferenced outside its own test.
 - `components/LayoutManagerModal/SharedWithMeItem.tsx` — shared layout item
 
 Inline rename in the grid and list items uses `useInlineEdit` from `@/design-system`.
