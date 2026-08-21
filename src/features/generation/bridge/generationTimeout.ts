@@ -147,9 +147,8 @@ export const HEIGHT_BONUS_BUCKET_UNITS = 2;
  * Hard ceiling — protects users from runaway WASM OOM loops while still giving
  * legitimately complex bins room to finish.
  *
- * Raised from 90s to 180s (#timeouts): measured generation of heavy honeycomb
- * bins runs well past 90s on the single-threaded OCCT pipeline — e.g. a 4×4×8
- * honeycomb bin's pattern cut alone is ~14s and a tall 6×6×20 is ~3min. The
+ * Heavy honeycomb bins run well past 90s on the single-threaded OCCT pipeline:
+ * a 4×4×8 honeycomb bin's pattern cut alone is ~14s and a tall 6×6×20 is ~3min. The
  * boolean `pattern_cut` stage is ~82% of total and scales super-linearly, so the
  * batch cut is already near-optimal and can't be meaningfully parallelized
  * (splitting the solid forces a recombine that costs more than it saves). Until
@@ -173,14 +172,11 @@ export const MAX_TIMEOUT_MS = 180_000;
  * that hardware gap while preserving the relative ordering the complexity budget
  * already encodes (a hex bin still gets proportionally more than a trivial one).
  *
- * Raised from 4× to 6× (#bin-export-timeout): a small cohort of users still hit
- * `ExportTimeoutError` on heavy honeycomb / big-magnet-grid / scoop+tall designs.
- * The export budget only began modelling the hardware gap at all (after
- * those reports), and 4× under-served the genuinely slowest devices — old phones
- * and throttled mobile browsers routinely run 5–6× the reference machine. 6×
- * lifts mid-weight designs that were clamping just short of finishing, and lets
- * the heaviest honeycomb bins reach the raised ceiling below instead of being
- * cut off well under it.
+ * 6× rather than 4×: old phones and throttled mobile browsers routinely run
+ * 5–6× the reference machine, and a smaller multiplier clamps mid-weight designs
+ * just short of finishing and stops the heaviest honeycomb bins reaching the
+ * ceiling below. Heavy honeycomb, big-magnet-grid and scoop+tall designs are the
+ * ones that hit `ExportTimeoutError` when this is too low.
  */
 export const EXPORT_TIMEOUT_MULTIPLIER = 6;
 
@@ -190,11 +186,10 @@ export const EXPORT_TIMEOUT_MULTIPLIER = 6;
  * genuinely-wedged WASM heap from hanging forever, not to bound interactive
  * wait.
  *
- * Raised from 15 to 20 minutes (#bin-export-timeout) so the heaviest known
- * pipeline actually receives the 6× export multiplier instead of being clamped
- * back: a 6×6×20 honeycomb's ~3-minute pattern cut runs ≈18 min at 6× on the
- * slowest hardware, which the old 15-minute cap would have truncated. 20 minutes
- * still bounds a wedged heap, and the progress bar + cancel button mean a user
+ * 20 minutes so the heaviest known pipeline actually receives the 6× export
+ * multiplier instead of being clamped back: a 6×6×20 honeycomb's ~3-minute
+ * pattern cut runs ≈18 min at 6× on the slowest hardware, so a 15-minute cap
+ * would truncate it. 20 minutes still bounds a wedged heap, and the progress bar + cancel button mean a user
  * who no longer wants to wait is never stuck.
  */
 export const EXPORT_MAX_TIMEOUT_MS = 1_200_000;

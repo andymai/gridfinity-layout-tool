@@ -60,9 +60,8 @@ function PieceMesh({
   const colors = useThreeColors();
   const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
   const displayColor = useMemo(
-    // 0.7 gray-blend (was 0.5) — smooth normals + edge wireframes pulled the
-    // preview close to BREP-quality, so a stronger desaturation keeps the
-    // "draft" affordance legible.
+    // Smooth normals + edge wireframes pull the preview close to BREP-quality,
+    // so it takes a strong desaturation to keep the "draft" affordance legible.
     () => (isPreview ? desaturateColor(filamentColor, 0.7) : filamentColor),
     [filamentColor, isPreview]
   );
