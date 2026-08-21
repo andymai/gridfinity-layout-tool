@@ -389,7 +389,9 @@ jobs:
       - name: Check union exhaustiveness
         id: exhaustiveness
         continue-on-error: true
-        run: pnpm run check:exhaustiveness -- --all
+        # No '--' separator: pnpm forwards it literally and the script then
+        # checks a single nonexistent path instead of all 2,382 source files.
+        run: pnpm run check:exhaustiveness --all
 
       - name: Check doc drift
         id: doc_drift
