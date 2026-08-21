@@ -69,7 +69,8 @@
     "knip:fix": "knip --fix",
     "typecheck": "tsgo -b --noEmit",
     "quality": "pnpm run typecheck && pnpm run lint && pnpm run knip",
-    "test:profile": "pnpm run build:en-locale && tsx scripts/profile-tests.ts"
+    "test:profile": "pnpm run build:en-locale && tsx scripts/profile-tests.ts",
+    "check:doc-drift": "tsx scripts/check-doc-drift.ts"
   },
   "size-limit": [
     {

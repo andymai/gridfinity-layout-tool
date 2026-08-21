@@ -75,6 +75,15 @@ ESLint flat config **replaces** per-rule values instead of merging: the React.la
 
 ## Pre-PR authoring checklist (defect classes no gate can catch)
 
+`check:doc-drift` is the doc gate. Two failure modes, two fixes:
+
+- _"Docs reference code that does not exist"_ — fix the reference. Only add to
+  `allowedMissingRefs` in `scripts/doc-budget.json` when the token genuinely names
+  something outside the repo (a library internal, a commit sha, a placeholder); a
+  test asserts every allowlist entry is still necessary.
+- _"Docs grew past their budget"_ — trim, move the detail into a skill, or run
+  `pnpm run check:doc-drift --update` if the growth is warranted.
+
 None of the four gate layers assert these; they recur as user-reported bugs because the suite proves geometry is _valid_, not that it is _manufacturable_ or that _controls move the output_ (see the geometry-debugging and testing recipes). Before opening a PR, if the diff touches:
 
 - **A connector / joint / retention / snap / pad feature** → add a fit test, not just a scenario snapshot: seat-with-clearance + bearing-volume-on-pull-apart (`connectorKeyFit.test.ts`), an insertion-stroke test if it snaps (`snapClipInsertion.test.ts`), undercut pinned above the FDM budget (`constants/connectors.test.ts`), and re-run fit at 0.6/0.8 mm nozzle. "Adds geometry beyond the floor joint" does NOT prove it locks.
