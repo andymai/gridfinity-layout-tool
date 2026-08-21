@@ -243,7 +243,8 @@ const drawerUpdateSchema = z
     fractionalEdgeY: z.union([z.literal('start'), z.literal('end')]),
     // Half the largest settable pitch (setGridUnitMm clamps to
     // GRID_PITCH_MM_MAX, not GRID_UNIT_MM_MAX); the command re-clamps to the
-    // layout's actual ±pitch/2.
+    // layout's own `drawerFrameShiftLimits`, which is half a pitch until an
+    // oversize perimeter gives the lattice more room than that.
     gridShiftX: z
       .number()
       .min(-GRID_PITCH_MM_MAX / 2)

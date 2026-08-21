@@ -189,7 +189,7 @@ describe('EditableDimensions', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it('commits again once a value is edited back and forth', () => {
+  it('treats a value edited back to its starting point as no edit', () => {
     const onCommit = vi.fn();
     render(<EditableDimensions {...defaultProps} onCommit={onCommit} />);
     fireEvent.click(screen.getByRole('button'));
@@ -200,6 +200,19 @@ describe('EditableDimensions', () => {
     fireEvent.keyDown(widthInput, { key: 'Enter' });
 
     // Back at the starting value: nothing to apply.
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('treats a re-typed identical measurement as no edit', () => {
+    const onCommit = vi.fn();
+    render(<EditableDimensions {...defaultProps} onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    const widthInput = screen.getByLabelText('Width mm');
+    // Same measurement, different string — the field only ever showed "441".
+    fireEvent.change(widthInput, { target: { value: '441.00' } });
+    fireEvent.keyDown(widthInput, { key: 'Enter' });
+
     expect(onCommit).not.toHaveBeenCalled();
   });
 });

@@ -45,7 +45,8 @@ const payloadSchema = z
     fractionalEdgeY: z.enum(['start', 'end']),
     // Static bound = half the largest settable pitch (GRID_PITCH_MM_MAX via
     // setGridUnitMm, NOT the smaller GRID_UNIT_MM_MAX); handle() re-clamps to
-    // the layout's actual ±pitch/2 per axis.
+    // the layout's own `drawerFrameShiftLimits`, which is half a pitch until an
+    // oversize perimeter gives the lattice more room than that.
     gridShiftX: z
       .number()
       .min(-GRID_PITCH_MM_MAX / 2)

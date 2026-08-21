@@ -116,20 +116,25 @@ export function EditableDimensions({
       setEditing(false);
       return;
     }
+    const h = hasHeight ? parseFloat(localHeight) : undefined;
     // Opening the field and clicking away is not an edit. Committing it anyway
     // ran the caller's snap-to-grid on values the user never typed, which on a
     // baseplate synced to a shaped drawer dropped the sync and the shape.
+    // Compared as displayed rather than as typed, so a re-entry of the same
+    // measurement ("441.00" over "441") reads as the no-op it is; `formatMm` is
+    // the precision the field shows, so anything it rounds away was never on
+    // screen to change.
+    const same = (typed: number, current: number): boolean => formatMm(typed) === formatMm(current);
     if (
-      localWidth === formatMm(widthMm) &&
-      localDepth === formatMm(depthMm) &&
-      (heightMm === undefined || localHeight === formatMm(heightMm))
+      same(w, widthMm) &&
+      same(d, depthMm) &&
+      (heightMm === undefined || h === undefined || Number.isNaN(h) || same(h, heightMm))
     ) {
       setEditing(false);
       return;
     }
     if (hasHeight) {
-      const h = parseFloat(localHeight);
-      if (!Number.isNaN(h)) {
+      if (h !== undefined && !Number.isNaN(h)) {
         onCommit(clamp(w), clamp(d), clampHeight(h));
       }
     } else {
