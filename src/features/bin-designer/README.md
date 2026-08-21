@@ -107,9 +107,9 @@ graph TB
   `useKnifeRestPairing` reconciler in design-linking) — moving, stashing, deleting and
   rotating act on the unit while the gap between them stays free grid space
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, top-surface picker with its magnet / lip-only / separate-baseplate sub-toggles, thickness sliders
-- `components/panel/SlideControls/` — the sliding lid's own knobs: channel placement (`recessed` under the stacking lip, so the bin still stacks / `flush` at the rim for the deepest interior, which needs the lip off and says so as a blocker with a one-click fix), which wall it opens through, the pull (none / finger notch / in-plane tab), and the click-shut detent. The sliding clearance is deliberately NOT here — it lives under the panel's Advanced disclosure with the other millimetre knobs, because it is the one number with a right answer per printer and none in general. Everything it renders comes from `slideLidPlanForParams`, so a readout can never disagree with the geometry
+- `components/panel/SlideControls/` — channel placement (`recessed` under the stacking lip so the bin still stacks, or `flush` at the rim for the deepest interior, which needs the lip off and says so as a blocker with a one-click fix), which wall it opens through, the pull (none / finger notch / in-plane tab), and the click-shut detent. Sliding clearance is deliberately NOT here: it lives under Advanced with the other millimetre knobs, being the one number with a right answer per printer and none in general. Everything rendered comes from `slideLidPlanForParams`, so a readout cannot disagree with the geometry.
 - `components/panel/HingeControls/` — which wall the hinge axis runs along, and what holds the lid SHUT (nothing / a snap rail on the opposite wall / magnet bosses on that wall). A hinge fixes one edge and says nothing about the other three, which is why the catch is its own choice. The readout is the point: the pin is a filament offcut the user cuts themselves, so the cut length is the one number nobody can measure off the model, and it is quoted again in the export dialog from the same `hingePinLengths` call, one per RUN (a cutout splitting the hinge wall leaves two barrels and needs two pins). Running fit lives under Advanced with the other millimetre knobs. Switching TO a hinge seeds a scallop grip on the opposite wall when the grip is still untouched, but never overwrites a configured one.
-- `components/panel/LidGripControls/` — grip relief (#3272): the chamfer / shadow-line / scallop cut at the lid↔bin seam that gives a fingernail somewhere to go, plus the opt-in bin lip dip. Height is a knob on the shadow line and the scallop (`grip.heightMm`; `null` = the mode's own request, and a chamfer has none, since its 45° section is its depth). Its readout reports the depth, the height and the lid left ABOVE the cut, plus which dimension ran out, because the requested values are bounded by the design's own tray / magnet / skirt geometry and a shortened relief otherwise reads as a defect. The shadow line is unavailable on a stackable top — it moves the face an upper bin registers against; `lidGripModeAllowed` is the rule, mirrored server-side
+- `components/panel/LidGripControls/` — the chamfer / shadow-line / scallop cut at the lid↔bin seam, plus the opt-in bin lip dip. `grip.heightMm` is a knob on the shadow line and the scallop (`null` = the mode's own request; a chamfer has none, its 45° section being its depth). The readout reports depth, height, lid left ABOVE the cut and which dimension ran out, because the requested values are bounded by the design's own tray / magnet / skirt geometry and a shortened relief otherwise reads as a defect. The shadow line is unavailable on a stackable top, since it moves the face an upper bin registers against; `lidGripModeAllowed` is the rule, mirrored server-side.
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/panel/ColorsSection/AccentBandsEditor.tsx` — the top and bottom accent bands. These are the only PLANE-CUT zones: every other zone paints whatever geometry carries its `FeatureTag`, while a band recolors the outermost N mm of the body at one end and overrides each zone it covers (a bottom band paints the socket, a top band paints the lip). `accentCutPlanes` in `types/featureColors.ts` is the single resolver for both planes — it also owns the rule that a colliding pair tiles rather than overlaps — because the preview, the 3MF exporter and the eyedropper all read it
 - `utils/accentBandUnits.ts` — mm ↔ whole-layer conversion for the band height sliders. The design always stores absolute mm; `settings.accentBandUnit` is an authoring preference resolved against `printSettings.layerHeightMm`, so changing a printer profile never repaints a saved design
@@ -122,8 +122,8 @@ graph TB
   multi-color mode it paints the lid with its zone color (`featureColors.lid`) to match the
   exporter, rather than the body color
 - `components/preview/LidGuideLine/` — visual cue connecting bin and lid in exploded views. Hidden for a sliding lid, whose whole point is that it does NOT dock downward
-- `components/preview/LidExplodeSlider/` — slider that lifts the lid off the bin (replaces view-mode pills). For a sliding lid the same drag translates it along its entry axis instead; for a hinged one it carries DEGREES and stops where the lid does, because a hinged lid cannot lift and an exploded view would hide the one thing worth checking — whether the nose clears the rim through the arc. Range and unit are props rather than a second component, since the track, the drag mapping and the keyboard are identical whatever the number means — `lidGroupPosition` in `preview/LidMesh/lidAnchorZ.ts` owns BOTH the seated placement and the explode direction, so no consumer has to know which kind of lid it is
-- `components/preview/LidMesh/lidAnchorZ.ts` — `lidHingePose` poses a hinged lid as three nested groups rather than one: a group turns about its own origin and the hinge axis is out at the wall, so collapsing them looks identical at 0° and swings the lid through the bin at anything else. There is deliberately NO pin rendered — a pin sits recessed inside a closed barrel, so it draws 0 pixels shut and 334 of 2.4M fully open. The interleaved knuckles carry the joint on their own; the cut length is quoted in the panel and the export dialog instead
+- `components/preview/LidExplodeSlider/` — lifts the lid off the bin. A sliding lid translates along its entry axis instead; a hinged one carries DEGREES and stops where the lid does, because it cannot lift and an exploded view would hide the one thing worth checking, whether the nose clears the rim through the arc. Range and unit are props rather than a second component, since track, drag mapping and keyboard are identical whatever the number means. `lidGroupPosition` (`preview/LidMesh/lidAnchorZ.ts`) owns BOTH the seated placement and the explode direction, so no consumer needs to know which kind of lid it is.
+- `components/preview/LidMesh/lidAnchorZ.ts` — `lidHingePose` poses a hinged lid as three nested groups, not one: a group turns about its own origin while the hinge axis is out at the wall, so collapsing them looks identical at 0° and swings the lid through the bin at anything else. There is deliberately NO pin rendered: a pin sits recessed inside a closed barrel, drawing 0 pixels shut and 334 of 2.4M fully open. The interleaved knuckles carry the joint; the cut length is quoted in the panel and the export dialog instead.
 - `store/designer.ts` — design state and parameter mutations (composed from slices)
 - `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
 - `store/cutoutSelection.ts` — cutout editor selection state
@@ -137,7 +137,7 @@ graph TB
 - `types/` — TypeScript types for designer state, cutouts, compartments, lid config
 - `utils/` — validation, print estimates, file naming, design JSON serialization
 - `utils/tags.ts` — `normalizeTags` (trim/strip-control-chars/dedupe/cap: 12 tags × 32 chars)
-- `@/shared/printSettings/assembledHeight` — how tall the design stands seated on a baseplate with its lid on (#3037), as disjoint bottom-to-top bands summing to the total. **A socketed bin nests `SOCKET_HEIGHT` into the plate**, so a plain no-magnet, no-solid-floor plate contributes 0mm; only `baseplateFloorDepth` (magnet retaining floor + optional solid floor) lifts the bin. A **flat base has no socket, so it gets no plate band at all** — it sits straight in the drawer, and counting one would overstate clearance by the plate's full height. Feeds both the sidebar rows (`panel/AssembledHeightBreakdown`) and the 3D height dimension (`preview/BinDimensions`) via `hooks/useAssembledHeight`, so the drawing and the readout cannot disagree. The lid's rise is derived from `lidAnchorZ`/`resolveLidPlateThickness` rather than measured, so it is correct before generation finishes — `generation/.../assembledHeight.scenario.test.ts` runs the real kernel to keep the derivation pinned to the meshes. It sits in `shared/` because the layout's drawer-ceiling check, the bin inspector and the layers panel all need the same answer and cannot import this feature; the design's rise reaches them through `assembledRiseMm` on the custom-bin registry
+- `@/shared/printSettings/assembledHeight` — how tall the design stands seated on a baseplate with its lid on, as disjoint bottom-to-top bands summing to the total. **A socketed bin nests `SOCKET_HEIGHT` into the plate**, so a plain no-magnet, no-solid-floor plate contributes 0mm; only `baseplateFloorDepth` (magnet retaining floor + optional solid floor) lifts the bin. **A flat base has no socket, so it gets no plate band at all**: counting one would overstate clearance by the plate's full height. Feeds the sidebar rows (`panel/AssembledHeightBreakdown`) and the 3D height dimension (`preview/BinDimensions`) through `hooks/useAssembledHeight`, so drawing and readout cannot disagree. The lid's rise is derived from `lidAnchorZ`/`resolveLidPlateThickness` rather than measured, so it is correct before generation finishes; `generation/.../assembledHeight.scenario.test.ts` runs the real kernel to pin the derivation to the meshes. It lives in `shared/` because the layout's drawer-ceiling check, the bin inspector and the layers panel all need the answer and cannot import this feature, reaching it via `assembledRiseMm` on the custom-bin registry.
 
 ## Critical Concepts
 
@@ -364,39 +364,35 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 - **Lock covers transforms only**: `Cutout.locked` means "cannot be moved, resized, or
   rotated". Batch edits to cut depth, chamfer and colour still apply to locked shapes; X/Y,
   W/H and rotation skip them.
-- **Parametric arrays**: a cutout can carry a `CutoutArrayConfig` (`array`) that
-  replicates it across a `grid`, `staggered`, or `radial` pattern from a single
+- **Parametric arrays**: a cutout can carry a `CutoutArrayConfig` (`array`)
+  replicating it across a `grid`, `staggered` or `radial` pattern from a single
   **master**. Placement math lives in `@/shared/utils/cutoutArray`
-  (`arrayInstances` → offsets, `expandCutoutArray` → concrete `Cutout[]`), shared
-  by the worker (cut tools) and the 2D editor (instance meshes) so both derive
-  identical positions. Instance 0 is always the master (a real cut, keeps its
-  id/placement); derived instances get ids `${master.id}::a${i}`. Total instances
-  are capped at `MAX_ARRAY_INSTANCES`, and the editor clamps counts, pitch, and
-  radius to feasible bounds (`arrayFieldBounds`) so an array can't be grown past
-  the bin footprint. **Pitch is bounded by the bin, never by the master's own
-  box**: two instances overlap only when they overlap on BOTH axes, so a
-  staggered array whose half-pitch X offset already clears the master may nest
-  arbitrarily close in Y — a per-axis floor cannot see that, and read off the
-  box it also refused a deliberate overlap, which is how two shapes are made to
-  cut into each other as one opening. `arrayInstancesOverlap` asks the two-axis
-  question and the editor warns that the cuts will merge; `clearPitchX/Y` say
-  where that begins. Detection accepts what the editor warns about, since
-  nothing stops two independent cutouts from touching either. Arrays are restricted to **ungrouped, non-path** cutouts;
-  `flattenCutoutArray` / `applyFlattenArray` bake instances into independent
-  cutouts. Array controls (`+/-` steppers) appear in both the full-screen
-  workspace and the sidebar editor (`CutoutArrayControls`). **A flatten declines
-  whole or completes whole**: its first step strips the master's repeat config,
-  so a run that fills the lid part way through would leave the design with
-  neither the array nor the instances it stood for. `applyFlattenArray` takes
-  `remainingCutoutCapacity` and returns `'no-room'` before touching anything.
+  (`arrayInstances` for offsets, `expandCutoutArray` for concrete `Cutout[]`),
+  shared by the worker and the 2D editor so both derive identical positions.
+  Instance 0 is always the master (a real cut, keeping its id/placement); derived
+  instances get ids `${master.id}::a${i}`. Totals cap at `MAX_ARRAY_INSTANCES`,
+  and the editor clamps counts, pitch and radius via `arrayFieldBounds`.
 
-  **The UI calls this "Repeat"** (`binDesigner.cutouts.repeat.*`). The data field
-  is `array`: renaming it would change every stored design and
-  `communityParamsFingerprint`. The section sits above Color/Fit in both editors
-  and opens on preset chips (`repeatPresets.ts`), each checked against
-  `arrayFieldBounds` so a chip that would be clamped is disabled instead. When
-  `canArray` refuses, the section stays and states the reason with an Ungroup
-  action (`repeatBlockedReason`).
+  - **Pitch is bounded by the bin, never by the master's own box.** Two instances
+    overlap only when they overlap on BOTH axes, so a staggered array whose
+    half-pitch X offset already clears the master may nest arbitrarily close in Y.
+    A per-axis floor cannot see that, and read off the box it also refused a
+    deliberate overlap, which is how two shapes are made to cut into each other as
+    one opening. `arrayInstancesOverlap` asks the two-axis question and the editor
+    warns the cuts will merge; `clearPitchX/Y` say where that begins.
+  - Restricted to **ungrouped, non-path** cutouts. `flattenCutoutArray` /
+    `applyFlattenArray` bake instances into independent cutouts, and **a flatten
+    declines whole or completes whole**: its first step strips the master's repeat
+    config, so a run that filled the lid part way through would leave neither the
+    array nor the instances it stood for. `applyFlattenArray` takes
+    `remainingCutoutCapacity` and returns `'no-room'` before touching anything.
+  - **The UI calls this "Repeat"** (`binDesigner.cutouts.repeat.*`) but the data
+    field is `array`: renaming it would change every stored design and
+    `communityParamsFingerprint`. The section opens on preset chips
+    (`repeatPresets.ts`), each checked against `arrayFieldBounds` so a chip that
+    would be clamped is disabled. When `canArray` refuses, the section stays and
+    states the reason with an Ungroup action (`repeatBlockedReason`). Controls
+    (`CutoutArrayControls`, `+/-` steppers) appear in the workspace and the sidebar.
 
   **`@/shared/utils/cutoutRepeatDetect` runs the inverse direction**: it recovers
   the master + config from hand-placed instances, fitting centers to a lattice
@@ -461,8 +457,73 @@ estimates), and the source file name.
 4. **Half-cells get no magnet holes** - only full 1×1 unit cells
 5. **Solid style skips shell** - `buildBinBox`'s `solid` flag bypasses `.shell()`, so wallThickness is irrelevant
 6. **Label tabs skip solid bins** - both generation and ghost overlay guard against `style === 'solid'`. Tabs default to `edges: 'back'` (legacy); `'front'` and `'both'` enable tuck-under ledges (#1898). `inset` (mm) slides the tab inward from its anchor wall for shorter coverage. In `'both'` mode the front tab silently drops when `2·depth + 2·inset > compartmentDepth` and the panel surfaces an inline warning.
-   - **Swappable-label socket mode (#2666)**: `label.mode: 'socket'` replaces the printed-in text with a click-in pocket for standard interchange label plates (dims pinned in `@/shared/constants/labelPlates`; Cullenect v2-compatible). Tabs honour the width % like text mode does (#3402; they were forced full-width until then), `alignment` moves the tab AND positions the pocket inside it — which is why the alignment control stays visible at 100% width in socket mode, where a per-compartment plate override can leave the pocket far narrower than its shelf — the depth floor rises to 14mm, and `compartments.labelPlateWidths` (per-compartment ID, remapped in lockstep like `compartmentTexts`) overrides the auto largest-fit plate width. Fit math is shared with the worker via `@/shared/utils/labelSocketPlan` — UI warnings and cut geometry can't drift. The matching plates export from the panel (`LabelPlatesControls` + `useLabelPlateExport` → `EXPORT_LABEL_PLATES`): one plate per socket carrying its `compartmentTexts` entry — per SOCKET, not per compartment, since `edges: 'both'` gives a compartment one on each wall (#2910) — text depth snapped to whole layer heights for filament-swap two-color printing, with a pre-export 3D preview parsed from the STL path. A fit-calibration card (`LabelFitSampleButton` + `useLabelFitSampleExport` → `EXPORT_LABEL_FIT_SAMPLE`) sweeps the socket clearance across a −0.10…+0.10mm offset ladder so the winning coupon's embossed value maps directly onto `plateFitOffset`. Plates can also carry a hardware icon (`compartments.labelIcons`, per-compartment ID and remapped in lockstep like `compartmentTexts`; allowlist `LABEL_PLATE_ICONS`) rendered left of the text. Icon geometry is SVG path data in `@/shared/constants/labelIconPaths`, extruded by `labelPlateIcons.ts` and previewed by `LabelIconPicker` from the SAME strings, so the grid can't show a silhouette the plate won't print — contributor contract in `docs/label-icons.md`. `label.socketStyle` (absent = `clickIn`) selects the pocket profile: `slideChannel` swaps the ribs for overhanging lips with a mouth through the tab's compartment-facing edge and a park detent — thicker shelf (`LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM`), same standard plates. On lipped bins the click-in shelf sinks `LABEL_SOCKET_STACK_RELIEF_MM` (0.8mm) below the interior ceiling — a stacked bin's foot seats only 0.25mm above that plane, so a plate standing proud of the shelf lifts it. The relief is sized for the worst case, a plate perched on the retention ribs instead of clicked home AND carrying max-depth embossed text; click-in pockets are also cut `LABEL_SOCKET_CLICK_POCKET_RELIEF_MM` deeper than the plate so a normally-seated one is recessed rather than flush. The shared resolver `resolveLabelShelfTopMm` keeps the worker, the panel's height display/ceiling, and the ghost preview on the same plane, and **caps an explicit `label.height` at the relieved plane** wherever the relief applies (elsewhere it is honored verbatim).
-   - **Per-compartment label text has ONE editor and a picker.** `compartments.compartmentTexts` (keyed by compartment id) feeds the engraving (`labelTabBuilder`) and `LabelTextList`, the always-expanded list leading `LabelTabsSection`. The `CompartmentEditor` "Label text" mode (`useCompartmentLabeling`, **standard style + >1 compartment only**) no longer carries a field of its own: clicking a cell moves focus to that compartment's row in the list. Its mode and selection therefore live in the store (`ui.compartmentLabelMode`, `ui.labelFocusCompartmentId`), not local state — the grid and the list sit in different panel sections with no common ancestor, so "pick on grid" could not reach the grid otherwise. **Reset `ui` alongside `params` in tests**, or the selection leaks between cases. Both call `setCompartmentText`. Labels render **always-visible** on grid cells (truncated, full text via `title`) so they're legible without hover (which doesn't exist on touch); typing a label when label tabs are off shows an inline "Enable label tabs" prompt. The text persists regardless of whether tabs are enabled or actually generate. `LabelTextList` shows EVERY row with the filled ones dimmed rather than filtered away — the row number's only meaning is that it matches the grid, so hiding rows breaks the mapping on exactly the large grids where it matters — and it surfaces two things the geometry will not: how many tabs print blank, and which captions the builder dropped for overflowing their host (`generation.mesh.labelTextOverflow`, see generation gotcha 7). Clearing the whole list goes through `clearLabelText`, one history entry so one undo restores it. In socket mode each row also carries that compartment's plate width and icon, so the per-compartment choices are one row rather than two lists keyed the same way; the fit knobs (socket style, `plateFitOffset`, the calibration card) fold into a collapsed "Plate fit" group since they calibrate a printer, not a label. `useLabelPlateCounts` returns a `DesignLabelInfo` per linked design — the plate set plus `tabsWithoutText`, a DESIGN-level fact (tabs on, no text anywhere) rather than a per-tab blank count, because counting individual blanks needs the worker's tab plan and a guess would over-report.
+   - **Swappable-label socket mode**: `label.mode: 'socket'` replaces printed-in
+     text with a click-in pocket for standard interchange label plates (dims in
+     `@/shared/constants/labelPlates`, Cullenect v2-compatible). Fit math is shared
+     with the worker via `@/shared/utils/labelSocketPlan`, so UI warnings and cut
+     geometry cannot drift.
+     - Tabs honour the width % like text mode does. `alignment` moves the tab AND
+       positions the pocket inside it, which is why the alignment control stays
+       visible at 100% width in socket mode: a per-compartment plate override can
+       leave the pocket far narrower than its shelf. The depth floor rises to 14mm,
+       and `compartments.labelPlateWidths` (per-compartment ID, remapped in lockstep
+       like `compartmentTexts`) overrides the auto largest-fit plate width.
+     - Plates export from the panel (`LabelPlatesControls` + `useLabelPlateExport` →
+       `EXPORT_LABEL_PLATES`): one plate **per SOCKET, not per compartment**, since
+       `edges: 'both'` gives a compartment one on each wall. Text depth snaps to whole
+       layer heights for filament-swap two-colour printing, with a pre-export 3D
+       preview parsed from the STL path. `LabelFitSampleButton` +
+       `useLabelFitSampleExport` → `EXPORT_LABEL_FIT_SAMPLE` sweeps socket clearance
+       across a −0.10…+0.10mm ladder so the winning coupon's embossed value maps
+       directly onto `plateFitOffset`.
+     - Plates can carry a hardware icon (`compartments.labelIcons`, remapped in
+       lockstep like `compartmentTexts`; allowlist `LABEL_PLATE_ICONS`) left of the
+       text. Icon geometry is SVG path data in `@/shared/constants/labelIconPaths`,
+       extruded by `labelPlateIcons.ts` and previewed by `LabelIconPicker` from the
+       SAME strings, so the grid cannot show a silhouette the plate will not print.
+       Contributor contract in `docs/label-icons.md`.
+     - `label.socketStyle` (absent = `clickIn`) selects the pocket profile:
+       `slideChannel` swaps the ribs for overhanging lips with a mouth through the
+       tab's compartment-facing edge and a park detent, using a thicker shelf
+       (`LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM`) and the same standard plates. On
+       lipped bins the click-in shelf sinks `LABEL_SOCKET_STACK_RELIEF_MM` (0.8mm)
+       below the interior ceiling, since a stacked bin's foot seats only 0.25mm above
+       that plane, so a plate standing proud would lift it. The relief is sized for
+       the worst case (a plate perched on the ribs AND carrying max-depth text);
+       click-in pockets are cut `LABEL_SOCKET_CLICK_POCKET_RELIEF_MM` deeper than the
+       plate so a seated one is recessed rather than flush. `resolveLabelShelfTopMm`
+       keeps worker, panel and ghost preview on the same plane and **caps an explicit
+       `label.height` at the relieved plane** wherever the relief applies.
+   - **Per-compartment label text has ONE editor and a picker.**
+     `compartments.compartmentTexts` (keyed by compartment id) feeds the engraving
+     (`labelTabBuilder`) and `LabelTextList`, the always-expanded list leading
+     `LabelTabsSection`. The `CompartmentEditor` "Label text" mode
+     (`useCompartmentLabeling`, **standard style + >1 compartment only**) carries no
+     field of its own: clicking a cell moves focus to that compartment's row.
+     - Mode and selection live in the store (`ui.compartmentLabelMode`,
+       `ui.labelFocusCompartmentId`), not local state, because the grid and the list
+       sit in different panel sections with no common ancestor. **Reset `ui`
+       alongside `params` in tests**, or the selection leaks between cases. Both call
+       `setCompartmentText`.
+     - Labels render **always-visible** on grid cells (truncated, full text via
+       `title`) so they are legible without hover, which does not exist on touch.
+       Typing a label when tabs are off shows an inline "Enable label tabs" prompt;
+       the text persists regardless of whether tabs are enabled or generate.
+     - `LabelTextList` shows EVERY row with filled ones dimmed rather than filtered
+       away: the row number's only meaning is that it matches the grid, so hiding
+       rows breaks the mapping on exactly the large grids where it matters. It also
+       surfaces two things the geometry will not: how many tabs print blank, and
+       which captions the builder dropped for overflowing their host
+       (`generation.mesh.labelTextOverflow`, generation gotcha 7). Clearing goes
+       through `clearLabelText`, one history entry so one undo restores it.
+     - In socket mode each row also carries that compartment's plate width and icon,
+       so per-compartment choices are one row rather than two lists keyed the same
+       way; the fit knobs (socket style, `plateFitOffset`, the calibration card) fold
+       into a collapsed "Plate fit" group since they calibrate a printer, not a
+       label. `useLabelPlateCounts` returns a `DesignLabelInfo` per linked design:
+       the plate set plus `tabsWithoutText`, a DESIGN-level fact rather than a
+       per-tab blank count, because counting individual blanks needs the worker's tab
+       plan and a guess would over-report.
 7. **cellMask dimensions must track width × depth** - `cols` must equal
    `Math.round(width × MASK_CELLS_PER_UNIT)` and `rows` the depth equivalent.
    `paramSlice.setCellMask` rejects mismatched masks outright. When the bin
