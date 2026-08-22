@@ -51,7 +51,11 @@ export function registerLinkedExcessResolver(
 
 function linkedExcess(bin: Bin): number {
   if (bin.linkedDesignId === undefined || linkedExcessResolver === null) return 0;
-  return linkedExcessResolver(bin);
+  const excess = linkedExcessResolver(bin);
+  // The resolver is pluggable, so its output is not trusted: a NaN here would
+  // flow into zEnd and make every vertical-overlap comparison false, silently
+  // disabling collisions and blocked zones.
+  return Number.isFinite(excess) && excess > 0 ? excess : 0;
 }
 
 /**

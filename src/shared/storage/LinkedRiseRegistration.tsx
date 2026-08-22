@@ -24,10 +24,20 @@ function refs(): Map<DesignId, CustomBinRef> {
   return refsById;
 }
 
-subscribeToRegistry(() => {
+function invalidate(): void {
   refsById = null;
   registryTick += 1;
-});
+}
+
+subscribeToRegistry(invalidate);
+
+// The registry subscriber only sees same-tab writes; a design saved in another
+// tab arrives as a storage event (same key handling as `useCustomBins`).
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'gridfinity-custom-bins-v1' || e.key === null) invalidate();
+  });
+}
 
 registerLinkedExcessResolver(
   (bin: Bin): number => {

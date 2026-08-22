@@ -226,6 +226,15 @@ describe('linked-design excess rise', () => {
     expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
   });
 
+  it('treats a non-finite or negative resolver value as zero excess', () => {
+    registerLinkedExcessResolver(() => Number.NaN);
+    expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
+    registerLinkedExcessResolver(() => Infinity);
+    expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
+    registerLinkedExcessResolver(() => -2);
+    expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
+  });
+
   it('recomputes cached blocked zones when the rise version changes', () => {
     let excess = 0;
     let version = 0;

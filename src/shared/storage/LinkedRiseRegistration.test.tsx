@@ -56,6 +56,23 @@ describe('LinkedRiseRegistration', () => {
     expect(rect.ok && rect.value.zEnd).toBe(4);
   });
 
+  it('re-reads the registry after a cross-tab storage event', async () => {
+    await import('@/shared/storage/LinkedRiseRegistration');
+    registry.push({
+      id: designId('lidded'),
+      name: 'Lidded',
+      width: 2,
+      depth: 2,
+      height: 4,
+      assembledRiseMm: 4 * 7 + LIP_PROTRUSION_MM + 14,
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    window.dispatchEvent(new StorageEvent('storage', { key: 'gridfinity-custom-bins-v1' }));
+
+    const rect = getBin3DRectResult(linkedBin, layers);
+    expect(rect.ok && rect.value.zEnd).toBeCloseTo(6, 6);
+  });
+
   it('renders nothing', async () => {
     const { LinkedRiseRegistration } = await import('@/shared/storage/LinkedRiseRegistration');
     expect(LinkedRiseRegistration()).toBeNull();
