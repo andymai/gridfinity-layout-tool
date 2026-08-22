@@ -52,6 +52,7 @@ import { sketch } from './meshUtils';
 import { buildTextSolid, fitTextSize, type ResolvedTextStyle } from './textBuilder';
 import { buildIconSolid, measureIconBox } from './labelPlateIcons';
 import { buildBaseplateSTL } from './baseplateSTL';
+import { PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /** One plate to build: standard width + the text it carries (may be empty). */
 export interface LabelPlateSpec {
@@ -483,7 +484,7 @@ export async function exportLabelPlates(
       const data = await blob.arrayBuffer();
       return { data, fileName: `${name}.step` };
     }
-    const meshResult = mesh(assembled, { tolerance: 0.05, angularTolerance: 10 });
+    const meshResult = mesh(assembled, { tolerance: 0.05, angularTolerance: PREVIEW_ANGULAR_TOLERANCE_RAD });
     // Face provenance for STL→3MF paint_color: TEXT-tagged glyph faces map
     // to the text color, everything else to the plate color. The STL below
     // writes from this same tessellation, so the ranges stay aligned.

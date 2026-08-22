@@ -86,6 +86,7 @@ import {
   insideAreaFraction,
   type RegionClass,
 } from '@/shared/utils/drawerOutlineGeometry';
+import { EXPORT_ANGULAR_TOLERANCE_RAD, PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /**
  * Minimum surviving area for an outline-clipped over-tile pocket. Below this
@@ -171,13 +172,13 @@ export function generateBaseplate(
 
   if (forExport) {
     tolerance = 0.01;
-    angularTolerance = 5;
+    angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD;
   } else if (params.magnetHoles) {
     tolerance = Math.min(0.1, Math.max(0.05, maxDimension / 2500));
-    angularTolerance = 10;
+    angularTolerance = PREVIEW_ANGULAR_TOLERANCE_RAD;
   } else {
     tolerance = Math.min(0.4, Math.max(0.15, maxDimension / 600));
-    angularTolerance = 12;
+    angularTolerance = PREVIEW_ANGULAR_TOLERANCE_RAD;
   }
 
   try {
@@ -233,7 +234,7 @@ function buildConnectorKeyMeshIfNeeded(
 
   const clip = buildSnapClip(totalHeight, params.gridUnitMm, params.nozzleSizeMm);
   try {
-    const clipMesh = mesh(clip, { tolerance: 0.05, angularTolerance: 10 });
+    const clipMesh = mesh(clip, { tolerance: 0.05, angularTolerance: PREVIEW_ANGULAR_TOLERANCE_RAD });
     const indexed = toIndexedMeshData(clipMesh, new Float32Array(0));
     return {
       vertices: indexed.vertices,
@@ -795,7 +796,7 @@ export async function exportBaseplate(
     // indistinguishable from the prior 0.01mm while roughly halving the
     // tessellation triangle budget on large plates. Callers can still override.
     const tol = tolerance ?? 0.02;
-    const angTol = angularTolerance ?? 6;
+    const angTol = angularTolerance ?? EXPORT_ANGULAR_TOLERANCE_RAD;
     const meshResult = mesh(baseplate, { tolerance: tol, angularTolerance: angTol });
     const data = buildBaseplateSTL(meshResult, name);
     return { data, fileName: `${name}.stl` };
@@ -829,7 +830,7 @@ export async function exportConnectorKey(
       return { data, fileName: `${name}.step` };
     }
     const tol = tolerance ?? 0.01;
-    const angTol = angularTolerance ?? 5;
+    const angTol = angularTolerance ?? EXPORT_ANGULAR_TOLERANCE_RAD;
     const meshResult = mesh(key, { tolerance: tol, angularTolerance: angTol });
     const data = buildBaseplateSTL(meshResult, name);
     return { data, fileName: `${name}.stl` };

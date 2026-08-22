@@ -1,17 +1,17 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`floor patterns > compartment divider footings stay solid 1`] = `6716`;
+exports[`floor patterns > compartment divider footings stay solid 1`] = `6812`;
 
-exports[`floor patterns > custom-shape bin patterns only its filled feet 1`] = `12254`;
+exports[`floor patterns > custom-shape bin patterns only its filled feet 1`] = `12314`;
 
-exports[`floor patterns > flat base takes one interior-wide window 1`] = `5176`;
+exports[`floor patterns > flat base takes one interior-wide window 1`] = `5208`;
 
-exports[`floor patterns > floor and wall patterns compose 1`] = `9852`;
+exports[`floor patterns > floor and wall patterns compose 1`] = `9948`;
 
-exports[`floor patterns > fractional edge foot carries a narrower window 1`] = `5924`;
+exports[`floor patterns > fractional edge foot carries a narrower window 1`] = `5988`;
 
-exports[`floor patterns > half sockets get one window per quarter foot 1`] = `3340`;
+exports[`floor patterns > half sockets get one window per quarter foot 1`] = `3436`;
 
-exports[`floor patterns > magnet + screw pockets stay solid 1`] = `14604`;
+exports[`floor patterns > magnet + screw pockets stay solid 1`] = `14892`;
 
-exports[`floor patterns > scoop ramp footings stay solid 1`] = `12292`;
+exports[`floor patterns > scoop ramp footings stay solid 1`] = `12406`;

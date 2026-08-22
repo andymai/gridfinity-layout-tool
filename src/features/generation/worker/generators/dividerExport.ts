@@ -16,6 +16,7 @@ import { pitchFromParams } from './gridPitch';
 import { resolveOverhang, overhangExpansion } from './overhang';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
+import { EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 const CLEARANCE = GRIDFINITY.TOLERANCE;
 
@@ -97,7 +98,7 @@ export async function exportDividerPiecesSeparately(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = 5
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD
 ): Promise<CombinedExportPiece[]> {
   const { wallHeight } = deriveDimensions(params, true);
 

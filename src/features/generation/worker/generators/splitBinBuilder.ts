@@ -46,6 +46,7 @@ import { buildWallPatterns } from './wallPatternBuilder';
 import { buildKumikoWallPatterns } from './kumikoWrapBuilder';
 import { fuseAllOrNull } from './utils/shapeOps';
 import { splitConnectorsSuppressedByBase } from '@/shared/generation/splitUtils';
+import { EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /** Result of a split export: array of piece buffers with grid labels */
 export interface SplitExportResult {
@@ -798,7 +799,7 @@ export async function exportSplitBin(
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
   tolerance = 0.01,
-  angularTolerance = 5,
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD,
   splitConnectorConfig?: SplitConnectorConfig,
   format: ExportFormat = 'stl'
 ): Promise<SplitExportResult> {
@@ -906,7 +907,7 @@ export async function exportSplitBinRange(
   cutPlanesY: readonly number[],
   pieceIndices: readonly number[],
   tolerance = 0.01,
-  angularTolerance = 5,
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD,
   splitConnectorConfig?: SplitConnectorConfig,
   format: ExportFormat = 'stl'
 ): Promise<SplitExportResult> {

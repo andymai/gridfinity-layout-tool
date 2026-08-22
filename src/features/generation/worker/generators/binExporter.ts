@@ -10,7 +10,7 @@ import { generateBin } from './binOrchestrator';
 import { FeatureTag } from './featureTags';
 import { getLastSolid, isLastSolidReusableFor, setLastSolid } from './shapeCache';
 import { paramsFingerprint } from '@/shared/generation/paramsFingerprint';
-import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './utils/tolerances';
+import { EXPORT_ANGULAR_TOLERANCE_RAD, EXPORT_TOLERANCE } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 import { hasMeshImprints, prepareMeshImprints } from './meshImprint';
@@ -30,7 +30,7 @@ export interface ExportResult {
  *
  * `faceGroups` is captured so 3MF callers can map each STL triangle to a
  * feature tag. The match relies on brepjs's shape+tolerance mesh cache: the
- * regen path runs `mesh()` at `EXPORT_TOLERANCE`/`EXPORT_ANGULAR_TOLERANCE`
+ * regen path runs `mesh()` at `EXPORT_TOLERANCE`/`EXPORT_ANGULAR_TOLERANCE_RAD`
  * (the export branch of `computeTessellationTolerances`), and we re-mesh /
  * `exportSTL` with the same constants here so all three calls hit the same
  * cached tessellation.
@@ -92,7 +92,7 @@ async function runExportAttempt(
   if (!faceGroups) {
     const m = mesh(solid, {
       tolerance: EXPORT_TOLERANCE,
-      angularTolerance: EXPORT_ANGULAR_TOLERANCE,
+      angularTolerance: EXPORT_ANGULAR_TOLERANCE_RAD,
     });
     faceGroups = m.faceGroups.map((g) => ({
       start: g.start,
@@ -104,14 +104,14 @@ async function runExportAttempt(
   onProgress?.(0.92);
   // `faceGroups` above indexes into the same mesh() tessellation the fallback
   // writes from, so 3MF material alignment survives an OCCT-writer failure.
-  const data = await exportSolidToStl(solid, name, EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE);
+  const data = await exportSolidToStl(solid, name, EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE_RAD);
   onProgress?.(1);
   return { data, fileName: `${name}.stl`, faceGroups };
 }
 
 /**
  * Export the last generated solid in the requested format. Tessellation is
- * fixed at `EXPORT_TOLERANCE` / `EXPORT_ANGULAR_TOLERANCE` so the faceGroups
+ * fixed at `EXPORT_TOLERANCE` / `EXPORT_ANGULAR_TOLERANCE_RAD` so the faceGroups
  * captured at generation time line up with the triangles `exportSTL` emits
  * (brepjs caches `mesh()` by shape+tolerance — diverging here would silently
  * misalign per-triangle material indices in the 3MF).

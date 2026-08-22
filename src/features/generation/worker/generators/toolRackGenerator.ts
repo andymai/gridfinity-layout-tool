@@ -38,6 +38,7 @@ import { creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import { keepOuterShell } from './utils/outerShell';
 import { buildBaseplateSTL } from './baseplateSTL';
+import { EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 interface ResolvedFins {
   readonly count: number;
@@ -199,7 +200,7 @@ export async function exportToolRack(
   envelope: ItemEnvelope,
   format: ExportFormat,
   tolerance = 0.02,
-  angularTolerance = 6
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
   const built = buildToolRackSolid(structure, envelope, false);
   const rack = keepOuterShell(built);

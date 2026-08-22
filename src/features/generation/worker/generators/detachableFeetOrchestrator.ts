@@ -36,6 +36,7 @@ import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import type { ProgressFn } from './generatorTypes';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
+import { EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /** Gap between feet on the print plate (mm). */
 const PLATE_GAP_MM = 4;
@@ -113,7 +114,7 @@ export function generateDetachableFeetMesh(
   try {
     const compound = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));
     try {
-      const shapeMesh = mesh(compound, { tolerance: 0.01, angularTolerance: 5 });
+      const shapeMesh = mesh(compound, { tolerance: 0.01, angularTolerance: EXPORT_ANGULAR_TOLERANCE_RAD });
       // Crease edges, exactly as the lid and the tray get them. Without these
       // the feet are the one companion part rendering as a flat silhouette
       // while everything around it is outlined.
@@ -150,7 +151,7 @@ export async function exportDetachableFeet(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = 5
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD
 ): Promise<DetachableFeetExportResult | null> {
   const feet = buildFeetSolids(params, true, true);
   if (!feet) return null;

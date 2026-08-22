@@ -1,5 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`cutout repeat overlap > 2×2 solid with a tightly nested staggered array 1`] = `4008`;
+exports[`cutout repeat overlap > 2×2 solid with a tightly nested staggered array 1`] = `4080`;
 
-exports[`cutout repeat overlap > 2×2 solid with an overlapping grid array 1`] = `3348`;
+exports[`cutout repeat overlap > 2×2 solid with an overlapping grid array 1`] = `3420`;

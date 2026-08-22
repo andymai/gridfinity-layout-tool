@@ -1,25 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`base styles > flat base no lip 1`] = `204`;
+exports[`base styles > flat base no lip 1`] = `252`;
 
-exports[`base styles > flat base with lip 1`] = `892`;
+exports[`base styles > flat base with lip 1`] = `924`;
 
-exports[`base styles > magnet base no lip 1`] = `800`;
+exports[`base styles > magnet base no lip 1`] = `1032`;
 
-exports[`base styles > magnet base with lip 1`] = `1896`;
+exports[`base styles > magnet base with lip 1`] = `1944`;
 
-exports[`base styles > magnet+screw base no lip 1`] = `1040`;
+exports[`base styles > magnet+screw base no lip 1`] = `1464`;
 
-exports[`base styles > magnet+screw base with lip 1`] = `2280`;
+exports[`base styles > magnet+screw base with lip 1`] = `2376`;
 
-exports[`base styles > screw base no lip 1`] = `704`;
+exports[`base styles > screw base no lip 1`] = `1048`;
 
-exports[`base styles > screw base with lip 1`] = `1752`;
+exports[`base styles > screw base with lip 1`] = `1848`;
 
-exports[`base styles > standard base no lip 1`] = `464`;
+exports[`base styles > standard base no lip 1`] = `616`;
 
-exports[`base styles > standard base with lip 1`] = `1368`;
+exports[`base styles > standard base with lip 1`] = `1416`;
 
-exports[`base styles > weighted base no lip 1`] = `464`;
+exports[`base styles > weighted base no lip 1`] = `616`;
 
-exports[`base styles > weighted base with lip 1`] = `1368`;
+exports[`base styles > weighted base with lip 1`] = `1416`;
