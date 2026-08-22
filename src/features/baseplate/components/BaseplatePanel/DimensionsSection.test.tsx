@@ -3,9 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { DimensionsSection } from './DimensionsSection';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { gridUnits, mm } from '@/core/types';
-import { resetAllStores } from '@/test/testUtils';
+import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
+import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { drawerFrameOverhang } from '@/shared/utils/outlineFrame';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -13,7 +14,11 @@ vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 describe('DimensionsSection', () => {
   beforeEach(() => {
     resetAllStores();
+    useToastStore.setState({ toasts: [] });
+    useHalfGridModeStore.getState().setHalfGridMode(false);
   });
+
+  const toastMessages = (): string[] => useToastStore.getState().toasts.map((t) => t.message);
 
   it('renders the sync toggle, steppers, and padding controls', () => {
     render(<DimensionsSection />);
@@ -83,6 +88,112 @@ describe('DimensionsSection', () => {
       const params = useLayoutStore.getState().layout.baseplateParams;
       expect(params?.baseplateDepth).toBe(11);
       expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
+    });
+
+    it('says so when the fit turns the mode on', () => {
+      render(<DimensionsSection />);
+      commitMm('423', '502');
+      expect(toastMessages()).toContain('toast.halfBinModeAutoEnabled');
+    });
+  });
+
+  //. mm entry turns half-grid mode on, and the plate page carries neither the
+  // sidebar's toggle nor the H shortcut, so without this control the mode is
+  // reachable but not reversible from the only page that sets it.
+  describe('half-grid mode toggle', () => {
+    const toggle = (): HTMLElement => screen.getByLabelText('sidebar.halfBinMode');
+
+    /** A detached plate with explicit dimensions, as mm entry leaves one. */
+    function detachedPlate(width: number, depth: number, padMm: number): void {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({
+        ...current,
+        syncWithLayout: false,
+        baseplateWidth: gridUnits(width),
+        baseplateDepth: gridUnits(depth),
+        paddingLeft: mm(padMm),
+        paddingRight: mm(padMm),
+        paddingFront: mm(padMm),
+        paddingBack: mm(padMm),
+      });
+    }
+
+    /** Outer plate size in mm — the figure the user typed, which has to survive. */
+    function footprint(): { w: number; d: number } {
+      const { layout } = useLayoutStore.getState();
+      const p = layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      const gridW = (p.baseplateWidth ?? layout.drawer.width) * layout.gridUnitMm;
+      const gridD = (p.baseplateDepth ?? layout.drawer.depth) * effectiveGridUnitMmY(layout);
+      return {
+        w: gridW + p.paddingLeft + p.paddingRight,
+        d: gridD + p.paddingFront + p.paddingBack,
+      };
+    }
+
+    it('reflects the stored mode', () => {
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+      render(<DimensionsSection />);
+      expect(toggle()).toBeChecked();
+    });
+
+    it('turns the mode on', () => {
+      render(<DimensionsSection />);
+      fireEvent.click(toggle());
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+    });
+
+    it('floors fractional dimensions and hands the millimetres back to padding', () => {
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+      detachedPlate(11.5, 6.5, 9.5);
+      render(<DimensionsSection />);
+      const before = footprint();
+      fireEvent.click(toggle());
+
+      const params = useLayoutStore.getState().layout.baseplateParams;
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
+      expect(params?.baseplateWidth).toBe(11);
+      expect(params?.baseplateDepth).toBe(6);
+      expect(params?.paddingLeft).toBeCloseTo(20, 2);
+      expect(params?.paddingRight).toBeCloseTo(20, 2);
+      expect(params?.paddingFront).toBeCloseTo(20, 2);
+      expect(params?.paddingBack).toBeCloseTo(20, 2);
+      expect(footprint()).toEqual(before);
+    });
+
+    it('leaves whole-unit dimensions and their padding untouched', () => {
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+      detachedPlate(11, 6, 9.5);
+      render(<DimensionsSection />);
+      fireEvent.click(toggle());
+
+      const params = useLayoutStore.getState().layout.baseplateParams;
+      expect(params?.baseplateWidth).toBe(11);
+      expect(params?.paddingLeft).toBeCloseTo(9.5, 2);
+    });
+
+    it('leaves a synced plate to the layout', () => {
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+      render(<DimensionsSection />);
+      fireEvent.click(toggle());
+
+      const params = useLayoutStore.getState().layout.baseplateParams;
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
+      expect(params?.baseplateWidth).toBeUndefined();
+    });
+
+    it('keeps the mode on and says why when fractional bins block it', () => {
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+      useLayoutStore.setState((state) => ({
+        layout: {
+          ...state.layout,
+          bins: [createTestBin({ width: gridUnits(1.5) })],
+        },
+      }));
+      render(<DimensionsSection />);
+      fireEvent.click(toggle());
+
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+      expect(toastMessages()).toContain('halfBinBlocked.message');
     });
   });
 
