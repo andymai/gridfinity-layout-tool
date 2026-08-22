@@ -11,6 +11,7 @@ interface DesignGridItemProps {
   isActive: boolean;
   isFocused: boolean;
   onSelect: () => void;
+  onPlaceInLayout?: () => void;
   onDownloadJSON: () => void;
   onRename: (newName: string) => void;
   onEditTags: () => void;
@@ -34,6 +35,7 @@ export function DesignGridItem({
   isActive,
   isFocused,
   onSelect,
+  onPlaceInLayout,
   onDownloadJSON,
   onRename,
   onEditTags,
@@ -197,6 +199,7 @@ export function DesignGridItem({
               design={design}
               isActive={isActive}
               onLoad={onSelect}
+              onPlaceInLayout={onPlaceInLayout}
               onDownloadJSON={onDownloadJSON}
               onRename={startEditing}
               onEditTags={onEditTags}

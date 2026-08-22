@@ -746,6 +746,6 @@ Cards show a static thumbnail; the detail view loads a live, rotatable 3D previe
 
 ## Integration
 
-- `?placeBin=WxDxH` URL param places bin at (0,0) in Layout Planner
+- `?placeBin=WxDxH&placeDesignId=...` URL params place a bin at the first free spot in the Layout Planner, linked to the design when the registry resolves the id (`navigateToPlaceInLayout` / `usePlaceBinFromURL`)
 - Uses `generation` feature for WASM tessellation
 - `utils/publishNudge.ts` — the one-shot "share this?" offer after an export. An export is the moment a design is finished enough to be worth sharing, which is why the offer rides it. It fires once per browser ever, skips a design that is already published, and stands down entirely when `recordExportAndShouldPromptSupport()` claims the success view: two asks on one action is one ask too many. A browser with no usable storage reads as already-offered, so a lost dismissal cannot turn into a prompt on every export.

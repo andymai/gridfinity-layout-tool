@@ -1,5 +1,6 @@
 import { DesignGridItem } from '../DesignGridItem';
 import { DesignListItem } from '../DesignListItem';
+import { isLayoutPlaceableDesign } from '../../utils/designKind';
 import type { SavedDesign } from '../../types';
 
 interface DesignItemsViewProps {
@@ -10,6 +11,7 @@ interface DesignItemsViewProps {
   selectionActive: boolean;
   isSelected: (id: string) => boolean;
   onLoad: (design: SavedDesign) => void;
+  onPlaceInLayout: (design: SavedDesign) => void;
   onDownloadJSON: (design: SavedDesign) => void;
   onRename: (design: SavedDesign, newName: string) => void;
   onEditTags: (design: SavedDesign) => void;
@@ -33,6 +35,7 @@ export function DesignItemsView({
   selectionActive,
   isSelected,
   onLoad,
+  onPlaceInLayout,
   onDownloadJSON,
   onRename,
   onEditTags,
@@ -47,6 +50,7 @@ export function DesignItemsView({
     isActive: design.id === currentDesignId,
     isFocused: index === focusedIndex,
     onSelect: () => onLoad(design),
+    onPlaceInLayout: isLayoutPlaceableDesign(design) ? () => onPlaceInLayout(design) : undefined,
     onDownloadJSON: () => onDownloadJSON(design),
     onRename: (newName: string) => onRename(design, newName),
     onEditTags: () => onEditTags(design),

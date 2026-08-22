@@ -93,6 +93,31 @@ describe('DesignActions', () => {
     expect(onLoad).toHaveBeenCalled();
   });
 
+  it('calls onPlaceInLayout when Place in layout is clicked', async () => {
+    const onPlaceInLayout = vi.fn();
+    render(<DesignActions {...defaultProps} onPlaceInLayout={onPlaceInLayout} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /place in layout/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('menuitem', { name: /place in layout/i }));
+    expect(onPlaceInLayout).toHaveBeenCalled();
+  });
+
+  it('omits Place in layout when the callback is absent', async () => {
+    render(<DesignActions {...defaultProps} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('menuitem', { name: /place in layout/i })).not.toBeInTheDocument();
+  });
+
   it('calls onRename when Rename is clicked', async () => {
     const onRename = vi.fn();
     render(<DesignActions {...defaultProps} onRename={onRename} />);

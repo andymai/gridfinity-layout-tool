@@ -3253,6 +3253,10 @@ const en: Record<string, string> = {
   'binDesigner.extraWallHeightTooltip':
     'Raise the outer walls and stacking lip above the bin height, leaving the interior as-is. Adds headroom so tall contents are enclosed and a stacked bin rests on the taller rim.',
   'binDesigner.load': 'Load',
+  'binDesigner.placeInLayout.action': 'Place in layout',
+  'binDesigner.placeInLayout.defaultName': 'Custom bin',
+  'binDesigner.placeInLayout.placed': 'Placed "{name}". Drag to reposition.',
+  'binDesigner.placeInLayout.staged': '"{name}" added to staging. Drag it onto the grid.',
   'binDesigner.loadingSharedDesign': 'Loading shared design',
   'binDesigner.fractionalEdgeMismatch':
     "This design's half-unit foot is on a different edge than where the linked bin sits in the drawer.",

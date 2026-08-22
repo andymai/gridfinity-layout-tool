@@ -49,6 +49,7 @@ import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import type { ViewMode } from '@/shared/components/ViewModeToggle';
 import { downloadDesignAsFile } from '@/features/bin-designer/utils/designJson';
+import { navigateToPlaceInLayout } from '../../hooks/usePlaceBinInLayout';
 
 interface DesignListDialogProps {
   open: boolean;
@@ -118,6 +119,14 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [navigateToDesign, onClose]
   );
   const binImport = useImportBinDesign(handleImportedBinSaved);
+
+  const handlePlaceInLayout = useCallback(
+    (design: SavedDesign) => {
+      navigateToPlaceInLayout(design);
+      onClose();
+    },
+    [onClose]
+  );
 
   const handleDownloadJSON = useCallback(
     (design: SavedDesign) => {
@@ -505,6 +514,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     selectionActive: selection.active,
     isSelected: selection.isSelected,
     onLoad: handleLoad,
+    onPlaceInLayout: handlePlaceInLayout,
     onDownloadJSON: handleDownloadJSON,
     onRename: (design: SavedDesign, newName: string) => void handleRename(design, newName),
     onEditTags: (design: SavedDesign) => setTagEdit({ mode: 'single', design }),

@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom';
 import { isOk } from '@/core/result';
 import {
   designFootprint,
-  isBinDesign,
+  isLayoutPlaceableDesign,
   listDesigns,
   type SavedDesign,
 } from '@/features/bin-designer';
@@ -51,10 +51,8 @@ export function LinkDesignDialog() {
   const compatibleDesigns = useMemo(() => {
     if (!pendingLinkDesign) return [];
     const { width, depth } = pendingLinkDesign.footprint;
-    // Linkable kinds: parametric bins and imported meshes. Other non-bin
-    // items (tool racks) have no bin semantics and stay excluded.
     return designs.filter((d) => {
-      if (!isBinDesign(d) && d.structure?.kind !== 'importedMesh') return false;
+      if (!isLayoutPlaceableDesign(d)) return false;
       const fp = designFootprint(d);
       return fp.width === width && fp.depth === depth;
     });

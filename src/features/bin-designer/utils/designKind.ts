@@ -9,6 +9,12 @@ export function isBinDesign(design: SavedDesign): design is SavedDesign & { para
   return (design.kind ?? 'bin') === 'bin' && design.params !== undefined;
 }
 
+/** Kinds that can stand on the layout grid as a bin: parametric bins and
+ *  imported meshes. Other non-bin items (tool racks) have no bin semantics. */
+export function isLayoutPlaceableDesign(design: SavedDesign): boolean {
+  return isBinDesign(design) || design.structure?.kind === 'importedMesh';
+}
+
 export interface DesignFootprint {
   readonly width: number;
   readonly depth: number;

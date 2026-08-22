@@ -35,6 +35,7 @@ function baseProps() {
     selectionActive: false,
     isSelected: () => false,
     onLoad: vi.fn(),
+    onPlaceInLayout: vi.fn(),
     onDownloadJSON: vi.fn(),
     onRename: vi.fn(),
     onEditTags: vi.fn(),
