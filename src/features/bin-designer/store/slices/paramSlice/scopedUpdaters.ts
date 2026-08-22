@@ -35,7 +35,11 @@ import {
   DEFAULT_ACCENT_BAND,
   DEFAULT_FLOOR_PATTERN_CONFIG,
 } from '@/features/bin-designer/constants';
-import { pushHistoryEntry } from '@/features/bin-designer/store/helpers';
+import {
+  applyCutoutFillAnchor,
+  captureCutoutFill,
+  pushHistoryEntry,
+} from '@/features/bin-designer/store/helpers';
 import type { Set } from './types';
 
 export function createScopedUpdaters(set: Set) {
@@ -44,7 +48,12 @@ export function createScopedUpdaters(set: Set) {
     updateBase: (partial: Partial<BaseConfig>) => {
       set((state) => {
         pushHistoryEntry(state);
+        // The style and the tile flag both move the wall height, so a
+        // floor-anchored cutout fill has to be carried across this too, not
+        // only across the height controls.
+        const heldFill = captureCutoutFill(state);
         Object.assign(state.params.base, partial);
+        applyCutoutFillAnchor(state, heldFill);
       });
     },
 

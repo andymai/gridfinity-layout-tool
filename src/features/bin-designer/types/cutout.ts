@@ -281,10 +281,29 @@ export type ReorderDirection = 'forward' | 'backward' | 'front' | 'back';
  */
 export type CutoutToggleProperties = Partial<Pick<Cutout, 'locked' | 'hidden' | 'name'>>;
 
+/**
+ * Which end of the bin the fill level is anchored to.
+ *
+ * Only `topOffset` describes the geometry; this says what should stay fixed
+ * when the bin gets taller or shorter. Anchored to the rim, the recess above
+ * the fill keeps its depth and the fill grows with the bin. Anchored to the
+ * floor, the fill keeps its height and the recess absorbs the change, which is
+ * what you want when the fill height is set by what goes in the pockets (#3697).
+ */
+export type CutoutFillReference = 'rim' | 'floor';
+
+export const CUTOUT_FILL_REFERENCES: readonly CutoutFillReference[] = ['rim', 'floor'];
+
 /** Global cutout configuration for solid bins */
 export interface CutoutConfig {
   /** Global top offset: lowers the solid fill surface below the rim (0 = flush with rim) */
   readonly topOffset: number;
+  /**
+   * Which end {@link topOffset} is held against when the bin's wall height
+   * changes. Absent is treated as `'rim'`, which is how it behaved before the
+   * option existed.
+   */
+  readonly fillReference?: CutoutFillReference;
 }
 
 /** A positioned cutout instance on the bin top surface */

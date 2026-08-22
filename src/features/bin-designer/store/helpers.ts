@@ -14,6 +14,7 @@ import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '../constants';
 import { loadDefaultParams } from '../storage/defaultParamsStorage';
 import { evictIfNeeded } from './meshCacheManager';
 import { isFractional } from '@/core/constants';
+import { heldCutoutFillMm, reanchorCutoutFill } from '@/features/bin-designer/utils/cutoutFill';
 import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
@@ -72,6 +73,26 @@ export function getPendingMeshCache(): CachedMesh | null {
 /** Set the pending mesh cache. */
 export function setPendingMeshCache(mesh: CachedMesh | null): void {
   pendingMeshCache = mesh;
+}
+
+/**
+ * Hold a floor-anchored cutout fill at its height across a param change (#3697).
+ *
+ * Two calls, around the mutation: {@link heldCutoutFillMm} first, then this.
+ * Every action that can move the wall height has to bracket itself this way,
+ * which is `setParam`, `setParams` and `updateBase`. The wall height is a
+ * function of the height, the height unit and the base style at once, so
+ * watching a field list would miss whichever one was added next.
+ */
+export function applyCutoutFillAnchor(state: Draft<DesignerState>, heldMm: number | null): void {
+  const topOffset = reanchorCutoutFill(state.params, heldMm);
+  if (topOffset === undefined) return;
+  state.params.cutoutConfig = { ...state.params.cutoutConfig, topOffset };
+}
+
+/** Fill height to carry across a param change; null when nothing is anchored. */
+export function captureCutoutFill(state: Draft<DesignerState>): number | null {
+  return heldCutoutFillMm(state.params);
 }
 
 /**

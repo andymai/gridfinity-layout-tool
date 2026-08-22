@@ -217,6 +217,7 @@ export type {
   ReorderDirection,
   CutoutToggleProperties,
   CutoutConfig,
+  CutoutFillReference,
   Cutout,
   CutoutColorScope,
   CutoutArrayMode,
@@ -226,6 +227,7 @@ export type {
   KnifeSlotOpenEnd,
 } from './cutout';
 export {
+  CUTOUT_FILL_REFERENCES,
   DEFAULT_GROUP_OP,
   DEFAULT_CUTOUT_COLOR_SCOPE,
   GROUP_OPS,

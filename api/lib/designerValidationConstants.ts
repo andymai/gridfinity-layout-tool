@@ -21,6 +21,13 @@ export const CONSTRAINTS = {
   SOCKET_HEIGHT: 5,
   DEFAULT_HEIGHT_UNIT_MM: 7,
   MAX_HEIGHT: 50,
+  // Cutout fill level: how far the solid surface sits below the rim (mm). A
+  // static bound for API payloads, matching MAX_LABEL_TAB_HEIGHT's reasoning
+  // (ceiling 350 = MAX_HEIGHT * 7mm heightUnitMm), because heightUnitMm is
+  // allowlisted but not range-checked. The client clamps to the actual wall
+  // height; this only has to stop a NaN or an absurd number reaching the
+  // generator, where it becomes `wallHeight - topOffset`.
+  MAX_TOP_OFFSET_MM: 350,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,
   MAX_DIVIDER_THICKNESS: 2.4,
