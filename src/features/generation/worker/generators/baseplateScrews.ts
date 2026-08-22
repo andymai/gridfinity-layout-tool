@@ -78,18 +78,12 @@ export function screwFloorCandidates(
 
 /**
  * Squared-mm slack within which two candidates count as EQUIDISTANT, so the
- * directional preference below decides between them instead of arrival order.
+ * lean decides between them rather than arrival order. Detecting the tie is the
+ * point: the two magnets flanking a centreline are equidistant by construction,
+ * so a strict `<` never reaches the lean at all.
  *
- * Detecting the tie is the point, not tolerating error: the two magnets
- * flanking a centreline are equidistant by construction, so in exact arithmetic
- * this is an exact tie, and a bare `<` would hand it to whichever candidate the
- * lattice happened to emit first.
- *
- * Note the units before re-deriving the scale: this is compared against a
- * SQUARED distance, so the positional slack it admits is `eps / 2r`, not
- * `sqrt(eps)`. At the ~128mm² an edge anchor sees (r ~ 11.3mm) that is about
- * 0.04 nanometres, far below anything the lattice can express, which is what
- * keeps the window from swallowing a genuinely nearer candidate.
+ * Compared against a SQUARED distance, so the slack it admits is `eps / 2r`,
+ * not `sqrt(eps)`: ~0.04nm at an edge anchor's ~128mm², far under the lattice.
  */
 const SNAP_TIE_EPSILON_MM2 = 1e-6;
 
@@ -100,12 +94,9 @@ const SNAP_TIE_EPSILON_MM2 = 1e-6;
  * ideal target, and is snapped to the nearest candidate: the single rule that
  * stops each layer inventing its own notion of "the corner cell".
  *
- * Nearest is not enough on its own. Magnets sit at `cellCenter ± HOLE_OFFSET`,
- * so nothing is ever ON a centreline and an edge-midpoint anchor ties exactly
- * between the two positions flanking it; taking the first such candidate leans
- * every edge screw toward whichever corner `forEachCell` emits first (#3698).
- * Ties therefore go to {@link screwSnapPreference}, which leans opposite
- * anchors opposite ways so the resolved set is invariant under a half-turn.
+ * Nearest alone is ambiguous: an edge-midpoint anchor ties exactly between the
+ * two magnets flanking it, and taking the first leans every edge screw toward
+ * one corner (#3698). Ties go to {@link screwSnapPreference}.
  *
  * Candidates are consumed as they are taken. Without that, every anchor on a
  * piece small enough to offer one magnet position would snap to the SAME point
