@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.440.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.2...gridfinity-layout-tool-v4.440.3) (2026-08-22)
+
+
+### Bug Fixes
+
+* **generation:** pass tessellation angular tolerance in radians ([#3716](https://github.com/andymai/gridfinity-layout-tool/issues/3716)) ([21520ef](https://github.com/andymai/gridfinity-layout-tool/commit/21520ef78ad1ef9bcc11708867f098c4b416cadd))
+
 ## [4.440.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.1...gridfinity-layout-tool-v4.440.2) (2026-08-22)
 
 
