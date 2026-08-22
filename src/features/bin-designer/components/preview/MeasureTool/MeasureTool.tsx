@@ -227,6 +227,11 @@ export function MeasureTool() {
     };
 
     const onPointerLeave = (): void => {
+      // Guarded because these listeners stay registered for everyone, so that
+      // shift+drag works without entering the tool. An unguarded `invalidate`
+      // here would schedule a canvas render on every pointer-leave for users
+      // who never opened the ruler, on a frameloop that only draws on demand.
+      if (!useDesignerStore.getState().ui.measure.active) return;
       setHover(null);
       invalidate();
     };
