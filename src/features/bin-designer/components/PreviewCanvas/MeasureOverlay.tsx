@@ -33,8 +33,9 @@ export function MeasureOverlay() {
   const setMeasureMode = useDesignerStore((s) => s.setMeasureMode);
   const clearMeasure = useDesignerStore((s) => s.clearMeasure);
 
-  // A finished measurement outlives the tool on purpose: turning the tool off
-  // should not silently discard the number the user just took.
+  // This banner IS the tool's chrome, including its only Clear control, so it
+  // goes when the tool does. Leaving a measurement drawn with no visible way to
+  // dismiss it is the trap the store avoids by clearing points on exit.
   if (!active) return null;
 
   // Length-checked rather than truthiness-checked: index access is typed

@@ -200,14 +200,46 @@ describe('MeasureTool', () => {
     expect(controls.enabled).toBe(false);
   });
 
-  it('keeps a finished measurement drawn after the tool is switched off', () => {
-    // The number outlives the mode on purpose; exiting should not discard it.
+  it('drops the measurement when the tool is switched off', () => {
+    // The banner is the only Clear control, so a measurement outliving it could
+    // not be dismissed without reopening the tool.
     seedMesh();
-    useDesignerStore.getState().setMeasurePoints([
-      { x: 0, y: 0, z: 0, kind: 'vertex' },
-      { x: 10, y: 0, z: 0, kind: 'vertex' },
-    ]);
+    useDesignerStore.getState().setMeasureActive(true);
+    render(<MeasureTool />);
+    pointer('pointerdown', 400, 300);
+    pointer('pointerup', 400, 300);
+    expect(measure().points).toHaveLength(1);
+
+    useDesignerStore.getState().setMeasureActive(false);
+
+    expect(measure().points).toHaveLength(0);
+  });
+
+  it('keeps a shift+drag measurement, which never had a banner to lose', () => {
+    // The deliberate exception to the rule above: taken with the tool off, so
+    // there is no chrome to disappear and Escape is the dismiss.
+    seedMesh();
     const { container } = render(<MeasureTool />);
+
+    pointer('pointerdown', 400, 300, { shiftKey: true });
+    pointer('pointermove', 430, 320, { shiftKey: true });
+    pointer('pointerup', 430, 320, { shiftKey: true });
+
+    expect(measure().active).toBe(false);
+    expect(measure().points).toHaveLength(2);
     expect(container).not.toBeEmptyDOMElement();
+  });
+
+  it('clears a tool-less measurement on Escape', () => {
+    seedMesh();
+    render(<MeasureTool />);
+    pointer('pointerdown', 400, 300, { shiftKey: true });
+    expect(measure().points).toHaveLength(1);
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+
+    expect(measure().points).toHaveLength(0);
   });
 });

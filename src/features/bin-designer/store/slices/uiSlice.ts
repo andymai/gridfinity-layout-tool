@@ -187,7 +187,8 @@ export function createUISlice(set: Set) {
         // leak from one mode into the next.
         state.ui.hoveredColorZone = null;
         // Mutual exclusion runs both ways: the measuring tool claims the same
-        // pointer picks, so entering a color tool has to stand it down.
+        // pointer picks, so entering a color tool has to stand it down. Its
+        // points go with it, for the same reason they go on an ordinary exit.
         if (tool !== null && state.ui.measure.active) {
           state.ui.measure = { ...state.ui.measure, active: false, points: [] };
         }
@@ -209,6 +210,11 @@ export function createUISlice(set: Set) {
 
     setMeasureActive: (active: boolean) => {
       set((state) => {
+        // Points clear on BOTH transitions, not just on entry. The banner is
+        // the tool's only Clear control, so a measurement left drawn after the
+        // tool closes could not be dismissed without reopening it. A shift+drag
+        // taken with the tool off is the deliberate exception: it never had a
+        // banner, and Escape is its dismiss.
         state.ui.measure = { ...state.ui.measure, active, points: [] };
         if (!active) return;
         // Both tools claim pointer picks in the preview, so entering this one
