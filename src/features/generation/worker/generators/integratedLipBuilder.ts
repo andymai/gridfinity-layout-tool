@@ -59,7 +59,9 @@ export function buildBinBoxWithLip(
   wallThickness: number,
   gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
-  overhang?: ResolvedOverhang
+  overhang?: ResolvedOverhang,
+  /** Interior floor thickness (mm); defaults to `wallThickness`. */
+  floorThickness?: number
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const ov = polygon ? undefined : overhang;
@@ -151,7 +153,7 @@ export function buildBinBoxWithLip(
     // taper, as a single ruled loft. A single tool means there is no
     // second-tool junction plane to leave a coincident face.
     const innerSections: Sketch[] = [
-      sectionAt(wallThickness, wt),
+      sectionAt(floorThickness ?? wallThickness, wt),
       sectionAt(zAngleBottom, wt),
       sectionAt(zAngleBottom + FOOT, clampedInset(zAngleBottom + FOOT, INNER_ANGLE)),
       sectionAt(zExt, clampedInset(zExt, INNER_BASE)),

@@ -287,7 +287,7 @@ export {
   DETACHABLE_PIN_MIN_ENGAGEMENT_MM,
   detachablePinEngagementMm,
   detachableFeetFitFloor,
-  detachableFeetFloorMm,
+  binFloorMm,
   DETACHABLE_PIN_TARGET_ENGAGEMENT_MM,
   DETACHABLE_PIN_RIDGE_STEP_MM,
   DETACHABLE_PIN_LEAD_IN_MM,

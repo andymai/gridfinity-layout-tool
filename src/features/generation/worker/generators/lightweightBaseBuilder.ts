@@ -57,6 +57,7 @@ import { sketch } from './meshUtils';
 import {
   buildSingleCellSocket,
   buildSimplifiedCellSocket,
+  buildSocketTopPrism,
   forEachSocketCell,
   DEFAULT_FRACTIONAL_EDGE,
   type FractionalEdge,
@@ -152,7 +153,15 @@ export function buildLightweightBase(
   cellMask?: CellMask,
   openFloorDrawings?: readonly Drawing[],
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  /**
+   * Body floor thickness (mm); defaults to `wallThickness`.
+   *
+   * Only the floor OPENING reads it. The cup's own wall stays `wallThickness`:
+   * the opening tool has to reach the floor's top face to break through, and
+   * that face is the floor's, not the wall's.
+   */
+  floorThickness?: number
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
   // Per-axis pitch: unitX scales width/columns, unitY scales depth/rows.
@@ -201,6 +210,10 @@ export function buildLightweightBase(
     // Build a vertical prism over the whole base Z-range from a set of footprint
     // polygons. Returns null (and the caller skips that clip) on any degenerate
     // input rather than sinking the build.
+    //
+    // Reaches the FLOOR top, not the wall's: it clips the opening tools, so a
+    // prism that stopped short would truncate them inside the floor and re-seal
+    // every cup it was only meant to narrow.
     const buildClipPrism = (drawings: readonly Drawing[] | undefined): Shape3D | null => {
       if (!drawings || drawings.length === 0) return null;
       try {
@@ -210,7 +223,9 @@ export function buildLightweightBase(
               drawings.map(
                 (d) =>
                   scope.register(
-                    sketch(d, 'XY', -SOCKET_HEIGHT - 1).extrude(SOCKET_HEIGHT + wallThickness + 2)
+                    sketch(d, 'XY', -SOCKET_HEIGHT - 1).extrude(
+                      SOCKET_HEIGHT + (floorThickness ?? wallThickness) + 2
+                    )
                   ) as ValidSolid
               )
             )
@@ -269,13 +284,29 @@ export function buildLightweightBase(
           translate(scope.register(unwrap(clone(innerFoot))), [cell.centerX, cell.centerY, zShift])
         );
         if (opensUpward) {
+          // The SAME shape as the void, at the same shift, so the opening is
+          // flush with the cup mouth. Shifting it further to reach a thicker
+          // floor would cut with a narrower slice of the taper and leave an
+          // unsupported horizontal ledge around every cup.
           openingTools.push(
             translate(scope.register(unwrap(clone(innerFoot))), [
               cell.centerX,
               cell.centerY,
-              wallThickness,
+              zShift,
             ])
           );
+          // What the void does not reach: a prism of the cup mouth carrying the
+          // opening the rest of the way up through the floor.
+          const remaining = (floorThickness ?? wallThickness) - zShift;
+          if (remaining > 0) {
+            openingTools.push(
+              translate(scope.register(buildSocketTopPrism(innerW, innerD, remaining)), [
+                cell.centerX,
+                cell.centerY,
+                zShift,
+              ])
+            );
+          }
         }
       },
       fractionalEdge

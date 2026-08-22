@@ -143,13 +143,10 @@ describe('printEstimates', () => {
     });
 
     it('matches the OCCT-measured solid volume for a 2×2×3 standard bin (±15%)', () => {
-      // Ground truth from the real generator: 2×2×3u solid = 46238 mm³. The
-      // earlier 17094 came from a measurement that left the base socket out —
-      // one 1u foot is ~7300 mm³ on its own, so four of them plus a body could
-      // never total that.
+      // Ground truth from the real generator: 2×2×3u solid = 51500 mm³.
       const est = estimatePrint(DEFAULT_BIN_PARAMS);
-      expect(est.volumeMm3).toBeGreaterThan(46238 * 0.85);
-      expect(est.volumeMm3).toBeLessThan(46238 * 1.15);
+      expect(est.volumeMm3).toBeGreaterThan(51500 * 0.85);
+      expect(est.volumeMm3).toBeLessThan(51500 * 1.15);
     });
 
     it('a plain standard bin matches the shared print-export estimator', () => {
@@ -503,7 +500,9 @@ describe('printEstimates', () => {
       const partial =
         estimatePrint(masked).volumeMm3 - estimatePrint({ ...masked, floorPattern }).volumeMm3;
       expect(partial).toBeGreaterThan(0);
-      expect(partial).toBeCloseTo(full * 0.75, 0);
+      // As a ratio, not an absolute: both sides are differences of rounded
+      // volumes, so an absolute tolerance of 0.5 sits inside the rounding noise.
+      expect(partial / full).toBeCloseTo(0.75, 2);
     });
 
     it('drainage holes are inert on the bases the worker never patterns', () => {

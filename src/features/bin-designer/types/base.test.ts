@@ -9,7 +9,7 @@ import {
   DETACHABLE_PIN_RIDGE_STEP_MM,
   DETACHABLE_PIN_TARGET_ENGAGEMENT_MM,
   detachableFeetFitFloor,
-  detachableFeetFloorMm,
+  binFloorMm,
   detachablePinEngagementMm,
 } from './base';
 
@@ -54,11 +54,11 @@ describe('detachable pin engagement', () => {
 
   it('gives every allowed wall the same engagement, so the fit never depends on it', () => {
     for (const wall of [1, 1.2, 1.6, 2, 2.4]) {
-      expect(detachablePinEngagementMm(detachableFeetFloorMm(wall))).toBeGreaterThanOrEqual(
+      expect(detachablePinEngagementMm(binFloorMm(wall))).toBeGreaterThanOrEqual(
         DETACHABLE_PIN_TARGET_ENGAGEMENT_MM
       );
     }
     // A thicker wall keeps its own floor rather than being thinned to the target.
-    expect(detachableFeetFloorMm(4)).toBe(4);
+    expect(binFloorMm(4)).toBe(4);
   });
 });

@@ -8,16 +8,16 @@ exports[`divider patterns > dividers + label tabs keep the shelf anchorage solid
 
 exports[`divider patterns > dividers + outer cutouts + handles 1`] = `13452`;
 
-exports[`divider patterns > dividers + scoops keep the ramp footings solid 1`] = `12538`;
+exports[`divider patterns > dividers + scoops keep the ramp footings solid 1`] = `12490`;
 
-exports[`divider patterns > half-grid footprint with patterned dividers 1`] = `10324`;
+exports[`divider patterns > half-grid footprint with patterned dividers 1`] = `10302`;
 
-exports[`divider patterns > mitsukude lattice on dividers 1`] = `15914`;
+exports[`divider patterns > mitsukude lattice on dividers 1`] = `15890`;
 
 exports[`divider patterns > overhang shifts the interior with the dividers 1`] = `10844`;
 
-exports[`divider patterns > round pattern on a single column divider 1`] = `20212`;
+exports[`divider patterns > round pattern on a single column divider 1`] = `20188`;
 
 exports[`divider patterns > shortened dividers re-fit the band 1`] = `8480`;
 
-exports[`divider patterns > tilted dividers carry the pattern in-plane 1`] = `10060`;
+exports[`divider patterns > tilted dividers carry the pattern in-plane 1`] = `10042`;

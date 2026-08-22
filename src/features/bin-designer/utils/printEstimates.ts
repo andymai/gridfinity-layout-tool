@@ -12,7 +12,7 @@
 
 import type { BinParams, LabelTabSupport, WallPatternType } from '@/features/bin-designer/types';
 import {
-  detachableFeetFloorMm,
+  binFloorMm,
   isSocketlessBase,
   isUndersideRelief,
 } from '@/features/bin-designer/types/base';
@@ -218,13 +218,6 @@ function computeBinVolume(params: BinParams): number {
       params.gridUnitMm,
       gridUnitMmY
     );
-    // The thicker floor, or the reported saving counts material the bin gets
-    // back. From `params.wallThickness` because that is what the pipeline
-    // resolves the floor from; `wallThickness` above is a style constant.
-    volume +=
-      Math.max(0, outerW - 2 * wallThickness) *
-      Math.max(0, outerD - 2 * wallThickness) *
-      (detachableFeetFloorMm(params.wallThickness) - params.wallThickness);
   }
 
   // A base-only bin IS feet + floor slab + an optional lip, which is exactly
@@ -317,7 +310,13 @@ function solidFillVolume(
   if (!params.base.solid && params.style !== 'solid') return 0;
 
   const wallHeight = baseWallHeight(params.base, params.height * params.heightUnitMm);
-  const fillHeight = wallHeight - wallThickness - Math.max(0, params.cutoutConfig.topOffset);
+  // From the FLOOR's top, not the wall's: the `base` component already prices
+  // material up to `binFloorMm`, so a fill starting at `wallThickness` counts
+  // the difference twice. Resolved from `params.wallThickness` rather than the
+  // style constant above, because that is what the pipeline resolves it from —
+  // they part company once a wall exceeds the spec floor.
+  const floorThickness = binFloorMm(params.wallThickness);
+  const fillHeight = wallHeight - floorThickness - Math.max(0, params.cutoutConfig.topOffset);
   if (fillHeight <= 0) return 0;
 
   const innerW = Math.max(0, outerW - 2 * wallThickness);

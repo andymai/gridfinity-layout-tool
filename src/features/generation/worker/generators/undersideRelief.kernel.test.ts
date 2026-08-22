@@ -23,6 +23,8 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { BinParams } from '@/shared/types/bin';
+import { binFloorMm } from '@/shared/types/bin';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { initTestKernel } from '@/test/initTestKernel';
@@ -169,4 +171,40 @@ describe('underside relief', () => {
     // ate into the wrong cells would break it before it broke any other check.
     expect(perCell(2, 2)).toBeCloseTo(perCell(1, 1), -1);
   }, 120000);
+});
+
+/**
+ * The interior relief opens the body floor over each cup mouth, and the tools
+ * that do it are clipped to the open-compartment region so a divider keeps a
+ * solid core beneath it. Both the opening and its clip are measured against the
+ * FLOOR, which is `binFloorMm` rather than the wall — a thin-walled bin has the
+ * widest gap between the two, so it is where a tool sized off the wall stops
+ * reaching and silently re-seals every cup.
+ *
+ * Sealed cups are watertight, manifold and of plausible triangle count. Only a
+ * column probe sees them.
+ */
+describe('the interior relief opens its cups whatever the wall', () => {
+  it.each([0.4, 0.8, 1.2, 1.6])(
+    'opens them at a %smm wall',
+    (wallThickness) => {
+      const m = bin(INTERIOR, {
+        width: 2,
+        depth: 1,
+        wallThickness,
+        // Multiple compartments, so the openings are clipped rather than used raw.
+        compartments: { cols: 3, rows: 1, thickness: 1.2, cells: [0, 1, 2] },
+      });
+      const { minZ } = boundingBox(m.vertices);
+      // The export mesh sits with the feet on its own minZ, so the cavity floor is
+      // a socket plus a floor above that.
+      const floorTop = minZ + GRIDFINITY_SPEC.SOCKET_HEIGHT + binFloorMm(wallThickness);
+      // Just under the cavity floor, at a cup mouth: open on the interior relief.
+      expect(isSolidThrough(m, 21, 0, floorTop - 0.3, floorTop - 0.05)).toBe(false);
+      // And between the cups the floor is still there, so this is an opening
+      // rather than a floor that simply failed to build.
+      expect(isSolidThrough(m, 0, 0, floorTop - 0.3, floorTop - 0.05)).toBe(true);
+    },
+    120000
+  );
 });

@@ -307,14 +307,18 @@ export function detachablePinEngagementMm(floorThicknessMm: number): number {
 }
 
 /**
- * Floor thickness a bin gets once its feet come off, in mm. The one mode where
- * the floor has a job the walls do not share: it is the whole depth a blind pin
- * hole has.
+ * Interior floor thickness, in mm.
  *
- * Taken from the spec's dead space rather than from what the pin wants, so a
- * detachable bin's cavity floor lands where a Gridfinity bin's belongs.
+ * The spec's dead space from a bin's bottom to its cavity floor is
+ * {@link GRIDFINITY.BASE_HEIGHT}, of which the socket is
+ * {@link GRIDFINITY.SOCKET_HEIGHT}; the rest is floor. Shelling to
+ * `wallThickness` left the cavity floor below that plane, which is what makes
+ * `(height - 1) x HEIGHT_UNIT` the cavity height the spec says it is.
+ *
+ * A wall thicker than the remainder keeps its own floor: thinning it back to
+ * spec would put less material under the cavity than beside it.
  */
-export function detachableFeetFloorMm(wallThicknessMm: number): number {
+export function binFloorMm(wallThicknessMm: number): number {
   return Math.max(wallThicknessMm, GRIDFINITY.BASE_HEIGHT - GRIDFINITY.SOCKET_HEIGHT);
 }
 

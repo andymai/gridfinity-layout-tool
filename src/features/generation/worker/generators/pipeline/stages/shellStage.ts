@@ -120,7 +120,8 @@ export const shellStage: PipelineStage = {
         params.cellMask,
         openFloorDrawings,
         { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
-        params.magnetAnchor
+        params.magnetAnchor,
+        dim.floorThickness
       );
       floorOpenings = liteBase.floorOpenings;
     }
@@ -176,10 +177,7 @@ export const shellStage: PipelineStage = {
         // The integrated builder mirrors the angled support unconditionally, so a
         // wall too short to carry one has to take the fuse path, where
         // `buildTopShape` can be told to leave it off.
-        dim.lipHasSupport &&
-        // Draft-only path, and only `buildBinBox` raises the floor — taking it
-        // would preview a floor the export does not have.
-        dim.floorThickness === params.wallThickness;
+        dim.lipHasSupport;
 
       let built = withScope((scope: DisposalScope) => {
         // Base-only bin: `boxWallHeight` is 0, and extruding a zero-length
@@ -251,7 +249,8 @@ export const shellStage: PipelineStage = {
               params.wallThickness,
               pitch,
               params.cellMask,
-              dim.overhang
+              dim.overhang,
+              dim.floorThickness
             );
             // One solid: the lip is not a separable origin here, so the whole
             // body carries the BASE tag (the exact path preserves the LIP tag).

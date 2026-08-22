@@ -24,16 +24,16 @@ import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
  * and take `meshVolume` of the returned mesh (see `__kernel-tests__/meshAssertions`).
  */
 const OCCT_GROUND_TRUTH: ReadonlyArray<readonly [number, number, number, number]> = [
-  [1, 1, 3, 13525],
-  [1, 2, 3, 25180],
-  [2, 2, 3, 46238],
-  [3, 3, 3, 97757],
-  [1, 1, 6, 17449],
-  [2, 2, 6, 54395],
-  [2, 2, 9, 62553],
-  [1, 1, 2, 12217],
-  [3, 2, 5, 74146],
-  [4, 4, 6, 184709],
+  [1, 1, 3, 14747],
+  [1, 2, 3, 27716],
+  [2, 2, 3, 51500],
+  [3, 3, 3, 109884],
+  [1, 1, 6, 18673],
+  [2, 2, 6, 59660],
+  [2, 2, 9, 67819],
+  [1, 1, 2, 13438],
+  [3, 2, 5, 82135],
+  [4, 4, 6, 206526],
 ];
 
 describe('standardBinVolume', () => {
@@ -146,11 +146,11 @@ describe('standardBinVolume', () => {
       expect(est.costUSD).toBeGreaterThan(0);
     });
 
-    it('filament length matches the OCCT solid volume conversion (1×1×3u ≈ 5.62m)', () => {
+    it('filament length matches the OCCT solid volume conversion (1×1×3u ≈ 6.13m)', () => {
       const est = estimateStandardBinFilament(1, 1, 3);
-      // 13525mm³ / 2.405mm² / 1000 ≈ 5.62m
-      expect(est.metersFilament).toBeGreaterThan(5.62 * 0.9);
-      expect(est.metersFilament).toBeLessThan(5.62 * 1.1);
+      // 14747mm³ / 2.405mm² / 1000 ≈ 6.13m
+      expect(est.metersFilament).toBeGreaterThan(6.13 * 0.9);
+      expect(est.metersFilament).toBeLessThan(6.13 * 1.1);
     });
 
     it('is monotonic: larger bins cost more and take longer', () => {

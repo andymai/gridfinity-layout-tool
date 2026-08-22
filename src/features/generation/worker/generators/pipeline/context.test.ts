@@ -79,6 +79,9 @@ describe('createInitialContext', () => {
       'rect',
       'none', // compartments segment
       '0', // overhang segment (no overhang)
+      // Floor segment: appended whenever the spec floor exceeds the wall, which
+      // is every wall under 2mm. Absent on a bin already walled that thick.
+      'floor2',
     ].join('|');
 
     expect(ctx.dimensions.shellKey).toBe(expected);
