@@ -22,7 +22,9 @@ const QUAD: number[][] = [
   [-10, 5, 0, 10, 5, 0, 10, 5, 10],
   [-10, 5, 0, 10, 5, 10, -10, 5, 10],
 ];
-const GEOM: LipGeom = { cx: 0, cy: 0, minZ: 0, maxZ: 10 };
+// floorZ === minZ: this fixture is a bare quad, not a real lip, so no support
+// skirt has to be cut away from the colored region.
+const GEOM: LipGeom = { cx: 0, cy: 0, minZ: 0, maxZ: 10, floorZ: 0 };
 const FACE_GROUPS: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.LIP }];
 
 function run(counts: { corners: 1 | 2 | 4; bands: 1 | 2 | 4 }) {
@@ -126,6 +128,64 @@ describe('lipSeamSplitter', () => {
     const uniform = computeLipColoredMesh({ ...base, lipUniform: true });
     expect(uniform.positions).toBeNull();
     expect(uniform.triZones).toHaveLength(QUAD.length);
+  });
+});
+
+describe('lip color floor', () => {
+  // A 6u bin's outer face over the lip: skirt bottom 39.3, wall top 42, peak
+  // 46.3, floor 42.32. One quad, exactly as the kernel tessellates the flush
+  // wall/lip face.
+  const FLOOR_Z = 42.32;
+  const FACE: number[][] = [
+    [-10, 5, 39.3, 10, 5, 39.3, 10, 5, 46.3],
+    [-10, 5, 39.3, 10, 5, 46.3, -10, 5, 46.3],
+  ];
+  const LIP_GEOM: LipGeom = { cx: 0, cy: 0, minZ: 39.3, maxZ: 46.3, floorZ: FLOOR_Z };
+
+  const run = (counts: { corners: 1 | 2 | 4; bands: 1 | 2 | 4 }, lipUniform: boolean) =>
+    computeLipColoredMesh({
+      triangleCount: FACE.length,
+      faceGroups: FACE_GROUPS,
+      getTriangle: (i) => FACE[i],
+      geom: LIP_GEOM,
+      counts,
+      lipUniform,
+    });
+
+  it('cuts a uniform lip at the floor so the skirt keeps the body color', () => {
+    // The whole point of #3705: with one lip color there are no seams, but the
+    // face still has to be cut or its centroid paints the skirt too.
+    const { triZones, positions } = run({ corners: 1, bands: 1 }, true);
+    expect(positions).not.toBeNull();
+    for (let i = 0; i < triZones.length; i++) {
+      const t = positions!.subarray(i * 9, i * 9 + 9);
+      const cz = (t[2] + t[5] + t[8]) / 3;
+      expect(triZones[i]).toBe(cz <= FLOOR_Z ? 'body' : 'lip:frontLeft:0');
+    }
+    expect(triZones).toContain('body');
+    expect(triZones).toContain('lip:frontLeft:0');
+  });
+
+  it('never lands a band below the floor', () => {
+    const { triZones, positions } = run({ corners: 1, bands: 4 }, false);
+    for (let i = 0; i < triZones.length; i++) {
+      const t = positions!.subarray(i * 9, i * 9 + 9);
+      const cz = (t[2] + t[5] + t[8]) / 3;
+      if (cz <= FLOOR_Z) expect(triZones[i]).toBe('body');
+    }
+    // Bands still span the full 0..3 range, just over [floorZ, maxZ].
+    expect(new Set(triZones)).toEqual(
+      new Set(['body', 'lip:frontLeft:0', 'lip:frontLeft:1', 'lip:frontLeft:2', 'lip:frontLeft:3'])
+    );
+  });
+
+  it('conserves area across the floor cut', () => {
+    const inputArea = FACE.reduce((s, t) => s + triArea(t), 0);
+    const { triZones, positions } = run({ corners: 1, bands: 1 }, true);
+    let outArea = 0;
+    for (let i = 0; i < triZones.length; i++)
+      outArea += triArea(positions!.subarray(i * 9, i * 9 + 9));
+    expect(outArea).toBeCloseTo(inputArea, 4);
   });
 });
 

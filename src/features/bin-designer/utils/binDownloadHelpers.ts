@@ -389,15 +389,16 @@ function lidColorConfig(
   const grid = featureColors.lidLip;
   if (!grid) return null;
   const counts = { corners: grid.corners, bands: grid.bands };
+  const getTriangle = (t: number): Float32Array => vertices.subarray(t * 9, t * 9 + 9);
   const triangleXYZ = (t: number) => {
-    const i = t * 9;
+    const v = getTriangle(t);
     return {
-      x: (vertices[i] + vertices[i + 3] + vertices[i + 6]) / 3,
-      y: (vertices[i + 1] + vertices[i + 4] + vertices[i + 7]) / 3,
-      z: (vertices[i + 2] + vertices[i + 5] + vertices[i + 8]) / 3,
+      x: (v[0] + v[3] + v[6]) / 3,
+      y: (v[1] + v[4] + v[7]) / 3,
+      z: (v[2] + v[5] + v[8]) / 3,
     };
   };
-  const geom = computeLidLipGeom(faceGroups, triangleXYZ);
+  const geom = computeLidLipGeom(faceGroups, getTriangle);
   if (!geom) return null;
 
   const { colors, colorToIndex } = resolveColorMapping(featureColors);

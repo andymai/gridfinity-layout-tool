@@ -18,6 +18,7 @@ import { buildParams } from './__kernel-tests__/scenarioTypes';
 import { computeLipGeom } from '@/features/bin-designer/utils/lipCornerClassifier';
 import { computeLipColoredMesh } from '@/features/bin-designer/utils/lipSeamSplitter';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings';
 import { FeatureTag } from './featureTags';
 import type { LipAxisCount } from '@/features/bin-designer/types/featureColors';
 
@@ -78,14 +79,7 @@ describe('lip multi-color splitter (generated bin)', () => {
     for (let i = 0; i < triangleCount; i++) flat.set(getIndexed(i), i * 9);
     const getFlat = (i: number): number[] => Array.from(flat.subarray(i * 9, i * 9 + 9));
 
-    const geom = computeLipGeom(faceGroups ?? [], (i) => {
-      const t = getIndexed(i);
-      return {
-        x: (t[0] + t[3] + t[6]) / 3,
-        y: (t[1] + t[4] + t[7]) / 3,
-        z: (t[2] + t[5] + t[8]) / 3,
-      };
-    });
+    const geom = computeLipGeom(faceGroups ?? [], getIndexed);
     expect(geom).not.toBeNull();
 
     const preview = computeLipColoredMesh({
@@ -132,10 +126,16 @@ describe('lip multi-color splitter (generated bin)', () => {
         origMaxZ = Math.max(origMaxZ, t[v * 3 + 2]);
       }
     }
+    // Conservation is measured over LIP-tagged output, not over lip-celled
+    // output: the color floor hands the support skirt to `body` while it stays
+    // LIP-tagged.
     let outputLipArea = 0;
+    let coloredLipArea = 0;
     for (let i = 0; i < preview.triZones.length; i++) {
-      if (!preview.triZones[i].startsWith('lip:')) continue;
-      outputLipArea += triArea(preview.positions!, i * 9);
+      if (preview.triTags[i] !== FeatureTag.LIP) continue;
+      const area = triArea(preview.positions!, i * 9);
+      outputLipArea += area;
+      if (preview.triZones[i].startsWith('lip:')) coloredLipArea += area;
       for (let v = 0; v < 3; v++) {
         const z = preview.positions![i * 9 + v * 3 + 2];
         expect(z).toBeGreaterThanOrEqual(origMinZ - 1e-3);
@@ -144,7 +144,21 @@ describe('lip multi-color splitter (generated bin)', () => {
     }
     expect(outputLipArea).toBeCloseTo(inputLipArea, 2);
 
-    // 4. Band classification stayed within the measured lip Z extent.
+    // 4. The color floor lands above the wall top, so no lip cell reaches the
+    //    support skirt or the bin's top surface (#3705). The wall top is the
+    //    lip apex less its protrusion; both come from the generated mesh.
+    const wallTopZ = origMaxZ - (GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP);
+    expect(geom!.floorZ).toBeGreaterThan(wallTopZ);
+    expect(geom!.floorZ).toBeLessThan(origMaxZ);
+    expect(coloredLipArea).toBeLessThan(outputLipArea);
+    for (let i = 0; i < preview.triZones.length; i++) {
+      if (!preview.triZones[i].startsWith('lip:')) continue;
+      for (let v = 0; v < 3; v++) {
+        expect(preview.positions![i * 9 + v * 3 + 2]).toBeGreaterThanOrEqual(geom!.floorZ - 1e-6);
+      }
+    }
+
+    // 5. Band classification stayed within the measured lip Z extent.
     expect(geom!.minZ).toBeGreaterThanOrEqual(origMinZ - 1e-3);
     expect(geom!.maxZ).toBeLessThanOrEqual(origMaxZ + 1e-3);
   }, 60_000);
