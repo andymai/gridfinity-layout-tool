@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Séparateurs en grille",
   "binDesigner.interiorSummary": "{count} compartiment(s)",
   "binDesigner.invalidDesignFile": "Fichier de design invalide",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Support à outils construit à partir de pièces sur une base Gridfinity",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Bac de rangement Gridfinity personnalisé",
   "binDesigner.itemKind.importedMesh": "Bac importé",

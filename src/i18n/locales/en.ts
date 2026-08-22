@@ -2215,6 +2215,8 @@ const en: Record<string, string> = {
   'binDesigner.itemKind.toolRack.description': 'Angled rack for pliers, tweezers, and hand tools',
   'binDesigner.itemKind.importedMesh': 'Imported bin',
   'binDesigner.itemKind.importedMesh.description': 'Bin imported from an STL file',
+  'binDesigner.itemKind.assembly': 'Workshop',
+  'binDesigner.itemKind.assembly.description': 'Tool holder built from parts on a Gridfinity base',
   'binDesigner.newToolRack': 'New tool rack (experimental)',
   'binDesigner.newBin': 'New bin',
   'binDesigner.rack.group': 'Tool rack',

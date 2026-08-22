@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "网格隔板",
   "binDesigner.interiorSummary": "{count} 个隔间",
   "binDesigner.invalidDesignFile": "无效的设计文件",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "在 Gridfinity 底座上用零件搭建的工具架",
   "binDesigner.itemKind.bin": "收纳盒",
   "binDesigner.itemKind.bin.description": "自定义 Gridfinity 收纳盒",
   "binDesigner.itemKind.importedMesh": "导入的收纳盒",

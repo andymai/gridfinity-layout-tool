@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Rasterverdeling",
   "binDesigner.interiorSummary": "{count} compartiment(en)",
   "binDesigner.invalidDesignFile": "Ongeldig ontwerpbestand",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Gereedschapshouder opgebouwd uit onderdelen op een Gridfinity-basis",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Aangepaste Gridfinity-opbergbak",
   "binDesigner.itemKind.importedMesh": "Geïmporteerde bak",

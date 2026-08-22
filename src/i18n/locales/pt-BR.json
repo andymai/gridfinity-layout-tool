@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Divisores em grade",
   "binDesigner.interiorSummary": "{count} compartimento(s)",
   "binDesigner.invalidDesignFile": "Arquivo de design inválido",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Suporte de ferramentas montado com peças sobre uma base Gridfinity",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Caixa de armazenamento Gridfinity personalizada",
   "binDesigner.itemKind.importedMesh": "Compartimento importado",

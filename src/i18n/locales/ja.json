@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "グリッド仕切り板",
   "binDesigner.interiorSummary": "{count}個の区画",
   "binDesigner.invalidDesignFile": "無効なデザインファイルです",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Gridfinityベースの上にパーツを組み合わせて作るツールホルダー",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "カスタム Gridfinity 収納ビン",
   "binDesigner.itemKind.importedMesh": "インポートしたビン",

@@ -249,6 +249,19 @@ export const FEATURE_FLAGS = [
     graduatedAt: '2026-08',
     requiresRefresh: false,
   },
+  {
+    id: 'workshop',
+    name: 'Workshop',
+    description:
+      'Build tool holders from parts. Place posts, fins, tubes, cradles and more on a Gridfinity base in 3D, stack and carve them, then export the result.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Under construction. The Workshop editor has not shipped yet, so this switch does nothing until it arrives.',
+    addedAt: '2026-08',
+    requiresRefresh: false,
+    comingSoon: true,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

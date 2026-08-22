@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Rutenettvegger",
   "binDesigner.interiorSummary": "{count} rom",
   "binDesigner.invalidDesignFile": "Ugyldig designfil",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Verktøyholder bygget av deler på en Gridfinity-base",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Egendefinert Gridfinity-oppbevaringsboks",
   "binDesigner.itemKind.importedMesh": "Importert boks",
