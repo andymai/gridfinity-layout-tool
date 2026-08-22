@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.437.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.436.0...gridfinity-layout-tool-v4.437.0) (2026-08-22)
+
+
+### Features
+
+* **bin-designer:** place saved designs into the layout from My Designs ([#3692](https://github.com/andymai/gridfinity-layout-tool/issues/3692)) ([0ecb3f1](https://github.com/andymai/gridfinity-layout-tool/commit/0ecb3f1df472c2a9b99fe3372866a63b671dfd55))
+
 ## [4.436.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.435.5...gridfinity-layout-tool-v4.436.0) (2026-08-21)
 
 
