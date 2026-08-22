@@ -1,0 +1,21 @@
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.test.tsx
+  s_78ddc1438b0696::t_188116e828bcd9 8,121-132,149,160
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_78ddc1438b0696::t_da13331010b971 283-286,291,315
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "40c89e81bda0c6f2a750f4e853059058cb998145",
+  "prompts": {},
+  "sessions": {
+    "s_78ddc1438b0696": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49f34978-08aa-4eeb-8146-635fb8d4d8e9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
