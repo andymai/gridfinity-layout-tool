@@ -1,13 +1,11 @@
 /**
  * Point-to-point and wall-thickness measuring in the 3D preview (#3696).
  *
- * Picking does NOT go through the R3F event system or a scene object. The
- * component raycasts the worker's mesh arrays directly
- * ({@link raycastTriangles}), for two reasons: `BinMesh` only attaches pointer
- * handlers while a color tool is active, and anything mesh-shaped added to this
- * scene is swept into the published GLB by `exportPreviewGlb`. Everything drawn
- * here is a drei `<Line>` or a troika `<Text>`, both of which that export
- * filters out structurally.
+ * Picking does NOT go through the R3F event system: `BinMesh` only attaches
+ * pointer handlers while a color tool is active. It raycasts the mesh arrays
+ * directly instead, which also keeps the tool out of the scene for the reason
+ * `measure3d` gives. Everything drawn here is a drei `<Line>` or a troika
+ * `<Text>`, both of which `exportPreviewGlb` filters out structurally.
  *
  * Two ways in, matching the 2D ruler's sticky/transient pair:
  *   - the toolbar toggle, where a click places a point and orbit stays live
@@ -194,12 +192,10 @@ export function MeasureTool() {
         }
       }
       if (!useDesignerStore.getState().ui.measure.active || e.pointerType === 'touch') return;
-      // One pick per frame. The raycast walks every triangle: measured at
-      // ~4.6ms on a 300k-triangle mesh, so roughly a quarter of a frame on the
-      // densest bins and unnoticeable on ordinary ones. Pointermove fires far
-      // more often than the canvas redraws, and the canvas is frameloop
-      // "demand", so throttling to a frame is what keeps that bounded. An
-      // acceleration structure would be the next step if it ever stops being.
+      // One pick per frame. The raycast walks every triangle, measured at
+      // ~4.6ms over 300k, so roughly a quarter of a frame on the densest bins.
+      // Pointermove fires far more often than this canvas redraws, so the frame
+      // throttle is what bounds it; a BVH is the next step if it stops being.
       if (hoverFrameRef.current !== 0) return;
       hoverFrameRef.current = requestAnimationFrame(() => {
         hoverFrameRef.current = 0;

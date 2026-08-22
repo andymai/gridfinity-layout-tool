@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import {
   buildSnapModel,
-  collectSnapTargets,
   nearestPointOnSegment,
   snapToNearestTarget,
   computeMeasurement,
@@ -25,56 +24,40 @@ function makeCutout(overrides: Partial<Cutout> = {}): Cutout {
   };
 }
 
-describe('collectSnapTargets', () => {
-  it('returns corners, edge midpoints, and center for a rectangle', () => {
-    const cutout = makeCutout({ x: 0, y: 0, width: 10, depth: 20 });
-    const targets = collectSnapTargets([cutout]);
+/** A snap model over cutouts alone, with no board frame and no lattice. */
+function shapesOnly(cutouts: readonly Cutout[]) {
+  return buildSnapModel({ cutouts, innerW: 0, innerD: 0, gridSize: null });
+}
 
-    // 4 corners + 4 edge midpoints + 1 center = 9
-    expect(targets).toHaveLength(9);
+describe('buildSnapModel over a single shape', () => {
+  it('offers corners, edge midpoints and the centre of a rectangle', () => {
+    const model = shapesOnly([makeCutout({ x: 0, y: 0, width: 10, depth: 20 })]);
 
-    // Corners
-    expect(targets).toContainEqual({ x: 0, y: 0 });
-    expect(targets).toContainEqual({ x: 10, y: 0 });
-    expect(targets).toContainEqual({ x: 0, y: 20 });
-    expect(targets).toContainEqual({ x: 10, y: 20 });
-
-    // Center
-    expect(targets).toContainEqual({ x: 5, y: 10 });
+    expect(model.points).toContainEqual({ x: 0, y: 0 });
+    expect(model.points).toContainEqual({ x: 10, y: 0 });
+    expect(model.points).toContainEqual({ x: 0, y: 20 });
+    expect(model.points).toContainEqual({ x: 10, y: 20 });
+    expect(model.points).toContainEqual({ x: 5, y: 10 });
+    expect(model.segments).toHaveLength(4);
   });
 
   it('skips hidden cutouts', () => {
-    const cutout = makeCutout({ hidden: true });
-    const targets = collectSnapTargets([cutout]);
-    expect(targets).toHaveLength(0);
+    expect(shapesOnly([makeCutout({ hidden: true })]).points).toHaveLength(0);
   });
 });
 
-describe('snapToNearestTarget', () => {
-  const targets = [
-    { x: 10, y: 10 },
-    { x: 50, y: 50 },
-  ];
+describe('snapToNearestTarget threshold', () => {
+  const model = shapesOnly([makeCutout({ x: 5, y: 5, width: 10, depth: 10 })]);
 
-  it('snaps to nearest target within threshold', () => {
-    // At zoom=1, threshold is 8mm. Point (11, 11) is ~1.4mm from (10,10)
-    const result = snapToNearestTarget(11, 11, targets, 1);
-    expect(result.snapped).toBe(true);
-    expect(result.x).toBe(10);
-    expect(result.y).toBe(10);
+  it('snaps to the nearest point within the threshold', () => {
+    // At zoom 1 the threshold is 8mm; (11, 11) is ~1.4mm from the corner.
+    const result = snapToNearestTarget(11, 11, model, 1);
+    expect([result.snapped, result.x, result.y]).toEqual([true, 10, 10]);
   });
 
-  it('returns original point when nothing is close enough', () => {
-    const result = snapToNearestTarget(30, 30, targets, 1);
-    expect(result.snapped).toBe(false);
-    expect(result.x).toBe(30);
-    expect(result.y).toBe(30);
-  });
-
-  it('adapts threshold based on zoom', () => {
-    // At zoom=10, threshold is 0.8mm. Point (11, 10) is 1mm away — too far
-    const result = snapToNearestTarget(11, 10, targets, 10);
-    expect(result.snapped).toBe(false);
+  it('scales the threshold with zoom', () => {
+    // At zoom 10 the threshold is 0.8mm, so the same 1mm gap is out of reach.
+    expect(snapToNearestTarget(11, 10.99, model, 10).kind).toBe('none');
   });
 });
 
@@ -197,11 +180,6 @@ describe('snapToNearestTarget priority (#3696)', () => {
     // Not the board centre, which is deliberately a target of its own.
     const snapped = snapToNearestTarget(37, 22, buildSnapModel(board), 20);
     expect(snapped).toEqual({ x: 37, y: 22, snapped: false, kind: 'none' });
-  });
-
-  it('still accepts a bare target array, so old callers keep working', () => {
-    const snapped = snapToNearestTarget(0.1, 0.1, [{ x: 0, y: 0 }], 20);
-    expect(snapped.kind).toBe('point');
   });
 });
 

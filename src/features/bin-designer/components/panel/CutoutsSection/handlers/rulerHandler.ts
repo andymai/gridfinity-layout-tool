@@ -11,14 +11,9 @@
  *             true edges
  *   grid    - the editor's own snap lattice, when snap is on
  *
- * Points beat segments beat the grid, which is what a CAD ruler does and what
- * makes a corner reachable when an edge runs through it. Below all three the
- * cursor stays free, so a measurement is never forced onto something.
- *
- * The original version offered only points, and only from cutout BOUNDING
- * BOXES. Measuring a cutout to a wall snapped to nothing at all, and a rotated
- * shape snapped to a box floating off it. Outlines now come from
- * `getCutoutOutline`, the same silhouette the canvas draws.
+ * Points beat segments beat the grid, which is what makes a corner reachable
+ * when an edge runs through it. Below all three the cursor stays free, so a
+ * measurement is never forced onto something.
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
@@ -114,20 +109,13 @@ function boxSegments(minX: number, minY: number, maxX: number, maxY: number): Sn
 }
 
 /**
- * Collect all snap targets from cutout geometry.
+ * Everything on the board the ruler can snap to.
  *
- * Prefers the true silhouette (`getCutoutOutline`), which is already rotated
- * and, for a path, built from the real vertices. Falls back to the rotated
- * bounding box only for a cutout too degenerate to outline, which is the same
- * verdict the rest of the editor gives it.
+ * Shape outlines come from `getCutoutOutline`, the silhouette the canvas
+ * already draws, so a rotated shape and a pen path snap to their real edges.
+ * The rotated bounding box is the fallback only for a shape too degenerate to
+ * outline, which is the verdict the rest of the editor gives it anyway.
  */
-export function collectSnapTargets(
-  cutouts: readonly Cutout[],
-  meshAssets?: Readonly<Record<string, MeshAsset>>
-): readonly SnapTarget[] {
-  return buildSnapModel({ cutouts, meshAssets, innerW: 0, innerD: 0, gridSize: null }).points;
-}
-
 export function buildSnapModel(input: SnapModelInput): SnapModel {
   const points: SnapTarget[] = [];
   const segments: SnapSegment[] = [];
@@ -214,13 +202,9 @@ export interface SnapResult {
 export function snapToNearestTarget(
   mmX: number,
   mmY: number,
-  model: SnapModel | readonly SnapTarget[],
+  resolved: SnapModel,
   zoom: number
 ): SnapResult {
-  const resolved: SnapModel = Array.isArray(model)
-    ? { points: model, segments: [], gridSize: null }
-    : (model as SnapModel);
-
   const thresholdMm = SNAP_THRESHOLD_PX / zoom;
   const thresholdSq = thresholdMm * thresholdMm;
 
