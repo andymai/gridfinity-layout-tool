@@ -11,80 +11,9 @@ import { BoxGeometry, CylinderGeometry, ExtrudeGeometry, Matrix4, Path, Shape } 
 import type { BufferGeometry } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { AssemblyPartNode, CutterProfile } from '@/shared/types/assembly';
+export { partFootprint, partSeatHeight } from '@/shared/types/assemblyPlacement';
 
 const DEG = Math.PI / 180;
-
-/** Height of the part's top face above its own seat — the child seat plane. */
-export function partSeatHeight(node: AssemblyPartNode): number {
-  switch (node.type) {
-    case 'post':
-      return node.params.height;
-    case 'fin':
-      return node.params.height;
-    case 'block':
-      return node.params.height;
-    case 'tube':
-      return node.params.height;
-    case 'cradle':
-      return node.params.height;
-    case 'hook': {
-      const { stemHeight, lipHeight, thickness } = node.params;
-      return Math.max(stemHeight, stemHeight - thickness + lipHeight);
-    }
-    case 'arch':
-      return node.params.height;
-    case 'cutter':
-      return 0;
-  }
-}
-
-/** XY footprint extents (mm) used for drag planes and ghost outlines. */
-export function partFootprint(node: AssemblyPartNode): { w: number; d: number } {
-  switch (node.type) {
-    case 'post':
-      return { w: node.params.diameter, d: node.params.diameter };
-    case 'fin':
-      return { w: node.params.length, d: node.params.thickness };
-    case 'block':
-      return { w: node.params.width, d: node.params.depth };
-    case 'tube': {
-      const outer = node.params.boreDiameter + 2 * node.params.wall;
-      return { w: outer, d: outer };
-    }
-    case 'cradle':
-      return { w: node.params.length, d: node.params.width };
-    case 'hook':
-      return { w: node.params.width, d: node.params.reach };
-    case 'arch': {
-      const { span, uprightThickness, depth } = node.params;
-      return { w: span + 2 * uprightThickness, d: depth };
-    }
-    case 'cutter':
-      return cutterFootprint(node.params.profile);
-  }
-}
-
-function cutterFootprint(profile: CutterProfile): { w: number; d: number } {
-  switch (profile.shape) {
-    case 'circle':
-      return { w: profile.diameter, d: profile.diameter };
-    case 'rectangle':
-      return { w: profile.width, d: profile.depth };
-    case 'polygon':
-      return { w: profile.diameter, d: profile.diameter };
-    case 'slot':
-      return { w: profile.length, d: profile.width };
-    case 'path':
-    case 'outline': {
-      const xs = profile.points.map((p) => p.x);
-      const ys = profile.points.map((p) => p.y);
-      return {
-        w: Math.max(1, Math.max(...xs) - Math.min(...xs)),
-        d: Math.max(1, Math.max(...ys) - Math.min(...ys)),
-      };
-    }
-  }
-}
 
 /** Rotate a shape-plane (profile-in-YZ, extruded-along-X) solid into world axes. */
 const YZ_PROFILE_TO_WORLD = new Matrix4().set(0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1);

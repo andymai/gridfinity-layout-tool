@@ -3,6 +3,7 @@
  * `generation.worker.ts` so the generator registry is populated before any
  * GENERATE_ITEM / EXPORT_ITEM message arrives. Worker-only — pulls OCCT, never React.
  */
+import { assemblyGeneratorModule } from './assemblyItem';
 import { binGeneratorModule } from './binItem';
 import { registerItemGenerator } from './generatorRegistry';
 import { importedMeshGeneratorModule } from './importedMeshItem';
@@ -11,3 +12,4 @@ import { toolRackGeneratorModule } from './toolRackItem';
 registerItemGenerator(binGeneratorModule);
 registerItemGenerator(toolRackGeneratorModule);
 registerItemGenerator(importedMeshGeneratorModule);
+registerItemGenerator(assemblyGeneratorModule);
