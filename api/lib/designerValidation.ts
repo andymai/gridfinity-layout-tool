@@ -1358,11 +1358,6 @@ function validateInsert(insert: unknown, index: number): string | null {
 }
 
 /**
- * Cutouts are otherwise passed through untyped (their geometry is regenerated
- * client-side), but the shadow-board color fields flow into exported 3MF
- * material colors, so an untrusted `color` / `colorScope` must be rejected here.
- */
-/**
  * Global fill level for a cutout bin.
  *
  * `topOffset` reaches the generator as `wallHeight - topOffset`, so a
@@ -1389,6 +1384,11 @@ function validateCutoutConfig(value: unknown): string | null {
   return null;
 }
 
+/**
+ * Cutouts are otherwise passed through untyped (their geometry is regenerated
+ * client-side), but the shadow-board color fields flow into exported 3MF
+ * material colors, so an untrusted `color` / `colorScope` must be rejected here.
+ */
 function validateCutouts(value: unknown): string | null {
   if (!Array.isArray(value)) return 'cutouts must be an array';
   for (let i = 0; i < value.length; i++) {
