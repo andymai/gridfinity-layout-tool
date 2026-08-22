@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.438.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.0...gridfinity-layout-tool-v4.438.1) (2026-08-22)
+
+
+### Bug Fixes
+
+* **bin-designer:** make detachable feet press on by hand ([#3700](https://github.com/andymai/gridfinity-layout-tool/issues/3700)) ([c83f644](https://github.com/andymai/gridfinity-layout-tool/commit/c83f644e5fd02cbff24b9ca07454fe8b8357c99b))
+
 ## [4.438.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.437.0...gridfinity-layout-tool-v4.438.0) (2026-08-22)
 
 
