@@ -1,0 +1,33 @@
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_a36c0b85dfeec4::t_d22f49a8932eab 384,453,493
+src/features/bin-designer/components/Workshop/proxyGeometry.ts
+  s_a36c0b85dfeec4::t_1e95708856b4bc 14
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_3ceb63dc2c35cf 51,196,333-335
+  s_a36c0b85dfeec4::t_01ce74378dbe98 1-50,52-195,197-332,336-487
+  s_a36c0b85dfeec4::t_148388310c55d6 488-489
+src/features/generation/worker/items/assemblyItem.ts
+  s_a36c0b85dfeec4::t_01ce74378dbe98 1-20
+src/shared/types/assemblyPlacement.ts
+  s_a36c0b85dfeec4::t_184663b994a293 1-140
+src/features/bin-designer/components/Workshop/workshopPlacement.ts
+  s_a36c0b85dfeec4::t_1e95708856b4bc 2-4,8-15
+src/features/generation/worker/items/registerGenerators.ts
+  s_a36c0b85dfeec4::t_01ce74378dbe98 6,15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "906e7f0c26188b058a28499e74fac5ebeccbbe50",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
