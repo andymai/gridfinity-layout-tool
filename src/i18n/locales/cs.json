@@ -878,7 +878,7 @@
   "binDesigner.designName": "Název návrhu",
   "binDesigner.designs": "Návrhy",
   "binDesigner.detachableFeet": "Odnímatelné nožičky",
-  "binDesigner.detachableFeet.pinHint": "Pokud větší kolík nedosedne, zkuste nejdřív menší",
+  "binDesigner.detachableFeet.pinHint": "Největší průměr, do otvoru 3 mm. Pokud nožka nedosedne, zvolte o velikost méně.",
   "binDesigner.detachableFeet.pinSize": "Průměr kolíku",
   "binDesigner.detachableFeet.saving": "Spotřebuje o {percent} % méně materiálu než pevné nožičky",
   "binDesigner.detachableFeet.savingSuperseded": "Odlehčená základna už tuto úsporu pokrývá",

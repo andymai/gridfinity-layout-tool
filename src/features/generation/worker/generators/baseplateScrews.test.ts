@@ -13,6 +13,7 @@ import {
   screwAwareHoleRadius,
   screwFloorCandidates,
 } from './baseplateScrews';
+import { planPieceScrews } from '@/shared/generation/screwHolePlan';
 
 const COUNTERSINK: ScrewHoleParams = {
   enabled: true,
@@ -120,6 +121,91 @@ describe('resolveScrewHoles', () => {
 
   it('returns nothing for an empty plan', () => {
     expect(resolveScrewHoles([], candidates)).toEqual([]);
+  });
+});
+
+describe('resolveScrewHoles half-turn symmetry (#3698)', () => {
+  const NO_BANDS = { left: 0, right: 0, front: 0, back: 0 } as const;
+  const CELL_OPTS = { gridUnitMm: 42, fractionalEdgeX: 'end', fractionalEdgeY: 'end' } as const;
+
+  /**
+   * The composition `planBaseplateScrewHoles` performs, minus the resolved-param
+   * plumbing: an unpadded piece, so every anchor is floor-sited and every screw
+   * goes through the snap this fix governs.
+   */
+  function holesFor(gridW: number, gridD: number, screwsPerPiece: number) {
+    const params: ScrewHoleParams = { ...COUNTERSINK, screwsPerPiece };
+    return resolveScrewHoles(
+      planPieceScrews(params, {
+        widthMm: gridW * 42,
+        depthMm: gridD * 42,
+        bands: NO_BANDS,
+        floorPadProvisioned: true,
+      }),
+      screwFloorCandidates(gridW, gridD, screwAwareHoleRadius(6.5 / 2, params), { ...CELL_OPTS })
+    );
+  }
+
+  /** Every hole's half-turn image is also a hole. */
+  function isHalfTurnInvariant(holes: ReadonlyArray<{ x: number; y: number }>): boolean {
+    const key = (x: number, y: number) => `${x.toFixed(4)},${y.toFixed(4)}`;
+    const present = new Set(holes.map((h) => key(h.x, h.y)));
+    return holes.every((h) => present.has(key(-h.x, -h.y)));
+  }
+
+  it('places the eight screws of an even-celled piece symmetrically', () => {
+    // The reported case: a 12x12 plate split into four 6x6 pieces, eight screws
+    // each. Every edge midpoint falls on a grid line, so all four are exact ties.
+    const holes = holesFor(6, 6, 8);
+    expect(holes).toHaveLength(8);
+    expect(isHalfTurnInvariant(holes)).toBe(true);
+  });
+
+  it('leans the front and back edge screws to opposite sides of the centreline', () => {
+    // The defect itself: both used to take the same cell, putting every edge
+    // screw 8mm toward the same corner and leaving the set with no symmetry.
+    const holes = holesFor(6, 6, 8);
+    const halfD = (6 * 42) / 2;
+    // The edge midpoints are the only screws near the vertical centreline; the
+    // corners on the same rows sit a whole cell out.
+    const nearCentre = holes.filter((h) => Math.abs(h.x) < 21);
+    const front = nearCentre.find((h) => h.y < 0);
+    const back = nearCentre.find((h) => h.y > 0);
+    expect(front?.y).toBeCloseTo(-halfD + (21 - HOLE_OFFSET), 6);
+    expect(front?.x).toBeCloseTo(-(21 - HOLE_OFFSET), 6);
+    expect(back?.x).toBeCloseTo(21 - HOLE_OFFSET, 6);
+  });
+
+  it('holds on an odd-celled piece, where the tie is between cell centres', () => {
+    const holes = holesFor(5, 5, 8);
+    expect(holes).toHaveLength(8);
+    expect(isHalfTurnInvariant(holes)).toBe(true);
+  });
+
+  it('holds on a non-square piece', () => {
+    const holes = holesFor(6, 4, 8);
+    expect(holes).toHaveLength(8);
+    expect(isHalfTurnInvariant(holes)).toBe(true);
+  });
+
+  it('closes under the rotation at four and six screws', () => {
+    // Counts that fill whole half-turn pairs. Six is why the edge anchors are
+    // ordered b/t before r/l: the compass order would take b and r, whose
+    // partners are never filled.
+    expect(isHalfTurnInvariant(holesFor(6, 6, 4))).toBe(true);
+    expect(isHalfTurnInvariant(holesFor(6, 6, 6))).toBe(true);
+  });
+
+  it('still resolves nearest first, so a lean never beats a closer candidate', () => {
+    // Candidate order puts the tie-preferred but distant point first.
+    const holes = resolveScrewHoles(
+      [{ anchor: 'b', site: 'floor', target: [0, -42] }],
+      [
+        [-40, -13],
+        [-13, -29],
+      ]
+    );
+    expect(holes).toEqual([{ x: -13, y: -29, site: 'floor' }]);
   });
 });
 

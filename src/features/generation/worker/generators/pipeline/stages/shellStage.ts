@@ -176,7 +176,10 @@ export const shellStage: PipelineStage = {
         // The integrated builder mirrors the angled support unconditionally, so a
         // wall too short to carry one has to take the fuse path, where
         // `buildTopShape` can be told to leave it off.
-        dim.lipHasSupport;
+        dim.lipHasSupport &&
+        // Draft-only path, and only `buildBinBox` raises the floor — taking it
+        // would preview a floor the export does not have.
+        dim.floorThickness === params.wallThickness;
 
       let built = withScope((scope: DisposalScope) => {
         // Base-only bin: `boxWallHeight` is 0, and extruding a zero-length
@@ -271,7 +274,8 @@ export const shellStage: PipelineStage = {
           params.cellMask,
           compartmentCavityDrawings,
           compartmentCavityKey,
-          dim.overhang
+          dim.overhang,
+          dim.floorThickness
         );
         collectOrigins(binBody, FeatureTag.BASE, originToTag);
 
@@ -370,9 +374,8 @@ export const shellStage: PipelineStage = {
     // happen to something the user presses on afterwards. They are generated
     // and combined alongside the bin the way a lid is.
     //
-    // Cutting here rather than before `setShellCache` is deliberate: the cached
-    // body is shared with an integral bin of the same size (the two really are
-    // identical above the floor), and only this clone gets holed.
+    // Cutting here rather than before `setShellCache` is deliberate: only this
+    // clone gets holed.
     if (dim.detachableFeet) {
       const resolved = resolveDetachableFeet(params);
       if (resolved.placements.length > 0) {
@@ -381,7 +384,7 @@ export const shellStage: PipelineStage = {
           armMm: resolved.armMm,
           pinDiameterMm: resolved.pinDiameterMm,
           pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
-          floorThicknessMm: params.wallThickness,
+          floorThicknessMm: dim.floorThickness,
           // Screws only: their bore also passes through the FLOOR, so the tool
           // this returns has to carry it. Magnets stay in the feet.
           screw: resolved.screw,

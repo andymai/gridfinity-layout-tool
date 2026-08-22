@@ -16,6 +16,8 @@ import {
   isSolidThrough,
   verticalSolidSpans,
 } from './__kernel-tests__/meshAssertions';
+import type { MeshData } from '@/features/generation/bridge/types';
+import { HOLE_OFFSET } from './generatorTypes';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
 import { mm } from '@/core/types';
@@ -280,5 +282,99 @@ describe('baseplate mount-down screw holes (#3425)', () => {
     assertStructurallyValid(result);
     const bb = boundingBox(result.vertices);
     expect(bb.maxZ - bb.minZ).toBeCloseTo(SOCKET_HEIGHT + magnetFloor + pad, 1);
+  });
+});
+
+describe('screw hole placement symmetry (#3698)', () => {
+  const EIGHT: ScrewHoleParams = { ...SCREWS, screwsPerPiece: 8 };
+  const PAD = screwPadThicknessMm(EIGHT, 0);
+  /** The reported case: one 6x6 piece of a split 12x12 plate, eight screws. */
+  const SIX_BY_SIX = defaults({
+    width: 6,
+    depth: 6,
+    screwHoles: EIGHT,
+    screwPadThicknessMm: PAD,
+  });
+
+  function plate(draft: boolean): MeshData {
+    return getGenerateBaseplate()(SIX_BY_SIX, NO_OP, !draft, undefined, draft);
+  }
+
+  /**
+   * Whether the cell containing (x, y) kept a floor.
+   *
+   * Read at a magnet position OTHER than the screw's own, because the screw
+   * hole is void whether or not the cell has a pad, and so is a cell with no
+   * screw at all. Only a sibling position separates the two: a screw-bearing
+   * cell is floored across its pad, an empty one is open to the underside.
+   * This is what makes the probe answer "which cell took the screw" rather
+   * than "is there a hole here", which is the whole question in #3698.
+   */
+  function cellIsFloored(mesh: MeshData, x: number, y: number): boolean {
+    return verticalSolidSpans(mesh, x, y).length > 0;
+  }
+
+  /** Every magnet position on the plate, which is every place a screw can land. */
+  function magnetLattice(): Array<readonly [number, number]> {
+    const axis: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      const centre = -126 + 21 + i * 42;
+      axis.push(centre - HOLE_OFFSET, centre + HOLE_OFFSET);
+    }
+    return axis.flatMap((x) => axis.map((y) => [x, y] as const));
+  }
+
+  /**
+   * Quantized before formatting, and `+ 0` to collapse a negative zero.
+   * The plate's underside lands on -2e-16 rather than exactly 0, and both
+   * `toFixed` and `Object.is` preserve that sign, so a raw comparison reports
+   * every floored column as asymmetric while the solid is perfectly symmetric.
+   */
+  function columnSignature(mesh: MeshData, x: number, y: number): string {
+    const q = (v: number): string => (Math.round(v * 1000) / 1000 + 0).toFixed(3);
+    return verticalSolidSpans(mesh, x, y)
+      .map(([a, b]) => `${q(a)}..${q(b)}`)
+      .join('|');
+  }
+
+  it('staggers the front and back edge screws across the centreline', () => {
+    // Both used to take the cell left of centre. The pad under the sibling
+    // magnet is what says which cell actually got the screw.
+    const mesh = plate(false);
+    expect(cellIsFloored(mesh, -34, -118)).toBe(true);
+    expect(cellIsFloored(mesh, 34, -118)).toBe(false);
+    expect(cellIsFloored(mesh, 34, 118)).toBe(true);
+    expect(cellIsFloored(mesh, -34, 118)).toBe(false);
+  });
+
+  it('staggers the left and right edge screws across the centreline', () => {
+    const mesh = plate(false);
+    expect(cellIsFloored(mesh, -118, 34)).toBe(true);
+    expect(cellIsFloored(mesh, -118, -34)).toBe(false);
+    expect(cellIsFloored(mesh, 118, -34)).toBe(true);
+    expect(cellIsFloored(mesh, 118, 34)).toBe(false);
+  });
+
+  it('presents the same material after a half-turn, at every magnet position', () => {
+    // States the property the issue asks for directly against the solid, rather
+    // than against a second copy of the planner's arithmetic. Occupancy is read
+    // per column, so it survives whatever order the mesher triangulated in.
+    const mesh = plate(false);
+    const mismatched = magnetLattice().filter(
+      ([x, y]) => columnSignature(mesh, x, y) !== columnSignature(mesh, -x, -y)
+    );
+    expect(mismatched).toEqual([]);
+  });
+
+  it('puts every screw where the exported plate does, in the draft fast path', () => {
+    // The draft mesh and the BREP build each call the planner with their own
+    // input; a divergence there is invisible in the preview and only shows up
+    // once the plate is printed.
+    const exported = plate(false);
+    const draft = plate(true);
+    const diverged = magnetLattice().filter(
+      ([x, y]) => cellIsFloored(exported, x, y) !== cellIsFloored(draft, x, y)
+    );
+    expect(diverged).toEqual([]);
   });
 });

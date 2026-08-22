@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.438.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.2...gridfinity-layout-tool-v4.438.3) (2026-08-22)
+
+
+### Bug Fixes
+
+* **baseplate:** place screw holes symmetrically about the piece centre ([#3699](https://github.com/andymai/gridfinity-layout-tool/issues/3699)) ([b7b95ff](https://github.com/andymai/gridfinity-layout-tool/commit/b7b95ff9127d5fce3c3009b652f709248906427f))
+
+## [4.438.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.1...gridfinity-layout-tool-v4.438.2) (2026-08-22)
+
+
+### Bug Fixes
+
+* **bin-designer:** take the detachable floor from the spec's dead space ([#3704](https://github.com/andymai/gridfinity-layout-tool/issues/3704)) ([4a6eb01](https://github.com/andymai/gridfinity-layout-tool/commit/4a6eb01e2d0120c4c154a3a95095cdf1659ca68b))
+
+## [4.438.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.0...gridfinity-layout-tool-v4.438.1) (2026-08-22)
+
+
+### Bug Fixes
+
+* **bin-designer:** make detachable feet press on by hand ([#3700](https://github.com/andymai/gridfinity-layout-tool/issues/3700)) ([c83f644](https://github.com/andymai/gridfinity-layout-tool/commit/c83f644e5fd02cbff24b9ca07454fe8b8357c99b))
+
 ## [4.438.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.437.0...gridfinity-layout-tool-v4.438.0) (2026-08-22)
 
 

@@ -878,7 +878,7 @@
   "binDesigner.designName": "Назва дизайну",
   "binDesigner.designs": "Дизайни",
   "binDesigner.detachableFeet": "Знімні ніжки",
-  "binDesigner.detachableFeet.pinHint": "Якщо більший штифт не сідає, спробуйте спершу менший",
+  "binDesigner.detachableFeet.pinHint": "Найбільший діаметр, в отвір 3 мм. Якщо ніжка не входить, оберіть менший розмір.",
   "binDesigner.detachableFeet.pinSize": "Розмір штифта",
   "binDesigner.detachableFeet.saving": "Витрачає на {percent}% менше матеріалу, ніж вбудовані ніжки",
   "binDesigner.detachableFeet.savingSuperseded": "Полегшена основа вже забезпечує цю економію",

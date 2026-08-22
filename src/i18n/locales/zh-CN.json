@@ -878,7 +878,7 @@
   "binDesigner.designName": "设计名称",
   "binDesigner.designs": "设计",
   "binDesigner.detachableFeet": "可拆卸底脚",
-  "binDesigner.detachableFeet.pinHint": "若较大的销钉装不进，请先试较小的",
+  "binDesigner.detachableFeet.pinHint": "最大直径，对应 3mm 孔。若支脚装不进去，请选小一号。",
   "binDesigner.detachableFeet.pinSize": "销钉尺寸",
   "binDesigner.detachableFeet.saving": "比一体式底脚少用 {percent}% 的材料",
   "binDesigner.detachableFeet.savingSuperseded": "轻量化底座已经实现了这部分节省",
