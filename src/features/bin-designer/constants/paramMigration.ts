@@ -26,7 +26,7 @@ import type {
   WallCutoutShape,
   KnifeRestConfig,
 } from '../types';
-import { DEFAULT_PATTERN_SCALE } from '../types';
+import { CUTOUT_FILL_REFERENCES, DEFAULT_PATTERN_SCALE } from '../types';
 import {
   KNIFE_REST_DEFAULT_GAP_MM,
   KNIFE_REST_GROOVE_DEPTH_MM,
@@ -1281,9 +1281,19 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   })();
 
   // Migrate cutoutConfig and handle legacy per-cutout topOffset
+  const rawCutoutConfig = (params.cutoutConfig as Partial<CutoutConfig> | undefined) ?? {};
+  const rawFillReference = rawCutoutConfig.fillReference;
   const cutoutConfig: CutoutConfig = {
     ...DEFAULT_CUTOUT_CONFIG,
-    ...((params.cutoutConfig as Partial<CutoutConfig> | undefined) ?? {}),
+    ...rawCutoutConfig,
+    // Coerce an unknown reference back to the default, the same way the handle
+    // shape below does. The declared type is a claim about trusted data, so the
+    // runtime check still matters: every load path (share, sync, localStorage)
+    // lands here, and this is where a value the type no longer allows stops.
+    fillReference:
+      rawFillReference !== undefined && CUTOUT_FILL_REFERENCES.includes(rawFillReference)
+        ? rawFillReference
+        : DEFAULT_CUTOUT_CONFIG.fillReference,
   };
 
   // Migrate handle config (v2: ledges → holes)

@@ -100,9 +100,10 @@ export const DISABLED_WALL_CUTOUT: WallCutout = {
   ...DEFAULT_CUTOUT_POSITION,
 } as const;
 
-/** Default cutout configuration: flush with rim (no offset) */
+/** Default cutout configuration: flush with rim (no offset), held against it */
 export const DEFAULT_CUTOUT_CONFIG: CutoutConfig = {
   topOffset: 0,
+  fillReference: 'rim',
 } as const;
 
 /** Default split connector configuration: enabled with glue-fit tolerances.

@@ -1483,3 +1483,26 @@ describe('migrateParams', () => {
     });
   });
 });
+
+describe('migrateParams - cutout fill reference (#3697)', () => {
+  it('defaults a design saved before the option existed to the rim', () => {
+    // Rim anchoring reproduces the old behaviour exactly, so an existing
+    // design's fill plane cannot move just because the option shipped.
+    const result = migrateParams({ cutoutConfig: { topOffset: 4 } });
+    expect(result.cutoutConfig).toEqual({ topOffset: 4, fillReference: 'rim' });
+  });
+
+  it('keeps a stored reference', () => {
+    const result = migrateParams({ cutoutConfig: { topOffset: 4, fillReference: 'floor' } });
+    expect(result.cutoutConfig.fillReference).toBe('floor');
+  });
+
+  it('coerces a value the type no longer allows back to the default', () => {
+    // Every load path lands here: share, sync and localStorage all carry data
+    // this process did not write, and the declared type is only a claim.
+    const result = migrateParams({
+      cutoutConfig: { topOffset: 4, fillReference: 'ceiling' },
+    } as unknown as Parameters<typeof migrateParams>[0]);
+    expect(result.cutoutConfig.fillReference).toBe('rim');
+  });
+});

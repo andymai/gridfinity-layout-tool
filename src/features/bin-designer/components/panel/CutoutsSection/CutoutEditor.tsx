@@ -36,7 +36,7 @@ import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import type { ContextMenuAction } from './CutoutContextMenu';
 import { CutoutEmptyState } from './CutoutEmptyState';
-import { SliderInput } from '@/design-system';
+import { CutoutFillControls } from '@/features/bin-designer/components/controls';
 
 /** Canvas width in CSS pixels (fits 288px sidebar) */
 const CANVAS_WIDTH = 248;
@@ -53,7 +53,6 @@ export function CutoutEditor() {
     setGroupOp,
     updateCutoutsBatch,
     removeCutoutsBatch,
-    updateCutoutConfig,
     reorderCutouts,
     undo,
     redo,
@@ -76,7 +75,6 @@ export function CutoutEditor() {
       setGroupOp: s.setGroupOp,
       updateCutoutsBatch: s.updateCutoutsBatch,
       removeCutoutsBatch: s.removeCutoutsBatch,
-      updateCutoutConfig: s.updateCutoutConfig,
       reorderCutouts: s.reorderCutouts,
       undo: s.undo,
       redo: s.redo,
@@ -513,17 +511,9 @@ export function CutoutEditor() {
         onCancel={stlImport.cancel}
       />
 
-      {/* Global top offset control */}
+      {/* Fill level: shared with the workspace inspector so the two agree */}
       <div className="rounded border border-stroke-subtle bg-surface-elevated p-3">
-        <SliderInput
-          label={t('binDesigner.cutouts.topOffset')}
-          value={params.cutoutConfig.topOffset}
-          onChange={(topOffset) => updateCutoutConfig({ topOffset })}
-          min={0}
-          max={wallHeight - 0.5}
-          step={0.5}
-          unit="mm"
-        />
+        <CutoutFillControls />
       </div>
 
       {/* WebGL Canvas */}

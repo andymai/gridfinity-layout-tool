@@ -7,6 +7,7 @@
 import { Button, Checkbox } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { CutoutPlateSettings } from './CutoutPlateSettings';
+import { CutoutFillControls } from '@/features/bin-designer/components/controls';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
 
 const GRID_SIZES = [0.25, 0.5, 1, 2, 5] as const;
@@ -94,6 +95,15 @@ export function CutoutBoardSettings({
             <dd className="tabular-nums text-content-secondary">{cutoutCount}</dd>
           </div>
         </dl>
+      </div>
+
+      {/* Fill level: a bin-level plane, but the cutouts are cut from it, so the
+          workspace has to expose it or the only control is in the sidebar. */}
+      <div className="space-y-3 border-t border-stroke-subtle pt-3">
+        <span className="block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+          {t('binDesigner.cutouts.fillLevel')}
+        </span>
+        <CutoutFillControls />
       </div>
 
       <CutoutPlateSettings />

@@ -2608,6 +2608,17 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.knifeDepthClamped':
     'This blade is deeper than the bin can cut, so the slot stops at {depth}mm and the knife sits proud. A {needed}u bin takes the whole blade.',
   'binDesigner.cutouts.topOffset': 'Top Offset',
+  'binDesigner.cutouts.fillLevel': 'Fill Level',
+  'binDesigner.cutouts.fillMeasuredFrom': 'Measured from',
+  'binDesigner.cutouts.fillFromRim': 'Rim',
+  'binDesigner.cutouts.fillFromFloor': 'Floor',
+  'binDesigner.cutouts.fillHeight': 'Fill Height',
+  'binDesigner.cutouts.fillBelowRim': '{mm} below the rim',
+  'binDesigner.cutouts.fillAboveFloor': '{mm} above the floor',
+  'binDesigner.cutouts.fillHintRim':
+    'The recess above the fill keeps its depth, so the fill grows when the bin gets taller.',
+  'binDesigner.cutouts.fillHintFloor':
+    'The fill keeps its height, so pocket depths survive a change to the bin height.',
   'binDesigner.cutouts.cornerRadius': 'Corner radius',
   'binDesigner.cutouts.scoopRadius': 'Scoop radius',
   'binDesigner.cutouts.scoopW': 'Scoop W',

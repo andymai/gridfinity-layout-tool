@@ -352,3 +352,68 @@ describe('DesignerStore - cutout actions', () => {
     });
   });
 });
+
+describe('DesignerStore - cutout fill anchoring (#3697)', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  function setFill(topOffset: number, fillReference: 'rim' | 'floor'): void {
+    useDesignerStore.getState().updateCutoutConfig({ topOffset, fillReference });
+  }
+
+  const config = () => useDesignerStore.getState().params.cutoutConfig;
+
+  it('holds the offset when the reference is the rim', () => {
+    useDesignerStore.getState().setParam('height', 3);
+    setFill(4, 'rim');
+
+    useDesignerStore.getState().setParam('height', 6);
+
+    expect(config().topOffset).toBe(4);
+  });
+
+  it('holds the fill height when the reference is the floor', () => {
+    useDesignerStore.getState().setParam('height', 3);
+    setFill(4, 'floor');
+
+    // 3u leaves a 16mm wall, so the fill is 12mm. A 6u bin walls 37mm, and the
+    // fill has to stay 12mm rather than growing with the bin.
+    useDesignerStore.getState().setParam('height', 6);
+
+    expect(config().topOffset).toBeCloseTo(25, 6);
+  });
+
+  it('re-anchors through setParams too, not only setParam', () => {
+    // Share-load and the dimension controls both route through setParams, so a
+    // fix that only covered setParam would leave those paths sliding the fill.
+    useDesignerStore.getState().setParam('height', 3);
+    setFill(4, 'floor');
+
+    useDesignerStore.getState().setParams({ height: 6 });
+
+    expect(config().topOffset).toBeCloseTo(25, 6);
+  });
+
+  it('leaves the offset alone when the change does not move the wall height', () => {
+    useDesignerStore.getState().setParam('height', 3);
+    setFill(4, 'floor');
+
+    useDesignerStore.getState().setParam('width', 3);
+
+    expect(config().topOffset).toBe(4);
+  });
+
+  it('is undone as one step, not left behind by the height undo', () => {
+    // The re-anchor rides inside the same history entry as the height change,
+    // so undo cannot restore the height while keeping the derived offset.
+    useDesignerStore.getState().setParam('height', 3);
+    setFill(4, 'floor');
+    useDesignerStore.getState().setParam('height', 6);
+
+    useDesignerStore.getState().undo();
+
+    expect(useDesignerStore.getState().params.height).toBe(3);
+    expect(config().topOffset).toBe(4);
+  });
+});

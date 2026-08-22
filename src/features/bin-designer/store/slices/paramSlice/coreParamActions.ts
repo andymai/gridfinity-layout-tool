@@ -19,6 +19,9 @@ import {
   isAllFilled,
   validateMask,
 } from '@/shared/utils/cellMask';
+import { reanchorCutoutFill } from '@/features/bin-designer/utils/cutoutFill';
+import type { Draft } from 'immer';
+import type { DesignerState } from '@/features/bin-designer/types';
 import type { Set, Get } from './types';
 
 export function createCoreParamActions(set: Set, get: Get) {
@@ -44,6 +47,7 @@ export function createCoreParamActions(set: Set, get: Get) {
 
       set((state) => {
         pushHistoryEntry(state);
+        const before = { ...state.params };
         state.params[key] = value;
         // When the bin footprint grows or shrinks, keep a custom shape mask
         // aligned to the new dimensions. New cells default to filled so a
@@ -55,6 +59,7 @@ export function createCoreParamActions(set: Set, get: Get) {
             state.params.depth
           );
         }
+        applyCutoutFillAnchor(state, before);
       });
     },
 
@@ -82,6 +87,7 @@ export function createCoreParamActions(set: Set, get: Get) {
 
       set((state) => {
         pushHistoryEntry(state);
+        const before = { ...state.params };
         Object.assign(state.params, partial);
         // Keep cellMask aligned with the resulting width/depth. Matters for
         // the dimension-swap button and share-load, both of which route
@@ -93,6 +99,7 @@ export function createCoreParamActions(set: Set, get: Get) {
             state.params.depth
           );
         }
+        applyCutoutFillAnchor(state, before);
       });
     },
 
@@ -132,6 +139,20 @@ export function createCoreParamActions(set: Set, get: Get) {
       });
     },
   };
+}
+
+/**
+ * Hold a floor-anchored cutout fill at its height when the wall height moves.
+ *
+ * Lives here rather than in the cutout updaters because the trigger is a change
+ * to the BIN (height, height unit, base style), not to the cutout config, and
+ * both whole-params writes funnel through this file. A no-op for the rim
+ * default, which is what every design carries unless it opted out.
+ */
+function applyCutoutFillAnchor(state: Draft<DesignerState>, before: BinParams): void {
+  const topOffset = reanchorCutoutFill(before, state.params);
+  if (topOffset === undefined || topOffset === state.params.cutoutConfig.topOffset) return;
+  state.params.cutoutConfig = { ...state.params.cutoutConfig, topOffset };
 }
 
 /**

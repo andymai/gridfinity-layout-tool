@@ -144,6 +144,7 @@ const VALID_TEXT_SIZE_MODES = ['auto', 'fixed'] as const;
 const VALID_TEXT_CASES = ['as-typed', 'upper', 'title'] as const;
 const VALID_TEXT_CUT_PROFILES = ['straight', 'drafted'] as const;
 const VALID_CUTOUT_COLOR_SCOPES = ['floor', 'floorAndWalls'] as const;
+const VALID_CUTOUT_FILL_REFERENCES = ['rim', 'floor'] as const;
 
 /**
  * Cross-boundary contract: MUST match `CUTOUT_LABEL_MODES` in
@@ -1361,6 +1362,33 @@ function validateInsert(insert: unknown, index: number): string | null {
  * client-side), but the shadow-board color fields flow into exported 3MF
  * material colors, so an untrusted `color` / `colorScope` must be rejected here.
  */
+/**
+ * Global fill level for a cutout bin.
+ *
+ * `topOffset` reaches the generator as `wallHeight - topOffset`, so a
+ * non-finite value propagates a NaN through every cutout's placement, and an
+ * unbounded one is a cheap way to make a published design generate nothing.
+ * `fillReference` only says which end the client re-anchors against, but it is
+ * an enum on a public payload and cheaper to bound here than to reason about.
+ */
+function validateCutoutConfig(value: unknown): string | null {
+  if (!isObject(value)) return 'cutoutConfig must be an object';
+  if (value.topOffset !== undefined) {
+    if (!isNumber(value.topOffset) || !inRange(value.topOffset, 0, CONSTRAINTS.MAX_TOP_OFFSET_MM)) {
+      return `cutoutConfig.topOffset must be between 0 and ${CONSTRAINTS.MAX_TOP_OFFSET_MM}`;
+    }
+  }
+  if (
+    value.fillReference !== undefined &&
+    !VALID_CUTOUT_FILL_REFERENCES.includes(
+      value.fillReference as (typeof VALID_CUTOUT_FILL_REFERENCES)[number]
+    )
+  ) {
+    return `cutoutConfig.fillReference must be one of: ${VALID_CUTOUT_FILL_REFERENCES.join(', ')}`;
+  }
+  return null;
+}
+
 function validateCutouts(value: unknown): string | null {
   if (!Array.isArray(value)) return 'cutouts must be an array';
   for (let i = 0; i < value.length; i++) {
@@ -1693,6 +1721,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.cutouts !== undefined) {
     const cutoutsErr = validateCutouts(params.cutouts);
     if (cutoutsErr) return validationError('INVALID_PARAMS', cutoutsErr);
+  }
+
+  if (params.cutoutConfig !== undefined) {
+    const cfgErr = validateCutoutConfig(params.cutoutConfig);
+    if (cfgErr) return validationError('INVALID_PARAMS', cfgErr);
   }
 
   if (params.meshAssets !== undefined || Array.isArray(params.cutouts)) {
