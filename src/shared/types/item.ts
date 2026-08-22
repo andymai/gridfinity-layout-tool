@@ -9,10 +9,11 @@
  * NOTE: `GridfinityItem` / `ItemKind` are DESIGNER-scoped. The layout domain's
  * placeable unit remains `Bin` — do not reuse `ItemKind` for layout entities.
  */
+import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { BinParams, FeatureColorConfig } from '@/shared/types/bin';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 
-export type ItemKind = 'bin' | 'toolRack' | 'importedMesh';
+export type ItemKind = 'bin' | 'toolRack' | 'importedMesh' | 'assembly';
 
 /**
  * The baseplate-mating subset shared by every kind. For bins this is a
@@ -97,7 +98,8 @@ export interface ImportedMeshStructure {
   readonly sourceFileName?: string;
 }
 
-export type ItemStructure = BinStructure | ToolRackStructure | ImportedMeshStructure;
+export type ItemStructure =
+  BinStructure | ToolRackStructure | ImportedMeshStructure | AssemblyStructure;
 
 export interface GridfinityItem {
   readonly envelope: ItemEnvelope;

@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Przegródki siatki",
   "binDesigner.interiorSummary": "{count} przegroda/przegród",
   "binDesigner.invalidDesignFile": "Nieprawidłowy plik projektu",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Uchwyt na narzędzia zbudowany z części na podstawie Gridfinity",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Własny bin do przechowywania Gridfinity",
   "binDesigner.itemKind.importedMesh": "Zaimportowany bin",

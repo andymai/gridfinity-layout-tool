@@ -31,15 +31,16 @@ const envelope: ItemEnvelope = {
 };
 
 describe('item descriptor registry', () => {
-  it('registers bin, toolRack, and importedMesh', () => {
+  it('registers bin, toolRack, importedMesh, and assembly', () => {
     expect(hasItemDescriptor('bin')).toBe(true);
     expect(hasItemDescriptor('toolRack')).toBe(true);
     expect(hasItemDescriptor('importedMesh')).toBe(true);
+    expect(hasItemDescriptor('assembly')).toBe(true);
     expect(
       listItemDescriptors()
         .map((d) => d.kind)
         .sort()
-    ).toEqual(['bin', 'importedMesh', 'toolRack']);
+    ).toEqual(['assembly', 'bin', 'importedMesh', 'toolRack']);
   });
 
   it('throws on an unregistered kind', () => {

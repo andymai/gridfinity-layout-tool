@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Mřížkové přepážky",
   "binDesigner.interiorSummary": "{count} přihrádek",
   "binDesigner.invalidDesignFile": "Neplatný soubor návrhu",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Držák na nářadí sestavený z dílů na základně Gridfinity",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Vlastní úložný bin Gridfinity",
   "binDesigner.itemKind.importedMesh": "Importovaný bin",

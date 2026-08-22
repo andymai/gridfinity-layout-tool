@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Сітка розділювачів",
   "binDesigner.interiorSummary": "{count} відсіків",
   "binDesigner.invalidDesignFile": "Недійсний файл дизайну",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Тримач інструментів, зібраний з деталей на основі Gridfinity",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Власний контейнер Gridfinity",
   "binDesigner.itemKind.importedMesh": "Імпортований контейнер",

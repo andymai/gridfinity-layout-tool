@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "그리드 칸막이",
   "binDesigner.interiorSummary": "칸 {count}개",
   "binDesigner.invalidDesignFile": "잘못된 디자인 파일",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Gridfinity 베이스 위에 부품을 조립해 만드는 공구 홀더",
   "binDesigner.itemKind.bin": "수납통",
   "binDesigner.itemKind.bin.description": "맞춤 Gridfinity 수납통",
   "binDesigner.itemKind.importedMesh": "가져온 수납통",

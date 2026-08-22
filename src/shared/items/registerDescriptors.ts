@@ -4,6 +4,7 @@
  * picker). Importing it has the side effect of populating the descriptor
  * registry — keep it free of React and OCCT.
  */
+import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
 import { binDescriptor } from '@/shared/items/bin/descriptor';
 import { importedMeshDescriptor } from '@/shared/items/importedMesh/descriptor';
 import { registerItemDescriptor } from '@/shared/items/registry';
@@ -17,6 +18,7 @@ export function registerItemDescriptors(): void {
   registerItemDescriptor(binDescriptor);
   registerItemDescriptor(toolRackDescriptor);
   registerItemDescriptor(importedMeshDescriptor);
+  registerItemDescriptor(assemblyDescriptor);
 }
 
 registerItemDescriptors();

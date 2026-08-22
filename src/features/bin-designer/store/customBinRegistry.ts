@@ -268,7 +268,9 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     ...(typeof fractionalEdgeManualX === 'boolean' ? { fractionalEdgeManualX } : {}),
     ...(typeof fractionalEdgeManualY === 'boolean' ? { fractionalEdgeManualY } : {}),
     ...(typeof halfSockets === 'boolean' ? { halfSockets } : {}),
-    ...(kind === 'bin' || kind === 'toolRack' || kind === 'importedMesh' ? { kind } : {}),
+    ...(kind === 'bin' || kind === 'toolRack' || kind === 'importedMesh' || kind === 'assembly'
+      ? { kind }
+      : {}),
     ...(typeof assembledRiseMm === 'number' &&
     Number.isFinite(assembledRiseMm) &&
     assembledRiseMm > 0

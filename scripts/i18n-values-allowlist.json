@@ -89,6 +89,7 @@
     "binDesigner.handles.summary",
     "binDesigner.interior.bento.title",
     "binDesigner.interiorSolid",
+    "binDesigner.itemKind.assembly",
     "binDesigner.knifeRest.style",
     "binDesigner.labelColor",
     "binDesigner.layout",

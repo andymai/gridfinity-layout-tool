@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Rutnätsavdelare",
   "binDesigner.interiorSummary": "{count} fack",
   "binDesigner.invalidDesignFile": "Ogiltig designfil",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Verktygshållare byggd av delar på en Gridfinity-bas",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Anpassad Gridfinity-förvaringslåda",
   "binDesigner.itemKind.importedMesh": "Importerad låda",

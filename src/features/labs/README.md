@@ -38,6 +38,7 @@ Internal status enum values → UI badge labels: `experimental` → "Early acces
 | `item_kinds`            | `experimental`  | Non-bin items (tool racks) that sit on a baseplate                                            |
 | `community_fits_gap`    | `experimental`  | Select a layout gap and browse community designs that fit it                                  |
 | `sliding_tray`          | `experimental`  | Rail-and-tray sliding insert in the bin designer's Walls section                              |
+| `workshop`              | `experimental`  | Part-based Workshop builder (coming soon; no UI yet)                                          |
 | `community_showcase`    | `preview`       | Publish and remix bin designs in the community showcase                                       |
 | `drawer_shapes`         | `graduated`     | Non-rectangular drawer shapes (L-shapes, notches, cut corners)                                |
 | `bin_designer`          | `graduated`     | Custom bin designer                                                                           |

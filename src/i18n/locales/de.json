@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Rastereinteilung",
   "binDesigner.interiorSummary": "{count} Fach/Fächer",
   "binDesigner.invalidDesignFile": "Ungültige Design-Datei",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Werkzeughalter aus Teilen auf einer Gridfinity-Basis",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Individueller Gridfinity-Aufbewahrungsbehälter",
   "binDesigner.itemKind.importedMesh": "Importierter Behälter",

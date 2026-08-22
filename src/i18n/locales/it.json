@@ -1041,6 +1041,8 @@
   "binDesigner.interior.standard.title": "Divisori a griglia",
   "binDesigner.interiorSummary": "{count} scomparti",
   "binDesigner.invalidDesignFile": "File di design non valido",
+  "binDesigner.itemKind.assembly": "Workshop",
+  "binDesigner.itemKind.assembly.description": "Portautensili costruito con parti su una base Gridfinity",
   "binDesigner.itemKind.bin": "Bin",
   "binDesigner.itemKind.bin.description": "Bin portaoggetti Gridfinity personalizzato",
   "binDesigner.itemKind.importedMesh": "Contenitore importato",
