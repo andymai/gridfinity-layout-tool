@@ -30,7 +30,14 @@ import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { boundingBox, isSolidThrough, meshTopologyStats } from './__kernel-tests__/meshAssertions';
 import { seatDepth } from './__kernel-tests__/binSeating';
-import type { FootLattice } from '@/shared/types/bin';
+import {
+  DETACHABLE_PIN_HOLE_DIAMETER_MM,
+  DETACHABLE_PIN_LEAD_IN_MM,
+  DETACHABLE_PIN_TARGET_ENGAGEMENT_MM,
+  detachableFeetFloorMm,
+  detachablePinEngagementMm,
+  type FootLattice,
+} from '@/shared/types/bin';
 
 import type { DetachableFeetGeometry, DetachableFeetOptions } from './detachableFeetBuilder';
 
@@ -91,11 +98,27 @@ function feetOf(over: Partial<DetachableFeetOptions> = {}): DetachableFeetGeomet
     placements: [CORNER_L],
     armMm: ARM,
     pinDiameterMm: PIN,
-    pinHoleDiameterMm: PIN,
+    pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
     floorThicknessMm: FLOOR,
     forExport: true,
     ...over,
   });
+}
+
+/**
+ * Z of the interior floor surface, probed at the bin's centre — not `minZ`, and
+ * not the underside: below a 1mm wall the body reaches further down, so only the
+ * floor's TOP is where the arithmetic says.
+ */
+function interiorFloorZ(m: MeshData): number {
+  const { minZ, maxZ } = boundingBox(m.vertices);
+  let inFloor = false;
+  for (let z = minZ; z < maxZ; z += 0.05) {
+    const solid = isSolidThrough(m, 0, 0, z, z + 0.04);
+    if (solid) inFloor = true;
+    else if (inFloor) return z;
+  }
+  return maxZ;
 }
 
 /** Extreme coordinate on one axis among vertices sitting at `z`. */
@@ -149,6 +172,56 @@ describe('detachable foot geometry', () => {
       expect(box.maxZ).toBeCloseTo(FLOOR - MEMBRANE, 4);
       expect(box.maxZ).toBeLessThan(FLOOR);
       expect(box.minZ).toBeCloseTo(-5, 4);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles?.delete();
+    }
+  });
+
+  /**
+   * The one dimension every other check here is blind to: a pin wider than its
+   * hole is still a closed solid of the right height, with its holes in place.
+   */
+  it('never exceeds its stated diameter anywhere along a pin', () => {
+    const { feet, pinHoles } = feetOf();
+    try {
+      const m = meshOf(feet[0]);
+      const pins = footPinPositions(CORNER_L, ARM, PIN);
+      // Above the foot's top face is pin territory alone.
+      let widest = 0;
+      for (let i = 0; i < m.vertices.length; i += 3) {
+        if (m.vertices[i + 2] <= 1e-6) continue;
+        let nearest = Infinity;
+        for (const pin of pins) {
+          nearest = Math.min(nearest, Math.hypot(m.vertices[i] - pin.x, m.vertices[i + 1] - pin.y));
+        }
+        widest = Math.max(widest, nearest);
+      }
+      expect(widest * 2).toBeLessThanOrEqual(PIN + 1e-4);
+      // And reaches it: the bound alone would pass an undersized pin.
+      expect(widest * 2).toBeCloseTo(PIN, 3);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles?.delete();
+    }
+  });
+
+  it('tapers each pin tip so three pins can enter three holes at once', () => {
+    const { feet, pinHoles } = feetOf();
+    try {
+      const m = meshOf(feet[0]);
+      const pins = footPinPositions(CORNER_L, ARM, PIN);
+      const { maxZ } = boundingBox(m.vertices);
+      let tipRadius = 0;
+      for (let i = 0; i < m.vertices.length; i += 3) {
+        if (Math.abs(m.vertices[i + 2] - maxZ) > 1e-4) continue;
+        for (const pin of pins) {
+          const d = Math.hypot(m.vertices[i] - pin.x, m.vertices[i + 1] - pin.y);
+          if (d < PIN) tipRadius = Math.max(tipRadius, d);
+        }
+      }
+      expect(tipRadius).toBeGreaterThan(0);
+      expect(tipRadius * 2).toBeLessThan(PIN - DETACHABLE_PIN_LEAD_IN_MM);
     } finally {
       feet.forEach((f) => f.delete());
       pinHoles?.delete();
@@ -332,6 +405,7 @@ describe('a bin built with detachable feet', () => {
     const { minZ } = boundingBox(m.vertices);
     const resolved = resolveDetachableFeet(binParams('detachable'));
     expect(resolved.placements.length).toBe(4);
+    const floor = detachableFeetFloorMm(FLOOR);
 
     for (const foot of resolved.placements) {
       for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
@@ -339,11 +413,28 @@ describe('a bin built with detachable feet', () => {
         expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.05, minZ + 0.3)).toBe(false);
         // ...and the membrane above it is solid, so nothing reaches the
         // interior — where the scoop ramp, dividers and floor pattern live.
-        expect(isSolidThrough(m, pin.x, pin.y, minZ + FLOOR - MEMBRANE + 0.05, minZ + FLOOR)).toBe(
+        expect(isSolidThrough(m, pin.x, pin.y, minZ + floor - MEMBRANE + 0.05, minZ + floor)).toBe(
           true
         );
       }
     }
+  });
+
+  it('spends the thicker floor on the pin, not on the membrane', () => {
+    const m = bin('detachable');
+    const { minZ } = boundingBox(m.vertices);
+    const resolved = resolveDetachableFeet(binParams('detachable'));
+    const floor = detachableFeetFloorMm(FLOOR);
+    expect(floor).toBeGreaterThan(FLOOR);
+
+    const pin = footPinPositions(resolved.placements[0], resolved.armMm, resolved.pinDiameterMm)[0];
+    // Open to the membrane, so the extra floor is engagement not dead material.
+    expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.05, minZ + floor - MEMBRANE - 0.05)).toBe(
+      false
+    );
+    expect(detachablePinEngagementMm(floor)).toBeGreaterThanOrEqual(
+      DETACHABLE_PIN_TARGET_ENGAGEMENT_MM
+    );
   });
 });
 
@@ -469,15 +560,18 @@ describe('a floor too thin to hold a pin', () => {
         base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
       };
       const m = generateBin(params, undefined, true);
-      const { minZ } = boundingBox(m.vertices);
       const resolved = resolveDetachableFeet(params);
+      const top = interiorFloorZ(m);
       for (const foot of resolved.placements) {
         for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
           // The WHOLE membrane, not a sliver at the very top: a probe that thin
           // passes while a hole eats almost all of the band it is meant to
           // protect, which is the invariant the blind holes exist for.
-          const top = minZ + wallThickness;
           expect(isSolidThrough(m, pin.x, pin.y, top - MEMBRANE, top)).toBe(true);
+          const reach = detachablePinEngagementMm(detachableFeetFloorMm(wallThickness));
+          expect(
+            isSolidThrough(m, pin.x, pin.y, top - MEMBRANE - reach + 0.1, top - MEMBRANE - 0.1)
+          ).toBe(false);
         }
       }
     }

@@ -25,7 +25,11 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import { hasDetachableFeet, DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
+import {
+  hasDetachableFeet,
+  detachableFeetFloorMm,
+  DETACHABLE_PIN_HOLE_DIAMETER_MM,
+} from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import { footCellCentre, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { buildDetachableFeet } from './detachableFeetBuilder';
@@ -61,7 +65,7 @@ function buildFeetSolids(
     armMm: resolved.armMm,
     pinDiameterMm: resolved.pinDiameterMm,
     pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
-    floorThicknessMm: params.wallThickness,
+    floorThicknessMm: detachableFeetFloorMm(params.wallThickness),
     screw: resolved.screw,
     magnet: resolved.magnet
       ? {

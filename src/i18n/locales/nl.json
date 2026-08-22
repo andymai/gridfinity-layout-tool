@@ -878,7 +878,7 @@
   "binDesigner.designName": "Design naam",
   "binDesigner.designs": "Ontwerpen",
   "binDesigner.detachableFeet": "Afneembare voetjes",
-  "binDesigner.detachableFeet.pinHint": "Probeer eerst de kleinste pen als de grootste niet past",
+  "binDesigner.detachableFeet.pinHint": "Grootste diameter, in een gat van 3 mm. Past een voet niet, kies dan een maat kleiner.",
   "binDesigner.detachableFeet.pinSize": "Pengrootte",
   "binDesigner.detachableFeet.saving": "Gebruikt {percent}% minder materiaal dan vaste voetjes",
   "binDesigner.detachableFeet.savingSuperseded": "De lichtgewicht bodem dekt deze besparing al",

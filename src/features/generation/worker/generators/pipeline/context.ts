@@ -8,6 +8,7 @@
 import type { BinParams } from '@/shared/types/bin';
 import {
   hasDetachableFeet,
+  detachableFeetFloorMm,
   hasDividerLean,
   isUndersideRelief,
   resolveTileFloorThickness,
@@ -85,6 +86,9 @@ export function deriveDimensions(
   // is skipped too, and the export is a flat-bottomed box with no feet part.
   const detachableFeet =
     hasDetachableFeet(params.base) && resolveDetachableFeet(params).placements.length > 0;
+  const floorThickness = detachableFeet
+    ? detachableFeetFloorMm(params.wallThickness)
+    : params.wallThickness;
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only
   // those 1u cells that straddle a half-bin boundary into quarter
@@ -354,6 +358,8 @@ export function deriveDimensions(
       // the floor already punched. Appended only when set, so every interior and
       // non-lite bin keeps a byte-identical key.
       ...(undersideRelief ? ['underside'] : []),
+      // A thicker floor is a different solid from the integral bin's.
+      ...(floorThickness !== params.wallThickness ? [`floor${quantize(floorThickness)}`] : []),
       // A tray bin's shell is socketless, so it must not reuse a socketed bin's
       // cached body. `isFlat` above does not separate them: a custom
       // `heightUnitMm` makes a socketed 13mm x 2u and a tray-bottom 7mm x 3u agree on
@@ -408,6 +414,7 @@ export function deriveDimensions(
     isTrayBottom,
     socketless,
     detachableFeet,
+    floorThickness,
     baseOffsetZ,
     halfSockets,
     socketCellPlan,

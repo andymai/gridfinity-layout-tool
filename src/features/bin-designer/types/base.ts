@@ -251,11 +251,9 @@ export function hasDetachableFeet(base: {
 }
 
 /**
- * True when the floor is thick enough for a pin that holds.
- *
- * The holes are blind, so a pin gets `wallThickness` minus the membrane, and
- * three of the selectable wall thicknesses (0.4, 0.6, 0.8) leave less than
- * {@link DETACHABLE_PIN_MIN_ENGAGEMENT_MM}.
+ * True when the wall is thick enough for the feet to seat. Not about pin depth —
+ * {@link detachableFeetFloorMm} fixes that. Below 1mm the body's floor grows
+ * DOWNWARD past Z=0, the plane the feet's top face assumes, so they stand proud.
  *
  * ADVISORY ONLY: it greys the toggle, and no geometry path consults it. The
  * builder clamps the pin instead, so "does this bin have feet" has exactly one
@@ -268,23 +266,15 @@ export function detachableFeetFitFloor(wallThicknessMm: number): boolean {
 }
 
 /**
- * Pin diameters offered for the press fit, in mm.
- *
- * The hole is always {@link DETACHABLE_PIN_HOLE_DIAMETER_MM}, so this is an
- * interference choice rather than a dimension: which one holds depends on the
- * printer and the filament, and either side of the pair the pin falls out or
- * will not go on.
- *
- * Sized against the joint rather than convention. A pin is a LOCATING feature
- * here: the holes are blind, so engagement is `wallThickness` minus the
- * membrane — 0.8mm on a stock floor — and no diameter makes a joint that
- * shallow hold by depth. All a wider pin buys is a hole that eats the arm it
- * sits in; 3mm leaves 4.7mm of wall each side of a 12.45mm arm.
+ * Pin diameters offered for the press fit, in mm — each the pin's WIDEST
+ * diameter, which is what decides whether it enters
+ * {@link DETACHABLE_PIN_HOLE_DIAMETER_MM}. FDM prints a small hole undersize and
+ * a small pin oversize, so the printed fit runs tighter than these figures.
  */
-export const DETACHABLE_PIN_DIAMETERS_MM = [2.9, 3] as const;
+export const DETACHABLE_PIN_DIAMETERS_MM = [2.7, 2.8, 2.9, 3] as const;
 
 /** Applied when a BaseConfig's `feetPinDiameter` is missing. */
-export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 3;
+export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 2.8;
 
 /** Diameter of the pin holes cut into the underside of the bin floor, in mm. */
 export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 3;
@@ -316,20 +306,38 @@ export function detachablePinEngagementMm(floorThicknessMm: number): number {
   return floorThicknessMm - DETACHABLE_PIN_MEMBRANE_MM;
 }
 
+/** Engagement a detachable-feet bin's floor is sized to give, in mm. */
+export const DETACHABLE_PIN_TARGET_ENGAGEMENT_MM = 2;
+
 /**
- * How much the pin's diameter grows and shrinks again, per layer, in mm.
- *
- * The pin is not a cylinder: stepping its diameter up and back down every layer
- * lets it pop home and stay there without glue. That makes the ridge pitch a
- * function of the SLICER's layer height, which the worker deliberately does not
- * see — so this assumes {@link DETACHABLE_PIN_ASSUMED_LAYER_MM} and the fit
- * degrades on any other layer height rather than failing visibly. Stated here
- * so the assumption is one constant rather than an unwritten one.
+ * Floor thickness a bin gets once its feet come off, in mm. The one mode where
+ * the floor has a job the walls do not share: it is the whole depth a blind pin
+ * hole has.
+ */
+export function detachableFeetFloorMm(wallThicknessMm: number): number {
+  return Math.max(
+    wallThicknessMm,
+    DETACHABLE_PIN_TARGET_ENGAGEMENT_MM + DETACHABLE_PIN_MEMBRANE_MM
+  );
+}
+
+/**
+ * How far the pin is relieved between ridge crests, in mm. Steps INWARD from the
+ * selected diameter, so {@link DETACHABLE_PIN_DIAMETERS_MM} stays the widest
+ * point. Ridge pitch assumes {@link DETACHABLE_PIN_ASSUMED_LAYER_MM}; other
+ * layer heights degrade the fit rather than failing visibly.
  */
 export const DETACHABLE_PIN_RIDGE_STEP_MM = 0.2;
 
 /** The layer height {@link DETACHABLE_PIN_RIDGE_STEP_MM} is pitched for. */
 export const DETACHABLE_PIN_ASSUMED_LAYER_MM = 0.2;
+
+/**
+ * Length of the tapered lead-in at a pin's tip, in mm. An L foot's three pins
+ * must enter at once; with flat tips the first to touch down fixes the foot and
+ * the other two land on floor.
+ */
+export const DETACHABLE_PIN_LEAD_IN_MM = 0.4;
 
 /**
  * Largest gap allowed between adjacent feet, in mm.

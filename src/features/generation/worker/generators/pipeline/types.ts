@@ -111,6 +111,12 @@ export interface BinDimensions {
    */
   readonly detachableFeet: boolean;
   /**
+   * Interior floor thickness, in mm. Equals {@link BinParams.wallThickness}
+   * except under {@link detachableFeet}. Read this wherever the FLOOR is meant;
+   * `wallThickness` still answers everything about the walls.
+   */
+  readonly floorThickness: number;
+  /**
    * True when there is no solid interior floor left — the question every
    * feature that stands ON the floor is actually asking, and the reason it is
    * separate from {@link lightweight}.
