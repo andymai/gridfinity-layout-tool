@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.439.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.3...gridfinity-layout-tool-v4.439.0) (2026-08-22)
+
+
+### Features
+
+* **bin-designer:** make the cutout fill level reachable and floor-anchored ([#3701](https://github.com/andymai/gridfinity-layout-tool/issues/3701)) ([6cd3399](https://github.com/andymai/gridfinity-layout-tool/commit/6cd33998c55caa896dda5d59a631f2824f3791dd))
+
 ## [4.438.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.2...gridfinity-layout-tool-v4.438.3) (2026-08-22)
 
 
