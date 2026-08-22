@@ -7,6 +7,8 @@
 import { useCallback } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { useToastStore } from '@/core/store/toast';
+import { isOk } from '@/core/result';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS, MARGIN_MIN_DETACH_MM } from '@/core/constants';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
@@ -20,7 +22,7 @@ import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls
 import { PaddingSchematic } from './PaddingSchematic';
 import { GridDimensionStepper } from './GridDimensionStepper';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
-import { PADDING_MAX } from '../PaddingStepper';
+import { PADDING_MAX, roundMm } from '../PaddingStepper';
 import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
 import { isMarginSeamStyle } from '@/shared/types/bin';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
@@ -61,6 +63,8 @@ export function DimensionsSection() {
   } = useBaseplatePanelDerived();
   const halfGridMode = useHalfGridModeStore((s) => s.halfGridMode);
   const setHalfGridMode = useHalfGridModeStore((s) => s.setHalfGridMode);
+  const toggleHalfGridMode = useHalfGridModeStore((s) => s.toggleHalfGridMode);
+  const addToast = useToastStore((s) => s.addToast);
 
   const handleSyncToggle = useCallback((checked: boolean) => {
     const layoutState = useLayoutStore.getState().layout;
@@ -232,7 +236,10 @@ export function DimensionsSection() {
         : halfUnitUpgrade(targetDepthMm, gridUnitMmY, depthFit.units);
       const snappedWidth = (widthUpgrade ?? widthFit).units;
       const snappedDepth = (depthUpgrade ?? depthFit).units;
-      if (widthUpgrade !== null || depthUpgrade !== null) setHalfGridMode(true);
+      if (widthUpgrade !== null || depthUpgrade !== null) {
+        setHalfGridMode(true);
+        addToast(t('toast.halfBinModeAutoEnabled'), 'info');
+      }
 
       // Clamp at 0: `slackMm` goes negative when the fit's minimum (1 unit in
       // whole-unit mode, GRID_MIN in half) forced a grid larger than the
@@ -258,7 +265,53 @@ export function DimensionsSection() {
         paddingBack: mm(halfPadDepth),
       });
     },
-    [gridUnitMm, gridUnitMmY, halfGridMode, setHalfGridMode]
+    [addToast, gridUnitMm, gridUnitMmY, halfGridMode, setHalfGridMode, t]
+  );
+
+  /**
+   * The plate page is the only surface that can turn half-grid mode on without
+   * offering a way back: the sidebar toggle and the H shortcut both live on the
+   * layout route, so mm entry would otherwise strand the mode here.
+   *
+   * Turning it off reverses that entry's trade. Each fractional axis floors to a
+   * whole unit and the millimetres it gives up return to the matching padding
+   * pair, so the footprint the user typed survives and the grid re-centers
+   * inside it. A synced plate keeps its dimensions — the layout owns those.
+   */
+  const handleHalfGridToggle = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        setHalfGridMode(true);
+        return;
+      }
+      if (!isOk(toggleHalfGridMode())) {
+        addToast(t('halfBinBlocked.message'), 'error');
+        return;
+      }
+      const layoutState = useLayoutStore.getState().layout;
+      const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      if (current.syncWithLayout !== false) return;
+      const width = current.baseplateWidth ?? layoutState.drawer.width;
+      const depth = current.baseplateDepth ?? layoutState.drawer.depth;
+      const wholeWidth = Math.max(1, Math.floor(width));
+      const wholeDepth = Math.max(1, Math.floor(depth));
+      if (wholeWidth === width && wholeDepth === depth) return;
+      // Clamp at 0: flooring a sub-unit axis raises it to 1 instead, and a grid
+      // that grew has no freed material to hand back.
+      const freedWidth = Math.max(0, (width - wholeWidth) * gridUnitMm) / 2;
+      const freedDepth = Math.max(0, (depth - wholeDepth) * gridUnitMmY) / 2;
+      const grow = (pad: number, by: number): number => Math.min(PADDING_MAX, roundMm(pad + by));
+      useLayoutStore.getState().setBaseplateParams({
+        ...current,
+        baseplateWidth: gridUnits(wholeWidth),
+        baseplateDepth: gridUnits(wholeDepth),
+        paddingLeft: mm(grow(current.paddingLeft, freedWidth)),
+        paddingRight: mm(grow(current.paddingRight, freedWidth)),
+        paddingFront: mm(grow(current.paddingFront, freedDepth)),
+        paddingBack: mm(grow(current.paddingBack, freedDepth)),
+      });
+    },
+    [addToast, gridUnitMm, gridUnitMmY, setHalfGridMode, t, toggleHalfGridMode]
   );
 
   return (
@@ -285,6 +338,11 @@ export function DimensionsSection() {
             disabled={synced}
           />
         </div>
+        <Checkbox
+          checked={halfGridMode}
+          onChange={handleHalfGridToggle}
+          label={t('sidebar.halfBinMode')}
+        />
         {/* Fractional edge position — shown when the effective dimensions are half-unit */}
         {(hasFractionalWidth || hasFractionalDepth) && (
           <div className="space-y-1.5">
