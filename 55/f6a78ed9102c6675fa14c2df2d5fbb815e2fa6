@@ -1,0 +1,151 @@
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.test.tsx
+  s_a36c0b85dfeec4::t_cfc09f375921e6 1-28,30-31,38-45
+  s_a36c0b85dfeec4::t_25a2e1cdf6370b 29,32-37
+src/features/bin-designer/components/Workshop/PlacementGhost.tsx
+  s_a36c0b85dfeec4::t_6a14eb5ed3b578 1-43
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_a36c0b85dfeec4::t_72e712d8229dd6 1-155
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/features/labs/README.md
+  s_a36c0b85dfeec4::t_b7a8a5a1e78b45 41
+src/features/bin-designer/components/Workshop/workshopPlacement.ts
+  s_a36c0b85dfeec4::t_ad1524ea49a3b0 1-104
+src/features/bin-designer/utils/assemblyTree.test.ts
+  s_a36c0b85dfeec4::t_72f1aeddd62cbd 1-97
+src/features/bin-designer/types/uiState.ts
+  s_a36c0b85dfeec4::t_66ba511c84f8e6 203-209
+  s_a36c0b85dfeec4::t_dd7b2663098177 5,210-212
+src/features/bin-designer/components/Workshop/WorkshopCanvas.test.tsx
+  s_a36c0b85dfeec4::t_41d7abe8be75aa 1-8
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/features/bin-designer/types/designerState.ts
+  s_a36c0b85dfeec4::t_dd7b2663098177 352
+  s_a36c0b85dfeec4::t_66ba511c84f8e6 7-12,152-167,351
+src/core/labs/features.ts
+  s_a36c0b85dfeec4::t_4d22123842a93b 260
+src/features/bin-designer/components/Workshop/WorkshopScene.test.tsx
+  s_a36c0b85dfeec4::t_41d7abe8be75aa 1-8
+src/features/bin-designer/components/Workshop/BasePlateMesh.test.tsx
+  s_a36c0b85dfeec4::t_41d7abe8be75aa 1-8
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/features/bin-designer/components/Workshop/PlacementGhost.test.tsx
+  s_a36c0b85dfeec4::t_41d7abe8be75aa 1-8
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_a36c0b85dfeec4::t_4d22123842a93b 58,64,98,325-328
+  s_a36c0b85dfeec4::t_ea7ab31eea0d85 329-331
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_a36c0b85dfeec4::t_15165bf37aa8d8 5
+  s_a36c0b85dfeec4::t_a320471d32d0af 59
+  s_a36c0b85dfeec4::t_139170ec874b65 105,124,146
+  s_a36c0b85dfeec4::t_6358e9efb00be5 1,3-4,6-23,25-58,60-101,103-104,106-120,122-123,125-145,147-149
+  s_a36c0b85dfeec4::t_e1db1b4ca1bbd8 2,24,102,121
+src/features/bin-designer/constants/defaults.ts
+  s_a36c0b85dfeec4::t_dd7b2663098177 311
+  s_a36c0b85dfeec4::t_66ba511c84f8e6 310
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.test.tsx
+  s_a36c0b85dfeec4::t_8358040befc4bd 55-60,186
+  s_a36c0b85dfeec4::t_3406c2f2cdae68 1
+src/features/bin-designer/store/helpers.ts
+  s_a36c0b85dfeec4::t_4e7d3efc03b017 21,119-125,181-192
+src/features/bin-designer/store/slices/historySlice.ts
+  s_a36c0b85dfeec4::t_4e7d3efc03b017 59-65,87-93
+src/features/bin-designer/components/Workshop/proxyGeometry.test.ts
+  s_a36c0b85dfeec4::t_ad1524ea49a3b0 1-54
+src/shared/hooks/useThemeEffect.ts
+  s_a36c0b85dfeec4::t_239ac297c19126 51-54,72-75
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_ef271f930b7ee3 52,89,94,172,177
+  s_a36c0b85dfeec4::t_239ac297c19126 1-51,53-87,92-93,95-171,173-176,178-213
+  s_a36c0b85dfeec4::t_dd7b2663098177 88,90-91
+  s_a36c0b85dfeec4::t_e5789dead81b44 214-216
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_41d7abe8be75aa 1-116
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_a36c0b85dfeec4::t_4bfceef619b958 87,135-141
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_a36c0b85dfeec4::t_dd7b2663098177 6,96-101
+  s_a36c0b85dfeec4::t_66ba511c84f8e6 93-95,102-104
+src/features/bin-designer/hooks/useGeneration.ts
+  s_a36c0b85dfeec4::t_9a3b5ee7e2f781 340-342
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_b9758a1e13563f 2221-2274
+src/features/bin-designer/types/generation.ts
+  s_a36c0b85dfeec4::t_4e7d3efc03b017 12,110-117
+src/features/bin-designer/components/Workshop/BasePlateMesh.tsx
+  s_a36c0b85dfeec4::t_6a14eb5ed3b578 1-79
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/features/bin-designer/store/designer.scenario.workshop.test.ts
+  s_a36c0b85dfeec4::t_72f1aeddd62cbd 1-125
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_a36c0b85dfeec4::t_e1db1b4ca1bbd8 6
+  s_a36c0b85dfeec4::t_6a14eb5ed3b578 1-5,7-86
+src/shared/items/assembly/descriptor.ts
+  s_a36c0b85dfeec4::t_72e712d8229dd6 9,267-290
+  s_a36c0b85dfeec4::t_7421af92365379 145,198,219,266,291-301,341
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/features/bin-designer/components/Workshop/workshopPlacement.test.ts
+  s_a36c0b85dfeec4::t_ad1524ea49a3b0 1-83
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_a36c0b85dfeec4::t_cfc09f375921e6 1-83,85-141,143-158,160-175,177-190
+  s_a36c0b85dfeec4::t_e1db1b4ca1bbd8 142,159,176
+  s_a36c0b85dfeec4::t_4144f050e9b526 84
+src/features/bin-designer/components/Workshop/proxyGeometry.ts
+  s_a36c0b85dfeec4::t_3d4dfd7c408a7f 117
+  s_a36c0b85dfeec4::t_15165bf37aa8d8 247,306,333
+  s_a36c0b85dfeec4::t_652b9a79805918 1-116,118-246,248-305,307-332,334-372
+  s_a36c0b85dfeec4::t_fe8037b9e83591 373-376
+src/features/bin-designer/components/Workshop/WorkshopPanel/partFieldConfig.ts
+  s_a36c0b85dfeec4::t_6358e9efb00be5 1-85
+src/features/bin-designer/components/Workshop/PartProxyMesh.test.tsx
+  s_a36c0b85dfeec4::t_41d7abe8be75aa 1-8
+scripts/i18n-values-allowlist.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 315-319
+src/features/bin-designer/utils/assemblyTree.ts
+  s_a36c0b85dfeec4::t_7421af92365379 1-53,61,65,68-83,87,91,93-103,107-108,110-112,116,119-140
+  s_a36c0b85dfeec4::t_95dd74bc00c321 54-60,62-64,66-67,84-86,88-90,92,104-106,109,113-115,117-118
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_a36c0b85dfeec4::t_41d7abe8be75aa 1-32
+src/features/bin-designer/store/slices/paramSlice/index.ts
+  s_a36c0b85dfeec4::t_66ba511c84f8e6 9,22
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.test.tsx
+  s_a36c0b85dfeec4::t_cfc09f375921e6 1-37
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_b9758a1e13563f 1326,4190-4243
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "55f6a78ed9102c6675fa14c2df2d5fbb815e2fa6",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
