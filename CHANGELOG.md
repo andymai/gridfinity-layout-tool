@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.438.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.437.0...gridfinity-layout-tool-v4.438.0) (2026-08-22)
+
+
+### Features
+
+* **grid-editor:** charge linked designs' real rise into stacking collision ([#3694](https://github.com/andymai/gridfinity-layout-tool/issues/3694)) ([41958dd](https://github.com/andymai/gridfinity-layout-tool/commit/41958dd0be6114646a5303186a446162e5b69821))
+
 ## [4.437.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.436.0...gridfinity-layout-tool-v4.437.0) (2026-08-22)
 
 
