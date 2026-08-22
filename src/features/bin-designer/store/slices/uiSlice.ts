@@ -10,6 +10,7 @@ import type {
   CutoutTarget,
   DesignerTab,
   PickerOverlayState,
+  MeasureMode,
   SplitViewMode,
   SplitPieceMeshEntry,
   DividerTiltPreview,
@@ -17,6 +18,7 @@ import type {
   InteriorCard,
 } from '../../types';
 import type { ColorZone, HoverableZone } from '../../types/featureColors';
+import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 import { parseLipCell } from '../../types/featureColors';
 import { isFractional } from '@/core/constants';
 import { pushHistoryEntry } from '../helpers';
@@ -184,6 +186,11 @@ export function createUISlice(set: Set) {
         // Drop hover focus on every tool transition so the glow doesn't
         // leak from one mode into the next.
         state.ui.hoveredColorZone = null;
+        // Mutual exclusion runs both ways: the measuring tool claims the same
+        // pointer picks, so entering a color tool has to stand it down.
+        if (tool !== null && state.ui.measure.active) {
+          state.ui.measure = { ...state.ui.measure, active: false, points: [] };
+        }
         // Picker only makes sense in eyedropper mode — clear it whenever
         // we transition to anything else (null, swap-pick-first, etc.),
         // otherwise a picker opened during eyedropper would float over the
@@ -197,6 +204,49 @@ export function createUISlice(set: Set) {
     setPickerOverlay: (overlay: PickerOverlayState | null) => {
       set((state) => {
         state.ui.pickerOverlay = overlay;
+      });
+    },
+
+    setMeasureActive: (active: boolean) => {
+      set((state) => {
+        state.ui.measure = { ...state.ui.measure, active, points: [] };
+        if (!active) return;
+        // Both tools claim pointer picks in the preview, so entering this one
+        // exits the other rather than leaving two live at once.
+        state.ui.colorTool = null;
+        state.ui.swapFirstZone = null;
+        state.ui.pickerOverlay = null;
+        state.ui.hoveredColorZone = null;
+      });
+    },
+
+    setMeasureMode: (mode: MeasureMode) => {
+      set((state) => {
+        // Points from the other mode do not carry over: a thickness pair is
+        // two faces of one wall, a point pair is two picks the user chose.
+        state.ui.measure = { ...state.ui.measure, mode, points: [] };
+      });
+    },
+
+    addMeasurePoint: (point: MeasurePoint) => {
+      set((state) => {
+        const current = state.ui.measure.points;
+        // A third pick starts over rather than growing the list, so the tool
+        // never needs an explicit "new measurement" action.
+        const points = current.length >= 2 ? [point] : [...current, point];
+        state.ui.measure = { ...state.ui.measure, points };
+      });
+    },
+
+    setMeasurePoints: (points: readonly MeasurePoint[]) => {
+      set((state) => {
+        state.ui.measure = { ...state.ui.measure, points: [...points] };
+      });
+    },
+
+    clearMeasure: () => {
+      set((state) => {
+        state.ui.measure = { ...state.ui.measure, points: [] };
       });
     },
 

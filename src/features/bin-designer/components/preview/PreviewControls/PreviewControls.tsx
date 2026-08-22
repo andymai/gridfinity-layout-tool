@@ -21,6 +21,7 @@ import {
   IconOrthographic,
   IconAssembled,
   IconExploded,
+  IconMeasure,
 } from './icons';
 
 import type { Projection } from '@/shared/components/preview/CameraRig';
@@ -53,6 +54,9 @@ interface PreviewControlsProps {
   onSplitViewModeChange?: (mode: SplitViewMode) => void;
   /** When true, hides the single-color picker (e.g. multi-color mode active) */
   hideColorPicker?: boolean;
+  /** Whether the 3D measuring tool owns pointer picks (#3696). */
+  measureActive?: boolean;
+  onMeasureToggle?: () => void;
 }
 
 const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
@@ -126,6 +130,8 @@ export function PreviewControls({
   splitViewMode,
   onSplitViewModeChange,
   hideColorPicker,
+  measureActive,
+  onMeasureToggle,
 }: PreviewControlsProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const desktopPickerRef = useRef<HTMLDivElement>(null);
@@ -296,6 +302,28 @@ export function PreviewControls({
             <span>{t('binDesigner.xray')}</span>
           </Button>
 
+          {/* Measure toggle */}
+          {onMeasureToggle && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              touchTarget={false}
+              onClick={onMeasureToggle}
+              className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
+                measureActive
+                  ? 'bg-accent text-on-accent hover:bg-accent'
+                  : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+              }`}
+              title={t('binDesigner.measure.toggle')}
+              aria-label={t('binDesigner.measure.toggleAria')}
+              aria-pressed={measureActive === true}
+            >
+              <IconMeasure />
+              <span>{t('binDesigner.measure.short')}</span>
+            </Button>
+          )}
+
           {/* Projection toggle (perspective ↔ orthographic) */}
           <Button
             type="button"
@@ -445,6 +473,25 @@ export function PreviewControls({
           >
             <IconWireframe />
           </IconButton>
+
+          {/* Measure */}
+          {onMeasureToggle && (
+            <IconButton
+              type="button"
+              touchTarget={false}
+              pressed={measureActive === true}
+              onClick={onMeasureToggle}
+              className={`flex items-center justify-center rounded-none min-w-[44px] min-h-[44px] p-2 transition-colors touch-manipulation ${
+                measureActive
+                  ? 'bg-accent text-on-accent hover:bg-accent'
+                  : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+              }`}
+              title={t('binDesigner.measure.toggle')}
+              aria-label={t('binDesigner.measure.toggleAria')}
+            >
+              <IconMeasure />
+            </IconButton>
+          )}
 
           {/* X-ray */}
           <IconButton

@@ -16,7 +16,7 @@ import { useCutoutSelection } from '@/features/bin-designer/store';
 import { snapToGrid, getRotatedBounds, type AlignmentGuide } from './geometry';
 import { cutoutFitsInMask } from './maskFit';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
-import { collectSnapTargets } from './handlers/rulerHandler';
+import { buildSnapModel } from './handlers/rulerHandler';
 import type { RulerMeasurement } from './handlers/rulerHandler';
 import {
   type InteractionMode,
@@ -91,8 +91,22 @@ export function useCutoutInteraction({
   /** Current zoom level — updated externally so ruler snap threshold adapts */
   const rulerZoomRef = useRef(1);
 
-  /** Memoized snap targets for ruler — only recompute when cutouts array changes */
-  const rulerSnapTargets = useMemo(() => collectSnapTargets(cutouts), [cutouts]);
+  /**
+   * Snap model for the ruler: shape outlines, the interior walls, and the
+   * editor's own snap lattice. Rebuilt when any of those move, which is why it
+   * takes the board frame rather than the cutouts alone (#3696).
+   */
+  const rulerSnapTargets = useMemo(
+    () =>
+      buildSnapModel({
+        cutouts,
+        meshAssets,
+        innerW: binWidth,
+        innerD: binDepth,
+        gridSize: snapEnabled ? gridSize : null,
+      }),
+    [cutouts, meshAssets, binWidth, binDepth, snapEnabled, gridSize]
+  );
 
   const snap = useCallback(
     (v: number) => (snapEnabled ? snapToGrid(v, gridSize) : v),

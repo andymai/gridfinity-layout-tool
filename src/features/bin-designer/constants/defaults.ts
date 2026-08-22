@@ -297,6 +297,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   colorTool: null,
   swapFirstZone: null,
   pickerOverlay: null,
+  measure: { active: false, mode: 'points', points: [] },
   shapeEditorOpen: false,
   selectedDividerKey: null,
   hoveredDividerKey: null,

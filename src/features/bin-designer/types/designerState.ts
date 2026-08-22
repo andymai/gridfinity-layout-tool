@@ -1,5 +1,6 @@
 import type { SaveStatus } from '@/shared/types/saveStatus';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
@@ -53,6 +54,7 @@ import type {
   CutoutTarget,
   ColorTool,
   PickerOverlayState,
+  MeasureMode,
   DividerTiltPreview,
   ExportFileNameConfig,
 } from './uiState';
@@ -332,6 +334,18 @@ export interface DesignerState {
    * multi-color gets disabled.
    */
   setPickerOverlay: (overlay: PickerOverlayState | null) => void;
+  /**
+   * Turn the 3D measuring tool on or off. Turning it on clears any color tool:
+   * both own pointer picks in the preview, and the overlay banner promise is
+   * that only one tool is live at a time.
+   */
+  setMeasureActive: (active: boolean) => void;
+  setMeasureMode: (mode: MeasureMode) => void;
+  /** Place the next point. A pick past the second starts a fresh measurement. */
+  addMeasurePoint: (point: MeasurePoint) => void;
+  /** Record a whole measurement at once, which is what a thickness probe is. */
+  setMeasurePoints: (points: readonly MeasurePoint[]) => void;
+  clearMeasure: () => void;
   /**
    * Pick a zone in the active flow. Behavior depends on `ui.colorTool`:
    *  - `'swap-pick-first'`: store the zone and advance to `'swap-pick-second'`

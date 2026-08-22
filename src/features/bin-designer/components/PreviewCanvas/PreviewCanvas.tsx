@@ -36,6 +36,7 @@ import {
   BinAxisLabels,
   AssembledBinDimensions,
   CompartmentDimensions,
+  MeasureTool,
   BinNameLabel,
   PreviewControls,
   PreviewSkeleton,
@@ -84,6 +85,7 @@ import { CameraRig } from '@/shared/components/preview/CameraRig';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
 import { ColorToolOverlay } from './ColorToolOverlay';
+import { MeasureOverlay } from './MeasureOverlay';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { PipetteIcon } from '@/design-system/Icon';
 import { IconButton } from '@/design-system';
@@ -283,6 +285,13 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // Screen reader description
   const binDescription = describeBin(params);
   const statusAnnouncement = getStatusAnnouncement(wasmStatus, generationStatus, hasMesh, t);
+
+  const measureActive = useDesignerStore((s) => s.ui.measure.active);
+  const setMeasureActive = useDesignerStore((s) => s.setMeasureActive);
+  const toggleMeasure = useCallback(
+    () => setMeasureActive(!measureActive),
+    [measureActive, setMeasureActive]
+  );
 
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
@@ -623,6 +632,11 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 </>
               )}
 
+              {/* Measuring tool. Last in the scene so its overlay draws over the
+                  model; it raycasts the mesh arrays itself rather than joining
+                  the scene, so nothing here reaches the published GLB. */}
+              <MeasureTool />
+
               {/* Orbit controls - Z-up with polar limits, pan disabled on mobile */}
               <OrbitControls
                 ref={controlsRef}
@@ -711,6 +725,8 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               splitViewMode={splitViewMode}
               onSplitViewModeChange={setSplitViewMode}
               hideColorPicker={showColors}
+              measureActive={measureActive}
+              onMeasureToggle={toggleMeasure}
             />
           )}
 
@@ -739,6 +755,10 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               overlay reads `pickerOverlay` from the store, so any tool exit
               clears it without prop drilling. */}
           {showColors && <ColorToolOverlay onClosePicker={handleClosePicker} />}
+
+          {/* Measuring tool chrome. Renders its own null when inactive, and is
+              not gated on `showColors` because the two tools are exclusive. */}
+          <MeasureOverlay />
 
           {/* Touch gesture hint (mobile/tablet first visit) */}
           <TouchHint />
