@@ -49,7 +49,7 @@ import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import type { ViewMode } from '@/shared/components/ViewModeToggle';
 import { downloadDesignAsFile } from '@/features/bin-designer/utils/designJson';
-import { navigateToPlaceInLayout } from '../../hooks/usePlaceBinInLayout';
+import { navigateToPlaceInLayout } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 
 interface DesignListDialogProps {
   open: boolean;

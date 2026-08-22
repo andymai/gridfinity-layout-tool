@@ -1,6 +1,6 @@
 import { DesignGridItem } from '../DesignGridItem';
 import { DesignListItem } from '../DesignListItem';
-import { isLayoutPlaceableDesign } from '../../utils/designKind';
+import { isLayoutPlaceableDesign } from '@/features/bin-designer/utils/designKind';
 import type { SavedDesign } from '../../types';
 
 interface DesignItemsViewProps {

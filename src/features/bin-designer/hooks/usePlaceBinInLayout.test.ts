@@ -55,6 +55,27 @@ describe('navigateToPlaceInLayout', () => {
     window.removeEventListener('popstate', listener);
   });
 
+  it('registers an imported-mesh design in the custom-bin registry', () => {
+    const imported = makeDesign({
+      id: designId('mesh-1'),
+      name: 'Scanned Tray',
+      params: undefined,
+      kind: 'importedMesh',
+      envelope: {
+        width: 3,
+        depth: 2,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+      } as unknown as SavedDesign['envelope'],
+      structure: { kind: 'importedMesh', heightUnits: 5 } as unknown as SavedDesign['structure'],
+    });
+    navigateToPlaceInLayout(imported);
+    const ref = loadRegistry().find((r) => r.id === 'mesh-1');
+    expect(ref?.kind).toBe('importedMesh');
+    expect(ref).toMatchObject({ width: 3, depth: 2, height: 5 });
+    expect(window.location.search).toContain('placeDesignId=mesh-1');
+  });
+
   it('registers a bin design in the custom-bin registry', () => {
     navigateToPlaceInLayout(makeDesign());
     const ref = loadRegistry().find((r) => r.id === 'design-1');

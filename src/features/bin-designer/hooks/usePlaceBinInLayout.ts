@@ -30,19 +30,19 @@ import {
   registryHeightFields,
   registryKnifeRestFields,
   registryOverhangFields,
-} from '../store/customBinRegistry';
-import { designFootprint, isBinDesign } from '../utils/designKind';
-import type { SavedDesign } from '../types';
+} from '@/features/bin-designer/store/customBinRegistry';
+import { designFootprint, isBinDesign } from '@/features/bin-designer/utils/designKind';
+import type { SavedDesign } from '@/features/bin-designer/types';
 
 /**
  * Open the Layout Planner with `design` queued for placement as a linked bin.
  */
 export function navigateToPlaceInLayout(design: SavedDesign): void {
   const { width, depth, height } = designFootprint(design);
+  // A design can exist in IndexedDB without a registry entry (only the
+  // mounted Designer page's save hooks register). Register here so the
+  // placed bin links to an id the planner can resolve.
   if (isBinDesign(design)) {
-    // A design can exist in IndexedDB without a registry entry (only the
-    // mounted Designer page's save hooks register). Register here so the
-    // placed bin links to an id the planner can resolve.
     upsertRegistryEntry({
       id: design.id,
       name: design.name,
@@ -53,6 +53,17 @@ export function navigateToPlaceInLayout(design: SavedDesign): void {
       ...registryHeightFields(design.params),
       ...registryKnifeRestFields(design.params),
       ...registryOverhangFields(design.params),
+      updatedAt: design.updatedAt,
+    });
+  } else if (design.structure?.kind === 'importedMesh') {
+    upsertRegistryEntry({
+      id: design.id,
+      name: design.name,
+      width,
+      depth,
+      height,
+      kind: 'importedMesh',
+      ...registryEdgeFields({}),
       updatedAt: design.updatedAt,
     });
   }

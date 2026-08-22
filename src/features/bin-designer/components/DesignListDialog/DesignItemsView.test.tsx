@@ -78,6 +78,38 @@ describe('DesignItemsView', () => {
     expect(props.onLoad).toHaveBeenCalledWith(designs[1]);
   });
 
+  it('wires Place in layout for a bin design', async () => {
+    const props = baseProps();
+    render(
+      <div>
+        <DesignItemsView variant="grid" {...props} items={[designs[1]]} />
+      </div>
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /place in layout/i }));
+    expect(props.onPlaceInLayout).toHaveBeenCalledWith(designs[1]);
+  });
+
+  it('omits Place in layout for a non-placeable kind', async () => {
+    const toolRack: SavedDesign = {
+      id: designId('design-3'),
+      name: 'Wrench Rack',
+      kind: 'toolRack',
+      thumbnail: null,
+      exportFileNameConfig: null,
+      createdAt: '2026-01-20T10:00:00.000Z',
+      updatedAt: '2026-01-22T12:00:00.000Z',
+    };
+    render(
+      <div>
+        <DesignItemsView variant="grid" {...baseProps()} items={[toolRack]} />
+      </div>
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
+    await screen.findByRole('menu');
+    expect(screen.queryByRole('menuitem', { name: /place in layout/i })).not.toBeInTheDocument();
+  });
+
   it('registers a DOM ref for each rendered item', () => {
     const props = baseProps();
     render(
