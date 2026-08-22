@@ -878,11 +878,11 @@ describe('printEstimates', () => {
    */
   describe('detachable feet — measured ground truth (±5%)', () => {
     const ASSEMBLY_MM3: ReadonlyArray<readonly [number, number, number]> = [
-      [1, 1, 8256],
-      [3, 2, 31088],
-      [2, 4, 39589],
-      [6, 3, 67510],
-      [1, 4, 22736],
+      [1, 1, 10065],
+      [3, 2, 43006],
+      [2, 4, 55575],
+      [6, 3, 104226],
+      [1, 4, 30448],
     ];
 
     for (const [w, d, truth] of ASSEMBLY_MM3) {

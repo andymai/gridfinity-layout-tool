@@ -878,7 +878,7 @@
   "binDesigner.designName": "Nombre del diseño",
   "binDesigner.designs": "Diseños",
   "binDesigner.detachableFeet": "Patas desmontables",
-  "binDesigner.detachableFeet.pinHint": "Prueba primero el pasador pequeño si el grande no encaja",
+  "binDesigner.detachableFeet.pinHint": "Diámetro máximo, para un orificio de 3 mm. Si un pie no encaja, baja una talla.",
   "binDesigner.detachableFeet.pinSize": "Tamaño del pasador",
   "binDesigner.detachableFeet.saving": "Usa un {percent} % menos de material que las patas integradas",
   "binDesigner.detachableFeet.savingSuperseded": "La base aligerada ya cubre este ahorro",

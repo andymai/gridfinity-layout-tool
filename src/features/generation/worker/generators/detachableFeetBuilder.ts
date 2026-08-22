@@ -40,7 +40,11 @@ import {
   footPinPositions,
   type FootPlacement,
 } from '@/shared/utils/detachableFeetPlan';
-import { DETACHABLE_PIN_RIDGE_STEP_MM, detachablePinEngagementMm } from '@/shared/types/bin';
+import {
+  DETACHABLE_PIN_LEAD_IN_MM,
+  DETACHABLE_PIN_RIDGE_STEP_MM,
+  detachablePinEngagementMm,
+} from '@/shared/types/bin';
 
 /** How far a clip box overshoots the cell it trims, so no face is coplanar. */
 const CLIP_MARGIN = 2;
@@ -122,17 +126,26 @@ function coveredCorners(
 }
 
 /**
- * A pin, as a stack of alternating radii.
+ * A pin, as a stack of alternating radii under a tapered tip.
  *
- * The diameter steps up and back down every layer so the pin ratchets home and
- * stays without glue. Sections land every half-ridge, which is what puts a
- * ridge crest in the middle of each printed layer rather than on the boundary
- * between two.
+ * Steps IN from `diameterMm` rather than out past it, so the pin is never wider
+ * than the diameter the caller asked for. Sections land every half-ridge, which
+ * puts a crest mid-layer rather than on the boundary between two.
  */
 function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): Shape3D {
   const r = diameterMm / 2;
-  const crest = r + DETACHABLE_PIN_RIDGE_STEP_MM / 2;
   const step = DETACHABLE_PIN_RIDGE_STEP_MM / 2;
+
+  // Too short to carry a ridge: a plain cylinder rather than a degenerate loft.
+  if (heightMm < 2 * step) {
+    return scope.register(
+      translate(scope.register(cylinder(r, heightMm + COPLANAR_OVERLAP)), [0, 0, -COPLANAR_OVERLAP])
+    );
+  }
+
+  const valley = r - DETACHABLE_PIN_RIDGE_STEP_MM;
+  const lead = Math.min(DETACHABLE_PIN_LEAD_IN_MM, heightMm / 3);
+  const ridgeTopZ = heightMm - lead;
   const section = (radius: number, z: number): Sketch =>
     drawCircle(radius).sketchOnPlane('XY', z) as Sketch;
 
@@ -140,24 +153,21 @@ function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): S
   // volumetric overlap rather than two coincident planes. Without it OCCT
   // leaves non-manifold junctions all round every pin — the solid stays closed,
   // so only an edge-manifold check sees it, and a slicer would quietly repair
-  // it into something else.
+  // it into something else. Root at the valley radius: the first layer off the
+  // foot's top face squishes out, so it is the last place for the tight fit.
   const sections: Array<[number, number]> = [
-    [-COPLANAR_OVERLAP, r],
-    [0, r],
+    [-COPLANAR_OVERLAP, valley],
+    [0, valley],
   ];
   let ridge = 0;
-  for (let z = step; z < heightMm - 1e-6; z += step) {
-    sections.push([z, ridge % 2 === 0 ? crest : r]);
+  // Half a step short, so the closing section cannot land on the last ridge and
+  // loft between two coincident circles.
+  for (let z = step; z < ridgeTopZ - step / 2; z += step) {
+    sections.push([z, ridge % 2 === 0 ? r : valley]);
     ridge++;
   }
-  sections.push([heightMm, r]);
-
-  // Too short to carry a ridge: a plain cylinder rather than a degenerate loft.
-  if (sections.length < 4) {
-    return scope.register(
-      translate(scope.register(cylinder(r, heightMm + COPLANAR_OVERLAP)), [0, 0, -COPLANAR_OVERLAP])
-    );
-  }
+  sections.push([ridgeTopZ, valley]);
+  sections.push([heightMm, valley - lead]);
 
   const start = section(sections[0][1], sections[0][0]);
   try {

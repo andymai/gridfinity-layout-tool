@@ -191,7 +191,12 @@ export function buildBinBox(
    * (and lowers the floor footprint) without touching the base sockets, so the
    * overhang region ends up with a flat bottom. Suppressed for polygon masks.
    */
-  overhang?: ResolvedOverhang
+  overhang?: ResolvedOverhang,
+  /**
+   * Interior floor thickness (mm) when it exceeds `wallThickness`. Applied after
+   * the body is built, so all five hollowing paths get it from one place.
+   */
+  floorThickness?: number
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const ov = polygon ? undefined : overhang;
@@ -214,7 +219,10 @@ export function buildBinBox(
     quantize(cutoutTopOffset),
     polygon ? hashMask(cellMask) : 'rect',
     useMultiCavity ? (compartmentCavityKey ?? 'comp') : 'none',
-    ov ? overhangKey(ov) : '0'
+    ov ? overhangKey(ov) : '0',
+    ...(floorThickness !== undefined && floorThickness > wallThickness
+      ? [`floor${quantize(floorThickness)}`]
+      : [])
   );
   const cached = getBoxCache(boxKey);
   if (cached) {
@@ -271,12 +279,32 @@ export function buildBinBox(
     ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + wallThickness)
     : [];
 
+  const raisesFloor = !solid && floorThickness !== undefined && floorThickness > wallThickness;
+
   return withScope((scope: DisposalScope) => {
     const rawBox = sketch(makeFootprint()).extrude(wallHeight);
     // Punch O-shape holes through the outer extrusion. When there are no
     // holes this is a no-op and returns the same shape. `subtractHolesFromSolid`
     // already registers intermediates with the scope via `scope.register`.
     const box = subtractHolesFromSolid(scope, rawBox, outerHoleDrawings, wallHeight);
+
+    /**
+     * The slab overlaps the existing floor top by COPLANAR_MARGIN — merely
+     * meeting that face fuses non-manifold.
+     */
+    const finish = (shape: Shape3D): Shape3D => {
+      if (!raisesFloor) return setBoxCache(boxKey, shape);
+      const slab = scope.register(
+        sketch(makeInnerFootprint(), 'XY', wallThickness - COPLANAR_MARGIN).extrude(
+          floorThickness - wallThickness + COPLANAR_MARGIN
+        )
+      );
+      const fused = unwrap(fuse(shape as ValidSolid, slab as ValidSolid));
+      // Registering the cached shape would queue a delete on what the cache
+      // hands out.
+      if (fused !== shape) scope.register(shape);
+      return setBoxCache(boxKey, fused);
+    };
 
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
@@ -300,7 +328,7 @@ export function buildBinBox(
           const fillHeight = wallHeight - cutoutTopOffset;
           if (cutoutTopOffset <= 0 || fillHeight <= 0) {
             scope.register(box); // unused on the taper path
-            return setBoxCache(boxKey, unwrap(clone(outer)));
+            return finish(unwrap(clone(outer)));
           }
           // The recess spans fillHeight→past the rim. Above the band the wall is
           // prismatic, so a rim-sized inner footprint is exact there; a recess
@@ -335,7 +363,7 @@ export function buildBinBox(
               : rawRecess;
           const body = unwrap(cut(outer as ValidSolid, recess as ValidSolid));
           scope.register(box); // unused on the taper path
-          return setBoxCache(boxKey, body);
+          return finish(body);
         } catch (e: unknown) {
           // Mirror the hollow taper branch: never lose the bin, but surface the
           // regression instead of silently shipping an untapered body.
@@ -364,7 +392,7 @@ export function buildBinBox(
             // Narrow-feature polygon or degenerate inner offset — fall back
             // to the raw solid box so generation never crashes in
             // cutoutTopOffset mode. Mirrors the non-solid polygon branch.
-            return setBoxCache(boxKey, box);
+            return finish(box);
           }
         } else {
           // Rectangular path — brepjs shell is reliable on convex perimeters.
@@ -384,7 +412,7 @@ export function buildBinBox(
         // Guard: if fillHeight or inner dimensions are non-positive, the interior fill
         // would produce degenerate geometry that crashes WASM. Return hollow walls only.
         if (fillHeight <= 0 || (!polygon && (innerW <= 0 || innerD <= 0))) {
-          return setBoxCache(boxKey, hollowWalls);
+          return finish(hollowWalls);
         }
 
         // For polygon masks the offset can collapse on narrow features or
@@ -398,15 +426,15 @@ export function buildBinBox(
             subtractHolesFromSolid(scope, rawFill, innerHoleDrawings, fillHeight)
           );
         } catch {
-          return setBoxCache(boxKey, hollowWalls);
+          return finish(hollowWalls);
         }
         scope.register(hollowWalls); // consumed by fuse
 
         // Combine walls with lowered interior fill
-        return setBoxCache(boxKey, unwrap(fuse(hollowWalls, innerFill)));
+        return finish(unwrap(fuse(hollowWalls, innerFill)));
       }
       // Standard solid mode: full solid block — box goes to cache, NOT registered
-      return setBoxCache(boxKey, box);
+      return finish(box);
     }
 
     // Guard: if wall thickness leaves no interior, return the solid box.
@@ -416,7 +444,7 @@ export function buildBinBox(
       const innerW = outerW - 2 * wallThickness;
       const innerD = outerD - 2 * wallThickness;
       if (innerW <= 0 || innerD <= 0) {
-        return setBoxCache(boxKey, box);
+        return finish(box);
       }
     }
 
@@ -486,7 +514,7 @@ export function buildBinBox(
         // owned by the scope — registering it again would queue a second
         // `delete()` on the same handle.
         scope.register(box);
-        return setBoxCache(boxKey, result);
+        return finish(result);
       } catch (e: unknown) {
         // Defensive only — context.ts is supposed to gate this path with
         // `compartmentCavitiesAreViable` so cuts can't fail in practice.
@@ -525,7 +553,7 @@ export function buildBinBox(
           )
         );
       } catch {
-        return setBoxCache(boxKey, box);
+        return finish(box);
       }
     }
 
@@ -544,7 +572,7 @@ export function buildBinBox(
           offY
         );
         scope.register(box); // unused on the taper path
-        return setBoxCache(boxKey, taperedBody);
+        return finish(taperedBody);
       } catch (e: unknown) {
         // Fall through to the plain shelled box below so the bin is never lost —
         // but surface it (like the multi-cavity fallback) so a taper regression
@@ -562,10 +590,10 @@ export function buildBinBox(
     try {
       result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
     } catch {
-      return setBoxCache(boxKey, box);
+      return finish(box);
     }
     scope.register(box); // consumed by shell
-    return setBoxCache(boxKey, result);
+    return finish(result);
   });
 }
 

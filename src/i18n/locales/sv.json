@@ -878,7 +878,7 @@
   "binDesigner.designName": "Designnamn",
   "binDesigner.designs": "Designer",
   "binDesigner.detachableFeet": "Avtagbara fötter",
-  "binDesigner.detachableFeet.pinHint": "Prova det mindre stiftet först om det större inte passar",
+  "binDesigner.detachableFeet.pinHint": "Största diameter, i ett 3 mm hål. Om en fot inte sitter, välj en storlek mindre.",
   "binDesigner.detachableFeet.pinSize": "Stiftstorlek",
   "binDesigner.detachableFeet.saving": "Använder {percent} % mindre material än inbyggda fötter",
   "binDesigner.detachableFeet.savingSuperseded": "Den lätta basen täcker redan denna besparing",

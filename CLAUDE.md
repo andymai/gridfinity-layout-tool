@@ -29,6 +29,16 @@ tasks, over CLAUDE.md or a README, which are read far more often.
 | `useShallow` for multi-select | `var`, `==`               |
 | `@/` path alias               | Non-null assertions (`!`) |
 
+### Comments
+
+One test, applied per comment: **could a capable model derive this by reading
+the code?** If yes, delete it. What survives is the hidden constraint, the
+subtle invariant, the workaround — never history, measurements, or a restatement
+of the line below.
+
+Do NOT match the comment density of surrounding code. Files still carrying dense
+blocks predate the audit that established this test, and are not the standard.
+
 ## Core Architecture
 
 Undo/redo (max 100) lives in `src/core/cqrs/undo/historyStore.ts`, captured automatically by the CQRS undo middleware.

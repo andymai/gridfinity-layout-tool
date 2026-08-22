@@ -11,7 +11,11 @@
  */
 
 import type { BinParams, LabelTabSupport, WallPatternType } from '@/features/bin-designer/types';
-import { isSocketlessBase, isUndersideRelief } from '@/features/bin-designer/types/base';
+import {
+  detachableFeetFloorMm,
+  isSocketlessBase,
+  isUndersideRelief,
+} from '@/features/bin-designer/types/base';
 import { baseWallHeight } from './binDimensions';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
@@ -214,6 +218,13 @@ function computeBinVolume(params: BinParams): number {
       params.gridUnitMm,
       gridUnitMmY
     );
+    // The thicker floor, or the reported saving counts material the bin gets
+    // back. From `params.wallThickness` because that is what the pipeline
+    // resolves the floor from; `wallThickness` above is a style constant.
+    volume +=
+      Math.max(0, outerW - 2 * wallThickness) *
+      Math.max(0, outerD - 2 * wallThickness) *
+      (detachableFeetFloorMm(params.wallThickness) - params.wallThickness);
   }
 
   // A base-only bin IS feet + floor slab + an optional lip, which is exactly
