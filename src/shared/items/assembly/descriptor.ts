@@ -194,7 +194,7 @@ const partNodeSchema: z.ZodType<AssemblyPartNode> = z.lazy(() =>
   ])
 );
 
-const childrenSchema = z.lazy(() => z.array(partNodeSchema));
+const childrenSchema = z.lazy(() => z.array(partNodeSchema).max(MAX_ASSEMBLY_PARTS));
 
 function countNodes(nodes: readonly AssemblyPartNode[]): number {
   return nodes.reduce((sum, n) => sum + 1 + countNodes(n.children), 0);
@@ -215,7 +215,7 @@ export const assemblySchema: z.ZodType<AssemblyStructure> = z
     schemaVersion: z.literal(1),
     base: baseSchema,
     mirrorAxis: z.enum(['x', 'y']),
-    parts: z.array(partNodeSchema),
+    parts: z.array(partNodeSchema).max(MAX_ASSEMBLY_PARTS),
   })
   .refine((s) => countNodes(s.parts) <= MAX_ASSEMBLY_PARTS, {
     message: `an assembly holds at most ${MAX_ASSEMBLY_PARTS} parts`,
@@ -282,7 +282,8 @@ function isRecord(v: unknown): v is Record<string, unknown> {
  * cannot be made valid. Keeping valid siblings and subtrees is the point —
  * one bad node must not cost a whole build.
  */
-function normalizePartNode(raw: unknown): AssemblyPartNode | null {
+function normalizePartNode(raw: unknown, depth: number): AssemblyPartNode | null {
+  if (depth > MAX_ASSEMBLY_DEPTH) return null;
   if (!isRecord(raw)) return null;
   if (!isAssemblyPartType(raw.type)) return null;
   const array = arraySchema.safeParse(raw.array);
@@ -294,7 +295,10 @@ function normalizePartNode(raw: unknown): AssemblyPartNode | null {
     ...(array.success ? { array: array.data } : {}),
     ...(typeof raw.mirror === 'boolean' ? { mirror: raw.mirror } : {}),
     children: Array.isArray(raw.children)
-      ? raw.children.map(normalizePartNode).filter((n): n is AssemblyPartNode => n !== null)
+      ? raw.children
+          .slice(0, MAX_ASSEMBLY_PARTS)
+          .map((child) => normalizePartNode(child, depth + 1))
+          .filter((n): n is AssemblyPartNode => n !== null)
       : [],
   };
   const parsed = partNodeSchema.safeParse(candidate);
@@ -343,7 +347,10 @@ function migrateAssembly(raw: unknown): AssemblyStructure {
     mirrorAxis: obj.mirrorAxis === 'y' ? ('y' as const) : ('x' as const),
     parts: capParts(
       Array.isArray(obj.parts)
-        ? obj.parts.map(normalizePartNode).filter((n): n is AssemblyPartNode => n !== null)
+        ? obj.parts
+            .slice(0, MAX_ASSEMBLY_PARTS)
+            .map((part) => normalizePartNode(part, 1))
+            .filter((n): n is AssemblyPartNode => n !== null)
         : []
     ),
   };
