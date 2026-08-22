@@ -17,6 +17,7 @@ export {
 export { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 export { BinDimensions, AssembledBinDimensions } from './BinDimensions';
 export { CompartmentDimensions } from './CompartmentDimensions/CompartmentDimensions';
+export { MeasureTool } from './MeasureTool';
 export { BinNameLabel } from '@/shared/components/preview/BinNameLabel';
 export { PreviewControls, type CameraPreset } from './PreviewControls';
 export { type Projection } from '@/shared/components/preview/CameraRig';

@@ -27,6 +27,14 @@ vi.mock('@react-three/fiber', () => ({
     },
     invalidate: vi.fn(),
     size: { width: 800, height: 600 },
+    // The measuring tool registers its listeners on the real canvas element and
+    // raycasts through the shared raycaster, so the stub has to offer both.
+    gl: { domElement: document.createElement('canvas') },
+    raycaster: {
+      setFromCamera: vi.fn(),
+      ray: { origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: -1 } },
+    },
+    controls: null,
   }),
   useFrame: () => {
     /* noop */

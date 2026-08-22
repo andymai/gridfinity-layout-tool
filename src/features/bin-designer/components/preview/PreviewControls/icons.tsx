@@ -137,3 +137,19 @@ export function IconExploded() {
     </svg>
   );
 }
+
+/** Measure: a dimension line with end caps and a tick */
+export function IconMeasure() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 11.5L13 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <path
+        d="M1.6 9.4l2.8 4.2M11.6 2.4l2.8 4.2"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      <circle cx="8" cy="8" r="1.4" fill="currentColor" opacity="0.7" />
+    </svg>
+  );
+}

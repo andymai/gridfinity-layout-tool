@@ -3,6 +3,7 @@ import type { CompartmentConfig } from './compartments';
 import type { InteriorCard } from './interior';
 import type { HistoryEntry, SplitPieceMeshEntry } from './generation';
 import type { OverhangHighlightSide } from './walls';
+import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords
@@ -43,6 +44,20 @@ export type SplitViewMode = 'assembled' | 'exploded';
 export type CutoutTarget = 'bin' | 'lid';
 
 /** UI state for the designer page */
+/** Which quantity the 3D measuring tool reports. */
+export type MeasureMode = 'points' | 'thickness';
+
+export interface MeasureState {
+  /** Whether the tool owns pointer picks in the preview. */
+  readonly active: boolean;
+  readonly mode: MeasureMode;
+  /**
+   * Placed points, world mm. Empty, one (awaiting the second pick), or two.
+   * A third pick starts a new measurement rather than growing the list.
+   */
+  readonly points: readonly MeasurePoint[];
+}
+
 export interface DesignerUIState {
   readonly activeTab: DesignerTab;
   readonly exportDialogOpen: boolean;
@@ -116,6 +131,16 @@ export interface DesignerUIState {
    * orphaned picker after a toolbar toggle or multi-color disable).
    */
   readonly pickerOverlay: PickerOverlayState | null;
+  /**
+   * The 3D measuring tool (#3696). UI state, not params: a measurement is not
+   * part of the design, so it stays out of the share payload and out of undo.
+   *
+   * The points are WORLD millimetres and survive a regeneration on purpose.
+   * Dragging a divider and watching the number move is the workflow the tool
+   * exists for, and silently re-snapping them to the new mesh would change
+   * what was measured without saying so.
+   */
+  readonly measure: MeasureState;
   /**
    * Whether the Custom-shape editor section is expanded. Tracks the toggle
    * independently of the mask because the store auto-clears fully-filled
