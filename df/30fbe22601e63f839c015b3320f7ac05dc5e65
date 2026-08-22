@@ -1,0 +1,69 @@
+src/shared/utils/collision.ts
+  s_c4a3b406d82c2b::t_c5f51dbb88cf91 203
+  s_c4a3b406d82c2b::t_feb4d4ea9233c2 159-162,167-168
+  s_c4a3b406d82c2b::t_65db8cbc333310 32-56,60-65,73,80
+  s_c4a3b406d82c2b::t_f7f9467b577322 143
+  s_c4a3b406d82c2b::t_e37e5375f97c28 31
+src/shared/storage/LinkedRiseRegistration.tsx
+  s_c4a3b406d82c2b::t_32ae482dffbc21 1-51
+src/features/bin-designer/index.ts
+  s_c4a3b406d82c2b::t_bb71594c577978 23-24
+src/shared/storage/LinkedRiseRegistration.test.tsx
+  s_c4a3b406d82c2b::t_d1cad3b5b65dba 1-63
+src/shared/utils/heightUnits.ts
+  s_c4a3b406d82c2b::t_b30769fc3bb17e 77-108
+src/App.tsx
+  s_c4a3b406d82c2b::t_f2b8c0af2d30f1 46
+  s_c4a3b406d82c2b::t_5f1ba3eb517cab 624
+src/shared/hooks/interactions/useStagingDragInteraction.ts
+  s_c4a3b406d82c2b::t_04707956c9a9ec 110
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_c4a3b406d82c2b::t_cfb99150a93504 179
+src/core/cqrs/v2/domain/bin/duplicateBin.ts
+  s_c4a3b406d82c2b::t_280caa6fc2da32 45-52
+src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  s_c4a3b406d82c2b::t_eb8c1b62a0b2b4 169
+  s_c4a3b406d82c2b::t_735751c8bbfe45 94-95
+  s_c4a3b406d82c2b::t_e2241a78204d31 20
+  s_c4a3b406d82c2b::t_e8b41e42c42d19 113
+src/shared/utils/validationPlacement.test.ts
+  s_c4a3b406d82c2b::t_68c622e7598cc5 132-185
+  s_c4a3b406d82c2b::t_517497dc1841a5 1,3,7
+  s_c4a3b406d82c2b::t_017a9230c92446 186-188
+src/shared/utils/heightUnits.test.ts
+  s_c4a3b406d82c2b::t_2ad05fb5ca4cc8 10
+  s_c4a3b406d82c2b::t_028f080d28ecc9 13-48
+src/shared/utils/validationPlacement.ts
+  s_c4a3b406d82c2b::t_9ecdd360be4a2b 16
+  s_c4a3b406d82c2b::t_eb21da1315d58f 42-47
+  s_c4a3b406d82c2b::t_23e941aebaac87 127
+.claude/skills/grid-editor/SKILL.md
+  s_c4a3b406d82c2b::t_8aaea924173577 23
+src/shared/utils/collision.test.ts
+  s_c4a3b406d82c2b::t_60da2f44f3357b 1,11,15
+  s_c4a3b406d82c2b::t_3d3a8a71c810fa 184-255
+src/core/cqrs/v2/domain/bin/addBin.ts
+  s_c4a3b406d82c2b::t_05868ec0d17c97 73-77
+src/core/cqrs/v2/domain/bin/moveBinFromStaging.ts
+  s_c4a3b406d82c2b::t_82fd9f1975e7a7 83
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_c4a3b406d82c2b::t_04707956c9a9ec 244
+src/shared/hooks/interactions/useResizeInteraction.ts
+  s_c4a3b406d82c2b::t_04707956c9a9ec 136-141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "df30fbe22601e63f839c015b3320f7ac05dc5e65",
+  "prompts": {},
+  "sessions": {
+    "s_c4a3b406d82c2b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99849f0b-e287-49ae-b079-b440370877ca",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
