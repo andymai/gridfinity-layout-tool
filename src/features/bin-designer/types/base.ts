@@ -312,14 +312,13 @@ export function detachablePinEngagementMm(floorThicknessMm: number): number {
  * hole has.
  *
  * Taken from the spec's dead space rather than from what the pin wants, so a
- * detachable bin's cavity floor lands where a Gridfinity bin's belongs. Sizing
- * it off the joint instead put the floor 0.4mm past that.
+ * detachable bin's cavity floor lands where a Gridfinity bin's belongs.
  */
 export function detachableFeetFloorMm(wallThicknessMm: number): number {
   return Math.max(wallThicknessMm, GRIDFINITY.BASE_HEIGHT - GRIDFINITY.SOCKET_HEIGHT);
 }
 
-/** What {@link detachableFeetFloorMm} leaves a pin, before the membrane. */
+/** Least engagement a detachable bin gives a pin; a thicker wall gives more. */
 export const DETACHABLE_PIN_TARGET_ENGAGEMENT_MM =
   GRIDFINITY.BASE_HEIGHT - GRIDFINITY.SOCKET_HEIGHT - DETACHABLE_PIN_MEMBRANE_MM;
 
