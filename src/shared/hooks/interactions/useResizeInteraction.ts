@@ -161,7 +161,8 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
               otherBinIds,
               minSizeNow,
               layout.drawer,
-              bin.clearanceHeight
+              bin.clearanceHeight,
+              bin.linkedDesignId
             );
             newRects.set(binId, snapResult.rect);
             if (snapResult.isSnapped) {

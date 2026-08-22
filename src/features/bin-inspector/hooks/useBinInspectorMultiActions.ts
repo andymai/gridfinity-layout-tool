@@ -187,7 +187,14 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
 
       for (const b of binsToMove) {
         const result = canPlaceBin(
-          { x: b.x, y: b.y, width: b.width, depth: b.depth, height: b.height },
+          {
+            x: b.x,
+            y: b.y,
+            width: b.width,
+            depth: b.depth,
+            height: b.height,
+            linkedDesignId: b.linkedDesignId,
+          },
           targetLayerId,
           layout,
           b.id

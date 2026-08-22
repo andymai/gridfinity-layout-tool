@@ -233,6 +233,7 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
       width: p.depth,
       depth: p.width,
       height: p.height,
+      linkedDesignId: p.linkedDesignId,
     }));
     const excludeIds = new Set(pieces.map((p) => p.id));
     const allValid = rotated.every(
@@ -364,6 +365,7 @@ export function handleNudge(e: KeyboardEvent, ctx: KeyboardContext): boolean {
         width: bin.width,
         depth: bin.depth,
         height: bin.height,
+        linkedDesignId: bin.linkedDesignId,
       },
       bin.layerId,
       ctx.layout,

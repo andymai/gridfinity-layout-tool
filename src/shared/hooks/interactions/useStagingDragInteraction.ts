@@ -142,7 +142,8 @@ export function useStagingDragInteraction(
             moveDirX,
             moveDirY,
             step,
-            bin.clearanceHeight
+            bin.clearanceHeight,
+            bin.linkedDesignId
           );
 
           if (snapResult) {

@@ -48,7 +48,14 @@ export function computeAlignedPositions(
     }
 
     const validation = canPlaceBin(
-      { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
+      {
+        x: newX,
+        y: newY,
+        width: bin.width,
+        depth: bin.depth,
+        height: bin.height,
+        linkedDesignId: bin.linkedDesignId,
+      },
       bin.layerId,
       layout,
       bin.id,

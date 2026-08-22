@@ -1,6 +1,7 @@
 import type {
   Bin,
   BinId,
+  DesignId,
   GridUnits,
   HeightUnits,
   LayerId,
@@ -127,7 +128,8 @@ export function snapPosition(
   moveDirX: number,
   moveDirY: number,
   step: number,
-  clearanceHeight?: HeightUnits
+  clearanceHeight?: HeightUnits,
+  linkedDesignId?: DesignId
 ): SnapResult | null {
   // First check if target position is already valid
   const directResult = canPlaceBin(
@@ -138,6 +140,7 @@ export function snapPosition(
       depth: depth as GridUnits,
       height,
       clearanceHeight,
+      linkedDesignId,
     },
     layerId,
     layout,
@@ -167,6 +170,7 @@ export function snapPosition(
         depth: depth as GridUnits,
         height,
         clearanceHeight,
+        linkedDesignId,
       },
       layerId,
       layout,
@@ -224,6 +228,7 @@ export function snapGroupDelta(
           depth: bin.depth,
           height: bin.height,
           clearanceHeight: bin.clearanceHeight,
+          linkedDesignId: bin.linkedDesignId,
         },
         layerId,
         layout,
@@ -280,11 +285,12 @@ export function snapResizeRect(
   excludeBinIds: Set<BinId>,
   step: number,
   drawer: { width: number; depth: number },
-  clearanceHeight?: HeightUnits
+  clearanceHeight?: HeightUnits,
+  linkedDesignId?: DesignId
 ): { rect: Rect; isSnapped: boolean } {
   // If requested rect is already valid, use it directly
   const reqResult = canPlaceBin(
-    { ...requestedRect, height: binHeight, clearanceHeight },
+    { ...requestedRect, height: binHeight, clearanceHeight, linkedDesignId },
     layerId,
     layout,
     excludeBinId,
@@ -358,7 +364,7 @@ export function snapResizeRect(
     );
 
     const result = canPlaceBin(
-      { ...candidateRect, height: binHeight, clearanceHeight },
+      { ...candidateRect, height: binHeight, clearanceHeight, linkedDesignId },
       layerId,
       layout,
       excludeBinId,

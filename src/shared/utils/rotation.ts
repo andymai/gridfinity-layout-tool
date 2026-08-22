@@ -28,6 +28,7 @@ export function validateRotationInPlace(bin: Bin, layout: Layout): RotationResul
     depth: bin.width,
     height: bin.height,
     clearanceHeight: bin.clearanceHeight,
+    linkedDesignId: bin.linkedDesignId,
   };
 
   const validation = canPlaceBin(rotatedRect, bin.layerId, layout, bin.id);
@@ -89,7 +90,8 @@ export function validateRotation(bin: Bin, layout: Layout, maxSearchDistance = 3
     layout,
     bin.id,
     maxSearchDistance,
-    bin.clearanceHeight
+    bin.clearanceHeight,
+    bin.linkedDesignId
   );
 
   if (nearbyPos) {

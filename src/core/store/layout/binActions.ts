@@ -21,7 +21,11 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
         }
 
         const rect = { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
-        const validationResult = canPlaceBin({ ...rect, height: bin.height }, bin.layerId, layout);
+        const validationResult = canPlaceBin(
+          { ...rect, height: bin.height, linkedDesignId: bin.linkedDesignId },
+          bin.layerId,
+          layout
+        );
         if (!validationResult.valid) {
           return err(toPlacementError(validationResult.reason, rect));
         }
@@ -55,7 +59,7 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
       ) {
         const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
         const validationResult = canPlaceBin(
-          { ...rect, height: merged.height },
+          { ...rect, height: merged.height, linkedDesignId: merged.linkedDesignId },
           merged.layerId,
           layout,
           id
@@ -193,7 +197,12 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
       }
 
       const rect = { x: x as GridUnits, y: y as GridUnits, width: bin.width, depth: bin.depth };
-      const validationResult = canPlaceBin({ ...rect, height: layer.height }, layerId, layout, id);
+      const validationResult = canPlaceBin(
+        { ...rect, height: layer.height, linkedDesignId: bin.linkedDesignId },
+        layerId,
+        layout,
+        id
+      );
       if (!validationResult.valid) {
         return err(toPlacementError(validationResult.reason, rect));
       }

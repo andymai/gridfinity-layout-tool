@@ -1,7 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { validateRotation, type RotationResult } from '@/shared/utils/rotation';
+import { describe, it, expect, afterEach } from 'vitest';
+import {
+  validateRotation,
+  validateRotationInPlace,
+  type RotationResult,
+} from '@/shared/utils/rotation';
+import { registerLinkedExcessResolver } from '@/shared/utils/collision';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
-import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 function expectRotationValid(result: RotationResult): Extract<RotationResult, { valid: true }> {
   expect(result.valid).toBe(true);
@@ -276,5 +281,44 @@ describe('validateRotation', () => {
 
       expect(result.valid).toBe(true);
     });
+  });
+});
+
+describe('validateRotationInPlace linked-design excess rise', () => {
+  afterEach(() => {
+    registerLinkedExcessResolver(null);
+  });
+
+  it("charges the rotated bin's linked excess against bins above", () => {
+    registerLinkedExcessResolver((b) => (b.linkedDesignId === 'lidded' ? 2 : 0));
+    const layout = createTestLayout({
+      layers: [
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(6) },
+      ],
+    });
+    const bin = createTestBin({
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(3),
+      linkedDesignId: designId('lidded'),
+    });
+    // Overlaps only the ROTATED footprint, one layer up; the rotated rect
+    // reaches it vertically only when its linked excess is charged.
+    const upper = createTestBin({
+      id: binId('upper'),
+      layerId: layerId('layer2'),
+      x: gridUnits(2),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
+    layout.bins = [bin, upper];
+
+    expect(validateRotationInPlace(bin, layout).valid).toBe(false);
+
+    registerLinkedExcessResolver(null);
+    expect(validateRotationInPlace(bin, layout).valid).toBe(true);
   });
 });
