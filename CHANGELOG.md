@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.440.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.0...gridfinity-layout-tool-v4.440.1) (2026-08-22)
+
+
+### Bug Fixes
+
+* **generation:** give every bin the spec's 7mm dead space ([#3709](https://github.com/andymai/gridfinity-layout-tool/issues/3709)) ([5ebfdf1](https://github.com/andymai/gridfinity-layout-tool/commit/5ebfdf1a89a9eb2baf6e7a021f0ecb0e15015430))
+
 ## [4.440.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.439.0...gridfinity-layout-tool-v4.440.0) (2026-08-22)
 
 
