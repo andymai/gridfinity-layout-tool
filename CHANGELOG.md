@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.440.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.439.0...gridfinity-layout-tool-v4.440.0) (2026-08-22)
+
+
+### Features
+
+* **bin-designer:** add a measuring tool and widen the ruler's snapping ([#3706](https://github.com/andymai/gridfinity-layout-tool/issues/3706)) ([0c2beca](https://github.com/andymai/gridfinity-layout-tool/commit/0c2beca22786937c8e52af1605f3c50e92813dab))
+
 ## [4.439.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.3...gridfinity-layout-tool-v4.439.0) (2026-08-22)
 
 
