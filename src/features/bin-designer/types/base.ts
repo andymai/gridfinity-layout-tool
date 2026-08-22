@@ -306,19 +306,22 @@ export function detachablePinEngagementMm(floorThicknessMm: number): number {
   return floorThicknessMm - DETACHABLE_PIN_MEMBRANE_MM;
 }
 
-export const DETACHABLE_PIN_TARGET_ENGAGEMENT_MM = 2;
-
 /**
  * Floor thickness a bin gets once its feet come off, in mm. The one mode where
  * the floor has a job the walls do not share: it is the whole depth a blind pin
  * hole has.
+ *
+ * Taken from the spec's dead space rather than from what the pin wants, so a
+ * detachable bin's cavity floor lands where a Gridfinity bin's belongs. Sizing
+ * it off the joint instead put the floor 0.4mm past that.
  */
 export function detachableFeetFloorMm(wallThicknessMm: number): number {
-  return Math.max(
-    wallThicknessMm,
-    DETACHABLE_PIN_TARGET_ENGAGEMENT_MM + DETACHABLE_PIN_MEMBRANE_MM
-  );
+  return Math.max(wallThicknessMm, GRIDFINITY.BASE_HEIGHT - GRIDFINITY.SOCKET_HEIGHT);
 }
+
+/** What {@link detachableFeetFloorMm} leaves a pin, before the membrane. */
+export const DETACHABLE_PIN_TARGET_ENGAGEMENT_MM =
+  GRIDFINITY.BASE_HEIGHT - GRIDFINITY.SOCKET_HEIGHT - DETACHABLE_PIN_MEMBRANE_MM;
 
 /**
  * How far the pin is relieved between ridge crests, in mm. Steps INWARD from the
