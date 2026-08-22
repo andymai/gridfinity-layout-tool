@@ -248,10 +248,10 @@ export function MeasureTool() {
         cancelAnimationFrame(hoverFrameRef.current);
         hoverFrameRef.current = 0;
       }
-      // Only hand orbit back if this component took it away; a teardown in the
-      // middle of a scrub still has to release it, which is why the gesture
-      // flag is consulted rather than blindly re-enabling.
-      if (!down.scrub) setControls(true);
+      // Deliberately does NOT touch orbit. This cleanup runs on every
+      // dependency change, not only on unmount, so releasing here would hand
+      // the camera back mid-drag and let it swing under the ruler. The
+      // unmount-only effect below owns the release.
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('pointermove', onPointerMove);
       el.removeEventListener('pointerleave', onPointerLeave);
@@ -259,6 +259,22 @@ export function MeasureTool() {
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [gl, controls, pick, commit, invalidate, clearMeasure, setMeasureActive, setMeasurePoints]);
+
+  // Release orbit if the component goes away mid-scrub, which would otherwise
+  // leave the camera permanently frozen with nothing naming the cause. Empty
+  // deps so this cleanup runs on unmount and never on a re-register; the
+  // controls object is read through a ref because it is not a dependency here.
+  const controlsRef = useRef<unknown>(null);
+  useEffect(() => {
+    controlsRef.current = controls;
+  }, [controls]);
+  useEffect(
+    () => () => {
+      const held = controlsRef.current;
+      if (gestureRef.current.scrub && hasEnabled(held)) held.enabled = true;
+    },
+    []
+  );
 
   // ── Drawing ────────────────────────────────────────────────────────
   // Hover is DERIVED away when the tool is off rather than cleared in an

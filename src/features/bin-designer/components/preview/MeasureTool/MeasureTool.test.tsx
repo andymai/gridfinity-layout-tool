@@ -107,6 +107,7 @@ describe('MeasureTool', () => {
   beforeEach(() => {
     useDesignerStore.setState(useDesignerStore.getInitialState());
     invalidate.mockClear();
+    controls.enabled = true;
   });
 
   it('draws nothing at rest, so an idle tool costs the scene nothing', () => {
@@ -174,6 +175,29 @@ describe('MeasureTool', () => {
 
     pointer('pointerup', 460, 340, { shiftKey: true });
     expect(measure().active).toBe(false);
+  });
+
+  it('hands orbit back if it unmounts mid-scrub', () => {
+    // Otherwise the camera is frozen for good, with nothing on screen naming
+    // the measuring tool as the reason.
+    seedMesh();
+    const { unmount } = render(<MeasureTool />);
+
+    pointer('pointerdown', 400, 300, { shiftKey: true });
+    expect(controls.enabled).toBe(false);
+
+    unmount();
+    expect(controls.enabled).toBe(true);
+  });
+
+  it('keeps orbit suspended for the whole scrub, not just the first frame', () => {
+    seedMesh();
+    render(<MeasureTool />);
+
+    pointer('pointerdown', 400, 300, { shiftKey: true });
+    pointer('pointermove', 430, 320, { shiftKey: true });
+
+    expect(controls.enabled).toBe(false);
   });
 
   it('keeps a finished measurement drawn after the tool is switched off', () => {
