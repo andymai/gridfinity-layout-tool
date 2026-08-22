@@ -3,10 +3,20 @@
  * click the canvas to place), the build tree, the selected part's inspector,
  * and the base/footprint controls.
  */
+import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore } from '@/core/store/settings';
+import { bridgeManager } from '@/shared/generation/bridge';
+import { triggerDownload } from '@/shared/generation/exportUtils';
+import { export3MF } from '@/shared/generation/export';
+import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { isOk } from '@/core/result';
+import { getUserMessage } from '@/core/result';
+import type { GridfinityItem } from '@/shared/types/item';
 import { ASSEMBLY_PART_TYPES } from '@/shared/types/assembly';
 import type { AssemblyPartNode, AssemblyStructure } from '@/shared/types/assembly';
 import { clamp } from '@/shared/utils/math';
@@ -71,17 +81,85 @@ export function WorkshopPanel() {
   const updateAssemblyBase = useDesignerStore((s) => s.updateAssemblyBase);
   const setSelectedAssemblyPartId = useDesignerStore((s) => s.setSelectedAssemblyPartId);
   const setWorkshopPendingPartType = useDesignerStore((s) => s.setWorkshopPendingPartType);
+  const addToast = useToastStore((s) => s.addToast);
+  const [exporting, setExporting] = useState(false);
 
   if (structure?.kind !== 'assembly' || !envelope) return null;
   const assembly: AssemblyStructure = structure;
+
+  const exportBuild = async (format: 'stl' | 'step' | '3mf'): Promise<void> => {
+    const item: GridfinityItem = { envelope, structure: assembly };
+    setExporting(true);
+    const bridge = await bridgeManager.acquire();
+    try {
+      // The worker exports BREP as STL or STEP; 3MF is packaged here from
+      // the STL bytes, same as the imported-mesh panel.
+      const workerFormat = format === 'step' ? 'step' : 'stl';
+      const result = await bridge.exportItem(item, workerFormat);
+      if (format === 'step') {
+        triggerDownload(new Blob([result.data], { type: 'model/step' }), result.fileName);
+        return;
+      }
+      if (format === 'stl') {
+        triggerDownload(new Blob([result.data], { type: 'application/sla' }), result.fileName);
+        return;
+      }
+      const parsed = parseSTLBinary(result.data);
+      if (!isOk(parsed)) throw new Error(getUserMessage(parsed.error));
+      const printSettings = useSettingsStore.getState().settings.printSettings;
+      const blob = export3MF(parsed.value.vertices, parsed.value.normals, {
+        name: result.fileName.replace(/\.stl$/, ''),
+        printSettings: {
+          layerHeight: printSettings.layerHeightMm,
+          infillPercent: printSettings.infillPercent,
+          material: 'PLA',
+          supportRequired: false,
+          estimatedMinutes: 0,
+          estimatedGrams: 0,
+        },
+      });
+      triggerDownload(blob, result.fileName.replace(/\.stl$/, '.3mf'));
+    } catch {
+      addToast(t('workshop.export.failed'), 'error');
+    } finally {
+      bridgeManager.release();
+      setExporting(false);
+    }
+  };
   const selectedNode = selectedId === null ? null : findAssemblyPart(assembly.parts, selectedId);
 
   return (
     <div className="flex h-full flex-col overflow-y-auto" data-testid="workshop-panel">
-      <div className="border-b border-stroke-subtle px-4 py-3">
+      <div className="flex items-center justify-between border-b border-stroke-subtle px-4 py-3">
         <Button variant="ghost" size="sm" onClick={() => newDesign('bin')}>
           {`← ${t('binDesigner.newBin')}`}
         </Button>
+        <div className="flex gap-1">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={exporting}
+            onClick={() => void exportBuild('stl')}
+          >
+            {t('workshop.export.stl')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={exporting}
+            onClick={() => void exportBuild('3mf')}
+          >
+            {t('workshop.export.threeMf')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={exporting}
+            onClick={() => void exportBuild('step')}
+          >
+            {t('workshop.export.step')}
+          </Button>
+        </div>
       </div>
 
       <StickyGroupHeader title={t('workshop.palette.title')} expanded onExpandedChange={() => {}}>
