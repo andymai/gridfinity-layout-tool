@@ -306,7 +306,6 @@ export function detachablePinEngagementMm(floorThicknessMm: number): number {
   return floorThicknessMm - DETACHABLE_PIN_MEMBRANE_MM;
 }
 
-/** Engagement a detachable-feet bin's floor is sized to give, in mm. */
 export const DETACHABLE_PIN_TARGET_ENGAGEMENT_MM = 2;
 
 /**
