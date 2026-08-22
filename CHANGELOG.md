@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.442.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.441.0...gridfinity-layout-tool-v4.442.0) (2026-08-22)
+
+
+### Features
+
+* **workshop:** 3D proxy editor with part placement, stacking, and undo ([#3722](https://github.com/andymai/gridfinity-layout-tool/issues/3722)) ([9bd4764](https://github.com/andymai/gridfinity-layout-tool/commit/9bd476415e8fc3dad303bce5e65658be2738d600))
+
 ## [4.441.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.4...gridfinity-layout-tool-v4.441.0) (2026-08-22)
 
 
