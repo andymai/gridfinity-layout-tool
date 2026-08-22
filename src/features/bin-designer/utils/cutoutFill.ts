@@ -65,24 +65,27 @@ function clampFillHeight(wallHeightMm: number, fillHeightMm: number): number {
 }
 
 /**
- * The `topOffset` a param change should land on, or `undefined` to leave it be.
+ * Fill height (mm) to hold across a param change, or null when nothing is held.
  *
- * Compares the wall height BEFORE and AFTER rather than watching a list of
- * fields, because the wall height is a function of the height, the height unit
- * and the base style at once, and a list would silently miss whichever one was
- * added next. `baseWallHeight` is pure arithmetic, so asking it twice is
- * cheaper than remembering its dependencies.
- *
- * Returns `undefined` for a rim-anchored design so the caller writes nothing at
- * all: rim anchoring IS "leave `topOffset` alone", and that is the default.
+ * Captured as a NUMBER before the change, never as a reference into the params:
+ * `updateBase` mutates `params.base` in place, so a snapshot holding that
+ * object would read the new style back and conclude nothing moved.
  */
-export function reanchorCutoutFill(prev: BinParams, next: BinParams): number | undefined {
-  if (next.cutoutConfig.fillReference !== 'floor') return undefined;
+export function heldCutoutFillMm(params: BinParams): number | null {
+  if (params.cutoutConfig.fillReference !== 'floor') return null;
+  return cutoutFillHeightMm(cutoutWallHeightMm(params), params.cutoutConfig.topOffset);
+}
 
-  const before = cutoutWallHeightMm(prev);
-  const after = cutoutWallHeightMm(next);
-  if (before === after) return undefined;
-
-  const held = cutoutFillHeightMm(before, prev.cutoutConfig.topOffset);
-  return topOffsetForFillHeight(after, held);
+/**
+ * The `topOffset` that restores `heldMm` at the new wall height, or `undefined`
+ * to leave it alone.
+ *
+ * Takes the held height rather than the previous params so it cannot be fooled
+ * by an in-place mutation, and so a rim-anchored design (the default) costs one
+ * property read instead of a snapshot of the whole param tree.
+ */
+export function reanchorCutoutFill(next: BinParams, heldMm: number | null): number | undefined {
+  if (heldMm === null) return undefined;
+  const topOffset = topOffsetForFillHeight(cutoutWallHeightMm(next), heldMm);
+  return topOffset === next.cutoutConfig.topOffset ? undefined : topOffset;
 }

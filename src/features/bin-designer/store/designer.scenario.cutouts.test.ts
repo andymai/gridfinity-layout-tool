@@ -395,6 +395,20 @@ describe('DesignerStore - cutout fill anchoring (#3697)', () => {
     expect(config().topOffset).toBeCloseTo(25, 6);
   });
 
+  it('re-anchors through updateBase, which moves the wall height in place', () => {
+    // The Base panel writes with `Object.assign(state.params.base, partial)`,
+    // so it neither goes through setParam nor leaves a previous object to
+    // compare against. Held as a number before the mutation for that reason.
+    useDesignerStore.getState().setParam('height', 3);
+    setFill(4, 'floor');
+
+    // 3u socketed walls 16mm, so the fill is 12mm. A flat base has no socket
+    // and walls the full 21mm, so the offset has to grow to 9 to hold it.
+    useDesignerStore.getState().updateBase({ style: 'flat' });
+
+    expect(config().topOffset).toBeCloseTo(9, 6);
+  });
+
   it('leaves the offset alone when the change does not move the wall height', () => {
     useDesignerStore.getState().setParam('height', 3);
     setFill(4, 'floor');
