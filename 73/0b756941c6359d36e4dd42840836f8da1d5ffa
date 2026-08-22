@@ -1,0 +1,35 @@
+src/shared/printSettings/standardBinVolume.ts
+  s_65ac4d815d4512::t_e28968f5169530 48-50,52-53
+src/features/generation/worker/generators/undersideRelief.kernel.test.ts
+  s_65ac4d815d4512::t_598fd424bfc99c 26-27
+  s_65ac4d815d4512::t_bef0d227473141 175-187
+  s_5c497b714ed350::t_731f86b47a0cd4 188-210
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_65ac4d815d4512::t_1468e55cea4962 213-216,226-228
+src/features/bin-designer/utils/printEstimates.ts
+  s_65ac4d815d4512::t_ac3e521b399eae 315-318
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "730b756941c6359d36e4dd42840836f8da1d5ffa",
+  "prompts": {},
+  "sessions": {
+    "s_5c497b714ed350": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a696f35-5cea-4799-a7a8-8d6bfaa0432e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_65ac4d815d4512": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2943a70c-6289-4af1-9d7f-5b681b3147f4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
