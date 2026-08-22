@@ -80,7 +80,7 @@ export const moveBinFromStaging = defineCommand({
     // staging, but a grid placement must fit the layer's slot.
     const rect = { x, y, width: bin.width, depth: bin.depth };
     const validationResult = canPlaceBin(
-      { ...rect, height: layer.height },
+      { ...rect, height: layer.height, linkedDesignId: bin.linkedDesignId },
       layerId,
       ctx.aggregate,
       id

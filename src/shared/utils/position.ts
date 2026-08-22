@@ -1,4 +1,13 @@
-import type { Bin, GridUnits, HeightUnits, Layout, Coord, LayerId, BinId } from '@/core/types';
+import type {
+  Bin,
+  DesignId,
+  GridUnits,
+  HeightUnits,
+  Layout,
+  Coord,
+  LayerId,
+  BinId,
+} from '@/core/types';
 import { canPlaceBin } from './validation';
 
 /**
@@ -86,7 +95,8 @@ export function findNearbyValidPosition(
   layout: Layout,
   excludeBinId: BinId,
   maxDistance = 3,
-  clearanceHeight?: HeightUnits
+  clearanceHeight?: HeightUnits,
+  linkedDesignId?: DesignId
 ): NearbyPosition | null {
   // Determine step size based on whether dimensions are fractional (half-bin mode)
   const hasFractional =
@@ -116,6 +126,7 @@ export function findNearbyValidPosition(
         depth: depth as GridUnits,
         height,
         clearanceHeight,
+        linkedDesignId,
       },
       layerId,
       layout,
@@ -195,6 +206,7 @@ export function canSwapBins(binA: Bin, binB: Bin, layout: Layout): SwapCompatibi
       depth: aDepth,
       height: binA.height,
       clearanceHeight: binA.clearanceHeight,
+      linkedDesignId: binA.linkedDesignId,
     },
     binA.layerId,
     layout,
@@ -219,6 +231,7 @@ export function canSwapBins(binA: Bin, binB: Bin, layout: Layout): SwapCompatibi
       depth: binB.depth,
       height: binB.height,
       clearanceHeight: binB.clearanceHeight,
+      linkedDesignId: binB.linkedDesignId,
     },
     binB.layerId,
     layout,

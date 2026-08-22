@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { canPlaceBin } from './validationPlacement';
+import { registerLinkedExcessResolver } from './collision';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import type { HeightUnits, Layout, Rect } from '@/core/types';
-import { binId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 
 const LAYER_1 = layerId('layer1');
 const LAYER_2 = layerId('layer2');
@@ -126,6 +127,63 @@ describe('canPlaceBin', () => {
       layout
     );
     expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
+  });
+
+  describe('linked-design excess rise', () => {
+    afterEach(() => {
+      registerLinkedExcessResolver(null);
+    });
+
+    it('returns blocked_zone when a lower linked design rises past its bin height', () => {
+      registerLinkedExcessResolver((bin) => (bin.linkedDesignId === 'lidded' ? 2 : 0));
+      const layout = makeTwoLayerLayout();
+      // layer1 height = 3; bin height 3 + 2u design excess extends to z = 5 > layer2 start (3)
+      layout.bins = [
+        createTestBin({
+          id: binId('lidded-bin'),
+          width: gridUnits(3),
+          depth: gridUnits(3),
+          height: heightUnits(3),
+          linkedDesignId: designId('lidded'),
+        }),
+      ];
+      const result = canPlaceBin(
+        placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
+        LAYER_2,
+        layout
+      );
+      expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
+    });
+
+    it("counts the candidate's own excess against bins in the layer above", () => {
+      registerLinkedExcessResolver((bin) => (bin.linkedDesignId === 'lidded' ? 2 : 0));
+      const layout = makeTwoLayerLayout();
+      layout.bins = [
+        createTestBin({
+          id: binId('upper'),
+          layerId: LAYER_2,
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
+        }),
+      ];
+      const result = canPlaceBin(
+        {
+          ...placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+          linkedDesignId: designId('lidded'),
+        },
+        LAYER_1,
+        layout
+      );
+      expect(result).toMatchObject({ valid: false, reason: 'collision' });
+
+      const withoutLink = canPlaceBin(
+        placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+        LAYER_1,
+        layout
+      );
+      expect(withoutLink).toEqual({ valid: true });
+    });
   });
 
   it('returns blocked_zone when a tall lower-layer bin protrudes into the target layer', () => {

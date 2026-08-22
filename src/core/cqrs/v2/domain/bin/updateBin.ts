@@ -176,7 +176,7 @@ export const updateBin = defineCommand({
     if (spatial && merged.layerId !== STAGING_ID) {
       const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
       const validationResult = canPlaceBin(
-        { ...rect, height: merged.height },
+        { ...rect, height: merged.height, linkedDesignId: merged.linkedDesignId },
         merged.layerId,
         ctx.aggregate,
         id

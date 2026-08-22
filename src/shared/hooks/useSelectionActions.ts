@@ -91,6 +91,7 @@ export function useSelectionActions() {
           depth: bin.width,
           height: bin.height,
           clearanceHeight: bin.clearanceHeight,
+          linkedDesignId: bin.linkedDesignId,
         },
         bin.layerId,
         layout,
@@ -155,6 +156,7 @@ export function useSelectionActions() {
           depth: bin.depth,
           height: maxHeight,
           clearanceHeight: bin.clearanceHeight,
+          linkedDesignId: bin.linkedDesignId,
         },
         bin.layerId,
         layout,
@@ -203,6 +205,7 @@ export function useSelectionActions() {
             // bin is judged against a height it will never take.
             height: isBinLocked(bin) ? bin.height : targetLayer.height,
             clearanceHeight: bin.clearanceHeight,
+            linkedDesignId: bin.linkedDesignId,
           },
           targetLayerId,
           layout,

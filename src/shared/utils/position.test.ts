@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { areSizeCompatible, canSwapBins, findBinAtPosition } from '@/shared/utils/position';
+import { registerLinkedExcessResolver } from '@/shared/utils/collision';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
-import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 describe('areSizeCompatible', () => {
   it('returns compatible for exact size match', () => {
@@ -336,5 +337,55 @@ describe('findBinAtPosition', () => {
     );
 
     expect(result).toBe(bin2);
+  });
+});
+
+describe('canSwapBins linked-design excess rise', () => {
+  afterEach(() => {
+    registerLinkedExcessResolver(null);
+  });
+
+  it("charges a swapped bin's linked excess at its destination", () => {
+    registerLinkedExcessResolver((b) => (b.linkedDesignId === 'lidded' ? 2 : 0));
+    const layout = createTestLayout({
+      layers: [
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(6) },
+      ],
+    });
+    const binA = createTestBin({
+      id: binId('a'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      linkedDesignId: designId('lidded'),
+    });
+    const binB = createTestBin({
+      id: binId('b'),
+      x: gridUnits(4),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
+    // Sits directly above B's spot; A swapped there rises into it only when
+    // its linked excess is charged.
+    const upper = createTestBin({
+      id: binId('upper'),
+      layerId: layerId('layer2'),
+      x: gridUnits(4),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
+    layout.bins = [binA, binB, upper];
+
+    expect(canSwapBins(binA, binB, layout)).toMatchObject({
+      compatible: false,
+      reason: 'placement_invalid',
+    });
+
+    registerLinkedExcessResolver(null);
+    expect(canSwapBins(binA, binB, layout).compatible).toBe(true);
   });
 });

@@ -43,6 +43,7 @@ import { TabletPanelOverlay, TabletPanelTriggers } from '@/shell/Tablet';
 import { LiveRegion } from '@/shell/LiveRegion';
 import { LocalMutationsProvider } from '@/shared/contexts';
 import { DesignStoreRegistration } from '@/shared/storage/DesignStoreRegistration';
+import { LinkedRiseRegistration } from '@/shared/storage/LinkedRiseRegistration';
 import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
 import { useEngagementNudges } from '@/features/engagement';
@@ -620,6 +621,7 @@ export default function App() {
                 : t('seo.h1')}
       </h1>
       <DesignStoreRegistration />
+      <LinkedRiseRegistration />
       {cloudSyncEnabled && (
         <Suspense fallback={null}>
           <LazySyncSessionMount />

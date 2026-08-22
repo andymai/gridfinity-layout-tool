@@ -29,8 +29,44 @@ export function getLayerZStartResult(
 }
 
 /**
+ * Resolves how far a bin's linked design protrudes past `height + clearance`,
+ * in height units (see `linkedStackExcessUnits`). Registered from the shell
+ * composition root because the data lives in the bin-designer registry, which
+ * this module must not import. Unregistered (or a bin without a link) means
+ * zero excess — the pre-registration unit model.
+ */
+export type LinkedExcessResolver = (bin: Bin) => number;
+
+let linkedExcessResolver: LinkedExcessResolver | null = null;
+let linkedExcessVersion: () => unknown = () => 0;
+
+export function registerLinkedExcessResolver(
+  resolver: LinkedExcessResolver | null,
+  version?: () => unknown
+): void {
+  linkedExcessResolver = resolver;
+  linkedExcessVersion = version ?? ((): unknown => 0);
+  blockedZonesCache = null;
+}
+
+function linkedExcess(bin: Bin): number {
+  if (bin.linkedDesignId === undefined || linkedExcessResolver === null) return 0;
+  const excess = linkedExcessResolver(bin);
+  // The resolver is pluggable, so its output is not trusted: a NaN here would
+  // flow into zEnd and make every vertical-overlap comparison false, silently
+  // disabling collisions and blocked zones.
+  return Number.isFinite(excess) && excess > 0 ? excess : 0;
+}
+
+/**
  * Get the 3D bounding box for a bin with Result-based error handling.
  * Use this when layer existence is not guaranteed.
+ *
+ * The vertical charge is `height` plus the larger of the user-reserved
+ * clearance and the linked design's real excess rise: clearance reserves
+ * airspace for contents, the excess is material above the nominal height (a
+ * lid, extra wall height, a diverged design), and whichever reaches higher is
+ * the obstruction.
  */
 export function getBin3DRectResult(bin: Bin, layers: Layer[]): Result<Rect3D, ValidationError> {
   const zStartResult = getLayerZStartResult(bin.layerId, layers);
@@ -38,13 +74,14 @@ export function getBin3DRectResult(bin: Bin, layers: Layer[]): Result<Rect3D, Va
     return zStartResult;
   }
   const zStart = zStartResult.value;
+  const above = Math.max(bin.clearanceHeight || 0, linkedExcess(bin));
   return ok({
     x: bin.x,
     y: bin.y,
     width: bin.width,
     depth: bin.depth,
     zStart: zStart as HeightUnits,
-    zEnd: (zStart + bin.height + (bin.clearanceHeight || 0)) as HeightUnits,
+    zEnd: (zStart + bin.height + above) as HeightUnits,
   });
 }
 
@@ -107,6 +144,7 @@ let blockedZonesCache: {
   targetLayerId: LayerId;
   bins: Bin[];
   layers: Layer[];
+  riseVersion: unknown;
   result: BlockedZone[];
 } | null = null;
 
@@ -122,12 +160,16 @@ export function getBlockedZones(
 ): BlockedZone[] {
   if (!targetLayerId) return [];
 
-  // Check cache - use reference equality for arrays (Zustand returns same refs when unchanged)
+  // Check cache - use reference equality for arrays (Zustand returns same refs
+  // when unchanged). The rise version covers linked-design excess: a design
+  // re-save or unit change can move zones without touching bins/layers identity.
+  const riseVersion = linkedExcessVersion();
   if (
     blockedZonesCache &&
     blockedZonesCache.targetLayerId === targetLayerId &&
     blockedZonesCache.bins === bins &&
-    blockedZonesCache.layers === layers
+    blockedZonesCache.layers === layers &&
+    blockedZonesCache.riseVersion === riseVersion
   ) {
     return blockedZonesCache.result;
   }
@@ -162,7 +204,7 @@ export function getBlockedZones(
     }
   }
 
-  blockedZonesCache = { targetLayerId, bins, layers, result: blocked };
+  blockedZonesCache = { targetLayerId, bins, layers, riseVersion, result: blocked };
 
   return blocked;
 }

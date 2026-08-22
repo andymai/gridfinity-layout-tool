@@ -133,7 +133,12 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
         );
 
         const result = canPlaceBin(
-          { ...newRect, height: bin.height, clearanceHeight: bin.clearanceHeight },
+          {
+            ...newRect,
+            height: bin.height,
+            clearanceHeight: bin.clearanceHeight,
+            linkedDesignId: bin.linkedDesignId,
+          },
           activeLayerId,
           layout,
           binId,
@@ -156,7 +161,8 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
               otherBinIds,
               minSizeNow,
               layout.drawer,
-              bin.clearanceHeight
+              bin.clearanceHeight,
+              bin.linkedDesignId
             );
             newRects.set(binId, snapResult.rect);
             if (snapResult.isSnapped) {

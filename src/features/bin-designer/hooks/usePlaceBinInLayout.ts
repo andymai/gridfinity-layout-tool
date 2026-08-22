@@ -17,7 +17,7 @@ import { useToastStore } from '@/core/store/toast';
 import { commandBus, createCqrsMutations } from '@/core/cqrs';
 import { isOk } from '@/core/result';
 import { gridUnits, heightUnits } from '@/core/types';
-import type { GridUnits, HeightUnits, LayerId, Layout } from '@/core/types';
+import type { DesignId, GridUnits, HeightUnits, LayerId, Layout } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { useTranslation } from '@/i18n';
@@ -91,7 +91,8 @@ function findFirstFit(
   layerId: LayerId,
   width: number,
   depth: number,
-  height: HeightUnits
+  height: HeightUnits,
+  linkedDesignId: DesignId | undefined
 ): FitRect | null {
   const orientations =
     width === depth
@@ -109,7 +110,7 @@ function findFirstFit(
           width: gridUnits(orientation.width),
           depth: gridUnits(orientation.depth),
         };
-        if (canPlaceBin({ ...rect, height }, layerId, layout).valid) {
+        if (canPlaceBin({ ...rect, height, linkedDesignId }, layerId, layout).valid) {
           return rect;
         }
       }
@@ -165,7 +166,7 @@ function placeBinFromUrl(t: TFunction): void {
     ...(ref === undefined ? {} : { linkedDesignId: ref.id }),
   };
 
-  const fit = findFirstFit(layout, layerId, width, depth, height);
+  const fit = findFirstFit(layout, layerId, width, depth, height, ref?.id);
   if (fit !== null) {
     const result = mutations.addBin({ ...common, layerId, ...fit });
     if (isOk(result)) {

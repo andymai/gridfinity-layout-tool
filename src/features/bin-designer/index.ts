@@ -20,6 +20,8 @@ export {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  loadRegistry,
+  subscribeToRegistry,
 } from './store';
 
 // --- Storage ---

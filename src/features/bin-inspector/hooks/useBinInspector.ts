@@ -275,7 +275,14 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       // Validate placement on target layer using bin's actual height (no auto-adjustment)
       const result = canPlaceBin(
-        { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
+        {
+          x: bin.x,
+          y: bin.y,
+          width: bin.width,
+          depth: bin.depth,
+          height: bin.height,
+          linkedDesignId: bin.linkedDesignId,
+        },
         targetLayerId,
         layout,
         bin.id
@@ -461,7 +468,12 @@ export function useBinInspector(): UseBinInspectorReturn {
     (size: { width: number; depth: number; height: number }): boolean => {
       if (!bin || isBinLocked(bin)) return false;
       const rect = resolveSuggestedRect(size);
-      return canPlaceBin({ x: bin.x, y: bin.y, ...rect }, bin.layerId, layout, bin.id).valid;
+      return canPlaceBin(
+        { x: bin.x, y: bin.y, linkedDesignId: bin.linkedDesignId, ...rect },
+        bin.layerId,
+        layout,
+        bin.id
+      ).valid;
     },
     [bin, layout, resolveSuggestedRect]
   );
