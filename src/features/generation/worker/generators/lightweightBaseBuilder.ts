@@ -210,6 +210,10 @@ export function buildLightweightBase(
     // Build a vertical prism over the whole base Z-range from a set of footprint
     // polygons. Returns null (and the caller skips that clip) on any degenerate
     // input rather than sinking the build.
+    //
+    // Reaches the FLOOR top, not the wall's: it clips the opening tools, so a
+    // prism that stopped short would truncate them inside the floor and re-seal
+    // every cup it was only meant to narrow.
     const buildClipPrism = (drawings: readonly Drawing[] | undefined): Shape3D | null => {
       if (!drawings || drawings.length === 0) return null;
       try {
@@ -219,7 +223,9 @@ export function buildLightweightBase(
               drawings.map(
                 (d) =>
                   scope.register(
-                    sketch(d, 'XY', -SOCKET_HEIGHT - 1).extrude(SOCKET_HEIGHT + wallThickness + 2)
+                    sketch(d, 'XY', -SOCKET_HEIGHT - 1).extrude(
+                      SOCKET_HEIGHT + (floorThickness ?? wallThickness) + 2
+                    )
                   ) as ValidSolid
               )
             )

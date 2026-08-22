@@ -312,8 +312,10 @@ function solidFillVolume(
   const wallHeight = baseWallHeight(params.base, params.height * params.heightUnitMm);
   // From the FLOOR's top, not the wall's: the `base` component already prices
   // material up to `binFloorMm`, so a fill starting at `wallThickness` counts
-  // the difference twice.
-  const floorThickness = binFloorMm(wallThickness);
+  // the difference twice. Resolved from `params.wallThickness` rather than the
+  // style constant above, because that is what the pipeline resolves it from —
+  // they part company once a wall exceeds the spec floor.
+  const floorThickness = binFloorMm(params.wallThickness);
   const fillHeight = wallHeight - floorThickness - Math.max(0, params.cutoutConfig.topOffset);
   if (fillHeight <= 0) return 0;
 

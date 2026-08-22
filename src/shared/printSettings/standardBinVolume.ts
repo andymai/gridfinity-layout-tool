@@ -45,14 +45,12 @@ import { GRIDFINITY_SPEC } from './gridfinityGeometry';
 const WALL_EFF = 1.165;
 
 /**
- * Floor + base socket feet material per unit of cell footprint area (mm³/mm²),
- * calibrated to OCCT geometry. At the standard 42mm pitch this is ≈10838mm³ per
- * 42×42 cell; expressing it per unit area lets it scale to other grid pitches
- * (e.g. half-pitch sockets) without hardcoding the reference pitch.
- *   10838 mm³ / (42mm)² ≈ 6.1441 mm³/mm²
+ * Floor + base socket feet material per unit of cell footprint area (mm³/mm²).
+ * Per unit AREA so it scales to other grid pitches (half-pitch sockets, say)
+ * without hardcoding the reference pitch.
  *
- * Fitted by least squares over the ten bins in `OCCT_GROUND_TRUTH`, holding
- * `WALL_EFF` and `LIP_AREA`: worst residual 1.7%, 7 of 10 within 0.5%.
+ * Re-derive by least squares over `OCCT_GROUND_TRUTH`, holding `WALL_EFF` and
+ * `LIP_AREA`. Any change to the floor or the socket invalidates it.
  */
 const BASE_VOL_PER_CELL_AREA = 6.1441;
 
