@@ -55,11 +55,13 @@ import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { ToolRackParameterPanel } from '../panel/ToolRackSection/ToolRackParameterPanel';
 import { ImportedMeshPanel } from '../panel/ImportedMeshSection/ImportedMeshPanel';
+import { WorkshopPanel } from '../Workshop/WorkshopPanel/WorkshopPanel';
 
 export function ParameterPanel() {
   const itemKind = useDesignerStore((s) => s.itemKind);
   if (itemKind === 'toolRack') return <ToolRackParameterPanel />;
   if (itemKind === 'importedMesh') return <ImportedMeshPanel />;
+  if (itemKind === 'assembly') return <WorkshopPanel />;
   return <BinParameterPanel />;
 }
 
@@ -93,6 +95,7 @@ function BinParameterPanel() {
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const itemKindsEnabled = useFeatureFlag('item_kinds');
+  const workshopEnabled = useFeatureFlag('workshop');
   const newDesign = useDesignerStore((s) => s.newDesign);
   const customShapeReason = t('binDesigner.shape.custom.hint');
 
@@ -316,6 +319,13 @@ function BinParameterPanel() {
           <div className="px-4 py-3 border-b border-stroke-subtle">
             <Button variant="secondary" onClick={() => newDesign('toolRack')} className="w-full">
               {t('binDesigner.newToolRack')}
+            </Button>
+          </div>
+        )}
+        {workshopEnabled && (
+          <div className="px-4 py-3 border-b border-stroke-subtle">
+            <Button variant="secondary" onClick={() => newDesign('assembly')} className="w-full">
+              {t('binDesigner.newWorkshop')}
             </Button>
           </div>
         )}

@@ -9,6 +9,7 @@ import type {
   TypeStemWarning,
 } from '@/shared/types/generation';
 import type { BinParams } from './binParams';
+import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 
 /**
  * Lid mesh data as stored in the designer store. Mirrors the shared
@@ -106,6 +107,14 @@ export interface CachedMesh {
 export interface HistoryEntry {
   readonly params: BinParams;
   readonly mesh: CachedMesh | null;
+  /**
+   * Non-bin snapshot. History is cleared on every kind switch, so all
+   * entries in one stack share the design's kind; entries captured while
+   * designing a bin omit these.
+   */
+  readonly itemKind?: ItemKind;
+  readonly structure?: ItemStructure | null;
+  readonly envelope?: ItemEnvelope | null;
 }
 
 // Designer UI State Types

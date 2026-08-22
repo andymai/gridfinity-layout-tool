@@ -312,7 +312,11 @@
     "toolSwitcher.baseplateGenerator",
     "toolSwitcher.binDesigner",
     "toolSwitcher.gridfinityLayoutTool",
-    "toolSwitcher.layout"
+    "toolSwitcher.layout",
+    "workshop.base.title",
+    "workshop.field.diameter",
+    "workshop.inspector.rotation",
+    "workshop.part.tube"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

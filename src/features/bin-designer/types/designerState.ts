@@ -4,6 +4,12 @@ import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
+import type {
+  AssemblyBase,
+  AssemblyPartParams,
+  AssemblyPartType,
+  PartTransform,
+} from '@/shared/types/assembly';
 import type { AccentBandConfig, ColorZone, HoverableZone, LipColorConfig } from './featureColors';
 import type { LidConfig } from './lid';
 import type { TextStyleDefaults, TextStyleOverride, WallTextSide, TextAnchor } from './text';
@@ -142,6 +148,22 @@ export interface DesignerState {
   // Non-bin item actions (no-ops when itemKind is 'bin')
   updateStructure: (partial: Partial<ItemStructure>) => void;
   updateEnvelope: (partial: Partial<ItemEnvelope>) => void;
+
+  // Workshop assembly actions (no-ops unless structure.kind is 'assembly')
+  addAssemblyPart: (
+    type: AssemblyPartType,
+    parentId: string | null,
+    transform?: Partial<PartTransform>
+  ) => string | null;
+  moveAssemblyPart: (id: string, transform: Partial<PartTransform>) => void;
+  reparentAssemblyPart: (
+    id: string,
+    newParentId: string | null,
+    transform?: Partial<PartTransform>
+  ) => boolean;
+  removeAssemblyPart: (id: string) => void;
+  updateAssemblyPartParams: (id: string, params: Partial<AssemblyPartParams>) => void;
+  updateAssemblyBase: (partial: Partial<AssemblyBase>) => void;
 
   // Compartment actions
   /** Regenerate a uniform grid. Carries labels by position where they fit and
@@ -326,6 +348,8 @@ export interface DesignerState {
   setLabelFocusCompartmentId: (id: number | null) => void;
   /** Select a drawn compartment in the Bento workspace (null clears). */
   setSelectedBentoCompartmentId: (id: number | null) => void;
+  setSelectedAssemblyPartId: (id: string | null) => void;
+  setWorkshopPendingPartType: (type: AssemblyPartType | null) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { ItemTypeDescriptor } from '@/shared/items/registry';
 import type { ItemEnvelope } from '@/shared/types/item';
 import type {
+  AssemblyBase,
   AssemblyPartNode,
   AssemblyPartParamsByType,
   AssemblyPartType,
@@ -141,7 +142,7 @@ const nodeBase = {
   mirror: z.boolean().optional(),
 };
 
-const partNodeSchema: z.ZodType<AssemblyPartNode> = z.lazy(() =>
+export const assemblyPartNodeSchema: z.ZodType<AssemblyPartNode> = z.lazy(() =>
   z.discriminatedUnion('type', [
     z.object({
       ...nodeBase,
@@ -194,7 +195,7 @@ const partNodeSchema: z.ZodType<AssemblyPartNode> = z.lazy(() =>
   ])
 );
 
-const childrenSchema = z.lazy(() => z.array(partNodeSchema).max(MAX_ASSEMBLY_PARTS));
+const childrenSchema = z.lazy(() => z.array(assemblyPartNodeSchema).max(MAX_ASSEMBLY_PARTS));
 
 function countNodes(nodes: readonly AssemblyPartNode[]): number {
   return nodes.reduce((sum, n) => sum + 1 + countNodes(n.children), 0);
@@ -215,7 +216,7 @@ export const assemblySchema: z.ZodType<AssemblyStructure> = z
     schemaVersion: z.literal(1),
     base: baseSchema,
     mirrorAxis: z.enum(['x', 'y']),
-    parts: z.array(partNodeSchema).max(MAX_ASSEMBLY_PARTS),
+    parts: z.array(assemblyPartNodeSchema).max(MAX_ASSEMBLY_PARTS),
   })
   .refine((s) => countNodes(s.parts) <= MAX_ASSEMBLY_PARTS, {
     message: `an assembly holds at most ${MAX_ASSEMBLY_PARTS} parts`,
@@ -262,6 +263,42 @@ export const DEFAULT_PART_PARAMS: {
 
 export const DEFAULT_PART_TRANSFORM: PartTransform = { x: 0, y: 0, seatZ: 0, rotZDeg: 0 };
 
+const clamp = (v: number, min: number, max: number): number => Math.min(max, Math.max(min, v));
+
+/** Clamp to the base schema's ranges (same rationale as `clampPartTransform`). */
+export function clampAssemblyBase(base: AssemblyBase): AssemblyBase {
+  return {
+    floorThickness: clamp(base.floorThickness, 1, 10),
+    ...(base.cornerRadius !== undefined ? { cornerRadius: clamp(base.cornerRadius, 0, 20) } : {}),
+  };
+}
+
+export function createAssemblyPartNode<K extends AssemblyPartType>(
+  type: K,
+  id: string,
+  transform: PartTransform
+): Extract<AssemblyPartNode, { type: K }> {
+  // Correlated-union construction; the cast is sound because params come
+  // from the same K-indexed map the node type is defined by.
+  return {
+    id,
+    type,
+    params: defaultPartParams(type),
+    transform,
+    children: [],
+  } as unknown as Extract<AssemblyPartNode, { type: K }>;
+}
+
+/** Clamp to the transform schema's ranges, so edits can never produce a node migration would drop. */
+export function clampPartTransform(t: PartTransform): PartTransform {
+  return {
+    x: clamp(t.x, -1000, 1000),
+    y: clamp(t.y, -1000, 1000),
+    seatZ: clamp(t.seatZ, -200, 200),
+    rotZDeg: clamp(t.rotZDeg, -360, 360),
+  };
+}
+
 export function defaultPartParams<K extends AssemblyPartType>(
   type: K
 ): AssemblyPartParamsByType[K] {
@@ -301,7 +338,7 @@ function normalizePartNode(raw: unknown, depth: number): AssemblyPartNode | null
           .filter((n): n is AssemblyPartNode => n !== null)
       : [],
   };
-  const parsed = partNodeSchema.safeParse(candidate);
+  const parsed = assemblyPartNodeSchema.safeParse(candidate);
   return parsed.success ? parsed.data : null;
 }
 

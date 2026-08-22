@@ -48,6 +48,10 @@ export const THREE_COLORS = {
     footprintLine: '#ffffff',
     groundPlane: '#1e1e2e',
     contactShadowColor: '#000000',
+    workshopBase: '#3a3f52',
+    workshopPart: '#9fb0c0',
+    workshopPartSelected: '#5aa7ff',
+    workshopGhost: '#3ed3e4',
   },
   light: {
     canvasBg: '#edecea',
@@ -65,6 +69,10 @@ export const THREE_COLORS = {
     footprintLine: '#000000',
     groundPlane: '#e0ddd8',
     contactShadowColor: '#2a2520',
+    workshopBase: '#c9c6bf',
+    workshopPart: '#8a94a4',
+    workshopPartSelected: '#2f6fd0',
+    workshopGhost: '#0a7e8c',
   },
 } as const;
 

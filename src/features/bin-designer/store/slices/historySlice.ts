@@ -56,6 +56,13 @@ export function createHistorySlice(set: Set, get: Get) {
         const currentEntry: HistoryEntry = {
           params: current(state.params),
           mesh: getPendingMeshCache(),
+          ...(state.itemKind !== 'bin'
+            ? {
+                itemKind: state.itemKind,
+                structure: state.structure ? current(state.structure) : null,
+                envelope: state.envelope ? current(state.envelope) : null,
+              }
+            : {}),
         };
         state.history.future = [currentEntry, ...historySnapshot.future] as HistoryEntry[];
 
@@ -77,6 +84,13 @@ export function createHistorySlice(set: Set, get: Get) {
         const currentEntry: HistoryEntry = {
           params: current(state.params),
           mesh: getPendingMeshCache(),
+          ...(state.itemKind !== 'bin'
+            ? {
+                itemKind: state.itemKind,
+                structure: state.structure ? current(state.structure) : null,
+                envelope: state.envelope ? current(state.envelope) : null,
+              }
+            : {}),
         };
         state.history.past = [...historySnapshot.past, currentEntry] as HistoryEntry[];
 

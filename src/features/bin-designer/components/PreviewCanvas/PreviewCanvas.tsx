@@ -84,6 +84,7 @@ import {
 import { CameraRig } from '@/shared/components/preview/CameraRig';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
+import { WorkshopCanvas } from '../Workshop/WorkshopCanvas';
 import { ColorToolOverlay } from './ColorToolOverlay';
 import { MeasureOverlay } from './MeasureOverlay';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
@@ -131,7 +132,13 @@ function formatStackPitch(pitchMm: number): string {
   return Number.isInteger(pitchMm) ? String(pitchMm) : pitchMm.toFixed(1);
 }
 
-export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
+export function PreviewCanvas(props: PreviewCanvasProps = {}) {
+  const itemKind = useDesignerStore((s) => s.itemKind);
+  if (itemKind === 'assembly') return <WorkshopCanvas />;
+  return <BinPreviewCanvas {...props} />;
+}
+
+function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
