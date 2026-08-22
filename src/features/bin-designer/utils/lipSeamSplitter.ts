@@ -15,7 +15,7 @@
 
 import { FeatureTag } from '@/shared/types/generation';
 import type { FaceGroupData } from '@/shared/types/generation';
-import { classifyLipCell, type LipGeom } from './lipCornerClassifier';
+import { classifyLipCell, lipColorFloorActive, type LipGeom } from './lipCornerClassifier';
 import { featureTagToColorZone } from '../types/featureColors';
 import type { ColorZone, LipAxisCount } from '../types/featureColors';
 
@@ -176,11 +176,27 @@ function seamPlanes(
   // corners: 2 → front/back (y); 4 → also left/right (x).
   if (counts.corners >= 2) planes.push({ axis: 1, c: geom.cy });
   if (counts.corners === 4) planes.push({ axis: 0, c: geom.cx });
-  // bands: interior horizontal planes.
-  if (counts.bands >= 2 && geom.maxZ > geom.minZ) {
-    const step = (geom.maxZ - geom.minZ) / counts.bands;
-    for (let k = 1; k < counts.bands; k++) planes.push({ axis: 2, c: geom.minZ + k * step });
+  // bands: interior horizontal planes, dividing the COLORABLE extent.
+  if (counts.bands >= 2 && geom.maxZ > geom.floorZ) {
+    const step = (geom.maxZ - geom.floorZ) / counts.bands;
+    for (let k = 1; k < counts.bands; k++) planes.push({ axis: 2, c: geom.floorZ + k * step });
   }
+  return planes;
+}
+
+/**
+ * Planes every lip triangle is cut along, whatever the grid. The color floor
+ * applies even to a uniform lip: without the cut, the outer face is one tall
+ * quad whose centroid sits above the floor, so the whole skirt would take lip
+ * color anyway — the case #3705 was filed for.
+ */
+function lipCutPlanes(
+  geom: LipGeom,
+  counts: { corners: LipAxisCount; bands: LipAxisCount },
+  splitLipGrid: boolean
+): { axis: 0 | 1 | 2; c: number }[] {
+  const planes = splitLipGrid ? seamPlanes(geom, counts) : [];
+  if (lipColorFloorActive(geom)) planes.push({ axis: 2, c: geom.floorZ });
   return planes;
 }
 
@@ -202,7 +218,7 @@ export function splitLipMesh(input: LipSplitInput): LipSplitResult {
   // them, since `> cutZ` and `<= bottomCutZ` partition the axis.
   const bottomPlane = bottomCutZ !== null && bottomCutZ !== cutZ ? bottomCutZ : null;
   const tags = buildTriTags(faceGroups, triangleCount);
-  const lipPlanes = geom && splitLipGrid ? seamPlanes(geom, counts) : [];
+  const lipPlanes = geom ? lipCutPlanes(geom, counts, splitLipGrid) : [];
 
   const positions: number[] = [];
   const triZones: ColorZone[] = [];
@@ -256,7 +272,12 @@ function classifyPiece(
 ): ColorZone {
   if (ctx.cutZ !== null && cz > ctx.cutZ) return 'topAccent';
   if (ctx.bottomCutZ !== null && cz <= ctx.bottomCutZ) return 'bottomAccent';
-  if (ctx.isLip && ctx.geom !== null) return classifyLipCell(cx, cy, cz, ctx.geom, ctx.counts);
+  if (ctx.isLip && ctx.geom !== null) {
+    // Null = under the color floor, i.e. the support skirt that blends into the
+    // wall. It falls through to the tag lookup, which sends LIP to `body`.
+    const cell = classifyLipCell(cx, cy, cz, ctx.geom, ctx.counts);
+    if (cell !== null) return cell;
+  }
   return featureTagToColorZone(ctx.tag) ?? 'body';
 }
 
@@ -311,10 +332,12 @@ export function computeLipColoredMesh(input: {
   const allowSplit = input.allowSplit ?? true;
   const splitLipGrid = !!geom && lipGridIsNonTrivial(counts) && !lipUniform;
   const anyAccent = cutZ !== null || bottomCutZ !== null;
+  const splitLipFloor = !!geom && lipColorFloorActive(geom);
 
   // Re-tessellate when there are exact color boundaries to honor: a non-uniform
-  // lip grid, or an accent cut (which slices every triangle at its Z plane).
-  if (allowSplit && (splitLipGrid || anyAccent)) {
+  // lip grid, the color floor, or an accent cut (which slices every triangle at
+  // its Z plane).
+  if (allowSplit && (splitLipGrid || splitLipFloor || anyAccent)) {
     const r = splitLipMesh({
       triangleCount,
       faceGroups,

@@ -88,17 +88,6 @@ function meshAccessors(
   getTriangle: (i: number) => number[];
 } {
   const triangleCount = indices.length / 3;
-  const triangleXYZ = (triIdx: number) => {
-    const i = triIdx * 3;
-    const a = indices[i] * 3;
-    const b = indices[i + 1] * 3;
-    const c = indices[i + 2] * 3;
-    return {
-      x: (vertices[a] + vertices[b] + vertices[c]) / 3,
-      y: (vertices[a + 1] + vertices[b + 1] + vertices[c + 1]) / 3,
-      z: (vertices[a + 2] + vertices[b + 2] + vertices[c + 2]) / 3,
-    };
-  };
   const getTriangle = (i: number): number[] => {
     const base = i * 3;
     const a = indices[base] * 3;
@@ -116,7 +105,7 @@ function meshAccessors(
       vertices[c + 2],
     ];
   };
-  return { triangleCount, geom: computeLipGeom(faceGroups, triangleXYZ), getTriangle };
+  return { triangleCount, geom: computeLipGeom(faceGroups, getTriangle), getTriangle };
 }
 
 /**

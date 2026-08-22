@@ -113,16 +113,7 @@ export function buildTriangleMaterialIndices(
       vertices[b + 8],
     ];
   };
-  const triangleXYZ = (i: number) => {
-    const b = i * 9;
-    return {
-      x: (vertices[b] + vertices[b + 3] + vertices[b + 6]) / 3,
-      y: (vertices[b + 1] + vertices[b + 4] + vertices[b + 7]) / 3,
-      z: (vertices[b + 2] + vertices[b + 5] + vertices[b + 8]) / 3,
-    };
-  };
-
-  const geom = computeLipGeom(faceGroups, triangleXYZ);
+  const geom = computeLipGeom(faceGroups, getTriangle);
   const { triZones, positions, normals, triTags } = computeLipColoredMesh({
     triangleCount,
     faceGroups,

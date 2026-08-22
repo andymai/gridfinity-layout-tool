@@ -38,19 +38,33 @@ export function buildLidColorGroups(
   const grid = featureColors.lidLip;
   if (!grid || !faceGroups || !vertices || !indices) return null;
 
-  const triangleXYZ = (t: number) => {
+  const getTriangle = (t: number): number[] => {
     const i = t * 3;
     const a = indices[i] * 3;
     const b = indices[i + 1] * 3;
     const c = indices[i + 2] * 3;
+    return [
+      vertices[a],
+      vertices[a + 1],
+      vertices[a + 2],
+      vertices[b],
+      vertices[b + 1],
+      vertices[b + 2],
+      vertices[c],
+      vertices[c + 1],
+      vertices[c + 2],
+    ];
+  };
+  const triangleXYZ = (t: number) => {
+    const v = getTriangle(t);
     return {
-      x: (vertices[a] + vertices[b] + vertices[c]) / 3,
-      y: (vertices[a + 1] + vertices[b + 1] + vertices[c + 1]) / 3,
-      z: (vertices[a + 2] + vertices[b + 2] + vertices[c + 2]) / 3,
+      x: (v[0] + v[3] + v[6]) / 3,
+      y: (v[1] + v[4] + v[7]) / 3,
+      z: (v[2] + v[5] + v[8]) / 3,
     };
   };
 
-  const geom = computeLidLipGeom(faceGroups, triangleXYZ);
+  const geom = computeLidLipGeom(faceGroups, getTriangle);
   if (!geom) return null;
 
   const counts = { corners: grid.corners, bands: grid.bands };
