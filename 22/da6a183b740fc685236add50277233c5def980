@@ -1,0 +1,29 @@
+src/features/bin-designer/hooks/usePlaceBinInLayout.test.ts
+  s_c4a3b406d82c2b::t_0c59ebc9b88224 58-78
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_c4a3b406d82c2b::t_8528b2d599e1a7 52
+src/features/bin-designer/components/DesignListDialog/DesignItemsView.tsx
+  s_c4a3b406d82c2b::t_83093d3b6f37d9 3
+src/features/bin-designer/components/DesignListDialog/DesignItemsView.test.tsx
+  s_c4a3b406d82c2b::t_9a5eba098363a6 81-112
+src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  s_c4a3b406d82c2b::t_ca90084c9dd4e4 42-44,58-66
+  s_c4a3b406d82c2b::t_025915acc534d9 33-35
+  s_c4a3b406d82c2b::t_6ce641ea35d9d8 67-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "22da6a183b740fc685236add50277233c5def980",
+  "prompts": {},
+  "sessions": {
+    "s_c4a3b406d82c2b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99849f0b-e287-49ae-b079-b440370877ca",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
