@@ -11,6 +11,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import { collectAssemblyIds, findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 import {
+  parentLocalToWorld,
   resolvePlacedParts,
   snapCoord,
   worldToParentLocal,
@@ -29,6 +30,7 @@ export interface WorkshopInteraction {
   readonly placements: PlacedPart[];
   readonly placedById: Map<string, PlacedPart>;
   readonly hover: HoverSurface | null;
+  readonly ghostPosition: { x: number; y: number; z: number } | null;
   readonly draggingId: string | null;
   readonly selectedId: string | null;
   readonly pendingType: ReturnType<typeof usePendingType>;
@@ -54,7 +56,10 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
   const [hover, setHover] = useState<HoverSurface | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const draggedSubtreeRef = useRef<Set<string>>(new Set());
-  const altRef = useRef(false);
+  // Transaction opens lazily on the first real mutation of a drag, so a
+  // click that never moves the part leaves no undo step behind.
+  const dragTransactionRef = useRef(false);
+  const [fineSnap, setFineSnap] = useState(false);
 
   const placements = useMemo(() => resolvePlacedParts(structure), [structure]);
   const placedById = useMemo(() => {
@@ -67,14 +72,14 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
 
   useEffect(() => {
     const down = (e: KeyboardEvent): void => {
-      if (e.key === 'Alt') altRef.current = true;
+      if (e.key === 'Alt') setFineSnap(true);
       if (e.key === 'Escape') {
         useDesignerStore.getState().setWorkshopPendingPartType(null);
         invalidate();
       }
     };
     const up = (e: KeyboardEvent): void => {
-      if (e.key === 'Alt') altRef.current = false;
+      if (e.key === 'Alt') setFineSnap(false);
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
@@ -85,7 +90,10 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
   }, [invalidate]);
 
   const endDrag = useCallback((): void => {
-    useDesignerStore.getState().commitTransaction();
+    if (dragTransactionRef.current) {
+      useDesignerStore.getState().commitTransaction();
+      dragTransactionRef.current = false;
+    }
     const controls = getThree().controls as { enabled: boolean } | null;
     if (controls) controls.enabled = true;
     setDraggingId(null);
@@ -101,12 +109,12 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
 
   const snapPoint = useCallback(
     (surface: HoverSurface): { x: number; y: number } => {
-      const fine = altRef.current;
+      const fine = fineSnap;
       const parent = surface.parentId === null ? null : (placedById.get(surface.parentId) ?? null);
       const local = worldToParentLocal({ x: surface.x, y: surface.y }, parent);
       return { x: snapCoord(local.x, fine), y: snapCoord(local.y, fine) };
     },
-    [placedById]
+    [fineSnap, placedById]
   );
 
   const onSurfaceMove = useCallback(
@@ -120,6 +128,10 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
         if (!node) return;
         const currentParent = resolveParentId(currentStructure, draggingId);
         const local = snapPoint(surface);
+        if (!dragTransactionRef.current) {
+          store.startTransaction();
+          dragTransactionRef.current = true;
+        }
         if (surface.parentId === currentParent) {
           store.moveAssemblyPart(draggingId, { x: local.x, y: local.y, seatZ: 0 });
         } else {
@@ -171,7 +183,6 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
       const node = findAssemblyPart(currentStructure.parts, id);
       if (!node) return;
       draggedSubtreeRef.current = new Set(collectAssemblyIds([node]));
-      store.startTransaction();
       const controls = getThree().controls as { enabled: boolean } | null;
       if (controls) controls.enabled = false;
       setDraggingId(id);
@@ -185,10 +196,22 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
     []
   );
 
+  // Snap in the hovered parent's local frame — the same math placement uses —
+  // then convert back to the store frame so the ghost lands where the part will.
+  const ghostPosition = useMemo((): { x: number; y: number; z: number } | null => {
+    if (!hover) return null;
+    const parent = hover.parentId === null ? null : (placedById.get(hover.parentId) ?? null);
+    const local = worldToParentLocal({ x: hover.x, y: hover.y }, parent);
+    const snapped = { x: snapCoord(local.x, fineSnap), y: snapCoord(local.y, fineSnap) };
+    const world = parentLocalToWorld(snapped, parent);
+    return { x: world.x, y: world.y, z: hover.topZ };
+  }, [fineSnap, hover, placedById]);
+
   return {
     placements,
     placedById,
     hover,
+    ghostPosition,
     draggingId,
     selectedId,
     pendingType,

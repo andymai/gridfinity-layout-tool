@@ -136,8 +136,9 @@ export function createAssemblyActions(set: Set, get: Get) {
       const node = findAssemblyPart(current, id);
       if (!node) return;
       const candidate = { ...node, params: { ...node.params, ...params } } as AssemblyPartNode;
-      if (!assemblyPartNodeSchema.safeParse(candidate).success) return;
-      const next = withAssemblyPartUpdated(current, id, () => candidate);
+      const parsed = assemblyPartNodeSchema.safeParse(candidate);
+      if (!parsed.success) return;
+      const next = withAssemblyPartUpdated(current, id, () => parsed.data);
       if (next) commitParts(next);
     },
 
@@ -145,6 +146,12 @@ export function createAssemblyActions(set: Set, get: Get) {
       const structure = get().structure;
       if (structure?.kind !== 'assembly') return;
       const nextBase = clampAssemblyBase({ ...structure.base, ...partial });
+      if (
+        nextBase.floorThickness === structure.base.floorThickness &&
+        nextBase.cornerRadius === structure.base.cornerRadius
+      ) {
+        return;
+      }
       set((state) => {
         if (state.structure?.kind !== 'assembly') return;
         pushHistoryEntry(state);

@@ -60,10 +60,10 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
           onPartPointerDown={interaction.onPartPointerDown}
         />
       ))}
-      {interaction.pendingType && interaction.hover && interaction.draggingId === null && (
+      {interaction.pendingType && interaction.ghostPosition && interaction.draggingId === null && (
         <PlacementGhost
           type={interaction.pendingType}
-          hover={interaction.hover}
+          position={interaction.ghostPosition}
           baseW={w}
           baseD={d}
         />

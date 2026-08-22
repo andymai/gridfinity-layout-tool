@@ -4,17 +4,17 @@ import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import type { AssemblyPartType } from '@/shared/types/assembly';
 import { createAssemblyPartNode, DEFAULT_PART_TRANSFORM } from '@/shared/items/assembly/descriptor';
 import { buildPartGeometry } from './proxyGeometry';
-import { snapCoord, storeToScene } from './workshopPlacement';
-import type { HoverSurface } from './useWorkshopInteraction';
+import { storeToScene } from './workshopPlacement';
 
 interface PlacementGhostProps {
   type: AssemblyPartType;
-  hover: HoverSurface;
+  /** Snapped store-frame position, computed by the interaction hook. */
+  position: { x: number; y: number; z: number };
   baseW: number;
   baseD: number;
 }
 
-export function PlacementGhost({ type, hover, baseW, baseD }: PlacementGhostProps) {
+export function PlacementGhost({ type, position, baseW, baseD }: PlacementGhostProps) {
   const colors = useThreeColors();
   const geometry = useMemo(
     () => buildPartGeometry(createAssemblyPartNode(type, 'ghost', { ...DEFAULT_PART_TRANSFORM })),
@@ -25,11 +25,7 @@ export function PlacementGhost({ type, hover, baseW, baseD }: PlacementGhostProp
   return (
     <mesh
       geometry={geometry}
-      position={[
-        storeToScene(snapCoord(hover.x, false), baseW),
-        storeToScene(snapCoord(hover.y, false), baseD),
-        hover.topZ,
-      ]}
+      position={[storeToScene(position.x, baseW), storeToScene(position.y, baseD), position.z]}
       raycast={() => null}
     >
       <meshStandardMaterial

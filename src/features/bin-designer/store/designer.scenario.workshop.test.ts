@@ -110,6 +110,15 @@ describe('DesignerStore - workshop assembly actions', () => {
     expect(findAssemblyPart(assembly().parts, id)?.transform.x).toBe(0);
   });
 
+  it('keeps an unchanged base edit a true no-op', () => {
+    store().updateAssemblyBase({ floorThickness: 2 });
+    expect(store().history.past).toHaveLength(0);
+    store().updateAssemblyBase({ floorThickness: 99 });
+    store().updateAssemblyBase({ floorThickness: 12 });
+    expect(assembly().base.floorThickness).toBe(10);
+    expect(store().history.past).toHaveLength(1);
+  });
+
   it('base edits clamp and undo', () => {
     store().updateAssemblyBase({ floorThickness: 99 });
     expect(assembly().base.floorThickness).toBe(10);

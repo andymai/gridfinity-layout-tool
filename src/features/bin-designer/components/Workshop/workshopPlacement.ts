@@ -91,6 +91,16 @@ export function snapCoord(v: number, fine: boolean): number {
   return Math.round(v / step) * step;
 }
 
+/** Inverse of `worldToParentLocal`. */
+export function parentLocalToWorld(
+  point: { x: number; y: number },
+  parent: PlacedPart | null
+): { x: number; y: number } {
+  if (!parent) return { x: point.x, y: point.y };
+  const rotated = rotate2d(point.x, point.y, parent.rotZDeg);
+  return { x: parent.x + rotated.x, y: parent.y + rotated.y };
+}
+
 /**
  * Convert a store-frame world point to a transform local to `parent`
  * (null = a root seated on the base floor).
