@@ -133,7 +133,12 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
         );
 
         const result = canPlaceBin(
-          { ...newRect, height: bin.height, clearanceHeight: bin.clearanceHeight },
+          {
+            ...newRect,
+            height: bin.height,
+            clearanceHeight: bin.clearanceHeight,
+            linkedDesignId: bin.linkedDesignId,
+          },
           activeLayerId,
           layout,
           binId,

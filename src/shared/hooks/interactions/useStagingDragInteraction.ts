@@ -107,6 +107,7 @@ export function useStagingDragInteraction(
           depth: bin.depth,
           height: bin.height,
           clearanceHeight: bin.clearanceHeight,
+          linkedDesignId: bin.linkedDesignId,
         },
         activeLayerId,
         layout,

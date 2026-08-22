@@ -75,6 +75,38 @@ export function solveUnitsUnderCeiling(
 }
 
 /**
+ * Sub-millimetre differences between a design's assembled rise and the plain
+ * stacking pitch are profile arithmetic (lip vs junction constants differ by
+ * under half a millimetre across base styles), not a real obstruction — only
+ * excess beyond this counts toward collision.
+ */
+const STACK_EXCESS_EPSILON_MM = 0.5;
+
+/**
+ * How far a linked design's real assembled rise protrudes past the unit-space
+ * charge its bin already pays in collision (`height + clearance`), in height
+ * units.
+ *
+ * The unit model charges a plain bin its stacking pitch — body height with the
+ * lip netted against the junction the bin above sinks into. Expressing the
+ * linked design's rise in the same net convention makes a standard design come
+ * out at exactly zero, so only genuine protrusions (lids, stack grids, extra
+ * wall height, a bin whose height diverged from its design) charge the layers
+ * above. A lipless design grants no junction, mirroring `drawerCeilingFit`'s
+ * supporter-side credit.
+ */
+export function linkedStackExcessUnits(
+  binHeightUnits: number,
+  heightUnitMm: number,
+  linked: { riseMm: number; hasLip?: boolean } | undefined
+): number {
+  if (linked === undefined || heightUnitMm <= 0 || !Number.isFinite(linked.riseMm)) return 0;
+  const linkedNetMm = linked.riseMm - (linked.hasLip !== false ? STACK_JUNCTION_MM : 0);
+  const excessMm = linkedNetMm - stackPitchMm(binHeightUnits, heightUnitMm);
+  return excessMm > STACK_EXCESS_EPSILON_MM ? excessMm / heightUnitMm : 0;
+}
+
+/**
  * Format a (possibly fractional) height-unit value for display: up to two
  * decimals with trailing zeros stripped, so 5 -> "5", 4.37 -> "4.37".
  */

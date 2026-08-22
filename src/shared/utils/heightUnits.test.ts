@@ -7,7 +7,44 @@ import {
   stackPitchMm,
   stackedTotalMm,
   solveUnitsUnderCeiling,
+  linkedStackExcessUnits,
 } from './heightUnits';
+
+describe('linkedStackExcessUnits', () => {
+  const UNIT = 7;
+  const standardRise = (h: number) => h * UNIT + LIP_PROTRUSION_MM;
+
+  it('returns 0 with no linked rise data', () => {
+    expect(linkedStackExcessUnits(4, UNIT, undefined)).toBe(0);
+  });
+
+  it('is exactly neutral for a standard lipped design', () => {
+    expect(linkedStackExcessUnits(4, UNIT, { riseMm: standardRise(4) })).toBe(0);
+  });
+
+  it('stays neutral for a lipless design (residual under the epsilon)', () => {
+    expect(linkedStackExcessUnits(4, UNIT, { riseMm: 4 * UNIT, hasLip: false })).toBe(0);
+  });
+
+  it('charges a lid rise above the nominal height', () => {
+    const lidMm = 14;
+    const excess = linkedStackExcessUnits(4, UNIT, { riseMm: standardRise(4) + lidMm });
+    expect(excess).toBeCloseTo(lidMm / UNIT, 6);
+  });
+
+  it('charges a design taller than its diverged bin height', () => {
+    expect(linkedStackExcessUnits(4, UNIT, { riseMm: standardRise(6) })).toBeCloseTo(2, 6);
+  });
+
+  it('never goes negative for a design shorter than the bin', () => {
+    expect(linkedStackExcessUnits(6, UNIT, { riseMm: standardRise(4) })).toBe(0);
+  });
+
+  it('ignores excess at or under half a millimetre', () => {
+    expect(linkedStackExcessUnits(4, UNIT, { riseMm: standardRise(4) + 0.5 })).toBe(0);
+    expect(linkedStackExcessUnits(4, UNIT, { riseMm: standardRise(4) + 0.6 })).toBeGreaterThan(0);
+  });
+});
 
 describe('formatHeightUnits', () => {
   it('renders whole units without decimals', () => {

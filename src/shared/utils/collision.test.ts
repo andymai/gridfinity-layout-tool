@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   getLayerZStartResult,
   getBin3DRectResult,
@@ -8,10 +8,11 @@ import {
   getDisplayLayers,
   checkLayerReorderCollisions,
   isInBlockedZone,
+  registerLinkedExcessResolver,
 } from '@/shared/utils/collision';
 import { isOk } from '@/core/result';
 import type { BlockedZone, Layer } from '@/core/types';
-import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
+import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, expectOk, expectErr } from '@/test/testUtils';
 
@@ -177,6 +178,78 @@ describe('binsCollideResult', () => {
       depth: gridUnits(2),
     });
     expect(expectErr(binsCollideResult(binA, binB, layers)).code).toBe('VALIDATION_INVALID_LAYER');
+  });
+});
+
+describe('linked-design excess rise', () => {
+  afterEach(() => {
+    registerLinkedExcessResolver(null);
+  });
+
+  const linkedBin = (height: number) =>
+    createTestBin({
+      id: binId('1'),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(height),
+      linkedDesignId: designId('lidded'),
+    });
+
+  it('charges the resolved excess into zEnd when it beats clearance', () => {
+    registerLinkedExcessResolver(() => 2);
+    const rect = expectOk(getBin3DRectResult(linkedBin(3), layers));
+    expect(rect.zEnd).toBe(5);
+  });
+
+  it('keeps the larger of clearance and excess', () => {
+    registerLinkedExcessResolver(() => 1);
+    const bin = { ...linkedBin(3), clearanceHeight: heightUnits(4) };
+    expect(expectOk(getBin3DRectResult(bin, layers)).zEnd).toBe(7);
+  });
+
+  it('creates a blocked zone in the layer above for a protruding linked design', () => {
+    registerLinkedExcessResolver((bin) => (bin.linkedDesignId === 'lidded' ? 2 : 0));
+    const zones = getBlockedZones(LAYER_2, [linkedBin(3)], layers);
+    expect(zones).toHaveLength(1);
+    expect(zones[0]).toMatchObject({ sourceBinId: '1', sourceLayerId: LAYER_1 });
+  });
+
+  it('leaves zero-excess linked bins and unlinked bins unblocked', () => {
+    registerLinkedExcessResolver(() => 0);
+    const plain = createTestBin({ id: binId('2'), x: gridUnits(4) });
+    expect(getBlockedZones(LAYER_2, [linkedBin(3), plain], layers)).toEqual([]);
+  });
+
+  it('ignores the resolver once unregistered', () => {
+    registerLinkedExcessResolver(() => 2);
+    registerLinkedExcessResolver(null);
+    expect(expectOk(getBin3DRectResult(linkedBin(3), layers)).zEnd).toBe(3);
+  });
+
+  it('recomputes cached blocked zones when the rise version changes', () => {
+    let excess = 0;
+    let version = 0;
+    registerLinkedExcessResolver(
+      () => excess,
+      () => version
+    );
+    const bins = [linkedBin(3)];
+    expect(getBlockedZones(LAYER_2, bins, layers)).toEqual([]);
+    excess = 2;
+    version = 1;
+    expect(getBlockedZones(LAYER_2, bins, layers)).toHaveLength(1);
+  });
+
+  it('keeps serving the cache while the version is unchanged', () => {
+    let calls = 0;
+    registerLinkedExcessResolver(() => {
+      calls += 1;
+      return 2;
+    });
+    const bins = [linkedBin(3)];
+    const first = getBlockedZones(LAYER_2, bins, layers);
+    expect(getBlockedZones(LAYER_2, bins, layers)).toBe(first);
+    expect(calls).toBe(1);
   });
 });
 

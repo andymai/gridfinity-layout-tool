@@ -13,6 +13,7 @@
 
 import type {
   Bin,
+  DesignId,
   HeightUnits,
   Layout,
   ValidationResult,
@@ -38,7 +39,12 @@ import {
  * @param excludeBinIds - Set of bin IDs to exclude (for multi-select operations)
  */
 export function canPlaceBin(
-  rect: Rect & { height: HeightUnits; clearanceHeight?: HeightUnits },
+  rect: Rect & {
+    height: HeightUnits;
+    clearanceHeight?: HeightUnits;
+    /** Lets the candidate's own linked-design excess rise count against bins above. */
+    linkedDesignId?: DesignId;
+  },
   layerId: LayerId,
   layout: Layout,
   excludeBinId?: BinId,
@@ -118,6 +124,7 @@ export function canPlaceBin(
     depth: rect.depth,
     height: rect.height,
     clearanceHeight: rect.clearanceHeight,
+    linkedDesignId: rect.linkedDesignId,
     category: toCategoryId(''),
     label: '',
     notes: '',

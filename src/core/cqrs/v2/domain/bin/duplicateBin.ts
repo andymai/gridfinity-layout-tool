@@ -42,7 +42,14 @@ function findAdjacentPlacement(
     const x = ((bin.x as number) + dx) as GridUnits;
     const y = ((bin.y as number) + dy) as GridUnits;
     const result = canPlaceBin(
-      { x, y, width: bin.width, depth: bin.depth, height: bin.height },
+      {
+        x,
+        y,
+        width: bin.width,
+        depth: bin.depth,
+        height: bin.height,
+        linkedDesignId: bin.linkedDesignId,
+      },
       bin.layerId,
       layout
     );
