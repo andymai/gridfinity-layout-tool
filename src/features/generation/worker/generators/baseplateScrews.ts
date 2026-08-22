@@ -77,13 +77,19 @@ export function screwFloorCandidates(
 }
 
 /**
- * Squared-mm slack below which two candidates count as the same distance.
+ * Squared-mm slack within which two candidates count as EQUIDISTANT, so the
+ * directional preference below decides between them instead of arrival order.
  *
- * Guards float noise only: at the ~130mm² separations an edge anchor sees, this
- * is a few nanometres of position, far under any distinction the lattice can
- * express. It has to exist because the tie it detects is EXACT in exact
- * arithmetic (the two magnets flanking a centreline are equidistant by
- * construction), so `<` alone would resolve it by accumulated rounding.
+ * Detecting the tie is the point, not tolerating error: the two magnets
+ * flanking a centreline are equidistant by construction, so in exact arithmetic
+ * this is an exact tie, and a bare `<` would hand it to whichever candidate the
+ * lattice happened to emit first.
+ *
+ * Note the units before re-deriving the scale: this is compared against a
+ * SQUARED distance, so the positional slack it admits is `eps / 2r`, not
+ * `sqrt(eps)`. At the ~128mm² an edge anchor sees (r ~ 11.3mm) that is about
+ * 0.04 nanometres, far below anything the lattice can express, which is what
+ * keeps the window from swallowing a genuinely nearer candidate.
  */
 const SNAP_TIE_EPSILON_MM2 = 1e-6;
 
