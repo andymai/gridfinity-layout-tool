@@ -19,7 +19,7 @@ import { deriveDimensions } from './pipeline/context';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { toIndexedMeshData, creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
-import { computeTessellationTolerances } from './utils/tolerances';
+import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
@@ -49,7 +49,7 @@ export async function exportSlideTray(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = 5
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD
 ): Promise<SlideTrayExportResult | null> {
   const solid = buildSlideTray(slideInputForParams(params));
   if (!solid) return null;
@@ -91,12 +91,12 @@ export function generateSlideTray(
   try {
     checkCancelled(signal);
     const maxDimension = Math.max(tray.widthMm, tray.depthMm);
-    const { tolerance, angularTolerance } = computeTessellationTolerances(
+    const { tolerance, angularToleranceRad } = computeTessellationTolerances(
       false,
       true,
       maxDimension
     );
-    const shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    const shapeMesh = mesh(solid, { tolerance, angularTolerance: angularToleranceRad });
     const edgeLines =
       getKernelCapabilities().tessellationModel === 'build-time'
         ? creaseEdges(shapeMesh)

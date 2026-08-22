@@ -14,7 +14,7 @@ import type { ProgressFn } from './generatorTypes';
 import { buildLid, buildStackPlate } from './lidBuilder';
 import { toIndexedMeshData, creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
-import { computeTessellationTolerances } from './utils/tolerances';
+import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
 import { isSlideLid, shouldGenerateLid } from '@/shared/types/bin';
 import { unwrapExportBlob } from './utils/exportUnwrap';
@@ -96,13 +96,13 @@ export function generateLid(
       params.depth * (params.gridUnitMmY ?? params.gridUnitMm)
     );
     // Lid always has lip-mating geometry → use the "has lip" tolerance tier.
-    const { tolerance, angularTolerance } = computeTessellationTolerances(
+    const { tolerance, angularToleranceRad } = computeTessellationTolerances(
       forExport,
       true,
       maxDimension
     );
 
-    const shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    const shapeMesh = mesh(solid, { tolerance, angularTolerance: angularToleranceRad });
     const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
     const edgeLines = buildTime
       ? creaseEdges(shapeMesh)
@@ -145,13 +145,13 @@ export function generateStackPlate(
     );
     // The slab's only curved detail is the pocket tapers; use the fine ("has
     // lip") tier so they read smoothly — the mesh is small, so cost is trivial.
-    const { tolerance, angularTolerance } = computeTessellationTolerances(
+    const { tolerance, angularToleranceRad } = computeTessellationTolerances(
       false,
       true,
       maxDimension
     );
 
-    const shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    const shapeMesh = mesh(solid, { tolerance, angularTolerance: angularToleranceRad });
     const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
     const edgeLines = buildTime
       ? creaseEdges(shapeMesh)
@@ -202,7 +202,7 @@ export async function exportLid(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = 5
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD
 ): Promise<LidExportResult | null> {
   if (!shouldGenerateLid(params)) return null;
 
@@ -253,7 +253,7 @@ export async function exportStackPlate(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = 5
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD
 ): Promise<LidExportResult | null> {
   if (!shouldGenerateLid(params)) return null;
 

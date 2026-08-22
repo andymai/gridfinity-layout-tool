@@ -16,7 +16,7 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { buildParams } from '../../__kernel-tests__/scenarioTypes';
 import { setLastSolid, getLastSolid } from '../../shapeCache';
 import { exportSolidToStl } from '../../utils/stlMeshFallback';
-import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from '../../utils/tolerances';
+import { EXPORT_ANGULAR_TOLERANCE_RAD, EXPORT_TOLERANCE } from '../../utils/tolerances';
 import type { BinParams } from '@/shared/types/bin';
 import type * as BinOrchestratorModule from '../../binOrchestrator';
 
@@ -36,7 +36,7 @@ async function exportDefects(
   generateBin(buildParams(overrides), undefined, true);
   const solid = getLastSolid();
   if (!solid) throw new Error('no solid');
-  const data = await exportSolidToStl(solid, 'x', EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE);
+  const data = await exportSolidToStl(solid, 'x', EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE_RAD);
   const parsed = parseSTLBinary(data);
   if (!isOk(parsed)) throw new Error('STL parse failed');
   const { vertices } = parsed.value;

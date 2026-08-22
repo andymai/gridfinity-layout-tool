@@ -151,7 +151,7 @@ export function generateLabelPlates(
 
   // Plates are small and flat; their only curved detail is the corner radius
   // and glyph outlines, so the fine tier costs little and reads cleanly.
-  const { tolerance, angularTolerance } = computeTessellationTolerances(false, true, dim.innerW);
+  const { tolerance, angularToleranceRad } = computeTessellationTolerances(false, true, dim.innerW);
 
   const plates: LabelPlateMeshData[] = [];
   for (let i = 0; i < shown.length; i++) {
@@ -169,7 +169,7 @@ export function generateLabelPlates(
       // No edge lines: on a plate, crease edges trace the outline AND every
       // glyph, which reads as noise at this scale — and the preview would pay
       // kernel time plus a transferred buffer to render nothing.
-      const shapeMesh = mesh(solid, { tolerance, angularTolerance });
+      const shapeMesh = mesh(solid, { tolerance, angularTolerance: angularToleranceRad });
       const indexed = toIndexedMeshData(shapeMesh);
       plates.push({
         vertices: indexed.vertices,

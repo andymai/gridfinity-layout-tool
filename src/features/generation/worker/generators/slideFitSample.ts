@@ -28,6 +28,7 @@ import type { ExportFormat } from '../../bridge/types';
 import { sketch } from './meshUtils';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /** Clearances swept across the coupons, in mm per side. */
 export const SLIDE_FIT_SAMPLE_CLEARANCES: readonly number[] = [0.15, 0.2, 0.25, 0.3, 0.35];
@@ -186,7 +187,7 @@ export async function exportSlideFitSample(
     // bloat the rounded nothing this card contains.
     const meshResult = mesh(assembled, {
       tolerance: tolerance ?? 0.05,
-      angularTolerance: angularTolerance ?? 10,
+      angularTolerance: angularTolerance ?? PREVIEW_ANGULAR_TOLERANCE_RAD,
     });
     return { data: buildBaseplateSTL(meshResult, name), fileName: `${name}.stl` };
   } finally {

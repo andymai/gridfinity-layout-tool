@@ -39,6 +39,7 @@ import { getPocketTemplate } from './baseplatePockets';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
+import { EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 interface RailDims {
   readonly railW: number;
@@ -246,7 +247,7 @@ export async function exportMargin(
     }
     const meshResult = mesh(rail, {
       tolerance: tolerance ?? 0.02,
-      angularTolerance: angularTolerance ?? 6,
+      angularTolerance: angularTolerance ?? EXPORT_ANGULAR_TOLERANCE_RAD,
     });
     const data = buildBaseplateSTL(meshResult, name);
     return { data, fileName: `${name}.stl` };

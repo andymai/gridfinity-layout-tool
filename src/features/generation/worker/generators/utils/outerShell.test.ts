@@ -16,7 +16,7 @@ import { setLastSolid, getLastSolid } from '../shapeCache';
 import { buildBinBox } from '../boxBuilder';
 import { buildScoopRamps } from '../scoopRampBuilder';
 import { exportSolidToStl } from './stlMeshFallback';
-import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './tolerances';
+import { EXPORT_ANGULAR_TOLERANCE_RAD, EXPORT_TOLERANCE } from './tolerances';
 import { keepOuterShell } from './outerShell';
 import type * as BinOrchestratorModule from '../binOrchestrator';
 
@@ -60,7 +60,7 @@ async function meshDefects(solid: unknown): Promise<{ nonManifold: number; bound
     solid as never,
     'x',
     EXPORT_TOLERANCE,
-    EXPORT_ANGULAR_TOLERANCE
+    EXPORT_ANGULAR_TOLERANCE_RAD
   );
   const parsed = parseSTLBinary(data);
   if (!isOk(parsed)) throw new Error('STL parse failed');

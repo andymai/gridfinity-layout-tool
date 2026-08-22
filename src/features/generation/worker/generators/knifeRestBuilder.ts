@@ -37,7 +37,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from './socketBuilder';
 import { creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
-import { computeTessellationTolerances } from './utils/tolerances';
+import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 
@@ -186,12 +186,12 @@ export function generateKnifeRest(
     checkCancelled(signal);
     const maxDimension =
       Math.max(plan.alongU, plan.crossU) * Math.max(params.gridUnitMm, params.gridUnitMmY ?? 0);
-    const { tolerance, angularTolerance } = computeTessellationTolerances(
+    const { tolerance, angularToleranceRad } = computeTessellationTolerances(
       forExport,
       false,
       maxDimension
     );
-    const shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    const shapeMesh = mesh(solid, { tolerance, angularTolerance: angularToleranceRad });
     const edgeLines =
       getKernelCapabilities().tessellationModel === 'build-time'
         ? creaseEdges(shapeMesh)
@@ -218,7 +218,7 @@ export async function exportKnifeRest(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = 5
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD
 ): Promise<KnifeRestExportResult | null> {
   const plan = planKnifeRest(params);
   if (!plan || plan.style !== 'companion') return null;

@@ -11,7 +11,7 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin } from '../__kernel-tests__/wasmInit';
 import { getLastSolid, clearAllCaches } from '../shapeCache';
-import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './tolerances';
+import { EXPORT_ANGULAR_TOLERANCE_RAD, EXPORT_TOLERANCE } from './tolerances';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { hasNoNaNOrInfinity } from '../__kernel-tests__/meshAssertions';
 import { isOk } from '@/core/result';
@@ -46,7 +46,7 @@ describe('exportSolidMeshToStl', () => {
       solid,
       'fallback-test',
       EXPORT_TOLERANCE,
-      EXPORT_ANGULAR_TOLERANCE
+      EXPORT_ANGULAR_TOLERANCE_RAD
     );
 
     const parsed = parseSTLBinary(data);
@@ -68,7 +68,7 @@ describe('exportSolidMeshToStl', () => {
       solid,
       'fallback-tall',
       EXPORT_TOLERANCE,
-      EXPORT_ANGULAR_TOLERANCE
+      EXPORT_ANGULAR_TOLERANCE_RAD
     );
     const parsed = parseSTLBinary(data);
     expect(isOk(parsed)).toBe(true);
@@ -78,7 +78,7 @@ describe('exportSolidMeshToStl', () => {
     // makes the fallback succeed whenever the preview (also mesh()-driven) does.
     const m = mesh(solid, {
       tolerance: EXPORT_TOLERANCE,
-      angularTolerance: EXPORT_ANGULAR_TOLERANCE,
+      angularTolerance: EXPORT_ANGULAR_TOLERANCE_RAD,
       cache: true,
     });
     const meshTriangleCount = m.triangles.length / 3;

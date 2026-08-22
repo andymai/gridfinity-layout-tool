@@ -80,6 +80,7 @@ import { buildTextSolid } from './textBuilder';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { sanitizeParams } from './baseplateSlab';
+import { PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /** Fit-offset ladder swept across the columns, centered on nominal (0). */
 const SAMPLE_OFFSETS: readonly number[] = [-0.1, -0.05, 0, 0.05, 0.1];
@@ -387,10 +388,10 @@ export async function exportConnectorSample(
     // are all planar (tessellated exactly at any tolerance), so the fine 0.01mm
     // default only multiplies triangles on the rounded corners and the embossed
     // ID labels — which turned this small tray into a ~31MB, multi-minute export.
-    // 0.05mm / 10° matches the connector-clip mesh and keeps labels legible while
-    // cutting the file size and mesh time dramatically.
+    // The 0.05mm chord height matches the connector-clip mesh and keeps labels
+    // legible while cutting the file size and mesh time dramatically.
     const tol = tolerance ?? 0.05;
-    const angTol = angularTolerance ?? 10;
+    const angTol = angularTolerance ?? PREVIEW_ANGULAR_TOLERANCE_RAD;
     const meshResult = mesh(lifted, { tolerance: tol, angularTolerance: angTol });
     const data = buildBaseplateSTL(meshResult, name);
     return { data, fileName: `${name}.stl` };

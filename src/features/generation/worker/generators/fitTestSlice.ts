@@ -58,7 +58,7 @@ import { buildTextSolid } from './textBuilder';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { hasMeshImprints, imprintPieceArrays, prepareMeshImprints } from './meshImprint';
 import { buildSTLBufferFromIndexed } from '../../export/stlExporter';
-import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './utils/tolerances';
+import { EXPORT_ANGULAR_TOLERANCE_RAD, EXPORT_TOLERANCE } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 
 /** XY margin on the band box, so the intersect bounds material in Z only. A
@@ -285,7 +285,7 @@ export interface FitTestMeshPiece {
 function pieceToMesh(piece: FitTestPiece, params: BinParams, imprinted: boolean): FitTestMeshPiece {
   const m = mesh(piece.solid, {
     tolerance: EXPORT_TOLERANCE,
-    angularTolerance: EXPORT_ANGULAR_TOLERANCE,
+    angularTolerance: EXPORT_ANGULAR_TOLERANCE_RAD,
     cache: false,
   });
   let vertices = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);

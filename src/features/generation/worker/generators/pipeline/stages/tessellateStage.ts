@@ -70,13 +70,13 @@ export const tessellateStage: PipelineStage = {
     const identified = forExport && !ctx.deferredSolid;
     setLastSolid(solid, forExport, identified ? paramsFingerprint(ctx.params) : null);
 
-    const { tolerance, angularTolerance } = computeTessellationTolerances(
+    const { tolerance, angularToleranceRad } = computeTessellationTolerances(
       forExport,
       dim.hasLip,
       dim.maxDimension
     );
 
-    let shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    let shapeMesh = mesh(solid, { tolerance, angularTolerance: angularToleranceRad });
 
     // Build-time kernels (manifold draft) have no B-rep topology, so their
     // meshEdges() returns the full triangle wireframe. Recover clean feature
@@ -100,11 +100,11 @@ export const tessellateStage: PipelineStage = {
         // design, where the body's features change but the base does not. A null
         // key (lightweight base) always re-meshes.
         const cacheKey = deferredSolidKey
-          ? socketMeshKey(deferredSolidKey, tolerance, angularTolerance, buildTime)
+          ? socketMeshKey(deferredSolidKey, tolerance, angularToleranceRad, buildTime)
           : null;
         let cached = cacheKey ? getSocketMesh(cacheKey) : null;
         if (!cached) {
-          const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance });
+          const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance: angularToleranceRad });
           const socketEdges = buildTime
             ? creaseEdges(socketMesh)
             : meshEdges(deferredSolid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD })

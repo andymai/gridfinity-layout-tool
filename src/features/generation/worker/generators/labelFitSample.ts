@@ -45,6 +45,7 @@ import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { cutLabelSocket } from './labelTabBuilder';
 import { buildLabelPlate } from './labelPlateBuilder';
+import { PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /** Fit-offset ladder swept across the coupons, centered on nominal (0). */
 export const LABEL_FIT_SAMPLE_OFFSETS: readonly number[] = [-0.1, -0.05, 0, 0.05, 0.1];
@@ -206,7 +207,7 @@ export async function exportLabelFitSample(
     // planar, so the fine default only bloats rounded corners and glyphs.
     const meshResult = mesh(assembled, {
       tolerance: tolerance ?? 0.05,
-      angularTolerance: angularTolerance ?? 10,
+      angularTolerance: angularTolerance ?? PREVIEW_ANGULAR_TOLERANCE_RAD,
     });
     const data = buildBaseplateSTL(meshResult, name);
     return { data, fileName: `${name}.stl` };
