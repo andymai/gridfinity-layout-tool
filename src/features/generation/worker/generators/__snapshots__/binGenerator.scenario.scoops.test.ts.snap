@@ -1,30 +1,30 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `3916`;
+exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `3924`;
 
-exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `4506`;
+exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `4522`;
 
-exports[`scoop > 2×2 scoop auto radius 1`] = `3916`;
+exports[`scoop > 2×2 scoop auto radius 1`] = `3924`;
 
 exports[`scoop > 2×2 scoop disabled 1`] = `2796`;
 
-exports[`scoop > 2×2 scoop radius 10mm 1`] = `3956`;
+exports[`scoop > 2×2 scoop radius 10mm 1`] = `3964`;
 
-exports[`scoop side > 6×1 bin scooped on the long wall 1`] = `3792`;
+exports[`scoop side > 6×1 bin scooped on the long wall 1`] = `3800`;
 
-exports[`scoop side > left scoop across 2 columns (outer vs interior) 1`] = `4934`;
+exports[`scoop side > left scoop across 2 columns (outer vs interior) 1`] = `4950`;
 
-exports[`scoop side > scoop on the back wall 1`] = `3916`;
+exports[`scoop side > scoop on the back wall 1`] = `3924`;
 
-exports[`scoop side > scoop on the left wall 1`] = `3916`;
+exports[`scoop side > scoop on the left wall 1`] = `3924`;
 
-exports[`scoop side > scoop on the right wall 1`] = `3916`;
+exports[`scoop side > scoop on the right wall 1`] = `3924`;
 
-exports[`scoop side > side scoop with lip (outer-wall offset active) 1`] = `3916`;
+exports[`scoop side > side scoop with lip (outer-wall offset active) 1`] = `3924`;
 
-exports[`scoop two-variable > 2×2 shallow curved scoop (run > height) 1`] = `3872`;
+exports[`scoop two-variable > 2×2 shallow curved scoop (run > height) 1`] = `3884`;
 
-exports[`scoop two-variable > 2×2 steep curved scoop (run < height) 1`] = `4060`;
+exports[`scoop two-variable > 2×2 steep curved scoop (run < height) 1`] = `4068`;
 
 exports[`scoop two-variable > 2×2 steep straight scoop 1`] = `3436`;
 

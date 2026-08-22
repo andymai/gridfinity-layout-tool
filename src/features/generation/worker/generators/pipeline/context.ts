@@ -8,7 +8,7 @@
 import type { BinParams } from '@/shared/types/bin';
 import {
   hasDetachableFeet,
-  detachableFeetFloorMm,
+  binFloorMm,
   hasDividerLean,
   isUndersideRelief,
   resolveTileFloorThickness,
@@ -86,9 +86,7 @@ export function deriveDimensions(
   // is skipped too, and the export is a flat-bottomed box with no feet part.
   const detachableFeet =
     hasDetachableFeet(params.base) && resolveDetachableFeet(params).placements.length > 0;
-  const floorThickness = detachableFeet
-    ? detachableFeetFloorMm(params.wallThickness)
-    : params.wallThickness;
+  const floorThickness = binFloorMm(params.wallThickness);
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only
   // those 1u cells that straddle a half-bin boundary into quarter

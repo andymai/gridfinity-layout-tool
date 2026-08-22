@@ -317,6 +317,24 @@ export function filledSocketCells(
  * @param cellW_mm Physical width of this cell in mm (after clearance)
  * @param cellD_mm Physical depth of this cell in mm (after clearance)
  */
+/**
+ * A prism of a cell socket's TOP face, rising `heightMm` from z=0.
+ *
+ * The socket's top 0.25mm is already vertical, so this continues that face
+ * without a step. Lives here because the corner-radius clamp is the socket
+ * profile's, and a second copy of it is a ledge inside every cup.
+ */
+export function buildSocketTopPrism(cellW_mm: number, cellD_mm: number, heightMm: number): Shape3D {
+  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
+  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
+  return (
+    drawRoundedRectangle(cellW_mm, cellD_mm, Math.max(cornerR, 0.1)).sketchOnPlane(
+      'XY',
+      0
+    ) as Sketch
+  ).extrude(heightMm);
+}
+
 export function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
   // Clamp corner radius to fit within cell dimensions
   const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
