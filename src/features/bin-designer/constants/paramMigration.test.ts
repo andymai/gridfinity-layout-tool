@@ -1506,3 +1506,36 @@ describe('migrateParams - cutout fill reference (#3697)', () => {
     expect(result.cutoutConfig.fillReference).toBe('rim');
   });
 });
+
+describe('migrateParams - cutout top offset coercion (#3697)', () => {
+  const migrate = (topOffset: unknown): number =>
+    migrateParams({ cutoutConfig: { topOffset } } as unknown as Parameters<typeof migrateParams>[0])
+      .cutoutConfig.topOffset;
+
+  it('keeps a sane stored value', () => {
+    expect(migrate(4)).toBe(4);
+  });
+
+  it('replaces a value that is not a number', () => {
+    // The server bounds this on publish, but a design already in localStorage
+    // or arriving over sync never touches that path. The generator reads
+    // `wallHeight - topOffset` as its cutting plane, so a string lands there as
+    // NaN and drops every cutout without saying why.
+    expect(migrate('abc')).toBe(0);
+    expect(migrate(null)).toBe(0);
+    expect(migrate(undefined)).toBe(0);
+  });
+
+  it('replaces a non-finite value', () => {
+    expect(migrate(Number.NaN)).toBe(0);
+    expect(migrate(Number.POSITIVE_INFINITY)).toBe(0);
+  });
+
+  it('clamps a negative offset, which would raise the fill above the rim', () => {
+    expect(migrate(-5)).toBe(0);
+  });
+
+  it('clamps an offset no bin could have', () => {
+    expect(migrate(1e9)).toBe(350);
+  });
+});

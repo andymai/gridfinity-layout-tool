@@ -26,6 +26,17 @@ import { baseWallHeight } from './binDimensions';
  */
 export const MIN_CUTOUT_FILL_MM = 0.5;
 
+/**
+ * Ceiling a stored offset is clamped to on load.
+ *
+ * Not a wall height: the migration that applies it has no base style to derive
+ * one from, and the control clamps against the real height anyway. This only
+ * has to stop a value that could never describe a bin from reaching the
+ * generator. Mirrors `CONSTRAINTS.MAX_TOP_OFFSET_MM` on the server, which is
+ * `MAX_HEIGHT` height units at the default 7mm.
+ */
+export const MAX_CUTOUT_TOP_OFFSET_MM = 350;
+
 /** Interior wall height (mm) the fill level is measured within. */
 export function cutoutWallHeightMm(
   params: Pick<BinParams, 'base' | 'height' | 'heightUnitMm'>

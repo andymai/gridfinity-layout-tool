@@ -120,6 +120,7 @@ import {
 } from '../types/text';
 import type { TextStyleDefaults } from '../types/text';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
+import { MAX_CUTOUT_TOP_OFFSET_MM } from '../utils/cutoutFill';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import {
   DEFAULT_BIN_PARAMS,
@@ -1294,6 +1295,18 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       rawFillReference !== undefined && CUTOUT_FILL_REFERENCES.includes(rawFillReference)
         ? rawFillReference
         : DEFAULT_CUTOUT_CONFIG.fillReference,
+    // The server bounds this on publish, but nothing bounds a design already
+    // in localStorage or arriving over sync, and those never touch that path.
+    // A string reaches the generator as `wallHeight - topOffset` = NaN, which
+    // drops every cutout silently, and breaks the slider on the way. Clamped
+    // only against zero and a sane ceiling: the wall height is not known here,
+    // and the control and `cutoutFillHeightMm` both clamp against the real one.
+    topOffset: clampNumber(
+      rawCutoutConfig.topOffset,
+      0,
+      MAX_CUTOUT_TOP_OFFSET_MM,
+      DEFAULT_CUTOUT_CONFIG.topOffset
+    ),
   };
 
   // Migrate handle config (v2: ledges → holes)
