@@ -11,6 +11,8 @@ import {
   resolveScrewHeadDiameter,
   screwHeadRecessDepth,
   screwPadThicknessMm,
+  screwSnapPreference,
+  type ScrewAnchor,
   type ScrewPieceInput,
 } from './screwHolePlan';
 
@@ -158,6 +160,74 @@ describe('minBandForHead', () => {
   });
 });
 
+describe('screwSnapPreference', () => {
+  /** The anchor a half-turn maps each anchor onto. */
+  const HALF_TURN: Record<ScrewAnchor, ScrewAnchor> = {
+    bl: 'tr',
+    tr: 'bl',
+    br: 'tl',
+    tl: 'br',
+    b: 't',
+    t: 'b',
+    l: 'r',
+    r: 'l',
+  };
+
+  it('gives every anchor the exact opposite lean to its half-turn partner', () => {
+    // This is the whole property: a tie resolved by lean then resolves to the
+    // mirrored point for the partner, so the set closes under the rotation.
+    for (const anchor of SCREW_ANCHORS) {
+      const [x, y] = screwSnapPreference(anchor);
+      const [px, py] = screwSnapPreference(HALF_TURN[anchor]);
+      // Summed rather than negated: -0 is not Object.is-equal to 0, which is
+      // what a deep-equal against [-x, -y] would trip over on a zero component.
+      expect(px + x).toBe(0);
+      expect(py + y).toBe(0);
+    }
+  });
+
+  it('leans an edge midpoint along the axis it does not name', () => {
+    // 'b' is fixed in y and free in x, so the lean has to act on x or it can
+    // never break the tie it exists for.
+    expect(screwSnapPreference('b')).toEqual([-1, 0]);
+    expect(screwSnapPreference('t')).toEqual([1, 0]);
+    expect(screwSnapPreference('l')).toEqual([0, 1]);
+    expect(screwSnapPreference('r')).toEqual([0, -1]);
+  });
+
+  it('leans a corner outboard along its own diagonal', () => {
+    expect(screwSnapPreference('bl')).toEqual([-1, -1]);
+    expect(screwSnapPreference('tr')).toEqual([1, 1]);
+  });
+
+  it('never returns a negative zero, which would not compare equal to its mirror', () => {
+    for (const anchor of SCREW_ANCHORS) {
+      for (const component of screwSnapPreference(anchor)) {
+        expect(Object.is(component, -0)).toBe(false);
+      }
+    }
+  });
+});
+
+describe('SCREW_ANCHORS', () => {
+  it('fills half-turn pairs, so an even count always closes under the rotation', () => {
+    const HALF_TURN: Record<ScrewAnchor, ScrewAnchor> = {
+      bl: 'tr',
+      tr: 'bl',
+      br: 'tl',
+      tl: 'br',
+      b: 't',
+      t: 'b',
+      l: 'r',
+      r: 'l',
+    };
+    for (let count = 2; count <= SCREW_ANCHORS.length; count += 2) {
+      const filled = new Set<ScrewAnchor>(SCREW_ANCHORS.slice(0, count));
+      for (const anchor of filled) expect(filled.has(HALF_TURN[anchor])).toBe(true);
+    }
+  });
+});
+
 describe('planPieceScrews', () => {
   it('sites four corner screws in the margin when the bands are wide enough', () => {
     const slots = planPieceScrews(
@@ -166,7 +236,7 @@ describe('planPieceScrews', () => {
     );
     expect(slots).toHaveLength(4);
     expect(slots.every((s) => s.site === 'margin')).toBe(true);
-    expect(slots.map((s) => s.anchor)).toEqual(['bl', 'br', 'tr', 'tl']);
+    expect(slots.map((s) => s.anchor)).toEqual(['bl', 'tr', 'br', 'tl']);
   });
 
   it('falls back to the floor when no band can host the head', () => {
@@ -217,9 +287,11 @@ describe('planPieceScrews', () => {
     expect(new Set(anchors).size).toBe(anchors.length);
   });
 
-  it('extends to edge midpoints for counts above four', () => {
+  it('extends to edge midpoints for counts above four, a half-turn pair at a time', () => {
+    // b before t before r/l, not the compass order: six screws then close under
+    // the 180° rotation instead of taking one anchor whose partner never fills.
     const slots = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 6 }, piece());
-    expect(slots.map((s) => s.anchor)).toEqual(['bl', 'br', 'tr', 'tl', 'b', 'r']);
+    expect(slots.map((s) => s.anchor)).toEqual(['bl', 'tr', 'br', 'tl', 'b', 't']);
   });
 
   it('caps a count beyond the anchor list rather than stacking holes', () => {

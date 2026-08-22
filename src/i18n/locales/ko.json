@@ -887,7 +887,7 @@
   "binDesigner.designName": "디자인 이름",
   "binDesigner.designs": "디자인",
   "binDesigner.detachableFeet": "분리형 발",
-  "binDesigner.detachableFeet.pinHint": "큰 핀이 들어가지 않으면 작은 핀을 먼저 시도하세요",
+  "binDesigner.detachableFeet.pinHint": "최대 지름이며 구멍은 3mm입니다. 다리가 들어가지 않으면 한 치수 작게 선택하세요.",
   "binDesigner.detachableFeet.pinSize": "핀 크기",
   "binDesigner.detachableFeet.saving": "일체형 발보다 재료를 {percent}% 적게 사용합니다",
   "binDesigner.detachableFeet.savingSuperseded": "경량 베이스가 이미 이 절감을 제공합니다",

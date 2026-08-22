@@ -26,6 +26,7 @@ import {
   planPieceScrews,
   resolveScrewHeadDiameter,
   screwCutDepths,
+  screwSnapPreference,
   type ScrewSite,
   type ScrewSlot,
 } from '@/shared/generation/screwHolePlan';
@@ -76,11 +77,26 @@ export function screwFloorCandidates(
 }
 
 /**
+ * Squared-mm slack within which two candidates count as EQUIDISTANT, so the
+ * lean decides between them rather than arrival order. Detecting the tie is the
+ * point: the two magnets flanking a centreline are equidistant by construction,
+ * so a strict `<` never reaches the lean at all.
+ *
+ * Compared against a SQUARED distance, so the slack it admits is `eps / 2r`,
+ * not `sqrt(eps)`: ~0.04nm at an edge anchor's ~128mm², far under the lattice.
+ */
+const SNAP_TIE_EPSILON_MM2 = 1e-6;
+
+/**
  * Turn planned slots into absolute positions.
  *
  * A margin slot already carries its exact centre. A floor slot carries only an
  * ideal target, and is snapped to the nearest candidate: the single rule that
  * stops each layer inventing its own notion of "the corner cell".
+ *
+ * Nearest alone is ambiguous: an edge-midpoint anchor ties exactly between the
+ * two magnets flanking it, and taking the first leans every edge screw toward
+ * one corner (#3698). Ties go to {@link screwSnapPreference}.
  *
  * Candidates are consumed as they are taken. Without that, every anchor on a
  * piece small enough to offer one magnet position would snap to the SAME point
@@ -99,14 +115,20 @@ export function resolveScrewHoles(
       continue;
     }
 
+    const [leanX, leanY] = screwSnapPreference(slot.anchor);
     let bestIndex = -1;
     let bestDist = Number.POSITIVE_INFINITY;
+    let bestLean = Number.NEGATIVE_INFINITY;
     for (let i = 0; i < available.length; i++) {
       const dx = available[i][0] - slot.target[0];
       const dy = available[i][1] - slot.target[1];
       const d = dx * dx + dy * dy;
-      if (d < bestDist) {
-        bestDist = d;
+      if (d > bestDist + SNAP_TIE_EPSILON_MM2) continue;
+
+      const lean = dx * leanX + dy * leanY;
+      if (d < bestDist - SNAP_TIE_EPSILON_MM2 || lean > bestLean) {
+        bestDist = Math.min(bestDist, d);
+        bestLean = lean;
         bestIndex = i;
       }
     }

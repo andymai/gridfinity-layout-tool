@@ -887,7 +887,7 @@
   "binDesigner.designName": "Design-Name",
   "binDesigner.designs": "Designs",
   "binDesigner.detachableFeet": "Abnehmbare Füße",
-  "binDesigner.detachableFeet.pinHint": "Wenn der größere Stift nicht sitzt, zuerst den kleineren versuchen",
+  "binDesigner.detachableFeet.pinHint": "Größter Durchmesser, für eine 3-mm-Bohrung. Sitzt ein Fuß nicht, eine Größe kleiner wählen.",
   "binDesigner.detachableFeet.pinSize": "Stiftgröße",
   "binDesigner.detachableFeet.saving": "Verbraucht {percent} % weniger Material als feste Füße",
   "binDesigner.detachableFeet.savingSuperseded": "Der Leichtbau-Boden deckt diese Einsparung bereits ab",

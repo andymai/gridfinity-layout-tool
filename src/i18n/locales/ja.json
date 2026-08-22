@@ -887,7 +887,7 @@
   "binDesigner.designName": "デザイン名",
   "binDesigner.designs": "デザイン",
   "binDesigner.detachableFeet": "取り外し式の脚",
-  "binDesigner.detachableFeet.pinHint": "大きいピンが入らない場合は小さいピンをお試しください",
+  "binDesigner.detachableFeet.pinHint": "最大径です（穴は3mm）。脚が入らない場合は1サイズ小さくしてください。",
   "binDesigner.detachableFeet.pinSize": "ピンの太さ",
   "binDesigner.detachableFeet.saving": "一体型の脚より材料を{percent}%節約します",
   "binDesigner.detachableFeet.savingSuperseded": "軽量ベースで既にこの節約は実現されています",

@@ -887,7 +887,7 @@
   "binDesigner.designName": "Nom du design",
   "binDesigner.designs": "Designs",
   "binDesigner.detachableFeet": "Pieds amovibles",
-  "binDesigner.detachableFeet.pinHint": "Essayez d'abord le petit ergot si le grand ne rentre pas",
+  "binDesigner.detachableFeet.pinHint": "Diamètre maximal, pour un trou de 3 mm. Si un pied ne s’emboîte pas, descendez d’une taille.",
   "binDesigner.detachableFeet.pinSize": "Taille des ergots",
   "binDesigner.detachableFeet.saving": "Utilise {percent} % de matière en moins que des pieds intégrés",
   "binDesigner.detachableFeet.savingSuperseded": "La base allégée couvre déjà cette économie",

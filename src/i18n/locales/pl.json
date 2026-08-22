@@ -887,7 +887,7 @@
   "binDesigner.designName": "Nazwa projektu",
   "binDesigner.designs": "Projekty",
   "binDesigner.detachableFeet": "Odczepiane nóżki",
-  "binDesigner.detachableFeet.pinHint": "Jeśli większy kołek nie wchodzi, spróbuj najpierw mniejszego",
+  "binDesigner.detachableFeet.pinHint": "Największa średnica, do otworu 3 mm. Jeśli nóżka nie wchodzi, wybierz mniejszy rozmiar.",
   "binDesigner.detachableFeet.pinSize": "Rozmiar kołka",
   "binDesigner.detachableFeet.saving": "Zużywa o {percent}% mniej materiału niż nóżki wbudowane",
   "binDesigner.detachableFeet.savingSuperseded": "Odchudzona podstawa już zapewnia tę oszczędność",

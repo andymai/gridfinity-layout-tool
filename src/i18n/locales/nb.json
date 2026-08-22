@@ -887,7 +887,7 @@
   "binDesigner.designName": "Designnavn",
   "binDesigner.designs": "Design",
   "binDesigner.detachableFeet": "Avtakbare føtter",
-  "binDesigner.detachableFeet.pinHint": "Prøv den minste pinnen først hvis den største ikke sitter",
+  "binDesigner.detachableFeet.pinHint": "Største diameter, i et 3 mm hull. Går ikke en fot på plass, velg én størrelse mindre.",
   "binDesigner.detachableFeet.pinSize": "Pinnestørrelse",
   "binDesigner.detachableFeet.saving": "Bruker {percent} % mindre materiale enn innebygde føtter",
   "binDesigner.detachableFeet.savingSuperseded": "Den lette bunnen dekker allerede denne besparelsen",

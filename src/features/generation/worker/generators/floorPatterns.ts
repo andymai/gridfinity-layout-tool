@@ -306,6 +306,6 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
   return {
     windows,
     cutZ0: dim.undersideRelief ? -COPLANAR_MARGIN : -dim.baseOffsetZ - COPLANAR_MARGIN,
-    cutZ1: params.wallThickness + COPLANAR_MARGIN,
+    cutZ1: dim.floorThickness + COPLANAR_MARGIN,
   };
 }

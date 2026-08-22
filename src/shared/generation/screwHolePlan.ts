@@ -54,8 +54,14 @@ export type ScrewSite = 'margin' | 'floor';
  * `preferIdenticalPieces` a piece may be placed 180° rotated, which maps
  * bl↔tr and br↔tl; a full set is invariant under that, a partial one is not and
  * would break the rotated pair's shared fingerprint.
+ *
+ * WITHIN each block the order is by half-turn pair, not by the compass: bl/tr
+ * before br/tl, and b/t before r/l, so every even count closes under that same
+ * rotation (#3698). It also picks the better two-screw layout for free, since a
+ * diagonal pair resists the pivot that two screws sharing an edge allow. Odd
+ * counts cannot close and are left asymmetric rather than pretended otherwise.
  */
-export const SCREW_ANCHORS = ['bl', 'br', 'tr', 'tl', 'b', 'r', 't', 'l'] as const;
+export const SCREW_ANCHORS = ['bl', 'tr', 'br', 'tl', 'b', 't', 'r', 'l'] as const;
 export type ScrewAnchor = (typeof SCREW_ANCHORS)[number];
 
 export interface ScrewSlot {
@@ -331,6 +337,26 @@ function anchorCornerRadius(anchor: ScrewAnchor, radii: ScrewCornerRadii | undef
   if (sx === 0 || sy === 0) return Math.max(radii.tl, radii.tr, radii.bl, radii.br);
   if (sx < 0) return sy < 0 ? radii.bl : radii.tl;
   return sy < 0 ? radii.br : radii.tr;
+}
+
+/**
+ * Which way a floor snap leans when two candidates are equidistant (#3698).
+ *
+ * Mirror symmetry is not on the table: a magnet sits at `cellCenter ±
+ * HOLE_OFFSET`, so nothing ever lands on a centreline for one screw to sit on.
+ * The lean instead makes the SET invariant under a HALF-TURN, the symmetry a
+ * rectangular piece can have and the one `preferIdenticalPieces` already relies
+ * on. So opposite anchors lean opposite ways, and a corner leans outboard along
+ * its own diagonal, which its half-turn partner mirrors.
+ */
+export function screwSnapPreference(anchor: ScrewAnchor): readonly [number, number] {
+  const [sx, sy] = anchorSigns(anchor);
+  // An edge midpoint is free along the axis it does not name. Turning the
+  // anchor's own direction a quarter turn selects that axis and hands 'b'/'t'
+  // (and 'l'/'r') the opposing leans a half-turn demands. A corner names both
+  // axes, so it keeps its own direction.
+  if (sx === 0 || sy === 0) return [sy, sx === 0 ? 0 : -sx];
+  return [sx, sy];
 }
 
 /** The ideal point for an anchor, used as the floor snap target. */

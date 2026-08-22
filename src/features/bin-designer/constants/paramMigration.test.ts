@@ -13,6 +13,7 @@ import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
 import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
+import { DEFAULT_DETACHABLE_PIN_DIAMETER_MM } from '../types/base';
 import { expectOk } from '@/test/testUtils';
 import type { BinParams } from '../types';
 
@@ -677,7 +678,7 @@ describe('migrateParams', () => {
     const result = migrateParams({
       base: { ...DEFAULT_BIN_PARAMS.base, feetPinDiameter: 5 },
     });
-    expect(result.base.feetPinDiameter).toBe(3);
+    expect(result.base.feetPinDiameter).toBe(DEFAULT_DETACHABLE_PIN_DIAMETER_MM);
   });
 
   it('keeps a valid pin diameter and an absent one alone', () => {

@@ -887,7 +887,7 @@
   "binDesigner.designName": "Nome del design",
   "binDesigner.designs": "Design",
   "binDesigner.detachableFeet": "Piedini staccabili",
-  "binDesigner.detachableFeet.pinHint": "Prova prima il perno piccolo se quello grande non entra",
+  "binDesigner.detachableFeet.pinHint": "Diametro massimo, per un foro da 3 mm. Se un piedino non entra, scendi di una misura.",
   "binDesigner.detachableFeet.pinSize": "Misura del perno",
   "binDesigner.detachableFeet.saving": "Usa il {percent}% di materiale in meno rispetto ai piedini integrati",
   "binDesigner.detachableFeet.savingSuperseded": "La base alleggerita copre già questo risparmio",
