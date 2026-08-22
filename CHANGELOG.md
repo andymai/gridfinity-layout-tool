@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.440.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.3...gridfinity-layout-tool-v4.440.4) (2026-08-22)
+
+
+### Bug Fixes
+
+* **baseplate:** let the plate page turn half-grid mode back off ([#3718](https://github.com/andymai/gridfinity-layout-tool/issues/3718)) ([2996b3b](https://github.com/andymai/gridfinity-layout-tool/commit/2996b3b4bc789eb4079e4b2f927bcde2d26da397))
+
 ## [4.440.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.2...gridfinity-layout-tool-v4.440.3) (2026-08-22)
 
 
