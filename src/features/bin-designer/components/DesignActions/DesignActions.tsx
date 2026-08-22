@@ -10,6 +10,8 @@ interface DesignActionsProps {
   design: SavedDesign;
   isActive: boolean;
   onLoad: () => void;
+  /** Absent for kinds that cannot stand on the layout grid (tool racks). */
+  onPlaceInLayout?: () => void;
   onDownloadJSON: () => void;
   onRename: () => void;
   onEditTags: () => void;
@@ -25,6 +27,7 @@ export function DesignActions({
   design,
   isActive,
   onLoad,
+  onPlaceInLayout,
   onDownloadJSON,
   onRename,
   onEditTags,
@@ -162,6 +165,33 @@ export function DesignActions({
                   />
                 </svg>
                 {t('binDesigner.load')}
+              </Button>
+            )}
+
+            {/* Place in layout */}
+            {onPlaceInLayout && (
+              <Button
+                variant="ghost"
+                fullWidth
+                role="menuitem"
+                onClick={handleAction(onPlaceInLayout)}
+                className="w-full px-3 py-2.5 justify-start text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4 text-content-secondary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 17h6m-3-3v6"
+                  />
+                </svg>
+                {t('binDesigner.placeInLayout.action')}
               </Button>
             )}
 
