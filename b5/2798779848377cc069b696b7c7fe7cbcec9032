@@ -1,0 +1,25 @@
+src/shared/utils/collision.test.ts
+  s_b2c3b1c58b951a::t_301a5416752317 229-237
+src/shared/utils/collision.ts
+  s_b2c3b1c58b951a::t_004298e4cd0d3c 54-58
+src/shared/storage/LinkedRiseRegistration.test.tsx
+  s_b2c3b1c58b951a::t_2513410df2d642 59-75
+src/shared/storage/LinkedRiseRegistration.tsx
+  s_b2c3b1c58b951a::t_39bb16fd7b9179 27,30-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "b52798779848377cc069b696b7c7fe7cbcec9032",
+  "prompts": {},
+  "sessions": {
+    "s_b2c3b1c58b951a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d19f78c2-7999-4eab-8419-ff8884cfab45",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
