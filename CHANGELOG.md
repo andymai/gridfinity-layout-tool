@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.440.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.1...gridfinity-layout-tool-v4.440.2) (2026-08-22)
+
+
+### Bug Fixes
+
+* **bin-designer:** start stacking-lip color above the bin's top surface ([#3713](https://github.com/andymai/gridfinity-layout-tool/issues/3713)) ([6d05a2b](https://github.com/andymai/gridfinity-layout-tool/commit/6d05a2b90cf628cd4d0be1918df343942f441b37)), closes [#3705](https://github.com/andymai/gridfinity-layout-tool/issues/3705)
+
 ## [4.440.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.0...gridfinity-layout-tool-v4.440.1) (2026-08-22)
 
 
