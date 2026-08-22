@@ -8,6 +8,8 @@ import type { BinParams } from '@/features/bin-designer/types';
 import { isErr } from '@/core/result';
 import { validateCompartmentSizes } from '@/features/bin-designer/utils/validation';
 import {
+  applyCutoutFillAnchor,
+  captureCutoutFill,
   defaultsForNewDesign,
   paramsNeedHalfGridMode,
   pushHistoryEntry,
@@ -44,6 +46,7 @@ export function createCoreParamActions(set: Set, get: Get) {
 
       set((state) => {
         pushHistoryEntry(state);
+        const heldFill = captureCutoutFill(state);
         state.params[key] = value;
         // When the bin footprint grows or shrinks, keep a custom shape mask
         // aligned to the new dimensions. New cells default to filled so a
@@ -55,6 +58,7 @@ export function createCoreParamActions(set: Set, get: Get) {
             state.params.depth
           );
         }
+        applyCutoutFillAnchor(state, heldFill);
       });
     },
 
@@ -82,6 +86,7 @@ export function createCoreParamActions(set: Set, get: Get) {
 
       set((state) => {
         pushHistoryEntry(state);
+        const heldFill = captureCutoutFill(state);
         Object.assign(state.params, partial);
         // Keep cellMask aligned with the resulting width/depth. Matters for
         // the dimension-swap button and share-load, both of which route
@@ -93,6 +98,7 @@ export function createCoreParamActions(set: Set, get: Get) {
             state.params.depth
           );
         }
+        applyCutoutFillAnchor(state, heldFill);
       });
     },
 

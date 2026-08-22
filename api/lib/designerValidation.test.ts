@@ -2253,3 +2253,48 @@ describe('knifeRest validation', () => {
     expect(withKnifeRest({ enabled: true, color: 'red' }).valid).toBe(false);
   });
 });
+
+describe('cutoutConfig validation (#3697)', () => {
+  function withConfig(cutoutConfig: unknown) {
+    const payload = validPayload();
+    return { ...payload, params: { ...payload.params, cutoutConfig } };
+  }
+
+  it('accepts an absent config, so pre-cutout designs still publish', () => {
+    const result = validateDesignerShare(validPayload(), 1000);
+    expect(result.valid).toBe(true);
+  });
+
+  it('accepts both fill references', () => {
+    for (const fillReference of ['rim', 'floor']) {
+      const result = validateDesignerShare(withConfig({ topOffset: 4, fillReference }), 1000);
+      expect(result.valid).toBe(true);
+    }
+  });
+
+  it('rejects an unknown fill reference', () => {
+    const result = validateDesignerShare(
+      withConfig({ topOffset: 4, fillReference: 'ceiling' }),
+      1000
+    );
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects a non-finite offset, which would NaN every cutout placement', () => {
+    // The generator reads `wallHeight - topOffset` as its cutting plane, so a
+    // NaN here does not fail loudly, it silently produces nothing.
+    expect(validateDesignerShare(withConfig({ topOffset: Number.NaN }), 1000).valid).toBe(false);
+  });
+
+  it('rejects an offset outside the payload bound', () => {
+    expect(validateDesignerShare(withConfig({ topOffset: -1 }), 1000).valid).toBe(false);
+    expect(
+      validateDesignerShare(withConfig({ topOffset: CONSTRAINTS.MAX_TOP_OFFSET_MM + 1 }), 1000)
+        .valid
+    ).toBe(false);
+  });
+
+  it('rejects a config that is not an object', () => {
+    expect(validateDesignerShare(withConfig('flush'), 1000).valid).toBe(false);
+  });
+});
