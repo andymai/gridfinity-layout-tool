@@ -1,0 +1,19 @@
+src/features/bin-designer/types/base.ts
+  s_65ac4d815d4512::t_0e189ce16658ca 315,321
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "a39db90311b943bbe1e5c79ba5124c4abcb218f9",
+  "prompts": {},
+  "sessions": {
+    "s_65ac4d815d4512": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2943a70c-6289-4af1-9d7f-5b681b3147f4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
