@@ -1,0 +1,61 @@
+src/shared/utils/snap.ts
+  s_b2c3b1c58b951a::t_2fa23678206663 231
+  s_b2c3b1c58b951a::t_b9a4dc8d5690aa 4
+  s_b2c3b1c58b951a::t_223c3fc3bcebb2 131-132,143
+  s_b2c3b1c58b951a::t_0a0bbb3a590a9e 173
+  s_b2c3b1c58b951a::t_f0c20c1689a181 367
+  s_b2c3b1c58b951a::t_a03b9bde928628 288-289,293
+src/shared/utils/alignBins.ts
+  s_b2c3b1c58b951a::t_8d82b8316eae07 51-58
+src/shared/hooks/interactions/useResizeInteraction.ts
+  s_b2c3b1c58b951a::t_4d1f62b66df536 164-165
+src/core/store/layout/binActions.ts
+  s_b2c3b1c58b951a::t_5fc38f25b5b991 200-205
+  s_b2c3b1c58b951a::t_6bac651452a211 24-28
+  s_b2c3b1c58b951a::t_5e997a0cc8df6a 62
+src/shared/utils/position.test.ts
+  s_b2c3b1c58b951a::t_d1e8a19dae41a2 1,3,5,342-390
+  s_b2c3b1c58b951a::t_9d0e3299fe0e73 391
+src/features/bin-inspector/hooks/useBinInspectorMultiActions.ts
+  s_b2c3b1c58b951a::t_4fdf802f2f043d 190-197
+src/shared/utils/rotation.ts
+  s_b2c3b1c58b951a::t_268668f4336126 31
+  s_b2c3b1c58b951a::t_cc8c5cfd29d457 93-94
+src/shared/hooks/useSelectionActions.ts
+  s_b2c3b1c58b951a::t_6e3597942875f8 94
+  s_b2c3b1c58b951a::t_b6740121c4e55a 208
+  s_b2c3b1c58b951a::t_2dbc51a994a387 159
+src/shared/hooks/interactions/useStagingDragInteraction.ts
+  s_b2c3b1c58b951a::t_060dc552f9e9c4 145-146
+src/shared/hooks/keyboard/handlers.ts
+  s_b2c3b1c58b951a::t_d542450bfdd1ac 368
+  s_b2c3b1c58b951a::t_b06aa0822bb2e8 236
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_b2c3b1c58b951a::t_4501dcbf2b908c 278-285
+  s_b2c3b1c58b951a::t_45f86e89d7b5bc 471-476
+src/shared/utils/position.ts
+  s_b2c3b1c58b951a::t_5571f8df92cc5d 98-99
+  s_b2c3b1c58b951a::t_309b07fa2b7996 234
+  s_b2c3b1c58b951a::t_fa5e6384d11afa 129
+  s_b2c3b1c58b951a::t_3fc1f7ddf547b0 1-10
+  s_b2c3b1c58b951a::t_52deeaf55b9dd3 209
+src/shared/utils/rotation.test.ts
+  s_b2c3b1c58b951a::t_d1e8a19dae41a2 1-7,9,286-323
+  s_b2c3b1c58b951a::t_a53129187da7ee 324
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "3f749eb23d4ea7fa357fd520581581d9f67569e6",
+  "prompts": {},
+  "sessions": {
+    "s_b2c3b1c58b951a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d19f78c2-7999-4eab-8419-ff8884cfab45",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
