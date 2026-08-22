@@ -287,6 +287,41 @@ describe('assembly migrate', () => {
     expect(migrated.parts[0]?.array).toBeUndefined();
   });
 
+  it('drops each invalid optional on its own, keeping the other', () => {
+    const migrated = migrate(
+      structureWith([
+        post('bad-array', { array: { count: 1, dx: 5, dy: 0 }, mirror: true }),
+        post('bad-mirror', { array: { count: 3, dx: 10, dy: 0 }, mirror: 'yes' }),
+      ])
+    );
+    expect(migrated.parts).toHaveLength(2);
+    expect(migrated.parts[0]?.array).toBeUndefined();
+    expect(migrated.parts[0]?.mirror).toBe(true);
+    expect(migrated.parts[1]?.array).toEqual({ count: 3, dx: 10, dy: 0 });
+    expect(migrated.parts[1]?.mirror).toBeUndefined();
+  });
+
+  it('trims an over-cap build to the first parts instead of resetting it', () => {
+    const parts = Array.from({ length: MAX_ASSEMBLY_PARTS + 40 }, (_, i) => post(`p${i}`));
+    const migrated = migrate(structureWith(parts));
+    expect(migrated.parts).toHaveLength(MAX_ASSEMBLY_PARTS);
+    expect(migrated.parts[0]?.id).toBe('p0');
+    expect(migrated.parts[MAX_ASSEMBLY_PARTS - 1]?.id).toBe(`p${MAX_ASSEMBLY_PARTS - 1}`);
+  });
+
+  it('prunes stacking beyond the depth cap instead of resetting the build', () => {
+    const chain = (depth: number): Record<string, unknown> =>
+      post(`d${depth}`, depth > 1 ? { children: [chain(depth - 1)] } : {});
+    const migrated = migrate(structureWith([chain(MAX_ASSEMBLY_DEPTH + 3)]));
+    let depth = 0;
+    let level = migrated.parts;
+    while (level.length > 0) {
+      depth += 1;
+      level = level[0]?.children ?? [];
+    }
+    expect(depth).toBe(MAX_ASSEMBLY_DEPTH);
+  });
+
   it('resets an invalid base while keeping the parts', () => {
     const migrated = migrate({
       base: { floorThickness: 999 },

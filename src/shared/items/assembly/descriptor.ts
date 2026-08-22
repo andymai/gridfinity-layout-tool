@@ -277,32 +277,50 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 }
 
 /**
- * Salvage one node: fill gaps from defaults, recurse into children, drop the
- * node only when its own values cannot be made valid. Keeping valid siblings
- * and subtrees is the point — one bad node must not cost a whole build.
+ * Salvage one node: fill gaps from defaults, validate each optional on its
+ * own, recurse into children, and drop the node only when its own values
+ * cannot be made valid. Keeping valid siblings and subtrees is the point —
+ * one bad node must not cost a whole build.
  */
 function normalizePartNode(raw: unknown): AssemblyPartNode | null {
   if (!isRecord(raw)) return null;
   if (!isAssemblyPartType(raw.type)) return null;
+  const array = arraySchema.safeParse(raw.array);
   const candidate = {
     id: typeof raw.id === 'string' && raw.id.length > 0 ? raw.id : crypto.randomUUID(),
     type: raw.type,
     params: { ...defaultPartParams(raw.type), ...(isRecord(raw.params) ? raw.params : {}) },
     transform: { ...DEFAULT_PART_TRANSFORM, ...(isRecord(raw.transform) ? raw.transform : {}) },
-    ...(raw.array !== undefined ? { array: raw.array } : {}),
-    ...(raw.mirror !== undefined ? { mirror: raw.mirror } : {}),
+    ...(array.success ? { array: array.data } : {}),
+    ...(typeof raw.mirror === 'boolean' ? { mirror: raw.mirror } : {}),
     children: Array.isArray(raw.children)
       ? raw.children.map(normalizePartNode).filter((n): n is AssemblyPartNode => n !== null)
       : [],
   };
   const parsed = partNodeSchema.safeParse(candidate);
-  if (parsed.success) return parsed.data;
-  const withoutOptionals = partNodeSchema.safeParse({
-    ...candidate,
-    array: undefined,
-    mirror: undefined,
-  });
-  return withoutOptionals.success ? withoutOptionals.data : null;
+  return parsed.success ? parsed.data : null;
+}
+
+/**
+ * Trim an over-cap build instead of losing it: keep the first
+ * `MAX_ASSEMBLY_PARTS` nodes in tree order and drop children below
+ * `MAX_ASSEMBLY_DEPTH`, so the final parse cannot fail on the caps.
+ */
+function capParts(parts: AssemblyPartNode[]): AssemblyPartNode[] {
+  let budget = MAX_ASSEMBLY_PARTS;
+  const prune = (nodes: AssemblyPartNode[], depth: number): AssemblyPartNode[] => {
+    const kept: AssemblyPartNode[] = [];
+    for (const node of nodes) {
+      if (budget === 0) break;
+      budget -= 1;
+      kept.push({
+        ...node,
+        children: depth < MAX_ASSEMBLY_DEPTH ? prune(node.children, depth + 1) : [],
+      });
+    }
+    return kept;
+  };
+  return prune(parts, 1);
 }
 
 function assemblyDefaults(): AssemblyStructure {
@@ -323,9 +341,11 @@ function migrateAssembly(raw: unknown): AssemblyStructure {
       ...(isRecord(obj.base) ? obj.base : {}),
     },
     mirrorAxis: obj.mirrorAxis === 'y' ? ('y' as const) : ('x' as const),
-    parts: Array.isArray(obj.parts)
-      ? obj.parts.map(normalizePartNode).filter((n): n is AssemblyPartNode => n !== null)
-      : [],
+    parts: capParts(
+      Array.isArray(obj.parts)
+        ? obj.parts.map(normalizePartNode).filter((n): n is AssemblyPartNode => n !== null)
+        : []
+    ),
   };
   const parsed = assemblySchema.safeParse(candidate);
   if (parsed.success) return parsed.data;
