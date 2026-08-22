@@ -1,3 +1,4 @@
+import type * as ThreeModule from 'three';
 import type { ReactNode } from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -51,7 +52,12 @@ vi.mock('@react-three/drei', () => ({
   Detailed: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('three', () => {
+vi.mock('three', async (importOriginal) => {
+  // Spread the real module first: the canvas now also pulls the Workshop
+  // proxy-geometry graph, whose imports (Matrix4, Shape, ExtrudeGeometry, ...)
+  // only need to exist at import time — the bin-path assertions below still
+  // exercise the stubbed classes.
+  const actual = await importOriginal<typeof ThreeModule>();
   function BufferGeometry() {
     /* mock */
   }
@@ -177,6 +183,7 @@ vi.mock('three', () => {
   }
 
   return {
+    ...actual,
     Vector2,
     Vector3,
     Spherical,

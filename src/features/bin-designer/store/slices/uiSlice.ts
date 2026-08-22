@@ -3,6 +3,7 @@
  */
 
 import type { Draft } from 'immer';
+import type { AssemblyPartType } from '@/shared/types/assembly';
 import type {
   DesignerState,
   BinParams,
@@ -86,6 +87,18 @@ export function createUISlice(set: Set) {
     setSelectedBentoCompartmentId: (id: number | null) => {
       set((state) => {
         state.ui.selectedBentoCompartmentId = id;
+      });
+    },
+
+    setSelectedAssemblyPartId: (id: string | null) => {
+      set((state) => {
+        state.ui.selectedAssemblyPartId = id;
+      });
+    },
+
+    setWorkshopPendingPartType: (type: AssemblyPartType | null) => {
+      set((state) => {
+        state.ui.workshopPendingPartType = type;
       });
     },
 

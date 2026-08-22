@@ -257,10 +257,9 @@ export const FEATURE_FLAGS = [
     status: 'experimental',
     risk: 'medium',
     warning:
-      'Under construction. The Workshop editor has not shipped yet, so this switch does nothing until it arrives.',
+      'Early feature. Workshop builds are proxy previews only for now — not saved, exportable, or placeable in layouts yet.',
     addedAt: '2026-08',
     requiresRefresh: false,
-    comingSoon: true,
   },
 ] as const satisfies readonly FeatureFlag[];
 

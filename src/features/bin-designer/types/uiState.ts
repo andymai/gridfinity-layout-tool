@@ -2,6 +2,7 @@ import type { ColorZone, HoverableZone } from './featureColors';
 import type { CompartmentConfig } from './compartments';
 import type { InteriorCard } from './interior';
 import type { HistoryEntry, SplitPieceMeshEntry } from './generation';
+import type { AssemblyPartType } from '@/shared/types/assembly';
 import type { OverhangHighlightSide } from './walls';
 import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 
@@ -199,6 +200,16 @@ export interface DesignerUIState {
    * value; consumers must treat an id that is no longer drawn as null.
    */
   readonly selectedBentoCompartmentId: number | null;
+
+  /**
+   * Selected Workshop part, by node id. Cleared when the part (or an
+   * ancestor) is removed; an id absent from the tree after an undo must be
+   * treated as no selection.
+   */
+  readonly selectedAssemblyPartId: string | null;
+
+  /** Palette part type armed for click-to-place in the Workshop canvas. */
+  readonly workshopPendingPartType: AssemblyPartType | null;
 }
 
 /** In-flight divider tilt used only for live preview (see `dividerTiltPreview`). */

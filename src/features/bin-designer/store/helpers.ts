@@ -18,6 +18,7 @@ import { heldCutoutFillMm, reanchorCutoutFill } from '@/features/bin-designer/ut
 import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
+import { findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 
 /**
  * Resolve the parameters a fresh bin starts from.
@@ -115,6 +116,13 @@ export function pushHistoryEntry(
   const entry: HistoryEntry = {
     params: current(state.params),
     mesh: pendingMeshCache,
+    ...(state.itemKind !== 'bin'
+      ? {
+          itemKind: state.itemKind,
+          structure: state.structure ? current(state.structure) : null,
+          envelope: state.envelope ? current(state.envelope) : null,
+        }
+      : {}),
   };
 
   // Snapshot past as plain objects to avoid leaking draft proxies into
@@ -170,6 +178,18 @@ export function dissolveSingletonGroups(cutouts: Cutout[]): Cutout[] {
  */
 export function restoreHistoryEntry(state: Draft<DesignerState>, entry: HistoryEntry): void {
   state.params = entry.params;
+  if (entry.itemKind !== undefined) {
+    state.itemKind = entry.itemKind;
+    state.structure = entry.structure ?? null;
+    state.envelope = entry.envelope ?? null;
+    if (
+      state.ui.selectedAssemblyPartId !== null &&
+      (state.structure?.kind !== 'assembly' ||
+        !findAssemblyPart(state.structure.parts, state.ui.selectedAssemblyPartId))
+    ) {
+      state.ui.selectedAssemblyPartId = null;
+    }
+  }
   // Keep UI toggles consistent with the restored params. Without this,
   // undoing across a custom-shape paint leaves `shapeEditorOpen` stuck on
   // after the mask is gone, and undoing across a dimension change can

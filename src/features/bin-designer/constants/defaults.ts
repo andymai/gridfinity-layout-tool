@@ -307,6 +307,8 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   compartmentLabelMode: false,
   labelFocusCompartmentId: null,
   selectedBentoCompartmentId: null,
+  selectedAssemblyPartId: null,
+  workshopPendingPartType: null,
 };
 
 /** Default empty history */
