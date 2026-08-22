@@ -1,0 +1,24 @@
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_78ddc1438b0696::t_0efceddb8232e6 239-242,268-314,341-345
+  s_78ddc1438b0696::t_148ebafec6be2f 10-11,25,66-67
+src/features/baseplate/components/PaddingStepper/index.ts
+  s_78ddc1438b0696::t_28c13f055c1098 2
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.test.tsx
+  s_78ddc1438b0696::t_a65c80a71bab82 6,9,17-18,21-22,92-185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "3641277d54d3c0416f49e59d1bf6f583be428f58",
+  "prompts": {},
+  "sessions": {
+    "s_78ddc1438b0696": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49f34978-08aa-4eeb-8146-635fb8d4d8e9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
