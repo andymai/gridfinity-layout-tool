@@ -5,7 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { gridUnits, mm } from '@/core/types';
+import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { drawerFrameOverhang } from '@/shared/utils/outlineFrame';
 
@@ -118,6 +118,18 @@ describe('DimensionsSection', () => {
       });
     }
 
+    /** Outer plate size in mm — the figure the user typed, which has to survive. */
+    function footprint(): { w: number; d: number } {
+      const { layout } = useLayoutStore.getState();
+      const p = layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      const gridW = (p.baseplateWidth ?? layout.drawer.width) * layout.gridUnitMm;
+      const gridD = (p.baseplateDepth ?? layout.drawer.depth) * effectiveGridUnitMmY(layout);
+      return {
+        w: gridW + p.paddingLeft + p.paddingRight,
+        d: gridD + p.paddingFront + p.paddingBack,
+      };
+    }
+
     it('reflects the stored mode', () => {
       useHalfGridModeStore.getState().setHalfGridMode(true);
       render(<DimensionsSection />);
@@ -130,12 +142,11 @@ describe('DimensionsSection', () => {
       expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
 
-    // The 502mm drawer from the mm-entry case above, run backwards: 11.5 units
-    // and 9.5mm a side becomes 11 units and 20mm, the same 502mm footprint.
     it('floors fractional dimensions and hands the millimetres back to padding', () => {
       useHalfGridModeStore.getState().setHalfGridMode(true);
       detachedPlate(11.5, 6.5, 9.5);
       render(<DimensionsSection />);
+      const before = footprint();
       fireEvent.click(toggle());
 
       const params = useLayoutStore.getState().layout.baseplateParams;
@@ -146,6 +157,7 @@ describe('DimensionsSection', () => {
       expect(params?.paddingRight).toBeCloseTo(20, 2);
       expect(params?.paddingFront).toBeCloseTo(20, 2);
       expect(params?.paddingBack).toBeCloseTo(20, 2);
+      expect(footprint()).toEqual(before);
     });
 
     it('leaves whole-unit dimensions and their padding untouched', () => {

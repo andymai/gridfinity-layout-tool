@@ -280,14 +280,15 @@ export function DimensionsSection() {
    */
   const handleHalfGridToggle = useCallback(
     (checked: boolean) => {
-      if (checked) {
-        setHalfGridMode(true);
-        return;
-      }
+      // Both directions route through the toggle rather than a bare setter, so
+      // this checkbox earns the feature-usage mark and the persistence-failure
+      // toast the store attaches to a user-driven flip.
+      if (checked === useHalfGridModeStore.getState().halfGridMode) return;
       if (!isOk(toggleHalfGridMode())) {
         addToast(t('halfBinBlocked.message'), 'error');
         return;
       }
+      if (checked) return;
       const layoutState = useLayoutStore.getState().layout;
       const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       if (current.syncWithLayout !== false) return;
@@ -311,7 +312,7 @@ export function DimensionsSection() {
         paddingBack: mm(grow(current.paddingBack, freedDepth)),
       });
     },
-    [addToast, gridUnitMm, gridUnitMmY, setHalfGridMode, t, toggleHalfGridMode]
+    [addToast, gridUnitMm, gridUnitMmY, t, toggleHalfGridMode]
   );
 
   return (
