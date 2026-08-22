@@ -26,6 +26,7 @@ import {
   planPieceScrews,
   resolveScrewHeadDiameter,
   screwCutDepths,
+  screwSnapPreference,
   type ScrewSite,
   type ScrewSlot,
 } from '@/shared/generation/screwHolePlan';
@@ -76,11 +77,29 @@ export function screwFloorCandidates(
 }
 
 /**
+ * Squared-mm slack below which two candidates count as the same distance.
+ *
+ * Guards float noise only: at the ~130mm² separations an edge anchor sees, this
+ * is a few nanometres of position, far under any distinction the lattice can
+ * express. It has to exist because the tie it detects is EXACT in exact
+ * arithmetic (the two magnets flanking a centreline are equidistant by
+ * construction), so `<` alone would resolve it by accumulated rounding.
+ */
+const SNAP_TIE_EPSILON_MM2 = 1e-6;
+
+/**
  * Turn planned slots into absolute positions.
  *
  * A margin slot already carries its exact centre. A floor slot carries only an
  * ideal target, and is snapped to the nearest candidate: the single rule that
  * stops each layer inventing its own notion of "the corner cell".
+ *
+ * Nearest is not enough on its own. Magnets sit at `cellCenter ± HOLE_OFFSET`,
+ * so nothing is ever ON a centreline and an edge-midpoint anchor ties exactly
+ * between the two positions flanking it; taking the first such candidate leans
+ * every edge screw toward whichever corner `forEachCell` emits first (#3698).
+ * Ties therefore go to {@link screwSnapPreference}, which leans opposite
+ * anchors opposite ways so the resolved set is invariant under a half-turn.
  *
  * Candidates are consumed as they are taken. Without that, every anchor on a
  * piece small enough to offer one magnet position would snap to the SAME point
@@ -99,14 +118,20 @@ export function resolveScrewHoles(
       continue;
     }
 
+    const [leanX, leanY] = screwSnapPreference(slot.anchor);
     let bestIndex = -1;
     let bestDist = Number.POSITIVE_INFINITY;
+    let bestLean = Number.NEGATIVE_INFINITY;
     for (let i = 0; i < available.length; i++) {
       const dx = available[i][0] - slot.target[0];
       const dy = available[i][1] - slot.target[1];
       const d = dx * dx + dy * dy;
-      if (d < bestDist) {
-        bestDist = d;
+      if (d > bestDist + SNAP_TIE_EPSILON_MM2) continue;
+
+      const lean = dx * leanX + dy * leanY;
+      if (d < bestDist - SNAP_TIE_EPSILON_MM2 || lean > bestLean) {
+        bestDist = Math.min(bestDist, d);
+        bestLean = lean;
         bestIndex = i;
       }
     }

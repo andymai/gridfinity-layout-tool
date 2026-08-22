@@ -54,8 +54,16 @@ export type ScrewSite = 'margin' | 'floor';
  * `preferIdenticalPieces` a piece may be placed 180° rotated, which maps
  * bl↔tr and br↔tl; a full set is invariant under that, a partial one is not and
  * would break the rotated pair's shared fingerprint.
+ *
+ * WITHIN each block the order is by half-turn pair, not by the compass: bl/tr
+ * before br/tl, and b/t before r/l. Every even count then closes under the same
+ * rotation instead of taking an anchor whose partner is never filled, which is
+ * what left the edge screws with no symmetry at all (#3698). It also picks the
+ * better two-screw layout for free: a diagonal pair resists the pivot that two
+ * screws sharing an edge allow. Odd counts cannot close (the extra screw has no
+ * partner) and are left asymmetric rather than pretended otherwise.
  */
-export const SCREW_ANCHORS = ['bl', 'br', 'tr', 'tl', 'b', 'r', 't', 'l'] as const;
+export const SCREW_ANCHORS = ['bl', 'tr', 'br', 'tl', 'b', 't', 'r', 'l'] as const;
 export type ScrewAnchor = (typeof SCREW_ANCHORS)[number];
 
 export interface ScrewSlot {
@@ -331,6 +339,38 @@ function anchorCornerRadius(anchor: ScrewAnchor, radii: ScrewCornerRadii | undef
   if (sx === 0 || sy === 0) return Math.max(radii.tl, radii.tr, radii.bl, radii.br);
   if (sx < 0) return sy < 0 ? radii.bl : radii.tl;
   return sy < 0 ? radii.br : radii.tr;
+}
+
+/**
+ * Which way a floor snap leans when two candidates are equidistant from an
+ * anchor's ideal target.
+ *
+ * A magnet sits at `cellCenter ± HOLE_OFFSET`, so no candidate ever lands on a
+ * piece's centreline and an edge-midpoint anchor is ALWAYS an exact tie between
+ * the two positions flanking it. Left to the candidate list's order, every such
+ * anchor takes whichever cell `forEachCell` happened to emit first, which drags
+ * all four edge screws toward the same corner and leaves the set invariant
+ * under no symmetry at all (#3698).
+ *
+ * Mirror symmetry is not on the table: one screw cannot straddle a centreline,
+ * and there is never a candidate on it to sit at. So the lean is chosen to make
+ * the SET invariant under a HALF-TURN, which is the symmetry a rectangular
+ * piece can actually have, and the one `preferIdenticalPieces` already relies
+ * on when it places a piece 180° rotated. Opposite anchors therefore lean
+ * opposite ways, and a corner leans outboard along its own diagonal, which its
+ * half-turn partner mirrors.
+ *
+ * Returned as a direction rather than a chosen point because the candidate set
+ * is the geometry layer's to know; this states only which way to break a tie.
+ */
+export function screwSnapPreference(anchor: ScrewAnchor): readonly [number, number] {
+  const [sx, sy] = anchorSigns(anchor);
+  // An edge midpoint is free along the axis it does not name. Turning the
+  // anchor's own direction a quarter turn selects that axis and hands 'b'/'t'
+  // (and 'l'/'r') the opposing leans a half-turn demands. A corner names both
+  // axes, so it keeps its own direction.
+  if (sx === 0 || sy === 0) return [sy, sx === 0 ? 0 : -sx];
+  return [sx, sy];
 }
 
 /** The ideal point for an anchor, used as the floor snap target. */
