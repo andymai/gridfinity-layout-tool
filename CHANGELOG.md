@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.441.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.4...gridfinity-layout-tool-v4.441.0) (2026-08-22)
+
+
+### Features
+
+* **workshop:** add the assembly item kind and schema behind a labs flag ([#3720](https://github.com/andymai/gridfinity-layout-tool/issues/3720)) ([779ca69](https://github.com/andymai/gridfinity-layout-tool/commit/779ca69b3c51e1c4ec3e062cb3be3a7999802ebb))
+
 ## [4.440.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.440.3...gridfinity-layout-tool-v4.440.4) (2026-08-22)
 
 
