@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.438.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.1...gridfinity-layout-tool-v4.438.2) (2026-08-22)
+
+
+### Bug Fixes
+
+* **bin-designer:** take the detachable floor from the spec's dead space ([#3704](https://github.com/andymai/gridfinity-layout-tool/issues/3704)) ([4a6eb01](https://github.com/andymai/gridfinity-layout-tool/commit/4a6eb01e2d0120c4c154a3a95095cdf1659ca68b))
+
 ## [4.438.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.438.0...gridfinity-layout-tool-v4.438.1) (2026-08-22)
 
 
