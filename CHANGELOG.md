@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.470.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.469.0...gridfinity-layout-tool-v4.470.0) (2026-08-23)
+
+
+### Features
+
+* **generation:** magnet and screw holes on half-size feet ([#3781](https://github.com/andymai/gridfinity-layout-tool/issues/3781)) ([caaa9b0](https://github.com/andymai/gridfinity-layout-tool/commit/caaa9b0003b1f3124dccf6b7933b75b08f995e59))
+
 ## [4.469.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.468.0...gridfinity-layout-tool-v4.469.0) (2026-08-23)
 
 
