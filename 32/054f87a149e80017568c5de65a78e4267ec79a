@@ -1,0 +1,91 @@
+src/features/community/components/CommunityDetail/CommunityDetailContent.tsx
+  s_a36c0b85dfeec4::t_38643114b99eca 408-412
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/shared/types/community.ts
+  s_a36c0b85dfeec4::t_3144f2bbefd9d9 158-159,210-215
+  s_a36c0b85dfeec4::t_21ac6bc5d4c61f 12-13
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/shared/types/exampleTechniques.ts
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 20-21,34
+src/features/community/components/PrintCostPanel/PrintCostPanel.test.tsx
+  s_a36c0b85dfeec4::t_8f72abfd948948 52
+  s_a36c0b85dfeec4::t_d89cfa38b1fcb2 49-51,53-54
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/features/community/api/client.test.ts
+  s_a36c0b85dfeec4::t_e35e79bd9f9e55 680-709
+src/features/bin-designer/utils/communityToDesign.ts
+  s_a36c0b85dfeec4::t_45ad7e991f114e 2,41-49
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/shell/Modals/DesignGalleryModal/communityDesignerBridge.ts
+  s_a36c0b85dfeec4::t_45ad7e991f114e 113-142,147-149,186,200-211
+  s_a36c0b85dfeec4::t_a3b6393f7abafa 13-14
+src/features/community/components/PrintCostPanel/PrintCostPanel.tsx
+  s_a36c0b85dfeec4::t_4d8960ffaf1af0 29-30,88
+src/features/community/components/PublishDialog/PublishDialog.tsx
+  s_a36c0b85dfeec4::t_38643114b99eca 188-190
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+scripts/i18n-values-allowlist.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 158
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 4023
+src/features/community/api/client.ts
+  s_a36c0b85dfeec4::t_8eb255ba95fd73 113-114
+src/features/bin-designer/utils/communityToDesign.test.ts
+  s_a36c0b85dfeec4::t_ea19f9b18a6bca 109-159
+src/shell/Modals/DesignGalleryModal/communityDesignerBridge.test.ts
+  s_a36c0b85dfeec4::t_101d6717699d45 38-43,46-47,193-251,253-257,260
+  s_a36c0b85dfeec4::t_db1f00dfc84806 252
+  s_a36c0b85dfeec4::t_2d05c3fce4847d 258-259
+  s_a36c0b85dfeec4::t_2435804865b128 261-263
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_e0d8eb9b6ad8a0 1905
+src/shared/types/exampleTechniques.test.ts
+  s_a36c0b85dfeec4::t_e2d16b30035086 17,33
+api/lib/communityValidation.ts
+  s_a36c0b85dfeec4::t_b27df50381fd13 13-17,253-254,467-471,473,482,484-486,488-489
+  s_a36c0b85dfeec4::t_8c8b1c1ca17dc1 19
+api/lib/communityValidation.test.ts
+  s_a36c0b85dfeec4::t_8c8b1c1ca17dc1 144-168
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_7456630c89612c 248-412
+  s_a36c0b85dfeec4::t_e737cea5bdd7ad 413-415
+api/lib/communityStore.ts
+  s_a36c0b85dfeec4::t_8c8b1c1ca17dc1 124-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "32054f87a149e80017568c5de65a78e4267ec79a",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
