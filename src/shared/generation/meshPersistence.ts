@@ -20,6 +20,7 @@
 import { openDB } from 'idb';
 import type { IDBPDatabase } from 'idb';
 import type { BinParams } from '@/shared/types/bin';
+import type { GridfinityItem } from '@/shared/types/item';
 import type { KernelName } from '@/shared/generation/bridge';
 import type { MeshData } from '@/shared/types/generation';
 import { meshDataByteSize } from './meshBytes';
@@ -201,6 +202,17 @@ function djb2(str: string): string {
 export function binMeshCacheKey(params: BinParams, kernel: KernelName): string {
   const revision = KERNEL_MESH_REVISION[kernel];
   return `${MESH_CACHE_VERSION}:${kernel}-${revision}:${djb2(stableStringify(params))}`;
+}
+
+/**
+ * Content-addressed cache key for a non-bin item's preview mesh (envelope +
+ * discriminated structure). Same kernel-namespacing contract as
+ * {@link binMeshCacheKey}; the `item:` segment keeps the two content spaces
+ * from ever colliding on a hash.
+ */
+export function itemMeshCacheKey(item: GridfinityItem, kernel: KernelName): string {
+  const revision = KERNEL_MESH_REVISION[kernel];
+  return `${MESH_CACHE_VERSION}:${kernel}-${revision}:item:${djb2(stableStringify(item))}`;
 }
 
 /**

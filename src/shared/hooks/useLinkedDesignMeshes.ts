@@ -7,6 +7,8 @@
  * - `importedMesh`: the stored GMA1 asset IS the geometry — decoded on the
  *   main thread and re-framed to the preview convention (XY-centered, Z=0
  *   bottom), exactly like the worker's `importedMeshItem.generate`.
+ * - `assembly`: generated through the item bridge (`generateItemImmediate`),
+ *   content-addressed into the same cross-session mesh cache.
  * - `bin` (params): the cross-session IndexedDB mesh cache is tried first
  *   (`meshPersistence`, keyed by params hash + active kernel — instant for any
  *   design the user has opened); on a miss the mesh is generated via
@@ -25,6 +27,7 @@ import { loadDesign, useCustomBins, type SavedDesign } from '@/features/bin-desi
 import { decodeMeshData } from '@/shared/generation/meshAsset';
 import {
   binMeshCacheKey,
+  itemMeshCacheKey,
   loadPersistedBinMesh,
   savePersistedBinMesh,
 } from '@/shared/generation/meshPersistence';
@@ -32,6 +35,7 @@ import { bridgeManager, getActiveKernel } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { useSettingsStore } from '@/core/store';
 import type { MeshData } from '@/shared/types/generation';
+import type { GridfinityItem } from '@/shared/types/item';
 
 /** A resolved design mesh ready for layout preview rendering. */
 export interface LinkedDesignMesh {
@@ -135,6 +139,27 @@ async function resolveDesignMesh(
       triangleCount: indices.length / 3,
     };
     return { sig, mesh, width: design.envelope.width, depth: design.envelope.depth };
+  }
+
+  if (structure?.kind === 'assembly' && design.envelope) {
+    const item: GridfinityItem = { envelope: design.envelope, structure };
+    // Content-addressed like the bin path, so a returning user's drawer shows
+    // the holder instantly without a worker round-trip.
+    const persistKey = itemMeshCacheKey(item, getActiveKernel());
+    const persisted = await loadPersistedBinMesh(persistKey);
+    if (persisted) {
+      return { sig, mesh: persisted, width: design.envelope.width, depth: design.envelope.depth };
+    }
+    const bridge = await bridgeManager.acquire();
+    try {
+      const result = await bridge.generateItemImmediate(item);
+      if (result.mesh.vertices.length === 0) return null;
+      const mesh = stripLabelPlates(result.mesh);
+      savePersistedBinMesh(persistKey, mesh);
+      return { sig, mesh, width: design.envelope.width, depth: design.envelope.depth };
+    } finally {
+      bridgeManager.release();
+    }
   }
 
   const params = design.params;
