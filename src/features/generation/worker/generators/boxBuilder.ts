@@ -298,10 +298,9 @@ export function buildBinBox(
      * The slab overlaps the existing floor top by COPLANAR_MARGIN — merely
      * meeting that face fuses non-manifold.
      *
-     * `taper` is the taper the body was actually built with, absent on every
-     * untapered path and on a taper fallback. The slab footprint is rim-sized,
-     * and down at the floor a tapered wall has narrowed away from the rim, so
-     * unclipped it fuses on as a plate protruding into open air (#3751).
+     * Its footprint is rim-sized, so on a tapered body it has to be clipped to
+     * the inner envelope: down at the floor the wall has narrowed away from the
+     * rim, and the raw slab fuses on as a plate protruding past it.
      */
     const finish = (shape: Shape3D, taper?: ResolvedTaper | null): Shape3D => {
       if (!raisesFloor) return setBoxCache(boxKey, shape);
