@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "name": "Impossible grid",
+  "drawer": { "width": 3, "depth": 2, "height": 6 },
+  "gridUnitMm": 300,
+  "heightUnitMm": 7,
+  "categories": [{ "id": "c1", "name": "General", "color": "#3b82f6" }],
+  "layers": [{ "id": "l1", "name": "Base", "height": 6 }],
+  "bins": []
+}

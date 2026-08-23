@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "name": "Two bins on the same cells",
+  "drawer": { "width": 3, "depth": 2, "height": 6 },
+  "gridUnitMm": 42,
+  "heightUnitMm": 7,
+  "categories": [{ "id": "c1", "name": "General", "color": "#3b82f6" }],
+  "layers": [{ "id": "l1", "name": "Base", "height": 6 }],
+  "bins": [
+    {
+      "id": "b1",
+      "layerId": "l1",
+      "x": 0,
+      "y": 0,
+      "width": 2,
+      "depth": 2,
+      "height": 6,
+      "category": "c1",
+      "label": "First",
+      "notes": ""
+    },
+    {
+      "id": "b2",
+      "layerId": "l1",
+      "x": 1,
+      "y": 0,
+      "width": 2,
+      "depth": 2,
+      "height": 6,
+      "category": "c1",
+      "label": "Second",
+      "notes": ""
+    }
+  ]
+}

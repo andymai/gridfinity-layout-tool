@@ -1,0 +1,17 @@
+{
+  "$schema": "https://gridfinitylayouttool.com/schema/bin-design.schema.json",
+  "type": "gridfinity-bin-design",
+  "version": "1.0",
+  "name": "Minimal bin",
+  "params": {
+    "width": 2,
+    "depth": 2,
+    "height": 3,
+    "gridUnitMm": 42,
+    "heightUnitMm": 7,
+    "wallThickness": 1.2,
+    "style": "standard",
+    "base": { "style": "standard", "stackingLip": true },
+    "compartments": { "cols": 1, "rows": 1, "thickness": 1.2, "cells": [0] }
+  }
+}

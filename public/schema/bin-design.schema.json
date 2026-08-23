@@ -1,0 +1,2523 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gridfinitylayouttool.com/schema/bin-design.schema.json",
+  "title": "Gridfinity bin design",
+  "description": "A single bin design exported from the Gridfinity Layout Tool bin designer. Unknown properties are allowed so newer files still validate. This schema is an AUTHORING contract: it enforces enums and ranges strictly, while `required` lists only what the importer genuinely rejects a file for. Every other BinParams field is non-optional in TypeScript but is backfilled by migrateParams on load, so a hand-authored file may omit it. See https://gridfinitylayouttool.com/schema",
+  "type": "object",
+  "required": ["type", "version", "name", "params"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional pointer to this schema. Ignored by the importer; present only so editors offer completion."
+    },
+    "type": {
+      "const": "gridfinity-bin-design",
+      "description": "Document discriminator. The importer rejects any other value."
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Document format version. Always \"1.0\". The importer never branches on it; backward compatibility is handled by migrateParams instead."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Design name. Also seeds the export filename."
+    },
+    "params": {
+      "$ref": "#/$defs/BinParams"
+    },
+    "_meta": {
+      "$ref": "#/$defs/ExportMeta"
+    }
+  },
+  "$defs": {
+    "AccentBandConfig": {
+      "type": "object",
+      "description": "A horizontal accent band of a different colour.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the accent band."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Band colour."
+        },
+        "heightMm": {
+          "type": "number",
+          "minimum": 0,
+          "default": 2,
+          "x-constant": {
+            "minimum": "ACCENT_BAND_MIN_MM",
+            "default": "ACCENT_BAND_DEFAULT_MM"
+          },
+          "description": "Band height in mm."
+        }
+      }
+    },
+    "AxisSlotConfig": {
+      "type": "object",
+      "description": "Slot settings for one axis.",
+      "required": ["enabled", "pitch"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Cut slots along this axis."
+        },
+        "pitch": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Slot pitch in mm."
+        }
+      }
+    },
+    "BaseConfig": {
+      "type": "object",
+      "description": "How the bin attaches to a baseplate, and what its underside looks like. The bin coordinate system puts Z=0 at the socket-box interface.",
+      "required": ["style"],
+      "properties": {
+        "style": {
+          "enum": ["standard", "magnet", "screw", "magnet_and_screw", "weighted", "flat", "lid"],
+          "description": "Base attachment style. This is a string union, not an enum: the UI derives it from boolean toggles via computeBaseStyle()."
+        },
+        "magnetDiameter": {
+          "type": "number",
+          "minimum": 4,
+          "maximum": 10,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER"
+          },
+          "description": "Magnet hole diameter in mm."
+        },
+        "magnetDepth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 4,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT"
+          },
+          "description": "Magnet hole depth in mm."
+        },
+        "screwDiameter": {
+          "type": "number",
+          "minimum": 2,
+          "maximum": 6,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_SCREW_DIAMETER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_SCREW_DIAMETER"
+          },
+          "description": "Screw hole diameter in mm."
+        },
+        "stackingLip": {
+          "type": "boolean",
+          "description": "Add the Gridfinity stacking lip at the rim so another bin can sit on top."
+        },
+        "solid": {
+          "type": "boolean",
+          "description": "Fill the base solid instead of hollowing it."
+        },
+        "halfSockets": {
+          "type": "boolean",
+          "description": "Use half-pitch sockets on the underside."
+        },
+        "footLatticeX": {
+          "enum": ["grid", "half"],
+          "default": "grid",
+          "description": "Foot lattice pitch along X. 'half' places feet every 0.5 unit."
+        },
+        "footLatticeY": {
+          "enum": ["grid", "half"],
+          "default": "grid",
+          "description": "Foot lattice pitch along Y."
+        },
+        "lightweight": {
+          "type": "boolean",
+          "description": "Remove material to save filament."
+        },
+        "lightweightMode": {
+          "enum": ["interior", "underside"],
+          "default": "interior",
+          "description": "Where lightweighting removes material."
+        },
+        "feet": {
+          "enum": ["integral", "detachable"],
+          "default": "integral",
+          "description": "Whether feet are printed as part of the body or as separate pin-mounted parts."
+        },
+        "feetPinDiameter": {
+          "type": "number",
+          "enum": [2.7, 2.8, 2.9, 3],
+          "default": 2.8,
+          "x-constant": {
+            "enum": "DETACHABLE_PIN_DIAMETERS_MM",
+            "default": "DEFAULT_DETACHABLE_PIN_DIAMETER_MM"
+          },
+          "description": "Pin diameter in mm for detachable feet. Only meaningful when feet is 'detachable'."
+        },
+        "spacer": {
+          "type": "boolean",
+          "description": "Build a floorless spacer used to shim a stack between odd and even total heights. A spacer may be 1u tall; nothing else may."
+        },
+        "tile": {
+          "type": "boolean",
+          "description": "Build a baseplate-style tile rather than a bin body."
+        },
+        "trayBottom": {
+          "$ref": "#/$defs/TrayBottomConfig"
+        }
+      }
+    },
+    "BezierHandle": {
+      "type": "object",
+      "description": "Bezier control handle, a relative offset in mm from its point.",
+      "required": ["dx", "dy"],
+      "properties": {
+        "dx": {
+          "type": "number",
+          "description": "X offset in mm."
+        },
+        "dy": {
+          "type": "number",
+          "description": "Y offset in mm."
+        }
+      }
+    },
+    "BinParams": {
+      "type": "object",
+      "description": "The complete bin parameter set handed to the generator. Dimensions are in GRID units; everything ending in Mm is millimetres. Never mix the two.",
+      "required": [
+        "width",
+        "depth",
+        "height",
+        "gridUnitMm",
+        "heightUnitMm",
+        "wallThickness",
+        "base",
+        "style",
+        "compartments"
+      ],
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 16,
+          "multipleOf": 0.5,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_DIMENSION",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_DIMENSION"
+          },
+          "description": "Width in grid units. 0.5 increments allowed."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 16,
+          "multipleOf": 0.5,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_DIMENSION",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_DIMENSION"
+          },
+          "description": "Depth in grid units. 0.5 increments allowed."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 50,
+          "multipleOf": 1,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HEIGHT"
+          },
+          "description": "Height in HEIGHT units, not mm. 1u is base only and is legal for spacers; every other base style needs at least 2u for a usable cavity."
+        },
+        "fractionalEdgeX": {
+          "enum": ["start", "end"],
+          "default": "end",
+          "description": "Side the half-unit foot column sits on when width is fractional. 'end' = right, 'start' = left. Lets a 2.5x2 bin pick its side without rotating the print, which would move the front scoop."
+        },
+        "fractionalEdgeY": {
+          "enum": ["start", "end"],
+          "default": "end",
+          "description": "Side the half-unit foot row sits on when depth is fractional. 'end' = back, 'start' = front."
+        },
+        "fractionalEdgeManualX": {
+          "type": "boolean",
+          "default": false,
+          "description": "True once the user deliberately chose the X fractional edge. Suppresses the drawer-mismatch warning for that axis only."
+        },
+        "fractionalEdgeManualY": {
+          "type": "boolean",
+          "default": false,
+          "description": "True once the user deliberately chose the Y fractional edge."
+        },
+        "gridUnitMm": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 60,
+          "default": 42,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.GRID_UNIT_MM_MIN",
+            "maximum": "CONSTRAINTS.GRID_UNIT_MM_MAX",
+            "default": "CONSTRAINTS.GRID_UNIT_MM_DEFAULT"
+          },
+          "description": "Millimetres per grid unit along X. Also the square grid unit when gridUnitMmY is omitted."
+        },
+        "gridUnitMmY": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 60,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.GRID_UNIT_MM_MIN",
+            "maximum": "CONSTRAINTS.GRID_UNIT_MM_MAX"
+          },
+          "description": "Millimetres per grid unit along Y for a non-square grid, e.g. 42x22. Omitted or equal to gridUnitMm means square. Only the cell pitch stretches; round features stay isotropic."
+        },
+        "magnetAnchor": {
+          "enum": ["edge", "center"],
+          "default": "edge",
+          "description": "Magnet hole anchor. INJECTED from the owning layout at generation time so bin, lid and baseplate magnets stay mated. Do not rely on it in a standalone design file."
+        },
+        "nozzleSizeMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 0.4,
+          "description": "Print nozzle in mm that a label socket's pocket clearance scales to. INJECTED transiently at generation time and never persisted, so a printer's nozzle never syncs to other devices or rides along in a shared design. Should not appear in an exported file."
+        },
+        "heightUnitMm": {
+          "type": "number",
+          "minimum": 3,
+          "maximum": 20,
+          "default": 7,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.HEIGHT_UNIT_MM_MIN",
+            "maximum": "CONSTRAINTS.HEIGHT_UNIT_MM_MAX",
+            "default": "CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT"
+          },
+          "description": "Millimetres per height unit. Standard Gridfinity is 7."
+        },
+        "wallThickness": {
+          "type": "number",
+          "minimum": 0.4,
+          "maximum": 2.4,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_WALL_THICKNESS",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_WALL_THICKNESS"
+          },
+          "description": "Outer wall thickness in mm. 0.4 is one wall line on a 0.4mm nozzle; 2.4 is three lines on a 0.8mm nozzle."
+        },
+        "base": {
+          "$ref": "#/$defs/BaseConfig"
+        },
+        "style": {
+          "enum": ["standard", "slotted", "solid"],
+          "description": "Bin interior style. 'standard' is a walled cavity, 'slotted' adds divider slots, 'solid' is a filled block that cutouts are cut into."
+        },
+        "compartments": {
+          "$ref": "#/$defs/CompartmentConfig"
+        },
+        "scoop": {
+          "$ref": "#/$defs/ScoopConfig"
+        },
+        "label": {
+          "$ref": "#/$defs/LabelTabConfig"
+        },
+        "walls": {
+          "$ref": "#/$defs/WallConfig"
+        },
+        "slide": {
+          "$ref": "#/$defs/SlideConfig"
+        },
+        "handles": {
+          "$ref": "#/$defs/HandleConfig"
+        },
+        "slotConfig": {
+          "$ref": "#/$defs/SlotConfig"
+        },
+        "dividerPieces": {
+          "$ref": "#/$defs/DividerPieceConfig"
+        },
+        "inserts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Insert"
+          },
+          "description": "Cavities cut into the bin floor. May be empty."
+        },
+        "cutouts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Cutout"
+          },
+          "description": "Top-down cavity cuts, used mainly by the 'solid' style. May be empty."
+        },
+        "cutoutConfig": {
+          "$ref": "#/$defs/CutoutConfig"
+        },
+        "meshAssets": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/MeshAsset"
+          },
+          "description": "Imported STL imprint meshes keyed by the id that a shape 'mesh' Cutout's meshId references. Omit for designs without mesh imprints."
+        },
+        "wallPattern": {
+          "$ref": "#/$defs/WallPatternConfig"
+        },
+        "floorPattern": {
+          "$ref": "#/$defs/FloorPatternConfig"
+        },
+        "splitConnectors": {
+          "$ref": "#/$defs/SplitConnectorConfig"
+        },
+        "featureColors": {
+          "$ref": "#/$defs/FeatureColorConfig"
+        },
+        "textDefaults": {
+          "$ref": "#/$defs/TextStyleDefaults"
+        },
+        "surfaceText": {
+          "$ref": "#/$defs/SurfaceTextConfig"
+        },
+        "lid": {
+          "$ref": "#/$defs/LidConfig"
+        },
+        "knifeRest": {
+          "$ref": "#/$defs/KnifeRestConfig"
+        },
+        "cellMask": {
+          "$ref": "#/$defs/CellMask"
+        },
+        "overhang": {
+          "$ref": "#/$defs/OverhangConfig"
+        },
+        "extraWallHeightMm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 0,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT"
+          },
+          "description": "Extra exterior wall height in mm ABOVE the nominal bin height. Outer walls and stacking lip rise; the interior floor, cutouts, dividers, scoops and label tabs stay anchored at the original top plane. A collar of dead headroom. 0 reproduces the standard bin exactly."
+        }
+      }
+    },
+    "CellMask": {
+      "type": "object",
+      "description": "Custom footprint mask for a non-rectangular bin. Stored at HALF-BIN resolution unconditionally: a width x depth bin has a (2*width) x (2*depth) mask. When omitted, or when every cell is filled, the bin uses the faster rectangle path. When present and partial, features that cannot yet operate on a non-rectangular footprint are skipped: compartments, cutouts, walls, handles, inserts, scoops and label tabs.",
+      "required": ["cols", "rows", "cells"],
+      "properties": {
+        "cols": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Mask columns. Equals 2 * BinParams.width."
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Mask rows. Equals 2 * BinParams.depth."
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "enum": [0, 1]
+          },
+          "description": "Row-major occupancy, 0 or 1. Length MUST equal cols * rows."
+        }
+      }
+    },
+    "CompartmentConfig": {
+      "type": "object",
+      "description": "The interior compartment grid. cells is a ROW-MAJOR parallel array whose length MUST equal cols * rows; the importer rejects a mismatch. The per-compartment arrays (compartmentTexts, labelIcons, compartmentColors, ...) are parallel to cells and are remapped together when compartments merge or split.",
+      "required": ["cols", "rows", "thickness", "cells"],
+      "properties": {
+        "cols": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID"
+          },
+          "description": "Compartment columns. Capped at 12 because a 16x16 grid risks a generation timeout."
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID"
+          },
+          "description": "Compartment rows."
+        },
+        "thickness": {
+          "type": "number",
+          "minimum": 0.4,
+          "maximum": 2.4,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_THICKNESS",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_THICKNESS"
+          },
+          "description": "Divider wall thickness in mm."
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Row-major compartment id per grid cell. Length MUST equal cols * rows. Cells sharing an id are one merged compartment."
+        },
+        "compartmentTexts": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          },
+          "description": "Per-compartment engraved text, parallel to the compartment id space."
+        },
+        "labelPlateWidths": {
+          "type": "array",
+          "items": {
+            "type": ["number", "null"]
+          },
+          "description": "Per-compartment label plate width in grid units."
+        },
+        "labelIcons": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          },
+          "description": "Per-compartment label icon id."
+        },
+        "compartmentColors": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          },
+          "description": "Per-compartment hex colour for multi-colour export."
+        },
+        "compartmentColorScopes": {
+          "type": "array",
+          "items": {
+            "enum": ["floor", "floorAndWalls", null]
+          },
+          "description": "Whether a compartment's colour covers just its floor or its walls too."
+        },
+        "dividerOverrides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DividerOverride"
+          },
+          "description": "Per-divider geometry overrides."
+        },
+        "drawnUnitCells": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Unit cells painted by the compartment drawing tool."
+        },
+        "stash": {
+          "type": "array",
+          "maxItems": 36,
+          "x-constant": {
+            "maxItems": "DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES"
+          },
+          "items": {
+            "$ref": "#/$defs/StashedCompartment"
+          },
+          "description": "Bento stash of saved compartment shapes."
+        },
+        "dividerHeight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Divider wall height in mm. Shorter than the cavity leaves an open top between compartments."
+        }
+      }
+    },
+    "Cutout": {
+      "type": "object",
+      "description": "A top-down cavity cut, mainly for the 'solid' style. x and y are in MILLIMETRES from the bin interior's left/front edge, not grid units.",
+      "required": ["id", "shape", "x", "y", "width", "depth", "cutDepth"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique cutout id within the design."
+        },
+        "shape": {
+          "enum": ["rectangle", "circle", "path", "polygon", "slot", "mesh", "knifeSlot"],
+          "description": "Cutout shape. 'path' needs a valid path array; 'mesh' needs meshId; 'polygon' needs sides."
+        },
+        "x": {
+          "type": "number",
+          "description": "X position in mm from the bin interior's left edge."
+        },
+        "y": {
+          "type": "number",
+          "description": "Y position in mm from the bin interior's front edge."
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Width in mm, or diameter for a circle."
+        },
+        "depth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Depth in mm. Ignored for a circle."
+        },
+        "cutDepth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "How deep the cut goes in mm."
+        },
+        "rotation": {
+          "type": "number",
+          "description": "Rotation in degrees."
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Corner radius in mm."
+        },
+        "label": {
+          "type": "string",
+          "description": "Text engraved next to the cutout."
+        },
+        "groupId": {
+          "type": "string",
+          "description": "Boolean group this cutout belongs to."
+        },
+        "groupOp": {
+          "enum": ["union", "subtract", "intersect", "exclude"],
+          "default": "union",
+          "description": "Boolean operation within the group."
+        },
+        "scoopRadiusW": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Scoop radius along width in mm."
+        },
+        "scoopRadiusD": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Scoop radius along depth in mm."
+        },
+        "scoopEdges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Which edges of the cutout are scooped."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name in the cutout list."
+        },
+        "locked": {
+          "type": "boolean",
+          "description": "Prevent editing in the canvas."
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "Hide from the preview without deleting."
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "Stacking order in the 2D editor."
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PathPoint"
+          },
+          "description": "Pen-tool path. Required for shape 'path'. Duplicate consecutive vertices make the worker fall back to a bounding box, which renders as a plain rectangle in 3D while looking correct in 2D."
+        },
+        "sides": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 12,
+          "default": 6,
+          "x-constant": {
+            "minimum": "MIN_POLYGON_SIDES",
+            "maximum": "MAX_POLYGON_SIDES",
+            "default": "DEFAULT_POLYGON_SIDES"
+          },
+          "description": "Polygon side count. Only meaningful for shape 'polygon'."
+        },
+        "clearance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5,
+          "default": 0.2,
+          "x-constant": {
+            "maximum": "MAX_CUTOUT_CLEARANCE",
+            "default": "DEFAULT_CUTOUT_CLEARANCE"
+          },
+          "description": "Extra clearance in mm around the cut."
+        },
+        "chamferWidth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5,
+          "x-constant": {
+            "maximum": "MAX_CUTOUT_CHAMFER"
+          },
+          "description": "Chamfer width in mm at the cut's mouth."
+        },
+        "array": {
+          "$ref": "#/$defs/CutoutArrayConfig"
+        },
+        "engraveLabel": {
+          "type": "boolean",
+          "description": "Engrave the label text next to this cutout."
+        },
+        "textSide": {
+          "enum": ["top", "bottom", "left", "right"],
+          "description": "Which side of the cutout the label sits on."
+        },
+        "textAnchor": {
+          "enum": [
+            "top-left",
+            "top",
+            "top-right",
+            "left",
+            "center",
+            "right",
+            "bottom-left",
+            "bottom",
+            "bottom-right"
+          ],
+          "description": "Nine-point anchor for the label."
+        },
+        "textOffset": {
+          "$ref": "#/$defs/TextOffset"
+        },
+        "textAngle": {
+          "type": "number",
+          "description": "Label rotation in degrees."
+        },
+        "textStyle": {
+          "$ref": "#/$defs/TextStyleOverride"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Cutout colour for multi-colour export."
+        },
+        "colorScope": {
+          "enum": ["floor", "floorAndWalls"],
+          "default": "floorAndWalls",
+          "description": "Whether the colour covers just the cut floor or its walls too."
+        },
+        "labelMode": {
+          "enum": ["text", "socket"],
+          "description": "'socket' builds a pocket for a swappable label plate instead of engraving."
+        },
+        "labelPlateWidthU": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Label plate width in grid units for socket mode."
+        },
+        "labelIcon": {
+          "type": "string",
+          "description": "Icon id engraved with the label."
+        },
+        "meshId": {
+          "type": "string",
+          "description": "Key into BinParams.meshAssets. Required for shape 'mesh'."
+        },
+        "knife": {
+          "$ref": "#/$defs/KnifeSpec"
+        }
+      }
+    },
+    "CutoutArrayConfig": {
+      "type": "object",
+      "description": "Repeat a cutout in a grid, staggered grid, or ring. Total instances are capped at 400.",
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "enum": ["grid", "staggered", "radial"],
+          "description": "Array layout."
+        },
+        "cols": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "x-constant": {
+            "maximum": "MAX_ARRAY_COUNT"
+          },
+          "description": "Columns. Grid and staggered modes only."
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "x-constant": {
+            "maximum": "MAX_ARRAY_COUNT"
+          },
+          "description": "Rows. Grid and staggered modes only."
+        },
+        "pitchX": {
+          "type": "number",
+          "description": "Column pitch in mm."
+        },
+        "pitchY": {
+          "type": "number",
+          "description": "Row pitch in mm."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "x-constant": {
+            "maximum": "MAX_ARRAY_COUNT"
+          },
+          "description": "Instance count for radial mode."
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Ring radius in mm for radial mode."
+        },
+        "startAngle": {
+          "type": "number",
+          "description": "Starting angle in degrees for radial mode."
+        },
+        "rotateToCenter": {
+          "type": "boolean",
+          "description": "Rotate each instance to face the ring centre."
+        }
+      }
+    },
+    "CutoutConfig": {
+      "type": "object",
+      "description": "Global settings for top-down cutouts.",
+      "required": ["topOffset"],
+      "properties": {
+        "topOffset": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Lowers the solid fill surface below the rim in mm. 0 is flush with the rim."
+        },
+        "fillReference": {
+          "enum": ["rim", "floor"],
+          "default": "rim",
+          "description": "Which end topOffset is held against when the bin's wall height changes."
+        }
+      }
+    },
+    "DividerOverride": {
+      "type": "object",
+      "description": "Geometry override for the divider between two compartments.",
+      "required": ["compartmentA", "compartmentB"],
+      "properties": {
+        "compartmentA": {
+          "type": "integer",
+          "description": "First compartment id."
+        },
+        "compartmentB": {
+          "type": "integer",
+          "description": "Second compartment id."
+        },
+        "offsetStart": {
+          "type": "number",
+          "description": "Offset in mm at the divider's start end."
+        },
+        "offsetEnd": {
+          "type": "number",
+          "description": "Offset in mm at the divider's far end."
+        },
+        "rakeDeg": {
+          "type": "number",
+          "description": "Divider rake angle in degrees."
+        }
+      }
+    },
+    "DividerPieceConfig": {
+      "type": "object",
+      "description": "The separately printed divider pieces that ride in the slots.",
+      "required": ["height", "thickness", "clearance"],
+      "properties": {
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Divider height in mm."
+        },
+        "thickness": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 2.4,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS"
+          },
+          "description": "Divider thickness in mm."
+        },
+        "clearance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.3,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE"
+          },
+          "description": "Fit clearance in mm between divider and slot."
+        }
+      }
+    },
+    "ExportMeta": {
+      "type": "object",
+      "description": "Provenance stamp added on export. Never load-bearing.",
+      "properties": {
+        "exportedFrom": {
+          "type": "string",
+          "description": "Origin URL of the exporting app."
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 export timestamp."
+        }
+      }
+    },
+    "FeatureColorConfig": {
+      "type": "object",
+      "description": "Per-feature filament colour assignment for multi-colour 3MF export. Colours are hex strings; a zone left unset inherits the body colour.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable per-feature colours."
+        },
+        "body": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Body colour."
+        },
+        "lip": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Stacking lip colour."
+        },
+        "labelTab": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Label tab colour."
+        },
+        "base": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Base colour."
+        },
+        "scoop": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Scoop colour."
+        },
+        "dividers": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Divider colour."
+        },
+        "text": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Engraved text colour."
+        },
+        "lid": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Lid colour."
+        },
+        "lidLip": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Lid lip colour."
+        },
+        "topAccent": {
+          "$ref": "#/$defs/AccentBandConfig"
+        },
+        "bottomAccent": {
+          "$ref": "#/$defs/AccentBandConfig"
+        }
+      }
+    },
+    "FloorPatternConfig": {
+      "type": "object",
+      "description": "Drainage or ventilation perforation of the bin floor. The cut passes through the floor slab AND the base socket under it, so holes drain instead of ending in a blind pocket.",
+      "required": ["enabled", "pattern", "scale"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable floor perforation."
+        },
+        "pattern": {
+          "enum": ["round", "honeycomb", "diamond", "triangle", "slots"],
+          "description": "Floor pattern type. A subset of the wall patterns; kumiko patterns are not available here."
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Pattern cell scale."
+        }
+      }
+    },
+    "HandleConfig": {
+      "type": "object",
+      "description": "Grip cutouts in the bin walls.",
+      "required": ["enabled", "shape", "width", "height", "front", "back", "left", "right"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable handles."
+        },
+        "shape": {
+          "enum": ["rectangle", "oval", "scoop"],
+          "description": "Handle cutout shape."
+        },
+        "width": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 100,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_WIDTH",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_WIDTH"
+          },
+          "description": "Handle width as a PERCENTAGE of the wall span."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 30,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_HEIGHT"
+          },
+          "description": "Handle height in mm."
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_CORNER_RADIUS",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_CORNER_RADIUS"
+          },
+          "description": "Handle corner radius in mm."
+        },
+        "verticalPosition": {
+          "type": "number",
+          "minimum": 0.2,
+          "maximum": 0.9,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_VERTICAL_POSITION",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_VERTICAL_POSITION"
+          },
+          "description": "Handle centre as a FRACTION of wall height, 0 at the floor."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_COUNT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_COUNT"
+          },
+          "description": "Handles per enabled wall."
+        },
+        "chamfer": {
+          "type": "boolean",
+          "description": "Chamfer the handle opening."
+        },
+        "interior": {
+          "type": "boolean",
+          "description": "Also cut handles in interior divider walls."
+        },
+        "front": {
+          "$ref": "#/$defs/HandleSide"
+        },
+        "back": {
+          "$ref": "#/$defs/HandleSide"
+        },
+        "left": {
+          "$ref": "#/$defs/HandleSide"
+        },
+        "right": {
+          "$ref": "#/$defs/HandleSide"
+        }
+      }
+    },
+    "HandleSide": {
+      "type": "object",
+      "description": "Per-wall handle override.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable a handle on this wall."
+        },
+        "width": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 100,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_WIDTH",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_WIDTH"
+          },
+          "description": "Width override as a percentage of wall span."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 30,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_HEIGHT"
+          },
+          "description": "Height override in mm."
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_CORNER_RADIUS",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_CORNER_RADIUS"
+          },
+          "description": "Corner radius override in mm."
+        }
+      }
+    },
+    "Insert": {
+      "type": "object",
+      "description": "A cavity cut into the bin floor. Positions are in MILLIMETRES from the bin interior's left/front edge.",
+      "required": ["id", "shape", "x", "y", "width", "depth", "cutDepth"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique insert id."
+        },
+        "templateId": {
+          "type": ["string", "null"],
+          "description": "Template this insert came from, or null if hand-placed."
+        },
+        "shape": {
+          "enum": ["rectangle", "circle", "hexagon", "rounded-rect", "slot"],
+          "description": "Cavity shape."
+        },
+        "x": {
+          "type": "number",
+          "description": "X in mm from the bin interior's left edge."
+        },
+        "y": {
+          "type": "number",
+          "description": "Y in mm from the bin interior's front edge."
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Width in mm, or diameter for circle and hexagon."
+        },
+        "depth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Depth in mm. Ignored for circle and hexagon."
+        },
+        "cutDepth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "How deep the cavity goes in mm."
+        },
+        "rotation": {
+          "enum": [0, 90, 180, 270],
+          "description": "Rotation in degrees. Only right angles."
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Corner radius in mm for 'rounded-rect'."
+        },
+        "label": {
+          "type": "string",
+          "description": "Optional label for the insert."
+        }
+      }
+    },
+    "KnifeRestConfig": {
+      "type": "object",
+      "description": "Handle rest for a knife block: a saddle-topped companion solid, or an integrated rear section, carrying knife handles at the height the knifeSlot cutouts imply.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Generate a handle rest."
+        },
+        "style": {
+          "enum": ["companion", "integrated"],
+          "description": "'companion' is a separate part placed as a paired bin; 'integrated' builds it into the block."
+        },
+        "gapMm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 200,
+          "default": 21,
+          "x-constant": {
+            "maximum": "KNIFE_REST_MAX_GAP_MM",
+            "default": "KNIFE_REST_DEFAULT_GAP_MM"
+          },
+          "description": "Gap in mm between block and rest."
+        },
+        "depthU": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 4,
+          "x-constant": {
+            "minimum": "KNIFE_REST_MIN_DEPTH_U",
+            "maximum": "KNIFE_REST_MAX_DEPTH_U"
+          },
+          "description": "Rest depth in grid units."
+        },
+        "grooveDepthMm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 15,
+          "x-constant": {
+            "minimum": "KNIFE_REST_MIN_GROOVE_DEPTH_MM",
+            "maximum": "KNIFE_REST_MAX_GROOVE_DEPTH_MM"
+          },
+          "description": "Saddle groove depth in mm."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Rest colour."
+        }
+      }
+    },
+    "KnifeSpec": {
+      "type": "object",
+      "description": "Blade dimensions driving a 'knifeSlot' cutout.",
+      "properties": {
+        "presetId": {
+          "type": "string",
+          "description": "Preset knife id, when one was chosen."
+        },
+        "bladeLengthMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Blade length in mm."
+        },
+        "heelHeightMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Blade heel height in mm."
+        },
+        "spineThicknessMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Spine thickness in mm."
+        },
+        "handleDiameterMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Handle diameter in mm."
+        },
+        "openEnd": {
+          "enum": ["start", "end"],
+          "description": "Which end of the slot is open."
+        }
+      }
+    },
+    "LabelTabConfig": {
+      "type": "object",
+      "description": "Label shelf across the bin's compartments. Mixed units again: depth, height, inset and lipHeight are millimetres, width is a percentage.",
+      "required": ["enabled", "support", "depth", "width", "alignment", "edges", "inset"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable label tabs."
+        },
+        "mode": {
+          "enum": ["text", "socket"],
+          "default": "text",
+          "description": "'text' engraves directly on the tab. 'socket' builds a pocket for a separately printed swappable label plate."
+        },
+        "plateFitOffset": {
+          "type": "number",
+          "description": "Fit offset in mm applied to a socket's pocket. Positive is looser. Only meaningful in 'socket' mode."
+        },
+        "socketStyle": {
+          "type": "string",
+          "description": "Which socket profile a 'socket' mode tab uses."
+        },
+        "support": {
+          "enum": ["bracket", "solid", "fillet"],
+          "description": "Support structure under the tab. 'bracket' is open gussets, 'solid' is a filled triangle, 'fillet' is a curve."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 50,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH"
+          },
+          "description": "Tab depth in MILLIMETRES. The UI further clamps to min(50, innerDepth - 1) so the tab cannot span past the opposite wall."
+        },
+        "width": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 100,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH"
+          },
+          "description": "Tab width as a PERCENTAGE of the compartment column width."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 9,
+          "maximum": 350,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_HEIGHT"
+          },
+          "description": "Z position in mm of the shelf TOP above the cavity floor. Absent means the wall top. Lowering it creates a tuck-under pocket between rim and shelf."
+        },
+        "lip": {
+          "type": "boolean",
+          "description": "Add a raised rim on the tab's free edge to retain loose label cards."
+        },
+        "lipHeight": {
+          "type": "number",
+          "minimum": 0.4,
+          "maximum": 5,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_LIP_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_LIP_HEIGHT"
+          },
+          "description": "Lip height in mm. Reserves that much shelf headroom."
+        },
+        "alignment": {
+          "enum": ["left", "center", "right"],
+          "description": "Horizontal alignment of the tab within its span."
+        },
+        "edges": {
+          "enum": ["back", "front", "both"],
+          "description": "Which wall the tabs anchor to."
+        },
+        "inset": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_INSET",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_INSET"
+          },
+          "description": "Inward offset in mm from the anchor wall. The UI clamps further per compartment depth so two tabs in 'both' mode cannot collide."
+        },
+        "textStyle": {
+          "$ref": "#/$defs/TextStyleOverride"
+        },
+        "span": {
+          "type": "string",
+          "description": "How far a tab spans across compartments."
+        },
+        "rowTexts": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          },
+          "description": "Per-row label text."
+        }
+      }
+    },
+    "LidConfig": {
+      "type": "object",
+      "description": "Click-lock lid, generated as a separate companion solid. Indexed rather than fully documented in prose; the authoritative definitions live in src/features/bin-designer/types/lid.ts.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Generate a lid alongside the bin."
+        },
+        "attachment": {
+          "enum": ["friction", "clickRails", "magnetic", "slide", "hinge"],
+          "description": "How the lid attaches."
+        },
+        "stackableTop": {
+          "type": "boolean",
+          "description": "Give the lid a socket-patterned top so another bin can stack on it."
+        },
+        "stackLipOnly": {
+          "type": "boolean",
+          "description": "Emit only the stacking lip band rather than a full stackable top."
+        },
+        "magnetHoles": {
+          "type": "boolean",
+          "description": "Cut magnet holes in the lid."
+        },
+        "separateStackPlate": {
+          "type": "boolean",
+          "description": "Emit the stackable top as its own printable plate."
+        },
+        "clickRails": {
+          "$ref": "#/$defs/SideFlags"
+        },
+        "clickRailCoverage": {
+          "type": "number",
+          "minimum": 50,
+          "maximum": 100,
+          "x-constant": {
+            "minimum": "LID_CLICK_RAIL_COVERAGE_MIN",
+            "maximum": "LID_CLICK_RAIL_COVERAGE_MAX"
+          },
+          "description": "Percentage of each side carrying the click rail."
+        },
+        "extraHeightMm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "x-constant": {
+            "minimum": "LID_EXTRA_HEIGHT_MIN_MM",
+            "maximum": "LID_EXTRA_HEIGHT_MAX_MM"
+          },
+          "description": "Extra lid height in mm. The lid mirror of BinParams.extraWallHeightMm."
+        },
+        "topThicknessMm": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 5,
+          "x-constant": {
+            "minimum": "LID_TOP_THICKNESS_MIN_MM",
+            "maximum": "LID_TOP_THICKNESS_MAX_MM"
+          },
+          "description": "Lid top slab thickness in mm."
+        },
+        "retentionMagnet": {
+          "$ref": "#/$defs/LidMagnetConfig"
+        },
+        "tray": {
+          "$ref": "#/$defs/LidTrayConfig"
+        },
+        "grip": {
+          "$ref": "#/$defs/LidGripConfig"
+        },
+        "relieveInterior": {
+          "type": "boolean",
+          "description": "Hollow the lid interior to save filament."
+        },
+        "slide": {
+          "$ref": "#/$defs/LidSlideConfig"
+        },
+        "hinge": {
+          "$ref": "#/$defs/LidHingeConfig"
+        },
+        "cutouts": {
+          "type": "array",
+          "maxItems": 24,
+          "x-constant": {
+            "maxItems": "MAX_LID_CUTOUTS"
+          },
+          "items": {
+            "$ref": "#/$defs/Cutout"
+          },
+          "description": "Cutouts taken out of the lid, using the same Cutout shape as the bin."
+        }
+      }
+    },
+    "LidGripConfig": {
+      "type": "object",
+      "description": "A finger grip so the lid can be lifted off.",
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "enum": ["none", "chamfer", "reveal", "scallop"],
+          "description": "Grip style."
+        },
+        "sides": {
+          "$ref": "#/$defs/SideFlags"
+        },
+        "coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of each side the grip spans."
+        },
+        "heightMm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Grip height in mm."
+        },
+        "binDip": {
+          "type": "boolean",
+          "description": "Dip the bin rim to meet the grip."
+        }
+      }
+    },
+    "LidHingeConfig": {
+      "type": "object",
+      "description": "A hinged lid.",
+      "required": ["side"],
+      "properties": {
+        "side": {
+          "enum": ["front", "back", "left", "right"],
+          "description": "Which side the hinge is on."
+        },
+        "catchMode": {
+          "enum": ["none", "detent", "magnets"],
+          "description": "How the lid is held closed."
+        },
+        "fitClearanceMm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Hinge fit clearance in mm."
+        }
+      }
+    },
+    "LidMagnetConfig": {
+      "type": "object",
+      "description": "Retention magnets holding the lid down.",
+      "required": ["diameter", "depth"],
+      "properties": {
+        "diameter": {
+          "type": "number",
+          "minimum": 4,
+          "maximum": 10,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER"
+          },
+          "description": "Magnet diameter in mm."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 4,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT"
+          },
+          "description": "Magnet pocket depth in mm."
+        },
+        "edgeMagnets": {
+          "type": "boolean",
+          "description": "Place magnets at the edges rather than the corners."
+        }
+      }
+    },
+    "LidSlideConfig": {
+      "type": "object",
+      "description": "A sliding lid that rides in rails.",
+      "required": ["placement"],
+      "properties": {
+        "placement": {
+          "enum": ["recessed", "flush"],
+          "description": "Whether the lid sits flush with the rim or recessed below it."
+        },
+        "entrySide": {
+          "enum": ["front", "back", "left", "right"],
+          "description": "Which side the lid slides in from."
+        },
+        "clearanceMm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Fit clearance in mm."
+        },
+        "pull": {
+          "enum": ["none", "notch", "tab"],
+          "description": "Pull feature so the lid can be gripped."
+        },
+        "detent": {
+          "type": "boolean",
+          "description": "Add a detent that holds the lid closed."
+        }
+      }
+    },
+    "LidTrayConfig": {
+      "type": "object",
+      "description": "Turns the lid into a shallow tray.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the lid tray."
+        },
+        "depthMm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Tray depth in mm."
+        },
+        "wallMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Tray wall thickness in mm."
+        }
+      }
+    },
+    "MeshAsset": {
+      "type": "object",
+      "description": "An imported STL imprint mesh, referenced by a shape 'mesh' Cutout's meshId. The payload is an opaque encoded blob; hand-authoring one is not practical.",
+      "required": ["name", "data", "triangleCount", "sizeMm", "outlines"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Original file name, sanitized with the extension stripped."
+        },
+        "data": {
+          "type": "string",
+          "description": "base64(deflate(quantized mesh)). Opaque."
+        },
+        "triangleCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Triangle count of the decoded mesh."
+        },
+        "sizeMm": {
+          "type": "object",
+          "description": "Oriented lay-flat bounding box size in mm.",
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": {
+              "type": "number",
+              "description": "Size along X in mm."
+            },
+            "y": {
+              "type": "number",
+              "description": "Size along Y in mm."
+            },
+            "z": {
+              "type": "number",
+              "description": "Size along Z in mm."
+            }
+          }
+        },
+        "outlines": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MeshOutlinePoint"
+            }
+          },
+          "description": "Top-down silhouette outer rings with holes dropped, simplified. Powers the 2D footprint render without decoding the mesh."
+        }
+      }
+    },
+    "MeshOutlinePoint": {
+      "type": "object",
+      "description": "A point on a mesh silhouette ring, in mm.",
+      "required": ["x", "y"],
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "X in mm."
+        },
+        "y": {
+          "type": "number",
+          "description": "Y in mm."
+        }
+      }
+    },
+    "OverhangConfig": {
+      "type": "object",
+      "description": "Per-side outward expansion of a bin body in mm, letting a bin fill a gap an integral grid cannot express. Outward only. All-zero or omitted keeps the standard rectangle path. Ignored for cellMask bins. left/right are -X/+X and front/back are -Y/+Y, matching the grid.",
+      "required": ["left", "right", "front", "back"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Absent means enabled is inferred from any non-zero side."
+        },
+        "left": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 21,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_OVERHANG",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_OVERHANG"
+          },
+          "description": "Outward expansion on -X in mm."
+        },
+        "right": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 21,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_OVERHANG",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_OVERHANG"
+          },
+          "description": "Outward expansion on +X in mm."
+        },
+        "front": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 21,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_OVERHANG",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_OVERHANG"
+          },
+          "description": "Outward expansion on -Y in mm."
+        },
+        "back": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 21,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_OVERHANG",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_OVERHANG"
+          },
+          "description": "Outward expansion on +Y in mm."
+        },
+        "feet": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add grid-aligned feet under the overhang region. False leaves a flat bottom with feet at the nominal footprint."
+        },
+        "taper": {
+          "$ref": "#/$defs/WallTaperConfig"
+        }
+      }
+    },
+    "PathPoint": {
+      "type": "object",
+      "description": "One pen-tool path point in mm, with optional bezier handles. Consecutive duplicate points make 3D generation silently fall back to a bounding box, which renders as a plain rectangle while the 2D preview still looks correct.",
+      "required": ["x", "y"],
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "X in mm from the bin interior's left edge."
+        },
+        "y": {
+          "type": "number",
+          "description": "Y in mm from the bin interior's front edge."
+        },
+        "handleIn": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BezierHandle"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Incoming bezier control handle as a relative offset. null makes the point a hard corner."
+        },
+        "handleOut": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BezierHandle"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Outgoing bezier control handle as a relative offset. null makes the point a hard corner."
+        },
+        "symmetric": {
+          "type": "boolean",
+          "description": "Keep handleIn and handleOut mirrored."
+        }
+      }
+    },
+    "ScoopConfig": {
+      "type": "object",
+      "description": "A curved or straight ramp at one wall so contents can be scooped out.",
+      "required": ["enabled", "side", "radius"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the scoop."
+        },
+        "side": {
+          "enum": ["front", "back", "left", "right"],
+          "description": "Which wall the scoop rises from."
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 5,
+          "maximum": 25,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS"
+          },
+          "description": "Scoop radius in mm."
+        },
+        "run": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 140,
+          "x-constant": {
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_SCOOP_RUN"
+          },
+          "description": "Horizontal run of the scoop in mm."
+        },
+        "style": {
+          "enum": ["curved", "straight"],
+          "default": "curved",
+          "description": "Scoop cross-section."
+        },
+        "autoMaxHeight": {
+          "type": "boolean",
+          "description": "Let the scoop rise to the tallest printable height instead of a fixed one."
+        }
+      }
+    },
+    "SideFlags": {
+      "type": "object",
+      "description": "Per-side booleans. front/back are -Y/+Y and left/right are -X/+X, matching the grid.",
+      "required": ["front", "back", "left", "right"],
+      "properties": {
+        "front": {
+          "type": "boolean",
+          "description": "-Y side."
+        },
+        "back": {
+          "type": "boolean",
+          "description": "+Y side."
+        },
+        "left": {
+          "type": "boolean",
+          "description": "-X side."
+        },
+        "right": {
+          "type": "boolean",
+          "description": "+X side."
+        }
+      }
+    },
+    "SlideConfig": {
+      "type": "object",
+      "description": "A sliding tray: a rail on this bin plus the companion tray that rides it.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the sliding tray."
+        },
+        "railMount": {
+          "enum": ["interior", "rim"],
+          "default": "interior",
+          "description": "Where the rail mounts."
+        },
+        "trayWidthUnits": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Tray width in grid units."
+        },
+        "trayDepthMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Tray depth in mm."
+        },
+        "trayWallMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Tray wall thickness in mm."
+        },
+        "railDropMm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How far the rail sits below the rim in mm."
+        },
+        "railProtrusionMm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How far the rail protrudes inward in mm."
+        },
+        "railThicknessMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Rail thickness in mm."
+        },
+        "clearanceMm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Fit clearance in mm between rail and tray."
+        }
+      }
+    },
+    "SlotConfig": {
+      "type": "object",
+      "description": "Slots that removable dividers slide into. Only meaningful for the 'slotted' style.",
+      "required": ["x", "y", "width", "depth"],
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/AxisSlotConfig"
+        },
+        "y": {
+          "$ref": "#/$defs/AxisSlotConfig"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 1.8,
+          "maximum": 3,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_SLOT_WIDTH",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_SLOT_WIDTH"
+          },
+          "description": "Slot width in mm."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_SLOT_DEPTH",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_SLOT_DEPTH"
+          },
+          "description": "Slot depth in mm."
+        },
+        "crossStyle": {
+          "enum": ["lap", "insert"],
+          "description": "How crossing dividers meet."
+        },
+        "longAxis": {
+          "type": "string",
+          "description": "Which axis the long divider runs along."
+        },
+        "partialStyle": {
+          "enum": ["full", "snappable", "lengthSet"],
+          "description": "Whether dividers span fully, snap to length, or come as a length set."
+        },
+        "layout": {
+          "enum": ["even", "custom"],
+          "description": "Even pitch or a custom grid."
+        },
+        "customGrid": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Custom slot positions. Only meaningful when layout is 'custom'."
+        }
+      }
+    },
+    "SplitConnectorConfig": {
+      "type": "object",
+      "description": "Connectors joining the pieces of a bin too large for the print bed.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable split connectors."
+        },
+        "clearance": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Fit clearance in mm."
+        },
+        "tongueProtrusion": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How far the tongue protrudes in mm."
+        },
+        "tongueThickness": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Tongue thickness in mm."
+        },
+        "wallConnector": {
+          "enum": ["none", "key"],
+          "description": "Whether the wall seam also gets a separate key."
+        },
+        "ridgeWidthFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Ridge width as a fraction of the tongue."
+        },
+        "ridgeHeightFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Ridge height as a fraction of the tongue."
+        },
+        "nozzleSizeMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Nozzle size the connector clearances scale to."
+        }
+      }
+    },
+    "StashedCompartment": {
+      "type": "object",
+      "description": "A saved compartment shape in the bento stash.",
+      "required": ["w", "h"],
+      "properties": {
+        "w": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Width in compartment cells."
+        },
+        "h": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Height in compartment cells."
+        },
+        "label": {
+          "type": "string",
+          "description": "Optional label carried with the stashed shape."
+        }
+      }
+    },
+    "SurfaceTextConfig": {
+      "type": "object",
+      "description": "Text on exterior surfaces: the lid top and the outer walls. Omit for designs without surface text so they serialize byte-identically.",
+      "properties": {
+        "lidText": {
+          "type": "string",
+          "description": "Text engraved or embossed on the lid top. Deliberately monochrome."
+        },
+        "walls": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Per-wall text keyed by side: front, back, left, right."
+        },
+        "wallAlign": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": ["top", "center", "bottom"]
+          },
+          "description": "Per-wall vertical alignment keyed by side."
+        },
+        "style": {
+          "$ref": "#/$defs/TextStyleOverride"
+        },
+        "lidStyle": {
+          "$ref": "#/$defs/TextStyleOverride"
+        },
+        "wallStyles": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/TextStyleOverride"
+          },
+          "description": "Per-wall style overrides keyed by side."
+        }
+      }
+    },
+    "TextOffset": {
+      "type": "object",
+      "description": "Text nudge from its anchor, in mm.",
+      "required": ["x", "y"],
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "Horizontal nudge in mm."
+        },
+        "y": {
+          "type": "number",
+          "description": "Vertical nudge in mm."
+        }
+      }
+    },
+    "TextStyleDefaults": {
+      "type": "object",
+      "description": "Design-level defaults for engraved text geometry on label tabs and next to cutouts. Individual instances may attach a TextStyleOverride.",
+      "required": ["font", "mode", "depth"],
+      "properties": {
+        "font": {
+          "enum": [
+            "atkinson",
+            "atkinson-bold",
+            "jetbrains-mono",
+            "jetbrains-mono-bold",
+            "barlow-condensed",
+            "poppins",
+            "allerta-stencil"
+          ],
+          "description": "Font family."
+        },
+        "mode": {
+          "enum": ["engrave", "emboss", "through-cut"],
+          "description": "How the glyphs meet the surface."
+        },
+        "depth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Engrave or emboss depth in mm."
+        },
+        "margin": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Margin in mm around the text block."
+        },
+        "minFontSize": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Lower bound in mm for auto-sized text."
+        },
+        "maxFontSize": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Upper bound in mm for auto-sized text."
+        },
+        "anchor": {
+          "enum": [
+            "top-left",
+            "top",
+            "top-right",
+            "left",
+            "center",
+            "right",
+            "bottom-left",
+            "bottom",
+            "bottom-right"
+          ],
+          "description": "Nine-point anchor within the available area."
+        },
+        "offset": {
+          "$ref": "#/$defs/TextOffset"
+        },
+        "sizeMode": {
+          "enum": ["auto", "fixed"],
+          "description": "'auto' fits the text to the area; 'fixed' uses fixedSize."
+        },
+        "fixedSize": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Font size in mm when sizeMode is 'fixed'."
+        },
+        "snapToScale": {
+          "type": "boolean",
+          "description": "Snap the computed size to the shared type scale."
+        },
+        "uniformAcrossWalls": {
+          "type": "boolean",
+          "description": "Use one size for every wall rather than fitting each separately."
+        },
+        "tracking": {
+          "type": "number",
+          "description": "Letter spacing adjustment."
+        },
+        "autoTracking": {
+          "type": "boolean",
+          "description": "Let the layout choose tracking."
+        },
+        "textCase": {
+          "enum": ["as-typed", "upper", "title"],
+          "description": "Case transform applied before layout."
+        },
+        "lineScale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Line height multiplier."
+        },
+        "lineGap": {
+          "type": "number",
+          "description": "Extra gap between lines in mm."
+        },
+        "cutProfile": {
+          "enum": ["straight", "drafted"],
+          "description": "'drafted' angles the glyph walls so an engraved cut releases cleanly."
+        },
+        "draftAngleDeg": {
+          "type": "number",
+          "minimum": 3,
+          "x-constant": {
+            "minimum": "MIN_TEXT_DRAFT_DEG"
+          },
+          "description": "Draft angle in degrees. Only meaningful when cutProfile is 'drafted'."
+        }
+      }
+    },
+    "TextStyleOverride": {
+      "type": "object",
+      "description": "A sparse override onto TextStyleDefaults. Every TextStyleDefaults field is optional here, plus fontSizeOverride. Omitted fields are not reset.",
+      "properties": {
+        "font": {
+          "enum": [
+            "atkinson",
+            "atkinson-bold",
+            "jetbrains-mono",
+            "jetbrains-mono-bold",
+            "barlow-condensed",
+            "poppins",
+            "allerta-stencil"
+          ],
+          "description": "Font family override."
+        },
+        "mode": {
+          "enum": ["engrave", "emboss", "through-cut"],
+          "description": "Mode override."
+        },
+        "depth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Depth override in mm."
+        },
+        "margin": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Margin override in mm."
+        },
+        "minFontSize": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Minimum size override in mm."
+        },
+        "maxFontSize": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Maximum size override in mm."
+        },
+        "anchor": {
+          "enum": [
+            "top-left",
+            "top",
+            "top-right",
+            "left",
+            "center",
+            "right",
+            "bottom-left",
+            "bottom",
+            "bottom-right"
+          ],
+          "description": "Anchor override."
+        },
+        "offset": {
+          "$ref": "#/$defs/TextOffset"
+        },
+        "sizeMode": {
+          "enum": ["auto", "fixed"],
+          "description": "Size mode override."
+        },
+        "fixedSize": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Fixed size override in mm."
+        },
+        "snapToScale": {
+          "type": "boolean",
+          "description": "Snap-to-scale override."
+        },
+        "uniformAcrossWalls": {
+          "type": "boolean",
+          "description": "Uniform-across-walls override."
+        },
+        "tracking": {
+          "type": "number",
+          "description": "Tracking override."
+        },
+        "autoTracking": {
+          "type": "boolean",
+          "description": "Auto-tracking override."
+        },
+        "textCase": {
+          "enum": ["as-typed", "upper", "title"],
+          "description": "Case override."
+        },
+        "lineScale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Line height override."
+        },
+        "lineGap": {
+          "type": "number",
+          "description": "Line gap override in mm."
+        },
+        "cutProfile": {
+          "enum": ["straight", "drafted"],
+          "description": "Cut profile override."
+        },
+        "draftAngleDeg": {
+          "type": "number",
+          "minimum": 3,
+          "x-constant": {
+            "minimum": "MIN_TEXT_DRAFT_DEG"
+          },
+          "description": "Draft angle override in degrees."
+        },
+        "fontSizeOverride": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Hard font size in mm for this instance only, bypassing auto sizing."
+        }
+      }
+    },
+    "TrayBottomConfig": {
+      "type": "object",
+      "description": "Turns the bin underside into a lid-like tray bottom that mates with the bin below.",
+      "required": ["attachment", "extraHeightMm"],
+      "properties": {
+        "attachment": {
+          "enum": ["friction", "clickRails", "magnetic", "slide", "hinge"],
+          "description": "How the tray bottom attaches to the bin below."
+        },
+        "extraHeightMm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Extra skirt depth in mm to clear contents protruding from the bin below."
+        },
+        "clickRails": {
+          "$ref": "#/$defs/SideFlags"
+        },
+        "clickRailCoverage": {
+          "type": "number",
+          "minimum": 50,
+          "maximum": 100,
+          "x-constant": {
+            "minimum": "LID_CLICK_RAIL_COVERAGE_MIN",
+            "maximum": "LID_CLICK_RAIL_COVERAGE_MAX"
+          },
+          "description": "Percentage of each rail's side that carries the click feature."
+        },
+        "retentionMagnet": {
+          "$ref": "#/$defs/LidMagnetConfig"
+        }
+      }
+    },
+    "WallConfig": {
+      "type": "object",
+      "description": "Cutouts taken out of the bin's walls. Global width/depth are PERCENTAGES; per-side entries may override them.",
+      "required": [
+        "enabled",
+        "shape",
+        "width",
+        "depth",
+        "front",
+        "back",
+        "left",
+        "right",
+        "interior"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Master toggle for wall cutouts."
+        },
+        "shape": {
+          "enum": ["u-shape", "scoop", "funnel"],
+          "description": "Cutout shape applied to all sides."
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Default cutout width as a PERCENTAGE of the wall span, for sides without an override."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Default cutout depth as a PERCENTAGE of wall height, measured from the top."
+        },
+        "cornerRadiusTop": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Default shoulder round-over in mm. null means square, which is what every design saved before this control had."
+        },
+        "cornerRadiusBottom": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Default bottom fillet in mm. null means the automatic 15%-of-span rule."
+        },
+        "front": {
+          "$ref": "#/$defs/WallCutout"
+        },
+        "back": {
+          "$ref": "#/$defs/WallCutout"
+        },
+        "left": {
+          "$ref": "#/$defs/WallCutout"
+        },
+        "right": {
+          "$ref": "#/$defs/WallCutout"
+        },
+        "interior": {
+          "$ref": "#/$defs/WallCutout"
+        }
+      }
+    },
+    "WallCutout": {
+      "type": "object",
+      "description": "One wall's cutout. Note the mixed units: width and depth are percentages, offset and widthMm are millimetres.",
+      "required": ["enabled", "width", "depth", "alignment", "offset", "widthMm"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this side's cutout is on."
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Cutout width as a PERCENTAGE of the wall span. Ignored when widthMm is set."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Cutout depth as a PERCENTAGE of wall height, from the top."
+        },
+        "alignment": {
+          "enum": ["left", "center", "right"],
+          "description": "Horizontal alignment within the wall span."
+        },
+        "offset": {
+          "type": "number",
+          "description": "Horizontal offset from the alignment anchor in MILLIMETRES. Positive is toward right/back."
+        },
+        "widthMm": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Absolute cutout width in mm. When null, the percentage width is used instead."
+        },
+        "cornerRadiusTop": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Shoulder round-over in mm. null defers to WallConfig.cornerRadiusTop."
+        },
+        "cornerRadiusBottom": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Bottom fillet in mm. null defers to WallConfig.cornerRadiusBottom."
+        }
+      }
+    },
+    "WallPatternConfig": {
+      "type": "object",
+      "description": "Decorative perforation of the bin walls. The pattern cut is the single most expensive generation step; large bins with a pattern can approach the generation timeout.",
+      "required": ["enabled", "pattern", "scale", "sides"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the wall pattern."
+        },
+        "pattern": {
+          "enum": [
+            "honeycomb",
+            "round",
+            "diamond",
+            "triangle",
+            "slots",
+            "mitsukude",
+            "goma",
+            "asanoha",
+            "sakura",
+            "rindo",
+            "mikado",
+            "tsumiishi-kikko"
+          ],
+          "description": "Pattern type. The last seven are kumiko patterns."
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 0.5,
+          "x-constant": {
+            "default": "DEFAULT_PATTERN_SCALE"
+          },
+          "description": "Pattern cell scale. Smaller means more, finer cells and a slower cut."
+        },
+        "dividers": {
+          "type": "boolean",
+          "description": "Also apply the pattern to interior divider walls."
+        },
+        "sides": {
+          "$ref": "#/$defs/WallPatternSides"
+        }
+      }
+    },
+    "WallPatternSides": {
+      "type": "object",
+      "description": "Which walls carry the pattern.",
+      "required": ["left", "right", "front", "back"],
+      "properties": {
+        "left": {
+          "type": "boolean",
+          "description": "-X wall."
+        },
+        "right": {
+          "type": "boolean",
+          "description": "+X wall."
+        },
+        "front": {
+          "type": "boolean",
+          "description": "-Y wall."
+        },
+        "back": {
+          "type": "boolean",
+          "description": "+Y wall."
+        }
+      }
+    },
+    "WallTaperConfig": {
+      "type": "object",
+      "description": "Bottom-band taper on the outer wall. Full width at the rim, angling inward over bandHeight by up to each side's overhang so the base never drops below the nominal footprint.",
+      "required": ["profile", "bandHeight", "left", "right", "front", "back"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Absent means enabled is inferred from any non-zero side."
+        },
+        "profile": {
+          "enum": ["chamfer", "fillet"],
+          "description": "Cross-section shape."
+        },
+        "bandHeight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 350,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_TAPER_BAND",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_TAPER_BAND"
+          },
+          "description": "How far up the wall the taper rises in mm, clamped to wall height at build."
+        },
+        "left": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 42,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_TAPER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_TAPER"
+          },
+          "description": "Magnitude on -X in mm. Chamfer: base inset. Fillet: radius. 0 keeps the side vertical."
+        },
+        "right": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 42,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_TAPER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_TAPER"
+          },
+          "description": "Magnitude on +X in mm."
+        },
+        "front": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 42,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_TAPER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_TAPER"
+          },
+          "description": "Magnitude on -Y in mm."
+        },
+        "back": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 42,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_TAPER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_TAPER"
+          },
+          "description": "Magnitude on +Y in mm."
+        }
+      }
+    }
+  }
+}

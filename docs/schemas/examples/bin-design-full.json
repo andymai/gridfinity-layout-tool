@@ -1,0 +1,212 @@
+{
+  "$schema": "https://gridfinitylayouttool.com/schema/bin-design.schema.json",
+  "type": "gridfinity-bin-design",
+  "version": "1.0",
+  "name": "Divided parts bin",
+  "params": {
+    "width": 3,
+    "depth": 2,
+    "height": 6,
+    "fractionalEdgeX": "end",
+    "fractionalEdgeY": "end",
+    "gridUnitMm": 42,
+    "heightUnitMm": 7,
+    "wallThickness": 1.2,
+    "style": "standard",
+    "extraWallHeightMm": 0,
+    "base": {
+      "style": "magnet",
+      "magnetDiameter": 6,
+      "magnetDepth": 2,
+      "screwDiameter": 3,
+      "stackingLip": true,
+      "solid": false,
+      "halfSockets": false,
+      "footLatticeX": "grid",
+      "footLatticeY": "grid",
+      "lightweight": false,
+      "lightweightMode": "interior",
+      "feet": "integral",
+      "spacer": false,
+      "tile": false
+    },
+    "compartments": {
+      "cols": 3,
+      "rows": 2,
+      "thickness": 1.2,
+      "cells": [0, 1, 2, 0, 3, 4],
+      "compartmentTexts": ["M3", "M4", "M5", null, "Washers"],
+      "dividerHeight": 30
+    },
+    "scoop": {
+      "enabled": true,
+      "side": "front",
+      "radius": 12,
+      "run": 20,
+      "style": "curved",
+      "autoMaxHeight": false
+    },
+    "label": {
+      "enabled": true,
+      "mode": "text",
+      "support": "bracket",
+      "depth": 12,
+      "width": 100,
+      "alignment": "center",
+      "edges": "back",
+      "inset": 0,
+      "lip": true,
+      "lipHeight": 1
+    },
+    "walls": {
+      "enabled": false,
+      "shape": "u-shape",
+      "width": 60,
+      "depth": 40,
+      "cornerRadiusTop": null,
+      "cornerRadiusBottom": null,
+      "front": {
+        "enabled": false,
+        "width": 60,
+        "depth": 40,
+        "alignment": "center",
+        "offset": 0,
+        "widthMm": null
+      },
+      "back": {
+        "enabled": false,
+        "width": 60,
+        "depth": 40,
+        "alignment": "center",
+        "offset": 0,
+        "widthMm": null
+      },
+      "left": {
+        "enabled": false,
+        "width": 60,
+        "depth": 40,
+        "alignment": "center",
+        "offset": 0,
+        "widthMm": null
+      },
+      "right": {
+        "enabled": false,
+        "width": 60,
+        "depth": 40,
+        "alignment": "center",
+        "offset": 0,
+        "widthMm": null
+      },
+      "interior": {
+        "enabled": false,
+        "width": 60,
+        "depth": 40,
+        "alignment": "center",
+        "offset": 0,
+        "widthMm": null
+      }
+    },
+    "wallPattern": {
+      "enabled": false,
+      "pattern": "honeycomb",
+      "scale": 0.5,
+      "dividers": false,
+      "sides": { "left": true, "right": true, "front": false, "back": false }
+    },
+    "floorPattern": { "enabled": false, "pattern": "round", "scale": 0.5 },
+    "handles": {
+      "enabled": false,
+      "shape": "rectangle",
+      "width": 40,
+      "height": 12,
+      "cornerRadius": 2,
+      "verticalPosition": 0.7,
+      "count": 1,
+      "chamfer": true,
+      "interior": false,
+      "front": { "enabled": false },
+      "back": { "enabled": false },
+      "left": { "enabled": false },
+      "right": { "enabled": false }
+    },
+    "slide": { "enabled": false },
+    "slotConfig": {
+      "x": { "enabled": false, "pitch": 21 },
+      "y": { "enabled": false, "pitch": 21 },
+      "width": 2.4,
+      "depth": 1,
+      "layout": "even"
+    },
+    "dividerPieces": { "height": 20, "thickness": 1.6, "clearance": 0.15 },
+    "inserts": [],
+    "cutouts": [],
+    "cutoutConfig": { "topOffset": 0, "fillReference": "rim" },
+    "splitConnectors": {
+      "enabled": true,
+      "clearance": 0.15,
+      "tongueProtrusion": 4,
+      "tongueThickness": 2,
+      "wallConnector": "none"
+    },
+    "featureColors": {
+      "enabled": true,
+      "body": "#334155",
+      "lip": "#f59e0b",
+      "labelTab": "#f8fafc",
+      "text": "#0f172a"
+    },
+    "textDefaults": {
+      "font": "atkinson-bold",
+      "mode": "engrave",
+      "depth": 0.6,
+      "margin": 1.5,
+      "anchor": "center",
+      "offset": { "x": 0, "y": 0 },
+      "sizeMode": "auto",
+      "minFontSize": 4,
+      "maxFontSize": 12,
+      "textCase": "upper",
+      "cutProfile": "drafted",
+      "draftAngleDeg": 5
+    },
+    "surfaceText": {
+      "walls": { "front": "PARTS" },
+      "wallAlign": { "front": "center" }
+    },
+    "lid": {
+      "enabled": true,
+      "attachment": "clickRails",
+      "stackableTop": true,
+      "stackLipOnly": false,
+      "magnetHoles": false,
+      "separateStackPlate": false,
+      "clickRails": { "front": true, "back": true, "left": false, "right": false },
+      "clickRailCoverage": 80,
+      "topThicknessMm": 1.2,
+      "relieveInterior": true,
+      "grip": { "mode": "scallop", "coverage": 40, "heightMm": 6, "binDip": false },
+      "cutouts": []
+    },
+    "overhang": {
+      "enabled": true,
+      "left": 2,
+      "right": 2,
+      "front": 0,
+      "back": 0,
+      "feet": false,
+      "taper": {
+        "enabled": true,
+        "profile": "fillet",
+        "bandHeight": 8,
+        "left": 2,
+        "right": 2,
+        "front": 0,
+        "back": 0
+      }
+    }
+  },
+  "_meta": {
+    "exportedFrom": "https://gridfinitylayouttool.com",
+    "exportedAt": "2026-01-01T00:00:00.000Z"
+  }
+}

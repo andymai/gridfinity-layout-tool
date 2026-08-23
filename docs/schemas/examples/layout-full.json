@@ -1,0 +1,146 @@
+{
+  "$schema": "https://gridfinitylayouttool.com/schema/layout.schema.json",
+  "version": "1.0",
+  "name": "Workshop drawer",
+  "purpose": "workshop",
+  "drawer": {
+    "width": 4,
+    "depth": 3,
+    "height": 12,
+    "fractionalEdgeX": "end",
+    "fractionalEdgeY": "end",
+    "measuredMm": { "width": 172, "depth": 130, "height": 85 },
+    "outline": {
+      "vertices": [
+        { "x": 0, "y": 0 },
+        { "x": 168, "y": 0 },
+        { "x": 168, "y": 84 },
+        { "x": 126, "y": 84 },
+        { "x": 126, "y": 126 },
+        { "x": 0, "y": 126 }
+      ],
+      "authoring": { "kind": "cells" }
+    }
+  },
+  "printBedSize": 256,
+  "printBedDepth": 256,
+  "gridUnitMm": 42,
+  "heightUnitMm": 7,
+  "magnetAnchor": "edge",
+  "categories": [
+    { "id": "cat-fasteners", "name": "Fasteners", "color": "#3b82f6" },
+    { "id": "cat-tools", "name": "Tools", "color": "#f59e0b" }
+  ],
+  "layers": [
+    { "id": "layer-bottom", "name": "Bottom", "height": 6 },
+    { "id": "layer-top", "name": "Top", "height": 6 }
+  ],
+  "bins": [
+    {
+      "id": "bin-m3",
+      "layerId": "layer-bottom",
+      "x": 0,
+      "y": 0,
+      "width": 2,
+      "depth": 2,
+      "height": 6,
+      "category": "cat-fasteners",
+      "label": "M3 bolts",
+      "notes": "10mm and 16mm",
+      "customProperties": { "supplier": "local" },
+      "linkedDesignId": "design-divided-tray"
+    },
+    {
+      "id": "bin-drivers",
+      "layerId": "layer-bottom",
+      "x": 2,
+      "y": 0,
+      "width": 2,
+      "depth": 1,
+      "height": 6,
+      "category": "cat-tools",
+      "label": "Drivers",
+      "notes": "",
+      "locked": true
+    },
+    {
+      "id": "bin-half",
+      "layerId": "layer-bottom",
+      "x": 0,
+      "y": 2,
+      "width": 1.5,
+      "depth": 1,
+      "height": 6,
+      "category": "cat-tools",
+      "label": "Bits",
+      "notes": "Half-grid width"
+    },
+    {
+      "id": "bin-upper",
+      "layerId": "layer-top",
+      "x": 0,
+      "y": 0,
+      "width": 2,
+      "depth": 2,
+      "height": 6,
+      "clearanceHeight": 0,
+      "category": "cat-tools",
+      "label": "Calipers",
+      "notes": ""
+    },
+    {
+      "id": "bin-stashed",
+      "layerId": "__staging__",
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "depth": 1,
+      "height": 4,
+      "category": "cat-fasteners",
+      "label": "Spare",
+      "notes": "Parked off-grid in the staging stash"
+    }
+  ],
+  "baseplateParams": {
+    "magnetHoles": true,
+    "magnetDiameter": 6,
+    "magnetDepth": 2,
+    "paddingLeft": 2,
+    "paddingRight": 2,
+    "paddingFront": 2,
+    "paddingBack": 2,
+    "paddingAnchor": "c",
+    "lightweight": true,
+    "connectorNubs": true,
+    "connectorStyle": "puzzle",
+    "syncWithLayout": true,
+    "cornerRadius": 2.5,
+    "screwHoles": {
+      "enabled": false,
+      "diameter": 4,
+      "headStyle": "countersink",
+      "screwsPerPiece": 4
+    }
+  },
+  "linkedDesigns": [
+    {
+      "id": "design-divided-tray",
+      "name": "Divided tray",
+      "params": {
+        "width": 2,
+        "depth": 2,
+        "height": 6,
+        "gridUnitMm": 42,
+        "heightUnitMm": 7,
+        "wallThickness": 1.2,
+        "style": "standard",
+        "base": { "style": "magnet", "magnetDiameter": 6, "magnetDepth": 2, "stackingLip": true },
+        "compartments": { "cols": 2, "rows": 1, "thickness": 1.2, "cells": [0, 1] }
+      }
+    }
+  ],
+  "_meta": {
+    "exportedFrom": "https://gridfinitylayouttool.com",
+    "exportedAt": "2026-01-01T00:00:00.000Z"
+  }
+}
