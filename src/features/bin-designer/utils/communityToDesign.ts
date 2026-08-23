@@ -1,4 +1,5 @@
 import { saveDesign, setActiveDesignId } from '@/features/bin-designer/storage/DesignerStorage';
+import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { SavedDesign } from '@/features/bin-designer/types';
 import { remixHintId } from '@/features/bin-designer/utils/remixHintId';
@@ -37,7 +38,15 @@ export async function communityToDesign(
 ): Promise<Result<SavedDesign, StorageError>> {
   const result = await saveDesign({
     name: design.name,
-    params: design.params,
+    ...(design.kind === 'assembly' && design.envelope && design.structure
+      ? {
+          kind: 'assembly' as const,
+          envelope: design.envelope,
+          // Migration is the trust boundary for remote structures, exactly as
+          // in the sync adapter — the server validated shape, this clamps.
+          structure: assemblyDescriptor.migrate(design.structure, design.envelope),
+        }
+      : { params: design.params }),
     thumbnail: null,
     exportFileNameConfig: null,
     lineage: lineageFromParent(design),

@@ -405,9 +405,11 @@ export function CommunityDetailContent({
           </h3>
           <p className="text-sm text-content-secondary">
             {t('community.detail.gridUnits', {
-              width: params.width,
-              depth: params.depth,
-              height: params.height,
+              width: params?.width ?? design.envelope?.width ?? 0,
+              depth: params?.depth ?? design.envelope?.depth ?? 0,
+              height:
+                params?.height ??
+                Math.max(1, Math.round(metrics.height / (design.envelope?.heightUnitMm ?? 7))),
             })}
           </p>
           <p className="text-xs text-content-tertiary">

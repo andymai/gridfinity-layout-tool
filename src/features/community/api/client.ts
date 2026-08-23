@@ -110,8 +110,8 @@ function isCommunityDesign(value: unknown): value is CommunityDesign {
     isKnownCategory(value.category) &&
     Array.isArray(value.techniques) &&
     value.techniques.every(isKnownTechnique) &&
-    value.techniques.every(isKnownTechnique) &&
-    isRecord(value.params) &&
+    (isRecord(value.params) ||
+      (value.kind === 'assembly' && isRecord(value.envelope) && isRecord(value.structure))) &&
     isRecord(value.metrics) &&
     (value.lineage === null || isRecord(value.lineage)) &&
     Array.isArray(value.thumbnails) &&

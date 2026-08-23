@@ -46,6 +46,12 @@ beforeEach(() => {
 });
 
 describe('PrintCostPanel', () => {
+  it('renders without an estimate when params are absent (assembly)', () => {
+    render(<PrintCostPanel metrics={METRICS} summary={summary()} gapContext={null} />);
+    expect(estimate).not.toHaveBeenCalled();
+    expect(screen.getByTestId('print-cost-panel')).toBeInTheDocument();
+  });
+
   it('labels model-derived figures as estimated', () => {
     render(<PrintCostPanel params={PARAMS} metrics={METRICS} summary={null} />);
 

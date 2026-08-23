@@ -9,6 +9,8 @@
  */
 import type { BinParams } from '@/shared/types/bin';
 import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
+import type { ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
 
 export const COMMUNITY_CATEGORIES = [
   'tools',
@@ -153,6 +155,8 @@ export interface CommunityCard {
   readonly authorPublicId: string;
   readonly category: CommunityCategory;
   readonly techniques: readonly ExampleTechnique[];
+  /** 'assembly' for a Workshop holder; absent on bin designs (and pre-field cards). */
+  readonly kind?: 'assembly';
   readonly metrics: CommunityDesignMetrics;
   readonly thumbnailUrl: string;
   /** True when `lineage` is non-null on the full record; drives the card's corner remix glyph. */
@@ -203,7 +207,12 @@ export interface CommunityDesign {
   readonly category: CommunityCategory;
   /** Derived server-side by `deriveCommunityTechniques` at publish/update time, not client-supplied. */
   readonly techniques: readonly ExampleTechnique[];
-  readonly params: BinParams;
+  /** Bin params; absent on a Workshop assembly record. */
+  readonly params?: BinParams;
+  /** Workshop assembly content, mirrored from the server record. */
+  readonly kind?: 'assembly';
+  readonly envelope?: ItemEnvelope;
+  readonly structure?: AssemblyStructure;
   readonly metrics: CommunityDesignMetrics;
   readonly lineage: CommunityDesignLineage | null;
   /** 2-3 WebP 384px blob URLs. */

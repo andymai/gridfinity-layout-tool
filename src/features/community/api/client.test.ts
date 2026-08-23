@@ -677,6 +677,36 @@ describe('fetchCommunityDesign', () => {
     );
   });
 
+  it('accepts a Workshop assembly record (envelope + structure, no params)', async () => {
+    const { params: _params, ...rest } = design;
+    const assembly = {
+      ...rest,
+      kind: 'assembly',
+      envelope: { width: 2, depth: 2, gridUnitMm: 42, heightUnitMm: 7 },
+      structure: {
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts: [],
+      },
+    };
+    fetchMock.mockResolvedValue(jsonResponse(200, { design: assembly }));
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.design.kind).toBe('assembly');
+      expect(result.value.design.params).toBeUndefined();
+    }
+  });
+
+  it('still rejects a record with neither params nor an assembly shape', async () => {
+    const { params: _params, ...paramless } = design;
+    fetchMock.mockResolvedValue(jsonResponse(200, { design: paramless }));
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isErr(result)).toBe(true);
+  });
+
   it('defaults isOwner to false when the field is absent', async () => {
     fetchMock.mockResolvedValue(jsonResponse(200, { design }));
     const result = await fetchCommunityDesign('AbCdEf123456');

@@ -185,7 +185,9 @@ export function PublishDialog() {
     let cancelled = false;
     void fetchOwnDesign(parentId).then((result) => {
       if (cancelled) return;
-      if (isOk(result)) {
+      if (isOk(result) && result.value.params !== undefined) {
+        // Assembly parents skip the identical-to-parent interstitial: their
+        // content hash lives server-side (B4 still rejects an unchanged remix).
         setParentParamsHash(hashBinParams(result.value.params));
       }
     });

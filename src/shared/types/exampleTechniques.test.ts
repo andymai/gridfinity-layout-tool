@@ -14,6 +14,7 @@ const ALL_TECHNIQUES: readonly ExampleTechnique[] = [
   'customShape',
   'wallPattern',
   'knifeSlots',
+  'workshop',
 ];
 
 describe('TECHNIQUE_CONFIG', () => {
@@ -29,7 +30,7 @@ describe('TECHNIQUE_CONFIG', () => {
     }
   });
 
-  it('has exactly the 10 known technique keys, no more', () => {
+  it('has exactly the 11 known technique keys, no more', () => {
     expect(Object.keys(TECHNIQUE_CONFIG).sort()).toEqual([...ALL_TECHNIQUES].sort());
   });
 });

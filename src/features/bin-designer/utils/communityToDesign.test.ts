@@ -106,6 +106,57 @@ describe('communityToDesign', () => {
     expect(loadDesign).toHaveBeenCalledWith(saved);
   });
 
+  it('saves an assembly through the descriptor migration gate', async () => {
+    const design = {
+      ...communityDesign(),
+      params: undefined,
+      kind: 'assembly' as const,
+      envelope: {
+        width: 2,
+        depth: 2,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        attachment: {
+          magnetHoles: false,
+          magnetDiameter: 6.5,
+          magnetDepth: 2.4,
+          screwHoles: false,
+          screwDiameter: 3,
+        },
+        featureColors: { enabled: false },
+      } as unknown as CommunityDesign['envelope'],
+      structure: {
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts: [
+          {
+            id: 'p1',
+            type: 'post',
+            params: { diameter: 8, height: 40 },
+            transform: { x: 42, y: 42, seatZ: 0, rotZDeg: 0 },
+            children: [],
+          },
+        ],
+      } as unknown as CommunityDesign['structure'],
+    };
+    saveDesign.mockResolvedValue({ ok: true, value: { id: 'design_asm', name: design.name } });
+
+    const result = await communityToDesign(design);
+
+    expect(isOk(result)).toBe(true);
+    const arg = saveDesign.mock.calls[0][0] as Record<string, unknown>;
+    expect(arg.kind).toBe('assembly');
+    expect(arg.params).toBeUndefined();
+    expect(arg.envelope).toMatchObject({ width: 2, depth: 2 });
+    // Migration ran: the structure is the descriptor's parsed copy, with the
+    // part surviving intact.
+    const structure = arg.structure as { kind: string; parts: unknown[] };
+    expect(structure.kind).toBe('assembly');
+    expect(structure.parts).toHaveLength(1);
+  });
+
   it('leaves the remix banner alone for a plain remix', async () => {
     saveDesign.mockResolvedValue({ ok: true, value: { id: 'design_new' } });
     await communityToDesign(communityDesign());
