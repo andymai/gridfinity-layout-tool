@@ -153,26 +153,33 @@ describe('cross-references resolve', () => {
       .replace(/[^a-z0-9 -]/g, '')
       .replace(/ /g, '-');
 
-  it.each(GENERATED_DOCS)('%s has no dead local anchors', (file) => {
-    const source = readDoc(file);
-    const targets = new Set<string>();
-    for (const [, heading] of source.matchAll(/^#{1,6}\s+(.+)$/gm)) targets.add(slug(heading));
-    for (const [, id] of source.matchAll(/<a id="([\w.:-]+)"><\/a>/g)) targets.add(id);
+  /** Every anchor a document offers: heading slugs plus explicit ids. */
+  function anchorsOf(file: string): Set<string> {
+    const source = readFileSync(join(DOCS_DIR, file), 'utf8');
+    const out = new Set<string>();
+    for (const [, heading] of source.matchAll(/^#{1,6}\s+(.+)$/gm)) out.add(slug(heading));
+    for (const [, id] of source.matchAll(/<a id="([\w.:-]+)"><\/a>/g)) out.add(id);
+    return out;
+  }
 
-    const dead = [...source.matchAll(/\]\(#([\w-]+)\)/g)]
-      .map((m) => m[1])
-      .filter((target) => !targets.has(target));
+  const anchors = new Map(ALL_DOCS.map((file) => [file, anchorsOf(file)] as const));
+
+  it.each(ALL_DOCS)('%s links land on a real anchor', (file) => {
+    const source = readFileSync(join(DOCS_DIR, file), 'utf8');
+    const dead: string[] = [];
+    // An empty document group means the link is local to this file.
+    for (const [, doc, target] of source.matchAll(/\]\(([\w-]*\.md)?#([\w-]+)\)/g)) {
+      const targetFile = doc ?? file;
+      const known = anchors.get(targetFile);
+      if (known === undefined) {
+        dead.push(`${targetFile} (unknown document)`);
+      } else if (!known.has(target)) {
+        dead.push(`${targetFile}#${target}`);
+      }
+    }
     expect(
       [...new Set(dead)].sort(),
       `${file} links to anchors that do not exist. Run \`pnpm run gen:schema-docs\`.`
     ).toEqual([]);
-  });
-
-  it.each(GENERATED_DOCS)('%s cross-document links name a real file', (file) => {
-    const source = readDoc(file);
-    const files = [...source.matchAll(/\]\(([\w-]+\.md)#[\w-]+\)/g)].map((m) => m[1]);
-    for (const target of new Set(files)) {
-      expect(GENERATED_DOCS.includes(target), `${file} links to unknown doc ${target}`).toBe(true);
-    }
   });
 });
