@@ -168,6 +168,20 @@ describe('fitTestCutoutSpans', () => {
     expect(leaned.max - leaned.min).toBeCloseTo(plain.max - plain.min + expected, 5);
   });
 
+  it('clamps the lean travel to the depth the builder actually cuts', () => {
+    // An over-deep cutDepth is clamped to solidSurfaceZ by the generator, so
+    // the sweep must reserve for the clamped depth, not the stored number:
+    // two over-deep values land on the same swept footprint.
+    const spanFor = (cutDepth: number) =>
+      fitTestCutoutSpans(
+        board({}, [cutout({ shape: 'rectangle', width: 10, depth: 10, cutDepth, leanDeg: 30 })])
+      ).y[0];
+    const width = (s: { min: number; max: number }) => s.max - s.min;
+    expect(width(spanFor(999))).toBeCloseTo(width(spanFor(500)), 5);
+    expect(width(spanFor(999))).toBeLessThan(100);
+    expect(width(spanFor(999))).toBeGreaterThan(width(spanFor(8)));
+  });
+
   it('ignores lean on shapes the builder never tilts', () => {
     const plain = fitTestCutoutSpans(
       board({}, [cutout({ shape: 'knifeSlot', width: 30, depth: 3 })])

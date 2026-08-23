@@ -94,10 +94,7 @@ export function defaultFitTestThicknessMm(params: BinParams): number {
  * stubs that will not lie flat, with the stamp cut into mostly air.
  */
 export function fitTestThicknessRangeMm(params: BinParams): { min: number; max: number } {
-  const usable = Math.max(
-    0,
-    binDimensions(params).wallHeight - Math.max(0, params.cutoutConfig.topOffset)
-  );
+  const usable = usableCutDepthMm(params);
   const max = Math.max(
     FIT_TEST_MIN_THICKNESS_MM,
     Math.min(usable, Math.min(deepestCutoutDepthMm(params), usable) + params.wallThickness)
@@ -155,24 +152,34 @@ function openingGrowthMm(cutout: Cutout): {
  * Clearance and the entry chamfer both widen the OPENING, which is the face the
  * card is measured at, so both count toward the footprint a seam has to miss.
  */
-function openingHalfExtents(cutout: Cutout): { hx: number; hy: number } {
+function openingHalfExtents(cutout: Cutout, usableDepthMm: number): { hx: number; hy: number } {
   const grow = openingGrowthMm(cutout);
   const hw = cutout.width / 2 + grow.clearanceW + grow.chamfer;
   let hd = cutout.depth / 2 + grow.clearanceD + grow.chamfer;
   // A leaned pocket sweeps past its drawn footprint along the local depth
   // axis: the mouth stretches by 1/cos(lean) and the floor travels a further
-  // cutDepth·sin(lean) to one side. Reserved symmetrically (the travel side
-  // depends on the sign composed with rotation), so the seam margin can only
-  // over-reserve, never route a cut plane through the swept pocket.
+  // depth·sin(lean) to one side, at the depth the builder actually cuts
+  // (`min(cutDepth, solidSurfaceZ)` — an over-deep cutDepth is clamped there,
+  // so counting it raw would reserve seam margin for material never removed).
+  // Reserved symmetrically (the travel side depends on the sign composed with
+  // rotation), so the seam margin can only over-reserve sideways, never route
+  // a cut plane through the swept pocket.
   const lean = resolveCutoutLeanDeg(cutout);
   if (lean !== 0) {
     const leanRad = (Math.abs(lean) * Math.PI) / 180;
-    hd = hd / Math.cos(leanRad) + cutout.cutDepth * Math.sin(leanRad);
+    const cutDepth = Math.min(cutout.cutDepth, usableDepthMm);
+    hd = hd / Math.cos(leanRad) + cutDepth * Math.sin(leanRad);
   }
   const rad = (cutout.rotation * Math.PI) / 180;
   const cos = Math.abs(Math.cos(rad));
   const sin = Math.abs(Math.sin(rad));
   return { hx: hw * cos + hd * sin, hy: hw * sin + hd * cos };
+}
+
+/** The material below the fill surface — what the builder clamps a pocket's
+ *  depth against (its `solidSurfaceZ`). */
+function usableCutDepthMm(params: BinParams): number {
+  return Math.max(0, binDimensions(params).wallHeight - Math.max(0, params.cutoutConfig.topOffset));
 }
 
 /**
@@ -186,10 +193,11 @@ function openingHalfExtents(cutout: Cutout): { hx: number; hy: number } {
  */
 export function fitTestCutoutSpans(params: BinParams): { x: AxisSpan[]; y: AxisSpan[] } {
   const { innerW, innerD, offsetX, offsetY } = cutoutInterior(params);
+  const usableDepth = usableCutDepthMm(params);
   const x: AxisSpan[] = [];
   const y: AxisSpan[] = [];
   for (const cutout of fitTestCutouts(params)) {
-    const { hx, hy } = openingHalfExtents(cutout);
+    const { hx, hy } = openingHalfExtents(cutout, usableDepth);
     const cx = cutout.x + cutout.width / 2 - innerW / 2 + offsetX;
     const cy = cutout.y + cutout.depth / 2 - innerD / 2 + offsetY;
     x.push({ min: cx - hx, max: cx + hx });
@@ -210,8 +218,9 @@ export interface CutoutBox2D {
  *  than the per-axis projections {@link fitTestCutoutSpans} gives. */
 export function fitTestCutoutBoxes(params: BinParams): CutoutBox2D[] {
   const { innerW, innerD, offsetX, offsetY } = cutoutInterior(params);
+  const usableDepth = usableCutDepthMm(params);
   return fitTestCutouts(params).map((cutout) => {
-    const { hx, hy } = openingHalfExtents(cutout);
+    const { hx, hy } = openingHalfExtents(cutout, usableDepth);
     const cx = cutout.x + cutout.width / 2 - innerW / 2 + offsetX;
     const cy = cutout.y + cutout.depth / 2 - innerD / 2 + offsetY;
     return { minX: cx - hx, maxX: cx + hx, minY: cy - hy, maxY: cy + hy };
