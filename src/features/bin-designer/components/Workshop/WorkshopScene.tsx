@@ -128,11 +128,11 @@ export function WorkshopScene({
           the worker's sharp mesh is already wedge-shaped and stays outside.
           Pointer math resolves through sceneFromWorld. */}
       <group
-        position={tilt ? [tilt.at[0], tilt.at[1], tilt.at[2]] : undefined}
-        rotation={tilt ? [tilt.rotation[0], tilt.rotation[1], tilt.rotation[2]] : undefined}
+        position={tilt ? [tilt.at[0], tilt.at[1], tilt.at[2]] : [0, 0, 0]}
+        rotation={tilt ? [tilt.rotation[0], tilt.rotation[1], tilt.rotation[2]] : [0, 0, 0]}
       >
         <group
-          position={tilt ? [-tilt.at[0], -tilt.at[1], -tilt.at[2]] : undefined}
+          position={tilt ? [-tilt.at[0], -tilt.at[1], -tilt.at[2]] : [0, 0, 0]}
           ref={flatFrameRef}
         >
           <BasePlateMesh

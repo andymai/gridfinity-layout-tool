@@ -26,7 +26,7 @@ export function WedgeFillerMesh({ envelope, base, wedge }: WedgeFillerMeshProps)
   const cornerRadius = Math.min(base.cornerRadius ?? 4, w / 2, d / 2);
 
   const geometries = useMemo((): BufferGeometry[] => {
-    const socketHeight = GRIDFINITY_SPEC.BASE_HEIGHT;
+    const socketHeight = GRIDFINITY_SPEC.SOCKET_HEIGHT;
     const socket = new ExtrudeGeometry(roundedRectShape(w, d, cornerRadius), {
       depth: socketHeight,
       bevelEnabled: false,

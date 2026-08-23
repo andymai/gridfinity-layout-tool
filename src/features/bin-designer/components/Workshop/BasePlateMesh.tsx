@@ -91,7 +91,7 @@ export function BasePlateMesh({
   const w = fullW - 2 * deckInset;
   const d = fullD - 2 * deckInset;
   const plateHeight =
-    wedgeAngle > 0 ? base.floorThickness : GRIDFINITY_SPEC.BASE_HEIGHT + base.floorThickness;
+    wedgeAngle > 0 ? base.floorThickness : GRIDFINITY_SPEC.SOCKET_HEIGHT + base.floorThickness;
   const cornerRadius = Math.min(base.cornerRadius ?? 4, w / 2, d / 2);
 
   const geometry = useMemo(() => {
