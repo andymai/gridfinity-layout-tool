@@ -34,6 +34,8 @@ export function partSeatHeight(node: AssemblyPartNode): number {
       return node.params.height;
     case 'riser':
       return node.params.stepCount * node.params.stepHeight;
+    case 'boreBank':
+      return node.params.height;
     case 'cutter':
       return 0;
   }
@@ -64,6 +66,8 @@ export function partFootprint(node: AssemblyPartNode): { w: number; d: number } 
       return { w: node.params.width, d: node.params.depth };
     case 'riser':
       return { w: node.params.width, d: node.params.stepCount * node.params.stepDepth };
+    case 'boreBank':
+      return { w: node.params.width, d: node.params.depth };
     case 'cutter':
       return cutterFootprint(node.params.profile);
   }

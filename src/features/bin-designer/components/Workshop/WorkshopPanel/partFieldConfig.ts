@@ -97,6 +97,16 @@ export const PART_NUMBER_FIELDS: Record<AssemblyPartType, readonly PartNumberFie
     { key: 'stepDepth', labelKey: 'workshop.field.stepDepth', min: 5, max: 80, step: 1 },
     { key: 'stepHeight', labelKey: 'workshop.field.stepHeight', min: 2, max: 60, step: 1 },
   ],
+  boreBank: [
+    { key: 'width', labelKey: 'workshop.field.width', min: 10, max: 300, step: 1 },
+    { key: 'depth', labelKey: 'workshop.field.depth', min: 8, max: 120, step: 1 },
+    { key: 'height', labelKey: 'workshop.field.height', min: 8, max: 120, step: 1 },
+    { key: 'boreDiameter', labelKey: 'workshop.field.boreDiameter', min: 2, max: 40, step: 0.5 },
+    { key: 'boreDepth', labelKey: 'workshop.field.boreDepth', min: 3, max: 110, step: 1 },
+    { key: 'columns', labelKey: 'workshop.field.columns', min: 1, max: 15, step: 1 },
+    { key: 'rows', labelKey: 'workshop.field.rows', min: 1, max: 6, step: 1 },
+    { key: 'angleDeg', labelKey: 'workshop.field.leanDeg', min: 0, max: 30, step: 1 },
+  ],
   cutter: [
     { key: 'depth', labelKey: 'workshop.field.cutDepth', min: 0.5, max: 200, step: 0.5 },
     { key: 'clearance', labelKey: 'workshop.field.clearance', min: 0, max: 5, step: 0.1 },
@@ -114,5 +124,6 @@ export const PART_LABEL_KEYS: Record<AssemblyPartType, string> = {
   arch: 'workshop.part.arch',
   comb: 'workshop.part.comb',
   riser: 'workshop.part.riser',
+  boreBank: 'workshop.part.boreBank',
   cutter: 'workshop.part.cutter',
 };

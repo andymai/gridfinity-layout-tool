@@ -25,7 +25,8 @@ import { PART_LABEL_KEYS, PART_NUMBER_FIELDS } from './partFieldConfig';
 /** Degrees for angle-ish keys, counts unitless, millimetres otherwise. */
 function unitFor(key: string): string | undefined {
   if (key.endsWith('Deg') || key === 'rotation') return '°';
-  if (key === 'count' || key === 'sides') return undefined;
+  if (key === 'count' || key === 'sides' || key === 'columns' || key === 'rows') return undefined;
+  if (key.endsWith('Count')) return undefined;
   return 'mm';
 }
 

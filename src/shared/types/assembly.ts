@@ -23,6 +23,7 @@ export const ASSEMBLY_PART_TYPES = [
   'arch',
   'comb',
   'riser',
+  'boreBank',
   'cutter',
 ] as const;
 
@@ -135,6 +136,18 @@ export interface CombParams {
   readonly slotDepth: number;
 }
 
+export interface BoreBankParams {
+  readonly width: number;
+  readonly depth: number;
+  readonly height: number;
+  readonly boreDiameter: number;
+  readonly boreDepth: number;
+  readonly columns: number;
+  readonly rows: number;
+  /** Lean of every bore toward the front face, for easy grab-and-read. */
+  readonly angleDeg: number;
+}
+
 export interface RiserParams {
   /** Run of the steps along its local X. */
   readonly width: number;
@@ -218,6 +231,10 @@ export interface RiserNode extends PartNodeBase {
   readonly type: 'riser';
   readonly params: RiserParams;
 }
+export interface BoreBankNode extends PartNodeBase {
+  readonly type: 'boreBank';
+  readonly params: BoreBankParams;
+}
 export interface CutterNode extends PartNodeBase {
   readonly type: 'cutter';
   readonly params: CutterParams;
@@ -233,6 +250,7 @@ export type AssemblyPartNode =
   | ArchNode
   | CombNode
   | RiserNode
+  | BoreBankNode
   | CutterNode;
 
 export type AssemblyPartParams = AssemblyPartNode['params'];
@@ -247,6 +265,7 @@ export interface AssemblyPartParamsByType {
   readonly arch: ArchParams;
   readonly comb: CombParams;
   readonly riser: RiserParams;
+  readonly boreBank: BoreBankParams;
   readonly cutter: CutterParams;
 }
 

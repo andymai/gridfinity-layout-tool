@@ -130,4 +130,74 @@ describe('assembly generator (real WASM)', () => {
     expect(stairVolume).toBeGreaterThan(60 * 36 * 36 * 0.45);
     expect(stairVolume).toBeLessThan(60 * 36 * 36 * 0.75);
   });
+
+  it('an angled bore bank drills a leaning grid without breaking through', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const bank = { width: 70, depth: 30, height: 35 };
+    const solid = structureWith([
+      part(
+        'block',
+        'b',
+        { x: 42, y: 21 },
+        {
+          params: { ...bank, wedgeAngleDeg: 0, tiltDeg: 0 },
+        }
+      ),
+    ]);
+    const drilled = structureWith([
+      part(
+        'boreBank',
+        'bb',
+        { x: 42, y: 21 },
+        {
+          params: {
+            ...bank,
+            boreDiameter: 8,
+            boreDepth: 28,
+            columns: 5,
+            rows: 2,
+            angleDeg: 15,
+          },
+        }
+      ),
+    ]);
+    const plain = generateAssembly(solid, makeEnvelope(2, 1), noop, true);
+    const bored = generateAssembly(drilled, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(bored);
+    assertNoDegenerateTriangles(bored);
+    assertWatertight(bored);
+    // Ten 8mm bores ~28mm deep: several cm3 gone, but the floor and front
+    // stay closed so the outer envelope is unchanged.
+    expect(meshVolume(bored)).toBeLessThan(meshVolume(plain) - 8_000);
+    const plainBox = boundingBox(plain.vertices);
+    const boredBox = boundingBox(bored.vertices);
+    expect(boredBox.minY).toBeCloseTo(plainBox.minY, 1);
+    expect(boredBox.maxZ).toBeCloseTo(plainBox.maxZ, 1);
+  });
+
+  it('a steep lean clamps bore depth instead of exiting the front face', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const risky = structureWith([
+      part(
+        'boreBank',
+        'bb',
+        { x: 42, y: 21 },
+        {
+          params: {
+            width: 40,
+            depth: 12,
+            height: 40,
+            boreDiameter: 6,
+            boreDepth: 38,
+            columns: 3,
+            rows: 1,
+            angleDeg: 30,
+          },
+        }
+      ),
+    ]);
+    const result = generateAssembly(risky, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(result);
+    assertWatertight(result);
+  });
 });

@@ -615,6 +615,54 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       body = easedOrOriginal(body, treadEdges, Math.min(TOP_EASE_MM, stepHeight / 4));
       return body;
     }
+    case 'boreBank': {
+      const { width, depth, height, columns, rows, angleDeg } = node.params;
+      const rad = angleDeg * DEG;
+      const pitchX = width / columns;
+      // Centered on an even pitch: edge webs keep 1mm, interior webs 2mm;
+      // the deepest point keeps a 2mm floor.
+      const bore = Math.min(node.params.boreDiameter, pitchX - 2, depth - 3);
+      // Rows pack toward the back face so each leaning bore sweeps forward
+      // beneath the mouths in front of it; every row's depth then clamps
+      // against its own distance to the front wall.
+      const backCy = depth / 2 - 1.5 - bore / 2;
+      const frontLimit = -depth / 2 + 1.5 + bore / 2;
+      const rowPitch = rows > 1 ? Math.min(bore + 2, (backCy - frontLimit) / (rows - 1)) : 0;
+      const maxByFloor = (height - 2) / Math.cos(rad);
+      const total = height + sink;
+      let body: Shape3D = box(width, depth, total, { at: [0, 0, total / 2 - sink] });
+      body = easedOrOriginal(
+        body,
+        verticalEdges(body),
+        Math.min(CORNER_FILLET_MM, width / 8, depth / 8)
+      );
+      body = easedOrOriginal(body, edgesNearPlane(body, height), Math.min(TOP_EASE_MM, depth / 6));
+      if (bore <= 1) return body;
+      const axis: [number, number, number] = [0, -Math.sin(rad), -Math.cos(rad)];
+      const cutters: Shape3D[] = [];
+      for (let c = 0; c < columns; c += 1) {
+        for (let r = 0; r < rows; r += 1) {
+          const cx = -width / 2 + pitchX * (c + 0.5);
+          const cy = backCy - rowPitch * r;
+          let boreDepth = Math.min(node.params.boreDepth, maxByFloor);
+          if (rad > 0) {
+            boreDepth = Math.min(boreDepth, (cy - frontLimit) / Math.sin(rad));
+          }
+          if (boreDepth <= 1) continue;
+          cutters.push(
+            cylinder(bore / 2, boreDepth + 1, {
+              at: [cx, cy + Math.sin(rad), height + Math.cos(rad)],
+              axis,
+            })
+          );
+        }
+      }
+      if (cutters.length === 0) return body;
+      const drilled = unwrap(cutAll(body, cutters as ValidSolid[], { optimisation: 'commonFace' }));
+      for (const cutter of cutters) cutter.delete();
+      if (drilled !== body) body.delete();
+      return drilled;
+    }
     case 'cutter':
       return buildCutterSolid(node.params);
   }

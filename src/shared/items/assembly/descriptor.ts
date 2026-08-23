@@ -115,6 +115,17 @@ const riserParamsSchema = z.object({
   stepHeight: z.number().min(2).max(60),
 });
 
+const boreBankParamsSchema = z.object({
+  width: z.number().min(10).max(300),
+  depth: z.number().min(8).max(120),
+  height: z.number().min(8).max(120),
+  boreDiameter: z.number().min(2).max(40),
+  boreDepth: z.number().min(3).max(110),
+  columns: z.number().int().min(1).max(15),
+  rows: z.number().int().min(1).max(6),
+  angleDeg: z.number().min(0).max(30),
+});
+
 const pathPointSchema = z.object({
   x: z.number().min(-2000).max(2000),
   y: z.number().min(-2000).max(2000),
@@ -227,6 +238,12 @@ export const assemblyPartNodeSchema: z.ZodType<AssemblyPartNode> = z.lazy(() =>
     }),
     z.object({
       ...nodeBase,
+      type: z.literal('boreBank'),
+      params: boreBankParamsSchema,
+      children: childrenSchema,
+    }),
+    z.object({
+      ...nodeBase,
       type: z.literal('cutter'),
       params: cutterParamsSchema,
       children: childrenSchema,
@@ -315,6 +332,16 @@ export const DEFAULT_PART_PARAMS: {
   },
   comb: { width: 80, depth: 14, height: 35, slotCount: 4, slotWidth: 9, slotDepth: 25 },
   riser: { width: 60, stepCount: 3, stepDepth: 18, stepHeight: 14 },
+  boreBank: {
+    width: 70,
+    depth: 30,
+    height: 35,
+    boreDiameter: 8,
+    boreDepth: 28,
+    columns: 5,
+    rows: 2,
+    angleDeg: 15,
+  },
   cutter: { profile: { shape: 'circle', diameter: 6.5 }, depth: 20, clearance: 0.2, chamfer: 0.6 },
 };
 

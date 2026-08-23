@@ -440,6 +440,14 @@ export function buildPartGeometry(node: AssemblyPartNode): BufferGeometry {
       return buildComb(node.params);
     case 'riser':
       return buildRiser(node.params);
+    case 'boreBank': {
+      const { width, depth, height } = node.params;
+      const g = new ExtrudeGeometry(
+        roundedRectShape(width, depth, Math.min(2.5, width / 8, depth / 8)),
+        { depth: height, bevelEnabled: false }
+      );
+      return g;
+    }
     case 'cutter':
       return buildCutter(node.params);
   }

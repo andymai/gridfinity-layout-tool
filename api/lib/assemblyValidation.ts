@@ -29,6 +29,7 @@ const PART_TYPES = new Set([
   'arch',
   'comb',
   'riser',
+  'boreBank',
   'cutter',
 ]);
 
@@ -202,6 +203,19 @@ function validParams(type: string, params: unknown): boolean {
         num(params.stepDepth, 5, 80) &&
         num(params.stepHeight, 2, 60)
       );
+    case 'boreBank':
+      return (
+        num(params.width, 10, 300) &&
+        num(params.depth, 8, 120) &&
+        num(params.height, 8, 120) &&
+        num(params.boreDiameter, 2, 40) &&
+        num(params.boreDepth, 3, 110) &&
+        num(params.columns, 1, 15) &&
+        Number.isInteger(params.columns) &&
+        num(params.rows, 1, 6) &&
+        Number.isInteger(params.rows) &&
+        num(params.angleDeg, 0, 30)
+      );
     case 'cutter':
       return (
         validProfile(params.profile) &&
@@ -310,6 +324,16 @@ const PART_PARAM_KEYS: Record<string, readonly string[]> = {
   arch: ['span', 'height', 'style', 'rodDiameter', 'bridgeWidth', 'uprightThickness', 'depth'],
   comb: ['width', 'depth', 'height', 'slotCount', 'slotWidth', 'slotDepth'],
   riser: ['width', 'stepCount', 'stepDepth', 'stepHeight'],
+  boreBank: [
+    'width',
+    'depth',
+    'height',
+    'boreDiameter',
+    'boreDepth',
+    'columns',
+    'rows',
+    'angleDeg',
+  ],
   cutter: ['profile', 'depth', 'clearance', 'chamfer'],
 };
 
