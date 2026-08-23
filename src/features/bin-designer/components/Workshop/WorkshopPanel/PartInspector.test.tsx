@@ -31,7 +31,7 @@ describe('PartInspector', () => {
   it('renders per-type fields for a cradle including groove style', () => {
     useDesignerStore.getState().addAssemblyPart('cradle', null);
     render(<PartInspector node={selectedNode()} />);
-    expect(screen.getByText('Groove style')).toBeInTheDocument();
+    expect(screen.getByLabelText('Groove style')).toBeInTheDocument();
     expect(screen.getByText('Groove width')).toBeInTheDocument();
   });
 });

@@ -31,6 +31,7 @@ import { StickyGroupHeader } from '../../panel/StickyGroupHeader';
 import { PanelSection } from '../../panel/PanelSection';
 import { PartInspector } from './PartInspector';
 import { PART_LABEL_KEYS } from './partFieldConfig';
+import { PART_ICONS } from './partIcons';
 import { partSummary } from './partSummary';
 
 function TreeRows({
@@ -79,6 +80,33 @@ function TreeRows({
     </>
   );
 }
+
+interface PaletteTile {
+  readonly id: string;
+  readonly type: AssemblyPartNode['type'];
+  readonly cutterShape?: 'circle' | 'slot';
+  readonly labelKey: string;
+}
+
+const PALETTE_TILES: readonly PaletteTile[] = [
+  ...ASSEMBLY_PART_TYPES.filter((type) => type !== 'cutter').map((type) => ({
+    id: type,
+    type,
+    labelKey: PART_LABEL_KEYS[type],
+  })),
+  {
+    id: 'hole',
+    type: 'cutter' as const,
+    cutterShape: 'circle' as const,
+    labelKey: 'workshop.palette.hole',
+  },
+  {
+    id: 'slot',
+    type: 'cutter' as const,
+    cutterShape: 'slot' as const,
+    labelKey: 'workshop.palette.slot',
+  },
+];
 
 export function WorkshopPanel() {
   const t = useTranslation();
@@ -201,49 +229,34 @@ export function WorkshopPanel() {
         <StickyGroupHeader title={t('workshop.palette.title')} expanded onExpandedChange={() => {}}>
           <PanelSection>
             <p className="mb-2 text-xs text-content-tertiary">{t('workshop.palette.hint')}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {ASSEMBLY_PART_TYPES.filter((type) => type !== 'cutter').map((type) => (
-                <Button
-                  key={type}
-                  variant={pendingType === type ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => setWorkshopPendingPartType(pendingType === type ? null : type)}
-                >
-                  {t(PART_LABEL_KEYS[type])}
-                </Button>
-              ))}
-              <Button
-                variant={
-                  pendingType === 'cutter' && pendingCutterShape === 'circle'
-                    ? 'primary'
-                    : 'secondary'
-                }
-                size="sm"
-                onClick={() =>
-                  setWorkshopPendingPartType(
-                    pendingType === 'cutter' && pendingCutterShape === 'circle' ? null : 'cutter',
-                    'circle'
-                  )
-                }
-              >
-                {t('workshop.palette.hole')}
-              </Button>
-              <Button
-                variant={
-                  pendingType === 'cutter' && pendingCutterShape === 'slot'
-                    ? 'primary'
-                    : 'secondary'
-                }
-                size="sm"
-                onClick={() =>
-                  setWorkshopPendingPartType(
-                    pendingType === 'cutter' && pendingCutterShape === 'slot' ? null : 'cutter',
-                    'slot'
-                  )
-                }
-              >
-                {t('workshop.palette.slot')}
-              </Button>
+            <div className="grid grid-cols-3 gap-1.5">
+              {PALETTE_TILES.map((tile) => {
+                const active =
+                  tile.cutterShape === undefined
+                    ? pendingType === tile.type
+                    : pendingType === 'cutter' && pendingCutterShape === tile.cutterShape;
+                return (
+                  <Button
+                    key={tile.id}
+                    variant="ghost"
+                    size="sm"
+                    aria-pressed={active}
+                    title={t(tile.labelKey)}
+                    className={
+                      'h-auto flex-col gap-1 rounded-lg px-1 py-2 text-[10px] font-medium ' +
+                      (active
+                        ? 'bg-accent text-on-accent shadow-sm ring-1 ring-accent/40 hover:bg-accent'
+                        : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content')
+                    }
+                    onClick={() =>
+                      setWorkshopPendingPartType(active ? null : tile.type, tile.cutterShape)
+                    }
+                  >
+                    {PART_ICONS[tile.id]}
+                    <span className="truncate">{t(tile.labelKey)}</span>
+                  </Button>
+                );
+              })}
             </div>
           </PanelSection>
         </StickyGroupHeader>
