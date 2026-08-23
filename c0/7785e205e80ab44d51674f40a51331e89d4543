@@ -1,0 +1,68 @@
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_73886cd55fc7c1 390-400,404-414,416-423
+  s_a36c0b85dfeec4::t_1fc729d11696f8 356-359,361,363-364,366,371-381,383-386,431-438,442,453,455-456,479
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 135-136,143-146,155-156,260-262
+  s_a36c0b85dfeec4::t_e79e8b656ab3cf 263-265
+  s_a36c0b85dfeec4::t_faeb2eb939e3cc 266-270
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/generation/worker/generators/assemblyGenerator.scenario.test.ts
+  s_a36c0b85dfeec4::t_65b17fd28dc320 121-128,140-153,176-180
+  s_a36c0b85dfeec4::t_7b5f2771a9563d 129-139,154-175
+  s_a36c0b85dfeec4::t_fc794df3979853 120
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/shared/types/assembly.ts
+  s_a36c0b85dfeec4::t_dee2f1cd11fe35 72-73,82-86,94
+src/shared/items/assembly/descriptor.ts
+  s_a36c0b85dfeec4::t_67fe3dde703308 53-54,66-70,74-75,253-261
+  s_a36c0b85dfeec4::t_dee2f1cd11fe35 252,263
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 2263-2265
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/bin-designer/components/Workshop/proxyGeometry.ts
+  s_a36c0b85dfeec4::t_f0c839c52ecc6e 165,169-170,172-173,186-188
+  s_a36c0b85dfeec4::t_ec427420c63b71 93,95-103,106,108,110,119,127-128,131-153
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/bin-designer/components/Workshop/WorkshopPanel/partFieldConfig.ts
+  s_a36c0b85dfeec4::t_e8a6ed22108330 34,41-55,63
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c07785e205e80ab44d51674f40a51331e89d4543",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
