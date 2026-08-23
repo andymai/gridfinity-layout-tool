@@ -69,6 +69,8 @@ export interface FinParams {
 }
 
 export interface BlockParams {
+  /** Presentation tilt about the part's X axis; the base stays buried. */
+  readonly tiltDeg?: number;
   readonly width: number;
   readonly depth: number;
   readonly height: number;
@@ -77,6 +79,11 @@ export interface BlockParams {
 }
 
 export interface TubeParams {
+  /** Collar recess so a tool's shoulder sits flat; 0 = off. */
+  readonly counterboreDiameter?: number;
+  readonly counterboreDepth?: number;
+  /** Bore narrows toward the floor, gripping mixed shaft sizes. */
+  readonly boreTaperDeg?: number;
   readonly boreDiameter: number;
   readonly wall: number;
   readonly height: number;
@@ -84,6 +91,7 @@ export interface TubeParams {
 }
 
 export interface CradleParams {
+  readonly tiltDeg?: number;
   /** Extent along the groove axis in mm. */
   readonly length: number;
   readonly width: number;

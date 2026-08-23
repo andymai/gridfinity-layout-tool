@@ -90,22 +90,36 @@ function buildBlock(p: {
   depth: number;
   height: number;
   wedgeAngleDeg: number;
+  tiltDeg?: number;
 }): BufferGeometry {
+  const tilt = p.tiltDeg ?? 0;
+  const drop = tilt > 0 ? Math.tan(tilt * DEG) * (p.depth / 2) + 0.5 : 0;
+  // `dropped` = the geometry already extends below z=0 by `drop` (the wedge
+  // profile draws its base there); otherwise shift the extra extrusion down.
+  const finish = (geometry: BufferGeometry, dropped: boolean): BufferGeometry => {
+    if (tilt > 0) {
+      if (!dropped) geometry.translate(0, 0, -drop);
+      geometry.rotateX(tilt * DEG);
+    }
+    return geometry;
+  };
   if (p.wedgeAngleDeg <= 0) {
     // Rounded vertical corners, matching the worker's corner fillets.
-    return new ExtrudeGeometry(
+    const body = new ExtrudeGeometry(
       roundedRectShape(p.width, p.depth, Math.min(2.5, p.width / 5, p.depth / 5)),
-      { depth: p.height, bevelEnabled: false, curveSegments: 8 }
+      { depth: p.height + drop, bevelEnabled: false, curveSegments: 8 }
     );
+    return finish(body, false);
   }
   const lowEdge = Math.max(0.5, p.height - p.depth * Math.tan(p.wedgeAngleDeg * DEG));
   const shape = new Shape();
-  shape.moveTo(-p.depth / 2, 0);
+  shape.moveTo(-p.depth / 2, -drop);
+  shape.lineTo(p.depth / 2, -drop);
   shape.lineTo(p.depth / 2, 0);
   shape.lineTo(p.depth / 2, lowEdge);
   shape.lineTo(-p.depth / 2, p.height);
   shape.closePath();
-  return extrudeYZProfile(shape, p.width);
+  return finish(extrudeYZProfile(shape, p.width), true);
 }
 
 function buildTube(p: {
@@ -113,18 +127,33 @@ function buildTube(p: {
   wall: number;
   height: number;
   tiltDeg: number;
+  counterboreDiameter?: number;
+  counterboreDepth?: number;
 }): BufferGeometry {
   const outer = p.boreDiameter / 2 + p.wall;
-  const shape = new Shape();
-  shape.absarc(0, 0, outer, 0, Math.PI * 2, false);
-  const hole = new Path();
-  hole.absarc(0, 0, p.boreDiameter / 2, 0, Math.PI * 2, true);
-  shape.holes.push(hole);
-  const geometry = new ExtrudeGeometry(shape, {
-    depth: p.height,
-    bevelEnabled: false,
-    curveSegments: 24,
-  });
+  const cbR = Math.min((p.counterboreDiameter ?? 0) / 2, outer - 0.4);
+  const cbDepth = Math.min(p.counterboreDepth ?? 0, p.height - 1);
+  const hasCollar = cbR > p.boreDiameter / 2 && cbDepth > 0.2;
+  const ring = (boreR: number, from: number, to: number): BufferGeometry => {
+    const shape = new Shape();
+    shape.absarc(0, 0, outer, 0, Math.PI * 2, false);
+    const hole = new Path();
+    hole.absarc(0, 0, boreR, 0, Math.PI * 2, true);
+    shape.holes.push(hole);
+    const segment = new ExtrudeGeometry(shape, {
+      depth: to - from,
+      bevelEnabled: false,
+      curveSegments: 24,
+    });
+    segment.translate(0, 0, from);
+    return segment;
+  };
+  const geometry = hasCollar
+    ? mergeGeometries([
+        ring(p.boreDiameter / 2, 0, p.height - cbDepth),
+        ring(cbR, p.height - cbDepth, p.height),
+      ])
+    : ring(p.boreDiameter / 2, 0, p.height);
   if (p.tiltDeg > 0) geometry.rotateX(p.tiltDeg * DEG);
   return geometry;
 }
@@ -136,11 +165,15 @@ function buildCradle(p: {
   grooveStyle: 'round' | 'vee';
   grooveWidth: number;
   grooveDepth: number;
+  tiltDeg?: number;
 }): BufferGeometry {
   const gw = Math.min(p.grooveWidth, p.width - 1);
   const gd = Math.min(p.grooveDepth, p.height - 0.5);
+  const tilt = p.tiltDeg ?? 0;
+  const drop = tilt > 0 ? Math.tan(tilt * DEG) * (p.width / 2) + 0.5 : 0;
   const shape = new Shape();
-  shape.moveTo(-p.width / 2, 0);
+  shape.moveTo(-p.width / 2, -drop);
+  shape.lineTo(p.width / 2, -drop);
   shape.lineTo(p.width / 2, 0);
   shape.lineTo(p.width / 2, p.height);
   shape.lineTo(gw / 2, p.height);
@@ -153,7 +186,9 @@ function buildCradle(p: {
   }
   shape.lineTo(-p.width / 2, p.height);
   shape.closePath();
-  return extrudeYZProfile(shape, p.length);
+  const geometry = extrudeYZProfile(shape, p.length);
+  if (tilt > 0) geometry.rotateX(tilt * DEG);
+  return geometry;
 }
 
 function buildHook(p: {

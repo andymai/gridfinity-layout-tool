@@ -132,14 +132,18 @@ function validParams(type: string, params: unknown): boolean {
         num(params.width, 2, 400) &&
         num(params.depth, 2, 400) &&
         num(params.height, 1, 200) &&
-        num(params.wedgeAngleDeg, 0, 60)
+        num(params.wedgeAngleDeg, 0, 60) &&
+        (params.tiltDeg === undefined || num(params.tiltDeg, 0, 20))
       );
     case 'tube':
       return (
         num(params.boreDiameter, 2, 80) &&
         num(params.wall, 0.8, 10) &&
         num(params.height, 4, 200) &&
-        num(params.tiltDeg, 0, 30)
+        num(params.tiltDeg, 0, 30) &&
+        (params.counterboreDiameter === undefined || num(params.counterboreDiameter, 0, 90)) &&
+        (params.counterboreDepth === undefined || num(params.counterboreDepth, 0, 40)) &&
+        (params.boreTaperDeg === undefined || num(params.boreTaperDeg, 0, 10))
       );
     case 'cradle':
       return (
@@ -148,7 +152,8 @@ function validParams(type: string, params: unknown): boolean {
         num(params.height, 4, 100) &&
         (params.grooveStyle === 'round' || params.grooveStyle === 'vee') &&
         num(params.grooveWidth, 2, 80) &&
-        num(params.grooveDepth, 1, 60)
+        num(params.grooveDepth, 1, 60) &&
+        (params.tiltDeg === undefined || num(params.tiltDeg, 0, 20))
       );
     case 'hook':
       return (
@@ -252,9 +257,17 @@ const SOCKET_HEIGHT_MM = 5;
 const PART_PARAM_KEYS: Record<string, readonly string[]> = {
   post: ['diameter', 'height', 'taperDeg', 'tipChamfer'],
   fin: ['length', 'thickness', 'height', 'leanDeg', 'leanAxis'],
-  block: ['width', 'depth', 'height', 'wedgeAngleDeg'],
-  tube: ['boreDiameter', 'wall', 'height', 'tiltDeg'],
-  cradle: ['length', 'width', 'height', 'grooveStyle', 'grooveWidth', 'grooveDepth'],
+  block: ['width', 'depth', 'height', 'wedgeAngleDeg', 'tiltDeg'],
+  tube: [
+    'boreDiameter',
+    'wall',
+    'height',
+    'tiltDeg',
+    'counterboreDiameter',
+    'counterboreDepth',
+    'boreTaperDeg',
+  ],
+  cradle: ['length', 'width', 'height', 'grooveStyle', 'grooveWidth', 'grooveDepth', 'tiltDeg'],
   hook: ['stemHeight', 'reach', 'lipHeight', 'thickness', 'width'],
   arch: ['span', 'height', 'style', 'rodDiameter', 'bridgeWidth', 'uprightThickness', 'depth'],
   cutter: ['profile', 'depth', 'clearance', 'chamfer'],
