@@ -381,7 +381,7 @@ function offsetPathOutline(
   return out;
 }
 
-function pathWire(pts: readonly { x: number; y: number }[]): Drawing {
+export function pathWire(pts: readonly { x: number; y: number }[]): Drawing {
   let pen = draw([pts[0].x, pts[0].y]);
   for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
   return pen.close();
@@ -450,7 +450,7 @@ function buildChamferedPathShape(
  */
 export const BEZIER_SEGMENTS = 12;
 
-function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y: number }> {
+export function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y: number }> {
   const result: Array<{ x: number; y: number }> = [];
   const n = path.length;
 
@@ -490,7 +490,7 @@ function flattenPathToPolyline(path: readonly PathPoint[]): Array<{ x: number; y
 }
 
 /** Check if a closed polyline self-intersects (any non-adjacent edges cross). */
-function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): boolean {
+export function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): boolean {
   const n = poly.length;
   if (n < 4) return false;
 

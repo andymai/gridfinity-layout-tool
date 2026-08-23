@@ -337,8 +337,9 @@ export function useGeneration(): void {
   // compartment validation / export-warm — those are bin-specific.
   const runItemGeneration = useCallback(
     async (item: GridfinityItem) => {
-      // No worker generator is registered for 'assembly' yet — the Workshop
-      // proxy scene renders client-side until the generator lands.
+      // The Workshop canvas renders client-side proxies and never reads
+      // generation.mesh, so epoch-driven regeneration would be wasted work —
+      // the sharpen phase wires this up. Exports call the worker directly.
       if (item.structure.kind === 'assembly') return;
       const bridge = bridgeRef.current;
       if (!bridge || bridge.isDestroyed) return;
