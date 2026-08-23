@@ -50,6 +50,8 @@ const finParamsSchema = z.object({
 });
 
 const blockParamsSchema = z.object({
+  /** Presentation tilt about the part's X axis; the base stays buried. */
+  tiltDeg: z.number().min(0).max(20).default(0),
   width: z.number().min(2).max(400),
   depth: z.number().min(2).max(400),
   height: z.number().min(1).max(200),
@@ -61,9 +63,16 @@ const tubeParamsSchema = z.object({
   wall: z.number().min(0.8).max(10),
   height: z.number().min(4).max(200),
   tiltDeg: z.number().min(0).max(30),
+  /** Collar recess so a tool's shoulder sits flat; 0 = off. */
+  counterboreDiameter: z.number().min(0).max(90).default(0),
+  counterboreDepth: z.number().min(0).max(40).default(0),
+  /** Bore narrows toward the floor, gripping mixed shaft sizes. */
+  boreTaperDeg: z.number().min(0).max(10).default(0),
 });
 
 const cradleParamsSchema = z.object({
+  /** Presentation tilt about the part's X axis; the base stays buried. */
+  tiltDeg: z.number().min(0).max(20).default(0),
   length: z.number().min(4).max(400),
   width: z.number().min(4).max(100),
   height: z.number().min(4).max(100),
@@ -240,9 +249,18 @@ export const DEFAULT_PART_PARAMS: {
 } = {
   post: { diameter: 8, height: 40, taperDeg: 0, tipChamfer: 1 },
   fin: { length: 60, thickness: 3, height: 25, leanDeg: 20 },
-  block: { width: 40, depth: 20, height: 20, wedgeAngleDeg: 0 },
-  tube: { boreDiameter: 16, wall: 2, height: 60, tiltDeg: 0 },
+  block: { width: 40, depth: 20, height: 20, wedgeAngleDeg: 0, tiltDeg: 0 },
+  tube: {
+    boreDiameter: 16,
+    wall: 2,
+    height: 60,
+    tiltDeg: 0,
+    counterboreDiameter: 0,
+    counterboreDepth: 0,
+    boreTaperDeg: 0,
+  },
   cradle: {
+    tiltDeg: 0,
     length: 30,
     width: 20,
     height: 15,

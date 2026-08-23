@@ -353,40 +353,74 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
     }
     case 'block': {
       const { width, depth, height, wedgeAngleDeg } = node.params;
+      const tiltDeg = node.params.tiltDeg ?? 0;
+      // A tilted prism must stay buried: extend the base down by the lift the
+      // rotation would give the raised edge, then rotate about the part's X.
+      const drop = tiltDeg > 0 ? Math.tan(tiltDeg * DEG) * (depth / 2) + 0.5 : 0;
       const corner = Math.min(CORNER_FILLET_MM, width / 5, depth / 5);
+      let body: Shape3D;
       if (wedgeAngleDeg <= 0) {
-        const total = height + sink;
-        let body: Shape3D = box(width, depth, total, { at: [0, 0, total / 2 - sink] });
+        const total = height + sink + drop;
+        body = box(width, depth, total, { at: [0, 0, total / 2 - sink - drop] });
         body = easedOrOriginal(body, verticalEdges(body), corner);
-        return easedOrOriginal(
+        body = easedOrOriginal(
           body,
           edgesNearPlane(body, height),
           Math.min(TOP_EASE_MM, height / 5)
         );
+      } else {
+        const lowEdge = Math.max(0.5, height - depth * Math.tan(wedgeAngleDeg * DEG));
+        const pen = draw([-depth / 2, -sink - drop])
+          .lineTo([depth / 2, -sink - drop])
+          .lineTo([depth / 2, lowEdge])
+          .lineTo([-depth / 2, height])
+          .close();
+        const wedge = sketch(pen, 'YZ', -width / 2).extrude(width);
+        // The sloped face stays crisp (it is the functional ramp); only the
+        // vertical corner lines soften.
+        body = easedOrOriginal(wedge, verticalEdges(wedge), corner);
       }
-      const lowEdge = Math.max(0.5, height - depth * Math.tan(wedgeAngleDeg * DEG));
-      const pen = draw([-depth / 2, -sink])
-        .lineTo([depth / 2, -sink])
-        .lineTo([depth / 2, lowEdge])
-        .lineTo([-depth / 2, height])
-        .close();
-      const wedge = sketch(pen, 'YZ', -width / 2).extrude(width);
-      // The sloped face stays crisp (it is the functional ramp); only the
-      // vertical corner lines soften.
-      return easedOrOriginal(wedge, verticalEdges(wedge), corner);
+      if (tiltDeg <= 0) return body;
+      const tilted = rotate(body, tiltDeg, { at: [0, 0, 0], axis: [1, 0, 0] });
+      body.delete();
+      return tilted;
     }
     case 'tube': {
       const { boreDiameter, wall, height, tiltDeg } = node.params;
-      const outer = cylinder(boreDiameter / 2 + wall, height + sink, { at: [0, 0, -sink] });
-      const bore = cylinder(boreDiameter / 2, height + 2 * sink + 2, {
-        at: [0, 0, -sink - 1],
-      });
+      const boreTaperDeg = node.params.boreTaperDeg ?? 0;
+      const outerR = boreDiameter / 2 + wall;
+      const rTop = boreDiameter / 2;
+      const outer = cylinder(outerR, height + sink, { at: [0, 0, -sink] });
+      const boreH = height + 2 * sink + 2;
+      const bore =
+        boreTaperDeg > 0
+          ? cone(Math.max(0.5, rTop - boreH * Math.tan(boreTaperDeg * DEG)), rTop, boreH, {
+              at: [0, 0, -sink - 1],
+            })
+          : cylinder(rTop, boreH, { at: [0, 0, -sink - 1] });
       let hollow = unwrap(cut(outer, bore, { optimisation: 'commonFace' })) as Shape3D;
       if (hollow !== outer) outer.delete();
       bore.delete();
+      // Collar recess: a wider, shallow bore at the mouth so a tool's
+      // shoulder sits flat — the parameterized screwdriver-holder idiom.
+      const cbR = Math.min((node.params.counterboreDiameter ?? 0) / 2, outerR - 0.4);
+      const cbDepth = Math.min(node.params.counterboreDepth ?? 0, height - 1);
+      if (cbR > rTop && cbDepth > 0.2) {
+        const collar = cylinder(cbR, cbDepth + 1, { at: [0, 0, height - cbDepth] });
+        const recessed = unwrap(cut(hollow, collar, { optimisation: 'commonFace' }));
+        if (recessed !== hollow) hollow.delete();
+        collar.delete();
+        hollow = recessed;
+      }
       // Lead-in chamfer on both rims: the tool finds the bore, and the mouth
-      // reads finished instead of saw-cut.
-      hollow = chamferedOrOriginal(hollow, edgesNearPlane(hollow, height), Math.min(wall / 3, 0.8));
+      // reads finished instead of saw-cut. Sized to the rim's true wall,
+      // which the counterbore may have thinned.
+      const rimWall = cbR > rTop && cbDepth > 0.2 ? outerR - cbR : wall;
+      hollow = chamferedOrOriginal(
+        hollow,
+        edgesNearPlane(hollow, height),
+        Math.min(rimWall / 3, 0.8)
+      );
       if (tiltDeg <= 0) return hollow;
       const tilted = rotate(hollow, tiltDeg, { at: [0, 0, 0], axis: [1, 0, 0] });
       hollow.delete();
@@ -394,10 +428,18 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
     }
     case 'cradle': {
       const { length, width, height, grooveStyle, grooveWidth, grooveDepth } = node.params;
+      const cradleTilt = node.params.tiltDeg ?? 0;
+      const cradleDrop = cradleTilt > 0 ? Math.tan(cradleTilt * DEG) * (width / 2) + 0.5 : 0;
+      const tiltCradle = (shape: Shape3D): Shape3D => {
+        if (cradleTilt <= 0) return shape;
+        const tilted = rotate(shape, cradleTilt, { at: [0, 0, 0], axis: [1, 0, 0] });
+        shape.delete();
+        return tilted;
+      };
       const gw = Math.min(grooveWidth, width - 1);
       const gd = Math.min(grooveDepth, height - 0.5);
       if (grooveStyle === 'vee') {
-        const pen = draw([-width / 2, -sink])
+        const pen = draw([-width / 2, -sink - cradleDrop])
           .lineTo([width / 2, -sink])
           .lineTo([width / 2, height])
           .lineTo([gw / 2, height])
@@ -408,10 +450,10 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         const vee = sketch(pen, 'YZ', -length / 2).extrude(length);
         // Top edges — outer rim AND groove mouth — get the same ease: the
         // mouth rounding doubles as the tool's lead-in.
-        return easedOrOriginal(vee, edgesNearPlane(vee, height), Math.min(0.6, gd / 5));
+        return tiltCradle(easedOrOriginal(vee, edgesNearPlane(vee, height), Math.min(0.6, gd / 5)));
       }
-      const total = height + sink;
-      const body = box(length, width, total, { at: [0, 0, total / 2 - sink] });
+      const total = height + sink + cradleDrop;
+      const body = box(length, width, total, { at: [0, 0, total / 2 - sink - cradleDrop] });
       const r = gw / 2;
       const groove = cylinder(r, length + 20, {
         at: [-(length + 20) / 2, 0, height - gd + r],
@@ -434,7 +476,7 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
           return atTop && onBoundary;
         })
         .findAll(carved);
-      return easedOrOriginal(carved, rimEdges, Math.min(0.8, gd / 4));
+      return tiltCradle(easedOrOriginal(carved, rimEdges, Math.min(0.8, gd / 4)));
     }
     case 'hook': {
       const { stemHeight, reach, lipHeight, thickness, width } = node.params;

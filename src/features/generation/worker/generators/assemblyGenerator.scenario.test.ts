@@ -118,6 +118,67 @@ describe('assembly generator (real WASM)', () => {
     expect(bounds.maxZ).toBeCloseTo(expectedTop, 1);
   });
 
+  it('a counterbored, tapered tube loses volume to the collar and cone', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const plainTube = structureWith([part('tube', 't', { x: 42, y: 21 })]);
+    const collared = structureWith([
+      part(
+        'tube',
+        't',
+        { x: 42, y: 21 },
+        {
+          params: {
+            boreDiameter: 16,
+            wall: 2,
+            height: 60,
+            tiltDeg: 0,
+            counterboreDiameter: 18,
+            counterboreDepth: 8,
+            boreTaperDeg: 3,
+          },
+        }
+      ),
+    ]);
+    const plain = generateAssembly(plainTube, makeEnvelope(2, 1), noop, true);
+    const recessed = generateAssembly(collared, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(recessed);
+    assertWatertight(recessed);
+    // The collar removes wall material; the bore taper ADDS material at the
+    // bottom (the bore narrows) — the collar dominates at these sizes.
+    expect(meshVolume(recessed)).not.toBeCloseTo(meshVolume(plain), 0);
+  });
+
+  it('tilted block and cradle stay valid with the base buried', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const tilted = structureWith([
+      part(
+        'block',
+        'b',
+        { x: 30, y: 21 },
+        { params: { width: 40, depth: 20, height: 20, wedgeAngleDeg: 0, tiltDeg: 15 } }
+      ),
+      part(
+        'cradle',
+        'c',
+        { x: 60, y: 21 },
+        {
+          params: {
+            length: 30,
+            width: 20,
+            height: 15,
+            grooveStyle: 'round',
+            grooveWidth: 12,
+            grooveDepth: 6,
+            tiltDeg: 12,
+          },
+        }
+      ),
+    ]);
+    const result = generateAssembly(tilted, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(result);
+    assertWatertight(result);
+  });
+
   it('a hole cutter removes volume from a block', async () => {
     const { generateAssembly } = await import('./assemblyGenerator');
     const solidBlock = structureWith([part('block', 'b', { x: 42, y: 21 })]);

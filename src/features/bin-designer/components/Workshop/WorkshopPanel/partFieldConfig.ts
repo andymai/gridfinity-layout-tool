@@ -31,12 +31,28 @@ export const PART_NUMBER_FIELDS: Record<AssemblyPartType, readonly PartNumberFie
     { key: 'depth', labelKey: 'workshop.field.depth', min: 2, max: 400, step: 1 },
     { key: 'height', labelKey: 'workshop.field.height', min: 1, max: 200, step: 1 },
     { key: 'wedgeAngleDeg', labelKey: 'workshop.field.wedgeAngleDeg', min: 0, max: 60, step: 1 },
+    { key: 'tiltDeg', labelKey: 'workshop.field.tiltDeg', min: 0, max: 20, step: 1 },
   ],
   tube: [
     { key: 'boreDiameter', labelKey: 'workshop.field.boreDiameter', min: 2, max: 80, step: 0.5 },
     { key: 'wall', labelKey: 'workshop.field.wall', min: 0.8, max: 10, step: 0.2 },
     { key: 'height', labelKey: 'workshop.field.height', min: 4, max: 200, step: 1 },
     { key: 'tiltDeg', labelKey: 'workshop.field.tiltDeg', min: 0, max: 30, step: 1 },
+    {
+      key: 'counterboreDiameter',
+      labelKey: 'workshop.field.counterboreDiameter',
+      min: 0,
+      max: 90,
+      step: 0.5,
+    },
+    {
+      key: 'counterboreDepth',
+      labelKey: 'workshop.field.counterboreDepth',
+      min: 0,
+      max: 40,
+      step: 0.5,
+    },
+    { key: 'boreTaperDeg', labelKey: 'workshop.field.boreTaperDeg', min: 0, max: 10, step: 0.5 },
   ],
   cradle: [
     { key: 'length', labelKey: 'workshop.field.length', min: 4, max: 400, step: 1 },
@@ -44,6 +60,7 @@ export const PART_NUMBER_FIELDS: Record<AssemblyPartType, readonly PartNumberFie
     { key: 'height', labelKey: 'workshop.field.height', min: 4, max: 100, step: 1 },
     { key: 'grooveWidth', labelKey: 'workshop.field.grooveWidth', min: 2, max: 80, step: 0.5 },
     { key: 'grooveDepth', labelKey: 'workshop.field.grooveDepth', min: 1, max: 60, step: 0.5 },
+    { key: 'tiltDeg', labelKey: 'workshop.field.tiltDeg', min: 0, max: 20, step: 1 },
   ],
   hook: [
     { key: 'stemHeight', labelKey: 'workshop.field.stemHeight', min: 4, max: 200, step: 1 },
