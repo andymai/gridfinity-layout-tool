@@ -40,8 +40,38 @@ interface SnappingSliderProps {
   tip?: string;
 }
 
-/** Values that should always show labels (key waypoints) */
-const KEY_VALUES = new Set([0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.6]);
+/**
+ * Pick which stops get a printed label, spacing them so they cannot collide.
+ * Positions are percentages of the track, and the gap is derived from the
+ * widest label against the narrowest track the sidebar ever gets (~200px), so
+ * the same rule holds for millimetre stops and percentage stops alike.
+ */
+function pickLabelledValues(
+  values: number[],
+  active: number,
+  positionOf: (v: number) => number
+): Set<number> {
+  if (values.length === 0) return new Set();
+
+  const widestLabel = Math.max(...values.map((v) => String(v).length));
+  const minGapPct = ((widestLabel * 7 + 10) / 200) * 100;
+
+  const chosen: number[] = [];
+  const clears = (v: number) =>
+    chosen.every((c) => Math.abs(positionOf(v) - positionOf(c)) >= minGapPct);
+  const take = (v: number | undefined) => {
+    if (v !== undefined && !chosen.includes(v) && clears(v)) chosen.push(v);
+  };
+
+  // The selected stop outranks the ends: it is the one the reader is looking
+  // for, and the thumb already marks where it sits.
+  take(values.find((v) => Math.abs(v - active) < 0.001));
+  take(values[0]);
+  take(values[values.length - 1]);
+  for (const v of values) take(v);
+
+  return new Set(chosen);
+}
 
 export function SnappingSlider({
   label,
@@ -178,6 +208,11 @@ export function SnappingSlider({
     [disabled, values, value, onChange]
   );
 
+  const labelledValues = useMemo(
+    () => pickLabelledValues(values, value, getPosition),
+    [values, value, getPosition]
+  );
+
   const handleTickClick = useCallback(
     (tickValue: number) => {
       if (!disabled) {
@@ -293,8 +328,7 @@ export function SnappingSlider({
         <div className="relative mt-1 h-9">
           {options.map((option) => {
             const isActive = Math.abs(option.value - value) < 0.001;
-            const showLabel = KEY_VALUES.has(option.value) || isActive;
-            if (!showLabel) return null;
+            if (!labelledValues.has(option.value)) return null;
             return (
               <Button
                 key={option.value}

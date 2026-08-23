@@ -4,13 +4,20 @@ import { cva } from 'class-variance-authority';
 import { cn } from '../cn';
 import { focusRing, disabledStyles, interactiveTransition } from '../variants';
 
-const groupVariants = cva(['inline-flex rounded-lg bg-surface p-0.5', 'border border-stroke'], {
-  variants: {
-    fullWidth: {
-      true: 'flex w-full',
+// `flex-wrap`: every panel section that hosts one of these sits inside an
+// overflow-hidden animation wrapper (Collapsible, StickyGroupHeader), so a
+// row too wide for its column is silently cut off rather than scrolled.
+// Segments keep their natural width and spill onto a second row instead.
+const groupVariants = cva(
+  ['inline-flex flex-wrap gap-y-0.5 rounded-lg bg-surface p-0.5', 'border border-stroke'],
+  {
+    variants: {
+      fullWidth: {
+        true: 'flex w-full',
+      },
     },
-  },
-});
+  }
+);
 
 const segmentVariants = cva(
   [

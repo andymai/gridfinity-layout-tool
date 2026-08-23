@@ -313,10 +313,11 @@ describe('ParameterPanel', () => {
     it('wall thickness slider shows tick marks for options', () => {
       render(<ParameterPanel />);
 
-      // SnappingSlider shows tick buttons for each option
+      // Labelled stops are spaced to clear each other, so 2.4 stays unlabelled
+      // next to the 2.6 end stop.
       expect(screen.getByLabelText('Select 0.4mm')).toBeInTheDocument();
       expect(screen.getByLabelText('Select 1.2mm')).toBeInTheDocument();
-      expect(screen.getByLabelText('Select 2.4mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('Select 2.6mm')).toBeInTheDocument();
     });
 
     it('clicking a tick mark updates the store', () => {

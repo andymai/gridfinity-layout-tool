@@ -35,6 +35,44 @@ describe('SnappingSlider', () => {
     expect(screen.getByLabelText('Select 2mm')).toBeInTheDocument();
   });
 
+  it('labels a percentage scale, not just the selected stop', () => {
+    const coverage: SnappingSliderOption[] = [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100].map(
+      (value) => ({ value, description: '' })
+    );
+    render(
+      <SnappingSlider
+        label="Rail coverage"
+        value={50}
+        onChange={vi.fn()}
+        options={coverage}
+        unit="%"
+      />
+    );
+    for (const value of [50, 60, 70, 80, 90, 100]) {
+      expect(screen.getByLabelText(`Select ${value}%`)).toBeInTheDocument();
+    }
+  });
+
+  it('drops a labelled stop that would collide with its neighbour', () => {
+    const crowded: SnappingSliderOption[] = [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.6].map((value) => ({
+      value,
+      description: '',
+    }));
+    render(<SnappingSlider {...defaultProps} options={crowded} value={1.2} />);
+    // 2.4 sits one ninth of the track from 2.6, too close for both labels.
+    expect(screen.getByLabelText('Select 2.6mm')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Select 2.4mm')).not.toBeInTheDocument();
+  });
+
+  it('always labels the selected stop', () => {
+    const crowded: SnappingSliderOption[] = [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.6].map((value) => ({
+      value,
+      description: '',
+    }));
+    render(<SnappingSlider {...defaultProps} options={crowded} value={2.4} />);
+    expect(screen.getByLabelText('Select 2.4mm')).toBeInTheDocument();
+  });
+
   it('shows description for current value', () => {
     render(<SnappingSlider {...defaultProps} value={1.2} />);
     expect(screen.getByText('Standard')).toBeInTheDocument();
