@@ -676,6 +676,9 @@ export interface CommunityContentHashInput {
  */
 export function communityContentHash(content: CommunityContentHashInput): string {
   const canonical = stableStringify({
+    // Serialized under the legacy 'params' key on purpose: every stored
+    // content hash — publish idempotency and moderation tombstones — was
+    // minted with it, and a tombstone must keep matching its content forever.
     params: content.content,
     name: content.name,
     description: content.description,
