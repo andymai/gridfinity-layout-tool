@@ -30,6 +30,8 @@ export function partSummary(node: AssemblyPartNode): string {
       return `${node.params.slotCount}×${fmt(node.params.slotWidth)}`;
     case 'riser':
       return `${node.params.stepCount}×${fmt(node.params.stepHeight)}`;
+    case 'boreBank':
+      return `${node.params.columns}×${node.params.rows} ⌀${fmt(node.params.boreDiameter)}`;
     case 'cutter': {
       const profile = node.params.profile;
       if (profile.shape === 'circle' || profile.shape === 'polygon') {

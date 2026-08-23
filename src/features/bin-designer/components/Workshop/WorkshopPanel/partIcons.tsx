@@ -62,6 +62,14 @@ export const PART_ICONS: Record<string, ReactElement> = {
       <path d="M2 11.5v-2.5h3v-3h3v-3h4v8.5z" />
     </>
   ),
+  boreBank: svg(
+    <>
+      <rect x="2" y="4" width="10" height="7.5" rx="1.2" />
+      <ellipse cx="4.6" cy="6.5" rx="1" ry="0.8" />
+      <ellipse cx="7" cy="6.5" rx="1" ry="0.8" />
+      <ellipse cx="9.4" cy="6.5" rx="1" ry="0.8" />
+    </>
+  ),
   arch: svg(
     <>
       <path d="M3 12V6M11 12V6" />
