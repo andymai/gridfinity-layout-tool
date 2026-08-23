@@ -1,0 +1,44 @@
+src/features/bin-designer/hooks/useToolRackMigration.ts
+  s_a36c0b85dfeec4::t_279333a27082fb 1-33
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_a36c0b85dfeec4::t_a1bb4463c5838c 21,69
+src/core/labs/features.ts
+  s_a36c0b85dfeec4::t_949fafa467b8f5 145
+src/features/bin-designer/utils/workshopTemplates.test.ts
+  s_a36c0b85dfeec4::t_decdf7997b934e 6-10,41-78
+  s_a36c0b85dfeec4::t_c842dc06c48ee8 79
+src/features/bin-designer/utils/workshopTemplates.ts
+  s_a36c0b85dfeec4::t_decdf7997b934e 114-187
+  s_a36c0b85dfeec4::t_8f088fc5286396 7-8
+  s_a36c0b85dfeec4::t_4124a0e5d0e696 188
+src/core/store/labs.ts
+  s_a36c0b85dfeec4::t_949fafa467b8f5 32
+src/features/bin-designer/hooks/useToolRackMigration.test.ts
+  s_a36c0b85dfeec4::t_279333a27082fb 1-81
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_a36c0b85dfeec4::t_4001f6a1ba35a6 36,153
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_4001f6a1ba35a6 11,32-33,45-46,62,214-215,231-247,265,278
+src/features/bin-designer/components/Workshop/MoveHandle3D.test.tsx
+  s_a36c0b85dfeec4::t_ccb67ba3fe3f85 1-8
+src/features/bin-designer/components/Workshop/MoveHandle3D.tsx
+  s_a36c0b85dfeec4::t_ccb67ba3fe3f85 1-45
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_ccb67ba3fe3f85 11,112-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c64bf96b3698b0d0688b1be012d92d9ef5101fa2",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
