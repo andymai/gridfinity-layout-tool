@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.463.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.462.0...gridfinity-layout-tool-v4.463.0) (2026-08-23)
+
+
+### Features
+
+* **bento:** non-rectangular compartments and merged leftover space ([#3773](https://github.com/andymai/gridfinity-layout-tool/issues/3773)) ([ef5cc87](https://github.com/andymai/gridfinity-layout-tool/commit/ef5cc87aba66cc4291e29758245904b790cefc16))
+
 ## [4.462.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.461.0...gridfinity-layout-tool-v4.462.0) (2026-08-23)
 
 
