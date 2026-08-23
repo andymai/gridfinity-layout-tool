@@ -1,0 +1,29 @@
+src/features/generation/worker/generators/assemblyGenerator.scenario.test.ts
+  s_a36c0b85dfeec4::t_6622f71b1556ff 237-239
+  s_a36c0b85dfeec4::t_e01ef6f2f252db 233-236,240-277,279
+  s_a36c0b85dfeec4::t_1105a7580cb89f 232
+  s_a36c0b85dfeec4::t_7cd2fb4bec7e11 278
+  s_a36c0b85dfeec4::t_05953437b9b67e 280-281
+src/features/bin-designer/components/Workshop/BasePlateMesh.tsx
+  s_a36c0b85dfeec4::t_e01ef6f2f252db 84-85,87-91,119-120
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_62f5eeb960e1b9 646
+  s_a36c0b85dfeec4::t_5d1ccc34149d3e 629,634-645,647-652
+  s_a36c0b85dfeec4::t_c2ade51445bba7 744-750
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "9a8376a88226be58590fc062f1bc3e5078106e99",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
