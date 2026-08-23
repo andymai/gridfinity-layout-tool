@@ -1,0 +1,51 @@
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_04841e727a910b 4323-4326
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_d6c157eb134394 4323-4326
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_54619dacaa0f1d 2354-2357
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_da0321391dc091 4323-4326
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_1a6f3ffa7b5565 4323-4326
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_0690bd3e664987 4323-4326
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_4b598e0edb7b48 4323-4326
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_7e7c8f88e47980 4323-4326
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_6c09ac3e3a3be6 4323-4326
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_d7fd6d6a4ee13c 4323-4326
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_6bfd9b4abcd8ff 4323-4326
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_fcf260b8bc1c68 4323-4326
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_e771d7895d867e 4323-4326
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_95f997566b85f6 4323-4326
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_087819f0cb4f39 4323-4326
+src/features/bin-designer/utils/workshopTemplates.ts
+  s_a36c0b85dfeec4::t_fdc6c7b03f4d7c 15-21,26-29,117-239,249-256
+src/features/generation/worker/generators/assemblyGenerator.scenario.labels.test.ts
+  s_a36c0b85dfeec4::t_14f01fb32bd28e 74-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "5f47c70e4a1f9316eecad29f86ec496a8df7c5f4",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
