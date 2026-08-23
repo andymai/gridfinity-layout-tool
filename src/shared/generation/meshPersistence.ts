@@ -212,7 +212,9 @@ export function binMeshCacheKey(params: BinParams, kernel: KernelName): string {
  */
 export function itemMeshCacheKey(item: GridfinityItem, kernel: KernelName): string {
   const revision = KERNEL_MESH_REVISION[kernel];
-  return `${MESH_CACHE_VERSION}:${kernel}-${revision}:item:${djb2(stableStringify(item))}`;
+  // item2: assembly part-quality pass (fillets/chamfers) changed geometry for
+  // identical structures; bumping only this segment spares the bin cache.
+  return `${MESH_CACHE_VERSION}:${kernel}-${revision}:item2:${djb2(stableStringify(item))}`;
 }
 
 /**

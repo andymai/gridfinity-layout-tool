@@ -14,6 +14,7 @@
 import {
   applyMatrix,
   box,
+  chamfer,
   clone,
   cone,
   cut,
@@ -22,10 +23,13 @@ import {
   draw,
   drawCircle,
   drawRoundedRectangle,
+  edgeFinder,
   exportSTEP,
   fuseAll,
+  getBounds,
   getKernelCapabilities,
   intersect,
+  isOk,
   mesh,
   meshEdges,
   mirror,
@@ -34,7 +38,7 @@ import {
   unwrap,
   withScope,
 } from 'brepjs';
-import type { Drawing, Shape3D, ValidSolid } from 'brepjs';
+import type { Drawing, Edge, Shape3D, ValidSolid } from 'brepjs';
 import type {
   AssemblyPartNode,
   AssemblyStructure,
@@ -60,7 +64,12 @@ import { creaseEdges } from './utils';
 import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
-import { flattenPathToPolyline, pathWire, polylineSelfIntersects } from './cutoutBuilder';
+import {
+  applyFilletWithFallback,
+  flattenPathToPolyline,
+  pathWire,
+  polylineSelfIntersects,
+} from './cutoutBuilder';
 import { offsetClosedPolygon } from './polygonOffset';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { getFeatureCache, setFeatureCache } from './shapeCache';
@@ -73,6 +82,83 @@ const CUTTER_TOP_OVERSHOOT = 1;
 
 /** Default outer corner radius of the floor plate when the base sets none. */
 const DEFAULT_FLOOR_CORNER_RADIUS = 4;
+
+/**
+ * The edge language that makes an assembly read as a designed product rather
+ * than fused primitives: one small roundover on every top rim, rounded
+ * vertical corners on prisms, and a molded cove where each part meets the
+ * surface it seats on. Magnitudes stay small so no footprint or functional
+ * face moves; every application degrades to the sharp shape on kernel failure.
+ */
+const TOP_EASE_MM = 1;
+const CORNER_FILLET_MM = 2.5;
+const JUNCTION_FILLET_MM = 1.5;
+
+/** Edges whose Z extent brackets `z` (planar rims, junction seams). */
+function edgesNearPlane(shape: Shape3D, z: number, tolerance = 0.4): Edge[] {
+  return edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      return bounds.zMax >= z - tolerance && bounds.zMin <= z + tolerance;
+    })
+    .findAll(shape);
+}
+
+/**
+ * The long top edges of a run — crown lines whose fillet is a plain cylinder.
+ * The short end edges are excluded: on leaned prisms their corner patches
+ * tessellate degenerate (the scoop-cusp class).
+ */
+function longTopEdges(shape: Shape3D, zTop: number, runLength: number): Edge[] {
+  return edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      return (
+        bounds.zMax >= zTop - 0.4 &&
+        bounds.zMin >= zTop - 0.4 &&
+        Math.abs(bounds.xMax - bounds.xMin) > runLength * 0.9
+      );
+    })
+    .findAll(shape);
+}
+
+/** Vertical edges (zero XY extent) — the corner lines of a prism. */
+function verticalEdges(shape: Shape3D): Edge[] {
+  return edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      return (
+        bounds.zMax - bounds.zMin > 0.5 &&
+        Math.abs(bounds.xMax - bounds.xMin) < 1e-3 &&
+        Math.abs(bounds.yMax - bounds.yMin) < 1e-3
+      );
+    })
+    .findAll(shape);
+}
+
+/** Fillet with fallback; deletes the input when a new shape came back. */
+function easedOrOriginal(shape: Shape3D, edges: readonly Edge[], radius: number): Shape3D {
+  if (edges.length === 0 || radius <= 0.05) return shape;
+  const result = applyFilletWithFallback(shape, edges, radius);
+  if (result !== shape) shape.delete();
+  return result;
+}
+
+/** Chamfer that keeps the original on kernel failure (same contract as the fillet fallback). */
+function chamferedOrOriginal(shape: Shape3D, edges: readonly Edge[], distance: number): Shape3D {
+  if (edges.length === 0 || distance <= 0.05) return shape;
+  try {
+    const result = chamfer(shape as ValidSolid, edges as Edge[], distance);
+    if (isOk(result)) {
+      const next = unwrap(result);
+      if (next !== shape) shape.delete();
+      return next;
+    }
+  } catch {
+    // Sharp edge beats no part.
+  }
+  return shape;
+}
 
 function stableKeyValue(value: unknown): unknown {
   if (typeof value === 'number') return quantize(value);
@@ -88,7 +174,7 @@ function stableKeyValue(value: unknown): unknown {
 function partCacheKey(node: AssemblyPartNode): string {
   // No forExport in the key: templates are pure BREP solids with no
   // tessellation-quality input, so preview and export share one entry.
-  return buildCacheKey('assembly-part-v1', node.type, JSON.stringify(stableKeyValue(node.params)));
+  return buildCacheKey('assembly-part-v2', node.type, JSON.stringify(stableKeyValue(node.params)));
 }
 
 function centeredOnBounds(pts: readonly { x: number; y: number }[]): { x: number; y: number }[] {
@@ -188,51 +274,94 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
   const sink = COPLANAR_OVERLAP;
   switch (node.type) {
     case 'post': {
-      const { diameter, height, taperDeg } = node.params;
+      const { diameter, height, taperDeg, tipChamfer } = node.params;
       const rBottom = diameter / 2;
       const rTop = Math.max(0.5, rBottom - height * Math.tan(taperDeg * DEG));
       const total = height + sink;
-      if (taperDeg > 0) {
-        return cone(rBottom, rTop, total, { at: [0, 0, -sink] });
-      }
-      return cylinder(rBottom, total, { at: [0, 0, -sink] });
+      const body =
+        taperDeg > 0
+          ? cone(rBottom, rTop, total, { at: [0, 0, -sink] })
+          : cylinder(rBottom, total, { at: [0, 0, -sink] });
+      const tip = Math.min(tipChamfer ?? 1, rTop - 0.3, height / 4);
+      return chamferedOrOriginal(body, edgesNearPlane(body, height), tip);
     }
     case 'fin': {
       const { length, thickness, height, leanDeg, leanAxis } = node.params;
-      const lean = Math.tan(leanDeg * DEG) * height;
-      if (leanAxis === 'length') {
-        // Shear along the plate's run, then clip back to the nominal length
-        // — the rack generator's leaning fins were clipped the same way so
-        // the lean never overshoots the footprint.
-        const total = height + sink;
-        const plate = box(length, thickness, total, { at: [0, 0, total / 2 - sink] });
-        if (leanDeg <= 0) return plate;
-        const tan = Math.tan(leanDeg * DEG);
-        const sheared = unwrap(
-          applyMatrix(plate, {
-            linear: [1, 0, tan, 0, 1, 0, 0, 0, 1],
-            translation: [0, 0, 0],
-          })
+      const crown = Math.min(thickness / 3, TOP_EASE_MM);
+      const tan = leanDeg > 0 ? Math.tan(leanDeg * DEG) : 0;
+      if (tan <= 0) {
+        // Near-capsule footprint: rounded ends read as a designed blade, and
+        // the rounding stays inscribed so the nominal footprint never grows.
+        // 0.45× thickness keeps a real straight segment on each side — a true
+        // tangent capsule leaves micro-edges OCCT can reject.
+        // No crown ease here: filleting the capsule's top loop slivers where
+        // the straight runs meet the end arcs tangentially (the scoop-cusp
+        // class); the rounded footprint carries the look on its own. The
+        // radius leaves a >=1.2mm straight segment on the short ends — the
+        // near-tangent leftover is itself a degenerate-facet source.
+        const endRadius = Math.min(thickness * 0.45, (thickness - 1.2) / 2);
+        if (endRadius < 0.3) {
+          const total = height + sink;
+          return box(length, thickness, total, { at: [0, 0, total / 2 - sink] });
+        }
+        return sketch(drawRoundedRectangle(length, thickness, endRadius), 'XY', -sink).extrude(
+          height + sink
         );
-        if (sheared !== plate) plate.delete();
-        const clip = box(length, thickness + 2, total * 2 + 2, { at: [0, 0, total / 2 - sink] });
+      }
+      // Leaning fins keep planar constructions: OCCT's sheared-box faces only
+      // come out clean when a boolean rebuilds them (the length-axis clip does
+      // that; the thickness-axis draws its quad directly), and the capsule's
+      // arc faces can invert under the non-uniform transform outright. The
+      // rounding budget goes to the crown alone.
+      const total = height + sink;
+      if (leanAxis === 'length') {
+        const boxPlate = box(length, thickness, total, { at: [0, 0, total / 2 - sink] });
+        const linear = [1, 0, tan, 0, 1, 0, 0, 0, 1] as [
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+        ];
+        const sheared = unwrap(
+          applyMatrix(boxPlate, { linear, translation: [0, 0, 0] })
+        ) as Shape3D;
+        if (sheared !== boxPlate) boxPlate.delete();
+        // Clip back to the nominal run — the rack generator's leaning fins
+        // were clipped the same way so the lean never overshoots.
+        const clip = box(length, thickness + 2, total * 2 + 2, {
+          at: [0, 0, total / 2 - sink],
+        });
         const clipped = unwrap(intersect(sheared, clip, { optimisation: 'commonFace' }));
         if (clipped !== sheared) sheared.delete();
         clip.delete();
-        return clipped;
+        return easedOrOriginal(clipped, longTopEdges(clipped, height, length), crown);
       }
+      const lean = tan * height;
       const pen = draw([-thickness / 2, -sink])
         .lineTo([thickness / 2, -sink])
         .lineTo([thickness / 2 + lean, height])
         .lineTo([-thickness / 2 + lean, height])
         .close();
-      return sketch(pen, 'YZ', -length / 2).extrude(length);
+      const quad = sketch(pen, 'YZ', -length / 2).extrude(length);
+      return easedOrOriginal(quad, longTopEdges(quad, height, length), crown);
     }
     case 'block': {
       const { width, depth, height, wedgeAngleDeg } = node.params;
+      const corner = Math.min(CORNER_FILLET_MM, width / 5, depth / 5);
       if (wedgeAngleDeg <= 0) {
         const total = height + sink;
-        return box(width, depth, total, { at: [0, 0, total / 2 - sink] });
+        let body: Shape3D = box(width, depth, total, { at: [0, 0, total / 2 - sink] });
+        body = easedOrOriginal(body, verticalEdges(body), corner);
+        return easedOrOriginal(
+          body,
+          edgesNearPlane(body, height),
+          Math.min(TOP_EASE_MM, height / 5)
+        );
       }
       const lowEdge = Math.max(0.5, height - depth * Math.tan(wedgeAngleDeg * DEG));
       const pen = draw([-depth / 2, -sink])
@@ -240,7 +369,10 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         .lineTo([depth / 2, lowEdge])
         .lineTo([-depth / 2, height])
         .close();
-      return sketch(pen, 'YZ', -width / 2).extrude(width);
+      const wedge = sketch(pen, 'YZ', -width / 2).extrude(width);
+      // The sloped face stays crisp (it is the functional ramp); only the
+      // vertical corner lines soften.
+      return easedOrOriginal(wedge, verticalEdges(wedge), corner);
     }
     case 'tube': {
       const { boreDiameter, wall, height, tiltDeg } = node.params;
@@ -248,9 +380,12 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       const bore = cylinder(boreDiameter / 2, height + 2 * sink + 2, {
         at: [0, 0, -sink - 1],
       });
-      const hollow = unwrap(cut(outer, bore, { optimisation: 'commonFace' }));
+      let hollow = unwrap(cut(outer, bore, { optimisation: 'commonFace' })) as Shape3D;
       if (hollow !== outer) outer.delete();
       bore.delete();
+      // Lead-in chamfer on both rims: the tool finds the bore, and the mouth
+      // reads finished instead of saw-cut.
+      hollow = chamferedOrOriginal(hollow, edgesNearPlane(hollow, height), Math.min(wall / 3, 0.8));
       if (tiltDeg <= 0) return hollow;
       const tilted = rotate(hollow, tiltDeg, { at: [0, 0, 0], axis: [1, 0, 0] });
       hollow.delete();
@@ -269,7 +404,10 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
           .lineTo([-gw / 2, height])
           .lineTo([-width / 2, height])
           .close();
-        return sketch(pen, 'YZ', -length / 2).extrude(length);
+        const vee = sketch(pen, 'YZ', -length / 2).extrude(length);
+        // Top edges — outer rim AND groove mouth — get the same ease: the
+        // mouth rounding doubles as the tool's lead-in.
+        return easedOrOriginal(vee, edgesNearPlane(vee, height), Math.min(0.6, gd / 5));
       }
       const total = height + sink;
       const body = box(length, width, total, { at: [0, 0, total / 2 - sink] });
@@ -281,7 +419,21 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       const carved = unwrap(cut(body, groove, { optimisation: 'commonFace' }));
       if (carved !== body) body.delete();
       groove.delete();
-      return carved;
+      // Only the outer rim: the groove's near-tangent seam edges sliver under
+      // fillet, and the round groove is its own lead-in anyway.
+      const rimEdges = edgeFinder()
+        .when((e) => {
+          const bounds = getBounds(e);
+          const atTop = bounds.zMax >= height - 0.3 && bounds.zMin >= height - 0.3;
+          const onBoundary =
+            Math.abs(Math.abs(bounds.yMin) - width / 2) < 0.2 ||
+            Math.abs(Math.abs(bounds.yMax) - width / 2) < 0.2 ||
+            Math.abs(Math.abs(bounds.xMin) - length / 2) < 0.2 ||
+            Math.abs(Math.abs(bounds.xMax) - length / 2) < 0.2;
+          return atTop && onBoundary;
+        })
+        .findAll(carved);
+      return easedOrOriginal(carved, rimEdges, Math.min(0.8, gd / 4));
     }
     case 'hook': {
       const { stemHeight, reach, lipHeight, thickness, width } = node.params;
@@ -301,7 +453,18 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         pen = pen.lineTo([r, s - t]).lineTo([r, s]);
       }
       const drawing = pen.lineTo([0, s]).close();
-      const solid = sketch(drawing, 'YZ', -width / 2).extrude(width);
+      let solid: Shape3D = sketch(drawing, 'YZ', -width / 2).extrude(width);
+      // A hook is all silhouette: rounding the length-running profile corners
+      // is what separates a molded J from an extruded L-bracket. Only those
+      // edges — the sunk base edges and short profile segments produce
+      // degenerate slivers under fillet.
+      const silhouetteEdges = edgeFinder()
+        .when((e) => {
+          const bounds = getBounds(e);
+          return Math.abs(bounds.xMax - bounds.xMin) > width * 0.9 && bounds.zMin > 0.2;
+        })
+        .findAll(solid);
+      solid = easedOrOriginal(solid, silhouetteEdges, Math.min(0.8, t / 2.5));
       const anchored = translate(solid, [0, -r / 2, 0]);
       solid.delete();
       return anchored;
@@ -330,9 +493,17 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         const thickness = Math.min(bridgeWidth, height / 2);
         parts.push(box(crossLength, depth, thickness, { at: [0, 0, height - thickness / 2] }));
       }
-      const fused = unwrap(fuseAll(parts as ValidSolid[], { optimisation: 'commonFace' }));
+      let fused = unwrap(fuseAll(parts as ValidSolid[], { optimisation: 'commonFace' })) as Shape3D;
       for (const part of parts) {
         if (part !== fused) part.delete();
+      }
+      fused = easedOrOriginal(
+        fused,
+        verticalEdges(fused),
+        Math.min(CORNER_FILLET_MM, uprightThickness / 4, depth / 4)
+      );
+      if (style !== 'rod') {
+        fused = easedOrOriginal(fused, edgesNearPlane(fused, height), TOP_EASE_MM);
       }
       return fused;
     }
@@ -422,10 +593,34 @@ export function buildAssemblySolid(
     scope.register(floor);
     onStage?.('features', 0.5);
 
-    const superstructure = unwrap(
+    let superstructure = unwrap(
       fuseAll(additive as ValidSolid[], { optimisation: 'commonFace' })
-    );
+    ) as Shape3D;
     if (!additive.includes(superstructure)) scope.register(superstructure);
+
+    // Molded blend at every seat plane: the concave cove where a part meets
+    // the floor (or a parent's top face) is the single strongest cue that the
+    // assembly was designed as one object rather than boolean-unioned. The
+    // same pass rounds the floor plate's own rim. Failures fall back through
+    // smaller radii to the sharp union.
+    const seatPlanes = new Set<number>([floorThickness]);
+    for (const placed of placements) {
+      if (placed.node.type !== 'cutter') seatPlanes.add(floorThickness + placed.z);
+    }
+    const junctionEdges: Edge[] = [];
+    for (const plane of seatPlanes) {
+      junctionEdges.push(...edgesNearPlane(superstructure, plane, 0.3));
+    }
+    if (junctionEdges.length > 0) {
+      const blended = applyFilletWithFallback(
+        superstructure,
+        junctionEdges,
+        Math.min(JUNCTION_FILLET_MM, floorThickness * 0.75)
+      );
+      if (blended !== superstructure) {
+        superstructure = scope.register(blended);
+      }
+    }
 
     checkCancelled(signal);
     const socket = buildBaseSocket(
