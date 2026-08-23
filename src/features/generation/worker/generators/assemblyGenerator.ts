@@ -619,7 +619,8 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       const { width, depth, height, columns, rows, angleDeg } = node.params;
       const rad = angleDeg * DEG;
       const pitchX = width / columns;
-      // Webs keep 1mm between mouths; the deepest point keeps a 2mm floor.
+      // Centered on an even pitch: edge webs keep 1mm, interior webs 2mm;
+      // the deepest point keeps a 2mm floor.
       const bore = Math.min(node.params.boreDiameter, pitchX - 2, depth - 3);
       // Rows pack toward the back face so each leaning bore sweeps forward
       // beneath the mouths in front of it; every row's depth then clamps
