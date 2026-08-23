@@ -1,0 +1,47 @@
+src/shell/layoutExport/useLayoutExport.ts
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 348-352,368-369,376
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_8ea2896b2ae84a 3282-3283
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "cde9b68e9a37c9f8e1c8f7939d5976a8aaf184fb",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
