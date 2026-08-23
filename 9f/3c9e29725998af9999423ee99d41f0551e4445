@@ -1,0 +1,22 @@
+src/features/bin-designer/utils/workshopTemplates.ts
+  s_a36c0b85dfeec4::t_0229adf6e6c789 129-133,138-139,142,150,158-159,162
+src/features/bin-designer/utils/workshopTemplates.test.ts
+  s_a36c0b85dfeec4::t_0229adf6e6c789 61-62,80-82
+  s_a36c0b85dfeec4::t_4a8cd0119bc445 63-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "9f3c9e29725998af9999423ee99d41f0551e4445",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
