@@ -203,7 +203,12 @@ export function resolvePlacedParts(
  */
 export function assemblyRiseMm(structure: AssemblyStructure, socketAndFloorMm: number): number {
   const placed = resolvePlacedParts(structure);
-  const maxTop = placed.reduce((max, p) => Math.max(max, p.topZ), 0);
+  // Cutters are subtractive: their seat plane is not material, so it must not
+  // set the standing height.
+  const maxTop = placed.reduce(
+    (max, p) => (p.node.type === 'cutter' ? max : Math.max(max, p.topZ)),
+    0
+  );
   return maxTop + socketAndFloorMm;
 }
 

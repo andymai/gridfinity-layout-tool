@@ -38,6 +38,11 @@ describe('assemblyRiseMm', () => {
     expect(assemblyRiseMm(structureWith([]), 10)).toBe(10);
   });
 
+  it('ignores cutters, whose seat plane is not material', () => {
+    const lifted = part('cutter', 'c', { seatZ: 60 });
+    expect(assemblyRiseMm(structureWith([lifted]), 10)).toBe(10);
+  });
+
   it('stays consistent with assemblyHeightUnits', () => {
     const post = part('post', 'p', {}, {
       params: { diameter: 8, height: 40 },
