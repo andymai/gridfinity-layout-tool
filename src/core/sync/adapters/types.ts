@@ -93,7 +93,16 @@ export interface SyncAdapter<T = unknown> {
  */
 export interface DesignSyncPayload {
   name: string;
-  params: unknown;
+  /** Bin params; absent for non-bin kinds, which carry `structure` instead. */
+  params?: unknown;
+  /**
+   * Item kind for non-bin designs. Absent means bin (every payload written
+   * before kinds synced). `envelope`/`structure` are `unknown` for the same
+   * layering reason as `params`.
+   */
+  kind?: string;
+  envelope?: unknown;
+  structure?: unknown;
   /**
    * Organization tags. Like `name`, these ride alongside `params` (not
    * inside it) so they survive the cloud round-trip; the server stores them

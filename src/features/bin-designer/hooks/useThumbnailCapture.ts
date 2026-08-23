@@ -27,7 +27,7 @@ import { designId } from '@/core/types';
 export function useThumbnailCapture(): void {
   const prevStatusRef = useRef<string>('');
 
-  const { generationStatus, needsThumbnailUpdate, currentDesignId, params, designName } =
+  const { generationStatus, needsThumbnailUpdate, currentDesignId, params, designName, itemKind } =
     useDesignerStore(
       useShallow((s) => ({
         generationStatus: s.generation.status,
@@ -35,12 +35,15 @@ export function useThumbnailCapture(): void {
         currentDesignId: s.currentDesignId,
         params: s.params,
         designName: s.designName,
+        itemKind: s.itemKind,
       }))
     );
 
   const setNeedsThumbnailUpdate = useDesignerStore((s) => s.setNeedsThumbnailUpdate);
 
   useEffect(() => {
+    // Frames from bin params; non-bin kinds capture through their own hooks.
+    if (itemKind !== 'bin') return;
     // Only trigger when status transitions TO 'complete'
     if (
       generationStatus !== 'complete' ||
@@ -98,6 +101,7 @@ export function useThumbnailCapture(): void {
     return () => clearTimeout(timeoutId);
   }, [
     generationStatus,
+    itemKind,
     needsThumbnailUpdate,
     currentDesignId,
     params.width,

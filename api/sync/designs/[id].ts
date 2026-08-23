@@ -1,5 +1,10 @@
 import { ErrorCode, isValidShareId } from '../../lib/shared.js';
 import { validateDesignerShare, sanitizeTags } from '../../lib/designerValidation.js';
+import {
+  validateAssemblyEnvelope,
+  validateAssemblyStructure,
+} from '../../lib/assemblyValidation.js';
+import { CONSTRAINTS } from '../../lib/designerValidationConstants.js';
 import { sanitizeString } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
@@ -71,18 +76,39 @@ function sanitizeLineage(
 function unwrapDesignPayload(design: unknown): {
   name: string | null;
   params: unknown;
+  kind?: 'assembly';
+  envelope?: unknown;
+  structure?: unknown;
   tags: unknown;
   publishedId: unknown;
   lineage: unknown;
 } | null {
   if (design === null || typeof design !== 'object') return null;
-  const { name, params, tags, publishedId, lineage } = design as {
+  const { name, params, kind, envelope, structure, tags, publishedId, lineage } = design as {
     name?: unknown;
     params?: unknown;
+    kind?: unknown;
+    envelope?: unknown;
+    structure?: unknown;
     tags?: unknown;
     publishedId?: unknown;
     lineage?: unknown;
   };
+  if (kind === 'assembly') {
+    if (name !== undefined && typeof name !== 'string') return null;
+    if (typeof envelope !== 'object' || envelope === null) return null;
+    if (typeof structure !== 'object' || structure === null) return null;
+    return {
+      name: name ?? null,
+      params: null,
+      kind: 'assembly',
+      envelope,
+      structure,
+      tags,
+      publishedId,
+      lineage,
+    };
+  }
   if (typeof params === 'object' && params !== null) {
     // Wrapper shape: name must be a string or absent. Reject other types
     // so malformed clients can't silently drop the user-visible field.
@@ -171,6 +197,51 @@ export default createSyncResourceHandler<DesignEnvelope>({
     // it's what the quota check and index entry track. Without the split,
     // users get charged for bytes the validator stripped and the index
     // drifts from what the blob holds.
+    if (unwrapped.kind === 'assembly') {
+      const preBytes = Buffer.byteLength(JSON.stringify({ ...unwrapped, name, tags }), 'utf8');
+      if (preBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
+        return {
+          ok: false,
+          status: 400,
+          error: 'assembly design exceeds the size limit',
+          code: ErrorCode.VALIDATION_ERROR,
+        };
+      }
+      const envelopeCheck = validateAssemblyEnvelope(unwrapped.envelope);
+      if (!envelopeCheck.valid) {
+        return {
+          ok: false,
+          status: 400,
+          error: envelopeCheck.error.message,
+          code: ErrorCode.VALIDATION_ERROR,
+        };
+      }
+      const structureCheck = validateAssemblyStructure(unwrapped.structure);
+      if (!structureCheck.valid) {
+        return {
+          ok: false,
+          status: 400,
+          error: structureCheck.error.message,
+          code: ErrorCode.VALIDATION_ERROR,
+        };
+      }
+      const stored = {
+        name,
+        kind: 'assembly' as const,
+        envelope: unwrapped.envelope,
+        structure: unwrapped.structure,
+        tags,
+        ...(publishedId !== undefined ? { publishedId } : {}),
+        ...(lineage !== undefined ? { lineage } : {}),
+      };
+      return {
+        ok: true,
+        envelope: { design: stored, modifiedAt, schemaVersion: SCHEMA_VERSION },
+        sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
+        tiebreakerCandidate: stored,
+      };
+    }
+
     const validationPayload = {
       type: 'designer' as const,
       version: 1 as const,

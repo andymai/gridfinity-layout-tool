@@ -257,7 +257,7 @@ export const FEATURE_FLAGS = [
     status: 'experimental',
     risk: 'medium',
     warning:
-      'Early feature. Workshop builds export to STL, 3MF and STEP, but are not auto-saved or placeable in drawer layouts yet.',
+      'Early feature. Workshop builds auto-save to your library, sync when signed in, and export to STL, 3MF and STEP — but cannot be placed in drawer layouts yet.',
     addedAt: '2026-08',
     requiresRefresh: false,
   },

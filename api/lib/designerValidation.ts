@@ -1259,7 +1259,7 @@ function validateAccentBand(value: unknown, path: string): string | null {
  * grid `{ corners, bands, cells }`. Rejects unknown keys at every level so a
  * crafted share can't smuggle attacker-controlled junk past the size cap.
  */
-function validateFeatureColors(value: unknown): string | null {
+export function validateFeatureColors(value: unknown): string | null {
   if (!isObject(value)) return 'featureColors must be an object';
 
   for (const key of Object.keys(value)) {

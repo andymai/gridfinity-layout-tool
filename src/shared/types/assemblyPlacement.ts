@@ -196,3 +196,17 @@ export function resolvePlacedParts(
   walk(structure.parts, { x: 0, y: 0, rotZDeg: 0, topZ: 0 }, null, 1, '', { mx: 1, my: 1 });
   return placed;
 }
+
+/**
+ * Overall build height in Gridfinity height units (7mm), socket and floor
+ * included — the framing/footprint number a library row reports.
+ */
+export function assemblyHeightUnits(
+  structure: AssemblyStructure,
+  heightUnitMm: number,
+  socketAndFloorMm: number
+): number {
+  const placed = resolvePlacedParts(structure);
+  const maxTop = placed.reduce((max, p) => Math.max(max, p.topZ), 0);
+  return Math.max(1, Math.ceil((maxTop + socketAndFloorMm) / heightUnitMm));
+}

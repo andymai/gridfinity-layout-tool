@@ -12,7 +12,7 @@ interface DesignGridItemProps {
   isFocused: boolean;
   onSelect: () => void;
   onPlaceInLayout?: () => void;
-  onDownloadJSON: () => void;
+  onDownloadJSON?: () => void;
   onRename: (newName: string) => void;
   onEditTags: () => void;
   onDuplicate: () => void;

@@ -50,6 +50,36 @@ describe('designFootprint', () => {
     expect(designFootprint(design)).toEqual({ width: 2, depth: 1, height: 3 });
   });
 
+  it('derives assembly height from the tallest placed part', () => {
+    const design = {
+      id: 'w',
+      name: 'W',
+      kind: 'assembly',
+      thumbnail: null,
+      exportFileNameConfig: null,
+      createdAt: '',
+      updatedAt: '',
+      envelope: { width: 4, depth: 2, gridUnitMm: 42, heightUnitMm: 7 },
+      structure: {
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts: [
+          {
+            id: 'p',
+            type: 'post',
+            params: { diameter: 8, height: 40, taperDeg: 0, tipChamfer: 1 },
+            transform: { x: 20, y: 20, seatZ: 0, rotZDeg: 0 },
+            children: [],
+          },
+        ],
+      },
+    } as unknown as Parameters<typeof designFootprint>[0];
+    // 40mm post + 5mm socket + 2mm floor = 47mm -> ceil(47/7) = 7 units.
+    expect(designFootprint(design)).toEqual({ width: 4, depth: 2, height: 7 });
+  });
+
   it('keeps height 0 for non-bin kinds without a claimed height', () => {
     const design: SavedDesign = {
       ...baseDesign(),
