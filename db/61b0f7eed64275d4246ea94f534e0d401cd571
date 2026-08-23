@@ -1,0 +1,19 @@
+src/shared/items/assembly/descriptor.test.ts
+  s_a36c0b85dfeec4::t_76b65f1447cb39 98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "db61b0f7eed64275d4246ea94f534e0d401cd571",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
