@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/__kernel-tests__/scenarioTypes.ts
+  s_099dfca49934d3::t_30388ef1d75bc5 44-47
+  s_099dfca49934d3::t_a05b363dd33dbb 65
+  s_099dfca49934d3::t_10e0f289778584 43,48-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "05efcadab6410a06c0821604a4a8fa3f505be7ac",
+  "prompts": {},
+  "sessions": {
+    "s_099dfca49934d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a089f407-f1ae-461b-8c4f-dca6891327a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
