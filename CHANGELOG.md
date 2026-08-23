@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.467.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.466.0...gridfinity-layout-tool-v4.467.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** angled bore bank part ([#3783](https://github.com/andymai/gridfinity-layout-tool/issues/3783)) ([c79b542](https://github.com/andymai/gridfinity-layout-tool/commit/c79b542c1a47fcbdab4db06c42878eba32657bad))
+
 ## [4.466.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.465.0...gridfinity-layout-tool-v4.466.0) (2026-08-23)
 
 
