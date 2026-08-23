@@ -46,6 +46,7 @@ const finParamsSchema = z.object({
   thickness: z.number().min(0.8).max(20),
   height: z.number().min(4).max(200),
   leanDeg: z.number().min(0).max(45),
+  leanAxis: z.enum(['thickness', 'length']).optional(),
 });
 
 const blockParamsSchema = z.object({

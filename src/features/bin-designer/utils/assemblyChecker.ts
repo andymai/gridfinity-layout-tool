@@ -6,7 +6,7 @@
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { PlacedPart } from '@/shared/types/assemblyPlacement';
 import type { ItemEnvelope } from '@/shared/types/item';
-import { partFootprint, resolvePlacedParts } from '@/shared/types/assemblyPlacement';
+import { partFootprint, resolvePlacedParts, rotate2d } from '@/shared/types/assemblyPlacement';
 
 export type AssemblyWarningKind =
   'floating' | 'unsupported' | 'overhang' | 'socketBreach' | 'outsideBase';
@@ -37,10 +37,13 @@ export function checkAssembly(
     d: envelope.depth * envelope.gridUnitMm,
   };
   const placed = resolvePlacedParts(structure, extent);
-  const byId = new Map<string, PlacedPart>();
-  for (const p of placed) {
-    if (!byId.has(p.selectId)) byId.set(p.selectId, p);
-  }
+  const byKey = new Map<string, PlacedPart>();
+  for (const p of placed) byKey.set(p.key, p);
+  const parentInstanceOf = (p: PlacedPart): PlacedPart | null => {
+    const slash = p.key.lastIndexOf('/');
+    if (slash === -1) return null;
+    return byKey.get(p.key.slice(0, slash)) ?? null;
+  };
 
   const warnings: AssemblyWarning[] = [];
   const flagged = new Set<string>();
@@ -60,11 +63,14 @@ export function checkAssembly(
     }
 
     // Unsupported: seated on a parent but anchored outside its top face.
+    // Compared per expanded INSTANCE in the parent's frame, so array copies
+    // marching off their parent are caught too.
     if (node.type !== 'cutter' && p.parentId !== null) {
-      const parent = byId.get(p.parentId);
+      const parent = parentInstanceOf(p);
       if (parent) {
-        const half = partFootprint(parent.node);
-        if (Math.abs(node.transform.x) > half.w / 2 || Math.abs(node.transform.y) > half.d / 2) {
+        const parentHalf = partFootprint(parent.node);
+        const local = rotate2d(p.x - parent.x, p.y - parent.y, -parent.rotZDeg);
+        if (Math.abs(local.x) > parentHalf.w / 2 || Math.abs(local.y) > parentHalf.d / 2) {
           flag(p.selectId, 'unsupported');
         }
       }
@@ -86,14 +92,20 @@ export function checkAssembly(
       flag(p.selectId, 'socketBreach');
     }
 
-    // Off the base: material past the plate edge prints in mid-air.
+    // Off the base: material past the plate edge prints in mid-air. The
+    // footprint is local-frame, so rotate it into a world-axis bound first.
     if (node.type !== 'cutter') {
       const half = partFootprint(node);
+      const rad = (p.rotZDeg * Math.PI) / 180;
+      const cos = Math.abs(Math.cos(rad));
+      const sin = Math.abs(Math.sin(rad));
+      const halfW = (cos * half.w + sin * half.d) / 2;
+      const halfD = (sin * half.w + cos * half.d) / 2;
       if (
-        p.x - half.w / 2 < -0.05 ||
-        p.x + half.w / 2 > extent.w + 0.05 ||
-        p.y - half.d / 2 < -0.05 ||
-        p.y + half.d / 2 > extent.d + 0.05
+        p.x - halfW < -0.05 ||
+        p.x + halfW > extent.w + 0.05 ||
+        p.y - halfD < -0.05 ||
+        p.y + halfD > extent.d + 0.05
       ) {
         flag(p.selectId, 'outsideBase');
       }

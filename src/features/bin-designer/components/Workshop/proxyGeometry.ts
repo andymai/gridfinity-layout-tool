@@ -39,11 +39,19 @@ function buildFin(p: {
   thickness: number;
   height: number;
   leanDeg: number;
+  leanAxis?: 'thickness' | 'length';
 }): BufferGeometry {
   const geometry = new BoxGeometry(p.length, p.thickness, p.height);
   geometry.translate(0, 0, p.height / 2);
   if (p.leanDeg > 0) {
-    geometry.applyMatrix4(new Matrix4().makeShear(0, 0, 0, 0, 0, Math.tan(p.leanDeg * DEG)));
+    const tan = Math.tan(p.leanDeg * DEG);
+    // makeShear slots: zy shears y by z (tip over the long edge); zx shears
+    // x by z (run the lean along the plate's length).
+    const shear =
+      p.leanAxis === 'length'
+        ? new Matrix4().makeShear(0, 0, 0, 0, tan, 0)
+        : new Matrix4().makeShear(0, 0, 0, 0, 0, tan);
+    geometry.applyMatrix4(shear);
   }
   return geometry;
 }

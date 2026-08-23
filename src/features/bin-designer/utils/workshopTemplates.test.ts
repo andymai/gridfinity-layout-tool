@@ -56,6 +56,9 @@ describe('buildWorkshopTemplate', () => {
     const fin = converted.parts.find((n) => n.type === 'fin');
     expect(fin?.array?.count).toBe(6);
     expect(fin?.type === 'fin' && fin.params.leanDeg).toBe(20);
+    // The 90° turn maps the length-axis shear to world +Y — the rack's
+    // back-lean; a thickness-axis lean would tip fins sideways.
+    expect(fin?.type === 'fin' && fin.params.leanAxis).toBe('length');
     const rail = converted.parts.find((n) => n.type === 'block');
     expect(rail?.type === 'block' && rail.params.height).toBe(10);
     expect(rail?.transform.y).toBe(84 - 1.5);
@@ -63,6 +66,24 @@ describe('buildWorkshopTemplate', () => {
     const convertedFin = converted.parts.find((n) => n.type === 'fin');
     expect(convertedFin?.transform.y).toBe(42);
     expect(convertedFin?.type === 'fin' && convertedFin.params.length).toBe(84);
+  });
+
+  it('clamps a sub-schema rail into a valid block instead of losing it', () => {
+    const rack = {
+      kind: 'toolRack' as const,
+      floorThickness: 2,
+      finAngleDeg: 20,
+      finThickness: 3,
+      finHeight: 25,
+      finCount: 4,
+      slotInsetMm: 8,
+      backRail: { enabled: true, height: 0.5, thickness: 0.6 },
+    };
+    const converted = convertToolRackToAssembly(rack, envelope);
+    expect(assemblySchema.safeParse(converted).success).toBe(true);
+    const rail = converted.parts.find((n) => n.type === 'block');
+    expect(rail?.type === 'block' && rail.params.depth).toBe(2);
+    expect(rail?.type === 'block' && rail.params.height).toBe(1);
   });
 
   it('derives fin count from pitch when the rack omitted it', () => {

@@ -7,7 +7,7 @@ import { openLayoutDatabase, saveMlData, saveSharedWithMeEntries } from './backe
 import { useSettingsStore } from '@/core/store/settings';
 import type { SharedWithMeEntry } from '@/core/types';
 
-function isMigrationDone(key: string): boolean {
+export function isMigrationDone(key: string): boolean {
   try {
     return localStorage.getItem(key) === 'true';
   } catch {
@@ -15,7 +15,7 @@ function isMigrationDone(key: string): boolean {
   }
 }
 
-function setMigrationDone(key: string): void {
+export function setMigrationDone(key: string): void {
   try {
     localStorage.setItem(key, 'true');
   } catch {

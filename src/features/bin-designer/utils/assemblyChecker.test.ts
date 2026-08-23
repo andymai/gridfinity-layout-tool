@@ -105,6 +105,33 @@ describe('checkAssembly', () => {
     expect(kinds([part('block', 'b', { x: 2, y: 42 })])).toEqual(['b:outsideBase']);
   });
 
+  it('does not flag a rotated long part whose real extent fits the base', () => {
+    // A depth-spanning fin at x=8: unrotated its 80mm length would poke
+    // out; rotated 90° only its 3mm thickness lies along X.
+    const fin = part(
+      'fin',
+      'f',
+      { x: 8, y: 42, rotZDeg: 90 },
+      {
+        params: { length: 80, thickness: 3, height: 25, leanDeg: 20, leanAxis: 'length' },
+      }
+    );
+    expect(kinds([fin])).toEqual([]);
+  });
+
+  it('flags array copies that march off their parent', () => {
+    const arrayedPost = part(
+      'post',
+      'p',
+      { x: 0, y: 0 },
+      {
+        array: { count: 3, dx: 20, dy: 0 },
+      }
+    );
+    const block = part('block', 'b', {}, { children: [arrayedPost] });
+    expect(kinds([block])).toEqual(['p:unsupported']);
+  });
+
   it('reports an array or mirror twin once per part and rule', () => {
     const post = part('post', 'p', { seatZ: 10 }, { array: { count: 4, dx: 20, dy: 0 } });
     expect(kinds([post])).toEqual(['p:floating']);

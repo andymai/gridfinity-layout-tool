@@ -6,7 +6,11 @@
  */
 import type { AssemblyPartNode, AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope, ToolRackStructure } from '@/shared/types/item';
-import { createAssemblyPartNode, defaultCutterProfile } from '@/shared/items/assembly/descriptor';
+import {
+  clampPartTransform,
+  createAssemblyPartNode,
+  defaultCutterProfile,
+} from '@/shared/items/assembly/descriptor';
 
 export type WorkshopTemplateId = 'pliersRack' | 'screwdriverBlock';
 
@@ -136,33 +140,46 @@ export function convertToolRackToAssembly(
 
   if (rack.backRail.enabled) {
     // Flush to the back edge, full footprint width — the rack generator's
-    // placement, so a migrated rack keeps its exact outline.
-    const rail = createAssemblyPartNode('block', crypto.randomUUID(), {
-      x: w / 2,
-      y: d - rack.backRail.thickness / 2,
-      seatZ: 0,
-      rotZDeg: 0,
-    });
+    // placement, so a migrated rack keeps its exact outline. Rail values are
+    // clamped into the block schema (rack rails could be thinner/shorter
+    // than a block allows); an unclamped value would make migration drop
+    // the rail entirely on the next load.
+    const rail = createAssemblyPartNode(
+      'block',
+      crypto.randomUUID(),
+      clampPartTransform({
+        x: w / 2,
+        y: d - rack.backRail.thickness / 2,
+        seatZ: 0,
+        rotZDeg: 0,
+      })
+    );
     parts.push({
       ...rail,
       params: {
         ...rail.params,
-        width: Math.min(w, 400),
-        depth: rack.backRail.thickness,
-        height: rack.backRail.height,
+        width: Math.min(Math.max(w, 2), 400),
+        depth: Math.min(Math.max(rack.backRail.thickness, 2), 400),
+        height: Math.min(Math.max(rack.backRail.height, 1), 200),
         wedgeAngleDeg: 0,
       },
     });
   }
 
   // Fins span the full depth and fuse into the rail, as in the generator.
+  // leanAxis 'length' + the 90° turn reproduces the rack's back-lean: the
+  // shear runs along the plate (local +X), which the rotation maps to +Y.
   const finLength = Math.max(12, Math.min(d, 400));
-  const fin = createAssemblyPartNode('fin', crypto.randomUUID(), {
-    x: rack.slotInsetMm,
-    y: d / 2,
-    seatZ: 0,
-    rotZDeg: 90,
-  });
+  const fin = createAssemblyPartNode(
+    'fin',
+    crypto.randomUUID(),
+    clampPartTransform({
+      x: rack.slotInsetMm,
+      y: d / 2,
+      seatZ: 0,
+      rotZDeg: 90,
+    })
+  );
   parts.push({
     ...fin,
     params: {
@@ -171,6 +188,7 @@ export function convertToolRackToAssembly(
       thickness: Math.min(Math.max(rack.finThickness, 0.8), 20),
       height: Math.min(Math.max(rack.finHeight, 4), 200),
       leanDeg: Math.min(Math.max(rack.finAngleDeg, 0), 45),
+      leanAxis: 'length',
     },
     ...(count > 1 ? { array: { count, dx: Math.min(spacing, 500), dy: 0 } } : {}),
   });

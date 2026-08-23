@@ -60,6 +60,12 @@ export interface FinParams {
   readonly height: number;
   /** Lean back from vertical in degrees (0..45 for printability). */
   readonly leanDeg: number;
+  /**
+   * Which local axis the lean displaces. 'thickness' (default) tips the
+   * plate over its long bottom edge; 'length' shears along the plate's run —
+   * the tool rack's geometry once its fin row is rotated onto the base.
+   */
+  readonly leanAxis?: 'thickness' | 'length';
 }
 
 export interface BlockParams {

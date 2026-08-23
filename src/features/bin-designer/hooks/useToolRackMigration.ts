@@ -7,14 +7,17 @@
  */
 import { useEffect, useRef } from 'react';
 import { isOk } from '@/core/result';
+import { isMigrationDone, setMigrationDone } from '@/core/storage/localStorageMigrations';
 import { listDesigns, saveDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { convertToolRackToAssembly } from '@/features/bin-designer/utils/workshopTemplates';
+
+const MIGRATION_KEY = 'workshop-toolrack-migration-v1';
 
 export function useToolRackMigration(): void {
   const ranRef = useRef(false);
 
   useEffect(() => {
-    if (ranRef.current) return;
+    if (ranRef.current || isMigrationDone(MIGRATION_KEY)) return;
     ranRef.current = true;
     void (async () => {
       const designs = await listDesigns();
@@ -28,6 +31,9 @@ export function useToolRackMigration(): void {
           structure: convertToolRackToAssembly(design.structure, design.envelope),
         });
       }
+      // Marked only after a full successful scan; a thrown save leaves the
+      // flag unset so the next visit retries.
+      setMigrationDone(MIGRATION_KEY);
     })();
   }, []);
 }

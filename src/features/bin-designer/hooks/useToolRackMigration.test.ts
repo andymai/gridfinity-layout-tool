@@ -51,6 +51,7 @@ const rackDesign = {
 describe('useToolRackMigration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it('converts saved racks to assemblies, keeping id and name', async () => {
