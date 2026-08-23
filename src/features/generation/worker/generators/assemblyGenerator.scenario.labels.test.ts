@@ -71,4 +71,20 @@ describe('assembly part labels (real WASM)', () => {
     expect(meshVolume(recessed)).toBeLessThan(v - 20);
     expect(meshVolume(top)).toBeLessThan(v - 20);
   });
+
+  it('every showcase template generates watertight at 4x2', { timeout: 90_000 }, async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const { buildWorkshopTemplate } =
+      await import('@/features/bin-designer/utils/workshopTemplates');
+    const bigEnv: ItemEnvelope = { ...env, width: 4, depth: 2 };
+    for (const id of ['plierComb', 'screwdriverStation', 'angledBitBank', 'wrenchRail'] as const) {
+      const structure: AssemblyStructure = {
+        ...DEFAULT_ASSEMBLY_STRUCTURE,
+        parts: buildWorkshopTemplate(id, bigEnv),
+      };
+      const result = generateAssembly(structure, bigEnv, noop, true);
+      assertWatertight(result, id);
+      expect(meshVolume(result)).toBeGreaterThan(10_000);
+    }
+  });
 });

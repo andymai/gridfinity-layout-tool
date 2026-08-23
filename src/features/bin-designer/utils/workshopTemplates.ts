@@ -12,11 +12,21 @@ import {
   defaultCutterProfile,
 } from '@/shared/items/assembly/descriptor';
 
-export type WorkshopTemplateId = 'pliersRack' | 'screwdriverBlock';
+export type WorkshopTemplateId =
+  | 'pliersRack'
+  | 'screwdriverBlock'
+  | 'plierComb'
+  | 'screwdriverStation'
+  | 'angledBitBank'
+  | 'wrenchRail';
 
 export const WORKSHOP_TEMPLATE_IDS: readonly WorkshopTemplateId[] = [
   'pliersRack',
   'screwdriverBlock',
+  'plierComb',
+  'screwdriverStation',
+  'angledBitBank',
+  'wrenchRail',
 ];
 
 function extent(envelope: ItemEnvelope): { w: number; d: number } {
@@ -104,6 +114,129 @@ function screwdriverBlock(envelope: ItemEnvelope): AssemblyPartNode[] {
   return [blockNode];
 }
 
+/** One comb bar sized for plier handles, slots front-to-back. */
+function plierComb(envelope: ItemEnvelope): AssemblyPartNode[] {
+  const { w, d } = extent(envelope);
+  const width = w - 16;
+  const slotCount = Math.max(2, Math.min(15, Math.floor(width / 26)));
+  const comb = createAssemblyPartNode('comb', crypto.randomUUID(), {
+    x: w / 2,
+    y: d / 2,
+    seatZ: 0,
+    rotZDeg: 0,
+  });
+  return [
+    {
+      ...comb,
+      params: {
+        ...comb.params,
+        width,
+        depth: Math.min(16, d - 12),
+        height: 42,
+        slotCount,
+        slotWidth: 13,
+        slotDepth: 32,
+      },
+    },
+  ];
+}
+
+/** A two-step riser with a labeled bit bank seated on the top tread. */
+function screwdriverStation(envelope: ItemEnvelope): AssemblyPartNode[] {
+  const { w, d } = extent(envelope);
+  const stepDepth = Math.min(24, Math.max(14, d / 3));
+  const riser = createAssemblyPartNode('riser', crypto.randomUUID(), {
+    x: w / 2,
+    y: d - stepDepth - 6,
+    seatZ: 0,
+    rotZDeg: 0,
+  });
+  const bankDepth = Math.min(22, stepDepth);
+  const bank = createAssemblyPartNode('boreBank', crypto.randomUUID(), {
+    x: 0,
+    y: stepDepth / 2,
+    seatZ: 0,
+    rotZDeg: 0,
+  });
+  const bankNode: AssemblyPartNode = {
+    ...bank,
+    params: {
+      ...bank.params,
+      width: w - 28,
+      depth: bankDepth,
+      height: 30,
+      boreDiameter: 9,
+      boreDepth: 24,
+      columns: Math.max(2, Math.min(15, Math.floor((w - 28) / 20))),
+      rows: 1,
+      angleDeg: 12,
+    },
+    label: { text: 'DRIVERS', sizeMm: 7, depthMm: 0.6, style: 'recessed', face: 'front' },
+  };
+  return [
+    {
+      ...riser,
+      params: { ...riser.params, width: w - 20, stepCount: 2, stepDepth, stepHeight: 16 },
+      children: [bankNode],
+    },
+  ];
+}
+
+/** One leaning bore bank with an engraved caption. */
+function angledBitBank(envelope: ItemEnvelope): AssemblyPartNode[] {
+  const { w, d } = extent(envelope);
+  const bank = createAssemblyPartNode('boreBank', crypto.randomUUID(), {
+    x: w / 2,
+    y: d / 2,
+    seatZ: 0,
+    rotZDeg: 0,
+  });
+  return [
+    {
+      ...bank,
+      params: {
+        ...bank.params,
+        width: w - 16,
+        depth: Math.min(34, d - 12),
+        height: 36,
+        boreDiameter: 8,
+        boreDepth: 30,
+        columns: Math.max(2, Math.min(15, Math.floor((w - 16) / 14))),
+        rows: 2,
+        angleDeg: 18,
+      },
+      label: { text: 'BITS', sizeMm: 9, depthMm: 0.8, style: 'recessed', face: 'front' },
+    },
+  ];
+}
+
+/** A wrench comb: narrow slots for shafts, a raised caption on the band. */
+function wrenchRail(envelope: ItemEnvelope): AssemblyPartNode[] {
+  const { w, d } = extent(envelope);
+  const width = w - 16;
+  const comb = createAssemblyPartNode('comb', crypto.randomUUID(), {
+    x: w / 2,
+    y: d / 2,
+    seatZ: 0,
+    rotZDeg: 0,
+  });
+  return [
+    {
+      ...comb,
+      params: {
+        ...comb.params,
+        width,
+        depth: Math.min(14, d - 12),
+        height: 46,
+        slotCount: Math.max(2, Math.min(15, Math.floor(width / 18))),
+        slotWidth: 7,
+        slotDepth: 30,
+      },
+      label: { text: 'WRENCHES', sizeMm: 7, depthMm: 0.6, style: 'raised', face: 'front' },
+    },
+  ];
+}
+
 export function buildWorkshopTemplate(
   id: WorkshopTemplateId,
   envelope: ItemEnvelope
@@ -113,6 +246,14 @@ export function buildWorkshopTemplate(
       return pliersRack(envelope);
     case 'screwdriverBlock':
       return screwdriverBlock(envelope);
+    case 'plierComb':
+      return plierComb(envelope);
+    case 'screwdriverStation':
+      return screwdriverStation(envelope);
+    case 'angledBitBank':
+      return angledBitBank(envelope);
+    case 'wrenchRail':
+      return wrenchRail(envelope);
   }
 }
 
