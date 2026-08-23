@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.445.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.444.0...gridfinity-layout-tool-v4.445.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** library autosave, cloud sync, and the server validation mirror ([#3730](https://github.com/andymai/gridfinity-layout-tool/issues/3730)) ([b9ee772](https://github.com/andymai/gridfinity-layout-tool/commit/b9ee77225f5502acb7dffcba341c72746f048c53))
+
 ## [4.444.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.443.0...gridfinity-layout-tool-v4.444.0) (2026-08-23)
 
 
