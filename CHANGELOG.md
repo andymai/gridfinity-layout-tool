@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.459.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.458.0...gridfinity-layout-tool-v4.459.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** rotation gizmo and snap alignment guides ([#3764](https://github.com/andymai/gridfinity-layout-tool/issues/3764)) ([ade63d0](https://github.com/andymai/gridfinity-layout-tool/commit/ade63d00d316315586725bab7724f3d4e61080d0))
+
 ## [4.458.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.457.0...gridfinity-layout-tool-v4.458.0) (2026-08-23)
 
 
