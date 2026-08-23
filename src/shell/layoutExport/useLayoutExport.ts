@@ -367,15 +367,17 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         // Phase 1.6 — Workshop assemblies: generated in the worker via the
         // item export path (STEP carries exact BREP, so no format skip). One
-        // failed design skips rather than aborting the whole archive.
+        // failed design degrades to a partial archive rather than aborting it;
+        // its path is dropped from the manifest below so the listing only
+        // names files the archive actually contains.
+        const failedItemPaths = new Set<string>();
         for (const a of plan.itemExportable) {
           try {
             const result = await bridge.exportItem(a.item, workerFormat);
             if (projectMode) projectParts.addStl(baseNameOf(a.path), result.data);
             else binFiles.push({ path: a.path, data: result.data });
           } catch {
-            // Tallied nowhere: the manifest still lists the design, and a
-            // partial archive beats losing every other part over one holder.
+            failedItemPaths.add(a.path);
           }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
@@ -520,8 +522,9 @@ export function useLayoutExport(): UseLayoutExportReturn {
           return null;
         });
 
-        // Nothing usable — don't ship an empty archive.
-        if (plan.exportable.length === 0 && !bp) {
+        // Nothing usable — don't ship an empty archive. Meshes and assemblies
+        // count: a layout of only those still has bin files worth shipping.
+        if (binTotal === 0 && !bp) {
           useToastStore.getState().addToast(t('layoutExport.nothingToExport'), 'error');
           return false;
         }
@@ -591,7 +594,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         const manifest = buildLayoutManifest({
           layoutName: layout.name,
           format,
-          bins: plan.manifestBins,
+          bins: plan.manifestBins.filter((b) => !failedItemPaths.has(b.path)),
           baseplate: bp
             ? {
                 pieceCount: bp.pieces.length,
@@ -625,7 +628,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         // Report what actually made it into the archive.
         const addToast = useToastStore.getState().addToast;
-        if (plan.exportable.length === 0) {
+        if (binTotal === 0) {
           addToast(t('layoutExport.baseplateOnly'), 'info');
         } else if (!bp) {
           addToast(
