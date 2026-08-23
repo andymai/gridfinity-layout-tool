@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Alert, Button, Dialog, Field, Input, Textarea } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CommunityPublishCaptures } from '@/core/store/communityPublish';
+import type { PublishAssemblyContent } from './publishSummary';
 import type { AuthProvider } from '@/core/sync/session/sessionApi';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCategory, CommunityDesignLineage } from '@/shared/types/community';
@@ -44,7 +45,8 @@ export interface PublishFormProps {
   prefill: PublishPrefill;
   captures: CommunityPublishCaptures | null;
   captureFailed: boolean;
-  params: BinParams;
+  params?: BinParams;
+  assembly?: PublishAssemblyContent | null;
   lineage: CommunityDesignLineage | null;
   publicName: string;
   /** No public name was ever saved, so the identity field opens expanded. */
@@ -69,6 +71,7 @@ export function PublishForm({
   captures,
   captureFailed,
   params,
+  assembly,
   lineage,
   publicName,
   firstTimePublisher,
@@ -189,6 +192,7 @@ export function PublishForm({
             thumbnails={captures?.thumbnails ?? null}
             captureFailed={captureFailed}
             params={params}
+            assembly={assembly}
             lineage={lineage}
             onRetryCapture={onRetryCapture}
           />

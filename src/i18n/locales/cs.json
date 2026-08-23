@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Nic nerozpoznáno",
   "community.publish.form.waitingPreview": "Čeká se na náhled…",
   "community.publish.form.wallsSummary": "Stěny {thickness} mm",
+  "community.publish.form.floorSummary": "Dno {thickness} mm",
   "community.publish.identity.change": "Změnit",
   "community.publish.identity.hint": "Tvé veřejné jméno, zobrazené u všeho, co publikuješ.",
   "community.publish.identity.label": "Veřejné jméno",

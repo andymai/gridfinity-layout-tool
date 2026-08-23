@@ -4113,6 +4113,7 @@ const en: Record<string, string> = {
   'community.publish.form.categoryLabel': 'Category',
   'community.publish.form.categoryRequired': 'Choose a category.',
   'community.publish.form.wallsSummary': '{thickness} mm walls',
+  'community.publish.form.floorSummary': '{thickness} mm floor',
   'community.publish.form.techniquesLabel': 'Detected techniques',
   'community.publish.form.techniquesNone': 'None detected',
   'community.publish.form.lineageNotice': 'Will be credited as a remix of {parent} by {author}',

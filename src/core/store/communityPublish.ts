@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { BinParams } from '@/shared/types/bin';
+import type { ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { CommunityDesignLineage, CommunityPublishDraft } from '@/shared/types/community';
 
 /**
@@ -21,7 +23,13 @@ export interface CommunityPublishCaptures {
 export interface CommunityPublishDesignContext {
   designId: string;
   designName: string;
-  params: BinParams;
+  /** Bin content; absent when publishing a Workshop assembly. */
+  params?: BinParams;
+  /** Workshop assembly content; the server re-validates and sanitizes. */
+  kind?: 'assembly';
+  envelope?: ItemEnvelope;
+  structure?: AssemblyStructure;
+  /** Stable hash of whichever content shape is present. */
   paramsHash: string;
   /** Set when the local design is already published; drives update mode. */
   publishedId: string | null;

@@ -3,6 +3,8 @@ import { ok, err, isErr } from '@/core/result';
 import { isApiErrorResponse } from '@/core/api/mapApiError';
 import { apiFetch } from '@/core/sync/apiFetch';
 import type { BinParams } from '@/shared/types/bin';
+import type { ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
 import type {
   CommunityCard,
   CommunityCategory,
@@ -58,7 +60,12 @@ export interface CommunityPublishInput {
   description: string;
   authorName: string;
   category: CommunityCategory;
-  params: BinParams;
+  /** Bin content; absent on a Workshop assembly publish. */
+  params?: BinParams;
+  /** Workshop assembly content — the server validates, sanitizes, and derives height. */
+  kind?: 'assembly';
+  envelope?: ItemEnvelope;
+  structure?: AssemblyStructure;
   /** WebP data URLs or raw base64, 1-3 entries, each <= 200 KB decoded. */
   thumbnails: readonly string[];
   /** Raw base64 GLB, <= 2 MB decoded. */

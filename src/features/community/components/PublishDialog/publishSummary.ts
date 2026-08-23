@@ -1,4 +1,13 @@
 import type { BinParams } from '@/shared/types/bin';
+import type { ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
+import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+
+export interface PublishAssemblyContent {
+  readonly envelope: ItemEnvelope;
+  readonly structure: AssemblyStructure;
+}
 
 function format(value: number): string {
   return Number.isInteger(value) ? String(value) : String(Math.round(value * 10) / 10);
@@ -23,4 +32,36 @@ export function formatMillimetres(params: BinParams): string {
   const depth = format(params.depth * unitY);
   const height = format(params.height * params.heightUnitMm);
   return `${width} × ${depth} × ${height} mm`;
+}
+
+function assemblyUnits(assembly: PublishAssemblyContent): {
+  width: number;
+  depth: number;
+  height: number;
+} {
+  const { envelope, structure } = assembly;
+  return {
+    width: envelope.width,
+    depth: envelope.depth,
+    height: assemblyHeightUnits(
+      structure,
+      envelope.heightUnitMm,
+      GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness
+    ),
+  };
+}
+
+/** Assembly grid footprint in units, height from the tallest placed part. */
+export function formatAssemblyGridSize(assembly: PublishAssemblyContent): string {
+  const { width, depth, height } = assemblyUnits(assembly);
+  return `${format(width)}×${format(depth)}×${format(height)}`;
+}
+
+/** Assembly nominal outer size in millimetres — same pitch semantics as bins. */
+export function formatAssemblyMillimetres(assembly: PublishAssemblyContent): string {
+  const { envelope } = assembly;
+  const { width, depth, height } = assemblyUnits(assembly);
+  return `${format(width * envelope.gridUnitMm)} × ${format(depth * envelope.gridUnitMm)} × ${format(
+    height * envelope.heightUnitMm
+  )} mm`;
 }

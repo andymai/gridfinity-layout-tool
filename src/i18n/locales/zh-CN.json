@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "未检测到",
   "community.publish.form.waitingPreview": "正在等待预览…",
   "community.publish.form.wallsSummary": "壁厚 {thickness} mm",
+  "community.publish.form.floorSummary": "{thickness} mm 底板",
   "community.publish.identity.change": "更改",
   "community.publish.identity.hint": "你的公开名称，会显示在你发布的所有内容上。",
   "community.publish.identity.label": "公开名称",

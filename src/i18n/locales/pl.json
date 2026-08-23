@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Nie wykryto żadnych",
   "community.publish.form.waitingPreview": "Czekanie na podgląd…",
   "community.publish.form.wallsSummary": "Ścianki {thickness} mm",
+  "community.publish.form.floorSummary": "Dno {thickness} mm",
   "community.publish.identity.change": "Zmień",
   "community.publish.identity.hint": "Twoja nazwa publiczna, widoczna przy wszystkim, co publikujesz.",
   "community.publish.identity.label": "Nazwa publiczna",

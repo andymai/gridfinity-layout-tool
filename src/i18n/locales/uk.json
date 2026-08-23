@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Нічого не виявлено",
   "community.publish.form.waitingPreview": "Очікуємо попередній перегляд…",
   "community.publish.form.wallsSummary": "Стінки {thickness} мм",
+  "community.publish.form.floorSummary": "Дно {thickness} мм",
   "community.publish.identity.change": "Змінити",
   "community.publish.identity.hint": "Ваше публічне ім’я, яке відображатиметься на всьому, що ви публікуєте.",
   "community.publish.identity.label": "Публічне ім’я",

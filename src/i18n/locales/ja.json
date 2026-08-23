@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "検出されませんでした",
   "community.publish.form.waitingPreview": "プレビューを待っています…",
   "community.publish.form.wallsSummary": "壁厚 {thickness} mm",
+  "community.publish.form.floorSummary": "底面 {thickness} mm",
   "community.publish.identity.change": "変更",
   "community.publish.identity.hint": "あなたが公開するすべてのコンテンツに表示される公開名です。",
   "community.publish.identity.label": "公開名",

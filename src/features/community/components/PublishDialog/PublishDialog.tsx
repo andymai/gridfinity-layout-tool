@@ -238,7 +238,9 @@ export function PublishDialog() {
       description: fields.description,
       authorName: fields.publicName,
       category: fields.category,
-      params: context.params,
+      ...(context.kind === 'assembly'
+        ? { kind: 'assembly' as const, envelope: context.envelope, structure: context.structure }
+        : { params: context.params }),
       thumbnails: publishCaptures.thumbnails,
       glb: publishCaptures.glb,
     };
@@ -493,6 +495,11 @@ export function PublishDialog() {
               captures={captures}
               captureFailed={captureFailed}
               params={context.params}
+              assembly={
+                context.kind === 'assembly' && context.envelope && context.structure
+                  ? { envelope: context.envelope, structure: context.structure }
+                  : null
+              }
               lineage={context.lineage}
               publicName={publicName}
               firstTimePublisher={storedDisplayName === ''}

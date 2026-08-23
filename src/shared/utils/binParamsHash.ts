@@ -23,7 +23,12 @@ function stableStringify(value: unknown): string {
 }
 
 export function hashBinParams(params: BinParams): string {
-  const text = stableStringify(params);
+  return hashDesignContent(params);
+}
+
+/** Same stable FNV-1a digest over any design content shape (assembly envelope + structure included). */
+export function hashDesignContent(content: unknown): string {
+  const text = stableStringify(content);
   let hash = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) {
     hash ^= text.charCodeAt(i);
