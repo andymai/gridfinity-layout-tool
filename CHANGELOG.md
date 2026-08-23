@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.449.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.448.0...gridfinity-layout-tool-v4.449.0) (2026-08-23)
+
+
+### Features
+
+* **schema:** publish JSON Schemas for layout and bin design files ([#3735](https://github.com/andymai/gridfinity-layout-tool/issues/3735)) ([e6e6a20](https://github.com/andymai/gridfinity-layout-tool/commit/e6e6a203f79f965eeb248381778693b81666df26))
+
 ## [4.448.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.447.0...gridfinity-layout-tool-v4.448.0) (2026-08-23)
 
 
