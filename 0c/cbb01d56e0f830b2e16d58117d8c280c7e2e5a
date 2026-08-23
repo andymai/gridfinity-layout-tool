@@ -1,0 +1,21 @@
+src/shared/types/assemblyPlacement.ts
+  s_a36c0b85dfeec4::t_337e99a97617bf 206-211
+src/shared/types/assemblyPlacement.test.ts
+  s_a36c0b85dfeec4::t_41846f1aa3b98d 41-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "0ccbb01d56e0f830b2e16d58117d8c280c7e2e5a",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
