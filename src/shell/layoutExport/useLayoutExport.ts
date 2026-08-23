@@ -345,6 +345,11 @@ export function useLayoutExport(): UseLayoutExportReturn {
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
 
+        // Failed per-design exports (corrupt mesh asset, worker item failure)
+        // degrade to a partial archive; their paths drop out of the manifest,
+        // totals, and outcome decisions below, and surface in one toast.
+        const failedItemPaths = new Set<string>();
+
         // Phase 1.5 — imported-mesh designs: the stored asset IS the geometry,
         // decoded and re-serialized here on the main thread (no worker slot
         // needed). Plan already excludes these under STEP. A single corrupt
@@ -360,17 +365,15 @@ export function useLayoutExport(): UseLayoutExportReturn {
             );
             if (projectMode) projectParts.addStl(baseNameOf(m.path), stl);
             else binFiles.push({ path: m.path, data: stl });
+          } else {
+            failedItemPaths.add(m.path);
           }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
 
         // Phase 1.6 — Workshop assemblies: generated in the worker via the
-        // item export path (STEP carries exact BREP, so no format skip). One
-        // failed design degrades to a partial archive rather than aborting it;
-        // its path is dropped from the manifest below so the listing only
-        // names files the archive actually contains.
-        const failedItemPaths = new Set<string>();
+        // item export path (STEP carries exact BREP, so no format skip).
         for (const a of plan.itemExportable) {
           try {
             const result = await bridge.exportItem(a.item, workerFormat);
