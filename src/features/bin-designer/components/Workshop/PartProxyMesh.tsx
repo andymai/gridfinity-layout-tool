@@ -33,7 +33,7 @@ interface PartProxyMeshProps {
   onSurfaceMove: (surface: HoverSurface) => void;
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
-  onPartPointerDown: (id: string, pointerId: number) => void;
+  onPartPointerDown: (id: string, pointerType: string) => void;
 }
 
 const DEG = Math.PI / 180;
@@ -60,7 +60,11 @@ export function PartProxyMesh({
   const reducedMotion = usePrefersReducedMotion();
   const invalidate = useThree((s) => s.invalidate);
   const { node } = placed;
-  const geometry = useMemo(() => buildPartGeometry(node), [node]);
+  // Keyed on type + params, not node identity: drags path-copy the node and
+  // every ancestor per pointermove while params stay reference-equal, and a
+  // rebuild here re-uploads geometry for the whole chain each frame.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const geometry = useMemo(() => buildPartGeometry(node), [node.type, node.params]);
   useEffect(() => () => geometry.dispose(), [geometry]);
 
   const materialRef = useRef<MeshStandardMaterial>(null);
@@ -150,7 +154,7 @@ export function PartProxyMesh({
       onPointerDown={(e) => {
         if (e.button !== 0) return;
         e.stopPropagation();
-        onPartPointerDown(placed.selectId, e.pointerId);
+        onPartPointerDown(placed.selectId, e.pointerType);
       }}
       onClick={(e) => {
         e.stopPropagation();

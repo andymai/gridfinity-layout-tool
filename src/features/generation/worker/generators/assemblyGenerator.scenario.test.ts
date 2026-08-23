@@ -177,6 +177,27 @@ describe('assembly generator (real WASM)', () => {
     expect(bounds.maxY - bounds.minY).toBeGreaterThan(80);
   });
 
+  it('a length-leaning fin stays clipped to its nominal run', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const lengthLean = part(
+      'fin',
+      'f',
+      { x: 84, y: 42 },
+      {
+        params: { length: 60, thickness: 3, height: 25, leanDeg: 20, leanAxis: 'length' },
+      }
+    );
+    const result = generateAssembly(structureWith([lengthLean]), makeEnvelope(4, 2), noop, true);
+    assertStructurallyValid(result);
+    const bounds = boundingBox(result.vertices);
+    // Unclipped, the shear would push the fin past the base rim.
+    expect(bounds.maxX - bounds.minX).toBeLessThanOrEqual(4 * 42);
+    const finVolume =
+      meshVolume(result) -
+      meshVolume(generateAssembly(structureWith([]), makeEnvelope(4, 2), noop, true));
+    expect(finVolume).toBeGreaterThan(60 * 3 * 25 * 0.6);
+  });
+
   it('a mirrored hook emits a reflected twin with symmetric bounds', async () => {
     const { generateAssembly } = await import('./assemblyGenerator');
     const single = generateAssembly(

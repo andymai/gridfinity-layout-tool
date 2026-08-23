@@ -28,6 +28,12 @@ export interface HoverSurface {
 }
 
 export interface WorkshopInteraction {
+  /**
+   * The selection was made by a touch pointerdown on this exact part — the
+   * move handle shows only then, so selection changes from any other path
+   * (placement auto-select, the tree, removal) can never leave it stale.
+   */
+  readonly selectedViaTouch: boolean;
   readonly placements: PlacedPart[];
   readonly placedById: Map<string, PlacedPart>;
   readonly hover: HoverSurface | null;
@@ -39,7 +45,8 @@ export interface WorkshopInteraction {
   onSurfaceMove: (surface: HoverSurface) => void;
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
-  onPartPointerDown: (id: string, pointerId: number) => void;
+  onPartPointerDown: (id: string, pointerType: string) => void;
+  beginPartDrag: (id: string) => void;
   isInDraggedSubtree: (id: string) => boolean;
 }
 
@@ -65,6 +72,7 @@ export function useWorkshopInteraction(
 
   const [hover, setHover] = useState<HoverSurface | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [touchSelectedId, setTouchSelectedId] = useState<string | null>(null);
   const draggedSubtreeRef = useRef<Set<string>>(new Set());
   // Transaction opens lazily on the first real mutation of a drag, so a
   // click that never moves the part leaves no undo step behind.
@@ -121,7 +129,14 @@ export function useWorkshopInteraction(
   useEffect(() => {
     if (draggingId === null) return;
     window.addEventListener('pointerup', endDrag);
-    return () => window.removeEventListener('pointerup', endDrag);
+    // A cancelled touch (edge swipe, notification shade, palm rejection)
+    // fires pointercancel, never pointerup — without this the drag wedges
+    // orbit, the open undo transaction, and the drag state.
+    window.addEventListener('pointercancel', endDrag);
+    return () => {
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
+    };
   }, [draggingId, endDrag]);
 
   const snapPoint = useCallback(
@@ -206,11 +221,9 @@ export function useWorkshopInteraction(
     [invalidate, snapPoint]
   );
 
-  const onPartPointerDown = useCallback(
-    (id: string, _pointerId: number): void => {
+  const beginPartDrag = useCallback(
+    (id: string): void => {
       const store = useDesignerStore.getState();
-      if (store.ui.workshopPendingPartType) return;
-      store.setSelectedAssemblyPartId(id);
       const currentStructure = store.structure;
       if (currentStructure?.kind !== 'assembly') return;
       const node = findAssemblyPart(currentStructure.parts, id);
@@ -223,6 +236,27 @@ export function useWorkshopInteraction(
       invalidate();
     },
     [getThree, invalidate]
+  );
+
+  const onPartPointerDown = useCallback(
+    (id: string, pointerType: string): void => {
+      const store = useDesignerStore.getState();
+      if (store.ui.workshopPendingPartType) return;
+      store.setSelectedAssemblyPartId(id);
+      // Touch: tap selects; moving happens through the dedicated handle so a
+      // one-finger drag from a part still orbits instead of dragging it. The
+      // pointer that made the selection is the ONE modality signal — a
+      // mouse on a touchscreen laptop drags, a finger gets the handle.
+      const viaTouch = pointerType === 'touch';
+      setTouchSelectedId(viaTouch ? id : null);
+      if (viaTouch) {
+        skipNextBaseClickRef.current = true;
+        invalidate();
+        return;
+      }
+      beginPartDrag(id);
+    },
+    [beginPartDrag, invalidate]
   );
 
   const isInDraggedSubtree = useCallback(
@@ -242,6 +276,7 @@ export function useWorkshopInteraction(
   }, [fineSnap, hover, placedById]);
 
   return {
+    selectedViaTouch: selectedId !== null && selectedId === touchSelectedId,
     placements,
     placedById,
     hover,
@@ -254,6 +289,7 @@ export function useWorkshopInteraction(
     onSurfaceLeave,
     onSurfaceClick,
     onPartPointerDown,
+    beginPartDrag,
     isInDraggedSubtree,
   };
 }

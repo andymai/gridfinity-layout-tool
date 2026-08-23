@@ -14,7 +14,10 @@ import {
   setPreviewCanvas,
   setPreviewContext,
 } from '@/features/bin-designer/utils/thumbnail';
+import { useDesignerKeyboard } from '@/features/bin-designer/hooks/useDesignerKeyboard';
 import { WorkshopScene } from './WorkshopScene';
+
+const noop = (): void => undefined;
 
 /** Registers this canvas with the thumbnail pipeline (see PreviewContextSync). */
 function WorkshopContextSync() {
@@ -31,8 +34,22 @@ export function WorkshopCanvas() {
   const { structure, envelope } = useDesignerStore(
     useShallow((s) => ({ structure: s.structure, envelope: s.envelope }))
   );
+  const undo = useDesignerStore((s) => s.undo);
+  const redo = useDesignerStore((s) => s.redo);
   const webgl = detectWebGL();
   useEffect(() => () => clearPreviewCanvas(), []);
+  // The bin preview mounts the shared designer shortcuts; this canvas
+  // replaces it wholesale, so undo/redo must be re-bound here. Camera and
+  // render-mode shortcuts are bin-preview concerns and stay inert.
+  useDesignerKeyboard({
+    onCameraPreset: noop,
+    onResetView: noop,
+    onToggleWireframe: noop,
+    onToggleXray: noop,
+    onToggleProjection: noop,
+    onUndo: undo,
+    onRedo: redo,
+  });
 
   if (structure?.kind !== 'assembly' || !envelope) return null;
   if (!webgl.available && webgl.reason) {

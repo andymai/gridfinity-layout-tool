@@ -25,6 +25,7 @@ import {
   exportSTEP,
   fuseAll,
   getKernelCapabilities,
+  intersect,
   mesh,
   meshEdges,
   mirror,
@@ -84,13 +85,10 @@ function stableKeyValue(value: unknown): unknown {
   return value;
 }
 
-function partCacheKey(node: AssemblyPartNode, forExport: boolean): string {
-  return buildCacheKey(
-    'assembly-part-v1',
-    node.type,
-    forExport,
-    JSON.stringify(stableKeyValue(node.params))
-  );
+function partCacheKey(node: AssemblyPartNode): string {
+  // No forExport in the key: templates are pure BREP solids with no
+  // tessellation-quality input, so preview and export share one entry.
+  return buildCacheKey('assembly-part-v1', node.type, JSON.stringify(stableKeyValue(node.params)));
 }
 
 function centeredOnBounds(pts: readonly { x: number; y: number }[]): { x: number; y: number }[] {
@@ -203,8 +201,9 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       const { length, thickness, height, leanDeg, leanAxis } = node.params;
       const lean = Math.tan(leanDeg * DEG) * height;
       if (leanAxis === 'length') {
-        // Shear along the plate's run: build the plain plate and apply the
-        // same x-by-z shear matrix the proxy uses, so both stay identical.
+        // Shear along the plate's run, then clip back to the nominal length
+        // — the rack generator's leaning fins were clipped the same way so
+        // the lean never overshoots the footprint.
         const total = height + sink;
         const plate = box(length, thickness, total, { at: [0, 0, total / 2 - sink] });
         if (leanDeg <= 0) return plate;
@@ -216,7 +215,11 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
           })
         );
         if (sheared !== plate) plate.delete();
-        return sheared;
+        const clip = box(length, thickness + 2, total * 2 + 2, { at: [0, 0, total / 2 - sink] });
+        const clipped = unwrap(intersect(sheared, clip, { optimisation: 'commonFace' }));
+        if (clipped !== sheared) sheared.delete();
+        clip.delete();
+        return clipped;
       }
       const pen = draw([-thickness / 2, -sink])
         .lineTo([thickness / 2, -sink])
@@ -343,10 +346,9 @@ function positionedPartSolid(
   halfW: number,
   halfD: number,
   floorThickness: number,
-  forExport: boolean,
   mirrorAxis: 'x' | 'y'
 ): Shape3D | null {
-  const key = partCacheKey(placed.node, forExport);
+  const key = partCacheKey(placed.node);
   let template = getFeatureCache('assembly-part', key);
   if (!template) {
     const built = buildPartTemplate(placed.node);
@@ -411,7 +413,6 @@ export function buildAssemblySolid(
         (envelope.width * unitMm) / 2,
         (envelope.depth * unitMm) / 2,
         floorThickness,
-        forExport,
         structure.mirrorAxis
       );
       if (!solid) continue;
