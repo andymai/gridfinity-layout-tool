@@ -21,6 +21,12 @@ import {
   getEligibleDividers,
 } from '@/features/bin-designer/utils/compartments';
 import { getCompartmentRect, type CellRect } from '@/features/bin-designer/utils/bentoDraw';
+import {
+  cellRegionLoops,
+  regionPathD,
+  widestRunRect,
+  type CellCorner,
+} from '@/features/bin-designer/utils/bentoRegion';
 import type { DividerTiltPreview } from '@/features/bin-designer/types';
 import { rowKeyOf } from '@/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection';
 import {
@@ -121,6 +127,22 @@ export function BentoCanvas({
     h: rect.h * cellPxH,
   });
 
+  // Cell-corner (row 0 = front/bottom) → screen px, for region outlines.
+  const cornerPx = (corner: CellCorner): { x: number; y: number } => ({
+    x: originX + corner.col * cellPxW,
+    y: originY + screenH - corner.row * cellPxH,
+  });
+
+  const cellsById = useMemo(() => {
+    const map = new Map<number, number[]>();
+    config.cells.forEach((id, idx) => {
+      const list = map.get(id);
+      if (list) list.push(idx);
+      else map.set(id, [idx]);
+    });
+    return map;
+  }, [config.cells]);
+
   // Ordinals count DRAWN compartments only. Numbering every background
   // pocket produced labels like "Compartment 6" for the third thing the user
   // drew, and the numbers reshuffled whenever a pocket's reading-order slot
@@ -134,13 +156,50 @@ export function BentoCanvas({
     return map;
   }, [config, drawnIds]);
 
+  /**
+   * One entry per drawn compartment. `region` is null for the ordinary case —
+   * a compartment that fills its bounding box, drawn as one rect — and carries
+   * the outline loops for a merged L, S, T or U.
+   */
   const drawnRects = useMemo(
     () =>
       [...drawnIds]
-        .map((id) => ({ id, rect: getCompartmentRect(config, id) }))
-        .filter((entry): entry is { id: number; rect: CellRect } => entry.rect !== null),
-    [config, drawnIds]
+        .map((id) => {
+          const rect = getCompartmentRect(config, id);
+          if (!rect) return null;
+          const cells = cellsById.get(id) ?? [];
+          const fillsRect = cells.length === rect.w * rect.h;
+          return {
+            id,
+            rect,
+            region: fillsRect ? null : cellRegionLoops(cols, rows, cells),
+            labelRect: fillsRect ? rect : widestRunRect(cols, cells),
+          };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
+    [config, drawnIds, cellsById, cols, rows]
   );
+
+  /**
+   * Merged leftover regions, drawn as one shape each. Off in the default mode,
+   * where every leftover cell is its own pocket and renders as its own rect.
+   */
+  const backgroundRegions = useMemo(() => {
+    const ids = config.backgroundIds;
+    if (!ids || ids.length === 0) return [];
+    return ids
+      .map((id) => ({ id, cells: cellsById.get(id) ?? [] }))
+      .filter(({ cells }) => cells.length > 1)
+      .map(({ id, cells }) => ({ id, loops: cellRegionLoops(cols, rows, cells) }));
+  }, [config.backgroundIds, cellsById, cols, rows]);
+
+  const mergedBackgroundCells = useMemo(() => {
+    const set = new Set<number>();
+    for (const region of backgroundRegions) {
+      for (const idx of cellsById.get(region.id) ?? []) set.add(idx);
+    }
+    return set;
+  }, [backgroundRegions, cellsById]);
 
   // Tilted/shifted walls: committed overrides plus the dock's live preview.
   const tiltLines = useMemo(() => {
@@ -188,15 +247,21 @@ export function BentoCanvas({
     };
   };
 
-  const selectedRect =
-    selectedId !== null ? drawnRects.find((d) => d.id === selectedId)?.rect : undefined;
+  // A merged shape has no rectangle to pull on — a resize handle would offer
+  // to reshape it into its own bounding box, notch included.
+  const resizableRect = (id: number): CellRect | undefined => {
+    const entry = drawnRects.find((d) => d.id === id);
+    return entry && entry.region === null ? entry.rect : undefined;
+  };
+
+  const selectedRect = selectedId !== null ? resizableRect(selectedId) : undefined;
 
   // The selection owns the handles; the hovered compartment only borrows them
   // when nothing is selected, so hovering a neighbour never moves the grab
   // targets off the thing the user is working on.
   const hoverRect =
     showHoverHandles && hoveredId !== null && hoveredId !== selectedId
-      ? drawnRects.find((d) => d.id === hoveredId)?.rect
+      ? resizableRect(hoveredId)
       : undefined;
   const handleTarget =
     selectedRect && selectedId !== null
@@ -255,6 +320,7 @@ export function BentoCanvas({
         Array.from({ length: cols }, (_, c) => {
           const id = config.cells[r * cols + c];
           if (drawnIds.has(id)) return null;
+          if (mergedBackgroundCells.has(r * cols + c)) return null;
           const inset = Math.min(2, cellPxW / 8, cellPxH / 8);
           return (
             <rect
@@ -272,8 +338,22 @@ export function BentoCanvas({
         })
       )}
 
+      {/* Merged leftover: one pocket per open area, so what the drawn
+          compartments leave behind prints as an L, U or S rather than a field
+          of 1×1s. `evenodd` opens the hole a ring encloses. */}
+      {backgroundRegions.map(({ id, loops }) => (
+        <path
+          key={`bg${id}`}
+          d={regionPathD(loops, cornerPx)}
+          fillRule="evenodd"
+          className="fill-surface stroke-stroke-subtle"
+          strokeWidth={0.75}
+          data-testid="bento-background-region"
+        />
+      ))}
+
       {/* Drawn compartments */}
-      {drawnRects.map(({ id, rect }) => {
+      {drawnRects.map(({ id, rect, region, labelRect }) => {
         const { x, y, w, h } = rectPx(rect);
         const label = config.compartmentTexts?.[id] ?? '';
         const isSelected = id === selectedId;
@@ -282,30 +362,50 @@ export function BentoCanvas({
         const widthMm = Math.round(rect.w * (interiorW / cols));
         const depthMm = Math.round(rect.h * (interiorD / rows));
         const justDropped = drop?.id === id;
+        const bodyStyle: React.CSSProperties = {
+          stroke: previewColor,
+          fill: previewColor,
+          fillOpacity: isSelected || isHovered ? 0.3 : 0.16,
+          opacity: isMoving ? 0.4 : 1,
+        };
+        // A merged compartment's caption goes on its widest run: the centre of
+        // an L or U is in the notch, over the neighbour.
+        const caption = labelRect
+          ? rectPx({ col: labelRect.col, row: labelRect.row, w: labelRect.w, h: 1 })
+          : { x, y, w, h };
+        const captionH = region ? caption.h : h;
         return (
           <Fragment key={justDropped ? `${id}-drop${drop.token}` : id}>
-            <rect
-              x={x + 1.5}
-              y={y + 1.5}
-              width={Math.max(0, w - 3)}
-              height={Math.max(0, h - 3)}
-              rx={5}
-              className={justDropped ? 'animate-bento-drop' : undefined}
-              style={{
-                stroke: previewColor,
-                fill: previewColor,
-                fillOpacity: isSelected || isHovered ? 0.3 : 0.16,
-                opacity: isMoving ? 0.4 : 1,
-              }}
-              strokeWidth={isSelected ? 2.5 : 1.5}
-              data-testid={`bento-compartment-${id}`}
-              data-selected={isSelected || undefined}
-            />
+            {region ? (
+              <path
+                d={regionPathD(region, cornerPx)}
+                fillRule="evenodd"
+                className={justDropped ? 'animate-bento-drop' : undefined}
+                style={bodyStyle}
+                strokeWidth={isSelected ? 2.5 : 1.5}
+                data-testid={`bento-compartment-${id}`}
+                data-shape="region"
+                data-selected={isSelected || undefined}
+              />
+            ) : (
+              <rect
+                x={x + 1.5}
+                y={y + 1.5}
+                width={Math.max(0, w - 3)}
+                height={Math.max(0, h - 3)}
+                rx={5}
+                className={justDropped ? 'animate-bento-drop' : undefined}
+                style={bodyStyle}
+                strokeWidth={isSelected ? 2.5 : 1.5}
+                data-testid={`bento-compartment-${id}`}
+                data-selected={isSelected || undefined}
+              />
+            )}
             <foreignObject
-              x={x + 3}
-              y={y + 3}
-              width={Math.max(0, w - 6)}
-              height={Math.max(0, h - 6)}
+              x={caption.x + 3}
+              y={caption.y + 3}
+              width={Math.max(0, caption.w - 6)}
+              height={Math.max(0, captionH - 6)}
               pointerEvents="none"
               style={{ opacity: isMoving ? 0.4 : 1 }}
             >
@@ -315,7 +415,7 @@ export function BentoCanvas({
                     {label}
                   </span>
                 ) : null}
-                {h > 34 && (
+                {!region && h > 34 && (
                   <span className="text-[10px] tabular-nums text-content-tertiary">
                     {t('binDesigner.bento.compartmentSize', { width: widthMm, depth: depthMm })}
                   </span>
@@ -323,8 +423,8 @@ export function BentoCanvas({
               </div>
             </foreignObject>
             <text
-              x={x + 8}
-              y={y + 14}
+              x={caption.x + 8}
+              y={caption.y + 14}
               className="fill-content-tertiary text-[9px] tabular-nums"
               pointerEvents="none"
               style={{ opacity: isMoving ? 0.4 : 1 }}

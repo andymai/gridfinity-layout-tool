@@ -148,6 +148,8 @@ export const COMPARTMENT_CONFIG_KEYS = [
   'drawnUnitCells',
   'stash',
   'dividerHeight',
+  'mergeBackground',
+  'backgroundIds',
 ] as const;
 export type _CompartmentConfigKeys = Assert<
   KeysMatch<keyof CompartmentConfig, (typeof COMPARTMENT_CONFIG_KEYS)[number]>

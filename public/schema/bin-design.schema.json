@@ -554,6 +554,17 @@
           "type": "number",
           "minimum": 0,
           "description": "Divider wall height in mm. Shorter than the cavity leaves an open top between compartments."
+        },
+        "mergeBackground": {
+          "type": "boolean",
+          "description": "Bento mode: leftover grid merges into one pocket per connected region instead of a field of 1x1 pockets, so the interior can take a C/L/S/T/U outline."
+        },
+        "backgroundIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Ids of the merged leftover regions, so a multi-cell compartment nobody drew still reads as background."
         }
       }
     },

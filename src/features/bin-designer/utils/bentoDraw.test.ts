@@ -479,3 +479,60 @@ function withValueAt<T>(id: number, value: T): (T | null)[] {
   out[id] = value;
   return out;
 }
+
+describe('bentoDraw with mergeBackground', () => {
+  const mergedGrid = (cols = 3, rows = 3): CompartmentConfig => ({
+    ...createUniformGrid(cols, rows, 1.2),
+    mergeBackground: true,
+  });
+
+  const backgroundOf = (config: CompartmentConfig): number[] => config.backgroundIds ?? [];
+
+  it('leaves one leftover region around a centred compartment', () => {
+    const { config } = draw(mergedGrid(), 1, 1, 1, 1);
+    // The U wraps the drawn cell: one background id, one drawn id.
+    expect(backgroundOf(config)).toHaveLength(1);
+    expect(new Set(config.cells).size).toBe(2);
+    expect(getDrawnCompartmentIds(config).size).toBe(1);
+  });
+
+  it('keeps a drawn 1x1 out of the leftover it sits in', () => {
+    const { config, id } = draw(mergedGrid(), 0, 0, 1, 1);
+    expect(config.cells.filter((c) => c === id)).toHaveLength(1);
+    expect(getDrawnCompartmentIds(config).has(id)).toBe(true);
+  });
+
+  it('splits leftover into one region per disconnected area', () => {
+    // A full column of drawn cells cuts the 3x3 grid in two.
+    let config = mergedGrid();
+    config = draw(config, 1, 0, 1, 3).config;
+    expect(backgroundOf(config)).toHaveLength(2);
+  });
+
+  it('treats a merged leftover region as background, not as a drawn compartment', () => {
+    const { config } = draw(mergedGrid(), 1, 1, 1, 1);
+    const backgroundId = backgroundOf(config)[0];
+    // Multi-cell would otherwise read as drawn.
+    expect(config.cells.filter((c) => c === backgroundId).length).toBeGreaterThan(1);
+    expect(getDrawnCompartmentIds(config).has(backgroundId)).toBe(false);
+  });
+
+  it('collapses an empty grid to a single pocket', () => {
+    const cleared = clearDrawnCompartments(mergedGrid());
+    expect(new Set(cleared.cells).size).toBe(1);
+    expect(backgroundOf(cleared)).toHaveLength(1);
+  });
+
+  it('re-merges the leftover a removed compartment gives back', () => {
+    const drawn = draw(mergedGrid(), 1, 1, 1, 1);
+    const removed = removeCompartment(drawn.config, drawn.id);
+    expect(removed).not.toBeNull();
+    expect(new Set(removed?.cells).size).toBe(1);
+  });
+
+  it('is off by default, leaving every cell its own pocket', () => {
+    const { config } = draw(grid(3, 3), 1, 1, 1, 1);
+    expect(config.backgroundIds).toBeUndefined();
+    expect(new Set(config.cells).size).toBe(9);
+  });
+});

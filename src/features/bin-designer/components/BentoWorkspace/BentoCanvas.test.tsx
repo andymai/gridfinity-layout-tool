@@ -48,6 +48,35 @@ describe('BentoCanvas', () => {
     ).toHaveLength(1);
   });
 
+  it('draws a merged compartment as an outline instead of its bounding box', () => {
+    // An L: the top-left 2x1 plus the cell under its left half.
+    const config: CompartmentConfig = {
+      ...createUniformGrid(4, 3, 1.2),
+      cells: [0, 0, 1, 2, 0, 3, 4, 5, 6, 7, 8, 9],
+    };
+    render(<BentoCanvas {...makeProps(config, { drawnIds: new Set([0]) })} />);
+
+    const body = screen.getByTestId('bento-compartment-0');
+    expect(body.getAttribute('data-shape')).toBe('region');
+    expect(body.tagName.toLowerCase()).toBe('path');
+  });
+
+  it('draws merged leftover as one region and drops its per-cell pockets', () => {
+    // 2x2 grid: one drawn cell, the other three merged into one leftover.
+    const config: CompartmentConfig = {
+      ...createUniformGrid(2, 2, 1.2),
+      cells: [0, 1, 1, 1],
+      mergeBackground: true,
+      backgroundIds: [1],
+      drawnUnitCells: [0],
+    };
+    render(<BentoCanvas {...makeProps(config, { drawnIds: new Set([0]) })} />);
+
+    expect(screen.getAllByTestId('bento-background-region')).toHaveLength(1);
+    // The three leftover cells are covered by that one region, not drawn each.
+    expect(screen.queryAllByTestId('bento-pocket')).toHaveLength(0);
+  });
+
   it('shows the compartment label text', () => {
     const { config, id } = withDrawn();
     const labeled: CompartmentConfig = {

@@ -203,6 +203,8 @@ export interface DesignerState {
   moveBentoCompartment: (id: number, dCol: number, dRow: number) => number | null;
   resizeBentoCompartment: (id: number, target: CellRect) => number | null;
   duplicateBentoCompartment: (id: number, target: CellRect) => number | null;
+  /** Fuse drawn compartments into one shape; null unless their union touches. */
+  mergeBentoCompartments: (ids: readonly number[]) => number | null;
   removeBentoCompartment: (id: number) => boolean;
   stashBentoCompartment: (id: number) => boolean;
   placeBentoStashEntry: (index: number, rect: CellRect) => number | null;
@@ -213,6 +215,8 @@ export interface DesignerState {
     rows: number
   ) => { stashedCount: number; droppedCount: number } | null;
   clearBentoCompartments: () => void;
+  /** Bento mode: leftover cells merge into one pocket per open area. */
+  setBentoMergeBackground: (enabled: boolean) => void;
 
   // Angled-divider override actions
   setDividerOverride: (

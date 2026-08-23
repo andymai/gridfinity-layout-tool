@@ -28,7 +28,7 @@ import {
 } from '@/shared/utils/scoopCalculations';
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH, BOX_CORNER_RADIUS } from './generatorConstants';
 import { findCompartmentBounds } from './compartmentBuilder';
-import { compartmentHasTiltedEdge } from '@/shared/types/bin';
+import { compartmentHasTiltedEdge, isRectangularCompartment } from '@/shared/types/bin';
 /**
  * Build finger scoop ramps that curve from the bin floor up to `scoop.side`.
  *
@@ -96,6 +96,10 @@ function buildScoopRampsInScope(
       // wedge/trapezoid and the ramp math no longer applies. Silently skip;
       // the UI surfaces a tooltip explaining why.
       if (compartmentHasTiltedEdge(params.compartments, compId)) continue;
+
+      // Same reasoning for a merged L, S or U: the ramp spans the compartment's
+      // bounding-box wall, which on those crosses the notch into a neighbour.
+      if (!isRectangularCompartment(params.compartments, compId)) continue;
 
       const bounds = findCompartmentBounds(compId, cols, rows, cells);
       if (!bounds) continue;

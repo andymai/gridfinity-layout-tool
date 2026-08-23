@@ -172,7 +172,71 @@ export function isRectangularSelection(
 }
 
 /**
- * Validate that all compartments in the grid form valid rectangles.
+ * Check whether a set of cells is one 4-connected region.
+ *
+ * The weaker sibling of {@link isRectangularSelection}, and the invariant a
+ * compartment actually has to hold: divider walls fall out of the boundaries
+ * between differing cell IDs, so any connected blob prints as one pocket. Two
+ * disjoint islands under one ID would print as two pockets sharing a label,
+ * colour and dock entry, which is why that stays rejected.
+ */
+export function isContiguousSelection(
+  cols: number,
+  cellIndices: number[] | readonly number[]
+): boolean {
+  if (cellIndices.length === 0) return false;
+  const remaining = new Set(cellIndices);
+  const stack = [cellIndices[0]];
+  remaining.delete(cellIndices[0]);
+  while (stack.length > 0) {
+    const idx = stack.pop() as number;
+    const col = idx % cols;
+    const neighbours = [
+      col > 0 ? idx - 1 : -1,
+      col + 1 < cols ? idx + 1 : -1,
+      idx - cols,
+      idx + cols,
+    ];
+    for (const n of neighbours) {
+      if (n < 0 || !remaining.has(n)) continue;
+      remaining.delete(n);
+      stack.push(n);
+    }
+  }
+  return remaining.size === 0;
+}
+
+/** True when every ID in `cells` occupies one connected region. */
+function allCompartmentsContiguous(cols: number, cells: readonly number[]): boolean {
+  const byId = new Map<number, number[]>();
+  cells.forEach((id, idx) => {
+    const list = byId.get(id);
+    if (list) list.push(idx);
+    else byId.set(id, [idx]);
+  });
+  for (const indices of byId.values()) {
+    if (!isContiguousSelection(cols, indices)) return false;
+  }
+  return true;
+}
+
+/**
+ * Whether a compartment fills its own bounding box.
+ *
+ * Non-rectangular compartments (an L, U or S built by merging) are valid
+ * geometry — the wall builder only reads ID boundaries — but every feature
+ * that positions itself from `getCompartmentBounds` would land in the notch.
+ * Those features gate on this.
+ */
+export function isRectangularCompartment(
+  config: CompartmentConfig,
+  compartmentId: number
+): boolean {
+  return isRectangularSelection(config.cols, getCellsForCompartment(config, compartmentId));
+}
+
+/**
+ * Validate that every compartment in the grid is one connected region.
  * Returns the IDs of any invalid compartments, or empty array if all valid.
  */
 export function validateCompartmentGrid(config: CompartmentConfig): number[] {
@@ -181,7 +245,7 @@ export function validateCompartmentGrid(config: CompartmentConfig): number[] {
 
   for (const id of ids) {
     const cells = getCellsForCompartment(config, id);
-    if (!isRectangularSelection(config.cols, cells)) {
+    if (!isContiguousSelection(config.cols, cells)) {
       invalid.push(id);
     }
   }
@@ -205,6 +269,7 @@ export type DividerOverrideValidationError =
   | 'self-pair'
   | 'unknown-compartment'
   | 'non-adjacent-compartments'
+  | 'non-rectangular-compartment'
   | 'offset-not-finite'
   | 'offset-out-of-bounds'
   | 'rake-not-finite'
@@ -243,6 +308,12 @@ export function validateDividerOverride(
   }
   if (!compartmentsAreAdjacent(config, compartmentA, compartmentB)) {
     return 'non-adjacent-compartments';
+  }
+  if (
+    !isRectangularCompartment(config, compartmentA) ||
+    !isRectangularCompartment(config, compartmentB)
+  ) {
+    return 'non-rectangular-compartment';
   }
   return null;
 }
@@ -307,6 +378,10 @@ export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[
   }
   const consider = (a: number, b: number, axis: 'vertical' | 'horizontal'): void => {
     if (a === b) return;
+    // A non-rectangular compartment can share several disjoint boundary runs
+    // with one neighbour, and an override names a pair, not a run — there is
+    // no single segment to tilt.
+    if (!isRectangularCompartment(config, a) || !isRectangularCompartment(config, b)) return;
     const [ca, cb] = a < b ? [a, b] : [b, a];
     const key = `${ca}|${cb}`;
     if (seen.has(key)) return;
@@ -769,6 +844,10 @@ export function compartmentTabEligible(
   const bounds = getCompartmentBounds(config, compartmentId);
   if (!bounds) return false;
 
+  // The shelf spans the bounding box's anchor wall. On an L or U that wall is
+  // partly open air over the neighbouring pocket.
+  if (!isRectangularCompartment(config, compartmentId)) return false;
+
   // A tilted anchor wall breaks the axis-aligned wall the shelf and gusset
   // geometry assume.
   const hasTilt = anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
@@ -927,7 +1006,7 @@ function compartmentsAreAdjacent(config: CompartmentConfig, a: number, b: number
 
 /**
  * Merge a set of cells into a single compartment.
- * The cells must form a valid rectangle. Returns null if invalid.
+ * The cells must form one connected region; returns null if they don't.
  * Uses the lowest existing compartment ID from the merged cells, or
  * assigns the next available ID.
  */
@@ -935,7 +1014,7 @@ export function mergeCells(
   config: CompartmentConfig,
   cellIndices: number[] | readonly number[]
 ): CompartmentConfig | null {
-  if (!isRectangularSelection(config.cols, cellIndices)) return null;
+  if (!isContiguousSelection(config.cols, cellIndices)) return null;
 
   // Find the target compartment ID (lowest existing in selection)
   const existingIds = cellIndices.map((i) => config.cells[i]);
@@ -945,6 +1024,10 @@ export function mergeCells(
   for (const idx of cellIndices) {
     newCells[idx] = targetId;
   }
+
+  // Taking part of a compartment can strand the rest in two pieces. The
+  // selection being connected says nothing about what it leaves behind.
+  if (!allCompartmentsContiguous(config.cols, newCells)) return null;
 
   const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
   return {
@@ -970,6 +1053,9 @@ export function mergeCells(
     }),
     ...(config.drawnUnitCells && {
       drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, normalized),
+    }),
+    ...(config.backgroundIds && {
+      backgroundIds: remapBackgroundIds(config.backgroundIds, remap),
     }),
   };
 }
@@ -1021,6 +1107,9 @@ export function splitCompartment(
     }),
     ...(config.drawnUnitCells && {
       drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, normalized),
+    }),
+    ...(config.backgroundIds && {
+      backgroundIds: remapBackgroundIds(config.backgroundIds, remap),
     }),
   };
 }
@@ -1309,6 +1398,24 @@ export function remapDrawnUnitCells(
     out.push(newId);
   }
   return out.length > 0 ? out.sort((a, b) => a - b) : undefined;
+}
+
+/**
+ * Reindex the merged-background markers through an `oldId → newId` remap.
+ * IDs that no longer exist drop out; `undefined` when nothing survives, per
+ * the compact-storage convention the other optional arrays follow.
+ */
+export function remapBackgroundIds(
+  oldIds: readonly number[] | undefined,
+  remap: ReadonlyMap<number, number>
+): number[] | undefined {
+  if (!oldIds || oldIds.length === 0) return undefined;
+  const out = new Set<number>();
+  for (const oldId of oldIds) {
+    const newId = remap.get(oldId);
+    if (newId !== undefined) out.add(newId);
+  }
+  return out.size > 0 ? [...out].sort((a, b) => a - b) : undefined;
 }
 
 /**

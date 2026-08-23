@@ -14,12 +14,14 @@ import {
   clearDrawnCompartments,
   drawCompartment,
   duplicateCompartment,
+  mergeCompartments,
   moveCompartment,
   placeFromStash,
   removeCompartment,
   removeStashEntry,
   resizeCompartment,
   resizeGridPreservingCompartments,
+  setMergeBackground,
   stashCompartment,
   type CellRect,
   type RegridResult,
@@ -148,6 +150,26 @@ export function createBentoActions(set: Set, get: Get) {
         state.params.compartments = result.config;
       });
       return { stashedCount: result.stashedCount, droppedCount: result.droppedCount };
+    },
+
+    mergeBentoCompartments: (ids: readonly number[]): number | null => {
+      const result = mergeCompartments(get().params.compartments, ids);
+      if (!result) return null;
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.compartments = result.config;
+      });
+      return result.id;
+    },
+
+    setBentoMergeBackground: (enabled: boolean): void => {
+      const compartments = get().params.compartments;
+      const next = setMergeBackground(compartments, enabled);
+      if (next === compartments) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.compartments = next;
+      });
     },
 
     clearBentoCompartments: (): void => {

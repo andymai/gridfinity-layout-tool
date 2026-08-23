@@ -17,7 +17,7 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { compartmentHasTiltedEdge } from '@/shared/types/bin';
+import { compartmentHasTiltedEdge, isRectangularCompartment } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
@@ -177,6 +177,9 @@ export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepO
     if (seen.has(compId)) continue;
     seen.add(compId);
     if (compartmentHasTiltedEdge(params.compartments, compId)) continue;
+    // Same two gates the ramp builder applies, or this reserves space for a
+    // scoop that is never built.
+    if (!isRectangularCompartment(params.compartments, compId)) continue;
     const bounds = findCompartmentBounds(compId, cols, rows, cells);
     if (!bounds) continue;
     const { minCol, maxCol, minRow } = bounds;

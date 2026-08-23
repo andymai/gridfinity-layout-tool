@@ -15,6 +15,8 @@ import {
   getCellsForCompartment,
   getCompartmentBounds,
   getCompartmentCount,
+  isContiguousSelection,
+  isRectangularCompartment,
   isRectangularSelection,
   validateCompartmentGrid,
   mergeCells,
@@ -450,6 +452,35 @@ describe('compartments', () => {
     });
   });
 
+  describe('isContiguousSelection', () => {
+    it('accepts a single cell, a rectangle and an L', () => {
+      expect(isContiguousSelection(3, [4])).toBe(true);
+      expect(isContiguousSelection(3, [0, 1, 3, 4])).toBe(true);
+      expect(isContiguousSelection(3, [0, 1, 3])).toBe(true);
+    });
+
+    it('rejects diagonal-only and disjoint selections', () => {
+      // (0,0) and (1,1) touch at a corner, which no wall boundary follows.
+      expect(isContiguousSelection(3, [0, 4])).toBe(false);
+      expect(isContiguousSelection(3, [0, 2])).toBe(false);
+      expect(isContiguousSelection(3, [])).toBe(false);
+    });
+  });
+
+  describe('isRectangularCompartment', () => {
+    const lShaped: CompartmentConfig = {
+      cols: 3,
+      rows: 3,
+      thickness: 1.2,
+      cells: [0, 0, 1, 0, 2, 3, 4, 5, 6],
+    };
+
+    it('separates a bounding-box filler from an L', () => {
+      expect(isRectangularCompartment(lShaped, 0)).toBe(false);
+      expect(isRectangularCompartment(lShaped, 1)).toBe(true);
+    });
+  });
+
   describe('validateCompartmentGrid', () => {
     it('returns empty array for valid uniform grid', () => {
       const config = createUniformGrid(3, 2, 1.2);
@@ -466,12 +497,22 @@ describe('compartments', () => {
       expect(validateCompartmentGrid(config)).toEqual([]);
     });
 
-    it('returns IDs of L-shaped compartments', () => {
+    it('accepts an L-shaped compartment', () => {
       const config: CompartmentConfig = {
         cols: 3,
         rows: 3,
         thickness: 1.2,
         cells: [0, 0, 1, 0, 2, 3, 4, 5, 6], // ID 0 forms an L
+      };
+      expect(validateCompartmentGrid(config)).toEqual([]);
+    });
+
+    it('returns IDs of compartments split into disconnected islands', () => {
+      const config: CompartmentConfig = {
+        cols: 3,
+        rows: 3,
+        thickness: 1.2,
+        cells: [0, 1, 0, 2, 3, 4, 5, 6, 7], // ID 0 sits in two corners
       };
       expect(validateCompartmentGrid(config)).toEqual([0]);
     });
@@ -481,10 +522,9 @@ describe('compartments', () => {
         cols: 3,
         rows: 3,
         thickness: 1.2,
-        // ID 0: cells [0,1,3] = L-shape in top-left
-        // ID 1: cells [2,5] = vertical pair (valid)
-        // ID 2: cells [4,6,7] = L-shape in bottom-left
-        cells: [0, 0, 1, 0, 2, 1, 2, 2, 3],
+        // ID 0: cells [0,2] and ID 2: cells [3,5] — each in two islands.
+        // ID 1: cells [1,4] = vertical pair (valid).
+        cells: [0, 1, 0, 2, 1, 2, 3, 4, 5],
       };
       const invalid = validateCompartmentGrid(config);
       expect(invalid).toContain(0);
@@ -503,11 +543,32 @@ describe('compartments', () => {
   // =============================================================================
 
   describe('mergeCells', () => {
-    it('returns null for non-rectangular selection', () => {
+    it('merges an L-shaped selection into one compartment', () => {
       const config = createUniformGrid(3, 3, 1.2);
       // L-shape: [0,1,3]
       const result = mergeCells(config, [0, 1, 3]);
-      expect(result).toBeNull();
+      expect(result).not.toBeNull();
+      expect(result?.cells[0]).toBe(result?.cells[1]);
+      expect(result?.cells[0]).toBe(result?.cells[3]);
+    });
+
+    it('returns null for a selection in two disconnected pieces', () => {
+      const config = createUniformGrid(3, 3, 1.2);
+      // Opposite corners, nothing joining them.
+      expect(mergeCells(config, [0, 8])).toBeNull();
+    });
+
+    it('returns null when taking part of a compartment strands the rest', () => {
+      // Row 1 is one compartment spanning all three columns. The merge target
+      // is the lowest id in the selection, so its middle cell defects to the
+      // cell above and leaves row 1 as two islands.
+      const config: CompartmentConfig = {
+        cols: 3,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 2, 3, 3, 3],
+      };
+      expect(mergeCells(config, [1, 4])).toBeNull();
     });
 
     it('merges horizontal cells', () => {

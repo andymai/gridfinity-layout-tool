@@ -3196,6 +3196,8 @@ const en: Record<string, string> = {
   'binDesigner.bento.quickstart.draw': 'Drag on the grid to draw a compartment.',
   'binDesigner.bento.quickstart.moveResize':
     'Drag a compartment to move it, pull its handles to resize. Alt-drag duplicates.',
+  'binDesigner.bento.quickstart.merge':
+    'Shift-click a second compartment to fuse the two into one L, S or U shape.',
   'binDesigner.bento.quickstart.stash':
     'Drop a compartment on the shelf below to set it aside; drag it back anytime.',
   'binDesigner.bento.canvasLabel': 'Bento canvas, {cols} columns by {rows} rows',
@@ -3223,10 +3225,16 @@ const en: Record<string, string> = {
   'binDesigner.bento.labelSpanDisabled':
     'Full-width tabs print one label per row. Edit those in the Label tabs panel.',
   'binDesigner.bento.sizeReadout': 'Size',
+  'binDesigner.bento.sizeMerged': 'Merged shape',
   'binDesigner.bento.cellsReadout': 'Cells',
   'binDesigner.bento.stashAction': 'Move to stash',
   'binDesigner.bento.wallsTitle': 'Walls',
   'binDesigner.bento.binWideTitle': 'Bin-wide',
+  'binDesigner.bento.mergeBackground': 'Merge leftover space',
+  'binDesigner.bento.mergeBackgroundHint':
+    'Empty cells print as one pocket per open area, so the space around your compartments can take an L, U or S shape instead of a field of small pockets.',
+  'binDesigner.bento.toastMergeBlocked':
+    'Those two don’t touch — a merged compartment has to be one piece.',
   'binDesigner.bento.color.enable': 'Color this compartment',
   'binDesigner.bento.color.surface': 'Painted surface',
   'binDesigner.bento.color.note':
@@ -3252,7 +3260,8 @@ const en: Record<string, string> = {
   'binDesigner.bento.hintResize': 'Release to apply the new size',
   'binDesigner.bento.hintResizeTo': 'Release to resize to {w}×{h}',
   'binDesigner.bento.hintPlace': 'Drop on the grid to place this compartment',
-  'binDesigner.bento.hintSelected': 'Drag to move · pull the handles to resize · Delete removes',
+  'binDesigner.bento.hintSelected':
+    'Drag to move · pull the handles to resize · Shift-click a neighbour to merge · Delete removes',
   'binDesigner.bento.hintIdle': 'Drag on the grid to draw a compartment',
   'binDesigner.bento.emptyStateHint': 'Drag anywhere to draw your first compartment',
   'binDesigner.bento.backgroundNote': 'Empty cells print as 1×1 pockets',

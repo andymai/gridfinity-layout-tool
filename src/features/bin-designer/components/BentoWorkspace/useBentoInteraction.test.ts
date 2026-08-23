@@ -28,6 +28,7 @@ function makeActions() {
     duplicate: vi.fn((): number | null => 10),
     stash: vi.fn((): boolean => true),
     placeFromStash: vi.fn((): number | null => 11),
+    merge: vi.fn((): number | null => null),
   };
 }
 
@@ -111,6 +112,13 @@ function gridWithDrawn() {
   return result;
 }
 
+/** The same grid plus a 1×1 at (2,0), so there are two things to merge. */
+function gridWithTwoDrawn() {
+  const second = drawCompartment(gridWithDrawn().config, { col: 2, row: 0, w: 1, h: 1 });
+  if (!second) throw new Error('unreachable');
+  return second.config;
+}
+
 describe('useBentoInteraction', () => {
   beforeEach(() => {
     cleanup();
@@ -141,6 +149,44 @@ describe('useBentoInteraction', () => {
       expect(h.api.ghost).toMatchObject({ kind: 'draw', valid: false });
       h.up(15, 15);
       expect(h.actions.draw).not.toHaveBeenCalled();
+    });
+
+    it('shift-click on a neighbour merges it into the selection', () => {
+      const config = gridWithTwoDrawn();
+      const selected = config.cells[0];
+      const target = config.cells[2];
+      const onInvalidMerge = vi.fn();
+      const h = mount(config, { selectedId: selected, onInvalidMerge });
+      h.actions.merge.mockReturnValueOnce(3);
+
+      h.down(25, 25, { shiftKey: true });
+
+      expect(h.actions.merge).toHaveBeenCalledWith([selected, target]);
+      expect(h.onSelect).toHaveBeenLastCalledWith(3);
+      // No move gesture: the click merged instead of grabbing.
+      expect(h.api.gesture).toBeNull();
+      expect(onInvalidMerge).not.toHaveBeenCalled();
+    });
+
+    it('reports a shift-click merge the model refuses', () => {
+      const config = gridWithTwoDrawn();
+      const onInvalidMerge = vi.fn();
+      const h = mount(config, { selectedId: config.cells[0], onInvalidMerge });
+      h.actions.merge.mockReturnValueOnce(null);
+
+      h.down(25, 25, { shiftKey: true });
+
+      expect(onInvalidMerge).toHaveBeenCalled();
+    });
+
+    it('leaves a plain click on a compartment as a move', () => {
+      const config = gridWithTwoDrawn();
+      const h = mount(config, { selectedId: config.cells[0] });
+
+      h.down(25, 25);
+
+      expect(h.actions.merge).not.toHaveBeenCalled();
+      expect(h.api.gesture).toMatchObject({ type: 'move' });
     });
 
     it('deselects when starting a draw on background', () => {

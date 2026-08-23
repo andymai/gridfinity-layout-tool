@@ -271,4 +271,71 @@ describe('DesignerStore - bento draw actions', () => {
       expect(params().compartments.compartmentTexts?.[id]).toBe('screws');
     });
   });
+
+  describe('mergeBentoCompartments', () => {
+    it('fuses two neighbours into one non-rectangular compartment', () => {
+      const a = useDesignerStore.getState().drawBentoCompartment({ col: 0, row: 0, w: 2, h: 1 });
+      const b = useDesignerStore.getState().drawBentoCompartment({ col: 0, row: 1, w: 1, h: 1 });
+      if (a === null || b === null) throw new Error('unreachable');
+
+      const merged = useDesignerStore.getState().mergeBentoCompartments([a, b]);
+      expect(merged).not.toBeNull();
+      if (merged === null) throw new Error('unreachable');
+
+      const cells = params().compartments.cells;
+      expect(cells.filter((id) => id === merged)).toHaveLength(3);
+      // The L fills three of the four cells its bounding box covers.
+      expect(getCompartmentRect(params().compartments, merged)).toEqual({
+        col: 0,
+        row: 0,
+        w: 2,
+        h: 2,
+      });
+    });
+
+    it('refuses compartments that do not touch, without touching history', () => {
+      const a = useDesignerStore.getState().drawBentoCompartment({ col: 0, row: 0, w: 1, h: 1 });
+      const b = useDesignerStore.getState().drawBentoCompartment({ col: 3, row: 2, w: 1, h: 1 });
+      if (a === null || b === null) throw new Error('unreachable');
+      const historyLen = useDesignerStore.getState().history.past.length;
+
+      expect(useDesignerStore.getState().mergeBentoCompartments([a, b])).toBeNull();
+      expect(useDesignerStore.getState().history.past).toHaveLength(historyLen);
+    });
+  });
+
+  describe('setBentoMergeBackground', () => {
+    it('collapses leftover cells into one pocket per open area', () => {
+      const id = useDesignerStore.getState().drawBentoCompartment({ col: 1, row: 1, w: 1, h: 1 });
+      if (id === null) throw new Error('unreachable');
+
+      useDesignerStore.getState().setBentoMergeBackground(true);
+
+      const compartments = params().compartments;
+      expect(compartments.mergeBackground).toBe(true);
+      // One leftover region wrapping the drawn cell, plus the cell itself.
+      expect(compartments.backgroundIds).toHaveLength(1);
+      expect(new Set(compartments.cells).size).toBe(2);
+      expect(getDrawnCompartmentIds(compartments).size).toBe(1);
+    });
+
+    it('hands the leftover back as unit pockets when turned off', () => {
+      useDesignerStore.getState().drawBentoCompartment({ col: 1, row: 1, w: 1, h: 1 });
+      useDesignerStore.getState().setBentoMergeBackground(true);
+
+      useDesignerStore.getState().setBentoMergeBackground(false);
+
+      const compartments = params().compartments;
+      expect(compartments.mergeBackground).toBeUndefined();
+      expect(compartments.backgroundIds).toBeUndefined();
+      // 4x3 grid, all cells their own pocket again.
+      expect(new Set(compartments.cells).size).toBe(12);
+    });
+
+    it('is a no-op when already in that mode', () => {
+      const historyLen = useDesignerStore.getState().history.past.length;
+      useDesignerStore.getState().setBentoMergeBackground(false);
+      expect(useDesignerStore.getState().history.past).toHaveLength(historyLen);
+    });
+  });
 });

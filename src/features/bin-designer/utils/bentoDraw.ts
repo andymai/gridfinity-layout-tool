@@ -24,6 +24,7 @@ import { TEXT_MAX_LENGTH } from '../types/text';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import {
   cellIndex,
+  isContiguousSelection,
   getCellsForCompartment,
   getCompartmentBounds,
   getCompartmentReadingOrder,
@@ -32,6 +33,7 @@ import {
   remapCompartmentColorScopes,
   remapCompartmentTexts,
   remapDividerOverrides,
+  remapBackgroundIds,
   remapDrawnUnitCells,
   remapLabelIcons,
   remapLabelPlateWidths,
@@ -80,6 +82,9 @@ export function getDrawnCompartmentIds(config: CompartmentConfig): ReadonlySet<n
     if (icon !== null) markDecorated(id);
   });
   config.drawnUnitCells?.forEach(markDecorated);
+  // Last word: a merged leftover region is multi-cell, which every rule above
+  // reads as drawn.
+  config.backgroundIds?.forEach((id) => drawn.delete(id));
   return drawn;
 }
 
@@ -137,6 +142,51 @@ export function getCompartmentRect(config: CompartmentConfig, id: number): CellR
 }
 
 /**
+ * Collapse every 4-connected run of leftover cells onto one ID, and report
+ * which IDs those are.
+ *
+ * Runs before normalize, on provisional IDs, so the caller's `remap.get(id)`
+ * still finds a compartment it just drew: merging only ever rewrites cells
+ * nobody drew.
+ */
+function mergeBackgroundRuns(
+  config: CompartmentConfig,
+  cells: number[]
+): { cells: number[]; backgroundIds: number[] } {
+  const drawn = getDrawnCompartmentIds({ ...config, cells });
+  const { cols } = config;
+  const out = [...cells];
+  const visited = new Array<boolean>(cells.length).fill(false);
+  const backgroundIds: number[] = [];
+  let fresh = Math.max(...cells) + 1;
+
+  for (let start = 0; start < out.length; start++) {
+    if (visited[start] || drawn.has(out[start])) continue;
+    const runId = fresh++;
+    backgroundIds.push(runId);
+    const stack = [start];
+    visited[start] = true;
+    while (stack.length > 0) {
+      const idx = stack.pop() as number;
+      out[idx] = runId;
+      const col = idx % cols;
+      const neighbours = [
+        col > 0 ? idx - 1 : -1,
+        col + 1 < cols ? idx + 1 : -1,
+        idx - cols,
+        idx + cols,
+      ];
+      for (const n of neighbours) {
+        if (n < 0 || n >= out.length || visited[n] || drawn.has(out[n])) continue;
+        visited[n] = true;
+        stack.push(n);
+      }
+    }
+  }
+  return { cells: out, backgroundIds };
+}
+
+/**
  * Normalize a rebuilt cells array and thread every parallel structure through
  * the remap, then drop divider overrides whose pair stopped being adjacent.
  * All mutations in this module end here.
@@ -145,7 +195,10 @@ function rebuild(
   config: CompartmentConfig,
   newCells: number[]
 ): { config: CompartmentConfig; remap: Map<number, number> } {
-  const { cells, remap } = normalizeIdsWithRemap(newCells);
+  const merged = config.mergeBackground
+    ? mergeBackgroundRuns(config, newCells)
+    : { cells: newCells, backgroundIds: [] };
+  const { cells, remap } = normalizeIdsWithRemap(merged.cells);
   let next: CompartmentConfig = {
     ...config,
     cells,
@@ -169,6 +222,9 @@ function rebuild(
     }),
     ...(config.drawnUnitCells && {
       drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, cells),
+    }),
+    ...(merged.backgroundIds.length > 0 && {
+      backgroundIds: remapBackgroundIds(merged.backgroundIds, remap),
     }),
   };
   const overrides = next.dividerOverrides;
@@ -232,11 +288,14 @@ export function drawCompartment(config: CompartmentConfig, rect: CellRect): Draw
   for (const idx of rectIndices(config.cols, rect)) {
     newCells[idx] = fresh;
   }
-  const { config: rebuilt, remap } = rebuild(config, newCells);
+  // Marked before the rebuild, not after: with `mergeBackground` on, an
+  // unmarked 1×1 is indistinguishable from leftover and gets swallowed by the
+  // run it sits in.
+  const marked = rect.w === 1 && rect.h === 1 ? addDrawnUnitCell(config, fresh) : config;
+  const { config: rebuilt, remap } = rebuild(marked, newCells);
   const id = remap.get(fresh);
   if (id === undefined) return null;
-  const next = rect.w === 1 && rect.h === 1 ? addDrawnUnitCell(rebuilt, id) : rebuilt;
-  return { config: next, id };
+  return { config: rebuilt, id };
 }
 
 /**
@@ -302,11 +361,11 @@ export function resizeCompartment(
   for (const idx of rectIndices(config.cols, target)) {
     newCells[idx] = id;
   }
-  const { config: rebuilt, remap } = rebuild(config, newCells);
+  const marked = target.w === 1 && target.h === 1 ? addDrawnUnitCell(config, id) : config;
+  const { config: rebuilt, remap } = rebuild(marked, newCells);
   const newId = remap.get(id);
   if (newId === undefined) return null;
-  const next = target.w === 1 && target.h === 1 ? addDrawnUnitCell(rebuilt, newId) : rebuilt;
-  return { config: next, id: newId };
+  return { config: rebuilt, id: newId };
 }
 
 /**
@@ -326,7 +385,8 @@ export function duplicateCompartment(
   for (const idx of rectIndices(config.cols, target)) {
     newCells[idx] = fresh;
   }
-  const { config: rebuilt, remap } = rebuild(config, newCells);
+  const marked = target.w === 1 && target.h === 1 ? addDrawnUnitCell(config, fresh) : config;
+  const { config: rebuilt, remap } = rebuild(marked, newCells);
   const newId = remap.get(fresh);
   const srcId = remap.get(id);
   if (newId === undefined || srcId === undefined) return null;
@@ -363,8 +423,68 @@ export function duplicateCompartment(
       next = { ...next, compartmentColorScopes: scopes };
     }
   }
-  if (target.w === 1 && target.h === 1) next = addDrawnUnitCell(next, newId);
   return { config: next, id: newId };
+}
+
+/**
+ * Turn the merged-leftover mode on or off, re-deriving the grid either way.
+ *
+ * Turning it off has to hand every merged region back as the field of 1×1
+ * pockets it was, or the leftover would keep printing as one pocket with the
+ * mode reading as off.
+ */
+export function setMergeBackground(config: CompartmentConfig, enabled: boolean): CompartmentConfig {
+  if ((config.mergeBackground ?? false) === enabled) return config;
+  if (enabled) {
+    const next: CompartmentConfig = { ...config, mergeBackground: true };
+    return rebuild(next, [...next.cells]).config;
+  }
+  const drawn = getDrawnCompartmentIds(config);
+  const cells = [...config.cells];
+  let fresh = Math.max(...cells) + 1;
+  for (let i = 0; i < cells.length; i++) {
+    if (!drawn.has(cells[i])) cells[i] = fresh++;
+  }
+  const { backgroundIds: _background, mergeBackground: _mode, ...rest } = config;
+  return rebuild(rest, cells).config;
+}
+
+/**
+ * Fuse drawn compartments into one, which is how an interior gets an L, S, T
+ * or U outline: the merged cells keep no wall between them.
+ *
+ * Null unless the union is one 4-connected region — two islands under one ID
+ * would print as two pockets sharing a label and a dock entry. The
+ * lowest-numbered compartment's label, plate and colour survive; the others'
+ * go, as they do on delete.
+ */
+export function mergeCompartments(
+  config: CompartmentConfig,
+  ids: readonly number[]
+): DrawResult | null {
+  const drawn = getDrawnCompartmentIds(config);
+  const unique = [...new Set(ids)];
+  if (unique.length < 2 || unique.some((id) => !drawn.has(id))) return null;
+
+  const wanted = new Set(unique);
+  const indices: number[] = [];
+  config.cells.forEach((id, i) => {
+    if (wanted.has(id)) indices.push(i);
+  });
+  if (!isContiguousSelection(config.cols, indices)) return null;
+
+  const target = Math.min(...unique);
+  let next = config;
+  for (const id of unique) {
+    if (id !== target) next = clearCompartmentMetadata(next, id);
+  }
+  const cells = [...next.cells];
+  for (const i of indices) cells[i] = target;
+
+  const { config: rebuilt, remap } = rebuild(next, cells);
+  const newId = remap.get(target);
+  if (newId === undefined) return null;
+  return { config: rebuilt, id: newId };
 }
 
 /**
@@ -506,7 +626,10 @@ export function clearDrawnCompartments(config: CompartmentConfig): CompartmentCo
     drawnUnitCells: _drawn,
     compartmentColors: _colors,
     compartmentColorScopes: _scopes,
+    backgroundIds: _background,
     ...keep
   } = config;
-  return { ...keep, cells };
+  // Through the funnel so an empty grid in `mergeBackground` mode comes out as
+  // the one pocket it should be, not the field of cells it was built as.
+  return rebuild({ ...keep, cells }, cells).config;
 }
