@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Button, Stepper } from '@/design-system';
+import { Button, SegmentedControl, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
@@ -21,6 +21,10 @@ import { ASSEMBLY_PART_TYPES } from '@/shared/types/assembly';
 import type { AssemblyPartNode, AssemblyStructure } from '@/shared/types/assembly';
 import { clamp } from '@/shared/utils/math';
 import { findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
+import {
+  buildWorkshopTemplate,
+  WORKSHOP_TEMPLATE_IDS,
+} from '@/features/bin-designer/utils/workshopTemplates';
 import { StickyGroupHeader } from '../../panel/StickyGroupHeader';
 import { PanelSection } from '../../panel/PanelSection';
 import { PartInspector } from './PartInspector';
@@ -83,6 +87,8 @@ export function WorkshopPanel() {
   const setSelectedAssemblyPartId = useDesignerStore((s) => s.setSelectedAssemblyPartId);
   const setWorkshopPendingPartType = useDesignerStore((s) => s.setWorkshopPendingPartType);
   const addToast = useToastStore((s) => s.addToast);
+  const setAssemblyMirrorAxis = useDesignerStore((s) => s.setAssemblyMirrorAxis);
+  const loadAssemblyTemplate = useDesignerStore((s) => s.loadAssemblyTemplate);
   const [exporting, setExporting] = useState(false);
 
   if (structure?.kind !== 'assembly' || !envelope) return null;
@@ -216,7 +222,23 @@ export function WorkshopPanel() {
       <StickyGroupHeader title={t('workshop.tree.title')} expanded onExpandedChange={() => {}}>
         <PanelSection>
           {assembly.parts.length === 0 ? (
-            <p className="text-xs text-content-tertiary">{t('workshop.tree.empty')}</p>
+            <div>
+              <p className="mb-2 text-xs text-content-tertiary">{t('workshop.tree.empty')}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {WORKSHOP_TEMPLATE_IDS.map((templateId) => (
+                  <Button
+                    key={templateId}
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      loadAssemblyTemplate(buildWorkshopTemplate(templateId, envelope))
+                    }
+                  >
+                    {t(`workshop.template.${templateId}`)}
+                  </Button>
+                ))}
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col gap-1">
               <TreeRows
@@ -291,6 +313,21 @@ export function WorkshopPanel() {
                 max={10}
                 step={0.5}
                 size="md"
+              />
+            </div>
+            <div>
+              <span className="mb-1 block text-xs text-content-tertiary">
+                {t('workshop.mirror.axis')}
+              </span>
+              <SegmentedControl
+                aria-label={t('workshop.mirror.axis')}
+                value={assembly.mirrorAxis}
+                onChange={(axis) => setAssemblyMirrorAxis(axis)}
+                options={[
+                  { value: 'x', label: t('workshop.mirror.axisX') },
+                  { value: 'y', label: t('workshop.mirror.axisY') },
+                ]}
+                size="sm"
               />
             </div>
           </div>

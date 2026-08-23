@@ -126,6 +126,58 @@ describe('DesignerStore - workshop assembly actions', () => {
     expect(assembly().base.floorThickness).toBe(2);
   });
 
+  it('sets, edits, and clears a linear array', () => {
+    const id = store().addAssemblyPart('post', null);
+    if (!id) throw new Error('unreachable');
+    store().setAssemblyPartArray(id, { count: 4, dx: 20, dy: 0 });
+    expect(findAssemblyPart(assembly().parts, id)?.array).toEqual({ count: 4, dx: 20, dy: 0 });
+    store().setAssemblyPartArray(id, null);
+    expect(findAssemblyPart(assembly().parts, id)?.array).toBeUndefined();
+    store().setAssemblyPartArray(id, { count: 1, dx: 20, dy: 0 });
+    expect(findAssemblyPart(assembly().parts, id)?.array).toBeUndefined();
+  });
+
+  it('toggles mirror and the assembly axis with undo coverage', () => {
+    const id = store().addAssemblyPart('fin', null);
+    if (!id) throw new Error('unreachable');
+    store().setAssemblyPartMirror(id, true);
+    expect(findAssemblyPart(assembly().parts, id)?.mirror).toBe(true);
+    store().setAssemblyMirrorAxis('y');
+    expect(assembly().mirrorAxis).toBe('y');
+    store().undo();
+    expect(assembly().mirrorAxis).toBe('x');
+  });
+
+  it('aligns and distributes siblings in one undo step each', () => {
+    const a = store().addAssemblyPart('post', null, { x: 10, y: 5 });
+    const b = store().addAssemblyPart('post', null, { x: 40, y: 9 });
+    const c = store().addAssemblyPart('post', null, { x: 100, y: 20 });
+    if (!a || !b || !c) throw new Error('unreachable');
+    store().alignAssemblySiblings(a, 'y');
+    expect(assembly().parts.map((n) => n.transform.y)).toEqual([5, 5, 5]);
+    store().distributeAssemblySiblings(a, 'x');
+    expect(assembly().parts.map((n) => n.transform.x)).toEqual([10, 55, 100]);
+    store().undo();
+    expect(assembly().parts.map((n) => n.transform.x)).toEqual([10, 40, 100]);
+  });
+
+  it('loads a template tree and refuses an invalid one', () => {
+    const good = [
+      {
+        id: 'tpl',
+        type: 'post' as const,
+        params: { diameter: 8, height: 40, taperDeg: 0, tipChamfer: 1 },
+        transform: { x: 20, y: 20, seatZ: 0, rotZDeg: 0 },
+        children: [],
+      },
+    ];
+    expect(store().loadAssemblyTemplate(good)).toBe(true);
+    expect(assembly().parts).toHaveLength(1);
+    const bad = [{ ...good[0], params: { ...good[0].params, diameter: 9999 } }];
+    expect(store().loadAssemblyTemplate(bad)).toBe(false);
+    expect(assembly().parts).toHaveLength(1);
+  });
+
   it('assembly actions no-op for a bin design', () => {
     useDesignerStore.getState().newDesign('bin');
     expect(store().addAssemblyPart('post', null)).toBeNull();

@@ -8,6 +8,7 @@
  */
 import {
   assemblyPartNodeSchema,
+  assemblySchema,
   clampAssemblyBase,
   clampPartTransform,
   createAssemblyPartNode,
@@ -18,11 +19,13 @@ import type {
   AssemblyPartNode,
   AssemblyPartParams,
   AssemblyPartType,
+  PartArray,
   PartTransform,
 } from '@/shared/types/assembly';
 import {
   collectAssemblyIds,
   findAssemblyPart,
+  findAssemblySiblings,
   withAssemblyPartAdded,
   withAssemblyPartRemoved,
   withAssemblyPartReparented,
@@ -145,6 +148,105 @@ export function createAssemblyActions(set: Set, get: Get) {
       if (!parsed.success) return;
       const next = withAssemblyPartUpdated(current, id, () => parsed.data);
       if (next) commitParts(next);
+    },
+
+    setAssemblyPartArray: (id: string, array: PartArray | null): void => {
+      const current = parts();
+      if (!current) return;
+      const node = findAssemblyPart(current, id);
+      if (!node) return;
+      const candidate = {
+        ...node,
+        ...(array === null ? {} : { array }),
+      };
+      if (array === null) delete (candidate as { array?: PartArray }).array;
+      if (!assemblyPartNodeSchema.safeParse(candidate).success) return;
+      const next = withAssemblyPartUpdated(current, id, () => candidate);
+      if (next) commitParts(next);
+    },
+
+    setAssemblyPartMirror: (id: string, mirror: boolean): void => {
+      const current = parts();
+      if (!current) return;
+      const node = findAssemblyPart(current, id);
+      if (!node || (node.mirror ?? false) === mirror) return;
+      const candidate = { ...node };
+      if (mirror) candidate.mirror = true;
+      else delete candidate.mirror;
+      const next = withAssemblyPartUpdated(current, id, () => candidate);
+      if (next) commitParts(next);
+    },
+
+    setAssemblyMirrorAxis: (axis: 'x' | 'y'): void => {
+      const structure = get().structure;
+      if (structure?.kind !== 'assembly' || structure.mirrorAxis === axis) return;
+      set((state) => {
+        if (state.structure?.kind !== 'assembly') return;
+        pushHistoryEntry(state);
+        state.structure.mirrorAxis = axis;
+      });
+    },
+
+    alignAssemblySiblings: (id: string, axis: 'x' | 'y'): void => {
+      const current = parts();
+      if (!current) return;
+      const siblings = findAssemblySiblings(current, id);
+      const anchor = siblings?.find((n) => n.id === id);
+      if (!siblings || !anchor || siblings.length < 2) return;
+      const value = anchor.transform[axis];
+      if (siblings.every((n) => n.transform[axis] === value)) return;
+      let next: AssemblyPartNode[] | null = current;
+      for (const sibling of siblings) {
+        if (sibling.transform[axis] === value) continue;
+        next = withAssemblyPartUpdated(next, sibling.id, (n) => ({
+          ...n,
+          transform: clampPartTransform({ ...n.transform, [axis]: value }),
+        }));
+        if (!next) return;
+      }
+      commitParts(next);
+    },
+
+    distributeAssemblySiblings: (id: string, axis: 'x' | 'y'): void => {
+      const current = parts();
+      if (!current) return;
+      const siblings = findAssemblySiblings(current, id);
+      if (!siblings || siblings.length < 3) return;
+      const sorted = [...siblings].sort((a, b) => a.transform[axis] - b.transform[axis]);
+      const first = sorted[0];
+      const last = sorted[sorted.length - 1];
+      if (!first || !last) return;
+      const span = last.transform[axis] - first.transform[axis];
+      const step = span / (sorted.length - 1);
+      let next: AssemblyPartNode[] | null = current;
+      let changed = false;
+      for (let i = 1; i < sorted.length - 1; i += 1) {
+        const sibling = sorted[i];
+        if (!sibling) continue;
+        const target = first.transform[axis] + step * i;
+        if (sibling.transform[axis] === target) continue;
+        changed = true;
+        next = withAssemblyPartUpdated(next, sibling.id, (n) => ({
+          ...n,
+          transform: clampPartTransform({ ...n.transform, [axis]: target }),
+        }));
+        if (!next) return;
+      }
+      if (changed) commitParts(next);
+    },
+
+    loadAssemblyTemplate: (parts_: AssemblyPartNode[]): boolean => {
+      const structure = get().structure;
+      if (structure?.kind !== 'assembly') return false;
+      const candidate = { ...structure, parts: parts_ };
+      if (!assemblySchema.safeParse(candidate).success) return false;
+      set((state) => {
+        if (state.structure?.kind !== 'assembly') return;
+        pushHistoryEntry(state);
+        state.structure.parts = parts_;
+        state.ui.selectedAssemblyPartId = null;
+      });
+      return true;
     },
 
     updateAssemblyBase: (partial: Partial<AssemblyBase>): void => {

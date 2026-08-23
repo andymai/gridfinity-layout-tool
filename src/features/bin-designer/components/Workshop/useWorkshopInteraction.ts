@@ -51,7 +51,10 @@ function usePendingCutterShape() {
   return useDesignerStore((s) => s.ui.workshopPendingCutterShape);
 }
 
-export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopInteraction {
+export function useWorkshopInteraction(
+  structure: AssemblyStructure,
+  baseExtent: { w: number; d: number }
+): WorkshopInteraction {
   const pendingType = usePendingType();
   const pendingCutterShape = usePendingCutterShape();
   const { selectedId } = useDesignerStore(
@@ -72,7 +75,10 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
   const skipNextBaseClickRef = useRef(false);
   const [fineSnap, setFineSnap] = useState(false);
 
-  const placements = useMemo(() => resolvePlacedParts(structure), [structure]);
+  const placements = useMemo(
+    () => resolvePlacedParts(structure, baseExtent),
+    [structure, baseExtent]
+  );
   const placedById = useMemo(() => {
     const map = new Map<string, PlacedPart>();
     for (const p of placements) {

@@ -59,6 +59,48 @@ describe('resolvePlacedParts', () => {
   });
 });
 
+describe('mirror expansion', () => {
+  const extent = { w: 168, d: 84 };
+
+  it('emits a reflected twin across the left-right plane', () => {
+    const fin = part('block', 'b', { x: 40, y: 30, rotZDeg: 30 }, { mirror: true });
+    const placed = resolvePlacedParts(structureWith([fin]), extent);
+    expect(placed).toHaveLength(2);
+    const twin = placed.find((p) => p.mirrored);
+    expect(twin?.x).toBeCloseTo(168 - 40);
+    expect(twin?.y).toBeCloseTo(30);
+    expect(twin?.rotZDeg).toBeCloseTo(-30);
+    expect(twin?.selectId).toBe('b');
+    expect(new Set(placed.map((p) => p.key)).size).toBe(2);
+  });
+
+  it('reflects children inside the mirrored frame', () => {
+    const post = part('post', 'p', { x: 10, y: 5 });
+    const block = part('block', 'b', { x: 40, y: 30 }, { mirror: true, children: [post] });
+    const placed = resolvePlacedParts(structureWith([block]), extent);
+    const twinChild = placed.find((p) => p.selectId === 'p' && p.mirrored);
+    expect(twinChild?.x).toBeCloseTo(168 - 40 - 10);
+    expect(twinChild?.y).toBeCloseTo(30 + 5);
+  });
+
+  it('ignores mirror without a base extent and off the root level', () => {
+    const fin = part('block', 'b', { x: 40, y: 30 }, { mirror: true });
+    expect(resolvePlacedParts(structureWith([fin]))).toHaveLength(1);
+    const child = part('post', 'p', { x: 5, y: 5 }, { mirror: true });
+    const parent = part('block', 'root', { x: 40, y: 30 }, { children: [child] });
+    const placed = resolvePlacedParts(structureWith([parent]), extent);
+    expect(placed.filter((p) => p.selectId === 'p')).toHaveLength(1);
+  });
+
+  it('mirrors across the front-back plane when the axis is y', () => {
+    const fin = part('block', 'b', { x: 40, y: 30 }, { mirror: true });
+    const structure = { ...structureWith([fin]), mirrorAxis: 'y' as const };
+    const twin = resolvePlacedParts(structure, extent).find((p) => p.mirrored);
+    expect(twin?.x).toBeCloseTo(40);
+    expect(twin?.y).toBeCloseTo(84 - 30);
+  });
+});
+
 describe('coordinate helpers', () => {
   it('snaps to the 3.5mm sub-grid and to fine steps', () => {
     expect(snapCoord(5.1, false)).toBeCloseTo(3.5);

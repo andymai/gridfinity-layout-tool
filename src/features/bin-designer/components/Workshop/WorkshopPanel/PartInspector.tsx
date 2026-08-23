@@ -1,5 +1,5 @@
 /** Transform + parameter editor for the selected Workshop part. */
-import { SegmentedControl, Button, Stepper, TrashIcon } from '@/design-system';
+import { SegmentedControl, Button, Stepper, Switch, TrashIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import type { AssemblyPartNode } from '@/shared/types/assembly';
@@ -44,6 +44,10 @@ export function PartInspector({ node }: PartInspectorProps) {
   const moveAssemblyPart = useDesignerStore((s) => s.moveAssemblyPart);
   const updateAssemblyPartParams = useDesignerStore((s) => s.updateAssemblyPartParams);
   const removeAssemblyPart = useDesignerStore((s) => s.removeAssemblyPart);
+  const setAssemblyPartArray = useDesignerStore((s) => s.setAssemblyPartArray);
+  const setAssemblyPartMirror = useDesignerStore((s) => s.setAssemblyPartMirror);
+  const alignAssemblySiblings = useDesignerStore((s) => s.alignAssemblySiblings);
+  const distributeAssemblySiblings = useDesignerStore((s) => s.distributeAssemblySiblings);
 
   const params = node.params as unknown as Record<string, number>;
 
@@ -145,6 +149,88 @@ export function PartInspector({ node }: PartInspectorProps) {
             }
           />
         ))}
+      </div>
+
+      <div className="mt-3 flex items-center justify-between">
+        <span className="text-xs text-content-tertiary">{t('workshop.repeat.title')}</span>
+        <Switch
+          checked={node.array !== undefined}
+          onChange={(on) => setAssemblyPartArray(node.id, on ? { count: 3, dx: 16, dy: 0 } : null)}
+          aria-label={t('workshop.repeat.title')}
+        />
+      </div>
+      {node.array && (
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          <NumberField
+            label={t('workshop.repeat.count')}
+            value={node.array.count}
+            min={2}
+            max={64}
+            step={1}
+            onChange={(count) => {
+              if (node.array) {
+                setAssemblyPartArray(node.id, { ...node.array, count: Math.round(count) });
+              }
+            }}
+          />
+          <NumberField
+            label={t('workshop.repeat.dx')}
+            value={node.array.dx}
+            min={-500}
+            max={500}
+            step={0.5}
+            onChange={(dx) => {
+              if (node.array) setAssemblyPartArray(node.id, { ...node.array, dx });
+            }}
+          />
+          <NumberField
+            label={t('workshop.repeat.dy')}
+            value={node.array.dy}
+            min={-500}
+            max={500}
+            step={0.5}
+            onChange={(dy) => {
+              if (node.array) setAssemblyPartArray(node.id, { ...node.array, dy });
+            }}
+          />
+        </div>
+      )}
+
+      <div className="mt-3 flex items-center justify-between">
+        <span className="text-xs text-content-tertiary">{t('workshop.mirror.part')}</span>
+        <Switch
+          checked={node.mirror === true}
+          onChange={(on) => setAssemblyPartMirror(node.id, on)}
+          aria-label={t('workshop.mirror.part')}
+        />
+      </div>
+
+      <div className="mt-3">
+        <span className="mb-1 block text-xs text-content-tertiary">
+          {t('workshop.arrange.title')}
+        </span>
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="secondary" size="sm" onClick={() => alignAssemblySiblings(node.id, 'y')}>
+            {t('workshop.arrange.alignRow')}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => alignAssemblySiblings(node.id, 'x')}>
+            {t('workshop.arrange.alignColumn')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => distributeAssemblySiblings(node.id, 'x')}
+          >
+            {t('workshop.arrange.distributeX')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => distributeAssemblySiblings(node.id, 'y')}
+          >
+            {t('workshop.arrange.distributeY')}
+          </Button>
+        </div>
       </div>
     </PanelSection>
   );

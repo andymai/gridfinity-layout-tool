@@ -138,3 +138,16 @@ export function withAssemblyPartReparented(
   if (!without) return null;
   return withAssemblyPartAdded(without, newParentId, node);
 }
+
+/** The sibling list containing `id`: root parts, or the parent's children. */
+export function findAssemblySiblings(
+  parts: AssemblyPartNode[],
+  id: string
+): AssemblyPartNode[] | null {
+  if (parts.some((n) => n.id === id)) return parts;
+  for (const node of parts) {
+    const found = findAssemblySiblings(node.children, id);
+    if (found) return found;
+  }
+  return null;
+}

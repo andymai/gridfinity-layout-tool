@@ -177,6 +177,31 @@ describe('assembly generator (real WASM)', () => {
     expect(bounds.maxY - bounds.minY).toBeGreaterThan(80);
   });
 
+  it('a mirrored hook emits a reflected twin with symmetric bounds', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const single = generateAssembly(
+      structureWith([part('hook', 'h', { x: 24, y: 21 })]),
+      makeEnvelope(2, 1),
+      noop,
+      true
+    );
+    const mirroredResult = generateAssembly(
+      structureWith([part('hook', 'h', { x: 24, y: 21 }, { mirror: true })]),
+      makeEnvelope(2, 1),
+      noop,
+      true
+    );
+    assertStructurallyValid(mirroredResult);
+    const emptyVol = meshVolume(
+      generateAssembly(structureWith([]), makeEnvelope(2, 1), noop, true)
+    );
+    const singleVol = meshVolume(single) - emptyVol;
+    const twinVol = meshVolume(mirroredResult) - emptyVol;
+    expect(twinVol).toBeGreaterThan(singleVol * 1.8);
+    const bounds = boundingBox(mirroredResult.vertices);
+    expect(bounds.minX).toBeCloseTo(-bounds.maxX, 0);
+  });
+
   it('a magnet-hole envelope still builds', async () => {
     const { generateAssembly } = await import('./assemblyGenerator');
     const result = generateAssembly(
