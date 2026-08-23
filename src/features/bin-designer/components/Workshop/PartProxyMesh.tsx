@@ -33,7 +33,7 @@ interface PartProxyMeshProps {
   onSurfaceMove: (surface: HoverSurface) => void;
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
-  onPartPointerDown: (id: string, pointerId: number) => void;
+  onPartPointerDown: (id: string, pointerId: number, pointerType: string) => void;
 }
 
 const DEG = Math.PI / 180;
@@ -150,7 +150,7 @@ export function PartProxyMesh({
       onPointerDown={(e) => {
         if (e.button !== 0) return;
         e.stopPropagation();
-        onPartPointerDown(placed.selectId, e.pointerId);
+        onPartPointerDown(placed.selectId, e.pointerId, e.pointerType);
       }}
       onClick={(e) => {
         e.stopPropagation();

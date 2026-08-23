@@ -8,6 +8,7 @@ import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope } from '@/shared/types/item';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BasePlateMesh } from './BasePlateMesh';
+import { MoveHandle3D } from './MoveHandle3D';
 import { PartProxyMesh } from './PartProxyMesh';
 import { PlacementGhost } from './PlacementGhost';
 import { WorkshopSharpMesh } from './WorkshopSharpMesh';
@@ -108,6 +109,21 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
       {interaction.draggingId !== null && (
         <DragCatchPlane baseW={w} baseD={d} onSurfaceMove={interaction.onSurfaceMove} />
       )}
+      {interaction.isTouchDevice &&
+        interaction.selectedId !== null &&
+        interaction.draggingId === null &&
+        interaction.pendingType === null &&
+        (() => {
+          const selectedPlaced = interaction.placedById.get(interaction.selectedId);
+          return selectedPlaced ? (
+            <MoveHandle3D
+              placed={selectedPlaced}
+              baseW={w}
+              baseD={d}
+              onBeginDrag={interaction.beginPartDrag}
+            />
+          ) : null;
+        })()}
       <OrbitControls
         makeDefault
         enableDamping
