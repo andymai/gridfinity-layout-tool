@@ -95,7 +95,7 @@ describe('assembly schema', () => {
       {
         id: 'rail',
         type: 'block',
-        params: { width: 160, depth: 12, height: 30, wedgeAngleDeg: 0 },
+        params: { width: 160, depth: 12, height: 30, wedgeAngleDeg: 0, tiltDeg: 0 },
         transform: { x: 4, y: 60, seatZ: 0, rotZDeg: 0 },
         children: [
           {
