@@ -2217,7 +2217,6 @@ const en: Record<string, string> = {
   'binDesigner.itemKind.importedMesh.description': 'Bin imported from an STL file',
   'binDesigner.itemKind.assembly': 'Workshop',
   'binDesigner.itemKind.assembly.description': 'Tool holder built from parts on a Gridfinity base',
-  'binDesigner.newToolRack': 'New tool rack (experimental)',
   'binDesigner.newWorkshop': 'New Workshop build (experimental)',
   'workshop.archStyle.bridge': 'Bridge',
   'workshop.archStyle.rod': 'Rod',

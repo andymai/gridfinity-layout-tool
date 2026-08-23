@@ -4,8 +4,8 @@
  * template can be applied repeatedly; sizes derive from the envelope, so a
  * 2x1 base gets a smaller rack than a 4x2.
  */
-import type { AssemblyPartNode } from '@/shared/types/assembly';
-import type { ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyPartNode, AssemblyStructure } from '@/shared/types/assembly';
+import type { ItemEnvelope, ToolRackStructure } from '@/shared/types/item';
 import { createAssemblyPartNode, defaultCutterProfile } from '@/shared/items/assembly/descriptor';
 
 export type WorkshopTemplateId = 'pliersRack' | 'screwdriverBlock';
@@ -110,4 +110,79 @@ export function buildWorkshopTemplate(
     case 'screwdriverBlock':
       return screwdriverBlock(envelope);
   }
+}
+
+/**
+ * Convert a saved slanted tool rack into an equivalent Workshop build:
+ * the back rail becomes a block, the fin row becomes one fin node with a
+ * linear array (same count/pitch derivation the rack generator used), and
+ * the floor carries over on the base. Geometry matches the rack's layout —
+ * fins are depth-running plates arrayed across the width, leaning back.
+ */
+export function convertToolRackToAssembly(
+  rack: ToolRackStructure,
+  envelope: ItemEnvelope
+): AssemblyStructure {
+  const w = envelope.width * envelope.gridUnitMm;
+  const d = envelope.depth * envelope.gridUnitMm;
+  const pitch = rack.slotPitch ?? 16;
+  const count = Math.max(
+    2,
+    Math.min(64, rack.finCount ?? Math.floor((w - 2 * rack.slotInsetMm) / pitch) + 1)
+  );
+  const spacing = count > 1 ? (w - 2 * rack.slotInsetMm) / (count - 1) : 0;
+
+  const parts: AssemblyPartNode[] = [];
+
+  if (rack.backRail.enabled) {
+    const rail = createAssemblyPartNode('block', crypto.randomUUID(), {
+      x: w / 2,
+      y: d - rack.backRail.thickness / 2 - 1,
+      seatZ: 0,
+      rotZDeg: 0,
+    });
+    parts.push({
+      ...rail,
+      params: {
+        ...rail.params,
+        width: Math.min(w - 2, 400),
+        depth: rack.backRail.thickness,
+        height: rack.backRail.height,
+        wedgeAngleDeg: 0,
+      },
+    });
+  }
+
+  const railDepth = rack.backRail.enabled ? rack.backRail.thickness + 2 : 0;
+  const finLength = Math.max(12, Math.min(d - railDepth - 6, 400));
+  const fin = createAssemblyPartNode('fin', crypto.randomUUID(), {
+    x: rack.slotInsetMm,
+    y: (d - railDepth) / 2,
+    seatZ: 0,
+    rotZDeg: 90,
+  });
+  parts.push({
+    ...fin,
+    params: {
+      ...fin.params,
+      length: finLength,
+      thickness: Math.min(Math.max(rack.finThickness, 0.8), 20),
+      height: Math.min(Math.max(rack.finHeight, 4), 200),
+      leanDeg: Math.min(Math.max(rack.finAngleDeg, 0), 45),
+    },
+    ...(count > 1 ? { array: { count, dx: Math.min(spacing, 500), dy: 0 } } : {}),
+  });
+
+  return {
+    kind: 'assembly',
+    schemaVersion: 1,
+    base: {
+      floorThickness: Math.min(Math.max(rack.floorThickness, 1), 10),
+      ...(rack.cornerRadius !== undefined
+        ? { cornerRadius: Math.min(Math.max(rack.cornerRadius, 0), 20) }
+        : {}),
+    },
+    mirrorAxis: 'x',
+    parts,
+  };
 }

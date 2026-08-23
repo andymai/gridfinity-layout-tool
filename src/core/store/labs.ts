@@ -29,6 +29,7 @@ function loadPreferences(): LabsPreferences {
     // Clean up orphaned keys from removed labs features
     delete prefs.enabledFeatures.handle_ledges;
     delete prefs.enabledFeatures.angled_dividers;
+    delete prefs.enabledFeatures.item_kinds;
 
     return prefs;
   }

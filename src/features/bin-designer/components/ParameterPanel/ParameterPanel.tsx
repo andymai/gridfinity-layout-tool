@@ -94,7 +94,6 @@ function BinParameterPanel() {
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
-  const itemKindsEnabled = useFeatureFlag('item_kinds');
   const workshopEnabled = useFeatureFlag('workshop');
   const newDesign = useDesignerStore((s) => s.newDesign);
   const customShapeReason = t('binDesigner.shape.custom.hint');
@@ -315,13 +314,6 @@ function BinParameterPanel() {
           </div>
         </StickyGroupHeader>
 
-        {itemKindsEnabled && (
-          <div className="px-4 py-3 border-b border-stroke-subtle">
-            <Button variant="secondary" onClick={() => newDesign('toolRack')} className="w-full">
-              {t('binDesigner.newToolRack')}
-            </Button>
-          </div>
-        )}
         {workshopEnabled && (
           <div className="px-4 py-3 border-b border-stroke-subtle">
             <Button variant="secondary" onClick={() => newDesign('assembly')} className="w-full">

@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "새 디자인",
   "binDesigner.newDesignConfirm": "새 디자인을 시작할까요? 현재 디자인은 저장되어 나중에 불러올 수 있습니다.",
   "binDesigner.newDesignCreated": "새 디자인을 만들었습니다",
-  "binDesigner.newToolRack": "새 공구 랙(실험적)",
   "binDesigner.newWorkshop": "새 Workshop 조립(실험적)",
   "binDesigner.noDesignsMatch": "\"{query}\"와(과) 일치하는 디자인이 없습니다",
   "binDesigner.noSavedDesignsYet": "아직 저장된 디자인이 없습니다",

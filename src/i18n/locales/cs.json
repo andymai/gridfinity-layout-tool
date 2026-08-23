@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "Nový návrh",
   "binDesigner.newDesignConfirm": "Začít nový návrh? Tvůj aktuální návrh je uložen a lze ho později načíst.",
   "binDesigner.newDesignCreated": "Nový návrh vytvořen",
-  "binDesigner.newToolRack": "Nový stojan na nářadí (experimentální)",
   "binDesigner.newWorkshop": "Nová sestava Workshop (experimentální)",
   "binDesigner.noDesignsMatch": "Žádný návrh neodpovídá „{query}“",
   "binDesigner.noSavedDesignsYet": "Zatím žádné uložené návrhy",

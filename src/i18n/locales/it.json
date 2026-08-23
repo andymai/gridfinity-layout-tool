@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "Nuovo design",
   "binDesigner.newDesignConfirm": "Iniziare un nuovo design? Il design attuale è salvato e può essere caricato in seguito.",
   "binDesigner.newDesignCreated": "Nuovo design creato",
-  "binDesigner.newToolRack": "Nuova rastrelliera (sperimentale)",
   "binDesigner.newWorkshop": "Nuova costruzione Workshop (sperimentale)",
   "binDesigner.noDesignsMatch": "Nessun design corrisponde a \"{query}\"",
   "binDesigner.noSavedDesignsYet": "Ancora nessun design salvato",

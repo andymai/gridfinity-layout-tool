@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "Neues Design",
   "binDesigner.newDesignConfirm": "Neues Design starten? Dein aktuelles Design wird gespeichert und kann später geladen werden.",
   "binDesigner.newDesignCreated": "Neues Design erstellt",
-  "binDesigner.newToolRack": "Neuer Werkzeughalter (experimentell)",
   "binDesigner.newWorkshop": "Neuer Workshop-Aufbau (experimentell)",
   "binDesigner.noDesignsMatch": "Keine Designs stimmen mit „{query}\" überein",
   "binDesigner.noSavedDesignsYet": "Noch keine gespeicherten Designs",
