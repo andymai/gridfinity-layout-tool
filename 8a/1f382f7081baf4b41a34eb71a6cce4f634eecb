@@ -1,0 +1,30 @@
+src/features/bin-designer/components/Workshop/WorkshopContextMenu.tsx
+  s_a36c0b85dfeec4::t_17e3eca22ecb88 34-38,45
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_0eda1e3c9390d5 12,31-32
+  s_4e61e832655bad::t_76ec5d75d2c34b 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "8a1f382f7081baf4b41a34eb71a6cce4f634eecb",
+  "prompts": {},
+  "sessions": {
+    "s_4e61e832655bad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "67285071-fdce-492e-a2ba-8c4b63a45124",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
