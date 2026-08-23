@@ -310,6 +310,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   selectedAssemblyPartId: null,
   workshopPendingPartType: null,
   workshopPendingCutterShape: null,
+  workshopSnapMm: 3.5,
 };
 
 /** Default empty history */

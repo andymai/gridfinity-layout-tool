@@ -34,6 +34,7 @@ interface PartProxyMeshProps {
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
   onPartPointerDown: (id: string, pointerType: string) => void;
+  onPartContextMenu?: (id: string, clientX: number, clientY: number) => void;
 }
 
 const DEG = Math.PI / 180;
@@ -55,6 +56,7 @@ export function PartProxyMesh({
   onSurfaceLeave,
   onSurfaceClick,
   onPartPointerDown,
+  onPartContextMenu,
 }: PartProxyMeshProps) {
   const colors = useThreeColors();
   const reducedMotion = usePrefersReducedMotion();
@@ -155,6 +157,11 @@ export function PartProxyMesh({
         if (e.button !== 0) return;
         e.stopPropagation();
         onPartPointerDown(placed.selectId, e.pointerType);
+      }}
+      onContextMenu={(e) => {
+        e.stopPropagation();
+        e.nativeEvent.preventDefault();
+        onPartContextMenu?.(placed.selectId, e.nativeEvent.clientX, e.nativeEvent.clientY);
       }}
       onClick={(e) => {
         e.stopPropagation();

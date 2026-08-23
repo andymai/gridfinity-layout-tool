@@ -1,5 +1,7 @@
 /** Scene composition for the Workshop editor: base, parts, ghost, controls. */
 import { OrbitControls } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
+import { useThree } from '@react-three/fiber';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
 import { CameraRig } from '@/shared/components/preview/CameraRig';
 import { SceneLighting } from '@/features/bin-designer/components/PreviewCanvas/previewCanvasCamera';
@@ -7,7 +9,9 @@ import { FootprintGrid } from '@/features/bin-designer/components/preview/Footpr
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope } from '@/shared/types/item';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 import { AlignmentGuides } from './AlignmentGuides';
+import { WorkshopDragTip } from './WorkshopDragTip';
 import { BasePlateMesh } from './BasePlateMesh';
 import { MoveHandle3D } from './MoveHandle3D';
 import { RotationGizmo3D } from './RotationGizmo3D';
@@ -24,9 +28,30 @@ interface WorkshopSceneProps {
   envelope: ItemEnvelope;
   /** performance.now() of the last armed click that hit nothing. */
   missFlashAt?: number;
+  controlsRef?: RefObject<OrbitControlsType | null>;
+  invalidateRef?: RefObject<(() => void) | null>;
+  onPartContextMenu?: (partId: string, clientX: number, clientY: number) => void;
 }
 
-export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: WorkshopSceneProps) {
+function InvalidateBridge({ invalidateRef }: { invalidateRef: RefObject<(() => void) | null> }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    invalidateRef.current = invalidate;
+    return () => {
+      invalidateRef.current = null;
+    };
+  }, [invalidate, invalidateRef]);
+  return null;
+}
+
+export function WorkshopScene({
+  structure,
+  envelope,
+  missFlashAt = 0,
+  controlsRef,
+  invalidateRef,
+  onPartContextMenu,
+}: WorkshopSceneProps) {
   const extent = useMemo(() => baseExtentMm(envelope), [envelope]);
   const interaction = useWorkshopInteraction(structure, extent);
   const { w, d } = extent;
@@ -101,8 +126,22 @@ export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: Workshop
           onSurfaceLeave={interaction.onSurfaceLeave}
           onSurfaceClick={interaction.onSurfaceClick}
           onPartPointerDown={interaction.onPartPointerDown}
+          onPartContextMenu={onPartContextMenu}
         />
       ))}
+      {(interaction.draggingId !== null || interaction.rotatingId !== null) &&
+        (() => {
+          const activeId = interaction.draggingId ?? interaction.rotatingId;
+          const placed = activeId !== null ? interaction.placedById.get(activeId) : undefined;
+          return placed ? (
+            <WorkshopDragTip
+              placed={placed}
+              mode={interaction.rotatingId !== null ? 'rotate' : 'move'}
+              baseW={w}
+              baseD={d}
+            />
+          ) : null;
+        })()}
       {interaction.pendingType && interaction.ghostPosition && interaction.draggingId === null && (
         <PlacementGhost
           type={interaction.pendingType}
@@ -167,7 +206,9 @@ export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: Workshop
             />
           ) : null;
         })()}
+      {invalidateRef && <InvalidateBridge invalidateRef={invalidateRef} />}
       <OrbitControls
+        ref={controlsRef}
         makeDefault
         enableDamping
         dampingFactor={0.12}

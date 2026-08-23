@@ -164,6 +164,7 @@ export interface DesignerState {
     newParentId: string | null,
     transform?: Partial<PartTransform>
   ) => boolean;
+  duplicateAssemblyPart: (id: string) => string | null;
   removeAssemblyPart: (id: string) => void;
   updateAssemblyPartParams: (id: string, params: Partial<AssemblyPartParams>) => void;
   setAssemblyPartArray: (id: string, array: PartArray | null) => void;
@@ -362,6 +363,7 @@ export interface DesignerState {
     type: AssemblyPartType | null,
     cutterShape?: 'circle' | 'slot' | null
   ) => void;
+  setWorkshopSnapMm: (snapMm: number) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**

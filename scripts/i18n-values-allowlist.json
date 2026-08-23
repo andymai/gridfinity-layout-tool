@@ -319,7 +319,11 @@
     "workshop.inspector.rotation",
     "workshop.part.tube",
     "workshop.profileShape.polygon",
-    "workshop.profileShape.rectangle"
+    "workshop.profileShape.rectangle",
+    "workshop.view.front",
+    "workshop.view.isometric",
+    "workshop.view.side",
+    "workshop.view.top"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",
