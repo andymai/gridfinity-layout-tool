@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.465.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.464.0...gridfinity-layout-tool-v4.465.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** wedge base with tilted deck and flat socket ([#3779](https://github.com/andymai/gridfinity-layout-tool/issues/3779)) ([55f66f3](https://github.com/andymai/gridfinity-layout-tool/commit/55f66f3efa6827e6439927ca0b53eadbaa5d463e))
+
 ## [4.464.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.463.0...gridfinity-layout-tool-v4.464.0) (2026-08-23)
 
 
