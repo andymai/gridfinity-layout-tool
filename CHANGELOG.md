@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.443.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.442.0...gridfinity-layout-tool-v4.443.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** sharpen swap and hologram scan-in ([#3726](https://github.com/andymai/gridfinity-layout-tool/issues/3726)) ([32b4b00](https://github.com/andymai/gridfinity-layout-tool/commit/32b4b006ee2c1343408a59f721bb76330906c6fb))
+* **workshop:** worker generator, exact geometry, and STL/STEP/3MF export ([#3724](https://github.com/andymai/gridfinity-layout-tool/issues/3724)) ([94944f7](https://github.com/andymai/gridfinity-layout-tool/commit/94944f7b8489f10eedab9dfacd2a1942a7e7d8b4))
+
 ## [4.442.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.441.0...gridfinity-layout-tool-v4.442.0) (2026-08-22)
 
 
