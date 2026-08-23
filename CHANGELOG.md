@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.458.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.457.0...gridfinity-layout-tool-v4.458.0) (2026-08-23)
+
+
+### Features
+
+* **community:** publish Workshop assemblies from the designer ([#3761](https://github.com/andymai/gridfinity-layout-tool/issues/3761)) ([60d2651](https://github.com/andymai/gridfinity-layout-tool/commit/60d2651fec94dfba0049e827c886621c5f983a83))
+
+
+### Bug Fixes
+
+* **bin-designer:** stop side-panel controls clipping their content ([#3752](https://github.com/andymai/gridfinity-layout-tool/issues/3752)) ([a1e6eb0](https://github.com/andymai/gridfinity-layout-tool/commit/a1e6eb0199b1ccba2c6f2d69ce438e658d78d9d5))
+
 ## [4.457.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.456.0...gridfinity-layout-tool-v4.457.0) (2026-08-23)
 
 
