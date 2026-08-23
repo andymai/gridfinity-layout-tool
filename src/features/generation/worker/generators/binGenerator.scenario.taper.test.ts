@@ -18,7 +18,9 @@ import {
   boundingBox,
   meshTopologyStats,
   meshVolume,
+  sectionHalfWidth,
 } from './__kernel-tests__/meshAssertions';
+import { SOCKET_HEIGHT } from './generatorTypes';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 beforeAll(async () => {
@@ -306,5 +308,39 @@ describe('bin wall taper geometry (#2933)', () => {
     // The taper fully retracts both X sides, so the tapered bin's feet stop a
     // full 10mm/side short of where the flat bin's reach.
     expect(floorSpanX(feetFlat) - floorSpanX(feetTapered)).toBeCloseTo(taper.left + taper.right, 0);
+  });
+
+  // `binFloorMm` makes the floor thicker than a 1.2mm wall, so a rim-sized slab
+  // is fused in above the cavity floor. Down there a tapered wall has pulled
+  // back from the rim, and the unclipped slab fused on as a flat plate jutting
+  // past it (#3751) — a defect the bounding box cannot see, since the rim is
+  // the widest part either way.
+  it('a raised floor stops at the tapered wall rather than plating past it', () => {
+    const generateBin = getGenerateBin();
+    // The reported configuration: no base overhang at all, so the whole 34mm is
+    // flare and the base must come back to the nominal 84mm footprint.
+    const sides = { left: 0, right: 34, front: 0, back: 0 };
+    const bandHeight = 13.5;
+    const mesh = generateBin(
+      buildParams({
+        width: 2,
+        depth: 2,
+        height: 4,
+        overhang: { ...sides, taper: { profile: 'chamfer', bandHeight, ...sides } },
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(mesh, 'raised floor + taper');
+
+    const bb = boundingBox(mesh.vertices);
+    const floorZ = bb.minZ + SOCKET_HEIGHT; // body Z=0
+    // Chamfer is linear, so at height z nothing may reach past the rim less the
+    // inset still to be recovered — at the floor itself, the nominal footprint.
+    for (const z of [0, 0.5, 1, 2]) {
+      expect(sectionHalfWidth(mesh, floorZ + z)).toBeLessThanOrEqual(
+        bb.maxX - sides.right * (1 - z / bandHeight) + 0.05
+      );
+    }
   });
 });

@@ -45,7 +45,13 @@ import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
-import { hasOverhang, overhangExpansion, overhangKey, type ResolvedOverhang } from './overhang';
+import {
+  hasOverhang,
+  overhangExpansion,
+  overhangKey,
+  type ResolvedOverhang,
+  type ResolvedTaper,
+} from './overhang';
 import {
   buildTaperedBox,
   buildTaperedInnerEnvelope,
@@ -291,14 +297,40 @@ export function buildBinBox(
     /**
      * The slab overlaps the existing floor top by COPLANAR_MARGIN — merely
      * meeting that face fuses non-manifold.
+     *
+     * `taper` is the taper the body was actually built with, absent on every
+     * untapered path and on a taper fallback. The slab footprint is rim-sized,
+     * and down at the floor a tapered wall has narrowed away from the rim, so
+     * unclipped it fuses on as a plate protruding into open air (#3751).
      */
-    const finish = (shape: Shape3D): Shape3D => {
+    const finish = (shape: Shape3D, taper?: ResolvedTaper | null): Shape3D => {
       if (!raisesFloor) return setBoxCache(boxKey, shape);
-      const slab = scope.register(
+      const rawSlab = scope.register(
         sketch(makeInnerFootprint(), 'XY', wallThickness - COPLANAR_MARGIN).extrude(
           floorThickness - wallThickness + COPLANAR_MARGIN
         )
       );
+      const slab = taper
+        ? scope.register(
+            unwrap(
+              intersect(
+                rawSlab as ValidSolid,
+                scope.register(
+                  buildTaperedInnerEnvelope(
+                    outerW,
+                    outerD,
+                    wallHeight,
+                    wallThickness,
+                    taper,
+                    floorThickness,
+                    offX,
+                    offY
+                  )
+                ) as ValidSolid
+              )
+            )
+          )
+        : rawSlab;
       const fused = unwrap(fuse(shape as ValidSolid, slab as ValidSolid));
       // Registering the cached shape would queue a delete on what the cache
       // hands out.
@@ -514,7 +546,7 @@ export function buildBinBox(
         // owned by the scope — registering it again would queue a second
         // `delete()` on the same handle.
         scope.register(box);
-        return finish(result);
+        return finish(result, lofts ? ov?.taper : null);
       } catch (e: unknown) {
         // Defensive only — context.ts is supposed to gate this path with
         // `compartmentCavitiesAreViable` so cuts can't fail in practice.
@@ -572,7 +604,7 @@ export function buildBinBox(
           offY
         );
         scope.register(box); // unused on the taper path
-        return finish(taperedBody);
+        return finish(taperedBody, ov.taper);
       } catch (e: unknown) {
         // Fall through to the plain shelled box below so the bin is never lost —
         // but surface it (like the multi-cavity fallback) so a taper regression
