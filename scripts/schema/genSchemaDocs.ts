@@ -84,8 +84,16 @@ function renderConstraint(s: Record<string, unknown>): string {
   return parts.join(', ');
 }
 
+/**
+ * Renders a value as one markdown table cell.
+ *
+ * Backslashes are escaped BEFORE pipes, not after: escaping pipes first would
+ * let a description containing a literal backslash produce `\\|`, which renders
+ * as a stray backslash and an unescaped cell break.
+ */
 function cell(text: unknown): string {
   return String(text ?? '')
+    .replace(/\\/g, '\\\\')
     .replace(/\|/g, '\\|')
     .replace(/\s+/g, ' ')
     .trim();
