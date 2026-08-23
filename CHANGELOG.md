@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.455.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.454.0...gridfinity-layout-tool-v4.455.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** carry assemblies in shared and archived layouts ([#3755](https://github.com/andymai/gridfinity-layout-tool/issues/3755)) ([dc32c11](https://github.com/andymai/gridfinity-layout-tool/commit/dc32c115e2bdda3e9e462f3b386ca07f90dbd618))
+
 ## [4.454.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.453.0...gridfinity-layout-tool-v4.454.0) (2026-08-23)
 
 
