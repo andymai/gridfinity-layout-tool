@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.451.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.450.0...gridfinity-layout-tool-v4.451.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** polish pass from the ship review ([#3744](https://github.com/andymai/gridfinity-layout-tool/issues/3744)) ([524b87d](https://github.com/andymai/gridfinity-layout-tool/commit/524b87d4a6a0f78120ef5ee9098c533847c32ae5))
+
 ## [4.450.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.449.0...gridfinity-layout-tool-v4.450.0) (2026-08-23)
 
 
