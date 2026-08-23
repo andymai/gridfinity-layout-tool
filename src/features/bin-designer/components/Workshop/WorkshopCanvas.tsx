@@ -3,7 +3,7 @@
  * designer holds an assembly. Parts render as instant client-side proxies;
  * the exact worker-fused solid joins in a later phase.
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { PerspectiveCamera } from 'three';
 import { useShallow } from 'zustand/react/shallow';
@@ -34,6 +34,9 @@ export function WorkshopCanvas() {
   const { structure, envelope } = useDesignerStore(
     useShallow((s) => ({ structure: s.structure, envelope: s.envelope }))
   );
+  // An armed click that hits no surface would otherwise be a silent no-op;
+  // a brief pulse on the base plate shows where placement is valid.
+  const [missFlashAt, setMissFlashAt] = useState(0);
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
   const webgl = detectWebGL();
@@ -63,9 +66,14 @@ export function WorkshopCanvas() {
           frameloop="demand"
           gl={{ antialias: true, localClippingEnabled: true, preserveDrawingBuffer: true }}
           onCreated={({ gl }) => setPreviewCanvas(gl.domElement)}
+          onPointerMissed={() => {
+            if (useDesignerStore.getState().ui.workshopPendingPartType) {
+              setMissFlashAt(performance.now());
+            }
+          }}
         >
           <WorkshopContextSync />
-          <WorkshopScene structure={structure} envelope={envelope} />
+          <WorkshopScene structure={structure} envelope={envelope} missFlashAt={missFlashAt} />
         </Canvas>
       </WebGLErrorBoundary>
     </div>

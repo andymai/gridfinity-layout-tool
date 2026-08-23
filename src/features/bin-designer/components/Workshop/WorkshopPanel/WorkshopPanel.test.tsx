@@ -29,9 +29,10 @@ describe('WorkshopPanel', () => {
     const postId = useDesignerStore.getState().addAssemblyPart('post', blockId);
     useDesignerStore.getState().setSelectedAssemblyPartId(null);
     render(<WorkshopPanel />);
-    const postButtons = screen.getAllByRole('button', { name: 'Post' });
+    // Tree rows carry a dims suffix ("Post ⌀8×40"); the palette stays bare.
+    const postButtons = screen.getAllByRole('button', { name: /^Post/ });
     expect(postButtons).toHaveLength(2);
-    const treeRow = postButtons[1];
+    const treeRow = postButtons.find((b) => /⌀/.test(b.textContent ?? ''));
     if (!treeRow) throw new Error('unreachable');
     fireEvent.click(treeRow);
     expect(useDesignerStore.getState().ui.selectedAssemblyPartId).toBe(postId);
