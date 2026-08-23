@@ -81,17 +81,14 @@ export function BasePlateMesh({
     }
     invalidate();
   });
-  const { w: fullW, d: fullD } = baseExtentMm(envelope);
-  const wedgeAngle = base.wedge !== undefined && base.wedge.angleDeg > 0 ? base.wedge.angleDeg : 0;
+  const { w, d } = baseExtentMm(envelope);
+  const wedged = base.wedge !== undefined && base.wedge.angleDeg > 0;
   // Wedge mode: the socket and plinth render flat outside the tilt group
-  // (WedgeFillerMesh); this mesh becomes just the deck, inset like the
-  // worker's so its leaning walls stay inside the plinth.
-  const deckInset =
-    wedgeAngle > 0 ? base.floorThickness * Math.sin((wedgeAngle * Math.PI) / 180) + 0.6 : 0;
-  const w = fullW - 2 * deckInset;
-  const d = fullD - 2 * deckInset;
-  const plateHeight =
-    wedgeAngle > 0 ? base.floorThickness : GRIDFINITY_SPEC.SOCKET_HEIGHT + base.floorThickness;
+  // (WedgeFillerMesh); this mesh becomes just the deck, whose silhouette
+  // stays full width (the worker insets only the deck's lower body).
+  const plateHeight = wedged
+    ? base.floorThickness
+    : GRIDFINITY_SPEC.SOCKET_HEIGHT + base.floorThickness;
   const cornerRadius = Math.min(base.cornerRadius ?? 4, w / 2, d / 2);
 
   const geometry = useMemo(() => {
@@ -119,8 +116,8 @@ export function BasePlateMesh({
     return {
       parentId: null,
       topZ: 0,
-      x: sceneToStore(local.x, fullW),
-      y: sceneToStore(local.y, fullD),
+      x: sceneToStore(local.x, w),
+      y: sceneToStore(local.y, d),
     };
   };
 

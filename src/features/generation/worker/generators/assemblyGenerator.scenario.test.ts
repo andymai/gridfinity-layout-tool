@@ -230,6 +230,56 @@ describe('assembly generator (real WASM)', () => {
     );
   });
 
+  it('a rim-placed part on a wedged base stays one connected solid', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const wedged: AssemblyStructure = {
+      ...structureWith([
+        part(
+          'post',
+          'rim',
+          { x: 0.5, y: 21 },
+          {
+            params: { diameter: 3, height: 20, taperDeg: 0, tipChamfer: 1 },
+          }
+        ),
+      ]),
+      base: {
+        ...DEFAULT_ASSEMBLY_STRUCTURE.base,
+        floorThickness: 4,
+        wedge: { angleDeg: 20, lowEdge: 'left' },
+      },
+    };
+    const result = generateAssembly(wedged, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(result);
+    assertWatertight(result);
+    // Union-find over welded mesh vertices: a floating part shows up as a
+    // second connected component even in a watertight mesh.
+    const { vertices, indices } = result;
+    const Q = 1e4;
+    const key = (i: number): string =>
+      `${Math.round(vertices[i * 3] * Q)},${Math.round(vertices[i * 3 + 1] * Q)},${Math.round(vertices[i * 3 + 2] * Q)}`;
+    const parent = new Map<string, string>();
+    const find = (a: string): string => {
+      let r = a;
+      while (parent.get(r) !== r) r = parent.get(r) as string;
+      return r;
+    };
+    const union = (a: string, b: string): void => {
+      if (!parent.has(a)) parent.set(a, a);
+      if (!parent.has(b)) parent.set(b, b);
+      const ra = find(a);
+      const rb = find(b);
+      if (ra !== rb) parent.set(ra, rb);
+    };
+    for (let i = 0; i < indices.length; i += 3) {
+      union(key(indices[i]), key(indices[i + 1]));
+      union(key(indices[i + 1]), key(indices[i + 2]));
+    }
+    const roots = new Set<string>();
+    for (const k of parent.keys()) roots.add(find(k));
+    expect(roots.size).toBe(1);
+  });
+
   it('a hole cutter removes volume from a block', async () => {
     const { generateAssembly } = await import('./assemblyGenerator');
     const solidBlock = structureWith([part('block', 'b', { x: 42, y: 21 })]);

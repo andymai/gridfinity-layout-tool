@@ -626,11 +626,30 @@ export function buildAssemblySolid(
   const deckCorner = Math.min(cornerRadius, Math.min(deckW, deckD) / 2 - 0.1);
 
   return withScope((scope) => {
-    const floor = sketch(
+    let floor = sketch(
       drawRoundedRectangle(deckW, deckD, deckCorner),
       'XY',
       -COPLANAR_OVERLAP
     ).extrude(floorThickness + COPLANAR_OVERLAP);
+    if (deckInset > 0) {
+      // The top of the deck keeps the full footprint so a part seated
+      // anywhere on it (including the rim strip the inset exposes) still
+      // fuses into the deck instead of floating above the plinth. Only
+      // points above the hinge plane, which all lean inward, are full
+      // width, so the tangency and envelope arguments for the inset hold.
+      const capT = Math.max(0.6, Math.min(1.2, floorThickness / 2));
+      const cap = sketch(
+        drawRoundedRectangle(totalW, totalD, cornerRadius),
+        'XY',
+        floorThickness - capT
+      ).extrude(capT);
+      const stepped = unwrap(fuseAll([floor, cap] as ValidSolid[])) as Shape3D;
+      if (stepped !== floor && stepped !== cap) {
+        floor.delete();
+        cap.delete();
+      }
+      floor = stepped;
+    }
 
     const placements = resolvePlacedParts(structure, {
       w: envelope.width * unitMm,
@@ -722,7 +741,13 @@ export function buildAssemblySolid(
         )
       );
       const clipSize = Math.max(totalW, totalD) * 3;
-      const clipBox = box(clipSize, clipSize, clipSize, { at: [0, 0, clipSize / 2] });
+      // The box's bottom face must contain the pivot line: rotating about a
+      // point above the face only shifts the cut plane by h*(1 - 1/cos), so
+      // the plane would stay at the hinge and leave the sliver (and a
+      // micron-scale deck gap the mesh weld tolerance hides).
+      const clipBox = box(clipSize, clipSize, clipSize, {
+        at: [0, 0, clipSize / 2 + lowFaceTop],
+      });
       const clip = rotate(clipBox, wedgeTransform.angle, {
         at: [wedgeTransform.at[0], wedgeTransform.at[1], lowFaceTop],
         axis: wedgeTransform.axis,
