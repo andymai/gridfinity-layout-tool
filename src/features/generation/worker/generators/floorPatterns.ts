@@ -29,7 +29,7 @@ import { scoopKeepOuts } from './dividerPatterns';
 import { interiorDividerSegments } from './compartmentBuilder';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { filledSocketCells } from './socketBuilder';
-import { magnetPositionsForCell } from './baseplateMagnets';
+import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { footPinPositions, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
 import { forEachCell } from './cellDecomposition';
@@ -137,7 +137,7 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
     params.width,
     params.depth,
     (cell) => {
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+      if (!cellHostsAttachmentHoles(cell, radius, dim.gridUnitMmX, dim.gridUnitMmY)) return;
       for (const [x, y] of magnetPositionsForCell(
         cell,
         radius,

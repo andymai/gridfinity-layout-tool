@@ -32,7 +32,7 @@ import {
 } from '@/shared/generation/screwHolePlan';
 import { SOCKET_HEIGHT, COPLANAR_MARGIN, forEachCell } from './generatorTypes';
 import type { ForEachCellOptions, CellInfo } from './generatorTypes';
-import { magnetPositionsForCell } from './baseplateMagnets';
+import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { resolvePitch, type GridPitch, type GridUnitInput } from './gridPitch';
 
 export interface ResolvedScrewHole {
@@ -49,9 +49,10 @@ export interface ResolvedScrewHole {
  * magnet, so passing the magnet radius alone would let the placement clamp a
  * position closer to a wall than the cone can actually fit.
  *
- * Fractional cells are skipped, matching `buildMagnetHoles`: the plate carries
- * no magnets there, so there is no pad for a screw either. A fractional corner
- * simply snaps to the nearest full cell instead.
+ * Cell eligibility comes from `cellHostsAttachmentHoles`, matching
+ * `buildMagnetHoles`: a screw sits on the same pad a magnet would, so a cell too
+ * small to hold one holds neither, and a corner over it snaps inward to the
+ * nearest cell that does.
  */
 export function screwFloorCandidates(
   gridW: number,
@@ -67,7 +68,7 @@ export function screwFloorCandidates(
     gridW,
     gridD,
     (cell) => {
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+      if (!cellHostsAttachmentHoles(cell, holeRadius, pitchX, pitchY)) return;
       if (cellFilter !== undefined && !cellFilter(cell)) return;
       out.push(...magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor));
     },

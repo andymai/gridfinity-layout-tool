@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { magnetPositionsForCell, MAGNET_EDGE_CLEARANCE } from './baseplateMagnets';
+import {
+  cellHostsAttachmentHoles,
+  magnetPositionsForCell,
+  MAGNET_EDGE_CLEARANCE,
+} from './baseplateMagnets';
 import { MAGNET_OFFSETS } from './generatorConstants';
-import { HOLE_OFFSET } from './generatorTypes';
+import { CLEARANCE, HOLE_OFFSET, INSET_BOT } from './generatorTypes';
 import type { CellInfo } from './cellDecomposition';
 
 const GRID = 42;
@@ -210,5 +214,57 @@ describe('magnetPositionsForCell', () => {
       const legacy = magnetPositionsForCell(cell(1, 1), MAGNET_R, 50, 50, 'center');
       expect(defaulted).not.toEqual(legacy);
     });
+  });
+});
+
+describe('cellHostsAttachmentHoles', () => {
+  it('admits a half cell at spec pitch (#3778)', () => {
+    expect(cellHostsAttachmentHoles(cell(0.5, 0.5), MAGNET_R, GRID, GRID)).toBe(true);
+    expect(cellHostsAttachmentHoles(cell(0.5, 1), MAGNET_R, GRID, GRID)).toBe(true);
+  });
+
+  it('rejects a half cell whose tapered face cannot hold the wall (pitch 25)', () => {
+    // 12.5mm nominal leaves ~6.1mm once the socket taper and fit clearance come
+    // off — narrower than a 6.5mm magnet, let alone its wall.
+    expect(cellHostsAttachmentHoles(cell(0.5, 0.5), MAGNET_R, 25, 25)).toBe(false);
+  });
+
+  it('rejects on the short axis alone', () => {
+    expect(cellHostsAttachmentHoles(cell(0.5, 4), MAGNET_R, 25, 42)).toBe(false);
+  });
+
+  it('narrows as the hole widens', () => {
+    // The same half cell that fits a 6.5mm magnet cannot fit a 16mm one.
+    expect(cellHostsAttachmentHoles(cell(0.5, 0.5), 8, GRID, GRID)).toBe(false);
+  });
+
+  it('admits every full cell regardless of pitch, as before the half-cell change', () => {
+    for (const pitch of [20, 25, 42, 60]) {
+      expect(cellHostsAttachmentHoles(cell(1, 1), MAGNET_R, pitch, pitch)).toBe(true);
+    }
+  });
+});
+
+describe('half-cell magnet placement (#3778)', () => {
+  it('gives a lone half foot one centered hole', () => {
+    expect(magnetPositionsForCell(cell(0.5, 0.5, 21, 0), MAGNET_R, GRID, GRID)).toEqual([[21, 0]]);
+  });
+
+  it('keeps the standard ±13 spacing on a half foot long axis (0.5×1)', () => {
+    const positions = magnetPositionsForCell(cell(0.5, 1, 21, 0), MAGNET_R, GRID, GRID);
+    expect(positions).toHaveLength(2);
+    for (const [x] of positions) expect(x).toBeCloseTo(21, 6);
+    const ys = positions.map((p) => p[1]).sort((a, b) => a - b);
+    expect(ys[0]).toBeCloseTo(-HOLE_OFFSET, 6);
+    expect(ys[1]).toBeCloseTo(HOLE_OFFSET, 6);
+  });
+
+  it('keeps a printable wall on the half foot tapered face', () => {
+    // The face the hole opens on is the socket bottom: nominal less the fit
+    // clearance and the taper on each side.
+    const bottomHalf = (0.5 * GRID - CLEARANCE) / 2 - INSET_BOT;
+    for (const [x] of magnetPositionsForCell(cell(0.5, 0.5), MAGNET_R, GRID, GRID)) {
+      expect(bottomHalf - Math.abs(x) - MAGNET_R).toBeGreaterThanOrEqual(MAGNET_EDGE_CLEARANCE);
+    }
   });
 });

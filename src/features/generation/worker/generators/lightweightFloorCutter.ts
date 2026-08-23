@@ -14,7 +14,7 @@ import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN, INSET_BOT } from './gener
 import { forEachCell } from './cellDecomposition';
 import type { ForEachCellOptions, CellInfo } from './cellDecomposition';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
-import { magnetPositionsForCell } from './baseplateMagnets';
+import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { sketch } from './meshUtils';
 import { magnetOuterWallMarginForNozzle, magnetPadMarginForNozzle } from '@/shared/printSettings';
 import type { MagnetAnchor } from '@/core/types';
@@ -117,9 +117,11 @@ export function buildLightweightFloorCutters(
         const cellW_mm = cell.widthUnits * unitX;
         const cellD_mm = cell.depthUnits * unitY;
 
-        // Fractional cells (half-unit) have no magnets — cut through their
-        // entire floor since the solid material serves no purpose.
-        if (cell.widthUnits < 1 || cell.depthUnits < 1) {
+        // A cell too small for a magnet has nothing to hold that floor up for,
+        // so cut through all of it. A half cell that DOES take a magnet falls
+        // through to the pad logic below, which leaves it solid rather than
+        // stranding the magnet it just placed.
+        if (!cellHostsAttachmentHoles(cell, magnetRadius, unitX, unitY)) {
           const fhw = cellW_mm / 2 - INSET_BOT;
           const fhd = cellD_mm / 2 - INSET_BOT;
           if (fhw <= 0 || fhd <= 0) return;

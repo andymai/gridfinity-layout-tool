@@ -6,10 +6,11 @@ beforeAll(async () => {
   await initBrepjs();
 }, 30_000);
 
-const cellOpts = () => ({
+const cellOpts = (overrides: { gridUnitMm?: number } = {}) => ({
   gridUnitMm: 42,
   fractionalEdgeX: 'end' as const,
   fractionalEdgeY: 'end' as const,
+  ...overrides,
 });
 
 describe('buildLightweightFloorCutters', () => {
@@ -25,11 +26,22 @@ describe('buildLightweightFloorCutters', () => {
     expect(result).toHaveLength(4);
   });
 
-  it('includes fractional cells with full floor cutout', async () => {
+  it('leaves a magnet-bearing half cell solid rather than stranding its magnet (#3778)', async () => {
     const { buildLightweightFloorCutters } = await import('./lightweightFloorCutter');
-    // 1.5×1.5 = 1 full cell (cross cutout) + fractional cells (full rectangular cutout)
+    // 1.5×1.5 at spec pitch: the full cell gets its cross; the three half cells
+    // now carry magnets, and only the symmetric 4-corner layout maps to a cross,
+    // so they stay solid instead of having their floors cut away.
     const result = buildLightweightFloorCutters(1.5, 1.5, 3.25, 2, cellOpts());
-    expect(result.length).toBeGreaterThan(1);
+    expect(result).toHaveLength(1);
+  });
+
+  it('still cuts the whole floor of a half cell too small for a magnet', async () => {
+    const { buildLightweightFloorCutters } = await import('./lightweightFloorCutter');
+    // At pitch 25 the 12.5mm half cells hold no magnet, so their floor material
+    // serves nothing — and the 25mm full cell takes a lone centered magnet,
+    // which is not a cross. Three fractional cutters, no cross.
+    const result = buildLightweightFloorCutters(1.5, 1.5, 3.25, 2, cellOpts({ gridUnitMm: 25 }));
+    expect(result).toHaveLength(3);
   });
 
   it('each cutter is a valid Shape3D with geometry', async () => {

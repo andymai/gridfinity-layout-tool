@@ -46,7 +46,7 @@ import {
 } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
-import { magnetPositionsForCell } from './baseplateMagnets';
+import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import {
@@ -443,8 +443,11 @@ function batchFuseAndCut(cellSockets: Shape3D[], holeTools: Shape3D[]): Shape3D 
  * Magnet/screw holes are placed at the standard 4-corner positions (±13mm from
  * cell center) using the original cell decomposition, NOT the half-socket sub-cells.
  * This ensures magnets align with the baseplate regardless of socket subdivision.
- * Sub-unit cells (from fractional grid dimensions like 1.5×1) are skipped since
- * the Gridfinity spec doesn't define magnet positions for fractional cells.
+ * A half foot keeps the part of that pattern it can hold — two holes on its long
+ * axis, or one centered — which is what a matching half pocket in this tool's
+ * baseplate places too. Against a third-party full-cell plate the centered hole
+ * lands ~2.5mm off that plate's lattice magnet: partial engagement, where the
+ * foot used to offer none.
  *
  * @param forExport If true, uses full 5-section socket profile. Preview uses 3-section.
  */
@@ -602,7 +605,7 @@ export function buildBaseSocket(
         gridW,
         gridD,
         (cell) => {
-          if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+          if (!cellHostsAttachmentHoles(cell, holeRadius, unitX, unitY)) return;
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
           // Standard ±13mm 4-corner pattern on a normal foot; a non-square/small
           // foot (e.g. a 25mm-wide cell) gets the corners that fit, else a single

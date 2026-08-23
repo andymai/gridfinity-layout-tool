@@ -5,17 +5,17 @@
  * Each hole is a BLIND pocket on the floor's UPPER face — opens at lid-local
  * Z = 0 (the visible top surface that an upper bin sits on when stacked) and
  * stops short of the floor BOTTOM by `LID_MAGNET_CEILING` so the magnet sits
- * in a sealed cup. Half-bin sub-cells are skipped (Gridfinity doesn't define
- * fractional-cell magnet positions); polygon bins use `isCellFilled` to skip
- * unfilled cells.
+ * in a sealed cup. A half-bin sub-cell keeps whatever of the pattern its size
+ * allows, exactly as the bin base under it does, so the two still mate; polygon
+ * bins use the mask to skip unfilled cells.
  */
 
 import { drawCircle, unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import { LID_COPLANAR_MARGIN, LID_MAGNET_CEILING } from './lidConstants';
 import { forEachCell } from './cellDecomposition';
-import { magnetPositionsForCell } from './baseplateMagnets';
-import { isCellFilled } from './lidStackGrid';
+import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
+import { isLidCellFilled } from './lidStackGrid';
 import type { LidInputs } from './lidInputs';
 
 export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
@@ -30,7 +30,6 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
     magnetDepth,
     magnetAnchor,
     topThickness,
-    cellMask,
   } = inputs;
   const radius = magnetDiameter / 2;
   // Magnet cells sit on the (possibly non-square) socket grid; the ±13mm hole
@@ -51,23 +50,15 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
   // Faster than per-magnet cut() for non-trivial lids — a 10×10 polygon lid
   // has ~400 holes; per-cut would be 400 boolean ops vs one batched op here.
   const cutters: Shape3D[] = [];
-  // forEachCell handles fractional dimensions (half-bin mode): it decomposes
-  // the lid footprint into 1u full cells + a trailing 0.5u half-cell. Skip
-  // half-cells — Gridfinity doesn't define magnet positions for fractional
-  // cells (matches `socketBuilder.buildBaseSocket`), so the lid magnets line
-  // up with the bin's base sockets.
-  const halfTotalW = (cellsX * gridUnitMm) / 2;
-  const halfTotalD = (cellsY * gridUnitMmY) / 2;
+  // Cell eligibility and mask filtering are both shared — with
+  // `socketBuilder.buildBaseSocket` for the first and the stack-grid pockets for
+  // the second — so a magnet only ever lands where a bin foot can seat on it.
   forEachCell(
     cellsX,
     cellsY,
     (cell) => {
-      if (cell.widthUnits !== 1 || cell.depthUnits !== 1) return;
-      if (cellMask) {
-        const cellX = Math.round((cell.centerX + halfTotalW - gridUnitMm / 2) / gridUnitMm);
-        const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMmY / 2) / gridUnitMmY);
-        if (!isCellFilled(cellMask, cellX, cellY)) return;
-      }
+      if (!cellHostsAttachmentHoles(cell, radius, gridUnitMm, gridUnitMmY)) return;
+      if (!isLidCellFilled(inputs, cell)) return;
       // Shared placement so the lid magnets land at exactly the positions the
       // bin base sockets use (same wall-distance clamp), letting them mate.
       for (const [px, py] of magnetPositionsForCell(
