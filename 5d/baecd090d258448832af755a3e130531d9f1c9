@@ -1,0 +1,60 @@
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_a36c0b85dfeec4::t_895b7ba8ef0407 101-113
+  s_a36c0b85dfeec4::t_bd58e6c0c2620a 6,8,28-29,39,46,63-65,71,285-292
+  s_a36c0b85dfeec4::t_1bbedda940bcd0 269,284
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/features/bin-designer/utils/assemblyChecker.ts
+  s_a36c0b85dfeec4::t_1fb7f4d0b3567e 1-5,8-103
+  s_a36c0b85dfeec4::t_66fbcd1d5006c3 6-7
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_bd15891f887eb4 2228-2232
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/features/bin-designer/utils/assemblyChecker.test.ts
+  s_a36c0b85dfeec4::t_1fb7f4d0b3567e 1-46,48-88
+  s_a36c0b85dfeec4::t_2b2f8e0365492f 47
+  s_a36c0b85dfeec4::t_44255d2fb8e363 89-103
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.test.tsx
+  s_a36c0b85dfeec4::t_bd15891f887eb4 40-47
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_bd15891f887eb4 4274-4279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "5dbaecd090d258448832af755a3e130531d9f1c9",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
