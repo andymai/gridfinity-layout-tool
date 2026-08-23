@@ -53,7 +53,7 @@ describe('assemblyRiseMm', () => {
     };
     const rad = (10 * Math.PI) / 180;
     expect(assemblyRiseMm(structure, 10, EXTENT)).toBeCloseTo(
-      50 * Math.cos(rad) + EXTENT.d * Math.sin(rad)
+      5 + 45 * Math.cos(rad) + EXTENT.d * Math.sin(rad)
     );
   });
 
@@ -64,7 +64,7 @@ describe('assemblyRiseMm', () => {
     };
     const rad = (15 * Math.PI) / 180;
     expect(assemblyRiseMm(structure, 10, EXTENT)).toBeCloseTo(
-      10 * Math.cos(rad) + EXTENT.w * Math.sin(rad)
+      5 + 5 * Math.cos(rad) + EXTENT.w * Math.sin(rad)
     );
   });
 

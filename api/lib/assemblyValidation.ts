@@ -443,7 +443,8 @@ export function sanitizeAssemblyContent(
       wedgeIn.lowEdge === 'front' || wedgeIn.lowEdge === 'back'
         ? (envelopeIn.depth as number) * (envelopeIn.gridUnitMm as number)
         : (envelopeIn.width as number) * (envelopeIn.gridUnitMm as number);
-    riseMm = flatRise * Math.cos(rad) + along * Math.sin(rad);
+    riseMm =
+      SOCKET_HEIGHT_MM + (flatRise - SOCKET_HEIGHT_MM) * Math.cos(rad) + along * Math.sin(rad);
   }
   return { envelope, structure, riseMm };
 }

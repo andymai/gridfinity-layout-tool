@@ -7,6 +7,7 @@
  * base floor's top face (the root seat plane).
  */
 import type { AssemblyPartNode, AssemblyStructure, CutterProfile } from '@/shared/types/assembly';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 const DEG = Math.PI / 180;
 
@@ -221,7 +222,9 @@ export function assemblyRiseMm(
   const rad = (wedge.angleDeg * Math.PI) / 180;
   const extent =
     wedge.lowEdge === 'front' || wedge.lowEdge === 'back' ? baseExtent.d : baseExtent.w;
-  return flat * Math.cos(rad) + extent * Math.sin(rad);
+  // The socket never tilts: only the height above it rotates.
+  const socketMm = Math.min(GRIDFINITY_SPEC.SOCKET_HEIGHT, socketAndFloorMm);
+  return socketMm + (flat - socketMm) * Math.cos(rad) + extent * Math.sin(rad);
 }
 
 /**
