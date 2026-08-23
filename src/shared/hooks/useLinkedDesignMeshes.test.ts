@@ -35,6 +35,7 @@ vi.mock('@/shared/generation/meshAsset', () => ({
 vi.mock('@/shared/generation/meshPersistence', () => ({
   // Kernel-sensitive so the per-kernel namespacing is observable.
   binMeshCacheKey: vi.fn((_p: unknown, kernel: KernelName) => `persist-key-${kernel}`),
+  itemMeshCacheKey: vi.fn((_i: unknown, kernel: KernelName) => `item-key-${kernel}`),
   loadPersistedBinMesh: vi.fn(async () => null),
   savePersistedBinMesh: vi.fn(),
 }));
@@ -118,6 +119,39 @@ function makeImportedDesign(): SavedDesign {
         outlines: [],
       },
     },
+    thumbnail: null,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+    exportFileNameConfig: null,
+  };
+}
+
+function makeAssemblyDesign(): SavedDesign {
+  return {
+    id: D1,
+    name: 'Workshop Holder',
+    kind: 'assembly',
+    envelope: {
+      width: 2,
+      depth: 1,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      attachment: {
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
+    } as unknown as SavedDesign['envelope'],
+    structure: {
+      kind: 'assembly',
+      schemaVersion: 1,
+      base: { floorThickness: 2 },
+      mirrorAxis: 'x',
+      parts: [],
+    } as unknown as SavedDesign['structure'],
     thumbnail: null,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
@@ -226,6 +260,45 @@ describe('useLinkedDesignMeshes', () => {
     const persisted = mockSavePersistedBinMesh.mock.calls[0][1];
     expect(persisted).not.toHaveProperty('labelPlates');
     expect(result.current.get(D1)?.mesh).not.toHaveProperty('labelPlates');
+  });
+
+  it('generates an assembly through the item bridge and persists under the item key', async () => {
+    const mesh = makeMesh();
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeAssemblyDesign()));
+    const generateItemImmediate = vi.fn(async () => ({ mesh }));
+    mockAcquire.mockResolvedValue({
+      generateItemImmediate,
+    } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
+
+    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(D1)?.mesh).toBe(mesh);
+    });
+    expect(generateItemImmediate).toHaveBeenCalledWith(
+      expect.objectContaining({ structure: expect.objectContaining({ kind: 'assembly' }) })
+    );
+    expect(mockLoadPersistedBinMesh).toHaveBeenCalledWith('item-key-occt-wasm');
+    expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('item-key-occt-wasm', mesh);
+    expect(result.current.get(D1)).toMatchObject({ width: 2, depth: 1 });
+    expect(mockRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it('serves a persisted assembly mesh without touching the bridge', async () => {
+    const mesh = makeMesh();
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeAssemblyDesign()));
+    mockLoadPersistedBinMesh.mockResolvedValue(mesh);
+
+    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(D1)?.mesh).toBe(mesh);
+    });
+    expect(mockAcquire).not.toHaveBeenCalled();
   });
 
   it('decodes imported STL designs on the main thread, centered on XY', async () => {
