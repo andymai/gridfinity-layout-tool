@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.454.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.453.0...gridfinity-layout-tool-v4.454.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** export placed assemblies from layout ZIP and inspector ([#3754](https://github.com/andymai/gridfinity-layout-tool/issues/3754)) ([2757bd3](https://github.com/andymai/gridfinity-layout-tool/commit/2757bd33881721a28bc6666058230c039f27eacd))
+
 ## [4.453.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.452.0...gridfinity-layout-tool-v4.453.0) (2026-08-23)
 
 
