@@ -8,14 +8,16 @@ import type {
 } from '@/core/sync/adapters/types';
 import { designId } from '@/core/types';
 import type { CommunityDesignLineage } from '@/shared/types/community';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams, SavedDesign } from '@/features/bin-designer/types';
+import type { ItemEnvelope } from '@/shared/types/item';
+import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
 import {
   deleteDesign,
   listDesigns,
   loadDesign,
   saveDesign,
 } from '@/features/bin-designer/storage/DesignerStorage';
-import { isBinDesign } from '@/features/bin-designer/utils/designKind';
+import { isBinDesign, isSyncableDesign } from '@/features/bin-designer/utils/designKind';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
 
@@ -53,11 +55,51 @@ function isLineage(value: unknown): value is CommunityDesignLineage {
  */
 function unwrap(payload: unknown): {
   name?: string;
-  params: BinParams;
+  params?: BinParams;
+  kind?: 'assembly';
+  envelope?: ItemEnvelope;
+  structure?: unknown;
   tags?: string[];
   publishedId?: string | null;
   lineage?: CommunityDesignLineage | null;
 } {
+  if (payload !== null && typeof payload === 'object' && 'kind' in payload) {
+    const wrapper = payload as {
+      name?: unknown;
+      kind?: unknown;
+      envelope?: unknown;
+      structure?: unknown;
+      tags?: unknown;
+      publishedId?: unknown;
+      lineage?: unknown;
+    };
+    if (
+      wrapper.kind === 'assembly' &&
+      typeof wrapper.envelope === 'object' &&
+      wrapper.envelope !== null &&
+      typeof wrapper.structure === 'object' &&
+      wrapper.structure !== null
+    ) {
+      const trimmed = typeof wrapper.name === 'string' ? wrapper.name.trim() : '';
+      return {
+        name: trimmed === '' ? undefined : trimmed,
+        kind: 'assembly',
+        envelope: wrapper.envelope as ItemEnvelope,
+        structure: wrapper.structure,
+        tags: wrapper.tags === undefined ? undefined : normalizeTags(wrapper.tags),
+        publishedId:
+          wrapper.publishedId === null || typeof wrapper.publishedId === 'string'
+            ? wrapper.publishedId
+            : undefined,
+        lineage:
+          wrapper.lineage === null
+            ? null
+            : isLineage(wrapper.lineage)
+              ? wrapper.lineage
+              : undefined,
+      };
+    }
+  }
   if (payload !== null && typeof payload === 'object' && 'params' in payload) {
     const { name, params, tags, publishedId, lineage } = payload as {
       name?: unknown;
@@ -90,21 +132,36 @@ function unwrap(payload: unknown): {
   return { params: payload as BinParams };
 }
 
+function buildPayload(d: SavedDesign): DesignSyncPayload {
+  if (isBinDesign(d)) {
+    return {
+      name: d.name,
+      params: d.params,
+      tags: d.tags,
+      publishedId: d.publishedId,
+      lineage: d.lineage,
+    };
+  }
+  return {
+    name: d.name,
+    kind: 'assembly',
+    envelope: d.envelope,
+    structure: d.structure,
+    tags: d.tags,
+    publishedId: d.publishedId,
+    lineage: d.lineage,
+  };
+}
+
 export const designAdapter: DesignAdapter = {
   async list(): Promise<SyncableItem<DesignSyncPayload>[]> {
     const result = await listDesigns();
     if (!isOk(result)) return [];
-    // Cloud sync carries bin params only; non-bin kinds (toolRack,
-    // importedMesh) are local-only and must never upload `params: undefined`.
-    return result.value.filter(isBinDesign).map((d) => ({
+    // Bins and assemblies sync; toolRack and importedMesh (base64 mesh
+    // blobs) stay local-only.
+    return result.value.filter(isSyncableDesign).map((d) => ({
       id: d.id,
-      payload: {
-        name: d.name,
-        params: d.params,
-        tags: d.tags,
-        publishedId: d.publishedId,
-        lineage: d.lineage,
-      },
+      payload: buildPayload(d),
       modifiedAt: toMs(d.updatedAt),
     }));
   },
@@ -113,18 +170,12 @@ export const designAdapter: DesignAdapter = {
     const result = await loadDesign(designId(id));
     if (!isOk(result)) return null;
     const d = result.value;
-    // Non-bin kinds are local-only: returning null makes the engine drop the
-    // outbox entry as a no-op (it never tombstones on a null get).
-    if (!isBinDesign(d)) return null;
+    // Non-syncable kinds: returning null makes the engine drop the outbox
+    // entry as a no-op (it never tombstones on a null get).
+    if (!isSyncableDesign(d)) return null;
     return {
       id: d.id,
-      payload: {
-        name: d.name,
-        params: d.params,
-        tags: d.tags,
-        publishedId: d.publishedId,
-        lineage: d.lineage,
-      },
+      payload: buildPayload(d),
       modifiedAt: toMs(d.updatedAt),
     };
   },
@@ -139,6 +190,9 @@ export const designAdapter: DesignAdapter = {
       const {
         name: remoteName,
         params,
+        kind: remoteKind,
+        envelope: remoteEnvelope,
+        structure: remoteStructure,
         tags: remoteTags,
         publishedId: remotePublishedId,
         lineage: remoteLineage,
@@ -154,16 +208,32 @@ export const designAdapter: DesignAdapter = {
       // other device"), so only `undefined` (legacy payload) falls back.
       const publishedId = remotePublishedId === undefined ? base?.publishedId : remotePublishedId;
       const lineage = remoteLineage === undefined ? base?.lineage : remoteLineage;
-      const result = await saveDesign({
-        id: designId(item.id),
-        name,
-        params,
-        thumbnail: base?.thumbnail ?? null,
-        exportFileNameConfig: base?.exportFileNameConfig ?? null,
-        tags,
-        publishedId,
-        lineage,
-      });
+      const result =
+        remoteKind === 'assembly' && remoteEnvelope
+          ? await saveDesign({
+              id: designId(item.id),
+              name,
+              kind: 'assembly',
+              envelope: remoteEnvelope,
+              // Migration is the gate: a newer client's structure gets its
+              // unknown fields dropped node-by-node rather than rejected.
+              structure: assemblyDescriptor.migrate(remoteStructure, remoteEnvelope),
+              thumbnail: base?.thumbnail ?? null,
+              exportFileNameConfig: base?.exportFileNameConfig ?? null,
+              tags,
+              publishedId,
+              lineage,
+            })
+          : await saveDesign({
+              id: designId(item.id),
+              name,
+              params: params,
+              thumbnail: base?.thumbnail ?? null,
+              exportFileNameConfig: base?.exportFileNameConfig ?? null,
+              tags,
+              publishedId,
+              lineage,
+            });
       if (!isOk(result)) {
         throw new Error(`saveDesign failed for ${item.id}`);
       }

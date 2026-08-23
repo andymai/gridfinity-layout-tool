@@ -3,17 +3,36 @@
  * designer holds an assembly. Parts render as instant client-side proxies;
  * the exact worker-fused solid joins in a later phase.
  */
-import { Canvas } from '@react-three/fiber';
+import { useEffect } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
+import { PerspectiveCamera } from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
+import {
+  clearPreviewCanvas,
+  setPreviewCanvas,
+  setPreviewContext,
+} from '@/features/bin-designer/utils/thumbnail';
 import { WorkshopScene } from './WorkshopScene';
+
+/** Registers this canvas with the thumbnail pipeline (see PreviewContextSync). */
+function WorkshopContextSync() {
+  const { gl, scene, camera } = useThree();
+  useEffect(() => {
+    if (camera instanceof PerspectiveCamera) {
+      setPreviewContext(gl, scene, camera);
+    }
+  }, [gl, scene, camera]);
+  return null;
+}
 
 export function WorkshopCanvas() {
   const { structure, envelope } = useDesignerStore(
     useShallow((s) => ({ structure: s.structure, envelope: s.envelope }))
   );
   const webgl = detectWebGL();
+  useEffect(() => () => clearPreviewCanvas(), []);
 
   if (structure?.kind !== 'assembly' || !envelope) return null;
   if (!webgl.available && webgl.reason) {
@@ -23,7 +42,12 @@ export function WorkshopCanvas() {
   return (
     <div className="relative h-full w-full" translate="no" data-testid="workshop-canvas">
       <WebGLErrorBoundary component="designer">
-        <Canvas frameloop="demand" gl={{ antialias: true, localClippingEnabled: true }}>
+        <Canvas
+          frameloop="demand"
+          gl={{ antialias: true, localClippingEnabled: true, preserveDrawingBuffer: true }}
+          onCreated={({ gl }) => setPreviewCanvas(gl.domElement)}
+        >
+          <WorkshopContextSync />
           <WorkshopScene structure={structure} envelope={envelope} />
         </Canvas>
       </WebGLErrorBoundary>

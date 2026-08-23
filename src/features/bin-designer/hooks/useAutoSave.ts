@@ -79,6 +79,7 @@ function waitForGenerationComplete(
  * "Untitled Bin" entries from appearing in My Designs during exploratory parameter tweaks.
  */
 export function useAutoSave(): void {
+  const itemKind = useDesignerStore((s) => s.itemKind);
   const { params, currentDesignId, exportFileNameConfig } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -199,6 +200,9 @@ export function useAutoSave(): void {
   );
 
   useEffect(() => {
+    // Params-only autosave: non-bin kinds persist through their own hooks,
+    // and flushing here would write stale bin params onto their rows.
+    if (itemKind !== 'bin') return;
     // Skip first render (initial mount shouldn't trigger save)
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -249,7 +253,7 @@ export function useAutoSave(): void {
         clearTimeout(timerRef.current);
       }
     };
-  }, [params, exportFileNameConfig, currentDesignId, performSave]);
+  }, [itemKind, params, exportFileNameConfig, currentDesignId, performSave]);
 
   // Leaving the designer (route change) unmounts this hook, which aborts both
   // the debounce and any save still waiting on generation — a window of up to
@@ -261,7 +265,7 @@ export function useAutoSave(): void {
     return () => {
       const state = useDesignerStore.getState();
       const id = state.currentDesignId;
-      if (!id) return;
+      if (!id || state.itemKind !== 'bin') return;
       if (
         lastSavedParams.current === state.params &&
         lastSavedConfig.current === state.exportFileNameConfig

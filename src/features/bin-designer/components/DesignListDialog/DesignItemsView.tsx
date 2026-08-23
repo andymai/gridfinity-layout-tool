@@ -51,7 +51,7 @@ export function DesignItemsView({
     isFocused: index === focusedIndex,
     onSelect: () => onLoad(design),
     onPlaceInLayout: isLayoutPlaceableDesign(design) ? () => onPlaceInLayout(design) : undefined,
-    onDownloadJSON: () => onDownloadJSON(design),
+    onDownloadJSON: design.params ? () => onDownloadJSON(design) : undefined,
     onRename: (newName: string) => onRename(design, newName),
     onEditTags: () => onEditTags(design),
     onDuplicate: () => onDuplicate(design),

@@ -114,6 +114,114 @@ describe('designAdapter non-bin kinds (local-only)', () => {
   });
 });
 
+describe('designAdapter assembly kind', () => {
+  const assemblyStructure = () => ({
+    kind: 'assembly' as const,
+    schemaVersion: 1 as const,
+    base: { floorThickness: 2 },
+    mirrorAxis: 'x' as const,
+    parts: [
+      {
+        id: 'p1',
+        type: 'post' as const,
+        params: { diameter: 8, height: 40, taperDeg: 0, tipChamfer: 1 },
+        transform: { x: 20, y: 20, seatZ: 0, rotZDeg: 0 },
+        children: [],
+      },
+    ],
+  });
+  const assemblyEnvelope = () =>
+    ({
+      width: 4,
+      depth: 2,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      attachment: {
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
+    }) as SavedDesign['envelope'];
+
+  function assemblyDesign(id: string): SavedDesign {
+    const base = savedDesign(id, '2026-04-01T00:00:00.000Z', 'Workshop build');
+    const { params: _params, ...rest } = base;
+    return {
+      ...rest,
+      kind: 'assembly',
+      envelope: assemblyEnvelope(),
+      structure: assemblyStructure(),
+    };
+  }
+
+  it('list() includes assemblies with kind/envelope/structure in the payload', async () => {
+    listDesignsMock.mockResolvedValueOnce(ok([assemblyDesign('w')]));
+    const items = await designAdapter.list();
+    expect(items).toHaveLength(1);
+    const payload = items[0]?.payload;
+    expect(payload?.kind).toBe('assembly');
+    expect(payload?.params).toBeUndefined();
+    expect(payload?.structure).toBeDefined();
+  });
+
+  it('get() returns an assembly payload', async () => {
+    loadDesignMock.mockResolvedValueOnce(ok(assemblyDesign('w')));
+    const item = await designAdapter.get('w');
+    expect(item?.payload.kind).toBe('assembly');
+  });
+
+  it('applyRemote round-trips an assembly through migration into saveDesign', async () => {
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+    saveDesignMock.mockResolvedValueOnce(ok(assemblyDesign('w')));
+    await designAdapter.applyRemote({
+      id: 'w',
+      payload: {
+        name: 'Remote build',
+        kind: 'assembly',
+        envelope: assemblyEnvelope(),
+        structure: assemblyStructure(),
+      },
+      modifiedAt: 1,
+    });
+    expect(saveDesignMock).toHaveBeenCalledTimes(1);
+    const saved = saveDesignMock.mock.calls[0]?.[0] as SavedDesign;
+    expect(saved.kind).toBe('assembly');
+    expect(saved.params).toBeUndefined();
+    expect(saved.structure?.kind).toBe('assembly');
+    expect(saved.structure?.kind === 'assembly' ? saved.structure.parts : []).toHaveLength(1);
+  });
+
+  it('applyRemote drops invalid remote nodes through migration instead of failing', async () => {
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));
+    saveDesignMock.mockResolvedValueOnce(ok(assemblyDesign('w')));
+    const remote = assemblyStructure();
+    const poisoned = {
+      ...remote,
+      parts: [
+        ...remote.parts,
+        { id: 'bad', type: 'sphere', params: {}, transform: {}, children: [] },
+      ],
+    };
+    await designAdapter.applyRemote({
+      id: 'w',
+      payload: {
+        name: 'Remote build',
+        kind: 'assembly',
+        envelope: assemblyEnvelope(),
+        structure: poisoned,
+      },
+      modifiedAt: 1,
+    });
+    const saved = saveDesignMock.mock.calls[0]?.[0] as SavedDesign;
+    expect(
+      saved.structure?.kind === 'assembly' ? saved.structure.parts.map((n) => n.id) : []
+    ).toEqual(['p1']);
+  });
+});
+
 describe('designAdapter tags', () => {
   it('list carries tags in the payload', async () => {
     listDesignsMock.mockResolvedValueOnce(
