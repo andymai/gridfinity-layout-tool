@@ -95,6 +95,7 @@ export function useWorkshopInteraction(
   // deselect what was just selected — swallow exactly that one click.
   const skipNextBaseClickRef = useRef(false);
   const [fineSnap, setFineSnap] = useState(false);
+  const snapMm = useDesignerStore((s) => s.ui.workshopSnapMm);
   const [rotatingId, setRotatingId] = useState<string | null>(null);
   const [alignGuides, setAlignGuides] = useState<AlignGuides | null>(null);
   const rotateStateRef = useRef<{
@@ -122,6 +123,37 @@ export function useWorkshopInteraction(
       if (e.key === 'Alt') setFineSnap(true);
       if (e.key === 'Escape') {
         useDesignerStore.getState().setWorkshopPendingPartType(null);
+        invalidate();
+      }
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return;
+      }
+      const store = useDesignerStore.getState();
+      const selected = store.ui.selectedAssemblyPartId;
+      if (selected === null) return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        store.removeAssemblyPart(selected);
+        invalidate();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        store.duplicateAssemblyPart(selected);
+        invalidate();
+        return;
+      }
+      if (e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const currentStructure = store.structure;
+        if (currentStructure?.kind !== 'assembly') return;
+        const node = findAssemblyPart(currentStructure.parts, selected);
+        if (!node) return;
+        store.moveAssemblyPart(selected, {
+          rotZDeg: ((node.transform.rotZDeg + 90 + 540) % 360) - 180,
+        });
         invalidate();
       }
     };
@@ -169,9 +201,9 @@ export function useWorkshopInteraction(
       const fine = fineSnap;
       const parent = surface.parentId === null ? null : (placedById.get(surface.parentId) ?? null);
       const local = worldToParentLocal({ x: surface.x, y: surface.y }, parent);
-      return { x: snapCoord(local.x, fine), y: snapCoord(local.y, fine) };
+      return { x: snapCoord(local.x, fine, snapMm), y: snapCoord(local.y, fine, snapMm) };
     },
-    [fineSnap, placedById]
+    [fineSnap, placedById, snapMm]
   );
 
   const onSurfaceMove = useCallback(
@@ -205,7 +237,7 @@ export function useWorkshopInteraction(
           xs.push(baseExtent.w / 2);
           ys.push(baseExtent.d / 2);
         }
-        const snapped = alignSnap(rawLocal, { xs, ys }, fineSnap);
+        const snapped = alignSnap(rawLocal, { xs, ys }, fineSnap, snapMm);
         setAlignGuides(
           snapped.guideX !== null || snapped.guideY !== null
             ? { x: snapped.guideX, y: snapped.guideY, parentId: surface.parentId }
@@ -230,7 +262,7 @@ export function useWorkshopInteraction(
       setHover(surface);
       invalidate();
     },
-    [baseExtent.d, baseExtent.w, draggingId, fineSnap, invalidate, placedById]
+    [baseExtent.d, baseExtent.w, draggingId, fineSnap, invalidate, placedById, snapMm]
   );
 
   const onSurfaceLeave = useCallback((): void => {
@@ -373,12 +405,15 @@ export function useWorkshopInteraction(
     if (!hover) return null;
     const parent = hover.parentId === null ? null : (placedById.get(hover.parentId) ?? null);
     const local = worldToParentLocal({ x: hover.x, y: hover.y }, parent);
-    const snapped = { x: snapCoord(local.x, fineSnap), y: snapCoord(local.y, fineSnap) };
+    const snapped = {
+      x: snapCoord(local.x, fineSnap, snapMm),
+      y: snapCoord(local.y, fineSnap, snapMm),
+    };
     const world = parentLocalToWorld(snapped, parent);
     // A placed part starts at local rotation 0, so its world orientation is
     // the parent frame's — the ghost previews exactly that.
     return { x: world.x, y: world.y, z: hover.topZ, rotZDeg: parent?.rotZDeg ?? 0 };
-  }, [fineSnap, hover, placedById]);
+  }, [fineSnap, hover, placedById, snapMm]);
 
   return {
     selectedViaTouch: selectedId !== null && selectedId === touchSelectedId,

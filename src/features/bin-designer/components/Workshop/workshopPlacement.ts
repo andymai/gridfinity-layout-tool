@@ -31,9 +31,11 @@ export function sceneToStore(v: number, extent: number): number {
 
 export const PLACEMENT_SNAP_MM = 3.5;
 export const FINE_SNAP_MM = 0.1;
+/** Grid pitches the snap widget cycles through. */
+export const SNAP_PITCHES_MM = [1, 3.5, 7] as const;
 
-export function snapCoord(v: number, fine: boolean): number {
-  const step = fine ? FINE_SNAP_MM : PLACEMENT_SNAP_MM;
+export function snapCoord(v: number, fine: boolean, pitchMm: number = PLACEMENT_SNAP_MM): number {
+  const step = fine ? FINE_SNAP_MM : pitchMm;
   return Math.round(v / step) * step;
 }
 
@@ -89,7 +91,8 @@ export interface AlignSnapResult {
 export function alignSnap(
   local: { x: number; y: number },
   candidates: { xs: readonly number[]; ys: readonly number[] },
-  fine: boolean
+  fine: boolean,
+  pitchMm: number = PLACEMENT_SNAP_MM
 ): AlignSnapResult {
   if (fine) {
     return { x: snapCoord(local.x, true), y: snapCoord(local.y, true), guideX: null, guideY: null };
@@ -109,8 +112,8 @@ export function alignSnap(
   const guideX = nearest(local.x, candidates.xs);
   const guideY = nearest(local.y, candidates.ys);
   return {
-    x: guideX ?? snapCoord(local.x, false),
-    y: guideY ?? snapCoord(local.y, false),
+    x: guideX ?? snapCoord(local.x, false, pitchMm),
+    y: guideY ?? snapCoord(local.y, false, pitchMm),
     guideX,
     guideY,
   };

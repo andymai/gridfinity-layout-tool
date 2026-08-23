@@ -9,6 +9,7 @@ import {
 import {
   collectAssemblyIds,
   countAssemblyParts,
+  findAssemblyParentId,
   findAssemblyPart,
   withAssemblyPartAdded,
   withAssemblyPartRemoved,
@@ -93,5 +94,14 @@ describe('withAssemblyPartReparented', () => {
     for (let i = 2; i <= MAX_ASSEMBLY_DEPTH; i += 1) chain = post(`d${i}`, [chain]);
     const parts = [chain, post('mover', [post('mover-child')])];
     expect(withAssemblyPartReparented(parts, 'mover', 'd2')).toBeNull();
+  });
+});
+
+describe('findAssemblyParentId', () => {
+  it('returns null for roots, the parent id for children, undefined for strangers', () => {
+    const parts = tree();
+    expect(findAssemblyParentId(parts, 'a')).toBeNull();
+    expect(findAssemblyParentId(parts, 'a2x')).toBe('a2');
+    expect(findAssemblyParentId(parts, 'ghost')).toBeUndefined();
   });
 });

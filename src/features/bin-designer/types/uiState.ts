@@ -213,6 +213,8 @@ export interface DesignerUIState {
 
   /** Starting profile for an armed cutter (the palette's Hole vs Slot). */
   readonly workshopPendingCutterShape: 'circle' | 'slot' | null;
+  /** Workshop placement grid pitch (mm); Alt always overrides to the 0.1mm fine grid. */
+  readonly workshopSnapMm: number;
 }
 
 /** In-flight divider tilt used only for live preview (see `dividerTiltPreview`). */

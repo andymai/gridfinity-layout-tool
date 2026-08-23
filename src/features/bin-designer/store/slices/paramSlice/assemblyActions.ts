@@ -24,6 +24,7 @@ import type {
 } from '@/shared/types/assembly';
 import {
   collectAssemblyIds,
+  findAssemblyParentId,
   findAssemblyPart,
   findAssemblySiblings,
   withAssemblyPartAdded,
@@ -117,6 +118,37 @@ export function createAssemblyActions(set: Set, get: Get) {
       if (!next) return false;
       commitParts(next);
       return true;
+    },
+
+    duplicateAssemblyPart: (id: string): string | null => {
+      const current = parts();
+      if (!current) return null;
+      const node = findAssemblyPart(current, id);
+      if (!node) return null;
+      const cloneNode = (n: AssemblyPartNode): AssemblyPartNode =>
+        ({
+          ...n,
+          id: crypto.randomUUID(),
+          transform: { ...n.transform },
+          params: { ...n.params },
+          ...(n.array ? { array: { ...n.array } } : {}),
+          children: n.children.map(cloneNode),
+        }) as AssemblyPartNode;
+      const copy = cloneNode(node);
+      const offset = {
+        ...copy,
+        transform: clampPartTransform({ ...copy.transform, x: copy.transform.x + 8 }),
+      } as AssemblyPartNode;
+      const parentId = findAssemblyParentId(current, id) ?? null;
+      const next = withAssemblyPartAdded(current, parentId, offset);
+      if (!next) return null;
+      set((state) => {
+        if (state.structure?.kind !== 'assembly') return;
+        pushHistoryEntry(state);
+        state.structure.parts = next;
+        state.ui.selectedAssemblyPartId = offset.id;
+      });
+      return offset.id;
     },
 
     removeAssemblyPart: (id: string): void => {

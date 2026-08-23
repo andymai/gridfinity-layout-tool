@@ -106,6 +106,12 @@ export function createUISlice(set: Set) {
       });
     },
 
+    setWorkshopSnapMm: (snapMm: number) => {
+      set((state) => {
+        state.ui.workshopSnapMm = snapMm;
+      });
+    },
+
     setInteriorCard: (card: InteriorCard) => {
       set((state) => {
         state.ui.interiorCard = card;
