@@ -40,6 +40,7 @@ export function BasePlateMesh({
 }: BasePlateMeshProps) {
   const colors = useThreeColors();
   const materialRef = useRef<MeshStandardMaterial>(null);
+  const flashDirtyRef = useRef(false);
   const invalidate = useThree((s) => s.invalidate);
 
   useEffect(() => {
@@ -54,7 +55,8 @@ export function BasePlateMesh({
     if (!material || flashAt === 0) return;
     const t = (performance.now() - flashAt) / FLASH_MS;
     if (t >= 1) {
-      if (material.emissiveIntensity !== 0) {
+      if (flashDirtyRef.current) {
+        flashDirtyRef.current = false;
         material.emissiveIntensity = 0;
         material.opacity = 1;
         material.transparent = false;
@@ -63,11 +65,15 @@ export function BasePlateMesh({
       }
       return;
     }
+    flashDirtyRef.current = true;
     material.visible = true;
     material.emissiveIntensity = 0.35 * (1 - t);
     if (hidden) {
       material.transparent = true;
       material.opacity = 0.35 * (1 - t);
+    } else {
+      material.transparent = false;
+      material.opacity = 1;
     }
     invalidate();
   });
