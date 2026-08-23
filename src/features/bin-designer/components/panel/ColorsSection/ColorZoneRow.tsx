@@ -90,7 +90,10 @@ export function ColorZoneRow({
         onPointerLeave={() => {
           if (!isOpen) onHover(null);
         }}
-        className="group flex w-full items-center gap-3 rounded-lg px-2 py-2 -mx-2 transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40 data-[open=true]:bg-surface-hover md:py-1.5"
+        // `justify-start` overrides the Button base: centred content splits any
+        // overflow across both edges, which clips the leading swatch instead of
+        // running off the trailing side.
+        className="group flex w-full items-center justify-start gap-3 rounded-lg px-2 py-2 -mx-2 transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40 data-[open=true]:bg-surface-hover md:py-1.5"
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label={`${label}: ${color}`}
@@ -100,7 +103,9 @@ export function ColorZoneRow({
           className="w-6 h-6 rounded-md border border-stroke-subtle/60 shrink-0 shadow-inner transition-transform group-hover:scale-105"
           style={{ backgroundColor: color }}
         />
-        <span className="flex-1 text-left text-xs font-normal text-content-secondary">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-left text-xs font-normal text-content-secondary">
+          {label}
+        </span>
         <span className="font-mono text-[11px] font-normal text-content-secondary tabular-nums">
           {color}
         </span>

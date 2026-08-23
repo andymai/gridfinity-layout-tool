@@ -195,6 +195,11 @@ describe('SegmentedControl', () => {
     }
   });
 
+  it('wraps segments instead of overflowing a narrow container', () => {
+    render(<SegmentedControl {...defaultProps} />);
+    expect(screen.getByRole('radiogroup').className).toContain('flex-wrap');
+  });
+
   it('applies className to the group container', () => {
     render(<SegmentedControl {...defaultProps} className="custom-class" />);
     expect(screen.getByRole('radiogroup')).toHaveClass('custom-class');

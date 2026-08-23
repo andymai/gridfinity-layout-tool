@@ -34,10 +34,10 @@ describe('BentoBinWideSection', () => {
     const before = useDesignerStore.getState().params.compartments;
     render(<BentoBinWideSection />);
 
-    fireEvent.click(screen.getByText('2.4'));
+    fireEvent.click(screen.getByText('2.6'));
 
     const after = useDesignerStore.getState().params.compartments;
-    expect(after.thickness).toBe(2.4);
+    expect(after.thickness).toBe(2.6);
     expect(after.cols).toBe(before.cols);
     expect(after.rows).toBe(before.rows);
     expect(after.cells).toEqual(before.cells);

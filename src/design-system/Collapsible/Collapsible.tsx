@@ -250,7 +250,12 @@ export const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
           aria-hidden={!expanded}
           inert={!expanded ? true : undefined}
           className={cn(
-            'overflow-hidden',
+            // `-mx-2 px-2` widens the clip box without moving the content:
+            // overflow clips to the padding box, so full-row controls that
+            // bleed their hover surface outward (CheckboxRow's `-mx-1.5`,
+            // ColorZoneRow's `-mx-2`) keep their rounded corners instead of
+            // being sliced square by the max-height animation.
+            'overflow-hidden -mx-2 px-2',
             hasToggled && 'transition-all duration-200',
             expanded ? 'opacity-100 max-h-[2000px] mt-3' : 'opacity-0 max-h-0'
           )}
