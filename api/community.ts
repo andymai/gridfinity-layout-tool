@@ -222,11 +222,11 @@ function cardFromRecord(record: CommunityDesignRecord): CommunityCardMetadata {
  */
 async function isExactDuplicate(
   redis: RedisClient,
-  paramsFingerprint: string,
+  contentFingerprint: string,
   authorPublicId: string
 ): Promise<boolean> {
-  if (COMMUNITY_EXAMPLE_PARAM_HASHES.has(paramsFingerprint)) return true;
-  const candidateId = await redis.get(communityParamsHashKey(paramsFingerprint));
+  if (COMMUNITY_EXAMPLE_PARAM_HASHES.has(contentFingerprint)) return true;
+  const candidateId = await redis.get(communityParamsHashKey(contentFingerprint));
   if (candidateId === null || candidateId === '') return false;
   const [status, candidateAuthor] = await redis.hmget(
     communityDesignKey(candidateId),
@@ -302,7 +302,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
     }
 
     try {
-      const paramsFingerprint = communityParamsFingerprint(communityDesignContent(payload));
+      const contentFingerprint = communityParamsFingerprint(communityDesignContent(payload));
       const contentHash = communityContentHash({
         content: communityDesignContent(payload),
         name: payload.name,
@@ -334,7 +334,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
 
       // B3: reject a verbatim re-upload of a built-in example or of another
       // author's live design. The author's own re-publish returned above.
-      if (await isExactDuplicate(redis, paramsFingerprint, authorPublicId)) {
+      if (await isExactDuplicate(redis, contentFingerprint, authorPublicId)) {
         res.status(409).json({
           error:
             'This matches a design that has already been published (or a built-in example). Make it your own before publishing.',
@@ -366,7 +366,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
       if (
         lineage !== null &&
         lineageResolve.parentContent !== null &&
-        communityParamsFingerprint(lineageResolve.parentContent) === paramsFingerprint
+        communityParamsFingerprint(lineageResolve.parentContent) === contentFingerprint
       ) {
         res.status(409).json({
           error: 'Change the design before publishing your remix.',
@@ -487,7 +487,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
       // Post-commit bookkeeping: the design is already live, so these keep the
       // duplicate index and remix stats in sync best-effort. A failure here
       // must not fail an already-successful publish.
-      await redis.set(communityParamsHashKey(paramsFingerprint), id).catch((indexErr: unknown) => {
+      await redis.set(communityParamsHashKey(contentFingerprint), id).catch((indexErr: unknown) => {
         logger.warn('Community publish: params-hash index write failed', {
           id,
           error: indexErr instanceof Error ? indexErr.message : String(indexErr),
