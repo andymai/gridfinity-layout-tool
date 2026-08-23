@@ -83,8 +83,8 @@ export interface AlignSnapResult {
 /**
  * Placement snap with sibling alignment: an axis within ALIGN_SNAP_MM of a
  * candidate (sibling center, plate center) snaps to it and reports a guide;
- * otherwise the magnetic grid applies. Fine mode (Alt) disables both kinds of
- * pull — free positioning is the whole point of the modifier.
+ * otherwise the magnetic grid applies. Fine mode (Alt) disables both magnetic
+ * pulls, leaving only the 0.1mm fine grid every Workshop gesture nudges on.
  */
 export function alignSnap(
   local: { x: number; y: number },
@@ -118,6 +118,10 @@ export function alignSnap(
 
 const RING_MARGIN_MM = 8;
 const RING_MIN_RADIUS_MM = 14;
+
+/** Ring height above the part top — the rotation catch plane must sit on the
+ *  same plane or the ray intersection skews the angle against the visible ring. */
+export const ROTATION_RING_LIFT_MM = 2;
 
 /** Rotation-gizmo ring radius: clear of the part's footprint, never cramped. */
 export function rotationRingRadiusMm(placed: PlacedPart): number {

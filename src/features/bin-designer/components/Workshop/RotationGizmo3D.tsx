@@ -1,17 +1,20 @@
 /**
- * In-canvas rotation gizmo: a flat ring around the selected part's top with a
- * knob at its current heading. Dragging anywhere on the ring rotates the part
- * about Z through the same transactioned machinery as a move — 15° detents,
- * Alt for 1° — so the grab point never jumps and undo captures one step.
+ * In-canvas rotation gizmo. The grab offset is captured at pointerdown so the
+ * part never jumps to meet the pointer, and rotation flows through the same
+ * transactioned move machinery as a drag so undo captures one step.
  */
 import { useMemo } from 'react';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import type { PlacedPart } from './workshopPlacement';
-import { rotationRingRadiusMm, sceneToStore, storeToScene } from './workshopPlacement';
+import {
+  ROTATION_RING_LIFT_MM,
+  rotationRingRadiusMm,
+  sceneToStore,
+  storeToScene,
+} from './workshopPlacement';
 
 const RING_TUBE_MM = 0.9;
 const KNOB_RADIUS_MM = 2.6;
-const RING_LIFT_MM = 2;
 
 interface RotationGizmo3DProps {
   placed: PlacedPart;
@@ -31,7 +34,7 @@ export function RotationGizmo3D({
   const colors = useThreeColors();
   const radius = useMemo(() => rotationRingRadiusMm(placed), [placed]);
   const headingRad = (placed.rotZDeg * Math.PI) / 180;
-  const z = placed.topZ + RING_LIFT_MM;
+  const z = placed.topZ + ROTATION_RING_LIFT_MM;
   const beginRotate = (e: {
     button: number;
     stopPropagation: () => void;

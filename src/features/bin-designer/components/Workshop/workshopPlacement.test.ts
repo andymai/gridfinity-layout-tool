@@ -169,7 +169,7 @@ describe('alignSnap', () => {
     expect(result.x).toBe(45.5);
   });
 
-  it('fine mode disables both pulls', () => {
+  it('fine mode disables both magnetic pulls, keeping the 0.1mm grid', () => {
     const result = alignSnap({ x: 40.4, y: 21.3 }, candidates, true);
     expect(result.guideX).toBeNull();
     expect(result.guideY).toBeNull();

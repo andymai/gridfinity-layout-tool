@@ -1,8 +1,7 @@
 /**
- * Drag-time alignment guides: thin emissive lines through the coordinate a
- * dragged part snapped to (a sibling's center, or the plate center). Guides
- * live in the target parent's frame, so on a rotated parent they draw rotated
- * with it — the line always shows the axis the part actually aligned along.
+ * Drag-time alignment guides. Drawn in the target parent's frame, not the
+ * world's: on a rotated parent the line rotates with it, so it always shows
+ * the axis the part actually aligned along.
  */
 import type { ReactElement } from 'react';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';

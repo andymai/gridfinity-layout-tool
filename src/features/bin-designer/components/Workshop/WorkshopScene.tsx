@@ -16,7 +16,7 @@ import { PlacementGhost } from './PlacementGhost';
 import { WorkshopSharpMesh } from './WorkshopSharpMesh';
 import { useWorkshopSharpen } from './useWorkshopSharpen';
 import { diffNewPartIds } from './hologramTracker';
-import { baseExtentMm, sceneToStore } from './workshopPlacement';
+import { baseExtentMm, ROTATION_RING_LIFT_MM, sceneToStore } from './workshopPlacement';
 import { useWorkshopInteraction, type HoverSurface } from './useWorkshopInteraction';
 
 interface WorkshopSceneProps {
@@ -147,7 +147,7 @@ export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: Workshop
             <RotationCatchPlane
               baseW={w}
               baseD={d}
-              z={rotating ? rotating.topZ : 0}
+              z={(rotating ? rotating.topZ : 0) + ROTATION_RING_LIFT_MM}
               onRotateMove={interaction.onRotateMove}
             />
           );
