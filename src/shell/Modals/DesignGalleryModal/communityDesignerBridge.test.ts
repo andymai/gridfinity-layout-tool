@@ -35,8 +35,16 @@ vi.mock('@/features/bin-designer/hooks/useCommunityPublish', () => ({
 const upsertRegistryEntry = vi.fn();
 const registryEdgeFields = vi.fn((_params: unknown) => ({}));
 const registryHeightFields = vi.fn((_params: unknown) => ({}));
+const registryAssemblyFields = vi.fn((_envelope: unknown, _structure: unknown) => ({
+  kind: 'assembly' as const,
+  assembledRiseMm: 47,
+  socketless: false,
+  hasLip: false,
+}));
 vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
   upsertRegistryEntry: (...a: unknown[]) => upsertRegistryEntry(...a),
+  registryAssemblyFields: (envelope: unknown, structure: unknown) =>
+    registryAssemblyFields(envelope, structure),
   registryEdgeFields: (params: unknown) => registryEdgeFields(params),
   registryHeightFields: (params: unknown) => registryHeightFields(params),
   registryOverhangFields: () => ({}),
@@ -180,6 +188,77 @@ describe('communityDesignerBridge', () => {
       communityToDesign.mockResolvedValue(
         ok({ id: 'design_new', name: 'Screw Bin', updatedAt: '2026-08-02T00:00:00.000Z' })
       );
+    });
+
+    const assemblyDesign: CommunityDesign = {
+      ...design,
+      id: 'Asm123456789',
+      name: 'Pliers Rack',
+      params: undefined,
+      kind: 'assembly',
+      envelope: {
+        width: 2,
+        depth: 2,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+      } as unknown as NonNullable<CommunityDesign['envelope']>,
+      structure: {
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts: [
+          {
+            id: 'p1',
+            type: 'post',
+            params: { diameter: 8, height: 40 },
+            transform: { x: 42, y: 42, seatZ: 0, rotZDeg: 0 },
+            children: [],
+          },
+        ],
+      } as unknown as NonNullable<CommunityDesign['structure']>,
+    };
+
+    it('places an assembly from its envelope with assembly registry fields', async () => {
+      useGapFitStore.getState().setConstraint(constraintFor());
+      communityToDesign.mockResolvedValue(
+        ok({ id: 'design_asm', name: 'Pliers Rack', updatedAt: '2026-08-23T00:00:00.000Z' })
+      );
+
+      await expect(placeCommunityDesignInLayout(assemblyDesign)).resolves.toBe('placed');
+
+      expect(registryAssemblyFields).toHaveBeenCalled();
+      expect(upsertRegistryEntry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'design_asm',
+          width: 2,
+          depth: 2,
+          height: 7,
+          kind: 'assembly',
+          hasLip: false,
+        })
+      );
+      const bins = useLayoutStore.getState().layout.bins;
+      expect(bins).toHaveLength(1);
+      expect(bins[0]).toMatchObject({
+        width: 2,
+        depth: 2,
+        height: 7,
+        linkedDesignId: 'design_asm',
+      });
+    });
+
+    it('treats an assembly on a different unit scale as no-fit', async () => {
+      useGapFitStore.getState().setConstraint(constraintFor());
+      await expect(
+        placeCommunityDesignInLayout({
+          ...assemblyDesign,
+          envelope: {
+            ...(assemblyDesign.envelope as unknown as Record<string, unknown>),
+            gridUnitMm: 21,
+          } as unknown as NonNullable<CommunityDesign['envelope']>,
+        })
+      ).resolves.toBe('no-fit');
     });
 
     it('places the design at the gap, links it, selects it, and clears the handoff', async () => {

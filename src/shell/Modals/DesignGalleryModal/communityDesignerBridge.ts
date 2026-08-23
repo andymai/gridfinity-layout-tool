@@ -10,6 +10,8 @@ import { isOk } from '@/core/result';
 import type { GridUnits, HeightUnits } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { CommunityDesign } from '@/shared/types/community';
+import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type {
   CommunityEditOriginalOutcome,
   CommunityPlaceOutcome,
@@ -108,15 +110,43 @@ export async function placeCommunityDesignInLayout(
     const { x, y, layerId } = constraint.targetPosition;
     if (!layout.layers.some((layer) => layer.id === layerId)) return 'error';
 
-    const { width, depth, height } = design.params;
+    const assembly =
+      design.kind === 'assembly' && design.envelope && design.structure
+        ? { envelope: design.envelope, structure: design.structure }
+        : null;
+    const dims =
+      assembly !== null
+        ? {
+            width: assembly.envelope.width,
+            depth: assembly.envelope.depth,
+            height: assemblyHeightUnits(
+              assembly.structure,
+              assembly.envelope.heightUnitMm,
+              GRIDFINITY_SPEC.SOCKET_HEIGHT + assembly.structure.base.floorThickness
+            ),
+            gridUnitMm: assembly.envelope.gridUnitMm,
+            gridUnitMmY: assembly.envelope.gridUnitMm,
+            heightUnitMm: assembly.envelope.heightUnitMm,
+          }
+        : design.params !== undefined
+          ? {
+              width: design.params.width,
+              depth: design.params.depth,
+              height: design.params.height,
+              gridUnitMm: design.params.gridUnitMm,
+              gridUnitMmY: design.params.gridUnitMmY ?? design.params.gridUnitMm,
+              heightUnitMm: design.params.heightUnitMm,
+            }
+          : null;
+    if (dims === null) return 'error';
+    const { width, depth, height } = dims;
     // The placed bin carries raw unit counts into the layout's unit system,
     // so a design authored on different mm-per-unit scales would come out a
     // different physical size than published. Treat that as unplaceable.
-    const designGridUnitMmY = design.params.gridUnitMmY ?? design.params.gridUnitMm;
     if (
-      design.params.gridUnitMm !== layout.gridUnitMm ||
-      designGridUnitMmY !== effectiveGridUnitMmY(layout) ||
-      design.params.heightUnitMm !== layout.heightUnitMm
+      dims.gridUnitMm !== layout.gridUnitMm ||
+      dims.gridUnitMmY !== effectiveGridUnitMmY(layout) ||
+      dims.heightUnitMm !== layout.heightUnitMm
     ) {
       return 'no-fit';
     }
@@ -153,6 +183,7 @@ export async function placeCommunityDesignInLayout(
     try {
       const {
         upsertRegistryEntry,
+        registryAssemblyFields,
         registryEdgeFields,
         registryHeightFields,
         registryOverhangFields,
@@ -166,9 +197,18 @@ export async function placeCommunityDesignInLayout(
         width,
         depth,
         height,
-        ...registryEdgeFields(design.params),
-        ...registryHeightFields(design.params),
-        ...registryOverhangFields(design.params),
+        ...(assembly !== null || design.params === undefined
+          ? {
+              ...registryEdgeFields({}),
+              ...(assembly !== null
+                ? registryAssemblyFields(assembly.envelope, assembly.structure)
+                : {}),
+            }
+          : {
+              ...registryEdgeFields(design.params),
+              ...registryHeightFields(design.params),
+              ...registryOverhangFields(design.params),
+            }),
         updatedAt: saved.value.updatedAt,
       });
 

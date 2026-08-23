@@ -26,7 +26,8 @@ import type { GapFitVerdict } from '../../utils/gapFit';
 import { formatGrams, formatPrintDuration, roundSummaryMinutes } from '../../utils/printFormat';
 
 export interface PrintCostPanelProps {
-  params: BinParams;
+  /** Absent on a Workshop assembly — the estimate row degrades to observed data. */
+  params?: BinParams;
   metrics: CommunityDesignMetrics;
   /** Null until the print list resolves; the panel shows estimates meanwhile. */
   summary: CommunityPrintSummary | null;
@@ -84,6 +85,7 @@ export function PrintCostPanel({
   // params rather than recomputed on every summary refresh.
   const estimate = useMemo(() => {
     try {
+      if (params === undefined) return null;
       return estimateCommunityPrint(params);
     } catch {
       // A design published by an older client can carry params this build's

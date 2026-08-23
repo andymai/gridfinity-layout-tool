@@ -4020,6 +4020,7 @@ const en: Record<string, string> = {
   'binExamples.technique.customShape': 'Custom shape',
   'binExamples.technique.wallPattern': 'Wall pattern',
   'binExamples.technique.knifeSlots': 'Knife slots',
+  'binExamples.technique.workshop': 'Workshop',
 
   // Bin example presets — wall cutouts
   'binExamples.wallCutout2x4Cable.name': '2×4 Cable Bin',

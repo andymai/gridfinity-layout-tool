@@ -17,7 +17,8 @@ export type ExampleTechnique =
   | 'handles'
   | 'customShape'
   | 'wallPattern'
-  | 'knifeSlots';
+  | 'knifeSlots'
+  | 'workshop';
 
 export const TECHNIQUE_CONFIG: Record<ExampleTechnique, { readonly labelKey: string }> = {
   compartments: { labelKey: 'binExamples.technique.compartments' },
@@ -30,4 +31,5 @@ export const TECHNIQUE_CONFIG: Record<ExampleTechnique, { readonly labelKey: str
   customShape: { labelKey: 'binExamples.technique.customShape' },
   wallPattern: { labelKey: 'binExamples.technique.wallPattern' },
   knifeSlots: { labelKey: 'binExamples.technique.knifeSlots' },
+  workshop: { labelKey: 'binExamples.technique.workshop' },
 };
