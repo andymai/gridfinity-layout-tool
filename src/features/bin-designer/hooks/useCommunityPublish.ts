@@ -139,10 +139,11 @@ export interface CommunityPublishEntry {
 }
 
 /**
- * Any bin the designer can produce is publishable. The gate is only that there
- * IS a bin with a ready mesh, never a judgement about which features it uses,
- * and never a disabled button explained by a `title` tooltip that does not
- * exist on touch.
+ * Any bin or Workshop assembly the designer can produce is publishable. The
+ * gate is only that there IS content with a ready mesh, never a judgement
+ * about which features it uses, and never a disabled button explained by a
+ * `title` tooltip that does not exist on touch. Imported meshes and legacy
+ * racks stay out — they have no publishable parametric content.
  */
 export function useCommunityPublishEntry(): CommunityPublishEntry {
   const publishVisible = useFeatureFlag('community_showcase');

@@ -55,22 +55,22 @@ export type CommunityClientError =
   | { kind: 'server' }
   | { kind: 'network' };
 
-export interface CommunityPublishInput {
+/** Exactly one content shape per publish: bin params, or a Workshop
+ *  assembly's envelope + structure (server validates, sanitizes, derives height). */
+export type CommunityPublishContent =
+  | { params: BinParams; kind?: undefined }
+  | { kind: 'assembly'; envelope: ItemEnvelope; structure: AssemblyStructure; params?: undefined };
+
+export type CommunityPublishInput = CommunityPublishContent & {
   name: string;
   description: string;
   authorName: string;
   category: CommunityCategory;
-  /** Bin content; absent on a Workshop assembly publish. */
-  params?: BinParams;
-  /** Workshop assembly content — the server validates, sanitizes, and derives height. */
-  kind?: 'assembly';
-  envelope?: ItemEnvelope;
-  structure?: AssemblyStructure;
   /** WebP data URLs or raw base64, 1-3 entries, each <= 200 KB decoded. */
   thumbnails: readonly string[];
   /** Raw base64 GLB, <= 2 MB decoded. */
   glb: string;
-}
+};
 
 export interface CommunityPublishResult {
   id: string;

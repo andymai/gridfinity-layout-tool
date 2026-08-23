@@ -23,9 +23,13 @@ export interface CommunityPublishCaptures {
 export interface CommunityPublishDesignContext {
   designId: string;
   designName: string;
-  /** Bin content; absent when publishing a Workshop assembly. */
+  /**
+   * Content shape invariant: exactly one of the two is populated — `params`
+   * for a bin, or `kind: 'assembly'` WITH `envelope` + `structure`. The one
+   * producer (openCommunityPublish) guarantees it; the dialog's submit path
+   * fails fast rather than posting an incomplete body if it is ever broken.
+   */
   params?: BinParams;
-  /** Workshop assembly content; the server re-validates and sanitizes. */
   kind?: 'assembly';
   envelope?: ItemEnvelope;
   structure?: AssemblyStructure;

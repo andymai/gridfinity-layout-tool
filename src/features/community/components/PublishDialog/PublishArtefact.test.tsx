@@ -66,11 +66,7 @@ describe('PublishArtefact', () => {
           depth: 2,
           gridUnitMm: 42,
           heightUnitMm: 7,
-        } as unknown as PublishArtefactProps['assembly'] extends infer T
-          ? T extends { envelope: infer E }
-            ? E
-            : never
-          : never,
+        },
         structure: {
           kind: 'assembly',
           schemaVersion: 1,
