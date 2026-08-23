@@ -1,0 +1,59 @@
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_a36c0b85dfeec4::t_3282b9961590df 10-15,128,169,223
+  s_a36c0b85dfeec4::t_0f48481c1ef368 2-9,19,25-32,38,42,44-52,72-98,101,103-118,120-124,129-137,139-143,145-146,148-152,154-164,167,170-217,219-222,224-233,235-281
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.test.tsx
+  s_a36c0b85dfeec4::t_95b9f62941c5eb 34
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_0778759eb396e5 2271-2272
+src/features/bin-designer/components/Workshop/WorkshopPanel/partIcons.tsx
+  s_a36c0b85dfeec4::t_b09804d26c2511 1-14,20-21,24-25,27,30,32,35-36,38,41-42,44,47,49,52,54,57-59,61,64,66,69,71-72
+  s_a36c0b85dfeec4::t_a4bf18598b791a 15-19,23,26,29,31,34,37,40,43,46,48,51,53,56,60,63,65,68,70
+  s_a36c0b85dfeec4::t_8d09894a6b536c 22,28,33,39,45,50,55,62,67
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_a36c0b85dfeec4::t_8d09894a6b536c 97-108,252
+  s_a36c0b85dfeec4::t_70f8a6a6ea9515 34,84-96,109-110,232-251,253-259
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_0778759eb396e5 4241-4242
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "60c1d6043d1224b29115a4c0561c030745b21f90",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
