@@ -121,13 +121,10 @@ export function communityDesignContent(record: {
   envelope?: Record<string, unknown>;
   structure?: Record<string, unknown>;
 }): Record<string, unknown> {
-  return (
-    record.params ?? {
-      kind: 'assembly',
-      envelope: record.envelope ?? {},
-      structure: record.structure ?? {},
-    }
-  );
+  if (record.kind === 'assembly') {
+    return { kind: 'assembly', envelope: record.envelope ?? {}, structure: record.structure ?? {} };
+  }
+  return record.params ?? {};
 }
 
 export interface CommunityDesignRecord {

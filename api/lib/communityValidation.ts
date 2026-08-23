@@ -10,9 +10,13 @@
 
 import { checkText, filterDisplayName, filterSharedDesignsContent } from './contentFilter.js';
 import { validateDesignerShare } from './designerValidation.js';
-import { validateAssemblyEnvelope, validateAssemblyStructure } from './assemblyValidation.js';
+import {
+  sanitizeAssemblyContent,
+  validateAssemblyEnvelope,
+  validateAssemblyStructure,
+} from './assemblyValidation.js';
 import { isValidShareId } from './shared.js';
-import { isNumber, isObject, isString, validationError } from './validationUtils.js';
+import { isObject, isString, validationError } from './validationUtils.js';
 import {
   classifyCommunityDescription,
   classifyCommunityName,
@@ -246,8 +250,8 @@ export interface CommunityPublishPayload {
   kind?: 'assembly';
   envelope?: Record<string, unknown>;
   structure?: Record<string, unknown>;
-  /** Client-computed standing height in 7mm units (range-checked); the
-   *  metrics derivation needs it because the envelope carries no height. */
+  /** Server-derived standing height in height units — computed from the
+   *  validated part tree, never client-supplied. */
   heightUnits?: number;
   techniques: CommunityTechnique[];
   /** Raw base64 (any data-URL prefix stripped), ready to decode for blob upload. */
@@ -460,11 +464,13 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
     if (!structureResult.valid) {
       return { valid: false, error: structureResult.error };
     }
-    if (!isNumber(body.heightUnits) || body.heightUnits < 1 || body.heightUnits > 60) {
-      return validationError('INVALID_PAYLOAD', 'heightUnits must be a number between 1 and 60');
-    }
+    // Project onto the known shape: unknown keys drop, part ids are reduced
+    // to a machine-safe charset, and the standing height derives from the
+    // validated part tree — the client cannot smuggle strings past the
+    // validators or game the stored height.
+    const sanitized = sanitizeAssemblyContent(body.envelope, body.structure);
     const assemblyBytes = Buffer.byteLength(
-      JSON.stringify({ envelope: body.envelope, structure: body.structure }),
+      JSON.stringify({ envelope: sanitized.envelope, structure: sanitized.structure }),
       'utf8'
     );
     if (assemblyBytes > MAX_COMMUNITY_ASSEMBLY_BYTES) {
@@ -473,13 +479,14 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
         `design exceeds maximum size of ${MAX_COMMUNITY_ASSEMBLY_BYTES / 1024}KB`
       );
     }
+    const heightUnitMm = (sanitized.envelope.heightUnitMm as number) || 7;
     assembly = {
-      envelope: body.envelope as Record<string, unknown>,
-      structure: body.structure as Record<string, unknown>,
-      heightUnits: body.heightUnits,
+      envelope: sanitized.envelope,
+      structure: sanitized.structure,
+      heightUnits: Math.max(1, Math.ceil(sanitized.riseMm / heightUnitMm)),
     };
-    // Assembly structures carry no engraved text, so the name/description
-    // sweeps above are the whole text surface.
+    // Assembly structures carry no free text after the projection, so the
+    // name/description sweeps above are the whole text surface.
   } else {
     if (!isObject(body.params)) {
       return validationError('MISSING_PARAMS', 'params must be an object');

@@ -141,10 +141,31 @@ describe('validateCommunityPublish', () => {
     expectError(assemblyBody({ envelope: { width: 500 } }), 'INVALID_PARAMS');
   });
 
-  it('rejects an assembly with a missing or out-of-range heightUnits', () => {
-    expectError(assemblyBody({ heightUnits: undefined }), 'INVALID_PAYLOAD');
-    expectError(assemblyBody({ heightUnits: 0 }), 'INVALID_PAYLOAD');
-    expectError(assemblyBody({ heightUnits: 400 }), 'INVALID_PAYLOAD');
+  it('derives heightUnits from the part tree, ignoring any client value', () => {
+    // 40mm post + 5mm socket + 2mm floor = 47mm -> 7 units of 7mm.
+    const result = validateCommunityPublish(assemblyBody({ heightUnits: 2 }));
+    expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected valid');
+    expect(result.payload.heightUnits).toBe(7);
+  });
+
+  it('drops unknown keys and unsafe id characters from the stored content', () => {
+    const body = assemblyBody();
+    const structure = body.structure as Record<string, unknown>;
+    structure.extra = 'smuggled';
+    const part = (structure.parts as Record<string, unknown>[])[0];
+    part.id = 'p1<script>';
+    part.note = 'also smuggled';
+    const result = validateCommunityPublish(body);
+    expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected valid');
+    const stored = result.payload.structure as {
+      extra?: unknown;
+      parts: Array<{ id: string; note?: unknown }>;
+    };
+    expect(stored.extra).toBeUndefined();
+    expect(stored.parts[0].note).toBeUndefined();
+    expect(stored.parts[0].id).toBe('p1_script_');
   });
 
   it('rejects a non-object body', () => {
