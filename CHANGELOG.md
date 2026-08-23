@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.450.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.449.0...gridfinity-layout-tool-v4.450.0) (2026-08-23)
+
+
+### Features
+
+* **schema:** make the JSON format docs discoverable ([#3739](https://github.com/andymai/gridfinity-layout-tool/issues/3739)) ([00d5946](https://github.com/andymai/gridfinity-layout-tool/commit/00d59461658fc999eb5283a46df316e07730526d))
+
 ## [4.449.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.448.0...gridfinity-layout-tool-v4.449.0) (2026-08-23)
 
 
