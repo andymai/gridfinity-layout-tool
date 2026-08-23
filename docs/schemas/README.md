@@ -120,3 +120,11 @@ markers. Narrative prose around them is hand-written and left alone.
 
 A stale table fails CI, so regenerate after any schema change rather than
 editing a table by hand.
+
+`bin-design.md` is deliberately layered: the parameter set and the configs
+people actually hand-author carry full tables, while the long tail is summarised
+with a pointer to the type that defines it. That split is declared in
+`INDEXED_DEFS` and checked both ways, so a config cannot lose its table by
+accident, nor be demoted to a pointer without saying so. Everything is typed by
+the schema either way, so editor completion and `validate:json` cover the whole
+document regardless.

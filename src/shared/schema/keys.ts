@@ -121,6 +121,59 @@ export const SCHEMA_ROOT_KEYS = {
 export const UNCHECKED_DEFS = ['CornerCut', 'CustomProperties'] as const;
 
 /**
+ * Definitions documented by a pointer to their defining type rather than by a
+ * field table.
+ *
+ * The reference is layered on purpose: the document root, the parameter set,
+ * and the configs people actually hand-author carry full tables, while the
+ * long tail is summarised and pointed at. Listing them here rather than
+ * inferring it keeps the layering a decision `docs.test.ts` can check in both
+ * directions, so a config cannot lose its table by accident, and one cannot be
+ * quietly demoted to a pointer either.
+ *
+ * `OverhangConfig` and `WallTaperConfig` stay tabled despite being niche,
+ * because `layout.md` defers to them for `Bin.overhang` and a pointer would
+ * strand that reader.
+ */
+export const INDEXED_DEFS = [
+  'AccentBandConfig',
+  'AxisSlotConfig',
+  'BezierHandle',
+  'CutoutArrayConfig',
+  'CutoutScoopEdges',
+  'DividerOverride',
+  'DividerPieceConfig',
+  'FeatureColorConfig',
+  'FloorPatternConfig',
+  'HandleConfig',
+  'HandleSide',
+  'Insert',
+  'KnifeRestConfig',
+  'KnifeSpec',
+  'LidConfig',
+  'LidGripConfig',
+  'LidHingeConfig',
+  'LidMagnetConfig',
+  'LidSlideConfig',
+  'LidTrayConfig',
+  'MeshAsset',
+  'MeshOutlinePoint',
+  'PathPoint',
+  'SideFlags',
+  'SlideConfig',
+  'SlotConfig',
+  'SplitConnectorConfig',
+  'StashedCompartment',
+  'SurfaceTextConfig',
+  'TextOffset',
+  'TextStyleDefaults',
+  'TextStyleOverride',
+  'TrayBottomConfig',
+  'WallPatternConfig',
+  'WallPatternSides',
+] as const;
+
+/**
  * Manifests with no TypeScript type to assert against, so the compile-time
  * half of the guard cannot apply. `ExportMeta` is built as an object literal
  * inside `exportLayoutJSON` and never named.

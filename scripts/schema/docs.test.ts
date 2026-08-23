@@ -2,15 +2,17 @@
  * Docs to schema parity, the fourth drift guard.
  *
  * The field tables in `docs/schemas/*.md` are generated from the schemas, so
- * this asserts three things:
+ * this asserts:
  *
  *  1. Regenerating produces no diff. A schema change that was not followed by
  *     `pnpm run gen:schema-docs` fails here rather than leaving a table that
  *     quietly describes the old shape.
  *  2. Every `$def` is documented somewhere. A new config cannot be added to a
  *     schema and left out of the reference.
- *  3. Sections marked `indexed` really do point at a source file, so the
- *     layered-depth decision stays deliberate instead of becoming a hole.
+ *  3. The layering is deliberate in both directions: a definition is only
+ *     documented by pointer if it is declared in `INDEXED_DEFS`, every declared
+ *     one really is indexed, and each cites the type that defines it.
+ *  4. Every cross-reference resolves, which nothing else checks.
  */
 
 import { readFileSync } from 'node:fs';
@@ -24,7 +26,7 @@ import {
   renderDoc,
   schemaIndex,
 } from './genSchemaDocs';
-import { UNCHECKED_DEFS } from '@/shared/schema/keys';
+import { INDEXED_DEFS, UNCHECKED_DEFS } from '@/shared/schema/keys';
 import { BIN_DESIGN_SCHEMA_FILE, LAYOUT_SCHEMA_FILE, defsOf, readSchema } from './loadSchemas';
 
 const GENERATED_DOCS = ['layout.md', 'bin-design.md'];
@@ -92,13 +94,29 @@ describe('indexed sections point somewhere', () => {
   const found = markers();
   const indexed = [...found.entries()].filter(([, meta]) => meta.indexed);
 
-  it('only definitions without properties are indexed', () => {
-    const allowed = new Set<string>(UNCHECKED_DEFS);
-    const unexpected = indexed.map(([name]) => name).filter((name) => !allowed.has(name));
+  it('every indexed section is a declared one', () => {
+    const declared = new Set<string>([...INDEXED_DEFS, ...UNCHECKED_DEFS]);
+    const undeclared = indexed.map(([name]) => name).filter((name) => !declared.has(name));
     expect(
-      unexpected,
-      'a definition with real properties is documented by pointer instead of a table. Generated tables are free to maintain, so prefer one.'
+      undeclared,
+      'a definition is documented by pointer without being listed in INDEXED_DEFS. Give it a table, or declare the demotion so the layering stays a decision rather than an omission.'
     ).toEqual([]);
+  });
+
+  it('every declared indexed def is actually indexed', () => {
+    const actual = new Set(indexed.map(([name]) => name));
+    const missing = [...INDEXED_DEFS].filter((name) => !actual.has(name));
+    expect(
+      missing,
+      'INDEXED_DEFS names definitions that still carry a full table. Remove them from the list, or index them.'
+    ).toEqual([]);
+  });
+
+  it('tabled defs are not silently listed as indexed', () => {
+    const overlap = [...INDEXED_DEFS].filter((name) =>
+      (UNCHECKED_DEFS as readonly string[]).includes(name)
+    );
+    expect(overlap, 'a def is in both INDEXED_DEFS and UNCHECKED_DEFS').toEqual([]);
   });
 
   it.each(indexed.map(([name, meta]) => [name, meta.file] as const))(
@@ -120,5 +138,41 @@ describe('docs are internally consistent', () => {
   it.each(ALL_DOCS)('%s has no unfilled generated region', (file) => {
     const source = readFileSync(join(DOCS_DIR, file), 'utf8');
     expect(source).not.toContain('<!-- generated:start -->\n\n<!-- generated:end -->');
+  });
+});
+
+/**
+ * The tables render `$ref`s as links, and nothing else checks that those
+ * targets exist. Headings are prose-named ("## Handles" for `HandleConfig`), so
+ * the generator emits an explicit anchor per section; this is what proves it.
+ */
+describe('cross-references resolve', () => {
+  const slug = (heading: string): string =>
+    heading
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/ /g, '-');
+
+  it.each(GENERATED_DOCS)('%s has no dead local anchors', (file) => {
+    const source = readDoc(file);
+    const targets = new Set<string>();
+    for (const [, heading] of source.matchAll(/^#{1,6}\s+(.+)$/gm)) targets.add(slug(heading));
+    for (const [, id] of source.matchAll(/<a id="([\w.:-]+)"><\/a>/g)) targets.add(id);
+
+    const dead = [...source.matchAll(/\]\(#([\w-]+)\)/g)]
+      .map((m) => m[1])
+      .filter((target) => !targets.has(target));
+    expect(
+      [...new Set(dead)].sort(),
+      `${file} links to anchors that do not exist. Run \`pnpm run gen:schema-docs\`.`
+    ).toEqual([]);
+  });
+
+  it.each(GENERATED_DOCS)('%s cross-document links name a real file', (file) => {
+    const source = readDoc(file);
+    const files = [...source.matchAll(/\]\(([\w-]+\.md)#[\w-]+\)/g)].map((m) => m[1]);
+    for (const target of new Set(files)) {
+      expect(GENERATED_DOCS.includes(target), `${file} links to unknown doc ${target}`).toBe(true);
+    }
   });
 });
