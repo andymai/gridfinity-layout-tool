@@ -91,6 +91,45 @@ export function deriveCommunityMetrics(params: Record<string, unknown>): Communi
   };
 }
 
+/**
+ * Metrics for a Workshop assembly: footprint from the envelope, height from
+ * the validated client-computed standing height (the envelope carries none).
+ */
+export function deriveAssemblyMetrics(
+  envelope: Record<string, unknown>,
+  heightUnits: number
+): CommunityDesignMetrics {
+  const gridUnitMm = positiveNumber(envelope.gridUnitMm, DEFAULT_GRID_UNIT_MM);
+  const heightUnitMm = positiveNumber(envelope.heightUnitMm, DEFAULT_HEIGHT_UNIT_MM);
+  return {
+    width: positiveNumber(envelope.width, 1) * gridUnitMm - BIN_TOLERANCE_MM,
+    depth: positiveNumber(envelope.depth, 1) * gridUnitMm - BIN_TOLERANCE_MM,
+    height: Math.max(1, heightUnits) * heightUnitMm,
+    gridUnitMm,
+  };
+}
+
+/**
+ * The publishable design content regardless of kind — bin params, or an
+ * assembly's envelope + structure. The single input every duplicate,
+ * remix-differs, and idempotency hash must cover, so the two kinds can
+ * never alias each other.
+ */
+export function communityDesignContent(record: {
+  params?: Record<string, unknown>;
+  kind?: string;
+  envelope?: Record<string, unknown>;
+  structure?: Record<string, unknown>;
+}): Record<string, unknown> {
+  return (
+    record.params ?? {
+      kind: 'assembly',
+      envelope: record.envelope ?? {},
+      structure: record.structure ?? {},
+    }
+  );
+}
+
 export interface CommunityDesignRecord {
   id: string;
   authorPublicId: string;
@@ -99,7 +138,12 @@ export interface CommunityDesignRecord {
   description: string;
   category: CommunityCategory;
   techniques: CommunityTechnique[];
-  params: Record<string, unknown>;
+  /** Bin params; absent on a Workshop assembly record. */
+  params?: Record<string, unknown>;
+  /** Workshop assembly content: envelope + part structure instead of params. */
+  kind?: 'assembly';
+  envelope?: Record<string, unknown>;
+  structure?: Record<string, unknown>;
   metrics: CommunityDesignMetrics;
   lineage: CommunityLineage | null;
   /** Blob URLs of the revision-stamped WebP captures. */
@@ -200,6 +244,8 @@ export interface CommunityCardMetadata {
   authorName: string;
   category: CommunityCategory;
   techniques: CommunityTechnique[];
+  /** '' for a bin design; 'assembly' for a Workshop holder. */
+  kind?: string;
   width: number;
   depth: number;
   height: number;
@@ -257,6 +303,7 @@ export async function writeCommunityCard(redis: Redis, card: CommunityCardMetada
     authorName: card.authorName,
     category: card.category,
     techniques: JSON.stringify(card.techniques),
+    kind: card.kind ?? '',
     width: String(card.width),
     depth: String(card.depth),
     height: String(card.height),
@@ -289,6 +336,7 @@ function parseCard(fields: Record<string, string | undefined>): CommunityCardRec
     authorName: fields.authorName ?? '',
     category: (fields.category ?? 'other') as CommunityCategory,
     techniques,
+    kind: fields.kind ?? '',
     width: Number(fields.width ?? 0),
     depth: Number(fields.depth ?? 0),
     height: Number(fields.height ?? 0),
@@ -603,7 +651,8 @@ function stableStringify(value: unknown): string {
 }
 
 export interface CommunityContentHashInput {
-  params: Record<string, unknown>;
+  /** Kind-agnostic design content — see {@link communityDesignContent}. */
+  content: Record<string, unknown>;
   name: string;
   description: string;
   category: string;
@@ -629,7 +678,7 @@ export interface CommunityContentHashInput {
  */
 export function communityContentHash(content: CommunityContentHashInput): string {
   const canonical = stableStringify({
-    params: content.params,
+    params: content.content,
     name: content.name,
     description: content.description,
     category: content.category,

@@ -6,6 +6,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('./designerValidation.js', () => ({
   validateDesignerShare: mocks.validateDesignerShare,
+  // Real implementation: assemblyValidation (unmocked) imports it, and the
+  // assembly publish tests exercise that path for real.
+  validateFeatureColors: (value: unknown): string | null =>
+    value !== undefined && typeof value !== 'object' ? 'featureColors must be an object' : null,
 }));
 
 import {
@@ -78,6 +82,69 @@ describe('validateCommunityPublish', () => {
     expect(result.payload.techniques).toEqual([]);
     expect(result.payload.thumbnails).toEqual([webpBase64()]);
     expect(result.payload.glb).toBe(glbBase64());
+  });
+
+  const assemblyBody = (over: Record<string, unknown> = {}): Record<string, unknown> =>
+    validBody({
+      params: undefined,
+      kind: 'assembly',
+      envelope: {
+        width: 2,
+        depth: 2,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        attachment: {
+          magnetHoles: false,
+          magnetDiameter: 6.5,
+          magnetDepth: 2.4,
+          screwHoles: false,
+          screwDiameter: 3,
+        },
+        featureColors: { enabled: false },
+      },
+      structure: {
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts: [
+          {
+            id: 'p1',
+            type: 'post',
+            params: { diameter: 8, height: 40, taperDeg: 0, tipChamfer: 1 },
+            transform: { x: 20, y: 20, seatZ: 0, rotZDeg: 0 },
+            children: [],
+          },
+        ],
+      },
+      heightUnits: 7,
+      ...over,
+    });
+
+  it('accepts a Workshop assembly publish and tags it workshop', () => {
+    const result = validateCommunityPublish(assemblyBody());
+    expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected valid');
+    expect(result.payload.kind).toBe('assembly');
+    expect(result.payload.params).toBeUndefined();
+    expect(result.payload.envelope).toMatchObject({ width: 2, depth: 2 });
+    expect(result.payload.structure).toMatchObject({ kind: 'assembly' });
+    expect(result.payload.heightUnits).toBe(7);
+    expect(result.payload.techniques).toEqual(['workshop']);
+  });
+
+  it('rejects an assembly with an invalid structure or envelope', () => {
+    expectError(
+      assemblyBody({ structure: { kind: 'assembly', schemaVersion: 2 } }),
+      'INVALID_PARAMS'
+    );
+    expectError(assemblyBody({ envelope: { width: 500 } }), 'INVALID_PARAMS');
+  });
+
+  it('rejects an assembly with a missing or out-of-range heightUnits', () => {
+    expectError(assemblyBody({ heightUnits: undefined }), 'INVALID_PAYLOAD');
+    expectError(assemblyBody({ heightUnits: 0 }), 'INVALID_PAYLOAD');
+    expectError(assemblyBody({ heightUnits: 400 }), 'INVALID_PAYLOAD');
   });
 
   it('rejects a non-object body', () => {
@@ -392,7 +459,7 @@ describe('deriveCommunityTechniques', () => {
       cellMask: { cols: 2, rows: 1, cells: [1, 0] },
       wallPattern: { enabled: true },
     });
-    expect(everything).toEqual([...COMMUNITY_TECHNIQUES]);
+    expect(everything).toEqual(COMMUNITY_TECHNIQUES.filter((t) => t !== 'workshop'));
   });
 });
 

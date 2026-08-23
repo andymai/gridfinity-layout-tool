@@ -39,9 +39,11 @@ import {
   communityContentHash,
   communityDedupeBucket,
   communityMeshBlobPath,
+  communityDesignContent,
   communityParamsFingerprint,
   communityThumbBlobPath,
   deleteCommunityDesignBlob,
+  deriveAssemblyMetrics,
   deriveCommunityMetrics,
   readCommunityDesignBlob,
   recordModerationTombstone,
@@ -388,8 +390,14 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
       return sendError(res, 403, ErrorCode.UNAUTHORIZED, 'This design cannot be updated.');
     }
 
-    const paramsFingerprint = communityParamsFingerprint(payload.params);
-    const previousFingerprint = communityParamsFingerprint(existing.params);
+    // A design's kind is fixed at publish: the update payload must stay the
+    // same shape as the stored record, or the content fields below would mix.
+    if ((existing.kind === 'assembly') !== (payload.kind === 'assembly')) {
+      sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'design kind cannot change on update');
+      return;
+    }
+    const paramsFingerprint = communityParamsFingerprint(communityDesignContent(payload));
+    const previousFingerprint = communityParamsFingerprint(communityDesignContent(existing));
 
     // B3: reject an edit into a verbatim built-in example or another author's
     // live design.
@@ -404,7 +412,10 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
     // B4: a remix must still differ from its parent after an edit.
     if (existing.lineage !== null) {
       const parent = await readCommunityDesignBlob(existing.lineage.parentId);
-      if (parent !== null && communityParamsFingerprint(parent.params) === paramsFingerprint) {
+      if (
+        parent !== null &&
+        communityParamsFingerprint(communityDesignContent(parent)) === paramsFingerprint
+      ) {
         return res.status(409).json({
           error: 'Change the design before publishing your remix.',
           code: 'REMIX_UNCHANGED',
@@ -447,8 +458,13 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
       authorName: payload.authorName,
       category: payload.category,
       techniques: payload.techniques,
-      params: payload.params,
-      metrics: deriveCommunityMetrics(payload.params),
+      ...(payload.kind === 'assembly'
+        ? { kind: 'assembly' as const, envelope: payload.envelope, structure: payload.structure }
+        : { params: payload.params }),
+      metrics:
+        payload.kind === 'assembly'
+          ? deriveAssemblyMetrics(payload.envelope ?? {}, payload.heightUnits ?? 1)
+          : deriveCommunityMetrics(payload.params ?? {}),
       thumbnails: thumbnailUrls,
       meshUrl: mesh.url,
       updatedAt: Date.now(),
@@ -468,6 +484,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
       authorName: updated.authorName,
       category: updated.category,
       techniques: updated.techniques,
+      kind: updated.kind ?? '',
       width: updated.metrics.width,
       depth: updated.metrics.depth,
       height: updated.metrics.height,
@@ -487,7 +504,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
     // lineage (A8) so it matches the publish-side hash.
     await redis.hset(communityDesignKey(id), {
       contentHash: communityContentHash({
-        params: payload.params,
+        content: communityDesignContent(payload),
         name: payload.name,
         description: payload.description,
         category: payload.category,

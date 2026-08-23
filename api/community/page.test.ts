@@ -42,6 +42,7 @@ function design(overrides: Partial<DesignMeta> = {}): DesignMeta {
     description: 'Holds twelve hex drivers upright so you can read the sizes.',
     thumbnailUrl: 'https://blob.test/thumb.webp',
     category: 'tools',
+    kind: '',
     metrics: { width: 83.5, depth: 41.5, height: 21, gridUnitMm: 42 },
     counts: { likes: 3, remixes: 0, prints: 1 },
     featured: false,
@@ -275,6 +276,12 @@ describe('isIndexable', () => {
 });
 
 describe('renderDesignFallback', () => {
+  it('names a Workshop holder instead of a bin', () => {
+    const html = renderDesignFallback(design({ kind: 'assembly' }), 'https://x.test/d/a');
+    expect(html).toContain('Workshop holder design');
+    expect(html).not.toContain('bin design');
+  });
+
   it('omits the details list when there is nothing to put in it', () => {
     const html = renderDesignFallback(
       design({
