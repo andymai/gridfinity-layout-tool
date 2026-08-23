@@ -18,7 +18,11 @@ import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { loadDesign, saveDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
-import { registryEdgeFields, upsertRegistryEntry } from '../store/customBinRegistry';
+import {
+  registryAssemblyFields,
+  registryEdgeFields,
+  upsertRegistryEntry,
+} from '../store/customBinRegistry';
 import { captureThumbnailAtPreset } from '../utils/thumbnail';
 
 const AUTO_SAVE_DELAY_MS = 1000;
@@ -66,8 +70,8 @@ async function persistExisting(
       envelope.heightUnitMm,
       GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness
     ),
-    kind: 'assembly',
     ...registryEdgeFields({}),
+    ...registryAssemblyFields(envelope, structure),
     updatedAt: result.value.updatedAt,
   });
 }

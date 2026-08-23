@@ -5,12 +5,16 @@ import {
   upsertRegistryEntry,
   removeRegistryEntry,
   rebuildRegistry,
+  registryAssemblyFields,
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
   type CustomBinRef,
 } from './customBinRegistry';
 import { designId } from '@/core/types';
+import type { ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 function makeRef(id: string, name: string = 'Test Bin'): CustomBinRef {
@@ -269,6 +273,42 @@ describe('customBinRegistry', () => {
         base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
       });
       expect(flat.socketless).toBe(true);
+    });
+  });
+
+  describe('registryAssemblyFields', () => {
+    const envelope = { width: 4, depth: 2, gridUnitMm: 42, heightUnitMm: 7 } as ItemEnvelope;
+    const structureWith = (parts: unknown[]): AssemblyStructure =>
+      ({
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts,
+      }) as AssemblyStructure;
+
+    it('charges the full rise with no lip and no socketless flag', () => {
+      const fields = registryAssemblyFields(envelope, structureWith([]));
+      expect(fields.kind).toBe('assembly');
+      expect(fields.socketless).toBe(false);
+      expect(fields.hasLip).toBe(false);
+      expect(fields.assembledRiseMm).toBeCloseTo(GRIDFINITY_SPEC.SOCKET_HEIGHT + 2, 5);
+      expect(fields.overhangMm).toBeUndefined();
+    });
+
+    it('surfaces a part hanging past the plate as overhangMm', () => {
+      const overhung = structureWith([
+        {
+          id: 'b',
+          type: 'block',
+          params: { width: 40, depth: 20, height: 20 },
+          transform: { x: 0, y: 42, seatZ: 0, rotZDeg: 0 },
+          children: [],
+        },
+      ]);
+      const fields = registryAssemblyFields(envelope, overhung);
+      expect(fields.overhangMm).toEqual({ left: 20, right: 0, front: 0, back: 0 });
+      expect(fields.assembledRiseMm).toBeCloseTo(GRIDFINITY_SPEC.SOCKET_HEIGHT + 2 + 20, 5);
     });
   });
 

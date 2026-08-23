@@ -172,7 +172,7 @@ describe('LinkDesignDialog', () => {
     expect(screen.getByLabelText('common.close')).toBeInTheDocument();
   });
 
-  it('lists imported-mesh designs with a matching footprint, excludes tool racks', async () => {
+  it('lists imported-mesh and assembly designs with a matching footprint, excludes tool racks', async () => {
     mockListDesigns.mockResolvedValue({
       ok: true,
       value: [
@@ -196,6 +196,20 @@ describe('LinkDesignDialog', () => {
           kind: 'importedMesh',
           envelope: { width: 4, depth: 4 },
           structure: { kind: 'importedMesh', heightUnits: 2 },
+          thumbnail: null,
+        },
+        {
+          id: 'asm-1',
+          name: 'Workshop Holder',
+          kind: 'assembly',
+          envelope: { width: 2, depth: 3, gridUnitMm: 42, heightUnitMm: 7 },
+          structure: {
+            kind: 'assembly',
+            schemaVersion: 1,
+            base: { floorThickness: 2 },
+            mirrorAxis: 'x',
+            parts: [],
+          },
           thumbnail: null,
         },
         {
@@ -224,6 +238,8 @@ describe('LinkDesignDialog', () => {
     expect(screen.getByText('Parametric Box')).toBeInTheDocument();
     // Imported designs carry a kind badge
     expect(screen.getByText('binDesigner.itemKind.importedMesh')).toBeInTheDocument();
+    expect(screen.getByText('Workshop Holder')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.itemKind.assembly')).toBeInTheDocument();
     expect(screen.queryByText('Wrong Footprint Mesh')).not.toBeInTheDocument();
     expect(screen.queryByText('Tool Rack')).not.toBeInTheDocument();
   });

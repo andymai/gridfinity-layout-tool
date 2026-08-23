@@ -76,6 +76,34 @@ describe('navigateToPlaceInLayout', () => {
     expect(window.location.search).toContain('placeDesignId=mesh-1');
   });
 
+  it('registers an assembly design with rise and lip fields', () => {
+    const assembly = makeDesign({
+      id: designId('asm-1'),
+      name: 'Pliers Rack',
+      params: undefined,
+      kind: 'assembly',
+      envelope: {
+        width: 2,
+        depth: 2,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+      } as unknown as SavedDesign['envelope'],
+      structure: {
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts: [],
+      } as unknown as SavedDesign['structure'],
+    });
+    navigateToPlaceInLayout(assembly);
+    const ref = loadRegistry().find((r) => r.id === 'asm-1');
+    expect(ref?.kind).toBe('assembly');
+    expect(ref).toMatchObject({ width: 2, depth: 2, socketless: false, hasLip: false });
+    expect(ref?.assembledRiseMm).toBeGreaterThan(0);
+    expect(window.location.search).toContain('placeDesignId=asm-1');
+  });
+
   it('registers a bin design in the custom-bin registry', () => {
     navigateToPlaceInLayout(makeDesign());
     const ref = loadRegistry().find((r) => r.id === 'design-1');

@@ -8,7 +8,10 @@
  */
 
 import type { DesignId } from '@/core/types';
-import type { ItemKind } from '@/shared/types/item';
+import type { ItemEnvelope, ItemKind } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
+import { assemblyOverhangMm, assemblyRiseMm } from '@/shared/types/assemblyPlacement';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result/errors';
 import { isOk } from '@/core/result';
@@ -213,6 +216,31 @@ export function registryOverhangFields(
   const o = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
   if (!hasOverhang(o)) return { overhangMm: undefined };
   return { overhangMm: { left: o.left, right: o.right, front: o.front, back: o.back } };
+}
+
+/**
+ * Project the fields a Workshop assembly's registry entry carries out of its
+ * envelope + structure — the assembly counterpart of
+ * {@link registryHeightFields} + {@link registryOverhangFields}. `hasLip` is
+ * always false (a holder's parts stand proud of a plate with no lip), so the
+ * ceiling charges the full rise with no junction credit; parts placed past the
+ * plate edge surface as `overhangMm` so print-bed fit sees the real extent.
+ */
+export function registryAssemblyFields(
+  envelope: ItemEnvelope,
+  structure: AssemblyStructure
+): Pick<CustomBinRef, 'kind' | 'assembledRiseMm' | 'socketless' | 'hasLip' | 'overhangMm'> {
+  const socketAndFloorMm = GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness;
+  return {
+    kind: 'assembly',
+    assembledRiseMm: assemblyRiseMm(structure, socketAndFloorMm),
+    socketless: false,
+    hasLip: false,
+    overhangMm: assemblyOverhangMm(structure, {
+      w: envelope.width * envelope.gridUnitMm,
+      d: envelope.depth * envelope.gridUnitMm,
+    }),
+  };
 }
 
 /**

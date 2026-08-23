@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { designId } from '@/core/types';
 import type { BinParams, SavedDesign } from '../types';
-import { designFootprint, isBinDesign } from './designKind';
+import { designFootprint, isBinDesign, isLayoutPlaceableDesign } from './designKind';
 
 function baseDesign(): Omit<SavedDesign, 'params'> {
   return {
@@ -28,6 +28,53 @@ describe('isBinDesign', () => {
       structure: { kind: 'importedMesh', heightUnits: 3 } as SavedDesign['structure'],
     };
     expect(isBinDesign(design)).toBe(false);
+  });
+});
+
+describe('isLayoutPlaceableDesign', () => {
+  const assemblyStructure = {
+    kind: 'assembly',
+    schemaVersion: 1,
+    base: { floorThickness: 2 },
+    mirrorAxis: 'x',
+    parts: [],
+  } as unknown as SavedDesign['structure'];
+  const envelope = { width: 2, depth: 3 } as SavedDesign['envelope'];
+
+  it('accepts bins, imported meshes, and assemblies', () => {
+    expect(isLayoutPlaceableDesign({ ...baseDesign(), params: { width: 2 } as BinParams })).toBe(
+      true
+    );
+    expect(
+      isLayoutPlaceableDesign({
+        ...baseDesign(),
+        kind: 'importedMesh',
+        envelope,
+        structure: { kind: 'importedMesh', heightUnits: 3 } as SavedDesign['structure'],
+      })
+    ).toBe(true);
+    expect(
+      isLayoutPlaceableDesign({
+        ...baseDesign(),
+        kind: 'assembly',
+        envelope,
+        structure: assemblyStructure,
+      })
+    ).toBe(true);
+  });
+
+  it('rejects tool racks and an assembly missing its envelope', () => {
+    expect(
+      isLayoutPlaceableDesign({
+        ...baseDesign(),
+        kind: 'toolRack',
+        envelope,
+        structure: { kind: 'toolRack' } as unknown as SavedDesign['structure'],
+      })
+    ).toBe(false);
+    expect(
+      isLayoutPlaceableDesign({ ...baseDesign(), kind: 'assembly', structure: assemblyStructure })
+    ).toBe(false);
   });
 });
 

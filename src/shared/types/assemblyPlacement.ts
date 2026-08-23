@@ -198,6 +198,16 @@ export function resolvePlacedParts(
 }
 
 /**
+ * Exact standing height in mm, socket and floor included — what the layout's
+ * drawer-ceiling check charges for a placed assembly (`assembledRiseMm`).
+ */
+export function assemblyRiseMm(structure: AssemblyStructure, socketAndFloorMm: number): number {
+  const placed = resolvePlacedParts(structure);
+  const maxTop = placed.reduce((max, p) => Math.max(max, p.topZ), 0);
+  return maxTop + socketAndFloorMm;
+}
+
+/**
  * Overall build height in Gridfinity height units (7mm), socket and floor
  * included — the framing/footprint number a library row reports.
  */
@@ -206,7 +216,40 @@ export function assemblyHeightUnits(
   heightUnitMm: number,
   socketAndFloorMm: number
 ): number {
-  const placed = resolvePlacedParts(structure);
-  const maxTop = placed.reduce((max, p) => Math.max(max, p.topZ), 0);
-  return Math.max(1, Math.ceil((maxTop + socketAndFloorMm) / heightUnitMm));
+  return Math.max(1, Math.ceil(assemblyRiseMm(structure, socketAndFloorMm) / heightUnitMm));
+}
+
+const OVERHANG_EPSILON_MM = 0.05;
+
+/**
+ * Per-side millimetres any part's body extends past the base plate, in the
+ * design's own frame (front = min-y edge). Placement past the edge is legal
+ * (the checker only advises), so the layout's print-bed math must see it —
+ * this is the registry's `overhangMm` for an assembly. Undefined when every
+ * part stays on the plate.
+ */
+export function assemblyOverhangMm(
+  structure: AssemblyStructure,
+  baseExtent: { w: number; d: number }
+): { left: number; right: number; front: number; back: number } | undefined {
+  let left = 0;
+  let right = 0;
+  let front = 0;
+  let back = 0;
+  for (const p of resolvePlacedParts(structure, baseExtent)) {
+    if (p.node.type === 'cutter') continue;
+    const half = partFootprint(p.node);
+    const rad = (p.rotZDeg * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(rad));
+    const sin = Math.abs(Math.sin(rad));
+    const halfW = (cos * half.w + sin * half.d) / 2;
+    const halfD = (sin * half.w + cos * half.d) / 2;
+    left = Math.max(left, halfW - p.x);
+    right = Math.max(right, p.x + halfW - baseExtent.w);
+    front = Math.max(front, halfD - p.y);
+    back = Math.max(back, p.y + halfD - baseExtent.d);
+  }
+  if (Math.max(left, right, front, back) <= OVERHANG_EPSILON_MM) return undefined;
+  const clamp = (v: number): number => (v > OVERHANG_EPSILON_MM ? Math.round(v * 100) / 100 : 0);
+  return { left: clamp(left), right: clamp(right), front: clamp(front), back: clamp(back) };
 }
