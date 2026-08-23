@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.460.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.459.1...gridfinity-layout-tool-v4.460.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** give parts a designed edge language ([#3768](https://github.com/andymai/gridfinity-layout-tool/issues/3768)) ([29a5661](https://github.com/andymai/gridfinity-layout-tool/commit/29a5661f4e402f39e8fac79312d738231cf68084))
+
 ## [4.459.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.459.0...gridfinity-layout-tool-v4.459.1) (2026-08-23)
 
 
