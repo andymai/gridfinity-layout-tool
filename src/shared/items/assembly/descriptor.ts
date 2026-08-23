@@ -99,6 +99,22 @@ const archParamsSchema = z.object({
   depth: z.number().min(4).max(60),
 });
 
+const combParamsSchema = z.object({
+  width: z.number().min(10).max(300),
+  depth: z.number().min(4).max(80),
+  height: z.number().min(5).max(120),
+  slotCount: z.number().int().min(1).max(15),
+  slotWidth: z.number().min(1).max(60),
+  slotDepth: z.number().min(1).max(110),
+});
+
+const riserParamsSchema = z.object({
+  width: z.number().min(10).max(300),
+  stepCount: z.number().int().min(2).max(6),
+  stepDepth: z.number().min(5).max(80),
+  stepHeight: z.number().min(2).max(60),
+});
+
 const pathPointSchema = z.object({
   x: z.number().min(-2000).max(2000),
   y: z.number().min(-2000).max(2000),
@@ -199,6 +215,18 @@ export const assemblyPartNodeSchema: z.ZodType<AssemblyPartNode> = z.lazy(() =>
     }),
     z.object({
       ...nodeBase,
+      type: z.literal('comb'),
+      params: combParamsSchema,
+      children: childrenSchema,
+    }),
+    z.object({
+      ...nodeBase,
+      type: z.literal('riser'),
+      params: riserParamsSchema,
+      children: childrenSchema,
+    }),
+    z.object({
+      ...nodeBase,
       type: z.literal('cutter'),
       params: cutterParamsSchema,
       children: childrenSchema,
@@ -285,6 +313,8 @@ export const DEFAULT_PART_PARAMS: {
     uprightThickness: 6,
     depth: 15,
   },
+  comb: { width: 80, depth: 14, height: 35, slotCount: 4, slotWidth: 9, slotDepth: 25 },
+  riser: { width: 60, stepCount: 3, stepDepth: 18, stepHeight: 14 },
   cutter: { profile: { shape: 'circle', diameter: 6.5 }, depth: 20, clearance: 0.2, chamfer: 0.6 },
 };
 

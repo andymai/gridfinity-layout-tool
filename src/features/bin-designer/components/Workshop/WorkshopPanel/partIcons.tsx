@@ -52,6 +52,16 @@ export const PART_ICONS: Record<string, ReactElement> = {
       <path d="M4.5 2v8a2.5 2.5 0 0 0 5 0V8.5" />
     </>
   ),
+  comb: svg(
+    <>
+      <path d="M2 11.5v-7h2v4h2v-4h2v4h2v-4h2v7z" />
+    </>
+  ),
+  riser: svg(
+    <>
+      <path d="M2 11.5v-2.5h3v-3h3v-3h4v8.5z" />
+    </>
+  ),
   arch: svg(
     <>
       <path d="M3 12V6M11 12V6" />

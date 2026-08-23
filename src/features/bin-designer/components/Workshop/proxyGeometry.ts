@@ -222,6 +222,69 @@ function buildHook(p: {
   return geometry;
 }
 
+function buildComb(p: {
+  width: number;
+  depth: number;
+  height: number;
+  slotCount: number;
+  slotWidth: number;
+  slotDepth: number;
+}): BufferGeometry {
+  const slotWidth = Math.min(p.slotWidth, p.width / p.slotCount - 2);
+  const slotDepth = Math.min(p.slotDepth, p.height - 1.5);
+  // Front-elevation comb silhouette (teeth and slots), extruded through the
+  // depth: drawn in x/z then stood upright.
+  const shape = new Shape();
+  shape.moveTo(-p.width / 2, 0);
+  shape.lineTo(p.width / 2, 0);
+  if (slotWidth > 0.5 && slotDepth > 0.5) {
+    const pitch = p.width / p.slotCount;
+    shape.lineTo(p.width / 2, p.height);
+    for (let i = p.slotCount - 1; i >= 0; i -= 1) {
+      const cx = -p.width / 2 + pitch * (i + 0.5);
+      shape.lineTo(cx + slotWidth / 2, p.height);
+      shape.lineTo(cx + slotWidth / 2, p.height - slotDepth);
+      shape.lineTo(cx - slotWidth / 2, p.height - slotDepth);
+      shape.lineTo(cx - slotWidth / 2, p.height);
+    }
+    shape.lineTo(-p.width / 2, p.height);
+  } else {
+    shape.lineTo(p.width / 2, p.height);
+    shape.lineTo(-p.width / 2, p.height);
+  }
+  shape.closePath();
+  const g = new ExtrudeGeometry(shape, { depth: p.depth, bevelEnabled: false });
+  g.applyMatrix4(new Matrix4().makeRotationX(Math.PI / 2));
+  g.translate(0, p.depth / 2, 0);
+  return g;
+}
+
+function buildRiser(p: {
+  width: number;
+  stepCount: number;
+  stepDepth: number;
+  stepHeight: number;
+}): BufferGeometry {
+  const totalD = p.stepCount * p.stepDepth;
+  // Side-elevation staircase, drawn in y/z and extruded along the run.
+  const shape = new Shape();
+  shape.moveTo(-totalD / 2, 0);
+  shape.lineTo(totalD / 2, 0);
+  shape.lineTo(totalD / 2, p.stepCount * p.stepHeight);
+  for (let i = p.stepCount; i >= 1; i -= 1) {
+    const yFront = totalD / 2 - (p.stepCount - i + 1) * p.stepDepth;
+    shape.lineTo(yFront, i * p.stepHeight);
+    if (i > 1) shape.lineTo(yFront, (i - 1) * p.stepHeight);
+  }
+  shape.closePath();
+  const g = new ExtrudeGeometry(shape, { depth: p.width, bevelEnabled: false });
+  // Profile drawn in (y, z); extrusion runs along x.
+  g.applyMatrix4(new Matrix4().makeRotationX(Math.PI / 2));
+  g.applyMatrix4(new Matrix4().makeRotationZ(Math.PI / 2));
+  g.translate(-p.width / 2, 0, 0);
+  return g;
+}
+
 function buildArch(p: {
   span: number;
   height: number;
@@ -373,6 +436,10 @@ export function buildPartGeometry(node: AssemblyPartNode): BufferGeometry {
       return buildHook(node.params);
     case 'arch':
       return buildArch(node.params);
+    case 'comb':
+      return buildComb(node.params);
+    case 'riser':
+      return buildRiser(node.params);
     case 'cutter':
       return buildCutter(node.params);
   }

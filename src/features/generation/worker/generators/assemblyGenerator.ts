@@ -556,6 +556,65 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       }
       return fused;
     }
+    case 'comb': {
+      const { width, depth, height, slotCount } = node.params;
+      // Slots center on an even pitch, so the edge tooth is half an interior
+      // one: pitch - 2 keeps every tooth at least 1mm. The slot floor keeps 1.5mm.
+      const slotWidth = Math.min(node.params.slotWidth, width / slotCount - 2);
+      const slotDepth = Math.min(node.params.slotDepth, height - 1.5);
+      const total = height + sink;
+      let body: Shape3D = box(width, depth, total, { at: [0, 0, total / 2 - sink] });
+      body = easedOrOriginal(
+        body,
+        verticalEdges(body),
+        Math.min(CORNER_FILLET_MM, width / 8, depth / 4)
+      );
+      // Ease the rim before cutting so the slot walls stay crisp; a slot cut
+      // through the roundover leaves clean edges, while filleting after
+      // would sliver every tooth corner.
+      body = easedOrOriginal(body, edgesNearPlane(body, height), Math.min(TOP_EASE_MM, depth / 5));
+      if (slotWidth <= 0.5 || slotDepth <= 0.5) return body;
+      const pitch = width / slotCount;
+      const cutters: Shape3D[] = [];
+      for (let i = 0; i < slotCount; i += 1) {
+        const cx = -width / 2 + pitch * (i + 0.5);
+        cutters.push(
+          box(slotWidth, depth + 2, slotDepth + 1, {
+            at: [cx, 0, height - (slotDepth + 1) / 2 + 1],
+          })
+        );
+      }
+      const carved = unwrap(cutAll(body, cutters as ValidSolid[], { optimisation: 'commonFace' }));
+      for (const cutter of cutters) cutter.delete();
+      if (carved !== body) body.delete();
+      return carved;
+    }
+    case 'riser': {
+      const { width, stepCount, stepDepth, stepHeight } = node.params;
+      const totalD = stepCount * stepDepth;
+      let pen = draw([-totalD / 2, -sink])
+        .lineTo([totalD / 2, -sink])
+        .lineTo([totalD / 2, stepCount * stepHeight]);
+      for (let i = stepCount; i >= 1; i -= 1) {
+        const yFront = totalD / 2 - (stepCount - i + 1) * stepDepth;
+        pen = pen.lineTo([yFront, i * stepHeight]);
+        if (i > 1) pen = pen.lineTo([yFront, (i - 1) * stepHeight]);
+      }
+      const stairs = sketch(pen.close(), 'YZ', -width / 2).extrude(width);
+      let body = easedOrOriginal(
+        stairs,
+        verticalEdges(stairs),
+        Math.min(CORNER_FILLET_MM, stepDepth / 4, stepHeight / 3)
+      );
+      // Every tread plane in one pass: convex noses round over, the concave
+      // tread-to-riser corner coves — the stair reads molded, not stacked.
+      const treadEdges: Edge[] = [];
+      for (let i = 1; i <= stepCount; i += 1) {
+        treadEdges.push(...edgesNearPlane(body, i * stepHeight));
+      }
+      body = easedOrOriginal(body, treadEdges, Math.min(TOP_EASE_MM, stepHeight / 4));
+      return body;
+    }
     case 'cutter':
       return buildCutterSolid(node.params);
   }

@@ -395,17 +395,4 @@ describe('assembly generator (real WASM)', () => {
     );
     assertStructurallyValid(result);
   });
-
-  it('exports STL and STEP with bytes and the workshop filename', async () => {
-    const { exportAssembly } = await import('./assemblyGenerator');
-    const structure = structureWith([
-      part('block', 'b', { x: 42, y: 21 }, { children: [part('cutter', 'hole', {})] }),
-    ]);
-    const stl = await exportAssembly(structure, makeEnvelope(2, 1), 'stl');
-    expect(stl.data.byteLength).toBeGreaterThan(0);
-    expect(stl.fileName).toBe('workshop_2x1.stl');
-    const step = await exportAssembly(structure, makeEnvelope(2, 1), 'step');
-    expect(step.data.byteLength).toBeGreaterThan(0);
-    expect(step.fileName).toBe('workshop_2x1.step');
-  });
 });

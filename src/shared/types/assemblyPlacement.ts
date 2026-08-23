@@ -30,6 +30,10 @@ export function partSeatHeight(node: AssemblyPartNode): number {
     }
     case 'arch':
       return node.params.height;
+    case 'comb':
+      return node.params.height;
+    case 'riser':
+      return node.params.stepCount * node.params.stepHeight;
     case 'cutter':
       return 0;
   }
@@ -56,6 +60,10 @@ export function partFootprint(node: AssemblyPartNode): { w: number; d: number } 
       const { span, uprightThickness, depth } = node.params;
       return { w: span + 2 * uprightThickness, d: depth };
     }
+    case 'comb':
+      return { w: node.params.width, d: node.params.depth };
+    case 'riser':
+      return { w: node.params.width, d: node.params.stepCount * node.params.stepDepth };
     case 'cutter':
       return cutterFootprint(node.params.profile);
   }
