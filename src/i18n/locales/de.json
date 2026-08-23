@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "Dieses Layout hat noch keine Bins. Zeichne einen im Raster, um loszulegen.",
   "layoutExport.noLinkedBins": "Hier ist noch kein Bin mit einem gespeicherten Design verknüpft, daher gibt es keine Geometrie zum Exportieren. Öffne einen Bin und wähle ein Design zum Verknüpfen.",
   "layoutExport.nothingToExport": "Es konnte nichts exportiert werden.",
+  "layoutExport.itemsFailed.one": "Ein verknüpftes Design konnte nicht exportiert werden und fehlt im Archiv.",
+  "layoutExport.itemsFailed.other": "{count} verknüpfte Designs konnten nicht exportiert werden und fehlen im Archiv.",
   "layoutExport.progress.baseplate": "Grundplatte wird exportiert ({current}/{total})",
   "layoutExport.progress.bins": "Bins werden exportiert ({current}/{total})",
   "layoutExport.progress.labels": "Etikettenplatten werden exportiert ({current}/{total})",

@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "Ця розкладка ще не має бінів. Намалюйте перший на сітці, щоб почати.",
   "layoutExport.noLinkedBins": "Жоден бін тут ще не повʼязаний зі збереженим дизайном, тож немає геометрії для експорту. Відкрийте бін і виберіть дизайн, щоб повʼязати його.",
   "layoutExport.nothingToExport": "Не вдалося нічого експортувати.",
+  "layoutExport.itemsFailed.one": "Один пов’язаний дизайн не вдалося експортувати, його вилучено з архіву.",
+  "layoutExport.itemsFailed.other": "{count} пов’язаних дизайнів не вдалося експортувати, їх вилучено з архіву.",
   "layoutExport.progress.baseplate": "Експорт опорної плити ({current}/{total})",
   "layoutExport.progress.bins": "Експорт бінів ({current}/{total})",
   "layoutExport.progress.labels": "Експорт пластин етикеток ({current}/{total})",

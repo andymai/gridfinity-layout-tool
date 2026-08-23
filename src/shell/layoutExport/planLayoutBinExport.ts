@@ -31,7 +31,11 @@ import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin'
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { hasMeshImprints } from '@/shared/generation/meshAsset';
 import { importedMeshDescriptor } from '@/shared/items/importedMesh/descriptor';
-import type { ImportedMeshStructure, ItemEnvelope } from '@/shared/types/item';
+import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
+import type { GridfinityItem, ImportedMeshStructure, ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
+import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { PrintSettings } from '@/shared/printSettings';
 import {
   estimateMeshFilament,
@@ -81,6 +85,16 @@ export interface LayoutMeshExportable {
   readonly designName: string;
 }
 
+/** A Workshop assembly to export: generated in the worker via the item
+ *  export path (envelope + structure), one file per design. */
+export interface LayoutItemExportable {
+  readonly item: GridfinityItem;
+  /** ZIP path in the chosen format, e.g. `bins/workshop_2x2.stl` or `.step`. */
+  readonly path: string;
+  readonly quantity: number;
+  readonly designName: string;
+}
+
 /** The layout's print bed, used to decide which bins have to be split. */
 export interface PrintBedSize {
   readonly widthMm: number;
@@ -90,6 +104,7 @@ export interface PrintBedSize {
 export interface LayoutBinExportPlan {
   readonly exportable: readonly LayoutExportable[];
   readonly meshExportable: readonly LayoutMeshExportable[];
+  readonly itemExportable: readonly LayoutItemExportable[];
   readonly manifestBins: ManifestBinEntry[];
   readonly skipped: ManifestSkipped;
   readonly totals: { readonly filamentGrams: number; readonly printTimeMinutes: number };
@@ -216,6 +231,10 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     DesignId,
     { design: SavedDesign; envelope: ItemEnvelope; structure: ImportedMeshStructure }
   >();
+  const assemblyDesignById = new Map<
+    DesignId,
+    { design: SavedDesign; envelope: ItemEnvelope; structure: AssemblyStructure }
+  >();
   for (const { id, design } of loaded) {
     if (!design) {
       missingDesigns++;
@@ -224,6 +243,12 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     if (!design.params) {
       if (design.structure?.kind === 'importedMesh' && design.envelope) {
         meshDesignById.set(id, {
+          design,
+          envelope: design.envelope,
+          structure: design.structure,
+        });
+      } else if (design.structure?.kind === 'assembly' && design.envelope) {
+        assemblyDesignById.set(id, {
           design,
           envelope: design.envelope,
           structure: design.structure,
@@ -313,6 +338,28 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
   const meshUsable = format === 'step' ? [] : [...meshGroups.values()];
   const meshDesignsStepSkipped = format === 'step' ? meshGroups.size : 0;
 
+  // Group linked bins on assembly designs by design id. Unlike meshes these
+  // export fine under STEP — the worker item path carries exact BREP.
+  interface AssemblyExportGroup {
+    readonly design: SavedDesign;
+    readonly envelope: ItemEnvelope;
+    readonly structure: AssemblyStructure;
+    quantity: number;
+  }
+  const assemblyGroups = new Map<DesignId, AssemblyExportGroup>();
+  for (const b of bins) {
+    if (b.linkedDesignId === undefined) continue;
+    const assembly = assemblyDesignById.get(b.linkedDesignId);
+    if (!assembly) continue;
+    const existing = assemblyGroups.get(b.linkedDesignId);
+    if (existing) {
+      existing.quantity++;
+    } else {
+      assemblyGroups.set(b.linkedDesignId, { ...assembly, quantity: 1 });
+    }
+  }
+  const assemblyUsable = [...assemblyGroups.values()];
+
   // One dedupe pass across bin AND mesh names so an imported design can't
   // silently collide with a parametric design of the same stem.
   const fileNames = dedupeFileNames([
@@ -328,11 +375,16 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     ...meshUsable.map(
       (m) => `${importedMeshDescriptor.exportFileName(m.envelope, m.structure)}.${format}`
     ),
+    ...assemblyUsable.map(
+      (a) => `${assemblyDescriptor.exportFileName(a.envelope, a.structure)}.${format}`
+    ),
   ]);
-  const meshFileNames = fileNames.slice(usable.length);
+  const meshFileNames = fileNames.slice(usable.length, usable.length + meshUsable.length);
+  const itemFileNames = fileNames.slice(usable.length + meshUsable.length);
 
   const paths = fileNames.slice(0, usable.length).map((name) => `bins/${name}`);
   const meshPaths = meshFileNames.map((name) => `bins/${name}`);
+  const itemPaths = itemFileNames.map((name) => `bins/${name}`);
   const companions = usable.map((u) => binCompanions(u.params));
   const exportable = usable.map((u, i) => ({
     params: u.params,
@@ -414,9 +466,48 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     });
   }
 
+  const itemExportable: LayoutItemExportable[] = assemblyUsable.map((a, i) => ({
+    item: { envelope: a.envelope, structure: a.structure },
+    path: itemPaths[i],
+    quantity: a.quantity,
+    designName: a.design.name,
+  }));
+
+  for (let i = 0; i < assemblyUsable.length; i++) {
+    const a = assemblyUsable[i];
+    const heightUnits = assemblyHeightUnits(
+      a.structure,
+      a.envelope.heightUnitMm,
+      GRIDFINITY_SPEC.SOCKET_HEIGHT + a.structure.base.floorThickness
+    );
+    // The wall-model estimate over-reads an open holder, but it is the same
+    // fallback pre-volume meshes use, and the manifest labels it an estimate.
+    const est = estimateStandardBinFilament(
+      a.envelope.width,
+      a.envelope.depth,
+      heightUnits,
+      printSettings,
+      a.envelope.gridUnitMm,
+      a.envelope.heightUnitMm
+    );
+    totalGrams += est.gramsFilament * a.quantity;
+    totalMinutes += est.printTimeMinutes * a.quantity;
+    manifestBins.push({
+      path: itemPaths[i],
+      designName: a.design.name,
+      widthUnits: a.envelope.width,
+      depthUnits: a.envelope.depth,
+      heightUnits,
+      quantity: a.quantity,
+      filamentGrams: est.gramsFilament,
+      printTimeMinutes: est.printTimeMinutes,
+    });
+  }
+
   return {
     exportable,
     meshExportable,
+    itemExportable,
     manifestBins,
     skipped: {
       unlinkedBins,

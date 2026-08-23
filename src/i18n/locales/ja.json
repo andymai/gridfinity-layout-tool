@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "このレイアウトにはまだビンがありません。グリッド上に描いて始めましょう。",
   "layoutExport.noLinkedBins": "保存済みデザインにリンクされたビンがまだないため、エクスポートできるジオメトリがありません。ビンを開いてデザインを選び、リンクしてください。",
   "layoutExport.nothingToExport": "エクスポートできるものがありませんでした。",
+  "layoutExport.itemsFailed.one": "リンクされたデザイン1件のエクスポートに失敗し、アーカイブから除外されました。",
+  "layoutExport.itemsFailed.other": "リンクされたデザイン{count}件のエクスポートに失敗し、アーカイブから除外されました。",
   "layoutExport.progress.baseplate": "ベースプレートをエクスポート中（{current}/{total}）",
   "layoutExport.progress.bins": "ビンをエクスポート中（{current}/{total}）",
   "layoutExport.progress.labels": "ラベルプレートを書き出し中（{current}/{total}）",

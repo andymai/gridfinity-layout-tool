@@ -524,6 +524,89 @@ describe('planLayoutBinExport', () => {
     });
   });
 
+  describe('assembly designs', () => {
+    function assemblyDesign(id: string, name: string): SavedDesign {
+      return {
+        id: designId(id),
+        name,
+        kind: 'assembly',
+        envelope: {
+          width: 2,
+          depth: 2,
+          gridUnitMm: 42,
+          heightUnitMm: 7,
+          attachment: {
+            magnetHoles: false,
+            magnetDiameter: 6.5,
+            magnetDepth: 2.4,
+            screwHoles: false,
+            screwDiameter: 3,
+          },
+          featureColors: DEFAULT_BIN_PARAMS.featureColors,
+        },
+        structure: {
+          kind: 'assembly',
+          schemaVersion: 1,
+          base: { floorThickness: 2 },
+          mirrorAxis: 'x',
+          parts: [
+            {
+              id: 'p1',
+              type: 'post',
+              params: { diameter: 8, height: 40 },
+              transform: { x: 42, y: 42, seatZ: 0, rotZDeg: 0 },
+              children: [],
+            },
+          ],
+        } as unknown as SavedDesign['structure'],
+        thumbnail: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+        exportFileNameConfig: null,
+      };
+    }
+
+    function planFor(format: 'stl' | 'step') {
+      const bins: Bin[] = [
+        linkedBin('a1'),
+        { ...linkedBin('a1'), id: createTestBin({ x: gridUnits(3) }).id, x: gridUnits(3) },
+      ];
+      const loaded: LoadedDesign[] = [
+        { id: designId('a1'), design: assemblyDesign('a1', 'pliers rack') },
+      ];
+      return planLayoutBinExport({
+        bins,
+        loaded,
+        format,
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+    }
+
+    it('exports an assembly with quantity grouping and a manifest entry', () => {
+      const plan = planFor('stl');
+      expect(plan.skipped.nonBinDesigns).toBe(0);
+      expect(plan.itemExportable).toHaveLength(1);
+      expect(plan.itemExportable[0].path).toBe('bins/workshop_2x2.stl');
+      expect(plan.itemExportable[0].quantity).toBe(2);
+      expect(plan.itemExportable[0].item.structure.kind).toBe('assembly');
+      const entry = plan.manifestBins.find((b) => b.designName === 'pliers rack');
+      // 40mm post + socket + 2mm floor, in 7mm units.
+      expect(entry?.heightUnits).toBe(7);
+      expect(entry?.quantity).toBe(2);
+      expect(plan.totals.filamentGrams).toBeGreaterThan(0);
+    });
+
+    it('keeps assemblies under STEP — the item path carries exact BREP', () => {
+      const plan = planFor('step');
+      expect(plan.itemExportable).toHaveLength(1);
+      expect(plan.itemExportable[0].path).toBe('bins/workshop_2x2.step');
+    });
+  });
+
   describe('oversized bins (#3074)', () => {
     // 256mm bed at the stock 42mm pitch fits 6 units per axis.
     const bigBin = (w: number, d: number): LoadedDesign => ({

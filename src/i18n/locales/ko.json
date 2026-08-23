@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "이 레이아웃에는 아직 수납통이 없습니다. 그리드에 하나를 그려서 시작하세요.",
   "layoutExport.noLinkedBins": "저장된 디자인에 연결된 수납통이 아직 없어 내보낼 형상이 없습니다. 수납통을 열고 디자인을 선택해 연결하세요.",
   "layoutExport.nothingToExport": "내보낼 수 있는 항목이 없습니다.",
+  "layoutExport.itemsFailed.one": "연결된 디자인 1개를 내보내지 못해 아카이브에서 제외되었습니다.",
+  "layoutExport.itemsFailed.other": "연결된 디자인 {count}개를 내보내지 못해 아카이브에서 제외되었습니다.",
   "layoutExport.progress.baseplate": "베이스플레이트 내보내는 중 ({current}/{total})",
   "layoutExport.progress.bins": "수납통 내보내는 중 ({current}/{total})",
   "layoutExport.progress.labels": "라벨 플레이트 내보내는 중 ({current}/{total})",

@@ -255,7 +255,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // are packaged here. Worker format: STEP stays STEP, STL and 3MF both
         // export STL geometry.
         const workerFormat: ExportFormat = partFormat === 'step' ? 'step' : 'stl';
-        const binTotal = plan.exportable.length + plan.meshExportable.length;
+        const binTotal =
+          plan.exportable.length + plan.meshExportable.length + plan.itemExportable.length;
         const binLabel = (current: number): string =>
           t('layoutExport.progress.bins', { current, total: binTotal });
         setExportProgress({ current: 0, total: binTotal, label: binLabel(0) });
@@ -344,6 +345,11 @@ export function useLayoutExport(): UseLayoutExportReturn {
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
 
+        // Failed per-design exports (corrupt mesh asset, worker item failure)
+        // degrade to a partial archive; their paths drop out of the manifest,
+        // totals, and outcome decisions below, and surface in one toast.
+        const failedItemPaths = new Set<string>();
+
         // Phase 1.5 — imported-mesh designs: the stored asset IS the geometry,
         // decoded and re-serialized here on the main thread (no worker slot
         // needed). Plan already excludes these under STEP. A single corrupt
@@ -359,10 +365,48 @@ export function useLayoutExport(): UseLayoutExportReturn {
             );
             if (projectMode) projectParts.addStl(baseNameOf(m.path), stl);
             else binFiles.push({ path: m.path, data: stl });
+          } else {
+            failedItemPaths.add(m.path);
           }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
+
+        // Phase 1.6 — Workshop assemblies: generated in the worker via the
+        // item export path (STEP carries exact BREP, so no format skip).
+        for (const a of plan.itemExportable) {
+          try {
+            const result = await bridge.exportItem(a.item, workerFormat);
+            if (projectMode) projectParts.addStl(baseNameOf(a.path), result.data);
+            else binFiles.push({ path: a.path, data: result.data });
+          } catch {
+            failedItemPaths.add(a.path);
+          }
+          done++;
+          setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
+        }
+        if (failedItemPaths.size > 0) {
+          useToastStore
+            .getState()
+            .addToast(
+              failedItemPaths.size === 1
+                ? t('layoutExport.itemsFailed.one')
+                : t('layoutExport.itemsFailed.other', { count: failedItemPaths.size }),
+              'error'
+            );
+        }
+
+        // Estimates for parts that failed above must not survive into the
+        // manifest totals or the 3MF print settings.
+        const adjustedTotals = plan.manifestBins
+          .filter((b) => failedItemPaths.has(b.path))
+          .reduce(
+            (acc, b) => ({
+              filamentGrams: acc.filamentGrams - b.filamentGrams * b.quantity,
+              printTimeMinutes: acc.printTimeMinutes - b.printTimeMinutes * b.quantity,
+            }),
+            { ...plan.totals }
+          );
 
         // Phase 1.7 — swappable label plates for socket-mode designs:
         // per-design bed-sized sheets in labels/. A plate failure must not
@@ -503,8 +547,11 @@ export function useLayoutExport(): UseLayoutExportReturn {
           return null;
         });
 
-        // Nothing usable — don't ship an empty archive.
-        if (plan.exportable.length === 0 && !bp) {
+        // Nothing usable — don't ship an empty archive. Meshes and assemblies
+        // count: a layout of only those still has bin files worth shipping,
+        // minus any item exports that failed above.
+        const shippedParts = binTotal - failedItemPaths.size;
+        if (shippedParts === 0 && !bp) {
           useToastStore.getState().addToast(t('layoutExport.nothingToExport'), 'error');
           return false;
         }
@@ -548,8 +595,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
               bedWidthMm: layout.printBedSize,
               bedDepthMm: layout.printBedDepth ?? layout.printBedSize,
               printSettings: buildThreeMFPrintSettings(printSettings, {
-                printTimeMinutes: plan.totals.printTimeMinutes,
-                gramsFilament: plan.totals.filamentGrams,
+                printTimeMinutes: adjustedTotals.printTimeMinutes,
+                gramsFilament: adjustedTotals.filamentGrams,
               }),
             });
             if (project) {
@@ -574,7 +621,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         const manifest = buildLayoutManifest({
           layoutName: layout.name,
           format,
-          bins: plan.manifestBins,
+          bins: plan.manifestBins.filter((b) => !failedItemPaths.has(b.path)),
           baseplate: bp
             ? {
                 pieceCount: bp.pieces.length,
@@ -593,7 +640,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
                 }
               : null,
           skipped: plan.skipped,
-          totals: plan.totals,
+          totals: adjustedTotals,
         });
 
         const textFiles: ZipTextFile[] = [{ name: 'manifest.txt', content: manifest }];
@@ -608,7 +655,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         // Report what actually made it into the archive.
         const addToast = useToastStore.getState().addToast;
-        if (plan.exportable.length === 0) {
+        if (shippedParts === 0) {
           addToast(t('layoutExport.baseplateOnly'), 'info');
         } else if (!bp) {
           addToast(

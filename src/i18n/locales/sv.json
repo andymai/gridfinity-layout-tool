@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "Den här layouten har inga fack ännu. Rita ett i rutnätet för att komma igång.",
   "layoutExport.noLinkedBins": "Inga fack här är länkade till en sparad design ännu, så det finns ingen geometri att exportera. Öppna ett fack och välj en design att länka det till.",
   "layoutExport.nothingToExport": "Inget kunde exporteras.",
+  "layoutExport.itemsFailed.one": "En länkad design kunde inte exporteras och utelämnades ur arkivet.",
+  "layoutExport.itemsFailed.other": "{count} länkade designer kunde inte exporteras och utelämnades ur arkivet.",
   "layoutExport.progress.baseplate": "Exporterar bottenplatta ({current}/{total})",
   "layoutExport.progress.bins": "Exporterar fack ({current}/{total})",
   "layoutExport.progress.labels": "Exporterar etikettplattor ({current}/{total})",
