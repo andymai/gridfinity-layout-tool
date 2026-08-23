@@ -94,12 +94,13 @@ const TOP_EASE_MM = 1;
 const CORNER_FILLET_MM = 2.5;
 const JUNCTION_FILLET_MM = 1.5;
 
-/** Edges whose Z extent brackets `z` (planar rims, junction seams). */
+/** Edges lying IN the plane at `z` (planar rims, junction seams) — never a
+ *  vertical edge that merely crosses it, the classic sliver source. */
 function edgesNearPlane(shape: Shape3D, z: number, tolerance = 0.4): Edge[] {
   return edgeFinder()
     .when((e) => {
       const bounds = getBounds(e);
-      return bounds.zMax >= z - tolerance && bounds.zMin <= z + tolerance;
+      return Math.abs(bounds.zMax - z) <= tolerance && Math.abs(bounds.zMin - z) <= tolerance;
     })
     .findAll(shape);
 }

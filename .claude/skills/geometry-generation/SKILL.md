@@ -104,6 +104,18 @@ Commit bodies here contain root-cause analyses and upstream references — `git 
 
 ## Construction invariants
 
+### Workshop assembly edge language
+
+Part templates carry an automatic finish (`assemblyGenerator.ts`): capsule fin
+footprints, corner/top fillets, rim chamfers, and a post-fuse cove at every
+seat plane. Three sliver classes are excluded BY CONSTRUCTION, not by fallback:
+capsule end segments stay >=1.2mm, leaned-fin crowns fillet only the long
+edges, and round-groove tangent seams are never selected. Plane-edge selection
+must match edges lying IN the plane — an edge crossing it fillets a whole
+vertical corner. Proxies mirror silhouettes only (capsule/rounded footprints);
+exact fillets appear at sharpen. Any geometry change here bumps the
+`assembly-part-*` template key AND the persisted `item*` mesh-cache segment.
+
 ### The perimeter is the material; the grid extent is not its bound
 
 Never consume `drawer.outline` raw for gating, rendering or generation. Go through
