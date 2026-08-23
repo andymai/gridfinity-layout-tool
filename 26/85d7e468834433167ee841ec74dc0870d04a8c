@@ -1,0 +1,19 @@
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_a36c0b85dfeec4::t_fdd015f7944c71 139-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "2685d7e468834433167ee841ec74dc0870d04a8c",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
