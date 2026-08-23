@@ -1,0 +1,27 @@
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_a36c0b85dfeec4::t_8788f537f3c21f 36,63-67,157
+src/features/bin-designer/components/Workshop/MoveHandle3D.tsx
+  s_a36c0b85dfeec4::t_8788f537f3c21f 31
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_8788f537f3c21f 112
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_8788f537f3c21f 31-32,44,71,128-135,238,243-248,255,275
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_0ee52a93e61193 87-90,345
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "5488d35e5dd72ae19aa28e7cb41c1c8499e114c9",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
