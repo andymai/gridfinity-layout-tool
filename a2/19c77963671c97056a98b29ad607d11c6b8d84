@@ -1,0 +1,40 @@
+src/features/bin-designer/components/Workshop/workshopPlacement.test.ts
+  s_a36c0b85dfeec4::t_396385a1ccc14f 162,174-177
+  s_a36c0b85dfeec4::t_d373011b7e636a 9-11
+  s_a36c0b85dfeec4::t_7792ddeaadca56 129-161,163-173,178-188
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_d1cf4491a34097 233
+  s_a36c0b85dfeec4::t_a4a41317fd2a3c 15,18,32-38,51-52,61-62,98-106,147-149,155,165,187-213,219,222-223,313-359,390-391,400-401
+src/features/bin-designer/components/Workshop/AlignmentGuides.test.tsx
+  s_a36c0b85dfeec4::t_7792ddeaadca56 1-8
+src/features/bin-designer/components/Workshop/RotationGizmo3D.test.tsx
+  s_a36c0b85dfeec4::t_7792ddeaadca56 1-8
+src/features/bin-designer/components/Workshop/AlignmentGuides.tsx
+  s_a36c0b85dfeec4::t_3e08ce5cf2edc4 1-6,8-29,31-48,50-56
+  s_a36c0b85dfeec4::t_5c4c91f7a7abe7 7,30,49
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_79a5c5e8413d21 10,13,35,93-94,118-154,183-211
+  s_a36c0b85dfeec4::t_9cce1ceeece702 212-214
+src/features/bin-designer/components/Workshop/workshopPlacement.ts
+  s_a36c0b85dfeec4::t_ecb3184502421c 61-116,126
+  s_a36c0b85dfeec4::t_d1cf4491a34097 15,117-125
+src/features/bin-designer/components/Workshop/RotationGizmo3D.tsx
+  s_a36c0b85dfeec4::t_d39c79428766be 1-9,11-31,33-72
+  s_a36c0b85dfeec4::t_d1cf4491a34097 10,32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "a219c77963671c97056a98b29ad607d11c6b8d84",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
