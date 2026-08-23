@@ -20,9 +20,11 @@ import { useWorkshopInteraction, type HoverSurface } from './useWorkshopInteract
 interface WorkshopSceneProps {
   structure: AssemblyStructure;
   envelope: ItemEnvelope;
+  /** performance.now() of the last armed click that hit nothing. */
+  missFlashAt?: number;
 }
 
-export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
+export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: WorkshopSceneProps) {
   const extent = useMemo(() => baseExtentMm(envelope), [envelope]);
   const interaction = useWorkshopInteraction(structure, extent);
   const { w, d } = extent;
@@ -72,6 +74,7 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
         envelope={envelope}
         base={structure.base}
         hidden={showSharp}
+        flashAt={missFlashAt}
         onSurfaceMove={interaction.onSurfaceMove}
         onSurfaceLeave={interaction.onSurfaceLeave}
         onSurfaceClick={interaction.onSurfaceClick}

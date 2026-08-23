@@ -13,8 +13,8 @@ import { storeToScene } from './workshopPlacement';
 interface PlacementGhostProps {
   type: AssemblyPartType;
   cutterShape: 'circle' | 'slot' | null;
-  /** Snapped store-frame position, computed by the interaction hook. */
-  position: { x: number; y: number; z: number };
+  /** Snapped store-frame pose (the target frame's rotation included). */
+  position: { x: number; y: number; z: number; rotZDeg: number };
   baseW: number;
   baseD: number;
 }
@@ -38,6 +38,7 @@ export function PlacementGhost({ type, cutterShape, position, baseW, baseD }: Pl
     <mesh
       geometry={geometry}
       position={[storeToScene(position.x, baseW), storeToScene(position.y, baseD), position.z]}
+      rotation={[0, 0, (position.rotZDeg * Math.PI) / 180]}
       raycast={() => null}
     >
       <meshStandardMaterial

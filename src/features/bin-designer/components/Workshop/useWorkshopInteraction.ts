@@ -37,7 +37,7 @@ export interface WorkshopInteraction {
   readonly placements: PlacedPart[];
   readonly placedById: Map<string, PlacedPart>;
   readonly hover: HoverSurface | null;
-  readonly ghostPosition: { x: number; y: number; z: number } | null;
+  readonly ghostPosition: { x: number; y: number; z: number; rotZDeg: number } | null;
   readonly draggingId: string | null;
   readonly selectedId: string | null;
   readonly pendingType: ReturnType<typeof usePendingType>;
@@ -266,13 +266,20 @@ export function useWorkshopInteraction(
 
   // Snap in the hovered parent's local frame — the same math placement uses —
   // then convert back to the store frame so the ghost lands where the part will.
-  const ghostPosition = useMemo((): { x: number; y: number; z: number } | null => {
+  const ghostPosition = useMemo((): {
+    x: number;
+    y: number;
+    z: number;
+    rotZDeg: number;
+  } | null => {
     if (!hover) return null;
     const parent = hover.parentId === null ? null : (placedById.get(hover.parentId) ?? null);
     const local = worldToParentLocal({ x: hover.x, y: hover.y }, parent);
     const snapped = { x: snapCoord(local.x, fineSnap), y: snapCoord(local.y, fineSnap) };
     const world = parentLocalToWorld(snapped, parent);
-    return { x: world.x, y: world.y, z: hover.topZ };
+    // A placed part starts at local rotation 0, so its world orientation is
+    // the parent frame's — the ghost previews exactly that.
+    return { x: world.x, y: world.y, z: hover.topZ, rotZDeg: parent?.rotZDeg ?? 0 };
   }, [fineSnap, hover, placedById]);
 
   return {
