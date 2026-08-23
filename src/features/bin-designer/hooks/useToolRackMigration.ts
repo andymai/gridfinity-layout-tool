@@ -22,18 +22,20 @@ export function useToolRackMigration(): void {
     void (async () => {
       const designs = await listDesigns();
       if (!isOk(designs)) return;
+      let allSaved = true;
       for (const design of designs.value) {
         if (design.kind !== 'toolRack') continue;
         if (!design.envelope || design.structure?.kind !== 'toolRack') continue;
-        await saveDesign({
+        const saved = await saveDesign({
           ...design,
           kind: 'assembly',
           structure: convertToolRackToAssembly(design.structure, design.envelope),
         });
+        if (!isOk(saved)) allSaved = false;
       }
-      // Marked only after a full successful scan; a thrown save leaves the
-      // flag unset so the next visit retries.
-      setMigrationDone(MIGRATION_KEY);
+      // Marked only after every rack converted; a failed save leaves the
+      // flag unset so the next visit retries the stragglers.
+      if (allSaved) setMigrationDone(MIGRATION_KEY);
     })();
   }, []);
 }

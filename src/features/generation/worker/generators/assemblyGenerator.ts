@@ -25,6 +25,7 @@ import {
   exportSTEP,
   fuseAll,
   getKernelCapabilities,
+  intersect,
   mesh,
   meshEdges,
   mirror,
@@ -200,8 +201,9 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       const { length, thickness, height, leanDeg, leanAxis } = node.params;
       const lean = Math.tan(leanDeg * DEG) * height;
       if (leanAxis === 'length') {
-        // Shear along the plate's run: build the plain plate and apply the
-        // same x-by-z shear matrix the proxy uses, so both stay identical.
+        // Shear along the plate's run, then clip back to the nominal length
+        // — the rack generator's leaning fins were clipped the same way so
+        // the lean never overshoots the footprint.
         const total = height + sink;
         const plate = box(length, thickness, total, { at: [0, 0, total / 2 - sink] });
         if (leanDeg <= 0) return plate;
@@ -213,7 +215,11 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
           })
         );
         if (sheared !== plate) plate.delete();
-        return sheared;
+        const clip = box(length, thickness + 2, total * 2 + 2, { at: [0, 0, total / 2 - sink] });
+        const clipped = unwrap(intersect(sheared, clip, { optimisation: 'commonFace' }));
+        if (clipped !== sheared) sheared.delete();
+        clip.delete();
+        return clipped;
       }
       const pen = draw([-thickness / 2, -sink])
         .lineTo([thickness / 2, -sink])

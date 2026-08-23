@@ -66,6 +66,17 @@ describe('useToolRackMigration', () => {
     expect((saved.structure as { kind: string }).kind).toBe('assembly');
   });
 
+  it('keeps the done-flag unset when a save fails, so the next visit retries', async () => {
+    listDesignsMock.mockResolvedValue(ok([rackDesign]));
+    saveDesignMock.mockResolvedValueOnce({ ok: false, error: { message: 'nope' } });
+    const first = renderHook(() => useToolRackMigration());
+    await waitFor(() => expect(saveDesignMock).toHaveBeenCalledTimes(1));
+    first.unmount();
+    saveDesignMock.mockResolvedValueOnce(ok({ ...rackDesign, kind: 'assembly' }));
+    renderHook(() => useToolRackMigration());
+    await waitFor(() => expect(saveDesignMock).toHaveBeenCalledTimes(2));
+  });
+
   it('leaves bins, assemblies, and imported meshes untouched', async () => {
     listDesignsMock.mockResolvedValueOnce(
       ok([
