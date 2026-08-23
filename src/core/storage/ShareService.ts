@@ -18,11 +18,56 @@ import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
 import { getDesignStorePort } from './designStorePort';
 import type { BinParams } from '@/shared/types/bin';
+import type { AssemblyStructure } from '@/shared/types/assembly';
+import {
+  assemblyHeightUnits,
+  assemblyOverhangMm,
+  assemblyRiseMm,
+} from '@/shared/types/assemblyPlacement';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { hasOversizedMeshAsset } from '@/shared/generation/meshAsset';
+
+/** A design travelling with a layout: bin params, or an assembly's
+ *  envelope + structure. Exactly one of the two shapes is populated. */
 export interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
-  readonly params: BinParams;
+  readonly params?: BinParams;
+  readonly kind?: 'assembly';
+  readonly envelope?: unknown;
+  readonly structure?: unknown;
+}
+
+/** Assembly envelope fields the restore paths actually read. */
+interface AssemblyEnvelopeShape {
+  readonly width: number;
+  readonly depth: number;
+  readonly heightUnitMm: number;
+  readonly gridUnitMm: number;
+}
+
+function isAssemblyEnvelope(value: unknown): value is AssemblyEnvelopeShape {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.width === 'number' &&
+    typeof v.depth === 'number' &&
+    typeof v.heightUnitMm === 'number' &&
+    typeof v.gridUnitMm === 'number'
+  );
+}
+
+function isAssemblyStructureShape(value: unknown): value is AssemblyStructure {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  const base = v.base as Record<string, unknown> | null | undefined;
+  return (
+    v.kind === 'assembly' &&
+    Array.isArray(v.parts) &&
+    typeof base === 'object' &&
+    base !== null &&
+    typeof base.floorThickness === 'number'
+  );
 }
 
 /**
@@ -30,7 +75,8 @@ export interface LinkedDesignExport {
  *
  * Shared by file export and cloud share so both carry the same payload — a
  * layout that travels without its designs arrives as bins with dangling
- * references. Designs that fail to load (deleted) or have no `params`
+ * references. Bin designs travel as `params`, assemblies as
+ * `envelope`/`structure`; designs that fail to load (deleted) or cannot travel
  * (tool racks, imported meshes) are omitted rather than failing the whole set.
  */
 export async function collectLinkedDesigns(layout: Layout): Promise<LinkedDesignExport[]> {
@@ -50,11 +96,17 @@ export async function collectLinkedDesigns(layout: Layout): Promise<LinkedDesign
   const linkedDesigns: LinkedDesignExport[] = [];
   for (const id of designIds) {
     const result = await port.loadDesign(id);
-    if (isOk(result) && result.value.params) {
+    if (!isOk(result)) continue;
+    const design = result.value;
+    if (design.params) {
+      linkedDesigns.push({ id: design.id, name: design.name, params: design.params as BinParams });
+    } else if (design.kind === 'assembly' && design.envelope && design.structure) {
       linkedDesigns.push({
-        id: result.value.id,
-        name: result.value.name,
-        params: result.value.params as BinParams,
+        id: design.id,
+        name: design.name,
+        kind: 'assembly',
+        envelope: design.envelope,
+        structure: design.structure,
       });
     }
   }
@@ -205,29 +257,39 @@ export async function restoreEmbeddedDesigns(
   for (const entry of data.linkedDesigns as unknown[]) {
     const linkedDesign = entry as Record<string, unknown> | null;
     if (
-      linkedDesign &&
-      typeof linkedDesign === 'object' &&
-      'id' in linkedDesign &&
-      'name' in linkedDesign &&
-      'params' in linkedDesign &&
-      typeof linkedDesign.id === 'string' &&
-      typeof linkedDesign.name === 'string' &&
-      // The cloud paths bound each asset server-side; a locally-imported file
-      // reaches storage with its meshAssets verbatim, so this is where an
-      // over-budget asset would otherwise get in and be handed to the decoder
-      // on every preview.
-      !hasOversizedMeshAsset(linkedDesign.params)
+      !linkedDesign ||
+      typeof linkedDesign !== 'object' ||
+      typeof linkedDesign.id !== 'string' ||
+      typeof linkedDesign.name !== 'string'
     ) {
-      const result = await port.saveDesign({
-        name: linkedDesign.name,
-        params: linkedDesign.params,
-        thumbnail: null,
-        exportFileNameConfig: null,
-      });
-      if (isOk(result)) {
-        designIdMap.set(linkedDesign.id, result.value.id);
-        importedDesignCount++;
-      }
+      continue;
+    }
+    const isAssembly =
+      linkedDesign.kind === 'assembly' &&
+      isAssemblyEnvelope(linkedDesign.envelope) &&
+      isAssemblyStructureShape(linkedDesign.structure);
+    // The cloud paths bound each asset server-side; a locally-imported file
+    // reaches storage with its meshAssets verbatim, so this is where an
+    // over-budget asset would otherwise get in and be handed to the decoder
+    // on every preview. (The adapter's descriptor migration is the equivalent
+    // gate for an assembly structure.)
+    const isBin = 'params' in linkedDesign && !hasOversizedMeshAsset(linkedDesign.params);
+    if (!isAssembly && !isBin) continue;
+    const result = await port.saveDesign({
+      name: linkedDesign.name,
+      ...(isAssembly
+        ? {
+            kind: 'assembly' as const,
+            envelope: linkedDesign.envelope,
+            structure: linkedDesign.structure,
+          }
+        : { params: linkedDesign.params }),
+      thumbnail: null,
+      exportFileNameConfig: null,
+    });
+    if (isOk(result)) {
+      designIdMap.set(linkedDesign.id, result.value.id);
+      importedDesignCount++;
     }
   }
 
@@ -279,7 +341,14 @@ function sharedDesignLocalId(shareId: string, sourceDesignId: string): DesignId 
 export async function restoreSharedDesigns(
   shareId: string,
   layout: Layout,
-  designs: ReadonlyArray<{ id: string; name: string; params: unknown }>
+  designs: ReadonlyArray<{
+    id: string;
+    name: string;
+    params?: unknown;
+    kind?: string;
+    envelope?: unknown;
+    structure?: unknown;
+  }>
 ): Promise<Layout> {
   if (designs.length === 0) return layout;
 
@@ -290,6 +359,47 @@ export async function restoreSharedDesigns(
 
   const idMap = new Map<string, DesignId>();
   for (const design of designs) {
+    if (
+      design.kind === 'assembly' &&
+      isAssemblyEnvelope(design.envelope) &&
+      isAssemblyStructureShape(design.structure)
+    ) {
+      const envelope = design.envelope;
+      const structure = design.structure;
+      const result = await port.saveDesign({
+        id: sharedDesignLocalId(shareId, design.id),
+        name: design.name,
+        kind: 'assembly',
+        envelope,
+        structure,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      });
+      if (!isOk(result)) continue;
+      idMap.set(design.id, result.value.id);
+      // Same registry-or-invisible rule as bins; the assembly fields mirror
+      // the feature's `registryAssemblyFields` projection (built here from
+      // the server-validated structure — migration only clamps ranges, which
+      // these placement reads tolerate).
+      const socketAndFloorMm = GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness;
+      await port.upsertRegistryEntry({
+        id: result.value.id,
+        name: result.value.name,
+        width: envelope.width,
+        depth: envelope.depth,
+        height: assemblyHeightUnits(structure, envelope.heightUnitMm, socketAndFloorMm),
+        kind: 'assembly',
+        assembledRiseMm: assemblyRiseMm(structure, socketAndFloorMm),
+        socketless: false,
+        hasLip: false,
+        overhangMm: assemblyOverhangMm(structure, {
+          w: envelope.width * envelope.gridUnitMm,
+          d: envelope.depth * envelope.gridUnitMm,
+        }),
+        updatedAt: result.value.updatedAt,
+      });
+      continue;
+    }
     if (!design.params || typeof design.params !== 'object' || Array.isArray(design.params)) {
       continue;
     }

@@ -23,6 +23,7 @@ import type {
 import type { Result, StorageError } from '@/core/result';
 import type { DesignId } from '@/core/types';
 import type { BinParams } from '@/features/bin-designer/types';
+import type { ItemEnvelope } from '@/shared/types/item';
 
 export const designStoreAdapter: DesignStorePort = {
   async loadDesign(id: DesignId): Promise<Result<LoadedDesignData, StorageError>> {
@@ -32,6 +33,21 @@ export const designStoreAdapter: DesignStorePort = {
 
   async saveDesign(input: SaveDesignInput): Promise<Result<SavedDesignData, StorageError>> {
     const { saveDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
+    if (input.kind === 'assembly' && input.envelope) {
+      const { assemblyDescriptor } = await import('@/shared/items/assembly/descriptor');
+      const envelope = input.envelope as ItemEnvelope;
+      return saveDesign({
+        id: input.id,
+        name: input.name,
+        kind: 'assembly',
+        envelope,
+        // Migration is the trust boundary: an embedded or shared structure
+        // gets schema-salvaged node-by-node, exactly like a sync payload.
+        structure: assemblyDescriptor.migrate(input.structure, envelope),
+        thumbnail: input.thumbnail,
+        exportFileNameConfig: input.exportFileNameConfig,
+      });
+    }
     return saveDesign({
       id: input.id,
       name: input.name,

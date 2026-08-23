@@ -29,7 +29,12 @@ export interface ShareMetadata {
 export interface SharedLinkedDesign {
   id: string;
   name: string;
-  params: unknown;
+  /** Bin params; absent on an assembly entry. */
+  params?: unknown;
+  /** Workshop assembly entries carry envelope + structure instead of params. */
+  kind?: 'assembly';
+  envelope?: unknown;
+  structure?: unknown;
 }
 
 export interface FetchShareResponse {
@@ -139,16 +144,21 @@ function validateFetchShareResponse(
   // guard doesn't validate this field, so re-check it as untrusted input.
   const raw: unknown = data.linkedDesigns;
   const linkedDesigns = Array.isArray(raw)
-    ? raw.filter(
-        (entry): entry is SharedLinkedDesign =>
-          typeof entry === 'object' &&
-          entry !== null &&
-          typeof (entry as Record<string, unknown>).id === 'string' &&
-          typeof (entry as Record<string, unknown>).name === 'string' &&
-          typeof (entry as Record<string, unknown>).params === 'object' &&
-          (entry as Record<string, unknown>).params !== null &&
-          !Array.isArray((entry as Record<string, unknown>).params)
-      )
+    ? raw.filter((entry): entry is SharedLinkedDesign => {
+        if (typeof entry !== 'object' || entry === null) return false;
+        const e = entry as Record<string, unknown>;
+        if (typeof e.id !== 'string' || typeof e.name !== 'string') return false;
+        if (
+          e.kind === 'assembly' &&
+          typeof e.envelope === 'object' &&
+          e.envelope !== null &&
+          typeof e.structure === 'object' &&
+          e.structure !== null
+        ) {
+          return true;
+        }
+        return typeof e.params === 'object' && e.params !== null && !Array.isArray(e.params);
+      })
     : undefined;
 
   return { valid: true, data: { ...data, linkedDesigns } };

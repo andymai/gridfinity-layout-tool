@@ -988,6 +988,68 @@ describe('validateSharedDesigns', () => {
     }
   });
 
+  const assemblyEnvelope = () => ({
+    width: 4,
+    depth: 2,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    attachment: {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2.4,
+      screwHoles: false,
+      screwDiameter: 3,
+    },
+    featureColors: { enabled: false },
+  });
+  const assemblyStructure = () => ({
+    kind: 'assembly',
+    schemaVersion: 1,
+    base: { floorThickness: 2 },
+    mirrorAxis: 'x',
+    parts: [
+      {
+        id: 'p1',
+        type: 'post',
+        params: { diameter: 8, height: 40, taperDeg: 0, tipChamfer: 1 },
+        transform: { x: 20, y: 20, seatZ: 0, rotZDeg: 0 },
+        children: [],
+      },
+    ],
+  });
+  const assemblyDesign = (over: Record<string, unknown> = {}) => ({
+    id: 'design_asm',
+    name: 'Pliers Rack',
+    kind: 'assembly',
+    envelope: assemblyEnvelope(),
+    structure: assemblyStructure(),
+    ...over,
+  });
+
+  it('accepts a well-formed assembly entry alongside a bin design', () => {
+    const result = validateSharedDesigns([design(), assemblyDesign()]);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.designs).toHaveLength(2);
+      expect(result.designs[1]).toMatchObject({ id: 'design_asm', kind: 'assembly' });
+      expect(result.designs[1].structure).toBeDefined();
+      expect(result.designs[1].params).toBeUndefined();
+    }
+  });
+
+  it('rejects an assembly entry with an invalid structure', () => {
+    const bad = assemblyDesign({ structure: { kind: 'assembly', schemaVersion: 2 } });
+    const result = validateSharedDesigns([bad]);
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects an assembly entry with an invalid envelope', () => {
+    const bad = assemblyDesign({ envelope: { width: 500 } });
+    const result = validateSharedDesigns([bad]);
+    expect(result.valid).toBe(false);
+  });
+
   it('rejects a non-array payload', () => {
     expect(validateSharedDesigns({ id: 'design_1' }).valid).toBe(false);
   });

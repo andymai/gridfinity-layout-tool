@@ -291,7 +291,7 @@ function collectDesignText(value: unknown, out: string[], depth = 0, key?: strin
  * itself gets — otherwise `linkedDesigns` is a way around it.
  */
 export function filterSharedDesignsContent(
-  designs: ReadonlyArray<{ name: string; params: unknown }>
+  designs: ReadonlyArray<{ name: string; params?: unknown }>
 ): ContentFilterResult {
   for (const design of designs) {
     const nameResult = checkText(design.name);

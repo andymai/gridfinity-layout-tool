@@ -19,7 +19,10 @@ import { getDesignStorePort } from './designStorePort';
 interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
-  readonly params: unknown;
+  readonly params?: unknown;
+  readonly kind?: 'assembly';
+  readonly envelope?: unknown;
+  readonly structure?: unknown;
 }
 
 interface ArchiveLayoutEntry {
@@ -115,11 +118,17 @@ export async function exportAllLayouts(
           if (port !== null) {
             for (const id of designIds) {
               const result = await port.loadDesign(id);
-              if (isOk(result)) {
+              if (!isOk(result)) continue;
+              const design = result.value;
+              if (design.params) {
+                linkedDesigns.push({ id: design.id, name: design.name, params: design.params });
+              } else if (design.kind === 'assembly' && design.envelope && design.structure) {
                 linkedDesigns.push({
-                  id: result.value.id,
-                  name: result.value.name,
-                  params: result.value.params,
+                  id: design.id,
+                  name: design.name,
+                  kind: 'assembly',
+                  envelope: design.envelope,
+                  structure: design.structure,
                 });
               }
             }
