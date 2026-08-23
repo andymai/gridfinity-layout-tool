@@ -18,6 +18,22 @@ const DEG = Math.PI / 180;
 /** Rotate a shape-plane (profile-in-YZ, extruded-along-X) solid into world axes. */
 const YZ_PROFILE_TO_WORLD = new Matrix4().set(0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1);
 
+function roundedRectShape(w: number, d: number, radius: number): Shape {
+  const r = Math.min(radius, w / 2 - 1e-3, d / 2 - 1e-3);
+  const shape = new Shape();
+  shape.moveTo(-w / 2 + r, -d / 2);
+  shape.lineTo(w / 2 - r, -d / 2);
+  shape.absarc(w / 2 - r, -d / 2 + r, r, -Math.PI / 2, 0, false);
+  shape.lineTo(w / 2, d / 2 - r);
+  shape.absarc(w / 2 - r, d / 2 - r, r, 0, Math.PI / 2, false);
+  shape.lineTo(-w / 2 + r, d / 2);
+  shape.absarc(-w / 2 + r, d / 2 - r, r, Math.PI / 2, Math.PI, false);
+  shape.lineTo(-w / 2, -d / 2 + r);
+  shape.absarc(-w / 2 + r, -d / 2 + r, r, Math.PI, Math.PI * 1.5, false);
+  shape.closePath();
+  return shape;
+}
+
 function extrudeYZProfile(shape: Shape, alongX: number): BufferGeometry {
   const geometry = new ExtrudeGeometry(shape, { depth: alongX, bevelEnabled: false });
   geometry.applyMatrix4(YZ_PROFILE_TO_WORLD);
@@ -41,8 +57,21 @@ function buildFin(p: {
   leanDeg: number;
   leanAxis?: 'thickness' | 'length';
 }): BufferGeometry {
-  const geometry = new BoxGeometry(p.length, p.thickness, p.height);
-  geometry.translate(0, 0, p.height / 2);
+  // Straight fins are capsules, matching the worker; leaning fins stay
+  // prisms there (sheared arcs invert in OCCT), so the proxy matches.
+  const endRadius = Math.min(p.thickness * 0.45, (p.thickness - 1.2) / 2);
+  const geometry =
+    p.leanDeg <= 0 && endRadius >= 0.3
+      ? new ExtrudeGeometry(roundedRectShape(p.length, p.thickness, endRadius), {
+          depth: p.height,
+          bevelEnabled: false,
+          curveSegments: 12,
+        })
+      : (() => {
+          const boxGeometry = new BoxGeometry(p.length, p.thickness, p.height);
+          boxGeometry.translate(0, 0, p.height / 2);
+          return boxGeometry;
+        })();
   if (p.leanDeg > 0) {
     const tan = Math.tan(p.leanDeg * DEG);
     // makeShear slots: zy shears y by z (tip over the long edge); zx shears
@@ -63,9 +92,11 @@ function buildBlock(p: {
   wedgeAngleDeg: number;
 }): BufferGeometry {
   if (p.wedgeAngleDeg <= 0) {
-    const box = new BoxGeometry(p.width, p.depth, p.height);
-    box.translate(0, 0, p.height / 2);
-    return box;
+    // Rounded vertical corners, matching the worker's corner fillets.
+    return new ExtrudeGeometry(
+      roundedRectShape(p.width, p.depth, Math.min(2.5, p.width / 5, p.depth / 5)),
+      { depth: p.height, bevelEnabled: false, curveSegments: 8 }
+    );
   }
   const lowEdge = Math.max(0.5, p.height - p.depth * Math.tan(p.wedgeAngleDeg * DEG));
   const shape = new Shape();
