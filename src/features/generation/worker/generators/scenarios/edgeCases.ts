@@ -105,7 +105,6 @@ export const edgeCases: ScenarioCase[] = [
         thickness: 0.8,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('edge cases', '2x2 with 8x8 compartments (tiny cells)', {
     assert: 'structural',
@@ -119,7 +118,6 @@ export const edgeCases: ScenarioCase[] = [
         thickness: 0.4,
       },
     },
-    timeout: 60_000,
   }),
 
   // Stress: multiple inserts
@@ -193,7 +191,6 @@ export const edgeCases: ScenarioCase[] = [
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
       inserts: [makeInsert({ shape: 'circle', width: 15, depth: 15, cutDepth: 3, x: 0, y: 0 })],
     },
-    timeout: 60_000,
   }),
 
   // Cutout edge-finding robustness

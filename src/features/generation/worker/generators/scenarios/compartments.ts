@@ -20,6 +20,5 @@ export const compartments: ScenarioCase[] = [
         thickness: 0.8,
       },
     },
-    timeout: 60_000,
   }),
 ];

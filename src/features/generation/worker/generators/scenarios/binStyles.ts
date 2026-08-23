@@ -39,7 +39,6 @@ export const binStyles: ScenarioCase[] = [
         style,
         base: { ...DEFAULT_BIN_PARAMS.base, ...base },
       },
-      timeout: 60_000,
       customAssert: (result, params) => {
         assertBoundingBoxMatchesParams(result, params, `4x4-${label}`);
       },

@@ -325,7 +325,6 @@ export const labelSockets: ScenarioCase[] = [
       label: SOCKET_LABEL,
       wallPattern: { enabled: true, pattern: 'honeycomb' },
     },
-    timeout: 90_000,
   }),
 
   // Text-mode sentinel: mode absent takes the legacy code path; the

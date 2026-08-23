@@ -178,7 +178,6 @@ export const cutoutLabelSockets: ScenarioCase[] = [
     params: board(),
     customAssert: (result, params) =>
       assertCutoutSocket(result, params, { label: 'board socket', plateWidthU: 2 }),
-    timeout: 60_000,
   }),
 
   // A 90° socket is the whole reason a side-anchored label is usable: the gap
@@ -203,7 +202,6 @@ export const cutoutLabelSockets: ScenarioCase[] = [
     }),
     customAssert: (result, params) =>
       assertCutoutSocket(result, params, { label: '90° board socket', plateWidthU: 1 }),
-    timeout: 60_000,
   }),
 
   // Stated as a DELTA against the same board without a lip: the sink is
@@ -233,7 +231,6 @@ export const cutoutLabelSockets: ScenarioCase[] = [
         expect(pocketDelta).toBeCloseTo(LABEL_SOCKET_STACK_RELIEF_MM, 1);
       },
     },
-    timeout: 90_000,
   }),
 
   // The engraved path must be untouched by any of this: a design that never
@@ -254,6 +251,5 @@ export const cutoutLabelSockets: ScenarioCase[] = [
         }),
       ],
     }),
-    timeout: 60_000,
   }),
 ];

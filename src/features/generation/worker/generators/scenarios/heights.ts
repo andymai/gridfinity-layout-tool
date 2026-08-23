@@ -32,7 +32,6 @@ export const heightVariations: ScenarioCase[] = [
   defineScenario('height', '4×4 height 6u (wide + tall, stress)', {
     assert: 'structural',
     params: { width: 4, depth: 4, height: 6 },
-    timeout: 60_000,
     customAssert: (result, params) => {
       assertBoundingBoxMatchesParams(result, params, '4x4x6');
     },

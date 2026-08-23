@@ -73,7 +73,6 @@ export const dividerPatterns: ScenarioCase[] = [
       },
       assert: assertDividersPerforated,
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', '2×2 honeycomb dividers', {
@@ -85,7 +84,6 @@ export const dividerPatterns: ScenarioCase[] = [
       compartments: TWO_BY_TWO,
       walls: ALL_SIDES_OFF,
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', 'round pattern on a single column divider', {
@@ -97,7 +95,6 @@ export const dividerPatterns: ScenarioCase[] = [
       compartments: { cols: 3, rows: 1, cells: [0, 1, 2], thickness: 1.2 },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 90_000,
   }),
 
   // ── Feature keep-outs — every intruder that lands on a divider ────────────
@@ -112,7 +109,6 @@ export const dividerPatterns: ScenarioCase[] = [
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', 'dividers + interior cutouts', {
@@ -128,7 +124,6 @@ export const dividerPatterns: ScenarioCase[] = [
         interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', 'dividers + label tabs keep the shelf anchorage solid', {
@@ -141,7 +136,6 @@ export const dividerPatterns: ScenarioCase[] = [
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', 'dividers + outer cutouts + handles', {
@@ -157,7 +151,6 @@ export const dividerPatterns: ScenarioCase[] = [
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 40 },
       },
     },
-    timeout: 90_000,
   }),
 
   // ── Divider geometry variants ────────────────────────────────────────────
@@ -174,7 +167,6 @@ export const dividerPatterns: ScenarioCase[] = [
       compartments: { ...TWO_BY_TWO, dividerHeight: 20 },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', 'divider too short for a band stays solid', {
@@ -202,7 +194,6 @@ export const dividerPatterns: ScenarioCase[] = [
         );
       },
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', 'tilted dividers carry the pattern in-plane', {
@@ -220,7 +211,6 @@ export const dividerPatterns: ScenarioCase[] = [
       },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', 'half-grid footprint with patterned dividers', {
@@ -232,7 +222,6 @@ export const dividerPatterns: ScenarioCase[] = [
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 90_000,
   }),
 
   defineScenario('divider patterns', 'overhang shifts the interior with the dividers', {
@@ -245,7 +234,6 @@ export const dividerPatterns: ScenarioCase[] = [
       overhang: { enabled: true, left: 4, right: 0, front: 2, back: 0, feet: false },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 90_000,
   }),
 
   // ── Kumiko lattice panels on dividers ────────────────────────────────────
@@ -312,6 +300,5 @@ export const dividerPatterns: ScenarioCase[] = [
         ).toBe(off.triangleCount);
       },
     },
-    timeout: 90_000,
   }),
 ];

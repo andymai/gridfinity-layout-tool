@@ -30,7 +30,6 @@ export const lipWall: ScenarioCase[] = lipWallCases.map(({ width, depth, label }
       style: 'slotted',
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
-    timeout: 120_000,
     customAssert: (result) => {
       const zMin = meshWallHeight781 - 2.0;
       const zMax = meshWallHeight781 + 1.0;

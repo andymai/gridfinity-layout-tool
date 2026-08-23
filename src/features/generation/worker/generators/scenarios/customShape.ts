@@ -310,7 +310,6 @@ export const customShapes: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('custom-shape', '3×3 T with lip + scoop (concave perimeter + scoop)', {
@@ -322,7 +321,6 @@ export const customShapes: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('custom-shape', '3×3 U with handles + label (multi-feature polygon)', {
@@ -339,7 +337,6 @@ export const customShapes: ScenarioCase[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('custom-shape', '3×3 O-shape + magnet base + lip', {
@@ -354,7 +351,6 @@ export const customShapes: ScenarioCase[] = [
         stackingLip: true,
       },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('custom-shape', '3×3 O-shape + half sockets', {
@@ -365,7 +361,6 @@ export const customShapes: ScenarioCase[] = [
       cellMask: O_SHAPE_MASK,
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('custom-shape', '3×3 L tall (10u) + lip (z-extrusion stability)', {
@@ -377,7 +372,6 @@ export const customShapes: ScenarioCase[] = [
       cellMask: L_SHAPE_MASK,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('custom-shape', '4×3 asymmetric L (non-square bounding box)', {
@@ -396,7 +390,6 @@ export const customShapes: ScenarioCase[] = [
       ]),
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('custom-shape', '3×3 L + slotted bin (polygon + slots)', {
@@ -408,6 +401,5 @@ export const customShapes: ScenarioCase[] = [
       style: 'slotted',
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
-    timeout: 60_000,
   }),
 ];
