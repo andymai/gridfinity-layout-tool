@@ -52,6 +52,8 @@ and must be at least the sum of the layer heights.
 
 <!-- schema:Drawer -->
 
+<a id="drawer"></a>
+
 <!-- generated:start -->
 
 | Field             | Type                                    | Required | Default | Constraint              | Notes                                                                                                                                                                                                                                                                       |
@@ -76,6 +78,8 @@ after you commit, and so the baseplate panel can pre-fill padding from it.
 
 <!-- schema:MeasuredDrawerMm -->
 
+<a id="measureddrawermm"></a>
+
 <!-- generated:start -->
 
 | Field    | Type     | Required | Default | Constraint    | Notes                         |
@@ -91,6 +95,8 @@ after you commit, and so the baseplate panel can pre-fill padding from it.
 `layers[0]` is the **bottom** layer. The UI reverses them for display.
 
 <!-- schema:Layer -->
+
+<a id="layer"></a>
 
 <!-- generated:start -->
 
@@ -108,6 +114,8 @@ Every bin's `category` must name an `id` from this array. The schema cannot
 check that; the importer can.
 
 <!-- schema:Category -->
+
+<a id="category"></a>
 
 <!-- generated:start -->
 
@@ -129,35 +137,39 @@ instead of placing it on the grid.
 
 <!-- schema:Bin -->
 
+<a id="bin"></a>
+
 <!-- generated:start -->
 
-| Field              | Type                                    | Required | Default | Constraint           | Notes                                                                                                                                                                                      |
-| ------------------ | --------------------------------------- | -------- | ------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `id`               | `string`                                | yes      |         | length >= 1          | Unique id. Regenerated on import.                                                                                                                                                          |
-| `layerId`          | `string`                                | yes      |         | length >= 1          | Owning layer id, or the literal "**staging**" to park the bin in the off-grid stash instead of on the grid.                                                                                |
-| `x`                | `number`                                | yes      |         | >= 0, step 0.5       | Left edge in grid units, 0-based, measured from the LEFT.                                                                                                                                  |
-| `y`                | `number`                                | yes      |         | >= 0, step 0.5       | Bottom edge in grid units, 0-based, measured from the BOTTOM.                                                                                                                              |
-| `width`            | `number`                                | yes      |         | > 0, <= 50, step 0.5 | Width in grid units. 0.5 increments allowed.                                                                                                                                               |
-| `depth`            | `number`                                | yes      |         | > 0, <= 50, step 0.5 | Depth in grid units. 0.5 increments allowed.                                                                                                                                               |
-| `height`           | `number`                                | yes      |         | >= 2                 | Height in height units. Must be at least the owning layer's height and must fit the space to the drawer top. The schema cannot check that; the importer does.                              |
-| `clearanceHeight`  | `number`                                |          |         | >= 0                 | Extra blocked space above the bin in height units, for contents taller than the bin.                                                                                                       |
-| `category`         | `string`                                |          |         | length >= 1          | Category id. The exporter always writes one, and it MUST match an id in the categories array; a dangling reference fails import. Omitted is tolerated and backfills to an empty id.        |
-| `label`            | `string`                                |          |         | length <= 24         | Short bin label. The exporter always writes one; omitted backfills to an empty string.                                                                                                     |
-| `notes`            | `string`                                |          |         | length <= 256        | Longer note. The exporter always writes one; omitted backfills to an empty string.                                                                                                         |
-| `customProperties` | [`CustomProperties`](#customproperties) |          |         |                      |                                                                                                                                                                                            |
-| `linkedDesignId`   | `string`                                |          |         |                      | Id of a saved bin design. Should match a linkedDesigns[].id in the same file, otherwise the reference dangles after import.                                                                |
-| `extendToMargin`   | `boolean`                               |          | `false` |                      | Let this bin's walls extend into the baseplate's drawer-fit margin on every drawer edge it abuts. A flag, not a distance: the per-side reach is derived live from baseplateParams padding. |
-| `marginTaper`      | [`MarginTaper`](#margintaper)           |          |         |                      |                                                                                                                                                                                            |
-| `overhang`         | [`OverhangConfig`](#overhangconfig)     |          |         |                      |                                                                                                                                                                                            |
-| `locked`           | `boolean`                               |          | `false` |                      | Freeze size. While true, width/depth/height edits are rejected and automatic resizes skip this bin. Position and descriptive fields stay editable.                                         |
-| `pairId`           | `string`                                |          |         |                      | Groups a two-piece design (knife block plus handle rest) so both move, stash and delete together. An orphaned pairId is dropped on import.                                                 |
-| `pairRole`         | `"block"` \| `"rest"`                   |          |         |                      | Which piece of the pair this bin is.                                                                                                                                                       |
+| Field              | Type                                             | Required | Default | Constraint           | Notes                                                                                                                                                                                      |
+| ------------------ | ------------------------------------------------ | -------- | ------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`               | `string`                                         | yes      |         | length >= 1          | Unique id. Regenerated on import.                                                                                                                                                          |
+| `layerId`          | `string`                                         | yes      |         | length >= 1          | Owning layer id, or the literal "**staging**" to park the bin in the off-grid stash instead of on the grid.                                                                                |
+| `x`                | `number`                                         | yes      |         | >= 0, step 0.5       | Left edge in grid units, 0-based, measured from the LEFT.                                                                                                                                  |
+| `y`                | `number`                                         | yes      |         | >= 0, step 0.5       | Bottom edge in grid units, 0-based, measured from the BOTTOM.                                                                                                                              |
+| `width`            | `number`                                         | yes      |         | > 0, <= 50, step 0.5 | Width in grid units. 0.5 increments allowed.                                                                                                                                               |
+| `depth`            | `number`                                         | yes      |         | > 0, <= 50, step 0.5 | Depth in grid units. 0.5 increments allowed.                                                                                                                                               |
+| `height`           | `number`                                         | yes      |         | >= 2                 | Height in height units. Must be at least the owning layer's height and must fit the space to the drawer top. The schema cannot check that; the importer does.                              |
+| `clearanceHeight`  | `number`                                         |          |         | >= 0                 | Extra blocked space above the bin in height units, for contents taller than the bin.                                                                                                       |
+| `category`         | `string`                                         |          |         | length >= 1          | Category id. The exporter always writes one, and it MUST match an id in the categories array; a dangling reference fails import. Omitted is tolerated and backfills to an empty id.        |
+| `label`            | `string`                                         |          |         | length <= 24         | Short bin label. The exporter always writes one; omitted backfills to an empty string.                                                                                                     |
+| `notes`            | `string`                                         |          |         | length <= 256        | Longer note. The exporter always writes one; omitted backfills to an empty string.                                                                                                         |
+| `customProperties` | [`CustomProperties`](#customproperties)          |          |         |                      |                                                                                                                                                                                            |
+| `linkedDesignId`   | `string`                                         |          |         |                      | Id of a saved bin design. Should match a linkedDesigns[].id in the same file, otherwise the reference dangles after import.                                                                |
+| `extendToMargin`   | `boolean`                                        |          | `false` |                      | Let this bin's walls extend into the baseplate's drawer-fit margin on every drawer edge it abuts. A flag, not a distance: the per-side reach is derived live from baseplateParams padding. |
+| `marginTaper`      | [`MarginTaper`](#margintaper)                    |          |         |                      |                                                                                                                                                                                            |
+| `overhang`         | [`OverhangConfig`](bin-design.md#overhangconfig) |          |         |                      |                                                                                                                                                                                            |
+| `locked`           | `boolean`                                        |          | `false` |                      | Freeze size. While true, width/depth/height edits are rejected and automatic resizes skip this bin. Position and descriptive fields stay editable.                                         |
+| `pairId`           | `string`                                         |          |         |                      | Groups a two-piece design (knife block plus handle rest) so both move, stash and delete together. An orphaned pairId is dropped on import.                                                 |
+| `pairRole`         | `"block"` \| `"rest"`                            |          |         |                      | Which piece of the pair this bin is.                                                                                                                                                       |
 
 <!-- generated:end -->
 
 ### CustomProperties
 
 <!-- schema:CustomProperties indexed -->
+
+<a id="customproperties"></a>
 
 A map of user metadata with no fixed keys, so there is nothing to enumerate.
 Keys and values are strings, bounded by `validateCustomProperties` in
@@ -170,6 +182,8 @@ reaches into a drawer's curved sides while its base still sits flat. Requires
 `extendToMargin`.
 
 <!-- schema:MarginTaper -->
+
+<a id="margintaper"></a>
 
 <!-- generated:start -->
 
@@ -205,6 +219,8 @@ enclose at least one grid cell.
 
 <!-- schema:DrawerOutline -->
 
+<a id="draweroutline"></a>
+
 <!-- generated:start -->
 
 | Field       | Type                                    | Required | Default | Constraint | Notes                                                              |
@@ -217,6 +233,8 @@ enclose at least one grid cell.
 ### OutlineVertex
 
 <!-- schema:OutlineVertex -->
+
+<a id="outlinevertex"></a>
 
 <!-- generated:start -->
 
@@ -235,6 +253,8 @@ the same mode. Never trusted for geometry, and sanitized server-side.
 
 <!-- schema:OutlineAuthoring -->
 
+<a id="outlineauthoring"></a>
+
 <!-- generated:start -->
 
 | Field     | Type                                             | Required | Default | Constraint | Notes                                        |
@@ -247,6 +267,8 @@ the same mode. Never trusted for geometry, and sanitized server-side.
 ### CornerCutParams
 
 <!-- schema:CornerCutParams -->
+
+<a id="cornercutparams"></a>
 
 <!-- generated:start -->
 
@@ -266,6 +288,8 @@ Dimensions in mm.
 
 <!-- schema:CornerCut indexed -->
 
+<a id="cornercut"></a>
+
 Defined in `src/core/types/drawerOutline.ts`.
 
 ## Baseplate
@@ -275,6 +299,8 @@ drawer-fit margin in mm on each side, and several other fields only mean
 anything in combination with them.
 
 <!-- schema:BaseplateParams -->
+
+<a id="baseplateparams"></a>
 
 <!-- generated:start -->
 
@@ -320,6 +346,8 @@ anything in combination with them.
 
 <!-- schema:CornerRadii -->
 
+<a id="cornerradii"></a>
+
 <!-- generated:start -->
 
 | Field | Type     | Required | Default | Constraint | Notes                     |
@@ -334,6 +362,8 @@ anything in combination with them.
 ### StackPrintParams
 
 <!-- schema:StackPrintParams -->
+
+<a id="stackprintparams"></a>
 
 <!-- generated:start -->
 
@@ -352,6 +382,8 @@ the override is dropped and the automatic plan is used instead, silently.
 
 <!-- schema:SplitOverride -->
 
+<a id="splitoverride"></a>
+
 <!-- generated:start -->
 
 | Field  | Type       | Required | Default | Constraint | Notes                                                      |
@@ -364,6 +396,8 @@ the override is dropped and the automatic plan is used instead, silently.
 ### ScrewHoleParams
 
 <!-- schema:ScrewHoleParams -->
+
+<a id="screwholeparams"></a>
 
 <!-- generated:start -->
 
@@ -388,13 +422,15 @@ like layer and category ids.
 
 <!-- schema:LinkedDesign -->
 
+<a id="linkeddesign"></a>
+
 <!-- generated:start -->
 
-| Field    | Type                      | Required | Default | Constraint  | Notes                                          |
-| -------- | ------------------------- | -------- | ------- | ----------- | ---------------------------------------------- |
-| `id`     | `string`                  | yes      |         | length >= 1 | Design id, matched against Bin.linkedDesignId. |
-| `name`   | `string`                  | yes      |         |             | Design name.                                   |
-| `params` | [`BinParams`](#binparams) | yes      |         |             |                                                |
+| Field    | Type                                   | Required | Default | Constraint  | Notes                                          |
+| -------- | -------------------------------------- | -------- | ------- | ----------- | ---------------------------------------------- |
+| `id`     | `string`                               | yes      |         | length >= 1 | Design id, matched against Bin.linkedDesignId. |
+| `name`   | `string`                               | yes      |         |             | Design name.                                   |
+| `params` | [`BinParams`](bin-design.md#binparams) | yes      |         |             |                                                |
 
 <!-- generated:end -->
 
@@ -403,6 +439,8 @@ like layer and category ids.
 ### ExportMeta
 
 <!-- schema:ExportMeta -->
+
+<a id="exportmeta"></a>
 
 <!-- generated:start -->
 

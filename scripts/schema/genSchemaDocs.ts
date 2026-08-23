@@ -28,6 +28,7 @@ export const DOCS_DIR = join(process.cwd(), 'docs/schemas');
 export const START = '<!-- generated:start -->';
 export const END = '<!-- generated:end -->';
 const MARKER = /<!-- schema:([\w.:-]+?)(?: (indexed))? -->/;
+const ANCHOR_LINE = /^<a id="[\w.:-]+"><\/a>$/;
 
 /** `$def` name to subschema, across both files, plus the two document roots. */
 export function schemaIndex(): Map<string, Record<string, unknown>> {
@@ -51,7 +52,11 @@ function renderType(subschema: unknown): string {
   const ref = subschema.$ref;
   if (typeof ref === 'string') {
     const name = ref.slice(ref.lastIndexOf('/') + 1);
-    return `[\`${name}\`](#${anchor(name)})`;
+    // An absolute `$ref` crosses into the other schema, so the link has to
+    // cross documents too. A bare `#anchor` would be a dead link, since the
+    // definition is not in the file being rendered.
+    const doc = ref.startsWith('#') ? '' : 'bin-design.md';
+    return `[\`${name}\`](${doc}#${anchor(name)})`;
   }
   if (subschema.const !== undefined) return `\`${JSON.stringify(subschema.const)}\``;
   if (Array.isArray(subschema.enum)) {
@@ -133,6 +138,16 @@ export function renderDoc(source: string, index: Map<string, Record<string, unkn
       pending = { name: match[1], indexed: match[2] === 'indexed' };
       out.push(line);
       i += 1;
+      // Anchor every section by its definition name. The tables link `$ref`s as
+      // `#definitionname`, but headings are prose-named ("## Handles" for
+      // `HandleConfig`), so without this the cross-references are dead links.
+      // Emitted for indexed sections too, since those are link targets as well.
+      if (!match[1].startsWith('root:')) {
+        out.push('', `<a id="${anchor(match[1])}"></a>`);
+        while (i < lines.length && lines[i].trim() === '') i += 1;
+        if (i < lines.length && ANCHOR_LINE.test(lines[i].trim())) i += 1;
+        out.push('');
+      }
       continue;
     }
     if (line.trim() === START) {

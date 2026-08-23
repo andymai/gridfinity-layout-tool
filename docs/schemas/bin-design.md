@@ -9,6 +9,13 @@ optionally its companion solids (lid, knife rest).
 
 Read [README.md](README.md) first for the traps that apply to both formats.
 
+**This reference is layered.** The parameter set and the configs people actually
+hand-author carry full field tables. The long tail is summarised with a pointer
+to the type that defines it, because those are read far less often than they
+would cost to carry here. Every field is still typed by the schema either way,
+so `$schema` completion and `pnpm run validate:json` cover the whole document
+regardless of how it is documented.
+
 Unlike the layout format, this one is a **wrapper**, not a flat spread. The
 parameters live under `params`:
 
@@ -56,6 +63,8 @@ deliberately never persisted, so a printer's nozzle never syncs to other devices
 or rides along in a shared design.
 
 <!-- schema:BinParams -->
+
+<a id="binparams"></a>
 
 <!-- generated:start -->
 
@@ -116,6 +125,8 @@ booleans and derives the style from them via `computeBaseStyle()`. Setting
 
 <!-- schema:BaseConfig -->
 
+<a id="baseconfig"></a>
+
 <!-- generated:start -->
 
 | Field             | Type                                                                                                   | Required | Default      | Constraint  | Notes                                                                                                                        |
@@ -143,37 +154,22 @@ booleans and derives the style from them via `computeBaseStyle()`. Setting
 
 Turns the underside into a lid-like tray bottom that mates with the bin below.
 
-<!-- schema:TrayBottomConfig -->
+<!-- schema:TrayBottomConfig indexed -->
 
-<!-- generated:start -->
+<a id="traybottomconfig"></a>
 
-| Field               | Type                                                                     | Required | Default | Constraint    | Notes                                                                    |
-| ------------------- | ------------------------------------------------------------------------ | -------- | ------- | ------------- | ------------------------------------------------------------------------ |
-| `attachment`        | `"friction"` \| `"clickRails"` \| `"magnetic"` \| `"slide"` \| `"hinge"` | yes      |         |               | How the tray bottom attaches to the bin below.                           |
-| `extraHeightMm`     | `number`                                                                 | yes      |         | >= 0          | Extra skirt depth in mm to clear contents protruding from the bin below. |
-| `clickRails`        | [`SideFlags`](#sideflags)                                                |          |         |               |                                                                          |
-| `clickRailCoverage` | `number`                                                                 |          |         | >= 50, <= 100 | Percentage of each rail's side that carries the click feature.           |
-| `retentionMagnet`   | [`LidMagnetConfig`](#lidmagnetconfig)                                    |          |         |               |                                                                          |
-
-<!-- generated:end -->
+5 fields, in `src/features/bin-designer/types/base.ts`.
 
 ### SideFlags
 
 Per-side booleans, used by click rails and lid grips. `front`/`back` are -Y/+Y
 and `left`/`right` are -X/+X, matching the grid.
 
-<!-- schema:SideFlags -->
+<!-- schema:SideFlags indexed -->
 
-<!-- generated:start -->
+<a id="sideflags"></a>
 
-| Field   | Type      | Required | Default | Constraint | Notes    |
-| ------- | --------- | -------- | ------- | ---------- | -------- |
-| `front` | `boolean` | yes      |         |            | -Y side. |
-| `back`  | `boolean` | yes      |         |            | +Y side. |
-| `left`  | `boolean` | yes      |         |            | -X side. |
-| `right` | `boolean` | yes      |         |            | +X side. |
-
-<!-- generated:end -->
+4 fields, in `src/features/bin-designer/types/lid.ts`.
 
 ## Compartments
 
@@ -189,6 +185,8 @@ The 12x12 ceiling is a generation-time budget, not an arbitrary limit: a 12x12
 grid finishes in about 14s, while 16x16 reaches ~39s and risks a timeout.
 
 <!-- schema:CompartmentConfig -->
+
+<a id="compartmentconfig"></a>
 
 <!-- generated:start -->
 
@@ -212,39 +210,27 @@ grid finishes in about 14s, while 16x16 reaches ~39s and risks a timeout.
 
 ### DividerOverride
 
-<!-- schema:DividerOverride -->
+<!-- schema:DividerOverride indexed -->
 
-<!-- generated:start -->
+<a id="divideroverride"></a>
 
-| Field          | Type      | Required | Default | Constraint | Notes                                    |
-| -------------- | --------- | -------- | ------- | ---------- | ---------------------------------------- |
-| `compartmentA` | `integer` | yes      |         |            | First compartment id.                    |
-| `compartmentB` | `integer` | yes      |         |            | Second compartment id.                   |
-| `offsetStart`  | `number`  |          |         |            | Offset in mm at the divider's start end. |
-| `offsetEnd`    | `number`  |          |         |            | Offset in mm at the divider's far end.   |
-| `rakeDeg`      | `number`  |          |         |            | Divider rake angle in degrees.           |
-
-<!-- generated:end -->
+5 fields, in `src/features/bin-designer/types/compartments.ts`.
 
 ### StashedCompartment
 
-<!-- schema:StashedCompartment -->
+<!-- schema:StashedCompartment indexed -->
 
-<!-- generated:start -->
+<a id="stashedcompartment"></a>
 
-| Field   | Type      | Required | Default | Constraint | Notes                                          |
-| ------- | --------- | -------- | ------- | ---------- | ---------------------------------------------- |
-| `w`     | `integer` | yes      |         | >= 1       | Width in compartment cells.                    |
-| `h`     | `integer` | yes      |         | >= 1       | Height in compartment cells.                   |
-| `label` | `string`  |          |         |            | Optional label carried with the stashed shape. |
-
-<!-- generated:end -->
+3 fields, in `src/features/bin-designer/types/compartments.ts`.
 
 ## Scoop
 
 A ramp at one wall so contents can be scooped out.
 
 <!-- schema:ScoopConfig -->
+
+<a id="scoopconfig"></a>
 
 <!-- generated:start -->
 
@@ -272,6 +258,8 @@ already had), and on a per-side `WallCutout` it means "defer to the
 
 <!-- schema:WallConfig -->
 
+<a id="wallconfig"></a>
+
 <!-- generated:start -->
 
 | Field                | Type                                   | Required | Default | Constraint   | Notes                                                                                                           |
@@ -293,6 +281,8 @@ already had), and on a per-side `WallCutout` it means "defer to the
 ### WallCutout
 
 <!-- schema:WallCutout -->
+
+<a id="wallcutout"></a>
 
 <!-- generated:start -->
 
@@ -321,48 +311,27 @@ subset: kumiko is not available there.
 Floor perforation cuts through the floor slab **and** the base socket beneath
 it, so holes drain rather than ending in a blind pocket.
 
-<!-- schema:WallPatternConfig -->
+<!-- schema:WallPatternConfig indexed -->
 
-<!-- generated:start -->
+<a id="wallpatternconfig"></a>
 
-| Field      | Type                                                                                                                                                                               | Required | Default | Constraint | Notes                                                                 |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- | ---------- | --------------------------------------------------------------------- |
-| `enabled`  | `boolean`                                                                                                                                                                          | yes      |         |            | Enable the wall pattern.                                              |
-| `pattern`  | `"honeycomb"` \| `"round"` \| `"diamond"` \| `"triangle"` \| `"slots"` \| `"mitsukude"` \| `"goma"` \| `"asanoha"` \| `"sakura"` \| `"rindo"` \| `"mikado"` \| `"tsumiishi-kikko"` | yes      |         |            | Pattern type. The last seven are kumiko patterns.                     |
-| `scale`    | `number`                                                                                                                                                                           | yes      | `0.5`   | > 0        | Pattern cell scale. Smaller means more, finer cells and a slower cut. |
-| `dividers` | `boolean`                                                                                                                                                                          |          |         |            | Also apply the pattern to interior divider walls.                     |
-| `sides`    | [`WallPatternSides`](#wallpatternsides)                                                                                                                                            | yes      |         |            |                                                                       |
-
-<!-- generated:end -->
+5 fields, in `src/features/bin-designer/types/walls.ts`.
 
 ### WallPatternSides
 
-<!-- schema:WallPatternSides -->
+<!-- schema:WallPatternSides indexed -->
 
-<!-- generated:start -->
+<a id="wallpatternsides"></a>
 
-| Field   | Type      | Required | Default | Constraint | Notes    |
-| ------- | --------- | -------- | ------- | ---------- | -------- |
-| `left`  | `boolean` | yes      |         |            | -X wall. |
-| `right` | `boolean` | yes      |         |            | +X wall. |
-| `front` | `boolean` | yes      |         |            | -Y wall. |
-| `back`  | `boolean` | yes      |         |            | +Y wall. |
-
-<!-- generated:end -->
+4 fields, in `src/features/bin-designer/types/walls.ts`.
 
 ### FloorPatternConfig
 
-<!-- schema:FloorPatternConfig -->
+<!-- schema:FloorPatternConfig indexed -->
 
-<!-- generated:start -->
+<a id="floorpatternconfig"></a>
 
-| Field     | Type                                                                   | Required | Default | Constraint | Notes                                                                                      |
-| --------- | ---------------------------------------------------------------------- | -------- | ------- | ---------- | ------------------------------------------------------------------------------------------ |
-| `enabled` | `boolean`                                                              | yes      |         |            | Enable floor perforation.                                                                  |
-| `pattern` | `"round"` \| `"honeycomb"` \| `"diamond"` \| `"triangle"` \| `"slots"` | yes      |         |            | Floor pattern type. A subset of the wall patterns; kumiko patterns are not available here. |
-| `scale`   | `number`                                                               | yes      |         | > 0        | Pattern cell scale.                                                                        |
-
-<!-- generated:end -->
+3 fields, in `src/features/bin-designer/types/floor.ts`.
 
 ## Label tabs
 
@@ -378,6 +347,8 @@ In `socket` mode the tab becomes a pocket for a separately printed swappable
 label plate instead of carrying engraved text.
 
 <!-- schema:LabelTabConfig -->
+
+<a id="labeltabconfig"></a>
 
 <!-- generated:start -->
 
@@ -404,92 +375,46 @@ label plate instead of carrying engraved text.
 
 ## Handles
 
-<!-- schema:HandleConfig -->
+<!-- schema:HandleConfig indexed -->
 
-<!-- generated:start -->
+<a id="handleconfig"></a>
 
-| Field              | Type                                   | Required | Default | Constraint     | Notes                                                       |
-| ------------------ | -------------------------------------- | -------- | ------- | -------------- | ----------------------------------------------------------- |
-| `enabled`          | `boolean`                              | yes      |         |                | Enable handles.                                             |
-| `shape`            | `"rectangle"` \| `"oval"` \| `"scoop"` | yes      |         |                | Handle cutout shape.                                        |
-| `width`            | `number`                               | yes      |         | >= 10, <= 100  | Handle width as a PERCENTAGE of the wall span.              |
-| `height`           | `number`                               | yes      |         | >= 8, <= 30    | Handle height in mm.                                        |
-| `cornerRadius`     | `number`                               |          |         | >= 0, <= 10    | Handle corner radius in mm.                                 |
-| `verticalPosition` | `number`                               |          |         | >= 0.2, <= 0.9 | Handle centre as a FRACTION of wall height, 0 at the floor. |
-| `count`            | `integer`                              |          |         | >= 1, <= 3     | Handles per enabled wall.                                   |
-| `chamfer`          | `boolean`                              |          |         |                | Chamfer the handle opening.                                 |
-| `interior`         | `boolean`                              |          |         |                | Also cut handles in interior divider walls.                 |
-| `front`            | [`HandleSide`](#handleside)            | yes      |         |                |                                                             |
-| `back`             | [`HandleSide`](#handleside)            | yes      |         |                |                                                             |
-| `left`             | [`HandleSide`](#handleside)            | yes      |         |                |                                                             |
-| `right`            | [`HandleSide`](#handleside)            | yes      |         |                |                                                             |
-
-<!-- generated:end -->
+13 fields, in `src/features/bin-designer/types/handles.ts`.
 
 ### HandleSide
 
-<!-- schema:HandleSide -->
+<!-- schema:HandleSide indexed -->
 
-<!-- generated:start -->
+<a id="handleside"></a>
 
-| Field          | Type      | Required | Default | Constraint    | Notes                                        |
-| -------------- | --------- | -------- | ------- | ------------- | -------------------------------------------- |
-| `enabled`      | `boolean` | yes      |         |               | Enable a handle on this wall.                |
-| `width`        | `number`  |          |         | >= 10, <= 100 | Width override as a percentage of wall span. |
-| `height`       | `number`  |          |         | >= 8, <= 30   | Height override in mm.                       |
-| `cornerRadius` | `number`  |          |         | >= 0, <= 10   | Corner radius override in mm.                |
-
-<!-- generated:end -->
+4 fields, in `src/features/bin-designer/types/handles.ts`.
 
 ## Dividers and slots
 
 Slots are only meaningful for the `slotted` style. The divider pieces are
 printed separately and ride in them.
 
-<!-- schema:SlotConfig -->
+<!-- schema:SlotConfig indexed -->
 
-<!-- generated:start -->
+<a id="slotconfig"></a>
 
-| Field          | Type                                       | Required | Default | Constraint   | Notes                                                                                   |
-| -------------- | ------------------------------------------ | -------- | ------- | ------------ | --------------------------------------------------------------------------------------- |
-| `x`            | [`AxisSlotConfig`](#axisslotconfig)        | yes      |         |              |                                                                                         |
-| `y`            | [`AxisSlotConfig`](#axisslotconfig)        | yes      |         |              |                                                                                         |
-| `width`        | `number`                                   | yes      |         | >= 1.8, <= 3 | Slot width in mm.                                                                       |
-| `depth`        | `number`                                   | yes      |         | >= 0.5, <= 2 | Slot depth in mm.                                                                       |
-| `crossStyle`   | `"lap"` \| `"insert"`                      |          |         |              | How crossing dividers meet.                                                             |
-| `longAxis`     | `"x"` \| `"y"`                             |          |         |              | Which axis carries the full-length dividers. Honoured only when crossStyle is 'insert'. |
-| `partialStyle` | `"full"` \| `"snappable"` \| `"lengthSet"` |          |         |              | Whether dividers span fully, snap to length, or come as a length set.                   |
-| `layout`       | `"even"` \| `"custom"`                     |          |         |              | Even pitch or a custom grid.                                                            |
-| `customGrid`   | `number`[]                                 |          |         |              | Custom slot positions. Only meaningful when layout is 'custom'.                         |
-
-<!-- generated:end -->
+9 fields, in `src/features/bin-designer/types/dividers.ts`.
 
 ### AxisSlotConfig
 
-<!-- schema:AxisSlotConfig -->
+<!-- schema:AxisSlotConfig indexed -->
 
-<!-- generated:start -->
+<a id="axisslotconfig"></a>
 
-| Field     | Type      | Required | Default | Constraint | Notes                      |
-| --------- | --------- | -------- | ------- | ---------- | -------------------------- |
-| `enabled` | `boolean` | yes      |         |            | Cut slots along this axis. |
-| `pitch`   | `number`  | yes      |         | > 0        | Slot pitch in mm.          |
-
-<!-- generated:end -->
+2 fields, in `src/features/bin-designer/types/dividers.ts`.
 
 ### DividerPieceConfig
 
-<!-- schema:DividerPieceConfig -->
+<!-- schema:DividerPieceConfig indexed -->
 
-<!-- generated:start -->
+<a id="dividerpiececonfig"></a>
 
-| Field       | Type     | Required | Default | Constraint     | Notes                                         |
-| ----------- | -------- | -------- | ------- | -------------- | --------------------------------------------- |
-| `height`    | `number` | yes      |         | > 0            | Divider height in mm.                         |
-| `thickness` | `number` | yes      |         | >= 0.8, <= 2.4 | Divider thickness in mm.                      |
-| `clearance` | `number` | yes      |         | >= 0, <= 0.3   | Fit clearance in mm between divider and slot. |
-
-<!-- generated:end -->
+3 fields, in `src/features/bin-designer/types/dividers.ts`.
 
 ## Cutouts
 
@@ -506,6 +431,8 @@ the 2D editor and comes out as a plain rectangle in 3D.
 
 <!-- schema:CutoutConfig -->
 
+<a id="cutoutconfig"></a>
+
 <!-- generated:start -->
 
 | Field           | Type                 | Required | Default | Constraint | Notes                                                                       |
@@ -518,6 +445,8 @@ the 2D editor and comes out as a plain rectangle in 3D.
 ### Cutout
 
 <!-- schema:Cutout -->
+
+<a id="cutout"></a>
 
 <!-- generated:start -->
 
@@ -568,111 +497,56 @@ the 2D editor and comes out as a plain rectangle in 3D.
 Which edges of a cutout are scooped. Absent means all four, so the object only
 needs writing when some edges should stay square.
 
-<!-- schema:CutoutScoopEdges -->
+<!-- schema:CutoutScoopEdges indexed -->
 
-<!-- generated:start -->
+<a id="cutoutscoopedges"></a>
 
-| Field   | Type      | Required | Default | Constraint | Notes              |
-| ------- | --------- | -------- | ------- | ---------- | ------------------ |
-| `left`  | `boolean` | yes      |         |            | Scoop the -X edge. |
-| `right` | `boolean` | yes      |         |            | Scoop the +X edge. |
-| `front` | `boolean` | yes      |         |            | Scoop the -Y edge. |
-| `back`  | `boolean` | yes      |         |            | Scoop the +Y edge. |
-
-<!-- generated:end -->
+4 fields, in `src/features/bin-designer/types/cutout.ts`.
 
 ### CutoutArrayConfig
 
-<!-- schema:CutoutArrayConfig -->
+<!-- schema:CutoutArrayConfig indexed -->
 
-<!-- generated:start -->
+<a id="cutoutarrayconfig"></a>
 
-| Field            | Type                                    | Required | Default | Constraint  | Notes                                         |
-| ---------------- | --------------------------------------- | -------- | ------- | ----------- | --------------------------------------------- |
-| `mode`           | `"grid"` \| `"staggered"` \| `"radial"` | yes      |         |             | Array layout.                                 |
-| `cols`           | `integer`                               |          |         | >= 1, <= 50 | Columns. Grid and staggered modes only.       |
-| `rows`           | `integer`                               |          |         | >= 1, <= 50 | Rows. Grid and staggered modes only.          |
-| `pitchX`         | `number`                                |          |         |             | Column pitch in mm.                           |
-| `pitchY`         | `number`                                |          |         |             | Row pitch in mm.                              |
-| `count`          | `integer`                               |          |         | >= 1, <= 50 | Instance count for radial mode.               |
-| `radius`         | `number`                                |          |         | > 0         | Ring radius in mm for radial mode.            |
-| `startAngle`     | `number`                                |          |         |             | Starting angle in degrees for radial mode.    |
-| `rotateToCenter` | `boolean`                               |          |         |             | Rotate each instance to face the ring centre. |
-
-<!-- generated:end -->
+9 fields, in `src/features/bin-designer/types/cutout.ts`.
 
 ### PathPoint
 
-<!-- schema:PathPoint -->
+<!-- schema:PathPoint indexed -->
 
-<!-- generated:start -->
+<a id="pathpoint"></a>
 
-| Field       | Type                                      | Required | Default | Constraint | Notes                                                                                    |
-| ----------- | ----------------------------------------- | -------- | ------- | ---------- | ---------------------------------------------------------------------------------------- |
-| `x`         | `number`                                  | yes      |         |            | X in mm from the bin interior's left edge.                                               |
-| `y`         | `number`                                  | yes      |         |            | Y in mm from the bin interior's front edge.                                              |
-| `handleIn`  | [`BezierHandle`](#bezierhandle) \| `null` |          |         |            | Incoming bezier control handle as a relative offset. null makes the point a hard corner. |
-| `handleOut` | [`BezierHandle`](#bezierhandle) \| `null` |          |         |            | Outgoing bezier control handle as a relative offset. null makes the point a hard corner. |
-| `symmetric` | `boolean`                                 |          |         |            | Keep handleIn and handleOut mirrored.                                                    |
-
-<!-- generated:end -->
+5 fields, in `src/features/bin-designer/types/cutout.ts`.
 
 ### BezierHandle
 
-<!-- schema:BezierHandle -->
+<!-- schema:BezierHandle indexed -->
 
-<!-- generated:start -->
+<a id="bezierhandle"></a>
 
-| Field | Type     | Required | Default | Constraint | Notes           |
-| ----- | -------- | -------- | ------- | ---------- | --------------- |
-| `dx`  | `number` | yes      |         |            | X offset in mm. |
-| `dy`  | `number` | yes      |         |            | Y offset in mm. |
-
-<!-- generated:end -->
+2 fields, in `src/features/bin-designer/types/cutout.ts`.
 
 ### KnifeSpec
 
 Blade dimensions driving a `knifeSlot` cutout.
 
-<!-- schema:KnifeSpec -->
+<!-- schema:KnifeSpec indexed -->
 
-<!-- generated:start -->
+<a id="knifespec"></a>
 
-| Field              | Type                 | Required | Default | Constraint | Notes                                 |
-| ------------------ | -------------------- | -------- | ------- | ---------- | ------------------------------------- |
-| `presetId`         | `string`             |          |         |            | Preset knife id, when one was chosen. |
-| `bladeLengthMm`    | `number`             |          |         | > 0        | Blade length in mm.                   |
-| `heelHeightMm`     | `number`             |          |         | > 0        | Blade heel height in mm.              |
-| `spineThicknessMm` | `number`             |          |         | > 0        | Spine thickness in mm.                |
-| `handleDiameterMm` | `number`             |          |         | > 0        | Handle diameter in mm.                |
-| `openEnd`          | `"start"` \| `"end"` |          |         |            | Which end of the slot is open.        |
-
-<!-- generated:end -->
+6 fields, in `src/features/bin-designer/types/cutout.ts`.
 
 ## Inserts
 
 Cavities cut into the bin floor. Positions are in millimetres from the interior
 left and front edges, like cutouts.
 
-<!-- schema:Insert -->
+<!-- schema:Insert indexed -->
 
-<!-- generated:start -->
+<a id="insert"></a>
 
-| Field          | Type                                                                       | Required | Default | Constraint  | Notes                                                   |
-| -------------- | -------------------------------------------------------------------------- | -------- | ------- | ----------- | ------------------------------------------------------- |
-| `id`           | `string`                                                                   | yes      |         | length >= 1 | Unique insert id.                                       |
-| `templateId`   | `string` \| `null`                                                         |          |         |             | Template this insert came from, or null if hand-placed. |
-| `shape`        | `"rectangle"` \| `"circle"` \| `"hexagon"` \| `"rounded-rect"` \| `"slot"` | yes      |         |             | Cavity shape.                                           |
-| `x`            | `number`                                                                   | yes      |         |             | X in mm from the bin interior's left edge.              |
-| `y`            | `number`                                                                   | yes      |         |             | Y in mm from the bin interior's front edge.             |
-| `width`        | `number`                                                                   | yes      |         | > 0         | Width in mm, or diameter for circle and hexagon.        |
-| `depth`        | `number`                                                                   | yes      |         | > 0         | Depth in mm. Ignored for circle and hexagon.            |
-| `cutDepth`     | `number`                                                                   | yes      |         | > 0         | How deep the cavity goes in mm.                         |
-| `rotation`     | `0` \| `90` \| `180` \| `270`                                              |          |         |             | Rotation in degrees. Only right angles.                 |
-| `cornerRadius` | `number`                                                                   |          |         | >= 0        | Corner radius in mm for 'rounded-rect'.                 |
-| `label`        | `string`                                                                   |          |         |             | Optional label for the insert.                          |
-
-<!-- generated:end -->
+11 fields, in `src/features/bin-designer/types/binParams.ts`.
 
 ## Non-rectangular bins
 
@@ -686,6 +560,8 @@ non-rectangular footprint: compartments, cutouts, walls, handles, inserts,
 scoops and label tabs are skipped rather than approximated.
 
 <!-- schema:CellMask -->
+
+<a id="cellmask"></a>
 
 <!-- generated:start -->
 
@@ -709,6 +585,8 @@ the overhang region has a flat bottom unless `feet` is set. Ignored for
 
 <!-- schema:OverhangConfig -->
 
+<a id="overhangconfig"></a>
+
 <!-- generated:start -->
 
 | Field     | Type                                  | Required | Default | Constraint  | Notes                                                                                                           |
@@ -730,6 +608,8 @@ Stored rim-anchored: the wall is full width at the rim and angles inward over
 
 <!-- schema:WallTaperConfig -->
 
+<a id="walltaperconfig"></a>
+
 <!-- generated:start -->
 
 | Field        | Type                      | Required | Default | Constraint   | Notes                                                                                  |
@@ -748,42 +628,19 @@ Stored rim-anchored: the wall is full width at the rim and angles inward over
 
 Connectors joining the pieces of a bin too large for the print bed.
 
-<!-- schema:SplitConnectorConfig -->
+<!-- schema:SplitConnectorConfig indexed -->
 
-<!-- generated:start -->
+<a id="splitconnectorconfig"></a>
 
-| Field                 | Type                | Required | Default | Constraint | Notes                                           |
-| --------------------- | ------------------- | -------- | ------- | ---------- | ----------------------------------------------- |
-| `enabled`             | `boolean`           | yes      |         |            | Enable split connectors.                        |
-| `clearance`           | `number`            |          |         | >= 0       | Fit clearance in mm.                            |
-| `tongueProtrusion`    | `number`            |          |         | >= 0       | How far the tongue protrudes in mm.             |
-| `tongueThickness`     | `number`            |          |         | > 0        | Tongue thickness in mm.                         |
-| `wallConnector`       | `"none"` \| `"key"` |          |         |            | Whether the wall seam also gets a separate key. |
-| `ridgeWidthFraction`  | `number`            |          |         | >= 0, <= 1 | Ridge width as a fraction of the tongue.        |
-| `ridgeHeightFraction` | `number`            |          |         | >= 0, <= 1 | Ridge height as a fraction of the tongue.       |
-| `nozzleSizeMm`        | `number`            |          |         | > 0        | Nozzle size the connector clearances scale to.  |
-
-<!-- generated:end -->
+8 fields, in `src/features/bin-designer/types/splitConnector.ts`.
 
 ## Sliding tray
 
-<!-- schema:SlideConfig -->
+<!-- schema:SlideConfig indexed -->
 
-<!-- generated:start -->
+<a id="slideconfig"></a>
 
-| Field              | Type                    | Required | Default      | Constraint | Notes                                      |
-| ------------------ | ----------------------- | -------- | ------------ | ---------- | ------------------------------------------ |
-| `enabled`          | `boolean`               | yes      |              |            | Enable the sliding tray.                   |
-| `railMount`        | `"interior"` \| `"rim"` |          | `"interior"` |            | Where the rail mounts.                     |
-| `trayWidthUnits`   | `number`                |          |              | > 0        | Tray width in grid units.                  |
-| `trayDepthMm`      | `number`                |          |              | > 0        | Tray depth in mm.                          |
-| `trayWallMm`       | `number`                |          |              | > 0        | Tray wall thickness in mm.                 |
-| `railDropMm`       | `number`                |          |              | >= 0       | How far the rail sits below the rim in mm. |
-| `railProtrusionMm` | `number`                |          |              | >= 0       | How far the rail protrudes inward in mm.   |
-| `railThicknessMm`  | `number`                |          |              | > 0        | Rail thickness in mm.                      |
-| `clearanceMm`      | `number`                |          |              | >= 0       | Fit clearance in mm between rail and tray. |
-
-<!-- generated:end -->
+9 fields, in `src/features/bin-designer/types/slide.ts`.
 
 ## Text
 
@@ -794,240 +651,107 @@ field is not reset, it inherits.
 `surfaceText` puts text on exterior surfaces. Lid text is deliberately
 monochrome; wall text activates the text colour zone.
 
-<!-- schema:TextStyleDefaults -->
+<!-- schema:TextStyleDefaults indexed -->
 
-<!-- generated:start -->
+<a id="textstyledefaults"></a>
 
-| Field                | Type                                                                                                                                             | Required | Default | Constraint | Notes                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- | ---------- | --------------------------------------------------------------------- |
-| `font`               | `"atkinson"` \| `"atkinson-bold"` \| `"jetbrains-mono"` \| `"jetbrains-mono-bold"` \| `"barlow-condensed"` \| `"poppins"` \| `"allerta-stencil"` | yes      |         |            | Font family.                                                          |
-| `mode`               | `"engrave"` \| `"emboss"` \| `"through-cut"`                                                                                                     | yes      |         |            | How the glyphs meet the surface.                                      |
-| `depth`              | `number`                                                                                                                                         | yes      |         | > 0        | Engrave or emboss depth in mm.                                        |
-| `margin`             | `number`                                                                                                                                         |          |         | >= 0       | Margin in mm around the text block.                                   |
-| `minFontSize`        | `number`                                                                                                                                         |          |         | > 0        | Lower bound in mm for auto-sized text.                                |
-| `maxFontSize`        | `number`                                                                                                                                         |          |         | > 0        | Upper bound in mm for auto-sized text.                                |
-| `anchor`             | `"top-left"` \| `"top"` \| `"top-right"` \| `"left"` \| `"center"` \| `"right"` \| `"bottom-left"` \| `"bottom"` \| `"bottom-right"`             |          |         |            | Nine-point anchor within the available area.                          |
-| `offset`             | [`TextOffset`](#textoffset)                                                                                                                      |          |         |            |                                                                       |
-| `sizeMode`           | `"auto"` \| `"fixed"`                                                                                                                            |          |         |            | 'auto' fits the text to the area; 'fixed' uses fixedSize.             |
-| `fixedSize`          | `number`                                                                                                                                         |          |         | > 0        | Font size in mm when sizeMode is 'fixed'.                             |
-| `snapToScale`        | `boolean`                                                                                                                                        |          |         |            | Snap the computed size to the shared type scale.                      |
-| `uniformAcrossWalls` | `boolean`                                                                                                                                        |          |         |            | Use one size for every wall rather than fitting each separately.      |
-| `tracking`           | `number`                                                                                                                                         |          |         |            | Letter spacing adjustment.                                            |
-| `autoTracking`       | `boolean`                                                                                                                                        |          |         |            | Let the layout choose tracking.                                       |
-| `textCase`           | `"as-typed"` \| `"upper"` \| `"title"`                                                                                                           |          |         |            | Case transform applied before layout.                                 |
-| `lineScale`          | `number`                                                                                                                                         |          |         | > 0        | Line height multiplier.                                               |
-| `lineGap`            | `number`                                                                                                                                         |          |         |            | Extra gap between lines in mm.                                        |
-| `cutProfile`         | `"straight"` \| `"drafted"`                                                                                                                      |          |         |            | 'drafted' angles the glyph walls so an engraved cut releases cleanly. |
-| `draftAngleDeg`      | `number`                                                                                                                                         |          |         | >= 3       | Draft angle in degrees. Only meaningful when cutProfile is 'drafted'. |
-
-<!-- generated:end -->
+19 fields, in `src/features/bin-designer/types/text.ts`.
 
 ### TextStyleOverride
 
-<!-- schema:TextStyleOverride -->
+<!-- schema:TextStyleOverride indexed -->
 
-<!-- generated:start -->
+<a id="textstyleoverride"></a>
 
-| Field                | Type                                                                                                                                             | Required | Default | Constraint | Notes                                                               |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- | ---------- | ------------------------------------------------------------------- |
-| `font`               | `"atkinson"` \| `"atkinson-bold"` \| `"jetbrains-mono"` \| `"jetbrains-mono-bold"` \| `"barlow-condensed"` \| `"poppins"` \| `"allerta-stencil"` |          |         |            | Font family override.                                               |
-| `mode`               | `"engrave"` \| `"emboss"` \| `"through-cut"`                                                                                                     |          |         |            | Mode override.                                                      |
-| `depth`              | `number`                                                                                                                                         |          |         | > 0        | Depth override in mm.                                               |
-| `margin`             | `number`                                                                                                                                         |          |         | >= 0       | Margin override in mm.                                              |
-| `minFontSize`        | `number`                                                                                                                                         |          |         | > 0        | Minimum size override in mm.                                        |
-| `maxFontSize`        | `number`                                                                                                                                         |          |         | > 0        | Maximum size override in mm.                                        |
-| `anchor`             | `"top-left"` \| `"top"` \| `"top-right"` \| `"left"` \| `"center"` \| `"right"` \| `"bottom-left"` \| `"bottom"` \| `"bottom-right"`             |          |         |            | Anchor override.                                                    |
-| `offset`             | [`TextOffset`](#textoffset)                                                                                                                      |          |         |            |                                                                     |
-| `sizeMode`           | `"auto"` \| `"fixed"`                                                                                                                            |          |         |            | Size mode override.                                                 |
-| `fixedSize`          | `number`                                                                                                                                         |          |         | > 0        | Fixed size override in mm.                                          |
-| `snapToScale`        | `boolean`                                                                                                                                        |          |         |            | Snap-to-scale override.                                             |
-| `uniformAcrossWalls` | `boolean`                                                                                                                                        |          |         |            | Uniform-across-walls override.                                      |
-| `tracking`           | `number`                                                                                                                                         |          |         |            | Tracking override.                                                  |
-| `autoTracking`       | `boolean`                                                                                                                                        |          |         |            | Auto-tracking override.                                             |
-| `textCase`           | `"as-typed"` \| `"upper"` \| `"title"`                                                                                                           |          |         |            | Case override.                                                      |
-| `lineScale`          | `number`                                                                                                                                         |          |         | > 0        | Line height override.                                               |
-| `lineGap`            | `number`                                                                                                                                         |          |         |            | Line gap override in mm.                                            |
-| `cutProfile`         | `"straight"` \| `"drafted"`                                                                                                                      |          |         |            | Cut profile override.                                               |
-| `draftAngleDeg`      | `number`                                                                                                                                         |          |         | >= 3       | Draft angle override in degrees.                                    |
-| `fontSizeOverride`   | `number`                                                                                                                                         |          |         | > 0        | Hard font size in mm for this instance only, bypassing auto sizing. |
-
-<!-- generated:end -->
+20 fields, in `src/features/bin-designer/types/text.ts`.
 
 ### TextOffset
 
-<!-- schema:TextOffset -->
+<!-- schema:TextOffset indexed -->
 
-<!-- generated:start -->
+<a id="textoffset"></a>
 
-| Field | Type     | Required | Default | Constraint | Notes                   |
-| ----- | -------- | -------- | ------- | ---------- | ----------------------- |
-| `x`   | `number` | yes      |         |            | Horizontal nudge in mm. |
-| `y`   | `number` | yes      |         |            | Vertical nudge in mm.   |
-
-<!-- generated:end -->
+2 fields, in `src/features/bin-designer/types/text.ts`.
 
 ### SurfaceTextConfig
 
-<!-- schema:SurfaceTextConfig -->
+<!-- schema:SurfaceTextConfig indexed -->
 
-<!-- generated:start -->
+<a id="surfacetextconfig"></a>
 
-| Field        | Type                                                | Required | Default | Constraint | Notes                                                              |
-| ------------ | --------------------------------------------------- | -------- | ------- | ---------- | ------------------------------------------------------------------ |
-| `lidText`    | `string`                                            |          |         |            | Text engraved or embossed on the lid top. Deliberately monochrome. |
-| `walls`      | object of `string`                                  |          |         |            | Per-wall text keyed by side: front, back, left, right.             |
-| `wallAlign`  | object of `"top"` \| `"center"` \| `"bottom"`       |          |         |            | Per-wall vertical alignment keyed by side.                         |
-| `style`      | [`TextStyleOverride`](#textstyleoverride)           |          |         |            |                                                                    |
-| `lidStyle`   | [`TextStyleOverride`](#textstyleoverride)           |          |         |            |                                                                    |
-| `wallStyles` | object of [`TextStyleOverride`](#textstyleoverride) |          |         |            | Per-wall style overrides keyed by side.                            |
-
-<!-- generated:end -->
+6 fields, in `src/features/bin-designer/types/text.ts`.
 
 ## Colours
 
 Per-feature filament assignment for multi-colour 3MF export. A zone left unset
 inherits the body colour.
 
-<!-- schema:FeatureColorConfig -->
+<!-- schema:FeatureColorConfig indexed -->
 
-<!-- generated:start -->
+<a id="featurecolorconfig"></a>
 
-| Field          | Type                                    | Required | Default | Constraint          | Notes                       |
-| -------------- | --------------------------------------- | -------- | ------- | ------------------- | --------------------------- |
-| `enabled`      | `boolean`                               | yes      |         |                     | Enable per-feature colours. |
-| `body`         | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Body colour.                |
-| `lip`          | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Stacking lip colour.        |
-| `labelTab`     | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Label tab colour.           |
-| `base`         | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Base colour.                |
-| `scoop`        | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Scoop colour.               |
-| `dividers`     | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Divider colour.             |
-| `text`         | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Engraved text colour.       |
-| `lid`          | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Lid colour.                 |
-| `lidLip`       | `string`                                |          |         | `^#[0-9a-fA-F]{6}$` | Lid lip colour.             |
-| `topAccent`    | [`AccentBandConfig`](#accentbandconfig) |          |         |                     |                             |
-| `bottomAccent` | [`AccentBandConfig`](#accentbandconfig) |          |         |                     |                             |
-
-<!-- generated:end -->
+12 fields, in `src/features/bin-designer/types/featureColors.ts`.
 
 ### AccentBandConfig
 
-<!-- schema:AccentBandConfig -->
+<!-- schema:AccentBandConfig indexed -->
 
-<!-- generated:start -->
+<a id="accentbandconfig"></a>
 
-| Field      | Type      | Required | Default | Constraint          | Notes                   |
-| ---------- | --------- | -------- | ------- | ------------------- | ----------------------- |
-| `enabled`  | `boolean` | yes      |         |                     | Enable the accent band. |
-| `color`    | `string`  |          |         | `^#[0-9a-fA-F]{6}$` | Band colour.            |
-| `heightMm` | `number`  |          | `2`     | >= 0                | Band height in mm.      |
-
-<!-- generated:end -->
+3 fields, in `src/features/bin-designer/types/featureColors.ts`.
 
 ## Lid
 
 Generated as a separate companion solid. The lid has the largest surface area of
-any config here; the tables below are complete, and the authoritative
-definitions live in `src/features/bin-designer/types/lid.ts`.
+any config here, which is why it is summarised rather than tabled: its six
+shapes total 45 fields, and `src/features/bin-designer/types/lid.ts` documents
+each one against the geometry it drives.
 
-<!-- schema:LidConfig -->
+<!-- schema:LidConfig indexed -->
 
-<!-- generated:start -->
+<a id="lidconfig"></a>
 
-| Field                | Type                                                                     | Required | Default | Constraint    | Notes                                                                  |
-| -------------------- | ------------------------------------------------------------------------ | -------- | ------- | ------------- | ---------------------------------------------------------------------- |
-| `enabled`            | `boolean`                                                                | yes      |         |               | Generate a lid alongside the bin.                                      |
-| `attachment`         | `"friction"` \| `"clickRails"` \| `"magnetic"` \| `"slide"` \| `"hinge"` |          |         |               | How the lid attaches.                                                  |
-| `stackableTop`       | `boolean`                                                                |          |         |               | Give the lid a socket-patterned top so another bin can stack on it.    |
-| `stackLipOnly`       | `boolean`                                                                |          |         |               | Emit only the stacking lip band rather than a full stackable top.      |
-| `magnetHoles`        | `boolean`                                                                |          |         |               | Cut magnet holes in the lid.                                           |
-| `separateStackPlate` | `boolean`                                                                |          |         |               | Emit the stackable top as its own printable plate.                     |
-| `clickRails`         | [`SideFlags`](#sideflags)                                                |          |         |               |                                                                        |
-| `clickRailCoverage`  | `number`                                                                 |          |         | >= 50, <= 100 | Percentage of each side carrying the click rail.                       |
-| `extraHeightMm`      | `number`                                                                 |          |         | >= 0, <= 100  | Extra lid height in mm. The lid mirror of BinParams.extraWallHeightMm. |
-| `topThicknessMm`     | `number`                                                                 |          |         | >= 0.8, <= 5  | Lid top slab thickness in mm.                                          |
-| `retentionMagnet`    | [`LidMagnetConfig`](#lidmagnetconfig)                                    |          |         |               |                                                                        |
-| `tray`               | [`LidTrayConfig`](#lidtrayconfig)                                        |          |         |               |                                                                        |
-| `grip`               | [`LidGripConfig`](#lidgripconfig)                                        |          |         |               |                                                                        |
-| `relieveInterior`    | `boolean`                                                                |          |         |               | Hollow the lid interior to save filament.                              |
-| `slide`              | [`LidSlideConfig`](#lidslideconfig)                                      |          |         |               |                                                                        |
-| `hinge`              | [`LidHingeConfig`](#lidhingeconfig)                                      |          |         |               |                                                                        |
-| `cutouts`            | [`Cutout`](#cutout)[]                                                    |          |         | items <= 24   | Cutouts taken out of the lid, using the same Cutout shape as the bin.  |
-
-<!-- generated:end -->
+17 fields, in `src/features/bin-designer/types/lid.ts`.
 
 ### LidMagnetConfig
 
-<!-- schema:LidMagnetConfig -->
+<!-- schema:LidMagnetConfig indexed -->
 
-<!-- generated:start -->
+<a id="lidmagnetconfig"></a>
 
-| Field         | Type      | Required | Default | Constraint  | Notes                                               |
-| ------------- | --------- | -------- | ------- | ----------- | --------------------------------------------------- |
-| `diameter`    | `number`  | yes      |         | >= 4, <= 10 | Magnet diameter in mm.                              |
-| `depth`       | `number`  | yes      |         | >= 1, <= 4  | Magnet pocket depth in mm.                          |
-| `edgeMagnets` | `boolean` |          |         |             | Place magnets at the edges rather than the corners. |
-
-<!-- generated:end -->
+3 fields, in `src/features/bin-designer/types/lid.ts`.
 
 ### LidTrayConfig
 
-<!-- schema:LidTrayConfig -->
+<!-- schema:LidTrayConfig indexed -->
 
-<!-- generated:start -->
+<a id="lidtrayconfig"></a>
 
-| Field     | Type      | Required | Default | Constraint | Notes                      |
-| --------- | --------- | -------- | ------- | ---------- | -------------------------- |
-| `enabled` | `boolean` | yes      |         |            | Enable the lid tray.       |
-| `depthMm` | `number`  |          |         | >= 0       | Tray depth in mm.          |
-| `wallMm`  | `number`  |          |         | > 0        | Tray wall thickness in mm. |
-
-<!-- generated:end -->
+3 fields, in `src/features/bin-designer/types/lid.ts`.
 
 ### LidGripConfig
 
-<!-- schema:LidGripConfig -->
+<!-- schema:LidGripConfig indexed -->
 
-<!-- generated:start -->
+<a id="lidgripconfig"></a>
 
-| Field      | Type                                                 | Required | Default | Constraint   | Notes                                   |
-| ---------- | ---------------------------------------------------- | -------- | ------- | ------------ | --------------------------------------- |
-| `mode`     | `"none"` \| `"chamfer"` \| `"reveal"` \| `"scallop"` | yes      |         |              | Grip style.                             |
-| `sides`    | [`SideFlags`](#sideflags)                            |          |         |              |                                         |
-| `coverage` | `number`                                             |          |         | >= 0, <= 100 | Percentage of each side the grip spans. |
-| `heightMm` | `number`                                             |          |         | >= 0         | Grip height in mm.                      |
-| `binDip`   | `boolean`                                            |          |         |              | Dip the bin rim to meet the grip.       |
-
-<!-- generated:end -->
+5 fields, in `src/features/bin-designer/types/lid.ts`.
 
 ### LidHingeConfig
 
-<!-- schema:LidHingeConfig -->
+<!-- schema:LidHingeConfig indexed -->
 
-<!-- generated:start -->
+<a id="lidhingeconfig"></a>
 
-| Field            | Type                                           | Required | Default | Constraint | Notes                       |
-| ---------------- | ---------------------------------------------- | -------- | ------- | ---------- | --------------------------- |
-| `side`           | `"front"` \| `"back"` \| `"left"` \| `"right"` | yes      |         |            | Which side the hinge is on. |
-| `catchMode`      | `"none"` \| `"detent"` \| `"magnets"`          |          |         |            | How the lid is held closed. |
-| `fitClearanceMm` | `number`                                       |          |         | >= 0       | Hinge fit clearance in mm.  |
-
-<!-- generated:end -->
+3 fields, in `src/features/bin-designer/types/lid.ts`.
 
 ### LidSlideConfig
 
-<!-- schema:LidSlideConfig -->
+<!-- schema:LidSlideConfig indexed -->
 
-<!-- generated:start -->
+<a id="lidslideconfig"></a>
 
-| Field         | Type                                           | Required | Default | Constraint | Notes                                                         |
-| ------------- | ---------------------------------------------- | -------- | ------- | ---------- | ------------------------------------------------------------- |
-| `placement`   | `"recessed"` \| `"flush"`                      | yes      |         |            | Whether the lid sits flush with the rim or recessed below it. |
-| `entrySide`   | `"front"` \| `"back"` \| `"left"` \| `"right"` |          |         |            | Which side the lid slides in from.                            |
-| `clearanceMm` | `number`                                       |          |         | >= 0       | Fit clearance in mm.                                          |
-| `pull`        | `"none"` \| `"notch"` \| `"tab"`               |          |         |            | Pull feature so the lid can be gripped.                       |
-| `detent`      | `boolean`                                      |          |         |            | Add a detent that holds the lid closed.                       |
-
-<!-- generated:end -->
+5 fields, in `src/features/bin-designer/types/lid.ts`.
 
 ## Knife rest
 
@@ -1036,53 +760,33 @@ handles at the height the `knifeSlot` cutouts imply. A `companion` rest is
 placed in a layout as a **paired bin**: two bins sharing one `pairId`, which
 move, stash and delete together.
 
-<!-- schema:KnifeRestConfig -->
+<!-- schema:KnifeRestConfig indexed -->
 
-<!-- generated:start -->
+<a id="kniferestconfig"></a>
 
-| Field           | Type                            | Required | Default | Constraint          | Notes                                                                                         |
-| --------------- | ------------------------------- | -------- | ------- | ------------------- | --------------------------------------------------------------------------------------------- |
-| `enabled`       | `boolean`                       | yes      |         |                     | Generate a handle rest.                                                                       |
-| `style`         | `"companion"` \| `"integrated"` |          |         |                     | 'companion' is a separate part placed as a paired bin; 'integrated' builds it into the block. |
-| `gapMm`         | `number`                        |          | `21`    | >= 0, <= 200        | Gap in mm between block and rest.                                                             |
-| `depthU`        | `number`                        |          |         | >= 0.5, <= 4        | Rest depth in grid units.                                                                     |
-| `grooveDepthMm` | `number`                        |          |         | >= 0, <= 15         | Saddle groove depth in mm.                                                                    |
-| `color`         | `string`                        |          |         | `^#[0-9a-fA-F]{6}$` | Rest colour.                                                                                  |
-
-<!-- generated:end -->
+6 fields, in `src/features/bin-designer/types/knifeBlock.ts`.
 
 ## Imported meshes
 
-<!-- schema:MeshAsset -->
+<!-- schema:MeshAsset indexed -->
 
-<!-- generated:start -->
+<a id="meshasset"></a>
 
-| Field           | Type                                        | Required | Default | Constraint | Notes                                                                                                                     |
-| --------------- | ------------------------------------------- | -------- | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `name`          | `string`                                    | yes      |         |            | Original file name, sanitized with the extension stripped.                                                                |
-| `data`          | `string`                                    | yes      |         |            | base64(deflate(quantized mesh)). Opaque.                                                                                  |
-| `triangleCount` | `integer`                                   | yes      |         | >= 0       | Triangle count of the decoded mesh.                                                                                       |
-| `sizeMm`        | `object`                                    | yes      |         |            | Oriented lay-flat bounding box size in mm.                                                                                |
-| `outlines`      | [`MeshOutlinePoint`](#meshoutlinepoint)[][] | yes      |         |            | Top-down silhouette outer rings with holes dropped, simplified. Powers the 2D footprint render without decoding the mesh. |
-
-<!-- generated:end -->
+5 fields, in `src/shared/generation/meshAsset.ts`.
 
 ### MeshOutlinePoint
 
-<!-- schema:MeshOutlinePoint -->
+<!-- schema:MeshOutlinePoint indexed -->
 
-<!-- generated:start -->
+<a id="meshoutlinepoint"></a>
 
-| Field | Type     | Required | Default | Constraint | Notes    |
-| ----- | -------- | -------- | ------- | ---------- | -------- |
-| `x`   | `number` | yes      |         |            | X in mm. |
-| `y`   | `number` | yes      |         |            | Y in mm. |
-
-<!-- generated:end -->
+2 fields, in `src/shared/generation/meshAsset.ts`.
 
 ### ExportMeta
 
 <!-- schema:ExportMeta -->
+
+<a id="exportmeta"></a>
 
 <!-- generated:start -->
 
