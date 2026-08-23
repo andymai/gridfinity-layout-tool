@@ -1,0 +1,157 @@
+src/features/bin-designer/components/Workshop/WorkshopPanel/partSummary.ts
+  s_a36c0b85dfeec4::t_616098c3366ce7 29,31
+  s_a36c0b85dfeec4::t_ebb69eaa33c630 33-34
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_bfbefd40ea267b 4216-4218,4301
+  s_a36c0b85dfeec4::t_6a0983ddad7c92 4271-4280
+  s_a36c0b85dfeec4::t_1a6f3ffa7b5565 4323-4326
+src/shared/items/assembly/descriptor.ts
+  s_a36c0b85dfeec4::t_b8663453dccd78 102-117,236-247,342-343
+  s_a36c0b85dfeec4::t_74a2edb7736b3a 118-128,248-253,344-353
+  s_a36c0b85dfeec4::t_f6e457bff466e6 176-183,189
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 2262-2267,2330-2331
+  s_a36c0b85dfeec4::t_402fcb271b19ce 2243-2245,2332
+  s_a36c0b85dfeec4::t_a8fc00dcd2078e 2296-2305
+  s_a36c0b85dfeec4::t_54619dacaa0f1d 2354-2357
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_f1bb3c3b8d40bd 4216-4218,4301
+  s_a36c0b85dfeec4::t_4d4535363bca9f 4271-4280
+  s_a36c0b85dfeec4::t_d6c157eb134394 4323-4326
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_914b0bfe3675b8 4216-4218,4301
+  s_a36c0b85dfeec4::t_6490dfc013c2f4 4271-4280
+  s_a36c0b85dfeec4::t_4b598e0edb7b48 4323-4326
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_7fb2f059b5a082 4241
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4240,4242,4299-4300
+  s_a36c0b85dfeec4::t_53103d98b16ffa 4216-4218,4301
+  s_a36c0b85dfeec4::t_16f56453bac4d8 4271-4280
+  s_a36c0b85dfeec4::t_d7fd6d6a4ee13c 4323-4326
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_0f4cd31bfa184f 4216-4218,4301
+  s_a36c0b85dfeec4::t_0fe81d2b36dc04 4271-4280
+  s_a36c0b85dfeec4::t_087819f0cb4f39 4323-4326
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_64c950e26cb349 4216-4218,4301
+  s_a36c0b85dfeec4::t_6aa48d06ff7ea3 4271-4280
+  s_a36c0b85dfeec4::t_95f997566b85f6 4323-4326
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_8f436eafbfe732 599-601,604
+  s_a36c0b85dfeec4::t_c5c8b8993466bd 605
+  s_a36c0b85dfeec4::t_26d71ae6a2d6c3 563-564,568-598,602-603,606-621
+  s_a36c0b85dfeec4::t_1ea71cb1e05ecc 565-567
+  s_a36c0b85dfeec4::t_63dafac083d1ab 622-625,628-669
+  s_a36c0b85dfeec4::t_5fcf293daeac46 626-627
+  s_a36c0b85dfeec4::t_2bb2d3951f8715 28,42,48,59-60,675-827,833-834,853-855,933-934
+src/features/generation/worker/generators/assemblyGenerator.scenario.export.test.ts
+  s_a36c0b85dfeec4::t_f3e93a379a7d85 1-77
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_f10e7ea51da9d0 23-32,34-35,189-193,201
+  s_a36c0b85dfeec4::t_15e2b941c95f70 194,196-200
+  s_a36c0b85dfeec4::t_8d87f1dc43c2ae 202,204-205
+  s_a36c0b85dfeec4::t_90086894dc7c37 206,342-343,419-421
+  s_a36c0b85dfeec4::t_1ea71cb1e05ecc 195,203
+  s_a36c0b85dfeec4::t_fa796cd5b1815d 33,207-219,344-353
+  s_a36c0b85dfeec4::t_80e4b1a922a756 16,300,308-322,491-501
+src/features/bin-designer/components/Workshop/proxyGeometry.ts
+  s_a36c0b85dfeec4::t_0f5deca1c3e67d 225-232,234-272,274-287,439-442
+  s_a36c0b85dfeec4::t_8f436eafbfe732 273
+  s_a36c0b85dfeec4::t_1ea71cb1e05ecc 233
+  s_a36c0b85dfeec4::t_d9cbcbeabc701d 443-450
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_9c293f3b566eac 4216-4218,4301
+  s_a36c0b85dfeec4::t_5216047e025863 4271-4280
+  s_a36c0b85dfeec4::t_0690bd3e664987 4323-4326
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_38c66c67c8dab3 4216-4218,4301
+  s_a36c0b85dfeec4::t_329a25a50296cf 4271-4280
+  s_a36c0b85dfeec4::t_6c09ac3e3a3be6 4323-4326
+src/features/generation/worker/generators/assemblyGenerator.scenario.combriser.test.ts
+  s_a36c0b85dfeec4::t_f3e93a379a7d85 1-80,82-85,87-102,104-118
+  s_a36c0b85dfeec4::t_128e22d2ec00cc 81,86,103
+  s_a36c0b85dfeec4::t_7518a6ba6ef419 119-121
+  s_a36c0b85dfeec4::t_9f08190b6b22fc 122-132,203
+  s_a36c0b85dfeec4::t_08614e7fe00100 133-202
+src/features/bin-designer/components/Workshop/WorkshopPanel/partFieldConfig.ts
+  s_a36c0b85dfeec4::t_616098c3366ce7 86-99,125-126
+  s_a36c0b85dfeec4::t_67e08404d7309c 100-109,127
+  s_a36c0b85dfeec4::t_6cccd79f832884 6,130-136
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_6ff98db37e930f 4216-4218,4301
+  s_a36c0b85dfeec4::t_3d540322b32dde 4271-4280
+  s_a36c0b85dfeec4::t_04841e727a910b 4323-4326
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_9fda22579ea6ee 4216-4218,4301
+  s_a36c0b85dfeec4::t_ac9ff3e488bd1d 4271-4280
+  s_a36c0b85dfeec4::t_da0321391dc091 4323-4326
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_a38658111b53a8 4216-4218,4301
+  s_a36c0b85dfeec4::t_724b485664cdc1 4271-4280
+  s_a36c0b85dfeec4::t_7e7c8f88e47980 4323-4326
+src/features/bin-designer/components/Workshop/WorkshopPanel/partIcons.tsx
+  s_a36c0b85dfeec4::t_f9249098969df8 55-64
+  s_a36c0b85dfeec4::t_45714d385bcf8f 65-72
+src/shared/types/assembly.ts
+  s_a36c0b85dfeec4::t_ba4a3137a41efd 24-25,128-138,151-159,239-246,257-265,267,279-280
+  s_a36c0b85dfeec4::t_282d7da757d188 26,139-150,247-250,266,281
+  s_a36c0b85dfeec4::t_d8c8e0e221dc10 188-198,205-206
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_d166554576a052 4216-4218,4301
+  s_a36c0b85dfeec4::t_bed2f365afee2a 4271-4280
+  s_a36c0b85dfeec4::t_fcf260b8bc1c68 4323-4326
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_71ea1095b86c7f 4216-4218,4301
+  s_a36c0b85dfeec4::t_5ec8d0538c286c 4271-4280
+  s_a36c0b85dfeec4::t_e771d7895d867e 4323-4326
+src/shared/types/assemblyPlacement.ts
+  s_a36c0b85dfeec4::t_e3d086c5871dd1 33-36,65-68
+  s_a36c0b85dfeec4::t_872bf58245ed36 37-38,69-70
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_9c63fba9e5a50e 4237-4242,4299-4300
+  s_a36c0b85dfeec4::t_28048b49f9703c 4216-4218,4301
+  s_a36c0b85dfeec4::t_2deab702791cfd 4271-4280
+  s_a36c0b85dfeec4::t_6bfd9b4abcd8ff 4323-4326
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_a36c0b85dfeec4::t_11d13817591fb6 29-30
+  s_a36c0b85dfeec4::t_9c78bf5be332b4 6,24,69,285-377
+scripts/i18n-values-allowlist.json
+  s_a36c0b85dfeec4::t_fce0039d3375f4 320-321,336,341-342,347-348
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_a36c0b85dfeec4::t_9a1626837fc97e 23,198-212
+src/features/bin-designer/types/designerState.ts
+  s_a36c0b85dfeec4::t_1c4e6af269a125 14,172
+src/features/generation/worker/generators/assemblyGenerator.scenario.labels.test.ts
+  s_a36c0b85dfeec4::t_2bf65f6db8f88f 1-73,90
+  s_a36c0b85dfeec4::t_14f01fb32bd28e 74-89
+src/features/bin-designer/utils/workshopTemplates.ts
+  s_a36c0b85dfeec4::t_fdc6c7b03f4d7c 15-21,26-29,117-239,249-256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "f0a56d8c4ce5a11de561971937c65b410836f67e",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
