@@ -9,6 +9,7 @@ import { FootprintGrid } from '@/features/bin-designer/components/preview/Footpr
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope } from '@/shared/types/item';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 import { AlignmentGuides } from './AlignmentGuides';
 import { WorkshopDragTip } from './WorkshopDragTip';
 import { BasePlateMesh } from './BasePlateMesh';
@@ -27,16 +28,12 @@ interface WorkshopSceneProps {
   envelope: ItemEnvelope;
   /** performance.now() of the last armed click that hit nothing. */
   missFlashAt?: number;
-  controlsRef?: React.MutableRefObject<OrbitControlsType | null>;
-  invalidateRef?: React.MutableRefObject<(() => void) | null>;
+  controlsRef?: RefObject<OrbitControlsType | null>;
+  invalidateRef?: RefObject<(() => void) | null>;
   onPartContextMenu?: (partId: string, clientX: number, clientY: number) => void;
 }
 
-function InvalidateBridge({
-  invalidateRef,
-}: {
-  invalidateRef: React.MutableRefObject<(() => void) | null>;
-}) {
+function InvalidateBridge({ invalidateRef }: { invalidateRef: RefObject<(() => void) | null> }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
     invalidateRef.current = invalidate;

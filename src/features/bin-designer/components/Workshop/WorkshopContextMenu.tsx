@@ -31,17 +31,18 @@ interface WorkshopContextMenuProps {
 export function WorkshopContextMenu({ menu, onClose }: WorkshopContextMenuProps) {
   const t = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
-  const store = useDesignerStore.getState();
-  const node =
-    store.structure?.kind === 'assembly'
-      ? findAssemblyPart(store.structure.parts, menu.partId)
-      : null;
+  // Subscribed, not a snapshot: an undo while the menu is open must not leave
+  // Rotate/Mirror acting on stale transform values.
+  const node = useDesignerStore((s) =>
+    s.structure?.kind === 'assembly' ? findAssemblyPart(s.structure.parts, menu.partId) : null
+  );
 
   if (!node) return null;
   const run = (action: () => void) => () => {
     action();
     onClose();
   };
+  const store = useDesignerStore.getState();
   return (
     <ContextMenuContainer
       isOpen
