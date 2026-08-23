@@ -3,6 +3,7 @@ import {
   Button,
   Collapsible,
   IconButton,
+  Input,
   SegmentedControl,
   Switch,
   TrashIcon,
@@ -20,7 +21,7 @@ import { CompactNumberInput } from '@/shared/components/CompactNumberInput/Compa
 import { clamp } from '@/shared/utils/math';
 import { PanelSection } from '../../panel/PanelSection';
 import { CutterProfileSection } from './CutterProfileSection';
-import { PART_LABEL_KEYS, PART_NUMBER_FIELDS } from './partFieldConfig';
+import { LABEL_FACES, PART_LABEL_KEYS, PART_NUMBER_FIELDS } from './partFieldConfig';
 
 /** Degrees for angle-ish keys, counts unitless, millimetres otherwise. */
 function unitFor(key: string): string | undefined {
@@ -65,6 +66,7 @@ export function PartInspector({ node }: PartInspectorProps) {
   const removeAssemblyPart = useDesignerStore((s) => s.removeAssemblyPart);
   const setAssemblyPartArray = useDesignerStore((s) => s.setAssemblyPartArray);
   const setAssemblyPartMirror = useDesignerStore((s) => s.setAssemblyPartMirror);
+  const setAssemblyPartLabel = useDesignerStore((s) => s.setAssemblyPartLabel);
   const alignAssemblySiblings = useDesignerStore((s) => s.alignAssemblySiblings);
   const distributeAssemblySiblings = useDesignerStore((s) => s.distributeAssemblySiblings);
 
@@ -280,6 +282,99 @@ export function PartInspector({ node }: PartInspectorProps) {
           />
         </div>
       </Collapsible>
+
+      {LABEL_FACES[node.type] !== undefined && (
+        <Collapsible
+          title={t('workshop.label.title')}
+          size="sm"
+          summary={node.label ? node.label.text : undefined}
+          defaultExpanded={node.label !== undefined}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-content-tertiary">{t('workshop.label.title')}</span>
+            <Switch
+              checked={node.label !== undefined}
+              onChange={(on) =>
+                setAssemblyPartLabel(
+                  node.id,
+                  on
+                    ? {
+                        text: t('workshop.label.placeholder'),
+                        sizeMm: 8,
+                        depthMm: 0.8,
+                        style: 'recessed',
+                        face: (LABEL_FACES[node.type] ?? ['front'])[0],
+                      }
+                    : null
+                )
+              }
+              aria-label={t('workshop.label.title')}
+            />
+          </div>
+          {node.label && (
+            <div className="mt-2 flex flex-col gap-2">
+              <Input
+                value={node.label.text}
+                maxLength={40}
+                aria-label={t('workshop.label.text')}
+                onChange={(e) => {
+                  if (node.label) {
+                    setAssemblyPartLabel(node.id, { ...node.label, text: e.target.value });
+                  }
+                }}
+              />
+              <div className="grid grid-cols-2 gap-1">
+                <Field
+                  label={t('workshop.label.size')}
+                  value={node.label.sizeMm}
+                  min={3}
+                  max={24}
+                  step={0.5}
+                  unit="mm"
+                  onChange={(sizeMm) => {
+                    if (node.label) setAssemblyPartLabel(node.id, { ...node.label, sizeMm });
+                  }}
+                />
+                <Field
+                  label={t('workshop.label.depth')}
+                  value={node.label.depthMm}
+                  min={0.4}
+                  max={3}
+                  step={0.1}
+                  unit="mm"
+                  onChange={(depthMm) => {
+                    if (node.label) setAssemblyPartLabel(node.id, { ...node.label, depthMm });
+                  }}
+                />
+              </div>
+              <SegmentedControl
+                aria-label={t('workshop.label.style')}
+                value={node.label.style}
+                onChange={(style) => {
+                  if (node.label) setAssemblyPartLabel(node.id, { ...node.label, style });
+                }}
+                options={[
+                  { value: 'recessed', label: t('workshop.label.recessed') },
+                  { value: 'raised', label: t('workshop.label.raised') },
+                ]}
+                size="sm"
+              />
+              <SegmentedControl
+                aria-label={t('workshop.label.face')}
+                value={node.label.face}
+                onChange={(face) => {
+                  if (node.label) setAssemblyPartLabel(node.id, { ...node.label, face });
+                }}
+                options={(LABEL_FACES[node.type] ?? []).map((face) => ({
+                  value: face,
+                  label: t(`workshop.edge.${face === 'top' ? 'top' : face}`),
+                }))}
+                size="sm"
+              />
+            </div>
+          )}
+        </Collapsible>
+      )}
     </PanelSection>
   );
 }

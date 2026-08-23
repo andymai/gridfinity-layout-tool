@@ -13,6 +13,7 @@ import {
   validationError,
 } from './validationUtils.js';
 import { validateFeatureColors } from './designerValidation.js';
+import { checkText } from './contentFilter.js';
 
 const MAX_ASSEMBLY_PARTS = 256;
 const MAX_ASSEMBLY_DEPTH = 8;
@@ -296,11 +297,27 @@ export function validateAssemblyStructure(structure: unknown): AssemblyValidatio
     if (!validTransform(node.transform)) return fail('part transform out of range');
     if (node.array !== undefined && !validArray(node.array)) return fail('part array out of range');
     if (node.mirror !== undefined && !isBoolean(node.mirror)) return fail('part mirror invalid');
+    if (node.label !== undefined && !validLabel(node.label)) return fail('part label invalid');
     if (!validParams(node.type, node.params)) return fail(`invalid ${node.type} params`);
     if (!Array.isArray(node.children)) return fail('part children must be an array');
     for (const child of node.children) stack.push({ node: child, depth: depth + 1 });
   }
   return { valid: true };
+}
+
+const LABEL_FACES = new Set(['front', 'back', 'left', 'right', 'top']);
+
+function validLabel(label: unknown): boolean {
+  if (!isObject(label)) return false;
+  if (!isString(label.text) || label.text.length === 0 || label.text.length > 40) return false;
+  if (!checkText(label.text).passed) return false;
+  return (
+    num(label.sizeMm, 3, 24) &&
+    num(label.depthMm, 0.4, 3) &&
+    (label.style === 'raised' || label.style === 'recessed') &&
+    isString(label.face) &&
+    LABEL_FACES.has(label.face)
+  );
 }
 
 /** Socket stack height above Z=0, mirroring GRIDFINITY_SPEC.SOCKET_HEIGHT. */
@@ -471,6 +488,17 @@ export function sanitizeAssemblyContent(
         ? { array: { count: arrayIn.count, dx: arrayIn.dx, dy: arrayIn.dy } }
         : {}),
       ...(nodeRaw.mirror !== undefined ? { mirror: nodeRaw.mirror } : {}),
+      ...(isObject(nodeRaw.label)
+        ? {
+            label: {
+              text: nodeRaw.label.text,
+              sizeMm: nodeRaw.label.sizeMm,
+              depthMm: nodeRaw.label.depthMm,
+              style: nodeRaw.label.style,
+              face: nodeRaw.label.face,
+            },
+          }
+        : {}),
       children: (nodeRaw.children as Record<string, unknown>[]).map((child) =>
         sanitizeNode(child, top)
       ),
