@@ -11,6 +11,7 @@ import type {
   AssemblyPartType,
   PartArray,
   PartTransform,
+  PartLabel,
 } from '@/shared/types/assembly';
 import type { AccentBandConfig, ColorZone, HoverableZone, LipColorConfig } from './featureColors';
 import type { LidConfig } from './lid';
@@ -168,6 +169,7 @@ export interface DesignerState {
   removeAssemblyPart: (id: string) => void;
   updateAssemblyPartParams: (id: string, params: Partial<AssemblyPartParams>) => void;
   setAssemblyPartArray: (id: string, array: PartArray | null) => void;
+  setAssemblyPartLabel: (id: string, label: PartLabel | null) => void;
   setAssemblyPartMirror: (id: string, mirror: boolean) => void;
   setAssemblyMirrorAxis: (axis: 'x' | 'y') => void;
   alignAssemblySiblings: (id: string, axis: 'x' | 'y') => void;

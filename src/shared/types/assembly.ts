@@ -185,12 +185,25 @@ export interface CutterParams {
   readonly chamfer: number;
 }
 
+export type PartLabelFace = 'front' | 'back' | 'left' | 'right' | 'top';
+
+/** Embossed or engraved caption on one flat face of a box-like part. */
+export interface PartLabel {
+  readonly text: string;
+  readonly sizeMm: number;
+  readonly depthMm: number;
+  readonly style: 'raised' | 'recessed';
+  readonly face: PartLabelFace;
+}
+
 interface PartNodeBase {
   readonly id: string;
   readonly transform: PartTransform;
   readonly array?: PartArray;
   /** Also emit this subtree reflected across the assembly's mirror axis. */
   readonly mirror?: boolean;
+  /** Caption on a flat face; only box-faced parts render it. */
+  readonly label?: PartLabel;
   /** Parts seated on this part's top face. */
   readonly children: AssemblyPartNode[];
 }

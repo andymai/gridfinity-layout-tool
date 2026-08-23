@@ -20,6 +20,7 @@ import type {
   AssemblyPartParams,
   AssemblyPartType,
   PartArray,
+  PartLabel,
   PartTransform,
 } from '@/shared/types/assembly';
 import {
@@ -192,6 +193,21 @@ export function createAssemblyActions(set: Set, get: Get) {
         ...(array === null ? {} : { array }),
       };
       if (array === null) delete (candidate as { array?: PartArray }).array;
+      if (!assemblyPartNodeSchema.safeParse(candidate).success) return;
+      const next = withAssemblyPartUpdated(current, id, () => candidate);
+      if (next) commitParts(next);
+    },
+
+    setAssemblyPartLabel: (id: string, label: PartLabel | null): void => {
+      const current = parts();
+      if (!current) return;
+      const node = findAssemblyPart(current, id);
+      if (!node) return;
+      const candidate = {
+        ...node,
+        ...(label === null ? {} : { label: { ...label, text: label.text.slice(0, 40) } }),
+      };
+      if (label === null) delete (candidate as { label?: PartLabel }).label;
       if (!assemblyPartNodeSchema.safeParse(candidate).success) return;
       const next = withAssemblyPartUpdated(current, id, () => candidate);
       if (next) commitParts(next);

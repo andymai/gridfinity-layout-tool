@@ -3,7 +3,7 @@
  * schema, which stays the authority — `updateAssemblyPartParams` re-validates
  * every edit, so a drifted range here can annoy but never corrupt.
  */
-import type { AssemblyPartType } from '@/shared/types/assembly';
+import type { AssemblyPartType, PartLabelFace } from '@/shared/types/assembly';
 
 export interface PartNumberField {
   readonly key: string;
@@ -126,4 +126,11 @@ export const PART_LABEL_KEYS: Record<AssemblyPartType, string> = {
   riser: 'workshop.part.riser',
   boreBank: 'workshop.part.boreBank',
   cutter: 'workshop.part.cutter',
+};
+
+export const LABEL_FACES: Partial<Record<AssemblyPartType, readonly PartLabelFace[]>> = {
+  block: ['front', 'back', 'left', 'right', 'top'],
+  comb: ['front', 'back', 'left', 'right'],
+  boreBank: ['front', 'back', 'left', 'right'],
+  riser: ['front', 'left', 'right', 'top'],
 };

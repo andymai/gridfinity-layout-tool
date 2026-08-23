@@ -173,11 +173,20 @@ const cutterParamsSchema = z.object({
   chamfer: z.number().min(0).max(5),
 });
 
+const labelSchema = z.object({
+  text: z.string().min(1).max(40),
+  sizeMm: z.number().min(3).max(24),
+  depthMm: z.number().min(0.4).max(3),
+  style: z.enum(['raised', 'recessed']),
+  face: z.enum(['front', 'back', 'left', 'right', 'top']),
+});
+
 const nodeBase = {
   id: z.string().min(1).max(64),
   transform: transformSchema,
   array: arraySchema.optional(),
   mirror: z.boolean().optional(),
+  label: labelSchema.optional(),
 };
 
 export const assemblyPartNodeSchema: z.ZodType<AssemblyPartNode> = z.lazy(() =>
