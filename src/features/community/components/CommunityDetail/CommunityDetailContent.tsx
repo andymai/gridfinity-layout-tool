@@ -409,7 +409,7 @@ export function CommunityDetailContent({
               depth: params?.depth ?? design.envelope?.depth ?? 0,
               height:
                 params?.height ??
-                Math.max(1, Math.round(metrics.height / (design.envelope?.heightUnitMm ?? 7))),
+                Math.max(1, Math.ceil(metrics.height / (design.envelope?.heightUnitMm ?? 7))),
             })}
           </p>
           <p className="text-xs text-content-tertiary">
