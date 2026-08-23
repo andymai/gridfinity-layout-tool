@@ -43,6 +43,9 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
+ * `v13`: a half foot now carries magnet/screw holes, so any bin, lid, or plate
+ * with a fractional dimension and attachment holes enabled generates different
+ * bytes for params it already has an entry under.
  * `v12`: `MeshData` gained `knifeRestMesh`, which entries written before it
  * cannot carry — a knife block would pre-paint without its companion rest
  * until the LRU happened to evict the entry.
@@ -64,7 +67,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v12';
+const MESH_CACHE_VERSION = 'v13';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

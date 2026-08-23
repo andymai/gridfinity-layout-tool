@@ -8,19 +8,28 @@
  * Builds one template cylinder, clones+translates per position.
  *
  * Nominal full (1.0+ unit) cells get the standard 4-corner pattern (±13mm from
- * cell center). Fractional cells in the nominal grid are skipped — the
- * Gridfinity spec doesn't define magnet positions there. PARTIAL over-tile
- * margin tiles are handled by {@link buildPartialCellMagnetHoles}: each gets the
- * corner magnets that physically fit, falling back to a single centered magnet
- * for tiles too small for any corner, so the clipped padding tiles aren't left
- * solid.
+ * cell center). A half cell keeps whatever of that pattern still fits — two
+ * magnets on its long axis, or a single centered one — provided its tapered
+ * face holds a printable wall around the hole ({@link cellHostsAttachmentHoles}).
+ * PARTIAL over-tile margin tiles are handled by
+ * {@link buildPartialCellMagnetHoles}: each gets the corner magnets that
+ * physically fit, falling back to a single centered magnet for tiles too small
+ * for any corner, so the clipped padding tiles aren't left solid.
  */
 
 import { cylinder, unwrap, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
-import { SIZE, SOCKET_HEIGHT, COPLANAR_MARGIN, HOLE_OFFSET, forEachCell } from './generatorTypes';
+import {
+  SIZE,
+  SOCKET_HEIGHT,
+  COPLANAR_MARGIN,
+  HOLE_OFFSET,
+  CLEARANCE,
+  INSET_BOT,
+  forEachCell,
+} from './generatorTypes';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 
 /**
@@ -39,6 +48,29 @@ import type { ForEachCellOptions, CellInfo } from './generatorTypes';
  * this is the printable floor used for the fit-or-center fallback.
  */
 export const MAGNET_EDGE_CLEARANCE = 1.5;
+
+/**
+ * Whether a cell may carry attachment (magnet / screw) holes at all.
+ *
+ * {@link magnetPositionsForCell} measures its wall from the cell's NOMINAL
+ * edge, but the face a hole actually opens on is the tapered one — narrower by
+ * `INSET_BOT` per side, plus the fit clearance a foot gives up. A full cell has
+ * that slack to spare; a half cell only does from roughly spec pitch upward, so
+ * the tapered face is what decides here rather than the unit count.
+ *
+ * Full cells answer true unconditionally: they carry holes today at every
+ * pitch, and re-gating them would move holes on parts already printed.
+ */
+export function cellHostsAttachmentHoles(
+  cell: CellInfo,
+  holeRadius: number,
+  pitchX: number,
+  pitchY: number
+): boolean {
+  if (cell.widthUnits >= 1 && cell.depthUnits >= 1) return true;
+  const minSpanMm = 2 * (holeRadius + MAGNET_EDGE_CLEARANCE + INSET_BOT) + CLEARANCE;
+  return cell.widthUnits * pitchX >= minSpanMm && cell.depthUnits * pitchY >= minSpanMm;
+}
 
 /** Build magnet-hole cutter solids at the given XY positions (Z handled here). */
 function buildMagnetCutters(
@@ -90,7 +122,7 @@ export function buildMagnetHoles(
     gridW,
     gridD,
     (cell) => {
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+      if (!cellHostsAttachmentHoles(cell, magnetRadius, pitchX, pitchY)) return;
       if (cellFilter !== undefined && !cellFilter(cell)) return;
       // Same shared placement (with the standard wall-distance clamp) as the bin
       // base and lid, so every magnet-bearing surface agrees.

@@ -11,9 +11,6 @@
  * `stackLipOnly` swaps the per-cell pockets for one footprint-wide
  * pocket, so only the perimeter ring survives — the same lip an upper bin
  * registers on, without the interior dividers.
- *
- * `isCellFilled` is also exported because the magnet-hole pass (a separate
- * sibling) needs the same cell-fill predicate for polygon bins.
  */
 
 import { drawRoundedRectangle, unwrap, translate, cutAll } from 'brepjs';
@@ -113,10 +110,10 @@ function buildStackLipCutter(inputs: LidInputs): Shape3D {
 
 /**
  * Each whole grid cell maps to a 2×2 mask region. Treat the whole cell as
- * filled only when ALL four mask cells are set; otherwise skip pockets/
- * magnets to avoid a hole that would clip the polygon boundary.
+ * filled only when ALL four mask cells are set; otherwise skip pockets to
+ * avoid one that would clip the polygon boundary.
  */
-export function isCellFilled(mask: CellMask, cellX: number, cellY: number): boolean {
+function isCellFilled(mask: CellMask, cellX: number, cellY: number): boolean {
   const baseCol = cellX * 2;
   const baseRow = cellY * 2;
   for (let dr = 0; dr < 2; dr++) {

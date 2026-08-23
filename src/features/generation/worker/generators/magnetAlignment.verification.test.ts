@@ -18,6 +18,8 @@ import type { MeshData } from '@/features/generation/bridge/types';
 import { initTestKernel } from '@/test/initTestKernel';
 import { HOLE_OFFSET, SIZE } from './generatorTypes';
 
+const MAGNET_RADIUS = DEFAULT_BIN_PARAMS.base.magnetDiameter / 2;
+
 type GenerateFn = (
   params: BinParams,
   onProgress?: (stage: string, progress: number) => void,
@@ -32,6 +34,31 @@ beforeAll(async () => {
   generateBin = mod.generateBin;
 }, 30000);
 
+/** Vertices on the mesh's bottom Z layer, as XY pairs. */
+function getBottomVerts(mesh: MeshData): Array<[number, number]> {
+  const verts: Array<[number, number, number]> = [];
+  for (let i = 0; i < mesh.vertices.length; i += 3) {
+    verts.push([mesh.vertices[i], mesh.vertices[i + 1], mesh.vertices[i + 2]]);
+  }
+
+  const minZ = Math.min(...verts.map(([, , z]) => z));
+  return verts.filter(([, , z]) => z - minZ < 0.1).map(([x, y]) => [x, y]);
+}
+
+/**
+ * Whether a magnet hole of `radius` opens at (cx, cy) on the bottom face.
+ *
+ * Reads the hole's rim rather than a cluster average: a hole centred ON a
+ * cluster-grid node has no vertices near that node at all — they all sit a full
+ * radius away — so clustering answers "no hole" for the centred case.
+ */
+function hasHoleAt(mesh: MeshData, cx: number, cy: number, radius: number): boolean {
+  const onRim = getBottomVerts(mesh).filter(
+    ([x, y]) => Math.abs(Math.hypot(x - cx, y - cy) - radius) < 0.3
+  );
+  return onRim.length >= 4;
+}
+
 /**
  * Extract vertex XY clusters at the minimum Z level of the mesh.
  * The bottom of the socket (Z=0 in the output mesh) has both corner features
@@ -39,13 +66,7 @@ beforeAll(async () => {
  * the hole center at ±HOLE_OFFSET from cell center.
  */
 function getBottomXYClusters(mesh: MeshData): Array<{ x: number; y: number; count: number }> {
-  const verts: Array<[number, number, number]> = [];
-  for (let i = 0; i < mesh.vertices.length; i += 3) {
-    verts.push([mesh.vertices[i], mesh.vertices[i + 1], mesh.vertices[i + 2]]);
-  }
-
-  const minZ = Math.min(...verts.map(([, , z]) => z));
-  const bottomVerts = verts.filter(([, , z]) => z - minZ < 0.1);
+  const bottomVerts = getBottomVerts(mesh);
 
   // Cluster by XY (3mm grid)
   const grid = new Map<string, { sumX: number; sumY: number; count: number }>();
@@ -128,6 +149,39 @@ describe('magnet hole alignment verification', () => {
     // Use tight tolerance (1.5mm) — 10.5 and 13 are 2.5mm apart
     expect(hasClusterNear(clusters, -WRONG_OFFSET, -WRONG_OFFSET, 1.5)).toBe(false);
     expect(hasClusterNear(clusters, WRONG_OFFSET, WRONG_OFFSET, 1.5)).toBe(false);
+  });
+
+  it('0.5×0.5 half bin gets a centered magnet hole (#3778)', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 0.5,
+      depth: 0.5,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
+    };
+
+    // The lone half foot is too narrow for the ±13 corners, so the hole sits at
+    // the foot centre — where a matching half pocket puts its own.
+    expect(hasHoleAt(generateBin(params), 0, 0, MAGNET_RADIUS)).toBe(true);
+
+    const flat: BinParams = { ...params, base: { ...params.base, style: 'flat' } };
+    expect(hasHoleAt(generateBin(flat), 0, 0, MAGNET_RADIUS)).toBe(false);
+  });
+
+  it('1.5×1 bin magnetizes its half foot on the standard Y spacing (#3778)', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 1.5,
+      depth: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
+    };
+
+    const clusters = getBottomXYClusters(generateBin(params));
+    // Cells decompose to [1, 0.5]: full foot centred at -10.5, half foot at +21.
+    const halfFootX = SIZE * 0.5;
+    expect(hasClusterNear(clusters, halfFootX, -HOLE_OFFSET)).toBe(true);
+    expect(hasClusterNear(clusters, halfFootX, HOLE_OFFSET)).toBe(true);
+    // The full foot keeps its own 4 corners.
+    expect(hasClusterNear(clusters, -SIZE / 4 - HOLE_OFFSET, -HOLE_OFFSET)).toBe(true);
   });
 
   it('halfSockets does not change magnet hole positions', () => {

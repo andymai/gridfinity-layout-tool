@@ -44,10 +44,19 @@ describe('screwFloorCandidates', () => {
     expect(screwFloorCandidates(2, 3, 4, { ...cellOpts })).toHaveLength(24);
   });
 
-  it('skips fractional cells, which carry no magnets to sit on', () => {
-    // A 1.5x1 grid has one full cell and one half cell; only the full one
-    // contributes, so a fractional corner snaps inward to a real position.
-    expect(screwFloorCandidates(1.5, 1, 4, { ...cellOpts })).toHaveLength(4);
+  it('offers the half cell the pads it can hold (#3778)', () => {
+    // A 1.5x1 grid is one full cell (4 corners) plus a 21×42 half cell, which
+    // holds two pads at the standard ±13 spacing on its long axis.
+    expect(screwFloorCandidates(1.5, 1, 4, { ...cellOpts })).toHaveLength(6);
+  });
+
+  it('skips a half cell too small for a pad, snapping a corner inward instead', () => {
+    // At pitch 25 the half cell is 12.5mm — under the taper it cannot hold a
+    // ø8 head, so only the full cell contributes.
+    const opts = { ...cellOpts, gridUnitMm: 25 };
+    expect(screwFloorCandidates(1.5, 1, 4, opts)).toHaveLength(
+      screwFloorCandidates(1, 1, 4, opts).length
+    );
   });
 
   it('honours a cell filter', () => {

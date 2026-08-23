@@ -50,7 +50,7 @@ import {
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
-import { magnetPositionsForCell } from './baseplateMagnets';
+import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import { sketch } from './meshUtils';
@@ -346,7 +346,7 @@ export function buildLightweightBase(
         gridUnitMm,
         DEFAULT_SOCKET_CELL_PLAN,
         (cell) => {
-          if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+          if (!cellHostsAttachmentHoles(cell, holeRadius, unitX, unitY)) return;
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
           // Fit-or-center magnet positions so a non-square/small foot's pads and
           // drills stay inside the foot instead of breaching its side.

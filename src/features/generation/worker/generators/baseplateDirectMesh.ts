@@ -55,7 +55,7 @@ import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
 import { addMagnetHoleAt } from './directMeshMagnets';
 import { addScrewHoleAt } from './directMeshScrews';
-import { magnetPositionsForCell } from './baseplateMagnets';
+import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { planBaseplateScrewHoles } from './baseplateScrews';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
 
@@ -140,6 +140,10 @@ export function generateBaseplateDirect(
   // ring, while a sub-threshold sliver keeps its solid fill.
   const cells: CellInfo[] = [];
   forEachCell(width, depth, (cell) => cells.push(cell), cellOpts);
+  // Everything appended past here is an over-tile frame tile. The magnet pass
+  // below magnetizes frame tiles separately, so it needs the nominal grid alone
+  // — it can no longer tell the two apart by cell size.
+  const nominalCellCount = cells.length;
   // Plain solid padding fills the whole margin ring (no pockets); over-tile
   // restricts the ring to the un-pocketed outer band via per-side pocket depths.
   let drawRing = !overTile;
@@ -252,12 +256,10 @@ export function generateBaseplateDirect(
 
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
-    // Nominal grid: full cells get the standard 4 corners (fractional nominal
-    // cells are skipped, matching the BREP build). `cells` also holds the frame
-    // tiles, but they're <1u so the guard skips them here — they're magnetized
-    // by the over-tile pass below.
-    for (const cell of cells) {
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
+    // Nominal grid: full cells get the standard 4 corners, half cells whatever
+    // of that pattern their tapered floor holds — matching the BREP build.
+    for (const cell of cells.slice(0, nominalCellCount)) {
+      if (!cellHostsAttachmentHoles(cell, magnetRadius, gridUnitMm, gridUnitMmY)) continue;
       // Shared placement (wall-distance clamp) — identical to the BREP plate,
       // bin base, and lid so the draft preview and all mating surfaces agree.
       for (const [x, y] of magnetPositionsForCell(
