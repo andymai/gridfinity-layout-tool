@@ -1411,6 +1411,18 @@ function validateCutouts(value: unknown): string | null {
       const styleErr = validateTextStyleOverride(c.textStyle, `cutouts[${i}].textStyle`);
       if (styleErr) return styleErr;
     }
+    // Lean feeds tan() in the generator's tool-extension math, so a NaN or an
+    // absurd angle must stop here (same reasoning as cutoutConfig.topOffset).
+    if (
+      c.leanDeg !== undefined &&
+      !(
+        typeof c.leanDeg === 'number' &&
+        Number.isFinite(c.leanDeg) &&
+        Math.abs(c.leanDeg) <= CONSTRAINTS.MAX_CUTOUT_LEAN_DEG
+      )
+    ) {
+      return `cutouts[${i}].leanDeg must be a number within ±${CONSTRAINTS.MAX_CUTOUT_LEAN_DEG}`;
+    }
     // Socket fields drive geometry the client regenerates, but `labelIcon`
     // also selects a silhouette by name, so it is checked against the same
     // allowlist the compartment icons use rather than trusted as a string.

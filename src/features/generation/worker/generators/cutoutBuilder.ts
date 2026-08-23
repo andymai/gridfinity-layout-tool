@@ -44,6 +44,7 @@ import {
   DEFAULT_POLYGON_SIDES,
   CLEARANCE_SHAPES,
   CHAMFER_SHAPES,
+  resolveCutoutLeanDeg,
 } from '@/shared/types/bin';
 import {
   regularPolygonPoints,
@@ -162,12 +163,42 @@ function cutoutProfileDrawing(p: {
 }
 
 /**
+ * Extra tool length past the mouth (z = cutDepth), along the axis, that a
+ * leaned tool needs so its tilted top still covers the whole drawn footprint
+ * at the mouth plane — otherwise the down-tilted side leaves a material hood
+ * overhanging the opening. The interior clip trims whatever ends up above the
+ * fill surface, so the margin only has to be sufficient, not exact.
+ */
+function leanTopExtension(leanDeg: number, localDepth: number): number {
+  if (leanDeg === 0) return 0;
+  return (localDepth / 2) * Math.abs(Math.tan((leanDeg * Math.PI) / 180)) + 1;
+}
+
+/**
+ * Tilt a finished tool about its own mouth: rotate about the local X axis
+ * through (0, 0, mouthZ), so the opening stays put and the floor travels along
+ * local +Y for positive angles. Applied after the scoop fillet (the scooped
+ * floor tilts with the pocket) and before the plan rotation (which carries the
+ * tilt to any direction). Consumes `shape`.
+ */
+function applyCutoutLean(shape: Shape3D, leanDeg: number, mouthZ: number): Shape3D {
+  if (leanDeg === 0) return shape;
+  const leaned = rotate(shape, leanDeg, { at: [0, 0, mouthZ], axis: [1, 0, 0] });
+  shape.delete();
+  return leaned;
+}
+
+/**
  * Entry-chamfer cutout: a straight prism that flares outward over the top
  * `chamfer` mm so the opening is a ~45° countersink (bits self-center). Built
  * as a 3-section ruled loft — nominal at the bottom, nominal again at
  * `cutDepth − chamfer`, then the outset profile at the top rim. The outset
  * grows each bounding dimension by `2·chamfer` (and the corner radius by
  * `chamfer`), matching the vertical drop for a true 45° bevel.
+ *
+ * `topExtension` (leaned tools) continues the flared rim profile straight up
+ * past the mouth as a fourth section, so the countersink stays at the mouth
+ * while the extension keeps the tilted opening fully clear.
  */
 function buildChamferedCutoutShape(p: {
   readonly shape: string;
@@ -177,6 +208,7 @@ function buildChamferedCutoutShape(p: {
   readonly sides?: number;
   readonly cutDepth: number;
   readonly chamfer: number;
+  readonly topExtension: number;
 }): Shape3D {
   const profile = (w: number, dd: number, cr: number, z: number): Sketch =>
     cutoutProfileDrawing({
@@ -189,13 +221,15 @@ function buildChamferedCutoutShape(p: {
 
   const base = profile(p.w, p.d, p.cornerRadius, 0);
   const straightTop = profile(p.w, p.d, p.cornerRadius, p.cutDepth - p.chamfer);
-  const flared = profile(
-    p.w + 2 * p.chamfer,
-    p.d + 2 * p.chamfer,
-    p.cornerRadius + p.chamfer,
-    p.cutDepth
-  );
-  return base.loftWith([straightTop, flared], { ruled: true });
+  const flaredW = p.w + 2 * p.chamfer;
+  const flaredD = p.d + 2 * p.chamfer;
+  const flaredCR = p.cornerRadius + p.chamfer;
+  const flared = profile(flaredW, flaredD, flaredCR, p.cutDepth);
+  const sections = [straightTop, flared];
+  if (p.topExtension > 0) {
+    sections.push(profile(flaredW, flaredD, flaredCR, p.cutDepth + p.topExtension));
+  }
+  return base.loftWith(sections, { ruled: true });
 }
 
 /** Create an extruded cutout shape centered at origin, **without rotation**.
@@ -214,6 +248,7 @@ function buildUnrotatedCutoutShape(cutout: {
   readonly sides?: number;
   readonly clearance?: number;
   readonly chamferWidth?: number;
+  readonly leanDeg?: number;
   readonly path?: readonly PathPoint[];
 }): Shape3D | null {
   if (cutout.cutDepth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return null;
@@ -241,12 +276,19 @@ function buildUnrotatedCutoutShape(cutout: {
     (CHAMFER_SHAPES as readonly string[]).includes(cutout.shape) && cutout.chamferWidth
       ? Math.max(0, Math.min(cutout.chamferWidth, cutout.cutDepth - 0.2))
       : 0;
+
+  // Leaned tools carry extra length past the mouth so the tilted top still
+  // clears the whole opening; the interior clip trims the excess. `d` (with
+  // clearance) is the local extent the tilt sweeps, whatever the shape.
+  const topExt = leanTopExtension(resolveCutoutLeanDeg(cutout), d);
+  const fullDepth = cutout.cutDepth + topExt;
+
   if (chamfer > 0.05) {
     if (cutout.shape === 'path') {
       // Paths can't use the parametric profile loft; flatten + offset the outline
       // for the flared rim. On any failure, fall through to a straight extrude.
       try {
-        return buildChamferedPathShape(cutout, chamfer, clearance);
+        return buildChamferedPathShape(cutout, chamfer, clearance, topExt);
       } catch {
         /* fall through to the straight `case 'path'` below */
       }
@@ -259,6 +301,7 @@ function buildUnrotatedCutoutShape(cutout: {
         sides: cutout.sides,
         cutDepth: cutout.cutDepth,
         chamfer,
+        topExtension: topExt,
       });
     }
   }
@@ -271,8 +314,8 @@ function buildUnrotatedCutoutShape(cutout: {
       // `drawEllipse` extrude produces an invalid solid that the boolean drops,
       // so the cut silently no-ops (see ELLIPSE_SEGMENTS).
       return Math.abs(rx - ry) < 0.01
-        ? cylinder(rx, cutout.cutDepth)
-        : sketch(ellipsePolygonDrawing(rx, ry), 'XY').extrude(cutout.cutDepth);
+        ? cylinder(rx, fullDepth)
+        : sketch(ellipsePolygonDrawing(rx, ry), 'XY').extrude(fullDepth);
     }
     case 'polygon': {
       const pts = regularPolygonPoints(
@@ -281,11 +324,11 @@ function buildUnrotatedCutoutShape(cutout: {
         d
       );
       if (pts.length < 3) {
-        return box(w, d, cutout.cutDepth, { at: [0, 0, cutout.cutDepth / 2] });
+        return box(w, d, fullDepth, { at: [0, 0, fullDepth / 2] });
       }
       let pen = draw([pts[0].x, pts[0].y]);
       for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
-      return sketch(pen.close(), 'XY').extrude(cutout.cutDepth);
+      return sketch(pen.close(), 'XY').extrude(fullDepth);
     }
     case 'slot':
     case 'knifeSlot': {
@@ -293,15 +336,15 @@ function buildUnrotatedCutoutShape(cutout: {
       // half-height radius makes drawRoundedRectangle emit a degenerate
       // zero-length straight segment on the short edges, which OCCT rejects.
       const r = Math.max(0.01, slotCornerRadius(w, d) - 0.01);
-      return sketch(drawRoundedRectangle(w, d, r), 'XY').extrude(cutout.cutDepth);
+      return sketch(drawRoundedRectangle(w, d, r), 'XY').extrude(fullDepth);
     }
     case 'path': {
       try {
-        return buildPathCutoutShape(cutout, clearance);
+        return buildPathCutoutShape({ ...cutout, cutDepth: fullDepth }, clearance);
       } catch {
         // Self-intersecting or degenerate path — fall back to bounding box rectangle
-        return box(cutout.width, cutout.depth, cutout.cutDepth, {
-          at: [0, 0, cutout.cutDepth / 2],
+        return box(cutout.width, cutout.depth, fullDepth, {
+          at: [0, 0, fullDepth / 2],
         });
       }
     }
@@ -312,10 +355,10 @@ function buildUnrotatedCutoutShape(cutout: {
         return sketch(
           drawRoundedRectangle(cutout.width, cutout.depth, Math.min(cutout.cornerRadius, maxCR)),
           'XY'
-        ).extrude(cutout.cutDepth);
+        ).extrude(fullDepth);
       }
-      return box(cutout.width, cutout.depth, cutout.cutDepth, {
-        at: [0, 0, cutout.cutDepth / 2],
+      return box(cutout.width, cutout.depth, fullDepth, {
+        at: [0, 0, fullDepth / 2],
       });
     }
   }
@@ -336,10 +379,13 @@ function buildCutoutShape(cutout: {
   readonly sides?: number;
   readonly clearance?: number;
   readonly chamferWidth?: number;
+  readonly leanDeg?: number;
   readonly path?: readonly PathPoint[];
 }): Shape3D | null {
   let shape = buildUnrotatedCutoutShape(cutout);
   if (!shape) return null;
+
+  shape = applyCutoutLean(shape, resolveCutoutLeanDeg(cutout), cutout.cutDepth);
 
   if (cutout.rotation !== 0) {
     const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
@@ -429,7 +475,8 @@ function buildChamferedPathShape(
     readonly path?: readonly PathPoint[];
   },
   chamfer: number,
-  clearance: number
+  clearance: number,
+  topExtension: number
 ): Shape3D {
   const outline = pathOutline(cutout);
   if (!outline) throw new Error('path: degenerate');
@@ -441,7 +488,11 @@ function buildChamferedPathShape(
   const baseSketch = pathWire(base).sketchOnPlane('XY', 0) as Sketch;
   const straightTop = pathWire(base).sketchOnPlane('XY', cutout.cutDepth - chamfer) as Sketch;
   const flaredTop = pathWire(flared).sketchOnPlane('XY', cutout.cutDepth) as Sketch;
-  return baseSketch.loftWith([straightTop, flaredTop], { ruled: true });
+  const sections = [straightTop, flaredTop];
+  if (topExtension > 0) {
+    sections.push(pathWire(flared).sketchOnPlane('XY', cutout.cutDepth + topExtension) as Sketch);
+  }
+  return baseSketch.loftWith(sections, { ruled: true });
 }
 
 /** Flatten a closed bezier path to an open polyline for 3D generation.
@@ -683,6 +734,8 @@ export function buildUngroupedCutout(
       shape = filleted;
     }
   }
+
+  shape = applyCutoutLean(shape, resolveCutoutLeanDeg(cutout), effectiveDepth);
 
   if (cutout.rotation !== 0) {
     const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
@@ -934,6 +987,8 @@ export function buildArrayUngroupedCutouts(
     }
   }
 
+  master = applyCutoutLean(master, resolveCutoutLeanDeg(cutout), effectiveDepth);
+
   // Bake the uniform rotation into master so instances only need a translate.
   if (!nonUniformRotation && cutout.rotation !== 0) {
     const rotated = rotate(master, -cutout.rotation, { axis: [0, 0, 1] });
@@ -1132,7 +1187,11 @@ export function buildCutoutCuts(
     // Non-union groups (subtract/intersect/exclude) can hollow a member's
     // footprint out of the final cavity, so a member-footprint floor guess may
     // point at solid material. Only union cavities keep member floors intact.
-    const allowFloor = cutout.groupId === null || groupOps.get(cutout.groupId) === 'union';
+    // A leaned pocket's floor is tilted and laterally shifted, so the flat
+    // recess-floor Z guess is wrong for it too — its labels stay on the top.
+    const allowFloor =
+      (cutout.groupId === null || groupOps.get(cutout.groupId) === 'union') &&
+      resolveCutoutLeanDeg(cutout) === 0;
     const textShape = buildCutoutLabel(
       cutout,
       label,

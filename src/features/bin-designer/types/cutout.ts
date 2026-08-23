@@ -127,6 +127,38 @@ export const CHAMFER_SHAPES: readonly CutoutShape[] = [
   'knifeSlot',
 ];
 
+/** Steepest {@link Cutout.leanDeg} the editor allows, per direction. */
+export const MAX_CUTOUT_LEAN_DEG = 45;
+
+/**
+ * Shapes that accept a {@link Cutout.leanDeg} tilt. Mesh imprints are cut in
+ * the mesh domain (no BREP tool to tilt); knife slots anchor a horizontal
+ * breach channel and a rest saddle that both assume a vertical slot.
+ */
+export const LEAN_SHAPES: readonly CutoutShape[] = [
+  'rectangle',
+  'circle',
+  'polygon',
+  'slot',
+  'path',
+];
+
+/**
+ * The lean a cutout actually generates with: 0 for shapes that cannot tilt and
+ * for absent/non-finite values, clamped to ±{@link MAX_CUTOUT_LEAN_DEG}
+ * otherwise. The worker, the fit-test plan and the editor UI all read the
+ * field through this so they cannot disagree about when a lean applies.
+ */
+export function resolveCutoutLeanDeg(cutout: {
+  readonly shape: string;
+  readonly leanDeg?: number;
+}): number {
+  const lean = cutout.leanDeg;
+  if (lean === undefined || !Number.isFinite(lean)) return 0;
+  if (!(LEAN_SHAPES as readonly string[]).includes(cutout.shape)) return 0;
+  return Math.max(-MAX_CUTOUT_LEAN_DEG, Math.min(MAX_CUTOUT_LEAN_DEG, lean));
+}
+
 /** Which end of a knife slot's long (local X) axis opens through the wall. */
 export type KnifeSlotOpenEnd = 'start' | 'end';
 
@@ -393,6 +425,17 @@ export interface Cutout {
    * Missing/undefined/0 = straight walls, so existing designs are unchanged.
    */
   readonly chamferWidth?: number;
+  /**
+   * Tilt of the pocket's axis off vertical, in degrees (±{@link
+   * MAX_CUTOUT_LEAN_DEG}), so an item slides in at a slope. The pocket is the
+   * drawn cross-section rotated about its own opening along the shape's local
+   * depth axis (positive tips the floor toward the shape's top edge in the
+   * editor); `rotation` carries the tilt to any direction. `cutDepth` is
+   * measured along the tilted axis. Absent = 0 (straight down), so existing
+   * designs' fingerprints are untouched; ignored for shapes outside
+   * {@link LEAN_SHAPES}.
+   */
+  readonly leanDeg?: number;
   /**
    * Optional parametric array: this cutout is the master, replicated across the
    * grid/ring described by {@link CutoutArrayConfig}. Instances are derived at

@@ -1517,6 +1517,26 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('cutout lean validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+
+    it('accepts an in-range lean, either sign', () => {
+      expect(withCutouts([{ id: 'a', leanDeg: 30 }]).valid).toBe(true);
+      expect(withCutouts([{ id: 'a', leanDeg: -45 }]).valid).toBe(true);
+    });
+
+    it('rejects an out-of-range, non-finite, or non-numeric lean', () => {
+      expect(withCutouts([{ id: 'a', leanDeg: 46 }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', leanDeg: -90 }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', leanDeg: Number.NaN }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', leanDeg: '30' }]).valid).toBe(false);
+    });
+  });
+
   describe('cutout label socket validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();

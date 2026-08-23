@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`cutout lean > 2×2 solid, lean composes with entry chamfer 1`] = `282`;
+
+exports[`cutout lean > 2×2 solid, lean composes with scoop fillet 1`] = `212`;
+
+exports[`cutout lean > 2×2 solid, leaned circle pocket 1`] = `266`;
+
+exports[`cutout lean > 2×2 solid, leaned freeform path pocket 1`] = `140`;
+
+exports[`cutout lean > 2×2 solid, leaned grid array 1`] = `188`;
+
+exports[`cutout lean > 2×2 solid, leaned rectangle pocket travels with the lean 1`] = `140`;
+
+exports[`cutout lean > 2×2 solid, leaned union group 1`] = `172`;
+
+exports[`cutout lean > 2×2 solid, negative lean mirrors the travel 1`] = `140`;
+
+exports[`cutout lean > 2×2 solid, rotation carries the lean direction 1`] = `140`;

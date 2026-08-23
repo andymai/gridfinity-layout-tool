@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Cuchillo de carne",
   "binDesigner.cutouts.knifePreset.utility": "Cuchillo multiusos",
   "binDesigner.cutouts.knifeSpineThickness": "Lomo",
+  "binDesigner.cutouts.lean": "Inclinación",
+  "binDesigner.cutouts.leanHint": "Inclina el hueco sobre su abertura para que los objetos entren deslizándose en pendiente. La rotación gira la dirección de la inclinación.",
   "binDesigner.cutouts.nSelected": "{count} recortes seleccionados",
   "binDesigner.cutouts.paste": "Pegar",
   "binDesigner.cutouts.pathfinder.emptyResult": "El resultado de Pathfinder está vacío: no queda nada para cortar",

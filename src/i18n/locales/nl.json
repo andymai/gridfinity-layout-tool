@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Steakmes",
   "binDesigner.cutouts.knifePreset.utility": "Universeel mes",
   "binDesigner.cutouts.knifeSpineThickness": "Rug",
+  "binDesigner.cutouts.lean": "Helling",
+  "binDesigner.cutouts.leanHint": "Kantelt de uitsparing om de opening zodat voorwerpen er schuin in glijden. Rotatie draait de kantelrichting.",
   "binDesigner.cutouts.nSelected": "{count} uitsparingen geselecteerd",
   "binDesigner.cutouts.paste": "Plakken",
   "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultaat is leeg — niets om uit te snijden",

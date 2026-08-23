@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Biffkniv",
   "binDesigner.cutouts.knifePreset.utility": "Universalkniv",
   "binDesigner.cutouts.knifeSpineThickness": "Rygg",
+  "binDesigner.cutouts.lean": "Helling",
+  "binDesigner.cutouts.leanHint": "Vipper lommen rundt åpningen slik at gjenstander glir inn på skrå. Rotasjon snur hellingsretningen.",
   "binDesigner.cutouts.nSelected": "{count} utskjæringer valgt",
   "binDesigner.cutouts.paste": "Lim inn",
   "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultatet er tomt — ingenting igjen å skjære",

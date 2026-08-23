@@ -15,7 +15,12 @@
  */
 
 import type { BinParams, Cutout } from '@/shared/types/bin';
-import { CHAMFER_SHAPES, CLEARANCE_SHAPES, DEFAULT_POLYGON_SIDES } from '@/shared/types/bin';
+import {
+  CHAMFER_SHAPES,
+  CLEARANCE_SHAPES,
+  DEFAULT_POLYGON_SIDES,
+  resolveCutoutLeanDeg,
+} from '@/shared/types/bin';
 import { regularPolygonPoints } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -153,7 +158,17 @@ function openingGrowthMm(cutout: Cutout): {
 function openingHalfExtents(cutout: Cutout): { hx: number; hy: number } {
   const grow = openingGrowthMm(cutout);
   const hw = cutout.width / 2 + grow.clearanceW + grow.chamfer;
-  const hd = cutout.depth / 2 + grow.clearanceD + grow.chamfer;
+  let hd = cutout.depth / 2 + grow.clearanceD + grow.chamfer;
+  // A leaned pocket sweeps past its drawn footprint along the local depth
+  // axis: the mouth stretches by 1/cos(lean) and the floor travels a further
+  // cutDepth·sin(lean) to one side. Reserved symmetrically (the travel side
+  // depends on the sign composed with rotation), so the seam margin can only
+  // over-reserve, never route a cut plane through the swept pocket.
+  const lean = resolveCutoutLeanDeg(cutout);
+  if (lean !== 0) {
+    const leanRad = (Math.abs(lean) * Math.PI) / 180;
+    hd = hd / Math.cos(leanRad) + cutout.cutDepth * Math.sin(leanRad);
+  }
   const rad = (cutout.rotation * Math.PI) / 180;
   const cos = Math.abs(Math.cos(rad));
   const sin = Math.abs(Math.sin(rad));

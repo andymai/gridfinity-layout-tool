@@ -72,12 +72,15 @@ function buildTools(cutouts: LidCutoutInputs): Shape3D[] {
   // them against the effective depth, which here is the whole plate: a fillet on
   // a through-cut rounds the tool's BOTTOM edge, so the hole would come out
   // nominal at the top face and pinched at the underside. A scoop rounds a pocket
-  // into its floor, and a hole has no floor.
+  // into its floor, and a hole has no floor. Lean is zeroed for the same class
+  // of reason: the underside structures and the hole preview assume a vertical
+  // bore through the plate.
   const through = (c: Cutout): Cutout => ({
     ...c,
     cutDepth: surfaceZ,
     scoopRadiusW: 0,
     scoopRadiusD: 0,
+    leanDeg: 0,
   });
 
   const groups = new Map<string, Cutout[]>();
