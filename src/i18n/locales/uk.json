@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "Новий дизайн",
   "binDesigner.newDesignConfirm": "Почати новий дизайн? Ваш поточний дизайн збережено й може бути завантажений пізніше.",
   "binDesigner.newDesignCreated": "Створено новий дизайн",
-  "binDesigner.newToolRack": "Новий тримач інструментів (експериментально)",
   "binDesigner.newWorkshop": "Нова збірка Workshop (експериментальна)",
   "binDesigner.noDesignsMatch": "Жоден дизайн не відповідає «{query}»",
   "binDesigner.noSavedDesignsYet": "Збережених дизайнів ще немає",

@@ -12,6 +12,7 @@
  * bottom-left-origin coordinates are shifted by half the footprint.
  */
 import {
+  applyMatrix,
   box,
   clone,
   cone,
@@ -199,12 +200,28 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       return cylinder(rBottom, total, { at: [0, 0, -sink] });
     }
     case 'fin': {
-      const { length, thickness, height, leanDeg } = node.params;
-      const dy = Math.tan(leanDeg * DEG) * height;
+      const { length, thickness, height, leanDeg, leanAxis } = node.params;
+      const lean = Math.tan(leanDeg * DEG) * height;
+      if (leanAxis === 'length') {
+        // Shear along the plate's run: build the plain plate and apply the
+        // same x-by-z shear matrix the proxy uses, so both stay identical.
+        const total = height + sink;
+        const plate = box(length, thickness, total, { at: [0, 0, total / 2 - sink] });
+        if (leanDeg <= 0) return plate;
+        const tan = Math.tan(leanDeg * DEG);
+        const sheared = unwrap(
+          applyMatrix(plate, {
+            linear: [1, 0, tan, 0, 1, 0, 0, 0, 1],
+            translation: [0, 0, 0],
+          })
+        );
+        if (sheared !== plate) plate.delete();
+        return sheared;
+      }
       const pen = draw([-thickness / 2, -sink])
         .lineTo([thickness / 2, -sink])
-        .lineTo([thickness / 2 + dy, height])
-        .lineTo([-thickness / 2 + dy, height])
+        .lineTo([thickness / 2 + lean, height])
+        .lineTo([-thickness / 2 + lean, height])
         .close();
       return sketch(pen, 'YZ', -length / 2).extrude(length);
     }

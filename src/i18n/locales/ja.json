@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "新しいデザイン",
   "binDesigner.newDesignConfirm": "新しいデザインを開始しますか?現在のデザインは保存され、後で読み込み可能です。",
   "binDesigner.newDesignCreated": "新しいデザインを作成しました",
-  "binDesigner.newToolRack": "新しいツールラック（実験的）",
   "binDesigner.newWorkshop": "新しいWorkshopビルド（実験的）",
   "binDesigner.noDesignsMatch": "「{query}」に一致するデザインはありません",
   "binDesigner.noSavedDesignsYet": "保存済みデザインはまだありません",

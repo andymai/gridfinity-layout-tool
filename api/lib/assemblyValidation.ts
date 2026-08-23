@@ -122,7 +122,10 @@ function validParams(type: string, params: unknown): boolean {
         num(params.length, 4, 400) &&
         num(params.thickness, 0.8, 20) &&
         num(params.height, 4, 200) &&
-        num(params.leanDeg, 0, 45)
+        num(params.leanDeg, 0, 45) &&
+        (params.leanAxis === undefined ||
+          params.leanAxis === 'thickness' ||
+          params.leanAxis === 'length')
       );
     case 'block':
       return (

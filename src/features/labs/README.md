@@ -35,7 +35,6 @@ Internal status enum values → UI badge labels: `experimental` → "Early acces
 | ----------------------- | --------------- | --------------------------------------------------------------------------------------------- |
 | `brepkit_kernel`        | `experimental`  | Alternative 3D geometry engine (BrepKit) — driven by `EngineSelector`                         |
 | `show_generation_perf`  | `experimental`  | Per-stage generation timing overlay in the bin designer                                       |
-| `item_kinds`            | `experimental`  | Non-bin items (tool racks) that sit on a baseplate                                            |
 | `community_fits_gap`    | `experimental`  | Select a layout gap and browse community designs that fit it                                  |
 | `sliding_tray`          | `experimental`  | Rail-and-tray sliding insert in the bin designer's Walls section                              |
 | `workshop`              | `experimental`  | Part-based Workshop builder: 3D editor, exact export, library sync                            |

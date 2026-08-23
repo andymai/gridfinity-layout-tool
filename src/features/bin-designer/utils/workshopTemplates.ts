@@ -4,9 +4,13 @@
  * template can be applied repeatedly; sizes derive from the envelope, so a
  * 2x1 base gets a smaller rack than a 4x2.
  */
-import type { AssemblyPartNode } from '@/shared/types/assembly';
-import type { ItemEnvelope } from '@/shared/types/item';
-import { createAssemblyPartNode, defaultCutterProfile } from '@/shared/items/assembly/descriptor';
+import type { AssemblyPartNode, AssemblyStructure } from '@/shared/types/assembly';
+import type { ItemEnvelope, ToolRackStructure } from '@/shared/types/item';
+import {
+  clampPartTransform,
+  createAssemblyPartNode,
+  defaultCutterProfile,
+} from '@/shared/items/assembly/descriptor';
 
 export type WorkshopTemplateId = 'pliersRack' | 'screwdriverBlock';
 
@@ -110,4 +114,95 @@ export function buildWorkshopTemplate(
     case 'screwdriverBlock':
       return screwdriverBlock(envelope);
   }
+}
+
+/**
+ * Convert a saved slanted tool rack into an equivalent Workshop build:
+ * the back rail becomes a block, the fin row becomes one fin node with a
+ * linear array (same count/pitch derivation the rack generator used), and
+ * the floor carries over on the base. Geometry matches the rack's layout —
+ * fins are depth-running plates arrayed across the width, leaning back.
+ */
+export function convertToolRackToAssembly(
+  rack: ToolRackStructure,
+  envelope: ItemEnvelope
+): AssemblyStructure {
+  const w = envelope.width * envelope.gridUnitMm;
+  const d = envelope.depth * envelope.gridUnitMm;
+  const pitch = rack.slotPitch ?? 16;
+  const usableW = w - 2 * rack.slotInsetMm;
+  // Same derivation as the rack generator's resolveFins: finCount wins,
+  // otherwise round(usable / pitch) + 1, spacing spread across the usable run.
+  const count = Math.max(2, Math.min(64, rack.finCount ?? Math.round(usableW / pitch) + 1));
+  const spacing = count > 1 ? usableW / (count - 1) : 0;
+
+  const parts: AssemblyPartNode[] = [];
+
+  if (rack.backRail.enabled) {
+    // Flush to the back edge, full footprint width — the rack generator's
+    // placement, so a migrated rack keeps its exact outline. Rail values are
+    // clamped into the block schema (rack rails could be thinner/shorter
+    // than a block allows); an unclamped value would make migration drop
+    // the rail entirely on the next load.
+    const rail = createAssemblyPartNode(
+      'block',
+      crypto.randomUUID(),
+      clampPartTransform({
+        x: w / 2,
+        y: d - rack.backRail.thickness / 2,
+        seatZ: 0,
+        rotZDeg: 0,
+      })
+    );
+    parts.push({
+      ...rail,
+      params: {
+        ...rail.params,
+        width: Math.min(Math.max(w, 2), 400),
+        depth: Math.min(Math.max(rack.backRail.thickness, 2), 400),
+        height: Math.min(Math.max(rack.backRail.height, 1), 200),
+        wedgeAngleDeg: 0,
+      },
+    });
+  }
+
+  // Fins span the full depth and fuse into the rail, as in the generator.
+  // leanAxis 'length' + the 90° turn reproduces the rack's back-lean: the
+  // shear runs along the plate (local +X), which the rotation maps to +Y.
+  const finLength = Math.max(12, Math.min(d, 400));
+  const fin = createAssemblyPartNode(
+    'fin',
+    crypto.randomUUID(),
+    clampPartTransform({
+      x: rack.slotInsetMm,
+      y: d / 2,
+      seatZ: 0,
+      rotZDeg: 90,
+    })
+  );
+  parts.push({
+    ...fin,
+    params: {
+      ...fin.params,
+      length: finLength,
+      thickness: Math.min(Math.max(rack.finThickness, 0.8), 20),
+      height: Math.min(Math.max(rack.finHeight, 4), 200),
+      leanDeg: Math.min(Math.max(rack.finAngleDeg, 0), 45),
+      leanAxis: 'length',
+    },
+    ...(count > 1 ? { array: { count, dx: Math.min(spacing, 500), dy: 0 } } : {}),
+  });
+
+  return {
+    kind: 'assembly',
+    schemaVersion: 1,
+    base: {
+      floorThickness: Math.min(Math.max(rack.floorThickness, 1), 10),
+      ...(rack.cornerRadius !== undefined
+        ? { cornerRadius: Math.min(Math.max(rack.cornerRadius, 0), 20) }
+        : {}),
+    },
+    mirrorAxis: 'x',
+    parts,
+  };
 }

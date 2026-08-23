@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "Nowy projekt",
   "binDesigner.newDesignConfirm": "Rozpocząć nowy projekt? Twój bieżący projekt jest zapisany i można go później wczytać.",
   "binDesigner.newDesignCreated": "Utworzono nowy projekt",
-  "binDesigner.newToolRack": "Nowy stojak na narzędzia (eksperymentalny)",
   "binDesigner.newWorkshop": "Nowa konstrukcja Workshop (eksperymentalna)",
   "binDesigner.noDesignsMatch": "Żaden projekt nie pasuje do \"{query}\"",
   "binDesigner.noSavedDesignsYet": "Brak zapisanych projektów",

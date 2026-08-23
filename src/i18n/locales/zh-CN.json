@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "新建设计",
   "binDesigner.newDesignConfirm": "开始一个新设计？你当前的设计已保存，稍后可以加载。",
   "binDesigner.newDesignCreated": "已创建新设计",
-  "binDesigner.newToolRack": "新建工具架（实验性）",
   "binDesigner.newWorkshop": "新建Workshop搭建（实验性）",
   "binDesigner.noDesignsMatch": "没有与“{query}”匹配的设计",
   "binDesigner.noSavedDesignsYet": "还没有保存的设计",

@@ -1322,7 +1322,6 @@
   "binDesigner.newDesign": "Nieuw design",
   "binDesigner.newDesignConfirm": "Een nieuw ontwerp starten? Je huidige ontwerp is opgeslagen en kan later worden geladen.",
   "binDesigner.newDesignCreated": "Nieuw ontwerp aangemaakt",
-  "binDesigner.newToolRack": "Nieuw gereedschapsrek (experimenteel)",
   "binDesigner.newWorkshop": "Nieuwe Workshop-opbouw (experimenteel)",
   "binDesigner.noDesignsMatch": "Geen ontwerpen gevonden voor „{query}\"",
   "binDesigner.noSavedDesignsYet": "Nog geen opgeslagen designs",
