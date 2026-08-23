@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.462.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.461.0...gridfinity-layout-tool-v4.462.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** canvas UX — presets, snap widget, context menu, shortcuts ([#3772](https://github.com/andymai/gridfinity-layout-tool/issues/3772)) ([3e5fb04](https://github.com/andymai/gridfinity-layout-tool/commit/3e5fb048a8ecc5627c36e2f86b1b0721e62d8a20))
+
 ## [4.461.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.460.0...gridfinity-layout-tool-v4.461.0) (2026-08-23)
 
 
