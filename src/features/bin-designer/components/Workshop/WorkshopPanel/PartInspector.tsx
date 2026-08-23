@@ -5,6 +5,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import type { AssemblyPartNode } from '@/shared/types/assembly';
 import { clamp } from '@/shared/utils/math';
 import { PanelSection } from '../../panel/PanelSection';
+import { CutterProfileSection } from './CutterProfileSection';
 import { PART_LABEL_KEYS, PART_NUMBER_FIELDS } from './partFieldConfig';
 
 interface NumberFieldProps {
@@ -127,6 +128,7 @@ export function PartInspector({ node }: PartInspectorProps) {
           />
         </div>
       )}
+      {node.type === 'cutter' && <CutterProfileSection node={node} />}
       <div className="mt-2 grid grid-cols-2 gap-2">
         {PART_NUMBER_FIELDS[node.type].map((field) => (
           <NumberField

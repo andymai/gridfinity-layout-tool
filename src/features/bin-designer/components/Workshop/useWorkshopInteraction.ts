@@ -10,6 +10,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import { collectAssemblyIds, findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
+import { defaultCutterProfile } from '@/shared/items/assembly/descriptor';
 import {
   parentLocalToWorld,
   resolvePlacedParts,
@@ -34,6 +35,7 @@ export interface WorkshopInteraction {
   readonly draggingId: string | null;
   readonly selectedId: string | null;
   readonly pendingType: ReturnType<typeof usePendingType>;
+  readonly pendingCutterShape: 'circle' | 'slot' | null;
   onSurfaceMove: (surface: HoverSurface) => void;
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
@@ -45,8 +47,13 @@ function usePendingType() {
   return useDesignerStore((s) => s.ui.workshopPendingPartType);
 }
 
+function usePendingCutterShape() {
+  return useDesignerStore((s) => s.ui.workshopPendingCutterShape);
+}
+
 export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopInteraction {
   const pendingType = usePendingType();
+  const pendingCutterShape = usePendingCutterShape();
   const { selectedId } = useDesignerStore(
     useShallow((s) => ({ selectedId: s.ui.selectedAssemblyPartId }))
   );
@@ -166,7 +173,15 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
       if (type) {
         skipNextBaseClickRef.current = false;
         const local = snapPoint(surface);
-        store.addAssemblyPart(type, surface.parentId, { x: local.x, y: local.y });
+        const cutterShape = store.ui.workshopPendingCutterShape;
+        store.addAssemblyPart(
+          type,
+          surface.parentId,
+          { x: local.x, y: local.y },
+          type === 'cutter' && cutterShape
+            ? { profile: defaultCutterProfile(cutterShape) }
+            : undefined
+        );
         invalidate();
         return;
       }
@@ -228,6 +243,7 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
     draggingId,
     selectedId,
     pendingType,
+    pendingCutterShape,
     onSurfaceMove,
     onSurfaceLeave,
     onSurfaceClick,

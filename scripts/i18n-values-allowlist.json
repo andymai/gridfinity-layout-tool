@@ -316,7 +316,9 @@
     "workshop.base.title",
     "workshop.field.diameter",
     "workshop.inspector.rotation",
-    "workshop.part.tube"
+    "workshop.part.tube",
+    "workshop.profileShape.polygon",
+    "workshop.profileShape.rectangle"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

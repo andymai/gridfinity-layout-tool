@@ -53,15 +53,20 @@ export function createAssemblyActions(set: Set, get: Get) {
     addAssemblyPart: (
       type: AssemblyPartType,
       parentId: string | null,
-      transform?: Partial<PartTransform>
+      transform?: Partial<PartTransform>,
+      params?: Partial<AssemblyPartParams>
     ): string | null => {
       const current = parts();
       if (!current) return null;
-      const node = createAssemblyPartNode(
+      const base = createAssemblyPartNode(
         type,
         crypto.randomUUID(),
         clampPartTransform({ ...DEFAULT_PART_TRANSFORM, ...transform })
       );
+      const node = params
+        ? ({ ...base, params: { ...base.params, ...params } } as AssemblyPartNode)
+        : base;
+      if (params && !assemblyPartNodeSchema.safeParse(node).success) return null;
       const next = withAssemblyPartAdded(current, parentId, node);
       if (!next) return null;
       set((state) => {
