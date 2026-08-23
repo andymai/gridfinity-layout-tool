@@ -7,6 +7,7 @@
  * base floor's top face (the root seat plane).
  */
 import type { AssemblyPartNode, AssemblyStructure, CutterProfile } from '@/shared/types/assembly';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 const DEG = Math.PI / 180;
 
@@ -201,7 +202,11 @@ export function resolvePlacedParts(
  * Exact standing height in mm, socket and floor included — what the layout's
  * drawer-ceiling check charges for a placed assembly (`assembledRiseMm`).
  */
-export function assemblyRiseMm(structure: AssemblyStructure, socketAndFloorMm: number): number {
+export function assemblyRiseMm(
+  structure: AssemblyStructure,
+  socketAndFloorMm: number,
+  baseExtent?: { w: number; d: number }
+): number {
   const placed = resolvePlacedParts(structure);
   // Cutters are subtractive: their seat plane is not material, so it must not
   // set the standing height.
@@ -209,7 +214,17 @@ export function assemblyRiseMm(structure: AssemblyStructure, socketAndFloorMm: n
     (max, p) => (p.node.type === 'cutter' ? max : Math.max(max, p.topZ)),
     0
   );
-  return maxTop + socketAndFloorMm;
+  const flat = maxTop + socketAndFloorMm;
+  const wedge = structure.base.wedge;
+  if (wedge === undefined || wedge.angleDeg <= 0 || baseExtent === undefined) return flat;
+  // The wedge hinges at the low bottom edge: the high edge lifts by the
+  // tilted extent, and the tallest part leans with the surface.
+  const rad = (wedge.angleDeg * Math.PI) / 180;
+  const extent =
+    wedge.lowEdge === 'front' || wedge.lowEdge === 'back' ? baseExtent.d : baseExtent.w;
+  // The socket never tilts: only the height above it rotates.
+  const socketMm = Math.min(GRIDFINITY_SPEC.SOCKET_HEIGHT, socketAndFloorMm);
+  return socketMm + (flat - socketMm) * Math.cos(rad) + extent * Math.sin(rad);
 }
 
 /**
@@ -219,9 +234,13 @@ export function assemblyRiseMm(structure: AssemblyStructure, socketAndFloorMm: n
 export function assemblyHeightUnits(
   structure: AssemblyStructure,
   heightUnitMm: number,
-  socketAndFloorMm: number
+  socketAndFloorMm: number,
+  baseExtent?: { w: number; d: number }
 ): number {
-  return Math.max(1, Math.ceil(assemblyRiseMm(structure, socketAndFloorMm) / heightUnitMm));
+  return Math.max(
+    1,
+    Math.ceil(assemblyRiseMm(structure, socketAndFloorMm, baseExtent) / heightUnitMm)
+  );
 }
 
 const OVERHANG_EPSILON_MM = 0.05;

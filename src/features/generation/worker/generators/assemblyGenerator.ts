@@ -613,12 +613,41 @@ export function buildAssemblySolid(
     Math.min(totalW, totalD) / 2 - 0.1
   );
 
+  const wedge = structure.base.wedge;
+  const wedgeAngle = wedge !== undefined && wedge.angleDeg > 0 ? wedge.angleDeg : 0;
+  // In wedge mode the deck sits strictly inside the straight-walled plinth:
+  // a rotated full-width plate's bottom edge would lie exactly in the
+  // plinth's wall plane (a surface tangency OCCT tessellates with cracks),
+  // and its leaning top edge would overhang the envelope. The inset covers
+  // the worst-case lean, floorThickness * sin(angle).
+  const deckInset = wedgeAngle > 0 ? floorThickness * Math.sin(wedgeAngle * DEG) + 0.6 : 0;
+  const deckW = totalW - 2 * deckInset;
+  const deckD = totalD - 2 * deckInset;
+  const deckCorner = Math.min(cornerRadius, Math.min(deckW, deckD) / 2 - 0.1);
+
   return withScope((scope) => {
-    const floor = sketch(
-      drawRoundedRectangle(totalW, totalD, cornerRadius),
+    let floor = sketch(
+      drawRoundedRectangle(deckW, deckD, deckCorner),
       'XY',
       -COPLANAR_OVERLAP
     ).extrude(floorThickness + COPLANAR_OVERLAP);
+    if (deckInset > 0) {
+      // The top of the deck keeps the full footprint so a part seated
+      // anywhere on it (including the rim strip the inset exposes) still
+      // fuses into the deck instead of floating above the plinth. Only
+      // points above the hinge plane, which all lean inward, are full
+      // width, so the tangency and envelope arguments for the inset hold.
+      const capT = Math.max(0.6, Math.min(1.2, floorThickness / 2));
+      const cap = sketch(
+        drawRoundedRectangle(totalW, totalD, cornerRadius),
+        'XY',
+        floorThickness - capT
+      ).extrude(capT);
+      const stepped = unwrap(fuseAll([floor, cap] as ValidSolid[])) as Shape3D;
+      if (stepped !== floor) floor.delete();
+      if (stepped !== cap) cap.delete();
+      floor = stepped;
+    }
 
     const placements = resolvePlacedParts(structure, {
       w: envelope.width * unitMm,
@@ -671,6 +700,67 @@ export function buildAssemblySolid(
       }
     }
 
+    // Presentation wedge: rotate the finished superstructure about its low
+    // bottom edge and fill beneath with a prism to the flat socket plane —
+    // parts tilt with the surface, the socket never does. Cutters get the
+    // same transform below so holes stay where they were placed.
+    let wedgeTransform: {
+      at: [number, number, number];
+      axis: [number, number, number];
+      angle: number;
+    } | null = null;
+    if (wedgeAngle > 0 && wedge !== undefined) {
+      const halfW = totalW / 2;
+      const halfD = totalD / 2;
+      wedgeTransform =
+        wedge.lowEdge === 'front'
+          ? { at: [0, -halfD, 0], axis: [1, 0, 0], angle: wedgeAngle }
+          : wedge.lowEdge === 'back'
+            ? { at: [0, halfD, 0], axis: [1, 0, 0], angle: -wedgeAngle }
+            : wedge.lowEdge === 'left'
+              ? { at: [-halfW, 0, 0], axis: [0, 1, 0], angle: -wedgeAngle }
+              : { at: [halfW, 0, 0], axis: [0, 1, 0], angle: wedgeAngle };
+      const rotatedSuper = rotate(superstructure, wedgeTransform.angle, {
+        at: wedgeTransform.at,
+        axis: wedgeTransform.axis,
+      });
+      scope.register(rotatedSuper);
+      const tan = Math.tan(wedgeAngle * DEG);
+      const rise = (wedge.lowEdge === 'front' || wedge.lowEdge === 'back' ? totalD : totalW) * tan;
+      // The plinth's low wall keeps a blunt face: a clip plane through the
+      // slab's bottom edge leaves either a knife edge or a sub-tolerance wall
+      // strip there, and both tessellate with cracks. Hinging the clip this
+      // far up buries the deck's underside in the filler by the same amount,
+      // so the cap keeps it under the deck's thickness.
+      const lowFaceTop = Math.min(Math.max(3 * tan, 0.3), 0.6 * floorThickness);
+      const slab = scope.register(
+        sketch(drawRoundedRectangle(totalW, totalD, cornerRadius), 'XY', -COPLANAR_OVERLAP).extrude(
+          rise + lowFaceTop + 2
+        )
+      );
+      const clipSize = Math.max(totalW, totalD) * 3;
+      // The box's bottom face must contain the pivot line: rotating about a
+      // point above the face only shifts the cut plane by h*(1 - 1/cos), so
+      // the plane would stay at the hinge and leave the sliver (and a
+      // micron-scale deck gap the mesh weld tolerance hides).
+      const clipBox = box(clipSize, clipSize, clipSize, {
+        at: [0, 0, clipSize / 2 + lowFaceTop],
+      });
+      const clip = rotate(clipBox, wedgeTransform.angle, {
+        at: [wedgeTransform.at[0], wedgeTransform.at[1], lowFaceTop],
+        axis: wedgeTransform.axis,
+      });
+      clipBox.delete();
+      const filler = unwrap(cut(slab, clip, { optimisation: 'commonFace' }));
+      clip.delete();
+      if (filler !== slab) scope.register(filler);
+      const merged = unwrap(
+        fuseAll([rotatedSuper, filler] as ValidSolid[], { optimisation: 'commonFace' })
+      ) as Shape3D;
+      if (merged !== rotatedSuper && merged !== filler) scope.register(merged);
+      superstructure = merged;
+    }
+
     checkCancelled(signal);
     const socket = buildBaseSocket(
       envelope.width,
@@ -694,7 +784,20 @@ export function buildAssemblySolid(
     checkCancelled(signal);
     let solid: Shape3D = fused;
     if (cutters.length > 0) {
-      const carved = unwrap(cutAll(fused, cutters as ValidSolid[], { optimisation: 'commonFace' }));
+      const effectiveCutters =
+        wedgeTransform === null
+          ? cutters
+          : cutters.map((cutter) =>
+              scope.register(
+                rotate(cutter, wedgeTransform.angle, {
+                  at: wedgeTransform.at,
+                  axis: wedgeTransform.axis,
+                })
+              )
+            );
+      const carved = unwrap(
+        cutAll(fused, effectiveCutters as ValidSolid[], { optimisation: 'commonFace' })
+      );
       if (carved !== fused) scope.register(carved);
       solid = carved;
     }

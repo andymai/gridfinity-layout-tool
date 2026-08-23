@@ -46,7 +46,8 @@ function assemblyUnits(assembly: PublishAssemblyContent): {
     height: assemblyHeightUnits(
       structure,
       envelope.heightUnitMm,
-      GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness
+      GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness,
+      { w: envelope.width * envelope.gridUnitMm, d: envelope.depth * envelope.gridUnitMm }
     ),
   };
 }

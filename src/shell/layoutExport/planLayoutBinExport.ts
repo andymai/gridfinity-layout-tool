@@ -478,7 +478,8 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     const heightUnits = assemblyHeightUnits(
       a.structure,
       a.envelope.heightUnitMm,
-      GRIDFINITY_SPEC.SOCKET_HEIGHT + a.structure.base.floorThickness
+      GRIDFINITY_SPEC.SOCKET_HEIGHT + a.structure.base.floorThickness,
+      { w: a.envelope.width * a.envelope.gridUnitMm, d: a.envelope.depth * a.envelope.gridUnitMm }
     );
     // The wall-model estimate over-reads an open holder, but it is the same
     // fallback pre-volume meshes use, and the manifest labels it an estimate.

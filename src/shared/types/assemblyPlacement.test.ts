@@ -43,6 +43,39 @@ describe('assemblyRiseMm', () => {
     expect(assemblyRiseMm(structureWith([lifted]), 10)).toBe(10);
   });
 
+  it('adds the wedge lift from the tilted base extent', () => {
+    const post = part('post', 'p', {}, {
+      params: { diameter: 8, height: 40 },
+    } as Partial<AssemblyPartNode>);
+    const structure: AssemblyStructure = {
+      ...structureWith([post]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 10, lowEdge: 'front' } },
+    };
+    const rad = (10 * Math.PI) / 180;
+    expect(assemblyRiseMm(structure, 10, EXTENT)).toBeCloseTo(
+      5 + 45 * Math.cos(rad) + EXTENT.d * Math.sin(rad)
+    );
+  });
+
+  it('tilts about the depth axis when the low edge is left or right', () => {
+    const structure: AssemblyStructure = {
+      ...structureWith([]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 15, lowEdge: 'left' } },
+    };
+    const rad = (15 * Math.PI) / 180;
+    expect(assemblyRiseMm(structure, 10, EXTENT)).toBeCloseTo(
+      5 + 5 * Math.cos(rad) + EXTENT.w * Math.sin(rad)
+    );
+  });
+
+  it('ignores the wedge without a base extent to tilt over', () => {
+    const structure: AssemblyStructure = {
+      ...structureWith([]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 15, lowEdge: 'front' } },
+    };
+    expect(assemblyRiseMm(structure, 10)).toBe(10);
+  });
+
   it('stays consistent with assemblyHeightUnits', () => {
     const post = part('post', 'p', {}, {
       params: { diameter: 8, height: 40 },

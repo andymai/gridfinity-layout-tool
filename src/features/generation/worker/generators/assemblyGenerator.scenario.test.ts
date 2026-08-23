@@ -179,6 +179,107 @@ describe('assembly generator (real WASM)', () => {
     assertWatertight(result);
   });
 
+  it('a wedged base tilts the plate, fills beneath, and stays watertight', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const wedged: AssemblyStructure = {
+      ...structureWith([part('post', 'p', { x: 42, y: 21 })]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 10, lowEdge: 'front' } },
+    };
+    const flat = structureWith([part('post', 'p', { x: 42, y: 21 })]);
+    const wedgedResult = generateAssembly(wedged, makeEnvelope(2, 1), noop, true);
+    const flatResult = generateAssembly(flat, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(wedgedResult);
+    assertNoDegenerateTriangles(wedgedResult);
+    assertWatertight(wedgedResult);
+    // The filler prism under the tilted plate is new material.
+    expect(meshVolume(wedgedResult)).toBeGreaterThan(meshVolume(flatResult) + 1000);
+    const bounds = boundingBox(wedgedResult.vertices);
+    expect(bounds.minZ).toBeCloseTo(0, 1);
+    // The tilt lifts the center post's top past its flat height, but never
+    // past the conservative full-extent bound the placement math reserves.
+    const rad = (10 * Math.PI) / 180;
+    const flatTop = boundingBox(flatResult.vertices).maxZ;
+    expect(bounds.maxZ).toBeGreaterThan(flatTop + 1);
+    expect(bounds.maxZ).toBeLessThan(
+      SOCKET_HEIGHT + (flatTop - SOCKET_HEIGHT) * Math.cos(rad) + 41.5 * Math.sin(rad) + 0.5
+    );
+  });
+
+  it('a cutter follows the wedge so its hole stays under the placed part', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const drilled: AssemblyStructure = {
+      ...structureWith([
+        part(
+          'block',
+          'b',
+          { x: 42, y: 21 },
+          { children: [part('cutter', 'hole', { x: 0, y: 0 })] }
+        ),
+      ]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 12, lowEdge: 'left' } },
+    };
+    const solid: AssemblyStructure = {
+      ...structureWith([part('block', 'b', { x: 42, y: 21 })]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 12, lowEdge: 'left' } },
+    };
+    const carved = generateAssembly(drilled, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(carved);
+    assertWatertight(carved);
+    expect(meshVolume(carved)).toBeLessThan(
+      meshVolume(generateAssembly(solid, makeEnvelope(2, 1), noop, true)) - 200
+    );
+  });
+
+  it('a rim-placed part on a wedged base stays one connected solid', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const wedged: AssemblyStructure = {
+      ...structureWith([
+        part(
+          'post',
+          'rim',
+          { x: 0.5, y: 21 },
+          {
+            params: { diameter: 3, height: 20, taperDeg: 0, tipChamfer: 1 },
+          }
+        ),
+      ]),
+      base: {
+        ...DEFAULT_ASSEMBLY_STRUCTURE.base,
+        floorThickness: 4,
+        wedge: { angleDeg: 20, lowEdge: 'left' },
+      },
+    };
+    const result = generateAssembly(wedged, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(result);
+    assertWatertight(result);
+    // Union-find over welded mesh vertices: a floating part shows up as a
+    // second connected component even in a watertight mesh.
+    const { vertices, indices } = result;
+    const Q = 1e4;
+    const key = (i: number): string =>
+      `${Math.round(vertices[i * 3] * Q)},${Math.round(vertices[i * 3 + 1] * Q)},${Math.round(vertices[i * 3 + 2] * Q)}`;
+    const parent = new Map<string, string>();
+    const find = (a: string): string => {
+      let r = a;
+      while (parent.get(r) !== r) r = parent.get(r) as string;
+      return r;
+    };
+    const union = (a: string, b: string): void => {
+      if (!parent.has(a)) parent.set(a, a);
+      if (!parent.has(b)) parent.set(b, b);
+      const ra = find(a);
+      const rb = find(b);
+      if (ra !== rb) parent.set(ra, rb);
+    };
+    for (let i = 0; i < indices.length; i += 3) {
+      union(key(indices[i]), key(indices[i + 1]));
+      union(key(indices[i + 1]), key(indices[i + 2]));
+    }
+    const roots = new Set<string>();
+    for (const k of parent.keys()) roots.add(find(k));
+    expect(roots.size).toBe(1);
+  });
+
   it('a hole cutter removes volume from a block', async () => {
     const { generateAssembly } = await import('./assemblyGenerator');
     const solidBlock = structureWith([part('block', 'b', { x: 42, y: 21 })]);

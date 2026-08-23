@@ -373,6 +373,62 @@ export function WorkshopPanel() {
               </div>
               <div>
                 <span className="mb-1 block text-xs text-content-tertiary">
+                  {t('workshop.wedge.angle')}
+                </span>
+                <Stepper
+                  aria-label={t('workshop.wedge.angle')}
+                  value={assembly.base.wedge?.angleDeg ?? 0}
+                  onChange={(v) =>
+                    updateAssemblyBase({
+                      wedge:
+                        clamp(v, 0, 20) > 0
+                          ? {
+                              angleDeg: clamp(v, 0, 20),
+                              lowEdge: assembly.base.wedge?.lowEdge ?? 'front',
+                            }
+                          : undefined,
+                    })
+                  }
+                  onStep={(delta) => {
+                    const next = clamp((assembly.base.wedge?.angleDeg ?? 0) + delta, 0, 20);
+                    updateAssemblyBase({
+                      wedge:
+                        next > 0
+                          ? { angleDeg: next, lowEdge: assembly.base.wedge?.lowEdge ?? 'front' }
+                          : undefined,
+                    });
+                  }}
+                  min={0}
+                  max={20}
+                  step={1}
+                  size="md"
+                />
+              </div>
+              {assembly.base.wedge !== undefined && (
+                <div>
+                  <span className="mb-1 block text-xs text-content-tertiary">
+                    {t('workshop.wedge.lowEdge')}
+                  </span>
+                  <SegmentedControl
+                    aria-label={t('workshop.wedge.lowEdge')}
+                    value={assembly.base.wedge.lowEdge}
+                    onChange={(lowEdge) =>
+                      updateAssemblyBase({
+                        wedge: { angleDeg: assembly.base.wedge?.angleDeg ?? 8, lowEdge },
+                      })
+                    }
+                    options={[
+                      { value: 'front', label: t('workshop.edge.front') },
+                      { value: 'back', label: t('workshop.edge.back') },
+                      { value: 'left', label: t('workshop.edge.left') },
+                      { value: 'right', label: t('workshop.edge.right') },
+                    ]}
+                    size="sm"
+                  />
+                </div>
+              )}
+              <div>
+                <span className="mb-1 block text-xs text-content-tertiary">
                   {t('workshop.mirror.axis')}
                 </span>
                 <SegmentedControl

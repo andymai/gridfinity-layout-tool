@@ -57,7 +57,11 @@ export function designFootprint(design: SavedDesign): DesignFootprint {
           ? assemblyHeightUnits(
               structure,
               design.envelope.heightUnitMm,
-              GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness
+              GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness,
+              {
+                w: design.envelope.width * design.envelope.gridUnitMm,
+                d: design.envelope.depth * design.envelope.gridUnitMm,
+              }
             )
           : 0;
     return { width: design.envelope.width, depth: design.envelope.depth, height };

@@ -219,6 +219,13 @@ function treeDepth(nodes: readonly AssemblyPartNode[]): number {
 const baseSchema = z.object({
   floorThickness: z.number().min(1).max(10),
   cornerRadius: z.number().min(0).max(20).optional(),
+  /** Whole-build presentation wedge; the socket stays flat underneath. */
+  wedge: z
+    .object({
+      angleDeg: z.number().min(0).max(20),
+      lowEdge: z.enum(['front', 'back', 'left', 'right']),
+    })
+    .optional(),
 });
 
 export const assemblySchema: z.ZodType<AssemblyStructure> = z
@@ -290,6 +297,9 @@ export function clampAssemblyBase(base: AssemblyBase): AssemblyBase {
   return {
     floorThickness: clamp(base.floorThickness, 1, 10),
     ...(base.cornerRadius !== undefined ? { cornerRadius: clamp(base.cornerRadius, 0, 20) } : {}),
+    ...(base.wedge !== undefined && base.wedge.angleDeg > 0
+      ? { wedge: { angleDeg: clamp(base.wedge.angleDeg, 0, 20), lowEdge: base.wedge.lowEdge } }
+      : {}),
   };
 }
 

@@ -5,6 +5,7 @@
  */
 import { useEffect, useMemo, useRef } from 'react';
 import { ExtrudeGeometry, Shape } from 'three';
+import type { Vector3 } from 'three';
 import type { MeshStandardMaterial } from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
@@ -25,6 +26,8 @@ interface BasePlateMeshProps {
   onSurfaceMove: (surface: HoverSurface) => void;
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
+  /** World → flat placement frame (identity unless the base is wedged). */
+  sceneFromWorld?: (point: Vector3) => Vector3;
 }
 
 const FLASH_MS = 350;
@@ -37,6 +40,7 @@ export function BasePlateMesh({
   onSurfaceMove,
   onSurfaceLeave,
   onSurfaceClick,
+  sceneFromWorld,
 }: BasePlateMeshProps) {
   const colors = useThreeColors();
   const materialRef = useRef<MeshStandardMaterial>(null);
@@ -78,7 +82,13 @@ export function BasePlateMesh({
     invalidate();
   });
   const { w, d } = baseExtentMm(envelope);
-  const plateHeight = GRIDFINITY_SPEC.BASE_HEIGHT + base.floorThickness;
+  const wedged = base.wedge !== undefined && base.wedge.angleDeg > 0;
+  // Wedge mode: the socket and plinth render flat outside the tilt group
+  // (WedgeFillerMesh); this mesh becomes just the deck, whose silhouette
+  // stays full width (the worker insets only the deck's lower body).
+  const plateHeight = wedged
+    ? base.floorThickness
+    : GRIDFINITY_SPEC.SOCKET_HEIGHT + base.floorThickness;
   const cornerRadius = Math.min(base.cornerRadius ?? 4, w / 2, d / 2);
 
   const geometry = useMemo(() => {
@@ -101,12 +111,15 @@ export function BasePlateMesh({
 
   useEffect(() => () => geometry.dispose(), [geometry]);
 
-  const toSurface = (e: ThreeEvent<PointerEvent | MouseEvent>): HoverSurface => ({
-    parentId: null,
-    topZ: 0,
-    x: sceneToStore(e.point.x, w),
-    y: sceneToStore(e.point.y, d),
-  });
+  const toSurface = (e: ThreeEvent<PointerEvent | MouseEvent>): HoverSurface => {
+    const local = sceneFromWorld ? sceneFromWorld(e.point) : e.point;
+    return {
+      parentId: null,
+      topZ: 0,
+      x: sceneToStore(local.x, w),
+      y: sceneToStore(local.y, d),
+    };
+  };
 
   return (
     <mesh

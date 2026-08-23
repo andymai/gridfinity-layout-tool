@@ -287,7 +287,9 @@ export function createAssemblyActions(set: Set, get: Get) {
       const nextBase = clampAssemblyBase({ ...structure.base, ...partial });
       if (
         nextBase.floorThickness === structure.base.floorThickness &&
-        nextBase.cornerRadius === structure.base.cornerRadius
+        nextBase.cornerRadius === structure.base.cornerRadius &&
+        nextBase.wedge?.angleDeg === structure.base.wedge?.angleDeg &&
+        nextBase.wedge?.lowEdge === structure.base.wedge?.lowEdge
       ) {
         return;
       }
