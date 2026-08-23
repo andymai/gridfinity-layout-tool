@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Suporte de alicates",
   "workshop.template.screwdriverBlock": "Bloco de chaves de fenda",
   "workshop.tree.empty": "Nenhuma peça ainda. Escolha uma peça e clique na base para começar a montar.",
-  "workshop.tree.title": "Montagem"
+  "workshop.tree.title": "Montagem",
+  "workshop.warning.floating": "Flutua acima do assento",
+  "workshop.warning.outsideBase": "Ultrapassa a base",
+  "workshop.warning.overhang": "A saliência pode precisar de suportes",
+  "workshop.warning.socketBreach": "Corta o soquete",
+  "workshop.warning.unsupported": "Ultrapassa a peça de apoio"
 }

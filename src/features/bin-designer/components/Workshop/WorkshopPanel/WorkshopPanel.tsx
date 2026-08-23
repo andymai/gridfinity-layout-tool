@@ -3,9 +3,9 @@
  * click the canvas to place), the build tree, the selected part's inspector,
  * and the base/footprint controls.
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Button, SegmentedControl, Stepper } from '@/design-system';
+import { AlertTriangleIcon, Button, SegmentedControl, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
@@ -25,6 +25,8 @@ import {
   buildWorkshopTemplate,
   WORKSHOP_TEMPLATE_IDS,
 } from '@/features/bin-designer/utils/workshopTemplates';
+import { checkAssembly } from '@/features/bin-designer/utils/assemblyChecker';
+import type { AssemblyWarning } from '@/features/bin-designer/utils/assemblyChecker';
 import { StickyGroupHeader } from '../../panel/StickyGroupHeader';
 import { PanelSection } from '../../panel/PanelSection';
 import { PartInspector } from './PartInspector';
@@ -34,12 +36,14 @@ function TreeRows({
   nodes,
   depth,
   selectedId,
+  warned,
   onSelect,
   label,
 }: {
   nodes: readonly AssemblyPartNode[];
   depth: number;
   selectedId: string | null;
+  warned: ReadonlySet<string>;
   onSelect: (id: string) => void;
   label: (node: AssemblyPartNode) => string;
 }) {
@@ -56,11 +60,15 @@ function TreeRows({
           >
             {label(node)}
             {node.array ? ` ×${node.array.count}` : ''}
+            {warned.has(node.id) && (
+              <AlertTriangleIcon size="sm" className="ml-auto text-amber-500" />
+            )}
           </Button>
           <TreeRows
             nodes={node.children}
             depth={depth + 1}
             selectedId={selectedId}
+            warned={warned}
             onSelect={onSelect}
             label={label}
           />
@@ -90,6 +98,20 @@ export function WorkshopPanel() {
   const setAssemblyMirrorAxis = useDesignerStore((s) => s.setAssemblyMirrorAxis);
   const loadAssemblyTemplate = useDesignerStore((s) => s.loadAssemblyTemplate);
   const [exporting, setExporting] = useState(false);
+  const warnings = useMemo(
+    () => (structure?.kind === 'assembly' && envelope ? checkAssembly(structure, envelope) : []),
+    [structure, envelope]
+  );
+  const warningsByPart = useMemo(() => {
+    const map = new Map<string, AssemblyWarning[]>();
+    for (const warning of warnings) {
+      const list = map.get(warning.partId) ?? [];
+      list.push(warning);
+      map.set(warning.partId, list);
+    }
+    return map;
+  }, [warnings]);
+  const warnedIds = useMemo(() => new Set(warnings.map((w) => w.partId)), [warnings]);
 
   if (structure?.kind !== 'assembly' || !envelope) return null;
   const assembly: AssemblyStructure = structure;
@@ -245,6 +267,7 @@ export function WorkshopPanel() {
                 nodes={assembly.parts}
                 depth={0}
                 selectedId={selectedId}
+                warned={warnedIds}
                 onSelect={setSelectedAssemblyPartId}
                 label={(node) => t(PART_LABEL_KEYS[node.type])}
               />
@@ -259,6 +282,15 @@ export function WorkshopPanel() {
           expanded
           onExpandedChange={() => {}}
         >
+          {(warningsByPart.get(selectedNode.id) ?? []).map((warning) => (
+            <p
+              key={warning.kind}
+              className="flex items-center gap-2 px-4 pt-2 text-xs text-amber-500"
+            >
+              <AlertTriangleIcon size="sm" />
+              {t(`workshop.warning.${warning.kind}`)}
+            </p>
+          ))}
           <PartInspector node={selectedNode} />
         </StickyGroupHeader>
       )}

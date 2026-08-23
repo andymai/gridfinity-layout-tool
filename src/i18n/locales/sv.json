@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Tångställ",
   "workshop.template.screwdriverBlock": "Skruvmejselblock",
   "workshop.tree.empty": "Inga delar ännu. Välj en del och klicka på basen för att börja bygga.",
-  "workshop.tree.title": "Bygge"
+  "workshop.tree.title": "Bygge",
+  "workshop.warning.floating": "Svävar ovanför sätet",
+  "workshop.warning.outsideBase": "Sticker utanför basen",
+  "workshop.warning.overhang": "Överhänget kan behöva stöd",
+  "workshop.warning.socketBreach": "Skär in i sockeln",
+  "workshop.warning.unsupported": "Hänger utanför sin bärare"
 }

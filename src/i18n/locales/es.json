@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Soporte de alicates",
   "workshop.template.screwdriverBlock": "Bloque de destornilladores",
   "workshop.tree.empty": "Aún no hay piezas. Elige una pieza y haz clic en la base para empezar a construir.",
-  "workshop.tree.title": "Montaje"
+  "workshop.tree.title": "Montaje",
+  "workshop.warning.floating": "Flota sobre su asiento",
+  "workshop.warning.outsideBase": "Sobresale de la base",
+  "workshop.warning.overhang": "El voladizo puede necesitar soportes",
+  "workshop.warning.socketBreach": "Corta el zócalo",
+  "workshop.warning.unsupported": "Sobresale de su pieza base"
 }

@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Tangstativ",
   "workshop.template.screwdriverBlock": "Skrutrekkerblokk",
   "workshop.tree.empty": "Ingen deler ennå. Velg en del og klikk på basen for å begynne å bygge.",
-  "workshop.tree.title": "Oppbygning"
+  "workshop.tree.title": "Oppbygning",
+  "workshop.warning.floating": "Svever over setet",
+  "workshop.warning.outsideBase": "Går utenfor basen",
+  "workshop.warning.overhang": "Overhenget kan trenge støtter",
+  "workshop.warning.socketBreach": "Skjærer inn i sokkelen",
+  "workshop.warning.unsupported": "Henger utenfor forelderen"
 }

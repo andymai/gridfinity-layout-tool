@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "플라이어 랙",
   "workshop.template.screwdriverBlock": "드라이버 블록",
   "workshop.tree.empty": "아직 부품이 없습니다. 부품을 고르고 베이스를 클릭해 조립을 시작하세요.",
-  "workshop.tree.title": "조립"
+  "workshop.tree.title": "조립",
+  "workshop.warning.floating": "안착면 위에 떠 있음",
+  "workshop.warning.outsideBase": "베이스 밖으로 벗어남",
+  "workshop.warning.overhang": "오버행에 서포트가 필요할 수 있음",
+  "workshop.warning.socketBreach": "소켓까지 절단됨",
+  "workshop.warning.unsupported": "부모 부품 밖으로 벗어남"
 }

@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Stojan na kleště",
   "workshop.template.screwdriverBlock": "Blok na šroubováky",
   "workshop.tree.empty": "Zatím žádné díly. Vyberte díl a kliknutím na základnu začněte stavět.",
-  "workshop.tree.title": "Sestava"
+  "workshop.tree.title": "Sestava",
+  "workshop.warning.floating": "Vznáší se nad usazením",
+  "workshop.warning.outsideBase": "Přesahuje základnu",
+  "workshop.warning.overhang": "Převis může vyžadovat podpěry",
+  "workshop.warning.socketBreach": "Zasahuje do patky",
+  "workshop.warning.unsupported": "Přesahuje přes rodičovský díl"
 }
