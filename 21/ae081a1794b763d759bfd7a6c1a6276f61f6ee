@@ -1,0 +1,114 @@
+src/i18n/locales/en.ts
+  s_099dfca49934d3::t_5313431d5d470d 2765-2767
+public/schema/bin-design.schema.json
+  s_099dfca49934d3::t_06d1858cdf508c 701-709
+api/lib/designerValidation.test.ts
+  s_099dfca49934d3::t_70de62c62d9bfe 1520-1539
+src/shared/utils/fitTestPlan.test.ts
+  s_099dfca49934d3::t_c8f24ae1518715 156-179
+src/shared/schema/binContentKeys.ts
+  s_099dfca49934d3::t_d7ab25c37acf3f 188
+src/features/bin-designer/types/index.ts
+  s_099dfca49934d3::t_4fd3b455779bc2 246-248
+src/i18n/locales/sv.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/features/bin-designer/types/cutout.ts
+  s_099dfca49934d3::t_50faf355107769 152-155,158
+  s_099dfca49934d3::t_e93aa30b0b4842 429-438
+  s_099dfca49934d3::t_8304983970e207 130-151,156-157,159-161
+  s_099dfca49934d3::t_15b616a2075690 428
+src/features/generation/worker/generators/scenarios/cutoutLean.ts
+  s_099dfca49934d3::t_b2dbe9c0f044f6 1-12,17,24-67,69-122,124-156,168-185,190-202,204-207,209-224
+  s_099dfca49934d3::t_07ebe30b80dafd 186-189
+  s_099dfca49934d3::t_96205474dc388e 157-167
+  s_099dfca49934d3::t_ae756b6efc4e3d 13-16,18-23
+  s_099dfca49934d3::t_0e9b9747a3f0a7 68
+  s_099dfca49934d3::t_7078941c42e28c 123
+  s_099dfca49934d3::t_9380db46929c60 203
+  s_099dfca49934d3::t_bb13da4234b89c 208
+src/i18n/locales/de.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/i18n/locales/pt-BR.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/features/generation/worker/generators/binGenerator.scenario.cutoutLean.test.ts
+  s_099dfca49934d3::t_737bac916abb52 1-5
+src/i18n/locales/cs.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+docs/schemas/bin-design.md
+  s_099dfca49934d3::t_2a07241ece23a0 480
+src/shared/types/bin.ts
+  s_099dfca49934d3::t_b78ca24c2f5c84 268-270
+src/i18n/locales/ja.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/i18n/locales/nl.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/i18n/locales/ko.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/i18n/locales/pl.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/i18n/locales/fr.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/features/generation/worker/generators/scenarios/index.ts
+  s_099dfca49934d3::t_5b8a02a3b9e1a5 53
+  s_099dfca49934d3::t_290be87d3aa3e4 107
+src/features/bin-designer/types/cutout.test.ts
+  s_099dfca49934d3::t_40e34a61ee9050 1-25
+src/i18n/locales/es.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+docs/schemas/constraints.md
+  s_099dfca49934d3::t_2a07241ece23a0 142
+src/i18n/locales/nb.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/i18n/locales/zh-CN.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+scripts/schema/bounds.test.ts
+  s_099dfca49934d3::t_9056aa6a980147 60,151
+src/i18n/locales/it.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+api/lib/designerValidationConstants.ts
+  s_099dfca49934d3::t_ef15ada421bf62 31-34
+src/features/generation/worker/generators/binGenerator.export.cutoutLean.test.ts
+  s_099dfca49934d3::t_47e5dee5db8cdd 1-5
+api/lib/designerValidation.ts
+  s_099dfca49934d3::t_9591eb47820507 1414-1425
+src/features/generation/worker/generators/lidCutoutBuilder.ts
+  s_099dfca49934d3::t_88736fc53b77a7 75-77
+  s_099dfca49934d3::t_552e578806fea2 83
+src/shared/utils/fitTestPlan.ts
+  s_099dfca49934d3::t_56fe8e41f9601a 161-171
+  s_099dfca49934d3::t_1397c7a6b6c61f 18-23
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_099dfca49934d3::t_6ea3865287194b 233-251
+  s_099dfca49934d3::t_7e81f0c61f7c9e 16-17
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_099dfca49934d3::t_5cd28d217f042f 478-479,491-495
+  s_099dfca49934d3::t_6444430837e28d 47
+  s_099dfca49934d3::t_1061e76725dcc2 251
+  s_099dfca49934d3::t_ab010fbae623b0 738-739
+  s_099dfca49934d3::t_0c6f5d0436bded 279-285,291,304,317-318,327,331,339,343,346-347,358,360-361
+  s_099dfca49934d3::t_a12828dd23b276 165-190,198-201,211,224-232
+  s_099dfca49934d3::t_2600b6a83d1df8 990-991
+  s_099dfca49934d3::t_39bd87f268b7e6 382,388
+  s_099dfca49934d3::t_dfc4c936447f57 1190-1194
+  s_099dfca49934d3::t_616d4d3f7d423b 389
+src/i18n/locales/uk.json
+  s_099dfca49934d3::t_d89b0e9af67afc 734-735
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.cutoutLean.test.ts.snap
+  s_099dfca49934d3::t_b45d32a3e66436 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "21ae081a1794b763d759bfd7a6c1a6276f61f6ee",
+  "prompts": {},
+  "sessions": {
+    "s_099dfca49934d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a089f407-f1ae-461b-8c4f-dca6891327a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
