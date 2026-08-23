@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "Este layout ainda não tem compartimentos. Desenhe um na grade para começar.",
   "layoutExport.noLinkedBins": "Nenhum compartimento aqui está vinculado a um design salvo ainda, então não há geometria para exportar. Abra um compartimento e escolha um design para vinculá-lo.",
   "layoutExport.nothingToExport": "Não foi possível exportar nada.",
+  "layoutExport.itemsFailed.one": "Um design de suporte não pôde ser exportado e ficou de fora do arquivo.",
+  "layoutExport.itemsFailed.other": "{count} designs de suporte não puderam ser exportados e ficaram de fora do arquivo.",
   "layoutExport.progress.baseplate": "Exportando placa base ({current}/{total})",
   "layoutExport.progress.bins": "Exportando compartimentos ({current}/{total})",
   "layoutExport.progress.labels": "Exportando placas de rótulo ({current}/{total})",

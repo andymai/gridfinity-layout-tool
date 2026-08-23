@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "Cette disposition ne contient pas encore de bacs. Dessinez-en un sur la grille pour commencer.",
   "layoutExport.noLinkedBins": "Aucun bac n'est encore lié à un modèle enregistré, il n'y a donc aucune géométrie à exporter. Ouvrez un bac et choisissez un modèle pour le lier.",
   "layoutExport.nothingToExport": "Rien n'a pu être exporté.",
+  "layoutExport.itemsFailed.one": "Un modèle de support n'a pas pu être exporté et a été exclu de l'archive.",
+  "layoutExport.itemsFailed.other": "{count} modèles de support n'ont pas pu être exportés et ont été exclus de l'archive.",
   "layoutExport.progress.baseplate": "Exportation de la plaque de base ({current}/{total})",
   "layoutExport.progress.bins": "Exportation des bacs ({current}/{total})",
   "layoutExport.progress.labels": "Export des plaques d'étiquette ({current}/{total})",

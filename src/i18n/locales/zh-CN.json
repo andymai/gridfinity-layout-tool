@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "此布局还没有收纳盒。在网格上画一个即可开始。",
   "layoutExport.noLinkedBins": "这里还没有收纳盒关联到已保存的设计，因此没有可导出的几何体。打开一个收纳盒并选择设计来关联它。",
   "layoutExport.nothingToExport": "没有可导出的内容。",
+  "layoutExport.itemsFailed.one": "1 个支架设计导出失败，已从压缩包中移除。",
+  "layoutExport.itemsFailed.other": "{count} 个支架设计导出失败，已从压缩包中移除。",
   "layoutExport.progress.baseplate": "正在导出底板（{current}/{total}）",
   "layoutExport.progress.bins": "正在导出收纳盒（{current}/{total}）",
   "layoutExport.progress.labels": "正在导出标签板（{current}/{total}）",

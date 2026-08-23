@@ -380,6 +380,10 @@ const en: Record<string, string> = {
   'layoutExport.noBins': 'This layout has no bins yet. Draw one on the grid to get started.',
   'layoutExport.engineNotReady': 'The 3D engine is still loading. Try again in a moment.',
   'layoutExport.nothingToExport': 'Nothing could be exported.',
+  'layoutExport.itemsFailed.one':
+    'One holder design failed to export and was left out of the archive.',
+  'layoutExport.itemsFailed.other':
+    '{count} holder designs failed to export and were left out of the archive.',
   'layoutExport.baseplateOnly': 'Exported the baseplate only — no bin designs could be loaded.',
   'layoutExport.binsOnly': 'Exported bins — the baseplate could not be generated.',
   'layoutExport.baseplateOverBed':

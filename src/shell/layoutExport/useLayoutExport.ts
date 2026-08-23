@@ -382,6 +382,28 @@ export function useLayoutExport(): UseLayoutExportReturn {
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
+        if (failedItemPaths.size > 0) {
+          useToastStore
+            .getState()
+            .addToast(
+              failedItemPaths.size === 1
+                ? t('layoutExport.itemsFailed.one')
+                : t('layoutExport.itemsFailed.other', { count: failedItemPaths.size }),
+              'error'
+            );
+        }
+
+        // Estimates for parts that failed above must not survive into the
+        // manifest totals or the 3MF print settings.
+        const adjustedTotals = plan.manifestBins
+          .filter((b) => failedItemPaths.has(b.path))
+          .reduce(
+            (acc, b) => ({
+              filamentGrams: acc.filamentGrams - b.filamentGrams * b.quantity,
+              printTimeMinutes: acc.printTimeMinutes - b.printTimeMinutes * b.quantity,
+            }),
+            { ...plan.totals }
+          );
 
         // Phase 1.7 — swappable label plates for socket-mode designs:
         // per-design bed-sized sheets in labels/. A plate failure must not
@@ -523,8 +545,10 @@ export function useLayoutExport(): UseLayoutExportReturn {
         });
 
         // Nothing usable — don't ship an empty archive. Meshes and assemblies
-        // count: a layout of only those still has bin files worth shipping.
-        if (binTotal === 0 && !bp) {
+        // count: a layout of only those still has bin files worth shipping,
+        // minus any item exports that failed above.
+        const shippedParts = binTotal - failedItemPaths.size;
+        if (shippedParts === 0 && !bp) {
           useToastStore.getState().addToast(t('layoutExport.nothingToExport'), 'error');
           return false;
         }
@@ -568,8 +592,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
               bedWidthMm: layout.printBedSize,
               bedDepthMm: layout.printBedDepth ?? layout.printBedSize,
               printSettings: buildThreeMFPrintSettings(printSettings, {
-                printTimeMinutes: plan.totals.printTimeMinutes,
-                gramsFilament: plan.totals.filamentGrams,
+                printTimeMinutes: adjustedTotals.printTimeMinutes,
+                gramsFilament: adjustedTotals.filamentGrams,
               }),
             });
             if (project) {
@@ -613,7 +637,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
                 }
               : null,
           skipped: plan.skipped,
-          totals: plan.totals,
+          totals: adjustedTotals,
         });
 
         const textFiles: ZipTextFile[] = [{ name: 'manifest.txt', content: manifest }];
@@ -628,7 +652,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         // Report what actually made it into the archive.
         const addToast = useToastStore.getState().addToast;
-        if (binTotal === 0) {
+        if (shippedParts === 0) {
           addToast(t('layoutExport.baseplateOnly'), 'info');
         } else if (!bp) {
           addToast(

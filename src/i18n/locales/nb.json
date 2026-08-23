@@ -3279,6 +3279,8 @@
   "layoutExport.noBins": "Dette oppsettet har ingen binger ennå. Tegn en i rutenettet for å komme i gang.",
   "layoutExport.noLinkedBins": "Ingen binger her er koblet til et lagret design ennå, så det finnes ingen geometri å eksportere. Åpne en binge og velg et design å koble den til.",
   "layoutExport.nothingToExport": "Ingenting kunne eksporteres.",
+  "layoutExport.itemsFailed.one": "Én holderdesign kunne ikke eksporteres og ble utelatt fra arkivet.",
+  "layoutExport.itemsFailed.other": "{count} holderdesign kunne ikke eksporteres og ble utelatt fra arkivet.",
   "layoutExport.progress.baseplate": "Eksporterer bunnplate ({current}/{total})",
   "layoutExport.progress.bins": "Eksporterer binger ({current}/{total})",
   "layoutExport.progress.labels": "Eksporterer etikettplater ({current}/{total})",

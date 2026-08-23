@@ -89,7 +89,7 @@ export interface LayoutMeshExportable {
  *  export path (envelope + structure), one file per design. */
 export interface LayoutItemExportable {
   readonly item: GridfinityItem;
-  /** ZIP path, e.g. `bins/workshop_2x2.stl`. */
+  /** ZIP path in the chosen format, e.g. `bins/workshop_2x2.stl` or `.step`. */
   readonly path: string;
   readonly quantity: number;
   readonly designName: string;
