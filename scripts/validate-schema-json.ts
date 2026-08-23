@@ -17,6 +17,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { validateImport } from '../src/shared/utils/validation.ts';
+import { hasOversizedMeshAsset } from '../src/shared/generation/meshAsset.ts';
 import { validateImportedBinParams } from '../src/features/bin-designer/utils/designJson.ts';
 import type { DocumentFormat } from './schema/loadSchemas.ts';
 import { createValidators, detectFormat, formatErrors } from './schema/loadSchemas.ts';
@@ -86,16 +87,18 @@ function validateFile(file: string): Report {
     const result = validateImport(doc);
     if (!result.valid) importerErrors.push(...result.errors);
 
-    // `restoreEmbeddedDesigns` needs a design store, which does not exist
-    // outside the app, so embedded designs are checked against the schema here
-    // instead of being skipped.
+    // The schema leg already validates every embedded design against BinParams
+    // via the layout schema's $ref, so re-checking it here would report the same
+    // error twice and file the second copy under the wrong leg. What the schema
+    // cannot express is the asset budget: `restoreEmbeddedDesigns` silently
+    // DROPS a design whose mesh assets are oversized, so a file that imports
+    // "successfully" can arrive with bins pointing at nothing.
     const linked = (doc as { linkedDesigns?: unknown }).linkedDesigns;
     if (Array.isArray(linked)) {
       linked.forEach((entry, i) => {
-        const params = (entry as { params?: unknown }).params;
-        if (!validators.binParams(params)) {
+        if (hasOversizedMeshAsset((entry as { params?: unknown }).params)) {
           importerErrors.push(
-            ...formatErrors(validators.binParams.errors).map((e) => `linkedDesigns[${i}] ${e}`)
+            `linkedDesigns[${i}] exceeds the mesh asset budget and would be dropped on import`
           );
         }
       });
