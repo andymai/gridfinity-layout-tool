@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.448.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.447.0...gridfinity-layout-tool-v4.448.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** tap-to-place touch adaptation ([#3737](https://github.com/andymai/gridfinity-layout-tool/issues/3737)) ([24d055b](https://github.com/andymai/gridfinity-layout-tool/commit/24d055b8c6e91fcd0dbc0439303b72f22dac18eb))
+
 ## [4.447.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.446.0...gridfinity-layout-tool-v4.447.0) (2026-08-23)
 
 
