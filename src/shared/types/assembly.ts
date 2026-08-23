@@ -21,6 +21,8 @@ export const ASSEMBLY_PART_TYPES = [
   'cradle',
   'hook',
   'arch',
+  'comb',
+  'riser',
   'cutter',
 ] as const;
 
@@ -122,6 +124,26 @@ export interface ArchParams {
   readonly depth: number;
 }
 
+export interface CombParams {
+  /** Run of the bar along its local X, slots cut across the depth. */
+  readonly width: number;
+  readonly depth: number;
+  readonly height: number;
+  readonly slotCount: number;
+  readonly slotWidth: number;
+  /** Slot opening depth, measured down from the top face. */
+  readonly slotDepth: number;
+}
+
+export interface RiserParams {
+  /** Run of the steps along its local X. */
+  readonly width: number;
+  readonly stepCount: number;
+  /** Tread depth per step along local Y; the lowest step is at the front. */
+  readonly stepDepth: number;
+  readonly stepHeight: number;
+}
+
 /**
  * 2D profile a cutter sweeps downward. Deliberately the cutout editor's
  * vocabulary — a scanned tool outline or library cutout drops in as-is.
@@ -188,13 +210,30 @@ export interface ArchNode extends PartNodeBase {
   readonly type: 'arch';
   readonly params: ArchParams;
 }
+export interface CombNode extends PartNodeBase {
+  readonly type: 'comb';
+  readonly params: CombParams;
+}
+export interface RiserNode extends PartNodeBase {
+  readonly type: 'riser';
+  readonly params: RiserParams;
+}
 export interface CutterNode extends PartNodeBase {
   readonly type: 'cutter';
   readonly params: CutterParams;
 }
 
 export type AssemblyPartNode =
-  PostNode | FinNode | BlockNode | TubeNode | CradleNode | HookNode | ArchNode | CutterNode;
+  | PostNode
+  | FinNode
+  | BlockNode
+  | TubeNode
+  | CradleNode
+  | HookNode
+  | ArchNode
+  | CombNode
+  | RiserNode
+  | CutterNode;
 
 export type AssemblyPartParams = AssemblyPartNode['params'];
 
@@ -206,6 +245,8 @@ export interface AssemblyPartParamsByType {
   readonly cradle: CradleParams;
   readonly hook: HookParams;
   readonly arch: ArchParams;
+  readonly comb: CombParams;
+  readonly riser: RiserParams;
   readonly cutter: CutterParams;
 }
 

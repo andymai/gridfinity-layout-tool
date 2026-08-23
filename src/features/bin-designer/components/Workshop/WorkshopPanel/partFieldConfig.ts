@@ -83,6 +83,20 @@ export const PART_NUMBER_FIELDS: Record<AssemblyPartType, readonly PartNumberFie
     },
     { key: 'depth', labelKey: 'workshop.field.depth', min: 4, max: 60, step: 1 },
   ],
+  comb: [
+    { key: 'width', labelKey: 'workshop.field.width', min: 10, max: 300, step: 1 },
+    { key: 'depth', labelKey: 'workshop.field.depth', min: 4, max: 80, step: 1 },
+    { key: 'height', labelKey: 'workshop.field.height', min: 5, max: 120, step: 1 },
+    { key: 'slotCount', labelKey: 'workshop.field.slotCount', min: 1, max: 15, step: 1 },
+    { key: 'slotWidth', labelKey: 'workshop.field.slotWidth', min: 1, max: 60, step: 0.5 },
+    { key: 'slotDepth', labelKey: 'workshop.field.slotDepth', min: 1, max: 110, step: 1 },
+  ],
+  riser: [
+    { key: 'width', labelKey: 'workshop.field.width', min: 10, max: 300, step: 1 },
+    { key: 'stepCount', labelKey: 'workshop.field.stepCount', min: 2, max: 6, step: 1 },
+    { key: 'stepDepth', labelKey: 'workshop.field.stepDepth', min: 5, max: 80, step: 1 },
+    { key: 'stepHeight', labelKey: 'workshop.field.stepHeight', min: 2, max: 60, step: 1 },
+  ],
   cutter: [
     { key: 'depth', labelKey: 'workshop.field.cutDepth', min: 0.5, max: 200, step: 0.5 },
     { key: 'clearance', labelKey: 'workshop.field.clearance', min: 0, max: 5, step: 0.1 },
@@ -98,5 +112,7 @@ export const PART_LABEL_KEYS: Record<AssemblyPartType, string> = {
   cradle: 'workshop.part.cradle',
   hook: 'workshop.part.hook',
   arch: 'workshop.part.arch',
+  comb: 'workshop.part.comb',
+  riser: 'workshop.part.riser',
   cutter: 'workshop.part.cutter',
 };

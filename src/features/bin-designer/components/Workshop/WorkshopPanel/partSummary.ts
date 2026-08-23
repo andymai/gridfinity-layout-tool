@@ -26,6 +26,10 @@ export function partSummary(node: AssemblyPartNode): string {
       return `${fmt(node.params.reach)}×${fmt(node.params.stemHeight)}`;
     case 'arch':
       return `${fmt(node.params.span)}×${fmt(node.params.height)}`;
+    case 'comb':
+      return `${fmt(node.params.width)}mm ${node.params.slotCount}×${fmt(node.params.slotWidth)}`;
+    case 'riser':
+      return `${node.params.stepCount}×${fmt(node.params.stepHeight)}mm`;
     case 'cutter': {
       const profile = node.params.profile;
       if (profile.shape === 'circle' || profile.shape === 'polygon') {

@@ -19,7 +19,18 @@ const MAX_ASSEMBLY_DEPTH = 8;
 const MAX_PATH_POINTS = 2000;
 const MAX_OUTLINE_POINTS = 5000;
 
-const PART_TYPES = new Set(['post', 'fin', 'block', 'tube', 'cradle', 'hook', 'arch', 'cutter']);
+const PART_TYPES = new Set([
+  'post',
+  'fin',
+  'block',
+  'tube',
+  'cradle',
+  'hook',
+  'arch',
+  'comb',
+  'riser',
+  'cutter',
+]);
 
 export type AssemblyValidationResult =
   { valid: true } | { valid: false; error: { code: 'INVALID_PARAMS'; message: string } };
@@ -173,6 +184,22 @@ function validParams(type: string, params: unknown): boolean {
         num(params.uprightThickness, 2, 30) &&
         num(params.depth, 4, 60)
       );
+    case 'comb':
+      return (
+        num(params.width, 10, 300) &&
+        num(params.depth, 4, 80) &&
+        num(params.height, 5, 120) &&
+        num(params.slotCount, 1, 15) &&
+        num(params.slotWidth, 1, 60) &&
+        num(params.slotDepth, 1, 110)
+      );
+    case 'riser':
+      return (
+        num(params.width, 10, 300) &&
+        num(params.stepCount, 2, 6) &&
+        num(params.stepDepth, 5, 80) &&
+        num(params.stepHeight, 2, 60)
+      );
     case 'cutter':
       return (
         validProfile(params.profile) &&
@@ -279,6 +306,8 @@ const PART_PARAM_KEYS: Record<string, readonly string[]> = {
   cradle: ['length', 'width', 'height', 'grooveStyle', 'grooveWidth', 'grooveDepth', 'tiltDeg'],
   hook: ['stemHeight', 'reach', 'lipHeight', 'thickness', 'width'],
   arch: ['span', 'height', 'style', 'rodDiameter', 'bridgeWidth', 'uprightThickness', 'depth'],
+  comb: ['width', 'depth', 'height', 'slotCount', 'slotWidth', 'slotDepth'],
+  riser: ['width', 'stepCount', 'stepDepth', 'stepHeight'],
   cutter: ['profile', 'depth', 'clearance', 'chamfer'],
 };
 
@@ -343,6 +372,9 @@ function seatHeightMm(type: string, params: Record<string, unknown>): number {
   if (type === 'hook') {
     const stem = params.stemHeight as number;
     return Math.max(stem, stem - (params.thickness as number) + (params.lipHeight as number));
+  }
+  if (type === 'riser') {
+    return (params.stepCount as number) * (params.stepHeight as number);
   }
   return (params.height as number) ?? 0;
 }
