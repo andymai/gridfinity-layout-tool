@@ -7,14 +7,16 @@ import { FootprintGrid } from '@/features/bin-designer/components/preview/Footpr
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope } from '@/shared/types/item';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { AlignmentGuides } from './AlignmentGuides';
 import { BasePlateMesh } from './BasePlateMesh';
 import { MoveHandle3D } from './MoveHandle3D';
+import { RotationGizmo3D } from './RotationGizmo3D';
 import { PartProxyMesh } from './PartProxyMesh';
 import { PlacementGhost } from './PlacementGhost';
 import { WorkshopSharpMesh } from './WorkshopSharpMesh';
 import { useWorkshopSharpen } from './useWorkshopSharpen';
 import { diffNewPartIds } from './hologramTracker';
-import { baseExtentMm, sceneToStore } from './workshopPlacement';
+import { baseExtentMm, ROTATION_RING_LIFT_MM, sceneToStore } from './workshopPlacement';
 import { useWorkshopInteraction, type HoverSurface } from './useWorkshopInteraction';
 
 interface WorkshopSceneProps {
@@ -30,7 +32,7 @@ export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: Workshop
   const { w, d } = extent;
   const cameraDistance = Math.max(w, d) * 1.4 + 80;
   const sharp = useWorkshopSharpen();
-  const showSharp = sharp && interaction.draggingId === null;
+  const showSharp = sharp && interaction.draggingId === null && interaction.rotatingId === null;
 
   const knownIdsRef = useRef<ReadonlySet<string> | null>(null);
   const [holograms, setHolograms] = useState<Map<string, number>>(new Map());
@@ -88,7 +90,8 @@ export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: Workshop
           baseD={d}
           selected={interaction.selectedId === placed.selectId}
           raycastDisabled={
-            interaction.draggingId !== null && interaction.isInDraggedSubtree(placed.selectId)
+            (interaction.draggingId !== null && interaction.isInDraggedSubtree(placed.selectId)) ||
+            interaction.rotatingId !== null
           }
           hidden={showSharp}
           mirrorAxis={structure.mirrorAxis}
@@ -112,6 +115,43 @@ export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: Workshop
       {interaction.draggingId !== null && (
         <DragCatchPlane baseW={w} baseD={d} onSurfaceMove={interaction.onSurfaceMove} />
       )}
+      {interaction.draggingId !== null &&
+        interaction.alignGuides !== null &&
+        (() => {
+          const guides = interaction.alignGuides;
+          const parent =
+            guides.parentId === null ? null : (interaction.placedById.get(guides.parentId) ?? null);
+          return guides.parentId !== null && parent === null ? null : (
+            <AlignmentGuides guides={guides} parent={parent} baseW={w} baseD={d} />
+          );
+        })()}
+      {interaction.selectedId !== null &&
+        interaction.draggingId === null &&
+        interaction.pendingType === null &&
+        (() => {
+          const selectedPlaced = interaction.placedById.get(interaction.selectedId);
+          return selectedPlaced ? (
+            <RotationGizmo3D
+              placed={selectedPlaced}
+              baseW={w}
+              baseD={d}
+              active={interaction.rotatingId !== null}
+              onBeginRotate={interaction.beginPartRotate}
+            />
+          ) : null;
+        })()}
+      {interaction.rotatingId !== null &&
+        (() => {
+          const rotating = interaction.placedById.get(interaction.rotatingId);
+          return (
+            <RotationCatchPlane
+              baseW={w}
+              baseD={d}
+              z={(rotating ? rotating.topZ : 0) + ROTATION_RING_LIFT_MM}
+              onRotateMove={interaction.onRotateMove}
+            />
+          );
+        })()}
       {interaction.selectedViaTouch &&
         interaction.selectedId !== null &&
         interaction.draggingId === null &&
@@ -137,6 +177,38 @@ export function WorkshopScene({ structure, envelope, missFlashAt = 0 }: Workshop
         target={[0, 0, 15]}
       />
     </>
+  );
+}
+
+/**
+ * While the gizmo is grabbed, every pointer move must resolve to a world
+ * point on the ring's plane regardless of what is underneath — same trick
+ * as DragCatchPlane, at the ring's height so the angle has no parallax.
+ */
+function RotationCatchPlane({
+  baseW,
+  baseD,
+  z,
+  onRotateMove,
+}: {
+  baseW: number;
+  baseD: number;
+  z: number;
+  onRotateMove: (world: { x: number; y: number }) => void;
+}) {
+  return (
+    <mesh
+      position={[0, 0, z]}
+      onPointerMove={(e) => {
+        onRotateMove({
+          x: sceneToStore(e.point.x, baseW),
+          y: sceneToStore(e.point.y, baseD),
+        });
+      }}
+    >
+      <planeGeometry args={[baseW * 6, baseD * 6]} />
+      <meshBasicMaterial visible={false} />
+    </mesh>
   );
 }
 

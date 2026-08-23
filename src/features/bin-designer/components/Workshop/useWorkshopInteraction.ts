@@ -12,8 +12,10 @@ import type { AssemblyStructure } from '@/shared/types/assembly';
 import { collectAssemblyIds, findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 import { defaultCutterProfile } from '@/shared/items/assembly/descriptor';
 import {
+  alignSnap,
   parentLocalToWorld,
   resolvePlacedParts,
+  snapAngleDeg,
   snapCoord,
   worldToParentLocal,
   type PlacedPart,
@@ -25,6 +27,13 @@ export interface HoverSurface {
   /** Pointer position in the store frame (mm). */
   readonly x: number;
   readonly y: number;
+}
+
+export interface AlignGuides {
+  /** Aligned local coordinates in the target parent's frame; null axis = no guide. */
+  readonly x: number | null;
+  readonly y: number | null;
+  readonly parentId: string | null;
 }
 
 export interface WorkshopInteraction {
@@ -39,6 +48,8 @@ export interface WorkshopInteraction {
   readonly hover: HoverSurface | null;
   readonly ghostPosition: { x: number; y: number; z: number; rotZDeg: number } | null;
   readonly draggingId: string | null;
+  readonly rotatingId: string | null;
+  readonly alignGuides: AlignGuides | null;
   readonly selectedId: string | null;
   readonly pendingType: ReturnType<typeof usePendingType>;
   readonly pendingCutterShape: 'circle' | 'slot' | null;
@@ -47,6 +58,8 @@ export interface WorkshopInteraction {
   onSurfaceClick: (surface: HoverSurface) => void;
   onPartPointerDown: (id: string, pointerType: string) => void;
   beginPartDrag: (id: string) => void;
+  beginPartRotate: (id: string, world: { x: number; y: number }) => void;
+  onRotateMove: (world: { x: number; y: number }) => void;
   isInDraggedSubtree: (id: string) => boolean;
 }
 
@@ -82,6 +95,15 @@ export function useWorkshopInteraction(
   // deselect what was just selected — swallow exactly that one click.
   const skipNextBaseClickRef = useRef(false);
   const [fineSnap, setFineSnap] = useState(false);
+  const [rotatingId, setRotatingId] = useState<string | null>(null);
+  const [alignGuides, setAlignGuides] = useState<AlignGuides | null>(null);
+  const rotateStateRef = useRef<{
+    id: string;
+    centerX: number;
+    centerY: number;
+    parentWorldDeg: number;
+    grabOffsetDeg: number;
+  } | null>(null);
 
   const placements = useMemo(
     () => resolvePlacedParts(structure, baseExtent),
@@ -122,12 +144,15 @@ export function useWorkshopInteraction(
     const controls = getThree().controls as { enabled: boolean } | null;
     if (controls) controls.enabled = true;
     setDraggingId(null);
+    setRotatingId(null);
+    setAlignGuides(null);
+    rotateStateRef.current = null;
     draggedSubtreeRef.current = new Set();
     invalidate();
   }, [getThree, invalidate]);
 
   useEffect(() => {
-    if (draggingId === null) return;
+    if (draggingId === null && rotatingId === null) return;
     window.addEventListener('pointerup', endDrag);
     // A cancelled touch (edge swipe, notification shade, palm rejection)
     // fires pointercancel, never pointerup — without this the drag wedges
@@ -137,7 +162,7 @@ export function useWorkshopInteraction(
       window.removeEventListener('pointerup', endDrag);
       window.removeEventListener('pointercancel', endDrag);
     };
-  }, [draggingId, endDrag]);
+  }, [draggingId, rotatingId, endDrag]);
 
   const snapPoint = useCallback(
     (surface: HoverSurface): { x: number; y: number } => {
@@ -159,17 +184,43 @@ export function useWorkshopInteraction(
         const node = findAssemblyPart(currentStructure.parts, draggingId);
         if (!node) return;
         const currentParent = resolveParentId(currentStructure, draggingId);
-        const local = snapPoint(surface);
+        const parent =
+          surface.parentId === null ? null : (placedById.get(surface.parentId) ?? null);
+        const rawLocal = worldToParentLocal({ x: surface.x, y: surface.y }, parent);
+        // Alignment candidates are the target frame's other children (the
+        // parts a guide can meaningfully relate to), plus the plate center
+        // when seating on the base.
+        const siblings =
+          surface.parentId === null
+            ? currentStructure.parts
+            : (findAssemblyPart(currentStructure.parts, surface.parentId)?.children ?? []);
+        const xs: number[] = [];
+        const ys: number[] = [];
+        for (const sibling of siblings) {
+          if (draggedSubtreeRef.current.has(sibling.id)) continue;
+          xs.push(sibling.transform.x);
+          ys.push(sibling.transform.y);
+        }
+        if (surface.parentId === null) {
+          xs.push(baseExtent.w / 2);
+          ys.push(baseExtent.d / 2);
+        }
+        const snapped = alignSnap(rawLocal, { xs, ys }, fineSnap);
+        setAlignGuides(
+          snapped.guideX !== null || snapped.guideY !== null
+            ? { x: snapped.guideX, y: snapped.guideY, parentId: surface.parentId }
+            : null
+        );
         if (!dragTransactionRef.current) {
           store.startTransaction();
           dragTransactionRef.current = true;
         }
         if (surface.parentId === currentParent) {
-          store.moveAssemblyPart(draggingId, { x: local.x, y: local.y, seatZ: 0 });
+          store.moveAssemblyPart(draggingId, { x: snapped.x, y: snapped.y, seatZ: 0 });
         } else {
           store.reparentAssemblyPart(draggingId, surface.parentId, {
-            x: local.x,
-            y: local.y,
+            x: snapped.x,
+            y: snapped.y,
             seatZ: 0,
           });
         }
@@ -179,7 +230,7 @@ export function useWorkshopInteraction(
       setHover(surface);
       invalidate();
     },
-    [draggingId, invalidate, snapPoint]
+    [baseExtent.d, baseExtent.w, draggingId, fineSnap, invalidate, placedById]
   );
 
   const onSurfaceLeave = useCallback((): void => {
@@ -259,6 +310,53 @@ export function useWorkshopInteraction(
     [beginPartDrag, invalidate]
   );
 
+  const beginPartRotate = useCallback(
+    (id: string, world: { x: number; y: number }): void => {
+      const store = useDesignerStore.getState();
+      const currentStructure = store.structure;
+      if (currentStructure?.kind !== 'assembly') return;
+      const node = findAssemblyPart(currentStructure.parts, id);
+      const placed = placedById.get(id);
+      if (!node || !placed) return;
+      const pointerDeg = (Math.atan2(world.y - placed.y, world.x - placed.x) * 180) / Math.PI;
+      rotateStateRef.current = {
+        id,
+        centerX: placed.x,
+        centerY: placed.y,
+        parentWorldDeg: placed.rotZDeg - node.transform.rotZDeg,
+        // Grab where the pointer lands, so the part never jumps to meet it.
+        grabOffsetDeg: pointerDeg - placed.rotZDeg,
+      };
+      skipNextBaseClickRef.current = true;
+      const controls = getThree().controls as { enabled: boolean } | null;
+      if (controls) controls.enabled = false;
+      setRotatingId(id);
+      invalidate();
+    },
+    [getThree, invalidate, placedById]
+  );
+
+  const onRotateMove = useCallback(
+    (world: { x: number; y: number }): void => {
+      const state = rotateStateRef.current;
+      if (state === null) return;
+      const store = useDesignerStore.getState();
+      const pointerDeg =
+        (Math.atan2(world.y - state.centerY, world.x - state.centerX) * 180) / Math.PI;
+      const localDeg = snapAngleDeg(
+        pointerDeg - state.grabOffsetDeg - state.parentWorldDeg,
+        fineSnap
+      );
+      if (!dragTransactionRef.current) {
+        store.startTransaction();
+        dragTransactionRef.current = true;
+      }
+      store.moveAssemblyPart(state.id, { rotZDeg: localDeg });
+      invalidate();
+    },
+    [fineSnap, invalidate]
+  );
+
   const isInDraggedSubtree = useCallback(
     (id: string): boolean => draggedSubtreeRef.current.has(id),
     []
@@ -289,6 +387,8 @@ export function useWorkshopInteraction(
     hover,
     ghostPosition,
     draggingId,
+    rotatingId,
+    alignGuides,
     selectedId,
     pendingType,
     pendingCutterShape,
@@ -297,6 +397,8 @@ export function useWorkshopInteraction(
     onSurfaceClick,
     onPartPointerDown,
     beginPartDrag,
+    beginPartRotate,
+    onRotateMove,
     isInDraggedSubtree,
   };
 }
