@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.457.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.456.0...gridfinity-layout-tool-v4.457.0) (2026-08-23)
+
+
+### Features
+
+* **community:** render, remix, and place published assemblies ([#3760](https://github.com/andymai/gridfinity-layout-tool/issues/3760)) ([1e03c2b](https://github.com/andymai/gridfinity-layout-tool/commit/1e03c2be7f33e9902454844efed4865a0ce0aa28))
+
 ## [4.456.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.455.0...gridfinity-layout-tool-v4.456.0) (2026-08-23)
 
 
