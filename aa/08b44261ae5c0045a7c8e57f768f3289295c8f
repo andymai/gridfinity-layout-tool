@@ -1,0 +1,79 @@
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 29,329-330,341-348,384-387,397-398
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_a36c0b85dfeec4::t_1ea7480dd34567 8,24-27,90-91,225-241,318-330,332
+  s_a36c0b85dfeec4::t_3745b09fb82c0e 331
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 2289-2303
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 54-57,78-81
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 11,22,28,153-250
+  s_a36c0b85dfeec4::t_6ac203464c11fc 251
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/features/bin-designer/utils/assemblyTree.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 141-153
+src/features/bin-designer/utils/workshopTemplates.test.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 1-42
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_a36c0b85dfeec4::t_1ea7480dd34567 10,29,51,143,162
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/features/bin-designer/utils/workshopTemplates.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 1-113
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/features/bin-designer/types/designerState.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 9,12,169-174
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_a36c0b85dfeec4::t_4c367c3db642f9 2,47-50,153-234
+src/features/generation/worker/generators/assemblyGenerator.scenario.test.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 180-204
+src/features/bin-designer/components/Workshop/workshopPlacement.test.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 62-103
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_1ea7480dd34567 9,25-27,90
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/shared/types/assemblyPlacement.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 100-101,112-122,124-125,131-132,134,138-142,144,146-191,195-196
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/features/bin-designer/store/designer.scenario.workshop.test.ts
+  s_a36c0b85dfeec4::t_1ea7480dd34567 129-180
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_1ea7480dd34567 4193-4197,4243-4246,4267-4272
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "aa08b44261ae5c0045a7c8e57f768f3289295c8f",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
