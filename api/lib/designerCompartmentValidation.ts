@@ -335,6 +335,12 @@ export function validateCompartments(compartments: unknown): string | null {
     if (!Array.isArray(compartments.backgroundIds)) {
       return 'compartments.backgroundIds must be an array';
     }
+    // The markers only mean anything in merged-leftover mode. Without the mode
+    // the client would still demote those compartments to background, so a
+    // payload carrying one without the other is inconsistent, not just odd.
+    if (compartments.mergeBackground !== true) {
+      return 'compartments.backgroundIds requires compartments.mergeBackground';
+    }
     if (compartments.backgroundIds.length > expectedLength) {
       return `compartments.backgroundIds length must not exceed cols × rows (${expectedLength})`;
     }

@@ -1485,6 +1485,39 @@ describe('migrateParams', () => {
   });
 });
 
+describe('migrateParams - bento merged leftover (#3748)', () => {
+  const compartments = (extra: Record<string, unknown>) => ({
+    ...DEFAULT_BIN_PARAMS.compartments,
+    cols: 2,
+    rows: 2,
+    cells: [0, 1, 1, 1],
+    ...extra,
+  });
+
+  it('keeps the markers in merged mode', () => {
+    const result = migrateParams({
+      compartments: compartments({ mergeBackground: true, backgroundIds: [1] }),
+    });
+    expect(result.compartments.mergeBackground).toBe(true);
+    expect(result.compartments.backgroundIds).toEqual([1]);
+  });
+
+  it('drops markers left behind without the mode', () => {
+    // Otherwise compartment 1 reads as background with the mode off, and the
+    // dock loses a compartment the user drew.
+    const result = migrateParams({ compartments: compartments({ backgroundIds: [1] }) });
+    expect(result.compartments.backgroundIds).toBeUndefined();
+    expect(result.compartments.mergeBackground).toBeUndefined();
+  });
+
+  it('drops markers for compartments that no longer exist', () => {
+    const result = migrateParams({
+      compartments: compartments({ mergeBackground: true, backgroundIds: [1, 9] }),
+    });
+    expect(result.compartments.backgroundIds).toEqual([1]);
+  });
+});
+
 describe('migrateParams - cutout fill reference (#3697)', () => {
   it('defaults a design saved before the option existed to the rim', () => {
     // Rim anchoring reproduces the old behaviour exactly, so an existing
