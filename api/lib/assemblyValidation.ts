@@ -245,3 +245,171 @@ export function validateAssemblyStructure(structure: unknown): AssemblyValidatio
   }
   return { valid: true };
 }
+
+/** Socket stack height above Z=0, mirroring GRIDFINITY_SPEC.SOCKET_HEIGHT. */
+const SOCKET_HEIGHT_MM = 5;
+
+const PART_PARAM_KEYS: Record<string, readonly string[]> = {
+  post: ['diameter', 'height', 'taperDeg', 'tipChamfer'],
+  fin: ['length', 'thickness', 'height', 'leanDeg', 'leanAxis'],
+  block: ['width', 'depth', 'height', 'wedgeAngleDeg'],
+  tube: ['boreDiameter', 'wall', 'height', 'tiltDeg'],
+  cradle: ['length', 'width', 'height', 'grooveStyle', 'grooveWidth', 'grooveDepth'],
+  hook: ['stemHeight', 'reach', 'lipHeight', 'thickness', 'width'],
+  arch: ['span', 'height', 'style', 'rodDiameter', 'bridgeWidth', 'uprightThickness', 'depth'],
+  cutter: ['profile', 'depth', 'clearance', 'chamfer'],
+};
+
+function sanitizePoint(p: Record<string, unknown>): Record<string, unknown> {
+  return { x: p.x, y: p.y };
+}
+
+function sanitizeHandle(h: unknown): unknown {
+  if (h === null || !isObject(h)) return null;
+  return { dx: h.dx, dy: h.dy };
+}
+
+function sanitizeProfile(profile: Record<string, unknown>): Record<string, unknown> {
+  switch (profile.shape) {
+    case 'circle':
+      return { shape: 'circle', diameter: profile.diameter };
+    case 'rectangle':
+      return {
+        shape: 'rectangle',
+        width: profile.width,
+        depth: profile.depth,
+        cornerRadius: profile.cornerRadius,
+      };
+    case 'polygon':
+      return { shape: 'polygon', diameter: profile.diameter, sides: profile.sides };
+    case 'slot':
+      return { shape: 'slot', length: profile.length, width: profile.width };
+    case 'path':
+      return {
+        shape: 'path',
+        points: (profile.points as Record<string, unknown>[]).map((point) => ({
+          ...sanitizePoint(point),
+          handleIn: sanitizeHandle(point.handleIn),
+          handleOut: sanitizeHandle(point.handleOut),
+          symmetric: point.symmetric,
+        })),
+      };
+    default:
+      return {
+        shape: 'outline',
+        points: (profile.points as Record<string, unknown>[]).map(sanitizePoint),
+      };
+  }
+}
+
+function sanitizePartParams(
+  type: string,
+  params: Record<string, unknown>
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const key of PART_PARAM_KEYS[type] ?? []) {
+    const value = params[key];
+    if (value === undefined) continue;
+    out[key] = key === 'profile' ? sanitizeProfile(value as Record<string, unknown>) : value;
+  }
+  return out;
+}
+
+/** Part-top height above its own seat; mirrors the client's partSeatHeight. */
+function seatHeightMm(type: string, params: Record<string, unknown>): number {
+  if (type === 'cutter') return 0;
+  if (type === 'hook') {
+    const stem = params.stemHeight as number;
+    return Math.max(stem, stem - (params.thickness as number) + (params.lipHeight as number));
+  }
+  return (params.height as number) ?? 0;
+}
+
+export interface SanitizedAssembly {
+  envelope: Record<string, unknown>;
+  structure: Record<string, unknown>;
+  /** Server-derived standing height in mm, socket and floor included. */
+  riseMm: number;
+}
+
+/**
+ * Project a VALIDATED assembly onto its known shape, dropping every unknown
+ * key, restricting part ids to a machine-safe charset, and deriving the
+ * standing height from the part tree — so nothing the validators did not
+ * range-check can reach a public record, and no client-supplied height can
+ * game bed-fit or SEO facts. Call only after `validateAssemblyEnvelope` and
+ * `validateAssemblyStructure` have both passed.
+ */
+export function sanitizeAssemblyContent(
+  envelopeRaw: unknown,
+  structureRaw: unknown
+): SanitizedAssembly {
+  const envelopeIn = envelopeRaw as Record<string, unknown>;
+  const attachmentIn = envelopeIn.attachment as Record<string, unknown>;
+  const envelope: Record<string, unknown> = {
+    width: envelopeIn.width,
+    depth: envelopeIn.depth,
+    gridUnitMm: envelopeIn.gridUnitMm,
+    heightUnitMm: envelopeIn.heightUnitMm,
+    attachment: {
+      magnetHoles: attachmentIn.magnetHoles,
+      magnetDiameter: attachmentIn.magnetDiameter,
+      magnetDepth: attachmentIn.magnetDepth,
+      screwHoles: attachmentIn.screwHoles,
+      screwDiameter: attachmentIn.screwDiameter,
+    },
+    // Strictly validated by validateFeatureColors (unknown keys rejected).
+    featureColors: envelopeIn.featureColors,
+  };
+
+  const structureIn = structureRaw as Record<string, unknown>;
+  const baseIn = structureIn.base as Record<string, unknown>;
+  let maxTop = 0;
+
+  const sanitizeNode = (
+    nodeRaw: Record<string, unknown>,
+    parentTop: number
+  ): Record<string, unknown> => {
+    const type = nodeRaw.type as string;
+    const transformIn = nodeRaw.transform as Record<string, unknown>;
+    const params = nodeRaw.params as Record<string, unknown>;
+    const top = parentTop + (transformIn.seatZ as number) + seatHeightMm(type, params);
+    if (type !== 'cutter' && top > maxTop) maxTop = top;
+    const arrayIn = nodeRaw.array as Record<string, unknown> | undefined;
+    return {
+      id: (nodeRaw.id as string).replace(/[^A-Za-z0-9_-]/g, '_'),
+      type,
+      params: sanitizePartParams(type, params),
+      transform: {
+        x: transformIn.x,
+        y: transformIn.y,
+        seatZ: transformIn.seatZ,
+        rotZDeg: transformIn.rotZDeg,
+      },
+      ...(arrayIn !== undefined
+        ? { array: { count: arrayIn.count, dx: arrayIn.dx, dy: arrayIn.dy } }
+        : {}),
+      ...(nodeRaw.mirror !== undefined ? { mirror: nodeRaw.mirror } : {}),
+      children: (nodeRaw.children as Record<string, unknown>[]).map((child) =>
+        sanitizeNode(child, top)
+      ),
+    };
+  };
+
+  const structure: Record<string, unknown> = {
+    kind: 'assembly',
+    schemaVersion: 1,
+    base: {
+      floorThickness: baseIn.floorThickness,
+      ...(baseIn.cornerRadius !== undefined ? { cornerRadius: baseIn.cornerRadius } : {}),
+    },
+    mirrorAxis: structureIn.mirrorAxis,
+    parts: (structureIn.parts as Record<string, unknown>[]).map((node) => sanitizeNode(node, 0)),
+  };
+
+  return {
+    envelope,
+    structure,
+    riseMm: maxTop + SOCKET_HEIGHT_MM + (baseIn.floorThickness as number),
+  };
+}

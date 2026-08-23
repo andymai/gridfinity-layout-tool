@@ -4,9 +4,13 @@ const mocks = vi.hoisted(() => ({
   validateDesignerShare: vi.fn(),
 }));
 
-vi.mock('./designerValidation.js', () => ({
-  validateDesignerShare: mocks.validateDesignerShare,
-}));
+vi.mock('./designerValidation.js', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    validateDesignerShare: mocks.validateDesignerShare,
+  };
+});
 
 import {
   COMMUNITY_CATEGORIES,
@@ -78,6 +82,90 @@ describe('validateCommunityPublish', () => {
     expect(result.payload.techniques).toEqual([]);
     expect(result.payload.thumbnails).toEqual([webpBase64()]);
     expect(result.payload.glb).toBe(glbBase64());
+  });
+
+  const assemblyBody = (over: Record<string, unknown> = {}): Record<string, unknown> =>
+    validBody({
+      params: undefined,
+      kind: 'assembly',
+      envelope: {
+        width: 2,
+        depth: 2,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        attachment: {
+          magnetHoles: false,
+          magnetDiameter: 6.5,
+          magnetDepth: 2.4,
+          screwHoles: false,
+          screwDiameter: 3,
+        },
+        featureColors: { enabled: false },
+      },
+      structure: {
+        kind: 'assembly',
+        schemaVersion: 1,
+        base: { floorThickness: 2 },
+        mirrorAxis: 'x',
+        parts: [
+          {
+            id: 'p1',
+            type: 'post',
+            params: { diameter: 8, height: 40, taperDeg: 0, tipChamfer: 1 },
+            transform: { x: 20, y: 20, seatZ: 0, rotZDeg: 0 },
+            children: [],
+          },
+        ],
+      },
+      heightUnits: 7,
+      ...over,
+    });
+
+  it('accepts a Workshop assembly publish and tags it workshop', () => {
+    const result = validateCommunityPublish(assemblyBody());
+    expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected valid');
+    expect(result.payload.kind).toBe('assembly');
+    expect(result.payload.params).toBeUndefined();
+    expect(result.payload.envelope).toMatchObject({ width: 2, depth: 2 });
+    expect(result.payload.structure).toMatchObject({ kind: 'assembly' });
+    expect(result.payload.heightUnits).toBe(7);
+    expect(result.payload.techniques).toEqual(['workshop']);
+  });
+
+  it('rejects an assembly with an invalid structure or envelope', () => {
+    expectError(
+      assemblyBody({ structure: { kind: 'assembly', schemaVersion: 2 } }),
+      'INVALID_PARAMS'
+    );
+    expectError(assemblyBody({ envelope: { width: 500 } }), 'INVALID_PARAMS');
+  });
+
+  it('derives heightUnits from the part tree, ignoring any client value', () => {
+    // 40mm post + 5mm socket + 2mm floor = 47mm -> 7 units of 7mm.
+    const result = validateCommunityPublish(assemblyBody({ heightUnits: 2 }));
+    expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected valid');
+    expect(result.payload.heightUnits).toBe(7);
+  });
+
+  it('drops unknown keys and unsafe id characters from the stored content', () => {
+    const body = assemblyBody();
+    const structure = body.structure as Record<string, unknown>;
+    structure.extra = 'smuggled';
+    const part = (structure.parts as Record<string, unknown>[])[0];
+    part.id = 'p1<script>';
+    part.note = 'also smuggled';
+    const result = validateCommunityPublish(body);
+    expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected valid');
+    const stored = result.payload.structure as {
+      extra?: unknown;
+      parts: Array<{ id: string; note?: unknown }>;
+    };
+    expect(stored.extra).toBeUndefined();
+    expect(stored.parts[0].note).toBeUndefined();
+    expect(stored.parts[0].id).toBe('p1_script_');
   });
 
   it('rejects a non-object body', () => {
@@ -392,7 +480,7 @@ describe('deriveCommunityTechniques', () => {
       cellMask: { cols: 2, rows: 1, cells: [1, 0] },
       wallPattern: { enabled: true },
     });
-    expect(everything).toEqual([...COMMUNITY_TECHNIQUES]);
+    expect(everything).toEqual(COMMUNITY_TECHNIQUES.filter((t) => t !== 'workshop'));
   });
 });
 

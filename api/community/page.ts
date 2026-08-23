@@ -89,6 +89,8 @@ export interface DesignMeta {
   readonly description: string;
   readonly thumbnailUrl: string;
   readonly category: string;
+  /** 'assembly' for a Workshop holder; '' for a bin design. */
+  readonly kind: string;
   readonly metrics: {
     readonly width: number;
     readonly depth: number;
@@ -157,6 +159,11 @@ function gridFootprint(metrics: DesignMeta['metrics']): string | null {
  * big it is in both unit systems, and where to go next. The dimensions are the
  * part a snippet cannot summarise away.
  */
+/** 'bin design' vs 'Workshop holder design' — the only copy that differs by kind. */
+function designNoun(design: Pick<DesignMeta, 'kind'>): string {
+  return design.kind === 'assembly' ? 'Workshop holder design' : 'bin design';
+}
+
 export function renderDesignFallback(design: DesignMeta, url: string): string {
   const name = escapeAttr(design.name.trim() === '' ? 'Untitled design' : design.name);
   const author = escapeAttr(design.authorName);
@@ -179,14 +186,14 @@ export function renderDesignFallback(design: DesignMeta, url: string): string {
     `        <h1>${name}</h1>`,
   ];
   parts.push(
-    `        <p>A Gridfinity bin design shared by ${author}, free to remix and print under CC BY 4.0.</p>`
+    `        <p>A Gridfinity ${designNoun(design)} shared by ${author}, free to remix and print under CC BY 4.0.</p>`
   );
   if (design.description.trim() !== '') {
     parts.push(`        <p>${escapeAttr(truncate(design.description, 600))}</p>`);
   }
   if (design.thumbnailUrl !== '') {
     parts.push(
-      `        <img src="${escapeAttr(design.thumbnailUrl)}" alt="${name}, a Gridfinity bin design by ${author}" width="384" height="384">`
+      `        <img src="${escapeAttr(design.thumbnailUrl)}" alt="${name}, a Gridfinity ${designNoun(design)} by ${author}" width="384" height="384">`
     );
   }
   if (facts.length > 0) {
@@ -290,7 +297,7 @@ export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: str
   const title = `${design.name} by ${design.authorName} — Gridfinity Community`;
   const description =
     design.description.trim() === ''
-      ? `A Gridfinity bin design shared by ${design.authorName}, free to remix and print.`
+      ? `A Gridfinity ${designNoun(design)} shared by ${design.authorName}, free to remix and print.`
       : truncate(design.description, MAX_DESCRIPTION);
 
   let html = shell;
@@ -316,7 +323,7 @@ export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: str
   // worse than no og:image, which falls back to the site default.
   if (design.thumbnailUrl !== '') {
     swaps.push(['og:image', design.thumbnailUrl]);
-    swaps.push(['og:image:alt', `${design.name}, a Gridfinity bin design`]);
+    swaps.push(['og:image:alt', `${design.name}, a Gridfinity ${designNoun(design)}`]);
     // The shell declares the site card's 1200x630. A design's image is a 384px
     // square render, or a promoted print photo of some other shape entirely,
     // so the inherited dimensions would have scrapers reserve a box the image
@@ -375,6 +382,7 @@ async function readDesignMeta(designId: string): Promise<DesignMeta | null> {
     description: record?.description ?? '',
     thumbnailUrl: card.thumbnailUrl,
     category: card.category,
+    kind: card.kind ?? '',
     // The stored record is flat; the API's nested `metrics`/`counts` shape is
     // assembled elsewhere. `prints` is optional in the record for fixture
     // ergonomics, so it needs the default here.

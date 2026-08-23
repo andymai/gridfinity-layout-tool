@@ -28,6 +28,8 @@ import {
   setCommunityDesignStatus,
   toggleCommunityLike,
   communityContentHash,
+  communityDesignContent,
+  deriveAssemblyMetrics,
   type CommunityCardMetadata,
   type CommunityDesignRecord,
 } from './communityStore.js';
@@ -277,6 +279,7 @@ describe('readCommunityCards', () => {
     expect(cards).toHaveLength(3);
     expect(cards[0]).toEqual({
       ...CARD,
+      kind: '',
       featured: true,
       likes: 7,
       remixes: 2,
@@ -596,9 +599,46 @@ describe('toggleCommunityLike', () => {
   });
 });
 
+describe('deriveAssemblyMetrics', () => {
+  it('takes footprint from the envelope and height from the validated units', () => {
+    expect(
+      deriveAssemblyMetrics({ width: 2, depth: 3, gridUnitMm: 42, heightUnitMm: 7 }, 7)
+    ).toEqual({ width: 83.5, depth: 125.5, height: 49, gridUnitMm: 42 });
+  });
+
+  it('clamps junk to safe defaults like the bin derivation', () => {
+    expect(deriveAssemblyMetrics({}, 0)).toEqual({
+      width: 41.5,
+      depth: 41.5,
+      height: 7,
+      gridUnitMm: 42,
+    });
+  });
+});
+
+describe('communityDesignContent', () => {
+  it('passes bin params through', () => {
+    const params = { width: 2 };
+    expect(communityDesignContent({ params })).toBe(params);
+  });
+
+  it('wraps assembly envelope + structure so kinds cannot alias', () => {
+    const content = communityDesignContent({
+      kind: 'assembly',
+      envelope: { width: 2 },
+      structure: { kind: 'assembly', parts: [] },
+    });
+    expect(content).toEqual({
+      kind: 'assembly',
+      envelope: { width: 2 },
+      structure: { kind: 'assembly', parts: [] },
+    });
+  });
+});
+
 describe('communityContentHash', () => {
   const content = {
-    params: { width: 2, compartments: { cols: 2, cells: [0, 1] } },
+    content: { width: 2, compartments: { cols: 2, cells: [0, 1] } },
     name: 'Socket Organizer',
     description: 'Holds 24 sockets.',
     category: 'tools',
@@ -615,7 +655,7 @@ describe('communityContentHash', () => {
       category: 'tools',
       description: 'Holds 24 sockets.',
       name: 'Socket Organizer',
-      params: { compartments: { cells: [0, 1], cols: 2 }, width: 2 },
+      content: { compartments: { cells: [0, 1], cols: 2 }, width: 2 },
       lineage: null,
       authorName: 'Andy',
     };
@@ -627,7 +667,7 @@ describe('communityContentHash', () => {
     expect(communityContentHash({ ...content, name: 'Other' })).not.toBe(base);
     expect(communityContentHash({ ...content, description: '' })).not.toBe(base);
     expect(communityContentHash({ ...content, category: 'other' })).not.toBe(base);
-    expect(communityContentHash({ ...content, params: { width: 3 } })).not.toBe(base);
+    expect(communityContentHash({ ...content, content: { width: 3 } })).not.toBe(base);
   });
 
   it('changes with authorName so a name-correction retry does not alias (A8)', () => {
@@ -653,7 +693,7 @@ describe('communityContentHash', () => {
   it('is sensitive to array order (cells are positional)', () => {
     const swapped = {
       ...content,
-      params: { ...content.params, compartments: { cols: 2, cells: [1, 0] } },
+      content: { ...content.content, compartments: { cols: 2, cells: [1, 0] } },
     };
     expect(communityContentHash(swapped)).not.toBe(communityContentHash(content));
   });

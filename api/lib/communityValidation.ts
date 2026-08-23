@@ -10,6 +10,11 @@
 
 import { checkText, filterDisplayName, filterSharedDesignsContent } from './contentFilter.js';
 import { validateDesignerShare } from './designerValidation.js';
+import {
+  sanitizeAssemblyContent,
+  validateAssemblyEnvelope,
+  validateAssemblyStructure,
+} from './assemblyValidation.js';
 import { isValidShareId } from './shared.js';
 import { isObject, isString, validationError } from './validationUtils.js';
 import {
@@ -122,6 +127,8 @@ export const COMMUNITY_AUTHOR_NAME_MAX_LENGTH = 32;
 export const MAX_COMMUNITY_THUMBNAILS = 3;
 export const MAX_COMMUNITY_THUMBNAIL_BYTES = 200_000;
 export const MAX_COMMUNITY_GLB_BYTES = 2_000_000;
+// Per-assembly content cap, matching the sync endpoint's design payload budget.
+const MAX_COMMUNITY_ASSEMBLY_BYTES = 100 * 1024;
 
 /**
  * MIRROR: derivation logic must match `deriveTechniques` in
@@ -142,6 +149,7 @@ export const COMMUNITY_TECHNIQUES = [
   'handles',
   'customShape',
   'wallPattern',
+  'workshop',
 ] as const;
 export type CommunityTechnique = (typeof COMMUNITY_TECHNIQUES)[number];
 
@@ -234,8 +242,17 @@ export interface CommunityPublishPayload {
   description: string;
   authorName: string;
   category: CommunityCategory;
-  /** Sanitized, allowlist-filtered params from `validateDesignerShare`; persist these, never the raw input. */
-  params: Record<string, unknown>;
+  /** Sanitized, allowlist-filtered params from `validateDesignerShare`; persist
+   *  these, never the raw input. Absent on a Workshop assembly publish. */
+  params?: Record<string, unknown>;
+  /** Workshop assemblies publish envelope + structure instead of params,
+   *  validated by the same deep validators the sync endpoint uses. */
+  kind?: 'assembly';
+  envelope?: Record<string, unknown>;
+  structure?: Record<string, unknown>;
+  /** Server-derived standing height in height units — computed from the
+   *  validated part tree, never client-supplied. */
+  heightUnits?: number;
   techniques: CommunityTechnique[];
   /** Raw base64 (any data-URL prefix stripped), ready to decode for blob upload. */
   thumbnails: string[];
@@ -428,27 +445,71 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
   }
   const category = body.category as CommunityCategory;
 
-  if (!isObject(body.params)) {
-    return validationError('MISSING_PARAMS', 'params must be an object');
-  }
-  const designerPayload = { type: 'designer' as const, version: 1 as const, params: body.params };
-  // sizeBytes covers what the design blob will actually persist (envelope +
-  // params). Thumbnails and the GLB are separate blobs with their own caps.
-  const sizeBytes = Buffer.byteLength(
-    JSON.stringify({ name, description, category, ...designerPayload }),
-    'utf8'
-  );
-  const designResult = validateDesignerShare(designerPayload, sizeBytes);
-  if (!designResult.valid) {
-    return { valid: false, error: designResult.error };
-  }
-  const params = designResult.payload.params;
+  let params: Record<string, unknown> | undefined;
+  let assembly:
+    | {
+        envelope: Record<string, unknown>;
+        structure: Record<string, unknown>;
+        heightUnits: number;
+      }
+    | undefined;
+  if (body.kind === 'assembly') {
+    // Workshop assembly: the same deep validators the sync endpoint trusts,
+    // so a community publish can't become a side door around them.
+    const envelopeResult = validateAssemblyEnvelope(body.envelope);
+    if (!envelopeResult.valid) {
+      return { valid: false, error: envelopeResult.error };
+    }
+    const structureResult = validateAssemblyStructure(body.structure);
+    if (!structureResult.valid) {
+      return { valid: false, error: structureResult.error };
+    }
+    // Project onto the known shape: unknown keys drop, part ids are reduced
+    // to a machine-safe charset, and the standing height derives from the
+    // validated part tree — the client cannot smuggle strings past the
+    // validators or game the stored height.
+    const sanitized = sanitizeAssemblyContent(body.envelope, body.structure);
+    const assemblyBytes = Buffer.byteLength(
+      JSON.stringify({ envelope: sanitized.envelope, structure: sanitized.structure }),
+      'utf8'
+    );
+    if (assemblyBytes > MAX_COMMUNITY_ASSEMBLY_BYTES) {
+      return validationError(
+        'SIZE_LIMIT',
+        `design exceeds maximum size of ${MAX_COMMUNITY_ASSEMBLY_BYTES / 1024}KB`
+      );
+    }
+    const heightUnitMm = (sanitized.envelope.heightUnitMm as number) || 7;
+    assembly = {
+      envelope: sanitized.envelope,
+      structure: sanitized.structure,
+      heightUnits: Math.max(1, Math.ceil(sanitized.riseMm / heightUnitMm)),
+    };
+    // Assembly structures carry no free text after the projection, so the
+    // name/description sweeps above are the whole text surface.
+  } else {
+    if (!isObject(body.params)) {
+      return validationError('MISSING_PARAMS', 'params must be an object');
+    }
+    const designerPayload = { type: 'designer' as const, version: 1 as const, params: body.params };
+    // sizeBytes covers what the design blob will actually persist (envelope +
+    // params). Thumbnails and the GLB are separate blobs with their own caps.
+    const sizeBytes = Buffer.byteLength(
+      JSON.stringify({ name, description, category, ...designerPayload }),
+      'utf8'
+    );
+    const designResult = validateDesignerShare(designerPayload, sizeBytes);
+    if (!designResult.valid) {
+      return { valid: false, error: designResult.error };
+    }
+    params = designResult.payload.params;
 
-  // Sweeps engraved/label text nested inside the sanitized params, a
-  // separate channel from the envelope strings checked above.
-  const designText = filterSharedDesignsContent([{ name, params }]);
-  if (!designText.passed) {
-    return validationError('CONTENT_BLOCKED', designText.reason ?? 'contains prohibited content');
+    // Sweeps engraved/label text nested inside the sanitized params, a
+    // separate channel from the envelope strings checked above.
+    const designText = filterSharedDesignsContent([{ name, params }]);
+    if (!designText.passed) {
+      return validationError('CONTENT_BLOCKED', designText.reason ?? 'contains prohibited content');
+    }
   }
 
   if (!Array.isArray(body.thumbnails) || body.thumbnails.length < 1) {
@@ -477,8 +538,9 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
       description,
       authorName,
       category,
-      params,
-      techniques: deriveCommunityTechniques(params),
+      ...(assembly !== undefined
+        ? { kind: 'assembly' as const, ...assembly, techniques: ['workshop' as const] }
+        : { params, techniques: deriveCommunityTechniques(params ?? {}) }),
       thumbnails,
       glb: glbCheck.base64,
     },

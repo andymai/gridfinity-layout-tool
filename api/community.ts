@@ -31,9 +31,11 @@ import {
   adjustRemixCredit,
   communityContentHash,
   communityMeshBlobPath,
+  communityDesignContent,
   communityParamsFingerprint,
   communityThumbBlobPath,
   deleteCommunityDesignBlob,
+  deriveAssemblyMetrics,
   deriveCommunityMetrics,
   isModeratedContent,
   readCommunityCards,
@@ -100,7 +102,7 @@ function badRequest(res: VercelResponse, message: string): void {
 }
 
 type LineageResolveResult =
-  | { ok: true; lineage: CommunityLineage | null; parentParams: Record<string, unknown> | null }
+  | { ok: true; lineage: CommunityLineage | null; parentContent: Record<string, unknown> | null }
   | { ok: false; message: string };
 
 /**
@@ -123,7 +125,7 @@ async function resolveLineage(
   redis: RedisClient,
   lineage: CommunityLineage | null
 ): Promise<LineageResolveResult> {
-  if (lineage === null) return { ok: true, lineage: null, parentParams: null };
+  if (lineage === null) return { ok: true, lineage: null, parentContent: null };
   const parentCard = (await readCommunityCards(redis, [lineage.parentId]))[0] ?? null;
   if (parentCard === null || parentCard.status !== 'live') {
     return { ok: false, message: 'lineage.parentId does not reference a live design' };
@@ -152,7 +154,7 @@ async function resolveLineage(
       parentAuthorName: parentCard.authorName,
       rootAuthorName,
     },
-    parentParams: parentRecord.params,
+    parentContent: communityDesignContent(parentRecord),
   };
 }
 
@@ -198,6 +200,7 @@ function cardFromRecord(record: CommunityDesignRecord): CommunityCardMetadata {
     authorName: record.authorName,
     category: record.category,
     techniques: record.techniques,
+    kind: record.kind ?? '',
     width: record.metrics.width,
     depth: record.metrics.depth,
     height: record.metrics.height,
@@ -219,11 +222,11 @@ function cardFromRecord(record: CommunityDesignRecord): CommunityCardMetadata {
  */
 async function isExactDuplicate(
   redis: RedisClient,
-  paramsFingerprint: string,
+  contentFingerprint: string,
   authorPublicId: string
 ): Promise<boolean> {
-  if (COMMUNITY_EXAMPLE_PARAM_HASHES.has(paramsFingerprint)) return true;
-  const candidateId = await redis.get(communityParamsHashKey(paramsFingerprint));
+  if (COMMUNITY_EXAMPLE_PARAM_HASHES.has(contentFingerprint)) return true;
+  const candidateId = await redis.get(communityParamsHashKey(contentFingerprint));
   if (candidateId === null || candidateId === '') return false;
   const [status, candidateAuthor] = await redis.hmget(
     communityDesignKey(candidateId),
@@ -299,9 +302,9 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
     }
 
     try {
-      const paramsFingerprint = communityParamsFingerprint(payload.params);
+      const contentFingerprint = communityParamsFingerprint(communityDesignContent(payload));
       const contentHash = communityContentHash({
-        params: payload.params,
+        content: communityDesignContent(payload),
         name: payload.name,
         description: payload.description,
         category: payload.category,
@@ -331,7 +334,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
 
       // B3: reject a verbatim re-upload of a built-in example or of another
       // author's live design. The author's own re-publish returned above.
-      if (await isExactDuplicate(redis, paramsFingerprint, authorPublicId)) {
+      if (await isExactDuplicate(redis, contentFingerprint, authorPublicId)) {
         res.status(409).json({
           error:
             'This matches a design that has already been published (or a built-in example). Make it your own before publishing.',
@@ -362,8 +365,8 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
       // farmed by re-uploading the parent unchanged.
       if (
         lineage !== null &&
-        lineageResolve.parentParams !== null &&
-        communityParamsFingerprint(lineageResolve.parentParams) === paramsFingerprint
+        lineageResolve.parentContent !== null &&
+        communityParamsFingerprint(lineageResolve.parentContent) === contentFingerprint
       ) {
         res.status(409).json({
           error: 'Change the design before publishing your remix.',
@@ -405,8 +408,13 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
         description: payload.description,
         category: payload.category,
         techniques: payload.techniques,
-        params: payload.params,
-        metrics: deriveCommunityMetrics(payload.params),
+        ...(payload.kind === 'assembly'
+          ? { kind: 'assembly' as const, envelope: payload.envelope, structure: payload.structure }
+          : { params: payload.params }),
+        metrics:
+          payload.kind === 'assembly'
+            ? deriveAssemblyMetrics(payload.envelope ?? {}, payload.heightUnits ?? 1)
+            : deriveCommunityMetrics(payload.params ?? {}),
         lineage,
         thumbnails: thumbBlobs.map((blob) => blob.url),
         meshUrl: meshBlob.url,
@@ -479,7 +487,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
       // Post-commit bookkeeping: the design is already live, so these keep the
       // duplicate index and remix stats in sync best-effort. A failure here
       // must not fail an already-successful publish.
-      await redis.set(communityParamsHashKey(paramsFingerprint), id).catch((indexErr: unknown) => {
+      await redis.set(communityParamsHashKey(contentFingerprint), id).catch((indexErr: unknown) => {
         logger.warn('Community publish: params-hash index write failed', {
           id,
           error: indexErr instanceof Error ? indexErr.message : String(indexErr),
@@ -529,6 +537,8 @@ interface CommunityListItem {
   authorPublicId: string;
   category: CommunityCategory;
   techniques: CommunityTechnique[];
+  /** 'assembly' for a Workshop holder; omitted for bin designs. */
+  kind?: 'assembly';
   metrics: CommunityDesignMetrics;
   thumbnailUrl: string;
   isRemix: boolean;
@@ -572,6 +582,7 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
     authorPublicId: card.authorPublicId,
     category: card.category,
     techniques: card.techniques,
+    ...(card.kind === 'assembly' && { kind: 'assembly' as const }),
     metrics: {
       width: card.width,
       depth: card.depth,
