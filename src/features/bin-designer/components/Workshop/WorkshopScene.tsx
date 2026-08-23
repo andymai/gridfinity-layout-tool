@@ -97,6 +97,7 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
       {interaction.pendingType && interaction.ghostPosition && interaction.draggingId === null && (
         <PlacementGhost
           type={interaction.pendingType}
+          cutterShape={interaction.pendingCutterShape}
           position={interaction.ghostPosition}
           baseW={w}
           baseD={d}

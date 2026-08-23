@@ -96,9 +96,13 @@ export function createUISlice(set: Set) {
       });
     },
 
-    setWorkshopPendingPartType: (type: AssemblyPartType | null) => {
+    setWorkshopPendingPartType: (
+      type: AssemblyPartType | null,
+      cutterShape: 'circle' | 'slot' | null = null
+    ) => {
       set((state) => {
         state.ui.workshopPendingPartType = type;
+        state.ui.workshopPendingCutterShape = type === 'cutter' ? cutterShape : null;
       });
     },
 

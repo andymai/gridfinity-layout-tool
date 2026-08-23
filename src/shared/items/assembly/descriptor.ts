@@ -11,6 +11,7 @@ import type {
   AssemblyPartParamsByType,
   AssemblyPartType,
   AssemblyStructure,
+  CutterProfile,
   PartTransform,
 } from '@/shared/types/assembly';
 import { ASSEMBLY_PART_TYPES } from '@/shared/types/assembly';
@@ -297,6 +298,38 @@ export function clampPartTransform(t: PartTransform): PartTransform {
     seatZ: clamp(t.seatZ, -200, 200),
     rotZDeg: clamp(t.rotZDeg, -360, 360),
   };
+}
+
+/** Fresh, schema-valid starting profile for each cutter shape. */
+export function defaultCutterProfile(shape: CutterProfile['shape']): CutterProfile {
+  switch (shape) {
+    case 'circle':
+      return { shape: 'circle', diameter: 6.5 };
+    case 'rectangle':
+      return { shape: 'rectangle', width: 20, depth: 10, cornerRadius: 1 };
+    case 'polygon':
+      return { shape: 'polygon', diameter: 8, sides: 6 };
+    case 'slot':
+      return { shape: 'slot', length: 40, width: 3.5 };
+    case 'path':
+      return {
+        shape: 'path',
+        points: [
+          { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 20, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 10, y: 20, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      };
+    case 'outline':
+      return {
+        shape: 'outline',
+        points: [
+          { x: 0, y: 0 },
+          { x: 20, y: 0 },
+          { x: 10, y: 20 },
+        ],
+      };
+  }
 }
 
 export function defaultPartParams<K extends AssemblyPartType>(

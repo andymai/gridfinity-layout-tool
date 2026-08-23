@@ -309,6 +309,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   selectedBentoCompartmentId: null,
   selectedAssemblyPartId: null,
   workshopPendingPartType: null,
+  workshopPendingCutterShape: null,
 };
 
 /** Default empty history */

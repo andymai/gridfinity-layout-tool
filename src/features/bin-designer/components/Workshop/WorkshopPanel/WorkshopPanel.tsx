@@ -68,12 +68,13 @@ function TreeRows({
 
 export function WorkshopPanel() {
   const t = useTranslation();
-  const { structure, envelope, selectedId, pendingType } = useDesignerStore(
+  const { structure, envelope, selectedId, pendingType, pendingCutterShape } = useDesignerStore(
     useShallow((s) => ({
       structure: s.structure,
       envelope: s.envelope,
       selectedId: s.ui.selectedAssemblyPartId,
       pendingType: s.ui.workshopPendingPartType,
+      pendingCutterShape: s.ui.workshopPendingCutterShape,
     }))
   );
   const newDesign = useDesignerStore((s) => s.newDesign);
@@ -168,7 +169,7 @@ export function WorkshopPanel() {
         <PanelSection>
           <p className="mb-2 text-xs text-content-tertiary">{t('workshop.palette.hint')}</p>
           <div className="grid grid-cols-2 gap-2">
-            {ASSEMBLY_PART_TYPES.map((type) => (
+            {ASSEMBLY_PART_TYPES.filter((type) => type !== 'cutter').map((type) => (
               <Button
                 key={type}
                 variant={pendingType === type ? 'primary' : 'secondary'}
@@ -178,6 +179,36 @@ export function WorkshopPanel() {
                 {t(PART_LABEL_KEYS[type])}
               </Button>
             ))}
+            <Button
+              variant={
+                pendingType === 'cutter' && pendingCutterShape === 'circle'
+                  ? 'primary'
+                  : 'secondary'
+              }
+              size="sm"
+              onClick={() =>
+                setWorkshopPendingPartType(
+                  pendingType === 'cutter' && pendingCutterShape === 'circle' ? null : 'cutter',
+                  'circle'
+                )
+              }
+            >
+              {t('workshop.palette.hole')}
+            </Button>
+            <Button
+              variant={
+                pendingType === 'cutter' && pendingCutterShape === 'slot' ? 'primary' : 'secondary'
+              }
+              size="sm"
+              onClick={() =>
+                setWorkshopPendingPartType(
+                  pendingType === 'cutter' && pendingCutterShape === 'slot' ? null : 'cutter',
+                  'slot'
+                )
+              }
+            >
+              {t('workshop.palette.slot')}
+            </Button>
           </div>
         </PanelSection>
       </StickyGroupHeader>

@@ -210,6 +210,9 @@ export interface DesignerUIState {
 
   /** Palette part type armed for click-to-place in the Workshop canvas. */
   readonly workshopPendingPartType: AssemblyPartType | null;
+
+  /** Starting profile for an armed cutter (the palette's Hole vs Slot). */
+  readonly workshopPendingCutterShape: 'circle' | 'slot' | null;
 }
 
 /** In-flight divider tilt used only for live preview (see `dividerTiltPreview`). */

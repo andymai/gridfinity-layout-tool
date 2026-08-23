@@ -13,7 +13,7 @@ import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { isOk } from '@/core/result';
-import { MAX_SVG_FILE_SIZE } from '../svgImport/types';
+import { MAX_SVG_FILE_SIZE, type ParsedCutoutSpec } from '../svgImport/types';
 import { parseScanSvg, rescaleToLongestMm, type ParsedScan } from './scanIngest';
 import { useScanImport } from './useScanImport';
 import { useScanSession } from './useScanSession';
@@ -21,6 +21,12 @@ import { ScanQrCode } from './ScanQrCode';
 import { buildCalibrationSheetSvg, CALIBRATION_SHEET_FILENAME } from './calibrationSheetSvg';
 
 interface ScanWithPhoneDialogProps {
+  /**
+   * Replaces the default commit into the bin's cutout list. Returns how many
+   * specs were consumed (drives the success toast). The Workshop uses this
+   * to turn a scan into a cutter profile instead of a bin cutout.
+   */
+  readonly onImport?: (specs: readonly ParsedCutoutSpec[]) => number;
   readonly open: boolean;
   readonly onClose: () => void;
 }
@@ -59,10 +65,11 @@ function PrivacyHint({ text }: { readonly text: string }) {
   );
 }
 
-export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps) {
+export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDialogProps) {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
-  const { addScanCutouts } = useScanImport();
+  const { addScanCutouts: addToCutouts } = useScanImport();
+  const addScanCutouts = onImport ?? addToCutouts;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const fieldId = useId();
   const [stage, setStage] = useState<Stage>({ kind: 'awaiting' });

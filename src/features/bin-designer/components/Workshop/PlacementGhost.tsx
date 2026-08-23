@@ -1,25 +1,37 @@
 /** Translucent preview of the armed palette part at the hovered surface. */
 import { useEffect, useMemo } from 'react';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
-import type { AssemblyPartType } from '@/shared/types/assembly';
-import { createAssemblyPartNode, DEFAULT_PART_TRANSFORM } from '@/shared/items/assembly/descriptor';
+import type { AssemblyPartNode, AssemblyPartType } from '@/shared/types/assembly';
+import {
+  createAssemblyPartNode,
+  defaultCutterProfile,
+  DEFAULT_PART_TRANSFORM,
+} from '@/shared/items/assembly/descriptor';
 import { buildPartGeometry } from './proxyGeometry';
 import { storeToScene } from './workshopPlacement';
 
 interface PlacementGhostProps {
   type: AssemblyPartType;
+  cutterShape: 'circle' | 'slot' | null;
   /** Snapped store-frame position, computed by the interaction hook. */
   position: { x: number; y: number; z: number };
   baseW: number;
   baseD: number;
 }
 
-export function PlacementGhost({ type, position, baseW, baseD }: PlacementGhostProps) {
+export function PlacementGhost({ type, cutterShape, position, baseW, baseD }: PlacementGhostProps) {
   const colors = useThreeColors();
-  const geometry = useMemo(
-    () => buildPartGeometry(createAssemblyPartNode(type, 'ghost', { ...DEFAULT_PART_TRANSFORM })),
-    [type]
-  );
+  const geometry = useMemo(() => {
+    const base = createAssemblyPartNode(type, 'ghost', { ...DEFAULT_PART_TRANSFORM });
+    const node =
+      type === 'cutter' && cutterShape
+        ? ({
+            ...base,
+            params: { ...base.params, profile: defaultCutterProfile(cutterShape) },
+          } as AssemblyPartNode)
+        : base;
+    return buildPartGeometry(node);
+  }, [type, cutterShape]);
   useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (

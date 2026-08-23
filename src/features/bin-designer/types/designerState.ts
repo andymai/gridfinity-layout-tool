@@ -153,7 +153,8 @@ export interface DesignerState {
   addAssemblyPart: (
     type: AssemblyPartType,
     parentId: string | null,
-    transform?: Partial<PartTransform>
+    transform?: Partial<PartTransform>,
+    params?: Partial<AssemblyPartParams>
   ) => string | null;
   moveAssemblyPart: (id: string, transform: Partial<PartTransform>) => void;
   reparentAssemblyPart: (
@@ -349,7 +350,10 @@ export interface DesignerState {
   /** Select a drawn compartment in the Bento workspace (null clears). */
   setSelectedBentoCompartmentId: (id: number | null) => void;
   setSelectedAssemblyPartId: (id: string | null) => void;
-  setWorkshopPendingPartType: (type: AssemblyPartType | null) => void;
+  setWorkshopPendingPartType: (
+    type: AssemblyPartType | null,
+    cutterShape?: 'circle' | 'slot' | null
+  ) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**
