@@ -190,6 +190,7 @@ function validParams(type: string, params: unknown): boolean {
         num(params.depth, 4, 80) &&
         num(params.height, 5, 120) &&
         num(params.slotCount, 1, 15) &&
+        Number.isInteger(params.slotCount) &&
         num(params.slotWidth, 1, 60) &&
         num(params.slotDepth, 1, 110)
       );
@@ -197,6 +198,7 @@ function validParams(type: string, params: unknown): boolean {
       return (
         num(params.width, 10, 300) &&
         num(params.stepCount, 2, 6) &&
+        Number.isInteger(params.stepCount) &&
         num(params.stepDepth, 5, 80) &&
         num(params.stepHeight, 2, 60)
       );

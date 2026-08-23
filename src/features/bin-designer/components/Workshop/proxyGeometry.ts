@@ -230,7 +230,7 @@ function buildComb(p: {
   slotWidth: number;
   slotDepth: number;
 }): BufferGeometry {
-  const slotWidth = Math.min(p.slotWidth, (p.width - (p.slotCount + 1)) / p.slotCount);
+  const slotWidth = Math.min(p.slotWidth, p.width / p.slotCount - 2);
   const slotDepth = Math.min(p.slotDepth, p.height - 1.5);
   // Front-elevation comb silhouette (teeth and slots), extruded through the
   // depth: drawn in x/z then stood upright.

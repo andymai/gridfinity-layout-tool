@@ -558,8 +558,9 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
     }
     case 'comb': {
       const { width, depth, height, slotCount } = node.params;
-      // Teeth keep at least 1mm of material; the slot floor keeps 1.5mm.
-      const slotWidth = Math.min(node.params.slotWidth, (width - (slotCount + 1)) / slotCount);
+      // Slots center on an even pitch, so the edge tooth is half an interior
+      // one: pitch - 2 keeps every tooth at least 1mm. The slot floor keeps 1.5mm.
+      const slotWidth = Math.min(node.params.slotWidth, width / slotCount - 2);
       const slotDepth = Math.min(node.params.slotDepth, height - 1.5);
       const total = height + sink;
       let body: Shape3D = box(width, depth, total, { at: [0, 0, total / 2 - sink] });
