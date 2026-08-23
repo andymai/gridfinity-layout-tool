@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.461.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.460.0...gridfinity-layout-tool-v4.461.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** panel refresh on the cutout editor idioms ([#3770](https://github.com/andymai/gridfinity-layout-tool/issues/3770)) ([cb2ec5a](https://github.com/andymai/gridfinity-layout-tool/commit/cb2ec5a6df9789af8bdc895afb469dee17ecebb7))
+
 ## [4.460.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.459.1...gridfinity-layout-tool-v4.460.0) (2026-08-23)
 
 
