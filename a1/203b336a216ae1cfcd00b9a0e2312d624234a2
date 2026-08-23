@@ -1,0 +1,27 @@
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_a36c0b85dfeec4::t_0a7fc380fb7c34 527-609
+src/features/design-linking/hooks/useQuickExport.ts
+  s_a36c0b85dfeec4::t_006d16b77a1569 58,60,68-75,77
+  s_a36c0b85dfeec4::t_0377886db15262 12,50-54,59,61-67
+src/shell/layoutExport/useLayoutExport.ts
+  s_a36c0b85dfeec4::t_d44d25bfa032fe 258-259,368-378
+  s_a36c0b85dfeec4::t_08c59c02eba979 379-383
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_a36c0b85dfeec4::t_9e8bb62c2b5a8c 34-38,88-97,107,234-237,250-255,341-362,378-380,382-383,387,469-506,510
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "a1203b336a216ae1cfcd00b9a0e2312d624234a2",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
