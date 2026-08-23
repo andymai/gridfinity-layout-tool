@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.447.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.446.0...gridfinity-layout-tool-v4.447.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** migrate tool racks into Workshop and retire item_kinds ([#3734](https://github.com/andymai/gridfinity-layout-tool/issues/3734)) ([7406e4b](https://github.com/andymai/gridfinity-layout-tool/commit/7406e4b594a01e0831ca28a8e73e6e511f1b378e))
+
 ## [4.446.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.445.0...gridfinity-layout-tool-v4.446.0) (2026-08-23)
 
 
