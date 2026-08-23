@@ -1,0 +1,47 @@
+src/features/bin-designer/utils/assemblyChecker.test.ts
+  s_a36c0b85dfeec4::t_1d774ed6bd82c5 119
+  s_a36c0b85dfeec4::t_348cca1e754c27 108-118,120-124,128
+  s_a36c0b85dfeec4::t_59a9270a02ffb2 125-127
+  s_a36c0b85dfeec4::t_0deb9505453773 129-131
+  s_a36c0b85dfeec4::t_07ff1afad5eef9 132-134
+src/shared/items/assembly/descriptor.ts
+  s_a36c0b85dfeec4::t_f07d53df49a4cd 49
+src/features/bin-designer/components/Workshop/proxyGeometry.ts
+  s_a36c0b85dfeec4::t_f07d53df49a4cd 42,47-54
+src/shared/types/assembly.ts
+  s_a36c0b85dfeec4::t_f07d53df49a4cd 63-68
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_f07d53df49a4cd 125-128
+src/features/bin-designer/hooks/useToolRackMigration.test.ts
+  s_a36c0b85dfeec4::t_348cca1e754c27 54
+src/core/storage/localStorageMigrations.ts
+  s_a36c0b85dfeec4::t_be63ea422e4fda 10,18
+src/features/bin-designer/utils/workshopTemplates.ts
+  s_a36c0b85dfeec4::t_aed09e2ab833c3 143-156,161-163,170-171,173-182,191
+  s_a36c0b85dfeec4::t_46d0e88b147f9f 9-13
+src/features/bin-designer/hooks/useToolRackMigration.ts
+  s_a36c0b85dfeec4::t_be63ea422e4fda 10,14-15,20,34-36
+src/features/bin-designer/utils/workshopTemplates.test.ts
+  s_a36c0b85dfeec4::t_348cca1e754c27 59-61,71-86
+  s_a36c0b85dfeec4::t_2dbc7f69bdd06d 87-88
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_f07d53df49a4cd 15,203-220,223-224
+src/features/bin-designer/utils/assemblyChecker.ts
+  s_a36c0b85dfeec4::t_be63ea422e4fda 9,40-46,66-67,69,71-73,95-96,99-103,105-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "3a9428394e71a2b3dd6bd954c8c51547c6027dba",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
