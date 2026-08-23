@@ -114,7 +114,6 @@ function screwdriverBlock(envelope: ItemEnvelope): AssemblyPartNode[] {
   return [blockNode];
 }
 
-/** One comb bar sized for plier handles, slots front-to-back. */
 function plierComb(envelope: ItemEnvelope): AssemblyPartNode[] {
   const { w, d } = extent(envelope);
   const width = w - 16;
@@ -141,7 +140,6 @@ function plierComb(envelope: ItemEnvelope): AssemblyPartNode[] {
   ];
 }
 
-/** A two-step riser with a labeled bit bank seated on the top tread. */
 function screwdriverStation(envelope: ItemEnvelope): AssemblyPartNode[] {
   const { w, d } = extent(envelope);
   const stepDepth = Math.min(24, Math.max(14, d / 3));
@@ -182,7 +180,6 @@ function screwdriverStation(envelope: ItemEnvelope): AssemblyPartNode[] {
   ];
 }
 
-/** One leaning bore bank with an engraved caption. */
 function angledBitBank(envelope: ItemEnvelope): AssemblyPartNode[] {
   const { w, d } = extent(envelope);
   const bank = createAssemblyPartNode('boreBank', crypto.randomUUID(), {
@@ -210,7 +207,6 @@ function angledBitBank(envelope: ItemEnvelope): AssemblyPartNode[] {
   ];
 }
 
-/** A wrench comb: narrow slots for shafts, a raised caption on the band. */
 function wrenchRail(envelope: ItemEnvelope): AssemblyPartNode[] {
   const { w, d } = extent(envelope);
   const width = w - 16;
