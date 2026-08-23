@@ -13,6 +13,7 @@ import { Dialog } from '@/design-system/Dialog';
 import { ProgressBar } from '@/design-system/ProgressBar';
 import { useTranslation } from '@/i18n';
 import type { ExportFileFormat, ExportFileNameConfig, FileNameStyle } from '@/shared/types/bin';
+import { SchemaDocsLink } from '@/shared/components/SchemaDocsLink';
 import { MobileHandoffBanner } from './MobileHandoffBanner';
 
 /** Ordered format options for the selector */
@@ -408,6 +409,7 @@ export function ExportDialog({
                 {sourceDownload.hint && (
                   <p className="mt-0.5 text-[10px] text-content-tertiary">{sourceDownload.hint}</p>
                 )}
+                <SchemaDocsLink className="mt-1 inline-block text-[10px]" />
               </div>
             )}
 

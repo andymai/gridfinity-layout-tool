@@ -25,8 +25,8 @@ pnpm run validate:json docs/schemas/examples  # a directory
 
 Two legs are checked and reported separately:
 
-1. **schema** — structure, types, enums, ranges, with exact JSON pointers.
-2. **importer** — the rules JSON Schema cannot express.
+1. **schema**: structure, types, enums, ranges, with exact JSON pointers.
+2. **importer**: the rules JSON Schema cannot express.
 
 A file is only safe to import when both pass. Schema validation alone would
 accept a file the app then rejects, so treat a green schema leg as necessary,

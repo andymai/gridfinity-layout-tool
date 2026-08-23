@@ -130,6 +130,10 @@ graph TB
 
 ## Critical Concepts
 
+The exported design JSON format is documented in `docs/schemas/bin-design.md`
+(field reference, recipes, and the traps), and hand-written files can be checked
+with `pnpm run validate:json`.
+
 - **Epoch pattern**: `store.setParam()` increments epoch → triggers regeneration. Only properties the worker reads bump it, so cutout toggles split three ways. `locked` is editor state the worker never sees, so it calls `pushHistoryEntry(state, { affectsGeometry: false })` and undo works without a rebuild. `hidden` IS geometry: `buildCutoutCuts` filters hidden cutouts out of the cavity, group and label loops alike (a hidden group member stops contributing to its boolean), so hide, show and `showAllCutouts` all regenerate. `zIndex` is geometry only when the design has a group, since ordering's only geometric role is sequencing boolean ops inside one
 - **Spacer / riser (`base.spacer`)**: a floorless bin used as a riser so bins of different heights finish flush. Deliberately NOT a new `BinStyle` but a base property, so it composes with wall features and doesn't ripple through the ~20 `style` consumers.
   - Derives `dimensions.lightweight = true` and asks `lightweightBaseBuilder` for the `'through'` open direction: **zShift 0**, so the cup opens at BOTH ends. The floor-opening slug punches the body floor over each cup, making the whole cell a through-hole.

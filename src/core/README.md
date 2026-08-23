@@ -59,6 +59,9 @@ backends/
 migration.ts        — one-time localStorage → IndexedDB migration
 ```
 
+The layout JSON format `ShareService` reads and writes is documented in
+`docs/schemas/layout.md`, with a validator at `pnpm run validate:json`.
+
 ## Result Type (`result/`)
 
 ```typescript

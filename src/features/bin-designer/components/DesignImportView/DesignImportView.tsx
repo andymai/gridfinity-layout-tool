@@ -11,6 +11,7 @@ import { parseDesignJSON } from '@/features/bin-designer/utils/designJson';
 import type { BinParams } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import { SchemaDocsLink } from '@/shared/components/SchemaDocsLink';
 
 interface DesignImportViewProps {
   onImport: (design: { name: string; params: BinParams }) => void;
@@ -258,6 +259,7 @@ export function DesignImportView({ onImport, onCancel, onStlFile }: DesignImport
               <li key={index}>• {error}</li>
             ))}
           </ul>
+          <SchemaDocsLink className="mt-2 ml-6 inline-block text-danger/80 hover:text-danger" />
         </div>
       )}
 
