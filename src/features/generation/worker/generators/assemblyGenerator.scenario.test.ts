@@ -190,8 +190,7 @@ describe('assembly generator (real WASM)', () => {
     const result = generateAssembly(structureWith([lengthLean]), makeEnvelope(4, 2), noop, true);
     assertStructurallyValid(result);
     const bounds = boundingBox(result.vertices);
-    // Base is 167.5mm wide; an unclipped 20° shear on a 25mm fin would push
-    // the fin 9mm past its 60mm run. Clipped, the base rim stays the max.
+    // Unclipped, the shear would push the fin past the base rim.
     expect(bounds.maxX - bounds.minX).toBeLessThanOrEqual(4 * 42);
     const finVolume =
       meshVolume(result) -

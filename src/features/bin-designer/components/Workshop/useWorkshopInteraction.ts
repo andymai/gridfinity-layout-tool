@@ -28,7 +28,11 @@ export interface HoverSurface {
 }
 
 export interface WorkshopInteraction {
-  /** The current selection was made by touch — show the move handle. */
+  /**
+   * The selection was made by a touch pointerdown on this exact part — the
+   * move handle shows only then, so selection changes from any other path
+   * (placement auto-select, the tree, removal) can never leave it stale.
+   */
   readonly selectedViaTouch: boolean;
   readonly placements: PlacedPart[];
   readonly placedById: Map<string, PlacedPart>;
@@ -68,7 +72,7 @@ export function useWorkshopInteraction(
 
   const [hover, setHover] = useState<HoverSurface | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [selectedViaTouch, setSelectedViaTouch] = useState(false);
+  const [touchSelectedId, setTouchSelectedId] = useState<string | null>(null);
   const draggedSubtreeRef = useRef<Set<string>>(new Set());
   // Transaction opens lazily on the first real mutation of a drag, so a
   // click that never moves the part leaves no undo step behind.
@@ -244,7 +248,7 @@ export function useWorkshopInteraction(
       // pointer that made the selection is the ONE modality signal — a
       // mouse on a touchscreen laptop drags, a finger gets the handle.
       const viaTouch = pointerType === 'touch';
-      setSelectedViaTouch(viaTouch);
+      setTouchSelectedId(viaTouch ? id : null);
       if (viaTouch) {
         skipNextBaseClickRef.current = true;
         invalidate();
@@ -272,7 +276,7 @@ export function useWorkshopInteraction(
   }, [fineSnap, hover, placedById]);
 
   return {
-    selectedViaTouch,
+    selectedViaTouch: selectedId !== null && selectedId === touchSelectedId,
     placements,
     placedById,
     hover,
