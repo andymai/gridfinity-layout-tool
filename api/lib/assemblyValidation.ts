@@ -12,6 +12,7 @@ import {
   isObject,
   validationError,
 } from './validationUtils.js';
+import { validateFeatureColors } from './designerValidation.js';
 
 const MAX_ASSEMBLY_PARTS = 256;
 const MAX_ASSEMBLY_DEPTH = 8;
@@ -195,7 +196,8 @@ export function validateAssemblyEnvelope(envelope: unknown): AssemblyValidationR
   ) {
     return fail('envelope.attachment out of range');
   }
-  if (!isObject(envelope.featureColors)) return fail('envelope.featureColors must be an object');
+  const featureColorsError = validateFeatureColors(envelope.featureColors);
+  if (featureColorsError) return fail(featureColorsError);
   return { valid: true };
 }
 

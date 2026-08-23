@@ -109,7 +109,7 @@ export function useWorkshopAutoSave(): void {
           kind: 'assembly',
           envelope,
           structure,
-          thumbnail: thumbnail ?? '',
+          thumbnail: thumbnail ?? null,
           exportFileNameConfig: null,
         }).then((result) => {
           creatingRef.current = false;

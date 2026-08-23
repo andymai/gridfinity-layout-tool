@@ -62,6 +62,8 @@ function unwrap(payload: unknown): {
   tags?: string[];
   publishedId?: string | null;
   lineage?: CommunityDesignLineage | null;
+  /** A kind-wrapped payload this client cannot represent — do not apply. */
+  invalid?: true;
 } {
   if (payload !== null && typeof payload === 'object' && 'kind' in payload) {
     const wrapper = payload as {
@@ -99,6 +101,10 @@ function unwrap(payload: unknown): {
               : undefined,
       };
     }
+    // Any other kind-wrapped payload (a future kind, or an assembly wrapper
+    // missing its envelope/structure) must not fall through to the bare
+    // BinParams path — that would persist a corrupted bin row.
+    return { invalid: true };
   }
   if (payload !== null && typeof payload === 'object' && 'params' in payload) {
     const { name, params, tags, publishedId, lineage } = payload as {
@@ -196,7 +202,9 @@ export const designAdapter: DesignAdapter = {
         tags: remoteTags,
         publishedId: remotePublishedId,
         lineage: remoteLineage,
+        invalid,
       } = unwrap(item.payload);
+      if (invalid) return;
       // LWW: engine only calls applyRemote when remote is newer, so a
       // remote rename must win. Local name is only a fallback for legacy
       // payloads with no name; the literal covers a legacy fresh-device pull.
