@@ -1,0 +1,41 @@
+src/features/bin-designer/components/Workshop/WorkshopSharpMesh.tsx
+  s_a36c0b85dfeec4::t_39ce284475bd43 1-28,33-83
+  s_a36c0b85dfeec4::t_d7d31be5986ba5 29-32
+src/features/bin-designer/components/Workshop/hologramTracker.ts
+  s_a36c0b85dfeec4::t_dd200a9ba4f2ac 1-19
+src/features/bin-designer/components/Workshop/hologramTracker.test.ts
+  s_a36c0b85dfeec4::t_dd200a9ba4f2ac 1-25
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_a36c0b85dfeec4::t_dd200a9ba4f2ac 1-8,10-12,15-16,27-31,39-40,49-51,58-59,64,67-75,96-98,101-104,106,109-111,113,116-120,127,158-159,163-164,168-169
+  s_a36c0b85dfeec4::t_a58193b95c7660 9,65-66,76-95,99-100,105,107-108,112,114-115
+  s_a36c0b85dfeec4::t_ac656b04cf6c90 141
+  s_a36c0b85dfeec4::t_485ee058ffc24b 165-167
+src/features/bin-designer/components/Workshop/BasePlateMesh.tsx
+  s_a36c0b85dfeec4::t_137263e8e8ece3 19-20,29,79-84
+src/features/bin-designer/components/Workshop/WorkshopSharpMesh.test.tsx
+  s_a36c0b85dfeec4::t_39ce284475bd43 1-8
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_ac656b04cf6c90 62-65,167,173-175,177-180,198
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_a36c0b85dfeec4::t_137263e8e8ece3 26
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_137263e8e8ece3 9,13-15,28-52,72,77,88-90
+src/features/bin-designer/components/Workshop/useWorkshopSharpen.ts
+  s_a36c0b85dfeec4::t_39ce284475bd43 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "b76dedbc8b387cdcf3930379f3d35bf36ec16432",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
