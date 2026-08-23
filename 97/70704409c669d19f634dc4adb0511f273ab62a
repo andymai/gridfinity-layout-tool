@@ -1,0 +1,71 @@
+src/features/bin-designer/hooks/useThumbnailCapture.ts
+  s_a36c0b85dfeec4::t_58c0faa7efb7d1 30,38,45-46,104
+api/lib/assemblyValidation.test.ts
+  s_a36c0b85dfeec4::t_c4e62fa0cd2562 1-169
+  s_a36c0b85dfeec4::t_ab381606ebdc43 170-172
+  s_a36c0b85dfeec4::t_637c5d673a227c 173-174
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_a36c0b85dfeec4::t_b9bd904b38c507 82
+  s_a36c0b85dfeec4::t_78ed8f0a8cace8 203-205,256,268
+src/features/bin-designer/components/DesignListItem/DesignListItem.tsx
+  s_a36c0b85dfeec4::t_09d9e0e1873c00 15
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_a36c0b85dfeec4::t_dd0ee7de4031d5 117-224
+src/features/bin-designer/hooks/useWorkshopAutoSave.ts
+  s_a36c0b85dfeec4::t_40e2437836a03c 113
+  s_a36c0b85dfeec4::t_b9bd904b38c507 1-112,114-161
+src/features/bin-designer/utils/designKind.ts
+  s_a36c0b85dfeec4::t_d728cda30a2a62 6-7,14-26,46-56
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_a36c0b85dfeec4::t_b9bd904b38c507 20,67
+src/features/bin-designer/utils/designKind.test.ts
+  s_a36c0b85dfeec4::t_1416dde5f0a833 53-82
+src/features/bin-designer/components/DesignGridItem/DesignGridItem.tsx
+  s_a36c0b85dfeec4::t_09d9e0e1873c00 15
+src/features/labs/README.md
+  s_a36c0b85dfeec4::t_cdc9951030819b 41
+src/shared/types/assemblyPlacement.ts
+  s_a36c0b85dfeec4::t_b4fcf3534827cf 199-212
+src/core/labs/features.ts
+  s_a36c0b85dfeec4::t_cdc9951030819b 260
+src/features/bin-designer/sync/designAdapter.ts
+  s_a36c0b85dfeec4::t_3d6878b2415bbd 11-13,20
+  s_a36c0b85dfeec4::t_b08102f8862939 58-61,66-102,135-155,160-162,164,173-175,178,193-195,211-232
+  s_a36c0b85dfeec4::t_cb539cff4c969a 233-235
+  s_a36c0b85dfeec4::t_01b5c123452dc8 236
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_10c9ec05120ff0 1-237
+  s_a36c0b85dfeec4::t_f89193d2e7fb21 238-240
+  s_a36c0b85dfeec4::t_d4cce85aa443e3 241-242
+api/sync/designs/[id].ts
+  s_a36c0b85dfeec4::t_0d78d2571772f9 3-7,79-81,87,90-92,97-111,200,202-244
+  s_a36c0b85dfeec4::t_fd6b59455ec06b 201
+src/core/sync/adapters/types.ts
+  s_a36c0b85dfeec4::t_d728cda30a2a62 96-105
+src/features/bin-designer/components/DesignListDialog/DesignItemsView.tsx
+  s_a36c0b85dfeec4::t_09d9e0e1873c00 54
+src/features/bin-designer/components/DesignActions/DesignActions.tsx
+  s_a36c0b85dfeec4::t_09d9e0e1873c00 15,199-205,207-222
+  s_a36c0b85dfeec4::t_e18fa45c5103f3 223
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_a36c0b85dfeec4::t_1166564b9e1137 6-8,12-16,19-29,35,45-50
+src/features/bin-designer/hooks/useWorkshopAutoSave.test.ts
+  s_a36c0b85dfeec4::t_986446aead54f2 1-98
+  s_a36c0b85dfeec4::t_4e340bb1ea6ec3 99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "9770704409c669d19f634dc4adb0511f273ab62a",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
