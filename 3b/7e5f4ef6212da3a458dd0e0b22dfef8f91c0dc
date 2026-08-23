@@ -1,0 +1,23 @@
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_a36c0b85dfeec4::t_0e9c5974a9d0f3 114,270
+src/features/bin-designer/utils/assemblyChecker.ts
+  s_a36c0b85dfeec4::t_110e4878ad5d49 3-4
+src/features/bin-designer/utils/assemblyChecker.test.ts
+  s_a36c0b85dfeec4::t_237d2ec4df3909 79-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "3b7e5f4ef6212da3a458dd0e0b22dfef8f91c0dc",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
