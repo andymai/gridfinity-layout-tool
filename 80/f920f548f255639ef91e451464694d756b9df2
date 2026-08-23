@@ -1,0 +1,87 @@
+src/features/bin-designer/types/designerState.ts
+  s_a36c0b85dfeec4::t_6547a89088891f 353-356
+  s_a36c0b85dfeec4::t_c97bbca12f2f37 156-157
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_a36c0b85dfeec4::t_c97bbca12f2f37 56-57,61,66-69
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_a36c0b85dfeec4::t_fca7a6e7346041 8,131
+src/features/bin-designer/components/Workshop/PlacementGhost.tsx
+  s_a36c0b85dfeec4::t_6b3035194d1916 15,22,24-34
+  s_a36c0b85dfeec4::t_5376e71df55fc1 4-9
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.tsx
+  s_a36c0b85dfeec4::t_bd9bc96a3699d9 16
+  s_a36c0b85dfeec4::t_d03bf42ad0f512 24-29,68,71-72
+src/features/bin-designer/components/Workshop/WorkshopPanel/CutterProfileSection.test.tsx
+  s_a36c0b85dfeec4::t_53134179b75b55 1-24,26-44
+  s_a36c0b85dfeec4::t_15250e8e5b8ce5 25
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_a36c0b85dfeec4::t_6547a89088891f 99-102,105
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_a36c0b85dfeec4::t_fca7a6e7346041 71,77,170,180-209
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_6b3035194d1916 100
+src/features/bin-designer/constants/defaults.ts
+  s_a36c0b85dfeec4::t_6547a89088891f 312
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/shared/items/assembly/descriptor.ts
+  s_a36c0b85dfeec4::t_c97bbca12f2f37 14,303-332
+  s_a36c0b85dfeec4::t_984a124ab08d2e 333-334
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/features/bin-designer/components/Workshop/WorkshopPanel/CutterProfileSection.tsx
+  s_a36c0b85dfeec4::t_53134179b75b55 1-200
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/features/bin-designer/types/uiState.ts
+  s_a36c0b85dfeec4::t_6547a89088891f 213-215
+scripts/i18n-values-allowlist.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 319-321
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/features/bin-designer/components/Workshop/cutterProfileImport.ts
+  s_a36c0b85dfeec4::t_6547a89088891f 1-33
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_6b3035194d1916 38,50-53,56,246
+  s_a36c0b85dfeec4::t_6547a89088891f 13,176-184
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+src/features/bin-designer/components/Workshop/cutterProfileImport.test.ts
+  s_a36c0b85dfeec4::t_6547a89088891f 1-56
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_22a357459c53fc 2269-2280
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_22a357459c53fc 4206,4219,4239-4240,4250-4257
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "80f920f548f255639ef91e451464694d756b9df2",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
