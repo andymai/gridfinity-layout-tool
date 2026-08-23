@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.459.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.459.0...gridfinity-layout-tool-v4.459.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* **generation:** clip a tapered bin's raised floor to the wall ([#3766](https://github.com/andymai/gridfinity-layout-tool/issues/3766)) ([cc9fba6](https://github.com/andymai/gridfinity-layout-tool/commit/cc9fba60d453641a0c2fad12c46298acb4ec2f98))
+
 ## [4.459.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.458.0...gridfinity-layout-tool-v4.459.0) (2026-08-23)
 
 
