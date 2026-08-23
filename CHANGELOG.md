@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.469.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.468.0...gridfinity-layout-tool-v4.469.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** four showcase templates on the new parts ([#3787](https://github.com/andymai/gridfinity-layout-tool/issues/3787)) ([6ddfe25](https://github.com/andymai/gridfinity-layout-tool/commit/6ddfe256bb66b51b76988f10706881f93cb5c376))
+
 ## [4.468.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.467.0...gridfinity-layout-tool-v4.468.0) (2026-08-23)
 
 
