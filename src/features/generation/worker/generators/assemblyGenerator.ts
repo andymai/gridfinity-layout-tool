@@ -392,11 +392,17 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       const rTop = boreDiameter / 2;
       const outer = cylinder(outerR, height + sink, { at: [0, 0, -sink] });
       const boreH = height + 2 * sink + 2;
+      // The cone is anchored so its radius AT THE MOUTH (z = height) is exactly
+      // boreDiameter/2 — the overshoot above the rim widens, never narrows.
+      const taperTan = Math.tan(boreTaperDeg * DEG);
       const bore =
         boreTaperDeg > 0
-          ? cone(Math.max(0.5, rTop - boreH * Math.tan(boreTaperDeg * DEG)), rTop, boreH, {
-              at: [0, 0, -sink - 1],
-            })
+          ? cone(
+              Math.max(0.5, rTop - (height + sink + 1) * taperTan),
+              rTop + (sink + 1) * taperTan,
+              boreH,
+              { at: [0, 0, -sink - 1] }
+            )
           : cylinder(rTop, boreH, { at: [0, 0, -sink - 1] });
       let hollow = unwrap(cut(outer, bore, { optimisation: 'commonFace' })) as Shape3D;
       if (hollow !== outer) outer.delete();
@@ -440,7 +446,7 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
       const gd = Math.min(grooveDepth, height - 0.5);
       if (grooveStyle === 'vee') {
         const pen = draw([-width / 2, -sink - cradleDrop])
-          .lineTo([width / 2, -sink])
+          .lineTo([width / 2, -sink - cradleDrop])
           .lineTo([width / 2, height])
           .lineTo([gw / 2, height])
           .lineTo([0, height - gd])

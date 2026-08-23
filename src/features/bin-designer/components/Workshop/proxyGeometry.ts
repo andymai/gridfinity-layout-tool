@@ -94,9 +94,11 @@ function buildBlock(p: {
 }): BufferGeometry {
   const tilt = p.tiltDeg ?? 0;
   const drop = tilt > 0 ? Math.tan(tilt * DEG) * (p.depth / 2) + 0.5 : 0;
-  const finish = (geometry: BufferGeometry): BufferGeometry => {
+  // `dropped` = the geometry already extends below z=0 by `drop` (the wedge
+  // profile draws its base there); otherwise shift the extra extrusion down.
+  const finish = (geometry: BufferGeometry, dropped: boolean): BufferGeometry => {
     if (tilt > 0) {
-      geometry.translate(0, 0, -drop);
+      if (!dropped) geometry.translate(0, 0, -drop);
       geometry.rotateX(tilt * DEG);
     }
     return geometry;
@@ -107,16 +109,17 @@ function buildBlock(p: {
       roundedRectShape(p.width, p.depth, Math.min(2.5, p.width / 5, p.depth / 5)),
       { depth: p.height + drop, bevelEnabled: false, curveSegments: 8 }
     );
-    return finish(body);
+    return finish(body, false);
   }
   const lowEdge = Math.max(0.5, p.height - p.depth * Math.tan(p.wedgeAngleDeg * DEG));
   const shape = new Shape();
-  shape.moveTo(-p.depth / 2, 0);
+  shape.moveTo(-p.depth / 2, -drop);
+  shape.lineTo(p.depth / 2, -drop);
   shape.lineTo(p.depth / 2, 0);
   shape.lineTo(p.depth / 2, lowEdge);
   shape.lineTo(-p.depth / 2, p.height);
   shape.closePath();
-  return finish(extrudeYZProfile(shape, p.width));
+  return finish(extrudeYZProfile(shape, p.width), true);
 }
 
 function buildTube(p: {
