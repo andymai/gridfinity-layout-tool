@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.464.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.463.0...gridfinity-layout-tool-v4.464.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** counterbored tapered tubes and presentation tilt ([#3776](https://github.com/andymai/gridfinity-layout-tool/issues/3776)) ([a2e1688](https://github.com/andymai/gridfinity-layout-tool/commit/a2e168830ac6338e0520177600cc1eb9b11f331f))
+
 ## [4.463.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.462.0...gridfinity-layout-tool-v4.463.0) (2026-08-23)
 
 
