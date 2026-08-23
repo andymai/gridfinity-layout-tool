@@ -20,6 +20,9 @@ justified by raising the number in the same commit. To add detail, prefer moving
 it into the matching `.claude/skills/*/SKILL.md`, which loads only for relevant
 tasks, over CLAUDE.md or a README, which are read far more often.
 
+The two hand-authorable JSON formats (layouts, bin designs) live in
+`docs/schemas/`; validate one with `pnpm run validate:json`.
+
 ## Code Style (Enforced)
 
 | Required                      | Prohibited                |

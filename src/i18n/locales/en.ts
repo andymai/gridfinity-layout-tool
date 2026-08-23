@@ -109,6 +109,7 @@ const en: Record<string, string> = {
   'errorBoundary.backupDone': 'Backup downloaded.',
   'errorBoundary.backupError': "Couldn't create a backup. Try refreshing the page.",
 
+  'common.schemaDocsLink': 'File format reference',
   'common.customize': 'Customize',
   'common.copy': 'Copy',
   'common.copied': 'Copied!',

@@ -1040,6 +1040,7 @@ const SITEMAP_PAGES: Record<string, SitemapPage> = {
   'gridfinity-calculator': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-cutout-generator': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-software': { basePriority: 0.7, changefreq: 'monthly' },
+  schema: { basePriority: 0.5, changefreq: 'monthly' },
 };
 
 function sitemapImageXml(slug: string): string {

@@ -6,6 +6,7 @@ import type { Layout } from '@/core/types';
 import type { LayoutArchive } from '@/core/storage';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import { SchemaDocsLink } from '@/shared/components/SchemaDocsLink';
 
 interface ImportViewProps {
   onImport: (layout: Layout) => void;
@@ -317,6 +318,7 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
               <li key={index}>• {error}</li>
             ))}
           </ul>
+          <SchemaDocsLink className="mt-2 ml-6 inline-block text-danger/80 hover:text-danger" />
         </div>
       )}
 
