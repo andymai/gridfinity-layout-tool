@@ -1,0 +1,37 @@
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_4924df2d7e8a52 299-306,308
+  s_a36c0b85dfeec4::t_e106e609bd55bf 297-298,307
+  s_a36c0b85dfeec4::t_b218c64555ea7a 277,281-286,291,350-351,355,358-364
+  s_a36c0b85dfeec4::t_dd941f948db2be 107-124,334
+  s_a36c0b85dfeec4::t_1d33e7052d63ed 17,26,29,32,41,67-72,86-106,125-161
+  s_a36c0b85dfeec4::t_8d6e696945ba39 177,344,467,496,500-507,596,598,601-615,619
+  s_a36c0b85dfeec4::t_587cc8a3ac57d8 290,292-296,309-312,318-319,326-329,333,335,407-408,422-436,456-459,618
+  s_a36c0b85dfeec4::t_1b37185abeae82 313-316,320-325,331-332,336-338,342
+  s_a36c0b85dfeec4::t_d5730b21eda941 162
+  s_a36c0b85dfeec4::t_49bc5b5358eb5b 409-410
+  s_a36c0b85dfeec4::t_7ad3baf4d93a13 460-462,464-466
+  s_a36c0b85dfeec4::t_a53c46832c7520 616-617
+  s_a36c0b85dfeec4::t_47efcd6c6f9e7f 620-622
+  s_a36c0b85dfeec4::t_a07aa694347f19 372-375,383,386-388,463,623-624
+src/shared/generation/meshPersistence.ts
+  s_a36c0b85dfeec4::t_cb284c24d81524 215-217
+src/features/bin-designer/components/Workshop/proxyGeometry.ts
+  s_a36c0b85dfeec4::t_e21c06419faf2c 60-74
+  s_a36c0b85dfeec4::t_212cac31ca61dd 21-36,95-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "5e3485b763f41938b444daebde27185da67cd068",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
