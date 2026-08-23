@@ -26,6 +26,7 @@ import {
   getKernelCapabilities,
   mesh,
   meshEdges,
+  mirror,
   rotate,
   translate,
   unwrap,
@@ -325,7 +326,8 @@ function positionedPartSolid(
   halfW: number,
   halfD: number,
   floorThickness: number,
-  forExport: boolean
+  forExport: boolean,
+  mirrorAxis: 'x' | 'y'
 ): Shape3D | null {
   const key = partCacheKey(placed.node, forExport);
   let template = getFeatureCache('assembly-part', key);
@@ -335,6 +337,14 @@ function positionedPartSolid(
     setFeatureCache('assembly-part', key, built);
     template = getFeatureCache('assembly-part', key);
     if (!template) template = built;
+  }
+  if (placed.mirrored) {
+    const reflected = mirror(template, {
+      normal: mirrorAxis === 'x' ? [1, 0, 0] : [0, 1, 0],
+      at: [0, 0, 0],
+    });
+    template.delete();
+    template = reflected;
   }
   const rotated =
     placed.rotZDeg !== 0 ? rotate(template, placed.rotZDeg, { axis: [0, 0, 1] }) : template;
@@ -371,7 +381,10 @@ export function buildAssemblySolid(
       -COPLANAR_OVERLAP
     ).extrude(floorThickness + COPLANAR_OVERLAP);
 
-    const placements = resolvePlacedParts(structure);
+    const placements = resolvePlacedParts(structure, {
+      w: envelope.width * unitMm,
+      d: envelope.depth * unitMm,
+    });
     const additive: Shape3D[] = [floor];
     const cutters: Shape3D[] = [];
     for (const placed of placements) {
@@ -381,7 +394,8 @@ export function buildAssemblySolid(
         (envelope.width * unitMm) / 2,
         (envelope.depth * unitMm) / 2,
         floorThickness,
-        forExport
+        forExport,
+        structure.mirrorAxis
       );
       if (!solid) continue;
       if (placed.node.type === 'cutter') cutters.push(scope.register(solid));

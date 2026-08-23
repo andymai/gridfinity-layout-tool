@@ -97,6 +97,8 @@ export interface PlacedPart {
   readonly topZ: number;
   readonly parentId: string | null;
   readonly depth: number;
+  /** Reflected twin across the assembly's mirror plane (render mirrored geometry). */
+  readonly mirrored: boolean;
 }
 
 export function rotate2d(x: number, y: number, deg: number): { x: number; y: number } {
@@ -107,34 +109,90 @@ export function rotate2d(x: number, y: number, deg: number): { x: number; y: num
   return { x: x * cos - y * sin, y: x * sin + y * cos };
 }
 
-/** Flatten the attachment tree into world-placed instances, expanding arrays. */
-export function resolvePlacedParts(structure: AssemblyStructure): PlacedPart[] {
+/**
+ * Flatten the attachment tree into world-placed instances, expanding arrays
+ * and — when the base extent is known — each root-level `mirror: true`
+ * subtree's reflected twin across the assembly's mirror plane through the
+ * base center. Reflection flips handedness: child offsets mirror on the
+ * reflected axis and rotations compose negated.
+ */
+export function resolvePlacedParts(
+  structure: AssemblyStructure,
+  baseExtent?: { w: number; d: number }
+): PlacedPart[] {
   const placed: PlacedPart[] = [];
+  const axis = structure.mirrorAxis;
+
   const walk = (
     nodes: readonly AssemblyPartNode[],
     origin: { x: number; y: number; rotZDeg: number; topZ: number },
     parentId: string | null,
     depth: number,
-    keyPrefix: string
+    keyPrefix: string,
+    refl: { mx: 1 | -1; my: 1 | -1 }
   ): void => {
+    const handed = refl.mx * refl.my;
     for (const node of nodes) {
       const copies = node.array ? node.array.count : 1;
       for (let i = 0; i < copies; i += 1) {
-        const step = node.array
-          ? rotate2d(node.array.dx * i, node.array.dy * i, origin.rotZDeg)
-          : { x: 0, y: 0 };
-        const local = rotate2d(node.transform.x, node.transform.y, origin.rotZDeg);
-        const x = origin.x + local.x + step.x;
-        const y = origin.y + local.y + step.y;
+        const offX = node.transform.x + (node.array ? node.array.dx * i : 0);
+        const offY = node.transform.y + (node.array ? node.array.dy * i : 0);
+        const local = rotate2d(refl.mx * offX, refl.my * offY, origin.rotZDeg);
+        const x = origin.x + local.x;
+        const y = origin.y + local.y;
         const z = origin.topZ + node.transform.seatZ;
-        const rotZDeg = origin.rotZDeg + node.transform.rotZDeg;
+        const rotZDeg = origin.rotZDeg + handed * node.transform.rotZDeg;
         const topZ = z + partSeatHeight(node);
-        const key = `${keyPrefix}${node.id}${i > 0 ? `#${i}` : ''}`;
-        placed.push({ node, selectId: node.id, key, x, y, z, rotZDeg, topZ, parentId, depth });
-        walk(node.children, { x, y, rotZDeg, topZ }, node.id, depth + 1, `${key}/`);
+        const mirrored = handed === -1;
+        const key = `${keyPrefix}${node.id}${i > 0 ? `#${i}` : ''}${mirrored ? '~m' : ''}`;
+        placed.push({
+          node,
+          selectId: node.id,
+          key,
+          x,
+          y,
+          z,
+          rotZDeg,
+          topZ,
+          parentId,
+          depth,
+          mirrored,
+        });
+        walk(node.children, { x, y, rotZDeg, topZ }, node.id, depth + 1, `${key}/`, refl);
+
+        if (!mirrored && node.mirror && baseExtent && parentId === null) {
+          const rx = axis === 'x' ? baseExtent.w - x : x;
+          const ry = axis === 'y' ? baseExtent.d - y : y;
+          const rrot = -rotZDeg;
+          const rKey = `${keyPrefix}${node.id}${i > 0 ? `#${i}` : ''}~m`;
+          placed.push({
+            node,
+            selectId: node.id,
+            key: rKey,
+            x: rx,
+            y: ry,
+            z,
+            rotZDeg: rrot,
+            topZ,
+            parentId,
+            depth,
+            mirrored: true,
+          });
+          const childRefl: { mx: 1 | -1; my: 1 | -1 } =
+            axis === 'x' ? { mx: -1, my: 1 } : { mx: 1, my: -1 };
+          walk(
+            node.children,
+            { x: rx, y: ry, rotZDeg: rrot, topZ },
+            node.id,
+            depth + 1,
+            `${rKey}/`,
+            childRefl
+          );
+        }
       }
     }
   };
-  walk(structure.parts, { x: 0, y: 0, rotZDeg: 0, topZ: 0 }, null, 1, '');
+
+  walk(structure.parts, { x: 0, y: 0, rotZDeg: 0, topZ: 0 }, null, 1, '', { mx: 1, my: 1 });
   return placed;
 }

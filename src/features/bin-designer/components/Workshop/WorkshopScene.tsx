@@ -6,7 +6,7 @@ import { SceneLighting } from '@/features/bin-designer/components/PreviewCanvas/
 import { FootprintGrid } from '@/features/bin-designer/components/preview/FootprintGrid/FootprintGrid';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope } from '@/shared/types/item';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BasePlateMesh } from './BasePlateMesh';
 import { PartProxyMesh } from './PartProxyMesh';
 import { PlacementGhost } from './PlacementGhost';
@@ -22,8 +22,9 @@ interface WorkshopSceneProps {
 }
 
 export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
-  const interaction = useWorkshopInteraction(structure);
-  const { w, d } = baseExtentMm(envelope);
+  const extent = useMemo(() => baseExtentMm(envelope), [envelope]);
+  const interaction = useWorkshopInteraction(structure, extent);
+  const { w, d } = extent;
   const cameraDistance = Math.max(w, d) * 1.4 + 80;
   const sharp = useWorkshopSharpen();
   const showSharp = sharp && interaction.draggingId === null;
@@ -86,6 +87,7 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
             interaction.draggingId !== null && interaction.isInDraggedSubtree(placed.selectId)
           }
           hidden={showSharp}
+          mirrorAxis={structure.mirrorAxis}
           hologramStart={holograms.get(placed.selectId) ?? null}
           onHologramEnd={endHologram}
           onSurfaceMove={interaction.onSurfaceMove}

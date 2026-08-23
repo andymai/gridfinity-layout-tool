@@ -6,8 +6,10 @@ import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 import type {
   AssemblyBase,
+  AssemblyPartNode,
   AssemblyPartParams,
   AssemblyPartType,
+  PartArray,
   PartTransform,
 } from '@/shared/types/assembly';
 import type { AccentBandConfig, ColorZone, HoverableZone, LipColorConfig } from './featureColors';
@@ -164,6 +166,12 @@ export interface DesignerState {
   ) => boolean;
   removeAssemblyPart: (id: string) => void;
   updateAssemblyPartParams: (id: string, params: Partial<AssemblyPartParams>) => void;
+  setAssemblyPartArray: (id: string, array: PartArray | null) => void;
+  setAssemblyPartMirror: (id: string, mirror: boolean) => void;
+  setAssemblyMirrorAxis: (axis: 'x' | 'y') => void;
+  alignAssemblySiblings: (id: string, axis: 'x' | 'y') => void;
+  distributeAssemblySiblings: (id: string, axis: 'x' | 'y') => void;
+  loadAssemblyTemplate: (parts: AssemblyPartNode[]) => boolean;
   updateAssemblyBase: (partial: Partial<AssemblyBase>) => void;
 
   // Compartment actions

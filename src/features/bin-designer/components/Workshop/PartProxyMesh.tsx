@@ -7,7 +7,7 @@
  * sweeps up its height under a cyan emissive glow that settles to solid.
  */
 import { useEffect, useMemo, useRef } from 'react';
-import { Plane, Vector3 } from 'three';
+import { DoubleSide, Plane, Vector3 } from 'three';
 import type { MeshStandardMaterial } from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
@@ -26,6 +26,7 @@ interface PartProxyMeshProps {
   raycastDisabled: boolean;
   /** Sharp worker mesh is on screen — render nothing, keep raycast alive. */
   hidden: boolean;
+  mirrorAxis: 'x' | 'y';
   /** performance.now() at placement, when this instance should scan in. */
   hologramStart: number | null;
   onHologramEnd: (id: string) => void;
@@ -47,6 +48,7 @@ export function PartProxyMesh({
   selected,
   raycastDisabled,
   hidden,
+  mirrorAxis,
   hologramStart,
   onHologramEnd,
   onSurfaceMove,
@@ -138,6 +140,7 @@ export function PartProxyMesh({
       geometry={geometry}
       position={[storeToScene(placed.x, baseW), storeToScene(placed.y, baseD), placed.z]}
       rotation={[0, 0, placed.rotZDeg * DEG]}
+      scale={placed.mirrored ? (mirrorAxis === 'x' ? [-1, 1, 1] : [1, -1, 1]) : [1, 1, 1]}
       {...(raycastDisabled ? { raycast: NO_RAYCAST } : {})}
       onPointerMove={(e) => {
         e.stopPropagation();
@@ -156,6 +159,7 @@ export function PartProxyMesh({
     >
       <meshStandardMaterial
         ref={materialRef}
+        side={DoubleSide}
         visible={showSolid}
         color={color}
         roughness={0.6}
