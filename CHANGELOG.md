@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.444.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.443.0...gridfinity-layout-tool-v4.444.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** arrays, mirror, sibling arrange, and starter templates ([#3729](https://github.com/andymai/gridfinity-layout-tool/issues/3729)) ([25355c2](https://github.com/andymai/gridfinity-layout-tool/commit/25355c22e42349d090988a54405ea836ec5faee6))
+* **workshop:** cutter profile picker and scan bridge ([#3727](https://github.com/andymai/gridfinity-layout-tool/issues/3727)) ([7806196](https://github.com/andymai/gridfinity-layout-tool/commit/7806196422ec235edc35985db43bb69ecc0bead1))
+
 ## [4.443.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.442.0...gridfinity-layout-tool-v4.443.0) (2026-08-23)
 
 
