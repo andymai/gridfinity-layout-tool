@@ -644,10 +644,8 @@ export function buildAssemblySolid(
         floorThickness - capT
       ).extrude(capT);
       const stepped = unwrap(fuseAll([floor, cap] as ValidSolid[])) as Shape3D;
-      if (stepped !== floor && stepped !== cap) {
-        floor.delete();
-        cap.delete();
-      }
+      if (stepped !== floor) floor.delete();
+      if (stepped !== cap) cap.delete();
       floor = stepped;
     }
 
