@@ -23,7 +23,7 @@ export function WorkshopCanvas() {
   return (
     <div className="relative h-full w-full" translate="no" data-testid="workshop-canvas">
       <WebGLErrorBoundary component="designer">
-        <Canvas frameloop="demand" gl={{ antialias: true }}>
+        <Canvas frameloop="demand" gl={{ antialias: true, localClippingEnabled: true }}>
           <WorkshopScene structure={structure} envelope={envelope} />
         </Canvas>
       </WebGLErrorBoundary>

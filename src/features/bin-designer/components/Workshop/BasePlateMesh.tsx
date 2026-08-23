@@ -16,6 +16,8 @@ import type { HoverSurface } from './useWorkshopInteraction';
 interface BasePlateMeshProps {
   envelope: ItemEnvelope;
   base: AssemblyBase;
+  /** Sharp worker mesh is on screen — render nothing, keep raycast alive. */
+  hidden?: boolean;
   onSurfaceMove: (surface: HoverSurface) => void;
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
@@ -24,6 +26,7 @@ interface BasePlateMeshProps {
 export function BasePlateMesh({
   envelope,
   base,
+  hidden = false,
   onSurfaceMove,
   onSurfaceLeave,
   onSurfaceClick,
@@ -73,7 +76,12 @@ export function BasePlateMesh({
         onSurfaceClick(toSurface(e));
       }}
     >
-      <meshStandardMaterial color={colors.workshopBase} roughness={0.85} metalness={0.05} />
+      <meshStandardMaterial
+        visible={!hidden}
+        color={colors.workshopBase}
+        roughness={0.85}
+        metalness={0.05}
+      />
     </mesh>
   );
 }
