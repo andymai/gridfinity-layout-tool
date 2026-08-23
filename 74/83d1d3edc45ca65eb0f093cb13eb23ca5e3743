@@ -1,0 +1,38 @@
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_a36c0b85dfeec4::t_fc7256898574e0 34,64,165,198-214,216-220,222-227,229-245,248-249,251-283,286-371
+  s_a36c0b85dfeec4::t_1d5a8c770df003 372-374
+  s_a36c0b85dfeec4::t_a38bd37601ce1f 375,377-379
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_58dc7c46a59e9a 23-24,27,77
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_a36c0b85dfeec4::t_58dc7c46a59e9a 6,37-39,69-73,76
+src/features/bin-designer/components/Workshop/WorkshopPanel/partSummary.test.ts
+  s_a36c0b85dfeec4::t_295ca2d49fff2b 1-52
+src/features/bin-designer/components/Workshop/BasePlateMesh.tsx
+  s_a36c0b85dfeec4::t_9ac16cf5537201 6,8-9,23-24,30-31,36,42-66,68-73,119,124-125
+  s_a36c0b85dfeec4::t_38b7ec488360c7 67
+src/features/bin-designer/components/Workshop/PlacementGhost.tsx
+  s_a36c0b85dfeec4::t_58dc7c46a59e9a 16-17,41
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_58dc7c46a59e9a 40,269-274,280-282
+src/features/bin-designer/components/Workshop/WorkshopPanel/partSummary.ts
+  s_a36c0b85dfeec4::t_295ca2d49fff2b 1-38
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.test.tsx
+  s_a36c0b85dfeec4::t_9159d9c43fee0c 32-33,35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "7483d1d3edc45ca65eb0f093cb13eb23ca5e3743",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
