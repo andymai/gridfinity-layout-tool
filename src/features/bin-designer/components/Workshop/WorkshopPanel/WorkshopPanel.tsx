@@ -111,6 +111,7 @@ export function WorkshopPanel() {
     }
     return map;
   }, [warnings]);
+  const warnedIds = useMemo(() => new Set(warnings.map((w) => w.partId)), [warnings]);
 
   if (structure?.kind !== 'assembly' || !envelope) return null;
   const assembly: AssemblyStructure = structure;
@@ -266,7 +267,7 @@ export function WorkshopPanel() {
                 nodes={assembly.parts}
                 depth={0}
                 selectedId={selectedId}
-                warned={new Set(warnings.map((w) => w.partId))}
+                warned={warnedIds}
                 onSelect={setSelectedAssemblyPartId}
                 label={(node) => t(PART_LABEL_KEYS[node.type])}
               />

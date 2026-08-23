@@ -1,7 +1,7 @@
 /**
  * Advisory printability checks over a Workshop build — pure math on the
- * placed-part list, no OCCT. Warnings inform (a badge, an export summary);
- * they never block anything: the printer owner decides.
+ * placed-part list, no OCCT. Warnings inform (a tree badge, inspector
+ * messages); they never block anything: the printer owner decides.
  */
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { PlacedPart } from '@/shared/types/assemblyPlacement';

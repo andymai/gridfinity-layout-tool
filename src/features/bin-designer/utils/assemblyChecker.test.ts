@@ -76,6 +76,15 @@ describe('checkAssembly', () => {
       }
     );
     expect(kinds([arch])).toEqual(['a:overhang']);
+    const hook = part(
+      'hook',
+      'h',
+      {},
+      {
+        params: { stemHeight: 30, reach: 60, lipHeight: 8, thickness: 4, width: 15 },
+      }
+    );
+    expect(kinds([hook])).toEqual(['h:overhang']);
   });
 
   it('flags a cutter that reaches through the floor into the socket', () => {
