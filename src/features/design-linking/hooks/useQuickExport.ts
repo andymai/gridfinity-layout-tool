@@ -9,6 +9,7 @@ import { useCallback, useState } from 'react';
 import type { DesignId } from '@/core/types';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { generateFileName, loadDesign } from '@/features/bin-designer';
+import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
 import { useToastStore } from '@/core/store';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
@@ -46,21 +47,34 @@ export function useQuickExport(): UseQuickExportReturn {
           return;
         }
         const design = designResult.value;
-        // Only bin designs are quick-exportable via this path (non-bin items
-        // have no flat `params`).
-        if (!design.params) return;
+        const assembly =
+          design.structure?.kind === 'assembly' && design.envelope
+            ? { envelope: design.envelope, structure: design.structure }
+            : null;
+        if (!design.params && !assembly) return;
 
         const bridge = await bridgeManager.acquire();
         try {
-          const result = await bridge.exportBin(design.params, 'stl');
-          const fileName = generateFileName(
-            design.params,
-            'stl',
-            design.exportFileNameConfig ?? 'descriptive',
-            design.name
-          );
+          const exported = design.params
+            ? {
+                data: (await bridge.exportBin(design.params, 'stl')).data,
+                fileName: generateFileName(
+                  design.params,
+                  'stl',
+                  design.exportFileNameConfig ?? 'descriptive',
+                  design.name
+                ),
+              }
+            : assembly
+              ? {
+                  data: (await bridge.exportItem(assembly, 'stl')).data,
+                  fileName: `${assemblyDescriptor.exportFileName(assembly.envelope, assembly.structure)}.stl`,
+                }
+              : null;
+          if (!exported) return;
+          const { data, fileName } = exported;
 
-          const blob = new Blob([result.data], { type: 'application/sla' });
+          const blob = new Blob([data], { type: 'application/sla' });
           const url = URL.createObjectURL(blob);
           const anchor = document.createElement('a');
           anchor.href = url;

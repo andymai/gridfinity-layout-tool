@@ -255,7 +255,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // are packaged here. Worker format: STEP stays STEP, STL and 3MF both
         // export STL geometry.
         const workerFormat: ExportFormat = partFormat === 'step' ? 'step' : 'stl';
-        const binTotal = plan.exportable.length + plan.meshExportable.length;
+        const binTotal =
+          plan.exportable.length + plan.meshExportable.length + plan.itemExportable.length;
         const binLabel = (current: number): string =>
           t('layoutExport.progress.bins', { current, total: binTotal });
         setExportProgress({ current: 0, total: binTotal, label: binLabel(0) });
@@ -359,6 +360,22 @@ export function useLayoutExport(): UseLayoutExportReturn {
             );
             if (projectMode) projectParts.addStl(baseNameOf(m.path), stl);
             else binFiles.push({ path: m.path, data: stl });
+          }
+          done++;
+          setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
+        }
+
+        // Phase 1.6 — Workshop assemblies: generated in the worker via the
+        // item export path (STEP carries exact BREP, so no format skip). One
+        // failed design skips rather than aborting the whole archive.
+        for (const a of plan.itemExportable) {
+          try {
+            const result = await bridge.exportItem(a.item, workerFormat);
+            if (projectMode) projectParts.addStl(baseNameOf(a.path), result.data);
+            else binFiles.push({ path: a.path, data: result.data });
+          } catch {
+            // Tallied nowhere: the manifest still lists the design, and a
+            // partial archive beats losing every other part over one holder.
           }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
