@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.456.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.455.0...gridfinity-layout-tool-v4.456.0) (2026-08-23)
+
+
+### Features
+
+* **community:** accept Workshop assemblies server-side ([#3758](https://github.com/andymai/gridfinity-layout-tool/issues/3758)) ([a7b56df](https://github.com/andymai/gridfinity-layout-tool/commit/a7b56df640b1dcc12a707d32e1c3be460771bf34))
+
 ## [4.455.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.454.0...gridfinity-layout-tool-v4.455.0) (2026-08-23)
 
 
