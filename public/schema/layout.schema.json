@@ -595,8 +595,8 @@
     },
     "LinkedDesign": {
       "type": "object",
-      "description": "A bin design embedded in the layout file so bins keep their geometry when the layout travels.",
-      "required": ["id", "name", "params"],
+      "description": "A design embedded in the layout file so bins keep their geometry when the layout travels: a bin design (params) or a Workshop assembly (kind + envelope + structure). The oneOf pins which of the two field sets an entry must carry.",
+      "required": ["id", "name"],
       "properties": {
         "id": {
           "type": "string",
@@ -609,8 +609,67 @@
         },
         "params": {
           "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/BinParams"
+        },
+        "kind": {
+          "const": "assembly",
+          "description": "Discriminator for assembly entries."
+        },
+        "envelope": {
+          "type": "object",
+          "description": "Assembly envelope: footprint in grid units plus unit sizes. Present only on assembly entries.",
+          "required": ["width", "depth", "gridUnitMm", "heightUnitMm"],
+          "properties": {
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "depth": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "gridUnitMm": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "heightUnitMm": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "structure": {
+          "type": "object",
+          "description": "Assembly part tree; validated in depth by the app's schema on import. Present only on assembly entries.",
+          "required": ["kind", "base", "parts"],
+          "properties": {
+            "kind": {
+              "const": "assembly"
+            },
+            "base": {
+              "type": "object"
+            },
+            "parts": {
+              "type": "array"
+            }
+          }
         }
-      }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "params": {}
+          },
+          "required": ["params"]
+        },
+        {
+          "properties": {
+            "kind": {},
+            "envelope": {},
+            "structure": {}
+          },
+          "required": ["kind", "envelope", "structure"]
+        }
+      ]
     },
     "BaseplateParams": {
       "type": "object",

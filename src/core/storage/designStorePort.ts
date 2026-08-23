@@ -24,6 +24,11 @@ export interface LoadedDesignData {
   readonly name: string;
   /** Bin params (opaque; absent for non-bin design kinds). */
   readonly params?: unknown;
+  /** Item kind for non-bin designs (opaque; the adapter narrows it). */
+  readonly kind?: string;
+  /** Envelope + structure for non-bin kinds (opaque, like `params`). */
+  readonly envelope?: unknown;
+  readonly structure?: unknown;
 }
 
 /** What core hands the port to persist a design. */
@@ -31,7 +36,16 @@ export interface SaveDesignInput {
   /** Omit to mint a fresh id; provide to upsert a specific design. */
   readonly id?: DesignId;
   readonly name: string;
-  readonly params: unknown;
+  readonly params?: unknown;
+  /**
+   * Workshop assembly persistence: when `kind` is 'assembly' the adapter
+   * gates `structure` through the descriptor's migration (schema salvage)
+   * before saving — the same trust boundary the sync engine applies to a
+   * remote payload. `params` is ignored for assembly saves.
+   */
+  readonly kind?: 'assembly';
+  readonly envelope?: unknown;
+  readonly structure?: unknown;
   readonly thumbnail: string | null;
   readonly exportFileNameConfig: null;
 }
@@ -66,6 +80,18 @@ export interface DesignRegistryEntry extends DesignRegistryEdgeFields {
   readonly width: number;
   readonly depth: number;
   readonly height: number;
+  /** Item kind of the design; absent = parametric bin. */
+  readonly kind?: 'importedMesh' | 'assembly';
+  /** Assembled-rise fields — mirror the feature's `CustomBinRef`. */
+  readonly assembledRiseMm?: number;
+  readonly socketless?: boolean;
+  readonly hasLip?: boolean;
+  readonly overhangMm?: {
+    readonly left: number;
+    readonly right: number;
+    readonly front: number;
+    readonly back: number;
+  };
   readonly updatedAt: string;
 }
 

@@ -426,11 +426,14 @@ like layer and category ids.
 
 <!-- generated:start -->
 
-| Field    | Type                                   | Required | Default | Constraint  | Notes                                          |
-| -------- | -------------------------------------- | -------- | ------- | ----------- | ---------------------------------------------- |
-| `id`     | `string`                               | yes      |         | length >= 1 | Design id, matched against Bin.linkedDesignId. |
-| `name`   | `string`                               | yes      |         |             | Design name.                                   |
-| `params` | [`BinParams`](bin-design.md#binparams) | yes      |         |             |                                                |
+| Field       | Type                                   | Required | Default | Constraint  | Notes                                                                                                   |
+| ----------- | -------------------------------------- | -------- | ------- | ----------- | ------------------------------------------------------------------------------------------------------- |
+| `id`        | `string`                               | yes      |         | length >= 1 | Design id, matched against Bin.linkedDesignId.                                                          |
+| `name`      | `string`                               | yes      |         |             | Design name.                                                                                            |
+| `params`    | [`BinParams`](bin-design.md#binparams) |          |         |             |                                                                                                         |
+| `kind`      | `"assembly"`                           |          |         |             | Discriminator for assembly entries.                                                                     |
+| `envelope`  | `object`                               |          |         |             | Assembly envelope: footprint in grid units plus unit sizes. Present only on assembly entries.           |
+| `structure` | `object`                               |          |         |             | Assembly part tree; validated in depth by the app's schema on import. Present only on assembly entries. |
 
 <!-- generated:end -->
 

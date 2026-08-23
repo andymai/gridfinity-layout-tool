@@ -186,7 +186,14 @@ export type _ScrewHolesKeys = Assert<
   KeysMatch<keyof ScrewHoleParams, (typeof SCREW_HOLES_KEYS)[number]>
 >;
 
-export const LINKED_DESIGN_KEYS = ['id', 'name', 'params'] as const;
+export const LINKED_DESIGN_KEYS = [
+  'id',
+  'name',
+  'params',
+  'kind',
+  'envelope',
+  'structure',
+] as const;
 export type _LinkedDesignKeys = Assert<
   KeysMatch<keyof LinkedDesignExport, (typeof LINKED_DESIGN_KEYS)[number]>
 >;

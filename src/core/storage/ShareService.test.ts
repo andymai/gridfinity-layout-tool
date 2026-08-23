@@ -680,6 +680,41 @@ describe('storage-share', () => {
       expect(mockLoadDesign).toHaveBeenCalledWith('design-1');
     });
 
+    it('embeds an assembly design as kind + envelope + structure', async () => {
+      const layout = createLayoutWithLinkedDesigns();
+      mockLoadDesign.mockResolvedValue(
+        ok({
+          id: 'design-1',
+          name: 'Pliers Rack',
+          kind: 'assembly',
+          envelope: { width: 2, depth: 2, gridUnitMm: 42, heightUnitMm: 7 },
+          structure: {
+            kind: 'assembly',
+            schemaVersion: 1,
+            base: { floorThickness: 2 },
+            mirrorAxis: 'x',
+            parts: [],
+          },
+          thumbnail: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+          exportFileNameConfig: null,
+        })
+      );
+
+      const json = await exportLayoutJSONWithDesigns(layout);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.linkedDesigns).toHaveLength(1);
+      expect(parsed.linkedDesigns[0]).toMatchObject({
+        id: 'design-1',
+        name: 'Pliers Rack',
+        kind: 'assembly',
+      });
+      expect(parsed.linkedDesigns[0].structure.kind).toBe('assembly');
+      expect(parsed.linkedDesigns[0].params).toBeUndefined();
+    });
+
     it('omits designs that cannot be found in IndexedDB (deleted designs)', async () => {
       const layout = createLayoutWithLinkedDesigns();
 
@@ -795,6 +830,52 @@ describe('storage-share', () => {
         thumbnail: null,
         exportFileNameConfig: null,
       });
+    });
+
+    it('saves an embedded assembly through the port with its structure', async () => {
+      const layout = createTestLayout();
+      layout.bins[0].linkedDesignId = designId('old-asm-id');
+
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          {
+            id: 'old-asm-id',
+            name: 'Travel Rack',
+            kind: 'assembly',
+            envelope: { width: 2, depth: 2, gridUnitMm: 42, heightUnitMm: 7 },
+            structure: {
+              kind: 'assembly',
+              schemaVersion: 1,
+              base: { floorThickness: 2 },
+              mirrorAxis: 'x',
+              parts: [],
+            },
+          },
+        ],
+      });
+
+      mockSaveDesign.mockResolvedValue(
+        ok({
+          id: 'new-asm-id',
+          name: 'Travel Rack',
+          thumbnail: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+          exportFileNameConfig: null,
+        })
+      );
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.importedDesignCount).toBe(1);
+      expect(mockSaveDesign).toHaveBeenCalledWith(
+        expect.objectContaining({
+          kind: 'assembly',
+          structure: expect.objectContaining({ kind: 'assembly' }),
+        })
+      );
+      expect(result.layout.bins[0].linkedDesignId).toBe('new-asm-id');
     });
 
     it('updates linkedDesignId references on bins', async () => {
@@ -960,6 +1041,84 @@ describe('storage-share', () => {
     beforeEach(() => {
       vi.clearAllMocks();
       registerDesignStorePort(fakePort);
+    });
+
+    const assemblyEnvelope = () => ({
+      width: 2,
+      depth: 2,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      attachment: {
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
+    });
+    const assemblyStructure = () => ({
+      kind: 'assembly',
+      schemaVersion: 1,
+      base: { floorThickness: 2 },
+      mirrorAxis: 'x',
+      parts: [
+        {
+          id: 'p1',
+          type: 'post',
+          params: { diameter: 8, height: 40 },
+          transform: { x: 42, y: 42, seatZ: 0, rotZDeg: 0 },
+          children: [],
+        },
+      ],
+    });
+
+    it('persists a travelling assembly and registers it with its rise fields', async () => {
+      mockSaveDesign.mockResolvedValue(savedAs('design_shared_asm'));
+
+      const result = await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-asm-1'), [
+        {
+          id: 'remote-asm-1',
+          name: 'Pliers Rack',
+          kind: 'assembly',
+          envelope: assemblyEnvelope(),
+          structure: assemblyStructure(),
+        },
+      ]);
+
+      expect(mockSaveDesign).toHaveBeenCalledWith(
+        expect.objectContaining({
+          kind: 'assembly',
+          envelope: expect.objectContaining({ width: 2, depth: 2 }),
+          structure: expect.objectContaining({ kind: 'assembly' }),
+        })
+      );
+      expect(mockUpsertRegistryEntry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          kind: 'assembly',
+          hasLip: false,
+          socketless: false,
+          // 40mm post + socket + 2mm floor, in 7mm units.
+          height: 7,
+          assembledRiseMm: expect.any(Number),
+        })
+      );
+      expect(result.bins[0].linkedDesignId).toBe('design_shared_asm');
+    });
+
+    it('skips an assembly entry whose structure fails the shape guard', async () => {
+      const result = await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-asm-1'), [
+        {
+          id: 'remote-asm-1',
+          name: 'Broken',
+          kind: 'assembly',
+          envelope: assemblyEnvelope(),
+          structure: { kind: 'assembly' },
+        },
+      ]);
+
+      expect(mockSaveDesign).not.toHaveBeenCalled();
+      expect(result.bins[0].linkedDesignId).toBe('remote-asm-1');
     });
 
     it('returns the layout untouched when no designs travelled with it', async () => {

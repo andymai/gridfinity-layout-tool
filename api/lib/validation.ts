@@ -5,6 +5,7 @@
 
 import { isNumber, isObject, inRange, validationError } from './validationUtils.js';
 import { validateDesignerShare } from './designerValidation.js';
+import { validateAssemblyEnvelope, validateAssemblyStructure } from './assemblyValidation.js';
 
 // Constraints for shared layouts
 const SHARE_CONSTRAINTS = {
@@ -47,6 +48,8 @@ const DESIGN_ID_MAX_LENGTH = 64;
  */
 const MAX_LINKED_DESIGNS = 250;
 const MAX_LINKED_DESIGNS_BYTES = 512 * 1024;
+// Per-assembly cap, matching the sync endpoint's design payload budget.
+const MAX_ASSEMBLY_DESIGN_BYTES = 100 * 1024;
 const DESIGN_NAME_MAX_LENGTH = 64;
 
 /** Reserved keys that cannot be used as custom property names */
@@ -398,11 +401,15 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
   };
 }
 
-/** A bin design travelling with a shared layout, keyed by the id its bins carry. */
+/** A design travelling with a shared layout, keyed by the id its bins carry.
+ *  Bin designs carry `params`; Workshop assemblies carry envelope + structure. */
 export interface SharedDesignShape {
   id: string;
   name: string;
-  params: Record<string, unknown>;
+  params?: Record<string, unknown>;
+  kind?: 'assembly';
+  envelope?: Record<string, unknown>;
+  structure?: Record<string, unknown>;
 }
 
 export type SharedDesignsResult =
@@ -447,6 +454,51 @@ export function validateSharedDesigns(data: unknown): SharedDesignsResult {
     }
     // Bins share designs freely, so the client can emit the same id twice.
     if (seen.has(id)) continue;
+
+    if (entry.kind === 'assembly') {
+      // Assemblies ride the same deep validators the sync endpoint uses, so a
+      // layout share can't become a side door around them.
+      const envelopeResult = validateAssemblyEnvelope(entry.envelope);
+      if (!envelopeResult.valid) {
+        return validationError(
+          'VALIDATION_ERROR',
+          `Invalid linked design envelope: ${envelopeResult.error.message}`
+        );
+      }
+      const structureResult = validateAssemblyStructure(entry.structure);
+      if (!structureResult.valid) {
+        return validationError(
+          'VALIDATION_ERROR',
+          `Invalid linked design structure: ${structureResult.error.message}`
+        );
+      }
+      const assemblyBytes = JSON.stringify({
+        envelope: entry.envelope,
+        structure: entry.structure,
+      }).length;
+      if (assemblyBytes > MAX_ASSEMBLY_DESIGN_BYTES) {
+        return validationError(
+          'SIZE_LIMIT',
+          `Linked assembly exceeds maximum size of ${MAX_ASSEMBLY_DESIGN_BYTES / 1024}KB`
+        );
+      }
+      totalBytes += assemblyBytes;
+      if (totalBytes > MAX_LINKED_DESIGNS_BYTES) {
+        return validationError(
+          'SIZE_LIMIT',
+          `Linked designs exceed maximum size of ${MAX_LINKED_DESIGNS_BYTES / 1024}KB`
+        );
+      }
+      seen.add(id);
+      designs.push({
+        id: sanitizeString(id, DESIGN_ID_MAX_LENGTH),
+        name: sanitizeString(name, DESIGN_NAME_MAX_LENGTH),
+        kind: 'assembly',
+        envelope: entry.envelope as Record<string, unknown>,
+        structure: entry.structure as Record<string, unknown>,
+      });
+      continue;
+    }
 
     const paramsBytes = JSON.stringify(params ?? null).length;
     const result = validateDesignerShare({ type: 'designer', version: 1, params }, paramsBytes);
