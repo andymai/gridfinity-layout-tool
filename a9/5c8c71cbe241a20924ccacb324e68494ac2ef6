@@ -1,0 +1,67 @@
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_80e4b1a922a756 16,300,308-322,491-501
+scripts/i18n-values-allowlist.json
+  s_a36c0b85dfeec4::t_fce0039d3375f4 320-321,336,341-342,347-348
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_a36c0b85dfeec4::t_9c78bf5be332b4 6,24,69,285-377
+src/features/bin-designer/components/Workshop/WorkshopPanel/partFieldConfig.ts
+  s_a36c0b85dfeec4::t_6cccd79f832884 6,130-136
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_a36c0b85dfeec4::t_9a1626837fc97e 23,198-212
+src/features/bin-designer/types/designerState.ts
+  s_a36c0b85dfeec4::t_1c4e6af269a125 14,172
+src/features/generation/worker/generators/assemblyGenerator.scenario.labels.test.ts
+  s_a36c0b85dfeec4::t_2bf65f6db8f88f 1-74
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_2bb2d3951f8715 28,42,48,59-60,675-827,833-834,853-855,933-934
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_3d540322b32dde 4271-4280
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_4d4535363bca9f 4271-4280
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_a8fc00dcd2078e 2296-2305
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_ac9ff3e488bd1d 4271-4280
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_6a0983ddad7c92 4271-4280
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_5216047e025863 4271-4280
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_6490dfc013c2f4 4271-4280
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_724b485664cdc1 4271-4280
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_329a25a50296cf 4271-4280
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_16f56453bac4d8 4271-4280
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_2deab702791cfd 4271-4280
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_bed2f365afee2a 4271-4280
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_5ec8d0538c286c 4271-4280
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_6aa48d06ff7ea3 4271-4280
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_0fe81d2b36dc04 4271-4280
+src/shared/items/assembly/descriptor.ts
+  s_a36c0b85dfeec4::t_f6e457bff466e6 176-183,189
+src/shared/types/assembly.ts
+  s_a36c0b85dfeec4::t_d8c8e0e221dc10 188-198,205-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "a95c8c71cbe241a20924ccacb324e68494ac2ef6",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
