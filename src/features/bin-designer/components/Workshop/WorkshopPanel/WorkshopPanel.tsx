@@ -90,8 +90,10 @@ export function WorkshopPanel() {
   const exportBuild = async (format: 'stl' | 'step' | '3mf'): Promise<void> => {
     const item: GridfinityItem = { envelope, structure: assembly };
     setExporting(true);
-    const bridge = await bridgeManager.acquire();
+    let acquired = false;
     try {
+      const bridge = await bridgeManager.acquire();
+      acquired = true;
       // The worker exports BREP as STL or STEP; 3MF is packaged here from
       // the STL bytes, same as the imported-mesh panel.
       const workerFormat = format === 'step' ? 'step' : 'stl';
@@ -122,7 +124,7 @@ export function WorkshopPanel() {
     } catch {
       addToast(t('workshop.export.failed'), 'error');
     } finally {
-      bridgeManager.release();
+      if (acquired) bridgeManager.release();
       setExporting(false);
     }
   };
