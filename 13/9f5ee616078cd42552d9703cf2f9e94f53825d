@@ -1,0 +1,26 @@
+src/features/bin-designer/hooks/useToolRackMigration.ts
+  s_a36c0b85dfeec4::t_742e51ed10426f 25,29,34,36-38
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_742e51ed10426f 28,204-206,218-222
+src/features/bin-designer/hooks/useToolRackMigration.test.ts
+  s_a36c0b85dfeec4::t_f566a56cf91997 69-79
+src/features/generation/worker/generators/assemblyGenerator.scenario.test.ts
+  s_a36c0b85dfeec4::t_f566a56cf91997 180-200
+  s_a36c0b85dfeec4::t_60b72fd1706678 201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "139f5ee616078cd42552d9703cf2f9e94f53825d",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
