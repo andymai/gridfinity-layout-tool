@@ -52,7 +52,6 @@ export const halfSockets: ScenarioCase[] = [
       depth: 3,
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('half-sockets', '2×2 half sockets + screw base', {
@@ -112,7 +111,6 @@ export const halfSockets: ScenarioCase[] = [
       depth: 3,
       base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half', footLatticeY: 'half' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('half-sockets', '3×3 half foot lattice on X only', {
@@ -122,7 +120,6 @@ export const halfSockets: ScenarioCase[] = [
       depth: 3,
       base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half' },
     },
-    timeout: 60_000,
   }),
 
   // Asks for `half` on both axes of a 2.5x2 bin: the fractional X falls back to

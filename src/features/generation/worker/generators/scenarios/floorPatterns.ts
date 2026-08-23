@@ -110,14 +110,12 @@ export const floorPatterns: ScenarioCase[] = [
         assertDrainsThrough(drained, plain);
       },
     },
-    timeout: 90_000,
   }),
 
   defineScenario('floor patterns', 'holes stay clear of the baseplate-mating taper', {
     assert: 'structural',
     params: { width: 2, depth: 2, height: 4, floorPattern: HONEYCOMB_FLOOR },
     customAssert: assertFeetUnbreached,
-    timeout: 90_000,
   }),
 
   // ── Everything that already occupies the base or stands on the floor ──────
@@ -131,7 +129,6 @@ export const floorPatterns: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw' },
     },
     customAssert: assertFeetUnbreached,
-    timeout: 90_000,
   }),
 
   defineScenario('floor patterns', 'compartment divider footings stay solid', {
@@ -142,7 +139,6 @@ export const floorPatterns: ScenarioCase[] = [
       floorPattern: HONEYCOMB_FLOOR,
       compartments: TWO_BY_TWO,
     },
-    timeout: 90_000,
   }),
 
   defineScenario('floor patterns', 'scoop ramp footings stay solid', {
@@ -153,7 +149,6 @@ export const floorPatterns: ScenarioCase[] = [
       floorPattern: ROUND_FLOOR,
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
     },
-    timeout: 90_000,
   }),
 
   // ── Base variants ────────────────────────────────────────────────────────
@@ -166,7 +161,6 @@ export const floorPatterns: ScenarioCase[] = [
       floorPattern: ROUND_FLOOR,
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
     },
-    timeout: 90_000,
   }),
 
   defineScenario('floor patterns', 'half sockets get one window per quarter foot', {
@@ -177,12 +171,10 @@ export const floorPatterns: ScenarioCase[] = [
       floorPattern: ROUND_FLOOR,
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
     },
-    timeout: 90_000,
   }),
 
   defineScenario('floor patterns', 'fractional edge foot carries a narrower window', {
     params: { width: 1.5, depth: 1, height: 4, floorPattern: ROUND_FLOOR },
-    timeout: 90_000,
   }),
 
   // ── Composition ──────────────────────────────────────────────────────────
@@ -195,7 +187,6 @@ export const floorPatterns: ScenarioCase[] = [
       floorPattern: HONEYCOMB_FLOOR,
       wallPattern: { enabled: true, pattern: 'honeycomb', scale: 0.5, dividers: false },
     },
-    timeout: 120_000,
   }),
 
   defineScenario('floor patterns', 'custom-shape bin patterns only its filled feet', {
@@ -206,7 +197,6 @@ export const floorPatterns: ScenarioCase[] = [
       floorPattern: ROUND_FLOOR,
       cellMask: { cols: 4, rows: 4, cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0] },
     },
-    timeout: 90_000,
   }),
 
   // ── Degenerate: an element too bold for any window leaves the floor solid ─
@@ -235,6 +225,5 @@ export const floorPatterns: ScenarioCase[] = [
         expect(meshVolume(oversized)).toBeCloseTo(meshVolume(plain), 3);
       },
     },
-    timeout: 90_000,
   }),
 ];

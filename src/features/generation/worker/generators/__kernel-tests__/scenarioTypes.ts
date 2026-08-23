@@ -40,7 +40,13 @@ export interface ScenarioCase {
   params: Partial<BinParams>;
   forExport?: boolean;
   assert: AssertionMode;
-  timeout: number;
+  /**
+   * Passed straight to `it()`, where an explicit value overrides the
+   * generators project `testTimeout` in BOTH directions — a value below it is
+   * a cap, not a raise. Annotate only scenarios that need more than the
+   * project bound; leave the rest unset so the project bound applies.
+   */
+  timeout?: number;
   /** Runs after standard assertions with the generated mesh. */
   customAssert?: (result: MeshData, params: BinParams) => void;
   /** Generate a second mesh and compare. */
@@ -52,19 +58,16 @@ export interface ScenarioCase {
 /**
  * Create a scenario case with sensible defaults.
  * - `assert` defaults to `'snapshot'`
- * - `timeout` defaults to `30000`
  */
 export function defineScenario(
   category: string,
   name: string,
-  config: Omit<ScenarioCase, 'name' | 'category' | 'assert' | 'timeout'> &
-    Partial<Pick<ScenarioCase, 'assert' | 'timeout'>>
+  config: Omit<ScenarioCase, 'name' | 'category' | 'assert'> & Partial<Pick<ScenarioCase, 'assert'>>
 ): ScenarioCase {
   return {
     name,
     category,
     assert: 'snapshot',
-    timeout: 30_000,
     ...config,
   };
 }

@@ -24,7 +24,6 @@ export const handles: ScenarioCase[] = [
         right: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'handle holes with label tabs (back suppression)', {
     assert: 'structural',
@@ -39,7 +38,6 @@ export const handles: ScenarioCase[] = [
         back: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'handle holes with wall cutouts on same sides', {
     assert: 'structural',
@@ -58,7 +56,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'handle holes + cutouts on all four walls', {
     assert: 'structural',
@@ -83,7 +80,6 @@ export const handles: ScenarioCase[] = [
         right: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'handle holes with sharp corners (radius=0)', {
     assert: 'structural',
@@ -98,7 +94,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'handle holes with max corner radius (oval)', {
     assert: 'structural',
@@ -115,7 +110,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'handle holes + wide cutout suppresses all segments', {
     assert: 'structural',
@@ -134,7 +128,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'handle holes + left-aligned cutout (asymmetric split)', {
     assert: 'structural',
@@ -162,7 +155,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   // --- New shape scenarios ---
   defineScenario('handles', 'oval shape handles on front wall', {
@@ -178,7 +170,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'scoop shape handles on front wall', {
     assert: 'structural',
@@ -193,7 +184,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'multi-handle count=2 on wide bin', {
     assert: 'structural',
@@ -208,7 +198,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'custom vertical position at 40%', {
     assert: 'structural',
@@ -223,7 +212,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'interior wall handles with 2x2 compartments', {
     assert: 'structural',
@@ -239,7 +227,6 @@ export const handles: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('handles', 'chamfer enabled on rectangle handles', {
     assert: 'structural',
@@ -255,6 +242,5 @@ export const handles: ScenarioCase[] = [
         left: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
 ];

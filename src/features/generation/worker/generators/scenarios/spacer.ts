@@ -54,7 +54,6 @@ export const spacer: ScenarioCase[] = [
   defineScenario('spacer', '3×3 spacer (interior feet must stay attached)', {
     assert: 'structural',
     forExport: true,
-    timeout: 60_000,
     params: { width: 3, depth: 3, height: 2, base: spacerBase },
   }),
 
