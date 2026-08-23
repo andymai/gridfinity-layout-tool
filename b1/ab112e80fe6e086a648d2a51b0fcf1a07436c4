@@ -1,0 +1,26 @@
+src/features/bin-designer/hooks/useWorkshopAutoSave.ts
+  s_a36c0b85dfeec4::t_9a0aa7fb0df021 112
+api/lib/designerValidation.ts
+  s_a36c0b85dfeec4::t_9a0aa7fb0df021 1262
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_f29ea8dd5830b8 15
+  s_a36c0b85dfeec4::t_9a0aa7fb0df021 199-200
+src/features/bin-designer/sync/designAdapter.ts
+  s_a36c0b85dfeec4::t_9a0aa7fb0df021 65-66,104-107,205,207
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "b1ab112e80fe6e086a648d2a51b0fcf1a07436c4",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
