@@ -136,6 +136,14 @@ function makeAssemblyDesign(): SavedDesign {
       depth: 1,
       gridUnitMm: 42,
       heightUnitMm: 7,
+      attachment: {
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
     } as unknown as SavedDesign['envelope'],
     structure: {
       kind: 'assembly',
