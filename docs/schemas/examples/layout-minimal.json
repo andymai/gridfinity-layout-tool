@@ -1,0 +1,25 @@
+{
+  "$schema": "https://gridfinitylayouttool.com/schema/layout.schema.json",
+  "version": "1.0",
+  "name": "Minimal drawer",
+  "drawer": { "width": 3, "depth": 2, "height": 6 },
+  "printBedSize": 256,
+  "gridUnitMm": 42,
+  "heightUnitMm": 7,
+  "categories": [{ "id": "cat-general", "name": "General", "color": "#3b82f6" }],
+  "layers": [{ "id": "layer-base", "name": "Base", "height": 6 }],
+  "bins": [
+    {
+      "id": "bin-screws",
+      "layerId": "layer-base",
+      "x": 0,
+      "y": 0,
+      "width": 2,
+      "depth": 2,
+      "height": 6,
+      "category": "cat-general",
+      "label": "Screws",
+      "notes": ""
+    }
+  ]
+}

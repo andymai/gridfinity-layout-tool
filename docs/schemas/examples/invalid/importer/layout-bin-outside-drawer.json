@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "name": "Bin past the right edge",
+  "drawer": { "width": 3, "depth": 2, "height": 6 },
+  "gridUnitMm": 42,
+  "heightUnitMm": 7,
+  "categories": [{ "id": "c1", "name": "General", "color": "#3b82f6" }],
+  "layers": [{ "id": "l1", "name": "Base", "height": 6 }],
+  "bins": [
+    {
+      "id": "b1",
+      "layerId": "l1",
+      "x": 2,
+      "y": 0,
+      "width": 2,
+      "depth": 2,
+      "height": 6,
+      "category": "c1",
+      "label": "Overhanging",
+      "notes": ""
+    }
+  ]
+}

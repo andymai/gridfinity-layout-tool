@@ -1,0 +1,963 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gridfinitylayouttool.com/schema/layout.schema.json",
+  "title": "Gridfinity layout",
+  "description": "A drawer layout produced by Export Layout in the Gridfinity Layout Tool. Grid origin is bottom-left; layers[0] is the bottom layer. Unknown properties are allowed so newer files still validate. This schema is an AUTHORING contract: it requires more than the importer strictly demands, because the importer backfills missing fields. See https://gridfinitylayouttool.com/schema",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "drawer",
+    "gridUnitMm",
+    "heightUnitMm",
+    "categories",
+    "layers",
+    "bins"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional pointer to this schema. Ignored by the importer; present only so editors offer completion."
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Document format version. Always \"1.0\". The importer never branches on it; backward compatibility is handled by field-level defaulting instead."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "x-constant": {
+        "maxLength": "CONSTRAINTS.NAME_MAX_LENGTH"
+      },
+      "description": "Layout name shown in the library."
+    },
+    "drawer": {
+      "$ref": "#/$defs/Drawer"
+    },
+    "printBedSize": {
+      "type": "number",
+      "minimum": 42,
+      "maximum": 3000,
+      "default": 256,
+      "x-constant": {
+        "minimum": "CONSTRAINTS.PRINT_BED_MM_MIN",
+        "maximum": "CONSTRAINTS.PRINT_BED_MM_MAX",
+        "default": "CONSTRAINTS.PRINT_BED_MM_DEFAULT"
+      },
+      "description": "Print bed width in mm. Used to decide when a baseplate must be split."
+    },
+    "printBedDepth": {
+      "type": "number",
+      "minimum": 42,
+      "maximum": 3000,
+      "x-constant": {
+        "minimum": "CONSTRAINTS.PRINT_BED_MM_MIN",
+        "maximum": "CONSTRAINTS.PRINT_BED_MM_MAX"
+      },
+      "description": "Print bed depth in mm. Absent means the bed is square and equals printBedSize."
+    },
+    "gridUnitMm": {
+      "type": "number",
+      "minimum": 20,
+      "maximum": 60,
+      "default": 42,
+      "x-constant": {
+        "minimum": "CONSTRAINTS.GRID_UNIT_MM_MIN",
+        "maximum": "CONSTRAINTS.GRID_UNIT_MM_MAX",
+        "default": "CONSTRAINTS.GRID_UNIT_MM_DEFAULT"
+      },
+      "description": "Millimetres per grid unit along X. Standard Gridfinity is 42."
+    },
+    "gridUnitMmY": {
+      "type": "number",
+      "minimum": 20,
+      "maximum": 60,
+      "x-constant": {
+        "minimum": "CONSTRAINTS.GRID_UNIT_MM_MIN",
+        "maximum": "CONSTRAINTS.GRID_UNIT_MM_MAX"
+      },
+      "description": "Millimetres per grid unit along Y, for a non-square grid. Omit for a square grid: omitting keeps square layouts byte-identical, and consumers resolve it as gridUnitMmY ?? gridUnitMm."
+    },
+    "heightUnitMm": {
+      "type": "number",
+      "minimum": 3,
+      "maximum": 20,
+      "default": 7,
+      "x-constant": {
+        "minimum": "CONSTRAINTS.HEIGHT_UNIT_MM_MIN",
+        "maximum": "CONSTRAINTS.HEIGHT_UNIT_MM_MAX",
+        "default": "CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT"
+      },
+      "description": "Millimetres per height unit. Standard Gridfinity is 7."
+    },
+    "magnetAnchor": {
+      "enum": ["edge", "center"],
+      "default": "edge",
+      "description": "Where magnet holes anchor in each cell. 'edge' holds a constant 8mm from the cell edge (the true Gridfinity corner). 'center' is the legacy fixed 13mm from cell centre. Identical at a 42mm grid; only observable above it."
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "x-constant": {
+        "minItems": "CONSTRAINTS.CATEGORIES_MIN",
+        "maxItems": "CONSTRAINTS.CATEGORIES_MAX"
+      },
+      "items": {
+        "$ref": "#/$defs/Category"
+      },
+      "description": "Colour categories. Every Bin.category must name an id from this list."
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "x-constant": {
+        "minItems": "CONSTRAINTS.LAYERS_MIN",
+        "maxItems": "CONSTRAINTS.LAYERS_MAX"
+      },
+      "items": {
+        "$ref": "#/$defs/Layer"
+      },
+      "description": "Vertical layers, index 0 = BOTTOM. The UI displays them reversed; the file is always bottom-first."
+    },
+    "bins": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Bin"
+      },
+      "description": "Placed bins. May be empty."
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Free-text drawer purpose, e.g. \"workshop\". Descriptive only."
+    },
+    "baseplateParams": {
+      "$ref": "#/$defs/BaseplateParams"
+    },
+    "activeBaseplateId": {
+      "type": ["string", "null"],
+      "description": "Pointer to the active baseplate library design. null means a detached inline draft."
+    },
+    "linkedDesigns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/LinkedDesign"
+      },
+      "description": "Bin designs travelling with this layout, written by \"export with designs\". Each entry's id is matched against Bin.linkedDesignId. Omit when no bin carries a linkedDesignId; a layout exported without these arrives with dangling references."
+    },
+    "_meta": {
+      "$ref": "#/$defs/ExportMeta"
+    }
+  },
+  "$defs": {
+    "ExportMeta": {
+      "type": "object",
+      "description": "Provenance stamp added on export and deleted on import. Never load-bearing.",
+      "properties": {
+        "exportedFrom": {
+          "type": "string",
+          "description": "Origin URL of the exporting app."
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 export timestamp."
+        }
+      }
+    },
+    "Drawer": {
+      "type": "object",
+      "description": "The drawer envelope in grid units. Grid origin is bottom-left.",
+      "required": ["width", "depth", "height"],
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 50,
+          "multipleOf": 0.5,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.GRID_MIN",
+            "maximum": "CONSTRAINTS.GRID_MAX"
+          },
+          "description": "Drawer width in grid units. 0.5 increments allowed (half-bin mode)."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 50,
+          "multipleOf": 0.5,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.GRID_MIN",
+            "maximum": "CONSTRAINTS.GRID_MAX"
+          },
+          "description": "Drawer depth in grid units. 0.5 increments allowed."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Drawer height in HEIGHT units, not mm. Must be at least the sum of layer heights."
+        },
+        "fractionalEdgeX": {
+          "enum": ["start", "end"],
+          "default": "end",
+          "description": "Which side carries the half-unit column when width is fractional. 'start' = left, 'end' = right."
+        },
+        "fractionalEdgeY": {
+          "enum": ["start", "end"],
+          "default": "end",
+          "description": "Which side carries the half-unit row when depth is fractional. 'start' = front/bottom, 'end' = back/top."
+        },
+        "outline": {
+          "$ref": "#/$defs/DrawerOutline"
+        },
+        "gridShiftX": {
+          "type": "number",
+          "description": "Manual grid shift in mm along X inside a custom perimeter, composed on top of automatic lattice registration. Only meaningful with outline present. Consumers clamp to plus or minus half the grid pitch, since a larger shift is just a different whole-cell registration."
+        },
+        "gridShiftY": {
+          "type": "number",
+          "description": "Manual grid shift in mm along Y. Same clamping as gridShiftX."
+        },
+        "measuredMm": {
+          "$ref": "#/$defs/MeasuredDrawerMm"
+        }
+      }
+    },
+    "MeasuredDrawerMm": {
+      "type": "object",
+      "description": "The user's tape-measure reading of the physical drawer. Never consulted for geometry; the grid dimensions stay authoritative.",
+      "required": ["width", "depth"],
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5000,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.MEASURED_MM_MIN",
+            "maximum": "CONSTRAINTS.MEASURED_MM_MAX"
+          },
+          "description": "Measured inside width in mm."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5000,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.MEASURED_MM_MIN",
+            "maximum": "CONSTRAINTS.MEASURED_MM_MAX"
+          },
+          "description": "Measured inside depth in mm."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5000,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.MEASURED_MM_MIN",
+            "maximum": "CONSTRAINTS.MEASURED_MM_MAX"
+          },
+          "description": "Measured inside height in mm."
+        }
+      }
+    },
+    "DrawerOutline": {
+      "type": "object",
+      "description": "Non-rectangular drawer boundary: ONE closed counter-clockwise loop, implicitly closed from last vertex back to first. Interior holes are unrepresentable by design. The loop must be simple (non-self-intersecting), lie inside the grid extent, and enclose at least one grid cell.",
+      "required": ["vertices"],
+      "properties": {
+        "vertices": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/OutlineVertex"
+          },
+          "description": "Counter-clockwise loop. Do not repeat the first vertex at the end."
+        },
+        "authoring": {
+          "$ref": "#/$defs/OutlineAuthoring"
+        }
+      }
+    },
+    "OutlineVertex": {
+      "type": "object",
+      "description": "Outline vertex in drawer-local MILLIMETRES, origin at the grid's bottom-left, spanning [0, width x gridUnitMm] by [0, depth x gridUnitMm].",
+      "required": ["x", "y"],
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "X in mm from the grid's bottom-left."
+        },
+        "y": {
+          "type": "number",
+          "description": "Y in mm from the grid's bottom-left."
+        },
+        "bulge": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1,
+          "description": "Arc bulge for the segment from this vertex to the next, DXF LWPOLYLINE convention tan(sweep/4). 0 or absent is a straight line. Magnitude at most 1, capping arcs at 180 degrees."
+        }
+      }
+    },
+    "OutlineAuthoring": {
+      "type": "object",
+      "description": "Round-trip hint recording which editor wrote the outline. Never trusted for geometry.",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": ["cells", "corners", "trace", "pen"],
+          "description": "Authoring surface that produced the outline."
+        },
+        "corners": {
+          "$ref": "#/$defs/CornerCutParams"
+        }
+      }
+    },
+    "CornerCutParams": {
+      "type": "object",
+      "description": "Per-corner cuts for the corner-cuts editor. tl/tr are back-left/back-right in grid coordinates (y up).",
+      "properties": {
+        "tl": {
+          "$ref": "#/$defs/CornerCut"
+        },
+        "tr": {
+          "$ref": "#/$defs/CornerCut"
+        },
+        "bl": {
+          "$ref": "#/$defs/CornerCut"
+        },
+        "br": {
+          "$ref": "#/$defs/CornerCut"
+        }
+      }
+    },
+    "CornerCut": {
+      "description": "One corner cut. Dimensions in mm.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": {
+              "const": "none"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "size"],
+          "properties": {
+            "kind": {
+              "const": "chamfer"
+            },
+            "size": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "r"],
+          "properties": {
+            "kind": {
+              "const": "radius"
+            },
+            "r": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "w", "d"],
+          "properties": {
+            "kind": {
+              "const": "notch"
+            },
+            "w": {
+              "type": "number",
+              "minimum": 0
+            },
+            "d": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "Category": {
+      "type": "object",
+      "description": "A colour category. Bins reference these by id.",
+      "required": ["id", "name", "color"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique id. Regenerated on import, so it only has to be internally consistent within the file."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 24,
+          "x-constant": {
+            "maxLength": "CONSTRAINTS.LABEL_MAX_LENGTH"
+          },
+          "description": "Display name. Must be unique case-insensitively."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Hex colour, #RRGGBB."
+        }
+      }
+    },
+    "Layer": {
+      "type": "object",
+      "description": "A vertical layer. Index 0 in the layers array is the BOTTOM layer.",
+      "required": ["id", "name", "height"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique id, referenced by Bin.layerId. Regenerated on import."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 24,
+          "x-constant": {
+            "maxLength": "CONSTRAINTS.LABEL_MAX_LENGTH"
+          },
+          "description": "Display name."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 2,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.MIN_LAYER_HEIGHT"
+          },
+          "description": "Layer height in height units. 1u is socket base only, so 2 is the minimum usable."
+        }
+      }
+    },
+    "Bin": {
+      "type": "object",
+      "description": "A placed bin. Coordinates are grid units with origin at BOTTOM-LEFT: x grows right, y grows UP (not down).",
+      "required": ["id", "layerId", "x", "y", "width", "depth", "height"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique id. Regenerated on import."
+        },
+        "layerId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Owning layer id, or the literal \"__staging__\" to park the bin in the off-grid stash instead of on the grid."
+        },
+        "x": {
+          "type": "number",
+          "minimum": 0,
+          "multipleOf": 0.5,
+          "description": "Left edge in grid units, 0-based, measured from the LEFT."
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0,
+          "multipleOf": 0.5,
+          "description": "Bottom edge in grid units, 0-based, measured from the BOTTOM."
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 50,
+          "multipleOf": 0.5,
+          "x-constant": {
+            "maximum": "CONSTRAINTS.GRID_MAX"
+          },
+          "description": "Width in grid units. 0.5 increments allowed."
+        },
+        "depth": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 50,
+          "multipleOf": 0.5,
+          "x-constant": {
+            "maximum": "CONSTRAINTS.GRID_MAX"
+          },
+          "description": "Depth in grid units. 0.5 increments allowed."
+        },
+        "height": {
+          "type": "number",
+          "minimum": 2,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.MIN_BIN_HEIGHT"
+          },
+          "description": "Height in height units. Must be at least the owning layer's height and must fit the space to the drawer top. The schema cannot check that; the importer does."
+        },
+        "clearanceHeight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Extra blocked space above the bin in height units, for contents taller than the bin."
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Category id. The exporter always writes one, and it MUST match an id in the categories array; a dangling reference fails import. Omitted is tolerated and backfills to an empty id."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 24,
+          "x-constant": {
+            "maxLength": "CONSTRAINTS.LABEL_MAX_LENGTH"
+          },
+          "description": "Short bin label. The exporter always writes one; omitted backfills to an empty string."
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 256,
+          "x-constant": {
+            "maxLength": "CONSTRAINTS.NOTES_MAX_LENGTH"
+          },
+          "description": "Longer note. The exporter always writes one; omitted backfills to an empty string."
+        },
+        "customProperties": {
+          "$ref": "#/$defs/CustomProperties"
+        },
+        "linkedDesignId": {
+          "type": "string",
+          "description": "Id of a saved bin design. Should match a linkedDesigns[].id in the same file, otherwise the reference dangles after import."
+        },
+        "extendToMargin": {
+          "type": "boolean",
+          "default": false,
+          "description": "Let this bin's walls extend into the baseplate's drawer-fit margin on every drawer edge it abuts. A flag, not a distance: the per-side reach is derived live from baseplateParams padding."
+        },
+        "marginTaper": {
+          "$ref": "#/$defs/MarginTaper"
+        },
+        "overhang": {
+          "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/OverhangConfig"
+        },
+        "locked": {
+          "type": "boolean",
+          "default": false,
+          "description": "Freeze size. While true, width/depth/height edits are rejected and automatic resizes skip this bin. Position and descriptive fields stay editable."
+        },
+        "pairId": {
+          "type": "string",
+          "description": "Groups a two-piece design (knife block plus handle rest) so both move, stash and delete together. An orphaned pairId is dropped on import."
+        },
+        "pairRole": {
+          "enum": ["block", "rest"],
+          "description": "Which piece of the pair this bin is."
+        }
+      }
+    },
+    "MarginTaper": {
+      "type": "object",
+      "description": "Outer-wall taper for a drawer-margin bin, angling the wall outward over bandHeight so it reaches into a drawer's curved sides while the base stays flat. Requires extendToMargin.",
+      "required": ["profile", "bandHeight"],
+      "properties": {
+        "profile": {
+          "enum": ["chamfer", "fillet"],
+          "description": "Cross-section shape of the taper."
+        },
+        "bandHeight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 350,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_TAPER_BAND",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_TAPER_BAND"
+          },
+          "description": "How far up the wall the taper rises, in mm."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Absent means enabled is inferred from any non-zero side."
+        },
+        "flare": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 42,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_TAPER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_TAPER"
+          },
+          "description": "Extra width in mm at the rim beyond the padding. The only authored width; applied on every abutting edge."
+        }
+      }
+    },
+    "LinkedDesign": {
+      "type": "object",
+      "description": "A bin design embedded in the layout file so bins keep their geometry when the layout travels.",
+      "required": ["id", "name", "params"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Design id, matched against Bin.linkedDesignId."
+        },
+        "name": {
+          "type": "string",
+          "description": "Design name."
+        },
+        "params": {
+          "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/BinParams"
+        }
+      }
+    },
+    "BaseplateParams": {
+      "type": "object",
+      "description": "Per-layout baseplate configuration. Padding is the drawer-fit margin in mm on each side.",
+      "required": [
+        "magnetHoles",
+        "magnetDiameter",
+        "magnetDepth",
+        "paddingLeft",
+        "paddingRight",
+        "paddingFront",
+        "paddingBack"
+      ],
+      "properties": {
+        "magnetHoles": {
+          "type": "boolean",
+          "description": "Cut magnet holes in the plate."
+        },
+        "magnetDiameter": {
+          "type": "number",
+          "minimum": 4,
+          "maximum": 10,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER"
+          },
+          "description": "Magnet hole diameter in mm."
+        },
+        "magnetDepth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 4,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT"
+          },
+          "description": "Magnet hole depth in mm."
+        },
+        "paddingLeft": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Drawer-fit margin on -X in mm."
+        },
+        "paddingRight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Drawer-fit margin on +X in mm."
+        },
+        "paddingFront": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Drawer-fit margin on -Y in mm."
+        },
+        "paddingBack": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Drawer-fit margin on +Y in mm."
+        },
+        "paddingAnchor": {
+          "enum": ["tl", "tc", "tr", "ml", "c", "mr", "bl", "bc", "br", "custom"],
+          "description": "Nine-point padding distribution anchor. First letter is vertical (t/m/b), second horizontal (l/c/r). 'custom' means per-side edited with no anchor."
+        },
+        "overTile": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fill the drawer-fit padding with functional grid (a clipped tile per axis) instead of solid plastic. A sub-threshold sliver falls back to solid."
+        },
+        "overTileHalfGrid": {
+          "type": "boolean",
+          "default": false,
+          "description": "Pack true 0.5-unit half-sockets into each margin before falling back to a clipped tile. Only meaningful when overTile is true."
+        },
+        "overTileHalfGridSolidLeftover": {
+          "type": "boolean",
+          "default": false,
+          "description": "Leave the sub-half-unit remainder solid instead of making it a clipped pocket. Only meaningful when overTileHalfGrid is true."
+        },
+        "wholeCellsOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fit a custom perimeter by whole cells only, dropping any cell the outline crosses. Only meaningful with drawer.outline."
+        },
+        "connectorNubs": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable registration connectors on split-piece join edges."
+        },
+        "lightweight": {
+          "type": "boolean",
+          "default": true,
+          "description": "Remove centre floor material, keeping only magnet pads."
+        },
+        "solidFloor": {
+          "type": "boolean",
+          "default": false,
+          "description": "Leave a solid floor under every socket instead of cutting pockets through. Adds solidFloorThickness below the 5mm socket; pocket depth is unchanged."
+        },
+        "solidFloorThickness": {
+          "type": "number",
+          "minimum": 0.4,
+          "maximum": 5,
+          "default": 0.8,
+          "x-constant": {
+            "minimum": "SOLID_FLOOR_MIN_MM",
+            "maximum": "SOLID_FLOOR_MAX_MM"
+          },
+          "description": "Thickness in mm of the solid floor. Only meaningful when solidFloor is true."
+        },
+        "syncWithLayout": {
+          "type": "boolean",
+          "default": true,
+          "description": "Derive grid dimensions from the drawer. When false, baseplateWidth and baseplateDepth are used."
+        },
+        "baseplateWidth": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 50,
+          "multipleOf": 0.5,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.GRID_MIN",
+            "maximum": "CONSTRAINTS.GRID_MAX"
+          },
+          "description": "Custom grid width in units. Used only when syncWithLayout is false."
+        },
+        "baseplateDepth": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 50,
+          "multipleOf": 0.5,
+          "x-constant": {
+            "minimum": "CONSTRAINTS.GRID_MIN",
+            "maximum": "CONSTRAINTS.GRID_MAX"
+          },
+          "description": "Custom grid depth in units. Used only when syncWithLayout is false."
+        },
+        "invertDovetails": {
+          "type": "boolean",
+          "default": false,
+          "description": "Swap the tongue/groove convention on all join edges."
+        },
+        "preferIdenticalPieces": {
+          "type": "boolean",
+          "default": false,
+          "description": "Optimise for fewer unique part designs at the cost of more total parts. Produces twice the connector features per boundary and may add one or two pieces."
+        },
+        "connectorStyle": {
+          "enum": ["dovetail", "puzzle", "dovetailKey", "snapClip"],
+          "default": "dovetail",
+          "description": "Connector geometry on join edges. 'dovetail' is a near-flat slip fit; 'puzzle' is a locking jigsaw tab; 'dovetailKey' and 'snapClip' cut female features on both sides and ship a separate part. Only meaningful when connectorNubs is true.",
+          "x-constant": {
+            "enum": "BASEPLATE_CONNECTOR_STYLES"
+          }
+        },
+        "connectorSlotsAllEdges": {
+          "type": "boolean",
+          "default": false,
+          "description": "Also cut seam slots on exterior edges so each piece keys into any other plate. Only valid for the both-female styles with connectorNubs on; padded exterior edges are skipped."
+        },
+        "connectorFitOffset": {
+          "type": "number",
+          "description": "Fit offset in mm added to per-side connector groove clearance. Positive is looser. Clamped so effective clearance never goes negative."
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "default": 2.5,
+          "description": "Uniform outer corner radius in mm. Gridfinity spec is 2.5."
+        },
+        "cornerRadii": {
+          "$ref": "#/$defs/CornerRadii"
+        },
+        "fractionalEdgeX": {
+          "enum": ["start", "end"],
+          "default": "end",
+          "description": "Which edge carries the half-unit column when baseplateWidth is fractional and syncWithLayout is false."
+        },
+        "fractionalEdgeY": {
+          "enum": ["start", "end"],
+          "default": "end",
+          "description": "Which edge carries the half-unit row when baseplateDepth is fractional and syncWithLayout is false."
+        },
+        "detachMargins": {
+          "type": "boolean",
+          "default": false,
+          "description": "Detach drawer-fit padding into separate printable rail pieces so a bad margin does not scrap the whole plate."
+        },
+        "detachMarginConnector": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add a connector at each body-to-long-rail seam. Short rails and corners stay friction-fit. Only meaningful when detachMargins is true."
+        },
+        "stackPrint": {
+          "$ref": "#/$defs/StackPrintParams"
+        },
+        "splitOverride": {
+          "$ref": "#/$defs/SplitOverride"
+        },
+        "screwHoles": {
+          "$ref": "#/$defs/ScrewHoleParams"
+        }
+      }
+    },
+    "CornerRadii": {
+      "type": "object",
+      "description": "Per-corner radius overrides in mm. When present, takes precedence over cornerRadius.",
+      "required": ["tl", "tr", "bl", "br"],
+      "properties": {
+        "tl": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Back-left radius in mm."
+        },
+        "tr": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Back-right radius in mm."
+        },
+        "bl": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Front-left radius in mm."
+        },
+        "br": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Front-right radius in mm."
+        }
+      }
+    },
+    "StackPrintParams": {
+      "type": "object",
+      "description": "Vertical stack printing. Each identical-piece group is duplicated along Z so a drawer's worth of plates prints in one job. Connectors, magnet holes and corner rounding are auto-disabled while enabled.",
+      "required": ["enabled", "gapMm"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable stack printing."
+        },
+        "gapMm": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 1,
+          "default": 0.2,
+          "x-constant": {
+            "minimum": "STACK_PRINT_MIN_GAP_MM",
+            "maximum": "STACK_PRINT_MAX_GAP_MM",
+            "default": "STACK_PRINT_DEFAULT_GAP_MM"
+          },
+          "description": "Air gap between stacked copies in mm. One print layer, about 0.2, is typical."
+        },
+        "copies": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 1,
+          "x-constant": {
+            "minimum": "STACK_PRINT_MIN_COPIES",
+            "maximum": "STACK_PRINT_MAX_COPIES",
+            "default": "STACK_PRINT_DEFAULT_COPIES"
+          },
+          "description": "How many copies of the whole layout to print."
+        }
+      }
+    },
+    "SplitOverride": {
+      "type": "object",
+      "description": "A hand-drawn split plan replacing the planner's automatic tiling. cols must sum to the plate width and rows to its depth, otherwise the override is dropped and the automatic plan is used.",
+      "required": ["cols", "rows"],
+      "properties": {
+        "cols": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "description": "Chunk widths in grid units, left to right, in print order."
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "description": "Chunk depths in grid units, front to back, in print order."
+        }
+      }
+    },
+    "ScrewHoleParams": {
+      "type": "object",
+      "description": "Mount-down screw holes through the plate.",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Cut screw holes."
+        },
+        "diameter": {
+          "type": "number",
+          "minimum": 2,
+          "maximum": 8,
+          "x-constant": {
+            "minimum": "SCREW_HOLE_MIN_DIAMETER_MM",
+            "maximum": "SCREW_HOLE_MAX_DIAMETER_MM"
+          },
+          "description": "Screw shaft hole diameter in mm."
+        },
+        "headStyle": {
+          "enum": ["countersink", "counterbore"],
+          "description": "Head recess style."
+        },
+        "headDiameter": {
+          "type": "number",
+          "minimum": 3,
+          "maximum": 16,
+          "x-constant": {
+            "minimum": "SCREW_HEAD_MIN_DIAMETER_MM",
+            "maximum": "SCREW_HEAD_MAX_DIAMETER_MM"
+          },
+          "description": "Head recess diameter in mm. Absent uses the style default (8 for countersink, 5.5 for counterbore)."
+        },
+        "counterboreDepth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 6,
+          "x-constant": {
+            "maximum": "SCREW_COUNTERBORE_MAX_DEPTH_MM"
+          },
+          "description": "Counterbore depth in mm. Only meaningful for headStyle 'counterbore'."
+        },
+        "screwsPerPiece": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8,
+          "x-constant": {
+            "minimum": "SCREWS_PER_PIECE_MIN",
+            "maximum": "SCREWS_PER_PIECE_MAX"
+          },
+          "description": "How many screw holes each split piece gets."
+        }
+      }
+    },
+    "CustomProperties": {
+      "type": "object",
+      "description": "Free-form user metadata as string-to-string pairs. No fixed keys.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

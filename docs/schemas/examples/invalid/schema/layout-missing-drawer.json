@@ -1,0 +1,9 @@
+{
+  "version": "1.0",
+  "name": "No drawer",
+  "gridUnitMm": 42,
+  "heightUnitMm": 7,
+  "categories": [{ "id": "c1", "name": "General", "color": "#3b82f6" }],
+  "layers": [{ "id": "l1", "name": "Base", "height": 6 }],
+  "bins": []
+}

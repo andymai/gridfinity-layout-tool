@@ -66,6 +66,7 @@ export {
   restoreEmbeddedDesigns,
   restoreSharedDesigns,
   collectLinkedDesigns,
+  type LinkedDesignExport,
   exportPrintListTSV,
   type PrintListTSVMeta,
 } from './ShareService';

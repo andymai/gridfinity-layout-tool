@@ -1,0 +1,16 @@
+{
+  "type": "gridfinity-bin-design",
+  "version": "1.0",
+  "name": "Unknown style",
+  "params": {
+    "width": 2,
+    "depth": 2,
+    "height": 3,
+    "gridUnitMm": 42,
+    "heightUnitMm": 7,
+    "wallThickness": 1.2,
+    "style": "fancy",
+    "base": { "style": "standard" },
+    "compartments": { "cols": 1, "rows": 1, "thickness": 1.2, "cells": [0] }
+  }
+}
