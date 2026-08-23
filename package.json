@@ -71,7 +71,8 @@
     "quality": "pnpm run typecheck && pnpm run lint && pnpm run knip",
     "test:profile": "pnpm run build:en-locale && tsx scripts/profile-tests.ts",
     "check:doc-drift": "tsx scripts/check-doc-drift.ts",
-    "validate:json": "tsx --tsconfig tsconfig.app.json scripts/validate-schema-json.ts"
+    "validate:json": "tsx --tsconfig tsconfig.app.json scripts/validate-schema-json.ts",
+    "gen:schema-docs": "tsx --tsconfig tsconfig.app.json scripts/gen-schema-docs.ts"
   },
   "size-limit": [
     {
