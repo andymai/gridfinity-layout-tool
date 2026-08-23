@@ -1,0 +1,26 @@
+src/shared/utils/fitTestPlan.test.ts
+  s_099dfca49934d3::t_15ea9b83bd4d8a 173-174,179-182
+  s_099dfca49934d3::t_d0ce11e4db3405 171-172,175-178,183-184
+src/shared/utils/fitTestPlan.ts
+  s_099dfca49934d3::t_cde3d51ea269c9 196,200
+  s_099dfca49934d3::t_5005d2126f400e 97
+  s_099dfca49934d3::t_282a3f3ea1e636 155,161-166,170-171,179-182
+  s_099dfca49934d3::t_a7d4704167ceea 221,223
+  s_099dfca49934d3::t_73fc517e6a8af9 183-184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "8782a488bae590f490633e7c431f4f469246b8bc",
+  "prompts": {},
+  "sessions": {
+    "s_099dfca49934d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a089f407-f1ae-461b-8c4f-dca6891327a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
