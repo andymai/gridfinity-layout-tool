@@ -6,6 +6,9 @@ import {
   DEFAULT_PART_TRANSFORM,
 } from '@/shared/items/assembly/descriptor';
 import {
+  alignSnap,
+  rotationRingRadiusMm,
+  snapAngleDeg,
   resolvePlacedParts,
   snapCoord,
   worldToParentLocal,
@@ -121,5 +124,65 @@ describe('coordinate helpers', () => {
     const local = worldToParentLocal({ x: 50, y: 60 }, parent);
     expect(local.x).toBeCloseTo(10);
     expect(local.y).toBeCloseTo(0);
+  });
+});
+
+describe('snapAngleDeg', () => {
+  it('snaps to 15-degree detents by default', () => {
+    expect(snapAngleDeg(22, false)).toBe(15);
+    expect(snapAngleDeg(23, false)).toBe(30);
+    expect(snapAngleDeg(-52, false)).toBe(-45);
+  });
+
+  it('snaps to 1 degree in fine mode', () => {
+    expect(snapAngleDeg(22.4, true)).toBe(22);
+  });
+
+  it('normalizes to (-180, 180] so the readout stays friendly', () => {
+    expect(snapAngleDeg(270, false)).toBe(-90);
+    expect(snapAngleDeg(-270, false)).toBe(90);
+    expect(snapAngleDeg(180, false)).toBe(180);
+    expect(snapAngleDeg(-180, false)).toBe(180);
+  });
+});
+
+describe('alignSnap', () => {
+  const candidates = { xs: [40, 80], ys: [21] };
+
+  it('snaps an axis to a nearby candidate and reports the guide', () => {
+    const result = alignSnap({ x: 41.2, y: 10 }, candidates, false);
+    expect(result.x).toBe(40);
+    expect(result.guideX).toBe(40);
+    expect(result.guideY).toBeNull();
+    // The unaligned axis still takes the magnetic grid.
+    expect(result.y).toBe(10.5);
+  });
+
+  it('prefers the closest candidate when two are in range', () => {
+    const result = alignSnap({ x: 41.6, y: 0 }, { xs: [40, 42.5], ys: [] }, false);
+    expect(result.x).toBe(42.5);
+  });
+
+  it('falls back to the grid outside the alignment radius', () => {
+    const result = alignSnap({ x: 45, y: 0 }, candidates, false);
+    expect(result.guideX).toBeNull();
+    expect(result.x).toBe(45.5);
+  });
+
+  it('fine mode disables both pulls', () => {
+    const result = alignSnap({ x: 40.4, y: 21.3 }, candidates, true);
+    expect(result.guideX).toBeNull();
+    expect(result.guideY).toBeNull();
+    expect(result.x).toBeCloseTo(40.4, 6);
+    expect(result.y).toBeCloseTo(21.3, 6);
+  });
+});
+
+describe('rotationRingRadiusMm', () => {
+  it('clears the part footprint with a margin, never cramped', () => {
+    const wide = { node: { type: 'block', params: { width: 60, depth: 20, height: 20 } } };
+    expect(rotationRingRadiusMm(wide as never)).toBe(38);
+    const tiny = { node: { type: 'post', params: { diameter: 8, height: 40 } } };
+    expect(rotationRingRadiusMm(tiny as never)).toBe(14);
   });
 });

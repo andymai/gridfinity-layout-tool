@@ -12,7 +12,7 @@ export {
   rotate2d,
   type PlacedPart,
 } from '@/shared/types/assemblyPlacement';
-import { rotate2d, type PlacedPart } from '@/shared/types/assemblyPlacement';
+import { partFootprint, rotate2d, type PlacedPart } from '@/shared/types/assemblyPlacement';
 
 export function baseExtentMm(envelope: ItemEnvelope): { w: number; d: number } {
   return {
@@ -57,4 +57,70 @@ export function worldToParentLocal(
 ): { x: number; y: number } {
   if (!parent) return { x: point.x, y: point.y };
   return rotate2d(point.x - parent.x, point.y - parent.y, -parent.rotZDeg);
+}
+
+export const ROTATION_SNAP_DEG = 15;
+export const FINE_ROTATION_SNAP_DEG = 1;
+
+/** Snap an angle to the rotation grid and normalize to (-180, 180]. */
+export function snapAngleDeg(deg: number, fine: boolean): number {
+  const step = fine ? FINE_ROTATION_SNAP_DEG : ROTATION_SNAP_DEG;
+  const snapped = Math.round(deg / step) * step;
+  const wrapped = (((snapped % 360) + 540) % 360) - 180;
+  return wrapped === -180 ? 180 : wrapped;
+}
+
+export const ALIGN_SNAP_MM = 2;
+
+export interface AlignSnapResult {
+  readonly x: number;
+  readonly y: number;
+  /** Aligned sibling coordinate per axis, null when the grid snap won. */
+  readonly guideX: number | null;
+  readonly guideY: number | null;
+}
+
+/**
+ * Placement snap with sibling alignment: an axis within ALIGN_SNAP_MM of a
+ * candidate (sibling center, plate center) snaps to it and reports a guide;
+ * otherwise the magnetic grid applies. Fine mode (Alt) disables both kinds of
+ * pull — free positioning is the whole point of the modifier.
+ */
+export function alignSnap(
+  local: { x: number; y: number },
+  candidates: { xs: readonly number[]; ys: readonly number[] },
+  fine: boolean
+): AlignSnapResult {
+  if (fine) {
+    return { x: snapCoord(local.x, true), y: snapCoord(local.y, true), guideX: null, guideY: null };
+  }
+  const nearest = (value: number, options: readonly number[]): number | null => {
+    let best: number | null = null;
+    let bestDistance = ALIGN_SNAP_MM;
+    for (const option of options) {
+      const distance = Math.abs(value - option);
+      if (distance <= bestDistance) {
+        best = option;
+        bestDistance = distance;
+      }
+    }
+    return best;
+  };
+  const guideX = nearest(local.x, candidates.xs);
+  const guideY = nearest(local.y, candidates.ys);
+  return {
+    x: guideX ?? snapCoord(local.x, false),
+    y: guideY ?? snapCoord(local.y, false),
+    guideX,
+    guideY,
+  };
+}
+
+const RING_MARGIN_MM = 8;
+const RING_MIN_RADIUS_MM = 14;
+
+/** Rotation-gizmo ring radius: clear of the part's footprint, never cramped. */
+export function rotationRingRadiusMm(placed: PlacedPart): number {
+  const footprint = partFootprint(placed.node);
+  return Math.max(RING_MIN_RADIUS_MM, Math.max(footprint.w, footprint.d) / 2 + RING_MARGIN_MM);
 }
