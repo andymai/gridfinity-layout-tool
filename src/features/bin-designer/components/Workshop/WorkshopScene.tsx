@@ -6,9 +6,13 @@ import { SceneLighting } from '@/features/bin-designer/components/PreviewCanvas/
 import { FootprintGrid } from '@/features/bin-designer/components/preview/FootprintGrid/FootprintGrid';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope } from '@/shared/types/item';
+import { useEffect, useRef, useState } from 'react';
 import { BasePlateMesh } from './BasePlateMesh';
 import { PartProxyMesh } from './PartProxyMesh';
 import { PlacementGhost } from './PlacementGhost';
+import { WorkshopSharpMesh } from './WorkshopSharpMesh';
+import { useWorkshopSharpen } from './useWorkshopSharpen';
+import { diffNewPartIds } from './hologramTracker';
 import { baseExtentMm, sceneToStore } from './workshopPlacement';
 import { useWorkshopInteraction, type HoverSurface } from './useWorkshopInteraction';
 
@@ -21,6 +25,31 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
   const interaction = useWorkshopInteraction(structure);
   const { w, d } = baseExtentMm(envelope);
   const cameraDistance = Math.max(w, d) * 1.4 + 80;
+  const sharp = useWorkshopSharpen();
+  const showSharp = sharp && interaction.draggingId === null;
+
+  const knownIdsRef = useRef<ReadonlySet<string> | null>(null);
+  const [holograms, setHolograms] = useState<Map<string, number>>(new Map());
+  useEffect(() => {
+    const { ids, fresh } = diffNewPartIds(knownIdsRef.current, interaction.placements);
+    knownIdsRef.current = ids;
+    if (fresh.length > 0) {
+      const now = performance.now();
+      setHolograms((prev) => {
+        const next = new Map(prev);
+        for (const id of fresh) next.set(id, now);
+        return next;
+      });
+    }
+  }, [interaction.placements]);
+  const endHologram = (id: string): void => {
+    setHolograms((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
+  };
 
   return (
     <>
@@ -40,10 +69,12 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
       <BasePlateMesh
         envelope={envelope}
         base={structure.base}
+        hidden={showSharp}
         onSurfaceMove={interaction.onSurfaceMove}
         onSurfaceLeave={interaction.onSurfaceLeave}
         onSurfaceClick={interaction.onSurfaceClick}
       />
+      {showSharp && <WorkshopSharpMesh floorThickness={structure.base.floorThickness} />}
       {interaction.placements.map((placed) => (
         <PartProxyMesh
           key={placed.key}
@@ -54,6 +85,9 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
           raycastDisabled={
             interaction.draggingId !== null && interaction.isInDraggedSubtree(placed.selectId)
           }
+          hidden={showSharp}
+          hologramStart={holograms.get(placed.selectId) ?? null}
+          onHologramEnd={endHologram}
           onSurfaceMove={interaction.onSurfaceMove}
           onSurfaceLeave={interaction.onSurfaceLeave}
           onSurfaceClick={interaction.onSurfaceClick}

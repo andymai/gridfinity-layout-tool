@@ -59,6 +59,10 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
   // Transaction opens lazily on the first real mutation of a drag, so a
   // click that never moves the part leaves no undo step behind.
   const dragTransactionRef = useRef(false);
+  // A pointerdown on a part disables that subtree's raycast for the drag, so
+  // the browser's synthesized click can fall through to the base and would
+  // deselect what was just selected — swallow exactly that one click.
+  const skipNextBaseClickRef = useRef(false);
   const [fineSnap, setFineSnap] = useState(false);
 
   const placements = useMemo(() => resolvePlacedParts(structure), [structure]);
@@ -160,12 +164,20 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
       const store = useDesignerStore.getState();
       const type = store.ui.workshopPendingPartType;
       if (type) {
+        skipNextBaseClickRef.current = false;
         const local = snapPoint(surface);
         store.addAssemblyPart(type, surface.parentId, { x: local.x, y: local.y });
         invalidate();
         return;
       }
+      if (surface.parentId !== null) {
+        skipNextBaseClickRef.current = false;
+      }
       if (surface.parentId === null) {
+        if (skipNextBaseClickRef.current) {
+          skipNextBaseClickRef.current = false;
+          return;
+        }
         store.setSelectedAssemblyPartId(null);
         invalidate();
       }
@@ -183,6 +195,7 @@ export function useWorkshopInteraction(structure: AssemblyStructure): WorkshopIn
       const node = findAssemblyPart(currentStructure.parts, id);
       if (!node) return;
       draggedSubtreeRef.current = new Set(collectAssemblyIds([node]));
+      skipNextBaseClickRef.current = true;
       const controls = getThree().controls as { enabled: boolean } | null;
       if (controls) controls.enabled = false;
       setDraggingId(id);
