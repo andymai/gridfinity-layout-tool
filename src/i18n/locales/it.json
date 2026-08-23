@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Nessuna rilevata",
   "community.publish.form.waitingPreview": "In attesa dell'anteprima…",
   "community.publish.form.wallsSummary": "Pareti da {thickness} mm",
+  "community.publish.form.floorSummary": "Fondo da {thickness} mm",
   "community.publish.identity.change": "Modifica",
   "community.publish.identity.hint": "Il tuo nome pubblico, mostrato su tutto ciò che pubblichi.",
   "community.publish.identity.label": "Nome pubblico",

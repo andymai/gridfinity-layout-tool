@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Aucune détectée",
   "community.publish.form.waitingPreview": "En attente de l'aperçu…",
   "community.publish.form.wallsSummary": "Parois de {thickness} mm",
+  "community.publish.form.floorSummary": "Fond de {thickness} mm",
   "community.publish.identity.change": "Modifier",
   "community.publish.identity.hint": "Votre nom public, affiché sur tout ce que vous publiez.",
   "community.publish.identity.label": "Nom public",

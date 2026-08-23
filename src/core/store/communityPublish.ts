@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { BinParams } from '@/shared/types/bin';
+import type { ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { CommunityDesignLineage, CommunityPublishDraft } from '@/shared/types/community';
 
 /**
@@ -21,7 +23,17 @@ export interface CommunityPublishCaptures {
 export interface CommunityPublishDesignContext {
   designId: string;
   designName: string;
-  params: BinParams;
+  /**
+   * Content shape invariant: exactly one of the two is populated — `params`
+   * for a bin, or `kind: 'assembly'` WITH `envelope` + `structure`. The one
+   * producer (openCommunityPublish) guarantees it; the dialog's submit path
+   * fails fast rather than posting an incomplete body if it is ever broken.
+   */
+  params?: BinParams;
+  kind?: 'assembly';
+  envelope?: ItemEnvelope;
+  structure?: AssemblyStructure;
+  /** Stable hash of whichever content shape is present. */
   paramsHash: string;
   /** Set when the local design is already published; drives update mode. */
   publishedId: string | null;

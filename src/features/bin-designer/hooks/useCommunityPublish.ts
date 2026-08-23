@@ -14,7 +14,9 @@ import type { CommunityPublishDraft } from '@/shared/types/community';
 import { designId } from '@/core/types';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { hashBinParams } from '@/shared/utils/binParamsHash';
+import { hashBinParams, hashDesignContent } from '@/shared/utils/binParamsHash';
+import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { loadPendingPublishAction } from '@/shared/utils/communityPendingAction';
 import type { PendingPublishAction } from '@/shared/utils/communityPendingAction';
 import { useDesignerStore } from '../store/designer';
@@ -46,15 +48,29 @@ async function capturePublishAssets(): Promise<void> {
   const targetDesignId = useCommunityPublishStore.getState().context?.designId ?? null;
   if (targetDesignId === null || state.currentDesignId !== targetDesignId) return;
   const epoch = useCommunityPublishStore.getState().beginCapture();
-  const { params } = state;
-  const thumbnails = await captureCommunityThumbnails({
-    width: params.width,
-    depth: params.depth,
-    height: params.height,
-    gridUnitMm: params.gridUnitMm,
-    gridUnitMmY: params.gridUnitMmY,
-    heightUnitMm: params.heightUnitMm,
-  });
+  const { params, envelope, structure } = state;
+  const frame =
+    state.itemKind === 'assembly' && envelope !== null && structure?.kind === 'assembly'
+      ? {
+          width: envelope.width,
+          depth: envelope.depth,
+          height: assemblyHeightUnits(
+            structure,
+            envelope.heightUnitMm,
+            GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness
+          ),
+          gridUnitMm: envelope.gridUnitMm,
+          heightUnitMm: envelope.heightUnitMm,
+        }
+      : {
+          width: params.width,
+          depth: params.depth,
+          height: params.height,
+          gridUnitMm: params.gridUnitMm,
+          gridUnitMmY: params.gridUnitMmY,
+          heightUnitMm: params.heightUnitMm,
+        };
+  const thumbnails = await captureCommunityThumbnails(frame);
   const glb = await exportCommunityGlb();
   const publish = useCommunityPublishStore.getState();
   if (!publish.isOpen) return;
@@ -70,7 +86,11 @@ async function capturePublishAssets(): Promise<void> {
 
 export async function openCommunityPublish(draft: CommunityPublishDraft | null): Promise<void> {
   const state = useDesignerStore.getState();
-  if (state.itemKind !== 'bin') return;
+  const assembly =
+    state.itemKind === 'assembly' && state.envelope !== null && state.structure?.kind === 'assembly'
+      ? { envelope: state.envelope, structure: state.structure }
+      : null;
+  if (state.itemKind !== 'bin' && assembly === null) return;
   const currentId = state.currentDesignId;
   if (currentId === null) return;
 
@@ -86,8 +106,9 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
     {
       designId: currentId,
       designName: state.designName,
-      params: state.params,
-      paramsHash: hashBinParams(state.params),
+      ...(assembly !== null
+        ? { kind: 'assembly' as const, ...assembly, paramsHash: hashDesignContent(assembly) }
+        : { params: state.params, paramsHash: hashBinParams(state.params) }),
       publishedId,
       lineage,
       draft,
@@ -118,14 +139,17 @@ export interface CommunityPublishEntry {
 }
 
 /**
- * Any bin the designer can produce is publishable. The gate is only that there
- * IS a bin with a ready mesh, never a judgement about which features it uses,
- * and never a disabled button explained by a `title` tooltip that does not
- * exist on touch.
+ * Any bin or Workshop assembly the designer can produce is publishable. The
+ * gate is only that there IS content with a ready mesh, never a judgement
+ * about which features it uses, and never a disabled button explained by a
+ * `title` tooltip that does not exist on touch. Imported meshes and legacy
+ * racks stay out — they have no publishable parametric content.
  */
 export function useCommunityPublishEntry(): CommunityPublishEntry {
   const publishVisible = useFeatureFlag('community_showcase');
-  const canPublish = useDesignerStore((s) => s.itemKind === 'bin' && isMeshReady(s));
+  const canPublish = useDesignerStore(
+    (s) => (s.itemKind === 'bin' || s.itemKind === 'assembly') && isMeshReady(s)
+  );
   const openPublish = useCallback(() => {
     void openCommunityPublish(null);
   }, []);

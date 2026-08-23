@@ -11,12 +11,19 @@ import type { CommunityDesignLineage } from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { deriveTechniques } from '@/shared/utils/communityTechniques';
 import { PublishPreview } from './PublishPreview';
-import { formatGridSize, formatMillimetres } from './publishSummary';
+import {
+  formatAssemblyGridSize,
+  formatAssemblyMillimetres,
+  formatGridSize,
+  formatMillimetres,
+} from './publishSummary';
+import type { PublishAssemblyContent } from './publishSummary';
 
 export interface PublishArtefactProps {
   thumbnails: readonly string[] | null;
   captureFailed: boolean;
-  params: BinParams;
+  params?: BinParams;
+  assembly?: PublishAssemblyContent | null;
   lineage: CommunityDesignLineage | null;
   onRetryCapture: () => void;
 }
@@ -25,11 +32,12 @@ export function PublishArtefact({
   thumbnails,
   captureFailed,
   params,
+  assembly,
   lineage,
   onRetryCapture,
 }: PublishArtefactProps) {
   const t = useTranslation();
-  const techniques = deriveTechniques(params);
+  const techniques = params !== undefined ? deriveTechniques(params) : ['workshop' as const];
 
   // Only worth a line when the root is a third party: a root that is the
   // parent, or the parent's own author, says nothing the parent line has not.
@@ -48,10 +56,27 @@ export function PublishArtefact({
       />
 
       <div>
-        <p className="text-sm font-medium text-content">{formatGridSize(params)}</p>
+        <p className="text-sm font-medium text-content">
+          {params !== undefined
+            ? formatGridSize(params)
+            : assembly
+              ? formatAssemblyGridSize(assembly)
+              : ''}
+        </p>
         <p className="text-xs text-content-tertiary">
-          {formatMillimetres(params)} ·{' '}
-          {t('community.publish.form.wallsSummary', { thickness: params.wallThickness })}
+          {params !== undefined ? (
+            <>
+              {formatMillimetres(params)} ·{' '}
+              {t('community.publish.form.wallsSummary', { thickness: params.wallThickness })}
+            </>
+          ) : assembly ? (
+            <>
+              {formatAssemblyMillimetres(assembly)} ·{' '}
+              {t('community.publish.form.floorSummary', {
+                thickness: assembly.structure.base.floorThickness,
+              })}
+            </>
+          ) : null}
         </p>
       </div>
 

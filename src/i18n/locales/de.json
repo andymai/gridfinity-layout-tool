@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Keine erkannt",
   "community.publish.form.waitingPreview": "Warten auf die Vorschau…",
   "community.publish.form.wallsSummary": "{thickness} mm Wandstärke",
+  "community.publish.form.floorSummary": "{thickness} mm Boden",
   "community.publish.identity.change": "Ändern",
   "community.publish.identity.hint": "Dein öffentlicher Name, angezeigt bei allem, was du veröffentlichst.",
   "community.publish.identity.label": "Öffentlicher Name",

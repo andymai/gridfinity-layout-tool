@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Inga identifierade",
   "community.publish.form.waitingPreview": "Väntar på förhandsvisningen…",
   "community.publish.form.wallsSummary": "{thickness} mm väggar",
+  "community.publish.form.floorSummary": "{thickness} mm botten",
   "community.publish.identity.change": "Ändra",
   "community.publish.identity.hint": "Ditt offentliga namn, visas på allt du publicerar.",
   "community.publish.identity.label": "Offentligt namn",

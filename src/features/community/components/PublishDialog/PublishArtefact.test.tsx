@@ -57,6 +57,38 @@ describe('PublishArtefact', () => {
     expect(screen.getByText('Scoop')).toBeInTheDocument();
   });
 
+  it('states an assembly size from its envelope and tags it Workshop', () => {
+    renderArtefact({
+      params: undefined,
+      assembly: {
+        envelope: {
+          width: 2,
+          depth: 2,
+          gridUnitMm: 42,
+          heightUnitMm: 7,
+        },
+        structure: {
+          kind: 'assembly',
+          schemaVersion: 1,
+          base: { floorThickness: 2 },
+          mirrorAxis: 'x',
+          parts: [
+            {
+              id: 'p1',
+              type: 'post',
+              params: { diameter: 8, height: 40 },
+              transform: { x: 42, y: 42, seatZ: 0, rotZDeg: 0 },
+              children: [],
+            },
+          ],
+        },
+      } as unknown as NonNullable<PublishArtefactProps['assembly']>,
+    });
+    expect(screen.getByText('2×2×7')).toBeInTheDocument();
+    expect(screen.getByText(/84 × 84 × 49 mm/)).toBeInTheDocument();
+    expect(screen.getByText('Workshop')).toBeInTheDocument();
+  });
+
   it('omits the lineage block for an original design', () => {
     renderArtefact();
     expect(screen.queryByText(/Parent Bin/)).not.toBeInTheDocument();

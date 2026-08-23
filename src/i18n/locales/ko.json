@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "감지된 기법 없음",
   "community.publish.form.waitingPreview": "미리보기를 기다리는 중…",
   "community.publish.form.wallsSummary": "벽 두께 {thickness} mm",
+  "community.publish.form.floorSummary": "바닥 {thickness} mm",
   "community.publish.identity.change": "변경",
   "community.publish.identity.hint": "게시하는 모든 항목에 표시되는 공개 이름입니다.",
   "community.publish.identity.label": "공개 이름",

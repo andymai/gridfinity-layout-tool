@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Ingen oppdaget",
   "community.publish.form.waitingPreview": "Venter på forhåndsvisningen…",
   "community.publish.form.wallsSummary": "{thickness} mm vegger",
+  "community.publish.form.floorSummary": "{thickness} mm bunn",
   "community.publish.identity.change": "Endre",
   "community.publish.identity.hint": "Det offentlige navnet ditt, vist på alt du publiserer.",
   "community.publish.identity.label": "Offentlig navn",

@@ -3,6 +3,8 @@ import { ok, err, isErr } from '@/core/result';
 import { isApiErrorResponse } from '@/core/api/mapApiError';
 import { apiFetch } from '@/core/sync/apiFetch';
 import type { BinParams } from '@/shared/types/bin';
+import type { ItemEnvelope } from '@/shared/types/item';
+import type { AssemblyStructure } from '@/shared/types/assembly';
 import type {
   CommunityCard,
   CommunityCategory,
@@ -53,17 +55,22 @@ export type CommunityClientError =
   | { kind: 'server' }
   | { kind: 'network' };
 
-export interface CommunityPublishInput {
+/** Exactly one content shape per publish: bin params, or a Workshop
+ *  assembly's envelope + structure (server validates, sanitizes, derives height). */
+export type CommunityPublishContent =
+  | { params: BinParams; kind?: undefined }
+  | { kind: 'assembly'; envelope: ItemEnvelope; structure: AssemblyStructure; params?: undefined };
+
+export type CommunityPublishInput = CommunityPublishContent & {
   name: string;
   description: string;
   authorName: string;
   category: CommunityCategory;
-  params: BinParams;
   /** WebP data URLs or raw base64, 1-3 entries, each <= 200 KB decoded. */
   thumbnails: readonly string[];
   /** Raw base64 GLB, <= 2 MB decoded. */
   glb: string;
-}
+};
 
 export interface CommunityPublishResult {
   id: string;

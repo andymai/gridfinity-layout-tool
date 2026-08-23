@@ -233,12 +233,27 @@ export function PublishDialog() {
       store.fail({ kind: 'server' });
       return;
     }
+    // The store context is written only by openCommunityPublish, which
+    // guarantees a complete content shape — but an incomplete one must fail
+    // here, not as a server 400 with envelope/structure silently dropped.
+    const content =
+      context.kind === 'assembly'
+        ? context.envelope !== undefined && context.structure !== undefined
+          ? { kind: 'assembly' as const, envelope: context.envelope, structure: context.structure }
+          : null
+        : context.params !== undefined
+          ? { params: context.params }
+          : null;
+    if (content === null) {
+      store.fail({ kind: 'server' });
+      return;
+    }
     const input: CommunityPublishInput = {
       name: fields.name,
       description: fields.description,
       authorName: fields.publicName,
       category: fields.category,
-      params: context.params,
+      ...content,
       thumbnails: publishCaptures.thumbnails,
       glb: publishCaptures.glb,
     };
@@ -493,6 +508,11 @@ export function PublishDialog() {
               captures={captures}
               captureFailed={captureFailed}
               params={context.params}
+              assembly={
+                context.kind === 'assembly' && context.envelope && context.structure
+                  ? { envelope: context.envelope, structure: context.structure }
+                  : null
+              }
               lineage={context.lineage}
               publicName={publicName}
               firstTimePublisher={storedDisplayName === ''}

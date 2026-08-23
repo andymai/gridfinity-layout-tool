@@ -132,6 +132,52 @@ describe('useCommunityPublish', () => {
       );
     });
 
+    it('opens with assembly content and frames captures from the envelope', async () => {
+      useDesignerStore.setState({
+        itemKind: 'assembly',
+        envelope: {
+          width: 2,
+          depth: 2,
+          gridUnitMm: 42,
+          heightUnitMm: 7,
+        } as unknown as ReturnType<typeof useDesignerStore.getState>['envelope'],
+        structure: {
+          kind: 'assembly',
+          schemaVersion: 1,
+          base: { floorThickness: 2 },
+          mirrorAxis: 'x',
+          parts: [
+            {
+              id: 'p1',
+              type: 'post',
+              params: { diameter: 8, height: 40 },
+              transform: { x: 42, y: 42, seatZ: 0, rotZDeg: 0 },
+              children: [],
+            },
+          ],
+        } as unknown as ReturnType<typeof useDesignerStore.getState>['structure'],
+      });
+
+      await openCommunityPublish(null);
+
+      const context = useCommunityPublishStore.getState().context;
+      expect(context?.kind).toBe('assembly');
+      expect(context?.params).toBeUndefined();
+      expect(context?.envelope).toMatchObject({ width: 2, depth: 2 });
+      expect(context?.structure).toMatchObject({ kind: 'assembly' });
+      expect(context?.paramsHash).toMatch(/^[0-9a-f]{8}$/);
+      // 40mm post + socket + 2mm floor = 7 units frames the capture height.
+      expect(vi.mocked(captureCommunityThumbnails)).toHaveBeenCalledWith(
+        expect.objectContaining({ width: 2, depth: 2, height: 7 })
+      );
+    });
+
+    it('still refuses kinds with no publishable content', async () => {
+      useDesignerStore.setState({ itemKind: 'importedMesh' });
+      await openCommunityPublish(null);
+      expect(useCommunityPublishStore.getState().isOpen).toBe(false);
+    });
+
     it('reads publishedId and lineage from the saved design', async () => {
       const lineage = {
         parentId: 'Parent123456',

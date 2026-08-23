@@ -2488,6 +2488,7 @@
   "community.publish.form.techniquesNone": "Geen gedetecteerd",
   "community.publish.form.waitingPreview": "Wachten op het voorbeeld…",
   "community.publish.form.wallsSummary": "Wanden van {thickness} mm",
+  "community.publish.form.floorSummary": "{thickness} mm bodem",
   "community.publish.identity.change": "Wijzigen",
   "community.publish.identity.hint": "Je openbare naam, weergegeven bij alles wat je publiceert.",
   "community.publish.identity.label": "Openbare naam",
