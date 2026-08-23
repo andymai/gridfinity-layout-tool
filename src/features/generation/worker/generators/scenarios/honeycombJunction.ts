@@ -84,7 +84,6 @@ export const honeycombJunction: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 60_000,
   }),
 
   // ── Bug 1: junction blocking must work without wall cutouts ──────────────
@@ -98,7 +97,6 @@ export const honeycombJunction: ScenarioCase[] = [
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 60_000,
   }),
 
   defineScenario('honeycomb junction', '2×2 bin, 2×2 compartments, no cutouts', {
@@ -110,7 +108,6 @@ export const honeycombJunction: ScenarioCase[] = [
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
       walls: ALL_SIDES_OFF,
     },
-    timeout: 60_000,
   }),
 
   // ── Bug 2: no mesh holes when cutouts enabled but all sides off ──────────
@@ -124,7 +121,6 @@ export const honeycombJunction: ScenarioCase[] = [
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
       walls: { ...ALL_SIDES_OFF, enabled: true },
     },
-    timeout: 60_000,
   }),
 
   // ── Junction + active cutout on one side ─────────────────────────────────
@@ -142,7 +138,6 @@ export const honeycombJunction: ScenarioCase[] = [
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     },
-    timeout: 60_000,
   }),
 
   // ── Honeycomb + dividers + interior wall cutouts ──────────────────────────
@@ -160,7 +155,6 @@ export const honeycombJunction: ScenarioCase[] = [
         interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     },
-    timeout: 60_000,
   }),
 
   // ── Honeycomb + dividers + outer + interior cutouts ──────────────────────
@@ -179,7 +173,6 @@ export const honeycombJunction: ScenarioCase[] = [
         interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     },
-    timeout: 60_000,
   }),
 
   // ── Bug 3: clip depth must cover hex prism extrusion at thick walls ─
@@ -210,7 +203,6 @@ export const honeycombJunction: ScenarioCase[] = [
       },
       assert: assertDividerJunction,
     },
-    timeout: 60_000,
   }),
 
   defineScenario('honeycomb junction', 'thick walls (2.4mm) no lip — junction blocking holds', {
@@ -237,7 +229,6 @@ export const honeycombJunction: ScenarioCase[] = [
       },
       assert: assertDividerJunction,
     },
-    timeout: 60_000,
   }),
 
   // ── Dividers add geometry but junction blocking limits the increase ─────
@@ -267,7 +258,6 @@ export const honeycombJunction: ScenarioCase[] = [
         },
         assert: assertDividerJunction,
       },
-      timeout: 60_000,
     }
   ),
 
@@ -304,7 +294,6 @@ export const honeycombJunction: ScenarioCase[] = [
           ).toBe(cutoutsOnSidesOff.triangleCount);
         },
       },
-      timeout: 60_000,
     }
   ),
 
@@ -338,7 +327,6 @@ export const honeycombJunction: ScenarioCase[] = [
         ).toBeGreaterThan(0);
         assertWatertight(mesh, 'bold round pattern + dividers, thin walls, no lip (#2865)');
       },
-      timeout: 60_000,
     }
   ),
 ];

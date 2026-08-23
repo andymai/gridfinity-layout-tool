@@ -33,7 +33,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
       base: SOLID_BASE,
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
     },
-    timeout: 60_000,
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, 'solid+label-bracket');
     },
@@ -55,7 +54,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
       base: SOLID_BASE,
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'solid' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, 'solid + label tab + thick walls — label still ignored', {
@@ -76,7 +74,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
       cutouts: [makeCutout({ id: 'c1', shape: 'circle', cutDepth: 4 })],
     },
-    timeout: 60_000,
   }),
 
   // ─── Solid + handle params (also ignored) + cutouts ──────────────────────
@@ -94,7 +91,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
       },
       cutouts: [makeCutout({ id: 'c1', cutDepth: 3 })],
     },
-    timeout: 60_000,
   }),
 
   // ─── topOffset × cutDepth matrix ─────────────────────────────────────────
@@ -116,7 +112,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
         cutoutConfig: { topOffset: offset },
         cutouts: [makeCutout({ id: 'c1', width: 20, depth: 20, cutDepth: depth })],
       },
-      timeout: 60_000,
     })
   ),
 
@@ -135,7 +130,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
         makeCutout({ id: 'd', x: 20, y: 20, rotation: 90, groupId: 'g1' }),
       ],
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, 'solid + grouped cutouts varying depth in same group', {
@@ -151,7 +145,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
         makeCutout({ id: 's3', x: 20, cutDepth: 8, groupId: 'g1' }),
       ],
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, 'solid + grouped cutouts with scoop at 45°', {
@@ -182,7 +175,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
         }),
       ],
     },
-    timeout: 60_000,
   }),
 
   // ─── topOffset + stacking lip (solid + lip on, edge case) ───────────────
@@ -194,7 +186,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
       cutoutConfig: { topOffset: 5 },
       cutouts: [makeCutout({ id: 'c1', cutDepth: 8 })],
     },
-    timeout: 60_000,
     customAssert: (result, params) => {
       assertBoundingBoxMatchesParams(result, params, 'solid+lip+topOffset');
     },
@@ -213,7 +204,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
         makeCutout({ id: 'c', x: 0, y: 0, cutDepth: 4 }),
       ],
     },
-    timeout: 60_000,
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, 'solid+lip+multiCut');
     },
@@ -243,7 +233,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
         }),
       ],
     },
-    timeout: 60_000,
   }),
 
   // ─── Stress: solid + 6 features ─────────────────────────────────────────
@@ -281,7 +270,6 @@ export const solidCutoutMatrix: ScenarioCase[] = [
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
       cutouts: [makeCutout({ id: 'frac', width: 15, depth: 15, cutDepth: 3 })],
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '0.5×0.5 solid + cutout (smallest + cut)', {

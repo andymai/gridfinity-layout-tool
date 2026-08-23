@@ -27,7 +27,6 @@ export const permutationMatrix: ScenarioCase[] = [
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
     customAssert: (result, params) => {
       assertBoundingBoxMatchesParams(result, params, 'lip+compart+scoop');
     },
@@ -71,7 +70,6 @@ export const permutationMatrix: ScenarioCase[] = [
         left: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
     customAssert: (result, params) => {
       assertBoundingBoxMatchesParams(result, params, 'slotted+lip+handles');
     },
@@ -94,7 +92,6 @@ export const permutationMatrix: ScenarioCase[] = [
         back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 50 },
       },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 cutouts + handles + label tab (3 cuts)', {
@@ -109,7 +106,6 @@ export const permutationMatrix: ScenarioCase[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '3×2 inserts + scoop + compartments (floor + back wall + interior)', {
@@ -124,7 +120,6 @@ export const permutationMatrix: ScenarioCase[] = [
       compartments: { cols: 3, rows: 1, cells: [0, 1, 2], thickness: 0.8 },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 
   // ─── Half sockets × sub-features ──────────────────────────────────────────
@@ -148,7 +143,6 @@ export const permutationMatrix: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
       wallPattern: { enabled: true, pattern: 'honeycomb' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 half sockets + handles', {
@@ -163,7 +157,6 @@ export const permutationMatrix: ScenarioCase[] = [
         back: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 half sockets + scoop + lip', {
@@ -176,7 +169,6 @@ export const permutationMatrix: ScenarioCase[] = [
       },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 
   // ─── Wall pattern intersections (honeycomb border clipping) ──────────────
@@ -195,7 +187,6 @@ export const permutationMatrix: ScenarioCase[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
     },
-    timeout: 120_000,
   }),
 
   defineScenario(CAT, '4×4 honeycomb + wall cutouts + lip (hex prism + border)', {
@@ -213,7 +204,6 @@ export const permutationMatrix: ScenarioCase[] = [
         back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 80, depth: 50 },
       },
     },
-    timeout: 120_000,
   }),
 
   defineScenario(CAT, '1.5×1.5 honeycomb + fractional + lip', {
@@ -225,7 +215,6 @@ export const permutationMatrix: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
       wallPattern: { enabled: true, pattern: 'honeycomb' },
     },
-    timeout: 60_000,
   }),
 
   // ─── Solid mode × cuts ───────────────────────────────────────────────────
@@ -240,7 +229,6 @@ export const permutationMatrix: ScenarioCase[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 solid + handles (cuts above solid surface)', {
@@ -259,7 +247,6 @@ export const permutationMatrix: ScenarioCase[] = [
         back: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 solid + grouped cutouts at varying depths', {
@@ -276,7 +263,6 @@ export const permutationMatrix: ScenarioCase[] = [
         makeCutout({ id: 'deep', x: 10, cutDepth: 6, groupId: 'g1' }),
       ],
     },
-    timeout: 60_000,
   }),
 
   // ─── 4×4 stress: many features at scale ───────────────────────────────────
@@ -295,7 +281,6 @@ export const permutationMatrix: ScenarioCase[] = [
       scoop: { enabled: true, radius: 'auto' },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
     },
-    timeout: 120_000,
   }),
 
   defineScenario(CAT, '4×4 slotted + handles + label + lip (multi-cut stress)', {
@@ -314,7 +299,6 @@ export const permutationMatrix: ScenarioCase[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
     },
-    timeout: 120_000,
   }),
 
   defineScenario(CAT, '4×4 honeycomb + handles + scoop + lip + halfSockets', {
@@ -347,7 +331,6 @@ export const permutationMatrix: ScenarioCase[] = [
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 slotted + inserts + lip', {
@@ -357,7 +340,6 @@ export const permutationMatrix: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
       inserts: [makeInsert({ shape: 'circle', width: 20, depth: 20, cutDepth: 4 })],
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 slotted + handles + label', {
@@ -373,7 +355,6 @@ export const permutationMatrix: ScenarioCase[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
     },
-    timeout: 60_000,
   }),
 
   // ─── Fractional dimensions × features ────────────────────────────────────
@@ -385,7 +366,6 @@ export const permutationMatrix: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2.5×1 handles + lip (asymmetric + lip)', {
@@ -401,7 +381,6 @@ export const permutationMatrix: ScenarioCase[] = [
         front: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '0.5×2 magnet + lip + half sockets (long half-bin stress)', {
@@ -416,7 +395,6 @@ export const permutationMatrix: ScenarioCase[] = [
         halfSockets: true,
       },
     },
-    timeout: 60_000,
   }),
 
   // ─── Label-tab × interior interactions ──────────────────────────────────
@@ -427,7 +405,6 @@ export const permutationMatrix: ScenarioCase[] = [
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 label tab solid + thick walls (gusset edge case)', {
@@ -454,7 +431,6 @@ export const permutationMatrix: ScenarioCase[] = [
       scoop: { enabled: true, radius: 'auto' },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
     },
-    timeout: 60_000,
   }),
 
   defineScenario(CAT, '2×2 weighted base + compartments + scoop', {
@@ -464,7 +440,6 @@ export const permutationMatrix: ScenarioCase[] = [
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 
   // ─── Scoop interactions ───────────────────────────────────────────────
@@ -476,6 +451,5 @@ export const permutationMatrix: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
 ];

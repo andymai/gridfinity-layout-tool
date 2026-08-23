@@ -55,7 +55,6 @@ export const regressions: ScenarioCase[] = [
       scoop: { enabled: true, radius: 'auto' },
     },
     forExport: true,
-    timeout: 60_000,
     customAssert: (result, params) => {
       assertBoundingBoxMatchesParams(result, params, '#1760');
       assertNoDegenerateTriangles(result, '#1760');
@@ -71,7 +70,6 @@ export const regressions: ScenarioCase[] = [
       depth: 2,
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, '#1681');
     },
@@ -111,7 +109,6 @@ export const regressions: ScenarioCase[] = [
       style: 'slotted',
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
-    timeout: 60_000,
     customAssert: (result) => {
       const wallHeight = 6 * GRIDFINITY.HEIGHT_UNIT;
       const bb = boundingBox(result.vertices);
@@ -190,7 +187,6 @@ export const regressions: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
     },
-    timeout: 120_000,
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, '#1437');
     },
@@ -201,7 +197,6 @@ export const regressions: ScenarioCase[] = [
   defineScenario(CAT, '#1404 oversized 8×4 bin (would need split)', {
     assert: 'structural',
     params: { width: 8, depth: 4, height: 4 },
-    timeout: 120_000,
     customAssert: (result, params) => {
       assertBoundingBoxMatchesParams(result, params, '#1404');
     },
@@ -218,7 +213,6 @@ export const regressions: ScenarioCase[] = [
       height: 6,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
-    timeout: 120_000,
     customAssert: (result) => {
       const outerW = 3 * SIZE - TOL;
       const outerD = 5 * SIZE - TOL;
@@ -239,7 +233,6 @@ export const regressions: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
     },
-    timeout: 120_000,
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, '#1354');
     },
@@ -257,7 +250,6 @@ export const regressions: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 0.8 },
     },
-    timeout: 120_000,
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, '#1351');
     },
@@ -301,7 +293,6 @@ export const regressions: ScenarioCase[] = [
       height: 4,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
-    timeout: 60_000,
     customAssert: (result) => {
       const outerW = 5 * SIZE - TOL;
       const outerD = 2 * SIZE - TOL;
@@ -345,7 +336,6 @@ export const regressions: ScenarioCase[] = [
     assert: 'structural',
     params: { style: 'slotted', height: 4 },
     forExport: true,
-    timeout: 60_000,
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, '#921');
     },
@@ -374,7 +364,6 @@ export const regressions: ScenarioCase[] = [
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 50, depth: 40 },
       },
     },
-    timeout: 60_000,
     customAssert: (result, params) => {
       assertBoundingBoxMatchesParams(result, params, '#371');
     },
@@ -434,7 +423,6 @@ export const regressions: ScenarioCase[] = [
       cutoutConfig: { topOffset: 5 },
       cutouts: [makeCutout({ id: 'top-cut', width: 20, depth: 20, cutDepth: 8 })],
     },
-    timeout: 60_000,
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, '#solid-top');
     },

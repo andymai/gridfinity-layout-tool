@@ -26,7 +26,6 @@ export const solidMode: ScenarioCase[] = [
         base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false },
       },
       forExport: true,
-      timeout: 60_000,
       compareWith: {
         params: {
           width: 1,
@@ -94,7 +93,6 @@ export const solidMode: ScenarioCase[] = [
       cutouts: [makeCutout({ id: 'center-cutout', x: 20, y: 20 })],
     },
     forExport: true,
-    timeout: 60_000,
     compareWith: {
       params: {
         width: 2,

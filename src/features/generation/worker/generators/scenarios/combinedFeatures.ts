@@ -15,7 +15,6 @@ export const combinedFeatures: ScenarioCase[] = [
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
       scoop: { enabled: true, radius: 'auto' },
     },
-    timeout: 60_000,
   }),
   defineScenario('combined features', '4\u00d74 magnet + label bracket + half-sockets', {
     params: {
@@ -29,7 +28,6 @@ export const combinedFeatures: ScenarioCase[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
     },
-    timeout: 60_000,
   }),
   defineScenario('combined features', '1.5\u00d72 flat + slotted + 3\u00d72 merged compartments', {
     params: {
@@ -39,7 +37,6 @@ export const combinedFeatures: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
       compartments: { cols: 3, rows: 2, cells: [0, 0, 1, 2, 3, 4], thickness: 0.8 },
     },
-    timeout: 60_000,
   }),
   defineScenario('combined features', '2\u00d72 compartments + insert (overlap interaction)', {
     params: {
@@ -69,7 +66,6 @@ export const combinedFeatures: ScenarioCase[] = [
         right: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('combined features', '2\u00d72 honeycomb walls + scoop cutout (front only)', {
     assert: 'structural',
@@ -89,7 +85,6 @@ export const combinedFeatures: ScenarioCase[] = [
         interior: DISABLED_WALL_CUTOUT,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('combined features', '2\u00d72 honeycomb walls + funnel cutout (left-aligned)', {
     assert: 'structural',
@@ -109,7 +104,6 @@ export const combinedFeatures: ScenarioCase[] = [
         interior: DISABLED_WALL_CUTOUT,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('combined features', '2\u00d72 honeycomb walls + handle holes', {
     assert: 'structural',
@@ -125,7 +119,6 @@ export const combinedFeatures: ScenarioCase[] = [
         left: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('combined features', '2\u00d72 honeycomb walls + handles + wall cutouts', {
     assert: 'structural',
@@ -146,7 +139,6 @@ export const combinedFeatures: ScenarioCase[] = [
         right: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('combined features', '2\u00d72 honeycomb walls + handles + label (back skip)', {
     assert: 'structural',
@@ -163,6 +155,5 @@ export const combinedFeatures: ScenarioCase[] = [
         back: ENABLED_SIDE,
       },
     },
-    timeout: 60_000,
   }),
 ];

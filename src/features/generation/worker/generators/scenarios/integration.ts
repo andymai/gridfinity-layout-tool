@@ -26,7 +26,6 @@ export const integration: ScenarioCase[] = [
   defineScenario('integration', 'generates a 2x2 bin (DEFAULT_BIN_PARAMS)', {
     assert: 'structural',
     params: {},
-    timeout: 60_000,
     customAssert: (result) => {
       expect(result.triangleCount).toBeGreaterThan(100);
     },
@@ -38,7 +37,6 @@ export const integration: ScenarioCase[] = [
       depth: 2,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
     },
-    timeout: 60_000,
   }),
   defineScenario('integration', '0.5x0.5 bin with single half-cell socket', {
     assert: 'structural',
@@ -55,7 +53,6 @@ export const integration: ScenarioCase[] = [
       depth: 1.5,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
-    timeout: 60_000,
   }),
   defineScenario('integration', '0.5x1 bin with half-width socket cell', {
     assert: 'structural',
@@ -72,7 +69,6 @@ export const integration: ScenarioCase[] = [
       depth: 2,
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', stackingLip: false },
     },
-    timeout: 60_000,
     customAssert: (result) => {
       expect(result.triangleCount).toBeGreaterThan(100);
     },
@@ -86,7 +82,6 @@ export const integration: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' },
     },
     forExport: true,
-    timeout: 120_000,
     customAssert: (result) => {
       expect(result.triangleCount).toBeGreaterThan(100);
     },
@@ -99,7 +94,6 @@ export const integration: ScenarioCase[] = [
       height: 3,
       wallPattern: { enabled: true, pattern: 'honeycomb' },
     },
-    timeout: 120_000,
     customAssert: (result) => {
       expect(result.triangleCount).toBeGreaterThan(100);
     },
@@ -112,7 +106,6 @@ export const integration: ScenarioCase[] = [
       height: 3,
       wallPattern: { enabled: false, pattern: 'honeycomb' },
     },
-    timeout: 60_000,
     customAssert: (result) => {
       expect(result.triangleCount).toBeGreaterThan(100);
     },

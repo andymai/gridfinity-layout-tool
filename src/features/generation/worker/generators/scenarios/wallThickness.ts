@@ -38,13 +38,11 @@ export const wallThickness: ScenarioCase[] = [
       wallThickness: 2.4,
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0.8 },
     },
-    timeout: 60_000,
   }),
 
   defineScenario('wall thickness', '4×4 thick walls (stress)', {
     assert: 'structural',
     params: { width: 4, depth: 4, wallThickness: 2.4 },
-    timeout: 60_000,
     customAssert: (result, params) => {
       assertBoundingBoxMatchesParams(result, params, '4x4-thick');
     },

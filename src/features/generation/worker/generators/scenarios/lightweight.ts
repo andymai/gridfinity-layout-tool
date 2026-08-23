@@ -80,7 +80,6 @@ export const lightweight: ScenarioCase[] = [
   defineScenario('lightweight', '4×4 lite export (stress)', {
     assert: 'structural',
     forExport: true,
-    timeout: 60_000,
     params: { width: 4, depth: 4, base: { ...lite, style: 'magnet' } },
   }),
 
@@ -100,7 +99,6 @@ export const lightweight: ScenarioCase[] = [
   defineScenario('lightweight', '2×2 lite + 2×2 compartments + magnet', {
     assert: 'structural',
     forExport: true,
-    timeout: 60_000,
     params: {
       width: 2,
       depth: 2,

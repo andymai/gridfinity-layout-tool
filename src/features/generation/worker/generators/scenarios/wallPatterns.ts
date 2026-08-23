@@ -66,7 +66,6 @@ function patternCase(pattern: WallPatternType, scale = 0.5): ScenarioCase {
       walls: ALL_SIDES_OFF,
     },
     assert: 'structural',
-    timeout: 60_000,
     compareWith: {
       params: {
         width: 3,
@@ -105,7 +104,6 @@ function frontOnlyCase(): ScenarioCase {
   return defineScenario('wall patterns', 'front-only selection carves only the front wall', {
     params,
     assert: 'structural',
-    timeout: 60_000,
     customAssert: (result) => {
       // Mid-band of the pattern zone on a 35mm-tall bin — comfortably inside
       // the keep-outs at both ends whatever the exact band works out to.

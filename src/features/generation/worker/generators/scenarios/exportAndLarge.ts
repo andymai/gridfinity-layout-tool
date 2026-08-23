@@ -5,14 +5,12 @@ export const exportMode: ScenarioCase[] = [
   defineScenario('export mode', '2\u00d72 default params (forExport=true)', {
     params: {},
     forExport: true,
-    timeout: 60_000,
   }),
 ];
 
 export const largeBin: ScenarioCase[] = [
   defineScenario('large bin', '8\u00d78 standard', {
     params: { width: 8, depth: 8 },
-    timeout: 60_000,
   }),
 ];
 

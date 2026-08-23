@@ -16,7 +16,6 @@ export const wallCutouts: ScenarioCase[] = [
         depth: 50,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('wall cutouts', 'slotted bin with per-side wall cutouts', {
     assert: 'structural',
@@ -37,7 +36,6 @@ export const wallCutouts: ScenarioCase[] = [
         interior: DISABLED_WALL_CUTOUT,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('wall cutouts', 'standard bin with interior wall cutouts and compartments', {
     assert: 'structural',
@@ -58,7 +56,6 @@ export const wallCutouts: ScenarioCase[] = [
         interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('wall cutouts', 'interior divider cutout honours alignment + offset (#2323)', {
     assert: 'structural',
@@ -88,7 +85,6 @@ export const wallCutouts: ScenarioCase[] = [
         },
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('wall cutouts', 'tilted interior divider cutout with alignment (#2323)', {
     assert: 'structural',
@@ -124,7 +120,6 @@ export const wallCutouts: ScenarioCase[] = [
         },
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('wall cutouts', 'full-height u-shape meets the rim square (#3173)', {
     // The reporter's config: a 14mm grid with 2.6mm walls and a 100%-height
@@ -150,7 +145,6 @@ export const wallCutouts: ScenarioCase[] = [
         interior: DISABLED_WALL_CUTOUT,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('wall cutouts', 'full-height u-shape through a stacking lip (#3173)', {
     // Same cut against a lipped wall: the true rim is the lip peak at
@@ -176,7 +170,6 @@ export const wallCutouts: ScenarioCase[] = [
         interior: DISABLED_WALL_CUTOUT,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('wall cutouts', 'left-aligned cutout with offset and absolute mm width', {
     assert: 'structural',
@@ -196,7 +189,6 @@ export const wallCutouts: ScenarioCase[] = [
         interior: DISABLED_WALL_CUTOUT,
       },
     },
-    timeout: 60_000,
   }),
   defineScenario('wall cutouts', 'full-width cutout squares its bottom corners', {
     assert: 'structural',
@@ -219,6 +211,5 @@ export const wallCutouts: ScenarioCase[] = [
       },
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
     },
-    timeout: 60_000,
   }),
 ];

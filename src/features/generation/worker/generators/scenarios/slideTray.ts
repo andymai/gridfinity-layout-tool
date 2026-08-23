@@ -17,7 +17,6 @@ export const slideTray: ScenarioCase[] = [
       height: 6,
       slide: slide({ railMount: 'interior', trayWidthUnits: 1 }),
     },
-    timeout: 60_000,
   }),
   defineScenario('slide tray', 'rim track on a lipped bin', {
     assert: 'structural',
@@ -27,7 +26,6 @@ export const slideTray: ScenarioCase[] = [
       height: 6,
       slide: slide({ railMount: 'rim', trayWidthUnits: 2 }),
     },
-    timeout: 60_000,
   }),
   defineScenario('slide tray', 'rim track without a stacking lip', {
     assert: 'structural',
@@ -38,7 +36,6 @@ export const slideTray: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
       slide: slide({ railMount: 'rim' }),
     },
-    timeout: 60_000,
   }),
   defineScenario('slide tray', 'interior ledges under a wall pattern', {
     assert: 'structural',
@@ -49,7 +46,6 @@ export const slideTray: ScenarioCase[] = [
       wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
       slide: slide({ railMount: 'interior' }),
     },
-    timeout: 90_000,
   }),
   defineScenario('slide tray', 'interior ledges under a kumiko wrap', {
     assert: 'structural',
@@ -60,7 +56,6 @@ export const slideTray: ScenarioCase[] = [
       wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'mitsukude' },
       slide: slide({ railMount: 'interior' }),
     },
-    timeout: 120_000,
   }),
   defineScenario('slide tray', 'interior ledges with compartments and a lid', {
     assert: 'structural',
@@ -71,6 +66,5 @@ export const slideTray: ScenarioCase[] = [
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
       slide: slide({ railMount: 'interior', railDropMm: 6 }),
     },
-    timeout: 90_000,
   }),
 ];
