@@ -1,0 +1,25 @@
+src/features/bin-designer/components/Workshop/WorkshopPanel/CutterProfileSection.tsx
+  s_a36c0b85dfeec4::t_c52a3484e83217 2-4,66-67
+src/features/bin-designer/components/Workshop/cutterProfileImport.test.ts
+  s_a36c0b85dfeec4::t_c52a3484e83217 52-63
+src/features/bin-designer/components/Workshop/cutterProfileImport.ts
+  s_a36c0b85dfeec4::t_c52a3484e83217 12-13,20,25-27,31-35
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_a36c0b85dfeec4::t_c52a3484e83217 66-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "fef1d6fb5274ea72a40201d8e011ea8dcb57ba94",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
