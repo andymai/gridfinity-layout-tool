@@ -24,10 +24,16 @@ export function isSyncableDesign(design: SavedDesign): boolean {
   );
 }
 
-/** Kinds that can stand on the layout grid as a bin: parametric bins and
- *  imported meshes. Other non-bin items (tool racks) have no bin semantics. */
+/** Kinds that can stand on the layout grid as a bin: parametric bins,
+ *  imported meshes, and Workshop assemblies (socketed base, so they seat and
+ *  collide like a bin). Legacy tool racks stay out — the migration converts
+ *  them to assemblies. */
 export function isLayoutPlaceableDesign(design: SavedDesign): boolean {
-  return isBinDesign(design) || design.structure?.kind === 'importedMesh';
+  return (
+    isBinDesign(design) ||
+    design.structure?.kind === 'importedMesh' ||
+    (design.structure?.kind === 'assembly' && design.envelope !== undefined)
+  );
 }
 
 export interface DesignFootprint {

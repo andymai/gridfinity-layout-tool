@@ -26,6 +26,7 @@ import { dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
 import {
   loadRegistry,
   upsertRegistryEntry,
+  registryAssemblyFields,
   registryEdgeFields,
   registryHeightFields,
   registryKnifeRestFields,
@@ -64,6 +65,17 @@ export function navigateToPlaceInLayout(design: SavedDesign): void {
       height,
       kind: 'importedMesh',
       ...registryEdgeFields({}),
+      updatedAt: design.updatedAt,
+    });
+  } else if (design.structure?.kind === 'assembly' && design.envelope) {
+    upsertRegistryEntry({
+      id: design.id,
+      name: design.name,
+      width,
+      depth,
+      height,
+      ...registryEdgeFields({}),
+      ...registryAssemblyFields(design.envelope, design.structure),
       updatedAt: design.updatedAt,
     });
   }

@@ -297,7 +297,13 @@ export function LinkDesignDialog() {
                 const numCompartments = design.params
                   ? new Set(design.params.compartments.cells).size
                   : 0;
-                const isImportedMesh = design.structure?.kind === 'importedMesh';
+                const structureKind = design.structure?.kind;
+                const kindBadge =
+                  structureKind === 'importedMesh'
+                    ? t('binDesigner.itemKind.importedMesh')
+                    : structureKind === 'assembly'
+                      ? t('binDesigner.itemKind.assembly')
+                      : null;
                 const heightMismatch = dh !== binHeight;
 
                 return (
@@ -339,9 +345,9 @@ export function LinkDesignDialog() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className="truncate text-sm font-medium text-content">{design.name}</p>
-                          {isImportedMesh && (
+                          {kindBadge !== null && (
                             <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded bg-surface-elevated text-content-secondary">
-                              {t('binDesigner.itemKind.importedMesh')}
+                              {kindBadge}
                             </span>
                           )}
                           {heightMismatch && (
