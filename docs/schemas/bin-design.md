@@ -386,7 +386,7 @@ label plate instead of carrying engraved text.
 | `enabled`        | `boolean`                                 | yes      |          |               | Enable label tabs.                                                                                                                                  |
 | `mode`           | `"text"` \| `"socket"`                    |          | `"text"` |               | 'text' engraves directly on the tab. 'socket' builds a pocket for a separately printed swappable label plate.                                       |
 | `plateFitOffset` | `number`                                  |          |          |               | Fit offset in mm applied to a socket's pocket. Positive is looser. Only meaningful in 'socket' mode.                                                |
-| `socketStyle`    | `string`                                  |          |          |               | Which socket profile a 'socket' mode tab uses.                                                                                                      |
+| `socketStyle`    | `"clickIn"` \| `"slideChannel"`           |          |          |               | Which socket profile a 'socket' mode tab uses. 'clickIn' snaps the plate down onto a shelf; 'slideChannel' slides it in from the side.              |
 | `support`        | `"bracket"` \| `"solid"` \| `"fillet"`    | yes      |          |               | Support structure under the tab. 'bracket' is open gussets, 'solid' is a filled triangle, 'fillet' is a curve.                                      |
 | `depth`          | `number`                                  | yes      |          | >= 8, <= 50   | Tab depth in MILLIMETRES. The UI further clamps to min(50, innerDepth - 1) so the tab cannot span past the opposite wall.                           |
 | `width`          | `number`                                  | yes      |          | >= 10, <= 100 | Tab width as a PERCENTAGE of the compartment column width.                                                                                          |
@@ -397,7 +397,7 @@ label plate instead of carrying engraved text.
 | `edges`          | `"back"` \| `"front"` \| `"both"`         | yes      |          |               | Which wall the tabs anchor to.                                                                                                                      |
 | `inset`          | `number`                                  | yes      |          | >= 0, <= 100  | Inward offset in mm from the anchor wall. The UI clamps further per compartment depth so two tabs in 'both' mode cannot collide.                    |
 | `textStyle`      | [`TextStyleOverride`](#textstyleoverride) |          |          |               |                                                                                                                                                     |
-| `span`           | `string`                                  |          |          |               | How far a tab spans across compartments.                                                                                                            |
+| `span`           | `boolean`                                 |          |          |               | Span one tab across a whole row of compartments instead of one per column. When true, captions come from rowTexts.                                  |
 | `rowTexts`       | `string` \| `null`[]                      |          |          |               | Per-row label text.                                                                                                                                 |
 
 <!-- generated:end -->
@@ -450,17 +450,17 @@ printed separately and ride in them.
 
 <!-- generated:start -->
 
-| Field          | Type                                       | Required | Default | Constraint   | Notes                                                                 |
-| -------------- | ------------------------------------------ | -------- | ------- | ------------ | --------------------------------------------------------------------- |
-| `x`            | [`AxisSlotConfig`](#axisslotconfig)        | yes      |         |              |                                                                       |
-| `y`            | [`AxisSlotConfig`](#axisslotconfig)        | yes      |         |              |                                                                       |
-| `width`        | `number`                                   | yes      |         | >= 1.8, <= 3 | Slot width in mm.                                                     |
-| `depth`        | `number`                                   | yes      |         | >= 0.5, <= 2 | Slot depth in mm.                                                     |
-| `crossStyle`   | `"lap"` \| `"insert"`                      |          |         |              | How crossing dividers meet.                                           |
-| `longAxis`     | `string`                                   |          |         |              | Which axis the long divider runs along.                               |
-| `partialStyle` | `"full"` \| `"snappable"` \| `"lengthSet"` |          |         |              | Whether dividers span fully, snap to length, or come as a length set. |
-| `layout`       | `"even"` \| `"custom"`                     |          |         |              | Even pitch or a custom grid.                                          |
-| `customGrid`   | `number`[]                                 |          |         |              | Custom slot positions. Only meaningful when layout is 'custom'.       |
+| Field          | Type                                       | Required | Default | Constraint   | Notes                                                                                   |
+| -------------- | ------------------------------------------ | -------- | ------- | ------------ | --------------------------------------------------------------------------------------- |
+| `x`            | [`AxisSlotConfig`](#axisslotconfig)        | yes      |         |              |                                                                                         |
+| `y`            | [`AxisSlotConfig`](#axisslotconfig)        | yes      |         |              |                                                                                         |
+| `width`        | `number`                                   | yes      |         | >= 1.8, <= 3 | Slot width in mm.                                                                       |
+| `depth`        | `number`                                   | yes      |         | >= 0.5, <= 2 | Slot depth in mm.                                                                       |
+| `crossStyle`   | `"lap"` \| `"insert"`                      |          |         |              | How crossing dividers meet.                                                             |
+| `longAxis`     | `"x"` \| `"y"`                             |          |         |              | Which axis carries the full-length dividers. Honoured only when crossStyle is 'insert'. |
+| `partialStyle` | `"full"` \| `"snappable"` \| `"lengthSet"` |          |         |              | Whether dividers span fully, snap to length, or come as a length set.                   |
+| `layout`       | `"even"` \| `"custom"`                     |          |         |              | Even pitch or a custom grid.                                                            |
+| `customGrid`   | `number`[]                                 |          |         |              | Custom slot positions. Only meaningful when layout is 'custom'.                         |
 
 <!-- generated:end -->
 
@@ -537,7 +537,7 @@ the 2D editor and comes out as a plain rectangle in 3D.
 | `groupOp`          | `"union"` \| `"subtract"` \| `"intersect"` \| `"exclude"`                                                                            |          | `"union"`         |                     | Boolean operation within the group.                                                                                                                                                         |
 | `scoopRadiusW`     | `number`                                                                                                                             |          |                   | >= 0                | Scoop radius along width in mm.                                                                                                                                                             |
 | `scoopRadiusD`     | `number`                                                                                                                             |          |                   | >= 0                | Scoop radius along depth in mm.                                                                                                                                                             |
-| `scoopEdges`       | `string`[]                                                                                                                           |          |                   |                     | Which edges of the cutout are scooped.                                                                                                                                                      |
+| `scoopEdges`       | [`CutoutScoopEdges`](#cutoutscoopedges)                                                                                              |          |                   |                     |                                                                                                                                                                                             |
 | `name`             | `string`                                                                                                                             |          |                   |                     | Display name in the cutout list.                                                                                                                                                            |
 | `locked`           | `boolean`                                                                                                                            |          |                   |                     | Prevent editing in the canvas.                                                                                                                                                              |
 | `hidden`           | `boolean`                                                                                                                            |          |                   |                     | Hide from the preview without deleting.                                                                                                                                                     |
@@ -555,11 +555,29 @@ the 2D editor and comes out as a plain rectangle in 3D.
 | `textStyle`        | [`TextStyleOverride`](#textstyleoverride)                                                                                            |          |                   |                     |                                                                                                                                                                                             |
 | `color`            | `string`                                                                                                                             |          |                   | `^#[0-9a-fA-F]{6}$` | Cutout colour for multi-colour export.                                                                                                                                                      |
 | `colorScope`       | `"floor"` \| `"floorAndWalls"`                                                                                                       |          | `"floorAndWalls"` |                     | Whether the colour covers just the cut floor or its walls too.                                                                                                                              |
-| `labelMode`        | `"text"` \| `"socket"`                                                                                                               |          |                   |                     | 'socket' builds a pocket for a swappable label plate instead of engraving.                                                                                                                  |
+| `labelMode`        | `"engrave"` \| `"socket"`                                                                                                            |          |                   |                     | 'engrave' cuts the label text into the surface; 'socket' builds a pocket for a separately printed swappable label plate.                                                                    |
 | `labelPlateWidthU` | `number`                                                                                                                             |          |                   | > 0                 | Label plate width in grid units for socket mode.                                                                                                                                            |
 | `labelIcon`        | `string`                                                                                                                             |          |                   |                     | Icon id engraved with the label.                                                                                                                                                            |
 | `meshId`           | `string`                                                                                                                             |          |                   |                     | Key into BinParams.meshAssets. Required for shape 'mesh'.                                                                                                                                   |
 | `knife`            | [`KnifeSpec`](#knifespec)                                                                                                            |          |                   |                     |                                                                                                                                                                                             |
+
+<!-- generated:end -->
+
+### CutoutScoopEdges
+
+Which edges of a cutout are scooped. Absent means all four, so the object only
+needs writing when some edges should stay square.
+
+<!-- schema:CutoutScoopEdges -->
+
+<!-- generated:start -->
+
+| Field   | Type      | Required | Default | Constraint | Notes              |
+| ------- | --------- | -------- | ------- | ---------- | ------------------ |
+| `left`  | `boolean` | yes      |         |            | Scoop the -X edge. |
+| `right` | `boolean` | yes      |         |            | Scoop the +X edge. |
+| `front` | `boolean` | yes      |         |            | Scoop the -Y edge. |
+| `back`  | `boolean` | yes      |         |            | Scoop the +Y edge. |
 
 <!-- generated:end -->
 

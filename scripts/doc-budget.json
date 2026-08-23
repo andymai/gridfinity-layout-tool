@@ -1,10 +1,6 @@
 {
   "tolerance": "1.1",
-  "allowedMissingRefs": [
-    "b17779575",
-    "components/Foo.tsx",
-    "diffProps"
-  ],
+  "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
   "words": {
     ".claude/skills/analytics-and-labs/SKILL.md": 1270,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
@@ -31,9 +27,9 @@
     "docs/design/sliding-tray.md": 1053,
     "docs/label-icons.md": 890,
     "docs/schemas/README.md": 821,
-    "docs/schemas/bin-design.md": 10339,
-    "docs/schemas/constraints.md": 1218,
-    "docs/schemas/layout.md": 4391,
+    "docs/schemas/bin-design.md": 10492,
+    "docs/schemas/constraints.md": 1414,
+    "docs/schemas/layout.md": 4412,
     "scripts/community-admin/README.md": 831,
     "scripts/sync-admin/README.md": 1056,
     "scripts/train-bin-recommender/README.md": 343,
