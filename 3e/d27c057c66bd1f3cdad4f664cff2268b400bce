@@ -1,0 +1,69 @@
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_fa796cd5b1815d 32,206-218,327-336
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_a36c0b85dfeec4::t_11d13817591fb6 28-29
+src/features/bin-designer/components/Workshop/WorkshopPanel/partFieldConfig.ts
+  s_a36c0b85dfeec4::t_67e08404d7309c 100-109,127
+src/features/bin-designer/components/Workshop/WorkshopPanel/partIcons.tsx
+  s_a36c0b85dfeec4::t_45714d385bcf8f 65-72
+src/features/bin-designer/components/Workshop/WorkshopPanel/partSummary.ts
+  s_a36c0b85dfeec4::t_ebb69eaa33c630 33-34
+src/features/bin-designer/components/Workshop/proxyGeometry.ts
+  s_a36c0b85dfeec4::t_d9cbcbeabc701d 443-450
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_6ff98db37e930f 4216-4218,4291
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_f1bb3c3b8d40bd 4216-4218,4291
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_402fcb271b19ce 2243-2245,2322
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_9fda22579ea6ee 4216-4218,4291
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_bfbefd40ea267b 4216-4218,4291
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_9c293f3b566eac 4216-4218,4291
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_914b0bfe3675b8 4216-4218,4291
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_a38658111b53a8 4216-4218,4291
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_38c66c67c8dab3 4216-4218,4291
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_53103d98b16ffa 4216-4218,4291
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_28048b49f9703c 4216-4218,4291
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_d166554576a052 4216-4218,4291
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_71ea1095b86c7f 4216-4218,4291
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_64c950e26cb349 4216-4218,4291
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_0f4cd31bfa184f 4216-4218,4291
+src/shared/items/assembly/descriptor.ts
+  s_a36c0b85dfeec4::t_74a2edb7736b3a 118-128,239-244,335-344
+src/shared/types/assembly.ts
+  s_a36c0b85dfeec4::t_282d7da757d188 26,139-150,234-237,253,268
+src/shared/types/assemblyPlacement.ts
+  s_a36c0b85dfeec4::t_872bf58245ed36 37-38,69-70
+src/features/generation/worker/generators/assemblyGenerator.scenario.combriser.test.ts
+  s_a36c0b85dfeec4::t_08614e7fe00100 133-202
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_63dafac083d1ab 618-664
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "3ed27c057c66bd1f3cdad4f664cff2268b400bce",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
