@@ -8,7 +8,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import { useResponsive } from '@/shared/hooks/useResponsive';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import { collectAssemblyIds, findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 import { defaultCutterProfile } from '@/shared/items/assembly/descriptor';
@@ -29,8 +28,8 @@ export interface HoverSurface {
 }
 
 export interface WorkshopInteraction {
-  /** Touch devices select on tap and move via the on-canvas handle. */
-  readonly isTouchDevice: boolean;
+  /** The current selection was made by touch — show the move handle. */
+  readonly selectedViaTouch: boolean;
   readonly placements: PlacedPart[];
   readonly placedById: Map<string, PlacedPart>;
   readonly hover: HoverSurface | null;
@@ -42,7 +41,7 @@ export interface WorkshopInteraction {
   onSurfaceMove: (surface: HoverSurface) => void;
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
-  onPartPointerDown: (id: string, pointerId: number, pointerType: string) => void;
+  onPartPointerDown: (id: string, pointerType: string) => void;
   beginPartDrag: (id: string) => void;
   isInDraggedSubtree: (id: string) => boolean;
 }
@@ -59,7 +58,6 @@ export function useWorkshopInteraction(
   structure: AssemblyStructure,
   baseExtent: { w: number; d: number }
 ): WorkshopInteraction {
-  const { isTouchDevice } = useResponsive();
   const pendingType = usePendingType();
   const pendingCutterShape = usePendingCutterShape();
   const { selectedId } = useDesignerStore(
@@ -70,6 +68,7 @@ export function useWorkshopInteraction(
 
   const [hover, setHover] = useState<HoverSurface | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [selectedViaTouch, setSelectedViaTouch] = useState(false);
   const draggedSubtreeRef = useRef<Set<string>>(new Set());
   // Transaction opens lazily on the first real mutation of a drag, so a
   // click that never moves the part leaves no undo step behind.
@@ -126,7 +125,14 @@ export function useWorkshopInteraction(
   useEffect(() => {
     if (draggingId === null) return;
     window.addEventListener('pointerup', endDrag);
-    return () => window.removeEventListener('pointerup', endDrag);
+    // A cancelled touch (edge swipe, notification shade, palm rejection)
+    // fires pointercancel, never pointerup — without this the drag wedges
+    // orbit, the open undo transaction, and the drag state.
+    window.addEventListener('pointercancel', endDrag);
+    return () => {
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
+    };
   }, [draggingId, endDrag]);
 
   const snapPoint = useCallback(
@@ -229,20 +235,24 @@ export function useWorkshopInteraction(
   );
 
   const onPartPointerDown = useCallback(
-    (id: string, _pointerId: number, pointerType: string): void => {
+    (id: string, pointerType: string): void => {
       const store = useDesignerStore.getState();
       if (store.ui.workshopPendingPartType) return;
       store.setSelectedAssemblyPartId(id);
       // Touch: tap selects; moving happens through the dedicated handle so a
-      // one-finger drag from a part still orbits instead of dragging it.
-      if (pointerType === 'touch' || isTouchDevice) {
+      // one-finger drag from a part still orbits instead of dragging it. The
+      // pointer that made the selection is the ONE modality signal — a
+      // mouse on a touchscreen laptop drags, a finger gets the handle.
+      const viaTouch = pointerType === 'touch';
+      setSelectedViaTouch(viaTouch);
+      if (viaTouch) {
         skipNextBaseClickRef.current = true;
         invalidate();
         return;
       }
       beginPartDrag(id);
     },
-    [beginPartDrag, invalidate, isTouchDevice]
+    [beginPartDrag, invalidate]
   );
 
   const isInDraggedSubtree = useCallback(
@@ -262,7 +272,7 @@ export function useWorkshopInteraction(
   }, [fineSnap, hover, placedById]);
 
   return {
-    isTouchDevice,
+    selectedViaTouch,
     placements,
     placedById,
     hover,

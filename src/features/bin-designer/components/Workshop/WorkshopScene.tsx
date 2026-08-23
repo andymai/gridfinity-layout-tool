@@ -109,7 +109,7 @@ export function WorkshopScene({ structure, envelope }: WorkshopSceneProps) {
       {interaction.draggingId !== null && (
         <DragCatchPlane baseW={w} baseD={d} onSurfaceMove={interaction.onSurfaceMove} />
       )}
-      {interaction.isTouchDevice &&
+      {interaction.selectedViaTouch &&
         interaction.selectedId !== null &&
         interaction.draggingId === null &&
         interaction.pendingType === null &&

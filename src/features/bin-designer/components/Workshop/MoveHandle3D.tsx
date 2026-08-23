@@ -28,6 +28,7 @@ export function MoveHandle3D({ placed, baseW, baseD, onBeginDrag }: MoveHandle3D
         placed.topZ + HANDLE_LIFT_MM,
       ]}
       onPointerDown={(e) => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
         e.stopPropagation();
         onBeginDrag(placed.selectId);
       }}
