@@ -4,13 +4,13 @@ const mocks = vi.hoisted(() => ({
   validateDesignerShare: vi.fn(),
 }));
 
-vi.mock('./designerValidation.js', () => ({
-  validateDesignerShare: mocks.validateDesignerShare,
-  // Real implementation: assemblyValidation (unmocked) imports it, and the
-  // assembly publish tests exercise that path for real.
-  validateFeatureColors: (value: unknown): string | null =>
-    value !== undefined && typeof value !== 'object' ? 'featureColors must be an object' : null,
-}));
+vi.mock('./designerValidation.js', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    validateDesignerShare: mocks.validateDesignerShare,
+  };
+});
 
 import {
   COMMUNITY_CATEGORIES,

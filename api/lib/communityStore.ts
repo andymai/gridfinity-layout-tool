@@ -93,7 +93,8 @@ export function deriveCommunityMetrics(params: Record<string, unknown>): Communi
 
 /**
  * Metrics for a Workshop assembly: footprint from the envelope, height from
- * the validated client-computed standing height (the envelope carries none).
+ * the server-derived standing height (`sanitizeAssemblyContent` walks the
+ * part tree; client values are ignored).
  */
 export function deriveAssemblyMetrics(
   envelope: Record<string, unknown>,
