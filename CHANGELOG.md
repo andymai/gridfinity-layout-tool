@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.446.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.445.0...gridfinity-layout-tool-v4.446.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** advisory printability checker ([#3732](https://github.com/andymai/gridfinity-layout-tool/issues/3732)) ([310f247](https://github.com/andymai/gridfinity-layout-tool/commit/310f247f6f8d816b57c9c222085cd4c14053d40c))
+
 ## [4.445.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.444.0...gridfinity-layout-tool-v4.445.0) (2026-08-23)
 
 
