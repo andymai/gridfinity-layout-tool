@@ -1,0 +1,59 @@
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_a36c0b85dfeec4::t_0a7fc380fb7c34 527-609
+src/features/design-linking/hooks/useQuickExport.ts
+  s_a36c0b85dfeec4::t_006d16b77a1569 58,60,68-75,77
+  s_a36c0b85dfeec4::t_0377886db15262 12,50-54,59,61-67
+src/shell/layoutExport/useLayoutExport.ts
+  s_a36c0b85dfeec4::t_d44d25bfa032fe 258-259,368-378
+  s_a36c0b85dfeec4::t_08c59c02eba979 379-383
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_a36c0b85dfeec4::t_9e8bb62c2b5a8c 34-38,88-97,107,234-237,250-255,341-362,378-380,382-383,387,469-506,510
+src/core/storage/ShareService.ts
+  s_a36c0b85dfeec4::t_975b44b67b0897 21-27,29-31,35-60,64,70,78-79,99-103,105-109
+  s_a36c0b85dfeec4::t_14fd2ce6241b01 61-63,65-69
+  s_a36c0b85dfeec4::t_b9a474718cb699 344-351,362-402
+  s_a36c0b85dfeec4::t_639a0c7fc649b5 260-263,265-292
+src/core/api/share.ts
+  s_a36c0b85dfeec4::t_14fd2ce6241b01 32-37,147-161
+api/lib/validation.ts
+  s_a36c0b85dfeec4::t_6449d6371134a8 51-52,404-405,409-412,458-464,466-471,473-501
+  s_a36c0b85dfeec4::t_e6b6a31da5dccc 8,465,472
+  s_a36c0b85dfeec4::t_bc8ef7293383c8 502
+src/core/storage/ShareService.test.ts
+  s_a36c0b85dfeec4::t_d0292b8c279a45 683-717,835-880,1046-1122
+  s_a36c0b85dfeec4::t_d767c85ebbe44a 1123
+src/core/storage/designStorePort.ts
+  s_a36c0b85dfeec4::t_272e8fa0f05fb7 27-31,39-48,83-94
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_a36c0b85dfeec4::t_272e8fa0f05fb7 26,36-50
+src/shared/schema/layoutKeys.ts
+  s_a36c0b85dfeec4::t_80309fea15ce14 189
+  s_a36c0b85dfeec4::t_f6c2b230904050 190-192
+  s_a36c0b85dfeec4::t_a0ef52d68336f2 193-196
+public/schema/layout.schema.json
+  s_a36c0b85dfeec4::t_4151254a80e56c 597-616,618-668,674
+  s_a36c0b85dfeec4::t_ad897deed2c0ae 669-673,676
+src/core/storage/BulkArchiveService.ts
+  s_a36c0b85dfeec4::t_66716914b62d60 22-25
+  s_a36c0b85dfeec4::t_df5477d0e05175 121-125,127-131
+api/lib/contentFilter.ts
+  s_a36c0b85dfeec4::t_80309fea15ce14 294
+api/lib/validation.test.ts
+  s_a36c0b85dfeec4::t_3f85180929efa4 991-1052
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "0eacb5e873e7355339bd952965fd3da56392500a",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
