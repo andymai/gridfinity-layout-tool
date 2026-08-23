@@ -58,6 +58,11 @@ describe('buildWorkshopTemplate', () => {
     expect(fin?.type === 'fin' && fin.params.leanDeg).toBe(20);
     const rail = converted.parts.find((n) => n.type === 'block');
     expect(rail?.type === 'block' && rail.params.height).toBe(10);
+    expect(rail?.transform.y).toBe(84 - 1.5);
+    expect(rail?.type === 'block' && rail.params.width).toBe(168);
+    const convertedFin = converted.parts.find((n) => n.type === 'fin');
+    expect(convertedFin?.transform.y).toBe(42);
+    expect(convertedFin?.type === 'fin' && convertedFin.params.length).toBe(84);
   });
 
   it('derives fin count from pitch when the rack omitted it', () => {
@@ -72,8 +77,9 @@ describe('buildWorkshopTemplate', () => {
       backRail: { enabled: false, height: 10, thickness: 3 },
     };
     const converted = convertToolRackToAssembly(rack, envelope);
-    // 4x42=168mm wide, 8mm insets: floor((168-16)/16)+1 = 10 fins.
-    expect(converted.parts[0]?.array?.count).toBe(10);
+    // 4x42=168mm wide, 8mm insets: round((168-16)/16)+1 = 11 fins — the
+    // rack generator's own derivation.
+    expect(converted.parts[0]?.array?.count).toBe(11);
     expect(converted.parts).toHaveLength(1);
   });
 

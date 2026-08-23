@@ -126,18 +126,20 @@ export function convertToolRackToAssembly(
   const w = envelope.width * envelope.gridUnitMm;
   const d = envelope.depth * envelope.gridUnitMm;
   const pitch = rack.slotPitch ?? 16;
-  const count = Math.max(
-    2,
-    Math.min(64, rack.finCount ?? Math.floor((w - 2 * rack.slotInsetMm) / pitch) + 1)
-  );
-  const spacing = count > 1 ? (w - 2 * rack.slotInsetMm) / (count - 1) : 0;
+  const usableW = w - 2 * rack.slotInsetMm;
+  // Same derivation as the rack generator's resolveFins: finCount wins,
+  // otherwise round(usable / pitch) + 1, spacing spread across the usable run.
+  const count = Math.max(2, Math.min(64, rack.finCount ?? Math.round(usableW / pitch) + 1));
+  const spacing = count > 1 ? usableW / (count - 1) : 0;
 
   const parts: AssemblyPartNode[] = [];
 
   if (rack.backRail.enabled) {
+    // Flush to the back edge, full footprint width — the rack generator's
+    // placement, so a migrated rack keeps its exact outline.
     const rail = createAssemblyPartNode('block', crypto.randomUUID(), {
       x: w / 2,
-      y: d - rack.backRail.thickness / 2 - 1,
+      y: d - rack.backRail.thickness / 2,
       seatZ: 0,
       rotZDeg: 0,
     });
@@ -145,7 +147,7 @@ export function convertToolRackToAssembly(
       ...rail,
       params: {
         ...rail.params,
-        width: Math.min(w - 2, 400),
+        width: Math.min(w, 400),
         depth: rack.backRail.thickness,
         height: rack.backRail.height,
         wedgeAngleDeg: 0,
@@ -153,11 +155,11 @@ export function convertToolRackToAssembly(
     });
   }
 
-  const railDepth = rack.backRail.enabled ? rack.backRail.thickness + 2 : 0;
-  const finLength = Math.max(12, Math.min(d - railDepth - 6, 400));
+  // Fins span the full depth and fuse into the rail, as in the generator.
+  const finLength = Math.max(12, Math.min(d, 400));
   const fin = createAssemblyPartNode('fin', crypto.randomUUID(), {
     x: rack.slotInsetMm,
-    y: (d - railDepth) / 2,
+    y: d / 2,
     seatZ: 0,
     rotZDeg: 90,
   });
