@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.466.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.465.0...gridfinity-layout-tool-v4.466.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** comb slot rack and tiered riser parts ([#3782](https://github.com/andymai/gridfinity-layout-tool/issues/3782)) ([c6cba6b](https://github.com/andymai/gridfinity-layout-tool/commit/c6cba6b7d61888cc38bf5ca3a4f7ec9f805ac9f3))
+
 ## [4.465.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.464.0...gridfinity-layout-tool-v4.465.0) (2026-08-23)
 
 
