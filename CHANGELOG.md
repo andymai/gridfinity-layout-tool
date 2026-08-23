@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.452.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.451.0...gridfinity-layout-tool-v4.452.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** place assemblies in drawer layouts ([#3747](https://github.com/andymai/gridfinity-layout-tool/issues/3747)) ([5ba594d](https://github.com/andymai/gridfinity-layout-tool/commit/5ba594d51e3bf4a070963b2c00776ab4a0948d16))
+
 ## [4.451.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.450.0...gridfinity-layout-tool-v4.451.0) (2026-08-23)
 
 
