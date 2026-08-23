@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.468.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.467.0...gridfinity-layout-tool-v4.468.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** embossed and engraved labels on flat-faced parts ([#3785](https://github.com/andymai/gridfinity-layout-tool/issues/3785)) ([2a8d7ed](https://github.com/andymai/gridfinity-layout-tool/commit/2a8d7ed50b389898df98d8d1e258b08f13a8128b))
+
 ## [4.467.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.466.0...gridfinity-layout-tool-v4.467.0) (2026-08-23)
 
 
