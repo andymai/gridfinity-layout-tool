@@ -104,14 +104,25 @@ export function BentoDock({
   // Ordinals count drawn compartments only — background pockets are not part
   // of this surface's vocabulary (mirrors BentoCanvas.displayNumberOf).
   const rows = useMemo(() => {
+    const cellCounts = new Map<number, number>();
+    for (const id of config.cells) {
+      cellCounts.set(id, (cellCounts.get(id) ?? 0) + 1);
+    }
     return getCompartmentReadingOrder(config)
       .filter((id) => drawnIds.has(id))
-      .map((id, index) => ({
-        id,
-        number: index + 1,
-        label: config.compartmentTexts?.[id] ?? '',
-        rect: getCompartmentRect(config, id),
-      }))
+      .map((id, index) => {
+        const rect = getCompartmentRect(config, id);
+        return {
+          id,
+          number: index + 1,
+          label: config.compartmentTexts?.[id] ?? '',
+          rect,
+          // A merged L, S or U has no width × depth to report; its bounding box
+          // would name a rectangle it does not fill.
+          cellCount: cellCounts.get(id) ?? 0,
+          isRegion: rect !== null && (cellCounts.get(id) ?? 0) !== rect.w * rect.h,
+        };
+      })
       .filter((row): row is typeof row & { rect: CellRect } => row.rect !== null);
   }, [config, drawnIds]);
 
@@ -361,14 +372,18 @@ export function BentoDock({
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
               <dt className="text-content-tertiary">{t('binDesigner.bento.sizeReadout')}</dt>
               <dd className="tabular-nums text-content-secondary">
-                {t('binDesigner.bento.sizeMm', {
-                  w: Math.round(selectedRow.rect.w * cellWmm),
-                  d: Math.round(selectedRow.rect.h * cellHmm),
-                })}
+                {selectedRow.isRegion
+                  ? t('binDesigner.bento.sizeMerged')
+                  : t('binDesigner.bento.sizeMm', {
+                      w: Math.round(selectedRow.rect.w * cellWmm),
+                      d: Math.round(selectedRow.rect.h * cellHmm),
+                    })}
               </dd>
               <dt className="text-content-tertiary">{t('binDesigner.bento.cellsReadout')}</dt>
               <dd className="tabular-nums text-content-secondary">
-                {selectedRow.rect.w} × {selectedRow.rect.h}
+                {selectedRow.isRegion
+                  ? selectedRow.cellCount
+                  : `${selectedRow.rect.w} × ${selectedRow.rect.h}`}
               </dd>
             </dl>
 

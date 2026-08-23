@@ -322,6 +322,47 @@ export function validateCompartments(compartments: unknown): string | null {
       seenMarks.add(id);
     }
   }
+  // Bento's merged-leftover mode and the markers that name the merged regions.
+  // Marker IDs must exist in `cells`; a marker on a compartment the user drew
+  // would demote it to background on the next edit.
+  if (
+    compartments.mergeBackground !== undefined &&
+    typeof compartments.mergeBackground !== 'boolean'
+  ) {
+    return 'compartments.mergeBackground must be a boolean';
+  }
+  if (compartments.backgroundIds !== undefined) {
+    if (!Array.isArray(compartments.backgroundIds)) {
+      return 'compartments.backgroundIds must be an array';
+    }
+    // The markers only mean anything in merged-leftover mode. Without the mode
+    // the client would still demote those compartments to background, so a
+    // payload carrying one without the other is inconsistent, not just odd.
+    if (compartments.mergeBackground !== true) {
+      return 'compartments.backgroundIds requires compartments.mergeBackground';
+    }
+    if (compartments.backgroundIds.length > expectedLength) {
+      return `compartments.backgroundIds length must not exceed cols × rows (${expectedLength})`;
+    }
+    const known = new Set<number>();
+    for (const cell of compartments.cells as unknown[]) {
+      if (typeof cell === 'number') known.add(cell);
+    }
+    const seenBackground = new Set<number>();
+    for (let i = 0; i < compartments.backgroundIds.length; i++) {
+      const id = compartments.backgroundIds[i] as unknown;
+      if (typeof id !== 'number' || !Number.isInteger(id) || id < 0) {
+        return `compartments.backgroundIds[${i}] must be a non-negative integer`;
+      }
+      if (!known.has(id)) {
+        return `compartments.backgroundIds[${i}] must reference an existing compartment`;
+      }
+      if (seenBackground.has(id)) {
+        return `compartments.backgroundIds has duplicate ID ${id}`;
+      }
+      seenBackground.add(id);
+    }
+  }
   // Optional off-grid stash (Bento workspace). Entries are free-floating
   // footprints with an optional label. MAX_STASH_ENTRIES is the server half
   // of the cap contract — the client refuses to stash past it, so an honest

@@ -74,6 +74,7 @@ export function BentoWorkspace() {
     moveBentoCompartment,
     resizeBentoCompartment,
     duplicateBentoCompartment,
+    mergeBentoCompartments,
     removeBentoCompartment,
     stashBentoCompartment,
     placeBentoStashEntry,
@@ -104,6 +105,7 @@ export function BentoWorkspace() {
       moveBentoCompartment: s.moveBentoCompartment,
       resizeBentoCompartment: s.resizeBentoCompartment,
       duplicateBentoCompartment: s.duplicateBentoCompartment,
+      mergeBentoCompartments: s.mergeBentoCompartments,
       removeBentoCompartment: s.removeBentoCompartment,
       stashBentoCompartment: s.stashBentoCompartment,
       placeBentoStashEntry: s.placeBentoStashEntry,
@@ -199,6 +201,7 @@ export function BentoWorkspace() {
       duplicate: duplicateBentoCompartment,
       stash: stashWithToast,
       placeFromStash: placeBentoStashEntry,
+      merge: mergeBentoCompartments,
     }),
     [
       drawBentoCompartment,
@@ -207,6 +210,7 @@ export function BentoWorkspace() {
       duplicateBentoCompartment,
       stashWithToast,
       placeBentoStashEntry,
+      mergeBentoCompartments,
     ]
   );
 
@@ -226,6 +230,9 @@ export function BentoWorkspace() {
     actions: interactionActions,
     onInvalidDrop: () => {
       addToast({ message: t('binDesigner.bento.toastBlocked'), type: 'info', duration: 3000 });
+    },
+    onInvalidMerge: () => {
+      addToast({ message: t('binDesigner.bento.toastMergeBlocked'), type: 'info', duration: 3000 });
     },
     onCommitted: markDropped,
     setPreviewCompartments,

@@ -589,6 +589,57 @@ describe('validateCompartments', () => {
     });
   });
 
+  describe('mergeBackground and backgroundIds', () => {
+    function merged(extra: Record<string, unknown> = {}) {
+      return {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 1, 1],
+        mergeBackground: true,
+        backgroundIds: [1],
+        ...extra,
+      };
+    }
+
+    it('accepts markers on existing compartments in merged mode', () => {
+      expect(validateCompartments(merged())).toBeNull();
+    });
+
+    it('rejects a non-boolean mode', () => {
+      expect(validateCompartments(merged({ mergeBackground: 'yes' }))).toBe(
+        'compartments.mergeBackground must be a boolean'
+      );
+    });
+
+    it('rejects markers without the mode that gives them meaning', () => {
+      expect(validateCompartments(merged({ mergeBackground: undefined }))).toBe(
+        'compartments.backgroundIds requires compartments.mergeBackground'
+      );
+      expect(validateCompartments(merged({ mergeBackground: false }))).toBe(
+        'compartments.backgroundIds requires compartments.mergeBackground'
+      );
+    });
+
+    it('rejects a marker on an unknown compartment ID', () => {
+      expect(validateCompartments(merged({ backgroundIds: [9] }))).toBe(
+        'compartments.backgroundIds[0] must reference an existing compartment'
+      );
+    });
+
+    it('rejects duplicates and malformed entries', () => {
+      expect(validateCompartments(merged({ backgroundIds: [1, 1] }))).toBe(
+        'compartments.backgroundIds has duplicate ID 1'
+      );
+      expect(validateCompartments(merged({ backgroundIds: [1.5] }))).toBe(
+        'compartments.backgroundIds[0] must be a non-negative integer'
+      );
+      expect(validateCompartments(merged({ backgroundIds: 'all' }))).toBe(
+        'compartments.backgroundIds must be an array'
+      );
+    });
+  });
+
   describe('drawnUnitCells', () => {
     function fourCells() {
       return { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] };

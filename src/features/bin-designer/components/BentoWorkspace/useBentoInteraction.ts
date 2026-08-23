@@ -113,6 +113,8 @@ export interface BentoInteractionContext {
    * without it a placed compartment simply blinks into existence.
    */
   readonly onCommitted?: (id: number) => void;
+  /** A shift-click asked to merge compartments that don't touch. */
+  readonly onInvalidMerge?: () => void;
   readonly actions: {
     readonly draw: (rect: CellRect) => number | null;
     readonly move: (id: number, dCol: number, dRow: number) => number | null;
@@ -120,6 +122,11 @@ export interface BentoInteractionContext {
     readonly duplicate: (id: number, rect: CellRect) => number | null;
     readonly stash: (id: number) => boolean;
     readonly placeFromStash: (index: number, rect: CellRect) => number | null;
+    /**
+     * Fuse two drawn compartments into one shape. Null when they don't touch —
+     * the caller says so; a merged pocket has to be one piece.
+     */
+    readonly merge: (ids: readonly number[]) => number | null;
   };
   readonly setPreviewCompartments: (preview: CompartmentConfig | null) => void;
   readonly setPreviewSelection: (
@@ -507,6 +514,15 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
       const id = config.cells[cell.row * config.cols + cell.col];
       e.preventDefault();
       if (drawnIds.has(id)) {
+        // Shift-click grows the selection into the compartment under the
+        // cursor instead of moving it: the gesture for an L, S, T or U.
+        const { selectedId, actions, onInvalidMerge } = ctxRef.current;
+        if (e.shiftKey && selectedId !== null && selectedId !== id) {
+          const merged = actions.merge([selectedId, id]);
+          if (merged === null) onInvalidMerge?.();
+          else onSelect(merged);
+          return;
+        }
         onSelect(id);
         const rect = getCompartmentRect(config, id);
         if (!rect) return;

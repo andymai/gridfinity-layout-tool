@@ -133,6 +133,23 @@ export interface CompartmentConfig {
    * treated as full and keeps the cut-path.
    */
   readonly dividerHeight?: number | 'auto';
+  /**
+   * Bento mode: leftover grid merges into one pocket per connected region
+   * instead of a field of 1×1 pockets. This is what lets an interior take a
+   * C/L/S/T/U outline — the shape is whatever the drawn compartments leave
+   * behind. Absent when off (fingerprint rule above).
+   */
+  readonly mergeBackground?: boolean;
+  /**
+   * IDs of the merged leftover regions, so a multi-cell compartment nobody
+   * drew still reads as background. The mirror image of
+   * {@link drawnUnitCells}, and recomputed from scratch on every Bento
+   * mutation rather than carried — the regions themselves are re-derived
+   * there, so a remapped marker would only ever be a second opinion. Classic
+   * (non-Bento) edits remap it like any other ID-keyed array. Absent when
+   * empty.
+   */
+  readonly backgroundIds?: number[];
 }
 
 /**

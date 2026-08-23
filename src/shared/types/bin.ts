@@ -337,6 +337,7 @@ export {
   findPairAwareRuns,
   hasDividerLean,
   getCompartmentBounds,
+  isRectangularCompartment,
   overrideKey,
   rectStraddlesTiltedDivider,
   rowHasFullWidthWall,

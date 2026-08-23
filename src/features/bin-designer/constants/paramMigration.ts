@@ -1049,12 +1049,13 @@ function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
 /**
  * Sanitize the Bento workspace fields on load, mirroring the server bounds:
  * stash entries need integer cell footprints within the grid ceiling and a
- * clamped label; `drawnUnitCells` may only mark IDs that are 1×1 in `cells`.
- * Both collapse to absent when empty — an always-present default would shift
- * `communityParamsFingerprint` for every existing design (see `base.tile`).
+ * clamped label; `drawnUnitCells` may only mark IDs that are 1×1 in `cells`,
+ * and `backgroundIds` only IDs that exist, and only in merged-leftover mode. All collapse to absent when empty —
+ * an always-present default would shift `communityParamsFingerprint` for every
+ * existing design (see `base.tile`).
  */
 function migrateBentoCompartmentFields(config: CompartmentConfig): CompartmentConfig {
-  const { stash, drawnUnitCells, ...rest } = config;
+  const { stash, drawnUnitCells, backgroundIds, mergeBackground, ...rest } = config;
 
   // Persisted payloads are untrusted — validate as unknown despite the type.
   const rawStash: readonly unknown[] = Array.isArray(stash) ? stash : [];
@@ -1091,10 +1092,25 @@ function migrateBentoCompartmentFields(config: CompartmentConfig): CompartmentCo
     ),
   ].sort((a, b) => a - b);
 
+  // Markers outlive their mode only as a way to demote a drawn compartment to
+  // background behind the user's back, so they go with it.
+  const cleanBackground =
+    mergeBackground === true
+      ? [
+          ...new Set(
+            (Array.isArray(backgroundIds) ? backgroundIds : []).filter(
+              (id): id is number => Number.isInteger(id) && counts.has(id)
+            )
+          ),
+        ].sort((a, b) => a - b)
+      : [];
+
   return {
     ...rest,
+    ...(mergeBackground === true ? { mergeBackground: true } : {}),
     ...(cleanStash.length > 0 ? { stash: cleanStash } : {}),
     ...(cleanDrawn.length > 0 ? { drawnUnitCells: cleanDrawn } : {}),
+    ...(cleanBackground.length > 0 ? { backgroundIds: cleanBackground } : {}),
   };
 }
 

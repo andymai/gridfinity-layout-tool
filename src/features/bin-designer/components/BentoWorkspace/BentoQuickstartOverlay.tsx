@@ -51,6 +51,7 @@ export function BentoQuickstartOverlay({ onDismiss }: BentoQuickstartOverlayProp
         <ul className="list-none space-y-2" role="list">
           <QuickstartRow text={t('binDesigner.bento.quickstart.draw')} />
           <QuickstartRow text={t('binDesigner.bento.quickstart.moveResize')} />
+          <QuickstartRow text={t('binDesigner.bento.quickstart.merge')} />
           <QuickstartRow text={t('binDesigner.bento.quickstart.stash')} />
         </ul>
 
