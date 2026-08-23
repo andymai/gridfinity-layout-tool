@@ -447,18 +447,7 @@
     "Bin": {
       "type": "object",
       "description": "A placed bin. Coordinates are grid units with origin at BOTTOM-LEFT: x grows right, y grows UP (not down).",
-      "required": [
-        "id",
-        "layerId",
-        "x",
-        "y",
-        "width",
-        "depth",
-        "height",
-        "category",
-        "label",
-        "notes"
-      ],
+      "required": ["id", "layerId", "x", "y", "width", "depth", "height"],
       "properties": {
         "id": {
           "type": "string",
@@ -518,7 +507,7 @@
         "category": {
           "type": "string",
           "minLength": 1,
-          "description": "Category id. MUST match an id in the categories array; a dangling reference fails import."
+          "description": "Category id. The exporter always writes one, and it MUST match an id in the categories array; a dangling reference fails import. Omitted is tolerated and backfills to an empty id."
         },
         "label": {
           "type": "string",
@@ -526,7 +515,7 @@
           "x-constant": {
             "maxLength": "CONSTRAINTS.LABEL_MAX_LENGTH"
           },
-          "description": "Short bin label. Required, but may be an empty string."
+          "description": "Short bin label. The exporter always writes one; omitted backfills to an empty string."
         },
         "notes": {
           "type": "string",
@@ -534,7 +523,7 @@
           "x-constant": {
             "maxLength": "CONSTRAINTS.NOTES_MAX_LENGTH"
           },
-          "description": "Longer note. Required, but may be an empty string."
+          "description": "Longer note. The exporter always writes one; omitted backfills to an empty string."
         },
         "customProperties": {
           "$ref": "#/$defs/CustomProperties"
@@ -770,7 +759,10 @@
         "connectorStyle": {
           "enum": ["dovetail", "puzzle", "dovetailKey", "snapClip"],
           "default": "dovetail",
-          "description": "Connector geometry on join edges. 'dovetail' is a near-flat slip fit; 'puzzle' is a locking jigsaw tab; 'dovetailKey' and 'snapClip' cut female features on both sides and ship a separate part. Only meaningful when connectorNubs is true."
+          "description": "Connector geometry on join edges. 'dovetail' is a near-flat slip fit; 'puzzle' is a locking jigsaw tab; 'dovetailKey' and 'snapClip' cut female features on both sides and ship a separate part. Only meaningful when connectorNubs is true.",
+          "x-constant": {
+            "enum": "BASEPLATE_CONNECTOR_STYLES"
+          }
         },
         "connectorSlotsAllEdges": {
           "type": "boolean",

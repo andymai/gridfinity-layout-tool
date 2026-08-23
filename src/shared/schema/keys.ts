@@ -68,6 +68,7 @@ import {
   CUTOUT_ARRAY_KEYS,
   CUTOUT_CONFIG_KEYS,
   CUTOUT_KEYS,
+  CUTOUT_SCOOP_EDGES_KEYS,
   FEATURE_COLOR_KEYS,
   INSERT_KEYS,
   KNIFE_REST_KEYS,
@@ -120,6 +121,16 @@ export const SCHEMA_ROOT_KEYS = {
 export const UNCHECKED_DEFS = ['CornerCut', 'CustomProperties'] as const;
 
 /**
+ * Manifests with no TypeScript type to assert against, so the compile-time
+ * half of the guard cannot apply. `ExportMeta` is built as an object literal
+ * inside `exportLayoutJSON` and never named.
+ *
+ * `keys.test.ts` asserts this list is EXACTLY the set of manifests lacking an
+ * assertion, so a new manifest cannot quietly ship without one.
+ */
+export const UNTYPED_MANIFESTS = ['EXPORT_META_KEYS'] as const;
+
+/**
  * Every checked `$def` name mapped to its manifest. `keys.test.ts` walks this
  * against the shipped schemas, so a `$def` added without a manifest (or a
  * manifest without a `$def`) fails.
@@ -138,6 +149,7 @@ export const SCHEMA_KEYS = {
   CornerCutParams: CORNER_CUT_PARAMS_KEYS,
   CornerRadii: CORNER_RADII_KEYS,
   Cutout: CUTOUT_KEYS,
+  CutoutScoopEdges: CUTOUT_SCOOP_EDGES_KEYS,
   CutoutArrayConfig: CUTOUT_ARRAY_KEYS,
   CutoutConfig: CUTOUT_CONFIG_KEYS,
   DividerOverride: DIVIDER_OVERRIDE_KEYS,

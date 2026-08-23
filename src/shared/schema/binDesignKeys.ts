@@ -28,6 +28,7 @@ import type {
   WallConfig,
   WallCutout,
   WallPatternConfig,
+  WallPatternSides,
   WallTaperConfig,
 } from '@/shared/types/bin';
 import type { Assert, KeysMatch } from './assert';
@@ -217,6 +218,9 @@ export type _WallPatternKeys = Assert<
 >;
 
 export const WALL_PATTERN_SIDES_KEYS = ['left', 'right', 'front', 'back'] as const;
+export type _WallPatternSidesKeys = Assert<
+  KeysMatch<keyof WallPatternSides, (typeof WALL_PATTERN_SIDES_KEYS)[number]>
+>;
 
 export const LABEL_TAB_KEYS = [
   'enabled',

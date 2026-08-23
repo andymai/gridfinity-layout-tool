@@ -8,8 +8,15 @@
  * manifest (and therefore the interface) agreeing.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { SCHEMA_KEYS, SCHEMA_ROOT_KEYS, UNCHECKED_DEFS } from '@/shared/schema/keys';
+import {
+  SCHEMA_KEYS,
+  SCHEMA_ROOT_KEYS,
+  UNCHECKED_DEFS,
+  UNTYPED_MANIFESTS,
+} from '@/shared/schema/keys';
 import {
   BIN_DESIGN_SCHEMA_FILE,
   LAYOUT_SCHEMA_FILE,
@@ -105,6 +112,45 @@ describe('every $ref resolves', () => {
       } else {
         expect(defs.has(name), `${file} references missing cross-file $def "${name}"`).toBe(true);
       }
+    }
+  });
+});
+
+/**
+ * Guards the guard. The compile-time assertions live in the type system, so no
+ * runtime test can observe them directly. This reads the manifest sources and
+ * asserts every `*_KEYS` const is paired with a `KeysMatch` assertion, which is
+ * what stops a new manifest from silently shipping without one.
+ */
+describe('every manifest has a compile-time assertion', () => {
+  const MANIFEST_FILES = ['layoutKeys.ts', 'binDesignKeys.ts', 'binContentKeys.ts'];
+  const exempt = new Set<string>(UNTYPED_MANIFESTS);
+
+  it.each(MANIFEST_FILES)('%s', (file) => {
+    const source = readFileSync(join(process.cwd(), 'src/shared/schema', file), 'utf8');
+    const declared = [...source.matchAll(/^export const (\w+_KEYS) =/gm)].map((m) => m[1]);
+    const asserted = new Set(
+      [...source.matchAll(/\(typeof (\w+_KEYS)\)\[number\]/g)].map((m) => m[1])
+    );
+    const missing = declared.filter((name) => !asserted.has(name) && !exempt.has(name));
+    expect(
+      missing,
+      `these manifests have no KeysMatch assertion, so their type can drift silently. Add one, or list it in UNTYPED_MANIFESTS with a reason.`
+    ).toEqual([]);
+  });
+
+  it('exemptions are real and still needed', () => {
+    const all = MANIFEST_FILES.map((file) =>
+      readFileSync(join(process.cwd(), 'src/shared/schema', file), 'utf8')
+    ).join('\n');
+    for (const name of exempt) {
+      expect(all, `UNTYPED_MANIFESTS names "${name}", which does not exist`).toContain(
+        `export const ${name} =`
+      );
+      expect(
+        all.includes(`(typeof ${name})[number]`),
+        `"${name}" now has an assertion, so it should come out of UNTYPED_MANIFESTS`
+      ).toBe(false);
     }
   });
 });

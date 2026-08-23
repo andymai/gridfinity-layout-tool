@@ -31,11 +31,27 @@ import {
   STACK_PRINT_MIN_GAP_MM,
 } from '@/core/types';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
+import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
+import { LABEL_SOCKET_STYLES } from '@/shared/constants/labelPlates';
 import {
   DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
   DETACHABLE_PIN_DIAMETERS_MM,
+  FEET_MODES,
+  FOOT_LATTICES,
+  LIGHTWEIGHT_MODES,
+  BIN_STYLES,
 } from '@/features/bin-designer/types/base';
 import {
+  CROSS_DIVIDER_STYLES,
+  PARTIAL_DIVIDER_STYLES,
+  SLOT_LAYOUTS,
+} from '@/features/bin-designer/types/dividers';
+import { FLOOR_PATTERN_TYPES } from '@/features/bin-designer/types/floor';
+import { SLIDE_RAIL_MOUNTS } from '@/features/bin-designer/types/slide';
+import {
+  CUTOUT_ARRAY_MODES,
+  CUTOUT_LABEL_MODES,
+  GROUP_OPS,
   DEFAULT_CUTOUT_CLEARANCE,
   DEFAULT_POLYGON_SIDES,
   MAX_ARRAY_COUNT,
@@ -49,6 +65,10 @@ import {
   ACCENT_BAND_MIN_MM,
 } from '@/features/bin-designer/types/featureColors';
 import {
+  LID_GRIP_MODES,
+  LID_HINGE_CATCHES,
+  LID_SLIDE_PLACEMENTS,
+  LID_SLIDE_PULLS,
   LID_CLICK_RAIL_COVERAGE_MAX,
   LID_CLICK_RAIL_COVERAGE_MIN,
   LID_EXTRA_HEIGHT_MAX_MM,
@@ -65,8 +85,14 @@ import {
   KNIFE_REST_MIN_DEPTH_U,
   KNIFE_REST_MIN_GROOVE_DEPTH_MM,
 } from '@/features/bin-designer/types/knifeBlock';
-import { MIN_TEXT_DRAFT_DEG } from '@/features/bin-designer/types/text';
-import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types/walls';
+import {
+  MIN_TEXT_DRAFT_DEG,
+  TEXT_ANCHORS,
+  TEXT_CASES,
+  TEXT_CUT_PROFILES,
+  TEXT_FONT_FAMILIES,
+} from '@/features/bin-designer/types/text';
+import { DEFAULT_PATTERN_SCALE, WALL_PATTERN_TYPES } from '@/features/bin-designer/types/walls';
 import { isRecord, loadSchemas, walkSubschemas } from './loadSchemas';
 
 /**
@@ -76,6 +102,29 @@ import { isRecord, loadSchemas, walkSubschemas } from './loadSchemas';
 const SOURCES: Record<string, unknown> = {
   CONSTRAINTS,
   DESIGNER_CONSTRAINTS,
+  BASEPLATE_CONNECTOR_STYLES,
+  BIN_STYLES,
+  CROSS_DIVIDER_STYLES,
+  CUTOUT_ARRAY_MODES,
+  CUTOUT_LABEL_MODES,
+  FEET_MODES,
+  FLOOR_PATTERN_TYPES,
+  FOOT_LATTICES,
+  GROUP_OPS,
+  LABEL_SOCKET_STYLES,
+  LID_GRIP_MODES,
+  LID_HINGE_CATCHES,
+  LID_SLIDE_PLACEMENTS,
+  LID_SLIDE_PULLS,
+  LIGHTWEIGHT_MODES,
+  PARTIAL_DIVIDER_STYLES,
+  SLIDE_RAIL_MOUNTS,
+  SLOT_LAYOUTS,
+  TEXT_ANCHORS,
+  TEXT_CASES,
+  TEXT_CUT_PROFILES,
+  TEXT_FONT_FAMILIES,
+  WALL_PATTERN_TYPES,
   ACCENT_BAND_DEFAULT_MM,
   ACCENT_BAND_MIN_MM,
   DEFAULT_CUTOUT_CLEARANCE,
@@ -161,7 +210,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 184;
+const MIN_ANNOTATED_BOUNDS = 211;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {

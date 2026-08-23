@@ -4,9 +4,11 @@
  * registry the drift tests walk.
  */
 
+import type { LinkedDesignExport } from '@/core/storage';
 import type {
   Bin,
   Category,
+  CornerCutParams,
   Drawer,
   DrawerOutline,
   Layer,
@@ -104,6 +106,9 @@ export type _OutlineAuthoringKeys = Assert<
 >;
 
 export const CORNER_CUT_PARAMS_KEYS = ['tl', 'tr', 'bl', 'br'] as const;
+export type _CornerCutParamsKeys = Assert<
+  KeysMatch<keyof CornerCutParams, (typeof CORNER_CUT_PARAMS_KEYS)[number]>
+>;
 
 export const MEASURED_DRAWER_KEYS = ['width', 'depth', 'height'] as const;
 export type _MeasuredDrawerKeys = Assert<
@@ -182,5 +187,13 @@ export type _ScrewHolesKeys = Assert<
 >;
 
 export const LINKED_DESIGN_KEYS = ['id', 'name', 'params'] as const;
+export type _LinkedDesignKeys = Assert<
+  KeysMatch<keyof LinkedDesignExport, (typeof LINKED_DESIGN_KEYS)[number]>
+>;
 
+/**
+ * The export stamp is built as an object literal inside `exportLayoutJSON`
+ * with no named type, so there is nothing to assert against. Listed in
+ * {@link UNTYPED_MANIFESTS} rather than left as a silent gap.
+ */
 export const EXPORT_META_KEYS = ['exportedFrom', 'exportedAt'] as const;

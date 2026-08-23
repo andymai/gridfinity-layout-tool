@@ -85,6 +85,7 @@ export type {
   LidHingeConfig,
   LidHingeCatch,
   FeatureColorConfig,
+  AccentBandConfig,
   TextMode,
   TextFontFamily,
   TextAnchor,

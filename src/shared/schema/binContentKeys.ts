@@ -9,7 +9,9 @@
 
 import type { MeshAsset, MeshOutlinePoint } from '@/shared/generation/meshAsset';
 import type {
+  AccentBandConfig,
   Cutout,
+  CutoutScoopEdges,
   CutoutArrayConfig,
   CutoutConfig,
   FeatureColorConfig,
@@ -49,6 +51,9 @@ export type _FeatureColorKeys = Assert<
 >;
 
 export const ACCENT_BAND_KEYS = ['enabled', 'color', 'heightMm'] as const;
+export type _AccentBandKeys = Assert<
+  KeysMatch<keyof AccentBandConfig, (typeof ACCENT_BAND_KEYS)[number]>
+>;
 
 export const TEXT_STYLE_KEYS = [
   'font',
@@ -241,6 +246,14 @@ export const PATH_POINT_KEYS = ['x', 'y', 'handleIn', 'handleOut', 'symmetric'] 
 export type _PathPointKeys = Assert<KeysMatch<keyof PathPoint, (typeof PATH_POINT_KEYS)[number]>>;
 
 export const BEZIER_HANDLE_KEYS = ['dx', 'dy'] as const;
+export type _BezierHandleKeys = Assert<
+  KeysMatch<keyof NonNullable<PathPoint['handleIn']>, (typeof BEZIER_HANDLE_KEYS)[number]>
+>;
+
+export const CUTOUT_SCOOP_EDGES_KEYS = ['left', 'right', 'front', 'back'] as const;
+export type _CutoutScoopEdgesKeys = Assert<
+  KeysMatch<keyof CutoutScoopEdges, (typeof CUTOUT_SCOOP_EDGES_KEYS)[number]>
+>;
 
 export const MESH_OUTLINE_POINT_KEYS = ['x', 'y'] as const;
 export type _MeshOutlinePointKeys = Assert<

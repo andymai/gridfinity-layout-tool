@@ -128,12 +128,18 @@
         "footLatticeX": {
           "enum": ["grid", "half"],
           "default": "grid",
-          "description": "Foot lattice pitch along X. 'half' places feet every 0.5 unit."
+          "description": "Foot lattice pitch along X. 'half' places feet every 0.5 unit.",
+          "x-constant": {
+            "enum": "FOOT_LATTICES"
+          }
         },
         "footLatticeY": {
           "enum": ["grid", "half"],
           "default": "grid",
-          "description": "Foot lattice pitch along Y."
+          "description": "Foot lattice pitch along Y.",
+          "x-constant": {
+            "enum": "FOOT_LATTICES"
+          }
         },
         "lightweight": {
           "type": "boolean",
@@ -142,12 +148,18 @@
         "lightweightMode": {
           "enum": ["interior", "underside"],
           "default": "interior",
-          "description": "Where lightweighting removes material."
+          "description": "Where lightweighting removes material.",
+          "x-constant": {
+            "enum": "LIGHTWEIGHT_MODES"
+          }
         },
         "feet": {
           "enum": ["integral", "detachable"],
           "default": "integral",
-          "description": "Whether feet are printed as part of the body or as separate pin-mounted parts."
+          "description": "Whether feet are printed as part of the body or as separate pin-mounted parts.",
+          "x-constant": {
+            "enum": "FEET_MODES"
+          }
         },
         "feetPinDiameter": {
           "type": "number",
@@ -315,7 +327,10 @@
         },
         "style": {
           "enum": ["standard", "slotted", "solid"],
-          "description": "Bin interior style. 'standard' is a walled cavity, 'slotted' adds divider slots, 'solid' is a filled block that cutouts are cut into."
+          "description": "Bin interior style. 'standard' is a walled cavity, 'slotted' adds divider slots, 'solid' is a filled block that cutouts are cut into.",
+          "x-constant": {
+            "enum": "BIN_STYLES"
+          }
         },
         "compartments": {
           "$ref": "#/$defs/CompartmentConfig"
@@ -599,7 +614,10 @@
         "groupOp": {
           "enum": ["union", "subtract", "intersect", "exclude"],
           "default": "union",
-          "description": "Boolean operation within the group."
+          "description": "Boolean operation within the group.",
+          "x-constant": {
+            "enum": "GROUP_OPS"
+          }
         },
         "scoopRadiusW": {
           "type": "number",
@@ -612,11 +630,7 @@
           "description": "Scoop radius along depth in mm."
         },
         "scoopEdges": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Which edges of the cutout are scooped."
+          "$ref": "#/$defs/CutoutScoopEdges"
         },
         "name": {
           "type": "string",
@@ -696,7 +710,10 @@
             "bottom",
             "bottom-right"
           ],
-          "description": "Nine-point anchor for the label."
+          "description": "Nine-point anchor for the label.",
+          "x-constant": {
+            "enum": "TEXT_ANCHORS"
+          }
         },
         "textOffset": {
           "$ref": "#/$defs/TextOffset"
@@ -719,8 +736,11 @@
           "description": "Whether the colour covers just the cut floor or its walls too."
         },
         "labelMode": {
-          "enum": ["text", "socket"],
-          "description": "'socket' builds a pocket for a swappable label plate instead of engraving."
+          "enum": ["engrave", "socket"],
+          "x-constant": {
+            "enum": "CUTOUT_LABEL_MODES"
+          },
+          "description": "'engrave' cuts the label text into the surface; 'socket' builds a pocket for a separately printed swappable label plate."
         },
         "labelPlateWidthU": {
           "type": "number",
@@ -747,7 +767,10 @@
       "properties": {
         "mode": {
           "enum": ["grid", "staggered", "radial"],
-          "description": "Array layout."
+          "description": "Array layout.",
+          "x-constant": {
+            "enum": "CUTOUT_ARRAY_MODES"
+          }
         },
         "cols": {
           "type": "integer",
@@ -813,6 +836,29 @@
           "enum": ["rim", "floor"],
           "default": "rim",
           "description": "Which end topOffset is held against when the bin's wall height changes."
+        }
+      }
+    },
+    "CutoutScoopEdges": {
+      "type": "object",
+      "description": "Which edges of a cutout are scooped. All four default to true when the whole object is absent.",
+      "required": ["left", "right", "front", "back"],
+      "properties": {
+        "left": {
+          "type": "boolean",
+          "description": "Scoop the -X edge."
+        },
+        "right": {
+          "type": "boolean",
+          "description": "Scoop the +X edge."
+        },
+        "front": {
+          "type": "boolean",
+          "description": "Scoop the -Y edge."
+        },
+        "back": {
+          "type": "boolean",
+          "description": "Scoop the +Y edge."
         }
       }
     },
@@ -963,7 +1009,10 @@
         },
         "pattern": {
           "enum": ["round", "honeycomb", "diamond", "triangle", "slots"],
-          "description": "Floor pattern type. A subset of the wall patterns; kumiko patterns are not available here."
+          "description": "Floor pattern type. A subset of the wall patterns; kumiko patterns are not available here.",
+          "x-constant": {
+            "enum": "FLOOR_PATTERN_TYPES"
+          }
         },
         "scale": {
           "type": "number",
@@ -1258,8 +1307,11 @@
           "description": "Fit offset in mm applied to a socket's pocket. Positive is looser. Only meaningful in 'socket' mode."
         },
         "socketStyle": {
-          "type": "string",
-          "description": "Which socket profile a 'socket' mode tab uses."
+          "enum": ["clickIn", "slideChannel"],
+          "x-constant": {
+            "enum": "LABEL_SOCKET_STYLES"
+          },
+          "description": "Which socket profile a 'socket' mode tab uses. 'clickIn' snaps the plate down onto a shelf; 'slideChannel' slides it in from the side."
         },
         "support": {
           "enum": ["bracket", "solid", "fillet"],
@@ -1331,8 +1383,8 @@
           "$ref": "#/$defs/TextStyleOverride"
         },
         "span": {
-          "type": "string",
-          "description": "How far a tab spans across compartments."
+          "type": "boolean",
+          "description": "Span one tab across a whole row of compartments instead of one per column. When true, captions come from rowTexts."
         },
         "rowTexts": {
           "type": "array",
@@ -1444,7 +1496,10 @@
       "properties": {
         "mode": {
           "enum": ["none", "chamfer", "reveal", "scallop"],
-          "description": "Grip style."
+          "description": "Grip style.",
+          "x-constant": {
+            "enum": "LID_GRIP_MODES"
+          }
         },
         "sides": {
           "$ref": "#/$defs/SideFlags"
@@ -1477,7 +1532,10 @@
         },
         "catchMode": {
           "enum": ["none", "detent", "magnets"],
-          "description": "How the lid is held closed."
+          "description": "How the lid is held closed.",
+          "x-constant": {
+            "enum": "LID_HINGE_CATCHES"
+          }
         },
         "fitClearanceMm": {
           "type": "number",
@@ -1524,7 +1582,10 @@
       "properties": {
         "placement": {
           "enum": ["recessed", "flush"],
-          "description": "Whether the lid sits flush with the rim or recessed below it."
+          "description": "Whether the lid sits flush with the rim or recessed below it.",
+          "x-constant": {
+            "enum": "LID_SLIDE_PLACEMENTS"
+          }
         },
         "entrySide": {
           "enum": ["front", "back", "left", "right"],
@@ -1537,7 +1598,10 @@
         },
         "pull": {
           "enum": ["none", "notch", "tab"],
-          "description": "Pull feature so the lid can be gripped."
+          "description": "Pull feature so the lid can be gripped.",
+          "x-constant": {
+            "enum": "LID_SLIDE_PULLS"
+          }
         },
         "detent": {
           "type": "boolean",
@@ -1808,7 +1872,10 @@
         "railMount": {
           "enum": ["interior", "rim"],
           "default": "interior",
-          "description": "Where the rail mounts."
+          "description": "Where the rail mounts.",
+          "x-constant": {
+            "enum": "SLIDE_RAIL_MOUNTS"
+          }
         },
         "trayWidthUnits": {
           "type": "number",
@@ -1880,19 +1947,28 @@
         },
         "crossStyle": {
           "enum": ["lap", "insert"],
-          "description": "How crossing dividers meet."
+          "description": "How crossing dividers meet.",
+          "x-constant": {
+            "enum": "CROSS_DIVIDER_STYLES"
+          }
         },
         "longAxis": {
-          "type": "string",
-          "description": "Which axis the long divider runs along."
+          "enum": ["x", "y"],
+          "description": "Which axis carries the full-length dividers. Honoured only when crossStyle is 'insert'."
         },
         "partialStyle": {
           "enum": ["full", "snappable", "lengthSet"],
-          "description": "Whether dividers span fully, snap to length, or come as a length set."
+          "description": "Whether dividers span fully, snap to length, or come as a length set.",
+          "x-constant": {
+            "enum": "PARTIAL_DIVIDER_STYLES"
+          }
         },
         "layout": {
           "enum": ["even", "custom"],
-          "description": "Even pitch or a custom grid."
+          "description": "Even pitch or a custom grid.",
+          "x-constant": {
+            "enum": "SLOT_LAYOUTS"
+          }
         },
         "customGrid": {
           "type": "array",
@@ -2038,7 +2114,10 @@
             "poppins",
             "allerta-stencil"
           ],
-          "description": "Font family."
+          "description": "Font family.",
+          "x-constant": {
+            "enum": "TEXT_FONT_FAMILIES"
+          }
         },
         "mode": {
           "enum": ["engrave", "emboss", "through-cut"],
@@ -2076,7 +2155,10 @@
             "bottom",
             "bottom-right"
           ],
-          "description": "Nine-point anchor within the available area."
+          "description": "Nine-point anchor within the available area.",
+          "x-constant": {
+            "enum": "TEXT_ANCHORS"
+          }
         },
         "offset": {
           "$ref": "#/$defs/TextOffset"
@@ -2108,7 +2190,10 @@
         },
         "textCase": {
           "enum": ["as-typed", "upper", "title"],
-          "description": "Case transform applied before layout."
+          "description": "Case transform applied before layout.",
+          "x-constant": {
+            "enum": "TEXT_CASES"
+          }
         },
         "lineScale": {
           "type": "number",
@@ -2121,7 +2206,10 @@
         },
         "cutProfile": {
           "enum": ["straight", "drafted"],
-          "description": "'drafted' angles the glyph walls so an engraved cut releases cleanly."
+          "description": "'drafted' angles the glyph walls so an engraved cut releases cleanly.",
+          "x-constant": {
+            "enum": "TEXT_CUT_PROFILES"
+          }
         },
         "draftAngleDeg": {
           "type": "number",
@@ -2147,7 +2235,10 @@
             "poppins",
             "allerta-stencil"
           ],
-          "description": "Font family override."
+          "description": "Font family override.",
+          "x-constant": {
+            "enum": "TEXT_FONT_FAMILIES"
+          }
         },
         "mode": {
           "enum": ["engrave", "emboss", "through-cut"],
@@ -2185,7 +2276,10 @@
             "bottom",
             "bottom-right"
           ],
-          "description": "Anchor override."
+          "description": "Anchor override.",
+          "x-constant": {
+            "enum": "TEXT_ANCHORS"
+          }
         },
         "offset": {
           "$ref": "#/$defs/TextOffset"
@@ -2217,7 +2311,10 @@
         },
         "textCase": {
           "enum": ["as-typed", "upper", "title"],
-          "description": "Case override."
+          "description": "Case override.",
+          "x-constant": {
+            "enum": "TEXT_CASES"
+          }
         },
         "lineScale": {
           "type": "number",
@@ -2230,7 +2327,10 @@
         },
         "cutProfile": {
           "enum": ["straight", "drafted"],
-          "description": "Cut profile override."
+          "description": "Cut profile override.",
+          "x-constant": {
+            "enum": "TEXT_CUT_PROFILES"
+          }
         },
         "draftAngleDeg": {
           "type": "number",
@@ -2411,7 +2511,10 @@
             "mikado",
             "tsumiishi-kikko"
           ],
-          "description": "Pattern type. The last seven are kumiko patterns."
+          "description": "Pattern type. The last seven are kumiko patterns.",
+          "x-constant": {
+            "enum": "WALL_PATTERN_TYPES"
+          }
         },
         "scale": {
           "type": "number",
