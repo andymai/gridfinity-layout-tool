@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.453.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.452.0...gridfinity-layout-tool-v4.453.0) (2026-08-23)
+
+
+### Features
+
+* **workshop:** render real assembly meshes in the drawer preview ([#3749](https://github.com/andymai/gridfinity-layout-tool/issues/3749)) ([a327022](https://github.com/andymai/gridfinity-layout-tool/commit/a3270228f38767a62b11591741eb0c6eb1610324))
+
 ## [4.452.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.451.0...gridfinity-layout-tool-v4.452.0) (2026-08-23)
 
 
