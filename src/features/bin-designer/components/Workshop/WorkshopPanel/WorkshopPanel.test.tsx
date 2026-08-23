@@ -37,6 +37,14 @@ describe('WorkshopPanel', () => {
     expect(useDesignerStore.getState().ui.selectedAssemblyPartId).toBe(postId);
   });
 
+  it('badges a part with printability warnings', () => {
+    const id = useDesignerStore.getState().addAssemblyPart('post', null, { x: 84, y: 42 });
+    if (!id) throw new Error('unreachable');
+    useDesignerStore.getState().moveAssemblyPart(id, { seatZ: 15 });
+    render(<WorkshopPanel />);
+    expect(screen.getByText('Floats above its seat')).toBeInTheDocument();
+  });
+
   it('shows the inspector for the selected part', () => {
     useDesignerStore.getState().addAssemblyPart('fin', null);
     render(<WorkshopPanel />);

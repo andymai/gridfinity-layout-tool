@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Стійка для плоскогубців",
   "workshop.template.screwdriverBlock": "Блок для викруток",
   "workshop.tree.empty": "Ще немає деталей. Виберіть деталь і клацніть основу, щоб почати збирання.",
-  "workshop.tree.title": "Збірка"
+  "workshop.tree.title": "Збірка",
+  "workshop.warning.floating": "Висить над посадкою",
+  "workshop.warning.outsideBase": "Виходить за межі основи",
+  "workshop.warning.overhang": "Навісу можуть знадобитися підтримки",
+  "workshop.warning.socketBreach": "Врізається в сокет",
+  "workshop.warning.unsupported": "Виступає за межі опори"
 }

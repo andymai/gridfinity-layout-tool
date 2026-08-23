@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "プライヤーラック",
   "workshop.template.screwdriverBlock": "ドライバーブロック",
   "workshop.tree.empty": "まだパーツがありません。パーツを選んでベースをクリックすると組み立てを開始できます。",
-  "workshop.tree.title": "ビルド"
+  "workshop.tree.title": "ビルド",
+  "workshop.warning.floating": "座面から浮いています",
+  "workshop.warning.outsideBase": "ベースからはみ出しています",
+  "workshop.warning.overhang": "オーバーハングにサポートが必要かも",
+  "workshop.warning.socketBreach": "ソケットまで切り込んでいます",
+  "workshop.warning.unsupported": "親パーツからはみ出しています"
 }

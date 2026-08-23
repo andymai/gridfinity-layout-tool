@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "钳子架",
   "workshop.template.screwdriverBlock": "螺丝刀座",
   "workshop.tree.empty": "还没有零件。选择一个零件并点击底座开始搭建。",
-  "workshop.tree.title": "搭建"
+  "workshop.tree.title": "搭建",
+  "workshop.warning.floating": "悬浮在座面上方",
+  "workshop.warning.outsideBase": "超出底座范围",
+  "workshop.warning.overhang": "悬垂可能需要支撑",
+  "workshop.warning.socketBreach": "切入底座插槽",
+  "workshop.warning.unsupported": "超出承载零件"
 }

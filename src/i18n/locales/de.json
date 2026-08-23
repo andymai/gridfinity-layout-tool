@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Zangenhalter",
   "workshop.template.screwdriverBlock": "Schraubendreherblock",
   "workshop.tree.empty": "Noch keine Teile. Wähle ein Teil und klicke auf die Basis, um zu bauen.",
-  "workshop.tree.title": "Aufbau"
+  "workshop.tree.title": "Aufbau",
+  "workshop.warning.floating": "Schwebt über der Auflage",
+  "workshop.warning.outsideBase": "Ragt über die Basis hinaus",
+  "workshop.warning.overhang": "Überhang braucht evtl. Stützen",
+  "workshop.warning.socketBreach": "Schneidet in den Sockel",
+  "workshop.warning.unsupported": "Ragt über das Trägerteil hinaus"
 }

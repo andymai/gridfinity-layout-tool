@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Stojak na szczypce",
   "workshop.template.screwdriverBlock": "Blok na wkrętaki",
   "workshop.tree.empty": "Brak części. Wybierz część i kliknij podstawę, aby rozpocząć budowę.",
-  "workshop.tree.title": "Konstrukcja"
+  "workshop.tree.title": "Konstrukcja",
+  "workshop.warning.floating": "Unosi się nad osadzeniem",
+  "workshop.warning.outsideBase": "Wystaje poza podstawę",
+  "workshop.warning.overhang": "Nawis może wymagać podpór",
+  "workshop.warning.socketBreach": "Wcina się w gniazdo",
+  "workshop.warning.unsupported": "Wystaje poza część nośną"
 }

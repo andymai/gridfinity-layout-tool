@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Râtelier à pinces",
   "workshop.template.screwdriverBlock": "Bloc à tournevis",
   "workshop.tree.empty": "Pas encore de pièces. Choisissez une pièce et cliquez sur la base pour commencer.",
-  "workshop.tree.title": "Assemblage"
+  "workshop.tree.title": "Assemblage",
+  "workshop.warning.floating": "Flotte au-dessus de son assise",
+  "workshop.warning.outsideBase": "Dépasse de la base",
+  "workshop.warning.overhang": "Le surplomb peut nécessiter des supports",
+  "workshop.warning.socketBreach": "Entaille le socle",
+  "workshop.warning.unsupported": "Dépasse de sa pièce support"
 }

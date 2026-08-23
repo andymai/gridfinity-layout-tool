@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Rastrelliera per pinze",
   "workshop.template.screwdriverBlock": "Blocco per cacciaviti",
   "workshop.tree.empty": "Nessuna parte ancora. Scegli una parte e fai clic sulla base per iniziare.",
-  "workshop.tree.title": "Costruzione"
+  "workshop.tree.title": "Costruzione",
+  "workshop.warning.floating": "Fluttua sopra la sua sede",
+  "workshop.warning.outsideBase": "Sporge oltre la base",
+  "workshop.warning.overhang": "La sporgenza può richiedere supporti",
+  "workshop.warning.socketBreach": "Taglia nello zoccolo",
+  "workshop.warning.unsupported": "Sporge dalla parte di supporto"
 }

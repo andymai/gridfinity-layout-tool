@@ -4271,5 +4271,10 @@
   "workshop.template.pliersRack": "Tangenrek",
   "workshop.template.screwdriverBlock": "Schroevendraaierblok",
   "workshop.tree.empty": "Nog geen onderdelen. Kies een onderdeel en klik op de basis om te beginnen.",
-  "workshop.tree.title": "Opbouw"
+  "workshop.tree.title": "Opbouw",
+  "workshop.warning.floating": "Zweeft boven zijn zitting",
+  "workshop.warning.outsideBase": "Steekt buiten de basis",
+  "workshop.warning.overhang": "Overhang heeft mogelijk support nodig",
+  "workshop.warning.socketBreach": "Snijdt in de socket",
+  "workshop.warning.unsupported": "Steekt buiten het dragende deel"
 }
