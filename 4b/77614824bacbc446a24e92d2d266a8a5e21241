@@ -1,0 +1,47 @@
+src/shared/types/assemblyPlacement.ts
+  s_a36c0b85dfeec4::t_f00aa6a6ffd9f1 253
+  s_a36c0b85dfeec4::t_c942243b65d343 200-209,219-252,254
+src/features/bin-designer/store/customBinRegistry.ts
+  s_a36c0b85dfeec4::t_14d843ba6ebcfe 11-14
+  s_a36c0b85dfeec4::t_8fcb616e0f357b 222-245
+  s_a36c0b85dfeec4::t_89f37f1f4cb3bd 221
+src/shared/types/assemblyPlacement.test.ts
+  s_a36c0b85dfeec4::t_72a32212dc8bbc 1-85
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_a36c0b85dfeec4::t_8b579e4168bd3e 8,15-17,279-312
+  s_a36c0b85dfeec4::t_1a5af47b62c858 313-314
+src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.test.tsx
+  s_a36c0b85dfeec4::t_01ee877e35e92e 175,201-214,241-242
+src/features/bin-designer/hooks/useWorkshopAutoSave.ts
+  s_a36c0b85dfeec4::t_cffca2337410d1 21-25
+  s_a36c0b85dfeec4::t_cb530b27963c91 74
+src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.tsx
+  s_a36c0b85dfeec4::t_3ae05bd0b06630 348,350
+  s_a36c0b85dfeec4::t_b6eab4c119f32e 300-306
+src/features/bin-designer/utils/designKind.ts
+  s_a36c0b85dfeec4::t_9fee4efaca9b4a 27-30,32-36
+src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  s_a36c0b85dfeec4::t_07e8ebeda5ce0d 29
+  s_a36c0b85dfeec4::t_1139c132fcf3bc 70-80
+src/features/bin-designer/utils/designKind.test.ts
+  s_a36c0b85dfeec4::t_ac0afa95401798 4,34-78
+  s_a36c0b85dfeec4::t_9ab7cc1de7d01c 79-80
+src/features/bin-designer/hooks/usePlaceBinInLayout.test.ts
+  s_a36c0b85dfeec4::t_4873d33cd19805 79-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "4b77614824bacbc446a24e92d2d266a8a5e21241",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
