@@ -1,0 +1,20 @@
+src/features/bin-designer/components/Workshop/BasePlateMesh.tsx
+  s_a36c0b85dfeec4::t_886c9e2419c9a2 43
+  s_a36c0b85dfeec4::t_b9c2c879ea3719 58-59,68,74-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "466062b6cb1f98a327ccc3305d583f745f020d09",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
