@@ -1,0 +1,94 @@
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 2273-2281
+scripts/i18n-values-allowlist.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 322-326
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/features/bin-designer/components/Workshop/WorkshopContextMenu.test.tsx
+  s_a36c0b85dfeec4::t_2aee30bf2f9eb6 1-8
+src/features/bin-designer/types/uiState.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 216-217
+src/features/bin-designer/utils/assemblyTree.test.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 12,99-105
+  s_a36c0b85dfeec4::t_b2df7a6469fbd6 106-107
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/features/bin-designer/components/Workshop/WorkshopDragTip.test.tsx
+  s_a36c0b85dfeec4::t_2aee30bf2f9eb6 1-8
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 98,128-158,204,206,240,265,408
+  s_a36c0b85dfeec4::t_fcd28cb2a4f1b2 409-411
+  s_a36c0b85dfeec4::t_30b7f182b6f5ec 416
+src/features/bin-designer/components/Workshop/WorkshopDragTip.tsx
+  s_a36c0b85dfeec4::t_a5c103ba6fe7a3 1-42
+src/features/bin-designer/components/Workshop/WorkshopViewBar.tsx
+  s_a36c0b85dfeec4::t_456d95787d2710 12-15
+  s_a36c0b85dfeec4::t_464547c2b45b9f 8
+  s_a36c0b85dfeec4::t_806335c3371f7c 1-7,9-11,16-56
+src/features/bin-designer/components/Workshop/WorkshopContextMenu.tsx
+  s_a36c0b85dfeec4::t_c06ff99b899764 1,3,5-14,26-32,34-45,52,54-57,59-66,68-72,74,76-80
+  s_a36c0b85dfeec4::t_fd61627102b2c6 2,4,15-25,33,46-51,58,67,75
+  s_a36c0b85dfeec4::t_2989b54f662f41 53,73
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 27,123-151
+  s_a36c0b85dfeec4::t_068b606f6f6f04 152-153
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 37,59,161-164
+  s_a36c0b85dfeec4::t_85b1e52da655b2 165
+src/features/bin-designer/components/Workshop/workshopPlacement.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 34-35,37-38,94-95,115-116
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 109-114
+src/features/bin-designer/constants/defaults.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 313
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/features/bin-designer/utils/assemblyTree.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 142-155
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 6,9,19-21,23-24,46,50-70,73-74,76-77,85-88,95-100,113-120,123-124
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 3-4,13,30-32,35-57,132,135-147,212,214
+src/features/bin-designer/types/designerState.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 167,366
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4243-4251
+src/features/bin-designer/components/Workshop/WorkshopViewBar.test.tsx
+  s_a36c0b85dfeec4::t_2aee30bf2f9eb6 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "a35874f16e6fd0005a092229b8ec55a27d59ad46",
+  "prompts": {},
+  "sessions": {
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
