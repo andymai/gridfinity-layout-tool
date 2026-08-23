@@ -18,8 +18,8 @@ import type { Shape3D, DisposalScope, Drawing, Sketch, ValidSolid } from 'brepjs
 import { pocketCornerRadius } from './generatorConstants';
 import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
 import { LID_COPLANAR_MARGIN, LID_MIN_CORNER_RADIUS } from './lidConstants';
-import { type CellMask } from '@/shared/utils/cellMask';
-import { forEachCell } from './cellDecomposition';
+import { isRegionFilled } from '@/shared/utils/cellMask';
+import { forEachCell, type CellInfo } from './cellDecomposition';
 import { buildMaskDrawingAtInset } from './maskPolygon';
 import { buildOutlineDrawing } from './lidProfile';
 import type { LidInputs } from './lidInputs';
@@ -108,23 +108,33 @@ function buildStackLipCutter(inputs: LidInputs): Shape3D {
   });
 }
 
+/** The slice of {@link LidInputs} that locates a cell against the mask. */
+export type LidCellGrid = Pick<
+  LidInputs,
+  'cellMask' | 'cellsX' | 'cellsY' | 'gridUnitMm' | 'gridUnitMmY'
+>;
+
 /**
- * Each whole grid cell maps to a 2×2 mask region. Treat the whole cell as
- * filled only when ALL four mask cells are set; otherwise skip pockets to
- * avoid one that would clip the polygon boundary.
+ * Whether the mask fills a cell's own footprint — false for a partially covered
+ * cell, so nothing is cut across the polygon boundary.
+ *
+ * Measured over the cell's OWN extent rather than the 1u cell containing it.
+ * A trailing 0.5u cell covers one column of mask sub-cells, and a whole-cell
+ * query reaches past the mask's last column, which answers "unfilled" for every
+ * fractional edge cell on a masked lid.
+ *
+ * Shared by the pocket pass here and the magnet pass in `lidMagnets`: both cut
+ * into the same face, and a cell one accepts while the other refuses puts a
+ * magnet where no foot can seat.
  */
-function isCellFilled(mask: CellMask, cellX: number, cellY: number): boolean {
-  const baseCol = cellX * 2;
-  const baseRow = cellY * 2;
-  for (let dr = 0; dr < 2; dr++) {
-    for (let dc = 0; dc < 2; dc++) {
-      const c = baseCol + dc;
-      const r = baseRow + dr;
-      if (c < 0 || c >= mask.cols || r < 0 || r >= mask.rows) return false;
-      if (mask.cells[r * mask.cols + c] !== 1) return false;
-    }
-  }
-  return true;
+export function isLidCellFilled(grid: LidCellGrid, cell: CellInfo): boolean {
+  const { cellMask, cellsX, cellsY, gridUnitMm, gridUnitMmY } = grid;
+  if (!cellMask) return true;
+  const leftUnit =
+    (cell.centerX + (cellsX * gridUnitMm) / 2 - (cell.widthUnits * gridUnitMm) / 2) / gridUnitMm;
+  const bottomUnit =
+    (cell.centerY + (cellsY * gridUnitMmY) / 2 - (cell.depthUnits * gridUnitMmY) / 2) / gridUnitMmY;
+  return isRegionFilled(cellMask, leftUnit, bottomUnit, cell.widthUnits, cell.depthUnits);
 }
 
 export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
@@ -150,25 +160,26 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
   if (inputs.stackLipOnly) {
     pockets.push(scope.register(buildStackLipCutter(inputs)));
   } else {
-    const halfTotalW = (cellsX * gridUnitMm) / 2;
-    const halfTotalD = (cellsY * gridUnitMmY) / 2;
     forEachCell(
       cellsX,
       cellsY,
       (cell) => {
-        const cellW = cell.widthUnits * gridUnitMm;
-        const cellD = cell.depthUnits * gridUnitMmY;
-        if (inputs.cellMask) {
-          const cellX = Math.round((cell.centerX + halfTotalW - gridUnitMm / 2) / gridUnitMm);
-          const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMmY / 2) / gridUnitMmY);
-          if (!isCellFilled(inputs.cellMask, cellX, cellY)) return;
-        }
-        const pocket = buildLidStackPocketCutter(cellW, cellD);
+        if (!isLidCellFilled(inputs, cell)) return;
+        const pocket = buildLidStackPocketCutter(
+          cell.widthUnits * gridUnitMm,
+          cell.depthUnits * gridUnitMmY
+        );
         const positioned = scope.register(translate(pocket, [cell.centerX, cell.centerY, 0]));
         pocket.delete();
         pockets.push(positioned);
       },
-      { gridUnitMm: pitch }
+      // The half cell must land on the side the stacked bin's half foot does,
+      // or the foot meets slab and the pocket meets air.
+      {
+        gridUnitMm: pitch,
+        fractionalEdgeX: inputs.fractionalEdgeX,
+        fractionalEdgeY: inputs.fractionalEdgeY,
+      }
     );
   }
 

@@ -29,6 +29,8 @@ import {
   CLEARANCE,
   INSET_BOT,
   forEachCell,
+  type ForEachCellOptions,
+  type CellInfo,
 } from './generatorTypes';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 
@@ -39,7 +41,6 @@ import { resolvePitch, type GridUnitInput } from './gridPitch';
  * (rather than being jammed against the edge).
  */
 const STANDARD_WALL_INSET = SIZE / 2 - HOLE_OFFSET;
-import type { ForEachCellOptions, CellInfo } from './generatorTypes';
 
 /**
  * Minimum plastic wall (mm) kept between a magnet hole and a small cell's edge
@@ -52,14 +53,13 @@ export const MAGNET_EDGE_CLEARANCE = 1.5;
 /**
  * Whether a cell may carry attachment (magnet / screw) holes at all.
  *
- * {@link magnetPositionsForCell} measures its wall from the cell's NOMINAL
- * edge, but the face a hole actually opens on is the tapered one — narrower by
- * `INSET_BOT` per side, plus the fit clearance a foot gives up. A full cell has
- * that slack to spare; a half cell only does from roughly spec pitch upward, so
- * the tapered face is what decides here rather than the unit count.
+ * {@link magnetPositionsForCell} measures its wall from the cell's NOMINAL edge,
+ * which the tapered face the hole opens on falls short of by `INSET_BOT` a side.
+ * A full cell absorbs that; a half cell only does from around spec pitch upward.
  *
- * Full cells answer true unconditionally: they carry holes today at every
- * pitch, and re-gating them would move holes on parts already printed.
+ * Full cells bypass the span check rather than passing it: they carry holes at
+ * every pitch today, and re-gating them would move holes on parts already
+ * printed.
  */
 export function cellHostsAttachmentHoles(
   cell: CellInfo,

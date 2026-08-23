@@ -36,13 +36,17 @@ beforeAll(async () => {
 
 /** Vertices on the mesh's bottom Z layer, as XY pairs. */
 function getBottomVerts(mesh: MeshData): Array<[number, number]> {
-  const verts: Array<[number, number, number]> = [];
-  for (let i = 0; i < mesh.vertices.length; i += 3) {
-    verts.push([mesh.vertices[i], mesh.vertices[i + 1], mesh.vertices[i + 2]]);
+  const { vertices } = mesh;
+  let minZ = Infinity;
+  for (let i = 2; i < vertices.length; i += 3) {
+    if (vertices[i] < minZ) minZ = vertices[i];
   }
 
-  const minZ = Math.min(...verts.map(([, , z]) => z));
-  return verts.filter(([, , z]) => z - minZ < 0.1).map(([x, y]) => [x, y]);
+  const bottom: Array<[number, number]> = [];
+  for (let i = 0; i < vertices.length; i += 3) {
+    if (vertices[i + 2] - minZ < 0.1) bottom.push([vertices[i], vertices[i + 1]]);
+  }
+  return bottom;
 }
 
 /**

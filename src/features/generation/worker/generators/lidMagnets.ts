@@ -15,7 +15,7 @@ import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import { LID_COPLANAR_MARGIN, LID_MAGNET_CEILING } from './lidConstants';
 import { forEachCell } from './cellDecomposition';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
-import { isRegionFilled } from '@/shared/utils/cellMask';
+import { isLidCellFilled } from './lidStackGrid';
 import type { LidInputs } from './lidInputs';
 
 export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
@@ -30,7 +30,6 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
     magnetDepth,
     magnetAnchor,
     topThickness,
-    cellMask,
   } = inputs;
   const radius = magnetDiameter / 2;
   // Magnet cells sit on the (possibly non-square) socket grid; the ±13mm hole
@@ -51,28 +50,15 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
   // Faster than per-magnet cut() for non-trivial lids — a 10×10 polygon lid
   // has ~400 holes; per-cut would be 400 boolean ops vs one batched op here.
   const cutters: Shape3D[] = [];
-  // forEachCell handles fractional dimensions (half-bin mode): it decomposes
-  // the lid footprint into 1u full cells + a trailing 0.5u half-cell. Both take
-  // holes on the same terms `socketBuilder.buildBaseSocket` uses, so the lid
-  // magnets line up with the bin's base sockets whatever the decomposition.
-  const halfTotalW = (cellsX * gridUnitMm) / 2;
-  const halfTotalD = (cellsY * gridUnitMmY) / 2;
+  // Cell eligibility and mask filtering are both shared — with
+  // `socketBuilder.buildBaseSocket` for the first and the stack-grid pockets for
+  // the second — so a magnet only ever lands where a bin foot can seat on it.
   forEachCell(
     cellsX,
     cellsY,
     (cell) => {
       if (!cellHostsAttachmentHoles(cell, radius, gridUnitMm, gridUnitMmY)) return;
-      if (cellMask) {
-        // The cell's own extent, not a full cell's — a half cell covers one
-        // column of mask sub-cells, and asking about four would read past it.
-        const leftUnit =
-          (cell.centerX + halfTotalW - (cell.widthUnits * gridUnitMm) / 2) / gridUnitMm;
-        const bottomUnit =
-          (cell.centerY + halfTotalD - (cell.depthUnits * gridUnitMmY) / 2) / gridUnitMmY;
-        if (!isRegionFilled(cellMask, leftUnit, bottomUnit, cell.widthUnits, cell.depthUnits)) {
-          return;
-        }
-      }
+      if (!isLidCellFilled(inputs, cell)) return;
       // Shared placement so the lid magnets land at exactly the positions the
       // bin base sockets use (same wall-distance clamp), letting them mate.
       for (const [px, py] of magnetPositionsForCell(
