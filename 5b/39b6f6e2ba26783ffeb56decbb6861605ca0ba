@@ -1,0 +1,141 @@
+src/i18n/locales/en.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 2276-2284
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 2263-2265
+scripts/i18n-values-allowlist.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 322-326
+src/i18n/locales/ko.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/ja.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/sv.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/es.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/bin-designer/components/Workshop/WorkshopContextMenu.test.tsx
+  s_a36c0b85dfeec4::t_2aee30bf2f9eb6 1-8
+src/features/bin-designer/types/uiState.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 216-217
+src/features/bin-designer/utils/assemblyTree.test.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 12,99-105
+  s_a36c0b85dfeec4::t_b2df7a6469fbd6 106-107
+src/i18n/locales/nb.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/bin-designer/components/Workshop/WorkshopDragTip.test.tsx
+  s_a36c0b85dfeec4::t_2aee30bf2f9eb6 1-8
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 98,128-158,204,206,240,265,408
+  s_a36c0b85dfeec4::t_fcd28cb2a4f1b2 409-411
+  s_a36c0b85dfeec4::t_30b7f182b6f5ec 416
+src/features/bin-designer/components/Workshop/WorkshopDragTip.tsx
+  s_a36c0b85dfeec4::t_a5c103ba6fe7a3 1-42
+src/features/bin-designer/components/Workshop/WorkshopViewBar.tsx
+  s_a36c0b85dfeec4::t_456d95787d2710 12-15
+  s_a36c0b85dfeec4::t_464547c2b45b9f 8
+  s_a36c0b85dfeec4::t_806335c3371f7c 1-7,9-11,16-56
+src/features/bin-designer/components/Workshop/WorkshopContextMenu.tsx
+  s_a36c0b85dfeec4::t_c06ff99b899764 1,3,5-14,26-32,39-44,46,53,55-58,60-67,69-73,75,77-81
+  s_a36c0b85dfeec4::t_fd61627102b2c6 2,4,15-25,33,47-52,59,68,76
+  s_a36c0b85dfeec4::t_2989b54f662f41 54,74
+  s_a36c0b85dfeec4::t_17e3eca22ecb88 34-38,45
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 27,123-151
+  s_a36c0b85dfeec4::t_068b606f6f6f04 152-153
+src/i18n/locales/cs.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/fr.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 37,59,161-164
+  s_a36c0b85dfeec4::t_85b1e52da655b2 165
+src/features/bin-designer/components/Workshop/workshopPlacement.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 34-35,37-38,94-95,115-116
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 109-114
+src/features/bin-designer/constants/defaults.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 313
+src/i18n/locales/it.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/bin-designer/utils/assemblyTree.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 142-155
+src/i18n/locales/de.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/nl.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/pl.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/uk.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 6,9,19-21,23-24,46,50-70,73-74,76-77,85-88,95-100,113-120,123-124
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 3-4,14,33,37-54,129,132-144,209,211
+  s_a36c0b85dfeec4::t_0eda1e3c9390d5 12,31-32
+  s_4e61e832655bad::t_76ec5d75d2c34b 36
+src/features/bin-designer/types/designerState.ts
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 167,366
+src/i18n/locales/zh-CN.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/i18n/locales/pt-BR.json
+  s_a36c0b85dfeec4::t_3da3efacdb6e04 4246-4254
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 4233-4235
+src/features/bin-designer/components/Workshop/WorkshopViewBar.test.tsx
+  s_a36c0b85dfeec4::t_2aee30bf2f9eb6 1-8
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_a36c0b85dfeec4::t_73886cd55fc7c1 390-400,404-414,416-423
+  s_a36c0b85dfeec4::t_1fc729d11696f8 356-359,361,363-364,366,371-381,383-386,431-438,442,453,455-456,479
+api/lib/assemblyValidation.ts
+  s_a36c0b85dfeec4::t_51fd94f9fbc3c8 135-136,143-146,155-156,260-262
+  s_a36c0b85dfeec4::t_e79e8b656ab3cf 263-265
+  s_a36c0b85dfeec4::t_faeb2eb939e3cc 266-270
+src/features/generation/worker/generators/assemblyGenerator.scenario.test.ts
+  s_a36c0b85dfeec4::t_65b17fd28dc320 121-128,140-153,176-180
+  s_a36c0b85dfeec4::t_7b5f2771a9563d 129-139,154-175
+  s_a36c0b85dfeec4::t_fc794df3979853 120
+src/shared/types/assembly.ts
+  s_a36c0b85dfeec4::t_dee2f1cd11fe35 72-73,82-86,94
+src/shared/items/assembly/descriptor.ts
+  s_a36c0b85dfeec4::t_67fe3dde703308 53-54,66-70,74-75,253-261
+  s_a36c0b85dfeec4::t_dee2f1cd11fe35 252,263
+src/features/bin-designer/components/Workshop/proxyGeometry.ts
+  s_a36c0b85dfeec4::t_f0c839c52ecc6e 165,169-170,172-173,186-188
+  s_a36c0b85dfeec4::t_ec427420c63b71 93,95-103,106,108,110,119,127-128,131-153
+src/features/bin-designer/components/Workshop/WorkshopPanel/partFieldConfig.ts
+  s_a36c0b85dfeec4::t_e8a6ed22108330 34,41-55,63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "5b39b6f6e2ba26783ffeb56decbb6861605ca0ba",
+  "prompts": {},
+  "sessions": {
+    "s_4e61e832655bad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "67285071-fdce-492e-a2ba-8c4b63a45124",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a36c0b85dfeec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edba5353-e972-4769-bd76-59a2b3c550e4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
