@@ -122,7 +122,11 @@ export async function placeCommunityDesignInLayout(
             height: assemblyHeightUnits(
               assembly.structure,
               assembly.envelope.heightUnitMm,
-              GRIDFINITY_SPEC.SOCKET_HEIGHT + assembly.structure.base.floorThickness
+              GRIDFINITY_SPEC.SOCKET_HEIGHT + assembly.structure.base.floorThickness,
+              {
+                w: assembly.envelope.width * assembly.envelope.gridUnitMm,
+                d: assembly.envelope.depth * assembly.envelope.gridUnitMm,
+              }
             ),
             gridUnitMm: assembly.envelope.gridUnitMm,
             gridUnitMmY: assembly.envelope.gridUnitMm,

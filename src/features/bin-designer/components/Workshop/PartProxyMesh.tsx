@@ -35,6 +35,8 @@ interface PartProxyMeshProps {
   onSurfaceClick: (surface: HoverSurface) => void;
   onPartPointerDown: (id: string, pointerType: string) => void;
   onPartContextMenu?: (id: string, clientX: number, clientY: number) => void;
+  /** World → flat placement frame (identity unless the base is wedged). */
+  sceneFromWorld?: (point: Vector3) => Vector3;
 }
 
 const DEG = Math.PI / 180;
@@ -57,6 +59,7 @@ export function PartProxyMesh({
   onSurfaceClick,
   onPartPointerDown,
   onPartContextMenu,
+  sceneFromWorld,
 }: PartProxyMeshProps) {
   const colors = useThreeColors();
   const reducedMotion = usePrefersReducedMotion();
@@ -134,11 +137,15 @@ export function PartProxyMesh({
       : colors.workshopPart;
   const showSolid = !hidden || selected || animating;
 
-  const toSurface = (e: ThreeEvent<PointerEvent | MouseEvent>): HoverSurface => ({
+  const toSurface = (e: ThreeEvent<PointerEvent | MouseEvent>): HoverSurface => {
+    const local = sceneFromWorld ? sceneFromWorld(e.point) : e.point;
+    return toSurfaceFromLocal(local);
+  };
+  const toSurfaceFromLocal = (local: { x: number; y: number }): HoverSurface => ({
     parentId: placed.selectId,
     topZ: placed.topZ,
-    x: sceneToStore(e.point.x, baseW),
-    y: sceneToStore(e.point.y, baseD),
+    x: sceneToStore(local.x, baseW),
+    y: sceneToStore(local.y, baseD),
   });
 
   return (

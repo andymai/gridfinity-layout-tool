@@ -179,6 +179,57 @@ describe('assembly generator (real WASM)', () => {
     assertWatertight(result);
   });
 
+  it('a wedged base tilts the plate, fills beneath, and stays watertight', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const wedged: AssemblyStructure = {
+      ...structureWith([part('post', 'p', { x: 42, y: 21 })]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 10, lowEdge: 'front' } },
+    };
+    const flat = structureWith([part('post', 'p', { x: 42, y: 21 })]);
+    const wedgedResult = generateAssembly(wedged, makeEnvelope(2, 1), noop, true);
+    const flatResult = generateAssembly(flat, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(wedgedResult);
+    assertNoDegenerateTriangles(wedgedResult);
+    assertWatertight(wedgedResult);
+    // The filler prism under the tilted plate is new material.
+    expect(meshVolume(wedgedResult)).toBeGreaterThan(meshVolume(flatResult) + 1000);
+    const bounds = boundingBox(wedgedResult.vertices);
+    expect(bounds.minZ).toBeCloseTo(0, 1);
+    // The tilt lifts the center post's top past its flat height, but never
+    // past the conservative full-extent bound the placement math reserves.
+    const rad = (10 * Math.PI) / 180;
+    const flatTop = boundingBox(flatResult.vertices).maxZ;
+    expect(bounds.maxZ).toBeGreaterThan(flatTop + 1);
+    expect(bounds.maxZ).toBeLessThan(
+      SOCKET_HEIGHT + (flatTop - SOCKET_HEIGHT) * Math.cos(rad) + 41.5 * Math.sin(rad) + 0.5
+    );
+  });
+
+  it('a cutter follows the wedge so its hole stays under the placed part', async () => {
+    const { generateAssembly } = await import('./assemblyGenerator');
+    const drilled: AssemblyStructure = {
+      ...structureWith([
+        part(
+          'block',
+          'b',
+          { x: 42, y: 21 },
+          { children: [part('cutter', 'hole', { x: 0, y: 0 })] }
+        ),
+      ]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 12, lowEdge: 'left' } },
+    };
+    const solid: AssemblyStructure = {
+      ...structureWith([part('block', 'b', { x: 42, y: 21 })]),
+      base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 12, lowEdge: 'left' } },
+    };
+    const carved = generateAssembly(drilled, makeEnvelope(2, 1), noop, true);
+    assertStructurallyValid(carved);
+    assertWatertight(carved);
+    expect(meshVolume(carved)).toBeLessThan(
+      meshVolume(generateAssembly(solid, makeEnvelope(2, 1), noop, true)) - 200
+    );
+  });
+
   it('a hole cutter removes volume from a block', async () => {
     const { generateAssembly } = await import('./assemblyGenerator');
     const solidBlock = structureWith([part('block', 'b', { x: 42, y: 21 })]);

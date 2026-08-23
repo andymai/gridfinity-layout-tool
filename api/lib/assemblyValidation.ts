@@ -220,6 +220,15 @@ export function validateAssemblyStructure(structure: unknown): AssemblyValidatio
   if (base.cornerRadius !== undefined && !num(base.cornerRadius, 0, 20)) {
     return fail('base.cornerRadius out of range');
   }
+  if (base.wedge !== undefined) {
+    if (!isObject(base.wedge) || !num(base.wedge.angleDeg, 0, 20)) {
+      return fail('base.wedge out of range');
+    }
+    const lowEdge = base.wedge.lowEdge;
+    if (lowEdge !== 'front' && lowEdge !== 'back' && lowEdge !== 'left' && lowEdge !== 'right') {
+      return fail('base.wedge.lowEdge invalid');
+    }
+  }
   if (structure.mirrorAxis !== 'x' && structure.mirrorAxis !== 'y') {
     return fail('mirrorAxis must be x or y');
   }
@@ -377,6 +386,7 @@ export function sanitizeAssemblyContent(
 
   const structureIn = structureRaw as Record<string, unknown>;
   const baseIn = structureIn.base as Record<string, unknown>;
+  const wedgeIn = baseIn.wedge as Record<string, unknown> | undefined;
   let maxTop = 0;
 
   const sanitizeNode = (
@@ -415,14 +425,25 @@ export function sanitizeAssemblyContent(
     base: {
       floorThickness: baseIn.floorThickness,
       ...(baseIn.cornerRadius !== undefined ? { cornerRadius: baseIn.cornerRadius } : {}),
+      ...(wedgeIn !== undefined && (wedgeIn.angleDeg as number) > 0
+        ? { wedge: { angleDeg: wedgeIn.angleDeg, lowEdge: wedgeIn.lowEdge } }
+        : {}),
     },
     mirrorAxis: structureIn.mirrorAxis,
     parts: (structureIn.parts as Record<string, unknown>[]).map((node) => sanitizeNode(node, 0)),
   };
 
-  return {
-    envelope,
-    structure,
-    riseMm: maxTop + SOCKET_HEIGHT_MM + (baseIn.floorThickness as number),
-  };
+  const flatRise = maxTop + SOCKET_HEIGHT_MM + (baseIn.floorThickness as number);
+  let riseMm = flatRise;
+  if (wedgeIn !== undefined && (wedgeIn.angleDeg as number) > 0) {
+    // The wedge hinges at the low bottom edge: the high edge lifts by the
+    // tilted extent while the tallest part leans with the surface.
+    const rad = ((wedgeIn.angleDeg as number) * Math.PI) / 180;
+    const along =
+      wedgeIn.lowEdge === 'front' || wedgeIn.lowEdge === 'back'
+        ? (envelopeIn.depth as number) * (envelopeIn.gridUnitMm as number)
+        : (envelopeIn.width as number) * (envelopeIn.gridUnitMm as number);
+    riseMm = flatRise * Math.cos(rad) + along * Math.sin(rad);
+  }
+  return { envelope, structure, riseMm };
 }

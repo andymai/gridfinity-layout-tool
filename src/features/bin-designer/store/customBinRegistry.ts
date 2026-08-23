@@ -233,7 +233,10 @@ export function registryAssemblyFields(
   const socketAndFloorMm = GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness;
   return {
     kind: 'assembly',
-    assembledRiseMm: assemblyRiseMm(structure, socketAndFloorMm),
+    assembledRiseMm: assemblyRiseMm(structure, socketAndFloorMm, {
+      w: envelope.width * envelope.gridUnitMm,
+      d: envelope.depth * envelope.gridUnitMm,
+    }),
     socketless: false,
     hasLip: false,
     overhangMm: assemblyOverhangMm(structure, {

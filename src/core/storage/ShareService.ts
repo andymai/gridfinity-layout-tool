@@ -387,9 +387,15 @@ export async function restoreSharedDesigns(
         name: result.value.name,
         width: envelope.width,
         depth: envelope.depth,
-        height: assemblyHeightUnits(structure, envelope.heightUnitMm, socketAndFloorMm),
+        height: assemblyHeightUnits(structure, envelope.heightUnitMm, socketAndFloorMm, {
+          w: envelope.width * envelope.gridUnitMm,
+          d: envelope.depth * envelope.gridUnitMm,
+        }),
         kind: 'assembly',
-        assembledRiseMm: assemblyRiseMm(structure, socketAndFloorMm),
+        assembledRiseMm: assemblyRiseMm(structure, socketAndFloorMm, {
+          w: envelope.width * envelope.gridUnitMm,
+          d: envelope.depth * envelope.gridUnitMm,
+        }),
         socketless: false,
         hasLip: false,
         overhangMm: assemblyOverhangMm(structure, {

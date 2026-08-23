@@ -57,7 +57,8 @@ async function capturePublishAssets(): Promise<void> {
           height: assemblyHeightUnits(
             structure,
             envelope.heightUnitMm,
-            GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness
+            GRIDFINITY_SPEC.SOCKET_HEIGHT + structure.base.floorThickness,
+            { w: envelope.width * envelope.gridUnitMm, d: envelope.depth * envelope.gridUnitMm }
           ),
           gridUnitMm: envelope.gridUnitMm,
           heightUnitMm: envelope.heightUnitMm,

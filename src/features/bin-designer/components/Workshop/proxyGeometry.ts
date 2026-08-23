@@ -18,7 +18,7 @@ const DEG = Math.PI / 180;
 /** Rotate a shape-plane (profile-in-YZ, extruded-along-X) solid into world axes. */
 const YZ_PROFILE_TO_WORLD = new Matrix4().set(0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1);
 
-function roundedRectShape(w: number, d: number, radius: number): Shape {
+export function roundedRectShape(w: number, d: number, radius: number): Shape {
   const r = Math.min(radius, w / 2 - 1e-3, d / 2 - 1e-3);
   const shape = new Shape();
   shape.moveTo(-w / 2 + r, -d / 2);

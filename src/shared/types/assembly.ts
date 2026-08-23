@@ -209,7 +209,15 @@ export interface AssemblyPartParamsByType {
   readonly cutter: CutterParams;
 }
 
+export interface AssemblyWedge {
+  /** Presentation angle of the whole build; the socket stays flat. */
+  readonly angleDeg: number;
+  /** Which edge stays low — the side the tools lean away from. */
+  readonly lowEdge: 'front' | 'back' | 'left' | 'right';
+}
+
 export interface AssemblyBase {
+  readonly wedge?: AssemblyWedge;
   /** Floor plate thickness in mm above the socket. */
   readonly floorThickness: number;
   readonly cornerRadius?: number;
