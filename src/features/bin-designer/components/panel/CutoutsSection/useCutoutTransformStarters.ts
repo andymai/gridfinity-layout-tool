@@ -15,7 +15,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
-import { computeBounds } from './geometry';
+import { selectionVisualBounds } from './cutoutGroups';
 import { addClonedCutouts } from './cutoutHelpers';
 import type { InteractionMode, ResizeHandle } from './cutoutInteractionTypes';
 
@@ -169,7 +169,7 @@ export function useCutoutTransformStarters({
     (startAngle: number) => {
       const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
       if (selectedCutouts.length < 2) return;
-      const bounds = computeBounds(selectedCutouts);
+      const bounds = selectionVisualBounds(selectedCutouts);
       const center = {
         x: (bounds.minX + bounds.maxX) / 2,
         y: (bounds.minY + bounds.maxY) / 2,
@@ -188,7 +188,7 @@ export function useCutoutTransformStarters({
     (mmX: number, mmY: number) => {
       const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
       if (selectedCutouts.length < 2) return;
-      const bounds = computeBounds(selectedCutouts);
+      const bounds = selectionVisualBounds(selectedCutouts);
       const center = {
         x: (bounds.minX + bounds.maxX) / 2,
         y: (bounds.minY + bounds.maxY) / 2,
