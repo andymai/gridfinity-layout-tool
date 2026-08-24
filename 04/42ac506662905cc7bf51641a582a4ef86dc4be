@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/CutoutsSection/cutoutDepthShortfall.ts
+  s_988f5d7bb7605f::t_ed469ece9bd548 89-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "0442ac506662905cc7bf51641a582a4ef86dc4be",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
