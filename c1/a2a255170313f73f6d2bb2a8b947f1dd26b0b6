@@ -1,0 +1,21 @@
+vercel.json
+  s_ed41b3402c59e7::t_f22394acbc6d8d 52
+src/shared/analytics/posthog/init.ts
+  s_ed41b3402c59e7::t_f60341fa32d074 46-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "c1a2a255170313f73f6d2bb2a8b947f1dd26b0b6",
+  "prompts": {},
+  "sessions": {
+    "s_ed41b3402c59e7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7ce2142-cc6c-4458-b323-d42c7db183b0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
