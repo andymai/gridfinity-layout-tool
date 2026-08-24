@@ -1,0 +1,64 @@
+api/lib/designerCompartmentValidation.ts
+  s_17a79989e24fcf::t_6bb0cbc596ff38 398-422
+src/features/bin-designer/utils/bentoDraw.test.ts
+  s_17a79989e24fcf::t_5daa35b7ae16e5 10
+  s_17a79989e24fcf::t_e24b26622f5d55 23
+  s_17a79989e24fcf::t_19d805573a9213 541-621,640-651
+  s_17a79989e24fcf::t_d440bc9df99ceb 622-639
+src/features/bin-designer/constants/paramMigration.ts
+  s_17a79989e24fcf::t_f7dc1fda2c4b6b 1050-1064
+  s_17a79989e24fcf::t_bfb2420752df27 1094,1096-1102
+  s_17a79989e24fcf::t_08535e179f99ec 1049
+src/features/bin-designer/types/compartments.ts
+  s_17a79989e24fcf::t_adbd34f514526c 173,175,177-187
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_17a79989e24fcf::t_c84baea9dc7da2 1519-1547
+src/shared/schema/binDesignKeys.ts
+  s_17a79989e24fcf::t_88b0ca5994ac06 169
+api/lib/designerCompartmentValidation.test.ts
+  s_17a79989e24fcf::t_a2b1c22d085731 756-806
+src/features/bin-designer/components/BentoWorkspace/BentoStashShelf.test.tsx
+  s_17a79989e24fcf::t_faccf5ce90142d 49,51-71
+  s_17a79989e24fcf::t_5d622f410a7308 50
+src/features/bin-designer/store/designer.scenario.bento.test.ts
+  s_17a79989e24fcf::t_cd7e9aa73a4a87 8
+  s_17a79989e24fcf::t_dbf3ac40e5763b 297-319
+src/features/bin-designer/components/BentoWorkspace/BentoStashShelf.tsx
+  s_17a79989e24fcf::t_8f0d902b159c4b 43-48,52-53,58-62
+  s_17a79989e24fcf::t_2acf4480f96117 133-143,149-153
+  s_17a79989e24fcf::t_e1d031adc90151 144-148
+  s_17a79989e24fcf::t_9a1cc24645020d 114
+  s_17a79989e24fcf::t_19fa745a1e4f87 111
+  s_17a79989e24fcf::t_bb464d964ca46e 39-42,49-51,54-57
+public/schema/bin-design.schema.json
+  s_17a79989e24fcf::t_e5157576a4c0d8 2064-2070
+src/features/bin-designer/utils/bentoDraw.ts
+  s_17a79989e24fcf::t_dddd54f6b19bca 280-282,284-287,292,298,303-305,309,311-314,318-325
+  s_17a79989e24fcf::t_75d4474ca40c22 357,363,366
+  s_17a79989e24fcf::t_b1129abc598ecf 422
+  s_17a79989e24fcf::t_a0c8ca27a3e560 630-631,638,642
+  s_17a79989e24fcf::t_838ff57d66bccd 525-542,549,553,570-572
+  s_17a79989e24fcf::t_10ebbf76803598 288-289,302,306-308
+  s_17a79989e24fcf::t_01cd48b0a591c3 310,315-317
+  s_17a79989e24fcf::t_8570d1bc5c8e2f 413-415,423-424,426
+  s_17a79989e24fcf::t_3bec192cc6d3ba 416-421
+  s_17a79989e24fcf::t_3299f239375f5a 360-362
+docs/schemas/bin-design.md
+  s_17a79989e24fcf::t_bacfe4ba3e0c6e 227
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "af9be4c06e779c3db8767bb7f98c8c366986ecdd",
+  "prompts": {},
+  "sessions": {
+    "s_17a79989e24fcf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "440bb349-37e2-4daa-a0d8-a45dcc0b6533",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
