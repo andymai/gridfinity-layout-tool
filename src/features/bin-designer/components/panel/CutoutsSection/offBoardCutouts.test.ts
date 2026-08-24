@@ -279,6 +279,19 @@ describe('clampCutoutToBoard', () => {
     expect(isCutoutOffBoard(path, { width: BIN_W, depth: BIN_D })).toBe(true);
   });
 
+  it('withholds a translation that cannot clear the flag', () => {
+    const path = createCutout({
+      id: 'stuck',
+      shape: 'path',
+      x: 30,
+      y: 10,
+      width: 300,
+      depth: 20,
+      path: [corner(30, 10), corner(330, 10), corner(330, 30), corner(30, 30)],
+    });
+    expect(clampOffBoardCutouts([path], { width: BIN_W, depth: BIN_D }).size).toBe(0);
+  });
+
   it('translates but never resizes a mesh cutout', () => {
     const mesh = createCutout({ shape: 'mesh', x: 30, y: 10, width: 200, depth: 20 });
     expect(clampCutoutToBoard(mesh, { width: BIN_W, depth: BIN_D })).toEqual({ x: 0, y: 10 });

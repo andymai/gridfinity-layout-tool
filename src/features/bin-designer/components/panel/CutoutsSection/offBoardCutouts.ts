@@ -253,7 +253,12 @@ export function clampCutoutToBoard(cutout: Cutout, board: CutoutBoard): Partial<
   return moved;
 }
 
-/** Updates for every off-board cutout that a clamp can fix (empty when none). */
+/**
+ * Updates for every off-board cutout that a clamp can fix (empty when none).
+ * A patch that would still leave the shape off board — an oversized path or
+ * mesh pulled to the origin but overhanging the far edge — is withheld, so an
+ * offered clamp always clears the warning for the cutouts it touches.
+ */
 export function clampOffBoardCutouts(
   cutouts: readonly Cutout[],
   board: CutoutBoard
@@ -262,7 +267,7 @@ export function clampOffBoardCutouts(
   for (const c of cutouts) {
     if (!isCutoutOffBoard(c, board)) continue;
     const moved = clampCutoutToBoard(c, board);
-    if (moved) updates.set(c.id, moved);
+    if (moved && !isCutoutOffBoard({ ...c, ...moved }, board)) updates.set(c.id, moved);
   }
   return updates;
 }

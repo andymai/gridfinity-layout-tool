@@ -16,7 +16,7 @@
 import { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore, remainingCutoutCapacity } from '@/features/bin-designer/store';
-import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
+import { MAX_LID_CUTOUTS, type Cutout } from '@/features/bin-designer/types';
 import {
   binDimensions,
   cutoutInterior,
@@ -322,18 +322,22 @@ export function CutoutWorkspace() {
     setParams({ width: growTarget.width, depth: growTarget.depth });
   }, [growTarget, setParams]);
 
-  const handleClampOffBoard = useCallback(() => {
-    const updates = clampOffBoardCutouts(cutouts, cutoutBoard);
-    if (updates.size > 0) updateCutoutsBatch(updates);
-  }, [cutouts, cutoutBoard, updateCutoutsBatch]);
-
-  // Hidden rather than inert: when the clamp can fix nothing (an oversized
-  // path or mesh, no valid mask/lid placement) a visible button would click
-  // without effect and read as broken.
-  const clampCanFix = useMemo(
-    () => offBoardIds.size > 0 && clampOffBoardCutouts(cutouts, cutoutBoard).size > 0,
+  // Computed once and shared by the button's visibility and its click, so the
+  // two can't disagree and the mask scan in the clamp isn't run twice. Hidden
+  // rather than inert: when the clamp can fix nothing (an oversized path or
+  // mesh, no valid mask/lid placement) a visible button would click without
+  // effect and read as broken.
+  const offBoardUpdates = useMemo(
+    () =>
+      offBoardIds.size > 0
+        ? clampOffBoardCutouts(cutouts, cutoutBoard)
+        : new Map<string, Partial<Cutout>>(),
     [offBoardIds, cutouts, cutoutBoard]
   );
+
+  const handleClampOffBoard = useCallback(() => {
+    if (offBoardUpdates.size > 0) updateCutoutsBatch(offBoardUpdates);
+  }, [offBoardUpdates, updateCutoutsBatch]);
 
   const {
     mode,
@@ -702,7 +706,7 @@ export function CutoutWorkspace() {
           onFitCue={setFitCue}
           onFlattenArray={handleFlattenArray}
           offBoardCount={offBoardIds.size}
-          onClampOffBoard={clampCanFix ? handleClampOffBoard : undefined}
+          onClampOffBoard={offBoardUpdates.size > 0 ? handleClampOffBoard : undefined}
           depthShortfallCount={depthShortfallCount}
           growTarget={growTarget}
           onGrowToFit={handleGrowToFit}
