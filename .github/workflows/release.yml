@@ -1,17 +1,18 @@
 name: Release
 # Scheduled, not per-push: each release merge is also the production deploy
-# trigger (scripts/vercel-ignore.sh). Three releases a day keeps the deploy
-# count and the CHANGELOG readable rather than one entry per merge.
+# trigger (scripts/vercel-ignore.sh). Three a day keeps a release a readable
+# unit for the CHANGELOG and for What's New, which per-merge releases would
+# reduce to one trivial item each.
 #
-# What a deploy does NOT do is interrupt anyone already using the app: the
-# service worker is registered with skipWaiting and clientsClaim both false,
-# so a live tab keeps its old bundle until `usePWAUpdate` offers the update on
-# its own hourly check. The client-side exposure that IS tied to deploy time is
-# a first-load visitor fetching while the CDN flips, so the hours are activity
-# troughs rather than round local times: 06:00 UTC is the daily minimum, 13:00
-# the last dip before the ramp into the 16:00-21:00 peak plateau, and 23:00 far
-# enough down the descent that a merge from the working day still ships that
-# day. The curve is measured in UTC, so it slides an hour at each DST boundary.
+# This is NOT a user-protection measure. A deploy does not interrupt anyone
+# using the app: the service worker registers with skipWaiting and clientsClaim
+# both false, so a live tab keeps its bundle until `usePWAUpdate` offers the
+# update on its own hourly check, and Vercel Skew Protection pins a client
+# mid-session to the deployment it loaded. The hours are activity troughs as a
+# tiebreaker only (06:00 UTC is the daily minimum, 13:00 the last dip before
+# the ramp into the 16:00-21:00 peak plateau, 23:00 the descent), and the
+# choice is insensitive: they land within 2% of the best available triple in
+# either DST offset, so a DST boundary needs no revisit.
 on:
   schedule:
     - cron: '0 6,13,23 * * *'
