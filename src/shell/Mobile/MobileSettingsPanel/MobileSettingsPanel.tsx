@@ -1,9 +1,12 @@
 import { useCallback, useState, Suspense } from 'react';
-import { GITHUB_RELEASES_URL, GITHUB_REPO_URL } from '@/shared/constants/links';
+import { GITHUB_REPO_URL } from '@/shared/constants/links';
 // Import stores directly to avoid circular dependency via barrel export
 import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useSettingsStore } from '@/core/store/settings';
+import { useViewStore } from '@/core/store/view';
+import { useMobileStore } from '@/core/store/mobile';
+import { hasUnseen, useSeenState } from '@/features/whats-new';
 import { CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -35,6 +38,11 @@ const SettingsModal = lazyWithRetry(() =>
  */
 export function MobileSettingsPanel() {
   const t = useTranslation();
+  const whatsNewUnseen = hasUnseen(useSeenState());
+  const openWhatsNew = useCallback(() => {
+    useMobileStore.getState().closeMobilePanel();
+    useViewStore.getState().setWhatsNewOpen(true);
+  }, []);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsTabId | undefined>(
@@ -358,14 +366,20 @@ export function MobileSettingsPanel() {
           <span className="text-xs font-semibold text-content-secondary">
             {t('sidebar.appName')}
           </span>
-          <a
-            href={`${GITHUB_RELEASES_URL}/tag/v${__APP_VERSION__}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] text-content-disabled hover:text-content-tertiary hover:underline"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={openWhatsNew}
+            aria-label={t('whatsNew.open')}
+            className="h-auto gap-1.5 px-0 text-[10px] font-normal text-content-disabled hover:bg-transparent hover:text-content-tertiary hover:underline"
           >
             {t('sidebar.version', { version: __APP_VERSION__ })}
-          </a>
+            {whatsNewUnseen && (
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-accent">
+                {t('whatsNew.badge')}
+              </span>
+            )}
+          </Button>
         </div>
         <div className="text-xs text-content-disabled leading-relaxed">
           <a

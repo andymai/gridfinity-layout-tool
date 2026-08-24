@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
+import { Switch } from '@/design-system';
 import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } from '@/i18n';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 import { SelectableCard } from '../../components/SelectableCard/SelectableCard';
@@ -8,9 +9,10 @@ export function GeneralTab() {
   const t = useTranslation();
   const { locale, setLocale } = useLocale();
 
-  const { settingsLocale, updateSetting } = useSettingsStore(
+  const { settingsLocale, showUpdateSummaries, updateSetting } = useSettingsStore(
     useShallow((state) => ({
       settingsLocale: state.settings.locale,
+      showUpdateSummaries: state.settings.showUpdateSummaries,
       updateSetting: state.updateSetting,
     }))
   );
@@ -49,6 +51,23 @@ export function GeneralTab() {
               description={loc.code !== 'en' ? loc.englishName : undefined}
             />
           ))}
+        </div>
+      </SettingSection>
+
+      <SettingSection
+        id="update-summaries"
+        title={t('settings.general.showUpdateSummaries')}
+        resetKeys={['showUpdateSummaries']}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-content-secondary">
+            {t('settings.general.showUpdateSummariesDesc')}
+          </span>
+          <Switch
+            checked={showUpdateSummaries}
+            onChange={(checked) => updateSetting('showUpdateSummaries', checked)}
+            aria-label={t('settings.general.showUpdateSummaries')}
+          />
         </div>
       </SettingSection>
     </div>

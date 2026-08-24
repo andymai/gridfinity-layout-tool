@@ -219,6 +219,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'open-bin-examples': () => {
         useBinExampleGalleryStore.getState().open();
       },
+      'open-whats-new': () => {
+        useViewStore.getState().setWhatsNewOpen(true);
+      },
       'new-layout': () => {
         void createNewLayout();
       },

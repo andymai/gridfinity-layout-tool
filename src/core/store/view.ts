@@ -45,6 +45,7 @@ interface ViewState {
 
   // Modals
   printModalOpen: boolean;
+  whatsNewOpen: boolean;
   layoutExportOpen: boolean;
   showLayoutManager: boolean;
   showBaseplateLibrary: boolean;
@@ -84,6 +85,7 @@ interface ViewActions {
 
   // Modals
   setPrintModalOpen: (open: boolean) => void;
+  setWhatsNewOpen: (open: boolean) => void;
   setLayoutExportOpen: (open: boolean) => void;
   setShowLayoutManager: (show: boolean) => void;
   setShowBaseplateLibrary: (show: boolean) => void;
@@ -111,6 +113,7 @@ export const INITIAL_VIEW_STATE = {
   highlightedRowLabel: null as number | null,
   highlightedColLabel: null as number | null,
   printModalOpen: false,
+  whatsNewOpen: false,
   layoutExportOpen: false,
   showLayoutManager: false,
   showBaseplateLibrary: false,
@@ -178,6 +181,7 @@ export const useViewStore = create<ViewStore>((set) => ({
 
   // Modal actions
   setPrintModalOpen: (open) => set({ printModalOpen: open }),
+  setWhatsNewOpen: (open) => set({ whatsNewOpen: open }),
   setLayoutExportOpen: (open) => set({ layoutExportOpen: open }),
   setShowLayoutManager: (show) => set({ showLayoutManager: show }),
   setShowBaseplateLibrary: (show) => set({ showBaseplateLibrary: show }),

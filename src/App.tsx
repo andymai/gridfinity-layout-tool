@@ -48,6 +48,7 @@ import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
 import { useEngagementNudges } from '@/features/engagement';
 import { useOnboarding } from '@/features/onboarding';
+import { useWhatsNewAutoOpen } from '@/features/whats-new';
 import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
@@ -127,6 +128,9 @@ const MobileLayout = lazyWithRetry(() =>
 );
 const CollabProvider = lazyWithRetry(() =>
   import('@/shell/Collab/CollabProvider').then(namedExport('CollabProvider'))
+);
+const WhatsNewModal = lazyWithRetry(() =>
+  import('@/shell/Modals/WhatsNewModal').then(namedExport('WhatsNewModal'))
 );
 const DesignGalleryModal = lazyWithRetry(() =>
   import('@/shell/Modals/DesignGalleryModal').then(namedExport('DesignGalleryModal'))
@@ -247,6 +251,7 @@ export default function App() {
 
   const { shouldShowDrawTutorial } = useOnboarding();
 
+  const whatsNewOpen = useViewStore((state) => state.whatsNewOpen);
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
@@ -321,6 +326,19 @@ export default function App() {
   usePWAUpdate();
   useAnalytics();
   useEngagementNudges();
+
+  // Suppressed on arrivals that came for something specific and while the
+  // first-run tutorial is still up: the digest is for someone returning to
+  // their own drawer, not for someone opening a shared link.
+  useWhatsNewAutoOpen({
+    allowed:
+      !hasShareUrl &&
+      !isCollaborative &&
+      !isCommunityRoute &&
+      !isSupportersRoute &&
+      !hasSharedLayoutPreview &&
+      !shouldShowDrawTutorial,
+  });
   useStorageMigration();
   useSnapshotAutoSave();
   useLocalStorageCleanup();
@@ -632,6 +650,11 @@ export default function App() {
       {binExampleGalleryOpen && (
         <Suspense fallback={null}>
           <DesignGalleryModal onClose={closeBinExampleGallery} />
+        </Suspense>
+      )}
+      {whatsNewOpen && (
+        <Suspense fallback={null}>
+          <WhatsNewModal />
         </Suspense>
       )}
       {communityShowcaseEnabled && communityPublishOpen && (

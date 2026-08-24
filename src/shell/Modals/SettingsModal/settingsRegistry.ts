@@ -30,6 +30,12 @@ export const SETTINGS_REGISTRY: SettingsRegistryEntry[] = [
     labelKey: 'settings.language',
     keywordsKey: 'settings.search.keywords.language',
   },
+  {
+    id: 'update-summaries',
+    tabId: 'general',
+    labelKey: 'settings.general.showUpdateSummaries',
+    keywordsKey: 'settings.search.keywords.updateSummaries',
+  },
   // Appearance
   {
     id: 'theme',

@@ -4981,6 +4981,40 @@ const en: Record<string, string> = {
   'printBedInput.widthAriaLabel': 'Print bed width',
   'printBedInput.depthAriaLabel': 'Print bed depth',
 
+  // What's New
+  'whatsNew.title': "What's New",
+  'commandPalette.openWhatsNew': "What's New",
+  'whatsNew.helpDescription':
+    'A short summary of recent user-facing changes, shown after the app updates.',
+  'whatsNew.helpKeywords': 'changelog|updates|release notes|new features|recent changes',
+  'whatsNew.subtitleUnseenOne': '1 update since you were last here',
+  'whatsNew.subtitleUnseenMany': '{count} updates since you were last here',
+  'whatsNew.subtitleAll': 'Everything worth mentioning, newest first',
+  'whatsNew.empty': "You're up to date.",
+  'whatsNew.seeAll': 'See all',
+  'whatsNew.back': 'Back',
+  'whatsNew.fullChangelog': 'Full changelog',
+  'whatsNew.dontShowAgain': "Don't show again",
+  'whatsNew.dismiss': 'Got it',
+  'whatsNew.open': "Open What's New",
+  'whatsNew.badge': 'New',
+  'whatsNew.kind.new': 'New',
+  'whatsNew.kind.improved': 'Improved',
+  'whatsNew.kind.fixed': 'Fixed',
+  'whatsNew.labs': 'Labs',
+  'whatsNew.action.openTool.layout': 'Open Layout',
+  'whatsNew.action.openTool.designer': 'Open Bins',
+  'whatsNew.action.openTool.baseplate': 'Open Baseplate',
+  'whatsNew.action.openModal.baseplateLibrary': 'Open baseplate library',
+  'whatsNew.action.openModal.print': 'Open print list',
+  'whatsNew.action.openModal.designGallery': 'Open gallery',
+  'whatsNew.action.openLabs': 'Open Labs',
+  'settings.general.showUpdateSummaries': 'Show update summaries',
+  'settings.search.keywords.updateSummaries':
+    "what's new, changelog, updates, release notes, recent changes",
+  'settings.general.showUpdateSummariesDesc':
+    'After an update, show a short summary of what changed. Unseen highlights are badged in the sidebar either way.',
+
   // Engagement Nudges
   'engagement.feedbackNudge': 'Have ideas for the tool? Your feedback shapes what gets built next.',
   'engagement.giveFeedback': 'Share Feedback',
