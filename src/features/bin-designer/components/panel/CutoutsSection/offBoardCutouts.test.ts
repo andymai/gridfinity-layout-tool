@@ -216,9 +216,72 @@ describe('clampCutoutToBoard', () => {
     expect(clampCutoutToBoard(stray, { width: BIN_W, depth: BIN_D })).toEqual({ x: 0, y: 0 });
   });
 
-  it('pins the min edge to the origin when the cutout is larger than the board', () => {
+  it('shrinks an oversized cutout to the board and anchors it at the origin', () => {
     const huge = createCutout({ x: 30, y: 20, width: 200, depth: 150 });
-    expect(clampCutoutToBoard(huge, { width: BIN_W, depth: BIN_D })).toEqual({ x: 0, y: 0 });
+    const patch = clampCutoutToBoard(huge, { width: BIN_W, depth: BIN_D });
+    expect(patch).toEqual({ x: 0, y: 0, width: BIN_W, depth: BIN_D });
+    expect(isCutoutOffBoard({ ...huge, ...patch }, { width: BIN_W, depth: BIN_D })).toBe(false);
+  });
+
+  it('clamps only the oversized axis', () => {
+    const wide = createCutout({ x: 27.5, y: 93.5, width: 500, depth: 39.5 });
+    const board = { width: 165.1, depth: 165.1 };
+    const fixed = { ...wide, ...clampCutoutToBoard(wide, board) };
+    expect(fixed.width).toBe(165.1);
+    expect(fixed.depth).toBe(39.5);
+    expect(isCutoutOffBoard(fixed, board)).toBe(false);
+    expect(clampCutoutToBoard(fixed, board)).toBeNull();
+  });
+
+  it('shrinks a rotated oversized cutout so its rotated footprint fits', () => {
+    const rotated = createCutout({ x: 10, y: 10, width: 300, depth: 40, rotation: 45 });
+    const board = { width: BIN_W, depth: BIN_D };
+    const fixed = { ...rotated, ...clampCutoutToBoard(rotated, board) };
+    expect(isCutoutOffBoard(fixed, board)).toBe(false);
+    expect(fixed.width / fixed.depth).toBeCloseTo(300 / 40);
+  });
+
+  it('maps the clamp to the crossed axes at 90° rotation', () => {
+    const bar = createCutout({ x: 10, y: 10, width: 200, depth: 10, rotation: 90 });
+    const board = { width: BIN_W, depth: BIN_D };
+    const fixed = { ...bar, ...clampCutoutToBoard(bar, board) };
+    expect(fixed.width).toBe(80);
+    expect(fixed.depth).toBe(10);
+    expect(isCutoutOffBoard(fixed, board)).toBe(false);
+  });
+
+  it('shrinks an array master so every instance fits', () => {
+    const arr = createCutout({
+      x: 0,
+      y: 10,
+      width: 200,
+      depth: 20,
+      array: gridArray(2, 1, 40, 40),
+    });
+    const board = { width: BIN_W, depth: BIN_D };
+    const fixed = { ...arr, ...clampCutoutToBoard(arr, board) };
+    expect(fixed.width).toBe(60);
+    expect(fixed.depth).toBe(20);
+    expect(isCutoutOffBoard(fixed, board)).toBe(false);
+  });
+
+  it('leaves an oversized path translation-only and flagged', () => {
+    const path = createCutout({
+      shape: 'path',
+      x: 0,
+      y: 10,
+      width: 300,
+      depth: 20,
+      path: [corner(0, 10), corner(300, 10), corner(300, 30), corner(0, 30)],
+    });
+    expect(clampCutoutToBoard(path, { width: BIN_W, depth: BIN_D })).toBeNull();
+    expect(clampOffBoardCutouts([path], { width: BIN_W, depth: BIN_D }).size).toBe(0);
+    expect(isCutoutOffBoard(path, { width: BIN_W, depth: BIN_D })).toBe(true);
+  });
+
+  it('translates but never resizes a mesh cutout', () => {
+    const mesh = createCutout({ shape: 'mesh', x: 30, y: 10, width: 200, depth: 20 });
+    expect(clampCutoutToBoard(mesh, { width: BIN_W, depth: BIN_D })).toEqual({ x: 0, y: 10 });
   });
 
   it('returns null when the cutout is already inside', () => {
@@ -275,6 +338,14 @@ describe('clampOffBoardCutouts', () => {
 
   it('returns an empty map when everything fits', () => {
     expect(clampOffBoardCutouts([createCutout()], { width: BIN_W, depth: BIN_D }).size).toBe(0);
+  });
+
+  it('resolves an oversized cutout in one application', () => {
+    const wide = createCutout({ id: 'wide', x: 27.5, y: 93.5, width: 500, depth: 39.5 });
+    const board = { width: 165.1, depth: 165.1 };
+    const fixed = { ...wide, ...clampOffBoardCutouts([wide], board).get('wide') };
+    expect(isCutoutOffBoard(fixed, board)).toBe(false);
+    expect(clampOffBoardCutouts([fixed], board).size).toBe(0);
   });
 
   it('relocates a mask-only violation into the nearest filled region', () => {

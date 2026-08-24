@@ -327,6 +327,14 @@ export function CutoutWorkspace() {
     if (updates.size > 0) updateCutoutsBatch(updates);
   }, [cutouts, cutoutBoard, updateCutoutsBatch]);
 
+  // Hidden rather than inert: when the clamp can fix nothing (an oversized
+  // path or mesh, no valid mask/lid placement) a visible button would click
+  // without effect and read as broken.
+  const clampCanFix = useMemo(
+    () => offBoardIds.size > 0 && clampOffBoardCutouts(cutouts, cutoutBoard).size > 0,
+    [offBoardIds, cutouts, cutoutBoard]
+  );
+
   const {
     mode,
     setMode,
@@ -694,7 +702,7 @@ export function CutoutWorkspace() {
           onFitCue={setFitCue}
           onFlattenArray={handleFlattenArray}
           offBoardCount={offBoardIds.size}
-          onClampOffBoard={handleClampOffBoard}
+          onClampOffBoard={clampCanFix ? handleClampOffBoard : undefined}
           depthShortfallCount={depthShortfallCount}
           growTarget={growTarget}
           onGrowToFit={handleGrowToFit}
