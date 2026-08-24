@@ -159,25 +159,31 @@ function lastEnabledIndex<T extends string>(options: SegmentedControlOption<T>[]
   return -1;
 }
 
-function balancedCompositions(rowCount: number, cellCount: number): number[][] {
+// The number of balanced compositions is C(rowCount, remainder), which is
+// combinatorial for pathological option counts; the cap keeps a resize tick
+// bounded while still covering every arrangement of realistic controls.
+const MAX_COMPOSITIONS = 64;
+
+function* balancedCompositions(rowCount: number, cellCount: number): Generator<number[]> {
   const base = Math.floor(cellCount / rowCount);
   const extra = cellCount % rowCount;
-  if (extra === 0) return [Array.from({ length: rowCount }, () => base)];
+  if (extra === 0) {
+    yield Array.from({ length: rowCount }, () => base);
+    return;
+  }
 
-  const compositions: number[][] = [];
   const extraRows = Array.from({ length: extra }, (_, i) => i);
-  for (;;) {
+  for (let yielded = 0; yielded < MAX_COMPOSITIONS; yielded++) {
     const sizes = Array.from({ length: rowCount }, () => base);
     for (const row of extraRows) sizes[row] += 1;
-    compositions.push(sizes);
+    yield sizes;
 
     let cursor = extra - 1;
     while (cursor >= 0 && extraRows[cursor] === rowCount - extra + cursor) cursor--;
-    if (cursor < 0) break;
+    if (cursor < 0) return;
     extraRows[cursor] += 1;
     for (let next = cursor + 1; next < extra; next++) extraRows[next] = extraRows[next - 1] + 1;
   }
-  return compositions;
 }
 
 function rowsFit(cellWidths: number[], sizes: number[], availableInner: number): boolean {

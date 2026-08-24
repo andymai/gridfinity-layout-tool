@@ -298,4 +298,12 @@ describe('computeRowSizes', () => {
     expect(computeRowSizes([40, 40, 40], 78)).toEqual([1, 1, 1]);
     expect(computeRowSizes([200], 90)).toEqual([1]);
   });
+
+  it('stays bounded and returns a full partition for pathological option counts', () => {
+    const sizes = computeRowSizes(
+      Array.from({ length: 40 }, () => 50),
+      120
+    );
+    expect(sizes.reduce((sum, size) => sum + size, 0)).toBe(40);
+  });
 });
