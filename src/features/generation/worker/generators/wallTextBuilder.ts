@@ -171,8 +171,7 @@ export const wallTextCutFeature: FeatureBuilder = {
   name: 'wallTextCut',
   tag: FeatureTag.TEXT,
   target: 'cut',
-  shouldBuild: (ctx) =>
-    hasAnyWallText(ctx.params) && hasWallTextMode(ctx.params, false) && !ctx.dimensions.solid,
+  shouldBuild: (ctx) => hasAnyWallText(ctx.params) && hasWallTextMode(ctx.params, false),
   cacheKey: wallTextCacheKey,
   build: (ctx) => buildWallTextShapes(ctx, false),
 };
@@ -181,8 +180,7 @@ export const wallTextEmbossFeature: FeatureBuilder = {
   name: 'wallTextEmboss',
   tag: FeatureTag.TEXT,
   target: 'fuse',
-  shouldBuild: (ctx) =>
-    hasAnyWallText(ctx.params) && hasWallTextMode(ctx.params, true) && !ctx.dimensions.solid,
+  shouldBuild: (ctx) => hasAnyWallText(ctx.params) && hasWallTextMode(ctx.params, true),
   cacheKey: wallTextCacheKey,
   build: (ctx) => buildWallTextShapes(ctx, true),
 };

@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "積石亀甲",
   "binDesigner.walls.text.anchor": "側面文字の配置",
   "binDesigner.walls.text.disabledPolygon": "カスタム形状のビンでは使用できません。",
-  "binDesigner.walls.text.disabledSolid": "ソリッドビンでは使用できません。",
   "binDesigner.walls.text.heading": "壁面テキスト",
   "binDesigner.walls.text.hint": "文字は各側面の空きスペースに配置され、切り欠きや取っ手を避けます。背後の側面パターンは取り除かれます。",
   "binDesigner.walls.text.placeholder": "例: ケーブル",

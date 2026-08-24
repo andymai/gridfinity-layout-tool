@@ -197,6 +197,75 @@ describe('wall surface text scenarios', () => {
     expect(withText.triangleCount).toBe(plain.triangleCount);
   });
 
+  // Solid bins used to skip wall text entirely, which left a shadow board with
+  // several tool pockets no practical way to identify itself from the outside.
+  // The outer face is the same wall a hollow bin engraves.
+  it('engraves a solid bin without moving its outer bbox', () => {
+    const generateBin = getGenerateBin();
+    const solid: Partial<BinParams> = {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+    };
+    const plain = generateBin(makeParams(undefined, solid));
+    const engraved = generateBin(makeParams({ walls: { front: 'ABC' } }, solid));
+    assertStructurallyValid(engraved, 'solid bin wall text');
+    expect(engraved.triangleCount).not.toBe(plain.triangleCount);
+    const a = boundingBox(plain.vertices);
+    const b = boundingBox(engraved.vertices);
+    expect(Math.abs(b.minY - a.minY)).toBeLessThan(0.01);
+    expect(Math.abs(b.maxY - a.maxY)).toBeLessThan(0.01);
+  });
+
+  it('embosses a solid bin outward by the clamped relief', () => {
+    const generateBin = getGenerateBin();
+    const solid: Partial<BinParams> = {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+    };
+    const plain = generateBin(makeParams(undefined, solid));
+    const embossed = generateBin(
+      makeParams(
+        {
+          walls: { front: 'ABC' },
+          style: { mode: 'emboss', depth: WALL_TEXT_MAX_EMBOSS },
+        },
+        solid
+      )
+    );
+    assertStructurallyValid(embossed, 'solid bin embossed wall text');
+    const a = boundingBox(plain.vertices);
+    const b = boundingBox(embossed.vertices);
+    expect(a.minY - b.minY).toBeGreaterThan(0);
+    expect(a.minY - b.minY).toBeLessThanOrEqual(WALL_TEXT_MAX_EMBOSS + 0.01);
+  });
+
+  it('keeps engraving a solid bin that also carries cutouts', () => {
+    const generateBin = getGenerateBin();
+    const solid: Partial<BinParams> = {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        {
+          id: 'pocket',
+          shape: 'circle',
+          x: 20,
+          y: 20,
+          width: 20,
+          depth: 20,
+          cutDepth: 8,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+        },
+      ],
+    };
+    const withoutText = generateBin(makeParams(undefined, solid));
+    const withText = generateBin(makeParams({ walls: { front: 'ABC' } }, solid));
+    assertStructurallyValid(withText, 'solid bin cutouts plus wall text');
+    expect(withText.triangleCount).not.toBe(withoutText.triangleCount);
+  });
+
   it('wall text rejects the direct-mesh draft path', () => {
     expect(canBinUseDirectMesh(makeParams(undefined))).toBe(true);
     expect(canBinUseDirectMesh(makeParams({ walls: { front: 'ABC' } }))).toBe(false);

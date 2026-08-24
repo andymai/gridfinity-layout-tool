@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Położenie napisu na ściance",
   "binDesigner.walls.text.disabledPolygon": "Niedostępne dla binów o własnym kształcie.",
-  "binDesigner.walls.text.disabledSolid": "Niedostępne dla pełnych binów.",
   "binDesigner.walls.text.heading": "Tekst na ściance",
   "binDesigner.walls.text.hint": "Tekst trafia w wolny obszar każdej ścianki, omijając wycięcia i uchwyty. Wzór ścianki jest za nim usuwany.",
   "binDesigner.walls.text.placeholder": "np. Kable",

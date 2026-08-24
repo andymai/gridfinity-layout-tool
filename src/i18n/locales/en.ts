@@ -3145,7 +3145,6 @@ const en: Record<string, string> = {
   'binDesigner.walls.text.placeholder': 'e.g. Cables',
   'binDesigner.walls.text.sideAria': '{side} wall text',
   'binDesigner.walls.text.disabledPolygon': 'Not available for custom-shape bins.',
-  'binDesigner.walls.text.disabledSolid': 'Not available for solid bins.',
   'binDesigner.walls.text.hint':
     'Text is placed in the clear area of each wall, avoiding cutouts and handles. Wall patterns are cleared behind it.',
   'binDesigner.slideTray.fitSample.button': 'Print fit test',

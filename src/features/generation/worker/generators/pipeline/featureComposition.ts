@@ -35,3 +35,13 @@ export const BIN_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
   wallTextCutFeature,
   wallTextEmbossFeature,
 ] as const;
+
+/**
+ * The subset a solid body can still take. Every other builder here shapes an
+ * interior a solid bin does not have; wall text works the outer face, which is
+ * the same wall either way.
+ */
+export const SOLID_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
+  wallTextCutFeature,
+  wallTextEmbossFeature,
+] as const;

@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Placering av väggtext",
   "binDesigner.walls.text.disabledPolygon": "Inte tillgängligt för lådor med anpassad form.",
-  "binDesigner.walls.text.disabledSolid": "Inte tillgängligt för massiva lådor.",
   "binDesigner.walls.text.heading": "Väggtext",
   "binDesigner.walls.text.hint": "Texten placeras i den lediga ytan på varje vägg, förbi urtag och handtag. Väggmönstret tas bort bakom den.",
   "binDesigner.walls.text.placeholder": "t.ex. Kablar",

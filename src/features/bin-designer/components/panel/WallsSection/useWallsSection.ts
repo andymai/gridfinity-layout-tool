@@ -200,8 +200,9 @@ export function useWallsSection() {
   }, [dividersAvailableReason, dividersFit, params.style, t]);
 
   // ── Wall surface text ─────────────────────────────────────────
-  // Mirrors the worker gates in `wallTextLayout.ts`: polygon and solid-mode
-  // bins skip wall text entirely.
+  // Mirrors the worker gate in `wallTextLayout.ts`: only polygon bins skip
+  // wall text. A solid bin's outer face is the same wall as a hollow one's —
+  // the glyphs land on it identically, whatever is behind them.
   const wallTexts = params.surfaceText?.walls ?? {};
   // Anchor and mode both resolve through the shared surface style over the
   // design defaults, the same layering the worker applies.
@@ -213,9 +214,7 @@ export function useWallsSection() {
   );
   const wallTextDisabledReason = isPartialMask(params.cellMask)
     ? t('binDesigner.walls.text.disabledPolygon')
-    : params.base.solid
-      ? t('binDesigner.walls.text.disabledSolid')
-      : undefined;
+    : undefined;
 
   // Wall-text is gated behind a toggle (matching the sibling cutout/handle
   // sections). The open state is UI-only — deriving it as `local || hasText`

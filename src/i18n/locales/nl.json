@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Positie van wandtekst",
   "binDesigner.walls.text.disabledPolygon": "Niet beschikbaar voor bakken met aangepaste vorm.",
-  "binDesigner.walls.text.disabledSolid": "Niet beschikbaar voor massieve bakken.",
   "binDesigner.walls.text.heading": "Wandtekst",
   "binDesigner.walls.text.hint": "De tekst komt in het vrije vlak van elke wand, langs uitsparingen en grepen. Het wandpatroon wordt erachter weggehaald.",
   "binDesigner.walls.text.placeholder": "bijv. Kabels",

@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "侧壁文字位置",
   "binDesigner.walls.text.disabledPolygon": "自定义形状收纳盒不可用。",
-  "binDesigner.walls.text.disabledSolid": "实心收纳盒不可用。",
   "binDesigner.walls.text.heading": "壁文字",
   "binDesigner.walls.text.hint": "文字会放在每面侧壁的空白区域，避开缺口和把手，并清除其后的侧壁纹样。",
   "binDesigner.walls.text.placeholder": "例如 Cables",
