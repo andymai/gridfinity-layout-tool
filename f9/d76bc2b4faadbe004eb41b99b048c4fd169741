@@ -1,0 +1,30 @@
+src/features/bin-designer/components/preview/GhostCutouts/GhostCutouts.tsx
+  s_988f5d7bb7605f::t_78fa0d0c17b98e 44,60
+  s_988f5d7bb7605f::t_01d2d81feb5c45 127-128
+  s_988f5d7bb7605f::t_4d8c66fce41b1c 76-78
+  s_988f5d7bb7605f::t_ef1f80e0956340 121
+  s_988f5d7bb7605f::t_3ba3e45372b1e5 102
+src/features/bin-designer/components/preview/GhostLidCutouts/GhostLidCutouts.tsx
+  s_988f5d7bb7605f::t_57d487450196c3 88-89,93
+src/features/bin-designer/components/preview/GhostCutouts/ghostCutoutGeometry.test.ts
+  s_988f5d7bb7605f::t_f78ac4b8d7bd0f 1-157
+src/features/bin-designer/components/preview/GhostCutouts/ghostCutoutGeometry.ts
+  s_988f5d7bb7605f::t_2f4e6a160bebb2 181-200,203,216
+  s_988f5d7bb7605f::t_573eff602fa1ec 4-13,18-24,33-180,206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "f9d76bc2b4faadbe004eb41b99b048c4fd169741",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
