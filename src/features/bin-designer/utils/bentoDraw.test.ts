@@ -312,6 +312,18 @@ describe('bentoDraw', () => {
       expect(placeFromStash(config, 0, { col: 1, row: 0, w: 2, h: 2 })).toBeNull();
     });
 
+    it('placeFromStash falls back to the rectangle for a wrong-length mask', () => {
+      const config: CompartmentConfig = {
+        ...grid(),
+        stash: [{ w: 2, h: 2, cells: [true, true] }],
+      };
+      const placed = placeFromStash(config, 0, { col: 1, row: 0, w: 2, h: 2 });
+      expect(placed).not.toBeNull();
+      if (!placed) throw new Error('unreachable');
+      expect(getCompartmentRect(placed.config, placed.id)).toEqual({ col: 1, row: 0, w: 2, h: 2 });
+      expect(getCellsForCompartment(placed.config, placed.id)).toHaveLength(4);
+    });
+
     it('removeStashEntry drops one entry and collapses to undefined', () => {
       const config: CompartmentConfig = { ...grid(), stash: [{ w: 1, h: 1 }] };
       expect(removeStashEntry(config, 0)?.stash).toBeUndefined();

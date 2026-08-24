@@ -572,8 +572,12 @@ export function placeFromStash(
   const entry = config.stash?.[index];
   if (!entry) return null;
   if (rect.w !== entry.w || rect.h !== entry.h) return null;
-  const mask = entry.cells;
   const box = rectIndices(config.cols, rect);
+  // A mask of the wrong length falls back to the rectangle rather than indexing
+  // past its end, where `undefined` would read as false and place a silently
+  // smaller shape. Migration drops these on load; this covers state that never
+  // passed through it.
+  const mask = entry.cells?.length === box.length ? entry.cells : undefined;
   const drawn = drawFootprint(config, rect, mask ? box.filter((_, i) => mask[i]) : box);
   if (!drawn) return null;
   let next = drawn.config;
