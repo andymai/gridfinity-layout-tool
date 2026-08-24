@@ -7,6 +7,8 @@
 
 import { Html } from '@react-three/drei';
 
+import { HTML_OVERLAY_Z_INDEX_RANGE } from './constants';
+
 interface DimensionTooltip3DProps {
   /** What to display */
   readonly type: 'resize' | 'drag';
@@ -38,7 +40,12 @@ export function DimensionTooltip3D({
       : `${x?.toFixed(1)}, ${y?.toFixed(1)}`;
 
   return (
-    <Html position={[worldX, worldY, 0.1]} style={{ pointerEvents: 'none' }} center={false}>
+    <Html
+      position={[worldX, worldY, 0.1]}
+      style={{ pointerEvents: 'none' }}
+      center={false}
+      zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
+    >
       <div
         className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-0.5 text-[10px] font-mono text-content whitespace-nowrap shadow-sm"
         style={{ transform: 'translate(5px, -28px)' }}

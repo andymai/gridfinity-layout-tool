@@ -12,7 +12,7 @@
 import { useMemo } from 'react';
 import { Html, Line } from '@react-three/drei';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
-import { RENDER_ORDER } from './constants';
+import { HTML_OVERLAY_Z_INDEX_RANGE, RENDER_ORDER } from './constants';
 
 interface RulerMeasurement3DProps {
   readonly measurement: RulerMeasurement;
@@ -101,6 +101,7 @@ export function RulerMeasurement3D({ measurement, zoom }: RulerMeasurement3DProp
         center
         style={{ pointerEvents: 'none' }}
         renderOrder={RENDER_ORDER.HANDLES}
+        zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
       >
         {/* eslint-disable i18next/no-literal-string -- measurement display, not translatable */}
         <div className="rounded bg-gray-900/95 px-2.5 py-1.5 text-xs font-mono text-yellow-200 whitespace-nowrap shadow-lg border border-yellow-500/40">
