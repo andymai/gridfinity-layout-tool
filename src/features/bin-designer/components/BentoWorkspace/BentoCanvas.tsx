@@ -276,6 +276,24 @@ export function BentoCanvas({
     return { x: x + 1, y: y + 1, width: Math.max(0, w - 2), height: Math.max(0, h - 2) };
   })();
 
+  /**
+   * Outline for a ghost carrying a merged footprint, so a dragged L keeps its
+   * shape instead of promising the bounding box the drop will not fill. Null
+   * once the drag leaves the grid — the rect ghost still reads as "not here".
+   */
+  const ghostLoops = useMemo(() => {
+    if (!ghost?.mask) return null;
+    const { rect, mask } = ghost;
+    const indices: number[] = [];
+    for (const offset of mask) {
+      const col = rect.col + (offset % rect.w);
+      const row = rect.row + Math.floor(offset / rect.w);
+      if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
+      indices.push(row * cols + col);
+    }
+    return cellRegionLoops(cols, rows, indices);
+  }, [ghost, cols, rows]);
+
   const handlesFor = (rect: CellRect) => {
     const { x, y, w, h } = rectPx(rect);
     const cx = x + w / 2;
@@ -453,15 +471,27 @@ export function BentoCanvas({
       {/* Gesture ghost (hidden while a move hovers the stash shelf) */}
       {ghost && !ghost.overStash && (
         <>
-          <rect
-            {...ghostPx}
-            rx={5}
-            strokeWidth={2}
-            style={ghostStyle(ghost)}
-            data-interaction-preview={ghost.kind}
-            data-snap-state={ghost.valid ? 'valid' : 'invalid'}
-            pointerEvents="none"
-          />
+          {ghostLoops ? (
+            <path
+              d={regionPathD(ghostLoops, cornerPx)}
+              fillRule="evenodd"
+              strokeWidth={2}
+              style={ghostStyle(ghost)}
+              data-interaction-preview={ghost.kind}
+              data-snap-state={ghost.valid ? 'valid' : 'invalid'}
+              pointerEvents="none"
+            />
+          ) : (
+            <rect
+              {...ghostPx}
+              rx={5}
+              strokeWidth={2}
+              style={ghostStyle(ghost)}
+              data-interaction-preview={ghost.kind}
+              data-snap-state={ghost.valid ? 'valid' : 'invalid'}
+              pointerEvents="none"
+            />
+          )}
           {/* Live size, so a drag says what it is about to produce instead of
               only whether it fits. The draw gesture's footer hint carries the
               cell count; this is the millimetres, on the shape itself. */}

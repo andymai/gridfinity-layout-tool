@@ -10,6 +10,7 @@ import { IconButton } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useTranslation } from '@/i18n';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
+import { cellRegionLoops, regionPathD } from '@/features/bin-designer/utils/bentoRegion';
 import type { StashedCompartment } from '@/features/bin-designer/types';
 
 function Icon({ paths }: { readonly paths: readonly string[] }) {
@@ -54,6 +55,13 @@ export function BentoStashShelf({
     };
   };
 
+  // A merged entry draws its own outline, so the shelf shows the L that comes
+  // back out rather than the bounding box it fits in. Row 0 is the bin front,
+  // which the canvas puts at the BOTTOM — the projection flips to match, or a
+  // stashed L would sit mirrored against the shape it came from.
+  const tileLoops = (entry: StashedCompartment) =>
+    entry.cells ? cellRegionLoops(entry.w, entry.h, entry.cells) : null;
+
   return (
     <div
       ref={shelfRef}
@@ -84,9 +92,10 @@ export function BentoStashShelf({
           {stash.map((entry, index) => {
             const isDragging = index === draggingIndex;
             const { width, height } = tileSize(entry);
+            const loops = tileLoops(entry);
             return (
               <div
-                key={`${index}-${entry.w}x${entry.h}-${entry.label ?? ''}`}
+                key={`${index}-${entry.w}x${entry.h}-${entry.cells?.join(',') ?? ''}-${entry.label ?? ''}`}
                 className={`group relative flex flex-shrink-0 flex-col items-center gap-0.5 rounded-md border p-1.5 ${
                   isDragging
                     ? 'border-dashed border-accent bg-transparent'
@@ -105,12 +114,33 @@ export function BentoStashShelf({
                   className="flex items-center justify-center"
                   onPointerDown={(e) => onEntryPointerDown(index, e)}
                 >
-                  <div
-                    className={`rounded-sm border ${
-                      isDragging ? 'border-dashed border-accent' : 'border-accent/70 bg-accent/15'
-                    }`}
-                    style={{ width, height }}
-                  />
+                  {loops ? (
+                    <svg
+                      width={width}
+                      height={height}
+                      viewBox={`0 0 ${entry.w} ${entry.h}`}
+                      preserveAspectRatio="none"
+                      aria-hidden
+                    >
+                      <path
+                        d={regionPathD(loops, (c) => ({ x: c.col, y: entry.h - c.row }))}
+                        fillRule="evenodd"
+                        vectorEffect="non-scaling-stroke"
+                        className={
+                          isDragging ? 'fill-none stroke-accent' : 'fill-accent/15 stroke-accent/70'
+                        }
+                        strokeWidth={1}
+                        strokeDasharray={isDragging ? '3 2' : undefined}
+                      />
+                    </svg>
+                  ) : (
+                    <div
+                      className={`rounded-sm border ${
+                        isDragging ? 'border-dashed border-accent' : 'border-accent/70 bg-accent/15'
+                      }`}
+                      style={{ width, height }}
+                    />
+                  )}
                 </div>
                 <span className="max-w-[5rem] truncate text-[10px] text-content-secondary">
                   {entry.label ?? `${entry.w}×${entry.h}`}

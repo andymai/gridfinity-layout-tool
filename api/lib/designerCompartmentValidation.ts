@@ -395,6 +395,29 @@ export function validateCompartments(compartments: unknown): string | null {
       ) {
         return `compartments.stash[${i}].h must be integer 1-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
       }
+      // Merged shapes carry their footprint as offsets into the w×h box.
+      // Absent means the full box, which is every unmerged entry. Duplicates
+      // are rejected rather than deduped: an entry the client never writes is
+      // a hand-authored payload, and a silent repair hides that.
+      if (entry.cells !== undefined) {
+        if (!Array.isArray(entry.cells)) {
+          return `compartments.stash[${i}].cells must be an array`;
+        }
+        const capacity = entry.w * entry.h;
+        if (entry.cells.length === 0 || entry.cells.length > capacity) {
+          return `compartments.stash[${i}].cells must hold 1-${capacity} offsets`;
+        }
+        const seen = new Set<number>();
+        for (const offset of entry.cells) {
+          if (!isNumber(offset) || !Number.isInteger(offset) || !inRange(offset, 0, capacity - 1)) {
+            return `compartments.stash[${i}].cells offsets must be integers 0-${capacity - 1}`;
+          }
+          if (seen.has(offset)) {
+            return `compartments.stash[${i}].cells has duplicate offset ${offset}`;
+          }
+          seen.add(offset);
+        }
+      }
       if (entry.label !== undefined) {
         if (typeof entry.label !== 'string') {
           return `compartments.stash[${i}].label must be a string`;

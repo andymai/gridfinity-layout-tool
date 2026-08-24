@@ -1075,9 +1075,28 @@ function migrateBentoCompartmentFields(config: CompartmentConfig): CompartmentCo
       );
     })
     .slice(0, DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES)
-    .map(({ w, h, label }) => {
+    .map(({ w, h, cells, label }) => {
       const clamped = typeof label === 'string' ? label.slice(0, TEXT_MAX_LENGTH) : '';
-      return { w, h, ...(clamped.length > 0 ? { label: clamped } : {}) };
+      // A merged L's footprint. Offsets outside the box, duplicates and a
+      // full-box list all collapse to absent, which IS the rectangle — the
+      // shape degrades to its bounding box rather than the entry vanishing.
+      const offsets = Array.isArray(cells)
+        ? [
+            ...new Set(
+              cells.filter(
+                (o: unknown): o is number =>
+                  Number.isInteger(o) && (o as number) >= 0 && (o as number) < w * h
+              )
+            ),
+          ].sort((a, b) => a - b)
+        : [];
+      const merged = offsets.length > 0 && offsets.length < w * h;
+      return {
+        w,
+        h,
+        ...(merged ? { cells: offsets } : {}),
+        ...(clamped.length > 0 ? { label: clamped } : {}),
+      };
     });
 
   const counts = new Map<number, number>();

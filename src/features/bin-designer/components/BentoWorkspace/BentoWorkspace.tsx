@@ -20,7 +20,8 @@ import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
 import {
-  findFreeRect,
+  compartmentMask,
+  findFreeSpot,
   getCompartmentRect,
   getDrawnCompartmentIds,
 } from '@/features/bin-designer/utils/bentoDraw';
@@ -291,7 +292,14 @@ export function BentoWorkspace() {
     (id: number) => {
       const rect = getCompartmentRect(compartments, id);
       if (!rect) return;
-      const target = findFreeRect(compartments, rect.w, rect.h);
+      // Seated by footprint, so duplicating a merged L can use a gap its
+      // bounding box would have been turned away from.
+      const target = findFreeSpot(
+        compartments,
+        rect.w,
+        rect.h,
+        compartmentMask(compartments, id, rect)
+      );
       if (!target) {
         addToast({ message: t('binDesigner.bento.toastNoRoom'), type: 'info', duration: 4000 });
         return;

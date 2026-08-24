@@ -224,7 +224,9 @@ grid finishes in about 14s, while 16x16 reaches ~39s and risks a timeout.
 
 <a id="stashedcompartment"></a>
 
-3 fields, in `src/features/bin-designer/types/compartments.ts`.
+4 fields, in `src/features/bin-designer/types/compartments.ts`. A merged L/S/T/U
+carries `cells`, the offsets it occupies inside its `w × h` box; omit it for a
+rectangle.
 
 ## Scoop
 

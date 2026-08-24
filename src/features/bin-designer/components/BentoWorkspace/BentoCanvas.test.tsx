@@ -166,6 +166,45 @@ describe('BentoCanvas', () => {
     expect(ghost).toHaveAttribute('data-snap-state', 'invalid');
   });
 
+  it('draws a merged ghost as its own outline, not as its bounding rect', () => {
+    const { config } = withDrawn();
+    const { rerender } = render(
+      <BentoCanvas
+        {...makeProps(config, {
+          ghost: {
+            rect: { col: 2, row: 0, w: 2, h: 2 },
+            valid: true,
+            kind: 'move',
+            overStash: false,
+            mask: [0, 1, 2],
+          },
+        })}
+      />
+    );
+    // The L traces 6 corners; a rect ghost would be a <rect> with none.
+    const outline = screen.getByTestId('bento-canvas').querySelector('path[data-snap-state]');
+    expect(outline).not.toBeNull();
+    expect(outline?.getAttribute('d')?.match(/L /g)).toHaveLength(5);
+
+    // A ghost dragged off the grid can't be traced, so it falls back to the rect.
+    rerender(
+      <BentoCanvas
+        {...makeProps(config, {
+          ghost: {
+            rect: { col: 3, row: 0, w: 2, h: 2 },
+            valid: false,
+            kind: 'move',
+            overStash: false,
+            mask: [0, 1, 2],
+          },
+        })}
+      />
+    );
+    const canvas = screen.getByTestId('bento-canvas');
+    expect(canvas.querySelector('path[data-snap-state]')).toBeNull();
+    expect(canvas.querySelector('rect[data-snap-state]')).not.toBeNull();
+  });
+
   it('hides the ghost while a move hovers the stash shelf', () => {
     const { config } = withDrawn();
     render(

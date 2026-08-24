@@ -2061,6 +2061,13 @@
           "minimum": 1,
           "description": "Height in compartment cells."
         },
+        "cells": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0 },
+          "description": "Occupied cells as row * w + col offsets inside the w x h box, for a merged L/S/T/U. Omit for a plain rectangle, which fills its box."
+        },
         "label": {
           "type": "string",
           "description": "Optional label carried with the stashed shape."

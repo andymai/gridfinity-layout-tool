@@ -1518,6 +1518,48 @@ describe('migrateParams - bento merged leftover (#3748)', () => {
   });
 });
 
+describe('migrateParams - stashed merged footprints', () => {
+  // `unknown` entries on purpose: the sanitizer's job is corrupt persisted input.
+  const withStash = (stash: readonly unknown[]) =>
+    ({
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols: 2,
+        rows: 2,
+        cells: [0, 1, 2, 3],
+        stash,
+      },
+    }) as unknown as Parameters<typeof migrateParams>[0];
+
+  it('keeps a merged L footprint through the load sanitizer', () => {
+    const result = migrateParams(withStash([{ w: 2, h: 2, cells: [0, 1, 2], label: 'bits' }]));
+    expect(result.compartments.stash).toEqual([{ w: 2, h: 2, cells: [0, 1, 2], label: 'bits' }]);
+  });
+
+  it('leaves a plain rectangle without a cells field', () => {
+    const result = migrateParams(withStash([{ w: 2, h: 1 }]));
+    expect(result.compartments.stash).toEqual([{ w: 2, h: 1 }]);
+  });
+
+  it('drops a full-box list, which IS the rectangle', () => {
+    const result = migrateParams(withStash([{ w: 2, h: 2, cells: [0, 1, 2, 3] }]));
+    expect(result.compartments.stash).toEqual([{ w: 2, h: 2 }]);
+  });
+
+  it('degrades a corrupt footprint to its bounding box rather than dropping the entry', () => {
+    for (const cells of [[4, 9], ['a'], [1.5], []] as unknown[][]) {
+      expect(migrateParams(withStash([{ w: 2, h: 2, cells }])).compartments.stash).toEqual([
+        { w: 2, h: 2 },
+      ]);
+    }
+  });
+
+  it('dedupes repeated offsets', () => {
+    const result = migrateParams(withStash([{ w: 2, h: 2, cells: [2, 0, 0, 1] }]));
+    expect(result.compartments.stash).toEqual([{ w: 2, h: 2, cells: [0, 1, 2] }]);
+  });
+});
+
 describe('migrateParams - cutout fill reference (#3697)', () => {
   it('defaults a design saved before the option existed to the rim', () => {
     // Rim anchoring reproduces the old behaviour exactly, so an existing

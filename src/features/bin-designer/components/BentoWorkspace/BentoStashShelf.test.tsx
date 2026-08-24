@@ -30,6 +30,26 @@ describe('BentoStashShelf', () => {
     expect(screen.getByText('binDesigner.bento.stashDropHint')).toBeInTheDocument();
   });
 
+  it('draws a merged entry as its outline so the shelf shows what comes back out', () => {
+    render(
+      <BentoStashShelf
+        {...makeProps({
+          stash: [
+            { w: 2, h: 2, cells: [0, 1, 2] },
+            { w: 2, h: 2 },
+          ],
+        })}
+      />
+    );
+
+    const tile = (index: number) =>
+      screen.getByTestId(`bento-stash-entry-${index}`).querySelector('[role="button"] svg path');
+    expect(tile(0)).not.toBeNull();
+    // Six corners for an L; the plain rectangle beside it stays a sized div.
+    expect(tile(0)?.getAttribute('d')?.match(/L /g)).toHaveLength(5);
+    expect(tile(1)).toBeNull();
+  });
+
   it('renders one tile per entry with its label', () => {
     render(
       <BentoStashShelf

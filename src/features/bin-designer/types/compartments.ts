@@ -174,6 +174,15 @@ export interface StashedCompartment {
   readonly w: number;
   /** Depth in grid cells (1..MAX_COMPARTMENT_GRID). */
   readonly h: number;
+  /**
+   * Occupied cells as `row * w + col` offsets inside the `w × h` box, for a
+   * merged L/S/T/U whose shape a box cannot describe. Absent means the full
+   * box, so an ordinary rectangle serializes exactly as it always has.
+   *
+   * Mutable element type for the same reason as the sibling arrays above: the
+   * `params` tree passes through Immer `Draft`s.
+   */
+  readonly cells?: number[];
   /** Engraved label carried with the compartment; empty/missing = none. */
   readonly label?: string;
 }

@@ -20,10 +20,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { throttleRAF, cancelThrottledRAF } from '@/shared/utils';
 import type { CompartmentConfig, StashedCompartment } from '@/features/bin-designer/types';
 import {
+  canPlaceMask,
   canPlaceRect,
+  compartmentMask,
   getCompartmentRect,
   getDrawnCompartmentIds,
+  isFullMask,
   rectIndices,
+  stashEntryMask,
   type CellRect,
 } from '@/features/bin-designer/utils/bentoDraw';
 import { previewMergeCells } from '@/features/bin-designer/utils/compartments';
@@ -81,6 +85,12 @@ export interface BentoGhost {
   readonly valid: boolean;
   readonly kind: 'draw' | 'move' | 'resize' | 'stashDrag';
   readonly overStash: boolean;
+  /**
+   * Offsets inside {@link rect} the ghost actually covers, set only when the
+   * dragged compartment is a merged L/S/T/U. Absent means the full rect, which
+   * is every draw and resize and most moves.
+   */
+  readonly mask?: readonly number[];
 }
 
 export interface BentoInteractionContext {
@@ -274,10 +284,20 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
       }
       case 'move': {
         if (!gesture.moved) return null;
-        const valid = gesture.duplicate
-          ? canPlaceRect(config, gesture.currentRect)
-          : canPlaceRect(config, gesture.currentRect, { ignoreId: gesture.id });
-        return { rect: gesture.currentRect, valid, kind: 'move', overStash: gesture.overStash };
+        const mask = compartmentMask(config, gesture.id, gesture.startRect);
+        const valid = canPlaceMask(
+          config,
+          gesture.currentRect,
+          mask,
+          gesture.duplicate ? {} : { ignoreId: gesture.id }
+        );
+        return {
+          rect: gesture.currentRect,
+          valid,
+          kind: 'move',
+          overStash: gesture.overStash,
+          ...(isFullMask(gesture.startRect, mask) ? {} : { mask }),
+        };
       }
       case 'resize':
         return {
@@ -286,14 +306,17 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
           kind: 'resize',
           overStash: false,
         };
-      case 'stashDrag':
+      case 'stashDrag': {
         if (!gesture.currentRect) return null;
+        const mask = stashEntryMask(gesture.entry);
         return {
           rect: gesture.currentRect,
-          valid: canPlaceRect(config, gesture.currentRect),
+          valid: canPlaceMask(config, gesture.currentRect, mask),
           kind: 'stashDrag',
           overStash: false,
+          ...(isFullMask(gesture.currentRect, mask) ? {} : { mask }),
         };
+      }
     }
   }, [gesture, ctx]);
 

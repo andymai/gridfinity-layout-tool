@@ -753,6 +753,54 @@ describe('validateCompartments', () => {
       );
     });
 
+    it('accepts a merged footprint and treats an absent one as the full box', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [
+            { w: 2, h: 2, cells: [0, 1, 2] },
+            { w: 2, h: 2 },
+          ],
+        })
+      ).toBeNull();
+    });
+
+    it('rejects a cells field that is not an array', () => {
+      expect(
+        validateCompartments({ ...validCompartments(), stash: [{ w: 2, h: 2, cells: 3 }] })
+      ).toBe('compartments.stash[0].cells must be an array');
+    });
+
+    it('rejects an empty or over-full cells list', () => {
+      expect(
+        validateCompartments({ ...validCompartments(), stash: [{ w: 2, h: 2, cells: [] }] })
+      ).toBe('compartments.stash[0].cells must hold 1-4 offsets');
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 2, cells: [0, 1, 2, 3, 3] }],
+        })
+      ).toBe('compartments.stash[0].cells must hold 1-4 offsets');
+    });
+
+    it('rejects offsets outside the box or not integers', () => {
+      expect(
+        validateCompartments({ ...validCompartments(), stash: [{ w: 2, h: 2, cells: [4] }] })
+      ).toBe('compartments.stash[0].cells offsets must be integers 0-3');
+      expect(
+        validateCompartments({ ...validCompartments(), stash: [{ w: 2, h: 2, cells: [-1] }] })
+      ).toBe('compartments.stash[0].cells offsets must be integers 0-3');
+      expect(
+        validateCompartments({ ...validCompartments(), stash: [{ w: 2, h: 2, cells: [1.5] }] })
+      ).toBe('compartments.stash[0].cells offsets must be integers 0-3');
+    });
+
+    it('rejects a duplicated offset rather than deduping it', () => {
+      expect(
+        validateCompartments({ ...validCompartments(), stash: [{ w: 2, h: 2, cells: [0, 0] }] })
+      ).toBe('compartments.stash[0].cells has duplicate offset 0');
+    });
+
     it('rejects a non-string label', () => {
       expect(
         validateCompartments({ ...validCompartments(), stash: [{ w: 1, h: 1, label: 7 }] })

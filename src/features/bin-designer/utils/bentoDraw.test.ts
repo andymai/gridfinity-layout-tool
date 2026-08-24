@@ -7,6 +7,7 @@ import {
   findFreeRect,
   getCompartmentRect,
   getDrawnCompartmentIds,
+  mergeCompartments,
   moveCompartment,
   placeFromStash,
   rectIndices,
@@ -19,6 +20,7 @@ import {
 } from '@/features/bin-designer/utils/bentoDraw';
 import {
   createUniformGrid,
+  getCellsForCompartment,
   remapDrawnUnitCells,
   validateCompartmentGrid,
 } from '@/features/bin-designer/utils/compartments';
@@ -534,5 +536,99 @@ describe('bentoDraw with mergeBackground', () => {
     const { config } = draw(grid(3, 3), 1, 1, 1, 1);
     expect(config.backgroundIds).toBeUndefined();
     expect(new Set(config.cells).size).toBe(9);
+  });
+});
+
+/**
+ * A merged compartment is the one case where a compartment does not fill its
+ * bounding box, so every op that rebuilds cells from `getCompartmentRect` alone
+ * silently flattens it back to a rectangle.
+ */
+describe('bentoDraw preserves merged (non-rectangular) footprints', () => {
+  /** Cells of a compartment as sorted `col,row` strings, for shape assertions. */
+  const shapeOf = (config: CompartmentConfig, id: number): string[] =>
+    getCellsForCompartment(config, id)
+      .map((idx) => `${idx % config.cols},${Math.floor(idx / config.cols)}`)
+      .sort();
+
+  const idWithCellCount = (config: CompartmentConfig, count: number): number => {
+    const found = [...getDrawnCompartmentIds(config)].find(
+      (id) => getCellsForCompartment(config, id).length === count
+    );
+    expect(found).toBeDefined();
+    if (found === undefined) throw new Error('unreachable');
+    return found;
+  };
+
+  /** An L over (0,0) (1,0) (0,1): three cells in a 2×2 bounding box. */
+  const mergedL = (base: CompartmentConfig = grid(4, 3)) => {
+    const first = draw(base, 0, 0, 2, 1);
+    const second = draw(first.config, 0, 1, 1, 1);
+    const merged = mergeCompartments(second.config, [...getDrawnCompartmentIds(second.config)]);
+    expect(merged).not.toBeNull();
+    if (!merged) throw new Error('unreachable');
+    expect(shapeOf(merged.config, merged.id)).toEqual(['0,0', '0,1', '1,0']);
+    return merged;
+  };
+
+  it('moveCompartment translates the L instead of filling its bounding box', () => {
+    const { config, id } = mergedL();
+    const moved = moveCompartment(config, id, 2, 1);
+    expect(moved).not.toBeNull();
+    if (!moved) throw new Error('unreachable');
+    expect(shapeOf(moved.config, moved.id)).toEqual(['2,1', '2,2', '3,1']);
+    expect(validateCompartmentGrid(moved.config)).toEqual([]);
+  });
+
+  it('moveCompartment fits an L into an L-shaped gap its bounding box overlaps', () => {
+    const { config } = mergedL();
+    // A blocker in the notch the L leaves empty at its destination: bounding-box
+    // collision rejects the move, footprint collision allows it.
+    const blocked = draw(config, 3, 2, 1, 1);
+    const l = idWithCellCount(blocked.config, 3);
+    const moved = moveCompartment(blocked.config, l, 2, 1);
+    expect(moved).not.toBeNull();
+    if (!moved) throw new Error('unreachable');
+    expect(shapeOf(moved.config, moved.id)).toEqual(['2,1', '2,2', '3,1']);
+  });
+
+  it('duplicateCompartment stamps the L, not its bounding rectangle', () => {
+    const { config, id } = mergedL();
+    const copy = duplicateCompartment(config, id, { col: 2, row: 1, w: 2, h: 2 });
+    expect(copy).not.toBeNull();
+    if (!copy) throw new Error('unreachable');
+    expect(shapeOf(copy.config, copy.id)).toEqual(['2,1', '2,2', '3,1']);
+    expect(shapeOf(copy.config, idWithCellCount(copy.config, 3))).toHaveLength(3);
+  });
+
+  it('stashCompartment records the footprint and placeFromStash restores it', () => {
+    const { config, id } = mergedL();
+    const stashed = stashCompartment(config, id);
+    expect(stashed).not.toBeNull();
+    if (!stashed) throw new Error('unreachable');
+    expect(stashed.stash).toEqual([{ w: 2, h: 2, cells: [0, 1, 2] }]);
+    const placed = placeFromStash(stashed, 0, { col: 2, row: 1, w: 2, h: 2 });
+    expect(placed).not.toBeNull();
+    if (!placed) throw new Error('unreachable');
+    expect(shapeOf(placed.config, placed.id)).toEqual(['2,1', '2,2', '3,1']);
+  });
+
+  it('resizeGridPreservingCompartments keeps the L intact when the grid grows', () => {
+    const { config } = mergedL();
+    const regrid = resizeGridPreservingCompartments(config, 6, 5);
+    expect(regrid.stashedCount).toBe(0);
+    expect(shapeOf(regrid.config, idWithCellCount(regrid.config, 3))).toEqual([
+      '0,0',
+      '0,1',
+      '1,0',
+    ]);
+    expect(validateCompartmentGrid(regrid.config)).toEqual([]);
+  });
+
+  it('stashes an L whole when the grid shrinks past it', () => {
+    const { config } = mergedL(grid(5, 4));
+    const regrid = resizeGridPreservingCompartments(config, 5, 1);
+    expect(regrid.stashedCount).toBe(1);
+    expect(regrid.config.stash).toEqual([{ w: 2, h: 2, cells: [0, 1, 2] }]);
   });
 });
