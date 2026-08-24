@@ -1,5 +1,24 @@
 # Changelog
 
+## [4.473.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.472.0...gridfinity-layout-tool-v4.473.0) (2026-08-24)
+
+
+### Features
+
+* **bin-designer:** offer centering as a way out of the clipped-cutout warning ([#3859](https://github.com/andymai/gridfinity-layout-tool/issues/3859)) ([0b6adc7](https://github.com/andymai/gridfinity-layout-tool/commit/0b6adc7c9bbe31623824ac6b2a3960bc99deca9c))
+* **whats-new:** summarize recent updates after an app update ([#3850](https://github.com/andymai/gridfinity-layout-tool/issues/3850)) ([d4467be](https://github.com/andymai/gridfinity-layout-tool/commit/d4467bec64ee49a80d4e2d0f7e5a4bce6af0c681))
+
+
+### Bug Fixes
+
+* **bin-designer:** make stashEntryMask the whole usability gate ([#3856](https://github.com/andymai/gridfinity-layout-tool/issues/3856)) ([ecd9079](https://github.com/andymai/gridfinity-layout-tool/commit/ecd9079dd86cbe7c128b924f7a678cdf591183b8))
+* **bin-designer:** preserve merged bento footprints through move, clone and stash ([#3849](https://github.com/andymai/gridfinity-layout-tool/issues/3849)) ([1f0e2f5](https://github.com/andymai/gridfinity-layout-tool/commit/1f0e2f51f85230367652483618b26299614a4b3c))
+* **bin-designer:** shrink oversized cutouts when bringing them back on board ([#3846](https://github.com/andymai/gridfinity-layout-tool/issues/3846)) ([3f1c89e](https://github.com/andymai/gridfinity-layout-tool/commit/3f1c89e43226eaba6ca87fe2c28e563ea1d2fbeb))
+* **bin-designer:** stop CompactNumberInput no-op writes that loop the renderer ([#3858](https://github.com/andymai/gridfinity-layout-tool/issues/3858)) ([d691cce](https://github.com/andymai/gridfinity-layout-tool/commit/d691cce688452b5f09d82f6c89f993e3b0baf25c))
+* **design-linking:** make unlink actually clear a bin's linked design ([#3848](https://github.com/andymai/gridfinity-layout-tool/issues/3848)) ([fa355c2](https://github.com/andymai/gridfinity-layout-tool/commit/fa355c26dcf56a80ee1855c3797d31611117d452)), closes [#3830](https://github.com/andymai/gridfinity-layout-tool/issues/3830)
+* **height:** stop rewriting typed mm heights via coarse unit snapping ([#3847](https://github.com/andymai/gridfinity-layout-tool/issues/3847)) ([1d773b9](https://github.com/andymai/gridfinity-layout-tool/commit/1d773b9c4e2e8dfe82cf1b36ebb2f0b24125b492))
+* **skills:** quote the json-schemas description so its frontmatter parses ([#3853](https://github.com/andymai/gridfinity-layout-tool/issues/3853)) ([955a017](https://github.com/andymai/gridfinity-layout-tool/commit/955a017610ec027a31bb1944a4544d0b816268d1))
+
 ## [4.472.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.7...gridfinity-layout-tool-v4.472.0) (2026-08-24)
 
 
