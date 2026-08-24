@@ -50,7 +50,11 @@ function rotateRing(
   degrees: number
 ): Point2D[] {
   if (!degrees) return [...points];
-  return points.map((p) => rotatePoint(p.x, p.y, cx, cy, degrees));
+  // Stored rotation is clockwise-positive and `rotatePoint` is CCW, so the
+  // ring takes the negated angle — the convention of `rotatePair`
+  // (booleanGeometry) and the worker's `rotate(shape, -rotation)`. Rotating
+  // CCW would validate a mirror image of every asymmetric silhouette.
+  return points.map((p) => rotatePoint(p.x, p.y, cx, cy, -degrees));
 }
 
 function ellipseRing(cx: number, cy: number, rx: number, ry: number): Point2D[] {
