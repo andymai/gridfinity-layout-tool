@@ -1,37 +1,41 @@
 #!/bin/bash
 # Vercel Build Command
 #
-# Wraps the build so PostHog source maps are uploaded from the deployed build.
-# They cannot come from anywhere else. Vercel inlines VITE_PUBLIC_POSTHOG_KEY
-# and VITE_LIVEBLOCKS_PUBLIC_KEY at build time, and Vite propagates that
-# content-hash change through every importer, so a build without those values
-# names roughly half its chunks differently. Maps uploaded from such a build key
-# to filenames production never serves.
+# Source maps must be produced and uploaded by the deployed build. Vercel inlines
+# VITE_PUBLIC_POSTHOG_KEY and VITE_LIVEBLOCKS_PUBLIC_KEY at build time, and Vite
+# propagates that content-hash change through every importer, so a build without
+# them emits different chunk filenames and its maps key to chunks that production
+# never serves.
 
 set -e
 
 pnpm run build
 
-# Previews are excluded: they would publish symbol sets for bundles that are
-# thrown away, against the same project as production.
+# Previews would publish symbol sets, against the same project as production, for
+# bundles that are then discarded.
 if [ "$VERCEL_ENV" = "production" ] && [ -n "$POSTHOG_CLI_API_KEY" ] && [ -n "$POSTHOG_CLI_PROJECT_ID" ]; then
+  release_args=(--release-name "${VERCEL_GIT_REPO_SLUG:-gridfinity-layout-tool}")
+  # Set on every Git-connected deploy; the fallback only covers a manual
+  # `vercel deploy`, which must degrade to an unversioned upload.
+  release_version="${VERCEL_GIT_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"
+  if [ -n "$release_version" ]; then
+    release_args+=(--release-version "$release_version")
+  fi
+
   # Injection rewrites the emitted assets/*.js. That is safe only because the
-  # service worker precaches every one of them with revision:null and leans on
-  # the filename hash instead; giving those entries a content revision would
-  # make this post-build mutation stale the precache manifest.
+  # service worker precaches each of them with revision:null; giving those
+  # entries a content revision would let this mutation stale the manifest.
   #
-  # Error tracking is not a release gate, so a failed upload must not fail the
-  # deploy.
+  # Error tracking is not a release gate.
   pnpm dlx @posthog/cli@0.15.0 sourcemap process \
     --directory dist \
-    --release-name "${VERCEL_GIT_REPO_SLUG:-gridfinity-layout-tool}" \
-    --release-version "${VERCEL_GIT_COMMIT_SHA:-$(git rev-parse HEAD)}" \
+    "${release_args[@]}" \
     --delete-after ||
     echo "Source map upload failed. Continuing deploy without symbolication." >&2
 else
   echo "Skipping source map upload: not a credentialed production deploy."
 fi
 
-# Hidden source maps carry no sourceMappingURL, but they stay fetchable at their
-# asset path, so no path above may leave one in the output.
+# Hidden source maps carry no sourceMappingURL but stay fetchable at their asset
+# path, so no branch above may leave one behind.
 find dist -name '*.map' -delete
