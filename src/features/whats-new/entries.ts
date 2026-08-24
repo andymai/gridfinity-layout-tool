@@ -23,6 +23,33 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     },
   },
   {
+    id: 'rotated-imprints',
+    date: '2026-08-24',
+    kind: 'fixed',
+    title: { en: 'Rotated STL imprints cut the way the editor draws them' },
+    body: {
+      en: 'A rotated imprint cutout was cut mirrored from the outline you positioned, so the pocket came out backwards. Rotation now matches between the editor, the validation silhouette and the cut.',
+    },
+  },
+  {
+    id: 'cutout-preview-truth',
+    date: '2026-08-24',
+    kind: 'fixed',
+    title: { en: 'Cutout previews match what actually gets cut' },
+    body: {
+      en: "Ghost outlines follow the cutout's real shape and depth, ellipses are sampled as true ellipses rather than approximated, and repeats are arranged by the full extent of the pattern instead of one tile.",
+    },
+  },
+  {
+    id: 'cut-depth-warning',
+    date: '2026-08-24',
+    kind: 'fixed',
+    title: { en: 'A warning when a cutout is deeper than the bin can give it' },
+    body: {
+      en: 'Asking for more depth than the body allows used to silently produce a shallower pocket. The designer now says so instead.',
+    },
+  },
+  {
     id: 'workshop-multi-select',
     date: '2026-08-24',
     kind: 'improved',
@@ -41,6 +68,24 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
       en: 'Custom cutouts take a lean angle, so a pocket can tilt its contents toward you instead of holding them upright.',
     },
     action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
+    id: 'tapered-floor-clip',
+    date: '2026-08-23',
+    kind: 'fixed',
+    title: { en: 'Tapered bins keep their raised floor inside the wall' },
+    body: {
+      en: 'A raised floor on a tapered bin could push past the wall it sits in.',
+    },
+  },
+  {
+    id: 'panel-clipping',
+    date: '2026-08-23',
+    kind: 'fixed',
+    title: { en: 'Side-panel controls stop clipping their content' },
+    body: {
+      en: "Controls in the designer's side panels cut off their own labels and values at some widths.",
+    },
   },
   {
     id: 'workshop',
@@ -78,6 +123,33 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     title: { en: 'Magnets and screw holes on half-size feet' },
     body: {
       en: 'Half-grid bins take the same magnet and screw hardware as full-size ones, so a 1x0.5 bin holds down as firmly as its neighbours.',
+    },
+  },
+  {
+    id: 'screw-hole-symmetry',
+    date: '2026-08-22',
+    kind: 'fixed',
+    title: { en: 'Baseplate screw holes sit symmetrically on each piece' },
+    body: {
+      en: 'Screw holes were placed about the whole plate rather than each split piece, so a piece could come out with holes off-centre.',
+    },
+  },
+  {
+    id: 'detachable-feet-fit',
+    date: '2026-08-22',
+    kind: 'fixed',
+    title: { en: 'Detachable feet press on by hand' },
+    body: {
+      en: "The first pass needed more force than a printed part should. Feet now take their clearance from the spec's dead space and seat by hand.",
+    },
+  },
+  {
+    id: 'stacking-lip-colour',
+    date: '2026-08-22',
+    kind: 'fixed',
+    title: { en: "Stacking-lip colour starts above the bin's top surface" },
+    body: {
+      en: 'Multi-colour bins bled the lip colour down into the wall below it.',
     },
   },
   {
@@ -120,6 +192,15 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     action: { kind: 'openTool', tool: 'layout' },
   },
   {
+    id: 'split-bin-lip',
+    date: '2026-08-21',
+    kind: 'fixed',
+    title: { en: 'Split bins rebuild their lip correctly' },
+    body: {
+      en: "A split piece cut its lip in the wrong frame, dropped its own lip from its reported dimensions, and seated a cutout's round-over on the wall top instead of the lip. Split parts now match unsplit ones.",
+    },
+  },
+  {
     id: 'leaning-dividers',
     date: '2026-08-21',
     kind: 'new',
@@ -156,6 +237,33 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     title: { en: 'Export a design as JSON' },
     body: {
       en: 'The export dialog hands you the design file itself, so you can keep it in version control, edit it by hand, or pass it to someone else.',
+    },
+  },
+  {
+    id: 'print-list-pieces',
+    date: '2026-08-19',
+    kind: 'fixed',
+    title: { en: 'The print list shows the pieces the exporter actually cuts' },
+    body: {
+      en: 'A split design listed a different set of parts than the export produced.',
+    },
+  },
+  {
+    id: 'drawer-ceiling',
+    date: '2026-08-18',
+    kind: 'fixed',
+    title: { en: 'The drawer-height check understands lids and lipless stacks' },
+    body: {
+      en: 'Slide lids, baseplates and lipless stacks were measured with the wrong model, so a layout could report clearance it did not have.',
+    },
+  },
+  {
+    id: 'sliding-lid-hardening',
+    date: '2026-08-18',
+    kind: 'fixed',
+    title: { en: 'Sliding lids survive corners, crowns and cutouts' },
+    body: {
+      en: 'Rounded corners, crowned tops and lid cutouts each produced a lid that would not print or would not slide.',
     },
   },
   {
@@ -228,6 +336,15 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     action: { kind: 'openTool', tool: 'designer' },
   },
   {
+    id: 'bin-volume-calibration',
+    date: '2026-08-16',
+    kind: 'fixed',
+    title: { en: 'Filament and time estimates recalibrated' },
+    body: {
+      en: 'Bin volume was recalibrated against measured solids, so print estimates track reality more closely.',
+    },
+  },
+  {
     id: 'bin-height-cap-50u',
     date: '2026-08-16',
     kind: 'improved',
@@ -245,6 +362,15 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     action: { kind: 'openTool', tool: 'designer' },
   },
   {
+    id: 'export-button-loss',
+    date: '2026-08-15',
+    kind: 'fixed',
+    title: { en: 'The export button stops disappearing' },
+    body: {
+      en: 'Losing the geometry engine took the export button with it, with no way back except a reload.',
+    },
+  },
+  {
     id: 'bento-merge-selection',
     date: '2026-08-15',
     kind: 'improved',
@@ -260,6 +386,15 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     title: { en: 'Ko-fi supporters recognised in the app' },
     body: {
       en: 'Supporters appear on the supporters page automatically, with their message and a bin of their own to find.',
+    },
+  },
+  {
+    id: 'click-rails',
+    date: '2026-08-14',
+    kind: 'fixed',
+    title: { en: 'Click-lock rails route around cutouts, handles and label tabs' },
+    body: {
+      en: 'Rails ran straight through anything in their path, into cutouts, handles, compartment dividers and label tabs. They now notch and segment around them, and skip a scooped wall.',
     },
   },
   {
@@ -291,6 +426,33 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     },
   },
   {
+    id: 'lid-magnets',
+    date: '2026-08-12',
+    kind: 'fixed',
+    title: { en: 'Lid magnets seat where the lid actually meets the bin' },
+    body: {
+      en: 'Magnet pads sat above the mating skirt and magnet posts sat in a socket above the lip rather than on it, so a magnetic lid closed on air. Auto scoop ramps also stay clear of the rail band now.',
+    },
+  },
+  {
+    id: 'step-mesh-export',
+    date: '2026-08-12',
+    kind: 'fixed',
+    title: { en: 'STEP export says no instead of producing a broken file' },
+    body: {
+      en: 'A design with mesh imprint cutouts cannot be represented in STEP. The option is now disabled rather than silently exporting something unusable.',
+    },
+  },
+  {
+    id: 'baseplate-preview-regen',
+    date: '2026-08-12',
+    kind: 'fixed',
+    title: { en: 'The baseplate preview updates with screw and fit settings' },
+    body: {
+      en: 'Changing screw, fit-offset or lightweight settings left the preview showing the old plate.',
+    },
+  },
+  {
     id: 'baseplate-screw-holes',
     date: '2026-08-12',
     kind: 'new',
@@ -310,6 +472,15 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     },
   },
   {
+    id: 'context-menu-size',
+    date: '2026-08-09',
+    kind: 'fixed',
+    title: { en: 'Context menus size to their widest item' },
+    body: {
+      en: 'Longer entries were truncated instead of widening the menu.',
+    },
+  },
+  {
     id: 'layout-zip-header',
     date: '2026-08-09',
     kind: 'improved',
@@ -318,6 +489,42 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
       en: 'The ZIP of every linked bin plus the baseplate is a button in the header instead of something to go looking for.',
     },
     action: { kind: 'openTool', tool: 'layout' },
+  },
+  {
+    id: 'path-editor-stale',
+    date: '2026-08-08',
+    kind: 'fixed',
+    title: { en: 'Three stale-index faults in the path editor' },
+    body: {
+      en: 'Editing vertices on a freeform path could act on the wrong point after a delete.',
+    },
+  },
+  {
+    id: 'community-browsing',
+    date: '2026-08-08',
+    kind: 'fixed',
+    title: { en: 'Community browsing polish' },
+    body: {
+      en: 'Support links are reachable on mobile, the filter rail hides when there is nothing to narrow, single-card shelves are gone, and two contrast failures are fixed.',
+    },
+  },
+  {
+    id: 'sliding-tray-fit',
+    date: '2026-08-07',
+    kind: 'fixed',
+    title: { en: 'Sliding trays rest on their rail' },
+    body: {
+      en: 'The tray floated above its rail, clearance was double the Gridfinity value, and wall patterns carved away the rail itself.',
+    },
+  },
+  {
+    id: 'menu-keyboard',
+    date: '2026-08-07',
+    kind: 'fixed',
+    title: { en: 'Menus honour the keyboard contract they advertise' },
+    body: {
+      en: 'Elements marked as menus did not all support arrow-key navigation and dismissal.',
+    },
   },
   {
     id: 'sliding-tray',
@@ -339,6 +546,24 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     },
   },
   {
+    id: 'spacer-socket',
+    date: '2026-08-06',
+    kind: 'fixed',
+    title: { en: 'Spacers sit above the socket they stand on' },
+    body: {
+      en: "A spacer's body overlapped the socket beneath it.",
+    },
+  },
+  {
+    id: 'wall-less-tray',
+    date: '2026-08-06',
+    kind: 'fixed',
+    title: { en: 'The wall-less tray gets a floor and a seatable foot' },
+    body: {
+      en: 'The tray base generated without a floor, so it could not sit on a baseplate.',
+    },
+  },
+  {
     id: 'bin-size-lock',
     date: '2026-08-06',
     kind: 'new',
@@ -357,6 +582,24 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
       en: 'Browse a gallery of published bin designs, filter by the dimensions you need, remix anything into your own library, and publish your own. Designs carry print reports, likes, remix ancestry and an estimate of what they cost to print.',
     },
     action: { kind: 'openModal', modal: 'designGallery' },
+  },
+  {
+    id: 'stacked-plate-axis',
+    date: '2026-08-05',
+    kind: 'fixed',
+    title: { en: 'Stacked plates turn about the axis that keeps sockets aligned' },
+    body: {
+      en: 'Rotating a stacked plate for printing misaligned its sockets with the plate below.',
+    },
+  },
+  {
+    id: 'label-tabs-dividers',
+    date: '2026-08-04',
+    kind: 'fixed',
+    title: { en: 'Label tabs sit against shifted dividers' },
+    body: {
+      en: 'Moving a divider left its label tab behind at the old position.',
+    },
   },
   {
     id: 'baseplate-custom-split-lines',
@@ -545,6 +788,33 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     action: { kind: 'openTool', tool: 'layout' },
   },
   {
+    id: 'cutout-labels-narrow',
+    date: '2026-07-14',
+    kind: 'fixed',
+    title: { en: 'Cutout labels stay visible on narrow cutouts' },
+    body: {
+      en: 'A label on a slim pocket was clipped away entirely.',
+    },
+  },
+  {
+    id: 'magnet-pad-strength',
+    date: '2026-07-13',
+    kind: 'fixed',
+    title: { en: 'Magnet pads print strong on wide nozzles' },
+    body: {
+      en: 'Pad walls were thin enough that a 0.6mm nozzle gave them too few perimeters to hold a magnet.',
+    },
+  },
+  {
+    id: 'connector-fit-offset',
+    date: '2026-07-12',
+    kind: 'fixed',
+    title: { en: 'Connector fit offset reaches split-piece geometry' },
+    body: {
+      en: 'The offset you set applied to the test print but not to the pieces themselves.',
+    },
+  },
+  {
     id: 'shaped-drawer-baseplates',
     date: '2026-07-12',
     kind: 'new',
@@ -565,12 +835,39 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     action: { kind: 'openModal', modal: 'baseplateLibrary' },
   },
   {
+    id: 'focus-after-delete',
+    date: '2026-07-09',
+    kind: 'fixed',
+    title: { en: 'Keyboard focus survives deleting a bin' },
+    body: {
+      en: 'Deleting the focused bin dropped focus out of the grid entirely.',
+    },
+  },
+  {
     id: 'accessibility-tab',
     date: '2026-07-09',
     kind: 'new',
     title: { en: 'Accessibility settings' },
     body: {
       en: 'High contrast, category patterns instead of colour alone, Windows High Contrast Mode support, a text alternative for the 3D preview, and localised screen-reader announcements on the grid.',
+    },
+  },
+  {
+    id: 'panel-scroll',
+    date: '2026-07-08',
+    kind: 'fixed',
+    title: { en: 'The parameter panel scrolls on its own' },
+    body: {
+      en: "Scrolling the designer's panel scrolled the whole page with it.",
+    },
+  },
+  {
+    id: 'overhang-aware-cutouts',
+    date: '2026-07-07',
+    kind: 'fixed',
+    title: { en: 'The cutout editor accounts for overhang' },
+    body: {
+      en: 'Cutouts were positioned against the nominal bin rather than the overhung one.',
     },
   },
   {
@@ -618,12 +915,57 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     body: { en: 'Work in the units you measured in rather than converting to height units first.' },
   },
   {
+    id: 'safari-15',
+    date: '2026-06-27',
+    kind: 'fixed',
+    title: { en: 'Safari 15 support' },
+    body: {
+      en: 'The build targeted syntax Safari 15 could not parse, so the app did not start there at all.',
+    },
+  },
+  {
+    id: 'divider-cutout-sync',
+    date: '2026-06-24',
+    kind: 'fixed',
+    title: { en: 'Divider cutouts follow the outer walls' },
+    body: {
+      en: 'Alignment, offset and millimetre values on divider cutouts drifted from the wall cutouts they were meant to match, and compartment labels were lost on a grid resize.',
+    },
+  },
+  {
+    id: 'wedged-worker',
+    date: '2026-06-23',
+    kind: 'fixed',
+    title: { en: 'A stuck generator resets instead of hanging' },
+    body: {
+      en: 'A generation timeout left the worker wedged, so every later change also hung. It now hard-resets, and the timeout ceiling is high enough for genuinely heavy exports.',
+    },
+  },
+  {
+    id: 'split-wall-connectors',
+    date: '2026-06-22',
+    kind: 'fixed',
+    title: { en: 'Split-bin wall connectors actually lock' },
+    body: {
+      en: 'Connectors on tall and overhung split walls were too slight to hold the pieces together.',
+    },
+  },
+  {
     id: 'stack-printing',
     date: '2026-06-21',
     kind: 'new',
     title: { en: 'Stack-print baseplates and layouts' },
     body: {
       en: 'Stack copies of each piece on the build plate, print a layout several times over, and split for the fewest plate loads rather than the fewest pieces.',
+    },
+  },
+  {
+    id: 'multicolour-preview',
+    date: '2026-06-20',
+    kind: 'fixed',
+    title: { en: 'Multi-colour preview paints the lid and label shelf' },
+    body: {
+      en: 'Both were left in the base colour regardless of the zone they belonged to.',
     },
   },
   {
@@ -637,12 +979,48 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     action: { kind: 'openTool', tool: 'baseplate' },
   },
   {
+    id: 'half-grid-split-crash',
+    date: '2026-06-17',
+    kind: 'fixed',
+    title: { en: 'Half-grid bins no longer crash the split preview' },
+    body: {
+      en: 'Fractional bin dimensions took the print view down.',
+    },
+  },
+  {
+    id: 'scan-card-detection',
+    date: '2026-06-17',
+    kind: 'fixed',
+    title: { en: 'Scanning recovers worn and colour-neutral reference cards' },
+    body: {
+      en: 'A card with eroded corners, or one printed without colour, was often missed. A card-shaped tool is also no longer mistaken for the card itself.',
+    },
+  },
+  {
     id: 'phone-tool-scan',
     date: '2026-06-17',
     kind: 'new',
     title: { en: 'Scan a tool with your phone to make a cutout' },
     body: {
       en: 'Photograph a tool next to a printed reference and the app traces its outline into a shadow-board pocket, with on-device segmentation, smoothed curves and optional symmetry correction. Nothing leaves your phone.',
+    },
+  },
+  {
+    id: 'rounded-corner-features',
+    date: '2026-06-12',
+    kind: 'fixed',
+    title: { en: 'Scoops, label supports and tabs stay inside rounded corners' },
+    body: {
+      en: "Each could push past the bin's rounded outer wall.",
+    },
+  },
+  {
+    id: 'watertight-stl',
+    date: '2026-06-10',
+    kind: 'fixed',
+    title: { en: 'Watertight STL across scoops, magnets, chamfers and handles' },
+    body: {
+      en: 'Combinations of these features produced meshes some slicers rejected.',
     },
   },
   {
