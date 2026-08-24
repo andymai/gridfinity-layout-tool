@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.471.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.4...gridfinity-layout-tool-v4.471.5) (2026-08-24)
+
+
+### Bug Fixes
+
+* **designer:** sample the true ellipse in the pathfinder preview ([#3813](https://github.com/andymai/gridfinity-layout-tool/issues/3813)) ([f4351e0](https://github.com/andymai/gridfinity-layout-tool/commit/f4351e0d968ec806c4028cd7e825f5c13f95a8ad)), closes [#3806](https://github.com/andymai/gridfinity-layout-tool/issues/3806)
+
 ## [4.471.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.3...gridfinity-layout-tool-v4.471.4) (2026-08-24)
 
 
