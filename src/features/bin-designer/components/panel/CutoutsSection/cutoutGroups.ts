@@ -21,15 +21,21 @@
  * Bounds are the *rotated* silhouette. A group's box is meaningless otherwise,
  * and every consumer expresses a move as a translation, so the unrotated
  * `x`/`y` stays in step with the box it was measured from.
+ *
+ * A repeat master's bounds span every expanded instance for the same reason:
+ * the instances are offsets from the master, so they translate with it, and
+ * centring or distributing by the master's own box alone parks the pattern
+ * off-centre.
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
+import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { type Bounds, getRotatedBounds } from './geometryCore';
 
 /** One rigid arrange target: a whole group, or a single ungrouped cutout. */
 export interface ArrangeUnit {
   readonly members: readonly Cutout[];
-  /** Rotated AABB spanning every member. */
+  /** Rotated AABB spanning every member, repeat instances included. */
   readonly bounds: Bounds;
   /** True when any member is locked — the unit is then immovable. */
   readonly locked: boolean;
@@ -43,11 +49,13 @@ function makeUnit(members: readonly Cutout[]): ArrangeUnit {
   let locked = false;
 
   for (const member of members) {
-    const b = getRotatedBounds(member);
-    minX = Math.min(minX, b.minX);
-    minY = Math.min(minY, b.minY);
-    maxX = Math.max(maxX, b.maxX);
-    maxY = Math.max(maxY, b.maxY);
+    for (const instance of expandCutoutArray(member)) {
+      const b = getRotatedBounds(instance);
+      minX = Math.min(minX, b.minX);
+      minY = Math.min(minY, b.minY);
+      maxX = Math.max(maxX, b.maxX);
+      maxY = Math.max(maxY, b.maxY);
+    }
     if (member.locked) locked = true;
   }
 
