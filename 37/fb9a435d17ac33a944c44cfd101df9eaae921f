@@ -1,0 +1,36 @@
+src/features/bin-designer/components/panel/WallsSection/WallsSection.test.tsx
+  s_29f851ea929e9e::t_ca99a63e6af3de 166,171-172
+  s_29f851ea929e9e::t_7bf78208d42bcb 148,153,156,158-160,162-165,167
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_29f851ea929e9e::t_cf38ad017c09b3 203-205,217
+src/features/generation/worker/generators/pipeline/featureComposition.ts
+  s_29f851ea929e9e::t_6c67492e877789 38-47
+src/features/generation/worker/generators/wallTextLayout.test.ts
+  s_29f851ea929e9e::t_8187035800ed54 266,272-301
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_29f851ea929e9e::t_f52b66d1e7092e 8-9,23,102-109,112-117
+src/shared/utils/wallTextPlan.ts
+  s_29f851ea929e9e::t_cf38ad017c09b3 17,371,380
+  s_29f851ea929e9e::t_d06c6ab2dadd14 113-114,118-123,330-337
+src/features/generation/worker/generators/binGenerator.scenario.wallText.test.ts
+  s_29f851ea929e9e::t_77614716d0bc07 200-204,209-220,225-243,245-261,263-268
+  s_29f851ea929e9e::t_ac7cc02b93af7e 205-208,221-224,244,262
+src/features/generation/worker/generators/wallTextBuilder.ts
+  s_29f851ea929e9e::t_9818f55ff3f2df 174,183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "37fb9a435d17ac33a944c44cfd101df9eaae921f",
+  "prompts": {},
+  "sessions": {
+    "s_29f851ea929e9e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eda90044-39c4-4236-b854-6be20c1a9dd4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
