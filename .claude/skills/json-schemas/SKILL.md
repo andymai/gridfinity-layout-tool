@@ -1,6 +1,6 @@
 ---
 name: json-schemas
-description: Hand-authoring or editing the two user-facing JSON documents: layout files (drawer, grid, layers, bins, baseplateParams, linkedDesigns) and bin design files (the gridfinity-bin-design wrapper around BinParams). Covers validating a file before import, the cross-field rules JSON Schema cannot express, the unit and orientation traps that produce valid-but-wrong files, and how to change a schema without breaking its four drift guards. Load when writing a layout or design JSON by hand, when an import is rejected, or when adding a field to Layout, Bin, or BinParams.
+description: 'Hand-authoring or editing the two user-facing JSON documents: layout files (drawer, grid, layers, bins, baseplateParams, linkedDesigns) and bin design files (the gridfinity-bin-design wrapper around BinParams). Covers validating a file before import, the cross-field rules JSON Schema cannot express, the unit and orientation traps that produce valid-but-wrong files, and how to change a schema without breaking its four drift guards. Load when writing a layout or design JSON by hand, when an import is rejected, or when adding a field to Layout, Bin, or BinParams.'
 ---
 
 # JSON schemas
