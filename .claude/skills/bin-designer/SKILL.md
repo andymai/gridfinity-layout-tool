@@ -22,6 +22,8 @@ Read `src/features/bin-designer/README.md` first — it covers the store/worker/
 4. **Every client constraint has a hand-maintained server mirror.** `constants/gridfinity.ts` `DESIGNER_CONSTRAINTS` ↔ `api/lib/designerValidationConstants.ts` `CONSTRAINTS`; type unions in `types/index.ts` ↔ `VALID_BIN_STYLES` / `VALID_LABEL_TAB_SUPPORTS` in `api/lib/designerValidation.ts`; top-level param keys ↔ `ALLOWED_PARAM_KEYS` there. Divergence means 400s on sync or params silently stripped from shares. `sanitizeTags` (server) must stay behaviorally identical to `normalizeTags` (`utils/tags.ts`).
 5. **Wall-feature units are mixed by design.** `WallCutout` width/depth are percentages (0–100 of wall span / wall height); `widthMm: null` means "use the % field". Handle width is % of span but handle height is mm. See the JSDoc on each field in `types/index.ts` — mixing these passes typecheck and produces silently wrong geometry.
 
+6. **A Bento compartment is a cell footprint, not a rect.** A merged L/S/T/U holds fewer cells than its bounding box, so every op in `utils/bentoDraw.ts` that rebuilds `cells` must carry `compartmentMask` (offsets inside the box) instead of repainting `rectIndices` — that squares the shape off, and it did so through move, duplicate, stash and `resizeGridPreservingCompartments` alike. `canPlaceMask` is the matching collision test: the notch of an L is not part of the compartment, so a rect test refuses legal drops. `StashedCompartment.cells` persists the footprint (absent = the full box, so rectangles serialize unchanged) and `migrateBentoCompartmentFields` sanitizes it on load. `resizeCompartment` refuses a non-rectangular compartment, matching the canvas, which hides its handles.
+
 ## Recipes
 
 ### Add a field to BinParams
