@@ -2061,6 +2061,14 @@
           "minimum": 1,
           "description": "Height in compartment cells."
         },
+        "cells": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "boolean"
+          },
+          "description": "Which cells of the w x h bounding box the shape fills, row-major with row 0 at the front. Length MUST equal w * h and at least one cell must be true. Omit it for a plain rectangle; an all-true mask is rejected. The filled cells must form one 4-connected region."
+        },
         "label": {
           "type": "string",
           "description": "Optional label carried with the stashed shape."

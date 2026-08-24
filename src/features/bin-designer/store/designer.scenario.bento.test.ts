@@ -5,6 +5,7 @@ import {
   getCompartmentRect,
   getDrawnCompartmentIds,
 } from '@/features/bin-designer/utils/bentoDraw';
+import { getCellsForCompartment } from '@/features/bin-designer/utils/compartments';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
 
@@ -291,6 +292,29 @@ describe('DesignerStore - bento draw actions', () => {
         w: 2,
         h: 2,
       });
+    });
+
+    it('carries the L through a move, a stash and a placement', () => {
+      const a = useDesignerStore.getState().drawBentoCompartment({ col: 0, row: 0, w: 2, h: 1 });
+      const b = useDesignerStore.getState().drawBentoCompartment({ col: 0, row: 1, w: 1, h: 1 });
+      if (a === null || b === null) throw new Error('unreachable');
+      const merged = useDesignerStore.getState().mergeBentoCompartments([a, b]);
+      if (merged === null) throw new Error('unreachable');
+
+      const moved = useDesignerStore.getState().moveBentoCompartment(merged, 2, 1);
+      if (moved === null) throw new Error('unreachable');
+      expect(getCellsForCompartment(params().compartments, moved)).toEqual([6, 7, 10]);
+
+      expect(useDesignerStore.getState().stashBentoCompartment(moved)).toBe(true);
+      expect(params().compartments.stash).toEqual([
+        { w: 2, h: 2, cells: [true, true, true, false] },
+      ]);
+
+      const placed = useDesignerStore
+        .getState()
+        .placeBentoStashEntry(0, { col: 0, row: 0, w: 2, h: 2 });
+      if (placed === null) throw new Error('unreachable');
+      expect(getCellsForCompartment(params().compartments, placed)).toEqual([0, 1, 4]);
     });
 
     it('refuses compartments that do not touch, without touching history', () => {

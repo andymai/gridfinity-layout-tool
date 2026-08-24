@@ -170,10 +170,21 @@ export interface CellRect {
  * `TEXT_BEARING_KEYS`; renaming it would ship an unmoderated public surface.
  */
 export interface StashedCompartment {
-  /** Width in grid cells (1..MAX_COMPARTMENT_GRID). */
+  /** Bounding-box width in grid cells (1..MAX_COMPARTMENT_GRID). */
   readonly w: number;
-  /** Depth in grid cells (1..MAX_COMPARTMENT_GRID). */
+  /** Bounding-box depth in grid cells (1..MAX_COMPARTMENT_GRID). */
   readonly h: number;
+  /**
+   * Which cells of the `w × h` bounding box the shape actually fills, row-major
+   * with row 0 at the front of the bin — the merged L/S/T/U outlines the Bento
+   * workspace can produce. Absent means the plain rectangle, so a rectangular
+   * entry serializes exactly as it did before this field existed and no
+   * existing design's `communityParamsFingerprint` shifts.
+   *
+   * Mutable element type mirrors the sibling arrays on
+   * {@link CompartmentConfig} (Immer `Draft` requirement).
+   */
+  readonly cells?: boolean[];
   /** Engraved label carried with the compartment; empty/missing = none. */
   readonly label?: string;
 }

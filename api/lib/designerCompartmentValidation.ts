@@ -15,6 +15,31 @@ import {
   VALID_LABEL_PLATE_WIDTHS,
 } from './designerValidationConstants.js';
 
+/**
+ * Whether a stash footprint mask is one 4-connected region. Mirrors
+ * `isContiguousSelection` on the client: two islands under one id would print
+ * as two pockets sharing a label.
+ */
+function isMaskContiguous(mask: readonly boolean[], w: number): boolean {
+  const start = mask.indexOf(true);
+  if (start < 0) return false;
+  const seen = new Set<number>([start]);
+  const queue = [start];
+  while (queue.length > 0) {
+    const idx = queue.pop() as number;
+    const col = idx % w;
+    // Row bounds fall out of the index range check below; only the column
+    // steps need guarding, or a step off the left edge wraps onto the row above.
+    const neighbours = [col > 0 ? idx - 1 : -1, col < w - 1 ? idx + 1 : -1, idx - w, idx + w];
+    for (const n of neighbours) {
+      if (n < 0 || n >= mask.length || seen.has(n) || !mask[n]) continue;
+      seen.add(n);
+      queue.push(n);
+    }
+  }
+  return seen.size === mask.filter(Boolean).length;
+}
+
 /** Mirrors `HEX_COLOR_REGEX` in `designerValidation.ts`. */
 const COMPARTMENT_HEX_COLOR_REGEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
@@ -394,6 +419,34 @@ export function validateCompartments(compartments: unknown): string | null {
         !inRange(entry.h, 1, CONSTRAINTS.MAX_COMPARTMENT_GRID)
       ) {
         return `compartments.stash[${i}].h must be integer 1-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+      }
+      // Footprint mask for a merged (non-rectangular) shape. An all-true mask
+      // is rejected rather than tolerated: absent IS the rectangle, and two
+      // encodings of one shape would give the same design two fingerprints.
+      if (entry.cells !== undefined) {
+        if (!Array.isArray(entry.cells)) {
+          return `compartments.stash[${i}].cells must be an array`;
+        }
+        const mask = entry.cells as unknown[];
+        if (mask.length !== entry.w * entry.h) {
+          return `compartments.stash[${i}].cells length must equal w × h (${entry.w * entry.h})`;
+        }
+        let filled = 0;
+        for (let c = 0; c < mask.length; c++) {
+          if (typeof mask[c] !== 'boolean') {
+            return `compartments.stash[${i}].cells[${c}] must be a boolean`;
+          }
+          if (mask[c] === true) filled++;
+        }
+        if (filled === 0) {
+          return `compartments.stash[${i}].cells must fill at least one cell`;
+        }
+        if (filled === mask.length) {
+          return `compartments.stash[${i}].cells must be omitted when every cell is filled`;
+        }
+        if (!isMaskContiguous(mask as boolean[], entry.w)) {
+          return `compartments.stash[${i}].cells must form one connected region`;
+        }
       }
       if (entry.label !== undefined) {
         if (typeof entry.label !== 'string') {

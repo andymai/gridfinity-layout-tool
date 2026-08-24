@@ -753,6 +753,75 @@ describe('validateCompartments', () => {
       );
     });
 
+    it('accepts a footprint mask for a merged shape', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 2, cells: [true, true, true, false], label: 'ell' }],
+        })
+      ).toBeNull();
+    });
+
+    it('rejects a non-array mask', () => {
+      expect(
+        validateCompartments({ ...validCompartments(), stash: [{ w: 2, h: 2, cells: {} }] })
+      ).toBe('compartments.stash[0].cells must be an array');
+    });
+
+    it('rejects a mask whose length is not w × h', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 2, cells: [true, false, true] }],
+        })
+      ).toBe('compartments.stash[0].cells length must equal w × h (4)');
+    });
+
+    it('rejects a non-boolean mask entry', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 1, cells: [true, 0] }],
+        })
+      ).toBe('compartments.stash[0].cells[1] must be a boolean');
+    });
+
+    it('rejects an empty mask', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 1, cells: [false, false] }],
+        })
+      ).toBe('compartments.stash[0].cells must fill at least one cell');
+    });
+
+    it('rejects an all-filled mask, which must be encoded as an omitted field', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 1, cells: [true, true] }],
+        })
+      ).toBe('compartments.stash[0].cells must be omitted when every cell is filled');
+    });
+
+    it('rejects a mask split into two islands', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 2, cells: [true, false, false, true] }],
+        })
+      ).toBe('compartments.stash[0].cells must form one connected region');
+    });
+
+    it('accepts an L-shaped mask', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 2, cells: [true, true, true, false] }],
+        })
+      ).toBeNull();
+    });
+
     it('rejects a non-string label', () => {
       expect(
         validateCompartments({ ...validCompartments(), stash: [{ w: 1, h: 1, label: 7 }] })

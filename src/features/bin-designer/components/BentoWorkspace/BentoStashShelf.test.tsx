@@ -48,6 +48,38 @@ describe('BentoStashShelf', () => {
     expect(screen.getByText('1×1')).toBeInTheDocument();
   });
 
+  it('renders a merged entry as its footprint, front row at the bottom', () => {
+    render(
+      <BentoStashShelf
+        {...makeProps({ stash: [{ w: 2, h: 2, cells: [true, true, true, false] }] })}
+      />
+    );
+
+    const shape = screen.getByTestId('bento-stash-shape-0');
+    // Back row first in DOM order: the notch sits top-right, the L's foot below.
+    expect([...shape.children].map((cell) => cell.className !== '')).toEqual([
+      true,
+      false,
+      true,
+      true,
+    ]);
+  });
+
+  it('renders a rectangular entry as one block, with no per-cell grid', () => {
+    render(<BentoStashShelf {...makeProps({ stash: [{ w: 2, h: 2 }] })} />);
+
+    expect(screen.queryByTestId('bento-stash-shape-0')).not.toBeInTheDocument();
+  });
+
+  it('renders a wrong-length mask as one block, matching where it would place', () => {
+    // placeFromStash falls back to the rectangle for a mask that does not match
+    // the box, so previewing the partial cells would advertise a shape the drop
+    // never produces.
+    render(<BentoStashShelf {...makeProps({ stash: [{ w: 2, h: 2, cells: [true, true] }] })} />);
+
+    expect(screen.queryByTestId('bento-stash-shape-0')).not.toBeInTheDocument();
+  });
+
   it('starts a drag from a tile', () => {
     const onEntryPointerDown = vi.fn();
     render(<BentoStashShelf {...makeProps({ stash: [{ w: 2, h: 2 }], onEntryPointerDown })} />);

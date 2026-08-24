@@ -277,25 +277,57 @@ function clearCompartmentMetadata(config: CompartmentConfig, id: number): Compar
 }
 
 /**
- * Draw a new compartment over background grid. Returns null when the rect
- * overlaps a drawn compartment or leaves the grid — the caller shows the
- * blocked ghost instead.
+ * Claim an exact set of cells for one new compartment. `rect` is the footprint's
+ * bounding box, which is what the placement check runs against: a merged shape
+ * is placed conservatively, matching the drag ghost the user aimed with.
  */
-export function drawCompartment(config: CompartmentConfig, rect: CellRect): DrawResult | null {
-  if (!canPlaceRect(config, rect)) return null;
+function drawFootprint(
+  config: CompartmentConfig,
+  rect: CellRect,
+  indices: readonly number[]
+): (DrawResult & { readonly remap: Map<number, number> }) | null {
+  if (indices.length === 0 || !canPlaceRect(config, rect)) return null;
+  // The one place a new id is minted from a caller-supplied index set, so the
+  // one-connected-region invariant is enforced here rather than at each caller:
+  // a stash mask can arrive disconnected from a hand-authored design file, and
+  // two islands under one id print as two pockets sharing a label.
+  if (!isContiguousSelection(config.cols, indices)) return null;
   const newCells = [...config.cells];
   const fresh = Math.max(...config.cells) + 1;
-  for (const idx of rectIndices(config.cols, rect)) {
+  for (const idx of indices) {
     newCells[idx] = fresh;
   }
   // Marked before the rebuild, not after: with `mergeBackground` on, an
   // unmarked 1×1 is indistinguishable from leftover and gets swallowed by the
   // run it sits in.
-  const marked = rect.w === 1 && rect.h === 1 ? addDrawnUnitCell(config, fresh) : config;
+  const marked = indices.length === 1 ? addDrawnUnitCell(config, fresh) : config;
   const { config: rebuilt, remap } = rebuild(marked, newCells);
   const id = remap.get(fresh);
   if (id === undefined) return null;
-  return { config: rebuilt, id };
+  return { config: rebuilt, id, remap };
+}
+
+/**
+ * Translate flat cell indices. Safe without re-deriving columns because callers
+ * validate the translated BOUNDING BOX first, which keeps every cell in the grid
+ * and stops a `dCol` shift from wrapping onto the next row.
+ */
+function translateIndices(
+  cols: number,
+  indices: readonly number[],
+  dCol: number,
+  dRow: number
+): number[] {
+  return indices.map((idx) => idx + dRow * cols + dCol);
+}
+
+/**
+ * Draw a new compartment over background grid. Returns null when the rect
+ * overlaps a drawn compartment or leaves the grid — the caller shows the
+ * blocked ghost instead.
+ */
+export function drawCompartment(config: CompartmentConfig, rect: CellRect): DrawResult | null {
+  return drawFootprint(config, rect, rectIndices(config.cols, rect));
 }
 
 /**
@@ -327,12 +359,16 @@ export function moveCompartment(
   if (dCol === 0 && dRow === 0) return { config, id };
   const target: CellRect = { ...rect, col: rect.col + dCol, row: rect.row + dRow };
   if (!canPlaceRect(config, target, { ignoreId: id })) return null;
+  const source = getCellsForCompartment(config, id);
   const newCells = [...config.cells];
   let fresh = Math.max(...config.cells) + 1;
-  for (const idx of getCellsForCompartment(config, id)) {
+  // Every source cell is released before any target cell is claimed: a short
+  // move overlaps its own footprint, so interleaving the two loops would strand
+  // a cell the compartment still occupies.
+  for (const idx of source) {
     newCells[idx] = fresh++;
   }
-  for (const idx of rectIndices(config.cols, target)) {
+  for (const idx of translateIndices(config.cols, source, dCol, dRow)) {
     newCells[idx] = id;
   }
   const { config: rebuilt, remap } = rebuild(config, newCells);
@@ -379,17 +415,20 @@ export function duplicateCompartment(
 ): DrawResult | null {
   const rect = getCompartmentRect(config, id);
   if (!rect || rect.w !== target.w || rect.h !== target.h) return null;
-  if (!canPlaceRect(config, target)) return null;
-  const newCells = [...config.cells];
-  const fresh = Math.max(...config.cells) + 1;
-  for (const idx of rectIndices(config.cols, target)) {
-    newCells[idx] = fresh;
-  }
-  const marked = target.w === 1 && target.h === 1 ? addDrawnUnitCell(config, fresh) : config;
-  const { config: rebuilt, remap } = rebuild(marked, newCells);
-  const newId = remap.get(fresh);
+  const stamped = drawFootprint(
+    config,
+    target,
+    translateIndices(
+      config.cols,
+      getCellsForCompartment(config, id),
+      target.col - rect.col,
+      target.row - rect.row
+    )
+  );
+  if (!stamped) return null;
+  const { config: rebuilt, id: newId, remap } = stamped;
   const srcId = remap.get(id);
-  if (newId === undefined || srcId === undefined) return null;
+  if (srcId === undefined) return null;
   let next = rebuilt;
   const label = next.compartmentTexts?.[srcId];
   if (label) next = writeText(next, newId, label);
@@ -488,22 +527,52 @@ export function mergeCompartments(
 }
 
 /**
- * Move a drawn compartment to the stash shelf, carrying its label. Null when
- * the stash is at capacity — the caller surfaces the reason.
+ * Which cells of a compartment's bounding box it fills, row-major, or undefined
+ * for a plain rectangle. Omitting the mask there keeps a rectangular stash entry
+ * serializing exactly as it did before the field existed.
+ */
+function footprintMask(
+  config: CompartmentConfig,
+  id: number,
+  rect: CellRect
+): boolean[] | undefined {
+  const owned = new Set(getCellsForCompartment(config, id));
+  if (owned.size === rect.w * rect.h) return undefined;
+  return rectIndices(config.cols, rect).map((idx) => owned.has(idx));
+}
+
+/**
+ * Move a drawn compartment to the stash shelf, carrying its label and, for a
+ * merged shape, the footprint its bounding box alone would lose. Null when the
+ * stash is at capacity — the caller surfaces the reason.
  */
 export function stashCompartment(config: CompartmentConfig, id: number): CompartmentConfig | null {
   const rect = getCompartmentRect(config, id);
   if (!rect) return null;
   if ((config.stash?.length ?? 0) >= DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES) return null;
   const label = config.compartmentTexts?.[id] ?? '';
+  const mask = footprintMask(config, id, rect);
   const entry: StashedCompartment = {
     w: rect.w,
     h: rect.h,
+    ...(mask ? { cells: mask } : {}),
     ...(label.length > 0 ? { label } : {}),
   };
   const removed = removeCompartment(config, id);
   if (!removed) return null;
   return { ...removed, stash: [...(config.stash ?? []), entry] };
+}
+
+/**
+ * A stash entry's usable footprint mask, or undefined when the entry stands for
+ * a plain rectangle. The single answer for placement and for the shelf preview:
+ * a mask of the wrong length must not render as one shape and place as another,
+ * and indexing past its end would read `undefined` as false and silently shrink
+ * the footprint. Migration drops these on load; this covers state that never
+ * passed through it.
+ */
+export function stashEntryMask(entry: StashedCompartment): boolean[] | undefined {
+  return entry.cells?.length === entry.w * entry.h ? entry.cells : undefined;
 }
 
 /** Place a stash entry onto background grid; the rect must match its size. */
@@ -515,7 +584,9 @@ export function placeFromStash(
   const entry = config.stash?.[index];
   if (!entry) return null;
   if (rect.w !== entry.w || rect.h !== entry.h) return null;
-  const drawn = drawCompartment(config, rect);
+  const box = rectIndices(config.cols, rect);
+  const mask = stashEntryMask(entry);
+  const drawn = drawFootprint(config, rect, mask ? box.filter((_, i) => mask[i]) : box);
   if (!drawn) return null;
   let next = drawn.config;
   if (entry.label) next = writeText(next, drawn.id, entry.label);
@@ -573,19 +644,19 @@ export function resizeGridPreservingCompartments(
     const rect = getCompartmentRect(config, id);
     if (!rect) continue;
     if (rect.col + rect.w <= newCols && rect.row + rect.h <= newRows) {
-      for (let r = rect.row; r < rect.row + rect.h; r++) {
-        for (let c = rect.col; c < rect.col + rect.w; c++) {
-          newCells[r * newCols + c] = id;
-        }
+      for (const idx of getCellsForCompartment(config, id)) {
+        newCells[Math.floor(idx / config.cols) * newCols + (idx % config.cols)] = id;
       }
     } else if (
       (config.stash?.length ?? 0) + stashAdditions.length <
       DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES
     ) {
       const label = config.compartmentTexts?.[id] ?? '';
+      const mask = footprintMask(config, id, rect);
       stashAdditions.push({
         w: rect.w,
         h: rect.h,
+        ...(mask ? { cells: mask } : {}),
         ...(label.length > 0 ? { label } : {}),
       });
     } else {

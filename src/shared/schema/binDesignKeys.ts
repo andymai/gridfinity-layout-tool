@@ -166,7 +166,7 @@ export type _DividerOverrideKeys = Assert<
   KeysMatch<keyof DividerOverride, (typeof DIVIDER_OVERRIDE_KEYS)[number]>
 >;
 
-export const STASHED_COMPARTMENT_KEYS = ['w', 'h', 'label'] as const;
+export const STASHED_COMPARTMENT_KEYS = ['w', 'h', 'cells', 'label'] as const;
 export type _StashedCompartmentKeys = Assert<
   KeysMatch<keyof StashedCompartment, (typeof STASHED_COMPARTMENT_KEYS)[number]>
 >;

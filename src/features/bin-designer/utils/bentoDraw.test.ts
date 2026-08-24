@@ -7,6 +7,7 @@ import {
   findFreeRect,
   getCompartmentRect,
   getDrawnCompartmentIds,
+  mergeCompartments,
   moveCompartment,
   placeFromStash,
   rectIndices,
@@ -19,6 +20,7 @@ import {
 } from '@/features/bin-designer/utils/bentoDraw';
 import {
   createUniformGrid,
+  getCellsForCompartment,
   remapDrawnUnitCells,
   validateCompartmentGrid,
 } from '@/features/bin-designer/utils/compartments';
@@ -300,6 +302,28 @@ describe('bentoDraw', () => {
       expect(placeFromStash(withDrawn, 0, { col: 1, row: 0, w: 2, h: 2 })).toBeNull();
     });
 
+    it('placeFromStash refuses a mask that is not one connected region', () => {
+      // Only reachable from a hand-authored design file; two islands under one
+      // id would print as two pockets sharing a label.
+      const config: CompartmentConfig = {
+        ...grid(),
+        stash: [{ w: 2, h: 2, cells: [true, false, false, true] }],
+      };
+      expect(placeFromStash(config, 0, { col: 1, row: 0, w: 2, h: 2 })).toBeNull();
+    });
+
+    it('placeFromStash falls back to the rectangle for a wrong-length mask', () => {
+      const config: CompartmentConfig = {
+        ...grid(),
+        stash: [{ w: 2, h: 2, cells: [true, true] }],
+      };
+      const placed = placeFromStash(config, 0, { col: 1, row: 0, w: 2, h: 2 });
+      expect(placed).not.toBeNull();
+      if (!placed) throw new Error('unreachable');
+      expect(getCompartmentRect(placed.config, placed.id)).toEqual({ col: 1, row: 0, w: 2, h: 2 });
+      expect(getCellsForCompartment(placed.config, placed.id)).toHaveLength(4);
+    });
+
     it('removeStashEntry drops one entry and collapses to undefined', () => {
       const config: CompartmentConfig = { ...grid(), stash: [{ w: 1, h: 1 }] };
       expect(removeStashEntry(config, 0)?.stash).toBeUndefined();
@@ -534,5 +558,116 @@ describe('bentoDraw with mergeBackground', () => {
     const { config } = draw(grid(3, 3), 1, 1, 1, 1);
     expect(config.backgroundIds).toBeUndefined();
     expect(new Set(config.cells).size).toBe(9);
+  });
+});
+
+describe('bentoDraw with merged non-rectangular compartments', () => {
+  /**
+   * L on a 4×3 grid: a 2×1 bar across the front row plus a 1×1 above its left
+   * cell, so cells 0, 1 and 4 are filled and 5 is the notch its bounding box
+   * leaves open.
+   */
+  const lShape = (base: CompartmentConfig = grid()) => {
+    const bar = draw(base, 0, 0, 2, 1);
+    const stub = draw(bar.config, 0, 1, 1, 1);
+    const barId = [...getDrawnCompartmentIds(stub.config)].find((c) => c !== stub.id);
+    if (barId === undefined) throw new Error('unreachable');
+    const merged = mergeCompartments(stub.config, [barId, stub.id]);
+    if (!merged) throw new Error('unreachable');
+    return merged;
+  };
+
+  it('builds the L fixture with three cells and a 2×2 bounding box', () => {
+    const merged = lShape();
+    expect(getCellsForCompartment(merged.config, merged.id)).toEqual([0, 1, 4]);
+    expect(getCompartmentRect(merged.config, merged.id)).toEqual({ col: 0, row: 0, w: 2, h: 2 });
+  });
+
+  it('moveCompartment translates the footprint instead of filling the bounding box', () => {
+    const merged = lShape();
+    const moved = moveCompartment(merged.config, merged.id, 2, 1);
+    expect(moved).not.toBeNull();
+    if (!moved) throw new Error('unreachable');
+    expect(getCellsForCompartment(moved.config, moved.id)).toEqual([6, 7, 10]);
+    // The notch the L leaves in its bounding box stays background.
+    expect(getDrawnCompartmentIds(moved.config).has(moved.config.cells[11])).toBe(false);
+    expect(validateCompartmentGrid(moved.config)).toEqual([]);
+  });
+
+  it('moveCompartment keeps the shape when source and target overlap', () => {
+    const merged = lShape();
+    const moved = moveCompartment(merged.config, merged.id, 1, 0);
+    expect(moved).not.toBeNull();
+    if (!moved) throw new Error('unreachable');
+    expect(getCellsForCompartment(moved.config, moved.id)).toEqual([1, 2, 5]);
+    expect(getDrawnCompartmentIds(moved.config).has(moved.config.cells[0])).toBe(false);
+  });
+
+  it('duplicateCompartment stamps the clone with the same footprint', () => {
+    const merged = lShape();
+    const dup = duplicateCompartment(merged.config, merged.id, { col: 2, row: 1, w: 2, h: 2 });
+    expect(dup).not.toBeNull();
+    if (!dup) throw new Error('unreachable');
+    expect(getCellsForCompartment(dup.config, dup.id)).toEqual([6, 7, 10]);
+    const srcId = [...getDrawnCompartmentIds(dup.config)].find((c) => c !== dup.id);
+    if (srcId === undefined) throw new Error('unreachable');
+    expect(getCellsForCompartment(dup.config, srcId)).toEqual([0, 1, 4]);
+  });
+
+  it('stashCompartment records the footprint mask and placeFromStash restores it', () => {
+    const merged = lShape();
+    const labeled: CompartmentConfig = {
+      ...merged.config,
+      compartmentTexts: withTextAt(merged.id, 'ell'),
+    };
+    const stashed = stashCompartment(labeled, merged.id);
+    expect(stashed).not.toBeNull();
+    if (!stashed) throw new Error('unreachable');
+    expect(stashed.stash).toEqual([{ w: 2, h: 2, cells: [true, true, true, false], label: 'ell' }]);
+    expect(getDrawnCompartmentIds(stashed).size).toBe(0);
+
+    const placed = placeFromStash(stashed, 0, { col: 2, row: 1, w: 2, h: 2 });
+    expect(placed).not.toBeNull();
+    if (!placed) throw new Error('unreachable');
+    expect(getCellsForCompartment(placed.config, placed.id)).toEqual([6, 7, 10]);
+    expect(placed.config.compartmentTexts?.[placed.id]).toBe('ell');
+    expect(placed.config.stash).toBeUndefined();
+  });
+
+  it('stashCompartment omits the mask for a plain rectangle', () => {
+    const { config, id } = draw(grid(), 0, 0, 2, 2);
+    const entry = stashCompartment(config, id)?.stash?.[0];
+    expect(entry).toBeDefined();
+    expect(Object.keys(entry ?? {})).toEqual(['w', 'h']);
+  });
+
+  it('resizeGridPreservingCompartments keeps the footprint through a regrid', () => {
+    const merged = lShape();
+    const result = resizeGridPreservingCompartments(merged.config, 6, 5);
+    const drawnIds = [...getDrawnCompartmentIds(result.config)];
+    expect(drawnIds).toHaveLength(1);
+    // Same cols/rows, re-indexed for the wider grid: (0,0), (1,0), (0,1).
+    expect(getCellsForCompartment(result.config, drawnIds[0])).toEqual([0, 1, 6]);
+  });
+
+  it('resizeGridPreservingCompartments stashes a displaced shape with its mask', () => {
+    const merged = lShape();
+    const pushedOut = moveCompartment(merged.config, merged.id, 2, 1);
+    if (!pushedOut) throw new Error('unreachable');
+    const result = resizeGridPreservingCompartments(pushedOut.config, 2, 2);
+    expect(result.stashedCount).toBe(1);
+    expect(result.config.stash).toEqual([{ w: 2, h: 2, cells: [true, true, true, false] }]);
+  });
+
+  it('placeFromStash fills only the masked cells of a hand-authored entry', () => {
+    const config: CompartmentConfig = {
+      ...grid(),
+      stash: [{ w: 2, h: 2, cells: [false, true, true, true] }],
+    };
+    const placed = placeFromStash(config, 0, { col: 1, row: 0, w: 2, h: 2 });
+    expect(placed).not.toBeNull();
+    if (!placed) throw new Error('unreachable');
+    expect(getCellsForCompartment(placed.config, placed.id)).toEqual([2, 5, 6]);
+    expect(getDrawnCompartmentIds(placed.config).has(placed.config.cells[1])).toBe(false);
   });
 });
