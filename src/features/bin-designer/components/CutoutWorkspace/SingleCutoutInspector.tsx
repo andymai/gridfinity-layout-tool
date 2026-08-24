@@ -24,6 +24,7 @@ import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
+import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
 import { CutoutScoopControls } from './CutoutScoopControls';
 import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
 import { CutoutFitControls } from '../panel/CutoutsSection/CutoutFitControls';
@@ -117,6 +118,16 @@ export function SingleCutoutInspector({
 }: SingleCutoutInspectorProps) {
   const t = useTranslation();
   const ungroupCutouts = useDesignerStore((s) => s.ungroupCutouts);
+  // maxCutDepth is the remaining fill on a bin host; a through-cut host has no
+  // depth to fall short of.
+  const depthShortfall = throughOnly
+    ? null
+    : cutoutDepthShortfall(
+        { ...cutout, ...preview.get(cutout.id) },
+        binWidth,
+        binDepth,
+        maxCutDepth
+      );
   return (
     <>
       <div className="-mx-4 border-b border-stroke-subtle px-4 py-3">
@@ -203,6 +214,14 @@ export function SingleCutoutInspector({
                 unit="mm"
                 disabled={disabled}
               />
+            )}
+            {depthShortfall && (
+              <p role="alert" className="pt-0.5 text-[11px] leading-snug text-warning">
+                {t('binDesigner.cutouts.depthShortfall', {
+                  achievable: depthShortfall.achievable.toFixed(1),
+                  requested: depthShortfall.requested.toFixed(1),
+                })}
+              </p>
             )}
           </div>
         </Collapsible>

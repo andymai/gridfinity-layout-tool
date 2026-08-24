@@ -43,6 +43,15 @@ describe('BinSizeSection', () => {
     expect(screen.queryByText(`${K}.bringBackIn`)).not.toBeInTheDocument();
   });
 
+  it('shows the depth-shortfall warning only when a cut falls short', () => {
+    const { rerender } = render(<BinSizeSection offBoardCount={0} depthShortfallCount={0} />);
+    expect(
+      screen.queryByText(tk(`${K}.depthShortfallWarning`, { count: 0 }))
+    ).not.toBeInTheDocument();
+    rerender(<BinSizeSection offBoardCount={0} depthShortfallCount={3} />);
+    expect(screen.getByText(tk(`${K}.depthShortfallWarning`, { count: 3 }))).toBeInTheDocument();
+  });
+
   it('offers to grow the bin alongside clamping back in', () => {
     const onGrow = vi.fn();
     render(

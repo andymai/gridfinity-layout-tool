@@ -58,6 +58,8 @@ interface InspectorContentProps {
   readonly board?: BoardSettings;
   /** Count of cutouts stranded past the board after a resize (0 = none). */
   readonly offBoardCount?: number;
+  /** Count of cutouts the generator will cut shallower than requested. */
+  readonly depthShortfallCount?: number;
   /** Clamp every off-board cutout back inside the board. */
   readonly onClampOffBoard?: () => void;
   /** Bin size that would fit every stray, or `null` when growing can't clear it. */
@@ -124,6 +126,7 @@ export function InspectorContent({
   onFlattenArray,
   board,
   offBoardCount = 0,
+  depthShortfallCount = 0,
   onClampOffBoard,
   growTarget,
   onGrowToFit,
@@ -153,6 +156,7 @@ export function InspectorContent({
       <BinSizeSection
         offBoardCount={offBoardCount}
         onClampOffBoard={onClampOffBoard}
+        depthShortfallCount={depthShortfallCount}
         growTarget={growTarget}
         onGrowToFit={onGrowToFit}
       />
