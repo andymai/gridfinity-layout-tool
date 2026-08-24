@@ -2,11 +2,18 @@ name: Release
 # Scheduled, not per-push: each release merge is also the production deploy
 # trigger (scripts/vercel-ignore.sh), and every deploy makes all active
 # clients re-fetch changed assets. Three releases a day batches merges into
-# a few deploys instead of one per merge. Cron is UTC: 16:00 / 20:00 / 00:00
-# is morning, midday, and late afternoon Pacific.
+# a few deploys instead of one per merge.
+#
+# The hours are activity troughs, not round local times. Against the hourly
+# active-user curve, 06:00 UTC is the daily minimum, 13:00 is the last dip
+# before the ramp into the 16:00-21:00 peak plateau, and 23:00 is far enough
+# down the descent that a merge from the working day still ships that day.
+# Deploying into the plateau costs roughly a third more disrupted sessions
+# than these slots do. The curve is measured in UTC, so it slides an hour at
+# each DST boundary.
 on:
   schedule:
-    - cron: '0 16,20,0 * * *'
+    - cron: '0 6,13,23 * * *'
   workflow_dispatch:
 
 permissions:
