@@ -1544,6 +1544,22 @@ describe('migrateParams - bento merged leftover (#3748)', () => {
       compartments: compartments({ stash: [{ w: 2, h: 1, cells: [1, 0] }] }),
     });
     expect(notBooleans.compartments.stash).toEqual([{ w: 2, h: 1 }]);
+
+    // Two islands under one id would place as two pockets sharing a label, and
+    // `drawFootprint` refuses them, so the entry degrades to its bounding box.
+    const twoIslands = migrateParams({
+      compartments: compartments({
+        stash: [{ w: 2, h: 2, cells: [true, false, false, true] }],
+      }),
+    });
+    expect(twoIslands.compartments.stash).toEqual([{ w: 2, h: 2 }]);
+
+    const lShape = migrateParams({
+      compartments: compartments({
+        stash: [{ w: 2, h: 2, cells: [true, true, true, false] }],
+      }),
+    });
+    expect(lShape.compartments.stash).toEqual([{ w: 2, h: 2, cells: [true, true, true, false] }]);
   });
 });
 

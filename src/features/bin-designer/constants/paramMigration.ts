@@ -121,6 +121,7 @@ import {
 import type { TextStyleDefaults } from '../types/text';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { MAX_CUTOUT_TOP_OFFSET_MM } from '../utils/cutoutFill';
+import { isContiguousSelection } from '../utils/compartments';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import {
   DEFAULT_BIN_PARAMS,
@@ -1048,17 +1049,24 @@ function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
 
 /**
  * A stash entry's footprint mask, or undefined for a plain rectangle. Anything
- * the server would reject — wrong length, non-boolean, empty, all-filled — is
- * dropped rather than repaired, landing the entry on the rectangle the field's
- * absence already means.
+ * the server would reject — wrong length, non-boolean, empty, all-filled, or
+ * split into two islands — is dropped rather than repaired, landing the entry on
+ * the rectangle the field's absence already means. Dropping beats leaving the
+ * mask in place: `drawFootprint` refuses a disconnected footprint, so a kept one
+ * would show a shelf chip that silently declines to place.
  */
 function cleanFootprintMask(mask: unknown, w: number, h: number): boolean[] | undefined {
   if (!Array.isArray(mask)) return undefined;
   const cells: unknown[] = mask;
   if (cells.length !== w * h) return undefined;
   if (cells.some((cell) => typeof cell !== 'boolean')) return undefined;
-  const filled = cells.filter((cell) => cell === true).length;
-  if (filled === 0 || filled === cells.length) return undefined;
+  const filled: number[] = [];
+  cells.forEach((cell, i) => {
+    if (cell === true) filled.push(i);
+  });
+  if (filled.length === 0 || filled.length === cells.length) return undefined;
+  // The mask is its own w-wide grid, so its own width is the stride.
+  if (!isContiguousSelection(w, filled)) return undefined;
   return cells as boolean[];
 }
 
