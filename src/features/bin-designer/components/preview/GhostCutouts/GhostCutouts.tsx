@@ -41,6 +41,7 @@ export function GhostCutouts() {
     heightUnitMm,
     wallThickness,
     cutouts,
+    cutoutConfig,
     base,
     lid,
     overhang,
@@ -56,6 +57,7 @@ export function GhostCutouts() {
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       cutouts: s.params.cutouts,
+      cutoutConfig: s.params.cutoutConfig,
       base: s.params.base,
       lid: s.params.lid,
       overhang: s.params.overhang,
@@ -71,6 +73,9 @@ export function GhostCutouts() {
   const totalH = height * heightUnitMm;
   const wallHeight = baseWallHeight(base, totalH);
   const floorZ = baseFloorZ(base, heightUnitMm, lid);
+  // The worker cuts from the solid FILL surface, which the global top offset
+  // lowers below the rim — and skips every cutout when nothing of it remains.
+  const fillSurface = wallHeight - cutoutConfig.topOffset;
 
   const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
   const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
@@ -94,7 +99,7 @@ export function GhostCutouts() {
   // - All cutouts: shown during generation
   // Apply live preview overrides (drag/resize/rotate) for real-time 3D feedback
   const cutoutsToRender = useMemo(() => {
-    if (!isSolid || cutouts.length === 0) return [];
+    if (!isSolid || cutouts.length === 0 || fillSurface <= 0) return [];
     // Hidden cutouts are dropped for the reason the builder drops them
     // (#3568): a ghost for a shape the export will not cut is the exact
     // preview-vs-export divergence the hidden flag's epoch bump exists to
@@ -113,14 +118,14 @@ export function GhostCutouts() {
       const overrides = previewOverrides.get(c.id);
       return overrides ? { ...c, ...overrides } : c;
     });
-  }, [isSolid, cutouts, isGenerating, hasSelection, selectedIds, previewOverrides]);
+  }, [isSolid, cutouts, isGenerating, hasSelection, selectedIds, previewOverrides, fillSurface]);
 
   const shouldShow = cutoutsToRender.length > 0;
 
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
-    return buildCutoutGeometry(cutoutsToRender, originX, originY, floorZ + wallHeight);
-  }, [shouldShow, cutoutsToRender, floorZ, wallHeight, originX, originY]);
+    return buildCutoutGeometry(cutoutsToRender, originX, originY, floorZ + fillSurface);
+  }, [shouldShow, cutoutsToRender, floorZ, fillSurface, originX, originY]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;
