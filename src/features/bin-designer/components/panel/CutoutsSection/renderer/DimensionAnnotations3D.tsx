@@ -9,6 +9,7 @@
 import { Html } from '@react-three/drei';
 
 import type { Cutout } from '@/features/bin-designer/types';
+import { HTML_OVERLAY_Z_INDEX_RANGE } from './constants';
 
 interface DimensionAnnotations3DProps {
   readonly cutouts: readonly Cutout[];
@@ -47,14 +48,24 @@ export function DimensionAnnotations3D({
         return (
           <group key={cutout.id}>
             {/* Width annotation below shape */}
-            <Html position={[widthX, widthY, 0.1]} center style={{ pointerEvents: 'none' }}>
+            <Html
+              position={[widthX, widthY, 0.1]}
+              center
+              style={{ pointerEvents: 'none' }}
+              zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
+            >
               <div className="rounded bg-surface-elevated/80 px-1 text-[10px] font-mono text-content-secondary whitespace-nowrap">
                 {effective.width.toFixed(1)}mm
               </div>
             </Html>
 
             {/* Depth annotation left of shape */}
-            <Html position={[depthX, depthY, 0.1]} center style={{ pointerEvents: 'none' }}>
+            <Html
+              position={[depthX, depthY, 0.1]}
+              center
+              style={{ pointerEvents: 'none' }}
+              zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
+            >
               <div className="rounded bg-surface-elevated/80 px-1 text-[10px] font-mono text-content-secondary whitespace-nowrap">
                 {effective.depth.toFixed(1)}mm
               </div>

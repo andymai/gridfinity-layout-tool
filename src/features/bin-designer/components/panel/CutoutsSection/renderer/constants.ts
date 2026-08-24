@@ -42,6 +42,14 @@ export const Z_LAYER_STEP = 0.05;
 export const Z_LAYER_MAX = 900;
 export const Z_LAYER_RENDER_STEP = 0.001;
 
+/**
+ * z-index range for drei `<Html>` overlays (dimension chips, drag tooltip,
+ * lock badge, ruler readout). drei's default range starts at ~16.7 million,
+ * which paints these chips through the cutout context menu (`z-50`) and its
+ * `z-40` scrim — every in-canvas HTML overlay must stay below both.
+ */
+export const HTML_OVERLAY_Z_INDEX_RANGE: [number, number] = [30, 0];
+
 /** Camera zoom limits (zoom = pixels per mm for the orthographic camera) */
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 50;

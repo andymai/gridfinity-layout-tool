@@ -7,6 +7,8 @@
 
 import { Html } from '@react-three/drei';
 
+import { HTML_OVERLAY_Z_INDEX_RANGE } from './constants';
+
 interface LockBadge3DProps {
   /** World-space X position (mm) */
   readonly worldX: number;
@@ -16,7 +18,12 @@ interface LockBadge3DProps {
 
 export function LockBadge3D({ worldX, worldY }: LockBadge3DProps) {
   return (
-    <Html position={[worldX, worldY, 0.1]} style={{ pointerEvents: 'none' }} center>
+    <Html
+      position={[worldX, worldY, 0.1]}
+      style={{ pointerEvents: 'none' }}
+      center
+      zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
+    >
       <div
         className="flex items-center justify-center rounded-full bg-surface-elevated/80 border border-stroke-subtle shadow-sm"
         style={{ width: 16, height: 16 }}
