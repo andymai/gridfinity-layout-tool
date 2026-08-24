@@ -1,0 +1,37 @@
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.tsx
+  s_29f851ea929e9e::t_9ed4e023216f3d 109
+  s_29f851ea929e9e::t_4a455d864625fa 28-33,52,96-108
+  s_29f851ea929e9e::t_942660fa2c0018 27,110-111
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_29f851ea929e9e::t_e64b0344f287fa 29,343-356,725
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
+  s_29f851ea929e9e::t_e60bff7dd1c707 257-316
+  s_29f851ea929e9e::t_4de18f99cbc9aa 256
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.tsx
+  s_29f851ea929e9e::t_ec7c1ccab92818 48-49
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.test.tsx
+  s_29f851ea929e9e::t_09d559e52380a8 144-192
+  s_29f851ea929e9e::t_cecba1db974d52 193-194
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_29f851ea929e9e::t_ec7c1ccab92818 65-66,133,162
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.test.ts
+  s_29f851ea929e9e::t_b857c054ae8d98 10,424-442,445,447-500
+  s_29f851ea929e9e::t_23594cc0f5c2de 443-444,446
+  s_29f851ea929e9e::t_037e3fc4e3aff4 501-502
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "ece1fbe59eaecb3b06930752174074906e87b5b6",
+  "prompts": {},
+  "sessions": {
+    "s_29f851ea929e9e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eda90044-39c4-4236-b854-6be20c1a9dd4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
