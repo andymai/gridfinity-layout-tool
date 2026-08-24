@@ -1,0 +1,93 @@
+src/i18n/locales/es.json
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+src/i18n/locales/en.ts
+  s_988f5d7bb7605f::t_5f2757cd869fdf 2732-2733
+  s_988f5d7bb7605f::t_ffaf434e3bd9d2 2984-2985
+src/i18n/locales/cs.json
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+src/i18n/locales/nl.json
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+src/i18n/locales/ja.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+src/i18n/locales/pl.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+src/i18n/locales/zh-CN.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.test.tsx
+  s_988f5d7bb7605f::t_443c31273e506f 46-54
+src/i18n/locales/de.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_100e5035750581 851
+src/i18n/locales/fr.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_988f5d7bb7605f::t_43e7f284eb324a 197-210
+  s_988f5d7bb7605f::t_e6173470a1ecb9 32
+  s_988f5d7bb7605f::t_7fdb9f62f7170b 139-142
+  s_988f5d7bb7605f::t_b51abdc04a0d3d 689
+  s_988f5d7bb7605f::t_da162e7dc5babe 698
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.tsx
+  s_988f5d7bb7605f::t_8776ff6b82921f 38-39,47
+  s_988f5d7bb7605f::t_ac9bc7b37a6d52 103-114
+src/i18n/locales/ko.json
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+src/i18n/locales/nb.json
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_988f5d7bb7605f::t_c2a602d186eed7 121-130
+  s_988f5d7bb7605f::t_f96341f7ceb3fa 218-225
+  s_988f5d7bb7605f::t_b15662817d02d9 27
+src/i18n/locales/uk.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+src/features/bin-designer/components/panel/CutoutsSection/cutoutDepthShortfall.ts
+  s_988f5d7bb7605f::t_43db98555129b0 116
+  s_988f5d7bb7605f::t_30103a1790b59d 1-19,21-37,40-50,71-81,83-115,117
+  s_988f5d7bb7605f::t_9558df3c40e67e 20
+  s_988f5d7bb7605f::t_e46383739c6b80 38-39,51-70
+  s_988f5d7bb7605f::t_8fc71174ba38fb 82
+src/features/bin-designer/components/panel/CutoutsSection/cutoutDepthShortfall.test.ts
+  s_988f5d7bb7605f::t_e1b0e5314e9401 1-60,85-96
+  s_988f5d7bb7605f::t_8bd0663e5ec325 61-84
+  s_988f5d7bb7605f::t_ec257ea4e2ee25 97-98
+src/i18n/locales/it.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+src/i18n/locales/pt-BR.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+src/i18n/locales/sv.json
+  s_988f5d7bb7605f::t_a9dfb80e986533 587
+  s_988f5d7bb7605f::t_f32872dcde6ab6 851
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.tsx
+  s_988f5d7bb7605f::t_02091772ea5cb4 48-49
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_988f5d7bb7605f::t_a2ced54b1ec1ad 129
+  s_988f5d7bb7605f::t_d409552c583827 61-62
+  s_988f5d7bb7605f::t_526067c739a497 159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "17390e1665afec93b3f4cdc967ace4cc3afdedcc",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
