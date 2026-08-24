@@ -1,0 +1,39 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.test.tsx
+  s_29f851ea929e9e::t_7148e22383ec70 89-117
+src/features/whats-new/entries.ts
+  s_29f851ea929e9e::t_9d2fb4e59bc656 16
+  s_29f851ea929e9e::t_3cdd1353658cba 17-24
+src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.tsx
+  s_29f851ea929e9e::t_1580f3b11686f5 86,96
+  s_29f851ea929e9e::t_1e4d91625b75e9 20
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_29f851ea929e9e::t_1e4d91625b75e9 27
+  s_29f851ea929e9e::t_1580f3b11686f5 165-170,174,185
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.test.ts
+  s_29f851ea929e9e::t_ea7039b6dfbbcb 116-118
+  s_29f851ea929e9e::t_dde0184b1171ed 6,73-115,119,124
+  s_29f851ea929e9e::t_3f7d7d9d70ff9a 120-123,125-126
+src/features/whats-new/latest.ts
+  s_29f851ea929e9e::t_3cdd1353658cba 9
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_29f851ea929e9e::t_d59b3ab2e8e155 170-197
+  s_29f851ea929e9e::t_fdffc1ae54c5d4 169
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.test.tsx
+  s_29f851ea929e9e::t_a004e1d6cc94d6 89-140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "40f2e63171761b50dcf0c1979401cb674aea0bd1",
+  "prompts": {},
+  "sessions": {
+    "s_29f851ea929e9e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eda90044-39c4-4236-b854-6be20c1a9dd4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
