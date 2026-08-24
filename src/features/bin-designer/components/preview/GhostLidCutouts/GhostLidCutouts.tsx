@@ -85,10 +85,12 @@ export function GhostLidCutouts({ lidOffsetMm }: GhostLidCutoutsProps) {
     if (result.length === 0) return result;
     // The depth the WORKER will use, not the stored one: a lid cutout always
     // spans the plate, so a ghost drawn at `cutDepth` would promise a pocket.
+    // Lean is zeroed for the same reason — the lid builder bores straight
+    // through and strips it, so a tilted ghost would promise a tilted hole.
     const host = lidCutoutHostFace(params);
     return result.map((c) => {
       const overrides = previewOverrides.get(c.id);
-      return { ...c, ...overrides, cutDepth: host.thickness };
+      return { ...c, ...overrides, cutDepth: host.thickness, leanDeg: 0 };
     });
   }, [window, cutouts, isGenerating, hasSelection, selectedIds, previewOverrides, params]);
 
