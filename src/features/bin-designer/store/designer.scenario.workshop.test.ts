@@ -299,9 +299,10 @@ describe('DesignerStore - workshop group operations', () => {
     const historyLen = store().history.past.length;
     const clones = store().duplicateAssemblyParts([a, b]);
     expect(clones).toHaveLength(2);
+    expect(clones.map((clone) => clone.sourceId)).toEqual([a, b]);
     expect(store().history.past).toHaveLength(historyLen + 1);
-    expect(store().ui.selectedAssemblyPartIds).toEqual(clones);
-    const first = findAssemblyPart(assembly().parts, clones[0] ?? '');
+    expect(store().ui.selectedAssemblyPartIds).toEqual(clones.map((clone) => clone.id));
+    const first = findAssemblyPart(assembly().parts, clones[0]?.id ?? '');
     expect(first?.transform.x).toBe(18);
   });
 

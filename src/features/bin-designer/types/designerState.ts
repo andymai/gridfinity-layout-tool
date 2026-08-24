@@ -177,6 +177,23 @@ export interface DesignerState {
   loadAssemblyTemplate: (parts: AssemblyPartNode[]) => boolean;
   updateAssemblyBase: (partial: Partial<AssemblyBase>) => void;
 
+  // Workshop group operations — world-frame, acting on the top-level members
+  // of the given selection (descendants of another member ride along)
+  moveAssemblyPartsWorldTo: (
+    targets: readonly { id: string; x: number; y: number; rotZDeg?: number }[]
+  ) => void;
+  nudgeAssemblyPartsWorld: (ids: readonly string[], dx: number, dy: number) => void;
+  rotateAssemblyPartsWorld: (ids: readonly string[], deltaDeg: number) => void;
+  alignAssemblyPartsWorld: (ids: readonly string[], axis: 'x' | 'y') => void;
+  distributeAssemblyPartsWorld: (ids: readonly string[], axis: 'x' | 'y') => void;
+  removeAssemblyParts: (ids: readonly string[]) => void;
+  duplicateAssemblyParts: (
+    ids: readonly string[],
+    offsetMm?: number
+  ) => { id: string; sourceId: string }[];
+  copyAssemblyParts: (ids: readonly string[]) => number;
+  pasteAssemblyParts: (at?: { x: number; y: number }) => string[];
+
   // Compartment actions
   /** Regenerate a uniform grid. Carries labels by position where they fit and
    *  returns the count of labels that couldn't be preserved. */
@@ -365,6 +382,10 @@ export interface DesignerState {
   /** Select a drawn compartment in the Bento workspace (null clears). */
   setSelectedBentoCompartmentId: (id: number | null) => void;
   setSelectedAssemblyPartId: (id: string | null) => void;
+  /** Replace the Workshop multi-selection; `anchor` must be a member to win. */
+  setSelectedAssemblyPartIds: (ids: readonly string[], anchor?: string | null) => void;
+  /** Shift-click semantics: add the id, or drop it if already selected. */
+  toggleAssemblyPartSelected: (id: string) => void;
   setWorkshopPendingPartType: (
     type: AssemblyPartType | null,
     cutterShape?: 'circle' | 'slot' | null

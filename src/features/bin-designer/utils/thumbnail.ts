@@ -363,6 +363,9 @@ export async function exportPreviewGlb(): Promise<ArrayBuffer | null> {
   const edgeGeometries: BufferGeometry[] = [];
   previewScene.traverse((obj) => {
     if (!obj.visible) return;
+    // Selection chrome (rotation ring, resize handles) marks itself with
+    // renderOrder >= 2 — the same convention captureThumbnailAtPreset hides.
+    if (obj.renderOrder >= 2) return;
 
     // Precomputed BREP edge lines — baked so the live 3D preview shows the same
     // black outlines as the 2D thumbnail. Position only; black material below.

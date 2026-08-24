@@ -388,11 +388,13 @@ export function createAssemblyActions(set: Set, get: Get) {
     },
 
     /**
-     * Set world positions for several parts at once (group drag). Targets are
-     * world-frame; descendants of another target ride along with their
-     * ancestor, so callers pass top-level ids only.
+     * Set world placements for several parts at once (group drag/rotate).
+     * Targets are world-frame; descendants of another target ride along with
+     * their ancestor, so callers pass top-level ids only.
      */
-    moveAssemblyPartsWorldTo: (targets: readonly { id: string; x: number; y: number }[]): void => {
+    moveAssemblyPartsWorldTo: (
+      targets: readonly { id: string; x: number; y: number; rotZDeg?: number }[]
+    ): void => {
       applyWorldTargets(targets);
     },
 
@@ -517,16 +519,22 @@ export function createAssemblyActions(set: Set, get: Get) {
 
     /**
      * Duplicate every selected subtree in one history entry and select the
-     * clones, so a follow-up drag moves the copies as a group.
+     * clones, so a follow-up drag moves the copies as a group. `offsetMm`
+     * shifts the clones aside (default) — alt-drag passes 0 so the clone
+     * starts under the pointer. Returns clone ids with their source ids so
+     * the caller can pick up the clone of the part it grabbed.
      */
-    duplicateAssemblyParts: (ids: readonly string[]): string[] => {
+    duplicateAssemblyParts: (
+      ids: readonly string[],
+      offsetMm: number = PASTE_OFFSET_MM
+    ): { id: string; sourceId: string }[] => {
       const current = parts();
       if (!current) return [];
       const top = filterTopLevelAssemblyIds(current, new Set(ids));
       if (top.length === 0) return [];
       const anchorId = get().ui.selectedAssemblyPartId;
       let next: AssemblyPartNode[] = current;
-      const cloneIds: string[] = [];
+      const clones: { id: string; sourceId: string }[] = [];
       let cloneAnchor: string | null = null;
       for (const id of top) {
         const node = findAssemblyPart(next, id);
@@ -536,24 +544,28 @@ export function createAssemblyActions(set: Set, get: Get) {
           ...copy,
           transform: clampPartTransform({
             ...copy.transform,
-            x: copy.transform.x + PASTE_OFFSET_MM,
+            x: copy.transform.x + offsetMm,
           }),
         } as AssemblyPartNode;
         const parentId = findAssemblyParentId(next, id) ?? null;
         const added = withAssemblyPartAdded(next, parentId, offset);
         if (!added) continue;
         next = added;
-        cloneIds.push(offset.id);
+        clones.push({ id: offset.id, sourceId: id });
         if (id === anchorId) cloneAnchor = offset.id;
       }
-      if (cloneIds.length === 0) return [];
+      if (clones.length === 0) return [];
       set((state) => {
         if (state.structure?.kind !== 'assembly') return;
         pushHistoryEntry(state);
         state.structure.parts = next;
-        setAssemblySelection(state, cloneIds, cloneAnchor);
+        setAssemblySelection(
+          state,
+          clones.map((clone) => clone.id),
+          cloneAnchor
+        );
       });
-      return cloneIds;
+      return clones;
     },
 
     /** Snapshot the selected subtrees (with world placement) for paste. */

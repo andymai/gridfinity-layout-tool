@@ -52,6 +52,10 @@ export const THREE_COLORS = {
     workshopPart: '#9fb0c0',
     workshopPartSelected: '#5aa7ff',
     workshopGhost: '#3ed3e4',
+    workshopCubeFace: '#2e3245',
+    workshopCubeHover: '#5aa7ff',
+    workshopCubeText: '#d5dbe6',
+    workshopCubeStroke: '#6b7285',
   },
   light: {
     canvasBg: '#edecea',
@@ -73,6 +77,10 @@ export const THREE_COLORS = {
     workshopPart: '#8a94a4',
     workshopPartSelected: '#2f6fd0',
     workshopGhost: '#0a7e8c',
+    workshopCubeFace: '#f4f2ee',
+    workshopCubeHover: '#2f6fd0',
+    workshopCubeText: '#3a3f4c',
+    workshopCubeStroke: '#a9adb8',
   },
 } as const;
 
