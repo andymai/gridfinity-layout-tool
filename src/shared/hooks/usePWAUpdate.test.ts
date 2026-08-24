@@ -549,9 +549,9 @@ describe('usePWAUpdate', () => {
       // Initial check
       expect(mockRegistration.update).toHaveBeenCalledTimes(1);
 
-      // Advance 15 minutes (periodic interval)
+      // Advance one periodic interval
       act(() => {
-        timerUtils.advanceTime(15 * 60 * 1000);
+        timerUtils.advanceTime(60 * 60 * 1000);
       });
 
       // Should have checked again
@@ -570,9 +570,9 @@ describe('usePWAUpdate', () => {
 
       unmount();
 
-      // Advance 15 minutes
+      // Advance one periodic interval
       act(() => {
-        timerUtils.advanceTime(15 * 60 * 1000);
+        timerUtils.advanceTime(60 * 60 * 1000);
       });
 
       // Should NOT have checked again (unmounted)
