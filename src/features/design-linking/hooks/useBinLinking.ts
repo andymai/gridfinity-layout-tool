@@ -125,7 +125,7 @@ export function useBinLinking(): UseBinLinkingReturn {
       if (!bin || !bin.linkedDesignId) return;
 
       batch(() => {
-        updateBin(binId, { linkedDesignId: undefined });
+        updateBin(binId, { linkedDesignId: null });
       });
 
       addToast({
@@ -142,7 +142,7 @@ export function useBinLinking(): UseBinLinkingReturn {
     (binIds: BinId[]) => {
       batch(() => {
         for (const binId of binIds) {
-          updateBin(binId, { linkedDesignId: undefined });
+          updateBin(binId, { linkedDesignId: null });
         }
       });
     },
@@ -260,7 +260,7 @@ export function useBinLinking(): UseBinLinkingReturn {
             synced.push(elig.binId);
           } else {
             // Unlink bin that can't sync
-            updateBin(elig.binId, { linkedDesignId: undefined });
+            updateBin(elig.binId, { linkedDesignId: null });
             unlinked.push(elig.binId);
           }
         }
@@ -406,7 +406,7 @@ export function useBinLinking(): UseBinLinkingReturn {
     async (binId: BinId, designId: DesignId, designName: string): Promise<boolean> => {
       // First unlink the bin
       batch(() => {
-        updateBin(binId, { linkedDesignId: undefined });
+        updateBin(binId, { linkedDesignId: null });
       });
 
       // Then delete the design from storage

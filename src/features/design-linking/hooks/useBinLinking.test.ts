@@ -190,7 +190,7 @@ describe('useBinLinking', () => {
         result.current.unlinkBin(binId('bin-1'));
       });
 
-      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
+      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: null });
     });
 
     it('shows info toast when unlinking', () => {
@@ -249,8 +249,8 @@ describe('useBinLinking', () => {
         result.current.unlinkBins([binId('bin-1'), binId('bin-2')]);
       });
 
-      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
-      expect(mockUpdateBin).toHaveBeenCalledWith('bin-2', { linkedDesignId: undefined });
+      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: null });
+      expect(mockUpdateBin).toHaveBeenCalledWith('bin-2', { linkedDesignId: null });
     });
 
     it('handles empty array', () => {
@@ -581,7 +581,7 @@ describe('useBinLinking', () => {
       });
 
       // Bin should be unlinked because it can't fit
-      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
+      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: null });
       expect(syncResult.unlinked).toContain('bin-1');
       expect(syncResult.synced).toHaveLength(0);
     });
@@ -743,7 +743,7 @@ describe('useBinLinking', () => {
         );
       });
 
-      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
+      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: null });
       expect(DesignerStorage.deleteDesign).toHaveBeenCalledWith('design-1');
       expect(CustomBinRegistry.removeRegistryEntry).toHaveBeenCalledWith('design-1');
       expect(mockAddToast).toHaveBeenCalledWith({
@@ -798,7 +798,7 @@ describe('useBinLinking', () => {
         );
       });
 
-      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
+      expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: null });
     });
   });
 

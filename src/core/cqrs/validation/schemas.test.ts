@@ -244,6 +244,11 @@ describe('bin.update schema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('accepts null to clear the linked design', () => {
+    const result = z.safeParse(schema, { id: 'bin-1', updates: { linkedDesignId: null } });
+    expect(result.success).toBe(true);
+  });
 });
 
 describe('bin.deleteBatch schema', () => {
