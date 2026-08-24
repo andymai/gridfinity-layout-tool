@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_988f5d7bb7605f::t_663571dca09949 267,270-273
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "73f125f6e64d6a284f93462b1259e975a1c5bd77",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
