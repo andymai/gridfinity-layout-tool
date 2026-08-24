@@ -205,11 +205,14 @@ describe('SegmentedControl', () => {
     expect(screen.getByRole('radiogroup')).toHaveClass('custom-class');
   });
 
-  it('hides the measurement probe from assistive tech and pointer events', () => {
+  it('hides the measurement probe from assistive tech and ancestor scroll extent', () => {
     render(<SegmentedControl {...defaultProps} />);
     const probe = screen.getByRole('radiogroup').querySelector('[data-measure]');
     expect(probe).not.toBeNull();
-    expect(probe).toHaveAttribute('aria-hidden', 'true');
+    const wrapper = probe?.closest('[aria-hidden="true"]');
+    expect(wrapper).not.toBeNull();
+    expect(wrapper?.className).toContain('overflow-hidden');
+    expect(wrapper?.className).toContain('w-0');
   });
 
   it('uses per-option aria-label and title for icon-only segments', () => {
@@ -265,7 +268,7 @@ describe('SegmentedControl grid collapse', () => {
   it('re-lays overflowing segments into balanced equal-width rows', () => {
     const group = renderOverflowing();
     expect(group.className).toContain('flex-col');
-    const rows = group.querySelectorAll(':scope > div:not([data-measure])');
+    const rows = group.querySelectorAll(':scope > div:not([aria-hidden])');
     expect(rows).toHaveLength(2);
     expect(rows[0].querySelectorAll('[role="radio"]')).toHaveLength(2);
     expect(rows[1].querySelectorAll('[role="radio"]')).toHaveLength(1);

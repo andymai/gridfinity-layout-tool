@@ -405,20 +405,27 @@ export function SegmentedControl<T extends string>({
         className
       )}
     >
+      {/* The zero-size overflow-hidden wrapper keeps the probe's natural width
+          out of ancestor scrollable-overflow, so a scrollable panel never gains
+          a horizontal scrollbar from the invisible measurement content. */}
       <div
-        ref={probeRef}
         aria-hidden="true"
-        data-measure=""
-        className="pointer-events-none invisible absolute top-0 left-0 inline-flex w-max border border-transparent p-0.5 whitespace-nowrap"
+        className="pointer-events-none invisible absolute top-0 left-0 h-0 w-0 overflow-hidden"
       >
-        {options.map((option) => (
-          <span
-            key={option.value}
-            className={cn(segmentVariants({ size, activeStyle, active: false }))}
-          >
-            {option.label}
-          </span>
-        ))}
+        <div
+          ref={probeRef}
+          data-measure=""
+          className="inline-flex w-max border border-transparent p-0.5 whitespace-nowrap"
+        >
+          {options.map((option) => (
+            <span
+              key={option.value}
+              className={cn(segmentVariants({ size, activeStyle, active: false }))}
+            >
+              {option.label}
+            </span>
+          ))}
+        </div>
       </div>
       {gridSizes === null
         ? options.map((option) => renderSegment(option, fullWidth))
