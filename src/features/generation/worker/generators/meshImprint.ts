@@ -306,10 +306,13 @@ function buildInstanceTool(
   try {
     const placeLocal = (local: Manifold): Manifold => {
       // Asset-local frame: footprint spans [0..sizeX]×[0..sizeY], z=0 at the
-      // pocket bottom. Rotate about the footprint center (matching 2D cutout
-      // rotation semantics), then move to the instance's world position.
+      // pocket bottom. Rotate about the footprint center, then move to the
+      // instance's world position. `Cutout.rotation` is clockwise-positive and
+      // Manifold's Z rotation is CCW, so the tool takes the negated angle —
+      // the same convention as the BREP tools' `rotate(shape, -rotation)` and
+      // `MeshFootprintMesh`'s `-rotation` render.
       const centered = track(local.translate([-cx, -cy, 0]));
-      const rotated = track(centered.rotate([0, 0, cutout.rotation]));
+      const rotated = track(centered.rotate([0, 0, -cutout.rotation]));
       return track(rotated.translate([worldX, worldY, zBottom]));
     };
 
