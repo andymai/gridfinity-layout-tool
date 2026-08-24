@@ -266,6 +266,25 @@ describe('wall surface text scenarios', () => {
     expect(withText.triangleCount).not.toBe(withoutText.triangleCount);
   });
 
+  // Half-grid is the recurring crash class for any new geometry path (integer
+  // assumptions on fractional dims), and solid mode reaches the wall through a
+  // different branch than the hollow one this file already covers.
+  it('stays valid on a half-grid solid bin', () => {
+    const generateBin = getGenerateBin();
+    const result = generateBin(
+      makeParams(
+        { walls: { front: 'AB' } },
+        {
+          style: 'solid',
+          base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+          width: 2.5,
+          depth: 1.5,
+        }
+      )
+    );
+    assertStructurallyValid(result, 'half-grid solid wall text');
+  });
+
   it('wall text rejects the direct-mesh draft path', () => {
     expect(canBinUseDirectMesh(makeParams(undefined))).toBe(true);
     expect(canBinUseDirectMesh(makeParams({ walls: { front: 'ABC' } }))).toBe(false);
