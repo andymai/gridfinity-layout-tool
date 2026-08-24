@@ -25,6 +25,7 @@ import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import {
   cellIndex,
   isContiguousSelection,
+  isUsableFootprintMask,
   getCellsForCompartment,
   getCompartmentBounds,
   getCompartmentReadingOrder,
@@ -565,14 +566,17 @@ export function stashCompartment(config: CompartmentConfig, id: number): Compart
 
 /**
  * A stash entry's usable footprint mask, or undefined when the entry stands for
- * a plain rectangle. The single answer for placement and for the shelf preview:
- * a mask of the wrong length must not render as one shape and place as another,
- * and indexing past its end would read `undefined` as false and silently shrink
- * the footprint. Migration drops these on load; this covers state that never
- * passed through it.
+ * a plain rectangle. The single answer for placement and for the shelf preview,
+ * covering every mask `drawFootprint` would refuse: wrong length (indexing past
+ * its end reads `undefined` as false and silently shrinks the footprint), empty,
+ * all-filled, or split into islands. Anything short of that renders as one shape
+ * and places as another. Migration drops these on load; this covers state that
+ * never passed through it.
  */
 export function stashEntryMask(entry: StashedCompartment): boolean[] | undefined {
-  return entry.cells?.length === entry.w * entry.h ? entry.cells : undefined;
+  const { cells } = entry;
+  if (!cells || !isUsableFootprintMask(cells, entry.w, entry.h)) return undefined;
+  return cells;
 }
 
 /** Place a stash entry onto background grid; the rect must match its size. */

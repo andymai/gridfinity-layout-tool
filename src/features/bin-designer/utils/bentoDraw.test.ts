@@ -302,25 +302,19 @@ describe('bentoDraw', () => {
       expect(placeFromStash(withDrawn, 0, { col: 1, row: 0, w: 2, h: 2 })).toBeNull();
     });
 
-    it('placeFromStash refuses a mask that is not one connected region', () => {
-      // Only reachable from a hand-authored design file; two islands under one
-      // id would print as two pockets sharing a label.
-      const config: CompartmentConfig = {
-        ...grid(),
-        stash: [{ w: 2, h: 2, cells: [true, false, false, true] }],
-      };
-      expect(placeFromStash(config, 0, { col: 1, row: 0, w: 2, h: 2 })).toBeNull();
-    });
-
-    it('placeFromStash falls back to the rectangle for a wrong-length mask', () => {
-      const config: CompartmentConfig = {
-        ...grid(),
-        stash: [{ w: 2, h: 2, cells: [true, true] }],
-      };
+    it.each([
+      ['wrong length', [true, true]],
+      ['empty', [false, false, false, false]],
+      ['all filled', [true, true, true, true]],
+      ['two islands', [true, false, false, true]],
+    ])('placeFromStash places a %s mask as the plain rectangle', (_label, cells) => {
+      // Every shape drawFootprint would refuse resolves the same way here and in
+      // the shelf preview, so a stash chip cannot advertise a shape the drop
+      // will not produce.
+      const config: CompartmentConfig = { ...grid(), stash: [{ w: 2, h: 2, cells }] };
       const placed = placeFromStash(config, 0, { col: 1, row: 0, w: 2, h: 2 });
       expect(placed).not.toBeNull();
       if (!placed) throw new Error('unreachable');
-      expect(getCompartmentRect(placed.config, placed.id)).toEqual({ col: 1, row: 0, w: 2, h: 2 });
       expect(getCellsForCompartment(placed.config, placed.id)).toHaveLength(4);
     });
 

@@ -221,6 +221,26 @@ function allCompartmentsContiguous(cols: number, cells: readonly number[]): bool
 }
 
 /**
+ * Whether a stash footprint mask is one the grid can actually take: the right
+ * length for its box, at least one filled cell, not every cell (a rectangle has
+ * its own encoding, the absent field), and one 4-connected region.
+ *
+ * Shared by the load-time sanitizer, the placement path and the shelf preview so
+ * a mask cannot be dropped by one and honoured by another, which would advertise
+ * a shape the drop never produces.
+ */
+export function isUsableFootprintMask(mask: readonly boolean[], w: number, h: number): boolean {
+  if (mask.length !== w * h) return false;
+  const filled: number[] = [];
+  mask.forEach((cell, i) => {
+    if (cell) filled.push(i);
+  });
+  if (filled.length === 0 || filled.length === mask.length) return false;
+  // The mask is its own w-wide grid, so its own width is the stride.
+  return isContiguousSelection(w, filled);
+}
+
+/**
  * Whether a compartment fills its own bounding box.
  *
  * Non-rectangular compartments (an L, U or S built by merging) are valid

@@ -121,7 +121,7 @@ import {
 import type { TextStyleDefaults } from '../types/text';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { MAX_CUTOUT_TOP_OFFSET_MM } from '../utils/cutoutFill';
-import { isContiguousSelection } from '../utils/compartments';
+import { isUsableFootprintMask } from '../utils/compartments';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import {
   DEFAULT_BIN_PARAMS,
@@ -1058,16 +1058,9 @@ function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
 function cleanFootprintMask(mask: unknown, w: number, h: number): boolean[] | undefined {
   if (!Array.isArray(mask)) return undefined;
   const cells: unknown[] = mask;
-  if (cells.length !== w * h) return undefined;
   if (cells.some((cell) => typeof cell !== 'boolean')) return undefined;
-  const filled: number[] = [];
-  cells.forEach((cell, i) => {
-    if (cell === true) filled.push(i);
-  });
-  if (filled.length === 0 || filled.length === cells.length) return undefined;
-  // The mask is its own w-wide grid, so its own width is the stride.
-  if (!isContiguousSelection(w, filled)) return undefined;
-  return cells as boolean[];
+  const booleans = cells as boolean[];
+  return isUsableFootprintMask(booleans, w, h) ? booleans : undefined;
 }
 
 /**
