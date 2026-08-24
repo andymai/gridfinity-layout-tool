@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/binGenerator.scenario.wallText.test.ts
+  s_29f851ea929e9e::t_8e195b9c6bab3c 269-287
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "1f522ddd352e23cf423e3e07e4eaa240ba599dab",
+  "prompts": {},
+  "sessions": {
+    "s_29f851ea929e9e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eda90044-39c4-4236-b854-6be20c1a9dd4",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
