@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.471.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.2...gridfinity-layout-tool-v4.471.3) (2026-08-24)
+
+
+### Bug Fixes
+
+* **designer:** ghost outline follows the cutout's true shape and cut ([#3809](https://github.com/andymai/gridfinity-layout-tool/issues/3809)) ([ec722f1](https://github.com/andymai/gridfinity-layout-tool/commit/ec722f14a208d00d6123167e7b71f2bc2d494c25))
+
 ## [4.471.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.1...gridfinity-layout-tool-v4.471.2) (2026-08-24)
 
 
