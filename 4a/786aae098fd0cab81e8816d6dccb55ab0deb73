@@ -1,0 +1,19 @@
+src/features/bin-designer/components/preview/GhostCutouts/GhostCutouts.tsx
+  s_988f5d7bb7605f::t_3bdc2c82004e6c 118-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "4a786aae098fd0cab81e8816d6dccb55ab0deb73",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
