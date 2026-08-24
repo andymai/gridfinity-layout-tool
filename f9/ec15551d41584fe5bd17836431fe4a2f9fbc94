@@ -1,5 +1,11 @@
 src/shared/constants/labelIconPaths.test.ts
   s_69a3c1ffa47316::t_1e16e241b8a81c 44-46,48
+src/features/generation/worker/generators/connectorUtils.test.ts
+  s_b71dadf490462d::t_6fcfe27edfe4da 196-199,203-205,209-213
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_b71dadf490462d::t_c66f8e74edf5fc 29,323-324
+src/features/generation/worker/generators/connectorUtils.ts
+  s_b71dadf490462d::t_c66f8e74edf5fc 52-56,114-117
 ---
 {
   "schema_version": "authorship/3.0.0",
@@ -11,6 +17,14 @@ src/shared/constants/labelIconPaths.test.ts
       "agent_id": {
         "tool": "claude",
         "id": "d1b78618-d19b-4af1-b047-9fba8a4a49f3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_b71dadf490462d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d63aa6a-1dd4-4ad7-9510-5f605c1e034c",
         "model": "claude-opus-5"
       },
       "human_author": "Andy Aragon <hi@andymai.com>"
