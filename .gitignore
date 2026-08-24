@@ -100,3 +100,8 @@ benchmarks/latest.json
 # build (scripts/vite-plugin-mediapipe-assets.ts), not committed. The model
 # (public/models/interactive-segmenter/) IS committed; it isn't published to npm.
 public/models/tasks-vision/
+
+# Command Code agent state: a local taste-learning profile, plus AGENTS.md,
+# which contributors symlink to CLAUDE.md so the two agents cannot drift apart.
+.commandcode/
+/AGENTS.md
