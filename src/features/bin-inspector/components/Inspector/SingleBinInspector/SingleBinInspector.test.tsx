@@ -286,11 +286,11 @@ describe('SingleBinInspector', () => {
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
       const heightInput = screen.getByLabelText('Bin height');
-      // 30.6mm at a 7mm unit -> 4.37u
+      // 30.6mm at a 7mm unit -> 4.3714u
       fireEvent.change(heightInput, { target: { value: '30.6' } });
       fireEvent.blur(heightInput);
 
-      expect(inspector.updateField).toHaveBeenCalledWith('height', 4.37);
+      expect(inspector.updateField).toHaveBeenCalledWith('height', 4.3714);
     });
 
     it('warns when the height will not stack with standard bins', () => {
