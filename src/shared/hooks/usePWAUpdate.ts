@@ -56,8 +56,10 @@ function captureSmokeEvent(name: string, props: Record<string, unknown>): void {
 // Toast duration for the brief "updating" notice shown right before reload
 const UPDATE_TOAST_MS = 5000;
 
-// Background polling interval (every 15 minutes when tab is active)
-const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
+// Background polling interval while a tab stays open. Every check fetches
+// sw.js past the HTTP cache and bills as an edge request, so this is kept
+// hourly; visibilitychange still triggers a check the moment a user returns.
+const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 
 // Minimum time between update checks (1 minute)
 const UPDATE_THROTTLE_MS = 60 * 1000;
@@ -364,7 +366,7 @@ function restoreEphemeralState(): boolean {
  * Checks for updates on:
  * - Initial page load (via onRegisteredSW callback)
  * - Tab visibility change (returning to tab)
- * - Every 15 minutes while active
+ * - Hourly while active
  *
  * Update checks are throttled and skip when:
  * - Offline (navigator.onLine is false)
@@ -443,7 +445,6 @@ export function usePWAUpdate(): void {
       // Check immediately on registration (page load)
       void checkForUpdate();
 
-      // Set up periodic checks (less aggressive - every 15 minutes)
       intervalRef.current = window.setInterval(() => {
         void checkForUpdate();
       }, UPDATE_CHECK_INTERVAL_MS);
