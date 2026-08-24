@@ -1,0 +1,54 @@
+src/features/bin-designer/utils/assemblyTree.ts
+  s_7b56e10d8fa40b::t_1df23306f83cd4 169-181
+  s_7b56e10d8fa40b::t_63f7e12bbf61b4 168,182-202
+src/features/bin-designer/constants/defaults.ts
+  s_7b56e10d8fa40b::t_fea752f16fdb03 311
+  s_7b56e10d8fa40b::t_473ff36abed944 314
+src/features/bin-designer/types/uiState.ts
+  s_7b56e10d8fa40b::t_332bfcdcd7df04 205-207,213-218
+  s_7b56e10d8fa40b::t_eeb49f10b4cb83 225-230
+  s_7b56e10d8fa40b::t_06cde51f95fca6 219
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_7b56e10d8fa40b::t_f355377bfdb05d 28
+  s_7b56e10d8fa40b::t_9ec20e99e3b253 26,30,39,46-71
+  s_7b56e10d8fa40b::t_f76943004f16cc 176,239,256-257,385,390,392-463,465-540,542-630
+  s_7b56e10d8fa40b::t_a27fa4b17f2f34 113-119
+  s_7b56e10d8fa40b::t_156fe991a0c77d 258-260
+  s_7b56e10d8fa40b::t_d8c4be29b7fd7b 229-230
+  s_7b56e10d8fa40b::t_258ab4dd103235 87-112,120-151
+  s_7b56e10d8fa40b::t_edf5de23fc1e4f 72
+  s_7b56e10d8fa40b::t_aae36b3716f36e 227-228
+  s_7b56e10d8fa40b::t_bac79f4e58e3c3 391
+  s_7b56e10d8fa40b::t_44ed96f21a1fc9 464
+  s_7b56e10d8fa40b::t_f68cceb3fc88dc 541
+  s_7b56e10d8fa40b::t_769cc602cb15b8 224
+src/features/bin-designer/utils/assemblyTree.test.ts
+  s_7b56e10d8fa40b::t_2ab4f54dac75fd 10,13,142
+  s_7b56e10d8fa40b::t_58cb0e698edbd0 110-141,143-150
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_7b56e10d8fa40b::t_d29b8de5d646fc 95-116
+  s_7b56e10d8fa40b::t_a787f4b47a9dba 25
+src/features/bin-designer/store/designer.scenario.workshop.test.ts
+  s_7b56e10d8fa40b::t_3ef46ceb1329f5 5,188-336
+  s_7b56e10d8fa40b::t_5f91b3f746ed9f 337
+src/features/bin-designer/store/helpers.ts
+  s_7b56e10d8fa40b::t_1a462b7dcb4c74 100-127
+  s_7b56e10d8fa40b::t_4bf6c2e0ecc9da 214
+  s_7b56e10d8fa40b::t_9912ab1974b905 99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "8a88d386fad231cd66b848179a1035e8928b3a43",
+  "prompts": {},
+  "sessions": {
+    "s_7b56e10d8fa40b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7e4da26-d3f3-446e-b4f4-c1d2d4b6b58d",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
