@@ -86,22 +86,26 @@ function instanceAchievableDepth(
 
   for (const px of [-hw, hw]) {
     for (const py of [-hd, hd]) {
+      // NOMINAL footprint corner already outside the board: the off-board
+      // warning's case, judged on the same un-leaned footprint it measures so
+      // the two warnings cannot both fire for one corner.
+      const nominalX = cx + px * cosR - py * sinR;
+      const nominalY = cy + px * sinR + py * cosR;
+      if (
+        nominalX < -BOARD_EDGE_TOLERANCE_MM ||
+        nominalX > binWidth + BOARD_EDGE_TOLERANCE_MM ||
+        nominalY < -BOARD_EDGE_TOLERANCE_MM ||
+        nominalY > binDepth + BOARD_EDGE_TOLERANCE_MM
+      ) {
+        return null;
+      }
+
       // Floor corner at depth D: q = py·cos(lean) + D·sin(lean) along the
       // local tilt axis, then plan-rotated. Linear in D on every axis.
       const bx = cx + px * cosR - py * cosL * sinR;
       const ax = -sinL * sinR;
       const by = cy + px * sinR + py * cosL * cosR;
       const ay = sinL * cosR;
-
-      // Mouth corner (D = 0) already outside the board: not our warning.
-      if (
-        bx < -BOARD_EDGE_TOLERANCE_MM ||
-        bx > binWidth + BOARD_EDGE_TOLERANCE_MM ||
-        by < -BOARD_EDGE_TOLERANCE_MM ||
-        by > binDepth + BOARD_EDGE_TOLERANCE_MM
-      ) {
-        return null;
-      }
 
       // Interior floor: z = fillSurface + py·sin(lean) − D·cos(lean) >= 0.
       bound((fillSurface + py * sinL) / cosL);
