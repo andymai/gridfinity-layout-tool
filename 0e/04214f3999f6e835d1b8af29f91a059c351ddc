@@ -1,0 +1,32 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/constants.ts
+  s_988f5d7bb7605f::t_cb49b00990468e 45-52
+src/features/bin-designer/components/panel/CutoutsSection/renderer/DimensionAnnotations3D.tsx
+  s_988f5d7bb7605f::t_bd56ca80c6de82 51-56
+  s_988f5d7bb7605f::t_4d5de4fbc792cd 63-68
+  s_988f5d7bb7605f::t_bee164b62ffdd7 12
+src/features/bin-designer/components/panel/CutoutsSection/renderer/DimensionTooltip3D.tsx
+  s_988f5d7bb7605f::t_8e60e352e1fccc 43-48
+  s_988f5d7bb7605f::t_468fb22f2131ec 10-11
+src/features/bin-designer/components/panel/CutoutsSection/renderer/LockBadge3D.tsx
+  s_988f5d7bb7605f::t_d0f6a75be34692 21-26
+  s_988f5d7bb7605f::t_750193e40bb231 10-11
+src/features/bin-designer/components/panel/CutoutsSection/renderer/RulerMeasurement3D.tsx
+  s_988f5d7bb7605f::t_912a5a1a68e287 104
+  s_988f5d7bb7605f::t_07903634d8119f 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "0e04214f3999f6e835d1b8af29f91a059c351ddc",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
