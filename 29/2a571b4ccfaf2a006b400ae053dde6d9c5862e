@@ -1,0 +1,26 @@
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.test.ts
+  s_17a79989e24fcf::t_44ff7f356504a3 282-294
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_17a79989e24fcf::t_dcf785728947e5 325-334,338-340
+  s_17a79989e24fcf::t_6131302181d11a 19
+  s_17a79989e24fcf::t_642f090a187884 709
+  s_17a79989e24fcf::t_f5ee67ea270ff6 341
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
+  s_17a79989e24fcf::t_ef21be1dcb68fe 256-261,270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "292a571b4ccfaf2a006b400ae053dde6d9c5862e",
+  "prompts": {},
+  "sessions": {
+    "s_17a79989e24fcf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "440bb349-37e2-4daa-a0d8-a45dcc0b6533",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
