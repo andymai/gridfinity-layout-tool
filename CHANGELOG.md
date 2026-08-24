@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.471.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.470.0...gridfinity-layout-tool-v4.471.0) (2026-08-24)
+
+
+### Features
+
+* **designer:** lean angle for custom cutouts ([#3795](https://github.com/andymai/gridfinity-layout-tool/issues/3795)) ([bb1e90c](https://github.com/andymai/gridfinity-layout-tool/commit/bb1e90c987eca28be602a9c8c3df4f9702a0bd70))
+
 ## [4.470.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.469.0...gridfinity-layout-tool-v4.470.0) (2026-08-23)
 
 
