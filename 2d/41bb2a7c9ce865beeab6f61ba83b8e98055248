@@ -1,0 +1,23 @@
+src/shared/components/AppVersionButton/AppVersionButton.tsx
+  s_98d93acaac415a::t_e20c510f4cc467 10-14
+src/features/whats-new/seenState.ts
+  s_98d93acaac415a::t_e20c510f4cc467 12-15
+src/features/whats-new/entries.ts
+  s_98d93acaac415a::t_e20c510f4cc467 1041
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "2d41bb2a7c9ce865beeab6f61ba83b8e98055248",
+  "prompts": {},
+  "sessions": {
+    "s_98d93acaac415a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9377b15c-ea26-4a99-a567-cd7e26d19e48",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
