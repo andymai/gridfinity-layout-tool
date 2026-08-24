@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.471.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.1...gridfinity-layout-tool-v4.471.2) (2026-08-24)
+
+
+### Bug Fixes
+
+* **designer:** arrange repeats by their full pattern extent ([#3803](https://github.com/andymai/gridfinity-layout-tool/issues/3803)) ([dc08ea1](https://github.com/andymai/gridfinity-layout-tool/commit/dc08ea12cab616d230a4e6cee3795224732b0f76)), closes [#3799](https://github.com/andymai/gridfinity-layout-tool/issues/3799)
+
 ## [4.471.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.0...gridfinity-layout-tool-v4.471.1) (2026-08-24)
 
 
