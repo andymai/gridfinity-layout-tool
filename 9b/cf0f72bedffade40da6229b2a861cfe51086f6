@@ -1,0 +1,33 @@
+.claude/skills/content-and-seo/SKILL.md
+  s_ed41b3402c59e7::t_bf8ffbc242325a 70
+  s_ed41b3402c59e7::t_45892836c28cc1 68-69
+  s_ed41b3402c59e7::t_558ce1a6493bdb 71-73
+  s_ed41b3402c59e7::t_1dd547b6910564 74-78
+scripts/vercel-ignore.sh
+  s_ed41b3402c59e7::t_1b350788a7d584 5-8,11
+  s_ed41b3402c59e7::t_7b26e94b876ba4 23-28,31-32,35-36,39-42
+.claude/skills/release-and-ci/SKILL.md
+  s_ed41b3402c59e7::t_089a3c472eefd4 90
+  s_ed41b3402c59e7::t_9a8cdd42761ffb 18-19
+.github/workflows/release.yml
+  s_ed41b3402c59e7::t_03ea5bdd7e596e 26-28
+  s_ed41b3402c59e7::t_361944a2865860 2-6,8-10
+scripts/doc-budget.json
+  s_ed41b3402c59e7::t_01d80429af3072 3-7,12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "9bcf0f72bedffade40da6229b2a861cfe51086f6",
+  "prompts": {},
+  "sessions": {
+    "s_ed41b3402c59e7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7ce2142-cc6c-4458-b323-d42c7db183b0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
