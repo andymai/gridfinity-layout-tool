@@ -1,40 +1,35 @@
 /**
- * In-canvas rotation gizmo. The grab offset is captured at pointerdown so the
- * part never jumps to meet the pointer, and rotation flows through the same
- * transactioned move machinery as a drag so undo captures one step.
+ * In-canvas rotation gizmo. Renders at the interaction's rotation hub — a
+ * single part's own ring, or a ring around a multi-selection's centroid.
+ * The grab offset is captured at pointerdown so parts never jump to meet
+ * the pointer, and rotation flows through the same transactioned move
+ * machinery as a drag so undo captures one step.
  */
-import { useMemo } from 'react';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
-import type { PlacedPart } from './workshopPlacement';
-import {
-  ROTATION_RING_LIFT_MM,
-  rotationRingRadiusMm,
-  sceneToStore,
-  storeToScene,
-} from './workshopPlacement';
+import type { RotationHub } from './useWorkshopInteraction';
+import { ROTATION_RING_LIFT_MM, sceneToStore, storeToScene } from './workshopPlacement';
 
 const RING_TUBE_MM = 0.9;
 const KNOB_RADIUS_MM = 2.6;
 
 interface RotationGizmo3DProps {
-  placed: PlacedPart;
+  hub: RotationHub;
   baseW: number;
   baseD: number;
   active: boolean;
-  onBeginRotate: (id: string, world: { x: number; y: number }) => void;
+  onBeginRotate: (world: { x: number; y: number }) => void;
 }
 
 export function RotationGizmo3D({
-  placed,
+  hub,
   baseW,
   baseD,
   active,
   onBeginRotate,
 }: RotationGizmo3DProps) {
   const colors = useThreeColors();
-  const radius = useMemo(() => rotationRingRadiusMm(placed), [placed]);
-  const headingRad = (placed.rotZDeg * Math.PI) / 180;
-  const z = placed.topZ + ROTATION_RING_LIFT_MM;
+  const headingRad = (hub.headingDeg * Math.PI) / 180;
+  const z = hub.topZ + ROTATION_RING_LIFT_MM;
   const beginRotate = (e: {
     button: number;
     stopPropagation: () => void;
@@ -42,15 +37,15 @@ export function RotationGizmo3D({
   }): void => {
     if (e.button !== 0) return;
     e.stopPropagation();
-    onBeginRotate(placed.selectId, {
+    onBeginRotate({
       x: sceneToStore(e.point.x, baseW),
       y: sceneToStore(e.point.y, baseD),
     });
   };
   return (
-    <group position={[storeToScene(placed.x, baseW), storeToScene(placed.y, baseD), z]}>
-      <mesh onPointerDown={beginRotate}>
-        <torusGeometry args={[radius, RING_TUBE_MM, 10, 64]} />
+    <group position={[storeToScene(hub.x, baseW), storeToScene(hub.y, baseD), z]}>
+      <mesh onPointerDown={beginRotate} renderOrder={2}>
+        <torusGeometry args={[hub.radius, RING_TUBE_MM, 10, 64]} />
         <meshStandardMaterial
           color={colors.workshopPartSelected}
           emissive={colors.workshopPartSelected}
@@ -60,8 +55,9 @@ export function RotationGizmo3D({
         />
       </mesh>
       <mesh
-        position={[radius * Math.cos(headingRad), radius * Math.sin(headingRad), 0]}
+        position={[hub.radius * Math.cos(headingRad), hub.radius * Math.sin(headingRad), 0]}
         onPointerDown={beginRotate}
+        renderOrder={2}
       >
         <sphereGeometry args={[KNOB_RADIUS_MM, 16, 12]} />
         <meshStandardMaterial

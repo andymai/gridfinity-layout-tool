@@ -22,6 +22,7 @@ export function MoveHandle3D({ placed, baseW, baseD, onBeginDrag }: MoveHandle3D
   const colors = useThreeColors();
   return (
     <mesh
+      renderOrder={2}
       position={[
         storeToScene(placed.x, baseW),
         storeToScene(placed.y, baseD),

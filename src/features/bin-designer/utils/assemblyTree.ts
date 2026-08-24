@@ -165,3 +165,35 @@ export function findAssemblySiblings(
   }
   return null;
 }
+
+/** Deep-copy a subtree (nested params included) with fresh ids on every node. */
+export function cloneAssemblySubtree(node: AssemblyPartNode): AssemblyPartNode {
+  const reId = (n: AssemblyPartNode): AssemblyPartNode => ({
+    ...n,
+    id: crypto.randomUUID(),
+    children: n.children.map(reId),
+  });
+  return reId(structuredClone(node));
+}
+
+/**
+ * Reduce a selection to its top-level members: ids whose ancestors are not
+ * also selected, in tree order. Group operations act on these and let the
+ * subtrees ride along, so a parent and its child in one selection never get
+ * a transform applied twice.
+ */
+export function filterTopLevelAssemblyIds(
+  parts: readonly AssemblyPartNode[],
+  ids: ReadonlySet<string>
+): string[] {
+  const result: string[] = [];
+  const walk = (nodes: readonly AssemblyPartNode[], underSelected: boolean): void => {
+    for (const node of nodes) {
+      const selected = !underSelected && ids.has(node.id);
+      if (selected) result.push(node.id);
+      walk(node.children, underSelected || selected);
+    }
+  };
+  walk(parts, false);
+  return result;
+}

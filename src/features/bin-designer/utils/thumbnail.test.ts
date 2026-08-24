@@ -449,6 +449,40 @@ describe('exportCommunityGlb', () => {
       await expect(exportCommunityGlb()).resolves.toBeNull();
     });
 
+    it('skips selection chrome marked with renderOrder >= 2', async () => {
+      const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+
+      const chromeOnly = new Scene();
+      const ring = new Mesh(
+        new BoxGeometry(1, 1, 1),
+        new MeshStandardMaterial({ color: 0x5aa7ff })
+      );
+      ring.renderOrder = 2;
+      chromeOnly.add(ring);
+      setPreviewContext(renderer, chromeOnly, new PerspectiveCamera(45));
+      await expect(exportCommunityGlb()).resolves.toBeNull();
+
+      const bare = new Scene();
+      bare.add(new Mesh(new BoxGeometry(1, 1, 1), new MeshStandardMaterial({ color: 0x808080 })));
+      setPreviewContext(renderer, bare, new PerspectiveCamera(45));
+      const withoutChrome = positionCounts((await exportCommunityGlb()) ?? '');
+
+      const selected = new Scene();
+      const chrome = new Mesh(
+        new BoxGeometry(1, 1, 1),
+        new MeshStandardMaterial({ color: 0x5aa7ff })
+      );
+      chrome.renderOrder = 2;
+      selected.add(
+        new Mesh(new BoxGeometry(1, 1, 1), new MeshStandardMaterial({ color: 0x808080 })),
+        chrome
+      );
+      setPreviewContext(renderer, selected, new PerspectiveCamera(45));
+      const withChrome = positionCounts((await exportCommunityGlb()) ?? '');
+
+      expect(withChrome).toEqual(withoutChrome);
+    });
+
     it('leaves the model untouched when annotations sit alongside it', async () => {
       const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
 

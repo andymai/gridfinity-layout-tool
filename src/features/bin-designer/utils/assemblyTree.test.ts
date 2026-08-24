@@ -7,8 +7,10 @@ import {
   MAX_ASSEMBLY_PARTS,
 } from '@/shared/items/assembly/descriptor';
 import {
+  cloneAssemblySubtree,
   collectAssemblyIds,
   countAssemblyParts,
+  filterTopLevelAssemblyIds,
   findAssemblyParentId,
   findAssemblyPart,
   withAssemblyPartAdded,
@@ -103,5 +105,46 @@ describe('findAssemblyParentId', () => {
     expect(findAssemblyParentId(parts, 'a')).toBeNull();
     expect(findAssemblyParentId(parts, 'a2x')).toBe('a2');
     expect(findAssemblyParentId(parts, 'ghost')).toBeUndefined();
+  });
+});
+
+describe('filterTopLevelAssemblyIds', () => {
+  it('drops ids whose ancestor is also selected, keeping tree order', () => {
+    const parts = tree();
+    const ids = new Set(['a2x', 'a', 'b', 'a1']);
+    expect(filterTopLevelAssemblyIds(parts, ids)).toEqual(['a', 'b']);
+  });
+
+  it('keeps a nested id whose ancestors are unselected', () => {
+    expect(filterTopLevelAssemblyIds(tree(), new Set(['a2x', 'b']))).toEqual(['a2x', 'b']);
+  });
+
+  it('ignores unknown ids', () => {
+    expect(filterTopLevelAssemblyIds(tree(), new Set(['nope']))).toEqual([]);
+  });
+});
+
+describe('cloneAssemblySubtree', () => {
+  it('re-ids every node and deep-copies transforms', () => {
+    const source = post('a', [post('a1')]);
+    const clone = cloneAssemblySubtree(source);
+    expect(clone.id).not.toBe('a');
+    expect(clone.children[0]?.id).not.toBe('a1');
+    expect(clone.transform).not.toBe(source.transform);
+    expect(clone.transform).toEqual(source.transform);
+    expect(clone.children[0]?.params).toEqual(source.children[0]?.params);
+  });
+
+  it('carries label and array along', () => {
+    const source: AssemblyPartNode = {
+      ...post('a'),
+      array: { count: 3, dx: 10, dy: 0 },
+      label: { text: 'drills', sizeMm: 8, depthMm: 1, style: 'raised', face: 'front' },
+    };
+    const clone = cloneAssemblySubtree(source);
+    expect(clone.array).toEqual(source.array);
+    expect(clone.array).not.toBe(source.array);
+    expect(clone.label).toEqual(source.label);
+    expect(clone.label).not.toBe(source.label);
   });
 });

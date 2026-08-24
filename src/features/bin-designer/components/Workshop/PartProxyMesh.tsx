@@ -33,7 +33,11 @@ interface PartProxyMeshProps {
   onSurfaceMove: (surface: HoverSurface) => void;
   onSurfaceLeave: () => void;
   onSurfaceClick: (surface: HoverSurface) => void;
-  onPartPointerDown: (id: string, pointerType: string) => void;
+  onPartPointerDown: (
+    id: string,
+    pointerType: string,
+    modifiers?: { shiftKey: boolean; altKey: boolean }
+  ) => void;
   onPartContextMenu?: (id: string, clientX: number, clientY: number) => void;
   /** World → flat placement frame (identity unless the base is wedged). */
   sceneFromWorld?: (point: Vector3) => Vector3;
@@ -163,7 +167,10 @@ export function PartProxyMesh({
       onPointerDown={(e) => {
         if (e.button !== 0) return;
         e.stopPropagation();
-        onPartPointerDown(placed.selectId, e.pointerType);
+        onPartPointerDown(placed.selectId, e.pointerType, {
+          shiftKey: e.nativeEvent.shiftKey,
+          altKey: e.nativeEvent.altKey,
+        });
       }}
       onContextMenu={(e) => {
         e.stopPropagation();

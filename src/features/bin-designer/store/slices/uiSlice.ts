@@ -22,7 +22,7 @@ import type { ColorZone, HoverableZone } from '../../types/featureColors';
 import type { MeasurePoint } from '@/features/bin-designer/utils/measure3d';
 import { parseLipCell } from '../../types/featureColors';
 import { isFractional } from '@/core/constants';
-import { pushHistoryEntry } from '../helpers';
+import { pushHistoryEntry, setAssemblySelection } from '../helpers';
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 
@@ -92,7 +92,28 @@ export function createUISlice(set: Set) {
 
     setSelectedAssemblyPartId: (id: string | null) => {
       set((state) => {
-        state.ui.selectedAssemblyPartId = id;
+        setAssemblySelection(state, id === null ? [] : [id], id);
+      });
+    },
+
+    setSelectedAssemblyPartIds: (ids: readonly string[], anchor: string | null = null) => {
+      set((state) => {
+        setAssemblySelection(state, ids, anchor);
+      });
+    },
+
+    toggleAssemblyPartSelected: (id: string) => {
+      set((state) => {
+        const ids = state.ui.selectedAssemblyPartIds;
+        if (ids.includes(id)) {
+          setAssemblySelection(
+            state,
+            ids.filter((existing) => existing !== id),
+            state.ui.selectedAssemblyPartId
+          );
+        } else {
+          setAssemblySelection(state, [...ids, id], id);
+        }
       });
     },
 

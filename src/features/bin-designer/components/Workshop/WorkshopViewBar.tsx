@@ -1,10 +1,12 @@
 /**
  * Canvas-corner chrome: camera presets (matching the bin preview's 1–4
- * shortcuts) and the snap-pitch cycle chip, the cutout toolbar's widget.
+ * shortcuts), zoom-to-selection, the projection toggle, and the snap-pitch
+ * cycle chip, the cutout toolbar's widget.
  */
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import type { Projection } from '@/shared/components/preview/CameraRig';
 import type { CameraPreset } from '../preview';
 import { SNAP_PITCHES_MM } from './workshopPlacement';
 
@@ -17,9 +19,17 @@ const PRESETS: ReadonlyArray<{ preset: CameraPreset; labelKey: string; shortcut:
 
 interface WorkshopViewBarProps {
   readonly onPreset: (preset: CameraPreset) => void;
+  readonly onFit: () => void;
+  readonly projection: Projection;
+  readonly onProjectionToggle: () => void;
 }
 
-export function WorkshopViewBar({ onPreset }: WorkshopViewBarProps) {
+export function WorkshopViewBar({
+  onPreset,
+  onFit,
+  projection,
+  onProjectionToggle,
+}: WorkshopViewBarProps) {
   const t = useTranslation();
   const snapMm = useDesignerStore((s) => s.ui.workshopSnapMm);
   const setWorkshopSnapMm = useDesignerStore((s) => s.setWorkshopSnapMm);
@@ -41,6 +51,27 @@ export function WorkshopViewBar({ onPreset }: WorkshopViewBarProps) {
           {t(labelKey)}
         </Button>
       ))}
+      <div className="mx-0.5 h-4 w-px bg-stroke-subtle" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="px-2 text-[11px]"
+        title={t('workshop.view.fitTitle')}
+        onClick={onFit}
+      >
+        {t('workshop.view.fit')}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="px-2 text-[11px]"
+        title={t('workshop.view.projectionToggle')}
+        onClick={onProjectionToggle}
+      >
+        {projection === 'perspective'
+          ? t('workshop.view.perspective')
+          : t('workshop.view.orthographic')}
+      </Button>
       <div className="mx-0.5 h-4 w-px bg-stroke-subtle" />
       <Button
         variant="ghost"

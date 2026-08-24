@@ -97,6 +97,35 @@ export function captureCutoutFill(state: Draft<DesignerState>): number | null {
 }
 
 /**
+ * Write the Workshop selection with its invariant intact: the anchor is a
+ * member of the id list (callers pass a preferred anchor; a non-member or
+ * null falls back to the last id). Every selection write in the store goes
+ * through here so the two fields can never disagree.
+ */
+export function setAssemblySelection(
+  state: Draft<DesignerState>,
+  ids: readonly string[],
+  anchor: string | null = null
+): void {
+  const unique = [...new Set(ids)];
+  state.ui.selectedAssemblyPartIds = unique;
+  state.ui.selectedAssemblyPartId =
+    anchor !== null && unique.includes(anchor) ? anchor : (unique[unique.length - 1] ?? null);
+}
+
+/** Drop selected ids that no longer resolve in the tree (undo, load, remove). */
+export function pruneAssemblySelection(state: Draft<DesignerState>): void {
+  const ids = state.ui.selectedAssemblyPartIds;
+  if (ids.length === 0) return;
+  const structure = state.structure;
+  const surviving =
+    structure?.kind === 'assembly' ? ids.filter((id) => findAssemblyPart(structure.parts, id)) : [];
+  if (surviving.length !== ids.length) {
+    setAssemblySelection(state, surviving, state.ui.selectedAssemblyPartId);
+  }
+}
+
+/**
  * Push current params (with pending mesh) to history past array.
  * Skips if inside a transaction (already pushed on transaction start).
  * Evicts old caches if memory budget exceeded.
@@ -182,13 +211,7 @@ export function restoreHistoryEntry(state: Draft<DesignerState>, entry: HistoryE
     state.itemKind = entry.itemKind;
     state.structure = entry.structure ?? null;
     state.envelope = entry.envelope ?? null;
-    if (
-      state.ui.selectedAssemblyPartId !== null &&
-      (state.structure?.kind !== 'assembly' ||
-        !findAssemblyPart(state.structure.parts, state.ui.selectedAssemblyPartId))
-    ) {
-      state.ui.selectedAssemblyPartId = null;
-    }
+    pruneAssemblySelection(state);
   }
   // Keep UI toggles consistent with the restored params. Without this,
   // undoing across a custom-shape paint leaves `shapeEditorOpen` stuck on

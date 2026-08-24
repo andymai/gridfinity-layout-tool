@@ -40,6 +40,7 @@ export function PlacementGhost({ type, cutterShape, position, baseW, baseD }: Pl
       position={[storeToScene(position.x, baseW), storeToScene(position.y, baseD), position.z]}
       rotation={[0, 0, (position.rotZDeg * Math.PI) / 180]}
       raycast={() => null}
+      renderOrder={2}
     >
       <meshStandardMaterial
         color={colors.workshopGhost}
