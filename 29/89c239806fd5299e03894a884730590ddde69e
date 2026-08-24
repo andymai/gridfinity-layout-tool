@@ -1,0 +1,26 @@
+src/features/bin-designer/components/panel/CutoutsSection/maskFit.ts
+  s_988f5d7bb7605f::t_220908485d7617 45-49
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.ts
+  s_988f5d7bb7605f::t_a0f9ad97e01a72 53-57
+src/features/bin-designer/components/panel/CutoutsSection/geometry.test.ts
+  s_988f5d7bb7605f::t_c482eb4ed0efa8 28
+  s_988f5d7bb7605f::t_ec85e7703dc732 1119-1142
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.test.ts
+  s_988f5d7bb7605f::t_3bbc6c20bd25ca 114-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "2989c239806fd5299e03894a884730590ddde69e",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
