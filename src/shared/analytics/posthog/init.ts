@@ -43,7 +43,9 @@ export function initAnalytics(): void {
   initPromise = import('posthog-js')
     .then(async ({ default: posthog }) => {
       posthog.init(key, {
-        api_host: '/ph',
+        // Direct host on purpose: proxying through the app domain would bill
+        // every capture and SDK asset fetch as a platform edge request.
+        api_host: 'https://us.i.posthog.com',
         ui_host: 'https://us.posthog.com',
         capture_pageview: false, // Manual pageview - auto mode fires on every replaceState
         capture_pageleave: true,
