@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "벽면 문구 위치",
   "binDesigner.walls.text.disabledPolygon": "맞춤 모양 수납통에는 사용할 수 없습니다.",
-  "binDesigner.walls.text.disabledSolid": "솔리드 수납통에는 사용할 수 없습니다.",
   "binDesigner.walls.text.heading": "벽 텍스트",
   "binDesigner.walls.text.hint": "문구는 각 벽면의 빈 영역에 배치되며 컷아웃과 손잡이를 피합니다. 뒤쪽 벽면 패턴은 제거됩니다.",
   "binDesigner.walls.text.placeholder": "예: 케이블",

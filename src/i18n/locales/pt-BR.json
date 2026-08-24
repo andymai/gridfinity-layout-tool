@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Posição do texto na parede",
   "binDesigner.walls.text.disabledPolygon": "Indisponível para caixas de formato personalizado.",
-  "binDesigner.walls.text.disabledSolid": "Indisponível para caixas maciças.",
   "binDesigner.walls.text.heading": "Texto na parede",
   "binDesigner.walls.text.hint": "O texto é posicionado na área livre de cada parede, desviando de recortes e alças. O padrão da parede é removido atrás dele.",
   "binDesigner.walls.text.placeholder": "ex.: Cabos",

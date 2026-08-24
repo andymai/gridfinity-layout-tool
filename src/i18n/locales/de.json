@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Position des Wandtexts",
   "binDesigner.walls.text.disabledPolygon": "Für Sonderformen nicht verfügbar.",
-  "binDesigner.walls.text.disabledSolid": "Für massive Behälter nicht verfügbar.",
   "binDesigner.walls.text.heading": "Wandtext",
   "binDesigner.walls.text.hint": "Der Text wird in die freie Fläche jeder Wand gesetzt, an Ausschnitten und Griffen vorbei. Das Wandmuster wird dahinter entfernt.",
   "binDesigner.walls.text.placeholder": "z. B. Kabel",

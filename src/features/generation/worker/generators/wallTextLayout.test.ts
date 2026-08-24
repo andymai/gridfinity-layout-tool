@@ -263,15 +263,42 @@ describe('computeWallTextLayouts', () => {
     }
   });
 
-  it('returns [] for polygon and solid bins', () => {
+  it('returns [] for polygon bins', () => {
     const polygon = makeParams(
       { front: 'Cables' },
       { cellMask: { cols: 4, rows: 4, cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] } }
     );
     expect(computeWallTextLayouts(polygon, DIMS)).toHaveLength(0);
-    expect(
-      computeWallTextLayouts(makeParams({ front: 'Cables' }), { ...DIMS, solid: true })
-    ).toHaveLength(0);
+  });
+
+  // A solid body's outer wall is the same face a hollow bin engraves, and it
+  // is often the only place a shadow board can identify itself from outside.
+  it('lays a solid bin out identically to a hollow one', () => {
+    const params = makeParams({ front: 'Cables' });
+    expect(computeWallTextLayouts(params, { ...DIMS, solid: true })).toEqual(
+      computeWallTextLayouts(params, DIMS)
+    );
+  });
+
+  // Solid style disables wall cutouts and handles, so nothing is cut there to
+  // dodge. An imported design can still carry the flags the constraint engine
+  // clears on the way in; honouring them would shrink the band around a hole
+  // that is never made.
+  it('ignores wall-cutout keep-outs a solid bin will never generate', () => {
+    const withCutout = makeParams(
+      { front: 'Cables' },
+      {
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true, width: 80, depth: 60 },
+        },
+      }
+    );
+    const plain = makeParams({ front: 'Cables' });
+    expect(computeWallTextLayouts(withCutout, { ...DIMS, solid: true })).toEqual(
+      computeWallTextLayouts(plain, { ...DIMS, solid: true })
+    );
   });
 
   it('clamps emboss relief and keeps an engrave floor', () => {

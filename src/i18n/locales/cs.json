@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Umístění textu na stěně",
   "binDesigner.walls.text.disabledPolygon": "Není dostupné pro biny s vlastním tvarem.",
-  "binDesigner.walls.text.disabledSolid": "Není dostupné pro plné biny.",
   "binDesigner.walls.text.heading": "Text na stěně",
   "binDesigner.walls.text.hint": "Text se umístí do volné plochy každé stěny, mimo výřezy a úchyty. Vzor stěny se za ním odstraní.",
   "binDesigner.walls.text.placeholder": "např. Kabely",

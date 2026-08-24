@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Posizione del testo sulla parete",
   "binDesigner.walls.text.disabledPolygon": "Non disponibile per contenitori con forma personalizzata.",
-  "binDesigner.walls.text.disabledSolid": "Non disponibile per contenitori pieni.",
   "binDesigner.walls.text.heading": "Testo sulla parete",
   "binDesigner.walls.text.hint": "Il testo viene collocato nell’area libera di ogni parete, evitando intagli e maniglie. Il motivo della parete viene rimosso dietro.",
   "binDesigner.walls.text.placeholder": "es. Cavi",

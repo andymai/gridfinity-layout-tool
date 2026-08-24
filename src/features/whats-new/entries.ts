@@ -14,6 +14,15 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'solid-bin-wall-text',
+    date: '2026-08-24',
+    kind: 'new',
+    title: { en: 'Wall text works on solid bins' },
+    body: {
+      en: 'A shadow board full of tool pockets had no way to label itself from the outside. Engraved and embossed wall text is now available on solid bins, with the same font, side and depth controls as everywhere else.',
+    },
+  },
+  {
     id: 'center-clipped-cutout',
     date: '2026-08-24',
     kind: 'new',

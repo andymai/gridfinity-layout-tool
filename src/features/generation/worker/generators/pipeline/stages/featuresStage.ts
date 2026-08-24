@@ -5,7 +5,8 @@
  * walls, inserts, slots, label tabs, scoop ramps, wall cutouts. Wall
  * patterns are handled as a special case with per-wall caching.
  *
- * Solid mode: only cutout cuts (top-down cavity carving).
+ * Solid mode: cutout cuts (top-down cavity carving), plus wall text — the
+ * outer face of a solid block is the same wall a hollow bin engraves.
  *
  * Populates fuseTargets (additive), cutTargets (subtractive), and
  * patternCutTargets (pattern cuts — separate boolean pass) arrays
@@ -19,7 +20,7 @@ import { buildCutoutCuts } from '../../featureBuilder';
 import { buildCutoutLabelSocketTools } from '../../cutoutLabelSocketBuilder';
 import { buildIntegratedKnifeRestTools } from '../../knifeRestBuilder';
 import { runFeatureBuilders } from '../featureRunner';
-import { BIN_FEATURE_BUILDERS } from '../featureComposition';
+import { BIN_FEATURE_BUILDERS, SOLID_FEATURE_BUILDERS } from '../featureComposition';
 import { buildWallPatterns } from '../../wallPatternBuilder';
 import { buildKumikoWallPatterns } from '../../kumikoWrapBuilder';
 import { buildDividerPatterns } from '../../dividerPatternBuilder';
@@ -98,9 +99,25 @@ export const featuresStage: PipelineStage = {
       // here would clobber them — just translate.
       const cutoutTools = cutTools.map(shiftToInterior);
       const embossTools = fuseTools.map(shiftToInterior);
+      // Wall text is the one generic feature a solid body can still take: it
+      // works the outer face, which a solid bin has exactly like a hollow one.
+      // Run through the shared runner rather than called directly, so engrave
+      // and emboss keep landing in the right pile and stay on the same cache
+      // key as everywhere else. Deliberately NOT shifted: the tools are built
+      // in the outer-wall frame, which the asymmetric-overhang offset above
+      // does not apply to.
+      const wallText = runFeatureBuilders(SOLID_FEATURE_BUILDERS, ctx);
       // Solid-mode cutout tools aren't keyed through feature builders, so the
       // post-boolean resume cache can't safely identify them — disable it.
-      return { ...ctx, cutTargets: cutoutTools, fuseTargets: embossTools, featuresKey: null };
+      return {
+        ...ctx,
+        cutTargets: [...cutoutTools, ...wallText.cutTargets],
+        fuseTargets: [...embossTools, ...wallText.fuseTargets],
+        // Empty for the two wall-text builders, and passed on anyway so a
+        // builder added to the solid set later cannot leak its shapes here.
+        patternCutTargets: wallText.patternCutTargets,
+        featuresKey: null,
+      };
     }
 
     // For non-rectangular (cellMask) bins, run only builders that have

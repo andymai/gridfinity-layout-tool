@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Plassering av veggtekst",
   "binDesigner.walls.text.disabledPolygon": "Ikke tilgjengelig for bokser med tilpasset form.",
-  "binDesigner.walls.text.disabledSolid": "Ikke tilgjengelig for massive bokser.",
   "binDesigner.walls.text.heading": "Veggtekst",
   "binDesigner.walls.text.hint": "Teksten plasseres i det ledige feltet på hver vegg, utenom utskjæringer og håndtak. Veggmønsteret fjernes bak den.",
   "binDesigner.walls.text.placeholder": "f.eks. Kabler",

@@ -145,23 +145,31 @@ describe('WallsSection', () => {
       expect(useDesignerStore.getState().params.surfaceText?.style?.mode).toBe('emboss');
     });
 
-    it('replaces the inputs with a reason for polygon and solid bins', () => {
+    it('replaces the inputs with a reason for polygon bins', () => {
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } },
         ui: { ...DEFAULT_UI_STATE },
       });
-      const { unmount } = render(<WallsSection />);
+      render(<WallsSection />);
       expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
       expect(screen.getByText('Not available for custom-shape bins.')).toBeInTheDocument();
-      unmount();
+    });
 
+    // A solid body has the same outer wall a hollow one does; only the interior
+    // features it disables are unavailable.
+    it('keeps the inputs on a solid bin', () => {
       useDesignerStore.setState({
-        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, solid: true } },
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          style: 'solid',
+          base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+          surfaceText: { walls: { front: 'BITS' } },
+        },
         ui: { ...DEFAULT_UI_STATE },
       });
       render(<WallsSection />);
-      expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
-      expect(screen.getByText('Not available for solid bins.')).toBeInTheDocument();
+      expect(screen.getByRole('textbox', { name: 'Front wall text' })).toHaveValue('BITS');
+      expect(screen.queryByText('Not available for solid bins.')).not.toBeInTheDocument();
     });
   });
 

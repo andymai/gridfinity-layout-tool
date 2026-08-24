@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Цуміїші-кікко (積石亀甲)",
   "binDesigner.walls.text.anchor": "Розташування напису на стінці",
   "binDesigner.walls.text.disabledPolygon": "Недоступно для контейнерів довільної форми.",
-  "binDesigner.walls.text.disabledSolid": "Недоступно для суцільних контейнерів.",
   "binDesigner.walls.text.heading": "Текст на стінці",
   "binDesigner.walls.text.hint": "Текст розміщується у вільній зоні кожної стінки, оминаючи вирізи та ручки. Візерунок стінки за ним прибирається.",
   "binDesigner.walls.text.placeholder": "напр. Кабелі",

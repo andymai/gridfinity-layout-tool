@@ -1858,7 +1858,6 @@
   "binDesigner.walls.pattern.tsumiishiKikko": "Tsumiishi-Kikko (積石亀甲)",
   "binDesigner.walls.text.anchor": "Position du texte sur la paroi",
   "binDesigner.walls.text.disabledPolygon": "Indisponible pour les bacs de forme personnalisée.",
-  "binDesigner.walls.text.disabledSolid": "Indisponible pour les bacs pleins.",
   "binDesigner.walls.text.heading": "Texte mural",
   "binDesigner.walls.text.hint": "Le texte est placé dans la zone libre de chaque paroi, en évitant découpes et poignées. Le motif de paroi est retiré derrière.",
   "binDesigner.walls.text.placeholder": "p. ex. Câbles",

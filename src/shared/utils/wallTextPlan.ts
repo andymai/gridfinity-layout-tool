@@ -14,8 +14,7 @@
  * same frame the feature builders use). Reading-direction conversion for glyph
  * placement happens in `wallTextBuilder` via {@link wallTextReadingSign}.
  *
- * Skipped entirely for polygon (cellMask) bins and solid-mode bins (the
- * solid-mode features stage doesn't run generic builders), and per-wall for
+ * Skipped entirely for polygon (cellMask) bins, and per-wall for
  * slot-occupied walls, mirrored in the WallsSection UI gating.
  */
 
@@ -111,9 +110,16 @@ function obstacleRects(
   side: WallTextSide,
   wallSpan: number,
   wallHeight: number,
-  isSlotted: boolean
+  isSlotted: boolean,
+  solid: boolean
 ): Rect[] {
   const rects: Rect[] = [];
+
+  // A solid body generates neither of the obstacles below — the style disables
+  // wall cutouts and handles outright. Reading them anyway would shrink the
+  // band around a hole nothing cuts, which an imported design can still ask for
+  // by carrying the flags the constraint engine clears on the way in.
+  if (solid) return rects;
 
   const cutout = params.walls.enabled ? params.walls[side] : undefined;
   if (cutout?.enabled) {
@@ -321,7 +327,14 @@ function collectSides(params: BinParams, dim: WallTextDims): SideInput[] {
     const bounds = wallBounds(params, dim, wallSpan);
     if (!bounds) continue;
 
-    const obstacles = obstacleRects(params, side, wallSpan, dim.wallHeight, dim.isSlotted);
+    const obstacles = obstacleRects(
+      params,
+      side,
+      wallSpan,
+      dim.wallHeight,
+      dim.isSlotted,
+      dim.solid
+    );
     out.push({ side, text, style, depth, rects: candidateRects(bounds, obstacles) });
   }
   return out;
@@ -355,7 +368,7 @@ function toLayout(input: SideInput, candidate: Candidate): WallTextLayout {
 
 /**
  * Compute the placement for every wall carrying text. Returns [] when the
- * feature doesn't apply (no strings, polygon or solid bin) and silently skips
+ * feature doesn't apply (no strings, or a polygon bin) and silently skips
  * walls whose clear regions can't hold the text at `minFontSize`, the
  * established convention for undersized features.
  */
@@ -364,7 +377,7 @@ export function computeWallTextLayouts(
   dim: WallTextDims,
   measurer: TypeMeasurer
 ): WallTextLayout[] {
-  if (isPartialMask(params.cellMask) || dim.solid) return [];
+  if (isPartialMask(params.cellMask)) return [];
 
   const sides = collectSides(params, dim);
   if (sides.length === 0) return [];
