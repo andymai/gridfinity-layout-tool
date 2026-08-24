@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "Importováno {count} tvarů z SVG",
   "toast.svgImport.unsupportedFile": "Soubor není platné SVG",
   "toast.undone": "Vráceno zpět",
-  "toast.updateAvailable": "Je dostupná nová verze",
-  "toast.updateReload": "Znovu načíst",
   "toast.updating": "Aktualizuji na nejnovější verzi…",
   "toolSwitcher.activeTool": "Aktivní nástroj",
   "toolSwitcher.baseplateGenerator": "Základní deska",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "novinky, seznam změn, aktualizace, poznámky k vydání, nedávné změny",
   "whatsNew.action.openTool.layout": "Otevřít Rozvržení",
   "whatsNew.action.openTool.designer": "Otevřít Biny",
-  "whatsNew.action.openTool.baseplate": "Otevřít Základní deska"
+  "whatsNew.action.openTool.baseplate": "Otevřít Základní deska",
+  "pwaUpdate.reload": "Znovu načíst",
+  "pwaUpdate.reloadAria": "Načíst znovu do nové verze",
+  "pwaUpdate.readyTooltip": "Je připravena nová verze. Použije se sama, až se zastavíte, nebo načtěte znovu hned.",
+  "whatsNew.openTooltip": "Podívejte se, co se nedávno změnilo"
 }

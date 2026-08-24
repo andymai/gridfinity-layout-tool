@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "Zaimportowano {count} kształt(ów) z SVG",
   "toast.svgImport.unsupportedFile": "Plik nie jest prawidłowym SVG",
   "toast.undone": "Cofnięto",
-  "toast.updateAvailable": "Dostępna jest nowa wersja",
-  "toast.updateReload": "Odśwież",
   "toast.updating": "Aktualizowanie do najnowszej wersji...",
   "toolSwitcher.activeTool": "Aktywne narzędzie",
   "toolSwitcher.baseplateGenerator": "Płyta bazowa",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "nowości, dziennik zmian, aktualizacje, informacje o wydaniu, ostatnie zmiany",
   "whatsNew.action.openTool.layout": "Otwórz Układ",
   "whatsNew.action.openTool.designer": "Otwórz Biny",
-  "whatsNew.action.openTool.baseplate": "Otwórz Płyta bazowa"
+  "whatsNew.action.openTool.baseplate": "Otwórz Płyta bazowa",
+  "pwaUpdate.reload": "Odśwież",
+  "pwaUpdate.reloadAria": "Wczytaj ponownie w nowej wersji",
+  "pwaUpdate.readyTooltip": "Nowa wersja jest gotowa. Zastosuje się sama, gdy zrobisz przerwę, albo wczytaj ponownie teraz.",
+  "whatsNew.openTooltip": "Zobacz, co ostatnio się zmieniło"
 }

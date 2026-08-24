@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "SVGから{count}個の図形をインポートしました",
   "toast.svgImport.unsupportedFile": "有効なSVGファイルではありません",
   "toast.undone": "元に戻しました",
-  "toast.updateAvailable": "新しいバージョンが利用可能です",
-  "toast.updateReload": "再読み込み",
   "toast.updating": "最新バージョンに更新中...",
   "toolSwitcher.activeTool": "アクティブツール",
   "toolSwitcher.baseplateGenerator": "ベースプレート",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "新着情報, 変更履歴, 更新, リリースノート, 最近の変更",
   "whatsNew.action.openTool.layout": "レイアウトを開く",
   "whatsNew.action.openTool.designer": "ビンを開く",
-  "whatsNew.action.openTool.baseplate": "ベースプレートを開く"
+  "whatsNew.action.openTool.baseplate": "ベースプレートを開く",
+  "pwaUpdate.reload": "再読み込み",
+  "pwaUpdate.reloadAria": "新しいバージョンで再読み込み",
+  "pwaUpdate.readyTooltip": "新しいバージョンの準備ができました。手を止めると自動的に適用されます。今すぐ再読み込みもできます。",
+  "whatsNew.openTooltip": "最近の変更点を見る"
 }

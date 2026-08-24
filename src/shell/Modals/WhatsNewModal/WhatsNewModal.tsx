@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge, Button, Checkbox, Dialog, Icon } from '@/design-system';
+import { cn } from '@/design-system/cn';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useSettingsStore } from '@/core/store/settings';
 import { useViewStore } from '@/core/store/view';
@@ -21,16 +22,31 @@ import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import type { Locale } from '@/i18n/types';
 
+const CIRCLE = 'M12 3a9 9 0 100 18 9 9 0 000-18z';
+
+/**
+ * Circled glyphs so the three kinds carry equal visual weight in a list.
+ * Not from ICON_PATHS: its `plusCircle` is a bare plus with no circle, which
+ * reads noticeably lighter than the others at this size.
+ */
 const KIND_ICON: Record<WhatsNewKind, readonly string[]> = {
-  new: ICON_PATHS.plusCircle,
-  improved: ICON_PATHS.bolt,
-  fixed: ICON_PATHS.check,
+  new: [CIRCLE, 'M12 8.5v7M8.5 12h7'],
+  improved: [CIRCLE, 'M12 16V8.5M12 8.5L9 11.5M12 8.5l3 3'],
+  fixed: [CIRCLE, 'M8.5 12.2l2.4 2.4 4.6-5'],
 };
 
 const KIND_TONE: Record<WhatsNewKind, 'accent' | 'info' | 'success'> = {
   new: 'accent',
   improved: 'info',
   fixed: 'success',
+};
+
+// text-info-strong, not text-info: on a plain surface the latter measures
+// 4.42:1 (see design-system/variants.ts), which fails on a small glyph.
+const KIND_COLOR: Record<WhatsNewKind, string> = {
+  new: 'text-accent',
+  improved: 'text-info-strong',
+  fixed: 'text-success',
 };
 
 export function WhatsNewModal() {
@@ -74,31 +90,55 @@ export function WhatsNewModal() {
         closeAriaLabel={t('common.close')}
         leading={
           showAll ? (
-            <Button size="sm" variant="ghost" onClick={() => setShowAll(false)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowAll(false)}
+              className="-ml-1.5 gap-1 px-1.5"
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
               {t('whatsNew.back')}
             </Button>
           ) : undefined
         }
       />
+      <Dialog.SubHeader>
+        <p className="text-sm text-content-tertiary">{subtitle}</p>
+      </Dialog.SubHeader>
       <Dialog.Body>
-        <p className="mb-4 text-sm text-content-tertiary">{subtitle}</p>
         {shown.length === 0 ? (
-          <p className="py-8 text-center text-sm text-content-tertiary">{t('whatsNew.empty')}</p>
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
+            <Icon size="lg" className="text-content-disabled">
+              {ICON_PATHS.check.map((d) => (
+                <path key={d} d={d} />
+              ))}
+            </Icon>
+            <p className="text-sm text-content-tertiary">{t('whatsNew.empty')}</p>
+          </div>
         ) : groups ? (
-          <div className="flex flex-col gap-6 pb-2">
+          <div className="flex flex-col py-2">
             {groups.map((group) => (
-              <section key={group.month} className="flex flex-col gap-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+              <section key={group.month} className="flex flex-col">
+                <h3 className="sticky top-0 z-10 -mx-1 bg-surface-secondary px-1 pb-1.5 pt-3 text-[11px] font-semibold uppercase tracking-wider text-content-tertiary">
                   {formatMonth(group.month, locale)}
                 </h3>
-                {group.entries.map((entry) => (
-                  <EntryRow key={entry.id} entry={entry} onNavigate={close} />
-                ))}
+                <div className="flex flex-col divide-y divide-stroke-subtle">
+                  {group.entries.map((entry) => (
+                    <EntryRow key={entry.id} entry={entry} onNavigate={close} />
+                  ))}
+                </div>
               </section>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col gap-4 pb-2">
+          <div className="flex flex-col divide-y divide-stroke-subtle py-1">
             {shown.map((entry) => (
               <EntryRow key={entry.id} entry={entry} onNavigate={close} />
             ))}
@@ -107,21 +147,21 @@ export function WhatsNewModal() {
       </Dialog.Body>
       <Dialog.Footer justify="between" bordered>
         <OptOutCheckbox />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <a
+            href={GITHUB_RELEASES_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-1.5 text-xs text-content-disabled hover:text-content-secondary hover:underline"
+          >
+            {t('whatsNew.fullChangelog')}
+          </a>
           {!showAll && (
             <Button size="sm" variant="ghost" onClick={() => setShowAll(true)}>
               {t('whatsNew.seeAll')}
             </Button>
           )}
-          <a
-            href={GITHUB_RELEASES_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-content-tertiary hover:text-content-secondary hover:underline"
-          >
-            {t('whatsNew.fullChangelog')}
-          </a>
-          <Button size="sm" onClick={close}>
+          <Button size="sm" variant="primary" onClick={close}>
             {t('whatsNew.dismiss')}
           </Button>
         </div>
@@ -157,14 +197,27 @@ function EntryRow({ entry, onNavigate }: EntryRowProps) {
   const paths = entry.icon ? ICON_PATHS[entry.icon] : KIND_ICON[kind];
 
   return (
-    <article className="flex gap-3">
-      <Icon size="sm" className="mt-0.5 flex-shrink-0 text-content-tertiary">
-        {paths.map((d) => (
-          <path key={d} d={d} />
-        ))}
-      </Icon>
+    <article className="flex gap-3 py-3.5">
+      <span className={cn('mt-0.5 flex-shrink-0', KIND_COLOR[kind])}>
+        <Icon size="sm">
+          {paths.map((d) => (
+            <path key={d} d={d} />
+          ))}
+        </Icon>
+      </span>
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-baseline justify-between gap-3">
+          <h4 className="text-sm font-semibold leading-snug text-content">
+            {resolveText(entry.title, locale)}
+          </h4>
+          <time
+            dateTime={entry.date}
+            className="flex-shrink-0 text-[11px] tabular-nums text-content-disabled"
+          >
+            {formatDay(entry.date, locale)}
+          </time>
+        </div>
+        <div className="mt-1 flex flex-wrap items-center gap-1.5">
           <Badge tone={KIND_TONE[kind]} size="sm">
             {t(`whatsNew.kind.${kind}`)}
           </Badge>
@@ -173,21 +226,14 @@ function EntryRow({ entry, onNavigate }: EntryRowProps) {
               {t('whatsNew.labs')}
             </Badge>
           )}
-          <h4 className="text-sm font-semibold text-content">{resolveText(entry.title, locale)}</h4>
         </div>
         {entry.body && (
-          <p className="mt-1 text-sm leading-relaxed text-content-secondary">
+          <p className="mt-1.5 text-sm leading-relaxed text-content-secondary">
             {resolveText(entry.body, locale)}
           </p>
         )}
         <EntryAction entry={entry} onNavigate={onNavigate} />
       </div>
-      <time
-        dateTime={entry.date}
-        className="flex-shrink-0 text-xs tabular-nums text-content-disabled"
-      >
-        {formatDay(entry.date, locale)}
-      </time>
     </article>
   );
 }
@@ -249,13 +295,14 @@ function EntryAction({ entry, onNavigate }: EntryRowProps) {
       <Button
         size="sm"
         variant="ghost"
-        className="-ml-2 mt-2"
+        className="-ml-1.5 mt-2 gap-1 px-1.5 text-accent"
         onClick={() => {
           onNavigate();
           openLabsDrawer();
         }}
       >
         {t('whatsNew.action.openLabs')}
+        <ArrowRight />
       </Button>
     );
   }
@@ -264,10 +311,16 @@ function EntryAction({ entry, onNavigate }: EntryRowProps) {
   if (!action) return null;
 
   return (
-    <Button size="sm" variant="ghost" className="-ml-2 mt-2" onClick={() => run(action)}>
+    <Button
+      size="sm"
+      variant="ghost"
+      className="-ml-1.5 mt-2 gap-1 px-1.5 text-accent"
+      onClick={() => run(action)}
+    >
       {action.kind === 'openTool'
         ? t(`whatsNew.action.openTool.${action.tool}`)
         : t(`whatsNew.action.openModal.${action.modal}`)}
+      <ArrowRight />
     </Button>
   );
 }
@@ -283,5 +336,24 @@ function formatDay(iso: string, locale: Locale): string {
   const [year, month, day] = iso.split('-');
   return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(
     new Date(Number(year), Number(month) - 1, Number(day))
+  );
+}
+
+function ArrowRight() {
+  return (
+    <svg
+      className="h-3 w-3"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M14 5l7 7-7 7M3 12h18"
+      />
+    </svg>
   );
 }

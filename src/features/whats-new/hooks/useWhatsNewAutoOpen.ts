@@ -7,7 +7,7 @@ import {
   isCooldownElapsed,
   recordAutoOpen,
   seedIfFirstRun,
-} from './seenState';
+} from '../seenState';
 
 /**
  * Marks that this browser session has already booted the app once. A silent PWA
@@ -30,8 +30,8 @@ function claimFreshSession(): boolean {
 
 interface Options {
   /**
-   * False on arrivals that came for something specific — a shared layout link,
-   * community, supporters, the phone scan route — and while onboarding runs.
+   * False on arrivals that came for something specific (a shared layout link,
+   * community, supporters, the phone scan route), and while onboarding runs.
    */
   allowed: boolean;
 }

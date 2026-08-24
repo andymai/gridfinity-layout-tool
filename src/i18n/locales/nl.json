@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "{count} vorm(en) geïmporteerd uit SVG",
   "toast.svgImport.unsupportedFile": "Bestand is geen geldig SVG",
   "toast.undone": "Ongedaan gemaakt",
-  "toast.updateAvailable": "Er is een nieuwe versie beschikbaar",
-  "toast.updateReload": "Opnieuw laden",
   "toast.updating": "Bijwerken naar laatste versie...",
   "toolSwitcher.activeTool": "Actief gereedschap",
   "toolSwitcher.baseplateGenerator": "Basisplaat",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "wat is er nieuw, wijzigingslogboek, updates, releaseopmerkingen, recente wijzigingen",
   "whatsNew.action.openTool.layout": "Indeling openen",
   "whatsNew.action.openTool.designer": "Bakken openen",
-  "whatsNew.action.openTool.baseplate": "Basisplaat openen"
+  "whatsNew.action.openTool.baseplate": "Basisplaat openen",
+  "pwaUpdate.reload": "Opnieuw laden",
+  "pwaUpdate.reloadAria": "Opnieuw laden met de nieuwe versie",
+  "pwaUpdate.readyTooltip": "Een nieuwe versie staat klaar. Die wordt vanzelf toegepast als je even pauzeert, of laad nu opnieuw.",
+  "whatsNew.openTooltip": "Bekijk wat er onlangs is veranderd"
 }

@@ -4,9 +4,7 @@ import { GITHUB_REPO_URL } from '@/shared/constants/links';
 import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useSettingsStore } from '@/core/store/settings';
-import { useViewStore } from '@/core/store/view';
 import { useMobileStore } from '@/core/store/mobile';
-import { hasUnseen, useSeenState } from '@/features/whats-new';
 import { CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -24,6 +22,7 @@ import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { Button, Checkbox, Stepper } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
+import { AppVersionButton } from '@/shared/components/AppVersionButton';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 
@@ -38,10 +37,8 @@ const SettingsModal = lazyWithRetry(() =>
  */
 export function MobileSettingsPanel() {
   const t = useTranslation();
-  const whatsNewUnseen = hasUnseen(useSeenState());
-  const openWhatsNew = useCallback(() => {
+  const closePanel = useCallback(() => {
     useMobileStore.getState().closeMobilePanel();
-    useViewStore.getState().setWhatsNewOpen(true);
   }, []);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -366,20 +363,7 @@ export function MobileSettingsPanel() {
           <span className="text-xs font-semibold text-content-secondary">
             {t('sidebar.appName')}
           </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={openWhatsNew}
-            aria-label={t('whatsNew.open')}
-            className="h-auto gap-1.5 px-0 text-[10px] font-normal text-content-disabled hover:bg-transparent hover:text-content-tertiary hover:underline"
-          >
-            {t('sidebar.version', { version: __APP_VERSION__ })}
-            {whatsNewUnseen && (
-              <span className="text-[9px] font-semibold uppercase tracking-wide text-accent">
-                {t('whatsNew.badge')}
-              </span>
-            )}
-          </Button>
+          <AppVersionButton align="center" onBeforeAction={closePanel} />
         </div>
         <div className="text-xs text-content-disabled leading-relaxed">
           <a

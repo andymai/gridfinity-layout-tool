@@ -26,6 +26,7 @@ import {
   isModalOpen,
 } from '@/shared/pwa/reloadSafety';
 import { useSyncStatusStore } from '@/core/sync/status';
+import { usePWAUpdateStore } from '@/core/store/pwaUpdate';
 import { getPosthogInstance } from '@/shared/analytics/posthog/init';
 
 /**
@@ -643,15 +644,12 @@ export function usePWAUpdate(): void {
         return;
       }
 
-      // Phase 2 — still active: surface a persistent prompt and keep a safety
-      // net running. Dismissing the toast leaves the update pending (no re-nag);
-      // the net still applies it on long idle or when the tab is backgrounded.
-      addToast({
-        message: t('toast.updateAvailable'),
-        type: 'info',
-        duration: 0,
-        action: { label: t('toast.updateReload'), onClick: performReload },
-      });
+      // Phase 2, still active: mark the update pending in the sidebar and keep
+      // the safety net running. The sidebar is the right shape for this: the
+      // state lasts until the user acts, which a toast cannot represent without
+      // sitting on screen indefinitely. The net still applies the update on long
+      // idle or when the tab is backgrounded.
+      usePWAUpdateStore.getState().announceUpdate(performReload);
 
       // waitForAutoApply resolves 'aborted' on unmount; performReload also
       // guards on signal.aborted, so no second check is needed here.

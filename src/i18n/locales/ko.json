@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "SVG에서 도형 {count}개를 가져왔습니다",
   "toast.svgImport.unsupportedFile": "유효한 SVG 파일이 아닙니다",
   "toast.undone": "실행 취소됨",
-  "toast.updateAvailable": "새 버전이 있습니다",
-  "toast.updateReload": "다시 로드",
   "toast.updating": "최신 버전으로 업데이트 중...",
   "toolSwitcher.activeTool": "활성 도구",
   "toolSwitcher.baseplateGenerator": "베이스플레이트",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "새로운 기능, 변경 로그, 업데이트, 릴리스 노트, 최근 변경 사항",
   "whatsNew.action.openTool.layout": "레이아웃 열기",
   "whatsNew.action.openTool.designer": "수납통 열기",
-  "whatsNew.action.openTool.baseplate": "베이스플레이트 열기"
+  "whatsNew.action.openTool.baseplate": "베이스플레이트 열기",
+  "pwaUpdate.reload": "다시 로드",
+  "pwaUpdate.reloadAria": "새 버전으로 새로고침",
+  "pwaUpdate.readyTooltip": "새 버전이 준비되었습니다. 잠시 멈추면 자동으로 적용되며, 지금 새로고침할 수도 있습니다.",
+  "whatsNew.openTooltip": "최근에 무엇이 바뀌었는지 보기"
 }

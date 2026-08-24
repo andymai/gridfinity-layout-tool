@@ -9,6 +9,7 @@ import { createDefaultLayout } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore, INITIAL_TOAST_STATE } from '@/core/store/toast';
+import { usePWAUpdateStore } from '@/core/store/pwaUpdate';
 import { useSettingsStore, DEFAULT_SETTINGS } from '@/core/store/settings';
 import { useLibraryStore } from '@/core/store/library';
 import { useLabsStore } from '@/core/store';
@@ -103,6 +104,8 @@ export function resetAllStores(): void {
   });
 
   useToastStore.setState(INITIAL_TOAST_STATE);
+
+  usePWAUpdateStore.setState({ updateReady: false, applyUpdate: null });
 
   useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
 

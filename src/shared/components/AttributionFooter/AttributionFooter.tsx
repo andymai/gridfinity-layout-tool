@@ -1,34 +1,17 @@
-import { Button } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { KOFI_URL } from '@/shared/constants/links';
 import { useTranslation } from '@/i18n';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
-import { useViewStore } from '@/core/store/view';
-import { hasUnseen, useSeenState } from '@/features/whats-new';
+import { AppVersionButton } from '@/shared/components/AppVersionButton';
 
 export function AttributionFooter() {
   const t = useTranslation();
   const { navigateToSupporters } = useSupportersRouting();
-  const setWhatsNewOpen = useViewStore((state) => state.setWhatsNewOpen);
-  const unseen = hasUnseen(useSeenState());
   return (
     <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
       <div className="text-content-secondary text-[11px] font-semibold mb-1 flex items-baseline gap-1.5">
         {t('sidebar.appName')}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setWhatsNewOpen(true)}
-          aria-label={t('whatsNew.open')}
-          className="h-auto gap-1.5 px-0 text-[10px] font-normal text-content-disabled hover:bg-transparent hover:text-content-tertiary hover:underline"
-        >
-          {t('sidebar.version', { version: __APP_VERSION__ })}
-          {unseen && (
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-accent">
-              {t('whatsNew.badge')}
-            </span>
-          )}
-        </Button>
+        <AppVersionButton />
       </div>
       {t('sidebar.gridfinityBy')}{' '}
       <a

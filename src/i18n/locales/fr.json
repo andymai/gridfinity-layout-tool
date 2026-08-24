@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "{count} forme(s) importée(s) depuis le SVG",
   "toast.svgImport.unsupportedFile": "Le fichier n'est pas un SVG valide",
   "toast.undone": "Annulé",
-  "toast.updateAvailable": "Une nouvelle version est disponible",
-  "toast.updateReload": "Recharger",
   "toast.updating": "Mise à jour vers la dernière version...",
   "toolSwitcher.activeTool": "Outil actif",
   "toolSwitcher.baseplateGenerator": "Socle",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "nouveautés, journal des modifications, mises à jour, notes de version, changements récents",
   "whatsNew.action.openTool.layout": "Ouvrir Disposition",
   "whatsNew.action.openTool.designer": "Ouvrir Bacs",
-  "whatsNew.action.openTool.baseplate": "Ouvrir Socle"
+  "whatsNew.action.openTool.baseplate": "Ouvrir Socle",
+  "pwaUpdate.reload": "Recharger",
+  "pwaUpdate.reloadAria": "Recharger avec la nouvelle version",
+  "pwaUpdate.readyTooltip": "Une nouvelle version est prête. Elle s'appliquera d'elle-même lors d'une pause, ou rechargez maintenant.",
+  "whatsNew.openTooltip": "Voir ce qui a changé récemment"
 }

@@ -14,6 +14,15 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'whats-new',
+    date: '2026-08-24',
+    kind: 'new',
+    title: { en: 'See what changed after an update' },
+    body: {
+      en: 'New versions install quietly while you work, which made improvements easy to miss. The version number in the sidebar now tells you when one is waiting, and shows a short summary of what changed once it lands.',
+    },
+  },
+  {
     id: 'workshop-multi-select',
     date: '2026-08-24',
     kind: 'improved',

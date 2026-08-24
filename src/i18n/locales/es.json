@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "Se importaron {count} forma(s) del SVG",
   "toast.svgImport.unsupportedFile": "El archivo no es un SVG válido",
   "toast.undone": "Deshecho",
-  "toast.updateAvailable": "Hay una nueva versión disponible",
-  "toast.updateReload": "Recargar",
   "toast.updating": "Actualizando a la última versión...",
   "toolSwitcher.activeTool": "Herramienta activa",
   "toolSwitcher.baseplateGenerator": "Base",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "novedades, registro de cambios, actualizaciones, notas de versión, cambios recientes",
   "whatsNew.action.openTool.layout": "Abrir Diseño",
   "whatsNew.action.openTool.designer": "Abrir Bins",
-  "whatsNew.action.openTool.baseplate": "Abrir Base"
+  "whatsNew.action.openTool.baseplate": "Abrir Base",
+  "pwaUpdate.reload": "Recargar",
+  "pwaUpdate.reloadAria": "Recargar con la nueva versión",
+  "pwaUpdate.readyTooltip": "Hay una nueva versión lista. Se aplicará sola cuando hagas una pausa, o recarga ahora.",
+  "whatsNew.openTooltip": "Mira qué ha cambiado recientemente"
 }

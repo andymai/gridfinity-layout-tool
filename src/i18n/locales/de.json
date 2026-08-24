@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "{count} Form(en) aus SVG importiert",
   "toast.svgImport.unsupportedFile": "Datei ist keine gültige SVG",
   "toast.undone": "Rückgängig gemacht",
-  "toast.updateAvailable": "Eine neue Version ist verfügbar",
-  "toast.updateReload": "Neu laden",
   "toast.updating": "Aktualisierung auf neueste Version...",
   "toolSwitcher.activeTool": "Aktives Werkzeug",
   "toolSwitcher.baseplateGenerator": "Grundplatte",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "neuerungen, änderungsprotokoll, aktualisierungen, versionshinweise, letzte änderungen",
   "whatsNew.action.openTool.layout": "Layout öffnen",
   "whatsNew.action.openTool.designer": "Bins öffnen",
-  "whatsNew.action.openTool.baseplate": "Grundplatte öffnen"
+  "whatsNew.action.openTool.baseplate": "Grundplatte öffnen",
+  "pwaUpdate.reload": "Neu laden",
+  "pwaUpdate.reloadAria": "Neu laden und aktualisieren",
+  "pwaUpdate.readyTooltip": "Eine neue Version ist bereit. Sie wird von selbst angewendet, wenn Sie pausieren, oder laden Sie jetzt neu.",
+  "whatsNew.openTooltip": "Sehen, was sich zuletzt geändert hat"
 }

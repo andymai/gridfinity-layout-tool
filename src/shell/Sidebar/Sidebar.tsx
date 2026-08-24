@@ -24,6 +24,7 @@ import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
+import { AppVersionRailButton } from '@/shared/components/AppVersionButton';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation, useLocale } from '@/i18n';
 import { LEARN_LINKS, learnHref } from './learnLinks';
@@ -181,8 +182,13 @@ export function Sidebar() {
               ))}
             </svg>
           </IconButton>
+          {/* Outside the cloudSyncEnabled gate below: an update still needs a way
+              to be applied when sync is off or the session has not resolved. */}
+          <div className="mt-auto flex flex-col items-center gap-2 pb-1">
+            <AppVersionRailButton />
+          </div>
           {cloudSyncEnabled && (
-            <div className="mt-auto w-full">
+            <div className="w-full">
               <UserDock variant="compact" />
             </div>
           )}

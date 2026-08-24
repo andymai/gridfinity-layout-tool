@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "Імпортовано {count} фігур із SVG",
   "toast.svgImport.unsupportedFile": "Файл не є дійсним SVG",
   "toast.undone": "Скасовано",
-  "toast.updateAvailable": "Доступна нова версія",
-  "toast.updateReload": "Перезавантажити",
   "toast.updating": "Оновлення до останньої версії...",
   "toolSwitcher.activeTool": "Активний інструмент",
   "toolSwitcher.baseplateGenerator": "Базова плита",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "що нового, журнал змін, оновлення, примітки до випуску, останні зміни",
   "whatsNew.action.openTool.layout": "Відкрити Розкладка",
   "whatsNew.action.openTool.designer": "Відкрити Біни",
-  "whatsNew.action.openTool.baseplate": "Відкрити Базова плита"
+  "whatsNew.action.openTool.baseplate": "Відкрити Базова плита",
+  "pwaUpdate.reload": "Перезавантажити",
+  "pwaUpdate.reloadAria": "Перезавантажити в нову версію",
+  "pwaUpdate.readyTooltip": "Нова версія готова. Вона застосується сама, коли ви зробите паузу, або перезавантажте зараз.",
+  "whatsNew.openTooltip": "Подивіться, що змінилося нещодавно"
 }

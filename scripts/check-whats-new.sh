@@ -19,14 +19,14 @@ STAGED=$(git diff --cached --name-only --diff-filter=ACMR || true)
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# 1. Marker drift — cheap enough to check on every commit that touches either file.
+# 1. Marker drift, cheap enough to check on every commit that touches either file.
 if [ -f "$ENTRIES" ] && [ -f "$LATEST" ]; then
   NEWEST=$(grep -m1 -oE "id: '[^']+'" "$ENTRIES" | head -1 | sed "s/id: '//; s/'$//")
   MARKER=$(grep -oE "LATEST_ENTRY_ID = '[^']+'" "$LATEST" | sed "s/LATEST_ENTRY_ID = '//; s/'$//")
   if [ -n "$NEWEST" ] && [ -n "$MARKER" ] && [ "$NEWEST" != "$MARKER" ]; then
     printf "${YELLOW}⚠ whats-new:${NC} LATEST_ENTRY_ID is '%s' but the newest entry is '%s'.\n" \
       "$MARKER" "$NEWEST"
-    printf "  Update %s — the sidebar badge reads that constant.\n\n" "$LATEST"
+    printf "  Update %s. The sidebar badge reads that constant.\n\n" "$LATEST"
   fi
 fi
 

@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "Importerade {count} form(er) från SVG",
   "toast.svgImport.unsupportedFile": "Filen är inte en giltig SVG",
   "toast.undone": "Ångrat",
-  "toast.updateAvailable": "En ny version är tillgänglig",
-  "toast.updateReload": "Ladda om",
   "toast.updating": "Uppdaterar till senaste version...",
   "toolSwitcher.activeTool": "Aktivt verktyg",
   "toolSwitcher.baseplateGenerator": "Bottenplatta",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "nyheter, ändringslogg, uppdateringar, versionsinformation, senaste ändringar",
   "whatsNew.action.openTool.layout": "Öppna Layout",
   "whatsNew.action.openTool.designer": "Öppna Fack",
-  "whatsNew.action.openTool.baseplate": "Öppna Bottenplatta"
+  "whatsNew.action.openTool.baseplate": "Öppna Bottenplatta",
+  "pwaUpdate.reload": "Ladda om",
+  "pwaUpdate.reloadAria": "Läs in den nya versionen",
+  "pwaUpdate.readyTooltip": "En ny version är klar. Den tillämpas av sig själv när du pausar, eller läs in nu.",
+  "whatsNew.openTooltip": "Se vad som har ändrats nyligen"
 }

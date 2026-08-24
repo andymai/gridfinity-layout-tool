@@ -90,7 +90,7 @@ export function isCooldownElapsed(state: SeenState): boolean {
   return Date.now() - state.lastAutoOpenAt >= AUTO_OPEN_COOLDOWN_MS;
 }
 
-/** Test seam — re-hydrates the cache from whatever localStorage currently holds. */
+/** Test seam. Re-hydrates the cache from whatever localStorage currently holds. */
 export function reloadSeenState(): void {
   cache = read();
   for (const listener of listeners) listener();

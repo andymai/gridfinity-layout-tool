@@ -6,6 +6,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
 import { useToastStore } from '@/core/store/toast';
+import { usePWAUpdateStore } from '@/core/store/pwaUpdate';
 import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import { saveEphemeralState, type EphemeralState } from '@/shared/utils/ephemeralState';
@@ -628,7 +629,7 @@ describe('usePWAUpdate', () => {
       expect(toasts.some((toast) => toast.message.includes('Updating'))).toBe(true);
     });
 
-    it('does not reload while the user is active; surfaces a persistent prompt', async () => {
+    it('does not reload while the user is active; marks the update pending', async () => {
       mockNeedRefresh = true;
       setActiveInteraction();
 
@@ -642,16 +643,15 @@ describe('usePWAUpdate', () => {
 
       // No reload while active...
       expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
-      // ...and a persistent (duration 0) prompt with a Reload action is shown.
-      const prompt = useToastStore
-        .getState()
-        .toasts.find((toast) => toast.message.includes('new version'));
-      expect(prompt).toBeDefined();
-      expect(prompt?.duration).toBe(0);
-      expect(prompt?.action?.label).toBe('Reload');
+      // ...and the sidebar is told, rather than a toast that never leaves.
+      expect(usePWAUpdateStore.getState().updateReady).toBe(true);
+      expect(usePWAUpdateStore.getState().applyUpdate).toBeTypeOf('function');
+      expect(
+        useToastStore.getState().toasts.some((toast) => toast.message.includes('new version'))
+      ).toBe(false);
     });
 
-    it('reloads immediately when the prompt action is clicked, even while active', async () => {
+    it('reloads immediately when the sidebar control is used, even while active', async () => {
       mockNeedRefresh = true;
       setActiveInteraction();
 
@@ -663,13 +663,9 @@ describe('usePWAUpdate', () => {
 
       await advancePastSilentWindow();
 
-      const prompt = useToastStore
-        .getState()
-        .toasts.find((toast) => toast.message.includes('new version'));
-
       // Still actively dragging — an explicit click overrides the blocking checks.
       act(() => {
-        void prompt?.action?.onClick();
+        usePWAUpdateStore.getState().applyUpdate?.();
       });
 
       expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);

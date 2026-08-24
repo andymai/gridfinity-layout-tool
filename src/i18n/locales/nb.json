@@ -4129,8 +4129,6 @@
   "toast.svgImport.success": "Importerte {count} form(er) fra SVG",
   "toast.svgImport.unsupportedFile": "Filen er ikke en gyldig SVG",
   "toast.undone": "Angret",
-  "toast.updateAvailable": "En ny versjon er tilgjengelig",
-  "toast.updateReload": "Last inn på nytt",
   "toast.updating": "Oppdaterer til siste versjon...",
   "toolSwitcher.activeTool": "Aktivt verktøy",
   "toolSwitcher.baseplateGenerator": "Bunnplate",
@@ -4384,5 +4382,9 @@
   "settings.search.keywords.updateSummaries": "nyheter, endringslogg, oppdateringer, versjonsnotater, nylige endringer",
   "whatsNew.action.openTool.layout": "Åpne Oppsett",
   "whatsNew.action.openTool.designer": "Åpne Bokser",
-  "whatsNew.action.openTool.baseplate": "Åpne Bunnplate"
+  "whatsNew.action.openTool.baseplate": "Åpne Bunnplate",
+  "pwaUpdate.reload": "Last inn på nytt",
+  "pwaUpdate.reloadAria": "Last inn den nye versjonen",
+  "pwaUpdate.readyTooltip": "En ny versjon er klar. Den tas i bruk av seg selv når du tar en pause, eller last inn nå.",
+  "whatsNew.openTooltip": "Se hva som er endret nylig"
 }
