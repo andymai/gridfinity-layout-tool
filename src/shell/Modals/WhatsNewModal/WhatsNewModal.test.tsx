@@ -46,6 +46,11 @@ describe('WhatsNewModal', () => {
   });
 
   it('clears the unseen badge once opened', () => {
+    localStorage.setItem(
+      'gridfinity-whats-new-v1',
+      JSON.stringify({ lastSeenId: 'an-older-entry', lastAutoOpenAt: 0 })
+    );
+    reloadSeenState();
     expect(hasUnseen(getSeenState())).toBe(true);
     useViewStore.getState().setWhatsNewOpen(true);
     render(<WhatsNewModal />);

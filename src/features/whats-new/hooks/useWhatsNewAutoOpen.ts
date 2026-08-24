@@ -45,11 +45,16 @@ export function useWhatsNewAutoOpen({ allowed }: Options): void {
   const setWhatsNewOpen = useViewStore((state) => state.setWhatsNewOpen);
 
   useEffect(() => {
+    // Seeded before the `allowed` gate on purpose: a first-time visitor who
+    // arrives on a share link or /community must still be recorded, or their
+    // marker stays empty and the sidebar badges them on every later visit.
+    const seeded = seedIfFirstRun();
+
     if (!allowed) return;
 
-    // A brand-new browser has nothing to catch up on: record the position and
-    // stay quiet, so the digest never lands on top of the draw tutorial.
-    if (seedIfFirstRun()) return;
+    // A brand-new browser has nothing to catch up on, so stay quiet this load
+    // rather than landing the digest on top of the draw tutorial.
+    if (seeded) return;
 
     const isFreshSession = claimFreshSession();
     if (!isFreshSession || !enabled) return;

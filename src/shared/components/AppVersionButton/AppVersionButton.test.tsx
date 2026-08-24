@@ -16,6 +16,15 @@ function button(): HTMLElement {
   return screen.getByRole('button');
 }
 
+/** A browser that has been here, but is behind the newest entry. */
+function behind(): void {
+  localStorage.setItem(
+    'gridfinity-whats-new-v1',
+    JSON.stringify({ lastSeenId: 'an-older-entry', lastAutoOpenAt: 0 })
+  );
+  reloadSeenState();
+}
+
 describe('AppVersionButton', () => {
   beforeEach(() => {
     resetAllStores();
@@ -33,6 +42,7 @@ describe('AppVersionButton', () => {
 
   it('badges unseen highlights and opens the digest', async () => {
     const user = userEvent.setup();
+    behind();
     render(<AppVersionButton />);
     expect(button()).toHaveTextContent('whatsNew.badge');
 
@@ -41,6 +51,7 @@ describe('AppVersionButton', () => {
   });
 
   it('a pending update takes precedence over unseen highlights', () => {
+    behind();
     usePWAUpdateStore.getState().announceUpdate(() => {});
     render(<AppVersionButton />);
     // Both conditions are true, but only the update chip may render: the two

@@ -64,6 +64,13 @@ describe('useWhatsNewAutoOpen', () => {
     expect(isOpen()).toBe(false);
   });
 
+  it('still seeds a first-time visitor who arrives on a suppressed route', () => {
+    // Otherwise their marker stays empty and the sidebar badges them forever.
+    renderHook(() => useWhatsNewAutoOpen({ allowed: false }));
+    expect(isOpen()).toBe(false);
+    expect(getSeenState().lastSeenId).toBe(LATEST_ENTRY_ID);
+  });
+
   it('stays quiet when update summaries are turned off', () => {
     seenLongAgo();
     useSettingsStore.getState().updateSetting('showUpdateSummaries', false);

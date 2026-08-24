@@ -28,7 +28,10 @@ describe('AttributionFooter', () => {
   });
 
   it('badges the version while highlights are unseen', () => {
-    localStorage.clear();
+    localStorage.setItem(
+      'gridfinity-whats-new-v1',
+      JSON.stringify({ lastSeenId: 'an-older-entry', lastAutoOpenAt: 0 })
+    );
     reloadSeenState();
     render(<AttributionFooter />);
     expect(screen.getByRole('button', { name: /Open What/ })).toHaveTextContent('New');

@@ -62,8 +62,16 @@ export function getSeenState(): SeenState {
   return cache;
 }
 
-/** True when the newest entry has never been shown to this browser. */
+/**
+ * True when the newest entry has never been shown to this browser.
+ *
+ * An empty marker means this browser has never been recorded at all, which is
+ * not the same as being behind: a first-time visitor has nothing to catch up
+ * on. Returning false there keeps the badge dark on the first paint, before
+ * `seedIfFirstRun` has run, and on routes where seeding is deferred.
+ */
 export function hasUnseen(state: SeenState): boolean {
+  if (state.lastSeenId === '') return false;
   return state.lastSeenId !== LATEST_ENTRY_ID;
 }
 

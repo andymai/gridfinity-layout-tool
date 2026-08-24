@@ -17,7 +17,18 @@ describe('seenState', () => {
     vi.useRealTimers();
   });
 
-  it('reports everything unseen before any marker exists', () => {
+  it('does not badge a browser that has never been recorded', () => {
+    // A first-time visitor is not behind, and must not be badged on the first
+    // paint before seedIfFirstRun() has run.
+    expect(hasUnseen(getSeenState())).toBe(false);
+  });
+
+  it('badges a browser whose marker is behind the newest entry', () => {
+    localStorage.setItem(
+      'gridfinity-whats-new-v1',
+      JSON.stringify({ lastSeenId: 'an-older-entry', lastAutoOpenAt: 0 })
+    );
+    reloadSeenState();
     expect(hasUnseen(getSeenState())).toBe(true);
   });
 
@@ -65,6 +76,6 @@ describe('seenState', () => {
     localStorage.setItem('gridfinity-whats-new-v1', 'not json');
     reloadSeenState();
     expect(() => getSeenState()).not.toThrow();
-    expect(hasUnseen(getSeenState())).toBe(true);
+    expect(getSeenState().lastSeenId).toBe('');
   });
 });
