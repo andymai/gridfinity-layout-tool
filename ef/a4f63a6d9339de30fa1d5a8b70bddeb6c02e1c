@@ -1,0 +1,108 @@
+src/i18n/locales/de.json
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+src/i18n/locales/sv.json
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+src/i18n/locales/ko.json
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+src/test/testUtils.ts
+  s_98d93acaac415a::t_76a31672c8d278 109
+  s_98d93acaac415a::t_032c6192c1a7a4 12,108
+src/features/whats-new/hooks/useWhatsNewAutoOpen.ts
+  s_98d93acaac415a::t_58aad906aa9de7 10
+src/shared/components/AppVersionButton/AppVersionButton.tsx
+  s_98d93acaac415a::t_0913f765bf1d10 1-15,17-44,46-92,97-122
+  s_98d93acaac415a::t_05697b9e8f879f 16,45,93-96
+src/i18n/locales/nl.json
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+src/features/whats-new/entries.ts
+  s_98d93acaac415a::t_ee29efd2f5789b 16
+  s_98d93acaac415a::t_2250dfba2c23ab 17-24
+scripts/doc-budget.json
+  s_98d93acaac415a::t_5f16e316c37d8f 68
+  s_98d93acaac415a::t_645dae6827acfd 3
+src/features/whats-new/hooks/useWhatsNewAutoOpen.test.ts
+  s_98d93acaac415a::t_58aad906aa9de7 1-102
+src/i18n/locales/ja.json
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+src/i18n/locales/es.json
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+src/features/whats-new/latest.ts
+  s_98d93acaac415a::t_2250dfba2c23ab 9
+src/shell/Sidebar/Sidebar.tsx
+  s_98d93acaac415a::t_4df8f0b3c0157d 27,185-189,191
+src/i18n/locales/pt-BR.json
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+src/shared/components/AttributionFooter/AttributionFooter.tsx
+  s_98d93acaac415a::t_6dcc023f73088e 5,14
+src/shared/components/AppVersionButton/AppVersionButton.test.tsx
+  s_98d93acaac415a::t_d41a89167c42da 1-96
+src/i18n/locales/zh-CN.json
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+src/i18n/locales/en.ts
+  s_98d93acaac415a::t_663956430495a4 1467
+  s_98d93acaac415a::t_b5d5f965a21a0d 1468-1470,5002
+src/shared/hooks/usePWAUpdate.test.ts
+  s_98d93acaac415a::t_b3f6915ad85a92 9,632,646-651,654,668
+src/i18n/locales/cs.json
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+src/features/whats-new/index.ts
+  s_98d93acaac415a::t_58aad906aa9de7 6
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_98d93acaac415a::t_4df8f0b3c0157d 25,40,366
+src/core/store/pwaUpdate.ts
+  s_98d93acaac415a::t_ad0598b6433ae4 1-26
+src/i18n/locales/nb.json
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+src/i18n/locales/uk.json
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+src/shell/Modals/WhatsNewModal/WhatsNewModal.tsx
+  s_98d93acaac415a::t_fa25141d9e4855 25-31,33-35,100-105,129,344-356
+  s_98d93acaac415a::t_95c6a7a93af850 3,46-47,49-51,200-207,209-220,231,298,305,314-319,323,341-343,357
+  s_98d93acaac415a::t_f15151316a3181 93-99,106,112-114,117-124,126,128,132-136,141,150,155,159-164
+  s_98d93acaac415a::t_ee6a3cb79fec51 44-45,48
+  s_98d93acaac415a::t_5df0a50c6a59ee 358-359
+src/i18n/locales/it.json
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+src/i18n/locales/fr.json
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+src/shared/hooks/usePWAUpdate.ts
+  s_98d93acaac415a::t_ab9b3b657ddc91 29,647-652
+src/i18n/locales/pl.json
+  s_98d93acaac415a::t_c610b5ef5ac970 4385
+  s_98d93acaac415a::t_0d1446393c7c77 4386-4389
+src/features/whats-new/README.md
+  s_98d93acaac415a::t_26021fdeed7535 8,10-12,14-15,19-21,25-29,31,35-38,43-51
+  s_98d93acaac415a::t_dd905b9d117f5d 32
+  s_98d93acaac415a::t_42f1cfdc0056e4 33-34,39
+src/shared/components/AppVersionButton/index.ts
+  s_98d93acaac415a::t_05697b9e8f879f 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "efa4f63a6d9339de30fa1d5a8b70bddeb6c02e1c",
+  "prompts": {},
+  "sessions": {
+    "s_98d93acaac415a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9377b15c-ea26-4a99-a567-cd7e26d19e48",
+        "model": "claude-opus-5"
+      },
+      "human_author": null
+    }
+  }
+}
