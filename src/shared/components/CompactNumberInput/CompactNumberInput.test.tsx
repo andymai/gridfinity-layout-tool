@@ -400,7 +400,8 @@ describe('CompactNumberInput', () => {
       fireEvent.click(screen.getByRole('button'));
       fireEvent.blur(screen.getByRole('textbox'));
 
-      expect(onChange).toHaveBeenLastCalledWith(20);
+      // No write at all: the value stays 20 because nothing changed.
+      expect(onChange).not.toHaveBeenCalled();
     });
 
     it('still refuses a typed value above it', () => {
@@ -411,7 +412,8 @@ describe('CompactNumberInput', () => {
       fireEvent.change(screen.getByRole('textbox'), { target: { value: '50' } });
       fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
 
-      expect(onChange).toHaveBeenLastCalledWith(20);
+      // 50 clamps back to the held 20, so there is no change to write.
+      expect(onChange).not.toHaveBeenCalled();
     });
 
     it('lets an arrow key move the value back toward range', async () => {
@@ -539,6 +541,62 @@ describe('CompactNumberInput', () => {
     fireEvent.pointerUp(document);
 
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  // A blur or Enter that leaves the committed value unchanged must not write to
+  // the store. In the bin designer each write churns cutout references, spends an
+  // undo slot, and re-renders — which lets the focus/select effect steal focus,
+  // blur a neighbour, and commit again, driving the "Maximum update depth
+  // exceeded" render loop.
+  describe('no-op writes', () => {
+    it('does not write on focus and blur when nothing was typed', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="X" value={10} onChange={onChange} />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.blur(screen.getByRole('textbox'));
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('does not write when a typed value clamps back to the current value', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="X" value={15} onChange={onChange} max={15} />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '20' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('does not write when the same value is retyped', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="X" value={10} onChange={onChange} />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '10' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('keeps the typed-entry ceiling fixed while the field is open', () => {
+      // `value` jumps above max mid-edit, as a store write could push it. The
+      // typed-entry ceiling must stay at max, not follow the value up, or a
+      // clamp could chase its own value past the limit and loop.
+      const onChange = vi.fn();
+      const { rerender } = render(
+        <CompactNumberInput label="X" value={10} onChange={onChange} min={0} max={20} />
+      );
+      fireEvent.click(screen.getByRole('button'));
+      rerender(<CompactNumberInput label="X" value={50} onChange={onChange} min={0} max={20} />);
+
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '45' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).toHaveBeenLastCalledWith(20);
+    });
   });
 
   it('shows a mixed placeholder when indeterminate, not the value', () => {
