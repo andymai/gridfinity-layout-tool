@@ -1,0 +1,23 @@
+src/shared/hooks/usePWAUpdate.ts
+  s_98d93acaac415a::t_3a5c733a8aca7f 665-667
+src/shell/Modals/WhatsNewModal/WhatsNewModal.tsx
+  s_98d93acaac415a::t_3a5c733a8aca7f 261-264,266,277-280,282-286
+src/shared/hooks/usePWAUpdate.test.ts
+  s_98d93acaac415a::t_14d7929b5c0537 654-673
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "a00e4310d76737ebb67a9ae3e40637d120d197c4",
+  "prompts": {},
+  "sessions": {
+    "s_98d93acaac415a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9377b15c-ea26-4a99-a567-cd7e26d19e48",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
