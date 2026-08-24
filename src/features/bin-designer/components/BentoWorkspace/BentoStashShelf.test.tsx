@@ -71,11 +71,15 @@ describe('BentoStashShelf', () => {
     expect(screen.queryByTestId('bento-stash-shape-0')).not.toBeInTheDocument();
   });
 
-  it('renders a wrong-length mask as one block, matching where it would place', () => {
-    // placeFromStash falls back to the rectangle for a mask that does not match
-    // the box, so previewing the partial cells would advertise a shape the drop
-    // never produces.
-    render(<BentoStashShelf {...makeProps({ stash: [{ w: 2, h: 2, cells: [true, true] }] })} />);
+  it.each([
+    ['wrong length', [true, true]],
+    ['empty', [false, false, false, false]],
+    ['all filled', [true, true, true, true]],
+    ['two islands', [true, false, false, true]],
+  ])('renders a %s mask as one block, matching where it would place', (_label, cells) => {
+    // placeFromStash resolves every one of these to the plain rectangle, so
+    // previewing the raw cells would advertise a shape the drop never produces.
+    render(<BentoStashShelf {...makeProps({ stash: [{ w: 2, h: 2, cells }] })} />);
 
     expect(screen.queryByTestId('bento-stash-shape-0')).not.toBeInTheDocument();
   });
