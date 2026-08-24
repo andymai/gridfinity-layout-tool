@@ -1,0 +1,38 @@
+src/core/cqrs/validation/schemas.ts
+  s_17a79989e24fcf::t_8b484e85b58e19 105
+src/core/types/layout.ts
+  s_17a79989e24fcf::t_98f6d0ed47273f 161-164
+  s_17a79989e24fcf::t_8662a6bdcfcea6 166-168,172
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_17a79989e24fcf::t_1163f07dd3bf06 193,252,584,746,801
+  s_17a79989e24fcf::t_df2cc8d39cb0d7 253
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_17a79989e24fcf::t_56d42b53f7738b 92-93
+  s_17a79989e24fcf::t_f032e0c8389cae 51
+src/core/cqrs/v2/domain/bin/updateBin.test.ts
+  s_17a79989e24fcf::t_bf5939e2e1c7e8 5
+  s_17a79989e24fcf::t_fd45945d7176ce 140-176
+src/core/cqrs/validation/schemas.test.ts
+  s_17a79989e24fcf::t_87f3bb9826f529 247-251
+src/features/design-linking/hooks/useBinLinking.ts
+  s_17a79989e24fcf::t_747489498888eb 263
+  s_17a79989e24fcf::t_73a990d409faf1 409
+  s_17a79989e24fcf::t_6062e7d61b35ee 145
+  s_17a79989e24fcf::t_42270b30fe900f 128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "72ed01c6608d4fadafc059f1f648b3ad5ff50c5b",
+  "prompts": {},
+  "sessions": {
+    "s_17a79989e24fcf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "440bb349-37e2-4daa-a0d8-a45dcc0b6533",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
