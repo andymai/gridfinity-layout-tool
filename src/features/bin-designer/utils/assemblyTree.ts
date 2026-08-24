@@ -166,17 +166,14 @@ export function findAssemblySiblings(
   return null;
 }
 
-/** Deep-copy a subtree with fresh ids on every node. */
+/** Deep-copy a subtree (nested params included) with fresh ids on every node. */
 export function cloneAssemblySubtree(node: AssemblyPartNode): AssemblyPartNode {
-  return {
-    ...node,
+  const reId = (n: AssemblyPartNode): AssemblyPartNode => ({
+    ...n,
     id: crypto.randomUUID(),
-    transform: { ...node.transform },
-    params: { ...node.params },
-    ...(node.array ? { array: { ...node.array } } : {}),
-    ...(node.label ? { label: { ...node.label } } : {}),
-    children: node.children.map(cloneAssemblySubtree),
-  } as AssemblyPartNode;
+    children: n.children.map(reId),
+  });
+  return reId(structuredClone(node));
 }
 
 /**

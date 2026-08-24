@@ -225,6 +225,9 @@ export function WorkshopCanvas() {
       }}
       onPointerDown={(e) => {
         if (e.button !== 0 || !e.shiftKey || gestureStartRef.current) return;
+        // Only a press on the 3D canvas starts a marquee — shift-clicking
+        // overlay chrome (view bar, selection toolbar) must stay a click.
+        if ((e.target as HTMLElement).tagName !== 'CANVAS') return;
         if (useDesignerStore.getState().ui.workshopPendingPartType) return;
         const bounds = wrapperRef.current?.getBoundingClientRect();
         if (!bounds) return;

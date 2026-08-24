@@ -255,7 +255,9 @@ export function useWorkshopInteraction(
         const currentStructure = store.structure;
         if (currentStructure?.kind !== 'assembly') return;
         e.preventDefault();
-        store.setSelectedAssemblyPartIds(currentStructure.parts.map((part) => part.id));
+        // Whole tree, not just roots — children tint too; group operations
+        // reduce to top-level members themselves.
+        store.setSelectedAssemblyPartIds(collectAssemblyIds(currentStructure.parts));
         invalidate();
         return;
       }
