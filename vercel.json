@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
+  "buildCommand": "bash scripts/vercel-build.sh",
   "trailingSlash": false,
   "redirects": [
     {

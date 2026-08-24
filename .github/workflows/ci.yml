@@ -65,18 +65,6 @@ jobs:
       - name: Check bundle size
         run: pnpm run size:check
 
-      # Upload source maps to PostHog for error tracking (main branch only)
-      # Requires POSTHOG_API_KEY and POSTHOG_PROJECT_ID secrets
-      # Get these from PostHog: Settings > Environment > Source Maps
-      - name: Upload source maps to PostHog
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        # Third-party action — pinned to commit SHA (Dependabot will keep it current).
-        uses: PostHog/upload-source-maps@991172e085213c222c61d2ba6a0b9e57c81e5066 # v2.0.0
-        with:
-          directory: dist
-          project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
-          api-key: ${{ secrets.POSTHOG_API_KEY }}
-
   # PRs: Split into two test groups for fast, balanced feedback (9 runners).
   #   Vitest shards by hashing the file path, not by duration, so the heavy
   #   brepjs/OpenCascade WASM generator tests (their own `generators` project)
