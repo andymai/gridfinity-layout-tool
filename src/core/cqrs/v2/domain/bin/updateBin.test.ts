@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
-import { binId, gridUnits } from '@/core/types';
+import { binId, designId, gridUnits } from '@/core/types';
 import { updateBin } from './updateBin';
 import { makeLayout, makeBin } from './_testHelpers';
 
@@ -134,6 +134,43 @@ describe('v2 bin.update', () => {
       expect(isOk(result)).toBe(true);
       if (!isOk(result)) return;
       expect('overhang' in result.value.event.payload.changes).toBe(false);
+    });
+  });
+
+  describe('linkedDesignId', () => {
+    const DESIGN = designId('design_1');
+
+    it('sets a new design id', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1')] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { linkedDesignId: 'design_2' } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      const next = produce(layout, (draft) => {
+        updateBin.apply({ type: 'bin.updated', payload: result.value.event.payload }, draft);
+      });
+      expect(next.bins[0].linkedDesignId).toBe('design_2');
+    });
+
+    it('clears it when null is sent, and captures the previous value for undo', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1', { linkedDesignId: DESIGN })] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { linkedDesignId: null } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('linkedDesignId' in result.value.event.payload.changes).toBe(true);
+      expect(result.value.event.payload.changes.linkedDesignId).toBeUndefined();
+      expect(result.value.event.payload.previous.linkedDesignId).toBe(DESIGN);
+
+      const next = produce(layout, (draft) => {
+        updateBin.apply({ type: 'bin.updated', payload: result.value.event.payload }, draft);
+      });
+      expect(next.bins[0].linkedDesignId).toBeUndefined();
     });
   });
 

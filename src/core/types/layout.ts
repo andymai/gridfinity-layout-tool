@@ -158,15 +158,18 @@ export interface Bin {
 /**
  * Update payload for a bin.
  *
- * Identical to `Partial<Bin>` except that `overhang` is tri-state: omitted
- * leaves it alone, an object sets it, and `null` clears it. A plain optional
- * field can't express "clear" — `{ overhang: undefined }` is indistinguishable
- * from omission once it crosses the command boundary.
+ * Identical to `Partial<Bin>` except that the fields below are tri-state:
+ * omitted leaves one alone, a value sets it, and `null` clears it. A plain
+ * optional field can't express "clear" — `{ overhang: undefined }` is
+ * indistinguishable from omission once it crosses the command boundary.
  */
-export type BinUpdates = Partial<Omit<Bin, 'overhang' | 'pairId' | 'pairRole'>> & {
+export type BinUpdates = Partial<
+  Omit<Bin, 'overhang' | 'pairId' | 'pairRole' | 'linkedDesignId'>
+> & {
   overhang?: OverhangConfig | null;
   pairId?: string | null;
   pairRole?: 'block' | 'rest' | null;
+  linkedDesignId?: DesignId | null;
 };
 
 /** Grid coordinate (0-based, origin at bottom-left). */

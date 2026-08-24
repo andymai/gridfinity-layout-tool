@@ -48,7 +48,7 @@ const updatesSchema = z
     label: z.string().max(CONSTRAINTS.LABEL_MAX_LENGTH),
     notes: z.string().max(CONSTRAINTS.NOTES_MAX_LENGTH),
     customProperties: z.record(z.string(), z.string()),
-    linkedDesignId: z.string(),
+    linkedDesignId: z.string().nullable(),
     extendToMargin: z.boolean(),
     marginTaper: z.object({
       profile: z.enum(['chamfer', 'fillet']),
@@ -89,7 +89,8 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.notes !== undefined) result.notes = updates.notes;
   if (updates.customProperties !== undefined) result.customProperties = updates.customProperties;
   if (updates.linkedDesignId !== undefined)
-    result.linkedDesignId = toDesignId(updates.linkedDesignId);
+    result.linkedDesignId =
+      updates.linkedDesignId === null ? undefined : toDesignId(updates.linkedDesignId);
   if (updates.extendToMargin !== undefined) result.extendToMargin = updates.extendToMargin;
   if (updates.marginTaper !== undefined) result.marginTaper = updates.marginTaper;
   // `null` is the wire form of "clear it"; the field itself is just optional.

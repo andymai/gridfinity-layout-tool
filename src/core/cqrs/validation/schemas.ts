@@ -102,7 +102,7 @@ const binPartialSchema = z
     label: labelStr,
     notes: notesStr,
     customProperties: z.record(z.string(), z.string()),
-    linkedDesignId: z.string(),
+    linkedDesignId: z.string().nullable(),
     extendToMargin: z.boolean(),
     marginTaper: z.object({
       profile: z.enum(['chamfer', 'fillet']),
