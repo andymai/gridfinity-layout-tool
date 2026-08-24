@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
-import { binId, gridUnits } from '@/core/types';
+import { binId, gridUnits, designId } from '@/core/types';
 import { updateBin } from './updateBin';
 import { makeLayout, makeBin } from './_testHelpers';
 
@@ -134,6 +134,49 @@ describe('v2 bin.update', () => {
       expect(isOk(result)).toBe(true);
       if (!isOk(result)) return;
       expect('overhang' in result.value.event.payload.changes).toBe(false);
+    });
+  });
+
+  describe('linkedDesignId', () => {
+    it('links a bin to a design', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1')] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { linkedDesignId: 'design_1' } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.linkedDesignId).toBe('design_1');
+    });
+
+    it('clears the link when null is sent, and captures the previous value for undo', () => {
+      const layout = makeLayout({
+        bins: [makeBin('bin_1', { linkedDesignId: designId('design_1') })],
+      });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { linkedDesignId: null } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('linkedDesignId' in result.value.event.payload.changes).toBe(true);
+      expect(result.value.event.payload.changes.linkedDesignId).toBeUndefined();
+      expect(result.value.event.payload.previous.linkedDesignId).toBe('design_1');
+    });
+
+    it('drops the field from the bin through apply()', () => {
+      const layout = makeLayout({
+        bins: [makeBin('bin_1', { linkedDesignId: designId('design_1') })],
+      });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { linkedDesignId: null } },
+        { aggregate: layout }
+      );
+      if (!isOk(result)) throw new Error('handle failed');
+      const next = produce(layout, (draft) => {
+        updateBin.apply({ type: 'bin.updated', payload: result.value.event.payload }, draft);
+      });
+      expect(next.bins[0].linkedDesignId).toBeUndefined();
     });
   });
 
