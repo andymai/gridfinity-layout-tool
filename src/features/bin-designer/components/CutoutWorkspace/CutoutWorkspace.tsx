@@ -29,6 +29,7 @@ import {
   clampOffBoardCutouts,
 } from '../panel/CutoutsSection/offBoardCutouts';
 import { computeGrowToFit } from '../panel/CutoutsSection/growBinToFit';
+import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
 import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
@@ -135,6 +136,10 @@ export function CutoutWorkspace() {
   // extra floor and land where the generator puts them. wallHeight is
   // unaffected (overhang is outward-only).
   const { wallHeight } = binDimensions(params);
+  // The worker cuts from the solid FILL surface, which the global top offset
+  // lowers below the rim — the depth ceiling and the shortfall warning both
+  // measure from there, not the wall top. A lid host bores its plate through.
+  const maxCutDepth = lidHost?.thickness ?? Math.max(0, wallHeight - params.cutoutConfig.topOffset);
   const interior = cutoutInterior(params);
   // The lid's board is its mating-cavity window, which is neither the bin's
   // interior nor the lid's outer plate. A null window means a gate refused the
@@ -188,6 +193,20 @@ export function CutoutWorkspace() {
     () => getOffBoardCutoutIds(cutouts, cutoutBoard),
     [cutouts, cutoutBoard]
   );
+
+  // Cutouts the generator will cut shallower than their requested depth (a
+  // stored depth outliving a shrunken bin, or a lean sliding the pocket into
+  // a wall or the floor). Hidden cutouts are not cut at all, so they cannot
+  // fall short. Through-cut lid holes have no depth to miss.
+  const depthShortfallCount = useMemo(() => {
+    if (isLid) return 0;
+    let count = 0;
+    for (const c of cutouts) {
+      if (c.hidden === true) continue;
+      if (cutoutDepthShortfall(c, binWidth, binDepth, maxCutDepth)) count++;
+    }
+    return count;
+  }, [isLid, cutouts, binWidth, binDepth, maxCutDepth]);
 
   const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();
@@ -667,7 +686,7 @@ export function CutoutWorkspace() {
           preview={preview}
           binWidth={binWidth}
           binDepth={binDepth}
-          maxCutDepth={lidHost?.thickness ?? wallHeight}
+          maxCutDepth={maxCutDepth}
           throughOnly={isLid}
           onUpdate={updateCutout}
           onUpdateBatch={updateCutoutsBatch}
@@ -676,6 +695,7 @@ export function CutoutWorkspace() {
           onFlattenArray={handleFlattenArray}
           offBoardCount={offBoardIds.size}
           onClampOffBoard={handleClampOffBoard}
+          depthShortfallCount={depthShortfallCount}
           growTarget={growTarget}
           onGrowToFit={handleGrowToFit}
           onDuplicate={duplicateSelected}

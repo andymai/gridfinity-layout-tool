@@ -35,6 +35,8 @@ interface BinSizeSectionProps {
   readonly growTarget?: GrowTarget | null;
   /** Resize the bin to {@link growTarget}. */
   readonly onGrowToFit?: () => void;
+  /** Count of cutouts the generator will cut shallower than requested. */
+  readonly depthShortfallCount?: number;
 }
 
 export function BinSizeSection({
@@ -42,6 +44,7 @@ export function BinSizeSection({
   onClampOffBoard,
   growTarget,
   onGrowToFit,
+  depthShortfallCount = 0,
 }: BinSizeSectionProps) {
   const t = useTranslation();
   return (
@@ -95,6 +98,18 @@ export function BinSizeSection({
               </Button>
             )}
           </div>
+        </Alert>
+      )}
+
+      {depthShortfallCount > 0 && (
+        // Warning, not error: the bin still generates, just shallower than the
+        // number in the inspector. Selecting the cutout shows the exact depths.
+        <Alert intent="warning" icon={<AlertTriangleIcon size="xs" className="mt-0.5" />}>
+          <p className="leading-snug text-warning">
+            {t('binDesigner.cutoutEditor.depthShortfallWarning', {
+              count: depthShortfallCount,
+            })}
+          </p>
         </Alert>
       )}
     </div>

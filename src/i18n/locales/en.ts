@@ -2729,6 +2729,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.positionX': 'X Position',
   'binDesigner.cutouts.positionY': 'Y Position',
   'binDesigner.cutouts.cutDepth': 'Cut depth',
+  'binDesigner.cutouts.depthShortfall':
+    'The bin has room for {achievable}mm of this {requested}mm cut. Lower the cut depth or lean, or move the cutout away from the edge.',
   'binDesigner.cutouts.throughDepthHint': 'Cuts through all {depth}mm of the plate.',
   'binDesigner.cutouts.knifePreset': 'Preset',
   'binDesigner.cutouts.knifePreset.chef8': 'Chef 8"',
@@ -2979,6 +2981,8 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.binFeatures': 'Bin features',
   'binDesigner.cutoutEditor.lipOffPausesLid':
     "The lid needs the stacking lip, so it won't be generated until you turn the lip back on.",
+  'binDesigner.cutoutEditor.depthShortfallWarning':
+    '{count} cutout(s) will be cut shallower than requested',
   'binDesigner.cutoutEditor.offBoardWarning': '{count} cutout(s) will be clipped',
   'binDesigner.cutoutEditor.bringBackIn': 'Bring back in',
   'binDesigner.cutoutEditor.growBinToFit': 'Grow bin to {width} × {depth}',
