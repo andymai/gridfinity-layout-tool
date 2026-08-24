@@ -46,6 +46,38 @@ describe('WhatsNewModal', () => {
     expect(screen.getByText(WHATS_NEW_ENTRIES[0].title.en)).toBeInTheDocument();
   });
 
+  it('navigates in-app rather than hard-reloading for a layout action', async () => {
+    const user = userEvent.setup();
+    const assign = vi.fn();
+    vi.spyOn(window, 'location', 'get').mockReturnValue({
+      ...window.location,
+      assign,
+    });
+
+    // Rewind the marker just past the newest layout-action entry so the digest
+    // is guaranteed to contain one, without hardcoding an id that may be pruned.
+    const idx = WHATS_NEW_ENTRIES.findIndex(
+      (e) => e.action?.kind === 'openTool' && e.action.tool === 'layout'
+    );
+    expect(idx).toBeGreaterThanOrEqual(0);
+    localStorage.setItem(
+      'gridfinity-whats-new-v1',
+      JSON.stringify({ lastSeenId: WHATS_NEW_ENTRIES[idx + 1].id, lastAutoOpenAt: 0 })
+    );
+    reloadSeenState();
+
+    useViewStore.getState().setWhatsNewOpen(true);
+    render(<WhatsNewModal />);
+
+    const layoutAction = screen.getAllByRole('button', {
+      name: 'whatsNew.action.openTool.layout',
+    })[0];
+    await user.click(layoutAction);
+
+    // A full reload would drop in-memory UI state; the routing hooks do not.
+    expect(assign).not.toHaveBeenCalled();
+  });
+
   it('opts out through the settings store rather than local state', async () => {
     const user = userEvent.setup();
     useViewStore.getState().setWhatsNewOpen(true);

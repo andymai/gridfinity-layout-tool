@@ -244,7 +244,7 @@ function EntryAction({ entry, onNavigate }: EntryRowProps) {
   const setShowBaseplateLibrary = useViewStore((state) => state.setShowBaseplateLibrary);
   const openGallery = useBinExampleGalleryStore((state) => state.open);
   const openLabsDrawer = useLabsStore((state) => state.openDrawer);
-  const { navigateToDesigner } = useDesignerRouting();
+  const { navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { navigateToBaseplate } = useBaseplateRouting();
 
   const run = useCallback(
@@ -254,7 +254,7 @@ function EntryAction({ entry, onNavigate }: EntryRowProps) {
         case 'openTool':
           switch (action.tool) {
             case 'layout':
-              window.location.assign('/');
+              navigateToPlanner();
               return;
             case 'designer':
               navigateToDesigner();
@@ -281,6 +281,7 @@ function EntryAction({ entry, onNavigate }: EntryRowProps) {
     [
       navigateToBaseplate,
       navigateToDesigner,
+      navigateToPlanner,
       onNavigate,
       openGallery,
       setPrintModalOpen,

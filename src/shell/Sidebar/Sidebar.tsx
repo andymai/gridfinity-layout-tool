@@ -182,16 +182,18 @@ export function Sidebar() {
               ))}
             </svg>
           </IconButton>
-          {/* Outside the cloudSyncEnabled gate below: an update still needs a way
-              to be applied when sync is off or the session has not resolved. */}
-          <div className="mt-auto flex flex-col items-center gap-2 pb-1">
+          {/* One bottom-pinned group so an idle AppVersionRailButton (which
+              renders null, the usual case) leaves no gap above the dock. The
+              button sits outside the cloudSyncEnabled gate because an update
+              still needs applying when sync is off. */}
+          <div className="mt-auto flex w-full flex-col items-center gap-2">
             <AppVersionRailButton />
+            {cloudSyncEnabled && (
+              <div className="w-full">
+                <UserDock variant="compact" />
+              </div>
+            )}
           </div>
-          {cloudSyncEnabled && (
-            <div className="w-full">
-              <UserDock variant="compact" />
-            </div>
-          )}
         </div>
       ) : (
         // Expanded state
