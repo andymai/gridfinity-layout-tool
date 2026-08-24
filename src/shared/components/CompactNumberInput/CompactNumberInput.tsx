@@ -74,15 +74,22 @@ export function CompactNumberInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   /**
+   * Committed value at the moment this edit began. The typed-entry ceiling reads
+   * it instead of live `value`, so a store write that lands mid-edit can't move
+   * the ceiling and make a clamp chase its own value into a render loop.
+   */
+  const editStartValue = useRef(value);
+
+  /**
    * Ceiling applied to a typed entry. `softMax` lifts it entirely; otherwise it
-   * is `max`, but never below the value already held — a field must not destroy
-   * its own contents just by being focused and blurred, which is what a `max`
-   * that has dropped below `value` would otherwise do (an oversize cutout pins
-   * X's max to 0 while X still reads its stored offset).
+   * is `max`, but never below the value held when editing began — a field must
+   * not destroy its own contents just by being focused and blurred, which is
+   * what a `max` that has dropped below the value would otherwise do (an oversize
+   * cutout pins X's max to 0 while X still reads its stored offset).
    */
   const clampTyped = useCallback(
-    (v: number) => clampRange(v, min, softMax ? Infinity : Math.max(max, value)),
-    [softMax, min, max, value]
+    (v: number) => clampRange(v, min, softMax ? Infinity : Math.max(max, editStartValue.current)),
+    [softMax, min, max]
   );
 
   /**
@@ -135,6 +142,7 @@ export function CompactNumberInput({
     // Mixed selection: start from an empty field so a typed value unifies all.
     setEditValue(indeterminate ? '' : formatValue(value));
     setEditPeak(value);
+    editStartValue.current = value;
     setEditing(true);
   }, [disabled, indeterminate, value, formatValue]);
 
@@ -156,10 +164,17 @@ export function CompactNumberInput({
       // absorb it, but by silently committing the ceiling — so "Infinity" set a
       // rotation field to 359 while "abc" left it alone. Non-finite input is
       // unparseable garbage, not a big number, and now reverts like any other.
-      if (Number.isFinite(parsed)) onChange(clampTyped(parsed));
+      // Only write a real change. A blur or Enter that lands on the committed
+      // value must not call `onChange` — each store write churns references,
+      // spends an undo slot, and re-renders, which lets the focus/select effect
+      // steal focus, blur a neighbour, and commit again, driving a render loop.
+      if (Number.isFinite(parsed)) {
+        const next = clampTyped(parsed);
+        if (next !== value) onChange(next);
+      }
       setEditing(false);
     },
-    [onChange, clampTyped]
+    [onChange, clampTyped, value]
   );
 
   const handleKeyDown = useCallback(
