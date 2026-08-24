@@ -1,0 +1,19 @@
+.claude/skills/json-schemas/SKILL.md
+  s_cac523767fa2ab::t_16c7c4143b489f 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "8e242489a6b11f35c527acb7caa3b0b43fd831f0",
+  "prompts": {},
+  "sessions": {
+    "s_cac523767fa2ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9d538120-8b6f-4d34-8f2a-8051d4326747",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
