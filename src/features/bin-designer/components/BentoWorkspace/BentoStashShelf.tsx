@@ -11,6 +11,7 @@ import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useTranslation } from '@/i18n';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import type { StashedCompartment } from '@/features/bin-designer/types';
+import { stashEntryMask } from '@/features/bin-designer/utils/bentoDraw';
 
 function Icon({ paths }: { readonly paths: readonly string[] }) {
   return (
@@ -109,6 +110,7 @@ export function BentoStashShelf({
             const isDragging = index === draggingIndex;
             const { width, height } = tileSize(entry);
             const fill = fillClass(isDragging);
+            const cells = stashEntryMask(entry);
             return (
               <div
                 key={`${index}-${entry.w}x${entry.h}-${entry.cells?.join('') ?? ''}-${entry.label ?? ''}`}
@@ -130,7 +132,7 @@ export function BentoStashShelf({
                   className="flex items-center justify-center"
                   onPointerDown={(e) => onEntryPointerDown(index, e)}
                 >
-                  {entry.cells ? (
+                  {cells ? (
                     <div
                       className="grid"
                       style={{
@@ -141,7 +143,7 @@ export function BentoStashShelf({
                       }}
                       data-testid={`bento-stash-shape-${index}`}
                     >
-                      {maskRowsTopFirst(entry.cells, entry.w, entry.h).map(({ key, filled }) => (
+                      {maskRowsTopFirst(cells, entry.w, entry.h).map(({ key, filled }) => (
                         <div
                           key={key}
                           className={filled ? `rounded-sm border ${fill}` : undefined}

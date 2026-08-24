@@ -71,6 +71,15 @@ describe('BentoStashShelf', () => {
     expect(screen.queryByTestId('bento-stash-shape-0')).not.toBeInTheDocument();
   });
 
+  it('renders a wrong-length mask as one block, matching where it would place', () => {
+    // placeFromStash falls back to the rectangle for a mask that does not match
+    // the box, so previewing the partial cells would advertise a shape the drop
+    // never produces.
+    render(<BentoStashShelf {...makeProps({ stash: [{ w: 2, h: 2, cells: [true, true] }] })} />);
+
+    expect(screen.queryByTestId('bento-stash-shape-0')).not.toBeInTheDocument();
+  });
+
   it('starts a drag from a tile', () => {
     const onEntryPointerDown = vi.fn();
     render(<BentoStashShelf {...makeProps({ stash: [{ w: 2, h: 2 }], onEntryPointerDown })} />);

@@ -563,6 +563,18 @@ export function stashCompartment(config: CompartmentConfig, id: number): Compart
   return { ...removed, stash: [...(config.stash ?? []), entry] };
 }
 
+/**
+ * A stash entry's usable footprint mask, or undefined when the entry stands for
+ * a plain rectangle. The single answer for placement and for the shelf preview:
+ * a mask of the wrong length must not render as one shape and place as another,
+ * and indexing past its end would read `undefined` as false and silently shrink
+ * the footprint. Migration drops these on load; this covers state that never
+ * passed through it.
+ */
+export function stashEntryMask(entry: StashedCompartment): boolean[] | undefined {
+  return entry.cells?.length === entry.w * entry.h ? entry.cells : undefined;
+}
+
 /** Place a stash entry onto background grid; the rect must match its size. */
 export function placeFromStash(
   config: CompartmentConfig,
@@ -573,11 +585,7 @@ export function placeFromStash(
   if (!entry) return null;
   if (rect.w !== entry.w || rect.h !== entry.h) return null;
   const box = rectIndices(config.cols, rect);
-  // A mask of the wrong length falls back to the rectangle rather than indexing
-  // past its end, where `undefined` would read as false and place a silently
-  // smaller shape. Migration drops these on load; this covers state that never
-  // passed through it.
-  const mask = entry.cells?.length === box.length ? entry.cells : undefined;
+  const mask = stashEntryMask(entry);
   const drawn = drawFootprint(config, rect, mask ? box.filter((_, i) => mask[i]) : box);
   if (!drawn) return null;
   let next = drawn.config;
