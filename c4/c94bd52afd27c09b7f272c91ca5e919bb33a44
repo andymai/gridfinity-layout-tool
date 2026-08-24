@@ -1,0 +1,22 @@
+src/design-system/SegmentedControl/SegmentedControl.tsx
+  s_a0224d4b47664d::t_d94db72cec2372 162-167,170-173,176,179,183
+src/design-system/SegmentedControl/SegmentedControl.test.tsx
+  s_a0224d4b47664d::t_6d4b2a60d7ccb2 301-305
+  s_a0224d4b47664d::t_056b5b75d1efe3 306-308
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "c4c94bd52afd27c09b7f272c91ca5e919bb33a44",
+  "prompts": {},
+  "sessions": {
+    "s_a0224d4b47664d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "98eed91c-49ff-442f-bf9c-fb8ee6cf4c3c",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
