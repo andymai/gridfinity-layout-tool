@@ -2,11 +2,13 @@
 # Vercel Ignored Build Step
 # https://vercel.com/docs/projects/overview#ignored-build-step
 #
-# Skips deployment when only non-SPA files changed (README, CI config, etc.)
-# This prevents unnecessary service worker updates for users.
+# Batches production deploys onto the release cadence. Every aliased deploy
+# makes all active clients re-fetch sw.js plus every precache entry whose
+# chunk hash changed, so deploy count, not traffic, sets the edge-request
+# usage; per-merge deploys multiply it by the day's merge count.
 #
 # Exit codes:
-#   0 = Skip build (no relevant changes)
+#   0 = Skip build
 #   1 = Proceed with build
 
 set -e
@@ -18,55 +20,26 @@ if [[ "$VERCEL_GIT_COMMIT_REF" == release-please--* ]]; then
   exit 0
 fi
 
-# Always build on main branch, but check if SPA source changed
+# Main deploys only on release merges, plus an explicit escape hatch.
+# A release-please merge is the batch point: it lands after the feature
+# commits it versions, so the build it triggers ships everything since the
+# last release, with the deployed bundle matching package.json. For anything
+# that cannot wait for a release (hotfix, config-only change), put [deploy]
+# in the squash commit message.
 if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
-  echo "Main branch: checking for SPA changes..."
-
-  # A release-please merge bumps only the version and changelog, but it touches
-  # package.json, which the watch list below counts as a real change. Those
-  # merges are ~40% of main's commits. The bumped version ships with the next
-  # source commit.
   if [[ "$VERCEL_GIT_COMMIT_MESSAGE" == "chore(main): release "* ]]; then
-    # Require a non-empty file list before trusting it. On a shallow clone with no
-    # HEAD^ the diff fails, and an empty result would otherwise be indistinguishable
-    # from "nothing outside the release files changed" and skip a real build.
-    if changed_files="$(git diff --name-only HEAD^ HEAD 2>/dev/null)" && [ -n "$changed_files" ]; then
-      non_release_files="$(printf '%s\n' "$changed_files" |
-        grep -vE '^(package\.json|CHANGELOG\.md|\.release-please-manifest\.json)$' || true)"
-      if [ -z "$non_release_files" ]; then
-        echo "Release-only commit (version + changelog). Skipping build."
-        exit 0
-      fi
-    fi
-  fi
-
-  # Check if any SPA-related files changed compared to previous commit
-  # If git diff --quiet exits 0, no changes were found (skip build)
-  # If git diff --quiet exits 1, changes were found (proceed with build)
-  #
-  # Note: vercel.json is intentionally excluded. It controls deployment
-  # config (headers, rewrites) but doesn't change the SPA bundle.
-  # Config-only changes can be deployed manually if needed.
-  if git diff --quiet HEAD^ HEAD -- \
-    src/ \
-    public/ \
-    content/ \
-    scripts/build-content.ts \
-    index.html \
-    package.json \
-    pnpm-lock.yaml \
-    vite.config.ts \
-    tsconfig.json \
-    tsconfig.app.json \
-    tsconfig.node.json \
-    api/
-  then
-    echo "No SPA changes detected. Skipping build."
-    exit 0
-  else
-    echo "SPA changes detected. Proceeding with build."
+    echo "Release merge. Proceeding with build."
     exit 1
   fi
+
+  if [[ "$VERCEL_GIT_COMMIT_MESSAGE" == *"[deploy]"* ]]; then
+    echo "Commit requests [deploy]. Proceeding with build."
+    exit 1
+  fi
+
+  echo "Not a release merge. Skipping build; changes ship with the next release."
+  echo "To deploy now: add [deploy] to the commit message, or merge the release PR."
+  exit 0
 fi
 
 # PR previews are opt-in. Most PRs never need one, and every preview build
