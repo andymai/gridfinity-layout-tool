@@ -1,0 +1,19 @@
+.gitignore
+  s_cac523767fa2ab::t_fc06a310002c17 52-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "50aa02fa9a5a5937feaa4e80ea98fd40737801d6",
+  "prompts": {},
+  "sessions": {
+    "s_cac523767fa2ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9d538120-8b6f-4d34-8f2a-8051d4326747",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
