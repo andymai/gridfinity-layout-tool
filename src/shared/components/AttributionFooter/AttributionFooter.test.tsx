@@ -1,16 +1,40 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { AttributionFooter } from './AttributionFooter';
+import { reloadSeenState } from '@/features/whats-new';
+import { useViewStore } from '@/core/store/view';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('AttributionFooter', () => {
-  it('renders app name and version link', () => {
+  beforeEach(() => {
+    resetAllStores();
+    localStorage.clear();
+    reloadSeenState();
+  });
+
+  it('renders app name and a version button that opens What’s New', async () => {
+    const user = userEvent.setup();
     render(<AttributionFooter />);
     expect(screen.getByText('Gridfinity Layout Tool')).toBeInTheDocument();
-    const versionLink = screen.getByRole('link', { name: /v\d+\.\d+\.\d+/ });
-    expect(versionLink).toHaveAttribute(
-      'href',
-      'https://github.com/andymai/gridfinity-layout-tool/releases'
+
+    // The version reaches GitHub Releases through the What's New footer now,
+    // rather than linking straight out of the sidebar.
+    const version = screen.getByRole('button', { name: /Open What/ });
+    expect(version).toHaveTextContent(/v\d+\.\d+\.\d+/);
+    expect(useViewStore.getState().whatsNewOpen).toBe(false);
+    await user.click(version);
+    expect(useViewStore.getState().whatsNewOpen).toBe(true);
+  });
+
+  it('badges the version while highlights are unseen', () => {
+    localStorage.setItem(
+      'gridfinity-whats-new-v1',
+      JSON.stringify({ lastSeenId: 'an-older-entry', lastAutoOpenAt: 0 })
     );
+    reloadSeenState();
+    render(<AttributionFooter />);
+    expect(screen.getByRole('button', { name: /Open What/ })).toHaveTextContent('New');
   });
 
   it('renders attribution links', () => {

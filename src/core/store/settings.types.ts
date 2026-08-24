@@ -253,6 +253,12 @@ export interface UserSettings {
   showAssembledHeightBreakdown: boolean;
 
   /**
+   * Let the What's New digest open by itself after an update. Turning it off
+   * stops the interruption only: the sidebar still badges unseen highlights.
+   */
+  showUpdateSummaries: boolean;
+
+  /**
    * Print estimation settings (filament cost, layer height, infill %).
    * Used by both bin designer and print export for time/cost estimates.
    */
@@ -368,6 +374,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // 3D preview - banana for scale
   showBananaScale: false,
+  showUpdateSummaries: true,
 
   // Bin designer - collapsed to a single assembled-height total by default
   showAssembledHeightBreakdown: false,

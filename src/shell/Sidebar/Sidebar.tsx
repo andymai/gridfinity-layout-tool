@@ -24,6 +24,7 @@ import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
+import { AppVersionRailButton } from '@/shared/components/AppVersionButton';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation, useLocale } from '@/i18n';
 import { LEARN_LINKS, learnHref } from './learnLinks';
@@ -181,11 +182,18 @@ export function Sidebar() {
               ))}
             </svg>
           </IconButton>
-          {cloudSyncEnabled && (
-            <div className="mt-auto w-full">
-              <UserDock variant="compact" />
-            </div>
-          )}
+          {/* One bottom-pinned group so an idle AppVersionRailButton (which
+              renders null, the usual case) leaves no gap above the dock. The
+              button sits outside the cloudSyncEnabled gate because an update
+              still needs applying when sync is off. */}
+          <div className="mt-auto flex w-full flex-col items-center gap-2">
+            <AppVersionRailButton />
+            {cloudSyncEnabled && (
+              <div className="w-full">
+                <UserDock variant="compact" />
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         // Expanded state

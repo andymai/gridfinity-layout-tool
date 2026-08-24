@@ -56,6 +56,7 @@
     "check:design-system": "tsx scripts/check-design-system-usage.ts",
     "check:design-system:staged": "tsx scripts/check-design-system-usage.ts --staged",
     "check:readme-reminders": "./scripts/check-readme-reminders.sh",
+    "check:whats-new": "./scripts/check-whats-new.sh",
     "check:missing-tests": "./scripts/check-missing-tests.sh",
     "check:component-structure": "./scripts/check-component-structure.sh",
     "seed-supporters": "tsx scripts/seed-supporters.ts",

@@ -1,9 +1,10 @@
 import { useCallback, useState, Suspense } from 'react';
-import { GITHUB_RELEASES_URL, GITHUB_REPO_URL } from '@/shared/constants/links';
+import { GITHUB_REPO_URL } from '@/shared/constants/links';
 // Import stores directly to avoid circular dependency via barrel export
 import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useSettingsStore } from '@/core/store/settings';
+import { useMobileStore } from '@/core/store/mobile';
 import { CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -21,6 +22,7 @@ import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { Button, Checkbox, Stepper } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
+import { AppVersionButton } from '@/shared/components/AppVersionButton';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 
@@ -35,6 +37,9 @@ const SettingsModal = lazyWithRetry(() =>
  */
 export function MobileSettingsPanel() {
   const t = useTranslation();
+  const closePanel = useCallback(() => {
+    useMobileStore.getState().closeMobilePanel();
+  }, []);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsTabId | undefined>(
@@ -358,14 +363,7 @@ export function MobileSettingsPanel() {
           <span className="text-xs font-semibold text-content-secondary">
             {t('sidebar.appName')}
           </span>
-          <a
-            href={`${GITHUB_RELEASES_URL}/tag/v${__APP_VERSION__}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] text-content-disabled hover:text-content-tertiary hover:underline"
-          >
-            {t('sidebar.version', { version: __APP_VERSION__ })}
-          </a>
+          <AppVersionButton align="center" onBeforeAction={closePanel} />
         </div>
         <div className="text-xs text-content-disabled leading-relaxed">
           <a

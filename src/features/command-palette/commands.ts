@@ -97,6 +97,12 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['supporters', 'donate', 'kofi', 'ko-fi', 'thanks', 'sponsor', 'support'],
   },
   {
+    id: 'open-whats-new',
+    labelKey: 'commandPalette.openWhatsNew',
+    category: 'navigation',
+    keywords: ['changelog', 'updates', 'release', 'notes', 'new', 'recent', 'changes'],
+  },
+  {
     id: 'open-bin-examples',
     labelKey: 'commandPalette.openBinExamples',
     category: 'navigation',

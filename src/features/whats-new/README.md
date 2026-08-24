@@ -1,0 +1,50 @@
+# What's New
+
+Curated highlights of user-facing changes, shown after an update.
+
+## Adding an entry
+
+Prepend to `entries.ts` and update `LATEST_ENTRY_ID` in `latest.ts`. The minimum
+is `id`, `date` and an English `title`; everything else is optional.
+
+The bar is judgment: would you mention this to someone using the tool? Most of
+what ships does not, and `CHANGELOG.md` stays the complete record.
+`pnpm run check:whats-new` reminds without blocking.
+
+Copy sits outside the i18n key system so `check:i18n:values` never blocks a
+release on 14 translations. Missing locales fall back to English.
+
+## Why the id is duplicated
+
+`entries.ts` is ~10kB gzipped and rides the modal's lazy chunk, but the badge
+must answer "anything unseen?" on every cold start. `latest.ts` holds the newest
+id as a literal so that stays eager. `latest.test.ts` fails if the two drift.
+
+## When the digest opens
+
+Cold start of a browser session, unseen entries present, and seven days since
+the last automatic opening. A silent PWA update reload keeps sessionStorage,
+which is how `useWhatsNewAutoOpen` tells "you came back" from "the app reloaded
+under you". `App.tsx` also suppresses it on share links, community, supporters
+and during onboarding. Turning off `showUpdateSummaries` stops it opening by
+itself; the badge stays.
+
+## One slot, three states
+
+`AppVersionButton` is the sidebar's only signal for both a pending update and
+unseen highlights: consecutive states of one story, so they share a slot and a
+pending update wins. `AppVersionRailButton` serves the 48px rail, outside
+`Sidebar`'s `cloudSyncEnabled` gate because an update still needs applying when
+sync is off.
+
+## Files
+
+| File                           | Purpose                                     |
+| ------------------------------ | ------------------------------------------- |
+| `entries.ts`                   | The curated list, newest first (lazy)       |
+| `latest.ts`                    | Newest id, eager, for the badge             |
+| `types.ts`                     | Entry shape and the closed action union     |
+| `digest.ts`                    | Unseen slicing, grouping, locale fallback   |
+| `seenState.ts`                 | localStorage marker and cooldown            |
+| `hooks/useWhatsNewAutoOpen.ts` | The open-or-stay-quiet decision             |
+| `helpEntries.ts`               | Help-modal entry, kept free of `entries.ts` |
