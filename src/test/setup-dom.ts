@@ -4,8 +4,13 @@
 
 import '@testing-library/jest-dom';
 import { afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { resetWebGLDetectionCacheForTests } from '@/shared/webgl/detectWebGL';
+
+// SegmentedControl renders its options a second time inside a hidden
+// [data-measure] probe to know when to collapse into a grid. Without this,
+// getByText in any test touching a segmented control matches both copies.
+configure({ defaultIgnore: 'script, style, [data-measure], [data-measure] *' });
 
 // Suppress jsdom-environment noise from Three.js / React Three Fiber.
 if (typeof window !== 'undefined') {
