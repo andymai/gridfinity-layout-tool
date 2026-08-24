@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.471.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.3...gridfinity-layout-tool-v4.471.4) (2026-08-24)
+
+
+### Bug Fixes
+
+* **designer:** warn when a cutout's cut depth cannot be fully generated ([#3811](https://github.com/andymai/gridfinity-layout-tool/issues/3811)) ([25f7e71](https://github.com/andymai/gridfinity-layout-tool/commit/25f7e71e19856c6788667fd7056b104d6e72ec0a))
+
 ## [4.471.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.2...gridfinity-layout-tool-v4.471.3) (2026-08-24)
 
 
