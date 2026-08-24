@@ -1,0 +1,28 @@
+src/features/bin-designer/components/Workshop/ResizeHandles3D.tsx
+  s_7b56e10d8fa40b::t_418d61430ec757 24,27
+  s_7b56e10d8fa40b::t_6bbd2b47fc121a 53-54,68-74,87-92
+  s_7b56e10d8fa40b::t_eaa0f8efc9c667 240-242,252-255
+  s_7b56e10d8fa40b::t_9a17dfd068abb2 93
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_7b56e10d8fa40b::t_6bbd2b47fc121a 297-301,465
+src/shared/hooks/useThemeEffect.ts
+  s_7b56e10d8fa40b::t_dd0ab08f2cdeb4 80,82-83
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_7b56e10d8fa40b::t_34fb92ce3961d6 94,283,289-292
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "4857bed4f5a67a50b87cb5062b09118b16a8f039",
+  "prompts": {},
+  "sessions": {
+    "s_7b56e10d8fa40b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7e4da26-d3f3-446e-b4f4-c1d2d4b6b58d",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
