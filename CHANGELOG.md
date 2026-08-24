@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.471.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.6...gridfinity-layout-tool-v4.471.7) (2026-08-24)
+
+
+### Bug Fixes
+
+* **generation:** cut rotated mesh imprints clockwise like the editor ([#3818](https://github.com/andymai/gridfinity-layout-tool/issues/3818)) ([c849e9e](https://github.com/andymai/gridfinity-layout-tool/commit/c849e9e7819ef57c18bd8fc40e0027b86d924e44))
+
 ## [4.471.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.5...gridfinity-layout-tool-v4.471.6) (2026-08-24)
 
 
