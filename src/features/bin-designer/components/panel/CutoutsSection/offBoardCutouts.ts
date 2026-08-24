@@ -258,14 +258,18 @@ export function clampCutoutToBoard(cutout: Cutout, board: CutoutBoard): Partial<
  * A patch that would still leave the shape off board — an oversized path or
  * mesh pulled to the origin but overhanging the far edge — is withheld, so an
  * offered clamp always clears the warning for the cutouts it touches.
+ *
+ * `offBoardIds` lets a caller that already ran the detection scan hand it in
+ * rather than pay for a second pass over every cutout.
  */
 export function clampOffBoardCutouts(
   cutouts: readonly Cutout[],
-  board: CutoutBoard
+  board: CutoutBoard,
+  offBoardIds: ReadonlySet<string> = getOffBoardCutoutIds(cutouts, board)
 ): Map<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
   for (const c of cutouts) {
-    if (!isCutoutOffBoard(c, board)) continue;
+    if (!offBoardIds.has(c.id)) continue;
     const moved = clampCutoutToBoard(c, board);
     if (moved && !isCutoutOffBoard({ ...c, ...moved }, board)) updates.set(c.id, moved);
   }

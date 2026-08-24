@@ -330,7 +330,7 @@ export function CutoutWorkspace() {
   const offBoardUpdates = useMemo(
     () =>
       offBoardIds.size > 0
-        ? clampOffBoardCutouts(cutouts, cutoutBoard)
+        ? clampOffBoardCutouts(cutouts, cutoutBoard, offBoardIds)
         : new Map<string, Partial<Cutout>>(),
     [offBoardIds, cutouts, cutoutBoard]
   );

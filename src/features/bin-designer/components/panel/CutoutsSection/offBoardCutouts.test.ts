@@ -353,6 +353,17 @@ describe('clampOffBoardCutouts', () => {
     expect(clampOffBoardCutouts([createCutout()], { width: BIN_W, depth: BIN_D }).size).toBe(0);
   });
 
+  it('clamps exactly the ids a caller supplies, skipping its own scan', () => {
+    const board = { width: BIN_W, depth: BIN_D };
+    const first = createCutout({ id: 'a', x: 95, y: 75 });
+    const second = createCutout({ id: 'b', x: 99, y: 79 });
+    const supplied = clampOffBoardCutouts([first, second], board, new Set(['a']));
+    expect([...supplied.keys()]).toEqual(['a']);
+    expect(
+      clampOffBoardCutouts([first, second], board, getOffBoardCutoutIds([first, second], board))
+    ).toEqual(clampOffBoardCutouts([first, second], board));
+  });
+
   it('resolves an oversized cutout in one application', () => {
     const wide = createCutout({ id: 'wide', x: 27.5, y: 93.5, width: 500, depth: 39.5 });
     const board = { width: 165.1, depth: 165.1 };
