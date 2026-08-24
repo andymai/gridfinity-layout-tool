@@ -24,6 +24,7 @@ import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
+import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
 import { CutoutScoopControls } from './CutoutScoopControls';
 import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
@@ -161,11 +162,16 @@ export function SingleCutoutInspector({
             />
             {/* softMax: W/H hold a measured dimension, so a typed value past the
                 board is kept and the off-board banner offers to grow the bin
-                (#3061) — truncating it silently shipped wrong-sized pockets. */}
+                (#3061) — truncating it silently shipped wrong-sized pockets.
+                Anchored on the center, matching every other size control here
+                (polygon across-flats, circle diameter, knife presets): a typed
+                size is a measurement of the thing going in the pocket, not an
+                instruction to move it. Handle drags stay edge-anchored — that
+                edge is what the cursor is holding. */}
             <CompactNumberInput
               label="W"
               value={getEffective(cutout, preview, 'width')}
-              onChange={(width) => onUpdate(cutout.id, { width })}
+              onChange={(width) => onUpdate(cutout.id, resizeAroundCenter(cutout, { width }))}
               min={2}
               max={binWidth}
               softMax
@@ -176,7 +182,7 @@ export function SingleCutoutInspector({
             <CompactNumberInput
               label="H"
               value={getEffective(cutout, preview, 'depth')}
-              onChange={(depth) => onUpdate(cutout.id, { depth })}
+              onChange={(depth) => onUpdate(cutout.id, resizeAroundCenter(cutout, { depth }))}
               min={2}
               max={binDepth}
               softMax

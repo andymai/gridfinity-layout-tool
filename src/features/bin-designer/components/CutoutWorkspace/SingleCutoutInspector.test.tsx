@@ -86,7 +86,58 @@ describe('SingleCutoutInspector', () => {
     fireEvent.change(input, { target: { value: '156' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    expect(onUpdate).toHaveBeenCalledWith('c1', { width: 156 });
+    // Center-anchored: the 10-wide cutout at x=5 is centered on 10, so a
+    // 156-wide box keeps that center and starts at -68. Deliberately off-board;
+    // the clipping warning offers grow / center / bring-back-in.
+    expect(onUpdate).toHaveBeenCalledWith('c1', { width: 156, depth: 10, x: -68, y: 5 });
+  });
+
+  // The router-bit case from the issue: only the size was meant to change, so
+  // the hole must not walk out from under the part it was drilled for.
+  it('holds a cutout center when a typed size changes', () => {
+    const onUpdate = vi.fn();
+    render(
+      <SingleCutoutInspector
+        cutout={makeCutout({ x: 20, y: 20, width: 6.35, depth: 6.35 })}
+        preview={new Map()}
+        binWidth={100}
+        binDepth={100}
+        maxCutDepth={20}
+        onUpdate={onUpdate}
+        disabled={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'W: 6.35 mm' }));
+    const input = screen.getByRole('textbox', { name: 'W' });
+    fireEvent.change(input, { target: { value: '12.7' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    const patch = onUpdate.mock.calls[0][1] as { x: number; width: number };
+    expect(patch.width).toBe(12.7);
+    expect(patch.x + patch.width / 2).toBeCloseTo(20 + 6.35 / 2, 10);
+  });
+
+  it('holds the center on the H axis too, leaving X alone', () => {
+    const onUpdate = vi.fn();
+    render(
+      <SingleCutoutInspector
+        cutout={makeCutout({ shape: 'rectangle', x: 20, y: 20, width: 10, depth: 10 })}
+        preview={new Map()}
+        binWidth={100}
+        binDepth={100}
+        maxCutDepth={20}
+        onUpdate={onUpdate}
+        disabled={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'H: 10 mm' }));
+    const input = screen.getByRole('textbox', { name: 'H' });
+    fireEvent.change(input, { target: { value: '30' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(onUpdate).toHaveBeenCalledWith('c1', { width: 10, depth: 30, x: 20, y: 10 });
   });
 
   it('shows the Repeat section with its presets for a repeatable shape', () => {

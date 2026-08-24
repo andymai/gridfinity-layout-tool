@@ -86,6 +86,35 @@ describe('CutoutPropertyPanel', () => {
     expect(screen.queryByTestId('slider-binDesigner.cutouts.cornerRadius')).not.toBeInTheDocument();
   });
 
+  // Same rule as the workspace inspector: the sidebar's width/depth sliders are
+  // the same measurement, so they hold the center too.
+  it('holds the cutout center when width changes', () => {
+    render(<CutoutPropertyPanel {...defaultProps} />);
+    fireEvent.change(screen.getByLabelText('binDesigner.cutouts.width'), {
+      target: { value: '40' },
+    });
+    // 20-wide at x=10 is centered on 20; a 40-wide box keeps that center.
+    expect(onUpdate).toHaveBeenCalledWith('test-cutout', {
+      width: 40,
+      depth: 15,
+      x: 0,
+      y: 10,
+    });
+  });
+
+  it('holds the cutout center when depth changes', () => {
+    render(<CutoutPropertyPanel {...defaultProps} />);
+    fireEvent.change(screen.getByLabelText('binDesigner.cutouts.depth'), {
+      target: { value: '25' },
+    });
+    expect(onUpdate).toHaveBeenCalledWith('test-cutout', {
+      width: 20,
+      depth: 25,
+      x: 10,
+      y: 5,
+    });
+  });
+
   it('renders duplicate and delete buttons', () => {
     render(<CutoutPropertyPanel {...defaultProps} />);
 

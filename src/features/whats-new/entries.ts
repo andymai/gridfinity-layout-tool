@@ -14,6 +14,15 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'center-anchored-resize',
+    date: '2026-08-24',
+    kind: 'improved',
+    title: { en: 'Typing a new cutout size keeps it where it was' },
+    body: {
+      en: 'Changing a width, height or diameter used to grow the shape from its corner, so the hole drifted and had to be repositioned. It now expands equally in every direction around its own center, matching the diameter and across-flats controls.',
+    },
+  },
+  {
     id: 'solid-bin-wall-text',
     date: '2026-08-24',
     kind: 'new',
