@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_29f851ea929e9e::t_723596bfee52e2 116-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "ef032cc6a8c57f21b4855cdd668a7dd274a43615",
+  "prompts": {},
+  "sessions": {
+    "s_29f851ea929e9e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eda90044-39c4-4236-b854-6be20c1a9dd4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
