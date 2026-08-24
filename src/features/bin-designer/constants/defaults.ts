@@ -308,8 +308,10 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   labelFocusCompartmentId: null,
   selectedBentoCompartmentId: null,
   selectedAssemblyPartId: null,
+  selectedAssemblyPartIds: [],
   workshopPendingPartType: null,
   workshopPendingCutterShape: null,
+  workshopClipboardCount: 0,
   workshopSnapMm: 3.5,
 };
 

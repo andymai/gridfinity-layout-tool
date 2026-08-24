@@ -202,17 +202,32 @@ export interface DesignerUIState {
   readonly selectedBentoCompartmentId: number | null;
 
   /**
-   * Selected Workshop part, by node id. Cleared when the part (or an
+   * Anchor of the Workshop selection, by node id — the part the inspector
+   * edits and align targets. Always a member of `selectedAssemblyPartIds`
+   * (null exactly when that list is empty). Cleared when the part (or an
    * ancestor) is removed; an id absent from the tree after an undo must be
    * treated as no selection.
    */
   readonly selectedAssemblyPartId: string | null;
+
+  /**
+   * Full Workshop selection in selection order. Write through
+   * `setAssemblySelection` (store/helpers) so the anchor invariant holds;
+   * ids are pruned wherever parts can vanish (remove, undo, template load).
+   */
+  readonly selectedAssemblyPartIds: readonly string[];
 
   /** Palette part type armed for click-to-place in the Workshop canvas. */
   readonly workshopPendingPartType: AssemblyPartType | null;
 
   /** Starting profile for an armed cutter (the palette's Hole vs Slot). */
   readonly workshopPendingCutterShape: 'circle' | 'slot' | null;
+  /**
+   * Number of parts in the Workshop copy clipboard. The snapshots themselves
+   * live module-level in assemblyActions; this mirror exists so paste
+   * affordances can react to a copy happening.
+   */
+  readonly workshopClipboardCount: number;
   /** Workshop placement grid pitch (mm); Alt always overrides to the 0.1mm fine grid. */
   readonly workshopSnapMm: number;
 }
