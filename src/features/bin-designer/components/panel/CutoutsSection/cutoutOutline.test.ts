@@ -111,6 +111,22 @@ describe('getCutoutOutline', () => {
     expect(ringArea(rings?.[0] ?? [])).toBeCloseTo(900);
   });
 
+  it('rotates clockwise, matching the renderer and the worker', () => {
+    // A right triangle with its square corner at bottom-left (0,0). Stored
+    // rotation is clockwise-positive (PathShapeMesh renders at -rotation), so
+    // 90° carries that corner to the TOP-LEFT (0,10); the CCW mirror would put
+    // it bottom-right instead, and a mask check made there validates a shape
+    // the cut does not match.
+    const path = [corner(0, 0), corner(10, 0), corner(0, 10)];
+    const ring = getCutoutOutline(makeCutout({ shape: 'path', path, rotation: 90 }))?.[0] ?? [];
+    const has = (x: number, y: number) =>
+      ring.some((p) => Math.abs(p.x - x) < 1e-6 && Math.abs(p.y - y) < 1e-6);
+    expect(has(0, 10)).toBe(true);
+    expect(has(0, 0)).toBe(true);
+    expect(has(10, 10)).toBe(true);
+    expect(has(10, 0)).toBe(false);
+  });
+
   it('rotates a path about its own vertex bounds, not the width/depth box', () => {
     // x/y/width/depth deliberately disagree with the path — the renderer pivots
     // on the vertex bounds, so the outline must too.

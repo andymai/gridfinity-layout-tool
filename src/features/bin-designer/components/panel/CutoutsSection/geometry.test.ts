@@ -25,7 +25,7 @@ import {
   flipSelectionHorizontal,
   flipSelectionVertical,
 } from './geometry';
-import { rectFitsInMask, cutoutFitsInMask } from './maskFit';
+import { rectFitsInMask, cutoutFitsInMask, getCutoutBounds } from './maskFit';
 import type { CellMask } from '@/shared/utils/cellMask';
 
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
@@ -1113,6 +1113,30 @@ describe('geometry', () => {
     it('rejects a rect with negative origin', () => {
       const fullMask = makeMask([[1]]);
       expect(rectFitsInMask(fullMask, -5, 0, 10, 10, CELL)).toBe(false);
+    });
+  });
+
+  describe('getCutoutBounds', () => {
+    it('measures a rotated path clockwise, matching the renderer', () => {
+      // Asymmetric right triangle, vertex bounds [0..20]x[0..10], center (10,5).
+      // Stored rotation is clockwise-positive, so at 45° the wide leg swings
+      // DOWN: maxX = 10 + 5·sin45, maxY = 5 + 15·sin45. The CCW mirror would
+      // read maxX = 10 + 15·sin45 instead and misplace the footprint.
+      const tri = createCutout({
+        shape: 'path',
+        rotation: 45,
+        path: [
+          { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 20, y: 0, handleIn: null, handleOut: null, symmetric: false },
+          { x: 0, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        ],
+      });
+      const b = getCutoutBounds(tri);
+      const s = Math.SQRT1_2;
+      expect(b.maxX).toBeCloseTo(10 + 5 * s, 4);
+      expect(b.maxY).toBeCloseTo(5 + 15 * s, 4);
+      expect(b.minX).toBeCloseTo(10 - 15 * s, 4);
+      expect(b.minY).toBeCloseTo(5 - 15 * s, 4);
     });
   });
 

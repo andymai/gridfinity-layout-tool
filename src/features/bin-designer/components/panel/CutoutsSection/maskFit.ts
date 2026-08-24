@@ -42,7 +42,11 @@ export function getCutoutBounds(cutout: Cutout): Bounds {
   let maxX = -Infinity;
   let maxY = -Infinity;
   for (const p of flattenPath(cutout.path)) {
-    const r = rotatePoint(p.x, p.y, cx, cy, cutout.rotation);
+    // Stored rotation is clockwise-positive and `rotatePoint` is CCW — the
+    // negated angle matches the renderer (`PathShapeMesh` at `-rotation`) and
+    // the worker's `rotate(shape, -rotation)`; the un-negated angle measures a
+    // mirror image of where the path actually sits.
+    const r = rotatePoint(p.x, p.y, cx, cy, -cutout.rotation);
     if (r.x < minX) minX = r.x;
     if (r.y < minY) minY = r.y;
     if (r.x > maxX) maxX = r.x;
