@@ -49,7 +49,7 @@
         },
         {
           "key": "Content-Security-Policy-Report-Only",
-          "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-Mw22/ZAJRshXEvS8/Ol3lQ4fuh9u0CpfYpgBaSMgOsE=' 'sha256-ZFh/jA8g0pm0KqxQsSQwlMZCLY+5rjgk3lzDL9ly2KU='; worker-src 'self' blob:; child-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.public.blob.vercel-storage.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.posthog.com https://*.liveblocks.io wss://*.liveblocks.io https://fonts.googleapis.com https://fonts.gstatic.com https://*.public.blob.vercel-storage.com; base-uri 'self'; form-action 'self'; object-src 'none'"
+          "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-Mw22/ZAJRshXEvS8/Ol3lQ4fuh9u0CpfYpgBaSMgOsE=' 'sha256-ZFh/jA8g0pm0KqxQsSQwlMZCLY+5rjgk3lzDL9ly2KU=' https://us-assets.i.posthog.com; worker-src 'self' blob:; child-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.public.blob.vercel-storage.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.posthog.com https://*.liveblocks.io wss://*.liveblocks.io https://fonts.googleapis.com https://fonts.gstatic.com https://*.public.blob.vercel-storage.com; base-uri 'self'; form-action 'self'; object-src 'none'"
         }
       ]
     },
@@ -425,14 +425,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/ph/static/:path(.*)",
-      "destination": "https://us-assets.i.posthog.com/static/:path"
-    },
-    {
-      "source": "/ph/:path(.*)",
-      "destination": "https://us.i.posthog.com/:path"
-    },
     {
       "source": "/:slug(what-is-gridfinity|guide|privacy|terms|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-calculator|gridfinity-sizes|gridfinity-tool-drawer|gridfinity-kitchen-drawer|gridfinity-software|gridfinity-cutout-generator)",
       "destination": "/:slug/index.html"
