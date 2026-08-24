@@ -1,0 +1,39 @@
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutTransformStarters.ts
+  s_988f5d7bb7605f::t_5aa171bd07b827 18
+  s_988f5d7bb7605f::t_1fa477f9fcc0a7 172,191
+src/features/bin-designer/components/panel/CutoutsSection/cutoutGroups.test.ts
+  s_988f5d7bb7605f::t_26ffeb3c19a286 162-165
+  s_988f5d7bb7605f::t_d6ca661c90cedf 4,6
+  s_988f5d7bb7605f::t_1d3c3398501a7b 139-161,166-181
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_988f5d7bb7605f::t_5aa171bd07b827 9-10
+  s_988f5d7bb7605f::t_1fa477f9fcc0a7 377
+src/features/bin-designer/components/panel/CutoutsSection/cutoutGroups.ts
+  s_988f5d7bb7605f::t_896e48c10e7834 44-48,53-61,63-80,82-83,85-88
+src/features/bin-designer/components/panel/CutoutsSection/geometryFlips.ts
+  s_988f5d7bb7605f::t_e3a8edb26c2f85 13
+  s_988f5d7bb7605f::t_253cd5b3a4fdfc 102-105,109-110
+  s_988f5d7bb7605f::t_171ea35985d458 142-143,147-148
+src/features/bin-designer/components/panel/CutoutsSection/geometry.test.ts
+  s_988f5d7bb7605f::t_8d015bf1a32e7c 912-919,924-953
+  s_988f5d7bb7605f::t_08f57a84206394 920-923
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutCanvas3D.tsx
+  s_988f5d7bb7605f::t_5aa171bd07b827 26
+  s_988f5d7bb7605f::t_1fa477f9fcc0a7 264
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "8b372df9cdb26413a766fe7f71237d732f908b43",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
