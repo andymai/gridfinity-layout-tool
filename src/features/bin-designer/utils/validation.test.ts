@@ -70,8 +70,8 @@ describe('validateBinParams', () => {
       expectOk(validateBinParams(makeParams({ height: 4.37 })));
     });
 
-    it('should reject heights finer than the 0.01u step', () => {
-      const result = validateBinParams(makeParams({ height: 4.375 }));
+    it('should reject heights finer than the 0.0001u step', () => {
+      const result = validateBinParams(makeParams({ height: 4.37505 }));
       const error = expectErr(result);
       expect(error.code).toBe('INVALID_STEP');
       expect(error.field).toBe('height');

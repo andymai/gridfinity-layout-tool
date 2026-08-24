@@ -106,6 +106,16 @@ describe('useDrawerSettings', () => {
 
       expect(result.current.drawer.depth).toBe(20);
     });
+
+    it('handleDrawerHeightInput keeps the typed mm value at display precision', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.handleDrawerHeightInput(85);
+      });
+
+      expect(Math.round(result.current.realWorldDimensions.height * 100) / 100).toBe(85);
+    });
   });
 
   describe('half-bin mode', () => {

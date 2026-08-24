@@ -83,9 +83,9 @@ describe('Unit converters', () => {
       expect(mmToHeightUnits(mm(21), heightUnitMm)).toBe(3);
     });
 
-    it('keeps the fractional part, snapped to 0.01u', () => {
-      expect(mmToHeightUnits(mm(10), heightUnitMm)).toBeCloseTo(1.43, 5);
-      expect(mmToHeightUnits(mm(30.6), heightUnitMm)).toBeCloseTo(4.37, 5);
+    it('keeps the fractional part, snapped to 0.0001u', () => {
+      expect(mmToHeightUnits(mm(10), heightUnitMm)).toBeCloseTo(1.4286, 6);
+      expect(mmToHeightUnits(mm(30.6), heightUnitMm)).toBeCloseTo(4.3714, 6);
     });
 
     it('handles a custom unit so 2x a 5u target matches a 10u target', () => {
@@ -98,13 +98,27 @@ describe('Unit converters', () => {
     it('handles zero', () => {
       expect(mmToHeightUnits(mm(0), heightUnitMm)).toBe(0);
     });
+
+    // The Sidebar and bin inspector show heights with two decimals; a typed mm
+    // value must survive the mm -> units -> mm round trip at that precision
+    // for every allowed unit size (3-20mm), or the field visibly rewrites the
+    // user's number (85 became 84.98 at the default 7mm unit).
+    it.each([
+      [85, 7],
+      [33.33, 7],
+      [100.01, 3],
+      [85.01, 20],
+    ])('round-trips %smm at a %smm unit within display precision', (typed, unit) => {
+      const roundTripped = heightUnitsToMm(mmToHeightUnits(mm(typed), mm(unit)), mm(unit));
+      expect(Math.round(roundTripped * 100) / 100).toBe(typed);
+    });
   });
 
   describe('roundHeightUnits', () => {
-    it('snaps to the nearest 0.01u', () => {
-      expect(roundHeightUnits(4.3700001)).toBeCloseTo(4.37, 5);
-      expect(roundHeightUnits(4.371)).toBeCloseTo(4.37, 5);
-      expect(roundHeightUnits(4.375)).toBeCloseTo(4.38, 5);
+    it('snaps to the nearest 0.0001u', () => {
+      expect(roundHeightUnits(4.37000001)).toBeCloseTo(4.37, 6);
+      expect(roundHeightUnits(4.37141)).toBeCloseTo(4.3714, 6);
+      expect(roundHeightUnits(4.37146)).toBeCloseTo(4.3715, 6);
     });
 
     it('leaves whole and half units untouched', () => {
@@ -112,9 +126,9 @@ describe('Unit converters', () => {
       expect(roundHeightUnits(2.5)).toBe(2.5);
     });
 
-    it('snaps an exact half-step up despite binary float error (1.005u -> 1.01u)', () => {
-      // 1.005 * 100 === 100.4999… in IEEE-754, which would otherwise floor to 1.00.
-      expect(roundHeightUnits(1.005)).toBeCloseTo(1.01, 5);
+    it('snaps an exact half-step up despite binary float error (1.00005u -> 1.0001u)', () => {
+      // 1.00005 * 10000 === 10000.4999… in IEEE-754, which would otherwise floor to 1.0000.
+      expect(roundHeightUnits(1.00005)).toBeCloseTo(1.0001, 6);
     });
   });
 });
