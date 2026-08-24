@@ -804,6 +804,24 @@ describe('validateCompartments', () => {
       ).toBe('compartments.stash[0].cells must be omitted when every cell is filled');
     });
 
+    it('rejects a mask split into two islands', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 2, cells: [true, false, false, true] }],
+        })
+      ).toBe('compartments.stash[0].cells must form one connected region');
+    });
+
+    it('accepts an L-shaped mask', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 2, h: 2, cells: [true, true, true, false] }],
+        })
+      ).toBeNull();
+    });
+
     it('rejects a non-string label', () => {
       expect(
         validateCompartments({ ...validCompartments(), stash: [{ w: 1, h: 1, label: 7 }] })

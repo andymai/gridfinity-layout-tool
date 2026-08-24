@@ -302,6 +302,16 @@ describe('bentoDraw', () => {
       expect(placeFromStash(withDrawn, 0, { col: 1, row: 0, w: 2, h: 2 })).toBeNull();
     });
 
+    it('placeFromStash refuses a mask that is not one connected region', () => {
+      // Only reachable from a hand-authored design file; two islands under one
+      // id would print as two pockets sharing a label.
+      const config: CompartmentConfig = {
+        ...grid(),
+        stash: [{ w: 2, h: 2, cells: [true, false, false, true] }],
+      };
+      expect(placeFromStash(config, 0, { col: 1, row: 0, w: 2, h: 2 })).toBeNull();
+    });
+
     it('removeStashEntry drops one entry and collapses to undefined', () => {
       const config: CompartmentConfig = { ...grid(), stash: [{ w: 1, h: 1 }] };
       expect(removeStashEntry(config, 0)?.stash).toBeUndefined();

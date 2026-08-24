@@ -226,6 +226,13 @@ grid finishes in about 14s, while 16x16 reaches ~39s and risks a timeout.
 
 4 fields, in `src/features/bin-designer/types/compartments.ts`.
 
+`cells` is the footprint mask for a merged (non-rectangular) shape, row-major
+with row 0 at the front of the bin, length `w * h`. Two rules JSON Schema cannot
+express: omit it entirely for a plain rectangle (an all-true mask is rejected, so
+one shape has one encoding and one fingerprint), and the filled cells must form
+one 4-connected region — two islands under one id would print as two pockets
+sharing a label.
+
 ## Scoop
 
 A ramp at one wall so contents can be scooped out.

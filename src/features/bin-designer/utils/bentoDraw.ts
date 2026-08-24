@@ -287,6 +287,11 @@ function drawFootprint(
   indices: readonly number[]
 ): (DrawResult & { readonly remap: Map<number, number> }) | null {
   if (indices.length === 0 || !canPlaceRect(config, rect)) return null;
+  // The one place a new id is minted from a caller-supplied index set, so the
+  // one-connected-region invariant is enforced here rather than at each caller:
+  // a stash mask can arrive disconnected from a hand-authored design file, and
+  // two islands under one id print as two pockets sharing a label.
+  if (!isContiguousSelection(config.cols, indices)) return null;
   const newCells = [...config.cells];
   const fresh = Math.max(...config.cells) + 1;
   for (const idx of indices) {

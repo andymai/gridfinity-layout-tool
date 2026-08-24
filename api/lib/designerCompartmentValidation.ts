@@ -15,6 +15,31 @@ import {
   VALID_LABEL_PLATE_WIDTHS,
 } from './designerValidationConstants.js';
 
+/**
+ * Whether a stash footprint mask is one 4-connected region. Mirrors
+ * `isContiguousSelection` on the client: two islands under one id would print
+ * as two pockets sharing a label.
+ */
+function isMaskContiguous(mask: readonly boolean[], w: number): boolean {
+  const start = mask.indexOf(true);
+  if (start < 0) return false;
+  const seen = new Set<number>([start]);
+  const queue = [start];
+  while (queue.length > 0) {
+    const idx = queue.pop() as number;
+    const col = idx % w;
+    // Row bounds fall out of the index range check below; only the column
+    // steps need guarding, or a step off the left edge wraps onto the row above.
+    const neighbours = [col > 0 ? idx - 1 : -1, col < w - 1 ? idx + 1 : -1, idx - w, idx + w];
+    for (const n of neighbours) {
+      if (n < 0 || n >= mask.length || seen.has(n) || !mask[n]) continue;
+      seen.add(n);
+      queue.push(n);
+    }
+  }
+  return seen.size === mask.filter(Boolean).length;
+}
+
 /** Mirrors `HEX_COLOR_REGEX` in `designerValidation.ts`. */
 const COMPARTMENT_HEX_COLOR_REGEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
@@ -418,6 +443,9 @@ export function validateCompartments(compartments: unknown): string | null {
         }
         if (filled === mask.length) {
           return `compartments.stash[${i}].cells must be omitted when every cell is filled`;
+        }
+        if (!isMaskContiguous(mask as boolean[], entry.w)) {
+          return `compartments.stash[${i}].cells must form one connected region`;
         }
       }
       if (entry.label !== undefined) {
