@@ -9,7 +9,10 @@ const AUTO_OPEN_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 interface SeenState {
   /** Id of the newest entry the user has been shown. */
   lastSeenId: string;
-  /** Epoch ms of the last automatic opening, 0 if never. */
+  /**
+   * Epoch ms of the last automatic opening, or of first-run seeding, which
+   * starts a new browser on the same cooldown. 0 only before either happens.
+   */
   lastAutoOpenAt: number;
 }
 

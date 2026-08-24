@@ -7,9 +7,11 @@ import { hasUnseen, useSeenState } from '@/features/whats-new';
 import { useTranslation } from '@/i18n';
 
 /**
- * The version line's three states, in priority order. They are mutually
- * exclusive by construction: reloading is exactly what turns `update` into
- * `unseen`, so the two signals can never compete for the same glance.
+ * The version line's three states, in priority order. A pending update and
+ * unseen highlights can both be true at once, so the slot renders only the
+ * higher-priority one and the two signals never compete for the same glance.
+ * In practice they rarely overlap, since reloading is what turns `update`
+ * into `unseen`.
  */
 type VersionState = 'update' | 'unseen' | 'idle';
 

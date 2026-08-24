@@ -1038,7 +1038,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     kind: 'improved',
     title: { en: 'Updates apply without interrupting you' },
     body: {
-      en: 'A new version installs when you pause rather than reloading mid-task, and the app repairs itself if a stale bundle is left behind. This entry is why the What is New summary exists.',
+      en: "A new version installs when you pause rather than reloading mid-task, and the app repairs itself if a stale bundle is left behind. This entry is why the What's New summary exists.",
     },
   },
   {
