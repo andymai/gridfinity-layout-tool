@@ -1,0 +1,22 @@
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_988f5d7bb7605f::t_9966a72a1349f2 103-105
+  s_988f5d7bb7605f::t_5875de8d8fd3bc 101-102,106,110-111,115
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.test.ts
+  s_988f5d7bb7605f::t_4e2e5a79580052 84-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "7998b0bc9c06c9dafe1874eb5721ba9f61613934",
+  "prompts": {},
+  "sessions": {
+    "s_988f5d7bb7605f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c13a0b2-6b66-4010-85e0-a67ee9096aeb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
