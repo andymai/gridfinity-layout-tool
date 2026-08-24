@@ -113,6 +113,9 @@ export const featuresStage: PipelineStage = {
         ...ctx,
         cutTargets: [...cutoutTools, ...wallText.cutTargets],
         fuseTargets: [...embossTools, ...wallText.fuseTargets],
+        // Empty for the two wall-text builders, and passed on anyway so a
+        // builder added to the solid set later cannot leak its shapes here.
+        patternCutTargets: wallText.patternCutTargets,
         featuresKey: null,
       };
     }
