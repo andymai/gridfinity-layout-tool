@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.471.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.0...gridfinity-layout-tool-v4.471.1) (2026-08-24)
+
+
+### Bug Fixes
+
+* **designer:** keep cutout canvas overlays below the context menu ([#3801](https://github.com/andymai/gridfinity-layout-tool/issues/3801)) ([e5c268b](https://github.com/andymai/gridfinity-layout-tool/commit/e5c268b254243ef0bc1fe4092b9a54d26ac7225a)), closes [#3798](https://github.com/andymai/gridfinity-layout-tool/issues/3798)
+
 ## [4.471.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.470.0...gridfinity-layout-tool-v4.471.0) (2026-08-24)
 
 
