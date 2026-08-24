@@ -1,0 +1,21 @@
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_29f851ea929e9e::t_0487848a4345e6 124-127,130,173,184
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.test.tsx
+  s_29f851ea929e9e::t_2329ddc0d45657 143-170
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d802b96cf580033d9479003126e06479b8bbda19",
+  "prompts": {},
+  "sessions": {
+    "s_29f851ea929e9e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eda90044-39c4-4236-b854-6be20c1a9dd4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
