@@ -1,0 +1,129 @@
+src/i18n/locales/de.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/ko.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/pl.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/features/bin-designer/utils/thumbnail.ts
+  s_7b56e10d8fa40b::t_1250d164391efc 366-368
+src/shared/hooks/useThemeEffect.ts
+  s_7b56e10d8fa40b::t_31b0b44699bd21 55-58
+  s_7b56e10d8fa40b::t_efc714bf066c9c 80-83
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_7b56e10d8fa40b::t_8ad7a901ad3b44 59-62,150-152,259-260,267-268,460
+  s_7b56e10d8fa40b::t_bcff6d27aeffc6 33-39,159,184
+  s_7b56e10d8fa40b::t_e2f89bca06144c 67-68,263,313-317,319-322
+  s_7b56e10d8fa40b::t_01d4ffc065555e 318
+  s_7b56e10d8fa40b::t_2eacfea5a16331 6,8-12,18-20,42-49,53,63-66,82-149,153-158,160-183,185-250,254,261-262,266,269,335,375,437-447,464-472,489-507
+  s_7b56e10d8fa40b::t_3616f5b61f1c12 26,448-449,451,456
+src/features/bin-designer/components/Workshop/PlacementGhost.tsx
+  s_7b56e10d8fa40b::t_50bf26ccaa1394 43
+src/features/bin-designer/components/Workshop/WorkshopViewBar.tsx
+  s_7b56e10d8fa40b::t_0fd19ab89ce522 3-4,9,22-24,27-32,55-74
+  s_7b56e10d8fa40b::t_24659aae4266cf 75
+src/features/bin-designer/components/Workshop/ResizeHandles3D.tsx
+  s_7b56e10d8fa40b::t_5df403397df6a5 1-14,16-49,51-63,65,70-168,170-184,186-196,200-242,244-257,262-268,270-278
+  s_7b56e10d8fa40b::t_8ad7a901ad3b44 50,64,169,185,243
+  s_7b56e10d8fa40b::t_fae15d595e2357 258-261,269
+  s_7b56e10d8fa40b::t_3616f5b61f1c12 66-69,197-199
+  s_7b56e10d8fa40b::t_0ab0860072e20b 15
+scripts/i18n-values-allowlist.json
+  s_7b56e10d8fa40b::t_c8c9a901040aaa 328-330,338,343-344,349-350
+src/i18n/locales/es.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/features/bin-designer/components/Workshop/MoveHandle3D.tsx
+  s_7b56e10d8fa40b::t_d880a2b538727f 25
+src/i18n/locales/en.ts
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 2290-2293,2296-2311
+  s_7b56e10d8fa40b::t_01d4ffc065555e 2294-2295
+src/i18n/locales/sv.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/nl.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/features/bin-designer/utils/thumbnail.test.ts
+  s_7b56e10d8fa40b::t_655d84a48589da 452-485
+src/features/bin-designer/types/designerState.ts
+  s_7b56e10d8fa40b::t_6c2a67966993d7 180-196
+  s_7b56e10d8fa40b::t_9cd4ebdf044e00 385-388
+src/features/bin-designer/components/Workshop/WorkshopContextMenu.tsx
+  s_7b56e10d8fa40b::t_4e4a8e08d16fa7 1-5,10,30-34,49-51,59-118,145-148
+  s_7b56e10d8fa40b::t_912c09fd5b302e 149
+src/i18n/locales/it.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/ja.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/fr.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/pt-BR.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/uk.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/features/bin-designer/components/Workshop/RotationGizmo3D.tsx
+  s_7b56e10d8fa40b::t_a36096d2aaeb82 2-6,9-10,16,20,31-32,40,46-48,58,60
+  s_7b56e10d8fa40b::t_337990979d23b3 24
+src/features/bin-designer/store/designer.scenario.workshop.test.ts
+  s_7b56e10d8fa40b::t_f39e7bd0f031a5 302,304-305
+src/features/bin-designer/components/Workshop/resizeHandleConfig.ts
+  s_7b56e10d8fa40b::t_d48ce17992a592 38-41,61-64
+  s_7b56e10d8fa40b::t_94205c8a8f739a 1-37,42-50,52-60,65-73,75-103,105-182,184,190-201,204-227
+  s_7b56e10d8fa40b::t_5623c766e224cd 51,74,183
+  s_7b56e10d8fa40b::t_c69a56e900fe5b 185-189,202-203
+  s_7b56e10d8fa40b::t_b2a162f63b580a 104
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_7b56e10d8fa40b::t_c4e85dc7668d4e 391-393,395-397
+  s_7b56e10d8fa40b::t_d45212d1cd9641 522-525,527-530,537,547
+  s_7b56e10d8fa40b::t_f516d60b2719b1 554,557,562-566,568
+src/features/bin-designer/components/Workshop/WorkshopSelectionToolbar.tsx
+  s_7b56e10d8fa40b::t_ccd3b5f029be38 1-136
+src/features/bin-designer/components/Workshop/WorkshopHoverTip.tsx
+  s_7b56e10d8fa40b::t_337990979d23b3 44
+  s_7b56e10d8fa40b::t_e6920f3fd824f7 1-27,31-34,36-39,41-43,45-63
+  s_7b56e10d8fa40b::t_a0c87925fd637d 28-30,35,40
+src/features/bin-designer/components/Workshop/ResizeHandles3D.test.tsx
+  s_7b56e10d8fa40b::t_96e4e82ba886b9 1-11
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_7b56e10d8fa40b::t_935e81b3d3e17e 36-40
+  s_7b56e10d8fa40b::t_9c4066fa7c1aa4 170-173
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_7b56e10d8fa40b::t_6ca3d94c659159 34-35,100-101,170,174-177,223,239-240,274,291-292
+  s_7b56e10d8fa40b::t_a0c87925fd637d 109-116,270-271
+  s_7b56e10d8fa40b::t_f79e2849845580 164-169
+  s_7b56e10d8fa40b::t_5983c985bf7eba 5-9,12,15,20,29,32,51-56,69-71,73-89,98-99,107-108,117-119,139-148,158,178-207,215,220-222,224-238,241-248,265,272-273,276,279-290,293-298
+  s_7b56e10d8fa40b::t_c8c9a901040aaa 21,57-68,72
+src/i18n/locales/cs.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/zh-CN.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/i18n/locales/nb.json
+  s_7b56e10d8fa40b::t_2c8ed7b8913d93 4269-4289
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_7b56e10d8fa40b::t_fb3cad368f7ae8 111-114,116,129-130,516,523,553,559,569,610,630,649
+  s_7b56e10d8fa40b::t_1b1620a58c4b7d 6-12,19-23,25,28,52-69,85-86,92,94,109-110,117,121-125,147-153,155-158,173-228,237-242,252-282,284,290,295-313,326,339,367-373,381-423,454,467,484,517-518,533-551,567,571-584,595-607,613-623,627-629,632-641,646,658-687,691,730-731,739
+  s_7b56e10d8fa40b::t_a1231754d40681 115
+  s_7b56e10d8fa40b::t_9fe3fa262590e3 229-232
+  s_7b56e10d8fa40b::t_af0c8666d5aca9 471-480,562-564
+  s_7b56e10d8fa40b::t_942a071ff78355 565
+src/features/bin-designer/components/Workshop/WorkshopSelectionToolbar.test.tsx
+  s_7b56e10d8fa40b::t_8dc35023d343ab 1-88
+src/features/bin-designer/components/Workshop/WorkshopHoverTip.test.tsx
+  s_7b56e10d8fa40b::t_45ad5a9f239871 1-55
+src/features/bin-designer/components/Workshop/resizeHandleConfig.test.ts
+  s_7b56e10d8fa40b::t_3974758722bd29 1-117,119-148,150-151
+  s_7b56e10d8fa40b::t_240428b1741a7a 118,149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "fc3ebbe3301eb62296036cfba084f34e7aca54b4",
+  "prompts": {},
+  "sessions": {
+    "s_7b56e10d8fa40b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7e4da26-d3f3-446e-b4f4-c1d2d4b6b58d",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
