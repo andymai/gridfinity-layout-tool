@@ -4386,5 +4386,6 @@
   "pwaUpdate.reload": "Znovu načíst",
   "pwaUpdate.reloadAria": "Načíst znovu do nové verze",
   "pwaUpdate.readyTooltip": "Je připravena nová verze. Použije se sama, až se zastavíte, nebo načtěte znovu hned.",
-  "whatsNew.openTooltip": "Podívejte se, co se nedávno změnilo"
+  "whatsNew.openTooltip": "Podívejte se, co se nedávno změnilo",
+  "whatsNew.subtitleRecent": "Nejnovější změny"
 }

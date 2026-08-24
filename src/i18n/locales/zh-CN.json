@@ -4386,5 +4386,6 @@
   "pwaUpdate.reload": "重新加载",
   "pwaUpdate.reloadAria": "重新加载以使用新版本",
   "pwaUpdate.readyTooltip": "新版本已就绪。您暂停时会自动应用，也可以立即重新加载。",
-  "whatsNew.openTooltip": "看看最近有哪些变更"
+  "whatsNew.openTooltip": "看看最近有哪些变更",
+  "whatsNew.subtitleRecent": "最近的变更"
 }

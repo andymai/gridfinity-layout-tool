@@ -4991,6 +4991,7 @@ const en: Record<string, string> = {
   'whatsNew.helpKeywords': 'changelog|updates|release notes|new features|recent changes',
   'whatsNew.subtitleUnseenOne': '1 update since you were last here',
   'whatsNew.subtitleUnseenMany': '{count} updates since you were last here',
+  'whatsNew.subtitleRecent': 'The most recent changes',
   'whatsNew.subtitleAll': 'Everything worth mentioning, newest first',
   'whatsNew.empty': "You're up to date.",
   'whatsNew.seeAll': 'See all',

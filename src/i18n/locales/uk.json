@@ -4386,5 +4386,6 @@
   "pwaUpdate.reload": "Перезавантажити",
   "pwaUpdate.reloadAria": "Перезавантажити в нову версію",
   "pwaUpdate.readyTooltip": "Нова версія готова. Вона застосується сама, коли ви зробите паузу, або перезавантажте зараз.",
-  "whatsNew.openTooltip": "Подивіться, що змінилося нещодавно"
+  "whatsNew.openTooltip": "Подивіться, що змінилося нещодавно",
+  "whatsNew.subtitleRecent": "Найновіші зміни"
 }

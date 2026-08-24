@@ -9,14 +9,23 @@ export function resolveText(text: LocalizedText, locale: Locale): string {
 }
 
 /**
- * Entries newer than the last one the user saw. An unrecognised marker means
- * their position is no longer in the list, so fall back to the newest few
- * rather than replaying the entire history at them.
+ * `unseen` means the list is exactly what shipped since the user last looked.
+ * `recent` means it is the newest few shown for context, either because they
+ * are caught up or because their marker is no longer in the list. The caller
+ * needs the distinction: only `unseen` may be described as a count of what
+ * they missed.
  */
-export function getUnseenEntries(entries: WhatsNewEntry[], lastSeenId: string): WhatsNewEntry[] {
+export type DigestKind = 'unseen' | 'recent';
+
+export interface Digest {
+  entries: WhatsNewEntry[];
+  kind: DigestKind;
+}
+
+export function buildDigest(entries: WhatsNewEntry[], lastSeenId: string): Digest {
   const index = entries.findIndex((entry) => entry.id === lastSeenId);
-  if (index === -1) return entries.slice(0, DIGEST_LIMIT);
-  return entries.slice(0, index);
+  if (index <= 0) return { entries: entries.slice(0, DIGEST_LIMIT), kind: 'recent' };
+  return { entries: entries.slice(0, index), kind: 'unseen' };
 }
 
 export interface EntryGroup {

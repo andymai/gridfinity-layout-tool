@@ -4386,5 +4386,6 @@
   "pwaUpdate.reload": "再読み込み",
   "pwaUpdate.reloadAria": "新しいバージョンで再読み込み",
   "pwaUpdate.readyTooltip": "新しいバージョンの準備ができました。手を止めると自動的に適用されます。今すぐ再読み込みもできます。",
-  "whatsNew.openTooltip": "最近の変更点を見る"
+  "whatsNew.openTooltip": "最近の変更点を見る",
+  "whatsNew.subtitleRecent": "最近の変更点"
 }

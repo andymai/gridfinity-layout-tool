@@ -4386,5 +4386,6 @@
   "pwaUpdate.reload": "Recarregar",
   "pwaUpdate.reloadAria": "Recarregar na nova versão",
   "pwaUpdate.readyTooltip": "Uma nova versão está pronta. Ela será aplicada sozinha quando você fizer uma pausa, ou recarregue agora.",
-  "whatsNew.openTooltip": "Veja o que mudou recentemente"
+  "whatsNew.openTooltip": "Veja o que mudou recentemente",
+  "whatsNew.subtitleRecent": "As mudanças mais recentes"
 }

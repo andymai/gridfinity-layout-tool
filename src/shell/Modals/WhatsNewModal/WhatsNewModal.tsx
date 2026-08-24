@@ -11,12 +11,7 @@ import { useLabsStore } from '@/core/store/labs';
 import { markAllSeen } from '@/features/whats-new';
 import { getSeenState } from '@/features/whats-new/seenState';
 import { WHATS_NEW_ENTRIES } from '@/features/whats-new/entries';
-import {
-  DIGEST_LIMIT,
-  getUnseenEntries,
-  groupByMonth,
-  resolveText,
-} from '@/features/whats-new/digest';
+import { buildDigest, groupByMonth, resolveText } from '@/features/whats-new/digest';
 import type { WhatsNewAction, WhatsNewEntry, WhatsNewKind } from '@/features/whats-new';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
@@ -58,24 +53,25 @@ export function WhatsNewModal() {
 
   // Captured once at mount, before markAllSeen() below empties the unseen list:
   // the digest must not blank out underneath the reader.
-  const [digest] = useState<WhatsNewEntry[]>(() => {
-    const unseen = getUnseenEntries(WHATS_NEW_ENTRIES, getSeenState().lastSeenId);
-    return unseen.length > 0 ? unseen : WHATS_NEW_ENTRIES.slice(0, DIGEST_LIMIT);
-  });
+  const [digest] = useState(() => buildDigest(WHATS_NEW_ENTRIES, getSeenState().lastSeenId));
 
   useEffect(() => {
     if (open) markAllSeen();
   }, [open]);
 
-  const shown = showAll ? WHATS_NEW_ENTRIES : digest;
+  const shown = showAll ? WHATS_NEW_ENTRIES : digest.entries;
   const groups = useMemo(() => (showAll ? groupByMonth(shown) : null), [showAll, shown]);
   const close = useCallback(() => setOpen(false), [setOpen]);
 
+  // Only a genuine unseen list may be described as "since you were last here".
+  // The recent-entries fallback is shown for context, not as a count of misses.
   const subtitle = showAll
     ? t('whatsNew.subtitleAll')
-    : digest.length === 1
-      ? t('whatsNew.subtitleUnseenOne')
-      : t('whatsNew.subtitleUnseenMany', { count: String(digest.length) });
+    : digest.kind === 'recent'
+      ? t('whatsNew.subtitleRecent')
+      : digest.entries.length === 1
+        ? t('whatsNew.subtitleUnseenOne')
+        : t('whatsNew.subtitleUnseenMany', { count: String(digest.entries.length) });
 
   return (
     <Dialog.Root

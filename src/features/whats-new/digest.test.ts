@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DIGEST_LIMIT, getUnseenEntries, groupByMonth, resolveText } from './digest';
+import { DIGEST_LIMIT, buildDigest, groupByMonth, resolveText } from './digest';
 import type { WhatsNewEntry } from './types';
 
 function entry(id: string, date: string): WhatsNewEntry {
@@ -15,21 +15,31 @@ const ENTRIES: WhatsNewEntry[] = [
   entry('a', '2026-06-15'),
 ];
 
-describe('getUnseenEntries', () => {
-  it('returns nothing when the newest entry is the marker', () => {
-    expect(getUnseenEntries(ENTRIES, 'f')).toEqual([]);
+describe('buildDigest', () => {
+  it('returns everything newer than the marker as unseen', () => {
+    const d = buildDigest(ENTRIES, 'c');
+    expect(d.kind).toBe('unseen');
+    expect(d.entries.map((e) => e.id)).toEqual(['f', 'e', 'd']);
   });
 
-  it('returns everything newer than the marker', () => {
-    expect(getUnseenEntries(ENTRIES, 'c').map((e) => e.id)).toEqual(['f', 'e', 'd']);
+  it('reports recent, not unseen, when the user is caught up', () => {
+    // Otherwise the modal claims "N updates since you were last here" to
+    // someone who has missed nothing.
+    const d = buildDigest(ENTRIES, 'f');
+    expect(d.kind).toBe('recent');
+    expect(d.entries).toHaveLength(DIGEST_LIMIT);
   });
 
-  it('falls back to the newest few when the marker was pruned', () => {
-    expect(getUnseenEntries(ENTRIES, 'long-gone')).toHaveLength(DIGEST_LIMIT);
+  it('reports recent when the marker was pruned', () => {
+    const d = buildDigest(ENTRIES, 'long-gone');
+    expect(d.kind).toBe('recent');
+    expect(d.entries).toHaveLength(DIGEST_LIMIT);
   });
 
-  it('treats an empty marker as pruned rather than replaying everything', () => {
-    expect(getUnseenEntries(ENTRIES, '')).toHaveLength(DIGEST_LIMIT);
+  it('reports recent for an empty marker rather than replaying everything', () => {
+    const d = buildDigest(ENTRIES, '');
+    expect(d.kind).toBe('recent');
+    expect(d.entries).toHaveLength(DIGEST_LIMIT);
   });
 });
 

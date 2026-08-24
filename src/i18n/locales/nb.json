@@ -4386,5 +4386,6 @@
   "pwaUpdate.reload": "Last inn på nytt",
   "pwaUpdate.reloadAria": "Last inn den nye versjonen",
   "pwaUpdate.readyTooltip": "En ny versjon er klar. Den tas i bruk av seg selv når du tar en pause, eller last inn nå.",
-  "whatsNew.openTooltip": "Se hva som er endret nylig"
+  "whatsNew.openTooltip": "Se hva som er endret nylig",
+  "whatsNew.subtitleRecent": "De nyeste endringene"
 }

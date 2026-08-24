@@ -4386,5 +4386,6 @@
   "pwaUpdate.reload": "Opnieuw laden",
   "pwaUpdate.reloadAria": "Opnieuw laden met de nieuwe versie",
   "pwaUpdate.readyTooltip": "Een nieuwe versie staat klaar. Die wordt vanzelf toegepast als je even pauzeert, of laad nu opnieuw.",
-  "whatsNew.openTooltip": "Bekijk wat er onlangs is veranderd"
+  "whatsNew.openTooltip": "Bekijk wat er onlangs is veranderd",
+  "whatsNew.subtitleRecent": "De meest recente wijzigingen"
 }

@@ -4386,5 +4386,6 @@
   "pwaUpdate.reload": "다시 로드",
   "pwaUpdate.reloadAria": "새 버전으로 새로고침",
   "pwaUpdate.readyTooltip": "새 버전이 준비되었습니다. 잠시 멈추면 자동으로 적용되며, 지금 새로고침할 수도 있습니다.",
-  "whatsNew.openTooltip": "최근에 무엇이 바뀌었는지 보기"
+  "whatsNew.openTooltip": "최근에 무엇이 바뀌었는지 보기",
+  "whatsNew.subtitleRecent": "가장 최근 변경 사항"
 }

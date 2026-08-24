@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WhatsNewModal } from './WhatsNewModal';
 import { WHATS_NEW_ENTRIES } from '@/features/whats-new/entries';
-import { hasUnseen, reloadSeenState } from '@/features/whats-new';
+import { hasUnseen, markAllSeen, reloadSeenState } from '@/features/whats-new';
 import { getSeenState } from '@/features/whats-new/seenState';
 import { useSettingsStore } from '@/core/store/settings';
 import { useViewStore } from '@/core/store/view';
@@ -34,6 +34,15 @@ describe('WhatsNewModal', () => {
     useViewStore.getState().setWhatsNewOpen(true);
     render(<WhatsNewModal />);
     expect(screen.getByText(WHATS_NEW_ENTRIES[0].title.en)).toBeInTheDocument();
+  });
+
+  it('does not claim missed updates to someone who is caught up', () => {
+    markAllSeen();
+    useViewStore.getState().setWhatsNewOpen(true);
+    render(<WhatsNewModal />);
+
+    expect(screen.getByText('whatsNew.subtitleRecent')).toBeInTheDocument();
+    expect(screen.queryByText('whatsNew.subtitleUnseenMany')).not.toBeInTheDocument();
   });
 
   it('clears the unseen badge once opened', () => {
