@@ -23,7 +23,7 @@ import type { FitCue } from '../cutoutSectionVisibility';
 import type { SegmentHoverInfo } from '../handlers';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
 import type { AlignmentGuide } from '../geometry';
-import { computeBounds } from '../geometry';
+import { selectionVisualBounds } from '../cutoutGroups';
 import { SceneContent } from './SceneContent';
 
 /** Read the user's selected bin preview color */
@@ -261,7 +261,7 @@ export function CutoutCanvas3D({
     if (selection.size < 2 || isDragging || isResizing || mode.type === 'rotating') return null;
     const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
     if (selectedCutouts.length < 2) return null;
-    const bounds = computeBounds(selectedCutouts);
+    const bounds = selectionVisualBounds(selectedCutouts);
     return {
       id: '__group__' as const,
       shape: 'rectangle' as const,

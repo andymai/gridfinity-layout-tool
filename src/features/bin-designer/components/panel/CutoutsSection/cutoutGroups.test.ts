@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
 import {
+  cutoutPatternBounds,
   expandSelectionToGroups,
+  selectionVisualBounds,
   toArrangeUnits,
   unitsBounds,
   unitWidth,
@@ -131,6 +133,49 @@ describe('toArrangeUnits', () => {
       cutout('d', { groupId: 'g1' }),
     ]);
     expect(units.map((u) => u.members[0].id)).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('selectionVisualBounds', () => {
+  it('spans rotated silhouettes and repeat instances', () => {
+    const bounds = selectionVisualBounds([
+      cutout('a', { x: 0, y: 5, width: 20, depth: 10, rotation: 90 }),
+      cutout('b', {
+        x: 30,
+        y: 0,
+        width: 10,
+        depth: 10,
+        array: {
+          mode: 'grid',
+          cols: 2,
+          rows: 1,
+          pitchX: 20,
+          pitchY: 20,
+          count: 2,
+          radius: 20,
+          startAngle: 0,
+          rotateToCenter: false,
+        },
+      }),
+    ]);
+    // a's turned bar spans [5..15] x [0..20]; b's pattern spans [30..60].
+    expect(bounds.minX).toBeCloseTo(5);
+    expect(bounds.minY).toBeCloseTo(0);
+    expect(bounds.maxX).toBeCloseTo(60);
+    expect(bounds.maxY).toBeCloseTo(20);
+  });
+
+  it('matches the plain box for an unrotated, unrepeated cutout', () => {
+    expect(cutoutPatternBounds(cutout('a', { x: 3, y: 4 }))).toEqual({
+      minX: 3,
+      minY: 4,
+      maxX: 13,
+      maxY: 14,
+    });
+  });
+
+  it('returns a zero box for an empty selection', () => {
+    expect(selectionVisualBounds([])).toEqual({ minX: 0, minY: 0, maxX: 0, maxY: 0 });
   });
 });
 

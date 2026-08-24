@@ -10,7 +10,7 @@
 
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import { getPathBounds } from './pathGeometry';
-import { computeBounds } from './geometryCore';
+import { cutoutPatternBounds, selectionVisualBounds } from './cutoutGroups';
 
 /**
  * Mirror a path point's X coordinate around a center, negating X handle components.
@@ -99,11 +99,15 @@ export function flipSelectionHorizontal(
 ): ReadonlyMap<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
   if (cutouts.length > 1) {
-    const bounds = computeBounds(cutouts);
+    // Mirror each cutout's VISUAL box (rotated silhouette, repeat instances
+    // included) about the selection's visual center — the unrotated x/width
+    // box drifts a rotated member and parks a repeat's pattern unmirrored.
+    const bounds = selectionVisualBounds(cutouts);
     const cx = (bounds.minX + bounds.maxX) / 2;
     for (const cutout of cutouts) {
       const patch = flipCutoutHorizontal(cutout);
-      const mirroredX = 2 * cx - (cutout.x + cutout.width);
+      const b = cutoutPatternBounds(cutout);
+      const mirroredX = cutout.x + (2 * cx - b.maxX - b.minX);
       if (cutout.shape === 'path' && patch.path) {
         // Path points are absolute — translate them to match the group-mirrored position
         const dx = mirroredX - (patch.x ?? cutout.x);
@@ -135,11 +139,13 @@ export function flipSelectionVertical(
 ): ReadonlyMap<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
   if (cutouts.length > 1) {
-    const bounds = computeBounds(cutouts);
+    // Same visual-box mirroring as the horizontal flip, on the Y axis.
+    const bounds = selectionVisualBounds(cutouts);
     const cy = (bounds.minY + bounds.maxY) / 2;
     for (const cutout of cutouts) {
       const patch = flipCutoutVertical(cutout);
-      const mirroredY = 2 * cy - (cutout.y + cutout.depth);
+      const b = cutoutPatternBounds(cutout);
+      const mirroredY = cutout.y + (2 * cy - b.maxY - b.minY);
       if (cutout.shape === 'path' && patch.path) {
         // Path points are absolute — translate them to match the group-mirrored position
         const dy = mirroredY - (patch.y ?? cutout.y);

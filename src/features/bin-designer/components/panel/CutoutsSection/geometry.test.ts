@@ -909,6 +909,48 @@ describe('geometry', () => {
       expect(updates.get('b')).toEqual({ rotation: 0, x: 0 });
     });
 
+    it('mirrors a rotated member about its visual silhouette, not its unrotated box', () => {
+      // A 20x10 bar turned 90° occupies [5..15] on X; its unrotated box [0..20]
+      // would pull the mirror center left and land the pair overlapping.
+      const a = createCutout({ id: 'a', x: 0, y: 5, width: 20, depth: 10, rotation: 90 });
+      const b = createCutout({ id: 'b', x: 30, y: 5, width: 10, depth: 10, rotation: 0 });
+      const updates = flipSelectionHorizontal([a, b]);
+      // Visual bounds: [5..40], center 22.5. a's silhouette [5..15] mirrors to
+      // [30..40] (x moves by 25); b's [30..40] mirrors to [5..15].
+      expect(updates.get('a')?.rotation).toBe(270);
+      expect(updates.get('a')?.x).toBeCloseTo(25);
+      expect(updates.get('b')?.rotation).toBe(0);
+      expect(updates.get('b')?.x).toBeCloseTo(5);
+    });
+
+    it('mirrors a repeat by its whole pattern extent', () => {
+      const master = createCutout({
+        id: 'a',
+        x: 0,
+        y: 0,
+        width: 10,
+        depth: 10,
+        rotation: 0,
+        array: {
+          mode: 'grid',
+          cols: 2,
+          rows: 1,
+          pitchX: 20,
+          pitchY: 20,
+          count: 2,
+          radius: 20,
+          startAngle: 0,
+          rotateToCenter: false,
+        },
+      });
+      const b = createCutout({ id: 'b', x: 50, y: 0, width: 10, depth: 10, rotation: 0 });
+      const updates = flipSelectionHorizontal([master, b]);
+      // Visual bounds: pattern [0..30] plus b [50..60] → center 30. The whole
+      // pattern mirrors to [30..60] (master to 30); b mirrors to [0..10].
+      expect(updates.get('a')).toEqual({ rotation: 0, x: 30 });
+      expect(updates.get('b')).toEqual({ rotation: 0, x: 0 });
+    });
+
     it('translates path points to match group-mirrored position', () => {
       const pathA = createCutout({
         id: 'a',

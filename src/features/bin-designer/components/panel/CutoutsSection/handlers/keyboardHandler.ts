@@ -6,12 +6,8 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import {
-  computeBounds,
-  rotatePoint,
-  flipSelectionHorizontal,
-  flipSelectionVertical,
-} from '../geometry';
+import { rotatePoint, flipSelectionHorizontal, flipSelectionVertical } from '../geometry';
+import { selectionVisualBounds } from '../cutoutGroups';
 import type { InteractionMode } from '../useCutoutInteraction';
 import { handleVertexEditKeyDown } from './pathEditHandler';
 import type { VertexEditMode, SegmentHoverInfo } from './pathEditHandler';
@@ -378,7 +374,7 @@ function handleRotate90(ctx: KeyboardHandlerContext): void {
     // Rigid group rotation: member centers travel clockwise (rotatePoint by
     // -90) to match the clockwise on-screen turn a +90 stored rotation gives.
     const selectedCutouts = ctx.cutouts.filter((c) => ctx.selection.has(c.id));
-    const bounds = computeBounds(selectedCutouts);
+    const bounds = selectionVisualBounds(selectedCutouts);
     const cx = (bounds.minX + bounds.maxX) / 2;
     const cy = (bounds.minY + bounds.maxY) / 2;
     const updates = new Map<string, Partial<Cutout>>();

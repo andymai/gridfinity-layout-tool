@@ -41,25 +41,51 @@ export interface ArrangeUnit {
   readonly locked: boolean;
 }
 
-function makeUnit(members: readonly Cutout[]): ArrangeUnit {
+/**
+ * A cutout's visual footprint: the rotated AABB spanning every repeat
+ * instance (just the cutout's own rotated box when there is no array).
+ */
+export function cutoutPatternBounds(cutout: Cutout): Bounds {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-  let locked = false;
-
-  for (const member of members) {
-    for (const instance of expandCutoutArray(member)) {
-      const b = getRotatedBounds(instance);
-      minX = Math.min(minX, b.minX);
-      minY = Math.min(minY, b.minY);
-      maxX = Math.max(maxX, b.maxX);
-      maxY = Math.max(maxY, b.maxY);
-    }
-    if (member.locked) locked = true;
+  for (const instance of expandCutoutArray(cutout)) {
+    const b = getRotatedBounds(instance);
+    minX = Math.min(minX, b.minX);
+    minY = Math.min(minY, b.minY);
+    maxX = Math.max(maxX, b.maxX);
+    maxY = Math.max(maxY, b.maxY);
   }
+  return { minX, minY, maxX, maxY };
+}
 
-  return { members, bounds: { minX, minY, maxX, maxY }, locked };
+/**
+ * Visual bounds of a whole selection — what the on-screen silhouettes span,
+ * repeat instances and rotation included. The box every multi-select
+ * transform (group box, flip mirror, rotate/scale pivot) must measure, or the
+ * operation centers on a box the user cannot see.
+ */
+export function selectionVisualBounds(cutouts: readonly Cutout[]): Bounds {
+  if (cutouts.length === 0) return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const cutout of cutouts) {
+    const b = cutoutPatternBounds(cutout);
+    minX = Math.min(minX, b.minX);
+    minY = Math.min(minY, b.minY);
+    maxX = Math.max(maxX, b.maxX);
+    maxY = Math.max(maxY, b.maxY);
+  }
+  return { minX, minY, maxX, maxY };
+}
+
+function makeUnit(members: readonly Cutout[]): ArrangeUnit {
+  const bounds = selectionVisualBounds(members);
+  const locked = members.some((member) => member.locked);
+  return { members, bounds, locked };
 }
 
 /**
