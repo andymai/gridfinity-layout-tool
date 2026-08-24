@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WhatsNewModal } from './WhatsNewModal';
@@ -19,6 +19,10 @@ describe('WhatsNewModal', () => {
     resetAllStores();
     localStorage.clear();
     reloadSeenState();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('renders nothing while closed', () => {
@@ -49,6 +53,8 @@ describe('WhatsNewModal', () => {
   it('navigates in-app rather than hard-reloading for a layout action', async () => {
     const user = userEvent.setup();
     const assign = vi.fn();
+    // Restored in afterEach: nothing here auto-restores mocks, and a leaked
+    // window.location getter would follow into every later test.
     vi.spyOn(window, 'location', 'get').mockReturnValue({
       ...window.location,
       assign,
