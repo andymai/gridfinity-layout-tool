@@ -45,6 +45,8 @@ interface InspectorDockProps {
   readonly offBoardCount?: number;
   /** Clamp every off-board cutout back inside the board. */
   readonly onClampOffBoard?: () => void;
+  /** Center every off-board cutout as one block. */
+  readonly onCenterOffBoard?: () => void;
   /** Count of cutouts the generator will cut shallower than requested. */
   readonly depthShortfallCount?: number;
   /** Bin size that would fit every stray, or `null` when growing can't clear it. */

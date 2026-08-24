@@ -254,6 +254,67 @@ export function clampCutoutToBoard(cutout: Cutout, board: CutoutBoard): Partial<
 }
 
 /**
+ * Updates that center every off-board cutout on the board AS ONE BLOCK, or an
+ * empty map when doing so would not clear the warning.
+ *
+ * The companion to the clamp for the case that produces most strays: a shape
+ * drawn at default size, then given its real dimensions, hangs off an edge
+ * while fitting the board perfectly well. The clamp slides it to the nearest
+ * edge; this puts it where it was going to be dragged anyway.
+ *
+ * One delta for the whole stray set, so strays the user arranged relative to
+ * each other keep that arrangement, and cutouts already on the board are never
+ * touched — this fixes the strays, it does not re-lay-out the design.
+ *
+ * All or nothing: a centering that rescues some strays and leaves others
+ * flagged would move the user's shapes and keep the warning up, so the caller
+ * hides the action instead. That also covers the boards where "centered" is not
+ * a meaningful answer — a cell mask or a lid window, where the middle of the
+ * bounding rectangle can be a notch or a magnet boss.
+ */
+export function centerOffBoardCutouts(
+  cutouts: readonly Cutout[],
+  board: CutoutBoard,
+  offBoardIds: ReadonlySet<string> = getOffBoardCutoutIds(cutouts, board)
+): Map<string, Partial<Cutout>> {
+  const empty = new Map<string, Partial<Cutout>>();
+  const strays = cutouts.filter((c) => offBoardIds.has(c.id));
+  if (strays.length === 0) return empty;
+
+  let group: Bounds | null = null;
+  for (const c of strays) {
+    for (const inst of expandCutoutArray(c)) {
+      const b = getCutoutBounds(inst);
+      group = group
+        ? {
+            minX: Math.min(group.minX, b.minX),
+            minY: Math.min(group.minY, b.minY),
+            maxX: Math.max(group.maxX, b.maxX),
+            maxY: Math.max(group.maxY, b.maxY),
+          }
+        : b;
+    }
+  }
+  if (!group) return empty;
+
+  const dx = (board.width - (group.maxX - group.minX)) / 2 - group.minX;
+  const dy = (board.depth - (group.maxY - group.minY)) / 2 - group.minY;
+  if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) return empty;
+
+  const updates = new Map<string, Partial<Cutout>>();
+  for (const c of strays) {
+    const moved = translateCutout(c, dx, dy);
+    if (isCutoutOffBoard(moved, board)) return empty;
+    updates.set(c.id, {
+      x: moved.x,
+      y: moved.y,
+      ...(moved.path ? { path: moved.path } : {}),
+    });
+  }
+  return updates;
+}
+
+/**
  * Updates for every off-board cutout that a clamp can fix (empty when none).
  * A patch that would still leave the shape off board — an oversized path or
  * mesh pulled to the origin but overhanging the far edge — is withheld, so an
