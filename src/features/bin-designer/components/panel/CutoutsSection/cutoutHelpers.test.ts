@@ -3,6 +3,7 @@ import {
   createDefaultCutout,
   defaultPlaceSize,
   resizeKeepingCenter,
+  resizeAroundCenter,
   flattenCutoutArray,
   applyFlattenArray,
   translateCutoutPreview,
@@ -66,6 +67,60 @@ describe('resizeKeepingCenter', () => {
     expect(r.y).toBe(0);
     expect(r.width).toBe(30);
     expect(r.depth).toBe(30);
+  });
+});
+
+describe('resizeAroundCenter', () => {
+  // The router-bit case: a 1/4" shank becomes a 1/2" shank and the hole must
+  // stay where it was drilled.
+  it('grows equally in every direction from the same center', () => {
+    const r = resizeAroundCenter(
+      { x: 20, y: 20, width: 6.35, depth: 6.35 },
+      {
+        width: 12.7,
+        depth: 12.7,
+      }
+    );
+    const centerOf = (o: number, size: number) => o + size / 2;
+    expect(centerOf(r.x, r.width)).toBeCloseTo(centerOf(20, 6.35), 10);
+    expect(centerOf(r.y, r.depth)).toBeCloseTo(centerOf(20, 6.35), 10);
+  });
+
+  it('moves only the axis being resized', () => {
+    const r = resizeAroundCenter({ x: 10, y: 10, width: 20, depth: 20 }, { width: 30 });
+    expect(r.x).toBe(5);
+    expect(r.y).toBe(10);
+    expect(r.depth).toBe(20);
+  });
+
+  it('shrinks toward the center too', () => {
+    const r = resizeAroundCenter(
+      { x: 10, y: 10, width: 20, depth: 20 },
+      {
+        width: 10,
+        depth: 10,
+      }
+    );
+    expect(r).toEqual({ x: 15, y: 15, width: 10, depth: 10 });
+  });
+
+  // The deliberate difference from resizeKeepingCenter: a typed size is a
+  // measurement, so it is never truncated and the origin is never pulled back
+  // onto the board. The off-board warning is what handles the result.
+  it('keeps the typed size and lets the result hang off the board', () => {
+    const r = resizeAroundCenter(
+      { x: 0, y: 0, width: 10, depth: 10 },
+      {
+        width: 40,
+        depth: 40,
+      }
+    );
+    expect(r).toEqual({ x: -15, y: -15, width: 40, depth: 40 });
+  });
+
+  it('is a no-op patch when neither dimension changes', () => {
+    const box = { x: 10, y: 10, width: 20, depth: 20 };
+    expect(resizeAroundCenter(box, {})).toEqual(box);
   });
 });
 

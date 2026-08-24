@@ -24,6 +24,7 @@ import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
+import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
 import { CutoutScoopControls } from './CutoutScoopControls';
 import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
@@ -120,14 +121,13 @@ export function SingleCutoutInspector({
   const ungroupCutouts = useDesignerStore((s) => s.ungroupCutouts);
   // maxCutDepth is the remaining fill on a bin host; a through-cut host has no
   // depth to fall short of.
+  // The fields display preview-merged values, so anything computed FROM them
+  // has to read the same box — a center taken from the stored x/width while an
+  // override is live would re-anchor on a position the user cannot see.
+  const live = { ...cutout, ...preview.get(cutout.id) };
   const depthShortfall = throughOnly
     ? null
-    : cutoutDepthShortfall(
-        { ...cutout, ...preview.get(cutout.id) },
-        binWidth,
-        binDepth,
-        maxCutDepth
-      );
+    : cutoutDepthShortfall(live, binWidth, binDepth, maxCutDepth);
   return (
     <>
       <div className="-mx-4 border-b border-stroke-subtle px-4 py-3">
@@ -161,11 +161,16 @@ export function SingleCutoutInspector({
             />
             {/* softMax: W/H hold a measured dimension, so a typed value past the
                 board is kept and the off-board banner offers to grow the bin
-                (#3061) — truncating it silently shipped wrong-sized pockets. */}
+                (#3061) — truncating it silently shipped wrong-sized pockets.
+                Anchored on the center, matching every other size control here
+                (polygon across-flats, circle diameter, knife presets): a typed
+                size is a measurement of the thing going in the pocket, not an
+                instruction to move it. Handle drags stay edge-anchored — that
+                edge is what the cursor is holding. */}
             <CompactNumberInput
               label="W"
               value={getEffective(cutout, preview, 'width')}
-              onChange={(width) => onUpdate(cutout.id, { width })}
+              onChange={(width) => onUpdate(cutout.id, resizeAroundCenter(live, { width }))}
               min={2}
               max={binWidth}
               softMax
@@ -176,7 +181,7 @@ export function SingleCutoutInspector({
             <CompactNumberInput
               label="H"
               value={getEffective(cutout, preview, 'depth')}
-              onChange={(depth) => onUpdate(cutout.id, { depth })}
+              onChange={(depth) => onUpdate(cutout.id, resizeAroundCenter(live, { depth }))}
               min={2}
               max={binDepth}
               softMax

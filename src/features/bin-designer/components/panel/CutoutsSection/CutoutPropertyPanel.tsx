@@ -17,6 +17,7 @@ import { hasFitControls, formatFitSummary, repeatBlockedReason } from './cutoutS
 import { CutoutArrayControls } from './CutoutArrayControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import type { FitCue } from './cutoutSectionVisibility';
+import { resizeAroundCenter } from './cutoutHelpers';
 
 interface CutoutPropertyPanelProps {
   readonly cutout: Cutout;
@@ -82,7 +83,7 @@ export function CutoutPropertyPanel({
               <SliderInput
                 label={t('binDesigner.cutouts.width')}
                 value={cutout.width}
-                onChange={(width) => onUpdate(cutout.id, { width })}
+                onChange={(width) => onUpdate(cutout.id, resizeAroundCenter(cutout, { width }))}
                 min={2}
                 max={maxWidth}
                 step={0.5}
@@ -92,7 +93,7 @@ export function CutoutPropertyPanel({
               <SliderInput
                 label={t('binDesigner.cutouts.depth')}
                 value={cutout.depth}
-                onChange={(depth) => onUpdate(cutout.id, { depth })}
+                onChange={(depth) => onUpdate(cutout.id, resizeAroundCenter(cutout, { depth }))}
                 min={2}
                 max={maxDepth}
                 step={0.5}
