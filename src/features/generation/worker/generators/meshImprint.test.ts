@@ -264,8 +264,13 @@ describe('mesh imprint generation (occt + manifold)', () => {
       });
 
     // The bottom-left quadrant lands top-left under a clockwise turn: carved.
+    // `lessThan` cannot pass vacuously — an empty probe reads Infinity.
     expect(probe(-5, 5)).toBeLessThan(solidTop - 4);
     // The empty quadrant lands bottom-right: the surface there stays solid.
+    // Infinity (no centroids sampled) is itself a pass: an untouched top face
+    // tessellates as a few large triangles, while a wrong-direction pocket
+    // fills the window with sub-threshold centroids — the reverted-fix run
+    // fails exactly here.
     expect(probe(5, -5)).toBeGreaterThan(solidTop - 0.3);
   }, 120_000);
 
