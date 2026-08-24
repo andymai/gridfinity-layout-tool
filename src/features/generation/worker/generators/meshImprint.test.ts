@@ -210,6 +210,65 @@ describe('mesh imprint generation (occt + manifold)', () => {
     expect(looseMax).toBeLessThan(tightMax + 2.0);
   }, 120_000);
 
+  it('rotates the imprint clockwise, matching the editor footprint', async () => {
+    // An L-shaped tool: full bottom bar [0..20]x[0..10] plus a leg
+    // [0..10]x[10..20], leaving the TOP-RIGHT quadrant of the 20x20 footprint
+    // empty. Stored rotation is clockwise-positive (MeshFootprintMesh renders
+    // at -rotation), so a 90° turn must swing the empty quadrant to the
+    // BOTTOM-right; a CCW cut parks it top-left — a mirrored pocket.
+    const bar = module.Manifold.cube([20, 10, 5], false);
+    const leg = module.Manifold.cube([10, 10, 5], false).translate([0, 10, 0]);
+    const lTool = module.Manifold.union([bar, leg]);
+    bar.delete();
+    leg.delete();
+    const gm = lTool.getMesh();
+    lTool.delete();
+    const soup = new Float32Array(gm.triVerts.length * 3);
+    for (let i = 0; i < gm.triVerts.length; i++) {
+      const v = gm.triVerts[i];
+      soup[i * 3] = gm.vertProperties[v * gm.numProp];
+      soup[i * 3 + 1] = gm.vertProperties[v * gm.numProp + 1];
+      soup[i * 3 + 2] = gm.vertProperties[v * gm.numProp + 2];
+    }
+    const importedL = await importMeshFromStl(
+      buildSTLBuffer(soup, new Float32Array(soup.length), 'l-tool'),
+      'l-tool.stl',
+      undefined,
+      module
+    );
+    if (!isOk(importedL)) throw new Error(`l-tool import failed: ${importedL.error.message}`);
+    const lAsset = importedL.value.asset;
+
+    const cutout = meshCutout({
+      meshId: 'l-tool',
+      width: lAsset.sizeMm.x,
+      depth: lAsset.sizeMm.y,
+      cutDepth: lAsset.sizeMm.z,
+      rotation: 90,
+    });
+    const params = solidBinParams([cutout], { 'l-tool': lAsset });
+    clearMeshImprintCache();
+    await prepareMeshImprints(params, module);
+    const imprinted = getGenerateBin()(params, undefined, true);
+
+    const { innerW, innerD, wallHeight } = deriveDimensions(params, true);
+    const solidTop = SOCKET_HEIGHT + wallHeight;
+    const cx = -innerW / 2 + 10 + lAsset.sizeMm.x / 2;
+    const cy = -innerD / 2 + 10 + lAsset.sizeMm.y / 2;
+    const probe = (dx: number, dy: number): number =>
+      minZInRegion(imprinted, {
+        minX: cx + dx - 2.5,
+        maxX: cx + dx + 2.5,
+        minY: cy + dy - 2.5,
+        maxY: cy + dy + 2.5,
+      });
+
+    // The bottom-left quadrant lands top-left under a clockwise turn: carved.
+    expect(probe(-5, 5)).toBeLessThan(solidTop - 4);
+    // The empty quadrant lands bottom-right: the surface there stays solid.
+    expect(probe(5, -5)).toBeGreaterThan(solidTop - 0.3);
+  }, 120_000);
+
   it('preserves relief below the shoulder instead of flattening to the silhouette', async () => {
     // A tool whose 3D form differs from its silhouette: a wide top slab
     // (20×10×3) on a narrow base (10×10×2). The projected silhouette is the
