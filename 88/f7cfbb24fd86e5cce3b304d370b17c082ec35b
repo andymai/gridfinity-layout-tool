@@ -1,0 +1,23 @@
+src/shared/hooks/usePWAUpdate.ts
+  s_ed41b3402c59e7::t_bf0520e337eff2 59-62
+  s_ed41b3402c59e7::t_7e2edfd1c10cb3 369
+src/shared/hooks/usePWAUpdate.test.ts
+  s_ed41b3402c59e7::t_f72f671ed0cab4 573,575
+  s_ed41b3402c59e7::t_7a9cf2e606e460 552,554
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "88f7cfbb24fd86e5cce3b304d370b17c082ec35b",
+  "prompts": {},
+  "sessions": {
+    "s_ed41b3402c59e7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7ce2142-cc6c-4458-b323-d42c7db183b0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
