@@ -14,6 +14,15 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'center-clipped-cutout',
+    date: '2026-08-24',
+    kind: 'new',
+    title: { en: 'Center a cutout that ended up off the board' },
+    body: {
+      en: 'Draw a shape, type its real size, and it often ends up hanging off an edge while fitting the bin perfectly well. The clipping warning now offers to center it, alongside growing the bin and pulling it back to the edge.',
+    },
+  },
+  {
     id: 'whats-new',
     date: '2026-08-24',
     kind: 'new',
