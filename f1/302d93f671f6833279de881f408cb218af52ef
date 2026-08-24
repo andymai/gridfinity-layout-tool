@@ -1,0 +1,128 @@
+src/features/whats-new/entries.ts
+  s_98d93acaac415a::t_ee29efd2f5789b 1-9,14-103,124-129,851,871-872
+  s_98d93acaac415a::t_44a308ad6e0d9d 10-13,104-123,130-275,278,280,282-284,287,289,291,293-352,355,357,359-362,365,367,369-491,493-494,496,498-500,503,505,507-518,521,523,525,527-528,531,533,535,537-546,557-592,602-611,614,616,618-630,633,635,637-710,729-748,751,754-788,798-850,852-870
+  s_98d93acaac415a::t_a8f6917007d454 276-277,279,281,285-286,288,290,292,353-354,356,358,363-364,366,368,492,495,497,501-502,504,506,519-520,522,524,526,529-530,532,534,536,547-556,593-601,612-613,615,617,631-632,634,636,711-728,749-750,752-753,789-797
+src/features/whats-new/index.ts
+  s_98d93acaac415a::t_ba4094a0306962 1-6,8
+  s_98d93acaac415a::t_bb62d46e02e14a 7
+src/i18n/locales/es.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/features/whats-new/digest.ts
+  s_98d93acaac415a::t_4003cb9361db9d 1-40
+src/shell/Modals/SettingsModal/settingsRegistry.ts
+  s_98d93acaac415a::t_207274f13a2b38 33-38
+src/features/whats-new/latest.test.ts
+  s_98d93acaac415a::t_7c12bc7ca09f89 1-41
+package.json
+  s_98d93acaac415a::t_207274f13a2b38 59
+src/features/whats-new/useWhatsNewAutoOpen.ts
+  s_98d93acaac415a::t_29c182e4df6318 4-10,50-51,57
+  s_98d93acaac415a::t_efdf8964767517 1-3,11-49,52-56,58-63
+src/i18n/locales/it.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/features/command-palette/commands.ts
+  s_98d93acaac415a::t_207274f13a2b38 100-104
+  s_98d93acaac415a::t_af588759ee3329 99
+src/features/whats-new/seenState.test.ts
+  s_98d93acaac415a::t_bb62d46e02e14a 8,15-16,51,66
+  s_98d93acaac415a::t_6887265e7dc0c2 1-7,9-14,17-50,52-65,67-70
+src/i18n/locales/ja.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/features/whats-new/seenState.ts
+  s_98d93acaac415a::t_2ec1c32a6f6dcd 60-64
+  s_98d93acaac415a::t_f9d180118f1396 93-95
+  s_98d93acaac415a::t_aa2f425517554a 1-59,65-92,96-97
+src/i18n/locales/nb.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/features/whats-new/types.ts
+  s_98d93acaac415a::t_f3315047c00439 22
+  s_98d93acaac415a::t_8c2f220a23eaa1 1-21,23-37
+src/i18n/locales/de.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/i18n/locales/zh-CN.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/shell/Modals/SettingsModal/tabs/GeneralTab/GeneralTab.tsx
+  s_98d93acaac415a::t_207274f13a2b38 3,12,15,56-70
+  s_98d93acaac415a::t_aebcbdfcf4eb7e 71-72
+src/shell/Modals/WhatsNewModal/WhatsNewModal.test.tsx
+  s_98d93acaac415a::t_876b6eab83bf5f 1-2,4-11,16-58
+  s_98d93acaac415a::t_6f9f12a55ac148 3,12-15
+src/i18n/locales/pl.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/shared/components/AttributionFooter/AttributionFooter.test.tsx
+  s_98d93acaac415a::t_207274f13a2b38 2-3,5-7,10-17,20-34
+src/i18n/locales/pt-BR.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/i18n/locales/sv.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/shell/Modals/HelpModal/helpEntryAggregator.ts
+  s_98d93acaac415a::t_207274f13a2b38 25,39
+src/i18n/locales/cs.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_98d93acaac415a::t_207274f13a2b38 2,7-9,41-45,369-374,377-382
+src/core/store/settings.types.ts
+  s_98d93acaac415a::t_207274f13a2b38 256-260,377
+  s_98d93acaac415a::t_ef7c0cbde8368d 255
+src/shell/Modals/WhatsNewModal/index.ts
+  s_98d93acaac415a::t_7dd966ba8e8c77 1
+src/features/whats-new/digest.test.ts
+  s_98d93acaac415a::t_9051c547e98cdd 1-58
+scripts/check-whats-new.sh
+  s_98d93acaac415a::t_b5fde0b1537ac6 1-55
+src/i18n/locales/uk.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/i18n/locales/fr.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/features/whats-new/README.md
+  s_98d93acaac415a::t_30542150939ae2 1-38
+  s_98d93acaac415a::t_9dfb822106e134 39-47
+src/i18n/locales/en.ts
+  s_98d93acaac415a::t_207274f13a2b38 4984-5017
+src/core/store/view.ts
+  s_98d93acaac415a::t_207274f13a2b38 48,88,116,184
+src/App.tsx
+  s_98d93acaac415a::t_207274f13a2b38 51,132-134,254,329-341,655-657
+  s_98d93acaac415a::t_2c265c128cd21f 658-659
+src/features/whats-new/latest.ts
+  s_98d93acaac415a::t_29c2714d586eba 1-9
+src/shell/Modals/WhatsNewModal/WhatsNewModal.tsx
+  s_98d93acaac415a::t_b809508a85fc13 43-49,51
+  s_98d93acaac415a::t_ff864becb95015 1-2,4-5,7-8,12,19-20,23-37,39-42,50,52-83,85-154,156-170,172-198,200-229,231-238,240-245,248-251,253-262,265-266,271-274,276,280-281,283,287
+  s_98d93acaac415a::t_cbd13fd2300593 268-270
+  s_98d93acaac415a::t_b818009717ed92 3,6,9,13-18,21-22,38,84,155,171,199,230,239,246-247,252,263-264,267,275,277-279,282,284-286
+  s_98d93acaac415a::t_d6e052ea63e48a 10-11
+src/shared/components/AttributionFooter/AttributionFooter.tsx
+  s_98d93acaac415a::t_207274f13a2b38 1,3,6-7,12-13,18-23,26-31
+src/i18n/locales/ko.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+scripts/i18n-values-allowlist.json
+  s_98d93acaac415a::t_207274f13a2b38 317,328,330-331,339,344-345,350-351
+src/i18n/locales/nl.json
+  s_98d93acaac415a::t_207274f13a2b38 4358-4387
+src/features/whats-new/helpEntries.ts
+  s_98d93acaac415a::t_3052eb583942f5 12
+  s_98d93acaac415a::t_9a0eb4718ee913 1-11,13-18
+.husky/pre-commit
+  s_98d93acaac415a::t_207274f13a2b38 16
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_98d93acaac415a::t_207274f13a2b38 222-224
+scripts/doc-budget.json
+  s_98d93acaac415a::t_c5c6a73ba0440f 72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "f1302d93f671f6833279de881f408cb218af52ef",
+  "prompts": {},
+  "sessions": {
+    "s_98d93acaac415a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9377b15c-ea26-4a99-a567-cd7e26d19e48",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
