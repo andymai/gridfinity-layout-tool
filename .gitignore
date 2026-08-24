@@ -49,6 +49,10 @@ bundle-analysis.*
 # Implementation plans (transient, never commit)
 docs/plans/
 .env*.local
+# Broader than the two rules above: .env.production / .env.staging carry real
+# credentials and matched neither. The template stays tracked.
+.env*
+!.env.example
 .playwright-mcp/
 
 # Defensive — training script pulls prod credentials into its own dir
