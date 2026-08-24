@@ -91,6 +91,7 @@ export function WorkshopCanvas() {
   const { structure, envelope } = useDesignerStore(
     useShallow((s) => ({ structure: s.structure, envelope: s.envelope }))
   );
+  const threeColors = useThreeColors();
   // An armed click that hits no surface would otherwise be a silent no-op;
   // a brief pulse on the base plate shows where placement is valid.
   const [missFlashAt, setMissFlashAt] = useState(0);
@@ -279,12 +280,16 @@ export function WorkshopCanvas() {
       {marquee && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute rounded-sm border border-accent bg-accent/10"
+          className="pointer-events-none absolute rounded-sm border"
           style={{
             left: Math.min(marquee.x0, marquee.x1),
             top: Math.min(marquee.y0, marquee.y1),
             width: Math.abs(marquee.x1 - marquee.x0),
             height: Math.abs(marquee.y1 - marquee.y0),
+            // Match the 3D selection tint, not the app accent — the marquee
+            // is part of the scene's selection language.
+            borderColor: threeColors.workshopPartSelected,
+            backgroundColor: `${threeColors.workshopPartSelected}1f`,
           }}
         />
       )}

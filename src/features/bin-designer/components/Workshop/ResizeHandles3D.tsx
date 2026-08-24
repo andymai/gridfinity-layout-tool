@@ -21,8 +21,10 @@ import { resizeHandlesFor, type ResizeHandleDef } from './resizeHandleConfig';
 import { storeToScene, type PlacedPart } from './workshopPlacement';
 
 const HANDLE_SIZE_MM = 3.2;
+const HANDLE_HIT_RADIUS_MM = 3.6;
 const LABEL_GAP_MM = 6;
 const DEG = Math.PI / 180;
+const NO_RAYCAST = (): null => null;
 
 const AXIS_UNIT: Record<ResizeHandleDef['axis'], readonly [number, number, number]> = {
   x: [1, 0, 0],
@@ -48,6 +50,8 @@ interface ResizeHandles3DProps {
   readonly baseD: number;
   /** Marquee suppression — a handle grab claims the pointerdown. */
   readonly onGestureStart?: () => void;
+  /** Mirrors whether a handle drag is in flight (suppresses the sharp swap). */
+  readonly onResizingChange?: (resizing: boolean) => void;
 }
 
 interface DragState {
@@ -61,7 +65,13 @@ interface DragState {
   readonly pxPerMm: number;
 }
 
-export function ResizeHandles3D({ placed, baseW, baseD, onGestureStart }: ResizeHandles3DProps) {
+export function ResizeHandles3D({
+  placed,
+  baseW,
+  baseD,
+  onGestureStart,
+  onResizingChange,
+}: ResizeHandles3DProps) {
   const colors = useThreeColors();
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
@@ -73,6 +83,13 @@ export function ResizeHandles3D({ placed, baseW, baseD, onGestureStart }: Resize
   const lastValueRef = useRef<number | null>(null);
   const [draggingKey, setDraggingKey] = useState<string | null>(null);
   const [editingKey, setEditingKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    onResizingChange?.(draggingKey !== null);
+  }, [draggingKey, onResizingChange]);
+  // The scene must never be left thinking a resize is stuck on after the
+  // handles unmount (selection change mid-drag).
+  useEffect(() => () => onResizingChange?.(false), [onResizingChange]);
 
   const node = placed.node;
   const handles = resizeHandlesFor(node);
@@ -220,6 +237,9 @@ export function ResizeHandles3D({ placed, baseW, baseD, onGestureStart }: Resize
               : [local.x, local.y + labelShift, local.z];
         return (
           <group key={def.key}>
+            {/* The visible cube is deliberately small; an invisible sphere
+                twice its size is the actual grab target, so the handle wins
+                the raycast over the part face right behind it. */}
             <mesh
               position={[local.x, local.y, local.z]}
               renderOrder={2}
@@ -229,6 +249,10 @@ export function ResizeHandles3D({ placed, baseW, baseD, onGestureStart }: Resize
                 beginDrag(def, { clientX: e.nativeEvent.clientX, clientY: e.nativeEvent.clientY });
               }}
             >
+              <sphereGeometry args={[HANDLE_HIT_RADIUS_MM, 8, 6]} />
+              <meshBasicMaterial visible={false} />
+            </mesh>
+            <mesh position={[local.x, local.y, local.z]} renderOrder={2} raycast={NO_RAYCAST}>
               <boxGeometry args={[HANDLE_SIZE_MM, HANDLE_SIZE_MM, HANDLE_SIZE_MM]} />
               <meshStandardMaterial
                 color={active ? colors.workshopGhost : colors.workshopPartSelected}

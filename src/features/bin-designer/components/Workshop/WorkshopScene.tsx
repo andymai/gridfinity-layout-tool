@@ -294,7 +294,11 @@ export function WorkshopScene({
   }, []);
   const cameraDistance = Math.max(w, d) * 1.4 + 80;
   const sharp = useWorkshopSharpen();
-  const showSharp = sharp && interaction.draggingId === null && interaction.rotatingId === null;
+  // A resize-handle drag regenerates params continuously; letting the sharp
+  // mesh swap in mid-gesture flashes the scan-in over the whole build.
+  const [resizing, setResizing] = useState(false);
+  const showSharp =
+    sharp && !resizing && interaction.draggingId === null && interaction.rotatingId === null;
 
   const knownIdsRef = useRef<ReadonlySet<string> | null>(null);
   const [holograms, setHolograms] = useState<Map<string, number>>(new Map());
@@ -458,6 +462,7 @@ export function WorkshopScene({
                   baseW={w}
                   baseD={d}
                   onGestureStart={onGestureStart}
+                  onResizingChange={setResizing}
                 />
               ) : null;
             })()}
