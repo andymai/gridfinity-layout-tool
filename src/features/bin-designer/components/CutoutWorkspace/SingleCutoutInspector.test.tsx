@@ -140,6 +140,34 @@ describe('SingleCutoutInspector', () => {
     expect(onUpdate).toHaveBeenCalledWith('c1', { width: 10, depth: 30, x: 20, y: 10 });
   });
 
+  // The fields render preview-merged values, so the center must be taken from
+  // the same box — anchoring on the stored one would re-center a shape onto a
+  // position the user cannot see.
+  it('anchors on the previewed box, not the stored one', () => {
+    const onUpdate = vi.fn();
+    render(
+      <SingleCutoutInspector
+        cutout={makeCutout({ shape: 'rectangle', x: 5, y: 5, width: 10, depth: 10 })}
+        preview={new Map([['c1', { x: 40, width: 20 }]])}
+        binWidth={100}
+        binDepth={100}
+        maxCutDepth={20}
+        onUpdate={onUpdate}
+        disabled={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'W: 20 mm' }));
+    const input = screen.getByRole('textbox', { name: 'W' });
+    fireEvent.change(input, { target: { value: '40' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    // Previewed box is 20 wide at x=40, centered on 50; a 40-wide box keeps
+    // that center and starts at 30. Anchoring on the stored 10-wide box at x=5
+    // would have produced -10.
+    expect(onUpdate).toHaveBeenCalledWith('c1', { width: 40, depth: 10, x: 30, y: 5 });
+  });
+
   it('shows the Repeat section with its presets for a repeatable shape', () => {
     renderit(makeCutout({ shape: 'circle' }));
     expect(screen.getByText('binDesigner.cutouts.section.repeat')).toBeInTheDocument();

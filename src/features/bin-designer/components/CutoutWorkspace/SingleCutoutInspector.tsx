@@ -121,14 +121,13 @@ export function SingleCutoutInspector({
   const ungroupCutouts = useDesignerStore((s) => s.ungroupCutouts);
   // maxCutDepth is the remaining fill on a bin host; a through-cut host has no
   // depth to fall short of.
+  // The fields display preview-merged values, so anything computed FROM them
+  // has to read the same box — a center taken from the stored x/width while an
+  // override is live would re-anchor on a position the user cannot see.
+  const live = { ...cutout, ...preview.get(cutout.id) };
   const depthShortfall = throughOnly
     ? null
-    : cutoutDepthShortfall(
-        { ...cutout, ...preview.get(cutout.id) },
-        binWidth,
-        binDepth,
-        maxCutDepth
-      );
+    : cutoutDepthShortfall(live, binWidth, binDepth, maxCutDepth);
   return (
     <>
       <div className="-mx-4 border-b border-stroke-subtle px-4 py-3">
@@ -171,7 +170,7 @@ export function SingleCutoutInspector({
             <CompactNumberInput
               label="W"
               value={getEffective(cutout, preview, 'width')}
-              onChange={(width) => onUpdate(cutout.id, resizeAroundCenter(cutout, { width }))}
+              onChange={(width) => onUpdate(cutout.id, resizeAroundCenter(live, { width }))}
               min={2}
               max={binWidth}
               softMax
@@ -182,7 +181,7 @@ export function SingleCutoutInspector({
             <CompactNumberInput
               label="H"
               value={getEffective(cutout, preview, 'depth')}
-              onChange={(depth) => onUpdate(cutout.id, resizeAroundCenter(cutout, { depth }))}
+              onChange={(depth) => onUpdate(cutout.id, resizeAroundCenter(live, { depth }))}
               min={2}
               max={binDepth}
               softMax
