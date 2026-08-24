@@ -81,6 +81,29 @@ describe('cutoutToPolygon', () => {
     expect(polygon![0].length).toBeGreaterThan(20);
   });
 
+  it('samples the true ellipse for a circle with independent depth', () => {
+    const ring = cutoutToPolygon(baseCutout({ shape: 'circle', width: 20, depth: 10 }))![0];
+    const xs = ring.map(([x]) => x);
+    const ys = ring.map(([, y]) => y);
+    // The worker cuts the full 20x10 ellipse; a collapsed circle would span
+    // only the 10mm short axis in X.
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(20, 1);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(10, 1);
+    // Inscribed 64-gon of a rx=10, ry=5 ellipse: within a percent of pi*rx*ry.
+    expect(polygonArea(ring)).toBeGreaterThan(Math.PI * 50 * 0.99);
+    expect(polygonArea(ring)).toBeLessThan(Math.PI * 50 * 1.001);
+  });
+
+  it('turns the ellipse with the cutout rotation', () => {
+    const ring = cutoutToPolygon(
+      baseCutout({ shape: 'circle', width: 20, depth: 10, rotation: 90 })
+    )![0];
+    const xs = ring.map(([x]) => x);
+    const ys = ring.map(([, y]) => y);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(10, 1);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(20, 1);
+  });
+
   // `Cutout.rotation` is clockwise-positive (CutoutShapeMesh renders at
   // `-rotation`; cutoutBuilder extrudes at `rotate(shape, -rotation)`). An
   // outline rotated the other way mirrors every non-symmetric shape, so the

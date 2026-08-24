@@ -98,18 +98,21 @@ function rectangleRing(c: Cutout): Ring {
   return ring;
 }
 
-/** Build the outline ring for a circle cutout (width = diameter). */
+/**
+ * Build the outline ring for a circle cutout (width/depth = the two diameters).
+ * Circles carry independent width and depth and the worker cuts the true
+ * ellipse (`ellipsePolygonDrawing`), so the preview must sample the same one or
+ * a grouped ellipse's boolean preview diverges from the mesh along its long axis.
+ */
 function circleRing(c: Cutout): Ring {
   const cx = c.x + c.width / 2;
   const cy = c.y + c.depth / 2;
-  // Circle's radius collapses to half the smaller bbox dim so non-square
-  // bounding rects (which only happen via resize bugs) still produce a
-  // valid loop instead of an ellipse polygon-clipping can choke on.
-  const r = Math.min(c.width, c.depth) / 2;
+  const rx = c.width / 2;
+  const ry = c.depth / 2;
   const ring: Ring = [];
   for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
     const a = (i / CIRCLE_SEGMENTS) * Math.PI * 2;
-    ring.push(rotatePair(cx + r * Math.cos(a), cy + r * Math.sin(a), cx, cy, c.rotation));
+    ring.push(rotatePair(cx + rx * Math.cos(a), cy + ry * Math.sin(a), cx, cy, c.rotation));
   }
   return ring;
 }
