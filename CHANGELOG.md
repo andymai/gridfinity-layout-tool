@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.471.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.5...gridfinity-layout-tool-v4.471.6) (2026-08-24)
+
+
+### Bug Fixes
+
+* **designer:** measure multi-select transforms by visual bounds ([#3816](https://github.com/andymai/gridfinity-layout-tool/issues/3816)) ([6159113](https://github.com/andymai/gridfinity-layout-tool/commit/6159113bb09f1ab01cbce92a9614e02345aae93d)), closes [#3807](https://github.com/andymai/gridfinity-layout-tool/issues/3807)
+* **designer:** rotate validation silhouettes clockwise like the renderer ([#3814](https://github.com/andymai/gridfinity-layout-tool/issues/3814)) ([b0853fc](https://github.com/andymai/gridfinity-layout-tool/commit/b0853fcc93097698f5aadfdb818315d2c138a978)), closes [#3805](https://github.com/andymai/gridfinity-layout-tool/issues/3805)
+
 ## [4.471.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.4...gridfinity-layout-tool-v4.471.5) (2026-08-24)
 
 
