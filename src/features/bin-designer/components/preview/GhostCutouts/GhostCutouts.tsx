@@ -113,10 +113,12 @@ export function GhostCutouts() {
     } else {
       return [];
     }
-    if (previewOverrides.size === 0) return result;
     return result.map((c) => {
       const overrides = previewOverrides.get(c.id);
-      return overrides ? { ...c, ...overrides } : c;
+      const merged = overrides ? { ...c, ...overrides } : c;
+      // The worker cuts at most the remaining fill (`effectiveDepth`), so a
+      // deeper stored cutDepth must not draw a floor below the bin's own.
+      return merged.cutDepth > fillSurface ? { ...merged, cutDepth: fillSurface } : merged;
     });
   }, [isSolid, cutouts, isGenerating, hasSelection, selectedIds, previewOverrides, fillSurface]);
 
