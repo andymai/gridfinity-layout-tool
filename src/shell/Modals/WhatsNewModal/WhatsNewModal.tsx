@@ -258,9 +258,12 @@ function EntryAction({ entry, onNavigate }: EntryRowProps) {
             case 'baseplate':
               navigateToBaseplate();
               return;
+            default: {
+              const _exhaustive: never = action.tool;
+              throw new Error(`whats-new: unknown tool ${_exhaustive as string}`);
+            }
           }
-          return;
-        case 'openModal':
+        case 'openModal': {
           switch (action.modal) {
             case 'baseplateLibrary':
               setShowBaseplateLibrary(true);
@@ -271,7 +274,16 @@ function EntryAction({ entry, onNavigate }: EntryRowProps) {
             case 'designGallery':
               openGallery();
               return;
+            default: {
+              const _exhaustive: never = action.modal;
+              throw new Error(`whats-new: unknown modal ${_exhaustive as string}`);
+            }
           }
+        }
+        default: {
+          const _exhaustive: never = action;
+          throw new Error(`whats-new: unknown action ${JSON.stringify(_exhaustive)}`);
+        }
       }
     },
     [

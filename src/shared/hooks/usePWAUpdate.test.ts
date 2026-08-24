@@ -651,6 +651,26 @@ describe('usePWAUpdate', () => {
       ).toBe(false);
     });
 
+    it('clears the pending-update state on unmount', async () => {
+      mockNeedRefresh = true;
+      setActiveInteraction();
+
+      const { unmount } = renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      await advancePastSilentWindow();
+      expect(usePWAUpdateStore.getState().updateReady).toBe(true);
+
+      // performReload() no-ops after the abort, so a lingering Reload control
+      // would silently do nothing.
+      unmount();
+      expect(usePWAUpdateStore.getState().updateReady).toBe(false);
+      expect(usePWAUpdateStore.getState().applyUpdate).toBeNull();
+    });
+
     it('reloads immediately when the sidebar control is used, even while active', async () => {
       mockNeedRefresh = true;
       setActiveInteraction();

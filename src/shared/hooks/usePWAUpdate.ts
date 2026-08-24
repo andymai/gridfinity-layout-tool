@@ -662,6 +662,9 @@ export function usePWAUpdate(): void {
 
     return () => {
       abortController.abort();
+      // performReload() no-ops once the signal aborts, so leaving the sidebar
+      // offering a Reload would give it a control that silently does nothing.
+      usePWAUpdateStore.getState().clearUpdate();
     };
   }, [needRefresh, addToast, updateServiceWorker, t]);
 
