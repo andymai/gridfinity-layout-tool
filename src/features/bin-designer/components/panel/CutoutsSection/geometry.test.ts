@@ -568,6 +568,36 @@ describe('geometry', () => {
       expect(result).toEqual({});
     });
 
+    it('centers a repeat by its whole pattern, not just the master', () => {
+      const cutouts = [
+        createCutout({
+          id: 'a',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          array: {
+            mode: 'grid',
+            cols: 2,
+            rows: 2,
+            pitchX: 20,
+            pitchY: 20,
+            count: 4,
+            radius: 20,
+            startAngle: 0,
+            rotateToCenter: false,
+          },
+        }),
+      ];
+      const result = centerInBin(cutouts, 100, 100);
+
+      // The pattern spans 30x30 (master box plus one 20mm pitch step per
+      // axis), so centred it runs 35..65 — the master sits at 35, while
+      // centring the master alone would have put it at 45.
+      expect(result.a.x).toBe(35);
+      expect(result.a.y).toBe(35);
+    });
+
     it('leaves the other axis exactly where the user put it', () => {
       // The whole point of the single-axis modes: centring both at once
       // discards a position that was placed deliberately.

@@ -90,6 +90,31 @@ describe('toArrangeUnits', () => {
     expect(unitDepth(unit)).toBeCloseTo(20);
   });
 
+  it('spans every repeat instance, not just the master', () => {
+    const [unit] = toArrangeUnits([
+      cutout('a', {
+        x: 10,
+        y: 10,
+        width: 10,
+        depth: 10,
+        array: {
+          mode: 'grid',
+          cols: 3,
+          rows: 2,
+          pitchX: 20,
+          pitchY: 15,
+          count: 6,
+          radius: 20,
+          startAngle: 0,
+          rotateToCenter: false,
+        },
+      }),
+    ]);
+    // Grid grows +X/+Y from the master: 2 extra columns at 20mm and 1 extra
+    // row at 15mm past the master's 10x10 box.
+    expect(unit.bounds).toEqual({ minX: 10, minY: 10, maxX: 60, maxY: 35 });
+  });
+
   it('marks a unit locked when any member is locked', () => {
     const [unit] = toArrangeUnits([
       cutout('a', { groupId: 'g1' }),
