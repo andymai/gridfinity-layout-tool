@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.472.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.7...gridfinity-layout-tool-v4.472.0) (2026-08-24)
+
+
+### Features
+
+* **design-system:** collapse overflowing segmented controls into a balanced grid ([#3826](https://github.com/andymai/gridfinity-layout-tool/issues/3826)) ([8d5ae10](https://github.com/andymai/gridfinity-layout-tool/commit/8d5ae107ea6f4c33aa831cdcc0a952abfdce8bc7))
+* **workshop:** multi-select, on-canvas resize, and camera tools ([#3823](https://github.com/andymai/gridfinity-layout-tool/issues/3823)) ([5306aa4](https://github.com/andymai/gridfinity-layout-tool/commit/5306aa46938bdc18d891a9ea241edda9d602c712))
+
+
+### Bug Fixes
+
+* **labs:** correct the Workshop flag warning about layout placement ([#3824](https://github.com/andymai/gridfinity-layout-tool/issues/3824)) ([6d07382](https://github.com/andymai/gridfinity-layout-tool/commit/6d073825e6f185d27724dd8a344f6e33a34b1a5b))
+
 ## [4.471.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.471.6...gridfinity-layout-tool-v4.471.7) (2026-08-24)
 
 
