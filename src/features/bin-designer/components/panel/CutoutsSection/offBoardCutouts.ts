@@ -32,6 +32,7 @@ import { translateCutout } from './cutoutHelpers';
 import { translatePathPoints } from './pathGeometry';
 import { getCutoutBounds, cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import { cutoutFitsInLidWindow, lidWindowOffset } from './lidWindowFit';
+import { MIN_CUTOUT_SIZE } from './geometryResize';
 import type { Bounds } from './geometryCore';
 
 /**
@@ -108,12 +109,70 @@ export function getOffBoardCutoutIds(cutouts: readonly Cutout[], board: CutoutBo
 
 /** Shift to bring [min,max] inside [0,extent]; pin the min edge when oversized. */
 function fitAxis(min: number, max: number, extent: number): number {
-  // Larger than the board on this axis — both edges can't fit, so anchor the
-  // min edge to the origin and let the build clip the overhang on the far side.
+  // Still larger than the board after any shrink (a path, a mesh, an array
+  // whose pitch alone overspans) — both edges can't fit, so anchor the min
+  // edge to the origin and let the build clip the overhang on the far side.
   if (max - min > extent) return -min;
   if (min < 0) return -min;
   if (max > extent) return extent - max;
   return 0;
+}
+
+/**
+ * Width/depth that let the cutout's rotated footprint — and every array
+ * instance — fit a `binWidth`×`binDepth` rectangle. `null` when no resize is
+ * needed or none would help: paths and meshes aren't sized by width/depth (a
+ * path's vertices are the truth, a mesh mirrors its STL and can't resize), and
+ * a shrink that still can't fit (min-size floor, array pitch overspanning the
+ * board) is withheld rather than mangling the shape without clearing the flag.
+ *
+ * Axis-aligned rotations clamp each axis independently; oblique ones scale
+ * uniformly, since per-axis shrinking of a rotated box couples the axes.
+ */
+function shrinkToFitRect(
+  cutout: Cutout,
+  binWidth: number,
+  binDepth: number
+): Pick<Cutout, 'width' | 'depth'> | null {
+  if (cutout.shape === 'path' || cutout.shape === 'mesh') return null;
+  const own = getCutoutBounds(cutout);
+  const ownW = own.maxX - own.minX;
+  const ownD = own.maxY - own.minY;
+  let availX = binWidth;
+  let availY = binDepth;
+  const instances = expandCutoutArray(cutout);
+  if (instances.length > 1) {
+    const u = unionBounds(instances.map(getCutoutBounds));
+    availX -= u.maxX - u.minX - ownW;
+    availY -= u.maxY - u.minY - ownD;
+  }
+  if (ownW <= availX + EPSILON && ownD <= availY + EPSILON) return null;
+  const rad = (cutout.rotation * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(rad));
+  const sin = Math.abs(Math.sin(rad));
+  let width: number;
+  let depth: number;
+  if (sin < 1e-9) {
+    width = Math.min(cutout.width, availX);
+    depth = Math.min(cutout.depth, availY);
+  } else if (cos < 1e-9) {
+    width = Math.min(cutout.width, availY);
+    depth = Math.min(cutout.depth, availX);
+  } else {
+    const scale = Math.min(availX / ownW, availY / ownD);
+    width = cutout.width * scale;
+    depth = cutout.depth * scale;
+  }
+  width = Math.max(MIN_CUTOUT_SIZE, width);
+  depth = Math.max(MIN_CUTOUT_SIZE, depth);
+  const shrunk = getCutoutBounds({ ...cutout, width, depth });
+  if (
+    shrunk.maxX - shrunk.minX > availX + EPSILON ||
+    shrunk.maxY - shrunk.minY > availY + EPSILON
+  ) {
+    return null;
+  }
+  return { width, depth };
 }
 
 /** Translation that fits the instances' union within the board rectangle. */
@@ -163,13 +222,19 @@ function maskOffset(
 }
 
 /**
- * Translation that brings a stray cutout (and all its array instances) back
- * inside the board. Returns `null` when no move is needed or — for a masked or
- * lid board — no valid placement exists (the cutout stays flagged for manual
- * repair). Path vertices move in lockstep with `x`/`y`.
+ * Update that brings a stray cutout (and all its array instances) back inside
+ * the board. On a plain rectangular board a shape larger than the board is
+ * first shrunk to fit (`shrinkToFitRect`); a masked or lid board only ever
+ * translates, since "fits somewhere in a concave region" has no single right
+ * size. Returns `null` when no change is needed or no fix exists (the cutout
+ * stays flagged for manual repair). Path vertices move in lockstep with
+ * `x`/`y`.
  */
 export function clampCutoutToBoard(cutout: Cutout, board: CutoutBoard): Partial<Cutout> | null {
-  const instances = expandCutoutArray(cutout);
+  const plainRect = !board.lidWindow && !(board.mask && board.cellSize);
+  const resized = plainRect ? shrinkToFitRect(cutout, board.width, board.depth) : null;
+  const base = resized ? { ...cutout, ...resized } : cutout;
+  const instances = expandCutoutArray(base);
   let offset: { dx: number; dy: number } | null;
   if (board.lidWindow) {
     offset = lidWindowOffset(instances, board.lidWindow, board.meshAssets);
@@ -178,26 +243,35 @@ export function clampCutoutToBoard(cutout: Cutout, board: CutoutBoard): Partial<
   } else {
     offset = rectOffset(instances.map(getCutoutBounds), board.width, board.depth);
   }
-  if (!offset) return null;
+  if (!offset) return resized;
   const { dx, dy } = offset;
-  if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) return null;
-  const moved: Partial<Cutout> = { x: cutout.x + dx, y: cutout.y + dy };
-  if (cutout.shape === 'path' && cutout.path) {
-    return { ...moved, path: translatePathPoints(cutout.path, dx, dy) };
+  if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) return resized;
+  const moved: Partial<Cutout> = { ...resized, x: base.x + dx, y: base.y + dy };
+  if (base.shape === 'path' && base.path) {
+    return { ...moved, path: translatePathPoints(base.path, dx, dy) };
   }
   return moved;
 }
 
-/** Position updates for every off-board cutout that a clamp can move (empty when none). */
+/**
+ * Updates for every off-board cutout that a clamp can fix (empty when none).
+ * A patch that would still leave the shape off board — an oversized path or
+ * mesh pulled to the origin but overhanging the far edge — is withheld, so an
+ * offered clamp always clears the warning for the cutouts it touches.
+ *
+ * `offBoardIds` lets a caller that already ran the detection scan hand it in
+ * rather than pay for a second pass over every cutout.
+ */
 export function clampOffBoardCutouts(
   cutouts: readonly Cutout[],
-  board: CutoutBoard
+  board: CutoutBoard,
+  offBoardIds: ReadonlySet<string> = getOffBoardCutoutIds(cutouts, board)
 ): Map<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
   for (const c of cutouts) {
-    if (!isCutoutOffBoard(c, board)) continue;
+    if (!offBoardIds.has(c.id)) continue;
     const moved = clampCutoutToBoard(c, board);
-    if (moved) updates.set(c.id, moved);
+    if (moved && !isCutoutOffBoard({ ...c, ...moved }, board)) updates.set(c.id, moved);
   }
   return updates;
 }
