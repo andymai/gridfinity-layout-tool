@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Faca de carne",
   "binDesigner.cutouts.knifePreset.utility": "Faca utilitária",
   "binDesigner.cutouts.knifeSpineThickness": "Dorso",
+  "binDesigner.cutouts.lean": "Inclinação",
+  "binDesigner.cutouts.leanHint": "Inclina o encaixe em torno da abertura para que os objetos deslizem em ângulo. A rotação gira a direção da inclinação.",
   "binDesigner.cutouts.nSelected": "{count} recortes selecionados",
   "binDesigner.cutouts.paste": "Colar",
   "binDesigner.cutouts.pathfinder.emptyResult": "Resultado do Pathfinder vazio — nada para cortar",

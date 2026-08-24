@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "ステーキナイフ",
   "binDesigner.cutouts.knifePreset.utility": "万能ナイフ",
   "binDesigner.cutouts.knifeSpineThickness": "峰",
+  "binDesigner.cutouts.lean": "傾き",
+  "binDesigner.cutouts.leanHint": "開口部を軸にポケットを傾け、物を斜めに差し込めるようにします。回転で傾く方向を変えられます。",
   "binDesigner.cutouts.nSelected": "{count}個の切り欠きを選択中",
   "binDesigner.cutouts.paste": "貼り付け",
   "binDesigner.cutouts.pathfinder.emptyResult": "パスファインダーの結果が空です — 切り取るものがありません",

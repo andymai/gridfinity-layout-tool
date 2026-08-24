@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Ніж для стейка",
   "binDesigner.cutouts.knifePreset.utility": "Універсальний ніж",
   "binDesigner.cutouts.knifeSpineThickness": "Обух",
+  "binDesigner.cutouts.lean": "Нахил",
+  "binDesigner.cutouts.leanHint": "Нахиляє кишеню навколо її отвору, щоб предмети всувалися під кутом. Обертання змінює напрямок нахилу.",
   "binDesigner.cutouts.nSelected": "{count} вирізів виділено",
   "binDesigner.cutouts.paste": "Вставити",
   "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder дав порожній результат — нічого вирізати",

@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Steakový nůž",
   "binDesigner.cutouts.knifePreset.utility": "Univerzální nůž",
   "binDesigner.cutouts.knifeSpineThickness": "Hřbet",
+  "binDesigner.cutouts.lean": "Náklon",
+  "binDesigner.cutouts.leanHint": "Naklopí kapsu kolem jejího otvoru, takže se předměty zasouvají šikmo. Rotace otáčí směr náklonu.",
   "binDesigner.cutouts.nSelected": "{count} vybraných výřezů",
   "binDesigner.cutouts.paste": "Vložit",
   "binDesigner.cutouts.pathfinder.emptyResult": "Výsledek Pathfinderu je prázdný — není co vyříznout",

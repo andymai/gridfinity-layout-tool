@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Coltello da bistecca",
   "binDesigner.cutouts.knifePreset.utility": "Coltello multiuso",
   "binDesigner.cutouts.knifeSpineThickness": "Costa",
+  "binDesigner.cutouts.lean": "Inclinazione",
+  "binDesigner.cutouts.leanHint": "Inclina la tasca attorno alla sua apertura così gli oggetti scivolano dentro in pendenza. La rotazione orienta la direzione dell'inclinazione.",
   "binDesigner.cutouts.nSelected": "{count} ritagli selezionati",
   "binDesigner.cutouts.paste": "Incolla",
   "binDesigner.cutouts.pathfinder.emptyResult": "Il risultato del Pathfinder è vuoto; non resta nulla da tagliare",

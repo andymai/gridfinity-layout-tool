@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Stekkniv",
   "binDesigner.cutouts.knifePreset.utility": "Allkniv",
   "binDesigner.cutouts.knifeSpineThickness": "Rygg",
+  "binDesigner.cutouts.lean": "Lutning",
+  "binDesigner.cutouts.leanHint": "Lutar fickan kring dess öppning så att föremål glider i en sluttning. Rotationen vrider lutningsriktningen.",
   "binDesigner.cutouts.nSelected": "{count} urtag markerade",
   "binDesigner.cutouts.paste": "Klistra in",
   "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultatet är tomt — inget kvar att skära",

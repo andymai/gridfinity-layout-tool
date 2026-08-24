@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Steakmesser",
   "binDesigner.cutouts.knifePreset.utility": "Allzweckmesser",
   "binDesigner.cutouts.knifeSpineThickness": "Rücken",
+  "binDesigner.cutouts.lean": "Neigung",
+  "binDesigner.cutouts.leanHint": "Kippt die Tasche um ihre Öffnung, sodass Gegenstände schräg hineingleiten. Die Drehung bestimmt die Kipprichtung.",
   "binDesigner.cutouts.nSelected": "{count} Ausschnitte ausgewählt",
   "binDesigner.cutouts.paste": "Einfügen",
   "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-Ergebnis ist leer — nichts zu schneiden",

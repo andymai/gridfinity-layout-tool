@@ -28,6 +28,10 @@ export const CONSTRAINTS = {
   // height; this only has to stop a NaN or an absurd number reaching the
   // generator, where it becomes `wallHeight - topOffset`.
   MAX_TOP_OFFSET_MM: 350,
+  // Mirrors MAX_CUTOUT_LEAN_DEG in src/features/bin-designer/types/cutout.ts.
+  // The client clamps at read time too; this stops a NaN or an absurd angle
+  // reaching tan() in the generator's tool-extension math.
+  MAX_CUTOUT_LEAN_DEG: 45,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,
   MAX_DIVIDER_THICKNESS: 2.4,

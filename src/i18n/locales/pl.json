@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Nóż do steków",
   "binDesigner.cutouts.knifePreset.utility": "Nóż uniwersalny",
   "binDesigner.cutouts.knifeSpineThickness": "Grzbiet",
+  "binDesigner.cutouts.lean": "Pochylenie",
+  "binDesigner.cutouts.leanHint": "Pochyla kieszeń wokół jej otworu, dzięki czemu przedmioty wsuwają się ukośnie. Obrót zmienia kierunek pochylenia.",
   "binDesigner.cutouts.nSelected": "Zaznaczono {count} wycięć",
   "binDesigner.cutouts.paste": "Wklej",
   "binDesigner.cutouts.pathfinder.emptyResult": "Wynik pathfindera jest pusty — nic nie zostało do wycięcia",

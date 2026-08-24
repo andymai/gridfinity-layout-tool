@@ -13,6 +13,8 @@ import type {
 } from '@/features/bin-designer/types';
 import {
   CUTOUT_LABEL_MODES,
+  LEAN_SHAPES,
+  MAX_CUTOUT_LEAN_DEG,
   TEXT_MAX_LENGTH,
   withFontSizeOverride,
 } from '@/features/bin-designer/types';
@@ -228,6 +230,25 @@ export function SingleCutoutInspector({
               onUpdate={(patch) => onUpdate(cutout.id, patch)}
               disabled={disabled}
             />
+            {LEAN_SHAPES.includes(cutout.shape) && !throughOnly && (
+              <div className="space-y-0.5">
+                <SliderInput
+                  label={t('binDesigner.cutouts.lean')}
+                  value={cutout.leanDeg ?? 0}
+                  onChange={(leanDeg) =>
+                    onUpdate(cutout.id, { leanDeg: leanDeg === 0 ? undefined : leanDeg })
+                  }
+                  min={-MAX_CUTOUT_LEAN_DEG}
+                  max={MAX_CUTOUT_LEAN_DEG}
+                  step={1}
+                  unit="°"
+                  disabled={disabled}
+                />
+                {(cutout.leanDeg ?? 0) !== 0 && (
+                  <p className="text-[10px] text-text-muted">{t('binDesigner.cutouts.leanHint')}</p>
+                )}
+              </div>
+            )}
             {cutout.shape !== 'mesh' && !throughOnly && (
               <CutoutScoopControls
                 key={cutout.id}

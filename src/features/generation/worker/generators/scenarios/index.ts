@@ -50,6 +50,7 @@ import { dividerPatterns } from './dividerPatterns';
 import { floorPatterns } from './floorPatterns';
 import { knifeBlock } from './knifeBlock';
 import { cutoutRepeatOverlap } from './cutoutRepeatOverlap';
+import { cutoutLean } from './cutoutLean';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -103,4 +104,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...slideTray,
   ...knifeBlock,
   ...cutoutRepeatOverlap,
+  ...cutoutLean,
 ];

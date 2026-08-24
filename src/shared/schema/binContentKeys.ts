@@ -185,6 +185,7 @@ export const CUTOUT_KEYS = [
   'sides',
   'clearance',
   'chamferWidth',
+  'leanDeg',
   'array',
   'engraveLabel',
   'textSide',

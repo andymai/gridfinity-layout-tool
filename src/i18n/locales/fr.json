@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "Couteau à steak",
   "binDesigner.cutouts.knifePreset.utility": "Couteau universel",
   "binDesigner.cutouts.knifeSpineThickness": "Dos",
+  "binDesigner.cutouts.lean": "Inclinaison",
+  "binDesigner.cutouts.leanHint": "Incline la poche autour de son ouverture pour que les objets glissent en pente. La rotation oriente la direction de l'inclinaison.",
   "binDesigner.cutouts.nSelected": "{count} découpes sélectionnées",
   "binDesigner.cutouts.paste": "Coller",
   "binDesigner.cutouts.pathfinder.emptyResult": "Le résultat du Pathfinder est vide — il ne reste rien à couper",

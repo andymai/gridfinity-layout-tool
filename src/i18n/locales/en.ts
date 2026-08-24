@@ -2762,6 +2762,9 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.fillHintFloor':
     'The fill keeps its height, so pocket depths survive a change to the bin height.',
   'binDesigner.cutouts.cornerRadius': 'Corner radius',
+  'binDesigner.cutouts.lean': 'Lean',
+  'binDesigner.cutouts.leanHint':
+    'Tilts the pocket about its opening so items slide in at a slope. Rotation turns the tilt direction.',
   'binDesigner.cutouts.scoopRadius': 'Scoop radius',
   'binDesigner.cutouts.scoopW': 'Scoop W',
   'binDesigner.cutouts.scoopD': 'Scoop D',

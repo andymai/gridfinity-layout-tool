@@ -698,6 +698,15 @@
           },
           "description": "Chamfer width in mm at the cut's mouth."
         },
+        "leanDeg": {
+          "type": "number",
+          "minimum": -45,
+          "maximum": 45,
+          "x-constant": {
+            "maximum": "MAX_CUTOUT_LEAN_DEG"
+          },
+          "description": "Tilt of the pocket's axis off vertical in degrees, about the opening along the shape's local depth axis; cutDepth is measured along the tilted axis. Ignored for mesh and knifeSlot shapes."
+        },
         "array": {
           "$ref": "#/$defs/CutoutArrayConfig"
         },

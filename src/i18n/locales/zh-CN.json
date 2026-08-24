@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "牛排刀",
   "binDesigner.cutouts.knifePreset.utility": "多用刀",
   "binDesigner.cutouts.knifeSpineThickness": "刀背",
+  "binDesigner.cutouts.lean": "倾斜",
+  "binDesigner.cutouts.leanHint": "使凹槽绕其开口倾斜，物品可沿斜面滑入。旋转可改变倾斜方向。",
   "binDesigner.cutouts.nSelected": "已选中 {count} 个挖槽",
   "binDesigner.cutouts.paste": "粘贴",
   "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder 结果为空 — 没有可切割的内容",

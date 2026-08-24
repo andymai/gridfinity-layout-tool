@@ -731,6 +731,8 @@
   "binDesigner.cutouts.knifePreset.steak": "스테이크 나이프",
   "binDesigner.cutouts.knifePreset.utility": "만능칼",
   "binDesigner.cutouts.knifeSpineThickness": "칼등",
+  "binDesigner.cutouts.lean": "기울기",
+  "binDesigner.cutouts.leanHint": "포켓을 입구를 축으로 기울여 물건을 비스듬히 밀어 넣을 수 있게 합니다. 회전으로 기울기 방향을 바꿉니다.",
   "binDesigner.cutouts.nSelected": "컷아웃 {count}개 선택됨",
   "binDesigner.cutouts.paste": "붙여넣기",
   "binDesigner.cutouts.pathfinder.emptyResult": "패스파인더 결과가 비어 있습니다 — 자를 것이 남지 않았습니다",
