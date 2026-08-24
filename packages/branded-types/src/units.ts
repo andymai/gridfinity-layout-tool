@@ -40,8 +40,7 @@ export const heightUnits = (n: number): HeightUnits => n as HeightUnits;
  * is sized so a typed mm height re-displays exactly at the app's two-decimal
  * readouts for every allowed unit size: the snap error is at most
  * step/2 × 20mm (HEIGHT_UNIT_MM_MAX) = 0.001mm, under the 0.005mm a
- * two-decimal display resolves. A coarser step silently rewrites what the
- * user typed (at 0.01u, an 85mm entry reads back as 84.98).
+ * two-decimal display resolves.
  */
 export const HEIGHT_UNIT_STEP = 0.0001;
 
