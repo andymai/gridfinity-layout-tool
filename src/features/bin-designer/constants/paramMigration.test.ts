@@ -1516,6 +1516,35 @@ describe('migrateParams - bento merged leftover (#3748)', () => {
     });
     expect(result.compartments.backgroundIds).toEqual([1]);
   });
+
+  it('keeps a stash entry footprint mask through a load', () => {
+    const result = migrateParams({
+      compartments: compartments({ stash: [{ w: 2, h: 2, cells: [true, true, true, false] }] }),
+    });
+    expect(result.compartments.stash).toEqual([{ w: 2, h: 2, cells: [true, true, true, false] }]);
+  });
+
+  it('drops a mask the server would reject, leaving the rectangle it means', () => {
+    const wrongLength = migrateParams({
+      compartments: compartments({ stash: [{ w: 2, h: 2, cells: [true, false] }] }),
+    });
+    expect(wrongLength.compartments.stash).toEqual([{ w: 2, h: 2 }]);
+
+    const allFilled = migrateParams({
+      compartments: compartments({ stash: [{ w: 2, h: 1, cells: [true, true] }] }),
+    });
+    expect(allFilled.compartments.stash).toEqual([{ w: 2, h: 1 }]);
+
+    const empty = migrateParams({
+      compartments: compartments({ stash: [{ w: 2, h: 1, cells: [false, false] }] }),
+    });
+    expect(empty.compartments.stash).toEqual([{ w: 2, h: 1 }]);
+
+    const notBooleans = migrateParams({
+      compartments: compartments({ stash: [{ w: 2, h: 1, cells: [1, 0] }] }),
+    });
+    expect(notBooleans.compartments.stash).toEqual([{ w: 2, h: 1 }]);
+  });
 });
 
 describe('migrateParams - cutout fill reference (#3697)', () => {

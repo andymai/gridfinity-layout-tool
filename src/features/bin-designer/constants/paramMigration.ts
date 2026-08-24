@@ -1047,6 +1047,22 @@ function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
 }
 
 /**
+ * A stash entry's footprint mask, or undefined for a plain rectangle. Anything
+ * the server would reject — wrong length, non-boolean, empty, all-filled — is
+ * dropped rather than repaired, landing the entry on the rectangle the field's
+ * absence already means.
+ */
+function cleanFootprintMask(mask: unknown, w: number, h: number): boolean[] | undefined {
+  if (!Array.isArray(mask)) return undefined;
+  const cells: unknown[] = mask;
+  if (cells.length !== w * h) return undefined;
+  if (cells.some((cell) => typeof cell !== 'boolean')) return undefined;
+  const filled = cells.filter((cell) => cell === true).length;
+  if (filled === 0 || filled === cells.length) return undefined;
+  return cells as boolean[];
+}
+
+/**
  * Sanitize the Bento workspace fields on load, mirroring the server bounds:
  * stash entries need integer cell footprints within the grid ceiling and a
  * clamped label; `drawnUnitCells` may only mark IDs that are 1×1 in `cells`,
@@ -1075,9 +1091,15 @@ function migrateBentoCompartmentFields(config: CompartmentConfig): CompartmentCo
       );
     })
     .slice(0, DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES)
-    .map(({ w, h, label }) => {
+    .map(({ w, h, cells, label }) => {
       const clamped = typeof label === 'string' ? label.slice(0, TEXT_MAX_LENGTH) : '';
-      return { w, h, ...(clamped.length > 0 ? { label: clamped } : {}) };
+      const mask = cleanFootprintMask(cells, w, h);
+      return {
+        w,
+        h,
+        ...(mask ? { cells: mask } : {}),
+        ...(clamped.length > 0 ? { label: clamped } : {}),
+      };
     });
 
   const counts = new Map<number, number>();

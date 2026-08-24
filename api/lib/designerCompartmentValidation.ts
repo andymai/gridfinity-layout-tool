@@ -395,6 +395,31 @@ export function validateCompartments(compartments: unknown): string | null {
       ) {
         return `compartments.stash[${i}].h must be integer 1-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
       }
+      // Footprint mask for a merged (non-rectangular) shape. An all-true mask
+      // is rejected rather than tolerated: absent IS the rectangle, and two
+      // encodings of one shape would give the same design two fingerprints.
+      if (entry.cells !== undefined) {
+        if (!Array.isArray(entry.cells)) {
+          return `compartments.stash[${i}].cells must be an array`;
+        }
+        const mask = entry.cells as unknown[];
+        if (mask.length !== entry.w * entry.h) {
+          return `compartments.stash[${i}].cells length must equal w × h (${entry.w * entry.h})`;
+        }
+        let filled = 0;
+        for (let c = 0; c < mask.length; c++) {
+          if (typeof mask[c] !== 'boolean') {
+            return `compartments.stash[${i}].cells[${c}] must be a boolean`;
+          }
+          if (mask[c] === true) filled++;
+        }
+        if (filled === 0) {
+          return `compartments.stash[${i}].cells must fill at least one cell`;
+        }
+        if (filled === mask.length) {
+          return `compartments.stash[${i}].cells must be omitted when every cell is filled`;
+        }
+      }
       if (entry.label !== undefined) {
         if (typeof entry.label !== 'string') {
           return `compartments.stash[${i}].label must be a string`;
