@@ -1,0 +1,20 @@
+src/test/setup-dom.ts
+  s_a0224d4b47664d::t_fb2841d0ae975a 7,10-13
+  s_a0224d4b47664d::t_66edd2602e2ee9 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "3415f0f3e57763481707ef7c4ebecb8f9a4c669f",
+  "prompts": {},
+  "sessions": {
+    "s_a0224d4b47664d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "98eed91c-49ff-442f-bf9c-fb8ee6cf4c3c",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
