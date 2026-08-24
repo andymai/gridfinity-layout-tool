@@ -26,6 +26,7 @@ import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan
 import { useCutoutInteraction } from '../panel/CutoutsSection/useCutoutInteraction';
 import {
   getOffBoardCutoutIds,
+  centerOffBoardCutouts,
   clampOffBoardCutouts,
 } from '../panel/CutoutsSection/offBoardCutouts';
 import { computeGrowToFit } from '../panel/CutoutsSection/growBinToFit';
@@ -338,6 +339,20 @@ export function CutoutWorkspace() {
   const handleClampOffBoard = useCallback(() => {
     if (offBoardUpdates.size > 0) updateCutoutsBatch(offBoardUpdates);
   }, [offBoardUpdates, updateCutoutsBatch]);
+
+  // Same shape of contract as the clamp above: empty means centering cannot
+  // clear the warning, and the action is hidden rather than offered inert.
+  const centerUpdates = useMemo(
+    () =>
+      offBoardIds.size > 0
+        ? centerOffBoardCutouts(cutouts, cutoutBoard, offBoardIds)
+        : new Map<string, Partial<Cutout>>(),
+    [offBoardIds, cutouts, cutoutBoard]
+  );
+
+  const handleCenterOffBoard = useCallback(() => {
+    if (centerUpdates.size > 0) updateCutoutsBatch(centerUpdates);
+  }, [centerUpdates, updateCutoutsBatch]);
 
   const {
     mode,
@@ -707,6 +722,7 @@ export function CutoutWorkspace() {
           onFlattenArray={handleFlattenArray}
           offBoardCount={offBoardIds.size}
           onClampOffBoard={offBoardUpdates.size > 0 ? handleClampOffBoard : undefined}
+          onCenterOffBoard={centerUpdates.size > 0 ? handleCenterOffBoard : undefined}
           depthShortfallCount={depthShortfallCount}
           growTarget={growTarget}
           onGrowToFit={handleGrowToFit}

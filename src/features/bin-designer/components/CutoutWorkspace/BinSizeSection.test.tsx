@@ -141,6 +141,57 @@ describe('BinSizeSection', () => {
     );
   });
 
+  describe('center action', () => {
+    const CENTER = 'binDesigner.cutouts.centerInBin';
+
+    it('offers centering alongside the clamp when it can clear the warning', () => {
+      const onCenter = vi.fn();
+      render(
+        <BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} onCenterOffBoard={onCenter} />
+      );
+      fireEvent.click(screen.getByText(CENTER));
+      expect(onCenter).toHaveBeenCalledTimes(1);
+    });
+
+    // Absent handler is the whole guard against duplicating "Bring back in":
+    // the workspace withholds it unless centering actually fixes every stray.
+    it('stays out of the panel when centering cannot clear the warning', () => {
+      render(<BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} />);
+      expect(screen.getByText(`${K}.bringBackIn`)).toBeInTheDocument();
+      expect(screen.queryByText(CENTER)).not.toBeInTheDocument();
+    });
+
+    it('never appears without a warning to attach to', () => {
+      render(<BinSizeSection offBoardCount={0} onCenterOffBoard={vi.fn()} />);
+      expect(screen.queryByText(CENTER)).not.toBeInTheDocument();
+    });
+
+    // Grow changes the part; center and clamp only move shapes, and center is
+    // the gentler of the two.
+    it('sits between growing the bin and clamping to the edge', () => {
+      render(
+        <BinSizeSection
+          offBoardCount={1}
+          onClampOffBoard={vi.fn()}
+          onCenterOffBoard={vi.fn()}
+          growTarget={{ width: 4, depth: 3 }}
+          onGrowToFit={vi.fn()}
+        />
+      );
+      const labels = screen.getAllByRole('button').map((b) => b.textContent);
+      const center = labels.indexOf(CENTER);
+      expect(center).toBeGreaterThan(
+        labels.indexOf(tk(`${K}.growBinToFit`, { width: 4, depth: 3 }))
+      );
+      expect(center).toBeLessThan(labels.indexOf(`${K}.bringBackIn`));
+    });
+
+    it('lets its label wrap in the narrow dock like its siblings', () => {
+      render(<BinSizeSection offBoardCount={1} onCenterOffBoard={vi.fn()} />);
+      expect(screen.getByText(CENTER)).toHaveClass('h-auto', 'whitespace-normal');
+    });
+  });
+
   // The dock narrows to 220px and 7 of 15 locales overrun the label there, so a
   // fixed-height button would clip the second line.
   it('lets the action labels wrap instead of clipping', () => {

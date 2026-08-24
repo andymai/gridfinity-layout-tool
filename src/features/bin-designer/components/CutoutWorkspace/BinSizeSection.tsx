@@ -25,6 +25,13 @@ interface BinSizeSectionProps {
   /** Clamp every off-board cutout back inside the board. */
   readonly onClampOffBoard?: () => void;
   /**
+   * Center every off-board cutout on the board as one block. Absent when
+   * centering would not clear the warning, which is what keeps this from
+   * duplicating the clamp: it is offered only for a shape that fits the board
+   * and is merely sitting in the wrong place.
+   */
+  readonly onCenterOffBoard?: () => void;
+  /**
    * Bin size that would fit every stray, or `null` when growing can't clear the
    * warning (past `MAX_DIMENSION`, a custom footprint, or a stray hanging past
    * the origin edge). `null` hides the action rather than growing partway, and
@@ -42,6 +49,7 @@ interface BinSizeSectionProps {
 export function BinSizeSection({
   offBoardCount,
   onClampOffBoard,
+  onCenterOffBoard,
   growTarget,
   onGrowToFit,
   depthShortfallCount = 0,
@@ -83,6 +91,22 @@ export function BinSizeSection({
                   width: growTarget.width,
                   depth: growTarget.depth,
                 })}
+              </Button>
+            )}
+            {/* Between the two: growing changes the part, centering and
+                clamping both only move shapes, and centering is the gentler of
+                those — it keeps the strays' arrangement instead of pinning
+                them to an edge. */}
+            {onCenterOffBoard && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                fullWidth
+                className={WRAPPING_ACTION}
+                onClick={onCenterOffBoard}
+              >
+                {t('binDesigner.cutouts.centerInBin')}
               </Button>
             )}
             {onClampOffBoard && (

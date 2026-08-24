@@ -7,6 +7,7 @@ import {
   getOffBoardCutoutIds,
   clampCutoutToBoard,
   clampOffBoardCutouts,
+  centerOffBoardCutouts,
 } from './offBoardCutouts';
 
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
@@ -417,6 +418,85 @@ describe('clampOffBoardCutouts', () => {
       clampOffBoardCutouts([tooBig], { width: 100, depth: 100, mask: mask, cellSize: cellSize })
         .size
     ).toBe(0);
+  });
+});
+
+describe('centerOffBoardCutouts', () => {
+  const board = { width: BIN_W, depth: BIN_D };
+
+  it('centers a single stray and leaves it on the board', () => {
+    const stray = createCutout({ id: 'out', x: 95, y: 75, width: 20, depth: 20 });
+    const updates = centerOffBoardCutouts([stray], board);
+    expect(updates.get('out')).toEqual({ x: 40, y: 30 });
+    expect(isCutoutOffBoard({ ...stray, ...updates.get('out') }, board)).toBe(false);
+  });
+
+  it('leaves cutouts already on the board untouched', () => {
+    const inside = createCutout({ id: 'in', x: 10, y: 10 });
+    const stray = createCutout({ id: 'out', x: 95, y: 75 });
+    expect([...centerOffBoardCutouts([inside, stray], board).keys()]).toEqual(['out']);
+  });
+
+  // The whole reason this is not "center each stray": concentric stacking would
+  // destroy an arrangement the user built.
+  it('moves several strays by ONE delta, preserving their spacing', () => {
+    const a = createCutout({ id: 'a', x: 105, y: 85, width: 10, depth: 10 });
+    const b = createCutout({ id: 'b', x: 125, y: 85, width: 10, depth: 10 });
+    const updates = centerOffBoardCutouts([a, b], board);
+    expect([...updates.keys()].sort()).toEqual(['a', 'b']);
+    const moved = (id: string, c: Cutout) => ({ ...c, ...updates.get(id) });
+    const ma = moved('a', a);
+    const mb = moved('b', b);
+    expect(mb.x - ma.x).toBe(b.x - a.x);
+    expect(mb.y - ma.y).toBe(b.y - a.y);
+    for (const m of [ma, mb]) expect(isCutoutOffBoard(m, board)).toBe(false);
+  });
+
+  it('withholds everything when centering cannot rescue every stray', () => {
+    // Wider than the board: centered, it still overhangs both edges, so the
+    // action is hidden rather than moving the other stray for nothing.
+    const oversized = createCutout({ id: 'big', x: 5, y: 10, width: 500, depth: 20 });
+    const small = createCutout({ id: 'small', x: 95, y: 75 });
+    expect(centerOffBoardCutouts([oversized, small], board).size).toBe(0);
+  });
+
+  it('returns an empty map when nothing is stranded', () => {
+    expect(centerOffBoardCutouts([createCutout()], board).size).toBe(0);
+  });
+
+  it('carries a path cutout vertices along with its origin', () => {
+    const stray = createCutout({
+      id: 'path',
+      shape: 'path',
+      x: 90,
+      y: 70,
+      width: 20,
+      depth: 20,
+      path: [corner(90, 70), corner(110, 70), corner(110, 90)],
+    });
+    const update = centerOffBoardCutouts([stray], board).get('path');
+    expect(update?.path).toBeDefined();
+    expect(isCutoutOffBoard({ ...stray, ...update }, board)).toBe(false);
+  });
+
+  it('measures an array by every instance, not just its master', () => {
+    const stray = createCutout({
+      id: 'arr',
+      x: 70,
+      y: 60,
+      width: 10,
+      depth: 10,
+      array: gridArray(3, 1, 20, 0),
+    });
+    const update = centerOffBoardCutouts([stray], board).get('arr');
+    expect(update).toBeDefined();
+    expect(isCutoutOffBoard({ ...stray, ...update }, board)).toBe(false);
+  });
+
+  it('honours a supplied id set rather than rescanning', () => {
+    const a = createCutout({ id: 'a', x: 95, y: 75 });
+    const b = createCutout({ id: 'b', x: 99, y: 79 });
+    expect([...centerOffBoardCutouts([a, b], board, new Set(['a'])).keys()]).toEqual(['a']);
   });
 });
 

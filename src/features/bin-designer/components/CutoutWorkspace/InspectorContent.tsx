@@ -62,6 +62,8 @@ interface InspectorContentProps {
   readonly depthShortfallCount?: number;
   /** Clamp every off-board cutout back inside the board. */
   readonly onClampOffBoard?: () => void;
+  /** Center every off-board cutout as one block. */
+  readonly onCenterOffBoard?: () => void;
   /** Bin size that would fit every stray, or `null` when growing can't clear it. */
   readonly growTarget?: GrowTarget | null;
   /** Resize the bin to {@link growTarget}. */
@@ -128,6 +130,7 @@ export function InspectorContent({
   offBoardCount = 0,
   depthShortfallCount = 0,
   onClampOffBoard,
+  onCenterOffBoard,
   growTarget,
   onGrowToFit,
 }: InspectorContentProps) {
@@ -156,6 +159,7 @@ export function InspectorContent({
       <BinSizeSection
         offBoardCount={offBoardCount}
         onClampOffBoard={onClampOffBoard}
+        onCenterOffBoard={onCenterOffBoard}
         depthShortfallCount={depthShortfallCount}
         growTarget={growTarget}
         onGrowToFit={onGrowToFit}
