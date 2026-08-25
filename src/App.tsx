@@ -38,6 +38,7 @@ import { DragPreview } from '@/shell/DragPreview';
 import { ToastContainer } from '@/shared/components/Toast';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { BackgroundMountBoundary } from '@/shell/BackgroundMountBoundary';
 import { BinContextMenuWrapper } from '@/shell/Mobile/BinContextMenuWrapper';
 import { TabletPanelOverlay, TabletPanelTriggers } from '@/shell/Tablet';
 import { LiveRegion } from '@/shell/LiveRegion';
@@ -392,11 +393,15 @@ export default function App() {
         <Suspense fallback={null}>
           <DesignLinkingDialogs />
         </Suspense>
-        {/* Own boundary so planner baseplate resolution isn't gated on the
-            unrelated design-linking chunk loading. */}
-        <Suspense fallback={null}>
-          <BaseplateLibraryInitMount />
-        </Suspense>
+        {/* Own Suspense so planner baseplate resolution isn't gated on the
+            unrelated design-linking chunk loading, and its own boundary so a
+            chunk that never arrives costs the margin resolution rather than
+            the app. */}
+        <BackgroundMountBoundary mountName="BaseplateLibraryInitMount">
+          <Suspense fallback={null}>
+            <BaseplateLibraryInitMount />
+          </Suspense>
+        </BackgroundMountBoundary>
       </>
     );
     if (isCollaborative && shareId) {
@@ -539,9 +544,11 @@ export default function App() {
           })()}
 
           {hasShareUrl && (
-            <Suspense fallback={null}>
-              <SharedLayoutImporter />
-            </Suspense>
+            <BackgroundMountBoundary mountName="SharedLayoutImporter">
+              <Suspense fallback={null}>
+                <SharedLayoutImporter />
+              </Suspense>
+            </BackgroundMountBoundary>
           )}
         </div>
       );
@@ -611,9 +618,11 @@ export default function App() {
 
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (
-          <Suspense fallback={null}>
-            <SharedLayoutImporter />
-          </Suspense>
+          <BackgroundMountBoundary mountName="SharedLayoutImporter">
+            <Suspense fallback={null}>
+              <SharedLayoutImporter />
+            </Suspense>
+          </BackgroundMountBoundary>
         )}
       </div>
     );
@@ -641,9 +650,11 @@ export default function App() {
       <DesignStoreRegistration />
       <LinkedRiseRegistration />
       {cloudSyncEnabled && (
-        <Suspense fallback={null}>
-          <LazySyncSessionMount />
-        </Suspense>
+        <BackgroundMountBoundary mountName="SyncSessionMount">
+          <Suspense fallback={null}>
+            <LazySyncSessionMount />
+          </Suspense>
+        </BackgroundMountBoundary>
       )}
       {routeContent}
       <ToastContainer />
