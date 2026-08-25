@@ -19,6 +19,7 @@ import { useLineMaterialResolution } from '../useLineMaterialResolution';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
   calculateSlotPositions,
+  dividerInterior,
   getEffectiveSlotDimensions,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
@@ -44,6 +45,8 @@ export function GhostSlotLines() {
     dividerPieces,
     hasLip,
     generationStatus,
+    overhang,
+    cellMask,
   } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
@@ -58,13 +61,20 @@ export function GhostSlotLines() {
       dividerPieces: s.params.dividerPieces,
       hasLip: s.params.base.stackingLip,
       generationStatus: s.generation.status,
+      overhang: s.params.overhang,
+      cellMask: s.params.cellMask,
     }))
   );
 
-  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { innerW, innerD, offsetX, offsetY } = dividerInterior({
+    width,
+    depth,
+    gridUnitMm,
+    gridUnitMmY,
+    wallThickness,
+    overhang,
+    cellMask,
+  });
   const totalH = height * heightUnitMm;
   const topZ = totalH;
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
@@ -89,14 +99,26 @@ export function GhostSlotLines() {
       dividerPieces.clearance
     );
 
+    // Slot positions are relative to the cavity center; an asymmetric overhang
+    // moves that center off scene origin, which stays the nominal footprint's.
+    const cx = (v: number): number => v + offsetX;
+    const cy = (v: number): number => v + offsetY;
+
     // X-axis slots on left/right walls
     if (slotConfig.x.enabled) {
       const yPositions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
       for (const yPos of yPositions) {
         // Left wall: short line segment perpendicular to wall
-        positions.push(-innerW / 2 - slotDepth, yPos, topZ, -innerW / 2, yPos, topZ);
+        positions.push(
+          cx(-innerW / 2 - slotDepth),
+          cy(yPos),
+          topZ,
+          cx(-innerW / 2),
+          cy(yPos),
+          topZ
+        );
         // Right wall
-        positions.push(innerW / 2, yPos, topZ, innerW / 2 + slotDepth, yPos, topZ);
+        positions.push(cx(innerW / 2), cy(yPos), topZ, cx(innerW / 2 + slotDepth), cy(yPos), topZ);
       }
     }
 
@@ -105,9 +127,16 @@ export function GhostSlotLines() {
       const xPositions = calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang);
       for (const xPos of xPositions) {
         // Front wall
-        positions.push(xPos, -innerD / 2 - slotDepth, topZ, xPos, -innerD / 2, topZ);
+        positions.push(
+          cx(xPos),
+          cy(-innerD / 2 - slotDepth),
+          topZ,
+          cx(xPos),
+          cy(-innerD / 2),
+          topZ
+        );
         // Back wall
-        positions.push(xPos, innerD / 2, topZ, xPos, innerD / 2 + slotDepth, topZ);
+        positions.push(cx(xPos), cy(innerD / 2), topZ, cx(xPos), cy(innerD / 2 + slotDepth), topZ);
       }
     }
 
@@ -121,6 +150,8 @@ export function GhostSlotLines() {
     slotConfig,
     innerW,
     innerD,
+    offsetX,
+    offsetY,
     wallThickness,
     topZ,
     lipOverhang,

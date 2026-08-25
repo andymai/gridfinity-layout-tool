@@ -29,6 +29,7 @@ import {
   getEffectiveSlotDimensions,
   getReceptacleDepth,
   resolveCrossDividerMode,
+  dividerInterior,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 
@@ -118,6 +119,8 @@ export function GhostDividerPieces() {
     hasLip,
     base,
     lid,
+    overhang,
+    cellMask,
   } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
@@ -133,13 +136,20 @@ export function GhostDividerPieces() {
       hasLip: s.params.base.stackingLip,
       base: s.params.base,
       lid: s.params.lid,
+      overhang: s.params.overhang,
+      cellMask: s.params.cellMask,
     }))
   );
 
-  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { outerW, outerD, innerW, innerD, offsetX, offsetY } = dividerInterior({
+    width,
+    depth,
+    gridUnitMm,
+    gridUnitMmY,
+    wallThickness,
+    overhang,
+    cellMask,
+  });
   const totalH = height * heightUnitMm;
   const wallHeight = baseWallHeight(base, totalH);
   // Socketed bases are translated up by SOCKET_HEIGHT in preview, placing the
@@ -188,8 +198,10 @@ export function GhostDividerPieces() {
     const crossMode = resolveCrossDividerMode(slotConfig, thickness);
     const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
     const boxZ = floorZ + dividerHeight / 2;
+    // Slot positions are relative to the cavity center; an asymmetric overhang
+    // moves that center off scene origin, which stays the nominal footprint's.
     const at = (x: number, y: number): THREE.Matrix4 =>
-      new THREE.Matrix4().makeTranslation(x, y, boxZ);
+      new THREE.Matrix4().makeTranslation(x + offsetX, y + offsetY, boxZ);
 
     const boxes: { w: number; d: number; h: number; matrix: THREE.Matrix4 }[] = [];
 
@@ -265,6 +277,8 @@ export function GhostDividerPieces() {
     dividerPieces,
     innerW,
     innerD,
+    offsetX,
+    offsetY,
     wallThickness,
     wallHeight,
     hasLip,
@@ -396,8 +410,8 @@ export function GhostDividerPieces() {
       const crossPitch = axis === 'x' ? slotConfig.y.pitch : slotConfig.x.pitch;
       const basePosition: [number, number, number] =
         axis === 'x'
-          ? [0, outerD / 2 + REFERENCE_GAP, floorZ + dividerHeight / 2]
-          : [outerW / 2 + REFERENCE_GAP, 0, floorZ + dividerHeight / 2];
+          ? [offsetX, offsetY + outerD / 2 + REFERENCE_GAP, floorZ + dividerHeight / 2]
+          : [offsetX + outerW / 2 + REFERENCE_GAP, offsetY, floorZ + dividerHeight / 2];
       const stackStep: [number, number] = axis === 'x' ? [0, thickness + 5] : [thickness + 5, 0];
       const rotation: [number, number, number] = axis === 'x' ? [0, 0, 0] : [0, 0, Math.PI / 2];
       const notchFromTop = axis === 'x';
@@ -447,6 +461,8 @@ export function GhostDividerPieces() {
     innerD,
     outerW,
     outerD,
+    offsetX,
+    offsetY,
     wallThickness,
     dividerHeight,
     floorZ,

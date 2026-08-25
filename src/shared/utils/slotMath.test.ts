@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import type { SlotConfig } from '@/shared/types/bin';
+import type { BinParams, SlotConfig } from '@/shared/types/bin';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import {
   calculateSlotPositions,
+  dividerInterior,
   calculateDividerHeight,
   calculateDividerLength,
   calculateShortDividerLengths,
@@ -448,5 +450,62 @@ describe('slottedWalls', () => {
   it('reports all walls slot-free when a custom grid is fully merged', () => {
     const merged = cfg({ layout: 'custom', customGrid: { cols: 2, rows: 2, cells: [0, 0, 0, 0] } });
     expect(slottedWalls(merged)).toEqual({ front: false, back: false, left: false, right: false });
+  });
+});
+
+describe('dividerInterior', () => {
+  const base: BinParams = { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2 };
+
+  it('matches the nominal interior when there is no overhang', () => {
+    const { innerW, innerD, offsetX, offsetY } = dividerInterior(base);
+    expect(innerW).toBeCloseTo(3 * base.gridUnitMm - 0.5 - 2 * base.wallThickness, 5);
+    expect(innerD).toBeCloseTo(2 * base.gridUnitMm - 0.5 - 2 * base.wallThickness, 5);
+    expect(offsetX).toBe(0);
+    expect(offsetY).toBe(0);
+  });
+
+  it('expands the interior by the per-side overhang so pieces reach the slots', () => {
+    const nominal = dividerInterior(base);
+    const expanded = dividerInterior({
+      ...base,
+      overhang: { enabled: true, left: 4, right: 6, front: 3, back: 0 },
+    });
+    expect(expanded.innerW).toBeCloseTo(nominal.innerW + 10, 5);
+    expect(expanded.innerD).toBeCloseTo(nominal.innerD + 3, 5);
+    expect(expanded.outerW).toBeCloseTo(nominal.outerW + 10, 5);
+  });
+
+  it('shifts the cavity center when opposite sides differ', () => {
+    const { offsetX, offsetY } = dividerInterior({
+      ...base,
+      overhang: { enabled: true, left: 4, right: 6, front: 3, back: 0 },
+    });
+    expect(offsetX).toBeCloseTo(1, 5); // (6 - 4) / 2
+    expect(offsetY).toBeCloseTo(-1.5, 5); // (0 - 3) / 2
+  });
+
+  it('ignores overhang when disabled', () => {
+    const disabled = dividerInterior({
+      ...base,
+      overhang: { enabled: false, left: 4, right: 6, front: 3, back: 2 },
+    });
+    expect(disabled.innerW).toBeCloseTo(dividerInterior(base).innerW, 5);
+  });
+
+  it('suppresses overhang under a partial cell mask, as the body does', () => {
+    const masked = dividerInterior({
+      ...base,
+      overhang: { enabled: true, left: 4, right: 6, front: 3, back: 2 },
+      // Half-bin resolution: a 3x2 bin is a 6x4 mask. One empty cell is enough
+      // to make it partial.
+      cellMask: { cols: 6, rows: 4, cells: [...Array(23).fill(1), 0] as (0 | 1)[] },
+    });
+    expect(masked.innerW).toBeCloseTo(dividerInterior(base).innerW, 5);
+    expect(masked.offsetX).toBe(0);
+  });
+
+  it('uses the Y pitch on a non-square grid', () => {
+    const { innerD } = dividerInterior({ ...base, gridUnitMmY: 22 });
+    expect(innerD).toBeCloseTo(2 * 22 - 0.5 - 2 * base.wallThickness, 5);
   });
 });

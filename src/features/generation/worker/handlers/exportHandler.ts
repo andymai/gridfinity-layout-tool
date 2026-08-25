@@ -17,7 +17,7 @@ import type {
   ExportCombinedMessage,
   CombinedExportPiece,
 } from '../../bridge/types';
-import { slottedHasDividers } from '@/shared/utils/slotMath';
+import { dividerInterior, slottedHasDividers } from '@/shared/utils/slotMath';
 import { exportBin } from '../generators/binGenerator';
 import { deriveDimensions } from '../generators/pipeline/context';
 import { getLastSolid } from '../generators/shapeCache';
@@ -28,7 +28,6 @@ import { exportLabelPlates } from '../generators/labelPlateBuilder';
 import { exportLabelFitSample } from '../generators/labelFitSample';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
-import { pitchFromParams } from '../generators/gridPitch';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
 import { slideLidPlanForParams } from '@/shared/types/bin';
 import {
@@ -47,7 +46,6 @@ import { exportFitTestSlice } from '../generators/fitTestSlice';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
-import { GRIDFINITY } from '@/shared/constants/bin';
 import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/shared/types/bin';
 import { hasDetachableFeet, shouldGenerateLid } from '@/shared/types/bin';
 import {
@@ -317,13 +315,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const binSolid = getLastSolid();
         if (!binSolid) throw new Error('Failed to get bin solid for compound assembly');
 
-        // Y axis uses gridUnitMmY when set (non-square grid); equal to X for
-        // square grids — matches the STL divider path in dividerExport.ts.
-        const { x: unitX, y: unitY } = pitchFromParams(params);
-        const outerW = params.width * unitX - GRIDFINITY.TOLERANCE;
-        const outerD = params.depth * unitY - GRIDFINITY.TOLERANCE;
-        const innerW = outerW - 2 * params.wallThickness;
-        const innerD = outerD - 2 * params.wallThickness;
+        const { innerW, innerD } = dividerInterior(params);
         const stepDims = deriveDimensions(params, true);
         const wallHeight = stepDims.wallHeight;
         const hasLip = params.base.stackingLip;
