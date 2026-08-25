@@ -1,0 +1,23 @@
+src/features/bin-designer/sync/designAdapter.ts
+  s_bc329c5b63b656::t_0318fb00feff89 16,238-247,254-256,289-294
+  s_bc329c5b63b656::t_b559f9fe4be939 295
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_bc329c5b63b656::t_57907f3c34d3eb 11,18,671-746
+  s_bc329c5b63b656::t_3212cd23a9256e 747-749
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "c3c273b421e2533d6c7e9e316b901d5456b7b9b6",
+  "prompts": {},
+  "sessions": {
+    "s_bc329c5b63b656": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f730b687-7a9c-4f6f-88f9-0d7f7583a9ef",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
