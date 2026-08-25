@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 import { render, screen, waitFor } from '@testing-library/react';
 import { Suspense, Component, type ReactNode, type ComponentType } from 'react';
+
+vi.mock('@/shared/pwa/staleRecovery', () => ({ recoverStaleBundle: vi.fn() }));
+const mockRecover = vi.mocked(recoverStaleBundle);
 
 const MockComponent: ComponentType = () => <div data-testid="mock-component">Loaded</div>;
 MockComponent.displayName = 'MockComponent';
@@ -26,31 +30,17 @@ class ErrorBoundary extends Component<
 }
 
 describe('lazyWithRetry', () => {
-  let originalLocation: Location;
-  let mockReload: ReturnType<typeof vi.fn>;
-
   beforeEach(() => {
-    // Clear sessionStorage before each test
     sessionStorage.clear();
     // Mock console.warn to prevent noise
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-    // Save and mock window.location
-    originalLocation = window.location;
-    mockReload = vi.fn();
-    Object.defineProperty(window, 'location', {
-      value: Object.assign({}, originalLocation, { reload: mockReload }),
-      writable: true,
-    });
+    // Default: recovery is available and takes over (the page is reloading).
+    mockRecover.mockReset();
+    mockRecover.mockResolvedValue(true);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    // Restore original location
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-    });
   });
 
   describe('API contract', () => {
@@ -73,7 +63,7 @@ describe('lazyWithRetry', () => {
       expect(() => lazyWithRetry(importFn, 0)).not.toThrow();
     });
 
-    it('accepts reloadOnFinalFailure option', () => {
+    it('accepts recoverOnFinalFailure option', () => {
       const importFn = vi.fn().mockResolvedValue({ default: MockComponent });
 
       // Should not throw with either option
@@ -190,7 +180,7 @@ describe('lazyWithRetry', () => {
     });
   });
 
-  describe('final failure with reload', () => {
+  describe('final failure with recovery', () => {
     beforeEach(() => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
     });
@@ -199,7 +189,7 @@ describe('lazyWithRetry', () => {
       vi.useRealTimers();
     });
 
-    it('reloads page when all retries exhausted', async () => {
+    it('recovers the stale bundle when all retries are exhausted', async () => {
       const importFn = vi.fn().mockRejectedValue(new Error('Chunk permanently unavailable'));
 
       const LazyComponent = lazyWithRetry(importFn, 1, true);
@@ -219,11 +209,11 @@ describe('lazyWithRetry', () => {
       });
 
       await waitFor(() => {
-        expect(mockReload).toHaveBeenCalled();
+        expect(mockRecover).toHaveBeenCalledWith('chunk_load_failure');
       });
     });
 
-    it('sets sessionStorage flag before reload', async () => {
+    it('does not drop the wasm cache, which a chunk miss does not implicate', async () => {
       const importFn = vi.fn().mockRejectedValue(new Error('Chunk permanently unavailable'));
 
       const LazyComponent = lazyWithRetry(importFn, 0, true);
@@ -237,22 +227,38 @@ describe('lazyWithRetry', () => {
       await vi.advanceTimersByTimeAsync(100);
 
       await waitFor(() => {
-        expect(mockReload).toHaveBeenCalled();
+        expect(mockRecover).toHaveBeenCalled();
       });
-
-      // Check that session flag was set
-      const keys = Object.keys(sessionStorage);
-      const chunkReloadKey = keys.find((k) => k.startsWith('chunk-reload-'));
-      expect(chunkReloadKey).toBeDefined();
-      expect(sessionStorage.getItem(chunkReloadKey!)).toBe('true');
+      expect(mockRecover.mock.calls[0]?.[1]?.dropWasmCache).toBeUndefined();
     });
 
-    it('does not reload if already reloaded (prevents infinite loop)', async () => {
-      const importFn = vi.fn().mockRejectedValue(new Error('Still failing'));
+    it('stays suspended while the recovery reload takes over', async () => {
+      const importFn = vi.fn().mockRejectedValue(new Error('Chunk permanently unavailable'));
 
-      // Pre-set the session key to simulate previous reload
-      const sessionKey = `chunk-reload-${importFn.toString().slice(0, 100)}`;
-      sessionStorage.setItem(sessionKey, 'true');
+      const LazyComponent = lazyWithRetry(importFn, 0, true);
+
+      render(
+        <ErrorBoundary fallback={<div data-testid="error">Error occurred</div>}>
+          <Suspense fallback={<div data-testid="loading">Loading...</div>}>
+            <LazyComponent />
+          </Suspense>
+        </ErrorBoundary>
+      );
+
+      await vi.advanceTimersByTimeAsync(100);
+
+      await waitFor(() => {
+        expect(mockRecover).toHaveBeenCalled();
+      });
+      // Never surfaces an error boundary: the page is on its way to reloading.
+      expect(screen.queryByTestId('error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+    });
+
+    it('throws when recovery declines, so the boundary can report it', async () => {
+      // Declined because one already ran this tab session, or the client is offline.
+      mockRecover.mockResolvedValue(false);
+      const importFn = vi.fn().mockRejectedValue(new Error('Still failing'));
 
       const LazyComponent = lazyWithRetry(importFn, 0, true);
 
@@ -269,39 +275,10 @@ describe('lazyWithRetry', () => {
       await waitFor(() => {
         expect(screen.getByTestId('error')).toBeInTheDocument();
       });
-
-      // Should NOT reload since session flag exists
-      expect(mockReload).not.toHaveBeenCalled();
-    });
-
-    it('clears session flag when throwing instead of reloading', async () => {
-      const importFn = vi.fn().mockRejectedValue(new Error('Failing'));
-
-      const sessionKey = `chunk-reload-${importFn.toString().slice(0, 100)}`;
-      sessionStorage.setItem(sessionKey, 'true');
-
-      const LazyComponent = lazyWithRetry(importFn, 0, true);
-
-      render(
-        <ErrorBoundary fallback={<div data-testid="error">Error</div>}>
-          <Suspense fallback={<div>Loading...</div>}>
-            <LazyComponent />
-          </Suspense>
-        </ErrorBoundary>
-      );
-
-      await vi.advanceTimersByTimeAsync(100);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('error')).toBeInTheDocument();
-      });
-
-      // Session flag should be cleared for next time
-      expect(sessionStorage.getItem(sessionKey)).toBeNull();
     });
   });
 
-  describe('final failure without reload', () => {
+  describe('final failure without recovery', () => {
     beforeEach(() => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
     });
@@ -310,7 +287,7 @@ describe('lazyWithRetry', () => {
       vi.useRealTimers();
     });
 
-    it('throws error when reloadOnFinalFailure is false', async () => {
+    it('throws error when recoverOnFinalFailure is false', async () => {
       const importFn = vi.fn().mockRejectedValue(new Error('Chunk unavailable'));
 
       const LazyComponent = lazyWithRetry(importFn, 0, false);
@@ -329,7 +306,7 @@ describe('lazyWithRetry', () => {
         expect(screen.getByTestId('error')).toBeInTheDocument();
       });
 
-      expect(mockReload).not.toHaveBeenCalled();
+      expect(mockRecover).not.toHaveBeenCalled();
     });
   });
 });

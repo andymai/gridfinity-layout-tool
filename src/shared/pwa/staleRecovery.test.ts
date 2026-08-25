@@ -49,16 +49,51 @@ afterEach(() => {
 });
 
 describe('recoverStaleBundle', () => {
-  it('clears precache + wasm caches, unregisters SWs, and reloads', async () => {
+  it('clears the precache, unregisters SWs, and reloads', async () => {
     const started = await recoverStaleBundle('wasm_load_failure');
 
     expect(started).toBe(true);
-    // Drops the precache and wasm caches, leaves unrelated caches (shared-layouts) alone.
+    // Drops the precache, leaves unrelated caches (shared-layouts) alone.
     expect(cacheDelete).toHaveBeenCalledWith('gridfinity-v1-precache-abc');
-    expect(cacheDelete).toHaveBeenCalledWith('wasm-binaries');
     expect(cacheDelete).not.toHaveBeenCalledWith('shared-layouts');
     expect(unregister).toHaveBeenCalledTimes(2);
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops the wasm cache only for a caller that implicates it', async () => {
+    await recoverStaleBundle('wasm_load_failure', { dropWasmCache: true });
+    expect(cacheDelete).toHaveBeenCalledWith('wasm-binaries');
+  });
+
+  it('spares the wasm cache for a chunk failure, which does not implicate it', async () => {
+    // Several megabytes whose hash usually survives a deploy, so re-downloading
+    // it buys a route-chunk recovery nothing.
+    await recoverStaleBundle('chunk_load_failure');
+    expect(cacheDelete).not.toHaveBeenCalledWith('wasm-binaries');
+  });
+
+  it('declines while offline, since unregistering the SW would strip the shell', async () => {
+    vi.stubGlobal('navigator', {
+      onLine: false,
+      serviceWorker: { getRegistrations: vi.fn().mockResolvedValue([{ unregister }]) },
+    });
+
+    expect(await recoverStaleBundle('chunk_load_failure')).toBe(false);
+    expect(unregister).not.toHaveBeenCalled();
+    expect(cacheDelete).not.toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('does not burn the session guard on a declined offline attempt', async () => {
+    vi.stubGlobal('navigator', { onLine: false, serviceWorker: undefined });
+    await recoverStaleBundle('chunk_load_failure');
+    expect(sessionStorage.getItem(STALE_RECOVERY_FLAG)).toBeNull();
+
+    vi.stubGlobal('navigator', {
+      onLine: true,
+      serviceWorker: { getRegistrations: vi.fn().mockResolvedValue([{ unregister }]) },
+    });
+    expect(await recoverStaleBundle('chunk_load_failure')).toBe(true);
   });
 
   it('captures a telemetry event with the reason', async () => {

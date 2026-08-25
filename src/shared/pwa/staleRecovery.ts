@@ -22,9 +22,9 @@
  * `handleWasmLoadFailure` is the correct shape: it recovers only when a load has
  * already failed with a stale-asset error.
  *
- * The wasm cache is dropped along with the precache deliberately — the one
- * surviving caller reaches here *because* a wasm artifact failed to load, so it
- * is the suspect rather than a bystander.
+ * Which caches count as suspect is the caller's call (`dropWasmCache`): a kernel
+ * failure implicates the wasm binary, a route-chunk failure does not, and the
+ * wasm cache holds multiple megabytes whose hash usually survives a deploy.
  */
 
 import { getPosthogInstance } from '@/shared/analytics/posthog/init';
@@ -49,13 +49,13 @@ function markRecovered(): void {
   }
 }
 
-async function clearStaleCaches(): Promise<void> {
+async function clearStaleCaches(dropWasmCache: boolean): Promise<void> {
   if (typeof caches === 'undefined') return;
   try {
     const keys = await caches.keys();
     await Promise.all(
       keys
-        .filter((k) => k.startsWith(PRECACHE_PREFIX) || k === WASM_CACHE)
+        .filter((k) => k.startsWith(PRECACHE_PREFIX) || (dropWasmCache && k === WASM_CACHE))
         .map((k) => caches.delete(k))
     );
   } catch {
@@ -77,13 +77,32 @@ async function unregisterServiceWorkers(): Promise<void> {
   }
 }
 
+interface RecoverOptions {
+  /**
+   * Also drop the wasm cache. Only for a caller whose failure implicates the
+   * wasm binary (see the module docstring).
+   */
+  readonly dropWasmCache?: boolean;
+}
+
 /**
  * Attempt a one-time stale-bundle recovery. Returns true if a recovery was
  * started (caches cleared + reload triggered), false if it was skipped because
- * one already ran this session.
+ * one already ran this session or the browser reports no network.
+ *
+ * Recovery ends by unregistering the service worker, so running it offline
+ * would trade an in-app error for the browser's own network error page and
+ * leave the user without the offline shell, with no fresher bundle reachable
+ * to justify the trade. `navigator.onLine` is only trusted in this direction:
+ * it reports true on a captive portal, but false only when the browser is
+ * certain there is no network.
  */
-export async function recoverStaleBundle(reason: string): Promise<boolean> {
+export async function recoverStaleBundle(
+  reason: string,
+  { dropWasmCache = false }: RecoverOptions = {}
+): Promise<boolean> {
   if (alreadyRecovered()) return false;
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
   markRecovered();
 
   try {
@@ -96,7 +115,7 @@ export async function recoverStaleBundle(reason: string): Promise<boolean> {
     // never let telemetry block recovery
   }
 
-  await clearStaleCaches();
+  await clearStaleCaches(dropWasmCache);
   await unregisterServiceWorkers();
 
   window.location.reload();
