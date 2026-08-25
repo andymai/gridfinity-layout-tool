@@ -42,6 +42,26 @@ const domIncludes = [
 // still executes all three projects.
 const generatorIncludes = ['src/features/generation/worker/generators/**/*.test.ts'];
 
+// The costliest generator files. PR shards skip them; main runs them, so the
+// release gate is unchanged and only PR-time feedback moves.
+const heavyGeneratorIncludes = [
+  'src/features/generation/worker/generators/binGenerator.export.kumikoPatterns.test.ts',
+  'src/features/generation/worker/generators/binGenerator.scenario.kumikoPatterns.test.ts',
+  'src/features/generation/worker/generators/binGenerator.export.dividerPatterns.test.ts',
+  'src/features/generation/worker/generators/binGenerator.scenario.dividerPatterns.test.ts',
+  'src/features/generation/worker/generators/binGenerator.export.kumikoWrapping.test.ts',
+  'src/features/generation/worker/generators/binGenerator.export.permutationMatrix.test.ts',
+  'src/features/generation/worker/generators/binGenerator.scenario.split-range.test.ts',
+  'src/features/generation/worker/generators/baseplateGenerator.scenario.outline.test.ts',
+  'src/features/generation/worker/generators/hingeSwing.scenario.test.ts',
+  'src/features/generation/worker/generators/slideLidSeating.scenario.test.ts',
+  'src/features/generation/worker/generators/fitTestSlice.scenario.test.ts',
+  'src/features/generation/worker/generators/labelPlateBuilder.test.ts',
+];
+
+const GENERATOR_TEST_TIMEOUT_MS = 120_000;
+const GENERATOR_HOOK_TIMEOUT_MS = 120_000;
+
 // Tests that need a real Redis rather than a hand-rolled ioredis mock — a Lua
 // script's behaviour cannot be asserted against a mock. Isolated into their own
 // project so the default `unit` run stays dependency-free; CI supplies
@@ -142,7 +162,7 @@ export default defineConfig({
           environment: 'node',
           setupFiles: ['./src/test/setup.ts'],
           include: generatorIncludes,
-          exclude: sharedExclude,
+          exclude: [...sharedExclude, ...heavyGeneratorIncludes],
           // The root 30s is calibrated for pure-JS tests that finish in
           // milliseconds. Everything here drives real OCCT booleans, and 1423
           // of the project's 1748 `it`s inherit that figure rather than
@@ -161,14 +181,26 @@ export default defineConfig({
           // `__kernel-tests__` only record measurements, and `sharedExclude` keeps
           // that directory out of this project regardless. A wedged kernel stays
           // bounded by the job's `timeout-minutes`.
-          testTimeout: 120_000,
+          testTimeout: GENERATOR_TEST_TIMEOUT_MS,
           // Separate knob with its own, tighter default (10s), and every file
           // here boots the WASM kernel via `initTestKernel()` in `beforeAll`.
           // 175 of 199 hooks were given an explicit raise by hand, which is why
           // `}, 30000)` on a hook is load-bearing rather than a restatement of
           // the default the way the `it`-level ones are. This covers the 24 that
           // were never given one.
-          hookTimeout: 120_000,
+          hookTimeout: GENERATOR_HOOK_TIMEOUT_MS,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'generators-heavy',
+          environment: 'node',
+          setupFiles: ['./src/test/setup.ts'],
+          include: heavyGeneratorIncludes,
+          exclude: sharedExclude,
+          testTimeout: GENERATOR_TEST_TIMEOUT_MS,
+          hookTimeout: GENERATOR_HOOK_TIMEOUT_MS,
         },
       },
       {
