@@ -9,19 +9,18 @@ interface IndexEntry {
   deletedAt?: number;
 }
 
-interface ManifestResponse {
-  layouts: Record<string, IndexEntry>;
-  designs: Record<string, IndexEntry>;
-  // Optional: a manifest from a server predating this key omits it.
-  baseplates?: Record<string, IndexEntry>;
+// Indexed by SyncKind; every kind optional, since a manifest from a server
+// predating that key omits it.
+type ManifestResponse = Partial<Record<SyncKind, Record<string, IndexEntry>>> & {
   indexUpdatedAt: number;
-}
+};
 
 interface ItemFetchResponse {
   envelope: {
     layout?: unknown;
     design?: unknown;
     baseplate?: unknown;
+    designVersion?: unknown;
     modifiedAt: number;
     schemaVersion: number;
   };
@@ -119,9 +118,16 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     'baseplates',
     manifest.baseplates ?? {}
   );
-  const layoutChanges = await diffKind(adapters.layouts, 'layouts', manifest.layouts);
-  const designChanges = await diffKind(adapters.designs, 'designs', manifest.designs);
-  const applied = layoutChanges + designChanges + baseplateChanges;
+  const layoutChanges = await diffKind(adapters.layouts, 'layouts', manifest.layouts ?? {});
+  const designChanges = await diffKind(adapters.designs, 'designs', manifest.designs ?? {});
+  // Versions last: a pulled version is only reachable through its design's
+  // history list, so nothing breaks if it lands after the design it belongs to.
+  const versionChanges = await diffKind(
+    adapters.designVersions,
+    'designVersions',
+    manifest.designVersions ?? {}
+  );
+  const applied = layoutChanges + designChanges + baseplateChanges + versionChanges;
 
   // Reset happened mid-flight — drop our results to avoid re-installing the
   // prior user's high-water mark or applying writes that belong to a session
@@ -165,12 +171,7 @@ async function diffKind(
     if (localMtime === undefined || localMtime < entry.modifiedAt) {
       const fetched = await fetchEnvelope(kind, id);
       if (!fetched) continue;
-      const payload =
-        kind === 'layouts'
-          ? fetched.envelope.layout
-          : kind === 'baseplates'
-            ? fetched.envelope.baseplate
-            : fetched.envelope.design;
+      const payload = fetched.envelope[ENVELOPE_KEY[kind]];
       if (payload === undefined) continue;
       await adapter.applyRemote({
         id,
@@ -182,6 +183,14 @@ async function diffKind(
   }
   return applied;
 }
+
+/** Wire key carrying each kind's payload inside its envelope. */
+const ENVELOPE_KEY: Record<SyncKind, 'layout' | 'design' | 'baseplate' | 'designVersion'> = {
+  layouts: 'layout',
+  designs: 'design',
+  baseplates: 'baseplate',
+  designVersions: 'designVersion',
+};
 
 async function fetchEnvelope(kind: SyncKind, id: string): Promise<ItemFetchResponse | null> {
   let res: Response;

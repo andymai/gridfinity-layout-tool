@@ -8,6 +8,7 @@ import type {
   LayoutAdapter,
   DesignAdapter,
   BaseplateAdapter,
+  DesignVersionAdapter,
 } from '../adapters/types';
 
 const getPendingEntriesMock = vi.fn();
@@ -61,6 +62,7 @@ function makeAdapters(layoutPayload: Record<string, unknown> | null = { v: 1 }):
     layouts: layouts as LayoutAdapter,
     designs: designs as DesignAdapter,
     baseplates: baseplates as BaseplateAdapter,
+    designVersions: baseplates as unknown as DesignVersionAdapter,
   };
 }
 

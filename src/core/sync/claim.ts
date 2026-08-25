@@ -34,16 +34,21 @@ interface IndexEntry {
   deletedAt?: number;
 }
 
-interface ManifestResponse {
-  layouts: Record<string, IndexEntry>;
-  designs: Record<string, IndexEntry>;
-  // Optional: a manifest from a server predating this key omits it.
-  baseplates?: Record<string, IndexEntry>;
+// Indexed by SyncKind so the merge loop can read a kind's entries without a
+// per-kind branch. Every kind is optional: a manifest from a server predating
+// that key omits it, and the loop falls back to an empty record.
+type ManifestResponse = Partial<Record<SyncKind, Record<string, IndexEntry>>> & {
   indexUpdatedAt: number;
-}
+};
 
 interface ItemFetchResponse {
-  envelope: { layout?: unknown; design?: unknown; baseplate?: unknown; modifiedAt: number };
+  envelope: {
+    layout?: unknown;
+    design?: unknown;
+    baseplate?: unknown;
+    designVersion?: unknown;
+    modifiedAt: number;
+  };
 }
 
 const inFlightByUser = new Map<string, Promise<ClaimResult>>();
@@ -85,11 +90,13 @@ async function execute(ctx: ClaimContext): Promise<ClaimResult> {
 }
 
 async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
-  const localLayouts = await ctx.adapters.layouts.list();
-  const localDesigns = await ctx.adapters.designs.list();
-  const localBaseplates = await ctx.adapters.baseplates.list();
+  // Keyed by kind rather than one binding per kind: every step below iterates
+  // this, so adding a SyncKind cannot silently skip the claim.
+  const kinds = Object.keys(ctx.adapters) as SyncKind[];
+  const local = {} as Record<SyncKind, SyncableItem[]>;
+  for (const kind of kinds) local[kind] = await ctx.adapters[kind].list();
 
-  const localCount = localLayouts.length + localDesigns.length + localBaseplates.length;
+  const localCount = kinds.reduce((total, kind) => total + local[kind].length, 0);
   const lastUserId = readLastSignedInUserId();
   const accountMismatch = lastUserId !== null && lastUserId !== ctx.userId && localCount > 0;
   if (accountMismatch) {
@@ -105,7 +112,7 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
       // Reverse order makes the failure safe — clearing the outbox is
       // the only step that gates cross-account leakage.
       await outboxClearAll();
-      await wipeLocal(ctx.adapters, localLayouts, localDesigns, localBaseplates);
+      await wipeLocal(ctx.adapters, local);
       persistLastSignedInUserId(ctx.userId);
       useSyncStatusStore.getState().succeed();
       return { status: 'discarded' };
@@ -126,34 +133,39 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
     return { status: 'unauthorized' };
   }
 
-  const layoutCounts = await mergeKind(
-    ctx.adapters.layouts,
-    'layouts',
-    localLayouts,
-    manifest.layouts
-  );
-  const designCounts = await mergeKind(
-    ctx.adapters.designs,
-    'designs',
-    localDesigns,
-    manifest.designs
-  );
-  const baseplateCounts = await mergeKind(
-    ctx.adapters.baseplates,
-    'baseplates',
-    localBaseplates,
-    // Fallback for a manifest predating the baseplates key (schema skew).
-    manifest.baseplates ?? {}
-  );
+  let pulled = 0;
+  let pushed = 0;
+  for (const kind of kinds) {
+    // `?? {}` covers a manifest predating this kind's key (schema skew).
+    const counts = await mergeKind(ctx.adapters[kind], kind, local[kind], manifest[kind] ?? {});
+    pulled += counts.pulled;
+    pushed += counts.pushed;
+  }
 
   persistLastSignedInUserId(ctx.userId);
   useSyncStatusStore.getState().succeed();
 
   return {
     status: 'merged',
-    pulled: layoutCounts.pulled + designCounts.pulled + baseplateCounts.pulled,
-    pushed: layoutCounts.pushed + designCounts.pushed + baseplateCounts.pushed,
+    pulled,
+    pushed,
   };
+}
+
+/**
+ * Each kind's envelope names its payload differently on the wire
+ * (`layout` / `design` / `baseplate` / `designVersion`), so the key is looked
+ * up rather than branched on at both call sites.
+ */
+const ENVELOPE_KEY: Record<SyncKind, 'layout' | 'design' | 'baseplate' | 'designVersion'> = {
+  layouts: 'layout',
+  designs: 'design',
+  baseplates: 'baseplate',
+  designVersions: 'designVersion',
+};
+
+function envelopePayload(kind: SyncKind, fetched: ItemFetchResponse): unknown {
+  return fetched.envelope[ENVELOPE_KEY[kind]];
 }
 
 interface MergeCounts {
@@ -200,12 +212,7 @@ async function mergeKind(
     if (!localItem) {
       const fetched = await fetchEnvelope(kind, id);
       if (fetched) {
-        const payload =
-          kind === 'layouts'
-            ? fetched.envelope.layout
-            : kind === 'baseplates'
-              ? fetched.envelope.baseplate
-              : fetched.envelope.design;
+        const payload = envelopePayload(kind, fetched);
         if (payload !== undefined) {
           await adapter.applyRemote({ id, payload, modifiedAt: fetched.envelope.modifiedAt });
           pulled++;
@@ -217,12 +224,7 @@ async function mergeKind(
     if (localItem.modifiedAt < entry.modifiedAt) {
       const fetched = await fetchEnvelope(kind, id);
       if (fetched) {
-        const payload =
-          kind === 'layouts'
-            ? fetched.envelope.layout
-            : kind === 'baseplates'
-              ? fetched.envelope.baseplate
-              : fetched.envelope.design;
+        const payload = envelopePayload(kind, fetched);
         if (payload !== undefined) {
           await adapter.applyRemote({ id, payload, modifiedAt: fetched.envelope.modifiedAt });
           pulled++;
@@ -281,13 +283,11 @@ async function fetchEnvelope(kind: SyncKind, id: string): Promise<ItemFetchRespo
 
 async function wipeLocal(
   adapters: SyncAdapters,
-  layouts: SyncableItem[],
-  designs: SyncableItem[],
-  baseplates: SyncableItem[]
+  local: Record<SyncKind, SyncableItem[]>
 ): Promise<void> {
-  for (const item of layouts) await adapters.layouts.applyRemoteDelete(item.id);
-  for (const item of designs) await adapters.designs.applyRemoteDelete(item.id);
-  for (const item of baseplates) await adapters.baseplates.applyRemoteDelete(item.id);
+  for (const kind of Object.keys(adapters) as SyncKind[]) {
+    for (const item of local[kind]) await adapters[kind].applyRemoteDelete(item.id);
+  }
 }
 
 function readLastSignedInUserId(): string | null {

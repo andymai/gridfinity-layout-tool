@@ -51,7 +51,7 @@ import { unlinkSupporterAccount } from '../lib/supporterLink.js';
  *
  *   1. Sessions   : DEL session:{token} for every token in the user's set
  *                   (so other tabs/devices flip to anonymous on next sync)
- *   2. Blobs      : del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json
+ *   2. Blobs      : del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json, designVersions/{id}.json
  *   3. Community  : delete each published design (record/thumbnail/mesh blobs,
  *                   card hash, per-design sets, membership in the parent's
  *                   children set, every liker's reverse liked set, sort-index
@@ -110,11 +110,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const layoutIds = await redis.hkeys(userIndexKey(userId, 'layouts'));
     const designIds = await redis.hkeys(userIndexKey(userId, 'designs'));
     const baseplateIds = await redis.hkeys(userIndexKey(userId, 'baseplates'));
+    const designVersionIds = await redis.hkeys(userIndexKey(userId, 'designVersions'));
 
     await Promise.all([
       ...layoutIds.map((id) => deleteBlobSafe(`users/${userId}/layouts/${id}.json`, userId)),
       ...designIds.map((id) => deleteBlobSafe(`users/${userId}/designs/${id}.json`, userId)),
       ...baseplateIds.map((id) => deleteBlobSafe(`users/${userId}/baseplates/${id}.json`, userId)),
+      ...designVersionIds.map((id) =>
+        deleteBlobSafe(`users/${userId}/designVersions/${id}.json`, userId)
+      ),
     ]);
 
     // 3. Community cascade. The record blob is read first because it is the
@@ -251,6 +255,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userIndexKey(userId, 'layouts'),
       userIndexKey(userId, 'designs'),
       userIndexKey(userId, 'baseplates'),
+      userIndexKey(userId, 'designVersions'),
       userIndexUpdatedAtKey(userId),
       userProfileKey(userId),
       userSessionsKey(userId),

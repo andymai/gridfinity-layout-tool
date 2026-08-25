@@ -25,6 +25,22 @@ import type {
 } from '@/features/bin-designer/types';
 import { MAX_VERSIONS_PER_DESIGN } from '@/features/bin-designer/types';
 import { getDb, DESIGN_VERSIONS_STORE } from './designerDb';
+import { emit as emitVersionEvent } from '@/features/bin-designer/sync/designVersionEvents';
+
+/**
+ * Ids whose next write came from the cloud, so the adapter's own listener does
+ * not echo a pulled version straight back to the server.
+ */
+const suppressed = new Set<string>();
+
+export function suppressVersionEvents(id: string): void {
+  suppressed.add(id);
+}
+
+function announce(event: Parameters<typeof emitVersionEvent>[0]): void {
+  if (suppressed.delete(event.id)) return;
+  emitVersionEvent(event);
+}
 
 /** Strip the compressed body so the history list never holds every design in memory. */
 function toSummary(version: DesignVersion): DesignVersionSummary {
@@ -107,6 +123,10 @@ export async function createDesignVersion(
       origin,
     };
     await db.put(DESIGN_VERSIONS_STORE, version);
+    announce({ type: 'put', id: version.id, modifiedAt: Date.parse(version.createdAt) });
+    for (const victim of evicted) {
+      announce({ type: 'delete', id: victim.id, deletedAt: Date.now() });
+    }
 
     return ok({ version: toSummary(version), evicted });
   } catch (e) {
@@ -158,6 +178,9 @@ async function patch(
 
     const updated: DesignVersion = { ...existing, ...fields };
     await db.put(DESIGN_VERSIONS_STORE, updated);
+    // A rename or a pin is a real edit the other device should see, so it needs
+    // a fresh mtime; `createdAt` is when the state was captured and never moves.
+    announce({ type: 'put', id: updated.id, modifiedAt: Date.now() });
     return ok(toSummary(updated));
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
@@ -182,6 +205,7 @@ export async function deleteDesignVersion(versionId: string): Promise<Result<voi
   try {
     const db = await getDb();
     await db.delete(DESIGN_VERSIONS_STORE, versionId);
+    announce({ type: 'delete', id: versionId, deletedAt: Date.now() });
     return ok(undefined);
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
@@ -201,8 +225,68 @@ export async function deleteVersionsForDesign(
     const existing = await readAll(designId);
     for (const version of existing) {
       await db.delete(DESIGN_VERSIONS_STORE, version.id);
+      announce({ type: 'delete', id: version.id, deletedAt: Date.now() });
     }
     return ok(existing.length);
+  } catch (e) {
+    return err(storageUnavailable('indexedDB', e));
+  }
+}
+
+// Sync-facing surface. The engine needs whole records across every design,
+// and writes that do NOT re-announce (an applied pull must not echo back).
+
+/** Every stored version, across all designs. Used by the sync adapter's `list`. */
+export async function listAllDesignVersions(): Promise<Result<DesignVersion[], StorageError>> {
+  try {
+    const db = await getDb();
+    return ok((await db.getAll(DESIGN_VERSIONS_STORE)) as DesignVersion[]);
+  } catch (e) {
+    return err(storageUnavailable('indexedDB', e));
+  }
+}
+
+/** One whole version record including its compressed body. */
+export async function getDesignVersionRecord(
+  versionId: string
+): Promise<Result<DesignVersion | null, StorageError>> {
+  try {
+    const db = await getDb();
+    const row = (await db.get(DESIGN_VERSIONS_STORE, versionId)) as DesignVersion | undefined;
+    return ok(row ?? null);
+  } catch (e) {
+    return err(storageUnavailable('indexedDB', e));
+  }
+}
+
+/**
+ * Write a version that came from the cloud.
+ *
+ * Suppresses the change event: the adapter's own listener would otherwise turn
+ * an applied pull straight back into an outbox push.
+ */
+export async function putRemoteDesignVersion(
+  version: DesignVersion
+): Promise<Result<void, StorageError>> {
+  try {
+    const db = await getDb();
+    suppressVersionEvents(version.id);
+    await db.put(DESIGN_VERSIONS_STORE, version);
+    return ok(undefined);
+  } catch (e) {
+    return err(storageUnavailable('indexedDB', e));
+  }
+}
+
+/** Delete a version because the cloud says it is gone, without re-announcing. */
+export async function deleteRemoteDesignVersion(
+  versionId: string
+): Promise<Result<void, StorageError>> {
+  try {
+    const db = await getDb();
+    suppressVersionEvents(versionId);
+    await db.delete(DESIGN_VERSIONS_STORE, versionId);
+    return ok(undefined);
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
   }

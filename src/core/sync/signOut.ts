@@ -3,7 +3,7 @@ import { flushNow, getPendingEntries, stop as stopEngine } from './engine';
 import { clearAll as clearOutbox } from './outbox';
 import { resetPullState } from './poller';
 import { clearLastSignedInUserId } from './claim';
-import type { SyncAdapters } from './adapters/types';
+import type { SyncAdapters, SyncKind } from './adapters/types';
 
 const FLUSH_TIMEOUT_MS = 5_000;
 
@@ -83,23 +83,19 @@ async function flushOutboxBestEffort(): Promise<void> {
 }
 
 async function countLocalItems(adapters: SyncAdapters): Promise<number> {
-  const [layouts, designs, baseplates] = await Promise.all([
-    adapters.layouts.list(),
-    adapters.designs.list(),
-    adapters.baseplates.list(),
-  ]);
-  return layouts.length + designs.length + baseplates.length;
+  // Iterated rather than destructured per kind: a new SyncKind that is missed
+  // here under-reports what "wipe local" is about to destroy.
+  const lists = await Promise.all(
+    (Object.keys(adapters) as SyncKind[]).map((kind) => adapters[kind].list())
+  );
+  return lists.reduce((total, items) => total + items.length, 0);
 }
 
 async function wipeLocal(adapters: SyncAdapters): Promise<void> {
-  const [layouts, designs, baseplates] = await Promise.all([
-    adapters.layouts.list(),
-    adapters.designs.list(),
-    adapters.baseplates.list(),
-  ]);
-  for (const item of layouts) await adapters.layouts.applyRemoteDelete(item.id);
-  for (const item of designs) await adapters.designs.applyRemoteDelete(item.id);
-  for (const item of baseplates) await adapters.baseplates.applyRemoteDelete(item.id);
+  for (const kind of Object.keys(adapters) as SyncKind[]) {
+    const adapter = adapters[kind];
+    for (const item of await adapter.list()) await adapter.applyRemoteDelete(item.id);
+  }
 }
 
 function isChoice(value: unknown): value is KeepLocalChoice {
