@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/labelTextFit.test.ts
+  s_6d35fd05af1b63::t_664d34c5490ea6 161
+  s_6d35fd05af1b63::t_51e896ba8e6d56 147-149
+  s_6d35fd05af1b63::t_8c0758e1151f9a 199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "790094a6b887c3eb4d245f1053c7836ec79e876b",
+  "prompts": {},
+  "sessions": {
+    "s_6d35fd05af1b63": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c72d8a61-627b-44ba-81fa-e36962e8063d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
