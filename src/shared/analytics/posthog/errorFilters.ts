@@ -65,16 +65,47 @@ export function shouldIgnoreError(
 interface ExceptionEventLike {
   event?: string;
   properties?: {
-    $exception_list?: Array<{ value?: string }>;
+    $exception_list?: Array<{
+      value?: string;
+      stacktrace?: { frames?: Array<{ function?: string }> };
+    }>;
     $exception_values?: string[];
     $exception_fingerprint?: string;
   };
 }
 
 /**
+ * `<Canvas>` kicks off an async `configure()` from a layout effect and neither
+ * awaits it nor cancels it on teardown, so unmounting mid-configure leaves its
+ * `onCreated` to run against a container ref React has already nulled:
+ *
+ *   onCreated: state => state.events.connect?.(… : divRef.current)
+ *
+ * `connect` then calls `addEventListener` on null. The canvas is already gone
+ * by then, so nothing user-visible breaks and no app frame appears in the
+ * stack — switching designs fast is enough to trigger it.
+ *
+ * Matched on the frame as well as the message: an app-side listener attached to
+ * a null target throws the same words, and that one we want to hear about.
+ */
+const NULL_LISTENER_TARGET =
+  /Cannot read propert(?:y|ies) of null \(reading '?addEventListener'?\)|null is not an object \(evaluating '[^']*\.addEventListener'\)/;
+
+function isCanvasTeardownRace(exception: {
+  value?: string;
+  stacktrace?: { frames?: Array<{ function?: string }> };
+}): boolean {
+  if (!exception.value || !NULL_LISTENER_TARGET.test(exception.value)) return false;
+  // `connect` and `onCreated` are property names on object literals, so they
+  // survive minification where the surrounding function names do not.
+  return (exception.stacktrace?.frames ?? []).some((f) => f.function?.endsWith('connect') === true);
+}
+
+/**
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
- * exception matches the extension/noise filters, dedupes the WebGL
- * context-creation burst, and passes everything else through unchanged.
+ * exception matches the extension/noise filters or the R3F canvas teardown
+ * race, dedupes the WebGL context-creation burst, and passes everything else
+ * through unchanged.
  *
  * Only the first entry in `$exception_list` / `$exception_values` is
  * checked. Subsequent entries are `Error.cause` chains — if a real app
@@ -98,9 +129,10 @@ export function filterExceptionForPosthog(
 ): ExceptionEventLike | null {
   if (!event) return event;
   if (event.event !== '$exception') return event;
-  const primary =
-    event.properties?.$exception_list?.[0]?.value ?? event.properties?.$exception_values?.[0];
+  const primaryException = event.properties?.$exception_list?.[0];
+  const primary = primaryException?.value ?? event.properties?.$exception_values?.[0];
   if (shouldIgnoreError(primary)) return null;
+  if (primaryException && isCanvasTeardownRace(primaryException)) return null;
 
   if (primary?.includes(WEBGL_CONTEXT_ERROR)) {
     // Detection already unavailable → the boundary handled this and we've

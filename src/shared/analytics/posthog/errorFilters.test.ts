@@ -157,3 +157,69 @@ describe('filterExceptionForPosthog — WebGL context-creation dedupe', () => {
     expect(result?.properties?.$exception_fingerprint).toBeUndefined();
   });
 });
+
+describe('R3F canvas teardown race', () => {
+  const CHROME = "Cannot read properties of null (reading 'addEventListener')";
+  const canvasFrames = [
+    { function: 'Ei' },
+    { function: 'onCreated' },
+    { function: 'Object.connect' },
+  ];
+
+  it('drops the null listener target thrown from the canvas connect path', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [{ value: CHROME, stacktrace: { frames: canvasFrames } }],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('keeps the same message when no connect frame is involved', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          { value: CHROME, stacktrace: { frames: [{ function: 'useMeasureTool' }] } },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+
+  it('keeps an unrelated error that happens to run through a connect frame', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          { value: 'TypeError: foo is not a function', stacktrace: { frames: canvasFrames } },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+
+  it('matches the WebKit phrasing of the same throw', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            value: "null is not an object (evaluating 'target.addEventListener')",
+            stacktrace: { frames: canvasFrames },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('keeps the error when frames are absent entirely', () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_list: [{ value: CHROME }] },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+});
