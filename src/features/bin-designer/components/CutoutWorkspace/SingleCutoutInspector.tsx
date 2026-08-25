@@ -425,6 +425,7 @@ function CutoutEngraveLabelControls({
   const minFontSize = useDesignerStore((s) => s.params.textDefaults.minFontSize);
   const maxFontSize = useDesignerStore((s) => s.params.textDefaults.maxFontSize);
   const setTextDefaults = useDesignerStore((s) => s.setTextDefaults);
+  const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
 
   const fontSizeOverride = cutout.textStyle?.fontSizeOverride;
   const setFontSizeOverride = (size: number | null) => {
@@ -488,7 +489,11 @@ function CutoutEngraveLabelControls({
             {t('binDesigner.cutouts.repeat.labels.socketNote')}
           </p>
         ) : (
-          <CutoutRepeatLabels cutout={cutout} disabled={disabled} onUpdate={onUpdate} />
+          <CutoutRepeatLabels
+            cutout={cutout}
+            disabled={disabled}
+            onChange={(config) => setCutoutArray(cutout.id, config)}
+          />
         ))}
       {isSocket && (
         <CutoutSocketControls

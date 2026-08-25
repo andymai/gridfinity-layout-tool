@@ -23,7 +23,14 @@ import { Button, Textarea } from '@/design-system';
 interface CutoutRepeatLabelsProps {
   readonly cutout: Cutout;
   readonly disabled?: boolean;
-  readonly onUpdate: (patch: Partial<Cutout>) => void;
+  /**
+   * Writes the whole repeat, not a cutout patch. A grouped cutout shares ONE
+   * config with its siblings, and this panel is reachable for a single member
+   * (the shape list lists an expanded group's members as their own rows), so
+   * patching just this cutout would leave the group holding two different
+   * repeats.
+   */
+  readonly onChange: (config: CutoutArrayConfig) => void;
 }
 
 const ACTION_CLASS =
@@ -62,7 +69,7 @@ const splitOnCommas = (labels: readonly string[]): string[] =>
 export function CutoutRepeatLabels({
   cutout,
   disabled = false,
-  onUpdate,
+  onChange,
 }: CutoutRepeatLabelsProps) {
   const t = useTranslation();
   const hintId = useId();
@@ -70,7 +77,7 @@ export function CutoutRepeatLabels({
   if (!array) return null;
 
   const setLabels = (labels: string[] | undefined): void => {
-    onUpdate({ array: { ...array, labels } satisfies CutoutArrayConfig });
+    onChange({ ...array, labels });
   };
 
   // Absent list = the repeat is labelled once, beside the master, which is what

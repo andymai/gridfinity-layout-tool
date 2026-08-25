@@ -39,14 +39,19 @@ const box = () => screen.getByRole('textbox');
 describe('CutoutRepeatLabels', () => {
   it('renders nothing for a cutout with no repeat', () => {
     const { container } = render(
-      <CutoutRepeatLabels cutout={cutout()} onUpdate={() => undefined} />
+      <CutoutRepeatLabels cutout={cutout()} onChange={() => undefined} />
     );
     expect(container).toBeEmptyDOMElement();
   });
 
   it('offers the opt-in until a list exists, so stored designs are untouched', () => {
     const onUpdate = vi.fn();
-    render(<CutoutRepeatLabels cutout={cutout({ array: config() })} onUpdate={onUpdate} />);
+    render(
+      <CutoutRepeatLabels
+        cutout={cutout({ array: config() })}
+        onChange={(config) => onUpdate({ array: config })}
+      />
+    );
     expect(screen.queryByRole('textbox')).toBeNull();
 
     fireEvent.click(screen.getByRole('button'));
@@ -62,7 +67,7 @@ describe('CutoutRepeatLabels', () => {
     render(
       <CutoutRepeatLabels
         cutout={cutout({ array: config({ labels: ['a', 'b', 'c'] }) })}
-        onUpdate={onUpdate}
+        onChange={(config) => onUpdate({ array: config })}
       />
     );
     fireEvent.change(box(), { target: { value: 'Upcut\n\nFlush' } });
@@ -75,7 +80,7 @@ describe('CutoutRepeatLabels', () => {
     render(
       <CutoutRepeatLabels
         cutout={cutout({ array: config({ labels: ['Upcut'] }) })}
-        onUpdate={() => undefined}
+        onChange={() => undefined}
       />
     );
     expect(screen.getByText(/labels\.count/)).toBeInTheDocument();
@@ -87,7 +92,7 @@ describe('CutoutRepeatLabels', () => {
     render(
       <CutoutRepeatLabels
         cutout={cutout({ array: config({ cols: 2, labels: ['a', 'b', 'c', 'd'] }) })}
-        onUpdate={() => undefined}
+        onChange={() => undefined}
       />
     );
     expect(screen.getByText(/labels\.long/)).toBeInTheDocument();
@@ -98,7 +103,7 @@ describe('CutoutRepeatLabels', () => {
     const { rerender } = render(
       <CutoutRepeatLabels
         cutout={cutout({ array: config({ labels: ['Upcut', 'Downcut', 'Flush'] }) })}
-        onUpdate={onUpdate}
+        onChange={(config) => onUpdate({ array: config })}
       />
     );
     expect(screen.queryByText('binDesigner.cutouts.repeat.labels.splitCommas')).toBeNull();
@@ -106,7 +111,7 @@ describe('CutoutRepeatLabels', () => {
     rerender(
       <CutoutRepeatLabels
         cutout={cutout({ array: config({ labels: ['Upcut, Downcut, Flush'] }) })}
-        onUpdate={onUpdate}
+        onChange={(config) => onUpdate({ array: config })}
       />
     );
     fireEvent.click(screen.getByText('binDesigner.cutouts.repeat.labels.splitCommas'));
@@ -120,7 +125,7 @@ describe('CutoutRepeatLabels', () => {
     render(
       <CutoutRepeatLabels
         cutout={cutout({ array: config({ labels: ['a', 'b', 'c'] }) })}
-        onUpdate={onUpdate}
+        onChange={(config) => onUpdate({ array: config })}
       />
     );
     fireEvent.click(screen.getByText('binDesigner.cutouts.repeat.labels.disable'));
@@ -133,7 +138,7 @@ describe('CutoutRepeatLabels', () => {
     render(
       <CutoutRepeatLabels
         cutout={cutout({ array: config({ mode: 'radial', labels: [] }) })}
-        onUpdate={() => undefined}
+        onChange={() => undefined}
       />
     );
     expect(screen.getByText(/labels\.order\.ring/)).toBeInTheDocument();

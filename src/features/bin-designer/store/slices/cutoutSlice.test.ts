@@ -1017,6 +1017,24 @@ describe('cutoutSlice - consolidated actions', () => {
       }
     });
 
+    it('propagates a label list written from ONE member to the whole group', () => {
+      // The shape list rows an expanded group's members individually, so the
+      // Label section is reachable for a single member. Writing its caption
+      // list must not leave the group holding two different repeats.
+      const { addCutout, groupCutouts, setCutoutArray } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+      groupCutouts(['a', 'b'], 'exclude');
+      setCutoutArray('a', row);
+
+      const member = useDesignerStore.getState().params.cutouts[1];
+      setCutoutArray(member.id, { ...row, labels: ['one', 'two', 'three'] });
+
+      for (const c of useDesignerStore.getState().params.cutouts) {
+        expect(c.array?.labels).toEqual(['one', 'two', 'three']);
+      }
+    });
+
     it('declines a group holding a path, which cannot be repeated', () => {
       const { addCutout, groupCutouts, setCutoutArray } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'a' }));
