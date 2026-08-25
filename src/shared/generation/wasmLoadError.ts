@@ -10,13 +10,36 @@
  * affected code paths historically swallowed the error.
  */
 
+/**
+ * Every phrasing a browser uses for "the asset did not arrive".
+ *
+ * Each engine words this differently and only Chrome's wording was listed, so a
+ * Safari or Firefox user hit the same stale bundle, matched nothing, and was
+ * left on a dead 3D engine instead of being reloaded onto the current build.
+ * Matching is substring and case-sensitive, so the wording has to be exact.
+ *
+ * Breadth is safe here because {@link isStaleAssetError} is only ever asked
+ * about an error that already failed to load the kernel: at that point a bare
+ * `Load failed` can only be the asset, and a reload is the right answer whether
+ * the cause was a stale hash or a dropped connection.
+ */
 const STALE_ASSET_SIGNATURES = [
   'not a WebAssembly binary',
   'stale cache or service worker',
   "doesn't start with",
   'script failed to load',
-  'Failed to fetch dynamically imported module',
   'WASM fetch failed',
+  // Dynamic import of the kernel's glue module. Chrome and Firefox disagree on
+  // the verb; `Failed to fetch` alone also covers Chrome's bare fetch failure.
+  'Failed to fetch',
+  'error loading dynamically imported module',
+  'Importing a module script failed',
+  'NetworkError when attempting to fetch resource',
+  // Safari's fetch rejection, which carries no detail at all.
+  'Load failed',
+  // A truncated download: the module declares more bytes than arrived, so
+  // compilation walks off the end. Re-fetching is exactly the fix.
+  'extends past end of the module',
   // A cached old bundle running on a browser that can't compile an instruction
   // the old build used (e.g. relaxed-SIMD on some Safari/iOS WebKit). Current
   // builds no longer emit it, so seeing it means the client is on stale cached

@@ -40,6 +40,38 @@ describe('isStaleAssetError', () => {
     ).toBe(true);
   });
 
+  it.each([
+    ['Safari dynamic import', 'Kernel init failed: Importing a module script failed.'],
+    [
+      'Firefox dynamic import',
+      'Kernel init failed: error loading dynamically imported module: https://x/assets/occt-wasm-C7KBdFbv.js',
+    ],
+    ['Firefox fetch', 'Kernel init failed: NetworkError when attempting to fetch resource.'],
+    [
+      'Safari fetch',
+      'Kernel init failed: Load failed (first attempt: Kernel init failed: Load failed)',
+    ],
+    ['Chrome fetch', 'Kernel init failed: Failed to fetch'],
+    [
+      'truncated download',
+      'Kernel init failed: Aborted(CompileError: WebAssembly.instantiate(): section (code 10, "Code") extends past end of the module (length 19686494, remaining bytes 17280021) @+74726)',
+    ],
+  ])('flags the %s failure, which a reload fixes', (_name, message) => {
+    expect(isStaleAssetError(new Error(message))).toBe(true);
+  });
+
+  it('leaves an unsupported instruction set unflagged, since reloading cannot help', () => {
+    // An old browser that cannot compile the instruction is not a stale cache.
+    // Reloading it in a loop would be the only outcome of flagging this.
+    expect(
+      isStaleAssetError(
+        new Error(
+          'Kernel init failed: Aborted(CompileError: WebAssembly.instantiate(): Compiling function #72 failed: Wasm SIMD unsupported @+86123)'
+        )
+      )
+    ).toBe(false);
+  });
+
   it('does not flag unrelated generation errors', () => {
     expect(isStaleAssetError(new Error('Split export range failed: STL_EXPORT_FAILED'))).toBe(
       false
