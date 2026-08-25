@@ -17,6 +17,7 @@ import {
   buildLabelPlate,
   buildLabelPlates,
   exportLabelPlates,
+  resolveUniformPlateTextSize,
   TEXT_BAND_MM,
 } from './labelPlateBuilder';
 import type { LabelPlateBuildOptions } from './labelPlateBuilder';
@@ -325,5 +326,54 @@ describe('labelPlateBuilder', () => {
   it('emits no TEXT face groups for blank plates', async () => {
     const { faceGroups } = await exportLabelPlates([{ widthU: 1, text: '' }], OPTS, 'stl');
     expect((faceGroups ?? []).some((g) => g.tag === FeatureTag.TEXT)).toBe(false);
+  });
+});
+
+describe('two-line captions', () => {
+  // A debossed plate drops its v1 channels, so a blank plate carrying them is
+  // not the baseline. Compare against a blank built the same way.
+  const NO_CHANNELS: LabelPlateBuildOptions = { ...OPTS, v1Channels: false };
+  const blankVol = (): number => volOf(buildLabelPlate({ widthU: 1, text: '' }, NO_CHANNELS));
+
+  it('engraves a caption the plate is too narrow to hold on one line', () => {
+    // The reported case: a fastener label that overruns a 1U plate. Before
+    // wrapping was allowed this shipped a blank plate.
+    const engraved = volOf(
+      buildLabelPlate({ widthU: 1, text: '5/16 x 3-1/4 Grade 8' }, NO_CHANNELS)
+    );
+    expect(engraved).toBeLessThan(blankVol());
+  });
+
+  it('honours an authored break rather than choosing its own', () => {
+    const wrapped = volOf(
+      buildLabelPlate({ widthU: 1, text: '5/16 x 3-1/4 Grade 8' }, NO_CHANNELS)
+    );
+    const authored = volOf(
+      buildLabelPlate({ widthU: 1, text: '5/16 x 3-1/4\nGrade 8' }, NO_CHANNELS)
+    );
+    expect(authored).toBeLessThan(blankVol());
+    // Different break points put different glyphs on different lines at
+    // different sizes, so the two cannot carve the same volume.
+    expect(authored).not.toBeCloseTo(wrapped, 3);
+  });
+
+  it('keeps the caption inside the plate footprint', () => {
+    const solid = buildLabelPlate({ widthU: 1, text: '5/16 x 3-1/4\nGrade 8' }, NO_CHANNELS);
+    const m = mesh(solid, { tolerance: 0.01, angularTolerance: 5, cache: false });
+    const bbox = boundingBox(new Float32Array(m.vertices));
+    expect(bbox.maxX - bbox.minX).toBeCloseTo(labelPlateWidthMm(1), 1);
+    expect(bbox.maxY - bbox.minY).toBeCloseTo(LABEL_PLATE_HEIGHT_MM, 1);
+    expect(bbox.maxZ - bbox.minZ).toBeCloseTo(LABEL_PLATE_THICKNESS_MM, 1);
+  });
+
+  it('does not let one two-line plate shrink the rest of the set', () => {
+    const singles = [
+      { widthU: 1 as const, text: 'M3 NUTS' },
+      { widthU: 1 as const, text: 'M4 BOLTS' },
+    ];
+    const withTwoLine = [...singles, { widthU: 1 as const, text: '5/16 x 3-1/4\nGrade 8' }];
+    expect(resolveUniformPlateTextSize(withTwoLine, OPTS)).toBe(
+      resolveUniformPlateTextSize(singles, OPTS)
+    );
   });
 });

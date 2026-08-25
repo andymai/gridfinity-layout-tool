@@ -52,13 +52,14 @@ interface CompartmentTextInputProps {
   /**
    * Accept line breaks, up to {@link TEXT_MAX_LINES}.
    *
-   * Opt-in rather than the default because the two callers want different
-   * things: a compartment caption is one line on a small tab, while a wall or
-   * lid caption can carry a heading and a subheading (lines after the first
-   * render at `lineScale`). Without this the second line is unreachable, and a
-   * knob nobody can produce input for is worse than no knob.
+   * Opt-in rather than the default because it changes what Enter means. With
+   * {@link onNavigate} set the field is one row of a list, so Enter keeps moving
+   * between rows and Shift+Enter takes the line break; a standalone wall or lid
+   * caption has nowhere to navigate, so Enter breaks the line directly.
    */
   readonly multiline?: boolean;
+  /** Rows to show before the caption has grown into them. */
+  readonly minRows?: number;
 }
 
 export function CompartmentTextInput({
@@ -72,6 +73,7 @@ export function CompartmentTextInput({
   invalid = false,
   describedBy,
   multiline = false,
+  minRows = 2,
 }: CompartmentTextInputProps) {
   const [draft, setDraft] = useState(committedValue);
   const focusedRef = useRef(false);
@@ -152,15 +154,41 @@ export function CompartmentTextInput({
     field?.select();
   }, [focusToken, multiline]);
 
-  // Enter adds a line rather than committing, but only while one is left in the
-  // budget: swallowing it at the cap is what stops a paste-and-hold from
-  // silently losing the tail to the normaliser.
+  // In a list, Enter stays row navigation. Filling captions one after another is
+  // the common case and losing it would cost more than a second line is worth,
+  // so the line break moves to Shift+Enter. A standalone field has no rows to
+  // move between, so there Enter breaks the line as it always did.
+  //
+  // Enter is swallowed at the cap rather than passed through: that is what stops
+  // a paste-and-hold from silently losing the tail to the normaliser.
   const handleAreaKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key !== 'Enter') return;
-      if (draft.split('\n').length >= TEXT_MAX_LINES) e.preventDefault();
+      if (e.key === 'Enter') {
+        if (onNavigate && !e.shiftKey) {
+          e.preventDefault();
+          clearIdleTimer();
+          commit(draft);
+          onNavigate('next');
+          return;
+        }
+        if (draft.split('\n').length >= TEXT_MAX_LINES) e.preventDefault();
+        return;
+      }
+      if (!onNavigate || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      // Leave the field only from its outer edges, so the arrows still walk the
+      // caret through a caption that has grown a second line.
+      const el = e.currentTarget;
+      const leaving =
+        e.key === 'ArrowUp'
+          ? !el.value.slice(0, el.selectionStart).includes('\n')
+          : !el.value.slice(el.selectionEnd).includes('\n');
+      if (!leaving) return;
+      e.preventDefault();
+      clearIdleTimer();
+      commit(draft);
+      onNavigate(e.key === 'ArrowUp' ? 'prev' : 'next');
     },
-    [draft]
+    [draft, onNavigate, clearIdleTimer, commit]
   );
 
   // Normalising on the way in keeps the field showing exactly what will be
@@ -179,7 +207,9 @@ export function CompartmentTextInput({
     return (
       <Textarea
         ref={areaRef}
-        rows={2}
+        // Grows with the caption so a list of one-line labels keeps the height
+        // it had as a single-line field.
+        rows={Math.min(TEXT_MAX_LINES, Math.max(minRows, draft.split('\n').length))}
         resize="none"
         value={draft}
         maxLength={TEXT_MAX_TOTAL_LENGTH}
