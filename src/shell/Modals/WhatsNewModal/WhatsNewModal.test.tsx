@@ -47,7 +47,7 @@ function leadCard(): HTMLElement {
 
 /** Matches a button by the start of its accessible name, which for a row
  *  concatenates the title, the body and the destination label. */
-function rowNamed(title: string) {
+function rowNamed(title: string): { name: (name: string) => boolean } {
   return { name: (name: string) => name.startsWith(title) };
 }
 

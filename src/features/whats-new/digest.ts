@@ -1,7 +1,7 @@
 import type { Locale } from '@/i18n/types';
 import type { LocalizedText, WhatsNewEntry, WhatsNewKind } from './types';
 
-/** Longest digest shown before the rest moves behind the archive view. */
+/** How many entries the `recent` fallback shows when there is no unseen list. */
 export const DIGEST_LIMIT = 5;
 
 /**

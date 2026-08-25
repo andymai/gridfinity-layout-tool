@@ -57,6 +57,17 @@ describe('DigestList', () => {
     expect(screen.queryByRole('heading', { name: 'whatsNew.kind.new' })).not.toBeInTheDocument();
   });
 
+  it('does not call the new section "also new" behind a promoted fix', () => {
+    renderList({
+      headline: entry('lead-fix', { kind: 'fixed', featured: true }),
+      rest: [entry('other')],
+    });
+    expect(screen.getByRole('heading', { name: 'whatsNew.kind.new' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'whatsNew.sectionAlsoNew' })
+    ).not.toBeInTheDocument();
+  });
+
   it('names the new section plainly when nothing is promoted', () => {
     renderList({ rest: [entry('other')] });
     expect(screen.getByRole('heading', { name: 'whatsNew.kind.new' })).toBeInTheDocument();

@@ -46,6 +46,9 @@ interface DigestListProps {
 export function DigestList({ headline, rest, overflow, activate, onSeeAll }: DigestListProps) {
   const t = useTranslation();
   const groups = useMemo(() => groupByKind(rest), [rest]);
+  // Only a promoted `new` entry makes the remaining new ones "also" new. A
+  // featured fix leads a digest whose new section is simply new.
+  const headlineKind = headline === null ? null : (headline.kind ?? 'new');
 
   if (headline === null && rest.length === 0) {
     return (
@@ -71,7 +74,7 @@ export function DigestList({ headline, rest, overflow, activate, onSeeAll }: Dig
               KIND_COLOR[group.kind]
             )}
           >
-            {group.kind === 'new' && headline !== null
+            {group.kind === 'new' && headlineKind === 'new'
               ? t('whatsNew.sectionAlsoNew')
               : t(`whatsNew.kind.${group.kind}`)}
           </h3>
