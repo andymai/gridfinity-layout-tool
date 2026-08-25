@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'two-line-label-captions',
+    date: '2026-08-25',
+    kind: 'improved',
+    title: { en: 'Labels that run to a second line' },
+    body: {
+      en: 'A caption too long for its label now breaks onto a second line instead of coming out blank, so a full fastener spec fits beside its icon. Press Shift+Enter where you want the break, or leave it and the label picks one.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'nested-cutout-groups',
     date: '2026-08-25',
     kind: 'new',
