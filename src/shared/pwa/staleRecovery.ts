@@ -4,9 +4,9 @@
  * The PWA's normal updater (`usePWAUpdate`) fixes the *next* load: a returning
  * user is served the old precached shell + old runtime-cached wasm, so the
  * current page can fail (e.g. kernel init) before any update applies. This
- * recovers the *current* visit: drop the precache + wasm caches, unregister the
- * service worker (so the reload bypasses it and fetches the latest from the
- * network), then hard-reload.
+ * recovers the *current* visit: drop the precache (plus the wasm cache, for a
+ * caller that implicates it), unregister the service worker (so the reload
+ * bypasses it and fetches the latest from the network), then hard-reload.
  *
  * Guarded by a per-session flag so a genuinely broken new bundle can't loop:
  * we recover at most once per tab session.
