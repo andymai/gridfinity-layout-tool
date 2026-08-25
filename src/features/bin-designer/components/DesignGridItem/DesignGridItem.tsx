@@ -1,5 +1,5 @@
 import { useTranslation, useFormatting } from '@/i18n';
-import { Checkbox, Input, useInlineEdit } from '@/design-system';
+import { Button, Checkbox, Input, useInlineEdit } from '@/design-system';
 import { BinDesignThumbnail } from '../BinDesignThumbnail';
 import { DesignActions } from '../DesignActions';
 import { DesignTagChips } from '../DesignTagChips';
@@ -23,6 +23,12 @@ interface DesignGridItemProps {
   selectionActive?: boolean;
   isSelected?: boolean;
   onToggleSelect?: () => void;
+  /** 1 when this card is a branch shown under the design it came from. */
+  nestLevel?: 0 | 1;
+  /** Branches hanging off this card; 0 hides the disclosure entirely. */
+  childCount?: number;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 /**
@@ -46,6 +52,10 @@ export function DesignGridItem({
   selectionActive = false,
   isSelected = false,
   onToggleSelect,
+  nestLevel = 0,
+  childCount = 0,
+  expanded = false,
+  onToggleExpand,
 }: DesignGridItemProps) {
   const t = useTranslation();
   const { formatRelativeDate } = useFormatting();
@@ -189,6 +199,32 @@ export function DesignGridItem({
         {/* Date and actions row — pinned to the bottom so dates align across a
             row regardless of how many tags each card shows */}
         <div className="flex items-center justify-between mt-auto pt-1.5">
+          {nestLevel === 1 && (
+            <p className="truncate text-[10px] text-accent">
+              {design.parentVersionName
+                ? t('binDesigner.designs.branchedFrom', { name: design.parentVersionName })
+                : t('binDesigner.designs.branchBadge')}
+            </p>
+          )}
+          {/* A card cannot be indented the way a list row can, so the branch count
+            doubles as the disclosure: the relationship has to be reachable in
+            both view modes or the grid quietly loses half the feature. */}
+          {childCount > 0 && onToggleExpand && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleExpand();
+              }}
+              aria-expanded={expanded}
+              className="h-auto px-0 py-0 text-[10px] font-normal text-accent hover:underline"
+            >
+              {expanded
+                ? t('binDesigner.designs.hideBranches')
+                : t('binDesigner.designs.branchCount', { count: childCount })}
+            </Button>
+          )}
           <p className="text-[10px] text-content-tertiary">
             {formatRelativeDate(design.updatedAt)}
           </p>

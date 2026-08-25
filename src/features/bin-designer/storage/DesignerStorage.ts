@@ -6,7 +6,6 @@
  * parameters, thumbnails, and timestamps.
  */
 
-import { openDB, type IDBPDatabase } from 'idb';
 import type { DesignId } from '@/core/types';
 import { designId } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
@@ -26,43 +25,19 @@ import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/f
 import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designerEvents';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { trackDesignCreated } from '@/shared/analytics/posthog';
+import { getDb, DESIGNS_STORE } from './designerDb';
+import {
+  deleteVersionsForDesign,
+  listDesignVersions,
+  readDesignVersion,
+} from './DesignVersionService';
 
-const DB_NAME = 'gridfinity-designer-v1';
-const DB_VERSION = 1;
-const DESIGNS_STORE = 'designs';
+// Re-exported so callers that treat this module as the designer's storage
+// surface keep one import site as the schema moves to `designerDb`.
+export { closeDesignerDb } from './designerDb';
 
 /** localStorage key for tracking the active design ID across sessions */
 const ACTIVE_DESIGN_KEY = 'gridfinity-designer-active-v1';
-
-let dbInstance: IDBPDatabase | null = null;
-
-/**
- * Open the designer database, creating stores if needed.
- */
-async function getDb(): Promise<IDBPDatabase> {
-  if (dbInstance) {
-    return dbInstance;
-  }
-
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(DESIGNS_STORE)) {
-        const store = db.createObjectStore(DESIGNS_STORE, { keyPath: 'id' });
-        store.createIndex('updatedAt', 'updatedAt');
-      }
-    },
-  });
-
-  // Clear cached instance if the browser closes the connection unexpectedly
-  db.addEventListener('close', () => {
-    if (dbInstance === db) {
-      dbInstance = null;
-    }
-  });
-
-  dbInstance = db;
-  return dbInstance;
-}
 
 /**
  * Generate a unique design ID.
@@ -101,6 +76,13 @@ export async function saveDesign(
       design.publishedId === undefined ? existing?.publishedId : design.publishedId;
     const lineage = design.lineage === undefined ? existing?.lineage : design.lineage;
 
+    // Branch lineage is written once, at creation, and every later save omits
+    // it. Falling back to the stored value is what keeps autosave from
+    // detaching a branch from its parent on the first edit.
+    const parentDesignId = design.parentDesignId ?? existing?.parentDesignId;
+    const parentVersionId = design.parentVersionId ?? existing?.parentVersionId;
+    const parentVersionName = design.parentVersionName ?? existing?.parentVersionName;
+
     const kind = design.kind ?? 'bin';
     // Reject incomplete writes up front so a malformed call can't persist a
     // record that later fails loadDesign() or renders blank.
@@ -125,6 +107,9 @@ export async function saveDesign(
       ...(tags.length > 0 ? { tags } : {}),
       ...(publishedId !== undefined ? { publishedId } : {}),
       ...(lineage !== undefined ? { lineage } : {}),
+      ...(parentDesignId !== undefined ? { parentDesignId } : {}),
+      ...(parentVersionId !== undefined ? { parentVersionId } : {}),
+      ...(parentVersionName !== undefined ? { parentVersionName } : {}),
       // Bins persist flat `params` (canonical, back-compat); non-bin kinds
       // persist `kind` + `envelope` + `structure` and OMIT `params` so a stale
       // bin payload can never shadow the real structure.
@@ -257,6 +242,65 @@ export async function duplicateDesign(id: DesignId): Promise<Result<SavedDesign,
 }
 
 /**
+ * Create an independent design seeded from one of a design's stored versions.
+ *
+ * A branch is a plain `SavedDesign`: it diverges the moment it exists and
+ * nothing propagates across the link afterwards. `parentDesignId` records where
+ * it came from so the library can show the family, which is the whole point of
+ * branching rather than duplicating.
+ *
+ * `publishedId` is deliberately not carried, for the same reason
+ * {@link duplicateDesign} drops it: it names a specific published record, and a
+ * branch is a new unpublished design.
+ */
+export async function branchFromVersion(
+  designId: DesignId,
+  versionId: string,
+  name: string
+): Promise<Result<SavedDesign, StorageError>> {
+  const parentResult = await loadDesign(designId);
+  if (isErr(parentResult)) return parentResult;
+  const parent = parentResult.value;
+
+  // Membership is checked before the read: `readDesignVersion` will happily
+  // return any version by id, so without this a mismatched pair would seed the
+  // branch from unrelated content and still stamp it as this design's child.
+  const versionsResult = await listDesignVersions(designId);
+  if (isErr(versionsResult)) return versionsResult;
+  const summary = versionsResult.value.find((v) => v.id === versionId);
+  if (!summary) {
+    return err(storageNotFound(`Version '${versionId}' does not belong to design '${designId}'`));
+  }
+  const versionName = summary.name;
+
+  const versionResult = await readDesignVersion(versionId);
+  if (isErr(versionResult)) return versionResult;
+  const content = versionResult.value;
+
+  const kind = (content.kind as SavedDesign['kind']) ?? 'bin';
+  return saveDesign({
+    name,
+    // Content comes from the VERSION, not the parent's current state.
+    ...(kind === 'bin'
+      ? { params: (content.params ?? parent.params) as BinParams }
+      : {
+          kind,
+          envelope: content.envelope as SavedDesign['envelope'],
+          structure: content.structure as SavedDesign['structure'],
+        }),
+    // The parent's thumbnail renders the state the branch was taken away from,
+    // so the regenerator draws the branch's own geometry instead.
+    thumbnail: null,
+    exportFileNameConfig: parent.exportFileNameConfig ? { ...parent.exportFileNameConfig } : null,
+    tags: parent.tags,
+    lineage: parent.lineage,
+    parentDesignId: designId,
+    parentVersionId: versionId,
+    ...(versionName ? { parentVersionName: versionName } : {}),
+  });
+}
+
+/**
  * Record a successful community publish on the local design so update mode
  * and cross-device sync see it.
  */
@@ -308,20 +352,15 @@ export async function deleteDesign(id: DesignId): Promise<Result<void, StorageEr
     }
 
     await db.delete(DESIGNS_STORE, id);
+    // Versions are keyed to a design; left behind they are unreachable rows that
+    // still occupy the store. Failure here must not fail the delete — the design
+    // is already gone, and reporting an error would invite a retry that then
+    // reports "not found".
+    await deleteVersionsForDesign(id);
     emitDesignerEvent({ type: 'delete', id, deletedAt: new Date().toISOString() });
     return ok(undefined);
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
-  }
-}
-
-/**
- * Close the database connection (for testing/cleanup).
- */
-export function closeDesignerDb(): void {
-  if (dbInstance) {
-    dbInstance.close();
-    dbInstance = null;
   }
 }
 

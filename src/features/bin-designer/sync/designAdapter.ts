@@ -138,6 +138,19 @@ function unwrap(payload: unknown): {
   return { params: payload as BinParams };
 }
 
+/**
+ * Spread conditionally rather than assigned: an explicit `undefined` key hashes
+ * like `null` in the server's equal-ms tiebreaker, which would make an
+ * unbranched design compare differently from one that predates the field.
+ */
+function branchFields(d: SavedDesign) {
+  return {
+    ...(d.parentDesignId !== undefined ? { parentDesignId: String(d.parentDesignId) } : {}),
+    ...(d.parentVersionId !== undefined ? { parentVersionId: d.parentVersionId } : {}),
+    ...(d.parentVersionName !== undefined ? { parentVersionName: d.parentVersionName } : {}),
+  };
+}
+
 function buildPayload(d: SavedDesign): DesignSyncPayload {
   if (isBinDesign(d)) {
     return {
@@ -146,6 +159,7 @@ function buildPayload(d: SavedDesign): DesignSyncPayload {
       tags: d.tags,
       publishedId: d.publishedId,
       lineage: d.lineage,
+      ...branchFields(d),
     };
   }
   return {
@@ -156,6 +170,7 @@ function buildPayload(d: SavedDesign): DesignSyncPayload {
     tags: d.tags,
     publishedId: d.publishedId,
     lineage: d.lineage,
+    ...branchFields(d),
   };
 }
 
@@ -216,6 +231,16 @@ export const designAdapter: DesignAdapter = {
       // other device"), so only `undefined` (legacy payload) falls back.
       const publishedId = remotePublishedId === undefined ? base?.publishedId : remotePublishedId;
       const lineage = remoteLineage === undefined ? base?.lineage : remoteLineage;
+      // Branch lineage is written once and never edited, so an absent remote
+      // value means "this payload predates the field", not "detached".
+      const remote = item.payload;
+      const branch = {
+        parentDesignId: remote.parentDesignId
+          ? designId(remote.parentDesignId)
+          : base?.parentDesignId,
+        parentVersionId: remote.parentVersionId ?? base?.parentVersionId,
+        parentVersionName: remote.parentVersionName ?? base?.parentVersionName,
+      };
       const result =
         remoteKind === 'assembly' && remoteEnvelope
           ? await saveDesign({
@@ -231,6 +256,7 @@ export const designAdapter: DesignAdapter = {
               tags,
               publishedId,
               lineage,
+              ...branch,
             })
           : await saveDesign({
               id: designId(item.id),
@@ -241,6 +267,7 @@ export const designAdapter: DesignAdapter = {
               tags,
               publishedId,
               lineage,
+              ...branch,
             });
       if (!isOk(result)) {
         throw new Error(`saveDesign failed for ${item.id}`);

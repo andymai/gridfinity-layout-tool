@@ -707,6 +707,55 @@ estimates), and the source file name.
 
 23. **`Cutout.rotation` is clockwise-positive, every trig helper is counter-clockwise** — `CutoutShapeMesh` renders at `rotationZ = -rotation` and `cutoutBuilder` extrudes at `rotate(shape, -rotation)`, while `rotatePoint` / `rotateAroundCenter` / `booleanGeometry`'s `rotatePair` are standard CCW. **Anything rotating a selection as a group must negate exactly one of the two** (the position swing or the per-member angle), or member centers travel one way while each member spins the other and the group shears. `handlers/groupRotateHandler` subtracts the drag delta because positions rotate CCW with the cursor; `pathfinderHelpers.buildGroupRotationUpdates` and the R key add to the rotation and rotate positions by `-deg`. A sign error is invisible at 180° and on rectangles at 90°, so test at an odd angle with asymmetric shapes. `booleanGeometry` must build outlines with the renderer's clockwise sense, or every rotated member gets a mirrored Pathfinder result.
 
+## Version History
+
+Named, restorable checkpoints for one design (`storage/DesignVersionService.ts`,
+`store/versionStore.ts`, `components/VersionHistory/`). Distinct from undo/redo,
+which is unnamed, capped at `MAX_HISTORY`, and gone on reload.
+
+- **Capture is manual.** Layouts snapshot on a timer (`core/storage/SnapshotService`);
+  a design version is written only when the user asks, or as the automatic
+  `pre-restore` copy taken before a restore overwrites the working state.
+- **`restoreVersion` is not `loadDesign`.** `loadDesign` clears history because it
+  switches designs. `restoreVersion` pushes a history entry and keeps
+  `currentDesignId`, so a restore is undoable like any other edit.
+- **The stored body is a `DesignVersionContent`, not a `BinParams`.** `toolRack`,
+  `importedMesh` and `assembly` designs carry `envelope`/`structure` and no params,
+  so a params-shaped record would store nothing for them.
+- **Eviction drops `pre-restore` captures before anything named**, and never a
+  pinned version. It is always announced: a version the user named is never
+  removed silently. A design whose versions are all pinned exceeds the cap rather
+  than refusing the save.
+- **Thumbnails are reused, not re-rendered.** A version copies the design's stored
+  thumbnail rather than driving the 3D scene, and is dropped by the cascade in
+  `deleteDesign`.
+
+### Branching
+
+`branchFromVersion` (`storage/DesignerStorage.ts`) creates an independent
+`SavedDesign` seeded from a stored version, tagged with `parentDesignId` +
+`parentVersionId`.
+
+- **Content comes from the VERSION, not the parent's current state.** Branching
+  from "0.2 mm, works" must reproduce that, not whatever the parent has drifted
+  to since.
+- **`parentDesignId` is not `lineage`.** `lineage` describes a community remix by
+  another author and carries their names; this points at a `DesignId` in the same
+  local library.
+- **The branch starts with no thumbnail.** The parent's renders the state the
+  branch was taken away from, so the regenerator draws the branch's own geometry
+  instead of shipping a misleading preview.
+- **`saveDesign` falls back to the stored parent link** when a write omits it.
+  Autosave omits it on every write after the first, and without the fallback the
+  first edit would detach the branch.
+- **`groupByLineage` (`components/DesignListDialog/designLineage.ts`) resolves to
+  the ROOT ancestor, not the immediate parent.** Nesting is one level deep, so a
+  branch of a branch whose parent is itself nested would belong to no rendered
+  row and disappear from the list entirely. A design whose parent is filtered out
+  or deleted is promoted to the top level for the same reason.
+- **Deleting a design does not delete its branches** (they are independent
+  designs), so the toast says how many survived: the indent implies otherwise.
+
 ## Thumbnail Pipeline
 
 Two paths produce design thumbnails, written to IndexedDB and surfaced in the design-list modal:

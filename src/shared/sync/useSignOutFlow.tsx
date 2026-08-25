@@ -6,12 +6,18 @@ import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
 // thumbnail helper, which is how three, @react-three/fiber and drei (~1.2 MB) ended
 // up eagerly preloaded. Same reasoning as the Liveblocks note in shared/hooks/index.ts.
 import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
+import { designVersionAdapter } from '@/features/bin-designer/sync/designVersionAdapter';
 import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { runSignOut, type KeepLocalPromptResult } from '@/core/sync/signOut';
 import { SignOutDialog } from '@/core/sync/dialogs/SignOutDialog';
 
-const ADAPTERS = { layouts: layoutAdapter, designs: designAdapter, baseplates: baseplateAdapter };
+const ADAPTERS = {
+  layouts: layoutAdapter,
+  designs: designAdapter,
+  baseplates: baseplateAdapter,
+  designVersions: designVersionAdapter,
+};
 
 interface SignOutFlow {
   signOut: () => Promise<void>;

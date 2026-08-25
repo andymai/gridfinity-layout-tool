@@ -23,6 +23,7 @@ const adapters: SyncAdapters = {
   layouts: noopAdapter,
   designs: noopAdapter,
   baseplates: noopAdapter,
+  designVersions: noopAdapter,
 };
 
 function setVisibility(state: 'hidden' | 'visible'): void {

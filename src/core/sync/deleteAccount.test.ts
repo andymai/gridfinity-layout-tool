@@ -8,6 +8,7 @@ import type {
   LayoutAdapter,
   DesignAdapter,
   BaseplateAdapter,
+  DesignVersionAdapter,
 } from './adapters/types';
 
 const apiDeleteAccountMock = vi.fn();
@@ -65,6 +66,7 @@ beforeEach(() => {
     layouts: layouts as LayoutAdapter,
     designs: designs as DesignAdapter,
     baseplates: baseplates as BaseplateAdapter,
+    designVersions: baseplates as unknown as DesignVersionAdapter,
   };
   apiDeleteAccountMock.mockResolvedValue(undefined);
 });

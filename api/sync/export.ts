@@ -20,7 +20,7 @@ import { communityPublishedKey } from '../lib/redisKeys.js';
  *
  * Stream a ZIP of the user's live data:
  *
- *   manifest.json        : { layouts, designs, baseplates: { [id]: IndexEntry }, community: [id], indexUpdatedAt, exportedAt }
+ *   manifest.json        : { layouts, designs, baseplates, designVersions: { [id]: IndexEntry }, community: [id], indexUpdatedAt, exportedAt }
  *   layouts/{id}.json    : full envelope for each non-tombstoned layout
  *   designs/{id}.json    : full envelope for each non-tombstoned design
  *   baseplates/{id}.json : full envelope for each non-tombstoned baseplate
@@ -50,19 +50,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   try {
-    const [layoutsIndex, designsIndex, baseplatesIndex, indexUpdatedAt, publishedIds] =
-      await Promise.all([
-        getIndex(redis, session.userId, 'layouts'),
-        getIndex(redis, session.userId, 'designs'),
-        getIndex(redis, session.userId, 'baseplates'),
-        getIndexUpdatedAt(redis, session.userId),
-        redis.smembers(communityPublishedKey(session.userId)),
-      ]);
+    const [
+      layoutsIndex,
+      designsIndex,
+      baseplatesIndex,
+      designVersionsIndex,
+      indexUpdatedAt,
+      publishedIds,
+    ] = await Promise.all([
+      getIndex(redis, session.userId, 'layouts'),
+      getIndex(redis, session.userId, 'designs'),
+      getIndex(redis, session.userId, 'baseplates'),
+      getIndex(redis, session.userId, 'designVersions'),
+      getIndexUpdatedAt(redis, session.userId),
+      redis.smembers(communityPublishedKey(session.userId)),
+    ]);
     const communityIds = [...publishedIds].sort();
 
     const liveLayouts = filterLive(layoutsIndex);
     const liveDesigns = filterLive(designsIndex);
     const liveBaseplates = filterLive(baseplatesIndex);
+    const liveDesignVersions = filterLive(designVersionsIndex);
 
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader(
@@ -80,6 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
               layouts: liveLayouts,
               designs: liveDesigns,
               baseplates: liveBaseplates,
+              designVersions: liveDesignVersions,
               community: communityIds,
               indexUpdatedAt,
               exportedAt: Date.now(),
@@ -94,6 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         streamEnvelopes(addFile, session.userId, 'layouts', Object.keys(liveLayouts)),
         streamEnvelopes(addFile, session.userId, 'designs', Object.keys(liveDesigns)),
         streamEnvelopes(addFile, session.userId, 'baseplates', Object.keys(liveBaseplates)),
+        streamEnvelopes(addFile, session.userId, 'designVersions', Object.keys(liveDesignVersions)),
         streamCommunityRecords(addFile, communityIds),
       ]);
     });

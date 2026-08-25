@@ -14,6 +14,26 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'design-branching',
+    date: '2026-08-25',
+    kind: 'new',
+    title: { en: 'Branch a design from any saved version' },
+    body: {
+      en: 'Turn a saved version into its own design without losing the original. Branches list under the design they came from, so a row of clearance experiments takes one line in your library instead of six.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
+    id: 'design-version-history',
+    date: '2026-08-25',
+    kind: 'new',
+    title: { en: 'Save named versions of a design' },
+    body: {
+      en: 'Keep the 0.2 mm clearance that fits while you try 0.3 mm. Save a design at any point under a name you choose, browse them later, and restore one. Your current state is saved first, and the restore undoes in a single step.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'repeat-a-boolean-group',
     featured: true,
     date: '2026-08-24',

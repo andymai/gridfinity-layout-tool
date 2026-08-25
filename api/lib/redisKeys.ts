@@ -47,7 +47,7 @@
 
 import { createHash } from 'node:crypto';
 
-export type SyncItemKind = 'layouts' | 'designs' | 'baseplates';
+export type SyncItemKind = 'layouts' | 'designs' | 'baseplates' | 'designVersions';
 
 export const COMMUNITY_INDEX_SORTS = ['newest', 'remixes', 'likes', 'prints'] as const;
 export type CommunityIndexSort = (typeof COMMUNITY_INDEX_SORTS)[number];

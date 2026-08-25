@@ -6,17 +6,20 @@ Server endpoints for the multi-device sync feature. Stores per-user layouts and 
 
 ## Endpoints
 
-| Endpoint                 | Method | Rate Limit | Purpose                                         |
-| ------------------------ | ------ | ---------- | ----------------------------------------------- |
-| `/api/sync/layouts/[id]` | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                |
-| `/api/sync/layouts/[id]` | PUT    | 60/min     | LWW write; 409 stale-write, 410 stale-resurrect |
-| `/api/sync/layouts/[id]` | DELETE | 60/min     | Tombstone + blob delete                         |
-| `/api/sync/designs/[id]` | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                |
-| `/api/sync/designs/[id]` | PUT    | 60/min     | LWW write; reuses designer-payload validator    |
-| `/api/sync/designs/[id]` | DELETE | 60/min     | Tombstone + blob delete                         |
-| `/api/sync/manifest`     | GET    | 240/min    | Full per-user index + `If-Modified-Since` 304   |
-| `/api/sync/export`       | GET    | 240/min    | ZIP of all live items + manifest.json           |
-| `/api/sync/account`      | DELETE | 60/min     | Cascade-delete sessions + KV + blobs            |
+| Endpoint                        | Method | Rate Limit | Purpose                                          |
+| ------------------------------- | ------ | ---------- | ------------------------------------------------ |
+| `/api/sync/layouts/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                 |
+| `/api/sync/layouts/[id]`        | PUT    | 60/min     | LWW write; 409 stale-write, 410 stale-resurrect  |
+| `/api/sync/layouts/[id]`        | DELETE | 60/min     | Tombstone + blob delete                          |
+| `/api/sync/designs/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                 |
+| `/api/sync/designs/[id]`        | PUT    | 60/min     | LWW write; reuses designer-payload validator     |
+| `/api/sync/designs/[id]`        | DELETE | 60/min     | Tombstone + blob delete                          |
+| `/api/sync/designVersions/[id]` | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                 |
+| `/api/sync/designVersions/[id]` | PUT    | 60/min     | LWW write; reuses the designer-payload validator |
+| `/api/sync/designVersions/[id]` | DELETE | 60/min     | Tombstone + blob delete                          |
+| `/api/sync/manifest`            | GET    | 240/min    | Full per-user index + `If-Modified-Since` 304    |
+| `/api/sync/export`              | GET    | 240/min    | ZIP of all live items + manifest.json            |
+| `/api/sync/account`             | DELETE | 60/min     | Cascade-delete sessions + KV + blobs             |
 
 Rate limits are keyed by `userId`, not IP — each authenticated user gets their own budget.
 
@@ -35,6 +38,16 @@ Rate limits are keyed by `userId`, not IP — each authenticated user gets their
 // users/{uid}/designs/{id}.json
 {
   design: BinParams,        // sanitized via validateDesignerShare
+  modifiedAt: number,
+  schemaVersion: 1,
+}
+
+// users/{uid}/designVersions/{id}.json
+{
+  designVersion: {
+    designId, name, createdAt, origin, pinned?,
+    content,                // { name, params } or { name, kind, envelope, structure }
+  },
   modifiedAt: number,
   schemaVersion: 1,
 }
@@ -62,6 +75,20 @@ use `CONSTRAINTS.MAX_PAYLOAD_BYTES` (100 KB, measured on
 `{ name, type, version, params }`). The pre-validation count is intentionally a
 subset of the request body, not the full HTTP payload — its only job is to gate
 the validator's workload.
+
+### Design versions
+
+`content` travels **uncompressed**, unlike the LZ string the client keeps in
+IndexedDB: the server runs `validateDesignerShare` over it, which it cannot do
+with an opaque blob. The adapter converts at that boundary.
+
+No `thumbnail` field: a PNG data URL would consume most of `MAX_PAYLOAD_BYTES`,
+and it regenerates locally from the params.
+
+Quota counts differently here, since 100 items would be a few designs' history:
+500 items / 25 MB, with the client capping each design at
+`MAX_VERSIONS_PER_DESIGN`. A `413` surfaces as the usual quota toast; the
+version is saved locally either way.
 
 ## LWW + tombstone semantics (PUT)
 

@@ -585,3 +585,84 @@ describe('designAdapter.subscribe', () => {
     expect(events).toEqual([]);
   });
 });
+
+// `buildPayload` names each field explicitly, so a field it forgets is simply
+// absent on the wire, and `saveDesign` rebuilds the record the same way on the
+// way back in. Nothing else fails when that happens: the design syncs, and only
+// its place in the family is gone.
+describe('branch lineage round-trip', () => {
+  beforeEach(() => {
+    __resetForTests();
+    vi.clearAllMocks();
+  });
+
+  const branched = (): SavedDesign => ({
+    ...savedDesign('design-branch', '2026-08-01T00:00:00.000Z'),
+    parentDesignId: designId('design-parent'),
+    parentVersionId: 'version-1',
+    parentVersionName: 'printed successfully',
+  });
+
+  it('puts the branch fields on the wire', async () => {
+    listDesignsMock.mockResolvedValue(ok([branched()]));
+
+    const [item] = await designAdapter.list();
+
+    expect(item.payload.parentDesignId).toBe('design-parent');
+    expect(item.payload.parentVersionId).toBe('version-1');
+    expect(item.payload.parentVersionName).toBe('printed successfully');
+  });
+
+  it('omits them entirely for a design that was never branched', async () => {
+    listDesignsMock.mockResolvedValue(
+      ok([savedDesign('design-plain', '2026-08-01T00:00:00.000Z')])
+    );
+
+    const [item] = await designAdapter.list();
+
+    // Absent, not `undefined`: an explicit undefined key hashes like null in
+    // the server's equal-ms tiebreaker.
+    expect('parentDesignId' in item.payload).toBe(false);
+  });
+
+  it('writes them back when a branch is pulled', async () => {
+    loadDesignMock.mockResolvedValue(err(storageNotFound('design-branch')));
+    saveDesignMock.mockResolvedValue(ok(branched()));
+
+    await designAdapter.applyRemote({
+      id: 'design-branch',
+      modifiedAt: Date.parse('2026-08-02T00:00:00.000Z'),
+      payload: {
+        ...samplePayload('0.3 mm trial'),
+        parentDesignId: 'design-parent',
+        parentVersionId: 'version-1',
+        parentVersionName: 'printed successfully',
+      },
+    });
+
+    expect(saveDesignMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parentDesignId: designId('design-parent'),
+        parentVersionId: 'version-1',
+        parentVersionName: 'printed successfully',
+      })
+    );
+  });
+
+  // Branch lineage is written once and never edited, so an absent remote value
+  // means the payload predates the field, not that the branch was detached.
+  it('keeps the local parent when the remote payload omits it', async () => {
+    loadDesignMock.mockResolvedValue(ok(branched()));
+    saveDesignMock.mockResolvedValue(ok(branched()));
+
+    await designAdapter.applyRemote({
+      id: 'design-branch',
+      modifiedAt: Date.parse('2026-08-02T00:00:00.000Z'),
+      payload: samplePayload('renamed elsewhere'),
+    });
+
+    expect(saveDesignMock).toHaveBeenCalledWith(
+      expect.objectContaining({ parentDesignId: designId('design-parent') })
+    );
+  });
+});

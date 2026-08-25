@@ -2,10 +2,14 @@ import { DesignGridItem } from '../DesignGridItem';
 import { DesignListItem } from '../DesignListItem';
 import { isLayoutPlaceableDesign } from '@/features/bin-designer/utils/designKind';
 import type { SavedDesign } from '../../types';
+import type { LineageRow } from './designLineage';
 
 interface DesignItemsViewProps {
   variant: 'grid' | 'list';
-  items: readonly SavedDesign[];
+  /** Already flattened by `groupByLineage`, so index-based navigation is unchanged. */
+  rows: readonly LineageRow[];
+  expandedIds: ReadonlySet<string>;
+  onToggleExpand: (id: string) => void;
   currentDesignId: string | null;
   focusedIndex: number;
   selectionActive: boolean;
@@ -29,7 +33,9 @@ interface DesignItemsViewProps {
  */
 export function DesignItemsView({
   variant,
-  items,
+  rows,
+  expandedIds,
+  onToggleExpand,
   currentDesignId,
   focusedIndex,
   selectionActive,
@@ -45,8 +51,16 @@ export function DesignItemsView({
   onToggleSelect,
   registerItemRef,
 }: DesignItemsViewProps) {
-  const commonProps = (design: SavedDesign, index: number) => ({
-    design,
+  const commonProps = (row: LineageRow, index: number) => ({
+    design: row.design,
+    nestLevel: row.depth,
+    childCount: row.childCount,
+    expanded: expandedIds.has(String(row.design.id)),
+    onToggleExpand: () => onToggleExpand(String(row.design.id)),
+    ...rowProps(row.design, index),
+  });
+
+  const rowProps = (design: SavedDesign, index: number) => ({
     isActive: design.id === currentDesignId,
     isFocused: index === focusedIndex,
     onSelect: () => onLoad(design),
@@ -65,11 +79,11 @@ export function DesignItemsView({
   if (variant === 'grid') {
     return (
       <>
-        {items.map((design, index) => (
+        {rows.map((row, index) => (
           <DesignGridItem
-            key={design.id}
-            {...commonProps(design, index)}
-            itemRef={(el) => registerItemRef(design.id, el)}
+            key={row.design.id}
+            {...commonProps(row, index)}
+            itemRef={(el) => registerItemRef(row.design.id, el)}
           />
         ))}
       </>
@@ -78,11 +92,11 @@ export function DesignItemsView({
 
   return (
     <>
-      {items.map((design, index) => (
+      {rows.map((row, index) => (
         <DesignListItem
-          key={design.id}
-          {...commonProps(design, index)}
-          itemRef={(el) => registerItemRef(design.id, el)}
+          key={row.design.id}
+          {...commonProps(row, index)}
+          itemRef={(el) => registerItemRef(row.design.id, el)}
         />
       ))}
     </>

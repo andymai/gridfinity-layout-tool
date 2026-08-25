@@ -31,6 +31,7 @@ import { DesignListNoResults } from './DesignListNoResults';
 import { DesignListOptionsMenu } from './DesignListOptionsMenu';
 import { DesignItemsView } from './DesignItemsView';
 import { filterAndSortDesigns, SORT_OPTIONS, SORT_OPTION_KEYS } from './designListSort';
+import { groupByLineage, branchesOf } from './designLineage';
 import type { SortOption } from './designListSort';
 import { removeRegistryEntry } from '../../store/customBinRegistry';
 import { useDesignerStore } from '../../store';
@@ -205,6 +206,18 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [designs, activeTags, searchQuery, sortBy, currentDesignId]
   );
 
+  // Which designs are showing their branches. Held here rather than persisted:
+  // it is a reading position, and a remembered one goes stale the moment the
+  // library changes.
+  const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
+  const toggleExpanded = useCallback((id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }, []);
+
   const localizedSortOptions = useMemo(
     () =>
       SORT_OPTIONS.map((value) => ({
@@ -295,6 +308,8 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   const handleDelete = useCallback(
     async (design: SavedDesign) => {
+      // Counted BEFORE the delete, while the branches are still in the list.
+      const orphaned = branchesOf(designs, String(design.id)).length;
       const result = await deleteDesign(design.id);
       if (isOk(result)) {
         setDesigns((prev) => prev.filter((d) => d.id !== design.id));
@@ -304,6 +319,16 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
           type: 'success',
           duration: 2000,
         });
+        // Branches are independent designs, so they survive. Saying so is the
+        // difference between "my branches are safe" and "they vanished with the
+        // row they were nested under", which is what the indent implies.
+        if (orphaned > 0) {
+          addToast({
+            message: t('binDesigner.designs.deleteWithBranches', { count: orphaned }),
+            type: 'info',
+            duration: 5000,
+          });
+        }
       } else {
         addToast({
           message: t('binDesigner.toast.designDeleteFailed'),
@@ -312,7 +337,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         });
       }
     },
-    [addToast, t]
+    [addToast, t, designs]
   );
 
   const handleSaveTags = useCallback(
@@ -628,12 +653,24 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                   aria-label={t('binDesigner.savedDesigns')}
                   className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 content-start"
                 >
-                  <DesignItemsView variant="grid" items={items} {...itemViewProps} />
+                  <DesignItemsView
+                    variant="grid"
+                    rows={groupByLineage(items, expandedIds)}
+                    expandedIds={expandedIds}
+                    onToggleExpand={toggleExpanded}
+                    {...itemViewProps}
+                  />
                 </div>
               )}
               renderList={(items) => (
                 <ul role="listbox" aria-label={t('binDesigner.savedDesigns')} className="space-y-2">
-                  <DesignItemsView variant="list" items={items} {...itemViewProps} />
+                  <DesignItemsView
+                    variant="list"
+                    rows={groupByLineage(items, expandedIds)}
+                    expandedIds={expandedIds}
+                    onToggleExpand={toggleExpanded}
+                    {...itemViewProps}
+                  />
                 </ul>
               )}
               noResultsState={<DesignListNoResults searchQuery={searchQuery} />}

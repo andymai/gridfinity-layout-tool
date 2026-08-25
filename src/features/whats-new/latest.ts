@@ -6,4 +6,4 @@
  * `latest.test.ts` asserts this matches `WHATS_NEW_ENTRIES[0]`, so the
  * duplication cannot drift past CI or the pre-commit check.
  */
-export const LATEST_ENTRY_ID = 'repeat-a-boolean-group';
+export const LATEST_ENTRY_ID = 'design-branching';

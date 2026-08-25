@@ -47,6 +47,7 @@ import type {
 import type { SlideConfig } from './slide';
 import type { FloorPatternConfig } from './floor';
 import type { BinParams, Insert } from './binParams';
+import type { DesignVersionContent } from './designVersion';
 import type {
   GenerationState,
   GenerationStatus,
@@ -147,6 +148,12 @@ export interface DesignerState {
   setNeedsThumbnailUpdate: (needed: boolean) => void;
   newDesign: (kind?: ItemKind) => void;
   loadDesign: (design: SavedDesign) => void;
+  /**
+   * Replace the working state with a stored version of the same design, as one
+   * undoable step. Unlike {@link loadDesign} this keeps `currentDesignId` and
+   * the undo history.
+   */
+  restoreVersion: (content: DesignVersionContent) => void;
 
   // Non-bin item actions (no-ops when itemKind is 'bin')
   updateStructure: (partial: Partial<ItemStructure>) => void;
@@ -367,6 +374,7 @@ export interface DesignerState {
   setActiveTab: (tab: DesignerTab) => void;
   setExportDialogOpen: (open: boolean) => void;
   setDesignListOpen: (open: boolean) => void;
+  setVersionsOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
   /**
    * Open or close the full-workspace cutout editor, and say which part it draws
