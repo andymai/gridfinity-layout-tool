@@ -224,6 +224,8 @@ export function LabelTextList({
                 )}
                 <div className={`min-w-0 flex-1 ${filled && !row.overflows ? 'opacity-70' : ''}`}>
                   <CompartmentTextInput
+                    multiline
+                    minRows={1}
                     committedValue={row.value}
                     compartmentId={row.index}
                     onCommit={onCommit}

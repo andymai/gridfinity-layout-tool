@@ -144,6 +144,9 @@ describe('planLabelTextOverflow', () => {
     // caption fitting bare and overflowing beside an icon — proves the plate's
     // own host math is what's measured, without pinning a millimetre threshold
     // that a future margin tweak would invalidate.
+    //
+    // The caption is long enough that it WRAPS in both cases: what separates
+    // them is that the icon leaves too little width for even three lines.
     const socketLabel = {
       ...DEFAULT_BIN_PARAMS.label,
       enabled: true,
@@ -155,7 +158,7 @@ describe('planLabelTextOverflow', () => {
       rows: 1,
       thickness: 1.2,
       cells: [0],
-      compartmentTexts: ['M3 CAP SCREWS A2'],
+      compartmentTexts: ['M3 CAP SCREWS A2 STAINLESS HEX'],
     };
 
     const bare = planLabelTextOverflow(
@@ -193,7 +196,7 @@ describe('planLabelTextOverflow', () => {
           rows: 1,
           thickness: 1.2,
           cells: [0],
-          compartmentTexts: ['M3 CAP SCREWS A2 STAINLESS'],
+          compartmentTexts: ['M3 CAP SCREWS A2 STAINLESS HEX SOCKET BUTTON HEAD FLANGED SERRATED'],
         },
       })
     );

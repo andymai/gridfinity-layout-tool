@@ -93,7 +93,7 @@ describe('CompartmentTextInput', () => {
 });
 
 describe('CompartmentTextInput multiline', () => {
-  it('is a single-line field by default, so a tab caption stays one line', () => {
+  it('is a single-line field unless multiline is asked for', () => {
     render(
       <CompartmentTextInput
         committedValue=""
@@ -138,6 +138,94 @@ describe('CompartmentTextInput multiline', () => {
     const event = createEvent.keyDown(field, { key: 'Enter' });
     fireEvent(field, event);
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  describe('inside a list, where Enter already means the next row', () => {
+    function listRow(committedValue = '') {
+      const onNavigate = vi.fn();
+      const onCommit = vi.fn();
+      render(
+        <CompartmentTextInput
+          multiline
+          minRows={1}
+          committedValue={committedValue}
+          compartmentId={0}
+          placeholder="p"
+          ariaLabel="caption"
+          onCommit={onCommit}
+          onNavigate={onNavigate}
+        />
+      );
+      const field: HTMLTextAreaElement = screen.getByRole('textbox', { name: 'caption' });
+      return { field, onNavigate, onCommit };
+    }
+
+    it('keeps Enter moving to the next row rather than breaking the line', () => {
+      const { field, onNavigate } = listRow('5/16 x 3-1/4');
+      const event = createEvent.keyDown(field, { key: 'Enter' });
+      fireEvent(field, event);
+      expect(event.defaultPrevented).toBe(true);
+      expect(onNavigate).toHaveBeenCalledWith('next');
+    });
+
+    it('gives the line break to Shift+Enter instead', () => {
+      const { field, onNavigate } = listRow('5/16 x 3-1/4');
+      const event = createEvent.keyDown(field, { key: 'Enter', shiftKey: true });
+      fireEvent(field, event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(onNavigate).not.toHaveBeenCalled();
+    });
+
+    it('still swallows Shift+Enter at the line cap', () => {
+      const { field } = listRow('a\nb\nc');
+      const event = createEvent.keyDown(field, { key: 'Enter', shiftKey: true });
+      fireEvent(field, event);
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('leaves the row when the caret has no line to move onto', () => {
+      const { field, onNavigate } = listRow('Grade 8');
+      field.setSelectionRange(3, 3);
+      const event = createEvent.keyDown(field, { key: 'ArrowDown' });
+      fireEvent(field, event);
+      expect(event.defaultPrevented).toBe(true);
+      expect(onNavigate).toHaveBeenCalledWith('next');
+    });
+
+    it('walks the caret instead when the caption has a line below', () => {
+      const { field, onNavigate } = listRow('5/16 x 3-1/4\nGrade 8');
+      field.setSelectionRange(3, 3);
+      const event = createEvent.keyDown(field, { key: 'ArrowDown' });
+      fireEvent(field, event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(onNavigate).not.toHaveBeenCalled();
+    });
+
+    it('walks the caret up when the caption has a line above', () => {
+      const { field, onNavigate } = listRow('5/16 x 3-1/4\nGrade 8');
+      field.setSelectionRange(15, 15);
+      const event = createEvent.keyDown(field, { key: 'ArrowUp' });
+      fireEvent(field, event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(onNavigate).not.toHaveBeenCalled();
+    });
+  });
+
+  it('leaves Enter breaking the line in a standalone field, which has no rows', () => {
+    render(
+      <CompartmentTextInput
+        multiline
+        committedValue="Heading"
+        compartmentId={0}
+        placeholder="p"
+        ariaLabel="caption"
+        onCommit={vi.fn()}
+      />
+    );
+    const field = screen.getByRole('textbox', { name: 'caption' });
+    const event = createEvent.keyDown(field, { key: 'Enter' });
+    fireEvent(field, event);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('normalises a paste on the way in, so the field shows what will be stored', () => {

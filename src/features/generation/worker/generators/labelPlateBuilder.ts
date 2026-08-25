@@ -44,6 +44,7 @@ import {
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import { splitTextLines } from '@/shared/types/bin';
 import type { TextStyleDefaults } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 import { COPLANAR_MARGIN } from './generatorConstants';
@@ -150,7 +151,6 @@ export function plateTextFits(spec: LabelPlateSpec, opts: LabelPlateBuildOptions
       style: plateTextStyle(opts),
       availW: plateTextHostWidthMm(spec.widthU, spec.icon),
       availD: TEXT_BAND_MM,
-      allowWrap: false,
     }) !== null
   );
 }
@@ -225,10 +225,16 @@ function plateTextMode(opts: LabelPlateBuildOptions): 'emboss' | 'engrave' {
  * down.
  *
  * Under the cap-height datum the vertical box is a constant of the face and
- * size, so every caption in a set now resolves to the SAME value here and this
- * pass reads as a no-op. It is kept because it is the thing that states the
- * intent: a set shares one size. Were the band or the face ever to vary per
- * plate, this is where that would be resolved rather than discovered.
+ * size, so every single-line caption in a set resolves to the SAME value here
+ * and this pass reads as a no-op. It is kept because it is the thing that
+ * states the intent: a set shares one size. Were the band or the face ever to
+ * vary per plate, this is where that would be resolved rather than discovered.
+ *
+ * Multi-line captions sit out. Two lines genuinely need a smaller size in the
+ * shared band, so folding one in would shrink every other plate in the set to
+ * match it — the same "drags the others down" the width axis is kept out for.
+ * They auto-fit alone instead, which lands them on a common size anyway
+ * whenever they share a line count.
  *
  * `undefined` when no plate carries text, leaving per-plate auto-fit.
  */
@@ -239,6 +245,7 @@ export function resolveUniformPlateTextSize(
   let smallest = Number.POSITIVE_INFINITY;
   for (const spec of specs) {
     if (!spec.text.trim()) continue;
+    if (splitTextLines(spec.text).length > 1) continue;
     const fitted = fitTextSize({
       text: spec.text,
       style: plateTextStyle(opts),
@@ -394,9 +401,6 @@ export function buildLabelPlate(
         topZ: t,
         depth: opts.textDepthMm,
         hostThickness: t,
-        // A plate caption is one field on a fixed-format part; a second line
-        // has nowhere to go beside the icon.
-        allowWrap: false,
         ...(uniformTextSize !== undefined ? { sharedSizeMm: uniformTextSize } : {}),
         hostKind: 'plaque',
       });
