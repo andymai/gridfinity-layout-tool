@@ -144,8 +144,10 @@ jobs:
           if [ "$GIT_REF" = "refs/heads/main" ]; then
             # Projects are named explicitly rather than using the default "all":
             # `integration` needs a Redis service and runs as its own job.
+            # `generators-heavy` runs nowhere else, so dropping it here retires
+            # those files silently. Guarded by src/test/ciProjectCoverage.test.ts.
             echo "Running full suite with coverage (main branch)"
-            pnpm vitest run --coverage --project=unit --project=dom --project=generators
+            pnpm vitest run --coverage --project=unit --project=dom --project=generators --project=generators-heavy
           elif [ "$GROUP" = "generators" ]; then
             echo "Running generators project (shard $SHARD)"
             pnpm vitest run --project=generators --shard="$SHARD"
