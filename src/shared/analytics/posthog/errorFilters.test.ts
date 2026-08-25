@@ -158,6 +158,58 @@ describe('filterExceptionForPosthog — WebGL context-creation dedupe', () => {
   });
 });
 
+describe('filterExceptionForPosthog — chunk-load dedupe', () => {
+  const fingerprintOf = (value: string): unknown =>
+    filterExceptionForPosthog({
+      event: '$exception',
+      properties: { $exception_list: [{ value }] },
+    })?.properties?.$exception_fingerprint;
+
+  it.each([
+    [
+      'Chrome',
+      'TypeError: Failed to fetch dynamically imported module: https://gridfinitylayouttool.com/assets/baseplate-CbgQ-55M.js',
+    ],
+    [
+      'Firefox',
+      'TypeError: error loading dynamically imported module: https://gridfinitylayouttool.com/assets/baseplate-CbgQ-55M.js',
+    ],
+    ['Safari', 'TypeError: Importing a module script failed.'],
+  ])('pins the %s wording to one fingerprint', (_engine, value) => {
+    expect(fingerprintOf(value)).toBe('chunk-load-failed');
+  });
+
+  it('groups across deploys, whose chunk hash and route differ', () => {
+    expect(
+      fingerprintOf(
+        'Failed to fetch dynamically imported module: https://x/assets/baseplate-AAA.js'
+      )
+    ).toBe(
+      fingerprintOf(
+        'Failed to fetch dynamically imported module: https://x/assets/designer-ZZZZZZZZ.js'
+      )
+    );
+  });
+
+  it('leaves a bare network failure alone, which is not necessarily a chunk', () => {
+    // `isStaleAssetError` may answer for these because it is only ever asked
+    // about a failed kernel load. This hook sees every exception, so matching
+    // them here would drag genuine API failures into the chunk bucket.
+    expect(fingerprintOf('TypeError: Failed to fetch')).toBeUndefined();
+    expect(fingerprintOf('TypeError: Load failed')).toBeUndefined();
+  });
+
+  it('still reports the event rather than dropping it', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [{ value: 'Failed to fetch dynamically imported module: https://x/a.js' }],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+});
+
 describe('R3F canvas teardown race', () => {
   const CHROME = "Cannot read properties of null (reading 'addEventListener')";
   const canvasFrames = [

@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-restricted-imports -- this util is the one legitimate caller of React.lazy.
 import { lazy, type ComponentType } from 'react';
+import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 
 /**
  * Wraps a dynamic import with retry logic to handle chunk loading failures.
@@ -9,7 +10,17 @@ import { lazy, type ComponentType } from 'react';
  *
  * On failure, it will:
  * 1. Retry the import up to `retries` times
- * 2. If all retries fail, reload the page (once) to get fresh assets
+ * 2. If all retries fail, recover onto the current build (once per session)
+ *
+ * Recovery has to go through {@link recoverStaleBundle} rather than a plain
+ * `location.reload()`. The precache holds index.html and the boot graph, which
+ * name the lazy chunk's hash; the chunk itself is deliberately left out of the
+ * manifest (see `manifestTransforms` in vite.config.ts). So a stale precache
+ * points at a hash the CDN no longer serves, and because the service worker
+ * ships with `skipWaiting: false` / `clientsClaim: false` it keeps serving that
+ * same precached pair across a reload, which comes back to the identical dead
+ * hash. Dropping the precache and unregistering the worker first is what makes
+ * the reload land on the current build.
  *
  * Note: Uses `ComponentType<never>` as the constraint because TypeScript's
  * type inference for lazy-loaded components requires the most permissive type.
@@ -21,11 +32,9 @@ import { lazy, type ComponentType } from 'react';
 export function lazyWithRetry<T extends ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   retries = 2,
-  reloadOnFinalFailure = true
+  recoverOnFinalFailure = true
 ): React.LazyExoticComponent<T> {
   return lazy(async () => {
-    const sessionKey = `chunk-reload-${importFn.toString().slice(0, 100)}`;
-
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         return await importFn();
@@ -39,21 +48,16 @@ export function lazyWithRetry<T extends ComponentType<any>>(
           continue;
         }
 
-        // All retries exhausted
-        if (reloadOnFinalFailure && !sessionStorage.getItem(sessionKey)) {
-          // Mark that we're reloading to prevent infinite reload loops
-          sessionStorage.setItem(sessionKey, 'true');
-          console.warn('All import retries failed, reloading page to fetch fresh assets...');
-          window.location.reload();
-
+        // A stale bundle is one condition for the whole tab, not one per chunk,
+        // so the once-per-session guard belongs to the shared recovery rather
+        // than to a key derived from this importFn.
+        if (recoverOnFinalFailure && (await recoverStaleBundle('chunk_load_failure'))) {
           // Return a never-resolving promise while the page reloads
           return new Promise(() => {});
         }
 
-        // Clear the reload marker for next time (if user navigates back)
-        sessionStorage.removeItem(sessionKey);
-
-        // Re-throw the error if we can't reload or already tried
+        // Recovery was declined (already used this session, offline, or opted
+        // out), so surface the failure to the nearest boundary.
         throw error;
       }
     }

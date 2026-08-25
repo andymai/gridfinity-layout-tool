@@ -41,6 +41,6 @@ export function captureWasmLoadFailure(error: unknown, surface: WasmLoadSurface)
 export function handleWasmLoadFailure(error: unknown, surface: WasmLoadSurface): void {
   captureWasmLoadFailure(error, surface);
   if (isStaleAssetError(error)) {
-    void recoverStaleBundle(`wasm_load_failure:${surface}`);
+    void recoverStaleBundle(`wasm_load_failure:${surface}`, { dropWasmCache: true });
   }
 }

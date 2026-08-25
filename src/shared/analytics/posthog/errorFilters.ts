@@ -24,6 +24,25 @@ const WEBGL_CONTEXT_ERROR = 'Error creating WebGL context';
 /** Stable fingerprint that collapses every WebGL-context-creation variant into one issue. */
 const WEBGL_CONTEXT_FINGERPRINT = 'webgl-context-creation-failed';
 
+/**
+ * A lazy route chunk that failed to import, in each engine's wording.
+ *
+ * Chrome and Firefox append the chunk URL, whose Vite hash rotates every build,
+ * so message-based grouping mints a brand-new issue (and a new auto-filed bug)
+ * per deploy for what is one recurring stale-bundle miss. Safari's variant
+ * carries no URL and groups on its own; it belongs in the same bucket.
+ *
+ * Deliberately narrower than `isStaleAssetError`, which may answer for bare
+ * `Load failed` / `Failed to fetch` because it is only ever asked about an error
+ * that already failed to load the kernel. This runs against every exception, so
+ * those phrasings would drag genuine API failures into the chunk bucket.
+ */
+const CHUNK_LOAD_ERROR =
+  /(?:Failed to fetch|error loading) dynamically imported module|Importing a module script failed/;
+
+/** Stable fingerprint collapsing every deploy's chunk-load miss into one issue. */
+const CHUNK_LOAD_FINGERPRINT = 'chunk-load-failed';
+
 const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   // Safari Web Extensions message bus
   /No Listener: tabs:/i,
@@ -117,8 +136,8 @@ function isCanvasTeardownRace(exception: ExceptionLike): boolean {
 /**
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
  * exception matches the extension/noise filters or the R3F canvas teardown
- * race, dedupes the WebGL context-creation burst, and passes everything else
- * through unchanged.
+ * race, dedupes the WebGL context-creation burst, pins chunk-load failures to
+ * one fingerprint, and passes everything else through unchanged.
  *
  * Only the first entry in `$exception_list` / `$exception_values` is
  * checked. Subsequent entries are `Error.cause` chains — if a real app
@@ -155,6 +174,13 @@ export function filterExceptionForPosthog(
     event.properties = {
       ...event.properties,
       $exception_fingerprint: WEBGL_CONTEXT_FINGERPRINT,
+    };
+  }
+
+  if (primary !== undefined && CHUNK_LOAD_ERROR.test(primary)) {
+    event.properties = {
+      ...event.properties,
+      $exception_fingerprint: CHUNK_LOAD_FINGERPRINT,
     };
   }
 

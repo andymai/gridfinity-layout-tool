@@ -61,7 +61,11 @@ describe('handleWasmLoadFailure', () => {
     );
 
     expect(captureException).toHaveBeenCalledTimes(1);
-    expect(recoverStaleBundle).toHaveBeenCalledWith('wasm_load_failure:bin_designer_preview');
+    // Drops the wasm cache: this caller is here because a wasm artifact failed,
+    // so it is the suspect rather than a bystander.
+    expect(recoverStaleBundle).toHaveBeenCalledWith('wasm_load_failure:bin_designer_preview', {
+      dropWasmCache: true,
+    });
   });
 
   it('captures but does not recover on a genuine (non-stale) error', () => {
