@@ -146,22 +146,20 @@ function knuckleSolid(
 }
 
 /**
- * The knuckle's root: the material that actually holds it on the bin.
+ * The knuckle's root: the material that holds it on the bin.
  *
- * A barrel inset from the outer face by its own radius plus a relief, and
- * raised to the lid plate's underside, misses the lip completely — the plan's
- * {@link HingeGeometry.rootDepthBelowLipTopMm} says why. The knuckles fused on
- * without it are cylinders hanging in air: the bin stays watertight, every mesh
- * statistic is plausible, and the export's outer-shell pass then drops them as
- * stray shells, which is how a hinged bin came to export as a plain one.
+ * Load-bearing, not a fillet. The barrel touches the bin nowhere at all — see
+ * {@link HingeGeometry.rootDepthBelowLipTopMm} — so a knuckle fused on without
+ * this is a free-floating cylinder, and `keepOuterShell` deletes it from every
+ * export as a stray shell.
  *
- * Bounded ABOVE by the trim plane where it comes to rest — the one plane the
- * lid never sweeps past — so no shape below it can foul the swing, and the stop
- * still lands at {@link HingeGeometry.stopAngleDeg} because the root's top face
- * IS that plane rather than a second opinion about it. Outboard it stops at the
- * barrel's own limit, so the bin's footprint still does not grow by a micron.
- * Inboard it stops at the axis, which is the only bound that needs no opinion
- * about the lip's profile.
+ * Each bound is a constraint rather than a taste. ABOVE, the trim plane where
+ * it comes to rest: the one plane the lid never sweeps past, so no shape below
+ * it can foul the swing, and the stop still lands at
+ * {@link HingeGeometry.stopAngleDeg} because the root's top face IS that plane
+ * rather than a second opinion about it. OUTBOARD, the barrel's own limit, so
+ * the footprint does not grow. INBOARD, the axis — the only bound that needs no
+ * opinion about the lip's profile.
  */
 function knuckleRootSolid(
   scope: DisposalScope,

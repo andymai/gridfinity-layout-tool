@@ -290,20 +290,18 @@ describe('hinged lid', () => {
   }, 600_000);
 
   it('welds the knuckles onto the bin, and exports what it previewed', async () => {
-    // The defect this pins shipped. The barrel is inset from the outer face by
-    // its own radius plus a relief and raised to the lid plate's underside; the
-    // lip's top chamfer recedes inboard as it rises. Those two facts put the
-    // nearest lip material `(axisInset + axisAboveLipTop)/√2` from the axis —
-    // further than the radius — so knuckles fused on bare touch NOTHING, and
-    // the measured bridge was 0.00mm³ on all four walls. Six free-floating
-    // cylinders, watertight and plainly visible in the preview.
+    // Two claims, because either alone passes the other's bug.
     //
-    // Two claims, because either alone passes the other's bug. The root volume
-    // asks whether the joint is ATTACHED, which no bounding box or triangle
-    // count can see — a floating knuckle and a welded one bound the same box.
-    // The export height asks whether it SURVIVES: the pass that makes a bin
-    // watertight discards stray shells, so a hinge that failed to weld left the
-    // STL silently and the file a user opened was a plain bin.
+    // The root volume asks whether the joint is ATTACHED, which nothing else
+    // here can see: a knuckle welded to the lip and one hanging clear of it
+    // bound the same box, carry the same triangles and displace the same
+    // volume. The barrel reaches no bin material on its own — the plan's
+    // `rootDepthBelowLipTopMm` has the arithmetic — so this is not a margin
+    // being checked, it is the whole joint.
+    //
+    // The export height asks whether it SURVIVES. The pass that makes a bin
+    // watertight discards stray shells, so a hinge that fails to weld is
+    // deleted from the STL while the preview keeps showing it.
     for (const side of ['back', 'front', 'left', 'right'] as const) {
       const params = hingeParams({}, { side, catchMode: 'none' });
       const plain = control(params);

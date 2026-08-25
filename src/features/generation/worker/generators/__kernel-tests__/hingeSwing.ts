@@ -79,9 +79,9 @@ export function swingAxis(
  * inside the lip up to the axis, with the barrel cut back out of it.
  *
  * Read as a DELTA against the same bin with a friction lid, which cancels the
- * lip the zone unavoidably contains. Zero is six cylinders waiting to fall off
- * the plate — which is what this repo shipped, and what the export then deleted
- * outright, a stray shell being exactly what `keepOuterShell` exists to discard.
+ * lip the zone unavoidably contains. Zero means knuckles that fall off the
+ * plate, and that the export deletes outright — a stray shell being exactly
+ * what `keepOuterShell` exists to discard.
  *
  * Deliberately one BIN band and not the whole run: a LID band has no bin
  * knuckle over it, and measuring there would report the lip alone however badly
