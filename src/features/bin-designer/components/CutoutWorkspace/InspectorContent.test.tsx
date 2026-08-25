@@ -480,6 +480,54 @@ describe('InspectorContent multi-select editing', () => {
     expect(updates.has('imported')).toBe(false);
   });
 
+  // The same field on a selection of one holds the shape's center (#3864), so a
+  // selection of two has to as well.
+  it('holds each cutout’s own center when batch-resizing', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'small', x: 10, y: 10, width: 20, depth: 20 }),
+      createCutout({ id: 'large', x: 60, y: 40, width: 40, depth: 40 }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-W'), { target: { value: '30' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    // small: center 20 → 30mm wide starts at 5. large: center 80 → starts at 65.
+    expect(updates.get('small')).toMatchObject({ width: 30, x: 5 });
+    expect(updates.get('large')).toMatchObject({ width: 30, x: 65 });
+    // The untouched axis stays put on both.
+    expect(updates.get('small')?.y).toBe(10);
+    expect(updates.get('large')?.y).toBe(40);
+  });
+
+  it('holds each cutout’s own center when batch-resizing depth', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'a', x: 10, y: 10, width: 20, depth: 20 }),
+      createCutout({ id: 'b', x: 10, y: 40, width: 20, depth: 40 }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-H'), { target: { value: '10' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('a')).toMatchObject({ depth: 10, y: 15 });
+    expect(updates.get('b')).toMatchObject({ depth: 10, y: 55 });
+    expect(updates.get('a')?.x).toBe(10);
+  });
+
+  // Flooring at the minimum must not leave the origin where the typed size put it.
+  it('re-centers on the floored size when a batch W is below the minimum', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'a', x: 10, y: 0, width: 20, depth: 20 }),
+      createCutout({ id: 'b', x: 50, y: 0, width: 20, depth: 20 }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-W'), { target: { value: '0.5' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    // Center 20 with a 2mm floor starts at 19, not at the original 10.
+    expect(updates.get('a')).toMatchObject({ width: 2, x: 19 });
+    expect(updates.get('b')).toMatchObject({ width: 2, x: 59 });
+  });
+
   it('clamps batch chamfer to each cutout’s own cut-depth headroom', () => {
     const onUpdateBatch = renderMulti([
       createCutout({ id: 'deep', cutDepth: 10 }),

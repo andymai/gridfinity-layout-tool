@@ -14,6 +14,7 @@ import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geometryAlign';
 import { expandSelectionToGroups } from '../panel/CutoutsSection/cutoutGroups';
+import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
 import { arrayInstanceCount, canGroupArray, groupRepeatBox } from '@/shared/utils/cutoutArray';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -265,6 +266,11 @@ export function InspectorContent({
   // past the wall, so each shape gets its own ceiling rather than the control
   // refusing the whole edit. Size is not — a typed W/H is a measurement, and it
   // is kept past the board for the grow-to-fit action to resolve.
+  //
+  // Size is also anchored per shape's OWN center, not the selection's: the field
+  // is the same control the single-cutout inspector renders, so holding a corner
+  // here would make one behaviour apply at a selection of one and its opposite
+  // at two.
   const handleGeometryBatch = (key: 'x' | 'y' | 'width' | 'depth', value: number) => {
     if (!onUpdateBatch || selectedCutouts.length <= 1) return;
     const updates = new Map<string, Partial<Cutout>>();
@@ -273,7 +279,11 @@ export function InspectorContent({
       if (key === 'width' || key === 'depth') {
         // Meshes carry baked geometry — resizing them would desync the asset.
         if (c.shape === 'mesh') continue;
-        updates.set(c.id, { [key]: Math.max(MIN_CUTOUT_SIZE_MM, value) });
+        const size = Math.max(MIN_CUTOUT_SIZE_MM, value);
+        updates.set(
+          c.id,
+          resizeAroundCenter(c, key === 'width' ? { width: size } : { depth: size })
+        );
         continue;
       }
       // An oversize cutout leaves no valid offset on this axis; pin it to 0.
