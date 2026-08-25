@@ -6,7 +6,6 @@
  * parameters, thumbnails, and timestamps.
  */
 
-import { openDB, type IDBPDatabase } from 'idb';
 import type { DesignId } from '@/core/types';
 import { designId } from '@/core/types';
 import type { Result, StorageError } from '@/core/result';
@@ -26,43 +25,15 @@ import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/f
 import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designerEvents';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { trackDesignCreated } from '@/shared/analytics/posthog';
+import { getDb, DESIGNS_STORE } from './designerDb';
+import { deleteVersionsForDesign } from './DesignVersionService';
 
-const DB_NAME = 'gridfinity-designer-v1';
-const DB_VERSION = 1;
-const DESIGNS_STORE = 'designs';
+// Re-exported so callers that treat this module as the designer's storage
+// surface keep one import site as the schema moves to `designerDb`.
+export { closeDesignerDb } from './designerDb';
 
 /** localStorage key for tracking the active design ID across sessions */
 const ACTIVE_DESIGN_KEY = 'gridfinity-designer-active-v1';
-
-let dbInstance: IDBPDatabase | null = null;
-
-/**
- * Open the designer database, creating stores if needed.
- */
-async function getDb(): Promise<IDBPDatabase> {
-  if (dbInstance) {
-    return dbInstance;
-  }
-
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(DESIGNS_STORE)) {
-        const store = db.createObjectStore(DESIGNS_STORE, { keyPath: 'id' });
-        store.createIndex('updatedAt', 'updatedAt');
-      }
-    },
-  });
-
-  // Clear cached instance if the browser closes the connection unexpectedly
-  db.addEventListener('close', () => {
-    if (dbInstance === db) {
-      dbInstance = null;
-    }
-  });
-
-  dbInstance = db;
-  return dbInstance;
-}
 
 /**
  * Generate a unique design ID.
@@ -308,20 +279,15 @@ export async function deleteDesign(id: DesignId): Promise<Result<void, StorageEr
     }
 
     await db.delete(DESIGNS_STORE, id);
+    // Versions are keyed to a design; left behind they are unreachable rows that
+    // still occupy the store. Failure here must not fail the delete — the design
+    // is already gone, and reporting an error would invite a retry that then
+    // reports "not found".
+    await deleteVersionsForDesign(id);
     emitDesignerEvent({ type: 'delete', id, deletedAt: new Date().toISOString() });
     return ok(undefined);
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
-  }
-}
-
-/**
- * Close the database connection (for testing/cleanup).
- */
-export function closeDesignerDb(): void {
-  if (dbInstance) {
-    dbInstance.close();
-    dbInstance = null;
   }
 }
 

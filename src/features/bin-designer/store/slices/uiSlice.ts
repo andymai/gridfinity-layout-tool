@@ -46,6 +46,12 @@ export function createUISlice(set: Set) {
       });
     },
 
+    setVersionsOpen: (open: boolean) => {
+      set((state) => {
+        state.ui.versionsOpen = open;
+      });
+    },
+
     setWireframeMode: (enabled: boolean) => {
       set((state) => {
         state.ui.wireframeMode = enabled;

@@ -63,6 +63,8 @@ export interface DesignerUIState {
   readonly activeTab: DesignerTab;
   readonly exportDialogOpen: boolean;
   readonly designListOpen: boolean;
+  /** Whether the version-history dialog is open. */
+  readonly versionsOpen: boolean;
   readonly wireframeMode: boolean;
   /** Whether half-bin mode is enabled (0.5 grid unit increments for width/depth) */
   readonly halfGridMode: boolean;

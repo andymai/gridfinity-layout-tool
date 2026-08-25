@@ -24,11 +24,30 @@ interface DesignerHeaderProps {
   nameEditor: DesignNameEditor;
 }
 
+/**
+ * History-clock glyph. Defined once because the desktop and mobile branches of
+ * this header both render it, and a control that exists in only one of the two
+ * is exactly how a designer feature ends up desktop-only.
+ */
+function VersionsIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 8v4l3 2m6-2a9 9 0 11-3.51-7.14M21 3v4h-4"
+      />
+    </svg>
+  );
+}
+
 export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
   const t = useTranslation();
   const saveStatus = useDesignerStore((s) => s.saveStatus);
   const designName = useDesignerStore((s) => s.designName);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
+  const setVersionsOpen = useDesignerStore((s) => s.setVersionsOpen);
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const canExport = useDesignerStore(
     (s) =>
@@ -213,6 +232,15 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   />
                 </svg>
               </IconButton>
+              <IconButton
+                variant="ghost"
+                touchTarget={false}
+                onClick={() => setVersionsOpen(true)}
+                title={t('binDesigner.versions.open')}
+                aria-label={t('binDesigner.versions.open')}
+              >
+                <VersionsIcon />
+              </IconButton>
             </div>
 
             <div className="w-px h-6 bg-stroke-subtle mx-2" />
@@ -378,6 +406,13 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
                 />
               </svg>
+            </IconButton>
+            <IconButton
+              variant="ghost"
+              onClick={() => setVersionsOpen(true)}
+              aria-label={t('binDesigner.versions.open')}
+            >
+              <VersionsIcon />
             </IconButton>
           </div>
         </>

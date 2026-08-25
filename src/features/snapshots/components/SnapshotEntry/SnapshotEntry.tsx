@@ -1,6 +1,6 @@
 import { Button, IconButton, InlineEditText } from '@/design-system';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
-import { useRelativeTime } from '../../hooks/useRelativeTime';
+import { useRelativeTime } from '@/shared/hooks/useRelativeTime';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { Snapshot } from '@/core/types';

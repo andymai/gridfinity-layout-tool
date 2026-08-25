@@ -3,11 +3,22 @@
  */
 
 import type { Draft } from 'immer';
-import type { DesignerState, SaveStatus, ExportFileNameConfig, SavedDesign } from '../../types';
+import type {
+  DesignerState,
+  SaveStatus,
+  ExportFileNameConfig,
+  SavedDesign,
+  DesignVersionContent,
+} from '../../types';
 import { THUMBNAIL_VERSION, deriveInteriorCard } from '../../types';
 import { migrateParams } from '../../constants';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '../../utils/fileNaming';
-import { defaultsForNewDesign, paramsNeedHalfGridMode, setPendingMeshCache } from '../helpers';
+import {
+  defaultsForNewDesign,
+  paramsNeedHalfGridMode,
+  pushHistoryEntry,
+  setPendingMeshCache,
+} from '../helpers';
 import { isPartialMask, validateMask } from '@/shared/utils/cellMask';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import type { ItemKind } from '@/shared/types/item';
@@ -22,6 +33,53 @@ export function createPersistenceSlice(set: Set) {
     setCurrentDesignId: (id: string | null) => {
       set((state) => {
         state.currentDesignId = id;
+      });
+    },
+
+    /**
+     * Replace the working state with a stored version of the SAME design.
+     *
+     * Deliberately not `loadDesign`: that switches which design is open and so
+     * clears history, which would make a restore the one edit in the designer
+     * that cannot be undone. This pushes a history entry instead and leaves
+     * `currentDesignId` alone, so Ctrl+Z steps back over it like any other edit.
+     *
+     * The caller is responsible for capturing a `pre-restore` version first —
+     * undo is bounded and lost on reload, and a restore is exactly the moment a
+     * user can lose work they never named.
+     */
+    restoreVersion: (content: DesignVersionContent) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.designName = content.name;
+
+        const kind: ItemKind = (content.kind as ItemKind | undefined) ?? 'bin';
+        const envelope = content.envelope as DesignerState['envelope'];
+        const structure = content.structure as DesignerState['structure'];
+        if (kind !== 'bin' && hasItemDescriptor(kind) && structure && envelope) {
+          state.itemKind = kind;
+          state.structure = getItemDescriptor(kind).migrate(structure, envelope);
+          state.envelope = envelope;
+        } else {
+          let migrated = migrateParams(content.params ?? {});
+          if (isPartialMask(migrated.cellMask) && validateMask(migrated.cellMask) !== null) {
+            migrated = { ...migrated, cellMask: undefined };
+          }
+          state.params = migrated;
+          state.itemKind = 'bin';
+          state.envelope = null;
+          state.structure = null;
+          state.ui.halfGridMode = paramsNeedHalfGridMode(migrated);
+          state.ui.shapeEditorOpen = isPartialMask(migrated.cellMask);
+          state.ui.interiorCard = deriveInteriorCard(migrated.style, migrated.compartments);
+          state.ui.bentoWorkspaceOpen = false;
+        }
+
+        // saveStatus is left alone: autosave watches params and drives it, the
+        // same as any other edit. Setting it here would report a state the
+        // persistence layer has not reached yet.
+        state.needsThumbnailUpdate = true;
+        state.generation.epoch += 1;
       });
     },
 

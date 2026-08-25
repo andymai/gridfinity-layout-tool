@@ -10,6 +10,7 @@
  */
 
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
+import { VersionHistory } from '../VersionHistory';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useSyncPhysicalUnits } from '@/features/bin-designer/hooks/useSyncPhysicalUnits';
@@ -95,6 +96,8 @@ export function DesignerPage() {
   );
   const bentoWorkspaceOpen = useDesignerStore((s) => s.ui.bentoWorkspaceOpen);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
+  const versionsOpen = useDesignerStore((s) => s.ui.versionsOpen);
+  const setVersionsOpen = useDesignerStore((s) => s.setVersionsOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
 
   const nameEditor = useDesignNameEditor();
@@ -150,6 +153,7 @@ export function DesignerPage() {
       {/* Modals */}
       <ExportDialog />
       <DesignListDialog open={designListOpen} onClose={() => setDesignListOpen(false)} />
+      <VersionHistory open={versionsOpen} onClose={() => setVersionsOpen(false)} />
     </div>
   );
 }

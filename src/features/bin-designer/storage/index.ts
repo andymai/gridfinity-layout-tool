@@ -6,8 +6,8 @@ export {
   duplicateDesign,
   updateDesignName,
   updateDesignParams,
-  closeDesignerDb,
 } from './DesignerStorage';
+export { closeDesignerDb } from './designerDb';
 export {
   saveDefaultParams,
   loadDefaultParams,

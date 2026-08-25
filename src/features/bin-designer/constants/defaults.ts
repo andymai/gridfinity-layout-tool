@@ -283,6 +283,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   activeTab: 'dimensions',
   exportDialogOpen: false,
   designListOpen: false,
+  versionsOpen: false,
   wireframeMode: false,
   halfGridMode: false,
   cutoutEditorOpen: false,
