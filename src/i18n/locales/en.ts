@@ -2735,6 +2735,18 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.repeat.presetNoFit': 'Not enough room from this position',
   'binDesigner.cutouts.repeat.blockedGrouped': 'Repeat works on ungrouped shapes.',
   'binDesigner.cutouts.repeat.blockedPath': 'Repeat is not available for pen paths.',
+  'binDesigner.cutouts.repeat.labels.enable': 'Label each copy separately',
+  'binDesigner.cutouts.repeat.labels.disable': 'Use one label for all copies',
+  'binDesigner.cutouts.repeat.labels.title': 'Labels',
+  'binDesigner.cutouts.repeat.labels.placeholder': 'One label per line',
+  'binDesigner.cutouts.repeat.labels.order.reading': 'Top row first, then left to right.',
+  'binDesigner.cutouts.repeat.labels.order.ring': 'Around the ring, starting from the first copy.',
+  'binDesigner.cutouts.repeat.labels.count': '{labels} labels / {copies} copies',
+  'binDesigner.cutouts.repeat.labels.short': '{count} copies still use the single label above.',
+  'binDesigner.cutouts.repeat.labels.long': '{count} spare, kept for when you add more copies.',
+  'binDesigner.cutouts.repeat.labels.splitCommas': 'Split on commas',
+  'binDesigner.cutouts.repeat.labels.socketNote':
+    'All copies share one label plate, so they share its text.',
   'binDesigner.cutouts.repeat.merge': 'Make repeat',
   'binDesigner.cutouts.repeat.suggestGrid':
     'These {count} shapes can become one repeat: {cols} × {rows} at {pitchX} × {pitchY} mm.',

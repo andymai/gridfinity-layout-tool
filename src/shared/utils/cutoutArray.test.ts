@@ -7,6 +7,8 @@ import {
   arrayInstancesOverlap,
   fillBinCounts,
   expandCutoutArray,
+  arrayLabelCounts,
+  labelledInstances,
   type ArrayInstance,
 } from './cutoutArray';
 import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
@@ -33,7 +35,9 @@ describe('grid mode', () => {
     const insts = arrayInstances(cfg({ mode: 'grid', cols: 3, rows: 2 }));
     expect(insts).toHaveLength(6);
     const m = master(insts);
-    expect(m).toEqual({ dx: 0, dy: 0, drot: 0, isMaster: true });
+    // labelIndex 3, not 0: the master is the BOTTOM-left hole of a 3x2 grid,
+    // and a caption list is written top row first.
+    expect(m).toEqual({ dx: 0, dy: 0, drot: 0, isMaster: true, labelIndex: 3 });
   });
 
   it('spaces instances by center-to-center pitch', () => {
@@ -60,7 +64,7 @@ describe('radial mode', () => {
   it('places `count` instances with the master at index 0', () => {
     const insts = arrayInstances(cfg({ mode: 'radial', count: 4, radius: 20, startAngle: 0 }));
     expect(insts).toHaveLength(4);
-    expect(master(insts)).toEqual({ dx: 0, dy: 0, drot: 0, isMaster: true });
+    expect(master(insts)).toEqual({ dx: 0, dy: 0, drot: 0, isMaster: true, labelIndex: 0 });
   });
 
   it('rotates instances to face center when enabled', () => {
@@ -430,5 +434,87 @@ describe('fillBinCounts', () => {
     const bounds = arrayFieldBounds(master({ x: 3, y: 7 }), 137, 111, { ...config, ...filled });
     expect(filled.cols).toBeLessThanOrEqual(bounds.maxCols);
     expect(filled.rows).toBeLessThanOrEqual(bounds.maxRows);
+  });
+});
+
+describe('per-instance captions', () => {
+  const cut = (overrides: Partial<Cutout> = {}): Cutout => ({
+    id: 'm',
+    shape: 'circle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: 'Bit',
+    groupId: null,
+    ...overrides,
+  });
+
+  it('reads a grid list top row first, left to right', () => {
+    // A 3x1 row is unambiguous; a 2x2 is where reading order and emission
+    // order disagree, so the corners are what this pins down.
+    const labels = ['TL', 'TR', 'BL', 'BR'];
+    const insts = expandCutoutArray(
+      cut({ array: cfg({ cols: 2, rows: 2, pitchX: 20, pitchY: 20, labels }) })
+    );
+    const at = (dx: number, dy: number) => insts.find((i) => i.x === dx && i.y === dy)?.label;
+    expect(at(0, 20)).toBe('TL');
+    expect(at(20, 20)).toBe('TR');
+    expect(at(0, 0)).toBe('BL');
+    expect(at(20, 0)).toBe('BR');
+  });
+
+  it('walks a radial list around the ring from the master', () => {
+    const insts = expandCutoutArray(
+      cut({ array: cfg({ mode: 'radial', count: 3, labels: ['one', 'two', 'three'] }) })
+    );
+    expect(insts.map((i) => i.label)).toEqual(['one', 'two', 'three']);
+  });
+
+  it("falls back to the master's label past the end of a short list", () => {
+    const insts = expandCutoutArray(cut({ array: cfg({ cols: 3, rows: 1, labels: ['Upcut'] }) }));
+    expect(insts.map((i) => i.label)).toEqual(['Upcut', 'Bit', 'Bit']);
+  });
+
+  it('honours a blank written INSIDE the list as a bare hole', () => {
+    // The asymmetry with the case above is deliberate: an empty slot the user
+    // typed is a decision, an unwritten one is unfinished work.
+    const insts = expandCutoutArray(
+      cut({ array: cfg({ cols: 3, rows: 1, labels: ['Upcut', '', 'Flush'] }) })
+    );
+    expect(insts.map((i) => i.label)).toEqual(['Upcut', '', 'Flush']);
+  });
+
+  it("leaves every instance on the master's label when there is no list", () => {
+    const insts = expandCutoutArray(cut({ array: cfg({ cols: 2, rows: 1 }) }));
+    expect(insts.map((i) => i.label)).toEqual(['Bit', 'Bit']);
+  });
+
+  it('keeps extra captions when the array shrinks, so they survive a resize', () => {
+    const labels = ['a', 'b', 'c', 'd'];
+    const shrunk = cfg({ cols: 2, rows: 1, labels });
+    expect(arrayLabelCounts(shrunk)).toEqual({ labels: 4, copies: 2 });
+    // Growing back finds them still there.
+    expect(
+      expandCutoutArray(cut({ array: cfg({ cols: 4, rows: 1, labels }) })).map((i) => i.label)
+    ).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('does not count trailing blanks as supplied captions', () => {
+    expect(arrayLabelCounts(cfg({ cols: 3, rows: 1, labels: ['a', 'b', ''] }))).toEqual({
+      labels: 2,
+      copies: 3,
+    });
+  });
+
+  it('captions only the master until a list exists, so stored designs are unchanged', () => {
+    const noList = cut({ array: cfg({ cols: 3, rows: 1 }) });
+    expect(labelledInstances(noList)).toHaveLength(1);
+    expect(
+      labelledInstances({ ...noList, array: cfg({ cols: 3, rows: 1, labels: [] }) })
+    ).toHaveLength(3);
   });
 });

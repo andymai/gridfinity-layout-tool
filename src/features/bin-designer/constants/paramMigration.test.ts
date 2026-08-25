@@ -1618,3 +1618,63 @@ describe('migrateParams - cutout top offset coercion (#3697)', () => {
     expect(migrate(1e9)).toBe(350);
   });
 });
+
+describe('repeat label list migration', () => {
+  const repeat = (labels: unknown) => ({
+    mode: 'grid' as const,
+    cols: 2,
+    rows: 1,
+    pitchX: 20,
+    pitchY: 20,
+    count: 2,
+    radius: 20,
+    startAngle: 0,
+    rotateToCenter: false,
+    labels,
+  });
+
+  const migrateCutoutWithArray = (labels: unknown): BinParams['cutouts'][number] =>
+    migrateParams({
+      cutouts: [
+        {
+          id: 'c1',
+          shape: 'circle',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          cutDepth: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: 'Bit',
+          groupId: null,
+          array: repeat(labels),
+        },
+      ],
+    } as Partial<BinParams>).cutouts[0];
+
+  it('keeps a well-formed list by reference, so the fingerprint is untouched', () => {
+    const labels = ['Upcut', '', 'Flush'];
+    expect(migrateCutoutWithArray(labels).array?.labels).toEqual(labels);
+  });
+
+  it('leaves a repeat that predates the list without one', () => {
+    expect(migrateCutoutWithArray(undefined).array?.labels).toBeUndefined();
+  });
+
+  it('drops a list that is not an array at all', () => {
+    expect(migrateCutoutWithArray('Upcut, Downcut').array?.labels).toBeUndefined();
+  });
+
+  it('caps the list at one label per copy the repeat could expand to', () => {
+    const flood = Array<string>(500).fill('x');
+    expect(migrateCutoutWithArray(flood).array?.labels).toHaveLength(400);
+  });
+
+  it('clamps an entry to one engraved line and blanks a non-string', () => {
+    const migrated = migrateCutoutWithArray(['a'.repeat(120), 42, null]);
+    expect(migrated.array?.labels?.[0]).toHaveLength(50);
+    expect(migrated.array?.labels?.[1]).toBe('');
+    expect(migrated.array?.labels?.[2]).toBe('');
+  });
+});

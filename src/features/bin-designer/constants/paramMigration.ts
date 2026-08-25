@@ -26,7 +26,8 @@ import type {
   WallCutoutShape,
   KnifeRestConfig,
 } from '../types';
-import { CUTOUT_FILL_REFERENCES, DEFAULT_PATTERN_SCALE } from '../types';
+import type { CutoutArrayConfig } from '../types';
+import { CUTOUT_FILL_REFERENCES, DEFAULT_PATTERN_SCALE, MAX_ARRAY_INSTANCES } from '../types';
 import {
   KNIFE_REST_DEFAULT_GAP_MM,
   KNIFE_REST_GROOVE_DEPTH_MM,
@@ -803,14 +804,41 @@ type MigrateParamsInput = Omit<Partial<BinParams>, 'wallPattern' | 'featureColor
  */
 function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
   const { scoopRadius, ...rest } = cutout;
+  const array = migrateCutoutArray(rest.array);
+  const withArray = array === rest.array ? rest : { ...rest, array };
   if (
     scoopRadius !== undefined &&
-    rest.scoopRadiusW === undefined &&
-    rest.scoopRadiusD === undefined
+    withArray.scoopRadiusW === undefined &&
+    withArray.scoopRadiusD === undefined
   ) {
-    return { ...rest, scoopRadiusW: scoopRadius, scoopRadiusD: scoopRadius };
+    return { ...withArray, scoopRadiusW: scoopRadius, scoopRadiusD: scoopRadius };
   }
-  return rest;
+  return withArray;
+}
+
+/**
+ * Normalize a repeat's per-copy label list. The share/sync validator rejects an
+ * oversized one, but a hand-authored JSON imported locally never reaches it, so
+ * the caps are applied here too: at most one label per copy the repeat can
+ * expand to, each one line long.
+ *
+ * Returns the input by reference when nothing needed changing, so a design that
+ * predates the list serializes byte-identically and its fingerprint holds.
+ */
+function migrateCutoutArray(array: CutoutArrayConfig | undefined): CutoutArrayConfig | undefined {
+  if (!array) return array;
+  const raw: unknown = array.labels;
+  if (raw === undefined) return array;
+  if (!Array.isArray(raw)) {
+    const { labels: _drop, ...rest } = array;
+    return rest;
+  }
+  const labels = raw
+    .slice(0, MAX_ARRAY_INSTANCES)
+    .map((entry: unknown) => (typeof entry === 'string' ? entry.slice(0, TEXT_MAX_LENGTH) : ''));
+  const unchanged =
+    labels.length === raw.length && labels.every((entry, i) => entry === (raw as unknown[])[i]);
+  return unchanged ? array : { ...array, labels };
 }
 
 /**

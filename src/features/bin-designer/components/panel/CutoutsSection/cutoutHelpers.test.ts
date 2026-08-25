@@ -159,7 +159,7 @@ describe('flattenCutoutArray', () => {
       },
     });
     const { masterPatch, added } = flattenCutoutArray(c);
-    expect(masterPatch).toEqual({ array: undefined });
+    expect(masterPatch).toEqual({ array: undefined, label: '' });
     expect(added).toHaveLength(2); // 3 instances − the master
     expect(added.every((a) => a.array === undefined)).toBe(true);
     expect(new Set(added.map((a) => a.id)).size).toBe(2); // unique ids
@@ -218,7 +218,7 @@ describe('applyFlattenArray', () => {
     expect(
       applyFlattenArray('m', [master], s.updateCutout, s.addCutout, Infinity, inertTransaction)
     ).toBe('flattened');
-    expect(s.patched).toEqual([{ array: undefined }]);
+    expect(s.patched).toEqual([{ array: undefined, label: '' }]);
     expect(s.added).toHaveLength(2);
   });
 

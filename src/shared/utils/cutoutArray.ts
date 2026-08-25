@@ -33,6 +33,13 @@ export interface ArrayInstance {
   readonly drot: number;
   /** True for instance 0 — the master — so the editor can mark it. */
   readonly isMaster: boolean;
+  /**
+   * Index into {@link CutoutArrayConfig.labels} for this instance. Deliberately
+   * NOT the emission index: a grid is emitted bottom row first (Y is up, gotcha
+   * #1) while a label list is written the way it is read, top row first. See
+   * {@link arrayLabelOrder}.
+   */
+  readonly labelIndex: number;
 }
 
 const clampCount = (n: number): number => Math.max(1, Math.round(Number.isFinite(n) ? n : 1));
@@ -76,6 +83,7 @@ export function arrayInstances(config: CutoutArrayConfig): ArrayInstance[] {
         dy: r * (d.y - base.y),
         drot: config.rotateToCenter ? k * step : 0,
         isMaster: k === 0,
+        labelIndex: k,
       });
     }
     return out;
@@ -94,10 +102,79 @@ export function arrayInstances(config: CutoutArrayConfig): ArrayInstance[] {
         dy: row * config.pitchY,
         drot: 0,
         isMaster: row === 0 && col === 0,
+        labelIndex: (rows - 1 - row) * cols + col,
       });
     }
   }
   return out;
+}
+
+/**
+ * How a label list maps onto the instances of an array, as a sentence the
+ * editor can show and this module implements.
+ *
+ * Grid and staggered arrays grow in +Y, which is UP, so instance 0 is the
+ * BOTTOM-left hole. A list of labels is written the way it is read (top row
+ * first), so the two orders are reversed by row, never by column.
+ */
+export type ArrayLabelOrder = 'reading' | 'ring';
+
+export function arrayLabelOrder(config: CutoutArrayConfig): ArrayLabelOrder {
+  return config.mode === 'radial' ? 'ring' : 'reading';
+}
+
+/**
+ * The label an instance carries: its own entry when the list reaches it (blank
+ * included, since an explicit empty slot means "leave this one bare"), and the
+ * master's label beyond the list's end.
+ *
+ * The asymmetry is the point. A list SHORTER than the array is half-finished
+ * work, and blanking the tail would hide the holes the user has yet to name; a
+ * blank written INSIDE the list is a decision.
+ */
+export function instanceLabel(
+  masterLabel: string,
+  labels: readonly string[] | undefined,
+  labelIndex: number
+): string {
+  if (!labels || labelIndex >= labels.length) return masterLabel;
+  return labels[labelIndex];
+}
+
+/**
+ * The instances that carry an engraved label of their own.
+ *
+ * A repeat WITHOUT a label list engraves once, beside the master, exactly as it
+ * did before the list existed, so every stored design keeps the part it
+ * printed. Writing a list is the act that opts a repeat into a label per
+ * instance, which is why the gate is the list's presence and not its contents:
+ * a list of one on a repeat of five still labels all five (the tail falling
+ * back to the master's label), and the editor reports the shortfall.
+ *
+ * Callers that want PLACEMENT rather than labels (bounds, sockets, fit tests)
+ * want every instance regardless, and use `expandCutoutArray`.
+ */
+export function labelledInstances(cutout: Cutout): Cutout[] {
+  if (cutout.array?.labels === undefined) return [cutout];
+  return expandCutoutArray(cutout);
+}
+
+/**
+ * How many labels a list supplies, against how many copies there are. The
+ * editor shows this as "5 labels / 5 copies" and warns on a mismatch rather
+ * than refusing it.
+ *
+ * Trailing blanks do not count as supplied: a list typed as `"A, B,"` has two
+ * labels and a stray separator, not three.
+ */
+export function arrayLabelCounts(config: CutoutArrayConfig): {
+  readonly labels: number;
+  readonly copies: number;
+} {
+  const labels = config.labels ?? [];
+  let last = labels.length;
+  while (last > 0 && labels[last - 1].trim() === '') last--;
+  return { labels: last, copies: arrayInstanceCount(config) };
 }
 
 /**
@@ -111,17 +188,20 @@ export function arrayInstances(config: CutoutArrayConfig): ArrayInstance[] {
  */
 export function expandCutoutArray(cutout: Cutout): Cutout[] {
   if (!cutout.array) return [cutout];
+  const labels = cutout.array.labels;
   const cx = cutout.x + cutout.width / 2;
   const cy = cutout.y + cutout.depth / 2;
   return arrayInstances(cutout.array).map((inst, i) => {
+    const label = instanceLabel(cutout.label, labels, inst.labelIndex);
     if (inst.isMaster) {
       const { array: _a, ...rest } = cutout;
-      return { ...rest, id: `${cutout.id}::a${i}` };
+      return { ...rest, id: `${cutout.id}::a${i}`, label };
     }
     const { array: _a, ...rest } = cutout;
     return {
       ...rest,
       id: `${cutout.id}::a${i}`,
+      label,
       x: cx + inst.dx - cutout.width / 2,
       y: cy + inst.dy - cutout.depth / 2,
       rotation: (((cutout.rotation + inst.drot) % 360) + 360) % 360,

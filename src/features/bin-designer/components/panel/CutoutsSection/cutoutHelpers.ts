@@ -208,7 +208,11 @@ export function flattenCutoutArray(master: Cutout): {
   if (!master.array) return { masterPatch: {}, added: [] };
   const instances = expandCutoutArray(master);
   const added = instances.slice(1).map((inst) => ({ ...inst, id: crypto.randomUUID() }));
-  return { masterPatch: { array: undefined }, added };
+  // The master's own label comes out of the list like every other instance's.
+  // It is rarely list entry 0 (a grid's master is the BOTTOM-left hole while
+  // the list is written top row first), so carrying the stored `label` through
+  // would hand the master a label meant for a different hole.
+  return { masterPatch: { array: undefined, label: instances[0].label }, added };
 }
 
 /**

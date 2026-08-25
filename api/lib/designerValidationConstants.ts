@@ -32,6 +32,11 @@ export const CONSTRAINTS = {
   // The client clamps at read time too; this stops a NaN or an absurd angle
   // reaching tan() in the generator's tool-extension math.
   MAX_CUTOUT_LEAN_DEG: 45,
+  // Mirrors MAX_ARRAY_INSTANCES in src/features/bin-designer/types/cutout.ts.
+  // A repeat expands to at most this many holes, so a label list longer than it
+  // describes copies that do not exist. Bounded here so a direct HTTP POST
+  // cannot smuggle an unbounded string array past the editor's own textarea.
+  MAX_ARRAY_INSTANCES: 400,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,
   MAX_DIVIDER_THICKNESS: 2.4,

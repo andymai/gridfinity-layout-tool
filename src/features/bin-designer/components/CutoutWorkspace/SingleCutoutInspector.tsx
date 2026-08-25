@@ -38,6 +38,7 @@ import {
 } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
+import { CutoutRepeatLabels } from './CutoutRepeatLabels';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutKnifeControls } from './CutoutKnifeControls';
 import { LabelSizeControl } from '../controls';
@@ -475,6 +476,18 @@ function CutoutEngraveLabelControls({
         placeholder={t('binDesigner.cutoutEngraveLabelPlaceholder')}
         aria-label={t('binDesigner.cutoutEngraveLabel')}
       />
+      {/* A repeat can caption each hole separately, but only when it engraves:
+          the socket planner cuts ONE pocket spanning the whole array, so a
+          socket repeat has a single plate to letter. Say so rather than
+          offering a list the plate cannot carry. */}
+      {cutout.array &&
+        (isSocket ? (
+          <p className="text-[10px] leading-snug text-content-tertiary">
+            {t('binDesigner.cutouts.repeat.labels.socketNote')}
+          </p>
+        ) : (
+          <CutoutRepeatLabels cutout={cutout} disabled={disabled} onUpdate={onUpdate} />
+        ))}
       {isSocket && (
         <CutoutSocketControls
           cutout={cutout}

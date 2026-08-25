@@ -51,7 +51,7 @@ import {
   slotCornerRadius,
   clampPolygonSides,
 } from '@/shared/utils/cutoutPolygon';
-import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { labelledInstances, expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
 import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
@@ -1180,36 +1180,44 @@ export function buildCutoutCuts(
   }
 
   const rawFuseShapes: Shape3D[] = [];
-  for (const cutout of params.cutouts) {
-    if (!isCutoutEngraveMode(cutout)) continue;
-    const label = cutout.label.trim();
-    if (label === '') continue;
-    // Non-union groups (subtract/intersect/exclude) can hollow a member's
-    // footprint out of the final cavity, so a member-footprint floor guess may
-    // point at solid material. Only union cavities keep member floors intact.
-    // A leaned pocket's floor is tilted and laterally shifted, so the flat
-    // recess-floor Z guess is wrong for it too — its labels stay on the top.
-    const allowFloor =
-      (cutout.groupId === null || groupOps.get(cutout.groupId) === 'union') &&
-      resolveCutoutLeanDeg(cutout) === 0;
-    const textShape = buildCutoutLabel(
-      cutout,
-      label,
-      params.textDefaults,
-      solidSurfaceZ,
-      originX,
-      originY,
-      innerW,
-      innerD,
-      allowFloor
-    );
-    if (!textShape) continue;
-    // Label text is its own color zone — tag it TEXT so an engraved label
-    // sharing the cut pile doesn't inherit its cutout's cavity color.
-    if (textShape.op === 'fuse') rawFuseShapes.push(textShape.solid);
-    else if (textShape.op === 'carve')
-      carveLabelFromCavities(textShape.solid, cavityIndices.get(cutout.id), rawShapes);
-    else pushRaw(textShape.solid, FeatureTag.TEXT);
+  for (const master of params.cutouts) {
+    if (!isCutoutEngraveMode(master)) continue;
+    // A repeat with a label list engraves once per instance, each with its own
+    // word; without one it engraves once beside the master, which is what every
+    // design stored before the list existed already prints.
+    for (const cutout of labelledInstances(master)) {
+      const label = cutout.label.trim();
+      if (label === '') continue;
+      // Non-union groups (subtract/intersect/exclude) can hollow a member's
+      // footprint out of the final cavity, so a member-footprint floor guess may
+      // point at solid material. Only union cavities keep member floors intact.
+      // A leaned pocket's floor is tilted and laterally shifted, so the flat
+      // recess-floor Z guess is wrong for it too — its labels stay on the top.
+      const allowFloor =
+        (cutout.groupId === null || groupOps.get(cutout.groupId) === 'union') &&
+        resolveCutoutLeanDeg(cutout) === 0;
+      const textShape = buildCutoutLabel(
+        cutout,
+        label,
+        params.textDefaults,
+        solidSurfaceZ,
+        originX,
+        originY,
+        innerW,
+        innerD,
+        allowFloor
+      );
+      if (!textShape) continue;
+      // Label text is its own color zone — tag it TEXT so an engraved label
+      // sharing the cut pile doesn't inherit its cutout's cavity color.
+      // Cavity lookup stays on the MASTER id: every instance's tool registers
+      // under it, and `carveLabelFromCavities` filters the list by bounds so
+      // these glyphs only carve the cavity they actually sit over.
+      if (textShape.op === 'fuse') rawFuseShapes.push(textShape.solid);
+      else if (textShape.op === 'carve')
+        carveLabelFromCavities(textShape.solid, cavityIndices.get(master.id), rawShapes);
+      else pushRaw(textShape.solid, FeatureTag.TEXT);
+    }
   }
 
   if (rawShapes.length === 0 && rawFuseShapes.length === 0) {
