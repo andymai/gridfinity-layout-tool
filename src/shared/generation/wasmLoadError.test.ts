@@ -40,8 +40,6 @@ describe('isStaleAssetError', () => {
     ).toBe(true);
   });
 
-  // Every one of these was seen in production going unflagged, so the user was
-  // left on a dead 3D engine instead of being reloaded onto the current build.
   it.each([
     ['Safari dynamic import', 'Kernel init failed: Importing a module script failed.'],
     [
