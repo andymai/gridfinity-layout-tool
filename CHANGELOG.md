@@ -1,5 +1,32 @@
 # Changelog
 
+## [4.474.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.473.0...gridfinity-layout-tool-v4.474.0) (2026-08-25)
+
+
+### Features
+
+* **bin-designer:** allow wall text on solid bins ([#3860](https://github.com/andymai/gridfinity-layout-tool/issues/3860)) ([9858582](https://github.com/andymai/gridfinity-layout-tool/commit/98585822ae6707f6b8d91d5fa072698338df50da))
+* **bin-designer:** branch a design from any saved version ([#3875](https://github.com/andymai/gridfinity-layout-tool/issues/3875)) ([9e0aad6](https://github.com/andymai/gridfinity-layout-tool/commit/9e0aad6a9b137720d06ef6134fb84757ab5f151d))
+* **bin-designer:** repeat a boolean group, and label every copy of a repeat ([#3871](https://github.com/andymai/gridfinity-layout-tool/issues/3871)) ([6224e95](https://github.com/andymai/gridfinity-layout-tool/commit/6224e952767c4d3ea79c9e288873ccef1335c8be))
+* **bin-designer:** resize a cutout about its own center when a size is typed ([#3864](https://github.com/andymai/gridfinity-layout-tool/issues/3864)) ([0874c66](https://github.com/andymai/gridfinity-layout-tool/commit/0874c66aef2c334ffcdebf19bd11b6a278c78f85))
+* **bin-designer:** save named versions of a design and restore them ([#3873](https://github.com/andymai/gridfinity-layout-tool/issues/3873)) ([418c258](https://github.com/andymai/gridfinity-layout-tool/commit/418c258456ec9315de161ca409e112cf664af941))
+* **sync:** sync design versions across devices ([#3874](https://github.com/andymai/gridfinity-layout-tool/issues/3874)) ([3242839](https://github.com/andymai/gridfinity-layout-tool/commit/32428398e8cc58fa22daec7205a34a4ba2bdb8be))
+
+
+### Bug Fixes
+
+* **bin-designer:** hold each shape's center when resizing a multi-selection ([#3872](https://github.com/andymai/gridfinity-layout-tool/issues/3872)) ([a298028](https://github.com/andymai/gridfinity-layout-tool/commit/a298028e1c44dbaeae0bf13e80cff886c4ef086d))
+* **ci:** upload source maps from the Vercel build ([#3865](https://github.com/andymai/gridfinity-layout-tool/issues/3865)) ([0a5b04f](https://github.com/andymai/gridfinity-layout-tool/commit/0a5b04f829d0b32e6e5f970768a57ea042be81ff))
+* **lid:** weld a hinged bin's knuckles to the lip so they survive export ([#3868](https://github.com/andymai/gridfinity-layout-tool/issues/3868)) ([04cd8a6](https://github.com/andymai/gridfinity-layout-tool/commit/04cd8a6437925221bdafb0583d2622724762d7c8)), closes [#3861](https://github.com/andymai/gridfinity-layout-tool/issues/3861)
+
+
+### Performance
+
+* **ci:** move the twelve costliest generator files off the PR path ([#3867](https://github.com/andymai/gridfinity-layout-tool/issues/3867)) ([3d57431](https://github.com/andymai/gridfinity-layout-tool/commit/3d57431b4572684b7ef033e45d2a1ed4f62ee1ae))
+* **ci:** restore the ESLint cache in CI ([#3866](https://github.com/andymai/gridfinity-layout-tool/issues/3866)) ([75670d8](https://github.com/andymai/gridfinity-layout-tool/commit/75670d889ce2f50798e86266bda0ff3162977469))
+* **ci:** shard the main-branch suite and merge coverage ([#3870](https://github.com/andymai/gridfinity-layout-tool/issues/3870)) ([282d958](https://github.com/andymai/gridfinity-layout-tool/commit/282d9585bf63694ca1494882f1d1318fab9d9f77))
+* **ci:** widen core test shards from three to six ([#3869](https://github.com/andymai/gridfinity-layout-tool/issues/3869)) ([c31cf56](https://github.com/andymai/gridfinity-layout-tool/commit/c31cf562ea40e1359a9efb30cde3b7761d5c61ad))
+
 ## [4.473.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.472.0...gridfinity-layout-tool-v4.473.0) (2026-08-24)
 
 
