@@ -35,6 +35,9 @@ export function VersionEntry({
   const relative = useRelativeTime(Date.parse(version.createdAt));
   const [confirming, setConfirming] = useState(false);
   const [editingName, setEditingName] = useState<string | null>(null);
+  // Inline rather than a positioned menu so it behaves the same under touch.
+  const [showActions, setShowActions] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const renameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -90,18 +93,15 @@ export function VersionEntry({
               variant="ghost"
               size="sm"
               disabled={busy}
-              onClick={() => setEditingName(version.name)}
+              aria-expanded={showActions}
+              aria-label={t('community.detail.moreActions')}
+              onClick={() => setShowActions((open) => !open)}
             >
-              {t('binDesigner.versions.rename')}
-            </Button>
-            <Button variant="ghost" size="sm" disabled={busy} onClick={() => onTogglePin(version)}>
-              {version.pinned ? t('binDesigner.versions.unpin') : t('binDesigner.versions.pin')}
-            </Button>
-            <Button variant="ghost" size="sm" disabled={busy} onClick={() => onDelete(version)}>
-              {t('binDesigner.versions.delete')}
-            </Button>
-            <Button variant="ghost" size="sm" disabled={busy} onClick={() => onBranch(version)}>
-              {t('binDesigner.versions.branch')}
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.75" />
+                <circle cx="12" cy="12" r="1.75" />
+                <circle cx="19" cy="12" r="1.75" />
+              </svg>
             </Button>
             <Button
               variant="secondary"
@@ -114,6 +114,57 @@ export function VersionEntry({
           </div>
         )}
       </div>
+
+      {showActions && !confirming && (
+        <div className="flex flex-wrap items-center gap-1 rounded-sm bg-surface-elevated px-2 py-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={busy}
+            onClick={() => setEditingName(version.name)}
+          >
+            {t('binDesigner.versions.rename')}
+          </Button>
+          <Button variant="ghost" size="sm" disabled={busy} onClick={() => onTogglePin(version)}>
+            {version.pinned ? t('binDesigner.versions.unpin') : t('binDesigner.versions.pin')}
+          </Button>
+          <Button variant="ghost" size="sm" disabled={busy} onClick={() => onBranch(version)}>
+            {t('binDesigner.versions.branch')}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={busy}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            {t('binDesigner.versions.delete')}
+          </Button>
+        </div>
+      )}
+
+      {confirmingDelete && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-sm bg-error-muted px-3 py-2">
+          <p className="text-xs text-content-secondary">
+            {t('binDesigner.versions.deleteWarning', { name: version.name })}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>
+              {t('binDesigner.versions.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                setConfirmingDelete(false);
+                onDelete(version);
+              }}
+            >
+              {t('binDesigner.versions.delete')}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {confirming && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-sm bg-surface-elevated px-3 py-2">

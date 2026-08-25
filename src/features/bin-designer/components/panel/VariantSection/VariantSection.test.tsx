@@ -104,7 +104,9 @@ describe('VariantSection', () => {
   it('edits a claimed dimension', () => {
     const { onChange } = renderSection({ dimensions: { width: 4 } });
 
-    fireEvent.change(screen.getByTestId('num-width'), { target: { value: '6' } });
+    fireEvent.change(screen.getByTestId('num-binDesigner.variants.field.width'), {
+      target: { value: '6' },
+    });
 
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ dimensions: expect.objectContaining({ width: 6 }) })

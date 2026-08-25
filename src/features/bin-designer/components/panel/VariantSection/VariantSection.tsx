@@ -114,7 +114,9 @@ export function VariantSection({
           const inherited = parentParams[field];
           return (
             <div key={field} className="flex items-center gap-2">
-              <span className="w-24 flex-shrink-0 text-xs text-content-secondary">{field}</span>
+              <span className="w-24 flex-shrink-0 text-xs text-content-secondary">
+                {t(`binDesigner.variants.field.${field}`)}
+              </span>
               {claimed === undefined ? (
                 <>
                   <span className="flex-1 text-xs text-content-tertiary">
@@ -133,7 +135,7 @@ export function VariantSection({
                 <>
                   <div className="flex-1">
                     <CompactNumberInput
-                      label={field}
+                      label={t(`binDesigner.variants.field.${field}`)}
                       value={claimed}
                       onChange={(value) => setDimension(field, value)}
                       min={0.5}
@@ -151,6 +153,17 @@ export function VariantSection({
                     {t('binDesigner.variants.release')}
                   </Button>
                 </>
+              )}
+              {claimed !== undefined && claimed !== inherited && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={busy}
+                  title={t('binDesigner.variants.inherited', { value: inherited })}
+                  onClick={() => setDimension(field, inherited)}
+                >
+                  {t('binDesigner.variants.takeParent')}
+                </Button>
               )}
             </div>
           );
@@ -190,7 +203,7 @@ export function VariantSection({
                         return (
                           <div key={field} className="flex items-center gap-2">
                             <span className="w-20 flex-shrink-0 text-[11px] text-content-secondary">
-                              {field}
+                              {t(`binDesigner.variants.field.${field}`)}
                             </span>
                             {claimed === undefined ? (
                               <>
@@ -210,7 +223,7 @@ export function VariantSection({
                               <>
                                 <div className="flex-1">
                                   <CompactNumberInput
-                                    label={field}
+                                    label={t(`binDesigner.variants.field.${field}`)}
                                     value={claimed}
                                     onChange={(value) => setCutoutField(cutout.id, field, value)}
                                     min={0}
@@ -230,6 +243,20 @@ export function VariantSection({
                                   {t('binDesigner.variants.release')}
                                 </Button>
                               </>
+                            )}
+                            {/* Live rather than a "parent changed" notice: a
+                                notification can be missed, and the question is
+                                what differs now. */}
+                            {claimed !== undefined && claimed !== inherited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={busy}
+                                title={t('binDesigner.variants.inherited', { value: inherited })}
+                                onClick={() => setCutoutField(cutout.id, field, inherited)}
+                              >
+                                {t('binDesigner.variants.takeParent')}
+                              </Button>
                             )}
                           </div>
                         );

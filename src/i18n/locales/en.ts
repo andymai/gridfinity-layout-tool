@@ -3537,6 +3537,7 @@ const en: Record<string, string> = {
   'binDesigner.versions.unpin': 'Unpin this version',
   'binDesigner.versions.rename': 'Rename',
   'binDesigner.versions.delete': 'Delete',
+  'binDesigner.versions.deleteWarning': 'Delete “{{name}}”? This cannot be undone.',
   'binDesigner.versions.saved': 'Saved “{{name}}”.',
   'binDesigner.versions.deleted': 'Deleted “{{name}}”.',
   'binDesigner.versions.evicted':
@@ -3559,6 +3560,16 @@ const en: Record<string, string> = {
 
   // Variants: a design kept in step with another except for values it claims
   'binDesigner.variants.label': 'Variant',
+  'binDesigner.variants.lockedHere': 'These values come from {{name}}.',
+  'binDesigner.variants.openParent': 'Open parent',
+  'binDesigner.variants.takeParent': 'Take parent’s',
+  'binDesigner.variants.field.width': 'Width',
+  'binDesigner.variants.field.depth': 'Depth',
+  'binDesigner.variants.field.height': 'Height',
+  'binDesigner.variants.field.wallThickness': 'Wall thickness',
+  'binDesigner.variants.field.cutDepth': 'Cut depth',
+  'binDesigner.variants.field.clearance': 'Clearance',
+  'binDesigner.variants.field.chamferWidth': 'Chamfer',
   'binDesigner.variants.create': 'Create variant',
   'binDesigner.variants.created': 'Created “{{name}}” as a variant of “{{parent}}”.',
   'binDesigner.variants.panelLocked':
