@@ -35,12 +35,14 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'repeat-a-boolean-group',
+    featured: true,
     date: '2026-08-24',
     kind: 'new',
     title: { en: 'Repeat a group of shapes as one piece' },
     body: {
       en: 'Building a recess out of two shapes with Exclude, then wanting a row of them, meant flattening the repeat and redoing the boolean on every copy by hand. Select the whole group and Repeat now arrays the finished shape, so every copy keeps the same relationship. Flattening one gives you an independent group per copy rather than loose shapes.',
     },
+    action: { kind: 'openTool', tool: 'designer' },
   },
   {
     id: 'per-copy-repeat-labels',
@@ -163,6 +165,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'workshop',
+    featured: true,
     date: '2026-08-23',
     kind: 'new',
     title: { en: 'Workshop: build tool holders out of parts' },
@@ -228,6 +231,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'designs-into-layout',
+    featured: true,
     date: '2026-08-22',
     kind: 'new',
     title: { en: 'Drop a saved design straight into your drawer' },
@@ -286,6 +290,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'hinged-lids',
+    featured: true,
     date: '2026-08-20',
     kind: 'new',
     title: { en: 'Lids that hinge open on a filament pin' },
@@ -528,6 +533,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'baseplate-screw-holes',
+    featured: true,
     date: '2026-08-12',
     kind: 'new',
     title: { en: 'Screw a baseplate down to the drawer' },
@@ -602,6 +608,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'sliding-tray',
+    featured: true,
     date: '2026-08-07',
     kind: 'new',
     title: { en: 'Sliding trays' },
@@ -649,6 +656,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'community',
+    featured: true,
     date: '2026-08-06',
     kind: 'new',
     title: { en: 'Community: publish and remix designs' },
@@ -687,6 +695,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'custom-drawer-perimeter',
+    featured: true,
     date: '2026-08-01',
     kind: 'new',
     title: { en: 'Draw a drawer that is not a rectangle' },
@@ -725,6 +734,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'spacer-mode',
+    featured: true,
     date: '2026-07-27',
     kind: 'new',
     title: { en: 'Spacer mode for bins of different heights' },
@@ -807,6 +817,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'non-square-grid',
+    featured: true,
     date: '2026-07-22',
     kind: 'new',
     title: { en: 'Grids that are not 42mm square' },
@@ -843,6 +854,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'stl-imprint-cutouts',
+    featured: true,
     date: '2026-07-18',
     kind: 'new',
     title: { en: 'Import an STL and cut its shape into a bin' },
@@ -853,6 +865,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'measured-drawer-fit',
+    featured: true,
     date: '2026-07-16',
     kind: 'new',
     title: { en: 'Enter your drawer size in millimetres' },
@@ -890,6 +903,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'shaped-drawer-baseplates',
+    featured: true,
     date: '2026-07-12',
     kind: 'new',
     title: { en: 'Baseplates for non-rectangular drawers' },
@@ -937,6 +951,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'overhang-aware-cutouts',
+    featured: true,
     date: '2026-07-07',
     kind: 'fixed',
     title: { en: 'The cutout editor accounts for overhang' },
@@ -965,6 +980,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   },
   {
     id: 'layout-zip-export',
+    featured: true,
     date: '2026-06-30',
     kind: 'new',
     title: { en: 'Export a whole layout as one ZIP' },
