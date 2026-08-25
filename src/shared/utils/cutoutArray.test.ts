@@ -564,6 +564,29 @@ describe('groupRepeatConfig', () => {
     expect(groupRepeatConfig([cut({ array: a }), cut({ id: 'b', array: b })])).toBeDefined();
   });
 
+  it('ignores fields the active mode never places with', () => {
+    // The config is flat, so a grid carries a remembered `radius` it does not
+    // cut with. Two members differing only there run the same pattern.
+    const a = cfg({ mode: 'grid', cols: 3, radius: 10, startAngle: 0 });
+    const b = cfg({ mode: 'grid', cols: 3, radius: 99, startAngle: 180 });
+    expect(groupRepeatConfig([cut({ array: a }), cut({ id: 'b', array: b })])?.cols).toBe(3);
+  });
+
+  it('still declines when a field the mode DOES place with differs', () => {
+    const a = cfg({ mode: 'radial', count: 4, radius: 10 });
+    const b = cfg({ mode: 'radial', count: 4, radius: 40 });
+    expect(groupRepeatConfig([cut({ array: a }), cut({ id: 'b', array: b })])).toBeUndefined();
+  });
+
+  it('declines when the modes themselves differ', () => {
+    expect(
+      groupRepeatConfig([
+        cut({ array: cfg({ mode: 'grid' }) }),
+        cut({ id: 'b', array: cfg({ mode: 'radial' }) }),
+      ])
+    ).toBeUndefined();
+  });
+
   it('declines for a group with no repeat at all', () => {
     expect(groupRepeatConfig([cut(), cut({ id: 'b' })])).toBeUndefined();
   });

@@ -314,19 +314,26 @@ export function groupRepeatConfig(
   return found;
 }
 
-/** Whether two repeats put their copies in the same places. */
+/**
+ * Whether two repeats put their copies in the same places.
+ *
+ * Compares exactly the fields {@link arrayInstances} reads for the mode in
+ * hand, and no others. The config is flat, carrying every mode's settings at
+ * once so switching modes does not lose them, so a grid's `radius` is a
+ * remembered value rather than part of the pattern. Comparing it anyway would
+ * call two groups different over a number neither of them cuts with.
+ */
 function samePlacement(a: CutoutArrayConfig, b: CutoutArrayConfig): boolean {
-  return (
-    a.mode === b.mode &&
-    a.cols === b.cols &&
-    a.rows === b.rows &&
-    a.pitchX === b.pitchX &&
-    a.pitchY === b.pitchY &&
-    a.count === b.count &&
-    a.radius === b.radius &&
-    a.startAngle === b.startAngle &&
-    a.rotateToCenter === b.rotateToCenter
-  );
+  if (a.mode !== b.mode) return false;
+  if (a.mode === 'radial') {
+    return (
+      a.count === b.count &&
+      a.radius === b.radius &&
+      a.startAngle === b.startAngle &&
+      a.rotateToCenter === b.rotateToCenter
+    );
+  }
+  return a.cols === b.cols && a.rows === b.rows && a.pitchX === b.pitchX && a.pitchY === b.pitchY;
 }
 
 /**
