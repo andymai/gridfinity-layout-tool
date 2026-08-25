@@ -713,9 +713,9 @@ Named, restorable checkpoints for one design (`storage/DesignVersionService.ts`,
 `store/versionStore.ts`, `components/VersionHistory/`). Distinct from undo/redo,
 which is unnamed, capped at `MAX_HISTORY`, and gone on reload.
 
-- **Capture is manual.** Layouts snapshot on a timer (`core/storage/SnapshotService`);
-  a design version is written only when the user asks, or as the automatic
-  `pre-restore` copy taken before a restore overwrites the working state.
+- **Capture is manual.** Layouts snapshot on a timer
+  (`core/storage/SnapshotService`); a design version is written only on request,
+  or as the automatic `pre-restore` copy taken before a restore.
 - **`restoreVersion` is not `loadDesign`.** `loadDesign` clears history because it
   switches designs. `restoreVersion` pushes a history entry and keeps
   `currentDesignId`, so a restore is undoable like any other edit.
@@ -764,17 +764,17 @@ A variant is a design kept in step with another except for values it claims
 
 - **`params` on a variant is a MATERIALIZED cache** of
   `applyOverrides(parent.params, overrides)`; `overrides` is the truth about what
-  the user owns. Resolving lazily instead was not an option: ~106 sites read a
-  saved design's params directly and every one expects a complete `BinParams`.
-  Materializing means export, publish, thumbnails, generation and sync need no
-  knowledge that variants exist.
+  the user owns. Resolving lazily was not an option: ~106 sites read a design's
+  params directly and each expects a complete `BinParams`. Materializing keeps
+  export, publish, thumbnails, generation and sync ignorant of variants.
 - **Propagation is a recompute, not a merge.** `updateDesignParams` rewrites
   every variant of the design it just saved, discarding whatever their stored
   params held for fields the overrides do not name. That is the model working.
-- **Which is why the rest of the panel is `inert` in a variant.** One gate rather
-  than a `disabled` prop per control: an edit outside the override surface
-  survives only until the next propagation, and a per-control guard is one that
-  gets forgotten when a section is added.
+- **Every surface editing those params is locked in a variant** (`VariantLock`):
+  the parameter panel AND the cutout/bento workspaces, which live in a different
+  subtree — guarding only the panel left the cutout editor free to make edits
+  that propagation then discarded. `inert` alone leaves controls looking
+  ordinary, so the lock also dims them and names the parent.
 - **Overrides carry their VALUES, not just which fields are claimed,** so a
   variant can be rebuilt from the parent alone.
 - **Cutout size overrides go through `resizeAroundCenter`.** A corner-anchored
@@ -782,6 +782,9 @@ A variant is a design kept in step with another except for values it claims
   off the center the parent placed it on.
 - **An override naming a deleted cutout is kept, reported and skipped** — the
   upstream deletion may itself be undone. Forgetting them is an explicit action.
+- **Divergence shows live, not as a notification.** A claimed field differing
+  from the parent's current value offers "Take parent's" in place; a one-shot
+  notice can be missed, and the question is what differs _now_.
 - **`variantOf` is the live link; `parentDesignId` only places it in the family
   tree.** Detaching drops the first and keeps the second, and is written straight
   to the store because `saveDesign` falls back to the stored value for both.

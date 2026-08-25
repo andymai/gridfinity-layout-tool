@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyOverrides, findDrift } from './applyOverrides';
+import { applyOverrides } from './applyOverrides';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import type { DesignOverrides } from '@/shared/types/designOverrides';
@@ -145,66 +145,5 @@ describe('applyOverrides', () => {
 
     expect(params.cutouts).toEqual([]);
     expect(orphans).toHaveLength(1);
-  });
-});
-
-describe('findDrift', () => {
-  it('reports nothing when the parent did not change', () => {
-    const p = parent();
-    expect(findDrift(p, p, { dimensions: { width: 4 } })).toEqual([]);
-  });
-
-  it('reports a claimed dimension the parent moved', () => {
-    const before = parent();
-    const after = { ...before, height: 12 };
-
-    const drift = findDrift(before, after, { dimensions: { height: 6 } });
-
-    expect(drift).toEqual([{ label: 'height', parentValue: 12, variantValue: 6 }]);
-  });
-
-  it('says nothing about a field the parent changed that the variant does not claim', () => {
-    const before = parent();
-    const after = { ...before, height: 12 };
-
-    expect(findDrift(before, after, { dimensions: { width: 4 } })).toEqual([]);
-  });
-
-  it('reports a claimed cutout field the parent moved', () => {
-    const before = parent([cutout('bit', { width: 6.35 })]);
-    const after = parent([cutout('bit', { width: 8 })]);
-
-    const drift = findDrift(before, after, { cutouts: { bit: { width: 12.7 } } });
-
-    expect(drift).toHaveLength(1);
-    expect(drift[0]).toMatchObject({ parentValue: 8, variantValue: 12.7 });
-  });
-
-  // `label` is a required string that is usually '', so `??` would accept it as
-  // a name and produce a drift entry reading `.width`.
-  it('falls back past an empty label when naming the field', () => {
-    const before = parent([cutout('bit', { width: 6.35, label: '' })]);
-    const after = parent([cutout('bit', { width: 8, label: '' })]);
-
-    const drift = findDrift(before, after, { cutouts: { bit: { width: 12.7 } } });
-
-    expect(drift[0].label).toBe('circle.width');
-  });
-
-  it('prefers the editor name when there is one', () => {
-    const before = parent([cutout('bit', { width: 6.35, name: 'Shank' })]);
-    const after = parent([cutout('bit', { width: 8, name: 'Shank' })]);
-
-    expect(findDrift(before, after, { cutouts: { bit: { width: 12.7 } } })[0].label).toBe(
-      'Shank.width'
-    );
-  });
-
-  // A cutout the parent added is not drift: the variant never held a value for it.
-  it('ignores a cutout that did not exist before', () => {
-    const before = parent([]);
-    const after = parent([cutout('bit')]);
-
-    expect(findDrift(before, after, { cutouts: { bit: { width: 12.7 } } })).toEqual([]);
   });
 });

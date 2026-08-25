@@ -18,6 +18,10 @@ import { loadSplitRatio } from '@/features/bin-designer/components/CutoutWorkspa
 import { CutoutDesktopOnlyBanner } from './CutoutDesktopOnlyBanner';
 import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 import { PerfOverlay } from '@/features/bin-designer/components/PerfOverlay';
+import { VariantLock } from '@/features/bin-designer/components/panel/VariantSection/VariantLock';
+import { useDesignerStore } from '@/features/bin-designer/store';
+import { useVariantContext } from '@/features/bin-designer/hooks/useVariantContext';
+import { openParentDesign } from '@/features/bin-designer/utils/openParentDesign';
 
 interface DesignerMainContentProps {
   isDesktop: boolean;
@@ -35,14 +39,33 @@ export function DesignerMainContent({
   bentoWorkspaceOpen,
 }: DesignerMainContentProps) {
   const [splitRatio, setSplitRatio] = useState(loadSplitRatio);
+  const currentDesignId = useDesignerStore((s) => s.currentDesignId);
+  const variant = useVariantContext(currentDesignId);
 
   // Both workspaces replace the sidebar and share the split ratio, so they
   // render through one branch. The store keeps the two flags mutually
   // exclusive; this only has to pick which one to draw.
+  //
+  // Locked for a variant for the same reason the parameter panel is: these
+  // edit the same `params`, which the next propagation rewrites. Guarding only
+  // the panel left the whole cutout and bento surface free to make edits that
+  // were then discarded without a word.
   const workspace = cutoutEditorOpen ? (
-    <CutoutWorkspace />
+    <VariantLock
+      locked={variant.isVariant || variant.isLoading}
+      parentName={variant.parentName}
+      onOpenParent={variant.parentId ? () => void openParentDesign(variant.parentId) : undefined}
+    >
+      <CutoutWorkspace />
+    </VariantLock>
   ) : bentoWorkspaceOpen ? (
-    <BentoWorkspace />
+    <VariantLock
+      locked={variant.isVariant || variant.isLoading}
+      parentName={variant.parentName}
+      onOpenParent={variant.parentId ? () => void openParentDesign(variant.parentId) : undefined}
+    >
+      <BentoWorkspace />
+    </VariantLock>
   ) : null;
 
   if (isDesktop && workspace) {

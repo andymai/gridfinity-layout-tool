@@ -203,9 +203,11 @@ export function DesignGridItem({
         <div className="flex items-center justify-between mt-auto pt-1.5">
           {nestLevel === 1 && (
             <p className="truncate text-[10px] text-accent">
-              {design.parentVersionName
-                ? t('binDesigner.designs.branchedFrom', { name: design.parentVersionName })
-                : t('binDesigner.designs.branchBadge')}
+              {design.variantOf
+                ? t('binDesigner.variants.label')
+                : design.parentVersionName
+                  ? t('binDesigner.designs.branchedFrom', { name: design.parentVersionName })
+                  : t('binDesigner.designs.branchBadge')}
             </p>
           )}
           {/* A card cannot be indented the way a list row can, so the branch count

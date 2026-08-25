@@ -27,6 +27,8 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { useVariantContext } from '@/features/bin-designer/hooks/useVariantContext';
 import { VariantSection } from '../panel/VariantSection';
+import { VariantLock } from '../panel/VariantSection/VariantLock';
+import { openParentDesign } from '@/features/bin-designer/utils/openParentDesign';
 import type { DesignOverrides } from '@/features/bin-designer/types';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { ShapeSection } from '../panel/ShapeSection';
@@ -287,7 +289,13 @@ function BinParameterPanel() {
             Also locked WHILE RESOLVING: the variant relationship is read from
             IndexedDB, and staying editable until that returns leaves exactly the
             window this guard exists to close. */}
-        <div inert={variant.isVariant || variant.isLoading}>
+        <VariantLock
+          locked={variant.isVariant || variant.isLoading}
+          parentName={variant.parentName}
+          onOpenParent={
+            variant.parentId ? () => void openParentDesign(variant.parentId) : undefined
+          }
+        >
           {/* Shape group */}
           <StickyGroupHeader
             title={t('binDesigner.group.shape')}
@@ -424,7 +432,7 @@ function BinParameterPanel() {
           {/* Capture the current settings as the default for new bins, right
             where the user has been editing them. */}
           <SetDefaultFooter />
-        </div>
+        </VariantLock>
 
         <AttributionFooter />
       </div>

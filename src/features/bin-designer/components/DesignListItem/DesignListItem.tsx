@@ -215,11 +215,15 @@ export function DesignListItem({
             </span>
           )}
         </p>
+        {/* A variant and a branch are both nested children, so the row has to say
+            which: one still follows its parent, the other does not. */}
         {nestLevel === 1 && (
           <p className="truncate text-[11px] text-accent">
-            {design.parentVersionName
-              ? t('binDesigner.designs.branchedFrom', { name: design.parentVersionName })
-              : t('binDesigner.designs.branchBadge')}
+            {design.variantOf
+              ? t('binDesigner.variants.label')
+              : design.parentVersionName
+                ? t('binDesigner.designs.branchedFrom', { name: design.parentVersionName })
+                : t('binDesigner.designs.branchBadge')}
           </p>
         )}
         {childCount > 0 && (

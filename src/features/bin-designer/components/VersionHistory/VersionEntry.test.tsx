@@ -17,6 +17,11 @@ function makeVersion(overrides: Partial<DesignVersionSummary> = {}): DesignVersi
   };
 }
 
+/** Reveal the row's secondary actions, which sit behind a disclosure. */
+function openActions() {
+  fireEvent.click(screen.getByLabelText('community.detail.moreActions'));
+}
+
 function renderEntry(overrides: Partial<DesignVersionSummary> = {}) {
   const handlers = {
     onRestore: vi.fn(),
@@ -30,6 +35,13 @@ function renderEntry(overrides: Partial<DesignVersionSummary> = {}) {
 }
 
 describe('VersionEntry', () => {
+  // Restore is the reason the list exists, so it stays on the row.
+  it('keeps restore on the row without opening the actions', () => {
+    renderEntry();
+    expect(screen.getByText('binDesigner.versions.restore')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.versions.delete')).toBeNull();
+  });
+
   it('shows the version name', () => {
     renderEntry();
     expect(screen.getByText('0.2 mm — tight')).toBeInTheDocument();
@@ -77,6 +89,7 @@ describe('VersionEntry', () => {
   it('renames on Enter', () => {
     const { onRename } = renderEntry();
 
+    openActions();
     fireEvent.click(screen.getByText('binDesigner.versions.rename'));
     const input = screen.getByLabelText('binDesigner.versions.rename');
     fireEvent.change(input, { target: { value: '0.3 mm — loose' } });
@@ -88,6 +101,7 @@ describe('VersionEntry', () => {
   it('discards a rename on Escape', () => {
     const { onRename } = renderEntry();
 
+    openActions();
     fireEvent.click(screen.getByText('binDesigner.versions.rename'));
     const input = screen.getByLabelText('binDesigner.versions.rename');
     fireEvent.change(input, { target: { value: 'nope' } });
@@ -100,6 +114,7 @@ describe('VersionEntry', () => {
   it('ignores a rename to whitespace', () => {
     const { onRename } = renderEntry();
 
+    openActions();
     fireEvent.click(screen.getByText('binDesigner.versions.rename'));
     const input = screen.getByLabelText('binDesigner.versions.rename');
     fireEvent.change(input, { target: { value: '   ' } });
@@ -111,6 +126,7 @@ describe('VersionEntry', () => {
   it('offers unpin for a pinned version', () => {
     const { onTogglePin } = renderEntry({ pinned: true });
 
+    openActions();
     fireEvent.click(screen.getByText('binDesigner.versions.unpin'));
 
     expect(onTogglePin).toHaveBeenCalledTimes(1);
@@ -118,13 +134,33 @@ describe('VersionEntry', () => {
 
   it('branches on request', () => {
     const { onBranch } = renderEntry();
+    openActions();
     fireEvent.click(screen.getByText('binDesigner.versions.branch'));
     expect(onBranch).toHaveBeenCalledTimes(1);
   });
 
-  it('deletes on request', () => {
+  // A named version is a deliberate checkpoint, so one click must not end it.
+  it('confirms before deleting', () => {
     const { onDelete } = renderEntry();
+
+    openActions();
     fireEvent.click(screen.getByText('binDesigner.versions.delete'));
+    expect(onDelete).not.toHaveBeenCalled();
+    expect(screen.getByText('binDesigner.versions.deleteWarning')).toBeInTheDocument();
+
+    const buttons = screen.getAllByText('binDesigner.versions.delete');
+    fireEvent.click(buttons[buttons.length - 1]);
     expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('abandons the delete when cancelled', () => {
+    const { onDelete } = renderEntry();
+
+    openActions();
+    fireEvent.click(screen.getByText('binDesigner.versions.delete'));
+    fireEvent.click(screen.getByText('binDesigner.versions.cancel'));
+
+    expect(onDelete).not.toHaveBeenCalled();
+    expect(screen.queryByText('binDesigner.versions.deleteWarning')).toBeNull();
   });
 });
