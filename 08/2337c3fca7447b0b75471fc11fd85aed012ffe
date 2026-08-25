@@ -1,0 +1,70 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+  s_69e2ad26aacb3a::t_6fdddc3dc8b8b3 36-42,103
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_69e2ad26aacb3a::t_23143372b3f409 10,148
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_69e2ad26aacb3a::t_8f6e7dcf4faa4b 284-286
+  s_1fdfbe0b4fd75c::t_220ec47e4e21ac 25-29,290
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlignment.ts
+  s_69e2ad26aacb3a::t_ee7e4ec621faff 12-18,171-192
+  s_69e2ad26aacb3a::t_68b87d9a6c0e96 193
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutTransformStarters.ts
+  s_69e2ad26aacb3a::t_c0a852ff1b1bdf 20,80
+src/features/bin-designer/components/CutoutWorkspace/GroupBreadcrumb.tsx
+  s_69e2ad26aacb3a::t_c0a852ff1b1bdf 54-59
+src/features/bin-designer/components/panel/CutoutsSection/geometry.ts
+  s_69e2ad26aacb3a::t_ee7e4ec621faff 42
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_69e2ad26aacb3a::t_23143372b3f409 10,299
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_69e2ad26aacb3a::t_9fec045d26a26c 651
+  s_69e2ad26aacb3a::t_988748a0034e1c 707-710
+  s_69e2ad26aacb3a::t_0fed78031d410a 44,909-914
+src/features/bin-designer/hooks/useGroupLevel.test.ts
+  s_69e2ad26aacb3a::t_5507a074b6f33e 1-6,8-101,119-120
+  s_69e2ad26aacb3a::t_73ac1d92456d56 7,102-118
+src/features/bin-designer/utils/cutoutHierarchy.ts
+  s_69e2ad26aacb3a::t_441a0a4f515c24 34,225-237,242,248,300
+src/features/bin-designer/utils/cutoutHierarchy.test.ts
+  s_69e2ad26aacb3a::t_a180bc400503f0 3,238-252,257-260
+  s_69e2ad26aacb3a::t_47208aba085834 253-256
+  s_69e2ad26aacb3a::t_54661bec19ff2f 261
+src/features/bin-designer/components/CutoutWorkspace/cutoutWorkspaceContextActions.ts
+  s_69e2ad26aacb3a::t_23143372b3f409 10,233
+  s_69e2ad26aacb3a::t_b0fbe9d6d7ab22 13
+  s_69e2ad26aacb3a::t_53e0f9a8325bbf 278,280-283
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_69e2ad26aacb3a::t_a508a748813608 10-15,1788-1810
+  s_69e2ad26aacb3a::t_65a27798c8ad3e 1811
+src/features/bin-designer/constants/paramMigration.ts
+  s_69e2ad26aacb3a::t_d33341ee3c4dee 932-938
+src/features/bin-designer/hooks/useGroupLevel.ts
+  s_69e2ad26aacb3a::t_2d16af1e12f73b 17,95-98,100
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_69e2ad26aacb3a::t_53e0f9a8325bbf 447,449-452
+  s_69e2ad26aacb3a::t_b0fbe9d6d7ab22 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "082337c3fca7447b0b75471fc11fd85aed012ffe",
+  "prompts": {},
+  "sessions": {
+    "s_1fdfbe0b4fd75c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ac71733354a0a5e6a",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_69e2ad26aacb3a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5f805e5a-a08d-4c40-9201-bd40c3b13829",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
