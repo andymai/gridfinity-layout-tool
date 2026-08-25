@@ -1,0 +1,50 @@
+src/shared/generation/captureWasmLoadFailure.ts
+  s_9c914b25f9c489::t_9d76e522ec1ed3 44
+src/shared/analytics/posthog/errorFilters.test.ts
+  s_9c914b25f9c489::t_bd8e864414e536 161-210
+  s_9c914b25f9c489::t_dfcc93d5aeb90b 211-212
+src/shared/utils/lazyWithRetry.test.tsx
+  s_9c914b25f9c489::t_a472d8147471e7 66
+  s_9c914b25f9c489::t_5c0c915727b8c4 9
+  s_9c914b25f9c489::t_942f4d710c3122 183,192,212,216,230,232,235-236,242,251,254-255,258-261,266,281,290,309
+  s_9c914b25f9c489::t_8342f703e05fc9 3,7-8
+  s_9c914b25f9c489::t_1c79229bd4d59e 253
+  s_9c914b25f9c489::t_386f80579d6222 37-39
+src/shared/pwa/staleRecovery.ts
+  s_9c914b25f9c489::t_03ec42f897e7fb 52,58
+  s_9c914b25f9c489::t_081d153cfc872b 80-82,84-87,91-94,96-98,100-103,118
+  s_9c914b25f9c489::t_9a185d431794c0 25-27
+  s_9c914b25f9c489::t_ef5500b5ce5a2c 105
+  s_9c914b25f9c489::t_4c318aee512b6e 95
+  s_9c914b25f9c489::t_b1941d3dadec06 83
+src/shared/analytics/posthog/errorFilters.ts
+  s_9c914b25f9c489::t_ef8ef6ad9946ce 139-140
+  s_9c914b25f9c489::t_9ae37b3500cbb7 31
+  s_9c914b25f9c489::t_413a29f7a93587 27-30,32-45
+  s_9c914b25f9c489::t_26ed40c094e88f 180-186
+src/shared/generation/captureWasmLoadFailure.test.ts
+  s_9c914b25f9c489::t_105ba267286e13 64-68
+src/shared/utils/lazyWithRetry.ts
+  s_9c914b25f9c489::t_32235ce934376e 21-23
+  s_9c914b25f9c489::t_de9887e1de92ff 3,13-20,35,51-54,59-60
+src/shared/pwa/staleRecovery.test.ts
+  s_9c914b25f9c489::t_f781ee45fc5c27 98
+  s_9c914b25f9c489::t_ecab5f2bdb961f 52,56,63-68,71-97
+  s_9c914b25f9c489::t_4e5f0b9294d369 69-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "183f45215a83b9f848713b3cd949dfdd9e57baff",
+  "prompts": {},
+  "sessions": {
+    "s_9c914b25f9c489": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cdb77bd3-d199-4063-8af9-9a02024787e8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
