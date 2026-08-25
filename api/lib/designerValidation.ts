@@ -1441,6 +1441,27 @@ function validateCutouts(value: unknown): string | null {
     if (c.labelIcon !== undefined && !VALID_LABEL_PLATE_ICONS.includes(c.labelIcon as string)) {
       return `cutouts[${i}].labelIcon is not a known plate icon`;
     }
+    // Per-copy repeat labels. Every entry is engraved text, so this is bounded
+    // the way `label.rowTexts` is: a repeat cannot exceed MAX_ARRAY_INSTANCES
+    // copies, and each caption is one line of the same length the editor caps.
+    const array = c.array;
+    if (isObject(array) && array.labels !== undefined) {
+      if (!Array.isArray(array.labels)) {
+        return `cutouts[${i}].array.labels must be an array`;
+      }
+      if (array.labels.length > CONSTRAINTS.MAX_ARRAY_INSTANCES) {
+        return `cutouts[${i}].array.labels length must not exceed ${CONSTRAINTS.MAX_ARRAY_INSTANCES}`;
+      }
+      for (let k = 0; k < array.labels.length; k++) {
+        const entry = array.labels[k] as unknown;
+        if (!isString(entry)) {
+          return `cutouts[${i}].array.labels[${k}] must be a string`;
+        }
+        if (entry.length > LABEL_TEXT_MAX_LENGTH) {
+          return `cutouts[${i}].array.labels[${k}] must not exceed ${LABEL_TEXT_MAX_LENGTH} characters`;
+        }
+      }
+    }
   }
   return null;
 }

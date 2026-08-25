@@ -6,7 +6,12 @@
  * (`CutoutLabel3D`) so the on-screen label tracks the printed engraving.
  */
 
-import type { Cutout, CutoutTextAnchor, CutoutTextOffset } from '@/shared/types/bin';
+import type {
+  Cutout,
+  CutoutArrayConfig,
+  CutoutTextAnchor,
+  CutoutTextOffset,
+} from '@/shared/types/bin';
 
 export interface CutoutAabb {
   readonly minX: number;
@@ -125,6 +130,44 @@ function axisBand(zone: Zone, lo: number, hi: number, iLo: number, iHi: number) 
       return { avail: 2 * Math.min(center - iLo, iHi - center), center };
     }
   }
+}
+
+/**
+ * Cap a label's band to the room ONE copy of a repeat owns.
+ *
+ * The band above deliberately grows into the interior rather than stopping at
+ * the cutout's own span, so a narrow hole still gets a legible caption. That is
+ * right for a single label and wrong for a labelled repeat: every copy would
+ * claim most of the board and four captions at pitch spacing would print on top
+ * of each other.
+ *
+ * Only a repeat that labels each copy is capped. Without a list a repeat
+ * engraves once, so it still gets the full band and every design stored before
+ * per-copy labels existed engraves exactly the text it did.
+ *
+ * The cap is the pitch, which is centre-to-centre, so neighbouring captions
+ * meet rather than overlap. A single row or column is uncapped on the axis it
+ * does not repeat along.
+ */
+export function fitLabelRoom(
+  availW: number,
+  availD: number,
+  config: CutoutArrayConfig | undefined
+): { readonly availW: number; readonly availD: number } {
+  if (!config?.labels) return { availW, availD };
+  if (config.mode === 'radial') {
+    const count = Math.max(1, Math.round(config.count));
+    if (count < 2) return { availW, availD };
+    // Straight-line distance between neighbouring copies on the ring.
+    const chord = 2 * Math.max(0, config.radius) * Math.sin(Math.PI / count);
+    return { availW: Math.min(availW, chord), availD: Math.min(availD, chord) };
+  }
+  const cols = Math.max(1, Math.round(config.cols));
+  const rows = Math.max(1, Math.round(config.rows));
+  return {
+    availW: cols > 1 ? Math.min(availW, Math.max(0, config.pitchX)) : availW,
+    availD: rows > 1 ? Math.min(availD, Math.max(0, config.pitchY)) : availD,
+  };
 }
 
 /** Smallest box containing both inputs. */

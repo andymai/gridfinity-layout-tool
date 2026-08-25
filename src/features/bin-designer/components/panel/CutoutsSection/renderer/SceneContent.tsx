@@ -43,6 +43,7 @@ import { PathEditOverlay3D } from './PathEditOverlay3D';
 import { RulerMeasurement3D } from './RulerMeasurement3D';
 import { LockBadge3D } from './LockBadge3D';
 import { GroupResultMesh } from './GroupResultMesh';
+import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
@@ -322,6 +323,15 @@ export function SceneContent({
       {(() => {
         const grouped = cutouts.filter((c) => c.groupId !== null);
         const isUnionLike = (c: Cutout): boolean => !c.groupOp || c.groupOp === 'union';
+        // A grouped Repeat copies the whole assembly, so every member draws
+        // once per copy. The preview override is merged BEFORE expanding, so a
+        // mid-drag group carries its copies with it; clicks and drags on any
+        // copy still address the member that owns it.
+        const live = (c: Cutout): Cutout => {
+          const o = preview.get(c.id);
+          return o ? { ...c, ...o } : c;
+        };
+        const copiesOf = (c: Cutout): Cutout[] => expandCutoutArray(live(c));
         const unionMembers = grouped.filter(isUnionLike);
         const otherMembers = grouped.filter((c) => !isUnionLike(c));
         const nonUnionGroups = new Map<string, Cutout[]>();
@@ -333,77 +343,85 @@ export function SceneContent({
         }
         return (
           <>
-            {unionMembers.map((cutout) => {
+            {unionMembers.flatMap((cutout) => {
               const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
               const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
-              return (
+              return copiesOf(cutout).map((copy) => (
                 <CutoutShapeMesh
-                  key={`${cutout.id}-fill`}
-                  cutout={cutout}
+                  key={`${copy.id}-fill`}
+                  cutout={copy}
                   isSelected={selection.has(cutout.id)}
                   isGrouped={true}
                   isDragging={isDragging && selection.has(cutout.id)}
-                  previewOverrides={preview.get(cutout.id)}
                   binColor={binColor}
                   renderMode="fill"
-                  onSelect={onSelectCutout}
-                  onDoubleClick={onDoubleClickCutout}
-                  onDragStart={memoizedDragStart}
+                  onSelect={(_id, additive) => onSelectCutout(cutout.id, additive)}
+                  onDoubleClick={() => onDoubleClickCutout(cutout.id)}
+                  onDragStart={
+                    memoizedDragStart
+                      ? (_id, mmX, mmY, altKey) => memoizedDragStart(cutout.id, mmX, mmY, altKey)
+                      : undefined
+                  }
                   disablePointerEvents={isVertexEditing || isRulerActive}
                 />
-              );
+              ));
             })}
-            {unionMembers.map((cutout) => (
-              <CutoutShapeMesh
-                key={`${cutout.id}-stroke`}
-                cutout={cutout}
-                isSelected={selection.has(cutout.id)}
-                isGrouped={true}
-                isDragging={isDragging && selection.has(cutout.id)}
-                previewOverrides={preview.get(cutout.id)}
-                binColor={binColor}
-                renderMode="stroke"
-                onSelect={onSelectCutout}
-                onDoubleClick={onDoubleClickCutout}
-                onDragStart={memoizedDragStart}
-              />
-            ))}
-            {[...nonUnionGroups.entries()].map(([gid, members]) => {
-              // Merge preview overrides per member so drag/resize previews show
-              // the correct boolean shape live as the user manipulates members.
-              const live = members.map((m) => {
-                const o = preview.get(m.id);
-                return o ? { ...m, ...o } : m;
-              });
+            {unionMembers.flatMap((cutout) =>
+              copiesOf(cutout).map((copy) => (
+                <CutoutShapeMesh
+                  key={`${copy.id}-stroke`}
+                  cutout={copy}
+                  isSelected={selection.has(cutout.id)}
+                  isGrouped={true}
+                  isDragging={isDragging && selection.has(cutout.id)}
+                  binColor={binColor}
+                  renderMode="stroke"
+                  onSelect={(_id, additive) => onSelectCutout(cutout.id, additive)}
+                  onDoubleClick={() => onDoubleClickCutout(cutout.id)}
+                  onDragStart={
+                    memoizedDragStart
+                      ? (_id, mmX, mmY, altKey) => memoizedDragStart(cutout.id, mmX, mmY, altKey)
+                      : undefined
+                  }
+                />
+              ))
+            )}
+            {[...nonUnionGroups.entries()].flatMap(([gid, members]) => {
               const anySelected = members.some((m) => selection.has(m.id));
-              return (
+              // One boolean result per copy, matching how the worker builds a
+              // repeated group: the op runs on the assembly as drawn and the
+              // result is what repeats.
+              return expandCutoutGroup(members.map(live)).map((copy, i) => (
                 <GroupResultMesh
-                  key={`group-result-${gid}`}
-                  members={live}
+                  key={`group-result-${gid}-${i}`}
+                  members={copy}
                   isSelected={anySelected}
                   binColor={binColor}
                 />
-              );
+              ));
             })}
-            {otherMembers.map((cutout) => {
+            {otherMembers.flatMap((cutout) => {
               const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
               const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
-              return (
+              return copiesOf(cutout).map((copy) => (
                 <CutoutShapeMesh
-                  key={`${cutout.id}-outline`}
-                  cutout={cutout}
+                  key={`${copy.id}-outline`}
+                  cutout={copy}
                   isSelected={selection.has(cutout.id)}
                   isGrouped={true}
                   isDragging={isDragging && selection.has(cutout.id)}
-                  previewOverrides={preview.get(cutout.id)}
                   binColor={binColor}
                   renderMode="stroke"
-                  onSelect={onSelectCutout}
-                  onDoubleClick={onDoubleClickCutout}
-                  onDragStart={memoizedDragStart}
+                  onSelect={(_id, additive) => onSelectCutout(cutout.id, additive)}
+                  onDoubleClick={() => onDoubleClickCutout(cutout.id)}
+                  onDragStart={
+                    memoizedDragStart
+                      ? (_id, mmX, mmY, altKey) => memoizedDragStart(cutout.id, mmX, mmY, altKey)
+                      : undefined
+                  }
                   disablePointerEvents={isVertexEditing || isRulerActive}
                 />
-              );
+              ));
             })}
           </>
         );

@@ -1537,6 +1537,38 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('repeat label list validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+    const withLabels = (labels: unknown) =>
+      withCutouts([{ id: 'a', array: { mode: 'grid', cols: 2, rows: 1, labels } }]);
+
+    it('accepts an absent list, an empty one, and blank entries', () => {
+      expect(withCutouts([{ id: 'a', array: { mode: 'grid' } }]).valid).toBe(true);
+      expect(withLabels([]).valid).toBe(true);
+      expect(withLabels(['Upcut', '', 'Flush']).valid).toBe(true);
+    });
+
+    it('rejects a list that is not an array of strings', () => {
+      expect(withLabels('Upcut, Downcut').valid).toBe(false);
+      expect(withLabels([1, 2]).valid).toBe(false);
+      expect(withLabels([null]).valid).toBe(false);
+    });
+
+    it('rejects more labels than a repeat can ever have copies', () => {
+      expect(withLabels(Array<string>(400).fill('a')).valid).toBe(true);
+      expect(withLabels(Array<string>(401).fill('a')).valid).toBe(false);
+    });
+
+    it('rejects an entry longer than one engraved line', () => {
+      expect(withLabels(['a'.repeat(50)]).valid).toBe(true);
+      expect(withLabels(['a'.repeat(51)]).valid).toBe(false);
+    });
+  });
+
   describe('cutout label socket validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();

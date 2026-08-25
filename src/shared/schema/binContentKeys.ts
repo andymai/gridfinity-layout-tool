@@ -213,6 +213,7 @@ export const CUTOUT_ARRAY_KEYS = [
   'radius',
   'startAngle',
   'rotateToCenter',
+  'labels',
 ] as const;
 export type _CutoutArrayKeys = Assert<
   KeysMatch<keyof CutoutArrayConfig, (typeof CUTOUT_ARRAY_KEYS)[number]>

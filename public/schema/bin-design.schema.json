@@ -838,7 +838,22 @@
         },
         "rotateToCenter": {
           "type": "boolean",
-          "description": "Rotate each instance to face the ring centre."
+          "description": "Rotate each instance to face the ring centre. Forced off for a grouped repeat, which copies the whole assembly."
+        },
+        "labels": {
+          "type": "array",
+          "maxItems": 400,
+          "x-constant": {
+            "maxItems": "MAX_ARRAY_INSTANCES"
+          },
+          "items": {
+            "type": "string",
+            "maxLength": 50,
+            "x-constant": {
+              "maxLength": "TEXT_MAX_LENGTH"
+            }
+          },
+          "description": "Per-copy engraved labels, in reading order: top row first and left to right for grid and staggered, around the ring from the first copy for radial. Omit to label the whole repeat once with the cutout's own label. An entry present in the list wins, blank included; copies past the end of a short list fall back to the cutout's label."
         }
       }
     },

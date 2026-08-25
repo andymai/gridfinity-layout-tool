@@ -22,7 +22,13 @@ import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE, MAX_LID_CUTOUTS } from '.
 import { canArray } from '@/shared/utils/cutoutArray';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
-import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
+import {
+  adoptedGroupArray,
+  dissolveSingletonGroups,
+  planCutoutArrayWrite,
+  pushHistoryEntry,
+  withCutoutArray,
+} from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
 
@@ -628,15 +634,28 @@ export function createCutoutSlice(rawSet: Set) {
           (target?.groupId
             ? owner.cutouts.find((c) => c.groupId === target.groupId)?.groupOp
             : undefined) ?? DEFAULT_GROUP_OP;
+        // A newcomer adopts the destination's repeat too, not just its op.
+        // Landing in a repeating group holding no repeat (or its own) leaves
+        // the group describing a pattern only some of it is part of, which the
+        // editor and the worker then read differently.
+        //
+        // Shaped like `destOp` above: an EXISTING group's answer wins outright,
+        // "no repeat" included, because the destination is what the mover is
+        // joining. Only a fresh pair has no answer yet, and there the newcomers
+        // bring one between them.
+        const destArray =
+          destGroupId === null
+            ? undefined
+            : target?.groupId
+              ? owner.cutouts.find((c) => c.groupId === target.groupId)?.array
+              : adoptedGroupArray(owner.cutouts, moving, null);
 
         pushHistoryEntry(state);
         const reparented = owner.cutouts.map((c) =>
           moving.has(c.id)
-            ? {
-                ...c,
-                groupId: destGroupId,
-                ...(destGroupId === null ? {} : { groupOp: destOp }),
-              }
+            ? destGroupId === null
+              ? { ...c, groupId: destGroupId }
+              : withCutoutArray({ ...c, groupId: destGroupId, groupOp: destOp }, destArray)
             : c
         );
         // Pulling members out can strand a one-member group behind.
@@ -663,6 +682,8 @@ export function createCutoutSlice(rawSet: Set) {
             if (c.groupId === existingGroupId) idsToGroup.add(c.id);
           }
         }
+        // One repeat per group, adopted the same way the color below is.
+        const sharedArray = adoptedGroupArray(owner.cutouts, idsToGroup, existingGroupId);
         // One color per group: adopt the group's existing color, else the first
         // colored member, so a freshly grouped set can't hold mixed backings.
         const colorSource =
@@ -684,6 +705,7 @@ export function createCutoutSlice(rawSet: Set) {
             !idsToGroup.has(c.id) ||
             (c.groupId === groupId &&
               (c.groupOp ?? DEFAULT_GROUP_OP) === groupOp &&
+              c.array === sharedArray &&
               (!colorPatch ||
                 (c.color === colorPatch.color &&
                   (c.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE) === colorPatch.colorScope)))
@@ -692,7 +714,9 @@ export function createCutoutSlice(rawSet: Set) {
 
         pushHistoryEntry(state);
         owner.cutouts = owner.cutouts.map((c) =>
-          idsToGroup.has(c.id) ? { ...c, groupId, groupOp, ...colorPatch } : c
+          idsToGroup.has(c.id)
+            ? withCutoutArray({ ...c, groupId, groupOp, ...colorPatch }, sharedArray)
+            : c
         );
       });
     },
@@ -723,6 +747,18 @@ export function createCutoutSlice(rawSet: Set) {
         pushHistoryEntry(state);
         owner.cutouts = owner.cutouts.map((c) =>
           c.groupId === groupId ? { ...c, groupOp: op } : c
+        );
+      });
+    },
+
+    setCutoutArray: (cutoutId: string, config: CutoutArrayConfig | undefined) => {
+      set((state) => {
+        const owner = cutoutOwner(state);
+        const plan = planCutoutArrayWrite(owner.cutouts, cutoutId, config);
+        if (!plan) return;
+        pushHistoryEntry(state, { affectsGeometry: true });
+        owner.cutouts = owner.cutouts.map((c) =>
+          plan.ids.has(c.id) ? withCutoutArray(c, plan.config) : c
         );
       });
     },

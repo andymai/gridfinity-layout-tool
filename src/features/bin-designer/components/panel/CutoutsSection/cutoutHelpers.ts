@@ -11,7 +11,7 @@ import {
   defaultEntryChamfer,
 } from '@/features/bin-designer/types';
 import { polygonBoxFromAcrossFlats } from '@/shared/utils/cutoutPolygon';
-import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray';
 import { DEFAULT_KNIFE_PRESET } from './knifeSlotPresets';
 import { KNIFE_SLOT_DEFAULT_CHAMFER, knifeSlotDimensions } from '@/features/bin-designer/types';
 import { translatePathPoints } from './pathGeometry';
@@ -208,7 +208,11 @@ export function flattenCutoutArray(master: Cutout): {
   if (!master.array) return { masterPatch: {}, added: [] };
   const instances = expandCutoutArray(master);
   const added = instances.slice(1).map((inst) => ({ ...inst, id: crypto.randomUUID() }));
-  return { masterPatch: { array: undefined }, added };
+  // The master's own label comes out of the list like every other instance's.
+  // It is rarely list entry 0 (a grid's master is the BOTTOM-left hole while
+  // the list is written top row first), so carrying the stored `label` through
+  // would hand the master a label meant for a different hole.
+  return { masterPatch: { array: undefined, label: instances[0].label }, added };
 }
 
 /**
@@ -243,6 +247,66 @@ export function applyFlattenArray(
   transaction.start();
   try {
     updateCutout(id, masterPatch);
+    for (const cutout of added) addCutout(cutout);
+  } finally {
+    transaction.commit();
+  }
+  return 'flattened';
+}
+
+/**
+ * Bake a repeated GROUP into independent groups: the members keep their ids and
+ * their arrangement at copy 0, and every further copy becomes a fresh group of
+ * clones with its own groupId.
+ *
+ * A fresh groupId per copy is the whole point. Flattening into loose shapes
+ * would drop the boolean the copies exist to repeat, which is the tedium a
+ * grouped repeat removes in the first place.
+ */
+export function flattenCutoutGroupArray(members: readonly Cutout[]): {
+  memberPatches: Map<string, Partial<Cutout>>;
+  added: Cutout[];
+} {
+  const memberPatches = new Map<string, Partial<Cutout>>();
+  const copies = expandCutoutGroup(members);
+  for (const member of members) memberPatches.set(member.id, { array: undefined });
+  const added: Cutout[] = [];
+  for (const copy of copies.slice(1)) {
+    // `cloneCutoutsWithGroups` mints one new groupId for the whole set, which
+    // is exactly one copy's worth of members.
+    for (const clone of cloneCutoutsWithGroups(copy)) {
+      const { originalId: _drop, array: _array, ...cutout } = clone;
+      added.push(cutout);
+    }
+  }
+  return { memberPatches, added };
+}
+
+/**
+ * Look up a repeated group by any member id and bake it into independent
+ * groups through the store callbacks, in one history entry.
+ *
+ * Declines whole when the host cannot take every clone, for the same reason
+ * {@link applyFlattenArray} does: a run that stops part way strips the repeat
+ * and leaves the copies it stood for unbuilt.
+ */
+export function applyFlattenGroupArray(
+  id: string,
+  cutouts: readonly Cutout[],
+  updateCutout: (id: string, patch: Partial<Cutout>) => void,
+  addCutout: (cutout: Cutout) => boolean,
+  capacity: number,
+  transaction: { readonly start: () => void; readonly commit: () => void }
+): 'flattened' | 'not-an-array' | 'no-room' {
+  const target = cutouts.find((c) => c.id === id);
+  if (!target || target.groupId === null) return 'not-an-array';
+  const members = cutouts.filter((c) => c.groupId === target.groupId);
+  if (!members.some((m) => m.array !== undefined)) return 'not-an-array';
+  const { memberPatches, added } = flattenCutoutGroupArray(members);
+  if (added.length > capacity) return 'no-room';
+  transaction.start();
+  try {
+    for (const [memberId, patch] of memberPatches) updateCutout(memberId, patch);
     for (const cutout of added) addCutout(cutout);
   } finally {
     transaction.commit();

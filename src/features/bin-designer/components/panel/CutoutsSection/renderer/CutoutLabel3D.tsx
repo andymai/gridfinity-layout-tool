@@ -20,6 +20,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
   cutoutLabelPlacement,
+  fitLabelRoom,
   labelPlacementForAabb,
   resolveCutoutTextAnchor,
 } from '@/shared/utils/cutoutLabel';
@@ -28,6 +29,7 @@ import {
   isCutoutEngraveMode,
   isCutoutSocketMode,
 } from '@/shared/utils/cutoutLabelSocketPlan';
+import { labelledInstances } from '@/shared/utils/cutoutArray';
 import {
   LABEL_PLATE_CORNER_RADIUS_MM,
   LABEL_PLATE_HEIGHT_MM,
@@ -131,22 +133,9 @@ export function CutoutLabel3D({
         }
 
         if (!isCutoutEngraveMode(cutout)) return null;
-        const label = cutout.label.trim();
-        if (label === '') return null;
 
         const overrides = preview.get(cutout.id);
         const effective = overrides ? { ...cutout, ...overrides } : cutout;
-
-        const placement = cutoutLabelPlacement(effective, binWidth, binDepth);
-        if (!placement) return null;
-
-        const fontSize = fitLabelFontSize(
-          label,
-          placement,
-          textDefaults,
-          effective.textStyle?.fontSizeOverride
-        );
-        if (fontSize === null) return null;
 
         // Label angle about the glyph center (anchored center/middle). Negated
         // to match the cutout-rotation convention used everywhere else (see
@@ -154,6 +143,9 @@ export function CutoutLabel3D({
         // turns the same way as a positive cutout rotation.
         const angleRad = -((effective.textAngle ?? 0) * Math.PI) / 180;
 
+        // Drag always nudges the MASTER: the offset is one field shared by
+        // every instance, so grabbing the third label in a row has to move the
+        // same value grabbing the first one does.
         const handlePointerDown = onLabelDragStart
           ? (e: ThreeEvent<PointerEvent>) => {
               if (e.nativeEvent.button !== 0) return; // left-click only
@@ -162,24 +154,46 @@ export function CutoutLabel3D({
             }
           : undefined;
 
-        return (
-          <Text
-            key={`label-${cutout.id}`}
-            position={[placement.centerX, placement.centerY, 0.05]}
-            rotation={[0, 0, angleRad]}
-            fontSize={fontSize}
-            color={labelFill}
-            fillOpacity={TEXT_OPACITY}
-            outlineWidth={OUTLINE_WIDTH}
-            outlineColor={labelOutline}
-            outlineOpacity={1}
-            anchorX="center"
-            anchorY="middle"
-            onPointerDown={handlePointerDown}
-          >
-            {label}
-          </Text>
-        );
+        // The override is applied BEFORE the expansion so a mid-drag repeat
+        // carries its labels along; expanding the committed master first would
+        // leave them behind at the grab point.
+        return labelledInstances(effective).map((instance) => {
+          const label = instance.label.trim();
+          if (label === '') return null;
+
+          const placement = cutoutLabelPlacement(instance, binWidth, binDepth);
+          if (!placement) return null;
+
+          // Same cap the engraver applies, so the editor shows the size that
+          // will actually be cut.
+          const room = fitLabelRoom(placement.availW, placement.availD, effective.array);
+          const fontSize = fitLabelFontSize(
+            label,
+            { ...placement, ...room },
+            textDefaults,
+            instance.textStyle?.fontSizeOverride
+          );
+          if (fontSize === null) return null;
+
+          return (
+            <Text
+              key={`label-${instance.id}`}
+              position={[placement.centerX, placement.centerY, 0.05]}
+              rotation={[0, 0, angleRad]}
+              fontSize={fontSize}
+              color={labelFill}
+              fillOpacity={TEXT_OPACITY}
+              outlineWidth={OUTLINE_WIDTH}
+              outlineColor={labelOutline}
+              outlineOpacity={1}
+              anchorX="center"
+              anchorY="middle"
+              onPointerDown={handlePointerDown}
+            >
+              {label}
+            </Text>
+          );
+        });
       })}
     </>
   );

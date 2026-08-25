@@ -7,7 +7,7 @@
  * would change every stored design and the community params fingerprint.
  */
 
-import type { Cutout, CutoutArrayMode, CutoutArrayConfig } from '@/features/bin-designer/types';
+import type { CutoutArrayMode, CutoutArrayConfig } from '@/features/bin-designer/types';
 import { CUTOUT_ARRAY_MODES, MAX_ARRAY_COUNT } from '@/features/bin-designer/types';
 import {
   arrayInstanceCount,
@@ -15,6 +15,7 @@ import {
   arrayInstancesOverlap,
   fillBinCounts,
   ARRAY_MIN_RADIUS,
+  type RepeatBox,
 } from '@/shared/utils/cutoutArray';
 import { useTranslation } from '@/i18n';
 import { Button, Checkbox, Stepper } from '@/design-system';
@@ -33,39 +34,54 @@ import {
 import type { RepeatBlockedReason } from './cutoutSectionVisibility';
 
 interface CutoutArrayControlsProps {
-  readonly cutout: Cutout;
+  /**
+   * The footprint the layout is measured against: one cutout's box, or a whole
+   * group's. A group repeats as one unit, so its spacing has to be measured
+   * against the assembly rather than against whichever member was clicked.
+   */
+  readonly box: RepeatBox;
+  readonly array: CutoutArrayConfig | undefined;
   /** Bin interior dimensions (mm) — array layout is clamped to fit within them. */
   readonly binWidth: number;
   readonly binDepth: number;
-  readonly onUpdate: (patch: Partial<Cutout>) => void;
+  readonly onChange: (config: CutoutArrayConfig | undefined) => void;
   readonly onFlatten: () => void;
   readonly disabled?: boolean;
-  /** Set when `canArray` fails; renders the reason in place of the controls. */
+  /** Set when a repeat is refused; renders the reason in place of the controls. */
   readonly blockedReason?: RepeatBlockedReason | null;
   /** Offered alongside the grouped explanation, so the reason has a way out. */
   readonly onUngroup?: () => void;
+  /**
+   * False for a group. Rotate-to-center turns each copy to face the ring, which
+   * for a group means turning the whole assembly; expanding members one at a
+   * time can only turn each about its own center, which pulls the assembly
+   * apart. See `groupArrayConfig`.
+   */
+  readonly canRotateToCenter?: boolean;
 }
 
 export function CutoutArrayControls({
-  cutout,
+  box,
+  array,
   binWidth,
   binDepth,
-  onUpdate,
+  onChange,
   onFlatten,
   disabled = false,
   blockedReason,
   onUngroup,
+  canRotateToCenter = true,
 }: CutoutArrayControlsProps) {
   const t = useTranslation();
-  const array = cutout.array;
+  const cutout = box;
 
   const setArray = (patch: Partial<CutoutArrayConfig>): void => {
     if (!array) return;
-    onUpdate({ array: { ...array, ...patch } });
+    onChange({ ...array, ...patch });
   };
 
   const create = (config: CutoutArrayConfig, source: 'preset' | 'inspector'): void => {
-    onUpdate({ array: config });
+    onChange(config);
     trackEvent('cutout_repeat_created', {
       source,
       mode: config.mode,
@@ -204,15 +220,21 @@ export function CutoutArrayControls({
             unit="°"
             disabled={disabled}
           />
-          <label className="flex items-center gap-2 text-xs text-content-secondary">
-            <Checkbox
-              checked={array.rotateToCenter}
-              onChange={(c) => setArray({ rotateToCenter: c })}
-              disabled={disabled}
-              aria-label={t('binDesigner.cutouts.repeat.rotateToCenter')}
-            />
-            {t('binDesigner.cutouts.repeat.rotateToCenter')}
-          </label>
+          {canRotateToCenter ? (
+            <label className="flex items-center gap-2 text-xs text-content-secondary">
+              <Checkbox
+                checked={array.rotateToCenter}
+                onChange={(c) => setArray({ rotateToCenter: c })}
+                disabled={disabled}
+                aria-label={t('binDesigner.cutouts.repeat.rotateToCenter')}
+              />
+              {t('binDesigner.cutouts.repeat.rotateToCenter')}
+            </label>
+          ) : (
+            <p className="text-[11px] leading-snug text-content-tertiary">
+              {t('binDesigner.cutouts.repeat.groupNoRotate')}
+            </p>
+          )}
         </>
       ) : (
         <div className="grid grid-cols-2 gap-1">
@@ -306,7 +328,7 @@ export function CutoutArrayControls({
           type="button"
           variant="ghost"
           className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
-          onClick={() => onUpdate({ array: undefined })}
+          onClick={() => onChange(undefined)}
           disabled={disabled}
           title={t('binDesigner.cutouts.repeat.remove')}
         >

@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { cutoutWorldAabb, cutoutLabelPlacement, resolveCutoutTextAnchor } from './cutoutLabel';
-import type { Cutout } from '@/shared/types/bin';
+import {
+  cutoutWorldAabb,
+  cutoutLabelPlacement,
+  fitLabelRoom,
+  resolveCutoutTextAnchor,
+} from './cutoutLabel';
+import type { Cutout, CutoutArrayConfig } from '@/shared/types/bin';
 
 type AabbInput = Parameters<typeof cutoutWorldAabb>[0];
 
@@ -199,5 +204,63 @@ describe('resolveCutoutTextAnchor', () => {
 
   it('defaults to top when neither is set', () => {
     expect(resolveCutoutTextAnchor({})).toBe('top');
+  });
+});
+
+describe('fitLabelRoom', () => {
+  const cfg = (over: Partial<CutoutArrayConfig> = {}): CutoutArrayConfig => ({
+    mode: 'grid',
+    cols: 4,
+    rows: 1,
+    pitchX: 38,
+    pitchY: 38,
+    count: 4,
+    radius: 30,
+    startAngle: 0,
+    rotateToCenter: false,
+    ...over,
+  });
+
+  it('leaves the band alone when there is no repeat', () => {
+    expect(fitLabelRoom(160, 40, undefined)).toEqual({ availW: 160, availD: 40 });
+  });
+
+  it('leaves the band alone for a repeat that labels itself once', () => {
+    // No list means one caption beside the master, which still gets the full
+    // band. Capping here would resize the text every stored design engraves.
+    expect(fitLabelRoom(160, 40, cfg())).toEqual({ availW: 160, availD: 40 });
+  });
+
+  it('caps a labelled row to its column pitch, so captions cannot collide', () => {
+    // The band grows into the interior by design; four copies each claiming
+    // 160mm printed on top of each other.
+    expect(fitLabelRoom(160, 40, cfg({ labels: ['a', 'b', 'c', 'd'] }))).toEqual({
+      availW: 38,
+      availD: 40,
+    });
+  });
+
+  it('caps only the axis the repeat actually runs along', () => {
+    const oneColumn = cfg({ cols: 1, rows: 4, labels: ['a', 'b', 'c', 'd'] });
+    expect(fitLabelRoom(160, 200, oneColumn)).toEqual({ availW: 160, availD: 38 });
+  });
+
+  it('never widens a band that was already tighter than the pitch', () => {
+    expect(fitLabelRoom(12, 9, cfg({ labels: ['a'] }))).toEqual({ availW: 12, availD: 9 });
+  });
+
+  it('caps a labelled ring to the gap between neighbours', () => {
+    // Chord between adjacent copies of a 4-ring at r=30: 2*30*sin(45°) ≈ 42.4.
+    const ring = cfg({ mode: 'radial', count: 4, radius: 30, labels: ['a', 'b', 'c', 'd'] });
+    const room = fitLabelRoom(160, 160, ring);
+    expect(room.availW).toBeCloseTo(42.43, 1);
+    expect(room.availD).toBeCloseTo(42.43, 1);
+  });
+
+  it('leaves a single-copy ring uncapped', () => {
+    expect(fitLabelRoom(160, 160, cfg({ mode: 'radial', count: 1, labels: ['a'] }))).toEqual({
+      availW: 160,
+      availD: 160,
+    });
   });
 });

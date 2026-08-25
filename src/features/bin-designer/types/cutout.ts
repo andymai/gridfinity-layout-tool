@@ -227,6 +227,20 @@ export interface CutoutArrayConfig {
   readonly startAngle: number;
   /** radial: when true, each instance is rotated to face the ring center. */
   readonly rotateToCenter: boolean;
+  /**
+   * Per-instance labels, indexed in the order {@link arrayLabelOrder} gives:
+   * reading order for grid/staggered (top row first, left to right), ring order
+   * for radial. Absent, which is the common case, leaves every instance
+   * labelled with the master's own {@link Cutout.label}, which is how a repeat
+   * behaved before the list existed.
+   *
+   * An entry present in the list wins outright, blank included: a deliberately
+   * empty slot is how you leave one hole of an otherwise labelled repeat bare.
+   * Instances PAST the end of a short list fall back to the master's label
+   * instead, so a half-filled list reads as unfinished rather than as a row of
+   * blanks. The editor reports the count mismatch; it does not refuse it.
+   */
+  readonly labels?: string[];
 }
 
 /**

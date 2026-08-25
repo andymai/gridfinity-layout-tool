@@ -106,8 +106,7 @@ function buildTools(cutouts: LidCutoutInputs): Shape3D[] {
     if (shape) tools.push(shape);
   }
   for (const members of groups.values()) {
-    const shape = buildGroupedCutouts(members.map(through), surfaceZ, originX, originY);
-    if (shape) tools.push(shape);
+    tools.push(...buildGroupedCutouts(members.map(through), surfaceZ, originX, originY));
   }
   return tools;
 }

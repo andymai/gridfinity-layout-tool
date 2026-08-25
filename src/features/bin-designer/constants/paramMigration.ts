@@ -26,7 +26,9 @@ import type {
   WallCutoutShape,
   KnifeRestConfig,
 } from '../types';
-import { CUTOUT_FILL_REFERENCES, DEFAULT_PATTERN_SCALE } from '../types';
+import type { CutoutArrayConfig } from '../types';
+import { CUTOUT_FILL_REFERENCES, DEFAULT_PATTERN_SCALE, MAX_ARRAY_INSTANCES } from '../types';
+import { groupRepeatConfig } from '@/shared/utils/cutoutArray';
 import {
   KNIFE_REST_DEFAULT_GAP_MM,
   KNIFE_REST_GROOVE_DEPTH_MM,
@@ -803,14 +805,78 @@ type MigrateParamsInput = Omit<Partial<BinParams>, 'wallPattern' | 'featureColor
  */
 function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
   const { scoopRadius, ...rest } = cutout;
+  const array = migrateCutoutArray(rest.array);
+  const withArray = array === rest.array ? rest : { ...rest, array };
   if (
     scoopRadius !== undefined &&
-    rest.scoopRadiusW === undefined &&
-    rest.scoopRadiusD === undefined
+    withArray.scoopRadiusW === undefined &&
+    withArray.scoopRadiusD === undefined
   ) {
-    return { ...rest, scoopRadiusW: scoopRadius, scoopRadiusD: scoopRadius };
+    return { ...withArray, scoopRadiusW: scoopRadius, scoopRadiusD: scoopRadius };
   }
-  return rest;
+  return withArray;
+}
+
+/**
+ * Give every member of a group the repeat its group runs.
+ *
+ * Repeating a loose cutout and THEN grouping it used to leave the config on
+ * that member alone. The worker has always cut every copy of such a group, so
+ * the config is spread across the members here rather than dropped, and the
+ * editor then draws the same copies the export cuts.
+ *
+ * A group whose members disagree is left exactly as it is: `groupRepeatConfig`
+ * declines to repeat it, and rewriting one member's pattern onto the others
+ * would move cuts in a design nothing in this app produced.
+ *
+ * Returns the input by reference when nothing needed changing, so a design that
+ * was already consistent serializes byte-identically.
+ */
+function shareGroupArrays(cutouts: readonly Cutout[]): Cutout[] {
+  const byGroup = new Map<string, Cutout[]>();
+  for (const cutout of cutouts) {
+    if (cutout.groupId === null) continue;
+    const members = byGroup.get(cutout.groupId);
+    if (members) members.push(cutout);
+    else byGroup.set(cutout.groupId, [cutout]);
+  }
+  const shared = new Map<string, CutoutArrayConfig>();
+  for (const [groupId, members] of byGroup) {
+    if (members.every((m) => m.array !== undefined)) continue;
+    const config = groupRepeatConfig(members);
+    if (config) shared.set(groupId, config);
+  }
+  if (shared.size === 0) return [...cutouts];
+  return cutouts.map((c) => {
+    if (c.groupId === null || c.array !== undefined) return c;
+    const config = shared.get(c.groupId);
+    return config ? { ...c, array: config } : c;
+  });
+}
+
+/**
+ * Normalize a repeat's per-copy label list. The share/sync validator rejects an
+ * oversized one, but a hand-authored JSON imported locally never reaches it, so
+ * the caps are applied here too: at most one label per copy the repeat can
+ * expand to, each one line long.
+ *
+ * Returns the input by reference when nothing needed changing, so a design that
+ * predates the list serializes byte-identically and its fingerprint holds.
+ */
+function migrateCutoutArray(array: CutoutArrayConfig | undefined): CutoutArrayConfig | undefined {
+  if (!array) return array;
+  const raw: unknown = array.labels;
+  if (raw === undefined) return array;
+  if (!Array.isArray(raw)) {
+    const { labels: _drop, ...rest } = array;
+    return rest;
+  }
+  const labels = raw
+    .slice(0, MAX_ARRAY_INSTANCES)
+    .map((entry: unknown) => (typeof entry === 'string' ? entry.slice(0, TEXT_MAX_LENGTH) : ''));
+  const unchanged =
+    labels.length === raw.length && labels.every((entry, i) => entry === (raw as unknown[])[i]);
+  return unchanged ? array : { ...array, labels };
 }
 
 /**
@@ -1408,13 +1474,14 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   // (crafted/corrupt designs) instead of erroring downstream; symmetrically,
   // drop assets no cutout references so they can't ride along via `...rest`
   // and bloat the design forever.
-  const migratedCutouts = (params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts)
-    .map((c) => migrateCutout(c as Cutout & LegacyCutoutFields))
-    .filter(
-      (c) =>
-        c.shape !== 'mesh' ||
-        (c.meshId !== undefined && params.meshAssets?.[c.meshId] !== undefined)
-    );
+  const migratedCutouts = shareGroupArrays(
+    (params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts).map((c) =>
+      migrateCutout(c as Cutout & LegacyCutoutFields)
+    )
+  ).filter(
+    (c) =>
+      c.shape !== 'mesh' || (c.meshId !== undefined && params.meshAssets?.[c.meshId] !== undefined)
+  );
   const referencedMeshIds = new Set(
     migratedCutouts.filter((c) => c.shape === 'mesh').map((c) => c.meshId)
   );

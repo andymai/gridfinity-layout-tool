@@ -38,6 +38,7 @@ import {
 } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
+import { CutoutRepeatLabels } from './CutoutRepeatLabels';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutKnifeControls } from './CutoutKnifeControls';
 import { LabelSizeControl } from '../controls';
@@ -119,6 +120,7 @@ export function SingleCutoutInspector({
 }: SingleCutoutInspectorProps) {
   const t = useTranslation();
   const ungroupCutouts = useDesignerStore((s) => s.ungroupCutouts);
+  const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
   // maxCutDepth is the remaining fill on a bin host; a through-cut host has no
   // depth to fall short of.
   // The fields display preview-merged values, so anything computed FROM them
@@ -315,10 +317,11 @@ export function SingleCutoutInspector({
           }
         >
           <CutoutArrayControls
-            cutout={cutout}
+            box={live}
+            array={cutout.array}
             binWidth={binWidth}
             binDepth={binDepth}
-            onUpdate={(patch) => onUpdate(cutout.id, patch)}
+            onChange={(config) => setCutoutArray(cutout.id, config)}
             onFlatten={() => onFlattenArray?.(cutout.id)}
             disabled={disabled}
             blockedReason={repeatBlockedReason(cutout)}
@@ -422,6 +425,7 @@ function CutoutEngraveLabelControls({
   const minFontSize = useDesignerStore((s) => s.params.textDefaults.minFontSize);
   const maxFontSize = useDesignerStore((s) => s.params.textDefaults.maxFontSize);
   const setTextDefaults = useDesignerStore((s) => s.setTextDefaults);
+  const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
 
   const fontSizeOverride = cutout.textStyle?.fontSizeOverride;
   const setFontSizeOverride = (size: number | null) => {
@@ -475,6 +479,22 @@ function CutoutEngraveLabelControls({
         placeholder={t('binDesigner.cutoutEngraveLabelPlaceholder')}
         aria-label={t('binDesigner.cutoutEngraveLabel')}
       />
+      {/* A repeat can caption each hole separately, but only when it engraves:
+          the socket planner cuts ONE pocket spanning the whole array, so a
+          socket repeat has a single plate to letter. Say so rather than
+          offering a list the plate cannot carry. */}
+      {cutout.array &&
+        (isSocket ? (
+          <p className="text-[10px] leading-snug text-content-tertiary">
+            {t('binDesigner.cutouts.repeat.labels.socketNote')}
+          </p>
+        ) : (
+          <CutoutRepeatLabels
+            cutout={cutout}
+            disabled={disabled}
+            onChange={(config) => setCutoutArray(cutout.id, config)}
+          />
+        ))}
       {isSocket && (
         <CutoutSocketControls
           cutout={cutout}
