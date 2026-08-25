@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.476.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.475.0...gridfinity-layout-tool-v4.476.0) (2026-08-25)
+
+
+### Features
+
+* **bin-designer:** give a label caption a second line ([#3895](https://github.com/andymai/gridfinity-layout-tool/issues/3895)) ([19e42fd](https://github.com/andymai/gridfinity-layout-tool/commit/19e42fd11b37e4c818ce5d9802c9220e9f857b35))
+
+
+### Bug Fixes
+
+* **generation:** recognise every browser's wording for a failed asset ([#3896](https://github.com/andymai/gridfinity-layout-tool/issues/3896)) ([57b68b4](https://github.com/andymai/gridfinity-layout-tool/commit/57b68b44aca356f9c4945470bd9dd8d03656ee11))
+* **shell:** recover a route chunk onto the build that actually has it ([#3899](https://github.com/andymai/gridfinity-layout-tool/issues/3899)) ([1e274d2](https://github.com/andymai/gridfinity-layout-tool/commit/1e274d290a89d803c9acb8cf5b92d4409ce2b3c0))
+
 ## [4.475.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.474.0...gridfinity-layout-tool-v4.475.0) (2026-08-25)
 
 
