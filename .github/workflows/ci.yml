@@ -113,7 +113,7 @@ jobs:
         # helps here and hurts there.
         include: >-
           ${{ github.event_name != 'pull_request'
-          && fromJSON('[{"name":"full","group":"full","shard":"1/1"}]')
+          && fromJSON('[{"name":"full 1/8","group":"full","shard":"1/8","idx":"1"},{"name":"full 2/8","group":"full","shard":"2/8","idx":"2"},{"name":"full 3/8","group":"full","shard":"3/8","idx":"3"},{"name":"full 4/8","group":"full","shard":"4/8","idx":"4"},{"name":"full 5/8","group":"full","shard":"5/8","idx":"5"},{"name":"full 6/8","group":"full","shard":"6/8","idx":"6"},{"name":"full 7/8","group":"full","shard":"7/8","idx":"7"},{"name":"full 8/8","group":"full","shard":"8/8","idx":"8"}]')
           || (vars.SELF_HOSTED_CI == 'true'
           && github.event.pull_request.head.repo.full_name == github.repository)
           && fromJSON('[{"name":"core 1/6","group":"core","shard":"1/6"},{"name":"core 2/6","group":"core","shard":"2/6"},{"name":"core 3/6","group":"core","shard":"3/6"},{"name":"core 4/6","group":"core","shard":"4/6"},{"name":"core 5/6","group":"core","shard":"5/6"},{"name":"core 6/6","group":"core","shard":"6/6"}]')
@@ -151,8 +151,12 @@ jobs:
             # `integration` needs a Redis service and runs as its own job.
             # `generators-heavy` runs nowhere else, so dropping it here retires
             # those files silently. Guarded by src/test/ciProjectCoverage.test.ts.
-            echo "Running full suite with coverage (main branch)"
-            pnpm vitest run --coverage --project=unit --project=dom --project=generators --project=generators-heavy
+            # --reporter=blob writes a machine-readable result per shard, which
+            # `Coverage Merge` recombines. The thresholds are zeroed here and
+            # enforced only there: a shard covers a fraction of the files, so
+            # checking the global thresholds against it fails every shard.
+            echo "Running full suite with coverage (main branch, shard $SHARD)"
+            pnpm vitest run --coverage --reporter=blob --shard="$SHARD" --coverage.thresholds.lines 0 --coverage.thresholds.functions 0 --coverage.thresholds.branches 0 --coverage.thresholds.statements 0 --project=unit --project=dom --project=generators --project=generators-heavy
           elif [ "$GROUP" = "generators" ]; then
             echo "Running generators project (shard $SHARD)"
             pnpm vitest run --project=generators --shard="$SHARD"
@@ -161,11 +165,20 @@ jobs:
             pnpm vitest run --project=unit --project=dom --shard="$SHARD"
           fi
 
+      - name: Upload blob report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+        with:
+          name: blob-${{ matrix.idx }}
+          path: .vitest-reports/
+          include-hidden-files: true
+          retention-days: 1
+
       - name: Upload coverage report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure() && github.ref == 'refs/heads/main'
         with:
-          name: coverage-report
+          name: coverage-report-${{ matrix.idx }}
           path: coverage/
           retention-days: 5
 
@@ -286,9 +299,47 @@ jobs:
   # shard names, so shard/group counts can change without updating the ruleset.
   # always() so it still runs (and fails) when a shard fails; skipped for
   # release-please PRs in lockstep with the test job above.
+  # Main only. A shard's coverage covers just the files it ran, so the
+  # thresholds cannot be checked on any single one; this recombines the blob
+  # reports and is the only place they are enforced.
+  test-merge:
+    name: Coverage Merge
+    needs: [test]
+    if: ${{ github.ref == 'refs/heads/main' && !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup pnpm + Node and install dependencies
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate artifacts
+        run: pnpm run build:en-locale
+
+      - name: Download blob reports
+        # Third-party action — pinned to commit SHA (Dependabot will keep it current).
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: blob-*
+          merge-multiple: true
+          path: .vitest-reports
+
+      - name: Merge reports and enforce coverage thresholds
+        run: pnpm vitest --mergeReports --coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 5
+
   test-gate:
     name: Unit Tests Complete
-    needs: [test, integration, test-selfhosted]
+    needs: [test, integration, test-selfhosted, test-merge]
     if: ${{ always() && !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     steps:
@@ -297,6 +348,8 @@ jobs:
           TEST_RESULT: ${{ needs.test.result }}
           INTEGRATION_RESULT: ${{ needs.integration.result }}
           SELFHOSTED_RESULT: ${{ needs.test-selfhosted.result }}
+          MERGE_RESULT: ${{ needs.test-merge.result }}
+          REF: ${{ github.ref }}
         run: |
           if [ "$TEST_RESULT" != "success" ]; then
             echo "Unit test shards did not all pass (result: $TEST_RESULT)"
@@ -312,6 +365,24 @@ jobs:
           # main. It is NOT a silent pass — the two conditions are written as
           # exact negations of each other, so whichever path is skipped, the other
           # one ran. Any other non-success state is a real failure.
+          # Coverage thresholds live only in the merge job, so on main a
+          # `skipped` here would drop them without failing anything. On a PR it
+          # is the correct state: the job does not run outside main.
+          if [ "$REF" = "refs/heads/main" ]; then
+            if [ "$MERGE_RESULT" != "success" ]; then
+              echo "Coverage merge did not pass (result: $MERGE_RESULT)"
+              exit 1
+            fi
+          else
+            case "$MERGE_RESULT" in
+              skipped|success) ;;
+              *)
+                echo "Coverage merge in an unexpected state for a PR (result: $MERGE_RESULT)"
+                exit 1
+                ;;
+            esac
+          fi
+
           case "$SELFHOSTED_RESULT" in
             success|skipped) ;;
             *)
