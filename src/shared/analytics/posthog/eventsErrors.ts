@@ -16,8 +16,11 @@ import { getDeviceType, trackEvent } from './trackEvent';
 /**
  * Get current layout context for error enrichment.
  * This helps debug errors by showing what the user was doing.
+ *
+ * Exported so `before_send` can attach it to exceptions posthog-js captures
+ * natively, which never pass through {@link captureException}.
  */
-function getLayoutContext(): Record<string, unknown> {
+export function getLayoutContext(): Record<string, unknown> {
   try {
     const layout = useLayoutStore.getState().layout;
     const { interaction } = useInteractionStore.getState();

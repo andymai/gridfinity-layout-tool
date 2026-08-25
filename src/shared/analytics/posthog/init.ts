@@ -6,15 +6,21 @@
 import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
 import { getStableUserId } from './identity';
-import { filterExceptionForPosthog, shouldIgnoreError } from './errorFilters';
+import { filterExceptionForPosthog } from './errorFilters';
 
 // INITIALIZATION (LAZY LOADED)
 
 let posthogInstance: PostHog | null = null;
 let initPromise: Promise<void> | null = null;
 let eventQueue: Array<{ name: string; properties: Record<string, unknown> }> = [];
-/** Re-entrancy guard: prevents infinite loops if captureException itself throws */
-let isCapturingGlobalError = false;
+/**
+ * Supplies layout context to natively-captured exceptions.
+ *
+ * Assigned once `./events` has loaded. Held as a reference rather than imported
+ * because `eventsErrors` imports `getPosthogInstance` from this module, and a
+ * static import back would close that cycle.
+ */
+let getExceptionContext: (() => Record<string, unknown>) | null = null;
 
 /**
  * Get the PostHog instance (for modules that need direct access).
@@ -58,11 +64,19 @@ export function initAnalytics(): void {
         // Performance monitoring - web vitals
         capture_performance: true,
 
-        // Drop extension/platform noise before it ships. Native capture_exceptions
-        // fires independently of our window.onerror handler, so this is the only
-        // place we can filter that path. CaptureResult is a structural superset
+        // The single place exceptions are filtered and enriched. Every capture
+        // path passes through here, native or explicit, so nothing needs a
+        // second handler to add context. CaptureResult is a structural superset
         // of the shape filterExceptionForPosthog reads.
-        before_send: (event) => filterExceptionForPosthog(event) as typeof event,
+        before_send: (event) => {
+          const kept = filterExceptionForPosthog(event);
+          if (kept?.event === '$exception' && getExceptionContext) {
+            // Explicit context wins: `captureException` callers pass details
+            // about the specific failure that the ambient layout can't know.
+            kept.properties = { ...getExceptionContext(), ...kept.properties };
+          }
+          return kept as typeof event;
+        },
       });
       posthogInstance = posthog;
 
@@ -75,15 +89,15 @@ export function initAnalytics(): void {
 
       // Set person properties (these persist across sessions)
       // Deferred import to avoid circular dependency: events.ts imports capture from init.ts.
-      // This makes the .then() callback async, which means error handlers below are installed
-      // after this await resolves. PostHog's capture_exceptions: true provides native coverage
-      // during that brief gap, so no errors are lost.
       const {
         updatePersonProperties,
-        captureException,
+        getLayoutContext,
         listenForPwaInstall,
         captureUtmParameters,
       } = await import('./events');
+      // Exceptions thrown before this resolves are still captured, just without
+      // the layout context `before_send` attaches once this is set.
+      getExceptionContext = getLayoutContext;
       updatePersonProperties();
       captureUtmParameters();
       listenForPwaInstall();
@@ -93,45 +107,6 @@ export function initAnalytics(): void {
         posthog.capture(event.name, event.properties);
       }
       eventQueue = [];
-
-      // Install global error handlers for structured exception capture.
-      // PostHog's auto-capture sends raw browser events with null message/type.
-      // These handlers intercept errors first and send structured data.
-      // A re-entrancy guard prevents infinite loops if captureException itself throws.
-      window.addEventListener('error', (event: ErrorEvent) => {
-        if (isCapturingGlobalError) return;
-        if (shouldIgnoreError(event.message, event.filename)) return;
-        isCapturingGlobalError = true;
-        try {
-          if (event.error instanceof Error) {
-            captureException(event.error, {
-              source: 'window.onerror',
-              file: event.filename,
-              line: event.lineno,
-              column: event.colno,
-            });
-          }
-        } finally {
-          isCapturingGlobalError = false;
-        }
-      });
-
-      window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-        if (isCapturingGlobalError) return;
-        const reasonMsg =
-          event.reason instanceof Error ? event.reason.message : String(event.reason);
-        if (shouldIgnoreError(reasonMsg)) return;
-        isCapturingGlobalError = true;
-        try {
-          const error =
-            event.reason instanceof Error ? event.reason : new Error(String(event.reason));
-          captureException(error, {
-            source: 'unhandledrejection',
-          });
-        } finally {
-          isCapturingGlobalError = false;
-        }
-      });
     })
     .catch(() => {
       // Fail silently
