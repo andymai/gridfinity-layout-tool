@@ -346,31 +346,10 @@ jobs:
           restore-keys: |
             eslint-${{ runner.os }}-${{ hashFiles('eslint.config.js', 'eslint-rules/**', 'pnpm-lock.yaml') }}-
 
-      - name: DEBUG restored cache state
-        continue-on-error: true
-        run: |
-          echo "--- restored cache dir, BEFORE any lint ---"
-          ls -la node_modules/.cache/eslint/ || echo "MISSING"
-          for f in node_modules/.cache/eslint/.cache_*; do
-            [ -e "$f" ] || continue
-            echo "name=$(basename "$f") size=$(stat -c %s "$f") md5=$(md5sum "$f" | cut -c1-12)"
-            echo "first-path-in-cache: $(head -c 200 "$f" | grep -oE '/[A-Za-z0-9._/-]{10,60}' | head -1)"
-          done
-
       - name: Lint
         id: lint
         continue-on-error: true
         run: pnpm run lint
-
-      - name: DEBUG cache after lint
-        continue-on-error: true
-        run: |
-          for f in node_modules/.cache/eslint/.cache_*; do
-            [ -e "$f" ] || continue
-            echo "name=$(basename "$f") size=$(stat -c %s "$f") md5=$(md5sum "$f" | cut -c1-12)"
-          done
-          echo "--- second lint in the same job ---"
-          time pnpm run lint > /dev/null
 
       - name: Check i18n keys
         id: i18n_keys
