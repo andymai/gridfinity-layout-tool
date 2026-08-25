@@ -25,6 +25,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   firstContactAngle,
+  knuckleRootMm3,
   pinObstructionMm3,
   seatedOverlapMm3,
   solidVolumeMm3,
@@ -285,6 +286,48 @@ describe('hinged lid', () => {
       const grew = boundingBox(hinged.bin.vertices).maxZ - boundingBox(plain.bin.vertices).maxZ;
       expect(grew).toBeGreaterThan(0);
       expect(grew).toBeLessThan(4);
+    }
+  }, 600_000);
+
+  it('welds the knuckles onto the bin, and exports what it previewed', async () => {
+    // Two claims, because either alone passes the other's bug.
+    //
+    // The root volume asks whether the joint is ATTACHED, which nothing else
+    // here can see: a knuckle welded to the lip and one hanging clear of it
+    // bound the same box, carry the same triangles and displace the same
+    // volume. The barrel reaches no bin material on its own — the plan's
+    // `rootDepthBelowLipTopMm` has the arithmetic — so this is not a margin
+    // being checked, it is the whole joint.
+    //
+    // The export height asks whether it SURVIVES. The pass that makes a bin
+    // watertight discards stray shells, so a hinge that fails to weld is
+    // deleted from the STL while the preview keeps showing it.
+    for (const side of ['back', 'front', 'left', 'right'] as const) {
+      const params = hingeParams({}, { side, catchMode: 'none' });
+      const plain = control(params);
+
+      // Same zone against both solids — the hinge plan defines it, and the
+      // control has no plan of its own to ask.
+      const rootMm3 = async (p: BinParams): Promise<number> => {
+        const { bin, lid } = await buildSolids(p);
+        try {
+          return await knuckleRootMm3(bin, params);
+        } finally {
+          lid.delete();
+        }
+      };
+      const bridge = (await rootMm3(params)) - (await rootMm3(plain));
+      expect({ side, welded: bridge > 10 }).toEqual({ side, welded: true });
+
+      // Measured on the EXPORT mesh against the export of the same control. The
+      // sibling footprint test pins this rise in the preview, and the preview is
+      // exactly where a missing hinge still looked right. Not the two meshes
+      // against each other: they tessellate at different tolerances, so a
+      // barrel's apex lands microns apart between them.
+      const top = (p: BinParams): number =>
+        boundingBox(getGenerateBin()(p, undefined, true).vertices).maxZ;
+      const grew = top(params) - top(plain);
+      expect({ side, grew: grew > 3 && grew < 4 }).toEqual({ side, grew: true });
     }
   }, 600_000);
 

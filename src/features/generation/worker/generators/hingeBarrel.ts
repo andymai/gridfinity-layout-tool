@@ -145,6 +145,47 @@ function knuckleSolid(
   return scope.register(unwrap(fuse(body, collar)));
 }
 
+/**
+ * The knuckle's root: the material that holds it on the bin.
+ *
+ * Load-bearing, not a fillet. The barrel touches the bin nowhere at all — see
+ * {@link HingeGeometry.rootDepthBelowLipTopMm} — so a knuckle fused on without
+ * this is a free-floating cylinder, and `keepOuterShell` deletes it from every
+ * export as a stray shell.
+ *
+ * Each bound is a constraint rather than a taste. ABOVE, the trim plane where
+ * it comes to rest: the one plane the lid never sweeps past, so no shape below
+ * it can foul the swing, and the stop still lands at
+ * {@link HingeGeometry.stopAngleDeg} because the root's top face IS that plane
+ * rather than a second opinion about it. OUTBOARD, the barrel's own limit, so
+ * the footprint does not grow. INBOARD, the axis — the only bound that needs no
+ * opinion about the lip's profile.
+ */
+function knuckleRootSolid(
+  scope: DisposalScope,
+  g: HingeGeometry,
+  frame: HingeFrame,
+  lo: number,
+  hi: number
+): Shape3D {
+  const cy = axisCross(g, frame);
+  const cz = frame.axisZ;
+  const outerY = cy + g.barrelRadiusMm;
+  const footZ = cz - g.axisAboveLipTopMm - g.rootDepthBelowLipTopMm;
+  const section = draw([cy, footZ])
+    .lineTo([cy, cz])
+    .lineTo([outerY, cz])
+    .lineTo([outerY, footZ])
+    .close();
+  const prism = scope.register(sketch(section, 'YZ').extrude(hi - lo));
+  const block = scope.register(translate(prism, [lo, 0, 0]));
+  // `trimTiltDeg - stopAngleDeg + 180` is the trim plane's normal after the
+  // full swing: the plan states the tilt at the CLOSED position, and the stop
+  // angle is how far it turns before the lid meets the bin.
+  const swept = halfSpaceThroughAxis(scope, g, frame, g.trimTiltDeg - g.stopAngleDeg + 180, lo, hi);
+  return scope.register(unwrap(cutAll(block as ValidSolid, [swept] as ValidSolid[])));
+}
+
 /** Bands one part owns within a run. */
 function bandsFor(run: HingeRun, owner: 'bin' | 'lid'): ReadonlyArray<readonly [number, number]> {
   return run.knuckles.filter((k) => k.owner === owner).map((k) => [k.lo, k.hi] as const);
@@ -353,7 +394,9 @@ export function buildBinHingeParts(g: HingeGeometry, frame: HingeFrame): BinHing
       for (const cutter of slotCutters(scope, g, frame, run, 'lid')) put(cutter, notches);
 
       for (const [lo, hi] of bandsFor(run, 'bin')) {
-        put(knuckleSolid(scope, g, frame, lo, hi), additions);
+        const knuckle = knuckleSolid(scope, g, frame, lo, hi);
+        const root = knuckleRootSolid(scope, g, frame, lo, hi);
+        put(scope.register(unwrap(fuse(knuckle as ValidSolid, root as ValidSolid))), additions);
       }
       for (const bore of boresFor(scope, g, frame, run)) put(bore, bores);
     }

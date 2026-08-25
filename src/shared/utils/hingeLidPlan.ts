@@ -48,6 +48,15 @@
  * the hinge exists — the same reason `lid.relieveInterior` runs last
  * (CLAUDE.md gotcha #18).
  *
+ * The bin's half is the mirror of it:
+ *
+ *     The bin may keep material outboard of the axis ANYWHERE the lid has
+ *     already swept past — everything below the trim plane at rest.
+ *
+ * That is the room the knuckle's root lives in, and it needs room because the
+ * barrel reaches no bin material at all. See
+ * {@link HingeGeometry.rootDepthBelowLipTopMm}.
+ *
  * ── THE STOP ─────────────────────────────────────────────────────────────
  *
  * The trim plane sets WHEN the lid stops and a small lobe gives it the reach to
@@ -140,6 +149,7 @@ import type {
   LidHingeCatch,
   LidRailSide,
 } from '@/shared/types/bin';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { labelTabInteriorDims, subtractSpan } from '@/shared/utils/labelTabPlan';
 import type { RailSegment, WallSpanBlock } from '@/shared/utils/labelTabPlan';
@@ -221,6 +231,21 @@ export interface HingeGeometry {
    * the lid in its own without either restating the other's origin.
    */
   readonly axisInsetMm: number;
+  /**
+   * Depth (mm) below the lip top that a bin knuckle's root reaches for.
+   *
+   * The barrel touches the bin NOWHERE. Inset from the outer face by its radius
+   * plus a relief and raised to the plate's underside, it clears the lip's top
+   * chamfer entirely: that chamfer recedes inboard as it rises, so the nearest
+   * lip material lies `(axisInsetMm + axisAboveLipTopMm)/√2` from the axis,
+   * further than {@link barrelRadiusMm} on every lip this app builds. Anything
+   * that has to be ATTACHED must reach past that, not merely to the rim.
+   *
+   * The chamfer stops receding once it meets the lip's vertical section, which
+   * is how deep a root has to go to stand on full-thickness material and no
+   * deeper.
+   */
+  readonly rootDepthBelowLipTopMm: number;
   /**
    * Tilt (deg) of the plane that trims the lid's material outboard of the axis.
    *
@@ -415,6 +440,7 @@ export function planHingeLid(params: BinParams): HingePlan {
       axisCrossMm,
       axisAboveLipTopMm,
       axisInsetMm,
+      rootDepthBelowLipTopMm: GRIDFINITY_SPEC.LIP_BIG_TAPER,
       barrelRadiusMm: LID_HINGE_BARREL_RADIUS_MM,
       trimTiltDeg:
         LID_HINGE_STOP_ANGLE_DEG -
