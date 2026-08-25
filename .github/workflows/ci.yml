@@ -429,6 +429,13 @@ jobs:
         continue-on-error: true
         run: pnpm run lint
 
+      - name: Check formatting
+        id: format
+        continue-on-error: true
+        # Prettier runs on staged files at commit time, so anything reaching the
+        # branch another way (a generator, a merge resolution) drifts unseen.
+        run: pnpm run format:check
+
       - name: Check i18n keys
         id: i18n_keys
         continue-on-error: true
@@ -497,6 +504,7 @@ jobs:
             fi
           }
           check_step "lint"                "${{ steps.lint.outcome }}"
+          check_step "formatting"          "${{ steps.format.outcome }}"
           check_step "i18n keys"           "${{ steps.i18n_keys.outcome }}"
           check_step "i18n values"         "${{ steps.i18n_values.outcome }}"
           check_step "i18n interpolation"  "${{ steps.i18n_interpolation.outcome }}"

@@ -75,12 +75,7 @@ export interface SyncResult {
 
 /** Types of linking operations for tracking/analytics */
 export type LinkingOperationType =
-  | 'link'
-  | 'unlink'
-  | 'sync'
-  | 'create-from-bin'
-  | 'edit-design'
-  | 'place-from-palette';
+  'link' | 'unlink' | 'sync' | 'create-from-bin' | 'edit-design' | 'place-from-palette';
 
 /** Entry point where linking operation was initiated */
 export type LinkingEntryPoint = 'context-menu' | 'inspector' | 'custom-bins-palette';

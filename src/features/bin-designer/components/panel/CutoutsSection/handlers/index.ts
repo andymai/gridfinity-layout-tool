@@ -31,11 +31,7 @@ export {
   handleVertexEditPointerUp,
   handleVertexEditKeyDown,
 } from './pathEditHandler';
-export type {
-  VertexEditMode,
-  VertexEditSetters,
-  SegmentHoverInfo,
-} from './pathEditHandler';
+export type { VertexEditMode, VertexEditSetters, SegmentHoverInfo } from './pathEditHandler';
 
 export type {
   PointerMoveEvent,

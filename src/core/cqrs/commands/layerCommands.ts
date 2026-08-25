@@ -20,7 +20,4 @@ export type ReorderLayersCommand = BaseCommand<
 >;
 
 export type LayerCommand =
-  | AddLayerCommand
-  | UpdateLayerCommand
-  | DeleteLayerCommand
-  | ReorderLayersCommand;
+  AddLayerCommand | UpdateLayerCommand | DeleteLayerCommand | ReorderLayersCommand;

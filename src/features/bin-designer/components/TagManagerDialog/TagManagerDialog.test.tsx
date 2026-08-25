@@ -17,7 +17,9 @@ function setup(tags: readonly string[] = ['kitchen', 'screws']) {
 
 describe('TagManagerDialog', () => {
   it('renders nothing when closed', () => {
-    const { container } = render(<TagManagerDialog open={false} tags={['kitchen']} onClose={vi.fn()} />);
+    const { container } = render(
+      <TagManagerDialog open={false} tags={['kitchen']} onClose={vi.fn()} />
+    );
     expect(container.firstChild).toBeNull();
   });
 

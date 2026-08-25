@@ -11,14 +11,7 @@ import { create } from 'zustand';
  */
 
 export type MobilePanel =
-  | 'layers'
-  | 'inspector'
-  | 'categories'
-  | 'print'
-  | 'settings'
-  | 'layouts'
-  | 'participants'
-  | null;
+  'layers' | 'inspector' | 'categories' | 'print' | 'settings' | 'layouts' | 'participants' | null;
 
 export type MobileLayersTab = 'layers' | 'tools';
 

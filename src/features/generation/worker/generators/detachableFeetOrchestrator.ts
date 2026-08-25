@@ -114,7 +114,10 @@ export function generateDetachableFeetMesh(
   try {
     const compound = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));
     try {
-      const shapeMesh = mesh(compound, { tolerance: 0.01, angularTolerance: EXPORT_ANGULAR_TOLERANCE_RAD });
+      const shapeMesh = mesh(compound, {
+        tolerance: 0.01,
+        angularTolerance: EXPORT_ANGULAR_TOLERANCE_RAD,
+      });
       // Crease edges, exactly as the lid and the tray get them. Without these
       // the feet are the one companion part rendering as a flat silhouette
       // while everything around it is outlined.

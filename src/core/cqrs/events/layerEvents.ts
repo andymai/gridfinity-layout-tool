@@ -35,7 +35,4 @@ export type LayersReorderedEvent = BaseDomainEvent<
 >;
 
 export type LayerEvent =
-  | LayerAddedEvent
-  | LayerUpdatedEvent
-  | LayerDeletedEvent
-  | LayersReorderedEvent;
+  LayerAddedEvent | LayerUpdatedEvent | LayerDeletedEvent | LayersReorderedEvent;

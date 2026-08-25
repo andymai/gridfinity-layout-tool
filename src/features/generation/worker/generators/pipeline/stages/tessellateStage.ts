@@ -104,7 +104,10 @@ export const tessellateStage: PipelineStage = {
           : null;
         let cached = cacheKey ? getSocketMesh(cacheKey) : null;
         if (!cached) {
-          const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance: angularToleranceRad });
+          const socketMesh = mesh(deferredSolid, {
+            tolerance,
+            angularTolerance: angularToleranceRad,
+          });
           const socketEdges = buildTime
             ? creaseEdges(socketMesh)
             : meshEdges(deferredSolid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD })
