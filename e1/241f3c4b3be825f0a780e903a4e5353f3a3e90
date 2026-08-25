@@ -1,0 +1,143 @@
+src/features/bin-designer/components/panel/VariantSection/VariantSection.test.tsx
+  s_bc329c5b63b656::t_e793e1a0dae6a6 1-162
+src/i18n/locales/uk.json
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+src/i18n/locales/fr.json
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+api/sync/designs/[id].ts
+  s_bc329c5b63b656::t_949bb06a7f259a 80-137,152-154,156,158-161,198-199,212-213,215-221
+src/features/bin-designer/components/DesignListDialog/DesignItemsView.tsx
+  s_bc329c5b63b656::t_04cf0cb73a132a 23,50,74-76
+src/i18n/locales/pt-BR.json
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+src/i18n/locales/pl.json
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+src/features/bin-designer/components/DesignActions/DesignActions.tsx
+  s_bc329c5b63b656::t_ca33918f0a33e8 19-20,37,303-330
+  s_bc329c5b63b656::t_eeea98e1ddb104 331
+src/i18n/locales/it.json
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+src/features/whats-new/latest.ts
+  s_bc329c5b63b656::t_7615aea2e339cc 9
+src/shared/utils/applyOverrides.test.ts
+  s_bc329c5b63b656::t_ea7cfee1257478 1-190
+src/features/bin-designer/types/index.ts
+  s_bc329c5b63b656::t_9156b91739e198 304
+src/i18n/locales/en.ts
+  s_bc329c5b63b656::t_0dce85297fdb9c 3561
+  s_bc329c5b63b656::t_efc6b635fcb987 3559-3560,3562-3577
+src/features/generation/worker/generators/binGenerator.scenario.variantOverrides.test.ts
+  s_bc329c5b63b656::t_e9f6acc96ecf80 1-5
+src/shared/utils/applyOverrides.ts
+  s_bc329c5b63b656::t_ea7cfee1257478 1-130
+  s_bc329c5b63b656::t_1c704fbf543409 131-134
+src/features/bin-designer/sync/designAdapter.ts
+  s_bc329c5b63b656::t_6a8edc3308415b 151-152,245-246
+src/features/bin-designer/hooks/useVariantContext.ts
+  s_bc329c5b63b656::t_d7f2ca6196d1ed 1-14,16-51,54,59-96
+  s_bc329c5b63b656::t_ea7cfee1257478 15
+  s_bc329c5b63b656::t_cf318fb04d4f55 52-53,55-58
+src/i18n/locales/cs.json
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+src/features/bin-designer/components/DesignListItem/DesignListItem.tsx
+  s_bc329c5b63b656::t_04cf0cb73a132a 19,49,251
+src/i18n/locales/zh-CN.json
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+src/i18n/locales/ja.json
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+src/features/bin-designer/components/DesignListDialog/DesignItemsView.test.tsx
+  s_bc329c5b63b656::t_3ec1cadfd84dd9 35
+src/i18n/locales/nb.json
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+src/features/bin-designer/storage/designVariants.test.ts
+  s_bc329c5b63b656::t_89b49ad79208e4 1-266
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_bc329c5b63b656::t_c9dde32bec656f 458
+  s_bc329c5b63b656::t_0dce85297fdb9c 16
+  s_bc329c5b63b656::t_f83b963a949d9f 21-26,447,453-457,459-575
+  s_bc329c5b63b656::t_ea7cfee1257478 33
+  s_bc329c5b63b656::t_ed9131ba90433b 92-95,124-125
+src/features/bin-designer/components/panel/VariantSection/index.ts
+  s_bc329c5b63b656::t_a7d5d7ff44e0d2 1
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_bc329c5b63b656::t_b2e641e813c844 419
+  s_bc329c5b63b656::t_10bca3a1d339a5 295,316,320-321,334,337-340,342-352,354-363,365,368-372,374-387,389,393-411,413-418,421,423-424
+  s_bc329c5b63b656::t_df82ca433cda6e 16,19-30
+  s_bc329c5b63b656::t_e2ed5a18459649 269-287
+  s_bc329c5b63b656::t_a8c7f01d25d95b 111-175
+  s_bc329c5b63b656::t_9739f875b0624a 288-294,296-301,303-310,314-315,317-318,323,328-333,335-336
+src/features/bin-designer/types/savedDesign.ts
+  s_bc329c5b63b656::t_ed9131ba90433b 4,53-72
+src/core/sync/adapters/types.ts
+  s_bc329c5b63b656::t_6a8edc3308415b 128-134
+api/sync/designs/[id].test.ts
+  s_bc329c5b63b656::t_bd1191e19520d4 731-844
+src/i18n/locales/nl.json
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+src/features/bin-designer/README.md
+  s_bc329c5b63b656::t_7615aea2e339cc 759-788
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_bc329c5b63b656::t_bb17f424c17b6e 18-20
+src/shared/utils/cutoutResize.ts
+  s_bc329c5b63b656::t_bb17f424c17b6e 1-33
+src/i18n/locales/es.json
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+src/features/generation/worker/generators/scenarios/variantOverrides.ts
+  s_bc329c5b63b656::t_ea7cfee1257478 4
+  s_bc329c5b63b656::t_2f7b561b9cefe9 21-36,80-85,89-92,103-106
+  s_bc329c5b63b656::t_08e2578afde370 48
+  s_bc329c5b63b656::t_f6b19d2ce2da93 1-3,5-20,37-42,49-79,86-88,93-102,107-119
+  s_bc329c5b63b656::t_05bdd55e925804 43-47
+src/i18n/locales/ko.json
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+src/features/whats-new/entries.ts
+  s_bc329c5b63b656::t_7615aea2e339cc 17-25
+  s_bc329c5b63b656::t_dc89ffa84c4332 16
+src/features/bin-designer/components/DesignGridItem/DesignGridItem.tsx
+  s_bc329c5b63b656::t_04cf0cb73a132a 19,50,245
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_bc329c5b63b656::t_a770bb96545a24 16,311-334,573
+  s_bc329c5b63b656::t_3ec1cadfd84dd9 42
+src/i18n/locales/de.json
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_bc329c5b63b656::t_0bdaf5cbbe9587 84-87
+  s_bc329c5b63b656::t_9be7cfd61bca98 1-52,58-65,78-83,88-249
+  s_bc329c5b63b656::t_526392d1315bd0 53-57,66-77
+src/i18n/locales/sv.json
+  s_bc329c5b63b656::t_0dce85297fdb9c 1809
+  s_bc329c5b63b656::t_b2805ba232c46b 1801-1808,1810-1815
+src/features/bin-designer/types/designVariant.ts
+  s_bc329c5b63b656::t_ea7cfee1257478 1-17
+src/shared/types/designOverrides.ts
+  s_bc329c5b63b656::t_64b878b2eab976 1-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "e1241f3c4b3be825f0a780e903a4e5353f3a3e90",
+  "prompts": {},
+  "sessions": {
+    "s_bc329c5b63b656": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f730b687-7a9c-4f6f-88f9-0d7f7583a9ef",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
