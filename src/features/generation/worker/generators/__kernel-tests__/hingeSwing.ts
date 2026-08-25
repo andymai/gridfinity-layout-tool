@@ -69,6 +69,64 @@ export function swingAxis(
 }
 
 /**
+ * Bin material (mm³) bridging one knuckle to the lip, the barrel itself excluded.
+ *
+ * The question no other probe here can answer. A knuckle that welded and a
+ * knuckle hanging half a millimetre over the rim contain the SAME material,
+ * bound the same box and displace the same volume; they differ only in whether
+ * anything joins the two. This measures that joint and nothing else: a box over
+ * one BIN band, from the axis out to the barrel's own outboard limit and from
+ * inside the lip up to the axis, with the barrel cut back out of it.
+ *
+ * Read as a DELTA against the same bin with a friction lid, which cancels the
+ * lip the zone unavoidably contains. Zero is six cylinders waiting to fall off
+ * the plate — which is what this repo shipped, and what the export then deleted
+ * outright, a stray shell being exactly what `keepOuterShell` exists to discard.
+ *
+ * Deliberately one BIN band and not the whole run: a LID band has no bin
+ * knuckle over it, and measuring there would report the lip alone however badly
+ * the joint was built.
+ */
+export async function knuckleRootMm3(binSolid: Shape3D, params: BinParams): Promise<number> {
+  const { box, cut, cylinder, rotate, unwrap } = await import('brepjs');
+  const { geometry } = planHingeLid(params);
+  if (!geometry) throw new Error('expected hinge geometry');
+  const band = geometry.runs[0].knuckles.find((k) => k.owner === 'bin');
+  if (!band) throw new Error('expected a bin-owned knuckle');
+
+  const r = geometry.barrelRadiusMm;
+  const lipTop = binLipTopZ(params);
+  const zLo = lipTop - geometry.rootDepthBelowLipTopMm;
+  const zHi = lipTop + geometry.axisAboveLipTopMm;
+  const len = band.hi - band.lo;
+  // Built canonically — band along X, wall at +Y — and rotated onto the chosen
+  // wall, which is the builder's own idiom and the reason it has no sign to get
+  // backwards. Naming the world cross coordinate instead would mean restating
+  // which way the band runs on each of the four walls: the four-quadrant trap
+  // CLAUDE.md gotcha #12 documents.
+  const zone = box(len, r, zHi - zLo, {
+    at: [(band.lo + band.hi) / 2, geometry.axisCrossMm + r / 2, (zLo + zHi) / 2],
+  });
+  const barrel = cylinder(r, len, {
+    at: [band.lo, geometry.axisCrossMm, zHi],
+    axis: [1, 0, 0],
+  });
+  const canonical = unwrap(cut(zone, barrel));
+  zone.delete();
+  barrel.delete();
+  const probe =
+    geometry.rotationDeg === 0
+      ? canonical
+      : rotate(canonical, geometry.rotationDeg, { axis: [0, 0, 1] });
+  if (probe !== canonical) canonical.delete();
+  try {
+    return await sharedVolume(binSolid, probe);
+  } finally {
+    probe.delete();
+  }
+}
+
+/**
  * Pose the lid solid: seat it, then open it by `deg` about the axis.
  *
  * Done as translate-to-origin, rotate, translate-back rather than with a
