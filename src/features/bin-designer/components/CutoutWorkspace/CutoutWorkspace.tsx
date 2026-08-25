@@ -15,7 +15,12 @@
 
 import { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useDesignerStore, remainingCutoutCapacity } from '@/features/bin-designer/store';
+import {
+  useCutoutSelection,
+  useDesignerStore,
+  remainingCutoutCapacity,
+} from '@/features/bin-designer/store';
+import { unitTag } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { MAX_LID_CUTOUTS, type Cutout } from '@/features/bin-designer/types';
 import {
   binDimensions,
@@ -55,6 +60,7 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
 import { CutoutEmptyState } from '../panel/CutoutsSection/CutoutEmptyState';
 import { useCutoutQuickstart } from '../../hooks/useCutoutQuickstart';
+import { useGroupLevel } from '../../hooks/useGroupLevel';
 import { useTranslation } from '@/i18n';
 import { useCutoutWorkspaceCamera } from './useCutoutWorkspaceCamera';
 import { useCutoutWorkspacePointer } from './useCutoutWorkspacePointer';
@@ -70,8 +76,6 @@ export function CutoutWorkspace() {
     removeCutout,
     clearCutouts,
     duplicateCutouts,
-    groupCutouts,
-    ungroupCutouts,
     setGroupOp,
     updateCutoutsBatch,
     removeCutoutsBatch,
@@ -79,6 +83,8 @@ export function CutoutWorkspace() {
     moveCutoutsAbove,
     setCutoutProperty,
     reparentCutouts,
+    moveUnitsIntoGroup,
+    setCutoutGroupName,
     undo,
     redo,
     canUndo,
@@ -98,8 +104,6 @@ export function CutoutWorkspace() {
       removeCutout: s.removeCutout,
       clearCutouts: s.clearCutouts,
       duplicateCutouts: s.duplicateCutouts,
-      groupCutouts: s.groupCutouts,
-      ungroupCutouts: s.ungroupCutouts,
       setGroupOp: s.setGroupOp,
       updateCutoutsBatch: s.updateCutoutsBatch,
       removeCutoutsBatch: s.removeCutoutsBatch,
@@ -107,6 +111,8 @@ export function CutoutWorkspace() {
       moveCutoutsAbove: s.moveCutoutsAbove,
       setCutoutProperty: s.setCutoutProperty,
       reparentCutouts: s.reparentCutouts,
+      moveUnitsIntoGroup: s.moveUnitsIntoGroup,
+      setCutoutGroupName: s.setCutoutGroupName,
       undo: s.undo,
       redo: s.redo,
       canUndo: s.history.past.length > 0,
@@ -258,19 +264,34 @@ export function CutoutWorkspace() {
   const [fitCue, setFitCue] = useState<FitCue>(null);
   const mergeCutoutsIntoArray = useDesignerStore((s) => s.mergeCutoutsIntoArray);
   const addToast = useToastStore((s) => s.addToast);
+  const { groupContext, handleGroup, handleUngroup } = useGroupLevel({
+    cutouts,
+    transaction: { start: startTransaction, commit: commitTransaction },
+  });
+
   const makeRepeatRef = useRef<() => void>(() => {});
 
   const handleFlattenGroupArray = useCallback(
     (id: string) => {
       const member = cutouts.find((c) => c.id === id);
-      const config = member
-        ? cutouts.find((c) => c.groupId === member.groupId && c.array !== undefined)?.array
-        : undefined;
+      // Read the config off the same unit the flatten will act on. Matching on
+      // `groupId` finds the first loose cutout with a repeat ANYWHERE once the
+      // member is a container's loose child, whose groupId is null.
+      const tag = member ? unitTag(member, groupContext) : null;
+      const config =
+        tag === null
+          ? undefined
+          : cutouts.find((c) => unitTag(c, groupContext) === tag && c.array !== undefined)?.array;
       const capacity = remainingCutoutCapacity(cutoutTarget, params.lid.cutouts);
-      const outcome = applyFlattenGroupArray(id, cutouts, updateCutout, addCutout, capacity, {
-        start: startTransaction,
-        commit: commitTransaction,
-      });
+      const outcome = applyFlattenGroupArray(
+        id,
+        cutouts,
+        updateCutout,
+        addCutout,
+        capacity,
+        { start: startTransaction, commit: commitTransaction },
+        groupContext
+      );
       if (outcome === 'no-room') {
         addToast(t('toast.flattenNoRoom', { max: MAX_LID_CUTOUTS }), 'error');
         return;
@@ -284,6 +305,7 @@ export function CutoutWorkspace() {
     },
     [
       cutouts,
+      groupContext,
       updateCutout,
       addCutout,
       cutoutTarget,
@@ -436,8 +458,8 @@ export function CutoutWorkspace() {
     onUpdate: updateCutout,
     onRemove: removeCutout,
     onAdd: addCutout,
-    onGroup: groupCutouts,
-    onUngroup: ungroupCutouts,
+    onGroup: handleGroup,
+    onUngroup: handleUngroup,
     // Via a ref because the handler needs `selection`, which this hook returns.
     onMakeRepeat: () => makeRepeatRef.current(),
     onUpdateBatch: updateCutoutsBatch,
@@ -454,6 +476,22 @@ export function CutoutWorkspace() {
     cellMask: boardMask,
     maskCellSize,
   });
+
+  /**
+   * Select a shape-list row, moving the editor into that row's branch first.
+   *
+   * Without the context move the list and the canvas disagree: the list shows a
+   * nested row selected while every arrange operation still treats its
+   * outermost ancestor as the unit, so aligning "these two subgroups" would
+   * slide the whole assembly instead.
+   */
+  const handleSelectRow = useCallback(
+    (ids: readonly string[], additive: boolean, context: readonly string[]) => {
+      useCutoutSelection.getState().setGroupContext(context);
+      selectIds(ids, additive);
+    },
+    [selectIds]
+  );
 
   // Pointer handlers + marquee + pan + Space-to-pan + cursor world pos
   const {
@@ -549,8 +587,9 @@ export function CutoutWorkspace() {
         updateCutoutsBatch,
         lockCutouts,
         unlockCutouts,
-        groupCutouts,
-        ungroupCutouts,
+        onGroup: handleGroup,
+        groupContext,
+        ungroupCutouts: handleUngroup,
         setGroupOp,
         reorderCutouts,
         flattenArray: handleFlattenArray,
@@ -573,8 +612,9 @@ export function CutoutWorkspace() {
       binDepth,
       lockCutouts,
       unlockCutouts,
-      groupCutouts,
-      ungroupCutouts,
+      handleGroup,
+      groupContext,
+      handleUngroup,
       setGroupOp,
       reorderCutouts,
       handleFlattenArray,
@@ -601,8 +641,8 @@ export function CutoutWorkspace() {
         onUpdateBatch={updateCutoutsBatch}
         onRemove={removeCutout}
         onDuplicate={duplicateCutouts}
-        onGroup={groupCutouts}
-        onUngroup={ungroupCutouts}
+        onGroup={handleGroup}
+        onUngroup={handleUngroup}
         onSetGroupOp={setGroupOp}
         onReorder={reorderCutouts}
         onClearAll={clearCutouts}
@@ -736,11 +776,14 @@ export function CutoutWorkspace() {
           shapeList={
             <ShapeList
               cutouts={cutouts}
+              groupNames={params.cutoutGroupNames}
               selection={selection}
-              onSelect={selectIds}
+              onSelect={handleSelectRow}
               onSetProperty={setCutoutProperty}
               onMoveAbove={moveCutoutsAbove}
               onReparent={reparentCutouts}
+              onMoveUnits={moveUnitsIntoGroup}
+              onRenameGroup={setCutoutGroupName}
             />
           }
           cutouts={cutouts}

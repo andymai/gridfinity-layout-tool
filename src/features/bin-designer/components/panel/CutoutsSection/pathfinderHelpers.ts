@@ -8,12 +8,17 @@
 
 import type { Cutout, GroupOp } from '@/features/bin-designer/types';
 import { computeBounds, getEffectiveBounds, clampRotationToBounds } from './geometry';
+import { isBooleanGroup, unitTags } from '@/features/bin-designer/utils/cutoutHierarchy';
 
 /**
  * The active op is well-defined only when every selected cutout belongs to
- * the same single group AND that group has no extra (non-selected) members.
- * Otherwise return null so no Pathfinder button gets the "current op"
+ * the same single BOOLEAN group AND that group has no extra (non-selected)
+ * members. Otherwise return null so no Pathfinder button gets the "current op"
  * highlight.
+ *
+ * A container never has an op, so a selection that is one whole assembly
+ * highlights nothing — which is the honest answer: the ops below would form a
+ * new boolean group, not change an existing one.
  */
 export function resolveActiveOp(
   selectedIds: readonly string[],
@@ -34,24 +39,26 @@ export function resolveActiveOp(
 }
 
 /**
- * Whether a plain Group action would actually change anything.
+ * Whether a plain Group action would actually change anything, at `context`.
  *
- * False once every selected cutout already shares one group — including a
- * PARTIAL selection of that group, where `resolveActiveOp` returns null but
- * `groupCutouts` would still re-group the whole group and land an empty undo
- * step. A mixed selection (loose shapes plus a group) stays groupable: that
- * folds the loose shapes into the existing group.
+ * False once the selection reaches fewer than two units at that level —
+ * including a PARTIAL selection of one group, where `resolveActiveOp` returns
+ * null but grouping would still land an empty undo step. Reaching a group plus
+ * anything else stays groupable: that wraps them in a container.
+ *
+ * Also false inside a boolean group, whose members are exactly what its op
+ * fuses; the store refuses that, and an enabled button that does nothing is
+ * worse than a disabled one.
  */
 export function canGroupSelection(
   selectedIds: readonly string[],
-  cutouts: readonly Cutout[]
+  cutouts: readonly Cutout[],
+  context: readonly string[] = []
 ): boolean {
   if (selectedIds.length < 2) return false;
+  if (context.length > 0 && isBooleanGroup(cutouts, context[context.length - 1])) return false;
   const selected = cutouts.filter((c) => selectedIds.includes(c.id));
-  if (selected.length < 2) return false;
-  const first = selected[0].groupId;
-  if (first === null) return true;
-  return selected.some((c) => c.groupId !== first);
+  return unitTags(selected, context).size >= 2;
 }
 
 /**

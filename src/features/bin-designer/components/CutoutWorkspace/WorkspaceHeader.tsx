@@ -7,8 +7,10 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { groupChain } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/store';
+import { GroupBreadcrumb } from './GroupBreadcrumb';
 import { Button, Checkbox, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
@@ -294,15 +296,18 @@ export function WorkspaceHeader({
 
   const selectedIds = [...selection];
   const selected = useMemo(() => cutouts.filter((c) => selection.has(c.id)), [cutouts, selection]);
-  const hasGroup = selected.some((c) => c.groupId !== null);
-  const canGroup = canGroupSelection(selectedIds, cutouts);
+  const hasGroup = selected.some((c) => groupChain(c).length > 0);
+  const groupContext = useCutoutSelection((state) => state.groupContext);
+  const setGroupContext = useCutoutSelection((state) => state.setGroupContext);
+  const groupNames = useDesignerStore((state) => state.params.cutoutGroupNames);
+  const canGroup = canGroupSelection(selectedIds, cutouts, groupContext);
   const singleCutout = selection.size === 1 ? (selected[0] ?? null) : null;
 
   // Arrange operates on whole groups, so a partially-selected group still moves
   // as one body.
   const arrangeTargets = useMemo(
-    () => expandSelectionToGroups(cutouts, selected),
-    [cutouts, selected]
+    () => expandSelectionToGroups(cutouts, selected, groupContext),
+    [cutouts, selected, groupContext]
   );
 
   const applyPositions = useCallback(
@@ -315,7 +320,7 @@ export function WorkspaceHeader({
 
   const handleAlign = useCallback(
     (type: AlignType) => {
-      const units = toArrangeUnits(arrangeTargets);
+      const units = toArrangeUnits(arrangeTargets, groupContext);
       const bounds = unitsBounds(units);
       const positions: Record<string, { x?: number; y?: number }> = {};
 
@@ -359,29 +364,31 @@ export function WorkspaceHeader({
       }
       applyPositions(positions);
     },
-    [arrangeTargets, applyPositions]
+    [arrangeTargets, groupContext, applyPositions]
   );
 
   const handleDistributeH = useCallback(() => {
-    applyPositions(distributeHorizontally(arrangeTargets, binWidth));
-  }, [arrangeTargets, binWidth, applyPositions]);
+    applyPositions(distributeHorizontally(arrangeTargets, binWidth, groupContext));
+  }, [arrangeTargets, binWidth, groupContext, applyPositions]);
 
   const handleDistributeV = useCallback(() => {
-    applyPositions(distributeVertically(arrangeTargets, binDepth));
-  }, [arrangeTargets, binDepth, applyPositions]);
+    applyPositions(distributeVertically(arrangeTargets, binDepth, groupContext));
+  }, [arrangeTargets, binDepth, groupContext, applyPositions]);
 
   const handleCenterInBin = useCallback(
     (axis: CenterAxis) => {
-      applyPositions(centerInBin(arrangeTargets, binWidth, binDepth, axis));
+      applyPositions(centerInBin(arrangeTargets, binWidth, binDepth, axis, groupContext));
     },
-    [arrangeTargets, binWidth, binDepth, applyPositions]
+    [arrangeTargets, binWidth, binDepth, groupContext, applyPositions]
   );
 
   const handleAutoArrange = useCallback(
     (gap: number, staggered: boolean) => {
-      applyPositions(autoArrangeCutouts(arrangeTargets, { binWidth, binDepth, gap, staggered }));
+      applyPositions(
+        autoArrangeCutouts(arrangeTargets, { binWidth, binDepth, gap, staggered }, groupContext)
+      );
     },
-    [arrangeTargets, binWidth, binDepth, applyPositions]
+    [arrangeTargets, binWidth, binDepth, groupContext, applyPositions]
   );
   const iconBtn = (
     onClick: () => void,
@@ -550,10 +557,17 @@ export function WorkspaceHeader({
   return (
     <div className="flex flex-col border-b border-stroke-subtle bg-surface-secondary">
       <div className="flex h-10 items-center justify-between px-3">
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex min-w-0 items-center gap-3 flex-shrink-0">
           <span className="text-sm font-medium text-content">
             {t('binDesigner.cutoutEditor.title')}
           </span>
+
+          <GroupBreadcrumb
+            cutouts={cutouts}
+            groupNames={groupNames}
+            context={groupContext}
+            onNavigate={setGroupContext}
+          />
 
           <div className="flex items-center gap-0.5">
             <IconButton

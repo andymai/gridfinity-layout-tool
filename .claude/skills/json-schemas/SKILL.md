@@ -46,6 +46,14 @@ drawer and its layer without colliding, `compartments.cells.length === cols * ro
 plate. `docs/schemas/examples/invalid/importer/` holds files that pass the schema
 and fail the importer, kept as proof of that gap.
 
+Cutout group ancestry is another: every member of a `groupId` must repeat the
+same `parentGroups` chain, and an id used as a `groupId` must not also appear in
+any `parentGroups` (a group is a boolean group or an arrange-only container,
+never both). Neither is expressible in the schema, so `normalizeGroupChains`
+repairs both at load — the first member in array order settles a disagreement,
+and the container reading loses. A hand-authored file that gets this wrong is
+accepted and silently rewritten, not rejected.
+
 ## Traps
 
 These produce files that are valid and wrong.

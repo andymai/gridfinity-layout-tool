@@ -6,8 +6,8 @@ import {
   STYLE_DEFAULT_OMIT_KEYS,
 } from './paramMigration';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from './defaults';
-import type { LidConfig } from '../types';
-import { FLOOR_PATTERN_TYPES, WALL_PATTERN_TYPES } from '../types';
+import type { Cutout, LidConfig } from '../types';
+import { FLOOR_PATTERN_TYPES, MAX_PARENT_GROUPS, WALL_PATTERN_TYPES } from '../types';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { validateBinParams } from '../utils/validation';
@@ -1737,5 +1737,117 @@ describe('legacy grouped repeat migration', () => {
       member({ id: 'b', groupId: null, x: 40 }),
     ]);
     expect(migrated.map((c) => c.array?.cols)).toEqual([3, undefined]);
+  });
+});
+
+describe('cutoutGroupNames', () => {
+  const cut = (over: Partial<Cutout> & { id: string }): Cutout => ({
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+    ...over,
+  });
+
+  it('keeps names for groups the design still has', () => {
+    const migrated = migrateParams({
+      cutouts: [cut({ id: 'a', groupId: 'gA', parentGroups: ['outer'] })],
+      cutoutGroupNames: { outer: 'Socket tray', gA: 'Ratchet' },
+    });
+    expect(migrated.cutoutGroupNames).toEqual({ outer: 'Socket tray', gA: 'Ratchet' });
+  });
+
+  it('drops names for groups nothing references', () => {
+    const migrated = migrateParams({
+      cutouts: [cut({ id: 'a' })],
+      cutoutGroupNames: { ghost: 'Gone' },
+    });
+    expect(migrated.cutoutGroupNames).toBeUndefined();
+  });
+
+  it('keeps a name referenced only by a LID cutout', () => {
+    const migrated = migrateParams({
+      cutouts: [cut({ id: 'a' })],
+      lid: { cutouts: [cut({ id: 'l', groupId: 'lidGroup' })] },
+      cutoutGroupNames: { lidGroup: 'Vent' },
+    } as never);
+    expect(migrated.cutoutGroupNames).toEqual({ lidGroup: 'Vent' });
+  });
+
+  it('rejects a non-object or non-string entry', () => {
+    expect(
+      migrateParams({
+        cutouts: [cut({ id: 'a', groupId: 'g' })],
+        cutoutGroupNames: 'nope',
+      } as never).cutoutGroupNames
+    ).toBeUndefined();
+    expect(
+      migrateParams({
+        cutouts: [cut({ id: 'a', groupId: 'g' })],
+        cutoutGroupNames: { g: 42 },
+      } as never).cutoutGroupNames
+    ).toBeUndefined();
+  });
+});
+
+describe('normalizeGroupChains', () => {
+  const cut = (over: Partial<Cutout> & { id: string }): Cutout => ({
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+    ...over,
+  });
+
+  it('settles members that disagree about their ancestry on the first one', () => {
+    const migrated = migrateParams({
+      cutouts: [
+        cut({ id: 'a', groupId: 'gA', parentGroups: ['outer'] }),
+        cut({ id: 'b', groupId: 'gA', parentGroups: ['elsewhere'] }),
+      ],
+    });
+    const byId = Object.fromEntries(migrated.cutouts.map((c) => [c.id, c]));
+    expect(byId.b.parentGroups).toEqual(['outer']);
+  });
+
+  it('strips the container reading from an id used both ways', () => {
+    // `gA` is a boolean group AND claimed as an ancestor — the boolean wins,
+    // or a subgroup could change what its op fuses.
+    const migrated = migrateParams({
+      cutouts: [
+        cut({ id: 'a', groupId: 'gA' }),
+        cut({ id: 'b', groupId: 'gB', parentGroups: ['gA'] }),
+      ],
+    });
+    const byId = Object.fromEntries(migrated.cutouts.map((c) => [c.id, c]));
+    expect(byId.b.parentGroups).toBeUndefined();
+    expect(byId.b.groupId).toBe('gB');
+  });
+
+  it('truncates a chain past the depth cap', () => {
+    const tooDeep = Array.from({ length: 20 }, (_, i) => `g${i}`);
+    const migrated = migrateParams({
+      cutouts: [cut({ id: 'a', groupId: 'leaf', parentGroups: tooDeep })],
+    });
+    expect(migrated.cutouts[0].parentGroups).toHaveLength(MAX_PARENT_GROUPS);
+  });
+
+  it('drops junk entries from a hand-authored chain', () => {
+    const migrated = migrateParams({
+      cutouts: [cut({ id: 'a', groupId: 'gA', parentGroups: ['outer', '', 'outer', 42] as never })],
+    });
+    expect(migrated.cutouts[0].parentGroups).toEqual(['outer']);
   });
 });

@@ -7,8 +7,15 @@
 
 import { useCallback, useState, useRef, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useDesignerStore, remainingCutoutCapacity } from '@/features/bin-designer/store';
+import {
+  useCutoutSelection,
+  useDesignerStore,
+  remainingCutoutCapacity,
+} from '@/features/bin-designer/store';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
+import { expandSelectionToGroups } from './cutoutGroups';
+import { useGroupLevel } from '@/features/bin-designer/hooks/useGroupLevel';
+import { GroupBreadcrumb } from '../../CutoutWorkspace/GroupBreadcrumb';
 import { useToastStore } from '@/core/store/toast';
 import {
   binDimensions,
@@ -48,8 +55,6 @@ export function CutoutEditor() {
     updateCutout,
     removeCutout,
     duplicateCutouts,
-    groupCutouts,
-    ungroupCutouts,
     setGroupOp,
     updateCutoutsBatch,
     removeCutoutsBatch,
@@ -70,8 +75,6 @@ export function CutoutEditor() {
       updateCutout: s.updateCutout,
       removeCutout: s.removeCutout,
       duplicateCutouts: s.duplicateCutouts,
-      groupCutouts: s.groupCutouts,
-      ungroupCutouts: s.ungroupCutouts,
       setGroupOp: s.setGroupOp,
       updateCutoutsBatch: s.updateCutoutsBatch,
       removeCutoutsBatch: s.removeCutoutsBatch,
@@ -89,6 +92,8 @@ export function CutoutEditor() {
   );
 
   const { cutouts } = params;
+  const { groupContext, handleGroup, handleUngroup } = useGroupLevel({ cutouts });
+
   // Overhang-expanded interior lets cutouts use the extra floor.
   const { wallHeight } = binDimensions(params);
   const { innerW: binWidth, innerD: binDepth } = cutoutInterior(params);
@@ -177,8 +182,8 @@ export function CutoutEditor() {
     onUpdate: updateCutout,
     onRemove: removeCutout,
     onAdd: addCutout,
-    onGroup: groupCutouts,
-    onUngroup: ungroupCutouts,
+    onGroup: handleGroup,
+    onUngroup: handleUngroup,
     onUpdateBatch: updateCutoutsBatch,
     onRemoveBatch: removeCutoutsBatch,
     onUndo: undo,
@@ -440,8 +445,14 @@ export function CutoutEditor() {
         actions.push({
           label: t(key),
           onClick: () => {
-            const selected = cutouts.filter((c) => selection.has(c.id));
-            const positions = centerInBin(selected, binWidth, binDepth, axis);
+            // Centre moves whole units, like every other arrange action, or a
+            // partially selected group is torn apart around the members that moved.
+            const selected = expandSelectionToGroups(
+              cutouts,
+              cutouts.filter((c) => selection.has(c.id)),
+              groupContext
+            );
+            const positions = centerInBin(selected, binWidth, binDepth, axis, groupContext);
             for (const [id, pos] of Object.entries(positions)) {
               updateCutout(id, pos);
             }
@@ -471,6 +482,7 @@ export function CutoutEditor() {
     selection,
     clipboard,
     cutouts,
+    groupContext,
     copySelected,
     duplicateSelected,
     deleteSelected,
@@ -515,6 +527,15 @@ export function CutoutEditor() {
       <div className="rounded border border-stroke-subtle bg-surface-elevated p-3">
         <CutoutFillControls />
       </div>
+
+      {/* Which level of the group tree the canvas below is working at. Renders
+          nothing at the top, which is the usual case. */}
+      <GroupBreadcrumb
+        cutouts={cutouts}
+        groupNames={params.cutoutGroupNames}
+        context={groupContext}
+        onNavigate={useCutoutSelection.getState().setGroupContext}
+      />
 
       {/* WebGL Canvas */}
       <div
@@ -571,8 +592,8 @@ export function CutoutEditor() {
           binWidth={binWidth}
           binDepth={binDepth}
           onUpdateBatch={updateCutoutsBatch}
-          onGroup={groupCutouts}
-          onUngroup={ungroupCutouts}
+          onGroup={handleGroup}
+          onUngroup={handleUngroup}
           onSetGroupOp={setGroupOp}
           onReorder={reorderCutouts}
           onDuplicate={duplicateCutouts}

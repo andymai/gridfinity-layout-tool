@@ -380,6 +380,17 @@
           },
           "description": "Imported STL imprint meshes keyed by the id that a shape 'mesh' Cutout's meshId references. Omit for designs without mesh imprints."
         },
+        "cutoutGroupNames": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 60,
+            "x-constant": {
+              "maxLength": "MAX_GROUP_NAME_LENGTH"
+            }
+          },
+          "description": "Display names for cutout groups, keyed by group id. Omit unnamed groups; they fall back to a derived label."
+        },
         "wallPattern": {
           "$ref": "#/$defs/WallPatternConfig"
         },
@@ -629,6 +640,15 @@
           "x-constant": {
             "enum": "GROUP_OPS"
           }
+        },
+        "parentGroups": {
+          "type": "array",
+          "items": { "type": "string" },
+          "maxItems": 9,
+          "x-constant": {
+            "maxItems": "MAX_PARENT_GROUPS"
+          },
+          "description": "Enclosing arrange-only groups, outermost first, excluding this cutout's own groupId. Omit for a top-level cutout; every member of a group repeats the same chain."
         },
         "scoopRadiusW": {
           "type": "number",

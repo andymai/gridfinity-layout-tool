@@ -19,8 +19,8 @@ export function hasShapeControls(shape: Cutout['shape']): boolean {
 // definition lives beside the placement math the detector also uses.
 export { canArray } from '@/shared/utils/cutoutArray';
 
-/** Why a cutout cannot carry a repeat, so the section can say so. */
-export type RepeatBlockedReason = 'grouped' | 'path';
+/** Why a cutout or group cannot carry a repeat, so the section can say so. */
+export type RepeatBlockedReason = 'grouped' | 'path' | 'descendantRepeat';
 
 /**
  * The reason a repeat is refused for this cutout, or null when it is not. The

@@ -96,7 +96,9 @@ export function CutoutArrayControls({
           {t(
             blockedReason === 'grouped'
               ? 'binDesigner.cutouts.repeat.blockedGrouped'
-              : 'binDesigner.cutouts.repeat.blockedPath'
+              : blockedReason === 'descendantRepeat'
+                ? 'binDesigner.cutouts.repeat.blockedDescendant'
+                : 'binDesigner.cutouts.repeat.blockedPath'
           )}
         </p>
         {blockedReason === 'grouped' && onUngroup && (

@@ -268,8 +268,9 @@ describe('DesignerStore - cutout actions', () => {
       const existingGroupId = useDesignerStore.getState().params.cutouts[0].groupId;
       expect(existingGroupId).not.toBeNull();
 
-      // Add third cutout to the group (includes one already-grouped member)
-      groupCutouts(['cutout-2', 'cutout-3']);
+      // An explicit op is the Pathfinder path, which still merges into one
+      // boolean group. Bare Group would wrap them in a container instead.
+      groupCutouts(['cutout-2', 'cutout-3'], 'union');
 
       const { params } = useDesignerStore.getState();
       // All three should share the same original groupId
@@ -289,14 +290,35 @@ describe('DesignerStore - cutout actions', () => {
       groupCutouts(['cutout-1', 'cutout-2', 'cutout-3']);
       const existingGroupId = useDesignerStore.getState().params.cutouts[0].groupId;
 
-      // Add cutout-4 by grouping with just cutout-1 (rest of group should be auto-included)
-      groupCutouts(['cutout-1', 'cutout-4']);
+      // Add cutout-4 by grouping with just cutout-1 (rest of group auto-included)
+      groupCutouts(['cutout-1', 'cutout-4'], 'union');
 
       const { params } = useDesignerStore.getState();
       // All four should have the same groupId
       for (const c of params.cutouts) {
         expect(c.groupId).toBe(existingGroupId);
       }
+    });
+
+    it('wraps rather than folds when Group is used on a group plus a loose shape', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'cutout-1' }));
+      addCutout(createTestCutout({ id: 'cutout-2' }));
+      addCutout(createTestCutout({ id: 'cutout-3' }));
+
+      groupCutouts(['cutout-1', 'cutout-2']);
+      const booleanId = useDesignerStore.getState().params.cutouts[0].groupId;
+
+      groupCutouts(['cutout-1', 'cutout-3']);
+
+      const { params } = useDesignerStore.getState();
+      const byId = Object.fromEntries(params.cutouts.map((c) => [c.id, c]));
+      expect(byId['cutout-1'].groupId).toBe(booleanId);
+      expect(byId['cutout-3'].groupId).toBeNull();
+      const container = byId['cutout-1'].parentGroups?.[0];
+      expect(container).toBeDefined();
+      expect(byId['cutout-2'].parentGroups).toEqual([container]);
+      expect(byId['cutout-3'].parentGroups).toEqual([container]);
     });
   });
 

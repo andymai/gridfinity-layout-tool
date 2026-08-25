@@ -87,9 +87,10 @@ export function findAlignmentGuides(
  */
 export function distributeHorizontally(
   cutouts: readonly Cutout[],
-  _binWidth: number
+  _binWidth: number,
+  context: readonly string[] = []
 ): Record<string, { x: number }> {
-  const units = toArrangeUnits(cutouts);
+  const units = toArrangeUnits(cutouts, context);
   if (units.length < MIN_DISTRIBUTE_UNITS) return {};
 
   const sorted = [...units].sort((a, b) => a.bounds.minX - b.bounds.minX);
@@ -118,9 +119,10 @@ export function distributeHorizontally(
  */
 export function distributeVertically(
   cutouts: readonly Cutout[],
-  _binDepth: number
+  _binDepth: number,
+  context: readonly string[] = []
 ): Record<string, { y: number }> {
-  const units = toArrangeUnits(cutouts);
+  const units = toArrangeUnits(cutouts, context);
   if (units.length < MIN_DISTRIBUTE_UNITS) return {};
 
   const sorted = [...units].sort((a, b) => a.bounds.minY - b.bounds.minY);
@@ -172,11 +174,12 @@ export function centerInBin(
   cutouts: readonly Cutout[],
   binWidth: number,
   binDepth: number,
-  axis: CenterAxis = 'both'
+  axis: CenterAxis = 'both',
+  context: readonly string[] = []
 ): Record<string, { x: number; y: number }> {
   if (cutouts.length === 0) return {};
 
-  const units = toArrangeUnits(cutouts);
+  const units = toArrangeUnits(cutouts, context);
   const bounds = unitsBounds(units);
   const groupW = bounds.maxX - bounds.minX;
   const groupH = bounds.maxY - bounds.minY;

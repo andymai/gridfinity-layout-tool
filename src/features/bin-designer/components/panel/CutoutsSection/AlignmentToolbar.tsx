@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { groupChain } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { Button, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -16,6 +17,7 @@ import {
   centerInBin,
   type CenterAxis,
 } from './geometry';
+import { useCutoutSelection } from '@/features/bin-designer/store';
 import { expandSelectionToGroups, toArrangeUnits, unitsBounds } from './cutoutGroups';
 import { autoArrangeCutouts } from './autoArrange';
 import { PathfinderControls } from './PathfinderControls';
@@ -143,12 +145,13 @@ export function AlignmentToolbar({
   const [gap, setGap] = useState(2);
 
   const selected = cutouts.filter((c) => selectedIds.includes(c.id));
-  const hasGroup = selected.some((c) => c.groupId !== null);
-  const canGroup = canGroupSelection(selectedIds, cutouts);
+  const hasGroup = selected.some((c) => groupChain(c).length > 0);
+  const groupContext = useCutoutSelection((state) => state.groupContext);
+  const canGroup = canGroupSelection(selectedIds, cutouts, groupContext);
 
   // Arrange operates on whole groups, so a partially-selected group still moves
   // as one body.
-  const arrangeTargets = expandSelectionToGroups(cutouts, selected);
+  const arrangeTargets = expandSelectionToGroups(cutouts, selected, groupContext);
 
   const applyPositions = (positions: Record<string, { x?: number; y?: number }>) => {
     const updates = new Map<string, Partial<Cutout>>(Object.entries(positions));
@@ -156,7 +159,7 @@ export function AlignmentToolbar({
   };
 
   const handleAlign = (type: AlignType) => {
-    const units = toArrangeUnits(arrangeTargets);
+    const units = toArrangeUnits(arrangeTargets, groupContext);
     const bounds = unitsBounds(units);
     const positions: Record<string, { x?: number; y?: number }> = {};
 
@@ -202,19 +205,19 @@ export function AlignmentToolbar({
   };
 
   const handleAutoArrange = () => {
-    applyPositions(autoArrangeCutouts(arrangeTargets, { binWidth, binDepth, gap }));
+    applyPositions(autoArrangeCutouts(arrangeTargets, { binWidth, binDepth, gap }, groupContext));
   };
 
   const handleDistributeH = () => {
-    applyPositions(distributeHorizontally(arrangeTargets, binWidth));
+    applyPositions(distributeHorizontally(arrangeTargets, binWidth, groupContext));
   };
 
   const handleDistributeV = () => {
-    applyPositions(distributeVertically(arrangeTargets, binDepth));
+    applyPositions(distributeVertically(arrangeTargets, binDepth, groupContext));
   };
 
   const handleCenterInBin = (axis: CenterAxis) => {
-    applyPositions(centerInBin(arrangeTargets, binWidth, binDepth, axis));
+    applyPositions(centerInBin(arrangeTargets, binWidth, binDepth, axis, groupContext));
   };
 
   const alignButton = (type: AlignType, label: string) => (

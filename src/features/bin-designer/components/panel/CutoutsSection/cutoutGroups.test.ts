@@ -192,3 +192,79 @@ describe('unitsBounds', () => {
     expect(unitsBounds([])).toEqual({ minX: 0, minY: 0, maxX: 0, maxY: 0 });
   });
 });
+
+describe('arrange units with nested groups', () => {
+  /**
+   * Three assemblies, each a container over one boolean pair, laid out left to
+   * right with a deliberate 5mm internal gap:
+   *
+   *   asmN = { gN: [ x, x+15 ] }
+   */
+  const assembly = (n: number, originX: number): Cutout[] => [
+    cutout(`a${n}`, { groupId: `g${n}`, parentGroups: [`asm${n}`], x: originX }),
+    cutout(`b${n}`, { groupId: `g${n}`, parentGroups: [`asm${n}`], x: originX + 15 }),
+  ];
+  const design = (): Cutout[] => [...assembly(1, 0), ...assembly(2, 60), ...assembly(3, 120)];
+
+  it('treats a whole assembly as one unit at the top level', () => {
+    const units = toArrangeUnits(design());
+    expect(units).toHaveLength(3);
+    // Each unit spans its pair: 10 wide at x, plus 10 wide at x+15 => 25.
+    expect(unitWidth(units[0])).toBe(25);
+    expect(units.map((u) => u.members.map((m) => m.id))).toEqual([
+      ['a1', 'b1'],
+      ['a2', 'b2'],
+      ['a3', 'b3'],
+    ]);
+  });
+
+  it('splits an assembly into its children once drilled into it', () => {
+    const units = toArrangeUnits(design(), ['asm1']);
+    // Only asm1's branch is in scope, and inside it g1 is the single unit.
+    expect(units).toHaveLength(1);
+    expect(units[0].members.map((m) => m.id)).toEqual(['a1', 'b1']);
+  });
+
+  it('separates loose children of a container into their own units', () => {
+    const cutouts = [
+      cutout('a', { groupId: 'gA', parentGroups: ['outer'] }),
+      cutout('b', { groupId: 'gA', parentGroups: ['outer'] }),
+      cutout('hex', { parentGroups: ['outer'], x: 40 }),
+      cutout('slot', { parentGroups: ['outer'], x: 60 }),
+    ];
+    const units = toArrangeUnits(cutouts, ['outer']);
+    // gA is one unit; the two loose children are one each, never merged.
+    expect(units.map((u) => u.members.map((m) => m.id))).toEqual([['a', 'b'], ['hex'], ['slot']]);
+  });
+
+  it('expands a partial selection to the whole assembly at the top level', () => {
+    const all = design();
+    const expanded = expandSelectionToGroups(all, [all[0]]);
+    expect(expanded.map((c) => c.id).sort()).toEqual(['a1', 'b1']);
+  });
+
+  it('expands only to the subgroup once drilled in', () => {
+    const cutouts = [
+      cutout('a', { groupId: 'gA', parentGroups: ['outer'] }),
+      cutout('b', { groupId: 'gA', parentGroups: ['outer'] }),
+      cutout('hex', { parentGroups: ['outer'] }),
+    ];
+    const expanded = expandSelectionToGroups(cutouts, [cutouts[0]], ['outer']);
+    expect(expanded.map((c) => c.id).sort()).toEqual(['a', 'b']);
+  });
+
+  it('never pulls in a loose sibling, which is its own unit', () => {
+    const cutouts = [
+      cutout('hex', { parentGroups: ['outer'] }),
+      cutout('slot', { parentGroups: ['outer'] }),
+    ];
+    const selected = [cutouts[0]];
+    expect(expandSelectionToGroups(cutouts, selected, ['outer'])).toBe(selected);
+  });
+
+  it('ignores cutouts outside the entered branch', () => {
+    const cutouts = [...design(), cutout('stray', { x: 200 })];
+    const units = toArrangeUnits(cutouts, ['asm2']);
+    expect(units.flatMap((u) => u.members.map((m) => m.id))).toEqual(['a2', 'b2']);
+  });
+});

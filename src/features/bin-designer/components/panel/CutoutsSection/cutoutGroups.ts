@@ -9,7 +9,7 @@
  *
  * Two rules the callers share:
  *
- *  - **Any selected member pulls in its whole group.** A selection that reaches
+ *  - **Any selected member pulls in its whole unit.** A selection that reaches
  *    a group only partially (via the shape list, say) still moves the group as
  *    one — the same expansion the canvas performs on click.
  *  - **A unit with any locked member never moves.** The lock is documented as
@@ -26,10 +26,20 @@
  * the instances are offsets from the master, so they translate with it, and
  * centring or distributing by the master's own box alone parks the pattern
  * off-centre.
+ *
+ * ## What counts as one unit
+ *
+ * Both entry points take the editor's drill-in `context`. At the top level a
+ * whole nested assembly is one rigid body, which is what lets three assemblies
+ * be distributed without disturbing the spacing inside any of them. Drilled
+ * into one, its direct children become the units, so the subgroups within it
+ * can be arranged against each other. Same `unitTag` the shape list and the
+ * store use, so all three agree about what "one thing" is.
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { unitTag, unitTagGroupId } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { type Bounds, getRotatedBounds } from './geometryCore';
 
 /** One rigid arrange target: a whole group, or a single ungrouped cutout. */
@@ -89,56 +99,57 @@ function makeUnit(members: readonly Cutout[]): ArrangeUnit {
 }
 
 /**
- * Add every member of any group the selection touches.
+ * Add every cutout sharing a unit with anything selected, resolved at
+ * `context`.
  *
- * Returns the input untouched when nothing selected is grouped, so the common
- * ungrouped case allocates nothing.
+ * Returns the input untouched when the selection already spans whole units, so
+ * the common loose-shape case allocates nothing.
  */
 export function expandSelectionToGroups(
   all: readonly Cutout[],
-  selected: readonly Cutout[]
+  selected: readonly Cutout[],
+  context: readonly string[] = []
 ): readonly Cutout[] {
-  const groupIds = new Set<string>();
+  const tags = new Set<string>();
   for (const cutout of selected) {
-    if (cutout.groupId !== null) groupIds.add(cutout.groupId);
+    const tag = unitTag(cutout, context);
+    // A loose shape is its own unit, so it can never pull anything else in.
+    if (tag !== null && unitTagGroupId(tag) !== null) tags.add(tag);
   }
-  if (groupIds.size === 0) return selected;
+  if (tags.size === 0) return selected;
 
   const selectedIds = new Set(selected.map((c) => c.id));
   const expanded = [...selected];
   for (const cutout of all) {
-    if (cutout.groupId !== null && groupIds.has(cutout.groupId) && !selectedIds.has(cutout.id)) {
-      expanded.push(cutout);
-    }
+    if (selectedIds.has(cutout.id)) continue;
+    const tag = unitTag(cutout, context);
+    if (tag !== null && tags.has(tag)) expanded.push(cutout);
   }
   return expanded;
 }
 
 /**
- * Collapse cutouts into arrange units — one per group, one per ungrouped
- * cutout. Units come out in first-appearance order so results stay stable.
+ * Collapse cutouts into arrange units — one per group at `context`, one per
+ * loose shape. Units come out in first-appearance order so results stay stable.
  */
-export function toArrangeUnits(cutouts: readonly Cutout[]): ArrangeUnit[] {
-  const byGroup = new Map<string, Cutout[]>();
+export function toArrangeUnits(
+  cutouts: readonly Cutout[],
+  context: readonly string[] = []
+): ArrangeUnit[] {
+  const byTag = new Map<string, Cutout[]>();
+  const order: string[] = [];
   for (const cutout of cutouts) {
-    if (cutout.groupId === null) continue;
-    const members = byGroup.get(cutout.groupId);
+    const tag = unitTag(cutout, context);
+    // Outside this branch entirely — not something the operation can move.
+    if (tag === null) continue;
+    const members = byTag.get(tag);
     if (members) members.push(cutout);
-    else byGroup.set(cutout.groupId, [cutout]);
-  }
-
-  const units: ArrangeUnit[] = [];
-  const emitted = new Set<string>();
-  for (const cutout of cutouts) {
-    if (cutout.groupId === null) {
-      units.push(makeUnit([cutout]));
-      continue;
+    else {
+      byTag.set(tag, [cutout]);
+      order.push(tag);
     }
-    if (emitted.has(cutout.groupId)) continue;
-    emitted.add(cutout.groupId);
-    units.push(makeUnit(byGroup.get(cutout.groupId) ?? [cutout]));
   }
-  return units;
+  return order.map((tag) => makeUnit(byTag.get(tag) ?? []));
 }
 
 /** Bounds spanning every unit, locked ones included — they anchor. */

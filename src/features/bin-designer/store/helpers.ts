@@ -9,6 +9,7 @@
 
 import { current, type Draft } from 'immer';
 import { isSocketlessBase } from '@/features/bin-designer/types/base';
+import { parentGroups, unitTag } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type {
   BinParams,
   CachedMesh,
@@ -260,16 +261,23 @@ export function adoptedGroupArray(
 export function planCutoutArrayWrite(
   cutouts: readonly Cutout[],
   cutoutId: string,
-  config: CutoutArrayConfig | undefined
+  config: CutoutArrayConfig | undefined,
+  context?: readonly string[]
 ): { readonly ids: ReadonlySet<string>; readonly config: CutoutArrayConfig | undefined } | null {
   const target = cutouts.find((c) => c.id === cutoutId);
   if (!target) return null;
-  const members =
-    target.groupId === null ? [target] : cutouts.filter((c) => c.groupId === target.groupId);
+  // Default to the target's OWN level, where a loose shape is its own unit and
+  // a boolean member's unit is its group. A caller arraying a whole container
+  // passes that container's level instead, or the write would land on whichever
+  // subgroup the first selected member happened to belong to.
+  const at = context ?? parentGroups(target);
+  const tag = unitTag(target, at);
+  if (tag === null) return null;
+  const members = cutouts.filter((c) => unitTag(c, at) === tag);
   if (members.some((m) => m.shape === 'path')) return null;
   return {
     ids: new Set(members.map((m) => m.id)),
-    config: target.groupId === null || !config ? config : groupArrayConfig(config),
+    config: members.length === 1 || !config ? config : groupArrayConfig(config),
   };
 }
 
