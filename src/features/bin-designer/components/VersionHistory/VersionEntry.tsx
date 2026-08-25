@@ -35,12 +35,8 @@ export function VersionEntry({
   const relative = useRelativeTime(Date.parse(version.createdAt));
   const [confirming, setConfirming] = useState(false);
   const [editingName, setEditingName] = useState<string | null>(null);
-  // Five equally-weighted buttons on every row made a 25-row list unreadable.
-  // Restore is the reason the list exists; the rest reveal on request, inline
-  // rather than in a positioned menu so it behaves the same under touch.
+  // Inline rather than a positioned menu so it behaves the same under touch.
   const [showActions, setShowActions] = useState(false);
-  // A named version is a deliberate checkpoint; one click should not end it.
-  // Same inline shape as the restore confirmation rather than a nested dialog.
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const renameRef = useRef<HTMLInputElement>(null);
 

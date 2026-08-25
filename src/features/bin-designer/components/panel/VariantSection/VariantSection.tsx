@@ -244,11 +244,9 @@ export function VariantSection({
                                 </Button>
                               </>
                             )}
-                            {/* Shown live rather than as a one-shot "the parent
-                                changed" notice: a notification can be missed,
-                                and the question the user actually has when they
-                                open a variant is "what am I holding that differs
-                                from the parent right now". */}
+                            {/* Live rather than a "parent changed" notice: a
+                                notification can be missed, and the question is
+                                what differs now. */}
                             {claimed !== undefined && claimed !== inherited && (
                               <Button
                                 variant="ghost"

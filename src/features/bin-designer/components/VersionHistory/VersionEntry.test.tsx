@@ -35,7 +35,6 @@ function renderEntry(overrides: Partial<DesignVersionSummary> = {}) {
 }
 
 describe('VersionEntry', () => {
-  // Restore is the reason the list exists, so it stays on the row.
   it('keeps restore on the row without opening the actions', () => {
     renderEntry();
     expect(screen.getByText('binDesigner.versions.restore')).toBeInTheDocument();
@@ -139,7 +138,6 @@ describe('VersionEntry', () => {
     expect(onBranch).toHaveBeenCalledTimes(1);
   });
 
-  // A named version is a deliberate checkpoint, so one click must not end it.
   it('confirms before deleting', () => {
     const { onDelete } = renderEntry();
 

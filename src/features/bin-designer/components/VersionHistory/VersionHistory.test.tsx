@@ -192,7 +192,6 @@ describe('VersionHistory', () => {
     expectOk(await createDesignVersion(DESIGN, 'doomed', { name: 'Router Bit Holder' }, null));
 
     render(<VersionHistory open onClose={vi.fn()} />);
-    // Delete lives behind the row's actions disclosure.
     fireEvent.click(await screen.findByLabelText('community.detail.moreActions'));
     fireEvent.click(screen.getByText('binDesigner.versions.delete'));
     const confirm = screen.getAllByText('binDesigner.versions.delete');
