@@ -330,15 +330,14 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # Restoring this is what makes Lint ~3s instead of ~156s; setup-pnpm caches
-      # the pnpm store, so without this step the cache is cold every run. The
-      # `--cache-strategy content` in the lint script is load-bearing for the
-      # same reason: a fresh checkout rewrites every mtime, and the default
-      # metadata strategy would call the whole tree changed and rebuild anyway.
+      # setup-pnpm caches the pnpm store, not this directory, so without this the
+      # ESLint cache is cold every run. `--cache-strategy content` in the lint
+      # script is load-bearing too: a fresh checkout rewrites every mtime, so the
+      # default metadata strategy would discard a restored cache.
       #
-      # eslint-rules/ is in the key because ESLint's cache records results, not
-      # the rules that produced them, so editing a custom rule against a warm
-      # cache would report a stale pass.
+      # eslint-rules/ is in the key because ESLint caches results, not the rules
+      # that produced them, so a rule edited against a warm cache reports a stale
+      # pass.
       - name: Restore ESLint cache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
