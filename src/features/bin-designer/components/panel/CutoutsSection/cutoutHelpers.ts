@@ -15,6 +15,9 @@ import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray
 import { DEFAULT_KNIFE_PRESET } from './knifeSlotPresets';
 import { KNIFE_SLOT_DEFAULT_CHAMFER, knifeSlotDimensions } from '@/features/bin-designer/types';
 import { translatePathPoints } from './pathGeometry';
+// Re-exported: the implementation moved to `shared/` so the variant resolver can
+// reach it, and every existing caller keeps importing it from here.
+export { resizeAroundCenter } from '@/shared/utils/cutoutResize';
 import {
   DEFAULT_RECT_SIZE,
   DEFAULT_CIRCLE_SIZE,
@@ -164,35 +167,6 @@ export function resizeKeepingCenter(
   const x = Math.max(0, Math.min(cx - width / 2, maxWidth - width));
   const y = Math.max(0, Math.min(cy - depth / 2, maxDepth - depth));
   return { x, y, width, depth };
-}
-
-/**
- * Patch that resizes a cutout about its own center, leaving the center where it
- * was and growing equally in every direction.
- *
- * Deliberately unclamped, unlike {@link resizeKeepingCenter}: the W/H fields
- * hold a MEASURED dimension, so truncating the size to the board — or sliding
- * the origin back onto it — would cut a pocket that is not the size that was
- * typed. A result hanging off the board is left to the off-board warning, which
- * offers to grow the bin, center the stray, or pull it back in.
- *
- * Rotation needs no special case: `x`/`y` are the unrotated box origin and
- * rotation is about the box center, so holding that center holds the rotated
- * shape too. Array instances are offsets from the master center, so they follow
- * as well.
- */
-export function resizeAroundCenter(
-  cutout: Pick<Cutout, 'x' | 'y' | 'width' | 'depth'>,
-  next: { readonly width?: number; readonly depth?: number }
-): Pick<Cutout, 'x' | 'y' | 'width' | 'depth'> {
-  const width = next.width ?? cutout.width;
-  const depth = next.depth ?? cutout.depth;
-  return {
-    width,
-    depth,
-    x: cutout.x + (cutout.width - width) / 2,
-    y: cutout.y + (cutout.depth - depth) / 2,
-  };
 }
 
 /**

@@ -77,6 +77,64 @@ interface BranchLineage {
   parentDesignId?: string;
   parentVersionId?: string;
   parentVersionName?: string;
+  variantOf?: string;
+  overrides?: StoredOverrides;
+}
+
+interface StoredOverrides {
+  dimensions?: Record<string, number>;
+  cutouts?: Record<string, Record<string, number>>;
+}
+
+/** Fields a variant may claim. Mirrors the client's curated override surface. */
+const DIMENSION_FIELDS = new Set(['width', 'depth', 'height', 'wallThickness']);
+const CUTOUT_FIELDS = new Set(['width', 'depth', 'cutDepth', 'clearance', 'chamferWidth']);
+
+/** Bounds the record so a crafted payload cannot store an unbounded map. */
+const MAX_CUTOUT_OVERRIDES = 400;
+
+function finiteNumbers(
+  value: unknown,
+  allowed: ReadonlySet<string>
+): Record<string, number> | undefined {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [key, raw] of Object.entries(value)) {
+    if (!allowed.has(key)) continue;
+    if (typeof raw !== 'number' || !Number.isFinite(raw)) continue;
+    out[key] = raw;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+/**
+ * Validate a variant's claimed values.
+ *
+ * Unknown keys and non-finite numbers are dropped rather than rejected: the
+ * override set is the client's curated surface and a newer client may name a
+ * field this server has not heard of, which must not make the whole design
+ * unsyncable. What survives is bounded and numeric, which is all the resolver
+ * needs.
+ */
+function sanitizeOverrides(value: unknown): StoredOverrides | undefined {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+  const raw = value as { dimensions?: unknown; cutouts?: unknown };
+
+  const dimensions = finiteNumbers(raw.dimensions, DIMENSION_FIELDS);
+
+  let cutouts: Record<string, Record<string, number>> | undefined;
+  if (typeof raw.cutouts === 'object' && raw.cutouts !== null && !Array.isArray(raw.cutouts)) {
+    const entries: Record<string, Record<string, number>> = {};
+    for (const [cutoutId, fields] of Object.entries(raw.cutouts).slice(0, MAX_CUTOUT_OVERRIDES)) {
+      if (typeof cutoutId !== 'string' || cutoutId.length === 0) continue;
+      const sanitized = finiteNumbers(fields, CUTOUT_FIELDS);
+      if (sanitized) entries[sanitizeString(cutoutId, MAX_NAME_LENGTH)] = sanitized;
+    }
+    if (Object.keys(entries).length > 0) cutouts = entries;
+  }
+
+  if (!dimensions && !cutouts) return undefined;
+  return { ...(dimensions ? { dimensions } : {}), ...(cutouts ? { cutouts } : {}) };
 }
 
 /**
@@ -91,9 +149,16 @@ interface BranchLineage {
 function sanitizeBranch(
   parentDesignId: unknown,
   parentVersionId: unknown,
-  parentVersionName: unknown
+  parentVersionName: unknown,
+  variantOf: unknown,
+  overrides: unknown
 ): BranchLineage {
+  const claimed = sanitizeOverrides(overrides);
   return {
+    ...(typeof variantOf === 'string' && variantOf.length > 0
+      ? { variantOf: sanitizeString(variantOf, MAX_NAME_LENGTH) }
+      : {}),
+    ...(claimed ? { overrides: claimed } : {}),
     ...(typeof parentDesignId === 'string' && parentDesignId.length > 0
       ? { parentDesignId: sanitizeString(parentDesignId, MAX_NAME_LENGTH) }
       : {}),
@@ -130,6 +195,8 @@ function unwrapDesignPayload(design: unknown): {
     parentDesignId,
     parentVersionId,
     parentVersionName,
+    variantOf,
+    overrides,
   } = design as {
     name?: unknown;
     params?: unknown;
@@ -142,8 +209,16 @@ function unwrapDesignPayload(design: unknown): {
     parentDesignId?: unknown;
     parentVersionId?: unknown;
     parentVersionName?: unknown;
+    variantOf?: unknown;
+    overrides?: unknown;
   };
-  const branch = sanitizeBranch(parentDesignId, parentVersionId, parentVersionName);
+  const branch = sanitizeBranch(
+    parentDesignId,
+    parentVersionId,
+    parentVersionName,
+    variantOf,
+    overrides
+  );
   if (kind === 'assembly') {
     if (name !== undefined && typeof name !== 'string') return null;
     if (typeof envelope !== 'object' || envelope === null) return null;

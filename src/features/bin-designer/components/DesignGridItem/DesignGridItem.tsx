@@ -16,6 +16,7 @@ interface DesignGridItemProps {
   onRename: (newName: string) => void;
   onEditTags: () => void;
   onDuplicate: () => void;
+  onCreateVariant?: () => void;
   onDelete: () => void;
   onFocus: () => void;
   itemRef: (el: HTMLDivElement | null) => void;
@@ -46,6 +47,7 @@ export function DesignGridItem({
   onRename,
   onEditTags,
   onDuplicate,
+  onCreateVariant,
   onDelete,
   onFocus,
   itemRef,
@@ -240,6 +242,7 @@ export function DesignGridItem({
               onRename={startEditing}
               onEditTags={onEditTags}
               onDuplicate={onDuplicate}
+              onCreateVariant={onCreateVariant}
               onDelete={onDelete}
             />
           </div>

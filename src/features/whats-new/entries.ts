@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'design-variants',
+    date: '2026-08-25',
+    kind: 'new',
+    title: { en: 'One design, several sizes' },
+    body: {
+      en: 'Make a variant of a design and claim just the values that differ, like a single shank diameter. Improve the shared geometry once and every variant follows, each keeping what it claimed.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'design-branching',
     date: '2026-08-25',
     kind: 'new',

@@ -20,6 +20,7 @@ interface DesignItemsViewProps {
   onRename: (design: SavedDesign, newName: string) => void;
   onEditTags: (design: SavedDesign) => void;
   onDuplicate: (design: SavedDesign) => void;
+  onCreateVariant: (design: SavedDesign) => void;
   onDelete: (design: SavedDesign) => void;
   onFocus: (index: number) => void;
   onToggleSelect: (id: string) => void;
@@ -46,6 +47,7 @@ export function DesignItemsView({
   onRename,
   onEditTags,
   onDuplicate,
+  onCreateVariant,
   onDelete,
   onFocus,
   onToggleSelect,
@@ -69,6 +71,9 @@ export function DesignItemsView({
     onRename: (newName: string) => onRename(design, newName),
     onEditTags: () => onEditTags(design),
     onDuplicate: () => onDuplicate(design),
+    // Only a bin design that is not already a variant: a variant of a variant
+    // would need a propagation chain, and a non-bin has no overridable params.
+    onCreateVariant: design.params && !design.variantOf ? () => onCreateVariant(design) : undefined,
     onDelete: () => onDelete(design),
     onFocus: () => onFocus(index),
     selectionActive,

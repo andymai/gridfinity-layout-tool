@@ -3556,6 +3556,25 @@ const en: Record<string, string> = {
   'binDesigner.designs.hideBranches': 'Hide branches',
   'binDesigner.designs.deleteWithBranches':
     'This design has {{count}} branches. Deleting it keeps them, listed on their own.',
+
+  // Variants: a design kept in step with another except for values it claims
+  'binDesigner.variants.label': 'Variant',
+  'binDesigner.variants.create': 'Create variant',
+  'binDesigner.variants.created': 'Created “{{name}}” as a variant of “{{parent}}”.',
+  'binDesigner.variants.panelLocked':
+    'Everything else comes from {{name}}. Claim a value below to change it here, or detach to edit freely.',
+  'binDesigner.variants.detach': 'Detach from parent',
+  'binDesigner.variants.detached': '“{{name}}” no longer follows its parent.',
+  'binDesigner.variants.claim': 'Claim',
+  'binDesigner.variants.release': 'Use parent’s value',
+  'binDesigner.variants.inherited': 'From parent: {{value}}',
+  'binDesigner.variants.noneClaimed': 'This variant matches its parent exactly.',
+  'binDesigner.variants.dimensions': 'Bin dimensions',
+  'binDesigner.variants.cutouts': 'Cutouts',
+  'binDesigner.variants.orphanTitle': '{{count}} claimed values point at deleted cutouts',
+  'binDesigner.variants.orphanBody':
+    'They are kept in case the deletion is undone, and ignored until then.',
+  'binDesigner.variants.orphanClear': 'Forget them',
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',

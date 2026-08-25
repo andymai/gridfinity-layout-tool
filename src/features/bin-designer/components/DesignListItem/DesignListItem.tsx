@@ -16,6 +16,7 @@ interface DesignListItemProps {
   onRename: (newName: string) => void;
   onEditTags: () => void;
   onDuplicate: () => void;
+  onCreateVariant?: () => void;
   onDelete: () => void;
   onFocus: () => void;
   itemRef: (el: HTMLLIElement | null) => void;
@@ -45,6 +46,7 @@ export function DesignListItem({
   onRename,
   onEditTags,
   onDuplicate,
+  onCreateVariant,
   onDelete,
   onFocus,
   itemRef,
@@ -246,6 +248,7 @@ export function DesignListItem({
           onRename={startEditing}
           onEditTags={onEditTags}
           onDuplicate={onDuplicate}
+          onCreateVariant={onCreateVariant}
           onDelete={onDelete}
         />
       </div>

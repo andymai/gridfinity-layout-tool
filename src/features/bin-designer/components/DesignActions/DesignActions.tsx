@@ -16,6 +16,8 @@ interface DesignActionsProps {
   onRename: () => void;
   onEditTags: () => void;
   onDuplicate: () => void;
+  /** Absent for a design that cannot have variants (no params, or already one). */
+  onCreateVariant?: () => void;
   onDelete: () => void;
 }
 
@@ -32,6 +34,7 @@ export function DesignActions({
   onRename,
   onEditTags,
   onDuplicate,
+  onCreateVariant,
   onDelete,
 }: DesignActionsProps) {
   const t = useTranslation();
@@ -296,6 +299,35 @@ export function DesignActions({
               </svg>
               {t('common.duplicate')}
             </Button>
+
+            {/* Create variant. Sits beside Duplicate deliberately: they are the
+                same gesture with different consequences, and putting them apart
+                would hide that a variant is the one that stays in step. */}
+            {onCreateVariant && (
+              <Button
+                variant="ghost"
+                fullWidth
+                role="menuitem"
+                onClick={handleAction(onCreateVariant)}
+                className="w-full px-3 py-2.5 justify-start text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4 text-content-secondary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 3v12m0 0a3 3 0 103 3 3 3 0 00-3-3zm12-6a3 3 0 11-3-3 3 3 0 013 3zm0 0v3a4 4 0 01-4 4h-4"
+                  />
+                </svg>
+                {t('binDesigner.variants.create')}
+              </Button>
+            )}
 
             {/* Delete */}
             <div className="border-t border-stroke my-1" />

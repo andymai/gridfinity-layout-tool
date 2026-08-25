@@ -32,6 +32,7 @@ function baseProps() {
     rows: designs.map((design) => ({ design, depth: 0 as const, childCount: 0 })),
     expandedIds: new Set<string>(),
     onToggleExpand: vi.fn(),
+    onCreateVariant: vi.fn(),
     currentDesignId: 'design-1' as string | null,
     focusedIndex: 0,
     selectionActive: false,

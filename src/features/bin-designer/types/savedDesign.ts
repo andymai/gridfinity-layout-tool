@@ -1,6 +1,7 @@
 import type { DesignId } from '@/core/types';
 import type { CommunityDesignLineage } from '@/shared/types/community';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
+import type { DesignOverrides } from './designVariant';
 import type { BinParams } from './binParams';
 import type { ExportFileNameConfig } from './uiState';
 
@@ -49,6 +50,26 @@ export interface SavedDesign {
   readonly parentVersionId?: string;
   /** Name of the seeding version, kept so the list reads without a second lookup. */
   readonly parentVersionName?: string;
+  /**
+   * The design this one stays in step with. Unlike {@link parentDesignId},
+   * which is a record of where a branch came from, this link is LIVE: saving
+   * the parent rewrites this design's params from it.
+   *
+   * A design carrying this is a variant; one carrying only `parentDesignId` is
+   * a branch, and the two are mutually exclusive by construction (a variant
+   * sets both, a branch sets only the first).
+   */
+  readonly variantOf?: DesignId;
+  /**
+   * The values this variant holds against its parent. Present iff
+   * {@link variantOf} is.
+   *
+   * `params` on a variant is a MATERIALIZED cache of
+   * `applyOverrides(parent.params, overrides)`; this is the truth about what
+   * the user owns. Everything else is the parent's and is rewritten on
+   * propagation.
+   */
+  readonly overrides?: DesignOverrides;
 }
 
 // Store Types

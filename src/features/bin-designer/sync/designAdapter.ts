@@ -148,6 +148,8 @@ function branchFields(d: SavedDesign) {
     ...(d.parentDesignId !== undefined ? { parentDesignId: String(d.parentDesignId) } : {}),
     ...(d.parentVersionId !== undefined ? { parentVersionId: d.parentVersionId } : {}),
     ...(d.parentVersionName !== undefined ? { parentVersionName: d.parentVersionName } : {}),
+    ...(d.variantOf !== undefined ? { variantOf: String(d.variantOf) } : {}),
+    ...(d.overrides !== undefined ? { overrides: d.overrides } : {}),
   };
 }
 
@@ -240,6 +242,8 @@ export const designAdapter: DesignAdapter = {
           : base?.parentDesignId,
         parentVersionId: remote.parentVersionId ?? base?.parentVersionId,
         parentVersionName: remote.parentVersionName ?? base?.parentVersionName,
+        variantOf: remote.variantOf ? designId(remote.variantOf) : base?.variantOf,
+        overrides: (remote.overrides as SavedDesign['overrides']) ?? base?.overrides,
       };
       const result =
         remoteKind === 'assembly' && remoteEnvelope

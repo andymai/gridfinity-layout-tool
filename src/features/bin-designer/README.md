@@ -756,6 +756,36 @@ which is unnamed, capped at `MAX_HISTORY`, and gone on reload.
 - **Deleting a design does not delete its branches** (they are independent
   designs), so the toast says how many survived: the indent implies otherwise.
 
+### Variants
+
+A variant is a design kept in step with another except for values it claims
+(`utils/applyOverrides.ts`, `storage/DesignerStorage.ts`,
+`components/panel/VariantSection/`).
+
+- **`params` on a variant is a MATERIALIZED cache** of
+  `applyOverrides(parent.params, overrides)`; `overrides` is the truth about what
+  the user owns. Resolving lazily instead was not an option: ~106 sites read a
+  saved design's params directly and every one expects a complete `BinParams`.
+  Materializing means export, publish, thumbnails, generation and sync need no
+  knowledge that variants exist.
+- **Propagation is a recompute, not a merge.** `updateDesignParams` rewrites
+  every variant of the design it just saved, discarding whatever their stored
+  params held for fields the overrides do not name. That is the model working.
+- **Which is why the rest of the panel is `inert` in a variant.** One gate rather
+  than a `disabled` prop per control: an edit outside the override surface
+  survives only until the next propagation, and a per-control guard is one that
+  gets forgotten when a section is added.
+- **Overrides carry their VALUES, not just which fields are claimed,** so a
+  variant can be rebuilt from the parent alone.
+- **Cutout size overrides go through `resizeAroundCenter`.** A corner-anchored
+  resize would turn a size override into a position change and slide the pocket
+  off the center the parent placed it on.
+- **An override naming a deleted cutout is kept, reported and skipped** — the
+  upstream deletion may itself be undone. Forgetting them is an explicit action.
+- **`variantOf` is the live link; `parentDesignId` only places it in the family
+  tree.** Detaching drops the first and keeps the second, and is written straight
+  to the store because `saveDesign` falls back to the stored value for both.
+
 ## Thumbnail Pipeline
 
 Two paths produce design thumbnails, written to IndexedDB and surfaced in the design-list modal:

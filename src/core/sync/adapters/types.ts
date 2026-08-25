@@ -125,6 +125,13 @@ export interface DesignSyncPayload {
   parentDesignId?: string;
   parentVersionId?: string;
   parentVersionName?: string;
+  /**
+   * Live variant link and the values the variant claims. Unlike
+   * `parentDesignId`, this one has consequences on the receiving device: saving
+   * the parent there rewrites this design's params.
+   */
+  variantOf?: string;
+  overrides?: unknown;
 }
 
 /**
