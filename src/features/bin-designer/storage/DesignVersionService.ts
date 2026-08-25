@@ -32,7 +32,6 @@ function toSummary(version: DesignVersion): DesignVersionSummary {
   return summary;
 }
 
-/** Newest first: the order the history list renders. */
 function byNewest(a: DesignVersion, b: DesignVersion): number {
   return b.createdAt.localeCompare(a.createdAt);
 }
@@ -115,7 +114,6 @@ export async function createDesignVersion(
   }
 }
 
-/** Every version of one design, newest first, without the compressed bodies. */
 export async function listDesignVersions(
   designId: DesignId
 ): Promise<Result<DesignVersionSummary[], StorageError>> {
@@ -126,7 +124,6 @@ export async function listDesignVersions(
   }
 }
 
-/** Decompress one version's stored design content. */
 export async function readDesignVersion(
   versionId: string
 ): Promise<Result<DesignVersionContent, StorageError>> {
@@ -137,7 +134,14 @@ export async function readDesignVersion(
 
     const json = decompressString(version.content);
     if (!json) return err(storageCorrupted(versionId, ['version content failed to decompress']));
-    return ok(JSON.parse(json) as DesignVersionContent);
+    // Parsed inside its own try: a body that decompresses but will not parse is
+    // corruption, and reporting it as `indexedDB unavailable` sends the caller
+    // to a retry that can never succeed.
+    try {
+      return ok(JSON.parse(json) as DesignVersionContent);
+    } catch {
+      return err(storageCorrupted(versionId, ['version content is not valid JSON']));
+    }
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
   }

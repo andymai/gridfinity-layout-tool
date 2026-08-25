@@ -129,17 +129,21 @@ export function VersionHistory({ open, onClose }: VersionHistoryProps) {
       const content = await readVersion(version.id);
       if (!content) return;
 
-      // Captured BEFORE the swap, and unconditionally: undo is bounded and lost
-      // on reload, so this is the only thing standing between a restore and
-      // work the user never named.
+      // Captured BEFORE the swap: undo is bounded and lost on reload, so this
+      // is the only thing standing between a restore and work the user never
+      // named. If the capture fails there is no checkpoint, so the restore does
+      // not happen either — overwriting with nothing to go back to is the exact
+      // outcome this flow exists to prevent. `saveVersion` has already surfaced
+      // the storage error.
       const backupName = t('binDesigner.versions.preRestoreName');
-      await saveVersion(
+      const backup = await saveVersion(
         toDesignId(currentDesignId),
         backupName,
         captureContent(),
         await captureThumbnail(currentDesignId),
         'pre-restore'
       );
+      if (!backup) return;
 
       restoreVersion(content);
       addToast(

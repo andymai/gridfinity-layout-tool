@@ -155,6 +155,38 @@ describe('VersionHistory', () => {
     expect(useDesignerStore.getState().params.width).toBe(4);
   });
 
+  // Restoring with no checkpoint written is the exact outcome the pre-restore
+  // capture exists to prevent, so a failed capture must abort the restore.
+  it('does not restore when the pre-restore capture fails', async () => {
+    await seedDesign();
+    useDesignerStore.getState().setParams({ width: 4 });
+    expectOk(
+      await createDesignVersion(
+        DESIGN,
+        'narrow',
+        { name: 'Router Bit Holder', params: { ...DEFAULT_BIN_PARAMS, width: 1 } },
+        null
+      )
+    );
+
+    const saveVersion = vi
+      .spyOn(useDesignVersionStore.getState(), 'saveVersion')
+      .mockResolvedValue(null);
+    useDesignVersionStore.setState({ saveVersion });
+
+    const onClose = vi.fn();
+    render(<VersionHistory open onClose={onClose} />);
+    fireEvent.click(await screen.findByText('binDesigner.versions.restore'));
+    const confirmButtons = screen.getAllByText('binDesigner.versions.restore');
+    fireEvent.click(confirmButtons[confirmButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(saveVersion).toHaveBeenCalled();
+    });
+    expect(useDesignerStore.getState().params.width).toBe(4);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('removes a version from the list when deleted', async () => {
     await seedDesign();
     expectOk(await createDesignVersion(DESIGN, 'doomed', { name: 'Router Bit Holder' }, null));

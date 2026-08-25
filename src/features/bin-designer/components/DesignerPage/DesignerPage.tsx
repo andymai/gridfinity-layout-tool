@@ -10,7 +10,7 @@
  */
 
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
-import { VersionHistory } from '../VersionHistory';
+import { VersionHistory } from '@/features/bin-designer/components/VersionHistory';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useSyncPhysicalUnits } from '@/features/bin-designer/hooks/useSyncPhysicalUnits';
