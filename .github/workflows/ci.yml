@@ -351,6 +351,17 @@ jobs:
         continue-on-error: true
         run: pnpm run lint
 
+      - name: DEBUG cache diagnosis
+        continue-on-error: true
+        run: |
+          echo "--- cache dir after first lint ---"
+          ls -la node_modules/.cache/eslint/ || echo "MISSING"
+          du -sh node_modules/.cache/eslint/ 2>/dev/null || true
+          echo "--- second lint run in the same job ---"
+          time pnpm run lint > /dev/null
+          echo "--- cache dir after second lint ---"
+          du -sh node_modules/.cache/eslint/ 2>/dev/null || true
+
       - name: Check i18n keys
         id: i18n_keys
         continue-on-error: true
