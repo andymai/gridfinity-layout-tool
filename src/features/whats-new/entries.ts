@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'design-branching',
+    date: '2026-08-25',
+    kind: 'new',
+    title: { en: 'Branch a design from any saved version' },
+    body: {
+      en: 'Turn a saved version into its own design without losing the original. Branches list under the design they came from, so a row of clearance experiments takes one line in your library instead of six.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'design-version-history',
     date: '2026-08-25',
     kind: 'new',

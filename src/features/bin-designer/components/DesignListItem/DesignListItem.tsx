@@ -1,5 +1,5 @@
 import { useTranslation, useFormatting } from '@/i18n';
-import { Checkbox, Input, useInlineEdit } from '@/design-system';
+import { Checkbox, IconButton, Input, useInlineEdit } from '@/design-system';
 import { BinDesignThumbnail } from '../BinDesignThumbnail';
 import { DesignActions } from '../DesignActions';
 import { DesignTagChips } from '../DesignTagChips';
@@ -23,6 +23,12 @@ interface DesignListItemProps {
   selectionActive?: boolean;
   isSelected?: boolean;
   onToggleSelect?: () => void;
+  /** 1 when this row is a branch shown under the design it came from. */
+  nestLevel?: 0 | 1;
+  /** Branches hanging off this row; 0 hides the disclosure entirely. */
+  childCount?: number;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 /**
@@ -45,6 +51,10 @@ export function DesignListItem({
   selectionActive = false,
   isSelected = false,
   onToggleSelect,
+  nestLevel = 0,
+  childCount = 0,
+  expanded = false,
+  onToggleExpand,
 }: DesignListItemProps) {
   const t = useTranslation();
   const { formatRelativeDate } = useFormatting();
@@ -97,7 +107,7 @@ export function DesignListItem({
       onKeyDown={handleItemKeyDown}
       onFocus={onFocus}
       className={`
-        group relative flex items-center gap-3 rounded-lg border px-3 py-2.5
+        group relative flex items-center gap-3 rounded-lg border py-2.5 pr-3
         cursor-pointer transition-colors outline-none
         focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-secondary
         ${
@@ -108,6 +118,7 @@ export function DesignListItem({
               : 'border-stroke-subtle hover:bg-surface-hover'
         }
       `}
+      style={{ paddingLeft: nestLevel === 1 ? 34 : 12 }}
     >
       {/* Active badge */}
       {isActive && (
@@ -130,6 +141,35 @@ export function DesignListItem({
             aria-label={t('binDesigner.selectDesign', { name: design.name })}
           />
         </div>
+      )}
+
+      {/* Disclosure for a design that has branches. Rendered in the row's own
+          flow (not absolutely placed) so the indent below cannot overlap it. */}
+      {childCount > 0 && onToggleExpand && (
+        <IconButton
+          variant="ghost"
+          size="sm"
+          touchTarget={false}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+          aria-expanded={expanded}
+          aria-label={
+            expanded ? t('binDesigner.designs.hideBranches') : t('binDesigner.designs.showBranches')
+          }
+          className="flex-shrink-0 text-content-tertiary"
+        >
+          <svg
+            className={`h-4 w-4 transition-transform ${expanded ? 'rotate-90' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </IconButton>
       )}
 
       {/* Thumbnail */}
@@ -173,6 +213,18 @@ export function DesignListItem({
             </span>
           )}
         </p>
+        {nestLevel === 1 && (
+          <p className="truncate text-[11px] text-accent">
+            {design.parentVersionName
+              ? t('binDesigner.designs.branchedFrom', { name: design.parentVersionName })
+              : t('binDesigner.designs.branchBadge')}
+          </p>
+        )}
+        {childCount > 0 && (
+          <p className="text-[11px] text-content-tertiary">
+            {t('binDesigner.designs.branchCount', { count: childCount })}
+          </p>
+        )}
         <p className="text-[11px] text-content-tertiary">
           {formatRelativeDate(design.updatedAt, { includeTime: true })}
         </p>

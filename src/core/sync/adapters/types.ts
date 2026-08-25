@@ -116,6 +116,15 @@ export interface DesignSyncPayload {
   publishedId?: string | null;
   /** Remix lineage snapshot, mirrors `CommunityDesignLineage`. */
   lineage?: CommunityDesignLineage | null;
+  /**
+   * Local branch lineage: the design this one was branched from, and the
+   * version that seeded it. Distinct from {@link lineage}, which describes a
+   * community remix by another author. Rides alongside `params` so the family
+   * survives the cloud round-trip.
+   */
+  parentDesignId?: string;
+  parentVersionId?: string;
+  parentVersionName?: string;
 }
 
 /**

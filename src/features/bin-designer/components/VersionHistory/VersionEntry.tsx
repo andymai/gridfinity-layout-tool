@@ -10,6 +10,7 @@ export interface VersionEntryProps {
   readonly onRename: (version: DesignVersionSummary, name: string) => void;
   readonly onTogglePin: (version: DesignVersionSummary) => void;
   readonly onDelete: (version: DesignVersionSummary) => void;
+  readonly onBranch: (version: DesignVersionSummary) => void;
   /** Disables every action while a restore is in flight. */
   readonly busy?: boolean;
 }
@@ -27,6 +28,7 @@ export function VersionEntry({
   onRename,
   onTogglePin,
   onDelete,
+  onBranch,
   busy = false,
 }: VersionEntryProps) {
   const t = useTranslation();
@@ -97,6 +99,9 @@ export function VersionEntry({
             </Button>
             <Button variant="ghost" size="sm" disabled={busy} onClick={() => onDelete(version)}>
               {t('binDesigner.versions.delete')}
+            </Button>
+            <Button variant="ghost" size="sm" disabled={busy} onClick={() => onBranch(version)}>
+              {t('binDesigner.versions.branch')}
             </Button>
             <Button
               variant="secondary"

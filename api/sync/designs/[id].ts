@@ -73,6 +73,39 @@ function sanitizeLineage(
  * two are unambiguous. Returns `null` if the wrapper is malformed (e.g.
  * `name` is present but isn't a string) so the caller can 400.
  */
+interface BranchLineage {
+  parentDesignId?: string;
+  parentVersionId?: string;
+  parentVersionName?: string;
+}
+
+/**
+ * Local branch lineage: which design this one was branched from, and which
+ * version seeded it.
+ *
+ * Opaque passthrough, like `publishedId`: the server never resolves these ids,
+ * they only exist so the owning library can draw the family. Non-string values
+ * are dropped rather than rejected, because a malformed pointer costs a nesting
+ * indent, not correctness, and refusing the write would block the design itself.
+ */
+function sanitizeBranch(
+  parentDesignId: unknown,
+  parentVersionId: unknown,
+  parentVersionName: unknown
+): BranchLineage {
+  return {
+    ...(typeof parentDesignId === 'string' && parentDesignId.length > 0
+      ? { parentDesignId: sanitizeString(parentDesignId, MAX_NAME_LENGTH) }
+      : {}),
+    ...(typeof parentVersionId === 'string' && parentVersionId.length > 0
+      ? { parentVersionId: sanitizeString(parentVersionId, MAX_NAME_LENGTH) }
+      : {}),
+    ...(typeof parentVersionName === 'string'
+      ? { parentVersionName: sanitizeString(parentVersionName, MAX_NAME_LENGTH) }
+      : {}),
+  };
+}
+
 function unwrapDesignPayload(design: unknown): {
   name: string | null;
   params: unknown;
@@ -82,9 +115,22 @@ function unwrapDesignPayload(design: unknown): {
   tags: unknown;
   publishedId: unknown;
   lineage: unknown;
+  branch: BranchLineage;
 } | null {
   if (design === null || typeof design !== 'object') return null;
-  const { name, params, kind, envelope, structure, tags, publishedId, lineage } = design as {
+  const {
+    name,
+    params,
+    kind,
+    envelope,
+    structure,
+    tags,
+    publishedId,
+    lineage,
+    parentDesignId,
+    parentVersionId,
+    parentVersionName,
+  } = design as {
     name?: unknown;
     params?: unknown;
     kind?: unknown;
@@ -93,7 +139,11 @@ function unwrapDesignPayload(design: unknown): {
     tags?: unknown;
     publishedId?: unknown;
     lineage?: unknown;
+    parentDesignId?: unknown;
+    parentVersionId?: unknown;
+    parentVersionName?: unknown;
   };
+  const branch = sanitizeBranch(parentDesignId, parentVersionId, parentVersionName);
   if (kind === 'assembly') {
     if (name !== undefined && typeof name !== 'string') return null;
     if (typeof envelope !== 'object' || envelope === null) return null;
@@ -107,6 +157,7 @@ function unwrapDesignPayload(design: unknown): {
       tags,
       publishedId,
       lineage,
+      branch,
     };
   }
   if (typeof params === 'object' && params !== null) {
@@ -115,7 +166,7 @@ function unwrapDesignPayload(design: unknown): {
     if (name !== undefined && typeof name !== 'string') return null;
     // `tags` is sanitized (not strictly validated) downstream, so any shape
     // is tolerated here; non-array input becomes [].
-    return { name: name ?? null, params, tags, publishedId, lineage };
+    return { name: name ?? null, params, tags, publishedId, lineage, branch };
   }
   return {
     name: null,
@@ -123,6 +174,7 @@ function unwrapDesignPayload(design: unknown): {
     tags: undefined,
     publishedId: undefined,
     lineage: undefined,
+    branch: {},
   };
 }
 
@@ -233,6 +285,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
         tags,
         ...(publishedId !== undefined ? { publishedId } : {}),
         ...(lineage !== undefined ? { lineage } : {}),
+        ...unwrapped.branch,
       };
       return {
         ok: true,
@@ -286,6 +339,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
       tags,
       ...(publishedId !== undefined ? { publishedId } : {}),
       ...(lineage !== undefined ? { lineage } : {}),
+      ...unwrapped.branch,
     };
     return {
       ok: true,

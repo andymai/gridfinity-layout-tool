@@ -23,6 +23,7 @@ function renderEntry(overrides: Partial<DesignVersionSummary> = {}) {
     onRename: vi.fn(),
     onTogglePin: vi.fn(),
     onDelete: vi.fn(),
+    onBranch: vi.fn(),
   };
   render(<VersionEntry version={makeVersion(overrides)} {...handlers} />);
   return handlers;
@@ -113,6 +114,12 @@ describe('VersionEntry', () => {
     fireEvent.click(screen.getByText('binDesigner.versions.unpin'));
 
     expect(onTogglePin).toHaveBeenCalledTimes(1);
+  });
+
+  it('branches on request', () => {
+    const { onBranch } = renderEntry();
+    fireEvent.click(screen.getByText('binDesigner.versions.branch'));
+    expect(onBranch).toHaveBeenCalledTimes(1);
   });
 
   it('deletes on request', () => {
