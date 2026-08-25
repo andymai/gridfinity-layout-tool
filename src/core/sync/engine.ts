@@ -11,6 +11,7 @@ import {
 import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
 import type { AdapterChange, SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
+import { PAYLOAD_KEY } from './payloadKey';
 
 type ConflictReason = 'remote-newer' | 'deleted-elsewhere' | 'quota' | 'gave-up';
 
@@ -181,12 +182,7 @@ async function sendOne(
     return;
   }
 
-  const body =
-    kind === 'layouts'
-      ? { layout: latest.payload, modifiedAt: latest.modifiedAt }
-      : kind === 'baseplates'
-        ? { baseplate: latest.payload, modifiedAt: latest.modifiedAt }
-        : { design: latest.payload, modifiedAt: latest.modifiedAt };
+  const body = { [PAYLOAD_KEY[kind]]: latest.payload, modifiedAt: latest.modifiedAt };
 
   const res = await apiFetch(url, {
     method: 'PUT',

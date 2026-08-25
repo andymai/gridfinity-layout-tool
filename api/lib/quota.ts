@@ -13,6 +13,12 @@ const QUOTA: Record<SyncItemKind, { maxCount: number; maxBytes: number }> = {
   layouts: { maxCount: 100, maxBytes: 10 * 1024 * 1024 },
   designs: { maxCount: 100, maxBytes: 10 * 1024 * 1024 },
   baseplates: { maxCount: 100, maxBytes: 10 * 1024 * 1024 },
+  // Versions are per-design, so this axis counts differently from the others:
+  // 100 items across a whole library would be a handful of designs' history.
+  // The client caps each design at MAX_VERSIONS_PER_DESIGN; this is the
+  // whole-account ceiling. Bodies are compressed params with no thumbnail, so
+  // they are far smaller than a design envelope.
+  designVersions: { maxCount: 500, maxBytes: 25 * 1024 * 1024 },
 };
 
 export type QuotaErrorReason = 'count' | 'bytes';

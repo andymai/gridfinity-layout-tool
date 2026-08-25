@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
 import { designAdapter } from '@/features/bin-designer';
+import { designVersionAdapter } from '@/features/bin-designer/sync/designVersionAdapter';
 import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import {
@@ -10,7 +11,12 @@ import {
 } from '@/core/sync/deleteAccount';
 import { DeleteAccountDialog } from '@/core/sync/dialogs/DeleteAccountDialog';
 
-const ADAPTERS = { layouts: layoutAdapter, designs: designAdapter, baseplates: baseplateAdapter };
+const ADAPTERS = {
+  layouts: layoutAdapter,
+  designs: designAdapter,
+  baseplates: baseplateAdapter,
+  designVersions: designVersionAdapter,
+};
 
 interface DeleteAccountFlow {
   deleteAccount: () => Promise<DeleteAccountResult>;

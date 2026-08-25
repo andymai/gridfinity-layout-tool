@@ -27,8 +27,18 @@ export interface DesignVersion {
    * budget for a value that regenerates locally.
    */
   readonly thumbnail: string | null;
-  /** ISO timestamp, matching `SavedDesign.createdAt`. */
+  /** ISO timestamp of the capture. Never moves after the version is written. */
   readonly createdAt: string;
+  /**
+   * ISO timestamp of the last edit to the version's own metadata (a rename or a
+   * pin). Absent on versions written before the field existed, which read as
+   * never edited.
+   *
+   * Separate from {@link createdAt} because sync compares mtimes: without it a
+   * rename pushes the original capture time, loses last-write-wins against the
+   * copy already on the server, and never converges.
+   */
+  readonly updatedAt?: string;
   /**
    * `'pre-restore'` marks the automatic capture taken immediately before a
    * restore overwrites the working state. Eviction drops these before anything

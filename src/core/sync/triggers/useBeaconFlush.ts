@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { getPendingEntries } from '../engine';
+import { PAYLOAD_KEY } from '../payloadKey';
 import type { SyncAdapters, SyncKind } from '../adapters/types';
 
 const BEACON_MAX_BYTES = 60 * 1024;
@@ -85,7 +86,5 @@ async function collectBeacons(adapters: SyncAdapters): Promise<PreparedBeacon[]>
 }
 
 function bodyForKind(kind: SyncKind, payload: unknown, modifiedAt: number): object {
-  if (kind === 'layouts') return { layout: payload, modifiedAt };
-  if (kind === 'baseplates') return { baseplate: payload, modifiedAt };
-  return { design: payload, modifiedAt };
+  return { [PAYLOAD_KEY[kind]]: payload, modifiedAt };
 }

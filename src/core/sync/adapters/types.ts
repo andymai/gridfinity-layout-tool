@@ -129,16 +129,35 @@ export interface BaseplatePayload {
   params: unknown;
 }
 
+/**
+ * A named version of a design. `content` travels UNCOMPRESSED so the server can
+ * run the same designer validator it runs on a design; the local store keeps it
+ * LZ-compressed and the adapter converts at this boundary.
+ *
+ * There is deliberately no `thumbnail`: it is a rendered PNG data URL that would
+ * consume most of the payload budget, and it regenerates locally from `content`.
+ */
+export interface DesignVersionPayload {
+  designId: string;
+  name: string;
+  /** `{ name, params }` for bins, `{ name, kind, envelope, structure }` otherwise. */
+  content: unknown;
+  createdAt: string;
+  origin: string;
+  pinned?: boolean;
+}
+
 export type LayoutAdapter = SyncAdapter<Layout>;
 export type DesignAdapter = SyncAdapter<DesignSyncPayload>;
 export type BaseplateAdapter = SyncAdapter<BaseplatePayload>;
+export type DesignVersionAdapter = SyncAdapter<DesignVersionPayload>;
 
 /**
  * All adapters bundled together — what the engine takes at start time.
  * The shape lets the engine treat them uniformly while keeping the
  * `kind` distinction visible in logs and the outbox.
  *
- * `SyncKind = 'layouts' | 'designs' | 'baseplates'` — plural to match
+ * `SyncKind` is plural to match
  * server endpoints (`/api/sync/{kind}/[id]`) and Redis index keys
  * (`users:{uid}:index:{kind}`). The outbox uses the same plural form so
  * there's no kind-translation shim anywhere in the stack.
@@ -147,6 +166,7 @@ export interface SyncAdapters {
   layouts: LayoutAdapter;
   designs: DesignAdapter;
   baseplates: BaseplateAdapter;
+  designVersions: DesignVersionAdapter;
 }
 
 export type SyncKind = keyof SyncAdapters;

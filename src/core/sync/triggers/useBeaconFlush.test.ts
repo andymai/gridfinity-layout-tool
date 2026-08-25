@@ -8,6 +8,7 @@ import type {
   LayoutAdapter,
   DesignAdapter,
   BaseplateAdapter,
+  DesignVersionAdapter,
 } from '../adapters/types';
 
 const getPendingEntriesMock = vi.fn();
@@ -57,10 +58,18 @@ function makeAdapters(layoutPayload: Record<string, unknown> | null = { v: 1 }):
     applyRemoteDelete: vi.fn(),
     subscribe: vi.fn(() => () => {}),
   };
+  const designVersions: SyncAdapter = {
+    list: vi.fn(),
+    get: vi.fn(async (id: string) => ({ id, payload: { v: 'ver' }, modifiedAt: 4000 })),
+    applyRemote: vi.fn(),
+    applyRemoteDelete: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  };
   return {
     layouts: layouts as LayoutAdapter,
     designs: designs as DesignAdapter,
     baseplates: baseplates as BaseplateAdapter,
+    designVersions: designVersions as unknown as DesignVersionAdapter,
   };
 }
 
@@ -108,6 +117,25 @@ describe('useBeaconFlush', () => {
     expect(url).toBe('/api/sync/baseplates/bp-1');
     const body = JSON.parse(await blob.text()) as Record<string, unknown>;
     expect(body).toEqual({ baseplate: { b: 1 }, modifiedAt: 3000 });
+  });
+
+  // The old `bodyForKind` fell through to `{ design }` for anything that was
+  // not layouts or baseplates, so this kind would have been beaconed under a
+  // key its endpoint does not read.
+  it('wraps a design version in { designVersion } (not { design })', async () => {
+    getPendingEntriesMock.mockResolvedValueOnce([
+      { kind: 'designVersions', id: 'ver-1', op: 'put', modifiedAt: 4000 },
+    ]);
+    renderHook(() => useBeaconFlush(makeAdapters()));
+    fireVisibilityHidden();
+    await settlePrep();
+    firePageHide();
+
+    expect(sendBeaconMock).toHaveBeenCalledTimes(1);
+    const [url, blob] = sendBeaconMock.mock.calls[0] as [string, Blob];
+    expect(url).toBe('/api/sync/designVersions/ver-1');
+    const body = JSON.parse(await blob.text()) as Record<string, unknown>;
+    expect(body).toEqual({ designVersion: { v: 'ver' }, modifiedAt: 4000 });
   });
 
   it('fires sendBeacon synchronously on pagehide — no awaits between the event and the call', async () => {
