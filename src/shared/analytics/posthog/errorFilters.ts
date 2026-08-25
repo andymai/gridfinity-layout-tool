@@ -62,16 +62,32 @@ export function shouldIgnoreError(
   return false;
 }
 
+interface ExceptionLike {
+  value?: string;
+  stacktrace?: { frames?: Array<{ function?: string; filename?: string }> };
+}
+
 interface ExceptionEventLike {
   event?: string;
   properties?: {
-    $exception_list?: Array<{
-      value?: string;
-      stacktrace?: { frames?: Array<{ function?: string }> };
-    }>;
+    $exception_list?: ExceptionLike[];
     $exception_values?: string[];
     $exception_fingerprint?: string;
+    [key: string]: unknown;
   };
+}
+
+/**
+ * True when the throw came out of an injected extension script.
+ *
+ * The source check used to run on `ErrorEvent.filename` in a `window.onerror`
+ * handler. posthog-js captures these natively too, and that path only ever sees
+ * stack frames, so the frames are where the origin has to be read from now.
+ */
+function isExtensionSourced(exception: ExceptionLike): boolean {
+  return (exception.stacktrace?.frames ?? []).some(
+    (f) => f.filename !== undefined && shouldIgnoreError(undefined, f.filename)
+  );
 }
 
 /**
@@ -91,10 +107,7 @@ interface ExceptionEventLike {
 const NULL_LISTENER_TARGET =
   /Cannot read propert(?:y|ies) of null \(reading '?addEventListener'?\)|null is not an object \(evaluating '[^']*\.addEventListener'\)/;
 
-function isCanvasTeardownRace(exception: {
-  value?: string;
-  stacktrace?: { frames?: Array<{ function?: string }> };
-}): boolean {
+function isCanvasTeardownRace(exception: ExceptionLike): boolean {
   if (!exception.value || !NULL_LISTENER_TARGET.test(exception.value)) return false;
   // `connect` and `onCreated` are property names on object literals, so they
   // survive minification where the surrounding function names do not.
@@ -132,6 +145,7 @@ export function filterExceptionForPosthog(
   const primaryException = event.properties?.$exception_list?.[0];
   const primary = primaryException?.value ?? event.properties?.$exception_values?.[0];
   if (shouldIgnoreError(primary)) return null;
+  if (primaryException && isExtensionSourced(primaryException)) return null;
   if (primaryException && isCanvasTeardownRace(primaryException)) return null;
 
   if (primary?.includes(WEBGL_CONTEXT_ERROR)) {

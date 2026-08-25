@@ -44,6 +44,7 @@ export {
 export { computeEngagementTier, updatePersonProperties, markFeatureUsed } from './eventsPerson';
 export {
   captureException,
+  getLayoutContext,
   trackLayoutSaveFailure,
   trackShareFailure,
   track3DRenderError,

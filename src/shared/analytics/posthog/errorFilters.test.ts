@@ -223,3 +223,54 @@ describe('R3F canvas teardown race', () => {
     expect(filterExceptionForPosthog(e)).toBe(e);
   });
 });
+
+describe('extension-sourced exceptions', () => {
+  it('drops a throw whose frames come from an extension script', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            value: 'TypeError: chrome.runtime is undefined',
+            stacktrace: {
+              frames: [
+                { function: 'x', filename: 'https://gridfinitylayouttool.com/assets/main.js' },
+                { function: 'y', filename: 'chrome-extension://abcdef/content.js' },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('keeps a throw whose frames are all first-party', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            value: 'TypeError: cannot read x',
+            stacktrace: {
+              frames: [
+                { function: 'x', filename: 'https://gridfinitylayouttool.com/assets/main.js' },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+
+  it('keeps a throw with no frame filenames', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [{ value: 'TypeError: cannot read x', stacktrace: { frames: [{}] } }],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+});
