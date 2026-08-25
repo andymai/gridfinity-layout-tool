@@ -1,6 +1,5 @@
 import type { FeatureId } from '@/core/labs';
 import type { Locale } from '@/i18n/types';
-import type { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 /**
  * Entry copy lives outside the i18n key system on purpose. Routing it through
@@ -29,8 +28,12 @@ export interface WhatsNewEntry {
   title: LocalizedText;
   kind?: WhatsNewKind;
   body?: LocalizedText;
-  /** Overrides the glyph derived from `kind`. */
-  icon?: keyof typeof ICON_PATHS;
+  /**
+   * Promotes the entry to the digest's lead card. The digest cannot infer this:
+   * `kind` and recency say nothing about whether a change is worth opening the
+   * modal for, so the judgement is recorded when the entry is written.
+   */
+  featured?: boolean;
   /** Marks the entry as an opt-in Labs feature and points its action at Labs. */
   labs?: FeatureId;
   action?: WhatsNewAction;
