@@ -1,0 +1,21 @@
+src/features/bin-designer/storage/branchFromVersion.test.ts
+  s_bc329c5b63b656::t_82d423385f0d97 141-162
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_bc329c5b63b656::t_03cf4c30015c1c 265-275,283,291-292
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "6490958d62a1eafeea058736bce62a0617efd863",
+  "prompts": {},
+  "sessions": {
+    "s_bc329c5b63b656": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f730b687-7a9c-4f6f-88f9-0d7f7583a9ef",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
