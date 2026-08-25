@@ -8,6 +8,7 @@
 
 import { useEffect } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
+import { useCutoutSelection } from '@/features/bin-designer/store';
 import { handleCutoutKeyDown } from './handlers';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import type { InteractionMode, PreviewMap } from './cutoutInteractionTypes';
@@ -102,6 +103,10 @@ export function useCutoutKeyboardShortcuts(deps: UseCutoutKeyboardShortcutsOptio
         setMode,
         setSegmentHover,
         setSelection,
+        // Read at fire time rather than subscribed: the drill-in level is not
+        // something a keydown listener should re-register for.
+        groupContext: useCutoutSelection.getState().groupContext,
+        exitGroup: useCutoutSelection.getState().exitGroup,
       });
     };
 

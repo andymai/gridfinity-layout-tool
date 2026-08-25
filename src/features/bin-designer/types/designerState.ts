@@ -296,8 +296,30 @@ export interface DesignerState {
   updateCutout: (id: string, updates: Partial<Cutout>) => void;
   clearCutouts: () => void;
   duplicateCutouts: (cutoutIds: readonly string[]) => void;
-  groupCutouts: (cutoutIds: readonly string[], op?: GroupOp) => void;
+  /**
+   * Bind a selection into one group, resolved relative to `context` — the
+   * groups the editor has been drilled into.
+   *
+   * With no `op`, a selection reaching only loose shapes forms a boolean group
+   * (the pre-nesting behavior) and one reaching any group forms an arrange-only
+   * container around it. An explicit `op` always means the Pathfinder path and
+   * always produces a boolean group.
+   */
+  groupCutouts: (cutoutIds: readonly string[], op?: GroupOp, context?: readonly string[]) => void;
+  /** Pull `cutoutIds` out of their own boolean group, leaving containers intact. */
   ungroupCutouts: (cutoutIds: readonly string[]) => void;
+  /**
+   * Move whole units (shape-list rows, as `unitTag`s) under `destGroupId`, or
+   * to the top level when null.
+   */
+  moveUnitsIntoGroup: (tags: readonly string[], destGroupId: string | null) => void;
+  /**
+   * Dissolve one group, promoting its children to its level and leaving every
+   * group nested inside it untouched. This is what Ungroup runs on a group row.
+   */
+  peelGroup: (groupId: string) => void;
+  /** Rename a group; an empty name clears the entry back to a derived label. */
+  setCutoutGroupName: (groupId: string, name: string) => void;
   /**
    * Drag-and-drop reparent: move `ids` onto `targetId`'s group (creating one
    * when the target is loose), or out of any group when `targetId` is null.
@@ -313,8 +335,19 @@ export interface DesignerState {
    * `groupOp` and the cavity color are shared: the members describe one cavity,
    * and two members repeating differently would describe a pattern the boolean
    * cannot be built from. `undefined` removes the repeat.
+   *
+   * `context` is the level to resolve the unit AT, not the group to repeat —
+   * pass a container's own level (`[]` for a top-level one) to repeat that
+   * container, and passing the container's id instead would mean "inside it"
+   * and land the write on whichever subgroup `cutoutId` belongs to. Omitted, it
+   * resolves at the target's own level: a loose shape repeats alone, a boolean
+   * member repeats its group.
    */
-  setCutoutArray: (cutoutId: string, config: CutoutArrayConfig | undefined) => void;
+  setCutoutArray: (
+    cutoutId: string,
+    config: CutoutArrayConfig | undefined,
+    context?: readonly string[]
+  ) => void;
 
   // Transaction + batch cutout actions
   startTransaction: () => void;

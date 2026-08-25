@@ -204,6 +204,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'textDefaults',
   'surfaceText',
   'meshAssets',
+  'cutoutGroupNames',
   'knifeRest',
 ]);
 
@@ -1441,6 +1442,22 @@ function validateCutouts(value: unknown): string | null {
     if (c.labelIcon !== undefined && !VALID_LABEL_PLATE_ICONS.includes(c.labelIcon as string)) {
       return `cutouts[${i}].labelIcon is not a known plate icon`;
     }
+    // Group ancestry. Entries are ids the client mints, so they are checked for
+    // shape and count only; the client reconciles members that disagree and
+    // strips a boolean group used as a container at load. An unbounded array
+    // would still ride into storage, which is what this bounds.
+    if (c.parentGroups !== undefined) {
+      if (!Array.isArray(c.parentGroups)) return `cutouts[${i}].parentGroups must be an array`;
+      if (c.parentGroups.length > CONSTRAINTS.MAX_PARENT_GROUPS) {
+        return `cutouts[${i}].parentGroups must have at most ${CONSTRAINTS.MAX_PARENT_GROUPS} entries`;
+      }
+      for (let k = 0; k < c.parentGroups.length; k++) {
+        const entry = (c.parentGroups as unknown[])[k];
+        if (!isString(entry) || entry.length === 0 || entry.length > 64) {
+          return `cutouts[${i}].parentGroups[${k}] must be a non-empty string (max 64 chars)`;
+        }
+      }
+    }
     // Per-copy repeat labels. Every entry is engraved text, so this is bounded
     // the way `label.rowTexts` is: a repeat cannot exceed MAX_ARRAY_INSTANCES
     // copies, and each caption is one line of the same length the editor caps.
@@ -1470,6 +1487,32 @@ const BASE64_REGEX = /^[A-Za-z0-9+/]+={0,2}$/;
 // eslint-disable-next-line no-control-regex -- reject control chars in user-supplied asset names/ids
 const CONTROL_CHARS_REGEX = /[\u0000-\u001f\u007f]/;
 const ALLOWED_MESH_ASSET_KEYS = new Set(['name', 'data', 'triangleCount', 'sizeMm', 'outlines']);
+
+/**
+ * Display names for cutout groups. Keyed by group id, so both halves are
+ * user-reachable strings and both are bounded; the client GCs entries whose
+ * group is gone, but a crafted payload can carry any keys it likes.
+ */
+function validateCutoutGroupNames(value: unknown): string | null {
+  if (value === undefined) return null;
+  if (!isObject(value)) return 'cutoutGroupNames must be an object';
+  const entries = Object.entries(value);
+  if (entries.length > CONSTRAINTS.MAX_CUTOUT_GROUP_NAMES) {
+    return `cutoutGroupNames must have at most ${CONSTRAINTS.MAX_CUTOUT_GROUP_NAMES} entries`;
+  }
+  for (const [id, name] of entries) {
+    if (id.length === 0 || id.length > 64 || CONTROL_CHARS_REGEX.test(id)) {
+      return 'cutoutGroupNames keys must be clean strings (max 64 chars)';
+    }
+    if (!isString(name) || name.length > CONSTRAINTS.MAX_GROUP_NAME_LENGTH) {
+      return `cutoutGroupNames.${id} must be a string (max ${CONSTRAINTS.MAX_GROUP_NAME_LENGTH} chars)`;
+    }
+    if (CONTROL_CHARS_REGEX.test(name)) {
+      return `cutoutGroupNames.${id} must not contain control characters`;
+    }
+  }
+  return null;
+}
 
 /**
  * Validate the mesh imprint asset map (STL imports). The mesh geometry itself
@@ -1760,6 +1803,9 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     const cfgErr = validateCutoutConfig(params.cutoutConfig);
     if (cfgErr) return validationError('INVALID_PARAMS', cfgErr);
   }
+
+  const groupNamesErr = validateCutoutGroupNames(params.cutoutGroupNames);
+  if (groupNamesErr) return validationError('INVALID_PARAMS', groupNamesErr);
 
   if (params.meshAssets !== undefined || Array.isArray(params.cutouts)) {
     const meshErr = validateMeshAssets(params.meshAssets, params.cutouts);

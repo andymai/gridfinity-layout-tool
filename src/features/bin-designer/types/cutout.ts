@@ -263,6 +263,33 @@ export const DEFAULT_GROUP_OP: GroupOp = 'union';
 /** Ordered op list for UI rendering and exhaustiveness checks. */
 export const GROUP_OPS: readonly GroupOp[] = ['union', 'subtract', 'intersect', 'exclude'];
 
+/**
+ * Total nesting levels a cutout may sit under, counting its own group.
+ *
+ * Nothing breaks past it — {@link Cutout.parentGroups} is a path, so a cycle is
+ * unrepresentable — but the shape list indents per level and the server has to
+ * bound a hand-authored payload somewhere. Mirror in
+ * `api/lib/designerValidationConstants.ts`.
+ */
+export const MAX_GROUP_DEPTH = 10;
+
+/**
+ * Length ceiling on {@link Cutout.parentGroups}. One less than
+ * {@link MAX_GROUP_DEPTH} because a grouped cutout's own `groupId` is the
+ * deepest level and is not repeated in the chain.
+ */
+export const MAX_PARENT_GROUPS = MAX_GROUP_DEPTH - 1;
+
+/** Longest display name a cutout group may carry. Mirrored in the server validator. */
+export const MAX_GROUP_NAME_LENGTH = 60;
+
+/**
+ * Ceiling on how many groups a design may name. No product rule caps the group
+ * count, so this only has to stop an unbounded map reaching storage. Mirror in
+ * `api/lib/designerValidationConstants.ts`.
+ */
+export const MAX_CUTOUT_GROUP_NAMES = 1000;
+
 /** Per-edge enable flags for split-axis cutout scoops, in the cutout's local frame. */
 export interface CutoutScoopEdges {
   readonly left: boolean;
@@ -381,6 +408,26 @@ export interface Cutout {
    * designs behave identically. Ignored when `groupId` is `null`.
    */
   readonly groupOp?: GroupOp;
+  /**
+   * Enclosing groups, OUTERMOST first, excluding this cutout's own
+   * {@link groupId}. Absent or empty = the cutout sits at the top level, which
+   * is every design authored before nesting existed.
+   *
+   * A parent group is an arrange-only container: it binds subgroups and loose
+   * shapes into one rigid body for move/align/distribute/repeat and carries no
+   * {@link groupOp}. Only `groupId` reaches the generator, so the worker
+   * partitions cutouts exactly as it always has and nesting cannot change what
+   * gets cut.
+   *
+   * A loose shape can be a direct child of a parent group — that is
+   * `groupId: null` with a non-empty `parentGroups`, which is why membership
+   * tests must not shortcut through `groupId === null`.
+   *
+   * Denormalized onto every member, like {@link groupOp}: all members of a
+   * group are required to carry an identical chain (enforced by the slice).
+   * Depth is capped at {@link MAX_GROUP_DEPTH} levels including `groupId`.
+   */
+  readonly parentGroups?: string[];
   /**
    * Scoop radius along the cutout's local width axis (mm).
    * Fillets the Y-aligned bottom edges (left/right walls in local frame).

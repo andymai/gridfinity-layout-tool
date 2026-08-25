@@ -174,6 +174,7 @@ export const CUTOUT_KEYS = [
   'label',
   'groupId',
   'groupOp',
+  'parentGroups',
   'scoopRadiusW',
   'scoopRadiusD',
   'scoopEdges',

@@ -8,6 +8,7 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import { rotatePoint, flipSelectionHorizontal, flipSelectionVertical } from '../geometry';
 import { selectionVisualBounds } from '../cutoutGroups';
+import { unitTag } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { InteractionMode } from '../useCutoutInteraction';
 import { handleVertexEditKeyDown } from './pathEditHandler';
 import type { VertexEditMode, SegmentHoverInfo } from './pathEditHandler';
@@ -50,6 +51,10 @@ export interface KeyboardHandlerContext {
   readonly setMode: (mode: InteractionMode) => void;
   readonly setSegmentHover: (hover: SegmentHoverInfo | null) => void;
   readonly setSelection: (selection: ReadonlySet<string>) => void;
+  /** Groups the editor is drilled into, outermost first. */
+  readonly groupContext?: readonly string[];
+  /** Step out one level; Escape walks back up the way double-click walked down. */
+  readonly exitGroup?: () => void;
 }
 
 /**
@@ -139,18 +144,21 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       ctx.clearActiveGuides();
       ctx.clearDrawingPreview();
       if (ctx.mode.type === 'idle') {
-        // Two-stage: if inside a group (single member selected), first re-select whole group
-        if (ctx.selection.size === 1) {
-          const selectedId = [...ctx.selection][0];
-          const cutout = ctx.cutouts.find((c) => c.id === selectedId);
-          if (cutout?.groupId) {
-            const groupIds = ctx.cutouts
-              .filter((c) => c.groupId === cutout.groupId)
-              .map((c) => c.id);
-            if (groupIds.length > 1) {
-              ctx.setSelection(new Set(groupIds));
-              break;
-            }
+        // Escape steps OUT one level before it clears anything, re-selecting
+        // the unit that contains what was selected. Deselecting from three
+        // levels deep would otherwise leave the editor drilled into a group
+        // with nothing selected to show for it.
+        const context = ctx.groupContext ?? [];
+        if (context.length > 0 && ctx.exitGroup) {
+          const outer = context.slice(0, -1);
+          const anchor = ctx.cutouts.find((c) => ctx.selection.has(c.id));
+          ctx.exitGroup();
+          const tag = anchor ? unitTag(anchor, outer) : null;
+          if (tag !== null) {
+            ctx.setSelection(
+              new Set(ctx.cutouts.filter((c) => unitTag(c, outer) === tag).map((c) => c.id))
+            );
+            break;
           }
         }
         ctx.deselectAll();

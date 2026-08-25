@@ -21,14 +21,27 @@ function cutout(overrides: Partial<Cutout> = {}): Cutout {
   };
 }
 
-function setup(cutouts: Cutout[], selection: string[] = []) {
+function setup(
+  cutouts: Cutout[],
+  selection: string[] = [],
+  groupNames: Record<string, string> = {}
+) {
   const handlers = {
     onSelect: vi.fn(),
     onSetProperty: vi.fn(),
     onMoveAbove: vi.fn(),
     onReparent: vi.fn(),
+    onMoveUnits: vi.fn(),
+    onRenameGroup: vi.fn(),
   };
-  render(<ShapeList cutouts={cutouts} selection={new Set(selection)} {...handlers} />);
+  render(
+    <ShapeList
+      cutouts={cutouts}
+      groupNames={groupNames}
+      selection={new Set(selection)}
+      {...handlers}
+    />
+  );
   return handlers;
 }
 
@@ -66,7 +79,7 @@ describe('ShapeList', () => {
       const user = userEvent.setup();
       const h = setup([cutout({ id: 'a' })]);
       await user.click(screen.getByTitle('Rectangle 20×15'));
-      expect(h.onSelect).toHaveBeenCalledWith(['a'], false);
+      expect(h.onSelect).toHaveBeenCalledWith(['a'], false, []);
     });
 
     it('passes additive when a modifier is held', async () => {
@@ -75,7 +88,7 @@ describe('ShapeList', () => {
       await user.keyboard('{Shift>}');
       await user.click(screen.getByTitle('Rectangle 20×15'));
       await user.keyboard('{/Shift}');
-      expect(h.onSelect).toHaveBeenCalledWith(['a'], true);
+      expect(h.onSelect).toHaveBeenCalledWith(['a'], true, []);
     });
 
     it('selects every member from a group row', async () => {
@@ -85,7 +98,7 @@ describe('ShapeList', () => {
         cutout({ id: 'b', groupId: 'g1', zIndex: 0 }),
       ]);
       await user.click(screen.getByTitle('Group of 2'));
-      expect(h.onSelect).toHaveBeenCalledWith(['a', 'b'], false);
+      expect(h.onSelect).toHaveBeenCalledWith(['a', 'b'], false, []);
     });
   });
 
@@ -273,7 +286,7 @@ describe('ShapeList', () => {
       expect(h.onMoveAbove).not.toHaveBeenCalled();
     });
 
-    it('anchors a drop onto a group row on one of its members', () => {
+    it('moves a shape into the group it is dropped on', () => {
       const h = setup([
         cutout({ id: 'loose', zIndex: 5, width: 10, depth: 10 }),
         cutout({ id: 'g-a', groupId: 'g1', zIndex: 1 }),
@@ -281,10 +294,11 @@ describe('ShapeList', () => {
       ]);
       startDrag(zones('Rectangle 10×10').body);
       fireEvent.drop(zones('Group of 2').body);
-      expect(h.onReparent).toHaveBeenCalledWith(['loose'], 'g-a');
+      // Names the group, not one of its members: the destination is the group.
+      expect(h.onMoveUnits).toHaveBeenCalledWith(['shape:loose'], 'g1');
     });
 
-    it('refuses to nest a group inside another group', () => {
+    it('refuses to nest a group inside a BOOLEAN group', () => {
       const h = setup([
         cutout({ id: 'g-a', groupId: 'g1', zIndex: 3 }),
         cutout({ id: 'g-b', groupId: 'g1', zIndex: 2 }),
@@ -295,7 +309,23 @@ describe('ShapeList', () => {
       const bodyOf = (el: Element) => el.closest('[draggable="true"]') as HTMLElement;
       startDrag(bodyOf(groups[0]));
       fireEvent.drop(bodyOf(groups[1]));
+      // g2's members are what its op fuses; admitting a subgroup would change
+      // what it carves without touching any of its own rows.
+      expect(h.onMoveUnits).not.toHaveBeenCalled();
       expect(h.onReparent).not.toHaveBeenCalled();
+    });
+
+    it('nests a group inside a CONTAINER', () => {
+      const h = setup([
+        // `outer` holds a loose shape, so it is a container, not a boolean group.
+        cutout({ id: 'loose', parentGroups: ['outer'], zIndex: 3 }),
+        cutout({ id: 'g-a', groupId: 'g1', zIndex: 1 }),
+        cutout({ id: 'g-b', groupId: 'g1', zIndex: 0 }),
+      ]);
+      const bodyOf = (el: Element) => el.closest('[draggable="true"]') as HTMLElement;
+      startDrag(bodyOf(screen.getByTitle('Group of 2')));
+      fireEvent.drop(bodyOf(screen.getByTitle('Group of 1')));
+      expect(h.onMoveUnits).toHaveBeenCalledWith(['group:g1'], 'outer');
     });
 
     it('ignores a drop onto the dragged row itself', () => {

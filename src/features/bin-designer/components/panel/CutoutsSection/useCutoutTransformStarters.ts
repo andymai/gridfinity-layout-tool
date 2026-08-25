@@ -16,6 +16,8 @@ import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { selectionVisualBounds } from './cutoutGroups';
+import { useCutoutSelection } from '@/features/bin-designer/store';
+import { unitSelectionIds } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { addClonedCutouts } from './cutoutHelpers';
 import type { InteractionMode, ResizeHandle } from './cutoutInteractionTypes';
 
@@ -71,13 +73,11 @@ export function useCutoutTransformStarters({
       if (selection.has(id)) {
         effectiveSelection = selection;
       } else {
-        const cutout = cutouts.find((c) => c.id === id);
-        if (cutout?.groupId) {
-          const groupIds = cutouts.filter((c) => c.groupId === cutout.groupId).map((c) => c.id);
-          effectiveSelection = new Set(groupIds);
-        } else {
-          effectiveSelection = new Set([id]);
-        }
+        // Resolve the same UNIT `selectCutout` would, at the same drill-in
+        // level. Expanding to the boolean group instead drags an assembly's
+        // subgroup out from under the rest of it on the very first press.
+        const context = useCutoutSelection.getState().groupContext;
+        effectiveSelection = target ? unitSelectionIds(cutouts, target, context) : new Set([id]);
         setSelection(effectiveSelection);
       }
 

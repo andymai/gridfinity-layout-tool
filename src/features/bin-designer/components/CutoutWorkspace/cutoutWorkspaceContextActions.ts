@@ -7,9 +7,10 @@
  */
 
 import type { ContextMenuAction } from '../panel/CutoutsSection/CutoutContextMenu';
+import { groupDepth } from '@/features/bin-designer/utils/cutoutHierarchy';
 import {
   CENTER_ACTIONS,
-  centerInBin,
+  centerSelectionInBin,
   flipSelectionHorizontal,
   flipSelectionVertical,
 } from '../panel/CutoutsSection/geometry';
@@ -38,7 +39,14 @@ interface BuildContextActionsArgs {
   updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   lockCutouts: (ids: string[]) => void;
   unlockCutouts: (ids: string[]) => void;
-  groupCutouts: (ids: readonly string[], op?: GroupOp) => void;
+  /**
+   * Group at the level the editor is drilled into. With no `op` it wraps; with
+   * one it is the Pathfinder path and merges into a boolean group.
+   */
+  onGroup: (ids: readonly string[], op?: GroupOp) => void;
+  /** Groups the editor is drilled into; arrange actions resolve units here. */
+  groupContext: readonly string[];
+  /** Plain Ungroup: peels one level. */
   ungroupCutouts: (ids: readonly string[]) => void;
   setGroupOp: (groupId: string, op: GroupOp) => void;
   reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
@@ -63,7 +71,8 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     updateCutoutsBatch,
     lockCutouts,
     unlockCutouts,
-    groupCutouts,
+    onGroup,
+    groupContext,
     ungroupCutouts,
     setGroupOp,
     reorderCutouts,
@@ -209,7 +218,7 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
 
     const dispatchOp = (op: GroupOp): void => {
       if (sharedGroupId) setGroupOp(sharedGroupId, op);
-      else groupCutouts(selectedIds, op);
+      else onGroup(selectedIds, op);
     };
 
     // Group/Ungroup first: the container is the everyday action, the boolean
@@ -217,11 +226,11 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     if (!sharedGroupId) {
       actions.push({
         label: t('binDesigner.cutouts.group'),
-        onClick: () => groupCutouts(selectedIds),
+        onClick: () => onGroup(selectedIds),
         shortcut: { keys: 'G', modifier: true },
       });
     }
-    if (selectedCutouts.some((c) => c.groupId !== null)) {
+    if (selectedCutouts.some((c) => groupDepth(c) > 0)) {
       actions.push({
         label: t('binDesigner.cutouts.ungroup'),
         onClick: () => ungroupCutouts(selectedIds),
@@ -266,8 +275,14 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
       actions.push({
         label: t(key),
         onClick: () => {
-          const selected = cutouts.filter((c) => selection.has(c.id));
-          const positions = centerInBin(selected, binWidth, binDepth, axis);
+          const positions = centerSelectionInBin(
+            cutouts,
+            selection,
+            binWidth,
+            binDepth,
+            axis,
+            groupContext
+          );
           for (const [id, pos] of Object.entries(positions)) {
             updateCutout(id, pos);
           }

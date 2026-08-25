@@ -2306,6 +2306,56 @@ describe('knifeRest validation', () => {
   });
 });
 
+describe('nested cutout groups', () => {
+  function withParams(patch: Record<string, unknown>) {
+    const payload = validPayload();
+    Object.assign(payload.params as Record<string, unknown>, patch);
+    return validateDesignerShare(payload, 500);
+  }
+
+  const cutout = (extra: Record<string, unknown>) => ({
+    id: 'c1',
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: 'gA',
+    ...extra,
+  });
+
+  it('accepts a chain within the depth cap', () => {
+    expect(withParams({ cutouts: [cutout({ parentGroups: ['outer', 'mid'] })] }).valid).toBe(true);
+  });
+
+  it('rejects a chain past the depth cap', () => {
+    const tooDeep = Array.from({ length: 10 }, (_, i) => `g${i}`);
+    expect(withParams({ cutouts: [cutout({ parentGroups: tooDeep })] }).valid).toBe(false);
+  });
+
+  it('rejects a non-array or non-string ancestry', () => {
+    expect(withParams({ cutouts: [cutout({ parentGroups: 'outer' })] }).valid).toBe(false);
+    expect(withParams({ cutouts: [cutout({ parentGroups: [42] })] }).valid).toBe(false);
+    expect(withParams({ cutouts: [cutout({ parentGroups: [''] })] }).valid).toBe(false);
+  });
+
+  it('accepts group names and rejects oversized or unclean ones', () => {
+    expect(withParams({ cutoutGroupNames: { gA: 'Socket tray' } }).valid).toBe(true);
+    expect(withParams({ cutoutGroupNames: { gA: 'x'.repeat(61) } }).valid).toBe(false);
+    expect(withParams({ cutoutGroupNames: { gA: 'bad\u0007name' } }).valid).toBe(false);
+    expect(withParams({ cutoutGroupNames: { ['k'.repeat(65)]: 'ok' } }).valid).toBe(false);
+    expect(withParams({ cutoutGroupNames: 'nope' }).valid).toBe(false);
+  });
+
+  it('accepts a design that carries neither field', () => {
+    expect(withParams({}).valid).toBe(true);
+  });
+});
+
 describe('cutoutConfig validation (#3697)', () => {
   function withConfig(cutoutConfig: unknown) {
     const payload = validPayload();

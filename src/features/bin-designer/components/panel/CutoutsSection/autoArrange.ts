@@ -30,10 +30,11 @@ export interface AutoArrangeOptions {
  */
 export function autoArrangeCutouts(
   cutouts: readonly Cutout[],
-  options: AutoArrangeOptions
+  options: AutoArrangeOptions,
+  context: readonly string[] = []
 ): Record<string, { x: number; y: number }> {
   const { binWidth, gap, staggered = false } = options;
-  const movable = toArrangeUnits(cutouts).filter((unit) => !unit.locked);
+  const movable = toArrangeUnits(cutouts, context).filter((unit) => !unit.locked);
   const sorted = [...movable].sort((a, b) => unitDepth(b) - unitDepth(a));
   const positions: Record<string, { x: number; y: number }> = {};
 

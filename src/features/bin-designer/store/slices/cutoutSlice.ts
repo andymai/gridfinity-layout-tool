@@ -18,7 +18,12 @@ import type {
   PathPoint,
   GroupOp,
 } from '../../types';
-import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE, MAX_LID_CUTOUTS } from '../../types';
+import {
+  DEFAULT_GROUP_OP,
+  DEFAULT_CUTOUT_COLOR_SCOPE,
+  MAX_GROUP_NAME_LENGTH,
+  MAX_LID_CUTOUTS,
+} from '../../types';
 import { canArray } from '@/shared/utils/cutoutArray';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
@@ -31,6 +36,23 @@ import {
 } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
+import {
+  canNestDeeper,
+  groupChain,
+  insertGroupAt,
+  isBooleanGroup,
+  maxChainLength,
+  parentGroups,
+  referencedGroupIds,
+  remapGroupChain,
+  removeGroup,
+  sameChain,
+  unitTag,
+  unitTagGroupId,
+  unitTagShapeId,
+  unitTags,
+  withGroupChain,
+} from '../../utils/cutoutHierarchy';
 
 /**
  * The cutout array every action in this slice reads and writes, chosen by
@@ -126,6 +148,24 @@ function gcMeshAssets(state: Draft<DesignerState>): void {
 }
 
 /**
+ * Drop names for groups the design no longer has. Runs after every path that
+ * can empty or dissolve a group, so a deleted assembly doesn't leave its name
+ * behind to be re-adopted by a later group that happens to reuse the id.
+ *
+ * Reads BOTH cutout arrays, unlike {@link gcMeshAssets}: one name map serves
+ * the bin and its lid, so counting references through `cutoutOwner` alone would
+ * drop every name the other array still uses.
+ */
+function gcCutoutGroupNames(state: Draft<DesignerState>): void {
+  const names = state.params.cutoutGroupNames;
+  if (!names) return;
+  const referenced = referencedGroupIds(state.params.cutouts, state.params.lid.cutouts ?? []);
+  const kept = Object.entries(names).filter(([id]) => referenced.has(id));
+  if (kept.length === Object.keys(names).length) return;
+  state.params.cutoutGroupNames = kept.length > 0 ? Object.fromEntries(kept) : undefined;
+}
+
+/**
  * How many more cutouts a target will accept.
  *
  * Only the LID is capped: `MAX_LID_CUTOUTS` bounds the boolean work against a
@@ -207,6 +247,48 @@ function withTopZIndex(state: Draft<DesignerState>, cutout: Cutout): Cutout {
  */
 function nextTopZIndexIn(list: readonly Cutout[]): number {
   return list.reduce((m, c) => Math.max(m, c.zIndex ?? 0), -1) + 1;
+}
+
+/** Where one moving cutout lands: its new ancestry, and whether it keeps its own group. */
+interface UnitLanding {
+  readonly chain: readonly string[];
+  readonly keepsGroup: boolean;
+}
+
+/**
+ * Resolve dragged {@link unitTag}s into a per-cutout landing.
+ *
+ * A dragged GROUP arrives intact, so its members keep everything from that
+ * group down. A dragged SHAPE row is one shape: it lands as a direct child and
+ * leaves whatever boolean group it was in — which is reachable by dragging a
+ * member out while drilled into its group.
+ */
+function planUnitLandings(
+  cutouts: readonly Cutout[],
+  tags: readonly string[],
+  destChain: readonly string[]
+): Map<string, UnitLanding> {
+  const landings = new Map<string, UnitLanding>();
+  for (const tag of tags) {
+    const groupId = unitTagGroupId(tag);
+    if (groupId === null) {
+      const id = unitTagShapeId(tag);
+      if (id !== null && cutouts.some((c) => c.id === id)) {
+        landings.set(id, { chain: destChain, keepsGroup: false });
+      }
+      continue;
+    }
+    for (const member of cutouts) {
+      const chain = groupChain(member);
+      const at = chain.indexOf(groupId);
+      if (at === -1) continue;
+      landings.set(member.id, {
+        chain: [...destChain, ...chain.slice(at)],
+        keepsGroup: member.groupId !== null,
+      });
+    }
+  }
+  return landings;
 }
 
 export function createCutoutSlice(rawSet: Set) {
@@ -529,6 +611,7 @@ export function createCutoutSlice(rawSet: Set) {
         const owner = cutoutOwner(state);
         owner.cutouts = dissolveSingletonGroups(owner.cutouts.filter((c) => c.id !== id));
         gcMeshAssets(state);
+        gcCutoutGroupNames(state);
       });
     },
 
@@ -551,6 +634,7 @@ export function createCutoutSlice(rawSet: Set) {
         pushHistoryEntry(state);
         cutoutOwner(state).cutouts = [];
         gcMeshAssets(state);
+        gcCutoutGroupNames(state);
       });
     },
 
@@ -564,26 +648,18 @@ export function createCutoutSlice(rawSet: Set) {
         pushHistoryEntry(state);
         const owner = cutoutOwner(state);
         const toDuplicate = owner.cutouts.filter((c) => cutoutIds.includes(c.id));
-        // Map old groupId -> new groupId so groups are preserved
+        // One map across the batch: see `remapGroupChain`.
         const groupMap = new Map<string, string>();
         const topZ = nextTopZIndexIn(cutoutList(state));
         const duplicated = toDuplicate.map((c, i) => {
-          let newGroupId: string | null = null;
-          if (c.groupId) {
-            if (!groupMap.has(c.groupId)) {
-              groupMap.set(c.groupId, generateLayoutId());
-            }
-            newGroupId = groupMap.get(c.groupId) ?? null;
-          }
           // Path points are absolute, so shifting x/y must shift them too —
           // otherwise duplicates render with the original path geometry.
           const translatedPath = c.path ? translatePathPoints(c.path, 5, 5) : c.path;
           return {
-            ...c,
+            ...remapGroupChain(c, groupMap, generateLayoutId),
             id: generateLayoutId(),
             x: c.x + 5,
             y: c.y + 5,
-            groupId: newGroupId,
             // Copies land above the originals, keeping their relative order.
             // Inheriting `c.zIndex` would put a duplicate on the same layer as
             // its source with an identical area — a tie neither stacking
@@ -621,13 +697,21 @@ export function createCutoutSlice(rawSet: Set) {
         const owner = cutoutOwner(state);
         const target =
           targetId === null ? null : (owner.cutouts.find((c) => c.id === targetId) ?? null);
+
         if (targetId !== null && !target) return;
 
         const destGroupId = target?.groupId ?? (target ? generateLayoutId() : null);
         // Forming a fresh pair means the target joins too.
         if (target && target.groupId === null) moving.add(target.id);
 
-        const noChange = owner.cutouts.every((c) => !moving.has(c.id) || c.groupId === destGroupId);
+        // The destination keeps its own place in the tree; a fresh pair forms
+        // where the target already sits.
+        const destChain =
+          target && destGroupId !== null ? [...parentGroups(target), destGroupId] : [];
+        const noChange = owner.cutouts.every(
+          (c) =>
+            !moving.has(c.id) || (c.groupId === destGroupId && sameChain(groupChain(c), destChain))
+        );
         if (noChange) return;
 
         const destOp: GroupOp =
@@ -654,19 +738,57 @@ export function createCutoutSlice(rawSet: Set) {
         const reparented = owner.cutouts.map((c) =>
           moving.has(c.id)
             ? destGroupId === null
-              ? { ...c, groupId: destGroupId }
-              : withCutoutArray({ ...c, groupId: destGroupId, groupOp: destOp }, destArray)
+              ? withGroupChain({ ...c, groupId: destGroupId }, destChain)
+              : withCutoutArray(
+                  withGroupChain({ ...c, groupId: destGroupId, groupOp: destOp }, destChain),
+                  destArray
+                )
             : c
         );
         // Pulling members out can strand a one-member group behind.
         owner.cutouts = dissolveSingletonGroups(reparented);
+        gcCutoutGroupNames(state);
       });
     },
 
-    groupCutouts: (cutoutIds: readonly string[], op?: GroupOp) => {
+    groupCutouts: (cutoutIds: readonly string[], op?: GroupOp, context: readonly string[] = []) => {
       if (cutoutIds.length < 2) return;
       set((state) => {
         const owner = cutoutOwner(state);
+        // Nothing may be created inside a boolean group. Its members are exactly
+        // what its op fuses, so a group formed among them would silently reduce
+        // that set — the one nesting move that could change existing geometry.
+        if (context.length > 0 && isBooleanGroup(owner.cutouts, context[context.length - 1])) {
+          return;
+        }
+        // Which things the selection reaches at this level. A group counts once
+        // however many of its members are selected, so "two shapes of one group"
+        // is one unit and correctly does nothing.
+        const units = unitTags(
+          owner.cutouts.filter((c) => cutoutIds.includes(c.id)),
+          context
+        );
+        if (units.size < 2) return;
+
+        // A selection reaching only loose shapes still forms a boolean group,
+        // exactly as it did before nesting existed — that is what keeps Ctrl+G
+        // then a Pathfinder op working. The moment it reaches a group, wrapping
+        // is the only thing that preserves what is already there, so an explicit
+        // op (a Pathfinder button) is the only way back to the flat behavior.
+        if (op === undefined && [...units].some((tag) => unitTagGroupId(tag) !== null)) {
+          const members = owner.cutouts.filter((c) => {
+            const tag = unitTag(c, context);
+            return tag !== null && units.has(tag);
+          });
+          if (!canNestDeeper(members)) return;
+          const containerId = generateLayoutId();
+          const memberIds = new Set(members.map((c) => c.id));
+          pushHistoryEntry(state, { affectsGeometry: false });
+          owner.cutouts = owner.cutouts.map((c) =>
+            memberIds.has(c.id) ? insertGroupAt(c, containerId, context.length) : c
+          );
+          return;
+        }
         // Reuse an existing groupId if any selected cutout already belongs to a group
         const existingMember = owner.cutouts.find(
           (c) => cutoutIds.includes(c.id) && c.groupId !== null
@@ -697,6 +819,11 @@ export function createCutoutSlice(rawSet: Set) {
               colorScope: colorSource.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE,
             }
           : undefined;
+        // Where the boolean group sits in the tree. An EXISTING group's own
+        // position wins — folding shapes into it must move them to it, not drag
+        // it out to wherever the caller was looking from.
+        const destParents = existingMember ? parentGroups(existingMember) : context;
+        const destChain = [...destParents, groupId];
         // Re-grouping a set that already forms this exact group changes nothing,
         // and an unconditional history push would spend an undo slot on it —
         // reachable from Ctrl+G on a partial selection of one group.
@@ -706,6 +833,7 @@ export function createCutoutSlice(rawSet: Set) {
             (c.groupId === groupId &&
               (c.groupOp ?? DEFAULT_GROUP_OP) === groupOp &&
               c.array === sharedArray &&
+              sameChain(groupChain(c), destChain) &&
               (!colorPatch ||
                 (c.color === colorPatch.color &&
                   (c.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE) === colorPatch.colorScope)))
@@ -715,9 +843,13 @@ export function createCutoutSlice(rawSet: Set) {
         pushHistoryEntry(state);
         owner.cutouts = owner.cutouts.map((c) =>
           idsToGroup.has(c.id)
-            ? withCutoutArray({ ...c, groupId, groupOp, ...colorPatch }, sharedArray)
+            ? withCutoutArray(
+                withGroupChain({ ...c, groupId, groupOp, ...colorPatch }, destChain),
+                sharedArray
+              )
             : c
         );
+        gcCutoutGroupNames(state);
       });
     },
 
@@ -734,6 +866,125 @@ export function createCutoutSlice(rawSet: Set) {
         // dissolve that singleton so the Pathfinder UI doesn't pretend a lone
         // cutout still belongs to an active group.
         owner.cutouts = dissolveSingletonGroups(ungrouped);
+        gcCutoutGroupNames(state);
+      });
+    },
+
+    /**
+     * Move whole units — group rows and shape rows from the shape list — under
+     * `destGroupId`, or to the top level when it is null.
+     *
+     * Takes {@link unitTag}s rather than cutout ids because the ids alone are
+     * ambiguous: the members of a dragged group and three loose shapes that
+     * happen to share a parent look identical as a flat id list, yet one has to
+     * keep its own group on landing and the other must not gain one.
+     */
+    moveUnitsIntoGroup: (tags: readonly string[], destGroupId: string | null) => {
+      if (tags.length === 0) return;
+      set((state) => {
+        const owner = cutoutOwner(state);
+        const movingGroups = tags.map(unitTagGroupId).filter((id): id is string => id !== null);
+        // A shape landing directly in a boolean group joins its boolean; every
+        // other landing keeps whatever the cutout already was.
+        const joinsBoolean =
+          destGroupId !== null && isBooleanGroup(owner.cutouts, destGroupId) ? destGroupId : null;
+
+        // A boolean group's members are exactly what its op fuses, so admitting
+        // a subgroup would change what it carves without touching its own rows.
+        if (joinsBoolean !== null && movingGroups.length > 0) return;
+
+        let destChain: readonly string[] = [];
+        if (destGroupId !== null) {
+          const anchor = owner.cutouts.find((c) => groupChain(c).includes(destGroupId));
+          if (!anchor) return;
+          const anchorChain = groupChain(anchor);
+          destChain = anchorChain.slice(0, anchorChain.indexOf(destGroupId) + 1);
+        }
+        // Landing a group inside itself, or anywhere in its own subtree, would
+        // cut that branch loose.
+        if (movingGroups.some((g) => destChain.includes(g))) return;
+
+        const landings = planUnitLandings(owner.cutouts, tags, destChain);
+        if (landings.size === 0) return;
+        // Per landing, not one flat cap: a shape that lands loose stores its
+        // whole chain in `parentGroups`, which the schema caps one lower.
+        const overDepth = [...landings.values()].some(
+          (l) => l.chain.length > maxChainLength({ groupId: l.keepsGroup ? 'kept' : null })
+        );
+        if (overDepth) return;
+
+        const unchanged = owner.cutouts.every((c) => {
+          const next = landings.get(c.id);
+          return (
+            next === undefined ||
+            (sameChain(groupChain(c), next.chain) && next.keepsGroup === (c.groupId !== null))
+          );
+        });
+        if (unchanged) return;
+
+        pushHistoryEntry(state, { affectsGeometry: joinsBoolean !== null });
+        const destOp =
+          joinsBoolean === null
+            ? DEFAULT_GROUP_OP
+            : (owner.cutouts.find((c) => c.groupId === joinsBoolean)?.groupOp ?? DEFAULT_GROUP_OP);
+        owner.cutouts = dissolveSingletonGroups(
+          owner.cutouts.map((c) => {
+            const landing = landings.get(c.id);
+            if (landing === undefined) return c;
+            if (landing.keepsGroup) return withGroupChain(c, landing.chain, true);
+            // `destChain` already ends with the destination group, so a shape
+            // joining a boolean group takes that chain as-is — appending the id
+            // again would list it twice and make it its own ancestor.
+            if (joinsBoolean !== null) {
+              return withGroupChain(
+                { ...c, groupId: joinsBoolean, groupOp: destOp },
+                landing.chain,
+                true
+              );
+            }
+            // Leaving a boolean group takes its op along: a stale one on a now
+            // loose shape would be adopted by whatever group it joins next.
+            const { groupOp: _omit, ...bare } = c;
+            return withGroupChain(bare, landing.chain, false);
+          })
+        );
+        gcCutoutGroupNames(state);
+      });
+    },
+
+    peelGroup: (groupId: string) => {
+      set((state) => {
+        const owner = cutoutOwner(state);
+        if (!owner.cutouts.some((c) => groupChain(c).includes(groupId))) return;
+        // Dissolving a container rearranges nothing the generator reads, but
+        // dissolving a boolean group turns one fused cut tool back into several,
+        // so only the latter is a geometry change.
+        pushHistoryEntry(state, { affectsGeometry: isBooleanGroup(owner.cutouts, groupId) });
+        const peeled = owner.cutouts.map((c) => {
+          if (!groupChain(c).includes(groupId)) return c;
+          // `groupOp` describes membership of the group being dissolved, so it
+          // has to go with it — a stale op on a now-loose shape would be adopted
+          // by whatever group the shape joins next.
+          const next = removeGroup(c, groupId);
+          if (c.groupId !== groupId) return next;
+          const { groupOp: _omit, ...rest } = next;
+          return rest;
+        });
+        owner.cutouts = dissolveSingletonGroups(peeled);
+        gcCutoutGroupNames(state);
+      });
+    },
+
+    setCutoutGroupName: (groupId: string, name: string) => {
+      set((state) => {
+        const trimmed = name.trim().slice(0, MAX_GROUP_NAME_LENGTH);
+        const names = state.params.cutoutGroupNames ?? {};
+        if ((names[groupId] ?? '') === trimmed) return;
+        // Editor metadata only — a rename must never rebuild the mesh.
+        pushHistoryEntry(state, { affectsGeometry: false });
+        const next = Object.fromEntries(Object.entries(names).filter(([id]) => id !== groupId));
+        if (trimmed !== '') next[groupId] = trimmed;
+        state.params.cutoutGroupNames = Object.keys(next).length > 0 ? next : undefined;
       });
     },
 
@@ -751,10 +1002,14 @@ export function createCutoutSlice(rawSet: Set) {
       });
     },
 
-    setCutoutArray: (cutoutId: string, config: CutoutArrayConfig | undefined) => {
+    setCutoutArray: (
+      cutoutId: string,
+      config: CutoutArrayConfig | undefined,
+      context?: readonly string[]
+    ) => {
       set((state) => {
         const owner = cutoutOwner(state);
-        const plan = planCutoutArrayWrite(owner.cutouts, cutoutId, config);
+        const plan = planCutoutArrayWrite(owner.cutouts, cutoutId, config, context);
         if (!plan) return;
         pushHistoryEntry(state, { affectsGeometry: true });
         owner.cutouts = owner.cutouts.map((c) =>
@@ -786,6 +1041,7 @@ export function createCutoutSlice(rawSet: Set) {
         const idSet = new Set(ids);
         owner.cutouts = dissolveSingletonGroups(owner.cutouts.filter((c) => !idSet.has(c.id)));
         gcMeshAssets(state);
+        gcCutoutGroupNames(state);
       });
     },
 
@@ -825,6 +1081,7 @@ export function createCutoutSlice(rawSet: Set) {
             .map((c) => (c.id === masterId ? { ...c, array: config } : c))
         );
         gcMeshAssets(state);
+        gcCutoutGroupNames(state);
         merged = true;
       });
       // Reported back so callers do not toast "merged" or count a merge that

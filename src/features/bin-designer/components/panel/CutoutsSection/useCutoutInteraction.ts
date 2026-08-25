@@ -13,6 +13,11 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import { useCutoutSelection } from '@/features/bin-designer/store';
+import {
+  groupChain,
+  isWithin,
+  unitSelectionIds,
+} from '@/features/bin-designer/utils/cutoutHierarchy';
 import { snapToGrid, getRotatedBounds, type AlignmentGuide } from './geometry';
 import { cutoutFitsInMask } from './maskFit';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
@@ -122,41 +127,48 @@ export function useCutoutInteraction({
       if (!cutout) return;
       if (cutout.hidden) return;
 
-      setSelection((prev) => {
-        if (additive) {
+      if (additive) {
+        setSelection((prev) => {
           const next = new Set(prev);
-          if (next.has(id)) {
-            next.delete(id);
-          } else {
-            next.add(id);
-          }
-          // Auto-join: if the clicked cutout is ungrouped and the selection
-          // contains a group, auto-add the clicked cutout to that group
-          if (onGroup && next.has(id) && !cutout.groupId) {
-            const selectedWithGroup = cutouts.find((c) => next.has(c.id) && c.groupId !== null);
-            if (selectedWithGroup) {
-              onGroup([...next]);
-            }
-          }
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
           return next;
-        }
+        });
+        return;
+      }
 
-        // Group-aware: select all cutouts with same groupId
-        if (cutout.groupId) {
-          const groupIds = cutouts.filter((c) => c.groupId === cutout.groupId).map((c) => c.id);
-          return new Set(groupIds);
-        }
-
-        return new Set([id]);
-      });
+      // A click selects the whole UNIT the cutout belongs to at the current
+      // depth: the outermost assembly from the top, a subgroup once drilled in.
+      const { groupContext, setGroupContext } = useCutoutSelection.getState();
+      // Clicking outside the entered branch leaves it, rather than selecting
+      // nothing — the alternative traps the user inside a group they can only
+      // escape by keyboard.
+      const context = isWithin(cutout, groupContext) ? groupContext : [];
+      if (context !== groupContext) setGroupContext(context);
+      setSelection(unitSelectionIds(cutouts, cutout, context));
     },
-    [cutouts, onGroup]
+    [cutouts]
   );
 
-  /** Double-click: select only the individual cutout (bypasses group) */
-  const selectIndividual = useCallback((id: string) => {
-    setSelection(new Set([id]));
-  }, []);
+  /**
+   * Double-click drills IN one level toward the clicked shape, selecting the
+   * unit at the new depth — the assembly's subgroup first, the shape itself
+   * only once there is nothing left to enter. Jumping straight to the shape
+   * would make the levels in between unreachable by pointer.
+   */
+  const selectIndividual = useCallback(
+    (id: string) => {
+      const cutout = cutouts.find((c) => c.id === id);
+      if (!cutout) return;
+      const { groupContext, setGroupContext } = useCutoutSelection.getState();
+      const chain = groupChain(cutout);
+      const base = isWithin(cutout, groupContext) ? groupContext : [];
+      const context = chain.slice(0, Math.min(base.length + 1, chain.length));
+      setGroupContext(context);
+      setSelection(unitSelectionIds(cutouts, cutout, context));
+    },
+    [cutouts]
+  );
 
   /**
    * Select an explicit set of ids, for the shape list.

@@ -80,10 +80,11 @@ function translateUnit(
  */
 export function alignSelection(
   cutouts: readonly Cutout[],
-  mode: AlignMode
+  mode: AlignMode,
+  context: readonly string[] = []
 ): ReadonlyMap<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
-  const units = toArrangeUnits(cutouts);
+  const units = toArrangeUnits(cutouts, context);
   if (units.length < 2) return updates;
 
   const bounds = unitsBounds(units);
@@ -111,10 +112,11 @@ export function alignSelection(
  */
 export function distributeSelection(
   cutouts: readonly Cutout[],
-  axis: DistributeAxis
+  axis: DistributeAxis,
+  context: readonly string[] = []
 ): ReadonlyMap<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
-  const units = toArrangeUnits(cutouts);
+  const units = toArrangeUnits(cutouts, context);
   if (units.length < MIN_DISTRIBUTE_COUNT) return updates;
 
   const horizontal = axis === 'horizontal';

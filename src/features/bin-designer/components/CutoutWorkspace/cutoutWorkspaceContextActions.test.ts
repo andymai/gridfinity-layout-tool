@@ -35,7 +35,8 @@ function build(cutout: Cutout, overrides: Record<string, unknown> = {}) {
     updateCutoutsBatch: vi.fn(),
     lockCutouts: vi.fn(),
     unlockCutouts: vi.fn(),
-    groupCutouts: vi.fn(),
+    onGroup: vi.fn(),
+    groupContext: [],
     ungroupCutouts: vi.fn(),
     setGroupOp: vi.fn(),
     reorderCutouts: vi.fn(),
@@ -107,14 +108,20 @@ describe('group context actions', () => {
     });
 
   it('offers Group for a loose multi-selection', () => {
-    const groupCutouts = vi.fn();
-    const actions = buildMulti([makeCutout({ id: 'a' }), makeCutout({ id: 'b' })], {
-      groupCutouts,
-    });
+    const onGroup = vi.fn();
+    const actions = buildMulti([makeCutout({ id: 'a' }), makeCutout({ id: 'b' })], { onGroup });
     expect(labels(actions)).toContain('binDesigner.cutouts.group');
     expect(labels(actions)).not.toContain('binDesigner.cutouts.ungroup');
     actions.find((a) => a.label === 'binDesigner.cutouts.group')?.onClick();
-    expect(groupCutouts).toHaveBeenCalledWith(['a', 'b']);
+    // No op: plain Group, which wraps at the level the editor is drilled into.
+    expect(onGroup).toHaveBeenCalledWith(['a', 'b']);
+  });
+
+  it('forwards the chosen op through the same handler, so it keeps the level', () => {
+    const onGroup = vi.fn();
+    const actions = buildMulti([makeCutout({ id: 'a' }), makeCutout({ id: 'b' })], { onGroup });
+    actions.find((a) => a.label === 'binDesigner.cutouts.pathfinder.subtract')?.onClick();
+    expect(onGroup).toHaveBeenCalledWith(['a', 'b'], 'subtract');
   });
 
   it('offers Ungroup (not Group) when the selection is already one group', () => {

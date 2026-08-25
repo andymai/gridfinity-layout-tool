@@ -5,7 +5,7 @@
  * Composes all 3D child components (background, shapes, handles, guides, etc.).
  */
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, type RefObject } from 'react';
 import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import type {
@@ -23,6 +23,8 @@ import { EditorBackground3D } from './EditorBackground3D';
 import { TaperBand3D } from './TaperBand3D';
 import { ReferenceOutline3D } from './ReferenceOutline3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
+import { dimmedBinColor } from './dimmedBinColor';
+import { isWithin } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
 import { KeepoutCircles3D } from './KeepoutCircles3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
@@ -98,6 +100,8 @@ export interface SceneContentProps {
   readonly referenceOutline?: { readonly width: number; readonly depth: number } | null;
   readonly lidWindow?: LidCutoutWindow | null;
   readonly binColor: string;
+  /** Groups the editor is drilled into; shapes outside the branch render faded. */
+  readonly groupContext?: readonly string[];
   readonly selection: ReadonlySet<string>;
   /** Cutouts stranded past the board edge — framed with a red warning outline. */
   readonly offBoardIds?: ReadonlySet<string>;
@@ -162,6 +166,7 @@ export function SceneContent({
   referenceOutline,
   lidWindow,
   binColor,
+  groupContext,
   selection,
   offBoardIds = EMPTY_IDS,
   preview,
@@ -197,6 +202,19 @@ export function SceneContent({
   rulerZoomRef,
 }: SceneContentProps) {
   const colors = useThreeColors();
+
+  /**
+   * Surface colour a shape draws against. Shapes outside the entered group get
+   * a brightened one so they fade toward the board — the canvas half of the
+   * drill-in cue the breadcrumb states in words.
+   */
+  const surfaceColorFor = useCallback(
+    (cutout: Cutout): string =>
+      groupContext && groupContext.length > 0 && !isWithin(cutout, groupContext)
+        ? dimmedBinColor(binColor)
+        : binColor,
+    [binColor, groupContext]
+  );
   // Force R3F invalidation on state changes
   const { camera, invalidate } = useThree();
 
@@ -287,7 +305,7 @@ export function SceneContent({
                 isSelected={selection.has(cutout.id)}
                 isDragging={isDragging && selection.has(cutout.id)}
                 previewOverride={preview.get(cutout.id)}
-                binColor={binColor}
+                binColor={surfaceColorFor(cutout)}
                 onSelect={onSelectCutout}
                 onDoubleClick={onDoubleClickCutout}
                 onDragStart={memoizedDragStart}
@@ -303,7 +321,7 @@ export function SceneContent({
               isGrouped={false}
               isDragging={isDragging && selection.has(cutout.id)}
               previewOverrides={preview.get(cutout.id)}
-              binColor={binColor}
+              binColor={surfaceColorFor(cutout)}
               onSelect={onSelectCutout}
               onDoubleClick={onDoubleClickCutout}
               onDragStart={memoizedDragStart}
@@ -353,7 +371,7 @@ export function SceneContent({
                   isSelected={selection.has(cutout.id)}
                   isGrouped={true}
                   isDragging={isDragging && selection.has(cutout.id)}
-                  binColor={binColor}
+                  binColor={surfaceColorFor(cutout)}
                   renderMode="fill"
                   onSelect={(_id, additive) => onSelectCutout(cutout.id, additive)}
                   onDoubleClick={() => onDoubleClickCutout(cutout.id)}
@@ -374,7 +392,7 @@ export function SceneContent({
                   isSelected={selection.has(cutout.id)}
                   isGrouped={true}
                   isDragging={isDragging && selection.has(cutout.id)}
-                  binColor={binColor}
+                  binColor={surfaceColorFor(cutout)}
                   renderMode="stroke"
                   onSelect={(_id, additive) => onSelectCutout(cutout.id, additive)}
                   onDoubleClick={() => onDoubleClickCutout(cutout.id)}
@@ -396,7 +414,7 @@ export function SceneContent({
                   key={`group-result-${gid}-${i}`}
                   members={copy}
                   isSelected={anySelected}
-                  binColor={binColor}
+                  binColor={surfaceColorFor(members[0])}
                 />
               ));
             })}
@@ -410,7 +428,7 @@ export function SceneContent({
                   isSelected={selection.has(cutout.id)}
                   isGrouped={true}
                   isDragging={isDragging && selection.has(cutout.id)}
-                  binColor={binColor}
+                  binColor={surfaceColorFor(cutout)}
                   renderMode="stroke"
                   onSelect={(_id, additive) => onSelectCutout(cutout.id, additive)}
                   onDoubleClick={() => onDoubleClickCutout(cutout.id)}

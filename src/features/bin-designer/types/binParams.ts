@@ -79,6 +79,19 @@ export interface BinParams {
    * GC'd by the store when the last referencing cutout is deleted.
    */
   readonly meshAssets?: Record<string, MeshAsset>;
+  /**
+   * User-chosen names for cutout groups, keyed by group id. Unnamed groups are
+   * simply absent and fall back to a derived "Group of N" row, so a design that
+   * never renames anything carries no entry at all.
+   *
+   * One map serves both `cutouts` and `lid.cutouts` — group ids are UUIDs, so
+   * they cannot collide across the two arrays. GC'd by the store when a group's
+   * last member goes, the same way {@link meshAssets} is.
+   *
+   * Editor metadata the generator never reads: writing one must not bump the
+   * geometry epoch, or renaming a row would rebuild the mesh.
+   */
+  readonly cutoutGroupNames?: Record<string, string>;
   readonly wallPattern: WallPatternConfig;
   /**
    * Drainage / ventilation perforation of the bin floor. The cut passes

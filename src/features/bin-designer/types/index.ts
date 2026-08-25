@@ -251,6 +251,10 @@ export {
   MAX_ARRAY_COUNT,
   CUTOUT_LABEL_MODES,
   DEFAULT_KNIFE_SPEC,
+  MAX_GROUP_DEPTH,
+  MAX_PARENT_GROUPS,
+  MAX_GROUP_NAME_LENGTH,
+  MAX_CUTOUT_GROUP_NAMES,
 } from './cutout';
 
 export type { KnifeRestStyle, KnifeRestConfig, KnifeSlotDimensions } from './knifeBlock';

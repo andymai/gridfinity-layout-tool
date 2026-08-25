@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
+import { useCutoutSelection } from '@/features/bin-designer/store';
 import { Canvas } from '@react-three/fiber';
 import type { RootState } from '@react-three/fiber';
 import type {
@@ -165,6 +166,7 @@ export function CutoutCanvas3D({
   rulerMeasurement,
   rulerZoomRef,
 }: CutoutCanvas3DProps) {
+  const groupContext = useCutoutSelection((state) => state.groupContext);
   const binColor = useBinPreviewColor();
   const isDragging = mode.type === 'dragging';
   const isResizing = mode.type === 'resizing';
@@ -322,6 +324,7 @@ export function CutoutCanvas3D({
         referenceOutline={referenceOutline}
         lidWindow={lidWindow}
         binColor={binColor}
+        groupContext={groupContext}
         selection={selection}
         offBoardIds={offBoardIds}
         preview={preview}

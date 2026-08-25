@@ -13,6 +13,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCutoutSelection } from '@/features/bin-designer/store';
+import { isWithin } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { Cutout } from '@/features/bin-designer/types';
 import type { InteractionMode } from '../panel/CutoutsSection/cutoutInteractionTypes';
 
@@ -237,7 +239,12 @@ export function useCutoutWorkspacePointer({
       const mh = mmTop - mmBottom;
 
       if (mw + mh > 2) {
+        // Only what is inside the entered group. A marquee that swept up
+        // out-of-branch shapes would select things every arrange operation then
+        // silently drops, since `toArrangeUnits` has no unit for them.
+        const context = useCutoutSelection.getState().groupContext;
         for (const cutout of cutouts) {
+          if (!isWithin(cutout, context)) continue;
           const cRight = cutout.x + cutout.width;
           const cTop = cutout.y + cutout.depth;
           if (cutout.x < mmRight && cRight > mmLeft && cutout.y < mmTop && cTop > mmBottom) {

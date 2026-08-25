@@ -9,7 +9,13 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { type Bounds, getEffectiveBounds } from './geometryCore';
-import { toArrangeUnits, unitsBounds, unitWidth, unitDepth } from './cutoutGroups';
+import {
+  expandSelectionToGroups,
+  toArrangeUnits,
+  unitsBounds,
+  unitWidth,
+  unitDepth,
+} from './cutoutGroups';
 
 /** Distribute needs a fixed unit at each end plus something to place between them. */
 const MIN_DISTRIBUTE_UNITS = 3;
@@ -87,9 +93,10 @@ export function findAlignmentGuides(
  */
 export function distributeHorizontally(
   cutouts: readonly Cutout[],
-  _binWidth: number
+  _binWidth: number,
+  context: readonly string[] = []
 ): Record<string, { x: number }> {
-  const units = toArrangeUnits(cutouts);
+  const units = toArrangeUnits(cutouts, context);
   if (units.length < MIN_DISTRIBUTE_UNITS) return {};
 
   const sorted = [...units].sort((a, b) => a.bounds.minX - b.bounds.minX);
@@ -118,9 +125,10 @@ export function distributeHorizontally(
  */
 export function distributeVertically(
   cutouts: readonly Cutout[],
-  _binDepth: number
+  _binDepth: number,
+  context: readonly string[] = []
 ): Record<string, { y: number }> {
-  const units = toArrangeUnits(cutouts);
+  const units = toArrangeUnits(cutouts, context);
   if (units.length < MIN_DISTRIBUTE_UNITS) return {};
 
   const sorted = [...units].sort((a, b) => a.bounds.minY - b.bounds.minY);
@@ -161,6 +169,29 @@ export const CENTER_ACTIONS: ReadonlyArray<{ readonly axis: CenterAxis; readonly
 ];
 
 /**
+ * Centre what the user has selected, as whole units.
+ *
+ * The expansion is the point: centring a partial selection would tear a group
+ * apart around the members that happened to be picked, and both context menus
+ * offer this action.
+ */
+export function centerSelectionInBin(
+  cutouts: readonly Cutout[],
+  selection: ReadonlySet<string>,
+  binWidth: number,
+  binDepth: number,
+  axis: CenterAxis,
+  context: readonly string[]
+): Record<string, { x: number; y: number }> {
+  const selected = expandSelectionToGroups(
+    cutouts,
+    cutouts.filter((c) => selection.has(c.id)),
+    context
+  );
+  return centerInBin(selected, binWidth, binDepth, axis, context);
+}
+
+/**
  * Center a selection within the bin.
  *
  * One delta for the whole selection, so relative offsets are preserved; a
@@ -172,11 +203,12 @@ export function centerInBin(
   cutouts: readonly Cutout[],
   binWidth: number,
   binDepth: number,
-  axis: CenterAxis = 'both'
+  axis: CenterAxis = 'both',
+  context: readonly string[] = []
 ): Record<string, { x: number; y: number }> {
   if (cutouts.length === 0) return {};
 
-  const units = toArrangeUnits(cutouts);
+  const units = toArrangeUnits(cutouts, context);
   const bounds = unitsBounds(units);
   const groupW = bounds.maxX - bounds.minX;
   const groupH = bounds.maxY - bounds.minY;

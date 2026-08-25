@@ -5,6 +5,11 @@
 
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import {
+  remapGroupChain,
+  unitTag,
+  unitTagGroupId,
+} from '@/features/bin-designer/utils/cutoutHierarchy';
+import {
   DEFAULT_POLYGON_SIDES,
   DEFAULT_CUTOUT_CLEARANCE,
   CLEARANCE_SHAPES,
@@ -31,8 +36,8 @@ export interface ClonedCutout extends Cutout {
 }
 
 /**
- * Clone cutouts and remap any shared groupId so the clones form their own
- * independent group (preserves "selected together" semantics for paste).
+ * Clone cutouts and remap their whole group ancestry so the clones form their
+ * own independent tree (preserves "selected together" semantics for paste).
  * `offsetFn` lets callers reposition each clone relative to its source.
  */
 export function cloneCutoutsWithGroups(
@@ -41,21 +46,12 @@ export function cloneCutoutsWithGroups(
 ): readonly ClonedCutout[] {
   const groupMap = new Map<string, string>();
   return originals.map((original) => {
-    const newId = crypto.randomUUID();
-    let newGroupId: string | null = null;
-    if (original.groupId) {
-      if (!groupMap.has(original.groupId)) {
-        groupMap.set(original.groupId, crypto.randomUUID());
-      }
-      newGroupId = groupMap.get(original.groupId) ?? null;
-    }
     const pos = offsetFn ? offsetFn(original) : { x: original.x, y: original.y };
     return {
-      ...original,
-      id: newId,
+      ...remapGroupChain(original, groupMap, () => crypto.randomUUID()),
+      id: crypto.randomUUID(),
       x: pos.x,
       y: pos.y,
-      groupId: newGroupId,
       originalId: original.id,
     };
   });
@@ -270,11 +266,17 @@ export function applyFlattenGroupArray(
   updateCutout: (id: string, patch: Partial<Cutout>) => void,
   addCutout: (cutout: Cutout) => boolean,
   capacity: number,
-  transaction: { readonly start: () => void; readonly commit: () => void }
+  transaction: { readonly start: () => void; readonly commit: () => void },
+  context: readonly string[] = []
 ): 'flattened' | 'not-an-array' | 'no-room' {
   const target = cutouts.find((c) => c.id === id);
-  if (!target || target.groupId === null) return 'not-an-array';
-  const members = cutouts.filter((c) => c.groupId === target.groupId);
+  if (!target) return 'not-an-array';
+  // Resolved by unit, not by `groupId`: a container's repeat spans loose
+  // children whose `groupId` is null, and matching on that would collect every
+  // loose cutout in the design instead.
+  const tag = unitTag(target, context);
+  if (tag === null || unitTagGroupId(tag) === null) return 'not-an-array';
+  const members = cutouts.filter((c) => unitTag(c, context) === tag);
   if (!members.some((m) => m.array !== undefined)) return 'not-an-array';
   const { memberPatches, added } = flattenCutoutGroupArray(members);
   if (added.length > capacity) return 'no-room';

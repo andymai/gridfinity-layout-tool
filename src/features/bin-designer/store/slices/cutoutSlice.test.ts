@@ -899,20 +899,61 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(after.params.cutouts).toBe(cutoutsBefore);
     });
 
-    it('still records history when a loose cutout joins an existing group', () => {
+    it('wraps a group and a loose cutout in a container rather than folding', () => {
       const { addCutout, groupCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'a' }));
       addCutout(createTestCutout({ id: 'b' }));
       addCutout(createTestCutout({ id: 'c' }));
       groupCutouts(['a', 'b']);
+      const booleanId = useDesignerStore
+        .getState()
+        .params.cutouts.find((x) => x.id === 'a')?.groupId;
 
       const depthBefore = useDesignerStore.getState().history.past.length;
       groupCutouts(['a', 'c']);
 
       const after = useDesignerStore.getState();
       expect(after.history.past.length).toBe(depthBefore + 1);
-      const byId = Object.fromEntries(after.params.cutouts.map((x) => [x.id, x.groupId]));
-      expect(byId.c).toBe(byId.a);
+      const byId = Object.fromEntries(after.params.cutouts.map((x) => [x.id, x]));
+      // a and b keep the boolean group they had; c stays loose.
+      expect(byId.a.groupId).toBe(booleanId);
+      expect(byId.b.groupId).toBe(booleanId);
+      expect(byId.c.groupId).toBeNull();
+      // All three now share one container above them.
+      const container = byId.a.parentGroups?.[0];
+      expect(container).toBeDefined();
+      expect(byId.b.parentGroups).toEqual([container]);
+      expect(byId.c.parentGroups).toEqual([container]);
+    });
+
+    it('leaves the geometry epoch alone when it only wraps a container', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+      groupCutouts(['a', 'b']);
+
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+      groupCutouts(['a', 'c']);
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+    });
+
+    it('refuses to form a group inside a boolean group', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+      groupCutouts(['a', 'b', 'c'], 'subtract');
+      const booleanId = useDesignerStore.getState().params.cutouts[0].groupId;
+      expect(booleanId).not.toBeNull();
+
+      const before = useDesignerStore.getState().params.cutouts;
+      // Drilled into the boolean group, grouping two of its members would leave
+      // its op fusing one shape instead of three.
+      groupCutouts(['a', 'b'], undefined, [booleanId as string]);
+
+      expect(useDesignerStore.getState().params.cutouts).toBe(before);
     });
 
     it('stamps the passed op on all members', () => {
@@ -927,20 +968,23 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(cutouts[1].groupOp).toBe('subtract');
     });
 
-    it('inherits an existing group s op when extending without an explicit op', () => {
+    it('folds a loose cutout into an existing group when a Pathfinder op asks', () => {
       const { addCutout, groupCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'a' }));
       addCutout(createTestCutout({ id: 'b' }));
       addCutout(createTestCutout({ id: 'c' }));
 
       groupCutouts(['a', 'b'], 'intersect');
-      groupCutouts(['a', 'c']);
+      // An explicit op is the Pathfinder path, which still merges into one
+      // boolean group — only bare Group wraps instead.
+      groupCutouts(['a', 'c'], 'intersect');
 
       const { cutouts } = useDesignerStore.getState().params;
-      const opByMember = Object.fromEntries(cutouts.map((c) => [c.id, c.groupOp]));
-      expect(opByMember.a).toBe('intersect');
-      expect(opByMember.b).toBe('intersect');
-      expect(opByMember.c).toBe('intersect');
+      const byId = Object.fromEntries(cutouts.map((c) => [c.id, c]));
+      expect(byId.c.groupId).toBe(byId.a.groupId);
+      expect(byId.a.groupOp).toBe('intersect');
+      expect(byId.b.groupOp).toBe('intersect');
+      expect(byId.c.groupOp).toBe('intersect');
     });
 
     it('ignores groups of size 1 (no-op)', () => {
@@ -1243,6 +1287,337 @@ describe('cutoutSlice - consolidated actions', () => {
       const c = cutouts.find((x) => x.id === 'c');
       expect(c?.groupId).toBeNull();
       expect(c?.groupOp).toBeUndefined();
+    });
+  });
+
+  /**
+   * Builds the tree the nesting tests read against and returns its ids:
+   *
+   *   container
+   *   ├─ gA (subtract)  a1, a2
+   *   ├─ gB (union)     b1, b2
+   *   └─ hex            (loose child)
+   *   loose             (top level)
+   */
+  const buildNested = (): { container: string; gA: string; gB: string } => {
+    const { addCutout, groupCutouts } = useDesignerStore.getState();
+    for (const id of ['a1', 'a2', 'b1', 'b2', 'hex', 'loose']) {
+      addCutout(createTestCutout({ id }));
+    }
+    groupCutouts(['a1', 'a2'], 'subtract');
+    groupCutouts(['b1', 'b2'], 'union');
+    groupCutouts(['a1', 'b1', 'hex']);
+
+    const byId = Object.fromEntries(
+      useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+    );
+    const container = byId.a1.parentGroups?.[0];
+    if (container === undefined) throw new Error('container not formed');
+    return { container, gA: byId.a1.groupId as string, gB: byId.b1.groupId as string };
+  };
+
+  const repeatConfig = (): CutoutArrayConfig => ({
+    mode: 'grid',
+    cols: 2,
+    rows: 1,
+    pitchX: 60,
+    pitchY: 0,
+    count: 1,
+    radius: 0,
+    startAngle: 0,
+    rotateToCenter: false,
+  });
+
+  describe('nested groups', () => {
+    it('wraps subgroups and a loose shape without touching their booleans', () => {
+      const { container, gA, gB } = buildNested();
+      const byId = Object.fromEntries(
+        useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+      );
+
+      expect(byId.a1.groupId).toBe(gA);
+      expect(byId.a2.groupId).toBe(gA);
+      expect(byId.a1.groupOp).toBe('subtract');
+      expect(byId.b1.groupId).toBe(gB);
+      expect(byId.hex.groupId).toBeNull();
+
+      for (const id of ['a1', 'a2', 'b1', 'b2', 'hex']) {
+        expect(byId[id].parentGroups).toEqual([container]);
+      }
+      // The cutout outside the selection is untouched, field and all.
+      expect(byId.loose.parentGroups).toBeUndefined();
+    });
+
+    it('pulls in every member of a group the selection only partly touches', () => {
+      buildNested();
+      const byId = Object.fromEntries(
+        useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+      );
+      // a2 and b2 were never selected; they came along with their groups.
+      expect(byId.a2.parentGroups).toEqual(byId.a1.parentGroups);
+      expect(byId.b2.parentGroups).toEqual(byId.b1.parentGroups);
+    });
+
+    describe('peelGroup', () => {
+      it('dissolves one level, leaving the subgroups intact', () => {
+        const { container, gA, gB } = buildNested();
+        useDesignerStore.getState().peelGroup(container);
+
+        const byId = Object.fromEntries(
+          useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+        );
+        expect(byId.a1.groupId).toBe(gA);
+        expect(byId.a1.groupOp).toBe('subtract');
+        expect(byId.b1.groupId).toBe(gB);
+        expect(byId.hex.groupId).toBeNull();
+        for (const id of ['a1', 'a2', 'b1', 'b2', 'hex']) {
+          expect(byId[id].parentGroups).toBeUndefined();
+        }
+      });
+
+      it('dissolving a container does not bump the geometry epoch', () => {
+        const { container } = buildNested();
+        const epochBefore = useDesignerStore.getState().generation.epoch;
+
+        useDesignerStore.getState().peelGroup(container);
+
+        expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+      });
+
+      it('dissolving a boolean group frees its members and drops the op', () => {
+        const { container, gA } = buildNested();
+        useDesignerStore.getState().peelGroup(gA);
+
+        const byId = Object.fromEntries(
+          useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+        );
+        expect(byId.a1.groupId).toBeNull();
+        expect(byId.a1.groupOp).toBeUndefined();
+        // They stay inside the container they were nested in.
+        expect(byId.a1.parentGroups).toEqual([container]);
+      });
+
+      it('ignores a group the design does not have', () => {
+        buildNested();
+        const before = useDesignerStore.getState().params.cutouts;
+        useDesignerStore.getState().peelGroup('not-a-group');
+        expect(useDesignerStore.getState().params.cutouts).toBe(before);
+      });
+    });
+
+    describe('moveUnitsIntoGroup', () => {
+      it('moves a whole subgroup into another container, keeping its boolean', () => {
+        const { gA, gB } = buildNested();
+        const { addCutout, groupCutouts, moveUnitsIntoGroup } = useDesignerStore.getState();
+        addCutout(createTestCutout({ id: 'x' }));
+        addCutout(createTestCutout({ id: 'y' }));
+        groupCutouts(['x', 'y']);
+        groupCutouts(['x', 'loose']);
+        const other = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'x')
+          ?.parentGroups?.[0];
+        if (other === undefined) throw new Error('second container not formed');
+
+        moveUnitsIntoGroup([`group:${gA}`], other);
+
+        const byId = Object.fromEntries(
+          useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+        );
+        expect(byId.a1.groupId).toBe(gA);
+        expect(byId.a1.groupOp).toBe('subtract');
+        expect(byId.a1.parentGroups).toEqual([other]);
+        expect(byId.a2.parentGroups).toEqual([other]);
+        // gB stayed where it was.
+        expect(byId.b1.groupId).toBe(gB);
+      });
+
+      it('refuses to move a group into a boolean group', () => {
+        const { gA, gB } = buildNested();
+        const before = useDesignerStore.getState().params.cutouts;
+
+        useDesignerStore.getState().moveUnitsIntoGroup([`group:${gB}`], gA);
+
+        expect(useDesignerStore.getState().params.cutouts).toBe(before);
+      });
+
+      it('refuses to move a group inside its own subtree', () => {
+        const { container } = buildNested();
+        const before = useDesignerStore.getState().params.cutouts;
+
+        useDesignerStore.getState().moveUnitsIntoGroup([`group:${container}`], container);
+
+        expect(useDesignerStore.getState().params.cutouts).toBe(before);
+      });
+
+      it('does not list the destination group twice when a shape joins it', () => {
+        const { container, gA } = buildNested();
+        useDesignerStore.getState().moveUnitsIntoGroup(['shape:hex'], gA);
+
+        const hex = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'hex');
+        expect(hex?.groupId).toBe(gA);
+        // `gA` must appear once, as the groupId — never also as its own ancestor.
+        expect(hex?.parentGroups).toEqual([container]);
+      });
+
+      it('drops a boolean member into a container as a loose shape', () => {
+        const { container } = buildNested();
+        // Reachable by dragging a member out while drilled into its group.
+        useDesignerStore.getState().moveUnitsIntoGroup(['shape:a1'], container);
+
+        const byId = Object.fromEntries(
+          useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+        );
+        expect(byId.a1.groupId).toBeNull();
+        expect(byId.a1.parentGroups).toEqual([container]);
+        // The container must not have been promoted into the boolean slot.
+        expect(byId.a1.groupId).not.toBe(container);
+        // And the op goes with the group it left.
+        expect(byId.a1.groupOp).toBeUndefined();
+        // gA is left with one member, which `dissolveSingletonGroups` frees —
+        // a boolean group of one has no op to run.
+        expect(byId.a2.groupId).toBeNull();
+        expect(byId.a2.parentGroups).toEqual([container]);
+      });
+
+      it('strips the op from a shape moved out to the top level', () => {
+        buildNested();
+        useDesignerStore.getState().moveUnitsIntoGroup(['shape:a1'], null);
+
+        const a1 = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'a1');
+        expect(a1?.groupId).toBeNull();
+        expect(a1?.groupOp).toBeUndefined();
+        expect(a1?.parentGroups).toBeUndefined();
+      });
+
+      it('lets a loose shape join a boolean group, adopting its op', () => {
+        const { gA } = buildNested();
+        useDesignerStore.getState().moveUnitsIntoGroup(['shape:loose'], gA);
+
+        const loose = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'loose');
+        expect(loose?.groupId).toBe(gA);
+        expect(loose?.groupOp).toBe('subtract');
+      });
+
+      it('moves a unit back out to the top level', () => {
+        const { gA } = buildNested();
+        useDesignerStore.getState().moveUnitsIntoGroup([`group:${gA}`], null);
+
+        const byId = Object.fromEntries(
+          useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+        );
+        expect(byId.a1.parentGroups).toBeUndefined();
+        expect(byId.a1.groupId).toBe(gA);
+        // Its former siblings stay in the container.
+        expect(byId.b1.parentGroups).toHaveLength(1);
+      });
+    });
+
+    it('duplicates an assembly into its own independent tree', () => {
+      const { container, gA } = buildNested();
+      const before = new Set(useDesignerStore.getState().params.cutouts.map((c) => c.id));
+
+      useDesignerStore.getState().duplicateCutouts(['a1', 'a2', 'b1', 'b2', 'hex']);
+
+      const copies = useDesignerStore.getState().params.cutouts.filter((c) => !before.has(c.id));
+      expect(copies).toHaveLength(5);
+
+      // The copy must not claim the original's container as its parent, or it
+      // lands inside the thing it was copied from.
+      const copyContainers = new Set(copies.map((c) => c.parentGroups?.[0]));
+      expect(copyContainers.size).toBe(1);
+      expect([...copyContainers][0]).not.toBe(container);
+      expect([...copyContainers][0]).toBeDefined();
+
+      // Its own internal structure survives: one fresh boolean group over the
+      // two members that were in gA, still carrying the op.
+      const copiedA = copies.filter((c) => c.groupOp === 'subtract');
+      expect(copiedA).toHaveLength(2);
+      expect(copiedA[0].groupId).toBe(copiedA[1].groupId);
+      expect(copiedA[0].groupId).not.toBe(gA);
+    });
+
+    describe('repeating a container', () => {
+      it('writes the repeat to every descendant, subgroups included', () => {
+        buildNested();
+        const config = repeatConfig();
+
+        // `[]` is the container's OWN level, where the container is one unit.
+        // Passing the container id instead would mean "inside it", resolving to
+        // whichever subgroup the anchor happens to belong to.
+        useDesignerStore.getState().setCutoutArray('a1', config, []);
+
+        const byId = Object.fromEntries(
+          useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+        );
+        // The whole assembly repeats as one piece.
+        for (const id of ['a1', 'a2', 'b1', 'b2', 'hex']) {
+          expect(byId[id].array).toBeDefined();
+        }
+        // The cutout outside the container is untouched.
+        expect(byId.loose.array).toBeUndefined();
+      });
+
+      it('writes only to its own group when no container level is given', () => {
+        const { gA } = buildNested();
+        const config = repeatConfig();
+
+        useDesignerStore.getState().setCutoutArray('a1', config);
+
+        const byId = Object.fromEntries(
+          useDesignerStore.getState().params.cutouts.map((c) => [c.id, c])
+        );
+        expect(byId.a1.groupId).toBe(gA);
+        expect(byId.a1.array).toBeDefined();
+        expect(byId.a2.array).toBeDefined();
+        // Its siblings inside the container are not part of that unit.
+        expect(byId.b1.array).toBeUndefined();
+        expect(byId.hex.array).toBeUndefined();
+      });
+    });
+
+    describe('setCutoutGroupName', () => {
+      it('stores, updates and clears a name', () => {
+        const { container } = buildNested();
+        const { setCutoutGroupName } = useDesignerStore.getState();
+
+        setCutoutGroupName(container, '  Socket tray  ');
+        expect(useDesignerStore.getState().params.cutoutGroupNames?.[container]).toBe(
+          'Socket tray'
+        );
+
+        setCutoutGroupName(container, '');
+        expect(useDesignerStore.getState().params.cutoutGroupNames).toBeUndefined();
+      });
+
+      it('does not bump the geometry epoch', () => {
+        const { container } = buildNested();
+        const epochBefore = useDesignerStore.getState().generation.epoch;
+
+        useDesignerStore.getState().setCutoutGroupName(container, 'Socket tray');
+
+        expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+      });
+
+      it('drops the name once the group is gone', () => {
+        const { container } = buildNested();
+        useDesignerStore.getState().setCutoutGroupName(container, 'Socket tray');
+
+        useDesignerStore.getState().peelGroup(container);
+
+        expect(useDesignerStore.getState().params.cutoutGroupNames).toBeUndefined();
+      });
+
+      it('keeps names for groups that survive', () => {
+        const { container, gA } = buildNested();
+        const { setCutoutGroupName } = useDesignerStore.getState();
+        setCutoutGroupName(container, 'Socket tray');
+        setCutoutGroupName(gA, 'Ratchet pocket');
+
+        useDesignerStore.getState().peelGroup(container);
+
+        const names = useDesignerStore.getState().params.cutoutGroupNames;
+        expect(names?.[gA]).toBe('Ratchet pocket');
+        expect(names?.[container]).toBeUndefined();
+      });
     });
   });
 

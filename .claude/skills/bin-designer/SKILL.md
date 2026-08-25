@@ -78,6 +78,41 @@ Run the `api/lib` suite after ANY touch of the validation mirrors — a green cl
 | Duplicate history entries / worker re-runs on identical text      | No-op guards removed from `setCompartmentText` / `setCompartmentDividerHeight`                     | Keep the guards; inputs commit on both idle-flush and blur                   |
 | Persisted JSON gains `dividerHeight: 'auto'` noise                | `'auto'` and `undefined` are the same state                                                        | `setCompartmentDividerHeight` omits the field for `'auto'`; keep it that way |
 
+## Nested cutout groups
+
+`Cutout.parentGroups` holds the enclosing groups outermost-first, excluding the
+cutout's own `groupId`; absent means top level. Three invariants, each of which
+changes geometry silently when broken:
+
+1. **A group id is a boolean group XOR a container.** A boolean group is some
+   cutout's `groupId`: it owns the `groupOp` and is all `cutoutBuilder` sees. A
+   container appears only in `parentGroups` and has no op. Disjointness is what
+   makes nesting invisible to the generator — wrapping a boolean group cannot
+   change which shapes its op fuses. The store refuses to create anything inside
+   a boolean group; `paramMigration.normalizeGroupChains` strips the container
+   reading from any id a file uses both ways.
+2. **Every member of a group repeats the same chain**, like `groupOp`, `color`
+   and `array` already do. `normalizeGroupChains` settles a disagreeing file on
+   the first member in array order.
+3. **`unitTag(cutout, context)` is the one definition of "one thing"** — read by
+   canvas selection, `shapeListModel` and `cutoutGroups`' arrange units.
+   `context` is the drill-in level in `store/cutoutSelection.ts`; `[]` is the
+   top, where a whole assembly is one unit. A loose direct child tags by its own
+   id, never by `null`, or one operation on it sweeps in its every sibling.
+
+`utils/cutoutHierarchy.ts` owns the tree. `withGroupChain` infers "ends in a
+boolean group?" from `cutout.groupId`, so `removeGroup` passes that flag
+explicitly — removing a cutout's OWN group would otherwise promote its container
+into the boolean slot.
+
+Names live in `BinParams.cutoutGroupNames`, GC'd across BOTH cutout arrays (bin
+and lid share one map) like `meshAssets`, and written with
+`affectsGeometry: false`. Depth caps at `MAX_GROUP_DEPTH`, mirrored in
+`api/lib/designerValidationConstants.ts`. Ungroup peels ONE level
+(`peelGroup`); plain Group wraps when the selection reaches any group and forms
+a boolean group only when it reaches loose shapes alone; an explicit `op` is
+always the Pathfinder path.
+
 For divider-override structure: pairs are canonical (`compartmentA < compartmentB`), unique, adjacent — enforced in both `utils/compartments.ts` (`validateDividerOverride[s]`) and `api/lib/designerCompartmentValidation.ts`. Structural validity does not guarantee the tilt renders (geometric checks happen at drag-commit and generation). `getEligibleDividers` row order is deliberately stable so panel rows don't shuffle — don't replace its sort with grid-scan order.
 
 Designer shares have their own limits (`MAX_PAYLOAD_BYTES` 100KB in `api/lib/designerValidationConstants.ts`), smaller than the layout-share limits in `api/lib/validation.ts` — see the share-api-collab skill. Cloud-sync envelope rules live in `src/features/bin-designer/sync/designAdapter.ts`. For the placed-bin side panel (bin-inspector), read `src/features/bin-inspector/README.md`; custom-property keys must avoid `RESERVED_PROPERTY_KEYS` in `src/core/constants.ts`.

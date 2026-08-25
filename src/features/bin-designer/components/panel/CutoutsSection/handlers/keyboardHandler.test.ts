@@ -152,21 +152,47 @@ describe('handleCutoutKeyDown — Escape', () => {
     expect(ctx.setMode).toHaveBeenCalledWith({ type: 'idle' });
   });
 
-  it('re-selects the whole group before deselecting, when inside one', () => {
-    // Two-stage escape: the first press steps back out to the group rather
-    // than dropping the selection entirely.
+  it('steps out one level and re-selects the containing group', () => {
+    // Two-stage escape: drilled into g1 with one member selected, the first
+    // press steps back out to the group rather than dropping the selection.
     const cutouts = [
       makeCutout({ id: 'a', groupId: 'g1' }),
       makeCutout({ id: 'b', groupId: 'g1' }),
     ];
-    const ctx = makeCtx({ selection: new Set(['a']), cutouts });
+    const exitGroup = vi.fn();
+    const ctx = makeCtx({
+      selection: new Set(['a']),
+      cutouts,
+      groupContext: ['g1'],
+      exitGroup,
+    });
     handleCutoutKeyDown(press('Escape'), ctx);
+    expect(exitGroup).toHaveBeenCalled();
     expect(ctx.setSelection).toHaveBeenCalledWith(new Set(['a', 'b']));
     expect(ctx.deselectAll).not.toHaveBeenCalled();
   });
 
-  it('deselects when the selection is a lone group member', () => {
-    // A group of one has nothing to step out to.
+  it('steps out of a nested group to the subgroup, not all the way out', () => {
+    const cutouts = [
+      makeCutout({ id: 'a', groupId: 'gA', parentGroups: ['outer'] }),
+      makeCutout({ id: 'b', groupId: 'gA', parentGroups: ['outer'] }),
+      makeCutout({ id: 'c', groupId: 'gB', parentGroups: ['outer'] }),
+    ];
+    const exitGroup = vi.fn();
+    const ctx = makeCtx({
+      selection: new Set(['a']),
+      cutouts,
+      groupContext: ['outer', 'gA'],
+      exitGroup,
+    });
+    handleCutoutKeyDown(press('Escape'), ctx);
+    expect(exitGroup).toHaveBeenCalled();
+    // Back inside `outer`, so the unit is gA — not the whole assembly.
+    expect(ctx.setSelection).toHaveBeenCalledWith(new Set(['a', 'b']));
+  });
+
+  it('deselects when already at the top level', () => {
+    // Nothing entered, so there is no level to step out to.
     const ctx = makeCtx({
       selection: new Set(['a']),
       cutouts: [makeCutout({ id: 'a', groupId: 'g1' })],

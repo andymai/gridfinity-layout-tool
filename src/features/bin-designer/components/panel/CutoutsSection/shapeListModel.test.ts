@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
 import {
   buildShapeList,
+  flattenNodes,
   nodeIds,
   derivedLabel,
   allSelected,
@@ -83,8 +84,8 @@ describe('buildShapeList', () => {
     it('lists members topmost first', () => {
       const list = buildShapeList(grouped);
       const group = list.find((n) => n.kind === 'group') as ShapeListGroup;
-      expect(ids(group.members)).toEqual(['g-a', 'g-b']);
-      expect(group.members.every((m) => m.nested)).toBe(true);
+      expect(ids(group.children)).toEqual(['g-a', 'g-b']);
+      expect(group.children.every((m) => m.kind === 'shape' && m.nested)).toBe(true);
     });
 
     it('marks a group locked only when every member is', () => {
@@ -188,5 +189,81 @@ describe('selection helpers', () => {
     expect(partiallySelected(['a', 'b'], new Set(['a']))).toBe(true);
     expect(partiallySelected(['a', 'b'], new Set(['a', 'b']))).toBe(false);
     expect(partiallySelected(['a', 'b'], new Set())).toBe(false);
+  });
+});
+
+describe('nested groups', () => {
+  /**
+   *   outer
+   *   ├─ gA [subtract]  a1, a2
+   *   └─ hex
+   *   loose
+   */
+  const nested = (): Cutout[] => [
+    cutout({ id: 'a1', groupId: 'gA', groupOp: 'subtract', parentGroups: ['outer'], zIndex: 4 }),
+    cutout({ id: 'a2', groupId: 'gA', groupOp: 'subtract', parentGroups: ['outer'], zIndex: 3 }),
+    cutout({ id: 'hex', parentGroups: ['outer'], zIndex: 2 }),
+    cutout({ id: 'loose', zIndex: 1 }),
+  ];
+
+  it('nests a group row inside its container', () => {
+    const list = buildShapeList(nested());
+    expect(ids(list)).toEqual(['group:outer', 'loose']);
+
+    const outer = list[0] as ShapeListGroup;
+    expect(outer.groupKind).toBe('container');
+    expect(outer.op).toBeUndefined();
+    expect(ids(outer.children)).toEqual(['group:gA', 'hex']);
+
+    const gA = outer.children[0] as ShapeListGroup;
+    expect(gA.groupKind).toBe('boolean');
+    expect(gA.op).toBe('subtract');
+    expect(ids(gA.children)).toEqual(['a1', 'a2']);
+  });
+
+  it('indents by depth and carries each row its own context', () => {
+    const outer = buildShapeList(nested())[0] as ShapeListGroup;
+    expect(outer.depth).toBe(0);
+    expect(outer.context).toEqual([]);
+    const gA = outer.children[0] as ShapeListGroup;
+    expect(gA.depth).toBe(1);
+    expect(gA.context).toEqual(['outer']);
+    expect(gA.children[0].depth).toBe(2);
+    expect(gA.children[0].context).toEqual(['outer', 'gA']);
+  });
+
+  it('acts on every descendant from a container row', () => {
+    const outer = buildShapeList(nested())[0] as ShapeListGroup;
+    expect([...nodeIds(outer)].sort()).toEqual(['a1', 'a2', 'hex']);
+  });
+
+  it('uses a group name when the design supplies one', () => {
+    const outer = buildShapeList(nested(), { outer: 'Socket tray' })[0] as ShapeListGroup;
+    expect(outer.name).toBe('Socket tray');
+    // A cleared name falls back to the derived label rather than showing ''.
+    expect((buildShapeList(nested(), { outer: '' })[0] as ShapeListGroup).name).toBeUndefined();
+  });
+
+  it('marks a container locked only when every descendant is', () => {
+    const partly = buildShapeList([
+      cutout({ id: 'a1', groupId: 'gA', parentGroups: ['outer'], locked: true }),
+      cutout({ id: 'hex', parentGroups: ['outer'] }),
+    ])[0] as ShapeListGroup;
+    expect(partly.locked).toBe(false);
+  });
+});
+
+describe('flattenNodes', () => {
+  it('walks the whole tree in display order', () => {
+    const list = buildShapeList([
+      cutout({ id: 'a1', groupId: 'gA', parentGroups: ['outer'], zIndex: 3 }),
+      cutout({ id: 'hex', parentGroups: ['outer'], zIndex: 2 }),
+      cutout({ id: 'loose', zIndex: 1 }),
+    ]);
+    expect(ids(flattenNodes(list))).toEqual(['group:outer', 'group:gA', 'a1', 'hex', 'loose']);
+  });
+
+  it('is empty for an empty list', () => {
+    expect(flattenNodes([])).toEqual([]);
   });
 });

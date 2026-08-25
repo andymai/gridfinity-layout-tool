@@ -7,6 +7,11 @@ vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/features/bin-designer/store', () => ({
   useDesignerStore: vi.fn(),
+  // Selector-aware: the header reads the drill-in level for the breadcrumb and
+  // for the arrange units, so a bare vi.fn() would hand both a function.
+  useCutoutSelection: vi.fn((selector: (state: unknown) => unknown) =>
+    selector({ groupContext: [], setGroupContext: vi.fn() })
+  ),
 }));
 
 vi.mock('../panel/CutoutsSection/geometry', () => ({
@@ -48,7 +53,13 @@ const defaultProps = {
 
 describe('WorkspaceHeader', () => {
   beforeEach(() => {
-    vi.mocked(useDesignerStore).mockReturnValue(vi.fn());
+    // The header's only other selector reads an action; `cutoutGroupNames` is
+    // absent on a design that has never named a group.
+    vi.mocked(useDesignerStore).mockImplementation(((selector: (state: unknown) => unknown) =>
+      selector({
+        setCutoutEditorOpen: vi.fn(),
+        params: { cutoutGroupNames: undefined },
+      })) as never);
   });
 
   it('renders the workspace title', () => {

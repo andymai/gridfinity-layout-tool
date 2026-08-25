@@ -10,7 +10,9 @@
  * which keeps the ordering and cascade rules testable without a DOM.
  */
 
-import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
+import type { Cutout, CutoutShape, GroupOp } from '@/features/bin-designer/types';
+import { DEFAULT_GROUP_OP } from '@/features/bin-designer/types';
+import { groupTag, unitKey } from '@/features/bin-designer/utils/cutoutHierarchy';
 
 /** A single cutout row. */
 export interface ShapeListLeaf {
@@ -19,25 +21,61 @@ export interface ShapeListLeaf {
   readonly cutout: Cutout;
   /** True when this row sits inside a group. */
   readonly nested: boolean;
+  /** How many groups enclose the row, for indentation. */
+  readonly depth: number;
+  /** Groups enclosing this row, outermost first. */
+  readonly context: readonly string[];
 }
 
-/** A group row holding its members, topmost member first. */
+/**
+ * A group row and the rows beneath it, topmost first.
+ *
+ * `groupKind` is what the row is: a `boolean` group is the one the generator
+ * fuses by its op, a `container` only binds its children for arranging. The
+ * shape list is the one place both are visible at once, so it is the one place
+ * the difference has to be legible.
+ */
 export interface ShapeListGroup {
   readonly kind: 'group';
   readonly id: string;
   readonly groupId: string;
-  readonly members: readonly ShapeListLeaf[];
-  /** Every member is locked. */
+  readonly groupKind: 'boolean' | 'container';
+  /** The op fused by a boolean group; absent on a container. */
+  readonly op?: GroupOp;
+  /** User-chosen name, absent when the row falls back to a derived label. */
+  readonly name?: string;
+  /** Direct children, groups and shapes alike. */
+  readonly children: readonly ShapeListNode[];
+  /** Every cutout beneath this row, at any depth. */
+  readonly cutouts: readonly Cutout[];
+  /** Every descendant is locked. */
   readonly locked: boolean;
-  /** Every member is hidden. */
+  /** Every descendant is hidden. */
   readonly hidden: boolean;
+  /** How many groups enclose the row, for indentation. */
+  readonly depth: number;
+  /** Groups enclosing this row, outermost first — excludes `groupId` itself. */
+  readonly context: readonly string[];
 }
 
 export type ShapeListNode = ShapeListGroup | ShapeListLeaf;
 
-/** Ids a row acts on: itself for a shape, every member for a group. */
+/** Ids a row acts on: itself for a shape, every descendant for a group. */
 export function nodeIds(node: ShapeListNode): readonly string[] {
-  return node.kind === 'group' ? node.members.map((m) => m.id) : [node.id];
+  return node.kind === 'group' ? node.cutouts.map((c) => c.id) : [node.id];
+}
+
+/** Every row beneath `node`, itself included, in display order. */
+export function flattenNodes(nodes: readonly ShapeListNode[]): readonly ShapeListNode[] {
+  const out: ShapeListNode[] = [];
+  const walk = (list: readonly ShapeListNode[]): void => {
+    for (const node of list) {
+      out.push(node);
+      if (node.kind === 'group') walk(node.children);
+    }
+  };
+  walk(nodes);
+  return out;
 }
 
 /**
@@ -65,42 +103,78 @@ function byStackDesc(cutouts: readonly Cutout[]): (a: Cutout, b: Cutout) => numb
  * another group moves the whole group's row — the alternative (ordering groups
  * by their lowest member, or by first appearance) makes rows jump in ways that
  * don't match what the canvas shows.
+ *
+ * Recurses one level per group: the cutouts of a group are re-partitioned
+ * against a context one deeper, which is the same `unitKey` grouping the canvas
+ * and the arrange math use. Sorting happens once at the top and the order is
+ * carried down, so a nested row never re-sorts into a different position than
+ * the stack it belongs to.
  */
-export function buildShapeList(cutouts: readonly Cutout[]): readonly ShapeListNode[] {
-  const cmp = byStackDesc(cutouts);
-  const sorted = [...cutouts].sort(cmp);
+export function buildShapeList(
+  cutouts: readonly Cutout[],
+  groupNames: Readonly<Record<string, string>> = {}
+): readonly ShapeListNode[] {
+  const sorted = [...cutouts].sort(byStackDesc(cutouts));
 
-  const groups = new Map<string, Cutout[]>();
-  for (const c of sorted) {
-    if (c.groupId === null) continue;
-    const members = groups.get(c.groupId);
-    if (members) members.push(c);
-    else groups.set(c.groupId, [c]);
-  }
+  const build = (
+    list: readonly Cutout[],
+    context: readonly string[],
+    depth: number
+  ): ShapeListNode[] => {
+    const byUnit = new Map<string, Cutout[]>();
+    // Rows in the order they are discovered: a loose cutout is its own row, a
+    // group id holds the slot of its topmost member until every member of it
+    // has been collected below.
+    const order: (Cutout | string)[] = [];
 
-  const nodes: ShapeListNode[] = [];
-  const emittedGroups = new Set<string>();
-
-  for (const c of sorted) {
-    if (c.groupId === null) {
-      nodes.push({ kind: 'shape', id: c.id, cutout: c, nested: false });
-      continue;
+    for (const c of list) {
+      const key = unitKey(c, context);
+      if (key === undefined) continue;
+      if (key === null) {
+        order.push(c);
+        continue;
+      }
+      const members = byUnit.get(key);
+      if (members) {
+        members.push(c);
+        continue;
+      }
+      byUnit.set(key, [c]);
+      order.push(key);
     }
-    // Emit the group at its topmost member's position, once.
-    if (emittedGroups.has(c.groupId)) continue;
-    emittedGroups.add(c.groupId);
-    const members = groups.get(c.groupId) ?? [];
-    nodes.push({
-      kind: 'group',
-      id: `group:${c.groupId}`,
-      groupId: c.groupId,
-      members: members.map((m) => ({ kind: 'shape', id: m.id, cutout: m, nested: true })),
-      locked: members.every((m) => m.locked === true),
-      hidden: members.every((m) => m.hidden === true),
-    });
-  }
 
-  return nodes;
+    return order.map((entry) => {
+      if (typeof entry !== 'string') {
+        return {
+          kind: 'shape',
+          id: entry.id,
+          cutout: entry,
+          nested: depth > 0,
+          depth,
+          context,
+        } satisfies ShapeListLeaf;
+      }
+      const members = byUnit.get(entry) ?? [];
+      const name = groupNames[entry];
+      const booleanMember = members.find((m) => m.groupId === entry);
+      return {
+        kind: 'group',
+        id: groupTag(entry),
+        groupId: entry,
+        groupKind: booleanMember ? 'boolean' : 'container',
+        ...(booleanMember ? { op: booleanMember.groupOp ?? DEFAULT_GROUP_OP } : {}),
+        ...(name ? { name } : {}),
+        children: build(members, [...context, entry], depth + 1),
+        cutouts: members,
+        locked: members.every((m) => m.locked === true),
+        hidden: members.every((m) => m.hidden === true),
+        depth,
+        context,
+      } satisfies ShapeListGroup;
+    });
+  };
+
+  return build(sorted, [], 0);
 }
 
 /** Round to 0.1mm, no trailing zeros — matches the editor's other readouts. */

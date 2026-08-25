@@ -37,6 +37,19 @@ export const CONSTRAINTS = {
   // describes copies that do not exist. Bounded here so a direct HTTP POST
   // cannot smuggle an unbounded string array past the editor's own textarea.
   MAX_ARRAY_INSTANCES: 400,
+  // Mirrors MAX_PARENT_GROUPS in src/features/bin-designer/types/cutout.ts.
+  // Group ancestry is a path, so a cycle is unrepresentable and nothing breaks
+  // past the cap; it is bounded here because a hand-authored payload is the one
+  // route that never passes through the editor's own refusal.
+  MAX_PARENT_GROUPS: 9,
+  // Mirrors MAX_GROUP_NAME_LENGTH in the same file. Group names are editor
+  // metadata that round-trip through sync, so they are length-bounded like
+  // every other user-supplied string.
+  MAX_GROUP_NAME_LENGTH: 60,
+  // No client rule caps how many groups a design has (the bin's cutout array is
+  // itself unbounded here), so this is a static ceiling whose only job is to
+  // stop an unbounded map riding into storage.
+  MAX_CUTOUT_GROUP_NAMES: 1000,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,
   MAX_DIVIDER_THICKNESS: 2.4,

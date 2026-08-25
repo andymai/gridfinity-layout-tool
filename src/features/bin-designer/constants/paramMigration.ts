@@ -27,7 +27,15 @@ import type {
   KnifeRestConfig,
 } from '../types';
 import type { CutoutArrayConfig } from '../types';
-import { CUTOUT_FILL_REFERENCES, DEFAULT_PATTERN_SCALE, MAX_ARRAY_INSTANCES } from '../types';
+import {
+  CUTOUT_FILL_REFERENCES,
+  DEFAULT_PATTERN_SCALE,
+  MAX_ARRAY_INSTANCES,
+  MAX_CUTOUT_GROUP_NAMES,
+  MAX_GROUP_NAME_LENGTH,
+  MAX_PARENT_GROUPS,
+} from '../types';
+import { referencedGroupIds, sameChain } from '../utils/cutoutHierarchy';
 import { groupRepeatConfig } from '@/shared/utils/cutoutArray';
 import {
   KNIFE_REST_DEFAULT_GAP_MM,
@@ -798,6 +806,48 @@ type MigrateParamsInput = Omit<Partial<BinParams>, 'wallPattern' | 'featureColor
   };
 
 /**
+ * Normalize a persisted ancestry chain.
+ *
+ * The store maintains these invariants by construction, but a hand-authored or
+ * crafted file reaches here without ever having passed through it: non-string
+ * entries, a group repeated at two depths (which would make the tree a cycle to
+ * anything walking it), and a chain deeper than the editor can show all have to
+ * be flattened out before the rest of the app trusts the field.
+ *
+ * Returns `undefined` for the absent/empty case so a design that never nested
+ * serializes exactly as it did before the field existed.
+ */
+function migrateParentGroups(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const seen = new Set<string>();
+  const chain: string[] = [];
+  for (const entry of raw as unknown[]) {
+    if (typeof entry !== 'string' || entry === '' || seen.has(entry)) continue;
+    seen.add(entry);
+    chain.push(entry);
+    if (chain.length === MAX_PARENT_GROUPS) break;
+  }
+  return chain.length > 0 ? chain : undefined;
+}
+
+/**
+ * Set a cutout's ancestry, dropping the field entirely for a top-level one so a
+ * design that never nests serializes as it did before the field existed.
+ *
+ * An unchanged cutout comes back by reference, which is what lets the callers
+ * leave an already-consistent design's fingerprint alone.
+ */
+function withParentGroups(cutout: Cutout, parents: readonly string[]): Cutout {
+  if (parents.length === 0) {
+    if (cutout.parentGroups === undefined) return cutout;
+    const { parentGroups: _drop, ...rest } = cutout;
+    return rest;
+  }
+  if (sameChain(parents, cutout.parentGroups ?? [])) return cutout;
+  return { ...cutout, parentGroups: [...parents] };
+}
+
+/**
  * Migrate a single cutout's legacy fields to current shape.
  *
  * Idempotent: re-running on an already-migrated cutout leaves W/D untouched.
@@ -807,14 +857,86 @@ function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
   const { scoopRadius, ...rest } = cutout;
   const array = migrateCutoutArray(rest.array);
   const withArray = array === rest.array ? rest : { ...rest, array };
+  const withParents = withParentGroups(
+    withArray,
+    migrateParentGroups(withArray.parentGroups) ?? []
+  );
+  return migrateScoopRadius(withParents, scoopRadius);
+}
+
+function migrateScoopRadius(cutout: Cutout, scoopRadius: number | undefined): Cutout {
   if (
     scoopRadius !== undefined &&
-    withArray.scoopRadiusW === undefined &&
-    withArray.scoopRadiusD === undefined
+    cutout.scoopRadiusW === undefined &&
+    cutout.scoopRadiusD === undefined
   ) {
-    return { ...withArray, scoopRadiusW: scoopRadius, scoopRadiusD: scoopRadius };
+    return { ...cutout, scoopRadiusW: scoopRadius, scoopRadiusD: scoopRadius };
   }
-  return withArray;
+  return cutout;
+}
+
+/**
+ * Reconcile group ancestry across a cutout array.
+ *
+ * Two things the store cannot produce but a file can:
+ *
+ *  - Members of one boolean group claiming DIFFERENT ancestors. The tree is
+ *    denormalized across members, so a disagreement has no honest reading; the
+ *    first member in array order settles it, the same tiebreak `cutoutBuilder`
+ *    already uses to pick a group's op.
+ *  - A group used as both a boolean group and a container. That would let a
+ *    subgroup change which shapes an op fuses, so the container reading loses
+ *    and the id is stripped from every ancestry chain that names it.
+ *
+ * Untouched cutouts come back by reference, so a design that was already
+ * consistent keeps its fingerprint.
+ */
+function normalizeGroupChains(cutouts: readonly Cutout[]): Cutout[] {
+  const booleanIds = new Set<string>();
+  for (const c of cutouts) {
+    if (c.groupId !== null) booleanIds.add(c.groupId);
+  }
+  const asContainers = (chain: readonly string[] | undefined): readonly string[] =>
+    (chain ?? []).filter((id) => !booleanIds.has(id));
+
+  const canonical = new Map<string, readonly string[]>();
+  for (const c of cutouts) {
+    if (c.groupId === null || canonical.has(c.groupId)) continue;
+    canonical.set(c.groupId, asContainers(c.parentGroups));
+  }
+
+  return cutouts.map((c) =>
+    withParentGroups(
+      c,
+      c.groupId === null ? asContainers(c.parentGroups) : (canonical.get(c.groupId) ?? [])
+    )
+  );
+}
+
+/**
+ * Keep the names of groups the design still has, the same way mesh assets are
+ * swept: the field survives on `...rest`, so without this a deleted assembly's
+ * name rides along in every later save and shifts the design's
+ * `communityParamsFingerprint`.
+ *
+ * Clamped, not just filtered: the server rejects an over-long name or an
+ * oversized map, so a hand-authored file has to be refused HERE too — the
+ * alternative is a design that edits fine locally and fails at publish.
+ */
+function migrateCutoutGroupNames(
+  raw: unknown,
+  referenced: ReadonlySet<string>
+): Record<string, string> | undefined {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return undefined;
+  const kept = Object.entries(raw)
+    .filter(([id, name]) => referenced.has(id) && typeof name === 'string')
+    .map(([id, name]) => [id, (name as string).trim().slice(0, MAX_GROUP_NAME_LENGTH)] as const)
+    // Trimmed BEFORE the empty test: the editor reads a whitespace-only name as
+    // unnamed, so keeping one leaves an inert entry that still shifts the
+    // design's fingerprint.
+    .filter(([, name]) => name !== '')
+    .slice(0, MAX_CUTOUT_GROUP_NAMES);
+  return kept.length > 0 ? Object.fromEntries(kept) : undefined;
 }
 
 /**
@@ -899,8 +1021,7 @@ function migrateCutoutArray(array: CutoutArrayConfig | undefined): CutoutArrayCo
  */
 function migrateLidCutouts(raw: unknown): Cutout[] | undefined {
   if (!Array.isArray(raw)) return undefined;
-  const out = raw
-    .map((c) => migrateCutout(c as Cutout & LegacyCutoutFields))
+  const out = normalizeGroupChains(raw.map((c) => migrateCutout(c as Cutout & LegacyCutoutFields)))
     .filter((c) => c.shape !== 'mesh')
     .slice(0, MAX_LID_CUTOUTS);
   // Absent, not empty: see the field's own note. An array that migrated down to
@@ -1475,12 +1596,19 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   // drop assets no cutout references so they can't ride along via `...rest`
   // and bloat the design forever.
   const migratedCutouts = shareGroupArrays(
-    (params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts).map((c) =>
-      migrateCutout(c as Cutout & LegacyCutoutFields)
+    normalizeGroupChains(
+      (params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts).map((c) =>
+        migrateCutout(c as Cutout & LegacyCutoutFields)
+      )
     )
   ).filter(
     (c) =>
       c.shape !== 'mesh' || (c.meshId !== undefined && params.meshAssets?.[c.meshId] !== undefined)
+  );
+  // Hoisted out of the `lid` block below so the group-name sweep can see BOTH
+  // cutout arrays — one name map serves the bin and its lid.
+  const migratedLidCutouts = migrateLidCutouts(
+    (params.lid as { cutouts?: unknown } | undefined)?.cutouts
   );
   const referencedMeshIds = new Set(
     migratedCutouts.filter((c) => c.shape === 'mesh').map((c) => c.meshId)
@@ -1509,6 +1637,10 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ...(migratedMeshAssets && Object.keys(migratedMeshAssets).length > 0
       ? { meshAssets: migratedMeshAssets }
       : { meshAssets: undefined }),
+    cutoutGroupNames: migrateCutoutGroupNames(
+      params.cutoutGroupNames,
+      referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
+    ),
     cutoutConfig,
     wallPattern: wallPatternConfig,
     floorPattern: floorPatternConfig,
@@ -1534,7 +1666,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         relieveInterior: rawRelieveInterior,
         slide: rawSlide,
         hinge: rawHinge,
-        cutouts: rawLidCutouts,
+        cutouts: _rawLidCutouts,
         ...stored
       } = raw;
       // Rails migrate first — `attachment` derives from them for legacy
@@ -1575,7 +1707,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         hinge: migrateHinge(rawHinge),
         // Spread `undefined` deliberately: the key is present-but-undefined here,
         // which `stableStringify` and `JSON.stringify` both drop.
-        cutouts: migrateLidCutouts(rawLidCutouts),
+        cutouts: migratedLidCutouts,
       };
     })(),
     ...(params.splitConnectors !== undefined

@@ -239,6 +239,13 @@ with `pnpm run validate:json`.
   keep the plain four-corner layout. Mid-edge pads anchor to a single wall with
   their own support-free 45° taper (`anchor: 'x' | 'y'`), unlike the two-wall
   corner gussets.
+- **Nested cutout groups**: `Cutout.parentGroups` holds enclosing groups,
+  outermost first, excluding the cutout's own `groupId`. A group id is EITHER a
+  boolean group (some cutout's `groupId`, owns the op, all the generator sees)
+  OR an arrange-only container (`parentGroups` only) — never both, which is why
+  `cutoutBuilder` is untouched. `utils/cutoutHierarchy.ts` owns the tree; its
+  `unitTag` is the one definition of "one thing" that selection, the shape list
+  and arrange share. Invariants: `bin-designer` skill.
 - **Cutout Pathfinder / `GroupOp`**: cutouts in the same `groupId` share an
   optional `groupOp` ∈ `'union' | 'subtract' | 'intersect' | 'exclude'`
   (missing = `'union'` so pre-Pathfinder designs are unchanged). The worker's

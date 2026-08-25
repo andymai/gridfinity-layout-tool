@@ -31,7 +31,8 @@ interface ShapeListRowProps {
   readonly onSelect: (ids: readonly string[], additive: boolean) => void;
   readonly onToggleLock: (ids: readonly string[], locked: boolean) => void;
   readonly onToggleHidden: (ids: readonly string[], hidden: boolean) => void;
-  readonly onRename: (id: string, name: string) => void;
+  /** Commit a row's display name: a cutout's `name`, or a group's entry in `cutoutGroupNames`. */
+  readonly onRename: (node: ShapeListNode, name: string) => void;
   readonly onDragStart: (node: ShapeListNode) => void;
   /** Report which half of the row the pointer is over, for the drop hint. */
   readonly onDragOverKind: (node: ShapeListNode, kind: DropKind) => void;
@@ -112,10 +113,15 @@ export function ShapeListRow({
   const locked = isGroup ? node.locked : cutout?.locked === true;
   const hidden = isGroup ? node.hidden : cutout?.hidden === true;
 
-  const label = isGroup
-    ? t('binDesigner.shapeList.group', { count: String(node.members.length) })
-    : cutout?.name?.trim()
-      ? cutout.name
+  // What the row is currently called, '' when it has never been named. Both
+  // kinds fall back to a derived label, so this is also the rename field's
+  // starting value — an unnamed row opens empty rather than pre-filled with a
+  // description the user would have to clear first.
+  const currentName = (isGroup ? node.name : cutout?.name) ?? '';
+  const label = currentName.trim()
+    ? currentName
+    : isGroup
+      ? t('binDesigner.shapeList.group', { count: String(node.children.length) })
       : (() => {
           const d = derivedLabel(cutout as Cutout);
           return t(d.key, d.values);
@@ -124,7 +130,7 @@ export function ShapeListRow({
   const commitRename = (value: string): void => {
     setEditing(false);
     if (cancelledRef.current) return;
-    if (cutout && value.trim() !== (cutout.name ?? '')) onRename(cutout.id, value.trim());
+    if (value.trim() !== currentName) onRename(node, value.trim());
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
@@ -178,7 +184,8 @@ export function ShapeListRow({
           e.preventDefault();
           onDrop(node, 'into');
         }}
-        className={`${ROW} ${node.kind === 'shape' && node.nested ? 'pl-5' : ''} ${
+        style={{ paddingLeft: 4 + node.depth * 12 }}
+        className={`${ROW} ${
           selected
             ? 'bg-accent/20 text-content'
             : partial
@@ -211,10 +218,10 @@ export function ShapeListRow({
           <span className="w-3.5 flex-shrink-0" />
         )}
 
-        {editing && cutout ? (
+        {editing ? (
           <Input
             ref={inputRef}
-            defaultValue={cutout.name ?? ''}
+            defaultValue={currentName}
             placeholder={t('binDesigner.shapeList.renamePlaceholder')}
             aria-label={t('binDesigner.shapeList.rename')}
             onBlur={(e) => commitRename(e.currentTarget.value)}
@@ -228,12 +235,23 @@ export function ShapeListRow({
             type="button"
             variant="ghost"
             onClick={(e) => onSelect(ids, e.shiftKey || e.metaKey || e.ctrlKey)}
-            onDoubleClick={() => cutout && setEditing(true)}
+            onDoubleClick={() => setEditing(true)}
             className="min-w-0 flex-1 justify-start truncate px-0.5 py-0 text-left text-[11px] font-normal"
             title={label}
           >
             <span className="truncate">{label}</span>
           </Button>
+        )}
+
+        {/* Only a boolean group changes what gets cut, so only it is badged.
+            A container carries no op and stays visually quiet. */}
+        {isGroup && node.groupKind === 'boolean' && node.op && (
+          <span
+            className="flex-shrink-0 rounded bg-surface-raised px-1 text-[9px] uppercase tracking-wide text-content-tertiary"
+            title={t(`binDesigner.cutouts.pathfinder.${node.op}`)}
+          >
+            {t(`binDesigner.cutouts.pathfinder.${node.op}`)}
+          </span>
         )}
 
         <Button

@@ -16,8 +16,19 @@ import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geo
 import { expandSelectionToGroups } from '../panel/CutoutsSection/cutoutGroups';
 import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
-import { arrayInstanceCount, canGroupArray, groupRepeatBox } from '@/shared/utils/cutoutArray';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import {
+  arrayInstanceCount,
+  canGroupArray,
+  groupRepeatBox,
+  groupRepeatConfig,
+} from '@/shared/utils/cutoutArray';
+import {
+  isBooleanGroup,
+  unitTag,
+  unitTagGroupId,
+} from '@/features/bin-designer/utils/cutoutHierarchy';
+import type { RepeatBlockedReason } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/store';
 import { Collapsible } from '@/design-system';
 import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
@@ -121,24 +132,56 @@ function getSharedField<K extends keyof Cutout>(
 }
 
 /**
- * The group a selection covers exactly, or null.
+ * The group the selection IS, whole, at the current depth — a boolean group or
+ * a container alike, since either repeats as one rigid assembly. Null for
+ * anything else: a partial group, a mix of units, or a lone shape.
  *
- * "Exactly" is both directions: every selected cutout is in the same group, and
- * every member of that group is selected. Clicking a member on the canvas
- * produces this, while ctrl-picking two of a group's three members from the
- * shape list does not, and setting a shared repeat from that partial selection
- * would write it onto a member the user cannot see they are editing.
+ * "Whole" runs both directions: every selected cutout resolves to the same
+ * unit, and every cutout of that unit is selected. Clicking a member on the
+ * canvas produces this, while ctrl-picking two of a group's three members from
+ * the shape list does not, and setting a shared repeat from that partial
+ * selection would write it onto a member the user cannot see they are editing.
  */
 function selectedWholeGroup(
   all: readonly Cutout[],
-  selected: readonly Cutout[]
-): readonly Cutout[] | null {
+  selected: readonly Cutout[],
+  context: readonly string[]
+): { readonly groupId: string; readonly members: readonly Cutout[] } | null {
   if (selected.length < 2) return null;
-  const groupId = selected[0].groupId;
+  const tag = unitTag(selected[0], context);
+  const groupId = tag === null ? null : unitTagGroupId(tag);
   if (groupId === null) return null;
-  if (selected.some((c) => c.groupId !== groupId)) return null;
-  const members = all.filter((c) => c.groupId === groupId);
-  return members.length === selected.length ? members : null;
+  if (selected.some((c) => unitTag(c, context) !== tag)) return null;
+  const members = all.filter((c) => unitTag(c, context) === tag);
+  return members.length === selected.length ? { groupId, members } : null;
+}
+
+/**
+ * Why a whole group refuses a repeat, or null when it takes one.
+ *
+ * A repeat belongs to the assembly, so anything inside already running its own
+ * would cut copies the assembly's pattern knows nothing about.
+ *
+ * The test differs by kind. A BOOLEAN group adopts a lone member's config on
+ * purpose — repeating a loose cutout and then grouping it is a shape shipped
+ * versions produce, and the worker has always cut every copy (see
+ * `groupRepeatConfig`). A CONTAINER has no such history: a config on some but
+ * not all of its members is a sub-unit repeating on its own, and offering it as
+ * the container's own repeat would silently promote it to the whole assembly on
+ * the next edit.
+ */
+function groupRepeatBlockedReason(
+  members: readonly Cutout[],
+  isBoolean: boolean
+): RepeatBlockedReason | null {
+  if (!canGroupArray(members)) return 'path';
+  const repeating = members.filter((m) => m.array !== undefined);
+  if (isBoolean) {
+    return groupRepeatConfig(members) === undefined && repeating.length > 0
+      ? 'descendantRepeat'
+      : null;
+  }
+  return repeating.length > 0 && repeating.length < members.length ? 'descendantRepeat' : null;
 }
 
 export function InspectorContent({
@@ -172,9 +215,10 @@ export function InspectorContent({
 
   // Align/distribute treat a group as one rigid body, so a partially-selected
   // group is pulled in whole before the math runs.
+  const groupContext = useCutoutSelection((state) => state.groupContext);
   const arrangeTargets = useMemo(
-    () => expandSelectionToGroups(cutouts, selectedCutouts),
-    [cutouts, selectedCutouts]
+    () => expandSelectionToGroups(cutouts, selectedCutouts, groupContext),
+    [cutouts, selectedCutouts, groupContext]
   );
 
   // Called above the empty-selection early return so hook order stays stable;
@@ -235,8 +279,20 @@ export function InspectorContent({
   // The group the selection IS, or null when it is a loose set or only part of
   // a group. A repeat belongs to the whole assembly, so a partial selection
   // must not be able to set one for members it does not include.
-  const wholeGroup = selectedWholeGroup(cutouts, selectedCutouts);
-  const groupArray = wholeGroup?.find((m) => m.array !== undefined)?.array;
+  const wholeUnit = selectedWholeGroup(cutouts, selectedCutouts, groupContext);
+  const wholeGroup = wholeUnit?.members ?? null;
+  // Boolean-ness is not "do the members agree on a groupId": a container of
+  // only loose shapes has every member's groupId null, so the unit's own id has
+  // to BE a boolean group.
+  const groupRepeatBlocked = wholeUnit
+    ? groupRepeatBlockedReason(
+        wholeUnit.members,
+        isBooleanGroup(wholeUnit.members, wholeUnit.groupId)
+      )
+    : null;
+  // A blocked unit must not display a sub-unit's config as its own.
+  const groupArray =
+    wholeGroup && groupRepeatBlocked === null ? groupRepeatConfig(wholeGroup) : undefined;
 
   const sharedCutDepth = getSharedValue(selectedCutouts, preview, 'cutDepth');
   const sharedRotation = getSharedValue(selectedCutouts, preview, 'rotation');
@@ -311,10 +367,10 @@ export function InspectorContent({
   };
 
   const handleAlign = (mode: AlignMode) =>
-    applySelectionUpdates(alignSelection(arrangeTargets, mode));
+    applySelectionUpdates(alignSelection(arrangeTargets, mode, groupContext));
 
   const handleDistribute = (axis: DistributeAxis) =>
-    applySelectionUpdates(distributeSelection(arrangeTargets, axis));
+    applySelectionUpdates(distributeSelection(arrangeTargets, axis, groupContext));
 
   // Non-rectangle cutouts collapse W/D to a single value via max() in the
   // generator, so writing only one axis would silently no-op when the other is
@@ -387,10 +443,10 @@ export function InspectorContent({
                 array={groupArray}
                 binWidth={binWidth}
                 binDepth={binDepth}
-                onChange={(config) => setCutoutArray(wholeGroup[0].id, config)}
+                onChange={(config) => setCutoutArray(wholeGroup[0].id, config, groupContext)}
                 onFlatten={() => onFlattenGroupArray?.(wholeGroup[0].id)}
                 disabled={disabled}
-                blockedReason={canGroupArray(wholeGroup) ? null : 'path'}
+                blockedReason={groupRepeatBlocked}
                 canRotateToCenter={false}
               />
             </Collapsible>
