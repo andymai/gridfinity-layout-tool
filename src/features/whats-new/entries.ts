@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'nested-cutout-groups',
+    date: '2026-08-25',
+    kind: 'new',
+    title: { en: 'Groups inside groups' },
+    body: {
+      en: 'Group a few shapes to lock their spacing, then group that with more shapes. Move, align, distribute or repeat the whole assembly and everything inside keeps its arrangement. Double-click to work inside a group, Escape to step back out.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'design-variants',
     date: '2026-08-25',
     kind: 'new',
