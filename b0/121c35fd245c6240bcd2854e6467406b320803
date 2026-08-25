@@ -1,0 +1,101 @@
+src/features/bin-designer/components/panel/VariantSection/VariantLock.tsx
+  s_bc329c5b63b656::t_ae37da551efddf 1-50
+src/i18n/locales/de.json
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+src/i18n/locales/cs.json
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_bc329c5b63b656::t_8f5f48991ddbd3 117-119,138,206,226
+  s_bc329c5b63b656::t_e4573034fe8cc4 157-167,247-261
+  s_bc329c5b63b656::t_9236d54bb73a4d 262
+src/i18n/locales/en.ts
+  s_bc329c5b63b656::t_66fcda5b5a4519 3540
+  s_bc329c5b63b656::t_7400ff2786a733 3563-3572
+src/i18n/locales/nl.json
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_bc329c5b63b656::t_c9765c64dc8900 328-333,338
+src/i18n/locales/pt-BR.json
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+src/features/bin-designer/components/VersionHistory/VersionHistory.test.tsx
+  s_bc329c5b63b656::t_9f589b4123e3cb 198-199
+  s_bc329c5b63b656::t_45f22e7efef596 195-197
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_bc329c5b63b656::t_8f5f48991ddbd3 30-31,292-298,435
+src/i18n/locales/ko.json
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+src/i18n/locales/sv.json
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+src/features/bin-designer/components/DesignerPage/DesignerMainContent.tsx
+  s_bc329c5b63b656::t_113bc5097b34c6 21-24,42-43,48-52,54-60,62-68
+src/shared/utils/applyOverrides.test.ts
+  s_bc329c5b63b656::t_66f87a4b630af1 2
+src/features/bin-designer/components/VersionHistory/VersionEntry.tsx
+  s_bc329c5b63b656::t_66fcda5b5a4519 42-44,122,142-147,150-172
+  s_bc329c5b63b656::t_a14456fda7029b 104-108
+  s_bc329c5b63b656::t_c4a7883d200928 38-41,100-102,125-141,148-149
+  s_bc329c5b63b656::t_683b74ce414b80 123-124
+src/i18n/locales/ja.json
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+src/i18n/locales/nb.json
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+src/i18n/locales/fr.json
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+src/features/bin-designer/components/panel/VariantSection/VariantSection.test.tsx
+  s_bc329c5b63b656::t_ef333837660ed6 107
+  s_bc329c5b63b656::t_0f8acae9e9545b 108-109
+src/i18n/locales/it.json
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+src/i18n/locales/pl.json
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+src/features/bin-designer/utils/openParentDesign.ts
+  s_bc329c5b63b656::t_113bc5097b34c6 1-19
+src/features/bin-designer/components/panel/VariantSection/VariantLock.test.tsx
+  s_bc329c5b63b656::t_614b8e30d8968f 1-69
+src/i18n/locales/uk.json
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+src/i18n/locales/es.json
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+src/i18n/locales/zh-CN.json
+  s_bc329c5b63b656::t_9f589b4123e3cb 1833
+  s_bc329c5b63b656::t_2699707505cea1 1808-1814,1817,1819,1825
+src/features/bin-designer/components/DesignGridItem/DesignGridItem.tsx
+  s_bc329c5b63b656::t_5ee7b3960b58b3 206-210
+src/features/bin-designer/README.md
+  s_bc329c5b63b656::t_13540aec78aa74 716-718,767-769,773-777,785-787
+src/features/bin-designer/components/DesignListItem/DesignListItem.tsx
+  s_bc329c5b63b656::t_5ee7b3960b58b3 222-226
+  s_bc329c5b63b656::t_d49e5877882c8c 218-219
+src/features/bin-designer/components/VersionHistory/VersionEntry.test.tsx
+  s_bc329c5b63b656::t_8714905718fbc9 20-24,38-44,92,104,117,129,137,146,165
+  s_bc329c5b63b656::t_9f589b4123e3cb 142-143,145,148-152,155-164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "b0121c35fd245c6240bcd2854e6467406b320803",
+  "prompts": {},
+  "sessions": {
+    "s_bc329c5b63b656": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f730b687-7a9c-4f6f-88f9-0d7f7583a9ef",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
