@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.475.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.474.0...gridfinity-layout-tool-v4.475.0) (2026-08-25)
+
+
+### Features
+
+* **bin-designer:** nest cutout groups ([#3881](https://github.com/andymai/gridfinity-layout-tool/issues/3881)) ([9d042d8](https://github.com/andymai/gridfinity-layout-tool/commit/9d042d81ea0f2067b87b36f700112d4b6a6b209a))
+* **bin-designer:** variants that stay in step with the design they came from ([#3877](https://github.com/andymai/gridfinity-layout-tool/issues/3877)) ([aee1d20](https://github.com/andymai/gridfinity-layout-tool/commit/aee1d205a70c31f80a372b88370dcdad265f8a72))
+* **whats-new:** rebuild the modal's information architecture ([#3876](https://github.com/andymai/gridfinity-layout-tool/issues/3876)) ([e49be61](https://github.com/andymai/gridfinity-layout-tool/commit/e49be6117bef773987b7927d55da0eb0fac38f2b))
+
+
+### Bug Fixes
+
+* **analytics:** capture each unhandled error once ([#3890](https://github.com/andymai/gridfinity-layout-tool/issues/3890)) ([ee93fc0](https://github.com/andymai/gridfinity-layout-tool/commit/ee93fc02454a7f4363591571c80aca75fabbc8f9))
+* **analytics:** stop reporting the canvas teardown race as an app error ([#3888](https://github.com/andymai/gridfinity-layout-tool/issues/3888)) ([73309ff](https://github.com/andymai/gridfinity-layout-tool/commit/73309ff057dc14583c88db082d6f8819fb4dbffc))
+* **bin-designer:** lock every surface a variant's params can be edited from ([#3879](https://github.com/andymai/gridfinity-layout-tool/issues/3879)) ([5815819](https://github.com/andymai/gridfinity-layout-tool/commit/58158194cb10d3569f94378a3feb6b3ba96dd723))
+* **bin-designer:** span dividers across the overhang-expanded interior ([#3887](https://github.com/andymai/gridfinity-layout-tool/issues/3887)) ([4b80069](https://github.com/andymai/gridfinity-layout-tool/commit/4b80069becd39a37b7c1247deb9c73f00fc6ebc7))
+* **shell:** keep a failed background mount from taking the app down ([#3889](https://github.com/andymai/gridfinity-layout-tool/issues/3889)) ([d296b19](https://github.com/andymai/gridfinity-layout-tool/commit/d296b19106a8b19e284823b47b662ae75f41ddba))
+
 ## [4.474.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.473.0...gridfinity-layout-tool-v4.474.0) (2026-08-25)
 
 
