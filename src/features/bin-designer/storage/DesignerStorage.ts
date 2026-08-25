@@ -13,7 +13,6 @@ import {
   ok,
   err,
   isErr,
-  isOk,
   storageNotFound,
   storageUnavailable,
   storageCorrupted,
@@ -263,21 +262,25 @@ export async function branchFromVersion(
   if (isErr(parentResult)) return parentResult;
   const parent = parentResult.value;
 
+  // Membership is checked before the read: `readDesignVersion` will happily
+  // return any version by id, so without this a mismatched pair would seed the
+  // branch from unrelated content and still stamp it as this design's child.
+  const versionsResult = await listDesignVersions(designId);
+  if (isErr(versionsResult)) return versionsResult;
+  const summary = versionsResult.value.find((v) => v.id === versionId);
+  if (!summary) {
+    return err(storageNotFound(`Version '${versionId}' does not belong to design '${designId}'`));
+  }
+  const versionName = summary.name;
+
   const versionResult = await readDesignVersion(versionId);
   if (isErr(versionResult)) return versionResult;
   const content = versionResult.value;
 
-  const versionsResult = await listDesignVersions(designId);
-  const versionName = isOk(versionsResult)
-    ? versionsResult.value.find((v) => v.id === versionId)?.name
-    : undefined;
-
   const kind = (content.kind as SavedDesign['kind']) ?? 'bin';
   return saveDesign({
     name,
-    // The branch's content comes from the VERSION, not from the parent's
-    // current state: branching from "0.2mm, works" must reproduce that, not
-    // whatever the parent has drifted to since.
+    // Content comes from the VERSION, not the parent's current state.
     ...(kind === 'bin'
       ? { params: (content.params ?? parent.params) as BinParams }
       : {
@@ -285,9 +288,8 @@ export async function branchFromVersion(
           envelope: content.envelope as SavedDesign['envelope'],
           structure: content.structure as SavedDesign['structure'],
         }),
-    // The parent's thumbnail shows its CURRENT state, which is the state the
-    // branch was taken away from. Left null so the regenerator renders the
-    // branch's own geometry instead of shipping a misleading preview.
+    // The parent's thumbnail renders the state the branch was taken away from,
+    // so the regenerator draws the branch's own geometry instead.
     thumbnail: null,
     exportFileNameConfig: parent.exportFileNameConfig ? { ...parent.exportFileNameConfig } : null,
     tags: parent.tags,

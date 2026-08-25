@@ -138,6 +138,28 @@ describe('branchFromVersion', () => {
     expect(reloaded.parentVersionId).toBe(version.id);
   });
 
+  // `readDesignVersion` returns any version by id, so without a membership
+  // check a mismatched pair would seed the branch from unrelated content and
+  // still stamp it as this design's child.
+  it('refuses a version belonging to a different design', async () => {
+    await seedParent();
+    const other = expectOk(
+      await saveDesign({
+        name: 'Other design',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      })
+    );
+    const foreign = expectOk(
+      await createDesignVersion(other.id, 'theirs', { name: 'Other design' }, null)
+    ).version;
+
+    const result = await branchFromVersion(PARENT, foreign.id, 'trial');
+
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
+  });
+
   it('reports a missing parent', async () => {
     expect(expectErr(await branchFromVersion(PARENT, 'nope', 'trial')).code).toBe(
       'STORAGE_NOT_FOUND'
