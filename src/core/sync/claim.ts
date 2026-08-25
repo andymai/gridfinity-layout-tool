@@ -1,3 +1,4 @@
+import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
 import { enqueue as outboxEnqueue, clearAll as outboxClearAll } from './outbox';
 import { useSyncStatusStore } from './status';
@@ -152,20 +153,8 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
   };
 }
 
-/**
- * Each kind's envelope names its payload differently on the wire
- * (`layout` / `design` / `baseplate` / `designVersion`), so the key is looked
- * up rather than branched on at both call sites.
- */
-const ENVELOPE_KEY: Record<SyncKind, 'layout' | 'design' | 'baseplate' | 'designVersion'> = {
-  layouts: 'layout',
-  designs: 'design',
-  baseplates: 'baseplate',
-  designVersions: 'designVersion',
-};
-
 function envelopePayload(kind: SyncKind, fetched: ItemFetchResponse): unknown {
-  return fetched.envelope[ENVELOPE_KEY[kind]];
+  return fetched.envelope[PAYLOAD_KEY[kind]];
 }
 
 interface MergeCounts {

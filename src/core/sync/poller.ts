@@ -1,3 +1,4 @@
+import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
@@ -171,7 +172,7 @@ async function diffKind(
     if (localMtime === undefined || localMtime < entry.modifiedAt) {
       const fetched = await fetchEnvelope(kind, id);
       if (!fetched) continue;
-      const payload = fetched.envelope[ENVELOPE_KEY[kind]];
+      const payload = fetched.envelope[PAYLOAD_KEY[kind]];
       if (payload === undefined) continue;
       await adapter.applyRemote({
         id,
@@ -183,14 +184,6 @@ async function diffKind(
   }
   return applied;
 }
-
-/** Wire key carrying each kind's payload inside its envelope. */
-const ENVELOPE_KEY: Record<SyncKind, 'layout' | 'design' | 'baseplate' | 'designVersion'> = {
-  layouts: 'layout',
-  designs: 'design',
-  baseplates: 'baseplate',
-  designVersions: 'designVersion',
-};
 
 async function fetchEnvelope(kind: SyncKind, id: string): Promise<ItemFetchResponse | null> {
   let res: Response;

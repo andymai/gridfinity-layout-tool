@@ -11,20 +11,9 @@ import {
 import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
 import type { AdapterChange, SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
+import { PAYLOAD_KEY } from './payloadKey';
 
 type ConflictReason = 'remote-newer' | 'deleted-elsewhere' | 'quota' | 'gave-up';
-
-/**
- * Key each kind's payload travels under in its PUT body, matching the endpoint
- * that reads it. A lookup rather than a chain of ternaries because the fallback
- * arm of that chain silently sent any new kind as a `design`.
- */
-const PAYLOAD_KEY: Record<SyncKind, 'layout' | 'design' | 'baseplate' | 'designVersion'> = {
-  layouts: 'layout',
-  designs: 'design',
-  baseplates: 'baseplate',
-  designVersions: 'designVersion',
-};
 
 export type EngineEvent =
   | { type: 'sync-error'; reason: ConflictReason; kind: SyncKind; id: string; message?: string }
