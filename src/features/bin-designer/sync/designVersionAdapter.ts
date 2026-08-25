@@ -31,11 +31,15 @@ function toOrigin(value: unknown): DesignVersionOrigin {
 }
 
 /**
- * A version's mtime is when it was last *edited*, not when it was captured:
- * renaming or pinning must win LWW against the older stored copy, and
- * `createdAt` never moves after the capture.
+ * A version's mtime is when it was last *edited*, not when it was captured.
+ * `engine.sendOne` re-reads the item at push time and sends THIS value, so
+ * returning `createdAt` for a renamed version would push the original capture
+ * time, lose last-write-wins against the copy already stored, and never
+ * converge.
  */
 function toMs(version: DesignVersion): number {
+  const edited = version.updatedAt === undefined ? NaN : Date.parse(version.updatedAt);
+  if (Number.isFinite(edited)) return edited;
   const created = Date.parse(version.createdAt);
   return Number.isFinite(created) ? created : 0;
 }
@@ -77,6 +81,11 @@ function fromItem(item: SyncableItem<DesignVersionPayload>): DesignVersion {
     // thumbnail regenerator fills one in from the params.
     thumbnail: null,
     createdAt: p.createdAt,
+    // The envelope's `modifiedAt` IS the edit time the sender reported, so it
+    // rehydrates `updatedAt` without a second wire field. Without this a pulled
+    // rename would report `createdAt` as its mtime on the next push and the two
+    // devices would trade stale writes forever.
+    updatedAt: new Date(item.modifiedAt).toISOString(),
     origin: toOrigin(p.origin),
     ...(p.pinned ? { pinned: true } : {}),
   };

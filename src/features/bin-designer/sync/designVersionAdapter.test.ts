@@ -167,19 +167,70 @@ describe('designVersionAdapter', () => {
       expect(changes).toContainEqual(expect.objectContaining({ kind: 'delete', id: saved.id }));
     });
 
-    // A rename is a real edit the other device has to receive, and it needs a
-    // fresh mtime to win LWW against the copy already stored.
-    it('reports a rename as a put with a newer mtime than the capture', async () => {
+    // `engine.sendOne` re-reads the item at push time and sends THAT mtime, so
+    // the adapter, not just the event, has to report the edit time. Reporting
+    // `createdAt` would push a stale timestamp that loses LWW forever.
+    it('reports a renamed version’s edit time, not its capture time', async () => {
       const saved = await seedVersion();
-      const changes: AdapterChange[] = [];
-      const unsubscribe = designVersionAdapter.subscribe((c) => changes.push(c));
+      await new Promise((r) => setTimeout(r, 5));
 
       expectOk(await renameDesignVersion(saved.id, 'renamed'));
+
+      const item = await designVersionAdapter.get(saved.id);
+      expect(item?.modifiedAt).toBeGreaterThan(Date.parse(saved.createdAt));
+    });
+
+    it('reports the capture time for a version that was never edited', async () => {
+      const saved = await seedVersion();
+
+      const item = await designVersionAdapter.get(saved.id);
+
+      expect(item?.modifiedAt).toBe(Date.parse(saved.createdAt));
+    });
+
+    // Otherwise the receiving device pushes back `createdAt` and the two trade
+    // stale writes forever.
+    it('keeps the edit time across a pull', async () => {
+      const id = '11111111-2222-3333-4444-aaaaaaaaaaaa';
+      const edited = Date.parse('2026-08-10T00:00:00.000Z');
+      await designVersionAdapter.applyRemote({
+        id,
+        modifiedAt: edited,
+        payload: {
+          designId: DESIGN,
+          name: 'renamed elsewhere',
+          content: { name: 'x', params: DEFAULT_BIN_PARAMS },
+          createdAt: '2026-08-01T00:00:00.000Z',
+          origin: 'manual',
+        },
+      });
+
+      const item = await designVersionAdapter.get(id);
+      expect(item?.modifiedAt).toBe(edited);
+    });
+
+    // A pulled write must not re-arm a filter that then swallows the next real
+    // local edit to the same version.
+    it('does not suppress the local change that follows a remote write', async () => {
+      const id = '11111111-2222-3333-4444-999999999999';
+      await designVersionAdapter.applyRemote({
+        id,
+        modifiedAt: Date.now(),
+        payload: {
+          designId: DESIGN,
+          name: 'pulled',
+          content: { name: 'x', params: DEFAULT_BIN_PARAMS },
+          createdAt: new Date().toISOString(),
+          origin: 'manual',
+        },
+      });
+
+      const changes: AdapterChange[] = [];
+      const unsubscribe = designVersionAdapter.subscribe((c) => changes.push(c));
+      expectOk(await renameDesignVersion(id, 'renamed locally'));
       unsubscribe();
 
-      const put = changes.find((c) => c.kind === 'put');
-      expect(put).toBeDefined();
-      expect(put?.modifiedAt).toBeGreaterThanOrEqual(Date.parse(saved.createdAt));
+      expect(changes).toContainEqual(expect.objectContaining({ kind: 'put', id }));
     });
 
     // Otherwise the engine's own listener turns every pull straight back into a push.

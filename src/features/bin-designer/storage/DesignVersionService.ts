@@ -25,22 +25,7 @@ import type {
 } from '@/features/bin-designer/types';
 import { MAX_VERSIONS_PER_DESIGN } from '@/features/bin-designer/types';
 import { getDb, DESIGN_VERSIONS_STORE } from './designerDb';
-import { emit as emitVersionEvent } from '@/features/bin-designer/sync/designVersionEvents';
-
-/**
- * Ids whose next write came from the cloud, so the adapter's own listener does
- * not echo a pulled version straight back to the server.
- */
-const suppressed = new Set<string>();
-
-export function suppressVersionEvents(id: string): void {
-  suppressed.add(id);
-}
-
-function announce(event: Parameters<typeof emitVersionEvent>[0]): void {
-  if (suppressed.delete(event.id)) return;
-  emitVersionEvent(event);
-}
+import { emit as announce } from '@/features/bin-designer/sync/designVersionEvents';
 
 /** Strip the compressed body so the history list never holds every design in memory. */
 function toSummary(version: DesignVersion): DesignVersionSummary {
@@ -176,11 +161,13 @@ async function patch(
     const existing = (await db.get(DESIGN_VERSIONS_STORE, versionId)) as DesignVersion | undefined;
     if (!existing) return err(storageNotFound(versionId));
 
-    const updated: DesignVersion = { ...existing, ...fields };
+    // `updatedAt` is what the adapter reports as the mtime. Stamping it here is
+    // what lets a rename win last-write-wins against the copy already synced;
+    // `createdAt` is when the state was captured and never moves.
+    const updatedAt = new Date().toISOString();
+    const updated: DesignVersion = { ...existing, ...fields, updatedAt };
     await db.put(DESIGN_VERSIONS_STORE, updated);
-    // A rename or a pin is a real edit the other device should see, so it needs
-    // a fresh mtime; `createdAt` is when the state was captured and never moves.
-    announce({ type: 'put', id: updated.id, modifiedAt: Date.now() });
+    announce({ type: 'put', id: updated.id, modifiedAt: Date.parse(updatedAt) });
     return ok(toSummary(updated));
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
@@ -262,15 +249,15 @@ export async function getDesignVersionRecord(
 /**
  * Write a version that came from the cloud.
  *
- * Suppresses the change event: the adapter's own listener would otherwise turn
- * an applied pull straight back into an outbox push.
+ * Deliberately writes through the store directly rather than
+ * {@link createDesignVersion}: only the announcing paths emit, so a pull is
+ * silent by construction and cannot echo back to the server as a push.
  */
 export async function putRemoteDesignVersion(
   version: DesignVersion
 ): Promise<Result<void, StorageError>> {
   try {
     const db = await getDb();
-    suppressVersionEvents(version.id);
     await db.put(DESIGN_VERSIONS_STORE, version);
     return ok(undefined);
   } catch (e) {
@@ -278,13 +265,12 @@ export async function putRemoteDesignVersion(
   }
 }
 
-/** Delete a version because the cloud says it is gone, without re-announcing. */
+/** Delete a version because the cloud says it is gone. Silent, as above. */
 export async function deleteRemoteDesignVersion(
   versionId: string
 ): Promise<Result<void, StorageError>> {
   try {
     const db = await getDb();
-    suppressVersionEvents(versionId);
     await db.delete(DESIGN_VERSIONS_STORE, versionId);
     return ok(undefined);
   } catch (e) {
