@@ -13,6 +13,7 @@ import type { ItemEnvelope } from '@/shared/types/item';
 import { assemblyDescriptor } from '@/shared/items/assembly/descriptor';
 import {
   deleteDesign,
+  detachVariant,
   listDesigns,
   loadDesign,
   saveDesign,
@@ -233,17 +234,26 @@ export const designAdapter: DesignAdapter = {
       // other device"), so only `undefined` (legacy payload) falls back.
       const publishedId = remotePublishedId === undefined ? base?.publishedId : remotePublishedId;
       const lineage = remoteLineage === undefined ? base?.lineage : remoteLineage;
-      // Branch lineage is written once and never edited, so an absent remote
-      // value means "this payload predates the field", not "detached".
       const remote = item.payload;
+      // Branch lineage is written once and never cleared, so an absent remote
+      // value there really does mean "this payload predates the field".
+      //
+      // The VARIANT pair is different: it is current state, and detaching
+      // clears both. Falling back to the local value would make a detach
+      // unsyncable, so remote wins outright — the engine only calls this when
+      // remote is newer. `overrides` defaults to `{}` rather than `undefined`
+      // so releasing every claim also crosses the wire (the server drops an
+      // empty object, which would otherwise read as "keep what you have").
+      const variantOf = remote.variantOf ? designId(remote.variantOf) : undefined;
       const branch = {
         parentDesignId: remote.parentDesignId
           ? designId(remote.parentDesignId)
           : base?.parentDesignId,
         parentVersionId: remote.parentVersionId ?? base?.parentVersionId,
         parentVersionName: remote.parentVersionName ?? base?.parentVersionName,
-        variantOf: remote.variantOf ? designId(remote.variantOf) : base?.variantOf,
-        overrides: (remote.overrides as SavedDesign['overrides']) ?? base?.overrides,
+        ...(variantOf
+          ? { variantOf, overrides: (remote.overrides as SavedDesign['overrides']) ?? {} }
+          : {}),
       };
       const result =
         remoteKind === 'assembly' && remoteEnvelope
@@ -275,6 +285,13 @@ export const designAdapter: DesignAdapter = {
             });
       if (!isOk(result)) {
         throw new Error(`saveDesign failed for ${item.id}`);
+      }
+      // `saveDesign` falls back to the STORED value for both variant fields, so
+      // it cannot clear them; `detachVariant` writes through the store for
+      // exactly that reason. Runs after the save so it keeps what was just
+      // written.
+      if (!variantOf && base?.variantOf) {
+        await detachVariant(designId(item.id));
       }
     } finally {
       suppressed.delete(item.id);
