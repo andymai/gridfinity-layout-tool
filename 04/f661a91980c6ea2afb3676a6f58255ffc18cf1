@@ -1,0 +1,31 @@
+src/features/bin-designer/hooks/useVariantContext.ts
+  s_bc329c5b63b656::t_5b2a8c12662d43 30,40-49,63,69,80,86-95,104
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_bc329c5b63b656::t_a6f22a2bac790b 568-579
+src/features/bin-designer/storage/designVariants.test.ts
+  s_bc329c5b63b656::t_3d07cff0e74124 246-250
+src/shared/utils/applyOverrides.test.ts
+  s_bc329c5b63b656::t_3d07cff0e74124 183-202
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_bc329c5b63b656::t_a6f22a2bac790b 286-290
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_bc329c5b63b656::t_a6f22a2bac790b 178-180
+src/shared/utils/applyOverrides.ts
+  s_bc329c5b63b656::t_a6f22a2bac790b 126-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "04f661a91980c6ea2afb3676a6f58255ffc18cf1",
+  "prompts": {},
+  "sessions": {
+    "s_bc329c5b63b656": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f730b687-7a9c-4f6f-88f9-0d7f7583a9ef",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
