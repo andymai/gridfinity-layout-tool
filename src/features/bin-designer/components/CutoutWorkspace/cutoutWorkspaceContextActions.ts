@@ -7,15 +7,14 @@
  */
 
 import type { ContextMenuAction } from '../panel/CutoutsSection/CutoutContextMenu';
-import { groupChain } from '@/features/bin-designer/utils/cutoutHierarchy';
+import { groupDepth } from '@/features/bin-designer/utils/cutoutHierarchy';
 import {
   CENTER_ACTIONS,
-  centerInBin,
+  centerSelectionInBin,
   flipSelectionHorizontal,
   flipSelectionVertical,
 } from '../panel/CutoutsSection/geometry';
 import { canArray } from '../panel/CutoutsSection/cutoutSectionVisibility';
-import { expandSelectionToGroups } from '../panel/CutoutsSection/cutoutGroups';
 import { defaultArrayConfig } from '@/shared/utils/cutoutArray';
 import {
   detectRepeatPattern,
@@ -231,7 +230,7 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
         shortcut: { keys: 'G', modifier: true },
       });
     }
-    if (selectedCutouts.some((c) => groupChain(c).length > 0)) {
+    if (selectedCutouts.some((c) => groupDepth(c) > 0)) {
       actions.push({
         label: t('binDesigner.cutouts.ungroup'),
         onClick: () => ungroupCutouts(selectedIds),
@@ -276,14 +275,14 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
       actions.push({
         label: t(key),
         onClick: () => {
-          // Centre moves whole units, like every other arrange action, or a
-          // partially selected group is torn apart around the members that moved.
-          const selected = expandSelectionToGroups(
+          const positions = centerSelectionInBin(
             cutouts,
-            cutouts.filter((c) => selection.has(c.id)),
+            selection,
+            binWidth,
+            binDepth,
+            axis,
             groupContext
           );
-          const positions = centerInBin(selected, binWidth, binDepth, axis, groupContext);
           for (const [id, pos] of Object.entries(positions)) {
             updateCutout(id, pos);
           }

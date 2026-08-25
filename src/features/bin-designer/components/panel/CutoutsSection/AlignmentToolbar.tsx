@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react';
-import { groupChain } from '@/features/bin-designer/utils/cutoutHierarchy';
+import { groupDepth } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { Button, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -145,7 +145,7 @@ export function AlignmentToolbar({
   const [gap, setGap] = useState(2);
 
   const selected = cutouts.filter((c) => selectedIds.includes(c.id));
-  const hasGroup = selected.some((c) => groupChain(c).length > 0);
+  const hasGroup = selected.some((c) => groupDepth(c) > 0);
   const groupContext = useCutoutSelection((state) => state.groupContext);
   const canGroup = canGroupSelection(selectedIds, cutouts, groupContext);
 

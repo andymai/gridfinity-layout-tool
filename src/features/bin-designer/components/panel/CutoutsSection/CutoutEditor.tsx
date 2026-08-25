@@ -13,7 +13,6 @@ import {
   remainingCutoutCapacity,
 } from '@/features/bin-designer/store';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
-import { expandSelectionToGroups } from './cutoutGroups';
 import { useGroupLevel } from '@/features/bin-designer/hooks/useGroupLevel';
 import { GroupBreadcrumb } from '../../CutoutWorkspace/GroupBreadcrumb';
 import { useToastStore } from '@/core/store/toast';
@@ -24,7 +23,7 @@ import {
 } from '@/features/bin-designer/utils/binDimensions';
 import {
   CENTER_ACTIONS,
-  centerInBin,
+  centerSelectionInBin,
   flipSelectionHorizontal,
   flipSelectionVertical,
 } from './geometry';
@@ -445,14 +444,14 @@ export function CutoutEditor() {
         actions.push({
           label: t(key),
           onClick: () => {
-            // Centre moves whole units, like every other arrange action, or a
-            // partially selected group is torn apart around the members that moved.
-            const selected = expandSelectionToGroups(
+            const positions = centerSelectionInBin(
               cutouts,
-              cutouts.filter((c) => selection.has(c.id)),
+              selection,
+              binWidth,
+              binDepth,
+              axis,
               groupContext
             );
-            const positions = centerInBin(selected, binWidth, binDepth, axis, groupContext);
             for (const [id, pos] of Object.entries(positions)) {
               updateCutout(id, pos);
             }

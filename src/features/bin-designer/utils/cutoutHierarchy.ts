@@ -31,7 +31,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { MAX_GROUP_DEPTH } from '@/features/bin-designer/types';
+import { MAX_GROUP_DEPTH, MAX_PARENT_GROUPS } from '@/features/bin-designer/types';
 
 /** Ancestors of a cutout, outermost first, excluding its own group. */
 export function parentGroups(cutout: Pick<Cutout, 'parentGroups'>): readonly string[] {
@@ -223,16 +223,29 @@ export function withGroupChain(
 }
 
 /**
+ * The longest ancestry chain this cutout can actually STORE.
+ *
+ * A grouped cutout spends its innermost level on `groupId`, so it gets the full
+ * {@link MAX_GROUP_DEPTH}. A loose one keeps every level in `parentGroups`,
+ * which the schema and the server cap one lower at {@link MAX_PARENT_GROUPS}.
+ * Guarding on depth alone lets the editor mint a loose shape with ten ancestors
+ * — a design that edits fine and is then rejected by sync and share.
+ */
+export function maxChainLength(cutout: Pick<Cutout, 'groupId'>): number {
+  return cutout.groupId === null ? MAX_PARENT_GROUPS : MAX_GROUP_DEPTH;
+}
+
+/**
  * Insert `groupId` as a new container at `depth`, wrapping whatever the cutout
  * currently sits in from that level down.
  *
- * Refuses past {@link MAX_GROUP_DEPTH} by returning the cutout untouched;
+ * Refuses past {@link maxChainLength} by returning the cutout untouched;
  * callers gate on {@link canNestDeeper} first so the UI can explain itself
  * rather than silently doing nothing.
  */
 export function insertGroupAt(cutout: Cutout, groupId: string, depth: number): Cutout {
   const chain = groupChain(cutout);
-  if (chain.length + 1 > MAX_GROUP_DEPTH) return cutout;
+  if (chain.length + 1 > maxChainLength(cutout)) return cutout;
   const next = [...chain.slice(0, depth), groupId, ...chain.slice(depth)];
   return withGroupChain(cutout, next);
 }
@@ -284,7 +297,7 @@ export function remapGroupChain(
 
 /** True when every cutout in `members` could take one more enclosing level. */
 export function canNestDeeper(members: readonly Cutout[]): boolean {
-  return members.every((m) => groupDepth(m) + 1 <= MAX_GROUP_DEPTH);
+  return members.every((m) => groupChain(m).length + 1 <= maxChainLength(m));
 }
 
 /**

@@ -39,6 +39,7 @@ export {
   distributeHorizontally,
   distributeVertically,
   centerInBin,
+  centerSelectionInBin,
   CENTER_ACTIONS,
   type AlignmentGuide,
   type CenterAxis,

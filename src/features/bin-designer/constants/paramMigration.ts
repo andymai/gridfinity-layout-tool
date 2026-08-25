@@ -929,9 +929,13 @@ function migrateCutoutGroupNames(
 ): Record<string, string> | undefined {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return undefined;
   const kept = Object.entries(raw)
-    .filter(([id, name]) => referenced.has(id) && typeof name === 'string' && name !== '')
-    .slice(0, MAX_CUTOUT_GROUP_NAMES)
-    .map(([id, name]) => [id, (name as string).slice(0, MAX_GROUP_NAME_LENGTH)] as const);
+    .filter(([id, name]) => referenced.has(id) && typeof name === 'string')
+    .map(([id, name]) => [id, (name as string).trim().slice(0, MAX_GROUP_NAME_LENGTH)] as const)
+    // Trimmed BEFORE the empty test: the editor reads a whitespace-only name as
+    // unnamed, so keeping one leaves an inert entry that still shifts the
+    // design's fingerprint.
+    .filter(([, name]) => name !== '')
+    .slice(0, MAX_CUTOUT_GROUP_NAMES);
   return kept.length > 0 ? Object.fromEntries(kept) : undefined;
 }
 

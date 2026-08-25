@@ -9,7 +9,13 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { type Bounds, getEffectiveBounds } from './geometryCore';
-import { toArrangeUnits, unitsBounds, unitWidth, unitDepth } from './cutoutGroups';
+import {
+  expandSelectionToGroups,
+  toArrangeUnits,
+  unitsBounds,
+  unitWidth,
+  unitDepth,
+} from './cutoutGroups';
 
 /** Distribute needs a fixed unit at each end plus something to place between them. */
 const MIN_DISTRIBUTE_UNITS = 3;
@@ -161,6 +167,29 @@ export const CENTER_ACTIONS: ReadonlyArray<{ readonly axis: CenterAxis; readonly
   { axis: 'x', key: 'binDesigner.cutouts.centerH' },
   { axis: 'y', key: 'binDesigner.cutouts.centerV' },
 ];
+
+/**
+ * Centre what the user has selected, as whole units.
+ *
+ * The expansion is the point: centring a partial selection would tear a group
+ * apart around the members that happened to be picked, and both context menus
+ * offer this action.
+ */
+export function centerSelectionInBin(
+  cutouts: readonly Cutout[],
+  selection: ReadonlySet<string>,
+  binWidth: number,
+  binDepth: number,
+  axis: CenterAxis,
+  context: readonly string[]
+): Record<string, { x: number; y: number }> {
+  const selected = expandSelectionToGroups(
+    cutouts,
+    cutouts.filter((c) => selection.has(c.id)),
+    context
+  );
+  return centerInBin(selected, binWidth, binDepth, axis, context);
+}
 
 /**
  * Center a selection within the bin.

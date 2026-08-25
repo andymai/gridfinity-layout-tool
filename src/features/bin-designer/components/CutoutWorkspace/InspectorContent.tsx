@@ -22,7 +22,11 @@ import {
   groupRepeatBox,
   groupRepeatConfig,
 } from '@/shared/utils/cutoutArray';
-import { unitTag, unitTagGroupId } from '@/features/bin-designer/utils/cutoutHierarchy';
+import {
+  isBooleanGroup,
+  unitTag,
+  unitTagGroupId,
+} from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { RepeatBlockedReason } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/store';
 import { Collapsible } from '@/design-system';
@@ -277,13 +281,13 @@ export function InspectorContent({
   // must not be able to set one for members it does not include.
   const wholeUnit = selectedWholeGroup(cutouts, selectedCutouts, groupContext);
   const wholeGroup = wholeUnit?.members ?? null;
+  // Boolean-ness is not "do the members agree on a groupId": a container of
+  // only loose shapes has every member's groupId null, so the unit's own id has
+  // to BE a boolean group.
   const groupRepeatBlocked = wholeUnit
     ? groupRepeatBlockedReason(
         wholeUnit.members,
-        // A container of only loose shapes has every member's groupId null, so
-        // "they all agree" is not the test — the unit's own id has to BE a
-        // boolean group.
-        wholeUnit.members.some((m) => m.groupId === wholeUnit.groupId)
+        isBooleanGroup(wholeUnit.members, wholeUnit.groupId)
       )
     : null;
   // A blocked unit must not display a sub-unit's config as its own.

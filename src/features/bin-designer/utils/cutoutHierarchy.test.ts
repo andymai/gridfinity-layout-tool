@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
-import { MAX_GROUP_DEPTH } from '@/features/bin-designer/types';
+import { MAX_GROUP_DEPTH, MAX_PARENT_GROUPS } from '@/features/bin-designer/types';
 import {
   canNestDeeper,
   countUnits,
@@ -233,6 +233,30 @@ describe('insertGroupAt', () => {
     const deep = insertGroupAt(cut({ id: 'a', groupId: 'gA', parentGroups: ['outer'] }), 'mid', 1);
     expect(deep.parentGroups).toEqual(['outer', 'mid']);
     expect(deep.groupId).toBe('gA');
+  });
+
+  it('caps a LOOSE shape one level lower, where the whole chain is stored', () => {
+    // A loose cutout keeps every level in `parentGroups`, which the schema and
+    // the server cap at MAX_PARENT_GROUPS. Guarding on depth alone would mint a
+    // design that edits fine and is then rejected by sync.
+    const atCap = cut({ id: 'hex', parentGroups: Array.from({ length: 9 }, (_, i) => `g${i}`) });
+    expect(insertGroupAt(atCap, 'more', 0)).toBe(atCap);
+    expect(canNestDeeper([atCap])).toBe(false);
+
+    const oneBelow = cut({ id: 'hex', parentGroups: Array.from({ length: 8 }, (_, i) => `g${i}`) });
+    expect(canNestDeeper([oneBelow])).toBe(true);
+    expect(insertGroupAt(oneBelow, 'more', 0).parentGroups).toHaveLength(9);
+  });
+
+  it('never mints a chain the schema would reject', () => {
+    for (const parents of [8, 9]) {
+      const loose = cut({
+        id: 'hex',
+        parentGroups: Array.from({ length: parents }, (_, i) => `g${i}`),
+      });
+      const after = insertGroupAt(loose, 'more', 0);
+      expect((after.parentGroups ?? []).length).toBeLessThanOrEqual(MAX_PARENT_GROUPS);
+    }
   });
 
   it('refuses to exceed the depth cap', () => {

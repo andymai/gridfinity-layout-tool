@@ -35,20 +35,6 @@ export function GroupBreadcrumb({
   const t = useTranslation();
   if (context.length === 0) return null;
 
-  const segment = (index: number): { readonly label: string; readonly to: readonly string[] } => {
-    const groupId = context[index];
-    const name = (groupNames[groupId] ?? '').trim();
-    return {
-      label:
-        name !== ''
-          ? name
-          : t('binDesigner.shapeList.group', {
-              count: String(countUnits(cutouts, context.slice(0, index + 1))),
-            }),
-      to: context.slice(0, index + 1),
-    };
-  };
-
   return (
     <nav
       aria-label={t('binDesigner.groupBreadcrumb.label')}
@@ -65,7 +51,12 @@ export function GroupBreadcrumb({
         {t('binDesigner.groupBreadcrumb.root')}
       </Button>
       {context.map((groupId, i) => {
-        const { label, to } = segment(i);
+        const to = context.slice(0, i + 1);
+        const name = (groupNames[groupId] ?? '').trim();
+        const label =
+          name !== ''
+            ? name
+            : t('binDesigner.shapeList.group', { count: String(countUnits(cutouts, to)) });
         const current = i === context.length - 1;
         return (
           <span key={groupId} className="flex min-w-0 items-center gap-0.5">

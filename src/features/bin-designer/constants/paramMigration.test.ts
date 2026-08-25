@@ -7,7 +7,12 @@ import {
 } from './paramMigration';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from './defaults';
 import type { Cutout, LidConfig } from '../types';
-import { FLOOR_PATTERN_TYPES, MAX_PARENT_GROUPS, WALL_PATTERN_TYPES } from '../types';
+import {
+  FLOOR_PATTERN_TYPES,
+  MAX_GROUP_NAME_LENGTH,
+  MAX_PARENT_GROUPS,
+  WALL_PATTERN_TYPES,
+} from '../types';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { validateBinParams } from '../utils/validation';
@@ -1778,6 +1783,30 @@ describe('cutoutGroupNames', () => {
       cutoutGroupNames: { lidGroup: 'Vent' },
     } as never);
     expect(migrated.cutoutGroupNames).toEqual({ lidGroup: 'Vent' });
+  });
+
+  it('drops a whitespace-only name rather than persisting an inert entry', () => {
+    const migrated = migrateParams({
+      cutouts: [cut({ id: 'a', groupId: 'gA' })],
+      cutoutGroupNames: { gA: '   ' },
+    });
+    expect(migrated.cutoutGroupNames).toBeUndefined();
+  });
+
+  it('trims a padded name to what the editor would show', () => {
+    const migrated = migrateParams({
+      cutouts: [cut({ id: 'a', groupId: 'gA' })],
+      cutoutGroupNames: { gA: '  Socket tray  ' },
+    });
+    expect(migrated.cutoutGroupNames).toEqual({ gA: 'Socket tray' });
+  });
+
+  it('clamps a name the server would reject', () => {
+    const migrated = migrateParams({
+      cutouts: [cut({ id: 'a', groupId: 'gA' })],
+      cutoutGroupNames: { gA: 'x'.repeat(200) },
+    });
+    expect(migrated.cutoutGroupNames?.gA).toHaveLength(MAX_GROUP_NAME_LENGTH);
   });
 
   it('rejects a non-object or non-string entry', () => {

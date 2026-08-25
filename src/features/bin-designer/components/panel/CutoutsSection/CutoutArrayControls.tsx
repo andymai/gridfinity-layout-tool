@@ -33,6 +33,13 @@ import {
 } from './repeatPresets';
 import type { RepeatBlockedReason } from './cutoutSectionVisibility';
 
+/** The explanation each refusal renders in place of the controls. */
+const BLOCKED_REASON_KEYS: Record<RepeatBlockedReason, string> = {
+  grouped: 'binDesigner.cutouts.repeat.blockedGrouped',
+  descendantRepeat: 'binDesigner.cutouts.repeat.blockedDescendant',
+  path: 'binDesigner.cutouts.repeat.blockedPath',
+};
+
 interface CutoutArrayControlsProps {
   /**
    * The footprint the layout is measured against: one cutout's box, or a whole
@@ -93,13 +100,7 @@ export function CutoutArrayControls({
     return (
       <div className="space-y-1.5">
         <p className="text-[11px] leading-snug text-content-tertiary">
-          {t(
-            blockedReason === 'grouped'
-              ? 'binDesigner.cutouts.repeat.blockedGrouped'
-              : blockedReason === 'descendantRepeat'
-                ? 'binDesigner.cutouts.repeat.blockedDescendant'
-                : 'binDesigner.cutouts.repeat.blockedPath'
-          )}
+          {t(BLOCKED_REASON_KEYS[blockedReason])}
         </p>
         {blockedReason === 'grouped' && onUngroup && (
           <Button

@@ -14,11 +14,7 @@ import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { Cutout, GroupOp } from '@/features/bin-designer/types';
 import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/store';
-import {
-  groupChain,
-  unitTagGroupId,
-  unitTags,
-} from '@/features/bin-designer/utils/cutoutHierarchy';
+import { isWithin, unitTagGroupId, unitTags } from '@/features/bin-designer/utils/cutoutHierarchy';
 
 export interface GroupLevelOptions {
   readonly cutouts: readonly Cutout[];
@@ -96,9 +92,12 @@ export function useGroupLevel({ cutouts, transaction }: GroupLevelOptions): Grou
   useEffect(() => {
     const { groupContext: live, setGroupContext } = useCutoutSelection.getState();
     if (live.length === 0) return;
-    const present = new Set(cutouts.flatMap((c) => groupChain(c)));
+    // Tested as a PATH, not as a set of surviving ids: moving a group to a
+    // different parent leaves its id present while the prefix that reached it
+    // no longer describes anything, and `isWithin` would then answer false for
+    // every cutout — the same silent no-op as a deleted group.
     let keep = live.length;
-    while (keep > 0 && !present.has(live[keep - 1])) keep--;
+    while (keep > 0 && !cutouts.some((c) => isWithin(c, live.slice(0, keep)))) keep--;
     if (keep !== live.length) setGroupContext(live.slice(0, keep));
   }, [cutouts]);
 

@@ -21,7 +21,6 @@ import type {
 import {
   DEFAULT_GROUP_OP,
   DEFAULT_CUTOUT_COLOR_SCOPE,
-  MAX_GROUP_DEPTH,
   MAX_GROUP_NAME_LENGTH,
   MAX_LID_CUTOUTS,
 } from '../../types';
@@ -42,6 +41,7 @@ import {
   groupChain,
   insertGroupAt,
   isBooleanGroup,
+  maxChainLength,
   parentGroups,
   referencedGroupIds,
   remapGroupChain,
@@ -648,8 +648,7 @@ export function createCutoutSlice(rawSet: Set) {
         pushHistoryEntry(state);
         const owner = cutoutOwner(state);
         const toDuplicate = owner.cutouts.filter((c) => cutoutIds.includes(c.id));
-        // Map the old ancestry onto fresh ids so the copies form their own tree
-        // rather than joining the group they were copied from.
+        // One map across the batch: see `remapGroupChain`.
         const groupMap = new Map<string, string>();
         const topZ = nextTopZIndexIn(cutoutList(state));
         const duplicated = toDuplicate.map((c, i) => {
@@ -705,9 +704,10 @@ export function createCutoutSlice(rawSet: Set) {
         // Forming a fresh pair means the target joins too.
         if (target && target.groupId === null) moving.add(target.id);
 
-        const destChain = target
-          ? [...parentGroups(target), ...(destGroupId ? [destGroupId] : [])]
-          : [];
+        // The destination keeps its own place in the tree; a fresh pair forms
+        // where the target already sits.
+        const destChain =
+          target && destGroupId !== null ? [...parentGroups(target), destGroupId] : [];
         const noChange = owner.cutouts.every(
           (c) =>
             !moving.has(c.id) || (c.groupId === destGroupId && sameChain(groupChain(c), destChain))
@@ -906,7 +906,12 @@ export function createCutoutSlice(rawSet: Set) {
 
         const landings = planUnitLandings(owner.cutouts, tags, destChain);
         if (landings.size === 0) return;
-        if ([...landings.values()].some((l) => l.chain.length > MAX_GROUP_DEPTH)) return;
+        // Per landing, not one flat cap: a shape that lands loose stores its
+        // whole chain in `parentGroups`, which the schema caps one lower.
+        const overDepth = [...landings.values()].some(
+          (l) => l.chain.length > maxChainLength({ groupId: l.keepsGroup ? 'kept' : null })
+        );
+        if (overDepth) return;
 
         const unchanged = owner.cutouts.every((c) => {
           const next = landings.get(c.id);

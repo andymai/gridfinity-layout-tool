@@ -7,7 +7,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { groupChain } from '@/features/bin-designer/utils/cutoutHierarchy';
+import { groupDepth } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/store';
 import { GroupBreadcrumb } from './GroupBreadcrumb';
@@ -296,7 +296,7 @@ export function WorkspaceHeader({
 
   const selectedIds = [...selection];
   const selected = useMemo(() => cutouts.filter((c) => selection.has(c.id)), [cutouts, selection]);
-  const hasGroup = selected.some((c) => groupChain(c).length > 0);
+  const hasGroup = selected.some((c) => groupDepth(c) > 0);
   const groupContext = useCutoutSelection((state) => state.groupContext);
   const setGroupContext = useCutoutSelection((state) => state.setGroupContext);
   const groupNames = useDesignerStore((state) => state.params.cutoutGroupNames);
