@@ -1,0 +1,20 @@
+src/shell/Modals/WhatsNewModal/WhatsNewModal.test.tsx
+  s_8269079f83f341::t_5f4578696eedba 2,31-47,70-71,75-78,80,83-84,93-94,155,159-161,175-177,180
+  s_8269079f83f341::t_bf64c4319e7c0e 88-90,92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "34bb315632819655b8cf8c5b6f6cac203c15f22e",
+  "prompts": {},
+  "sessions": {
+    "s_8269079f83f341": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7dbdd22-aa72-401a-a408-b76897d97ded",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
