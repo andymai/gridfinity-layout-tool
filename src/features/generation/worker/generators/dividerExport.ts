@@ -10,32 +10,11 @@ import { unwrap, fuse, exportSTEP } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { deriveDimensions } from './pipeline/context';
 import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
-import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
-import { pitchFromParams } from './gridPitch';
-import { resolveOverhang, overhangExpansion } from './overhang';
+import { dividerInterior } from '@/shared/utils/slotMath';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 import { EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
-
-const CLEARANCE = GRIDFINITY.TOLERANCE;
-
-/**
- * Interior dimensions the divider pieces span. Mirrors the pipeline's
- * `context.ts`: the interior grows into the overhang in lockstep with the body,
- * so pieces must span the expanded interior to reach the wall slots the body
- * cuts at those positions.
- */
-export function dividerInteriorDims(params: BinParams): { innerW: number; innerD: number } {
-  const { x: unitX, y: unitY } = pitchFromParams(params);
-  const ovh = overhangExpansion(resolveOverhang(params.overhang));
-  const outerW = params.width * unitX - CLEARANCE + ovh.addW;
-  const outerD = params.depth * unitY - CLEARANCE + ovh.addD;
-  return {
-    innerW: outerW - 2 * params.wallThickness,
-    innerD: outerD - 2 * params.wallThickness,
-  };
-}
 
 /**
  * Export unique divider piece(s) as a single STL file.
@@ -47,7 +26,7 @@ export async function exportDividers(
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
   const { wallHeight } = deriveDimensions(params, true);
 
-  const { innerW, innerD } = dividerInteriorDims(params);
+  const { innerW, innerD } = dividerInterior(params);
   const hasLip = params.base.stackingLip;
 
   const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip).map(
@@ -102,7 +81,7 @@ export async function exportDividerPiecesSeparately(
 ): Promise<CombinedExportPiece[]> {
   const { wallHeight } = deriveDimensions(params, true);
 
-  const { innerW, innerD } = dividerInteriorDims(params);
+  const { innerW, innerD } = dividerInterior(params);
   const hasLip = params.base.stackingLip;
 
   const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);

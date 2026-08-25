@@ -6,7 +6,14 @@
  */
 
 import { GRIDFINITY } from '@/shared/constants/bin';
-import type { CrossDividerStyle, PartialDividerStyle, SlotConfig } from '@/shared/types/bin';
+import type {
+  BinParams,
+  CrossDividerStyle,
+  PartialDividerStyle,
+  SlotConfig,
+} from '@/shared/types/bin';
+import { isPartialMask } from '@/shared/utils/cellMask';
+import { hasOverhang, overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 
 const LIP_SMALL_TAPER = GRIDFINITY.LIP_SMALL_TAPER;
 
@@ -440,4 +447,52 @@ export function calculateLapPartialSegments(
   }
 
   return { segments: all.slice(0, cap), dropped: Math.max(0, all.length - cap) };
+}
+
+/**
+ * The bin footprint and interior cavity that divider geometry is stated
+ * against, with any per-side {@link BinParams.overhang} folded in.
+ *
+ * Overhang grows the body outward, so the interior — and every slot cut into
+ * it — grows in lockstep. Four layers have to agree on the answer: the body
+ * that cuts the wall slots, the pieces that seat in them, the STEP compound
+ * that ships both, and the preview ghosts that show where they land. A piece
+ * stated against a different interior than the body it seats in does not reach
+ * its slot, so every one of them derives it here.
+ *
+ * Mirrors `generation/worker/generators/pipeline/context.ts`, including its
+ * suppression of overhang under a partial cell mask (the mask defines its own
+ * footprint). `offsetX`/`offsetY` are the shift of the expanded cavity's center
+ * away from the nominal footprint center, which is scene origin — zero unless
+ * opposite sides differ.
+ */
+export interface DividerInterior {
+  readonly outerW: number;
+  readonly outerD: number;
+  readonly innerW: number;
+  readonly innerD: number;
+  readonly offsetX: number;
+  readonly offsetY: number;
+}
+
+export function dividerInterior(
+  params: Pick<
+    BinParams,
+    'width' | 'depth' | 'gridUnitMm' | 'gridUnitMmY' | 'wallThickness' | 'overhang' | 'cellMask'
+  >
+): DividerInterior {
+  const unitX = params.gridUnitMm;
+  const unitY = params.gridUnitMmY ?? unitX;
+  const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+  const exp = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
+  const outerW = params.width * unitX - GRIDFINITY.TOLERANCE + (exp?.addW ?? 0);
+  const outerD = params.depth * unitY - GRIDFINITY.TOLERANCE + (exp?.addD ?? 0);
+  return {
+    outerW,
+    outerD,
+    innerW: outerW - 2 * params.wallThickness,
+    innerD: outerD - 2 * params.wallThickness,
+    offsetX: exp?.offsetX ?? 0,
+    offsetY: exp?.offsetY ?? 0,
+  };
 }
