@@ -6,6 +6,13 @@ export interface VariantLockProps {
   readonly locked: boolean;
   readonly parentName: string;
   readonly onOpenParent?: () => void;
+  /**
+   * True when the lock owns its container's full height (the cutout and bento
+   * workspaces). The parameter panel is the other case: it sits inside a
+   * scrolling column, where claiming the height and hiding the overflow would
+   * clip the sections and make them unreachable.
+   */
+  readonly fill?: boolean;
   readonly children: ReactNode;
 }
 
@@ -22,13 +29,19 @@ export interface VariantLockProps {
  * looking completely ordinary, so the surface reads as broken rather than
  * deliberate. The dimming and the note are what make it legible.
  */
-export function VariantLock({ locked, parentName, onOpenParent, children }: VariantLockProps) {
+export function VariantLock({
+  locked,
+  parentName,
+  onOpenParent,
+  fill = false,
+  children,
+}: VariantLockProps) {
   const t = useTranslation();
 
   if (!locked) return <>{children}</>;
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col">
+    <div className={fill ? 'relative flex h-full min-h-0 flex-col' : 'relative'}>
       <div className="flex flex-shrink-0 flex-wrap items-center gap-2 border-b border-stroke-subtle bg-surface-elevated px-4 py-2">
         <p className="flex-1 text-xs text-content-secondary">
           {t('binDesigner.variants.lockedHere', { name: parentName })}
@@ -42,7 +55,14 @@ export function VariantLock({ locked, parentName, onOpenParent, children }: Vari
       {/* `aria-hidden` is deliberately NOT set: the content stays readable to a
           screen reader, it just cannot be operated, which is the same thing a
           sighted user gets from the dimming. */}
-      <div inert className="min-h-0 flex-1 overflow-hidden opacity-55 grayscale-[0.35]">
+      <div
+        inert
+        className={
+          fill
+            ? 'min-h-0 flex-1 overflow-hidden opacity-55 grayscale-[0.35]'
+            : 'opacity-55 grayscale-[0.35]'
+        }
+      >
         {children}
       </div>
     </div>

@@ -55,6 +55,7 @@ export function DesignerMainContent({
       locked={variant.isVariant || variant.isLoading}
       parentName={variant.parentName}
       onOpenParent={variant.parentId ? () => void openParentDesign(variant.parentId) : undefined}
+      fill
     >
       <CutoutWorkspace />
     </VariantLock>
@@ -63,6 +64,7 @@ export function DesignerMainContent({
       locked={variant.isVariant || variant.isLoading}
       parentName={variant.parentName}
       onOpenParent={variant.parentId ? () => void openParentDesign(variant.parentId) : undefined}
+      fill
     >
       <BentoWorkspace />
     </VariantLock>

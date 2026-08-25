@@ -57,6 +57,32 @@ describe('VariantLock', () => {
     expect(onOpenParent).toHaveBeenCalledTimes(1);
   });
 
+  // The panel sits inside a scrolling column; claiming the height and hiding
+  // the overflow there would clip the sections and make them unreachable.
+  it('does not claim height or clip overflow unless it fills its container', () => {
+    const { container } = render(
+      <VariantLock locked parentName="Router Bit Holder">
+        <button type="button">edit me</button>
+      </VariantLock>
+    );
+
+    const guarded = container.querySelector('[inert]');
+    expect(guarded?.className).not.toContain('overflow-hidden');
+    expect(guarded?.className).not.toContain('flex-1');
+  });
+
+  it('fills its container when asked to', () => {
+    const { container } = render(
+      <VariantLock locked fill parentName="Router Bit Holder">
+        <button type="button">edit me</button>
+      </VariantLock>
+    );
+
+    const guarded = container.querySelector('[inert]');
+    expect(guarded?.className).toContain('flex-1');
+    expect(guarded?.className).toContain('overflow-hidden');
+  });
+
   it('omits the escape hatch when there is nowhere to go', () => {
     render(
       <VariantLock locked parentName="Router Bit Holder">
