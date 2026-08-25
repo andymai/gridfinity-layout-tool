@@ -283,8 +283,11 @@ function BinParameterPanel() {
             than a `disabled` prop on each control: a variant's params is a
             materialized cache that the next propagation rewrites, so an edit
             here would be silently discarded, and one gate is the only version of
-            this guard that cannot be forgotten when a section is added. */}
-        <div inert={variant.isVariant}>
+            this guard that cannot be forgotten when a section is added.
+            Also locked WHILE RESOLVING: the variant relationship is read from
+            IndexedDB, and staying editable until that returns leaves exactly the
+            window this guard exists to close. */}
+        <div inert={variant.isVariant || variant.isLoading}>
           {/* Shape group */}
           <StickyGroupHeader
             title={t('binDesigner.group.shape')}

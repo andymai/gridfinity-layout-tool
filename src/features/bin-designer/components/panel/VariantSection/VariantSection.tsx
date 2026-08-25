@@ -175,7 +175,9 @@ export function VariantSection({
                     aria-expanded={open}
                     onClick={() => setOpenCutoutId(open ? null : cutout.id)}
                   >
-                    <span className="truncate">{cutout.name ?? cutout.label ?? cutout.shape}</span>
+                    {/* `||`, not `??`: `label` is a required string and is usually '', which
+                        `??` would treat as a real name and render a blank row. */}
+                    <span className="truncate">{cutout.name || cutout.label || cutout.shape}</span>
                     {claimedFields.length > 0 && (
                       <span className="ml-2 text-accent">{claimedFields.length}</span>
                     )}

@@ -27,19 +27,26 @@ export interface VariantContext {
   readonly reload: () => void;
 }
 
-const NONE: VariantContext = {
+const NONE: Omit<VariantContext, 'reload' | 'isLoading'> = {
   isVariant: false,
   parentId: null,
   parentName: '',
   parentParams: null,
   overrides: {},
   orphans: [],
-  isLoading: false,
-  reload: () => {},
 };
 
 export function useVariantContext(currentDesignId: string | null): VariantContext {
-  const [state, setState] = useState<Omit<VariantContext, 'reload'>>(NONE);
+  // Keyed by the design it describes rather than carrying a separate loading
+  // flag. `isLoading` is then true from the instant the open design changes,
+  // including the very first render, with no synchronous setState in the
+  // effect. A plain boolean could only be raised INSIDE the effect, leaving a
+  // render where a variant still reports as an ordinary design and its panel is
+  // editable, which is the window the inert guard exists to close.
+  const [resolved, setResolved] = useState<{
+    forId: string | null;
+    context: Omit<VariantContext, 'reload' | 'isLoading'>;
+  }>({ forId: null, context: NONE });
   const [generation, setGeneration] = useState(0);
 
   const reload = useCallback(() => {
@@ -53,13 +60,13 @@ export function useVariantContext(currentDesignId: string | null): VariantContex
     // setState here would cascade a render before the effect has done anything.
     void (async () => {
       if (!currentDesignId) {
-        if (!cancelled) setState(NONE);
+        if (!cancelled) setResolved({ forId: null, context: NONE });
         return;
       }
       const self = await loadDesign(toDesignId(currentDesignId));
       if (cancelled) return;
       if (!isOk(self) || !self.value.variantOf) {
-        setState(NONE);
+        setResolved({ forId: currentDesignId, context: NONE });
         return;
       }
 
@@ -70,20 +77,22 @@ export function useVariantContext(currentDesignId: string | null): VariantContex
       // showing an inherit UI against a design that does not exist is worse
       // than showing none.
       if (!isOk(parent) || !parent.value.params) {
-        setState(NONE);
+        setResolved({ forId: currentDesignId, context: NONE });
         return;
       }
 
       const overrides = self.value.overrides ?? {};
       const { orphans } = applyOverrides(parent.value.params, overrides);
-      setState({
-        isVariant: true,
-        parentId: self.value.variantOf,
-        parentName: parent.value.name,
-        parentParams: parent.value.params,
-        overrides,
-        orphans,
-        isLoading: false,
+      setResolved({
+        forId: currentDesignId,
+        context: {
+          isVariant: true,
+          parentId: self.value.variantOf,
+          parentName: parent.value.name,
+          parentParams: parent.value.params,
+          overrides,
+          orphans,
+        },
       });
     })();
 
@@ -92,5 +101,5 @@ export function useVariantContext(currentDesignId: string | null): VariantContex
     };
   }, [currentDesignId, generation]);
 
-  return { ...state, reload };
+  return { ...resolved.context, isLoading: resolved.forId !== currentDesignId, reload };
 }

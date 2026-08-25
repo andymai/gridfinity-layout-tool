@@ -123,7 +123,9 @@ export function findDrift(
       const nowValue = cutout[field];
       if (wasValue !== nowValue && nowValue !== undefined) {
         drift.push({
-          label: `${cutout.name ?? cutout.label ?? cutout.shape}.${field}`,
+          // `||`, not `??`: `label` is a required string that is usually '',
+          // which would produce a drift entry reading `.width`.
+          label: `${cutout.name || cutout.label || cutout.shape}.${field}`,
           parentValue: nowValue,
           variantValue: claimed,
         });

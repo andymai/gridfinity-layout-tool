@@ -565,14 +565,18 @@ export async function detachVariant(
   const loaded = await loadDesign(variantId);
   if (isErr(loaded)) return loaded;
 
-  const db = await getDb();
-  const { variantOf: _variantOf, overrides: _overrides, ...rest } = loaded.value;
-  // Written through the store directly: `saveDesign` falls back to the STORED
-  // value for both fields, so passing them as undefined would restore them.
-  const detached: SavedDesign = { ...rest, updatedAt: new Date().toISOString() };
-  await db.put(DESIGNS_STORE, detached);
-  emitDesignerEvent({ type: 'put', id: detached.id, updatedAt: detached.updatedAt });
-  return ok(detached);
+  try {
+    const db = await getDb();
+    const { variantOf: _variantOf, overrides: _overrides, ...rest } = loaded.value;
+    // Written through the store directly: `saveDesign` falls back to the STORED
+    // value for both fields, so passing them as undefined would restore them.
+    const detached: SavedDesign = { ...rest, updatedAt: new Date().toISOString() };
+    await db.put(DESIGNS_STORE, detached);
+    emitDesignerEvent({ type: 'put', id: detached.id, updatedAt: detached.updatedAt });
+    return ok(detached);
+  } catch (e) {
+    return err(storageUnavailable('indexedDB', e));
+  }
 }
 
 /**

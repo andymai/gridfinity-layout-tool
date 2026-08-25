@@ -243,6 +243,11 @@ describe('design variants', () => {
     });
   });
 
+  it('reports a detach of something that does not exist through the Result channel', async () => {
+    const result = await detachVariant(designId('design_missing'));
+    expect(expectErr(result).code).toBe('STORAGE_NOT_FOUND');
+  });
+
   it('lists a variant like any other design', async () => {
     await seedParent();
     await createVariant(PARENT, '1/2"', { dimensions: { width: 4 } });
