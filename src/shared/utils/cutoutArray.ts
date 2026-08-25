@@ -282,6 +282,54 @@ export function expandCutoutArray(cutout: Cutout): Cutout[] {
 }
 
 /**
+ * The repeat a group runs, or undefined when it does not repeat.
+ *
+ * Members that carry no repeat adopt the one their siblings do, because that is
+ * a shape shipped versions produce: repeating a loose cutout and THEN grouping
+ * it left the config on that member alone, and the worker has always cut every
+ * copy of it. Reading such a group as un-repeated would quietly drop pockets
+ * from a board someone already printed.
+ *
+ * Members that carry DIFFERENT repeats decline instead. Nothing produces that,
+ * so it means a hand-authored or crafted design, and there is no honest way to
+ * pick a winner: whichever the worker chose, the copies of the other member
+ * would land somewhere the preview never drew.
+ *
+ * The editor and the worker both read the group through this, which is what
+ * stops them disagreeing about how many copies a group has.
+ *
+ * Labels are not compared. They ride on the same config but only decide what is
+ * engraved, so they cannot move a copy.
+ */
+export function groupRepeatConfig(
+  members: readonly Pick<Cutout, 'array'>[]
+): CutoutArrayConfig | undefined {
+  let found: CutoutArrayConfig | undefined;
+  for (const member of members) {
+    const array = member.array;
+    if (!array) continue;
+    if (!found) found = array;
+    else if (!samePlacement(found, array)) return undefined;
+  }
+  return found;
+}
+
+/** Whether two repeats put their copies in the same places. */
+function samePlacement(a: CutoutArrayConfig, b: CutoutArrayConfig): boolean {
+  return (
+    a.mode === b.mode &&
+    a.cols === b.cols &&
+    a.rows === b.rows &&
+    a.pitchX === b.pitchX &&
+    a.pitchY === b.pitchY &&
+    a.count === b.count &&
+    a.radius === b.radius &&
+    a.startAngle === b.startAngle &&
+    a.rotateToCenter === b.rotateToCenter
+  );
+}
+
+/**
  * The members of each copy of a repeated group, outermost index being the copy.
  * A group with no repeat yields one copy: the members as they stand.
  *
@@ -292,7 +340,13 @@ export function expandCutoutArray(cutout: Cutout): Cutout[] {
  * shared anchor instead.
  */
 export function expandCutoutGroup(members: readonly Cutout[]): Cutout[][] {
-  const perMember = members.map(expandCutoutArray);
+  // Read through the same gate the worker uses, so the two cannot disagree
+  // about whether a group repeats or how many copies it has. A member holding
+  // no repeat of its own is expanded on the group's, which is what makes a
+  // legacy group draw the copies it has always been cut with.
+  const config = groupRepeatConfig(members);
+  if (!config) return [[...members]];
+  const perMember = members.map((m) => expandCutoutArray(m.array ? m : { ...m, array: config }));
   const copies = Math.min(...perMember.map((m) => m.length));
   if (!Number.isFinite(copies) || copies <= 1) return [[...members]];
   const out: Cutout[][] = [];

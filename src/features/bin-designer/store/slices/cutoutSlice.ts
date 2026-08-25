@@ -634,15 +634,28 @@ export function createCutoutSlice(rawSet: Set) {
           (target?.groupId
             ? owner.cutouts.find((c) => c.groupId === target.groupId)?.groupOp
             : undefined) ?? DEFAULT_GROUP_OP;
+        // A newcomer adopts the destination's repeat too, not just its op.
+        // Landing in a repeating group holding no repeat (or its own) leaves
+        // the group describing a pattern only some of it is part of, which the
+        // editor and the worker then read differently.
+        //
+        // Shaped like `destOp` above: an EXISTING group's answer wins outright,
+        // "no repeat" included, because the destination is what the mover is
+        // joining. Only a fresh pair has no answer yet, and there the newcomers
+        // bring one between them.
+        const destArray =
+          destGroupId === null
+            ? undefined
+            : target?.groupId
+              ? owner.cutouts.find((c) => c.groupId === target.groupId)?.array
+              : adoptedGroupArray(owner.cutouts, moving, null);
 
         pushHistoryEntry(state);
         const reparented = owner.cutouts.map((c) =>
           moving.has(c.id)
-            ? {
-                ...c,
-                groupId: destGroupId,
-                ...(destGroupId === null ? {} : { groupOp: destOp }),
-              }
+            ? destGroupId === null
+              ? { ...c, groupId: destGroupId }
+              : withCutoutArray({ ...c, groupId: destGroupId, groupOp: destOp }, destArray)
             : c
         );
         // Pulling members out can strand a one-member group behind.

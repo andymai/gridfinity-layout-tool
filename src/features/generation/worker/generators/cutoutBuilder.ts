@@ -51,7 +51,12 @@ import {
   slotCornerRadius,
   clampPolygonSides,
 } from '@/shared/utils/cutoutPolygon';
-import { arrayInstances, expandCutoutArray, labelledInstances } from '@/shared/utils/cutoutArray';
+import {
+  arrayInstances,
+  expandCutoutArray,
+  groupRepeatConfig,
+  labelledInstances,
+} from '@/shared/utils/cutoutArray';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
 import { cutoutLabelPlacement, fitLabelRoom } from '@/shared/utils/cutoutLabel';
@@ -885,9 +890,11 @@ export function buildGroupedCutouts(
   const base = buildGroupSolid(groupMembers, solidSurfaceZ, originX, originY);
   if (!base) return [];
 
-  // Members share one config; read it off whichever member carries it, the way
-  // the group op is read off the first member.
-  const config = groupMembers.find((m) => m.array !== undefined)?.array;
+  // Only when every member agrees on the placement. A stored design can carry a
+  // group where they do not, and the editor declines to repeat that through the
+  // same gate, so honouring one member's repeat here would cut copies the
+  // preview never showed.
+  const config = groupRepeatConfig(groupMembers);
   if (!config) return [base];
 
   const shapes: Shape3D[] = [];

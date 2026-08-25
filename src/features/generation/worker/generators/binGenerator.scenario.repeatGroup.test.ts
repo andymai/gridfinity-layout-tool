@@ -102,6 +102,33 @@ describe('repeated boolean group', () => {
     expect(cutSurface(ringBin('intersect', ROW))).toBeGreaterThan(0);
   }, 240000);
 
+  it('repeats a legacy group where only one member carries the config', () => {
+    // Repeating a loose cutout and THEN grouping it used to leave the config on
+    // that member alone, and such a board has always been cut with every copy.
+    // Reading it as un-repeated now would drop pockets from a printed design.
+    const base = ringBin('exclude');
+    const legacy = {
+      ...base,
+      cutouts: [{ ...base.cutouts[0], array: ROW }, base.cutouts[1]],
+    };
+    expect(cutSurface(legacy)).toBe(cutSurface(ringBin('exclude')) * 3);
+  }, 240000);
+
+  it('declines a group whose members ask for different patterns', () => {
+    // Nothing in the app produces this, so there is no honest winner: whichever
+    // pattern won, the other member's copies would land where the preview never
+    // drew them. Cut the group as drawn instead.
+    const base = ringBin('exclude');
+    const contradictory = {
+      ...base,
+      cutouts: [
+        { ...base.cutouts[0], array: ROW },
+        { ...base.cutouts[1], array: { ...ROW, cols: 2, pitchX: 50 } },
+      ],
+    };
+    expect(cutSurface(contradictory)).toBe(cutSurface(base));
+  }, 240000);
+
   it('produces a sound mesh', () => {
     const mesh = getGenerateBin()(ringBin('exclude', ROW));
     expect(mesh.triangleCount).toBeGreaterThan(0);

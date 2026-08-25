@@ -15,7 +15,7 @@ import { makeUniformLipCells } from '../types/featureColors';
 import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
 import { DEFAULT_DETACHABLE_PIN_DIAMETER_MM } from '../types/base';
 import { expectOk } from '@/test/testUtils';
-import type { BinParams } from '../types';
+import type { BinParams, CutoutArrayConfig } from '../types';
 
 const defaults = DEFAULT_BIN_PARAMS.walls;
 const migrate = (raw: Parameters<typeof migrateWalls>[0]): ReturnType<typeof migrateWalls> =>
@@ -1676,5 +1676,66 @@ describe('repeat label list migration', () => {
     expect(migrated.array?.labels?.[0]).toHaveLength(50);
     expect(migrated.array?.labels?.[1]).toBe('');
     expect(migrated.array?.labels?.[2]).toBe('');
+  });
+});
+
+describe('legacy grouped repeat migration', () => {
+  const row: CutoutArrayConfig = {
+    mode: 'grid',
+    cols: 3,
+    rows: 1,
+    pitchX: 30,
+    pitchY: 30,
+    count: 3,
+    radius: 20,
+    startAngle: 0,
+    rotateToCenter: false,
+  };
+
+  const member = (over: Partial<BinParams['cutouts'][number]>) => ({
+    id: 'x',
+    shape: 'rectangle' as const,
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: 'g1',
+    groupOp: 'union' as const,
+    ...over,
+  });
+
+  const migrate = (cutouts: BinParams['cutouts']) => migrateParams({ cutouts }).cutouts;
+
+  it("spreads a lone member's repeat across its group", () => {
+    // Repeating a loose cutout and THEN grouping it left the config on that
+    // member alone. The worker has always cut every copy, so the group is made
+    // consistent rather than read as un-repeated.
+    const migrated = migrate([member({ id: 'a', array: row }), member({ id: 'b', x: 40 })]);
+    expect(migrated.map((c) => c.array?.cols)).toEqual([3, 3]);
+  });
+
+  it('leaves a group whose members ask for different patterns untouched', () => {
+    const migrated = migrate([
+      member({ id: 'a', array: row }),
+      member({ id: 'b', x: 40, array: { ...row, cols: 4 } }),
+    ]);
+    expect(migrated.map((c) => c.array?.cols)).toEqual([3, 4]);
+  });
+
+  it('leaves a group with no repeat alone', () => {
+    const migrated = migrate([member({ id: 'a' }), member({ id: 'b', x: 40 })]);
+    expect(migrated.every((c) => c.array === undefined)).toBe(true);
+  });
+
+  it('does not touch a loose cutout that repeats', () => {
+    const migrated = migrate([
+      member({ id: 'a', groupId: null, array: row }),
+      member({ id: 'b', groupId: null, x: 40 }),
+    ]);
+    expect(migrated.map((c) => c.array?.cols)).toEqual([3, undefined]);
   });
 });

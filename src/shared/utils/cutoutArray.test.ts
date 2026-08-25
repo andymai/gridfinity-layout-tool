@@ -7,6 +7,8 @@ import {
   arrayInstancesOverlap,
   fillBinCounts,
   expandCutoutArray,
+  expandCutoutGroup,
+  groupRepeatConfig,
   arrayLabelCounts,
   labelledInstances,
   type ArrayInstance,
@@ -516,5 +518,100 @@ describe('per-instance captions', () => {
     expect(
       labelledInstances({ ...noList, array: cfg({ cols: 3, rows: 1, labels: [] }) })
     ).toHaveLength(3);
+  });
+});
+
+describe('groupRepeatConfig', () => {
+  const cut = (over: Partial<Cutout> = {}): Cutout => ({
+    id: 'm',
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: 'g1',
+    ...over,
+  });
+
+  it('returns the shared repeat when every member agrees', () => {
+    const array = cfg({ cols: 3, rows: 1 });
+    expect(groupRepeatConfig([cut({ array }), cut({ id: 'b', array })])?.cols).toBe(3);
+  });
+
+  it('lets a member with no repeat adopt its siblings', () => {
+    // Shipped versions produce this: repeating a loose cutout and THEN grouping
+    // it left the config on that member alone, and such a board has always been
+    // cut with every copy.
+    expect(groupRepeatConfig([cut({ array: cfg({ cols: 3 }) }), cut({ id: 'b' })])?.cols).toBe(3);
+  });
+
+  it('declines when the members disagree about placement', () => {
+    expect(
+      groupRepeatConfig([
+        cut({ array: cfg({ cols: 3 }) }),
+        cut({ id: 'b', array: cfg({ cols: 4 }) }),
+      ])
+    ).toBeUndefined();
+  });
+
+  it('ignores a label difference, which cannot move a copy', () => {
+    const a = cfg({ labels: ['x'] });
+    const b = cfg({ labels: ['y', 'z'] });
+    expect(groupRepeatConfig([cut({ array: a }), cut({ id: 'b', array: b })])).toBeDefined();
+  });
+
+  it('declines for a group with no repeat at all', () => {
+    expect(groupRepeatConfig([cut(), cut({ id: 'b' })])).toBeUndefined();
+  });
+});
+
+describe('expandCutoutGroup', () => {
+  const cut = (over: Partial<Cutout> = {}): Cutout => ({
+    id: 'm',
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: 'g1',
+    ...over,
+  });
+
+  it('yields one member set per copy, each holding the whole group', () => {
+    const array = cfg({ cols: 3, rows: 1, pitchX: 30 });
+    const copies = expandCutoutGroup([cut({ array }), cut({ id: 'b', x: 12, array })]);
+    expect(copies).toHaveLength(3);
+    expect(copies.every((c) => c.length === 2)).toBe(true);
+    // Members keep their relative offset in every copy.
+    for (const [a, b] of copies) expect(b.x - a.x).toBe(12);
+  });
+
+  it('yields one copy for a group with no repeat', () => {
+    expect(expandCutoutGroup([cut(), cut({ id: 'b' })])).toHaveLength(1);
+  });
+
+  it("expands a member with no repeat on the group's, so a legacy group draws every copy", () => {
+    const copies = expandCutoutGroup([
+      cut({ array: cfg({ cols: 3, rows: 1, pitchX: 30 }) }),
+      cut({ id: 'b', x: 12 }),
+    ]);
+    expect(copies).toHaveLength(3);
+    for (const [a, b] of copies) expect(b.x - a.x).toBe(12);
+  });
+
+  it('yields one copy when the members ask for different patterns', () => {
+    const copies = expandCutoutGroup([
+      cut({ array: cfg({ cols: 3 }) }),
+      cut({ id: 'b', array: cfg({ cols: 4 }) }),
+    ]);
+    expect(copies).toHaveLength(1);
   });
 });

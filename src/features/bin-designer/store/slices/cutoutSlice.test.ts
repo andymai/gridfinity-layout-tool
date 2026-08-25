@@ -1100,6 +1100,70 @@ describe('cutoutSlice - consolidated actions', () => {
     });
   });
 
+  describe('reparenting into a repeated group', () => {
+    const row: CutoutArrayConfig = {
+      mode: 'grid',
+      cols: 3,
+      rows: 1,
+      pitchX: 30,
+      pitchY: 30,
+      count: 3,
+      radius: 20,
+      startAngle: 0,
+      rotateToCenter: false,
+    };
+
+    it('gives the newcomer the group repeat, not just the group op', () => {
+      // A member holding no repeat inside a repeating group makes the editor
+      // and the worker count copies differently.
+      const { addCutout, groupCutouts, setCutoutArray, reparentCutouts } =
+        useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+      addCutout(createTestCutout({ id: 'loose', x: 80 }));
+      groupCutouts(['a', 'b'], 'exclude');
+      setCutoutArray('a', row);
+
+      reparentCutouts(['loose'], 'a');
+
+      const moved = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'loose');
+      expect(moved?.groupOp).toBe('exclude');
+      expect(moved?.array?.cols).toBe(3);
+    });
+
+    it("drops a newcomer's own repeat when the destination group has none", () => {
+      const { addCutout, groupCutouts, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+      addCutout(createTestCutout({ id: 'loose', x: 80, array: row }));
+      groupCutouts(['a', 'b'], 'union');
+
+      reparentCutouts(['loose'], 'a');
+
+      // One repeat per group, so the group's answer (none) wins.
+      for (const c of useDesignerStore.getState().params.cutouts) {
+        expect(c.array).toBeUndefined();
+      }
+    });
+
+    it('leaves a repeat on a member pulled out to loose', () => {
+      const { addCutout, groupCutouts, setCutoutArray, reparentCutouts } =
+        useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+      addCutout(createTestCutout({ id: 'c', x: 80 }));
+      groupCutouts(['a', 'b', 'c'], 'union');
+      setCutoutArray('a', row);
+
+      reparentCutouts(['c'], null);
+
+      const pulled = useDesignerStore.getState().params.cutouts.find((x) => x.id === 'c');
+      expect(pulled?.groupId).toBeNull();
+      // It becomes its own repeat, the way ungrouping one already leaves it.
+      expect(pulled?.array?.cols).toBe(3);
+    });
+  });
+
   describe('setGroupOp', () => {
     it('updates the op on every member of a group', () => {
       const { addCutout, groupCutouts, setGroupOp } = useDesignerStore.getState();
