@@ -13,17 +13,24 @@ import {
   ok,
   err,
   isErr,
+  isOk,
   storageNotFound,
   storageUnavailable,
   storageCorrupted,
 } from '@/core/result';
-import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
+import type {
+  SavedDesign,
+  BinParams,
+  ExportFileNameConfig,
+  DesignOverrides,
+} from '@/features/bin-designer/types';
 import { THUMBNAIL_VERSION } from '@/features/bin-designer/types';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designerEvents';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
+import { applyOverrides } from '@/shared/utils/applyOverrides';
 import { trackDesignCreated } from '@/shared/analytics/posthog';
 import { getDb, DESIGNS_STORE } from './designerDb';
 import {
@@ -82,6 +89,10 @@ export async function saveDesign(
     const parentDesignId = design.parentDesignId ?? existing?.parentDesignId;
     const parentVersionId = design.parentVersionId ?? existing?.parentVersionId;
     const parentVersionName = design.parentVersionName ?? existing?.parentVersionName;
+    // Same reason as the branch link: written at creation and on override edits,
+    // omitted by every autosave in between.
+    const variantOf = design.variantOf ?? existing?.variantOf;
+    const overrides = design.overrides ?? existing?.overrides;
 
     const kind = design.kind ?? 'bin';
     // Reject incomplete writes up front so a malformed call can't persist a
@@ -110,6 +121,8 @@ export async function saveDesign(
       ...(parentDesignId !== undefined ? { parentDesignId } : {}),
       ...(parentVersionId !== undefined ? { parentVersionId } : {}),
       ...(parentVersionName !== undefined ? { parentVersionName } : {}),
+      ...(variantOf !== undefined ? { variantOf } : {}),
+      ...(overrides !== undefined ? { overrides } : {}),
       // Bins persist flat `params` (canonical, back-compat); non-bin kinds
       // persist `kind` + `envelope` + `structure` and OMIT `params` so a stale
       // bin payload can never shadow the real structure.
@@ -431,12 +444,139 @@ export async function updateDesignParams(
     return loadResult;
   }
 
-  return saveDesign({
+  const saved = await saveDesign({
     ...loadResult.value,
     params,
     ...(thumbnail !== undefined ? { thumbnail } : {}),
     ...(exportFileNameConfig !== undefined ? { exportFileNameConfig } : {}),
   });
+  if (isErr(saved)) return saved;
+
+  // Push the change into every variant of this design. Best-effort and never
+  // fails the parent's own save: the parent's params are already correct, and a
+  // variant that missed one propagation is rebuilt from scratch by the next.
+  await propagateToVariants(id, params);
+  return saved;
+}
+
+/**
+ * Rewrite every variant of `parentId` from the parent's new params.
+ *
+ * Runs over STORAGE rather than in-memory state: most variants of a design are
+ * not open, and the ones that are pick the change up through the designer's
+ * own reload path.
+ *
+ * A variant's `params` is a materialized cache of
+ * `applyOverrides(parent.params, overrides)`, so this is a recompute, not a
+ * merge: whatever the variant's stored params held for a field the overrides do
+ * not name is discarded in favour of the parent's. That is the model working,
+ * and it is why controls outside the override surface must not be editable in a
+ * variant.
+ */
+export async function propagateToVariants(
+  parentId: DesignId,
+  nextParams: BinParams
+): Promise<Result<number, StorageError>> {
+  try {
+    const db = await getDb();
+    const all = (await db.getAll(DESIGNS_STORE)) as SavedDesign[];
+    const variants = all.filter((d) => d.variantOf === parentId && d.id !== parentId);
+
+    let updated = 0;
+    for (const variant of variants) {
+      const { params: resolved } = applyOverrides(nextParams, variant.overrides);
+      const result = await saveDesign({ ...variant, params: resolved });
+      if (isOk(result)) updated++;
+    }
+    return ok(updated);
+  } catch (e) {
+    return err(storageUnavailable('indexedDB', e));
+  }
+}
+
+/**
+ * Create a variant: a design that stays in step with `parentId` except for the
+ * values named in `overrides`.
+ *
+ * Its params are materialized at creation, exactly as propagation will
+ * recompute them, so every existing consumer (export, publish, thumbnails,
+ * generation, sync) reads a complete `BinParams` and needs no knowledge that
+ * variants exist.
+ */
+export async function createVariant(
+  parentId: DesignId,
+  name: string,
+  overrides: DesignOverrides
+): Promise<Result<SavedDesign, StorageError>> {
+  const parentResult = await loadDesign(parentId);
+  if (isErr(parentResult)) return parentResult;
+  const parent = parentResult.value;
+  if (!parent.params) {
+    return err(storageCorrupted(parentId, ['only a bin design can have variants']));
+  }
+
+  const { params } = applyOverrides(parent.params, overrides);
+  return saveDesign({
+    name,
+    params,
+    thumbnail: null,
+    exportFileNameConfig: parent.exportFileNameConfig ? { ...parent.exportFileNameConfig } : null,
+    tags: parent.tags,
+    lineage: parent.lineage,
+    // Both links: `parentDesignId` places it in the family tree beside branches,
+    // `variantOf` is what makes propagation find it.
+    parentDesignId: parentId,
+    variantOf: parentId,
+    overrides,
+  });
+}
+
+/** Replace a variant's overrides and rebuild its params from its parent. */
+export async function updateVariantOverrides(
+  variantId: DesignId,
+  overrides: DesignOverrides
+): Promise<Result<SavedDesign, StorageError>> {
+  const variantResult = await loadDesign(variantId);
+  if (isErr(variantResult)) return variantResult;
+  const variant = variantResult.value;
+  if (!variant.variantOf) {
+    return err(storageCorrupted(variantId, ['design is not a variant']));
+  }
+
+  const parentResult = await loadDesign(variant.variantOf);
+  if (isErr(parentResult)) return parentResult;
+  const parentParams = parentResult.value.params;
+  if (!parentParams) {
+    return err(storageCorrupted(variant.variantOf, ['variant parent has no params']));
+  }
+
+  const { params } = applyOverrides(parentParams, overrides);
+  return saveDesign({ ...variant, params, overrides });
+}
+
+/**
+ * Detach a variant: it keeps the params it currently has and stops tracking its
+ * parent. `parentDesignId` is left in place, so it still reads as part of the
+ * family; only the live link goes.
+ */
+export async function detachVariant(
+  variantId: DesignId
+): Promise<Result<SavedDesign, StorageError>> {
+  const loaded = await loadDesign(variantId);
+  if (isErr(loaded)) return loaded;
+
+  try {
+    const db = await getDb();
+    const { variantOf: _variantOf, overrides: _overrides, ...rest } = loaded.value;
+    // Written through the store directly: `saveDesign` falls back to the STORED
+    // value for both fields, so passing them as undefined would restore them.
+    const detached: SavedDesign = { ...rest, updatedAt: new Date().toISOString() };
+    await db.put(DESIGNS_STORE, detached);
+    emitDesignerEvent({ type: 'put', id: detached.id, updatedAt: detached.updatedAt });
+    return ok(detached);
+  } catch (e) {
+    return err(storageUnavailable('indexedDB', e));
+  }
 }
 
 /**

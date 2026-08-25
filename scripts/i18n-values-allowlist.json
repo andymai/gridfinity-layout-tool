@@ -27,6 +27,7 @@
     "baseplate.stackPrint.copies.label",
     "baseplate.stackPrint.plates.one",
     "baseplate.title",
+    "binDesigner.variants.label",
     "binDesigner.angledDividers.angleLabel",
     "binDesigner.angledDividers.badgeAngle",
     "binDesigner.angledDividers.badgeLean",

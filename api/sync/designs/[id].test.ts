@@ -728,3 +728,117 @@ describe('branch lineage passthrough', () => {
     }
   });
 });
+
+describe('variant overrides passthrough', () => {
+  it('stores the live link and the claimed values', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: '1/2" Shank',
+            params: VALID_DESIGN,
+            variantOf: 'design_1700000000000_abc123',
+            overrides: { dimensions: { width: 4 }, cutouts: { bit: { width: 12.7 } } },
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    expect(res._status).toBe(200);
+    const stored = (
+      res._body as {
+        envelope: { design: { variantOf?: string; overrides?: Record<string, unknown> } };
+      }
+    ).envelope.design;
+    expect(stored.variantOf).toBe('design_1700000000000_abc123');
+    expect(stored.overrides).toEqual({
+      dimensions: { width: 4 },
+      cutouts: { bit: { width: 12.7 } },
+    });
+  });
+
+  // A newer client may claim a field this server has not heard of; refusing the
+  // write would make the whole design unsyncable over one unknown key.
+  it('drops fields outside the override surface without rejecting the write', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: 'Odd',
+            params: VALID_DESIGN,
+            variantOf: 'design_1700000000000_abc123',
+            overrides: {
+              dimensions: { width: 4, somethingNew: 9 },
+              cutouts: { bit: { width: 12.7, rotation: 45 } },
+            },
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    expect(res._status).toBe(200);
+    const stored = (res._body as { envelope: { design: { overrides?: StoredShape } } }).envelope
+      .design;
+    expect(stored.overrides?.dimensions).toEqual({ width: 4 });
+    expect(stored.overrides?.cutouts?.bit).toEqual({ width: 12.7 });
+  });
+
+  it('drops a non-finite claimed value', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: 'NaN',
+            params: VALID_DESIGN,
+            variantOf: 'design_1700000000000_abc123',
+            overrides: { dimensions: { width: 'wide' } },
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    expect(res._status).toBe(200);
+    const stored = (res._body as { envelope: { design: Record<string, unknown> } }).envelope.design;
+    expect('overrides' in stored).toBe(false);
+  });
+
+  it('leaves both fields absent on a design that is not a variant', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'Plain', params: VALID_DESIGN }, modifiedAt: 1000 },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    const stored = (res._body as { envelope: { design: Record<string, unknown> } }).envelope.design;
+    expect('variantOf' in stored).toBe(false);
+    expect('overrides' in stored).toBe(false);
+  });
+});
+
+interface StoredShape {
+  dimensions?: Record<string, number>;
+  cutouts?: Record<string, Record<string, number>>;
+}

@@ -13,9 +13,21 @@
  * - Finishing: Multi-color, Physical Units
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/design-system';
+import { isErr, isOk } from '@/core/result';
+import { designId as toDesignId } from '@/core/types';
+import { useToastStore } from '@/core/store/toast';
+import { showErrorToast } from '@/shared/hooks/useResultToast';
+import {
+  loadDesign,
+  updateVariantOverrides,
+  detachVariant,
+} from '@/features/bin-designer/storage/DesignerStorage';
+import { useVariantContext } from '@/features/bin-designer/hooks/useVariantContext';
+import { VariantSection } from '../panel/VariantSection';
+import type { DesignOverrides } from '@/features/bin-designer/types';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { ShapeSection } from '../panel/ShapeSection';
 import { InteriorSection } from '../panel/InteriorSection';
@@ -96,6 +108,71 @@ function BinParameterPanel() {
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const workshopEnabled = useFeatureFlag('workshop');
   const newDesign = useDesignerStore((s) => s.newDesign);
+  const currentDesignId = useDesignerStore((s) => s.currentDesignId);
+  const loadDesignIntoStore = useDesignerStore((s) => s.loadDesign);
+  const variant = useVariantContext(currentDesignId);
+  const [variantBusy, setVariantBusy] = useState(false);
+  const addToast = useToastStore((s) => s.addToast);
+
+  // Every variant action rewrites the design's params in storage, so the open
+  // design is reloaded from there rather than patched in place: the store would
+  // otherwise hold the pre-propagation params and autosave them straight back.
+  const reloadOpenDesign = useCallback(
+    async (id: string) => {
+      const reloaded = await loadDesign(toDesignId(id));
+      if (isOk(reloaded)) loadDesignIntoStore(reloaded.value);
+      variant.reload();
+    },
+    [loadDesignIntoStore, variant]
+  );
+
+  const handleOverridesChange = useCallback(
+    (next: DesignOverrides) => {
+      if (!currentDesignId) return;
+      setVariantBusy(true);
+      void (async () => {
+        try {
+          const result = await updateVariantOverrides(toDesignId(currentDesignId), next);
+          if (isErr(result)) {
+            showErrorToast(result.error);
+            return;
+          }
+          await reloadOpenDesign(currentDesignId);
+        } finally {
+          setVariantBusy(false);
+        }
+      })();
+    },
+    [currentDesignId, reloadOpenDesign]
+  );
+
+  const handleDetach = useCallback(() => {
+    if (!currentDesignId) return;
+    setVariantBusy(true);
+    void (async () => {
+      try {
+        const result = await detachVariant(toDesignId(currentDesignId));
+        if (isErr(result)) {
+          showErrorToast(result.error);
+          return;
+        }
+        addToast(t('binDesigner.variants.detached', { name: result.value.name }), 'info');
+        await reloadOpenDesign(currentDesignId);
+      } finally {
+        setVariantBusy(false);
+      }
+    })();
+  }, [currentDesignId, reloadOpenDesign, addToast, t]);
+
+  // Orphans are dropped only on request: they are kept in case the upstream
+  // deletion is undone, and forgetting them is the user's call, not ours.
+  const handleClearOrphans = useCallback(() => {
+    const live = new Set((variant.parentParams?.cutouts ?? []).map((c) => c.id));
+    const cutouts = Object.fromEntries(
+      Object.entries(variant.overrides.cutouts ?? {}).filter(([id]) => live.has(id))
+    );
+    handleOverridesChange({ ...variant.overrides, cutouts });
+  }, [variant.parentParams, variant.overrides, handleOverridesChange]);
   const customShapeReason = t('binDesigner.shape.custom.hint');
 
   // Group expansion state — controlled so help-modal deep-links can force a
@@ -189,142 +266,165 @@ function BinParameterPanel() {
           </Button>
         </div>
 
-        {/* Shape group */}
-        <StickyGroupHeader
-          title={t('binDesigner.group.shape')}
-          expanded={shapeExpanded}
-          onExpandedChange={setShapeExpanded}
-          summary={shapeSummary}
-          modifiedLabel={markIf(modified.shape)}
-        >
-          <div className="divide-y divide-stroke-subtle/50">
-            <PanelSection helpTarget="bd-dimensions">
-              <DimensionsSection />
-            </PanelSection>
-            <PanelSection helpTarget="bd-overhang">
-              {/* Advanced drawer-fit control next to the dimensions; collapsed by
+        {variant.isVariant && variant.parentParams && (
+          <VariantSection
+            parentName={variant.parentName}
+            parentParams={variant.parentParams}
+            overrides={variant.overrides}
+            orphans={variant.orphans}
+            busy={variantBusy}
+            onChange={handleOverridesChange}
+            onDetach={handleDetach}
+            onClearOrphans={handleClearOrphans}
+          />
+        )}
+
+        {/* Every section below is the PARENT's, for a variant. `inert` rather
+            than a `disabled` prop on each control: a variant's params is a
+            materialized cache that the next propagation rewrites, so an edit
+            here would be silently discarded, and one gate is the only version of
+            this guard that cannot be forgotten when a section is added.
+            Also locked WHILE RESOLVING: the variant relationship is read from
+            IndexedDB, and staying editable until that returns leaves exactly the
+            window this guard exists to close. */}
+        <div inert={variant.isVariant || variant.isLoading}>
+          {/* Shape group */}
+          <StickyGroupHeader
+            title={t('binDesigner.group.shape')}
+            expanded={shapeExpanded}
+            onExpandedChange={setShapeExpanded}
+            summary={shapeSummary}
+            modifiedLabel={markIf(modified.shape)}
+          >
+            <div className="divide-y divide-stroke-subtle/50">
+              <PanelSection helpTarget="bd-dimensions">
+                <DimensionsSection />
+              </PanelSection>
+              <PanelSection helpTarget="bd-overhang">
+                {/* Advanced drawer-fit control next to the dimensions; collapsed by
                   default and gated off internally for custom-shape (mask) bins. */}
-              <OverhangSection />
-            </PanelSection>
-            <PanelSection helpTarget="bd-shape">
-              <ShapeSection />
-            </PanelSection>
-            {needsSplit && (
-              <PanelSection>
-                {/* Splits work for any footprint — axis-aligned cut planes
+                <OverhangSection />
+              </PanelSection>
+              <PanelSection helpTarget="bd-shape">
+                <ShapeSection />
+              </PanelSection>
+              {needsSplit && (
+                <PanelSection>
+                  {/* Splits work for any footprint — axis-aligned cut planes
                     intersect the polygon naturally. Pieces may be irregular
                     but each has positive volume; tested in the polygon
                     scenario suite. */}
-                <SplitOptionsSection />
+                  <SplitOptionsSection />
+                </PanelSection>
+              )}
+              <PanelSection helpTarget="bd-walls">
+                <WallsSection />
               </PanelSection>
-            )}
-            <PanelSection helpTarget="bd-walls">
-              <WallsSection />
-            </PanelSection>
-          </div>
-        </StickyGroupHeader>
+            </div>
+          </StickyGroupHeader>
 
-        {/* Lid group. The lid is a distinct companion part, so it gets its own
+          {/* Lid group. The lid is a distinct companion part, so it gets its own
             top-level group rather than being buried under Walls. It sits here,
             between Shape and Interior, because the groups below Shape read down
             the part: the lid caps the top, the interior is inside, the base is
             underneath. */}
-        <StickyGroupHeader
-          title={t('binDesigner.group.lid')}
-          expanded={lidExpanded}
-          onExpandedChange={setLidExpanded}
-          summary={lidSummary}
-          modifiedLabel={markIf(modified.lid)}
-        >
-          <div className="divide-y divide-stroke-subtle/50">
-            <PanelSection helpTarget="bd-lid">
-              <LidSection />
-            </PanelSection>
-          </div>
-        </StickyGroupHeader>
+          <StickyGroupHeader
+            title={t('binDesigner.group.lid')}
+            expanded={lidExpanded}
+            onExpandedChange={setLidExpanded}
+            summary={lidSummary}
+            modifiedLabel={markIf(modified.lid)}
+          >
+            <div className="divide-y divide-stroke-subtle/50">
+              <PanelSection helpTarget="bd-lid">
+                <LidSection />
+              </PanelSection>
+            </div>
+          </StickyGroupHeader>
 
-        {/* Interior group */}
-        <StickyGroupHeader
-          title={t('binDesigner.group.interior')}
-          expanded={interiorExpanded}
-          onExpandedChange={setInteriorExpanded}
-          summary={interiorSummary}
-          modifiedLabel={markIf(modified.interior)}
-        >
-          <div className="divide-y divide-stroke-subtle/50">
-            <PanelSection helpTarget="bd-interior">
-              {/* Per-mode gating lives inside InteriorSection: Solid (cutouts) stays
+          {/* Interior group */}
+          <StickyGroupHeader
+            title={t('binDesigner.group.interior')}
+            expanded={interiorExpanded}
+            onExpandedChange={setInteriorExpanded}
+            summary={interiorSummary}
+            modifiedLabel={markIf(modified.interior)}
+          >
+            <div className="divide-y divide-stroke-subtle/50">
+              <PanelSection helpTarget="bd-interior">
+                {/* Per-mode gating lives inside InteriorSection: Solid (cutouts) stays
                   interactive on custom shapes; Standard/Slotted remain gated. */}
-              <InteriorSection />
-            </PanelSection>
-            {showLabelTabs && (
-              <PanelSection helpTarget="bd-label-tabs">
+                <InteriorSection />
+              </PanelSection>
+              {showLabelTabs && (
+                <PanelSection helpTarget="bd-label-tabs">
+                  <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+                    <LabelTabsSection />
+                  </FeatureGate>
+                </PanelSection>
+              )}
+              <PanelSection helpTarget="bd-scoop">
                 <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
-                  <LabelTabsSection />
+                  <ScoopSection />
                 </FeatureGate>
               </PanelSection>
-            )}
-            <PanelSection helpTarget="bd-scoop">
-              <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
-                <ScoopSection />
-              </FeatureGate>
-            </PanelSection>
-            <PanelSection helpTarget="bd-knife-rest">
-              <KnifeRestSection />
-            </PanelSection>
-          </div>
-        </StickyGroupHeader>
+              <PanelSection helpTarget="bd-knife-rest">
+                <KnifeRestSection />
+              </PanelSection>
+            </div>
+          </StickyGroupHeader>
 
-        {/* Base group */}
-        <StickyGroupHeader
-          title={t('binDesigner.group.base')}
-          expanded={baseExpanded}
-          onExpandedChange={setBaseExpanded}
-          summary={baseSummary}
-          modifiedLabel={markIf(modified.base)}
-        >
-          <div className="divide-y divide-stroke-subtle/50">
-            <PanelSection helpTarget="bd-base">
-              <BaseSection />
-            </PanelSection>
-          </div>
-        </StickyGroupHeader>
+          {/* Base group */}
+          <StickyGroupHeader
+            title={t('binDesigner.group.base')}
+            expanded={baseExpanded}
+            onExpandedChange={setBaseExpanded}
+            summary={baseSummary}
+            modifiedLabel={markIf(modified.base)}
+          >
+            <div className="divide-y divide-stroke-subtle/50">
+              <PanelSection helpTarget="bd-base">
+                <BaseSection />
+              </PanelSection>
+            </div>
+          </StickyGroupHeader>
 
-        {/* Finishing group: how the part is coloured and what the grid it is
+          {/* Finishing group: how the part is coloured and what the grid it is
             built against measures. Neither describes the base it used to be
             filed under; both are the last things you set, and physical units
             are rarely touched at all. */}
-        <StickyGroupHeader
-          title={t('binDesigner.group.finishing')}
-          expanded={finishingExpanded}
-          onExpandedChange={setFinishingExpanded}
-          summary={finishingSummary}
-          modifiedLabel={markIf(modified.finishing)}
-        >
-          <div className="divide-y divide-stroke-subtle/50">
-            <PanelSection helpTarget="bd-type">
-              <TypeSection />
-            </PanelSection>
-            <PanelSection helpTarget="bd-colors">
-              <ColorsSection />
-            </PanelSection>
-            <PanelSection helpTarget="bd-physical-units">
-              <PhysicalUnitsSection />
-            </PanelSection>
-          </div>
-        </StickyGroupHeader>
+          <StickyGroupHeader
+            title={t('binDesigner.group.finishing')}
+            expanded={finishingExpanded}
+            onExpandedChange={setFinishingExpanded}
+            summary={finishingSummary}
+            modifiedLabel={markIf(modified.finishing)}
+          >
+            <div className="divide-y divide-stroke-subtle/50">
+              <PanelSection helpTarget="bd-type">
+                <TypeSection />
+              </PanelSection>
+              <PanelSection helpTarget="bd-colors">
+                <ColorsSection />
+              </PanelSection>
+              <PanelSection helpTarget="bd-physical-units">
+                <PhysicalUnitsSection />
+              </PanelSection>
+            </div>
+          </StickyGroupHeader>
 
-        {workshopEnabled && (
-          <div className="px-4 py-3 border-b border-stroke-subtle">
-            <Button variant="secondary" onClick={() => newDesign('assembly')} className="w-full">
-              {t('binDesigner.newWorkshop')}
-            </Button>
-          </div>
-        )}
+          {workshopEnabled && (
+            <div className="px-4 py-3 border-b border-stroke-subtle">
+              <Button variant="secondary" onClick={() => newDesign('assembly')} className="w-full">
+                {t('binDesigner.newWorkshop')}
+              </Button>
+            </div>
+          )}
 
-        {/* Capture the current settings as the default for new bins, right
+          {/* Capture the current settings as the default for new bins, right
             where the user has been editing them. */}
-        <SetDefaultFooter />
+          <SetDefaultFooter />
+        </div>
 
         <AttributionFooter />
       </div>

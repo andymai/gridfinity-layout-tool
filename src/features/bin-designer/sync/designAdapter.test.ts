@@ -8,12 +8,14 @@ const listDesignsMock = vi.fn();
 const loadDesignMock = vi.fn();
 const saveDesignMock = vi.fn();
 const deleteDesignMock = vi.fn();
+const detachVariantMock = vi.fn();
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
   listDesigns: () => listDesignsMock(),
   loadDesign: (id: string) => loadDesignMock(id),
   saveDesign: (input: unknown) => saveDesignMock(input),
   deleteDesign: (id: string) => deleteDesignMock(id),
+  detachVariant: (id: string) => detachVariantMock(id),
 }));
 
 import { designAdapter } from './designAdapter';
@@ -664,5 +666,84 @@ describe('branch lineage round-trip', () => {
     expect(saveDesignMock).toHaveBeenCalledWith(
       expect.objectContaining({ parentDesignId: designId('design-parent') })
     );
+  });
+});
+
+// Detach clears both variant fields, so `buildPayload` omits them. Falling back
+// to the local value on the receiving side would make a detach unsyncable: the
+// other device would keep tracking a parent the user let go of.
+describe('variant link clearing', () => {
+  beforeEach(() => {
+    __resetForTests();
+    vi.clearAllMocks();
+  });
+
+  const variant = (): SavedDesign => ({
+    ...savedDesign('design-variant', '2026-08-01T00:00:00.000Z'),
+    variantOf: designId('design-parent'),
+    overrides: { dimensions: { width: 4 } },
+  });
+
+  it('puts the live link and the claims on the wire', async () => {
+    listDesignsMock.mockResolvedValue(ok([variant()]));
+
+    const [item] = await designAdapter.list();
+
+    expect(item.payload.variantOf).toBe('design-parent');
+    expect(item.payload.overrides).toEqual({ dimensions: { width: 4 } });
+  });
+
+  it('omits both for a design that is not a variant', async () => {
+    listDesignsMock.mockResolvedValue(ok([savedDesign('plain', '2026-08-01T00:00:00.000Z')]));
+
+    const [item] = await designAdapter.list();
+
+    expect('variantOf' in item.payload).toBe(false);
+    expect('overrides' in item.payload).toBe(false);
+  });
+
+  it('detaches locally when the remote payload has dropped the link', async () => {
+    loadDesignMock.mockResolvedValue(ok(variant()));
+    saveDesignMock.mockResolvedValue(ok(variant()));
+    detachVariantMock.mockResolvedValue(
+      ok(savedDesign('design-variant', '2026-08-02T00:00:00.000Z'))
+    );
+
+    await designAdapter.applyRemote({
+      id: 'design-variant',
+      modifiedAt: Date.parse('2026-08-02T00:00:00.000Z'),
+      payload: samplePayload('detached elsewhere'),
+    });
+
+    expect(detachVariantMock).toHaveBeenCalledWith('design-variant');
+  });
+
+  it('does not detach a design that was never a variant', async () => {
+    loadDesignMock.mockResolvedValue(ok(savedDesign('plain', '2026-08-01T00:00:00.000Z')));
+    saveDesignMock.mockResolvedValue(ok(savedDesign('plain', '2026-08-02T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'plain',
+      modifiedAt: Date.parse('2026-08-02T00:00:00.000Z'),
+      payload: samplePayload('renamed'),
+    });
+
+    expect(detachVariantMock).not.toHaveBeenCalled();
+  });
+
+  // The server drops an empty overrides object, so an absent key on a payload
+  // that still carries `variantOf` means "claims nothing", not "keep yours".
+  it('clears every claim when the remote payload keeps the link but sends none', async () => {
+    loadDesignMock.mockResolvedValue(ok(variant()));
+    saveDesignMock.mockResolvedValue(ok(variant()));
+
+    await designAdapter.applyRemote({
+      id: 'design-variant',
+      modifiedAt: Date.parse('2026-08-02T00:00:00.000Z'),
+      payload: { ...samplePayload('released'), variantOf: 'design-parent' },
+    });
+
+    expect(saveDesignMock).toHaveBeenCalledWith(expect.objectContaining({ overrides: {} }));
+    expect(detachVariantMock).not.toHaveBeenCalled();
   });
 });

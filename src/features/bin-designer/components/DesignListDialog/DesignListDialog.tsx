@@ -13,6 +13,7 @@ import {
   listDesigns,
   deleteDesign,
   duplicateDesign,
+  createVariant,
   saveDesign,
   updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
@@ -38,6 +39,7 @@ import { useDesignerStore } from '../../store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
+import { showErrorToast } from '@/shared/hooks/useResultToast';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
 import { ItemListShell } from '@/shared/components';
@@ -306,6 +308,30 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [addToast, t]
   );
 
+  // Created with NO overrides: an exact copy that stays in step. The user then
+  // claims values in the Variant panel section, which is where the difference
+  // between this and Duplicate becomes visible.
+  const handleCreateVariant = useCallback(
+    async (design: SavedDesign) => {
+      const name = `${design.name} (${t('binDesigner.variants.label')})`;
+      const result = await createVariant(design.id, name, {});
+      if (isOk(result)) {
+        setDesigns((prev) => [result.value, ...prev]);
+        addToast({
+          message: t('binDesigner.variants.created', {
+            name: result.value.name,
+            parent: design.name,
+          }),
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        showErrorToast(result.error);
+      }
+    },
+    [addToast, t]
+  );
+
   const handleDelete = useCallback(
     async (design: SavedDesign) => {
       // Counted BEFORE the delete, while the branches are still in the list.
@@ -544,6 +570,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     onRename: (design: SavedDesign, newName: string) => void handleRename(design, newName),
     onEditTags: (design: SavedDesign) => setTagEdit({ mode: 'single', design }),
     onDuplicate: (design: SavedDesign) => void handleDuplicate(design),
+    onCreateVariant: (design: SavedDesign) => void handleCreateVariant(design),
     onDelete: (design: SavedDesign) => void handleDelete(design),
     onFocus: setFocusedIndex,
     onToggleSelect: selection.toggle,
