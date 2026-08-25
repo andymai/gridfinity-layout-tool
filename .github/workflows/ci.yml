@@ -332,6 +332,22 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # setup-pnpm caches the pnpm store, not this directory, so without this the
+      # ESLint cache is cold every run. `--cache-strategy content` in the lint
+      # script is load-bearing too: a fresh checkout rewrites every mtime, so the
+      # default metadata strategy would discard a restored cache.
+      #
+      # eslint-rules/ is in the key because ESLint caches results, not the rules
+      # that produced them, so a rule edited against a warm cache reports a stale
+      # pass.
+      - name: Restore ESLint cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: node_modules/.cache/eslint
+          key: eslint-${{ runner.os }}-${{ hashFiles('eslint.config.js', 'eslint-rules/**', 'pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            eslint-${{ runner.os }}-${{ hashFiles('eslint.config.js', 'eslint-rules/**', 'pnpm-lock.yaml') }}-
+
       - name: Lint
         id: lint
         continue-on-error: true
