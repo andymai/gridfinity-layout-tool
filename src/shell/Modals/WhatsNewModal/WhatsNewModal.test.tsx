@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WhatsNewModal } from './WhatsNewModal';
 import { WHATS_NEW_ENTRIES } from '@/features/whats-new/entries';
@@ -15,8 +15,6 @@ vi.mock('@/i18n', () => ({
   useCurrentLocale: () => 'en' as const,
 }));
 
-const FEATURED = WHATS_NEW_ENTRIES.find((entry) => entry.featured === true);
-
 function open(): void {
   useViewStore.getState().setWhatsNewOpen(true);
 }
@@ -28,6 +26,23 @@ function rewind(steps: number): void {
     JSON.stringify({ lastSeenId: WHATS_NEW_ENTRIES[steps].id, lastAutoOpenAt: 0 })
   );
   reloadSeenState();
+}
+
+/**
+ * Puts the newest featured entry inside the digest window. Entries are prepended
+ * every release, so a test that assumed the promoted one was still among the
+ * newest few would rot the moment enough unflagged entries shipped above it.
+ */
+function rewindPastFirstFeatured(): void {
+  const index = WHATS_NEW_ENTRIES.findIndex((entry) => entry.featured === true);
+  expect(index).toBeGreaterThanOrEqual(0);
+  expect(index).toBeLessThan(DIGEST_MAX);
+  rewind(index + 1);
+}
+
+/** The lead card is the digest's only article. */
+function leadCard(): HTMLElement {
+  return screen.getByRole('article');
 }
 
 /** Matches a button by the start of its accessible name, which for a row
@@ -52,32 +67,31 @@ describe('WhatsNewModal', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('leads with the featured entry rather than whatever shipped last', () => {
+  it('leads with a featured entry, not simply the newest one', () => {
+    rewindPastFirstFeatured();
     open();
     render(<WhatsNewModal />);
 
-    expect(FEATURED).toBeDefined();
-    const headline = screen.getByRole('heading', { level: 3, name: FEATURED?.title.en });
-    expect(headline).toBeInTheDocument();
+    const card = leadCard();
+    const heading = within(card).getByRole('heading', { level: 3 });
+    const promoted = WHATS_NEW_ENTRIES.find((entry) => entry.title.en === heading.textContent);
+    expect(promoted?.featured).toBe(true);
     // A promoted entry keeps its full body; the rows below it are clamped.
-    expect(screen.getByText(FEATURED?.body?.en ?? '')).toBeInTheDocument();
+    expect(within(card).getByText(promoted?.body?.en ?? '')).toBeInTheDocument();
   });
 
-  it('groups the remaining entries under one heading per kind', () => {
+  it('states each kind once, as a heading, never per row', () => {
+    rewindPastFirstFeatured();
     open();
     render(<WhatsNewModal />);
 
-    // The lead card owns the newest 'new' entry, so its section reads "also new".
-    expect(screen.getByRole('heading', { name: 'whatsNew.sectionAlsoNew' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'whatsNew.kind.fixed' })).toBeInTheDocument();
-  });
+    // The lead card's title plus at least one section heading, so the counts
+    // below are measuring a rendered list rather than an empty one.
+    expect(screen.getAllByRole('heading', { level: 3 }).length).toBeGreaterThan(1);
 
-  it('states the kind once per section instead of once per row', () => {
-    open();
-    render(<WhatsNewModal />);
-
-    // One heading, no per-entry badge repeating it.
-    expect(screen.getAllByText('whatsNew.kind.fixed')).toHaveLength(1);
+    for (const kind of ['new', 'improved', 'fixed'] as const) {
+      expect(screen.queryAllByText(`whatsNew.kind.${kind}`).length).toBeLessThanOrEqual(1);
+    }
   });
 
   it('anchors the digest to the running version', () => {
@@ -138,11 +152,13 @@ describe('WhatsNewModal', () => {
       assign,
     });
 
+    rewindPastFirstFeatured();
     open();
     render(<WhatsNewModal />);
 
-    expect(FEATURED?.action?.kind).toBe('openTool');
-    await user.click(screen.getByRole('button', { name: /whatsNew.action.openTool/ }));
+    // Scoped to the card: rows below it carry the same destination labels.
+    const action = within(leadCard()).getByRole('button');
+    await user.click(action);
 
     // A full reload would drop in-memory UI state; the routing hooks do not.
     expect(assign).not.toHaveBeenCalled();
@@ -156,12 +172,12 @@ describe('WhatsNewModal', () => {
 
     await user.click(screen.getByRole('button', { name: /whatsNew.seeAll/ }));
 
-    const newest = WHATS_NEW_ENTRIES[0];
-    expect(newest.kind).toBe('new');
-    expect(screen.getByText(newest.title.en)).toBeInTheDocument();
+    const aNewEntry = WHATS_NEW_ENTRIES.find((entry) => (entry.kind ?? 'new') === 'new');
+    const title = aNewEntry?.title.en ?? '';
+    expect(screen.getByText(title)).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: /whatsNew.kind.fixed/ }));
-    expect(screen.queryByText(newest.title.en)).not.toBeInTheDocument();
+    expect(screen.queryByText(title)).not.toBeInTheDocument();
   });
 
   it('keeps archive rows to one line until one is expanded', async () => {
