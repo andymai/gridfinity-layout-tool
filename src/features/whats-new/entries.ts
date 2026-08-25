@@ -14,6 +14,15 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'hinged-bin-keeps-its-hinge',
+    date: '2026-08-24',
+    kind: 'fixed',
+    title: { en: 'Exported hinged bins keep their hinge' },
+    body: {
+      en: 'A hinged lid exported correctly, but the bin it hinges onto came out as an ordinary bin with nothing for the pin to pass through. The knuckles were drawn a fraction of a millimetre clear of the rim, so they showed in the preview and were dropped from the file. They are now joined to the lip. Re-export any hinged design you printed before today.',
+    },
+  },
+  {
     id: 'center-anchored-resize',
     date: '2026-08-24',
     kind: 'improved',
