@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/binGenerator.export.variantOverrides.test.ts
+  s_bc329c5b63b656::t_12d731e3046367 1-5
+src/features/generation/worker/generators/scenarios/index.ts
+  s_bc329c5b63b656::t_12d731e3046367 54,109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "884a091980e8610151a26a91dedb716ddb2e3a50",
+  "prompts": {},
+  "sessions": {
+    "s_bc329c5b63b656": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f730b687-7a9c-4f6f-88f9-0d7f7583a9ef",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
