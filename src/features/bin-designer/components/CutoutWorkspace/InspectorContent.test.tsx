@@ -112,6 +112,58 @@ const defaultProps = {
   disabled: false,
 };
 
+describe('InspectorContent - group repeat', () => {
+  const grouped = (over: Partial<Cutout> = {}): Cutout =>
+    createCutout({ groupId: 'g1', groupOp: 'exclude', ...over });
+
+  const pair = [
+    grouped({ id: 'outer', x: 5, y: 5, width: 26, depth: 20 }),
+    grouped({ id: 'inner', x: 11, y: 9, width: 14, depth: 12 }),
+  ];
+
+  it('offers Repeat when the selection is a whole group', () => {
+    render(
+      <InspectorContent {...defaultProps} cutouts={pair} selection={new Set(['outer', 'inner'])} />
+    );
+    expect(screen.getByText('binDesigner.cutouts.section.repeat')).toBeInTheDocument();
+  });
+
+  it('does not offer it for a partial selection of that group', () => {
+    // Half a group would write a repeat onto a member the user cannot see they
+    // are editing.
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[...pair, grouped({ id: 'third', x: 40, y: 5 })]}
+        selection={new Set(['outer', 'inner'])}
+      />
+    );
+    expect(screen.queryByText('binDesigner.cutouts.section.repeat')).toBeNull();
+  });
+
+  it('does not offer it for a loose multi-selection', () => {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[createCutout({ id: 'a' }), createCutout({ id: 'b', x: 50 })]}
+        selection={new Set(['a', 'b'])}
+      />
+    );
+    expect(screen.queryByText('binDesigner.cutouts.section.repeat')).toBeNull();
+  });
+
+  it('refuses a group holding a path, which cannot be repeated', () => {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[pair[0], grouped({ id: 'p', shape: 'path' })]}
+        selection={new Set(['outer', 'p'])}
+      />
+    );
+    expect(screen.getByText('binDesigner.cutouts.repeat.blockedPath')).toBeInTheDocument();
+  });
+});
+
 describe('InspectorContent', () => {
   it('renders an empty placeholder when nothing is selected', () => {
     render(<InspectorContent {...defaultProps} />);

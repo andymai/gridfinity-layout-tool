@@ -14,6 +14,24 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'repeat-a-boolean-group',
+    date: '2026-08-24',
+    kind: 'new',
+    title: { en: 'Repeat a group of shapes as one piece' },
+    body: {
+      en: 'Building a recess out of two shapes with Exclude, then wanting a row of them, meant flattening the repeat and redoing the boolean on every copy by hand. Select the whole group and Repeat now arrays the finished shape, so every copy keeps the same relationship. Flattening one gives you an independent group per copy rather than loose shapes.',
+    },
+  },
+  {
+    id: 'per-copy-repeat-labels',
+    date: '2026-08-24',
+    kind: 'new',
+    title: { en: 'Give every copy of a repeat its own label' },
+    body: {
+      en: 'A repeat cut a row of pockets but engraved a single caption beside the first one, so naming a rack of router bits meant flattening it and editing each pocket. The Label section now takes one label per line, filling the copies top row first and left to right, and tells you how many labels you have written against how many copies there are.',
+    },
+  },
+  {
     id: 'hinged-bin-keeps-its-hinge',
     date: '2026-08-24',
     kind: 'fixed',

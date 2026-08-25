@@ -298,6 +298,16 @@ export interface DesignerState {
    */
   reparentCutouts: (ids: readonly string[], targetId: string | null) => void;
   setGroupOp: (groupId: string, op: GroupOp) => void;
+  /**
+   * Set or clear the repeat driving `cutoutId`, writing it to every member of
+   * its group so a boolean result arrays as one unit.
+   *
+   * One shared config rather than a per-member one, for the same reason
+   * `groupOp` and the cavity color are shared: the members describe one cavity,
+   * and two members repeating differently would describe a pattern the boolean
+   * cannot be built from. `undefined` removes the repeat.
+   */
+  setCutoutArray: (cutoutId: string, config: CutoutArrayConfig | undefined) => void;
 
   // Transaction + batch cutout actions
   startTransaction: () => void;

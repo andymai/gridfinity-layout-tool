@@ -953,6 +953,135 @@ describe('cutoutSlice - consolidated actions', () => {
     });
   });
 
+  describe('setCutoutArray', () => {
+    const row: CutoutArrayConfig = {
+      mode: 'grid',
+      cols: 3,
+      rows: 1,
+      pitchX: 30,
+      pitchY: 30,
+      count: 3,
+      radius: 20,
+      startAngle: 0,
+      rotateToCenter: true,
+    };
+
+    it('writes one shared repeat onto every member of a group', () => {
+      const { addCutout, groupCutouts, setCutoutArray } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+      groupCutouts(['a', 'b'], 'exclude');
+
+      setCutoutArray('a', row);
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0].array?.cols).toBe(3);
+      expect(cutouts[1].array?.cols).toBe(3);
+    });
+
+    it('refuses rotate-to-center for a group, so the assembly cannot come apart', () => {
+      const { addCutout, groupCutouts, setCutoutArray } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+      groupCutouts(['a', 'b'], 'exclude');
+
+      setCutoutArray('a', { ...row, mode: 'radial' });
+
+      for (const c of useDesignerStore.getState().params.cutouts) {
+        expect(c.array?.rotateToCenter).toBe(false);
+      }
+    });
+
+    it('keeps rotate-to-center for a loose cutout', () => {
+      const { addCutout, setCutoutArray } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+
+      setCutoutArray('a', { ...row, mode: 'radial' });
+
+      expect(useDesignerStore.getState().params.cutouts[0].array?.rotateToCenter).toBe(true);
+    });
+
+    it('clears the repeat from the whole group, leaving no array key behind', () => {
+      const { addCutout, groupCutouts, setCutoutArray } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+      groupCutouts(['a', 'b'], 'union');
+      setCutoutArray('a', row);
+
+      setCutoutArray('b', undefined);
+
+      for (const c of useDesignerStore.getState().params.cutouts) {
+        // Absent, not `undefined`: a design that never had a repeat has to
+        // serialize exactly as it did before the field existed.
+        expect('array' in c).toBe(false);
+      }
+    });
+
+    it('declines a group holding a path, which cannot be repeated', () => {
+      const { addCutout, groupCutouts, setCutoutArray } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(
+        createTestCutout({
+          id: 'b',
+          x: 40,
+          shape: 'path',
+          path: [
+            { x: 40, y: 10, handleIn: null, handleOut: null, symmetric: false },
+            { x: 50, y: 10, handleIn: null, handleOut: null, symmetric: false },
+            { x: 45, y: 20, handleIn: null, handleOut: null, symmetric: false },
+          ],
+        })
+      );
+      groupCutouts(['a', 'b'], 'union');
+
+      setCutoutArray('a', row);
+
+      for (const c of useDesignerStore.getState().params.cutouts) {
+        expect(c.array).toBeUndefined();
+      }
+    });
+  });
+
+  describe('grouping a set that already repeats', () => {
+    const row: CutoutArrayConfig = {
+      mode: 'grid',
+      cols: 2,
+      rows: 1,
+      pitchX: 30,
+      pitchY: 30,
+      count: 2,
+      radius: 20,
+      startAngle: 0,
+      rotateToCenter: false,
+    };
+
+    it('adopts one repeat for the group, so repeat-then-group matches group-then-repeat', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', array: row }));
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+
+      groupCutouts(['a', 'b'], 'exclude');
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0].array?.cols).toBe(2);
+      expect(cutouts[1].array?.cols).toBe(2);
+    });
+
+    it('drops rotate-to-center when a radial repeat is carried into a group', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(
+        createTestCutout({ id: 'a', array: { ...row, mode: 'radial', rotateToCenter: true } })
+      );
+      addCutout(createTestCutout({ id: 'b', x: 40 }));
+
+      groupCutouts(['a', 'b'], 'union');
+
+      for (const c of useDesignerStore.getState().params.cutouts) {
+        expect(c.array?.rotateToCenter).toBe(false);
+      }
+    });
+  });
+
   describe('setGroupOp', () => {
     it('updates the op on every member of a group', () => {
       const { addCutout, groupCutouts, setGroupOp } = useDesignerStore.getState();

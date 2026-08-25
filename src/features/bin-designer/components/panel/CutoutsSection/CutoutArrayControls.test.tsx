@@ -42,12 +42,16 @@ function renderControls(
   cutout: Cutout,
   handlers: { onUpdate?: (patch: Partial<Cutout>) => void; onFlatten?: () => void } = {}
 ) {
+  // The control speaks configs; the harness keeps reporting them as the
+  // `{ array }` patch its assertions were written against.
+  const onUpdate = handlers.onUpdate ?? vi.fn();
   return render(
     <CutoutArrayControls
-      cutout={cutout}
+      box={cutout}
+      array={cutout.array}
       binWidth={300}
       binDepth={300}
-      onUpdate={handlers.onUpdate ?? vi.fn()}
+      onChange={(config) => onUpdate({ array: config })}
       onFlatten={handlers.onFlatten ?? vi.fn()}
     />
   );

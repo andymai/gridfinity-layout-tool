@@ -11,7 +11,8 @@
  * is visibly unavailable.
  */
 
-import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
+import type { RepeatBox } from '@/shared/utils/cutoutArray';
+import type { CutoutArrayConfig } from '@/features/bin-designer/types';
 import { arrayFieldBounds, defaultArrayConfig } from '@/shared/utils/cutoutArray';
 
 export type RepeatPresetId = 'grid2x2' | 'grid3x2' | 'row5' | 'ring6';
@@ -36,7 +37,7 @@ export function presetInstanceCount(preset: RepeatPreset): number {
   return preset.radial ? 6 : preset.cols * preset.rows;
 }
 
-export function buildPresetConfig(preset: RepeatPreset, cutout: Cutout): CutoutArrayConfig {
+export function buildPresetConfig(preset: RepeatPreset, cutout: RepeatBox): CutoutArrayConfig {
   const base = defaultArrayConfig(cutout.width, cutout.depth);
   if (preset.radial) return { ...base, mode: 'radial', count: presetInstanceCount(preset) };
   return { ...base, mode: 'grid', cols: preset.cols, rows: preset.rows };
@@ -45,7 +46,7 @@ export function buildPresetConfig(preset: RepeatPreset, cutout: Cutout): CutoutA
 /** True when the preset fits the bin at the cutout's current position. */
 export function presetFits(
   preset: RepeatPreset,
-  cutout: Cutout,
+  cutout: RepeatBox,
   binWidth: number,
   binDepth: number
 ): boolean {
@@ -68,7 +69,7 @@ export function presetFits(
  * disable rather than create a one-instance repeat that does nothing.
  */
 export function clampedDefaultConfig(
-  cutout: Cutout,
+  cutout: RepeatBox,
   binWidth: number,
   binDepth: number
 ): CutoutArrayConfig | null {

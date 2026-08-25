@@ -23,10 +23,14 @@ export { canArray } from '@/shared/utils/cutoutArray';
 export type RepeatBlockedReason = 'grouped' | 'path';
 
 /**
- * The reason `canArray` refuses this cutout, or null when it does not. The
+ * The reason a repeat is refused for this cutout, or null when it is not. The
  * Repeat section renders this instead of disappearing: a control that vanishes
- * without explanation reads as a bug, and grouping two shapes in order to
- * repeat the pair is a reasonable thing to have tried.
+ * without explanation reads as a bug.
+ *
+ * A grouped member is still refused HERE, in the single-cutout inspector,
+ * because a repeat on a group belongs to the group: it is offered on the whole
+ * selection instead, which is what clicking any member gives you. Reaching one
+ * member on its own through the shape list is the only way to land here.
  */
 export function repeatBlockedReason(
   cutout: Pick<Cutout, 'shape' | 'groupId'>

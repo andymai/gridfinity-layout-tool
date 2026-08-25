@@ -22,7 +22,13 @@ import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE, MAX_LID_CUTOUTS } from '.
 import { canArray } from '@/shared/utils/cutoutArray';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
-import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
+import {
+  adoptedGroupArray,
+  dissolveSingletonGroups,
+  planCutoutArrayWrite,
+  pushHistoryEntry,
+  withCutoutArray,
+} from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
 
@@ -663,6 +669,8 @@ export function createCutoutSlice(rawSet: Set) {
             if (c.groupId === existingGroupId) idsToGroup.add(c.id);
           }
         }
+        // One repeat per group, adopted the same way the color below is.
+        const sharedArray = adoptedGroupArray(owner.cutouts, idsToGroup, existingGroupId);
         // One color per group: adopt the group's existing color, else the first
         // colored member, so a freshly grouped set can't hold mixed backings.
         const colorSource =
@@ -684,6 +692,7 @@ export function createCutoutSlice(rawSet: Set) {
             !idsToGroup.has(c.id) ||
             (c.groupId === groupId &&
               (c.groupOp ?? DEFAULT_GROUP_OP) === groupOp &&
+              c.array === sharedArray &&
               (!colorPatch ||
                 (c.color === colorPatch.color &&
                   (c.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE) === colorPatch.colorScope)))
@@ -692,7 +701,9 @@ export function createCutoutSlice(rawSet: Set) {
 
         pushHistoryEntry(state);
         owner.cutouts = owner.cutouts.map((c) =>
-          idsToGroup.has(c.id) ? { ...c, groupId, groupOp, ...colorPatch } : c
+          idsToGroup.has(c.id)
+            ? withCutoutArray({ ...c, groupId, groupOp, ...colorPatch }, sharedArray)
+            : c
         );
       });
     },
@@ -723,6 +734,18 @@ export function createCutoutSlice(rawSet: Set) {
         pushHistoryEntry(state);
         owner.cutouts = owner.cutouts.map((c) =>
           c.groupId === groupId ? { ...c, groupOp: op } : c
+        );
+      });
+    },
+
+    setCutoutArray: (cutoutId: string, config: CutoutArrayConfig | undefined) => {
+      set((state) => {
+        const owner = cutoutOwner(state);
+        const plan = planCutoutArrayWrite(owner.cutouts, cutoutId, config);
+        if (!plan) return;
+        pushHistoryEntry(state, { affectsGeometry: true });
+        owner.cutouts = owner.cutouts.map((c) =>
+          plan.ids.has(c.id) ? withCutoutArray(c, plan.config) : c
         );
       });
     },

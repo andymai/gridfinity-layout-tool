@@ -41,7 +41,7 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { InspectorDock } from './InspectorDock';
 import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
-import { applyFlattenArray } from '../panel/CutoutsSection/cutoutHelpers';
+import { applyFlattenArray, applyFlattenGroupArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
@@ -259,6 +259,41 @@ export function CutoutWorkspace() {
   const mergeCutoutsIntoArray = useDesignerStore((s) => s.mergeCutoutsIntoArray);
   const addToast = useToastStore((s) => s.addToast);
   const makeRepeatRef = useRef<() => void>(() => {});
+
+  const handleFlattenGroupArray = useCallback(
+    (id: string) => {
+      const member = cutouts.find((c) => c.id === id);
+      const config = member
+        ? cutouts.find((c) => c.groupId === member.groupId && c.array !== undefined)?.array
+        : undefined;
+      const capacity = remainingCutoutCapacity(cutoutTarget, params.lid.cutouts);
+      const outcome = applyFlattenGroupArray(id, cutouts, updateCutout, addCutout, capacity, {
+        start: startTransaction,
+        commit: commitTransaction,
+      });
+      if (outcome === 'no-room') {
+        addToast(t('toast.flattenNoRoom', { max: MAX_LID_CUTOUTS }), 'error');
+        return;
+      }
+      if (outcome === 'flattened' && config) {
+        trackEvent('cutout_repeat_flattened', {
+          mode: config.mode,
+          instances: arrayInstanceCount(config),
+        });
+      }
+    },
+    [
+      cutouts,
+      updateCutout,
+      addCutout,
+      cutoutTarget,
+      params.lid.cutouts,
+      addToast,
+      t,
+      startTransaction,
+      commitTransaction,
+    ]
+  );
 
   const handleFlattenArray = useCallback(
     (id: string) => {
@@ -720,6 +755,7 @@ export function CutoutWorkspace() {
           disabled={isInteracting}
           onFitCue={setFitCue}
           onFlattenArray={handleFlattenArray}
+          onFlattenGroupArray={handleFlattenGroupArray}
           offBoardCount={offBoardIds.size}
           onClampOffBoard={offBoardUpdates.size > 0 ? handleClampOffBoard : undefined}
           onCenterOffBoard={centerUpdates.size > 0 ? handleCenterOffBoard : undefined}

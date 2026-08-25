@@ -120,6 +120,7 @@ export function SingleCutoutInspector({
 }: SingleCutoutInspectorProps) {
   const t = useTranslation();
   const ungroupCutouts = useDesignerStore((s) => s.ungroupCutouts);
+  const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
   // maxCutDepth is the remaining fill on a bin host; a through-cut host has no
   // depth to fall short of.
   // The fields display preview-merged values, so anything computed FROM them
@@ -316,10 +317,11 @@ export function SingleCutoutInspector({
           }
         >
           <CutoutArrayControls
-            cutout={cutout}
+            box={live}
+            array={cutout.array}
             binWidth={binWidth}
             binDepth={binDepth}
-            onUpdate={(patch) => onUpdate(cutout.id, patch)}
+            onChange={(config) => setCutoutArray(cutout.id, config)}
             onFlatten={() => onFlattenArray?.(cutout.id)}
             disabled={disabled}
             blockedReason={repeatBlockedReason(cutout)}

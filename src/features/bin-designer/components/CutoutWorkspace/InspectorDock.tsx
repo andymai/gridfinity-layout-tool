@@ -41,6 +41,7 @@ interface InspectorDockProps {
   readonly disabled?: boolean;
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
+  readonly onFlattenGroupArray?: (id: string) => void;
   /** Count of cutouts stranded past the board after a resize (0 = none). */
   readonly offBoardCount?: number;
   /** Clamp every off-board cutout back inside the board. */

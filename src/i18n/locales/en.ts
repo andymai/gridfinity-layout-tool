@@ -2733,7 +2733,9 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.repeat.presetLabel': 'Start with',
   'binDesigner.cutouts.repeat.presetRing': 'Ring of {count}',
   'binDesigner.cutouts.repeat.presetNoFit': 'Not enough room from this position',
-  'binDesigner.cutouts.repeat.blockedGrouped': 'Repeat works on ungrouped shapes.',
+  'binDesigner.cutouts.repeat.blockedGrouped': 'Select the whole group to repeat it as one piece.',
+  'binDesigner.cutouts.repeat.groupNoRotate':
+    'A group repeats as one piece, so every copy keeps the same angle.',
   'binDesigner.cutouts.repeat.blockedPath': 'Repeat is not available for pen paths.',
   'binDesigner.cutouts.repeat.labels.enable': 'Label each copy separately',
   'binDesigner.cutouts.repeat.labels.disable': 'Use one label for all copies',

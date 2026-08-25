@@ -20,6 +20,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
   cutoutLabelPlacement,
+  fitLabelRoom,
   labelPlacementForAabb,
   resolveCutoutTextAnchor,
 } from '@/shared/utils/cutoutLabel';
@@ -163,9 +164,12 @@ export function CutoutLabel3D({
           const placement = cutoutLabelPlacement(instance, binWidth, binDepth);
           if (!placement) return null;
 
+          // Same cap the engraver applies, so the editor shows the size that
+          // will actually be cut.
+          const room = fitLabelRoom(placement.availW, placement.availD, effective.array);
           const fontSize = fitLabelFontSize(
             label,
-            placement,
+            { ...placement, ...room },
             textDefaults,
             instance.textStyle?.fontSizeOverride
           );

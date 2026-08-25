@@ -16,6 +16,7 @@ import { CutoutShapeBadge } from './CutoutShapeBadge';
 import { hasFitControls, formatFitSummary, repeatBlockedReason } from './cutoutSectionVisibility';
 import { CutoutArrayControls } from './CutoutArrayControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
+import { useDesignerStore } from '@/features/bin-designer/store';
 import type { FitCue } from './cutoutSectionVisibility';
 import { resizeAroundCenter } from './cutoutHelpers';
 
@@ -50,6 +51,7 @@ export function CutoutPropertyPanel({
   onUngroup,
 }: CutoutPropertyPanelProps) {
   const t = useTranslation();
+  const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
 
   return (
     <div className="space-y-2.5 rounded border border-stroke-subtle bg-surface-elevated p-3">
@@ -173,10 +175,11 @@ export function CutoutPropertyPanel({
         }
       >
         <CutoutArrayControls
-          cutout={cutout}
+          box={cutout}
+          array={cutout.array}
           binWidth={maxWidth}
           binDepth={maxDepth}
-          onUpdate={(patch) => onUpdate(cutout.id, patch)}
+          onChange={(config) => setCutoutArray(cutout.id, config)}
           onFlatten={() => onFlattenArray?.(cutout.id)}
           disabled={disabled}
           blockedReason={repeatBlockedReason(cutout)}

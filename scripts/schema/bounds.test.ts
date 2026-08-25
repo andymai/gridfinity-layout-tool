@@ -55,6 +55,7 @@ import {
   DEFAULT_CUTOUT_CLEARANCE,
   DEFAULT_POLYGON_SIDES,
   MAX_ARRAY_COUNT,
+  MAX_ARRAY_INSTANCES,
   MAX_CUTOUT_CHAMFER,
   MAX_CUTOUT_CLEARANCE,
   MAX_CUTOUT_LEAN_DEG,
@@ -92,6 +93,7 @@ import {
   TEXT_CASES,
   TEXT_CUT_PROFILES,
   TEXT_FONT_FAMILIES,
+  TEXT_MAX_LENGTH,
 } from '@/features/bin-designer/types/text';
 import { DEFAULT_PATTERN_SCALE, WALL_PATTERN_TYPES } from '@/features/bin-designer/types/walls';
 import { isRecord, loadSchemas, walkSubschemas } from './loadSchemas';
@@ -125,6 +127,7 @@ const SOURCES: Record<string, unknown> = {
   TEXT_CASES,
   TEXT_CUT_PROFILES,
   TEXT_FONT_FAMILIES,
+  TEXT_MAX_LENGTH,
   WALL_PATTERN_TYPES,
   ACCENT_BAND_DEFAULT_MM,
   ACCENT_BAND_MIN_MM,
@@ -146,6 +149,7 @@ const SOURCES: Record<string, unknown> = {
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_MIN_MM,
   MAX_ARRAY_COUNT,
+  MAX_ARRAY_INSTANCES,
   MAX_CUTOUT_CHAMFER,
   MAX_CUTOUT_CLEARANCE,
   MAX_CUTOUT_LEAN_DEG,

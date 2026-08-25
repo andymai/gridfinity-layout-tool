@@ -14,6 +14,10 @@ import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geometryAlign';
 import { expandSelectionToGroups } from '../panel/CutoutsSection/cutoutGroups';
+import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
+import { arrayInstanceCount, canGroupArray, groupRepeatBox } from '@/shared/utils/cutoutArray';
+import { useDesignerStore } from '@/features/bin-designer/store';
+import { Collapsible } from '@/design-system';
 import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutColorControls } from './CutoutColorControls';
@@ -55,6 +59,8 @@ interface InspectorContentProps {
   readonly disabled?: boolean;
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
+  /** Bakes a repeated group into one independent group per copy. */
+  readonly onFlattenGroupArray?: (id: string) => void;
   readonly board?: BoardSettings;
   /** Count of cutouts stranded past the board after a resize (0 = none). */
   readonly offBoardCount?: number;
@@ -113,6 +119,27 @@ function getSharedField<K extends keyof Cutout>(
   return first;
 }
 
+/**
+ * The group a selection covers exactly, or null.
+ *
+ * "Exactly" is both directions: every selected cutout is in the same group, and
+ * every member of that group is selected. Clicking a member on the canvas
+ * produces this, while ctrl-picking two of a group's three members from the
+ * shape list does not, and setting a shared repeat from that partial selection
+ * would write it onto a member the user cannot see they are editing.
+ */
+function selectedWholeGroup(
+  all: readonly Cutout[],
+  selected: readonly Cutout[]
+): readonly Cutout[] | null {
+  if (selected.length < 2) return null;
+  const groupId = selected[0].groupId;
+  if (groupId === null) return null;
+  if (selected.some((c) => c.groupId !== groupId)) return null;
+  const members = all.filter((c) => c.groupId === groupId);
+  return members.length === selected.length ? members : null;
+}
+
 export function InspectorContent({
   cutouts,
   selection,
@@ -126,6 +153,7 @@ export function InspectorContent({
   disabled = false,
   onFitCue,
   onFlattenArray,
+  onFlattenGroupArray,
   board,
   offBoardCount = 0,
   depthShortfallCount = 0,
@@ -151,6 +179,10 @@ export function InspectorContent({
   // Called above the empty-selection early return so hook order stays stable;
   // it returns null for selections that are not a pattern anyway.
   const repeatSuggestion = useRepeatSuggestion(cutouts, selection, binWidth, binDepth, 'inspector');
+
+  // Same reason: the group Repeat section renders far below the early return,
+  // but its hook cannot.
+  const setCutoutArray = useDesignerStore((st) => st.setCutoutArray);
 
   // Bin-level controls stay visible across every selection state so the user can
   // resize the board and clear the stacking lip without leaving the editor.
@@ -199,6 +231,11 @@ export function InspectorContent({
 
   const isSingle = selectedCutouts.length === 1;
   const singleCutout = isSingle ? selectedCutouts[0] : null;
+  // The group the selection IS, or null when it is a loose set or only part of
+  // a group. A repeat belongs to the whole assembly, so a partial selection
+  // must not be able to set one for members it does not include.
+  const wholeGroup = selectedWholeGroup(cutouts, selectedCutouts);
+  const groupArray = wholeGroup?.find((m) => m.array !== undefined)?.array;
 
   const sharedCutDepth = getSharedValue(selectedCutouts, preview, 'cutDepth');
   const sharedRotation = getSharedValue(selectedCutouts, preview, 'rotation');
@@ -319,6 +356,35 @@ export function InspectorContent({
             onDistribute={handleDistribute}
             disabled={disabled}
           />
+          {/* Clicking any member selects the whole group, so this is where a
+              user who wants to array a boolean result actually lands. The
+              layout is measured against the group's own box, not one member's,
+              or Fill bin would run the assembly off the board. */}
+          {wholeGroup && (
+            <Collapsible
+              title={t('binDesigner.cutouts.section.repeat')}
+              size="sm"
+              summary={
+                groupArray
+                  ? t('binDesigner.cutouts.repeat.instances', {
+                      count: arrayInstanceCount(groupArray),
+                    })
+                  : t('binDesigner.cutouts.repeat.empty')
+              }
+            >
+              <CutoutArrayControls
+                box={groupRepeatBox(wholeGroup)}
+                array={groupArray}
+                binWidth={binWidth}
+                binDepth={binDepth}
+                onChange={(config) => setCutoutArray(wholeGroup[0].id, config)}
+                onFlatten={() => onFlattenGroupArray?.(wholeGroup[0].id)}
+                disabled={disabled}
+                blockedReason={canGroupArray(wholeGroup) ? null : 'path'}
+                canRotateToCenter={false}
+              />
+            </Collapsible>
+          )}
           <div className="grid grid-cols-2 gap-1">
             <CompactNumberInput
               label="X"

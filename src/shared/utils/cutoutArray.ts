@@ -14,10 +14,75 @@ import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
 import { MAX_ARRAY_INSTANCES, MAX_ARRAY_COUNT } from '@/features/bin-designer/types';
 import { clamp } from './math';
 
-/** Arrays apply to ungrouped, non-path cutouts (parametric shapes only). */
+/**
+ * A single loose cutout can drive a repeat of its own.
+ *
+ * Deliberately still refuses a grouped member: a group repeats as ONE unit
+ * through {@link canGroupArray}, so a member holding a private repeat would cut
+ * holes the boolean the group is built from knows nothing about. The repeat
+ * detector and the merge action read this too, and both work on loose shapes.
+ */
 export function canArray(cutout: Pick<Cutout, 'shape' | 'groupId'>): boolean {
   return cutout.shape !== 'path' && cutout.groupId === null;
 }
+
+/**
+ * A whole group can drive one shared repeat, so a boolean result (a recessed
+ * ring, a keyed pocket) can be arrayed without flattening it first.
+ *
+ * Paths are the only refusal, and for the same reason they are refused
+ * singly: the worker rebuilds a path from the master and cannot place its
+ * vertices per instance.
+ */
+export function canGroupArray(members: readonly Pick<Cutout, 'shape'>[]): boolean {
+  return members.length > 1 && members.every((m) => m.shape !== 'path');
+}
+
+/**
+ * The box a grouped repeat is measured against: the union of its members'
+ * nominal boxes.
+ *
+ * Spacing, the count ceilings and the fill action all ask "how much room is
+ * left beyond this shape", and for a group the answer has to be about the whole
+ * assembly. Measured on the nominal boxes, like every other bound in this
+ * module, so a rotated member sweeps a wider box than this accounts for.
+ */
+export function groupRepeatBox(members: readonly RepeatBox[]): RepeatBox {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const m of members) {
+    minX = Math.min(minX, m.x);
+    minY = Math.min(minY, m.y);
+    maxX = Math.max(maxX, m.x + m.width);
+    maxY = Math.max(maxY, m.y + m.depth);
+  }
+  if (!Number.isFinite(minX)) return { x: 0, y: 0, width: 0, depth: 0 };
+  return { x: minX, y: minY, width: maxX - minX, depth: maxY - minY };
+}
+
+/**
+ * A repeat config a GROUP may hold.
+ *
+ * `rotateToCenter` is the one setting a group cannot take. It turns each
+ * instance to face the ring, which for a group means turning the whole assembly
+ * about the ring center; expanding members one at a time can only turn each
+ * about its own center, which pulls the assembly apart. Every other mode leaves
+ * `drot` at 0, where per-member expansion is exact, so forcing this off is what
+ * lets a grouped repeat stay correct in the twenty-odd places that expand a
+ * cutout without knowing whether it is grouped.
+ */
+export function groupArrayConfig(config: CutoutArrayConfig): CutoutArrayConfig {
+  return config.rotateToCenter ? { ...config, rotateToCenter: false } : config;
+}
+
+/**
+ * The footprint a repeat's spacing and bounds are measured against: one
+ * cutout's box, or a whole group's (see {@link groupRepeatBox}). Every bounds
+ * helper here takes this rather than a `Cutout`, so the same math serves both.
+ */
+export type RepeatBox = Pick<Cutout, 'x' | 'y' | 'width' | 'depth'>;
 
 /** Absolute editor caps for array spacing (mm), independent of bin size. */
 export const ARRAY_MIN_PITCH = 1;
@@ -217,6 +282,25 @@ export function expandCutoutArray(cutout: Cutout): Cutout[] {
 }
 
 /**
+ * The members of each copy of a repeated group, outermost index being the copy.
+ * A group with no repeat yields one copy: the members as they stand.
+ *
+ * A transpose of the per-member expansions, which is only sound because a
+ * grouped repeat leaves `drot` at 0 (see {@link groupArrayConfig}). With a
+ * per-instance rotation the members would each turn about their own center and
+ * the assembly would come apart, so this would have to rotate the group about a
+ * shared anchor instead.
+ */
+export function expandCutoutGroup(members: readonly Cutout[]): Cutout[][] {
+  const perMember = members.map(expandCutoutArray);
+  const copies = Math.min(...perMember.map((m) => m.length));
+  if (!Number.isFinite(copies) || copies <= 1) return [[...members]];
+  const out: Cutout[][] = [];
+  for (let i = 0; i < copies; i++) out.push(perMember.map((m) => m[i]));
+  return out;
+}
+
+/**
  * How many instances physically fit on each axis at the current pitch, master
  * included and BEFORE the instance cap.
  *
@@ -303,7 +387,7 @@ const floorToHalf = (v: number): number => Math.floor(v * 2) / 2;
  * other fields as-is, so editing one never silently rewrites the others.
  */
 export function arrayFieldBounds(
-  cutout: Cutout,
+  cutout: RepeatBox,
   binWidth: number,
   binDepth: number,
   config: CutoutArrayConfig

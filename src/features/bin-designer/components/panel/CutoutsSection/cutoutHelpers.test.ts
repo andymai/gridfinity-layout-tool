@@ -6,9 +6,10 @@ import {
   resizeAroundCenter,
   flattenCutoutArray,
   applyFlattenArray,
+  flattenCutoutGroupArray,
   translateCutoutPreview,
 } from './cutoutHelpers';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
 
 describe('createDefaultCutout', () => {
   it('seeds a default hexagon side count for polygons', () => {
@@ -164,6 +165,92 @@ describe('flattenCutoutArray', () => {
     expect(added.every((a) => a.array === undefined)).toBe(true);
     expect(new Set(added.map((a) => a.id)).size).toBe(2); // unique ids
     expect(added.every((a) => a.id !== 'm')).toBe(true);
+  });
+});
+
+describe('flattenCutoutGroupArray', () => {
+  const row: CutoutArrayConfig = {
+    mode: 'grid',
+    cols: 3,
+    rows: 1,
+    pitchX: 30,
+    pitchY: 30,
+    count: 3,
+    radius: 20,
+    startAngle: 0,
+    rotateToCenter: false,
+  };
+
+  const pair = (array?: CutoutArrayConfig): Cutout[] => [
+    {
+      id: 'outer',
+      shape: 'rectangle',
+      x: 0,
+      y: 0,
+      width: 20,
+      depth: 20,
+      cutDepth: 5,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: 'g1',
+      groupOp: 'exclude',
+      ...(array ? { array } : {}),
+    },
+    {
+      id: 'inner',
+      shape: 'rectangle',
+      x: 5,
+      y: 5,
+      width: 10,
+      depth: 10,
+      cutDepth: 5,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: 'g1',
+      groupOp: 'exclude',
+      ...(array ? { array } : {}),
+    },
+  ];
+
+  it('strips the repeat from the original members', () => {
+    const { memberPatches } = flattenCutoutGroupArray(pair(row));
+    expect(memberPatches.get('outer')).toEqual({ array: undefined });
+    expect(memberPatches.get('inner')).toEqual({ array: undefined });
+  });
+
+  it('gives every copy its OWN group, so the boolean survives the flatten', () => {
+    const { added } = flattenCutoutGroupArray(pair(row));
+    // Two copies beyond the original, two members each.
+    expect(added).toHaveLength(4);
+    const groups = new Set(added.map((c) => c.groupId));
+    expect(groups.size).toBe(2);
+    expect(groups.has('g1')).toBe(false);
+    // Each new group holds a whole copy, not a stray member.
+    for (const gid of groups) {
+      expect(added.filter((c) => c.groupId === gid)).toHaveLength(2);
+    }
+  });
+
+  it("keeps the op and the members' relative spacing in every copy", () => {
+    const { added } = flattenCutoutGroupArray(pair(row));
+    expect(added.every((c) => c.groupOp === 'exclude')).toBe(true);
+    for (const gid of new Set(added.map((c) => c.groupId))) {
+      const [a, b] = added.filter((c) => c.groupId === gid);
+      // The inner rectangle sits 5mm in from the outer one, as it did at copy 0.
+      expect(Math.abs(b.x - a.x)).toBe(5);
+      expect(Math.abs(b.y - a.y)).toBe(5);
+    }
+  });
+
+  it('carries no repeat into the copies, so flattening is not undone by a redraw', () => {
+    const { added } = flattenCutoutGroupArray(pair(row));
+    expect(added.every((c) => c.array === undefined)).toBe(true);
+  });
+
+  it('adds nothing for a group with no repeat', () => {
+    expect(flattenCutoutGroupArray(pair()).added).toHaveLength(0);
   });
 });
 

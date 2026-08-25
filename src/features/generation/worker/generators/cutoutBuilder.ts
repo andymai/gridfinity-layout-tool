@@ -34,7 +34,7 @@ import {
 } from 'brepjs';
 import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
-import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
+import type { BinParams, Cutout, CutoutArrayConfig, PathPoint, GroupOp } from '@/shared/types/bin';
 import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
 import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
@@ -51,10 +51,10 @@ import {
   slotCornerRadius,
   clampPolygonSides,
 } from '@/shared/utils/cutoutPolygon';
-import { labelledInstances, expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { arrayInstances, expandCutoutArray, labelledInstances } from '@/shared/utils/cutoutArray';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
-import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
+import { cutoutLabelPlacement, fitLabelRoom } from '@/shared/utils/cutoutLabel';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
   resolveScoop,
@@ -855,8 +855,58 @@ function applyCallbackFilletWithFallback(
   return shape;
 }
 
-/** Build and fuse grouped cutouts with a shared adaptive scoop fillet. */
+/** A member with its shared Repeat stripped, so one group solid is built. */
+function withoutArray(cutout: Cutout): Cutout {
+  if (cutout.array === undefined) return cutout;
+  const { array: _drop, ...rest } = cutout;
+  return rest;
+}
+
+/**
+ * Build a grouped cutout, repeated across its members' shared Repeat.
+ *
+ * The boolean runs ONCE, on the group as the user drew it, and each further
+ * copy is a transform of that result. Expanding the members first and running
+ * one boolean over the whole flattened pile would be a different shape
+ * entirely: Intersect across copies that do not touch is empty, Subtract lets
+ * the frontmost copy carve every other one, and Exclude (union minus the
+ * intersection of ALL members) degrades to a plain union. It is also N times
+ * the boolean work for a result that has to come out identical at every copy.
+ *
+ * A grouped repeat always leaves `drot` at 0 (`groupArrayConfig` refuses
+ * rotate-to-center for a group), so a copy is a pure translation.
+ */
 export function buildGroupedCutouts(
+  groupMembers: BinParams['cutouts'],
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number
+): Shape3D[] {
+  const base = buildGroupSolid(groupMembers, solidSurfaceZ, originX, originY);
+  if (!base) return [];
+
+  // Members share one config; read it off whichever member carries it, the way
+  // the group op is read off the first member.
+  const config = groupMembers.find((m) => m.array !== undefined)?.array;
+  if (!config) return [base];
+
+  const shapes: Shape3D[] = [];
+  for (const inst of arrayInstances(config)) {
+    if (inst.isMaster) {
+      shapes.push(base);
+      continue;
+    }
+    try {
+      shapes.push(translate(base, [inst.dx, inst.dy, 0]));
+    } catch {
+      // One copy failing is not a reason to drop the pattern; the rest still cut.
+    }
+  }
+  return shapes;
+}
+
+/** Build and fuse ONE grouped cutout with a shared adaptive scoop fillet. */
+function buildGroupSolid(
   groupMembers: BinParams['cutouts'],
   solidSurfaceZ: number,
   originX: number,
@@ -868,12 +918,10 @@ export function buildGroupedCutouts(
   const memberShapes: Shape3D[] = [];
   const builtMembers: Cutout[] = [];
   const builtDepths: number[] = [];
-  // A member carrying a Repeat expands into its instances first, exactly as
-  // the ungrouped path does: the editor, the fit-test card and the estimate
-  // all count instances whatever the group state, so a master collapsed to
-  // one cut here would ship a bin missing every derived pocket. The editing
-  // rules refuse to CREATE the pairing, but a stored design can carry it.
-  for (const cutout of groupMembers.flatMap(expandCutoutArray)) {
+  // The members' own Repeat is applied to the group RESULT by the caller, so
+  // it is stripped here: expanding a member into its instances would put every
+  // copy inside one boolean, which is what this split exists to avoid.
+  for (const cutout of groupMembers.map(withoutArray)) {
     const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
     if (effectiveDepth <= 0) continue;
 
@@ -1154,12 +1202,18 @@ export function buildCutoutCuts(
   }
 
   for (const [, groupMembers] of groups) {
-    const shape = buildGroupedCutouts(groupMembers, solidSurfaceZ, originX, originY);
-    if (shape) {
-      const idx = rawShapes.length;
+    // One entry per copy of a repeated group; a plain group yields one.
+    const indices: number[] = [];
+    for (const shape of buildGroupedCutouts(groupMembers, solidSurfaceZ, originX, originY)) {
+      indices.push(rawShapes.length);
       // All members share a groupId -> one unit, one color for the merged cavity.
       pushRaw(shape, cavityTag(groupMembers[0]));
-      for (const m of groupMembers) cavityIndices.set(m.id, [idx]);
+    }
+    // Every member points at every copy, so a floor-embossed label carves out
+    // of whichever copy it sits over (`carveLabelFromCavities` filters by
+    // bounds), exactly as an ungrouped repeat's instances already do.
+    if (indices.length > 0) {
+      for (const m of groupMembers) cavityIndices.set(m.id, indices);
     }
   }
 
@@ -1205,7 +1259,8 @@ export function buildCutoutCuts(
         originY,
         innerW,
         innerD,
-        allowFloor
+        allowFloor,
+        master.array
       );
       if (!textShape) continue;
       // Label text is its own color zone — tag it TEXT so an engraved label
@@ -1565,11 +1620,15 @@ function buildCutoutLabel(
   originY: number,
   innerW: number,
   innerD: number,
-  allowFloor: boolean
+  allowFloor: boolean,
+  repeat: CutoutArrayConfig | undefined
 ): CutoutLabelShape | null {
   const placement = cutoutLabelPlacement(cutout, innerW, innerD, originX, originY);
   if (!placement) return null;
-  const { centerX, centerY, availW, availD } = placement;
+  const { centerX, centerY } = placement;
+  // Capped to the room one copy owns, so a labelled repeat's captions meet
+  // rather than print over each other.
+  const { availW, availD } = fitLabelRoom(placement.availW, placement.availD, repeat);
 
   // Per-cutout style layers over the design-wide defaults (today the UI only
   // writes `fontSizeOverride`, but merging the whole override keeps this in step

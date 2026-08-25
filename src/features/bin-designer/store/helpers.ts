@@ -9,7 +9,15 @@
 
 import { current, type Draft } from 'immer';
 import { isSocketlessBase } from '@/features/bin-designer/types/base';
-import type { BinParams, DesignerState, HistoryEntry, CachedMesh, Cutout } from '../types';
+import type {
+  BinParams,
+  CachedMesh,
+  Cutout,
+  CutoutArrayConfig,
+  DesignerState,
+  HistoryEntry,
+} from '../types';
+import { groupArrayConfig } from '@/shared/utils/cutoutArray';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '../constants';
 import { loadDefaultParams } from '../storage/defaultParamsStorage';
 import { evictIfNeeded } from './meshCacheManager';
@@ -205,6 +213,66 @@ export function dissolveSingletonGroups(cutouts: Cutout[]): Cutout[] {
  * regeneration is triggered (epoch unchanged). When there is no cache,
  * the epoch is incremented to trigger regeneration.
  */
+/**
+ * Set or remove a cutout's repeat. An absent config DELETES the key rather than
+ * storing `undefined`, so a design that never carried a repeat serializes
+ * exactly as it did before the field existed and its fingerprint holds.
+ */
+export function withCutoutArray(cutout: Cutout, config: CutoutArrayConfig | undefined): Cutout {
+  if (config === undefined) {
+    const { array: _drop, ...rest } = cutout;
+    return rest;
+  }
+  return { ...cutout, array: config };
+}
+
+/**
+ * The repeat a newly formed group adopts, or undefined for none.
+ *
+ * Taken from the group's own members first and then from whatever is being
+ * added, the same precedence the cavity color uses, so extending a repeating
+ * group with a loose shape does not swap the group's pattern for the newcomer's.
+ * This is also what makes "repeat first, then group" land in the same state as
+ * "group first, then repeat".
+ */
+export function adoptedGroupArray(
+  cutouts: readonly Cutout[],
+  idsToGroup: ReadonlySet<string>,
+  existingGroupId: string | null
+): CutoutArrayConfig | undefined {
+  const source =
+    (existingGroupId === null
+      ? undefined
+      : cutouts.find((c) => c.groupId === existingGroupId && c.array !== undefined)) ??
+    cutouts.find((c) => idsToGroup.has(c.id) && c.array !== undefined);
+  return source?.array ? groupArrayConfig(source.array) : undefined;
+}
+
+/**
+ * Which cutouts a repeat write lands on, and the config they take.
+ *
+ * A group repeats as ONE unit, so the config goes to every member: they
+ * describe a single cavity, and two members repeating differently would
+ * describe a pattern the boolean cannot be built from. Null when the write
+ * cannot apply at all, which today means a group holding a path (the worker
+ * rebuilds a path from its master and cannot place its vertices per copy).
+ */
+export function planCutoutArrayWrite(
+  cutouts: readonly Cutout[],
+  cutoutId: string,
+  config: CutoutArrayConfig | undefined
+): { readonly ids: ReadonlySet<string>; readonly config: CutoutArrayConfig | undefined } | null {
+  const target = cutouts.find((c) => c.id === cutoutId);
+  if (!target) return null;
+  const members =
+    target.groupId === null ? [target] : cutouts.filter((c) => c.groupId === target.groupId);
+  if (members.some((m) => m.shape === 'path')) return null;
+  return {
+    ids: new Set(members.map((m) => m.id)),
+    config: target.groupId === null || !config ? config : groupArrayConfig(config),
+  };
+}
+
 export function restoreHistoryEntry(state: Draft<DesignerState>, entry: HistoryEntry): void {
   state.params = entry.params;
   if (entry.itemKind !== undefined) {
