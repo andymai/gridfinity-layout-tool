@@ -25,6 +25,7 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams, SavedDesign } from '../types';
+import { getDb } from '@/features/bin-designer/storage/designerDb';
 import { expectOk, expectErr } from '@/test/testUtils';
 import { designId } from '@/core/types';
 import type { StorageError, StorageCorruptedError } from '@/core/result';
@@ -167,16 +168,9 @@ describe('DesignerStorage', () => {
         exportFileNameConfig: null,
       });
 
-      // Now directly inject corrupted data using raw IndexedDB
-      const { openDB } = await import('idb');
-      const db = await openDB('gridfinity-designer-v1', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('designs')) {
-            const store = db.createObjectStore('designs', { keyPath: 'id' });
-            store.createIndex('updatedAt', 'updatedAt');
-          }
-        },
-      });
+      // Injected through the module's own connection: pinning a schema version
+      // here would break every time the designer database gains a store.
+      const db = await getDb();
       await db.put('designs', {
         id: 'corrupted-null',
         name: 'Corrupted Design',
@@ -185,7 +179,6 @@ describe('DesignerStorage', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      db.close();
 
       const result = await loadDesign(designId('corrupted-null'));
       const error = expectStorageCorrupted(expectErr(result));
@@ -203,16 +196,9 @@ describe('DesignerStorage', () => {
         exportFileNameConfig: null,
       });
 
-      // Now directly inject corrupted data
-      const { openDB } = await import('idb');
-      const db = await openDB('gridfinity-designer-v1', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('designs')) {
-            const store = db.createObjectStore('designs', { keyPath: 'id' });
-            store.createIndex('updatedAt', 'updatedAt');
-          }
-        },
-      });
+      // Injected through the module's own connection: pinning a schema version
+      // here would break every time the designer database gains a store.
+      const db = await getDb();
       await db.put('designs', {
         id: 'corrupted-primitive',
         name: 'Corrupted Design',
@@ -221,7 +207,6 @@ describe('DesignerStorage', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      db.close();
 
       const result = await loadDesign(designId('corrupted-primitive'));
       const error = expectStorageCorrupted(expectErr(result));
@@ -239,16 +224,9 @@ describe('DesignerStorage', () => {
         exportFileNameConfig: null,
       });
 
-      // Now directly inject corrupted data
-      const { openDB } = await import('idb');
-      const db = await openDB('gridfinity-designer-v1', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('designs')) {
-            const store = db.createObjectStore('designs', { keyPath: 'id' });
-            store.createIndex('updatedAt', 'updatedAt');
-          }
-        },
-      });
+      // Injected through the module's own connection: pinning a schema version
+      // here would break every time the designer database gains a store.
+      const db = await getDb();
       await db.put('designs', {
         id: 'corrupted-array',
         name: 'Corrupted Design',
@@ -257,7 +235,6 @@ describe('DesignerStorage', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      db.close();
 
       const result = await loadDesign(designId('corrupted-array'));
       const error = expectStorageCorrupted(expectErr(result));
@@ -328,16 +305,9 @@ describe('DesignerStorage', () => {
         exportFileNameConfig: null,
       });
 
-      // Directly inject corrupted data to IndexedDB
-      const { openDB } = await import('idb');
-      const db = await openDB('gridfinity-designer-v1', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('designs')) {
-            const store = db.createObjectStore('designs', { keyPath: 'id' });
-            store.createIndex('updatedAt', 'updatedAt');
-          }
-        },
-      });
+      // Injected through the module's own connection: pinning a schema version
+      // here would break every time the designer database gains a store.
+      const db = await getDb();
       await db.put('designs', {
         id: 'corrupted-list',
         name: 'Corrupted Design',
@@ -346,7 +316,6 @@ describe('DesignerStorage', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      db.close();
 
       const result = await listDesigns();
       const value = expectOk(result);
@@ -365,16 +334,9 @@ describe('DesignerStorage', () => {
         exportFileNameConfig: null,
       });
 
-      // Directly inject corrupted data with string params
-      const { openDB } = await import('idb');
-      const db = await openDB('gridfinity-designer-v1', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('designs')) {
-            const store = db.createObjectStore('designs', { keyPath: 'id' });
-            store.createIndex('updatedAt', 'updatedAt');
-          }
-        },
-      });
+      // Injected through the module's own connection: pinning a schema version
+      // here would break every time the designer database gains a store.
+      const db = await getDb();
       await db.put('designs', {
         id: 'corrupted-string',
         name: 'Corrupted String',
@@ -383,7 +345,6 @@ describe('DesignerStorage', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      db.close();
 
       const result = await listDesigns();
       const value = expectOk(result);
@@ -408,16 +369,9 @@ describe('DesignerStorage', () => {
         exportFileNameConfig: null,
       });
 
-      // Add multiple corrupted entries
-      const { openDB } = await import('idb');
-      const db = await openDB('gridfinity-designer-v1', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('designs')) {
-            const store = db.createObjectStore('designs', { keyPath: 'id' });
-            store.createIndex('updatedAt', 'updatedAt');
-          }
-        },
-      });
+      // Injected through the module's own connection: pinning a schema version
+      // here would break every time the designer database gains a store.
+      const db = await getDb();
       await db.put('designs', {
         id: 'corrupted-1',
         name: 'Corrupted 1',
@@ -434,7 +388,6 @@ describe('DesignerStorage', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      db.close();
 
       const result = await listDesigns();
       const value = expectOk(result);

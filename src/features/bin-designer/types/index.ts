@@ -300,4 +300,5 @@ export * from './binParams';
 export * from './generation';
 export * from './uiState';
 export * from './savedDesign';
+export * from './designVersion';
 export * from './designerState';

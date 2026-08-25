@@ -3516,6 +3516,35 @@ const en: Record<string, string> = {
   'binDesigner.revertedToWorking': 'Reverted to last working configuration',
   'binDesigner.rows': 'Rows',
   'binDesigner.savedDesigns': 'Saved Designs',
+
+  // Version history: named, restorable checkpoints for one design
+  'binDesigner.versions.title': 'Versions',
+  'binDesigner.versions.open': 'Version history',
+  'binDesigner.versions.count': '{{count}} of {{max}}',
+  'binDesigner.versions.save': 'Save version',
+  'binDesigner.versions.namePlaceholder': 'Name this version',
+  'binDesigner.versions.nameHint': 'For example: 0.2 mm, a tight fit',
+  'binDesigner.versions.confirmSave': 'Save',
+  'binDesigner.versions.cancel': 'Cancel',
+  'binDesigner.versions.restore': 'Restore',
+  'binDesigner.versions.restoreWarning':
+    'Replaces your current design. Your current state is saved first.',
+  'binDesigner.versions.restored': 'Restored “{{name}}”. Current state saved as “{{backup}}”.',
+  'binDesigner.versions.preRestoreName': 'Before restore',
+  'binDesigner.versions.automatic': 'Automatic',
+  'binDesigner.versions.pinned': 'Pinned',
+  'binDesigner.versions.pin': 'Pin this version',
+  'binDesigner.versions.unpin': 'Unpin this version',
+  'binDesigner.versions.rename': 'Rename',
+  'binDesigner.versions.delete': 'Delete',
+  'binDesigner.versions.saved': 'Saved “{{name}}”.',
+  'binDesigner.versions.deleted': 'Deleted “{{name}}”.',
+  'binDesigner.versions.evicted':
+    'Oldest version “{{name}}” was removed to make room. Pin a version to keep it.',
+  'binDesigner.versions.emptyTitle': 'No versions yet',
+  'binDesigner.versions.emptyBody':
+    'Save one when the design reaches a state worth keeping, then come back to it any time.',
+  'binDesigner.versions.unsavedDesign': 'Save this design before you can keep versions of it.',
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
