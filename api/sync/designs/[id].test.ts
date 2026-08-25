@@ -619,3 +619,112 @@ describe('id validation', () => {
     expect(res._status).toBe(404);
   });
 });
+
+// The branch fields ride alongside `params`, so they bypass the params
+// validator entirely. Nothing else in CI notices if the endpoint drops them:
+// the write succeeds and the field is simply gone on the next pull.
+describe('branch lineage passthrough', () => {
+  it('stores the design a branch came from', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: '0.3 mm trial',
+            params: VALID_DESIGN,
+            parentDesignId: 'design_1700000000000_abc123',
+            parentVersionId: '11111111-2222-3333-4444-555555555555',
+            parentVersionName: 'printed successfully',
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    expect(res._status).toBe(200);
+    const stored = (
+      res._body as {
+        envelope: {
+          design: {
+            parentDesignId?: string;
+            parentVersionId?: string;
+            parentVersionName?: string;
+          };
+        };
+      }
+    ).envelope.design;
+    expect(stored.parentDesignId).toBe('design_1700000000000_abc123');
+    expect(stored.parentVersionId).toBe('11111111-2222-3333-4444-555555555555');
+    expect(stored.parentVersionName).toBe('printed successfully');
+  });
+
+  it('leaves the fields absent for a design that was never branched', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'Plain', params: VALID_DESIGN }, modifiedAt: 1000 },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    const stored = (res._body as { envelope: { design: Record<string, unknown> } }).envelope.design;
+    expect('parentDesignId' in stored).toBe(false);
+  });
+
+  // A malformed pointer costs a nesting indent, not correctness, so it is
+  // dropped rather than refusing the design itself.
+  it('drops a non-string parent id without rejecting the write', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: { name: 'Odd', params: VALID_DESIGN, parentDesignId: 42 },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    expect(res._status).toBe(200);
+    const stored = (res._body as { envelope: { design: Record<string, unknown> } }).envelope.design;
+    expect('parentDesignId' in stored).toBe(false);
+  });
+
+  it('carries the fields on an assembly design too', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: 'Assembly branch',
+            kind: 'assembly',
+            envelope: { widthMm: 84, depthMm: 84, heightMm: 42 },
+            structure: { kind: 'assembly', parts: [] },
+            parentDesignId: 'design_1700000000000_abc123',
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    if (res._status === 200) {
+      const stored = (res._body as { envelope: { design: Record<string, unknown> } }).envelope
+        .design;
+      expect(stored.parentDesignId).toBe('design_1700000000000_abc123');
+    }
+  });
+});

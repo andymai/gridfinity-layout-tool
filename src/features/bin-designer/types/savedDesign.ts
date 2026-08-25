@@ -31,6 +31,24 @@ export interface SavedDesign {
   readonly publishedId?: string | null;
   /** Remix lineage snapshot; describes where the design's content came from. */
   readonly lineage?: CommunityDesignLineage | null;
+  /**
+   * The design this one was branched from. Purely a record of where it came
+   * from: a branch is independent the moment it exists, and nothing propagates
+   * across this link.
+   *
+   * Deliberately NOT {@link lineage}, which describes a *community remix* by
+   * another author and carries their names. This is one local library's own
+   * history and points at a `DesignId` that exists on this device.
+   */
+  readonly parentDesignId?: DesignId;
+  /**
+   * The version that seeded the branch, so the row can say which checkpoint it
+   * started from. Absent when a branch was taken from the working state rather
+   * than from a stored version.
+   */
+  readonly parentVersionId?: string;
+  /** Name of the seeding version, kept so the list reads without a second lookup. */
+  readonly parentVersionName?: string;
 }
 
 // Store Types

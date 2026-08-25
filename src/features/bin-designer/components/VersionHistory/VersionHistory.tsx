@@ -2,12 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button, Dialog, EmptyState, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { isOk } from '@/core/result';
+import { isOk, isErr } from '@/core/result';
 import { designId as toDesignId } from '@/core/types';
 import { useToastStore } from '@/core/store/toast';
+import { showErrorToast } from '@/shared/hooks/useResultToast';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useDesignVersionStore } from '@/features/bin-designer/store/versionStore';
-import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
+import { loadDesign, branchFromVersion } from '@/features/bin-designer/storage/DesignerStorage';
 import { MAX_VERSIONS_PER_DESIGN } from '@/features/bin-designer/types';
 import type { DesignVersionContent, DesignVersionSummary } from '@/features/bin-designer/types';
 import { VersionEntry } from './VersionEntry';
@@ -157,6 +158,30 @@ export function VersionHistory({ open, onClose }: VersionHistoryProps) {
     }
   };
 
+  /**
+   * A branch is an independent design, so this leaves the current one alone and
+   * does not navigate: the user asked to keep this state, not to leave it. The
+   * toast names both ends so the new design is findable in the Designs list.
+   */
+  const handleBranch = async (version: DesignVersionSummary) => {
+    if (!currentDesignId) return;
+    setBusy(true);
+    try {
+      const name = `${designName} (${version.name})`;
+      const result = await branchFromVersion(toDesignId(currentDesignId), version.id, name);
+      if (isErr(result)) {
+        showErrorToast(result.error);
+        return;
+      }
+      addToast(
+        t('binDesigner.versions.branched', { name: result.value.name, version: version.name }),
+        'success'
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleDelete = async (version: DesignVersionSummary) => {
     await remove(version.id);
     addToast(t('binDesigner.versions.deleted', { name: version.name }), 'info');
@@ -240,6 +265,7 @@ export function VersionHistory({ open, onClose }: VersionHistoryProps) {
                     onRename={(v, name) => void rename(v.id, name)}
                     onTogglePin={(v) => void setPinned(v.id, !v.pinned)}
                     onDelete={(v) => void handleDelete(v)}
+                    onBranch={(v) => void handleBranch(v)}
                   />
                 ))}
               </ul>

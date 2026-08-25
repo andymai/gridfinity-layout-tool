@@ -730,6 +730,32 @@ which is unnamed, capped at `MAX_HISTORY`, and gone on reload.
   thumbnail rather than driving the 3D scene, and is dropped by the cascade in
   `deleteDesign`.
 
+### Branching
+
+`branchFromVersion` (`storage/DesignerStorage.ts`) creates an independent
+`SavedDesign` seeded from a stored version, tagged with `parentDesignId` +
+`parentVersionId`.
+
+- **Content comes from the VERSION, not the parent's current state.** Branching
+  from "0.2 mm, works" must reproduce that, not whatever the parent has drifted
+  to since.
+- **`parentDesignId` is not `lineage`.** `lineage` describes a community remix by
+  another author and carries their names; this points at a `DesignId` in the same
+  local library.
+- **The branch starts with no thumbnail.** The parent's renders the state the
+  branch was taken away from, so the regenerator draws the branch's own geometry
+  instead of shipping a misleading preview.
+- **`saveDesign` falls back to the stored parent link** when a write omits it.
+  Autosave omits it on every write after the first, and without the fallback the
+  first edit would detach the branch.
+- **`groupByLineage` (`components/DesignListDialog/designLineage.ts`) resolves to
+  the ROOT ancestor, not the immediate parent.** Nesting is one level deep, so a
+  branch of a branch whose parent is itself nested would belong to no rendered
+  row and disappear from the list entirely. A design whose parent is filtered out
+  or deleted is promoted to the top level for the same reason.
+- **Deleting a design does not delete its branches** (they are independent
+  designs), so the toast says how many survived: the indent implies otherwise.
+
 ## Thumbnail Pipeline
 
 Two paths produce design thumbnails, written to IndexedDB and surfaced in the design-list modal:

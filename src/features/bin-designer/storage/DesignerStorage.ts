@@ -13,6 +13,7 @@ import {
   ok,
   err,
   isErr,
+  isOk,
   storageNotFound,
   storageUnavailable,
   storageCorrupted,
@@ -26,7 +27,11 @@ import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designer
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { trackDesignCreated } from '@/shared/analytics/posthog';
 import { getDb, DESIGNS_STORE } from './designerDb';
-import { deleteVersionsForDesign } from './DesignVersionService';
+import {
+  deleteVersionsForDesign,
+  listDesignVersions,
+  readDesignVersion,
+} from './DesignVersionService';
 
 // Re-exported so callers that treat this module as the designer's storage
 // surface keep one import site as the schema moves to `designerDb`.
@@ -72,6 +77,13 @@ export async function saveDesign(
       design.publishedId === undefined ? existing?.publishedId : design.publishedId;
     const lineage = design.lineage === undefined ? existing?.lineage : design.lineage;
 
+    // Branch lineage is written once, at creation, and every later save omits
+    // it. Falling back to the stored value is what keeps autosave from
+    // detaching a branch from its parent on the first edit.
+    const parentDesignId = design.parentDesignId ?? existing?.parentDesignId;
+    const parentVersionId = design.parentVersionId ?? existing?.parentVersionId;
+    const parentVersionName = design.parentVersionName ?? existing?.parentVersionName;
+
     const kind = design.kind ?? 'bin';
     // Reject incomplete writes up front so a malformed call can't persist a
     // record that later fails loadDesign() or renders blank.
@@ -96,6 +108,9 @@ export async function saveDesign(
       ...(tags.length > 0 ? { tags } : {}),
       ...(publishedId !== undefined ? { publishedId } : {}),
       ...(lineage !== undefined ? { lineage } : {}),
+      ...(parentDesignId !== undefined ? { parentDesignId } : {}),
+      ...(parentVersionId !== undefined ? { parentVersionId } : {}),
+      ...(parentVersionName !== undefined ? { parentVersionName } : {}),
       // Bins persist flat `params` (canonical, back-compat); non-bin kinds
       // persist `kind` + `envelope` + `structure` and OMIT `params` so a stale
       // bin payload can never shadow the real structure.
@@ -224,6 +239,62 @@ export async function duplicateDesign(id: DesignId): Promise<Result<SavedDesign,
     // Lineage describes where the content came from, which is still true of
     // the copy, so it carries forward like tags.
     lineage: original.lineage,
+  });
+}
+
+/**
+ * Create an independent design seeded from one of a design's stored versions.
+ *
+ * A branch is a plain `SavedDesign`: it diverges the moment it exists and
+ * nothing propagates across the link afterwards. `parentDesignId` records where
+ * it came from so the library can show the family, which is the whole point of
+ * branching rather than duplicating.
+ *
+ * `publishedId` is deliberately not carried, for the same reason
+ * {@link duplicateDesign} drops it: it names a specific published record, and a
+ * branch is a new unpublished design.
+ */
+export async function branchFromVersion(
+  designId: DesignId,
+  versionId: string,
+  name: string
+): Promise<Result<SavedDesign, StorageError>> {
+  const parentResult = await loadDesign(designId);
+  if (isErr(parentResult)) return parentResult;
+  const parent = parentResult.value;
+
+  const versionResult = await readDesignVersion(versionId);
+  if (isErr(versionResult)) return versionResult;
+  const content = versionResult.value;
+
+  const versionsResult = await listDesignVersions(designId);
+  const versionName = isOk(versionsResult)
+    ? versionsResult.value.find((v) => v.id === versionId)?.name
+    : undefined;
+
+  const kind = (content.kind as SavedDesign['kind']) ?? 'bin';
+  return saveDesign({
+    name,
+    // The branch's content comes from the VERSION, not from the parent's
+    // current state: branching from "0.2mm, works" must reproduce that, not
+    // whatever the parent has drifted to since.
+    ...(kind === 'bin'
+      ? { params: (content.params ?? parent.params) as BinParams }
+      : {
+          kind,
+          envelope: content.envelope as SavedDesign['envelope'],
+          structure: content.structure as SavedDesign['structure'],
+        }),
+    // The parent's thumbnail shows its CURRENT state, which is the state the
+    // branch was taken away from. Left null so the regenerator renders the
+    // branch's own geometry instead of shipping a misleading preview.
+    thumbnail: null,
+    exportFileNameConfig: parent.exportFileNameConfig ? { ...parent.exportFileNameConfig } : null,
+    tags: parent.tags,
+    lineage: parent.lineage,
+    parentDesignId: designId,
+    parentVersionId: versionId,
+    ...(versionName ? { parentVersionName: versionName } : {}),
   });
 }
 

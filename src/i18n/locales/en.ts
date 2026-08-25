@@ -3545,6 +3545,17 @@ const en: Record<string, string> = {
   'binDesigner.versions.emptyBody':
     'Save one when the design reaches a state worth keeping, then come back to it any time.',
   'binDesigner.versions.unsavedDesign': 'Save this design before you can keep versions of it.',
+
+  // Branching: an independent design seeded from a stored version
+  'binDesigner.versions.branch': 'Branch from here',
+  'binDesigner.versions.branched': 'Created “{{name}}” from “{{version}}”.',
+  'binDesigner.designs.branchBadge': 'Branch',
+  'binDesigner.designs.branchedFrom': 'From “{{name}}”',
+  'binDesigner.designs.branchCount': '{{count}} branches',
+  'binDesigner.designs.showBranches': 'Show branches',
+  'binDesigner.designs.hideBranches': 'Hide branches',
+  'binDesigner.designs.deleteWithBranches':
+    'This design has {{count}} branches. Deleting it keeps them, listed on their own.',
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',

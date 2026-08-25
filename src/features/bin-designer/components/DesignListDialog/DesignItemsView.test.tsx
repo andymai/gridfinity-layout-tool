@@ -29,7 +29,9 @@ const designs: SavedDesign[] = [
 
 function baseProps() {
   return {
-    items: designs,
+    rows: designs.map((design) => ({ design, depth: 0 as const, childCount: 0 })),
+    expandedIds: new Set<string>(),
+    onToggleExpand: vi.fn(),
     currentDesignId: 'design-1' as string | null,
     focusedIndex: 0,
     selectionActive: false,
@@ -82,7 +84,11 @@ describe('DesignItemsView', () => {
     const props = baseProps();
     render(
       <div>
-        <DesignItemsView variant="grid" {...props} items={[designs[1]]} />
+        <DesignItemsView
+          variant="grid"
+          {...props}
+          rows={[{ design: designs[1], depth: 0, childCount: 0 }]}
+        />
       </div>
     );
     fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
@@ -102,7 +108,11 @@ describe('DesignItemsView', () => {
     };
     render(
       <div>
-        <DesignItemsView variant="grid" {...baseProps()} items={[toolRack]} />
+        <DesignItemsView
+          variant="grid"
+          {...baseProps()}
+          rows={[{ design: toolRack, depth: 0, childCount: 0 }]}
+        />
       </div>
     );
     fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
