@@ -22,8 +22,7 @@ const IDLE_CHECK_INTERVAL_MS = 60 * 1000; // Check every minute
 // Lazy store getter to avoid circular dependencies
 let layoutStoreGetter: (() => { layout: Layout; lastEditSource: string | null }) | null = null;
 let layoutStoreSubscribe:
-  | ((callback: (state: { lastEditSource: string | null }) => void) => () => void)
-  | null = null;
+  ((callback: (state: { lastEditSource: string | null }) => void) => () => void) | null = null;
 
 let isInitialized = false;
 let cleanupFunctions: (() => void)[] = [];

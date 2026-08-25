@@ -30,9 +30,8 @@ async function getSegmenter(): Promise<InteractiveSegmenterLegacy> {
       // `InteractiveSegmenter` was reused in tasks-vision 1.0 for a separate
       // encoder/decoder architecture that takes stroke sequences and its own
       // pair of models, so it is not a drop-in and not an upgrade path here.
-      const { FilesetResolver, InteractiveSegmenterLegacy } = await import(
-        '@mediapipe/tasks-vision'
-      );
+      const { FilesetResolver, InteractiveSegmenterLegacy } =
+        await import('@mediapipe/tasks-vision');
       const fileset = await FilesetResolver.forVisionTasks(WASM_BASE_PATH);
       const create = (delegate: 'GPU' | 'CPU') =>
         InteractiveSegmenterLegacy.createFromOptions(fileset, {

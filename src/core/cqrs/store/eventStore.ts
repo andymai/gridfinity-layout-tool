@@ -182,8 +182,7 @@ function createEventStore(): EventStore {
         // microtasks, so the next iteration's get() throws "no in-progress
         // transaction". Keeping requests continuously pending holds the tx open.
         const existing = (await Promise.all(events.map((event) => store.get(event.meta.id)))) as (
-          | DomainEvent
-          | undefined
+          DomainEvent | undefined
         )[];
 
         const writes: Promise<unknown>[] = [];

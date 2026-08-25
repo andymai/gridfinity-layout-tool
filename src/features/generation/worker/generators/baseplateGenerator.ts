@@ -234,7 +234,10 @@ function buildConnectorKeyMeshIfNeeded(
 
   const clip = buildSnapClip(totalHeight, params.gridUnitMm, params.nozzleSizeMm);
   try {
-    const clipMesh = mesh(clip, { tolerance: 0.05, angularTolerance: PREVIEW_ANGULAR_TOLERANCE_RAD });
+    const clipMesh = mesh(clip, {
+      tolerance: 0.05,
+      angularTolerance: PREVIEW_ANGULAR_TOLERANCE_RAD,
+    });
     const indexed = toIndexedMeshData(clipMesh, new Float32Array(0));
     return {
       vertices: indexed.vertices,

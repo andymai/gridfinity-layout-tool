@@ -1,9 +1,5 @@
 export type WebGLUnavailableReason =
-  | 'no-document'
-  | 'no-canvas'
-  | 'context-failed'
-  | 'context-lost'
-  | 'no-precision';
+  'no-document' | 'no-canvas' | 'context-failed' | 'context-lost' | 'no-precision';
 
 export interface WebGLDetectionResult {
   available: boolean;

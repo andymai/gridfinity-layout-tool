@@ -216,8 +216,7 @@ export const useUpdateMyPresence = (context?.useUpdateMyPresence ??
 // These can be called unconditionally - they catch RoomProvider errors and return safe defaults
 export const useOthers = createSafeHook(
   context?.useOthers as
-    | (() => readonly { connectionId: number; presence: UserPresence }[])
-    | undefined,
+    (() => readonly { connectionId: number; presence: UserPresence }[]) | undefined,
   safeStubHooks.useOthers
 );
 

@@ -17,11 +17,7 @@ export type {
   MotifMode,
   WrappedLatticeCalculator,
 } from './types';
-export {
-  isStampCalculator,
-  isWrappedLatticeCalculator,
-  shapeDescriptorKey,
-} from './types';
+export { isStampCalculator, isWrappedLatticeCalculator, shapeDescriptorKey } from './types';
 
 // Kumiko wrapped-lattice patterns
 export type {
@@ -73,7 +69,4 @@ export { TrianglePatternCalculator, createTriangleCalculator } from './triangleP
 export { SlotPatternCalculator, createSlotCalculator } from './slotPattern';
 
 // Registry
-export {
-  PATTERN_REGISTRY,
-  getPatternCalculator,
-} from './registry';
+export { PATTERN_REGISTRY, getPatternCalculator } from './registry';
