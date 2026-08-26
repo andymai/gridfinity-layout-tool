@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Component } from 'react';
 import type { ReactNode } from 'react';
+const { captureException } = vi.hoisted(() => ({ captureException: vi.fn() }));
+vi.mock('@/shared/analytics/posthog', () => ({ captureException }));
+
 import { WebGLErrorBoundary } from './WebGLErrorBoundary';
 import { detectWebGL, resetWebGLDetectionCacheForTests } from './detectWebGL';
 
@@ -59,6 +62,18 @@ describe('WebGLErrorBoundary', () => {
     const result = detectWebGL();
     expect(result.available).toBe(false);
     expect(result.reason).toBe('context-failed');
+  });
+
+  it('captures the context error explicitly, since the boundary swallows it', () => {
+    render(
+      <WebGLErrorBoundary>
+        <Thrower message="Error creating WebGL context." />
+      </WebGLErrorBoundary>
+    );
+    expect(captureException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Error creating WebGL context.' }),
+      { boundary: 'webgl' }
+    );
   });
 
   it('rethrows non-WebGL errors for an outer boundary to handle', () => {

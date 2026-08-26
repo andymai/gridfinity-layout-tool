@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
+import { captureException } from '@/shared/analytics/posthog';
 import { markWebGLUnavailable } from './detectWebGL';
 import { WebGLFallback } from './WebGLFallback';
 
@@ -37,6 +38,11 @@ export class WebGLErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error) {
     if (error.message.includes(WEBGL_CONTEXT_ERROR)) {
+      // Boundary-caught render throws don't reach window.onerror, so this
+      // explicit capture is the path's only telemetry. It must run before
+      // markWebGLUnavailable: the exception filter drops WebGL-context
+      // captures once detection reads unavailable.
+      captureException(error, { boundary: 'webgl' });
       markWebGLUnavailable('context-failed');
     }
   }
