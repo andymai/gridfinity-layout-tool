@@ -114,7 +114,7 @@ function directMeshToPayload(
  * skips generation on cache hits (epoch unchanged after undo/redo), and
  * releases the bridge on unmount.
  *
- * When the `manifold_preview` Labs flag is on, a second (Manifold) bridge
+ * A second (Manifold) bridge
  * renders a fast draft on the leading edge of each edit while the exact
  * occt-wasm geometry computes; the exact result always supersedes the draft.
  * A monotonic token guards arbitration: a draft is dropped if a newer edit has

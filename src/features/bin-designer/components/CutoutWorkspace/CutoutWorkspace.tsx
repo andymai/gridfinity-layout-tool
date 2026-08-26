@@ -42,7 +42,6 @@ import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
 import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { InspectorDock } from './InspectorDock';
 import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
@@ -218,7 +217,6 @@ export function CutoutWorkspace() {
   const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();
   const stlImport = useStlImport();
-  const scanEnabled = useFeatureFlag('scan_with_phone');
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
 
   // Mirrors the dock's own collapsed state (which it persists) so the canvas
@@ -668,14 +666,12 @@ export function CutoutWorkspace() {
               // board they would report success and add the shape to a part the
               // canvas is not showing.
               onImportStl={isLid ? undefined : stlImport.triggerImport}
-              onScanWithPhone={scanEnabled && !isLid ? () => setScanDialogOpen(true) : undefined}
+              onScanWithPhone={!isLid ? () => setScanDialogOpen(true) : undefined}
             />
           </div>
         </div>
 
-        {scanEnabled && (
-          <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
-        )}
+        <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
 
         <StlImportDialog
           pending={stlImport.pending}
@@ -716,9 +712,7 @@ export function CutoutWorkspace() {
               {cutouts.length === 0 && mode.type === 'idle' && (
                 <CutoutEmptyState
                   variant="workspace"
-                  onScanWithPhone={
-                    scanEnabled && !isLid ? () => setScanDialogOpen(true) : undefined
-                  }
+                  onScanWithPhone={!isLid ? () => setScanDialogOpen(true) : undefined}
                 />
               )}
               <CutoutCanvas3D

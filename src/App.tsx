@@ -69,9 +69,7 @@ import { useCommunityLikeReturn } from '@/shared/hooks/useCommunityLikeReturn';
 import { useCommunityDigestCheck } from '@/shared/hooks/useCommunityDigestCheck';
 import { SHORTCUTS } from '@/core/constants';
 
-// Lazy-loaded so the sync chunk only fetches when the user opts into the
-// `cloud_sync` Labs flag. The dynamic import means the code is in the
-// build output but the chunk request is gated.
+// Lazy-loaded so the sync chunk stays off the first-paint path.
 const LazySyncSessionMount = lazyWithRetry(() =>
   import('@/shared/sync/SyncSessionMount').then(namedExport('SyncSessionMount'))
 );
@@ -258,7 +256,6 @@ export default function App() {
 
   const { isCollaborative, shareId } = useCollabMode();
   const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
-  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const hasSharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview !== null);
 
   const [hasShareUrl] = useState(() => {
@@ -649,13 +646,11 @@ export default function App() {
       </h1>
       <DesignStoreRegistration />
       <LinkedRiseRegistration />
-      {cloudSyncEnabled && (
-        <BackgroundMountBoundary mountName="SyncSessionMount">
-          <Suspense fallback={null}>
-            <LazySyncSessionMount />
-          </Suspense>
-        </BackgroundMountBoundary>
-      )}
+      <BackgroundMountBoundary mountName="SyncSessionMount">
+        <Suspense fallback={null}>
+          <LazySyncSessionMount />
+        </Suspense>
+      </BackgroundMountBoundary>
       {routeContent}
       <ToastContainer />
       {binExampleGalleryOpen && (

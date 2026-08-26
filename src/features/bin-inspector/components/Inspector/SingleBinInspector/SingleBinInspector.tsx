@@ -4,7 +4,6 @@ import { mm, mmToHeightUnits, roundHeightUnits } from '@/core/types';
 import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
 import { ArrowLeftRightIcon, LockIcon, LockOpenIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { getBinLocationContext, isBinLocked } from '@/shared/utils/binLocation';
 import {
   formatHeightUnits,
@@ -68,7 +67,6 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   } = inspector;
 
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
-  const binRecommenderEnabled = useFeatureFlag('bin_recommender');
   const ceiling = useDrawerCeiling();
   const t = useTranslation();
 
@@ -376,21 +374,19 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             onChange={(value) => updateField('label', value)}
             variant={variant}
           />
-          {binRecommenderEnabled && (
-            <Suspense fallback={null}>
-              <BinSizeSuggestion
-                label={bin.label}
-                drawer={{
-                  width: layout.drawer.width,
-                  depth: layout.drawer.depth,
-                  height: layout.drawer.height,
-                }}
-                current={{ width: bin.width, depth: bin.depth, height: bin.height }}
-                onApply={applySuggestedSize}
-                canFit={canApplySuggestedSize}
-              />
-            </Suspense>
-          )}
+          <Suspense fallback={null}>
+            <BinSizeSuggestion
+              label={bin.label}
+              drawer={{
+                width: layout.drawer.width,
+                depth: layout.drawer.depth,
+                height: layout.drawer.height,
+              }}
+              current={{ width: bin.width, depth: bin.depth, height: bin.height }}
+              onApply={applySuggestedSize}
+              canFit={canApplySuggestedSize}
+            />
+          </Suspense>
         </div>
 
         {/* Find STL */}

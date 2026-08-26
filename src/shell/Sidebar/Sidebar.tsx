@@ -17,7 +17,6 @@ import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ToggleRow } from '@/shared/components/ToggleRow';
 import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
@@ -52,7 +51,6 @@ export function Sidebar() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [gridSizeExpanded, setGridSizeExpanded] = useState(true);
   const [physicalUnitsExpanded, setPhysicalUnitsExpanded] = useState(true);
-  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
   const handleScroll = useCallback(() => {
     if (scrollRef.current) {
@@ -183,16 +181,12 @@ export function Sidebar() {
             </svg>
           </IconButton>
           {/* One bottom-pinned group so an idle AppVersionRailButton (which
-              renders null, the usual case) leaves no gap above the dock. The
-              button sits outside the cloudSyncEnabled gate because an update
-              still needs applying when sync is off. */}
+              renders null, the usual case) leaves no gap above the dock. */}
           <div className="mt-auto flex w-full flex-col items-center gap-2">
             <AppVersionRailButton />
-            {cloudSyncEnabled && (
-              <div className="w-full">
-                <UserDock variant="compact" />
-              </div>
-            )}
+            <div className="w-full">
+              <UserDock variant="compact" />
+            </div>
           </div>
         </div>
       ) : (
@@ -589,14 +583,12 @@ export function Sidebar() {
               <AttributionFooter />
             </div>
           </div>
-          {cloudSyncEnabled && (
-            <UserDock
-              onOpenSettings={() => {
-                setSettingsInitialTab('account');
-                setShowSettingsModal(true);
-              }}
-            />
-          )}
+          <UserDock
+            onOpenSettings={() => {
+              setSettingsInitialTab('account');
+              setShowSettingsModal(true);
+            }}
+          />
         </div>
       )}
 

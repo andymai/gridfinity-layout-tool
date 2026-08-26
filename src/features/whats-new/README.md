@@ -37,8 +37,7 @@ badge stays.
 
 `AppVersionButton` carries both a pending update and unseen highlights:
 consecutive states of one story, so they share a slot and the update wins.
-`AppVersionRailButton` serves the 48px rail, outside `Sidebar`'s
-`cloudSyncEnabled` gate because an update still needs applying when sync is off.
+`AppVersionRailButton` serves the 48px rail.
 
 ## Files
 

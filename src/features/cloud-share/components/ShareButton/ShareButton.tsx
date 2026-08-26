@@ -1,14 +1,12 @@
 import { useRef } from 'react';
 import { useSharedPreviewStore, useSharePopoverStore } from '@/core/store';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import { IconButton } from '@/design-system';
 import { SharePopover } from './SharePopover';
 
 export function ShareButton() {
   const t = useTranslation();
-  const isFeatureEnabled = useFeatureFlag('collaborative_editing');
 
   const isPopoverOpen = useSharePopoverStore((state) => state.isOpen);
   const togglePopover = useSharePopoverStore((state) => state.toggle);
@@ -25,10 +23,6 @@ export function ShareButton() {
 
   const showSharedIndicator = hasActiveShare || isViewingSharedLayout;
   const isLoading = status === 'sharing' || status === 'updating';
-
-  if (!isFeatureEnabled) {
-    return null;
-  }
 
   const label = showSharedIndicator ? t('share.button.manageShare') : t('share.button.shareLayout');
 

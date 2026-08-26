@@ -45,7 +45,6 @@ import { useResponsive } from '@/shared/hooks';
 import { ItemListShell } from '@/shared/components';
 import { DesignImportView } from '../DesignImportView';
 import { ImportBinDialog, useImportBinDesign } from '../ImportBinDialog';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { SavedDesign, BinParams } from '../../types';
 import { useThumbnailRegeneration } from '../../hooks/useThumbnailRegeneration';
 import { useTranslation } from '@/i18n';
@@ -112,7 +111,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const { navigateToDesign, syncUrlToDesign } = useDesignerRouting();
   const addToast = useToastStore((s) => s.addToast);
 
-  const stlBinImportEnabled = useFeatureFlag('stl_bin_import');
   const handleImportedBinSaved = useCallback(
     (design: SavedDesign) => {
       navigateToDesign(design.id);
@@ -621,7 +619,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
               <DesignImportView
                 onImport={handleImportDesign}
                 onCancel={() => setShowImport(false)}
-                onStlFile={stlBinImportEnabled ? binImport.handleFile : undefined}
+                onStlFile={binImport.handleFile}
               />
               <ImportBinDialog
                 pending={binImport.pending}

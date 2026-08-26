@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
 import { loadBinRecommenderModel } from './loadModel';
 import { recommendBinSize, type DrawerDims } from './recommender';
@@ -16,7 +15,6 @@ export function useBinSizeSuggestion(
   drawer: DrawerDims,
   current: BinSize
 ): BinSizePrediction | null {
-  const enabled = useFeatureFlag('bin_recommender');
   const [model, setModel] = useState<BinRecommenderModel | null>(null);
   const [failed, setFailed] = useState(false);
   // The asset is fetched on demand, not precached, so a first request made
@@ -25,7 +23,6 @@ export function useBinSizeSuggestion(
   const attempt = useRetryOnReconnect(failed);
 
   useEffect(() => {
-    if (!enabled) return;
     let cancelled = false;
     loadBinRecommenderModel()
       .then((m) => {
@@ -40,14 +37,14 @@ export function useBinSizeSuggestion(
     return () => {
       cancelled = true;
     };
-  }, [enabled, attempt]);
+  }, [attempt]);
 
   const trimmed = label.trim();
   const { width: dw, depth: dd, height: dh } = drawer;
   const { width: cw, depth: cd, height: ch } = current;
 
   return useMemo(() => {
-    if (!enabled || !model || !trimmed) return null;
+    if (!model || !trimmed) return null;
 
     const prediction = recommendBinSize({
       label: trimmed,
@@ -64,5 +61,5 @@ export function useBinSizeSuggestion(
       return null;
     }
     return prediction;
-  }, [enabled, model, trimmed, dw, dd, dh, cw, cd, ch]);
+  }, [model, trimmed, dw, dd, dh, cw, cd, ch]);
 }

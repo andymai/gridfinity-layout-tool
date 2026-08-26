@@ -34,7 +34,6 @@ import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { useSvgImport } from './svgImport';
 import { useStlImport, StlImportDialog } from './stlImport';
 import { ScanWithPhoneDialog } from './scanImport';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import type { FitCue } from './cutoutSectionVisibility';
 import { applyFlattenArray } from './cutoutHelpers';
@@ -203,7 +202,6 @@ export function CutoutEditor() {
 
   const { triggerImport: triggerSvgImport } = useSvgImport();
   const stlImport = useStlImport();
-  const scanEnabled = useFeatureFlag('scan_with_phone');
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
 
   // Marquee state — in mm world coordinates
@@ -507,12 +505,10 @@ export function CutoutEditor() {
         onGridSizeChange={setGridSize}
         onImportSvg={triggerSvgImport}
         onImportStl={stlImport.triggerImport}
-        onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
+        onScanWithPhone={() => setScanDialogOpen(true)}
       />
 
-      {scanEnabled && (
-        <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
-      )}
+      <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
 
       <StlImportDialog
         pending={stlImport.pending}
@@ -542,10 +538,7 @@ export function CutoutEditor() {
         onContextMenu={handleContextMenu}
       >
         {cutouts.length === 0 && mode.type === 'idle' && (
-          <CutoutEmptyState
-            variant="sidebar"
-            onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
-          />
+          <CutoutEmptyState variant="sidebar" onScanWithPhone={() => setScanDialogOpen(true)} />
         )}
         <CutoutCanvas3D
           cutouts={cutouts}

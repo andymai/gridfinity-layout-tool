@@ -107,7 +107,6 @@ function BinParameterPanel() {
   const { needsSplit } = useSplitOptionsSection();
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
-  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const workshopEnabled = useFeatureFlag('workshop');
   const newDesign = useDesignerStore((s) => s.newDesign);
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
@@ -436,7 +435,7 @@ function BinParameterPanel() {
 
         <AttributionFooter />
       </div>
-      {cloudSyncEnabled && <UserDock />}
+      <UserDock />
     </div>
   );
 }
