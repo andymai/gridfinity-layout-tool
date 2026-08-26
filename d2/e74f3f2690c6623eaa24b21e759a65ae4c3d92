@@ -1,0 +1,25 @@
+src/features/bin-designer/hooks/useExport.ts
+  s_b004968be06b1b::t_9c8d02fd051605 32
+  s_b004968be06b1b::t_25684198ad4ccf 266-269
+src/features/bin-designer/hooks/useExport.test.ts
+  s_b004968be06b1b::t_cfbcc7eb5e10d6 29
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_b004968be06b1b::t_78c538a4cf95b6 15
+  s_b004968be06b1b::t_5e4c74073ea18f 633
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d2e74f3f2690c6623eaa24b21e759a65ae4c3d92",
+  "prompts": {},
+  "sessions": {
+    "s_b004968be06b1b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b8953669-0ed8-49fc-b900-80d0f59da410",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
