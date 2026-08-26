@@ -18,6 +18,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { getActiveBridge, type ExportFormat } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
+import { buildThreeMFPrintSettings } from '@/shared/generation/stlTo3mf';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
 import { getErrorMessage } from '@/shared/utils/errors';
@@ -130,14 +131,7 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
           const blob = export3MF(parseResult.value.vertices, parseResult.value.normals, {
             name: baseName,
             colorConfig,
-            printSettings: {
-              layerHeight: printSettings.layerHeightMm,
-              infillPercent: printSettings.infillPercent,
-              material: 'PLA',
-              supportRequired: false,
-              estimatedMinutes: 0,
-              estimatedGrams: 0,
-            },
+            printSettings: buildThreeMFPrintSettings(printSettings),
           });
           triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
         } else {

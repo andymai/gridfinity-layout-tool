@@ -1826,6 +1826,7 @@ const en: Record<string, string> = {
   'binDesigner.plateFitGroup': 'Plate fit',
   'binDesigner.plateFitOffsetHint':
     'Fine-tune the socket fit for your printer: negative = tighter, positive = looser.',
+  'binDesigner.exportNotReady': 'Generation engine not ready. Please wait and try again.',
   'binDesigner.plates.title': 'Label plates',
   'binDesigner.plates.blank': 'blank',
   'binDesigner.plates.preview': 'Preview plates',
@@ -3870,6 +3871,7 @@ const en: Record<string, string> = {
     'Prints all drawer plates as a vertical stack with gaps between them. Plates snap apart after printing.',
   'baseplate.stackPrint.sampleButton': 'Print fit test',
   'baseplate.stackPrint.sampleExportComplete': 'Stack fit sample exported',
+  'baseplate.stackPrint.sampleExportFailed': 'Stack fit sample export failed',
   'baseplate.stackPrint.sampleTitle': 'Stack fit sample',
   'baseplate.stackPrint.sampleDescription':
     'A single stack of two 1×1 plates to fine-tune the air-gap separation before printing a full stack.',
@@ -3933,6 +3935,7 @@ const en: Record<string, string> = {
     'Each coupon is labeled with its style (DT / DK / SC) and fit offset.',
   'baseplate.connectorSample.tip4': 'Found the right fit? Set Connector fit to that offset.',
   'baseplate.connectorSample.exportComplete': 'Fit sample exported',
+  'baseplate.connectorSample.exportFailed': 'Connector fit sample export failed',
   'baseplate.cornerRadius': 'Corner radius',
   'baseplate.cornerRadiusInfo':
     'Outer corner radius for fitting in rounded enclosures. Large radii trim or remove the corner sockets they pass through.',

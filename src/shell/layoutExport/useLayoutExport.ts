@@ -45,9 +45,9 @@ import type { BinParams } from '@/features/bin-designer';
 // this packaging only runs inside the lazy layout-export chunk.
 import {
   buildBinDownloadPayload,
-  buildThreeMFPrintSettings,
   buildMultiObject3MFObjects,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
+import { buildThreeMFPrintSettings } from '@/shared/generation/stlTo3mf';
 import { getLinkedDesignIds } from '@/features/design-linking';
 import { planLayoutBinExport } from './planLayoutBinExport';
 import type { LoadedDesign, LayoutExportable, LayoutSplitPlan } from './planLayoutBinExport';

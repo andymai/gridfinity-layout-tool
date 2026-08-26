@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useSlideFitSampleExport } from './useSlideFitSampleExport';
 import { triggerDownload } from '@/shared/generation/exportUtils';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { resetAllStores } from '@/test/testUtils';
 
@@ -63,7 +64,7 @@ describe('useSlideFitSampleExport', () => {
     expect(result.current.canExport).toBe(true);
   });
 
-  it('refuses to export without a bridge', async () => {
+  it('refuses to export without a bridge, and says why', async () => {
     const { result } = renderHook(() => useSlideFitSampleExport());
     let ok = true;
     await act(async () => {
@@ -71,6 +72,7 @@ describe('useSlideFitSampleExport', () => {
     });
     expect(ok).toBe(false);
     expect(triggerDownload).not.toHaveBeenCalled();
+    expect(useToastStore.getState().toasts[0].message).toBe('binDesigner.exportNotReady');
   });
 
   it("sends the design's own slide config, not a generic one", async () => {
