@@ -5,7 +5,6 @@ import { PanelErrorBoundary } from './PanelErrorBoundary';
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
   captureException: vi.fn(),
-  track3DRenderError: vi.fn(),
 }));
 
 function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {

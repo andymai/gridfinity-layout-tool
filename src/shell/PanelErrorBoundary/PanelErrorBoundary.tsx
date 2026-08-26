@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '@/design-system';
-import { captureException, track3DRenderError } from '@/shared/analytics/posthog';
+import { captureException } from '@/shared/analytics/posthog';
 
 // Error boundary strings as constants (class components cannot use hooks)
 const ERROR_SUFFIX = 'Error';
@@ -43,7 +43,6 @@ export class PanelErrorBoundary extends Component<Props, State> {
       panelName: this.props.panelName,
       componentStack: errorInfo.componentStack,
     });
-    track3DRenderError(this.props.panelName, error.message);
     this.props.onError?.(error);
   }
 

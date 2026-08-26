@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -26,6 +26,39 @@ import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
  *  callers can't desync the key by passing the pair in either order
  *  (`selectedDividerKey` / `hoveredDividerKey` lookups depend on this). */
 export const rowKeyOf = (a: number, b: number): string => (a < b ? `${a}-${b}` : `${b}-${a}`);
+
+type TrackPayload = Record<string, string | number | boolean | null>;
+
+/**
+ * Trailing debounce for a billable track call: only the last payload queued
+ * within `delayMs` is sent. `flush` sends a pending payload immediately, for
+ * unmount, so the final burst of an editing session isn't lost.
+ */
+export function createTrailingTrack(
+  send: (payload: TrackPayload) => void,
+  delayMs: number
+): { queue: (payload: TrackPayload) => void; flush: () => void } {
+  let pending: { timer: ReturnType<typeof setTimeout>; payload: TrackPayload } | null = null;
+  return {
+    queue(payload) {
+      if (pending) clearTimeout(pending.timer);
+      pending = {
+        payload,
+        timer: setTimeout(() => {
+          pending = null;
+          send(payload);
+        }, delayMs),
+      };
+    },
+    flush() {
+      if (!pending) return;
+      clearTimeout(pending.timer);
+      const { payload } = pending;
+      pending = null;
+      send(payload);
+    },
+  };
+}
 
 export interface TiltRow extends EligibleDivider {
   readonly key: string;
@@ -232,6 +265,15 @@ export function useDividerTiltSubsection() {
     setDividerTiltPreview(null);
   }, [setDividerTiltPreview]);
 
+  // A tilt is adjusted through many commits (each panel keystroke and drag end
+  // lands here), and every event is billable. Only the burst's final values
+  // carry signal, so the track is trailing-debounced with an unmount flush.
+  const dividerTrack = useMemo(
+    () => createTrailingTrack((payload) => trackEvent('divider_offset_changed', payload), 2000),
+    []
+  );
+  useEffect(() => () => dividerTrack.flush(), [dividerTrack]);
+
   // Commit: clamp, write the real override (one history entry), drop preview.
   const commitTilt = useCallback(
     (row: TiltRow, next: AngleShift, source: 'panel_input' | 'canvas_drag' = 'panel_input') => {
@@ -245,7 +287,7 @@ export function useDividerTiltSubsection() {
         result.offsetEnd,
         result.rakeDeg
       );
-      trackEvent('divider_offset_changed', {
+      dividerTrack.queue({
         axis: row.axis,
         offset_start_mm: result.offsetStart,
         offset_end_mm: result.offsetEnd,
@@ -253,7 +295,7 @@ export function useDividerTiltSubsection() {
         source,
       });
     },
-    [setDividerOverride, setDividerTiltPreview]
+    [setDividerOverride, setDividerTiltPreview, dividerTrack]
   );
 
   const resetRow = useCallback(

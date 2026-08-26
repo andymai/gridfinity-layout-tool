@@ -10,7 +10,6 @@ const { undoMock, historyState } = vi.hoisted(() => ({
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
   captureException: vi.fn(),
-  track3DRenderError: vi.fn(),
 }));
 
 // Mock storage: the boundary now offers a non-destructive backup, not a wipe.

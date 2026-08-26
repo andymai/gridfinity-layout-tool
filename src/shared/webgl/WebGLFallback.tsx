@@ -1,21 +1,9 @@
-import { useEffect } from 'react';
 import { useTranslation } from '@/i18n';
-import { track3DRenderError } from '@/shared/analytics/posthog';
-import type { WebGLUnavailableReason } from './detectWebGL';
-
-interface WebGLFallbackProps {
-  reason: WebGLUnavailableReason;
-  component: string;
-}
 
 const HELP_URL = 'https://get.webgl.org/';
 
-export function WebGLFallback({ reason, component }: WebGLFallbackProps) {
+export function WebGLFallback() {
   const t = useTranslation();
-
-  useEffect(() => {
-    track3DRenderError(component, `webgl-unavailable:${reason}`);
-  }, [component, reason]);
 
   return (
     <div

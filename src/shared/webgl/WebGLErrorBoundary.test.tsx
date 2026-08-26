@@ -2,12 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Component } from 'react';
 import type { ReactNode } from 'react';
+const { captureException } = vi.hoisted(() => ({ captureException: vi.fn() }));
+vi.mock('@/shared/analytics/posthog', () => ({ captureException }));
+
 import { WebGLErrorBoundary } from './WebGLErrorBoundary';
 import { detectWebGL, resetWebGLDetectionCacheForTests } from './detectWebGL';
-
-vi.mock('@/shared/analytics/posthog', () => ({
-  track3DRenderError: vi.fn(),
-}));
 
 function Thrower({ message }: { message: string }): ReactNode {
   throw new Error(message);
@@ -36,7 +35,7 @@ describe('WebGLErrorBoundary', () => {
 
   it('renders children when no error', () => {
     render(
-      <WebGLErrorBoundary component="designer">
+      <WebGLErrorBoundary>
         <div>canvas-content</div>
       </WebGLErrorBoundary>
     );
@@ -45,7 +44,7 @@ describe('WebGLErrorBoundary', () => {
 
   it('renders the WebGL fallback (no retry) on a context-creation error', () => {
     render(
-      <WebGLErrorBoundary component="designer">
+      <WebGLErrorBoundary>
         <Thrower message="Error creating WebGL context." />
       </WebGLErrorBoundary>
     );
@@ -56,7 +55,7 @@ describe('WebGLErrorBoundary', () => {
   it('flips detectWebGL() to unavailable so the next render skips the canvas', () => {
     expect(detectWebGL().available).toBe(true);
     render(
-      <WebGLErrorBoundary component="baseplate">
+      <WebGLErrorBoundary>
         <Thrower message="Error creating WebGL context." />
       </WebGLErrorBoundary>
     );
@@ -65,10 +64,22 @@ describe('WebGLErrorBoundary', () => {
     expect(result.reason).toBe('context-failed');
   });
 
+  it('captures the context error explicitly, since the boundary swallows it', () => {
+    render(
+      <WebGLErrorBoundary>
+        <Thrower message="Error creating WebGL context." />
+      </WebGLErrorBoundary>
+    );
+    expect(captureException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Error creating WebGL context.' }),
+      { boundary: 'webgl' }
+    );
+  });
+
   it('rethrows non-WebGL errors for an outer boundary to handle', () => {
     render(
       <Catcher>
-        <WebGLErrorBoundary component="designer">
+        <WebGLErrorBoundary>
           <Thrower message="something unrelated blew up" />
         </WebGLErrorBoundary>
       </Catcher>

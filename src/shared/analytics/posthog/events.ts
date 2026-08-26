@@ -47,7 +47,6 @@ export {
   getLayoutContext,
   trackLayoutSaveFailure,
   trackShareFailure,
-  track3DRenderError,
   trackTemplateLoadError,
 } from './eventsErrors';
 
