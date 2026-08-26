@@ -1,0 +1,23 @@
+src/core/storage/index.ts
+  s_8c2c4457d965c0::t_55004c9338e5b8 135-137
+src/core/storage/backends/openSingleton.test.ts
+  s_8c2c4457d965c0::t_9e9d8ac1a1b418 1-3,8-9,12-24
+  s_8c2c4457d965c0::t_7a6434cdd367ff 66-70
+  s_8c2c4457d965c0::t_f8148f28803459 146,165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "6582f24386231b1065684894a9134addc7d98030",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
