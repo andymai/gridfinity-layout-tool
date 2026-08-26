@@ -8,8 +8,7 @@ export function useFinishingGroupSummary(): string {
   const t = useTranslation();
   const { colorsEnabled, gridUnitMm, heightUnitMm } = useDesignerStore(
     useShallow((s) => ({
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve the runtime fallback
-      colorsEnabled: s.params.featureColors?.enabled ?? false,
+      colorsEnabled: s.params.featureColors.enabled,
       gridUnitMm: s.params.gridUnitMm,
       heightUnitMm: s.params.heightUnitMm,
     }))

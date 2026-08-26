@@ -92,22 +92,17 @@ export function ColorsSection() {
       binHeight: s.params.height,
       heightUnitMm: s.params.heightUnitMm,
       extraWallHeightMm: s.params.extraWallHeightMm,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      lipCorners: s.params.featureColors?.lip.corners ?? 1,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      lipBands: s.params.featureColors?.lip.bands ?? 1,
+      lipCorners: s.params.featureColors.lip.corners,
+      lipBands: s.params.featureColors.lip.bands,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
   );
   const setColorTool = useDesignerStore((s) => s.setColorTool);
   const swapZoneWithToast = useSwapZoneWithToast();
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; preserve runtime fallback
-  const multiColorEnabled = rawColors?.enabled ?? false;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy persisted configs may omit topAccent; migration backfills it but keep the runtime guard
-  const topAccent = rawColors?.topAccent ?? DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; preserve runtime fallback
-  const bottomAccent = rawColors?.bottomAccent;
+  const multiColorEnabled = rawColors.enabled;
+  const topAccent = rawColors.topAccent ?? DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
+  const bottomAccent = rawColors.bottomAccent;
   // Cap a band at the wall top — nominal height (units × mm/unit) plus any
   // exterior-wall collar — so it can't exceed the bin yet still reaches the top
   // of a collared bin. Floor of 1mm keeps the slider usable; the finite guard
@@ -160,8 +155,7 @@ export function ColorsSection() {
   const hasLid = activeZones.has('lid');
   const hasLidLip = activeZones.has(lidLipCellZone('frontLeft', 0));
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve the runtime fallback
-  const featureColors: FeatureColorConfig = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
+  const featureColors: FeatureColorConfig = rawColors;
   // Absent grid means "inherits the lid colour", so the editor is seeded with a
   // uniform grid rather than being hidden — the user needs somewhere to start.
   const lidLipConfig = featureColors.lidLip ?? {

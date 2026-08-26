@@ -64,8 +64,7 @@ export function StackPlateMesh({
       );
       return {
         stackPlateMesh: s.generation.mesh?.stackPlateMesh ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-        featureColors: s.params.featureColors ?? null,
+        featureColors: s.params.featureColors,
         // Same mated frame as LidMesh: local Z=0 lands at lidGroupZ.
         lidGroupZ: lipTopZ - anchorZ,
       };
@@ -81,8 +80,7 @@ export function StackPlateMesh({
 
   // The plate glues onto the lid, so it shares the lid's zone color in
   // multi-color mode (matches the exporter, which paints it lid-colored).
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); runtime guard kept as belt-and-suspenders.
-  const plateColor = featureColors?.enabled ? getZoneColor(featureColors, 'lid') : color;
+  const plateColor = featureColors.enabled ? getZoneColor(featureColors, 'lid') : color;
 
   const matProps = useMemo(
     () => ({

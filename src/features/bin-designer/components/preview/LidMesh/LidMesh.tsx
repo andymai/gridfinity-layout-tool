@@ -67,8 +67,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
   const { lidMesh, params, featureColors } = useDesignerStore(
     useShallow((s) => ({
       lidMesh: s.generation.mesh?.lidMesh ?? null,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      featureColors: s.params.featureColors ?? null,
+      featureColors: s.params.featureColors,
       params: s.params,
     }))
   );
@@ -98,8 +97,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
   // the print (the invariant GH established).
   const lidColorData = useMemo(
     () =>
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      featureColors?.enabled
+      featureColors.enabled
         ? buildLidColorGroups(
             lidMesh?.faceGroups,
             lidMesh?.vertices,
@@ -121,8 +119,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
   // In multi-color mode the lid is a single zone (`featureColors.lid`); the
   // exporter already paints the whole lid object that color, so the preview
   // must match instead of falling back to the body material (GH).
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); runtime guard kept as belt-and-suspenders.
-  const lidColor = featureColors?.enabled ? getZoneColor(featureColors, 'lid') : color;
+  const lidColor = featureColors.enabled ? getZoneColor(featureColors, 'lid') : color;
 
   const baseOpacity = opacityForOffset(lidOffsetMm);
   const matProps = useMemo(

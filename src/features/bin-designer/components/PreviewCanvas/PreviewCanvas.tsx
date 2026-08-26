@@ -377,8 +377,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
     }
   }, [wasmStatus]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve runtime fallback
-  const showColors = params.featureColors?.enabled ?? false;
+  const showColors = params.featureColors.enabled;
 
   // Responsive state for touch optimizations
   const { isDesktop, isTouchDevice } = useResponsive();
