@@ -46,7 +46,6 @@ export function DirectRemixList({ designId, remixCount }: DirectRemixListProps) 
         <p className="text-sm text-content-tertiary">{t('community.detail.buildsOnEmpty')}</p>
       ) : (
         /* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */
-        /* eslint-disable-next-line jsx-a11y/no-redundant-roles */
         <ul
           role="list"
           aria-label={t('community.detail.buildsOnThis', { count: remixCount })}

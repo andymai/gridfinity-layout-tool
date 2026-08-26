@@ -43,7 +43,6 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
         </h3>
 
         {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
-        {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
         <ul className="space-y-2 list-none" role="list">
           <FeatureRow
             index={0}

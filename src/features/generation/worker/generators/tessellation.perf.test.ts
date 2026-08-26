@@ -66,7 +66,6 @@ describe('tessellation performance budget', () => {
     });
     const avgMs = benchmarkGeneration(params);
 
-    // eslint-disable-next-line no-console -- perf reporting
     console.log(`  2×2 lip bin: ${avgMs.toFixed(1)}ms avg (budget: ${MAX_MS_SMALL_BIN}ms)`);
     expect(avgMs).toBeLessThan(MAX_MS_SMALL_BIN);
   });
@@ -80,7 +79,6 @@ describe('tessellation performance budget', () => {
     });
     const avgMs = benchmarkGeneration(params);
 
-    // eslint-disable-next-line no-console -- perf reporting
     console.log(`  4×4 lip bin: ${avgMs.toFixed(1)}ms avg (budget: ${MAX_MS_LARGE_BIN}ms)`);
     expect(avgMs).toBeLessThan(MAX_MS_LARGE_BIN);
   });
@@ -94,7 +92,6 @@ describe('tessellation performance budget', () => {
     });
     const avgMs = benchmarkGeneration(params);
 
-    // eslint-disable-next-line no-console -- perf reporting
     console.log(`  8×8 lip bin: ${avgMs.toFixed(1)}ms avg (budget: ${MAX_MS_VERY_LARGE_BIN}ms)`);
     expect(avgMs).toBeLessThan(MAX_MS_VERY_LARGE_BIN);
   });
@@ -110,7 +107,6 @@ describe('tessellation performance budget', () => {
     });
     const avgMs = benchmarkGeneration(params);
 
-    // eslint-disable-next-line no-console -- perf reporting
     console.log(`  2×2 complex: ${avgMs.toFixed(1)}ms avg (budget: ${MAX_MS_COMPLEX_BIN}ms)`);
     expect(avgMs).toBeLessThan(MAX_MS_COMPLEX_BIN);
   });

@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- CLI script that outputs to console */
 /**
  * Safety-checked i18n key consolidation helper.
  *

@@ -39,9 +39,7 @@ function subCellIndices(
 function coarsenToGridUnits(hb: CellMask): CellMask {
   const cols = hb.cols / 2;
   const rows = hb.rows / 2;
-  // `new Array(n)` returns `any[]`; we pre-size the typed slot for in-place fill.
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const cells: (0 | 1)[] = new Array(cols * rows);
+  const cells = new Array<0 | 1>(cols * rows);
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const [a, b, d, e] = subCellIndices(c, r, hb.cols);

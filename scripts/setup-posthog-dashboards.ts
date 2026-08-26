@@ -1,5 +1,4 @@
 #!/usr/bin/env -S pnpm exec tsx
-/* eslint-disable no-console */
 /**
  * PostHog Dashboard Setup Script
  *

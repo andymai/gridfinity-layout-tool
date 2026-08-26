@@ -230,7 +230,6 @@ export function PrintsSection({
             </p>
           ) : (
             <>
-              {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
               <ul role="list" className="space-y-2">
                 {items.map((print) => (
                   <PrintCard

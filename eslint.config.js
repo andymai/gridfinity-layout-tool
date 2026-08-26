@@ -94,6 +94,9 @@ export default defineConfig([
       'jsx-a11y/no-noninteractive-element-interactions': 'error',
       'jsx-a11y/no-autofocus': 'error',
       'jsx-a11y/interactive-supports-focus': 'error',
+      // role="list" on <ul> is not redundant in practice: Safari/iOS VoiceOver
+      // strips list semantics once list-style:none is applied.
+      'jsx-a11y/no-redundant-roles': ['error', { ul: ['list'] }],
 
       // React anti-patterns
       'react-hooks/rules-of-hooks': 'error',
@@ -438,11 +441,19 @@ export default defineConfig([
     ],
     rules: { 'max-lines': 'off' },
   },
-  // Scripts: no i18n rule needed
+  // Scripts: no i18n rule needed; stdout is a CLI's output channel, not debug logging
   {
     files: ['scripts/**/*.{ts,tsx}'],
     rules: {
       'i18next/no-literal-string': 'off',
+      'no-console': 'off',
+    },
+  },
+  // Diagnostic harnesses print their reports to the console by design
+  {
+    files: ['**/__kernel-tests__/**/*.{ts,tsx}', '**/*.perf.test.{ts,tsx}'],
+    rules: {
+      'no-console': 'off',
     },
   },
 ])

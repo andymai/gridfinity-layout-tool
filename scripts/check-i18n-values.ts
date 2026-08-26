@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- CLI script that outputs to console */
 /**
  * Pre-commit check: Detect locale values identical to English (untranslated placeholders).
  *

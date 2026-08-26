@@ -44,7 +44,6 @@ describe(`honeycomb wall pattern on ${getKernelName()}`, () => {
       })
     );
 
-    // eslint-disable-next-line no-console
     console.log(
       `[${getKernelName()}] plain tris=${plain.triangleCount} honeycomb tris=${honeycomb.triangleCount} minZ=${minZ(honeycomb.vertices)}`
     );

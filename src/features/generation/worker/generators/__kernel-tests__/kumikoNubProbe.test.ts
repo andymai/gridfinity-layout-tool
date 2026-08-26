@@ -55,9 +55,7 @@ describe('kumiko nub probe', () => {
         }
       }
     }
-    // eslint-disable-next-line no-console
     console.log(`cavity-protruding corner vertices: ${hits.size}`);
-    // eslint-disable-next-line no-console
     for (const k of [...hits.keys()].slice(0, 40)) console.log(' ', k);
   });
 });

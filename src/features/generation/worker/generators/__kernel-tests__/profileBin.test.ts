@@ -28,7 +28,6 @@ beforeAll(async () => {
 }, 30_000);
 
 afterAll(() => {
-  /* eslint-disable no-console */
   console.log(`\n┌──────────────────────────────────────────────────────────────────┐`);
   console.log(`│  Kernel: ${getKernelName().padEnd(55)}│`);
   console.log(`├──────────────────────────────────┬──────────┬──────────────────┤`);
@@ -40,7 +39,6 @@ afterAll(() => {
     );
   }
   console.log(`└──────────────────────────────────┴──────────┴──────────────────┘`);
-  /* eslint-enable no-console */
 });
 
 function runBin(name: string, overrides: Partial<BinParams>, forExport = false): void {

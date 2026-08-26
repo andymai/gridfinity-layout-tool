@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- build script logs status to stdout */
 /**
  * Generates the committed SEO/marketing images: in-page landing screenshots
  * (public/images/landing/) and per-page Open Graph cards (public/og/).

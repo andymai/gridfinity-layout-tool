@@ -47,7 +47,6 @@ export function BentoQuickstartOverlay({ onDismiss }: BentoQuickstartOverlayProp
         </h3>
 
         {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
-        {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
         <ul className="list-none space-y-2" role="list">
           <QuickstartRow text={t('binDesigner.bento.quickstart.draw')} />
           <QuickstartRow text={t('binDesigner.bento.quickstart.moveResize')} />

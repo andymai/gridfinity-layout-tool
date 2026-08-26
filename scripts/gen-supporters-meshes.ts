@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- Build script uses console for status output */
 /**
  * Bakes the real Gridfinity meshes the /supporters scene instances at runtime.
  *

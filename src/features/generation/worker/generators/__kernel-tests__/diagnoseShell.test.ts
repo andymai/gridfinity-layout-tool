@@ -65,7 +65,6 @@ test('diagnose flat no-lip face counts', async () => {
   const bb = withKernel('brepkit', () => getBounds(bkSolid!));
   const edgeTypes = withKernel('brepkit', () => collectEdgeTypeBreakdown(rawKernel, solidId));
 
-  /* eslint-disable no-console */
   console.log('\n=== FACE UNIFICATION DIAGNOSTIC ===');
   console.log(`Test Case: 1×1 flat no-lip bin`);
   console.log(`Bin Parameters: width=1, depth=1, style=flat, stackingLip=false`);
@@ -122,7 +121,6 @@ test('diagnose flat no-lip face counts', async () => {
   console.log(`  Volume: ${vol.toFixed(2)} mm³`);
   console.log(`  Volume valid: ${vol > 0 ? 'YES' : 'NO'}`);
   console.log('===================================\n');
-  /* eslint-enable no-console */
 
   expect(vol, 'volume should be positive').toBeGreaterThan(0);
 }, 60_000);
@@ -133,7 +131,6 @@ test('step-by-step volume: extrude then shell', async () => {
   const rawKernel = getRawBrepkitKernel();
 
   withKernel('brepkit', () => {
-    /* eslint-disable no-console */
     const outerW = STANDARD_BIN_WIDTH;
     const outerD = STANDARD_BIN_WIDTH;
     const r = SHELL_RADIUS;
@@ -207,7 +204,6 @@ test('step-by-step volume: extrude then shell', async () => {
     const counts = getEntityCounts(rawKernel, shelledId);
     console.log(`  Entities: F=${counts.faces} E=${counts.edges} V=${counts.verts}`);
     console.log('=====================================\n');
-    /* eslint-enable no-console */
 
     const extrudeRelErr = Math.abs(extrudeVol - expectedExtrude) / expectedExtrude;
     expect(extrudeRelErr, 'extrude volume within 1%').toBeLessThan(0.01);

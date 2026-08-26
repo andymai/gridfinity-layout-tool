@@ -39,12 +39,10 @@ function profile(label: string, width: number, depth: number, height: number): v
   );
   const total = performance.now() - start;
   const snap = perf.snapshot(total);
-  /* eslint-disable no-console */
   console.log(`\n=== ${label}: total ${total.toFixed(0)}ms ===`);
   for (const s of snap.stages) console.log(`  stage ${s.name}: ${s.ms.toFixed(0)}ms`);
   for (const s of snap.wallPatternSubsteps)
     console.log(`  wallPattern ${s.name}: ${s.ms.toFixed(0)}ms${s.count ? ` (n=${s.count})` : ''}`);
-  /* eslint-enable no-console */
 }
 
 describe('kumiko generation profile', () => {

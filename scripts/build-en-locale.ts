@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- Build script uses console for status output */
 /**
  * Generates en.json from en.ts for lazy-loaded runtime use.
  *

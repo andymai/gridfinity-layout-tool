@@ -8,7 +8,6 @@
  * and both meshes being closed. Manifoldness and triangle count are reported
  * per kernel rather than compared, since neither has to match to be correct.
  */
-/* eslint-disable no-console */
 import { readFileSync } from 'node:fs';
 
 interface Row {

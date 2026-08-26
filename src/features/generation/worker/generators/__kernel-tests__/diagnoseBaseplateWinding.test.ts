@@ -227,7 +227,6 @@ beforeEach(() => {
 });
 
 test('diagnose: does repairMeshWinding actually flip triangles for these configs?', () => {
-  /* eslint-disable no-console */
   console.log('\n========================================================================');
   console.log('  Raw mesh() vs repairMeshWinding output');
   console.log('========================================================================');
@@ -268,11 +267,9 @@ test('diagnose: does repairMeshWinding actually flip triangles for these configs
     }
   }
   console.log('========================================================================\n');
-  /* eslint-enable no-console */
 }, 300_000);
 
 test('diagnose buildBaseplateSolid winding step-by-step', () => {
-  /* eslint-disable no-console */
   console.log('\n========================================================================');
   console.log('  buildBaseplateSolid — per-step winding diagnosis (issue #1494)');
   console.log('========================================================================');
@@ -307,7 +304,6 @@ test('diagnose buildBaseplateSolid winding step-by-step', () => {
     for (const m of steps) console.log(formatStepRow(m));
   }
   console.log('\n========================================================================\n');
-  /* eslint-enable no-console */
 
   // Surface any per-config throws as a real test failure rather than only
   // a console line — silence is success-shaped in CI.

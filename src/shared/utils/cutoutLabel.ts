@@ -98,8 +98,7 @@ export function resolveCutoutTextAnchor(
   cutout: Pick<Cutout, 'textAnchor' | 'textSide'>
 ): CutoutTextAnchor {
   if (cutout.textAnchor) return cutout.textAnchor;
-  // Reading the deprecated field is the migration path it exists for.
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- reading the legacy field is the migration path it exists for
   switch (cutout.textSide) {
     case 'bottom':
       return 'bottom';

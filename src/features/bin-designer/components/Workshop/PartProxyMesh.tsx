@@ -69,10 +69,7 @@ export function PartProxyMesh({
   const reducedMotion = usePrefersReducedMotion();
   const invalidate = useThree((s) => s.invalidate);
   const { node } = placed;
-  // Keyed on type + params, not node identity: drags path-copy the node and
-  // every ancestor per pointermove while params stay reference-equal, and a
-  // rebuild here re-uploads geometry for the whole chain each frame.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on type + params, not node identity: drags path-copy the node and every ancestor per pointermove while params stay reference-equal, and a rebuild here re-uploads geometry for the whole chain each frame
   const geometry = useMemo(() => buildPartGeometry(node), [node.type, node.params]);
   useEffect(() => () => geometry.dispose(), [geometry]);
 
