@@ -450,7 +450,7 @@ export default defineConfig({
               priority: 100,
               test: (id: string) =>
                 id.endsWith('/src/core/constants.ts') ||
-                id.endsWith('/src/core/types.ts') ||
+                id.includes('/src/core/types/') ||
                 id.includes('packages/branded-types/src/'),
             },
             // Core React runtime — eager, shared by every UI chunk. HIGHEST vendor
@@ -484,7 +484,7 @@ export default defineConfig({
             // duplication (total JS is unchanged either way).
           ],
         },
-        // Note: posthog-js is dynamically imported in src/shared/analytics/posthog.ts
+        // Note: posthog-js is dynamically imported in src/shared/analytics/posthog/
         // so it automatically gets its own chunk without needing chunk config.
       },
     },
