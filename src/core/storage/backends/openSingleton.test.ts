@@ -1,12 +1,27 @@
-import { describe, it, expect } from 'vitest';
-import { deleteDB, openDB } from 'idb';
+// @vitest-environment jsdom
+import { describe, it, expect, afterEach } from 'vitest';
+import { openDB } from 'idb';
 import type { IDBPDatabase } from 'idb';
 import { createDbAccessor } from './openSingleton';
 
 let dbCounter = 0;
+const createdDbs: string[] = [];
+
 function nextDbName(): string {
   dbCounter += 1;
-  return `open-singleton-test-${dbCounter}`;
+  const name = `open-singleton-test-${dbCounter}`;
+  createdDbs.push(name);
+  return name;
+}
+
+/** Resolve on blocked too: a leaked connection must not hang the suite. */
+function deleteDb(name: string): Promise<void> {
+  return new Promise((resolve) => {
+    const req = indexedDB.deleteDatabase(name);
+    req.onsuccess = () => resolve();
+    req.onerror = () => resolve();
+    req.onblocked = () => resolve();
+  });
 }
 
 function withStore(db: IDBPDatabase): void {
@@ -47,6 +62,11 @@ async function blockVersion(name: string, version: number): Promise<void> {
   const blocker = await openDB(name, version, { upgrade: withStore });
   blocker.close();
 }
+
+afterEach(async () => {
+  const names = createdDbs.splice(0);
+  await Promise.all(names.map((name) => deleteDb(name)));
+});
 
 describe('createDbAccessor', () => {
   it('runs the upgrade callback and caches the connection', async () => {
@@ -123,7 +143,7 @@ describe('createDbAccessor', () => {
 
     await expect(accessor.get()).rejects.toThrow();
 
-    await deleteDB(name);
+    await deleteDb(name);
     await expect(accessor.get()).resolves.not.toBeNull();
 
     accessor.close();
@@ -142,7 +162,7 @@ describe('createDbAccessor', () => {
     expect(await accessor.get()).toBeNull();
 
     // The obstacle is gone, but the failure is remembered: no retry.
-    await deleteDB(name);
+    await deleteDb(name);
     expect(await accessor.get()).toBeNull();
 
     accessor.close();

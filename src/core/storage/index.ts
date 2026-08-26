@@ -132,4 +132,7 @@ export { clearAllAppData } from './clearAppData';
 export { cleanupLocalStorageBackups, clearCleanupFlag } from './localStorageCleanup';
 export type { CleanupStats } from './localStorageCleanup';
 
+export { createDbAccessor } from './backends/openSingleton';
+export type { DbAccessor, DbAccessorOptions } from './backends/openSingleton';
+
 export { getStorageBackend, resetStorageBackendCache } from './backend';
