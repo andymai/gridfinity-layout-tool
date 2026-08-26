@@ -22,6 +22,9 @@ describe('shouldIgnoreError — message patterns', () => {
     // Firefox-for-iOS injected `__firefox__` global / Reader-mode noise
     "ReferenceError: Can't find variable: __firefox__",
     "TypeError: undefined is not an object (evaluating 'window.__firefox__.reader')",
+    // iOS in-app browser (WKWebView) bridge-script injection
+    "TypeError: undefined is not an object (evaluating 'top.webkit.messageHandlers.foregroundToBackground.postMessage')",
+    "TypeError: undefined is not an object (evaluating 'window.webkit.messageHandlers.handler.postMessage')",
   ])('ignores %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(true);
   });
@@ -286,6 +289,45 @@ describe('R3F canvas teardown race', () => {
     const e = {
       event: '$exception',
       properties: { $exception_list: [{ value: CHROME }] },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+});
+
+describe('WebKit navigation aborts', () => {
+  it.each([
+    ['no stacktrace at all', { value: 'AbortError: AbortError' }],
+    ['empty frames', { value: 'AbortError: AbortError', stacktrace: { frames: [] } }],
+    [
+      'wordier WebKit phrasing',
+      { value: 'AbortError: The operation was aborted.', stacktrace: { frames: [] } },
+    ],
+  ])('drops a stackless AbortError with %s', (_shape, exception) => {
+    const e = { event: '$exception', properties: { $exception_list: [exception] } };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('keeps an AbortError that carries app frames', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            value: 'AbortError: AbortError',
+            stacktrace: { frames: [{ function: 'loadSharedLayout' }] },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+
+  it('keeps other stackless DOMExceptions', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [{ value: 'UnknownError: Database deleted by request of the user' }],
+      },
     };
     expect(filterExceptionForPosthog(e)).toBe(e);
   });
