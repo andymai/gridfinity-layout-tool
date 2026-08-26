@@ -16,6 +16,7 @@ import {
   validateAssemblyStructure,
 } from './assemblyValidation.js';
 import { isValidShareId } from './shared.js';
+import type { ErrorCodeType } from './shared.js';
 import { isObject, isString, validationError } from './validationUtils.js';
 import {
   classifyCommunityDescription,
@@ -51,6 +52,49 @@ export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
 export const COMMUNITY_REPORT_REASONS = ['inappropriate', 'spam', 'broken', 'stolen'] as const;
 export type CommunityReportReason = (typeof COMMUNITY_REPORT_REASONS)[number];
 export const COMMUNITY_REPORT_NOTE_MAX_LENGTH = 500;
+
+export type ParsedReportBody =
+  | { readonly ok: true; readonly reason: CommunityReportReason; readonly note: string }
+  | {
+      readonly ok: false;
+      readonly status: number;
+      readonly code: ErrorCodeType;
+      readonly message: string;
+    };
+
+/**
+ * One report-body contract for design reports and print reports: same reason
+ * allowlist, same note policy (absent or null means no note, over-length is
+ * truncated BEFORE the content filter's ReDoS-prone regexes run, blocked
+ * content is CONTENT_BLOCKED).
+ */
+export function parseReportBody(body: Record<string, unknown>): ParsedReportBody {
+  const { reason, note } = body;
+  if (!isString(reason) || !(COMMUNITY_REPORT_REASONS as readonly string[]).includes(reason)) {
+    return {
+      ok: false,
+      status: 400,
+      code: 'VALIDATION_ERROR',
+      message: `reason must be one of: ${COMMUNITY_REPORT_REASONS.join(', ')}`,
+    };
+  }
+  let parsedNote = '';
+  if (note !== undefined && note !== null) {
+    if (!isString(note)) {
+      return { ok: false, status: 400, code: 'VALIDATION_ERROR', message: 'note must be a string' };
+    }
+    parsedNote = note.slice(0, COMMUNITY_REPORT_NOTE_MAX_LENGTH);
+    if (parsedNote !== '' && !checkText(parsedNote).passed) {
+      return {
+        ok: false,
+        status: 400,
+        code: 'CONTENT_BLOCKED',
+        message: 'note contains prohibited content',
+      };
+    }
+  }
+  return { ok: true, reason: reason as CommunityReportReason, note: parsedNote };
+}
 
 /**
  * Description-required publish policy toggle. Default ON; set

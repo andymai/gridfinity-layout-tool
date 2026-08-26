@@ -19,7 +19,7 @@ import { logger } from '../lib/logger.js';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { readSession, requireSession } from '../lib/session.js';
 import type { SessionRecord } from '../lib/session.js';
-import { checkText, REPORT_THRESHOLD } from '../lib/contentFilter.js';
+import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
 import {
   ErrorCode,
   methodNotAllowed,
@@ -40,11 +40,7 @@ import {
   communityPrintedKey,
   communityPrintsKey,
 } from '../lib/redisKeys.js';
-import {
-  COMMUNITY_REPORT_NOTE_MAX_LENGTH,
-  COMMUNITY_REPORT_REASONS,
-} from '../lib/communityValidation.js';
-import type { CommunityReportReason } from '../lib/communityValidation.js';
+import { parseReportBody } from '../lib/communityValidation.js';
 import {
   communityPrintsEnabled,
   hasPrintSubstance,
@@ -627,35 +623,12 @@ async function handleReport(
     return;
   }
 
-  if (
-    !isString(body.reason) ||
-    !(COMMUNITY_REPORT_REASONS as readonly string[]).includes(body.reason)
-  ) {
-    sendError(
-      res,
-      400,
-      ErrorCode.VALIDATION_ERROR,
-      `reason must be one of: ${COMMUNITY_REPORT_REASONS.join(', ')}`
-    );
+  const parsed = parseReportBody(body);
+  if (!parsed.ok) {
+    sendError(res, parsed.status, parsed.code, parsed.message);
     return;
   }
-  const reason = body.reason as CommunityReportReason;
-
-  if (body.note !== undefined && body.note !== null) {
-    if (!isString(body.note) || body.note.length > COMMUNITY_REPORT_NOTE_MAX_LENGTH) {
-      sendError(
-        res,
-        400,
-        ErrorCode.VALIDATION_ERROR,
-        `note must be at most ${COMMUNITY_REPORT_NOTE_MAX_LENGTH} characters`
-      );
-      return;
-    }
-    if (body.note !== '' && !checkText(body.note).passed) {
-      sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'note contains prohibited content');
-      return;
-    }
-  }
+  const { reason } = parsed;
 
   const existing = await readCommunityPrint(redis, designId, targetPublicId);
   if (existing === null || existing.status !== 'live') {

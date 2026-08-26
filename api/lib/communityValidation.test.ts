@@ -24,6 +24,7 @@ import {
   communityRequiresDescription,
   deriveCommunityTechniques,
   parseCommunityLineage,
+  parseReportBody,
   validateCommunityPublish,
 } from './communityValidation.js';
 
@@ -513,6 +514,49 @@ describe('parseCommunityLineage', () => {
 
   it('rejects blocked content in snapshot names', () => {
     expect(parseCommunityLineage({ ...LINEAGE, parentName: 'cool <script name' }).ok).toBe(false);
+  });
+});
+
+describe('parseReportBody', () => {
+  it('accepts a valid reason with no note', () => {
+    expect(parseReportBody({ reason: 'spam' })).toEqual({ ok: true, reason: 'spam', note: '' });
+  });
+
+  it('treats a null note as absent', () => {
+    expect(parseReportBody({ reason: 'spam', note: null })).toEqual({
+      ok: true,
+      reason: 'spam',
+      note: '',
+    });
+  });
+
+  it('rejects an unknown reason with the enumerating message', () => {
+    const parsed = parseReportBody({ reason: 'other' });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) return;
+    expect(parsed.status).toBe(400);
+    expect(parsed.message).toContain('inappropriate');
+  });
+
+  it('rejects a non-string note', () => {
+    expect(parseReportBody({ reason: 'spam', note: 42 }).ok).toBe(false);
+  });
+
+  it('truncates an over-length note instead of rejecting it', () => {
+    const parsed = parseReportBody({
+      reason: 'spam',
+      note: 'the lid does not fit the bin. '.repeat(30),
+    });
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.note).toHaveLength(COMMUNITY_REPORT_NOTE_MAX_LENGTH);
+  });
+
+  it('returns CONTENT_BLOCKED for a filtered note', () => {
+    const parsed = parseReportBody({ reason: 'spam', note: 'visit https://spam.example now' });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) return;
+    expect(parsed.code).toBe('CONTENT_BLOCKED');
   });
 });
 
