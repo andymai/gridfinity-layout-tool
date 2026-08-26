@@ -15,12 +15,12 @@ import {
 import { validateFeatureColors } from './designerValidation.js';
 import { checkText } from './contentFilter.js';
 
-const MAX_ASSEMBLY_PARTS = 256;
-const MAX_ASSEMBLY_DEPTH = 8;
+export const MAX_ASSEMBLY_PARTS = 256;
+export const MAX_ASSEMBLY_DEPTH = 8;
 const MAX_PATH_POINTS = 2000;
 const MAX_OUTLINE_POINTS = 5000;
 
-const PART_TYPES = new Set([
+export const PART_TYPES = new Set([
   'post',
   'fin',
   'block',

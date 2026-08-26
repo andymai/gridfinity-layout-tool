@@ -53,9 +53,9 @@ export interface CommunityDesignMetrics {
  * src/); the pitch/height defaults and tolerance mirror `GRIDFINITY_SPEC` in
  * `src/shared/printSettings/gridfinityGeometry.ts`. Update both sides together.
  */
-const DEFAULT_GRID_UNIT_MM = 42;
-const DEFAULT_HEIGHT_UNIT_MM = 7;
-const BIN_TOLERANCE_MM = 0.5;
+export const DEFAULT_GRID_UNIT_MM = 42;
+export const DEFAULT_HEIGHT_UNIT_MM = 7;
+export const BIN_TOLERANCE_MM = 0.5;
 
 /**
  * Anonymous dedupe window for the open/export counters. Dedupe sets are keyed

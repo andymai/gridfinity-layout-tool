@@ -62,7 +62,7 @@ export function sanitizeTags(input: unknown): string[] {
 // `src/features/bin-designer/types/index.ts` — when a value is added there
 // it must be added here too, otherwise cloud sync PUTs from up-to-date
 // clients will be rejected with a 400.
-const VALID_BIN_STYLES = ['standard', 'slotted', 'solid'] as const;
+export const VALID_BIN_STYLES = ['standard', 'slotted', 'solid'] as const;
 const VALID_BASE_STYLES = [
   'standard',
   'magnet',
@@ -74,16 +74,16 @@ const VALID_BASE_STYLES = [
   'lid',
 ] as const;
 // Mirrors `FOOT_LATTICES` in `src/features/bin-designer/types/base.ts`.
-const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
+export const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
 // Mirrors `LIGHTWEIGHT_MODES` in the same file.
-const VALID_LIGHTWEIGHT_MODES = ['interior', 'underside'] as const;
+export const VALID_LIGHTWEIGHT_MODES = ['interior', 'underside'] as const;
 // Mirrors `FEET_MODES` and `DETACHABLE_PIN_DIAMETERS_MM` in the same file.
-const VALID_FEET_MODES = ['integral', 'detachable'] as const;
-const VALID_PIN_DIAMETERS = [2.7, 2.8, 2.9, 3] as const;
+export const VALID_FEET_MODES = ['integral', 'detachable'] as const;
+export const VALID_PIN_DIAMETERS = [2.7, 2.8, 2.9, 3] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 // Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts`.
 const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
-const VALID_LABEL_SOCKET_STYLES = ['clickIn', 'slideChannel'] as const;
+export const VALID_LABEL_SOCKET_STYLES = ['clickIn', 'slideChannel'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 
@@ -93,7 +93,7 @@ const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
  * blend the generator has to build, so an unbounded one is a crafted payload
  * that turns into an unbounded boolean.
  */
-const MAX_CUTOUT_CORNER_RADIUS = 25;
+export const MAX_CUTOUT_CORNER_RADIUS = 25;
 // Mirrors `LidAttachment` in `src/features/bin-designer/types/lid.ts`.
 const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
 /**
@@ -104,22 +104,22 @@ const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
  * channel, which is not a thing an underside can be, so the two lists are
  * deliberately separate rather than one list the tray path also widens.
  */
-const VALID_LID_ATTACHMENTS_TOP = [...VALID_LID_ATTACHMENTS, 'slide', 'hinge'] as const;
-const VALID_LID_SLIDE_PLACEMENTS = ['recessed', 'flush'] as const;
-const VALID_LID_SLIDE_PULLS = ['none', 'notch', 'tab'] as const;
+export const VALID_LID_ATTACHMENTS_TOP = [...VALID_LID_ATTACHMENTS, 'slide', 'hinge'] as const;
+export const VALID_LID_SLIDE_PLACEMENTS = ['recessed', 'flush'] as const;
+export const VALID_LID_SLIDE_PULLS = ['none', 'notch', 'tab'] as const;
 /** Wall sides `lid.slide.entrySide` may name. Mirrors `LID_RAIL_SIDES`. */
-const VALID_LID_RAIL_SIDES = ['front', 'back', 'left', 'right'] as const;
+export const VALID_LID_RAIL_SIDES = ['front', 'back', 'left', 'right'] as const;
 const ALLOWED_LID_SLIDE_KEYS = new Set(['placement', 'entrySide', 'clearanceMm', 'pull', 'detent']);
 /** Mirrors `LidHingeCatch` in the same module. */
-const VALID_LID_HINGE_CATCHES = ['none', 'detent', 'magnets'] as const;
+export const VALID_LID_HINGE_CATCHES = ['none', 'detent', 'magnets'] as const;
 const ALLOWED_LID_HINGE_KEYS = new Set(['side', 'catchMode', 'fitClearanceMm']);
 // Mirrors `LidGripMode` / `LidGripConfig` / `LidGripSides` in the same
 // module.
-const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
+export const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
 const ALLOWED_LID_GRIP_KEYS = new Set(['mode', 'sides', 'coverage', 'heightMm', 'binDip']);
 const ALLOWED_LID_GRIP_SIDE_KEYS = new Set(['front', 'back', 'left', 'right']);
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
-const VALID_TEXT_FONTS = [
+export const VALID_TEXT_FONTS = [
   'atkinson',
   'atkinson-bold',
   'jetbrains-mono',
@@ -129,7 +129,7 @@ const VALID_TEXT_FONTS = [
   'allerta-stencil',
 ] as const;
 const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
-const VALID_TEXT_ANCHORS = [
+export const VALID_TEXT_ANCHORS = [
   'top-left',
   'top',
   'top-right',
@@ -141,16 +141,16 @@ const VALID_TEXT_ANCHORS = [
   'bottom-right',
 ] as const;
 const VALID_TEXT_SIZE_MODES = ['auto', 'fixed'] as const;
-const VALID_TEXT_CASES = ['as-typed', 'upper', 'title'] as const;
-const VALID_TEXT_CUT_PROFILES = ['straight', 'drafted'] as const;
+export const VALID_TEXT_CASES = ['as-typed', 'upper', 'title'] as const;
+export const VALID_TEXT_CUT_PROFILES = ['straight', 'drafted'] as const;
 const VALID_CUTOUT_COLOR_SCOPES = ['floor', 'floorAndWalls'] as const;
-const VALID_CUTOUT_FILL_REFERENCES = ['rim', 'floor'] as const;
+export const VALID_CUTOUT_FILL_REFERENCES = ['rim', 'floor'] as const;
 
 /**
  * Cross-boundary contract: MUST match `CUTOUT_LABEL_MODES` in
  * `src/features/bin-designer/types/cutout.ts`.
  */
-const VALID_CUTOUT_LABEL_MODES = ['engrave', 'socket'] as const;
+export const VALID_CUTOUT_LABEL_MODES = ['engrave', 'socket'] as const;
 
 /**
  * Top-level keys allowed inside `params` after validation.
@@ -915,8 +915,8 @@ function checkCaption(text: string, label: string): string | null {
   }
   return null;
 }
-const VALID_WALL_TEXT_SIDES = ['front', 'back', 'left', 'right'] as const;
-const VALID_WALL_TEXT_ALIGNS = ['top', 'center', 'bottom'] as const;
+export const VALID_WALL_TEXT_SIDES = ['front', 'back', 'left', 'right'] as const;
+export const VALID_WALL_TEXT_ALIGNS = ['top', 'center', 'bottom'] as const;
 
 /**
  * Exterior-surface text: a lid-top string plus per-wall strings
@@ -1177,7 +1177,7 @@ function isValidColor(v: unknown): boolean {
   return HEX_COLOR_REGEX.test(v) || LEGACY_SLOT_IDS.has(v);
 }
 
-const LIP_CORNERS = ['frontLeft', 'frontRight', 'backRight', 'backLeft'] as const;
+export const LIP_CORNERS = ['frontLeft', 'frontRight', 'backRight', 'backLeft'] as const;
 const ALLOWED_FEATURE_COLOR_KEYS = new Set([
   'enabled',
   'body',
@@ -1198,7 +1198,7 @@ const ALLOWED_ACCENT_BAND_KEYS = new Set<string>(['enabled', 'heightMm', 'color'
 const MAX_ACCENT_BAND_HEIGHT_MM = 1000;
 const ALLOWED_LIP_CORNER_KEYS = new Set<string>(LIP_CORNERS);
 const ALLOWED_LIP_GRID_KEYS = new Set<string>(['corners', 'bands', 'cells']);
-const VALID_LIP_AXIS_COUNTS = new Set<number>([1, 2, 4]);
+export const VALID_LIP_AXIS_COUNTS = new Set<number>([1, 2, 4]);
 const LIP_CELL_KEY_RE = /^lip:(frontLeft|frontRight|backRight|backLeft):[0-3]$/;
 
 /**
