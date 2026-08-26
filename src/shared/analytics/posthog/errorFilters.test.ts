@@ -187,15 +187,17 @@ describe('filterExceptionForPosthog — chunk-load dedupe', () => {
     expect(fingerprintOf(value)).toBe('chunk-load-failed');
   });
 
-  it.each([
-    [
-      'timeout reset',
-      'Error: Worker was reset after a generation timeout',
-      'generation-worker-timeout',
-    ],
-    ['bare reset', 'Error: Worker was reset', 'generation-worker-reset'],
-  ])('pins the %s wording to a stable fingerprint', (_kind, value, expected) => {
-    expect(fingerprintOf(value)).toBe(expected);
+  describe('generation worker resets', () => {
+    it.each([
+      [
+        'timeout reset',
+        'Error: Worker was reset after a generation timeout',
+        'generation-worker-timeout',
+      ],
+      ['bare reset', 'Error: Worker was reset', 'generation-worker-reset'],
+    ])('pins the %s wording to a stable fingerprint', (_kind, value, expected) => {
+      expect(fingerprintOf(value)).toBe(expected);
+    });
   });
 
   it('groups across deploys, whose chunk hash and route differ', () => {
