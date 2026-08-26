@@ -106,7 +106,9 @@ const COUPON_FILLET = 1.4;
 const SEAM_GAP = 5;
 const COL_GAP = 7;
 const ROW_GAP = 10;
-const LABEL_DEPTH = 0.6;
+/** Raised-label height above the coupon top face. Exported so the scenario test
+ *  can assert the emboss actually landed (a textless coupon tops out lower). */
+export const LABEL_DEPTH = 0.6;
 const LABEL_MARGIN = 1.4;
 
 /** Widest offset label, e.g. "+0.05" / "-0.10" (5 glyphs); "0.00" is shorter. */

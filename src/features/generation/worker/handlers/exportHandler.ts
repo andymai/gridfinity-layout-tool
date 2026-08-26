@@ -43,6 +43,7 @@ import {
 } from '@/shared/utils/knifeRestPlan';
 import { exportSlideFitSample } from '../generators/slideFitSample';
 import { exportFitTestSlice } from '../generators/fitTestSlice';
+import { ensureFontsLoaded } from '../wasmInstantiator';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
@@ -144,6 +145,12 @@ export async function handleExportConnectorSample(
   message: ExportConnectorSampleMessage
 ): Promise<void> {
   const payload = message.payload;
+  // The coupon offset labels emboss synchronously and drop silently if their
+  // face isn't registered. INIT loads the eager set, but a font fetch that
+  // failed at worker start is only ever retried by whoever asks for the family
+  // again — so this handler must, or a stale/missing font asset ships a tray of
+  // textless coupons. Mirrors handleGenerate.
+  await ensureFontsLoaded(['jetbrains-mono']);
   await runExport(
     payload.requestId,
     'BASEPLATE_EXPORT_RESULT',
@@ -186,6 +193,9 @@ export async function handleExportLabelFitSample(
   message: ExportLabelFitSampleMessage
 ): Promise<void> {
   const payload = message.payload;
+  // Same as handleExportConnectorSample: the coupon offset labels need their
+  // face registered or they drop silently.
+  await ensureFontsLoaded(['jetbrains-mono']);
   await runExport(
     payload.requestId,
     'BASEPLATE_EXPORT_RESULT',

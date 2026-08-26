@@ -15,12 +15,19 @@ import { measureVolume } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { GRIDFINITY } from '@/shared/constants/bin';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { buildConnectorSampleTray, exportConnectorSample } from './connectorSample';
+import { buildConnectorSampleTray, exportConnectorSample, LABEL_DEPTH } from './connectorSample';
 
 beforeAll(async () => {
   await initBrepjs();
-}, 30000);
+  // The coupon offset labels emboss with jetbrains-mono; without it registered,
+  // buildTextSolid returns null and every coupon ships textless but still
+  // watertight — so the label assertion below is meaningless unless the font is
+  // loaded the way the worker loads it at init (issue #3945).
+  await loadTestFonts(['jetbrains-mono']);
+}, 60000);
 
 const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 2,
@@ -126,8 +133,8 @@ describe('connectorSample — fit-sample tray', () => {
     TEST_TIMEOUT_MS
   );
 
-  it.each([undefined, 'puzzle'] as const)(
-    'exports a watertight, bed-resting STL tray (%s)',
+  it.each([undefined, 'puzzle', 'dovetailKey', 'snapClip'] as const)(
+    'exports a watertight, bed-resting, labeled STL tray (%s)',
     async (style) => {
       const { data, fileName } = await exportConnectorSample(
         defaults({ connectorStyle: style }),
@@ -141,6 +148,13 @@ describe('connectorSample — fit-sample tray', () => {
       expect(stats.boundaryEdges, 'boundary edges').toBe(0);
       // Whole tray rests on the bed.
       expect(stats.minZ, 'rests on bed').toBeCloseTo(0, 1);
+      // The offset labels emboss above the coupon top face (couponHeight =
+      // SOCKET_HEIGHT with no magnet holes). A textless tray tops out at
+      // SOCKET_HEIGHT; the raised label lifts maxZ by LABEL_DEPTH. Guards issue
+      // #3945: watertightness alone passes even when every label silently drops.
+      expect(stats.maxZ, 'coupons carry raised labels').toBeGreaterThan(
+        GRIDFINITY.SOCKET_HEIGHT + LABEL_DEPTH / 2
+      );
     },
     TEST_TIMEOUT_MS
   );
