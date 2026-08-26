@@ -52,14 +52,6 @@ describe('FeatureCard', () => {
     expect(screen.getByText('Status: experimental')).toBeInTheDocument();
   });
 
-  it('shows coming soon badge for coming soon features', () => {
-    const comingSoonFeature = { ...baseFeature, comingSoon: true };
-    render(<FeatureCard feature={comingSoonFeature} isEnabled={false} onToggle={mockToggle} />);
-
-    expect(screen.getByText('labs.comingSoon')).toBeInTheDocument();
-    expect(screen.getByText('labs.inDevelopment')).toBeInTheDocument();
-  });
-
   it('renders toggle switch for experimental features', () => {
     render(<FeatureCard feature={baseFeature} isEnabled={false} onToggle={mockToggle} />);
 
@@ -105,37 +97,11 @@ describe('FeatureCard', () => {
     expect(screen.getByText('This is dangerous')).toBeInTheDocument();
   });
 
-  it('shows learn more link when URL is provided', () => {
-    const featureWithLink = { ...baseFeature, learnMoreUrl: 'https://example.com' };
-    render(<FeatureCard feature={featureWithLink} isEnabled={false} onToggle={mockToggle} />);
-
-    const link = screen.getByText('labs.learnMore');
-    expect(link).toBeInTheDocument();
-    expect(link.closest('a')).toHaveAttribute('href', 'https://example.com');
-  });
-
   it('shows always on indicator for graduated features', () => {
     const graduatedFeature = { ...baseFeature, status: 'graduated' as const };
     render(<FeatureCard feature={graduatedFeature} isEnabled={true} onToggle={mockToggle} />);
 
     expect(screen.getByText('labs.alwaysOn')).toBeInTheDocument();
     expect(screen.queryByRole('switch')).not.toBeInTheDocument();
-  });
-
-  it('does not show toggle for deprecated features', () => {
-    const deprecatedFeature = { ...baseFeature, status: 'deprecated' as const };
-    render(<FeatureCard feature={deprecatedFeature} isEnabled={false} onToggle={mockToggle} />);
-
-    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
-  });
-
-  it('applies reduced opacity for coming soon features', () => {
-    const comingSoonFeature = { ...baseFeature, comingSoon: true };
-    const { container } = render(
-      <FeatureCard feature={comingSoonFeature} isEnabled={false} onToggle={mockToggle} />
-    );
-
-    const article = container.querySelector('article');
-    expect(article).toHaveClass('opacity-75');
   });
 });

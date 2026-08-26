@@ -8,8 +8,7 @@
 export type FeatureStatus =
   | 'experimental' // Active experiment, may have bugs
   | 'preview' // More stable, nearing graduation
-  | 'graduated' // Now available to everyone
-  | 'deprecated'; // Being phased out
+  | 'graduated'; // Now available to everyone
 
 export type RiskLevel = 'low' | 'medium' | 'high';
 
@@ -20,11 +19,9 @@ export interface FeatureFlag {
   status: FeatureStatus;
   risk: RiskLevel;
   warning?: string;
-  learnMoreUrl?: string;
   addedAt: string;
   graduatedAt?: string;
   requiresRefresh: boolean;
-  comingSoon?: boolean;
   /**
    * On for everyone who has not decided otherwise, while the feature stays
    * listed in Labs and stays switchable off. The state a feature sits in

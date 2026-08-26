@@ -3,7 +3,6 @@ import type { FeatureFlag } from './types';
 import {
   FEATURE_FLAGS as FEATURE_FLAGS_LITERAL,
   getFeature,
-  getActiveFeatures,
   getGraduatedFeatures,
   getToggleableFeatures,
   type FeatureId,
@@ -11,10 +10,9 @@ import {
 
 // `FEATURE_FLAGS` is declared without a type annotation, so TS infers the exact
 // literal shape of today's entries. Statuses absent from the current set
-// ('preview', 'deprecated') then look like impossible comparisons, and optional
-// fields no entry happens to set ('comingSoon') look nonexistent — the tests
-// below are deliberately written to survive the flag set changing. Widening to
-// the declared type once here restores that. Production does the same thing via
+// ('preview') then look like impossible comparisons — the tests below are
+// deliberately written to survive the flag set changing. Widening to the
+// declared type once here restores that. Production does the same thing via
 // `as readonly FeatureFlag[]` casts inside features.ts.
 const FEATURE_FLAGS: readonly FeatureFlag[] = FEATURE_FLAGS_LITERAL;
 
@@ -57,7 +55,7 @@ describe('FEATURE_FLAGS', () => {
   });
 
   it('each feature has a valid status', () => {
-    const validStatuses = ['experimental', 'preview', 'graduated', 'deprecated'];
+    const validStatuses = ['experimental', 'preview', 'graduated'];
     FEATURE_FLAGS.forEach((feature) => {
       expect(validStatuses).toContain(feature.status);
     });
@@ -107,14 +105,6 @@ describe('FEATURE_FLAGS', () => {
       }
     });
   });
-
-  it('comingSoon is boolean if present', () => {
-    FEATURE_FLAGS.forEach((feature) => {
-      if (feature.comingSoon !== undefined) {
-        expect(typeof feature.comingSoon).toBe('boolean');
-      }
-    });
-  });
 });
 
 describe('getFeature()', () => {
@@ -153,59 +143,6 @@ describe('getFeature()', () => {
   });
 });
 
-describe('getActiveFeatures()', () => {
-  it('returns array of features', () => {
-    const active = getActiveFeatures();
-    expect(Array.isArray(active)).toBe(true);
-  });
-
-  it('excludes deprecated features', () => {
-    const active = getActiveFeatures();
-    const hasDeprecated = active.some((f) => f.status === 'deprecated');
-    expect(hasDeprecated).toBe(false);
-  });
-
-  it('includes experimental features', () => {
-    const active = getActiveFeatures();
-    const hasExperimental = active.some((f) => f.status === 'experimental');
-    expect(hasExperimental).toBe(true);
-  });
-
-  it('includes preview features', () => {
-    const active = getActiveFeatures();
-    const hasPreview = active.some((f) => f.status === 'preview');
-    if (FEATURE_FLAGS.some((f) => f.status === 'preview')) {
-      expect(hasPreview).toBe(true);
-    }
-  });
-
-  it('includes graduated features', () => {
-    const active = getActiveFeatures();
-    const hasGraduated = active.some((f) => f.status === 'graduated');
-    expect(hasGraduated).toBe(true);
-  });
-
-  it('returns features from FEATURE_FLAGS only', () => {
-    const active = getActiveFeatures();
-    active.forEach((feature) => {
-      expect(FEATURE_FLAGS).toContain(feature);
-    });
-  });
-
-  it('has no duplicates', () => {
-    const active = getActiveFeatures();
-    const ids = active.map((f) => f.id);
-    const uniqueIds = new Set(ids);
-    expect(uniqueIds.size).toBe(ids.length);
-  });
-
-  it('returns all non-deprecated features', () => {
-    const active = getActiveFeatures();
-    const expectedCount = FEATURE_FLAGS.filter((f) => f.status !== 'deprecated').length;
-    expect(active.length).toBe(expectedCount);
-  });
-});
-
 describe('getGraduatedFeatures()', () => {
   it('returns array of features', () => {
     const graduated = getGraduatedFeatures();
@@ -237,12 +174,6 @@ describe('getGraduatedFeatures()', () => {
     const graduated = getGraduatedFeatures();
     const hasPreview = graduated.some((f) => f.status === 'preview');
     expect(hasPreview).toBe(false);
-  });
-
-  it('excludes deprecated features', () => {
-    const graduated = getGraduatedFeatures();
-    const hasDeprecated = graduated.some((f) => f.status === 'deprecated');
-    expect(hasDeprecated).toBe(false);
   });
 
   it('returns features from FEATURE_FLAGS only', () => {
@@ -292,12 +223,6 @@ describe('getToggleableFeatures()', () => {
     expect(hasGraduated).toBe(false);
   });
 
-  it('excludes deprecated features', () => {
-    const toggleable = getToggleableFeatures();
-    const hasDeprecated = toggleable.some((f) => f.status === 'deprecated');
-    expect(hasDeprecated).toBe(false);
-  });
-
   it('includes collaborative_editing if it is experimental', () => {
     const toggleable = getToggleableFeatures();
     const hasCollaborative = toggleable.some((f) => f.id === 'collaborative_editing');
@@ -342,22 +267,14 @@ describe('FeatureId type', () => {
 });
 
 describe('Feature filtering consistency', () => {
-  it('all active features are either experimental, preview, or graduated', () => {
-    const active = getActiveFeatures();
-    active.forEach((feature) => {
-      expect(['experimental', 'preview', 'graduated']).toContain(feature.status);
-    });
-  });
-
-  it('graduated + toggleable covers all active features', () => {
+  it('graduated + toggleable covers every feature', () => {
     const graduated = getGraduatedFeatures();
     const toggleable = getToggleableFeatures();
-    const active = getActiveFeatures();
 
     const combined = new Set([...graduated, ...toggleable].map((f) => f.id));
-    const activeIds = new Set(active.map((f) => f.id));
+    const allIds = new Set(FEATURE_FLAGS.map((f) => f.id));
 
-    expect(combined).toEqual(activeIds);
+    expect(combined).toEqual(allIds);
   });
 
   it('graduated and toggleable do not overlap', () => {
@@ -369,18 +286,5 @@ describe('Feature filtering consistency', () => {
 
     const intersection = new Set([...graduatedIds].filter((id) => toggleableIds.has(id)));
     expect(intersection.size).toBe(0);
-  });
-
-  it('all features are either active or deprecated', () => {
-    const active = getActiveFeatures();
-    const activeIds = new Set(active.map((f) => f.id));
-
-    FEATURE_FLAGS.forEach((feature) => {
-      if (feature.status === 'deprecated') {
-        expect(activeIds.has(feature.id)).toBe(false);
-      } else {
-        expect(activeIds.has(feature.id)).toBe(true);
-      }
-    });
   });
 });

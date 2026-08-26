@@ -17,10 +17,6 @@ const STATUS_CONFIG: Record<FeatureStatus, { label: string; className: string }>
     label: 'Shipped',
     className: 'bg-success-muted text-success',
   },
-  deprecated: {
-    label: 'Retiring',
-    className: 'bg-surface-hover text-content-tertiary',
-  },
 };
 
 export function FeatureStatusBadge({ status }: FeatureStatusBadgeProps) {

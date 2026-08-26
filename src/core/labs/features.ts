@@ -258,10 +258,6 @@ export function getFeature(id: string): FeatureFlag | undefined {
   return FEATURE_FLAGS.find((f) => f.id === id);
 }
 
-export function getActiveFeatures(): FeatureFlag[] {
-  return (FEATURE_FLAGS as readonly FeatureFlag[]).filter((f) => f.status !== 'deprecated');
-}
-
 export function getGraduatedFeatures(): FeatureFlag[] {
   return (FEATURE_FLAGS as readonly FeatureFlag[]).filter((f) => f.status === 'graduated');
 }
