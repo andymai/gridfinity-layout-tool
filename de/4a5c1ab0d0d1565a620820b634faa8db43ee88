@@ -1,0 +1,20 @@
+vite.config.ts
+  s_8c2c4457d965c0::t_7395a89cdc425c 453
+  s_8c2c4457d965c0::t_d07796c39be552 487
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "de4a5c1ab0d0d1565a620820b634faa8db43ee88",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
