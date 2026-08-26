@@ -29,7 +29,7 @@ import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
-import { getActiveBridge, bridgeManager } from '@/shared/generation/bridge';
+import { getActiveBridge, getActiveKernel, bridgeManager } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
@@ -263,6 +263,10 @@ export function useExport(): UseExportReturn {
       captureException(error, {
         source: 'bin_export',
         export_format: format,
+        // Which kernel was active when the export failed. A worker-reset
+        // timeout terminates the worker, so read the durable main-thread
+        // selection rather than the dead worker's INIT_READY report.
+        kernel: getActiveKernel(),
         is_split_export: isSplit,
         bin_width: params.width,
         bin_depth: params.depth,
