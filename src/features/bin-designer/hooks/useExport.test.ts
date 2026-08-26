@@ -26,6 +26,7 @@ vi.mock('@/shared/generation/bridge', () => ({
     exportCombined: mockExportCombined,
     exportSplitBin: mockExportSplitBin,
   }),
+  getActiveKernel: () => 'occt-wasm',
   bridgeManager: {
     get engineReady() {
       return true;

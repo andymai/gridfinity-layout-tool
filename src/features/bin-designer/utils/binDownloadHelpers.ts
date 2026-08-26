@@ -12,6 +12,7 @@ import { export3MF, export3MFMultiObject } from '@/shared/generation/export';
 import { captureException } from '@/shared/analytics/posthog';
 import {
   getActiveBridge,
+  getActiveKernel,
   workerPoolManager,
   type SplitExportResult,
 } from '@/shared/generation/bridge';
@@ -629,6 +630,7 @@ export async function runSplitBinExport(
     captureException(poolErr instanceof Error ? poolErr : new Error(String(poolErr)), {
       source: 'bin_export_pool_fallback',
       export_format: format,
+      kernel: getActiveKernel(),
     });
     if (poolAcquired) {
       workerPoolManager.release();
