@@ -106,8 +106,8 @@ const COUPON_FILLET = 1.4;
 const SEAM_GAP = 5;
 const COL_GAP = 7;
 const ROW_GAP = 10;
-/** Raised-label height above the coupon top face. Exported so the scenario test
- *  can assert the emboss actually landed (a textless coupon tops out lower). */
+/** Exported so the scenario test can tell a labeled coupon (top face raised by
+ *  this) from a textless one, which tops out at the bare coupon height. */
 export const LABEL_DEPTH = 0.6;
 const LABEL_MARGIN = 1.4;
 

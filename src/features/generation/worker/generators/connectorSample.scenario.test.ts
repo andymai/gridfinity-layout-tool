@@ -22,10 +22,9 @@ import { buildConnectorSampleTray, exportConnectorSample, LABEL_DEPTH } from './
 
 beforeAll(async () => {
   await initBrepjs();
-  // The coupon offset labels emboss with jetbrains-mono; without it registered,
-  // buildTextSolid returns null and every coupon ships textless but still
-  // watertight — so the label assertion below is meaningless unless the font is
-  // loaded the way the worker loads it at init (issue #3945).
+  // Without jetbrains-mono registered, buildTextSolid returns null and coupons
+  // ship textless but still watertight — so the label assertion below would pass
+  // on unlabeled output. Register it the way the worker does at init.
   await loadTestFonts(['jetbrains-mono']);
 }, 60000);
 
@@ -148,10 +147,9 @@ describe('connectorSample — fit-sample tray', () => {
       expect(stats.boundaryEdges, 'boundary edges').toBe(0);
       // Whole tray rests on the bed.
       expect(stats.minZ, 'rests on bed').toBeCloseTo(0, 1);
-      // The offset labels emboss above the coupon top face (couponHeight =
-      // SOCKET_HEIGHT with no magnet holes). A textless tray tops out at
-      // SOCKET_HEIGHT; the raised label lifts maxZ by LABEL_DEPTH. Guards issue
-      // #3945: watertightness alone passes even when every label silently drops.
+      // Watertightness alone passes even when every label silently drops, so
+      // assert the emboss landed: a textless tray tops out at couponHeight
+      // (SOCKET_HEIGHT, no magnet holes); a labeled one is LABEL_DEPTH higher.
       expect(stats.maxZ, 'coupons carry raised labels').toBeGreaterThan(
         GRIDFINITY.SOCKET_HEIGHT + LABEL_DEPTH / 2
       );

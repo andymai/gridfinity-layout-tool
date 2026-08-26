@@ -145,11 +145,9 @@ export async function handleExportConnectorSample(
   message: ExportConnectorSampleMessage
 ): Promise<void> {
   const payload = message.payload;
-  // The coupon offset labels emboss synchronously and drop silently if their
-  // face isn't registered. INIT loads the eager set, but a font fetch that
-  // failed at worker start is only ever retried by whoever asks for the family
-  // again — so this handler must, or a stale/missing font asset ships a tray of
-  // textless coupons. Mirrors handleGenerate.
+  // INIT loads the eager set, but a font fetch that failed then is only retried
+  // when the family is next requested — so re-ensure here, or a stale/missing
+  // asset ships a textless tray with no recovery. Mirrors handleGenerate.
   await ensureFontsLoaded(['jetbrains-mono']);
   await runExport(
     payload.requestId,
@@ -193,8 +191,7 @@ export async function handleExportLabelFitSample(
   message: ExportLabelFitSampleMessage
 ): Promise<void> {
   const payload = message.payload;
-  // Same as handleExportConnectorSample: the coupon offset labels need their
-  // face registered or they drop silently.
+  // Re-ensure the label font, same reason as handleExportConnectorSample.
   await ensureFontsLoaded(['jetbrains-mono']);
   await runExport(
     payload.requestId,
