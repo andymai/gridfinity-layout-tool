@@ -1,10 +1,6 @@
-import { ErrorCode, isValidShareId } from '../../lib/shared.js';
+import { ErrorCode, isValidShareId, MAX_NAME_LENGTH } from '../../lib/shared.js';
 import { validateDesignerShare } from '../../lib/designerValidation.js';
-import {
-  validateAssemblyEnvelope,
-  validateAssemblyStructure,
-} from '../../lib/assemblyValidation.js';
-import { CONSTRAINTS } from '../../lib/designerValidationConstants.js';
+import { validateAssemblyContent } from '../../lib/assemblyValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
@@ -12,9 +8,6 @@ export const SCHEMA_VERSION = 1 as const;
 
 /** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.designVersions` in src/core/sync/payloadKey.ts. */
 export const PAYLOAD_KEY = 'designVersion' as const;
-
-/** Mirrors the design-name cap; a version name is shown in the same lists. */
-const MAX_NAME_LENGTH = 100;
 
 /** Mirrors `DesignVersionOrigin` on the client. */
 const ORIGINS = ['manual', 'pre-restore'] as const;
@@ -99,36 +92,13 @@ export default createSyncResourceHandler<DesignVersionEnvelope>({
       MAX_NAME_LENGTH
     );
 
-    // Non-bin kinds carry envelope + structure and no params, exactly as the
-    // design endpoint's assembly branch does.
     if (inner.kind !== undefined && inner.kind !== 'bin') {
       const preBytes = Buffer.byteLength(JSON.stringify(body), 'utf8');
-      if (preBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
-        return {
-          ok: false,
-          status: 400,
-          error: 'design version exceeds the size limit',
-          code: ErrorCode.VALIDATION_ERROR,
-        };
-      }
-      const envelopeCheck = validateAssemblyEnvelope(inner.envelope);
-      if (!envelopeCheck.valid) {
-        return {
-          ok: false,
-          status: 400,
-          error: envelopeCheck.error.message,
-          code: ErrorCode.VALIDATION_ERROR,
-        };
-      }
-      const structureCheck = validateAssemblyStructure(inner.structure);
-      if (!structureCheck.valid) {
-        return {
-          ok: false,
-          status: 400,
-          error: structureCheck.error.message,
-          code: ErrorCode.VALIDATION_ERROR,
-        };
-      }
+      const assembly = validateAssemblyContent(
+        { envelope: inner.envelope, structure: inner.structure },
+        { preBytes, sizeLabel: 'design version' }
+      );
+      if (!assembly.ok) return assembly;
       const stored = {
         designId,
         name,
@@ -138,8 +108,8 @@ export default createSyncResourceHandler<DesignVersionEnvelope>({
         content: {
           name: contentName,
           kind: inner.kind,
-          envelope: inner.envelope,
-          structure: inner.structure,
+          envelope: assembly.envelope,
+          structure: assembly.structure,
         },
       };
       return {

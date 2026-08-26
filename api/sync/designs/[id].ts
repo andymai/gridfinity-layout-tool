@@ -1,10 +1,6 @@
-import { ErrorCode, isValidShareId } from '../../lib/shared.js';
+import { ErrorCode, isValidShareId, MAX_NAME_LENGTH } from '../../lib/shared.js';
 import { validateDesignerShare, sanitizeTags } from '../../lib/designerValidation.js';
-import {
-  validateAssemblyEnvelope,
-  validateAssemblyStructure,
-} from '../../lib/assemblyValidation.js';
-import { CONSTRAINTS } from '../../lib/designerValidationConstants.js';
+import { validateAssemblyContent } from '../../lib/assemblyValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
@@ -12,9 +8,6 @@ export const SCHEMA_VERSION = 1 as const;
 
 /** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.designs` in src/core/sync/payloadKey.ts. */
 export const PAYLOAD_KEY = 'design' as const;
-
-/** Max length for a user-visible design name (mirrors `inserts[].label`). */
-const MAX_NAME_LENGTH = 100;
 
 /** Generous cap for lineage ids (community ids are 12 chars today). */
 const MAX_LINEAGE_ID_LENGTH = 64;
@@ -329,37 +322,16 @@ export default createSyncResourceHandler<DesignEnvelope>({
     // drifts from what the blob holds.
     if (unwrapped.kind === 'assembly') {
       const preBytes = Buffer.byteLength(JSON.stringify({ ...unwrapped, name, tags }), 'utf8');
-      if (preBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
-        return {
-          ok: false,
-          status: 400,
-          error: 'assembly design exceeds the size limit',
-          code: ErrorCode.VALIDATION_ERROR,
-        };
-      }
-      const envelopeCheck = validateAssemblyEnvelope(unwrapped.envelope);
-      if (!envelopeCheck.valid) {
-        return {
-          ok: false,
-          status: 400,
-          error: envelopeCheck.error.message,
-          code: ErrorCode.VALIDATION_ERROR,
-        };
-      }
-      const structureCheck = validateAssemblyStructure(unwrapped.structure);
-      if (!structureCheck.valid) {
-        return {
-          ok: false,
-          status: 400,
-          error: structureCheck.error.message,
-          code: ErrorCode.VALIDATION_ERROR,
-        };
-      }
+      const assembly = validateAssemblyContent(
+        { envelope: unwrapped.envelope, structure: unwrapped.structure },
+        { preBytes, sizeLabel: 'assembly design' }
+      );
+      if (!assembly.ok) return assembly;
       const stored = {
         name,
         kind: 'assembly' as const,
-        envelope: unwrapped.envelope,
-        structure: unwrapped.structure,
+        envelope: assembly.envelope,
+        structure: assembly.structure,
         tags,
         ...(publishedId !== undefined ? { publishedId } : {}),
         ...(lineage !== undefined ? { lineage } : {}),

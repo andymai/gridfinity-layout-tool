@@ -10,6 +10,8 @@ import type { VercelResponse } from '@vercel/node';
  * - Shared type definitions
  */
 
+export const MAX_NAME_LENGTH = 100;
+
 /**
  * Validate a layout/share ID format.
  * Supports multiple formats for backwards compatibility:

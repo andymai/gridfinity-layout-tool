@@ -14,6 +14,8 @@ import {
 } from './validationUtils.js';
 import { validateFeatureColors } from './designerValidation.js';
 import { checkText } from './contentFilter.js';
+import { CONSTRAINTS } from './designerValidationConstants.js';
+import { ErrorCode, type ErrorCodeType } from './shared.js';
 
 const MAX_ASSEMBLY_PARTS = 256;
 const MAX_ASSEMBLY_DEPTH = 8;
@@ -533,4 +535,35 @@ export function sanitizeAssemblyContent(
       SOCKET_HEIGHT_MM + (flatRise - SOCKET_HEIGHT_MM) * Math.cos(rad) + along * Math.sin(rad);
   }
   return { envelope, structure, riseMm };
+}
+
+export type AssemblyContentResult =
+  | { ok: true; envelope: unknown; structure: unknown }
+  | { ok: false; status: number; error: string; code: ErrorCodeType };
+
+const rejectContent = (error: string): AssemblyContentResult => ({
+  ok: false,
+  status: 400,
+  error,
+  code: ErrorCode.VALIDATION_ERROR,
+});
+
+/**
+ * `preBytes` is the caller's to measure: the cap guards CPU before the
+ * validators walk the tree, and each endpoint wraps the content differently
+ * (a design counts its sanitized name and tags, a version counts its raw
+ * body), so no single measurement fits both.
+ */
+export function validateAssemblyContent(
+  content: { envelope: unknown; structure: unknown },
+  options: { preBytes: number; sizeLabel: string }
+): AssemblyContentResult {
+  if (options.preBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
+    return rejectContent(`${options.sizeLabel} exceeds the size limit`);
+  }
+  const envelopeCheck = validateAssemblyEnvelope(content.envelope);
+  if (!envelopeCheck.valid) return rejectContent(envelopeCheck.error.message);
+  const structureCheck = validateAssemblyStructure(content.structure);
+  if (!structureCheck.valid) return rejectContent(structureCheck.error.message);
+  return { ok: true, envelope: content.envelope, structure: content.structure };
 }

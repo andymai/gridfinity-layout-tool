@@ -1,4 +1,4 @@
-import { ErrorCode, isValidShareId } from '../../lib/shared.js';
+import { ErrorCode, isValidShareId, MAX_NAME_LENGTH } from '../../lib/shared.js';
 import { validateBaseplateShare } from '../../lib/baseplateValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
 import { createSyncResourceHandler } from '../lib/resourceHandler.js';
@@ -7,9 +7,6 @@ export const SCHEMA_VERSION = 1 as const;
 
 /** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.baseplates` in src/core/sync/payloadKey.ts. */
 export const PAYLOAD_KEY = 'baseplate' as const;
-
-/** Max length for a user-visible baseplate name (mirrors the designs cap). */
-const MAX_NAME_LENGTH = 100;
 
 interface BaseplateEnvelope {
   /** `{ name, params }` wrapper; readers parse with `unwrapBaseplatePayload`. */
