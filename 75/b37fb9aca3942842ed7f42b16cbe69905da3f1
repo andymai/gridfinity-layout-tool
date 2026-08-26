@@ -1,0 +1,20 @@
+src/shared/analytics/useMLTracking.test.ts
+  s_77d0b52ee27f58::t_f1a0feeefcd179 18-21
+  s_77d0b52ee27f58::t_eaf1e8417850f8 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "75b37fb9aca3942842ed7f42b16cbe69905da3f1",
+  "prompts": {},
+  "sessions": {
+    "s_77d0b52ee27f58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f3aa5fd-a45a-4e7a-bdfe-c39dccf0151f",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
