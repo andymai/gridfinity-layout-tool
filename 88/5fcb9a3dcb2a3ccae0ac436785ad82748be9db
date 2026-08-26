@@ -1,0 +1,21 @@
+src/features/bin-designer/components/preview/PreviewSkeleton/PreviewSkeleton.tsx
+  s_ccb402c3211118::t_21d17c772be5a2 55-56,107,109,135
+src/features/bin-designer/components/preview/PreviewSkeleton/PreviewSkeleton.test.tsx
+  s_ccb402c3211118::t_d0cea7565fc512 37-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "885fcb9a3dcb2a3ccae0ac436785ad82748be9db",
+  "prompts": {},
+  "sessions": {
+    "s_ccb402c3211118": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "35dbe00a-0e58-4d32-8672-1898613a7a73",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
