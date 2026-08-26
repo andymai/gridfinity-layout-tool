@@ -1,0 +1,51 @@
+src/core/sync/outbox.ts
+  s_8c2c4457d965c0::t_d7c3b49e21f871 104,124,151,168,200,221,231
+  s_8c2c4457d965c0::t_2f08e7e9ae022d 61-70
+  s_8c2c4457d965c0::t_191df8a4084be9 241
+  s_8c2c4457d965c0::t_098199a4ba54be 238
+  s_8c2c4457d965c0::t_c30c5e9ce3c805 18
+src/core/cqrs/store/eventStore.ts
+  s_8c2c4457d965c0::t_4e02bf102b09d7 24-32,34-35
+  s_8c2c4457d965c0::t_b17ba01d8f0e21 10
+  s_8c2c4457d965c0::t_55a0b529f1bcb5 69,76-77
+  s_8c2c4457d965c0::t_844b12c167db35 41
+src/features/bin-designer/storage/designerDb.ts
+  s_8c2c4457d965c0::t_b09323939d16e9 24-37,39-40,42-43,50
+  s_8c2c4457d965c0::t_a2704838d5eb21 10-11
+src/shared/generation/meshPersistence.ts
+  s_8c2c4457d965c0::t_4fd300d2cf8746 128-140
+  s_8c2c4457d965c0::t_ba48d881b71544 20
+  s_8c2c4457d965c0::t_071df8818b9edb 279
+  s_8c2c4457d965c0::t_ea2875fd417d05 206,238
+src/features/baseplate/storage/BaseplateStorage.ts
+  s_8c2c4457d965c0::t_9b08aef3be0b69 299
+  s_8c2c4457d965c0::t_a6938e521333b0 62,107,135,179
+  s_8c2c4457d965c0::t_4f71f47acb9bd2 9
+  s_8c2c4457d965c0::t_835012015f37d5 35-41,43-44
+src/core/storage/backends/openSingleton.ts
+  s_8c2c4457d965c0::t_2d41597b2e744d 1-51,54-62,64-105
+  s_8c2c4457d965c0::t_e33960dc4fd2f8 63
+  s_8c2c4457d965c0::t_ee20a105a8bb45 52-53
+src/features/baseplate/utils/exportCache.ts
+  s_8c2c4457d965c0::t_46f70704808fc9 24,26
+  s_8c2c4457d965c0::t_e01faa1fcf624f 109,148,190
+  s_8c2c4457d965c0::t_875986c8ecb31e 60-69
+src/core/storage/backends/openSingleton.test.ts
+  s_8c2c4457d965c0::t_f9702c86297df9 1-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "ae88d27bf6a7e8e15bf05a69f9708f32bb87147d",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
