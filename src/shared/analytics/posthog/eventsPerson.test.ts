@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AnalyticsData } from './identity';
 
 const setPersonProperties = vi.fn();
 
@@ -11,21 +12,32 @@ vi.mock('./trackEvent', () => ({
   getDeviceType: () => 'desktop',
 }));
 
+// Stateful stand-in for the persisted analytics record: the dedupe guard
+// lives in this record, so the mock must behave like storage (writes are
+// visible to later loads), not return a fresh object per call.
+let record: AnalyticsData;
+
 vi.mock('./identity', () => ({
-  loadAnalyticsData: () => ({ featureFlags: {} }),
-  saveAnalyticsData: vi.fn(),
+  loadAnalyticsData: () => record,
+  saveAnalyticsData: (data: AnalyticsData) => {
+    record = data;
+  },
   getFirstSeenDate: () => '2026-01-01T00:00:00.000Z',
 }));
 
-import {
-  computeEngagementTier,
-  updatePersonProperties,
-  resetPersonPropertyCache,
-} from './eventsPerson';
+import { computeEngagementTier, updatePersonProperties } from './eventsPerson';
 
 beforeEach(() => {
   setPersonProperties.mockReset();
-  resetPersonPropertyCache();
+  record = {
+    userId: 'u1',
+    firstSeen: '2026-01-01T00:00:00.000Z',
+    featureFlags: {},
+    milestones: {},
+    designsCreated: 0,
+    lastSetPayload: '',
+    onceTraitsSent: false,
+  };
 });
 
 /** Calls that carry a non-empty first argument are `$set`; the rest are `$set_once`. */
@@ -51,7 +63,7 @@ describe('updatePersonProperties', () => {
     expect(setCalls()).toHaveLength(1);
   });
 
-  it('sends the once-only traits a single time per session', () => {
+  it('sends the once-only traits a single time per browser', () => {
     updatePersonProperties();
     updatePersonProperties();
 
@@ -77,6 +89,25 @@ describe('updatePersonProperties', () => {
     updatePersonProperties();
 
     expect(setCalls()).toHaveLength(2);
+  });
+
+  // Last in the file: vi.resetModules() re-creates the store modules, so any
+  // test running after it would read different store instances than the
+  // statically imported updatePersonProperties above.
+  it('does not resend after a reload when nothing changed', async () => {
+    vi.resetModules();
+    const firstLoad = await import('./eventsPerson');
+    firstLoad.updatePersonProperties();
+    expect(setCalls()).toHaveLength(1);
+    expect(setOnceCalls()).toHaveLength(1);
+
+    // A reload discards module state but keeps the persisted record.
+    vi.resetModules();
+    const secondLoad = await import('./eventsPerson');
+    secondLoad.updatePersonProperties();
+
+    expect(setCalls()).toHaveLength(1);
+    expect(setOnceCalls()).toHaveLength(1);
   });
 });
 

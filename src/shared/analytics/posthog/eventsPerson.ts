@@ -41,25 +41,6 @@ export function computeEngagementTier(
 }
 
 /**
- * Serialized copy of the last `$set` payload we sent, and whether the
- * once-only traits have gone out yet this page session.
- *
- * `setPersonProperties` does not diff: every call emits a billable `$set`
- * event whether or not a value changed. This is called after any significant
- * action, so without a client-side guard a session emits one `$set` per
- * action (plus a second for the `$set_once` block) to restate values that
- * almost never move.
- */
-let lastSetPayload: string | null = null;
-let sentOnceTraits = false;
-
-/** Test seam: clears the memoized person-property payload. */
-export function resetPersonPropertyCache(): void {
-  lastSetPayload = null;
-  sentOnceTraits = false;
-}
-
-/**
  * Update person properties in PostHog.
  * Call this after significant actions to keep user profile up-to-date.
  *
@@ -118,9 +99,17 @@ export function updatePersonProperties(): void {
       primary_device: getDeviceType(),
     };
 
+    // `setPersonProperties` does not diff: every call emits a billable `$set`
+    // whether or not a value changed, and this runs after any significant
+    // action. The guard lives in the persisted analytics record because it
+    // has to survive reloads — held in module memory it reset on every
+    // pageload, which made `$set` volume scale with pageviews (a full resend
+    // plus the `$set_once` block per load) instead of with profile changes.
     const serialized = JSON.stringify(setProps);
-    if (serialized !== lastSetPayload) {
-      lastSetPayload = serialized;
+    let identityChanged = false;
+    if (serialized !== data.lastSetPayload) {
+      data.lastSetPayload = serialized;
+      identityChanged = true;
       posthogInstance.setPersonProperties(setProps);
     }
 
@@ -131,10 +120,11 @@ export function updatePersonProperties(): void {
     // `document.referrer` (which can change between navigations) overwrite
     // the original initial_referrer.
     //
-    // $set_once is server-side idempotent, so resending only costs events.
-    // Once per page session is enough to cover a first-ever visit.
-    if (!sentOnceTraits) {
-      sentOnceTraits = true;
+    // $set_once is server-side idempotent, so resending only costs events;
+    // the persisted marker makes it one send per browser.
+    if (!data.onceTraitsSent) {
+      data.onceTraitsSent = true;
+      identityChanged = true;
       posthogInstance.setPersonProperties(
         {},
         {
@@ -160,7 +150,7 @@ export function updatePersonProperties(): void {
         flagsChanged = true;
       }
     }
-    if (flagsChanged) {
+    if (identityChanged || flagsChanged) {
       saveAnalyticsData(data);
     }
   } catch {
