@@ -630,12 +630,6 @@ async function handleReport(
   }
   const { reason } = parsed;
 
-  // A3: a deny-listed account keeps no report powers, matching design reports.
-  if ((await redis.sismember(communityDenylistKey(), session.userId)) === 1) {
-    sendError(res, 403, ErrorCode.UNAUTHORIZED, 'This action is not available for this account.');
-    return;
-  }
-
   const existing = await readCommunityPrint(redis, designId, targetPublicId);
   if (existing === null || existing.status !== 'live') {
     sendError(res, 404, ErrorCode.NOT_FOUND, 'Print report not found');

@@ -554,6 +554,7 @@ describe('parseReportBody', () => {
 
   it('returns CONTENT_BLOCKED for a filtered note', () => {
     const parsed = parseReportBody({ reason: 'spam', note: 'visit https://spam.example now' });
+    expect(parsed.ok).toBe(false);
     if (parsed.ok) return;
     expect(parsed.code).toBe('CONTENT_BLOCKED');
   });
