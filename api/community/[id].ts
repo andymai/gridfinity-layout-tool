@@ -4,6 +4,11 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { Redis } from 'ioredis';
 import { readSessionCookie } from '../lib/cookies.js';
 import {
+  cardFromRecord,
+  DUPLICATE_DESIGN_RESPONSE,
+  REMIX_UNCHANGED_RESPONSE,
+} from '../lib/communityRecord.js';
+import {
   communityAuthorKey,
   communityChildrenKey,
   communityDenylistKey,
@@ -402,11 +407,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
     // B3: reject an edit into a verbatim built-in example or another author's
     // live design.
     if (await isDuplicateOnUpdate(redis, contentFingerprint, existing.authorPublicId, id)) {
-      return res.status(409).json({
-        error:
-          'This matches a design that has already been published (or a built-in example). Make it your own before publishing.',
-        code: 'DUPLICATE_DESIGN',
-      });
+      return res.status(409).json(DUPLICATE_DESIGN_RESPONSE);
     }
 
     // B4: a remix must still differ from its parent after an edit.
@@ -416,10 +417,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
         parent !== null &&
         communityParamsFingerprint(communityDesignContent(parent)) === contentFingerprint
       ) {
-        return res.status(409).json({
-          error: 'Change the design before publishing your remix.',
-          code: 'REMIX_UNCHANGED',
-        });
+        return res.status(409).json(REMIX_UNCHANGED_RESPONSE);
       }
     }
 
@@ -477,26 +475,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
     // be flipped back to live by this in-flight edit; the card carries the
     // current status, never the publish-time one.
     const statusAtWrite = await readModerationStatus(id, existing.status);
-    await writeCommunityCard(redis, {
-      id,
-      name: updated.name,
-      authorPublicId: updated.authorPublicId,
-      authorName: updated.authorName,
-      category: updated.category,
-      techniques: updated.techniques,
-      kind: updated.kind ?? '',
-      width: updated.metrics.width,
-      depth: updated.metrics.depth,
-      height: updated.metrics.height,
-      gridUnitMm: updated.metrics.gridUnitMm,
-      thumbnailUrl: thumbnailUrls.length > 0 ? thumbnailUrls[0] : '',
-      isRemix: updated.lineage !== null,
-      parentId: updated.lineage?.parentId ?? '',
-      featured: updated.featured,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
-      status: statusAtWrite,
-    });
+    await writeCommunityCard(redis, cardFromRecord({ ...updated, status: statusAtWrite }));
 
     // Publish idempotency keys on this hash; without the refresh a retried
     // POST of the pre-edit content would 200 against this id and a POST of
