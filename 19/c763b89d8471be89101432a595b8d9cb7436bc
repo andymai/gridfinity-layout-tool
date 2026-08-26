@@ -1,0 +1,25 @@
+api/auth/providers/google.test.ts
+  s_8c2c4457d965c0::t_549e938f82d5a9 103
+  s_8c2c4457d965c0::t_655c659b5d3e95 116
+  s_8c2c4457d965c0::t_a0fe633dcf119e 38-42,49,54-55,62
+  s_8c2c4457d965c0::t_cda7c06a855185 82
+  s_8c2c4457d965c0::t_a1bee31ee860ee 71
+api/auth/providers/github.test.ts
+  s_8c2c4457d965c0::t_46018223c247d7 47-48,59,65-66,73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "19c763b89d8471be89101432a595b8d9cb7436bc",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
