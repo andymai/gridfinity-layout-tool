@@ -24,7 +24,6 @@ export const deleteLayer = defineCommand({
   payload: payloadSchema,
   emitted: 'layer.deleted',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layerDelete',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

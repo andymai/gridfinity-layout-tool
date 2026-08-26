@@ -23,7 +23,6 @@ export const addLayer = defineCommand({
   payload: payloadSchema,
   emitted: 'layer.added',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layerAdd',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     _payload,

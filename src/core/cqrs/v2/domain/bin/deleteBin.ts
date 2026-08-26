@@ -18,7 +18,6 @@ export const deleteBin = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.deleted',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binDelete',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const id = toBinId(payload.id);

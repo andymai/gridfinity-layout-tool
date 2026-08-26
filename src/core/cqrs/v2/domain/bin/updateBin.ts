@@ -131,7 +131,6 @@ export const updateBin = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.updated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binUpdate',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

@@ -20,7 +20,6 @@ export const deleteEntry = defineCommand({
   payload: payloadSchema,
   emitted: 'library.entryDeleted',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.libraryDeleteEntry',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (
     payload,

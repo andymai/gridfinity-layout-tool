@@ -31,7 +31,6 @@ export const moveBinFromStaging = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.movedFromStaging',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binMoveFromStaging',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

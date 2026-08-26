@@ -32,7 +32,6 @@ export const setCloudShare = defineCommand({
   payload: payloadSchema,
   emitted: 'library.cloudShareUpdated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.librarySetCloudShare',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload) => {
     const layoutId = toLayoutId(payload.layoutId);

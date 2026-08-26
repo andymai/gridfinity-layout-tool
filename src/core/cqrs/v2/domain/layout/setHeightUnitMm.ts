@@ -15,7 +15,6 @@ export const setHeightUnitMm = defineCommand({
   payload: payloadSchema,
   emitted: 'layout.heightUnitMmSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layoutSetHeightUnitMm',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const previousMm = ctx.aggregate.heightUnitMm as number;

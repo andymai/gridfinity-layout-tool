@@ -18,7 +18,6 @@ export const switchActive = defineCommand({
   payload: payloadSchema,
   emitted: 'library.activeLayoutSwitched',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.librarySwitchActive',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const newLayoutId = toLayoutId(payload.layoutId);

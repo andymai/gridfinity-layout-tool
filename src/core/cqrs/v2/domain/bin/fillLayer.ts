@@ -28,7 +28,6 @@ export const fillLayer = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.layerFilled',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layerFill',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const layerId = toLayerId(payload.layerId);

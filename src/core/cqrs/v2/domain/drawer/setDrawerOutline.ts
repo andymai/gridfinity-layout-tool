@@ -55,7 +55,6 @@ export const setDrawerOutline = defineCommand({
   payload: payloadSchema,
   emitted: 'drawer.outlineSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.drawerSetOutline',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

@@ -22,7 +22,6 @@ export const sampleAddBin = defineCommand({
   }),
   emitted: 'sample.bin.added',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binAdd',
   middleware: { undoCapture: true, validate: true },
   handle: (payload, _ctx) => {
     if (payload.x > 100) {
@@ -45,7 +44,6 @@ export const sampleDeleteBin = defineCommand({
   payload: z.object({ id: z.string().min(1) }),
   emitted: 'sample.bin.deleted',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binDelete',
   handle: (payload, _ctx) => {
     if (!payload.id.startsWith('bin_')) {
       return err<LayoutError>(layoutInvalidOperation('deleteBin', `Bad id ${payload.id}`));

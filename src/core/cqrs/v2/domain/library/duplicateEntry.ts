@@ -22,7 +22,6 @@ export const duplicateEntry = defineCommand({
   payload: payloadSchema,
   emitted: 'library.entryDuplicated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.libraryDuplicateEntry',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (
     payload,

@@ -19,7 +19,6 @@ export const setName = defineCommand({
   payload: payloadSchema,
   emitted: 'layout.nameSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layoutSetName',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const previousName = ctx.aggregate.name;

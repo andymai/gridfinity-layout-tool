@@ -21,7 +21,6 @@ export const renameEntry = defineCommand({
   payload: payloadSchema,
   emitted: 'library.entryRenamed',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.libraryRenameEntry',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const layoutId = toLayoutId(payload.layoutId);

@@ -29,7 +29,6 @@ export const fillGaps = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.layerFilled',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layerFillGaps',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const layerId = toLayerId(payload.layerId);

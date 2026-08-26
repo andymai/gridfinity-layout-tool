@@ -34,7 +34,6 @@ export const setActiveBaseplate = defineCommand({
   payload: payloadSchema,
   emitted: 'layout.activeBaseplateSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layoutSetActiveBaseplate',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const previousActiveBaseplateId: BaseplateDesignId | null =

@@ -20,7 +20,6 @@ export const moveBinToStaging = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.movedToStaging',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binMoveToStaging',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const id = toBinId(payload.id);
