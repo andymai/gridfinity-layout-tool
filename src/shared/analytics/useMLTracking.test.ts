@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const state = vi.hoisted(() => ({ factoryRuns: 0 }));
 
@@ -13,6 +13,10 @@ import { getMlTelemetry, mlTracking } from './useMLTracking';
 
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('getMlTelemetry', () => {
