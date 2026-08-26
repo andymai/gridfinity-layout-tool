@@ -19,7 +19,6 @@ export const setAuthorName = defineCommand({
   payload: payloadSchema,
   emitted: 'library.authorNameSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.librarySetAuthorName',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const previousName = ctx.aggregate.settings.authorName ?? '';

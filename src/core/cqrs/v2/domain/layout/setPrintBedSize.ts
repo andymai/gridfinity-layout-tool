@@ -23,7 +23,6 @@ export const setPrintBedSize = defineCommand({
   payload: payloadSchema,
   emitted: 'layout.printBedSizeSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layoutSetPrintBedSize',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const previousSize = ctx.aggregate.printBedSize as number;

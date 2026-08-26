@@ -41,7 +41,6 @@ export const updateLayer = defineCommand({
   payload: payloadSchema,
   emitted: 'layer.updated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layerUpdate',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

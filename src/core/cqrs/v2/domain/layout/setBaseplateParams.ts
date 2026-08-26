@@ -77,7 +77,6 @@ export const setBaseplateParams = defineCommand({
   payload: payloadSchema,
   emitted: 'layout.baseplateParamsSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layoutSetBaseplateParams',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const previousParams = ctx.aggregate.baseplateParams

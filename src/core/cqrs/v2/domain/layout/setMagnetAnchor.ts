@@ -13,7 +13,6 @@ export const setMagnetAnchor = defineCommand({
   payload: payloadSchema,
   emitted: 'layout.magnetAnchorSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layoutSetMagnetAnchor',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const previousAnchor = ctx.aggregate.magnetAnchor ?? 'edge';

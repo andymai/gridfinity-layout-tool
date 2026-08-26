@@ -18,7 +18,6 @@ export const clearCloudShare = defineCommand({
   payload: payloadSchema,
   emitted: 'library.cloudShareCleared',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.libraryClearCloudShare',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload) => {
     const layoutId = toLayoutId(payload.layoutId);

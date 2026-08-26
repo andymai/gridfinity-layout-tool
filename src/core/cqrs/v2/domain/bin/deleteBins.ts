@@ -20,7 +20,6 @@ export const deleteBins = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.batchDeleted',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binDeleteBatch',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const idSet = new Set(payload.ids.map(toBinId));

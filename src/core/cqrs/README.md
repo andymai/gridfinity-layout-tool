@@ -134,7 +134,6 @@ commands intentionally remain v1 (`handlers/designerHandlers.ts`,
      payload: payloadSchema,
      emitted: 'domain.myActionDone',
      schemaVersion: 1,
-     descriptionKey: 'undo.action.myAction',
      middleware: { undoCapture: true, validate: true },
      handle: (payload, ctx) => {
        // read-only planning against ctx.aggregate; brand payload values at
@@ -154,8 +153,8 @@ commands intentionally remain v1 (`handlers/designerHandlers.ts`,
 
 7. **Add the command's profile** to `COMMAND_PROFILES` in
    `middleware/middlewareConfig.ts` (the record is exhaustive over
-   `CommandType`) and its toast key to `commandDescriptions.ts` — that map,
-   not the def's `descriptionKey`, drives the undo/redo toast.
+   `CommandType`) and its toast key to `commandDescriptions.ts`, which
+   drives the undo/redo toast.
 
 8. **Add a Zod validation schema** in `validation/schemas.ts` — the
    validation middleware reads `COMMAND_SCHEMAS`, not the def's `payload`

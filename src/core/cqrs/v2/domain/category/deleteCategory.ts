@@ -23,7 +23,6 @@ export const deleteCategory = defineCommand({
   payload: payloadSchema,
   emitted: 'category.deleted',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.categoryDelete',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

@@ -39,7 +39,6 @@ export const updateEntry = defineCommand({
   payload: payloadSchema,
   emitted: 'library.entryUpdated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.libraryUpdateEntry',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (
     payload,

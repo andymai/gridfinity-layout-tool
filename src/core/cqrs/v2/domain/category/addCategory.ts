@@ -22,7 +22,6 @@ export const addCategory = defineCommand({
   payload: payloadSchema,
   emitted: 'category.added',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.categoryAdd',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

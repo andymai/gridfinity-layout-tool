@@ -150,7 +150,6 @@ describe('v2 bin.add', () => {
       expect(addBin.aggregate).toBe('layout');
       expect(addBin.emitted).toBe('bin.added');
       expect(addBin.schemaVersion).toBe(1);
-      expect(addBin.descriptionKey).toBe('undo.action.binAdd');
     });
   });
 });

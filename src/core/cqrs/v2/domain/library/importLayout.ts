@@ -24,7 +24,6 @@ export const importLayout = defineCommand({
   payload: payloadSchema,
   emitted: 'library.entryCreated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.libraryImportLayout',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload, ctx) => {
     // Central validation treats `layout` as `unknown`; computePreview

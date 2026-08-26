@@ -65,7 +65,6 @@ export const duplicateBin = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.duplicated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binDuplicate',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

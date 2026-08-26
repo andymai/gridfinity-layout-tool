@@ -49,7 +49,6 @@ export const expandToFit = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.expandedToFit',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binsExpandedToFit',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

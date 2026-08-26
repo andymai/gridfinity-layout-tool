@@ -43,7 +43,6 @@ export const addBin = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.added',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.binAdd',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     // Brand at the CQRS boundary (codebase convention: brand on

@@ -101,7 +101,6 @@ export interface CommandDefShape<
   readonly payload: z.ZodType<TPayload>;
   readonly emitted: TEventType;
   readonly schemaVersion: number;
-  readonly descriptionKey: string;
   readonly middleware?: MiddlewareFlags;
   readonly handle: (
     payload: TPayload,
@@ -129,5 +128,4 @@ export interface AnyCommandDef {
   readonly aggregate: AggregateName;
   readonly emitted: string;
   readonly schemaVersion: number;
-  readonly descriptionKey: string;
 }

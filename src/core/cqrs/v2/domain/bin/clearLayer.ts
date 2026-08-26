@@ -19,7 +19,6 @@ export const clearLayer = defineCommand({
   payload: payloadSchema,
   emitted: 'bin.layerCleared',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layerClear',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const layerId = toLayerId(payload.layerId);

@@ -39,7 +39,6 @@ export const updateCategory = defineCommand({
   payload: payloadSchema,
   emitted: 'category.updated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.categoryUpdate',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

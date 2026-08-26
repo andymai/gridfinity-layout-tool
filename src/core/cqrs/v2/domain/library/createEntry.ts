@@ -56,7 +56,6 @@ export const createEntry = defineCommand({
   payload: payloadSchema,
   emitted: 'library.entryCreated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.libraryCreateEntry',
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const id = payload.layoutId !== undefined ? toLayoutId(payload.layoutId) : generateLayoutId();

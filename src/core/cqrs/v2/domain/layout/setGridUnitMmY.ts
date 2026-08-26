@@ -23,7 +23,6 @@ export const setGridUnitMmY = defineCommand({
   payload: payloadSchema,
   emitted: 'layout.gridUnitMmYSet',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layoutSetGridUnitMmY',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const layout = ctx.aggregate;

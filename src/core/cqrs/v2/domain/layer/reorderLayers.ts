@@ -24,7 +24,6 @@ export const reorderLayers = defineCommand({
   payload: payloadSchema,
   emitted: 'layer.reordered',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.layerReorder',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,

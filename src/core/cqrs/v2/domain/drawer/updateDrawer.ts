@@ -92,7 +92,6 @@ export const updateDrawer = defineCommand({
   payload: payloadSchema,
   emitted: 'drawer.updated',
   schemaVersion: 1,
-  descriptionKey: 'undo.action.drawerUpdate',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (
     payload,
