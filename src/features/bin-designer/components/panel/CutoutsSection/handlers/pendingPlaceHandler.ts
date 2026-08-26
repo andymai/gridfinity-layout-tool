@@ -23,6 +23,9 @@ export function handlePendingPlaceMove(
   event: PointerMoveEvent,
   setMode: SetModeFn
 ): void {
+  // A text element's footprint follows its caption, not a drawn box, so there
+  // is no drawing mode to enter — it places on release wherever the press was.
+  if (mode.shape === 'text') return;
   const dist = Math.sqrt((event.mmX - mode.startMmX) ** 2 + (event.mmY - mode.startMmY) ** 2);
   if (dist >= PLACE_DRAG_THRESHOLD) {
     setMode({

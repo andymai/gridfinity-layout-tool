@@ -76,6 +76,8 @@ export interface LidCutoutInputs {
   readonly topZ: number;
   /** Plate depth (mm) below {@link topZ} — every cut spans all of it. */
   readonly thickness: number;
+  /** Design-wide type style — a text element's caption resolves through it. */
+  readonly textDefaults: BinParams['textDefaults'];
 }
 
 /** Geometric inputs derived from BinParams. */
@@ -342,7 +344,13 @@ function resolveLidCutoutInputs(params: BinParams): LidCutoutInputs | null {
   const host = lidCutoutHostFace(params);
   if (host.thickness <= 0) return null;
 
-  return { shapes, window, topZ: host.topZ, thickness: host.thickness };
+  return {
+    shapes,
+    window,
+    topZ: host.topZ,
+    thickness: host.thickness,
+    textDefaults: params.textDefaults,
+  };
 }
 
 export function resolveLidInputs(params: BinParams): LidInputs {

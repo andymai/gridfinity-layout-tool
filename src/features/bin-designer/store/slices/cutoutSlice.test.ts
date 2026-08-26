@@ -2251,3 +2251,84 @@ describe('cutoutSlice - lid array collapses to absent', () => {
     expect(lidCutouts()?.map((c) => c.id)).toEqual(['b']);
   });
 });
+
+function createTestCutoutTop(overrides: Partial<Cutout> = {}): Cutout {
+  return {
+    id: 'test-cutout-1',
+    shape: 'rectangle',
+    x: 10,
+    y: 10,
+    width: 20,
+    depth: 15,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: 'Test',
+    groupId: null,
+    ...overrides,
+  };
+}
+
+describe('updateCutout - text element footprint', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('re-derives the box from a caption edit, holding the center', () => {
+    const { addCutout, updateCutout } = useDesignerStore.getState();
+    addCutout(
+      createTestCutoutTop({
+        id: 'text-1',
+        shape: 'text',
+        label: 'AB',
+        x: 40,
+        y: 40,
+        width: 12,
+        depth: 12,
+        engraveLabel: true,
+        textStyle: { sizeMode: 'fixed', fixedSize: 10 },
+      })
+    );
+
+    updateCutout('text-1', { label: 'ABCD' });
+
+    const stored = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'text-1');
+    // 4 chars × 0.6 × 10mm = 24 wide; the center must not move.
+    expect(stored?.width).toBeCloseTo(24);
+    expect((stored?.x ?? 0) + (stored?.width ?? 0) / 2).toBeCloseTo(40 + 6);
+  });
+
+  it('re-derives the box when the explicit size changes', () => {
+    const { addCutout, updateCutout } = useDesignerStore.getState();
+    addCutout(
+      createTestCutoutTop({
+        id: 'text-2',
+        shape: 'text',
+        label: 'AB',
+        x: 40,
+        y: 40,
+        width: 12,
+        depth: 12,
+        engraveLabel: true,
+        textStyle: { sizeMode: 'fixed', fixedSize: 10 },
+      })
+    );
+
+    updateCutout('text-2', { textStyle: { sizeMode: 'fixed', fixedSize: 20 } });
+
+    const stored = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'text-2');
+    expect(stored?.width).toBeCloseTo(24);
+    expect(stored?.depth).toBeCloseTo(24);
+  });
+
+  it('leaves other shapes untouched by the sync', () => {
+    const { addCutout, updateCutout } = useDesignerStore.getState();
+    addCutout(createTestCutoutTop({ id: 'rect-1', shape: 'rectangle', width: 20, depth: 15 }));
+
+    updateCutout('rect-1', { label: 'much longer caption' });
+
+    const stored = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'rect-1');
+    expect(stored?.width).toBe(20);
+    expect(stored?.depth).toBe(15);
+  });
+});

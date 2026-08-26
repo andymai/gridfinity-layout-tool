@@ -201,6 +201,7 @@ const SHAPE_LABEL_KEYS: Record<CutoutShape, string> = {
   path: 'binDesigner.shapeList.derived.path',
   mesh: 'binDesigner.shapeList.derived.mesh',
   knifeSlot: 'binDesigner.shapeList.derived.knifeSlot',
+  text: 'binDesigner.shapeList.derived.text',
 };
 
 /**
@@ -217,6 +218,9 @@ export function derivedLabel(cutout: Cutout): DerivedLabel {
       return { key, values: { d: mm(cutout.width) } };
     case 'polygon':
       return { key, values: { sides: String(cutout.sides ?? 6), w: mm(cutout.width) } };
+    // A text row is told apart by what it says, not by its box.
+    case 'text':
+      return { key, values: { label: cutout.label.trim() } };
     case 'path':
     case 'mesh':
       return { key, values: { w: mm(cutout.width), d: mm(cutout.depth) } };

@@ -91,7 +91,7 @@ export function CutoutLabel3D({
   const pocketAabbs = useMemo(() => {
     const list: { id: string; aabb: CutoutAabb }[] = [];
     for (const c of cutouts) {
-      if (c.hidden === true) continue;
+      if (c.hidden === true || c.shape === 'text') continue;
       for (const instance of expandCutoutArray(c)) {
         list.push({ id: instance.id, aabb: cutoutWorldAabb(instance, 0, 0) });
       }
@@ -157,12 +157,6 @@ export function CutoutLabel3D({
         const overrides = preview.get(cutout.id);
         const effective = overrides ? { ...cutout, ...overrides } : cutout;
 
-        // Label angle about the glyph center (anchored center/middle). Negated
-        // to match the cutout-rotation convention used everywhere else (see
-        // CutoutShapeMesh `rotationZ`) and the engraver, so a positive angle
-        // turns the same way as a positive cutout rotation.
-        const angleRad = -((effective.textAngle ?? 0) * Math.PI) / 180;
-
         // Drag always nudges the MASTER: the offset is one field shared by
         // every instance, so grabbing the third label in a row has to move the
         // same value grabbing the first one does.
@@ -188,19 +182,30 @@ export function CutoutLabel3D({
           // will actually be cut: an explicit size widens the band to the
           // interior, auto-fit keeps the anchor band capped to a repeat copy's
           // room.
-          const explicit = hasExplicitLabelSize(instance.textStyle);
+          const explicit = hasExplicitLabelSize(instance);
           const banded = explicit
             ? expandBandToInterior(placement, binWidth, binDepth)
             : {
                 ...placement,
                 ...fitLabelRoom(placement.availW, placement.availD, effective.array),
               };
-          const fontSize = fitLabelFontSize(label, banded, textDefaults, instance.textStyle);
+          const fontSize = fitLabelFontSize(label, banded, textDefaults, instance);
           if (fontSize === null) return null;
+
+          // Glyph angle about the anchored center. A text element IS its text,
+          // so the element's rotation turns the glyphs (per instance, so a
+          // radial repeat's rotate-to-center reaches the captions); other
+          // shapes carry a separate label angle. Negated to match the
+          // cutout-rotation convention (see CutoutShapeMesh `rotationZ`) and
+          // the engraver.
+          const angleDeg =
+            instance.shape === 'text' ? instance.rotation : (effective.textAngle ?? 0);
+          const angleRad = -(angleDeg * Math.PI) / 180;
 
           // Explicit sizes are allowed to reach over pockets; warn where they
           // do, since glyph parts over an opening are cut away. A center
-          // anchor's own pocket is exempt — sitting over it is the placement.
+          // anchor's own pocket is exempt — sitting over it is the placement —
+          // and a text element has no pocket of its own to exempt.
           // `::a0` is the master's own footprint when an unlabelled repeat
           // engraves once beside the master box.
           let overlapsPocket = false;
@@ -210,11 +215,13 @@ export function CutoutLabel3D({
               fontSize,
               placement.centerX,
               placement.centerY,
-              effective.textAngle ?? 0
+              angleDeg
             );
             const anchor = resolveCutoutTextAnchor(instance);
             const ownIds =
-              anchor === 'center' ? new Set([instance.id, `${instance.id}::a0`]) : null;
+              instance.shape !== 'text' && anchor === 'center'
+                ? new Set([instance.id, `${instance.id}::a0`])
+                : null;
             overlapsPocket = pocketAabbs.some(
               (p) => !ownIds?.has(p.id) && aabbsIntersect(p.aabb, box)
             );

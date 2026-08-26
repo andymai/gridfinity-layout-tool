@@ -36,7 +36,7 @@ export const LID_TEXT_ENGRAVE_FLOOR = 0.4;
 
 /** Effective engrave depth below which the cut is skipped as unprintable
  *  (and geometrically degenerate — the extrusion would be ~epsilon). */
-const MIN_ENGRAVE_DEPTH = 0.05;
+export const MIN_ENGRAVE_DEPTH = 0.05;
 
 interface TextHostFace {
   readonly availW: number;

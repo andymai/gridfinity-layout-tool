@@ -16,6 +16,7 @@ import {
   defaultEntryChamfer,
 } from '@/features/bin-designer/types';
 import { polygonBoxFromAcrossFlats } from '@/shared/utils/cutoutPolygon';
+import { DEFAULT_TEXT_ELEMENT_SIZE, textElementFootprint } from '@/shared/utils/cutoutLabel';
 import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray';
 import { DEFAULT_KNIFE_PRESET } from './knifeSlotPresets';
 import { KNIFE_SLOT_DEFAULT_CHAMFER, knifeSlotDimensions } from '@/features/bin-designer/types';
@@ -139,6 +140,8 @@ export function defaultPlaceSize(shape: CutoutShape): { width: number; depth: nu
       const dims = knifeSlotDimensions(DEFAULT_KNIFE_PRESET.knife);
       return { width: dims.widthMm, depth: dims.depthMm };
     }
+    case 'text':
+      return textElementFootprint(DEFAULT_TEXT_ELEMENT_LABEL, DEFAULT_TEXT_ELEMENT_SIZE);
     default:
       return { width: DEFAULT_RECT_SIZE, depth: DEFAULT_RECT_SIZE };
   }
@@ -290,6 +293,13 @@ export function applyFlattenGroupArray(
   return 'flattened';
 }
 
+/**
+ * Caption a new text element starts with. Deliberately literal, not i18n'd:
+ * it is content that would be engraved as-is, and a short Latin word previews
+ * the design's typeface predictably in every locale.
+ */
+export const DEFAULT_TEXT_ELEMENT_LABEL = 'Text';
+
 /** Default cutout properties shared by click-to-place and draw-to-place. */
 export function createDefaultCutout(
   id: string,
@@ -329,6 +339,16 @@ export function createDefaultCutout(
           cutDepth: knifeSlotDimensions(DEFAULT_KNIFE_PRESET.knife).cutDepthMm,
           knife: DEFAULT_KNIFE_PRESET.knife,
           chamferWidth: KNIFE_SLOT_DEFAULT_CHAMFER,
+        }
+      : {}),
+    // A text element is its caption: engraved on its own footprint at an
+    // explicit size (a text block has no band to auto-fit into).
+    ...(shape === 'text'
+      ? {
+          label: DEFAULT_TEXT_ELEMENT_LABEL,
+          engraveLabel: true,
+          textAnchor: 'center' as const,
+          textStyle: { sizeMode: 'fixed' as const, fixedSize: DEFAULT_TEXT_ELEMENT_SIZE },
         }
       : {}),
   };

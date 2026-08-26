@@ -315,6 +315,35 @@ export function CutoutShapeToolbar({
         </Button>
       )}
 
+      {wrap(
+        t('binDesigner.cutouts.addText'),
+        'T',
+        <Button
+          type="button"
+          variant="ghost"
+          touchTarget={false}
+          className={`${btnBase} ${activeShape === 'text' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('text')}
+          aria-label={t('binDesigner.cutouts.addText')}
+          title={!vertical ? t('binDesigner.cutouts.addText') : undefined}
+        >
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          >
+            {/* Capital T */}
+            <path d="M2.5 3.5v-1h9v1" />
+            <path d="M7 2.5v9" />
+            <path d="M5 11.5h4" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.addText')}
+        </Button>
+      )}
+
       {onImportSvg &&
         wrap(
           t('binDesigner.cutouts.importSvg'),

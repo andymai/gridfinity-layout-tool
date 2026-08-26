@@ -29,6 +29,7 @@ import { shapePosZ, shapeRenderOrder } from './zLayer';
 import { PathShapeMesh } from './PathShapeMesh';
 import { PolygonShapeMesh } from './PolygonShapeMesh';
 import { MeshFootprintMesh } from './MeshFootprintMesh';
+import { TextElementMesh } from './TextElementMesh';
 import { slotCornerRadius } from '@/shared/utils/cutoutPolygon';
 
 const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
@@ -51,6 +52,25 @@ interface CutoutShapeMeshProps {
 }
 
 export const CutoutShapeMesh = memo(function CutoutShapeMesh(props: CutoutShapeMeshProps) {
+  // Text elements: the caption is drawn by CutoutLabel3D; this contributes the
+  // hit plane and selection frame only.
+  if (props.cutout.shape === 'text') {
+    return (
+      <TextElementMesh
+        cutout={props.cutout}
+        isSelected={props.isSelected}
+        isGrouped={props.isGrouped}
+        isDragging={props.isDragging}
+        previewOverrides={props.previewOverrides}
+        binColor={props.binColor}
+        onSelect={props.onSelect}
+        onDoubleClick={props.onDoubleClick}
+        onDragStart={props.onDragStart}
+        disablePointerEvents={props.disablePointerEvents}
+      />
+    );
+  }
+
   // Mesh imprints render their stored silhouette footprint (shape-locked)
   if (props.cutout.shape === 'mesh') {
     return (

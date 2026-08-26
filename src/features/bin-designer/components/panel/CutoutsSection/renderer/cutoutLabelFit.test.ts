@@ -18,8 +18,8 @@ describe('fitLabelFontSize', () => {
   const roomy: CutoutLabelPlacement = { centerX: 0, centerY: 0, availW: 200, availD: 200 };
 
   it('caps the size at the override when it fits below auto-fit', () => {
-    const auto = fitLabelFontSize('A', roomy, defaults, undefined);
-    const capped = fitLabelFontSize('A', roomy, defaults, { fontSizeOverride: 6 });
+    const auto = fitLabelFontSize('A', roomy, defaults, {});
+    const capped = fitLabelFontSize('A', roomy, defaults, { textStyle: { fontSizeOverride: 6 } });
     expect(auto).not.toBeNull();
     expect(capped).toBe(6);
     expect(capped!).toBeLessThan(auto!);
@@ -29,8 +29,8 @@ describe('fitLabelFontSize', () => {
     // availD 8 − 2·margin(1.5) = 5mm depth budget caps auto-fit at 5mm; a 12mm
     // override must collapse to that, mirroring the worker's band clamp.
     const narrow: CutoutLabelPlacement = { centerX: 0, centerY: 0, availW: 200, availD: 8 };
-    const auto = fitLabelFontSize('A', narrow, defaults, undefined);
-    const over = fitLabelFontSize('A', narrow, defaults, { fontSizeOverride: 12 });
+    const auto = fitLabelFontSize('A', narrow, defaults, {});
+    const over = fitLabelFontSize('A', narrow, defaults, { textStyle: { fontSizeOverride: 12 } });
     expect(auto).toBeCloseTo(5, 6);
     expect(over).toBeCloseTo(auto!, 6);
   });
@@ -39,44 +39,57 @@ describe('fitLabelFontSize', () => {
     // The UI can't produce this (slider min = minFontSize), but a crafted share
     // can. The band fits well above 3mm, so a 1mm override clamps up to 3mm
     // rather than rendering illegibly small.
-    expect(fitLabelFontSize('A', roomy, defaults, { fontSizeOverride: 1 })).toBe(3);
+    expect(fitLabelFontSize('A', roomy, defaults, { textStyle: { fontSizeOverride: 1 } })).toBe(3);
   });
 
   it('returns null when even the floor overflows, override notwithstanding', () => {
     const tiny: CutoutLabelPlacement = { centerX: 0, centerY: 0, availW: 200, availD: 4 };
     // availD 4 − 3 = 1mm < 3mm floor → dropped, same as auto-fit.
-    expect(fitLabelFontSize('A', tiny, defaults, { fontSizeOverride: 3 })).toBeNull();
+    expect(
+      fitLabelFontSize('A', tiny, defaults, { textStyle: { fontSizeOverride: 3 } })
+    ).toBeNull();
   });
 
   it('honours an explicit fixed size past the auto-fit ceiling', () => {
     // 25mm exceeds maxFontSize (20) — a target is not capped by the auto
     // ceiling, matching the worker's fixed path.
-    const size = fitLabelFontSize('A', roomy, defaults, { sizeMode: 'fixed', fixedSize: 25 });
+    const size = fitLabelFontSize('A', roomy, defaults, {
+      textStyle: { sizeMode: 'fixed', fixedSize: 25 },
+    });
     expect(size).toBe(25);
   });
 
   it('shrinks an explicit size only to what the band holds', () => {
     const narrow: CutoutLabelPlacement = { centerX: 0, centerY: 0, availW: 200, availD: 8 };
-    const size = fitLabelFontSize('A', narrow, defaults, { sizeMode: 'fixed', fixedSize: 12 });
+    const size = fitLabelFontSize('A', narrow, defaults, {
+      textStyle: { sizeMode: 'fixed', fixedSize: 12 },
+    });
     expect(size).toBeCloseTo(5, 6);
   });
 
   it('drops an explicit label the band cannot hold legibly', () => {
     const tiny: CutoutLabelPlacement = { centerX: 0, centerY: 0, availW: 200, availD: 4 };
-    expect(fitLabelFontSize('A', tiny, defaults, { sizeMode: 'fixed', fixedSize: 12 })).toBeNull();
+    expect(
+      fitLabelFontSize('A', tiny, defaults, { textStyle: { sizeMode: 'fixed', fixedSize: 12 } })
+    ).toBeNull();
   });
 
   it('honours a sub-floor explicit size that fits, unlike an override', () => {
     // The fixed path has no legibility floor on the asked-for size itself —
     // only the shrink is floored. Mirrors the worker exactly.
-    expect(fitLabelFontSize('A', roomy, defaults, { sizeMode: 'fixed', fixedSize: 2 })).toBe(2);
+    expect(
+      fitLabelFontSize('A', roomy, defaults, { textStyle: { sizeMode: 'fixed', fixedSize: 2 } })
+    ).toBe(2);
+  });
+
+  it('renders a style-less text element at the design fixed size, not auto', () => {
+    const size = fitLabelFontSize('A', roomy, defaults, { shape: 'text' });
+    expect(size).toBe(defaults.fixedSize);
   });
 
   it('ignores a leftover fontSizeOverride once a fixed size is set', () => {
     const size = fitLabelFontSize('A', roomy, defaults, {
-      sizeMode: 'fixed',
-      fixedSize: 10,
-      fontSizeOverride: 4,
+      textStyle: { sizeMode: 'fixed', fixedSize: 10, fontSizeOverride: 4 },
     });
     expect(size).toBe(10);
   });

@@ -142,7 +142,7 @@ export function SingleCutoutInspector({
               softMax
               step={0.5}
               unit="mm"
-              disabled={disabled || cutout.shape === 'mesh'}
+              disabled={disabled || cutout.shape === 'mesh' || cutout.shape === 'text'}
             />
             <CompactNumberInput
               label="H"
@@ -153,7 +153,7 @@ export function SingleCutoutInspector({
               softMax
               step={0.5}
               unit="mm"
-              disabled={disabled || cutout.shape === 'mesh'}
+              disabled={disabled || cutout.shape === 'mesh' || cutout.shape === 'text'}
             />
             <CompactNumberInput
               label={t('binDesigner.cutouts.rotation')}
@@ -168,24 +168,27 @@ export function SingleCutoutInspector({
               unit="°"
               disabled={disabled}
             />
-            {throughOnly ? (
-              <p className="text-xs text-content-tertiary">
-                {t('binDesigner.cutouts.throughDepthHint', {
-                  depth: maxCutDepth.toFixed(1),
-                })}
-              </p>
-            ) : (
-              <CompactNumberInput
-                label={t('binDesigner.cutouts.cutDepth')}
-                value={cutout.cutDepth}
-                onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
-                min={0.5}
-                max={maxCutDepth}
-                step={0.5}
-                unit="mm"
-                disabled={disabled}
-              />
-            )}
+            {/* A text element has no cavity, so neither the depth field nor
+                the through-cut hint applies to it. */}
+            {cutout.shape !== 'text' &&
+              (throughOnly ? (
+                <p className="text-xs text-content-tertiary">
+                  {t('binDesigner.cutouts.throughDepthHint', {
+                    depth: maxCutDepth.toFixed(1),
+                  })}
+                </p>
+              ) : (
+                <CompactNumberInput
+                  label={t('binDesigner.cutouts.cutDepth')}
+                  value={cutout.cutDepth}
+                  onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
+                  min={0.5}
+                  max={maxCutDepth}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+              ))}
             {depthShortfall && (
               <p role="alert" className="pt-0.5 text-[11px] leading-snug text-warning">
                 {t('binDesigner.cutouts.depthShortfall', {
@@ -198,59 +201,65 @@ export function SingleCutoutInspector({
         </Collapsible>
       </div>
 
-      <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-        <Collapsible title={t('binDesigner.cutouts.section.shape')} size="sm">
-          <div className="space-y-1.5">
-            {cutout.shape === 'rectangle' && (
-              <SliderInput
-                label={t('binDesigner.cutouts.cornerRadius')}
-                value={cutout.cornerRadius}
-                onChange={(cornerRadius) => onUpdate(cutout.id, { cornerRadius })}
-                min={0}
-                max={Math.min(cutout.width, cutout.depth) / 2}
-                step={0.5}
-                unit="mm"
-                disabled={disabled}
-              />
-            )}
-            <CutoutShapeControls
-              cutout={cutout}
-              maxWidth={binWidth}
-              maxDepth={binDepth}
-              onUpdate={(patch) => onUpdate(cutout.id, patch)}
-              disabled={disabled}
-            />
-            {LEAN_SHAPES.includes(cutout.shape) && !throughOnly && (
-              <div className="space-y-0.5">
+      {/* A text element's shape IS its caption — sizing lives in the Label
+          section, so an empty Shape section would only puzzle. */}
+      {cutout.shape !== 'text' && (
+        <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
+          <Collapsible title={t('binDesigner.cutouts.section.shape')} size="sm">
+            <div className="space-y-1.5">
+              {cutout.shape === 'rectangle' && (
                 <SliderInput
-                  label={t('binDesigner.cutouts.lean')}
-                  value={cutout.leanDeg ?? 0}
-                  onChange={(leanDeg) =>
-                    onUpdate(cutout.id, { leanDeg: leanDeg === 0 ? undefined : leanDeg })
-                  }
-                  min={-MAX_CUTOUT_LEAN_DEG}
-                  max={MAX_CUTOUT_LEAN_DEG}
-                  step={1}
-                  unit="°"
+                  label={t('binDesigner.cutouts.cornerRadius')}
+                  value={cutout.cornerRadius}
+                  onChange={(cornerRadius) => onUpdate(cutout.id, { cornerRadius })}
+                  min={0}
+                  max={Math.min(cutout.width, cutout.depth) / 2}
+                  step={0.5}
+                  unit="mm"
                   disabled={disabled}
                 />
-                {(cutout.leanDeg ?? 0) !== 0 && (
-                  <p className="text-[10px] text-text-muted">{t('binDesigner.cutouts.leanHint')}</p>
-                )}
-              </div>
-            )}
-            {cutout.shape !== 'mesh' && !throughOnly && (
-              <CutoutScoopControls
-                key={cutout.id}
+              )}
+              <CutoutShapeControls
                 cutout={cutout}
-                preview={preview.get(cutout.id)}
-                disabled={disabled}
+                maxWidth={binWidth}
+                maxDepth={binDepth}
                 onUpdate={(patch) => onUpdate(cutout.id, patch)}
+                disabled={disabled}
               />
-            )}
-          </div>
-        </Collapsible>
-      </div>
+              {LEAN_SHAPES.includes(cutout.shape) && !throughOnly && (
+                <div className="space-y-0.5">
+                  <SliderInput
+                    label={t('binDesigner.cutouts.lean')}
+                    value={cutout.leanDeg ?? 0}
+                    onChange={(leanDeg) =>
+                      onUpdate(cutout.id, { leanDeg: leanDeg === 0 ? undefined : leanDeg })
+                    }
+                    min={-MAX_CUTOUT_LEAN_DEG}
+                    max={MAX_CUTOUT_LEAN_DEG}
+                    step={1}
+                    unit="°"
+                    disabled={disabled}
+                  />
+                  {(cutout.leanDeg ?? 0) !== 0 && (
+                    <p className="text-[10px] text-text-muted">
+                      {t('binDesigner.cutouts.leanHint')}
+                    </p>
+                  )}
+                </div>
+              )}
+              {cutout.shape !== 'mesh' && !throughOnly && (
+                <CutoutScoopControls
+                  key={cutout.id}
+                  cutout={cutout}
+                  preview={preview.get(cutout.id)}
+                  disabled={disabled}
+                  onUpdate={(patch) => onUpdate(cutout.id, patch)}
+                />
+              )}
+            </div>
+          </Collapsible>
+        </div>
+      )}
 
       {/* Directly under Shape: for a knife slot these measurements ARE the
           shape — width, thickness and depth are all derived from them. */}
@@ -294,12 +303,12 @@ export function SingleCutoutInspector({
         </Collapsible>
       </div>
 
-      {/* Both sections are bin-only. `applyLidCutouts` tags every hole with the
-          flat `FeatureTag.CUTOUT` rather than a per-cutout colour tag, and it has
-          no label path at all — so on a lid these would preview one thing and
-          print another, and the colour swatch would silently switch the design
-          into multi-colour mode for a zone nothing paints. */}
-      {!throughOnly && (
+      {/* Colour is bin-only and cavity-only. `applyLidCutouts` tags every hole
+          with the flat `FeatureTag.CUTOUT` rather than a per-cutout colour tag,
+          so on a lid the swatch would silently switch the design into
+          multi-colour mode for a zone nothing paints; a text element has no
+          cavity to paint at all (its glyphs are the design-wide TEXT zone). */}
+      {!throughOnly && cutout.shape !== 'text' && (
         <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
           <Collapsible title={t('binDesigner.cutouts.section.color')} size="sm">
             <CutoutColorControls
@@ -334,7 +343,10 @@ export function SingleCutoutInspector({
         </div>
       )}
 
-      {!throughOnly && (
+      {/* Ordinary cutouts have no label path on a lid (`applyLidCutouts` cuts
+          holes only), but a text element IS its label — the lid pipeline
+          engraves it — so the section stays for text on either host. */}
+      {(!throughOnly || cutout.shape === 'text') && (
         <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
           <Collapsible title={t('binDesigner.cutouts.section.label')} size="sm">
             <CutoutEngraveLabelControls

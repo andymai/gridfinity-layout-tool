@@ -267,3 +267,23 @@ describe('flattenNodes', () => {
     expect(flattenNodes([])).toEqual([]);
   });
 });
+
+describe('derivedLabel — text element', () => {
+  it('names a text row by its caption, not its box', () => {
+    const label = derivedLabel({
+      id: 't1',
+      shape: 'text',
+      x: 0,
+      y: 0,
+      width: 12,
+      depth: 10,
+      cutDepth: 5,
+      rotation: 0,
+      cornerRadius: 0,
+      label: ' M4 bolts ',
+      groupId: null,
+    });
+    expect(label.key).toBe('binDesigner.shapeList.derived.text');
+    expect(label.values).toEqual({ label: 'M4 bolts' });
+  });
+});

@@ -6,6 +6,8 @@ import {
   fitLabelRoom,
   hasExplicitLabelSize,
   resolveCutoutTextAnchor,
+  textElementFootprint,
+  withTextFootprint,
 } from './cutoutLabel';
 import type { Cutout, CutoutArrayConfig } from '@/shared/types/bin';
 
@@ -268,13 +270,17 @@ describe('fitLabelRoom', () => {
 });
 
 describe('hasExplicitLabelSize', () => {
-  it('fires only on a per-cutout fixed size mode', () => {
-    expect(hasExplicitLabelSize(undefined)).toBe(false);
+  it('fires on a per-cutout fixed size mode', () => {
     expect(hasExplicitLabelSize({})).toBe(false);
-    expect(hasExplicitLabelSize({ fontSizeOverride: 8 })).toBe(false);
-    expect(hasExplicitLabelSize({ sizeMode: 'auto' })).toBe(false);
-    expect(hasExplicitLabelSize({ sizeMode: 'fixed' })).toBe(true);
-    expect(hasExplicitLabelSize({ sizeMode: 'fixed', fixedSize: 8 })).toBe(true);
+    expect(hasExplicitLabelSize({ textStyle: { fontSizeOverride: 8 } })).toBe(false);
+    expect(hasExplicitLabelSize({ textStyle: { sizeMode: 'auto' } })).toBe(false);
+    expect(hasExplicitLabelSize({ textStyle: { sizeMode: 'fixed' } })).toBe(true);
+    expect(hasExplicitLabelSize({ textStyle: { sizeMode: 'fixed', fixedSize: 8 } })).toBe(true);
+  });
+
+  it('treats a text element as explicit even without a style', () => {
+    expect(hasExplicitLabelSize({ shape: 'text' })).toBe(true);
+    expect(hasExplicitLabelSize({ shape: 'circle' })).toBe(false);
   });
 });
 
@@ -310,5 +316,51 @@ describe('expandBandToInterior', () => {
       availW: 100,
       availD: 80,
     });
+  });
+});
+
+describe('textElementFootprint', () => {
+  it('scales with caption length and size', () => {
+    expect(textElementFootprint('ABCD', 10)).toEqual({ width: 24, depth: 12 });
+  });
+
+  it('floors an empty caption so the element stays clickable', () => {
+    const empty = textElementFootprint('', 8);
+    expect(empty.width).toBeGreaterThanOrEqual(4);
+    expect(empty.depth).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe('withTextFootprint', () => {
+  const textElement: Cutout = {
+    id: 't1',
+    shape: 'text',
+    x: 40,
+    y: 40,
+    width: 20,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: 'AB',
+    groupId: null,
+    engraveLabel: true,
+    textStyle: { sizeMode: 'fixed', fixedSize: 10 },
+  };
+
+  it('re-derives the box from the caption, holding the center still', () => {
+    const out = withTextFootprint(textElement);
+    // 2 chars × 0.6 × 10mm = 12 wide, 12 tall (1.2em line box).
+    expect(out.width).toBeCloseTo(12);
+    expect(out.depth).toBeCloseTo(12);
+    expect(out.x + out.width / 2).toBeCloseTo(40 + 20 / 2);
+    expect(out.y + out.depth / 2).toBeCloseTo(40 + 10 / 2);
+  });
+
+  it('is identity for other shapes and for an in-sync footprint', () => {
+    const circle = { ...textElement, shape: 'circle' as const };
+    expect(withTextFootprint(circle)).toBe(circle);
+    const synced = withTextFootprint(textElement);
+    expect(withTextFootprint(synced)).toBe(synced);
   });
 });

@@ -38,6 +38,9 @@ interface LabelSizeControlProps {
   /** Size to seed when leaving Auto — pass the currently rendered size so the
    *  switch freezes what is on screen instead of jumping to `max`. */
   readonly manualSeed?: number;
+  /** Hide the Auto toggle. A text element has no band to auto-fit into, so
+   *  its size is always explicit and the slider always shows. */
+  readonly allowAuto?: boolean;
   /**
    * Explain that labels can render below the set size. Off by default: only
    * label tabs share a size across siblings, so only there does one label shrink
@@ -56,6 +59,7 @@ export function LabelSizeControl({
   labelClassName = 'text-[10px] text-content-tertiary',
   variant = 'cap',
   manualSeed,
+  allowAuto = true,
   explainShared = false,
 }: LabelSizeControlProps) {
   const t = useTranslation();
@@ -72,16 +76,20 @@ export function LabelSizeControl({
     <div className={cn('space-y-1', className)}>
       <div className="flex items-center justify-between">
         <span className={labelClassName}>{isAuto ? t('binDesigner.textSize') : setLabel}</span>
-        <Button
-          type="button"
-          variant="ghost"
-          disabled={disabled}
-          onClick={() => onChange(isAuto ? Math.min(max, Math.max(min, manualSeed ?? max)) : null)}
-          aria-pressed={isAuto}
-          className={`px-1.5 py-0.5 text-[10px] leading-none ${getSegmentClass(isAuto)}`}
-        >
-          {t('binDesigner.textSizeAuto')}
-        </Button>
+        {allowAuto && (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={disabled}
+            onClick={() =>
+              onChange(isAuto ? Math.min(max, Math.max(min, manualSeed ?? max)) : null)
+            }
+            aria-pressed={isAuto}
+            className={`px-1.5 py-0.5 text-[10px] leading-none ${getSegmentClass(isAuto)}`}
+          >
+            {t('binDesigner.textSizeAuto')}
+          </Button>
+        )}
       </div>
       {value !== undefined && (
         <SliderInput

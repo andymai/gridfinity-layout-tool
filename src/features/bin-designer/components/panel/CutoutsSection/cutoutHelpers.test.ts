@@ -403,3 +403,16 @@ describe('translateCutoutPreview', () => {
     expect(translateCutoutPreview(rect, { x: 99 })).toEqual({ ...rect, x: 99 });
   });
 });
+
+describe('createDefaultCutout — text element', () => {
+  it('seeds a caption engraved at an explicit size, centered on itself', () => {
+    const c = createDefaultCutout('id', 'text', 0, 0, 20, 10);
+    expect(c.label).toBe('Text');
+    expect(c.engraveLabel).toBe(true);
+    expect(c.textAnchor).toBe('center');
+    expect(c.textStyle).toEqual({ sizeMode: 'fixed', fixedSize: 8 });
+    // Caption only: no fit fields for a shape that cuts nothing.
+    expect(c.clearance).toBeUndefined();
+    expect(c.chamferWidth).toBeUndefined();
+  });
+});

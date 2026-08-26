@@ -154,6 +154,9 @@ function pathRing(c: Cutout): Ring | null {
  * that trade-off.
  */
 export function cutoutToPolygon(c: Cutout): Polygon | null {
+  // A text element contributes nothing to a group's boolean (the worker skips
+  // it), so giving it a footprint here would preview a merge that never cuts.
+  if (c.shape === 'text') return null;
   if (c.shape === 'path') {
     const ring = pathRing(c);
     return ring ? [ring] : null;

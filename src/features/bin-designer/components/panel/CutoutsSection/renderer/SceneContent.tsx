@@ -523,10 +523,12 @@ export function SceneContent({
 
       {/* Resize handles on single selected cutout (not during interactions).
           Mesh imprints are shape-locked: their footprint is derived from the
-          imported mesh, so resizing is meaningless — move/rotate only. */}
-      {selectedCutout && selectedCutout.shape !== 'mesh' && !isInteracting && (
-        <CutoutHandles3D cutout={selectedCutout} onResizeStart={onResizeStart} />
-      )}
+          imported mesh, so resizing is meaningless — move/rotate only. Text
+          elements likewise: their box follows the caption and its set size. */}
+      {selectedCutout &&
+        selectedCutout.shape !== 'mesh' &&
+        selectedCutout.shape !== 'text' &&
+        !isInteracting && <CutoutHandles3D cutout={selectedCutout} onResizeStart={onResizeStart} />}
 
       {/* Rotation handle (not during interactions) */}
       {selectedCutout && !isInteracting && (

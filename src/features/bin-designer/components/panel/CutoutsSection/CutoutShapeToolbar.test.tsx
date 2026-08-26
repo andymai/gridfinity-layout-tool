@@ -312,3 +312,22 @@ describe('CutoutShapeToolbar', () => {
     expect(onScanWithPhone).toHaveBeenCalledOnce();
   });
 });
+
+describe('CutoutShapeToolbar text tool', () => {
+  it('enters placing mode when clicking the text button', () => {
+    const onSelectShape = vi.fn();
+    render(
+      <CutoutShapeToolbar
+        mode={{ type: 'idle' }}
+        onSelectShape={onSelectShape}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+        gridSize={0.5}
+        onGridSizeChange={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('binDesigner.cutouts.addText'));
+    expect(onSelectShape).toHaveBeenCalledWith({ type: 'placing', shape: 'text' });
+  });
+});

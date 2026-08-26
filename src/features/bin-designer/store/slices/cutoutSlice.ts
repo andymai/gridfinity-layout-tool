@@ -25,6 +25,7 @@ import {
   MAX_LID_CUTOUTS,
 } from '../../types';
 import { canArray } from '@/shared/utils/cutoutArray';
+import { withTextFootprint } from '@/shared/utils/cutoutLabel';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
 import {
@@ -622,9 +623,9 @@ export function createCutoutSlice(rawSet: Set) {
         owner.cutouts = owner.cutouts.map((c) => {
           if (c.id !== id) return c;
           const transformedPath = applyPathTransform(c, updates);
-          return transformedPath
-            ? { ...c, ...updates, path: transformedPath }
-            : { ...c, ...updates };
+          return withTextFootprint(
+            transformedPath ? { ...c, ...updates, path: transformedPath } : { ...c, ...updates }
+          );
         });
       });
     },
@@ -1028,7 +1029,9 @@ export function createCutoutSlice(rawSet: Set) {
           const u = updates.get(c.id);
           if (!u) return c;
           const transformedPath = applyPathTransform(c, u);
-          return transformedPath ? { ...c, ...u, path: transformedPath } : { ...c, ...u };
+          return withTextFootprint(
+            transformedPath ? { ...c, ...u, path: transformedPath } : { ...c, ...u }
+          );
         });
       });
     },
