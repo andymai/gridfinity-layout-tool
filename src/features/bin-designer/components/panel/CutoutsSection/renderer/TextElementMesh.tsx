@@ -71,7 +71,7 @@ export const TextElementMesh = memo(function TextElementMesh({
     ]);
   }, [effective.width, effective.depth]);
 
-  const isEmpty = cutout.label.trim() === '';
+  const isEmpty = effective.label.trim() === '';
   const showFrame = isSelected || isHovered || isGrouped || isEmpty;
   const strokeColor = isSelected
     ? STROKE_SELECTED

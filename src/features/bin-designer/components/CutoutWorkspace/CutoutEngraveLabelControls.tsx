@@ -30,6 +30,7 @@ import {
   fitLabelRoom,
   hasExplicitLabelSize,
   resolveCutoutTextAnchor,
+  withCenteredTextPlacement,
 } from '@/shared/utils/cutoutLabel';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
@@ -98,7 +99,10 @@ export function CutoutEngraveLabelControls({
   const explicitSize = hasExplicitLabelSize(cutout);
   const requestedSize = cutout.textStyle?.fixedSize ?? textDefaults.fixedSize;
   const trimmedLabel = cutout.label.trim();
-  const placement = trimmedLabel === '' ? null : cutoutLabelPlacement(cutout, binWidth, binDepth);
+  const placement =
+    trimmedLabel === ''
+      ? null
+      : cutoutLabelPlacement(withCenteredTextPlacement(cutout), binWidth, binDepth);
   let renderedSize: number | null = null;
   if (placement) {
     const banded = explicitSize

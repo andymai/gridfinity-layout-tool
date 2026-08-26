@@ -108,8 +108,10 @@ describe('text element on the bin top', () => {
       expect(mesh.vertices.some((v) => !Number.isFinite(v))).toBe(false);
     }
 
-    // No cavity: an element with nothing to say changes nothing.
+    // No cavity: an element with nothing to say changes nothing — the whole
+    // tessellation comes out identical, not merely the same size.
     expect(blank.triangleCount).toBe(bare.triangleCount);
+    expect(blank.vertices).toEqual(bare.vertices);
 
     // Glyphs stand above the fill top, sized by the explicit 10mm style: the
     // cap height lands well above half the size and at or below the size.
@@ -118,6 +120,22 @@ describe('text element on the bin top', () => {
     expect(spans.y).toBeGreaterThan(5);
     expect(spans.y).toBeLessThan(11);
     expect(spans.x).toBeGreaterThan(0);
+  }, 240000);
+
+  it('ignores stray anchor and offset fields — the caption stays centered', () => {
+    const generateBin = getGenerateBin();
+
+    const clean = generateBin(solidBinWith([textElement()]));
+    const stray = generateBin(
+      solidBinWith([
+        textElement({ textAnchor: 'top', textOffset: { x: 15, y: 9 }, textSide: 'left' }),
+      ])
+    );
+
+    // The editor offers neither control for a text element, so a hand-authored
+    // file carrying them must engrave exactly what a clean one does.
+    expect(stray.triangleCount).toBe(clean.triangleCount);
+    expect(stray.vertices).toEqual(clean.vertices);
   }, 240000);
 
   it('turns the glyphs with the element rotation', () => {
@@ -155,11 +173,10 @@ describe('text element on a lid', () => {
 
     const plain = generateLid(base);
     const texted = generateLid(withText);
-    expect(plain).not.toBeNull();
-    expect(texted).not.toBeNull();
+    if (!plain || !texted) throw new Error('expected both lids to generate');
 
     // The caption adds glyph geometry; nothing else about the lid changed.
-    expect(texted!.triangleCount).toBeGreaterThan(plain!.triangleCount);
-    expect(texted!.vertices.some((v) => !Number.isFinite(v))).toBe(false);
+    expect(texted.triangleCount).toBeGreaterThan(plain.triangleCount);
+    expect(texted.vertices.some((v) => !Number.isFinite(v))).toBe(false);
   }, 240000);
 });
