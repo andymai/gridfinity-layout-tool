@@ -1,10 +1,3 @@
-/**
- * Tests for the GitHub OAuth provider. Mocks the `arctic` GitHub class (so no
- * network call to GitHub's token endpoint) and `fetch` (for the `/user` and
- * `/user/emails` REST calls); everything else — email selection, name
- * fallback, header shaping — runs the real provider code.
- */
-
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type * as ArcticModule from 'arctic';
 
@@ -50,14 +43,9 @@ function mockUser(overrides: Partial<RawGitHubUser> = {}): RawGitHubUser {
 }
 
 describe('githubProvider', () => {
-  const ORIGINAL_ENV = process.env;
-
   beforeEach(() => {
-    process.env = {
-      ...ORIGINAL_ENV,
-      GITHUB_CLIENT_ID: 'gh-id',
-      GITHUB_CLIENT_SECRET: 'gh-secret',
-    };
+    vi.stubEnv('GITHUB_CLIENT_ID', 'gh-id');
+    vi.stubEnv('GITHUB_CLIENT_SECRET', 'gh-secret');
     vi.stubGlobal('fetch', vi.fn());
     mocks.githubCtor.mockClear();
     mocks.createAuthorizationURL.mockClear();
@@ -68,21 +56,21 @@ describe('githubProvider', () => {
   });
 
   afterEach(() => {
-    process.env = ORIGINAL_ENV;
+    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
   });
 
   describe('config', () => {
     it('throws when both GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are unset', () => {
-      delete process.env.GITHUB_CLIENT_ID;
-      delete process.env.GITHUB_CLIENT_SECRET;
+      vi.stubEnv('GITHUB_CLIENT_ID', undefined);
+      vi.stubEnv('GITHUB_CLIENT_SECRET', undefined);
       expect(() => githubProvider.buildAuthorizationUrl('state')).toThrow(
         'GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET not configured'
       );
     });
 
     it('throws when only GITHUB_CLIENT_SECRET is unset', () => {
-      delete process.env.GITHUB_CLIENT_SECRET;
+      vi.stubEnv('GITHUB_CLIENT_SECRET', undefined);
       expect(() => githubProvider.buildAuthorizationUrl('state')).toThrow(
         'GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET not configured'
       );

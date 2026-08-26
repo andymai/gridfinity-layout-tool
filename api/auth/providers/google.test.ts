@@ -1,10 +1,3 @@
-/**
- * Tests for the Google OAuth provider. Mocks the `arctic` Google class (so no
- * network call to Google's token endpoint); `generateCodeVerifier` is the real
- * implementation. Everything else — callback URL construction, id_token
- * decoding, profile mapping — runs the real provider code.
- */
-
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type * as ArcticModule from 'arctic';
 
@@ -41,37 +34,32 @@ function makeIdToken(payload: Record<string, unknown>): string {
 }
 
 describe('googleProvider', () => {
-  const ORIGINAL_ENV = process.env;
-
   beforeEach(() => {
-    process.env = {
-      ...ORIGINAL_ENV,
-      GOOGLE_CLIENT_ID: 'g-id',
-      GOOGLE_CLIENT_SECRET: 'g-secret',
-    };
-    delete process.env.OAUTH_REDIRECT_BASE_URL;
-    delete process.env.VERCEL_URL;
-    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    vi.stubEnv('GOOGLE_CLIENT_ID', 'g-id');
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', 'g-secret');
+    vi.stubEnv('OAUTH_REDIRECT_BASE_URL', undefined);
+    vi.stubEnv('VERCEL_URL', undefined);
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', undefined);
     mocks.googleCtor.mockClear();
     mocks.createAuthorizationURL.mockClear();
     mocks.validateAuthorizationCode.mockReset();
   });
 
   afterEach(() => {
-    process.env = ORIGINAL_ENV;
+    vi.unstubAllEnvs();
   });
 
   describe('config', () => {
     it('throws when both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are unset', () => {
-      delete process.env.GOOGLE_CLIENT_ID;
-      delete process.env.GOOGLE_CLIENT_SECRET;
+      vi.stubEnv('GOOGLE_CLIENT_ID', undefined);
+      vi.stubEnv('GOOGLE_CLIENT_SECRET', undefined);
       expect(() => googleProvider.buildAuthorizationUrl('state')).toThrow(
         'GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not configured'
       );
     });
 
     it('throws when only GOOGLE_CLIENT_ID is unset', () => {
-      delete process.env.GOOGLE_CLIENT_ID;
+      vi.stubEnv('GOOGLE_CLIENT_ID', undefined);
       expect(() => googleProvider.buildAuthorizationUrl('state')).toThrow(
         'GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not configured'
       );
@@ -80,7 +68,7 @@ describe('googleProvider', () => {
 
   describe('callback URL construction', () => {
     it('appends the callback path to OAUTH_REDIRECT_BASE_URL', () => {
-      process.env.OAUTH_REDIRECT_BASE_URL = 'https://gridfinity.example';
+      vi.stubEnv('OAUTH_REDIRECT_BASE_URL', 'https://gridfinity.example');
       googleProvider.buildAuthorizationUrl('s');
 
       expect(mocks.googleCtor).toHaveBeenCalledWith(
@@ -91,7 +79,7 @@ describe('googleProvider', () => {
     });
 
     it('strips a trailing slash from OAUTH_REDIRECT_BASE_URL before appending the callback path', () => {
-      process.env.OAUTH_REDIRECT_BASE_URL = 'https://gridfinity.example/';
+      vi.stubEnv('OAUTH_REDIRECT_BASE_URL', 'https://gridfinity.example/');
       googleProvider.buildAuthorizationUrl('s');
 
       expect(mocks.googleCtor).toHaveBeenCalledWith(
@@ -112,7 +100,7 @@ describe('googleProvider', () => {
     });
 
     it('falls back through getBaseUrl() to VERCEL_URL when OAUTH_REDIRECT_BASE_URL is unset', () => {
-      process.env.VERCEL_URL = 'gflt-preview.vercel.app';
+      vi.stubEnv('VERCEL_URL', 'gflt-preview.vercel.app');
       googleProvider.buildAuthorizationUrl('s');
 
       expect(mocks.googleCtor).toHaveBeenCalledWith(
@@ -125,7 +113,7 @@ describe('googleProvider', () => {
 
   describe('buildAuthorizationUrl', () => {
     it('generates a PKCE code verifier and passes it plus the openid/profile/email scopes', () => {
-      process.env.OAUTH_REDIRECT_BASE_URL = 'https://gridfinity.example';
+      vi.stubEnv('OAUTH_REDIRECT_BASE_URL', 'https://gridfinity.example');
       const url = new URL('https://accounts.google.com/o/oauth2/v2/auth?state=s');
       mocks.createAuthorizationURL.mockReturnValue(url);
 
