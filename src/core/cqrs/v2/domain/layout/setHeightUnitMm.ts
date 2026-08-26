@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { ok } from '@/core/result';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 

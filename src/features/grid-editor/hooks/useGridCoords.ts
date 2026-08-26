@@ -6,7 +6,7 @@ import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBaseCellSize, getCellSizeY, snapToHalf } from '@/core/constants';
 import { effectiveGridUnitMmY } from '@/core/types';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { useResponsive } from '@/shared/hooks';
 
 /**

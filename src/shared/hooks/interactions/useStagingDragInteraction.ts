@@ -1,7 +1,8 @@
 import { useCallback, useRef } from 'react';
 import { useInteractionStore, useToastStore } from '@/core/store';
 import { useHalfGridModeStore } from '@/core/store';
-import { canPlaceBin, clamp, getPlacementErrorMessage } from '@/shared/utils/validation';
+import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { snapPosition } from '@/shared/utils/snap';
 import { capturePointer } from './interaction';
 import { findBinById } from '@/shared/utils/entity';

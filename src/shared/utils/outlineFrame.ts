@@ -29,7 +29,7 @@ import type {
   OutlineOverhang,
   StoredBaseplateParams,
 } from '@/core/types';
-import { clamp } from './validation';
+import { clamp } from './math';
 import { padOutline } from './padOutline';
 import { GRID_PITCH_MM_MAX, translateOutline } from './drawerOutline';
 import { clampCornerCuts, cornerCutVertices, cornerCutsMatchVertices } from './cornerCutOutline';

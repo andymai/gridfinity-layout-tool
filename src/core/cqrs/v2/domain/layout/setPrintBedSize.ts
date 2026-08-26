@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { ok } from '@/core/result';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { CONSTRAINTS } from '@/core/constants';
 import { mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';

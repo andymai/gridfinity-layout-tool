@@ -5,7 +5,7 @@
  * re-exports the public surface and houses small formatting helpers
  * (`truncate`, `formatDimension`, `getPlacementErrorMessage`,
  * `validateLayoutIntegrity`) that don't belong with the heavier
- * validators. `clamp` is re-exported from `./math` for back-compat.
+ * validators.
  *
  * Sibling modules:
  *   - `validationGuards`     — type guards + raw shape interfaces
@@ -19,7 +19,6 @@ import type { Layout, ValidationReason, BlockingInfo } from '@/core/types';
 import type { TFunction } from '@/i18n';
 import { STAGING_ID } from '@/core/constants';
 
-export { clamp } from './math';
 export { isValidDrawer, isValidLayer, isValidBin, isValidCategory } from './validationGuards';
 export { canPlaceBin } from './validationPlacement';
 export { validateCustomProperties } from './validationProperties';
