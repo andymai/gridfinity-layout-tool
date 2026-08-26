@@ -1,0 +1,61 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 508,511
+  s_8c2c4457d965c0::t_0370376fe341d3 541
+src/shell/Sidebar/Sidebar.tsx
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 184,187-189,586-591
+src/features/bin-recommender/README.md
+  s_8c2c4457d965c0::t_0e8b9960c684b3 7,54
+src/features/generation/bridge/BridgeManager.ts
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 97
+src/shared/sync/SyncSessionMount.tsx
+  s_8c2c4457d965c0::t_0e8b9960c684b3 18
+src/features/generation/README.md
+  s_8c2c4457d965c0::t_0e8b9960c684b3 143
+src/shared/hooks/useCollabMode.ts
+  s_8c2c4457d965c0::t_234c0df324ade1 21
+  s_8c2c4457d965c0::t_0e8b9960c684b3 5-6,36-37
+src/App.tsx
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 649-653
+  s_8c2c4457d965c0::t_0e8b9960c684b3 72
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 120
+src/features/bin-designer/hooks/useGeneration.ts
+  s_8c2c4457d965c0::t_0e8b9960c684b3 117
+src/features/whats-new/README.md
+  s_8c2c4457d965c0::t_e51087e62140a0 40
+scripts/doc-budget.json
+  s_8c2c4457d965c0::t_0370376fe341d3 47
+  s_8c2c4457d965c0::t_0d1bd10e8ddfff 48,56
+src/features/bin-inspector/README.md
+  s_8c2c4457d965c0::t_0e8b9960c684b3 61
+src/features/bin-recommender/useBinSizeSuggestion.ts
+  s_8c2c4457d965c0::t_cad193c57a576d 64
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 40,47
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_8c2c4457d965c0::t_0370376fe341d3 715
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 669,674
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 438
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 417-422
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 377-389
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_8c2c4457d965c0::t_0f87bbfdc88fa1 622
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d914ee22871f138f7bafcad50bef43d6b65b2af1",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
