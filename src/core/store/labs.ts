@@ -8,7 +8,7 @@
 
 import { create } from 'zustand';
 import type { LabsPreferences, FeatureId } from '@/core/labs';
-import { createDefaultLabsPreferences, getActiveFeatures, getFeature } from '@/core/labs';
+import { createDefaultLabsPreferences, getToggleableFeatures, getFeature } from '@/core/labs';
 // Deep-import the leaf module (not the barrel) to keep this store off the
 // `metrics.ts` import path. metrics.ts imports `useLabsStore` from this file;
 // going through the barrel would close the cycle, which under some chunking
@@ -80,12 +80,6 @@ export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: s
   // Graduated features are always enabled
   if (feature?.status === 'graduated') return true;
 
-  // Deprecated features are always disabled
-  if (feature?.status === 'deprecated') return false;
-
-  // Coming Soon features are always disabled
-  if (feature?.comingSoon) return false;
-
   return resolveStoredEnabled(preferences, featureId);
 }
 
@@ -127,11 +121,6 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
   },
 
   toggleFeature: (featureId) => {
-    const feature = getFeature(featureId);
-
-    // Coming Soon features cannot be toggled
-    if (feature?.comingSoon) return OK;
-
     const { preferences } = get();
     const newEnabled = !resolveStoredEnabled(preferences, featureId);
 
@@ -157,11 +146,6 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
   },
 
   enableFeature: (featureId) => {
-    const feature = getFeature(featureId);
-
-    // Coming Soon features cannot be enabled
-    if (feature?.comingSoon) return OK;
-
     const { preferences } = get();
     if (resolveStoredEnabled(preferences, featureId)) return OK;
 
@@ -213,10 +197,9 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
   getEnabledCount: () => {
     const { preferences } = get();
-    return getActiveFeatures().filter((feature) => {
-      if (feature.status !== 'experimental' && feature.status !== 'preview') return false;
-      return resolveFeatureEnabled(preferences, feature.id);
-    }).length;
+    return getToggleableFeatures().filter((feature) =>
+      resolveFeatureEnabled(preferences, feature.id)
+    ).length;
   },
 
   syncFromStorage: (prefs) => {

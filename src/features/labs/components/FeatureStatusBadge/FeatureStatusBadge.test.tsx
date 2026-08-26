@@ -18,9 +18,4 @@ describe('FeatureStatusBadge', () => {
     render(<FeatureStatusBadge status="graduated" />);
     expect(screen.getByText('Shipped')).toBeDefined();
   });
-
-  it('renders deprecated status', () => {
-    render(<FeatureStatusBadge status="deprecated" />);
-    expect(screen.getByText('Retiring')).toBeDefined();
-  });
 });

@@ -9,38 +9,16 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useLabsStore, LABS_STORAGE_KEY } from '@/core/store';
 import {
   FEATURE_FLAGS,
-  getActiveFeatures,
   getGraduatedFeatures,
   getToggleableFeatures,
   createDefaultLabsPreferences,
   type FeatureId,
 } from '@/core/labs';
-import * as features from '@/core/labs/features';
-import type { FeatureFlag } from '@/core/labs/types';
 
 // Mock trackEvent to avoid analytics calls in tests
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
-
-// Mock getFeature for store tests to return features without comingSoon
-// Note: Must mock the actual source module that the store imports from
-vi.mock('@/core/labs/features', async () => {
-  const actual = await vi.importActual<typeof features>('@/core/labs/features');
-  return {
-    ...actual,
-    getFeature: vi.fn((id: string) => {
-      const feature: FeatureFlag | undefined = actual.FEATURE_FLAGS.find((f) => f.id === id);
-      if (!feature) return undefined;
-      // Return feature without comingSoon for store tests
-      const { comingSoon: _, ...rest } = feature;
-      void _; // Suppress unused variable warning
-      return rest;
-    }),
-  };
-});
-
-const mockGetFeature = features.getFeature as ReturnType<typeof vi.fn>;
 
 describe('Labs Feature Registry', () => {
   describe('getFeature', () => {
@@ -55,20 +33,6 @@ describe('Labs Feature Registry', () => {
       const unknownId: string = 'unknown_feature';
       const feature = FEATURE_FLAGS.find((f) => f.id === unknownId);
       expect(feature).toBeUndefined();
-    });
-  });
-
-  describe('getActiveFeatures', () => {
-    it('returns non-deprecated features', () => {
-      const active = getActiveFeatures();
-      expect(active.length).toBeGreaterThan(0);
-      expect(active.every((f) => f.status !== 'deprecated')).toBe(true);
-    });
-
-    it('includes experimental and preview features', () => {
-      const active = getActiveFeatures();
-      const hasExperimental = active.some((f) => f.status === 'experimental');
-      expect(hasExperimental).toBe(true);
     });
   });
 
@@ -309,72 +273,5 @@ describe('FeatureId type', () => {
     // all IDs, this would fail to compile
     const ids: FeatureId[] = ['collaborative_editing', 'brepkit_kernel'];
     expect(ids).toHaveLength(2);
-  });
-});
-
-describe('Coming Soon features', () => {
-  const featureId: FeatureId = 'collaborative_editing';
-
-  beforeEach(() => {
-    localStorage.clear();
-    useLabsStore.setState({
-      preferences: createDefaultLabsPreferences(),
-      isDrawerOpen: false,
-    });
-  });
-
-  it('cannot be toggled when comingSoon is true', () => {
-    // Override mock to return feature with comingSoon
-    mockGetFeature.mockReturnValue({
-      id: featureId,
-      name: 'Collaborative Editing',
-      status: 'experimental',
-      comingSoon: true,
-    });
-
-    const store = useLabsStore.getState();
-    expect(store.isFeatureEnabled(featureId)).toBe(false);
-
-    store.toggleFeature(featureId);
-    // Should still be false because comingSoon features can't be toggled
-    expect(useLabsStore.getState().isFeatureEnabled(featureId)).toBe(false);
-    expect(useLabsStore.getState().preferences.enabledFeatures[featureId]).toBeUndefined();
-  });
-
-  it('cannot be enabled when comingSoon is true', () => {
-    mockGetFeature.mockReturnValue({
-      id: featureId,
-      name: 'Collaborative Editing',
-      status: 'experimental',
-      comingSoon: true,
-    });
-
-    const store = useLabsStore.getState();
-    store.enableFeature(featureId);
-
-    // Should still be false because comingSoon features can't be enabled
-    expect(useLabsStore.getState().isFeatureEnabled(featureId)).toBe(false);
-    expect(useLabsStore.getState().preferences.enabledFeatures[featureId]).toBeUndefined();
-  });
-
-  it('isFeatureEnabled returns false even if preferences say enabled', () => {
-    mockGetFeature.mockReturnValue({
-      id: featureId,
-      name: 'Collaborative Editing',
-      status: 'experimental',
-      comingSoon: true,
-    });
-
-    // Manually set preferences to enabled (simulating old data)
-    useLabsStore.setState({
-      preferences: {
-        enabledFeatures: { [featureId]: true },
-        lastModified: new Date().toISOString(),
-        version: 1,
-      },
-    });
-
-    // Should still return false because it's Coming Soon
-    expect(useLabsStore.getState().isFeatureEnabled(featureId)).toBe(false);
   });
 });

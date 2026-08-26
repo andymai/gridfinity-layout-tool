@@ -107,51 +107,6 @@ describe('useFeatureFlag', () => {
       expect(result.current).toBe(true);
     });
 
-    it('returns false for deprecated features regardless of preferences', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'deprecated_feature',
-        name: 'Deprecated Feature',
-        status: 'deprecated',
-      });
-
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { deprecated_feature: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-
-      const { result } = renderHook(() =>
-        useFeatureFlag('deprecated_feature' as features.FeatureId)
-      );
-
-      expect(result.current).toBe(false);
-    });
-
-    it('returns false for Coming Soon features regardless of preferences', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'coming_soon_feature',
-        name: 'Coming Soon Feature',
-        status: 'experimental',
-        comingSoon: true,
-      });
-
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { coming_soon_feature: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-
-      const { result } = renderHook(() =>
-        useFeatureFlag('coming_soon_feature' as features.FeatureId)
-      );
-
-      expect(result.current).toBe(false);
-    });
-
     it('returns false for non-existent features', () => {
       mockGetFeature.mockReturnValue(undefined);
 
@@ -240,43 +195,6 @@ describe('useFeatureFlag', () => {
       });
 
       expect(isFeatureEnabled('graduated_feature' as features.FeatureId)).toBe(true);
-    });
-
-    it('returns false for deprecated features', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'deprecated_feature',
-        name: 'Deprecated Feature',
-        status: 'deprecated',
-      });
-
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { deprecated_feature: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-
-      expect(isFeatureEnabled('deprecated_feature' as features.FeatureId)).toBe(false);
-    });
-
-    it('returns false for Coming Soon features', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'coming_soon_feature',
-        name: 'Coming Soon Feature',
-        status: 'experimental',
-        comingSoon: true,
-      });
-
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { coming_soon_feature: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-
-      expect(isFeatureEnabled('coming_soon_feature' as features.FeatureId)).toBe(false);
     });
   });
 });

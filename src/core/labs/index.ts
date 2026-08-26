@@ -13,10 +13,4 @@ export { createDefaultLabsPreferences } from './types';
 
 // Feature definitions
 export type { FeatureId } from './features';
-export {
-  FEATURE_FLAGS,
-  getFeature,
-  getActiveFeatures,
-  getGraduatedFeatures,
-  getToggleableFeatures,
-} from './features';
+export { FEATURE_FLAGS, getFeature, getGraduatedFeatures, getToggleableFeatures } from './features';
