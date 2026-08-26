@@ -1,0 +1,25 @@
+src/shared/analytics/posthog/eventsPerson.test.ts
+  s_77d0b52ee27f58::t_86f42b73948f5e 3,15-19,21-24,28,32-40,66
+  s_77d0b52ee27f58::t_336e67b440ddfa 93-111
+src/shared/analytics/posthog/eventsPerson.ts
+  s_77d0b52ee27f58::t_c3b066a6ba0fe7 102-107,109-112,123-127
+  s_77d0b52ee27f58::t_971addb153dc4d 153
+src/shared/analytics/posthog/identity.ts
+  s_77d0b52ee27f58::t_59a2482c687cd5 20-25,31-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "f9c0cae6fb54e5a49b6669edbc2d4b007315c72d",
+  "prompts": {},
+  "sessions": {
+    "s_77d0b52ee27f58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f3aa5fd-a45a-4e7a-bdfe-c39dccf0151f",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
