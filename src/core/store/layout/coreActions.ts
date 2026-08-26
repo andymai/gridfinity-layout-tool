@@ -9,7 +9,7 @@ import type {
 } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { migrateBaseplateParams } from '@/core/baseplateDefaults';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { GRID_PITCH_MM_MAX, gridPitchFloors } from '@/shared/utils/drawerOutline';
 import type { EditSource, SetLocal, ImmerSet, GetState } from './types';
 

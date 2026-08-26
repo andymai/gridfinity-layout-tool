@@ -7,7 +7,7 @@
 
 import { z } from 'zod';
 import { ok } from '@/core/result';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/baseplateDefaults';
 import type { StoredBaseplateParams, GridUnits, Mm } from '@/core/types';

@@ -19,7 +19,7 @@ import { z } from 'zod';
 import type { Result, LayoutError } from '@/core/result';
 import { ok } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import {
   drawerSizeFloors,
   isOutlineFullRectangle,

@@ -5,7 +5,7 @@ import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useSettingsStore } from '@/core/store/settings';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { binId as toBinId } from '@/core/types';
 import type { GridUnits } from '@/core/types';

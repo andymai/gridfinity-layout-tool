@@ -10,7 +10,7 @@ import {
   layoutInvalidOperation,
 } from '@/core/result';
 import { generateLayerId, CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from '../settings';
 import { requireLayer } from './helpers';

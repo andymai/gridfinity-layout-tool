@@ -9,7 +9,7 @@ import { z } from 'zod';
 import type { Result, LayoutError } from '@/core/result';
 import { ok, err, layoutInvalidOperation } from '@/core/result';
 import { CONSTRAINTS } from '@/core/constants';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import type { Layer, LayerId } from '@/core/types';
 import { layerId as toLayerId, heightUnits } from '@/core/types';
 import { defineCommand } from '../../defineCommand';

@@ -1,5 +1,5 @@
 import type { Bin, GridUnits, Rect } from '@/core/types';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 
 /**
  * Calculate the bounding box of multiple bins.

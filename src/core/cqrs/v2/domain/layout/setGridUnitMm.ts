@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 import { ok } from '@/core/result';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { mm } from '@/core/types';
 import { GRID_PITCH_MM_MAX, gridPitchFloors } from '@/shared/utils/drawerOutline';
 import { defineCommand } from '../../defineCommand';

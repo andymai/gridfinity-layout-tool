@@ -4,7 +4,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { CONSTRAINTS } from '@/core/constants';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { useTranslation } from '@/i18n';
 import type { SectionMeta } from '../types';
 

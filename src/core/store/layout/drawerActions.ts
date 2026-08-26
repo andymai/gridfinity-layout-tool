@@ -1,7 +1,7 @@
 import type { Drawer, GridUnits, HeightUnits } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 import { drawerSizeFloors, isOutlineFullRectangle } from '@/shared/utils/drawerOutline';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
 import type { SetLocal } from './types';

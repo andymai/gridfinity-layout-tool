@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { BinId, CategoryId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
-import { clamp } from '@/shared/utils/validation';
+import { clamp } from '@/shared/utils/math';
 
 /**
  * View Store
