@@ -20,10 +20,8 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { getActiveBridge } from '@/shared/generation/bridge';
-import { export3MF } from '@/shared/generation/export';
-import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
-import { isErr, getUserMessage } from '@/core/result';
 import { getErrorMessage } from '@/shared/utils/errors';
 import { trackToolConverted } from '@/shared/analytics/posthog';
 import {
@@ -80,23 +78,13 @@ export function useFitTestExport(): UseFitTestExportReturn {
           });
         });
 
+        const printSettings = useSettingsStore.getState().settings.printSettings;
         const pieces =
           format === '3mf'
             ? await Promise.all(
                 result.pieces.map(async (piece) => {
-                  const parsed = parseSTLBinary(piece.data);
-                  if (isErr(parsed)) throw new Error(getUserMessage(parsed.error));
-                  const printSettings = useSettingsStore.getState().settings.printSettings;
-                  const blob = export3MF(parsed.value.vertices, parsed.value.normals, {
+                  const blob = stlTo3MF(piece.data, printSettings, {
                     name: piece.label ? `${baseName}_${piece.label}` : baseName,
-                    printSettings: {
-                      layerHeight: printSettings.layerHeightMm,
-                      infillPercent: printSettings.infillPercent,
-                      material: 'PLA',
-                      supportRequired: false,
-                      estimatedMinutes: 0,
-                      estimatedGrams: 0,
-                    },
                   });
                   return { data: await blob.arrayBuffer(), label: piece.label };
                 })

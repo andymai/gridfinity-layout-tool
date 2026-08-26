@@ -6,20 +6,18 @@
  * exist for an imported mesh, and STEP is impossible (no BREP solid).
  */
 import { useShallow } from 'zustand/react/shallow';
-import { getUserMessage, isOk } from '@/core/result';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
 import { Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { bridgeManager } from '@/shared/generation/bridge';
-import { export3MF } from '@/shared/generation/export';
 import { triggerDownload } from '@/shared/generation/exportUtils';
+import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import type { GridfinityItem } from '@/shared/types/item';
 import { clamp } from '@/shared/utils/math';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import { MAX_IMPORTED_MESH_HEIGHT_UNITS } from '@/shared/items/importedMesh/descriptor';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { PanelSection } from '../PanelSection';
 import { StickyGroupHeader } from '../StickyGroupHeader';
 
@@ -79,19 +77,8 @@ export function ImportedMeshPanel() {
         triggerDownload(new Blob([result.data], { type: 'application/sla' }), result.fileName);
         return;
       }
-      const parsed = parseSTLBinary(result.data);
-      if (!isOk(parsed)) throw new Error(getUserMessage(parsed.error));
-      const printSettings = useSettingsStore.getState().settings.printSettings;
-      const blob = export3MF(parsed.value.vertices, parsed.value.normals, {
+      const blob = stlTo3MF(result.data, useSettingsStore.getState().settings.printSettings, {
         name: result.fileName.replace(/\.stl$/, ''),
-        printSettings: {
-          layerHeight: printSettings.layerHeightMm,
-          infillPercent: printSettings.infillPercent,
-          material: 'PLA',
-          supportRequired: false,
-          estimatedMinutes: 0,
-          estimatedGrams: 0,
-        },
       });
       triggerDownload(blob, result.fileName.replace(/\.stl$/, '.3mf'));
     } catch {

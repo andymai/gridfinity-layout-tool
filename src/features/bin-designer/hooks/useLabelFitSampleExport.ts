@@ -9,78 +9,28 @@
  * just like real sockets, so the offset transfers on that same nozzle.
  */
 
-import { useEngineReady } from '@/shared/hooks/useEngineReady';
-import { useCallback, useState } from 'react';
-import { useSettingsStore } from '@/core/store/settings';
-import { useToastStore } from '@/core/store/toast';
+import { useCallback } from 'react';
 import { useTranslation } from '@/i18n';
-import { getActiveBridge } from '@/shared/generation/bridge';
-import { export3MF } from '@/shared/generation/export';
-import { parseSTLBinary } from '@/shared/generation/stlParser';
-import { isErr, getUserMessage } from '@/core/result';
-import { getErrorMessage } from '@/shared/utils/errors';
-import {
-  FORMAT_MIME_TYPES,
-  FORMAT_EXTENSIONS,
-  triggerDownload,
-} from '@/shared/generation/exportUtils';
-import type { ExportFileFormat } from '@/shared/types/bin';
+import { downloadWorkerSample, useSampleExport } from '@/shared/hooks/useSampleExport';
+import type { SampleExportContext, UseSampleExportReturn } from '@/shared/hooks/useSampleExport';
 
 export const LABEL_FIT_SAMPLE_BASE_NAME = 'label-fit-sample';
 
-interface UseLabelFitSampleExportReturn {
-  readonly isExporting: boolean;
-  readonly canExport: boolean;
-  readonly downloadSample: (format: ExportFileFormat, baseName?: string) => Promise<boolean>;
-}
-
-export function useLabelFitSampleExport(): UseLabelFitSampleExportReturn {
+export function useLabelFitSampleExport(): UseSampleExportReturn {
   const t = useTranslation();
-  const [isExporting, setIsExporting] = useState(false);
-  const canExport = useEngineReady();
 
-  const downloadSample = useCallback(
-    async (format: ExportFileFormat, baseName: string = LABEL_FIT_SAMPLE_BASE_NAME) => {
-      const bridge = getActiveBridge();
-      if (!bridge) return false;
-
-      setIsExporting(true);
-      try {
-        const nozzleSizeMm = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
-        if (format === '3mf') {
-          const stlResult = await bridge.exportLabelFitSample('stl', nozzleSizeMm);
-          const parseResult = parseSTLBinary(stlResult.data);
-          if (isErr(parseResult)) throw new Error(getUserMessage(parseResult.error));
-          const printSettings = useSettingsStore.getState().settings.printSettings;
-          const blob = export3MF(parseResult.value.vertices, parseResult.value.normals, {
-            name: baseName,
-            printSettings: {
-              layerHeight: printSettings.layerHeightMm,
-              infillPercent: printSettings.infillPercent,
-              material: 'PLA',
-              supportRequired: false,
-              estimatedMinutes: 0,
-              estimatedGrams: 0,
-            },
-          });
-          triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
-        } else {
-          const result = await bridge.exportLabelFitSample(format, nozzleSizeMm);
-          const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-          triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
-        }
-        return true;
-      } catch (error: unknown) {
-        useToastStore
-          .getState()
-          .addToast(getErrorMessage(error, t('binDesigner.fitSample.exportFailed')), 'error');
-        return false;
-      } finally {
-        setIsExporting(false);
-      }
-    },
-    [t]
+  const download = useCallback(
+    (context: SampleExportContext) =>
+      downloadWorkerSample(context, (format) =>
+        context.bridge.exportLabelFitSample(format, context.printSettings.nozzleSizeMm)
+      ),
+    []
   );
 
-  return { isExporting, canExport, downloadSample };
+  return useSampleExport({
+    defaultBaseName: LABEL_FIT_SAMPLE_BASE_NAME,
+    notReadyMessage: t('binDesigner.exportNotReady'),
+    failureMessage: t('binDesigner.fitSample.exportFailed'),
+    download,
+  });
 }

@@ -47,10 +47,10 @@ import { exportWithResilience } from '@/features/bin-designer/utils/exportWithRe
 import {
   buildBinDownloadPayload,
   buildReportIssueUrl,
-  buildThreeMFPrintSettings,
   buildSplit3MFPieces,
   runSplitBinExport,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
+import { buildThreeMFPrintSettings } from '@/shared/generation/stlTo3mf';
 import {
   trackBinExportFailure,
   trackBinExportSucceeded,

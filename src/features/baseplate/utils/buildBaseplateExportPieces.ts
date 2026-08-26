@@ -12,6 +12,7 @@
 
 import { export3MF, buildSTLBuffer } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { buildThreeMFPrintSettings, stlTo3MF } from '@/shared/generation/stlTo3mf';
 import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import { isErr, getUserMessage } from '@/core/result';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -102,31 +103,6 @@ export interface BaseplateExportPieces {
   };
 }
 
-function printSettingsFor3MF(settings: BaseplateExportPrintSettings) {
-  return {
-    layerHeight: settings.layerHeightMm,
-    infillPercent: settings.infillPercent,
-    material: 'PLA',
-    supportRequired: false,
-    estimatedMinutes: 0,
-    estimatedGrams: 0,
-  };
-}
-
-/** Convert a single-plate STL to a single-instance 3MF (no stacking). */
-function convertStlTo3mf(
-  stlData: ArrayBuffer,
-  name: string,
-  settings: BaseplateExportPrintSettings
-): Blob {
-  const parseResult = parseSTLBinary(stlData);
-  if (isErr(parseResult)) {
-    throw new Error(getUserMessage(parseResult.error));
-  }
-  const { vertices, normals } = parseResult.value;
-  return export3MF(vertices, normals, { name, printSettings: printSettingsFor3MF(settings) });
-}
-
 /** Parse a binary STL into a triangle soup, or throw a user-facing error. */
 function parseStlSoup(stlData: ArrayBuffer): { vertices: Float32Array; normals: Float32Array } {
   const parseResult = parseSTLBinary(stlData);
@@ -161,7 +137,7 @@ function buildStackedFileBlob(
 
   return export3MF(soup.vertices, soup.normals, {
     name,
-    printSettings: printSettingsFor3MF(settings),
+    printSettings: buildThreeMFPrintSettings(settings),
   });
 }
 
@@ -279,7 +255,7 @@ export async function buildBaseplateExportPieces(
       } else {
         const r = await bridge.exportMargin(fullParams, m, 'stl');
         if (format === '3mf') {
-          const blob = convertStlTo3mf(r.data, `${baseNameNoExt}_${m.id}`, printSettings);
+          const blob = stlTo3MF(r.data, printSettings, { name: `${baseNameNoExt}_${m.id}` });
           out.push({ data: await blob.arrayBuffer(), label: m.id });
         } else {
           out.push({ data: r.data, label: m.id });
@@ -309,7 +285,7 @@ export async function buildBaseplateExportPieces(
       () => bridge.exportConnectorKey(fullParams, bridgeFormat).then((r) => r.data)
     );
     if (format === '3mf') {
-      const blob = convertStlTo3mf(keyData, `${baseNameNoExt}_key`, printSettings);
+      const blob = stlTo3MF(keyData, printSettings, { name: `${baseNameNoExt}_key` });
       keyData = await blob.arrayBuffer();
     }
     return [{ data: keyData, label: 'key' }];
@@ -412,7 +388,7 @@ export async function buildBaseplateExportPieces(
           const label = tiling.pieces[idx].label;
           const blob = export3MF(soup.vertices, soup.normals, {
             name: `${baseNameNoExt}_${label}`,
-            printSettings: printSettingsFor3MF(printSettings),
+            printSettings: buildThreeMFPrintSettings(printSettings),
           });
           pieces.push({ data: await blob.arrayBuffer(), label });
         }
@@ -523,7 +499,7 @@ export async function buildBaseplateExportPieces(
     );
     const bodyData =
       format === '3mf'
-        ? await convertStlTo3mf(stlData, `${baseNameNoExt}_body`, printSettings).arrayBuffer()
+        ? await stlTo3MF(stlData, printSettings, { name: `${baseNameNoExt}_body` }).arrayBuffer()
         : stlData;
     return {
       pieces: [
@@ -543,7 +519,7 @@ export async function buildBaseplateExportPieces(
   );
   const data =
     format === '3mf'
-      ? await convertStlTo3mf(stlData, baseNameNoExt, printSettings).arrayBuffer()
+      ? await stlTo3MF(stlData, printSettings, { name: baseNameNoExt }).arrayBuffer()
       : stlData;
   return { pieces: [{ data, label: '' }], guideText: '', baseNameNoExt, extension };
 }

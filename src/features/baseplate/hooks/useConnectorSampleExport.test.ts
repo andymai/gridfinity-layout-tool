@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useConnectorSampleExport } from './useConnectorSampleExport';
 import { triggerDownload } from '@/shared/generation/exportUtils';
+import { useToastStore } from '@/core/store/toast';
 import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -73,6 +74,7 @@ describe('useConnectorSampleExport', () => {
     });
     expect(ok).toBe(false);
     expect(triggerDownload).not.toHaveBeenCalled();
+    expect(useToastStore.getState().toasts[0].message).toBe('baseplate.exportNotReady');
   });
 
   it('exports STL straight from the bridge', async () => {

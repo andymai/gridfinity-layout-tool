@@ -48,25 +48,6 @@ import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import type { BinParams, ExportFileFormat } from '@/features/bin-designer/types';
 import type { CombinedExportResult, ExportFormat } from '@/shared/generation/bridge';
 
-/**
- * Materialize the {@link ThreeMFPrintSettings} block from the live print
- * settings + estimates. Pulled out of the hook so the construction can be
- * reused between the regular and split download paths.
- */
-export function buildThreeMFPrintSettings(
-  printSettings: { layerHeightMm: number; infillPercent: number },
-  estimates: { printTimeMinutes: number; gramsFilament: number }
-): ThreeMFPrintSettings {
-  return {
-    layerHeight: printSettings.layerHeightMm,
-    infillPercent: printSettings.infillPercent,
-    material: 'PLA',
-    supportRequired: false,
-    estimatedMinutes: estimates.printTimeMinutes,
-    estimatedGrams: estimates.gramsFilament,
-  };
-}
-
 /** Map piece labels from the worker to descriptive display names for 3MF/STEP. */
 export function formatPieceDisplayName(
   label: string,

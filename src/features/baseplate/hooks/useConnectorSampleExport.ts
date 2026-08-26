@@ -8,57 +8,19 @@
  * magnet settings so the coupon height matches the real plate.
  */
 
-import { useEngineReady } from '@/shared/hooks/useEngineReady';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { getActiveBridge } from '@/shared/generation/bridge';
-import { export3MF } from '@/shared/generation/export';
-import { parseSTLBinary } from '@/shared/generation/stlParser';
-import { isErr, getUserMessage } from '@/core/result';
-import { useToastStore } from '@/core/store/toast';
-import { getErrorMessage } from '@/shared/utils/errors';
 import { useTranslation } from '@/i18n';
+import { downloadWorkerSample, useSampleExport } from '@/shared/hooks/useSampleExport';
+import type { SampleExportContext, UseSampleExportReturn } from '@/shared/hooks/useSampleExport';
 import { buildFullParams } from '../utils/buildFullParams';
-import {
-  FORMAT_MIME_TYPES,
-  FORMAT_EXTENSIONS,
-  triggerDownload,
-} from '@/shared/generation/exportUtils';
-import type { ExportFileFormat } from '@/shared/types/bin';
 
 /** Default download name when the dialog isn't given a custom one. */
 export const CONNECTOR_SAMPLE_BASE_NAME = 'connector-fit-sample';
 
-interface UseConnectorSampleExportReturn {
-  readonly isExporting: boolean;
-  readonly canExport: boolean;
-  readonly downloadSample: (format: ExportFileFormat, baseName?: string) => Promise<boolean>;
-}
-
-function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
-  const parseResult = parseSTLBinary(stlData);
-  if (isErr(parseResult)) {
-    throw new Error(getUserMessage(parseResult.error));
-  }
-  const { vertices, normals } = parseResult.value;
-  const printSettings = useSettingsStore.getState().settings.printSettings;
-  return export3MF(vertices, normals, {
-    name,
-    printSettings: {
-      layerHeight: printSettings.layerHeightMm,
-      infillPercent: printSettings.infillPercent,
-      material: 'PLA',
-      supportRequired: false,
-      estimatedMinutes: 0,
-      estimatedGrams: 0,
-    },
-  });
-}
-
-export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
+export function useConnectorSampleExport(): UseSampleExportReturn {
   const t = useTranslation();
 
   const {
@@ -79,48 +41,28 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
     }))
   );
 
-  const [isExporting, setIsExporting] = useState(false);
-  const canExport = useEngineReady();
-
-  const downloadSample = useCallback(
-    async (format: ExportFileFormat, baseName: string = CONNECTOR_SAMPLE_BASE_NAME) => {
-      const bridge = getActiveBridge();
-      if (!bridge) {
-        useToastStore.getState().addToast(t('baseplate.exportNotReady'), 'error');
-        return false;
-      }
-
-      setIsExporting(true);
-      try {
-        const fullParams = buildFullParams(
-          baseplateParams,
-          drawerWidth,
-          drawerDepth,
-          gridUnitMm,
-          fractionalEdgeX,
-          fractionalEdgeY,
-          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
-        );
-
-        if (format === '3mf') {
-          const stlResult = await bridge.exportConnectorSample(fullParams, 'stl');
-          const blob = convertStlTo3mf(stlResult.data, baseName);
-          triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
-        } else {
-          const result = await bridge.exportConnectorSample(fullParams, format);
-          const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-          triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
-        }
-        return true;
-      } catch (error: unknown) {
-        useToastStore.getState().addToast(getErrorMessage(error, 'Export failed'), 'error');
-        return false;
-      } finally {
-        setIsExporting(false);
-      }
+  const download = useCallback(
+    (context: SampleExportContext) => {
+      const fullParams = buildFullParams(
+        baseplateParams,
+        drawerWidth,
+        drawerDepth,
+        gridUnitMm,
+        fractionalEdgeX,
+        fractionalEdgeY,
+        context.printSettings.nozzleSizeMm
+      );
+      return downloadWorkerSample(context, (format) =>
+        context.bridge.exportConnectorSample(fullParams, format)
+      );
     },
-    [t, drawerWidth, drawerDepth, gridUnitMm, fractionalEdgeX, fractionalEdgeY, baseplateParams]
+    [baseplateParams, drawerWidth, drawerDepth, gridUnitMm, fractionalEdgeX, fractionalEdgeY]
   );
 
-  return { isExporting, canExport, downloadSample };
+  return useSampleExport({
+    defaultBaseName: CONNECTOR_SAMPLE_BASE_NAME,
+    notReadyMessage: t('baseplate.exportNotReady'),
+    failureMessage: t('baseplate.connectorSample.exportFailed'),
+    download,
+  });
 }

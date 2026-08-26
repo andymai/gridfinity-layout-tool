@@ -12,10 +12,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { triggerDownload } from '@/shared/generation/exportUtils';
-import { export3MF } from '@/shared/generation/export';
-import { parseSTLBinary } from '@/shared/generation/stlParser';
-import { isOk } from '@/core/result';
-import { getUserMessage } from '@/core/result';
+import { stlTo3MF } from '@/shared/generation/stlTo3mf';
 import type { GridfinityItem } from '@/shared/types/item';
 import { ASSEMBLY_PART_TYPES } from '@/shared/types/assembly';
 import type { AssemblyPartNode, AssemblyStructure } from '@/shared/types/assembly';
@@ -165,19 +162,8 @@ export function WorkshopPanel() {
         triggerDownload(new Blob([result.data], { type: 'application/sla' }), result.fileName);
         return;
       }
-      const parsed = parseSTLBinary(result.data);
-      if (!isOk(parsed)) throw new Error(getUserMessage(parsed.error));
-      const printSettings = useSettingsStore.getState().settings.printSettings;
-      const blob = export3MF(parsed.value.vertices, parsed.value.normals, {
+      const blob = stlTo3MF(result.data, useSettingsStore.getState().settings.printSettings, {
         name: result.fileName.replace(/\.stl$/, ''),
-        printSettings: {
-          layerHeight: printSettings.layerHeightMm,
-          infillPercent: printSettings.infillPercent,
-          material: 'PLA',
-          supportRequired: false,
-          estimatedMinutes: 0,
-          estimatedGrams: 0,
-        },
       });
       triggerDownload(blob, result.fileName.replace(/\.stl$/, '.3mf'));
     } catch {
