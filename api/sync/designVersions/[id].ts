@@ -10,6 +10,9 @@ import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
+/** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.designVersions` in src/core/sync/payloadKey.ts. */
+export const PAYLOAD_KEY = 'designVersion' as const;
+
 /** Mirrors the design-name cap; a version name is shown in the same lists. */
 const MAX_NAME_LENGTH = 100;
 
@@ -38,7 +41,7 @@ interface DesignVersionEnvelope {
  */
 export default createSyncResourceHandler<DesignVersionEnvelope>({
   kind: 'designVersions',
-  payloadKey: 'designVersion',
+  payloadKey: PAYLOAD_KEY,
   isValidId: (id) => isValidShareId(id),
   invalidIdError: 'Invalid design version id',
   deletedError: 'This design version was deleted on another device',

@@ -5,6 +5,9 @@ import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
+/** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.baseplates` in src/core/sync/payloadKey.ts. */
+export const PAYLOAD_KEY = 'baseplate' as const;
+
 /** Max length for a user-visible baseplate name (mirrors the designs cap). */
 const MAX_NAME_LENGTH = 100;
 
@@ -44,7 +47,7 @@ function unwrapBaseplatePayload(
  */
 export default createSyncResourceHandler<BaseplateEnvelope>({
   kind: 'baseplates',
-  payloadKey: 'baseplate',
+  payloadKey: PAYLOAD_KEY,
   // Locally-minted baseplate ids (base36 suffix up to 6 chars but can be
   // shorter, so accept 1-8) plus the share formats for round-tripping.
   isValidId: (id) => /^baseplate_\d+_[a-z0-9]{1,8}$/.test(id) || isValidShareId(id),
