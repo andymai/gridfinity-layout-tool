@@ -1,0 +1,37 @@
+src/features/bin-designer/components/ParameterPanel/useFinishingGroupSummary.ts
+  s_8c2c4457d965c0::t_3a040ec17df857 11
+src/features/bin-designer/components/preview/BinMesh/BinMesh.tsx
+  s_8c2c4457d965c0::t_3a040ec17df857 93,100-101,108,136,276,314
+src/features/bin-designer/components/preview/DetachableFeetMesh/DetachableFeetMesh.tsx
+  s_8c2c4457d965c0::t_3a040ec17df857 44,51
+src/features/bin-designer/components/preview/LidMesh/LidMesh.tsx
+  s_8c2c4457d965c0::t_3a040ec17df857 70,100,122
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_8c2c4457d965c0::t_3a040ec17df857 380
+src/features/bin-designer/components/PreviewCanvas/ColorToolOverlay.tsx
+  s_8c2c4457d965c0::t_3a040ec17df857 87
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_8c2c4457d965c0::t_3a040ec17df857 95-96,103-105,158
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_8c2c4457d965c0::t_3a040ec17df857 44
+src/features/bin-designer/components/preview/StackPlateMesh/StackPlateMesh.tsx
+  s_8c2c4457d965c0::t_3a040ec17df857 67,83
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_8c2c4457d965c0::t_3a040ec17df857 458
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "e3ce70236c4be8718d42c4f681807fce302967e0",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
