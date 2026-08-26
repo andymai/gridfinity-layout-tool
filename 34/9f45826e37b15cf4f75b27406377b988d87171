@@ -1,0 +1,166 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_8986efd43f7781::t_b5aeb505451c3e 526-531
+src/i18n/locales/pt-BR.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.tsx
+  s_8986efd43f7781::t_11e6ae2e25a1ec 28
+  s_8986efd43f7781::t_896836572e80ea 84-88,133-153,222-246,248-250,252-258,261-284
+  s_8986efd43f7781::t_362f33c3aebfa5 98,107
+  s_8986efd43f7781::t_cf37fcee32945a 289,294
+src/i18n/locales/ko.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/controls/LabelSizeControl/LabelSizeControl.tsx
+  s_8986efd43f7781::t_488374ef1d8fe9 41-43,62,79-90
+  s_8986efd43f7781::t_2aa78c4f439418 91-92
+src/features/generation/worker/generators/lidInputs.ts
+  s_8986efd43f7781::t_b13346b9bd51c1 347-353
+  s_8986efd43f7781::t_0ee631cb5297ca 79-80
+src/i18n/locales/en.ts
+  s_8986efd43f7781::t_53bf13f6ac3ec0 2694,2911
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_8986efd43f7781::t_1fc85873ace456 19
+  s_8986efd43f7781::t_29819df7bdb9ec 143-144
+  s_8986efd43f7781::t_44b3e96e0054bc 344-353
+  s_8986efd43f7781::t_6c89102019698e 296-302
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
+  s_8986efd43f7781::t_de33ca5fee3ee4 318-346
+scripts/i18n-values-allowlist.json
+  s_8986efd43f7781::t_1d353558b5c1db 59,143
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.test.tsx
+  s_8986efd43f7781::t_495f3c95bdd903 315-333
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.test.ts
+  s_8986efd43f7781::t_495f3c95bdd903 272
+src/features/bin-designer/types/cutout.ts
+  s_8986efd43f7781::t_abb967ce19af60 27-35,38
+src/shared/utils/cutoutLabel.test.ts
+  s_8986efd43f7781::t_00650d442757f0 9-10,321-366
+  s_8986efd43f7781::t_ca6ea8c2c8a87a 273,275-283
+src/i18n/locales/it.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_8986efd43f7781::t_4ae1065e680798 297-305
+src/shared/utils/cutoutLabel.ts
+  s_8986efd43f7781::t_29869a8e37dfc9 174-207
+  s_8986efd43f7781::t_362f33c3aebfa5 228-230,240-244
+  s_8986efd43f7781::t_449fec489cef2e 208-225
+src/i18n/locales/fr.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/panel/CutoutsSection/renderer/cutoutLabelFit.ts
+  s_8986efd43f7781::t_bddf8f37798d6e 14-18
+  s_8986efd43f7781::t_362f33c3aebfa5 33,35,41
+src/i18n/locales/de.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/i18n/locales/zh-CN.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/panel/CutoutsSection/renderer/TextElementMesh.tsx
+  s_8986efd43f7781::t_ef26b09d4be719 1-138
+src/shared/utils/fitTestPlan.ts
+  s_8986efd43f7781::t_81c1ae29bdcc18 557-559
+  s_8986efd43f7781::t_d77c73109e54dc 54-55,58-60
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pendingPlaceHandler.ts
+  s_8986efd43f7781::t_f713873e490c9a 26-28
+src/i18n/locales/pl.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/generation/worker/generators/lidTextBuilder.ts
+  s_8986efd43f7781::t_7846321b6d9865 39
+src/i18n/locales/ja.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/preview/GhostCutouts/ghostCutoutGeometry.ts
+  s_8986efd43f7781::t_867f1dd1324a45 116-118
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_8986efd43f7781::t_ff7a3028ff998f 157-159
+src/features/whats-new/latest.ts
+  s_8986efd43f7781::t_354cc2006732ee 9
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutLabel3D.tsx
+  s_8986efd43f7781::t_eb11f44f80e551 94
+  s_8986efd43f7781::t_6e60a0ed4d9d4d 195-204,207,218
+  s_8986efd43f7781::t_63eebf78ba6dd1 208,222-224
+  s_8986efd43f7781::t_362f33c3aebfa5 185,192
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeBadge.tsx
+  s_8986efd43f7781::t_a9b15aac74a2bd 84-91
+  s_8986efd43f7781::t_5063c8fdedf53a 26-27
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_8986efd43f7781::t_2c50e7d9f94a2b 207-210,212-218,221-222,224-225,227,229-261,306-311,346-349
+  s_8986efd43f7781::t_604474a4f9a4b1 262
+  s_8986efd43f7781::t_3883a4add835ed 204-206
+  s_8986efd43f7781::t_cf214ddce70e70 171-191
+  s_8986efd43f7781::t_a46c85c4623aef 145,156
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.test.ts
+  s_8986efd43f7781::t_000aebb17daa56 406-418
+src/i18n/locales/uk.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/panel/CutoutsSection/renderer/TextElementMesh.test.tsx
+  s_8986efd43f7781::t_082ce70cc5e9be 1-9
+src/features/bin-designer/components/panel/CutoutsSection/shapeListModel.test.ts
+  s_8986efd43f7781::t_000aebb17daa56 270-289
+src/i18n/locales/cs.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/i18n/locales/es.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
+  s_8986efd43f7781::t_953f23c48ed9b5 137
+src/features/whats-new/entries.ts
+  s_8986efd43f7781::t_354cc2006732ee 22
+  s_8986efd43f7781::t_7cb90aee50db9b 17-21,23-25
+  s_8986efd43f7781::t_1c7d11a834a0f3 16
+src/i18n/locales/nb.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_8986efd43f7781::t_1d83e5656e1531 28
+  s_8986efd43f7781::t_47d887a14b9fd7 626-628
+  s_8986efd43f7781::t_9677072bf8aabc 1032-1034
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_8986efd43f7781::t_ef7a78549b2dfe 1197-1200
+  s_8986efd43f7781::t_362f33c3aebfa5 1655,1660-1667
+  s_8986efd43f7781::t_1e998b868dc3db 1522-1525
+  s_8986efd43f7781::t_f735483fb4446d 1698-1700
+src/features/generation/worker/generators/lidCutoutBuilder.ts
+  s_8986efd43f7781::t_362f33c3aebfa5 282-286
+  s_8986efd43f7781::t_2155bbf2c00ba7 105-107
+  s_8986efd43f7781::t_499ed10ae7906f 193
+  s_8986efd43f7781::t_f8393459e20393 232,234-281,287-318
+  s_8986efd43f7781::t_67d8fbf7529ca0 19-28,31-34,40-41
+src/features/bin-designer/components/panel/CutoutsSection/shapeListModel.ts
+  s_8986efd43f7781::t_6ee3ebb7d85419 221-223
+  s_8986efd43f7781::t_6c33a29a1c33db 204
+src/features/bin-designer/components/panel/CutoutsSection/renderer/cutoutLabelFit.test.ts
+  s_8986efd43f7781::t_a2f8e9a19b7546 83-87,92
+  s_8986efd43f7781::t_6934fe9ebb5420 48-50,56-58,64-66,72-74,80-82
+  s_8986efd43f7781::t_ca6ea8c2c8a87a 21-22,32-33,42
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_8986efd43f7781::t_df410ac1b229cc 2254-2334
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutShapeMesh.tsx
+  s_8986efd43f7781::t_5d4908bac4c0f8 32
+  s_8986efd43f7781::t_4e3420b80fc453 55-73
+src/features/bin-designer/components/panel/CutoutsSection/cutoutDepthShortfall.ts
+  s_8986efd43f7781::t_e4770015c09b64 47
+src/shared/utils/cutoutLabelSocketPlan.ts
+  s_8986efd43f7781::t_dedbae06909d8e 111-113
+  s_8986efd43f7781::t_0f4336de7e31c1 101-104
+src/features/generation/worker/generators/binGenerator.scenario.textElement.test.ts
+  s_8986efd43f7781::t_9943d1445b6333 1-165
+src/i18n/locales/nl.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pendingPlaceHandler.test.ts
+  s_8986efd43f7781::t_082ce70cc5e9be 1-28
+src/i18n/locales/sv.json
+  s_8986efd43f7781::t_ac587e1d34b70f 651,1556
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.ts
+  s_8986efd43f7781::t_3c936dfbb92b3b 193-196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "349f45826e37b15cf4f75b27406377b988d87171",
+  "prompts": {},
+  "sessions": {
+    "s_8986efd43f7781": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "02e988c2-7f43-4a7d-b215-1c09da0b9451",
+        "model": "claude-fable-5"
+      },
+      "human_author": null
+    }
+  }
+}
