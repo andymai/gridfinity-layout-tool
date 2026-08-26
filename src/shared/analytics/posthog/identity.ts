@@ -17,12 +17,26 @@ export interface AnalyticsData {
   /** Distinct bin designs created in this browser. Never decremented — deleting
    *  a design does not undo having made it. */
   designsCreated: number;
+  /** Serialized last `$set` payload sent to PostHog. Persisted because the
+   *  dedupe must survive reloads: `setPersonProperties` bills per call, not
+   *  per change (see eventsPerson.ts). */
+  lastSetPayload: string;
+  /** Whether the `$set_once` traits have ever been sent from this browser. */
+  onceTraitsSent: boolean;
 }
 
 let analyticsCache: AnalyticsData | null = null;
 
 export function createEmptyAnalyticsData(): AnalyticsData {
-  return { userId: '', firstSeen: '', featureFlags: {}, milestones: {}, designsCreated: 0 };
+  return {
+    userId: '',
+    firstSeen: '',
+    featureFlags: {},
+    milestones: {},
+    designsCreated: 0,
+    lastSetPayload: '',
+    onceTraitsSent: false,
+  };
 }
 
 export function loadAnalyticsData(): AnalyticsData {
