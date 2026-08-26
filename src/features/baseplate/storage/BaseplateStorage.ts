@@ -6,7 +6,7 @@
  * parameters, thumbnails, and timestamps. Mirrors DesignerStorage.
  */
 
-import { openDB, type IDBPDatabase } from 'idb';
+import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
 import { baseplateDesignId } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS, migrateBaseplateParams } from '@/core/constants';
@@ -32,35 +32,16 @@ const ACTIVE_DESIGN_KEY = 'gridfinity-baseplate-active-v1';
 /** Thumbnail format version — increment when changing thumbnail size/quality/format */
 const THUMBNAIL_VERSION = 1;
 
-let dbInstance: IDBPDatabase | null = null;
-
-/**
- * Open the baseplate library database, creating stores if needed.
- */
-async function getDb(): Promise<IDBPDatabase> {
-  if (dbInstance) {
-    return dbInstance;
-  }
-
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(DESIGNS_STORE)) {
-        const store = db.createObjectStore(DESIGNS_STORE, { keyPath: 'id' });
-        store.createIndex('updatedAt', 'updatedAt');
-      }
-    },
-  });
-
-  // Clear cached instance if the browser closes the connection unexpectedly
-  db.addEventListener('close', () => {
-    if (dbInstance === db) {
-      dbInstance = null;
+const baseplateDb = createDbAccessor({
+  name: DB_NAME,
+  version: DB_VERSION,
+  upgrade(db) {
+    if (!db.objectStoreNames.contains(DESIGNS_STORE)) {
+      const store = db.createObjectStore(DESIGNS_STORE, { keyPath: 'id' });
+      store.createIndex('updatedAt', 'updatedAt');
     }
-  });
-
-  dbInstance = db;
-  return dbInstance;
-}
+  },
+});
 
 /**
  * Generate a unique baseplate design ID.
@@ -78,7 +59,7 @@ export async function saveDesign(
   }
 ): Promise<Result<SavedBaseplateDesign, StorageError>> {
   try {
-    const db = await getDb();
+    const db = await baseplateDb.get();
     const now = new Date().toISOString();
 
     // Reject incomplete writes up front so a malformed call can't persist a
@@ -123,7 +104,7 @@ export async function loadDesign(
   id: BaseplateDesignId
 ): Promise<Result<SavedBaseplateDesign, StorageError>> {
   try {
-    const db = await getDb();
+    const db = await baseplateDb.get();
     const design = (await db.get(DESIGNS_STORE, id)) as SavedBaseplateDesign | undefined;
 
     if (!design) {
@@ -151,7 +132,7 @@ export async function loadDesign(
  */
 export async function listDesigns(): Promise<Result<SavedBaseplateDesign[], StorageError>> {
   try {
-    const db = await getDb();
+    const db = await baseplateDb.get();
     const designs = (await db.getAll(DESIGNS_STORE)) as SavedBaseplateDesign[];
 
     // Filter out corrupted entries (invalid params) to avoid breaking the entire list
@@ -195,7 +176,7 @@ export async function duplicateDesign(
  */
 export async function deleteDesign(id: BaseplateDesignId): Promise<Result<void, StorageError>> {
   try {
-    const db = await getDb();
+    const db = await baseplateDb.get();
     const exists: unknown = await db.get(DESIGNS_STORE, id);
 
     if (!exists) {
@@ -315,8 +296,5 @@ export function setActiveDesignId(id: BaseplateDesignId | null): void {
  * Close the database connection (for testing/cleanup).
  */
 export function closeBaseplateDb(): void {
-  if (dbInstance) {
-    dbInstance.close();
-    dbInstance = null;
-  }
+  baseplateDb.close();
 }

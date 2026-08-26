@@ -7,7 +7,8 @@
  * versions.
  */
 
-import { openDB, type IDBPDatabase } from 'idb';
+import type { IDBPDatabase } from 'idb';
+import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 
 const DB_NAME = 'gridfinity-designer-v1';
 
@@ -20,46 +21,31 @@ const DB_VERSION = 2;
 export const DESIGNS_STORE = 'designs';
 export const DESIGN_VERSIONS_STORE = 'designVersions';
 
-let dbInstance: IDBPDatabase | null = null;
-
-export async function getDb(): Promise<IDBPDatabase> {
-  if (dbInstance) {
-    return dbInstance;
-  }
-
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(DESIGNS_STORE)) {
-        const store = db.createObjectStore(DESIGNS_STORE, { keyPath: 'id' });
-        store.createIndex('updatedAt', 'updatedAt');
-      }
-      if (!db.objectStoreNames.contains(DESIGN_VERSIONS_STORE)) {
-        const store = db.createObjectStore(DESIGN_VERSIONS_STORE, { keyPath: 'id' });
-        // Every read is "the versions of one design", so the index carries the
-        // whole access pattern; `createdAt` ordering is done in memory because a
-        // design's list is bounded by MAX_VERSIONS_PER_DESIGN.
-        store.createIndex('designId', 'designId');
-      }
-    },
-  });
-
-  // Clear cached instance if the browser closes the connection unexpectedly
-  db.addEventListener('close', () => {
-    if (dbInstance === db) {
-      dbInstance = null;
+const designerDb = createDbAccessor({
+  name: DB_NAME,
+  version: DB_VERSION,
+  upgrade(db) {
+    if (!db.objectStoreNames.contains(DESIGNS_STORE)) {
+      const store = db.createObjectStore(DESIGNS_STORE, { keyPath: 'id' });
+      store.createIndex('updatedAt', 'updatedAt');
     }
-  });
+    if (!db.objectStoreNames.contains(DESIGN_VERSIONS_STORE)) {
+      const store = db.createObjectStore(DESIGN_VERSIONS_STORE, { keyPath: 'id' });
+      // Every read is "the versions of one design", so the index carries the
+      // whole access pattern; `createdAt` ordering is done in memory because a
+      // design's list is bounded by MAX_VERSIONS_PER_DESIGN.
+      store.createIndex('designId', 'designId');
+    }
+  },
+});
 
-  dbInstance = db;
-  return dbInstance;
+export function getDb(): Promise<IDBPDatabase> {
+  return designerDb.get();
 }
 
 /**
  * Close the database connection (for testing/cleanup).
  */
 export function closeDesignerDb(): void {
-  if (dbInstance) {
-    dbInstance.close();
-    dbInstance = null;
-  }
+  designerDb.close();
 }

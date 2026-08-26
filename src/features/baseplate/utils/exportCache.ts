@@ -21,8 +21,9 @@
  * just without the cache.
  */
 
-import { openDB, type IDBPDatabase } from 'idb';
+import type { IDBPDatabase } from 'idb';
 import type { ResolvedBaseplateParams, ExportFileFormat } from '@/shared/types/bin';
+import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 import { BASEPLATE_EXPORT_DB_NAME } from '@/core/storage/storageKeys';
 
 const DB_NAME = BASEPLATE_EXPORT_DB_NAME;
@@ -56,18 +57,16 @@ function nextTs(): number {
   return lastTs;
 }
 
-let dbPromise: Promise<IDBPDatabase | null> | null = null;
-
-function getDb(): Promise<IDBPDatabase | null> {
-  if (dbPromise) return dbPromise;
-  dbPromise = openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      const store = db.createObjectStore(STORE);
-      store.createIndex(TS_INDEX, 'ts');
-    },
-  }).catch(() => null); // IndexedDB unavailable → null, callers treat as miss/no-op
-  return dbPromise;
-}
+const exportDb = createDbAccessor({
+  name: DB_NAME,
+  version: DB_VERSION,
+  upgrade(db) {
+    const store = db.createObjectStore(STORE);
+    store.createIndex(TS_INDEX, 'ts');
+  },
+  // IndexedDB unavailable → null, callers treat as miss/no-op
+  onUnavailable: () => null,
+});
 
 /**
  * Recursively key-sorted JSON so logically-equal param objects stringify
@@ -107,7 +106,7 @@ export function buildExportCacheKey(
 /** Read one cached export, touching its recency. Returns undefined on miss/error. */
 export async function getCachedExport(key: string): Promise<ArrayBuffer | undefined> {
   try {
-    const db = await getDb();
+    const db = await exportDb.get();
     if (!db) return undefined;
     const entry = (await db.get(STORE, key)) as CacheEntry | undefined;
     if (!entry) return undefined;
@@ -146,7 +145,7 @@ export async function putCachedExports(
 ): Promise<void> {
   if (entries.length === 0) return;
   try {
-    const db = await getDb();
+    const db = await exportDb.get();
     if (!db) return;
     {
       const tx = db.transaction(STORE, 'readwrite');
@@ -188,7 +187,7 @@ async function evictIfNeeded(db: IDBPDatabase): Promise<void> {
 /** Clear the entire export cache (exposed for tests / settings "clear storage"). */
 export async function clearExportCache(): Promise<void> {
   try {
-    const db = await getDb();
+    const db = await exportDb.get();
     if (!db) return;
     await db.clear(STORE);
   } catch {

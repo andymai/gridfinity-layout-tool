@@ -17,8 +17,7 @@
  * the background regeneration immediately replaces.
  */
 
-import { openDB } from 'idb';
-import type { IDBPDatabase } from 'idb';
+import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 import type { BinParams } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type { KernelName } from '@/shared/generation/bridge';
@@ -126,43 +125,19 @@ function nextStamp(): number {
   return lastStamp;
 }
 
-let dbInstance: IDBPDatabase | null = null;
-let openPromise: Promise<IDBPDatabase> | null = null;
-
-async function openMeshDb(): Promise<IDBPDatabase> {
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(BIN_MESHES_STORE)) {
-        db.createObjectStore(BIN_MESHES_STORE, { keyPath: 'key' });
-      }
-      if (!db.objectStoreNames.contains(META_STORE)) {
-        const meta = db.createObjectStore(META_STORE, { keyPath: 'key' });
-        meta.createIndex('byTs', 'ts', { unique: false });
-      }
-    },
-  });
-
-  // Drop the cached handle if the browser closes the connection (tab eviction,
-  // a version change from another tab) so the next call reopens cleanly.
-  db.addEventListener('close', () => {
-    if (dbInstance === db) dbInstance = null;
-  });
-
-  return db;
-}
-
-async function getDb(): Promise<IDBPDatabase> {
-  if (dbInstance) return dbInstance;
-  openPromise ??= openMeshDb()
-    .then((db) => {
-      dbInstance = db;
-      return db;
-    })
-    .finally(() => {
-      openPromise = null;
-    });
-  return openPromise;
-}
+const meshDb = createDbAccessor({
+  name: DB_NAME,
+  version: DB_VERSION,
+  upgrade(db) {
+    if (!db.objectStoreNames.contains(BIN_MESHES_STORE)) {
+      db.createObjectStore(BIN_MESHES_STORE, { keyPath: 'key' });
+    }
+    if (!db.objectStoreNames.contains(META_STORE)) {
+      const meta = db.createObjectStore(META_STORE, { keyPath: 'key' });
+      meta.createIndex('byTs', 'ts', { unique: false });
+    }
+  },
+});
 
 /**
  * Stable JSON serialization: keys sorted at every level so params from Immer /
@@ -228,7 +203,7 @@ export function itemMeshCacheKey(item: GridfinityItem, kernel: KernelName): stri
 export async function loadPersistedBinMesh(key: string): Promise<MeshData | null> {
   if (!hasIndexedDb()) return null;
   try {
-    const db = await getDb();
+    const db = await meshDb.get();
     const stored = (await db.get(BIN_MESHES_STORE, key)) as StoredMesh | undefined;
     return stored?.mesh ?? null;
   } catch (e) {
@@ -260,7 +235,7 @@ export function savePersistedBinMesh(key: string, mesh: MeshData): void {
  */
 async function persistMesh(key: string, mesh: MeshData): Promise<void> {
   try {
-    const db = await getDb();
+    const db = await meshDb.get();
     const meta: MeshMeta = { key, byteSize: meshDataByteSize(mesh), ts: nextStamp() };
 
     const writeTx = db.transaction([BIN_MESHES_STORE, META_STORE], 'readwrite');
@@ -301,7 +276,5 @@ export function __setMaxCacheBytesForTests(bytes = 64 * 1024 * 1024): void {
 
 /** Test-only: close and drop the cached connection so the DB can be deleted. */
 export function __resetMeshDbForTests(): void {
-  if (dbInstance) dbInstance.close();
-  dbInstance = null;
-  openPromise = null;
+  meshDb.close();
 }
