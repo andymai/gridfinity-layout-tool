@@ -13,11 +13,11 @@ import { useMutations } from '@/shared/contexts';
 import {
   calcMaxGridUnits,
   CONSTRAINTS,
-  DEFAULT_BASEPLATE_PARAMS,
   STAGING_ID,
   snapToHalf,
   isFractional,
 } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { baseplateFloorDepth } from '@/shared/printSettings/baseplateHeight';
 import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';

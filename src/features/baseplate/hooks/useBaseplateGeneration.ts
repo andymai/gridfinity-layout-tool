@@ -29,7 +29,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { StoredBaseplateParams, DrawerOutline } from '@/core/types';
 import { useTranslation } from '@/i18n';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { hasEffectivePerimeter } from '../utils/buildFullParams';
 import {
   bridgeManager,

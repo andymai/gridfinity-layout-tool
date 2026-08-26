@@ -18,7 +18,7 @@ import { GRIDFINITY_SPEC, MAGNET_FLOOR } from '@/shared/printSettings/gridfinity
 import { getAccentHex } from '@/shared/utils/color';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { ConnectorKeyMesh } from '../../store/baseplatePageStore';
 import { buildFullParams } from '../../utils/buildFullParams';

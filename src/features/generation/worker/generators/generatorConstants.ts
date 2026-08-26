@@ -6,7 +6,7 @@
  */
 
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
-import { OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
+import { OVER_TILE_MIN_MARGIN_MM } from '@/core/baseplateDefaults';
 import { clamp } from '@/shared/utils/math';
 import { MAGNET_FLOOR, MAGNET_HOLE_OFFSET_MM } from '@/shared/printSettings/gridfinityGeometry';
 

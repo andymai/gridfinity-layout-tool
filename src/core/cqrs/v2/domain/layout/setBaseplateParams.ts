@@ -8,7 +8,8 @@
 import { z } from 'zod';
 import { ok } from '@/core/result';
 import { clamp } from '@/shared/utils/validation';
-import { CONSTRAINTS, SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM, STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/baseplateDefaults';
 import type { StoredBaseplateParams, GridUnits, Mm } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';

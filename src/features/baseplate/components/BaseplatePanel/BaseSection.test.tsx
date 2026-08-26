@@ -7,7 +7,7 @@ import { useLabsStore } from '@/core/store';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { BaseplatePiece } from '../../types/tiling';
 import type { ScrewHeadStyle } from '@/core/types';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { resetAllStores } from '@/test/testUtils';
 
 /** Minimal exterior-front/back, join-shared-edge piece for a 2-col split row. */

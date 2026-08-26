@@ -32,7 +32,7 @@ import {
   SCREW_PAD_MIN_RETAIN_MM,
   SCREWS_PER_PIECE_DEFAULT,
   SCREWS_PER_PIECE_MAX,
-} from '@/core/constants';
+} from '@/core/baseplateDefaults';
 import type { ScrewHeadStyle, ScrewHoleParams } from '@/core/types/baseplate';
 
 /**

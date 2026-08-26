@@ -10,7 +10,7 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { mm, STACK_PRINT_DEFAULT_GAP_MM } from '@/core/types';
 import type { StackPrintParams } from '@/core/types';
 import { export3MF, buildSTLBuffer } from '@/shared/generation/export';

@@ -10,7 +10,7 @@
  * designer and the worker derive plate heights from one definition.
  */
 
-import { SOLID_FLOOR_DEFAULT_MM } from '@/core/constants';
+import { SOLID_FLOOR_DEFAULT_MM } from '@/core/baseplateDefaults';
 import { GRIDFINITY_SPEC, MAGNET_FLOOR } from './gridfinityGeometry';
 
 /** The subset of baseplate params that determines how tall the plate prints. */

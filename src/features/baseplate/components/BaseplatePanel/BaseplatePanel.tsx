@@ -18,7 +18,7 @@ import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useToastStore } from '@/core/store/toast';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { RotateCcwIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { Button, ConfirmDialog } from '@/design-system';

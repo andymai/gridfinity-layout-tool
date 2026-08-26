@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BaseplatePage } from './BaseplatePage';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 
 // Mock i18n
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));

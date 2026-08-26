@@ -11,10 +11,12 @@ import {
   getCellSizeY,
   BREAKPOINTS,
   getDefaultDrawerSize,
+} from '@/core/constants';
+import {
   migrateBaseplateParams,
   SOLID_FLOOR_MIN_MM,
   SOLID_FLOOR_MAX_MM,
-} from '@/core/constants';
+} from '@/core/baseplateDefaults';
 
 describe('calcMaxGridUnits', () => {
   it('calculates max units for typical print bed', () => {

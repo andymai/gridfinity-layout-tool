@@ -11,7 +11,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { StoredBaseplateParams, DrawerOutline, FractionalEdge } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';

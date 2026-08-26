@@ -9,7 +9,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { StackPrintParams } from '@/core/types';
 import { STACK_PRINT_DEFAULT_COPIES, effectiveGridUnitMmY } from '@/core/types';
 import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';

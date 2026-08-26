@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { computeBaseplateTiling } from './splitPlanner';
 import { buildFullParams } from './buildFullParams';
 import { stackGroupsFromTiling, planPhysicalStacks } from './stackPrint';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { StoredBaseplateParams } from '@/core/types';
 
 /** Resolve groups + physical stacks for a drawer split on a given bed. */

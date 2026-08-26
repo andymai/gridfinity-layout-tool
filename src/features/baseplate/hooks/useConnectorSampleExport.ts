@@ -11,7 +11,7 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useTranslation } from '@/i18n';
 import { downloadWorkerSample, useSampleExport } from '@/shared/hooks/useSampleExport';
 import type { SampleExportContext, UseSampleExportReturn } from '@/shared/hooks/useSampleExport';

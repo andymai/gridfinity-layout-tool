@@ -450,6 +450,7 @@ export default defineConfig({
               priority: 100,
               test: (id: string) =>
                 id.endsWith('/src/core/constants.ts') ||
+                id.endsWith('/src/core/baseplateDefaults.ts') ||
                 id.includes('/src/core/types/') ||
                 id.includes('packages/branded-types/src/'),
             },

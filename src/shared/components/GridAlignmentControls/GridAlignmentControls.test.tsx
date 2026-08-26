@@ -4,7 +4,7 @@ import { useLayoutStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import { gridUnits, mm } from '@/core/types';
 import type { DrawerOutline, StoredBaseplateParams } from '@/core/types';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { GridAlignmentControls } from './GridAlignmentControls';
 
 vi.mock('@/i18n', () => ({

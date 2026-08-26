@@ -4,7 +4,7 @@ import { mm } from '@/core/types';
 import type { StackPrintParams } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { StackPrintSection } from './StackPrintSection';
 
 const enabled: StackPrintParams = { enabled: true, gapMm: mm(0.2) };

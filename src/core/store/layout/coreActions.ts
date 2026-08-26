@@ -7,7 +7,8 @@ import type {
   Mm,
   BaseplateDesignId,
 } from '@/core/types';
-import { CONSTRAINTS, migrateBaseplateParams } from '@/core/constants';
+import { CONSTRAINTS } from '@/core/constants';
+import { migrateBaseplateParams } from '@/core/baseplateDefaults';
 import { clamp } from '@/shared/utils/validation';
 import { GRID_PITCH_MM_MAX, gridPitchFloors } from '@/shared/utils/drawerOutline';
 import type { EditSource, SetLocal, ImmerSet, GetState } from './types';

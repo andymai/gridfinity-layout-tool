@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Drawer, DrawerOutline } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import {
   drawerFrameExtent,
   drawerFrameOutline,

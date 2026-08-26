@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { baseplateFloorDepth, baseplateTotalHeight } from './baseplateHeight';
 import { GRIDFINITY_SPEC, MAGNET_FLOOR } from './gridfinityGeometry';
-import { SOLID_FLOOR_DEFAULT_MM } from '@/core/constants';
+import { SOLID_FLOOR_DEFAULT_MM } from '@/core/baseplateDefaults';
 
 const SOCKET = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { mm } from '@/core/types';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { useStackPrintStatus } from './useStackPrintStatus';

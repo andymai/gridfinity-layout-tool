@@ -27,7 +27,7 @@ import { interiorBoundaryOffsetsMm } from './connectorKeys';
 // join edges — otherwise pieces that compute to exactly the bed width on paper
 // exceed it as STLs.
 import { TONGUE_PROTRUSION } from '@/shared/constants/connectors';
-import { MARGIN_MIN_DETACH_MM } from '@/core/constants';
+import { MARGIN_MIN_DETACH_MM } from '@/core/baseplateDefaults';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import type {
   BaseplatePiece,

@@ -14,7 +14,7 @@ import {
   setActiveDesignId,
   closeBaseplateDb,
 } from '@/features/baseplate/storage/BaseplateStorage';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { baseplateDesignId } from '@/core/types';
 import type { Mm } from '@/core/types';
 import { expectOk, expectErr } from '@/test/testUtils';
