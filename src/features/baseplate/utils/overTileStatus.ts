@@ -4,7 +4,7 @@
  * stay solid. Mirrors the worker's `frameCells` threshold so the UI tells the
  * truth about what over-tile will produce.
  */
-import { OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
+import { OVER_TILE_MIN_MARGIN_MM } from '@/core/baseplateDefaults';
 import type { StoredBaseplateParams } from '@/core/types';
 
 /** One padded edge, with its i18n label key (reuses the padding side labels). */

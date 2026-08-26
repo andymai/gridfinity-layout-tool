@@ -10,8 +10,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { CONSTRAINTS } from '@/core/constants';
 import {
-  CONSTRAINTS,
   SCREWS_PER_PIECE_MAX,
   SCREWS_PER_PIECE_MIN,
   SCREW_COUNTERBORE_MAX_DEPTH_MM,
@@ -21,7 +21,7 @@ import {
   SCREW_HOLE_MIN_DIAMETER_MM,
   SOLID_FLOOR_MAX_MM,
   SOLID_FLOOR_MIN_MM,
-} from '@/core/constants';
+} from '@/core/baseplateDefaults';
 import {
   STACK_PRINT_DEFAULT_COPIES,
   STACK_PRINT_DEFAULT_GAP_MM,

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mm } from '@/core/types';
 import type { DrawerOutline, StackPrintParams } from '@/core/types';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { computeBaseplateTiling, pieceToBaseplateParams } from './splitPlanner';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import { buildFullParams } from './buildFullParams';

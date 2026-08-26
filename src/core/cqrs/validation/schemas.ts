@@ -9,8 +9,8 @@
  */
 
 import * as z from 'zod';
+import { CONSTRAINTS } from '@/core/constants';
 import {
-  CONSTRAINTS,
   SOLID_FLOOR_MIN_MM,
   SOLID_FLOOR_MAX_MM,
   SCREW_HOLE_MIN_DIAMETER_MM,
@@ -20,7 +20,7 @@ import {
   SCREW_COUNTERBORE_MAX_DEPTH_MM,
   SCREWS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
-} from '@/core/constants';
+} from '@/core/baseplateDefaults';
 import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';

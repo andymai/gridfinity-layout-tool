@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mm } from '@gridfinity/branded-types';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { gridUnits } from '@gridfinity/branded-types';
 import { buildBaseplateExportPieces, BaseplateBedOverageError } from './buildBaseplateExportPieces';

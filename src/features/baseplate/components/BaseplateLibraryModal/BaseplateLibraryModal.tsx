@@ -24,7 +24,7 @@ import type { SavedBaseplateDesign } from '@/features/baseplate/types/library';
 import { listDesigns } from '@/features/baseplate/storage/BaseplateStorage';
 import { useBaseplateLibrary } from '@/features/baseplate/hooks/useBaseplateLibrary';
 import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { DeleteBaseplateWarningDialog } from '../DeleteBaseplateWarningDialog';
 
 interface BaseplateLibraryModalProps {

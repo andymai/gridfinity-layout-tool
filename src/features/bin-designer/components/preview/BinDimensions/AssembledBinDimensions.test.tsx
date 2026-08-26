@@ -6,7 +6,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { mm } from '@/core/types';
 
 vi.mock('@react-three/fiber', () => ({

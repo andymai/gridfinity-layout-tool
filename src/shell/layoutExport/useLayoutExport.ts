@@ -14,7 +14,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { trackEvent, trackToolConverted } from '@/shared/analytics/posthog';

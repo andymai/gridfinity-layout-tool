@@ -12,7 +12,7 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { assembledHeight, type AssembledHeight } from '@/shared/printSettings/assembledHeight';
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import type { StackPrintParams } from '@/core/types';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 
 // Geometry/material hooks pull in three.js + a live WebGL context — mock the
 // geometry hook so the component can be exercised in jsdom. The real stacking

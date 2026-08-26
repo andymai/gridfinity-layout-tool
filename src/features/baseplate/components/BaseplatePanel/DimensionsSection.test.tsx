@@ -4,7 +4,7 @@ import { DimensionsSection } from './DimensionsSection';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useToastStore } from '@/core/store/toast';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { drawerFrameOverhang } from '@/shared/utils/outlineFrame';

@@ -9,7 +9,7 @@
 import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
 import { baseplateDesignId } from '@/core/types';
-import { DEFAULT_BASEPLATE_PARAMS, migrateBaseplateParams } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS, migrateBaseplateParams } from '@/core/baseplateDefaults';
 import type { Result, StorageError } from '@/core/result';
 import {
   ok,

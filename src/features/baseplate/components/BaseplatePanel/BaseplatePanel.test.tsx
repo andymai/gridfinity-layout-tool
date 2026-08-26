@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { mm, gridUnits } from '@gridfinity/branded-types';
 import { BaseplatePanel } from './BaseplatePanel';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { BaseplateTiling } from '../../types/tiling';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { CornerCutParams } from '@/core/types';

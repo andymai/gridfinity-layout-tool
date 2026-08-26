@@ -23,7 +23,7 @@ import {
   SCREWS_PER_PIECE_DEFAULT,
   SCREWS_PER_PIECE_MIN,
   SCREWS_PER_PIECE_MAX,
-} from '@/core/constants';
+} from '@/core/baseplateDefaults';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { resolveScrewHeadDiameter } from '@/shared/generation/screwHolePlan';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { mm } from '@/core/types';
 import type { DrawerOutline } from '@/core/types';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
