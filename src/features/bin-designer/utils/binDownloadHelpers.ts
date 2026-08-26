@@ -455,8 +455,7 @@ export function buildMultiObject3MFObjects(
   lidFaceGroups?: CombinedExportResult['lidFaceGroups']
 ): ThreeMFObject[] {
   const objects: ThreeMFObject[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
-  const featureColorsEnabled: boolean = params.featureColors?.enabled ?? false;
+  const featureColorsEnabled: boolean = params.featureColors.enabled;
   // A colored cutout makes the design multi-color even with every featureColors
   // zone at body — mirror the single-piece path so bin+lid/divider exports paint
   // cutouts too.

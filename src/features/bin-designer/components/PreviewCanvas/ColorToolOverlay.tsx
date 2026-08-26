@@ -84,8 +84,7 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
       colorTool: s.ui.colorTool,
       swapFirstZone: s.ui.swapFirstZone,
       pickerOverlay: s.ui.pickerOverlay,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy persisted configs may omit featureColors; preserve runtime fallback
-      featureColors: s.params.featureColors ?? DEFAULT_FEATURE_COLOR_CONFIG,
+      featureColors: s.params.featureColors,
       baseStyle: s.params.base.style,
       stackingLip: s.params.base.stackingLip,
       labelEnabled: s.params.label.enabled,

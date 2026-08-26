@@ -41,8 +41,7 @@ export function LabelColorControls() {
 
   const { featureColors, colorTool, labelMode } = useDesignerStore(
     useShallow((s) => ({
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      featureColors: s.params.featureColors ?? DEFAULT_FEATURE_COLOR_CONFIG,
+      featureColors: s.params.featureColors,
       colorTool: s.ui.colorTool,
       labelMode: s.params.label.mode ?? 'text',
     }))

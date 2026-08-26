@@ -90,26 +90,22 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       isDraft: s.generation.isDraft,
       faceGroups: s.generation.mesh?.faceGroups ?? null,
       coarseLOD: s.generation.mesh?.coarseLOD ?? null,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      featureColors: s.params.featureColors ?? null,
+      featureColors: s.params.featureColors,
       baseStyle: s.params.base.style,
       stackingLip: s.params.base.stackingLip,
       labelEnabled: s.params.label.enabled,
       scoopEnabled: s.params.scoop.enabled,
       lidEnabled: s.params.lid.enabled,
       cells: s.params.compartments.cells,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      lipCorners: s.params.featureColors?.lip.corners ?? 1,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      lipBands: s.params.featureColors?.lip.bands ?? 1,
+      lipCorners: s.params.featureColors.lip.corners,
+      lipBands: s.params.featureColors.lip.bands,
       cutouts: s.params.cutouts,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
   );
   const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve runtime fallback
-  const multiColorEnabled = featureColors?.enabled ?? false;
+  const multiColorEnabled = featureColors.enabled;
   const cutoutUnits = useMemo(() => enumerateCutoutColorUnits(cutouts), [cutouts]);
   // Compartment colours are classified by position, so the plan needs the whole
   // param tree (interior size, overhang offset, floor plane) rather than the
@@ -137,8 +133,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); runtime guard kept as belt-and-suspenders.
-    if (!multiColorActive || !faceGroups || !featureColors || !vertices || !indices) {
+    if (!multiColorActive || !faceGroups || !vertices || !indices) {
       return null;
     }
     return buildMultiColorGroups(
@@ -278,8 +273,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     if (coarseGeometry) invalidate();
   }, [coarseGeometry, invalidate]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); guard it
-  const baseColor = multiColorEnabled && featureColors ? featureColors.body : color;
+  const baseColor = multiColorEnabled ? featureColors.body : color;
 
   // Single-color material props shared between fine mesh and coarse LOD
   const singleMatProps = useMemo(
@@ -317,8 +311,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   const zoneResolver = useMemo(() => {
     if (!toolActive) return null;
     if (multiColorData) return buildZoneResolver(multiColorData.triZones);
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs)
-    if (!faceGroups || !featureColors || !vertices || !indices) return null;
+    if (!faceGroups || !vertices || !indices) return null;
     return buildZoneResolver(buildHitTestZones(faceGroups, vertices, indices, featureColors));
   }, [toolActive, multiColorData, faceGroups, featureColors, vertices, indices]);
 

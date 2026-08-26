@@ -41,15 +41,14 @@ export function DetachableFeetMesh({
   const { feetMesh, featureColors } = useDesignerStore(
     useShallow((s) => ({
       feetMesh: s.generation.mesh?.detachableFeetMesh ?? null,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- typed required, but legacy persisted configs may omit it
-      featureColors: s.params.featureColors ?? null,
+      featureColors: s.params.featureColors,
     }))
   );
 
   // The feet ARE the bin's base, so in multi-colour mode they take the Base
   // zone rather than the body colour — otherwise the one control that should
   // paint them does nothing, in the preview and in the printed 3MF alike.
-  const feetColor = featureColors?.enabled ? getZoneColor(featureColors, 'base') : color;
+  const feetColor = featureColors.enabled ? getZoneColor(featureColors, 'base') : color;
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices: feetMesh?.vertices ?? null,
