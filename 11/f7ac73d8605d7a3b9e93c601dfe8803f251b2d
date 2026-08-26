@@ -1,0 +1,23 @@
+src/shared/webgl/WebGLErrorBoundary.tsx
+  s_77d0b52ee27f58::t_054b149bb95b28 3
+  s_77d0b52ee27f58::t_2b5137daded58e 41-45
+src/shared/webgl/WebGLErrorBoundary.test.tsx
+  s_77d0b52ee27f58::t_8a449c9528b250 5-7
+  s_77d0b52ee27f58::t_67722d0a857c6f 67-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "11f7ac73d8605d7a3b9e93c601dfe8803f251b2d",
+  "prompts": {},
+  "sessions": {
+    "s_77d0b52ee27f58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f3aa5fd-a45a-4e7a-bdfe-c39dccf0151f",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
