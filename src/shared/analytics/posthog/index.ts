@@ -52,7 +52,6 @@ export {
   captureException,
   trackLayoutSaveFailure,
   trackShareFailure,
-  track3DRenderError,
   trackTemplateLoadError,
   trackGalleryOpened,
   trackGalleryClosed,

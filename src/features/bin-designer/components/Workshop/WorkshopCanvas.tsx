@@ -208,7 +208,7 @@ export function WorkshopCanvas() {
 
   if (structure?.kind !== 'assembly' || !envelope) return null;
   if (!webgl.available && webgl.reason) {
-    return <WebGLFallback reason={webgl.reason} component="designer" />;
+    return <WebGLFallback />;
   }
 
   return (
@@ -251,7 +251,7 @@ export function WorkshopCanvas() {
         if (marquee) endMarquee(e);
       }}
     >
-      <WebGLErrorBoundary component="designer">
+      <WebGLErrorBoundary>
         <Canvas
           frameloop="demand"
           gl={{ antialias: true, localClippingEnabled: true, preserveDrawingBuffer: true }}

@@ -8,8 +8,6 @@ const WEBGL_CONTEXT_ERROR = 'Error creating WebGL context';
 
 interface Props {
   children: ReactNode;
-  /** Identifies the viewport in telemetry (e.g. "designer", "baseplate"). */
-  component: string;
 }
 
 interface State {
@@ -47,7 +45,7 @@ export class WebGLErrorBoundary extends Component<Props, State> {
     const { error } = this.state;
     if (error) {
       if (error.message.includes(WEBGL_CONTEXT_ERROR)) {
-        return <WebGLFallback reason="context-failed" component={this.props.component} />;
+        return <WebGLFallback />;
       }
       // Not a WebGL-context failure — re-throw from render() so React unwinds to
       // the outer PanelErrorBoundary. This delegation is exercised by the

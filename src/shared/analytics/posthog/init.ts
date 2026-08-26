@@ -61,8 +61,14 @@ export function initAnalytics(): void {
         // Error tracking - auto-capture exceptions
         capture_exceptions: true,
 
-        // Performance monitoring - web vitals
-        capture_performance: true,
+        // Performance monitoring. $web_vitals bills four events per sampled
+        // pageview and the dashboards read percentiles, which survive
+        // sampling; network timing stays on because replay's network tab is
+        // per-recording and cannot be sampled independently of it.
+        capture_performance: {
+          network_timing: true,
+          web_vitals: Math.random() < 0.25,
+        },
 
         // The single place exceptions are filtered and enriched. Every capture
         // path passes through here, native or explicit, so nothing needs a

@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/design-system';
-import { captureException, track3DRenderError } from '@/shared/analytics/posthog';
+import { captureException } from '@/shared/analytics/posthog';
 import { downloadArchive } from '@/core/storage';
 import { useLibraryStore } from '@/core/store/library';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
@@ -45,7 +45,6 @@ export class ErrorBoundary extends Component<Props, State> {
       boundary: 'root',
       componentStack: errorInfo.componentStack,
     });
-    track3DRenderError('root', error.message);
   }
 
   handleReset = () => {

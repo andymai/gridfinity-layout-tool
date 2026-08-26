@@ -309,13 +309,13 @@ export function BaseplatePreview({
       )}
 
       {!webgl.available && webgl.reason ? (
-        <WebGLFallback reason={webgl.reason} component="baseplate" />
+        <WebGLFallback />
       ) : (
         <div
           className={`h-full w-full transition-opacity duration-500 ${hasAnyMesh ? 'opacity-100' : 'opacity-0'}`}
         >
           <PanelErrorBoundary panelName="3D Preview">
-            <WebGLErrorBoundary component="baseplate">
+            <WebGLErrorBoundary>
               <Canvas
                 frameloop="demand"
                 // preserveDrawingBuffer keeps the framebuffer readable after

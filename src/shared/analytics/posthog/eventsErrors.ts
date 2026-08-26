@@ -4,8 +4,8 @@
  * `captureException` enriches caught errors with layout context so a
  * PostHog stack trace is debuggable without round-tripping a session
  * recording. The narrower `track*Failure` helpers fire discrete events
- * for known-bad outcomes (save, share, 3D render, template load) so
- * they show up in dashboards alongside the generic exceptions.
+ * for known-bad outcomes (save, share, template load) so they show up
+ * in dashboards alongside the generic exceptions.
  */
 
 import { useInteractionStore } from '@/core/store/interaction';
@@ -85,17 +85,6 @@ export function trackLayoutSaveFailure(
 export function trackShareFailure(errorCode: string, errorMessage: string): void {
   trackEvent('share_failure', {
     error_code: errorCode,
-    error_message: errorMessage,
-  });
-}
-
-/**
- * Track 3D rendering or component errors.
- * Called from error boundaries when a panel/component crashes.
- */
-export function track3DRenderError(component: string, errorMessage: string): void {
-  trackEvent('3d_render_error', {
-    component,
     error_message: errorMessage,
   });
 }

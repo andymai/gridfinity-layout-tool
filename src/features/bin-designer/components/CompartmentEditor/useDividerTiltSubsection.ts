@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -232,6 +232,42 @@ export function useDividerTiltSubsection() {
     setDividerTiltPreview(null);
   }, [setDividerTiltPreview]);
 
+  // A tilt is adjusted through many commits (each panel keystroke and drag end
+  // lands here), and every event is billable. Only the burst's final values
+  // carry signal, so the track is trailing-debounced; unmount flushes a
+  // pending one so the last burst of an editing session isn't lost.
+  const pendingDividerTrack = useRef<{
+    timer: ReturnType<typeof setTimeout>;
+    payload: Record<string, string | number | boolean | null>;
+  } | null>(null);
+
+  const queueDividerTrack = useCallback(
+    (payload: Record<string, string | number | boolean | null>) => {
+      const pending = pendingDividerTrack.current;
+      if (pending) clearTimeout(pending.timer);
+      pendingDividerTrack.current = {
+        payload,
+        timer: setTimeout(() => {
+          pendingDividerTrack.current = null;
+          trackEvent('divider_offset_changed', payload);
+        }, 2000),
+      };
+    },
+    []
+  );
+
+  useEffect(
+    () => () => {
+      const pending = pendingDividerTrack.current;
+      if (pending) {
+        clearTimeout(pending.timer);
+        pendingDividerTrack.current = null;
+        trackEvent('divider_offset_changed', pending.payload);
+      }
+    },
+    []
+  );
+
   // Commit: clamp, write the real override (one history entry), drop preview.
   const commitTilt = useCallback(
     (row: TiltRow, next: AngleShift, source: 'panel_input' | 'canvas_drag' = 'panel_input') => {
@@ -245,7 +281,7 @@ export function useDividerTiltSubsection() {
         result.offsetEnd,
         result.rakeDeg
       );
-      trackEvent('divider_offset_changed', {
+      queueDividerTrack({
         axis: row.axis,
         offset_start_mm: result.offsetStart,
         offset_end_mm: result.offsetEnd,
@@ -253,7 +289,7 @@ export function useDividerTiltSubsection() {
         source,
       });
     },
-    [setDividerOverride, setDividerTiltPreview]
+    [setDividerOverride, setDividerTiltPreview, queueDividerTrack]
   );
 
   const resetRow = useCallback(

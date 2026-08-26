@@ -435,7 +435,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
       </div>
 
       {!webgl.available && webgl.reason ? (
-        <WebGLFallback reason={webgl.reason} component="designer" />
+        <WebGLFallback />
       ) : showSkeleton ? (
         <PreviewSkeleton
           wasmStatus={wasmStatus}
@@ -447,7 +447,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
         />
       ) : (
         <PanelErrorBoundary panelName="3D Preview">
-          <WebGLErrorBoundary component="designer">
+          <WebGLErrorBoundary>
             <Canvas
               frameloop="demand"
               onCreated={({ gl }) => {
