@@ -1,0 +1,33 @@
+src/features/bin-designer/hooks/useDesignerFirstRun.ts
+  s_8c2c4457d965c0::t_eccb1c0ad0a81e 9,11-12,16-19,25,39,41,49,57
+src/features/onboarding/hooks/useOnboarding.ts
+  s_8c2c4457d965c0::t_76c88a238c85d2 1,4-5,10-13,19,26,53,58,74,90,100,108
+src/shared/hooks/createLocalStorageFlagStore.ts
+  s_8c2c4457d965c0::t_e69b75d2afd38a 1-93
+src/shared/utils/devRuntime.ts
+  s_8c2c4457d965c0::t_317b0362540555 1-7
+src/features/baseplate/hooks/useBaseplateFirstRun.ts
+  s_8c2c4457d965c0::t_fc8a72e4ed3fa4 9,11-12,16-19,25,35,37,53,63,71
+src/features/bin-designer/hooks/useBentoQuickstart.ts
+  s_8c2c4457d965c0::t_92adce6f32bb0a 11-12,14-16,24-30
+src/shared/hooks/createLocalStorageFlagStore.test.ts
+  s_8c2c4457d965c0::t_ff775cffc750cb 1-105
+src/features/bin-designer/hooks/useCutoutQuickstart.ts
+  s_8c2c4457d965c0::t_c54ce6a334f0f1 5-6,8-10,20,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "86b184fe8436aff860f1867c3ed84186ba0bf79e",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
