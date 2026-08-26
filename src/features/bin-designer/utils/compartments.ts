@@ -6,15 +6,29 @@
  * - Merging/splitting cells
  * - Validating rectangular compartment constraints
  * - Deriving divider wall segments from the cell map
+ *
+ * ID remapping lives in ./compartmentRemap and label-tab fit in
+ * ./compartmentTabFit; both are re-exported below, so this stays the one import
+ * path for the compartment model.
  */
 
-/* eslint-disable max-lines -- Cohesive compartment-grid algorithms (grid build, merge/split,
-   id renumbering, divider derivation) are tightly coupled: normalizeIds() renumbers cell IDs on
-   every merge/split, so the derivation here and any parallel arrays must stay in lockstep
-   (CLAUDE.md gotcha #6). Splitting these print-critical paths for a soft line-count limit risks
-   regressions; kept together deliberately. */
+/* eslint-disable max-lines -- The grid model and the divider geometry that reads it are one
+   mutually recursive unit: override validation, divider eligibility and merge/split all call
+   back into the contiguity and bounds rules they sit above. Splitting further would buy line
+   count with an import cycle. */
 
-import type { CompartmentColorScope, CompartmentConfig, DividerOverride } from '../types';
+import type { CompartmentConfig, DividerOverride } from '../types';
+import {
+  normalizeIdsWithRemap,
+  remapBackgroundIds,
+  remapCompartmentColors,
+  remapCompartmentColorScopes,
+  remapCompartmentTexts,
+  remapDividerOverrides,
+  remapDrawnUnitCells,
+  remapLabelIcons,
+  remapLabelPlateWidths,
+} from './compartmentRemap';
 
 // Grid Creation
 
@@ -656,345 +670,19 @@ export function compartmentHasTiltedEdge(
   return false;
 }
 
-/** Which wall of a row a label tab hangs from. */
-export type TabAnchorSide = 'back' | 'front';
+// Label Tab Span / Eligibility
 
-/** A compartment's usable X extent (mm, interior frame, origin at bin centre). */
-export interface CompartmentTabSpan {
-  readonly left: number;
-  readonly right: number;
-}
-
-/**
- * Signed mm shift of one vertical boundary of `compartmentId`, resolved from
- * `dividerOverrides`.
- *
- * `side` names which boundary of the compartment this is, and therefore which
- * endpoint of a TILTED divider bounds an axis-aligned tab: the left boundary is
- * bounded by its rightmost endpoint, the right boundary by its leftmost. A
- * straight shift has both endpoints equal, so the choice is moot there.
- *
- * A tall compartment can border different neighbours per row, each with its own
- * override, so every bordering row is folded in: the tab is one rectangle and
- * has to clear all of them.
- */
-/**
- * How far a compartment's edge has been pushed off its grid line by
- * `dividerOverrides`, in mm.
- *
- * The two axes are the same problem with rows and columns swapped: a positive
- * offset moves a vertical divider toward +X and a horizontal one toward +Y, so
- * the near side ('left'/'bottom') takes the most-positive offset and the far
- * side ('right'/'top') the most-negative. Taking the extreme is deliberate —
- * a tilted wall has two different endpoint offsets, and the compartment's
- * usable extent is bounded by whichever end intrudes furthest.
- */
-export function dividerShift(
-  config: CompartmentConfig,
-  compartmentId: number,
-  bounds: { minCol: number; maxCol: number; minRow: number; maxRow: number },
-  side: 'left' | 'right' | 'bottom' | 'top'
-): number {
-  const overrides = config.dividerOverrides;
-  if (!overrides || overrides.length === 0) return 0;
-  const { cols, rows, cells } = config;
-  const isX = side === 'left' || side === 'right';
-  const isNear = side === 'left' || side === 'bottom';
-
-  const neighborIndex = isX
-    ? isNear
-      ? bounds.minCol - 1
-      : bounds.maxCol + 1
-    : isNear
-      ? bounds.minRow - 1
-      : bounds.maxRow + 1;
-  const limit = isX ? cols : rows;
-  if (neighborIndex < 0 || neighborIndex >= limit) return 0;
-
-  const spanStart = isX ? bounds.minRow : bounds.minCol;
-  const spanEnd = isX ? bounds.maxRow : bounds.maxCol;
-
-  let shift = isNear ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
-  for (let i = spanStart; i <= spanEnd; i++) {
-    const neighborId = isX ? cells[i * cols + neighborIndex] : cells[neighborIndex * cols + i];
-    if (neighborId === compartmentId) continue;
-    const a = Math.min(compartmentId, neighborId);
-    const b = Math.max(compartmentId, neighborId);
-    const ov = overrides.find((o) => o.compartmentA === a && o.compartmentB === b);
-    // A bordering row/column with no override pins the boundary to its grid line.
-    const stepShift = ov
-      ? isNear
-        ? Math.max(ov.offsetStart, ov.offsetEnd)
-        : Math.min(ov.offsetStart, ov.offsetEnd)
-      : 0;
-    shift = isNear ? Math.max(shift, stepShift) : Math.min(shift, stepShift);
-  }
-  return Number.isFinite(shift) ? shift : 0;
-}
-
-function dividerXShift(
-  config: CompartmentConfig,
-  compartmentId: number,
-  bounds: { minCol: number; maxCol: number; minRow: number; maxRow: number },
-  side: 'left' | 'right'
-): number {
-  return dividerShift(config, compartmentId, bounds, side);
-}
-
-/**
- * The X span a compartment's label tab may occupy: the compartment's column
- * range, less half a divider on each side that has one, shifted to follow any
- * `dividerOverrides` on those dividers.
- *
- * The single source of truth for that span, shared by the worker that builds
- * the shelf, the ghost overlay that previews it and the socket planner that
- * sizes its plate. Deriving it from the nominal grid line instead left the
- * shelf floating off its wall and overhanging into the neighbour whenever a
- * divider was shifted.
- *
- * Returns null for an id that isn't in the grid.
- */
-export function compartmentTabXSpan(
-  config: CompartmentConfig,
-  compartmentId: number,
-  innerW: number
-): CompartmentTabSpan | null {
-  const bounds = getCompartmentBounds(config, compartmentId);
-  if (!bounds) return null;
-
-  const { cols, thickness } = config;
-  const cellW = innerW / cols;
-  const hasLeftWall = bounds.minCol > 0;
-  const hasRightWall = bounds.maxCol < cols - 1;
-
-  const left =
-    -innerW / 2 +
-    bounds.minCol * cellW +
-    (hasLeftWall ? thickness / 2 + dividerXShift(config, compartmentId, bounds, 'left') : 0);
-  const right =
-    -innerW / 2 +
-    (bounds.maxCol + 1) * cellW -
-    (hasRightWall ? thickness / 2 - dividerXShift(config, compartmentId, bounds, 'right') : 0);
-
-  return { left, right };
-}
-
-/**
- * True when a divider wall runs the FULL inner width at `row`'s anchor edge
- * (or that edge is the bin's own outer wall).
- *
- * Full-width label tabs hang off that wall, so a boundary where any
- * column's compartment continues straight through has nothing to carry the
- * shelf across its whole length. Shared by the worker, the ghost overlay and
- * the label-plate export so the three can't disagree about which rows get a
- * tab.
- */
-export function rowHasFullWidthWall(
-  config: CompartmentConfig,
-  row: number,
-  anchor: TabAnchorSide
-): boolean {
-  const { cols, rows, cells } = config;
-  if (anchor === 'back' ? row === rows - 1 : row === 0) return true;
-  const neighborRow = anchor === 'back' ? row + 1 : row - 1;
-  for (let col = 0; col < cols; col++) {
-    if (cells[row * cols + col] === cells[neighborRow * cols + col]) return false;
-  }
-  return true;
-}
-
-/**
- * Depth (mm) of the open region a spanning tab's body protrudes into: from
- * `row`'s anchor wall to the next full-width wall in the opposite direction.
- *
- * That — not the compartment the tab happens to start in — is what the body
- * has to fit inside, because a spanning tab crosses every column.
- */
-export function spanRegionDepth(
-  config: CompartmentConfig,
-  row: number,
-  anchor: TabAnchorSide,
-  cellD: number
-): number {
-  const step = anchor === 'back' ? -1 : 1;
-  let far = row;
-  while (
-    far + step >= 0 &&
-    far + step < config.rows &&
-    !rowHasFullWidthWall(config, far + step, anchor)
-  ) {
-    far += step;
-  }
-  return (Math.abs(row - far) + 1) * cellD;
-}
-
-/** Inputs a label tab's eligibility depends on, beyond the grid itself. */
-export interface LabelTabFit {
-  /** `label.depth` — how far the shelf body protrudes from its wall. */
-  readonly tabDepth: number;
-  /** `label.inset` — extra inward offset from the anchor wall. */
-  readonly inset: number;
-  /** Interior depth of one grid row (mm). */
-  readonly cellD: number;
-  /** True when `label.edges === 'both'`, which can make a front tab collide. */
-  readonly bothEdges: boolean;
-}
-
-/**
- * Whether a per-compartment label tab can actually exist at `compartmentId`'s
- * given edge — the counterpart of {@link spanningTabEligible} for the default
- * (non-full-width) layout.
- *
- * Compartments are enforced rectangles, so every one has both a front and a
- * back anchor edge; what varies is whether the shelf fits and whether the wall
- * it hangs from is axis-aligned.
- *
- * The single source of truth for that question, shared by the worker that cuts
- * the socket, the ghost overlay that previews it and the plate planner that
- * ships a plate for it. Issue was the plate planner answering it
- * independently — and never asking about `edges` at all, so a design with a tab
- * on both edges shipped half the plates it needed.
- */
-export function compartmentTabEligible(
-  config: CompartmentConfig,
-  compartmentId: number,
-  anchor: TabAnchorSide,
-  fit: LabelTabFit
-): boolean {
-  const bounds = getCompartmentBounds(config, compartmentId);
-  if (!bounds) return false;
-
-  // The shelf spans the bounding box's anchor wall. On an L or U that wall is
-  // partly open air over the neighbouring pocket.
-  if (!isRectangularCompartment(config, compartmentId)) return false;
-
-  // A tilted anchor wall breaks the axis-aligned wall the shelf and gusset
-  // geometry assume.
-  const hasTilt = anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
-  if (hasTilt(config, compartmentId)) return false;
-
-  // The body would punch through the compartment's opposite wall.
-  const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * fit.cellD;
-  if (fit.tabDepth + fit.inset > compartmentDepth) return false;
-
-  // With tabs on both edges, the front one is dropped where the pair would meet.
-  if (fit.bothEdges && anchor === 'front' && 2 * fit.tabDepth + 2 * fit.inset > compartmentDepth) {
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * Whether a full-width label tab can actually exist at `row`'s anchor
- * wall.
- *
- * The single source of truth for that question. The worker builds the shelf,
- * the ghost overlay previews it and the label-plate export ships a plate for
- * it — if any of the three answered differently, the user would get a preview
- * that doesn't match the mesh, or a printed plate with no socket to click into.
- */
-export function spanningTabEligible(
-  config: CompartmentConfig,
-  row: number,
-  anchor: TabAnchorSide,
-  fit: LabelTabFit
-): boolean {
-  // Nothing to hang the shelf from.
-  if (!rowHasFullWidthWall(config, row, anchor)) return false;
-
-  // A tilt anywhere along the boundary breaks the axis-aligned anchor wall the
-  // shelf and gusset geometry assume.
-  const { cols, cells } = config;
-  const hasTilt = anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
-  for (let col = 0; col < cols; col++) {
-    if (hasTilt(config, cells[row * cols + col])) return false;
-  }
-
-  // The body would punch through the wall bounding the far side.
-  const regionDepth = spanRegionDepth(config, row, anchor, fit.cellD);
-  if (fit.tabDepth + fit.inset > regionDepth) return false;
-
-  // With tabs on both edges, the front one is dropped where the pair would meet.
-  if (fit.bothEdges && anchor === 'front' && 2 * fit.tabDepth + 2 * fit.inset > regionDepth) {
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * True when the compartment's BACK wall is a tilted divider. Used by label
- * tabs which attach to the back wall and can't currently render on a tilt.
- *
- * "Back" = the +Y direction in interior coords (the higher-row neighbor in
- * the cell grid). A back wall is tilted when the compartment has a back
- * neighbor (not touching the bin's actual back wall) AND a divider override
- * pairs the two compartments.
- */
-export function compartmentHasTiltedBackWall(
-  config: CompartmentConfig,
-  compartmentId: number
-): boolean {
-  const overrides = config.dividerOverrides;
-  if (!overrides || overrides.length === 0) return false;
-  const bounds = getCompartmentBounds(config, compartmentId);
-  if (!bounds) return false;
-  if (bounds.maxRow === config.rows - 1) return false;
-  const backRow = bounds.maxRow + 1;
-  // Scan the entire back edge from minCol..maxCol. A wide compartment can
-  // border multiple different back-neighbors; any of them being tilted-pair
-  // with this compartment counts as a tilted back wall.
-  const overrideKeys = new Set<string>();
-  for (const o of overrides) {
-    const a = Math.min(o.compartmentA, o.compartmentB);
-    const b = Math.max(o.compartmentA, o.compartmentB);
-    overrideKeys.add(`${a}|${b}`);
-  }
-  for (let col = bounds.minCol; col <= bounds.maxCol; col++) {
-    const neighborId = config.cells[backRow * config.cols + col];
-    if (neighborId === compartmentId) continue;
-    const a = Math.min(compartmentId, neighborId);
-    const b = Math.max(compartmentId, neighborId);
-    if (overrideKeys.has(`${a}|${b}`)) return true;
-  }
-  return false;
-}
-
-/**
- * True when the compartment's FRONT wall is a tilted divider. Mirror of
- * `compartmentHasTiltedBackWall` for front-anchored label tabs.
- *
- * "Front" = the -Y direction in interior coords (the lower-row neighbor in
- * the cell grid). A front wall is tilted when the compartment has a front
- * neighbor (not touching the bin's actual front wall) AND a divider override
- * pairs the two compartments.
- */
-export function compartmentHasTiltedFrontWall(
-  config: CompartmentConfig,
-  compartmentId: number
-): boolean {
-  const overrides = config.dividerOverrides;
-  if (!overrides || overrides.length === 0) return false;
-  const bounds = getCompartmentBounds(config, compartmentId);
-  if (!bounds) return false;
-  if (bounds.minRow === 0) return false;
-  const frontRow = bounds.minRow - 1;
-  const overrideKeys = new Set<string>();
-  for (const o of overrides) {
-    const a = Math.min(o.compartmentA, o.compartmentB);
-    const b = Math.max(o.compartmentA, o.compartmentB);
-    overrideKeys.add(`${a}|${b}`);
-  }
-  for (let col = bounds.minCol; col <= bounds.maxCol; col++) {
-    const neighborId = config.cells[frontRow * config.cols + col];
-    if (neighborId === compartmentId) continue;
-    const a = Math.min(compartmentId, neighborId);
-    const b = Math.max(compartmentId, neighborId);
-    if (overrideKeys.has(`${a}|${b}`)) return true;
-  }
-  return false;
-}
+export {
+  compartmentHasTiltedBackWall,
+  compartmentHasTiltedFrontWall,
+  compartmentTabEligible,
+  compartmentTabXSpan,
+  dividerShift,
+  rowHasFullWidthWall,
+  spanRegionDepth,
+  spanningTabEligible,
+} from './compartmentTabFit';
+export type { CompartmentTabSpan, LabelTabFit, TabAnchorSide } from './compartmentTabFit';
 
 /**
  * True when two compartments share at least one cell-boundary edge. With the
@@ -1177,306 +865,21 @@ export function previewSplitCells(
   return next;
 }
 
-/**
- * Normalize compartment IDs to be contiguous starting from 0.
- * Preserves spatial ordering (top-left to bottom-right first occurrence).
- */
-export function normalizeIds(cells: number[]): number[] {
-  return normalizeIdsWithRemap(cells).cells;
-}
+// ID Remapping
 
-/**
- * Variant of `normalizeIds` that also returns the `oldId → newId` remap so
- * callers can keep parallel per-compartment arrays (e.g. `compartmentTexts`)
- * in lockstep with `cells`. Use this for any mutation that may renumber IDs.
- */
-export function normalizeIdsWithRemap(cells: number[]): {
-  cells: number[];
-  remap: Map<number, number>;
-} {
-  const remap = new Map<number, number>();
-  let nextId = 0;
-
-  const normalized = cells.map((id) => {
-    let normalizedId = remap.get(id);
-    if (normalizedId === undefined) {
-      normalizedId = nextId++;
-      remap.set(id, normalizedId);
-    }
-    return normalizedId;
-  });
-
-  return { cells: normalized, remap };
-}
-
-/**
- * Reindex a parallel per-compartment texts array through an `oldId → newId`
- * map (from `normalizeIdsWithRemap`).
- *
- * The remap is always one-to-one — IDs that disappeared from `cells` before
- * normalize ran (e.g. a merge stomped `1,2 → 0`) are absent from the remap
- * and their text drops. New IDs not in `oldTexts` (e.g. from a split) get
- * an empty string in the output slot.
- */
-export function remapCompartmentTexts(
-  oldTexts: readonly string[] | undefined,
-  remap: ReadonlyMap<number, number>
-): string[] {
-  if (!oldTexts || oldTexts.length === 0) return [];
-  let maxNewId = -1;
-  for (const newId of remap.values()) {
-    if (newId > maxNewId) maxNewId = newId;
-  }
-  const out: string[] = new Array<string>(maxNewId + 1).fill('');
-  for (const [oldId, newId] of remap) {
-    const t = oldTexts[oldId];
-    if (typeof t === 'string') out[newId] = t;
-  }
-  return out;
-}
-
-/**
- * Reindex the parallel per-compartment swappable-label plate width overrides
- * through an `oldId → newId` map, mirroring `remapCompartmentTexts`. IDs
- * absent from the remap drop their override; new IDs (splits) get `null`
- * (auto width). Returns `undefined` when no numeric override survives —
- * the "no overrides set" state, matching the field's compact-storage
- * convention (`setCompartmentPlateWidth` does the same).
- */
-export function remapLabelPlateWidths(
-  oldWidths: readonly (number | null)[] | undefined,
-  remap: ReadonlyMap<number, number>
-): (number | null)[] | undefined {
-  if (!oldWidths || oldWidths.length === 0) return undefined;
-  let maxNewId = -1;
-  for (const newId of remap.values()) {
-    if (newId > maxNewId) maxNewId = newId;
-  }
-  const out: (number | null)[] = new Array<number | null>(maxNewId + 1).fill(null);
-  let anySet = false;
-  for (const [oldId, newId] of remap) {
-    const w = oldWidths[oldId];
-    if (typeof w === 'number') {
-      out[newId] = w;
-      anySet = true;
-    }
-  }
-  return anySet ? out : undefined;
-}
-
-/**
- * Remap per-compartment plate icons across a `normalizeIdsWithRemap`
- * renumbering, exactly like `remapLabelPlateWidths` — icons whose
- * compartment vanished drop; new IDs get no icon.
- */
-export function remapLabelIcons(
-  oldIcons: readonly (string | null)[] | undefined,
-  remap: ReadonlyMap<number, number>
-): (string | null)[] | undefined {
-  if (!oldIcons || oldIcons.length === 0) return undefined;
-  let maxNewId = -1;
-  for (const newId of remap.values()) {
-    if (newId > maxNewId) maxNewId = newId;
-  }
-  const out: (string | null)[] = new Array<string | null>(maxNewId + 1).fill(null);
-  let anySet = false;
-  for (const [oldId, newId] of remap) {
-    const icon = oldIcons[oldId];
-    if (typeof icon === 'string') {
-      out[newId] = icon;
-      anySet = true;
-    }
-  }
-  return anySet ? out : undefined;
-}
-
-/**
- * Remap per-compartment shadow-box colours across a `normalizeIdsWithRemap`
- * renumbering, exactly like `remapLabelIcons` — a colour whose compartment
- * vanished drops, and a new ID (a split) starts uncoloured. Without this the
- * colours stay indexed by ids that no longer mean the same compartment, and a
- * merge silently repaints unrelated cells (CLAUDE.md gotcha #6).
- */
-export function remapCompartmentColors(
-  oldColors: readonly (string | null)[] | undefined,
-  remap: ReadonlyMap<number, number>
-): (string | null)[] | undefined {
-  if (!oldColors || oldColors.length === 0) return undefined;
-  let maxNewId = -1;
-  for (const newId of remap.values()) {
-    if (newId > maxNewId) maxNewId = newId;
-  }
-  const out: (string | null)[] = new Array<string | null>(maxNewId + 1).fill(null);
-  let anySet = false;
-  for (const [oldId, newId] of remap) {
-    const color = oldColors[oldId];
-    if (typeof color === 'string' && color !== '') {
-      out[newId] = color;
-      anySet = true;
-    }
-  }
-  return anySet ? out : undefined;
-}
-
-/**
- * Remap the per-compartment paint scopes in lockstep with
- * {@link remapCompartmentColors}. Kept separate rather than folded into one
- * object array so an existing design's `communityParamsFingerprint` only shifts
- * for the field it actually gained.
- */
-export function remapCompartmentColorScopes(
-  oldScopes: readonly (CompartmentColorScope | null)[] | undefined,
-  remap: ReadonlyMap<number, number>
-): (CompartmentColorScope | null)[] | undefined {
-  if (!oldScopes || oldScopes.length === 0) return undefined;
-  let maxNewId = -1;
-  for (const newId of remap.values()) {
-    if (newId > maxNewId) maxNewId = newId;
-  }
-  const out: (CompartmentColorScope | null)[] = new Array<CompartmentColorScope | null>(
-    maxNewId + 1
-  ).fill(null);
-  let anySet = false;
-  for (const [oldId, newId] of remap) {
-    const scope = oldScopes[oldId];
-    if (scope === 'floor' || scope === 'floorAndWalls') {
-      out[newId] = scope;
-      anySet = true;
-    }
-  }
-  return anySet ? out : undefined;
-}
-
-/**
- * Best-effort carry of per-compartment label text across a grid-DIMENSION
- * change. `setCompartmentGrid` regenerates a fresh uniform grid, so the new
- * IDs can't be remapped from the old ones (CLAUDE.md gotcha #6 — there is no
- * `oldId → newId` correspondence). Instead we anchor each old compartment at its
- * lowest cell in data coordinates (`minCol`, `minRow`) and carry its label to
- * the new uniform cell at that same position — the one spatial mapping that's
- * unambiguous. Row 0 is the visual BOTTOM (the grid renders `flex-col-reverse`),
- * so `minRow` is the compartment's visual bottom; for the common single-cell
- * case `minRow === maxRow` so it doesn't matter. (Display numbering instead
- * anchors at the visual TOP — see `getCompartmentReadingOrder`,.)
- *
- * Labels whose anchor falls outside the new (smaller) grid have nowhere to land
- * and are dropped; `droppedCount` reports how many non-empty labels were lost so
- * the caller can warn instead of discarding them silently.
- *
- * Returns `texts` indexed by new compartment ID (`row * newCols + col`).
- */
-export function carryCompartmentTextsByPosition(
-  oldConfig: CompartmentConfig,
-  newCols: number,
-  newRows: number
-): { texts: string[]; droppedCount: number } {
-  const oldTexts = oldConfig.compartmentTexts;
-  if (!oldTexts || oldTexts.length === 0) return { texts: [], droppedCount: 0 };
-
-  const texts = new Array<string>(newCols * newRows).fill('');
-  let droppedCount = 0;
-  for (const id of getCompartmentIds(oldConfig)) {
-    const label = oldTexts[id];
-    if (typeof label !== 'string' || label.length === 0) continue;
-    const bounds = getCompartmentBounds(oldConfig, id);
-    if (!bounds) continue;
-    if (bounds.minCol < newCols && bounds.minRow < newRows) {
-      texts[bounds.minRow * newCols + bounds.minCol] = label;
-    } else {
-      droppedCount++;
-    }
-  }
-  return { texts, droppedCount };
-}
-
-/**
- * Reindex the drawn-unit-cell markers through an `oldId → newId` remap,
- * mirroring `remapCompartmentTexts`. An ID that disappeared drops its marker;
- * an ID whose compartment is no longer 1×1 in `newCells` drops it too (a
- * multi-cell compartment is intrinsically drawn, so keeping the marker would
- * only leave a stale entry to resurface on a later split). Returns
- * `undefined` when nothing survives — the compact-storage convention every
- * optional compartment field follows.
- */
-export function remapDrawnUnitCells(
-  oldIds: readonly number[] | undefined,
-  remap: ReadonlyMap<number, number>,
-  newCells: readonly number[]
-): number[] | undefined {
-  if (!oldIds || oldIds.length === 0) return undefined;
-  const counts = new Map<number, number>();
-  for (const id of newCells) {
-    counts.set(id, (counts.get(id) ?? 0) + 1);
-  }
-  const out: number[] = [];
-  const seen = new Set<number>();
-  for (const oldId of oldIds) {
-    const newId = remap.get(oldId);
-    if (newId === undefined || seen.has(newId)) continue;
-    if (counts.get(newId) !== 1) continue;
-    seen.add(newId);
-    out.push(newId);
-  }
-  return out.length > 0 ? out.sort((a, b) => a - b) : undefined;
-}
-
-/**
- * Reindex the merged-background markers through an `oldId → newId` remap.
- * IDs that no longer exist drop out; `undefined` when nothing survives, per
- * the compact-storage convention the other optional arrays follow.
- */
-export function remapBackgroundIds(
-  oldIds: readonly number[] | undefined,
-  remap: ReadonlyMap<number, number>
-): number[] | undefined {
-  if (!oldIds || oldIds.length === 0) return undefined;
-  const out = new Set<number>();
-  for (const oldId of oldIds) {
-    const newId = remap.get(oldId);
-    if (newId !== undefined) out.add(newId);
-  }
-  return out.size > 0 ? [...out].sort((a, b) => a - b) : undefined;
-}
-
-/**
- * Reindex divider overrides through an `oldId → newId` remap.
- *
- * Drops any override whose endpoint compartment disappeared (cells stomped
- * before normalize ran) OR whose two endpoints collapsed to the same ID
- * (their boundary no longer exists). Surviving overrides keep canonical
- * `compartmentA < compartmentB` ordering.
- */
-export function remapDividerOverrides(
-  oldOverrides: readonly DividerOverride[] | undefined,
-  remap: ReadonlyMap<number, number>
-): DividerOverride[] {
-  if (!oldOverrides || oldOverrides.length === 0) return [];
-  const out: DividerOverride[] = [];
-  // Deduplicate by canonical pair: a merge can collapse two old overrides
-  // onto the same new (compartmentA, compartmentB) pair. Keep the first
-  // occurrence — without this, the worker's lookup map silently last-write-
-  // wins, the validator rejects the design on next save, and the schema's
-  // "no duplicate pairs" invariant breaks.
-  const seenPairs = new Set<string>();
-  for (const o of oldOverrides) {
-    const newA = remap.get(o.compartmentA);
-    const newB = remap.get(o.compartmentB);
-    if (newA === undefined || newB === undefined) continue;
-    if (newA === newB) continue;
-    const [a, b] = newA < newB ? [newA, newB] : [newB, newA];
-    const key = `${a}|${b}`;
-    if (seenPairs.has(key)) continue;
-    seenPairs.add(key);
-    out.push({
-      compartmentA: a,
-      compartmentB: b,
-      offsetStart: o.offsetStart,
-      offsetEnd: o.offsetEnd,
-      ...(o.rakeDeg ? { rakeDeg: o.rakeDeg } : {}),
-    });
-  }
-  return out;
-}
+export {
+  carryCompartmentTextsByPosition,
+  normalizeIds,
+  normalizeIdsWithRemap,
+  remapBackgroundIds,
+  remapCompartmentColors,
+  remapCompartmentColorScopes,
+  remapCompartmentTexts,
+  remapDividerOverrides,
+  remapDrawnUnitCells,
+  remapLabelIcons,
+  remapLabelPlateWidths,
+} from './compartmentRemap';
 
 // Wall Segment Derivation
 
