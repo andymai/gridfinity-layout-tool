@@ -3926,13 +3926,13 @@ const en: Record<string, string> = {
   'baseplate.connectorSample.button': 'Print fit test',
   'baseplate.connectorSample.dialogTitle': 'Connector fit sample',
   'baseplate.connectorSample.dialogDescription':
-    'A small calibration print of all three connector styles across a range of fit offsets. Print it, find the fit that clicks, then set Connector fit to that value before printing the full baseplate.',
+    'A small calibration print of the selected connector style across a range of fit offsets. Print it, find the fit that clicks, then set Connector fit to that value before printing the full baseplate.',
   'baseplate.connectorSample.tipsTitle': 'Print tips',
   'baseplate.connectorSample.tip1': 'Print flat with no supports.',
   'baseplate.connectorSample.tip2':
     "Use the same printer, filament, and nozzle you'll print the baseplate with.",
   'baseplate.connectorSample.tip3':
-    'Each coupon is labeled with its style (DT / DK / SC) and fit offset.',
+    'Each coupon is embossed with its fit offset; the whole tray is one connector style.',
   'baseplate.connectorSample.tip4': 'Found the right fit? Set Connector fit to that offset.',
   'baseplate.connectorSample.exportComplete': 'Fit sample exported',
   'baseplate.connectorSample.exportFailed': 'Connector fit sample export failed',

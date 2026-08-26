@@ -15,12 +15,18 @@ import { measureVolume } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { GRIDFINITY } from '@/shared/constants/bin';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { buildConnectorSampleTray, exportConnectorSample } from './connectorSample';
+import { buildConnectorSampleTray, exportConnectorSample, LABEL_DEPTH } from './connectorSample';
 
 beforeAll(async () => {
   await initBrepjs();
-}, 30000);
+  // Without jetbrains-mono registered, buildTextSolid returns null and coupons
+  // ship textless but still watertight — so the label assertion below would pass
+  // on unlabeled output. Register it the way the worker does at init.
+  await loadTestFonts(['jetbrains-mono']);
+}, 60000);
 
 const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 2,
@@ -126,8 +132,8 @@ describe('connectorSample — fit-sample tray', () => {
     TEST_TIMEOUT_MS
   );
 
-  it.each([undefined, 'puzzle'] as const)(
-    'exports a watertight, bed-resting STL tray (%s)',
+  it.each([undefined, 'puzzle', 'dovetailKey', 'snapClip'] as const)(
+    'exports a watertight, bed-resting, labeled STL tray (%s)',
     async (style) => {
       const { data, fileName } = await exportConnectorSample(
         defaults({ connectorStyle: style }),
@@ -141,6 +147,12 @@ describe('connectorSample — fit-sample tray', () => {
       expect(stats.boundaryEdges, 'boundary edges').toBe(0);
       // Whole tray rests on the bed.
       expect(stats.minZ, 'rests on bed').toBeCloseTo(0, 1);
+      // Watertightness alone passes even when every label silently drops, so
+      // assert the emboss landed: a textless tray tops out at couponHeight
+      // (SOCKET_HEIGHT, no magnet holes); a labeled one is LABEL_DEPTH higher.
+      expect(stats.maxZ, 'coupons carry raised labels').toBeGreaterThan(
+        GRIDFINITY.SOCKET_HEIGHT + LABEL_DEPTH / 2
+      );
     },
     TEST_TIMEOUT_MS
   );

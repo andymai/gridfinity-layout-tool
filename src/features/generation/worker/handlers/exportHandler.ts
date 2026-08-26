@@ -43,6 +43,7 @@ import {
 } from '@/shared/utils/knifeRestPlan';
 import { exportSlideFitSample } from '../generators/slideFitSample';
 import { exportFitTestSlice } from '../generators/fitTestSlice';
+import { ensureFontsLoaded } from '../wasmInstantiator';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
@@ -144,6 +145,10 @@ export async function handleExportConnectorSample(
   message: ExportConnectorSampleMessage
 ): Promise<void> {
   const payload = message.payload;
+  // INIT loads the eager set, but a font fetch that failed then is only retried
+  // when the family is next requested — so re-ensure here, or a stale/missing
+  // asset ships a textless tray with no recovery. Mirrors handleGenerate.
+  await ensureFontsLoaded(['jetbrains-mono']);
   await runExport(
     payload.requestId,
     'BASEPLATE_EXPORT_RESULT',
@@ -186,6 +191,8 @@ export async function handleExportLabelFitSample(
   message: ExportLabelFitSampleMessage
 ): Promise<void> {
   const payload = message.payload;
+  // Re-ensure the label font, same reason as handleExportConnectorSample.
+  await ensureFontsLoaded(['jetbrains-mono']);
   await runExport(
     payload.requestId,
     'BASEPLATE_EXPORT_RESULT',
