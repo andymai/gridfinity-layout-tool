@@ -44,6 +44,20 @@ const CHUNK_LOAD_ERROR =
 const CHUNK_LOAD_FINGERPRINT = 'chunk-load-failed';
 
 /**
+ * The generation worker's by-design reset rejections (`hardResetWorker` in
+ * `GenerationBridge.ts`). Their stacks run through a hashed bridge chunk, so
+ * message-based grouping mints a fresh issue (and a new auto-filed bug) every
+ * time a deploy rotates that hash. Both wordings come from the same
+ * timeout-triggered reset; they keep separate buckets because they name
+ * different casualties: the timeout wording rejects in-flight exports, the
+ * bare wording rejects in-flight mesh imports.
+ */
+const GENERATION_TIMEOUT_ERROR = 'Worker was reset after a generation timeout';
+const GENERATION_TIMEOUT_FINGERPRINT = 'generation-worker-timeout';
+const WORKER_RESET_ERROR = 'Worker was reset';
+const WORKER_RESET_FINGERPRINT = 'generation-worker-reset';
+
+/**
  * Per-session capture ceilings.
  *
  * Error tracking has its own monthly exception quota, and one looping client
@@ -230,6 +244,19 @@ export function filterExceptionForPosthog(
     event.properties = {
       ...event.properties,
       $exception_fingerprint: CHUNK_LOAD_FINGERPRINT,
+    };
+  }
+
+  // Longer message first: the timeout wording contains the bare reset wording.
+  if (primary !== undefined && primary.includes(GENERATION_TIMEOUT_ERROR)) {
+    event.properties = {
+      ...event.properties,
+      $exception_fingerprint: GENERATION_TIMEOUT_FINGERPRINT,
+    };
+  } else if (primary !== undefined && primary.includes(WORKER_RESET_ERROR)) {
+    event.properties = {
+      ...event.properties,
+      $exception_fingerprint: WORKER_RESET_FINGERPRINT,
     };
   }
 
