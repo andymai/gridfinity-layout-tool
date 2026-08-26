@@ -1,0 +1,105 @@
+src/i18n/locales/uk.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/features/baseplate/utils/buildBaseplateExportPieces.ts
+  s_8c2c4457d965c0::t_01b8599b9207ee 15
+  s_8c2c4457d965c0::t_f91503a04256e1 140,258,288,391,502,522
+src/i18n/locales/ja.json
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+src/features/bin-designer/hooks/useFitTestExport.ts
+  s_8c2c4457d965c0::t_b0684a3775f074 23
+  s_8c2c4457d965c0::t_1ad65630b3acae 81,86
+src/features/bin-designer/hooks/useSlideFitSampleExport.ts
+  s_8c2c4457d965c0::t_0c92f3120da374 11,14-15,19,22-27,30-35
+src/shared/hooks/useSampleExport.ts
+  s_8c2c4457d965c0::t_7294d15bf8c04a 1-102
+src/features/bin-designer/hooks/useLabelFitSampleExport.ts
+  s_8c2c4457d965c0::t_c40cc7adbba1de 12,14-15,19,22-27,30-35
+src/i18n/locales/fr.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/i18n/locales/ko.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/i18n/locales/en.ts
+  s_8c2c4457d965c0::t_367557c9c91fe2 3937
+  s_8c2c4457d965c0::t_c58c71f4257246 3873
+  s_8c2c4457d965c0::t_bea8b435519f7c 1829
+src/i18n/locales/sv.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/i18n/locales/pt-BR.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/i18n/locales/cs.json
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+src/features/baseplate/hooks/useStackSampleExport.ts
+  s_8c2c4457d965c0::t_dc31d15df7888c 10,18,21-22,34,44-45,49-68,70-72,74-75,77-83,85-89,91,94-100
+src/i18n/locales/it.json
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+src/features/bin-designer/hooks/useLabelFitSampleExport.test.ts
+  s_8c2c4457d965c0::t_8772b2b7b4f1db 5
+  s_8c2c4457d965c0::t_e53b5f177dc298 69,77
+src/shared/generation/export.ts
+  s_8c2c4457d965c0::t_71f0574b988477 21
+src/i18n/locales/nb.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/features/baseplate/hooks/useConnectorSampleExport.test.ts
+  s_8c2c4457d965c0::t_5fd5e7bef5e904 5
+  s_8c2c4457d965c0::t_7fea3dd9284cc5 77
+src/i18n/locales/pl.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/i18n/locales/nl.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/features/bin-designer/components/panel/ImportedMeshSection/ImportedMeshPanel.tsx
+  s_8c2c4457d965c0::t_48672508b28f3f 80
+  s_8c2c4457d965c0::t_b8588389921cf0 15
+src/features/baseplate/hooks/useConnectorSampleExport.ts
+  s_8c2c4457d965c0::t_dd5dee15310200 11,16-17,23,44-57,59,62-67
+src/features/bin-designer/hooks/useExport.ts
+  s_8c2c4457d965c0::t_9de4228b61a62c 53
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_8c2c4457d965c0::t_1f7cc9ea6802d1 134
+  s_8c2c4457d965c0::t_ea19983b22f04a 21
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_8c2c4457d965c0::t_738f9e55d7186b 165
+  s_8c2c4457d965c0::t_830177215ed5b4 15
+src/features/bin-designer/hooks/useSlideFitSampleExport.test.ts
+  s_8c2c4457d965c0::t_354b0467a17d58 6
+  s_8c2c4457d965c0::t_1511c74f4d7c63 67,75
+src/i18n/locales/de.json
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+src/shell/layoutExport/useLayoutExport.ts
+  s_8c2c4457d965c0::t_9a552b8619c886 50
+src/i18n/locales/zh-CN.json
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+src/i18n/locales/es.json
+  s_8c2c4457d965c0::t_d1b875aaad26bd 59,254
+  s_8c2c4457d965c0::t_eb2612a26cb4d3 969
+src/shared/generation/stlTo3mf.ts
+  s_8c2c4457d965c0::t_44549275d7a497 1-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "ec84d4c839e96d9b884a9a571ae81e9b6701a9c9",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
