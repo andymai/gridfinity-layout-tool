@@ -43,6 +43,29 @@ const CHUNK_LOAD_ERROR =
 /** Stable fingerprint collapsing every deploy's chunk-load miss into one issue. */
 const CHUNK_LOAD_FINGERPRINT = 'chunk-load-failed';
 
+/**
+ * Per-session capture ceilings.
+ *
+ * Error tracking has its own monthly exception quota, and one looping client
+ * can consume weeks of it: a stale-bundle session averages dozens of
+ * chunk-load captures (each doomed retry can be captured both natively and by
+ * a boundary), and a single such day has burned most of a month's allowance.
+ *
+ * A stale bundle is one condition for the whole tab (see lazyWithRetry), so
+ * the first chunk-load capture says everything the rest of the session's
+ * would. Every other identity keeps enough repeats to triage, then goes
+ * quiet for the session.
+ */
+const SESSION_EXCEPTION_CAP = 10;
+const sessionCaptureCounts = new Map<string, number>();
+let chunkLoadCaptured = false;
+
+/** Test seam: clears the per-session capture counters. */
+export function resetSessionCaptureCounts(): void {
+  sessionCaptureCounts.clear();
+  chunkLoadCaptured = false;
+}
+
 const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   // Safari Web Extensions message bus
   /No Listener: tabs:/i,
@@ -87,6 +110,7 @@ export function shouldIgnoreError(
 }
 
 interface ExceptionLike {
+  type?: string;
   value?: string;
   stacktrace?: { frames?: Array<{ function?: string; filename?: string }> };
 }
@@ -157,8 +181,9 @@ function isNavigationAbort(exception: ExceptionLike): boolean {
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
  * exception matches the extension/noise filters, the R3F canvas teardown
  * race, or a stackless navigation abort; dedupes the WebGL context-creation
- * burst, pins chunk-load failures to one fingerprint, and passes everything
- * else through unchanged.
+ * burst, pins chunk-load failures to one fingerprint and captures them once
+ * per session, caps every exception identity's captures per session, and
+ * passes everything else through unchanged.
  *
  * Only the first entry in `$exception_list` / `$exception_values` is
  * checked. Subsequent entries are `Error.cause` chains — if a real app
@@ -200,11 +225,23 @@ export function filterExceptionForPosthog(
   }
 
   if (primary !== undefined && CHUNK_LOAD_ERROR.test(primary)) {
+    if (chunkLoadCaptured) return null;
+    chunkLoadCaptured = true;
     event.properties = {
       ...event.properties,
       $exception_fingerprint: CHUNK_LOAD_FINGERPRINT,
     };
   }
+
+  // Pinned fingerprints group reliably; everything else keys on type + message
+  // prefix, which is stable enough to recognize a loop even though the
+  // server-side fingerprint isn't known at capture time.
+  const identity =
+    event.properties?.$exception_fingerprint ??
+    `${primaryException?.type ?? ''}:${primary?.slice(0, 120) ?? ''}`;
+  const captured = (sessionCaptureCounts.get(identity) ?? 0) + 1;
+  sessionCaptureCounts.set(identity, captured);
+  if (captured > SESSION_EXCEPTION_CAP) return null;
 
   return event;
 }

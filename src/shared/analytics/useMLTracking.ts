@@ -48,18 +48,40 @@ type MlTelemetryModule = typeof MlTelemetryNS;
 
 // Lazily loaded module cache
 let _mlTelemetry: MlTelemetryModule | undefined;
-function getMlTelemetry(): Promise<MlTelemetryModule> {
+let _mlTelemetryUnavailable = false;
+
+/**
+ * Resolves the mlTelemetry module, or null once loading has failed.
+ *
+ * Only success used to be cached, so a client on a stale bundle re-fetched
+ * the dead chunk hash on every tracked interaction, each attempt surfacing
+ * as a captured exception. A load failure means a stale bundle, which is one
+ * condition for the whole session, so the first failure latches tracking off.
+ */
+export function getMlTelemetry(): Promise<MlTelemetryModule | null> {
   if (_mlTelemetry) return Promise.resolve(_mlTelemetry);
-  return import('./mlTelemetry').then((mod) => {
-    _mlTelemetry = mod;
-    return mod;
-  });
+  if (_mlTelemetryUnavailable) return Promise.resolve(null);
+  return import('./mlTelemetry').then(
+    (mod) => {
+      _mlTelemetry = mod;
+      return mod;
+    },
+    (error: unknown) => {
+      _mlTelemetryUnavailable = true;
+      if (import.meta.env.DEV) {
+        console.error('[mlTelemetry] failed to load:', error);
+      }
+      return null;
+    }
+  );
 }
 
 /** Fire-and-forget tracking — silently ignores errors (analytics should never crash the app) */
 function track(fn: (m: MlTelemetryModule) => void): void {
   void getMlTelemetry()
-    .then(fn)
+    .then((m) => {
+      if (m) fn(m);
+    })
     .catch((error: unknown) => {
       if (import.meta.env.DEV) {
         console.error('[mlTelemetry] tracking failed:', error);

@@ -1,5 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { filterExceptionForPosthog, shouldIgnoreError } from './errorFilters';
+import {
+  filterExceptionForPosthog,
+  resetSessionCaptureCounts,
+  shouldIgnoreError,
+} from './errorFilters';
 
 const { detectWebGL } = vi.hoisted(() => ({ detectWebGL: vi.fn() }));
 vi.mock('@/shared/webgl/detectWebGL', () => ({ detectWebGL }));
@@ -7,6 +11,7 @@ vi.mock('@/shared/webgl/detectWebGL', () => ({ detectWebGL }));
 beforeEach(() => {
   // Default to "available" so non-WebGL cases behave normally.
   detectWebGL.mockReturnValue({ available: true });
+  resetSessionCaptureCounts();
 });
 
 describe('shouldIgnoreError — message patterns', () => {
@@ -183,15 +188,16 @@ describe('filterExceptionForPosthog — chunk-load dedupe', () => {
   });
 
   it('groups across deploys, whose chunk hash and route differ', () => {
-    expect(
-      fingerprintOf(
-        'Failed to fetch dynamically imported module: https://x/assets/baseplate-AAA.js'
-      )
-    ).toBe(
-      fingerprintOf(
-        'Failed to fetch dynamically imported module: https://x/assets/designer-ZZZZZZZZ.js'
-      )
+    const first = fingerprintOf(
+      'Failed to fetch dynamically imported module: https://x/assets/baseplate-AAA.js'
     );
+    // The once-per-session gate would mute the second capture; reset so this
+    // test only observes the fingerprint pinning.
+    resetSessionCaptureCounts();
+    const second = fingerprintOf(
+      'Failed to fetch dynamically imported module: https://x/assets/designer-ZZZZZZZZ.js'
+    );
+    expect(first).toBe(second);
   });
 
   it('leaves a bare network failure alone, which is not necessarily a chunk', () => {
@@ -202,14 +208,71 @@ describe('filterExceptionForPosthog — chunk-load dedupe', () => {
     expect(fingerprintOf('TypeError: Load failed')).toBeUndefined();
   });
 
-  it('still reports the event rather than dropping it', () => {
-    const e = {
+  it('reports the first occurrence and mutes the rest of the session', () => {
+    const make = (): Parameters<typeof filterExceptionForPosthog>[0] => ({
       event: '$exception',
       properties: {
         $exception_list: [{ value: 'Failed to fetch dynamically imported module: https://x/a.js' }],
       },
-    };
-    expect(filterExceptionForPosthog(e)).toBe(e);
+    });
+    const first = make();
+    expect(filterExceptionForPosthog(first)).toBe(first);
+    // A stale bundle is one condition for the whole tab: a stale session
+    // averages dozens of captures repeating the same fact, and the retries
+    // can be captured both natively and by a boundary.
+    expect(filterExceptionForPosthog(make())).toBeNull();
+    expect(
+      filterExceptionForPosthog({
+        event: '$exception',
+        properties: {
+          $exception_list: [{ value: 'TypeError: Importing a module script failed.' }],
+        },
+      })
+    ).toBeNull();
+  });
+});
+
+describe('filterExceptionForPosthog — per-session capture cap', () => {
+  const appError = (value: string): Parameters<typeof filterExceptionForPosthog>[0] => ({
+    event: '$exception',
+    properties: { $exception_list: [{ type: 'TypeError', value }] },
+  });
+
+  it('caps one looping identity without touching others', () => {
+    for (let i = 0; i < 10; i++) {
+      expect(filterExceptionForPosthog(appError('x is not a function'))).not.toBeNull();
+    }
+    expect(filterExceptionForPosthog(appError('x is not a function'))).toBeNull();
+    expect(filterExceptionForPosthog(appError('x is not a function'))).toBeNull();
+
+    // A different identity is unaffected by the exhausted one.
+    expect(filterExceptionForPosthog(appError('y is undefined'))).not.toBeNull();
+  });
+
+  it('caps a pinned-fingerprint burst the once-per-session gates miss', () => {
+    // WebGL context failures are muted only after detection flips to
+    // unavailable; when the boundary never flips it, this cap is the bound.
+    for (let i = 0; i < 10; i++) {
+      expect(
+        filterExceptionForPosthog({
+          event: '$exception',
+          properties: { $exception_list: [{ value: 'Error creating WebGL context.' }] },
+        })
+      ).not.toBeNull();
+    }
+    expect(
+      filterExceptionForPosthog({
+        event: '$exception',
+        properties: { $exception_list: [{ value: 'Error creating WebGL context.' }] },
+      })
+    ).toBeNull();
+  });
+
+  it('resets with the seam', () => {
+    for (let i = 0; i < 11; i++) filterExceptionForPosthog(appError('loop'));
+    expect(filterExceptionForPosthog(appError('loop'))).toBeNull();
+    resetSessionCaptureCounts();
+    expect(filterExceptionForPosthog(appError('loop'))).not.toBeNull();
   });
 });
 
