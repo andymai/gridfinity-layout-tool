@@ -1,0 +1,44 @@
+src/shared/webgl/WebGLErrorBoundary.tsx
+  s_77d0b52ee27f58::t_2e5579efa51b22 48
+src/shell/PanelErrorBoundary/PanelErrorBoundary.tsx
+  s_77d0b52ee27f58::t_0a8e6f85906047 4
+src/shared/analytics/posthog/init.ts
+  s_77d0b52ee27f58::t_74b7fab97f0973 64-71
+src/shared/webgl/WebGLFallback.tsx
+  s_77d0b52ee27f58::t_e8e7b212bdb18f 5
+src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
+  s_77d0b52ee27f58::t_a31843d83f40af 312,318
+src/shared/analytics/posthog/eventsErrors.ts
+  s_77d0b52ee27f58::t_f7a1952fe692fd 7-8
+src/shared/webgl/WebGLErrorBoundary.test.tsx
+  s_77d0b52ee27f58::t_a31843d83f40af 35,44,55,67
+src/shell/ErrorBoundary/ErrorBoundary.tsx
+  s_77d0b52ee27f58::t_110b76a4f80d02 4
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_77d0b52ee27f58::t_a31843d83f40af 211,254
+src/shared/webgl/WebGLFallback.test.tsx
+  s_77d0b52ee27f58::t_9c4ece028cba58 2,8
+src/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection.ts
+  s_77d0b52ee27f58::t_c954ca5a6eccb8 241,244
+  s_77d0b52ee27f58::t_055adab710a000 1
+  s_77d0b52ee27f58::t_abb0c4287b81dd 235-240,242-243,245-267
+  s_77d0b52ee27f58::t_d6fcf30aa58b0b 268-270
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_77d0b52ee27f58::t_a31843d83f40af 438,450
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "0c1414c51d5c3e65df51ed036e29238bf4a3939a",
+  "prompts": {},
+  "sessions": {
+    "s_77d0b52ee27f58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f3aa5fd-a45a-4e7a-bdfe-c39dccf0151f",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
