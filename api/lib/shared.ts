@@ -10,6 +10,9 @@ import type { VercelResponse } from '@vercel/node';
  * - Shared type definitions
  */
 
+/** Max length for a user-visible name on a synced resource. */
+export const MAX_NAME_LENGTH = 100;
+
 /**
  * Validate a layout/share ID format.
  * Supports multiple formats for backwards compatibility:

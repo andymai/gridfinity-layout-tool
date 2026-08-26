@@ -413,6 +413,7 @@ export default defineConfig([
       'api/ml-telemetry.ts', // pre-split (2268 LOC)
       'api/lib/mlTelemetry/aggregators.ts', // post-split equivalent
       // Cohesive single-concern modules where splitting would harm readability:
+      'api/lib/assemblyValidation.ts', // one hand-written mirror of the client assembly schema; its bounds, validators and sanitizer must move together
       'src/shared/utils/validation.ts', // type guards + import/salvage validation pipeline (728 LOC); concerns are interleaved by design
       'src/features/generation/bridge/GenerationBridge.ts', // single GenerationBridge class with the full worker-message protocol
       'src/features/generation/worker/generators/baseplateGenerator.ts', // single linear generation pipeline
