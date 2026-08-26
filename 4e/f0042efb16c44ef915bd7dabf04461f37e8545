@@ -1,0 +1,32 @@
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_8c2c4457d965c0::t_ff6322f85f8318 72
+eslint.config.js
+  s_8c2c4457d965c0::t_d20934cd78ae1a 97-99
+  s_8c2c4457d965c0::t_bacd82a58d4e61 444,449-456
+api/lib/validation.ts
+  s_8c2c4457d965c0::t_716b9bc548fce1 807
+src/shared/utils/cutoutLabel.ts
+  s_8c2c4457d965c0::t_64293e17aa47ff 101
+src/features/bin-designer/utils/tags.ts
+  s_8c2c4457d965c0::t_fb9dabc631d56e 27
+src/features/bin-designer/components/panel/ShapeSection/useShapeSection.ts
+  s_8c2c4457d965c0::t_bf9374a57aa9b2 42
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_8c2c4457d965c0::t_bf9374a57aa9b2 522,583,678
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "4ef0042efb16c44ef915bd7dabf04461f37e8545",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
