@@ -5,13 +5,11 @@ import { EMPTY_MODEL, MODEL_SCHEMA_VERSION, type LabelSuggesterModel } from './m
 // ~250 kB payload out of the JS module graph entirely. Fetched on demand and
 // runtime-cached by the service worker.
 import modelUrl from './labelSuggester.model.json?url';
+import { isRecord } from '@/shared/utils/isRecord';
 
 let modelPromise: Promise<LabelSuggesterModel> | null = null;
 
 /** Arrays are objects, and an array would silently miss every key lookup. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /** Shallow shape check — the payload is a build asset we emit, not user input. */
 function isLabelSuggesterModel(value: unknown): value is LabelSuggesterModel {

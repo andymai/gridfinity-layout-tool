@@ -17,6 +17,7 @@ import type {
 import type { CommunityReportReason } from '@/shared/types/community';
 import type { CommunityClientError } from './client';
 import { communityFetch, errorFromResponse } from './client';
+import { isRecord } from '@/shared/utils/isRecord';
 
 const PRINTS_ENDPOINT = '/api/community/prints';
 
@@ -63,10 +64,6 @@ export interface CommunityPrintWriteResult {
   print: CommunityPrint;
   /** Distinct printers after the write, so callers can update a card without refetching. */
   count: number;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function isPrint(value: unknown): value is CommunityPrint {

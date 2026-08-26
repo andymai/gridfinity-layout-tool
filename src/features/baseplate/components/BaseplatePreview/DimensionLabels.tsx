@@ -4,18 +4,13 @@ import * as THREE from 'three';
 import type { DrawerOutline } from '@/core/types';
 import { outlineBounds } from '@/shared/utils/drawerOutlineGeometry';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
+import { formatMm } from '@/shared/utils/format';
 
 const DIM_FONT_SIZE = 4;
 const DIM_OPACITY = 0.5;
 const DIM_OFFSET = 8; // mm from slab edge to label
 const DIM_LINE_OPACITY = 0.25;
 const DIM_TICK_SIZE = 3;
-
-/** Format mm for display: minimum needed decimals, no trailing zeros. */
-function formatMm(v: number): string {
-  const rounded = Math.round(v * 100) / 100;
-  return String(rounded);
-}
 
 /**
  * Width and depth dimension annotations along the baseplate edges.

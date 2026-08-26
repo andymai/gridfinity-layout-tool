@@ -5,13 +5,11 @@ import type { BinRecommenderModel } from './types';
 // ~270 kB payload out of the JS module graph entirely. Fetched on demand and
 // runtime-cached by the service worker.
 import modelUrl from './model.json?url';
+import { isRecord } from '@/shared/utils/isRecord';
 
 let modelPromise: Promise<BinRecommenderModel> | null = null;
 
 /** Arrays are objects, and an array would silently miss every key lookup. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 // Structural only: `recommendBinSize` already rejects an unsupported
 // schemaVersion, so duplicating that check here would fork the supported range.
