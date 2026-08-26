@@ -29,8 +29,13 @@ export interface LidMeshDataState {
 /** Current status of the generation engine */
 export type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
 
-/** WASM/Worker initialization status */
-export type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
+/**
+ * WASM/Worker initialization status.
+ *
+ * 'unsupported' is terminal in a way 'error' is not: the browser cannot compile
+ * the kernel at all, so neither a retry nor a reload changes the outcome.
+ */
+export type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
 
 /** Result of mesh generation */
 export interface GenerationResult {

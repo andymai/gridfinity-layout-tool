@@ -57,6 +57,7 @@ import {
   type MeshImportOutcome,
 } from './bridgeTypes';
 import type { MeshImportRotation } from '@/shared/generation/meshAsset';
+import { isUnsupportedWasmError } from '@/shared/generation/wasmLoadError';
 import { extractThreadingInfo } from './bridgeHelpers';
 import { GenerationResultCache } from './resultCache';
 import { installMessageHandler } from './bridgeMessageHandler';
@@ -157,7 +158,8 @@ export class GenerationBridge {
    * Safe to call multiple times (returns cached promise).
    *
    * Retries once on failure to recover from transient network errors,
-   * CDN edge cache misses, and service worker update races.
+   * CDN edge cache misses, and service worker update races — but not when the
+   * browser has already told us it cannot compile the binary.
    */
   init(): Promise<void> {
     if (this.destroyed) {
@@ -173,6 +175,9 @@ export class GenerationBridge {
       this.worker = null;
 
       if (this.destroyed) throw firstError;
+      // A browser that cannot compile the kernel's instruction set fails the
+      // retry identically, for a second multi-megabyte download.
+      if (isUnsupportedWasmError(firstError)) throw firstError;
 
       return this.tryInit().catch((retryError: unknown) => {
         const message = retryError instanceof Error ? retryError.message : String(retryError);

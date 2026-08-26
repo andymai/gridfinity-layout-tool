@@ -3871,6 +3871,9 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.warning.plateTooTall':
     'A single plate is taller than your {maxHeight}mm build height, so it won’t print. Raise the build-height limit in print settings.',
   'baseplate.wasmLoadFailed': 'Failed to load 3D engine',
+  'baseplate.wasmUnsupported': 'Browser cannot run the 3D engine',
+  'baseplate.wasmUnsupportedHint':
+    'This browser is too old to run the 3D engine. Update it, or open the tool in a recent Chrome, Edge, Firefox, or Safari.',
   'baseplate.generationFailed': 'Baseplate generation failed',
   'baseplate.errorRetryHint':
     'Try refreshing the page. If the problem persists, try a different browser.',
@@ -5189,6 +5192,7 @@ const en: Record<string, string> = {
   // Bin-designer screen-reader announcements
   'binDesigner.announce.loadingEngine': 'Loading 3D engine',
   'binDesigner.announce.engineLoadError': 'Error: 3D engine failed to load',
+  'binDesigner.announce.engineUnsupported': 'Error: this browser cannot run the 3D engine',
   'binDesigner.announce.generatingMesh': 'Generating bin mesh',
   'binDesigner.announce.meshGenerationError': 'Error: mesh generation failed',
   'binDesigner.announce.previewUpdated': 'Bin preview updated',
@@ -5199,11 +5203,14 @@ const en: Record<string, string> = {
   // Bin-designer preview
   'binDesigner.preview.initializingEngine': 'Initializing engine...',
   'binDesigner.preview.engineLoadFailed': 'Engine failed to load',
+  'binDesigner.preview.engineUnsupported': 'Engine not supported',
   'binDesigner.preview.generatingMesh': 'Generating mesh...',
   'binDesigner.preview.generationFailed': 'Generation failed',
   'binDesigner.preview.loadingPreview': 'Loading preview...',
   'binDesigner.preview.engineLoadHelpText':
     'The WebAssembly engine could not be loaded. Check your connection and try again.',
+  'binDesigner.preview.engineUnsupportedHelpText':
+    'This browser is too old to run the 3D engine. Update it, or open the tool in a recent Chrome, Edge, Firefox, or Safari.',
   'binDesigner.preview.generationHelpText':
     'Mesh generation encountered an error. Try adjusting parameters or retry.',
   'binDesigner.preview.generationHelpTextWithError': '{error}. Try adjusting parameters or retry.',

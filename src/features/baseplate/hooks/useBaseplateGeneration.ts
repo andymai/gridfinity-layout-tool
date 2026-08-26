@@ -42,6 +42,7 @@ import {
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { WorkerPool } from '@/shared/generation/bridge';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
+import { isUnsupportedWasmError } from '@/shared/generation/wasmLoadError';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { getStaticTranslation } from '@/i18n';
@@ -935,11 +936,17 @@ export function useBaseplateGeneration(): void {
       })
       .catch((e: unknown) => {
         if (cancelled) return;
-        const message = e instanceof Error ? e.message : String(e);
-        useToastStore
-          .getState()
-          .addToast(t('baseplate.toast.engineInitFailed', { message }), 'error');
-        setWasmStatus('error');
+        // The raw compile error names a byte offset in a binary the user did
+        // not ask about; the in-canvas panel says the useful part instead.
+        if (isUnsupportedWasmError(e)) {
+          setWasmStatus('unsupported');
+        } else {
+          const message = e instanceof Error ? e.message : String(e);
+          useToastStore
+            .getState()
+            .addToast(t('baseplate.toast.engineInitFailed', { message }), 'error');
+          setWasmStatus('error');
+        }
         handleWasmLoadFailure(e, 'baseplate_preview');
       });
 

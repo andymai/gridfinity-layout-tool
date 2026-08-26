@@ -30,6 +30,7 @@ export function PreviewSkeleton({
   const t = useTranslation();
   const getMessage = () => {
     if (wasmStatus === 'loading') return t('binDesigner.preview.initializingEngine');
+    if (wasmStatus === 'unsupported') return t('binDesigner.preview.engineUnsupported');
     if (wasmStatus === 'error') return t('binDesigner.preview.engineLoadFailed');
     if (generationStatus === 'generating') return t('binDesigner.preview.generatingMesh');
     if (generationStatus === 'error') return t('binDesigner.preview.generationFailed');
@@ -37,6 +38,7 @@ export function PreviewSkeleton({
   };
 
   const getHelpText = () => {
+    if (wasmStatus === 'unsupported') return t('binDesigner.preview.engineUnsupportedHelpText');
     if (wasmStatus === 'error') return t('binDesigner.preview.engineLoadHelpText');
     if (generationStatus === 'error') {
       return errorMessage
@@ -46,7 +48,12 @@ export function PreviewSkeleton({
     return null;
   };
 
-  const isError = wasmStatus === 'error' || generationStatus === 'error';
+  const isError =
+    wasmStatus === 'error' || wasmStatus === 'unsupported' || generationStatus === 'error';
+  // Retrying is only offered where it can work. An unsupported browser fails
+  // every attempt identically.
+  const showRetry = onRetry !== undefined && wasmStatus !== 'unsupported';
+  const showRevert = onRevert !== undefined && canRevert && generationStatus === 'error';
   const helpText = getHelpText();
 
   return (
@@ -97,9 +104,9 @@ export function PreviewSkeleton({
           {getMessage()}
         </p>
         {helpText && <p className="mt-1 text-xs text-content-tertiary">{helpText}</p>}
-        {isError && (onRetry || (onRevert && canRevert)) && (
+        {isError && (showRetry || showRevert) && (
           <div className="mt-3 flex items-center justify-center gap-2">
-            {onRetry && (
+            {showRetry && (
               <Button
                 variant="secondary"
                 onClick={onRetry}
@@ -125,7 +132,7 @@ export function PreviewSkeleton({
                 {t('binDesigner.retry')}
               </Button>
             )}
-            {onRevert && canRevert && generationStatus === 'error' && (
+            {showRevert && (
               <Button
                 variant="secondary"
                 onClick={onRevert}

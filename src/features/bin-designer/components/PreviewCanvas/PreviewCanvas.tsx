@@ -368,6 +368,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   });
 
   const handleRetry = useCallback(() => {
+    if (wasmStatus === 'unsupported') return;
     if (wasmStatus === 'error') {
       window.location.reload();
     } else {
@@ -399,7 +400,11 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // A Manifold pre-draft can land while the exact worker's WASM is still
   // loading (cold start) — show it rather than the skeleton; the overlay below
   // keeps signalling that the exact geometry is still on its way.
-  const showSkeleton = !hasMesh || wasmStatus === 'error' || (wasmStatus !== 'ready' && !isDraft);
+  const showSkeleton =
+    !hasMesh ||
+    wasmStatus === 'error' ||
+    wasmStatus === 'unsupported' ||
+    (wasmStatus !== 'ready' && !isDraft);
   // Keep the loading indicator up while a fast draft is shown and the exact
   // geometry is still computing (manifold_preview), not just during 'generating'.
   const showOverlay = (generationStatus === 'generating' || isDraft) && hasMesh;

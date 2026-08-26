@@ -24,6 +24,7 @@ describe('captureWasmLoadFailure', () => {
       surface: 'bin_designer_preview',
       kernel: 'occt-wasm',
       stale_asset: true,
+      unsupported_browser: false,
       // Collapses every deploy's stale-bundle failure into one issue.
       $exception_fingerprint: 'wasm-load-stale-asset',
     });
@@ -36,6 +37,27 @@ describe('captureWasmLoadFailure', () => {
       surface: 'baseplate_preview',
       kernel: 'occt-wasm',
       stale_asset: false,
+      unsupported_browser: false,
+    });
+  });
+
+  it('pins one fingerprint for an unsupported browser, whose message moves every build', () => {
+    // The byte offset and function index below shift with each kernel build, so
+    // without this pin the same old Safari mints a fresh issue per deploy.
+    captureWasmLoadFailure(
+      new Error(
+        "Kernel init failed: Aborted(CompileError: WebAssembly.Module doesn't parse at byte 51: " +
+          'invalid opcode 253, in function at index 18).'
+      ),
+      'baseplate_preview'
+    );
+
+    expect(captureException).toHaveBeenCalledWith(expect.any(Error), {
+      surface: 'baseplate_preview',
+      kernel: 'occt-wasm',
+      stale_asset: false,
+      unsupported_browser: true,
+      $exception_fingerprint: 'wasm-unsupported-browser',
     });
   });
 
@@ -70,6 +92,19 @@ describe('handleWasmLoadFailure', () => {
 
   it('captures but does not recover on a genuine (non-stale) error', () => {
     handleWasmLoadFailure(new Error('out of memory'), 'baseplate_preview');
+
+    expect(captureException).toHaveBeenCalledTimes(1);
+    expect(recoverStaleBundle).not.toHaveBeenCalled();
+  });
+
+  it('does not recover an unsupported browser, which would reload onto the same failure', () => {
+    handleWasmLoadFailure(
+      new Error(
+        "Kernel init failed: Aborted(CompileError: WebAssembly.Module doesn't parse at byte 51: " +
+          'invalid opcode 253, in function at index 18).'
+      ),
+      'bin_designer_preview'
+    );
 
     expect(captureException).toHaveBeenCalledTimes(1);
     expect(recoverStaleBundle).not.toHaveBeenCalled();

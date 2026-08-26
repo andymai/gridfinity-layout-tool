@@ -53,6 +53,29 @@ export function isStaleAssetError(error: unknown): boolean {
 }
 
 /**
+ * Every phrasing a browser uses for "I cannot compile this instruction".
+ *
+ * The kernel is built with SIMD, so a browser without it rejects the binary
+ * outright. JSC names the raw byte: 253 is 0xfd, the SIMD prefix, which is how
+ * every Safari below 16.4 reports the kernel. V8 names the feature instead.
+ */
+const UNSUPPORTED_INSTRUCTION_SIGNATURES = ['invalid opcode', 'Wasm SIMD unsupported'] as const;
+
+/**
+ * True when the browser itself cannot run the kernel, whatever build it fetches.
+ *
+ * The stale check wins: it answers for the wording a *current* build no longer
+ * emits (relaxed SIMD), where the client is running old cached code and a
+ * reload is the fix. What is left here survives a reload, so the caller owes
+ * the user an honest "this browser can't" rather than a retry.
+ */
+export function isUnsupportedWasmError(error: unknown): boolean {
+  if (isStaleAssetError(error)) return false;
+  const message = error instanceof Error ? error.message : String(error);
+  return UNSUPPORTED_INSTRUCTION_SIGNATURES.some((sig) => message.includes(sig));
+}
+
+/**
  * Reduce a bundler-hashed asset URL to a deploy-stable label.
  *
  * Vite emits content-hashed asset names (e.g. `occt-wasm-DVSq216o.wasm`) whose

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isStaleAssetError, stableAssetName } from './wasmLoadError';
+import { isStaleAssetError, isUnsupportedWasmError, stableAssetName } from './wasmLoadError';
 
 describe('isStaleAssetError', () => {
   it('flags the fetchWasmBinary stale-asset message', () => {
@@ -61,6 +61,8 @@ describe('isStaleAssetError', () => {
   });
 
   it('leaves an unsupported instruction set unflagged, since reloading cannot help', () => {
+    // Paired with the isUnsupportedWasmError suite below: what one claims the
+    // other must decline, or a browser that cannot compile gets reload-looped.
     // An old browser that cannot compile the instruction is not a stale cache.
     // Reloading it in a loop would be the only outcome of flagging this.
     expect(
@@ -81,6 +83,41 @@ describe('isStaleAssetError', () => {
   it('handles non-Error values without throwing', () => {
     expect(isStaleAssetError('script failed to load')).toBe(true);
     expect(isStaleAssetError(undefined)).toBe(false);
+  });
+});
+
+describe('isUnsupportedWasmError', () => {
+  it.each([
+    [
+      'Safari below 16.4, which has no SIMD (opcode 253 is 0xfd, the SIMD prefix)',
+      "Kernel init failed: Aborted(CompileError: WebAssembly.Module doesn't parse at byte 51: " +
+        'invalid opcode 253, in function at index 18). Build with -sASSERTIONS for more info.',
+    ],
+    [
+      'V8, which names the feature instead of the byte',
+      'Kernel init failed: Aborted(CompileError: WebAssembly.instantiate(): Compiling function ' +
+        '#72 failed: Wasm SIMD unsupported @+86123)',
+    ],
+  ])('flags %s', (_name, message) => {
+    expect(isUnsupportedWasmError(new Error(message))).toBe(true);
+  });
+
+  it('declines a stale-asset failure, which a reload does fix', () => {
+    // Relaxed SIMD is the overlap case: it reads as an unsupported instruction
+    // but current builds no longer emit it, so seeing it means stale cached code.
+    expect(
+      isUnsupportedWasmError(
+        new Error(
+          "Kernel init failed: Aborted(CompileError: WebAssembly.Module doesn't parse at byte " +
+            '301: relaxed simd instructions not supported, in function at index 219).'
+        )
+      )
+    ).toBe(false);
+  });
+
+  it('declines unrelated load and generation failures', () => {
+    expect(isUnsupportedWasmError(new Error('out of memory'))).toBe(false);
+    expect(isUnsupportedWasmError(undefined)).toBe(false);
   });
 });
 
