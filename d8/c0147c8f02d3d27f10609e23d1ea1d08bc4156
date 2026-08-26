@@ -1,0 +1,47 @@
+src/shared/utils/format.ts
+  s_8c2c4457d965c0::t_cb5f158d088f49 1-8
+src/features/baseplate/components/BaseplatePreview/DimensionLabels.tsx
+  s_8c2c4457d965c0::t_8c698e7fca6b17 7
+src/features/bin-inspector/labelSuggest/loadModel.ts
+  s_8c2c4457d965c0::t_8c698e7fca6b17 8
+src/features/community/utils/communityDigest.ts
+  s_8c2c4457d965c0::t_8c698e7fca6b17 13,49,57,62,74
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_8c2c4457d965c0::t_8c698e7fca6b17 5
+src/shared/items/assembly/descriptor.ts
+  s_8c2c4457d965c0::t_8c698e7fca6b17 18
+src/shared/utils/format.test.ts
+  s_8c2c4457d965c0::t_1a3eec3583e0c5 1-14
+src/features/community/components/CommunityDetail/CommunityDetailContent.tsx
+  s_8c2c4457d965c0::t_8c698e7fca6b17 21
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
+  s_8c2c4457d965c0::t_8c698e7fca6b17 29,79
+src/features/bin-inspector/components/Inspector/ExpandedFootprint/ExpandedFootprint.tsx
+  s_8c2c4457d965c0::t_8c698e7fca6b17 22
+src/shared/utils/isRecord.test.ts
+  s_8c2c4457d965c0::t_cbbf99a52bf25e 1-17
+src/features/community/api/client.ts
+  s_8c2c4457d965c0::t_8c698e7fca6b17 25
+src/features/bin-recommender/loadModel.ts
+  s_8c2c4457d965c0::t_8c698e7fca6b17 8
+src/features/community/api/printsClient.ts
+  s_8c2c4457d965c0::t_8c698e7fca6b17 20
+src/shared/utils/isRecord.ts
+  s_8c2c4457d965c0::t_5059e80aeeea15 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d8c0147c8f02d3d27f10609e23d1ea1d08bc4156",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
