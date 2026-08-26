@@ -15,6 +15,7 @@ import {
   DEFAULT_HEIGHT_UNIT_MM,
   deriveCommunityMetrics,
 } from './communityStore.js';
+import { validateDesignerShare } from './designerValidation.js';
 
 import { binDimensions } from '../../src/features/bin-designer/utils/binDimensions.js';
 import { DEFAULT_BIN_PARAMS } from '../../src/shared/constants/bin.js';
@@ -51,5 +52,39 @@ describe('community metric defaults (cross-boundary mirror)', () => {
     expect(metrics.depth).toBeCloseTo(client.outerD, 10);
     expect(metrics.height).toBeCloseTo(client.totalH, 10);
     expect(metrics.gridUnitMm).toBe(params.gridUnitMm);
+  });
+
+  // `binDimensions` measures depth with `gridUnitMmY ?? gridUnitMm` while
+  // `deriveCommunityMetrics` has only one pitch to work with. The two agree
+  // because a published design never carries the second one: `gridUnitMmY` is
+  // outside `ALLOWED_PARAM_KEYS`, so the share validator strips it on the way
+  // in. Allowlisting it without teaching the metrics about it would put every
+  // non-square-pitch card's depth on the wrong axis, and this fires first.
+  it('is never handed a Y pitch, because publish strips it', () => {
+    const squarePitch: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 2,
+      gridUnitMm: 42,
+    };
+    const share = {
+      type: 'designer' as const,
+      version: 1 as const,
+      params: { ...squarePitch, gridUnitMmY: 30 },
+    };
+    const sanitized = validateDesignerShare(
+      share,
+      Buffer.byteLength(JSON.stringify(share), 'utf8')
+    );
+    expect(sanitized).toMatchObject({ valid: true });
+
+    const stored = sanitized.valid ? sanitized.payload.params : {};
+    expect(Object.keys(stored)).toContain('gridUnitMm');
+    expect(Object.keys(stored)).not.toContain('gridUnitMmY');
+
+    const client = binDimensions(squarePitch);
+    const metrics = deriveCommunityMetrics(stored);
+    expect(metrics.width).toBeCloseTo(client.outerW, 10);
+    expect(metrics.depth).toBeCloseTo(client.outerD, 10);
   });
 });
