@@ -12,7 +12,7 @@ import type { BaseplateTiling, DedupStats } from '../types/tiling';
 import type { ExportFileNameConfig, MarginPiece } from '@/shared/types/bin';
 
 type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
-type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
+type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
 
 /** View mode for split baseplates: assembled (no gaps) or exploded (gaps between pieces). */
 export type SplitViewMode = 'assembled' | 'exploded';

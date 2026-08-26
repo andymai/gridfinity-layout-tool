@@ -7,6 +7,7 @@ import { bridgeManager, createDraftSkipGate, getActiveKernel } from '@/shared/ge
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
+import { isUnsupportedWasmError } from '@/shared/generation/wasmLoadError';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import {
   binMeshCacheKey,
@@ -440,7 +441,7 @@ export function useGeneration(): void {
       })
       .catch((e: unknown) => {
         if (cancelled) return;
-        setWasmStatus('error');
+        setWasmStatus(isUnsupportedWasmError(e) ? 'unsupported' : 'error');
         handleWasmLoadFailure(e, 'bin_designer_preview');
       });
 

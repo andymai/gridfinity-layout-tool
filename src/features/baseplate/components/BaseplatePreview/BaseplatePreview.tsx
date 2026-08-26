@@ -247,7 +247,8 @@ export function BaseplatePreview({
   // its dimensions reported — otherwise the gradient background shows through
   // while StackedBaseplateMeshes is still constructing or returns null.
   const hasAnyMesh = stackEnabled ? stackBounds !== null : isSplit ? hasSplitMeshes : hasMesh;
-  const hasError = wasmStatus === 'error' || generationStatus === 'error';
+  const hasError =
+    wasmStatus === 'error' || wasmStatus === 'unsupported' || generationStatus === 'error';
   const isWasmLoading = !hasError && wasmStatus !== 'ready';
   const isGenerating = generationStatus === 'generating';
   /**
@@ -484,12 +485,16 @@ export function BaseplatePreview({
         <div className="absolute inset-0 flex items-center justify-center" role="alert">
           <div className="mx-4 max-w-sm rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-center shadow-lg dark:border-red-800 dark:bg-red-950">
             <p className="text-sm font-medium text-red-800 dark:text-red-200">
-              {wasmStatus === 'error'
-                ? t('baseplate.wasmLoadFailed')
-                : t('baseplate.generationFailed')}
+              {wasmStatus === 'unsupported'
+                ? t('baseplate.wasmUnsupported')
+                : wasmStatus === 'error'
+                  ? t('baseplate.wasmLoadFailed')
+                  : t('baseplate.generationFailed')}
             </p>
             <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-              {t('baseplate.errorRetryHint')}
+              {wasmStatus === 'unsupported'
+                ? t('baseplate.wasmUnsupportedHint')
+                : t('baseplate.errorRetryHint')}
             </p>
           </div>
         </div>

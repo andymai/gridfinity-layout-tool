@@ -12,22 +12,31 @@
 import { captureException } from '@/shared/analytics/posthog';
 import { getActiveKernel } from '@/shared/generation/bridge';
 import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
-import { isStaleAssetError } from './wasmLoadError';
+import { isStaleAssetError, isUnsupportedWasmError } from './wasmLoadError';
 
 type WasmLoadSurface = 'bin_designer_preview' | 'baseplate_preview';
 
 export function captureWasmLoadFailure(error: unknown, surface: WasmLoadSurface): void {
   const staleAsset = isStaleAssetError(error);
+  // Mutually exclusive by construction — isUnsupportedWasmError defers to the
+  // stale check — so at most one fingerprint below is ever applied.
+  const unsupportedBrowser = isUnsupportedWasmError(error);
   captureException(error instanceof Error ? error : new Error(String(error)), {
     surface,
     kernel: getActiveKernel(),
     stale_asset: staleAsset,
+    unsupported_browser: unsupportedBrowser,
     // Stale-bundle failures self-heal (see handleWasmLoadFailure) and recur on
     // every deploy. Pin the whole self-healing class to one stable fingerprint
     // so a per-deploy hashed asset name — in the message or a stack frame — can't
     // splinter it into a fresh error-tracking issue each release. Genuine (non-
     // stale) load regressions keep their default per-message grouping.
     ...(staleAsset ? { $exception_fingerprint: 'wasm-load-stale-asset' } : {}),
+    // Same splintering, different cause: the compile error names the byte
+    // offset and function index where the engine gave up, and both move with
+    // every kernel build, so one unsupported browser mints a fresh issue per
+    // deploy. Nothing about the client changed between them.
+    ...(unsupportedBrowser ? { $exception_fingerprint: 'wasm-unsupported-browser' } : {}),
   });
 }
 

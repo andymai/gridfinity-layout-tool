@@ -63,6 +63,7 @@ export function getStatusAnnouncement(
   t: TFunction
 ): string | null {
   if (wasmStatus === 'loading') return t('binDesigner.announce.loadingEngine');
+  if (wasmStatus === 'unsupported') return t('binDesigner.announce.engineUnsupported');
   if (wasmStatus === 'error') return t('binDesigner.announce.engineLoadError');
   if (generationStatus === 'generating') return t('binDesigner.announce.generatingMesh');
   if (generationStatus === 'error') return t('binDesigner.announce.meshGenerationError');

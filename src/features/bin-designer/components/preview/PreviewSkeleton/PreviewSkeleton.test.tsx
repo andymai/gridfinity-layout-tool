@@ -22,6 +22,18 @@ describe('PreviewSkeleton', () => {
     expect(screen.getByText('Engine failed to load')).toBeInTheDocument();
   });
 
+  it('shows the unsupported-browser message instead of a connection hint', () => {
+    render(<PreviewSkeleton wasmStatus="unsupported" generationStatus="idle" />);
+    expect(screen.getByText('Engine not supported')).toBeInTheDocument();
+    expect(screen.getByText(/too old to run the 3D engine/)).toBeInTheDocument();
+  });
+
+  it('withholds retry when the browser can never load the engine', () => {
+    const onRetry = vi.fn();
+    render(<PreviewSkeleton wasmStatus="unsupported" generationStatus="idle" onRetry={onRetry} />);
+    expect(screen.queryByLabelText(/Retry loading/)).not.toBeInTheDocument();
+  });
+
   it('shows generation error message', () => {
     render(<PreviewSkeleton wasmStatus="ready" generationStatus="error" />);
     expect(screen.getByText('Generation failed')).toBeInTheDocument();

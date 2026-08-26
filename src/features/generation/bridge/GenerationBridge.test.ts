@@ -39,6 +39,13 @@ class MockWorker {
       // Simulates a worker that loads but hangs inside WASM init: no INIT_READY,
       // no error event, nothing.
       if (stallInit) return;
+      if (initErrorMessage !== null) {
+        const error = initErrorMessage;
+        setTimeout(() => {
+          this.simulateResponse({ type: 'ERROR', requestId: 'init', error });
+        }, 0);
+        return;
+      }
       const kernel = (data as { kernel?: string }).kernel ?? 'occt-wasm';
       setTimeout(() => {
         this.simulateResponse({
@@ -76,10 +83,15 @@ class MockWorker {
 let mockWorkerInstance: MockWorker | null = null;
 /** When true, MockWorker swallows INIT instead of replying. */
 let stallInit = false;
+/** When set, MockWorker answers INIT with an ERROR carrying this message. */
+let initErrorMessage: string | null = null;
+/** Workers the bridge has constructed — the retry count, observed from outside. */
+let workersCreated = 0;
 
 // Mock the Worker constructor globally
 function createMockWorkerClass() {
   return function MockWorkerConstructor() {
+    workersCreated++;
     mockWorkerInstance = new MockWorker();
     return mockWorkerInstance as unknown as Worker;
   };
@@ -100,6 +112,8 @@ describe('GenerationBridge', () => {
   beforeEach(() => {
     mockWorkerInstance = null;
     stallInit = false;
+    initErrorMessage = null;
+    workersCreated = 0;
     bridge = new GenerationBridge();
     vi.useFakeTimers();
   });
@@ -164,6 +178,30 @@ describe('GenerationBridge', () => {
     it('rejects if bridge is destroyed', async () => {
       bridge.destroy();
       await expect(bridge.init()).rejects.toThrow('destroyed');
+    });
+
+    it('retries a transient init failure on a second worker', async () => {
+      initErrorMessage = 'Kernel init failed: Failed to fetch';
+      const assertion = expect(bridge.init()).rejects.toThrow(/first attempt/);
+      await vi.advanceTimersByTimeAsync(10);
+      await assertion;
+
+      expect(workersCreated).toBe(2);
+    });
+
+    it('does not retry when the browser cannot compile the kernel', async () => {
+      // Safari below 16.4 has no SIMD, so opcode 0xfd (253) is unparseable. The
+      // retry would re-download megabytes to fail identically.
+      initErrorMessage =
+        "Kernel init failed: Aborted(CompileError: WebAssembly.Module doesn't parse at byte 51: " +
+        'invalid opcode 253, in function at index 18).';
+      const assertion = expect(bridge.init()).rejects.toThrow(/invalid opcode 253/);
+      await vi.advanceTimersByTimeAsync(10);
+      await assertion;
+
+      expect(workersCreated).toBe(1);
+      // No retry means no wrapping, so the original message reaches telemetry intact.
+      await expect(bridge.init()).rejects.not.toThrow(/first attempt/);
     });
   });
 
