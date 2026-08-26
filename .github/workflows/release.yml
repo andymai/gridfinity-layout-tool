@@ -63,6 +63,27 @@ jobs:
           manifest-file: .release-please-manifest.json
           token: ${{ steps.app-token.outputs.token }}
 
+      # Marks the release on PostHog charts so a metric change can be read
+      # against the deploy that shipped it. Best-effort by design: a missing
+      # key or a PostHog outage must never block the release pipeline, so the
+      # step skips without the secret and warns instead of failing.
+      - name: Annotate release in PostHog
+        if: steps.release.outputs.releases_created == 'true'
+        env:
+          POSTHOG_ANNOTATION_API_KEY: ${{ secrets.POSTHOG_ANNOTATION_API_KEY }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          if [ -z "$POSTHOG_ANNOTATION_API_KEY" ]; then
+            echo "POSTHOG_ANNOTATION_API_KEY not set; skipping release annotation."
+            exit 0
+          fi
+          curl --silent --show-error --max-time 30 \
+            -H "Authorization: Bearer $POSTHOG_ANNOTATION_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\": \"v$VERSION\", \"date_marker\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"scope\": \"project\", \"creation_type\": \"GIT\"}" \
+            "https://us.posthog.com/api/projects/284234/annotations/" \
+            || echo "::warning::PostHog release annotation failed (non-blocking)."
+
       - name: Auto-approve Release PR
         if: steps.release.outputs.pr
         env:
