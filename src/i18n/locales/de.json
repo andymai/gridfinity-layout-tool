@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Textgröße",
   "binDesigner.textSizeAuto": "Auto",
   "binDesigner.textSizeCapHint": "Tabs einer Reihe teilen eine Größe – eine längere Beschriftung verkleinert die übrigen.",
+  "binDesigner.textSizeExactHint": "Wird in dieser Größe gedruckt. Er kann über benachbarte Aussparungen reichen und schrumpft nur, wenn der Bin keinen Platz lässt.",
+  "binDesigner.textSizeLimited": "Die Bin-Größe begrenzt dieses Label auf {size} mm",
   "binDesigner.textSizeMax": "Max. Beschriftungsgröße",
   "binDesigner.threeDModel": "3D-Modell",
   "binDesigner.threeDModelDescription": "Eine druckbare 3D-Modelldatei exportieren",

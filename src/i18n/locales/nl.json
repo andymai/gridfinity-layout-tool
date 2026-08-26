@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Tekstgrootte",
   "binDesigner.textSizeAuto": "Auto",
   "binDesigner.textSizeCapHint": "Tabs in een rij delen één grootte, dus een langer label verkleint de rest.",
+  "binDesigner.textSizeExactHint": "Wordt op deze grootte geprint. Het kan over nabijgelegen uitsparingen reiken en krimpt alleen als de bin geen ruimte laat.",
+  "binDesigner.textSizeLimited": "De bin-grootte beperkt dit label tot {size} mm",
   "binDesigner.textSizeMax": "Max. labelgrootte",
   "binDesigner.threeDModel": "3D-model",
   "binDesigner.threeDModelDescription": "Exporteer een printbaar 3D-modelbestand",

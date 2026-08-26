@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "라벨 크기",
   "binDesigner.textSizeAuto": "자동",
   "binDesigner.textSizeCapHint": "한 줄의 탭들은 크기를 공유하므로, 긴 라벨은 나머지를 작게 만듭니다.",
+  "binDesigner.textSizeExactHint": "이 크기로 인쇄됩니다. 주변 컷아웃 위로 넘어갈 수 있으며 bin에 공간이 없을 때만 줄어듭니다.",
+  "binDesigner.textSizeLimited": "bin 크기로 인해 이 라벨은 {size} mm로 제한됩니다",
   "binDesigner.textSizeMax": "최대 라벨 크기",
   "binDesigner.threeDModel": "3D 모델",
   "binDesigner.threeDModelDescription": "인쇄 가능한 3D 모델 파일 내보내기",
