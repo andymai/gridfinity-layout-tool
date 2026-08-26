@@ -1,7 +1,8 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { useResponsive } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
-import { LayoutThumbnailWithLabels } from '../LayoutThumbnailWithLabels';
+import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
+import { computePreview } from '@/core/storage';
 import { THEME_CONFIG } from '../../types';
 import { INSPIRATION_LAYOUTS } from '../../data';
 import type { InspirationLayout } from '../../types';
@@ -44,6 +45,7 @@ export function LayoutPreviewOverlay({
   }, [onClose]);
 
   const { name, description, theme, metrics, layout: layoutData } = layout;
+  const mainPreview = useMemo(() => computePreview(layoutData), [layoutData]);
 
   // Find related layouts (same theme, excluding current)
   const relatedLayouts = useMemo(() => {
@@ -118,8 +120,9 @@ export function LayoutPreviewOverlay({
             className={`${isMobile ? 'p-4' : 'flex-1 p-6'} flex items-center justify-center bg-surface`}
           >
             <div className="bg-surface-secondary rounded-xl p-6 md:p-8 w-full h-full max-h-[60vh] flex items-center justify-center">
-              <LayoutThumbnailWithLabels
-                layout={layoutData}
+              <LayoutThumbnail
+                preview={mainPreview}
+                showLabels
                 responsive
                 className="max-w-full max-h-full"
               />
@@ -194,8 +197,9 @@ export function LayoutPreviewOverlay({
                       className="flex-1 flex-col items-stretch p-2 rounded-lg bg-surface hover:bg-surface-hover border border-stroke-subtle hover:border-stroke text-left"
                     >
                       <div className="aspect-[3/4] bg-surface-secondary rounded mb-1.5 flex items-center justify-center overflow-hidden p-1">
-                        <LayoutThumbnailWithLabels
-                          layout={related.layout}
+                        <LayoutThumbnail
+                          preview={computePreview(related.layout)}
+                          showLabels
                           responsive
                           className="max-w-full max-h-full"
                         />

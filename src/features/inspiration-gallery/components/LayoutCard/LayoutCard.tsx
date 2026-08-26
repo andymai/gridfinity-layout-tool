@@ -1,4 +1,6 @@
-import { LayoutThumbnailWithLabels } from '../LayoutThumbnailWithLabels';
+import { useMemo } from 'react';
+import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
+import { computePreview } from '@/core/storage';
 import { THEME_CONFIG } from '../../types';
 import type { InspirationLayout } from '../../types';
 import { useTranslation } from '@/i18n';
@@ -23,6 +25,7 @@ export function LayoutCard({
 }: LayoutCardProps) {
   const t = useTranslation();
   const { name, shortDescription, metrics, layout, theme } = inspirationLayout;
+  const preview = useMemo(() => computePreview(layout), [layout]);
 
   const animationDelay = `${Math.min(index * 50, 300)}ms`;
   const themeConfig = THEME_CONFIG[theme];
@@ -52,7 +55,12 @@ export function LayoutCard({
     >
       {/* Thumbnail - portrait aspect for taller cards */}
       <div className="aspect-[3/4] bg-surface-secondary rounded overflow-hidden mb-2 flex items-center justify-center relative p-2">
-        <LayoutThumbnailWithLabels layout={layout} responsive className="max-w-full max-h-full" />
+        <LayoutThumbnail
+          preview={preview}
+          showLabels
+          responsive
+          className="max-w-full max-h-full"
+        />
         {/* Theme indicator - top right */}
         <span
           className="absolute top-1.5 right-1.5 text-xs px-1.5 py-0.5 rounded-full bg-black/70 text-white backdrop-blur-sm"

@@ -83,4 +83,72 @@ describe('LayoutThumbnail', () => {
     const lines = container.querySelectorAll('line');
     expect(lines.length).toBeGreaterThan(0);
   });
+
+  describe('responsive mode', () => {
+    it('fills the container instead of using fixed dimensions', () => {
+      const { container } = render(<LayoutThumbnail preview={previewWithBins} responsive />);
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveAttribute('width', '100%');
+      expect(svg).toHaveAttribute('height', '100%');
+      expect(svg).toHaveAttribute('preserveAspectRatio', 'xMidYMid meet');
+    });
+
+    it('keeps a viewBox derived from the internal render size', () => {
+      const { container } = render(<LayoutThumbnail preview={previewWithBins} responsive />);
+      const svg = container.querySelector('svg');
+      expect(svg?.getAttribute('viewBox')).toBe('0 0 200 150');
+    });
+  });
+
+  describe('labels', () => {
+    it('renders label text for bins with labels when space permits', () => {
+      const { container } = render(
+        <LayoutThumbnail preview={previewWithBins} showLabels responsive />
+      );
+      const texts = Array.from(container.querySelectorAll('text')).map((t) => t.textContent);
+      expect(texts).toContain('Screws');
+    });
+
+    it('does not render labels for unlabeled bins', () => {
+      const { container } = render(
+        <LayoutThumbnail preview={previewWithBins} showLabels responsive />
+      );
+      expect(container.querySelectorAll('text')).toHaveLength(1);
+    });
+
+    it('does not render labels below the minimum bin size', () => {
+      const { container } = render(
+        <LayoutThumbnail preview={previewWithBins} showLabels size={40} />
+      );
+      expect(container.querySelectorAll('text')).toHaveLength(0);
+    });
+
+    it('rotates text for bins significantly taller than wide', () => {
+      const tallPreview: LayoutPreview = {
+        ...previewWithBins,
+        binMap: [
+          {
+            x: gridUnits(0),
+            y: gridUnits(0),
+            w: gridUnits(1),
+            d: gridUnits(3),
+            c: '#4a90d9',
+            l: 'Tall',
+          },
+        ],
+      };
+      const { container } = render(<LayoutThumbnail preview={tallPreview} showLabels responsive />);
+      const text = container.querySelector('text');
+      expect(text?.getAttribute('transform')).toMatch(/^rotate\(-90/);
+    });
+
+    it('uses the theme contrast color for label text', () => {
+      const { container } = render(
+        <LayoutThumbnail preview={previewWithBins} showLabels responsive />
+      );
+      const text = container.querySelector('text');
+      // #4a90d9 has luminance just above 0.5: dark text on a light fill
+      expect(text?.getAttribute('fill')).toBe('var(--text-on-light)');
+    });
+  });
 });
