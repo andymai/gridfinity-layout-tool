@@ -1,0 +1,37 @@
+src/shared/utils/cutoutLabel.ts
+  s_8986efd43f7781::t_17c66f1bf1846f 208-219,223-227
+  s_8986efd43f7781::t_bba6fbf6e6c078 220-222
+  s_8986efd43f7781::t_53c05c2c6af64c 207
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.tsx
+  s_8986efd43f7781::t_8fcd13007ae862 33,102-105
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_8986efd43f7781::t_ba22eaf78a5c4d 67,1647-1650
+src/features/generation/worker/generators/binGenerator.scenario.textElement.test.ts
+  s_8986efd43f7781::t_3c8a294e013b02 111-112,114,125-140,176,179-180
+src/shared/utils/cutoutLabel.test.ts
+  s_8986efd43f7781::t_b53ec5088c7f84 10,368-403
+  s_8986efd43f7781::t_d36e5309f0a3ac 404
+src/features/bin-designer/components/panel/CutoutsSection/renderer/TextElementMesh.tsx
+  s_8986efd43f7781::t_b53ec5088c7f84 74
+src/features/generation/worker/generators/lidCutoutBuilder.ts
+  s_8986efd43f7781::t_ba22eaf78a5c4d 32-36,274,276
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutLabel3D.tsx
+  s_8986efd43f7781::t_8fcd13007ae862 29,163-174,183-186
+  s_8986efd43f7781::t_29ff31963a462f 187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d2bfe337a9692746d9b7e2bcd70e667b50985f6f",
+  "prompts": {},
+  "sessions": {
+    "s_8986efd43f7781": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "02e988c2-7f43-4a7d-b215-1c09da0b9451",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
