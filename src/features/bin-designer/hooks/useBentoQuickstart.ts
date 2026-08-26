@@ -8,9 +8,12 @@
  * instructions that no longer apply.
  */
 
-import { createQuickstartFlag } from './quickstartFlag';
+import { useCallback } from 'react';
+import { createLocalStorageFlagStore } from '@/shared/hooks/createLocalStorageFlagStore';
 
-const useFlag = createQuickstartFlag('gridfinity-bento-quickstart-seen-v2');
+const store = createLocalStorageFlagStore({
+  quickstartSeen: 'gridfinity-bento-quickstart-seen-v2',
+});
 
 export interface UseBentoQuickstartReturn {
   quickstartSeen: boolean;
@@ -18,6 +21,11 @@ export interface UseBentoQuickstartReturn {
 }
 
 export function useBentoQuickstart(): UseBentoQuickstartReturn {
-  const { seen, markSeen } = useFlag();
-  return { quickstartSeen: seen, markQuickstartSeen: markSeen };
+  const { quickstartSeen } = store.useFlags();
+
+  const markQuickstartSeen = useCallback(() => {
+    store.setFlag('quickstartSeen');
+  }, []);
+
+  return { quickstartSeen, markQuickstartSeen };
 }
