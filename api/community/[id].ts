@@ -29,7 +29,7 @@ import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { readSession, requireSession } from '../lib/session.js';
 import type { SessionRecord } from '../lib/session.js';
 import { logger } from '../lib/logger.js';
-import { checkText, REPORT_THRESHOLD } from '../lib/contentFilter.js';
+import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
 import {
   ErrorCode,
   methodNotAllowed,
@@ -64,8 +64,8 @@ import type {
   CommunityHiddenReason,
 } from '../lib/communityStore.js';
 import {
-  COMMUNITY_REPORT_NOTE_MAX_LENGTH,
   COMMUNITY_REPORT_REASONS,
+  parseReportBody,
   validateCommunityPublish,
 } from '../lib/communityValidation.js';
 import { readCommunityPrints } from '../lib/communityPrintStore.js';
@@ -883,22 +883,11 @@ async function handleReportAction(
   const rateLimit = await checkRateLimit(session.userId, 'community.report');
   if (!rateLimit.allowed) return rateLimited(res, rateLimit.retryAfterSeconds);
 
-  const { reason, note } = body;
-  if (!isString(reason) || !(COMMUNITY_REPORT_REASONS as readonly string[]).includes(reason)) {
-    return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid report reason');
+  const parsed = parseReportBody(body);
+  if (!parsed.ok) {
+    return sendError(res, parsed.status, parsed.code, parsed.message);
   }
-  const reportReason = reason as CommunityReportReason;
-  let reportNote = '';
-  if (note !== undefined) {
-    if (!isString(note)) {
-      return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'note must be a string');
-    }
-    // The slice bounds the string before the filter's ReDoS-prone regexes run.
-    reportNote = note.slice(0, COMMUNITY_REPORT_NOTE_MAX_LENGTH);
-    if (reportNote !== '' && !checkText(reportNote).passed) {
-      return sendError(res, 400, ErrorCode.CONTENT_BLOCKED, 'note contains prohibited content');
-    }
-  }
+  const { reason: reportReason, note: reportNote } = parsed;
 
   const redis = getRedis();
   if (!redis) return serviceUnavailable(res);
