@@ -1,0 +1,19 @@
+.github/workflows/release.yml
+  s_77d0b52ee27f58::t_36c8d313871fc0 66-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "edd847dbc0c67ed963c2394b9deb45b3a5543fc0",
+  "prompts": {},
+  "sessions": {
+    "s_77d0b52ee27f58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f3aa5fd-a45a-4e7a-bdfe-c39dccf0151f",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
