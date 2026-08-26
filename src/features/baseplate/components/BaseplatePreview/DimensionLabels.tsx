@@ -12,8 +12,6 @@ const DIM_OFFSET = 8; // mm from slab edge to label
 const DIM_LINE_OPACITY = 0.25;
 const DIM_TICK_SIZE = 3;
 
-/** Format mm for display: minimum needed decimals, no trailing zeros. */
-
 /**
  * Width and depth dimension annotations along the baseplate edges.
  * Measures the material, so leader lines land on the plate's real edges and the

@@ -26,8 +26,6 @@ interface ExpandedFootprintProps {
   layout: Layout;
 }
 
-/** Up to 2 decimals, trailing zeros stripped (98, 104.5). */
-
 /** Signed mm for a per-side value, so `+0` reads as "not extended here". */
 function formatSide(value: number): string {
   return `+${formatMm(value)}`;

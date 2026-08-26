@@ -4,8 +4,6 @@ import { PencilIcon } from '@/design-system/Icon';
 import { clamp as clampRange } from '@/shared/utils/math';
 import { formatMm } from '@/shared/utils/format';
 
-/** Format mm for display: minimum needed decimals, no trailing zeros. */
-
 interface EditableDimensionsProps {
   /** Total width in mm (grid + padding) when hasPadding, or grid-only mm otherwise. */
   readonly widthMm: number;
