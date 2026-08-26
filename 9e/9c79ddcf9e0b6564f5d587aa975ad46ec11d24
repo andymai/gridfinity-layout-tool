@@ -1,0 +1,24 @@
+src/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection.test.ts
+  s_77d0b52ee27f58::t_d39ea0e6f1cab0 1-2,15-70
+  s_77d0b52ee27f58::t_945b0d72437028 71
+src/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection.ts
+  s_77d0b52ee27f58::t_4c4e813481095f 1,290,298
+  s_77d0b52ee27f58::t_cb1803d65fda93 270-272,275
+  s_77d0b52ee27f58::t_1a98b069a1d6ab 30-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "9e9c79ddcf9e0b6564f5d587aa975ad46ec11d24",
+  "prompts": {},
+  "sessions": {
+    "s_77d0b52ee27f58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3f3aa5fd-a45a-4e7a-bdfe-c39dccf0151f",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
