@@ -205,6 +205,27 @@ export function textElementFootprint(
 }
 
 /**
+ * A text element's caption is centered on its own footprint, full stop. The
+ * anchor grid and nudge fields are not offered for text, so stray values in a
+ * hand-authored file must not shift the caption away from the box the editor
+ * frames — every placement site (bin engraver, lid engraver, 2D preview,
+ * inspector fit) reads the element through this. Identity for every other
+ * shape and for a text element already clean, so callers apply it
+ * unconditionally.
+ */
+export function withCenteredTextPlacement<
+  T extends Pick<Cutout, 'shape' | 'textAnchor' | 'textOffset' | 'textSide'>,
+>(cutout: T): T {
+  if (cutout.shape !== 'text') return cutout;
+  // An ABSENT anchor is not clean: the legacy resolution defaults it to 'top'.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- clearing the legacy field is the point
+  if (cutout.textAnchor === 'center' && cutout.textOffset === undefined && !cutout.textSide) {
+    return cutout;
+  }
+  return { ...cutout, textAnchor: 'center', textOffset: undefined, textSide: undefined };
+}
+
+/**
  * Re-derive a text element's stored footprint from its caption and size,
  * holding the element's center still so an edit never walks it across the
  * board. Identity for every other shape and for a footprint already in sync,

@@ -26,6 +26,7 @@ import {
   hasExplicitLabelSize,
   labelPlacementForAabb,
   resolveCutoutTextAnchor,
+  withCenteredTextPlacement,
 } from '@/shared/utils/cutoutLabel';
 import type { CutoutAabb } from '@/shared/utils/cutoutLabel';
 import {
@@ -159,14 +160,18 @@ export function CutoutLabel3D({
 
         // Drag always nudges the MASTER: the offset is one field shared by
         // every instance, so grabbing the third label in a row has to move the
-        // same value grabbing the first one does.
-        const handlePointerDown = onLabelDragStart
-          ? (e: ThreeEvent<PointerEvent>) => {
-              if (e.nativeEvent.button !== 0) return; // left-click only
-              e.stopPropagation();
-              onLabelDragStart(cutout.id, e.point.x, e.point.y);
-            }
-          : undefined;
+        // same value grabbing the first one does. A text element takes no
+        // handler at all — its caption IS the element, so the pointer falls
+        // through to the TextElementMesh hit plane and moves the element,
+        // instead of writing a textOffset no text inspector can show or clear.
+        const handlePointerDown =
+          onLabelDragStart && cutout.shape !== 'text'
+            ? (e: ThreeEvent<PointerEvent>) => {
+                if (e.nativeEvent.button !== 0) return; // left-click only
+                e.stopPropagation();
+                onLabelDragStart(cutout.id, e.point.x, e.point.y);
+              }
+            : undefined;
 
         // The override is applied BEFORE the expansion so a mid-drag repeat
         // carries its labels along; expanding the committed master first would
@@ -175,7 +180,11 @@ export function CutoutLabel3D({
           const label = instance.label.trim();
           if (label === '') return null;
 
-          const placement = cutoutLabelPlacement(instance, binWidth, binDepth);
+          const placement = cutoutLabelPlacement(
+            withCenteredTextPlacement(instance),
+            binWidth,
+            binDepth
+          );
           if (!placement) return null;
 
           // Same band the engraver uses, so the editor shows the size that

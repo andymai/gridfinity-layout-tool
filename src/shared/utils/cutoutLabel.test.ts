@@ -7,6 +7,7 @@ import {
   hasExplicitLabelSize,
   resolveCutoutTextAnchor,
   textElementFootprint,
+  withCenteredTextPlacement,
   withTextFootprint,
 } from './cutoutLabel';
 import type { Cutout, CutoutArrayConfig } from '@/shared/types/bin';
@@ -362,5 +363,42 @@ describe('withTextFootprint', () => {
     expect(withTextFootprint(circle)).toBe(circle);
     const synced = withTextFootprint(textElement);
     expect(withTextFootprint(synced)).toBe(synced);
+  });
+});
+
+describe('withCenteredTextPlacement', () => {
+  const strayed: Cutout = {
+    id: 't1',
+    shape: 'text',
+    x: 40,
+    y: 40,
+    width: 12,
+    depth: 12,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: 'AB',
+    groupId: null,
+    engraveLabel: true,
+    textAnchor: 'top',
+    textOffset: { x: 5, y: -3 },
+  };
+
+  it('strips stray anchor and offset from a text element', () => {
+    const out = withCenteredTextPlacement(strayed);
+    expect(out.textAnchor).toBe('center');
+    expect(out.textOffset).toBeUndefined();
+  });
+
+  it('normalizes an ABSENT anchor too, which would legacy-default to top', () => {
+    const { textAnchor: _a, textOffset: _o, ...bare } = strayed;
+    expect(withCenteredTextPlacement(bare as Cutout).textAnchor).toBe('center');
+  });
+
+  it('is identity for other shapes and for a clean text element', () => {
+    const circle = { ...strayed, shape: 'circle' as const };
+    expect(withCenteredTextPlacement(circle)).toBe(circle);
+    const clean = withCenteredTextPlacement(strayed);
+    expect(withCenteredTextPlacement(clean)).toBe(clean);
   });
 });

@@ -29,7 +29,11 @@ import {
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { Cutout } from '@/shared/types/bin';
 import { resolveTextStyle, ZERO_TEXT_OFFSET } from '@/shared/types/bin';
-import { cutoutLabelPlacement, expandBandToInterior } from '@/shared/utils/cutoutLabel';
+import {
+  cutoutLabelPlacement,
+  expandBandToInterior,
+  withCenteredTextPlacement,
+} from '@/shared/utils/cutoutLabel';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
 import { labelledInstances } from '@/shared/utils/cutoutArray';
 import {
@@ -267,8 +271,9 @@ function applyLidTextElements(
     for (const instance of labelledInstances(master)) {
       const label = instance.label.trim();
       if (label === '') continue;
+      // Stray anchor/offset fields must not shift a lid caption either.
       const placement = cutoutLabelPlacement(
-        instance,
+        withCenteredTextPlacement(instance),
         window.spanW,
         window.spanD,
         originX,

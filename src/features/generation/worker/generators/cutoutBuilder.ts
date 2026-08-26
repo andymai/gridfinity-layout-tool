@@ -64,6 +64,7 @@ import {
   expandBandToInterior,
   fitLabelRoom,
   hasExplicitLabelSize,
+  withCenteredTextPlacement,
 } from '@/shared/utils/cutoutLabel';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
@@ -1643,7 +1644,10 @@ function buildCutoutLabel(
   allowFloor: boolean,
   repeat: CutoutArrayConfig | undefined
 ): CutoutLabelShape | null {
-  const placement = cutoutLabelPlacement(cutout, innerW, innerD, originX, originY);
+  // A text element's caption centers on its own box regardless of stray
+  // anchor/offset fields in a hand-authored file — the editor offers neither.
+  const placed = withCenteredTextPlacement(cutout);
+  const placement = cutoutLabelPlacement(placed, innerW, innerD, originX, originY);
   if (!placement) return null;
   const { centerX, centerY } = placement;
   // An explicit per-cutout size is a target: the band widens to the interior
