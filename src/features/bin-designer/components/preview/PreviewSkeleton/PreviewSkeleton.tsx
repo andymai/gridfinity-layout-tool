@@ -52,7 +52,8 @@ export function PreviewSkeleton({
     wasmStatus === 'error' || wasmStatus === 'unsupported' || generationStatus === 'error';
   // Retrying is only offered where it can work. An unsupported browser fails
   // every attempt identically.
-  const canRetry = wasmStatus !== 'unsupported';
+  const showRetry = onRetry !== undefined && wasmStatus !== 'unsupported';
+  const showRevert = onRevert !== undefined && canRevert && generationStatus === 'error';
   const helpText = getHelpText();
 
   return (
@@ -103,9 +104,9 @@ export function PreviewSkeleton({
           {getMessage()}
         </p>
         {helpText && <p className="mt-1 text-xs text-content-tertiary">{helpText}</p>}
-        {isError && ((onRetry && canRetry) || (onRevert && canRevert)) && (
+        {isError && (showRetry || showRevert) && (
           <div className="mt-3 flex items-center justify-center gap-2">
-            {onRetry && canRetry && (
+            {showRetry && (
               <Button
                 variant="secondary"
                 onClick={onRetry}
@@ -131,7 +132,7 @@ export function PreviewSkeleton({
                 {t('binDesigner.retry')}
               </Button>
             )}
-            {onRevert && canRevert && generationStatus === 'error' && (
+            {showRevert && (
               <Button
                 variant="secondary"
                 onClick={onRevert}

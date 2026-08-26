@@ -34,6 +34,21 @@ describe('PreviewSkeleton', () => {
     expect(screen.queryByLabelText(/Retry loading/)).not.toBeInTheDocument();
   });
 
+  it('renders no button row at all when neither action is offered', () => {
+    // Revert is gated on a generation error, so an unsupported browser with
+    // history would otherwise leave an empty, still-spaced row behind.
+    const { container } = render(
+      <PreviewSkeleton
+        wasmStatus="unsupported"
+        generationStatus="idle"
+        onRetry={vi.fn()}
+        onRevert={vi.fn()}
+        canRevert={true}
+      />
+    );
+    expect(container.querySelector('.mt-3')).toBeNull();
+  });
+
   it('shows generation error message', () => {
     render(<PreviewSkeleton wasmStatus="ready" generationStatus="error" />);
     expect(screen.getByText('Generation failed')).toBeInTheDocument();
