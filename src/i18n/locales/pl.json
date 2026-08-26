@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Rozmiar etykiety",
   "binDesigner.textSizeAuto": "Auto",
   "binDesigner.textSizeCapHint": "Zakładki w rzędzie dzielą jeden rozmiar, więc dłuższa etykieta zmniejsza pozostałe.",
+  "binDesigner.textSizeExactHint": "Drukuje się w tym rozmiarze. Może sięgać nad sąsiednie wycięcia i zmniejsza się tylko wtedy, gdy w binie brakuje miejsca.",
+  "binDesigner.textSizeLimited": "Rozmiar bina ogranicza tę etykietę do {size} mm",
   "binDesigner.textSizeMax": "Maks. rozmiar etykiety",
   "binDesigner.threeDModel": "Model 3D",
   "binDesigner.threeDModelDescription": "Eksportuj plik modelu 3D gotowy do druku",

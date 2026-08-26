@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Dimensione testo",
   "binDesigner.textSizeAuto": "Auto",
   "binDesigner.textSizeCapHint": "Le linguette di una fila condividono la dimensione, quindi un’etichetta più lunga riduce le altre.",
+  "binDesigner.textSizeExactHint": "Viene stampata a questa dimensione. Può estendersi sopra i ritagli vicini e si riduce solo quando il bin non lascia spazio.",
+  "binDesigner.textSizeLimited": "La dimensione del bin limita questa etichetta a {size} mm",
   "binDesigner.textSizeMax": "Dimensione max etichetta",
   "binDesigner.threeDModel": "Modello 3D",
   "binDesigner.threeDModelDescription": "Esporta un file di modello 3D stampabile",

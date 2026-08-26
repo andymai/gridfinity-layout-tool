@@ -81,3 +81,76 @@ describe('CutoutEngraveLabelControls relief depth', () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe('CutoutEngraveLabelControls exact size', () => {
+  beforeEach(() => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS },
+      history: { past: [], future: [] },
+    });
+  });
+
+  it('writes an exact size as a per-cutout fixed style', () => {
+    const onUpdate = renderControls(makeCutout());
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.textSizeAuto' }));
+
+    expect(onUpdate).toHaveBeenCalledWith({
+      textStyle: { sizeMode: 'fixed', fixedSize: expect.any(Number) as number },
+    });
+  });
+
+  it('seeds manual mode at the size currently rendering, not the slider max', () => {
+    const onUpdate = renderControls(makeCutout());
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.textSizeAuto' }));
+
+    const patch = onUpdate.mock.calls[0][0] as { textStyle: { fixedSize: number } };
+    // A 2-char label beside a 10mm cutout in a 100mm bin auto-fits well under
+    // the 40mm slider ceiling; seeding at the ceiling was the old max-seed.
+    expect(patch.textStyle.fixedSize).toBeLessThan(40);
+    expect(patch.textStyle.fixedSize).toBeGreaterThan(0);
+  });
+
+  it('clears both the fixed size and any legacy ceiling on Auto', () => {
+    const onUpdate = renderControls(
+      makeCutout({ textStyle: { sizeMode: 'fixed', fixedSize: 12, fontSizeOverride: 8 } })
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.textSizeAuto' }));
+
+    expect(onUpdate).toHaveBeenCalledWith({ textStyle: undefined });
+  });
+
+  it('shows a legacy ceiling in the slider so old designs stay editable', () => {
+    renderControls(makeCutout({ textStyle: { fontSizeOverride: 8 } }));
+
+    expect(screen.getByRole('slider', { name: 'binDesigner.textSize' })).toHaveAttribute(
+      'aria-valuenow',
+      '8'
+    );
+  });
+
+  it('warns with the rendered size when the bin cannot hold the request', () => {
+    // A 40mm request in a 30mm bin: even the widened band cannot hold it, so
+    // the label shrinks and the note names the size that actually prints.
+    render(
+      <CutoutEngraveLabelControls
+        cutout={makeCutout({ textStyle: { sizeMode: 'fixed', fixedSize: 40 } })}
+        binWidth={30}
+        binDepth={30}
+        disabled={false}
+        onUpdate={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('alert').textContent).toContain('binDesigner.textSizeLimited');
+  });
+
+  it('shows no limit warning while the request fits', () => {
+    const onUpdate = renderControls(makeCutout({ textStyle: { sizeMode: 'fixed', fixedSize: 8 } }));
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+});

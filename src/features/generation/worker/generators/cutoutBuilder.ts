@@ -59,7 +59,12 @@ import {
 } from '@/shared/utils/cutoutArray';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
-import { cutoutLabelPlacement, fitLabelRoom } from '@/shared/utils/cutoutLabel';
+import {
+  cutoutLabelPlacement,
+  expandBandToInterior,
+  fitLabelRoom,
+  hasExplicitLabelSize,
+} from '@/shared/utils/cutoutLabel';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
   resolveScoop,
@@ -1633,13 +1638,18 @@ function buildCutoutLabel(
   const placement = cutoutLabelPlacement(cutout, innerW, innerD, originX, originY);
   if (!placement) return null;
   const { centerX, centerY } = placement;
-  // Capped to the room one copy owns, so a labelled repeat's captions meet
-  // rather than print over each other.
-  const { availW, availD } = fitLabelRoom(placement.availW, placement.availD, repeat);
+  // An explicit per-cutout size is a target: the band widens to the interior
+  // and skips the repeat pitch cap, so the label prints at the asked-for size
+  // (overlapping neighbours if it must — the editor warns) and shrinks only
+  // when the bin itself cannot hold it. Auto-fit keeps the anchor band, capped
+  // to the room one copy of a repeat owns so captions meet rather than print
+  // over each other.
+  const { availW, availD } = hasExplicitLabelSize(cutout.textStyle)
+    ? expandBandToInterior(placement, innerW, innerD, originX, originY)
+    : fitLabelRoom(placement.availW, placement.availD, repeat);
 
-  // Per-cutout style layers over the design-wide defaults (today the UI only
-  // writes `fontSizeOverride`, but merging the whole override keeps this in step
-  // with the label tab and future per-cutout fields).
+  // Per-cutout style layers over the design-wide defaults, in step with the
+  // label tab's own override handling.
   const style = resolveTextStyle(textDefaults, cutout.textStyle);
 
   // Cutouts support engrave + emboss; through-cut would punch the floor, so it

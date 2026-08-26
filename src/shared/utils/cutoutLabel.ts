@@ -11,6 +11,7 @@ import type {
   CutoutArrayConfig,
   CutoutTextAnchor,
   CutoutTextOffset,
+  TextStyleOverride,
 } from '@/shared/types/bin';
 
 export interface CutoutAabb {
@@ -167,6 +168,46 @@ export function fitLabelRoom(
   return {
     availW: cols > 1 ? Math.min(availW, Math.max(0, config.pitchX)) : availW,
     availD: rows > 1 ? Math.min(availD, Math.max(0, config.pitchY)) : availD,
+  };
+}
+
+/**
+ * Whether this cutout's label carries an explicit size: the per-cutout style
+ * pins `sizeMode: 'fixed'`. An explicit size is a target, not a ceiling — the
+ * band grows past the anchor gap (see {@link expandBandToInterior}) and past
+ * the repeat pitch cap so the label renders at the asked-for size, shrinking
+ * only when the bin interior itself cannot hold it.
+ *
+ * The DESIGN-level size mode deliberately does not trigger this: designs saved
+ * under a fixed-size preset have always shrunk their cutout labels to the
+ * anchor band, and widening those bands would move engravings on every one of
+ * them.
+ */
+export function hasExplicitLabelSize(textStyle: TextStyleOverride | undefined): boolean {
+  return textStyle?.sizeMode === 'fixed';
+}
+
+/**
+ * Grow a band to the largest box symmetric about its center that stays inside
+ * the bin interior — the same symmetric-about-center rule `axisBand` already
+ * applies to a `center` zone, extended to both axes. Never returns less room
+ * than the anchor band itself (an offset can push the center right up to, or
+ * past, an interior edge). The label stays centered exactly where the anchor
+ * put it; it just stops being starved by the gap it happens to sit in.
+ */
+export function expandBandToInterior(
+  placement: CutoutLabelPlacement,
+  innerW: number,
+  innerD: number,
+  originX = 0,
+  originY = 0
+): CutoutLabelPlacement {
+  const availW = 2 * Math.min(placement.centerX - originX, originX + innerW - placement.centerX);
+  const availD = 2 * Math.min(placement.centerY - originY, originY + innerD - placement.centerY);
+  return {
+    ...placement,
+    availW: Math.max(placement.availW, availW),
+    availD: Math.max(placement.availD, availD),
   };
 }
 

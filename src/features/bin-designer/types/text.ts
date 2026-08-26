@@ -306,6 +306,24 @@ export function withFontSizeOverride(
   return { ...rest, fontSizeOverride: size };
 }
 
+/**
+ * Set (`size` in mm) or clear (`null`) an exact label size on a text style:
+ * `sizeMode: 'fixed'` plus the size, which generation treats as a target
+ * rather than a ceiling. Setting or clearing also drops any legacy
+ * `fontSizeOverride` — the two mechanisms answer the same question, so leaving
+ * the ceiling behind would silently cap a design that just asked for exact.
+ * Returns `undefined` when the result would be empty, like
+ * {@link withFontSizeOverride}.
+ */
+export function withExactLabelSize(
+  current: TextStyleOverride | undefined,
+  size: number | null
+): TextStyleOverride | undefined {
+  const { fontSizeOverride: _o, sizeMode: _m, fixedSize: _f, ...rest } = current ?? {};
+  if (size === null) return Object.keys(rest).length > 0 ? rest : undefined;
+  return { ...rest, sizeMode: 'fixed', fixedSize: size };
+}
+
 /** Hard cap on a single LINE of text. Input above this is rejected. */
 export const TEXT_MAX_LENGTH = 50;
 

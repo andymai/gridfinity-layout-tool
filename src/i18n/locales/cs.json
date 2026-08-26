@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Velikost štítku",
   "binDesigner.textSizeAuto": "Automaticky",
   "binDesigner.textSizeCapHint": "Jazýčky v řadě sdílejí velikost, takže delší štítek zmenší ostatní.",
+  "binDesigner.textSizeExactHint": "Tiskne se v této velikosti. Může zasahovat přes okolní výřezy; zmenší se jen tehdy, když v boxu nezbývá místo.",
+  "binDesigner.textSizeLimited": "Velikost boxu omezuje tento popisek na {size} mm",
   "binDesigner.textSizeMax": "Max. velikost štítku",
   "binDesigner.threeDModel": "3D model",
   "binDesigner.threeDModelDescription": "Exportuj soubor tisknutelného 3D modelu",

@@ -20,16 +20,20 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
   cutoutLabelPlacement,
+  cutoutWorldAabb,
+  expandBandToInterior,
   fitLabelRoom,
+  hasExplicitLabelSize,
   labelPlacementForAabb,
   resolveCutoutTextAnchor,
 } from '@/shared/utils/cutoutLabel';
+import type { CutoutAabb } from '@/shared/utils/cutoutLabel';
 import {
   cutoutSocketAnchorAabb,
   isCutoutEngraveMode,
   isCutoutSocketMode,
 } from '@/shared/utils/cutoutLabelSocketPlan';
-import { labelledInstances } from '@/shared/utils/cutoutArray';
+import { expandCutoutArray, labelledInstances } from '@/shared/utils/cutoutArray';
 import {
   LABEL_PLATE_CORNER_RADIUS_MM,
   LABEL_PLATE_HEIGHT_MM,
@@ -39,7 +43,8 @@ import { useCutoutSocketPlan } from '@/features/bin-designer/hooks/useCutoutSock
 import { CutoutSocketFootprint } from './CutoutSocketFootprint';
 import type { PreviewMap } from '../useCutoutInteraction';
 import { cutoutLabelColors } from './cutoutLabelColor';
-import { fitLabelFontSize } from './cutoutLabelFit';
+import { aabbsIntersect, estimateLabelAabb, fitLabelFontSize } from './cutoutLabelFit';
+import { OFF_BOARD_COLOR } from './constants';
 
 interface CutoutLabel3DProps {
   readonly cutouts: readonly Cutout[];
@@ -78,6 +83,21 @@ export function CutoutLabel3D({
     () => cutoutLabelColors(binColor),
     [binColor]
   );
+
+  // Pocket footprints for the explicit-size overlap warning: an exact-size
+  // label that crosses a pocket loses the glyph parts over the opening, so its
+  // halo goes red — same signal as the off-board frames. Committed positions
+  // only; a drag preview warns after release.
+  const pocketAabbs = useMemo(() => {
+    const list: { id: string; aabb: CutoutAabb }[] = [];
+    for (const c of cutouts) {
+      if (c.hidden === true) continue;
+      for (const instance of expandCutoutArray(c)) {
+        list.push({ id: instance.id, aabb: cutoutWorldAabb(instance, 0, 0) });
+      }
+    }
+    return list;
+  }, [cutouts]);
 
   return (
     <>
@@ -164,16 +184,41 @@ export function CutoutLabel3D({
           const placement = cutoutLabelPlacement(instance, binWidth, binDepth);
           if (!placement) return null;
 
-          // Same cap the engraver applies, so the editor shows the size that
-          // will actually be cut.
-          const room = fitLabelRoom(placement.availW, placement.availD, effective.array);
-          const fontSize = fitLabelFontSize(
-            label,
-            { ...placement, ...room },
-            textDefaults,
-            instance.textStyle?.fontSizeOverride
-          );
+          // Same band the engraver uses, so the editor shows the size that
+          // will actually be cut: an explicit size widens the band to the
+          // interior, auto-fit keeps the anchor band capped to a repeat copy's
+          // room.
+          const explicit = hasExplicitLabelSize(instance.textStyle);
+          const banded = explicit
+            ? expandBandToInterior(placement, binWidth, binDepth)
+            : {
+                ...placement,
+                ...fitLabelRoom(placement.availW, placement.availD, effective.array),
+              };
+          const fontSize = fitLabelFontSize(label, banded, textDefaults, instance.textStyle);
           if (fontSize === null) return null;
+
+          // Explicit sizes are allowed to reach over pockets; warn where they
+          // do, since glyph parts over an opening are cut away. A center
+          // anchor's own pocket is exempt — sitting over it is the placement.
+          // `::a0` is the master's own footprint when an unlabelled repeat
+          // engraves once beside the master box.
+          let overlapsPocket = false;
+          if (explicit) {
+            const box = estimateLabelAabb(
+              label,
+              fontSize,
+              placement.centerX,
+              placement.centerY,
+              effective.textAngle ?? 0
+            );
+            const anchor = resolveCutoutTextAnchor(instance);
+            const ownIds =
+              anchor === 'center' ? new Set([instance.id, `${instance.id}::a0`]) : null;
+            overlapsPocket = pocketAabbs.some(
+              (p) => !ownIds?.has(p.id) && aabbsIntersect(p.aabb, box)
+            );
+          }
 
           return (
             <Text
@@ -184,7 +229,7 @@ export function CutoutLabel3D({
               color={labelFill}
               fillOpacity={TEXT_OPACITY}
               outlineWidth={OUTLINE_WIDTH}
-              outlineColor={labelOutline}
+              outlineColor={overlapsPocket ? OFF_BOARD_COLOR : labelOutline}
               outlineOpacity={1}
               anchorX="center"
               anchorY="middle"

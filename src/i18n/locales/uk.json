@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Розмір тексту",
   "binDesigner.textSizeAuto": "Авто",
   "binDesigner.textSizeCapHint": "Вкладки в одному рядку мають спільний розмір, тож довший підпис зменшує решту.",
+  "binDesigner.textSizeExactHint": "Друкується в цьому розмірі. Може заходити на сусідні вирізи та зменшується лише тоді, коли в bin не лишається місця.",
+  "binDesigner.textSizeLimited": "Розмір bin обмежує цю мітку до {size} мм",
   "binDesigner.textSizeMax": "Макс. розмір підпису",
   "binDesigner.threeDModel": "3D-модель",
   "binDesigner.threeDModelDescription": "Експортувати придатний для друку файл 3D-моделі",

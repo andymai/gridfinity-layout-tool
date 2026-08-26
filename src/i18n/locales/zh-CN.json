@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "标签大小",
   "binDesigner.textSizeAuto": "自动",
   "binDesigner.textSizeCapHint": "同一行的标签片共用一个大小，因此更长的标签会缩小其余标签。",
+  "binDesigner.textSizeExactHint": "以此尺寸打印。它可以延伸到附近的切口上方，仅在 bin 没有空间时才会缩小。",
+  "binDesigner.textSizeLimited": "bin 尺寸将此标签限制为 {size} 毫米",
   "binDesigner.textSizeMax": "最大标签大小",
   "binDesigner.threeDModel": "3D 模型",
   "binDesigner.threeDModelDescription": "导出一个可打印的 3D 模型文件",

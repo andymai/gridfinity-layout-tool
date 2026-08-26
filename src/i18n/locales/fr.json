@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Taille du texte",
   "binDesigner.textSizeAuto": "Auto",
   "binDesigner.textSizeCapHint": "Les languettes d’une rangée partagent une taille : une étiquette plus longue réduit les autres.",
+  "binDesigner.textSizeExactHint": "S'imprime à cette taille. Elle peut déborder sur les découpes voisines et ne rétrécit que lorsque le bin ne laisse plus de place.",
+  "binDesigner.textSizeLimited": "La taille du bin limite cette étiquette à {size} mm",
   "binDesigner.textSizeMax": "Taille max. d’étiquette",
   "binDesigner.threeDModel": "Modèle 3D",
   "binDesigner.threeDModelDescription": "Exporter un fichier de modèle 3D imprimable",

@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   cutoutWorldAabb,
   cutoutLabelPlacement,
+  expandBandToInterior,
   fitLabelRoom,
+  hasExplicitLabelSize,
   resolveCutoutTextAnchor,
 } from './cutoutLabel';
 import type { Cutout, CutoutArrayConfig } from '@/shared/types/bin';
@@ -261,6 +263,52 @@ describe('fitLabelRoom', () => {
     expect(fitLabelRoom(160, 160, cfg({ mode: 'radial', count: 1, labels: ['a'] }))).toEqual({
       availW: 160,
       availD: 160,
+    });
+  });
+});
+
+describe('hasExplicitLabelSize', () => {
+  it('fires only on a per-cutout fixed size mode', () => {
+    expect(hasExplicitLabelSize(undefined)).toBe(false);
+    expect(hasExplicitLabelSize({})).toBe(false);
+    expect(hasExplicitLabelSize({ fontSizeOverride: 8 })).toBe(false);
+    expect(hasExplicitLabelSize({ sizeMode: 'auto' })).toBe(false);
+    expect(hasExplicitLabelSize({ sizeMode: 'fixed' })).toBe(true);
+    expect(hasExplicitLabelSize({ sizeMode: 'fixed', fixedSize: 8 })).toBe(true);
+  });
+});
+
+describe('expandBandToInterior', () => {
+  it('grows a narrow gap band symmetric about its center', () => {
+    // Center at (50, 30) in a 100×100 interior: symmetric room is 100 on X
+    // (50 each way) and 60 on Y (30 to the near edge, mirrored).
+    const placement = { centerX: 50, centerY: 30, availW: 20, availD: 4 };
+    expect(expandBandToInterior(placement, 100, 100)).toEqual({
+      centerX: 50,
+      centerY: 30,
+      availW: 100,
+      availD: 60,
+    });
+  });
+
+  it('never returns less room than the anchor band itself', () => {
+    // An offset drags the center past the interior edge: symmetric room is
+    // negative there, so the original band stands.
+    const placement = { centerX: -5, centerY: 50, availW: 12, availD: 8 };
+    const out = expandBandToInterior(placement, 100, 100);
+    expect(out.availW).toBe(12);
+    expect(out.availD).toBe(100);
+  });
+
+  it('respects a shifted origin, as generation uses', () => {
+    // Generation centers the interior on the model origin: a band centered on
+    // the origin has the full interior symmetric around it.
+    const placement = { centerX: 0, centerY: 0, availW: 5, availD: 5 };
+    expect(expandBandToInterior(placement, 100, 80, -50, -40)).toEqual({
+      centerX: 0,
+      centerY: 0,
+      availW: 100,
+      availD: 80,
     });
   });
 });

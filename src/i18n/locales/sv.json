@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Textstorlek",
   "binDesigner.textSizeAuto": "Auto",
   "binDesigner.textSizeCapHint": "Flikar i en rad delar storlek, så en längre etikett krymper de övriga.",
+  "binDesigner.textSizeExactHint": "Skrivs ut i den här storleken. Den kan sträcka sig över närliggande urtag och krymper bara när bin-en inte lämnar plats.",
+  "binDesigner.textSizeLimited": "Bin-storleken begränsar denna etikett till {size} mm",
   "binDesigner.textSizeMax": "Max etikettstorlek",
   "binDesigner.threeDModel": "3D-modell",
   "binDesigner.threeDModelDescription": "Exportera en utskriftsbar 3D-modellfil",

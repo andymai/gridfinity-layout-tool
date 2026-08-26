@@ -1926,6 +1926,9 @@ const en: Record<string, string> = {
   'binDesigner.textSize': 'Label size',
   'binDesigner.textSizeMax': 'Max label size',
   'binDesigner.textSizeCapHint': 'Tabs in a row share a size, so a longer label shrinks the rest.',
+  'binDesigner.textSizeExactHint':
+    'Prints at this size. It can reach over nearby cutouts, and shrinks only when the bin leaves no room.',
+  'binDesigner.textSizeLimited': 'Bin size limits this label to {size} mm',
   'binDesigner.textSizeAuto': 'Auto',
   'binDesigner.cutoutEngraveLabel': 'Engrave label',
   'binDesigner.cutoutEngraveLabelPlaceholder': 'e.g. M4×20',
