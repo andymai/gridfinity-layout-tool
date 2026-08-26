@@ -1,0 +1,21 @@
+src/shared/analytics/posthog/errorFilters.ts
+  s_06ba40f33e107c::t_f16ac32a44d179 127
+src/shared/analytics/posthog/errorFilters.test.ts
+  s_06ba40f33e107c::t_e7a69601fb46ee 270-284
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "46afcfa4608cc6b60dfcd1269b6aad2e29b2a567",
+  "prompts": {},
+  "sessions": {
+    "s_06ba40f33e107c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "709fcdfc-c5d8-472a-b83e-5adf642c0df3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
