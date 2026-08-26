@@ -5,8 +5,9 @@
  */
 
 import type { StoredBaseplateParams, PaddingAnchor, StackPrintParams } from './types';
-import { mm, gridUnits } from './types';
 import {
+  mm,
+  gridUnits,
   STACK_PRINT_MIN_GAP_MM,
   STACK_PRINT_MAX_GAP_MM,
   STACK_PRINT_DEFAULT_GAP_MM,
