@@ -1,102 +1,29 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useLayoutStore } from '@/core/store';
 import { trackEvent } from '@/shared/analytics/posthog';
-
-// localStorage Keys
-
-const DRAW_TUTORIAL_SEEN_KEY = 'gridfinity-onboarding-draw-tutorial-seen';
-const SIDEBAR_PULSE_DISMISSED_KEY = 'gridfinity-onboarding-sidebar-pulse-dismissed';
-
-const ALL_KEYS = [DRAW_TUTORIAL_SEEN_KEY, SIDEBAR_PULSE_DISMISSED_KEY] as const;
+import { createLocalStorageFlagStore } from '@/shared/hooks/createLocalStorageFlagStore';
+import { isDevRuntime } from '@/shared/utils/devRuntime';
 
 /** Engagement threshold: sidebar pulse stops after this many bins created */
 const ENGAGEMENT_BIN_THRESHOLD = 3;
 
-// Reactive localStorage — useSyncExternalStore so all hook instances share state
-
-type OnboardingFlags = {
-  drawTutorialSeen: boolean;
-  pulseDismissed: boolean;
-};
-
-let flagsCache: OnboardingFlags = readFlags();
-const listeners = new Set<() => void>();
-
-/** Safe localStorage read — returns null if unavailable */
-function safeGetItem(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-/** Safe localStorage write — silently fails if unavailable */
-function safeSetItem(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* storage unavailable */
-  }
-}
-
-/** Safe localStorage remove — silently fails if unavailable */
-function safeRemoveItem(key: string): void {
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    /* storage unavailable */
-  }
-}
-
-function readFlags(): OnboardingFlags {
-  return {
-    drawTutorialSeen: safeGetItem(DRAW_TUTORIAL_SEEN_KEY) === 'true',
-    pulseDismissed: safeGetItem(SIDEBAR_PULSE_DISMISSED_KEY) === 'true',
-  };
-}
-
-function notifyListeners(): void {
-  flagsCache = readFlags();
-  for (const listener of listeners) {
-    listener();
-  }
-}
-
-/** Set a localStorage flag and notify all hook instances in the same tab */
-function setFlag(key: string, value: string): void {
-  safeSetItem(key, value);
-  notifyListeners();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-function getSnapshot(): OnboardingFlags {
-  return flagsCache;
-}
+const store = createLocalStorageFlagStore({
+  drawTutorialSeen: 'gridfinity-onboarding-draw-tutorial-seen',
+  pulseDismissed: 'gridfinity-onboarding-sidebar-pulse-dismissed',
+});
 
 /**
  * Reset all onboarding flags so the first-run flow shows again on next page load.
  * Exported as a standalone function for use in Settings modal.
  */
-export function resetOnboarding(): void {
-  for (const key of ALL_KEYS) {
-    safeRemoveItem(key);
-  }
-  notifyListeners();
-}
+export const resetOnboarding = store.reset;
 
 /**
  * Re-read flags from localStorage into the module cache and notify subscribers.
  * Needed in tests that write to localStorage directly (outside setFlag).
  * @internal — test utility only
  */
-export function syncOnboardingFlags(): void {
-  notifyListeners();
-}
+export const syncOnboardingFlags = store.sync;
 
 // Hook
 
@@ -123,14 +50,12 @@ export interface UseOnboardingReturn {
  * all react to the same flag changes within a single tab.
  */
 export function useOnboarding(): UseOnboardingReturn {
-  const flags = useSyncExternalStore(subscribe, getSnapshot);
+  const flags = store.useFlags();
 
   const binCount = useLayoutStore((state) => state.layout.bins.length);
   const prevBinCountRef = useRef<number | null>(null);
 
-  // Skip onboarding in dev mode (covers local dev and E2E tests against dev server).
-  // Exclude Vitest so unit tests can still verify onboarding logic.
-  const isDev = import.meta.env.DEV && !import.meta.env.VITEST;
+  const isDev = isDevRuntime();
 
   // Draw tutorial: show on any empty grid until user creates their first bin
   const shouldShowDrawTutorial = !isDev && !flags.drawTutorialSeen && binCount === 0;
@@ -146,7 +71,7 @@ export function useOnboarding(): UseOnboardingReturn {
   // Auto-dismiss pulse when engagement threshold is reached
   useEffect(() => {
     if (!flags.pulseDismissed && flags.drawTutorialSeen && binCount >= ENGAGEMENT_BIN_THRESHOLD) {
-      setFlag(SIDEBAR_PULSE_DISMISSED_KEY, 'true');
+      store.setFlag('pulseDismissed');
       trackEvent('onboarding_sidebar_pulse_dismissed', {
         method: 'engagement_threshold',
         bin_count: binCount,
@@ -162,7 +87,7 @@ export function useOnboarding(): UseOnboardingReturn {
     const prev = prevBinCountRef.current;
     prevBinCountRef.current = binCount;
     if (!flags.drawTutorialSeen && binCount > 0) {
-      setFlag(DRAW_TUTORIAL_SEEN_KEY, 'true');
+      store.setFlag('drawTutorialSeen');
       if (prev === 0) {
         trackEvent('onboarding_draw_tutorial_completed', { method: 'first_bin' });
       }
@@ -172,7 +97,7 @@ export function useOnboarding(): UseOnboardingReturn {
   const markDrawTutorialComplete = useCallback(
     (method: 'first_bin' | 'manual_dismiss') => {
       if (flags.drawTutorialSeen) return;
-      setFlag(DRAW_TUTORIAL_SEEN_KEY, 'true');
+      store.setFlag('drawTutorialSeen');
       trackEvent('onboarding_draw_tutorial_completed', { method });
     },
     [flags.drawTutorialSeen]
@@ -180,7 +105,7 @@ export function useOnboarding(): UseOnboardingReturn {
 
   const dismissGalleryPulse = useCallback(() => {
     if (flags.pulseDismissed) return;
-    setFlag(SIDEBAR_PULSE_DISMISSED_KEY, 'true');
+    store.setFlag('pulseDismissed');
     trackEvent('onboarding_sidebar_pulse_dismissed', {
       method: 'gallery_opened',
       bin_count: binCount,

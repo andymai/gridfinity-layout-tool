@@ -6,77 +6,23 @@
  * localStorage-flagged.
  */
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback } from 'react';
 import { getDeviceType, trackEvent } from '@/shared/analytics/posthog';
-
-const QUICKSTART_KEY = 'gridfinity-baseplate-quickstart-seen';
-const PLANNER_BRIDGE_KEY = 'gridfinity-baseplate-planner-bridge-seen';
+import { createLocalStorageFlagStore } from '@/shared/hooks/createLocalStorageFlagStore';
+import { isDevRuntime } from '@/shared/utils/devRuntime';
 
 export type QuickstartDismissMethod = 'got_it' | 'first_edit' | 'escape';
 
-type FirstRunFlags = {
-  quickstartSeen: boolean;
-  plannerBridgeSeen: boolean;
-};
-
-function safeGetItem(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function safeSetItem(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* storage unavailable */
-  }
-}
-
-function readFlags(): FirstRunFlags {
-  return {
-    quickstartSeen: safeGetItem(QUICKSTART_KEY) === 'true',
-    plannerBridgeSeen: safeGetItem(PLANNER_BRIDGE_KEY) === 'true',
-  };
-}
-
-let flagsCache: FirstRunFlags = readFlags();
-const listeners = new Set<() => void>();
-
-function notifyListeners(): void {
-  flagsCache = readFlags();
-  for (const listener of listeners) {
-    listener();
-  }
-}
-
-function setFlag(key: string): void {
-  safeSetItem(key, 'true');
-  notifyListeners();
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-function getSnapshot(): FirstRunFlags {
-  return flagsCache;
-}
-
-function isDevRuntime(): boolean {
-  return import.meta.env.DEV && !import.meta.env.VITEST;
-}
+const store = createLocalStorageFlagStore({
+  quickstartSeen: 'gridfinity-baseplate-quickstart-seen',
+  plannerBridgeSeen: 'gridfinity-baseplate-planner-bridge-seen',
+});
 
 /**
  * Re-read flags from localStorage into the module cache and notify subscribers.
  * @internal — test utility only
  */
-export function syncBaseplateFirstRunFlags(): void {
-  notifyListeners();
-}
+export const syncBaseplateFirstRunFlags = store.sync;
 
 /**
  * Consume the quickstart on a genuine param edit. Callable from plain
@@ -86,9 +32,9 @@ export function syncBaseplateFirstRunFlags(): void {
  */
 export function dismissBaseplateQuickstartOnEdit(): void {
   if (isDevRuntime()) return;
-  if (flagsCache.quickstartSeen) return;
+  if (store.get().quickstartSeen) return;
   if (getDeviceType() === 'mobile') return;
-  setFlag(QUICKSTART_KEY);
+  store.setFlag('quickstartSeen');
   trackEvent('baseplate_quickstart_dismissed', { method: 'first_edit' });
 }
 
@@ -104,10 +50,8 @@ export interface UseBaseplateFirstRunReturn {
 }
 
 export function useBaseplateFirstRun(): UseBaseplateFirstRunReturn {
-  const flags = useSyncExternalStore(subscribe, getSnapshot);
+  const flags = store.useFlags();
 
-  // Skip in dev mode (covers local dev and E2E tests against dev server).
-  // Exclude Vitest so unit tests can still verify the logic.
   const isDev = isDevRuntime();
 
   const shouldShowQuickstart = !isDev && !flags.quickstartSeen;
@@ -116,7 +60,7 @@ export function useBaseplateFirstRun(): UseBaseplateFirstRunReturn {
   const markQuickstartSeen = useCallback(
     (method: QuickstartDismissMethod) => {
       if (flags.quickstartSeen) return;
-      setFlag(QUICKSTART_KEY);
+      store.setFlag('quickstartSeen');
       trackEvent('baseplate_quickstart_dismissed', { method });
     },
     [flags.quickstartSeen]
@@ -124,7 +68,7 @@ export function useBaseplateFirstRun(): UseBaseplateFirstRunReturn {
 
   const markPlannerBridgeSeen = useCallback(() => {
     if (flags.plannerBridgeSeen) return;
-    setFlag(PLANNER_BRIDGE_KEY);
+    store.setFlag('plannerBridgeSeen');
   }, [flags.plannerBridgeSeen]);
 
   return {
