@@ -1,7 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSyncStatusStore } from '@/core/sync/status';
@@ -17,7 +16,6 @@ const PROVIDER_LABEL_KEY = {
 
 export function AccountTab() {
   const t = useTranslation();
-  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
   const { status, user } = useSessionStore(useShallow((s) => ({ status: s.status, user: s.user })));
   const sync = useSyncStatusStore(
@@ -43,15 +41,6 @@ export function AccountTab() {
       });
     }
   };
-
-  if (!cloudSyncEnabled) {
-    return (
-      <div id="account" className="space-y-2">
-        <h3 className="text-base font-semibold text-content">{t('account.identity.heading')}</h3>
-        <p className="text-sm text-content-secondary">{t('settings.tabs.labs')}</p>
-      </div>
-    );
-  }
 
   return (
     <div id="account" className="space-y-8">

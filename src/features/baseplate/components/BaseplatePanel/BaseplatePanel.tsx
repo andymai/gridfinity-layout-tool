@@ -24,7 +24,6 @@ import { useTranslation } from '@/i18n';
 import { Button, ConfirmDialog } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { HelpTargetMarker } from '@/shared/help/HelpTargetMarker';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitViewStrip } from './SplitViewStrip';
@@ -37,7 +36,6 @@ import { updateBaseplateParams, useBaseplatePanelDerived } from './panelState';
 
 export function BaseplatePanel() {
   const t = useTranslation();
-  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
   const stackPrint = useLayoutStore(
     (state) => (state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS).stackPrint
@@ -119,7 +117,7 @@ export function BaseplatePanel() {
 
         <AttributionFooter />
       </div>
-      {cloudSyncEnabled && <UserDock />}
+      <UserDock />
       <ConfirmDialog
         isOpen={resetConfirmOpen}
         title={t('baseplate.resetConfirmTitle')}

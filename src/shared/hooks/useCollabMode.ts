@@ -2,9 +2,8 @@
  * Hook to detect if the current layout is in collaborative editing mode.
  *
  * A layout is collaborative (requires Liveblocks connection) when:
- * 1. The collaborative_editing Labs feature flag is enabled
- * 2. The share permission is "edit" (not "view")
- * 3. EITHER:
+ * 1. The share permission is "edit" (not "view")
+ * 2. EITHER:
  *    a. The active layout has a cloud share with edit permission, OR
  *    b. Viewing a shared layout with edit permission (from /s/{shareId} URL)
  *
@@ -19,9 +18,8 @@
  * ```
  */
 
-import { useLabsStore, useLibraryStore } from '@/core/store';
+import { useLibraryStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 
 export interface CollabModeState {
   /** Whether collaborative mode is active */
@@ -35,13 +33,10 @@ export interface CollabModeState {
 /**
  * Determines if the current layout is in collaborative mode.
  *
- * Returns collaboration state based on:
- * - Labs feature flag status
- * - Active layout's cloud share permission OR shared preview cloud share ID
+ * Returns collaboration state based on the active layout's cloud share
+ * permission OR the shared preview cloud share ID.
  */
 export function useCollabMode(): CollabModeState {
-  const isFeatureEnabled = useFeatureFlag('collaborative_editing');
-
   // Direct subscription to the cloud share of the active layout
   // This ensures re-render when cloudShare changes
   const cloudShare = useLibraryStore((state) => {
@@ -54,15 +49,6 @@ export function useCollabMode(): CollabModeState {
   const sharedPreview = useSharedPreviewStore((state) => state.sharedPreview);
   const sharedLayoutCloudShareId = sharedPreview?.cloudShareId ?? null;
   const sharedLayoutPermission = sharedPreview?.permission ?? null;
-
-  // Not collaborative if feature flag is disabled
-  if (!isFeatureEnabled) {
-    return {
-      isCollaborative: false,
-      canEdit: true, // Always can edit in local mode
-      shareId: null,
-    };
-  }
 
   // Check for shared preview mode first (viewer opened via /s/{shareId} URL)
   // Only connect to Liveblocks if permission is "edit"
@@ -101,7 +87,6 @@ export function useCollabMode(): CollabModeState {
  * Useful for conditional logic that doesn't need to re-render.
  */
 export function getCollabMode(): CollabModeState {
-  const isFeatureEnabled = useLabsStore.getState().isFeatureEnabled('collaborative_editing');
   const { activeLayoutId, entries } = useLibraryStore.getState().library;
   const sharedPreview = useSharedPreviewStore.getState().sharedPreview;
   const sharedLayoutCloudShareId = sharedPreview?.cloudShareId ?? null;
@@ -109,14 +94,6 @@ export function getCollabMode(): CollabModeState {
 
   const activeEntry = entries.find((e) => e.id === activeLayoutId);
   const cloudShare = activeEntry?.cloudShare;
-
-  if (!isFeatureEnabled) {
-    return {
-      isCollaborative: false,
-      canEdit: true,
-      shareId: null,
-    };
-  }
 
   // Check for shared preview mode first
   // Only connect to Liveblocks if permission is "edit"

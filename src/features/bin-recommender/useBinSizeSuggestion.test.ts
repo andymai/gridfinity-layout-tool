@@ -4,16 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gridUnits, heightUnits } from '@/core/types';
 import type { BinSizePrediction } from './types';
 
-vi.mock('@/shared/hooks/useFeatureFlag', () => ({ useFeatureFlag: vi.fn() }));
 vi.mock('./loadModel', () => ({ loadBinRecommenderModel: vi.fn() }));
 vi.mock('./recommender', () => ({ recommendBinSize: vi.fn() }));
 
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { loadBinRecommenderModel } from './loadModel';
 import { recommendBinSize } from './recommender';
 import { useBinSizeSuggestion } from './useBinSizeSuggestion';
 
-const flag = vi.mocked(useFeatureFlag);
 const reco = vi.mocked(recommendBinSize);
 const load = vi.mocked(loadBinRecommenderModel);
 
@@ -40,23 +37,12 @@ const pred = (over: Partial<BinSizePrediction>): BinSizePrediction => ({
 
 describe('useBinSizeSuggestion', () => {
   beforeEach(() => {
-    flag.mockReset();
     reco.mockReset();
     load.mockReset();
     load.mockResolvedValue(MODEL);
   });
 
-  it('returns null when the flag is off (and never loads the model)', () => {
-    flag.mockReturnValue(false);
-    reco.mockReturnValue(pred({}));
-    const { result } = renderHook(() => useBinSizeSuggestion('screws', drawer, current));
-    expect(result.current).toBeNull();
-    expect(reco).not.toHaveBeenCalled();
-    expect(load).not.toHaveBeenCalled();
-  });
-
   it('returns a label-tier prediction that differs from the current size', async () => {
-    flag.mockReturnValue(true);
     reco.mockReturnValue(pred({}));
     const { result } = renderHook(() => useBinSizeSuggestion('screws', drawer, current));
     await waitFor(() => expect(result.current).not.toBeNull());
@@ -64,7 +50,6 @@ describe('useBinSizeSuggestion', () => {
   });
 
   it('recovers when connectivity returns after a failed model fetch', async () => {
-    flag.mockReturnValue(true);
     reco.mockReturnValue(pred({}));
     load.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(MODEL);
 
@@ -83,7 +68,6 @@ describe('useBinSizeSuggestion', () => {
   });
 
   it('suppresses the drawer-prior tier', async () => {
-    flag.mockReturnValue(true);
     reco.mockReturnValue(pred({ source: 'drawer' }));
     const { result } = renderHook(() => useBinSizeSuggestion('screws', drawer, current));
     // Give the model load + memo a chance to run, then assert it stays null.
@@ -92,7 +76,6 @@ describe('useBinSizeSuggestion', () => {
   });
 
   it('returns null when the suggestion equals the current size', async () => {
-    flag.mockReturnValue(true);
     reco.mockReturnValue(
       pred({ size: { width: gridUnits(1), depth: gridUnits(1), height: heightUnits(3) } })
     );
@@ -102,7 +85,6 @@ describe('useBinSizeSuggestion', () => {
   });
 
   it('returns null for a blank label', async () => {
-    flag.mockReturnValue(true);
     reco.mockReturnValue(pred({}));
     const { result } = renderHook(() => useBinSizeSuggestion('   ', drawer, current));
     await new Promise((r) => setTimeout(r, 0));

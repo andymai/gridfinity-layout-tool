@@ -58,7 +58,7 @@ it nudges ranking but never outranks a literal text match.
 
 ## Size suggestion (Labs)
 
-`SingleBinInspector` renders the `bin-recommender` `BinSizeSuggestion` under the label field, gated on the `bin_recommender` Labs flag (the lazy chunk isn't fetched when off). It wires `onApply={applySuggestedSize}` and `canFit={canApplySuggestedSize}`.
+`SingleBinInspector` renders the `bin-recommender` `BinSizeSuggestion` under the label field (lazy-loaded). It wires `onApply={applySuggestedSize}` and `canFit={canApplySuggestedSize}`.
 
 ## Constraints
 

@@ -23,7 +23,6 @@ import { useTranslation } from '@/i18n';
 import { Button, Checkbox, Stepper } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { AppVersionButton } from '@/shared/components/AppVersionButton';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 
 // Lazy load SettingsModal — only loaded when user taps the button
@@ -40,7 +39,6 @@ export function MobileSettingsPanel() {
   const closePanel = useCallback(() => {
     useMobileStore.getState().closeMobilePanel();
   }, []);
-  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsTabId | undefined>(
     undefined
@@ -416,14 +414,12 @@ export function MobileSettingsPanel() {
         </div>
       </section>
 
-      {cloudSyncEnabled && (
-        <UserDock
-          onOpenSettings={() => {
-            setSettingsInitialTab('account');
-            setShowSettingsModal(true);
-          }}
-        />
-      )}
+      <UserDock
+        onOpenSettings={() => {
+          setSettingsInitialTab('account');
+          setShowSettingsModal(true);
+        }}
+      />
 
       {/* Settings Modal — rendered locally so it works on mobile (Sidebar not mounted) */}
       {showSettingsModal && (

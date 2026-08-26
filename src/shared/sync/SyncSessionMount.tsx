@@ -15,9 +15,7 @@ import { AccountMismatchDialog } from '@/core/sync/dialogs/AccountMismatchDialog
 import type { SyncAdapters } from '@/core/sync/adapters/types';
 
 /**
- * Boot point for the sync feature. Mounted only when the user has
- * enabled the `cloud_sync` Labs flag (parent gates the whole mount).
- * Owns:
+ * Boot point for the sync feature. Owns:
  *
  *   - session lifecycle (auth bookkeeping)
  *   - engine start/stop tied to authenticated status

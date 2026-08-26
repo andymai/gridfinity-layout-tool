@@ -94,14 +94,10 @@ export class BridgeManager {
 
   /**
    * Acquire the Manifold draft-preview bridge, or `null` when the kernel fails
-   * to init — draft is a best-effort enhancement, never fatal. The
-   * `manifold_preview` feature is graduated (always on), so the flag gate here
-   * only returns null if the feature were ever un-graduated. Ref-counted +
+   * to init — draft is a best-effort enhancement, never fatal. Ref-counted +
    * idle-kept like the exact bridge. Caller MUST call `releasePreview()` when done.
    */
   async acquirePreview(): Promise<GenerationBridge | null> {
-    if (!useLabsStore.getState().isFeatureEnabled('manifold_preview')) return null;
-
     this.previewRefCount++;
     if (this.previewIdleTimer !== null) {
       clearTimeout(this.previewIdleTimer);
