@@ -4,10 +4,10 @@ import { LayoutCard } from '.';
 import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { InspirationLayout } from '../../types';
 
-// Mock LayoutThumbnailWithLabels to avoid complex SVG rendering in tests
-vi.mock('../LayoutThumbnailWithLabels', () => ({
-  LayoutThumbnailWithLabels: ({ layout }: { layout: unknown }) => (
-    <div data-testid="layout-thumbnail" data-layout={JSON.stringify(layout)} />
+// Mock LayoutThumbnail to avoid complex SVG rendering in tests
+vi.mock('@/shell/LayoutThumbnail', () => ({
+  LayoutThumbnail: ({ preview }: { preview: unknown }) => (
+    <div data-testid="layout-thumbnail" data-preview={JSON.stringify(preview)} />
   ),
 }));
 

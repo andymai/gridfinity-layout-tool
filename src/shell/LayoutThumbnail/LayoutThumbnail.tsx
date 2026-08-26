@@ -1,4 +1,5 @@
 import type { LayoutPreview, ThumbnailBin } from '@/core/types';
+import { getContrastColor } from '@/shared/utils/color';
 
 interface LayoutThumbnailProps {
   preview: LayoutPreview;
@@ -7,25 +8,31 @@ interface LayoutThumbnailProps {
   className?: string;
   /** If true, show bin labels when there's enough space (default: false for backward compat) */
   showLabels?: boolean;
+  /** If true, the SVG fills its container via CSS; `size` only sets label detail */
+  responsive?: boolean;
 }
 
 /**
  * SVG thumbnail showing a top-down view of a layout's bins.
  * Renders bins as colored rectangles within the drawer bounds.
  * Optionally shows labels when showLabels=true and bins are large enough.
+ * Build the preview from a full Layout with `computePreview` (@/core/storage).
  */
 export function LayoutThumbnail({
   preview,
   size = 48,
   className = '',
   showLabels = false,
+  responsive = false,
 }: LayoutThumbnailProps) {
   const { drawerWidth, drawerDepth, binMap } = preview;
 
-  // Calculate aspect ratio and dimensions
+  // Responsive mode renders at a larger internal size for label detail; the
+  // on-screen size comes from CSS.
+  const baseSize = responsive ? Math.max(size, 200) : size;
   const aspectRatio = drawerDepth / drawerWidth;
-  const width = size;
-  const height = Math.round(size * aspectRatio);
+  const width = baseSize;
+  const height = Math.round(baseSize * aspectRatio);
 
   // Padding for the drawer border
   const padding = showLabels ? 2 : 1;
@@ -38,16 +45,29 @@ export function LayoutThumbnail({
   const minLabelWidth = 24;
   const minLabelHeight = 16;
 
+  // Larger renders get proportionally larger corner rounding and bin gaps
+  const large = responsive;
+  const binGap = large ? 1 : 0.5;
+  const binMinPx = large ? 2 : 1;
+
   return (
     <svg
-      width={width}
-      height={height}
+      {...(responsive
+        ? { width: '100%', height: '100%', preserveAspectRatio: 'xMidYMid meet' }
+        : { width, height })}
       viewBox={`0 0 ${width} ${height}`}
-      className={`rounded ${className}`}
+      className={`${large ? 'rounded-lg' : 'rounded'} ${className}`}
       aria-hidden="true"
     >
       {/* Drawer background */}
-      <rect x={0} y={0} width={width} height={height} rx={2} className="fill-surface-secondary" />
+      <rect
+        x={0}
+        y={0}
+        width={width}
+        height={height}
+        rx={large ? 4 : 2}
+        className="fill-surface-secondary"
+      />
 
       {/* Inner drawer area */}
       <rect
@@ -55,7 +75,7 @@ export function LayoutThumbnail({
         y={padding}
         width={innerWidth}
         height={innerHeight}
-        rx={1}
+        rx={large ? 2 : 1}
         className="fill-grid-bg"
       />
 
@@ -91,8 +111,8 @@ export function LayoutThumbnail({
       {binMap?.map((bin) => {
         const binX = padding + bin.x * scaleX;
         const binY = padding + innerHeight - (bin.y + bin.d) * scaleY;
-        const binWidth = Math.max(bin.w * scaleX - 0.5, 1);
-        const binHeight = Math.max(bin.d * scaleY - 0.5, 1);
+        const binWidth = Math.max(bin.w * scaleX - binGap, binMinPx);
+        const binHeight = Math.max(bin.d * scaleY - binGap, binMinPx);
 
         // Label rendering (only when showLabels is enabled)
         let labelElement = null;
@@ -115,7 +135,7 @@ export function LayoutThumbnail({
               y={binY}
               width={binWidth}
               height={binHeight}
-              rx={0.5}
+              rx={large ? 1 : 0.5}
               fill={bin.c}
               opacity={0.85}
             />
@@ -159,7 +179,6 @@ export function LayoutThumbnail({
 
 /**
  * Render a bin label with smart sizing and rotation.
- * Based on LayoutThumbnailWithLabels from inspiration-gallery.
  */
 function renderBinLabel(
   bin: ThumbnailBin,
@@ -214,18 +233,6 @@ function renderBinLabel(
       {truncateLabel(label, textWidth, fontSize)}
     </text>
   );
-}
-
-/**
- * Get a contrasting text color (black or white) for a given background color.
- */
-function getContrastColor(hexColor: string): string {
-  const hex = hexColor.replace('#', '');
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
 }
 
 /**

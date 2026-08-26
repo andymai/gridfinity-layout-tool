@@ -16,7 +16,6 @@ graph TB
 - `components/InspirationGallery.tsx` — gallery modal UI with filtering and grid
 - `components/LayoutCard.tsx` — layout preview card
 - `components/LayoutPreviewOverlay.tsx` — full-screen preview with metrics and related layouts
-- `components/LayoutThumbnailWithLabels.tsx` — 3D preview with bin labels
 - `components/ThemeFilterPills.tsx` — theme filter UI
 - `data/themes/*.ts` — preset layout definitions per theme
 - `utils/layoutBuilder.ts` — helpers to create bins/layers/categories, build InspirationLayout
