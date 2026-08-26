@@ -294,6 +294,15 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
+    // T: switch to text tool
+    case 't':
+      if (!mod) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ctx.setMode({ type: 'placing', shape: 'text' });
+      }
+      break;
+
     // M: switch to ruler/measure tool
     case 'm':
       if (!mod) {

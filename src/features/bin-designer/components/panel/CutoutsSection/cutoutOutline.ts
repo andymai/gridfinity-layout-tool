@@ -190,6 +190,10 @@ export function getCutoutOutline(
         roundedRectRing(cutout.x, cutout.y, cutout.width, cutout.depth, cutout.cornerRadius),
       ];
       break;
+    case 'text':
+      // The estimated caption box — a selection frame, not a cut outline.
+      rings = [roundedRectRing(cutout.x, cutout.y, cutout.width, cutout.depth, 0)];
+      break;
   }
 
   if (!rings) return null;

@@ -16,14 +16,29 @@
  * stops holding the bin.
  */
 
-import { unwrap, cut, cutAll, intersect, translate, drawRoundedRectangle, cylinder } from 'brepjs';
+import {
+  unwrap,
+  cut,
+  cutAll,
+  fuse,
+  intersect,
+  translate,
+  drawRoundedRectangle,
+  cylinder,
+} from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { Cutout } from '@/shared/types/bin';
+import { resolveTextStyle, ZERO_TEXT_OFFSET } from '@/shared/types/bin';
+import { cutoutLabelPlacement, expandBandToInterior } from '@/shared/utils/cutoutLabel';
+import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
+import { labelledInstances } from '@/shared/utils/cutoutArray';
 import {
   buildArrayUngroupedCutouts,
   buildGroupedCutouts,
   buildUngroupedCutout,
 } from './cutoutBuilder';
+import { buildTextSolid } from './textBuilder';
+import { LID_TEXT_ENGRAVE_FLOOR, MIN_ENGRAVE_DEPTH } from './lidTextBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import type { LidCutoutInputs, LidInputs } from './lidInputs';
@@ -87,6 +102,9 @@ function buildTools(cutouts: LidCutoutInputs): Shape3D[] {
   const singles: Cutout[] = [];
   for (const c of shapes) {
     if (c.hidden === true) continue;
+    // Text elements cut nothing; their captions are applied by
+    // `applyLidTextElements` after the holes.
+    if (c.shape === 'text') continue;
     if (c.groupId === null || c.groupId === undefined) {
       singles.push(c);
       continue;
@@ -172,7 +190,7 @@ export function applyLidCutouts(
   if (!cutouts) return body;
 
   const tools = buildTools(cutouts);
-  if (tools.length === 0) return body;
+  if (tools.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag);
 
   let boundary: Shape3D;
   try {
@@ -211,7 +229,91 @@ export function applyLidCutouts(
     }
   }
 
-  if (holes.length === 0) return body;
+  if (holes.length === 0) return applyLidTextElements(scope, body, cutouts, originToTag);
   scope.register(body);
-  return unwrap(cutAll(body as ValidSolid, holes as ValidSolid[]));
+  const cutBody = unwrap(cutAll(body as ValidSolid, holes as ValidSolid[]));
+  // Text AFTER the holes, so a caption engraves into what survives them —
+  // the same ordering the bin top and `applyLidText` follow.
+  return applyLidTextElements(scope, cutBody, cutouts, originToTag);
+}
+
+/**
+ * Engrave or emboss the caption of every text-element cutout onto the lid's
+ * host face. A text element cuts nothing (`buildTools` skips it); its label IS
+ * the feature, centered on the element's footprint at its explicit size, with
+ * the element's rotation turning the glyphs. Placement runs in the window
+ * frame — the same one the hole tools use — then shifts onto the lid's
+ * (possibly overhang-shifted) perimeter. Engrave depth is clamped so a caption
+ * can never pierce the plate; a caption that cannot be built is silently
+ * skipped, the established convention for undersized features.
+ */
+function applyLidTextElements(
+  scope: DisposalScope,
+  body: Shape3D,
+  cutouts: LidCutoutInputs,
+  originToTag?: Map<number, number>
+): Shape3D {
+  const texts = cutouts.shapes.filter(
+    (c) => c.shape === 'text' && c.hidden !== true && isCutoutEngraveMode(c)
+  );
+  if (texts.length === 0) return body;
+
+  const { window, topZ, thickness, textDefaults } = cutouts;
+  const originX = -window.spanW / 2;
+  const originY = -window.spanD / 2;
+
+  let current = body;
+  for (const master of texts) {
+    for (const instance of labelledInstances(master)) {
+      const label = instance.label.trim();
+      if (label === '') continue;
+      const placement = cutoutLabelPlacement(
+        instance,
+        window.spanW,
+        window.spanD,
+        originX,
+        originY
+      );
+      if (!placement) continue;
+      // A text element always carries an explicit size, so the band is the
+      // room around the caption's center inside the window — never the
+      // element's own estimated box.
+      const band = expandBandToInterior(placement, window.spanW, window.spanD, originX, originY);
+      // Forced onto the fixed path like the bin engraver: a text element's
+      // size is explicit by nature, whatever a hand-authored style says.
+      const resolved = resolveTextStyle(textDefaults, instance.textStyle);
+      const style =
+        resolved.sizeMode !== 'fixed' ? { ...resolved, sizeMode: 'fixed' as const } : resolved;
+      // Through-cut would stencil the plate; like bin-top captions it degrades
+      // to engrave, and the engrave keeps a floor so it cannot pierce.
+      const mode = style.mode === 'emboss' ? 'emboss' : 'engrave';
+      let depth = style.depth;
+      if (mode === 'engrave') {
+        depth = Math.min(depth, thickness - LID_TEXT_ENGRAVE_FLOOR);
+        if (depth < MIN_ENGRAVE_DEPTH) continue;
+      }
+      const result = buildTextSolid(scope, {
+        text: label,
+        style: { ...style, mode, anchor: 'center', offset: ZERO_TEXT_OFFSET },
+        availW: band.availW,
+        availD: band.availD,
+        centerX: placement.centerX + window.offsetX,
+        centerY: placement.centerY + window.offsetY,
+        topZ,
+        depth,
+        hostThickness: thickness,
+        angleDeg: instance.rotation,
+      });
+      if (!result) continue;
+      if (originToTag) {
+        collectOrigins(result.solid, FeatureTag.TEXT, originToTag);
+      }
+      scope.register(current);
+      current =
+        result.op === 'fuse'
+          ? unwrap(fuse(current as ValidSolid, result.solid as ValidSolid))
+          : unwrap(cut(current as ValidSolid, result.solid as ValidSolid));
+    }
+  }
+  return current;
 }

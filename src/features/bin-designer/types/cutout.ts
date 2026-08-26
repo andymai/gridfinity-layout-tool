@@ -24,9 +24,18 @@ import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labe
  *    groove (long axis = local X) whose {@link Cutout.knife} spec records the
  *    knife it was sized for. One end may open through the perimeter wall so
  *    the bolster stops at the block face and the handle lies level beyond it.
+ *  - `text` — a standalone caption, not a cavity: {@link Cutout.label} is
+ *    engraved or embossed centered on the element's footprint, at the size its
+ *    `textStyle` pins and turned by `rotation` (which rotates the glyphs — a
+ *    text element IS its text, so `textAngle` is unused). `width`/`depth`
+ *    mirror the estimated text block for hit-testing and selection, like a
+ *    mesh mirrors its silhouette; the store re-derives them on every caption
+ *    or size edit, so resize is disabled. Cuts nothing: no cavity, no fit
+ *    fields, no color zone, and inside a group it contributes no solid to the
+ *    boolean op.
  */
 export type CutoutShape =
-  'rectangle' | 'circle' | 'path' | 'polygon' | 'slot' | 'mesh' | 'knifeSlot';
+  'rectangle' | 'circle' | 'path' | 'polygon' | 'slot' | 'mesh' | 'knifeSlot' | 'text';
 
 /**
  * Which surfaces of a colored cutout take its {@link Cutout.color}:

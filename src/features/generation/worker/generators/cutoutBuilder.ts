@@ -1194,6 +1194,10 @@ export function buildCutoutCuts(
   // expands its own members inside `buildGroupedCutouts`.
   const groups = new Map<string, typeof params.cutouts>();
   for (const cutout of params.cutouts) {
+    // A text element is caption only: it stays in the label loop below but
+    // contributes no cavity tool — inside a group it adds nothing to the
+    // boolean, which is what keeps grouping text with shapes purely spatial.
+    if (cutout.shape === 'text') continue;
     if (cutout.groupId === null) {
       if (cutout.array) {
         for (const s of buildArrayUngroupedCutouts(cutout, solidSurfaceZ, originX, originY)) {
@@ -1515,6 +1519,10 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
     case 'mesh':
       // Mesh imprints are filtered out before the label loop; unreachable.
       return false;
+    case 'text':
+      // A text element has no cavity, so its caption always lands on the
+      // fill top — never on a recess floor.
+      return false;
     case 'rectangle':
       return roundedRectContains(lx, ly, hw, hd, Math.min(cutout.cornerRadius, hw, hd));
   }
@@ -1644,13 +1652,19 @@ function buildCutoutLabel(
   // when the bin itself cannot hold it. Auto-fit keeps the anchor band, capped
   // to the room one copy of a repeat owns so captions meet rather than print
   // over each other.
-  const { availW, availD } = hasExplicitLabelSize(cutout.textStyle)
+  const { availW, availD } = hasExplicitLabelSize(cutout)
     ? expandBandToInterior(placement, innerW, innerD, originX, originY)
     : fitLabelRoom(placement.availW, placement.availD, repeat);
 
   // Per-cutout style layers over the design-wide defaults, in step with the
-  // label tab's own override handling.
-  const style = resolveTextStyle(textDefaults, cutout.textStyle);
+  // label tab's own override handling. A text element is forced onto the fixed
+  // path: its size is explicit by nature, and a hand-authored one that dropped
+  // its style must not auto-fill the widened band.
+  const resolved = resolveTextStyle(textDefaults, cutout.textStyle);
+  const style =
+    cutout.shape === 'text' && resolved.sizeMode !== 'fixed'
+      ? { ...resolved, sizeMode: 'fixed' as const }
+      : resolved;
 
   // Cutouts support engrave + emboss; through-cut would punch the floor, so it
   // degrades to engrave.
@@ -1681,7 +1695,9 @@ function buildCutoutLabel(
       topZ: surfaceZ,
       depth: style.depth,
       hostThickness: surfaceZ,
-      angleDeg: cutout.textAngle ?? 0,
+      // A text element IS its text, so the element's rotation turns the
+      // glyphs; other shapes rotate their cavity and carry a separate angle.
+      angleDeg: cutout.shape === 'text' ? cutout.rotation : (cutout.textAngle ?? 0),
     });
     if (!result) return null;
     // Emboss below the fill top means "inside a recess" — reroute from the

@@ -44,7 +44,7 @@ export function cutoutDepthShortfall(
   binDepth: number,
   fillSurface: number
 ): DepthShortfall | null {
-  if (cutout.shape === 'mesh') return null;
+  if (cutout.shape === 'mesh' || cutout.shape === 'text') return null;
   const requested = cutout.cutDepth;
   if (!(requested > 0) || cutout.width <= 0 || cutout.depth <= 0) return null;
 

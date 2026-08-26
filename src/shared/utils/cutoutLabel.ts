@@ -172,8 +172,62 @@ export function fitLabelRoom(
 }
 
 /**
+ * Approximate width of a glyph relative to font size, for the SDF font the 2D
+ * editor draws with. Shared by the preview's size fit and the text element's
+ * footprint estimate so the selection frame hugs what the canvas shows.
+ */
+export const LABEL_CHAR_WIDTH_RATIO = 0.6;
+
+/** Rendered size (mm) a text element is created at. */
+export const DEFAULT_TEXT_ELEMENT_SIZE = 8;
+
+/** The explicit size a text element renders at. Text elements always carry a
+ *  fixed-size style; the default covers a hand-authored file that dropped it. */
+export function textElementSize(textStyle: TextStyleOverride | undefined): number {
+  return textStyle?.fixedSize ?? DEFAULT_TEXT_ELEMENT_SIZE;
+}
+
+/**
+ * Estimated footprint of a text element's caption block, in mm. This is the
+ * element's stored `width`/`depth` — a hit-test and selection frame, not a
+ * band the engraver fits into (the worker measures real glyphs), so an
+ * estimate is enough. Floored so an empty caption stays clickable.
+ */
+export function textElementFootprint(
+  label: string,
+  sizeMm: number
+): { readonly width: number; readonly depth: number } {
+  const chars = Math.max(1, label.trim().length);
+  return {
+    width: Math.max(4, chars * LABEL_CHAR_WIDTH_RATIO * sizeMm),
+    depth: Math.max(4, sizeMm * 1.2),
+  };
+}
+
+/**
+ * Re-derive a text element's stored footprint from its caption and size,
+ * holding the element's center still so an edit never walks it across the
+ * board. Identity for every other shape and for a footprint already in sync,
+ * so store update paths can apply it unconditionally.
+ */
+export function withTextFootprint(cutout: Cutout): Cutout {
+  if (cutout.shape !== 'text') return cutout;
+  const { width, depth } = textElementFootprint(cutout.label, textElementSize(cutout.textStyle));
+  if (cutout.width === width && cutout.depth === depth) return cutout;
+  return {
+    ...cutout,
+    x: cutout.x + (cutout.width - width) / 2,
+    y: cutout.y + (cutout.depth - depth) / 2,
+    width,
+    depth,
+  };
+}
+
+/**
  * Whether this cutout's label carries an explicit size: the per-cutout style
- * pins `sizeMode: 'fixed'`. An explicit size is a target, not a ceiling — the
+ * pins `sizeMode: 'fixed'`, or the cutout is a text element — which is its
+ * caption, so it is explicit by nature even in a hand-authored file that
+ * dropped the style. An explicit size is a target, not a ceiling — the
  * band grows past the anchor gap (see {@link expandBandToInterior}) and past
  * the repeat pitch cap so the label renders at the asked-for size, shrinking
  * only when the bin interior itself cannot hold it.
@@ -183,8 +237,11 @@ export function fitLabelRoom(
  * anchor band, and widening those bands would move engravings on every one of
  * them.
  */
-export function hasExplicitLabelSize(textStyle: TextStyleOverride | undefined): boolean {
-  return textStyle?.sizeMode === 'fixed';
+export function hasExplicitLabelSize(cutout: {
+  readonly shape?: string;
+  readonly textStyle?: TextStyleOverride;
+}): boolean {
+  return cutout.shape === 'text' || cutout.textStyle?.sizeMode === 'fixed';
 }
 
 /**

@@ -113,6 +113,9 @@ function localOutline(cutout: Cutout): OutlinePoint[] | null {
       return rectOutline(width, depth, cutout.cornerRadius);
     case 'mesh':
       return rectOutline(width, depth, 0);
+    case 'text':
+      // Caption only — no cavity for the ghost to show.
+      return null;
   }
 }
 

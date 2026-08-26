@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-text-tool',
+    date: '2026-08-26',
+    kind: 'new',
+    title: { en: 'A Text tool, and labels that print the size you set' },
+    body: {
+      en: 'Place text anywhere on a bin or lid with the new Text tool (T). It engraves or embosses at exactly the size you choose, turns with its rotation handle, and repeats like any shape, with per-copy captions for numbered sets. Cutout label sizes are exact now too, and engrave depth and emboss height sit right in the cutout editor.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'two-line-label-captions',
     date: '2026-08-25',
     kind: 'improved',

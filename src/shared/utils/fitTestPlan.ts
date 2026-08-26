@@ -51,10 +51,13 @@ export interface AxisSpan {
 /**
  * Every cutout the card physically contains: visible only, arrays expanded to
  * their instances. Hidden cutouts are excluded for the same reason the
- * generator excludes them — the card must match the bin it slices.
+ * generator excludes them — the card must match the bin it slices. Text
+ * elements cut no pocket, so there is nothing on a card to test the fit of.
  */
 export function fitTestCutouts(params: BinParams): Cutout[] {
-  return params.cutouts.filter((c) => c.hidden !== true).flatMap(expandCutoutArray);
+  return params.cutouts
+    .filter((c) => c.hidden !== true && c.shape !== 'text')
+    .flatMap(expandCutoutArray);
 }
 
 /**
@@ -551,6 +554,9 @@ function openingAreaMm2(cutout: Cutout): number {
     case 'path':
     case 'mesh':
       return w * d;
+    // A text element removes no opening from the card.
+    case 'text':
+      return 0;
   }
 }
 

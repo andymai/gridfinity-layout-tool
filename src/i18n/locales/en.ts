@@ -2691,6 +2691,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.addPolygon': 'Polygon',
   'binDesigner.cutouts.addSlot': 'Slot',
   'binDesigner.cutouts.addKnifeSlot': 'Knife slot',
+  'binDesigner.cutouts.addText': 'Text',
   'binDesigner.cutouts.sides': 'Sides',
   'binDesigner.cutouts.acrossFlats': 'Across flats',
   'binDesigner.cutouts.acrossFlatsInfo': 'Flat-to-flat width — matches hex bit / Allen specs',
@@ -2907,6 +2908,7 @@ const en: Record<string, string> = {
   'binDesigner.shapeList.derived.path': 'Path {w}×{d}',
   'binDesigner.shapeList.derived.mesh': 'Imprint {w}×{d}',
   'binDesigner.shapeList.derived.knifeSlot': 'Knife slot {w}×{d}mm',
+  'binDesigner.shapeList.derived.text': 'Text “{label}”',
 
   'binDesigner.cutouts.arrange.bringForward': 'Bring Forward',
   'binDesigner.cutouts.arrange.sendBackward': 'Send Backward',

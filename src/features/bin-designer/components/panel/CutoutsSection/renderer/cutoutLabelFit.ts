@@ -11,11 +11,12 @@
  */
 
 import type { TextStyleDefaults, TextStyleOverride } from '@/features/bin-designer/types';
-import { cutoutWorldAabb, hasExplicitLabelSize } from '@/shared/utils/cutoutLabel';
+import {
+  cutoutWorldAabb,
+  hasExplicitLabelSize,
+  LABEL_CHAR_WIDTH_RATIO as CHAR_WIDTH_RATIO,
+} from '@/shared/utils/cutoutLabel';
 import type { CutoutAabb, CutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
-
-/** Approximate width of a glyph relative to font size for drei's SDF font. */
-const CHAR_WIDTH_RATIO = 0.6;
 
 /**
  * Largest font size (mm) whose estimated bbox fits the band, clamped to the
@@ -29,14 +30,15 @@ export function fitLabelFontSize(
   label: string,
   placement: CutoutLabelPlacement,
   textDefaults: TextStyleDefaults,
-  textStyle: TextStyleOverride | undefined
+  cutout: { readonly shape?: string; readonly textStyle?: TextStyleOverride }
 ): number | null {
+  const textStyle = cutout.textStyle;
   const availW = placement.availW - 2 * textDefaults.margin;
   const availD = placement.availD - 2 * textDefaults.margin;
   if (availW <= 0 || availD <= 0) return null;
   const widthLimited = availW / (label.length * CHAR_WIDTH_RATIO);
   const fitted = Math.min(widthLimited, availD);
-  if (hasExplicitLabelSize(textStyle)) {
+  if (hasExplicitLabelSize(cutout)) {
     // Matches the worker's fixed path: the asked-for size is honoured whenever
     // it fits (uncapped by maxFontSize, unfloored by minFontSize), and shrinks
     // only to fit — with the legibility floor applying to the shrink alone.

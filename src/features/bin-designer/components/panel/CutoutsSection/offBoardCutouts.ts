@@ -134,7 +134,7 @@ function shrinkToFitRect(
   binWidth: number,
   binDepth: number
 ): Pick<Cutout, 'width' | 'depth'> | null {
-  if (cutout.shape === 'path' || cutout.shape === 'mesh') return null;
+  if (cutout.shape === 'path' || cutout.shape === 'mesh' || cutout.shape === 'text') return null;
   const own = getCutoutBounds(cutout);
   const ownW = own.maxX - own.minX;
   const ownD = own.maxY - own.minY;

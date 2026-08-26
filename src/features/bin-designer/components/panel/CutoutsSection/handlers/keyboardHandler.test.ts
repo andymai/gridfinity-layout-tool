@@ -269,6 +269,7 @@ describe('handleCutoutKeyDown — tool shortcuts', () => {
     ['g', { type: 'placing', shape: 'polygon' }],
     ['p', { type: 'placing', shape: 'path' }],
     ['s', { type: 'placing', shape: 'slot' }],
+    ['t', { type: 'placing', shape: 'text' }],
     ['m', { type: 'ruler-ready' }],
     ['v', { type: 'idle' }],
   ])('bare %s switches tool', (key, expected) => {

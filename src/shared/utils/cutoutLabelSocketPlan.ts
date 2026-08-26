@@ -98,15 +98,19 @@ export interface CutoutSocketPlanInput {
 const EMPTY_PLAN: CutoutSocketPlan = { sockets: [], skipped: [] };
 
 /** A cutout whose label is a swappable plate rather than an engraving. */
-export function isCutoutSocketMode(cutout: Pick<Cutout, 'labelMode'>): boolean {
-  return cutout.labelMode === 'socket';
+export function isCutoutSocketMode(cutout: Pick<Cutout, 'labelMode' | 'shape'>): boolean {
+  // A text element's caption is the element itself — there is no adjacent
+  // board to pocket a plate into, so a stray labelMode on one is ignored.
+  return cutout.labelMode === 'socket' && cutout.shape !== 'text';
 }
 
 /**
  * Whether a cutout's label is engraved into the board. Socket mode moves the
  * caption onto the plate, so the two are mutually exclusive.
  */
-export function isCutoutEngraveMode(cutout: Pick<Cutout, 'labelMode' | 'engraveLabel'>): boolean {
+export function isCutoutEngraveMode(
+  cutout: Pick<Cutout, 'labelMode' | 'engraveLabel' | 'shape'>
+): boolean {
   return cutout.engraveLabel === true && !isCutoutSocketMode(cutout);
 }
 
