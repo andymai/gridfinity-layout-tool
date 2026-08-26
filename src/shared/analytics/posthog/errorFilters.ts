@@ -124,7 +124,7 @@ function isExtensionSourced(exception: ExceptionLike): boolean {
  * a null target throws the same words, and that one we want to hear about.
  */
 const NULL_LISTENER_TARGET =
-  /Cannot read propert(?:y|ies) of null \(reading '?addEventListener'?\)|null is not an object \(evaluating '[^']*\.addEventListener'\)/;
+  /Cannot read propert(?:y|ies) of null \(reading '?addEventListener'?\)|null is not an object \(evaluating '[^']*\.addEventListener'\)|can't access property "addEventListener", .* is null/;
 
 function isCanvasTeardownRace(exception: ExceptionLike): boolean {
   if (!exception.value || !NULL_LISTENER_TARGET.test(exception.value)) return false;
