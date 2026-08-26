@@ -267,6 +267,21 @@ describe('R3F canvas teardown race', () => {
     expect(filterExceptionForPosthog(e)).toBeNull();
   });
 
+  it('matches the Firefox phrasing of the same throw', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            value: 'can\'t access property "addEventListener", t is null',
+            stacktrace: { frames: canvasFrames },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
   it('keeps the error when frames are absent entirely', () => {
     const e = {
       event: '$exception',
