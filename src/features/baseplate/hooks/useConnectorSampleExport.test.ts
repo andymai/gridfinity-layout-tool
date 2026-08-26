@@ -8,6 +8,12 @@ import { resetAllStores } from '@/test/testUtils';
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 let activeBridge: unknown = null;
+// `acquire()` publishes the bridge before `init()` resolves, so readiness can
+// lag a non-null bridge. Null follows the bridge; set it to force that window.
+let engineReadyOverride: boolean | null = null;
+function currentlyReady(): boolean {
+  return engineReadyOverride ?? activeBridge !== null;
+}
 const readyListeners = new Set<(ready: boolean) => void>();
 function broadcastReady(ready: boolean): void {
   for (const listener of readyListeners) listener(ready);
@@ -16,11 +22,11 @@ vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => activeBridge,
   bridgeManager: {
     get engineReady() {
-      return activeBridge !== null;
+      return currentlyReady();
     },
     subscribe: (listener: (ready: boolean) => void) => {
       readyListeners.add(listener);
-      listener(activeBridge !== null);
+      listener(currentlyReady());
       return () => readyListeners.delete(listener);
     },
   },
@@ -52,6 +58,7 @@ describe('useConnectorSampleExport', () => {
   beforeEach(() => {
     resetAllStores();
     activeBridge = null;
+    engineReadyOverride = null;
     vi.mocked(triggerDownload).mockClear();
   });
 
@@ -74,6 +81,22 @@ describe('useConnectorSampleExport', () => {
     });
     expect(ok).toBe(false);
     expect(triggerDownload).not.toHaveBeenCalled();
+    expect(useToastStore.getState().toasts[0].message).toBe('baseplate.exportNotReady');
+  });
+
+  it('refuses to export while the published bridge is still initializing', async () => {
+    const exportConnectorSample = vi.fn();
+    activeBridge = { exportConnectorSample };
+    engineReadyOverride = false;
+
+    const { result } = renderHook(() => useConnectorSampleExport());
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.downloadSample('stl');
+    });
+
+    expect(ok).toBe(false);
+    expect(exportConnectorSample).not.toHaveBeenCalled();
     expect(useToastStore.getState().toasts[0].message).toBe('baseplate.exportNotReady');
   });
 

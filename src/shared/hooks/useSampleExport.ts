@@ -10,7 +10,7 @@
 import { useCallback, useState } from 'react';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
-import { getActiveBridge } from '@/shared/generation/bridge';
+import { bridgeManager, getActiveBridge } from '@/shared/generation/bridge';
 import type { ExportFormat, GenerationBridge } from '@/shared/generation/bridge';
 import {
   FORMAT_EXTENSIONS,
@@ -73,8 +73,11 @@ export function useSampleExport(config: SampleExportConfig): UseSampleExportRetu
 
   const downloadSample = useCallback(
     async (format: ExportFileFormat, baseName: string = defaultBaseName): Promise<boolean> => {
+      // Readiness is read live, not from `canExport`: `acquire()` publishes the
+      // bridge before `init()` resolves, so a non-null bridge can still be
+      // uninitialized. Both reads together close that window.
       const bridge = getActiveBridge();
-      if (!bridge) {
+      if (!bridgeManager.engineReady || !bridge) {
         useToastStore.getState().addToast(notReadyMessage, 'error');
         return false;
       }
