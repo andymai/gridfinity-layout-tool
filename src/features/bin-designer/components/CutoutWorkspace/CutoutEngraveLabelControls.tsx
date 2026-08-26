@@ -20,10 +20,16 @@ import type {
 import {
   CUTOUT_LABEL_MODES,
   TEXT_MAX_LENGTH,
-  withFontSizeOverride,
+  withExactLabelSize,
 } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { resolveCutoutTextAnchor } from '@/shared/utils/cutoutLabel';
+import {
+  cutoutLabelPlacement,
+  expandBandToInterior,
+  fitLabelRoom,
+  hasExplicitLabelSize,
+  resolveCutoutTextAnchor,
+} from '@/shared/utils/cutoutLabel';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
@@ -33,6 +39,7 @@ import { Button, Input } from '@/design-system';
 import { CutoutSocketControls } from './CutoutSocketControls';
 import { useCutoutSocketPlan } from '@/features/bin-designer/hooks/useCutoutSocketPlan';
 import { TYPE_BOUNDS } from '../panel/TypeSection/useTypeSection';
+import { fitLabelFontSize } from '../panel/CutoutsSection/renderer/cutoutLabelFit';
 
 /** 3×3 anchor grid in reading order; the glyph hints the position, the
  *  i18n'd aria-label names it. `center` = label sits over the cutout face. */
@@ -75,16 +82,29 @@ export function CutoutEngraveLabelControls({
   const offset = cutout.textOffset ?? { x: 0, y: 0 };
   const labelMode: CutoutLabelMode = cutout.labelMode === 'socket' ? 'socket' : 'engrave';
   const isSocket = labelMode === 'socket';
-  const textMode = useDesignerStore((s) => s.params.textDefaults.mode);
-  const textDepth = useDesignerStore((s) => s.params.textDefaults.depth);
-  const minFontSize = useDesignerStore((s) => s.params.textDefaults.minFontSize);
-  const maxFontSize = useDesignerStore((s) => s.params.textDefaults.maxFontSize);
+  const textDefaults = useDesignerStore((s) => s.params.textDefaults);
   const setTextDefaults = useDesignerStore((s) => s.setTextDefaults);
   const setCutoutArray = useDesignerStore((s) => s.setCutoutArray);
+  const { mode: textMode, depth: textDepth } = textDefaults;
 
-  const fontSizeOverride = cutout.textStyle?.fontSizeOverride;
-  const setFontSizeOverride = (size: number | null) => {
-    onUpdate({ textStyle: withFontSizeOverride(cutout.textStyle, size) });
+  // The size an explicit request would print at, mirrored from the engraver's
+  // own fit so the seed and the limited-note tell the truth. Also the value
+  // shown while Auto is active would seed from.
+  const explicitSize = hasExplicitLabelSize(cutout.textStyle);
+  const requestedSize = cutout.textStyle?.fixedSize ?? textDefaults.fixedSize;
+  const trimmedLabel = cutout.label.trim();
+  const placement = trimmedLabel === '' ? null : cutoutLabelPlacement(cutout, binWidth, binDepth);
+  let renderedSize: number | null = null;
+  if (placement) {
+    const banded = explicitSize
+      ? expandBandToInterior(placement, binWidth, binDepth)
+      : { ...placement, ...fitLabelRoom(placement.availW, placement.availD, cutout.array) };
+    renderedSize = fitLabelFontSize(trimmedLabel, banded, textDefaults, cutout.textStyle);
+  }
+  const sizeValue = explicitSize ? requestedSize : cutout.textStyle?.fontSizeOverride;
+  const sizeLimited = explicitSize && renderedSize !== null && renderedSize + 0.05 < requestedSize;
+  const setLabelSize = (size: number | null) => {
+    onUpdate({ textStyle: withExactLabelSize(cutout.textStyle, size) });
   };
   // Through-cut isn't offered for cutouts; show it as engrave so the picker
   // reflects what the generator will actually produce.
@@ -252,13 +272,22 @@ export function CutoutEngraveLabelControls({
         )}
       </div>
       {!isSocket && (
-        <LabelSizeControl
-          value={fontSizeOverride}
-          onChange={setFontSizeOverride}
-          min={minFontSize}
-          max={maxFontSize}
-          disabled={disabled}
-        />
+        <>
+          <LabelSizeControl
+            variant="exact"
+            value={sizeValue}
+            onChange={setLabelSize}
+            min={TYPE_BOUNDS.fixedSize.min}
+            max={TYPE_BOUNDS.fixedSize.max}
+            manualSeed={renderedSize ?? undefined}
+            disabled={disabled}
+          />
+          {sizeLimited && renderedSize !== null && (
+            <p role="alert" className="text-[10px] leading-snug text-warning">
+              {t('binDesigner.textSizeLimited', { size: renderedSize.toFixed(1) })}
+            </p>
+          )}
+        </>
       )}
     </div>
   );

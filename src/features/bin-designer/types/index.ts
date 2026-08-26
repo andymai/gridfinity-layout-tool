@@ -60,6 +60,7 @@ export {
   resolveTextStyle,
   snapToTypeScale,
   splitTextLines,
+  withExactLabelSize,
   withFontSizeOverride,
   WALL_TEXT_SIDES,
   WALL_TEXT_ALIGNS,

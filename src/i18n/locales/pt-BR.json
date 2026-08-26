@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "Tamanho do texto",
   "binDesigner.textSizeAuto": "Automático",
   "binDesigner.textSizeCapHint": "As abas de uma fileira compartilham o tamanho, então uma etiqueta mais longa reduz as demais.",
+  "binDesigner.textSizeExactHint": "Imprime neste tamanho. Pode avançar sobre recortes próximos e só encolhe quando o bin não deixa espaço.",
+  "binDesigner.textSizeLimited": "O tamanho do bin limita este rótulo a {size} mm",
   "binDesigner.textSizeMax": "Tamanho máx. da etiqueta",
   "binDesigner.threeDModel": "Modelo 3D",
   "binDesigner.threeDModelDescription": "Exportar um arquivo de modelo 3D imprimível",

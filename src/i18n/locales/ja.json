@@ -1718,6 +1718,8 @@
   "binDesigner.textSize": "文字サイズ",
   "binDesigner.textSizeAuto": "自動",
   "binDesigner.textSizeCapHint": "同じ列のタブはサイズを共有するため、長いラベルがあると他が小さくなります。",
+  "binDesigner.textSizeExactHint": "このサイズで印刷されます。近くのカットアウトに重なることがあり、bin に余地がない場合のみ縮小されます。",
+  "binDesigner.textSizeLimited": "bin のサイズによりこのラベルは {size} mm に制限されます",
   "binDesigner.textSizeMax": "ラベルの最大サイズ",
   "binDesigner.threeDModel": "3Dモデル",
   "binDesigner.threeDModelDescription": "印刷可能な3Dモデルファイルをエクスポート",
