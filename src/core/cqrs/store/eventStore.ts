@@ -6,8 +6,8 @@
  * failures are logged but never block the command pipeline.
  */
 
-import { openDB } from 'idb';
 import type { IDBPDatabase } from 'idb';
+import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 import type { LayoutId } from '@/core/types';
 import type { DomainEvent } from '../events';
 import type { CorrelationId } from '../types';
@@ -21,56 +21,24 @@ const DB_VERSION = 1;
 const EVENTS_STORE = 'events';
 const MAX_EVENTS_PER_AGGREGATE = 10_000;
 
-// Database instance cache
-let dbInstance: IDBPDatabase | null = null;
-// In-flight open, shared so concurrent callers don't open duplicate connections
-let openPromise: Promise<IDBPDatabase> | null = null;
-
-async function openEventDb(): Promise<IDBPDatabase> {
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(EVENTS_STORE)) {
-        const store = db.createObjectStore(EVENTS_STORE, { keyPath: 'meta.id' });
-        store.createIndex('byAggregate', 'meta.aggregateId', { unique: false });
-        store.createIndex('byTimestamp', 'meta.timestamp', { unique: false });
-        store.createIndex('byCorrelation', 'meta.correlationId', { unique: false });
-      }
-    },
-  });
-
-  // Clear cached instance if the browser closes the connection unexpectedly
-  // (tab eviction, version change from another tab, profile teardown).
-  db.addEventListener('close', () => {
-    if (dbInstance === db) {
-      dbInstance = null;
+const eventDb = createDbAccessor({
+  name: DB_NAME,
+  version: DB_VERSION,
+  upgrade(db) {
+    if (!db.objectStoreNames.contains(EVENTS_STORE)) {
+      const store = db.createObjectStore(EVENTS_STORE, { keyPath: 'meta.id' });
+      store.createIndex('byAggregate', 'meta.aggregateId', { unique: false });
+      store.createIndex('byTimestamp', 'meta.timestamp', { unique: false });
+      store.createIndex('byCorrelation', 'meta.correlationId', { unique: false });
     }
-  });
-
-  return db;
-}
-
-async function getDb(): Promise<IDBPDatabase> {
-  if (dbInstance) return dbInstance;
-
-  // Dedupe concurrent opens — every user action triggers a fire-and-forget
-  // append, so without this a burst of actions can open several connections.
-  openPromise ??= openEventDb()
-    .then((db) => {
-      dbInstance = db;
-      return db;
-    })
-    .finally(() => {
-      openPromise = null;
-    });
-
-  return openPromise;
-}
+  },
+});
 
 /**
  * True when an error means the connection/transaction we used is gone and a
  * fresh open will recover. Older WebKit/Safari auto-commit a transaction
  * between microtasks, and mobile background-tab eviction or a cross-tab version
- * change can tear the connection down while `dbInstance` still caches it — so
+ * change can tear the connection down while the accessor still caches it — so
  * the transaction created on it has no in-progress transaction by the time the
  * request runs ("Attempt to get a record from database without an in-progress
  * transaction").
@@ -98,20 +66,15 @@ function isConnectionLifetimeError(error: unknown): boolean {
  * self-heals instead of silently throwing and dropping a CQRS event.
  */
 async function withFreshDb<T>(operation: (db: IDBPDatabase) => Promise<T>): Promise<T> {
-  const db = await getDb();
+  const db = await eventDb.get();
   try {
     return await operation(db);
   } catch (error: unknown) {
     if (!isConnectionLifetimeError(error)) throw error;
 
     // Drop the stale connection and re-open before the single retry.
-    if (dbInstance === db) dbInstance = null;
-    try {
-      db.close();
-    } catch {
-      // Connection was already closing — nothing to do.
-    }
-    const fresh = await getDb();
+    eventDb.invalidate(db);
+    const fresh = await eventDb.get();
     return operation(fresh);
   }
 }

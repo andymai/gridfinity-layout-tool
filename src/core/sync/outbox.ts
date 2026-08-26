@@ -15,7 +15,7 @@
  * intermediate states, we always push the latest local snapshot).
  */
 
-import { openDB, type IDBPDatabase } from 'idb';
+import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 import type { SyncKind } from './adapters/types';
 
 export type { SyncKind };
@@ -58,24 +58,16 @@ const MAX_DELAY_MS = 5 * 60 * 1_000; // cap at 5 minutes
  */
 export const MAX_ATTEMPTS = 8;
 
-let dbInstance: IDBPDatabase | null = null;
-
-async function getDb(): Promise<IDBPDatabase> {
-  if (dbInstance) return dbInstance;
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(upgradeDb) {
-      if (!upgradeDb.objectStoreNames.contains(STORE_NAME)) {
-        const store = upgradeDb.createObjectStore(STORE_NAME, { keyPath: 'key' });
-        store.createIndex('byNextAttempt', 'nextAttemptAt', { unique: false });
-      }
-    },
-  });
-  db.addEventListener('close', () => {
-    if (dbInstance === db) dbInstance = null;
-  });
-  dbInstance = db;
-  return dbInstance;
-}
+const outboxDb = createDbAccessor({
+  name: DB_NAME,
+  version: DB_VERSION,
+  upgrade(upgradeDb) {
+    if (!upgradeDb.objectStoreNames.contains(STORE_NAME)) {
+      const store = upgradeDb.createObjectStore(STORE_NAME, { keyPath: 'key' });
+      store.createIndex('byNextAttempt', 'nextAttemptAt', { unique: false });
+    }
+  },
+});
 
 function entryKey(kind: SyncKind, id: string): string {
   return `${kind}:${id}`;
@@ -109,7 +101,7 @@ export async function enqueue(input: {
   modifiedAt: number;
   op: 'put' | 'delete';
 }): Promise<void> {
-  const db = await getDb();
+  const db = await outboxDb.get();
   const now = Date.now();
   const entry: OutboxEntry = {
     key: entryKey(input.kind, input.id),
@@ -129,7 +121,7 @@ export async function enqueue(input: {
  * pending-count selector for the status indicator.
  */
 export async function getAll(): Promise<OutboxEntry[]> {
-  const db = await getDb();
+  const db = await outboxDb.get();
   return (await db.getAll(STORE_NAME)) as OutboxEntry[];
 }
 
@@ -156,7 +148,7 @@ export async function markSuccess(
   id: string,
   pushedModifiedAt: number
 ): Promise<void> {
-  const db = await getDb();
+  const db = await outboxDb.get();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
   const current = (await store.get(entryKey(kind, id))) as OutboxEntry | undefined;
@@ -173,7 +165,7 @@ export async function markSuccess(
  * caller can surface a permanent-failure toast.
  */
 export async function markFailure(kind: SyncKind, id: string): Promise<'rescheduled' | 'gave-up'> {
-  const db = await getDb();
+  const db = await outboxDb.get();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
   const current = (await store.get(entryKey(kind, id))) as OutboxEntry | undefined;
@@ -205,7 +197,7 @@ export async function rescheduleWithoutAttempt(
   id: string,
   delayMs: number
 ): Promise<void> {
-  const db = await getDb();
+  const db = await outboxDb.get();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
   const current = (await store.get(entryKey(kind, id))) as OutboxEntry | undefined;
@@ -226,7 +218,7 @@ export async function rescheduleWithoutAttempt(
  * signed out before we drained it).
  */
 export async function discard(kind: SyncKind, id: string): Promise<void> {
-  const db = await getDb();
+  const db = await outboxDb.get();
   await db.delete(STORE_NAME, entryKey(kind, id));
 }
 
@@ -236,16 +228,15 @@ export async function discard(kind: SyncKind, id: string): Promise<void> {
  * the same device.
  */
 export async function clearAll(): Promise<void> {
-  const db = await getDb();
+  const db = await outboxDb.get();
   await db.clear(STORE_NAME);
 }
 
 /**
  * Test-only: forget the cached DB connection so the next call opens
  * fresh. Vitest's IndexedDB cleanup between tests is per-DB-name; we
- * still need to drop our cached `dbInstance`.
+ * still need to drop the connection this module holds.
  */
 export function __resetForTests(): void {
-  dbInstance?.close();
-  dbInstance = null;
+  outboxDb.close();
 }
