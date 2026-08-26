@@ -1,0 +1,134 @@
+src/features/baseplate/utils/stackPrint.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/shared/printSettings/baseplateHeight.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/features/generation/worker/generators/generatorConstants.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 9
+src/core/baseplateDefaults.ts
+  s_8c2c4457d965c0::t_d30fff223d5c7f 1-7,9-14,16-268
+  s_8c2c4457d965c0::t_900f35c32a1e94 8,15
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 13-14
+src/features/bin-designer/components/panel/AssembledHeightBreakdown/AssembledHeightBreakdown.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 9
+src/features/baseplate/components/BaseplatePreview/StackedBaseplateMeshes.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/core/cqrs/validation/schemas.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 12
+  s_a77f322ab53e21::t_c3725c1380bd87 23
+src/features/baseplate/utils/splitPlanner.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 30
+src/features/bin-designer/hooks/useAssembledHeight.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 8
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 7
+src/features/baseplate/hooks/useStackPrintStatus.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 5
+src/features/baseplate/components/BaseplatePanel/PaddingSchematic.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/features/baseplate/components/BaseplatePanel/panelState.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 14
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 27
+src/features/baseplate/components/BaseplatePreview/StackedBaseplateMeshes.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 12
+src/features/grid-editor/components/Grid/DrawerMargin/useDrawerMarginInsets.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/features/baseplate/utils/overTileStatus.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 3
+src/core/cqrs/v2/domain/layout/setBaseplateParams.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 11-12
+scripts/schema/bounds.test.ts
+  s_8c2c4457d965c0::t_900f35c32a1e94 13
+  s_a77f322ab53e21::t_e501be2f50ca54 24
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 21
+src/features/baseplate/components/BaseplatePanel/StackPrintSection.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 7
+src/shared/hooks/useDrawerCeiling.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 15
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 10
+src/shell/layoutExport/useLayoutExport.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 17
+src/features/baseplate/hooks/useConnectorSampleExport.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 14
+src/shared/components/GridAlignmentControls/GridAlignmentControls.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 7
+src/features/baseplate/utils/stackGrouping.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 5
+src/features/baseplate/storage/BaseplateStorage.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 17
+src/features/baseplate/utils/overTileStatus.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 7
+src/shared/printSettings/baseplateHeight.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 13
+src/core/constants.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 1
+vite.config.ts
+  s_8c2c4457d965c0::t_007e666c261ee7 453
+src/features/bin-designer/hooks/useAssembledHeight.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 15
+src/features/baseplate/components/BaseplatePreview/ConnectorKeyMeshes.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 21
+src/features/baseplate/components/BaseplatePage/BaseplatePage.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 32
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 15
+src/features/bin-designer/components/preview/BinDimensions/AssembledBinDimensions.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 9
+src/features/baseplate/storage/BaseplateStorage.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 12
+src/core/store/layout/coreActions.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 10-11
+src/shared/utils/outlineFrame.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 5
+src/features/baseplate/components/BaseplatePanel/panelState.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/features/baseplate/hooks/useStackPrintStatus.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 13
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/useOutlineOverhangInsets.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 4
+src/features/baseplate/hooks/useStackSampleExport.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 13
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_8c2c4457d965c0::t_cb8717944ef88e 17
+src/features/baseplate/utils/buildBaseplateExportPieces.test.ts
+  s_8c2c4457d965c0::t_cb8717944ef88e 3
+src/core/constants.test.ts
+  s_a77f322ab53e21::t_cab1a95a80248b 14-15,19
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_a77f322ab53e21::t_2255827cf6fe7d 26
+src/shared/generation/screwHolePlan.ts
+  s_a77f322ab53e21::t_37190e854229dc 35
+src/shared/hooks/useDrawerSettings.ts
+  s_a77f322ab53e21::t_978587c63bbfa1 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "e00f7a738cf2b81704a244deb22ecb21c0ef12a3",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a77f322ab53e21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a84be13f5e8d28375",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
