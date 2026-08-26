@@ -1,0 +1,21 @@
+api/lib/communityStore.crossBoundary.test.ts
+  s_8c2c4457d965c0::t_cf2328ee683629 56-81,83-89
+  s_8c2c4457d965c0::t_ccda32c5b656b4 18
+  s_8c2c4457d965c0::t_cb3c4d0f62ddd2 82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "3fe1426eeda63c6f53d0b5711587b84063c83829",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
