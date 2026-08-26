@@ -1,0 +1,25 @@
+src/shared/hooks/useSampleExport.ts
+  s_8c2c4457d965c0::t_89d808a18c1697 76-78
+  s_8c2c4457d965c0::t_8c95ba6ed092a1 13
+  s_8c2c4457d965c0::t_32fad4d8d1f046 80
+src/features/baseplate/hooks/useConnectorSampleExport.test.ts
+  s_8c2c4457d965c0::t_bec7a13edf52ec 61
+  s_8c2c4457d965c0::t_b9c2f5ba7665e7 87-102
+  s_8c2c4457d965c0::t_bc01cc05dcb3b2 11-16,25,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d0b98081770727d81e96587e08160f813af6c512",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
