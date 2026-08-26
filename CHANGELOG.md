@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.476.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.476.0...gridfinity-layout-tool-v4.476.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* **analytics:** drop WebKit navigation aborts and WebView bridge noise ([#3906](https://github.com/andymai/gridfinity-layout-tool/issues/3906)) ([6572b7b](https://github.com/andymai/gridfinity-layout-tool/commit/6572b7b3ee98a2dd63c62d857a6367af063005d6))
+* **analytics:** recognise Firefox's wording for the canvas teardown race ([#3905](https://github.com/andymai/gridfinity-layout-tool/issues/3905)) ([1c81039](https://github.com/andymai/gridfinity-layout-tool/commit/1c810391b6dc974de04e8204e8f70af3dee49e28))
+* **generation:** tell a browser that cannot run the kernel so ([#3903](https://github.com/andymai/gridfinity-layout-tool/issues/3903)) ([56aee6d](https://github.com/andymai/gridfinity-layout-tool/commit/56aee6d1ac7270a14f7865861658064daf4a4883))
+
 ## [4.476.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.475.0...gridfinity-layout-tool-v4.476.0) (2026-08-25)
 
 
