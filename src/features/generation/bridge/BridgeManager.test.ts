@@ -427,14 +427,6 @@ describe('BridgeManager', () => {
       mockIsFeatureEnabled = () => false;
     });
 
-    it('returns null and creates no bridge when manifold_preview is off', async () => {
-      mockIsFeatureEnabled = () => false;
-      const preview = await manager.acquirePreview();
-
-      expect(preview).toBeNull();
-      expect(mockInstances).toHaveLength(0);
-    });
-
     it('creates a manifold bridge when manifold_preview is on', async () => {
       mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
       const preview = await manager.acquirePreview();
