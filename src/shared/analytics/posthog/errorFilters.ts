@@ -58,6 +58,11 @@ const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   // variable: __firefox__" or "window.__firefox__.reader" is undefined) our
   // handlers catch it. No app code is involved. Match every variant/fingerprint.
   /__firefox__/,
+  // iOS in-app browsers (WKWebView hosts) inject bridge scripts that call
+  // `window.webkit.messageHandlers.<handler>.postMessage`. In a frame where the
+  // host app didn't register the handler the chain is undefined and the injected
+  // script throws. No app code is involved — we never touch `webkit`.
+  /webkit\.messageHandlers/,
 ];
 
 const IGNORED_SOURCE_PATTERNS: readonly RegExp[] = [
@@ -134,10 +139,26 @@ function isCanvasTeardownRace(exception: ExceptionLike): boolean {
 }
 
 /**
+ * WebKit fires `unhandledrejection` for promises the navigation itself killed:
+ * leaving a page rejects every in-flight `fetch` with a bare `AbortError`
+ * carrying no stack. Chrome swallows those rejections, which is why the class
+ * is WebKit-only in tracking — an abort our own code leaked would surface
+ * cross-browser. Nothing failed; the user left.
+ *
+ * Gated on the absence of frames: an AbortError thrown through app code has a
+ * stack, and that one we want to hear about.
+ */
+function isNavigationAbort(exception: ExceptionLike): boolean {
+  if (exception.value === undefined || !exception.value.startsWith('AbortError')) return false;
+  return (exception.stacktrace?.frames ?? []).length === 0;
+}
+
+/**
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
- * exception matches the extension/noise filters or the R3F canvas teardown
- * race, dedupes the WebGL context-creation burst, pins chunk-load failures to
- * one fingerprint, and passes everything else through unchanged.
+ * exception matches the extension/noise filters, the R3F canvas teardown
+ * race, or a stackless navigation abort; dedupes the WebGL context-creation
+ * burst, pins chunk-load failures to one fingerprint, and passes everything
+ * else through unchanged.
  *
  * Only the first entry in `$exception_list` / `$exception_values` is
  * checked. Subsequent entries are `Error.cause` chains — if a real app
@@ -166,6 +187,7 @@ export function filterExceptionForPosthog(
   if (shouldIgnoreError(primary)) return null;
   if (primaryException && isExtensionSourced(primaryException)) return null;
   if (primaryException && isCanvasTeardownRace(primaryException)) return null;
+  if (primaryException && isNavigationAbort(primaryException)) return null;
 
   if (primary?.includes(WEBGL_CONTEXT_ERROR)) {
     // Detection already unavailable → the boundary handled this and we've
