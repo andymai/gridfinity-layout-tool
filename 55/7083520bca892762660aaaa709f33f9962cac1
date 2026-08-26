@@ -1,0 +1,57 @@
+src/core/cqrs/v2/domain/layout/setHeightUnitMm.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 5
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 7
+src/core/cqrs/v2/domain/layout/setGridUnitMm.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 11
+src/features/bin-inspector/hooks/useBinInspectorMultiActions.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 22-23
+src/features/grid-editor/hooks/useGridResize.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 8
+src/shared/hooks/interactions/useStagingDragInteraction.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 4-5
+src/core/store/layout/coreActions.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 12
+src/core/store/layout/drawerActions.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 4
+src/core/store/view.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 4
+src/core/cqrs/v2/domain/layout/setBaseplateParams.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 10
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 21-22
+src/features/grid-editor/hooks/useGridCoords.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 9
+src/shared/utils/validation.ts
+  s_8c2c4457d965c0::t_c8912f76425fd3 8
+src/core/cqrs/v2/domain/drawer/updateDrawer.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 22
+src/core/cqrs/v2/domain/layout/setPrintBedSize.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 9
+src/core/cqrs/v2/domain/layout/setGridUnitMmY.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 12
+src/core/cqrs/v2/domain/layer/updateLayer.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 12
+src/core/store/layout/layerActions.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 13
+src/shared/hooks/interactions/selection.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 2
+src/shared/utils/outlineFrame.ts
+  s_8c2c4457d965c0::t_fc5ff193d07244 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "557083520bca892762660aaaa709f33f9962cac1",
+  "prompts": {},
+  "sessions": {
+    "s_8c2c4457d965c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "749d93e1-9f99-498e-a330-02152714fad4",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
