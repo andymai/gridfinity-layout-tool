@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.477.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.476.1...gridfinity-layout-tool-v4.477.0) (2026-08-26)
+
+
+### Features
+
+* **bin-designer:** add a Text tool to the cutout editor ([#3914](https://github.com/andymai/gridfinity-layout-tool/issues/3914)) ([db39911](https://github.com/andymai/gridfinity-layout-tool/commit/db39911e20c330a29163f977d8eb4758f94fcc86))
+* **bin-designer:** expose text relief depth in the cutout editor ([#3909](https://github.com/andymai/gridfinity-layout-tool/issues/3909)) ([67f2f38](https://github.com/andymai/gridfinity-layout-tool/commit/67f2f386c6a96a4e92219c3a7cbb5d2777d3fedc))
+* **bin-designer:** make an explicit cutout label size a target, not a ceiling ([#3912](https://github.com/andymai/gridfinity-layout-tool/issues/3912)) ([838826e](https://github.com/andymai/gridfinity-layout-tool/commit/838826e0ea2343cf04a0776fa202e06996de3cdb))
+
+
+### Bug Fixes
+
+* **analytics:** cap per-session exception captures and stale-bundle retries ([#3913](https://github.com/andymai/gridfinity-layout-tool/issues/3913)) ([b8ebb26](https://github.com/andymai/gridfinity-layout-tool/commit/b8ebb260bbf46d234c64cd9b78f50116af55948d))
+
+
+### Performance
+
+* **analytics:** persist the $set dedupe across pageloads ([#3911](https://github.com/andymai/gridfinity-layout-tool/issues/3911)) ([3aef81d](https://github.com/andymai/gridfinity-layout-tool/commit/3aef81dfb90a60c00125b6c080b142e98151139b))
+* **analytics:** trim web vitals, divider commits, and the render-error event ([#3915](https://github.com/andymai/gridfinity-layout-tool/issues/3915)) ([cfb0c1d](https://github.com/andymai/gridfinity-layout-tool/commit/cfb0c1d18b9357438f72e741d506fd725341e53a))
+
 ## [4.476.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.476.0...gridfinity-layout-tool-v4.476.1) (2026-08-26)
 
 
