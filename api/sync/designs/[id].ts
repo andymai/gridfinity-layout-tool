@@ -10,6 +10,9 @@ import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
+/** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.designs` in src/core/sync/payloadKey.ts. */
+export const PAYLOAD_KEY = 'design' as const;
+
 /** Max length for a user-visible design name (mirrors `inserts[].label`). */
 const MAX_NAME_LENGTH = 100;
 
@@ -264,7 +267,7 @@ function unwrapDesignPayload(design: unknown): {
  */
 export default createSyncResourceHandler<DesignEnvelope>({
   kind: 'designs',
-  payloadKey: 'design',
+  payloadKey: PAYLOAD_KEY,
   // Locally-minted design ids plus the share formats (UUID, base36
   // timestamp, 12-char alphanumeric) so ids round-trip with the share
   // feature without renaming.

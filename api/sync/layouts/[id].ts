@@ -4,6 +4,9 @@ import { createSyncResourceHandler } from '../lib/resourceHandler.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
+/** The PUT body / GET envelope key for this resource; mirrors `PAYLOAD_KEY.layouts` in src/core/sync/payloadKey.ts. */
+export const PAYLOAD_KEY = 'layout' as const;
+
 interface LayoutEnvelope {
   layout: unknown;
   modifiedAt: number;
@@ -20,7 +23,7 @@ interface LayoutEnvelope {
  */
 export default createSyncResourceHandler<LayoutEnvelope>({
   kind: 'layouts',
-  payloadKey: 'layout',
+  payloadKey: PAYLOAD_KEY,
   // Layouts the client may sync share three id formats with the existing
   // share feature (UUID, base36 timestamp, 12-char alphanumeric); we accept
   // the same shapes here so layouts can be round-tripped between local

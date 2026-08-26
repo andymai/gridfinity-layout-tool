@@ -323,9 +323,6 @@ describe('PUT — equal-ms tiebreaker', () => {
       res2 as unknown as VercelResponse
     );
 
-    // Exactly one of the two arrival orders lets the second write win — proves
-    // the tiebreaker is a deterministic function of the payload, not a
-    // blanket "second write always/never wins" rule.
     const statuses = [res1._status, res2._status].sort();
     expect(statuses).toEqual([200, 409]);
   });
@@ -345,9 +342,6 @@ describe('PUT — equal-ms tiebreaker', () => {
       putReq({ value: 'first', modifiedAt: 1000 }),
       makeRes() as unknown as VercelResponse
     );
-    // Simulate divergence: the index entry survives but the blob is gone
-    // (failed prior write, manual deletion, etc.) — the index hash is left
-    // untouched.
     blobStore.clear();
 
     const res = makeRes();
@@ -407,7 +401,7 @@ describe('DELETE and tombstone protection', () => {
       putReq({ value: 'v1', modifiedAt: 1000 }),
       makeRes() as unknown as VercelResponse
     );
-    // Tombstoned "now" — far newer than any of the small modifiedAt values below.
+    // DELETE tombstones at Date.now(), far newer than the modifiedAt values below.
     await handler(makeReq({ method: 'DELETE' }), makeRes() as unknown as VercelResponse);
 
     const res = makeRes();
@@ -418,7 +412,6 @@ describe('DELETE and tombstone protection', () => {
     expect(body.code).toBe(ErrorCode.NOT_FOUND);
     expect(body.indexEntry.deletedAt).toBeDefined();
 
-    // Resurrection blocked: the entry stays gone, not silently restored to v1.
     const getRes = makeRes();
     await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
     expect(getRes._status).toBe(410);
@@ -443,7 +436,7 @@ describe('DELETE and tombstone protection', () => {
 describe('PUT — quota enforcement', () => {
   it('rejects 413 with a bytes reason when a single write exceeds the per-kind byte cap', async () => {
     const res = makeRes();
-    // fakeConfig.kind is 'layouts': maxBytes = 10 * 1024 * 1024.
+    // fakeConfig.kind is 'layouts': maxBytes is 10 * 1024 * 1024 (api/lib/quota.ts).
     await handler(
       putReq({ value: 'x', modifiedAt: 1000, sizeBytes: 11 * 1024 * 1024 }),
       res as unknown as VercelResponse
@@ -453,7 +446,6 @@ describe('PUT — quota enforcement', () => {
     expect(body.code).toBe(ErrorCode.SIZE_LIMIT);
     expect(body.error).toBe('Quota exceeded (bytes): 11534336 of 10485760.');
 
-    // Nothing was written: a rejected write leaves no trace.
     const getRes = makeRes();
     await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
     expect(getRes._status).toBe(404);
@@ -492,7 +484,6 @@ describe('PUT — blob write failure', () => {
     await handler(putReq({ value: 'v1', modifiedAt: 1000 }), res as unknown as VercelResponse);
     expect(res._status).toBe(500);
 
-    // No dangling index entry pointing at a blob that was never written.
     const getRes = makeRes();
     await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
     expect(getRes._status).toBe(404);
