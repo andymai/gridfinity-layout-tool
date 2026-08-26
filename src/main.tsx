@@ -8,6 +8,7 @@ import { detectBrowserLocale } from '@/i18n/detection.ts';
 import { isLocale } from '@/i18n/types.ts';
 import { useSettingsStore } from '@/core/store/settings.ts';
 import { initAnalytics } from '@/shared/analytics/posthog';
+import { getMlTelemetry } from '@/shared/analytics/useMLTracking';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library.ts';
 import { useSharedWithMeStore } from '@/core/store/sharedWithMe.ts';
@@ -63,10 +64,14 @@ if (isSmokeMode()) {
   // Initialize Posthog analytics (no-op in dev)
   initAnalytics();
 
-  // Lazily initialize ML telemetry — the module is ~104 KB and not needed for first paint
-  void import('./shared/analytics/mlTelemetry').then(({ initMLTelemetry, setLayoutStoreRef }) => {
-    setLayoutStoreRef(() => useLayoutStore.getState(), useLayoutStore.subscribe);
-    initMLTelemetry();
+  // Lazily initialize ML telemetry — the module is ~104 KB and not needed for
+  // first paint. The shared loader never rejects (a stale-bundle load failure
+  // resolves null and latches tracking off), so a bare `.then` cannot leak an
+  // unhandled rejection per pageload.
+  void getMlTelemetry().then((ml) => {
+    if (!ml) return;
+    ml.setLayoutStoreRef(() => useLayoutStore.getState(), useLayoutStore.subscribe);
+    ml.initMLTelemetry();
   });
 
   // Prevent pinch-to-zoom on iOS (Safari ignores viewport meta since iOS 10)
