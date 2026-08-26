@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "Altezza",
   "binDesigner.scoopMaxHeight": "Altezza massima",
   "binDesigner.scoopRadius": "Raggio",
+  "binDesigner.scoopRadiusAutoLabel": "Auto",
   "binDesigner.scoopRadiusAuto": "Auto (si adatta alla dimensione dello scomparto)",
   "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",

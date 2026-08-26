@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "Висота",
   "binDesigner.scoopMaxHeight": "Макс. висота",
   "binDesigner.scoopRadius": "Радіус",
+  "binDesigner.scoopRadiusAutoLabel": "Авто",
   "binDesigner.scoopRadiusAuto": "Авто (адаптується до розміру відсіку)",
   "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",

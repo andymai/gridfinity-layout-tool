@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "Høyde",
   "binDesigner.scoopMaxHeight": "Maks høyde",
   "binDesigner.scoopRadius": "Radius",
+  "binDesigner.scoopRadiusAutoLabel": "Auto",
   "binDesigner.scoopRadiusAuto": "Automatisk (tilpasser seg romstørrelse)",
   "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",

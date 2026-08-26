@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "Hauteur",
   "binDesigner.scoopMaxHeight": "Hauteur max.",
   "binDesigner.scoopRadius": "Rayon",
+  "binDesigner.scoopRadiusAutoLabel": "Auto",
   "binDesigner.scoopRadiusAuto": "Automatique (s'adapte à la taille du compartiment)",
   "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",
