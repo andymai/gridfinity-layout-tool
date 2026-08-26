@@ -2,6 +2,12 @@ import { randomUUID } from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { del, put } from '@vercel/blob';
 import { requireMethod } from './lib/method.js';
+import {
+  cardFromRecord,
+  communityDesignUrl,
+  DUPLICATE_DESIGN_RESPONSE,
+  REMIX_UNCHANGED_RESPONSE,
+} from './lib/communityRecord.js';
 import { readSessionCookie } from './lib/cookies.js';
 import { readSession, requireSession } from './lib/session.js';
 import type { SessionRecord } from './lib/session.js';
@@ -9,7 +15,6 @@ import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
 import {
   ErrorCode,
-  getBaseUrl,
   rateLimited,
   sendError,
   serviceUnavailable,
@@ -48,7 +53,6 @@ import {
 import { communityPrintsEnabled } from './lib/communityPrintValidation.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from './lib/communityExampleParamHashes.js';
 import type {
-  CommunityCardMetadata,
   CommunityCardRecord,
   CommunityDesignMetrics,
   CommunityDesignRecord,
@@ -91,11 +95,6 @@ const CURSOR_REGEX = /^\d{1,9}$/;
 // Short per-user publish lock TTL: long enough to cover the check->write
 // sequence of one publish, short enough that a crashed request self-heals.
 const PUBLISH_LOCK_TTL_MS = 10_000;
-
-// Matches the client's publicDesignUrl: /community/d/<id> is the canonical route.
-function communityDesignUrl(designId: string): string {
-  return `${getBaseUrl()}/community/d/${designId}`;
-}
 
 function badRequest(res: VercelResponse, message: string): void {
   sendError(res, 400, ErrorCode.VALIDATION_ERROR, message);
@@ -190,29 +189,6 @@ async function findPublishedIdByContentHash(
     }
   }
   return null;
-}
-
-function cardFromRecord(record: CommunityDesignRecord): CommunityCardMetadata {
-  return {
-    id: record.id,
-    name: record.name,
-    authorPublicId: record.authorPublicId,
-    authorName: record.authorName,
-    category: record.category,
-    techniques: record.techniques,
-    kind: record.kind ?? '',
-    width: record.metrics.width,
-    depth: record.metrics.depth,
-    height: record.metrics.height,
-    gridUnitMm: record.metrics.gridUnitMm,
-    thumbnailUrl: record.thumbnails[0] ?? '',
-    isRemix: record.lineage !== null,
-    parentId: record.lineage?.parentId ?? '',
-    featured: record.featured,
-    createdAt: record.createdAt,
-    updatedAt: record.updatedAt,
-    status: record.status,
-  };
 }
 
 /**
@@ -335,11 +311,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
       // B3: reject a verbatim re-upload of a built-in example or of another
       // author's live design. The author's own re-publish returned above.
       if (await isExactDuplicate(redis, contentFingerprint, authorPublicId)) {
-        res.status(409).json({
-          error:
-            'This matches a design that has already been published (or a built-in example). Make it your own before publishing.',
-          code: 'DUPLICATE_DESIGN',
-        });
+        res.status(409).json(DUPLICATE_DESIGN_RESPONSE);
         return;
       }
 
@@ -368,10 +340,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
         lineageResolve.parentContent !== null &&
         communityParamsFingerprint(lineageResolve.parentContent) === contentFingerprint
       ) {
-        res.status(409).json({
-          error: 'Change the design before publishing your remix.',
-          code: 'REMIX_UNCHANGED',
-        });
+        res.status(409).json(REMIX_UNCHANGED_RESPONSE);
         return;
       }
 
