@@ -83,8 +83,9 @@ export function ScoopSection() {
             onClick={handlers.toggleAutoRadius}
             className="px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
           >
-            {/* eslint-disable-next-line i18next/no-literal-string -- 'Auto' button label; full-string i18n for this site is tracked as separate debt */}
-            {state.isAutoRadius ? `${t('binDesigner.scoopRadius')}: Auto` : 'Auto'}
+            {state.isAutoRadius
+              ? `${t('binDesigner.scoopRadius')}: ${t('binDesigner.scoopRadiusAutoLabel')}`
+              : t('binDesigner.scoopRadiusAutoLabel')}
           </Button>
         </div>
 

@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "높이",
   "binDesigner.scoopMaxHeight": "최대 높이",
   "binDesigner.scoopRadius": "반지름",
+  "binDesigner.scoopRadiusAutoLabel": "자동",
   "binDesigner.scoopRadiusAuto": "자동(칸 크기에 맞춰 조정)",
   "binDesigner.scoopRadiusAutoRange": "자동 ({min}–{max}mm)",
   "binDesigner.scoopRadiusAutoValue": "자동 ({value}mm)",

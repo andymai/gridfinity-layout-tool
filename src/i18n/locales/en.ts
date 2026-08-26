@@ -2404,6 +2404,7 @@ const en: Record<string, string> = {
   'binDesigner.fingerScoop': 'Finger scoop',
   'binDesigner.fingerScoopUnavailableSlotted': 'Not available for slotted or solid bins',
   'binDesigner.scoopRadius': 'Radius',
+  'binDesigner.scoopRadiusAutoLabel': 'Auto',
   'binDesigner.scoopRadiusAuto': 'Auto (adapts to compartment size)',
   'binDesigner.scoopRadiusAutoValue': 'Auto ({value}mm)',
   'binDesigner.scoopRadiusAutoRange': 'Auto ({min}–{max}mm)',

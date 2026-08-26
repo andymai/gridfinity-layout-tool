@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "Hoogte",
   "binDesigner.scoopMaxHeight": "Max. hoogte",
   "binDesigner.scoopRadius": "Radius",
+  "binDesigner.scoopRadiusAutoLabel": "Auto",
   "binDesigner.scoopRadiusAuto": "Automatisch (past zich aan aan vakmaat)",
   "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max}mm)",
   "binDesigner.scoopRadiusAutoValue": "Auto ({value}mm)",

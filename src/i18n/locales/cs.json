@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "Výška",
   "binDesigner.scoopMaxHeight": "Max. výška",
   "binDesigner.scoopRadius": "Poloměr",
+  "binDesigner.scoopRadiusAutoLabel": "Automaticky",
   "binDesigner.scoopRadiusAuto": "Automaticky (přizpůsobí se velikosti přihrádky)",
   "binDesigner.scoopRadiusAutoRange": "Automaticky ({min}–{max} mm)",
   "binDesigner.scoopRadiusAutoValue": "Automaticky ({value} mm)",

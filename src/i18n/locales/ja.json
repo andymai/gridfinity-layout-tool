@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "高さ",
   "binDesigner.scoopMaxHeight": "最大高さ",
   "binDesigner.scoopRadius": "半径",
+  "binDesigner.scoopRadiusAutoLabel": "自動",
   "binDesigner.scoopRadiusAuto": "自動(区画サイズに応じて調整)",
   "binDesigner.scoopRadiusAutoRange": "自動({min}〜{max}mm)",
   "binDesigner.scoopRadiusAutoValue": "自動({value}mm)",

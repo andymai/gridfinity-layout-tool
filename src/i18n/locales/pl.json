@@ -1515,6 +1515,7 @@
   "binDesigner.scoopHeight": "Wysokość",
   "binDesigner.scoopMaxHeight": "Maks. wysokość",
   "binDesigner.scoopRadius": "Promień",
+  "binDesigner.scoopRadiusAutoLabel": "Auto",
   "binDesigner.scoopRadiusAuto": "Auto (dostosowuje się do rozmiaru przegrody)",
   "binDesigner.scoopRadiusAutoRange": "Auto ({min}–{max} mm)",
   "binDesigner.scoopRadiusAutoValue": "Auto ({value} mm)",
