@@ -1,5 +1,4 @@
 #!/usr/bin/env tsx
-/* eslint-disable no-console -- A CLI reports to stdout and stderr; that is its output channel, not debug logging. */
 /**
  * Validates a hand-authored layout or bin design JSON file.
  *

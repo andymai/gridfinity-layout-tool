@@ -1,5 +1,4 @@
 #!/usr/bin/env tsx
-/* eslint-disable no-console -- A generator CLI reports what it wrote; that is its output channel, not debug logging. */
 /**
  * Regenerates the field tables in docs/schemas/*.md from the published schemas.
  *

@@ -24,7 +24,7 @@ export function normalizeTags(input: unknown): string[] {
     // Mirror the server's sanitizeString: strip null bytes + control chars,
     // then trim and cap. Keeps the cross-boundary contract exact.
     const clean = raw
-      // eslint-disable-next-line no-control-regex
+      // eslint-disable-next-line no-control-regex -- the point is to match control bytes
       .replace(/[\x00-\x1F\x7F]/g, '')
       .trim()
       .slice(0, MAX_TAG_LENGTH);

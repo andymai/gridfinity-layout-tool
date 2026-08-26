@@ -242,7 +242,6 @@ beforeAll(async () => {
 afterAll(() => {
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(OUT, JSON.stringify({ kernel: getKernelName(), rows }, null, 2));
-  // eslint-disable-next-line no-console
   console.log(`wrote ${rows.length} rows to ${OUT}`);
 });
 

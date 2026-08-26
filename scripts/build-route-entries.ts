@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- build script logs status to stdout */
 /**
  * Post-build step: emit static HTML entry points for SPA routes that earn
  * search impressions (/designer, /baseplate) so crawlers and social scrapers

@@ -158,7 +158,6 @@ function Rail({ id, title, blurb, cards, onSelect, onSelectAuthor, onSeeAll }: R
       <div className="relative">
         {/* motion-reduce disables the snap yank outright, not just the timing:
             scroll-snap can still animate into place without scroll-behavior. */}
-        {/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- role="list" restores the list semantics Safari/iOS VoiceOver strips once list-style:none is applied. */}
         <ul
           ref={railRef}
           role="list"

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Build script for static content pages.
  * Converts Markdown files in content/ to HTML in public/.

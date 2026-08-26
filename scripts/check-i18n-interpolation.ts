@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- CLI script that outputs to console */
 /**
  * Pre-commit check: Verify translation interpolation placeholders match code usage.
  *

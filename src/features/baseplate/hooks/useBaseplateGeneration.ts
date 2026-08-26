@@ -519,9 +519,7 @@ export function useBaseplateGeneration(): void {
         } else {
           // Split: generate one direct-mesh per unique piece group, clone for duplicates.
           const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
-          // `new Array(n)` returns `any[]`; we pre-size the typed slot.
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const meshEntries: PieceMeshEntry[] = new Array(tiling.pieces.length);
+          const meshEntries = new Array<PieceMeshEntry>(tiling.pieces.length);
 
           for (const group of groups.values()) {
             const mesh = generateBaseplateDirect(group.params, NO_OP_PROGRESS);
@@ -582,9 +580,7 @@ export function useBaseplateGeneration(): void {
           setPieceMeshes([]);
         } else {
           const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
-          // `new Array(n)` returns `any[]`; we pre-size the typed slot.
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const meshEntries: PieceMeshEntry[] = new Array(tiling.pieces.length);
+          const meshEntries = new Array<PieceMeshEntry>(tiling.pieces.length);
 
           for (const group of groups.values()) {
             const baseResult = await preview.generateBaseplate(group.params, NO_OP_PROGRESS);
@@ -679,9 +675,7 @@ export function useBaseplateGeneration(): void {
             }
           }
 
-          // `new Array(n)` returns `any[]`; we pre-size the typed slot.
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const meshEntries: PieceMeshEntry[] = new Array(totalCount);
+          const meshEntries = new Array<PieceMeshEntry>(totalCount);
           for (let groupIdx = 0; groupIdx < uniqueGroups.length; groupIdx++) {
             const group = uniqueGroups[groupIdx];
             fillGroupMeshEntries(meshEntries, group, tiling.pieces, uniqueResults[groupIdx]);

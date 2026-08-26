@@ -67,7 +67,6 @@ describe('occt-wasm isolation: generateBin without occt init', () => {
   }, 600_000);
 
   it('prints isolated occt-wasm results for cross-reference vs parity test', () => {
-    /* eslint-disable no-console */
     console.log('\n=== OCCT-WASM ISOLATION (no occt registered) ===\n');
     for (const tc of CORE_PARITY_CASES) {
       const r = results.get(tc.name);
@@ -84,7 +83,6 @@ describe('occt-wasm isolation: generateBin without occt init', () => {
       '  expected (paired run):  1×1 lip=59f, 2×2 nolip=71f, 2×2 mag+screw=170f, 2×2 scoop=355f, 1×1 flat=27f'
     );
     console.log('\n=================================================\n');
-    /* eslint-enable no-console */
 
     expect(results.size).toBeGreaterThan(0);
   });

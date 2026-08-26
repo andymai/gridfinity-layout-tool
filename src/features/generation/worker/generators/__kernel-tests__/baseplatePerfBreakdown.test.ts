@@ -57,10 +57,8 @@ beforeAll(async () => {
 }, 60_000);
 
 afterAll(() => {
-  /* eslint-disable no-console -- diagnostic harness prints its table for inspection */
   console.log(`\nBaseplate stage breakdown — kernel: ${getKernelName()}\n`);
   for (const r of reports) console.log(r);
-  /* eslint-enable no-console */
 });
 
 function median(xs: readonly number[]): number {

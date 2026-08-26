@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- CLI script that outputs to console */
 /**
  * Batch i18n key consolidation.
  *

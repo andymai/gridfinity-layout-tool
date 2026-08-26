@@ -54,9 +54,7 @@ describe('goma boundary probe', () => {
       }
     }
     const boundary = [...edgeCount.entries()].filter(([, c]) => c === 1);
-    // eslint-disable-next-line no-console
     console.log(`boundary edges: ${boundary.length}`);
-    // eslint-disable-next-line no-console
     for (const [k] of boundary.slice(0, 20)) console.log(' ', k);
   }, 600_000);
 });

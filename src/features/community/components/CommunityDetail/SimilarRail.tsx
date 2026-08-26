@@ -80,7 +80,6 @@ export function SimilarRail({ design }: SimilarRailProps) {
         {t('community.detail.similarTitle')}
       </h3>
       {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
-      {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
       <ul
         role="list"
         aria-label={t('community.detail.similarTitle')}

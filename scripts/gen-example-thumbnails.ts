@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- Build script uses console for status output */
 /**
  * Pre-renders committed PNG thumbnails for each gallery example.
  *

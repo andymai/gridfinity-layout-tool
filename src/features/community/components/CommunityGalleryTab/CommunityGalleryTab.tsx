@@ -674,7 +674,6 @@ export function CommunityGalleryTab({
             {visible.length > 0 && (
               <>
                 {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
-                {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
                 <ul
                   role="list"
                   className={GRID_CLASS}

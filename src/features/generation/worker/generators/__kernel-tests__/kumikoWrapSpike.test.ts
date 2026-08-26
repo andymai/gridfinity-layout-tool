@@ -169,7 +169,6 @@ describe(`kumiko corner-wrap spike on ${getKernelName()}`, () => {
     const meshed = mesh(opened, { tolerance: 0.1 });
     expect(meshed.triangles.length).toBeGreaterThan(0);
 
-    // eslint-disable-next-line no-console
     console.log(
       `[${getKernelName()}] shell=${solidVol.toFixed(1)}mm³ opened=${openedVol.toFixed(1)}mm³ removed=${(
         (1 - openedVol / solidVol) *

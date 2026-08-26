@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- CLI script that outputs to console */
 /**
  * Detect translation keys in en.ts that are never referenced in source code.
  *

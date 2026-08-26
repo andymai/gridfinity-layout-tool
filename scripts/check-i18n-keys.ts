@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- CLI script that outputs to console */
 /**
  * Pre-commit check: Verify all locale JSON files have the same keys as en.ts.
  *
