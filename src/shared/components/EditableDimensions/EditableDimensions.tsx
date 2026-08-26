@@ -2,12 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Input } from '@/design-system';
 import { PencilIcon } from '@/design-system/Icon';
 import { clamp as clampRange } from '@/shared/utils/math';
+import { formatMm } from '@/shared/utils/format';
 
 /** Format mm for display: minimum needed decimals, no trailing zeros. */
-function formatMm(v: number): string {
-  const rounded = Math.round(v * 100) / 100;
-  return String(rounded);
-}
 
 interface EditableDimensionsProps {
   /** Total width in mm (grid + padding) when hasPadding, or grid-only mm otherwise. */

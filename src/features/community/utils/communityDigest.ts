@@ -10,6 +10,7 @@
  */
 
 import type { CommunityCard } from '@/shared/types/community';
+import { isRecord } from '@/shared/utils/isRecord';
 
 const DIGEST_KEY = 'gridfinity-community-digest-v1';
 
@@ -43,13 +44,9 @@ export const EMPTY_USER_DIGEST_RECORD: UserDigestRecord = {
   seen: {},
 };
 
-function isRecordObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isCounts(value: unknown): value is DigestCounts {
   return (
-    isRecordObject(value) &&
+    isRecord(value) &&
     typeof value.likes === 'number' &&
     typeof value.remixes === 'number' &&
     typeof value.exports === 'number'
@@ -57,12 +54,12 @@ function isCounts(value: unknown): value is DigestCounts {
 }
 
 function isCountsMap(value: unknown): value is Record<string, DigestCounts> {
-  return isRecordObject(value) && Object.values(value).every(isCounts);
+  return isRecord(value) && Object.values(value).every(isCounts);
 }
 
 function isUserDigestRecord(value: unknown): value is UserDigestRecord {
   return (
-    isRecordObject(value) &&
+    isRecord(value) &&
     typeof value.lastCheckedAt === 'number' &&
     isCountsMap(value.latest) &&
     isCountsMap(value.seen)
@@ -74,7 +71,7 @@ function loadAll(): Record<string, UserDigestRecord> {
     const stored = localStorage.getItem(DIGEST_KEY);
     if (stored === null) return {};
     const parsed: unknown = JSON.parse(stored);
-    if (!isRecordObject(parsed)) return {};
+    if (!isRecord(parsed)) return {};
     const records: Record<string, UserDigestRecord> = {};
     for (const [userId, record] of Object.entries(parsed)) {
       if (isUserDigestRecord(record)) records[userId] = record;

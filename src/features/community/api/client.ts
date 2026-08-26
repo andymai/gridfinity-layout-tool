@@ -22,6 +22,7 @@ import {
   COMMUNITY_REPORT_REASONS,
 } from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
+import { isRecord } from '@/shared/utils/isRecord';
 
 const COMMUNITY_ENDPOINT = '/api/community';
 
@@ -96,10 +97,6 @@ export function errorFromResponse(status: number, data: unknown): CommunityClien
     return { kind: 'validation', code: body.code, message: body.error };
   }
   return { kind: 'server' };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function isPublishResult(value: unknown): value is CommunityPublishResult {

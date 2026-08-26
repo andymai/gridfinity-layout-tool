@@ -19,6 +19,7 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { useTranslation } from '@/i18n';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { Bin, Layout } from '@/core/types';
+import { formatMm } from '@/shared/utils/format';
 
 interface ExpandedFootprintProps {
   bin: Bin;
@@ -26,9 +27,6 @@ interface ExpandedFootprintProps {
 }
 
 /** Up to 2 decimals, trailing zeros stripped (98, 104.5). */
-function formatMm(value: number): string {
-  return String(Math.round(value * 100) / 100);
-}
 
 /** Signed mm for a per-side value, so `+0` reads as "not extended here". */
 function formatSide(value: number): string {

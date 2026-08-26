@@ -26,15 +26,12 @@ import { normalizePaletteLip, lipCellZone } from '@/features/bin-designer/types/
 import { useTranslation } from '@/i18n';
 import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
+import { generateUUID } from '@/shared/utils/uuid';
 
 interface ColorsActionsMenuProps {
   featureColors: FeatureColorConfig;
   onMatchAllToBody: () => void;
   onApplyPalette: (palette: SavedColorPalette) => void;
-}
-
-function uuid(): string {
-  return globalThis.crypto.randomUUID();
 }
 
 export function ColorsActionsMenu({
@@ -79,7 +76,7 @@ export function ColorsActionsMenu({
     if (!name) return;
 
     const palette: SavedColorPalette = {
-      id: uuid(),
+      id: generateUUID(),
       name,
       createdAt: new Date().toISOString(),
       colors: {

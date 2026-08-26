@@ -15,6 +15,7 @@ import type {
   PartTransform,
 } from '@/shared/types/assembly';
 import { ASSEMBLY_PART_TYPES } from '@/shared/types/assembly';
+import { isRecord } from '@/shared/utils/isRecord';
 
 /** Hard ceiling on total nodes; the printability checker advises far below it. */
 export const MAX_ASSEMBLY_PARTS = 256;
@@ -435,10 +436,6 @@ export function defaultPartParams<K extends AssemblyPartType>(
 
 function isAssemblyPartType(v: unknown): v is AssemblyPartType {
   return typeof v === 'string' && (ASSEMBLY_PART_TYPES as readonly string[]).includes(v);
-}
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
 /**

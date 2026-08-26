@@ -18,6 +18,7 @@ import { DesignMediaPanel } from './DesignMediaPanel';
 import { DirectRemixList } from './DirectRemixList';
 import { RemixLineage } from './RemixLineage';
 import { SimilarRail } from './SimilarRail';
+import { formatMm } from '@/shared/utils/format';
 
 /**
  * Live-name resolution state for the lineage line: snapshot names render
@@ -208,10 +209,6 @@ function HiddenNotice({ moderation }: { moderation: OwnerModeration }) {
       )}
     </div>
   );
-}
-
-function formatMm(value: number): string {
-  return String(Number(value.toFixed(1)));
 }
 
 function formatDate(timestamp: number): string {
