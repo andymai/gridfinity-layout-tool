@@ -268,6 +268,21 @@ describe('push: uncaught rejections in fire-and-forget paths', () => {
     expect(useSyncStatusStore.getState().state).toBe('error');
     expect(useSyncStatusStore.getState().lastError).toContain('Failed to fetch');
   });
+
+  it('flushNow resolves instead of rejecting when a push fails at the network layer', async () => {
+    // useDebouncedPush and useVisibilityFlush call `void flushNow()`, so a
+    // rejected drain here would surface as an unhandled promise rejection —
+    // the exact "TypeError: Failed to fetch" captured in production.
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await new Promise((r) => setTimeout(r, 10));
+
+    await expect(engine.flushNow()).resolves.toBeUndefined();
+    expect(useSyncStatusStore.getState().state).toBe('error');
+    expect(useSyncStatusStore.getState().lastError).toContain('Failed to fetch');
+  });
 });
 
 describe('push: 429 rate-limited', () => {

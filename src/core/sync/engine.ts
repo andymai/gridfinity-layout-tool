@@ -87,10 +87,21 @@ export function onEngineEvent(listener: EngineEventListener): () => void {
   return () => state?.listeners.delete(listener);
 }
 
-/** Force a drain pass; returns when the in-flight pass completes. */
+/**
+ * Force a drain pass; returns when the in-flight pass completes.
+ *
+ * Route a drain rejection (typically a network `TypeError: Failed to fetch`)
+ * into the status store the same way `scheduleDrain` does. The debounced-push
+ * and visibility-flush triggers call `void flushNow()`, so a propagated
+ * rejection would escape as an unhandled promise rejection.
+ */
 export async function flushNow(): Promise<void> {
   if (state === null) return;
-  await drain(state);
+  try {
+    await drain(state);
+  } catch (error: unknown) {
+    reportUncaught('flush', error);
+  }
 }
 
 export async function getPendingEntries(): Promise<OutboxEntry[]> {
