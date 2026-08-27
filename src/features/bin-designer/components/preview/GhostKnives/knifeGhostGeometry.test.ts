@@ -18,7 +18,8 @@ const CHEF: KnifeSpec = {
   bladeLengthMm: 205,
   heelHeightMm: 47,
   spineThicknessMm: 2.3,
-  handleDiameterMm: 23,
+  handleWidthMm: 23,
+  handleHeightMm: 23,
   openEnd: 'end',
 };
 
@@ -95,7 +96,7 @@ describe('knifeGhostProfile', () => {
   it('closes the handle butt at the handle diameter, not wider', () => {
     const { handle } = knifeGhostProfile(CHEF);
     const heights = handle.map(([, belowSpine]) => belowSpine);
-    expect(Math.max(...heights) - Math.min(...heights)).toBeCloseTo(CHEF.handleDiameterMm, 6);
+    expect(Math.max(...heights) - Math.min(...heights)).toBeCloseTo(CHEF.handleHeightMm, 6);
   });
 });
 

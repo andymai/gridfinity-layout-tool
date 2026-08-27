@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Ouvrez l'éditeur complet pour un contrôle précis, des règles et des outils d'alignement.",
   "binDesigner.cutouts.knifeBladeLength": "Lame",
   "binDesigner.cutouts.knifeDepthClamped": "Cette lame est plus profonde que ce que le bin peut couper : la fente s'arrête à {depth} mm et le couteau dépasse. Un bin de {needed}u accepte toute la lame.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Manche ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Talon",
   "binDesigner.cutouts.knifeOpenEnd": "Côté manche",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Fermée",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Recharger avec la nouvelle version",
   "pwaUpdate.readyTooltip": "Une nouvelle version est prête. Elle s'appliquera d'elle-même lors d'une pause, ou rechargez maintenant.",
   "whatsNew.openTooltip": "Voir ce qui a changé récemment",
-  "whatsNew.subtitleRecent": "Les changements les plus récents"
+  "whatsNew.subtitleRecent": "Les changements les plus récents",
+  "binDesigner.cutouts.knifeHandleWidth": "Manche L",
+  "binDesigner.cutouts.knifeHandleHeight": "Manche H",
+  "binDesigner.cutouts.knifeOrientation": "Orientation",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Horizontal",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Vertical",
+  "binDesigner.cutouts.knifePreset.chefWood": "Couteau de chef (bois)"
 }

@@ -258,7 +258,12 @@ export {
   MAX_CUTOUT_GROUP_NAMES,
 } from './cutout';
 
-export type { KnifeRestStyle, KnifeRestConfig, KnifeSlotDimensions } from './knifeBlock';
+export type {
+  KnifeRestStyle,
+  KnifeRestConfig,
+  KnifeSlotDimensions,
+  KnifeSlotAxis,
+} from './knifeBlock';
 export {
   KNIFE_SLOT_LENGTH_MARGIN,
   KNIFE_SLOT_WIDTH_CLEARANCE,
@@ -280,6 +285,8 @@ export {
   knifeRestSaddleZMm,
   knifeRestBodyTopZMm,
   knifeBlockTopZMm,
+  knifeSlotAxis,
+  snapKnifeRotation,
 } from './knifeBlock';
 
 // Generation Types

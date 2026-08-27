@@ -23,6 +23,7 @@ import { EditorBackground3D } from './EditorBackground3D';
 import { TaperBand3D } from './TaperBand3D';
 import { ReferenceOutline3D } from './ReferenceOutline3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
+import { KnifeSlotOverlay } from './KnifeSlotOverlay';
 import { dimmedBinColor } from './dimmedBinColor';
 import { isWithin } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
@@ -57,6 +58,7 @@ interface DrawingPreview {
   readonly width: number;
   readonly depth: number;
   readonly shape: CutoutShapeType;
+  readonly rotation?: number;
 }
 
 interface TooltipInfo {
@@ -524,10 +526,13 @@ export function SceneContent({
       {/* Resize handles on single selected cutout (not during interactions).
           Mesh imprints are shape-locked: their footprint is derived from the
           imported mesh, so resizing is meaningless — move/rotate only. Text
-          elements likewise: their box follows the caption and its set size. */}
+          elements likewise: their box follows the caption and its set size. A
+          knife slot's box is derived from its blade measurements, so it is
+          sized in the Knife panel, never dragged out of true here. */}
       {selectedCutout &&
         selectedCutout.shape !== 'mesh' &&
         selectedCutout.shape !== 'text' &&
+        selectedCutout.shape !== 'knifeSlot' &&
         !isInteracting && <CutoutHandles3D cutout={selectedCutout} onResizeStart={onResizeStart} />}
 
       {/* Rotation handle (not during interactions) */}
@@ -559,6 +564,9 @@ export function SceneContent({
         </>
       )}
 
+      {/* Knife silhouettes: the handle each open-ended knife slot lets past the wall. */}
+      <KnifeSlotOverlay cutouts={cutouts} />
+
       {/* Drawing preview (corner-to-corner) */}
       {drawingPreview && (
         <DrawingPreview3D
@@ -567,6 +575,7 @@ export function SceneContent({
           width={drawingPreview.width}
           depth={drawingPreview.depth}
           shape={drawingPreview.shape}
+          rotation={drawingPreview.rotation}
         />
       )}
 

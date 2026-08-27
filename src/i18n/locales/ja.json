@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "フルエディターを開くと、精密な制御、ルーラー、整列ツールが利用できます。",
   "binDesigner.cutouts.knifeBladeLength": "刃渡り",
   "binDesigner.cutouts.knifeDepthClamped": "この刃はビンが切れる深さを超えているため、スロットは{depth}mmで止まり、ナイフが浮きます。{needed}uのビンなら刃全体が収まります。",
-  "binDesigner.cutouts.knifeHandleDiameter": "柄 ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "あご",
   "binDesigner.cutouts.knifeOpenEnd": "柄の向き",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "密閉",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "新しいバージョンで再読み込み",
   "pwaUpdate.readyTooltip": "新しいバージョンの準備ができました。手を止めると自動的に適用されます。今すぐ再読み込みもできます。",
   "whatsNew.openTooltip": "最近の変更点を見る",
-  "whatsNew.subtitleRecent": "最近の変更点"
+  "whatsNew.subtitleRecent": "最近の変更点",
+  "binDesigner.cutouts.knifeHandleWidth": "柄 幅",
+  "binDesigner.cutouts.knifeHandleHeight": "柄 高さ",
+  "binDesigner.cutouts.knifeOrientation": "向き",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "水平",
+  "binDesigner.cutouts.knifeOrientation.vertical": "垂直",
+  "binDesigner.cutouts.knifePreset.chefWood": "牛刀 (木柄)"
 }

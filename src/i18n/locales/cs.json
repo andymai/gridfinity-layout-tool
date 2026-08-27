@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Otevři plný editor pro přesné ovládání, pravítka a nástroje zarovnání.",
   "binDesigner.cutouts.knifeBladeLength": "Čepel",
   "binDesigner.cutouts.knifeDepthClamped": "Tato čepel je hlubší, než dokáže bin vyříznout, takže drážka končí v {depth} mm a nůž vyčnívá. Celou čepel pojme bin {needed}u.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Rukojeť ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Pata",
   "binDesigner.cutouts.knifeOpenEnd": "Strana rukojeti",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Uzavřeno",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Načíst znovu do nové verze",
   "pwaUpdate.readyTooltip": "Je připravena nová verze. Použije se sama, až se zastavíte, nebo načtěte znovu hned.",
   "whatsNew.openTooltip": "Podívejte se, co se nedávno změnilo",
-  "whatsNew.subtitleRecent": "Nejnovější změny"
+  "whatsNew.subtitleRecent": "Nejnovější změny",
+  "binDesigner.cutouts.knifeHandleWidth": "Rukojeť Š",
+  "binDesigner.cutouts.knifeHandleHeight": "Rukojeť V",
+  "binDesigner.cutouts.knifeOrientation": "Orientace",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Horizontálně",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Vertikálně",
+  "binDesigner.cutouts.knifePreset.chefWood": "Kuchařský nůž (dřevo)"
 }

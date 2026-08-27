@@ -14,7 +14,8 @@ const CHEF: KnifeSpec = {
   bladeLengthMm: 205,
   heelHeightMm: 47,
   spineThicknessMm: 2.3,
-  handleDiameterMm: 23,
+  handleWidthMm: 23,
+  handleHeightMm: 23,
   openEnd: 'end',
 };
 
@@ -156,7 +157,8 @@ export const knifeBlock: ScenarioCase[] = [
             bladeLengthMm: 115,
             heelHeightMm: 19,
             spineThicknessMm: 1.5,
-            handleDiameterMm: 19,
+            handleWidthMm: 19,
+            handleHeightMm: 19,
             openEnd: 'end',
           },
           array: {

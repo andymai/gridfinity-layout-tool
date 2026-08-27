@@ -5,7 +5,7 @@
  */
 
 import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
-import { LEAN_SHAPES, MAX_CUTOUT_LEAN_DEG } from '@/features/bin-designer/types';
+import { LEAN_SHAPES, MAX_CUTOUT_LEAN_DEG, snapKnifeRotation } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
@@ -142,7 +142,12 @@ export function SingleCutoutInspector({
               softMax
               step={0.5}
               unit="mm"
-              disabled={disabled || cutout.shape === 'mesh' || cutout.shape === 'text'}
+              disabled={
+                disabled ||
+                cutout.shape === 'mesh' ||
+                cutout.shape === 'text' ||
+                cutout.shape === 'knifeSlot'
+              }
             />
             <CompactNumberInput
               label="H"
@@ -153,18 +158,31 @@ export function SingleCutoutInspector({
               softMax
               step={0.5}
               unit="mm"
-              disabled={disabled || cutout.shape === 'mesh' || cutout.shape === 'text'}
+              disabled={
+                disabled ||
+                cutout.shape === 'mesh' ||
+                cutout.shape === 'text' ||
+                cutout.shape === 'knifeSlot'
+              }
             />
             <CompactNumberInput
               label={t('binDesigner.cutouts.rotation')}
               value={getEffective(cutout, preview, 'rotation')}
               onChange={(rotation) => {
+                // A knife slot only works wall-aligned, so its angle snaps to a
+                // quarter turn and skips the fit clamp — a blade too long to lie
+                // across the bin lands off the board (where the grow banner takes
+                // it) rather than being bent to a broken off-axis angle.
+                if (cutout.shape === 'knifeSlot') {
+                  onUpdate(cutout.id, { rotation: snapKnifeRotation(rotation) });
+                  return;
+                }
                 const clamped = clampRotationToBounds(cutout, rotation, binWidth, binDepth);
                 onUpdate(cutout.id, { rotation: clamped });
               }}
               min={0}
               max={359}
-              step={1}
+              step={cutout.shape === 'knifeSlot' ? 90 : 1}
               unit="°"
               disabled={disabled}
             />

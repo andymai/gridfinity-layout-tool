@@ -19,7 +19,8 @@ const CHEF: KnifeSpec = {
   bladeLengthMm: 205,
   heelHeightMm: 47,
   spineThicknessMm: 2.3,
-  handleDiameterMm: 23,
+  handleWidthMm: 23,
+  handleHeightMm: 23,
   openEnd: 'end',
 };
 

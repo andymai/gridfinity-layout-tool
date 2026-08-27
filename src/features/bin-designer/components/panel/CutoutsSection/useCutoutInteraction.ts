@@ -86,6 +86,8 @@ export function useCutoutInteraction({
     width: number;
     depth: number;
     shape: CutoutShape;
+    /** Wall-aligned angle for a knife slot flicked into orientation (deg). */
+    rotation?: number;
   } | null>(null);
   /** Path drawing preview (pen tool multi-click) */
   const [pathDrawingPreview, setPathDrawingPreview] = useState<PathDrawingPreviewState | null>(

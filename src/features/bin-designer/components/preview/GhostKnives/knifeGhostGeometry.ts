@@ -95,10 +95,11 @@ export function knifeGhostProfile(knife: KnifeSpec): KnifeGhostProfile {
 
   // The underside IS the saddle line the rest's groove bottoms out on, taken
   // from the same helper the groove is cut with — measured from the spine, so
-  // the block top it is relative to is 0 here.
+  // the block top it is relative to is 0 here. This is the side profile, so the
+  // handle's vertical extent is its height.
   const bottom = knifeRestSaddleZMm(0, knife);
-  const top = bottom + knife.handleDiameterMm;
-  const radius = knife.handleDiameterMm / 2;
+  const top = bottom + knife.handleHeightMm;
+  const radius = knife.handleHeightMm / 2;
   const buttStart = Math.max(0, GHOST_HANDLE_LENGTH_MM - radius);
   const handle: KnifeProfilePoint[] = [
     [0, top],

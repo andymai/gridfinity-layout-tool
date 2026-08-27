@@ -62,4 +62,32 @@ describe('handleDrawMove', () => {
     handleDrawMove(makeMode('circle', 20, 20), { mmX: 60, mmY: 60 }, L_MASK, noopSnap, setters);
     expect(setters.setDrawingPreview).not.toHaveBeenCalled();
   });
+
+  // A knife slot is not sized by the drag; its blade measurements fix the box
+  // (chef 8" default: 205+10 = 215 long, 2.3+1.5 = 3.8 thick) and the drag only
+  // aims it. The box is centred on the press point and stays unclamped.
+  it('sizes a dragged knife slot from the blade and aims it right on a +X flick', () => {
+    const setters = makeSetters();
+    handleDrawMove(makeMode('knifeSlot', 50, 50), { mmX: 70, mmY: 52 }, PLAIN, noopSnap, setters);
+    expect(setters.setDrawingPreview).toHaveBeenCalledWith({
+      x: 50 - 215 / 2,
+      y: 50 - 3.8 / 2,
+      width: 215,
+      depth: 3.8,
+      shape: 'knifeSlot',
+      rotation: 0,
+    });
+  });
+
+  it('maps flick direction to the wall-aligned exit', () => {
+    const rotationFor = (mmX: number, mmY: number): number => {
+      const setters = makeSetters();
+      handleDrawMove(makeMode('knifeSlot', 50, 50), { mmX, mmY }, PLAIN, noopSnap, setters);
+      return setters.setDrawingPreview.mock.calls[0][0].rotation;
+    };
+    expect(rotationFor(80, 51)).toBe(0); // right
+    expect(rotationFor(20, 51)).toBe(180); // left
+    expect(rotationFor(51, 20)).toBe(90); // front (−Y)
+    expect(rotationFor(51, 80)).toBe(270); // back (+Y)
+  });
 });

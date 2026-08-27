@@ -1458,6 +1458,56 @@ describe('migrateParams', () => {
     });
   });
 
+  describe('cutout knife handle migration', () => {
+    const makeKnifeSlot = (knife: Record<string, unknown>): unknown => ({
+      id: 'k1',
+      shape: 'knifeSlot',
+      x: 0,
+      y: 0,
+      width: 215,
+      depth: 3.8,
+      cutDepth: 51,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+      knife,
+    });
+
+    it('splits a legacy round handle diameter into width and height', () => {
+      const result = migrateParams({
+        cutouts: [
+          makeKnifeSlot({
+            bladeLengthMm: 205,
+            heelHeightMm: 47,
+            spineThicknessMm: 2.3,
+            handleDiameterMm: 23,
+            openEnd: 'end',
+          }),
+        ] as BinParams['cutouts'],
+      });
+      const knife = result.cutouts[0].knife;
+      expect(knife?.handleWidthMm).toBe(23);
+      expect(knife?.handleHeightMm).toBe(23);
+      expect(knife && 'handleDiameterMm' in knife).toBe(false);
+    });
+
+    it('leaves a knife already carrying width and height untouched', () => {
+      const knife = {
+        bladeLengthMm: 205,
+        heelHeightMm: 47,
+        spineThicknessMm: 2.3,
+        handleWidthMm: 34,
+        handleHeightMm: 26,
+        openEnd: 'end',
+      };
+      const result = migrateParams({
+        cutouts: [makeKnifeSlot(knife)] as BinParams['cutouts'],
+      });
+      expect(result.cutouts[0].knife).toEqual(knife);
+    });
+  });
+
   describe('sliding tray migration', () => {
     it('backfills the whole config for designs predating the feature', () => {
       const result = migrateParams({});

@@ -41,7 +41,8 @@ const CUSTOM: KnifeSpec = {
   bladeLengthMm: 205,
   heelHeightMm: 47,
   spineThicknessMm: 2.3,
-  handleDiameterMm: 23,
+  handleWidthMm: 26,
+  handleHeightMm: 22,
   openEnd: 'end',
 };
 
@@ -178,9 +179,34 @@ describe('CutoutKnifeControls', () => {
         bladeLengthMm: 205,
         heelHeightMm: 47,
         spineThicknessMm: 2.3,
-        handleDiameterMm: 23,
+        handleWidthMm: 26,
+        handleHeightMm: 22,
       },
     });
+  });
+
+  it('aims the blade vertically without touching its size', () => {
+    const onUpdate = vi.fn<(patch: Partial<Cutout>) => void>();
+    renderControls(knifeSlot(), onUpdate);
+
+    fireEvent.click(screen.getByText('binDesigner.cutouts.knifeOrientation.vertical'));
+
+    expect(onUpdate).toHaveBeenCalledWith({ rotation: 90 });
+  });
+
+  it('re-derives the slot and drops the preset when the handle width is edited', () => {
+    const onUpdate = vi.fn<(patch: Partial<Cutout>) => void>();
+    renderControls(knifeSlot({ knife: { ...CUSTOM, presetId: 'chef8' } }), onUpdate);
+
+    fireEvent.change(screen.getByTestId('compact-input-binDesigner.cutouts.knifeHandleWidth'), {
+      target: { value: '34' },
+    });
+
+    const patch = onUpdate.mock.calls[0][0];
+    expect(patch.knife).toEqual({ ...CUSTOM, handleWidthMm: 34 });
+    expect(patch.knife?.presetId).toBeUndefined();
+    // The handle does not size the slot, so the blade-derived width is unchanged.
+    expect(patch.width).toBe(215);
   });
 
   it('switches the exit end without touching the measurements', () => {

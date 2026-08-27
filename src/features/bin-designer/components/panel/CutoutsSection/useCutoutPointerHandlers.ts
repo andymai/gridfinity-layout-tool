@@ -39,6 +39,7 @@ interface DrawingPreviewState {
   readonly width: number;
   readonly depth: number;
   readonly shape: CutoutShape;
+  readonly rotation?: number;
 }
 
 interface UseCutoutPointerHandlersOptions {
@@ -307,15 +308,18 @@ export function useCutoutPointerHandlers(
       drawingPreview.depth >= MIN_CUTOUT_SIZE
     ) {
       const newId = crypto.randomUUID();
+      const created = createDefaultCutout(
+        newId,
+        drawingPreview.shape,
+        drawingPreview.x,
+        drawingPreview.y,
+        drawingPreview.width,
+        drawingPreview.depth
+      );
       onAdd(
-        createDefaultCutout(
-          newId,
-          drawingPreview.shape,
-          drawingPreview.x,
-          drawingPreview.y,
-          drawingPreview.width,
-          drawingPreview.depth
-        )
+        drawingPreview.rotation === undefined
+          ? created
+          : { ...created, rotation: drawingPreview.rotation }
       );
       setSelection(new Set([newId]));
     }

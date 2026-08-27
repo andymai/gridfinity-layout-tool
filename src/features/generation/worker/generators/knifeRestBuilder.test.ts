@@ -51,7 +51,7 @@ describe('knife rest companion', () => {
     const knife = params.cutouts[0].knife;
     expect(knife).toBeDefined();
     if (!knife) return;
-    expect(fillTop - saddle).toBeCloseTo(knife.handleDiameterMm + KNIFE_REST_HANDLE_DROP_MM, 1);
+    expect(fillTop - saddle).toBeCloseTo(knife.handleHeightMm + KNIFE_REST_HANDLE_DROP_MM, 1);
   }, 120_000);
 
   it('is a unit-height Gridfinity part with the planned footprint', () => {

@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Open de volledige editor voor nauwkeurige controle, linialen en uitlijngereedschappen.",
   "binDesigner.cutouts.knifeBladeLength": "Lemmet",
   "binDesigner.cutouts.knifeDepthClamped": "Dit lemmet is dieper dan de bin kan snijden, dus de sleuf stopt op {depth} mm en het mes steekt uit. Een bin van {needed}u neemt het hele lemmet op.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Heft ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Hiel",
   "binDesigner.cutouts.knifeOpenEnd": "Heftzijde",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Gesloten",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Opnieuw laden met de nieuwe versie",
   "pwaUpdate.readyTooltip": "Een nieuwe versie staat klaar. Die wordt vanzelf toegepast als je even pauzeert, of laad nu opnieuw.",
   "whatsNew.openTooltip": "Bekijk wat er onlangs is veranderd",
-  "whatsNew.subtitleRecent": "De meest recente wijzigingen"
+  "whatsNew.subtitleRecent": "De meest recente wijzigingen",
+  "binDesigner.cutouts.knifeHandleWidth": "Heft B",
+  "binDesigner.cutouts.knifeHandleHeight": "Heft H",
+  "binDesigner.cutouts.knifeOrientation": "Oriëntatie",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Horizontaal",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Verticaal",
+  "binDesigner.cutouts.knifePreset.chefWood": "Koksmes (hout)"
 }
