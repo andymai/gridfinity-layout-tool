@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Åpne den fullstendige editoren for presis kontroll, linjaler og justeringsverktøy.",
   "binDesigner.cutouts.knifeBladeLength": "Blad",
   "binDesigner.cutouts.knifeDepthClamped": "Dette bladet er dypere enn binet kan skjære, så sporet stopper på {depth} mm og kniven blir stående høyt. En bin på {needed}u tar hele bladet.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Skaft ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Hæl",
   "binDesigner.cutouts.knifeOpenEnd": "Skaftside",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Lukket",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Last inn den nye versjonen",
   "pwaUpdate.readyTooltip": "En ny versjon er klar. Den tas i bruk av seg selv når du tar en pause, eller last inn nå.",
   "whatsNew.openTooltip": "Se hva som er endret nylig",
-  "whatsNew.subtitleRecent": "De nyeste endringene"
+  "whatsNew.subtitleRecent": "De nyeste endringene",
+  "binDesigner.cutouts.knifeHandleWidth": "Skaft B",
+  "binDesigner.cutouts.knifeHandleHeight": "Skaft H",
+  "binDesigner.cutouts.knifeOrientation": "Orientering",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Horisontal",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Vertikal",
+  "binDesigner.cutouts.knifePreset.chefWood": "Kokkekniv (tre)"
 }

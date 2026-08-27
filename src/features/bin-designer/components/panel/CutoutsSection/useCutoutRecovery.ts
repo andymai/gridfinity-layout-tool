@@ -20,6 +20,7 @@ interface DrawingPreviewState {
   readonly width: number;
   readonly depth: number;
   readonly shape: CutoutShape;
+  readonly rotation?: number;
 }
 
 interface UseCutoutRecoveryOptions {

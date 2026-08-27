@@ -9,8 +9,17 @@
  */
 
 import { useDesignerStore } from '@/features/bin-designer/store';
-import type { Cutout, KnifeSlotOpenEnd, KnifeSpec } from '@/features/bin-designer/types';
-import { DEFAULT_KNIFE_SPEC, knifeSlotDimensions } from '@/features/bin-designer/types';
+import type {
+  Cutout,
+  KnifeSlotAxis,
+  KnifeSlotOpenEnd,
+  KnifeSpec,
+} from '@/features/bin-designer/types';
+import {
+  DEFAULT_KNIFE_SPEC,
+  knifeSlotAxis,
+  knifeSlotDimensions,
+} from '@/features/bin-designer/types';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
@@ -21,17 +30,24 @@ import { KNIFE_SLOT_PRESETS } from '../panel/CutoutsSection/knifeSlotPresets';
 import { resizeKeepingCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { knifeDepthClamp } from '../panel/CutoutsSection/cutoutSectionVisibility';
 
-/** The nominal measurements the four steppers edit — orientation is not one. */
+/** The nominal measurements the steppers edit — orientation is set separately. */
 type KnifeMeasurements = Pick<
   KnifeSpec,
-  'bladeLengthMm' | 'heelHeightMm' | 'spineThicknessMm' | 'handleDiameterMm'
+  'bladeLengthMm' | 'heelHeightMm' | 'spineThicknessMm' | 'handleWidthMm' | 'handleHeightMm'
 >;
 
 /** Editor bounds for the nominal knife measurements (mm). */
 const BLADE_LENGTH = { min: 20, max: 400, step: 1 };
 const HEEL_HEIGHT = { min: 5, max: 80, step: 0.5 };
 const SPINE_THICKNESS = { min: 0.5, max: 10, step: 0.1 };
-const HANDLE_DIAMETER = { min: 5, max: 60, step: 0.5 };
+const HANDLE_WIDTH = { min: 8, max: 70, step: 0.5 };
+const HANDLE_HEIGHT = { min: 8, max: 60, step: 0.5 };
+
+/** Whether the blade lies along the bin's width or its depth. */
+const ORIENTATIONS: readonly { readonly value: KnifeSlotAxis; readonly labelKey: string }[] = [
+  { value: 'horizontal', labelKey: 'binDesigner.cutouts.knifeOrientation.horizontal' },
+  { value: 'vertical', labelKey: 'binDesigner.cutouts.knifeOrientation.vertical' },
+];
 
 /** Handle-side options in reading order; `null` = enclosed on both ends. */
 const OPEN_ENDS: readonly { readonly value: KnifeSlotOpenEnd | null; readonly labelKey: string }[] =
@@ -116,6 +132,14 @@ export function CutoutKnifeControls({
     onUpdate({ knife: openEnd === null ? rest : { ...rest, openEnd } });
   };
 
+  // The blade lies along local X, so a quarter turn swings it between the bin's
+  // width and its depth. The handle side (openEnd) still picks which wall.
+  const axis = knifeSlotAxis(cutout.rotation);
+  const setAxis = (next: KnifeSlotAxis): void => {
+    if (next === axis) return;
+    onUpdate({ rotation: next === 'horizontal' ? 0 : 90 });
+  };
+
   return (
     <div className="space-y-2">
       <div className="space-y-1">
@@ -178,15 +202,53 @@ export function CutoutKnifeControls({
           disabled={disabled}
         />
         <CompactNumberInput
-          label={t('binDesigner.cutouts.knifeHandleDiameter')}
-          value={knife.handleDiameterMm}
-          onChange={(handleDiameterMm) => setMeasurement({ handleDiameterMm })}
-          min={HANDLE_DIAMETER.min}
-          max={HANDLE_DIAMETER.max}
-          step={HANDLE_DIAMETER.step}
+          label={t('binDesigner.cutouts.knifeHandleWidth')}
+          value={knife.handleWidthMm}
+          onChange={(handleWidthMm) => setMeasurement({ handleWidthMm })}
+          min={HANDLE_WIDTH.min}
+          max={HANDLE_WIDTH.max}
+          step={HANDLE_WIDTH.step}
           unit="mm"
           disabled={disabled}
         />
+        <CompactNumberInput
+          label={t('binDesigner.cutouts.knifeHandleHeight')}
+          value={knife.handleHeightMm}
+          onChange={(handleHeightMm) => setMeasurement({ handleHeightMm })}
+          min={HANDLE_HEIGHT.min}
+          max={HANDLE_HEIGHT.max}
+          step={HANDLE_HEIGHT.step}
+          unit="mm"
+          disabled={disabled}
+        />
+      </div>
+
+      <div className="space-y-1">
+        <span className="block text-[10px] text-content-tertiary">
+          {t('binDesigner.cutouts.knifeOrientation')}
+        </span>
+        <div
+          role="group"
+          aria-label={t('binDesigner.cutouts.knifeOrientation')}
+          className={SEGMENT_GROUP_CLASS}
+        >
+          {ORIENTATIONS.map(({ value, labelKey }) => {
+            const active = axis === value;
+            return (
+              <Button
+                key={value}
+                type="button"
+                variant="ghost"
+                disabled={disabled}
+                onClick={() => setAxis(value)}
+                aria-pressed={active}
+                className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(active)}`}
+              >
+                {t(labelKey)}
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="space-y-1">

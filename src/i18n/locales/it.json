@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Apri l'editor completo per un controllo preciso, righelli e strumenti di allineamento.",
   "binDesigner.cutouts.knifeBladeLength": "Lama",
   "binDesigner.cutouts.knifeDepthClamped": "Questa lama è più profonda di quanto il bin possa tagliare, quindi l'asola si ferma a {depth} mm e il coltello resta sporgente. Un bin da {needed}u accoglie l'intera lama.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Manico ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Tallone",
   "binDesigner.cutouts.knifeOpenEnd": "Lato del manico",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Chiusa",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Ricarica con la nuova versione",
   "pwaUpdate.readyTooltip": "È pronta una nuova versione. Verrà applicata da sola quando ti fermi, oppure ricarica ora.",
   "whatsNew.openTooltip": "Guarda cosa è cambiato di recente",
-  "whatsNew.subtitleRecent": "Le modifiche più recenti"
+  "whatsNew.subtitleRecent": "Le modifiche più recenti",
+  "binDesigner.cutouts.knifeHandleWidth": "Manico L",
+  "binDesigner.cutouts.knifeHandleHeight": "Manico A",
+  "binDesigner.cutouts.knifeOrientation": "Orientamento",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Orizzontale",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Verticale",
+  "binDesigner.cutouts.knifePreset.chefWood": "Coltello da chef (legno)"
 }

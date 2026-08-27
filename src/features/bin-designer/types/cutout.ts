@@ -189,8 +189,17 @@ export interface KnifeSpec {
   readonly heelHeightMm: number;
   /** Spine thickness at the heel (mm) — sizes the slot width. */
   readonly spineThicknessMm: number;
-  /** Handle diameter at its thickest (mm) — sizes the rest saddle height. */
-  readonly handleDiameterMm: number;
+  /**
+   * Handle width across its flat, in the slot's thin (cross) direction (mm) —
+   * sizes the rest saddle groove and the pitch neighbouring knives need. A
+   * wooden handle is wider here than a moulded one.
+   */
+  readonly handleWidthMm: number;
+  /**
+   * Handle height in the blade's edge-to-spine direction (mm) — sizes how far
+   * below the block top the handle underside sits, so the rest saddle height.
+   */
+  readonly handleHeightMm: number;
   /**
    * Which end of the slot opens through the perimeter wall so the handle can
    * lie level past the block face. The cut extends from that end to just
@@ -607,6 +616,7 @@ export const DEFAULT_KNIFE_SPEC: KnifeSpec = {
   bladeLengthMm: 205,
   heelHeightMm: 47,
   spineThicknessMm: 2.3,
-  handleDiameterMm: 23,
+  handleWidthMm: 26,
+  handleHeightMm: 22,
   openEnd: 'end',
 };

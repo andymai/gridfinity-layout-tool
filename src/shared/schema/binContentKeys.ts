@@ -225,7 +225,8 @@ export const KNIFE_SPEC_KEYS = [
   'bladeLengthMm',
   'heelHeightMm',
   'spineThicknessMm',
-  'handleDiameterMm',
+  'handleWidthMm',
+  'handleHeightMm',
   'openEnd',
 ] as const;
 export type _KnifeSpecKeys = Assert<KeysMatch<keyof KnifeSpec, (typeof KNIFE_SPEC_KEYS)[number]>>;

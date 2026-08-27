@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Abra o editor completo para controle preciso, réguas e ferramentas de alinhamento.",
   "binDesigner.cutouts.knifeBladeLength": "Lâmina",
   "binDesigner.cutouts.knifeDepthClamped": "Esta lâmina é mais funda do que o bin consegue cortar, então a ranhura para em {depth} mm e a faca fica saliente. Um bin de {needed}u aceita a lâmina inteira.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Cabo ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Calcanhar",
   "binDesigner.cutouts.knifeOpenEnd": "Lado do cabo",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Fechada",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Recarregar na nova versão",
   "pwaUpdate.readyTooltip": "Uma nova versão está pronta. Ela será aplicada sozinha quando você fizer uma pausa, ou recarregue agora.",
   "whatsNew.openTooltip": "Veja o que mudou recentemente",
-  "whatsNew.subtitleRecent": "As mudanças mais recentes"
+  "whatsNew.subtitleRecent": "As mudanças mais recentes",
+  "binDesigner.cutouts.knifeHandleWidth": "Cabo L",
+  "binDesigner.cutouts.knifeHandleHeight": "Cabo A",
+  "binDesigner.cutouts.knifeOrientation": "Orientação",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Horizontal",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Vertical",
+  "binDesigner.cutouts.knifePreset.chefWood": "Faca de chef (madeira)"
 }

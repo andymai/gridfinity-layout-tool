@@ -55,6 +55,7 @@ interface DrawingPreview {
   readonly width: number;
   readonly depth: number;
   readonly shape: CutoutShapeType;
+  readonly rotation?: number;
 }
 
 export interface CutoutCanvas3DProps {

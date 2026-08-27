@@ -18,7 +18,8 @@ const CHEF: KnifeSpec = {
   bladeLengthMm: 205,
   heelHeightMm: 47,
   spineThicknessMm: 2.3,
-  handleDiameterMm: 23,
+  handleWidthMm: 23,
+  handleHeightMm: 23,
   openEnd: 'end',
 };
 
@@ -26,7 +27,8 @@ const PARING: KnifeSpec = {
   bladeLengthMm: 90,
   heelHeightMm: 20,
   spineThicknessMm: 1.8,
-  handleDiameterMm: 19,
+  handleWidthMm: 19,
+  handleHeightMm: 19,
   openEnd: 'end',
 };
 
@@ -71,11 +73,11 @@ describe('planKnifeRest', () => {
     expect(plan.crossU).toBe(1);
     expect(plan.alongU).toBe(1);
     // Block fill top 56; saddle 56 - 23 - drop = 32; ideal top 38 → 6 units (42).
-    const saddle = 56 - CHEF.handleDiameterMm - KNIFE_REST_HANDLE_DROP_MM;
+    const saddle = 56 - CHEF.handleHeightMm - KNIFE_REST_HANDLE_DROP_MM;
     expect(plan.heightUnits).toBe(6);
     expect(plan.bodyTopZMm).toBe(42);
     expect(plan.grooves).toHaveLength(1);
-    expect(plan.grooves[0].widthMm).toBe(CHEF.handleDiameterMm + KNIFE_REST_GROOVE_EXTRA_WIDTH_MM);
+    expect(plan.grooves[0].widthMm).toBe(CHEF.handleWidthMm + KNIFE_REST_GROOVE_EXTRA_WIDTH_MM);
     expect(plan.grooves[0].depthMm).toBeCloseTo(plan.bodyTopZMm - saddle, 5);
     expect(plan.gapMm).toBe(KNIFE_REST_DEFAULT_GAP_MM);
   });
@@ -86,7 +88,7 @@ describe('planKnifeRest', () => {
     if (!plan) return;
     expect(plan.style).toBe('integrated');
     expect(plan.bodyTopZMm).toBeCloseTo(
-      56 - CHEF.handleDiameterMm - KNIFE_REST_HANDLE_DROP_MM + KNIFE_REST_GROOVE_DEPTH_MM,
+      56 - CHEF.handleHeightMm - KNIFE_REST_HANDLE_DROP_MM + KNIFE_REST_GROOVE_DEPTH_MM,
       5
     );
   });
@@ -107,7 +109,7 @@ describe('planKnifeRest', () => {
     const [chefGroove, paringGroove] = plan.grooves;
     expect(chefGroove.depthMm).toBeGreaterThan(paringGroove.depthMm);
     expect(chefGroove.depthMm - paringGroove.depthMm).toBeCloseTo(
-      CHEF.handleDiameterMm - PARING.handleDiameterMm,
+      CHEF.handleHeightMm - PARING.handleHeightMm,
       5
     );
   });

@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "打开完整编辑器以获得精确控制、标尺和对齐工具。",
   "binDesigner.cutouts.knifeBladeLength": "刀身",
   "binDesigner.cutouts.knifeDepthClamped": "此刀身比收纳盒能切出的深度更深，因此刀槽止于 {depth} mm，刀会高出。{needed}u 的收纳盒可容纳整个刀身。",
-  "binDesigner.cutouts.knifeHandleDiameter": "刀柄 ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "刀跟",
   "binDesigner.cutouts.knifeOpenEnd": "刀柄侧",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "封闭",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "重新加载以使用新版本",
   "pwaUpdate.readyTooltip": "新版本已就绪。您暂停时会自动应用，也可以立即重新加载。",
   "whatsNew.openTooltip": "看看最近有哪些变更",
-  "whatsNew.subtitleRecent": "最近的变更"
+  "whatsNew.subtitleRecent": "最近的变更",
+  "binDesigner.cutouts.knifeHandleWidth": "刀柄 宽",
+  "binDesigner.cutouts.knifeHandleHeight": "刀柄 高",
+  "binDesigner.cutouts.knifeOrientation": "方向",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "水平",
+  "binDesigner.cutouts.knifeOrientation.vertical": "竖直",
+  "binDesigner.cutouts.knifePreset.chefWood": "主厨刀 (木制)"
 }

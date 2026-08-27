@@ -25,6 +25,7 @@ import type {
   WallConfig,
   WallCutoutShape,
   KnifeRestConfig,
+  KnifeSpec,
 } from '../types';
 import type { CutoutArrayConfig } from '../types';
 import {
@@ -792,6 +793,33 @@ interface LegacyCutoutFields {
 }
 
 /**
+ * A knife spec as it may arrive from a pre-split file: one round
+ * `handleDiameterMm` and no width/height yet.
+ */
+type LegacyKnifeSpec = Omit<KnifeSpec, 'handleWidthMm' | 'handleHeightMm'> & {
+  handleWidthMm?: number;
+  handleHeightMm?: number;
+  handleDiameterMm?: number;
+};
+
+/**
+ * Split a legacy round `handleDiameterMm` into the width/height pair. A knife
+ * already carrying both comes back by reference so a current design keeps its
+ * fingerprint; an absent knife (the common case) is left untouched.
+ */
+function migrateKnifeSpec(knife: KnifeSpec | undefined): KnifeSpec | undefined {
+  if (knife === undefined) return knife;
+  const legacy = knife as LegacyKnifeSpec;
+  if (legacy.handleDiameterMm === undefined) return knife;
+  const { handleDiameterMm, ...rest } = legacy;
+  return {
+    ...rest,
+    handleWidthMm: rest.handleWidthMm ?? handleDiameterMm,
+    handleHeightMm: rest.handleHeightMm ?? handleDiameterMm,
+  };
+}
+
+/**
  * Input type for migrateParams — current params plus known legacy fields.
  *
  * `wallPattern` and `featureColors` are re-declared (via `Omit`, not a plain
@@ -855,8 +883,10 @@ function withParentGroups(cutout: Cutout, parents: readonly string[]): Cutout {
  */
 function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
   const { scoopRadius, ...rest } = cutout;
-  const array = migrateCutoutArray(rest.array);
-  const withArray = array === rest.array ? rest : { ...rest, array };
+  const knife = migrateKnifeSpec(rest.knife);
+  const withKnife = knife === rest.knife ? rest : { ...rest, knife };
+  const array = migrateCutoutArray(withKnife.array);
+  const withArray = array === withKnife.array ? withKnife : { ...withKnife, array };
   const withParents = withParentGroups(
     withArray,
     migrateParentGroups(withArray.parentGroups) ?? []

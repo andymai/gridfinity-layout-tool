@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Otwórz pełny edytor dla precyzyjnej kontroli, linijek i narzędzi wyrównywania.",
   "binDesigner.cutouts.knifeBladeLength": "Ostrze",
   "binDesigner.cutouts.knifeDepthClamped": "To ostrze jest głębsze, niż bin może wyciąć, więc szczelina kończy się na {depth} mm i nóż wystaje. Bin {needed}u pomieści całe ostrze.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Rękojeść ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Pięta",
   "binDesigner.cutouts.knifeOpenEnd": "Strona rękojeści",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Zamknięta",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Wczytaj ponownie w nowej wersji",
   "pwaUpdate.readyTooltip": "Nowa wersja jest gotowa. Zastosuje się sama, gdy zrobisz przerwę, albo wczytaj ponownie teraz.",
   "whatsNew.openTooltip": "Zobacz, co ostatnio się zmieniło",
-  "whatsNew.subtitleRecent": "Najnowsze zmiany"
+  "whatsNew.subtitleRecent": "Najnowsze zmiany",
+  "binDesigner.cutouts.knifeHandleWidth": "Rękojeść Sz",
+  "binDesigner.cutouts.knifeHandleHeight": "Rękojeść W",
+  "binDesigner.cutouts.knifeOrientation": "Orientacja",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Poziomo",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Pionowo",
+  "binDesigner.cutouts.knifePreset.chefWood": "Nóż szefa kuchni (drewno)"
 }

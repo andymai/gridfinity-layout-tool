@@ -57,6 +57,7 @@ export interface PreviewSetters {
       width: number;
       depth: number;
       shape: CutoutShape;
+      rotation?: number;
     } | null
   ) => void;
 }

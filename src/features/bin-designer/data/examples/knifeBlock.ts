@@ -54,9 +54,9 @@ export const KNIFE_BLOCK_EXAMPLES: ExampleDesign[] = [
       height: 8,
       style: 'solid',
       base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
-      // 27mm pitch: knife handles are ~23mm wide, so anything tighter and the
-      // knives themselves cannot lie side by side — and the rest's saddle
-      // cradles would merge into one indistinct scallop.
+      // 27mm pitch: the widest of these handles is ~26mm, so anything tighter
+      // and the knives themselves cannot lie side by side — and the rest's
+      // saddle cradles would merge into one indistinct scallop.
       cutouts: [
         slot('knife-chef', 'chef8', X_END, 11.65),
         slot('knife-santoku', 'santoku7', X_END, 38.8),

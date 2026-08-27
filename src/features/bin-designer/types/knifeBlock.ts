@@ -115,6 +115,29 @@ export function knifeRestStyle(rest: KnifeRestConfig): KnifeRestStyle {
   return rest.style ?? 'companion';
 }
 
+// ── Orientation ──────────────────────────────────────────────────────────────
+
+/**
+ * A knife slot only opens a wall, seats a rest, and shows its ghost when it is
+ * aligned to one of the four walls (`rotation % 90 === 0`); the breach, lip-gap
+ * and rest math are all axis-aligned by construction. Off-axis the slot silently
+ * loses all three, so the editor snaps a knife slot's angle to a quarter turn
+ * rather than letting it drift there. A free-angle rounded pocket is what the
+ * plain `slot` shape is for.
+ */
+export type KnifeSlotAxis = 'horizontal' | 'vertical';
+
+/** Whether a wall-aligned knife slot lies along the bin's width or its depth. */
+export function knifeSlotAxis(rotation: number): KnifeSlotAxis {
+  const steps = ((Math.round(rotation / 90) % 4) + 4) % 4;
+  return steps % 2 === 0 ? 'horizontal' : 'vertical';
+}
+
+/** Snap any angle to the nearest wall-aligned quarter turn, in [0, 360). */
+export function snapKnifeRotation(rotation: number): number {
+  return (((Math.round(rotation / 90) * 90) % 360) + 360) % 360;
+}
+
 /**
  * The solid fill surface's height above the print bottom (= the baseplate
  * seat both the block and its rest stand on). `height × heightUnitMm` already
@@ -131,17 +154,17 @@ export function knifeBlockTopZMm(params: {
 
 /** Saddle groove width for a knife's handle (mm). */
 export function knifeRestGrooveWidthMm(knife: KnifeSpec): number {
-  return knife.handleDiameterMm + KNIFE_REST_GROOVE_EXTRA_WIDTH_MM;
+  return knife.handleWidthMm + KNIFE_REST_GROOVE_EXTRA_WIDTH_MM;
 }
 
 /**
  * Height of a knife's saddle contact line (groove bottom) above the plane the
  * BLOCK TOP is measured from. With the spine flush at the block top, the
- * handle underside lies one diameter below it; the drop keeps the handle
+ * handle underside lies one handle-height below it; the drop keeps the handle
  * carrying the weight.
  */
 export function knifeRestSaddleZMm(blockTopZMm: number, knife: KnifeSpec): number {
-  return blockTopZMm - knife.handleDiameterMm - KNIFE_REST_HANDLE_DROP_MM;
+  return blockTopZMm - knife.handleHeightMm - KNIFE_REST_HANDLE_DROP_MM;
 }
 
 /**

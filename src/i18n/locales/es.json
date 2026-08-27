@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Abre el editor completo para control preciso, reglas y herramientas de alineación.",
   "binDesigner.cutouts.knifeBladeLength": "Hoja",
   "binDesigner.cutouts.knifeDepthClamped": "Esta hoja es más profunda de lo que el bin puede cortar, así que la ranura se detiene en {depth} mm y el cuchillo sobresale. Un bin de {needed}u admite la hoja entera.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Mango ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Talón",
   "binDesigner.cutouts.knifeOpenEnd": "Lado del mango",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Cerrado",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Recargar con la nueva versión",
   "pwaUpdate.readyTooltip": "Hay una nueva versión lista. Se aplicará sola cuando hagas una pausa, o recarga ahora.",
   "whatsNew.openTooltip": "Mira qué ha cambiado recientemente",
-  "whatsNew.subtitleRecent": "Los cambios más recientes"
+  "whatsNew.subtitleRecent": "Los cambios más recientes",
+  "binDesigner.cutouts.knifeHandleWidth": "Mango A",
+  "binDesigner.cutouts.knifeHandleHeight": "Mango A",
+  "binDesigner.cutouts.knifeOrientation": "Orientación",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Horizontal",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Vertical",
+  "binDesigner.cutouts.knifePreset.chefWood": "Cuchillo de chef (madera)"
 }

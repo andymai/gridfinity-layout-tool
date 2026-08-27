@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'knife-block-aiming',
+    date: '2026-08-27',
+    kind: 'improved',
+    title: { en: 'Knife blocks you can aim, with the knife on show' },
+    body: {
+      en: 'Drop a knife slot and flick it toward any of the four walls to set which way the handle comes out, or switch it horizontal and vertical in the panel. The editor now draws the knife lying in place with its handle over the wall, so you see what you get. Handles size by width and height instead of one round number, so a chunky wooden handle gets the room it needs, and there is a wooden-handle chef preset to start from.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-text-tool',
     date: '2026-08-26',
     kind: 'new',

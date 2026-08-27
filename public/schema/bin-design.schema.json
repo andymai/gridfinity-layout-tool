@@ -1332,10 +1332,15 @@
           "exclusiveMinimum": 0,
           "description": "Spine thickness in mm."
         },
-        "handleDiameterMm": {
+        "handleWidthMm": {
           "type": "number",
           "exclusiveMinimum": 0,
-          "description": "Handle diameter in mm."
+          "description": "Handle width across the slot's thin direction in mm. Sizes the rest saddle groove."
+        },
+        "handleHeightMm": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Handle height in the blade's edge-to-spine direction in mm. Sizes the rest saddle height."
         },
         "openEnd": {
           "enum": ["start", "end"],

@@ -7,10 +7,11 @@
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import type { CutoutShape } from '@/features/bin-designer/types';
-import { DEFAULT_POLYGON_SIDES } from '@/features/bin-designer/types';
+import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
+import { DEFAULT_KNIFE_SPEC, DEFAULT_POLYGON_SIDES } from '@/features/bin-designer/types';
 import { regularPolygonPoints, slotCornerRadius } from '@/shared/utils/cutoutPolygon';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { knifeSlotOverlayLoops } from './knifeSlotOverlayGeometry';
 
 interface DrawingPreview3DProps {
   readonly x: number;
@@ -18,6 +19,8 @@ interface DrawingPreview3DProps {
   readonly width: number;
   readonly depth: number;
   readonly shape: CutoutShape;
+  /** Wall-aligned angle for a knife slot flicked into orientation (deg). */
+  readonly rotation?: number;
 }
 
 const ACCENT_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
@@ -79,9 +82,32 @@ function buildOutlinePoints2D(
   ];
 }
 
-export function DrawingPreview3D({ x, y, width, depth, shape }: DrawingPreview3DProps) {
+export function DrawingPreview3D({
+  x,
+  y,
+  width,
+  depth,
+  shape,
+  rotation = 0,
+}: DrawingPreview3DProps) {
   const { lineObj, fillGeometry } = useMemo(() => {
-    const pts2D = buildOutlinePoints2D(x, y, width, depth, shape);
+    let pts2D = buildOutlinePoints2D(x, y, width, depth, shape);
+
+    // A knife slot flicked into orientation carries a wall-aligned angle; spin
+    // the outline about its centre by the same sign CutoutShapeMesh will use so
+    // the dashed preview matches the placed slot exactly.
+    if (rotation !== 0) {
+      const theta = -(rotation * Math.PI) / 180;
+      const cos = Math.cos(theta);
+      const sin = Math.sin(theta);
+      const cx = x + width / 2;
+      const cy = y + depth / 2;
+      pts2D = pts2D.map((p) => {
+        const dx = p.x - cx;
+        const dy = p.y - cy;
+        return new THREE.Vector2(cx + dx * cos - dy * sin, cy + dx * sin + dy * cos);
+      });
+    }
 
     const pts3D = pts2D.map((p) => new THREE.Vector3(p.x, p.y, 0.04));
     const lineGeometry = new THREE.BufferGeometry().setFromPoints(pts3D);
@@ -103,7 +129,38 @@ export function DrawingPreview3D({ x, y, width, depth, shape }: DrawingPreview3D
     const fill = new THREE.ShapeGeometry(new THREE.Shape(fillPts));
 
     return { lineObj: line, fillGeometry: fill };
-  }, [x, y, width, depth, shape]);
+  }, [x, y, width, depth, shape, rotation]);
+
+  // While aiming a knife slot, draw the handle it will let past the wall so the
+  // flick shows a whole knife, not just a capsule. openEnd is 'end' at creation,
+  // so the rotation the drag stamped is the whole of the orientation.
+  const handleObj = useMemo(() => {
+    if (shape !== 'knifeSlot') return null;
+    const synthetic = {
+      shape,
+      x,
+      y,
+      width,
+      depth,
+      rotation,
+      groupId: null,
+      knife: DEFAULT_KNIFE_SPEC,
+    } as Cutout;
+    const loops = knifeSlotOverlayLoops(synthetic);
+    if (loops.length === 0) return null;
+    const pts = loops[0].map(([px, py]) => new THREE.Vector3(px, py, 0.04));
+    pts.push(pts[0].clone());
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = new THREE.LineBasicMaterial({
+      color: ACCENT_COLOR,
+      transparent: true,
+      opacity: 0.9,
+      depthTest: false,
+    });
+    const obj = new THREE.Line(geo, mat);
+    obj.renderOrder = RENDER_ORDER.DRAWING_PREVIEW;
+    return obj;
+  }, [shape, x, y, width, depth, rotation]);
 
   return (
     <group renderOrder={RENDER_ORDER.DRAWING_PREVIEW}>
@@ -117,6 +174,7 @@ export function DrawingPreview3D({ x, y, width, depth, shape }: DrawingPreview3D
         />
       </mesh>
       <primitive object={lineObj} />
+      {handleObj && <primitive object={handleObj} />}
     </group>
   );
 }

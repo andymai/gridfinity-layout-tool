@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Відкрийте повний редактор для точного керування, лінійок і інструментів вирівнювання.",
   "binDesigner.cutouts.knifeBladeLength": "Лезо",
   "binDesigner.cutouts.knifeDepthClamped": "Це лезо глибше, ніж бін може прорізати, тож проріз зупиняється на {depth} мм і ніж виступає. Бін {needed}u вміщує все лезо.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Руків’я ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "П’ятка",
   "binDesigner.cutouts.knifeOpenEnd": "Бік руків’я",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Закритий",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Перезавантажити в нову версію",
   "pwaUpdate.readyTooltip": "Нова версія готова. Вона застосується сама, коли ви зробите паузу, або перезавантажте зараз.",
   "whatsNew.openTooltip": "Подивіться, що змінилося нещодавно",
-  "whatsNew.subtitleRecent": "Найновіші зміни"
+  "whatsNew.subtitleRecent": "Найновіші зміни",
+  "binDesigner.cutouts.knifeHandleWidth": "Руків'я Ш",
+  "binDesigner.cutouts.knifeHandleHeight": "Руків'я В",
+  "binDesigner.cutouts.knifeOrientation": "Орієнтація",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Горизонтально",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Вертикально",
+  "binDesigner.cutouts.knifePreset.chefWood": "Кухарський ніж (дерево)"
 }

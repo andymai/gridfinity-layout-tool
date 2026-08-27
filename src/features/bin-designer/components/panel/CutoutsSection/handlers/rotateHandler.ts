@@ -6,6 +6,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
+import { snapKnifeRotation } from '@/features/bin-designer/types';
 import { clampRotationToBounds } from '../geometry';
 import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
@@ -46,13 +47,19 @@ export function handleRotateMove(
   const delta = currentAngle - mode.startAngle;
   let newRotation = (((mode.initialRotation - delta) % 360) + 360) % 360;
 
-  // Snap to 15-degree increments when Shift is held
-  if (event.shiftKey) {
-    newRotation = Math.round(newRotation / 15) * 15;
+  // A knife slot only works wall-aligned, so it snaps to a quarter turn no
+  // matter what; every other shape snaps to 15° only while Shift is held. The
+  // knife also skips the fit clamp — an over-long blade lands off the board
+  // where the grow banner takes it, rather than bent to a broken off-axis angle.
+  if (cutout.shape === 'knifeSlot') {
+    newRotation = snapKnifeRotation(newRotation);
+  } else {
+    if (event.shiftKey) {
+      newRotation = Math.round(newRotation / 15) * 15;
+    }
+    // Clamp rotation to keep within bin bounds
+    newRotation = clampRotationToBounds(cutout, newRotation, bounds.binWidth, bounds.binDepth);
   }
-
-  // Clamp rotation to keep within bin bounds
-  newRotation = clampRotationToBounds(cutout, newRotation, bounds.binWidth, bounds.binDepth);
 
   // Polygon mask: hard-reject rotations whose rotated AABB overhangs the polygon.
   if (bounds.cellMask && bounds.maskCellSize) {

@@ -726,7 +726,6 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Öffnen Sie den vollständigen Editor für präzise Steuerung, Lineale und Ausrichtungswerkzeuge.",
   "binDesigner.cutouts.knifeBladeLength": "Klinge",
   "binDesigner.cutouts.knifeDepthClamped": "Diese Klinge ist tiefer, als der Bin schneiden kann, daher endet der Schlitz bei {depth} mm und das Messer steht über. Ein Bin mit {needed}u nimmt die ganze Klinge auf.",
-  "binDesigner.cutouts.knifeHandleDiameter": "Griff ⌀",
   "binDesigner.cutouts.knifeHeelHeight": "Ferse",
   "binDesigner.cutouts.knifeOpenEnd": "Griffseite",
   "binDesigner.cutouts.knifeOpenEnd.enclosed": "Geschlossen",
@@ -4475,5 +4474,11 @@
   "pwaUpdate.reloadAria": "Neu laden und aktualisieren",
   "pwaUpdate.readyTooltip": "Eine neue Version ist bereit. Sie wird von selbst angewendet, wenn Sie pausieren, oder laden Sie jetzt neu.",
   "whatsNew.openTooltip": "Sehen, was sich zuletzt geändert hat",
-  "whatsNew.subtitleRecent": "Die neuesten Änderungen"
+  "whatsNew.subtitleRecent": "Die neuesten Änderungen",
+  "binDesigner.cutouts.knifeHandleWidth": "Griff B",
+  "binDesigner.cutouts.knifeHandleHeight": "Griff H",
+  "binDesigner.cutouts.knifeOrientation": "Ausrichtung",
+  "binDesigner.cutouts.knifeOrientation.horizontal": "Waagerecht",
+  "binDesigner.cutouts.knifeOrientation.vertical": "Vertikal",
+  "binDesigner.cutouts.knifePreset.chefWood": "Kochmesser (Holz)"
 }

@@ -7,6 +7,8 @@ import {
   knifeRestBodyTopZMm,
   knifeRestGrooveWidthMm,
   knifeRestStyle,
+  knifeSlotAxis,
+  snapKnifeRotation,
   KNIFE_SLOT_MIN_WIDTH,
   KNIFE_SLOT_EDGE_FLOAT,
   KNIFE_REST_HANDLE_DROP_MM,
@@ -20,7 +22,8 @@ const PARING: KnifeSpec = {
   bladeLengthMm: 90,
   heelHeightMm: 20,
   spineThicknessMm: 1.8,
-  handleDiameterMm: 19,
+  handleWidthMm: 19,
+  handleHeightMm: 19,
   openEnd: 'end',
 };
 
@@ -45,7 +48,7 @@ describe('handle rest derivation', () => {
   it('puts the saddle one handle-diameter (plus drop) below the block top', () => {
     const blockTop = 61;
     expect(knifeRestSaddleZMm(blockTop, CHEF)).toBe(
-      blockTop - CHEF.handleDiameterMm - KNIFE_REST_HANDLE_DROP_MM
+      blockTop - CHEF.handleHeightMm - KNIFE_REST_HANDLE_DROP_MM
     );
   });
 
@@ -70,12 +73,31 @@ describe('handle rest derivation', () => {
 
   it('grooves wider than the handle so any section settles', () => {
     expect(knifeRestGrooveWidthMm(CHEF)).toBe(
-      CHEF.handleDiameterMm + KNIFE_REST_GROOVE_EXTRA_WIDTH_MM
+      CHEF.handleWidthMm + KNIFE_REST_GROOVE_EXTRA_WIDTH_MM
     );
   });
 
   it('defaults style to companion', () => {
     expect(knifeRestStyle({ enabled: true })).toBe('companion');
     expect(knifeRestStyle({ enabled: true, style: 'integrated' })).toBe('integrated');
+  });
+});
+
+describe('knife slot orientation', () => {
+  it('snaps any angle to the nearest quarter turn in [0, 360)', () => {
+    expect(snapKnifeRotation(0)).toBe(0);
+    expect(snapKnifeRotation(44)).toBe(0);
+    expect(snapKnifeRotation(46)).toBe(90);
+    expect(snapKnifeRotation(135)).toBe(180);
+    expect(snapKnifeRotation(300)).toBe(270);
+    expect(snapKnifeRotation(359)).toBe(0);
+    expect(snapKnifeRotation(-90)).toBe(270);
+  });
+
+  it('reads horizontal on the 0/180 axis and vertical on 90/270', () => {
+    expect(knifeSlotAxis(0)).toBe('horizontal');
+    expect(knifeSlotAxis(180)).toBe('horizontal');
+    expect(knifeSlotAxis(90)).toBe('vertical');
+    expect(knifeSlotAxis(270)).toBe('vertical');
   });
 });
