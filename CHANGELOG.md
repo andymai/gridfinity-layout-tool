@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.478.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.0...gridfinity-layout-tool-v4.478.1) (2026-08-27)
+
+
+### Bug Fixes
+
+* **sync:** stop a network push failure from escaping as an unhandled rejection ([#3953](https://github.com/andymai/gridfinity-layout-tool/issues/3953)) ([7a8766d](https://github.com/andymai/gridfinity-layout-tool/commit/7a8766dfd4e60c76248c90ad532395531012ac9a)), closes [#3952](https://github.com/andymai/gridfinity-layout-tool/issues/3952)
+
 ## [4.478.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.477.1...gridfinity-layout-tool-v4.478.0) (2026-08-27)
 
 
