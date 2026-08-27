@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.478.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.477.1...gridfinity-layout-tool-v4.478.0) (2026-08-27)
+
+
+### Features
+
+* **bin-designer:** rework the knife-block cutout editor ([#3950](https://github.com/andymai/gridfinity-layout-tool/issues/3950)) ([a9826ce](https://github.com/andymai/gridfinity-layout-tool/commit/a9826cec7d3967a327c418e3c5f9fcaef8548ce2))
+
+
+### Bug Fixes
+
+* **generation:** stop a slow cold init from tripping the generation timeout ([#3949](https://github.com/andymai/gridfinity-layout-tool/issues/3949)) ([3913428](https://github.com/andymai/gridfinity-layout-tool/commit/391342837c734557a4b58dd045ec5bb352c25f35))
+
 ## [4.477.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.477.0...gridfinity-layout-tool-v4.477.1) (2026-08-27)
 
 
