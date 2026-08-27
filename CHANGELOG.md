@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.477.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.477.0...gridfinity-layout-tool-v4.477.1) (2026-08-27)
+
+
+### Bug Fixes
+
+* **analytics:** attach the active kernel to export-failure captures ([#3947](https://github.com/andymai/gridfinity-layout-tool/issues/3947)) ([6c7dbe8](https://github.com/andymai/gridfinity-layout-tool/commit/6c7dbe88bccb497d9918201a6dbbf5ddfb48a417)), closes [#3941](https://github.com/andymai/gridfinity-layout-tool/issues/3941)
+* **analytics:** pin stable fingerprints for the worker-reset error class ([#3944](https://github.com/andymai/gridfinity-layout-tool/issues/3944)) ([337b7ab](https://github.com/andymai/gridfinity-layout-tool/commit/337b7ab614d4d2d4babfbde908e3e865d391221c))
+* **baseplate:** guarantee the fit-test coupon font and correct its labelling copy ([#3946](https://github.com/andymai/gridfinity-layout-tool/issues/3946)) ([907e3b7](https://github.com/andymai/gridfinity-layout-tool/commit/907e3b76960ee7a1d409ed508138f86cb62d57da))
+* **bin-designer:** keep a text element's caption centered on its box ([#3917](https://github.com/andymai/gridfinity-layout-tool/issues/3917)) ([19d7bfe](https://github.com/andymai/gridfinity-layout-tool/commit/19d7bfe94017c87cdc3cc5ff6c6fe0e831f3a110))
+* **bin-designer:** translate the scoop radius Auto button ([#3936](https://github.com/andymai/gridfinity-layout-tool/issues/3936)) ([5552283](https://github.com/andymai/gridfinity-layout-tool/commit/5552283fdbe41b2d1a529aa40867b925b2e84493))
+* **build:** repoint the core-foundation chunk pin at the types directory ([#3919](https://github.com/andymai/gridfinity-layout-tool/issues/3919)) ([39d0488](https://github.com/andymai/gridfinity-layout-tool/commit/39d0488c75ce4c4015ce1b2c4c8501fbe1626a98))
+
 ## [4.477.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.476.1...gridfinity-layout-tool-v4.477.0) (2026-08-26)
 
 
