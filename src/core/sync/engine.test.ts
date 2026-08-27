@@ -281,7 +281,7 @@ describe('push: uncaught rejections in fire-and-forget paths', () => {
     // entry directly. Enqueuing off-engine means no scheduled drain competes,
     // so flushNow is the only path that attempts — and fails — this push.
     await new Promise((r) => setTimeout(r, 10));
-    layoutsAdapter.applyRemote({ id: 'lay-1', payload: { v: 1 }, modifiedAt: 1000 });
+    await layoutsAdapter.applyRemote({ id: 'lay-1', payload: { v: 1 }, modifiedAt: 1000 });
     await outboxEnqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 1000, op: 'put' });
 
     await expect(engine.flushNow()).resolves.toBeUndefined();
