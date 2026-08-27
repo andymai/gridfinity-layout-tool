@@ -10,6 +10,7 @@ import {
   __resetForTests as resetOutbox,
   getAll as outboxGetAll,
   clearAll as clearOutbox,
+  enqueue as outboxEnqueue,
 } from './outbox';
 import type {
   AdapterChange,
@@ -266,6 +267,24 @@ describe('push: uncaught rejections in fire-and-forget paths', () => {
     await new Promise((r) => setTimeout(r, 50));
 
     expect(useSyncStatusStore.getState().state).toBe('error');
+    expect(useSyncStatusStore.getState().lastError).toContain('Failed to fetch');
+  });
+
+  it('flushNow resolves instead of rejecting when a push fails at the network layer', async () => {
+    // useDebouncedPush and useVisibilityFlush call `void flushNow()`, so a
+    // drain rejection that flushNow doesn't catch escapes as an unhandled
+    // promise rejection.
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    engine.start(adapters);
+    // Let the start-time rehydrate drain the (empty) outbox, then seed a due
+    // entry directly. Enqueuing off-engine means no scheduled drain competes,
+    // so flushNow is the only path that attempts — and fails — this push.
+    await new Promise((r) => setTimeout(r, 10));
+    await layoutsAdapter.applyRemote({ id: 'lay-1', payload: { v: 1 }, modifiedAt: 1000 });
+    await outboxEnqueue({ kind: 'layouts', id: 'lay-1', modifiedAt: 1000, op: 'put' });
+
+    await expect(engine.flushNow()).resolves.toBeUndefined();
     expect(useSyncStatusStore.getState().lastError).toContain('Failed to fetch');
   });
 });
