@@ -100,7 +100,9 @@ export async function flushNow(): Promise<void> {
   try {
     await drain(state);
   } catch (error: unknown) {
-    reportUncaught('flush', error);
+    // Same label as scheduleDrain: to the user this is the same drain failure,
+    // and lastError surfaces the label as a prefix.
+    reportUncaught('drain', error);
   }
 }
 
