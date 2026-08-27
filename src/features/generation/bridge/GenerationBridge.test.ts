@@ -54,7 +54,7 @@ class MockWorker {
           hardwareConcurrency: 4,
           kernel: kernel as 'occt-wasm' | 'brepkit',
         });
-      }, 0);
+      }, initDelayMs);
     }
   }
 
@@ -83,6 +83,8 @@ class MockWorker {
 let mockWorkerInstance: MockWorker | null = null;
 /** When true, MockWorker swallows INIT instead of replying. */
 let stallInit = false;
+/** Delay before MockWorker answers INIT with INIT_READY, in ms. */
+let initDelayMs = 0;
 /** When set, MockWorker answers INIT with an ERROR carrying this message. */
 let initErrorMessage: string | null = null;
 /** Workers the bridge has constructed — the retry count, observed from outside. */
@@ -112,6 +114,7 @@ describe('GenerationBridge', () => {
   beforeEach(() => {
     mockWorkerInstance = null;
     stallInit = false;
+    initDelayMs = 0;
     initErrorMessage = null;
     workersCreated = 0;
     bridge = new GenerationBridge();
@@ -1094,6 +1097,51 @@ describe('GenerationBridge', () => {
       expect(worker.terminated).toBe(true);
       const cancelMsg = worker.messages.find((m) => (m as { type: string }).type === 'CANCEL');
       expect(cancelMsg).toBeUndefined();
+    });
+
+    it('does not hard-reset a trivial request while a slow-but-successful cold init is still in flight', async () => {
+      // A cold occt-wasm boot on a slow connection can legitimately take longer
+      // than a trivial design's 30s BASE_TIMEOUT_MS while still finishing well
+      // inside init's own 60s allowance (GH #3941: "Worker was reset after a
+      // generation timeout" on a bin_count 0 / default-size layout — nothing
+      // was actually generating yet, the worker was still booting).
+      initDelayMs = 35_000;
+
+      const genPromise = bridge.generateImmediate(DEFAULT_BIN_PARAMS);
+      const worker = getWorker();
+
+      // Past the trivial-design generation budget, but init hasn't reported
+      // ready yet: no GENERATE message should have been sent, and the worker
+      // must not have been hard-reset.
+      await vi.advanceTimersByTimeAsync(30_000);
+      expect(worker.terminated).toBe(false);
+      expect(
+        worker.messages.find((m) => (m as { type: string }).type === 'GENERATE')
+      ).toBeUndefined();
+
+      // Init reports ready at 35s; the generation message goes out now, and
+      // its own timeout starts fresh from this point.
+      await vi.advanceTimersByTimeAsync(6_000);
+      const generateMsg = worker.messages.find(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      ) as { type: string; payload: { requestId: string } } | undefined;
+      expect(generateMsg).toBeDefined();
+      expect(worker.terminated).toBe(false);
+
+      worker.simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: generateMsg!.payload.requestId,
+        vertices: new Float32Array(0),
+        normals: new Float32Array(0),
+        indices: new Uint32Array(0),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 0,
+        timingMs: 10,
+      });
+
+      const result = await genPromise;
+      expect(result.timingMs).toBe(10);
+      expect(worker.terminated).toBe(false);
     });
   });
 });

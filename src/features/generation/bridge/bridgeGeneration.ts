@@ -54,11 +54,16 @@ export interface BridgeGenerationContext {
  * `init()` is an already-resolved cached promise, so this only defers the post
  * by a microtask.
  *
- * The timeout is armed up front, before awaiting `init()`, so a worker that
- * never reports ready (init hangs, or a replacement worker that never posts
- * INIT_READY) still trips the timeout and its hard-reset recovery instead of
- * leaving the request pending forever. Worker (re)init is fast relative to the
- * 30s+ budget, so charging it against the timeout is negligible.
+ * The timeout is armed only once `init()` resolves and the message is actually
+ * posted, so it measures generation time alone. `init()`'s own settlement is
+ * already bounded by `INIT_TIMEOUT_MS` with one retry (see `tryInit`), so a
+ * worker that never reports ready is caught there, not here. Arming this timer
+ * before `init()` settles double-charges a cold WASM boot against the
+ * generation budget: a legitimately slow-but-successful init (occt-wasm on a
+ * slow connection or cold cache, within `tryInit`'s own 60s allowance) can by
+ * itself exceed a trivial design's 30s `BASE_TIMEOUT_MS`, hard-resetting a
+ * worker that was about to come up healthy and rejecting a request that had
+ * not started generating anything yet.
  */
 function sendWhenReady(
   ctx: BridgeGenerationContext,
@@ -66,11 +71,11 @@ function sendWhenReady(
   timeoutMs: number,
   message: WorkerMessage
 ): void {
-  startGenerationTimeout(ctx, requestId, timeoutMs);
   void ctx.init().then(
     () => {
       // A newer request superseded this one while the worker was initializing.
       if (ctx.currentRequestId !== requestId) return;
+      startGenerationTimeout(ctx, requestId, timeoutMs);
       ctx.postMessage(message);
     },
     (err: unknown) => {
