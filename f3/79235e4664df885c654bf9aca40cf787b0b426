@@ -1,0 +1,51 @@
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.baseStyles.test.ts.brepkit.snap
+  s_314be466e6da7a::t_987e073ccdcfc0 11,15
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.binStyles.test.ts.brepkit.snap
+  s_314be466e6da7a::t_95f7b4c6cae41d 3,7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.brepkit.snap
+  s_314be466e6da7a::t_1babdfdebac814 3,5,7,9,11
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.compartments.test.ts.brepkit.snap
+  s_314be466e6da7a::t_3e997752fc8c7b 3,5,7,9
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.customShape.test.ts.brepkit.snap
+  s_314be466e6da7a::t_8f9358b2b0fee7 3,5,15,21
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dimensions.test.ts.brepkit.snap
+  s_314be466e6da7a::t_870fb7b60f43f7 15,17
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.exportAndLarge.test.ts.brepkit.snap
+  s_314be466e6da7a::t_e02dd4931d67da 5
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.floorPatterns.test.ts.brepkit.snap
+  s_314be466e6da7a::t_d973754d88c1db 3,5,7,9,15,17
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.halfSockets.test.ts.brepkit.snap
+  s_314be466e6da7a::t_0742e66b69e7b0 7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.heights.test.ts.brepkit.snap
+  s_314be466e6da7a::t_b63201036256b9 3,5
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.honeycombJunction.test.ts.brepkit.snap
+  s_314be466e6da7a::t_b0cf71d342a146 3,5,7,9,11,13,15
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.inserts.test.ts.brepkit.snap
+  s_314be466e6da7a::t_e9c0e0ff061c3f 3,5,7,9,11,13
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelTabs.test.ts.brepkit.snap
+  s_314be466e6da7a::t_186e57a840c8f2 5,7,9,11,13,15,17,19,21,23,25,27
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.brepkit.snap
+  s_314be466e6da7a::t_826d4cca482276 3,5,7,9,11,13,15,17,19,21,23,25,27
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.slotted.test.ts.brepkit.snap
+  s_314be466e6da7a::t_e4d39efd3e0676 3,5,7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.solidCutouts.test.ts.brepkit.snap
+  s_314be466e6da7a::t_ea4abf2de8fe95 15,25,37,55
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.wallThickness.test.ts.brepkit.snap
+  s_314be466e6da7a::t_1a45d544a0f608 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f379235e4664df885c654bf9aca40cf787b0b426",
+  "prompts": {},
+  "sessions": {
+    "s_314be466e6da7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0e716bae-6ad5-4987-8a01-2e228d558e8a",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
