@@ -1,0 +1,57 @@
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_62f65d65a57f59::t_410869a1097c43 15-16
+src/shared/webgl/configureTroikaText.test.ts
+  s_62f65d65a57f59::t_5eb066e98407b7 1-15
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_62f65d65a57f59::t_1eb16d1092d5aa 3-4
+src/shared/components/GlbViewer/GlbViewer.tsx
+  s_62f65d65a57f59::t_16731a2156632e 13-14
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_62f65d65a57f59::t_298a6e1303b00a 3-4
+src/shared/webgl/configureTroikaText.ts
+  s_62f65d65a57f59::t_8f3d1ee7b4ac65 1-12
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_62f65d65a57f59::t_00c44ec220b48d 20-21
+src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
+  s_62f65d65a57f59::t_2dcc6d303cf2cd 14-15
+src/features/bin-designer/components/ImportBinDialog/ImportBinDialog.tsx
+  s_62f65d65a57f59::t_526c5af56abf88 17-18
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutCanvas3D.tsx
+  s_62f65d65a57f59::t_c12f1b5dc595c6 14-15
+src/features/bin-designer/components/panel/LabelTabsSection/LabelPlatesControls.tsx
+  s_62f65d65a57f59::t_dff07ef6cd4817 12-13
+tsconfig.test.json
+  s_62f65d65a57f59::t_eae9943755344e 12
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.tsx
+  s_62f65d65a57f59::t_b4d0a9d85f9629 16-17
+src/shared/analytics/posthog/errorFilters.test.ts
+  s_62f65d65a57f59::t_cb3bc2b0cfff46 259
+  s_62f65d65a57f59::t_4b52d2157abb5e 255-258,260-290
+package.json
+  s_62f65d65a57f59::t_a2c7dfa459eb7e 158
+src/shared/analytics/posthog/errorFilters.ts
+  s_62f65d65a57f59::t_de468d9863a9c2 92,98
+  s_62f65d65a57f59::t_52a99eddad04e6 273-278
+  s_62f65d65a57f59::t_bd3ea54f25f0fb 61-75
+  s_62f65d65a57f59::t_c11f86a8826cb3 60,270-272
+src/shared/webgl/troika-three-text.d.ts
+  s_62f65d65a57f59::t_f0f4c43a203a36 1-3
+pnpm-lock.yaml
+  s_62f65d65a57f59::t_df21f1093c6d92 149-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9b33568c97636ee1c337f979c9e7fd860cb2060c",
+  "prompts": {},
+  "sessions": {
+    "s_62f65d65a57f59": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "00adf36b-6ef7-41d8-b720-5de30fd89dae",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
