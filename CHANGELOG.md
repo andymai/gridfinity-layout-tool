@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.478.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.1...gridfinity-layout-tool-v4.478.2) (2026-08-28)
+
+
+### Bug Fixes
+
+* **generation:** retain slotted dividers and brace lite-base floors ([#3959](https://github.com/andymai/gridfinity-layout-tool/issues/3959)) ([ad2c8cd](https://github.com/andymai/gridfinity-layout-tool/commit/ad2c8cdada324c38c93afaf500749e933ccf283c)), closes [#3957](https://github.com/andymai/gridfinity-layout-tool/issues/3957) [#3958](https://github.com/andymai/gridfinity-layout-tool/issues/3958)
+
 ## [4.478.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.0...gridfinity-layout-tool-v4.478.1) (2026-08-27)
 
 
