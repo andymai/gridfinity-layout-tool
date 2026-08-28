@@ -1,30 +1,30 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `2474`;
+exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `2860`;
 
-exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `2588`;
+exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `2962`;
 
-exports[`scoop > 2×2 scoop auto radius 1`] = `2474`;
+exports[`scoop > 2×2 scoop auto radius 1`] = `2860`;
 
-exports[`scoop > 2×2 scoop disabled 1`] = `1732`;
+exports[`scoop > 2×2 scoop disabled 1`] = `1744`;
 
-exports[`scoop > 2×2 scoop radius 10mm 1`] = `2872`;
+exports[`scoop > 2×2 scoop radius 10mm 1`] = `2864`;
 
-exports[`scoop side > 6×1 bin scooped on the long wall 1`] = `2696`;
+exports[`scoop side > 6×1 bin scooped on the long wall 1`] = `2944`;
 
-exports[`scoop side > left scoop across 2 columns (outer vs interior) 1`] = `2584`;
+exports[`scoop side > left scoop across 2 columns (outer vs interior) 1`] = `2960`;
 
-exports[`scoop side > scoop on the back wall 1`] = `2476`;
+exports[`scoop side > scoop on the back wall 1`] = `2872`;
 
-exports[`scoop side > scoop on the left wall 1`] = `2482`;
+exports[`scoop side > scoop on the left wall 1`] = `2860`;
 
-exports[`scoop side > scoop on the right wall 1`] = `2472`;
+exports[`scoop side > scoop on the right wall 1`] = `2872`;
 
-exports[`scoop side > side scoop with lip (outer-wall offset active) 1`] = `2472`;
+exports[`scoop side > side scoop with lip (outer-wall offset active) 1`] = `2872`;
 
-exports[`scoop two-variable > 2×2 shallow curved scoop (run > height) 1`] = `2852`;
+exports[`scoop two-variable > 2×2 shallow curved scoop (run > height) 1`] = `2840`;
 
-exports[`scoop two-variable > 2×2 steep curved scoop (run < height) 1`] = `2504`;
+exports[`scoop two-variable > 2×2 steep curved scoop (run < height) 1`] = `3248`;
 
 exports[`scoop two-variable > 2×2 steep straight scoop 1`] = `2396`;
 

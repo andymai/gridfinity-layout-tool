@@ -35,6 +35,44 @@ const DIVIDER_LENGTH_CLEARANCE = 0.3;
  */
 const MIN_TAB_ENGAGEMENT = 0.3;
 
+/** Installed height of the captured divider head below the slot throat. */
+export const DIVIDER_LOCK_HEAD_HEIGHT = 0.8;
+
+/** Installed height of the elastic throat that retains the divider head. */
+export const DIVIDER_LOCK_THROAT_HEIGHT = 0.6;
+
+/** Per-face interference at the throat for the shipped 1.6 mm divider. */
+export const DIVIDER_LOCK_INTERFERENCE_PER_SIDE = 0.2;
+
+export interface DividerLockPlan {
+  readonly pocketWidth: number;
+  readonly throatWidth: number;
+  readonly headHeight: number;
+  readonly throatHeight: number;
+}
+
+/**
+ * Resolve the paired snap geometry shared by wall slots and divider tips.
+ * The full-thickness head seats in the clearance pocket below a narrower
+ * throat. The short wall tabs flex while the head is pressed through.
+ */
+export function getDividerLockPlan(
+  dividerThickness: number,
+  dividerClearance: number
+): DividerLockPlan {
+  const interference = Math.min(
+    DIVIDER_LOCK_INTERFERENCE_PER_SIDE,
+    Math.max(0.08, dividerThickness * 0.125)
+  );
+  const throatWidth = Math.max(0.8, dividerThickness - 2 * interference);
+  return {
+    pocketWidth: dividerThickness + 2 * dividerClearance,
+    throatWidth,
+    headHeight: DIVIDER_LOCK_HEAD_HEIGHT,
+    throatHeight: DIVIDER_LOCK_THROAT_HEIGHT,
+  };
+}
+
 /**
  * Calculate evenly-distributed slot center positions along a dimension.
  * Returns positions relative to the center of the dimension (0 = center).

@@ -12,9 +12,9 @@ exports[`dimensions > 1×1 no lip 1`] = `352`;
 
 exports[`dimensions > 1×1 with lip 1`] = `880`;
 
-exports[`dimensions > 2×2 no lip 1`] = `940`;
+exports[`dimensions > 2×2 no lip 1`] = `948`;
 
-exports[`dimensions > 2×2 with lip 1`] = `1732`;
+exports[`dimensions > 2×2 with lip 1`] = `1744`;
 
 exports[`dimensions > 4×4 no lip 1`] = `3324`;
 

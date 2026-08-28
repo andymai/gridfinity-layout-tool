@@ -54,6 +54,15 @@ describe('buildLightweightBase', () => {
     expect(floorOpenings).toBeNull();
   });
 
+  it("'underside' adds a bed-to-floor support cross", () => {
+    const down = buildLightweightBase(1, 1, WT, false, false, 3.25, 2, 1.5, 'down', true);
+    const underside = buildLightweightBase(1, 1, WT, false, false, 3.25, 2, 1.5, 'underside', true);
+    expect(meshShape(underside.base).triangles.length).toBeGreaterThan(
+      meshShape(down.base).triangles.length
+    );
+    expect(underside.floorOpenings).toBeNull();
+  });
+
   it('retains magnet pads as solid islands (more geometry than plain cups)', () => {
     const plain = buildLightweightBase(2, 2, WT, false, false, 3.25, 2, 1.5, 'up', true);
     const withPads = buildLightweightBase(2, 2, WT, true, false, 3.25, 2, 1.5, 'up', true);

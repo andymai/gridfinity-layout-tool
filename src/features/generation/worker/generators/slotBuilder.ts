@@ -19,6 +19,7 @@ import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import {
   calculateSlotPositions,
+  getDividerLockPlan,
   getEffectiveSlotDimensions as getEffectiveSlotDimensionsRaw,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
@@ -105,6 +106,36 @@ function createMirroredCutters(
     box(rectW, rectD, height, { at: pos(negCenter) }),
     box(rectW, rectD, height, { at: pos(posCenter) }),
   ];
+}
+
+function createMirroredLockingCutters(
+  primaryDim: number,
+  slotWidth: number,
+  dividerThickness: number,
+  dividerClearance: number,
+  height: number,
+  halfSpan: number,
+  crossPos: number,
+  z: number,
+  axis: 'x' | 'y'
+): Shape3D[] {
+  const lock = getDividerLockPlan(dividerThickness, dividerClearance);
+  const lockHeight = lock.headHeight + lock.throatHeight;
+  if (height <= lockHeight) {
+    return createMirroredCutters(primaryDim, slotWidth, height, halfSpan, crossPos, z, axis);
+  }
+
+  const segments: Shape3D[] = [];
+  for (const [width, segmentHeight, segmentZ] of [
+    [lock.pocketWidth, lock.headHeight, z],
+    [lock.throatWidth, lock.throatHeight, z + lock.headHeight],
+    [slotWidth, height - lockHeight, z + lockHeight],
+  ] as const) {
+    segments.push(
+      ...createMirroredCutters(primaryDim, width, segmentHeight, halfSpan, crossPos, segmentZ, axis)
+    );
+  }
+  return segments;
 }
 
 /**
@@ -291,9 +322,11 @@ function buildSlotCutsInScope(
 
     for (const crossPos of positions) {
       // Wall slots (narrow, for tab engagement) — start at floor surface
-      const wallCutters = createMirroredCutters(
+      const wallCutters = createMirroredLockingCutters(
         slotDepth,
         slotWidth,
+        params.dividerPieces.thickness,
+        params.dividerPieces.clearance,
         slotHeight,
         halfSpan,
         crossPos,
@@ -340,17 +373,21 @@ function buildSlotCutsInScope(
       const lowTouch = low <= EPS;
       const highTouch = low + seg.length >= runMax - EPS;
 
-      const [negWall, posWall] = createMirroredCutters(
+      const wallCutters = createMirroredLockingCutters(
         slotDepth,
         slotWidth,
+        params.dividerPieces.thickness,
+        params.dividerPieces.clearance,
         slotHeight,
         halfSpan,
         crossPos,
         floorZ,
         axis
       );
-      keepSide(lowTouch, negWall);
-      keepSide(highTouch, posWall);
+      for (let i = 0; i < wallCutters.length; i += 2) {
+        keepSide(lowTouch, wallCutters[i]);
+        keepSide(highTouch, wallCutters[i + 1]);
+      }
 
       if (lipInfo && lipOverhang > 0) {
         const [negLip, posLip] = createMirroredLipCutters(
@@ -406,18 +443,26 @@ export const slotCutsFeature: FeatureBuilder = {
       : undefined;
     // The slot is sized to accept the divider piece, so `dividerPieces` is a
     // geometry input — and it reaches no other segment: `slotConfig` describes
-    // the layout and `shellKey` the body. Keyed on the RESOLVED pair rather
+    // the layout and `shellKey` the body. Keyed on the RESOLVED values rather
     // than the raw params so anything the formula grows is carried too, and
     // `dividerPieces.height` (a property of the piece, not the slot) does not
-    // fragment the cache.
+    // fragment the cache. `throatWidth` is keyed alongside `slotWidth` because
+    // it is a function of thickness ALONE — two piece configs with the same
+    // `slotWidth` (thickness + 2·clearance) but different thickness resolve to
+    // different throats, so `slotWidth` cannot stand in for it.
     const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
+    const { throatWidth } = getDividerLockPlan(
+      params.dividerPieces.thickness,
+      params.dividerPieces.clearance
+    );
     return compactKey(
       buildCacheKey(
-        'v2',
+        'v3',
         dim.shellKey,
         stableSerialize(params.slotConfig),
         quantize(slotWidth),
         quantize(slotDepth),
+        quantize(throatWidth),
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.interiorHeight),

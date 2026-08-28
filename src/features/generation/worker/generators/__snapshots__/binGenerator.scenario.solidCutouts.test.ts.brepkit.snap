@@ -12,7 +12,7 @@ exports[`solid cutouts > 2×2 solid with chamfered hexagon cutout 1`] = `1616`;
 
 exports[`solid cutouts > 2×2 solid with chamfered path cutout 1`] = `1572`;
 
-exports[`solid cutouts > 2×2 solid with chamfered rectangle cutout 1`] = `1636`;
+exports[`solid cutouts > 2×2 solid with chamfered rectangle cutout 1`] = `1620`;
 
 exports[`solid cutouts > 2×2 solid with chamfered slot cutout 1`] = `2088`;
 
@@ -22,7 +22,7 @@ exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`]
 
 exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `1812`;
 
-exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `1584`;
+exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `1568`;
 
 exports[`solid cutouts > 2×2 solid with hexagon (polygon) cutout 1`] = `1580`;
 
@@ -34,7 +34,7 @@ exports[`solid cutouts > 2×2 solid with path cutout having closing bezier curve
 
 exports[`solid cutouts > 2×2 solid with radial array (rotate-to-center) 1`] = `2080`;
 
-exports[`solid cutouts > 2×2 solid with rectangle cutout 1`] = `1584`;
+exports[`solid cutouts > 2×2 solid with rectangle cutout 1`] = `1568`;
 
 exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `1872`;
 
@@ -52,6 +52,6 @@ exports[`solid cutouts > 2×2 solid with slot (stadium) cutout 1`] = `1728`;
 
 exports[`solid cutouts > 2×2 solid with staggered hex array 1`] = `1668`;
 
-exports[`solid cutouts > 2×2 solid with topOffset 1`] = `2426`;
+exports[`solid cutouts > 2×2 solid with topOffset 1`] = `1820`;
 
 exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `1560`;

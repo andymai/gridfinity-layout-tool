@@ -1,11 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`] = `1028`;
+exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`] = `1244`;
 
-exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `2008`;
+exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `2016`;
 
-exports[`combined features > 2×2 label tabs with merged compartments 1`] = `2176`;
+exports[`combined features > 2×2 label tabs with merged compartments 1`] = `2180`;
 
-exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `2962`;
+exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `3144`;
 
-exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `16233`;
+exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `16288`;
