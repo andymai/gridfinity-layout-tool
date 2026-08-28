@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+// Side-effect: must run before any <Text> mounts under this Canvas.
+import '@/shared/webgl/configureTroikaText';
 import { Badge, Button, Dialog } from '@/design-system';
 import { ExportDialog } from '@/shared/components/ExportDialog';
 import { useToastStore } from '@/core/store/toast';

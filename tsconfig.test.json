@@ -9,6 +9,7 @@
   "include": [
     "src/vite-env.d.ts",
     "src/global.d.ts",
+    "src/shared/webgl/troika-three-text.d.ts",
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
     "src/**/*.testUtils.ts",

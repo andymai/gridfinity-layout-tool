@@ -10,6 +10,8 @@ import {
 import type { ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bounds, Center, OrbitControls, useGLTF, useProgress } from '@react-three/drei';
+// Side-effect: must run before any <Text> mounts under this Canvas.
+import '@/shared/webgl/configureTroikaText';
 import { Button, ProgressBar, cn } from '@/design-system';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useTranslation } from '@/i18n';

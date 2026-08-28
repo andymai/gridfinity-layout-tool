@@ -155,6 +155,7 @@
     "tailwind-merge": "^3.6.0",
     "three": "^0.185.1",
     "three-stdlib": "^2.36.1",
+    "troika-three-text": "0.52.5",
     "zod": "^4.4.3",
     "zustand": "^5.0.15"
   },

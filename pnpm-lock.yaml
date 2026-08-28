@@ -146,6 +146,9 @@ importers:
       three-stdlib:
         specifier: ^2.36.1
         version: 2.36.1(three@0.185.1)
+      troika-three-text:
+        specifier: 0.52.5
+        version: 0.52.5(three@0.185.1)
       zod:
         specifier: ^4.4.3
         version: 4.4.3

@@ -17,6 +17,8 @@ import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
+// Side-effect: must run before any <Text> mounts under this Canvas.
+import '@/shared/webgl/configureTroikaText';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { useTranslation } from '@/i18n';
 import {

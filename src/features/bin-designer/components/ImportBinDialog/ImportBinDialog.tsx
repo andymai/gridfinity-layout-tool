@@ -14,6 +14,8 @@ import type { ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+// Side-effect: must run before any <Text> mounts under this Canvas.
+import '@/shared/webgl/configureTroikaText';
 import { Button, Dialog, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { MeshImportRotation } from '@/shared/generation/meshAsset';
