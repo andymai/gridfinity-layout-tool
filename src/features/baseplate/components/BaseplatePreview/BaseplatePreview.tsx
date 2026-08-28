@@ -11,6 +11,8 @@
 import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+// Side-effect: must run before any <Text> mounts under this Canvas.
+import '@/shared/webgl/configureTroikaText';
 import { useShallow } from 'zustand/react/shallow';
 import { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';

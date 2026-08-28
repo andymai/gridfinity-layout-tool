@@ -58,6 +58,17 @@ const WORKER_RESET_ERROR = 'Worker was reset';
 const WORKER_RESET_FINGERPRINT = 'generation-worker-reset';
 
 /**
+ * troika-three-text's worker-init failure (see `configureTroikaText.ts`).
+ * Its stack points at whichever chunk renders text that session, so
+ * message-based grouping mints a fresh issue per deploy. Capture once per
+ * session: every subsequent `<Text>` sync in an affected session throws
+ * the same error again.
+ */
+const TROIKA_WORKER_INIT_ERROR =
+  'Worker module function was called but `init` did not return a callable function';
+const TROIKA_WORKER_INIT_FINGERPRINT = 'troika-worker-init-failed';
+
+/**
  * Per-session capture ceilings.
  *
  * Error tracking has its own monthly exception quota, and one looping client
@@ -73,11 +84,13 @@ const WORKER_RESET_FINGERPRINT = 'generation-worker-reset';
 const SESSION_EXCEPTION_CAP = 10;
 const sessionCaptureCounts = new Map<string, number>();
 let chunkLoadCaptured = false;
+let troikaWorkerInitCaptured = false;
 
 /** Test seam: clears the per-session capture counters. */
 export function resetSessionCaptureCounts(): void {
   sessionCaptureCounts.clear();
   chunkLoadCaptured = false;
+  troikaWorkerInitCaptured = false;
 }
 
 const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
@@ -249,6 +262,15 @@ export function filterExceptionForPosthog(
     event.properties = {
       ...event.properties,
       $exception_fingerprint: CHUNK_LOAD_FINGERPRINT,
+    };
+  }
+
+  if (primary !== undefined && primary.includes(TROIKA_WORKER_INIT_ERROR)) {
+    if (troikaWorkerInitCaptured) return null;
+    troikaWorkerInitCaptured = true;
+    event.properties = {
+      ...event.properties,
+      $exception_fingerprint: TROIKA_WORKER_INIT_FINGERPRINT,
     };
   }
 

@@ -11,6 +11,8 @@ import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react
 import { useCutoutSelection } from '@/features/bin-designer/store';
 import { Canvas } from '@react-three/fiber';
 import type { RootState } from '@react-three/fiber';
+// Side-effect: must run before any <Text> mounts under this Canvas.
+import '@/shared/webgl/configureTroikaText';
 import type {
   Cutout,
   CutoutShape as CutoutShapeType,

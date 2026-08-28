@@ -252,6 +252,42 @@ describe('filterExceptionForPosthog — chunk-load dedupe', () => {
   });
 });
 
+describe('filterExceptionForPosthog — troika worker-init dedupe', () => {
+  const TROIKA_ERROR =
+    'Worker module function was called but `init` did not return a callable function';
+
+  it("pins a stable fingerprint so every deploy's chunk hash groups into one issue", () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_list: [{ value: TROIKA_ERROR }] },
+    };
+    const result = filterExceptionForPosthog(e);
+    expect(result).toBe(e);
+    expect(result?.properties?.$exception_fingerprint).toBe('troika-worker-init-failed');
+  });
+
+  it('reports the first occurrence and mutes the rest of the session', () => {
+    const make = (): Parameters<typeof filterExceptionForPosthog>[0] => ({
+      event: '$exception',
+      properties: { $exception_list: [{ value: TROIKA_ERROR }] },
+    });
+    expect(filterExceptionForPosthog(make())).not.toBeNull();
+    // Every subsequent <Text> sync in the same broken session throws again.
+    expect(filterExceptionForPosthog(make())).toBeNull();
+    expect(filterExceptionForPosthog(make())).toBeNull();
+  });
+
+  it('does not fingerprint unrelated errors', () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_list: [{ value: 'TypeError: foo is not a function' }] },
+    };
+    const result = filterExceptionForPosthog(e);
+    expect(result).toBe(e);
+    expect(result?.properties?.$exception_fingerprint).toBeUndefined();
+  });
+});
+
 describe('filterExceptionForPosthog — per-session capture cap', () => {
   const appError = (value: string): Parameters<typeof filterExceptionForPosthog>[0] => ({
     event: '$exception',
