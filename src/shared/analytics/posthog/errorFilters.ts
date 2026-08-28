@@ -58,16 +58,11 @@ const WORKER_RESET_ERROR = 'Worker was reset';
 const WORKER_RESET_FINGERPRINT = 'generation-worker-reset';
 
 /**
- * troika-three-text (behind every `<Text>` in the 3D previews) fails to
- * `eval` the stringified module it hands its SDF-glyph worker on some WebKit
- * builds. Real, recurring — 25+ Safari/Mobile Safari users since March, not
- * one browser version — not extension noise. Its stack points at whichever
- * chunk renders text that session (`three-render`, `react-three`, ...), so
- * message-based grouping minted a fresh issue (and a new auto-filed bug) per
- * deploy. `configureTroikaText.ts` forces the main-thread fallback so this
- * shouldn't recur going forward; pin the fingerprint for the sessions still
- * on an older deploy and capture once — every subsequent `<Text>` sync in an
- * affected session throws the same error again.
+ * troika-three-text's worker-init failure (see `configureTroikaText.ts`).
+ * Its stack points at whichever chunk renders text that session, so
+ * message-based grouping mints a fresh issue per deploy. Capture once per
+ * session: every subsequent `<Text>` sync in an affected session throws
+ * the same error again.
  */
 const TROIKA_WORKER_INIT_ERROR =
   'Worker module function was called but `init` did not return a callable function';
