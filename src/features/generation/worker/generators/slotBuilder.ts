@@ -443,11 +443,18 @@ export const slotCutsFeature: FeatureBuilder = {
       : undefined;
     // The slot is sized to accept the divider piece, so `dividerPieces` is a
     // geometry input — and it reaches no other segment: `slotConfig` describes
-    // the layout and `shellKey` the body. Keyed on the RESOLVED pair rather
+    // the layout and `shellKey` the body. Keyed on the RESOLVED values rather
     // than the raw params so anything the formula grows is carried too, and
     // `dividerPieces.height` (a property of the piece, not the slot) does not
-    // fragment the cache.
+    // fragment the cache. `throatWidth` is keyed alongside `slotWidth` because
+    // it is a function of thickness ALONE — two piece configs with the same
+    // `slotWidth` (thickness + 2·clearance) but different thickness resolve to
+    // different throats, so `slotWidth` cannot stand in for it.
     const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
+    const { throatWidth } = getDividerLockPlan(
+      params.dividerPieces.thickness,
+      params.dividerPieces.clearance
+    );
     return compactKey(
       buildCacheKey(
         'v3',
@@ -455,6 +462,7 @@ export const slotCutsFeature: FeatureBuilder = {
         stableSerialize(params.slotConfig),
         quantize(slotWidth),
         quantize(slotDepth),
+        quantize(throatWidth),
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.interiorHeight),

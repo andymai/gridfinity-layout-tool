@@ -30,7 +30,9 @@
  *   flat and the redundant membrane `'down'` leaves under it is never built.
  *   Offset by {@link UNDERSIDE_RELIEF_BORDER_MM} rather than `wt`: this ring
  *   stands on the bed and carries a bridged floor, so it wants more material
- *   than a wall supported on both sides.
+ *   than a wall supported on both sides. A {@link UNDERSIDE_SUPPORT_RIB_MM}
+ *   cross-web is fused inside each foot, bed to floor, halving that otherwise
+ *   full-cell bridge span so it prints without sagging.
  *
  * Coordinate system matches the socket: Z=0 top (mates with body), Z=-SOCKET_HEIGHT bottom.
  */

@@ -218,10 +218,8 @@ export const lightweight: ScenarioCase[] = [
     params: { width: 2, depth: 2, height: 1, base: { ...underside, tile: true } },
   }),
 
-  // The reported repro (#3957 + #3958): a slotted bin on an underside-relief
-  // base. One export exercises both printability fixes together — the slot
-  // retention throat and the per-foot cross-web — across the partial-coplanar
-  // socket↔body fuse the relief leaves.
+  // The reported repro (#3957 + #3958): the feature interaction neither fix
+  // covers alone, over the relief's partial-coplanar socket↔body fuse.
   defineScenario('lightweight', '2×2 underside + slotted (retention + cross-web)', {
     assert: 'structural',
     forExport: true,

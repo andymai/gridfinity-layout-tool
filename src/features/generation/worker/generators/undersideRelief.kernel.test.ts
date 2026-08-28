@@ -137,8 +137,11 @@ describe('underside relief', () => {
   it('supports the bridged floor with a cross tied to the bed', () => {
     const mesh = bin(UNDERSIDE);
     const { minZ } = boundingBox(mesh.vertices);
-    expect(isSolidThrough(mesh, 0, 1.3, minZ, minZ + SOCKET_HEIGHT)).toBe(true);
-    expect(isSolidThrough(mesh, 1.3, 0, minZ, minZ + SOCKET_HEIGHT)).toBe(true);
+    // Each rib is 1.2mm wide on its own axis, so 0.4 stays inside the rib while
+    // keeping the column off X=0/Y=0 — where fan triangulation would make the
+    // probe ride shared edges (see the BORE note at the top of this file).
+    expect(isSolidThrough(mesh, 0.4, 1.3, minZ, minZ + SOCKET_HEIGHT)).toBe(true);
+    expect(isSolidThrough(mesh, 1.3, 0.4, minZ, minZ + SOCKET_HEIGHT)).toBe(true);
     expect(isSolidThrough(mesh, 1.3, 1.3, minZ, minZ + SOCKET_HEIGHT)).toBe(false);
   });
 
