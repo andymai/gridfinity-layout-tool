@@ -1,0 +1,58 @@
+src/i18n/locales/zh-CN.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/de.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/en.ts
+  s_68cbcb8723bc26::t_6209925c749618 1456
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_68cbcb8723bc26::t_2859a5e2b2c80a 506-526,528-529
+  s_68cbcb8723bc26::t_50ce8d31b20fb2 527
+  s_68cbcb8723bc26::t_2c4ab21da935c2 6
+src/i18n/locales/nb.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/nl.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/ko.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/uk.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/fr.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/pl.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/ja.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/pt-BR.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/it.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/es.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/i18n/locales/cs.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/features/bin-inspector/hooks/useBinInspectorMultiActions.ts
+  s_68cbcb8723bc26::t_69cdf356ec563e 122-126
+  s_68cbcb8723bc26::t_121846db30aa99 147
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.test.tsx
+  s_68cbcb8723bc26::t_3208893216a4e1 242-262
+src/i18n/locales/sv.json
+  s_68cbcb8723bc26::t_370b89cd79775d 4170
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.tsx
+  s_68cbcb8723bc26::t_9128674fa3376c 210-211
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "7a889e3c2bf9ee9ef48eb534380ca4607b828426",
+  "prompts": {},
+  "sessions": {
+    "s_68cbcb8723bc26": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5fc5e836-e11e-4368-8d07-407c717f7136",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
