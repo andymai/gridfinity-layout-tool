@@ -207,6 +207,8 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
             displayValue={heightDisplay}
             onStep={updateMultiHeight}
             ariaLabelPrefix={t('inspector.multi.heightAriaPrefix')}
+            decreaseDisabled={allLocked}
+            increaseDisabled={allLocked}
             variant={variant}
           />
         </div>

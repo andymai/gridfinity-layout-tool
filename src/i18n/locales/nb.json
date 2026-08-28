@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Flyttet til {name}",
   "toast.movedToStash": "Flyttet {count} bin(s) til stash",
   "toast.noMovableCollisions": "Ingen bins kan flyttes til dette laget (kollisjoner)",
+  "toast.allSelectedBinsLocked": "Alle valgte beholdere har låst størrelse. Lås opp for å endre høyden.",
   "toast.notifications": "Varsler",
   "toast.offline": "Du er frakoblet. Endringer lagres lokalt.",
   "toast.onboardingReset": "Onboarding tilbakestilt — last på nytt for å se veiledningen",

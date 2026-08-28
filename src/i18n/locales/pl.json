@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Przeniesiono do {name}",
   "toast.movedToStash": "Przeniesiono {count} bin(ów) do Stash",
   "toast.noMovableCollisions": "Żaden bin nie może zostać przeniesiony na tę warstwę (kolizje)",
+  "toast.allSelectedBinsLocked": "Wszystkie zaznaczone biny mają zablokowany rozmiar. Odblokuj je, aby zmienić wysokość.",
   "toast.notifications": "Powiadomienia",
   "toast.offline": "Jesteś offline. Zmiany zapisują się lokalnie.",
   "toast.onboardingReset": "Wprowadzenie zresetowane — odśwież, aby zobaczyć samouczek",

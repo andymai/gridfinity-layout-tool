@@ -239,6 +239,27 @@ describe('MultiBinInspector', () => {
 
       expect(inspector.updateMultiHeight).toHaveBeenCalledWith(-1);
     });
+
+    it('disables both height buttons when every selected bin is locked', () => {
+      const inspector = createMockInspector({
+        selectedBins: mockBins.map((b) => ({ ...b, locked: true })),
+      });
+      render(<MultiBinInspector inspector={inspector} variant="desktop" />);
+
+      expect(screen.getByLabelText('Increase height for all bins')).toBeDisabled();
+      expect(screen.getByLabelText('Decrease height for all bins')).toBeDisabled();
+    });
+
+    it('leaves height buttons enabled when only some selected bins are locked', () => {
+      const [first, ...rest] = mockBins;
+      const inspector = createMockInspector({
+        selectedBins: [{ ...first, locked: true }, ...rest],
+      });
+      render(<MultiBinInspector inspector={inspector} variant="desktop" />);
+
+      expect(screen.getByLabelText('Increase height for all bins')).toBeEnabled();
+      expect(screen.getByLabelText('Decrease height for all bins')).toBeEnabled();
+    });
   });
 
   describe('clearance handling', () => {

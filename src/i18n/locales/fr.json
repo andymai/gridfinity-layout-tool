@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Déplacé vers {name}",
   "toast.movedToStash": "{count} bin(s) déplacé(s) vers le stash",
   "toast.noMovableCollisions": "Aucun bin ne peut être déplacé vers ce layer (collisions)",
+  "toast.allSelectedBinsLocked": "Tous les bacs sélectionnés ont une taille verrouillée. Déverrouillez-les pour changer la hauteur.",
   "toast.notifications": "Notifications",
   "toast.offline": "Vous êtes hors ligne. Les modifications sont enregistrées localement.",
   "toast.onboardingReset": "Introduction réinitialisée — rechargez pour voir le tutoriel",

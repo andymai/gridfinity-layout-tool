@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "{name}(으)로 이동했습니다",
   "toast.movedToStash": "수납통 {count}개를 임시 보관함으로 이동했습니다",
   "toast.noMovableCollisions": "이 레이어로 이동할 수 있는 수납통이 없습니다(충돌)",
+  "toast.allSelectedBinsLocked": "선택한 모든 수납통의 크기가 잠겨 있습니다. 높이를 변경하려면 잠금을 해제하세요.",
   "toast.notifications": "알림",
   "toast.offline": "오프라인 상태입니다. 변경 사항이 로컬에 저장됩니다.",
   "toast.onboardingReset": "온보딩이 초기화되었습니다 — 튜토리얼을 보려면 다시 로드하세요",

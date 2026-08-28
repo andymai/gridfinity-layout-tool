@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Переміщено в {name}",
   "toast.movedToStash": "{count} бінів переміщено до сховку",
   "toast.noMovableCollisions": "Жодного біна не можна перемістити на цей шар (колізії)",
+  "toast.allSelectedBinsLocked": "Усі вибрані біни мають заблокований розмір. Розблокуйте їх, щоб змінити висоту.",
   "toast.notifications": "Сповіщення",
   "toast.offline": "Ви офлайн. Зміни зберігаються локально.",
   "toast.onboardingReset": "Ознайомлення скинуто — оновіть сторінку, щоб побачити навчальну підказку",
