@@ -104,6 +104,11 @@ const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
 
 const IGNORED_SOURCE_PATTERNS: readonly RegExp[] = [
   /^(chrome|moz|safari-web|safari)-extension:\/\//,
+  // A Safari extension packaged inside a macOS app bundle injects from a
+  // `file://` path, not an extension scheme: its script lives under the app's
+  // `.appex/` plug-in and a `.safariextension/` resources folder. Scope to
+  // those two path segments so local dev `file://` stacks stay reportable.
+  /^file:\/\/.*\.(?:appex|safariextension)\//,
 ];
 
 export function shouldIgnoreError(

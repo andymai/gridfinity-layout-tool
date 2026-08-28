@@ -56,6 +56,9 @@ describe('shouldIgnoreError — source patterns', () => {
     'moz-extension://uuid/script.js',
     'safari-web-extension://abc/foo.js',
     'safari-extension://abc/foo.js',
+    // A Safari extension packaged inside a macOS app bundle (e.g. PayPal Honey)
+    // injects from a `file://` path, not an extension scheme.
+    'file:///Applications/PayPal Honey.app/Contents/PlugIns/Extension.appex/Contents/Resources/Honey.safariextension/h0.js',
   ])('ignores %j', (source) => {
     expect(shouldIgnoreError('TypeError: x', source)).toBe(true);
   });
@@ -63,6 +66,10 @@ describe('shouldIgnoreError — source patterns', () => {
   it('does NOT ignore app sources', () => {
     expect(shouldIgnoreError('TypeError: x', '/assets/main-abc.js')).toBe(false);
     expect(shouldIgnoreError('TypeError: x', 'https://gridfinitylayouttool.com/foo.js')).toBe(
+      false
+    );
+    // A local dev `file://` stack is not an extension and stays reportable.
+    expect(shouldIgnoreError('TypeError: x', 'file:///Users/dev/gridfinity/src/main.ts')).toBe(
       false
     );
   });
@@ -421,6 +428,31 @@ describe('extension-sourced exceptions', () => {
               frames: [
                 { function: 'x', filename: 'https://gridfinitylayouttool.com/assets/main.js' },
                 { function: 'y', filename: 'chrome-extension://abcdef/content.js' },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('drops a Safari app-bundle extension throw whose frames use a file:// path', () => {
+    // Every frame of the observed UnavailableError points at the PayPal Honey
+    // Safari extension, injected from the app bundle instead of an extension
+    // scheme. The bare value cannot be message-matched, so the frame carries it.
+    const honeyFile =
+      'file:///Applications/PayPal Honey.app/Contents/PlugIns/Extension.appex/Contents/Resources/Honey.safariextension/h0.js';
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            value: 'UnavailableError',
+            stacktrace: {
+              frames: [
+                { function: 'a', filename: honeyFile },
+                { function: 'b', filename: honeyFile },
               ],
             },
           },
