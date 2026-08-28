@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.478.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.3...gridfinity-layout-tool-v4.478.4) (2026-08-28)
+
+
+### Bug Fixes
+
+* **three-preview:** stop WebKit troika worker failures from breaking text ([#3970](https://github.com/andymai/gridfinity-layout-tool/issues/3970)) ([50dc528](https://github.com/andymai/gridfinity-layout-tool/commit/50dc52848228bc9b8f54c7982162826dee635715))
+
 ## [4.478.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.2...gridfinity-layout-tool-v4.478.3) (2026-08-28)
 
 
