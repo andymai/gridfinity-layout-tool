@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useBinInspector } from '@/features/bin-inspector';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
+import { useToastStore } from '@/core/store/toast';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { resetAllStores } from '@/test/testUtils';
 import { connectSelectionPruning, eventBus } from '@/core/cqrs';
@@ -501,6 +502,30 @@ describe('useBinInspector', () => {
 
       // Only one event per design, not per bin
       expect(emitSyncEvent).toHaveBeenCalledTimes(1);
+    });
+
+    it('toasts and leaves heights untouched when every selected bin is locked', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer.height = heightUnits(12);
+      layout.bins = [
+        { ...createBin('bin1', 'layer1', 0, 0), height: heightUnits(3), locked: true },
+        { ...createBin('bin2', 'layer1', 3, 0), height: heightUnits(4), locked: true },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1'), binId('bin2')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateMultiHeight(2);
+      });
+
+      const bins = useLayoutStore.getState().layout.bins;
+      expect(bins[0].height).toBe(3);
+      expect(bins[1].height).toBe(4);
+      expect(useToastStore.getState().toasts.map((toast) => toast.message)).toContain(
+        'All selected bins are size-locked. Unlock them to change height.'
+      );
     });
   });
 

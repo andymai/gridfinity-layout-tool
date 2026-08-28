@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Flyttad till {name}",
   "toast.movedToStash": "Flyttade {count} fack till förråd",
   "toast.noMovableCollisions": "Inga fack kan flyttas till detta lager (kollisioner)",
+  "toast.allSelectedBinsLocked": "Alla markerade fack har låst storlek. Lås upp dem för att ändra höjden.",
   "toast.notifications": "Meddelanden",
   "toast.offline": "Du är offline. Ändringar sparas lokalt.",
   "toast.onboardingReset": "Introduktion återställd — ladda om för att se guiden",

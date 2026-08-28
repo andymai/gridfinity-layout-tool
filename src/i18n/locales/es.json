@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Movido a {name}",
   "toast.movedToStash": "{count} bin(s) movidos al almacén",
   "toast.noMovableCollisions": "No se pueden mover bins a este layer (colisiones)",
+  "toast.allSelectedBinsLocked": "Todos los bins seleccionados tienen el tamaño bloqueado. Desbloquéalos para cambiar la altura.",
   "toast.notifications": "Notificaciones",
   "toast.offline": "Estás sin conexión. Los cambios se guardan localmente.",
   "toast.onboardingReset": "Introducción restablecida — recarga para ver el tutorial",

@@ -119,6 +119,11 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
           return { bin: b, newHeight };
         });
 
+      if (updates.length === 0) {
+        addToast(t('toast.allSelectedBinsLocked'), 'info');
+        return;
+      }
+
       const succeededBinIds = new Set<BinId>();
       batch(() => {
         for (const { bin: b, newHeight } of updates) {
@@ -139,7 +144,7 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
         emitLinkedBinResize(b, { width: b.width, depth: b.depth, height: newHeight });
       }
     },
-    [selectedBins, layout.drawer.height, layout.layers, updateBin]
+    [selectedBins, layout.drawer.height, layout.layers, updateBin, addToast, t]
   );
 
   const updateMultiClearance = useCallback(

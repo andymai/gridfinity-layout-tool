@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "已移到 {name}",
   "toast.movedToStash": "已将 {count} 个收纳盒移入暂存区",
   "toast.noMovableCollisions": "没有收纳盒能移到此层（发生碰撞）",
+  "toast.allSelectedBinsLocked": "所选收纳盒均已锁定尺寸。请解锁后再修改高度。",
   "toast.notifications": "通知",
   "toast.offline": "你已离线。更改会保存在本地。",
   "toast.onboardingReset": "新手引导已重置 — 重新加载以查看教程",

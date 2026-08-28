@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Přesunuto do {name}",
   "toast.movedToStash": "Přesunuto {count} binů do Stash",
   "toast.noMovableCollisions": "Do této vrstvy nelze přesunout žádné biny (kolize)",
+  "toast.allSelectedBinsLocked": "Všechny vybrané biny mají zamčenou velikost. Odemkněte je pro změnu výšky.",
   "toast.notifications": "Oznámení",
   "toast.offline": "Jsi offline. Změny se ukládají lokálně.",
   "toast.onboardingReset": "Uvítací průvodce obnoven — nahraj znovu pro zobrazení tutoriálu",

@@ -1453,6 +1453,7 @@ const en: Record<string, string> = {
   'toast.movedMultiToLayer': 'Moved {count} bins to {name}',
   'toast.movedPartialToLayer': 'Moved {moved} of {total} bins ({blocked} blocked)',
   'toast.noMovableCollisions': 'No bins can be moved to this layer (collisions)',
+  'toast.allSelectedBinsLocked': 'All selected bins are size-locked. Unlock them to change height.',
   'toast.dragFromStash': 'Drag bin from stash to place it on a layer',
   'toast.customPropertySet': 'Set "{key}" on {count} bins',
   'toast.resizeTip': 'Tip: Drag the handles to resize',

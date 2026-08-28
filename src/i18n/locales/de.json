@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Zu {name} verschoben",
   "toast.movedToStash": "{count} Bin(s) in die Ablage verschoben",
   "toast.noMovableCollisions": "Keine Bins können auf diesen Layer verschoben werden (Kollisionen)",
+  "toast.allSelectedBinsLocked": "Alle ausgewählten Bins sind größengesperrt. Zum Ändern der Höhe entsperren.",
   "toast.notifications": "Benachrichtigungen",
   "toast.offline": "Sie sind offline. Änderungen werden lokal gespeichert.",
   "toast.onboardingReset": "Einführung zurückgesetzt – neu laden, um das Tutorial zu sehen",

@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Verplaatst naar {name}",
   "toast.movedToStash": "{count} bin(s) naar opslag verplaatst",
   "toast.noMovableCollisions": "Geen bins kunnen naar deze layer worden verplaatst (botsingen)",
+  "toast.allSelectedBinsLocked": "Alle geselecteerde bins hebben vergrendelde afmetingen. Ontgrendel ze om de hoogte te wijzigen.",
   "toast.notifications": "Meldingen",
   "toast.offline": "Je bent offline. Wijzigingen worden lokaal opgeslagen.",
   "toast.onboardingReset": "Introductie gereset — herlaad om de tutorial te zien",

@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "Spostato su {name}",
   "toast.movedToStash": "Spostati {count} bin nell'area di sosta",
   "toast.noMovableCollisions": "Nessun bin può essere spostato su questo livello (collisioni)",
+  "toast.allSelectedBinsLocked": "Tutti i bin selezionati hanno dimensioni bloccate. Sbloccali per modificare l'altezza.",
   "toast.notifications": "Notifiche",
   "toast.offline": "Sei offline. Le modifiche vengono salvate in locale.",
   "toast.onboardingReset": "Onboarding reimpostato; ricarica per vedere il tutorial",

@@ -4167,6 +4167,7 @@
   "toast.movedToLayer": "{name}に移動しました",
   "toast.movedToStash": "{count}個のビンをステージングに移動しました",
   "toast.noMovableCollisions": "このレイヤーに移動できるビンはありません(衝突)",
+  "toast.allSelectedBinsLocked": "選択したすべてのビンのサイズがロックされています。高さを変更するにはロックを解除してください。",
   "toast.notifications": "通知",
   "toast.offline": "オフラインです。変更はローカルに保存されます。",
   "toast.onboardingReset": "オンボーディングをリセットしました — 再読み込みでチュートリアルが表示されます",
