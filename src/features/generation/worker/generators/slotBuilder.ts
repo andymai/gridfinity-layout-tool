@@ -19,6 +19,7 @@ import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import {
   calculateSlotPositions,
+  getDividerLockPlan,
   getEffectiveSlotDimensions as getEffectiveSlotDimensionsRaw,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
@@ -105,6 +106,36 @@ function createMirroredCutters(
     box(rectW, rectD, height, { at: pos(negCenter) }),
     box(rectW, rectD, height, { at: pos(posCenter) }),
   ];
+}
+
+function createMirroredLockingCutters(
+  primaryDim: number,
+  slotWidth: number,
+  dividerThickness: number,
+  dividerClearance: number,
+  height: number,
+  halfSpan: number,
+  crossPos: number,
+  z: number,
+  axis: 'x' | 'y'
+): Shape3D[] {
+  const lock = getDividerLockPlan(dividerThickness, dividerClearance);
+  const lockHeight = lock.headHeight + lock.throatHeight;
+  if (height <= lockHeight) {
+    return createMirroredCutters(primaryDim, slotWidth, height, halfSpan, crossPos, z, axis);
+  }
+
+  const segments: Shape3D[] = [];
+  for (const [width, segmentHeight, segmentZ] of [
+    [lock.pocketWidth, lock.headHeight, z],
+    [lock.throatWidth, lock.throatHeight, z + lock.headHeight],
+    [slotWidth, height - lockHeight, z + lockHeight],
+  ] as const) {
+    segments.push(
+      ...createMirroredCutters(primaryDim, width, segmentHeight, halfSpan, crossPos, segmentZ, axis)
+    );
+  }
+  return segments;
 }
 
 /**
@@ -291,9 +322,11 @@ function buildSlotCutsInScope(
 
     for (const crossPos of positions) {
       // Wall slots (narrow, for tab engagement) — start at floor surface
-      const wallCutters = createMirroredCutters(
+      const wallCutters = createMirroredLockingCutters(
         slotDepth,
         slotWidth,
+        params.dividerPieces.thickness,
+        params.dividerPieces.clearance,
         slotHeight,
         halfSpan,
         crossPos,
@@ -340,17 +373,21 @@ function buildSlotCutsInScope(
       const lowTouch = low <= EPS;
       const highTouch = low + seg.length >= runMax - EPS;
 
-      const [negWall, posWall] = createMirroredCutters(
+      const wallCutters = createMirroredLockingCutters(
         slotDepth,
         slotWidth,
+        params.dividerPieces.thickness,
+        params.dividerPieces.clearance,
         slotHeight,
         halfSpan,
         crossPos,
         floorZ,
         axis
       );
-      keepSide(lowTouch, negWall);
-      keepSide(highTouch, posWall);
+      for (let i = 0; i < wallCutters.length; i += 2) {
+        keepSide(lowTouch, wallCutters[i]);
+        keepSide(highTouch, wallCutters[i + 1]);
+      }
 
       if (lipInfo && lipOverhang > 0) {
         const [negLip, posLip] = createMirroredLipCutters(
@@ -413,7 +450,7 @@ export const slotCutsFeature: FeatureBuilder = {
     const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
     return compactKey(
       buildCacheKey(
-        'v2',
+        'v3',
         dim.shellKey,
         stableSerialize(params.slotConfig),
         quantize(slotWidth),

@@ -218,6 +218,16 @@ export const lightweight: ScenarioCase[] = [
     params: { width: 2, depth: 2, height: 1, base: { ...underside, tile: true } },
   }),
 
+  // The reported repro (#3957 + #3958): a slotted bin on an underside-relief
+  // base. One export exercises both printability fixes together — the slot
+  // retention throat and the per-foot cross-web — across the partial-coplanar
+  // socket↔body fuse the relief leaves.
+  defineScenario('lightweight', '2×2 underside + slotted (retention + cross-web)', {
+    assert: 'structural',
+    forExport: true,
+    params: { width: 2, depth: 2, style: 'slotted', base: underside },
+  }),
+
   // It did something, and something DIFFERENT from the interior mode: the two
   // shells differ only in offset and open direction, so a mode that silently
   // fell back would land on an identical mesh.

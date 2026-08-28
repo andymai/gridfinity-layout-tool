@@ -36,6 +36,7 @@
  */
 
 import {
+  box,
   cylinder,
   unwrap,
   fuseAll,
@@ -69,6 +70,9 @@ import { UNDERSIDE_RELIEF_BORDER_MM } from '@/shared/types/bin';
 
 /** Solid margin of plastic around each magnet/screw hole in a retained pad. */
 const PAD_MARGIN = 1.2;
+
+/** Cross-web thickness that limits each underside bridge to half a cell. */
+export const UNDERSIDE_SUPPORT_RIB_MM = 1.2;
 
 /** Which side of the base the lite shell opens toward — or both, for a spacer. */
 export type LightweightOpenDirection = 'up' | 'down' | 'through' | 'underside';
@@ -252,6 +256,7 @@ export function buildLightweightBase(
     const feet: Shape3D[] = [];
     const voids: Shape3D[] = [];
     const openingTools: Shape3D[] = [];
+    const undersideSupports: Shape3D[] = [];
 
     forEachSocketCell(
       gridW,
@@ -263,9 +268,12 @@ export function buildLightweightBase(
         if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
         const cellW_mm = cell.widthUnits * unitX - CLEARANCE;
         const cellD_mm = cell.depthUnits * unitY - CLEARANCE;
-        feet.push(
-          translate(scope.register(buildFoot(cellW_mm, cellD_mm)), [cell.centerX, cell.centerY, 0])
-        );
+        const foot = translate(scope.register(buildFoot(cellW_mm, cellD_mm)), [
+          cell.centerX,
+          cell.centerY,
+          0,
+        ]);
+        feet.push(foot);
 
         const innerW = cellW_mm - 2 * shellOffset;
         const innerD = cellD_mm - 2 * shellOffset;
@@ -283,6 +291,24 @@ export function buildLightweightBase(
         voids.push(
           translate(scope.register(unwrap(clone(innerFoot))), [cell.centerX, cell.centerY, zShift])
         );
+        if (openDir === 'underside') {
+          const ribHeight = SOCKET_HEIGHT;
+          const ribZ = -SOCKET_HEIGHT / 2;
+          const slabs = [
+            box(cellW_mm, UNDERSIDE_SUPPORT_RIB_MM, ribHeight, {
+              at: [cell.centerX, cell.centerY, ribZ],
+            }),
+            box(UNDERSIDE_SUPPORT_RIB_MM, cellD_mm, ribHeight, {
+              at: [cell.centerX, cell.centerY, ribZ],
+            }),
+          ];
+          for (const slab of slabs) {
+            const clipped = unwrap(
+              intersect(scope.register(slab), scope.register(unwrap(clone(foot))))
+            );
+            undersideSupports.push(clipped);
+          }
+        }
         if (opensUpward) {
           // The SAME shape as the void, at the same shift, so the opening is
           // flush with the cup mouth. Shifting it further to reach a thicker
@@ -330,6 +356,17 @@ export function buildLightweightBase(
       if (hollow !== base) base.delete();
       if (voidSolid !== hollow) voidSolid.delete();
       base = hollow;
+    }
+
+    if (undersideSupports.length > 0) {
+      const supports = unwrap(
+        fuseAll(undersideSupports as ValidSolid[], { optimisation: 'commonFace' })
+      );
+      for (const rib of undersideSupports) if (rib !== supports) rib.delete();
+      const supported = unwrap(fuse(base, supports));
+      if (supported !== base) base.delete();
+      if (supports !== supported) supports.delete();
+      base = supported;
     }
 
     // Retain magnet/screw pads as solid islands, then drill the pockets.

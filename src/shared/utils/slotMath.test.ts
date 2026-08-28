@@ -9,6 +9,7 @@ import {
   calculateShortDividerLengths,
   calculateShortDividerSpans,
   getEffectiveSlotDimensions,
+  getDividerLockPlan,
   getReceptacleDepth,
   resolveCompartmentDividerHeight,
   resolveCrossDividerMode,
@@ -194,6 +195,22 @@ describe('getEffectiveSlotDimensions', () => {
     const { slotDepth } = getEffectiveSlotDimensions(0.4, 1.2, 0.1);
     expect(slotDepth).toBeCloseTo(0.32, 10);
     expect(slotDepth).toBeLessThan(0.4);
+  });
+});
+
+describe('getDividerLockPlan', () => {
+  it('captures the standard divider below a narrower printable throat', () => {
+    const lock = getDividerLockPlan(1.6, 0.25);
+    expect(lock.pocketWidth).toBeCloseTo(2.1, 10);
+    expect(lock.throatWidth).toBeCloseTo(1.2, 10);
+    expect(lock.throatWidth).toBeLessThan(1.6);
+    expect(lock.headHeight).toBeGreaterThan(lock.throatHeight);
+  });
+
+  it('keeps a usable throat on thin custom dividers', () => {
+    const lock = getDividerLockPlan(1, 0.2);
+    expect(lock.throatWidth).toBeGreaterThanOrEqual(0.8);
+    expect(lock.throatWidth).toBeLessThan(1);
   });
 });
 
