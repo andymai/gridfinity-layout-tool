@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.478.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.2...gridfinity-layout-tool-v4.478.3) (2026-08-28)
+
+
+### Bug Fixes
+
+* **analytics:** drop Safari app-bundle extension throws from error tracking ([#3966](https://github.com/andymai/gridfinity-layout-tool/issues/3966)) ([857c514](https://github.com/andymai/gridfinity-layout-tool/commit/857c514208ea8e430a6891c5fc2f825bacc90e50))
+* **bin-inspector:** feedback when bulk height edit hits an all-locked selection ([#3967](https://github.com/andymai/gridfinity-layout-tool/issues/3967)) ([d69a91e](https://github.com/andymai/gridfinity-layout-tool/commit/d69a91ec994510cd460a55b34e33b588f4c02cdf))
+
 ## [4.478.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.1...gridfinity-layout-tool-v4.478.2) (2026-08-28)
 
 
