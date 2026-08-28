@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/slotBuilder.ts
+  s_314be466e6da7a::t_61d271ab4a7e4d 446,449-452,454-457,465
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_314be466e6da7a::t_addd6e8c337c30 33-35
+src/features/generation/worker/generators/scenarios/lightweight.ts
+  s_314be466e6da7a::t_80915aa21e99bd 221-222
+src/features/generation/worker/generators/undersideRelief.kernel.test.ts
+  s_314be466e6da7a::t_a3f4db0fc1faba 140-144
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e8a03a7f57c19d17a47bcf100fb48a1eb2ddff8c",
+  "prompts": {},
+  "sessions": {
+    "s_314be466e6da7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0e716bae-6ad5-4987-8a01-2e228d558e8a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
