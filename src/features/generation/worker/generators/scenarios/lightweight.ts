@@ -218,8 +218,11 @@ export const lightweight: ScenarioCase[] = [
     params: { width: 2, depth: 2, height: 1, base: { ...underside, tile: true } },
   }),
 
-  // The reported repro (#3957 + #3958): the feature interaction neither fix
-  // covers alone, over the relief's partial-coplanar socket↔body fuse.
+  // The feature interaction from the reported repros (#3957 + #3958) at a
+  // test-sized footprint: the slot throat and foot cross-web together, over the
+  // relief's partial-coplanar socket↔body fuse — the case neither fix covers
+  // alone. Per-cell construction makes 2×2 as representative as the reported
+  // 2×5×7 and far cheaper to export.
   defineScenario('lightweight', '2×2 underside + slotted (retention + cross-web)', {
     assert: 'structural',
     forExport: true,
