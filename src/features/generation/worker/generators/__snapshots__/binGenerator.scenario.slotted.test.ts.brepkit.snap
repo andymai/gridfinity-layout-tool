@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`slotted variations > slotted with Y-axis slots 1`] = `2164`;
+exports[`slotted variations > slotted with Y-axis slots 1`] = `2392`;
 
-exports[`slotted variations > slotted with both axes 1`] = `2596`;
+exports[`slotted variations > slotted with both axes 1`] = `3040`;
 
-exports[`slotted variations > slotted without lip 1`] = `1056`;
+exports[`slotted variations > slotted without lip 1`] = `1704`;

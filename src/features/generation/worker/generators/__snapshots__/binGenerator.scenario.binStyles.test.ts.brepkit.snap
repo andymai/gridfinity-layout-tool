@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`bin styles > 2×2 slotted 1`] = `2164`;
+exports[`bin styles > 2×2 slotted 1`] = `2392`;
 
 exports[`bin styles > 2×2 solid 1`] = `1548`;
 
-exports[`bin styles > 2×2 standard 1`] = `1732`;
+exports[`bin styles > 2×2 standard 1`] = `1744`;

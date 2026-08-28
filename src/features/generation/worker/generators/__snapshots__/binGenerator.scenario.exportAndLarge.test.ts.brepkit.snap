@@ -2,6 +2,6 @@
 
 exports[`asymmetric dimensions > 0.5×4 extreme asymmetry 1`] = `1796`;
 
-exports[`export mode > 2×2 default params (forExport=true) 1`] = `2700`;
+exports[`export mode > 2×2 default params (forExport=true) 1`] = `2718`;
 
 exports[`large bin > 8×8 standard 1`] = `15300`;

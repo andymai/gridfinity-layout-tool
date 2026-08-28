@@ -2,26 +2,26 @@
 
 exports[`label tabs > 1×1 label both collision drops front 1`] = `880`;
 
-exports[`label tabs > 2×2 label bracket center 1`] = `1892`;
+exports[`label tabs > 2×2 label bracket center 1`] = `1904`;
 
-exports[`label tabs > 2×2 label bracket left 1`] = `1892`;
+exports[`label tabs > 2×2 label bracket left 1`] = `1904`;
 
-exports[`label tabs > 2×2 label bracket right 1`] = `1892`;
+exports[`label tabs > 2×2 label bracket right 1`] = `1904`;
 
-exports[`label tabs > 2×2 label disabled 1`] = `1732`;
+exports[`label tabs > 2×2 label disabled 1`] = `1744`;
 
-exports[`label tabs > 2×2 label front edge 1`] = `1892`;
+exports[`label tabs > 2×2 label front edge 1`] = `1904`;
 
-exports[`label tabs > 2×2 label lip bracket 1`] = `1908`;
+exports[`label tabs > 2×2 label lip bracket 1`] = `1920`;
 
-exports[`label tabs > 2×2 label lip solid 2mm 1`] = `1844`;
+exports[`label tabs > 2×2 label lip solid 2mm 1`] = `1804`;
 
-exports[`label tabs > 2×2 label solid left 1`] = `1792`;
+exports[`label tabs > 2×2 label solid left 1`] = `1804`;
 
-exports[`label tabs > 2×2×4 label both + inset 5mm 1`] = `1812`;
+exports[`label tabs > 2×2×4 label both + inset 5mm 1`] = `1824`;
 
-exports[`label tabs > 2×2×4 label both edges 1`] = `2052`;
+exports[`label tabs > 2×2×4 label both edges 1`] = `2064`;
 
-exports[`label tabs > 2×2×4 label lip both edges 1`] = `2084`;
+exports[`label tabs > 2×2×4 label lip both edges 1`] = `2096`;
 
-exports[`label tabs > 2×2×6 label dropped (height = 20mm) 1`] = `1892`;
+exports[`label tabs > 2×2×6 label dropped (height = 20mm) 1`] = `1904`;

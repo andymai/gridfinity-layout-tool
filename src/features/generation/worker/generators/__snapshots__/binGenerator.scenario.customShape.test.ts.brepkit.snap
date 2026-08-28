@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`custom-shape > 1.5×1.5 half-bin L user halfSockets off 1`] = `2726`;
+exports[`custom-shape > 1.5×1.5 half-bin L user halfSockets off 1`] = `2802`;
 
-exports[`custom-shape > 1.5×1.5 half-bin L with lip 1`] = `4146`;
+exports[`custom-shape > 1.5×1.5 half-bin L with lip 1`] = `4222`;
 
 exports[`custom-shape > 2×2 mixed-detail per-cell half sockets 1`] = `3670`;
 
@@ -12,13 +12,13 @@ exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`
 
 exports[`custom-shape > 3×3 L with front handle (polygon-aware side mapping) 1`] = `4698`;
 
-exports[`custom-shape > 3×3 L with honeycomb + front cutout (outermost-edge clip) 1`] = `6988`;
+exports[`custom-shape > 3×3 L with honeycomb + front cutout (outermost-edge clip) 1`] = `9700`;
 
 exports[`custom-shape > 3×3 L with honeycomb pattern (polygon edge enumeration) 1`] = `6998`;
 
 exports[`custom-shape > 3×3 L with lip 1`] = `4254`;
 
-exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `4016`;
+exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `4232`;
 
 exports[`custom-shape > 3×3 T with lip 1`] = `4246`;
 
