@@ -1,0 +1,35 @@
+src/shared/utils/slotMath.ts
+  s_314be466e6da7a::t_1847b567e5b519 38-75
+src/features/generation/worker/generators/scenarios/lightweight.ts
+  s_314be466e6da7a::t_6bb573aad6be3d 221-230
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_314be466e6da7a::t_1847b567e5b519 39,74-76,259,271-276,294-311,361-369
+  s_314be466e6da7a::t_fbc5d87a86a9f3 370-371
+src/features/generation/worker/generators/lightweightBaseBuilder.test.ts
+  s_314be466e6da7a::t_1847b567e5b519 57-65
+src/features/generation/worker/generators/undersideRelief.kernel.test.ts
+  s_314be466e6da7a::t_1847b567e5b519 137-144
+src/shared/utils/slotMath.test.ts
+  s_314be466e6da7a::t_1847b567e5b519 12,201-214
+  s_314be466e6da7a::t_7983bbb6f737c0 215-216
+src/features/generation/worker/generators/slotBuilder.ts
+  s_314be466e6da7a::t_1847b567e5b519 22,111-140,325,328-329,376,379-380,387-390,453
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.slotted.test.ts.snap
+  s_314be466e6da7a::t_0fcf1dd195e68a 3,5,7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "492294969cd660b294b7f7a3d6af4448ba2d2be8",
+  "prompts": {},
+  "sessions": {
+    "s_314be466e6da7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0e716bae-6ad5-4987-8a01-2e228d558e8a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
