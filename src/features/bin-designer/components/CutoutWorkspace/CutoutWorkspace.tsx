@@ -1,3 +1,4 @@
+import { loadPanelCollapsed } from '@/design-system';
 /**
  * Full-workspace cutout editor layout shell.
  *
@@ -51,7 +52,6 @@ import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
 import { RepeatSuggestion } from './RepeatSuggestion';
 import { useRepeatSuggestion, applyRepeatMerge } from '../../hooks/useRepeatSuggestion';
-import { loadInspectorCollapsed } from './inspectorDockStorage';
 import { detectRepeatPattern, type RepeatDetection } from '@/shared/utils/cutoutRepeatDetect';
 import { arrayInstanceCount, canArray } from '@/shared/utils/cutoutArray';
 import { clampedDefaultConfig } from '../panel/CutoutsSection/repeatPresets';
@@ -221,7 +221,9 @@ export function CutoutWorkspace() {
 
   // Mirrors the dock's own collapsed state (which it persists) so the canvas
   // knows whether the inspector is there to hold the repeat suggestion.
-  const [dockCollapsed, setDockCollapsed] = useState(loadInspectorCollapsed);
+  const [dockCollapsed, setDockCollapsed] = useState(() =>
+    loadPanelCollapsed('gridfinity-cutout-inspector')
+  );
 
   // Quickstart overlay state
   const { quickstartSeen, markQuickstartSeen } = useCutoutQuickstart();

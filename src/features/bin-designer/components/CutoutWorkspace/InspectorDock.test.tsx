@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { InspectorDock } from './InspectorDock';
 import type { Cutout } from '@/features/bin-designer/types';
-import { loadInspectorCollapsed } from './inspectorDockStorage';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -36,7 +35,7 @@ describe('InspectorDock', () => {
     fireEvent.click(screen.getByLabelText('binDesigner.cutoutEditor.inspectorCollapse'));
     expect(screen.queryByTestId('inspector-content')).not.toBeInTheDocument();
     expect(screen.getByLabelText('binDesigner.cutoutEditor.inspectorExpand')).toBeInTheDocument();
-    expect(loadInspectorCollapsed()).toBe(true);
+    expect(localStorage.getItem('gridfinity-cutout-inspector-collapsed')).toBe('1');
   });
 
   it('starts collapsed when persisted state says so, and can expand back', () => {
@@ -45,7 +44,7 @@ describe('InspectorDock', () => {
     expect(screen.queryByTestId('inspector-content')).not.toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('binDesigner.cutoutEditor.inspectorExpand'));
     expect(screen.getByTestId('inspector-content')).toBeInTheDocument();
-    expect(loadInspectorCollapsed()).toBe(false);
+    expect(localStorage.getItem('gridfinity-cutout-inspector-collapsed')).toBe('0');
   });
 
   it('exposes a resize separator with width value semantics when expanded', () => {

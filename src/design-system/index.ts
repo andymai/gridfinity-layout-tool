@@ -126,6 +126,19 @@ export type { StepperProps } from './Stepper';
 export { NumberField, evaluateNumberExpression } from './NumberField';
 export type { NumberFieldProps } from './NumberField';
 
+// SidePanel (resizable, collapsible docked column: Root, Header, Body)
+export { SidePanel, loadPanelCollapsed, loadPanelWidth } from './SidePanel';
+export type {
+  SidePanelRootProps,
+  SidePanelHeaderProps,
+  SidePanelBodyProps,
+  SidePanelLabels,
+} from './SidePanel';
+
+// SearchInput (Input preset: magnifier, clear affordance, shortcut hint)
+export { SearchInput } from './SearchInput';
+export type { SearchInputProps } from './SearchInput';
+
 export { Collapsible } from './Collapsible';
 export type { CollapsibleProps } from './Collapsible';
 
@@ -192,6 +205,8 @@ export {
   // Individual icons
   ArrowLeftIcon,
   ChevronDownIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
   CheckIcon,
   Grid3x3Icon,
   InfoIcon,
@@ -210,6 +225,8 @@ export type {
   IconProps,
   ArrowLeftIconProps,
   ChevronDownIconProps,
+  ChevronDoubleLeftIconProps,
+  ChevronDoubleRightIconProps,
   CheckIconProps,
   Grid3x3IconProps,
   InfoIconProps,

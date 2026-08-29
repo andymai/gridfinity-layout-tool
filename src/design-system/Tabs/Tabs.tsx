@@ -27,6 +27,7 @@ const tabsListVariants = cva(['flex'], {
       underline: '',
       rail: '',
       pill: 'gap-1',
+      iconRail: 'gap-1 px-1 py-2',
     },
     fullWidth: {
       true: 'w-full',
@@ -35,6 +36,7 @@ const tabsListVariants = cva(['flex'], {
   compoundVariants: [
     { orientation: 'horizontal', visual: 'underline', class: 'border-b border-stroke-subtle' },
     { orientation: 'vertical', visual: 'rail', class: 'border-r border-stroke-subtle py-2' },
+    { orientation: 'vertical', visual: 'iconRail', class: 'items-center' },
   ],
   defaultVariants: {
     orientation: 'horizontal',
@@ -56,6 +58,7 @@ const tabVariants = cva(
         underline: 'px-3 py-2.5 border-b-2 border-transparent',
         rail: 'w-full justify-start text-left px-4 py-2 border-l-2 border-transparent',
         pill: 'justify-center px-4 py-2 rounded-full min-h-[44px]',
+        iconRail: 'h-7 w-7 justify-center rounded-md p-0 border-l-2 border-transparent',
       },
       active: {
         true: 'font-medium',
@@ -71,6 +74,8 @@ const tabVariants = cva(
       { visual: 'rail', active: false, class: 'hover:bg-surface-hover' },
       { visual: 'pill', active: true, class: 'bg-accent text-on-accent' },
       { visual: 'pill', active: false, class: 'hover:bg-surface-hover' },
+      { visual: 'iconRail', active: true, class: 'bg-accent-muted text-accent border-accent' },
+      { visual: 'iconRail', active: false, class: 'hover:bg-surface-hover' },
     ],
     defaultVariants: {
       visual: 'underline',
@@ -158,9 +163,10 @@ export interface TabsListProps<T extends string> {
   /**
    * @default 'underline'. underline = border-b-2 accent active; rail = border-l-2 +
    * bg-surface-elevated active, vertical only; pill = rounded solid bg-accent active,
-   * 44px-friendly.
+   * 44px-friendly; iconRail = 28px square icon-only tabs (vertical only) — give each
+   * tab an aria-label and pair with a right-placed Tooltip.
    */
-  visual?: 'underline' | 'rail' | 'pill';
+  visual?: 'underline' | 'rail' | 'pill' | 'iconRail';
 
   /**
    * flex-1 equal-width tabs.
