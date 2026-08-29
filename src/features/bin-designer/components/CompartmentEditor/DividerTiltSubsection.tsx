@@ -1,10 +1,9 @@
-import { useRef, useState } from 'react';
-import { ArrowLeftIcon, InfoIcon, RotateCcwIcon } from '@/design-system/Icon';
-import { Popover } from '@/design-system/Popover';
+import { ArrowLeftIcon, RotateCcwIcon } from '@/design-system/Icon';
 import { Slider } from '@/design-system/Slider';
 import { Switch } from '@/design-system/Switch';
 import { Collapsible } from '@/design-system/Collapsible';
-import { Button, IconButton, Stepper } from '@/design-system';
+import { Button, Stepper } from '@/design-system';
+import { InfoDot } from '../panel/shared';
 import { useSettingsStore } from '@/core/store/settings';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
@@ -68,7 +67,9 @@ export function DividerTiltSubsection() {
           <span className="text-xs font-medium uppercase tracking-wide text-content-tertiary">
             {t('binDesigner.angledDividers.title')}
           </span>
-          <InfoPopoverButton t={t} />
+          <InfoDot aria-label={t('binDesigner.angledDividers.helpButtonLabel')}>
+            <p>{t('binDesigner.angledDividers.infoBody')}</p>
+          </InfoDot>
         </div>
         <Switch
           checked={enabled}
@@ -174,37 +175,6 @@ function ListView({ rows, compartments, hoveredKey, hasAnyOverride, handlers, t 
         </Button>
       )}
     </div>
-  );
-}
-
-function InfoPopoverButton({ t }: { readonly t: Translate }) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <IconButton
-        ref={buttonRef}
-        type="button"
-        variant="ghost"
-        size="sm"
-        touchTarget={false}
-        onClick={() => setOpen((prev) => !prev)}
-        aria-label={t('binDesigner.angledDividers.helpButtonLabel')}
-        aria-expanded={open}
-        className="h-4 w-4 rounded-full text-content-tertiary hover:bg-transparent hover:text-content-secondary"
-      >
-        <InfoIcon size="xs" />
-      </IconButton>
-      <Popover
-        anchorRef={buttonRef}
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        placement="bottom-start"
-        className="max-w-[260px] p-3 text-xs text-content-secondary"
-      >
-        <p>{t('binDesigner.angledDividers.infoBody')}</p>
-      </Popover>
-    </>
   );
 }
 
