@@ -133,7 +133,7 @@ describe('LidSection', () => {
       expect(
         screen.queryByRole('spinbutton', { name: 'Retention magnet diameter in millimeters' })
       ).not.toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
       expect(
         screen.getByRole('spinbutton', { name: 'Retention magnet diameter in millimeters' })
       ).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe('LidSection', () => {
     it('commits a typed thickness to lid.topThicknessMm', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);
-      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
       const input = screen.getByRole('spinbutton', {
         name: 'Lid top plate thickness in millimeters',
       });
@@ -158,7 +158,7 @@ describe('LidSection', () => {
     it('persists a clean one-decimal value at every step', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);
-      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
       const input = screen.getByRole('spinbutton', {
         name: 'Lid top plate thickness in millimeters',
       });
@@ -174,7 +174,7 @@ describe('LidSection', () => {
     it('clamps an over-range thickness to the maximum', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);
-      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
       const input = screen.getByRole('spinbutton', {
         name: 'Lid top plate thickness in millimeters',
       });
@@ -197,7 +197,7 @@ describe('LidSection', () => {
         base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 },
       });
       render(<LidSection />);
-      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
       expect(screen.getByText(/Top is 3\.1mm here/)).toBeInTheDocument();
     });
   });
@@ -217,7 +217,7 @@ describe('LidSection', () => {
         },
       });
       render(<LidSection />);
-      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
     }
 
     it('breaks the plate into recess, floor and overall', () => {
@@ -285,7 +285,7 @@ describe('LidSection', () => {
     it('shows no breakdown on a lid without a tray', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);
-      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
       expect(screen.queryByText('Overall lid thickness')).not.toBeInTheDocument();
     });
   });
@@ -440,7 +440,7 @@ describe('LidSection', () => {
         },
       });
       render(<LidSection />);
-      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Fine tuning' }));
       expect(
         screen.getByRole('spinbutton', { name: 'Tray recess depth in millimeters' })
       ).toBeInTheDocument();

@@ -1130,7 +1130,7 @@
   "binDesigner.labelTextUseBinName": "빈 이름 “{name}” 사용",
   "binDesigner.labelTextWidenTabs": "탭 넓히기",
   "binDesigner.labelWarningJump": "{group} 열기",
-  "binDesigner.lid.advanced": "고급",
+  "binDesigner.lid.advanced": "세부 조정",
   "binDesigner.lid.attachment": "부착",
   "binDesigner.lid.attachment.clickRails": "딸깍 레일",
   "binDesigner.lid.attachment.friction": "마찰",

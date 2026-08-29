@@ -151,7 +151,7 @@ export function LabelTabsSection() {
               cut into the bin, or engraved on separately printed plates (#2666)
               — which in socket mode also gives each row a plate to size. */}
           <div>
-            <span className="mb-1 block text-xs font-medium text-content-secondary">
+            <span className="mb-1 block text-label text-content-tertiary">
               {t('binDesigner.tabMode')}
             </span>
             <div role="group" aria-label={t('binDesigner.tabMode')} className={SEGMENT_GROUP_CLASS}>
@@ -188,7 +188,7 @@ export function LabelTabsSection() {
           {state.isSocketMode && (
             <>
               <div>
-                <span className="mb-1 block text-xs font-medium text-content-secondary">
+                <span className="mb-1 block text-label text-content-tertiary">
                   {t('binDesigner.socketStyle')}
                 </span>
                 <div
@@ -307,7 +307,7 @@ export function LabelTabsSection() {
           >
             <div className="space-y-3">
               <div>
-                <span className="mb-1 block text-xs font-medium text-content-secondary">
+                <span className="mb-1 block text-label text-content-tertiary">
                   {t('binDesigner.tabEdges')}
                 </span>
                 <div
@@ -400,7 +400,7 @@ export function LabelTabsSection() {
             <div className="space-y-3">
               {/* Support */}
               <div>
-                <span className="mb-1 block text-xs font-medium text-content-secondary">
+                <span className="mb-1 block text-label text-content-tertiary">
                   {t('binDesigner.tabSupport')}
                 </span>
                 <div

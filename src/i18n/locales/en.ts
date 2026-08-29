@@ -1997,7 +1997,7 @@ const en: Record<string, string> = {
     'A plain closed top. Nothing stacks on it and nothing rests in it.',
   'binDesigner.lid.frictionHint':
     'Grips the lip by friction alone, with no rails or magnets. Easiest to print and pull off.',
-  'binDesigner.lid.advanced': 'Advanced',
+  'binDesigner.lid.advanced': 'Fine tuning',
   'binDesigner.lid.requiresStackingLip': 'Requires stacking lip',
   'binDesigner.lid.stackLipOnly': 'Stacking lip only',
   'binDesigner.lid.stackGridHint':
