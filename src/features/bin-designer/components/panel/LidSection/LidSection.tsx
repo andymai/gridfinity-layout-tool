@@ -23,7 +23,16 @@ import { LidGripControls } from '../LidGripControls';
 import { SlideControls } from '../SlideControls';
 import { HingeControls } from '../HingeControls';
 import { StepperField } from '../shared/StepperField';
-import { Hint, Readout, SubHeader, DependencyHint, SegmentGrid, InfoDot } from '../shared';
+import {
+  Hint,
+  Readout,
+  SubHeader,
+  DependencyHint,
+  SegmentGrid,
+  InfoDot,
+  SideSelector,
+} from '../shared';
+import type { SideState } from '../shared';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -87,11 +96,10 @@ function CompatibilityIssue({
   );
 }
 
-/** Per-side click-rail toggles. Multi-select (each wall independent), so this
- *  stays a hand-rolled switch group rather than the single-select
- *  SegmentedControl primitive. A side auto-disables when a feature conflict
- *  (label tab, wall cutout, intruding handle) affects it; the user's persisted
- *  intent is kept so the rail returns once the conflict is resolved. */
+/** Per-side click-rail toggles. Multi-select (each wall independent). A side
+ *  auto-disables when a feature conflict (label tab, wall cutout, intruding
+ *  handle) affects it; the user's persisted intent is kept so the rail returns
+ *  once the conflict is resolved. */
 function RailSides({
   state,
   onToggle,
@@ -101,45 +109,26 @@ function RailSides({
   onToggle: (side: (typeof LID_RAIL_SIDES)[number]) => void;
   t: Translator;
 }) {
+  const sides: SideState[] = LID_RAIL_SIDES.map((side) => {
+    const isAutoDisabled = state.disabledRails.has(side);
+    return {
+      side,
+      label: t(`binDesigner.lid.side.${side}`),
+      active: state.clickRails[side],
+      disabled: isAutoDisabled,
+      title: isAutoDisabled
+        ? t('binDesigner.lid.clickRailDisabledBySide', {
+            side: t(`binDesigner.lid.side.${side}`),
+          })
+        : undefined,
+    };
+  });
   return (
     <div>
-      <span className="mb-1 block text-xs font-medium text-content-secondary">
+      <span className="mb-1 block text-label text-content-tertiary">
         {t('binDesigner.lid.clickRails')}
       </span>
-      <div className="flex gap-1">
-        {LID_RAIL_SIDES.map((side) => {
-          const isActive = state.clickRails[side];
-          const isAutoDisabled = state.disabledRails.has(side);
-          const effectiveActive = isActive && !isAutoDisabled;
-          const tooltip = isAutoDisabled
-            ? t('binDesigner.lid.clickRailDisabledBySide', {
-                side: t(`binDesigner.lid.side.${side}`),
-              })
-            : undefined;
-          return (
-            <Button
-              key={side}
-              type="button"
-              variant="ghost"
-              role="switch"
-              aria-checked={effectiveActive}
-              aria-disabled={isAutoDisabled}
-              disabled={isAutoDisabled}
-              title={tooltip}
-              onClick={() => onToggle(side)}
-              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                isAutoDisabled
-                  ? 'cursor-not-allowed border border-stroke-subtle bg-surface-secondary text-content-tertiary line-through opacity-60'
-                  : effectiveActive
-                    ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-              }`}
-            >
-              {t(`binDesigner.lid.side.${side}`)}
-            </Button>
-          );
-        })}
-      </div>
+      <SideSelector sides={sides} onToggle={onToggle} ariaLabel={t('binDesigner.lid.clickRails')} />
     </div>
   );
 }
