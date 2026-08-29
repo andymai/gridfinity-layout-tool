@@ -1,0 +1,55 @@
+src/i18n/locales/en.ts
+  s_2a038ae0eafe62::t_3d584e367a6e66 1928-1929
+  s_2a038ae0eafe62::t_0f65b16886f760 1930
+src/i18n/locales/es.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/sv.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/uk.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/ko.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 1716-1717
+src/i18n/locales/pl.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/nl.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/nb.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/de.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/it.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/ja.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/fr.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/pt-BR.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/cs.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.tsx
+  s_2a038ae0eafe62::t_3d584e367a6e66 418
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_2a038ae0eafe62::t_3d584e367a6e66 31-32,696-699
+  s_2a038ae0eafe62::t_0e4e51ba1aed51 700
+src/i18n/locales/zh-CN.json
+  s_2a038ae0eafe62::t_3d584e367a6e66 1716-1717
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.test.tsx
+  s_2a038ae0eafe62::t_d7913954575982 189,192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "280ecbfeff072f2bf054a4d7810a801742b67115",
+  "prompts": {},
+  "sessions": {
+    "s_2a038ae0eafe62": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6d11451-a87d-4bb2-a9ea-ae3543c6b5a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
