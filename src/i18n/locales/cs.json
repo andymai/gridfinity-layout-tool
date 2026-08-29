@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Rozbalit panel",
   "binDesigner.panel.resize": "Změnit velikost panelu",
   "binDesigner.panel.railTitle": "Nastavení",
-  "common.more": "Více"
+  "common.more": "Více",
+  "binDesigner.printFit.fits": "Vejde se na vaši tiskovou podložku {width} × {depth} mm.",
+  "binDesigner.dependency.enableStackingLip": "Zapnout stohovací okraj",
+  "binDesigner.dependency.editFootprint": "Upravit půdorys"
 }

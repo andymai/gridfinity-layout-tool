@@ -9,7 +9,6 @@ import type {
   BinParams,
   ColorTool,
   CutoutTarget,
-  DesignerTab,
   DesignerCategory,
   PickerOverlayState,
   MeasureMode,
@@ -29,12 +28,6 @@ type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 
 export function createUISlice(set: Set) {
   return {
-    setActiveTab: (tab: DesignerTab) => {
-      set((state) => {
-        state.ui.activeTab = tab;
-      });
-    },
-
     setActiveCategory: (category: DesignerCategory) => {
       set((state) => {
         state.ui.activeCategory = category;

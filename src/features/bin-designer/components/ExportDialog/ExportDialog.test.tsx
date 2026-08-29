@@ -104,7 +104,6 @@ function setupStore(overrides: Record<string, unknown> = {}) {
     },
     ui: {
       ...DEFAULT_UI_STATE,
-      activeTab: 'dimensions',
       exportDialogOpen: true,
       wireframeMode: false,
       designListOpen: false,
@@ -125,7 +124,6 @@ describe('ExportDialog', () => {
     setupStore({
       ui: {
         ...DEFAULT_UI_STATE,
-        activeTab: 'dimensions',
         exportDialogOpen: false,
         wireframeMode: false,
         designListOpen: false,
@@ -395,7 +393,6 @@ describe('ExportDialog', () => {
         exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format },
         ui: {
           ...DEFAULT_UI_STATE,
-          activeTab: 'dimensions',
           exportDialogOpen: open,
           wireframeMode: false,
           designListOpen: false,
@@ -489,7 +486,6 @@ describe('ExportDialog', () => {
         exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format },
         ui: {
           ...DEFAULT_UI_STATE,
-          activeTab: 'dimensions',
           exportDialogOpen: open,
           wireframeMode: false,
           designListOpen: false,

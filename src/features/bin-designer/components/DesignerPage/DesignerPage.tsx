@@ -2,9 +2,9 @@
  * Bin Designer page layout.
  *
  * Three responsive layouts:
- * - Desktop (>=900px): Side panel (288px) + full 3D preview
- * - Tablet (768-899px): Stacked - 3D preview (50vh) + tabbed controls below
- * - Mobile (<768px): Stacked - 3D preview (40vh) + tabbed controls
+ * - Desktop (>=900px): resizable rail-shell panel + full 3D preview
+ * - Tablet (768-899px): stacked — 3D preview (50vh) + panel below
+ * - Mobile (<768px): stacked — 3D preview (40vh) + panel below
  *
  * The useGeneration hook auto-generates mesh when parameters change.
  */

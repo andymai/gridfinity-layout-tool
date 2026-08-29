@@ -1,16 +1,18 @@
 /**
- * Which panel groups hold something changed from the defaults.
+ * Which rail categories hold something changed from the defaults.
  *
- * Drives the dot on a group header, so a collapsed panel still says where the
- * edits are. The summaries say WHAT a group holds; this says whether it is
- * stock, which is the question you can only otherwise answer by remembering
- * every default.
+ * Drives the dot on a category's rail icon, so the panel says where the edits
+ * are without opening every page. The summaries say WHAT a category holds;
+ * this says whether it is stock, which is the question you can only otherwise
+ * answer by remembering every default.
  */
 
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
 
-export type PanelGroup = 'shape' | 'lid' | 'interior' | 'base' | 'finishing';
+import type { DesignerCategory } from '@/features/bin-designer/types';
+
+export type PageCategory = Exclude<DesignerCategory, 'selection'>;
 
 /**
  * Where a param is edited. Anything unlisted belongs to Shape, which is what
@@ -18,8 +20,7 @@ export type PanelGroup = 'shape' | 'lid' | 'interior' | 'base' | 'finishing';
  * rather than being silently dropped from the comparison, and a dot in the
  * wrong place is visible where a missing one is not.
  */
-const GROUP_OF: Partial<Record<keyof BinParams, PanelGroup>> = {
-  lid: 'lid',
+const CATEGORY_OF: Partial<Record<keyof BinParams, PageCategory>> = {
   style: 'interior',
   compartments: 'interior',
   scoop: 'interior',
@@ -31,24 +32,21 @@ const GROUP_OF: Partial<Record<keyof BinParams, PanelGroup>> = {
   cutoutConfig: 'interior',
   knifeRest: 'interior',
   meshAssets: 'interior',
-  base: 'base',
-  floorPattern: 'base',
-  featureColors: 'finishing',
-  gridUnitMm: 'finishing',
-  gridUnitMmY: 'finishing',
-  heightUnitMm: 'finishing',
-  nozzleSizeMm: 'finishing',
+  lid: 'features',
+  walls: 'features',
+  handles: 'features',
+  slide: 'features',
+  wallPattern: 'style',
+  floorPattern: 'style',
+  featureColors: 'style',
+  surfaceText: 'style',
+  textDefaults: 'style',
+  gridUnitMm: 'print',
+  gridUnitMmY: 'print',
+  heightUnitMm: 'print',
+  nozzleSizeMm: 'print',
+  splitConnectors: 'print',
 };
-
-/**
- * Params edited from more than one group, deliberately left out.
- *
- * `surfaceText` holds wall text (Shape) and lid text (Lid) in one map, and
- * `textDefaults` styles both. Attributing either to a single group would light
- * the wrong dot, a worse failure than not lighting one, because a dot that is
- * sometimes wrong cannot be trusted anywhere.
- */
-const SPANS_GROUPS: ReadonlySet<string> = new Set(['surfaceText', 'textDefaults']);
 
 /**
  * Order-insensitive structural compare.
@@ -95,23 +93,25 @@ function matchesDefault(params: BinParams, key: string): boolean {
   return JSON.stringify(canonical(current[key])) === JSON.stringify(canonical(defaults[key]));
 }
 
-export function modifiedGroups(params: BinParams): Record<PanelGroup, boolean> {
-  const modified: Record<PanelGroup, boolean> = {
+export function modifiedCategories(params: BinParams): Record<PageCategory, boolean> {
+  const modified: Record<PageCategory, boolean> = {
     shape: false,
-    lid: false,
     interior: false,
-    base: false,
-    finishing: false,
+    features: false,
+    style: false,
+    print: false,
   };
 
   // Both sides, so an optional field the defaults omit (`cellMask`) still
   // counts once a design carries it.
   const keys = new Set([...Object.keys(DEFAULT_BIN_PARAMS), ...Object.keys(params)]);
 
+  // The task-based taxonomy resolves what the anatomy one could not:
+  // `surfaceText` and `textDefaults` are text appearance wherever the letters
+  // sit, so both attribute cleanly to Style instead of being excluded.
   for (const key of keys) {
-    if (SPANS_GROUPS.has(key)) continue;
     if (matchesDefault(params, key)) continue;
-    modified[GROUP_OF[key as keyof BinParams] ?? 'shape'] = true;
+    modified[CATEGORY_OF[key as keyof BinParams] ?? 'shape'] = true;
   }
 
   return modified;

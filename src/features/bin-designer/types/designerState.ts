@@ -59,7 +59,6 @@ import type { PerfSnapshot } from '@/shared/types/generation';
 import type {
   DesignerHistory,
   DesignerUIState,
-  DesignerTab,
   DesignerCategory,
   SplitViewMode,
   CutoutTarget,
@@ -405,7 +404,6 @@ export interface DesignerState {
   clearPerfHistory: () => void;
 
   // UI actions
-  setActiveTab: (tab: DesignerTab) => void;
   setActiveCategory: (category: DesignerCategory) => void;
   setExportDialogOpen: (open: boolean) => void;
   setDesignListOpen: (open: boolean) => void;

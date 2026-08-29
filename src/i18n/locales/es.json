@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Expandir panel",
   "binDesigner.panel.resize": "Cambiar tamaño del panel",
   "binDesigner.panel.railTitle": "Ajustes",
-  "common.more": "Más"
+  "common.more": "Más",
+  "binDesigner.printFit.fits": "Cabe en tu cama de impresión de {width} × {depth} mm.",
+  "binDesigner.dependency.enableStackingLip": "Activar borde apilable",
+  "binDesigner.dependency.editFootprint": "Editar contorno"
 }

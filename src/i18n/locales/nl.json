@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Paneel uitklappen",
   "binDesigner.panel.resize": "Paneelgrootte wijzigen",
   "binDesigner.panel.railTitle": "Instellingen",
-  "common.more": "Meer"
+  "common.more": "Meer",
+  "binDesigner.printFit.fits": "Past op je printbed van {width} × {depth} mm.",
+  "binDesigner.dependency.enableStackingLip": "Stapelrand inschakelen",
+  "binDesigner.dependency.editFootprint": "Omtrek bewerken"
 }

@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Vis panel",
   "binDesigner.panel.resize": "Endre panelstørrelse",
   "binDesigner.panel.railTitle": "Innstillinger",
-  "common.more": "Mer"
+  "common.more": "Mer",
+  "binDesigner.printFit.fits": "Får plass på skriveplaten din på {width} × {depth} mm.",
+  "binDesigner.dependency.enableStackingLip": "Slå på stablekant",
+  "binDesigner.dependency.editFootprint": "Rediger omriss"
 }

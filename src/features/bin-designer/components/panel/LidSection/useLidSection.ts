@@ -222,10 +222,10 @@ export function useLidSection() {
   // the worker builds from: the pin lengths it quotes are the ones the barrel
   // is actually bored for, and they change as the bin is resized.
   const hingePlan = planHingeLid(params);
-  const disabledReason =
-    needsStackingLip && !base.stackingLip
-      ? t('binDesigner.lid.requiresStackingLip')
-      : (blockerReason ?? undefined);
+  const stackingLipMissing = needsStackingLip && !base.stackingLip;
+  const disabledReason = stackingLipMissing
+    ? t('binDesigner.lid.requiresStackingLip')
+    : (blockerReason ?? undefined);
 
   // Effective enabled: the lid only renders/exports when the persisted
   // flag is set AND the bin has a stacking lip AND there are no blocker
@@ -966,6 +966,7 @@ export function useLidSection() {
       magneticClearanceMm: LID_MAGNETIC_EXTRA_CLEARANCE,
       hasMagneticRelief: resolveLidFootprintClearance(params) > LID_FIT_CLEARANCE,
       disabledReason,
+      stackingLipMissing,
       disabledRails,
       railCoverageOptions,
       valueSummary,
@@ -984,6 +985,7 @@ export function useLidSection() {
       isLidTextOpen,
     },
     handlers: {
+      enableStackingLip: () => updateBase({ stackingLip: true }),
       createMatchingTray,
       toggleEnabled,
       setAttachment,

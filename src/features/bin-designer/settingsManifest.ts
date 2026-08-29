@@ -9,6 +9,7 @@
  */
 
 import type { DesignerCategory } from '@/features/bin-designer/types';
+import { jumpToHelpTarget } from '@/shared/help/helpJumpDispatcher';
 
 export interface DesignerSettingEntry {
   readonly controlId: string;
@@ -35,10 +36,20 @@ export const DESIGNER_SETTINGS: readonly DesignerSettingEntry[] = [
   { controlId: 'bd-wall-style', category: 'style' },
   { controlId: 'bd-floor-pattern', category: 'style' },
   { controlId: 'bd-physical-units', category: 'print' },
+  { controlId: 'bd-print-fit', category: 'print' },
 ];
 
 export function categoryForControl(
   controlId: string
 ): Exclude<DesignerCategory, 'selection'> | undefined {
   return DESIGNER_SETTINGS.find((entry) => entry.controlId === controlId)?.category;
+}
+
+/**
+ * Jump the panel to a designer control: switches to its category (the shell
+ * listens for the dispatched event), opens enclosing disclosures, then scrolls
+ * and pulses the marker.
+ */
+export function jumpToDesignerControl(controlId: string): void {
+  void jumpToHelpTarget({ surface: 'binDesigner', controlId });
 }

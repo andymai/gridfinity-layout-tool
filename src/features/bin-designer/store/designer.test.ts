@@ -31,7 +31,6 @@ describe('useDesignerStore', () => {
       wasmStatus: 'unloaded',
       ui: {
         ...DEFAULT_UI_STATE,
-        activeTab: 'dimensions',
         exportDialogOpen: false,
         designListOpen: false,
         wireframeMode: false,
@@ -270,9 +269,9 @@ describe('useDesignerStore', () => {
   });
 
   describe('UI actions', () => {
-    it('should set active tab', () => {
-      useDesignerStore.getState().setActiveTab('base');
-      expect(useDesignerStore.getState().ui.activeTab).toBe('base');
+    it('sets the active category', () => {
+      useDesignerStore.getState().setActiveCategory('shape');
+      expect(useDesignerStore.getState().ui.activeCategory).toBe('shape');
     });
 
     it('should toggle export dialog', () => {

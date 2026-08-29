@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Розгорнути панель",
   "binDesigner.panel.resize": "Змінити розмір панелі",
   "binDesigner.panel.railTitle": "Налаштування",
-  "common.more": "Більше"
+  "common.more": "Більше",
+  "binDesigner.printFit.fits": "Вміщується на ваш стіл друку {width} × {depth} мм.",
+  "binDesigner.dependency.enableStackingLip": "Увімкнути стековий обід",
+  "binDesigner.dependency.editFootprint": "Редагувати контур"
 }

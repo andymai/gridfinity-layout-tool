@@ -52,6 +52,19 @@ Read `src/features/bin-designer/README.md` first — it covers the store/worker/
 3. Worker: `src/features/generation/worker/generators/labelTabBuilder.ts` — indexes `compartmentTexts?.[cellId]` by compartment ID; in `edges: 'both'` mode it silently drops colliding front tabs, and tabs are suppressed when the anchor wall is tilted (`compartmentHasTiltedBackWall` / `compartmentHasTiltedFrontWall` in `utils/compartmentTabFit.ts`).
 4. Update `components/preview/GhostLabelTabs/` so the generating-state preview matches.
 
+### Panel shell contracts (rail era)
+
+The panel is a rail of task categories (`BinPanelShell`): pages stay mounted
+(each keeps its scroll), `ui.activeCategory` + localStorage persist the pick,
+and `settingsManifest.ts` maps every `data-help-target` controlId to its
+category — a control that moves pages must update its manifest entry or help
+deep links open the wrong page. `jumpToDesignerControl(controlId)` is the one
+way to send the user to a control (switches category, opens `MoreDisclosure`s
+via the dispatcher's `help-jump:any` broadcast, pulses the marker); blocked
+features surface it through `DependencyHint`. Rail dots come from
+`categoryModified` (params keyed to categories; unlisted keys read as Shape)
+and the Print icon's warning dot from `needsSplit`.
+
 ## Verification
 
 ```bash

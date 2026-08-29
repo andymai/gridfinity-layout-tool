@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Développer le panneau",
   "binDesigner.panel.resize": "Redimensionner le panneau",
   "binDesigner.panel.railTitle": "Réglages",
-  "common.more": "Plus"
+  "common.more": "Plus",
+  "binDesigner.printFit.fits": "Tient sur votre plateau de {width} × {depth} mm.",
+  "binDesigner.dependency.enableStackingLip": "Activer la lèvre d’empilage",
+  "binDesigner.dependency.editFootprint": "Modifier l’empreinte"
 }

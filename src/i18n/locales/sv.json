@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Fäll ut panelen",
   "binDesigner.panel.resize": "Ändra panelens storlek",
   "binDesigner.panel.railTitle": "Inställningar",
-  "common.more": "Mer"
+  "common.more": "Mer",
+  "binDesigner.printFit.fits": "Får plats på din skrivarbädd på {width} × {depth} mm.",
+  "binDesigner.dependency.enableStackingLip": "Aktivera stapelkant",
+  "binDesigner.dependency.editFootprint": "Redigera kontur"
 }

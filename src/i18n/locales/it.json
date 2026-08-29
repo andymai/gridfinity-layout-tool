@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Espandi pannello",
   "binDesigner.panel.resize": "Ridimensiona pannello",
   "binDesigner.panel.railTitle": "Impostazioni",
-  "common.more": "Altro"
+  "common.more": "Altro",
+  "binDesigner.printFit.fits": "Entra nel tuo piano di stampa da {width} × {depth} mm.",
+  "binDesigner.dependency.enableStackingLip": "Attiva il bordo impilabile",
+  "binDesigner.dependency.editFootprint": "Modifica la sagoma"
 }

@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "展开面板",
   "binDesigner.panel.resize": "调整面板大小",
   "binDesigner.panel.railTitle": "设置",
-  "common.more": "更多"
+  "common.more": "更多",
+  "binDesigner.printFit.fits": "可放入您的 {width} × {depth} mm 打印床。",
+  "binDesigner.dependency.enableStackingLip": "启用堆叠边缘",
+  "binDesigner.dependency.editFootprint": "编辑轮廓"
 }

@@ -24,7 +24,7 @@ import { LidGripControls } from '../LidGripControls';
 import { SlideControls } from '../SlideControls';
 import { HingeControls } from '../HingeControls';
 import { StepperField } from '../shared/StepperField';
-import { Hint, Readout, SubHeader } from '../shared';
+import { Hint, Readout, SubHeader, DependencyHint } from '../shared';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -176,6 +176,12 @@ export function LidSection() {
         onChange={handlers.toggleEnabled}
         disabledReason={state.disabledReason}
       />
+      {state.stackingLipMissing && (
+        <DependencyHint
+          actionLabel={t('binDesigner.dependency.enableStackingLip')}
+          onAction={handlers.enableStackingLip}
+        />
+      )}
 
       {state.enabled && (
         <>

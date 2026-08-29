@@ -2,8 +2,10 @@ import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
 import { PanelSection } from '../../PanelSection';
 import { FeatureGate } from '../../FeatureGate';
+import { DependencyHint } from '../../shared';
 import { InteriorSection } from '../../InteriorSection';
 import { LabelTabsSection } from '../../LabelTabsSection';
 import { ScoopSection } from '../../ScoopSection';
@@ -19,6 +21,13 @@ export function InteriorPage() {
     }))
   );
   const customShapeReason = t('binDesigner.shape.custom.hint');
+  const footprintFix = isCustomShape ? (
+    <DependencyHint
+      reason={customShapeReason}
+      actionLabel={t('binDesigner.dependency.editFootprint')}
+      onAction={() => jumpToDesignerControl('bd-shape')}
+    />
+  ) : null;
 
   return (
     <div className="divide-y divide-stroke-subtle/50">
@@ -29,12 +38,14 @@ export function InteriorPage() {
       </PanelSection>
       {showLabelTabs && (
         <PanelSection helpTarget="bd-label-tabs">
+          {footprintFix}
           <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
             <LabelTabsSection />
           </FeatureGate>
         </PanelSection>
       )}
       <PanelSection helpTarget="bd-scoop">
+        {footprintFix}
         <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
           <ScoopSection />
         </FeatureGate>

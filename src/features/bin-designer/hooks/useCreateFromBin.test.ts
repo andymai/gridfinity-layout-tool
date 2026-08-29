@@ -33,7 +33,6 @@ describe('useCreateFromBin', () => {
       history: { past: [], future: [] },
       ui: {
         ...initialState.ui,
-        activeTab: 'dimensions',
         exportDialogOpen: false,
         designListOpen: false,
         wireframeMode: false,
