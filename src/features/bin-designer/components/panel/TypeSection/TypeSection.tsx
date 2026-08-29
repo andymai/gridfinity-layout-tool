@@ -5,8 +5,13 @@
  * exist because the type system has roughly a dozen fields and almost nobody
  * wants to assemble a coherent look out of them; the knobs exist because the
  * few who do should not be blocked by a curated list.
+ *
+ * Hovering or focusing a preset previews it through the real specimen, but
+ * only once that preset's face has loaded: swapping in a "loading" placeholder
+ * mid-hover would blank the one truthful preview the section has.
  */
 
+import { useState } from 'react';
 import {
   Alert,
   Button,
@@ -23,27 +28,32 @@ import {
   TEXT_CASES,
   TEXT_CUT_PROFILES,
   TEXT_FONT_FAMILIES,
+  TEXT_PRESETS,
   TEXT_PRESET_IDS,
 } from '@/features/bin-designer/types';
 import type {
   TextCase,
   TextCutProfile,
   TextMode,
+  TextPresetId,
   TextSizeMode,
 } from '@/features/bin-designer/types';
 import { cn } from '@/design-system/cn';
+import { resolveEffectiveFont } from '@/shared/utils/typePlan';
+import { useTypeMeasurer } from '@/features/bin-designer/hooks/useTypeMeasurer';
 import { AnchorPicker } from '../../controls/AnchorPicker';
 import { TypeSpecimen } from '../../controls/TypeSpecimen';
+import { Hint, SubHeader } from '../shared';
 import { useTypeSection, TYPE_BOUNDS } from './useTypeSection';
 
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
 const SIZE_MODE_OPTIONS: readonly TextSizeMode[] = ['auto', 'fixed'] as const;
 
-/** Stepper with the caption every other panel section draws above its own. */
-function LabelledStepper({ label, children }: { label: string; children: ReactNode }) {
+/** The section's one caption idiom: a text-label caption above its control. */
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <span className="mb-1 block text-xs text-content-tertiary">{label}</span>
+      <span className="mb-1 block text-label text-content-tertiary">{label}</span>
       {children}
     </div>
   );
@@ -52,6 +62,15 @@ function LabelledStepper({ label, children }: { label: string; children: ReactNo
 export function TypeSection() {
   const { t, state, handlers } = useTypeSection();
   const { style } = state;
+
+  // Hover/focus preview of a preset, gated on its face being loaded so the
+  // specimen never trades a real rendering for a loading placeholder.
+  const [previewId, setPreviewId] = useState<TextPresetId | null>(null);
+  const previewStyle = previewId !== null ? { ...style, ...TEXT_PRESETS[previewId] } : null;
+  const previewMeasurer = useTypeMeasurer(
+    previewStyle ? [resolveEffectiveFont(previewStyle.font, previewStyle.mode)] : []
+  );
+  const specimenStyle = previewStyle && previewMeasurer !== null ? previewStyle : style;
 
   const caseOptions: SegmentedControlOption<TextCase>[] = TEXT_CASES.map((value) => ({
     value,
@@ -63,39 +82,57 @@ export function TypeSection() {
 
   return (
     <div className="space-y-3">
-      <span className="block text-xs font-medium text-content-secondary">
-        {t('binDesigner.type.heading')}
-      </span>
+      <div className="space-y-1">
+        <SubHeader>{t('binDesigner.type.heading')}</SubHeader>
+        <Hint>{t('binDesigner.type.scope')}</Hint>
+      </div>
 
-      <div className="flex flex-wrap gap-1.5">
-        {TEXT_PRESET_IDS.map((id) => {
-          const active = state.activePreset === id;
-          return (
-            <Button
-              key={id}
-              type="button"
-              variant="ghost"
-              aria-pressed={active}
-              onClick={() => handlers.applyPreset(id)}
-              className={cn(
-                'h-auto rounded-full border px-2.5 py-1 text-label transition-colors',
-                active
-                  ? 'border-accent bg-accent/15 text-accent hover:bg-accent/15 hover:text-accent'
-                  : 'border-stroke-subtle bg-surface-elevated text-content-secondary hover:border-accent/50 hover:text-content'
-              )}
-            >
-              {t(`binDesigner.type.preset.${id}`)}
-            </Button>
-          );
-        })}
+      <div className="space-y-1.5">
+        <div
+          role="group"
+          aria-label={t('binDesigner.type.heading')}
+          className="grid grid-cols-2 gap-1.5"
+        >
+          {TEXT_PRESET_IDS.map((id) => {
+            const active = state.activePreset === id;
+            return (
+              <Button
+                key={id}
+                type="button"
+                variant="ghost"
+                touchTarget={false}
+                aria-pressed={active}
+                onClick={() => {
+                  handlers.applyPreset(id);
+                  setPreviewId(null);
+                }}
+                onMouseEnter={() => setPreviewId(id)}
+                onMouseLeave={() => setPreviewId((p) => (p === id ? null : p))}
+                onFocus={() => setPreviewId(id)}
+                onBlur={() => setPreviewId((p) => (p === id ? null : p))}
+                className={cn(
+                  'h-auto flex-col items-start gap-0 rounded-md border px-2.5 py-1.5 text-left font-normal transition-colors',
+                  active
+                    ? 'border-accent bg-accent/10 hover:bg-accent/10'
+                    : 'border-stroke-subtle bg-surface-elevated hover:border-stroke-strong hover:bg-surface-elevated'
+                )}
+              >
+                <span className={cn('text-value', active ? 'text-accent' : 'text-content')}>
+                  {t(`binDesigner.type.preset.${id}`)}
+                </span>
+                <span className="text-micro text-content-tertiary">
+                  {t(`binDesigner.type.preset.${id}.desc`)}
+                </span>
+              </Button>
+            );
+          })}
+        </div>
         {state.activePreset === null && (
-          <span className="self-center rounded-full border border-stroke-subtle px-2.5 py-1 text-label text-content-tertiary">
-            {t('binDesigner.type.preset.custom')}
-          </span>
+          <p className="text-micro text-content-tertiary">{t('binDesigner.type.preset.custom')}</p>
         )}
       </div>
 
-      <TypeSpecimen text={state.specimenText} style={style} />
+      <TypeSpecimen text={state.specimenText} style={specimenStyle} />
 
       {state.stemWarning && (
         <Alert intent="warning">
@@ -117,34 +154,31 @@ export function TypeSection() {
         </Alert>
       )}
 
-      <Select
-        aria-label={t('binDesigner.type.font')}
-        size="sm"
-        fullWidth
-        value={style.font}
-        onChange={(e) => handlers.setFont(e.target.value as (typeof TEXT_FONT_FAMILIES)[number])}
-        options={TEXT_FONT_FAMILIES.map((font) => ({
-          id: font,
-          name: t(`binDesigner.type.font.${font}`),
-        }))}
-      />
-      <SegmentedControl
-        aria-label={t('binDesigner.type.case')}
-        activeStyle="accent"
-        fullWidth
-        size="sm"
-        value={style.textCase}
-        onChange={handlers.setTextCase}
-        options={caseOptions}
-      />
+      <Field label={t('binDesigner.type.font')}>
+        <Select
+          aria-label={t('binDesigner.type.font')}
+          size="sm"
+          fullWidth
+          value={style.font}
+          onChange={(e) => handlers.setFont(e.target.value as (typeof TEXT_FONT_FAMILIES)[number])}
+          options={TEXT_FONT_FAMILIES.map((font) => ({
+            id: font,
+            name: t(`binDesigner.type.font.${font}`),
+          }))}
+        />
+      </Field>
 
-      {/* The anchor grid takes its own row rather than sitting beside the case
-          control: three case options plus a 3x3 grid overflow the panel's width
-          and clip each other's labels. */}
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-label text-content-tertiary">{t('binDesigner.type.anchor')}</span>
-        <AnchorPicker value={style.anchor} onChange={handlers.setAnchor} />
-      </div>
+      <Field label={t('binDesigner.type.case')}>
+        <SegmentedControl
+          aria-label={t('binDesigner.type.case')}
+          activeStyle="accent"
+          fullWidth
+          size="sm"
+          value={style.textCase}
+          onChange={handlers.setTextCase}
+          options={caseOptions}
+        />
+      </Field>
 
       {state.stencilSubstituted && (
         <p className="text-label leading-relaxed text-content-tertiary">
@@ -152,22 +186,24 @@ export function TypeSection() {
         </p>
       )}
 
-      <SegmentedControl
-        aria-label={t('binDesigner.type.sizeMode')}
-        activeStyle="accent"
-        fullWidth
-        size="sm"
-        value={style.sizeMode}
-        onChange={handlers.setSizeMode}
-        options={SIZE_MODE_OPTIONS.map((value) => ({
-          value,
-          label: t(`binDesigner.type.sizeMode.${value}`),
-        }))}
-      />
+      <Field label={t('binDesigner.type.sizeMode')}>
+        <SegmentedControl
+          aria-label={t('binDesigner.type.sizeMode')}
+          activeStyle="accent"
+          fullWidth
+          size="sm"
+          value={style.sizeMode}
+          onChange={handlers.setSizeMode}
+          options={SIZE_MODE_OPTIONS.map((value) => ({
+            value,
+            label: t(`binDesigner.type.sizeMode.${value}`),
+          }))}
+        />
+      </Field>
 
       {state.isFixedSize ? (
         <>
-          <LabelledStepper label={t('binDesigner.type.fixedSize')}>
+          <Field label={t('binDesigner.type.fixedSize')}>
             <Stepper
               aria-label={t('binDesigner.type.fixedSize')}
               value={style.fixedSize}
@@ -178,10 +214,8 @@ export function TypeSection() {
               size="sm"
               fullWidth
             />
-          </LabelledStepper>
-          <p className="text-label leading-relaxed text-content-tertiary">
-            {t('binDesigner.type.fixedSizeHint')}
-          </p>
+          </Field>
+          <Hint>{t('binDesigner.type.fixedSizeHint')}</Hint>
         </>
       ) : (
         <>
@@ -198,20 +232,30 @@ export function TypeSection() {
         </>
       )}
 
+      {/* The anchor grid takes its own row rather than sitting beside the case
+          control: three case options plus a 3x3 grid overflow the panel's width
+          and clip each other's labels. */}
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-label text-content-tertiary">{t('binDesigner.type.anchor')}</span>
+        <AnchorPicker value={style.anchor} onChange={handlers.setAnchor} />
+      </div>
+
       <MoreDisclosure label={t('binDesigner.type.advanced')}>
         <div className="space-y-3 pt-2">
-          <SegmentedControl
-            aria-label={t('binDesigner.textMode')}
-            activeStyle="accent"
-            fullWidth
-            size="sm"
-            value={style.mode}
-            onChange={handlers.setMode}
-            options={TEXT_MODE_OPTIONS.map((mode) => ({
-              value: mode,
-              label: t(`binDesigner.textMode.${mode}`),
-            }))}
-          />
+          <Field label={t('binDesigner.textMode')}>
+            <SegmentedControl
+              aria-label={t('binDesigner.textMode')}
+              activeStyle="accent"
+              fullWidth
+              size="sm"
+              value={style.mode}
+              onChange={handlers.setMode}
+              options={TEXT_MODE_OPTIONS.map((mode) => ({
+                value: mode,
+                label: t(`binDesigner.textMode.${mode}`),
+              }))}
+            />
+          </Field>
           <div className="space-y-1">
             <span className="block text-label text-content-tertiary">
               {t('binDesigner.type.tracking')}
@@ -230,7 +274,7 @@ export function TypeSection() {
               onChange={handlers.setAutoTracking}
             />
           </div>
-          <LabelledStepper label={t('binDesigner.type.lineScale')}>
+          <Field label={t('binDesigner.type.lineScale')}>
             <Stepper
               aria-label={t('binDesigner.type.lineScale')}
               value={style.lineScale}
@@ -241,8 +285,8 @@ export function TypeSection() {
               size="sm"
               fullWidth
             />
-          </LabelledStepper>
-          <LabelledStepper label={t('binDesigner.type.margin')}>
+          </Field>
+          <Field label={t('binDesigner.type.margin')}>
             <Stepper
               aria-label={t('binDesigner.type.margin')}
               value={style.margin}
@@ -253,8 +297,8 @@ export function TypeSection() {
               size="sm"
               fullWidth
             />
-          </LabelledStepper>
-          <LabelledStepper label={t('binDesigner.type.depth')}>
+          </Field>
+          <Field label={t('binDesigner.type.depth')}>
             <Stepper
               aria-label={t('binDesigner.type.depth')}
               value={style.depth}
@@ -265,18 +309,20 @@ export function TypeSection() {
               size="sm"
               fullWidth
             />
-          </LabelledStepper>
-          <SegmentedControl
-            aria-label={t('binDesigner.type.profile')}
-            activeStyle="accent"
-            fullWidth
-            size="sm"
-            value={style.cutProfile}
-            onChange={handlers.setCutProfile}
-            options={profileOptions}
-          />
+          </Field>
+          <Field label={t('binDesigner.type.profile')}>
+            <SegmentedControl
+              aria-label={t('binDesigner.type.profile')}
+              activeStyle="accent"
+              fullWidth
+              size="sm"
+              value={style.cutProfile}
+              onChange={handlers.setCutProfile}
+              options={profileOptions}
+            />
+          </Field>
           {state.isDrafted && (
-            <LabelledStepper label={t('binDesigner.type.draftAngle')}>
+            <Field label={t('binDesigner.type.draftAngle')}>
               <Stepper
                 aria-label={t('binDesigner.type.draftAngle')}
                 value={style.draftAngleDeg}
@@ -287,7 +333,7 @@ export function TypeSection() {
                 size="sm"
                 fullWidth
               />
-            </LabelledStepper>
+            </Field>
           )}
         </div>
       </MoreDisclosure>
