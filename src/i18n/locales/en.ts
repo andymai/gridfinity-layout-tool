@@ -2568,6 +2568,9 @@ const en: Record<string, string> = {
   'binDesigner.panel.expand': 'Expand panel',
   'binDesigner.panel.resize': 'Resize panel',
   'binDesigner.panel.railTitle': 'Settings',
+  'binDesigner.printFit.fits': 'Fits your {width} × {depth} mm print bed.',
+  'binDesigner.dependency.enableStackingLip': 'Enable stacking lip',
+  'binDesigner.dependency.editFootprint': 'Edit footprint',
   'binDesigner.multiColor.enableHint':
     'Assign different filaments to bin parts and export a multi-color 3MF.',
   'binDesigner.colors.body': 'Body',

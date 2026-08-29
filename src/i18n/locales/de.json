@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Panel ausklappen",
   "binDesigner.panel.resize": "Panelgröße ändern",
   "binDesigner.panel.railTitle": "Einstellungen",
-  "common.more": "Mehr"
+  "common.more": "Mehr",
+  "binDesigner.printFit.fits": "Passt auf dein {width} × {depth} mm Druckbett.",
+  "binDesigner.dependency.enableStackingLip": "Stapelrand aktivieren",
+  "binDesigner.dependency.editFootprint": "Grundriss bearbeiten"
 }

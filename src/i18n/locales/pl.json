@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "Rozwiń panel",
   "binDesigner.panel.resize": "Zmień rozmiar panelu",
   "binDesigner.panel.railTitle": "Ustawienia",
-  "common.more": "Więcej"
+  "common.more": "Więcej",
+  "binDesigner.printFit.fits": "Mieści się na stole {width} × {depth} mm.",
+  "binDesigner.dependency.enableStackingLip": "Włącz krawędź piętrowania",
+  "binDesigner.dependency.editFootprint": "Edytuj obrys"
 }

@@ -42,12 +42,13 @@ import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useLidGroupSummary } from './useLidGroupSummary';
 import { useFinishingGroupSummary } from './useFinishingGroupSummary';
-import { modifiedGroups } from './groupModified';
+import { modifiedCategories } from './categoryModified';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { ToolRackParameterPanel } from '../panel/ToolRackSection/ToolRackParameterPanel';
@@ -109,7 +110,8 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   // subscription on an immer object re-renders the whole shell on every params
   // write — dragging a slider re-ran the tree per frame. The selector still
   // runs per write; the render only happens when a flag flips.
-  const modified = useDesignerStore(useShallow((s) => modifiedGroups(s.params)));
+  const modified = useDesignerStore(useShallow((s) => modifiedCategories(s.params)));
+  const { needsSplit } = useSplitOptionsSection();
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const workshopEnabled = useFeatureFlag('workshop');
@@ -298,14 +300,10 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
         shape: shapeSummary,
         interior: interiorSummary,
         features: lidSummary,
-        style: finishingSummary,
+        print: finishingSummary,
       }}
-      modified={{
-        shape: modified.shape || modified.base,
-        interior: modified.interior,
-        features: modified.lid,
-        style: modified.finishing,
-      }}
+      modified={modified}
+      warnings={{ print: needsSplit }}
       dock={<UserDock />}
     />
   );

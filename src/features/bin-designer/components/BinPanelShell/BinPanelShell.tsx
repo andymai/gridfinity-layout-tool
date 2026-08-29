@@ -24,6 +24,7 @@ import { loadLastCategory, saveLastCategory } from './railPrefsStorage';
 
 /** The five legacy help surfaces the old accordion listened on. */
 const HELP_SURFACES = [
+  'binDesigner',
   'binDesigner:shape',
   'binDesigner:interior',
   'binDesigner:base',
@@ -59,6 +60,8 @@ export interface BinPanelShellProps {
   readonly summaries?: Partial<Record<PageCategory, string>>;
   /** Categories holding a non-default value, marked with a dot on the rail. */
   readonly modified?: Partial<Record<PageCategory, boolean>>;
+  /** Categories needing attention (e.g. the bin no longer fits the bed). */
+  readonly warnings?: Partial<Record<PageCategory, boolean>>;
   /** Pinned below everything, outside the scroll (user dock). */
   readonly dock?: ReactNode;
 }
@@ -71,6 +74,7 @@ export function BinPanelShell({
   wrapPages,
   summaries,
   modified,
+  warnings,
   dock,
 }: BinPanelShellProps) {
   const t = useTranslation();
@@ -134,12 +138,20 @@ export function BinPanelShell({
           >
             <span className="relative inline-flex">
               <CategoryIcon paths={iconPaths} />
-              {modified?.[id] && (
+              {warnings?.[id] ? (
                 <span
                   aria-hidden="true"
-                  data-testid="rail-modified-dot"
-                  className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-accent"
+                  data-testid="rail-warning-dot"
+                  className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-warning"
                 />
+              ) : (
+                modified?.[id] && (
+                  <span
+                    aria-hidden="true"
+                    data-testid="rail-modified-dot"
+                    className="absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-accent"
+                  />
+                )
               )}
             </span>
           </Tooltip>

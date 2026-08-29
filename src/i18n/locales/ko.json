@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "패널 펼치기",
   "binDesigner.panel.resize": "패널 크기 조절",
   "binDesigner.panel.railTitle": "설정",
-  "common.more": "더보기"
+  "common.more": "더보기",
+  "binDesigner.printFit.fits": "{width} × {depth} mm 프린트 베드에 들어갑니다.",
+  "binDesigner.dependency.enableStackingLip": "스태킹 립 켜기",
+  "binDesigner.dependency.editFootprint": "외곽선 편집"
 }

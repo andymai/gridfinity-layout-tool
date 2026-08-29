@@ -4485,5 +4485,8 @@
   "binDesigner.panel.expand": "パネルを展開",
   "binDesigner.panel.resize": "パネルのサイズを変更",
   "binDesigner.panel.railTitle": "設定",
-  "common.more": "その他"
+  "common.more": "その他",
+  "binDesigner.printFit.fits": "{width} × {depth} mm のプリントベッドに収まります。",
+  "binDesigner.dependency.enableStackingLip": "スタッキングリップを有効化",
+  "binDesigner.dependency.editFootprint": "外形を編集"
 }

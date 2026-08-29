@@ -123,6 +123,10 @@ export function useSplitOptionsSection() {
 
   return {
     needsSplit,
+    printBedSize: {
+      width: defaultPrintBedSize,
+      depth: defaultPrintBedDepth ?? defaultPrintBedSize,
+    },
     pieceCount,
     splitAxis,
     config,
