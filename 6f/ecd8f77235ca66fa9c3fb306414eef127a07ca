@@ -1,0 +1,53 @@
+src/features/bin-designer/components/panel/WallsSection/WallThicknessSection.test.tsx
+  s_9a500d3ffa116a::t_5701315b018255 1-19
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.test.tsx
+  s_9a500d3ffa116a::t_5701315b018255 1-333
+src/features/bin-designer/components/panel/WallsSection/WallThicknessSection.tsx
+  s_9a500d3ffa116a::t_beca6c8f0345d7 1-22
+src/features/bin-designer/components/panel/pages/ShapePage/ShapePage.tsx
+  s_9a500d3ffa116a::t_e7e16944dcaace 5,24
+src/features/bin-designer/components/panel/pages/FeaturesPage/FeaturesPage.tsx
+  s_9a500d3ffa116a::t_e7e16944dcaace 3-5,7,14-22
+src/features/bin-designer/components/panel/BaseSection/index.ts
+  s_9a500d3ffa116a::t_c967f4e0c4f001 2
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_9a500d3ffa116a::t_beca6c8f0345d7 1-177
+src/features/bin-designer/components/panel/BaseSection/FloorPatternSection.test.tsx
+  s_9a500d3ffa116a::t_c967f4e0c4f001 1-14,16,19-20,50-51,53-54,56-57
+  s_9a500d3ffa116a::t_8352514a9933a0 15,17-18,21-49,55
+  s_9a500d3ffa116a::t_e7e16944dcaace 52
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.test.tsx
+  s_9a500d3ffa116a::t_e7e16944dcaace 21-22
+  s_9a500d3ffa116a::t_3117f85d7ceee8 23-25
+  s_9a500d3ffa116a::t_38f1dc87b277f4 26-28
+src/features/bin-designer/components/panel/WallsSection/index.ts
+  s_9a500d3ffa116a::t_beca6c8f0345d7 1-2
+src/features/bin-designer/components/panel/pages/FeaturesPage/FeaturesPage.test.tsx
+  s_9a500d3ffa116a::t_e7e16944dcaace 20-22
+  s_9a500d3ffa116a::t_5c00f5c5cd0ec2 23-25
+  s_9a500d3ffa116a::t_39651df5e9a10c 26-28
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.tsx
+  s_9a500d3ffa116a::t_e7e16944dcaace 4-5,7,17-22
+src/features/bin-designer/settingsManifest.ts
+  s_9a500d3ffa116a::t_e7e16944dcaace 30-32,35-36
+src/features/bin-designer/components/panel/BaseSection/FloorPatternSection.tsx
+  s_9a500d3ffa116a::t_c967f4e0c4f001 1-66
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_9a500d3ffa116a::t_c967f4e0c4f001 52,342-343
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "6fecd8f77235ca66fa9c3fb306414eef127a07ca",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
