@@ -1,0 +1,19 @@
+package.json
+  s_e0e831152f36ca::t_67b7d0801f0ca7 116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "de2e45f363a37fa4f2169b019e97b49ea88f90d8",
+  "prompts": {},
+  "sessions": {
+    "s_e0e831152f36ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9807da34-2a8c-46dd-80b9-32757e28c49d",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
