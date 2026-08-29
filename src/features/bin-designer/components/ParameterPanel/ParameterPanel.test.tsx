@@ -299,9 +299,8 @@ describe('ParameterPanel', () => {
     it('shows wall thickness slider (expanded by default)', () => {
       const { container } = render(<ParameterPanel />);
 
-      // SnappingSlider has both a div and hidden input with slider role - query the visible div
-      const sliderDiv = container.querySelector('div[role="slider"][aria-label*="Wall thickness"]');
-      expect(sliderDiv).toBeInTheDocument();
+      const slider = container.querySelector('input[type="range"][aria-label*="Wall thickness"]');
+      expect(slider).toBeInTheDocument();
     });
 
     it('wall thickness slider shows tick marks for options', () => {

@@ -14,6 +14,6 @@ describe('WallThicknessSection', () => {
 
   it('renders the wall thickness slider', () => {
     const { container } = render(<WallThicknessSection />);
-    expect(container.querySelector('div[role="slider"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="snapping-slider-track"]')).toBeInTheDocument();
   });
 });
