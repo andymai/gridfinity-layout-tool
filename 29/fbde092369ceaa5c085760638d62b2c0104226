@@ -1,0 +1,61 @@
+src/design-system/SidePanel/SidePanel.visual.tsx
+  s_9a500d3ffa116a::t_edbbdf947bda13 1-39
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_9a500d3ffa116a::t_b0bd49f07c72c6 1,224-226
+src/design-system/SidePanel/SidePanel.tsx
+  s_9a500d3ffa116a::t_5c882dd59eb7c0 241-242
+  s_9a500d3ffa116a::t_3af21d9a3ba8dc 243
+  s_9a500d3ffa116a::t_f1dd310e5a4cd2 250
+  s_9a500d3ffa116a::t_b0bd49f07c72c6 260
+  s_9a500d3ffa116a::t_1a0f53cd3fd72f 1-240,244-249,251-259,261-339
+src/design-system/SearchInput/SearchInput.visual.tsx
+  s_9a500d3ffa116a::t_7cbf906ce2f3e1 1-27
+src/design-system/index.ts
+  s_9a500d3ffa116a::t_b0bd49f07c72c6 129-141,208-209,228-229
+src/design-system/SidePanel/index.ts
+  s_9a500d3ffa116a::t_b0bd49f07c72c6 1-3
+  s_9a500d3ffa116a::t_6c63a6b29f5ae9 4-6
+  s_9a500d3ffa116a::t_ea12ec7caa138d 7-8
+src/design-system/docs/COMPONENTS.md
+  s_9a500d3ffa116a::t_13e61c772e0d30 228-235
+src/design-system/Icon/icons/ChevronDoubleLeft.tsx
+  s_9a500d3ffa116a::t_e4fda1798fd508 1-19
+src/design-system/Icon/icons/ChevronDoubleRight.tsx
+  s_9a500d3ffa116a::t_f62c2f20384d30 1-19
+src/design-system/Icon/index.ts
+  s_9a500d3ffa116a::t_b3545e11a76b43 30-33
+src/design-system/SearchInput/SearchInput.test.tsx
+  s_9a500d3ffa116a::t_ee9144567f1bbd 1-3,5-19,22-27,29-33,36-42,45-66
+src/design-system/SearchInput/SearchInput.tsx
+  s_9a500d3ffa116a::t_6f99e4d215d3ef 1-67
+src/design-system/SearchInput/index.ts
+  s_9a500d3ffa116a::t_1526fd086f5498 1-2
+src/design-system/SidePanel/SidePanel.test.tsx
+  s_9a500d3ffa116a::t_faae78a7f2093c 1-103
+src/design-system/SidePanel/sidePanelStorage.ts
+  s_9a500d3ffa116a::t_8c69d5d4c428fc 1-52
+src/design-system/Tabs/Tabs.tsx
+  s_9a500d3ffa116a::t_a9460b48896100 30,39,61,77-78,166-167,169
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.test.tsx
+  s_9a500d3ffa116a::t_e7c5f221ea8d96 38,47
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.tsx
+  s_9a500d3ffa116a::t_eefcc62e612db3 6-9,12-13,20,99-111,113-147,163,173,176,178,180
+src/features/bin-designer/components/CutoutWorkspace/inspectorDockStorage.ts
+  s_9a500d3ffa116a::t_daac2dff7d5c64 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "29fbde092369ceaa5c085760638d62b2c0104226",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
