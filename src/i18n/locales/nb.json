@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Skjær hull i lokket ({count})",
   "binDesigner.lid.editCutoutsFull": "Inneholder allerede så mange former som et lokk kan ta ({max}). Slett én for å legge til en ny.",
   "binDesigner.lid.editCutoutsHint": "Tegn former som går helt gjennom lokkplaten: en dispenserspalte, en lufteåpning, en kabelgjennomføring. De holder avstand til koblingsveggen og magnetsoklene.",
-  "binDesigner.lid.enable": "Aktiver lokk",
+  "binDesigner.lid.enable": "Lokk",
   "binDesigner.lid.extraHeight": "Ekstra lokkhøyde",
   "binDesigner.lid.extraHeightAria": "Ekstra lokkhøyde i millimeter",
   "binDesigner.lid.extraHeightHint": "Hever lokket slik at innhold som stikker opp av en lav beholder (f.eks. tannpirkere) omsluttes. 0 = standardlokk.",

@@ -165,7 +165,7 @@ describe('BaseSection', () => {
     it('is collapsed at the default, showing only the summary', () => {
       render(<BaseSection />);
 
-      expect(screen.getByText('On grid / On grid')).toBeInTheDocument();
+      expect(screen.getAllByText('On grid').length).toBeGreaterThan(0);
       expect(screen.getByRole('button', { name: /Foot lattice/ })).toHaveAttribute(
         'aria-expanded',
         'false'

@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Cortar agujeros en la tapa ({count})",
   "binDesigner.lid.editCutoutsFull": "Contiene el máximo de formas que admite una tapa ({max}). Elimina una para añadir otra.",
   "binDesigner.lid.editCutoutsHint": "Dibuja formas que atraviesen por completo la placa de la tapa: una ranura dispensadora, una ventilación, un paso de cable. Se mantienen alejadas de la pared de encaje y de los soportes de imán.",
-  "binDesigner.lid.enable": "Activar tapa",
+  "binDesigner.lid.enable": "Tapa",
   "binDesigner.lid.extraHeight": "Altura extra de la tapa",
   "binDesigner.lid.extraHeightAria": "Altura extra de la tapa en milímetros",
   "binDesigner.lid.extraHeightHint": "Eleva la tapa para que el contenido que sobresale de un cajetín bajo (p. ej. palillos) quede cubierto. 0 = tapa estándar.",

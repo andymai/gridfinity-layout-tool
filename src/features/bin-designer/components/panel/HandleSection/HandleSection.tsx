@@ -250,7 +250,7 @@ export function HandleSection() {
               </MoreDisclosure>
 
               {/* Behavior toggles — separated visually */}
-              <div className="space-y-2 border-t border-stroke-subtle/50 pt-2">
+              <div className="flex flex-col items-start gap-2 border-t border-stroke-subtle/50 pt-2">
                 <Checkbox
                   size="sm"
                   checked={handles.chamfer}

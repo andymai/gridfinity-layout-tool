@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Wytnij otwory w pokrywie ({count})",
   "binDesigner.lid.editCutoutsFull": "Zawiera już maksymalną liczbę kształtów, jaką przyjmuje pokrywa ({max}). Usuń jeden, aby dodać kolejny.",
   "binDesigner.lid.editCutoutsHint": "Rysuj kształty przechodzące na wylot przez płytę pokrywy: szczelinę podajnika, wentylację, przepust na kabel. Zachowują odstęp od ścianki łączącej i gniazd magnesów.",
-  "binDesigner.lid.enable": "Włącz pokrywę",
+  "binDesigner.lid.enable": "Pokrywa",
   "binDesigner.lid.extraHeight": "Dodatkowa wysokość pokrywy",
   "binDesigner.lid.extraHeightAria": "Dodatkowa wysokość pokrywy w milimetrach",
   "binDesigner.lid.extraHeightHint": "Podnosi pokrywę, aby zawartość wystająca z niskiego bina (np. wykałaczki) była zamknięta. 0 = standardowa pokrywa.",

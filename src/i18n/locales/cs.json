@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Vyřezat otvory do víka ({count})",
   "binDesigner.lid.editCutoutsFull": "Už obsahuje maximální počet tvarů, který víko pojme ({max}). Jeden smažte, abyste mohli přidat další.",
   "binDesigner.lid.editCutoutsHint": "Nakreslete tvary, které procházejí celou deskou víka: dávkovací štěrbinu, ventilaci, průchodku pro kabel. Drží se dál od spojovací stěny a magnetových základen.",
-  "binDesigner.lid.enable": "Povolit víko",
+  "binDesigner.lid.enable": "Víko",
   "binDesigner.lid.extraHeight": "Přídavná výška víka",
   "binDesigner.lid.extraHeightAria": "Přídavná výška víka v milimetrech",
   "binDesigner.lid.extraHeightHint": "Zvýší víko tak, aby obsah vyčnívající z nízkého binu (např. párátka) byl uzavřený. 0 = standardní víko.",

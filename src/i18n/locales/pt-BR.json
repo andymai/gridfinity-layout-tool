@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Cortar furos na tampa ({count})",
   "binDesigner.lid.editCutoutsFull": "Já contém o máximo de formas que uma tampa aceita ({max}). Exclua uma para adicionar outra.",
   "binDesigner.lid.editCutoutsHint": "Desenhe formas que atravessam toda a placa da tampa: uma fenda dispensadora, uma ventilação, uma passagem de cabo. Elas ficam longe da parede de encaixe e das bases dos ímãs.",
-  "binDesigner.lid.enable": "Ativar tampa",
+  "binDesigner.lid.enable": "Tampa",
   "binDesigner.lid.extraHeight": "Altura extra da tampa",
   "binDesigner.lid.extraHeightAria": "Altura extra da tampa em milímetros",
   "binDesigner.lid.extraHeightHint": "Eleva a tampa para que o conteúdo que se projeta de um compartimento baixo (ex.: palitos) fique coberto. 0 = tampa padrão.",

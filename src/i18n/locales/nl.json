@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Gaten in het deksel snijden ({count})",
   "binDesigner.lid.editCutoutsFull": "Bevat al het maximale aantal vormen dat een deksel aankan ({max}). Verwijder er een om er een toe te voegen.",
   "binDesigner.lid.editCutoutsHint": "Teken vormen die helemaal door de dekselplaat gaan: een uitgifteslot, een ventilatieopening, een kabeldoorvoer. Ze blijven weg van de koppelwand en de magneetsokkels.",
-  "binDesigner.lid.enable": "Deksel inschakelen",
+  "binDesigner.lid.enable": "Deksel",
   "binDesigner.lid.extraHeight": "Extra dekselhoogte",
   "binDesigner.lid.extraHeightAria": "Extra dekselhoogte in millimeters",
   "binDesigner.lid.extraHeightHint": "Verhoogt het deksel zodat inhoud die uit een lage bak steekt (bijv. tandenstokers) wordt omsloten. 0 = standaarddeksel.",

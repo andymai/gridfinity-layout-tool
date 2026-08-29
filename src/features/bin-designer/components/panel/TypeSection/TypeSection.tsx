@@ -218,7 +218,7 @@ export function TypeSection() {
           <Hint>{t('binDesigner.type.fixedSizeHint')}</Hint>
         </>
       ) : (
-        <>
+        <div className="flex flex-col items-start gap-2">
           <Checkbox
             label={t('binDesigner.type.snapToScale')}
             checked={style.snapToScale}
@@ -229,7 +229,7 @@ export function TypeSection() {
             checked={style.uniformAcrossWalls}
             onChange={handlers.setUniformAcrossWalls}
           />
-        </>
+        </div>
       )}
 
       {/* The anchor grid takes its own row rather than sitting beside the case

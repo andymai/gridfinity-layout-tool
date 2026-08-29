@@ -11,7 +11,7 @@ function resetStore(overrides: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {
   });
 }
 
-const ENABLE = 'Enable lid';
+const ENABLE = 'Lid';
 
 describe('LidSection', () => {
   beforeEach(() => {

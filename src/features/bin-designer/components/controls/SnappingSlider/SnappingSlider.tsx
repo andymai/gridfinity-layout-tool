@@ -350,7 +350,7 @@ export function SnappingSlider({
       </p>
 
       {/* Optional tip */}
-      {tip && <p className="mt-1 text-micro text-content-tertiary italic">{tip}</p>}
+      {tip && <p className="mt-1 text-micro text-content-tertiary">{tip}</p>}
     </div>
   );
 }

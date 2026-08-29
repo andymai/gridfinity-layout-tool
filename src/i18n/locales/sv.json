@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Skär hål i locket ({count})",
   "binDesigner.lid.editCutoutsFull": "Innehåller redan så många former som ett lock rymmer ({max}). Ta bort en för att lägga till en till.",
   "binDesigner.lid.editCutoutsHint": "Rita former som går rakt genom lockplattan: en dispenserspringa, en ventil, en kabelgenomföring. De håller avstånd till kopplingsväggen och magnetsocklarna.",
-  "binDesigner.lid.enable": "Aktivera lock",
+  "binDesigner.lid.enable": "Lock",
   "binDesigner.lid.extraHeight": "Extra lockhöjd",
   "binDesigner.lid.extraHeightAria": "Extra lockhöjd i millimeter",
   "binDesigner.lid.extraHeightHint": "Höjer locket så att innehåll som sticker upp ur en låg låda (t.ex. tandpetare) omsluts. 0 = standardlock.",

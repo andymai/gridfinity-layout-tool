@@ -6,12 +6,12 @@
  * trio plus the effective readout is a block of its own, and folding it back
  * in pushed that file well past the 500-line ceiling.
  */
-import { Button, Checkbox, SegmentedControl } from '@/design-system';
+import { Button, Checkbox } from '@/design-system';
 import { LID_RAIL_SIDES, lidGripHeightAdjustable } from '@/features/bin-designer/types';
 import type { LidGripSides, LidRailSide } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { SnappingSlider } from '../../controls/SnappingSlider';
-import { Hint, Readout, StepperField } from '../shared';
+import { Hint, Readout, SegmentGrid, StepperField } from '../shared';
 import type { useLidSection } from '../LidSection/useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
@@ -32,7 +32,7 @@ function GripSides({
 }) {
   return (
     <div>
-      <span className="mb-1 block text-xs font-medium text-content-secondary">
+      <span className="mb-1 block text-label text-content-tertiary">
         {t('binDesigner.lid.gripSides')}
       </span>
       <div className="flex gap-1">
@@ -85,10 +85,10 @@ export function LidGripControls({
   const heightAdjustable = lidGripHeightAdjustable(grip.mode);
   return (
     <div className="space-y-2">
-      <span className="mb-1 block text-xs font-medium text-content-secondary">
+      <span className="mb-1 block text-label text-content-tertiary">
         {t('binDesigner.lid.gripMode')}
       </span>
-      <SegmentedControl
+      <SegmentGrid
         aria-label={t('binDesigner.lid.gripMode')}
         value={grip.mode}
         onChange={handlers.setGripMode}
