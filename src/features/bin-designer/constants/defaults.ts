@@ -280,7 +280,6 @@ export const DEFAULT_GENERATION_STATE: GenerationState = {
 
 /** Default UI state */
 export const DEFAULT_UI_STATE: DesignerUIState = {
-  activeTab: 'dimensions',
   activeCategory: 'shape',
   exportDialogOpen: false,
   designListOpen: false,

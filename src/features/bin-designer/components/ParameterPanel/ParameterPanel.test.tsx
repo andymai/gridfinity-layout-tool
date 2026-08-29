@@ -11,7 +11,6 @@ describe('ParameterPanel', () => {
       params: { ...DEFAULT_BIN_PARAMS },
       ui: {
         ...DEFAULT_UI_STATE,
-        activeTab: 'dimensions',
         exportDialogOpen: false,
         designListOpen: false,
         wireframeMode: false,
