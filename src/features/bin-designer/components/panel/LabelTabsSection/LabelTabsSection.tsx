@@ -28,6 +28,8 @@ import {
   LABEL_PLATE_FIT_OFFSET_STEP,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
+import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
+import { DependencyHint } from '../shared';
 import { LabelTextList } from './LabelTextList';
 import { LabelSectionWarnings } from './LabelSectionWarnings';
 import { LabelColorControls } from './LabelColorControls';
@@ -690,6 +692,11 @@ export function LabelTabsSection() {
                   min={state.textDefaults.minFontSize}
                   max={state.textDefaults.maxFontSize}
                   explainShared
+                />
+                <DependencyHint
+                  reason={t('binDesigner.tabText.sharedTypeNote')}
+                  actionLabel={t('binDesigner.tabText.editTypography')}
+                  onAction={() => jumpToDesignerControl('bd-type')}
                 />
               </div>
             </Collapsible>

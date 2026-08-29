@@ -1925,6 +1925,9 @@ const en: Record<string, string> = {
   'binDesigner.textMode.throughCutStencilNote':
     'Through-cut uses Allerta Stencil so letter centers stay attached.',
   'binDesigner.textFont': 'Font',
+  'binDesigner.tabText.sharedTypeNote':
+    'Case, size and tracking come from the design-wide type style.',
+  'binDesigner.tabText.editTypography': 'Open Typography',
   'binDesigner.textDepth': 'Text depth',
   'binDesigner.textSize': 'Label size',
   'binDesigner.textSizeMax': 'Max label size',

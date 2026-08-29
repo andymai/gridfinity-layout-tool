@@ -186,10 +186,10 @@ describe('CompartmentEditor', () => {
     expect(screen.queryByRole('application')).not.toBeInTheDocument();
   });
 
-  it('shows wall thickness control when compartments > 1', () => {
+  it('shows the divider thickness control when compartments > 1', () => {
     useDesignerStore.setState({ params: TWO_BY_TWO });
     render(<CompartmentEditor />);
-    expect(screen.getByText(/wall thickness/i)).toBeInTheDocument();
+    expect(screen.getByText(/divider thickness/i)).toBeInTheDocument();
   });
 
   it('shows instruction text for grid interaction', () => {

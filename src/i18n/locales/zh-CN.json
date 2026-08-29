@@ -1713,6 +1713,8 @@
   "binDesigner.tags.remove": "移除标签 {tag}",
   "binDesigner.tags.save": "保存",
   "binDesigner.tags.suggestionsLabel": "现有标签",
+  "binDesigner.tabText.sharedTypeNote": "大小写、字号与字距取自整个设计的字体样式。",
+  "binDesigner.tabText.editTypography": "打开字体样式",
   "binDesigner.textDepth": "文字深度",
   "binDesigner.textFont": "字体",
   "binDesigner.textMode": "工艺",

@@ -415,7 +415,7 @@ export function CompartmentEditor() {
       {compartmentCount > 1 && (
         <section className="space-y-4">
           <SnappingSlider
-            label={t('binDesigner.wallThickness')}
+            label={t('binDesigner.dividerThickness')}
             value={thickness}
             onChange={handleThicknessChange}
             options={thicknessOptions}
