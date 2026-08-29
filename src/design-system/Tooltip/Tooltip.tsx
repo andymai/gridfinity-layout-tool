@@ -1,6 +1,8 @@
 import { cloneElement, isValidElement, useId, useState } from 'react';
 import type { KeyboardEvent, ReactElement, ReactNode } from 'react';
 import { cn } from '../cn';
+import { Kbd } from '../Kbd';
+import { formatShortcut } from '../Kbd/formatShortcut';
 import { interactiveTransition } from '../variants';
 
 type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
@@ -24,7 +26,7 @@ export interface TooltipProps {
   /**
    * Optional keyboard-shortcut suffix rendered in mono kbd styling after the content.
    */
-  shortcut?: string;
+  shortcut?: string | readonly string[];
   /**
    * Side of the trigger the bubble appears on.
    * @default 'top'
@@ -137,14 +139,16 @@ export function Tooltip({
           placementClasses[placement],
           // opacity-only hiding keeps the description in the accessibility
           // tree (visibility:hidden would remove it).
-          visible ? 'opacity-100' : 'opacity-0',
+          visible ? 'translate-y-0 opacity-100' : 'translate-y-0.5 opacity-0',
           '[@media(hover:none)]:hidden'
         )}
         style={{ transitionDelay: visible ? `${delayMs}ms` : '0ms' }}
       >
         {content}
         {shortcut !== undefined && (
-          <kbd className="ml-1.5 font-mono text-content-tertiary">{shortcut}</kbd>
+          <Kbd className="ml-1.5" aria-hidden="true">
+            {Array.isArray(shortcut) ? formatShortcut(shortcut) : shortcut}
+          </Kbd>
         )}
       </span>
     </span>

@@ -19,6 +19,7 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { cn } from '../cn';
 import { IconButton } from '../IconButton';
+import { Tooltip } from '../Tooltip';
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '../Icon';
 import {
   loadPanelCollapsed,
@@ -200,19 +201,20 @@ function SidePanelRoot({
           className
         )}
       >
-        <IconButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          touchTarget={false}
-          onClick={toggleCollapsed}
-          className={collapseButtonClasses}
-          aria-expanded={false}
-          aria-label={labels.expand}
-          title={labels.expand}
-        >
-          <CollapseIcon size="sm" />
-        </IconButton>
+        <Tooltip content={labels.expand} placement={side === 'right' ? 'left' : 'right'}>
+          <IconButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
+            onClick={toggleCollapsed}
+            className={collapseButtonClasses}
+            aria-expanded={false}
+            aria-label={labels.expand}
+          >
+            <CollapseIcon size="sm" />
+          </IconButton>
+        </Tooltip>
         {railTitle && (
           <span
             className="mt-3 text-micro font-semibold uppercase tracking-wider text-content-tertiary"
@@ -289,19 +291,20 @@ function SidePanelHeader({ children, className }: SidePanelHeaderProps) {
       )}
     >
       <div className="flex items-center gap-2 px-4 py-2">
-        <IconButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          touchTarget={false}
-          onClick={toggleCollapsed}
-          className={collapseButtonClasses}
-          aria-expanded
-          aria-label={labels.collapse}
-          title={labels.collapse}
-        >
-          <CollapseIcon size="sm" />
-        </IconButton>
+        <Tooltip content={labels.collapse} placement="bottom">
+          <IconButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
+            onClick={toggleCollapsed}
+            className={collapseButtonClasses}
+            aria-expanded
+            aria-label={labels.collapse}
+          >
+            <CollapseIcon size="sm" />
+          </IconButton>
+        </Tooltip>
         {children}
       </div>
     </div>

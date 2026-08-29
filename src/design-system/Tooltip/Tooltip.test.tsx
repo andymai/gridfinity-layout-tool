@@ -23,7 +23,7 @@ describe('Tooltip', () => {
       expect(screen.getByRole('tooltip')).toHaveClass('opacity-0');
     });
 
-    it('renders the shortcut in mono kbd styling', () => {
+    it('renders the shortcut as a Kbd chip', () => {
       render(
         <Tooltip content="Undo" shortcut="⌘Z">
           <button type="button">Trigger</button>
@@ -31,7 +31,17 @@ describe('Tooltip', () => {
       );
       const kbd = screen.getByText('⌘Z');
       expect(kbd.tagName).toBe('KBD');
-      expect(kbd).toHaveClass('font-mono', 'text-content-tertiary');
+      expect(kbd).toHaveClass('text-micro');
+    });
+
+    it('formats an array shortcut per platform', () => {
+      render(
+        <Tooltip content="Undo" shortcut={['Mod', 'Z']}>
+          <button type="button">Trigger</button>
+        </Tooltip>
+      );
+      // jsdom reports a non-mac platform, so Mod resolves to Ctrl.
+      expect(screen.getByText('Ctrl+Z')).toBeInTheDocument();
     });
 
     it('omits the kbd element when no shortcut is given', () => {
