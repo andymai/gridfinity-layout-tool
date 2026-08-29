@@ -1,0 +1,21 @@
+src/features/bin-designer/components/ParameterPanel/usePrintSummary.ts
+  s_9a500d3ffa116a::t_40f3196f3742f5 1-20
+src/features/bin-designer/components/ParameterPanel/useStyleSummary.ts
+  s_9a500d3ffa116a::t_40f3196f3742f5 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "4d55891c3b98061c520b45dd8170853007f0f933",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
