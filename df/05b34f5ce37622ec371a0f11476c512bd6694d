@@ -1,0 +1,114 @@
+src/features/bin-designer/components/panel/pages/FeaturesPage/FeaturesPage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-21
+src/features/bin-designer/components/BinPanelShell/categoryDefs.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-19
+src/features/bin-designer/components/panel/pages/InteriorPage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-22
+src/i18n/locales/ja.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/components/DesignerPage/DesignerMainContent.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 6,94
+src/features/bin-designer/components/panel/pages/FeaturesPage/FeaturesPage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-21
+scripts/i18n-values-allowlist.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 42-43
+src/i18n/locales/nb.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/components/BinPanelShell/BinPanelShell.test.tsx
+  s_9a500d3ffa116a::t_16e5a1dcd229c0 1-67
+src/features/bin-designer/components/panel/pages/InteriorPage/InteriorPage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-47
+src/i18n/locales/nl.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-26
+src/i18n/locales/cs.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/components/BinPanelShell/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/types/designerState.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 63,409
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-17
+src/i18n/locales/fr.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/components/panel/pages/ShapePage/ShapePage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-31
+src/i18n/locales/pt-BR.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/i18n/locales/es.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/components/BinPanelShell/BinPanelShell.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-136,138-219
+  s_9a500d3ffa116a::t_3778300a3237fa 137
+src/features/bin-designer/components/panel/pages/PrintPage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/i18n/locales/de.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/components/panel/pages/ShapePage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/components/panel/pages/FeaturesPage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/constants/defaults.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 284
+src/i18n/locales/ko.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/i18n/locales/sv.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/i18n/locales/uk.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.test.tsx
+  s_9a500d3ffa116a::t_3778300a3237fa 9,25,28-30,33-34,37-38,41,44-46,49,54-57
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-21
+  s_9a500d3ffa116a::t_133832e8ffd4b3 22-24
+src/features/bin-designer/settingsManifest.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-39
+src/i18n/locales/en.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 2559-2570
+  s_9a500d3ffa116a::t_1740b5387e80e9 2571
+src/i18n/locales/it.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/i18n/locales/pl.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/features/bin-designer/types/uiState.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 35-37,67
+src/features/bin-designer/components/panel/pages/InteriorPage/InteriorPage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-24
+  s_9a500d3ffa116a::t_76c8d3a2ec95a3 25-33
+src/features/bin-designer/components/panel/pages/ShapePage/ShapePage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-25
+  s_9a500d3ffa116a::t_5ef26bc2ed6cac 26-31
+src/i18n/locales/zh-CN.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4488
+src/shared/constants/iconPaths.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 68-69
+  s_9a500d3ffa116a::t_72a9b330598eb3 70-73
+src/features/bin-designer/components/BinPanelShell/railPrefsStorage.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-26
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 13,38-40
+  s_9a500d3ffa116a::t_c9b8d9e5cd2796 41-43
+src/features/bin-designer/components/panel/pages/StylePage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 4-9,11-12,15,17,35-40,57-62,64-98,101,107-111,185-200,202,207-212,214-260,263-265,267-285,292,294,296-310
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "df05b34f5ce37622ec371a0f11476c512bd6694d",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
