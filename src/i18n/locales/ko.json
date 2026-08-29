@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "뚜껑에 구멍 뚫기({count})",
   "binDesigner.lid.editCutoutsFull": "뚜껑에 넣을 수 있는 최대 도형 수({max})에 도달했습니다. 추가하려면 하나를 삭제하세요.",
   "binDesigner.lid.editCutoutsHint": "뚜껑 판을 완전히 관통하는 모양을 그립니다. 배출용 슬롯, 통풍구, 케이블 통과 구멍 등입니다. 결합 벽과 자석 보스는 피해서 배치됩니다.",
-  "binDesigner.lid.enable": "뚜껑 사용",
+  "binDesigner.lid.enable": "뚜껑",
   "binDesigner.lid.extraHeight": "추가 뚜껑 높이",
   "binDesigner.lid.extraHeightAria": "추가 뚜껑 높이(밀리미터)",
   "binDesigner.lid.extraHeightHint": "낮은 수납통에서 튀어나오는 내용물(예: 이쑤시개)이 감싸지도록 뚜껑을 높입니다. 0 = 표준 뚜껑.",

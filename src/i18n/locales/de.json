@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Löcher in den Deckel schneiden ({count})",
   "binDesigner.lid.editCutoutsFull": "Enthält bereits so viele Formen, wie ein Deckel aufnehmen kann ({max}). Lösche eine, um eine weitere hinzuzufügen.",
   "binDesigner.lid.editCutoutsHint": "Zeichne Formen, die vollständig durch die Deckelplatte gehen: einen Ausgabeschlitz, eine Lüftung, eine Kabeldurchführung. Sie halten Abstand zur Passwand und zu den Magnetsockeln.",
-  "binDesigner.lid.enable": "Deckel aktivieren",
+  "binDesigner.lid.enable": "Deckel",
   "binDesigner.lid.extraHeight": "Zusätzliche Deckelhöhe",
   "binDesigner.lid.extraHeightAria": "Zusätzliche Deckelhöhe in Millimetern",
   "binDesigner.lid.extraHeightHint": "Erhöht den Deckel, damit Inhalte, die aus einem niedrigen Behälter herausragen (z. B. Zahnstocher), umschlossen werden. 0 = Standarddeckel.",

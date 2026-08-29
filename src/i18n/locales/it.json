@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Ritaglia fori nel coperchio ({count})",
   "binDesigner.lid.editCutoutsFull": "Contiene già il numero massimo di forme che un coperchio accetta ({max}). Eliminane una per aggiungerne un’altra.",
   "binDesigner.lid.editCutoutsHint": "Disegna forme che attraversano completamente la piastra del coperchio: una fessura erogatrice, una presa d’aria, un passaggio per cavi. Restano lontane dalla parete di accoppiamento e dalle sedi dei magneti.",
-  "binDesigner.lid.enable": "Attiva coperchio",
+  "binDesigner.lid.enable": "Coperchio",
   "binDesigner.lid.extraHeight": "Altezza extra del coperchio",
   "binDesigner.lid.extraHeightAria": "Altezza extra del coperchio in millimetri",
   "binDesigner.lid.extraHeightHint": "Alza il coperchio così i contenuti che sporgono da un bin basso (es. stuzzicadenti) restano racchiusi. 0 = coperchio standard.",

@@ -1974,7 +1974,7 @@ const en: Record<string, string> = {
   'binDesigner.cutoutSocket.skippedCount':
     '{n} cutout(s) asked for a socket and did not get one (limit {max} per board).',
   'binDesigner.plateIconOwnerCompartment': 'compartment {n}',
-  'binDesigner.lid.enable': 'Enable lid',
+  'binDesigner.lid.enable': 'Lid',
   'binDesigner.lid.summaryDisabled': 'Off',
   'binDesigner.lid.section.attaches': 'How it attaches',
   'binDesigner.lid.section.topSurface': 'Top surface',

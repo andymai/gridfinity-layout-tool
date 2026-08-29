@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "在盖子上开孔（{count}）",
   "binDesigner.lid.editCutoutsFull": "已达到盖子可容纳的形状上限（{max}）。删除一个后才能继续添加。",
   "binDesigner.lid.editCutoutsHint": "绘制贯穿盖板的形状：取物开口、通风孔、走线孔。它们会避开配合壁和磁铁座。",
-  "binDesigner.lid.enable": "启用盖子",
+  "binDesigner.lid.enable": "盖子",
   "binDesigner.lid.extraHeight": "额外盖子高度",
   "binDesigner.lid.extraHeightAria": "额外盖子高度（毫米）",
   "binDesigner.lid.extraHeightHint": "抬高盖子，使从矮收纳盒中伸出的内容物（例如牙签）被罩住。0 = 标准盖子。",

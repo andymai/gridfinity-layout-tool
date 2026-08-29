@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "フタに穴を開ける（{count}）",
   "binDesigner.lid.editCutoutsFull": "フタに配置できる図形の上限（{max}）に達しています。追加するには 1 つ削除してください。",
   "binDesigner.lid.editCutoutsHint": "フタの板を貫通する形状を描きます。取り出し用スリット、通気孔、ケーブルの通し穴など。かん合壁とマグネット台座は避けて配置されます。",
-  "binDesigner.lid.enable": "蓋を有効にする",
+  "binDesigner.lid.enable": "ふた",
   "binDesigner.lid.extraHeight": "ふたの追加の高さ",
   "binDesigner.lid.extraHeightAria": "ふたの追加の高さ（ミリメートル）",
   "binDesigner.lid.extraHeightHint": "低いビンからはみ出す中身（つまようじなど）を覆えるようにふたを高くします。0 = 標準のふた。",

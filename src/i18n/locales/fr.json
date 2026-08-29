@@ -1188,7 +1188,7 @@
   "binDesigner.lid.editCutoutsCount": "Découper des trous dans le couvercle ({count})",
   "binDesigner.lid.editCutoutsFull": "Contient déjà le nombre maximal de formes qu’un couvercle accepte ({max}). Supprimez-en une pour en ajouter une autre.",
   "binDesigner.lid.editCutoutsHint": "Dessinez des formes qui traversent entièrement la plaque du couvercle : une fente distributrice, une aération, un passage de câble. Elles restent à l’écart de la paroi d’emboîtement et des embases d’aimant.",
-  "binDesigner.lid.enable": "Activer le couvercle",
+  "binDesigner.lid.enable": "Couvercle",
   "binDesigner.lid.extraHeight": "Hauteur de couvercle supplémentaire",
   "binDesigner.lid.extraHeightAria": "Hauteur de couvercle supplémentaire en millimètres",
   "binDesigner.lid.extraHeightHint": "Rehausse le couvercle pour envelopper le contenu qui dépasse d'un bac bas (p. ex. cure-dents). 0 = couvercle standard.",

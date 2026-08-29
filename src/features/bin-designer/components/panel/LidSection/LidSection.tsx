@@ -18,13 +18,12 @@
 
 import { useState } from 'react';
 import { Button, SegmentedControl, Collapsible } from '@/design-system';
-import { Switch } from '@/design-system/Switch';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { LidGripControls } from '../LidGripControls';
 import { SlideControls } from '../SlideControls';
 import { HingeControls } from '../HingeControls';
 import { StepperField } from '../shared/StepperField';
-import { Hint, Readout, SubHeader, DependencyHint } from '../shared';
+import { Hint, Readout, SubHeader, DependencyHint, SegmentGrid } from '../shared';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -217,11 +216,8 @@ export function LidSection() {
           {/* ── How it attaches ──────────────────────────────────────── */}
           <section className="space-y-2">
             <SubHeader>{t('binDesigner.lid.section.attaches')}</SubHeader>
-            <SegmentedControl
+            <SegmentGrid
               aria-label={t('binDesigner.lid.attachment')}
-              activeStyle="accent"
-              fullWidth
-              size="sm"
               value={state.attachment}
               onChange={handlers.setAttachment}
               options={LID_ATTACHMENTS.map((mode) => ({
@@ -279,7 +275,7 @@ export function LidSection() {
 
             {state.topSurface === 'stackable' && (
               <div className="space-y-2">
-                <Switch
+                <FeatureToggle
                   label={t('binDesigner.lid.stackLipOnly')}
                   checked={state.stackLipOnly}
                   onChange={handlers.toggleStackLipOnly}
@@ -293,7 +289,7 @@ export function LidSection() {
                 {state.stackLipOnlyNeedsPlateHint && (
                   <Hint>{t('binDesigner.lid.stackLipOnlyPrintNote')}</Hint>
                 )}
-                <Switch
+                <FeatureToggle
                   label={t('binDesigner.lid.magnetHoles')}
                   checked={state.magnetHoles}
                   onChange={handlers.toggleMagnetHoles}
@@ -306,7 +302,7 @@ export function LidSection() {
                     })}
                   </Hint>
                 )}
-                <Switch
+                <FeatureToggle
                   label={t('binDesigner.lid.separateStackPlate')}
                   checked={state.separateStackPlate}
                   onChange={handlers.toggleSeparateStackPlate}
@@ -596,7 +592,7 @@ export function LidSection() {
               )}
 
               <div className="space-y-1">
-                <Switch
+                <FeatureToggle
                   label={t('binDesigner.lid.relieveInterior')}
                   checked={state.relieveInterior}
                   onChange={handlers.toggleRelieveInterior}

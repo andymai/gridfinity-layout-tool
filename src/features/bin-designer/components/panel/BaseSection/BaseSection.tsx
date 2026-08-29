@@ -309,9 +309,13 @@ export function BaseSection() {
           {state.showFootLattice && (
             <MoreDisclosure
               label={`${t('binDesigner.footLattice')}:`}
-              summary={footLatticeAxes
-                .map(({ value }) => t(`binDesigner.footLattice.${value}`))
-                .join(' / ')}
+              summary={
+                state.footLatticeX === state.footLatticeY
+                  ? t(`binDesigner.footLattice.${state.footLatticeX}`)
+                  : footLatticeAxes
+                      .map(({ value }) => t(`binDesigner.footLattice.${value}`))
+                      .join(' / ')
+              }
               nonDefault={footLatticeAxes.some(({ value }) => value !== DEFAULT_FOOT_LATTICE)}
             >
               {footLatticeAxes.map(({ axis, value, onChange, locked }) => (
