@@ -1,0 +1,74 @@
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.tsx
+  s_2a038ae0eafe62::t_930810553ae1ee 274-279,286-291
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.test.tsx
+  s_2a038ae0eafe62::t_cecf5f81531afb 113,128
+src/i18n/locales/nl.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/i18n/locales/pt-BR.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/i18n/locales/de.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.test.tsx
+  s_2a038ae0eafe62::t_5cfe8ccfe401d1 29
+  s_2a038ae0eafe62::t_7da0a01f12c51d 30-31,37,44,134
+src/i18n/locales/ja.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/i18n/locales/nb.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/i18n/locales/fr.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/i18n/locales/it.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/features/bin-designer/components/ParameterPanel/useInteriorGroupSummary.ts
+  s_2a038ae0eafe62::t_930810553ae1ee 26,30-31
+  s_2a038ae0eafe62::t_5cfd3a1ea3ed9a 22,27-29,35-40
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.tsx
+  s_2a038ae0eafe62::t_930810553ae1ee 182-187,378-385
+src/i18n/locales/pl.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/i18n/locales/sv.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.tsx
+  s_2a038ae0eafe62::t_930810553ae1ee 230-235
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.test.tsx
+  s_2a038ae0eafe62::t_5cfe8ccfe401d1 40
+src/features/bin-designer/components/CutoutWorkspace/CutoutPlateSettings.tsx
+  s_2a038ae0eafe62::t_930810553ae1ee 54-59
+src/i18n/locales/zh-CN.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/i18n/locales/cs.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/features/bin-designer/components/CutoutWorkspace/CutoutPlateSettings.test.tsx
+  s_2a038ae0eafe62::t_cecf5f81531afb 64
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.test.ts
+  s_2a038ae0eafe62::t_e5237e152cc3f2 197
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.tsx
+  s_2a038ae0eafe62::t_930810553ae1ee 71-76
+src/i18n/locales/es.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/i18n/locales/en.ts
+  s_2a038ae0eafe62::t_519f956ed0be76 1702-1703,1901-1902,1908-1909,1975-1976,2940-2941,3003-3004,3060-3061,3376-3379
+  s_2a038ae0eafe62::t_daae422ca4e2bd 1783,1852,1854,1920,1988,2007,2011,2027,2038-2040,2072,2105,2126,2130,2132,2134,2136,2138,2159,2161,2165,2167,2170,2178,2181,2193,2200,2430,2435,2438,2469,2476,2480,2497,2501,2506,2508,2510,2512,2535,2601,2647-2648,2693,2696,2714,2903,2966,2974,2984,2993,3070-3071,3073,3075,3077,3081,3085,3116,3122,3129,3275,3286,3311,3349,3362,3374,3380,3382,3395,3402,3424,3438,3457,3489,3505,3630,3691
+src/i18n/locales/ko.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.test.tsx
+  s_2a038ae0eafe62::t_e5237e152cc3f2 232,243
+src/i18n/locales/uk.json
+  s_2a038ae0eafe62::t_519f956ed0be76 410-411,416-417,593-594,626-627,807-808,873-874,1077-1078,1117-1118,1124-1125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "bf9c70cb264dfed55a78589d0f955f81f6ad4afe",
+  "prompts": {},
+  "sessions": {
+    "s_2a038ae0eafe62": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6d11451-a87d-4bb2-a9ea-ae3543c6b5a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
