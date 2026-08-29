@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.test.tsx
+  s_9a500d3ffa116a::t_0c7eab02535f2c 125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "afc58f2dea7cb319a6d56cb7a3a02f40dabb3ccd",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
