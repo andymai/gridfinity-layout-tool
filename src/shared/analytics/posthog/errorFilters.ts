@@ -69,6 +69,17 @@ const TROIKA_WORKER_INIT_ERROR =
 const TROIKA_WORKER_INIT_FINGERPRINT = 'troika-worker-init-failed';
 
 /**
+ * troika-three-text's bundled webgl-sdf-generator throws this on a WebGL1
+ * context that lacks the `ANGLE_instanced_arrays` extension — software-rendered
+ * and blocklisted GPUs (see `configureTroikaText.ts`). Its stack runs through
+ * the hashed three-render chunk, so message-based grouping mints a fresh issue
+ * per deploy. Capture once per session: every later `<Text>` sync in an
+ * affected session throws the same error again.
+ */
+const TROIKA_SDF_INSTANCING_ERROR = 'ANGLE_instanced_arrays not supported';
+const TROIKA_SDF_INSTANCING_FINGERPRINT = 'troika-sdf-instancing-unsupported';
+
+/**
  * Per-session capture ceilings.
  *
  * Error tracking has its own monthly exception quota, and one looping client
@@ -85,12 +96,14 @@ const SESSION_EXCEPTION_CAP = 10;
 const sessionCaptureCounts = new Map<string, number>();
 let chunkLoadCaptured = false;
 let troikaWorkerInitCaptured = false;
+let troikaSdfInstancingCaptured = false;
 
 /** Test seam: clears the per-session capture counters. */
 export function resetSessionCaptureCounts(): void {
   sessionCaptureCounts.clear();
   chunkLoadCaptured = false;
   troikaWorkerInitCaptured = false;
+  troikaSdfInstancingCaptured = false;
 }
 
 const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
@@ -271,6 +284,15 @@ export function filterExceptionForPosthog(
     event.properties = {
       ...event.properties,
       $exception_fingerprint: TROIKA_WORKER_INIT_FINGERPRINT,
+    };
+  }
+
+  if (primary !== undefined && primary.includes(TROIKA_SDF_INSTANCING_ERROR)) {
+    if (troikaSdfInstancingCaptured) return null;
+    troikaSdfInstancingCaptured = true;
+    event.properties = {
+      ...event.properties,
+      $exception_fingerprint: TROIKA_SDF_INSTANCING_FINGERPRINT,
     };
   }
 
