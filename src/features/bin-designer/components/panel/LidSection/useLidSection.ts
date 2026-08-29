@@ -978,6 +978,7 @@ export function useLidSection() {
       lidText,
       textMode,
       textDisabledReason,
+      textDisabledByStackGrid: stackGridOwnsTop,
       textOnTrayFloor: topSurface === 'tray',
       textOnStackLipFloor: lipOnlyTop,
       // Warning, not a gate — same treatment as the through-cut stencil note.

@@ -1925,6 +1925,9 @@ const en: Record<string, string> = {
   'binDesigner.textMode.throughCutStencilNote':
     'Through-cut uses Allerta Stencil so letter centers stay attached.',
   'binDesigner.textFont': 'Font',
+  'binDesigner.tabText.sharedTypeNote':
+    'Case, size and tracking come from the design-wide type style.',
+  'binDesigner.tabText.editTypography': 'Open Typography',
   'binDesigner.textDepth': 'Text depth',
   'binDesigner.textSize': 'Label size',
   'binDesigner.textSizeMax': 'Max label size',
@@ -1981,6 +1984,8 @@ const en: Record<string, string> = {
   'binDesigner.lid.section.text': 'Lid text',
   'binDesigner.lid.text.placeholder': 'e.g. Cables',
   'binDesigner.lid.text.aria': 'Lid text',
+  'binDesigner.infoButton': 'More information',
+  'binDesigner.lid.text.useStackLipOnly': 'Use stacking lip only',
   'binDesigner.lid.text.disabledStackable':
     'Not available with a full stack grid. Switch to “Stacking lip only” to free up the lid’s top face.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',
@@ -1995,7 +2000,7 @@ const en: Record<string, string> = {
     'A plain closed top. Nothing stacks on it and nothing rests in it.',
   'binDesigner.lid.frictionHint':
     'Grips the lip by friction alone, with no rails or magnets. Easiest to print and pull off.',
-  'binDesigner.lid.advanced': 'Advanced',
+  'binDesigner.lid.advanced': 'Fine tuning',
   'binDesigner.lid.requiresStackingLip': 'Requires stacking lip',
   'binDesigner.lid.stackLipOnly': 'Stacking lip only',
   'binDesigner.lid.stackGridHint':

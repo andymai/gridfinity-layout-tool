@@ -23,7 +23,7 @@ import { LidGripControls } from '../LidGripControls';
 import { SlideControls } from '../SlideControls';
 import { HingeControls } from '../HingeControls';
 import { StepperField } from '../shared/StepperField';
-import { Hint, Readout, SubHeader, DependencyHint, SegmentGrid } from '../shared';
+import { Hint, Readout, SubHeader, DependencyHint, SegmentGrid, InfoDot } from '../shared';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -174,6 +174,11 @@ export function LidSection() {
         checked={state.enabled}
         onChange={handlers.toggleEnabled}
         disabledReason={state.disabledReason}
+        badge={
+          <InfoDot aria-label={t('binDesigner.infoButton')}>
+            <p>{t('binDesigner.lid.printNote')}</p>
+          </InfoDot>
+        }
       />
       {state.stackingLipMissing && (
         <DependencyHint
@@ -184,10 +189,6 @@ export function LidSection() {
 
       {state.enabled && (
         <>
-          {/* Print-time hint — the mating cavity and click rails are
-              downward-facing overhangs that need supports for a clean print. */}
-          <Hint>{t('binDesigner.lid.printNote')}</Hint>
-
           {/* Compatibility notes — features that conflict with click-lock
               mating. Only renders when there are issues; blockers and warnings
               share the list and are color-coded by severity. */}
@@ -363,28 +364,39 @@ export function LidSection() {
                 </>
               }
             />
+            {state.textDisabledByStackGrid && (
+              <DependencyHint
+                actionLabel={t('binDesigner.lid.text.useStackLipOnly')}
+                onAction={handlers.toggleStackLipOnly}
+              />
+            )}
           </section>
 
           {/* ── Holes through the plate ───────────────────────────────── */}
           <div className="space-y-1">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full"
-              disabled={!state.cutouts.allowed}
-              onClick={handlers.openLidCutoutEditor}
-            >
-              {state.cutouts.count > 0
-                ? t('binDesigner.lid.editCutoutsCount', { count: state.cutouts.count })
-                : t('binDesigner.lid.editCutouts')}
-            </Button>
-            <Hint>
-              {!state.cutouts.allowed
-                ? t('binDesigner.lid.editCutoutsBlocked')
-                : state.cutouts.atCapacity
-                  ? t('binDesigner.lid.editCutoutsFull', { max: state.cutouts.max })
-                  : t('binDesigner.lid.editCutoutsHint')}
-            </Hint>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full flex-1"
+                disabled={!state.cutouts.allowed}
+                onClick={handlers.openLidCutoutEditor}
+              >
+                {state.cutouts.count > 0
+                  ? t('binDesigner.lid.editCutoutsCount', { count: state.cutouts.count })
+                  : t('binDesigner.lid.editCutouts')}
+              </Button>
+              <InfoDot aria-label={t('binDesigner.infoButton')}>
+                <p>{t('binDesigner.lid.editCutoutsHint')}</p>
+              </InfoDot>
+            </div>
+            {(!state.cutouts.allowed || state.cutouts.atCapacity) && (
+              <Hint>
+                {!state.cutouts.allowed
+                  ? t('binDesigner.lid.editCutoutsBlocked')
+                  : t('binDesigner.lid.editCutoutsFull', { max: state.cutouts.max })}
+              </Hint>
+            )}
           </div>
 
           {/* ── Extra height (folded in) ─────────────────────────────── */}
@@ -403,8 +415,8 @@ export function LidSection() {
               size="md"
               aria-label={t('binDesigner.lid.extraHeightAria')}
               commitMode="deferred"
+              info={t('binDesigner.lid.extraHeightHint')}
             />
-            <Hint>{t('binDesigner.lid.extraHeightHint')}</Hint>
           </div>
 
           {/* ── Advanced (millimetre fine-tuning) ────────────────────── */}
@@ -647,15 +659,23 @@ export function LidSection() {
               state.isSlide ? 'hidden' : ''
             }`}
           >
-            <SubHeader>{t('binDesigner.lid.section.grip')}</SubHeader>
-            <p className="text-xs text-content-tertiary">{t('binDesigner.lid.gripHint')}</p>
+            <div className="flex items-center gap-1.5">
+              <SubHeader>{t('binDesigner.lid.section.grip')}</SubHeader>
+              <InfoDot aria-label={t('binDesigner.lid.section.grip')}>
+                <p>{t('binDesigner.lid.gripHint')}</p>
+              </InfoDot>
+            </div>
             <LidGripControls state={state} handlers={handlers} t={t} />
           </section>
 
           {/* Hands off to a NEW design (#3036) — see `matchingTrayParams`. */}
           <section className="space-y-2 border-t border-stroke-subtle pt-3">
-            <SubHeader>{t('binDesigner.lid.section.tray')}</SubHeader>
-            <p className="text-xs text-content-tertiary">{t('binDesigner.lid.matchingTrayHint')}</p>
+            <div className="flex items-center gap-1.5">
+              <SubHeader>{t('binDesigner.lid.section.tray')}</SubHeader>
+              <InfoDot aria-label={t('binDesigner.lid.section.tray')}>
+                <p>{t('binDesigner.lid.matchingTrayHint')}</p>
+              </InfoDot>
+            </div>
             <Button variant="secondary" size="sm" onClick={handlers.createMatchingTray}>
               {t('binDesigner.lid.createMatchingTray')}
             </Button>

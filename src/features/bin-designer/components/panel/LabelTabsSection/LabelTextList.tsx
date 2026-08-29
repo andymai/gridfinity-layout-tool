@@ -238,7 +238,11 @@ export function LabelTextList({
                     focusToken={focus?.index === row.index ? focus.token : undefined}
                     invalid={row.overflows}
                     describedBy={row.overflows ? messageId : undefined}
-                    placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
+                    placeholder={
+                      row.index === rows[0]?.index
+                        ? t('binDesigner.tabEngravedTextPlaceholder')
+                        : ''
+                    }
                     ariaLabel={
                       spanning
                         ? t('binDesigner.rowEngravedTextAriaLabel', { n: row.displayNumber })
@@ -351,7 +355,7 @@ export function LabelTextList({
             size="sm"
             touchTarget={false}
             onClick={onPickOnGrid}
-            className="px-0 text-label font-medium text-accent hover:bg-transparent hover:text-accent/80"
+            className="h-auto rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-micro font-medium text-content-secondary hover:bg-surface-hover"
           >
             {t('binDesigner.labelTextPickOnGrid')}
           </Button>

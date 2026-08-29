@@ -28,6 +28,8 @@ import {
   LABEL_PLATE_FIT_OFFSET_STEP,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
+import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
+import { DependencyHint } from '../shared';
 import { LabelTextList } from './LabelTextList';
 import { LabelSectionWarnings } from './LabelSectionWarnings';
 import { LabelColorControls } from './LabelColorControls';
@@ -151,7 +153,7 @@ export function LabelTabsSection() {
               cut into the bin, or engraved on separately printed plates (#2666)
               — which in socket mode also gives each row a plate to size. */}
           <div>
-            <span className="mb-1 block text-xs font-medium text-content-secondary">
+            <span className="mb-1 block text-label text-content-tertiary">
               {t('binDesigner.tabMode')}
             </span>
             <div role="group" aria-label={t('binDesigner.tabMode')} className={SEGMENT_GROUP_CLASS}>
@@ -188,7 +190,7 @@ export function LabelTabsSection() {
           {state.isSocketMode && (
             <>
               <div>
-                <span className="mb-1 block text-xs font-medium text-content-secondary">
+                <span className="mb-1 block text-label text-content-tertiary">
                   {t('binDesigner.socketStyle')}
                 </span>
                 <div
@@ -307,7 +309,7 @@ export function LabelTabsSection() {
           >
             <div className="space-y-3">
               <div>
-                <span className="mb-1 block text-xs font-medium text-content-secondary">
+                <span className="mb-1 block text-label text-content-tertiary">
                   {t('binDesigner.tabEdges')}
                 </span>
                 <div
@@ -400,7 +402,7 @@ export function LabelTabsSection() {
             <div className="space-y-3">
               {/* Support */}
               <div>
-                <span className="mb-1 block text-xs font-medium text-content-secondary">
+                <span className="mb-1 block text-label text-content-tertiary">
                   {t('binDesigner.tabSupport')}
                 </span>
                 <div
@@ -690,6 +692,11 @@ export function LabelTabsSection() {
                   min={state.textDefaults.minFontSize}
                   max={state.textDefaults.maxFontSize}
                   explainShared
+                />
+                <DependencyHint
+                  reason={t('binDesigner.tabText.sharedTypeNote')}
+                  actionLabel={t('binDesigner.tabText.editTypography')}
+                  onAction={() => jumpToDesignerControl('bd-type')}
                 />
               </div>
             </Collapsible>
