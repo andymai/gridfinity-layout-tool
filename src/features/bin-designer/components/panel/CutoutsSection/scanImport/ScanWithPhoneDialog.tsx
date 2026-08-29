@@ -227,7 +227,12 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
                 >
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
-                {t('binDesigner.cutouts.scanImport.added', { count: added })}
+                {t(
+                  added === 1
+                    ? 'binDesigner.cutouts.scanImport.added.one'
+                    : 'binDesigner.cutouts.scanImport.added.other',
+                  { count: added }
+                )}
               </p>
             )}
             {scan.phase === 'unavailable' || scan.phase === 'expired' ? (

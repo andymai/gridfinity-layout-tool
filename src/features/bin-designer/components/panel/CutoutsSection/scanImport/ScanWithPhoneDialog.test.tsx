@@ -110,7 +110,7 @@ describe('ScanWithPhoneDialog', () => {
     const addedSpecs = mockAddScanCutouts.mock.calls[0][0] as Array<{ width: number }>;
     expect(addedSpecs[0].width).toBeCloseTo(50, 5);
     expect(onClose).not.toHaveBeenCalled();
-    expect(await screen.findByText('binDesigner.cutouts.scanImport.added')).toBeInTheDocument();
+    expect(await screen.findByText('binDesigner.cutouts.scanImport.added.one')).toBeInTheDocument();
     fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.done'));
     expect(onClose).toHaveBeenCalledOnce();
   });
@@ -125,7 +125,7 @@ describe('ScanWithPhoneDialog', () => {
     await waitFor(() => expect(mockAddScanCutouts).toHaveBeenCalledOnce());
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.queryByLabelText('binDesigner.cutouts.scanImport.scaleLabel')).toBeNull();
-    expect(screen.getByText('binDesigner.cutouts.scanImport.added')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.scanImport.added.one')).toBeInTheDocument();
   });
 
   it('buffers a scan that arrives during scale-confirm instead of clobbering it', async () => {

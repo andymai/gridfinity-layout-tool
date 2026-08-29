@@ -37,7 +37,7 @@ describe('LabelTextList', () => {
 
   it('counts how many tabs will print blank', () => {
     renderList();
-    expect(screen.getByText('2 tab(s) will print blank')).toBeInTheDocument();
+    expect(screen.getByText('2 tabs will print blank')).toBeInTheDocument();
     expect(screen.getByText('1 of 3 filled')).toBeInTheDocument();
   });
 

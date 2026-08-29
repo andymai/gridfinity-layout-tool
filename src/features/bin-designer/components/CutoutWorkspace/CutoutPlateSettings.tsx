@@ -51,7 +51,12 @@ export function CutoutPlateSettings() {
       </span>
 
       <p className="text-label text-content-secondary">
-        {t('binDesigner.cutoutSocket.socketCount', { n: plan.socketCount })}
+        {t(
+          plan.socketCount === 1
+            ? 'binDesigner.cutoutSocket.socketCount.one'
+            : 'binDesigner.cutoutSocket.socketCount.other',
+          { n: plan.socketCount }
+        )}
       </p>
       {plan.skippedCount > 0 && (
         <p role="status" className="text-label text-warning">

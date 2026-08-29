@@ -61,7 +61,7 @@ describe('CutoutPlateSettings', () => {
     board([cutout({ labelMode: 'socket', textAnchor: 'top' })]);
     render(<CutoutPlateSettings />);
 
-    expect(screen.getByText('binDesigner.cutoutSocket.socketCount')).toBeTruthy();
+    expect(screen.getByText('binDesigner.cutoutSocket.socketCount.one')).toBeTruthy();
     expect(screen.getByTestId('plate-export')).toBeTruthy();
   });
 

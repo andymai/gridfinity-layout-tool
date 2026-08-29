@@ -229,7 +229,7 @@ describe('WallSurfaceSection', () => {
       });
       render(<WallSurfaceSection />);
       expect(
-        screen.getByText('Outer walls stay solid — only the dividers are patterned')
+        screen.getByText('Outer walls stay solid: only the dividers are patterned')
       ).toBeInTheDocument();
     });
 
@@ -240,7 +240,7 @@ describe('WallSurfaceSection', () => {
         params: patterned({ left: false, right: false, front: false, back: false }),
       });
       render(<WallSurfaceSection />);
-      expect(screen.getByText('Nothing is patterned — pick at least one wall')).toBeInTheDocument();
+      expect(screen.getByText('Nothing is patterned: pick at least one wall')).toBeInTheDocument();
       expect(
         screen.queryByText('Pick a wall, or pattern the divider walls below')
       ).not.toBeInTheDocument();
