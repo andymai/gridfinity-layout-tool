@@ -22,7 +22,7 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
-import { Hint, SubHeader } from '../shared';
+import { Hint, SegmentGrid, SideSelector, SubHeader } from '../shared';
 import {
   DEFAULT_FOOT_LATTICE,
   FOOT_LATTICES,
@@ -84,11 +84,8 @@ export function BaseSection() {
     <div className="space-y-3">
       <Hint>{t('binDesigner.lidBottom.hint')}</Hint>
 
-      <SegmentedControl
+      <SegmentGrid
         aria-label={t('binDesigner.lid.attachment')}
-        activeStyle="accent"
-        fullWidth
-        size="sm"
         value={state.trayBottom.attachment}
         onChange={handlers.setTrayAttachment}
         options={LID_ATTACHMENTS.map((mode) => ({
@@ -109,22 +106,18 @@ export function BaseSection() {
 
       {state.trayBottom.attachment === 'clickRails' && (
         <div>
-          <span className="mb-1 block text-xs font-medium text-content-secondary">
+          <span className="mb-1 block text-label text-content-tertiary">
             {t('binDesigner.lid.clickRails')}
           </span>
-          <div className="flex gap-1">
-            {LID_RAIL_SIDES.map((side) => (
-              <Button
-                key={side}
-                size="sm"
-                variant={state.trayBottom.clickRails[side] ? 'primary' : 'secondary'}
-                aria-pressed={state.trayBottom.clickRails[side]}
-                onClick={() => handlers.toggleTrayRail(side)}
-              >
-                {t(`binDesigner.lid.side.${side}`)}
-              </Button>
-            ))}
-          </div>
+          <SideSelector
+            sides={LID_RAIL_SIDES.map((side) => ({
+              side,
+              label: t(`binDesigner.lid.side.${side}`),
+              active: state.trayBottom.clickRails[side],
+            }))}
+            onToggle={handlers.toggleTrayRail}
+            ariaLabel={t('binDesigner.lid.clickRails')}
+          />
         </div>
       )}
     </div>

@@ -1,8 +1,8 @@
 /**
- * Explanatory prose behind a small info button, for paragraphs that earn their
- * words but not their permanent panel height. The affordance the angled
- * dividers header already carries, extracted so every section reaches for the
- * same one.
+ * For prose that earns its words but not permanent panel height. Only
+ * evergreen explanations belong here: state-dependent messages (blocked
+ * reasons, warnings) must stay visible inline, or the state they report
+ * becomes invisible.
  */
 
 import { useRef, useState } from 'react';

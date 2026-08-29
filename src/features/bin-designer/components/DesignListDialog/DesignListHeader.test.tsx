@@ -14,6 +14,7 @@ function setup(overrides?: {
     onNewDesign: vi.fn(),
     onOpenOptionsMenu: vi.fn(),
     onClose: vi.fn(),
+    showWorkshopButton: false,
   };
   render(
     <DesignListHeader

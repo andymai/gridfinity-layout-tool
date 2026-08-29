@@ -36,6 +36,8 @@ import { groupByLineage, branchesOf } from './designLineage';
 import type { SortOption } from './designListSort';
 import { removeRegistryEntry } from '../../store/customBinRegistry';
 import { useDesignerStore } from '../../store';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import type { ItemKind } from '@/shared/types/item';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
@@ -107,6 +109,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   const loadDesign = useDesignerStore((s) => s.loadDesign);
   const newDesign = useDesignerStore((s) => s.newDesign);
+  const workshopEnabled = useFeatureFlag('workshop');
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const { navigateToDesign, syncUrlToDesign } = useDesignerRouting();
   const addToast = useToastStore((s) => s.addToast);
@@ -243,25 +246,36 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   );
 
   const [showNewDesignConfirm, setShowNewDesignConfirm] = useState(false);
+  // Which kind the pending confirm dialog will create; the confirm is the same
+  // unsaved-changes gate for a bin and a workshop, so the kind rides state.
+  const [pendingNewKind, setPendingNewKind] = useState<ItemKind>('bin');
 
-  const handleNewDesign = useCallback(() => {
-    const state = useDesignerStore.getState();
-    if (state.currentDesignId && state.history.past.length > 0) {
-      setShowNewDesignConfirm(true);
-      return;
-    }
-    newDesign();
-    syncUrlToDesign(null);
-    addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
-    onClose();
-  }, [newDesign, syncUrlToDesign, addToast, onClose, t]);
+  const createNewDesign = useCallback(
+    (kind: ItemKind) => {
+      newDesign(kind === 'bin' ? undefined : kind);
+      syncUrlToDesign(null);
+      addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
+      onClose();
+    },
+    [newDesign, syncUrlToDesign, addToast, onClose, t]
+  );
+
+  const handleNewDesign = useCallback(
+    (kind: ItemKind = 'bin') => {
+      const state = useDesignerStore.getState();
+      if (state.currentDesignId && state.history.past.length > 0) {
+        setPendingNewKind(kind);
+        setShowNewDesignConfirm(true);
+        return;
+      }
+      createNewDesign(kind);
+    },
+    [createNewDesign]
+  );
 
   const handleConfirmNewDesign = useCallback(() => {
-    newDesign();
-    syncUrlToDesign(null);
-    addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
-    onClose();
-  }, [newDesign, syncUrlToDesign, addToast, onClose, t]);
+    createNewDesign(pendingNewKind);
+  }, [createNewDesign, pendingNewKind]);
 
   const handleOpenOptionsMenu = useCallback((e: ReactMouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -608,6 +622,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
           onEnterSelect={() => selection.enter()}
           onShowImport={() => setShowImport(true)}
           onNewDesign={handleNewDesign}
+          showWorkshopButton={workshopEnabled}
           onOpenOptionsMenu={handleOpenOptionsMenu}
           onClose={onClose}
         />
