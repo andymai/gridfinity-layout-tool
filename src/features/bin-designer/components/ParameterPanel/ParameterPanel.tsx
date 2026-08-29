@@ -41,7 +41,8 @@ import { PrintPage } from '../panel/pages/PrintPage';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useLidGroupSummary } from './useLidGroupSummary';
-import { useFinishingGroupSummary } from './useFinishingGroupSummary';
+import { usePrintSummary } from './usePrintSummary';
+import { useStyleSummary } from './useStyleSummary';
 import { modifiedCategories } from './categoryModified';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -104,7 +105,8 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
   const lidSummary = useLidGroupSummary();
-  const finishingSummary = useFinishingGroupSummary();
+  const printSummary = usePrintSummary();
+  const styleSummary = useStyleSummary();
   // Selected through `useShallow` over derived flags rather than subscribing
   // to `params` wholesale: this is the panel ROOT, and an `Object.is`
   // subscription on an immer object re-renders the whole shell on every params
@@ -300,7 +302,8 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
         shape: shapeSummary,
         interior: interiorSummary,
         features: lidSummary,
-        print: finishingSummary,
+        style: styleSummary,
+        print: printSummary,
       }}
       modified={modified}
       warnings={{ print: needsSplit }}

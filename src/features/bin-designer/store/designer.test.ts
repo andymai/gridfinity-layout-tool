@@ -269,7 +269,7 @@ describe('useDesignerStore', () => {
   });
 
   describe('UI actions', () => {
-    it('should set active tab', () => {
+    it('sets the active category', () => {
       useDesignerStore.getState().setActiveCategory('shape');
       expect(useDesignerStore.getState().ui.activeCategory).toBe('shape');
     });
