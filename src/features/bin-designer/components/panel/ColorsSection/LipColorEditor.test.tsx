@@ -42,10 +42,8 @@ describe('LipColorEditor', () => {
       screen.queryByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
     ).toBeNull();
     expect(
-      screen.getByRole<HTMLInputElement>('checkbox', {
-        name: 'binDesigner.colors.lip.splitZones',
-      }).checked
-    ).toBe(false);
+      screen.getByRole('checkbox', { name: 'binDesigner.colors.lip.splitZones' })
+    ).not.toBeChecked();
   });
 
   it('reveals the Corners/Bands grid when split is enabled', () => {
@@ -82,10 +80,8 @@ describe('LipColorEditor', () => {
     ).toBeDefined();
     expect(screen.getAllByText(/binDesigner\.colors\.lip\.bandN/)).toHaveLength(4);
     expect(
-      screen.getByRole<HTMLInputElement>('checkbox', {
-        name: 'binDesigner.colors.lip.splitZones',
-      }).checked
-    ).toBe(true);
+      screen.getByRole('checkbox', { name: 'binDesigner.colors.lip.splitZones' })
+    ).toBeChecked();
   });
 
   it('collapsing the split resets the lip to a single color', () => {

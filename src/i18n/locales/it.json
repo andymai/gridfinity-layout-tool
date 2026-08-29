@@ -1936,6 +1936,8 @@
   "binDesigner.walls.pattern.rindo": "Rindo (竜胆)",
   "binDesigner.walls.pattern.round": "Tondo",
   "binDesigner.walls.pattern.sakura": "Sakura (桜)",
+  "binDesigner.style.section.color": "Colore",
+  "binDesigner.style.section.walls": "Pareti",
   "binDesigner.walls.pattern.scale": "Scala del motivo",
   "binDesigner.walls.pattern.scaleHint": "Fori più fini a sinistra, più grandi a destra",
   "binDesigner.walls.pattern.sides": "Pareti con motivo",

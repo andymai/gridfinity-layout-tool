@@ -1936,6 +1936,8 @@
   "binDesigner.walls.pattern.rindo": "Rindo (竜胆)",
   "binDesigner.walls.pattern.round": "圆形",
   "binDesigner.walls.pattern.sakura": "Sakura (桜)",
+  "binDesigner.style.section.color": "颜色",
+  "binDesigner.style.section.walls": "壁面",
   "binDesigner.walls.pattern.scale": "图案比例",
   "binDesigner.walls.pattern.scaleHint": "越往左孔越细，越往右越粗",
   "binDesigner.walls.pattern.sides": "应用图案的壁",

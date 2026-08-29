@@ -10,7 +10,7 @@ import { SliderInput } from '@/design-system';
 import { FLOOR_PATTERN_TYPES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { FeatureToggle } from '../FeatureToggle';
-import { Hint } from '../shared';
+import { Hint, SubHeader } from '../shared';
 import { PatternSelector } from '../WallsSection/PatternSelector';
 import { UnavailableFamily } from './BaseSection';
 import { useBaseSection } from './useBaseSection';
@@ -30,37 +30,40 @@ export function FloorPatternSection() {
   if (!state.showFloor) return null;
 
   return (
-    <FeatureToggle
-      label={t('binDesigner.base.floorPattern')}
-      checked={state.floorPatternEnabled}
-      onChange={handlers.toggleFloorPattern}
-      disabledReason={handlers.floorPatternDisabledReason}
-      primaryControls={
-        <>
-          <PatternSelector
-            id="floor-pattern-selector"
-            labelKey="binDesigner.base.floorPattern.shape"
-            patterns={FLOOR_PATTERN_TYPES}
-            selectedPattern={state.floorPatternType}
-            onChange={handlers.setFloorPatternType}
-          />
-          <SliderInput
-            label={t('binDesigner.walls.pattern.scale')}
-            value={state.floorPatternScalePercent}
-            onChange={handlers.setFloorPatternScale}
-            min={0}
-            max={100}
-            step={5}
-            unit="%"
-            info={t('binDesigner.walls.pattern.scaleHint')}
-          />
-          <Hint>
-            {state.floorPatternDoesNotFit
-              ? t('binDesigner.base.floorPattern.tooSmall')
-              : t('binDesigner.base.floorPattern.hint')}
-          </Hint>
-        </>
-      }
-    />
+    <div className="space-y-2">
+      <SubHeader>{t('binDesigner.base.section.floor')}</SubHeader>
+      <FeatureToggle
+        label={t('binDesigner.base.floorPattern')}
+        checked={state.floorPatternEnabled}
+        onChange={handlers.toggleFloorPattern}
+        disabledReason={handlers.floorPatternDisabledReason}
+        primaryControls={
+          <>
+            <PatternSelector
+              id="floor-pattern-selector"
+              labelKey="binDesigner.base.floorPattern.shape"
+              patterns={FLOOR_PATTERN_TYPES}
+              selectedPattern={state.floorPatternType}
+              onChange={handlers.setFloorPatternType}
+            />
+            <SliderInput
+              label={t('binDesigner.walls.pattern.scale')}
+              value={state.floorPatternScalePercent}
+              onChange={handlers.setFloorPatternScale}
+              min={0}
+              max={100}
+              step={5}
+              unit="%"
+              info={t('binDesigner.walls.pattern.scaleHint')}
+            />
+            <Hint>
+              {state.floorPatternDoesNotFit
+                ? t('binDesigner.base.floorPattern.tooSmall')
+                : t('binDesigner.base.floorPattern.hint')}
+            </Hint>
+          </>
+        }
+      />
+    </div>
   );
 }
