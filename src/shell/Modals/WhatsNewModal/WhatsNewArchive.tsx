@@ -62,7 +62,7 @@ export function ArchiveList({ filter, activate }: { filter: KindFilter; activate
     <div className="flex flex-col py-2">
       {groups.map((group) => (
         <section key={group.month} className="flex flex-col">
-          <h3 className="sticky top-0 z-10 -mx-1 bg-surface-secondary px-1 pb-1.5 pt-3 text-[11px] font-semibold uppercase tracking-wider text-content-tertiary">
+          <h3 className="sticky top-0 z-10 -mx-1 bg-surface-secondary px-1 pb-1.5 pt-3 text-label font-semibold uppercase tracking-wider text-content-tertiary">
             {formatMonth(group.month, locale)}
           </h3>
           <div className="flex flex-col divide-y divide-stroke-subtle">
@@ -101,7 +101,7 @@ function ArchiveRow({ entry, activate }: { entry: WhatsNewEntry; activate: Activ
         <LabsBadge entry={entry} />
         <time
           dateTime={entry.date}
-          className="flex-shrink-0 text-[11px] tabular-nums text-content-disabled"
+          className="flex-shrink-0 text-label tabular-nums text-content-disabled"
         >
           {formatDay(entry.date, locale)}
         </time>

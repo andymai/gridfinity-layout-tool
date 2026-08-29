@@ -281,7 +281,7 @@ export function CustomGridEditor() {
         </Button>
       </div>
 
-      <p className="text-[11px] text-content-tertiary">
+      <p className="text-label text-content-tertiary">
         {t('binDesigner.customPieceCount', { count: pieces.length })}
         {frictionCount > 0 && (
           <span className="text-warning">

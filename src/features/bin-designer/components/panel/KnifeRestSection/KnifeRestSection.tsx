@@ -61,7 +61,7 @@ export function KnifeRestSection() {
               size="sm"
               fullWidth
             />
-            <p className="mt-1 text-[11px] leading-relaxed text-content-tertiary">
+            <p className="mt-1 text-label leading-relaxed text-content-tertiary">
               {t(`binDesigner.knifeRest.styleHint.${state.style}`)}
             </p>
           </div>
@@ -108,7 +108,7 @@ export function KnifeRestSection() {
         size="md"
         aria-label={t('binDesigner.knifeRest.grooveDepthAria')}
       />
-      <p className="text-[11px] leading-relaxed text-content-tertiary">
+      <p className="text-label leading-relaxed text-content-tertiary">
         {t('binDesigner.knifeRest.grooveDepthHint')}
       </p>
     </FeatureToggle>

@@ -183,7 +183,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
         <div className="space-y-3">
           <p className="text-xs text-content-secondary">{t('drawerShape.editor.hint')}</p>
           {replacesDrawnShape && (
-            <p className="text-xs text-status-warning" role="alert">
+            <p className="text-xs text-warning" role="alert">
               {t('drawerShape.editor.replacesDrawnShape')}
             </p>
           )}
@@ -226,7 +226,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
               })
             )}
           </div>
-          {errorKey !== null && <p className="text-xs text-status-error">{t(errorKey)}</p>}
+          {errorKey !== null && <p className="text-xs text-error">{t(errorKey)}</p>}
         </div>
       </Dialog.Body>
       <Dialog.Footer>

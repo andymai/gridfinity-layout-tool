@@ -173,7 +173,7 @@ export function LidExplodeSlider({
       onPointerEnter={() => setIsHovering(true)}
       onPointerLeave={() => setIsHovering(false)}
     >
-      <span className="text-[11px] font-medium text-content-secondary">
+      <span className="text-label font-medium text-content-secondary">
         {labels?.open ?? t('binDesigner.preview.lidOpen')}
       </span>
 
@@ -250,7 +250,7 @@ export function LidExplodeSlider({
         />
       </div>
 
-      <span className="text-[11px] font-medium text-content-secondary">
+      <span className="text-label font-medium text-content-secondary">
         {labels?.closed ?? t('binDesigner.preview.lidClosed')}
       </span>
     </div>

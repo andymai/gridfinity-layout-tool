@@ -487,7 +487,7 @@ export function SupportersPage() {
           aria-label={t('supporters.sparklineLabel', { count: SPARKLINE_MONTHS })}
         >
           <Sparkline buckets={history} color={palette.accent} />
-          <figcaption className="text-[10px] font-medium uppercase tracking-[0.16em] opacity-55">
+          <figcaption className="text-micro font-medium uppercase tracking-[0.16em] opacity-55">
             {t('supporters.sparklineCaption')}
           </figcaption>
         </figure>
@@ -508,7 +508,7 @@ export function SupportersPage() {
           >
             {focused.isNewest && (
               <span
-                className="mr-2 rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                className="mr-2 rounded-sm px-1.5 py-0.5 text-micro font-bold uppercase tracking-wider"
                 style={{ background: palette.accent, color: '#fff' }}
               >
                 {t('supporters.justJoined')}

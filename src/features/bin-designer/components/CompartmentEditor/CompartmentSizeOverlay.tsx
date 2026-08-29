@@ -73,7 +73,7 @@ export function CompartmentSizeOverlay({
       {labels.map(({ id, left, top, text }) => (
         <span
           key={id}
-          className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-surface/70 px-1 text-[10px] tabular-nums text-content-secondary"
+          className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-surface/70 px-1 text-micro tabular-nums text-content-secondary"
           style={{ left: `${left}%`, top: `${top}%` }}
         >
           {text}

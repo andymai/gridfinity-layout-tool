@@ -189,10 +189,10 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
         <label className={`${textSize} text-content-tertiary`}>
           {t('designLinking.inspector.linkedDesign')}
         </label>
-        <div className="p-3 rounded-lg bg-status-warning/10 border border-status-warning/30">
+        <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
           <div className="flex items-center gap-2 mb-2">
             <svg
-              className="w-4 h-4 text-status-warning flex-shrink-0"
+              className="w-4 h-4 text-warning flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -204,7 +204,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
-            <span className="text-sm text-status-warning font-medium">
+            <span className="text-sm text-warning font-medium">
               {t('designLinking.inspector.designDeleted')}
             </span>
           </div>
@@ -290,14 +290,14 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
 
       {/* Drawer edge-orientation mismatch warning */}
       {edgeMismatch && (
-        <div className="p-3 rounded-lg bg-status-warning/10 border border-status-warning/30 space-y-2">
+        <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 space-y-2">
           <div className="flex items-start gap-2">
             <AlertTriangleIcon
               size="sm"
-              className="text-status-warning flex-shrink-0 mt-0.5"
+              className="text-warning flex-shrink-0 mt-0.5"
               aria-hidden="true"
             />
-            <span className="text-xs text-status-warning">
+            <span className="text-xs text-warning">
               {t('designLinking.inspector.edgeMismatch')}
             </span>
           </div>
@@ -418,7 +418,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               <Button
                 variant="ghost"
                 onClick={handleDelete}
-                className="w-full justify-start rounded-none px-3 py-2 text-left text-sm font-normal text-status-error hover:bg-surface-hover"
+                className="w-full justify-start rounded-none px-3 py-2 text-left text-sm font-normal text-error hover:bg-surface-hover"
                 role="menuitem"
               >
                 <svg

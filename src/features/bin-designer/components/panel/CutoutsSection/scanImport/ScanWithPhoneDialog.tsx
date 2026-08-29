@@ -44,7 +44,7 @@ const round1 = (n: number): number => Math.round(n * 10) / 10;
 
 function PrivacyHint({ text }: { readonly text: string }) {
   return (
-    <span className="flex items-center justify-center gap-1.5 text-[11px] text-content-tertiary">
+    <span className="flex items-center justify-center gap-1.5 text-label text-content-tertiary">
       <svg
         width="12"
         height="12"
@@ -245,7 +245,7 @@ export function ScanWithPhoneDialog({ open, onClose, onImport }: ScanWithPhoneDi
                   {t('binDesigner.cutouts.scanImport.hint')}
                 </p>
                 {/* Fallback if the QR can't be scanned/rendered: the link itself. */}
-                <p className="max-w-full break-all font-mono text-[10px] text-content-tertiary">
+                <p className="max-w-full break-all font-mono text-micro text-content-tertiary">
                   {scan.url}
                 </p>
                 <p className="flex items-center gap-2 text-xs text-content-tertiary">

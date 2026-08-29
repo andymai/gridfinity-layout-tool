@@ -57,7 +57,7 @@ export function CommandItem({ command, onSelect, t }: CommandItemProps) {
       value={searchValue}
       onSelect={() => onSelect(command.id)}
       disabled={!command.isAvailable}
-      className="group flex items-center justify-between gap-3 mx-2 px-2.5 py-2 rounded-lg cursor-pointer text-[13px] text-content transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-35 data-[disabled=true]:cursor-not-allowed focus-visible:outline-none"
+      className="group flex items-center justify-between gap-3 mx-2 px-2.5 py-2 rounded-lg cursor-pointer text-body text-content transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-35 data-[disabled=true]:cursor-not-allowed focus-visible:outline-none"
     >
       <span className="truncate">{t(command.labelKey)}</span>
       {command.shortcut && (

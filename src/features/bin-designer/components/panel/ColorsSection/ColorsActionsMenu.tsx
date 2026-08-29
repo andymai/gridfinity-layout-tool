@@ -211,11 +211,11 @@ export function ColorsActionsMenu({
 
             <div className="my-1 h-px bg-stroke-subtle/60" role="separator" />
 
-            <p className="px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
+            <p className="px-2 py-1 text-micro font-medium uppercase tracking-wide text-content-tertiary">
               {t('binDesigner.colors.palettes')}
             </p>
             {palettes.length === 0 ? (
-              <p className="px-2 py-1 text-[11px] italic text-content-tertiary">
+              <p className="px-2 py-1 text-label italic text-content-tertiary">
                 {t('binDesigner.colors.noPalettes')}
               </p>
             ) : (

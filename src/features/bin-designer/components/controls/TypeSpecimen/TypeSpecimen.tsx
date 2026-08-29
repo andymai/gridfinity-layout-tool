@@ -55,7 +55,7 @@ export function TypeSpecimen({ text, style }: TypeSpecimenProps) {
         </g>
       </svg>
       {pathData === '' && (
-        <p className="mt-1 text-center text-[11px] text-content-tertiary">
+        <p className="mt-1 text-center text-label text-content-tertiary">
           {measurer === null
             ? t('binDesigner.type.specimenLoading')
             : t('binDesigner.type.specimenEmpty')}

@@ -81,7 +81,7 @@ function BentoModeContent() {
   if (!isDesktop) {
     return (
       <div className="space-y-3">
-        <p className="rounded-md bg-surface/60 px-2 py-1.5 text-[11px] leading-relaxed text-content-tertiary">
+        <p className="rounded-md bg-surface/60 px-2 py-1.5 text-label leading-relaxed text-content-tertiary">
           {t('binDesigner.bento.smallScreenNote')}
         </p>
         <CompartmentEditor />
@@ -98,7 +98,7 @@ function BentoModeContent() {
         subtitle={t('binDesigner.openBentoWorkspaceSubtitle')}
         onClick={() => setBentoWorkspaceOpen(true)}
       />
-      <p className="px-1 text-[10px] text-content-tertiary">
+      <p className="px-1 text-micro text-content-tertiary">
         {drawnCount === 1
           ? t('binDesigner.bento.summary.one', {
               cols: compartments.cols,
@@ -128,7 +128,7 @@ function SolidModeContent() {
         <span className="text-xs font-semibold text-content-secondary">
           {t('binDesigner.editCutouts')}
         </span>
-        <p className="mt-0.5 text-[10px] leading-relaxed text-content-tertiary">
+        <p className="mt-0.5 text-micro leading-relaxed text-content-tertiary">
           {t('binDesigner.lightweightDisablesCutouts')}
         </p>
       </div>

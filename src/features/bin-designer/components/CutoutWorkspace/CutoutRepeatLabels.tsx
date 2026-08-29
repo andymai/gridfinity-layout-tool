@@ -34,7 +34,7 @@ interface CutoutRepeatLabelsProps {
 }
 
 const ACTION_CLASS =
-  'flex-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-[11px] text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50';
+  'flex-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-label text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50';
 
 /**
  * Rows the list is edited as. Blank lines are NOT dropped: a blank line inside
@@ -105,7 +105,7 @@ export function CutoutRepeatLabels({
 
   return (
     <div className="space-y-1">
-      <span className="text-[10px] text-text-muted">
+      <span className="text-micro text-text-muted">
         {t('binDesigner.cutouts.repeat.labels.title')}
       </span>
       <Textarea
@@ -119,7 +119,7 @@ export function CutoutRepeatLabels({
         aria-describedby={hintId}
         placeholder={t('binDesigner.cutouts.repeat.labels.placeholder')}
       />
-      <p id={hintId} className="text-[10px] leading-snug text-content-tertiary">
+      <p id={hintId} className="text-micro leading-snug text-content-tertiary">
         {t(`binDesigner.cutouts.repeat.labels.order.${arrayLabelOrder(array)}`)}
       </p>
       {/* Advisory, never a block: the request asks for a mismatch to be
@@ -130,7 +130,7 @@ export function CutoutRepeatLabels({
           rather than one line joined by punctuation, so no locale has to
           inherit English's clause order to read correctly. */}
       <p
-        className={`text-[11px] leading-snug ${short || long ? 'text-warning' : 'text-content-tertiary'}`}
+        className={`text-label leading-snug ${short || long ? 'text-warning' : 'text-content-tertiary'}`}
       >
         {t('binDesigner.cutouts.repeat.labels.count', {
           labels: counts.labels,
@@ -138,12 +138,12 @@ export function CutoutRepeatLabels({
         })}
       </p>
       {short && (
-        <p className="text-[11px] leading-snug text-content-tertiary">
+        <p className="text-label leading-snug text-content-tertiary">
           {t('binDesigner.cutouts.repeat.labels.short', { count: counts.copies - counts.labels })}
         </p>
       )}
       {long && (
-        <p className="text-[11px] leading-snug text-content-tertiary">
+        <p className="text-label leading-snug text-content-tertiary">
           {t('binDesigner.cutouts.repeat.labels.long', { count: counts.labels - counts.copies })}
         </p>
       )}

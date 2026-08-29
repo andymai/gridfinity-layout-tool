@@ -18,7 +18,7 @@ const modKey = isMac ? '⌘' : 'Ctrl';
 
 /** Keyboard key styling matching HelpModal */
 const keyClasses =
-  'inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-[11px] font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]';
+  'inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-label font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]';
 
 export function ShortcutBadge({ keys, modifier, shift, className = '' }: ShortcutBadgeProps) {
   const keyArray = useMemo(() => {
@@ -31,18 +31,18 @@ export function ShortcutBadge({ keys, modifier, shift, className = '' }: Shortcu
       {modifier && (
         <>
           <kbd className={keyClasses}>{modKey}</kbd>
-          <span className="text-content-tertiary text-[10px]">+</span>
+          <span className="text-content-tertiary text-micro">+</span>
         </>
       )}
       {shift && (
         <>
           <kbd className={keyClasses}>Shift</kbd>
-          <span className="text-content-tertiary text-[10px]">+</span>
+          <span className="text-content-tertiary text-micro">+</span>
         </>
       )}
       {keyArray.map((key, index) => (
         <span key={`${key}-${index}`} className="flex items-center gap-1">
-          {index > 0 && <span className="text-content-tertiary text-[10px] mx-0.5">/</span>}
+          {index > 0 && <span className="text-content-tertiary text-micro mx-0.5">/</span>}
           <kbd className={keyClasses}>{key}</kbd>
         </span>
       ))}

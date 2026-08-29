@@ -101,7 +101,7 @@ export function StackSeparationSlider({ value, onChange }: StackSeparationSlider
       onPointerEnter={() => setIsHovering(true)}
       onPointerLeave={() => setIsHovering(false)}
     >
-      <span className="text-[11px] font-medium text-content-secondary">
+      <span className="text-label font-medium text-content-secondary">
         {t('baseplate.stackPrint.separate')}
       </span>
 
@@ -162,7 +162,7 @@ export function StackSeparationSlider({ value, onChange }: StackSeparationSlider
         />
       </div>
 
-      <span className="text-[11px] font-medium text-content-secondary">
+      <span className="text-label font-medium text-content-secondary">
         {t('baseplate.stackPrint.together')}
       </span>
     </div>

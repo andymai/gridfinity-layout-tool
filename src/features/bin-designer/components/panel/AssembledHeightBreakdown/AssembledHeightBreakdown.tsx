@@ -43,7 +43,7 @@ export function AssembledHeightBreakdown() {
       </Button>
 
       {expanded && (
-        <dl className="space-y-0.5 pl-1 text-[11px] text-content-tertiary">
+        <dl className="space-y-0.5 pl-1 text-label text-content-tertiary">
           {breakdown.segments.map((segment) => (
             <div key={segment.kind}>
               <div className="flex items-baseline justify-between gap-2">
@@ -54,7 +54,7 @@ export function AssembledHeightBreakdown() {
                   0mm because the bin's base drops into the pockets. Say so, or
                   it looks like a broken number. */}
               {segment.kind === 'baseplate' && breakdown.nestedMm > 0 && (
-                <p className="text-[10px] text-content-tertiary/70">
+                <p className="text-micro text-content-tertiary/70">
                   {t('assembledHeight.nestedNote', {
                     plate: fmt(breakdown.baseplatePrintedMm),
                     nested: fmt(breakdown.nestedMm),
@@ -68,7 +68,7 @@ export function AssembledHeightBreakdown() {
 
       {clearance && (
         <p
-          className={`pl-1 text-[11px] ${clearance.fits ? 'text-content-tertiary' : 'text-warning'}`}
+          className={`pl-1 text-label ${clearance.fits ? 'text-content-tertiary' : 'text-warning'}`}
         >
           {clearance.fits
             ? t('assembledHeight.fits', { slack: fmt(clearance.slackMm) })

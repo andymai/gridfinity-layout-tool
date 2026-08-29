@@ -106,7 +106,7 @@ export function ColorZoneRow({
         <span className="min-w-0 flex-1 truncate text-left text-xs font-normal text-content-secondary">
           {label}
         </span>
-        <span className="font-mono text-[11px] font-normal text-content-secondary tabular-nums">
+        <span className="font-mono text-label font-normal text-content-secondary tabular-nums">
           {color}
         </span>
         <ChevronDownIcon

@@ -346,12 +346,12 @@ export function LinkDesignDialog() {
                         <div className="flex items-center gap-1.5">
                           <p className="truncate text-sm font-medium text-content">{design.name}</p>
                           {kindBadge !== null && (
-                            <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded bg-surface-elevated text-content-secondary">
+                            <span className="flex-shrink-0 px-1.5 py-0.5 text-micro font-medium rounded bg-surface-elevated text-content-secondary">
                               {kindBadge}
                             </span>
                           )}
                           {heightMismatch && (
-                            <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded bg-status-warning/10 text-status-warning">
+                            <span className="flex-shrink-0 px-1.5 py-0.5 text-micro font-medium rounded bg-warning/10 text-warning">
                               {t('designLinking.linkDialog.heightMismatch')}
                             </span>
                           )}

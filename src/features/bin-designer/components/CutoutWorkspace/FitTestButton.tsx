@@ -213,7 +213,7 @@ export function FitTestButton() {
                   aria-label={t('binDesigner.cutouts.fitTest.thickness')}
                 />
               </div>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-content-tertiary">
+              <p className="mt-1.5 text-label leading-relaxed text-content-tertiary">
                 {t('binDesigner.cutouts.fitTest.thicknessHint')}
               </p>
             </div>

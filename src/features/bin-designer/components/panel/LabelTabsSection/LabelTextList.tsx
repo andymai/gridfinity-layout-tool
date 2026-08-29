@@ -201,7 +201,7 @@ export function LabelTextList({
           size="sm"
           touchTarget={false}
           onClick={onApplySuggestedName}
-          className="mb-2 rounded-full border border-stroke-subtle px-2 py-0.5 text-[11px] font-medium text-content-secondary hover:bg-surface-hover"
+          className="mb-2 rounded-full border border-stroke-subtle px-2 py-0.5 text-label font-medium text-content-secondary hover:bg-surface-hover"
         >
           {t('binDesigner.labelTextUseBinName', { name: suggestedName })}
         </Button>
@@ -266,7 +266,7 @@ export function LabelTextList({
                   }`}
                 >
                   {row.plate.fittingWidthsU.length === 0 || row.plate.autoWidthU === null ? (
-                    <span className="text-[11px] text-warning">
+                    <span className="text-label text-warning">
                       {t('binDesigner.plateWidthNoFit')}
                     </span>
                   ) : (
@@ -314,7 +314,7 @@ export function LabelTextList({
               {row.overflows && (
                 <p
                   id={messageId}
-                  className={`flex items-start gap-1 text-[11px] leading-snug text-error ${
+                  className={`flex items-start gap-1 text-label leading-snug text-error ${
                     showNumbers ? 'pl-8' : ''
                   }`}
                 >
@@ -346,7 +346,7 @@ export function LabelTextList({
             size="sm"
             touchTarget={false}
             onClick={onPickOnGrid}
-            className="px-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80"
+            className="px-0 text-label font-medium text-accent hover:bg-transparent hover:text-accent/80"
           >
             {t('binDesigner.labelTextPickOnGrid')}
           </Button>
@@ -360,7 +360,7 @@ export function LabelTextList({
             size="sm"
             touchTarget={false}
             onClick={onClearAll}
-            className="px-0 text-[11px] font-medium text-content-tertiary hover:bg-transparent hover:text-content"
+            className="px-0 text-label font-medium text-content-tertiary hover:bg-transparent hover:text-content"
           >
             {t('binDesigner.labelTextClearAll')}
           </Button>

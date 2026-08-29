@@ -563,7 +563,7 @@ describe('RightPanel', () => {
 
       fireEvent.click(screen.getByLabelText('Copy bin list as TSV'));
 
-      // The checkmark SVG has text-[var(--color-success)] class
+      // The checkmark SVG has text-success class
       const copyButton = screen.getByLabelText('Copy bin list as TSV');
       const svg = copyButton.querySelector('svg');
       expect(svg).toHaveClass('text-success');

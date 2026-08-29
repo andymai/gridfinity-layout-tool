@@ -181,7 +181,7 @@ function AutoArrangePopover({
         variant="ghost"
         size="sm"
         touchTarget={false}
-        className="text-[11px] text-content-secondary"
+        className="text-label text-content-secondary"
         onClick={() => setOpen(!open)}
         title={t('binDesigner.cutouts.autoArrange')}
       >
@@ -191,7 +191,7 @@ function AutoArrangePopover({
         <div className="absolute top-full left-0 z-50 mt-1 rounded-lg border border-stroke-subtle bg-surface-elevated p-2 shadow-lg">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1 text-[11px] text-content-tertiary whitespace-nowrap">
+              <label className="flex items-center gap-1 text-label text-content-tertiary whitespace-nowrap">
                 {t('binDesigner.cutouts.gap')}
                 <Input
                   type="number"
@@ -210,7 +210,7 @@ function AutoArrangePopover({
                 variant="primary"
                 size="sm"
                 touchTarget={false}
-                className="text-[11px]"
+                className="text-label"
                 onClick={() => {
                   onArrange(gap, staggered);
                   setOpen(false);
@@ -418,8 +418,8 @@ export function WorkspaceHeader({
       touchTarget={false}
       className={
         danger
-          ? 'text-[11px] text-red-400 bg-transparent hover:bg-red-500/10'
-          : 'text-[11px] text-content-secondary'
+          ? 'text-label text-red-400 bg-transparent hover:bg-red-500/10'
+          : 'text-label text-content-secondary'
       }
       onClick={onClick}
       disabled={isDisabled || disabled}
@@ -448,7 +448,7 @@ export function WorkspaceHeader({
       );
     }
     return (
-      <span className="text-[11px] text-content-tertiary">
+      <span className="text-label text-content-tertiary">
         {t('binDesigner.cutoutEditor.selectedCount', { count: selection.size })}
       </span>
     );
@@ -623,7 +623,7 @@ export function WorkspaceHeader({
           </div>
 
           {cursorWorldPos && (
-            <span className="text-[10px] font-mono text-content-tertiary tabular-nums">
+            <span className="text-micro font-mono text-content-tertiary tabular-nums">
               {`X: ${cursorWorldPos.x.toFixed(1)} \u00a0 Y: ${cursorWorldPos.y.toFixed(1)}`}
             </span>
           )}
@@ -653,7 +653,7 @@ export function WorkspaceHeader({
               variant="ghost"
               size="sm"
               touchTarget={false}
-              className="min-w-[3.5rem] px-1 text-[11px] text-content-secondary tabular-nums"
+              className="min-w-[3.5rem] px-1 text-label text-content-secondary tabular-nums"
               onClick={onFitToView}
               title={t('binDesigner.cutoutEditor.fitToView')}
               aria-label={t('binDesigner.cutoutEditor.fitToView')}

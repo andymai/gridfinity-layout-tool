@@ -37,7 +37,7 @@ export function WorkspaceLaunchButton({
           <span className="text-xs font-semibold text-accent group-hover:text-accent/90">
             {title}
           </span>
-          <p className="text-[10px] text-content-tertiary mt-0.5 leading-relaxed">{subtitle}</p>
+          <p className="text-micro text-content-tertiary mt-0.5 leading-relaxed">{subtitle}</p>
         </div>
         <svg
           className="w-4 h-4 text-accent/50 flex-shrink-0 group-hover:translate-x-0.5 transition-transform"

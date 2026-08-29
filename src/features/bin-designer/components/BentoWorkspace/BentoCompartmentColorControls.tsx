@@ -48,7 +48,7 @@ export function BentoCompartmentColorControls({
 
   return (
     <div className="space-y-2">
-      <span className="block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
         {t('common.color')}
       </span>
       <CheckboxRow
@@ -85,14 +85,14 @@ export function BentoCompartmentColorControls({
                 variant="ghost"
                 onClick={() => setCompartmentColorScope(compartmentId, s)}
                 aria-pressed={scope === s}
-                className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(scope === s)}`}
+                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(scope === s)}`}
               >
                 {t(`binDesigner.cutouts.color.${s}`)}
               </Button>
             ))}
           </div>
 
-          <p className="text-[10px] leading-relaxed text-content-tertiary">
+          <p className="text-micro leading-relaxed text-content-tertiary">
             {t('binDesigner.bento.color.note')}
           </p>
         </>

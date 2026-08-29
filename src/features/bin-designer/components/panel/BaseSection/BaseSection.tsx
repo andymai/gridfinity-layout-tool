@@ -317,7 +317,7 @@ export function BaseSection() {
             >
               {footLatticeAxes.map(({ axis, value, onChange, locked }) => (
                 <div key={axis} className="flex items-center gap-2">
-                  <span className="w-10 shrink-0 text-[11px] text-content-tertiary">
+                  <span className="w-10 shrink-0 text-label text-content-tertiary">
                     {t(`binDesigner.footLattice.axis.${axis}`)}
                   </span>
                   <SegmentedControl
@@ -389,7 +389,7 @@ export function BaseSection() {
                 type="button"
                 variant="ghost"
                 onClick={handlers.enableUndersideRelief}
-                className="mt-1 rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-content-secondary hover:bg-surface-hover"
+                className="mt-1 rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-micro font-medium text-content-secondary hover:bg-surface-hover"
               >
                 {t('binDesigner.lightweight.useUnderside')}
               </Button>

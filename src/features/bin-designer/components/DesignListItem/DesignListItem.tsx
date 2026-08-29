@@ -124,7 +124,7 @@ export function DesignListItem({
     >
       {/* Active badge */}
       {isActive && (
-        <span className="absolute -top-2 left-3 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">
+        <span className="absolute -top-2 left-3 rounded bg-accent px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-surface">
           {t('layouts.active')}
         </span>
       )}
@@ -218,7 +218,7 @@ export function DesignListItem({
         {/* A variant and a branch are both nested children, so the row has to say
             which: one still follows its parent, the other does not. */}
         {nestLevel === 1 && (
-          <p className="truncate text-[11px] text-accent">
+          <p className="truncate text-label text-accent">
             {design.variantOf
               ? t('binDesigner.variants.label')
               : design.parentVersionName
@@ -227,11 +227,11 @@ export function DesignListItem({
           </p>
         )}
         {childCount > 0 && (
-          <p className="text-[11px] text-content-tertiary">
+          <p className="text-label text-content-tertiary">
             {t('binDesigner.designs.branchCount', { count: childCount })}
           </p>
         )}
-        <p className="text-[11px] text-content-tertiary">
+        <p className="text-label text-content-tertiary">
           {formatRelativeDate(design.updatedAt, { includeTime: true })}
         </p>
         {design.tags && design.tags.length > 0 && (

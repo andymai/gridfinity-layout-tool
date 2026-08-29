@@ -159,11 +159,11 @@ export function CommandPalette({ open, onOpenChange, initialQuery = '' }: Comman
               value={searchValue}
               onValueChange={setSearchValue}
               placeholder={t('commandPalette.placeholder')}
-              className="flex-1 py-3.5 text-[15px] bg-transparent text-content placeholder:text-content-tertiary outline-none"
+              className="flex-1 py-3.5 text-lg bg-transparent text-content placeholder:text-content-tertiary outline-none"
               // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
               autoFocus
             />
-            <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-[22px] px-1.5 text-[11px] font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-[22px] px-1.5 text-label font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.05)]">
               esc
             </kbd>
           </div>
@@ -203,7 +203,7 @@ export function CommandPalette({ open, onOpenChange, initialQuery = '' }: Comman
                         <path key={d} strokeLinecap="round" strokeLinejoin="round" d={d} />
                       ))}
                     </svg>
-                    <span className="text-[10px] font-semibold text-content-tertiary uppercase tracking-wider">
+                    <span className="text-micro font-semibold text-content-tertiary uppercase tracking-wider">
                       {t('commandPalette.recent')}
                     </span>
                   </div>
@@ -234,7 +234,7 @@ export function CommandPalette({ open, onOpenChange, initialQuery = '' }: Comman
                   heading={
                     <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-2.5 first:pt-1">
                       <CategoryIcon category={category} />
-                      <span className="text-[10px] font-semibold text-content-tertiary uppercase tracking-wider">
+                      <span className="text-micro font-semibold text-content-tertiary uppercase tracking-wider">
                         {t(CATEGORY_LABELS[category])}
                       </span>
                     </div>

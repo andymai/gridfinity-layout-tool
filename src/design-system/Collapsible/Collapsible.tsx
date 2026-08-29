@@ -4,11 +4,11 @@ import { cn } from '../cn';
 import { ChevronDownIcon } from '../Icon';
 import { focusRing, interactiveTransition } from '../variants';
 
-const headerVariants = cva(['font-semibold', 'tracking-wide'], {
+const headerVariants = cva(['font-semibold'], {
   variants: {
     size: {
-      sm: 'text-xs text-content-tertiary uppercase tracking-wider',
-      md: 'text-sm text-content-secondary',
+      sm: 'text-section uppercase text-content-tertiary',
+      md: 'text-sm tracking-wide text-content-secondary',
     },
   },
   defaultVariants: {

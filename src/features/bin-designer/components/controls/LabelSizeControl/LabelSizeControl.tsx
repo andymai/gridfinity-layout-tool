@@ -56,7 +56,7 @@ export function LabelSizeControl({
   max,
   disabled,
   className,
-  labelClassName = 'text-[10px] text-content-tertiary',
+  labelClassName = 'text-micro text-content-tertiary',
   variant = 'cap',
   manualSeed,
   allowAuto = true,
@@ -85,7 +85,7 @@ export function LabelSizeControl({
               onChange(isAuto ? Math.min(max, Math.max(min, manualSeed ?? max)) : null)
             }
             aria-pressed={isAuto}
-            className={`px-1.5 py-0.5 text-[10px] leading-none ${getSegmentClass(isAuto)}`}
+            className={`px-1.5 py-0.5 text-micro leading-none ${getSegmentClass(isAuto)}`}
           >
             {t('binDesigner.textSizeAuto')}
           </Button>

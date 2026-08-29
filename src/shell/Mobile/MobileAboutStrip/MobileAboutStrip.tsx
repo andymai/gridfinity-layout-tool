@@ -17,7 +17,7 @@ export function MobileAboutStrip() {
   if (binCount > 0) return null;
 
   return (
-    <aside className="flex-shrink-0 px-4 py-2 border-t border-stroke-subtle bg-surface text-[11px] leading-relaxed text-content-tertiary">
+    <aside className="flex-shrink-0 px-4 py-2 border-t border-stroke-subtle bg-surface text-label leading-relaxed text-content-tertiary">
       <p>
         {t('sidebar.about')}{' '}
         <a

@@ -285,7 +285,7 @@ export function TabsList<T extends string>({
           >
             {tab.label}
             {tab.badge !== undefined && tab.badge !== null && (
-              <span className="text-xs tabular-nums">{tab.badge}</span>
+              <span className="text-value tabular-nums">{tab.badge}</span>
             )}
           </button>
         );

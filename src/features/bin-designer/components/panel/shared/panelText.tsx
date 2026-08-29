@@ -2,7 +2,7 @@ import { RulerIcon } from '@/design-system/Icon';
 
 /** Small tertiary hint paragraph. */
 export function Hint({ children }: { children: string }) {
-  return <p className="text-[11px] leading-relaxed text-content-tertiary">{children}</p>;
+  return <p className="text-label leading-relaxed text-content-tertiary">{children}</p>;
 }
 
 /**
@@ -14,7 +14,7 @@ export function Hint({ children }: { children: string }) {
  */
 export function SubHeader({ children }: { children: string }) {
   return (
-    <span className="block text-[11px] font-semibold uppercase tracking-wider text-content-tertiary">
+    <span className="block text-label font-semibold uppercase tracking-wider text-content-tertiary">
       {children}
     </span>
   );

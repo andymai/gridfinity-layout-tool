@@ -174,7 +174,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {/* Save status indicator */}
         {saveStatus === 'saving' && (
           <div
-            className="flex items-center gap-1.5 px-2 py-1 text-xxs mr-2 text-content-tertiary"
+            className="flex items-center gap-1.5 px-2 py-1 text-micro mr-2 text-content-tertiary"
             aria-live="polite"
             role="status"
           >
@@ -203,7 +203,7 @@ export function Header({ saveStatus }: HeaderProps) {
         )}
         {saveStatus === 'saved' && (
           <div
-            className="flex items-center gap-1.5 px-2 py-1 text-xxs mr-2 text-content-secondary animate-fade-in"
+            className="flex items-center gap-1.5 px-2 py-1 text-micro mr-2 text-content-secondary animate-fade-in"
             aria-live="polite"
             role="status"
           >

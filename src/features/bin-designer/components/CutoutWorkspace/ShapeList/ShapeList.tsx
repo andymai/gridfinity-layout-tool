@@ -317,7 +317,7 @@ export function ShapeList({
 
   if (nodes.length === 0) {
     return (
-      <p className="px-3 py-6 text-center text-[11px] text-content-tertiary">
+      <p className="px-3 py-6 text-center text-label text-content-tertiary">
         {t('binDesigner.shapeList.empty')}
       </p>
     );
@@ -342,7 +342,7 @@ export function ShapeList({
         handleDropToBottom();
       }}
     >
-      <div className="px-1 pb-1 text-[10px] uppercase tracking-wider text-content-tertiary">
+      <div className="px-1 pb-1 text-micro uppercase tracking-wider text-content-tertiary">
         {t('binDesigner.shapeList.countLabel', { count: String(cutouts.length) })}
       </div>
       {renderRows(nodes)}

@@ -30,10 +30,10 @@ export function CutoutsSection() {
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        <p className="text-[11px] text-content-tertiary leading-relaxed">
+        <p className="text-label text-content-tertiary leading-relaxed">
           {t('binDesigner.cutouts.instructions')}
         </p>
-        <p className="text-[10px] text-content-disabled leading-relaxed">
+        <p className="text-micro text-content-disabled leading-relaxed">
           {t('binDesigner.cutouts.instructionsWorkspaceHint')}
         </p>
       </div>
@@ -41,7 +41,7 @@ export function CutoutsSection() {
       <CutoutEditor />
 
       {taperBand && (
-        <p className="text-[10px] text-content-disabled leading-relaxed">
+        <p className="text-micro text-content-disabled leading-relaxed">
           {t('binDesigner.cutouts.taperBandHint')}
         </p>
       )}

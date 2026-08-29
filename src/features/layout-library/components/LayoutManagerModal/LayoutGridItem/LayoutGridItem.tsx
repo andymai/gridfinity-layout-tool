@@ -88,7 +88,7 @@ export function LayoutGridItem({
         />
         {isActive && (
           <span
-            className="absolute top-1.5 right-1.5 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-on-dark"
+            className="absolute top-1.5 right-1.5 rounded bg-accent px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-on-dark"
             aria-label={t('layouts.currentlyActiveLayout')}
           >
             {t('layouts.active')}
@@ -127,7 +127,7 @@ export function LayoutGridItem({
         </p>
 
         <div className="flex items-center justify-between mt-1">
-          <span className="text-[10px] text-content-tertiary">
+          <span className="text-micro text-content-tertiary">
             {formatRelativeDate(entry.modifiedAt, false)}
           </span>
 
@@ -143,7 +143,7 @@ export function LayoutGridItem({
         </div>
 
         {entry.forkedFrom && (
-          <div className="text-[10px] text-content-tertiary truncate mt-0.5">
+          <div className="text-micro text-content-tertiary truncate mt-0.5">
             {t('layouts.forkedFromName', { name: entry.forkedFrom.name })}
           </div>
         )}

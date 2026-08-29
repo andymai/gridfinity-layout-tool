@@ -314,7 +314,7 @@ export function CompactNumberInput({
           {indeterminate ? MIXED_GLYPH : formatValue(value)}
         </Button>
       )}
-      {unit && <span className="select-none pr-1.5 text-[10px] text-content-disabled">{unit}</span>}
+      {unit && <span className="select-none pr-1.5 text-micro text-content-disabled">{unit}</span>}
     </div>
   );
 }

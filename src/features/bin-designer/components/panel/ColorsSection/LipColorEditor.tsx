@@ -121,7 +121,7 @@ export function LipColorEditor({
             {/* Not a <label>: it wraps a radiogroup, and a label leaks its text
                 onto the group's first radio (e.g. "Corners Corners"). The span is
                 the visible label; the SegmentedControl carries its own aria-label. */}
-            <div className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
+            <div className="flex items-center justify-between gap-2 text-label text-content-secondary">
               <span>{t('binDesigner.colors.lip.cornersLabel')}</span>
               <SegmentedControl
                 size="sm"
@@ -131,7 +131,7 @@ export function LipColorEditor({
                 onChange={(v) => onSetCorners(toAxis(v))}
               />
             </div>
-            <div className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
+            <div className="flex items-center justify-between gap-2 text-label text-content-secondary">
               <span>{t('binDesigner.colors.lip.bandsLabel')}</span>
               <SegmentedControl
                 size="sm"

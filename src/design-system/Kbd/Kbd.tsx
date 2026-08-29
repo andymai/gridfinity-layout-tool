@@ -5,7 +5,7 @@ import { cn } from '../cn';
 import { intentText } from '../variants';
 
 const kbdVariants = cva(
-  ['inline-block', 'px-1.5 py-0.5', 'rounded border', 'text-[10px] leading-none', 'align-middle'],
+  ['inline-block', 'px-1.5 py-0.5', 'rounded border', 'text-micro leading-none', 'align-middle'],
   {
     variants: {
       tone: {

@@ -63,7 +63,7 @@ export function WallsSection() {
           disabledReason={state.patternDisabledReason}
         />
         {state.patternPartialNote && state.patternEnabled && (
-          <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
+          <p className="text-label text-content-tertiary mt-1">{state.patternPartialNote}</p>
         )}
         {state.patternEnabled && !state.patternDisabled && (
           <>
@@ -84,7 +84,7 @@ export function WallsSection() {
                 Suppressed when the pattern renders nothing on this bin, so the
                 chips can't claim walls that export solid. */}
             {state.patternInertReason ? (
-              <p className="mt-3 text-[11px] leading-relaxed text-content-tertiary">
+              <p className="mt-3 text-label leading-relaxed text-content-tertiary">
                 {state.patternInertReason}
               </p>
             ) : (
@@ -98,7 +98,7 @@ export function WallsSection() {
                   ariaLabel={t('binDesigner.walls.pattern.sides')}
                 />
                 {state.patternSidesNote && (
-                  <p className="mt-1 text-[11px] leading-relaxed text-content-tertiary">
+                  <p className="mt-1 text-label leading-relaxed text-content-tertiary">
                     {state.patternSidesNote}
                   </p>
                 )}
@@ -114,7 +114,7 @@ export function WallsSection() {
                 disabled={state.dividersAvailableReason !== undefined}
                 label={t('binDesigner.walls.pattern.dividers')}
               />
-              <p className="ml-6 mt-1 text-[11px] leading-relaxed text-content-tertiary">
+              <p className="ml-6 mt-1 text-label leading-relaxed text-content-tertiary">
                 {state.dividersAvailableReason ??
                   state.dividersNote ??
                   t('binDesigner.walls.pattern.dividersHint')}
@@ -137,7 +137,7 @@ export function WallsSection() {
             <div className="grid grid-cols-2 gap-2">
               {WALL_TEXT_SIDES.map((side, index) => (
                 <div key={side}>
-                  <span className="mb-1 block text-[11px] text-content-tertiary">
+                  <span className="mb-1 block text-label text-content-tertiary">
                     {t(`binDesigner.lid.side.${side}`)}
                   </span>
                   <CompartmentTextInput
@@ -168,12 +168,12 @@ export function WallsSection() {
                   }))}
                 />
                 {state.wallTextMode === 'through-cut' && (
-                  <p className="text-[11px] leading-relaxed text-content-tertiary">
+                  <p className="text-label leading-relaxed text-content-tertiary">
                     {t('binDesigner.textMode.throughCutStencilNote')}
                   </p>
                 )}
                 <div className="space-y-1">
-                  <span className="block text-[11px] text-content-tertiary">
+                  <span className="block text-label text-content-tertiary">
                     {t('binDesigner.type.anchor')}
                   </span>
                   <AnchorPicker
@@ -182,10 +182,10 @@ export function WallsSection() {
                     label={t('binDesigner.walls.text.anchor')}
                   />
                 </div>
-                <p className="text-[11px] leading-relaxed text-content-tertiary">
+                <p className="text-label leading-relaxed text-content-tertiary">
                   {t('binDesigner.walls.text.hint')}
                 </p>
-                <p className="text-[11px] leading-relaxed text-content-tertiary">
+                <p className="text-label leading-relaxed text-content-tertiary">
                   {t('binDesigner.type.secondLineHint')}
                 </p>
               </>

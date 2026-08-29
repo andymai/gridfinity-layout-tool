@@ -107,7 +107,7 @@ export function RulerMeasurement3D({ measurement, zoom }: RulerMeasurement3DProp
         <div className="rounded bg-gray-900/95 px-2.5 py-1.5 text-xs font-mono text-yellow-200 whitespace-nowrap shadow-lg border border-yellow-500/40">
           <div className="font-semibold text-yellow-100">{distance.toFixed(1)}mm</div>
           {(Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1) && (
-            <div className="text-[10px] text-yellow-300/80">
+            <div className="text-micro text-yellow-300/80">
               {'\u0394'}x: {Math.abs(deltaX).toFixed(1)} &nbsp; {'\u0394'}y:{' '}
               {Math.abs(deltaY).toFixed(1)}
             </div>

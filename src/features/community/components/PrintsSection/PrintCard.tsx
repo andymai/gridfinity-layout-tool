@@ -259,14 +259,14 @@ export function PrintCard({
                 {onPromoteCover !== undefined &&
                   !deadPhotos.has(photo) &&
                   (photo === coverPhotoUrl ? (
-                    <p className="mt-1 text-center text-[11px] text-accent">
+                    <p className="mt-1 text-center text-label text-accent">
                       {t('community.prints.coverCurrent')}
                     </p>
                   ) : (
                     <Button
                       variant="ghost"
                       onClick={() => onPromoteCover(photo)}
-                      className="mt-1 h-auto w-full justify-center p-0 text-[11px] font-normal text-content-tertiary underline-offset-2 hover:underline"
+                      className="mt-1 h-auto w-full justify-center p-0 text-label font-normal text-content-tertiary underline-offset-2 hover:underline"
                       data-testid={`print-promote-${index}`}
                     >
                       {t('community.prints.useAsCover')}

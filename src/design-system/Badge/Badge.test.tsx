@@ -89,7 +89,7 @@ describe('Badge', () => {
   describe('size', () => {
     it('defaults to sm', () => {
       render(<Badge>3</Badge>);
-      expect(screen.getByText('3')).toHaveClass('text-[10px]', 'px-1.5', 'py-0.5');
+      expect(screen.getByText('3')).toHaveClass('text-micro', 'px-1.5', 'py-0.5');
     });
 
     it('applies md size', () => {

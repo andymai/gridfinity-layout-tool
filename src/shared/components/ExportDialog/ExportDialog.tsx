@@ -363,7 +363,7 @@ export function ExportDialog({
                   ))}
                 </div>
                 {estimatesDisclaimer && (
-                  <p className="mt-2 text-[10px] text-content-disabled">{estimatesDisclaimer}</p>
+                  <p className="mt-2 text-micro text-content-disabled">{estimatesDisclaimer}</p>
                 )}
               </div>
             )}
@@ -407,9 +407,9 @@ export function ExportDialog({
                   {sourceDownload.label}
                 </Button>
                 {sourceDownload.hint && (
-                  <p className="mt-0.5 text-[10px] text-content-tertiary">{sourceDownload.hint}</p>
+                  <p className="mt-0.5 text-micro text-content-tertiary">{sourceDownload.hint}</p>
                 )}
-                <SchemaDocsLink className="mt-1 inline-block text-[10px]" />
+                <SchemaDocsLink className="mt-1 inline-block text-micro" />
               </div>
             )}
 

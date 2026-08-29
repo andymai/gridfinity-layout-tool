@@ -275,7 +275,7 @@ export function HandleSection() {
               </div>
 
               {/* FDM support note — contextual to active handles */}
-              <p className="text-[11px] text-content-tertiary">
+              <p className="text-label text-content-tertiary">
                 {t('binDesigner.handles.supportNote')}
               </p>
             </>

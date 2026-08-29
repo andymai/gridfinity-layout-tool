@@ -103,7 +103,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
     >
       {TAB_GROUPS.map((group) => (
         <div key={group.labelKey} className="mb-2">
-          <p className="px-4 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-content-disabled">
+          <p className="px-4 pb-1 pt-2 text-micro font-semibold uppercase tracking-wide text-content-disabled">
             {t(group.labelKey)}
           </p>
           {group.tabs.map((tab) => renderTabButton(tab, 'desktop'))}

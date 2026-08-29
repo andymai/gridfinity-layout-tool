@@ -73,7 +73,7 @@ export function StickyGroupHeader({
           className={`transition-transform duration-200 text-content-tertiary ${expanded ? 'rotate-0' : '-rotate-90'}`}
           size="xs"
         />
-        <span className="text-[11px] font-bold text-content-tertiary uppercase tracking-widest">
+        <span className="text-label font-bold text-content-tertiary uppercase tracking-widest">
           {title}
         </span>
         {modifiedLabel && (
@@ -91,7 +91,7 @@ export function StickyGroupHeader({
           </>
         )}
         {badge && (
-          <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-info">
+          <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-info">
             {badge}
           </span>
         )}

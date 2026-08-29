@@ -117,7 +117,7 @@ export function LayerPanel() {
         </div>
 
         {ceiling !== null && !ceiling.fits && (
-          <p className="mb-1.5 text-xxs text-status-warning tabular-nums">
+          <p className="mb-1.5 text-micro text-warning tabular-nums">
             {t('drawerCeiling.layerOverflow', {
               over: String(Math.round(-ceiling.slackMm * 10) / 10),
             })}
@@ -134,7 +134,7 @@ export function LayerPanel() {
             }}
           />
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-content-disabled tabular-nums">
+        <div className="flex items-center gap-1 text-micro text-content-disabled tabular-nums">
           <span>
             {hasMultipleLayers
               ? t('layers.statsTotal', { coverage: totalCoverage, count: totalBinCount })

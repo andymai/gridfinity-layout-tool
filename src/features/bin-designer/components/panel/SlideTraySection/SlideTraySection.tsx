@@ -56,7 +56,7 @@ function SlideTrayControls() {
             }))}
             aria-label={t('binDesigner.slideTray.mountAria')}
           />
-          <p className="text-[11px] leading-relaxed text-content-tertiary">
+          <p className="text-label leading-relaxed text-content-tertiary">
             {t(`binDesigner.slideTray.mountHint.${slide.railMount}`)}
           </p>
           <div className="flex gap-2">
@@ -86,7 +86,7 @@ function SlideTrayControls() {
             />
           </div>
           {protrusionMm !== null && (
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
+            <p className="text-label leading-relaxed text-content-tertiary">
               {t('binDesigner.slideTray.protrudes', { mm: protrusionMm.toFixed(1) })}
             </p>
           )}
@@ -119,7 +119,7 @@ function SlideTrayControls() {
           aria-label={t('binDesigner.slideTray.clearanceAria')}
         />
       </div>
-      <p className="text-[11px] leading-relaxed text-content-tertiary">
+      <p className="text-label leading-relaxed text-content-tertiary">
         {t('binDesigner.slideTray.clearanceHint')}
       </p>
       <SlideFitSampleButton />

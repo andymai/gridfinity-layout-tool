@@ -57,7 +57,7 @@ const OPEN_ENDS: readonly { readonly value: KnifeSlotOpenEnd | null; readonly la
     { value: null, labelKey: 'binDesigner.cutouts.knifeOpenEnd.enclosed' },
   ];
 
-const CHIP_BASE = 'rounded border px-1.5 py-0.5 text-[11px] transition-colors';
+const CHIP_BASE = 'rounded border px-1.5 py-0.5 text-label transition-colors';
 const CHIP_INACTIVE =
   'border-stroke-subtle bg-surface-elevated text-content-secondary hover:border-accent/50 hover:text-content';
 const CHIP_ACTIVE = 'border-accent bg-accent/15 text-accent hover:bg-accent/15 hover:text-accent';
@@ -143,7 +143,7 @@ export function CutoutKnifeControls({
   return (
     <div className="space-y-2">
       <div className="space-y-1">
-        <span className="block text-[10px] text-content-tertiary">
+        <span className="block text-micro text-content-tertiary">
           {t('binDesigner.cutouts.knifePreset')}
         </span>
         <div className="flex flex-wrap gap-1">
@@ -224,7 +224,7 @@ export function CutoutKnifeControls({
       </div>
 
       <div className="space-y-1">
-        <span className="block text-[10px] text-content-tertiary">
+        <span className="block text-micro text-content-tertiary">
           {t('binDesigner.cutouts.knifeOrientation')}
         </span>
         <div
@@ -242,7 +242,7 @@ export function CutoutKnifeControls({
                 disabled={disabled}
                 onClick={() => setAxis(value)}
                 aria-pressed={active}
-                className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(active)}`}
+                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(active)}`}
               >
                 {t(labelKey)}
               </Button>
@@ -252,7 +252,7 @@ export function CutoutKnifeControls({
       </div>
 
       <div className="space-y-1">
-        <span className="block text-[10px] text-content-tertiary">
+        <span className="block text-micro text-content-tertiary">
           {t('binDesigner.cutouts.knifeOpenEnd')}
         </span>
         <div
@@ -270,20 +270,20 @@ export function CutoutKnifeControls({
                 disabled={disabled}
                 onClick={() => setOpenEnd(value)}
                 aria-pressed={active}
-                className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(active)}`}
+                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(active)}`}
               >
                 {t(labelKey)}
               </Button>
             );
           })}
         </div>
-        <p className="text-[10px] text-content-tertiary">
+        <p className="text-micro text-content-tertiary">
           {t('binDesigner.cutouts.knifeOpenEndHint')}
         </p>
       </div>
 
       {clamp && (
-        <p className="text-[11px] text-warning">
+        <p className="text-label text-warning">
           {t('binDesigner.cutouts.knifeDepthClamped', {
             depth: clamp.availableMm.toFixed(1),
             needed: clamp.neededHeightUnits,

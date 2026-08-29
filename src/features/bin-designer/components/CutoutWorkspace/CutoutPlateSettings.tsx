@@ -46,15 +46,15 @@ export function CutoutPlateSettings() {
 
   return (
     <div className="space-y-3 border-t border-stroke-subtle pt-3">
-      <span className="block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
         {t('binDesigner.cutoutSocket.boardSection')}
       </span>
 
-      <p className="text-[11px] text-content-secondary">
+      <p className="text-label text-content-secondary">
         {t('binDesigner.cutoutSocket.socketCount', { n: plan.socketCount })}
       </p>
       {plan.skippedCount > 0 && (
-        <p role="status" className="text-[11px] text-status-warning">
+        <p role="status" className="text-label text-warning">
           {t('binDesigner.cutoutSocket.skippedCount', {
             n: plan.skippedCount,
             max: MAX_CUTOUT_LABEL_SOCKETS,

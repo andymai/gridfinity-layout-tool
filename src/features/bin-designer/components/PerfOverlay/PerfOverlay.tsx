@@ -35,7 +35,7 @@ export function PerfOverlay() {
   const latest = perfHistory[perfHistory.length - 1];
   return (
     <div
-      className="pointer-events-auto absolute right-3 top-3 z-20 w-72 rounded-lg border border-stroke-subtle bg-surface-primary/95 p-3 text-[11px] font-mono shadow-lg backdrop-blur-sm"
+      className="pointer-events-auto absolute right-3 top-3 z-20 w-72 rounded-lg border border-stroke-subtle bg-surface-primary/95 p-3 text-label font-mono shadow-lg backdrop-blur-sm"
       aria-label="Generation performance overlay"
     >
       <Header

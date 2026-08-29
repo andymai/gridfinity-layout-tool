@@ -108,7 +108,7 @@ export function ConnectorPicker({
 
   return (
     <div className="space-y-1.5">
-      <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+      <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
         {t('baseplate.connectors.label')}
       </div>
       <div
@@ -160,7 +160,7 @@ export function ConnectorPicker({
                   <h4 className="text-sm font-medium text-content-primary">{t(titleKey)}</h4>
                   <p className="mt-0.5 text-xs text-content-secondary">{t(descKey)}</p>
                   {disabled && (
-                    <p className="mt-0.5 text-[11px] text-content-tertiary">{disabledReason}</p>
+                    <p className="mt-0.5 text-label text-content-tertiary">{disabledReason}</p>
                   )}
                 </div>
               </Button>

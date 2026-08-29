@@ -18,13 +18,11 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
   return (
     <article className="rounded-lg border border-stroke-subtle bg-surface p-4">
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h3 className="text-[15px] font-semibold text-content leading-tight">{feature.name}</h3>
+        <h3 className="text-title text-content leading-tight">{feature.name}</h3>
         <FeatureStatusBadge status={feature.status} />
       </div>
 
-      <p className="text-[13px] text-content-secondary leading-relaxed mb-3">
-        {feature.description}
-      </p>
+      <p className="text-body text-content-secondary leading-relaxed mb-3">{feature.description}</p>
 
       {feature.warning && (feature.risk === 'medium' || feature.risk === 'high') && (
         <div

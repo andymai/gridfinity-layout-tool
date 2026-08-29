@@ -416,7 +416,7 @@ export function BentoCanvas({
                   </span>
                 ) : null}
                 {!region && h > 34 && (
-                  <span className="text-[10px] tabular-nums text-content-tertiary">
+                  <span className="text-micro tabular-nums text-content-tertiary">
                     {t('binDesigner.bento.compartmentSize', { width: widthMm, depth: depthMm })}
                   </span>
                 )}
@@ -425,7 +425,7 @@ export function BentoCanvas({
             <text
               x={caption.x + 8}
               y={caption.y + 14}
-              className="fill-content-tertiary text-[9px] tabular-nums"
+              className="fill-content-tertiary text-micro tabular-nums"
               pointerEvents="none"
               style={{ opacity: isMoving ? 0.4 : 1 }}
             >
@@ -474,7 +474,7 @@ export function BentoCanvas({
           >
             <div className="flex h-full items-center">
               <span
-                className="rounded bg-surface/90 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-content-secondary shadow-sm"
+                className="rounded bg-surface/90 px-1.5 py-0.5 text-micro font-medium tabular-nums text-content-secondary shadow-sm"
                 data-testid="bento-ghost-size"
               >
                 {t('binDesigner.bento.sizeMm', {

@@ -43,7 +43,7 @@ export function BlockedResizeDialog() {
   return (
     <Dialog.Root open={pendingBlockedResize !== null} onClose={handleDismiss} size="sm">
       <Dialog.Header title={t('designLinking.blockedResize.title')} showCloseButton={false}>
-        <AlertTriangleIcon size="sm" className="text-status-warning" />
+        <AlertTriangleIcon size="sm" className="text-warning" />
       </Dialog.Header>
       <Dialog.Body>
         <p className="mb-3 text-sm text-content-secondary">
@@ -56,7 +56,7 @@ export function BlockedResizeDialog() {
         <div className="p-2.5 bg-surface rounded-lg border border-stroke-subtle space-y-1">
           {pendingBlockedResize?.reasons.map((reason) => (
             <div key={reason} className="flex items-center gap-2 text-sm text-content-secondary">
-              <span className="w-1.5 h-1.5 rounded-full bg-status-warning flex-shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-warning flex-shrink-0" />
               {t(REASON_KEYS[reason])}
             </div>
           ))}

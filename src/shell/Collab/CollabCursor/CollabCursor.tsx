@@ -79,7 +79,7 @@ export function CollabCursor({ presence, position }: CollabCursorProps) {
 
       {/* Name label floating above the cursor */}
       <div
-        className="absolute left-3 -top-5 px-1.5 py-0.5 text-[10px] font-medium text-white rounded whitespace-nowrap max-w-[100px] truncate shadow-md"
+        className="absolute left-3 -top-5 px-1.5 py-0.5 text-micro font-medium text-white rounded whitespace-nowrap max-w-[100px] truncate shadow-md"
         style={{ backgroundColor: color }}
       >
         {name}
@@ -88,7 +88,7 @@ export function CollabCursor({ presence, position }: CollabCursorProps) {
       {/* Activity label below the name (only shown when not idle) */}
       {activityText && (
         <div
-          className="absolute left-3 top-0 px-1.5 py-0.5 text-[9px] font-medium text-white rounded whitespace-nowrap shadow-sm animate-in fade-in duration-150"
+          className="absolute left-3 top-0 px-1.5 py-0.5 text-micro font-medium text-white rounded whitespace-nowrap shadow-sm animate-in fade-in duration-150"
           style={{ backgroundColor: color, opacity: 0.9 }}
         >
           {activityText}

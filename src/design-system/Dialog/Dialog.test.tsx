@@ -472,7 +472,7 @@ describe('Dialog', () => {
       );
       const header = screen.getByText('Test').parentElement?.parentElement;
       expect(header?.className).toContain('pb-4');
-      expect(screen.getByText('Test').className).toContain('text-xl');
+      expect(screen.getByText('Test').className).toContain('text-page');
     });
 
     it('drops the bottom inset at compact density so a tab row sits on the border', () => {
@@ -489,7 +489,7 @@ describe('Dialog', () => {
       expect(header?.className).not.toContain('pb-4');
       expect(header?.className).not.toContain('pb-2');
       expect(header?.className).toContain('border-b');
-      expect(screen.getByText('Test').className).toContain('text-base');
+      expect(screen.getByText('Test').className).toContain('text-title');
     });
   });
 

@@ -61,13 +61,11 @@ export function EngineSelector() {
   return (
     <article className="rounded-lg border border-stroke-subtle bg-surface p-4">
       <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="text-[15px] font-semibold text-content leading-tight">
-          {t('labs.engine.title')}
-        </h3>
+        <h3 className="text-title text-content leading-tight">{t('labs.engine.title')}</h3>
         {selectedFeature ? (
           <FeatureStatusBadge status={selectedFeature.status} />
         ) : (
-          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-success-muted text-success">
+          <span className="inline-flex items-center px-2 py-0.5 text-micro font-semibold uppercase tracking-wide rounded bg-success-muted text-success">
             {t('labs.engine.statusStable')}
           </span>
         )}
@@ -80,7 +78,7 @@ export function EngineSelector() {
         aria-label={t('labs.engine.ariaLabel')}
       />
 
-      <p className="mt-3 text-[13px] text-content-secondary leading-relaxed">
+      <p className="mt-3 text-body text-content-secondary leading-relaxed">
         {selectedFeature ? selectedFeature.description : t('labs.engine.descriptionDefault')}
       </p>
 

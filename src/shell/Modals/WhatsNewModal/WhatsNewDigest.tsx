@@ -70,7 +70,7 @@ export function DigestList({ headline, rest, overflow, activate, onSeeAll }: Dig
         <section key={group.kind} className="flex flex-col gap-1.5">
           <h3
             className={cn(
-              'text-[11px] font-semibold uppercase tracking-wider',
+              'text-label font-semibold uppercase tracking-wider',
               KIND_COLOR[group.kind]
             )}
           >
@@ -147,7 +147,7 @@ function DigestRow({ entry, activate }: { entry: WhatsNewEntry; activate: Activa
           <LabsBadge entry={entry} />
         </div>
         {entry.body && (
-          <p className="mt-0.5 line-clamp-2 text-[13px] leading-normal text-content-secondary">
+          <p className="mt-0.5 line-clamp-2 text-body leading-normal text-content-secondary">
             {resolveText(entry.body, locale)}
           </p>
         )}

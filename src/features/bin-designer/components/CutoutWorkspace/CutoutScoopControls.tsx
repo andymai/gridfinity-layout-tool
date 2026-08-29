@@ -87,7 +87,7 @@ export function CutoutScoopControls({
             type="button"
             variant="ghost"
             onClick={() => setExpanded(true)}
-            className="px-0 py-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
+            className="px-0 py-0 text-label font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
             disabled={disabled}
           >
             {t('binDesigner.cutouts.scoopSplit')}
@@ -117,7 +117,7 @@ export function CutoutScoopControls({
           type="button"
           variant="ghost"
           onClick={handleCollapse}
-          className="px-0 py-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
+          className="px-0 py-0 text-label font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
           disabled={disabled}
         >
           {t('binDesigner.cutouts.scoopUniform')}
@@ -147,7 +147,7 @@ export function CutoutScoopControls({
       </div>
       {supportsEdges && (
         <div className="flex items-center gap-1.5 pt-0.5">
-          <span className="text-[10px] text-content-tertiary">
+          <span className="text-micro text-content-tertiary">
             {t('binDesigner.cutouts.scoopEdges')}
           </span>
           <EdgeChip
@@ -201,7 +201,7 @@ function EdgeChip({ label, ariaLabel, on, disabled, onToggle }: EdgeChipProps) {
       disabled={disabled}
       aria-label={ariaLabel}
       aria-pressed={on}
-      className={`h-5 min-w-[20px] rounded px-1 text-[10px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`h-5 min-w-[20px] rounded px-1 text-micro font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50 ${
         on ? SEGMENT_ACTIVE : SEGMENT_INACTIVE
       }`}
     >

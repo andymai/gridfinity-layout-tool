@@ -105,7 +105,7 @@ export function VariantSection({
         </p>
       )}
 
-      <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-content-tertiary">
+      <h4 className="mb-1.5 text-label font-semibold uppercase tracking-wide text-content-tertiary">
         {t('binDesigner.variants.dimensions')}
       </h4>
       <div className="mb-4 flex flex-col gap-1.5">
@@ -172,7 +172,7 @@ export function VariantSection({
 
       {cutouts.length > 0 && (
         <>
-          <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-content-tertiary">
+          <h4 className="mb-1.5 text-label font-semibold uppercase tracking-wide text-content-tertiary">
             {t('binDesigner.variants.cutouts')}
           </h4>
           <div className="flex flex-col gap-1">
@@ -202,12 +202,12 @@ export function VariantSection({
                         const inherited = cutout[field] ?? 0;
                         return (
                           <div key={field} className="flex items-center gap-2">
-                            <span className="w-20 flex-shrink-0 text-[11px] text-content-secondary">
+                            <span className="w-20 flex-shrink-0 text-label text-content-secondary">
                               {t(`binDesigner.variants.field.${field}`)}
                             </span>
                             {claimed === undefined ? (
                               <>
-                                <span className="flex-1 text-[11px] text-content-tertiary">
+                                <span className="flex-1 text-label text-content-tertiary">
                                   {t('binDesigner.variants.inherited', { value: inherited })}
                                 </span>
                                 <Button

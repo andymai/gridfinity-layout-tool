@@ -91,7 +91,7 @@ Face: Inter variable (self-hosted, 400–700), IBM Plex Mono for code/kbd. All t
 | `xl`   | 18/24   | Panel titles     |
 | `2xl`  | 24/32   | Page title       |
 
-`text-xxs` is a temporary 10px utility (size and line-height only, none of the role sub-tokens); its call sites move to `text-micro` in the adoption PR and the token is then removed.
+Arbitrary sizes (`text-[10px]`, `text-[11px]`) and the old `text-xxs` alias are gone; use the role ramp.
 
 ## Component Size Scale
 

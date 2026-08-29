@@ -127,7 +127,7 @@ export function AccentBandsEditor({
           onMouseEnter={enabled ? () => onHover(zone) : undefined}
           onMouseLeave={enabled ? () => onHover(null) : undefined}
         >
-          <span className="text-[11px] font-medium text-content-secondary">{label}</span>
+          <span className="text-label font-medium text-content-secondary">{label}</span>
           <Checkbox checked={enabled} />
         </div>
         {enabled && (
@@ -170,7 +170,7 @@ export function AccentBandsEditor({
   return (
     <div className="border-t border-stroke-subtle pt-2">
       <div className="flex items-center justify-between gap-2 py-1">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content-secondary">
+        <span className="text-label font-semibold uppercase tracking-wide text-content-secondary">
           {t('binDesigner.colors.accent.title')}
         </span>
         {anyEnabled && (
@@ -184,7 +184,7 @@ export function AccentBandsEditor({
         )}
       </div>
       {anyEnabled ? null : (
-        <p className="pb-1 text-[11px] leading-snug text-content-tertiary">
+        <p className="pb-1 text-label leading-snug text-content-tertiary">
           {t('binDesigner.colors.accent.hint')}
         </p>
       )}

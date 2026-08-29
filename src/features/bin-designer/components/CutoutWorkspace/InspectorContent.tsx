@@ -408,7 +408,7 @@ export function InspectorContent({
 
       {!isSingle && selectedCutouts.length > 1 && (
         <>
-          <div className="text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
+          <div className="text-micro font-medium uppercase tracking-wide text-content-tertiary">
             {t('binDesigner.cutoutEditor.selectedCount', { count: selectedCutouts.length })}
           </div>
           {/* Above the align controls: if the selection is already a pattern,
@@ -578,7 +578,7 @@ export function InspectorContent({
       )}
 
       {singleCutout?.locked && (
-        <div className="flex gap-1.5 text-[10px] text-content-tertiary">
+        <div className="flex gap-1.5 text-micro text-content-tertiary">
           <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-amber-400">
             {t('binDesigner.cutoutEditor.locked')}
           </span>

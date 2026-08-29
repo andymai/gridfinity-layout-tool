@@ -118,7 +118,7 @@ export function PhysicalUnitsSection() {
                   onChange={(value) => useLayoutStore.getState().setMagnetAnchor(value)}
                 />
               </SettingsRow>
-              <p className="text-[11px] leading-relaxed text-content-tertiary">
+              <p className="text-label leading-relaxed text-content-tertiary">
                 {t(
                   magnetAnchor === 'center'
                     ? 'baseplate.magnetAnchorHintLegacy'

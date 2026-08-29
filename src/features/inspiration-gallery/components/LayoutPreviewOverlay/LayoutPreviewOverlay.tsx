@@ -210,7 +210,7 @@ export function LayoutPreviewOverlay({
                       >
                         {related.name}
                       </div>
-                      <div className="text-[10px] text-content-tertiary">
+                      <div className="text-micro text-content-tertiary">
                         {related.metrics.binCount}
                         {t('gallery.bins')}
                       </div>
@@ -248,7 +248,7 @@ function MetricCard({ label, value, subtext }: { label: string; value: string; s
     <div className="bg-surface rounded-lg p-3">
       <div className="text-lg font-semibold text-content">{value}</div>
       <div className="text-xs text-content-tertiary">{label}</div>
-      {subtext && <div className="text-[10px] text-content-disabled mt-0.5">{subtext}</div>}
+      {subtext && <div className="text-micro text-content-disabled mt-0.5">{subtext}</div>}
     </div>
   );
 }

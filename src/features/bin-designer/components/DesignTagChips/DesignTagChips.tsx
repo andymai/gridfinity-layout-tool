@@ -24,7 +24,7 @@ export function DesignTagChips({ tags, max = 3 }: DesignTagChipsProps) {
         return (
           <span
             key={tag}
-            className="inline-flex max-w-[8rem] items-center gap-1 truncate rounded-full bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-content-secondary"
+            className="inline-flex max-w-[8rem] items-center gap-1 truncate rounded-full bg-surface-elevated px-1.5 py-0.5 text-micro font-medium text-content-secondary"
             style={
               appearance?.color !== undefined
                 ? { backgroundColor: tagTint(appearance.color) }
@@ -38,7 +38,7 @@ export function DesignTagChips({ tags, max = 3 }: DesignTagChipsProps) {
         );
       })}
       {overflow > 0 && (
-        <span className="rounded-full px-1 py-0.5 text-[10px] font-medium text-content-tertiary">
+        <span className="rounded-full px-1 py-0.5 text-micro font-medium text-content-tertiary">
           {overflowLabel}
         </span>
       )}

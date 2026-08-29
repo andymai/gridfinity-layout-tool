@@ -99,7 +99,7 @@ export function AuthorSummary({
           {summary.topTechniques.map((technique) => (
             <span
               key={technique}
-              className="rounded bg-surface px-1.5 py-0.5 text-[11px] uppercase tracking-wide text-content-tertiary"
+              className="rounded bg-surface px-1.5 py-0.5 text-label uppercase tracking-wide text-content-tertiary"
             >
               {t(TECHNIQUE_CONFIG[technique].labelKey)}
             </span>
@@ -108,7 +108,7 @@ export function AuthorSummary({
       )}
 
       {indexCapped && (
-        <p className="mt-1 text-[11px] text-content-tertiary" data-testid="author-summary-partial">
+        <p className="mt-1 text-label text-content-tertiary" data-testid="author-summary-partial">
           {t('community.author.partial')}
         </p>
       )}

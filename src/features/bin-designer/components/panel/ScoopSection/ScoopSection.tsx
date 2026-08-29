@@ -81,7 +81,7 @@ export function ScoopSection() {
             type="button"
             variant="ghost"
             onClick={handlers.toggleAutoRadius}
-            className="px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
+            className="px-0 py-0 text-label font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
           >
             {state.isAutoRadius
               ? `${t('binDesigner.scoopRadius')}: ${t('binDesigner.scoopRadiusAutoLabel')}`
@@ -91,7 +91,7 @@ export function ScoopSection() {
 
         {state.isAutoRadius ? (
           <>
-            <p className="mb-2 text-[11px] text-content-tertiary">{state.autoDisplayText}</p>
+            <p className="mb-2 text-label text-content-tertiary">{state.autoDisplayText}</p>
             <span className="mb-1 block text-xs text-content-tertiary">
               {t('binDesigner.scoopMaxHeight')}
             </span>
@@ -154,7 +154,7 @@ export function ScoopSection() {
               />
             </div>
             {state.isSteep && (
-              <p className="text-[11px] text-warning">{t('binDesigner.scoopSteepWarning')}</p>
+              <p className="text-label text-warning">{t('binDesigner.scoopSteepWarning')}</p>
             )}
           </div>
         )}

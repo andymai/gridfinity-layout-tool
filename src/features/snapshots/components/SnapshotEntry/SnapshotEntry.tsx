@@ -49,7 +49,7 @@ export function SnapshotEntry({
           inputClassName="w-full text-xs font-medium"
         />
 
-        <div className="text-[11px] text-content-tertiary mt-0.5">
+        <div className="text-label text-content-tertiary mt-0.5">
           <span>{relativeTime}</span>
           <span className="mx-1">&middot;</span>
           <span>{t('snapshots.bins', { count: snapshot.preview.binCount })}</span>

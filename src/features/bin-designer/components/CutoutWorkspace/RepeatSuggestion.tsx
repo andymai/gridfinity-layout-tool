@@ -44,7 +44,7 @@ export function RepeatSuggestion({
     >
       <div className="flex items-start gap-2">
         <SparklesIcon className="mt-px h-4 w-4 flex-shrink-0 text-accent" />
-        <span className="flex-1 text-[11px] leading-snug text-content-secondary">
+        <span className="flex-1 text-label leading-snug text-content-secondary">
           {suggestion.message}
         </span>
       </div>

@@ -241,7 +241,7 @@ export function HeightCrossSectionDiagram({
               }}
             />
             {unusedPx >= 18 && (
-              <span className="relative text-[11px]" style={{ color: 'var(--text-disabled)' }}>
+              <span className="relative text-label" style={{ color: 'var(--text-disabled)' }}>
                 {t('layers.unusedSpace', { height: unusedHeight })}
               </span>
             )}
@@ -395,7 +395,7 @@ export function HeightCrossSectionDiagram({
                           </svg>
                         </IconButton>
                         <span
-                          className="text-[10px] tabular-nums min-w-[20px] text-center"
+                          className="text-micro tabular-nums min-w-[20px] text-center"
                           style={{
                             fontFamily: 'ui-monospace, monospace',
                             color: 'var(--text-tertiary)',
@@ -472,7 +472,7 @@ export function HeightCrossSectionDiagram({
                       </span>
                       <div className="flex items-center gap-1">
                         <span
-                          className="text-[11px]"
+                          className="text-label"
                           style={{
                             fontFamily: 'ui-monospace, monospace',
                             color: 'var(--text-disabled)',

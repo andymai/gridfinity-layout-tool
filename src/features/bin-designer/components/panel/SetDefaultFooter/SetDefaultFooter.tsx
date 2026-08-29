@@ -36,7 +36,7 @@ export function SetDefaultFooter() {
         <span className="flex-1">{t('binDesigner.setAsDefault')}</span>
       </Button>
       {hasCustomDefault && (
-        <div className="mt-1.5 flex items-center gap-1.5 pl-6 text-[11px] text-content-tertiary">
+        <div className="mt-1.5 flex items-center gap-1.5 pl-6 text-label text-content-tertiary">
           <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
           {t('binDesigner.customDefaultActive')}
         </div>

@@ -348,7 +348,7 @@ export function DimensionsSection() {
         {/* Fractional edge position — shown when the effective dimensions are half-unit */}
         {(hasFractionalWidth || hasFractionalDepth) && (
           <div className="space-y-1.5">
-            <div className="text-content-tertiary text-[10px] mb-1">
+            <div className="text-content-tertiary text-micro mb-1">
               {t('sidebar.halfUnitEdgePosition')}
             </div>
             {hasFractionalWidth && (
@@ -397,7 +397,7 @@ export function DimensionsSection() {
             />
           </div>
           {extentNoteKey !== undefined && (
-            <span className="text-[11px] italic text-content-tertiary">{t(extentNoteKey)}</span>
+            <span className="text-label italic text-content-tertiary">{t(extentNoteKey)}</span>
           )}
         </div>
 
@@ -410,10 +410,10 @@ export function DimensionsSection() {
             unreachable. */}
         {outlineActive && (
           <div className="space-y-2 border-t border-stroke-subtle pt-3">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+            <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
               {t('baseplate.gridPosition')}
             </div>
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
+            <p className="text-label leading-relaxed text-content-tertiary">
               {t('baseplate.gridPositionHint')}
             </p>
             <GridAlignmentControls />
@@ -423,11 +423,11 @@ export function DimensionsSection() {
         {/* Padding — spatial schematic. Padding composes with every shape,
             so the controls stay live; a notice explains the shaped case. */}
         <div className="space-y-2 border-t border-stroke-subtle pt-3">
-          <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+          <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
             {t('baseplate.padding')}
           </div>
           {cornerShaped && (
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
+            <p className="text-label leading-relaxed text-content-tertiary">
               {t('baseplate.cornerShapedPaddingNotice')}
             </p>
           )}
@@ -435,8 +435,8 @@ export function DimensionsSection() {
             <p
               className={
                 shapedPaddingComposes
-                  ? 'text-[11px] leading-relaxed text-content-tertiary'
-                  : 'text-[11px] leading-relaxed text-status-warning'
+                  ? 'text-label leading-relaxed text-content-tertiary'
+                  : 'text-label leading-relaxed text-warning'
               }
             >
               {t(
@@ -453,7 +453,7 @@ export function DimensionsSection() {
                 checked={wholeCellsOn}
                 onChange={setWholeCells}
               />
-              <p className="text-[11px] leading-relaxed text-content-tertiary">
+              <p className="text-label leading-relaxed text-content-tertiary">
                 {t('baseplate.wholeCellsOnlyHint')}
               </p>
             </div>
@@ -501,7 +501,7 @@ export function DimensionsSection() {
                             />
                           </div>
                         )}
-                        <div className="space-y-1 text-[11px] leading-relaxed">
+                        <div className="space-y-1 text-label leading-relaxed">
                           <p className="text-content-tertiary">
                             {t(
                               halfGridOn
@@ -530,7 +530,7 @@ export function DimensionsSection() {
                     ) : (
                       // Fill is on but no edge can fit a tile right now — keep the
                       // toggle enabled (so it can be turned off) and explain why.
-                      <p className="text-[11px] leading-relaxed text-content-tertiary">
+                      <p className="text-label leading-relaxed text-content-tertiary">
                         {t('baseplate.overTileTooSmall')}
                       </p>
                     )}
@@ -556,7 +556,7 @@ export function DimensionsSection() {
                   // On but nothing meets the threshold → no rails are emitted,
                   // so say so rather than imply they will.
                   !canDetach ? (
-                    <p className="text-[11px] leading-relaxed text-content-tertiary">
+                    <p className="text-label leading-relaxed text-content-tertiary">
                       {t('baseplate.detachMarginsTooSmall')}
                     </p>
                   ) : (
@@ -568,7 +568,7 @@ export function DimensionsSection() {
                         disabled={!marginConnectorStyleOk}
                         indent
                       />
-                      <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
+                      <p className="text-label leading-relaxed text-content-tertiary pl-6">
                         {marginConnectorStyleOk
                           ? t('baseplate.detachMarginConnectorHint')
                           : t('baseplate.detachMarginConnectorStyle')}

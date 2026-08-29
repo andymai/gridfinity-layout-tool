@@ -49,7 +49,7 @@ export function ExpandedFootprint({ bin, layout }: ExpandedFootprintProps) {
     <div className="rounded-md border border-subtle p-2">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-content-tertiary">
+          <p className="text-micro uppercase tracking-wide text-content-tertiary">
             {t('inspector.expandedFootprint')}
           </p>
           <p className="text-sm text-content-primary">
@@ -65,7 +65,7 @@ export function ExpandedFootprint({ bin, layout }: ExpandedFootprintProps) {
           {t('common.reset')}
         </Button>
       </div>
-      <p className="mt-1 text-[10px] leading-snug text-content-tertiary">
+      <p className="mt-1 text-micro leading-snug text-content-tertiary">
         {t('inspector.expandedFootprint.sides', {
           left: formatSide(left),
           right: formatSide(right),

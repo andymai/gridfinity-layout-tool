@@ -55,8 +55,8 @@ export const SEGMENT_INACTIVE =
 export const SEGMENT_GROUP_CLASS = 'flex rounded-lg border border-stroke-subtle bg-surface p-0.5';
 
 const SIZE_CLASS: Record<SegmentSize, string> = {
-  icon: 'p-1 text-[11px]',
-  sm: 'px-1.5 py-1 text-[11px]',
+  icon: 'p-1 text-label',
+  sm: 'px-1.5 py-1 text-label',
   md: 'px-2 py-1 text-xs',
 };
 

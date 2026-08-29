@@ -53,7 +53,7 @@ export function MobilePrintList() {
             {copyFeedback ? (
               <>
                 <svg
-                  className="w-4 h-4 text-[var(--color-success)]"
+                  className="w-4 h-4 text-success"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -141,7 +141,7 @@ export function MobilePrintList() {
                       <span className="font-semibold text-content">{row.size}</span>
                       <span className="text-sm text-content-tertiary">{row.height}u</span>
                       {row.needsSplit && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-[var(--color-warning-muted)] text-[var(--color-warning)]">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-warning-muted text-warning">
                           {t('mobile.printList.split')}
                           <svg
                             className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}

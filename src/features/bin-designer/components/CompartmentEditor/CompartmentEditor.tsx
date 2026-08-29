@@ -241,7 +241,7 @@ export function CompartmentEditor() {
             variant="ghost"
             onClick={() => setShowSizer((v) => !v)}
             aria-expanded={showSizer}
-            className="flex items-center gap-1 rounded-none px-0 py-0 hover:bg-transparent text-[11px] font-medium text-content-secondary hover:text-content"
+            className="flex items-center gap-1 rounded-none px-0 py-0 hover:bg-transparent text-label font-medium text-content-secondary hover:text-content"
           >
             <svg
               className={`h-3 w-3 transition-transform ${showSizer ? 'rotate-90' : ''}`}
@@ -295,7 +295,7 @@ export function CompartmentEditor() {
               </div>
               {/* Explains why typed sizes round up and discloses the edge
                   asymmetry (the grid cap is announced in the readout above). */}
-              <p className="text-[11px] text-content-tertiary">
+              <p className="text-label text-content-tertiary">
                 {t('binDesigner.compartmentEditor.tileEvenlyNote')}
               </p>
             </div>
@@ -362,7 +362,7 @@ export function CompartmentEditor() {
                 type="button"
                 variant="ghost"
                 onClick={handleReset}
-                className="rounded-none px-0 py-0 hover:bg-transparent text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+                className="rounded-none px-0 py-0 hover:bg-transparent text-label font-medium text-accent hover:text-accent/80 transition-colors"
                 aria-label={t('binDesigner.resetCompartmentLayoutToUniformGrid')}
               >
                 {t('common.reset')}

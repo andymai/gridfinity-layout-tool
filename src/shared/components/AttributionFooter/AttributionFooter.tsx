@@ -8,8 +8,8 @@ export function AttributionFooter() {
   const t = useTranslation();
   const { navigateToSupporters } = useSupportersRouting();
   return (
-    <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
-      <div className="text-content-secondary text-[11px] font-semibold mb-1 flex items-baseline gap-1.5">
+    <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-micro leading-relaxed">
+      <div className="text-content-secondary text-label font-semibold mb-1 flex items-baseline gap-1.5">
         {t('sidebar.appName')}
         <AppVersionButton />
       </div>

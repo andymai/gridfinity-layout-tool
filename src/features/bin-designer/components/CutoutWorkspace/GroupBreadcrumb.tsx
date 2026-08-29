@@ -38,14 +38,14 @@ export function GroupBreadcrumb({
   return (
     <nav
       aria-label={t('binDesigner.groupBreadcrumb.label')}
-      className="flex min-w-0 items-center gap-0.5 text-[11px] text-content-tertiary"
+      className="flex min-w-0 items-center gap-0.5 text-label text-content-tertiary"
     >
       <Button
         type="button"
         variant="ghost"
         size="sm"
         touchTarget={false}
-        className="px-1 py-0 text-[11px] text-content-secondary"
+        className="px-1 py-0 text-label text-content-secondary"
         onClick={() => onNavigate([])}
       >
         {t('binDesigner.groupBreadcrumb.root')}
@@ -78,7 +78,7 @@ export function GroupBreadcrumb({
               // rather than a control that does nothing when pressed.
               disabled={current}
               aria-current={current ? 'true' : undefined}
-              className={`max-w-[10rem] truncate px-1 py-0 text-[11px] ${
+              className={`max-w-[10rem] truncate px-1 py-0 text-label ${
                 current ? 'text-content' : 'text-content-secondary'
               }`}
               onClick={() => onNavigate(to)}
