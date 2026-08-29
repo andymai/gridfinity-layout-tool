@@ -17,7 +17,7 @@ type StepperFieldProps = ComponentProps<typeof Stepper> & {
 export function StepperField({ label, unit, ...stepper }: StepperFieldProps) {
   return (
     <div className="min-w-0 flex-1">
-      <span className="mb-1 block text-xs text-content-tertiary">
+      <span className="mb-1 block text-label text-content-tertiary">
         {label}
         {unit ? <span className="text-content-tertiary/70">{` (${unit})`}</span> : null}
       </span>

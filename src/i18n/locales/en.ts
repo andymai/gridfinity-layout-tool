@@ -1918,7 +1918,7 @@ const en: Record<string, string> = {
     'Not enough height for the lip. Reduce the lip height or depth, or turn the lip off.',
   'binDesigner.compartmentEditor.labelsSpanDisabled':
     'Full-width labels use row captions. Edit them in the Label tab section.',
-  'binDesigner.textMode': 'Style',
+  'binDesigner.textMode': 'Finish',
   'binDesigner.textMode.engrave': 'Engrave',
   'binDesigner.textMode.emboss': 'Emboss',
   'binDesigner.textMode.through-cut': 'Through-cut',
@@ -3158,7 +3158,7 @@ const en: Record<string, string> = {
   'binDesigner.type.sizeMode.fixed': 'Fixed size',
   'binDesigner.type.fixedSize': 'Type size',
   'binDesigner.type.fixedSizeHint':
-    'Every caption renders at this size, so a whole drawer of bins reads as one set. It shrinks only where the text physically cannot fit.',
+    'All captions share this size; text shrinks only where it cannot fit.',
   'binDesigner.type.snapToScale': 'Snap sizes to a scale',
   'binDesigner.type.uniformAcrossWalls': 'One size across all walls',
   'binDesigner.type.tracking': 'Letter spacing',
@@ -3180,7 +3180,13 @@ const en: Record<string, string> = {
   'binDesigner.type.preset.utility-mono': 'Utility mono',
   'binDesigner.type.preset.condensed-display': 'Condensed',
   'binDesigner.type.preset.classic': 'Classic',
-  'binDesigner.type.preset.custom': 'Custom',
+  'binDesigner.type.preset.custom': 'Custom settings',
+  'binDesigner.type.preset.engineering.desc': 'Bold sans caps',
+  'binDesigner.type.preset.utility-mono.desc': 'Monospace caps',
+  'binDesigner.type.preset.condensed-display.desc': 'Tall narrow caps',
+  'binDesigner.type.preset.classic.desc': 'The default look',
+  'binDesigner.type.scope':
+    'One style for every caption on this bin: labels, wall text, and the lid.',
   'binDesigner.type.stemWarning':
     'At this size the strokes are thinner than a nozzle can print cleanly, so the letters will run together.',
   'binDesigner.type.stemMeasured': 'Measured {stem}mm at {size}mm type; this needs about {min}mm.',

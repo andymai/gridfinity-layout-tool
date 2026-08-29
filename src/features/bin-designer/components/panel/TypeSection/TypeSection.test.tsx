@@ -20,16 +20,21 @@ describe('TypeSection', () => {
 
   it('marks the preset the design is actually on', () => {
     render(<TypeSection />);
-    expect(screen.getByRole('button', { name: 'Engineering' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /^Engineering/ })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
   });
 
-  it('applies a preset when its chip is picked', async () => {
+  it('applies a preset when its card is picked', async () => {
     render(<TypeSection />);
-    await userEvent.click(screen.getByRole('button', { name: 'Classic' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Classic/ }));
     expect(useDesignerStore.getState().params.textDefaults).toEqual(TEXT_PRESETS.classic);
+  });
+
+  it('describes what the section governs', () => {
+    render(<TypeSection />);
+    expect(screen.getByText(/every caption on this bin/)).toBeInTheDocument();
   });
 
   it('offers the nine-point anchor grid', () => {
