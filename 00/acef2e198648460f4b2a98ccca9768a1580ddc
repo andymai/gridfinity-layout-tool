@@ -1,0 +1,33 @@
+src/features/bin-designer/constants/defaults.ts
+  s_2a038ae0eafe62::t_fe78f5a585d91b 284-285
+src/features/bin-designer/types/designerState.ts
+  s_2a038ae0eafe62::t_a95aa21bb968e6 70
+  s_2a038ae0eafe62::t_16bd0edb58c702 409-412
+src/features/bin-designer/utils/selection.ts
+  s_2a038ae0eafe62::t_b5f3dfb917de92 16
+  s_2a038ae0eafe62::t_9125278e93edad 1-15,17-36
+src/features/bin-designer/utils/selection.test.ts
+  s_2a038ae0eafe62::t_b6ad44c4783771 1-41
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_2a038ae0eafe62::t_fe78f5a585d91b 13,35-61
+src/features/bin-designer/types/uiState.ts
+  s_2a038ae0eafe62::t_fe78f5a585d91b 36-48,78-85
+src/features/bin-designer/store/designer.scenario.selection.test.ts
+  s_2a038ae0eafe62::t_204821c7ee5763 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "00acef2e198648460f4b2a98ccca9768a1580ddc",
+  "prompts": {},
+  "sessions": {
+    "s_2a038ae0eafe62": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6d11451-a87d-4bb2-a9ea-ae3543c6b5a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": null
+    }
+  }
+}
