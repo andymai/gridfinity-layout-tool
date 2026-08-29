@@ -1,1 +1,0 @@
-export { CompactNumberInput } from './CompactNumberInput';

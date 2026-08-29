@@ -49,10 +49,8 @@ describe('CutoutEngraveLabelControls relief depth', () => {
   it('writes a typed depth to the design-wide text defaults', () => {
     renderControls(makeCutout());
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'binDesigner.cutoutTextDepth.engrave: 0.4 mm' })
-    );
-    const input = screen.getByRole('textbox', { name: 'binDesigner.cutoutTextDepth.engrave' });
+    const input = screen.getByRole('spinbutton', { name: 'binDesigner.cutoutTextDepth.engrave' });
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '1.2' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
@@ -69,15 +67,15 @@ describe('CutoutEngraveLabelControls relief depth', () => {
     renderControls(makeCutout());
 
     expect(
-      screen.getByRole('button', { name: 'binDesigner.cutoutTextDepth.emboss: 0.4 mm' })
-    ).toBeInTheDocument();
+      screen.getByRole('spinbutton', { name: 'binDesigner.cutoutTextDepth.emboss' })
+    ).toHaveValue('0.4');
   });
 
   it('keeps the depth field off the socket branch, which engraves nothing', () => {
     renderControls(makeCutout({ labelMode: 'socket' }));
 
     expect(
-      screen.queryByRole('button', { name: /binDesigner\.cutoutTextDepth/ })
+      screen.queryByRole('spinbutton', { name: /binDesigner\.cutoutTextDepth/ })
     ).not.toBeInTheDocument();
   });
 });

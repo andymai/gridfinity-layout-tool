@@ -22,9 +22,8 @@ import {
 } from '@/features/bin-designer/types';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
-import { Button } from '@/design-system';
+import { Button, NumberField } from '@/design-system';
 import { cn } from '@/design-system/cn';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { KNIFE_SLOT_PRESETS } from '../panel/CutoutsSection/knifeSlotPresets';
 import { resizeKeepingCenter } from '../panel/CutoutsSection/cutoutHelpers';
@@ -171,7 +170,7 @@ export function CutoutKnifeControls({
       </div>
 
       <div className="grid grid-cols-2 gap-1">
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.knifeBladeLength')}
           value={knife.bladeLengthMm}
           onChange={(bladeLengthMm) => setMeasurement({ bladeLengthMm })}
@@ -181,7 +180,7 @@ export function CutoutKnifeControls({
           unit="mm"
           disabled={disabled}
         />
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.knifeHeelHeight')}
           value={knife.heelHeightMm}
           onChange={(heelHeightMm) => setMeasurement({ heelHeightMm })}
@@ -191,7 +190,7 @@ export function CutoutKnifeControls({
           unit="mm"
           disabled={disabled}
         />
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.knifeSpineThickness')}
           value={knife.spineThicknessMm}
           onChange={(spineThicknessMm) => setMeasurement({ spineThicknessMm })}
@@ -201,7 +200,7 @@ export function CutoutKnifeControls({
           unit="mm"
           disabled={disabled}
         />
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.knifeHandleWidth')}
           value={knife.handleWidthMm}
           onChange={(handleWidthMm) => setMeasurement({ handleWidthMm })}
@@ -211,7 +210,7 @@ export function CutoutKnifeControls({
           unit="mm"
           disabled={disabled}
         />
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.knifeHandleHeight')}
           value={knife.handleHeightMm}
           onChange={(handleHeightMm) => setMeasurement({ handleHeightMm })}

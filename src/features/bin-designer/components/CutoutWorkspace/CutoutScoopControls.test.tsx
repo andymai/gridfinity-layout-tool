@@ -4,8 +4,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CutoutScoopControls } from './CutoutScoopControls';
 import type { Cutout } from '@/features/bin-designer/types';
 
-vi.mock('@/shared/components/CompactNumberInput', () => ({
-  CompactNumberInput: ({
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
+  NumberField: ({
     label,
     value,
     onChange,
@@ -24,10 +25,6 @@ vi.mock('@/shared/components/CompactNumberInput', () => ({
       onChange={(e) => onChange(Number(e.target.value))}
     />
   ),
-}));
-
-vi.mock('@/design-system', async () => ({
-  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
   SliderInput: ({
     label,
     value,

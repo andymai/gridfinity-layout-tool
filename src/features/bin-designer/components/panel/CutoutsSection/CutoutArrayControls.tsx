@@ -18,8 +18,7 @@ import {
   type RepeatBox,
 } from '@/shared/utils/cutoutArray';
 import { useTranslation } from '@/i18n';
-import { Button, Checkbox, Stepper } from '@/design-system';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { Button, Checkbox, Stepper, NumberField } from '@/design-system';
 import { clamp } from '@/shared/utils/math';
 import { cn } from '@/design-system/cn';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -241,7 +240,7 @@ export function CutoutArrayControls({
         </>
       ) : (
         <div className="grid grid-cols-2 gap-1">
-          <CompactNumberInput
+          <NumberField
             label={t('binDesigner.cutouts.repeat.cols')}
             value={array.cols}
             onChange={(v) =>
@@ -252,7 +251,7 @@ export function CutoutArrayControls({
             step={1}
             disabled={disabled}
           />
-          <CompactNumberInput
+          <NumberField
             label={t('binDesigner.cutouts.repeat.rows')}
             value={array.rows}
             onChange={(v) =>
@@ -263,7 +262,7 @@ export function CutoutArrayControls({
             step={1}
             disabled={disabled}
           />
-          <CompactNumberInput
+          <NumberField
             label={t('binDesigner.cutouts.repeat.pitchX')}
             value={array.pitchX}
             onChange={(v) =>
@@ -275,7 +274,7 @@ export function CutoutArrayControls({
             unit="mm"
             disabled={disabled}
           />
-          <CompactNumberInput
+          <NumberField
             label={t('binDesigner.cutouts.repeat.pitchY')}
             value={array.pitchY}
             onChange={(v) =>

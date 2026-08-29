@@ -69,8 +69,8 @@ describe('PenControls', () => {
   it('accepts a coordinate typed past the current grid extent, up to the ceiling', () => {
     const { props } = renderControls({ lone: { index: 0, x: 100, y: 50 }, maxWmm: 2100 });
 
-    fireEvent.click(screen.getByRole('button', { name: 'X: 100 mm' }));
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('spinbutton', { name: 'X' });
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '500' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 

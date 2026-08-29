@@ -122,7 +122,7 @@ describe('CutoutArrayControls — overlap', () => {
     // The floor was the master's own width; the field now bottoms out at the
     // absolute editor cap, so a deliberate overlap is reachable.
     renderControls(makeCutout({ width: 20, depth: 20, array: arrayCfg }));
-    const pitch = screen.getByRole('slider', { name: 'binDesigner.cutouts.repeat.pitchX' });
+    const pitch = screen.getByRole('spinbutton', { name: 'binDesigner.cutouts.repeat.pitchX' });
     expect(pitch).toHaveAttribute('aria-valuemin', '1');
   });
 

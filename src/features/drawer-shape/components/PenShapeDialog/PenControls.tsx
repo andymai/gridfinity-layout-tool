@@ -6,8 +6,7 @@
  * still belongs to the dialog and arrives as props.
  */
 
-import { Button, SegmentedControl, Stepper } from '@/design-system';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { Button, SegmentedControl, Stepper, NumberField } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SNAP_FRACTIONS, type SnapFraction } from '../../utils/penShape';
 
@@ -86,7 +85,7 @@ export function PenControls({
           <span className="text-xs text-content-secondary">
             {t('drawerShape.penCorner', { n: lone.index + 1 })}
           </span>
-          <CompactNumberInput
+          <NumberField
             label="X"
             value={lone.x}
             onChange={(v) => onCoordChange('x', v)}
@@ -95,7 +94,7 @@ export function PenControls({
             step={1}
             unit="mm"
           />
-          <CompactNumberInput
+          <NumberField
             label="Y"
             value={lone.y}
             onChange={(v) => onCoordChange('y', v)}
