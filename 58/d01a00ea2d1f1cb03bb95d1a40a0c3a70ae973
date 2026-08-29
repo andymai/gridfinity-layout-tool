@@ -1,0 +1,19 @@
+src/features/bin-designer/components/BinPanelShell/BinPanelShell.tsx
+  s_9a500d3ffa116a::t_ea07bff9606c72 101-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "58d01a00ea2d1f1cb03bb95d1a40a0c3a70ae973",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
