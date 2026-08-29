@@ -1,2 +1,2 @@
-export * from './BaseSection';
+export { BaseSection } from './BaseSection';
 export { FloorPatternSection } from './FloorPatternSection';
