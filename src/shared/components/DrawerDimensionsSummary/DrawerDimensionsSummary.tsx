@@ -128,14 +128,14 @@ export function DrawerDimensionsSummary({
 
       {hasMeasurement &&
         (hasOverflow ? (
-          <p className="text-center text-xxs text-status-warning">
+          <p className="text-center text-micro text-warning">
             {t('drawerDims.overflow', {
               width: fmt(Math.max(0, overflowWidth)),
               depth: fmt(Math.max(0, overflowDepth)),
             })}
           </p>
         ) : (
-          <p className="text-center text-xxs text-content-tertiary tabular-nums">
+          <p className="text-center text-micro text-content-tertiary tabular-nums">
             {t('drawerDims.fit', {
               width: fmt(gridWidthMm),
               depth: fmt(gridDepthMm),
@@ -146,16 +146,16 @@ export function DrawerDimensionsSummary({
         ))}
 
       {ceiling === null ? (
-        <p className="text-center text-xxs text-content-tertiary">
+        <p className="text-center text-micro text-content-tertiary">
           {t('drawerCeiling.measurePrompt')}
         </p>
       ) : /* an empty layout has no stack to judge, so no fit claim */
       ceiling.tallestMm === 0 ? null : ceiling.fits ? (
-        <p className="text-center text-xxs text-content-tertiary tabular-nums">
+        <p className="text-center text-micro text-content-tertiary tabular-nums">
           {t('drawerCeiling.fits', { slack: fmt(ceiling.slackMm) })}
         </p>
       ) : (
-        <p className="text-center text-xxs text-status-warning tabular-nums">
+        <p className="text-center text-micro text-warning tabular-nums">
           {t('drawerCeiling.overflow', { over: fmt(-ceiling.slackMm) })}
         </p>
       )}
@@ -167,7 +167,7 @@ export function DrawerDimensionsSummary({
         >
           <div className="flex items-start gap-1.5">
             <SparklesIcon size="xs" className="mt-0.5 flex-shrink-0 text-accent" />
-            <div className="flex-1 text-xxs text-content-secondary">
+            <div className="flex-1 text-micro text-content-secondary">
               <div className="font-medium text-content">
                 {t('drawerDims.suggestionTitle', {
                   width: String(suggestion.width),

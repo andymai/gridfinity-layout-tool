@@ -123,7 +123,7 @@ export function ActiveLayerPanel() {
         {paintSize && (
           <div
             role="status"
-            className="flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/10 px-2 py-1 text-[11px] leading-tight text-accent"
+            className="flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/10 px-2 py-1 text-label leading-tight text-accent"
           >
             <svg
               className="w-3 h-3 shrink-0"

@@ -305,7 +305,7 @@ export function PatternSelector({
         fullWidth
       />
       {disabled && disabledReason && (
-        <p className="text-[11px] text-content-tertiary mt-1.5">{disabledReason}</p>
+        <p className="text-label text-content-tertiary mt-1.5">{disabledReason}</p>
       )}
     </div>
   );

@@ -26,7 +26,7 @@ export function FractionalEdgeMismatchBanner({
   return (
     <div
       role="alert"
-      className="flex items-center gap-2 border-b border-status-warning/20 bg-status-warning/10 px-4 py-2 text-xs text-status-warning"
+      className="flex items-center gap-2 border-b border-warning/20 bg-warning/10 px-4 py-2 text-xs text-warning"
     >
       <AlertTriangleIcon size="sm" className="flex-shrink-0" aria-hidden="true" />
       <span className="flex-1">

@@ -51,7 +51,7 @@ export function OverhangSection() {
       disabledReason={meta.disabledReason}
       primaryControls={
         <>
-          <p className="text-[11px] leading-relaxed text-content-tertiary">
+          <p className="text-label leading-relaxed text-content-tertiary">
             {t('binDesigner.overhang.hint')}
           </p>
           {sides.map(({ side, label }) => (
@@ -103,7 +103,7 @@ export function OverhangSection() {
             </span>
             <Checkbox checked={state.feet} disabled={!feetEnabled} />
           </div>
-          <p className="text-[11px] leading-relaxed text-content-tertiary">
+          <p className="text-label leading-relaxed text-content-tertiary">
             {state.feetSuperseded
               ? t('binDesigner.detachableFeet.supersedes')
               : t('binDesigner.overhang.feetHint')}
@@ -129,7 +129,7 @@ export function OverhangSection() {
               </span>
               <Checkbox checked={taper.enabled} />
             </div>
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
+            <p className="text-label leading-relaxed text-content-tertiary">
               {t('binDesigner.overhang.taper.hint')}
             </p>
 
@@ -163,7 +163,7 @@ export function OverhangSection() {
                 >
                   <p
                     id={taperSidesHeadingId}
-                    className="mt-1 text-[11px] font-medium text-content-tertiary"
+                    className="mt-1 text-label font-medium text-content-tertiary"
                   >
                     {t('binDesigner.overhang.taper.sidesHeading')}
                   </p>

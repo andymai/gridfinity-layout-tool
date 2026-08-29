@@ -223,7 +223,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         </div>
 
         {locked && (
-          <p className="-mt-2 text-[10px] leading-snug text-content-disabled">
+          <p className="-mt-2 text-micro leading-snug text-content-disabled">
             {t('inspector.sizeLockedHint')}
           </p>
         )}
@@ -252,7 +252,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 size={isMobile ? 'lg' : 'md'}
                 aria-label={t('inspector.single.heightAria')}
               />
-              <div className="mt-1 text-[10px] text-content-disabled">{heightEquiv}</div>
+              <div className="mt-1 text-micro text-content-disabled">{heightEquiv}</div>
             </div>
 
             {/* Clearance control */}
@@ -285,7 +285,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                   size={isMobile ? 'lg' : 'md'}
                   aria-label={t('inspector.single.clearanceAria')}
                 />
-                <div className="mt-1 text-[10px] text-content-disabled">
+                <div className="mt-1 text-micro text-content-disabled">
                   {t('inspector.heightUnitsEquiv', {
                     units: formatHeightUnits(bin.clearanceHeight || 0),
                   })}
@@ -296,7 +296,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
           {/* Outside the grid: inside the narrow Height column these lines wrap far
               enough to stretch the row and strand the Clearance cell. */}
-          <div className="space-y-0.5 text-[10px] text-content-disabled">
+          <div className="space-y-0.5 text-micro text-content-disabled">
             <div>{`${minHeightHint} · ${maxHeightHint}`}</div>
             <div>
               {t('inspector.printedAndStackHint', {
@@ -425,7 +425,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             rows={3}
             style={{ resize: 'vertical', minHeight: '60px' }}
           />
-          <div className="text-right mt-1 text-[10px] text-content-disabled">
+          <div className="text-right mt-1 text-micro text-content-disabled">
             {bin.notes.length}/{CONSTRAINTS.NOTES_MAX_LENGTH}
           </div>
         </div>

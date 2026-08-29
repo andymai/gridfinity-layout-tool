@@ -27,7 +27,7 @@ export function ColorsHintBanner() {
   return (
     <div
       role="status"
-      className="flex items-start gap-2 rounded-lg border border-info/40 bg-info-muted/40 p-2.5 text-[11px] text-content-secondary"
+      className="flex items-start gap-2 rounded-lg border border-info/40 bg-info-muted/40 p-2.5 text-label text-content-secondary"
     >
       <InfoIcon size="sm" className="mt-0.5 shrink-0 text-info" />
       <p className="flex-1 leading-snug">{t('binDesigner.colors.firstTimeHint')}</p>

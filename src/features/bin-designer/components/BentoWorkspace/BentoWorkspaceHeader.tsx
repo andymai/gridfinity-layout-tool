@@ -146,7 +146,7 @@ export function BentoWorkspaceHeader({
           variant="ghost"
           size="sm"
           onClick={onClearAll}
-          className="text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80"
+          className="text-label font-medium text-accent hover:bg-transparent hover:text-accent/80"
           aria-label={t('binDesigner.bento.clearAllLabel')}
         >
           {t('binDesigner.bento.clearAll')}

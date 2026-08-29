@@ -51,7 +51,7 @@ export function ColorGroup({
         variant="ghost"
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-content-secondary py-1 -mx-1 px-1 rounded hover:bg-surface-hover transition-colors"
+        className="flex w-full items-center justify-between text-label font-semibold uppercase tracking-wide text-content-secondary py-1 -mx-1 px-1 rounded hover:bg-surface-hover transition-colors"
         aria-expanded={open}
         aria-controls={regionId}
       >

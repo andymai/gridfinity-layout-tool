@@ -100,7 +100,7 @@ export function MakeBentoDialog({ open, onClose }: MakeBentoDialogProps) {
     return (
       <Dialog.Root open={open} onClose={onClose} size="sm">
         <Dialog.Header title={t('designLinking.bento.title')} showCloseButton={false}>
-          <AlertTriangleIcon size="sm" className="text-status-warning" />
+          <AlertTriangleIcon size="sm" className="text-warning" />
         </Dialog.Header>
         <Dialog.Body>
           <p className="text-sm text-content-secondary">{blockedMessage(result.error, t)}</p>
@@ -234,9 +234,9 @@ export function MakeBentoDialog({ open, onClose }: MakeBentoDialogProps) {
         </div>
 
         {trapped.length > 0 && (
-          <div className="mb-3 rounded-lg border border-status-warning/40 bg-status-warning/5 p-2.5">
+          <div className="mb-3 rounded-lg border border-warning/40 bg-warning/5 p-2.5">
             <div className="flex items-start gap-2">
-              <AlertTriangleIcon size="sm" className="mt-0.5 shrink-0 text-status-warning" />
+              <AlertTriangleIcon size="sm" className="mt-0.5 shrink-0 text-warning" />
               <div className="flex-1 space-y-2">
                 <p className="text-sm text-content">
                   {t('designLinking.bento.trapped', { count: trapped.length })}
@@ -258,7 +258,7 @@ export function MakeBentoDialog({ open, onClose }: MakeBentoDialogProps) {
           <div className="space-y-1 rounded-lg border border-stroke-subtle bg-surface p-2.5">
             {warnings.map((warning) => (
               <div key={warning} className="flex items-center gap-2 text-sm text-content-secondary">
-                <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-status-warning" />
+                <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-warning" />
                 {warning}
               </div>
             ))}

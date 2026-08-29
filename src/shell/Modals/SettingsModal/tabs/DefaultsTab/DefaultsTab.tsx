@@ -216,7 +216,7 @@ export function DefaultsTab() {
                 aria-label={t('settings.defaultGridUnit')}
               />
             </SettingsRow>
-            <p className="mt-0.5 text-[10px] text-content-tertiary">
+            <p className="mt-0.5 text-micro text-content-tertiary">
               {t('settings.gridfinityStandardMm', {
                 value: CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
               })}

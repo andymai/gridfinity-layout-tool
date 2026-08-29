@@ -57,7 +57,7 @@ export function BinSizeSection({
   const t = useTranslation();
   return (
     <div className="space-y-3 border-b border-stroke-subtle pb-3 pt-3">
-      <span className="block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
         {t('binDesigner.cutoutEditor.binSize')}
       </span>
 

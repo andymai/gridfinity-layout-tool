@@ -91,7 +91,7 @@ export function BentoStashShelf({
         <span className="text-xs font-semibold text-content-secondary">
           {t('binDesigner.bento.stashTitle')}
         </span>
-        <span className="text-[10px] tabular-nums text-content-tertiary">
+        <span className="text-micro tabular-nums text-content-tertiary">
           {stash.length}/{DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES}
         </span>
       </div>
@@ -154,7 +154,7 @@ export function BentoStashShelf({
                     <div className={`rounded-sm border ${fill}`} style={{ width, height }} />
                   )}
                 </div>
-                <span className="max-w-[5rem] truncate text-[10px] text-content-secondary">
+                <span className="max-w-[5rem] truncate text-micro text-content-secondary">
                   {entry.label ?? `${entry.w}×${entry.h}`}
                 </span>
                 {!isDragging && (

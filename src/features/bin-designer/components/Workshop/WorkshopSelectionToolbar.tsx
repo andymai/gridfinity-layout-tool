@@ -42,7 +42,7 @@ export function WorkshopSelectionToolbar() {
       data-testid="workshop-selection-toolbar"
       className="absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-stroke-subtle bg-surface-elevated/90 p-1 shadow-sm backdrop-blur"
     >
-      <span className="px-2 text-[11px] font-medium text-content-secondary">
+      <span className="px-2 text-label font-medium text-content-secondary">
         {t('workshop.selection.count', { count })}
       </span>
       <div className="h-4 w-px bg-stroke-subtle" />
@@ -115,7 +115,7 @@ export function WorkshopSelectionToolbar() {
       <Button
         variant="ghost"
         size="sm"
-        className="px-1.5 text-status-error"
+        className="px-1.5 text-error"
         title={t('workshop.menu.delete')}
         onClick={() => run((ids) => store().removeAssemblyParts(ids))}
       >

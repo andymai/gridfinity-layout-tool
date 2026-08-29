@@ -184,7 +184,7 @@ export function SelectionToolbar({
         {otherLayers.length > 0 && (
           <Select
             size="sm"
-            className="h-6 text-[11px] text-content-secondary"
+            className="h-6 text-label text-content-secondary"
             value=""
             placeholder={t('selectionToolbar.moveToLayer')}
             options={otherLayers.map((layer) => ({ id: layer.id, name: layer.name }))}

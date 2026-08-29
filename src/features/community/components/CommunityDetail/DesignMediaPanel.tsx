@@ -155,7 +155,7 @@ export function DesignMediaPanel({
             data-testid="design-media-tile-model"
           >
             {poster !== '' && <img src={poster} alt="" className="h-full w-full object-cover" />}
-            <span className="absolute inset-x-0 bottom-0 bg-overlay-dark py-0.5 text-[10px] font-medium uppercase tracking-wide text-white">
+            <span className="absolute inset-x-0 bottom-0 bg-overlay-dark py-0.5 text-micro font-medium uppercase tracking-wide text-white">
               {t('community.media.modelBadge')}
             </span>
           </Button>

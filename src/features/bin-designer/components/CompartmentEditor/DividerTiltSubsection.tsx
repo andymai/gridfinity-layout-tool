@@ -124,7 +124,7 @@ function Teaser({ t }: { readonly t: Translate }) {
   return (
     <div className="mt-2 flex items-start gap-2.5">
       <TeaserDiagram />
-      <p className="flex-1 text-[11px] leading-relaxed text-content-tertiary">
+      <p className="flex-1 text-label leading-relaxed text-content-tertiary">
         {t('binDesigner.angledDividers.teaser')}
       </p>
     </div>
@@ -168,7 +168,7 @@ function ListView({ rows, compartments, hoveredKey, hasAnyOverride, handlers, t 
           type="button"
           variant="ghost"
           onClick={handlers.resetAll}
-          className="self-end px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
+          className="self-end px-0 py-0 text-label font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
         >
           {t('binDesigner.angledDividers.resetAll')}
         </Button>
@@ -250,14 +250,14 @@ function DividerRow({ row, compartments, isHovered, handlers, t }: DividerRowPro
         <span className="text-xs font-medium text-content-secondary tabular-nums">{rowLabel}</span>
         <span className="ml-auto flex items-center gap-1.5">
           {row.hasTilt && hasPlanTilt && (
-            <span className="text-[11px] font-medium tabular-nums text-accent">
+            <span className="text-label font-medium tabular-nums text-accent">
               {t('binDesigner.angledDividers.badgeAngle', {
                 angle: String(Math.round(row.angleDeg)),
               })}
             </span>
           )}
           {leanRounded !== 0 && (
-            <span className="text-[11px] font-medium tabular-nums text-content-secondary">
+            <span className="text-label font-medium tabular-nums text-content-secondary">
               {t('binDesigner.angledDividers.rowBadgeLean', { angle: String(leanRounded) })}
             </span>
           )}
@@ -315,7 +315,7 @@ function InspectorView({
           type="button"
           variant="ghost"
           onClick={() => handlers.selectDivider(null)}
-          className="flex items-center gap-1 px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
+          className="flex items-center gap-1 px-0 py-0 text-label font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
         >
           <ArrowLeftIcon size="xs" />
           {t('binDesigner.angledDividers.backToList')}
@@ -325,7 +325,7 @@ function InspectorView({
             type="button"
             variant="ghost"
             onClick={() => handlers.resetRow(row)}
-            className="flex items-center gap-1 px-0 py-0 text-[11px] font-medium text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
+            className="flex items-center gap-1 px-0 py-0 text-label font-medium text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
           >
             <RotateCcwIcon size="xs" />
             {t('binDesigner.angledDividers.resetToStraight')}
@@ -347,13 +347,13 @@ function InspectorView({
             interiorD={interiorD}
             dividerHeightMm={row.geometry?.dividerHeightMm ?? 0}
           />
-          <figcaption className="text-[10px] text-content-tertiary">
+          <figcaption className="text-micro text-content-tertiary">
             {t('binDesigner.angledDividers.topView')}
           </figcaption>
         </figure>
         <figure className="flex flex-col items-center gap-1">
           <LeanSpecimen leanDeg={leanDeg} />
-          <figcaption className="text-[10px] text-content-tertiary">
+          <figcaption className="text-micro text-content-tertiary">
             {t('binDesigner.angledDividers.sideView')}
           </figcaption>
         </figure>
@@ -426,7 +426,7 @@ function InspectorView({
           type="button"
           variant="ghost"
           onClick={() => handlers.applyLeanToAxis(row)}
-          className="self-start px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
+          className="self-start px-0 py-0 text-label font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
         >
           {t('binDesigner.angledDividers.applyLeanToAxis')}
         </Button>
@@ -438,7 +438,7 @@ function InspectorView({
         defaultExpanded={false}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-content-tertiary">
+          <span className="text-label text-content-tertiary">
             {t('binDesigner.angledDividers.shiftLabel')}
           </span>
           <Stepper
@@ -462,7 +462,7 @@ function InspectorView({
       </Collapsible>
 
       {row.hasTilt && conflicts.length > 0 && (
-        <p className="rounded bg-warning-muted px-2 py-1.5 text-[11px] text-content-secondary">
+        <p className="rounded bg-warning-muted px-2 py-1.5 text-label text-content-secondary">
           {t('binDesigner.angledDividers.conflictNotice')}
         </p>
       )}
@@ -540,7 +540,7 @@ function TiltControl({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] text-content-tertiary">{label}</span>
+        <span className="text-label text-content-tertiary">{label}</span>
         <span className="flex items-center gap-1">
           {presets.map((preset) => (
             <Button
@@ -550,7 +550,7 @@ function TiltControl({
               disabled={disabled || (presetDisabled?.(preset) ?? false)}
               onClick={() => onCommit(preset)}
               aria-label={presetAria(preset)}
-              className={`rounded border px-1.5 py-0.5 text-[10px] font-medium tabular-nums transition-colors disabled:opacity-40 ${
+              className={`rounded border px-1.5 py-0.5 text-micro font-medium tabular-nums transition-colors disabled:opacity-40 ${
                 Math.round(value) === preset
                   ? 'border-accent bg-accent/10 text-accent'
                   : 'border-stroke-subtle text-content-tertiary hover:border-stroke hover:text-content-secondary'
@@ -597,8 +597,8 @@ type LeanReadout = Hook['leanReadout'];
 function ReadoutRow({ label, value }: { readonly label: string; readonly value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
-      <span className="text-[11px] text-content-tertiary">{label}</span>
-      <span className="text-[11px] font-medium tabular-nums text-content-secondary">{value}</span>
+      <span className="text-label text-content-tertiary">{label}</span>
+      <span className="text-label font-medium tabular-nums text-content-secondary">{value}</span>
     </div>
   );
 }

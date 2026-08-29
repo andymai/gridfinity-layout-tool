@@ -61,7 +61,7 @@ export function FeatureToggle({
         <div className="flex items-center gap-2">
           <span className="text-xs text-content-secondary">{label}</span>
           {!disabledReason && comingSoon && (
-            <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-[10px] font-medium text-content-tertiary">
+            <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-micro font-medium text-content-tertiary">
               {t('common.soon')}
             </span>
           )}
@@ -93,7 +93,7 @@ export function FeatureToggle({
 
       {/* Disabled reason text */}
       {disabledReason && (
-        <p className="mt-0.5 text-[11px] text-content-tertiary">{disabledReason}</p>
+        <p className="mt-0.5 text-label text-content-tertiary">{disabledReason}</p>
       )}
 
       {/* Primary controls (shown immediately when enabled, no Customize needed) */}
@@ -104,7 +104,7 @@ export function FeatureToggle({
         <div className="ml-1 mt-0.5">
           <div className="flex items-center gap-2">
             {valueSummary && !customizeOpen && (
-              <span className="text-[11px] text-content-tertiary">{valueSummary}</span>
+              <span className="text-label text-content-tertiary">{valueSummary}</span>
             )}
             <Button
               variant="ghost"

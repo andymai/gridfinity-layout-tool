@@ -124,7 +124,7 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
               </Alert>
             )}
 
-            <p className="text-[11px] leading-relaxed text-content-secondary">
+            <p className="text-label leading-relaxed text-content-secondary">
               {t('baseplate.stackPrint.hint')}
             </p>
 
@@ -169,7 +169,7 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
               </Alert>
             )}
 
-            <div className="space-y-2 rounded border border-info/30 bg-info-muted px-2.5 py-2 text-[11px] leading-relaxed text-content-secondary">
+            <div className="space-y-2 rounded border border-info/30 bg-info-muted px-2.5 py-2 text-label leading-relaxed text-content-secondary">
               <p className="font-semibold text-info">{t('baseplate.stackPrint.tips.heading')}</p>
               <div className="space-y-0.5">
                 <p className="font-medium text-content">

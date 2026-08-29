@@ -59,7 +59,7 @@ export function MeasureOverlay() {
               touchTarget={false}
               onClick={() => setMeasureMode(m)}
               aria-pressed={m === mode}
-              className={`px-2 py-0.5 text-[11px] leading-none ${getSegmentClass(m === mode)}`}
+              className={`px-2 py-0.5 text-label leading-none ${getSegmentClass(m === mode)}`}
             >
               {m === 'points'
                 ? t('binDesigner.measure.modePoints')
@@ -101,7 +101,7 @@ export function MeasureOverlay() {
             size="sm"
             touchTarget={false}
             onClick={clearMeasure}
-            className="px-1 text-[11px] font-normal text-content-tertiary hover:text-content"
+            className="px-1 text-label font-normal text-content-tertiary hover:text-content"
           >
             {t('binDesigner.measure.clear')}
           </Button>

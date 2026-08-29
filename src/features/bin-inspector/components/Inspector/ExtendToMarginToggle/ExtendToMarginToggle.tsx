@@ -82,7 +82,7 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
         disabled={!linked}
         onChange={(checked) => updateBin(bin.id, { extendToMargin: checked })}
       />
-      <p className="mt-1 px-2 text-[10px] leading-snug text-content-disabled">
+      <p className="mt-1 px-2 text-micro leading-snug text-content-disabled">
         {linked ? t('inspector.extendToMargin.hint') : t('inspector.extendToMargin.needsLink')}
       </p>
 
@@ -121,7 +121,7 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
                 step={TAPER_BAND_STEP}
                 unit="mm"
               />
-              <p className="text-[10px] leading-snug text-content-disabled">
+              <p className="text-micro leading-snug text-content-disabled">
                 {t('inspector.taper.flare.hint')}
               </p>
             </div>

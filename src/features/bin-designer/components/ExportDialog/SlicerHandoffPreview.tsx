@@ -96,7 +96,7 @@ export function SlicerHandoffPreview({
           <p className="text-xs font-medium text-content">
             {t('binDesigner.colors.slicerHandoff.title')}
           </p>
-          <p className="text-[11px] text-content-tertiary">
+          <p className="text-label text-content-tertiary">
             {t('binDesigner.colors.slicerHandoff.description')}
           </p>
           <ul className="space-y-1.5">
@@ -109,10 +109,10 @@ export function SlicerHandoffPreview({
                 <span className="font-medium text-content">
                   {t('binDesigner.colors.slicerHandoff.filament', { n: i + 1 })}
                 </span>
-                <span className="font-mono text-[11px] text-content-secondary tabular-nums">
+                <span className="font-mono text-label text-content-secondary tabular-nums">
                   {f.color}
                 </span>
-                <span className="ml-auto truncate text-[11px] text-content-tertiary">
+                <span className="ml-auto truncate text-label text-content-tertiary">
                   {
                     // eslint-disable-next-line i18next/no-literal-string -- joiner is punctuation, not user copy
                     f.zones.join(', ')

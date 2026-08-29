@@ -25,7 +25,7 @@ describe('getSegmentClass', () => {
   });
 
   it('uses compact sizing for sm and default sizing for md', () => {
-    expect(getSegmentClass(false, { size: 'sm' })).toContain('text-[11px]');
+    expect(getSegmentClass(false, { size: 'sm' })).toContain('text-label');
     expect(getSegmentClass(false, { size: 'md' })).toContain('text-xs');
     expect(getSegmentClass(false)).toContain('text-xs');
   });

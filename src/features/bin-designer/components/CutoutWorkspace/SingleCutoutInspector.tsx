@@ -208,7 +208,7 @@ export function SingleCutoutInspector({
                 />
               ))}
             {depthShortfall && (
-              <p role="alert" className="pt-0.5 text-[11px] leading-snug text-warning">
+              <p role="alert" className="pt-0.5 text-label leading-snug text-warning">
                 {t('binDesigner.cutouts.depthShortfall', {
                   achievable: depthShortfall.achievable.toFixed(1),
                   requested: depthShortfall.requested.toFixed(1),
@@ -259,7 +259,7 @@ export function SingleCutoutInspector({
                     disabled={disabled}
                   />
                   {(cutout.leanDeg ?? 0) !== 0 && (
-                    <p className="text-[10px] text-text-muted">
+                    <p className="text-micro text-text-muted">
                       {t('binDesigner.cutouts.leanHint')}
                     </p>
                   )}

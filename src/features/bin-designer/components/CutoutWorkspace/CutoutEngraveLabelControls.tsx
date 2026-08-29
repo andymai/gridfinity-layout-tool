@@ -148,7 +148,7 @@ export function CutoutEngraveLabelControls({
               disabled={disabled}
               onClick={() => handleModeChange(opt)}
               aria-pressed={labelMode === opt}
-              className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(labelMode === opt)}`}
+              className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(labelMode === opt)}`}
             >
               {t(`binDesigner.cutoutLabelMode.${opt}`)}
             </Button>
@@ -171,7 +171,7 @@ export function CutoutEngraveLabelControls({
           offering a list the plate cannot carry. */}
       {cutout.array &&
         (isSocket ? (
-          <p className="text-[10px] leading-snug text-content-tertiary">
+          <p className="text-micro leading-snug text-content-tertiary">
             {t('binDesigner.cutouts.repeat.labels.socketNote')}
           </p>
         ) : (
@@ -200,7 +200,7 @@ export function CutoutEngraveLabelControls({
                 disabled={disabled}
                 onClick={() => setTextDefaults({ mode: opt })}
                 aria-pressed={effectiveMode === opt}
-                className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(effectiveMode === opt)}`}
+                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(effectiveMode === opt)}`}
               >
                 {t(`binDesigner.textMode.${opt}`)}
               </Button>
@@ -225,7 +225,7 @@ export function CutoutEngraveLabelControls({
       )}
       {!isTextElement && (
         <div className="space-y-1">
-          <span className="text-[10px] text-text-muted">{t('binDesigner.cutoutTextAnchor')}</span>
+          <span className="text-micro text-text-muted">{t('binDesigner.cutoutTextAnchor')}</span>
           <div
             role="group"
             aria-label={t('binDesigner.cutoutTextAnchor')}
@@ -299,7 +299,7 @@ export function CutoutEngraveLabelControls({
             disabled={disabled}
           />
           {sizeLimited && renderedSize !== null && (
-            <p role="alert" className="text-[10px] leading-snug text-warning">
+            <p role="alert" className="text-micro leading-snug text-warning">
               {t('binDesigner.textSizeLimited', { size: renderedSize.toFixed(1) })}
             </p>
           )}

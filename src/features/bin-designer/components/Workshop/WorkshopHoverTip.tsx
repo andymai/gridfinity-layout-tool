@@ -46,7 +46,7 @@ export function WorkshopHoverTip({ target }: WorkshopHoverTipProps) {
   return (
     <div
       data-testid="workshop-hover-tip"
-      className="pointer-events-none absolute z-10 max-w-[220px] rounded-md border border-stroke-subtle bg-surface-elevated/95 px-2.5 py-1.5 text-[11px] leading-snug shadow-md backdrop-blur"
+      className="pointer-events-none absolute z-10 max-w-[220px] rounded-md border border-stroke-subtle bg-surface-elevated/95 px-2.5 py-1.5 text-label leading-snug shadow-md backdrop-blur"
       style={{ left: target.x + 14, top: target.y + 18 }}
     >
       <div className="font-medium text-content-primary">

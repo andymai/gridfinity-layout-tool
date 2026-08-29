@@ -31,7 +31,7 @@ export function SaveStatusIndicator({
 
   return (
     <div
-      className={`flex items-center gap-1.5 ${compact ? 'px-0.5 py-0.5' : 'px-2 py-1 mr-2'} text-[11px] ${SAVE_STATUS_CLASSES[status]}`}
+      className={`flex items-center gap-1.5 ${compact ? 'px-0.5 py-0.5' : 'px-2 py-1 mr-2'} text-label ${SAVE_STATUS_CLASSES[status]}`}
       aria-live="polite"
       role="status"
     >

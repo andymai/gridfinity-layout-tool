@@ -46,7 +46,7 @@ export function CommunityDesignTile({
       <span className="line-clamp-1 text-xs text-content" title={card.name}>
         {card.name}
       </span>
-      <span className="line-clamp-1 text-[11px] text-content-tertiary">
+      <span className="line-clamp-1 text-label text-content-tertiary">
         {t('community.card.byAuthor', { author: card.authorName })}
       </span>
     </Button>

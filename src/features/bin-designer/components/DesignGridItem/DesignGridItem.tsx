@@ -141,7 +141,7 @@ export function DesignGridItem({
 
       {/* Active badge */}
       {isActive && (
-        <span className="absolute top-1.5 right-1.5 z-10 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">
+        <span className="absolute top-1.5 right-1.5 z-10 rounded bg-accent px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-surface">
           {t('layouts.active')}
         </span>
       )}
@@ -202,7 +202,7 @@ export function DesignGridItem({
             row regardless of how many tags each card shows */}
         <div className="flex items-center justify-between mt-auto pt-1.5">
           {nestLevel === 1 && (
-            <p className="truncate text-[10px] text-accent">
+            <p className="truncate text-micro text-accent">
               {design.variantOf
                 ? t('binDesigner.variants.label')
                 : design.parentVersionName
@@ -222,16 +222,14 @@ export function DesignGridItem({
                 onToggleExpand();
               }}
               aria-expanded={expanded}
-              className="h-auto px-0 py-0 text-[10px] font-normal text-accent hover:underline"
+              className="h-auto px-0 py-0 text-micro font-normal text-accent hover:underline"
             >
               {expanded
                 ? t('binDesigner.designs.hideBranches')
                 : t('binDesigner.designs.branchCount', { count: childCount })}
             </Button>
           )}
-          <p className="text-[10px] text-content-tertiary">
-            {formatRelativeDate(design.updatedAt)}
-          </p>
+          <p className="text-micro text-content-tertiary">{formatRelativeDate(design.updatedAt)}</p>
 
           {/* Actions - always visible on touch, hover/focus on desktop */}
           <div className="transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">

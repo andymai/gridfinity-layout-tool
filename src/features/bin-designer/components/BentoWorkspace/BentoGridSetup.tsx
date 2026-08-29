@@ -119,7 +119,7 @@ export function BentoGridSetup({
               <span className="text-xs font-semibold tabular-nums">
                 {option.cols}×{option.rows}
               </span>
-              <span className="text-[10px] font-normal tabular-nums text-content-tertiary">
+              <span className="text-micro font-normal tabular-nums text-content-tertiary">
                 {t('binDesigner.bento.gridSetupCellSize', {
                   w: Math.round(option.cellW),
                   d: Math.round(option.cellH),
@@ -128,7 +128,7 @@ export function BentoGridSetup({
             </Button>
           ))}
         </div>
-        <p className="text-[10px] text-content-tertiary">
+        <p className="text-micro text-content-tertiary">
           {t('binDesigner.bento.gridSetupCustomHint')}
         </p>
       </div>

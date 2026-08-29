@@ -130,7 +130,7 @@ export function TaperProfileCards({
                   className={selected ? 'text-accent' : 'text-content-secondary'}
                 />
               </svg>
-              <span className="text-[11px] font-medium leading-none">{card.label}</span>
+              <span className="text-label font-medium leading-none">{card.label}</span>
             </Button>
           </div>
         );

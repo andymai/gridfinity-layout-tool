@@ -424,7 +424,7 @@ export function RightPanel() {
                                             );
                                           })}
                                           {row.categoryIds.length > 3 && (
-                                            <span className="text-xxs text-content-disabled">
+                                            <span className="text-micro text-content-disabled">
                                               {t('rightPanel.moreCategories', {
                                                 count: row.categoryIds.length - 3,
                                               })}
@@ -509,7 +509,7 @@ export function RightPanel() {
                                       )}
                                       {(row.labelPlateCount ?? 0) > 0 && (
                                         <span
-                                          className="inline-flex items-center gap-1 text-xxs text-content-disabled"
+                                          className="inline-flex items-center gap-1 text-micro text-content-disabled"
                                           title={t('print.row.labelPlates', {
                                             count: row.labelPlateCount ?? 0,
                                           })}
@@ -538,7 +538,7 @@ export function RightPanel() {
                                           on them — worth knowing before the
                                           spool goes in, not after. */}
                                       {row.labelTabsWithoutText === true && (
-                                        <span className="text-xxs text-warning">
+                                        <span className="text-micro text-warning">
                                           {t('print.row.blankLabelTabs')}
                                         </span>
                                       )}

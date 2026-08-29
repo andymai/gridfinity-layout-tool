@@ -35,7 +35,7 @@ export function DesignerUpdatedDialog() {
       size="sm"
     >
       <Dialog.Header title={t('designLinking.designerUpdated.title')} showCloseButton={false}>
-        <InfoIcon size="sm" className="text-status-info" />
+        <InfoIcon size="sm" className="text-info" />
       </Dialog.Header>
       <Dialog.Body>
         <p className="text-sm text-content-secondary">

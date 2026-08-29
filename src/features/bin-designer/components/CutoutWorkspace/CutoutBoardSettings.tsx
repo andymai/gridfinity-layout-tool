@@ -39,12 +39,12 @@ export function CutoutBoardSettings({
   return (
     <div className="space-y-4 pt-3">
       {/* Selection guidance — kept distinct from the board settings below. */}
-      <p className="text-[11px] leading-relaxed text-content-tertiary">
+      <p className="text-label leading-relaxed text-content-tertiary">
         {t('binDesigner.cutoutEditor.inspectorEmptyHint')}
       </p>
 
       <div className="space-y-3 border-t border-stroke-subtle pt-3">
-        <span className="block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+        <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
           {t('binDesigner.cutoutEditor.boardSettings')}
         </span>
 
@@ -59,7 +59,7 @@ export function CutoutBoardSettings({
 
         {snapEnabled && (
           <div className="space-y-1">
-            <span className="block text-[10px] text-content-tertiary">
+            <span className="block text-micro text-content-tertiary">
               {t('binDesigner.gridSize')}
             </span>
             <div
@@ -83,7 +83,7 @@ export function CutoutBoardSettings({
           </div>
         )}
 
-        <dl className="space-y-1 text-[11px]">
+        <dl className="space-y-1 text-label">
           <div className="flex items-center justify-between">
             <dt className="text-content-tertiary">{t('binDesigner.cutoutEditor.boardSize')}</dt>
             <dd className="tabular-nums text-content-secondary">
@@ -100,7 +100,7 @@ export function CutoutBoardSettings({
       {/* Fill level: a bin-level plane, but the cutouts are cut from it, so the
           workspace has to expose it or the only control is in the sidebar. */}
       <div className="space-y-3 border-t border-stroke-subtle pt-3">
-        <span className="block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+        <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
           {t('binDesigner.cutouts.fillLevel')}
         </span>
         <CutoutFillControls />

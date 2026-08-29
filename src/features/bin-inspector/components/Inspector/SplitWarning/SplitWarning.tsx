@@ -94,7 +94,7 @@ function PrintBedIndicator({
       />
 
       {/* Label */}
-      <div className="absolute bottom-0 right-0 text-[8px] text-content-disabled px-0.5">
+      <div className="absolute bottom-0 right-0 text-micro text-content-disabled px-0.5">
         {bedLabel}
       </div>
     </div>
@@ -145,7 +145,7 @@ export function SplitWarning({
   // Warning state - bin exceeds print bed
   if (compact) {
     return (
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-[var(--color-warning-muted)] border border-[var(--color-warning)] text-[var(--color-warning)]">
+      <div className="flex items-center gap-2 p-3 rounded-lg bg-warning-muted border border-warning text-warning">
         <svg
           className="w-5 h-5 flex-shrink-0"
           fill="none"
@@ -165,7 +165,7 @@ export function SplitWarning({
   }
 
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-[var(--color-warning-muted)] border border-[var(--color-warning)] text-[var(--color-warning)] text-sm">
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-warning-muted border border-warning text-warning text-sm">
       <PrintBedIndicator
         binWidth={binWidth}
         binDepth={binDepth}

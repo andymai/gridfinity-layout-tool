@@ -372,7 +372,7 @@ export function CategoriesPanel() {
                     {/* Bin count badge - only rendered when category has bins */}
                     {binCount > 0 && (
                       <span
-                        className={`text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
+                        className={`text-micro min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
                           isHovered ? 'bg-accent/20 text-accent' : 'text-content-tertiary'
                         }`}
                         title={t('categories.binsUseCategory', { count: binCount })}

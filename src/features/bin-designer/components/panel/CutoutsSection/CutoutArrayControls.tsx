@@ -99,7 +99,7 @@ export function CutoutArrayControls({
   if (blockedReason) {
     return (
       <div className="space-y-1.5">
-        <p className="text-[11px] leading-snug text-content-tertiary">
+        <p className="text-label leading-snug text-content-tertiary">
           {t(BLOCKED_REASON_KEYS[blockedReason])}
         </p>
         {blockedReason === 'grouped' && onUngroup && (
@@ -121,7 +121,7 @@ export function CutoutArrayControls({
     const fallback = clampedDefaultConfig(cutout, binWidth, binDepth);
     return (
       <div className="space-y-1.5">
-        <span className="block text-[10px] text-content-tertiary">
+        <span className="block text-micro text-content-tertiary">
           {t('binDesigner.cutouts.repeat.presetLabel')}
         </span>
         <div className="flex flex-wrap gap-1">
@@ -177,7 +177,7 @@ export function CutoutArrayControls({
             type="button"
             variant="ghost"
             aria-selected={array.mode === mode}
-            className={`flex flex-1 items-center justify-center gap-1 rounded-md px-1.5 py-1.5 text-[11px] font-medium transition-all leading-none ${
+            className={`flex flex-1 items-center justify-center gap-1 rounded-md px-1.5 py-1.5 text-label font-medium transition-all leading-none ${
               array.mode === mode
                 ? 'bg-surface-elevated text-content shadow-sm'
                 : 'text-content-tertiary hover:text-content-secondary'
@@ -234,7 +234,7 @@ export function CutoutArrayControls({
               {t('binDesigner.cutouts.repeat.rotateToCenter')}
             </label>
           ) : (
-            <p className="text-[11px] leading-snug text-content-tertiary">
+            <p className="text-label leading-snug text-content-tertiary">
               {t('binDesigner.cutouts.repeat.groupNoRotate')}
             </p>
           )}
@@ -294,12 +294,12 @@ export function CutoutArrayControls({
           to cut into each other, so the user is told what will happen rather
           than stopped. */}
       {overlaps && (
-        <p className="pt-0.5 text-[11px] leading-snug text-warning">
+        <p className="pt-0.5 text-label leading-snug text-warning">
           {t('binDesigner.cutouts.repeat.overlapWarning')}
         </p>
       )}
 
-      <div className="flex items-center justify-between pt-0.5 text-[11px] text-content-tertiary">
+      <div className="flex items-center justify-between pt-0.5 text-label text-content-tertiary">
         <span>{t('binDesigner.cutouts.repeat.instances', { count })}</span>
       </div>
 
@@ -369,7 +369,7 @@ function PresetChip({ preset, label, fits, noFitReason, disabled, onPick }: Pres
       onClick={onPick}
       title={!fits ? noFitReason : undefined}
       className={cn(
-        'rounded border px-1.5 py-0.5 text-[11px] tabular-nums transition-colors',
+        'rounded border px-1.5 py-0.5 text-label tabular-nums transition-colors',
         off
           ? 'cursor-not-allowed border-stroke-subtle bg-surface-elevated text-content-tertiary opacity-50'
           : 'border-stroke-subtle bg-surface-elevated text-content-secondary hover:border-accent/50 hover:text-content'

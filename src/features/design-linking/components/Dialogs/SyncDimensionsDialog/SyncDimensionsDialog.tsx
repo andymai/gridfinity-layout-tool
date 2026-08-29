@@ -112,7 +112,7 @@ export function SyncDimensionsDialog() {
             </span>
           </div>
           {binsHaveVaryingDimensions && (
-            <div className="text-xs text-status-warning mt-0.5">
+            <div className="text-xs text-warning mt-0.5">
               {t('designLinking.syncDialog.binsVary')}
             </div>
           )}
@@ -121,7 +121,7 @@ export function SyncDimensionsDialog() {
         {/* Sync results preview */}
         <div className="mb-4 space-y-1.5">
           {canSyncCount > 0 && (
-            <div className="flex items-center gap-2 text-sm text-status-success">
+            <div className="flex items-center gap-2 text-sm text-success">
               <svg
                 className="w-4 h-4 flex-shrink-0"
                 fill="none"
@@ -139,7 +139,7 @@ export function SyncDimensionsDialog() {
             </div>
           )}
           {willUnlinkCount > 0 && (
-            <div className="flex items-center gap-2 text-sm text-status-warning">
+            <div className="flex items-center gap-2 text-sm text-warning">
               <svg
                 className="w-4 h-4 flex-shrink-0"
                 fill="none"

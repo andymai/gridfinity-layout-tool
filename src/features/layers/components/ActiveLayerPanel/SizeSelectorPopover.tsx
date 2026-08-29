@@ -54,7 +54,7 @@ function SizeButton({
         }}
       />
       <span
-        className={`text-[9px] leading-none ${isActive ? 'text-accent font-medium' : 'text-content-tertiary'}`}
+        className={`text-micro leading-none ${isActive ? 'text-accent font-medium' : 'text-content-tertiary'}`}
       >
         {w}×{d}
       </span>
@@ -90,7 +90,7 @@ export function SizeSelectorPopover({
   return (
     <Popover anchorRef={anchorRef} isOpen={isOpen} onClose={onClose} className="w-[264px]">
       {/* Header reinforces the brush identity */}
-      <div className="flex items-center gap-1.5 px-3 pt-3 pb-0.5 text-[11px] font-semibold uppercase tracking-wider text-content-secondary">
+      <div className="flex items-center gap-1.5 px-3 pt-3 pb-0.5 text-label font-semibold uppercase tracking-wider text-content-secondary">
         <svg
           className="w-3.5 h-3.5 text-accent"
           fill="none"
@@ -107,7 +107,7 @@ export function SizeSelectorPopover({
 
       {/* Squares section */}
       <div className="px-3 pt-1">
-        <div className="text-[11px] font-medium text-content-secondary uppercase tracking-wider mb-1.5">
+        <div className="text-label font-medium text-content-secondary uppercase tracking-wider mb-1.5">
           {t('layers.squares')}
         </div>
         <div className="grid grid-cols-6 gap-1">
@@ -126,7 +126,7 @@ export function SizeSelectorPopover({
       {/* Rectangles section */}
       <div className="px-3 pb-3">
         <div className="flex items-center justify-between mt-3 mb-1.5">
-          <span className="text-[11px] font-medium text-content-secondary uppercase tracking-wider">
+          <span className="text-label font-medium text-content-secondary uppercase tracking-wider">
             {t('layers.rectangles')}
           </span>
           <Button
@@ -134,7 +134,7 @@ export function SizeSelectorPopover({
             size="sm"
             touchTarget={false}
             onClick={() => setRotated(!rotated)}
-            className="text-[11px] text-content-tertiary hover:text-content flex items-center gap-1 transition-colors rounded px-1.5 py-0.5 hover:bg-surface-hover"
+            className="text-label text-content-tertiary hover:text-content flex items-center gap-1 transition-colors rounded px-1.5 py-0.5 hover:bg-surface-hover"
             title={rotated ? t('layers.showingTall') : t('layers.showingWide')}
             aria-label={rotated ? t('layers.switchToWide') : t('layers.switchToTall')}
           >
@@ -167,7 +167,7 @@ export function SizeSelectorPopover({
 
       {/* Help text footer */}
       <div className="px-3 py-2 border-t border-stroke-subtle bg-surface/50 rounded-b-xl">
-        <p className="text-[10px] text-content-tertiary leading-relaxed">
+        <p className="text-micro text-content-tertiary leading-relaxed">
           {t('layers.binPaletteInstruction')}{' '}
           <span className="text-content-disabled">{t('layers.binPaletteHint')}</span>
         </p>

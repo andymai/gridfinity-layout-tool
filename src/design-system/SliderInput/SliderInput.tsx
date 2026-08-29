@@ -64,10 +64,7 @@ export function SliderInput({
     >
       {/* Label row with editable value badge */}
       <div className="flex items-center justify-between mb-1">
-        <label
-          htmlFor={isEditing ? id : undefined}
-          className="text-xs font-medium text-content-secondary"
-        >
+        <label htmlFor={isEditing ? id : undefined} className="text-label text-content-secondary">
           {label}
         </label>
 
@@ -87,7 +84,7 @@ export function SliderInput({
       </div>
 
       {info && (
-        <p id={infoId} className="mb-1 text-[10px] text-content-tertiary">
+        <p id={infoId} className="mb-1 text-micro text-content-tertiary">
           {info}
         </p>
       )}

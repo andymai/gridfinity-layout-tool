@@ -44,7 +44,7 @@ export function WorkshopViewBar({
           key={preset}
           variant="ghost"
           size="sm"
-          className="px-2 text-[11px]"
+          className="px-2 text-label"
           title={`${t(labelKey)} (${shortcut})`}
           onClick={() => onPreset(preset)}
         >
@@ -55,7 +55,7 @@ export function WorkshopViewBar({
       <Button
         variant="ghost"
         size="sm"
-        className="px-2 text-[11px]"
+        className="px-2 text-label"
         title={t('workshop.view.fitTitle')}
         onClick={onFit}
       >
@@ -64,7 +64,7 @@ export function WorkshopViewBar({
       <Button
         variant="ghost"
         size="sm"
-        className="px-2 text-[11px]"
+        className="px-2 text-label"
         title={t('workshop.view.projectionToggle')}
         onClick={onProjectionToggle}
       >
@@ -76,7 +76,7 @@ export function WorkshopViewBar({
       <Button
         variant="ghost"
         size="sm"
-        className="px-2 font-mono text-[11px] text-content-secondary"
+        className="px-2 font-mono text-label text-content-secondary"
         title={t('workshop.snap.cycle')}
         onClick={cycleSnap}
       >

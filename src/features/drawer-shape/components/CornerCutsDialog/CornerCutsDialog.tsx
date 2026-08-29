@@ -172,7 +172,7 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
             const cut = active[key];
             return (
               <div key={key} className="space-y-2 rounded border border-stroke-subtle p-2">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+                <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
                   {t(labelKey)}
                 </div>
                 <Select

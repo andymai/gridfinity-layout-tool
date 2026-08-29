@@ -516,7 +516,7 @@ export function ColorsSection() {
         }
       />
       {!multiColorEnabled && (
-        <p className="text-[11px] text-content-tertiary leading-snug">
+        <p className="text-label text-content-tertiary leading-snug">
           {t('binDesigner.multiColor.enableHint')}
         </p>
       )}

@@ -59,7 +59,7 @@ export function CutoutSocketControls({
         disabled={disabled}
         onClick={() => onUpdate({ textAngle: 0 })}
         aria-pressed={!vertical}
-        className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(!vertical)}`}
+        className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(!vertical)}`}
       >
         {t('binDesigner.cutoutSocket.horizontal')}
       </Button>
@@ -69,7 +69,7 @@ export function CutoutSocketControls({
         disabled={disabled}
         onClick={() => onUpdate({ textAngle: 90 })}
         aria-pressed={vertical}
-        className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(vertical)}`}
+        className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(vertical)}`}
       >
         {t('binDesigner.cutoutSocket.vertical')}
       </Button>
@@ -82,7 +82,7 @@ export function CutoutSocketControls({
     // refusals are not orientation's to fix and keep the bare warning.
     return (
       <div className="space-y-2">
-        <p role="status" className="text-[10px] text-status-warning">
+        <p role="status" className="text-micro text-warning">
           {skipReason === 'centerAnchor'
             ? t('binDesigner.cutoutSocket.blockedCenterAnchor')
             : skipReason === 'tooShallow'
@@ -106,7 +106,7 @@ export function CutoutSocketControls({
   return (
     <div className="space-y-2">
       <div className="space-y-1">
-        <span className="text-[10px] text-text-muted">{t('binDesigner.cutoutSocket.width')}</span>
+        <span className="text-micro text-text-muted">{t('binDesigner.cutoutSocket.width')}</span>
         <div
           role="group"
           aria-label={t('binDesigner.cutoutSocket.width')}
@@ -118,7 +118,7 @@ export function CutoutSocketControls({
             disabled={disabled}
             onClick={() => setWidth(null)}
             aria-pressed={!pinned}
-            className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(!pinned)}`}
+            className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(!pinned)}`}
           >
             {t('binDesigner.cutoutSocket.widthAuto', { u: socket.widthU })}
           </Button>
@@ -130,7 +130,7 @@ export function CutoutSocketControls({
               disabled={disabled}
               onClick={() => setWidth(u)}
               aria-pressed={pinned && override === u}
-              className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(
+              className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(
                 pinned && override === u
               )}`}
             >
@@ -141,7 +141,7 @@ export function CutoutSocketControls({
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-text-muted">{t('binDesigner.cutoutSocket.icon')}</span>
+        <span className="text-micro text-text-muted">{t('binDesigner.cutoutSocket.icon')}</span>
         <LabelIconPicker
           value={cutout.labelIcon ?? null}
           onChange={(icon) => onUpdate({ labelIcon: icon ?? undefined })}

@@ -54,7 +54,7 @@ export function DimensionAnnotations3D({
               style={{ pointerEvents: 'none' }}
               zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
             >
-              <div className="rounded bg-surface-elevated/80 px-1 text-[10px] font-mono text-content-secondary whitespace-nowrap">
+              <div className="rounded bg-surface-elevated/80 px-1 text-micro font-mono text-content-secondary whitespace-nowrap">
                 {effective.width.toFixed(1)}mm
               </div>
             </Html>
@@ -66,7 +66,7 @@ export function DimensionAnnotations3D({
               style={{ pointerEvents: 'none' }}
               zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
             >
-              <div className="rounded bg-surface-elevated/80 px-1 text-[10px] font-mono text-content-secondary whitespace-nowrap">
+              <div className="rounded bg-surface-elevated/80 px-1 text-micro font-mono text-content-secondary whitespace-nowrap">
                 {effective.depth.toFixed(1)}mm
               </div>
             </Html>

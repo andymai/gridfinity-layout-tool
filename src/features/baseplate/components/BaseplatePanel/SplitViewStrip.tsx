@@ -123,7 +123,7 @@ export function SplitViewStrip({
             count: tiling.pieces.length,
           })}
         </span>
-        <span className="text-[11px] text-content-tertiary whitespace-nowrap">
+        <span className="text-label text-content-tertiary whitespace-nowrap">
           {tiling.isCustomSplit
             ? t('baseplate.splitCustom')
             : t('baseplate.splitReason', { printBed: printBedSize })}
@@ -131,7 +131,7 @@ export function SplitViewStrip({
       </div>
 
       <div className="px-4 pb-1">
-        <span className="text-[11px] text-content-secondary">
+        <span className="text-label text-content-secondary">
           {t(tiling.bedLoads === 1 ? 'baseplate.bedLoads.one' : 'baseplate.bedLoads.other', {
             count: tiling.bedLoads,
           })}
@@ -139,7 +139,7 @@ export function SplitViewStrip({
       </div>
 
       {tiling.paddingReductionHint && (
-        <div className="mx-4 mb-2 rounded bg-accent/10 px-2.5 py-1.5 text-[11px] text-accent">
+        <div className="mx-4 mb-2 rounded bg-accent/10 px-2.5 py-1.5 text-label text-accent">
           {t('baseplate.paddingHint', {
             axis: t(PADDING_HINT_AXIS_KEYS[tiling.paddingReductionHint.axis]),
             mm: tiling.paddingReductionHint.reductionMm,
@@ -151,7 +151,7 @@ export function SplitViewStrip({
       {tiling.bedOverages.length > 0 && (
         <div
           role="alert"
-          className="mx-4 mb-2 rounded bg-danger/10 px-2.5 py-1.5 text-[11px] text-danger"
+          className="mx-4 mb-2 rounded bg-danger/10 px-2.5 py-1.5 text-label text-danger"
         >
           {t('baseplate.splitOverBed', {
             pieces: tiling.bedOverages.map((o) => o.label).join(', '),
@@ -275,7 +275,7 @@ export function SplitViewStrip({
                     type="button"
                     touchTarget={false}
                     style={{ gridColumn: c + 1, gridRow: rowSizes.length - r }}
-                    className={`flex !h-auto items-center justify-center overflow-hidden rounded-none border !px-0 !py-0 font-mono text-[10px] font-normal transition-shadow ${
+                    className={`flex !h-auto items-center justify-center overflow-hidden rounded-none border !px-0 !py-0 font-mono text-micro font-normal transition-shadow ${
                       overage
                         ? 'border-danger bg-danger/10 text-danger ring-1 ring-danger'
                         : isSelected
@@ -323,13 +323,13 @@ export function SplitViewStrip({
       </div>
 
       <div className="flex items-baseline justify-between gap-2 px-4 pb-3">
-        <span className="text-[11px] text-content-tertiary">{t('baseplate.splitEditHint')}</span>
+        <span className="text-label text-content-tertiary">{t('baseplate.splitEditHint')}</span>
         {tiling.isCustomSplit && (
           <Button
             variant="ghost"
             size="sm"
             type="button"
-            className="!px-1 text-[11px]"
+            className="!px-1 text-label"
             onClick={() => onChangeSplit(undefined)}
           >
             {t('baseplate.splitResetAuto')}

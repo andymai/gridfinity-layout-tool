@@ -534,7 +534,7 @@ function ProgressSteps({
         return (
           <li key={s} className="flex items-center gap-2">
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${
+              className={`flex h-6 w-6 items-center justify-center rounded-full text-label font-semibold ${
                 active
                   ? 'bg-accent text-on-accent'
                   : done
@@ -774,7 +774,7 @@ function OverlayChip({
 }) {
   return (
     <span
-      className="absolute flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-surface/95 px-2.5 py-1 text-[11px] font-medium text-content-primary shadow-md ring-1 ring-black/[0.06] backdrop-blur-sm"
+      className="absolute flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-surface/95 px-2.5 py-1 text-label font-medium text-content-primary shadow-md ring-1 ring-black/[0.06] backdrop-blur-sm"
       style={{ left: `${leftPct}%`, top: `${topPct}%` }}
     >
       {tone === 'neutral' ? (
@@ -789,7 +789,7 @@ function OverlayChip({
 
 function PrivacyNote({ text }: { readonly text: string }) {
   return (
-    <p className="flex items-center gap-1.5 text-center text-[11px] text-content-tertiary">
+    <p className="flex items-center gap-1.5 text-center text-label text-content-tertiary">
       <svg
         width="12"
         height="12"

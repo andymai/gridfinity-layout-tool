@@ -268,7 +268,7 @@ export function ResizeHandles3D({
                     autoFocus
                     defaultValue={fmt(def.read(node))}
                     inputMode="decimal"
-                    className="w-14 rounded border border-accent bg-surface-elevated px-1 py-0.5 text-center font-mono text-[11px] text-content shadow-sm outline-none"
+                    className="w-14 rounded border border-accent bg-surface-elevated px-1 py-0.5 text-center font-mono text-label text-content shadow-sm outline-none"
                     onFocus={(e) => e.currentTarget.select()}
                     onPointerDown={(e) => e.stopPropagation()}
                     onKeyDown={(e) => {
@@ -282,7 +282,7 @@ export function ResizeHandles3D({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-auto cursor-text whitespace-nowrap rounded bg-surface-elevated/95 px-1.5 py-0.5 font-mono text-[11px] text-content shadow-sm ring-1 ring-stroke-subtle hover:ring-accent"
+                    className="h-auto cursor-text whitespace-nowrap rounded bg-surface-elevated/95 px-1.5 py-0.5 font-mono text-label text-content shadow-sm ring-1 ring-stroke-subtle hover:ring-accent"
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
                       e.stopPropagation();

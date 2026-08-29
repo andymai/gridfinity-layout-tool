@@ -193,7 +193,7 @@ export function PreviewControls({
                   size="sm"
                   touchTarget={false}
                   onClick={() => onSplitViewModeChange(mode)}
-                  className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
+                  className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-label font-medium transition-colors min-h-[28px] touch-manipulation ${
                     isActive
                       ? 'bg-accent text-on-accent hover:bg-accent'
                       : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -225,7 +225,7 @@ export function PreviewControls({
                 size="sm"
                 touchTarget={false}
                 onClick={() => onCameraPreset(key)}
-                className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
+                className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-label font-medium transition-colors min-h-[28px] touch-manipulation ${
                   isActive
                     ? 'bg-accent text-on-accent hover:bg-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -237,7 +237,7 @@ export function PreviewControls({
                 <Icon />
                 <span>{label}</span>
                 <kbd
-                  className={`text-[9px] font-normal ${isActive ? 'text-on-accent/60' : 'text-content-tertiary'}`}
+                  className={`text-micro font-normal ${isActive ? 'text-on-accent/60' : 'text-content-tertiary'}`}
                 >
                   {shortcut}
                 </kbd>
@@ -254,7 +254,7 @@ export function PreviewControls({
             size="sm"
             touchTarget={false}
             onClick={onResetView}
-            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-label font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
             title={t('binDesigner.resetView')}
             aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
@@ -269,7 +269,7 @@ export function PreviewControls({
             size="sm"
             touchTarget={false}
             onClick={onWireframeToggle}
-            className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
+            className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-label font-medium transition-colors min-h-[28px] touch-manipulation ${
               wireframe
                 ? 'bg-accent text-on-accent hover:bg-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -289,7 +289,7 @@ export function PreviewControls({
             size="sm"
             touchTarget={false}
             onClick={onXrayToggle}
-            className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
+            className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-label font-medium transition-colors min-h-[28px] touch-manipulation ${
               xray
                 ? 'bg-accent text-on-accent hover:bg-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -310,7 +310,7 @@ export function PreviewControls({
               size="sm"
               touchTarget={false}
               onClick={onMeasureToggle}
-              className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
+              className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-label font-medium transition-colors min-h-[28px] touch-manipulation ${
                 measureActive
                   ? 'bg-accent text-on-accent hover:bg-accent'
                   : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -331,7 +331,7 @@ export function PreviewControls({
             size="sm"
             touchTarget={false}
             onClick={onProjectionToggle}
-            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-label font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
             title={t('binDesigner.toggleProjection')}
             aria-label={t('binDesigner.toggleProjectionKeyboardShortcut')}
             aria-pressed={projection === 'orthographic'}
@@ -357,7 +357,7 @@ export function PreviewControls({
                 size="sm"
                 touchTarget={false}
                 onClick={() => setColorPickerOpen((v) => !v)}
-                className="flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
+                className="flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-label font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
                 title={t('binDesigner.changePreviewColor')}
                 aria-label={t('binDesigner.changePreviewColor')}
                 aria-expanded={colorPickerOpen}
@@ -399,7 +399,7 @@ export function PreviewControls({
                   variant="ghost"
                   touchTarget={false}
                   onClick={() => onSplitViewModeChange(mode)}
-                  className={`flex items-center justify-center gap-1 rounded-none min-w-[44px] min-h-[44px] px-3 py-2 text-[11px] font-medium transition-colors touch-manipulation ${
+                  className={`flex items-center justify-center gap-1 rounded-none min-w-[44px] min-h-[44px] px-3 py-2 text-label font-medium transition-colors touch-manipulation ${
                     isActive
                       ? 'bg-accent text-on-accent hover:bg-accent'
                       : 'text-content-secondary hover:bg-surface-hover hover:text-content'

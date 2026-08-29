@@ -31,7 +31,7 @@ export function FractionalEdgeToggle({
           type="button"
           onClick={() => onChange(axis, 'start')}
           aria-pressed={value === 'start'}
-          className={`rounded-none px-2.5 py-1 text-[10px] font-normal transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
+          className={`rounded-none px-2.5 py-1 text-micro font-normal transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
             value === 'start' ? activeClass : inactiveClass
           }`}
           title={startTitle}
@@ -43,7 +43,7 @@ export function FractionalEdgeToggle({
           type="button"
           onClick={() => onChange(axis, 'end')}
           aria-pressed={value === 'end'}
-          className={`rounded-none px-2.5 py-1 text-[10px] font-normal border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
+          className={`rounded-none px-2.5 py-1 text-micro font-normal border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
             value === 'end' ? activeClass : inactiveClass
           }`}
           title={endTitle}

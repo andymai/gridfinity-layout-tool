@@ -143,7 +143,7 @@ export function TransformControls({
         type="number"
         size="sm"
         wrapperClassName="w-12"
-        className="text-[11px]"
+        className="text-label"
         value={angle}
         min={-359}
         max={359}

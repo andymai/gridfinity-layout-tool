@@ -122,7 +122,7 @@ export function EditableValueBadge({
           onKeyDown={handleInputKeyDown}
           disabled={disabled}
           className={cn(
-            'w-16 rounded-md bg-surface px-2 py-0.5 text-right text-sm font-semibold tabular-nums text-content outline-none',
+            'w-16 rounded-md bg-surface px-2 py-0.5 text-right text-value tabular-nums text-content outline-none',
             'ring-2 ring-accent'
           )}
           aria-label={label}
@@ -135,7 +135,7 @@ export function EditableValueBadge({
           onClick={startEditing}
           disabled={disabled}
           className={cn(
-            'rounded-md bg-surface-secondary px-2 py-0.5 text-sm font-semibold tabular-nums text-content',
+            'rounded-md bg-surface-secondary px-2 py-0.5 text-value tabular-nums text-content',
             interactiveTransition,
             !disabled && 'cursor-text hover:ring-1 hover:ring-stroke-subtle',
             disabled && 'cursor-not-allowed'

@@ -24,7 +24,7 @@ export function FeatureStatusBadge({ status }: FeatureStatusBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded ${config.className}`}
+      className={`inline-flex items-center px-2 py-0.5 text-micro font-semibold uppercase tracking-wide rounded ${config.className}`}
       aria-label={`Status: ${config.label}`}
     >
       {config.label}

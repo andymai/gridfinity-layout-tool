@@ -30,7 +30,7 @@ function chipLabel(preset: CutoutSizePreset): string {
   return String(preset.mm);
 }
 
-const CHIP_BASE = 'rounded border px-1.5 py-0.5 text-[11px] tabular-nums transition-colors';
+const CHIP_BASE = 'rounded border px-1.5 py-0.5 text-label tabular-nums transition-colors';
 const CHIP_INACTIVE =
   'border-stroke-subtle bg-surface-elevated text-content-secondary hover:border-accent/50 hover:text-content';
 
@@ -48,7 +48,7 @@ export function CutoutPresetChips({
 
   return (
     <div className="space-y-1">
-      <span className="block text-[10px] text-content-tertiary">
+      <span className="block text-micro text-content-tertiary">
         {t('binDesigner.cutouts.sizePreset')}
       </span>
       <div className="flex flex-wrap gap-1">

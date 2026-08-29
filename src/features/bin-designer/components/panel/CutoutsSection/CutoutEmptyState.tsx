@@ -93,10 +93,10 @@ export function CutoutEmptyState({ variant, onScanWithPhone }: CutoutEmptyStateP
                 {t('binDesigner.cutouts.scanImport.emptyCta')}
               </span>
             </Button>
-            <p className="mt-1.5 text-[11px] text-content-tertiary">
+            <p className="mt-1.5 text-label text-content-tertiary">
               {t('binDesigner.cutouts.scanImport.emptyHelp')}
             </p>
-            <p className="mt-1 flex items-center justify-center gap-1 text-[10px] text-content-disabled">
+            <p className="mt-1 flex items-center justify-center gap-1 text-micro text-content-disabled">
               <svg
                 className="h-3 w-3 shrink-0"
                 viewBox="0 0 24 24"
@@ -122,7 +122,7 @@ export function CutoutEmptyState({ variant, onScanWithPhone }: CutoutEmptyStateP
 function ShortcutHint({ shortcut, label }: { readonly shortcut: string; readonly label: string }) {
   return (
     <div className="flex items-center gap-2">
-      <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
+      <kbd className="px-1.5 py-0.5 rounded text-micro bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
         {shortcut}
       </kbd>
       <span>{label}</span>

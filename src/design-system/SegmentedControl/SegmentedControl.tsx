@@ -32,7 +32,7 @@ const segmentVariants = cva(
   {
     variants: {
       size: {
-        sm: ['text-[11px]', 'px-2', 'py-0.5'],
+        sm: ['text-label', 'px-2', 'py-0.5'],
         md: ['text-xs', 'px-2.5', 'py-1.5'],
       },
       activeStyle: {

@@ -511,14 +511,14 @@ export function CutoutShapeToolbar({
           onClick={handleGridSizeCycle}
           title={`${t('binDesigner.gridSize')}: ${gridSize}mm`}
         >
-          <span className={vertical ? 'text-[10px] font-mono' : 'text-xs font-mono'}>
+          <span className={vertical ? 'text-micro font-mono' : 'text-xs font-mono'}>
             {gridSize}mm
           </span>
         </Button>
       )}
 
       {activeShape !== null && !vertical && (
-        <span className="text-[11px] text-content-tertiary">
+        <span className="text-label text-content-tertiary">
           {activeShape === 'path'
             ? t('binDesigner.cutouts.clickToDrawPath')
             : t('binDesigner.cutouts.dragToDraw')}
@@ -526,7 +526,7 @@ export function CutoutShapeToolbar({
       )}
 
       {isRulerActive && !vertical && (
-        <span className="text-[11px] text-content-tertiary">
+        <span className="text-label text-content-tertiary">
           {t('binDesigner.cutouts.dragToMeasure')}
         </span>
       )}

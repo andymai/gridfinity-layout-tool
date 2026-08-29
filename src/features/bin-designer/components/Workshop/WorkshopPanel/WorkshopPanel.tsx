@@ -229,7 +229,7 @@ export function WorkshopPanel() {
                     aria-pressed={active}
                     title={t(tile.labelKey)}
                     className={
-                      'h-auto flex-col gap-1 rounded-lg px-1 py-2 text-[10px] font-medium ' +
+                      'h-auto flex-col gap-1 rounded-lg px-1 py-2 text-micro font-medium ' +
                       (active
                         ? 'bg-accent text-on-accent shadow-sm ring-1 ring-accent/40 hover:bg-accent'
                         : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content')

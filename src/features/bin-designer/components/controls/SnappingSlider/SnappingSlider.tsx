@@ -336,7 +336,7 @@ export function SnappingSlider({
                 variant="ghost"
                 onClick={() => handleTickClick(option.value)}
                 disabled={disabled}
-                className={`absolute -translate-x-1/2 min-h-[36px] flex items-end pb-0.5 rounded-none px-0 hover:bg-transparent text-[11px] tabular-nums transition-colors ${
+                className={`absolute -translate-x-1/2 min-h-[36px] flex items-end pb-0.5 rounded-none px-0 hover:bg-transparent text-label tabular-nums transition-colors ${
                   disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:text-content'
                 } ${isActive ? 'font-semibold text-accent' : 'text-content-tertiary'}`}
                 style={{ left: `${getPosition(option.value)}%` }}
@@ -355,7 +355,7 @@ export function SnappingSlider({
       </p>
 
       {/* Optional tip */}
-      {tip && <p className="mt-1 text-[10px] text-content-tertiary italic">{tip}</p>}
+      {tip && <p className="mt-1 text-micro text-content-tertiary italic">{tip}</p>}
     </div>
   );
 }

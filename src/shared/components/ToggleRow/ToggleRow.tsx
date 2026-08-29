@@ -78,7 +78,7 @@ export function ToggleRow({
           {label}
         </span>
         {shortcut && (
-          <kbd className="text-[9px] leading-none text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">
+          <kbd className="text-micro leading-none text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">
             {shortcut}
           </kbd>
         )}

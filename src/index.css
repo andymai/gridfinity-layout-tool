@@ -60,11 +60,6 @@
   --text-page--letter-spacing: -0.015em;
   --text-page--font-weight: 600;
 
-  /* TODO: remove when the text-xxs call sites migrate to text-micro in the
-     ramp-adoption PR. Until then this makes the previously dead class real. */
-  --text-xxs: 0.625rem;
-  --text-xxs--line-height: 0.875rem;
-
   /* Surface colors (backgrounds) - use as bg-surface, bg-surface-secondary, etc. */
   --color-surface: var(--bg-primary);
   --color-surface-secondary: var(--bg-secondary);

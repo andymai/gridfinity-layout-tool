@@ -170,7 +170,7 @@ export function InspectorDock({
           <Icon paths={ICON_PATHS.chevronDoubleLeft} />
         </IconButton>
         <span
-          className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-content-tertiary"
+          className="mt-3 text-micro font-semibold uppercase tracking-wider text-content-tertiary"
           style={{ writingMode: 'vertical-rl' }}
         >
           {t('binDesigner.cutoutEditor.inspectorTitle')}

@@ -121,10 +121,10 @@ export function ColorPicker({
         />
         <div className="flex flex-1 flex-col leading-tight min-w-0">
           <span className="text-xs font-medium text-content truncate">{zoneLabel}</span>
-          <span className="font-mono text-[11px] text-content-secondary tabular-nums">{color}</span>
+          <span className="font-mono text-label text-content-secondary tabular-nums">{color}</span>
         </div>
         {!isAtDefault && (
-          <span className="font-mono text-[10px] text-content-tertiary tabular-nums whitespace-nowrap">
+          <span className="font-mono text-micro text-content-tertiary tabular-nums whitespace-nowrap">
             {t('binDesigner.colors.resetDefaultHint', { color: defaultColor })}
           </span>
         )}
@@ -132,7 +132,7 @@ export function ColorPicker({
 
       {/* Preset grid */}
       <div>
-        <p className="text-[10px] font-medium uppercase tracking-wide text-content-tertiary mb-1.5">
+        <p className="text-micro font-medium uppercase tracking-wide text-content-tertiary mb-1.5">
           {t('binDesigner.colors.presets')}
         </p>
         <div className="grid grid-cols-5 gap-1.5">
@@ -169,7 +169,7 @@ export function ColorPicker({
       {/* Used in this design (always rendered; empty state when no other zones differ) */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
+          <p className="text-micro font-medium uppercase tracking-wide text-content-tertiary">
             {t('binDesigner.colors.usedInDesign')}
           </p>
           {bodyColor && (
@@ -179,7 +179,7 @@ export function ColorPicker({
               touchTarget={false}
               type="button"
               onClick={handleSuggest}
-              className="flex items-center gap-1 text-[10px] text-content-tertiary hover:text-content-secondary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent rounded px-1"
+              className="flex items-center gap-1 text-micro text-content-tertiary hover:text-content-secondary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent rounded px-1"
               title={t('binDesigner.colors.suggest')}
               aria-label={t('binDesigner.colors.suggest')}
             >
@@ -188,7 +188,7 @@ export function ColorPicker({
           )}
         </div>
         {otherColors.length === 0 && suggestions.length === 0 && recentColors.length === 0 ? (
-          <p className="text-[11px] text-content-tertiary italic">
+          <p className="text-label text-content-tertiary italic">
             {t('binDesigner.colors.usedInDesign.empty')}
           </p>
         ) : (
@@ -227,7 +227,7 @@ export function ColorPicker({
 
       {/* Custom tools */}
       <div>
-        <p className="text-[10px] font-medium uppercase tracking-wide text-content-tertiary mb-1.5">
+        <p className="text-micro font-medium uppercase tracking-wide text-content-tertiary mb-1.5">
           {t('binDesigner.colors.customTools')}
         </p>
         <div className="flex items-stretch gap-1.5">
@@ -285,7 +285,7 @@ export function ColorPicker({
           </IconButton>
         </div>
         {hexError && (
-          <p className="text-[10px] text-error mt-1.5">{t('binDesigner.colors.hexInvalid')}</p>
+          <p className="text-micro text-error mt-1.5">{t('binDesigner.colors.hexInvalid')}</p>
         )}
       </div>
     </div>

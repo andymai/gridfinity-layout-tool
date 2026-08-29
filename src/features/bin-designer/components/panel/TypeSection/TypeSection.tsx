@@ -78,7 +78,7 @@ export function TypeSection() {
               aria-pressed={active}
               onClick={() => handlers.applyPreset(id)}
               className={cn(
-                'h-auto rounded-full border px-2.5 py-1 text-[11px] transition-colors',
+                'h-auto rounded-full border px-2.5 py-1 text-label transition-colors',
                 active
                   ? 'border-accent bg-accent/15 text-accent hover:bg-accent/15 hover:text-accent'
                   : 'border-stroke-subtle bg-surface-elevated text-content-secondary hover:border-accent/50 hover:text-content'
@@ -89,7 +89,7 @@ export function TypeSection() {
           );
         })}
         {state.activePreset === null && (
-          <span className="self-center rounded-full border border-stroke-subtle px-2.5 py-1 text-[11px] text-content-tertiary">
+          <span className="self-center rounded-full border border-stroke-subtle px-2.5 py-1 text-label text-content-tertiary">
             {t('binDesigner.type.preset.custom')}
           </span>
         )}
@@ -100,10 +100,10 @@ export function TypeSection() {
       {state.stemWarning && (
         <Alert intent="warning">
           <div className="space-y-1.5">
-            <p className="text-[11px] leading-relaxed">{t('binDesigner.type.stemWarning')}</p>
+            <p className="text-label leading-relaxed">{t('binDesigner.type.stemWarning')}</p>
             {/* The measurement, not just the verdict: it is what tells the user
                 how far they have to move, and it came from the built geometry. */}
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
+            <p className="text-label leading-relaxed text-content-tertiary">
               {t('binDesigner.type.stemMeasured', {
                 stem: state.stemWarning.minStemMm.toFixed(2),
                 min: state.stemWarning.minPrintableStemMm.toFixed(1),
@@ -141,12 +141,12 @@ export function TypeSection() {
           control: three case options plus a 3x3 grid overflow the panel's width
           and clip each other's labels. */}
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[11px] text-content-tertiary">{t('binDesigner.type.anchor')}</span>
+        <span className="text-label text-content-tertiary">{t('binDesigner.type.anchor')}</span>
         <AnchorPicker value={style.anchor} onChange={handlers.setAnchor} />
       </div>
 
       {state.stencilSubstituted && (
-        <p className="text-[11px] leading-relaxed text-content-tertiary">
+        <p className="text-label leading-relaxed text-content-tertiary">
           {t('binDesigner.textMode.throughCutStencilNote')}
         </p>
       )}
@@ -178,7 +178,7 @@ export function TypeSection() {
               fullWidth
             />
           </LabelledStepper>
-          <p className="text-[11px] leading-relaxed text-content-tertiary">
+          <p className="text-label leading-relaxed text-content-tertiary">
             {t('binDesigner.type.fixedSizeHint')}
           </p>
         </>
@@ -212,7 +212,7 @@ export function TypeSection() {
             }))}
           />
           <div className="space-y-1">
-            <span className="block text-[11px] text-content-tertiary">
+            <span className="block text-label text-content-tertiary">
               {t('binDesigner.type.tracking')}
             </span>
             <Slider

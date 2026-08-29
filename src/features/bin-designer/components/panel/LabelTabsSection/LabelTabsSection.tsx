@@ -536,7 +536,7 @@ export function LabelTabsSection() {
                     checked={state.lipEnabled}
                     onChange={handlers.toggleLabelLip}
                   />
-                  <p className="mt-0.5 pl-7 text-[11px] leading-snug text-content-tertiary">
+                  <p className="mt-0.5 pl-7 text-label leading-snug text-content-tertiary">
                     {t('binDesigner.tabLipHint')}
                   </p>
                   {state.lipEnabled && (

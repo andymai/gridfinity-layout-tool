@@ -212,7 +212,7 @@ export function GridCell({
       {/* Dimension label - shown on hover only (divider mode) */}
       {dimensionLabel && (
         <span
-          className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-bold tabular-nums transition-opacity duration-100"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center text-micro font-bold tabular-nums transition-opacity duration-100"
           style={{
             color: 'var(--color-accent)',
             opacity: showDimensionLabel ? 1 : 0,
@@ -227,7 +227,7 @@ export function GridCell({
       {showLabelText && (
         <span
           title={trimmedLabel}
-          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1 text-center text-[10px] font-semibold leading-tight"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1 text-center text-micro font-semibold leading-tight"
           style={{ color: getContrastingTextColor(previewColor) }}
         >
           {trimmedLabel}
@@ -236,7 +236,7 @@ export function GridCell({
       {/* Empty compartment: show its number while labeling. */}
       {showEmptyNumber && (
         <span
-          className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-medium tabular-nums"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center text-micro font-medium tabular-nums"
           style={{ color: getContrastingTextColor(previewColor), opacity: 0.55 }}
         >
           {displayNumber}

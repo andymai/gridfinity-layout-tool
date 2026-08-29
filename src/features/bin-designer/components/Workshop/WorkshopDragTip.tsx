@@ -34,7 +34,7 @@ export function WorkshopDragTip({ placed, mode, baseW, baseD }: WorkshopDragTipP
       center
       style={{ pointerEvents: 'none' }}
     >
-      <div className="whitespace-nowrap rounded bg-surface-elevated/95 px-1.5 py-0.5 font-mono text-[11px] text-content shadow-sm ring-1 ring-stroke-subtle">
+      <div className="whitespace-nowrap rounded bg-surface-elevated/95 px-1.5 py-0.5 font-mono text-label text-content shadow-sm ring-1 ring-stroke-subtle">
         {text}
       </div>
     </Html>

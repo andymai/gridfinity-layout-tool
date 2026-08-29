@@ -48,7 +48,7 @@ export function SplitOptionsSection() {
       />
 
       {showNozzleNotice && (
-        <p className="text-[11px] leading-relaxed text-content-tertiary">
+        <p className="text-label leading-relaxed text-content-tertiary">
           {t('binDesigner.splitConnectorNozzleNotice', { nozzle: nozzleSizeMm })}
         </p>
       )}

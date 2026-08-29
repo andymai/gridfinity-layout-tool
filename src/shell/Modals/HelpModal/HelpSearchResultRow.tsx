@@ -72,7 +72,7 @@ function KindBadge({ kind }: { kind: HelpEntry['kind'] }) {
         ? t('help.kind.feature')
         : t('help.kind.tip');
   return (
-    <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-elevated text-content-tertiary">
+    <span className="text-micro uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-elevated text-content-tertiary">
       {label}
     </span>
   );

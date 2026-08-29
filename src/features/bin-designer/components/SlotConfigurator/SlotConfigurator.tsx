@@ -357,7 +357,7 @@ export function SlotConfigurator() {
   return (
     <div className="space-y-3">
       {wallTooThin && (
-        <p className="rounded bg-warning/10 px-2 py-1.5 text-[11px] text-warning">
+        <p className="rounded bg-warning/10 px-2 py-1.5 text-label text-warning">
           {t('binDesigner.slotWallTooThin', { min: MIN_WALL_FOR_SLOTS })}
         </p>
       )}
@@ -372,7 +372,7 @@ export function SlotConfigurator() {
               type="button"
               variant="ghost"
               onClick={() => setLayout(l)}
-              className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+              className={`rounded px-2 py-0.5 text-label font-medium transition-colors ${
                 layout === l
                   ? 'bg-accent text-on-accent hover:bg-accent'
                   : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
@@ -398,7 +398,7 @@ export function SlotConfigurator() {
                   type="button"
                   variant="ghost"
                   onClick={() => setDirection(direction)}
-                  className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                  className={`rounded px-2 py-0.5 text-label font-medium transition-colors ${
                     activeDirection === direction
                       ? 'bg-accent text-on-accent hover:bg-accent'
                       : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
@@ -424,7 +424,7 @@ export function SlotConfigurator() {
                       type="button"
                       variant="ghost"
                       onClick={() => setCrossStyle(style)}
-                      className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                      className={`rounded px-2 py-0.5 text-label font-medium transition-colors ${
                         requestedCrossStyle === style
                           ? 'bg-accent text-on-accent hover:bg-accent'
                           : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
@@ -449,7 +449,7 @@ export function SlotConfigurator() {
                         type="button"
                         variant="ghost"
                         onClick={() => setLongAxis(axis)}
-                        className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                        className={`rounded px-2 py-0.5 text-label font-medium transition-colors ${
                           longAxis === axis
                             ? 'bg-accent text-on-accent hover:bg-accent'
                             : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
@@ -462,7 +462,7 @@ export function SlotConfigurator() {
                 </div>
               )}
               {insertTooThin && (
-                <p className="rounded bg-warning/10 px-2 py-1.5 text-[11px] text-warning">
+                <p className="rounded bg-warning/10 px-2 py-1.5 text-label text-warning">
                   {t('binDesigner.slotInsertTooThin', { min: MIN_DIVIDER_FOR_RECEPTACLES })}
                 </p>
               )}
@@ -484,7 +484,7 @@ export function SlotConfigurator() {
                         variant="ghost"
                         disabled={!partialAvailable}
                         onClick={() => setPartialStyle(style)}
-                        className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                        className={`rounded px-2 py-0.5 text-label font-medium transition-colors ${
                           active
                             ? 'bg-accent text-on-accent hover:bg-accent'
                             : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
@@ -497,12 +497,12 @@ export function SlotConfigurator() {
                 </div>
               </div>
               {!partialAvailable && (
-                <p className="text-[11px] text-content-tertiary">
+                <p className="text-label text-content-tertiary">
                   {t('binDesigner.slotPartialNeedsLap')}
                 </p>
               )}
               {snappableTooThin && (
-                <p className="rounded bg-warning/10 px-2 py-1.5 text-[11px] text-warning">
+                <p className="rounded bg-warning/10 px-2 py-1.5 text-label text-warning">
                   {t('binDesigner.slotSnapTooThin', { min: MIN_DIVIDER_FOR_SNAP })}
                 </p>
               )}

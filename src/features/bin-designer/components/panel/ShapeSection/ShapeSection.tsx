@@ -52,12 +52,12 @@ export function ShapeSection() {
               variant="ghost"
               onClick={handlers.resetShape}
               disabled={!state.isCustom}
-              className="ml-auto px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80 disabled:cursor-not-allowed disabled:opacity-50"
+              className="ml-auto px-0 py-0 text-label font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t('common.reset')}
             </Button>
           </div>
-          <p className="text-[11px] text-content-tertiary">{t('binDesigner.shape.gridHelp')}</p>
+          <p className="text-label text-content-tertiary">{t('binDesigner.shape.gridHelp')}</p>
           <ShapeGrid
             mask={state.mask}
             onToggleCell={handlers.toggleCell}
@@ -65,9 +65,7 @@ export function ShapeSection() {
             cellLabel={cellLabel}
           />
           {state.isCustom && (
-            <p className="text-[11px] text-content-tertiary">
-              {t('binDesigner.shape.custom.hint')}
-            </p>
+            <p className="text-label text-content-tertiary">{t('binDesigner.shape.custom.hint')}</p>
           )}
         </div>
       }

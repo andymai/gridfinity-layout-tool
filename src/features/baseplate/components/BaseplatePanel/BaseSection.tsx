@@ -190,7 +190,7 @@ export function BaseSection() {
                         }
                         label={t('baseplate.connectorSlotsAllEdges')}
                       />
-                      <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
+                      <p className="text-label leading-relaxed text-content-tertiary pl-6">
                         {t('baseplate.connectorSlotsAllEdgesHint')}
                       </p>
                     </div>
@@ -204,7 +204,7 @@ export function BaseSection() {
                   />
                   <ConnectorSampleButton />
                   {nozzleSizeMm > NOZZLE_BASELINE && (
-                    <p className="text-[11px] leading-relaxed text-content-tertiary">
+                    <p className="text-label leading-relaxed text-content-tertiary">
                       {t('baseplate.connectorNozzleNotice', { nozzle: nozzleSizeMm })}
                     </p>
                   )}
@@ -274,7 +274,7 @@ export function BaseSection() {
                   onChange={() => updateScrewHoles({ enabled: !screwHolesOn })}
                   valueSummary={screwSummary}
                   primaryControls={
-                    <p className="text-[11px] leading-relaxed text-content-tertiary">
+                    <p className="text-label leading-relaxed text-content-tertiary">
                       {t('baseplate.screwHoles.info')}
                     </p>
                   }

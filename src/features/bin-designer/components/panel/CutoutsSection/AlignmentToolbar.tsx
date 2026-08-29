@@ -236,7 +236,7 @@ export function AlignmentToolbar({
 
   return (
     <div className="space-y-2 rounded border border-stroke-subtle p-2">
-      <div className="text-[11px] text-content-tertiary">
+      <div className="text-label text-content-tertiary">
         {t('binDesigner.cutouts.nSelected', { count: selectedIds.length })}
       </div>
 
@@ -316,7 +316,7 @@ export function AlignmentToolbar({
         >
           {t('binDesigner.cutouts.autoArrange')}
         </Button>
-        <label className="flex items-center gap-1 text-[11px] text-content-tertiary">
+        <label className="flex items-center gap-1 text-label text-content-tertiary">
           {t('binDesigner.cutouts.gap')}
           <Input
             type="number"
@@ -334,7 +334,7 @@ export function AlignmentToolbar({
 
       {/* Pathfinder (Adobe Illustrator-style boolean ops) */}
       <div className="space-y-1">
-        <div className="text-[10px] uppercase tracking-wider text-content-tertiary">
+        <div className="text-micro uppercase tracking-wider text-content-tertiary">
           {t('binDesigner.cutouts.pathfinder.title')}
         </div>
         <PathfinderControls
@@ -347,7 +347,7 @@ export function AlignmentToolbar({
 
       {/* Transform: flip + rotate */}
       <div className="space-y-1">
-        <div className="text-[10px] uppercase tracking-wider text-content-tertiary">
+        <div className="text-micro uppercase tracking-wider text-content-tertiary">
           {t('binDesigner.cutouts.transform.title')}
         </div>
         <TransformControls
@@ -361,7 +361,7 @@ export function AlignmentToolbar({
 
       {/* Arrange: z-order */}
       <div className="space-y-1">
-        <div className="text-[10px] uppercase tracking-wider text-content-tertiary">
+        <div className="text-micro uppercase tracking-wider text-content-tertiary">
           {t('binDesigner.cutouts.arrange.title')}
         </div>
         <ArrangeControls selectedIds={selectedIds} onReorder={onReorder} />

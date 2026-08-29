@@ -184,7 +184,7 @@ describe('SegmentedControl', () => {
 
   it('applies compact text size for size sm', () => {
     render(<SegmentedControl {...defaultProps} size="sm" />);
-    expect(screen.getByRole('radio', { name: 'List' }).className).toContain('text-[11px]');
+    expect(screen.getByRole('radio', { name: 'List' }).className).toContain('text-label');
   });
 
   it('stretches segments equally when fullWidth', () => {

@@ -32,7 +32,7 @@ export function BinFeaturesSection() {
 
   return (
     <div className="space-y-2 border-b border-stroke-subtle pb-3 pt-3">
-      <span className="block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
         {t('binDesigner.cutoutEditor.binFeatures')}
       </span>
 
@@ -48,7 +48,7 @@ export function BinFeaturesSection() {
           The Lid section carries that warning in the main panel; it is off
           screen here, so the lid would otherwise vanish unexplained. */}
       {lidEnabled && !stackingLip && (
-        <p className="text-[11px] leading-relaxed text-content-tertiary">
+        <p className="text-label leading-relaxed text-content-tertiary">
           {t('binDesigner.cutoutEditor.lipOffPausesLid')}
         </p>
       )}

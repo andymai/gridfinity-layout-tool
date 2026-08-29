@@ -83,7 +83,7 @@ export function CutoutColorControls({
                 disabled={disabled}
                 onClick={() => setCutoutColor(ids, { colorScope: scope })}
                 aria-pressed={activeScope === scope}
-                className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(
+                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(
                   activeScope === scope
                 )}`}
               >

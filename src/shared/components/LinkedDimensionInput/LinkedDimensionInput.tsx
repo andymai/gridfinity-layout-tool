@@ -142,7 +142,7 @@ export function LinkedDimensionInput({
         className={inputClass}
         aria-label={widthAriaLabel}
       />
-      <span className="text-[10px] text-content-tertiary">×</span>
+      <span className="text-micro text-content-tertiary">×</span>
       <DeferredNumberInput
         value={depth}
         onChange={handleDepthChange}

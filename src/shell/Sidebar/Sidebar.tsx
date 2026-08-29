@@ -423,7 +423,7 @@ export function Sidebar() {
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
                     <div className="pt-2 space-y-1.5">
-                      <div className="text-content-tertiary text-xxs mb-1">
+                      <div className="text-content-tertiary text-micro mb-1">
                         {t('sidebar.halfUnitEdgePosition')}
                       </div>
                       {hasFractionalWidth && (

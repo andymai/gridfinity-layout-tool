@@ -45,7 +45,7 @@ interface ShapeListRowProps {
 }
 
 const ROW =
-  'group flex w-full cursor-grab items-center gap-1 rounded px-1 py-1 text-left text-[11px] active:cursor-grabbing';
+  'group flex w-full cursor-grab items-center gap-1 rounded px-1 py-1 text-left text-label active:cursor-grabbing';
 
 function EyeIcon({ off }: { readonly off: boolean }) {
   return (
@@ -228,7 +228,7 @@ export function ShapeListRow({
             onKeyDown={handleKeyDown}
             size="sm"
             wrapperClassName="min-w-0 flex-1 ring-1 ring-accent"
-            className="px-1 text-[11px]"
+            className="px-1 text-label"
           />
         ) : (
           <Button
@@ -236,7 +236,7 @@ export function ShapeListRow({
             variant="ghost"
             onClick={(e) => onSelect(ids, e.shiftKey || e.metaKey || e.ctrlKey)}
             onDoubleClick={() => setEditing(true)}
-            className="min-w-0 flex-1 justify-start truncate px-0.5 py-0 text-left text-[11px] font-normal"
+            className="min-w-0 flex-1 justify-start truncate px-0.5 py-0 text-left text-label font-normal"
             title={label}
           >
             <span className="truncate">{label}</span>
@@ -247,7 +247,7 @@ export function ShapeListRow({
             A container carries no op and stays visually quiet. */}
         {isGroup && node.groupKind === 'boolean' && node.op && (
           <span
-            className="flex-shrink-0 rounded bg-surface-raised px-1 text-[9px] uppercase tracking-wide text-content-tertiary"
+            className="flex-shrink-0 rounded bg-surface-raised px-1 text-micro uppercase tracking-wide text-content-tertiary"
             title={t(`binDesigner.cutouts.pathfinder.${node.op}`)}
           >
             {t(`binDesigner.cutouts.pathfinder.${node.op}`)}

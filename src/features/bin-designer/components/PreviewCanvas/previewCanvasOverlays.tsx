@@ -40,7 +40,7 @@ export function TouchHint() {
       role="status"
       aria-label={t('binDesigner.touchGestureHints')}
     >
-      <div className="flex items-center gap-3 rounded-full bg-black/70 px-4 py-2 text-[11px] text-white shadow-lg backdrop-blur-sm">
+      <div className="flex items-center gap-3 rounded-full bg-black/70 px-4 py-2 text-label text-white shadow-lg backdrop-blur-sm">
         <span>{t('binDesigner.dragToOrbit')}</span>
         <span className="h-3 w-px bg-white/30" />
         <span>{t('binDesigner.pinchToZoom')}</span>

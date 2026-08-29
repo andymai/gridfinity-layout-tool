@@ -70,7 +70,7 @@ function CompatibilityIssue({
   const dotColor = isBlocker ? 'bg-danger' : 'bg-warning';
   const textColor = isBlocker ? 'text-danger' : 'text-warning';
   return (
-    <li className={`flex items-start gap-1.5 text-[11px] leading-relaxed ${textColor}`}>
+    <li className={`flex items-start gap-1.5 text-label leading-relaxed ${textColor}`}>
       <span className={`mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full ${dotColor}`} />
       <span className="flex-1">{message}</span>
       {fixable && (
@@ -79,7 +79,7 @@ function CompatibilityIssue({
           variant="ghost"
           onClick={() => onFix(issue.id)}
           aria-label={t('binDesigner.lid.compat.fixAriaLabel', { detail: message })}
-          className="shrink-0 rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-content-secondary hover:bg-surface-hover"
+          className="shrink-0 rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-micro font-medium text-content-secondary hover:bg-surface-hover"
         >
           {t('binDesigner.lid.compat.fixButton')}
         </Button>
@@ -188,7 +188,7 @@ export function LidSection() {
               share the list and are color-coded by severity. */}
           {state.compatibilityIssues.length > 0 && (
             <div className="space-y-1 rounded-md border border-stroke-subtle bg-surface-secondary px-2.5 py-2">
-              <p className="text-[11px] font-medium text-content-secondary">
+              <p className="text-label font-medium text-content-secondary">
                 {t('binDesigner.lid.compat.heading')}
               </p>
               <ul className="space-y-1">

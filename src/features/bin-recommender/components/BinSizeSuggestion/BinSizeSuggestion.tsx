@@ -85,7 +85,7 @@ export function BinSizeSuggestion({
           {t('inspector.sizeSuggestionApply')}
         </Button>
       ) : (
-        <span className="text-[11px] text-content-tertiary whitespace-nowrap">
+        <span className="text-label text-content-tertiary whitespace-nowrap">
           {t('inspector.sizeSuggestionNoFit')}
         </span>
       )}

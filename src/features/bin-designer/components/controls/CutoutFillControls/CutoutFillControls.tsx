@@ -50,7 +50,7 @@ export function CutoutFillControls() {
   return (
     <div className="space-y-2">
       <div className="space-y-1">
-        <span className="block text-[10px] text-content-tertiary">
+        <span className="block text-micro text-content-tertiary">
           {t('binDesigner.cutouts.fillMeasuredFrom')}
         </span>
         <div
@@ -101,7 +101,7 @@ export function CutoutFillControls() {
         />
       )}
 
-      <p className="text-[10px] leading-relaxed text-content-disabled">
+      <p className="text-micro leading-relaxed text-content-disabled">
         {fromFloor ? t('binDesigner.cutouts.fillHintFloor') : t('binDesigner.cutouts.fillHintRim')}
       </p>
     </div>

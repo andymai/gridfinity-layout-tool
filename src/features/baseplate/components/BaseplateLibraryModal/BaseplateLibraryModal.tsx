@@ -295,7 +295,7 @@ function BaseplateCard({
         )}
         {isActive && (
           <span
-            className="absolute top-1.5 right-1.5 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-on-dark"
+            className="absolute top-1.5 right-1.5 rounded bg-accent px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-on-dark"
             aria-label={t('baseplate.library.currentlyActive')}
           >
             {t('baseplate.library.active')}

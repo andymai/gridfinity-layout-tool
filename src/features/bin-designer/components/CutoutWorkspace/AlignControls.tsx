@@ -80,7 +80,7 @@ export function AlignControls({
   return (
     <div className="space-y-1.5">
       <div>
-        <span className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
+        <span className="mb-1 block text-micro font-medium uppercase tracking-wide text-content-tertiary">
           {t('binDesigner.cutouts.align.title')}
         </span>
         <div className="flex gap-0.5">
@@ -102,7 +102,7 @@ export function AlignControls({
       </div>
 
       <div>
-        <span className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
+        <span className="mb-1 block text-micro font-medium uppercase tracking-wide text-content-tertiary">
           {t('binDesigner.cutouts.distribute.title')}
         </span>
         <div className="flex gap-0.5">

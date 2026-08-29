@@ -139,7 +139,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
           className="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center bg-accent shadow-sm"
           aria-hidden="true"
         >
-          <span className="text-[10px] font-bold text-black">{selectedBins.length}</span>
+          <span className="text-micro font-bold text-black">{selectedBins.length}</span>
         </div>
         <h2 className="flex-1 text-lg font-semibold text-content">{t('inspector.binsSelected')}</h2>
         {onClose && (

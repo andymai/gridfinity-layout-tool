@@ -83,7 +83,7 @@ export function DimensionsSection() {
           2.5×2 bin put its half foot on either side without rotating the print. */}
       {(state.hasFractionalWidth || state.hasFractionalDepth) && (
         <div className="space-y-1.5 text-xs">
-          <div className="text-content-tertiary text-[10px]">
+          <div className="text-content-tertiary text-micro">
             {t('sidebar.halfUnitEdgePosition')}
           </div>
           {state.hasFractionalWidth && (
@@ -120,7 +120,7 @@ export function DimensionsSection() {
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="text-xs text-content-tertiary">{t('common.height')}</span>
-            <span className="text-[11px] tabular-nums text-content-tertiary">{state.height}u</span>
+            <span className="text-label tabular-nums text-content-tertiary">{state.height}u</span>
           </div>
           <Stepper
             value={state.height}
@@ -147,7 +147,7 @@ export function DimensionsSection() {
           >
             {t('binDesigner.extraWallHeight')}
           </span>
-          <span className="text-[11px] tabular-nums text-content-tertiary">
+          <span className="text-label tabular-nums text-content-tertiary">
             {state.extraWallHeightMm} mm
           </span>
         </div>

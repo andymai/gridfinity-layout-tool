@@ -158,7 +158,7 @@ export function DialogHeader({
             id={titleId}
             className={cn(
               'font-semibold text-content',
-              density === 'compact' ? 'truncate text-base' : 'text-xl'
+              density === 'compact' ? 'truncate text-title' : 'text-page'
             )}
           >
             {title}

@@ -205,7 +205,7 @@ export function BentoDock({
           <Icon paths={ICON_PATHS.chevronDoubleLeft} />
         </IconButton>
         <span
-          className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-content-tertiary"
+          className="mt-3 text-micro font-semibold uppercase tracking-wider text-content-tertiary"
           style={{ writingMode: 'vertical-rl' }}
         >
           {t('binDesigner.bento.dockTitle')}
@@ -322,7 +322,7 @@ export function BentoDock({
                       {row.label ||
                         t('binDesigner.bento.compartmentFallbackName', { number: row.number })}
                     </span>
-                    <span className="flex-shrink-0 tabular-nums text-[10px] text-content-tertiary">
+                    <span className="flex-shrink-0 tabular-nums text-micro text-content-tertiary">
                       {t('binDesigner.bento.sizeMm', {
                         w: Math.round(row.rect.w * cellWmm),
                         d: Math.round(row.rect.h * cellHmm),
@@ -339,7 +339,7 @@ export function BentoDock({
         {selectedRow && (
           <div className="mt-4 flex flex-col gap-4 border-t border-stroke-subtle pt-3">
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+              <label className="mb-1 block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
                 {t('binDesigner.bento.labelField')}
               </label>
               {/* Full-width tabs print `label.rowTexts`, one caption per ROW,
@@ -347,7 +347,7 @@ export function BentoDock({
                   (#2897). Disabled rather than hidden — the stored text is kept
                   and comes back when span is switched off. */}
               {labelSpan ? (
-                <p className="text-[10px] leading-relaxed text-content-tertiary">
+                <p className="text-micro leading-relaxed text-content-tertiary">
                   {t('binDesigner.bento.labelSpanDisabled')}
                 </p>
               ) : (
@@ -361,7 +361,7 @@ export function BentoDock({
                     focusToken={labelFocusToken}
                   />
                   {!labelEnabled && (
-                    <p className="mt-1 text-[10px] leading-relaxed text-content-tertiary">
+                    <p className="mt-1 text-micro leading-relaxed text-content-tertiary">
                       {t('binDesigner.bento.labelTabsAuto')}
                     </p>
                   )}
@@ -401,11 +401,11 @@ export function BentoDock({
 
             {/* Wall shift/angle — the canvas shows the result, this edits it */}
             <div className="flex flex-col gap-3">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+              <span className="text-micro font-semibold uppercase tracking-wider text-content-tertiary">
                 {t('binDesigner.bento.wallsTitle')}
               </span>
               {selectedWalls.length === 0 ? (
-                <p className="text-[10px] leading-relaxed text-content-tertiary">
+                <p className="text-micro leading-relaxed text-content-tertiary">
                   {t('binDesigner.bento.wallsEmptyHint')}
                 </p>
               ) : (
@@ -435,7 +435,7 @@ export function BentoDock({
                             variant="ghost"
                             size="sm"
                             onClick={() => tilt.handlers.resetRow(wall)}
-                            className="h-auto px-1.5 py-0.5 text-[10px] text-accent hover:bg-transparent hover:text-accent/80"
+                            className="h-auto px-1.5 py-0.5 text-micro text-accent hover:bg-transparent hover:text-accent/80"
                           >
                             {t('common.reset')}
                           </Button>
@@ -443,7 +443,7 @@ export function BentoDock({
                       </div>
                       {wall.geometry ? (
                         <div className="grid grid-cols-2 gap-2">
-                          <label className="flex flex-col gap-0.5 text-[10px] text-content-tertiary">
+                          <label className="flex flex-col gap-0.5 text-micro text-content-tertiary">
                             {t('binDesigner.bento.wallShift')}
                             <Stepper
                               value={wall.shiftMm}
@@ -468,7 +468,7 @@ export function BentoDock({
                               aria-label={t('binDesigner.bento.wallShift')}
                             />
                           </label>
-                          <label className="flex flex-col gap-0.5 text-[10px] text-content-tertiary">
+                          <label className="flex flex-col gap-0.5 text-micro text-content-tertiary">
                             {t('binDesigner.bento.wallAngle')}
                             <Stepper
                               value={wall.angleDeg}
@@ -495,7 +495,7 @@ export function BentoDock({
                           </label>
                         </div>
                       ) : (
-                        <p className="text-[10px] text-content-tertiary">
+                        <p className="text-micro text-content-tertiary">
                           {t('binDesigner.bento.wallTooSmall')}
                         </p>
                       )}
