@@ -11,13 +11,13 @@ import {
   Alert,
   Button,
   Checkbox,
-  Collapsible,
   SegmentedControl,
   Select,
   Slider,
   Stepper,
 } from '@/design-system';
 import type { ReactNode } from 'react';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import type { SegmentedControlOption } from '@/design-system';
 import {
   TEXT_CASES,
@@ -197,7 +197,7 @@ export function TypeSection() {
         </>
       )}
 
-      <Collapsible title={t('binDesigner.type.advanced')} defaultExpanded={false}>
+      <MoreDisclosure label={t('binDesigner.type.advanced')}>
         <div className="space-y-3 pt-2">
           <SegmentedControl
             aria-label={t('binDesigner.textMode')}
@@ -289,7 +289,7 @@ export function TypeSection() {
             </LabelledStepper>
           )}
         </div>
-      </Collapsible>
+      </MoreDisclosure>
     </div>
   );
 }

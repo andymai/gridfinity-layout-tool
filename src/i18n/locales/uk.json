@@ -4484,5 +4484,6 @@
   "binDesigner.panel.collapse": "Згорнути панель",
   "binDesigner.panel.expand": "Розгорнути панель",
   "binDesigner.panel.resize": "Змінити розмір панелі",
-  "binDesigner.panel.railTitle": "Налаштування"
+  "binDesigner.panel.railTitle": "Налаштування",
+  "common.more": "Більше"
 }

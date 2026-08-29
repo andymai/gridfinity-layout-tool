@@ -9,14 +9,8 @@
  */
 
 import { FeatureToggle } from '../FeatureToggle';
-import {
-  ShapePicker,
-  SideSelector,
-  StepperField,
-  AdvancedDisclosure,
-  LinkIcon,
-  type SideState,
-} from '../shared';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
+import { ShapePicker, SideSelector, StepperField, LinkIcon, type SideState } from '../shared';
 import { RulerIcon } from '@/design-system/Icon';
 import { Button, Checkbox } from '@/design-system';
 import { clamp } from '@/shared/utils/math';
@@ -210,10 +204,10 @@ export function HandleSection() {
                 ))}
 
               {/* Advanced: vertical position + count, collapsible */}
-              <AdvancedDisclosure
+              <MoreDisclosure
                 label={`${t('binDesigner.handles.verticalPosition')}:`}
                 summary={advancedSummary}
-                forceOpen={advancedForceOpen}
+                nonDefault={advancedForceOpen}
               >
                 <div className="flex items-end gap-2">
                   <StepperField
@@ -253,7 +247,7 @@ export function HandleSection() {
                     aria-label={t('binDesigner.handles.countAria')}
                   />
                 </div>
-              </AdvancedDisclosure>
+              </MoreDisclosure>
 
               {/* Behavior toggles — separated visually */}
               <div className="space-y-2 border-t border-stroke-subtle/50 pt-2">

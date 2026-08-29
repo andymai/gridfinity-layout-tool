@@ -4484,5 +4484,6 @@
   "binDesigner.panel.collapse": "패널 접기",
   "binDesigner.panel.expand": "패널 펼치기",
   "binDesigner.panel.resize": "패널 크기 조절",
-  "binDesigner.panel.railTitle": "설정"
+  "binDesigner.panel.railTitle": "설정",
+  "common.more": "더보기"
 }

@@ -4484,5 +4484,6 @@
   "binDesigner.panel.collapse": "パネルを折りたたむ",
   "binDesigner.panel.expand": "パネルを展開",
   "binDesigner.panel.resize": "パネルのサイズを変更",
-  "binDesigner.panel.railTitle": "設定"
+  "binDesigner.panel.railTitle": "設定",
+  "common.more": "その他"
 }

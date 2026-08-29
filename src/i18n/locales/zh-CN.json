@@ -4484,5 +4484,6 @@
   "binDesigner.panel.collapse": "折叠面板",
   "binDesigner.panel.expand": "展开面板",
   "binDesigner.panel.resize": "调整面板大小",
-  "binDesigner.panel.railTitle": "设置"
+  "binDesigner.panel.railTitle": "设置",
+  "common.more": "更多"
 }

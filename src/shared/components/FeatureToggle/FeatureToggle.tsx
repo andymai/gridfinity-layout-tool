@@ -1,14 +1,14 @@
 /**
- * Feature toggle with "Customize" inline expand pattern.
+ * Feature toggle: a switch row with optional inline controls.
  *
- * Shows a toggle switch with optional default value summary.
- * When enabled, optionally shows a "Customize" link that reveals
- * detailed sub-controls inline below the toggle.
+ * `primaryControls` show whenever the feature is on; `children` fold behind
+ * the shared MoreDisclosure idiom.
  */
 
-import { useState, useId, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 
 interface FeatureToggleProps {
   /** Display label for the feature */
@@ -46,8 +46,6 @@ export function FeatureToggle({
   badge,
 }: FeatureToggleProps) {
   const t = useTranslation();
-  const [customizeOpen, setCustomizeOpen] = useState(false);
-  const contentId = useId();
 
   const isDisabled = !!disabledReason || comingSoon;
   const isActive = checked && !isDisabled;
@@ -99,38 +97,15 @@ export function FeatureToggle({
       {/* Primary controls (shown immediately when enabled, no Customize needed) */}
       {isActive && primaryControls && <div className="mt-1.5 space-y-3">{primaryControls}</div>}
 
-      {/* Value summary + Customize link (shown when enabled and has children) */}
+      {/* Detailed controls behind the shared disclosure idiom. */}
       {isActive && children && (
-        <div className="ml-1 mt-0.5">
-          <div className="flex items-center gap-2">
-            {valueSummary && !customizeOpen && (
-              <span className="text-label text-content-tertiary">{valueSummary}</span>
-            )}
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={() => setCustomizeOpen(!customizeOpen)}
-              aria-expanded={customizeOpen}
-              aria-controls={contentId}
-              className="text-xs font-medium text-accent px-0 py-2 -my-2 h-auto hover:bg-transparent hover:text-accent/80 transition-colors"
-            >
-              {customizeOpen ? t('common.done') : (customizeLabel ?? t('common.customize'))}
-            </Button>
-          </div>
-
-          {/* Inline expand for detailed controls */}
-          <div
-            id={contentId}
-            role="region"
-            aria-label={`${label} settings`}
-            aria-hidden={!customizeOpen}
-            className={`overflow-hidden transition-all duration-200 ${
-              customizeOpen ? 'opacity-100 max-h-[500px] mt-2' : 'opacity-0 max-h-0'
-            }`}
-          >
-            <div className="space-y-3 border-l-2 border-accent/20 pl-3 pb-1">{children}</div>
-          </div>
-        </div>
+        <MoreDisclosure
+          className="ml-1 mt-0.5"
+          label={customizeLabel ?? t('common.customize')}
+          summary={valueSummary}
+        >
+          {children}
+        </MoreDisclosure>
       )}
     </div>
   );

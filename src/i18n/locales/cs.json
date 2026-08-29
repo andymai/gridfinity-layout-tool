@@ -4484,5 +4484,6 @@
   "binDesigner.panel.collapse": "Sbalit panel",
   "binDesigner.panel.expand": "Rozbalit panel",
   "binDesigner.panel.resize": "Změnit velikost panelu",
-  "binDesigner.panel.railTitle": "Nastavení"
+  "binDesigner.panel.railTitle": "Nastavení",
+  "common.more": "Více"
 }

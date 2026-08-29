@@ -8,16 +8,10 @@
  */
 
 import { useTranslation } from '@/i18n';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { Button, Checkbox } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
-import {
-  ShapePicker,
-  SideSelector,
-  StepperField,
-  AdvancedDisclosure,
-  LinkIcon,
-  type SideState,
-} from '../shared';
+import { ShapePicker, SideSelector, StepperField, LinkIcon, type SideState } from '../shared';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import type {
@@ -82,10 +76,10 @@ function CornersDisclosure({
   const summary = `${topText} / ${isAuto ? autoLabel : `${bottom}mm`}`;
 
   return (
-    <AdvancedDisclosure
+    <MoreDisclosure
       label={`${t('binDesigner.wallCutouts.corners')}:`}
       summary={summary}
-      forceOpen={top > 0 || !isAuto}
+      nonDefault={top > 0 || !isAuto}
     >
       <div className="flex items-end gap-2">
         <StepperField
@@ -136,7 +130,7 @@ function CornersDisclosure({
           {autoLabel}
         </Button>
       </div>
-    </AdvancedDisclosure>
+    </MoreDisclosure>
   );
 }
 
@@ -246,10 +240,10 @@ function PositionDisclosure({
     : alignmentLabel;
 
   return (
-    <AdvancedDisclosure
+    <MoreDisclosure
       label={`${t('binDesigner.wallCutouts.position')}:`}
       summary={summary}
-      forceOpen={isCustom}
+      nonDefault={isCustom}
     >
       <ShapePicker
         options={ALIGNMENT_OPTIONS.map((value) => ({
@@ -278,7 +272,7 @@ function PositionDisclosure({
           />
         </div>
       )}
-    </AdvancedDisclosure>
+    </MoreDisclosure>
   );
 }
 

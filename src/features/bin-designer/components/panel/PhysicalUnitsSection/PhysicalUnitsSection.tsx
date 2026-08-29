@@ -5,14 +5,12 @@
  * so this section is collapsed by default, placed near the bottom of the panel.
  */
 
-import { useEffect, useState } from 'react';
-import { Collapsible } from '@/design-system';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
-import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import {
   DESIGNER_GRID_UNIT_MM_MIN,
   DESIGNER_GRID_UNIT_MM_MAX,
@@ -21,22 +19,9 @@ import {
 
 export function PhysicalUnitsSection() {
   const { state, handlers, meta, t } = usePhysicalUnitsSection();
-  const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    const handler = () => setExpanded(true);
-    const eventName = helpJumpEventName('binDesigner:finishing');
-    window.addEventListener(eventName, handler);
-    return () => window.removeEventListener(eventName, handler);
-  }, []);
 
   return (
-    <Collapsible
-      title={t('common.physicalUnits')}
-      expanded={expanded}
-      onExpandedChange={setExpanded}
-      summary={meta.summary}
-    >
+    <MoreDisclosure label={t('common.physicalUnits')} summary={meta.summary}>
       <div className="space-y-2">
         <SettingsRow
           label={t('binDesigner.gridUnit')}
@@ -94,6 +79,6 @@ export function PhysicalUnitsSection() {
           />
         </SettingsRow>
       </div>
-    </Collapsible>
+    </MoreDisclosure>
   );
 }

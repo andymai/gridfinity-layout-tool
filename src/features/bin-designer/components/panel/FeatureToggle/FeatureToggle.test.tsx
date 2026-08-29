@@ -45,25 +45,20 @@ describe('FeatureToggle', () => {
     expect(screen.getByText('common.customize')).toBeInTheDocument();
   });
 
-  it('clicking Customize reveals children, clicking Done hides them', () => {
+  it('clicking Customize reveals children and toggles closed again', () => {
     render(
       <FeatureToggle label="Test Feature" checked={true} onChange={vi.fn()}>
         <div data-testid="child-controls">Controls</div>
       </FeatureToggle>
     );
-    // Initially the customize region exists but is aria-hidden
     const customizeBtn = screen.getByText('common.customize');
-    const region = screen.getByRole('region', { hidden: true });
-    expect(region).toHaveAttribute('aria-hidden', 'true');
+    expect(customizeBtn.closest('button')).toHaveAttribute('aria-expanded', 'false');
 
-    // Click Customize — reveals children
     fireEvent.click(customizeBtn);
-    expect(region).toHaveAttribute('aria-hidden', 'false');
-    expect(screen.getByText('common.done')).toBeInTheDocument();
+    expect(customizeBtn.closest('button')).toHaveAttribute('aria-expanded', 'true');
 
-    // Click Done — hides children again
-    fireEvent.click(screen.getByText('common.done'));
-    expect(region).toHaveAttribute('aria-hidden', 'true');
+    fireEvent.click(customizeBtn);
+    expect(customizeBtn.closest('button')).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('shows coming soon badge and disables switch when comingSoon', () => {
