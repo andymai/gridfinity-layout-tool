@@ -13,7 +13,7 @@
  */
 
 import { useState } from 'react';
-import { Checkbox } from '@/design-system';
+import { CheckboxRow } from '@/design-system';
 import { SegmentedControl } from '@/design-system/SegmentedControl/SegmentedControl';
 import { useTranslation } from '@/i18n';
 import {
@@ -174,12 +174,7 @@ export function LipColorEditor({
         })}
       </div>
 
-      {/* Checkbox supplies its own <label htmlFor>; wrapping it in another
-          <label> nests labels and makes the visually-hidden input the labeled
-          control, which scrolls the panel to its bottom on click. */}
-      <Checkbox
-        size="sm"
-        className="w-fit"
+      <CheckboxRow
         checked={showGrid}
         onChange={handleToggleSplit}
         label={t('binDesigner.colors.lip.splitZones')}

@@ -1936,6 +1936,8 @@
   "binDesigner.walls.pattern.rindo": "Rindo (竜胆)",
   "binDesigner.walls.pattern.round": "Redondo",
   "binDesigner.walls.pattern.sakura": "Sakura (桜)",
+  "binDesigner.style.section.color": "Cor",
+  "binDesigner.style.section.walls": "Paredes",
   "binDesigner.walls.pattern.scale": "Escala do padrão",
   "binDesigner.walls.pattern.scaleHint": "Furos mais finos à esquerda, maiores à direita",
   "binDesigner.walls.pattern.sides": "Paredes com padrão",

@@ -131,6 +131,7 @@
     "binDesigner.slotVertical",
     "binDesigner.sortName",
     "binDesigner.splitPinDiameter",
+    "binDesigner.style.section.color",
     "binDesigner.tabDimensionsGroup",
     "binDesigner.tabSupport",
     "binDesigner.tagManager.colorLabel",

@@ -1936,6 +1936,8 @@
   "binDesigner.walls.pattern.rindo": "Rindo (竜胆)",
   "binDesigner.walls.pattern.round": "Rund",
   "binDesigner.walls.pattern.sakura": "Sakura (桜)",
+  "binDesigner.style.section.color": "Farge",
+  "binDesigner.style.section.walls": "Vegger",
   "binDesigner.walls.pattern.scale": "Mønsterskala",
   "binDesigner.walls.pattern.scaleHint": "Finere hull til venstre, grovere til høyre",
   "binDesigner.walls.pattern.sides": "Vegger med mønster",

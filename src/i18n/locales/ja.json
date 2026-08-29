@@ -1936,6 +1936,8 @@
   "binDesigner.walls.pattern.rindo": "竜胆",
   "binDesigner.walls.pattern.round": "円形",
   "binDesigner.walls.pattern.sakura": "桜",
+  "binDesigner.style.section.color": "色",
+  "binDesigner.style.section.walls": "壁面",
   "binDesigner.walls.pattern.scale": "パターンの大きさ",
   "binDesigner.walls.pattern.scaleHint": "左ほど細かく、右ほど大きく",
   "binDesigner.walls.pattern.sides": "パターンを適用する壁",

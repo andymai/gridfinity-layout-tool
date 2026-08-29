@@ -11,7 +11,7 @@ import { PatternSelector } from './PatternSelector';
 import { FeatureToggle } from '../FeatureToggle';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { AnchorPicker } from '../../controls/AnchorPicker';
-import { SideSelector, type SideState } from '../shared';
+import { SideSelector, SubHeader, type SideState } from '../shared';
 
 /** Mode options for the wall-text picker, in the shared textMode order. */
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
@@ -34,6 +34,7 @@ export function WallSurfaceSection() {
 
   return (
     <div className="space-y-4">
+      <SubHeader>{t('binDesigner.style.section.walls')}</SubHeader>
       <div>
         <PatternSelector
           selectedPattern={state.patternEnabled ? state.pattern : null}
@@ -68,7 +69,7 @@ export function WallSurfaceSection() {
               </p>
             ) : (
               <div className="mt-3">
-                <span className="mb-1 block text-xs text-content-secondary">
+                <span className="mb-1 block text-label text-content-tertiary">
                   {t('binDesigner.walls.pattern.sides')}
                 </span>
                 <SideSelector

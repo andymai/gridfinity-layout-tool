@@ -36,6 +36,7 @@ import { IconButton } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { FeatureToggle } from '../FeatureToggle';
+import { SubHeader } from '../shared';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { ColorZoneRow } from './ColorZoneRow';
 import { ColorGroup } from './ColorGroup';
@@ -340,6 +341,7 @@ export function ColorsSection() {
 
   return (
     <div className="space-y-2">
+      <SubHeader>{t('binDesigner.style.section.color')}</SubHeader>
       <FeatureToggle
         label={t('binDesigner.group.colors')}
         checked={multiColorEnabled}

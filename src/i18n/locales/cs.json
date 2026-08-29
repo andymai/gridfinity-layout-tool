@@ -1936,6 +1936,8 @@
   "binDesigner.walls.pattern.rindo": "Rindo (竜胆)",
   "binDesigner.walls.pattern.round": "Kulatý",
   "binDesigner.walls.pattern.sakura": "Sakura (桜)",
+  "binDesigner.style.section.color": "Barva",
+  "binDesigner.style.section.walls": "Stěny",
   "binDesigner.walls.pattern.scale": "Měřítko vzoru",
   "binDesigner.walls.pattern.scaleHint": "Jemnější otvory doleva, výraznější doprava",
   "binDesigner.walls.pattern.sides": "Vzorované stěny",

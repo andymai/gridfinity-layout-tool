@@ -3103,6 +3103,8 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.mikado': 'Mikado (帝つなぎ)',
   'binDesigner.walls.pattern.tsumiishiKikko': 'Tsumiishi-Kikko (積石亀甲)',
   'binDesigner.walls.pattern.groupKumiko': 'Kumiko',
+  'binDesigner.style.section.color': 'Color',
+  'binDesigner.style.section.walls': 'Walls',
   'binDesigner.walls.pattern.scale': 'Pattern scale',
   'binDesigner.walls.pattern.scaleHint': 'Finer holes to the left, bolder to the right',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',

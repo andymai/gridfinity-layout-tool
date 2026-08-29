@@ -1936,6 +1936,8 @@
   "binDesigner.walls.pattern.rindo": "Ріндо (竜胆)",
   "binDesigner.walls.pattern.round": "Круглий",
   "binDesigner.walls.pattern.sakura": "Сакура (桜)",
+  "binDesigner.style.section.color": "Колір",
+  "binDesigner.style.section.walls": "Стінки",
   "binDesigner.walls.pattern.scale": "Масштаб візерунка",
   "binDesigner.walls.pattern.scaleHint": "Дрібніші отвори ліворуч, більші праворуч",
   "binDesigner.walls.pattern.sides": "Стіни з візерунком",

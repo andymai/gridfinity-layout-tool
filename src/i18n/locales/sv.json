@@ -1936,6 +1936,8 @@
   "binDesigner.walls.pattern.rindo": "Rindo (竜胆)",
   "binDesigner.walls.pattern.round": "Rund",
   "binDesigner.walls.pattern.sakura": "Sakura (桜)",
+  "binDesigner.style.section.color": "Färg",
+  "binDesigner.style.section.walls": "Väggar",
   "binDesigner.walls.pattern.scale": "Mönsterskala",
   "binDesigner.walls.pattern.scaleHint": "Finare hål till vänster, grövre till höger",
   "binDesigner.walls.pattern.sides": "Väggar med mönster",
