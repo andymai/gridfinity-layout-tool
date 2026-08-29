@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Tooltip } from './Tooltip';
+import { formatShortcut } from '../Kbd';
 
 describe('Tooltip', () => {
   describe('rendering', () => {
@@ -40,8 +41,8 @@ describe('Tooltip', () => {
           <button type="button">Trigger</button>
         </Tooltip>
       );
-      // jsdom reports a non-mac platform, so Mod resolves to Ctrl.
-      expect(screen.getByText('Ctrl+Z')).toBeInTheDocument();
+      // Assert against the formatter itself so the test holds on any platform.
+      expect(screen.getByText(formatShortcut(['Mod', 'Z']))).toBeInTheDocument();
     });
 
     it('omits the kbd element when no shortcut is given', () => {
