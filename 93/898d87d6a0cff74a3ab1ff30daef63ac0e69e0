@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_9a500d3ffa116a::t_32839879bba7d7 174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "93898d87d6a0cff74a3ab1ff30daef63ac0e69e0",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
