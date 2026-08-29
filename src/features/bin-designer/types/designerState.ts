@@ -67,6 +67,7 @@ import type {
   MeasureMode,
   DividerTiltPreview,
   ExportFileNameConfig,
+  DesignerSelection,
 } from './uiState';
 import type { SavedDesign } from './savedDesign';
 import type { CommunityDesignLineage } from '@/shared/types/community';
@@ -405,6 +406,10 @@ export interface DesignerState {
 
   // UI actions
   setActiveCategory: (category: DesignerCategory) => void;
+  /** Point the Selection page at something; auto-switches the rail and stores the return slot. */
+  select: (selection: NonNullable<DesignerSelection>) => void;
+  /** Drop the selection and restore the category the auto-switch left. */
+  clearSelection: () => void;
   setExportDialogOpen: (open: boolean) => void;
   setDesignListOpen: (open: boolean) => void;
   setVersionsOpen: (open: boolean) => void;

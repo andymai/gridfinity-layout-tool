@@ -281,6 +281,8 @@ export const DEFAULT_GENERATION_STATE: GenerationState = {
 /** Default UI state */
 export const DEFAULT_UI_STATE: DesignerUIState = {
   activeCategory: 'shape',
+  selection: null,
+  returnCategory: null,
   exportDialogOpen: false,
   designListOpen: false,
   versionsOpen: false,
