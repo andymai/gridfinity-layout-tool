@@ -3,7 +3,6 @@ import { act, render, screen } from '@testing-library/react';
 import { PhysicalUnitsSection } from './PhysicalUnitsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
-import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 
 describe('PhysicalUnitsSection', () => {
   beforeEach(() => {
@@ -48,13 +47,19 @@ describe('PhysicalUnitsSection', () => {
     expect(screen.getByLabelText('Print bed width')).toBeInTheDocument();
   });
 
-  it('expands when a help-jump targets binDesigner:finishing so the print-bed marker is reachable', () => {
-    render(<PhysicalUnitsSection />);
+  it('expands when a help-jump targets its section so the print-bed marker is reachable', () => {
+    render(
+      <div data-help-target="bd-physical-units">
+        <PhysicalUnitsSection />
+      </div>
+    );
     const toggle = screen.getByRole('button', { name: /physical units/i });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
     act(() => {
-      window.dispatchEvent(new CustomEvent(helpJumpEventName('binDesigner:finishing')));
+      window.dispatchEvent(
+        new CustomEvent('help-jump:any', { detail: { controlId: 'bd-physical-units' } })
+      );
     });
 
     expect(toggle).toHaveAttribute('aria-expanded', 'true');

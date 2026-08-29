@@ -22,7 +22,7 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
-import { AdvancedDisclosure, Hint, SubHeader } from '../shared';
+import { Hint, SubHeader } from '../shared';
 import {
   DEFAULT_FOOT_LATTICE,
   FOOT_LATTICES,
@@ -34,6 +34,7 @@ import {
   DETACHABLE_PIN_DIAMETERS_MM,
 } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { BodyTypeCards } from './BodyTypeCards';
 import { useBaseSection } from './useBaseSection';
 
@@ -306,12 +307,12 @@ export function BaseSection() {
               default it is being honoured as, not as the customization it is
               not. */}
           {state.showFootLattice && (
-            <AdvancedDisclosure
+            <MoreDisclosure
               label={`${t('binDesigner.footLattice')}:`}
               summary={footLatticeAxes
                 .map(({ value }) => t(`binDesigner.footLattice.${value}`))
                 .join(' / ')}
-              forceOpen={footLatticeAxes.some(({ value }) => value !== DEFAULT_FOOT_LATTICE)}
+              nonDefault={footLatticeAxes.some(({ value }) => value !== DEFAULT_FOOT_LATTICE)}
             >
               {footLatticeAxes.map(({ axis, value, onChange, locked }) => (
                 <div key={axis} className="flex items-center gap-2">
@@ -334,7 +335,7 @@ export function BaseSection() {
                 </div>
               ))}
               <Hint>{handlers.footLatticeLockReason}</Hint>
-            </AdvancedDisclosure>
+            </MoreDisclosure>
           )}
         </section>
       )}

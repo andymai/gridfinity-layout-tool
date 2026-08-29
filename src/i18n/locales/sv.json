@@ -4484,5 +4484,6 @@
   "binDesigner.panel.collapse": "Fäll ihop panelen",
   "binDesigner.panel.expand": "Fäll ut panelen",
   "binDesigner.panel.resize": "Ändra panelens storlek",
-  "binDesigner.panel.railTitle": "Inställningar"
+  "binDesigner.panel.railTitle": "Inställningar",
+  "common.more": "Mer"
 }

@@ -118,6 +118,7 @@ const en: Record<string, string> = {
   'common.duplicate': 'Duplicate',
   'common.import': 'Import',
   'common.done': 'Done',
+  'common.more': 'More',
   'common.apply': 'Apply',
   'common.all': 'All',
   'common.clear': 'Clear',

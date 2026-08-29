@@ -17,6 +17,13 @@ const DEFAULT_TIMEOUT_MS = 2000;
 export const HELP_JUMP_EVENT_PREFIX = 'help-jump:';
 export const HELP_TARGET_ATTR = 'data-help-target';
 
+/**
+ * Fired alongside every surface event so disclosure components can open
+ * themselves when the target control is one of their descendants, without
+ * knowing which surface routed the jump.
+ */
+export const HELP_JUMP_ANY_EVENT = 'help-jump:any';
+
 export interface HelpJumpEventDetail {
   controlId: string;
 }
@@ -94,6 +101,9 @@ export async function jumpToHelpTarget(target: HelpTarget): Promise<boolean> {
   if (typeof window === 'undefined') return false;
 
   window.dispatchEvent(helpJumpEvent(target.surface, { controlId: target.controlId }));
+  window.dispatchEvent(
+    new CustomEvent(HELP_JUMP_ANY_EVENT, { detail: { controlId: target.controlId } })
+  );
 
   const selector = `[${HELP_TARGET_ATTR}="${CSS.escape(target.controlId)}"]`;
   const element = await waitForElement(selector);

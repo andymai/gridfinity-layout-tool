@@ -4484,5 +4484,6 @@
   "binDesigner.panel.collapse": "Réduire le panneau",
   "binDesigner.panel.expand": "Développer le panneau",
   "binDesigner.panel.resize": "Redimensionner le panneau",
-  "binDesigner.panel.railTitle": "Réglages"
+  "binDesigner.panel.railTitle": "Réglages",
+  "common.more": "Plus"
 }

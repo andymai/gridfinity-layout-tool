@@ -4484,5 +4484,6 @@
   "binDesigner.panel.collapse": "Paneel inklappen",
   "binDesigner.panel.expand": "Paneel uitklappen",
   "binDesigner.panel.resize": "Paneelgrootte wijzigen",
-  "binDesigner.panel.railTitle": "Instellingen"
+  "binDesigner.panel.railTitle": "Instellingen",
+  "common.more": "Meer"
 }

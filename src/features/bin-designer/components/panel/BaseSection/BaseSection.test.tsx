@@ -166,8 +166,14 @@ describe('BaseSection', () => {
       render(<BaseSection />);
 
       expect(screen.getByText('On grid / On grid')).toBeInTheDocument();
-      expect(screen.queryByLabelText('Width axis')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Depth axis')).not.toBeInTheDocument();
+      // Mounted but inert while closed, so help jumps can find the controls.
+      expect(screen.getByRole('button', { name: /Foot lattice/ })).toHaveAttribute(
+        'aria-expanded',
+        'false'
+      );
+      expect(
+        screen.getByLabelText('Width axis', { hidden: true }).closest('[inert]')
+      ).not.toBeNull();
     });
 
     it('opens on click', async () => {
@@ -189,8 +195,12 @@ describe('BaseSection', () => {
       });
       render(<BaseSection />);
 
+      expect(screen.getByRole('button', { name: /Foot lattice/ })).toHaveAttribute(
+        'aria-expanded',
+        'true'
+      );
       expect(screen.getByLabelText('Width axis')).toBeInTheDocument();
-      expect(screen.getByText('Half offset / On grid')).toBeInTheDocument();
+      expect(screen.getByLabelText('Width axis').closest('[inert]')).toBeNull();
     });
 
     // Half sockets seat at either offset, so the lattice has nothing left to

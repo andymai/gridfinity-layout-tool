@@ -136,8 +136,13 @@ describe('WallCutoutsSection', () => {
         },
       });
       render(<WallCutoutsSection />);
+      // Auto-opened, so the radius control itself is visible; the compact
+      // summary only renders while the disclosure is closed.
       expect(screen.getAllByLabelText('Top corner radius (mm)').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('4mm / Auto').length).toBeGreaterThanOrEqual(1);
+      const disclosure = screen
+        .getAllByRole('button', { name: /corner/i })
+        .find((b) => b.getAttribute('aria-expanded') !== null);
+      expect(disclosure).toHaveAttribute('aria-expanded', 'true');
     });
   });
 
