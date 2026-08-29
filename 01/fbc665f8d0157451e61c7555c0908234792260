@@ -1,0 +1,198 @@
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_2a038ae0eafe62::t_7cc07763527402 168
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_2a038ae0eafe62::t_eb2115df65826c 305-311
+  s_2a038ae0eafe62::t_96efbb3a9ad32f 25,87,109,112-120
+src/features/bin-designer/components/panel/shared/SegmentGrid.tsx
+  s_2a038ae0eafe62::t_26d558174ff9c0 6-7,15,43-44,53-56,78-79,82,89-93,98-105,108-113
+  s_2a038ae0eafe62::t_0e6dc79c9dd6a5 51
+  s_2a038ae0eafe62::t_80170a417af2b0 1-5,12-13,16,18-41,80-81,83,88,114-116
+  s_2a038ae0eafe62::t_fbd5cceea56cff 106
+  s_2a038ae0eafe62::t_5caf8013a37f13 8-11,14,17,42,45-50,52,57-77,84-87,94-97,107
+src/i18n/locales/nl.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/ko.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 1716-1717
+src/i18n/locales/ja.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/pl.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/uk.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/zh-CN.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 1716-1717
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_2a038ae0eafe62::t_eb2115df65826c 253
+src/i18n/locales/sv.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/fr.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/pt-BR.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/nb.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/features/bin-designer/components/controls/SnappingSlider/SnappingSlider.tsx
+  s_2a038ae0eafe62::t_eb2115df65826c 353
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_2a038ae0eafe62::t_eb2115df65826c 221,232
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+  s_2a038ae0eafe62::t_7787180134604d 9,14,35,88,91
+src/i18n/locales/cs.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_b7aec15877b33b 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/it.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_2a038ae0eafe62::t_fc208a6b4f1062 14
+  s_2a038ae0eafe62::t_27b7ee0f25d37e 136,147,161,177,200,220,288,443
+src/i18n/locales/es.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/features/bin-designer/components/panel/shared/index.ts
+  s_2a038ae0eafe62::t_7787180134604d 4
+  s_2a038ae0eafe62::t_ce57452bcb809b 5
+src/i18n/locales/de.json
+  s_2a038ae0eafe62::t_8b160141fb8df7 1191
+  s_2a038ae0eafe62::t_e8c06039267fdd 1299
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1300
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 1133
+  s_2a038ae0eafe62::t_3d584e367a6e66 947,1716-1717
+src/i18n/locales/en.ts
+  s_2a038ae0eafe62::t_8b160141fb8df7 1980
+  s_2a038ae0eafe62::t_2dbc33c616c08e 1987
+  s_2a038ae0eafe62::t_e8c06039267fdd 1988
+  s_2a038ae0eafe62::t_2b3ac2fef7652f 2003
+  s_2a038ae0eafe62::t_3d584e367a6e66 1928-1929
+  s_2a038ae0eafe62::t_0f65b16886f760 1930
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_2a038ae0eafe62::t_7787180134604d 209
+  s_2a038ae0eafe62::t_182f8511602e36 268,282
+  s_2a038ae0eafe62::t_eb2115df65826c 596
+  s_2a038ae0eafe62::t_a1544e59eb4138 295
+  s_2a038ae0eafe62::t_144cc2dd4b0c4f 166,168-170,356-361,366-377,379-388,407,651-656,662-667
+  s_2a038ae0eafe62::t_2dbc33c616c08e 167,378
+  s_2a038ae0eafe62::t_96efbb3a9ad32f 27
+  s_2a038ae0eafe62::t_38c056bb22a14c 26,112-123
+  s_2a038ae0eafe62::t_98c6210a197966 28-30
+  s_2a038ae0eafe62::t_55c8a4d18371c2 124-125
+  s_2a038ae0eafe62::t_6be11c817c6dc2 31-35,99-102,128,131
+src/features/bin-designer/components/panel/shared/SegmentGrid.test.tsx
+  s_2a038ae0eafe62::t_aaebfe9ceebc95 15-16,24
+  s_2a038ae0eafe62::t_728c633f02a111 1-12,14,17-18,20-21,25,44
+  s_2a038ae0eafe62::t_de1cee73be6669 13,19,22-23,26-43
+src/features/bin-designer/components/panel/shared/StepperField.tsx
+  s_2a038ae0eafe62::t_1285c65ce2cafa 10,16-19,22,25-34
+src/features/bin-designer/components/panel/shared/InfoDot.test.tsx
+  s_2a038ae0eafe62::t_09bb03289e80b8 1-17
+src/features/bin-designer/components/panel/shared/InfoDot.tsx
+  s_2a038ae0eafe62::t_5844f683c967f7 1,6-47
+  s_2a038ae0eafe62::t_5cccab250d4291 2-5
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_2a038ae0eafe62::t_e8c06039267fdd 981
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.tsx
+  s_2a038ae0eafe62::t_8c12cbc8371b5d 241-243,245,358
+  s_2a038ae0eafe62::t_1f0252fddaa35b 244
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_2a038ae0eafe62::t_b6753551596efd 156,193,312,405
+  s_2a038ae0eafe62::t_3d584e367a6e66 31-32,696-699
+  s_2a038ae0eafe62::t_0e4e51ba1aed51 700
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.tsx
+  s_2a038ae0eafe62::t_477f9bef6741fb 2-3,12-13,18-25,43-54
+  s_2a038ae0eafe62::t_3cd661d9f139a4 55
+src/features/bin-designer/components/panel/SetDefaultFooter/SetDefaultFooter.tsx
+  s_2a038ae0eafe62::t_e0a9c93484eb08 25
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.tsx
+  s_2a038ae0eafe62::t_3d584e367a6e66 418
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.test.tsx
+  s_2a038ae0eafe62::t_d7913954575982 189,192
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_2a038ae0eafe62::t_ddb418a80f0a14 1,5-6,70-72
+src/features/bin-designer/components/DesignListDialog/DesignListHeader.tsx
+  s_2a038ae0eafe62::t_ffac76ddeefcd1 2,12-13,26,52-60,63
+src/features/bin-designer/components/DesignListDialog/DesignListHeader.test.tsx
+  s_2a038ae0eafe62::t_f560b15e35aa92 17
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_2a038ae0eafe62::t_9077e5f3134c03 39-40,112,249-261,263-274,277-278,625
+src/features/bin-designer/constants/defaults.ts
+  s_2a038ae0eafe62::t_fe78f5a585d91b 284-285
+src/features/bin-designer/types/designerState.ts
+  s_2a038ae0eafe62::t_a95aa21bb968e6 70
+  s_2a038ae0eafe62::t_16bd0edb58c702 409-412
+src/features/bin-designer/utils/selection.ts
+  s_2a038ae0eafe62::t_b5f3dfb917de92 16
+  s_2a038ae0eafe62::t_9125278e93edad 1-15,17-36
+src/features/bin-designer/utils/selection.test.ts
+  s_2a038ae0eafe62::t_b6ad44c4783771 1-41
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_2a038ae0eafe62::t_fe78f5a585d91b 13,35-61
+src/features/bin-designer/types/uiState.ts
+  s_2a038ae0eafe62::t_fe78f5a585d91b 36-48,78-85
+src/features/bin-designer/store/designer.scenario.selection.test.ts
+  s_2a038ae0eafe62::t_204821c7ee5763 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "01fbc665f8d0157451e61c7555c0908234792260",
+  "prompts": {},
+  "sessions": {
+    "s_2a038ae0eafe62": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6d11451-a87d-4bb2-a9ea-ae3543c6b5a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
