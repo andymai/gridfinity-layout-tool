@@ -179,7 +179,12 @@ export function LabelTextList({
         <p className="mb-2 flex items-start gap-1 text-xs text-content-tertiary">
           <InfoIcon size="xs" className="mt-0.5 shrink-0" />
           <span className="flex-1">
-            {t('binDesigner.labelTextBlankCount', { count: blankCount })}
+            {t(
+              blankCount === 1
+                ? 'binDesigner.labelTextBlankCount.one'
+                : 'binDesigner.labelTextBlankCount.other',
+              { count: blankCount }
+            )}
           </span>
           <Button
             type="button"
@@ -370,7 +375,14 @@ export function LabelTextList({
       {/* One live region for the whole list: per-row announcements would fire on
           every keystroke that crosses the fit boundary. */}
       <span className="sr-only" aria-live="polite">
-        {overflowCount > 0 ? t('binDesigner.labelTextOverflowCount', { count: overflowCount }) : ''}
+        {overflowCount > 0
+          ? t(
+              overflowCount === 1
+                ? 'binDesigner.labelTextOverflowCount.one'
+                : 'binDesigner.labelTextOverflowCount.other',
+              { count: overflowCount }
+            )
+          : ''}
       </span>
     </div>
   );

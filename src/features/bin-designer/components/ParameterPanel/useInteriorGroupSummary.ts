@@ -19,14 +19,25 @@ export function useInteriorGroupSummary(): string {
   return useMemo(() => {
     const isSolid = style === 'solid';
     const isSlotted = style === 'slotted';
+    const compartmentCount = getCompartmentCount(compartments);
 
     const interiorPart = isSolid
       ? cutoutCount > 0
-        ? t('binDesigner.cutouts.summary', { count: cutoutCount })
+        ? t(
+            cutoutCount === 1
+              ? 'binDesigner.cutouts.summary.one'
+              : 'binDesigner.cutouts.summary.other',
+            { count: cutoutCount }
+          )
         : t('binDesigner.solidInteriorSummary')
       : isSlotted
         ? t('binDesigner.slottedInteriorSummary')
-        : t('binDesigner.interiorSummary', { count: getCompartmentCount(compartments) });
+        : t(
+            compartmentCount === 1
+              ? 'binDesigner.interiorSummary.one'
+              : 'binDesigner.interiorSummary.other',
+            { count: compartmentCount }
+          );
 
     const parts = [interiorPart];
     if (label.enabled && !isSlotted && !isSolid) {

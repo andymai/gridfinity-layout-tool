@@ -26,20 +26,22 @@ describe('BinSizeSection', () => {
 
   it('hides the off-board warning when nothing is stranded', () => {
     render(<BinSizeSection offBoardCount={0} onClampOffBoard={vi.fn()} />);
-    expect(screen.queryByText(tk(`${K}.offBoardWarning`, { count: 0 }))).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(tk(`${K}.offBoardWarning.other`, { count: 0 }))
+    ).not.toBeInTheDocument();
   });
 
   it('shows the warning and recover button when cutouts are off-board', () => {
     const onClamp = vi.fn();
     render(<BinSizeSection offBoardCount={2} onClampOffBoard={onClamp} />);
-    expect(screen.getByText(tk(`${K}.offBoardWarning`, { count: 2 }))).toBeInTheDocument();
+    expect(screen.getByText(tk(`${K}.offBoardWarning.other`, { count: 2 }))).toBeInTheDocument();
     fireEvent.click(screen.getByText(`${K}.bringBackIn`));
     expect(onClamp).toHaveBeenCalledTimes(1);
   });
 
   it('omits the recover button when no handler is provided', () => {
     render(<BinSizeSection offBoardCount={2} />);
-    expect(screen.getByText(tk(`${K}.offBoardWarning`, { count: 2 }))).toBeInTheDocument();
+    expect(screen.getByText(tk(`${K}.offBoardWarning.other`, { count: 2 }))).toBeInTheDocument();
     expect(screen.queryByText(`${K}.bringBackIn`)).not.toBeInTheDocument();
   });
 
@@ -129,7 +131,7 @@ describe('BinSizeSection', () => {
   // Screen readers got nothing when a cutout went off-board before this.
   it('announces the warning assertively', () => {
     render(<BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} />);
-    expect(screen.getByRole('alert')).toHaveTextContent(`${K}.offBoardWarning`);
+    expect(screen.getByRole('alert')).toHaveTextContent(`${K}.offBoardWarning.one`);
   });
 
   it('puts the unavailable reason above the actions, not after them', () => {

@@ -194,7 +194,7 @@ describe('useWallsSection', () => {
       const { result } = renderHook(() => useWallsSection());
       expect(result.current.state.dividersAvailableReason).toBeUndefined();
       expect(result.current.state.dividersNote).toBe(
-        'The pattern appears on the exported divider pieces — the preview shows them solid'
+        'The pattern appears on the exported divider pieces (the preview shows them solid)'
       );
     });
 
