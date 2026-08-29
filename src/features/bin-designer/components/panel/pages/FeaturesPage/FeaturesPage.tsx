@@ -17,9 +17,7 @@ export function FeaturesPage() {
       <PanelSection helpTarget="bd-wall-cutouts">
         <WallCutoutsSection />
       </PanelSection>
-      <PanelSection helpTarget="bd-slide-tray">
-        <SlideTraySection />
-      </PanelSection>
+      <SlideTraySection />
     </div>
   );
 }

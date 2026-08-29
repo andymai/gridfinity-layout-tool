@@ -54,8 +54,8 @@ export function AppVersionButton({ align = 'start', onBeforeAction }: AppVersion
         onClick={handleClick}
         aria-label={state === 'update' ? t('pwaUpdate.reloadAria') : t('whatsNew.open')}
         className={cn(
-          'h-auto gap-1.5 px-0 text-micro font-normal text-content-disabled',
-          'hover:bg-transparent hover:text-content-tertiary',
+          'h-auto gap-1.5 px-0 text-micro font-normal text-content-tertiary',
+          'hover:bg-transparent hover:text-content-secondary',
           align === 'center' && 'justify-center'
         )}
       >
