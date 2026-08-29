@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "Text víka",
   "binDesigner.lid.text.disabledPolygon": "Není dostupné pro biny s vlastním tvarem.",
   "binDesigner.lid.text.disabledStackable": "Není dostupné s plnou stohovou mřížkou — přepni na „Pouze stohovací lem“ a uvolni horní plochu víka.",
+  "binDesigner.lid.text.useStackLipOnly": "Použít pouze stohovací lem",
+  "binDesigner.infoButton": "Více informací",
   "binDesigner.lid.text.placeholder": "např. Kabely",
   "binDesigner.lid.text.stackLipEmbossWarning": "Vystouplý text zůstane pod tím, co na víko postavíš, takže to nedosedne rovně. Použij raději gravírování nebo průchozí řez.",
   "binDesigner.lid.text.stackLipHint": "Text se umístí na zapuštěnou plochu uvnitř lemu.",

@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "Texto de la tapa",
   "binDesigner.lid.text.disabledPolygon": "No disponible para contenedores de forma personalizada.",
   "binDesigner.lid.text.disabledStackable": "No disponible con una rejilla de apilado completa: cambia a «Solo borde apilable» para liberar la cara superior de la tapa.",
+  "binDesigner.lid.text.useStackLipOnly": "Usar solo borde apilable",
+  "binDesigner.infoButton": "Más información",
   "binDesigner.lid.text.placeholder": "p. ej. Cables",
   "binDesigner.lid.text.stackLipEmbossWarning": "El texto en relieve queda debajo de lo que se apile sobre la tapa, así que no asentará plano. Usa grabado o corte pasante.",
   "binDesigner.lid.text.stackLipHint": "El texto se coloca en la superficie hundida dentro del borde.",

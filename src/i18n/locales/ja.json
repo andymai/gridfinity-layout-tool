@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "フタのテキスト",
   "binDesigner.lid.text.disabledPolygon": "カスタム形状のビンでは使用できません。",
   "binDesigner.lid.text.disabledStackable": "フルスタックグリッドでは使用できません。「スタッキングリップのみ」に切り替えるとフタの天面が空きます。",
+  "binDesigner.lid.text.useStackLipOnly": "スタッキングリップのみにする",
+  "binDesigner.infoButton": "詳細情報",
   "binDesigner.lid.text.placeholder": "例: ケーブル",
   "binDesigner.lid.text.stackLipEmbossWarning": "浮き出し文字はフタに積んだものの下に来るため、平らに座らなくなります。彫り込みか貫通カットをおすすめします。",
   "binDesigner.lid.text.stackLipHint": "テキストはリップ内側の一段下がった面に配置されます。",

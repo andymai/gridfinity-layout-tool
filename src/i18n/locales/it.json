@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "Testo del coperchio",
   "binDesigner.lid.text.disabledPolygon": "Non disponibile per contenitori con forma personalizzata.",
   "binDesigner.lid.text.disabledStackable": "Non disponibile con una griglia di impilamento completa: passa a «Solo labbro di impilamento» per liberare la faccia superiore del coperchio.",
+  "binDesigner.lid.text.useStackLipOnly": "Usa solo il labbro di impilamento",
+  "binDesigner.infoButton": "Maggiori informazioni",
   "binDesigner.lid.text.placeholder": "es. Cavi",
   "binDesigner.lid.text.stackLipEmbossWarning": "Il testo in rilievo finisce sotto ciò che viene impilato sul coperchio, che quindi non appoggia in piano. Usa incisione o taglio passante.",
   "binDesigner.lid.text.stackLipHint": "Il testo viene posizionato sulla superficie ribassata all’interno del labbro.",

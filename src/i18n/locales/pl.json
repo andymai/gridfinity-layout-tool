@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "Tekst pokrywy",
   "binDesigner.lid.text.disabledPolygon": "Niedostępne dla binów o własnym kształcie.",
   "binDesigner.lid.text.disabledStackable": "Niedostępne przy pełnej siatce stosu — przełącz na „Tylko kołnierz sztaplujący”, aby zwolnić górną ściankę pokrywy.",
+  "binDesigner.lid.text.useStackLipOnly": "Użyj tylko kołnierza sztaplującego",
+  "binDesigner.infoButton": "Więcej informacji",
   "binDesigner.lid.text.placeholder": "np. Kable",
   "binDesigner.lid.text.stackLipEmbossWarning": "Wypukły tekst znajdzie się pod tym, co ustawisz na pokrywie, więc nie osiądzie płasko. Użyj grawerowania lub cięcia na wylot.",
   "binDesigner.lid.text.stackLipHint": "Tekst jest umieszczany na obniżonej powierzchni wewnątrz kołnierza.",

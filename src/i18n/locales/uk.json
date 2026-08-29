@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "Текст на кришці",
   "binDesigner.lid.text.disabledPolygon": "Недоступно для контейнерів довільної форми.",
   "binDesigner.lid.text.disabledStackable": "Недоступно з повною сіткою для штабелювання — перемкніться на «Лише край для стекування», щоб звільнити верхню поверхню кришки.",
+  "binDesigner.lid.text.useStackLipOnly": "Лише край для стекування",
+  "binDesigner.infoButton": "Докладніше",
   "binDesigner.lid.text.placeholder": "напр. Кабелі",
   "binDesigner.lid.text.stackLipEmbossWarning": "Опуклий текст опиниться під тим, що ставлять на кришку, тож воно не стане рівно. Краще використайте гравіювання або наскрізний виріз.",
   "binDesigner.lid.text.stackLipHint": "Текст розміщується на заглибленій поверхні всередині краю.",

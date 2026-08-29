@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "Texto da tampa",
   "binDesigner.lid.text.disabledPolygon": "Indisponível para caixas de formato personalizado.",
   "binDesigner.lid.text.disabledStackable": "Indisponível com uma grade de empilhamento completa — mude para “Somente borda de empilhamento” para liberar a face superior da tampa.",
+  "binDesigner.lid.text.useStackLipOnly": "Usar somente borda de empilhamento",
+  "binDesigner.infoButton": "Mais informações",
   "binDesigner.lid.text.placeholder": "ex.: Cabos",
   "binDesigner.lid.text.stackLipEmbossWarning": "Texto em relevo fica sob o que for empilhado na tampa, então não assenta plano. Use gravação ou corte vazado.",
   "binDesigner.lid.text.stackLipHint": "O texto é colocado na superfície rebaixada dentro da borda.",

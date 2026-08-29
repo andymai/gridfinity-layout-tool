@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "Texte du couvercle",
   "binDesigner.lid.text.disabledPolygon": "Indisponible pour les bacs de forme personnalisée.",
   "binDesigner.lid.text.disabledStackable": "Indisponible avec une grille d’empilage complète — passez à « Lèvre d’empilage seule » pour libérer la face supérieure du couvercle.",
+  "binDesigner.lid.text.useStackLipOnly": "Utiliser la lèvre d’empilage seule",
+  "binDesigner.infoButton": "Plus d’informations",
   "binDesigner.lid.text.placeholder": "p. ex. Câbles",
   "binDesigner.lid.text.stackLipEmbossWarning": "Le texte en relief se retrouve sous ce qui est empilé sur le couvercle : l’assise ne sera plus plane. Préférez la gravure ou la découpe traversante.",
   "binDesigner.lid.text.stackLipHint": "Le texte est placé sur la surface en creux à l’intérieur de la lèvre.",

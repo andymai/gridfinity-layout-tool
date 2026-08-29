@@ -1296,6 +1296,8 @@
   "binDesigner.lid.text.aria": "Locktext",
   "binDesigner.lid.text.disabledPolygon": "Inte tillgängligt för lådor med anpassad form.",
   "binDesigner.lid.text.disabledStackable": "Inte tillgängligt med fullt stapelrutnät — byt till ”Endast stapelbar läpp” för att frigöra lockets ovansida.",
+  "binDesigner.lid.text.useStackLipOnly": "Använd endast stapelbar läpp",
+  "binDesigner.infoButton": "Mer information",
   "binDesigner.lid.text.placeholder": "t.ex. Kablar",
   "binDesigner.lid.text.stackLipEmbossWarning": "Upphöjd text hamnar under det som staplas på locket, så det sitter inte plant. Använd gravyr eller genomgående snitt i stället.",
   "binDesigner.lid.text.stackLipHint": "Texten placeras på den nedsänkta ytan innanför läppen.",

@@ -1981,6 +1981,8 @@ const en: Record<string, string> = {
   'binDesigner.lid.section.text': 'Lid text',
   'binDesigner.lid.text.placeholder': 'e.g. Cables',
   'binDesigner.lid.text.aria': 'Lid text',
+  'binDesigner.infoButton': 'More information',
+  'binDesigner.lid.text.useStackLipOnly': 'Use stacking lip only',
   'binDesigner.lid.text.disabledStackable':
     'Not available with a full stack grid. Switch to “Stacking lip only” to free up the lid’s top face.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',
