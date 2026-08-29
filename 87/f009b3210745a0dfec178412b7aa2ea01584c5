@@ -1,0 +1,25 @@
+scripts/doc-budget.json
+  s_9a500d3ffa116a::t_bdfbc4d78ed5aa 7
+src/features/bin-designer/store/designer.test.ts
+  s_9a500d3ffa116a::t_bdfbc4d78ed5aa 272
+.claude/skills/bin-designer/SKILL.md
+  s_9a500d3ffa116a::t_bdfbc4d78ed5aa 55-67
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_9a500d3ffa116a::t_40f3196f3742f5 44-45,108-109,305-306
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "87f009b3210745a0dfec178412b7aa2ea01584c5",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
