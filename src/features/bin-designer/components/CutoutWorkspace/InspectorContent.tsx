@@ -8,7 +8,6 @@
 import { useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { CHAMFER_SHAPES, MAX_CUTOUT_CHAMFER, maxEntryChamfer } from '@/features/bin-designer/types';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
@@ -29,7 +28,7 @@ import {
 } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { RepeatBlockedReason } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/store';
-import { Collapsible } from '@/design-system';
+import { Collapsible, NumberField } from '@/design-system';
 import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutColorControls } from './CutoutColorControls';
@@ -452,7 +451,7 @@ export function InspectorContent({
             </Collapsible>
           )}
           <div className="grid grid-cols-2 gap-1">
-            <CompactNumberInput
+            <NumberField
               label="X"
               value={sharedX ?? 0}
               indeterminate={sharedX === null}
@@ -463,7 +462,7 @@ export function InspectorContent({
               unit="mm"
               disabled={disabled}
             />
-            <CompactNumberInput
+            <NumberField
               label="Y"
               value={sharedY ?? 0}
               indeterminate={sharedY === null}
@@ -474,7 +473,7 @@ export function InspectorContent({
               unit="mm"
               disabled={disabled}
             />
-            <CompactNumberInput
+            <NumberField
               label="W"
               value={sharedWidth ?? 0}
               indeterminate={sharedWidth === null}
@@ -486,7 +485,7 @@ export function InspectorContent({
               unit="mm"
               disabled={disabled}
             />
-            <CompactNumberInput
+            <NumberField
               label="H"
               value={sharedDepth ?? 0}
               indeterminate={sharedDepth === null}
@@ -498,7 +497,7 @@ export function InspectorContent({
               unit="mm"
               disabled={disabled}
             />
-            <CompactNumberInput
+            <NumberField
               label={t('binDesigner.cutouts.rotation')}
               value={sharedRotation ?? 0}
               indeterminate={sharedRotation === null}
@@ -511,7 +510,7 @@ export function InspectorContent({
             />
             {!throughOnly && (
               <>
-                <CompactNumberInput
+                <NumberField
                   label={t('binDesigner.cutouts.cutDepth')}
                   value={sharedCutDepth ?? 5}
                   indeterminate={sharedCutDepth === null}
@@ -522,7 +521,7 @@ export function InspectorContent({
                   unit="mm"
                   disabled={disabled}
                 />
-                <CompactNumberInput
+                <NumberField
                   label={t('binDesigner.cutouts.scoopW')}
                   value={sharedScoopRadiusW ?? 0}
                   indeterminate={sharedScoopRadiusW === null}
@@ -533,7 +532,7 @@ export function InspectorContent({
                   unit="mm"
                   disabled={disabled}
                 />
-                <CompactNumberInput
+                <NumberField
                   label={t('binDesigner.cutouts.scoopD')}
                   value={sharedScoopRadiusD ?? 0}
                   indeterminate={sharedScoopRadiusD === null}
@@ -547,7 +546,7 @@ export function InspectorContent({
               </>
             )}
             {chamferCutouts.length > 0 && (
-              <CompactNumberInput
+              <NumberField
                 label={t('binDesigner.cutouts.chamfer')}
                 value={sharedChamfer ?? 0}
                 indeterminate={sharedChamfer === null}

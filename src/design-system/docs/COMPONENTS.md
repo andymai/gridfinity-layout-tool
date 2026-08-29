@@ -225,6 +225,12 @@ interface SelectOption {
 
 ---
 
+## NumberField
+
+Compact scrub/type/nudge numeric input (Figma-style): the value is a persistent spinbutton input, the label doubles as a drag-to-scrub handle, arrows nudge with Shift ×10 / Alt ÷10, and typed entries may be small expressions ("42/2", "42mm"). `softMax` lets typed entries exceed `max` without truncation while gestures stay capped. Promoted from the bin designer's CompactNumberInput; its clamp/ceiling behavior is contract, covered by tests.
+
+Key props: `label`, `value`, `onChange`, `min/max/step`, `unit`, `softMax`, `indeterminate` (mixed multi-selection), `size` (`sm` 24px / `md` 28px), `precision`, `expression` (default on), `highlight`, `info`. Also exports `evaluateNumberExpression`.
+
 ## Stepper
 
 Numeric input with increment/decrement buttons.

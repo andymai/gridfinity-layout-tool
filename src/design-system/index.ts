@@ -122,6 +122,10 @@ export type { ColorSwatchProps } from './ColorSwatch';
 export { Stepper } from './Stepper';
 export type { StepperProps } from './Stepper';
 
+// NumberField (compact scrub/type/nudge numeric input with expression entry)
+export { NumberField, evaluateNumberExpression } from './NumberField';
+export type { NumberFieldProps } from './NumberField';
+
 export { Collapsible } from './Collapsible';
 export type { CollapsibleProps } from './Collapsible';
 

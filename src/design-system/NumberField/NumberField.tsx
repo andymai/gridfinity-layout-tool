@@ -1,18 +1,19 @@
 /**
  * Figma-style compact, number-first input.
  *
- * Number is primary: click the value to type an exact number, drag the label
- * to scrub coarsely, or use arrow keys to nudge. Modifiers apply to both scrub
- * and arrows — Shift = ×10 step, Alt = fine (÷10) step. Enter commits, Escape
- * reverts.
+ * The value is a persistent text input with spinbutton semantics: click to
+ * type an exact number or a small expression ("42/2"), drag the label to
+ * scrub coarsely, or use arrow keys to nudge. Modifiers apply to both scrub
+ * and arrows — Shift = ×10 step, Alt = fine (÷10) step. Enter commits,
+ * Escape reverts.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Button } from '@/design-system';
-import { cn } from '@/design-system/cn';
-import { clamp as clampRange } from '@/shared/utils/math';
+import { cn } from '../cn';
+import { controlHeights } from '../variants';
+import { evaluateNumberExpression } from './numberExpression';
 
-interface CompactNumberInputProps {
+export interface NumberFieldProps {
   readonly label: string;
   readonly value: number;
   readonly onChange: (value: number) => void;
@@ -37,6 +38,14 @@ interface CompactNumberInputProps {
    * can raise a value beyond what the user entered.
    */
   readonly softMax?: boolean;
+  /** Control row height: sm = 24px, md = 28px. */
+  readonly size?: 'sm' | 'md';
+  /** Decimal places kept on display and on scrub/nudge deltas. */
+  readonly precision?: number;
+  /** Evaluate typed arithmetic ("42/2") on commit. On by default. */
+  readonly expression?: boolean;
+  readonly id?: string;
+  readonly className?: string;
 }
 
 /** Placeholder glyph shown when a multi-selection has mixed values (en dash). */
@@ -47,6 +56,8 @@ const PIXELS_PER_STEP = 6;
 /** Movement past this (px) turns a label press into a scrub instead of a click. */
 const SCRUB_THRESHOLD = 3;
 
+const clampRange = (v: number, min: number, max: number): number => Math.min(Math.max(v, min), max);
+
 /** Step size for the current modifier keys: Shift = ×10, Alt = fine (÷10). */
 function effectiveStep(step: number, e: { shiftKey: boolean; altKey: boolean }): number {
   if (e.shiftKey) return step * 10;
@@ -54,7 +65,7 @@ function effectiveStep(step: number, e: { shiftKey: boolean; altKey: boolean }):
   return step;
 }
 
-export function CompactNumberInput({
+export function NumberField({
   label,
   value,
   onChange,
@@ -67,11 +78,18 @@ export function CompactNumberInput({
   highlight = false,
   indeterminate = false,
   softMax = false,
-}: CompactNumberInputProps) {
-  const [editing, setEditing] = useState(false);
+  size = 'md',
+  precision = 2,
+  expression = true,
+  id,
+  className,
+}: NumberFieldProps) {
+  const [focused, setFocused] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [scrubbing, setScrubbing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  /** Set before a programmatic blur (Enter/Escape) so onBlur doesn't commit twice. */
+  const skipBlurCommit = useRef(false);
 
   /**
    * Committed value at the moment this edit began. The typed-entry ceiling reads
@@ -79,6 +97,11 @@ export function CompactNumberInput({
    * the ceiling and make a clamp chase its own value into a render loop.
    */
   const editStartValue = useRef(value);
+
+  const parseTyped = useCallback(
+    (raw: string) => (expression ? evaluateNumberExpression(raw) : parseFloat(raw)),
+    [expression]
+  );
 
   /**
    * Ceiling applied to a typed entry. `softMax` lifts it entirely; otherwise it
@@ -117,15 +140,20 @@ export function CompactNumberInput({
   const [editPeak, setEditPeak] = useState(0);
 
   /**
-   * Round to 2dp, keeping accumulated scrub/nudge deltas free of float noise.
-   * Guarded: `v * 100` overflows to Infinity past ~9e306, which would render a
-   * committed finite entry as "Infinity" and wedge the field, since that string
-   * no longer parses back to anything committable.
+   * Round to `precision` dp, keeping accumulated scrub/nudge deltas free of
+   * float noise. Guarded: the scale-up overflows to Infinity for very large
+   * finite values, which would render a committed finite entry as "Infinity"
+   * and wedge the field, since that string no longer parses back to anything
+   * committable.
    */
-  const round2 = useCallback((v: number) => {
-    const scaled = v * 100;
-    return Number.isFinite(scaled) ? Math.round(scaled) / 100 : v;
-  }, []);
+  const round2 = useCallback(
+    (v: number) => {
+      const factor = 10 ** precision;
+      const scaled = v * factor;
+      return Number.isFinite(scaled) ? Math.round(scaled) / factor : v;
+    },
+    [precision]
+  );
 
   const formatValue = useCallback(
     (v: number) => {
@@ -137,28 +165,25 @@ export function CompactNumberInput({
 
   const tidy = round2;
 
-  const startEditing = useCallback(() => {
-    if (disabled) return;
+  const handleFocus = useCallback(() => {
     // Mixed selection: start from an empty field so a typed value unifies all.
     setEditValue(indeterminate ? '' : formatValue(value));
     setEditPeak(value);
     editStartValue.current = value;
-    setEditing(true);
-  }, [disabled, indeterminate, value, formatValue]);
+    setFocused(true);
+  }, [indeterminate, value, formatValue]);
 
   useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editing]);
+    if (focused) inputRef.current?.select();
+  }, [focused]);
 
   const commit = useCallback(
     (raw: string) => {
-      const parsed = parseFloat(raw);
-      // Finite, not merely non-NaN: `parseFloat` maps "Infinity" and any
-      // overflowing exponent to Infinity. `softMax` has no ceiling to absorb
-      // that, and downstream geometry must never see a non-finite dimension.
+      const parsed = parseTyped(raw);
+      // Finite, not merely non-NaN: "Infinity" and any overflowing exponent
+      // (or a typed division by zero) evaluate to Infinity. `softMax` has no
+      // ceiling to absorb that, and downstream geometry must never see a
+      // non-finite dimension.
       //
       // Deliberately app-wide rather than gated on `softMax`. A hard `max` did
       // absorb it, but by silently committing the ceiling — so "Infinity" set a
@@ -172,17 +197,28 @@ export function CompactNumberInput({
         const next = clampTyped(parsed);
         if (next !== value) onChange(next);
       }
-      setEditing(false);
     },
-    [onChange, clampTyped, value]
+    [onChange, clampTyped, value, parseTyped]
   );
+
+  const handleBlur = useCallback(() => {
+    if (!skipBlurCommit.current) commit(editValue);
+    skipBlurCommit.current = false;
+    setFocused(false);
+  }, [commit, editValue]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        commit(editValue);
-      } else if (e.key === 'Escape') {
-        setEditing(false);
+      if (e.key === 'Enter' || e.key === 'Escape') {
+        // Enter commits; Escape reverts. Both leave the edit state directly
+        // rather than through the blur event, which never fires when the
+        // element was not truly focused; the flag is armed only across the
+        // synchronous blur() dispatch so it can never go stale.
+        if (e.key === 'Enter') commit(editValue);
+        setFocused(false);
+        skipBlurCommit.current = true;
+        inputRef.current?.blur();
+        skipBlurCommit.current = false;
       } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
         const delta = effectiveStep(step, e) * (e.key === 'ArrowUp' ? 1 : -1);
@@ -190,7 +226,7 @@ export function CompactNumberInput({
         // 156 over a committed 10 and pressing ArrowDown must reach 155, not 9.5.
         // (`editValue` is empty for an untouched mixed selection, hence the
         // fallback.)
-        const typed = parseFloat(editValue);
+        const typed = parseTyped(editValue);
         const base = Number.isFinite(typed) ? typed : value;
         const peak = Math.max(editPeak, base);
         if (peak !== editPeak) setEditPeak(peak);
@@ -199,12 +235,24 @@ export function CompactNumberInput({
         setEditValue(formatValue(next));
       }
     },
-    [editValue, commit, value, min, editPeak, stepCeiling, onChange, formatValue, tidy, step]
+    [
+      editValue,
+      commit,
+      value,
+      min,
+      editPeak,
+      stepCeiling,
+      onChange,
+      formatValue,
+      tidy,
+      step,
+      parseTyped,
+    ]
   );
 
   const handleScrubStart = useCallback(
     (e: React.PointerEvent) => {
-      if (disabled || editing) return;
+      if (disabled || focused) return;
       e.preventDefault();
       const startX = e.clientX;
       const startValue = value;
@@ -232,27 +280,31 @@ export function CompactNumberInput({
         document.removeEventListener('pointermove', handleMove);
         document.removeEventListener('pointerup', handleUp);
         setScrubbing(false);
-        if (!moved) startEditing();
+        if (!moved) inputRef.current?.focus();
       };
 
       document.addEventListener('pointermove', handleMove);
       document.addEventListener('pointerup', handleUp);
     },
-    [disabled, editing, value, min, stepCeiling, onChange, tidy, startEditing, step]
+    [disabled, focused, value, min, stepCeiling, onChange, tidy, step]
   );
+
+  const displayValue = focused ? editValue : indeterminate ? MIXED_GLYPH : formatValue(value);
 
   return (
     <div
       className={cn(
-        'flex h-7 items-center rounded border border-stroke-subtle bg-surface-elevated text-left transition-[box-shadow] duration-500',
+        'flex items-center rounded border border-stroke-subtle bg-surface-elevated text-left transition-[box-shadow] duration-500',
+        controlHeights[size],
         disabled && 'cursor-not-allowed opacity-50',
-        highlight && 'ring-2 ring-accent/70'
+        highlight && 'ring-2 ring-accent/70',
+        className
       )}
       title={info}
     >
       <span
         className={cn(
-          'min-w-[1.5rem] select-none px-1.5 text-xs leading-none transition-colors',
+          'min-w-[1.5rem] select-none px-1.5 text-label leading-none transition-colors',
           // Persistent drag-handle affordance (After Effects "scrubby slider"): the
           // label always carries a dotted underline + ew-resize cursor so it reads as
           // draggable at rest, then brightens on hover and goes accent while scrubbing.
@@ -262,58 +314,44 @@ export function CompactNumberInput({
           scrubbing && 'text-accent'
         )}
         onPointerDown={handleScrubStart}
-        role="slider"
-        aria-label={label}
-        aria-valuenow={value}
-        aria-valuemin={min}
-        // The announced range always contains the value: publishing valuenow >
-        // valuemax is an invalid slider state. Independent of `softMax` — a hard
-        // ceiling can also sit below the value (an oversize cutout leaves no
-        // valid X offset, so X's max is 0 while it still reads its old offset).
-        aria-valuemax={max === Infinity ? undefined : Math.max(max, value)}
+        aria-hidden="true"
       >
         {label}
       </span>
-      {editing ? (
-        <input
-          ref={inputRef}
-          type="text"
-          inputMode="decimal"
-          value={editValue}
-          onChange={(e) => {
-            setEditValue(e.target.value);
-            // Reset rather than raise, so typing 100 over a committed 156 lowers
-            // the ceiling instead of leaving arrows free to climb back to 156.
-            const typed = parseFloat(e.target.value);
-            setEditPeak(Number.isFinite(typed) ? typed : value);
-          }}
-          onBlur={() => commit(editValue)}
-          onKeyDown={handleKeyDown}
-          className="min-w-0 flex-1 bg-transparent pr-1 text-right text-xs text-content outline-none"
-          disabled={disabled}
-          aria-label={label}
-        />
-      ) : (
-        <Button
-          variant="ghost"
-          type="button"
-          onClick={startEditing}
-          disabled={disabled}
-          className={cn(
-            'h-full min-w-0 flex-1 select-none justify-end rounded-none px-0 pr-1 py-0 text-right text-xs font-normal tabular-nums hover:bg-transparent',
-            indeterminate ? 'text-content-tertiary' : 'text-content',
-            !disabled && 'cursor-text',
-            scrubbing && 'text-accent'
-          )}
-          aria-label={
-            indeterminate
-              ? `${label}: mixed`
-              : `${label}: ${formatValue(value)}${unit ? ` ${unit}` : ''}`
-          }
-        >
-          {indeterminate ? MIXED_GLYPH : formatValue(value)}
-        </Button>
-      )}
+      <input
+        ref={inputRef}
+        id={id}
+        type="text"
+        inputMode="decimal"
+        role="spinbutton"
+        value={displayValue}
+        onFocus={handleFocus}
+        onChange={(e) => {
+          setEditValue(e.target.value);
+          // Reset rather than raise, so typing 100 over a committed 156 lowers
+          // the ceiling instead of leaving arrows free to climb back to 156.
+          const typed = parseTyped(e.target.value);
+          setEditPeak(Number.isFinite(typed) ? typed : value);
+        }}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className={cn(
+          'min-w-0 flex-1 select-none bg-transparent pr-1 text-right text-value tabular-nums outline-none',
+          indeterminate && !focused ? 'text-content-tertiary' : 'text-content',
+          !disabled && 'cursor-text',
+          scrubbing && 'text-accent'
+        )}
+        disabled={disabled}
+        aria-label={label}
+        aria-valuenow={indeterminate ? undefined : value}
+        aria-valuetext={indeterminate ? 'mixed' : undefined}
+        aria-valuemin={min}
+        // The announced range always contains the value: publishing valuenow >
+        // valuemax is an invalid spinbutton state. Independent of `softMax` — a
+        // hard ceiling can also sit below the value (an oversize cutout leaves no
+        // valid X offset, so X's max is 0 while it still reads its old offset).
+        aria-valuemax={max === Infinity ? undefined : Math.max(max, value)}
+      />
       {unit && <span className="select-none pr-1.5 text-micro text-content-disabled">{unit}</span>}
     </div>
   );

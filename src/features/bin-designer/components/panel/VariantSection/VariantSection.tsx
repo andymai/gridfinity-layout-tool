@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Alert, Button } from '@/design-system';
+import { Alert, Button, NumberField } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { PanelSection } from '../PanelSection';
 import type {
   BinParams,
@@ -134,7 +133,7 @@ export function VariantSection({
               ) : (
                 <>
                   <div className="flex-1">
-                    <CompactNumberInput
+                    <NumberField
                       label={t(`binDesigner.variants.field.${field}`)}
                       value={claimed}
                       onChange={(value) => setDimension(field, value)}
@@ -222,7 +221,7 @@ export function VariantSection({
                             ) : (
                               <>
                                 <div className="flex-1">
-                                  <CompactNumberInput
+                                  <NumberField
                                     label={t(`binDesigner.variants.field.${field}`)}
                                     value={claimed}
                                     onChange={(value) => setCutoutField(cutout.id, field, value)}

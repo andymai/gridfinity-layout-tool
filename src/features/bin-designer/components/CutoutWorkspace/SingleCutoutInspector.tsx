@@ -8,7 +8,6 @@ import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
 import { LEAN_SHAPES, MAX_CUTOUT_LEAN_DEG, snapKnifeRotation } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
 import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
@@ -28,7 +27,7 @@ import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutKnifeControls } from './CutoutKnifeControls';
 import { CutoutEngraveLabelControls } from './CutoutEngraveLabelControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
-import { Collapsible, SliderInput } from '@/design-system';
+import { Collapsible, SliderInput, NumberField } from '@/design-system';
 
 /**
  * Compact at-a-glance array summary, e.g. `6×3 · 18` (grid) or `⟳ 8` (radial).
@@ -105,7 +104,7 @@ export function SingleCutoutInspector({
             {/* A cutout wider than the board leaves no valid offset, and a
                 negative ceiling would report a nonsense aria-valuemax — pin the
                 axis to 0 until the board grows or the cutout shrinks. */}
-            <CompactNumberInput
+            <NumberField
               label="X"
               value={getEffective(cutout, preview, 'x')}
               onChange={(x) => onUpdate(cutout.id, { x })}
@@ -115,7 +114,7 @@ export function SingleCutoutInspector({
               unit="mm"
               disabled={disabled}
             />
-            <CompactNumberInput
+            <NumberField
               label="Y"
               value={getEffective(cutout, preview, 'y')}
               onChange={(y) => onUpdate(cutout.id, { y })}
@@ -133,7 +132,7 @@ export function SingleCutoutInspector({
                 size is a measurement of the thing going in the pocket, not an
                 instruction to move it. Handle drags stay edge-anchored — that
                 edge is what the cursor is holding. */}
-            <CompactNumberInput
+            <NumberField
               label="W"
               value={getEffective(cutout, preview, 'width')}
               onChange={(width) => onUpdate(cutout.id, resizeAroundCenter(live, { width }))}
@@ -149,7 +148,7 @@ export function SingleCutoutInspector({
                 cutout.shape === 'knifeSlot'
               }
             />
-            <CompactNumberInput
+            <NumberField
               label="H"
               value={getEffective(cutout, preview, 'depth')}
               onChange={(depth) => onUpdate(cutout.id, resizeAroundCenter(live, { depth }))}
@@ -165,7 +164,7 @@ export function SingleCutoutInspector({
                 cutout.shape === 'knifeSlot'
               }
             />
-            <CompactNumberInput
+            <NumberField
               label={t('binDesigner.cutouts.rotation')}
               value={getEffective(cutout, preview, 'rotation')}
               onChange={(rotation) => {
@@ -196,7 +195,7 @@ export function SingleCutoutInspector({
                   })}
                 </p>
               ) : (
-                <CompactNumberInput
+                <NumberField
                   label={t('binDesigner.cutouts.cutDepth')}
                   value={cutout.cutDepth}
                   onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}

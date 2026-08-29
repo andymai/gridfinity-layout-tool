@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { VariantSection } from './VariantSection';
@@ -6,8 +7,9 @@ import type { BinParams, Cutout, DesignOverrides } from '@/features/bin-designer
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
-vi.mock('@/shared/components/CompactNumberInput', () => ({
-  CompactNumberInput: ({
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
+  NumberField: ({
     label,
     value,
     onChange,

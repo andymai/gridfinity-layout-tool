@@ -33,11 +33,10 @@ import {
   withCenteredTextPlacement,
 } from '@/shared/utils/cutoutLabel';
 import { useTranslation } from '@/i18n';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { CutoutRepeatLabels } from './CutoutRepeatLabels';
 import { LabelSizeControl } from '../controls';
-import { Button, Input } from '@/design-system';
+import { Button, Input, NumberField } from '@/design-system';
 import { CutoutSocketControls } from './CutoutSocketControls';
 import { useCutoutSocketPlan } from '@/features/bin-designer/hooks/useCutoutSocketPlan';
 import { TYPE_BOUNDS } from '../panel/TypeSection/useTypeSection';
@@ -206,7 +205,7 @@ export function CutoutEngraveLabelControls({
               </Button>
             ))}
           </div>
-          <CompactNumberInput
+          <NumberField
             label={t(
               effectiveMode === 'emboss'
                 ? 'binDesigner.cutoutTextDepth.emboss'
@@ -252,7 +251,7 @@ export function CutoutEngraveLabelControls({
       )}
       {!isTextElement && (
         <div className="grid grid-cols-2 gap-1">
-          <CompactNumberInput
+          <NumberField
             label={t('binDesigner.cutoutTextOffsetX')}
             value={offset.x}
             onChange={(x) => onUpdate({ textOffset: { x, y: offset.y } })}
@@ -262,7 +261,7 @@ export function CutoutEngraveLabelControls({
             unit="mm"
             disabled={disabled}
           />
-          <CompactNumberInput
+          <NumberField
             label={t('binDesigner.cutoutTextOffsetY')}
             value={offset.y}
             onChange={(y) => onUpdate({ textOffset: { x: offset.x, y } })}
@@ -273,7 +272,7 @@ export function CutoutEngraveLabelControls({
             disabled={disabled}
           />
           {!isSocket && (
-            <CompactNumberInput
+            <NumberField
               label={t('binDesigner.cutoutTextAngle')}
               value={cutout.textAngle ?? 0}
               onChange={(angle) => onUpdate({ textAngle: ((angle % 360) + 360) % 360 })}

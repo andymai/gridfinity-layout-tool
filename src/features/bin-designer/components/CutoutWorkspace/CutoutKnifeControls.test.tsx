@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -6,8 +7,9 @@ import type { Cutout, KnifeSpec } from '@/features/bin-designer/types';
 import { knifeSlotPresetById } from '../panel/CutoutsSection/knifeSlotPresets';
 import { CutoutKnifeControls } from './CutoutKnifeControls';
 
-vi.mock('@/shared/components/CompactNumberInput', () => ({
-  CompactNumberInput: ({
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
+  NumberField: ({
     label,
     value,
     onChange,

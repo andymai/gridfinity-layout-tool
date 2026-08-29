@@ -7,6 +7,7 @@ import {
   SegmentedControl,
   Switch,
   TrashIcon,
+  NumberField,
 } from '@/design-system';
 import {
   AlignCenterHorizontalIcon,
@@ -17,7 +18,6 @@ import {
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import type { AssemblyPartNode } from '@/shared/types/assembly';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput/CompactNumberInput';
 import { clamp } from '@/shared/utils/math';
 import { PanelSection } from '../../panel/PanelSection';
 import { CutterProfileSection } from './CutterProfileSection';
@@ -43,7 +43,7 @@ interface FieldProps {
 
 function Field({ label, value, min, max, step, unit, onChange }: FieldProps) {
   return (
-    <CompactNumberInput
+    <NumberField
       label={label}
       value={value}
       min={min}

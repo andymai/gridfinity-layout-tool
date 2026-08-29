@@ -61,9 +61,9 @@ describe('SingleCutoutInspector', () => {
       ['X', '20'],
       ['Y', '20'],
     ] as const) {
-      const slider = screen.getByRole('slider', { name: label });
-      expect(slider).toHaveAttribute('aria-valuenow', now);
-      expect(slider).toHaveAttribute('aria-valuemax', now);
+      const spin = screen.getByRole('spinbutton', { name: label });
+      expect(spin).toHaveAttribute('aria-valuenow', now);
+      expect(spin).toHaveAttribute('aria-valuemax', now);
     }
   });
 
@@ -81,8 +81,8 @@ describe('SingleCutoutInspector', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'W: 10 mm' }));
-    const input = screen.getByRole('textbox', { name: 'W' });
+    const input = screen.getByRole('spinbutton', { name: 'W' });
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '156' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
@@ -108,8 +108,8 @@ describe('SingleCutoutInspector', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'W: 6.35 mm' }));
-    const input = screen.getByRole('textbox', { name: 'W' });
+    const input = screen.getByRole('spinbutton', { name: 'W' });
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '12.7' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
@@ -132,8 +132,8 @@ describe('SingleCutoutInspector', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'H: 10 mm' }));
-    const input = screen.getByRole('textbox', { name: 'H' });
+    const input = screen.getByRole('spinbutton', { name: 'H' });
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '30' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
@@ -157,8 +157,8 @@ describe('SingleCutoutInspector', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'W: 20 mm' }));
-    const input = screen.getByRole('textbox', { name: 'W' });
+    const input = screen.getByRole('spinbutton', { name: 'W' });
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '40' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 

@@ -15,8 +15,7 @@ import { useState } from 'react';
 import type { Cutout, CutoutScoopEdges } from '@/features/bin-designer/types';
 import { DEFAULT_SCOOP_EDGES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
-import { Button, SliderInput } from '@/design-system';
+import { Button, SliderInput, NumberField } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 
 interface CutoutScoopControlsProps {
@@ -124,7 +123,7 @@ export function CutoutScoopControls({
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-1">
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.scoopW')}
           value={radiusW}
           onChange={(scoopRadiusW) => onUpdate({ scoopRadiusW })}
@@ -134,7 +133,7 @@ export function CutoutScoopControls({
           unit="mm"
           disabled={disabled}
         />
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.scoopD')}
           value={radiusD}
           onChange={(scoopRadiusD) => onUpdate({ scoopRadiusD })}

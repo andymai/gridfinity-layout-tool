@@ -1,3 +1,4 @@
+import { NumberField } from '@/design-system';
 /**
  * Shape-sizing controls: polygon side-count + across-flats, and hardware
  * presets (hex/Allen for polygons, socket drives/diameters for circles).
@@ -20,7 +21,6 @@ import {
 } from '@/shared/utils/cutoutPolygon';
 import { useTranslation } from '@/i18n';
 import { MeshCutoutInfo } from './MeshCutoutInfo';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { resizeKeepingCenter } from './cutoutHelpers';
 import { HEX_ACROSS_FLATS_PRESETS, CIRCLE_DIAMETER_PRESETS } from './cutoutShapePresets';
 import { CutoutPresetChips } from './CutoutPresetChips';
@@ -75,7 +75,7 @@ export function CutoutShapeControls({
   if (cutout.shape === 'polygon') {
     return (
       <div className="space-y-1.5">
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.sides')}
           value={sides}
           onChange={(s) => {
@@ -87,7 +87,7 @@ export function CutoutShapeControls({
           step={1}
           disabled={disabled}
         />
-        <CompactNumberInput
+        <NumberField
           label={t('binDesigner.cutouts.acrossFlats')}
           value={acrossFlatsFromBox(sides, cutout.depth)}
           onChange={(af) => applyAcrossFlats(af)}
