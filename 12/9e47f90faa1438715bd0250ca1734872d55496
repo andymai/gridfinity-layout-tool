@@ -1,0 +1,63 @@
+src/i18n/locales/fr.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/es.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/en.ts
+  s_2a038ae0eafe62::t_1db39716ca4e83 3106-3107
+scripts/i18n-values-allowlist.json
+  s_2a038ae0eafe62::t_dd259cd58eb68a 134
+src/i18n/locales/cs.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/pt-BR.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.test.tsx
+  s_2a038ae0eafe62::t_0aca27adae9ca2 45-46,83-84
+src/i18n/locales/uk.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/pl.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/ja.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/it.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.tsx
+  s_2a038ae0eafe62::t_575e85f26fe141 16
+  s_2a038ae0eafe62::t_15c9e00d5e1fd7 177
+src/i18n/locales/zh-CN.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/features/bin-designer/components/panel/BaseSection/FloorPatternSection.tsx
+  s_2a038ae0eafe62::t_38e90b8478fe53 66-67
+  s_2a038ae0eafe62::t_e6f78fecacabda 13,33-36
+  s_2a038ae0eafe62::t_d9c3f3be6314fa 37-39,63-65
+  s_2a038ae0eafe62::t_d914da47da3720 40-62
+src/i18n/locales/ko.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/nl.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/de.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/sv.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/i18n/locales/nb.json
+  s_2a038ae0eafe62::t_1db39716ca4e83 1934-1935
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_2a038ae0eafe62::t_1db39716ca4e83 39,344
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_2a038ae0eafe62::t_e6f78fecacabda 14,37,72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "129e47f90faa1438715bd0250ca1734872d55496",
+  "prompts": {},
+  "sessions": {
+    "s_2a038ae0eafe62": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6d11451-a87d-4bb2-a9ea-ae3543c6b5a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
