@@ -45,19 +45,18 @@ describe('MoreDisclosure', () => {
   });
 
   it('shows the summary and dot only while closed and non-default', () => {
-    const { rerender } = render(
-      <MoreDisclosure nonDefault={false} summary="2 sides">
+    render(
+      <MoreDisclosure nonDefault summary="2 sides">
         <input aria-label="Depth" />
       </MoreDisclosure>
     );
-    expect(screen.getByText('2 sides')).toBeInTheDocument();
-    rerender(
-      <MoreDisclosure nonDefault={false} summary="2 sides" label="open-now">
-        <input aria-label="Depth" />
-      </MoreDisclosure>
-    );
-    fireEvent.click(screen.getByRole('button'));
+    // Auto-opened: neither summary nor dot while the values are visible.
     expect(screen.queryByText('2 sides')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('more-modified-dot')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button'));
+    expect(screen.getByText('2 sides')).toBeInTheDocument();
+    expect(screen.getByTestId('more-modified-dot')).toBeInTheDocument();
   });
 
   it('keeps children mounted but inert while closed', () => {

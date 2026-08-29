@@ -82,7 +82,11 @@ export function MoreDisclosure({
           />
           <span>{label ?? t('common.more')}</span>
           {!open && nonDefault && (
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
+            <span
+              aria-hidden="true"
+              data-testid="more-modified-dot"
+              className="h-1.5 w-1.5 rounded-full bg-accent"
+            />
           )}
         </Button>
         {/* Outside the button so the summary never pollutes its accessible name. */}
@@ -95,11 +99,17 @@ export function MoreDisclosure({
           accessibility tree, matching Collapsible's contract. */}
       <div
         ref={contentRef}
+        role="region"
+        aria-label={label ?? t('common.more')}
         aria-hidden={!open}
         inert={!open ? true : undefined}
         className={cn(
-          'overflow-hidden',
-          open ? 'ml-3.5 mt-2 max-h-none space-y-2 opacity-100' : 'max-h-0 opacity-0'
+          // `-mx-2 px-2` widens the clip box without moving the content, the
+          // same trick Collapsible uses so full-row controls that bleed their
+          // hover surface outward keep their rounded corners under the
+          // max-height clip.
+          'overflow-hidden -mx-2 px-2',
+          open ? 'ml-1.5 mt-2 max-h-none space-y-2 opacity-100' : 'max-h-0 opacity-0'
         )}
       >
         {children}

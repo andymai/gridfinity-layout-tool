@@ -166,7 +166,6 @@ describe('BaseSection', () => {
       render(<BaseSection />);
 
       expect(screen.getByText('On grid / On grid')).toBeInTheDocument();
-      // Mounted but inert while closed, so help jumps can find the controls.
       expect(screen.getByRole('button', { name: /Foot lattice/ })).toHaveAttribute(
         'aria-expanded',
         'false'
