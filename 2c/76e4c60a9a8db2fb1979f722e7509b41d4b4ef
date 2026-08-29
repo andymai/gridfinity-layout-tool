@@ -1,0 +1,35 @@
+src/design-system/Tooltip/Tooltip.tsx
+  s_9a500d3ffa116a::t_a2317f0d53b364 4-5,29,142,149-151
+src/design-system/Kbd/formatShortcut.ts
+  s_9a500d3ffa116a::t_bcdad118d45d3c 1-37
+src/design-system/index.ts
+  s_9a500d3ffa116a::t_a2317f0d53b364 30,112
+src/design-system/variants.ts
+  s_9a500d3ffa116a::t_a2317f0d53b364 86-90
+  s_9a500d3ffa116a::t_84dd3eea3426aa 85
+src/design-system/Tooltip/Tooltip.test.tsx
+  s_9a500d3ffa116a::t_40e06719ced54a 26,34-44
+src/design-system/Kbd/index.ts
+  s_9a500d3ffa116a::t_a2317f0d53b364 3
+src/design-system/Kbd/formatShortcut.test.ts
+  s_9a500d3ffa116a::t_a6c11617f7a74a 1-22
+src/design-system/SidePanel/SidePanel.tsx
+  s_9a500d3ffa116a::t_3adc78bcdd0ffc 22,204-217
+  s_9a500d3ffa116a::t_90cd2ea77631d2 294-307
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "2c76e4c60a9a8db2fb1979f722e7509b41d4b4ef",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
