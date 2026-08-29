@@ -1,0 +1,21 @@
+src/design-system/Tooltip/Tooltip.tsx
+  s_9a500d3ffa116a::t_54893cb6b098fd 4,20-35,42-43,158-160,167
+src/design-system/Tooltip/Tooltip.test.tsx
+  s_9a500d3ffa116a::t_54893cb6b098fd 4,44-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9077e1e60678e2b0b117dcf9aeb7b04d72595c46",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
