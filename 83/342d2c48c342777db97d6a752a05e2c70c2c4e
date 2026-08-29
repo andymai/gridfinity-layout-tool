@@ -1,0 +1,754 @@
+src/index.css
+  s_9a500d3ffa116a::t_def24abf7b975c 505-507
+  s_9a500d3ffa116a::t_507c763e66b122 10-12,17-62
+  s_9a500d3ffa116a::t_94bd7bb8daf8f4 267-269
+  s_9a500d3ffa116a::t_3fa25276ab62f2 130,132-158
+  s_9a500d3ffa116a::t_18df2782fda922 291-294,298-300,302-309,323-328
+  s_9a500d3ffa116a::t_6a1d4589048c43 131
+src/design-system/variants.ts
+  s_9a500d3ffa116a::t_ca161de75e2361 147-169
+  s_9a500d3ffa116a::t_359cab63316282 146
+  s_9a500d3ffa116a::t_765907262cf405 77-78
+  s_9a500d3ffa116a::t_cb5b5f58c7c27d 205
+  s_9a500d3ffa116a::t_034285c957327d 96,99-100,103-104,106-107,110-112
+  s_9a500d3ffa116a::t_6a1d4589048c43 97-98,101-102,105,108-109
+  s_9a500d3ffa116a::t_a2317f0d53b364 86-90
+  s_9a500d3ffa116a::t_84dd3eea3426aa 85
+playwright/ct.css
+  s_9a500d3ffa116a::t_e06d4e2c1ad0ef 12-21,23
+scripts/doc-budget.json
+  s_9a500d3ffa116a::t_1369d1c3df0b16 43
+  s_9a500d3ffa116a::t_85aef8b2dbc8e1 3
+  s_9a500d3ffa116a::t_278c218daae99f 41
+src/design-system/docs/TOKENS.md
+  s_9a500d3ffa116a::t_541d9d73a8567d 67-93
+  s_9a500d3ffa116a::t_c316dc4645cdbe 94
+  s_9a500d3ffa116a::t_8390e097b05089 148-172
+  s_9a500d3ffa116a::t_baec41367442c8 145-147
+  s_9a500d3ffa116a::t_821d5ca73adca8 141-144
+index.html
+  s_9a500d3ffa116a::t_a12b6e4f84c9d0 83-84,88-96,99,101-104
+  s_9a500d3ffa116a::t_1276d0b7458915 458
+src/features/drawer-shape/components/CornerCutsDialog/CornerCutsDialog.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 175
+src/shell/Collab/CollabCursor/CollabCursor.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 91
+  s_9a500d3ffa116a::t_68d04e9f050151 82
+src/features/bin-designer/components/panel/CutoutsSection/CutoutsSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 33,36,44
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 126
+src/features/bin-designer/components/preview/LidExplodeSlider/LidExplodeSlider.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 176,253
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 59,145,226,244,254,272,279,285
+  s_9a500d3ffa116a::t_530698d4d45aed 25,173,183,193,203,213
+src/features/bin-designer/components/panel/ColorsSection/AccentBandsEditor.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 130,173,187
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 85,124
+src/features/bin-designer/components/CutoutWorkspace/FitTestButton.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 216
+src/shell/Modals/WhatsNewModal/WhatsNewDigest.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 150
+  s_9a500d3ffa116a::t_68d04e9f050151 73
+src/features/bin-designer/components/CutoutWorkspace/ShapeList/ShapeList.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 320,345
+src/features/bin-inspector/components/Inspector/ExpandedFootprint/ExpandedFootprint.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 52,68
+src/shell/Sidebar/Sidebar.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 426
+src/features/bin-designer/components/panel/SlideTraySection/SlideTraySection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 59,89,122
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 142
+src/features/command-palette/components/CommandPalette/CommandPalette.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 162
+  s_9a500d3ffa116a::t_68d04e9f050151 166,206,237
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 184,194,213,421-422,451,626,656
+src/features/bin-designer/components/DesignTagChips/DesignTagChips.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 27,41
+src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 240
+  s_9a500d3ffa116a::t_68d04e9f050151 196,228,257,272,292,313,334,360,402
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 52
+src/features/baseplate/components/BaseplatePreview/BaseplatePreviewControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 167,193,215,228,246,267
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditorParts.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 215,230,239
+src/features/bin-designer/components/panel/CutoutsSection/TransformControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 146
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 539
+src/features/layers/components/LayerPanel/LayerPanel.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 120
+  s_9a500d3ffa116a::t_68d04e9f050151 137
+src/features/bin-designer/components/BentoWorkspace/BentoDock.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 208,325,342,350,364,404,408,438,446,471,498
+src/shared/components/SaveStatusIndicator/SaveStatusIndicator.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 34
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 62,94
+  s_9a500d3ffa116a::t_67b472df8baf44 2,4-5,8,11,100,102-108
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 490,511
+src/features/bin-designer/components/panel/SplitOptionsSection/SplitOptionsSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 51
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 298
+src/features/bin-designer/components/Workshop/WorkshopSelectionToolbar.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 45
+  s_9a500d3ffa116a::t_5cba9e50b80b82 118
+src/features/bin-designer/components/panel/CutoutsSection/CutoutPresetChips.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 33,51
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 204,269,317,349,363
+src/shared/components/segmentedControlClasses.ts
+  s_9a500d3ffa116a::t_68d04e9f050151 58-59
+src/features/bin-designer/components/Workshop/ResizeHandles3D.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 271,285
+src/features/baseplate/components/BaseplatePanel/StackPrintSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 127,172
+src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 349
+  s_9a500d3ffa116a::t_5cba9e50b80b82 354
+src/shell/Modals/WhatsNewModal/WhatsNewArchive.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 65,104
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 97
+  s_9a500d3ffa116a::t_5cba9e50b80b82 148,168
+src/features/bin-designer/components/panel/InteriorSection/WorkspaceLaunchButton.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 40
+src/features/community/components/CommunityDetail/SimilarRail.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 49
+src/features/layers/components/LayerPanel/HeightCrossSectionDiagram.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 244,398,475
+src/features/command-palette/components/CommandPaletteFooter/CommandPaletteFooter.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 19,25
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 127,171,253,260,318,328,350,356,429,441,465,543,553,600-601
+src/features/design-linking/components/Dialogs/DeleteDesignWarningDialog/DeleteDesignWarningDialog.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 87,89
+src/features/bin-designer/components/CutoutWorkspace/ShapeList/ShapeListRow.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 250
+  s_9a500d3ffa116a::t_68d04e9f050151 48,231,239
+src/features/design-linking/components/Dialogs/DesignerUpdatedDialog/DesignerUpdatedDialog.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 38
+src/features/labs/components/FeatureStatusBadge/FeatureStatusBadge.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 27
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 272
+  s_9a500d3ffa116a::t_ce053f90cbe52a 12
+  s_9a500d3ffa116a::t_ec9a1877f1d89b 207,210,250
+  s_9a500d3ffa116a::t_3f3fcfe853774f 13
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 210,261
+  s_9a500d3ffa116a::t_530698d4d45aed 30,107,117,135,151,167,198
+src/features/bin-designer/components/panel/ColorsSection/ColorPicker.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 124,127,135,172,182,191,230,288
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 360,375,401,427,452,465,487,500,505
+src/design-system/Badge/Badge.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 27
+src/features/bin-designer/components/CutoutWorkspace/CutoutColorControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 86
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 150,173,202,227,301
+  s_9a500d3ffa116a::t_530698d4d45aed 39,208,254,264,275
+src/features/bin-designer/components/BentoWorkspace/BentoStashShelf.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 94,157
+src/features/bin-designer/components/CutoutWorkspace/CutoutScoopControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 89,119,149,203
+  s_9a500d3ffa116a::t_530698d4d45aed 18,126,136
+src/features/bin-designer/components/panel/ColorsSection/ColorsHintBanner.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 30
+src/features/bin-designer/components/panel/CutoutsSection/renderer/DimensionTooltip3D.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 50
+src/features/bin-designer/components/BentoWorkspace/BentoGridSetup.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 122,131
+src/features/labs/components/LabsButton/LabsButton.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 32,35
+src/shared/components/ExportDialog/ExportDialog.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 366,410,412
+src/shell/Mobile/MobilePrintList/MobilePrintList.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 56,144
+src/design-system/SliderInput/EditableValueBadge.tsx
+  s_9a500d3ffa116a::t_a04a0d9babb18a 125
+  s_9a500d3ffa116a::t_e200f19b38fb7d 138
+src/features/inspiration-gallery/components/LayoutPreviewOverlay/LayoutPreviewOverlay.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 213,251
+src/shared/components/FractionalEdgeToggle/FractionalEdgeToggle.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 34,46
+src/features/bin-designer/components/controls/CutoutFillControls/CutoutFillControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 53,104
+src/features/drawer-shape/components/ShapeEditorDialog/ShapeEditorDialog.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 186,229
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 107,174,204,209
+  s_9a500d3ffa116a::t_530698d4d45aed 2,136,224
+src/design-system/SegmentedControl/SegmentedControl.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 35
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 351,400,413,416,426,430,438,456,504,533,559,571
+  s_9a500d3ffa116a::t_5cba9e50b80b82 439
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 193,207,277
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 73,82,197
+  s_9a500d3ffa116a::t_e25429fe0fec93 27,179-184
+src/shared/components/AppVersionButton/AppVersionButton.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 57
+  s_9a500d3ffa116a::t_6c42b8f6953799 68
+src/design-system/NumberField/NumberField.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 355
+  s_9a500d3ffa116a::t_530698d4d45aed 4-8,12-14,16,41-48,59-60,68,81-87,91-92,101-105,143-147,149-156,168,173-174,177-178,182-186,201,204-209,212-221,229,238-250,255,283,289,292-293,297-298,300-301,307,317-344,346-347,350-351,354
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 244,298,365
+src/features/bin-designer/components/panel/CutoutsSection/renderer/RulerMeasurement3D.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 110
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 79,81
+src/features/bin-designer/components/BentoWorkspace/BentoBinWideSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 57,88
+src/features/bin-designer/components/PerfOverlay/PerfOverlay.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 38
+src/design-system/Collapsible/Collapsible.tsx
+  s_9a500d3ffa116a::t_a5373b9a49a243 7,10-11
+src/features/bin-designer/components/ExportDialog/SlicerHandoffPreview.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 99,112,115
+src/shell/Modals/HelpModal/HelpSearchResultRow.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 75
+src/features/bin-designer/components/panel/CutoutsSection/renderer/DimensionAnnotations3D.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 57,69
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 81,92,103,106,144,149,181,215
+  s_9a500d3ffa116a::t_2a29b646012d9b 20,200,292
+src/features/categories/components/CategoriesPanel/CategoriesPanel.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 375
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 101,123,179,236,296,301,371
+  s_9a500d3ffa116a::t_530698d4d45aed 21,243,254,265,277
+src/features/design-linking/components/Dialogs/MakeBentoDialog/MakeBentoDialog.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 103,237,239,261
+src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 106
+src/features/bin-designer/components/PreviewCanvas/previewCanvasOverlays.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 43
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 410,580
+  s_9a500d3ffa116a::t_530698d4d45aed 31,454,465,476,488,500,513,524,535,549
+src/features/bin-designer/components/panel/InteriorSection/InteriorModeCard.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 84,101,131
+src/features/bin-recommender/components/BinSizeSuggestion/BinSizeSuggestion.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 88
+src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 126,134,142,154,278,326,332
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 121
+src/design-system/SegmentedControl/SegmentedControl.test.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 187
+src/features/bin-designer/components/CutoutWorkspace/CutoutPlateSettings.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 49,53
+  s_9a500d3ffa116a::t_5cba9e50b80b82 57
+src/features/bin-designer/components/CutoutWorkspace/CutoutRepeatLabels.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 37,108,122,133,141,146
+src/features/bin-designer/components/CompartmentEditor/CompartmentSizeOverlay.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 76
+src/features/bin-designer/components/controls/LabelSizeControl/LabelSizeControl.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 59,88
+src/features/layers/components/ActiveLayerPanel/SizeSelectorPopover.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 93,110,129,137,170
+  s_9a500d3ffa116a::t_6c42b8f6953799 57
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspaceHeader.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 149
+src/features/baseplate/components/BaseplatePreview/StackSeparationSlider.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 104,165
+src/features/bin-designer/components/DesignListItem/DesignListItem.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 127,221,230,234
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 284
+src/features/bin-designer/components/Workshop/WorkshopHoverTip.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 49
+src/features/bin-designer/components/panel/ColorsSection/ColorZoneRow.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 109
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 86,123,150
+src/features/bin-designer/components/DesignGridItem/DesignGridItem.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 144,205,225,232
+src/features/bin-designer/components/controls/SnappingSlider/SnappingSlider.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 339,358
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 239,319,337,350,364
+src/features/bin-designer/components/panel/SetDefaultFooter/SetDefaultFooter.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 39
+src/features/labs/components/EngineSelector/EngineSelector.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 68
+  s_9a500d3ffa116a::t_6c42b8f6953799 64,81
+src/features/bin-designer/components/panel/shared/panelText.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 5,17
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 519
+src/features/bin-designer/components/panel/AssembledHeightBreakdown/AssembledHeightBreakdown.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 46,57,71
+src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 187
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 537,777,792
+src/features/bin-designer/components/CutoutWorkspace/BinFeaturesSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 35,51
+src/shared/components/AttributionFooter/AttributionFooter.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 11-12
+src/shared/components/ToggleRow/ToggleRow.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 81
+src/features/labs/components/FeatureCard/FeatureCard.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 21,25
+src/features/bin-designer/components/CutoutWorkspace/RepeatSuggestion.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 47
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 214,218
+src/features/bin-designer/components/Workshop/WorkshopViewBar.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 47,58,67,79
+src/features/design-linking/components/Dialogs/BlockedResizeDialog/BlockedResizeDialog.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 46,59
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 192,195,207,293,297,300,421
+src/features/bin-designer/components/CutoutWorkspace/CutoutSocketControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 62,72,109,121,133,144
+  s_9a500d3ffa116a::t_5cba9e50b80b82 85
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 47,248
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 232
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 514,521,529
+src/features/bin-designer/components/panel/ScoopSection/ScoopSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 84,94,157
+src/design-system/SliderInput/SliderInput.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 87
+  s_9a500d3ffa116a::t_d5c512c3aec689 67
+src/features/community/components/AuthorSummary/AuthorSummary.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 102,111
+src/features/bin-designer/components/CutoutWorkspace/GroupBreadcrumb.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 41,48,81
+src/features/bin-designer/components/panel/ColorsSection/ColorGroup.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 54
+src/design-system/Badge/Badge.test.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 92
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 54,106,132,166
+src/features/bin-designer/components/DesignerPage/FractionalEdgeMismatchBanner.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 29
+src/design-system/Dialog/Dialog.test.tsx
+  s_9a500d3ffa116a::t_65d2d5a5106fff 475,492
+src/features/bin-designer/components/panel/ShapeSection/ShapeSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 55,60,68
+src/features/design-linking/components/Dialogs/SyncDimensionsDialog/SyncDimensionsDialog.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 115,124,142
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEmptyState.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 96,99,125
+src/features/community/components/PrintsSection/PrintCard.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 262,269
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 60
+src/shell/RightPanel/RightPanel.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 427,512,541
+src/design-system/Kbd/Kbd.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 8
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 226,255,288,299,428
+src/features/community/components/CommunityDetail/DesignMediaPanel.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 158
+src/shared/components/ShortcutBadge/ShortcutBadge.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 21,34,40,45
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 308
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 319,392
+  s_9a500d3ffa116a::t_c967f4e0c4f001 53,343-344
+  s_9a500d3ffa116a::t_ec9a1877f1d89b 25,37,310,315,338
+src/features/bin-designer/components/Workshop/WorkshopDragTip.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 37
+src/features/bin-designer/components/CutoutWorkspace/AlignControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 83,105
+src/features/bin-designer/components/controls/TypeSpecimen/TypeSpecimen.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 58
+src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 42,47,62,86,103
+src/features/bin-designer/components/panel/OverhangSection/TaperProfileCards.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 133
+src/features/layout-library/components/LayoutManagerModal/LayoutGridItem/LayoutGridItem.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 91,130,146
+src/shell/Mobile/MobileAboutStrip/MobileAboutStrip.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 20
+src/shell/RightPanel/RightPanel.test.tsx
+  s_9a500d3ffa116a::t_5cba9e50b80b82 566
+src/design-system/Dialog/DialogParts.tsx
+  s_9a500d3ffa116a::t_8ea3ae257493c7 161
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentColorControls.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 51,88,95
+src/design-system/cn.ts
+  s_9a500d3ffa116a::t_02def23a3ca9d8 2-13
+src/shared/components/StickyGroupHeader/StickyGroupHeader.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 76
+  s_9a500d3ffa116a::t_6c42b8f6953799 94
+src/features/baseplate/components/BaseplatePanel/ConnectorPicker.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 111,163
+src/features/bin-designer/components/PreviewCanvas/MeasureOverlay.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 62,104
+src/shell/Header/Header.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 177,206
+src/features/bin-designer/components/BentoWorkspace/BentoCanvas.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 419,477
+  s_9a500d3ffa116a::t_6c42b8f6953799 428
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 45,66,80,96,119,150,155,164,167
+  s_9a500d3ffa116a::t_beca6c8f0345d7 1-177
+src/shell/Modals/SettingsModal/tabs/DefaultsTab/DefaultsTab.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 219
+src/shared/components/LinkedDimensionInput/LinkedDimensionInput.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 145
+src/features/bin-inspector/components/Inspector/EmptyState/EmptyState.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 77,83,89
+src/features/bin-designer/components/panel/KnifeRestSection/KnifeRestSection.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 64,111
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 138,149,154,170
+  s_9a500d3ffa116a::t_5cba9e50b80b82 131,158
+src/design-system/Tabs/Tabs.tsx
+  s_9a500d3ffa116a::t_8b711cfa8c7357 294
+  s_9a500d3ffa116a::t_a9460b48896100 30,39,61,77-78,166-167,169
+src/shared/components/segmentedControlClasses.test.ts
+  s_9a500d3ffa116a::t_68d04e9f050151 28
+src/features/command-palette/components/CommandPalette/commandPaletteParts.tsx
+  s_9a500d3ffa116a::t_6c42b8f6953799 60
+src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.tsx
+  s_9a500d3ffa116a::t_68d04e9f050151 124,134
+src/design-system/index.ts
+  s_9a500d3ffa116a::t_0234f9c878d188 32-34
+  s_9a500d3ffa116a::t_530698d4d45aed 126-129
+  s_9a500d3ffa116a::t_b0bd49f07c72c6 130-142,209-210,229-230
+  s_9a500d3ffa116a::t_a2317f0d53b364 30,112
+src/shell/styles/themes.css
+  s_9a500d3ffa116a::t_761b690a93e92e 97-102
+src/design-system/NumberField/NumberField.visual.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1-34
+src/design-system/NumberField/index.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-3
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 64-66,84-85,111-112,135-136,160-161
+src/design-system/docs/COMPONENTS.md
+  s_9a500d3ffa116a::t_7c59ec165a547f 236-241
+  s_9a500d3ffa116a::t_13e61c772e0d30 228-235
+src/features/bin-designer/components/panel/VariantSection/VariantSection.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,10-12
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,78,90
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,10-12
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 10,46
+src/features/drawer-shape/components/PenShapeDialog/PenControls.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 72-73
+src/design-system/NumberField/NumberField.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 2,4,6-8,10,16,18,22,24,28,34,36,39,41,43,45-48,51,53,55-57,60,63,65,67-69,72,75,77,79-81,89,91,100,102,111,113,122,124,130,132,134-136,141,143,145-147,152-209,213,215-217,224,226-228,236,238,248,251,263,265,270,280,282-284,293,295-297,308,310-311,318,321,323-325,333,336-338,346,348-350,353-357,361-364,368-372,377,379-381,393,395-396,404,406-408,417,419,431,433-435,443,445,448-449,457,459,468,470,476,478,480-482,484-485,491,493,499-503,508,510-511,517,519,521-522,526-537,548,550-551,558,560-562,569,571-573,584,586-587,589-590,597-602,605-612,614-618
+  s_9a500d3ffa116a::t_c45e5f61ee1a98 613
+src/features/bin-designer/components/CutoutWorkspace/CutoutScoopControls.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 7-9
+src/design-system/NumberField/numberExpression.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-112
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 9,12-14
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 52-53,70-71,78
+src/features/bin-designer/README.md
+  s_9a500d3ffa116a::t_8993f1831603c7 52-53
+src/design-system/NumberField/numberExpression.test.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-70
+src/features/drawer-shape/components/PenShapeDialog/PenControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 9,88,97
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.test.tsx
+  s_9a500d3ffa116a::t_0c7eab02535f2c 125
+src/design-system/SidePanel/SidePanel.visual.tsx
+  s_9a500d3ffa116a::t_edbbdf947bda13 1-39
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_9a500d3ffa116a::t_b0bd49f07c72c6 1,224-226
+src/design-system/SidePanel/SidePanel.tsx
+  s_9a500d3ffa116a::t_5c882dd59eb7c0 243-244
+  s_9a500d3ffa116a::t_3af21d9a3ba8dc 245
+  s_9a500d3ffa116a::t_f1dd310e5a4cd2 252
+  s_9a500d3ffa116a::t_b0bd49f07c72c6 262
+  s_9a500d3ffa116a::t_1a0f53cd3fd72f 1-21,23-141,143-203,218-242,246-251,253-261,263-293,308-342
+  s_9a500d3ffa116a::t_09198f4889b327 142
+  s_9a500d3ffa116a::t_3adc78bcdd0ffc 22,204-217
+  s_9a500d3ffa116a::t_90cd2ea77631d2 294-307
+src/design-system/SearchInput/SearchInput.visual.tsx
+  s_9a500d3ffa116a::t_7cbf906ce2f3e1 1-27
+src/design-system/SidePanel/index.ts
+  s_9a500d3ffa116a::t_b0bd49f07c72c6 1-3
+  s_9a500d3ffa116a::t_6c63a6b29f5ae9 4-6
+  s_9a500d3ffa116a::t_ea12ec7caa138d 7-8
+src/design-system/Icon/icons/ChevronDoubleLeft.tsx
+  s_9a500d3ffa116a::t_e4fda1798fd508 1-19
+src/design-system/Icon/icons/ChevronDoubleRight.tsx
+  s_9a500d3ffa116a::t_f62c2f20384d30 1-19
+src/design-system/Icon/index.ts
+  s_9a500d3ffa116a::t_b3545e11a76b43 30-33
+src/design-system/SearchInput/SearchInput.test.tsx
+  s_9a500d3ffa116a::t_ee9144567f1bbd 1-3,5-19,22-27,29-33,36-42,45-66
+src/design-system/SearchInput/SearchInput.tsx
+  s_9a500d3ffa116a::t_6f99e4d215d3ef 1-29,32-33,35-69
+  s_9a500d3ffa116a::t_09198f4889b327 30-31,34
+src/design-system/SearchInput/index.ts
+  s_9a500d3ffa116a::t_1526fd086f5498 1-2
+src/design-system/SidePanel/SidePanel.test.tsx
+  s_9a500d3ffa116a::t_faae78a7f2093c 1-103
+src/design-system/SidePanel/sidePanelStorage.ts
+  s_9a500d3ffa116a::t_8c69d5d4c428fc 1-4,6-52
+  s_9a500d3ffa116a::t_09198f4889b327 5
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.test.tsx
+  s_9a500d3ffa116a::t_e7c5f221ea8d96 38,47
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.tsx
+  s_9a500d3ffa116a::t_eefcc62e612db3 6-9,12-13,20,99-111,113-147,163,173,176,178,180
+src/features/bin-designer/components/CutoutWorkspace/inspectorDockStorage.ts
+  s_9a500d3ffa116a::t_daac2dff7d5c64 1-3,5
+  s_9a500d3ffa116a::t_09198f4889b327 4
+src/design-system/Tooltip/Tooltip.tsx
+  s_9a500d3ffa116a::t_a2317f0d53b364 45,168-169
+  s_9a500d3ffa116a::t_54893cb6b098fd 4,20-35,42-43,158-160,167
+src/design-system/Kbd/formatShortcut.ts
+  s_9a500d3ffa116a::t_bcdad118d45d3c 1-37
+src/design-system/Tooltip/Tooltip.test.tsx
+  s_9a500d3ffa116a::t_40e06719ced54a 27,35-43
+  s_9a500d3ffa116a::t_54893cb6b098fd 4,44-45
+src/design-system/Kbd/index.ts
+  s_9a500d3ffa116a::t_a2317f0d53b364 3
+src/design-system/Kbd/formatShortcut.test.ts
+  s_9a500d3ffa116a::t_a6c11617f7a74a 1-22
+src/features/bin-designer/components/panel/pages/FeaturesPage/FeaturesPage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-19,29-30
+  s_9a500d3ffa116a::t_e7e16944dcaace 20-22
+  s_9a500d3ffa116a::t_5c00f5c5cd0ec2 23-25
+  s_9a500d3ffa116a::t_39651df5e9a10c 26-28
+src/features/bin-designer/components/BinPanelShell/categoryDefs.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-19
+src/features/bin-designer/components/panel/pages/InteriorPage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-20,29-30
+  s_9a500d3ffa116a::t_e7e16944dcaace 21-22
+  s_9a500d3ffa116a::t_3117f85d7ceee8 23-25
+  s_9a500d3ffa116a::t_38f1dc87b277f4 26-28
+src/i18n/locales/ja.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/DesignerPage/DesignerMainContent.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 6,94
+src/features/bin-designer/components/panel/pages/FeaturesPage/FeaturesPage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-2,6,8,9-10,11-13,23-25
+  s_9a500d3ffa116a::t_e7e16944dcaace 3-5,7,14-22
+scripts/i18n-values-allowlist.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 42-43
+src/i18n/locales/nb.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/BinPanelShell/BinPanelShell.test.tsx
+  s_9a500d3ffa116a::t_16e5a1dcd229c0 1-67
+src/features/bin-designer/components/panel/pages/InteriorPage/InteriorPage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-4,6-7,9-23,31-40,42-47,49-58
+  s_9a500d3ffa116a::t_8f319ec4b0287a 5,8,24-30,41,48
+src/i18n/locales/nl.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 2-7,12,15-16,19,29-35
+  s_9a500d3ffa116a::t_8f319ec4b0287a 1,8-11,13-14,17-18,20-28
+src/i18n/locales/cs.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/BinPanelShell/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/types/designerState.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 63,409
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-3,6,8-16,23-25
+  s_9a500d3ffa116a::t_e7e16944dcaace 4-5,7,17-22
+src/i18n/locales/fr.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/panel/pages/ShapePage/ShapePage.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-4,6-23,25-31
+  s_9a500d3ffa116a::t_e7e16944dcaace 5,24
+src/i18n/locales/pt-BR.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/es.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/BinPanelShell/BinPanelShell.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-26,28-62,65-76,78-104,109-140,142-143,146,155-234
+  s_9a500d3ffa116a::t_ea07bff9606c72 105-108
+  s_9a500d3ffa116a::t_7f3508df8d5b38 27
+  s_9a500d3ffa116a::t_8f319ec4b0287a 63-64,77,141,144-145,147-154
+src/features/bin-designer/components/panel/pages/PrintPage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/i18n/locales/de.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/panel/pages/ShapePage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/components/panel/pages/FeaturesPage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/constants/defaults.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 284
+src/i18n/locales/ko.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/sv.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/uk.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.test.tsx
+  s_9a500d3ffa116a::t_3778300a3237fa 9,25,28-30,33-34,37-38,41,44-46,49,54-57
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-21
+  s_9a500d3ffa116a::t_133832e8ffd4b3 22-24
+src/features/bin-designer/settingsManifest.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-11,13-30,34-35,38,40-46
+  s_9a500d3ffa116a::t_e7e16944dcaace 31-33,36-37
+  s_9a500d3ffa116a::t_8f319ec4b0287a 39
+  s_9a500d3ffa116a::t_4cbca78d09c872 55
+  s_9a500d3ffa116a::t_7f3508df8d5b38 12,47-54
+src/i18n/locales/en.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 2560-2566,2567-2569
+  s_9a500d3ffa116a::t_1740b5387e80e9 2570
+  s_9a500d3ffa116a::t_bbbd129b9e845a 121
+  s_9a500d3ffa116a::t_aeb477e5d02c44 2571-2573
+src/i18n/locales/it.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/pl.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/types/uiState.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 35-37,67
+src/features/bin-designer/components/panel/pages/InteriorPage/InteriorPage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-24
+  s_9a500d3ffa116a::t_76c8d3a2ec95a3 25-33
+src/features/bin-designer/components/panel/pages/ShapePage/ShapePage.test.tsx
+  s_9a500d3ffa116a::t_ebedb6b9442907 1-25
+  s_9a500d3ffa116a::t_5ef26bc2ed6cac 26-31
+src/i18n/locales/zh-CN.json
+  s_9a500d3ffa116a::t_51dc17ca9011da 4476-4483,4484-4486
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/shared/constants/iconPaths.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 68-69
+  s_9a500d3ffa116a::t_72a9b330598eb3 70-73
+src/features/bin-designer/components/BinPanelShell/railPrefsStorage.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1-26
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 13,38-40
+  s_9a500d3ffa116a::t_c9b8d9e5cd2796 41-43
+src/features/bin-designer/components/panel/pages/StylePage/index.ts
+  s_9a500d3ffa116a::t_51dc17ca9011da 1
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_9a500d3ffa116a::t_51dc17ca9011da 4-9,11-12,15,17,35-40,58-63,65-99,102,108-112,187-202,204,209-214,216-262,265-267,269-287,294,296,298-302,304,307-308
+  s_9a500d3ffa116a::t_2d7ab2da1ebc17 303
+  s_9a500d3ffa116a::t_8f319ec4b0287a 45,51,113-114,305-306
+src/features/bin-designer/components/panel/WallsSection/WallThicknessSection.test.tsx
+  s_9a500d3ffa116a::t_5701315b018255 1-19
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.test.tsx
+  s_9a500d3ffa116a::t_5701315b018255 1-333
+src/features/bin-designer/components/panel/WallsSection/WallThicknessSection.tsx
+  s_9a500d3ffa116a::t_beca6c8f0345d7 1-22
+src/features/bin-designer/components/panel/BaseSection/index.ts
+  s_9a500d3ffa116a::t_c967f4e0c4f001 2
+  s_9a500d3ffa116a::t_3a0c017e270784 1
+src/features/bin-designer/components/panel/BaseSection/FloorPatternSection.test.tsx
+  s_9a500d3ffa116a::t_c967f4e0c4f001 1-14,16,19-20,50-51,53-54,56-57
+  s_9a500d3ffa116a::t_8352514a9933a0 15,17-18,21-49,55
+  s_9a500d3ffa116a::t_e7e16944dcaace 52
+src/features/bin-designer/components/panel/WallsSection/index.ts
+  s_9a500d3ffa116a::t_beca6c8f0345d7 1-2
+src/features/bin-designer/components/panel/BaseSection/FloorPatternSection.tsx
+  s_9a500d3ffa116a::t_c967f4e0c4f001 1-66
+src/shared/components/MoreDisclosure/MoreDisclosure.tsx
+  s_9a500d3ffa116a::t_754b029d3b798c 57-62
+  s_9a500d3ffa116a::t_5b9f78f6a40828 70-88,90,92
+  s_9a500d3ffa116a::t_6190ccc94b47a2 1-56,63-69,89,91,93-109
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_9a500d3ffa116a::t_7e74df12d7e51a 169-173,196-199
+  s_9a500d3ffa116a::t_47e3b7981ec5e8 201
+  s_9a500d3ffa116a::t_da7a4b7fb01291 174
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+  s_9a500d3ffa116a::t_ec9a1877f1d89b 11,14,79,82,133,243,246,275
+src/shared/components/MoreDisclosure/index.ts
+  s_9a500d3ffa116a::t_6190ccc94b47a2 1-2
+src/features/bin-designer/components/panel/PhysicalUnitsSection/PhysicalUnitsSection.test.tsx
+  s_9a500d3ffa116a::t_754b029d3b798c 50-55,60-62
+src/shared/components/MoreDisclosure/MoreDisclosure.test.tsx
+  s_9a500d3ffa116a::t_bbbd129b9e845a 1-93
+src/features/bin-designer/components/panel/PhysicalUnitsSection/PhysicalUnitsSection.tsx
+  s_9a500d3ffa116a::t_2a29b646012d9b 9,24,82
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_9a500d3ffa116a::t_c1355ea17c88e5 139-140,142-145
+src/shared/help/helpJumpDispatcher.ts
+  s_9a500d3ffa116a::t_0dd7b14cacf134 20-26,104-106
+src/features/bin-designer/components/panel/FeatureToggle/FeatureToggle.test.tsx
+  s_9a500d3ffa116a::t_58334c337043ac 48,55,58,60-61
+src/shared/components/FeatureToggle/FeatureToggle.test.tsx
+  s_9a500d3ffa116a::t_58334c337043ac 48,55,58,60-61
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.ts
+  s_9a500d3ffa116a::t_8fd92594098e78 126
+  s_9a500d3ffa116a::t_953b1f8875c1c9 127-129
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_9a500d3ffa116a::t_95b0877a2d60e4 225-228,969
+  s_9a500d3ffa116a::t_e25429fe0fec93 988
+src/features/bin-designer/components/panel/shared/DependencyHint.tsx
+  s_9a500d3ffa116a::t_7f3508df8d5b38 1-10,13-19,21-31
+  s_9a500d3ffa116a::t_1c80462eab8e6d 11-12,20
+src/features/bin-designer/components/panel/shared/DependencyHint.test.tsx
+  s_9a500d3ffa116a::t_396317e49a9481 14-15
+  s_9a500d3ffa116a::t_7f3508df8d5b38 1-13
+src/features/bin-designer/components/panel/shared/index.ts
+  s_9a500d3ffa116a::t_7f3508df8d5b38 7
+src/features/bin-designer/components/ParameterPanel/categoryModified.test.ts
+  s_9a500d3ffa116a::t_56ece4b927459b 4-12,16,26,30-33,37-43,46-52,55-58,62-68,71-74,77-81,84,88,90-95
+  s_9a500d3ffa116a::t_d8bf1136e3ddbd 22-25,85-86
+  s_9a500d3ffa116a::t_cad57facc3814c 2,14,89
+src/features/bin-designer/components/ParameterPanel/categoryModified.ts
+  s_9a500d3ffa116a::t_cad57facc3814c 2,4-7,13-15,23,35-48,96-97,100-102,109-111,114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "83342d2c48c342777db97d6a752a05e2c70c2c4e",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
