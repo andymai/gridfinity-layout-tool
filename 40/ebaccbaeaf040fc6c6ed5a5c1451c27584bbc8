@@ -1,0 +1,85 @@
+src/i18n/locales/de.json
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1801,1803
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1798-1799
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+src/i18n/locales/ja.json
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799,1803
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+src/i18n/locales/ko.json
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+src/i18n/locales/pt-BR.json
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+src/features/bin-designer/components/panel/TypeSection/TypeSection.test.tsx
+  s_2a038ae0eafe62::t_d5a33be97498ce 23,29,31,35-37
+  s_2a038ae0eafe62::t_11260c69f10d13 38-39
+src/i18n/locales/en.ts
+  s_2a038ae0eafe62::t_34d0820a74e11c 1921,3185-3186
+  s_2a038ae0eafe62::t_efc0f93eaa006e 3183-3184
+  s_2a038ae0eafe62::t_b326c71ebdc439 3161,3187-3189
+src/i18n/locales/it.json
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+src/i18n/locales/nl.json
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1798-1799
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1801,1803
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+src/i18n/locales/pl.json
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+src/i18n/locales/zh-CN.json
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_2a038ae0eafe62::t_1f415f94107cf1 8-11,14,31,38,42-43,46,52-53,56,66-74,85-88,90-129,131,135,157-169,171-181,189-202,206,217-218,235-242,245-258,277,288-289,300-301,312-321
+  s_2a038ae0eafe62::t_dbfeee626126ab 322-323,325,336
+src/features/bin-designer/components/panel/shared/StepperField.tsx
+  s_2a038ae0eafe62::t_a71a81336f41e0 20
+src/i18n/locales/uk.json
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+src/i18n/locales/cs.json
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+src/i18n/locales/sv.json
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1801,1803
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1798-1799
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+src/i18n/locales/nb.json
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1798-1799
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1801,1803
+src/i18n/locales/es.json
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+src/i18n/locales/fr.json
+  s_2a038ae0eafe62::t_a4fabad2402df2 1792
+  s_2a038ae0eafe62::t_efc0f93eaa006e 1798,1801,1803
+  s_2a038ae0eafe62::t_35fd041a69c77a 1716,1782,1796,1799
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "40ebaccbaeaf040fc6c6ed5a5c1451c27584bbc8",
+  "prompts": {},
+  "sessions": {
+    "s_2a038ae0eafe62": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6d11451-a87d-4bb2-a9ea-ae3543c6b5a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
