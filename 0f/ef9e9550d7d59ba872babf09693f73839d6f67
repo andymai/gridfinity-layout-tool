@@ -1,0 +1,22 @@
+src/features/bin-designer/store/designer.test.ts
+  s_9a500d3ffa116a::t_882aeb7e27587a 274
+  s_9a500d3ffa116a::t_a00aa869baa527 273
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_9a500d3ffa116a::t_6c1200cf3faa0d 5-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "0fef9e9550d7d59ba872babf09693f73839d6f67",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
