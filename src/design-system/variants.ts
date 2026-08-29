@@ -88,23 +88,19 @@ export const activePress = 'active:scale-[0.98]' as const;
 export const touchTarget = 'min-h-[44px] min-w-[44px]' as const;
 
 /**
- * Pro-compact control row heights (tokens --control-h-sm/-md). Adopted
- * control-by-control; existing 36px intrinsic-height controls keep their
- * size until they are rebuilt on this scale.
+ * Pro-compact control row heights. Adopted control-by-control; existing
+ * 36px intrinsic-height controls keep their size until rebuilt on this scale.
  */
 export const controlHeights = {
-  sm: 'h-6',
-  md: 'h-7',
+  sm: 'h-(--control-h-sm)',
+  md: 'h-(--control-h-md)',
 } as const;
 
-/**
- * Standard control row layout at the md control height.
- */
-export const controlRow = 'flex h-7 items-center gap-2' as const;
+export const controlRow = 'flex h-(--control-h-md) items-center gap-2' as const;
 
 /**
- * Hairline border: 1px, thinning to 0.5px on high-density screens
- * (the `hairline` utility in index.css), in the subtle stroke color.
+ * The width behavior comes from the `hairline` utility in index.css, which
+ * thins to 0.5px on high-density screens.
  */
 export const hairline = 'hairline border-stroke-subtle' as const;
 

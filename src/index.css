@@ -128,8 +128,7 @@
   --color-selection-glow: var(--selection-glow);
   --color-selection-bg: var(--selection-bg);
 
-  /* Radius scale (pro-compact). rounded-* utilities reference these vars, as
-     does raw CSS via var(--radius-*). */
+  /* Radius scale (pro-compact) */
   --radius-sm: 0.25rem; /* 4px */
   --radius-md: 0.375rem; /* 6px */
   --radius-lg: 0.625rem; /* 10px */
