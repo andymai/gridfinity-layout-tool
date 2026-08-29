@@ -2563,8 +2563,6 @@ const en: Record<string, string> = {
   'binDesigner.category.features': 'Features',
   'binDesigner.category.style': 'Style',
   'binDesigner.category.print': 'Print',
-  'binDesigner.category.featuresInterim':
-    'Handles, wall cutouts and the slide tray are under Shape for now.',
   'binDesigner.panel.collapse': 'Collapse panel',
   'binDesigner.panel.expand': 'Expand panel',
   'binDesigner.panel.resize': 'Resize panel',

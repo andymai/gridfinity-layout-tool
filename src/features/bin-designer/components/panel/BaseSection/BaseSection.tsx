@@ -23,9 +23,7 @@ import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { AdvancedDisclosure, Hint, SubHeader } from '../shared';
-import { PatternSelector } from '../WallsSection/PatternSelector';
 import {
-  FLOOR_PATTERN_TYPES,
   DEFAULT_FOOT_LATTICE,
   FOOT_LATTICES,
   LID_ATTACHMENTS,
@@ -51,7 +49,7 @@ const FOOT_LATTICE_AXES = ['x', 'y'] as const;
  * explaining it. Keeping one dimmed line costs a row per inapplicable family
  * and leaves nothing unaccounted for.
  */
-function UnavailableFamily({ title, reason }: { title: string; reason: string }) {
+export function UnavailableFamily({ title, reason }: { title: string; reason: string }) {
   return (
     <section className="space-y-1 opacity-60">
       <SubHeader>{title}</SubHeader>
@@ -341,7 +339,8 @@ export function BaseSection() {
         </section>
       )}
 
-      {/* ── Floor ─────────────────────────────────────────────────────── */}
+      {/* ── Floor ── lightweight relief only; the drainage pattern lives on
+          the Style page with the other surface patterns. */}
       {!state.showFloor && state.floorUnavailable && (
         <UnavailableFamily
           title={t('binDesigner.base.section.floor')}
@@ -395,42 +394,6 @@ export function BaseSection() {
               </Button>
             )}
           </div>
-
-          {/* Floor pattern (#2816): drainage / ventilation. The holes pass
-              through the floor slab AND the feet, staying inside each foot's
-              flat underside so the baseplate-mating taper is never cut. */}
-          <FeatureToggle
-            label={t('binDesigner.base.floorPattern')}
-            checked={state.floorPatternEnabled}
-            onChange={handlers.toggleFloorPattern}
-            disabledReason={handlers.floorPatternDisabledReason}
-            primaryControls={
-              <>
-                <PatternSelector
-                  id="floor-pattern-selector"
-                  labelKey="binDesigner.base.floorPattern.shape"
-                  patterns={FLOOR_PATTERN_TYPES}
-                  selectedPattern={state.floorPatternType}
-                  onChange={handlers.setFloorPatternType}
-                />
-                <SliderInput
-                  label={t('binDesigner.walls.pattern.scale')}
-                  value={state.floorPatternScalePercent}
-                  onChange={handlers.setFloorPatternScale}
-                  min={0}
-                  max={100}
-                  step={5}
-                  unit="%"
-                  info={t('binDesigner.walls.pattern.scaleHint')}
-                />
-                <Hint>
-                  {state.floorPatternDoesNotFit
-                    ? t('binDesigner.base.floorPattern.tooSmall')
-                    : t('binDesigner.base.floorPattern.hint')}
-                </Hint>
-              </>
-            }
-          />
         </section>
       )}
     </div>

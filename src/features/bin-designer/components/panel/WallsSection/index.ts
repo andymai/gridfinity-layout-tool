@@ -1,1 +1,2 @@
-export * from './WallsSection';
+export { WallThicknessSection } from './WallThicknessSection';
+export { WallSurfaceSection } from './WallSurfaceSection';

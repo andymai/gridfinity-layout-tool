@@ -18,5 +18,13 @@ describe('StylePage', () => {
     const { container } = render(<StylePage />);
     expect(container.querySelector('[data-help-target="bd-type"]'), 'bd-type').not.toBeNull();
     expect(container.querySelector('[data-help-target="bd-colors"]'), 'bd-colors').not.toBeNull();
+    expect(
+      container.querySelector('[data-help-target="bd-wall-style"]'),
+      'bd-wall-style'
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-help-target="bd-floor-pattern"]'),
+      'bd-floor-pattern'
+    ).not.toBeNull();
   });
 });

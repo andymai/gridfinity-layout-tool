@@ -1,8 +1,10 @@
 import { PanelSection } from '../../PanelSection';
 import { TypeSection } from '../../TypeSection';
 import { ColorsSection } from '../../ColorsSection';
+import { WallSurfaceSection } from '../../WallsSection';
+import { FloorPatternSection } from '../../BaseSection';
 
-/** Appearance: typography presets and multi-color. */
+/** Appearance: typography, colors, wall patterns and text, floor pattern. */
 export function StylePage() {
   return (
     <div className="divide-y divide-stroke-subtle/50">
@@ -11,6 +13,12 @@ export function StylePage() {
       </PanelSection>
       <PanelSection helpTarget="bd-colors">
         <ColorsSection />
+      </PanelSection>
+      <PanelSection helpTarget="bd-wall-style">
+        <WallSurfaceSection />
+      </PanelSection>
+      <PanelSection helpTarget="bd-floor-pattern">
+        <FloorPatternSection />
       </PanelSection>
     </div>
   );
