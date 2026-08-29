@@ -1,0 +1,32 @@
+src/design-system/variants.ts
+  s_9a500d3ffa116a::t_765907262cf405 77-78
+  s_9a500d3ffa116a::t_cb5b5f58c7c27d 203
+  s_9a500d3ffa116a::t_034285c957327d 90-110
+src/design-system/docs/TOKENS.md
+  s_9a500d3ffa116a::t_8390e097b05089 148-172
+  s_9a500d3ffa116a::t_baec41367442c8 145-147
+  s_9a500d3ffa116a::t_821d5ca73adca8 141-144
+src/index.css
+  s_9a500d3ffa116a::t_3fa25276ab62f2 130-159
+  s_9a500d3ffa116a::t_18df2782fda922 292-295,299-301,303-310,324-329
+src/design-system/index.ts
+  s_9a500d3ffa116a::t_0234f9c878d188 31-33
+src/shell/styles/themes.css
+  s_9a500d3ffa116a::t_761b690a93e92e 97-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f2e162f0ef0dfdc7162415191d06360daece2672",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
