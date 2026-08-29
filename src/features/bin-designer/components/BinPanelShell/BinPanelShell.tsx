@@ -98,7 +98,10 @@ export function BinPanelShell({
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<HelpJumpEventDetail>).detail;
       const category = detail?.controlId ? categoryForControl(detail.controlId) : undefined;
-      if (category) setActiveCategory(category);
+      if (category) {
+        setActiveCategory(category);
+        saveLastCategory(category);
+      }
     };
     for (const surface of HELP_SURFACES) {
       window.addEventListener(`${HELP_JUMP_EVENT_PREFIX}${surface}`, handler);
