@@ -29,9 +29,11 @@ const selectVariants = cva(
   {
     variants: {
       size: {
-        sm: 'h-7 px-1.5 text-xs',
-        md: 'py-2 px-3 text-sm',
-        lg: 'h-12 px-5 text-base',
+        // Left-only padding: right padding is the base pr-8 chevron gutter,
+        // which a px-* here would override (px sorts after pr in the sheet).
+        sm: 'h-7 pl-1.5 text-xs',
+        md: 'py-2 pl-3 text-sm',
+        lg: 'h-12 pl-5 text-base',
       },
       fullWidth: {
         true: 'w-full',

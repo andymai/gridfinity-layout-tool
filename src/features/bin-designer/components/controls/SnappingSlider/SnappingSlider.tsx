@@ -245,17 +245,12 @@ export function SnappingSlider({
         {/* Draggable track area - uses pointer events for responsive dragging */}
         <div
           ref={trackRef}
+          data-testid="snapping-slider-track"
           className="relative h-8 cursor-pointer touch-none"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
-          role="slider"
-          aria-valuenow={displayValue}
-          aria-valuemin={min}
-          aria-valuemax={max}
-          aria-label={label}
-          tabIndex={-1}
         >
           {/* Track background */}
           <div className="absolute top-1/2 left-0 right-0 h-2 -translate-y-1/2 rounded-full bg-stroke-subtle" />

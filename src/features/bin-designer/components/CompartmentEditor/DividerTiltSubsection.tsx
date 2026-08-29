@@ -65,9 +65,9 @@ export function DividerTiltSubsection() {
     <div className="mt-3 border-t border-stroke-subtle/40 pt-3">
       <div className={`flex items-center justify-between ${enabled ? 'mb-2' : ''}`}>
         <div className="flex items-center gap-1.5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-content-tertiary">
+          <span className="text-xs font-medium uppercase tracking-wide text-content-tertiary">
             {t('binDesigner.angledDividers.title')}
-          </h3>
+          </span>
           <InfoPopoverButton t={t} />
         </div>
         <Switch

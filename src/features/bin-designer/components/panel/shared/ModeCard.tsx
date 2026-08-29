@@ -61,7 +61,7 @@ export function ModeCard({
               normal panel widths and drops to its own line on a narrow one,
               rather than squeezing the heading into an ellipsis. */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <h4 className="text-sm font-medium text-content-primary">{title}</h4>
+            <span className="text-sm font-medium text-content-primary">{title}</span>
             {badge}
           </div>
           <p className="text-xs text-content-secondary mt-0.5">{description}</p>

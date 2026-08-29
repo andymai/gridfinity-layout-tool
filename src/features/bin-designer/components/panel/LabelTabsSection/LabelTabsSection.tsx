@@ -107,7 +107,7 @@ export function LabelTabsSection() {
 
   // Technical readout, deliberately untranslated (same convention as
   // dimensionsReadout) apart from the font's own display name.
-  const textStyleReadout = `${t(`binDesigner.textFont.${state.textDefaults.font}`)} · ${
+  const textStyleReadout = `${t(`binDesigner.type.font.${state.textDefaults.font}`)} · ${
     state.textDefaults.depth
   } mm`;
 
@@ -650,7 +650,7 @@ export function LabelTabsSection() {
                       aria-label={t('binDesigner.textFont')}
                       options={FONT_OPTIONS.map((f): SelectOption => ({
                         id: f,
-                        name: t(`binDesigner.textFont.${f}`),
+                        name: t(`binDesigner.type.font.${f}`),
                       }))}
                     />
                   </div>

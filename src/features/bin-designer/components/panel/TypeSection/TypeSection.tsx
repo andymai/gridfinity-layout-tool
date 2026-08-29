@@ -120,6 +120,7 @@ export function TypeSection() {
       <Select
         aria-label={t('binDesigner.type.font')}
         size="sm"
+        fullWidth
         value={style.font}
         onChange={(e) => handlers.setFont(e.target.value as (typeof TEXT_FONT_FAMILIES)[number])}
         options={TEXT_FONT_FAMILIES.map((font) => ({

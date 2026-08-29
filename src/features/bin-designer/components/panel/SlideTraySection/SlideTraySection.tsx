@@ -21,6 +21,7 @@
 
 import { useTranslation } from '@/i18n';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { PanelSection } from '../PanelSection';
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperField } from '../shared';
 import { SegmentedControl } from '@/design-system';
@@ -31,7 +32,13 @@ import type { SlideRailMount } from '@/features/bin-designer/types';
 const MOUNTS: readonly SlideRailMount[] = ['interior', 'rim'];
 
 export function SlideTraySection() {
-  return useFeatureFlag('sliding_tray') ? <SlideTrayControls /> : null;
+  // The gate also owns the PanelSection wrapper: rendering the wrapper around a
+  // null child would leave an empty hairline band in the page's divide-y stack.
+  return useFeatureFlag('sliding_tray') ? (
+    <PanelSection helpTarget="bd-slide-tray">
+      <SlideTrayControls />
+    </PanelSection>
+  ) : null;
 }
 
 function SlideTrayControls() {

@@ -8,7 +8,7 @@ export function AttributionFooter() {
   const t = useTranslation();
   const { navigateToSupporters } = useSupportersRouting();
   return (
-    <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-micro leading-relaxed">
+    <div className="px-4 py-4 border-t border-stroke-subtle text-content-tertiary text-micro leading-relaxed">
       <div className="text-content-secondary text-label font-semibold mb-1 flex items-baseline gap-1.5">
         {t('sidebar.appName')}
         <AppVersionButton />
@@ -18,7 +18,7 @@ export function AttributionFooter() {
         href="https://www.youtube.com/c/ZackFreedman"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-content-tertiary hover:underline"
+        className="text-content-secondary hover:underline"
       >
         Zack Freedman
       </a>
@@ -28,7 +28,7 @@ export function AttributionFooter() {
         href="https://www.linkedin.com/in/andyhmai/"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-content-tertiary hover:underline"
+        className="text-content-secondary hover:underline"
       >
         Andy Aragon
       </a>{' '}
@@ -60,7 +60,7 @@ export function AttributionFooter() {
           e.preventDefault();
           navigateToSupporters();
         }}
-        className="text-content-tertiary hover:underline"
+        className="text-content-secondary hover:underline"
       >
         {t('sidebar.supporters')}
       </a>{' '}
@@ -69,7 +69,7 @@ export function AttributionFooter() {
         href="/privacy"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-content-tertiary hover:underline"
+        className="text-content-secondary hover:underline"
       >
         {t('sidebar.privacy')}
       </a>{' '}
@@ -78,7 +78,7 @@ export function AttributionFooter() {
         href="/terms"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-content-tertiary hover:underline"
+        className="text-content-secondary hover:underline"
       >
         {t('sidebar.terms')}
       </a>

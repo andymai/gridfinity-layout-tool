@@ -98,8 +98,7 @@ describe('SnappingSlider', () => {
     const onChange = vi.fn();
     const { container } = render(<SnappingSlider {...defaultProps} onChange={onChange} />);
 
-    // The slider track is the div with role="slider" (not the input)
-    const slider = container.querySelector('div[role="slider"]') as HTMLElement;
+    const slider = container.querySelector('[data-testid="snapping-slider-track"]') as HTMLElement;
 
     // Mock getBoundingClientRect for position calculation
     vi.spyOn(slider, 'getBoundingClientRect').mockReturnValue({
@@ -257,7 +256,9 @@ describe('SnappingSlider', () => {
       const onChange = vi.fn();
       const { container } = render(<SnappingSlider {...defaultProps} onChange={onChange} />);
 
-      const slider = container.querySelector('div[role="slider"]') as HTMLElement;
+      const slider = container.querySelector(
+        '[data-testid="snapping-slider-track"]'
+      ) as HTMLElement;
       vi.spyOn(slider, 'getBoundingClientRect').mockReturnValue({
         left: 0,
         right: 100,
@@ -280,7 +281,9 @@ describe('SnappingSlider', () => {
       const onChange = vi.fn();
       const { container } = render(<SnappingSlider {...defaultProps} onChange={onChange} />);
 
-      const slider = container.querySelector('div[role="slider"]') as HTMLElement;
+      const slider = container.querySelector(
+        '[data-testid="snapping-slider-track"]'
+      ) as HTMLElement;
       vi.spyOn(slider, 'getBoundingClientRect').mockReturnValue({
         left: 0,
         right: 100,
