@@ -1,0 +1,19 @@
+src/design-system/Stepper/Stepper.tsx
+  s_a03bf606116309::t_7ef46d34ce9eca 103-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "5852edd62da1ff78fc2d242a16cd6d630f015fe2",
+  "prompts": {},
+  "sessions": {
+    "s_a03bf606116309": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a3848e27-85f2-4482-b79a-bd202e5e82ad",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
