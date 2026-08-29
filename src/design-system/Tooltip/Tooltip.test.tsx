@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Tooltip } from './Tooltip';
+import { formatShortcut } from '../Kbd';
 
 describe('Tooltip', () => {
   describe('rendering', () => {
@@ -23,7 +24,7 @@ describe('Tooltip', () => {
       expect(screen.getByRole('tooltip')).toHaveClass('opacity-0');
     });
 
-    it('renders the shortcut in mono kbd styling', () => {
+    it('renders the shortcut as a Kbd chip', () => {
       render(
         <Tooltip content="Undo" shortcut="⌘Z">
           <button type="button">Trigger</button>
@@ -31,7 +32,17 @@ describe('Tooltip', () => {
       );
       const kbd = screen.getByText('⌘Z');
       expect(kbd.tagName).toBe('KBD');
-      expect(kbd).toHaveClass('font-mono', 'text-content-tertiary');
+      expect(kbd).toHaveClass('text-micro');
+    });
+
+    it('formats an array shortcut per platform', () => {
+      render(
+        <Tooltip content="Undo" shortcut={['Mod', 'Z']}>
+          <button type="button">Trigger</button>
+        </Tooltip>
+      );
+      // Assert against the formatter itself so the test holds on any platform.
+      expect(screen.getByText(formatShortcut(['Mod', 'Z']))).toBeInTheDocument();
     });
 
     it('omits the kbd element when no shortcut is given', () => {

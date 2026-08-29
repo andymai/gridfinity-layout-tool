@@ -1,6 +1,7 @@
 import { cloneElement, isValidElement, useId, useState } from 'react';
 import type { KeyboardEvent, ReactElement, ReactNode } from 'react';
 import { cn } from '../cn';
+import { Kbd, formatShortcut } from '../Kbd';
 import { interactiveTransition } from '../variants';
 
 type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
@@ -16,15 +17,32 @@ const placementClasses: Record<TooltipPlacement, string> = {
   right: 'left-full top-1/2 -translate-y-1/2 ml-1.5',
 };
 
+/** Entry drift toward the trigger, on the axis the placement does NOT center
+    on — top/bottom center with translate-x, left/right with translate-y, so
+    the motion class must never share that axis or it clobbers the centering. */
+const hiddenMotionClasses: Record<TooltipPlacement, string> = {
+  top: 'translate-y-0.5',
+  bottom: '-translate-y-0.5',
+  left: 'translate-x-0.5',
+  right: '-translate-x-0.5',
+};
+const visibleMotionClasses: Record<TooltipPlacement, string> = {
+  top: 'translate-y-0',
+  bottom: 'translate-y-0',
+  left: 'translate-x-0',
+  right: 'translate-x-0',
+};
+
 export interface TooltipProps {
   /**
    * Tooltip text. Plain string only.
    */
   content: string;
   /**
-   * Optional keyboard-shortcut suffix rendered in mono kbd styling after the content.
+   * Optional keyboard-shortcut suffix rendered as a Kbd chip after the
+   * content. An array form (['Mod','Z']) is formatted per platform.
    */
-  shortcut?: string;
+  shortcut?: string | readonly string[];
   /**
    * Side of the trigger the bubble appears on.
    * @default 'top'
@@ -137,14 +155,18 @@ export function Tooltip({
           placementClasses[placement],
           // opacity-only hiding keeps the description in the accessibility
           // tree (visibility:hidden would remove it).
-          visible ? 'opacity-100' : 'opacity-0',
+          visible
+            ? `opacity-100 ${visibleMotionClasses[placement]}`
+            : `opacity-0 ${hiddenMotionClasses[placement]}`,
           '[@media(hover:none)]:hidden'
         )}
         style={{ transitionDelay: visible ? `${delayMs}ms` : '0ms' }}
       >
         {content}
         {shortcut !== undefined && (
-          <kbd className="ml-1.5 font-mono text-content-tertiary">{shortcut}</kbd>
+          <Kbd className="ml-1.5">
+            {Array.isArray(shortcut) ? formatShortcut(shortcut) : shortcut}
+          </Kbd>
         )}
       </span>
     </span>

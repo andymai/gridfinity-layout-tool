@@ -83,6 +83,12 @@ export const interactiveTransition =
 export const activePress = 'active:scale-[0.98]' as const;
 
 /**
+ * Hover lift for raised interactive surfaces (cards, primary buttons).
+ */
+export const hoverRaise =
+  'hover:-translate-y-px hover:shadow-md active:translate-y-0 active:shadow-sm' as const;
+
+/**
  * Touch-friendly minimum size (44px per Apple HIG).
  */
 export const touchTarget = 'min-h-[44px] min-w-[44px]' as const;

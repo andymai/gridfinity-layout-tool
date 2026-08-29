@@ -27,6 +27,7 @@ export {
   disabledStyles,
   interactiveTransition,
   activePress,
+  hoverRaise,
   touchTarget,
   controlHeights,
   controlRow,
@@ -108,7 +109,7 @@ export type { SegmentedControlProps, SegmentedControlOption } from './SegmentedC
 export { Alert } from './Alert';
 export type { AlertProps } from './Alert';
 
-export { Kbd } from './Kbd';
+export { Kbd, formatShortcut, isMacPlatform } from './Kbd';
 export type { KbdProps } from './Kbd';
 
 export { Textarea } from './Textarea';
