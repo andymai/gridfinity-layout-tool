@@ -1,0 +1,23 @@
+src/features/bin-designer/components/DesignListDialog/DesignListHeader.tsx
+  s_2a038ae0eafe62::t_ffac76ddeefcd1 2,12-13,26,52-60,63
+src/features/bin-designer/components/DesignListDialog/DesignListHeader.test.tsx
+  s_2a038ae0eafe62::t_f560b15e35aa92 17
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_2a038ae0eafe62::t_9077e5f3134c03 39-40,112,249-261,263-274,277-278,625
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "a243e782d969b5e67dd5bf1fa9fe5e3c4c40eae6",
+  "prompts": {},
+  "sessions": {
+    "s_2a038ae0eafe62": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6d11451-a87d-4bb2-a9ea-ae3543c6b5a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
