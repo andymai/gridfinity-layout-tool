@@ -74,7 +74,8 @@ export const disabledStyles = [
 /**
  * Standard transition for interactive elements.
  */
-export const interactiveTransition = 'transition-all duration-100' as const;
+export const interactiveTransition =
+  'transition-all duration-(--motion-fast) ease-(--ease-out-quart)' as const;
 
 /**
  * Tactile press feedback for buttons and interactive elements.
@@ -85,6 +86,23 @@ export const activePress = 'active:scale-[0.98]' as const;
  * Touch-friendly minimum size (44px per Apple HIG).
  */
 export const touchTarget = 'min-h-[44px] min-w-[44px]' as const;
+
+/**
+ * Pro-compact control row heights. Adopted control-by-control; existing
+ * 36px intrinsic-height controls keep their size until rebuilt on this scale.
+ */
+export const controlHeights = {
+  sm: 'h-(--control-h-sm)',
+  md: 'h-(--control-h-md)',
+} as const;
+
+export const controlRow = 'flex h-(--control-h-md) items-center gap-2' as const;
+
+/**
+ * The width behavior comes from the `hairline` utility in index.css, which
+ * thins to 0.5px on high-density screens.
+ */
+export const hairline = 'hairline border-stroke-subtle' as const;
 
 // Size class mappings
 
@@ -178,7 +196,7 @@ export const variantColors = {
     'bg-gradient-to-b from-surface-hover to-surface-elevated',
     'text-content',
     'border border-stroke',
-    '[box-shadow:var(--shadow-sm),inset_0_1px_0_rgba(255,255,255,0.03)]',
+    'shadow-sm inset-shadow-[0_1px_0_rgba(255,255,255,0.03)]',
     'hover:from-surface-active hover:to-surface-hover hover:-translate-y-px hover:shadow-md',
     'active:translate-y-0 active:shadow-sm',
   ],
