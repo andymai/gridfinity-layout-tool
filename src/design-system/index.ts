@@ -34,13 +34,15 @@ export {
   sizeText,
   sizeGaps,
   iconSizes,
+  // Typography roles
+  typeRamp,
   // Variant mappings
   variantColors,
   intentBackgrounds,
   intentText,
 } from './variants';
 
-export type { Size, Variant, Intent } from './variants';
+export type { Size, Variant, Intent, TypeRole } from './variants';
 
 // Primitive Components
 

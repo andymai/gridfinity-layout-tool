@@ -19,5 +19,5 @@
   font-style: normal;
   font-weight: 400 700;
   font-display: block;
-  src: url('../public/fonts/inter-var-latin.woff2') format('woff2');
+  src: url('/fonts/inter-var-latin.woff2') format('woff2');
 }
