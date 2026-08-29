@@ -171,9 +171,7 @@ describe('BaseSection', () => {
         'aria-expanded',
         'false'
       );
-      expect(
-        screen.getByLabelText('Width axis', { hidden: true }).closest('[inert]')
-      ).not.toBeNull();
+      expect(screen.getByLabelText('Width axis').closest('[inert]')).not.toBeNull();
     });
 
     it('opens on click', async () => {
