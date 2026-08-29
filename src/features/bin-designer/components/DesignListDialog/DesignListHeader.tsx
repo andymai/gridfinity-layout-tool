@@ -1,4 +1,5 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
+import type { ItemKind } from '@/shared/types/item';
 import { useTranslation } from '@/i18n';
 import { Button, IconButton, XIcon } from '@/design-system';
 
@@ -8,7 +9,8 @@ interface DesignListHeaderProps {
   customDefaultActive: boolean;
   onEnterSelect: () => void;
   onShowImport: () => void;
-  onNewDesign: () => void;
+  onNewDesign: (kind?: ItemKind) => void;
+  showWorkshopButton: boolean;
   onOpenOptionsMenu: (e: ReactMouseEvent<HTMLButtonElement>) => void;
   onClose: () => void;
 }
@@ -21,6 +23,7 @@ export function DesignListHeader({
   onEnterSelect,
   onShowImport,
   onNewDesign,
+  showWorkshopButton,
   onOpenOptionsMenu,
   onClose,
 }: DesignListHeaderProps) {
@@ -46,9 +49,18 @@ export function DesignListHeader({
         >
           {t('common.import')}
         </Button>
+        {showWorkshopButton && (
+          <Button
+            variant="secondary"
+            onClick={() => onNewDesign('assembly')}
+            className="rounded-md px-3 py-1.5 text-sm font-medium"
+          >
+            {t('binDesigner.newWorkshop')}
+          </Button>
+        )}
         <Button
           variant="primary"
-          onClick={onNewDesign}
+          onClick={() => onNewDesign()}
           className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
         >
           {t('binDesigner.newDesign')}

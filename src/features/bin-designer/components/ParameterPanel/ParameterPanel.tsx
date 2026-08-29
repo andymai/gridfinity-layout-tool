@@ -48,7 +48,6 @@ import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useCommunityDigestStore } from '@/core/store/communityDigest';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
@@ -116,8 +115,6 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   const { needsSplit } = useSplitOptionsSection();
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
-  const workshopEnabled = useFeatureFlag('workshop');
-  const newDesign = useDesignerStore((s) => s.newDesign);
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const loadDesignIntoStore = useDesignerStore((s) => s.loadDesign);
   const variant = useVariantContext(currentDesignId);
@@ -256,14 +253,6 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
           onDetach={handleDetach}
           onClearOrphans={handleClearOrphans}
         />
-      )}
-
-      {workshopEnabled && (
-        <div className="border-b border-stroke-subtle px-4 py-3">
-          <Button variant="secondary" onClick={() => newDesign('assembly')} className="w-full">
-            {t('binDesigner.newWorkshop')}
-          </Button>
-        </div>
       )}
     </div>
   );
