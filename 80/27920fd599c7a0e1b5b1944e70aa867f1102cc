@@ -1,0 +1,27 @@
+playwright/ct.css
+  s_9a500d3ffa116a::t_61e5da9b2868cc 22
+src/design-system/cn.ts
+  s_9a500d3ffa116a::t_8bbb88b5361455 2-13
+src/design-system/docs/TOKENS.md
+  s_9a500d3ffa116a::t_61e5da9b2868cc 94
+src/design-system/index.ts
+  s_9a500d3ffa116a::t_d07f0091a8639d 37-38,45
+index.html
+  s_9a500d3ffa116a::t_b2134a4ce1b9b0 100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "8027920fd599c7a0e1b5b1944e70aa867f1102cc",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
