@@ -10,6 +10,7 @@ import type {
   ColorTool,
   CutoutTarget,
   DesignerCategory,
+  DesignerSelection,
   PickerOverlayState,
   MeasureMode,
   SplitViewMode,
@@ -31,6 +32,33 @@ export function createUISlice(set: Set) {
     setActiveCategory: (category: DesignerCategory) => {
       set((state) => {
         state.ui.activeCategory = category;
+        // A manual rail move away from the Selection page is a deselect: the
+        // page must never linger pointed at something the user has navigated
+        // away from, and the stored return slot would otherwise go stale.
+        if (category !== 'selection') {
+          state.ui.selection = null;
+          state.ui.returnCategory = null;
+        }
+      });
+    },
+
+    select: (selection: NonNullable<DesignerSelection>) => {
+      set((state) => {
+        state.ui.selection = selection;
+        if (state.ui.activeCategory !== 'selection') {
+          state.ui.returnCategory = state.ui.activeCategory;
+          state.ui.activeCategory = 'selection';
+        }
+      });
+    },
+
+    clearSelection: () => {
+      set((state) => {
+        state.ui.selection = null;
+        if (state.ui.activeCategory === 'selection') {
+          state.ui.activeCategory = state.ui.returnCategory ?? 'interior';
+        }
+        state.ui.returnCategory = null;
       });
     },
 

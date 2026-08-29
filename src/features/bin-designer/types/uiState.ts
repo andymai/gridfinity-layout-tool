@@ -33,6 +33,19 @@ export type ColorTool = 'eyedropper' | 'swap-pick-first' | 'swap-pick-second' | 
 /** Rail categories of the designer panel; 'selection' is the contextual slot. */
 export type DesignerCategory = 'selection' | 'shape' | 'interior' | 'features' | 'style' | 'print';
 
+/**
+ * What the contextual Selection page is pointed at. Compartment ids renumber
+ * on every merge/split, so a held id can go stale the moment params move:
+ * consumers must read through `resolveSelection`, which nulls anything the
+ * current params no longer contain, rather than trusting the raw field.
+ * Cutout selection arrives with 3D picking (B5).
+ */
+export type DesignerSelection =
+  | { readonly kind: 'compartment'; readonly id: number }
+  | { readonly kind: 'divider'; readonly key: string }
+  | { readonly kind: 'labelTab'; readonly compartmentId: number }
+  | null;
+
 /** View mode for split bin preview: assembled (no gaps) or exploded (gaps between pieces). */
 export type SplitViewMode = 'assembled' | 'exploded';
 
@@ -62,6 +75,14 @@ export interface MeasureState {
 
 export interface DesignerUIState {
   readonly activeCategory: DesignerCategory;
+  /** Current contextual selection; plain UI state, never history-tracked. */
+  readonly selection: DesignerSelection;
+  /**
+   * Category to restore when the selection clears. Set by the auto-switch into
+   * the Selection page and consumed exactly once on deselect, so Esc lands the
+   * user back where they were instead of on an arbitrary page.
+   */
+  readonly returnCategory: DesignerCategory | null;
   readonly exportDialogOpen: boolean;
   readonly designListOpen: boolean;
   /** Whether the version-history dialog is open. */

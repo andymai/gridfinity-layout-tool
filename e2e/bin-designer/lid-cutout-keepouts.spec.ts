@@ -38,7 +38,7 @@ test.describe('Lid cutout keep-outs', () => {
     await expect(canvas).toBeVisible({ timeout: 120_000 });
     await waitForGenerationComplete(page);
 
-    const lidToggle = page.getByRole('switch', { name: 'Enable lid' });
+    const lidToggle = page.getByRole('switch', { name: 'Lid' });
     await lidToggle.scrollIntoViewIfNeeded();
     await lidToggle.click();
     await expect(lidToggle).toBeChecked();
