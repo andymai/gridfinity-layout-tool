@@ -288,6 +288,30 @@ describe('filterExceptionForPosthog — troika worker-init dedupe', () => {
   });
 });
 
+describe('filterExceptionForPosthog — troika SDF instancing dedupe', () => {
+  const SDF_ERROR = 'ANGLE_instanced_arrays not supported';
+
+  it("pins a stable fingerprint so every deploy's chunk hash groups into one issue", () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_list: [{ value: SDF_ERROR }] },
+    };
+    const result = filterExceptionForPosthog(e);
+    expect(result).toBe(e);
+    expect(result?.properties?.$exception_fingerprint).toBe('troika-sdf-instancing-unsupported');
+  });
+
+  it('reports the first occurrence and mutes the rest of the session', () => {
+    const make = (): Parameters<typeof filterExceptionForPosthog>[0] => ({
+      event: '$exception',
+      properties: { $exception_list: [{ value: SDF_ERROR }] },
+    });
+    expect(filterExceptionForPosthog(make())).not.toBeNull();
+    expect(filterExceptionForPosthog(make())).toBeNull();
+    expect(filterExceptionForPosthog(make())).toBeNull();
+  });
+});
+
 describe('filterExceptionForPosthog — per-session capture cap', () => {
   const appError = (value: string): Parameters<typeof filterExceptionForPosthog>[0] => ({
     event: '$exception',
