@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.480.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.479.0...gridfinity-layout-tool-v4.480.0) (2026-08-29)
+
+
+### Features
+
+* **bin-designer:** fold explainers behind info dots, curate labels and Print ([#4000](https://github.com/andymai/gridfinity-layout-tool/issues/4000)) ([db4994d](https://github.com/andymai/gridfinity-layout-tool/commit/db4994d2dc3a3ead1549fa1665bb4e7c1dfe2269))
+* **bin-designer:** give the Style page a section spine ([#3998](https://github.com/andymai/gridfinity-layout-tool/issues/3998)) ([b4c02b7](https://github.com/andymai/gridfinity-layout-tool/commit/b4c02b7948e6a26879726515bc502b8054088407))
+* **bin-designer:** one control idiom across the Features and Shape pages ([#3999](https://github.com/andymai/gridfinity-layout-tool/issues/3999)) ([4b039b8](https://github.com/andymai/gridfinity-layout-tool/commit/4b039b82f4ffab94591fbec32eb5119cfd708172))
+* **bin-designer:** redesign the Typography section ([#3997](https://github.com/andymai/gridfinity-layout-tool/issues/3997)) ([b0e2a80](https://github.com/andymai/gridfinity-layout-tool/commit/b0e2a80512da85617733d3794478d0e8b26f1006))
+* **bin-designer:** selection model groundwork (B4) ([#4002](https://github.com/andymai/gridfinity-layout-tool/issues/4002)) ([5a8a0d8](https://github.com/andymai/gridfinity-layout-tool/commit/5a8a0d8d13add3b42f4044177c2d2e09356cd935))
+* **bin-designer:** shared joint primitives, SegmentGrid hardening, Workshop button move ([#4001](https://github.com/andymai/gridfinity-layout-tool/issues/4001)) ([ae0e12c](https://github.com/andymai/gridfinity-layout-tool/commit/ae0e12cb677f61828fc02350be4d8722fbf9bd84))
+
+
+### Bug Fixes
+
+* **baseplate:** stop params migration dropping splitOverride, screwHoles, fractional edges ([#4004](https://github.com/andymai/gridfinity-layout-tool/issues/4004)) ([13f192a](https://github.com/andymai/gridfinity-layout-tool/commit/13f192a90b4f2c6ad83f9e34f76eebb131a1cc19)), closes [#3994](https://github.com/andymai/gridfinity-layout-tool/issues/3994)
+* **bin-designer:** copy sweep for designer panel strings ([#3996](https://github.com/andymai/gridfinity-layout-tool/issues/3996)) ([d6f2cfe](https://github.com/andymai/gridfinity-layout-tool/commit/d6f2cfe1b2c9ca08590be42cfeece1c7b3a73fb6))
+* **bin-designer:** panel audit bug sweep ([#3995](https://github.com/andymai/gridfinity-layout-tool/issues/3995)) ([6a1e423](https://github.com/andymai/gridfinity-layout-tool/commit/6a1e4234249cab4ac4f96a8718d4830816162a6e))
+* **design-system:** pin Stepper input width so intrinsic size can't hide the + button ([#4005](https://github.com/andymai/gridfinity-layout-tool/issues/4005)) ([6bbd364](https://github.com/andymai/gridfinity-layout-tool/commit/6bbd36429030d5860f177f88261b0684171b941b)), closes [#3963](https://github.com/andymai/gridfinity-layout-tool/issues/3963)
+* **print-export:** merge mismatched palettes in multi-object 3MF export ([#3992](https://github.com/andymai/gridfinity-layout-tool/issues/3992)) ([d86c8d5](https://github.com/andymai/gridfinity-layout-tool/commit/d86c8d542e99aa7ff89a4455ef413f455a6346bf))
+
 ## [4.479.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.4...gridfinity-layout-tool-v4.479.0) (2026-08-29)
 
 
