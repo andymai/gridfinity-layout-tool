@@ -1,0 +1,85 @@
+src/i18n/locales/en.ts
+  s_9a500d3ffa116a::t_aeb477e5d02c44 2571-2573
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.ts
+  s_9a500d3ffa116a::t_8fd92594098e78 126
+  s_9a500d3ffa116a::t_953b1f8875c1c9 127-129
+src/i18n/locales/nl.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/de.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/pt-BR.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_9a500d3ffa116a::t_95b0877a2d60e4 225-228,969
+  s_9a500d3ffa116a::t_e25429fe0fec93 988
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_9a500d3ffa116a::t_e25429fe0fec93 27,179-184
+src/i18n/locales/sv.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/zh-CN.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_9a500d3ffa116a::t_2d7ab2da1ebc17 303
+  s_9a500d3ffa116a::t_8f319ec4b0287a 45,51,113-114,305-306
+src/i18n/locales/fr.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/it.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/panel/shared/DependencyHint.tsx
+  s_9a500d3ffa116a::t_7f3508df8d5b38 1-10,13-19,21-31
+  s_9a500d3ffa116a::t_1c80462eab8e6d 11-12,20
+src/i18n/locales/ko.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/pl.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/panel/pages/InteriorPage/InteriorPage.tsx
+  s_9a500d3ffa116a::t_8f319ec4b0287a 5,8,24-30,41,48
+src/i18n/locales/uk.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/BinPanelShell/BinPanelShell.tsx
+  s_9a500d3ffa116a::t_7f3508df8d5b38 27
+  s_9a500d3ffa116a::t_8f319ec4b0287a 63-64,77,141,144-145,147-154
+src/i18n/locales/nb.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/i18n/locales/ja.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.tsx
+  s_9a500d3ffa116a::t_8f319ec4b0287a 1,8-11,13-14,17-18,20-28
+src/features/bin-designer/components/panel/shared/DependencyHint.test.tsx
+  s_9a500d3ffa116a::t_396317e49a9481 14-15
+  s_9a500d3ffa116a::t_7f3508df8d5b38 1-13
+src/features/bin-designer/components/panel/shared/index.ts
+  s_9a500d3ffa116a::t_7f3508df8d5b38 7
+src/features/bin-designer/components/ParameterPanel/categoryModified.test.ts
+  s_9a500d3ffa116a::t_56ece4b927459b 4-12,16,26,30-33,37-43,46-52,55-58,62-68,71-74,77-81,84,88,90-95
+  s_9a500d3ffa116a::t_d8bf1136e3ddbd 22-25,85-86
+  s_9a500d3ffa116a::t_cad57facc3814c 2,14,89
+src/features/bin-designer/components/ParameterPanel/categoryModified.ts
+  s_9a500d3ffa116a::t_cad57facc3814c 2,4-7,13-15,23,35-48,96-97,100-102,109-111,114
+src/i18n/locales/cs.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_9a500d3ffa116a::t_da7a4b7fb01291 174
+src/i18n/locales/es.json
+  s_9a500d3ffa116a::t_aeb477e5d02c44 4488-4491
+src/features/bin-designer/settingsManifest.ts
+  s_9a500d3ffa116a::t_8f319ec4b0287a 39
+  s_9a500d3ffa116a::t_4cbca78d09c872 55
+  s_9a500d3ffa116a::t_7f3508df8d5b38 12,47-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ba24c5d366ff6a13cc3f9c4e552f0237b5e78739",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": null
+    }
+  }
+}
