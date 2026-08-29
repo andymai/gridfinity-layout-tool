@@ -1,0 +1,70 @@
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 10,46
+src/design-system/NumberField/numberExpression.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-112
+src/design-system/index.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 125-128
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 30,107,117,135,151,167,198
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 2,136,224
+src/features/drawer-shape/components/PenShapeDialog/PenControls.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 72-73
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 21,243,254,265,277
+src/features/drawer-shape/components/PenShapeDialog/PenControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 9,88,97
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 39,208,254,264,275
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 52-53,70-71,78
+src/features/bin-designer/README.md
+  s_9a500d3ffa116a::t_8993f1831603c7 52-53
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 9,12-14
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 25,173,183,193,203,213
+src/design-system/NumberField/index.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-3
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,10-12
+src/features/bin-designer/components/CutoutWorkspace/CutoutScoopControls.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 7-9
+src/design-system/NumberField/numberExpression.test.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-70
+src/design-system/NumberField/NumberField.visual.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1-34
+src/design-system/NumberField/NumberField.test.tsx
+  s_9a500d3ffa116a::t_c45e5f61ee1a98 613
+  s_9a500d3ffa116a::t_530698d4d45aed 1-612,614-620
+src/design-system/NumberField/NumberField.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1-358
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 31,454,465,476,488,500,513,524,535,549
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,78,90
+src/features/bin-designer/components/panel/VariantSection/VariantSection.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,10-12
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 64-66,84-85,111-112,135-136,160-161
+src/design-system/docs/COMPONENTS.md
+  s_9a500d3ffa116a::t_7c59ec165a547f 228-233
+src/features/bin-designer/components/CutoutWorkspace/CutoutScoopControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 18,126,136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "2b3dc3349dd119381d2943b59d5be6987bcfdfd4",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
