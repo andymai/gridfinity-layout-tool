@@ -1,0 +1,19 @@
+src/features/generation/export/threemfColor.ts
+  s_e0e831152f36ca::t_d298d627d8a918 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "bcaeb1636ba79fd5458845251f82886ba874f5c7",
+  "prompts": {},
+  "sessions": {
+    "s_e0e831152f36ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9807da34-2a8c-46dd-80b9-32757e28c49d",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
