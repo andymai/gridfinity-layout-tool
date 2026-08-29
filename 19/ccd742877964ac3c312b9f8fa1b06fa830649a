@@ -1,0 +1,25 @@
+e2e/bin-designer/lid-magnetic-tray-visual.spec.ts
+  s_2a038ae0eafe62::t_a35eeb1b472e3c 40
+e2e/bin-designer/lid-stack-lip-only-visual.spec.ts
+  s_2a038ae0eafe62::t_a35eeb1b472e3c 43
+e2e/bin-designer/lid-separate-baseplate-visual.spec.ts
+  s_2a038ae0eafe62::t_a35eeb1b472e3c 41
+e2e/bin-designer/lid-cutout-keepouts.spec.ts
+  s_2a038ae0eafe62::t_a35eeb1b472e3c 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "19ccd742877964ac3c312b9f8fa1b06fa830649a",
+  "prompts": {},
+  "sessions": {
+    "s_2a038ae0eafe62": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6d11451-a87d-4bb2-a9ea-ae3543c6b5a1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
