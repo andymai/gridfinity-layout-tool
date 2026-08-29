@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.479.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.4...gridfinity-layout-tool-v4.479.0) (2026-08-29)
+
+
+### Features
+
+* **bin-designer:** give the Shape, Features and Style pages their true shape ([#3984](https://github.com/andymai/gridfinity-layout-tool/issues/3984)) ([184d256](https://github.com/andymai/gridfinity-layout-tool/commit/184d25608eb9c3f5bdba2bcb9d9790de1b4854d0))
+* **bin-designer:** jump-link dependencies, category dots, always-on print fit ([#3986](https://github.com/andymai/gridfinity-layout-tool/issues/3986)) ([6119413](https://github.com/andymai/gridfinity-layout-tool/commit/6119413eca248e1cf20c03a3f90108bcc5e2f44e))
+* **bin-designer:** replace the accordion panel with a category rail shell ([#3983](https://github.com/andymai/gridfinity-layout-tool/issues/3983)) ([2e7a4af](https://github.com/andymai/gridfinity-layout-tool/commit/2e7a4afedfc359a8914c7e75426aaf64c2ec2e22))
+* **bin-designer:** unify the panel's disclosure idioms behind MoreDisclosure ([#3985](https://github.com/andymai/gridfinity-layout-tool/issues/3985)) ([6019309](https://github.com/andymai/gridfinity-layout-tool/commit/60193099052907bc8cc2b40d9d2dd3c661ad582c))
+* **design-system:** add SidePanel, iconRail tabs, and SearchInput ([#3981](https://github.com/andymai/gridfinity-layout-tool/issues/3981)) ([d1465ab](https://github.com/andymai/gridfinity-layout-tool/commit/d1465ab387c28fdee670dd7d69f5adf81f836225))
+* **design-system:** add the shortcut hint pattern and motion recipes ([#3982](https://github.com/andymai/gridfinity-layout-tool/issues/3982)) ([4aa95a5](https://github.com/andymai/gridfinity-layout-tool/commit/4aa95a55981fa40ee5fef7bc2f41088bd930e067))
+* **design-system:** adopt the type ramp and retire ad-hoc text sizes ([#3977](https://github.com/andymai/gridfinity-layout-tool/issues/3977)) ([409f868](https://github.com/andymai/gridfinity-layout-tool/commit/409f86853179e05f128152e53826c78c5c9109eb))
+* **design-system:** promote CompactNumberInput to NumberField with expressions ([#3979](https://github.com/andymai/gridfinity-layout-tool/issues/3979)) ([bcf2374](https://github.com/andymai/gridfinity-layout-tool/commit/bcf23740053f9f6b99cb008c68ad0c484772e259))
+* **design-system:** swap to Inter variable font and add role-based type ramp ([#3976](https://github.com/andymai/gridfinity-layout-tool/issues/3976)) ([94e0114](https://github.com/andymai/gridfinity-layout-tool/commit/94e01144bb2b479d1df797e5322bfa767f5e6ef5))
+* **design-system:** theme-aware elevation, radius, motion, and control tokens ([#3978](https://github.com/andymai/gridfinity-layout-tool/issues/3978)) ([4e07020](https://github.com/andymai/gridfinity-layout-tool/commit/4e070204690640af1f7f8bcd4fb2413877657350))
+
+
+### Bug Fixes
+
+* **three-preview:** guard main-thread troika SDF on missing WebGL extension ([#3973](https://github.com/andymai/gridfinity-layout-tool/issues/3973)) ([edf82e0](https://github.com/andymai/gridfinity-layout-tool/commit/edf82e008ceb048b9f824bae3acc1136305db15a))
+
 ## [4.478.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.478.3...gridfinity-layout-tool-v4.478.4) (2026-08-28)
 
 
