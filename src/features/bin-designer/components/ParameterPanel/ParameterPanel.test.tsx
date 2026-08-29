@@ -6,6 +6,7 @@ import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE, DESIGNER_CONSTRAINTS } from '../.
 
 describe('ParameterPanel', () => {
   beforeEach(() => {
+    localStorage.clear();
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
       ui: {
@@ -21,45 +22,39 @@ describe('ParameterPanel', () => {
     });
   });
 
-  it('renders group headers', () => {
+  it('renders the category rail', () => {
     render(<ParameterPanel />);
 
-    expect(screen.getByText('Shape')).toBeInTheDocument();
-    expect(screen.getByText('Interior')).toBeInTheDocument();
-    expect(screen.getByText('Base')).toBeInTheDocument();
+    for (const name of ['Shape', 'Interior', 'Features', 'Style', 'Print']) {
+      expect(screen.getByRole('tab', { name })).toBeInTheDocument();
+    }
   });
 
-  describe('section groups', () => {
-    it('collapsing a group hides child sections', () => {
+  describe('category rail', () => {
+    it('starts on Shape with the Selection slot disabled', () => {
       render(<ParameterPanel />);
 
-      const shapeButton = screen.getByText('Shape').closest('button');
-      expect(shapeButton).toBeInTheDocument();
-      expect(shapeButton).toHaveAttribute('aria-expanded', 'true');
-
-      fireEvent.click(shapeButton!);
-
-      expect(shapeButton).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByRole('tab', { name: 'Shape' })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByRole('tab', { name: 'Selection' })).toBeDisabled();
     });
 
-    it('every group renders expanded by default', () => {
+    it('switches pages when a category is picked', () => {
       render(<ParameterPanel />);
 
-      for (const title of ['Shape', 'Interior', 'Base', 'Lid', 'Finishing']) {
-        const btn = screen.getByText(title).closest('button');
-        expect(btn, title).toHaveAttribute('aria-expanded', 'true');
-      }
+      fireEvent.click(screen.getByRole('tab', { name: 'Style' }));
+      expect(screen.getByRole('tab', { name: 'Style' })).toHaveAttribute('aria-selected', 'true');
+      expect(useDesignerStore.getState().ui.activeCategory).toBe('style');
     });
 
-    it('marks a group whose params moved off the defaults', () => {
+    it('marks a category whose params moved off the defaults', () => {
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } },
       });
       render(<ParameterPanel />);
-      const interiorBtn = screen.getByText('Interior').closest('button');
-      expect(interiorBtn?.querySelector('[data-testid="group-modified-dot"]')).not.toBeNull();
-      const shapeBtn = screen.getByText('Shape').closest('button');
-      expect(shapeBtn?.querySelector('[data-testid="group-modified-dot"]')).toBeNull();
+      const interiorTab = screen.getByRole('tab', { name: 'Interior' });
+      expect(interiorTab.querySelector('[data-testid="rail-modified-dot"]')).not.toBeNull();
+      const shapeTab = screen.getByRole('tab', { name: 'Shape' });
+      expect(shapeTab.querySelector('[data-testid="rail-modified-dot"]')).toBeNull();
     });
   });
 

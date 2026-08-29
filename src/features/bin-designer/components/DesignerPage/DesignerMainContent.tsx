@@ -3,7 +3,7 @@
  *
  * Switches between four layouts:
  * - Desktop + cutout editor: CutoutWorkspace | ResizeDivider | PreviewCanvas
- * - Desktop: ParameterPanel (w-72) | PreviewCanvas
+ * - Desktop: ParameterPanel (resizable dock) | PreviewCanvas
  * - Landscape tablet/mobile: PreviewCanvas | ParameterPanel (w-64)
  * - Portrait tablet/mobile: PreviewCanvas (40-50vh) / ParameterPanel
  */
@@ -91,9 +91,7 @@ export function DesignerMainContent({
     /* Desktop: side-by-side */
     return (
       <main className="flex flex-1 overflow-hidden">
-        <div className="w-72 flex-shrink-0 overflow-hidden border-r border-stroke-subtle bg-surface-secondary">
-          <ParameterPanel />
-        </div>
+        <ParameterPanel frame="docked" />
         <div className="relative flex-1 overflow-hidden">
           <PreviewCanvas />
           <ExperimentalKernelBadge />
