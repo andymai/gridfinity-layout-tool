@@ -1,0 +1,35 @@
+src/index.css
+  s_9a500d3ffa116a::t_def24abf7b975c 471-473
+  s_9a500d3ffa116a::t_507c763e66b122 10-12,17-66
+  s_9a500d3ffa116a::t_94bd7bb8daf8f4 243-245
+  s_9a500d3ffa116a::t_f2871450a1e0b6 67
+src/design-system/variants.ts
+  s_9a500d3ffa116a::t_ca161de75e2361 123-145
+  s_9a500d3ffa116a::t_359cab63316282 122
+playwright/ct.css
+  s_9a500d3ffa116a::t_e06d4e2c1ad0ef 12-23
+scripts/doc-budget.json
+  s_9a500d3ffa116a::t_1369d1c3df0b16 43
+  s_9a500d3ffa116a::t_85aef8b2dbc8e1 3
+src/design-system/docs/TOKENS.md
+  s_9a500d3ffa116a::t_541d9d73a8567d 67-94
+index.html
+  s_9a500d3ffa116a::t_a12b6e4f84c9d0 83-84,88-96,99,101-104
+  s_9a500d3ffa116a::t_1276d0b7458915 458
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "73a78b519c7e92f201c8a0fffc9e6d65f332c3d9",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
