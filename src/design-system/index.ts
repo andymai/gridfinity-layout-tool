@@ -28,6 +28,9 @@ export {
   interactiveTransition,
   activePress,
   touchTarget,
+  controlHeights,
+  controlRow,
+  hairline,
   // Size mappings
   sizeHeights,
   sizePaddings,

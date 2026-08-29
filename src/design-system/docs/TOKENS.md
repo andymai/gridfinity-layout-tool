@@ -138,36 +138,38 @@ Icon-only buttons get a 44px `touchTarget` by default (per Apple HIG).
 
 ## Size Tokens
 
-| Variable              | Value   | Usage              |
-| --------------------- | ------- | ------------------ |
-| `--sidebar-width`     | `256px` | Left sidebar       |
-| `--right-panel-width` | `288px` | Right panel        |
-| `--header-height`     | `48px`  | Header bar         |
-| `--toolbar-height`    | `48px`  | Toolbar            |
-| `--touch-target`      | `44px`  | Min touch target   |
-| `--radius-sm`         | `4px`   | Small radius       |
-| `--radius-md`         | `8px`   | Medium radius      |
-| `--radius-lg`         | `12px`  | Large radius       |
-| `--radius-xl`         | `16px`  | Extra large radius |
+| Variable              | Value   | Usage                                                    |
+| --------------------- | ------- | -------------------------------------------------------- |
+| `--sidebar-width`     | `256px` | Left sidebar                                             |
+| `--right-panel-width` | `288px` | Right panel                                              |
+| `--header-height`     | `48px`  | Header bar                                               |
+| `--toolbar-height`    | `48px`  | Toolbar                                                  |
+| `--touch-target`      | `44px`  | Min touch target                                         |
+| `--control-h-sm`      | `24px`  | Compact control row (`controlHeights.sm`)                |
+| `--control-h-md`      | `28px`  | Standard control row (`controlHeights.md`, `controlRow`) |
+| `--radius-sm`         | `4px`   | Small radius                                             |
+| `--radius-md`         | `6px`   | Medium radius                                            |
+| `--radius-lg`         | `10px`  | Large radius                                             |
+| `--radius-xl`         | `12px`  | Extra large radius                                       |
 
-## Shadows
+## Elevation
 
-| Variable            | Value                        | Usage             |
-| ------------------- | ---------------------------- | ----------------- |
-| `--shadow-sm`       | `0 1px 2px rgba(0,0,0,0.2)`  | Subtle depth      |
-| `--shadow-md`       | `0 4px 8px rgba(0,0,0,0.25)` | Medium elevation  |
-| `--shadow-lg`       | `0 8px 16px rgba(0,0,0,0.3)` | High elevation    |
-| `--shadow-elevated` | Complex                      | Elevated surfaces |
-| `--shadow-floating` | Complex                      | Floating elements |
+`--elevation-sm/md/lg/xl` are the source of truth (dark in `index.css`, light in `themes.css`). The `shadow-sm/md/lg/xl` utilities resolve through them at runtime via the `@theme inline` map, so elevation is theme-aware everywhere; the legacy `--shadow-*` names remain as pointers for raw CSS. `--shadow-elevated`/`--shadow-floating` are raw-CSS-only surface shadows.
 
-## Transitions
+Hairline borders: the `hairline` utility renders 1px, thinning to 0.5px on ≥2dppx screens; pair with a stroke color (`hairline` constant in `variants.ts` composes `border-stroke-subtle`).
 
-| Variable              | Value                                     | Usage                |
-| --------------------- | ----------------------------------------- | -------------------- |
-| `--transition-fast`   | `100ms ease-out`                          | Micro-interactions   |
-| `--transition-normal` | `150ms ease-out`                          | Standard transitions |
-| `--transition-slow`   | `250ms ease-out`                          | Larger movements     |
-| `--transition-spring` | `200ms cubic-bezier(0.34, 1.56, 0.64, 1)` | Bouncy feedback      |
+## Motion
+
+| Variable              | Value                                     | Usage                                           |
+| --------------------- | ----------------------------------------- | ----------------------------------------------- |
+| `--motion-fast`       | `120ms`                                   | Micro-interactions (`interactiveTransition`)    |
+| `--motion-medium`     | `160ms`                                   | Standard transitions                            |
+| `--motion-slow`       | `200ms`                                   | Larger movements                                |
+| `--ease-out-quart`    | `cubic-bezier(0.25, 1, 0.5, 1)`           | Default deceleration (`ease-out-quart` utility) |
+| `--ease-in-out-quart` | `cubic-bezier(0.76, 0, 0.24, 1)`          | Symmetric moves (`ease-in-out-quart` utility)   |
+| `--transition-spring` | `200ms cubic-bezier(0.34, 1.56, 0.64, 1)` | Bouncy feedback                                 |
+
+Legacy `--transition-fast/normal/slow` resolve through the motion tokens. Both reduce-motion paths (`prefers-reduced-motion` and `data-reduce-motion`) blanket-zero all durations, so no per-token handling is needed.
 
 ## Responsive Breakpoints
 
