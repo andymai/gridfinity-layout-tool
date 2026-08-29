@@ -100,7 +100,12 @@ const inputVariants = cva(
   {
     variants: {
       orientation: {
-        horizontal: 'flex-1 h-full border-y border-stroke-subtle',
+        // `w-0` alongside `flex-1`: a number input's default intrinsic width is
+        // ~20 characters, and engines differ on whether that inflates the
+        // container's intrinsic size past its cell — where it paints the +
+        // button underneath the next control. A definite width takes the
+        // content size out of every sizing path; the min-w floor is the real size.
+        horizontal: 'w-0 flex-1 h-full border-y border-stroke-subtle',
         vertical: 'w-full border-x border-stroke-subtle',
       },
       // Width floors live in compoundVariants per orientation: horizontal needs
