@@ -38,7 +38,7 @@ test.describe('Lid separate baseplate (visual)', () => {
 
     // Enable the lid (requires the default stacking lip, which is on). The
     // grouped controls render directly — no Customize step.
-    const lidToggle = page.getByRole('switch', { name: 'Enable lid' });
+    const lidToggle = page.getByRole('switch', { name: 'Lid' });
     await lidToggle.scrollIntoViewIfNeeded();
     await lidToggle.click();
     await expect(lidToggle).toBeChecked();

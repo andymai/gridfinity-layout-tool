@@ -37,7 +37,7 @@ test.describe('Lid magnetic retention + tray top (visual)', () => {
     await waitForGenerationComplete(page);
 
     // Enable the lid (default stacking lip is on). Controls appear directly.
-    const lidToggle = page.getByRole('switch', { name: 'Enable lid' });
+    const lidToggle = page.getByRole('switch', { name: 'Lid' });
     await lidToggle.scrollIntoViewIfNeeded();
     await lidToggle.click();
     await expect(lidToggle).toBeChecked();
