@@ -1,0 +1,82 @@
+src/shared/components/MoreDisclosure/MoreDisclosure.tsx
+  s_9a500d3ffa116a::t_754b029d3b798c 57-62
+  s_9a500d3ffa116a::t_5b9f78f6a40828 70-88,90,92
+  s_9a500d3ffa116a::t_6190ccc94b47a2 1-56,63-69,89,91,93-109
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_9a500d3ffa116a::t_7e74df12d7e51a 169-176,198-201
+  s_9a500d3ffa116a::t_47e3b7981ec5e8 203
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+  s_9a500d3ffa116a::t_ec9a1877f1d89b 11,14,79,82,133,243,246,275
+src/i18n/locales/de.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/i18n/locales/es.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/i18n/locales/nl.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/i18n/locales/zh-CN.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/shared/components/MoreDisclosure/index.ts
+  s_9a500d3ffa116a::t_6190ccc94b47a2 1-2
+src/features/bin-designer/components/panel/PhysicalUnitsSection/PhysicalUnitsSection.test.tsx
+  s_9a500d3ffa116a::t_754b029d3b798c 50-55,60-62
+src/i18n/locales/pl.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/shared/components/MoreDisclosure/MoreDisclosure.test.tsx
+  s_9a500d3ffa116a::t_bbbd129b9e845a 1-93
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_9a500d3ffa116a::t_ec9a1877f1d89b 25,37,310,315,338
+src/i18n/locales/cs.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/features/bin-designer/components/panel/PhysicalUnitsSection/PhysicalUnitsSection.tsx
+  s_9a500d3ffa116a::t_2a29b646012d9b 9,24,82
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_9a500d3ffa116a::t_2a29b646012d9b 20,200,292
+src/i18n/locales/ja.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_9a500d3ffa116a::t_ce053f90cbe52a 12
+  s_9a500d3ffa116a::t_ec9a1877f1d89b 207,210,250
+  s_9a500d3ffa116a::t_3f3fcfe853774f 13
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_9a500d3ffa116a::t_c1355ea17c88e5 139-140,142-145
+src/shared/help/helpJumpDispatcher.ts
+  s_9a500d3ffa116a::t_0dd7b14cacf134 20-26,104-106
+src/i18n/locales/sv.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/i18n/locales/ko.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/i18n/locales/nb.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/features/bin-designer/components/panel/FeatureToggle/FeatureToggle.test.tsx
+  s_9a500d3ffa116a::t_58334c337043ac 48,55,58,60-61
+src/i18n/locales/pt-BR.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/i18n/locales/uk.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/i18n/locales/it.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_9a500d3ffa116a::t_67b472df8baf44 2,4-5,8,11,100,102-108
+src/i18n/locales/fr.json
+  s_9a500d3ffa116a::t_bbbd129b9e845a 4487-4488
+src/shared/components/FeatureToggle/FeatureToggle.test.tsx
+  s_9a500d3ffa116a::t_58334c337043ac 48,55,58,60-61
+src/i18n/locales/en.ts
+  s_9a500d3ffa116a::t_bbbd129b9e845a 121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9dd8cc656f4188e4fff352c278d32cd3aaaa826b",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
