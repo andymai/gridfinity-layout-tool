@@ -4,13 +4,22 @@
  * invalidate every consumer of the general constants module.
  */
 
-import type { StoredBaseplateParams, PaddingAnchor, StackPrintParams } from './types';
+import type {
+  StoredBaseplateParams,
+  PaddingAnchor,
+  StackPrintParams,
+  SplitOverride,
+  ScrewHoleParams,
+  FractionalEdge,
+} from './types';
 import {
   mm,
   gridUnits,
   STACK_PRINT_MIN_GAP_MM,
   STACK_PRINT_MAX_GAP_MM,
   STACK_PRINT_DEFAULT_GAP_MM,
+  STACK_PRINT_MIN_COPIES,
+  STACK_PRINT_MAX_COPIES,
 } from './types';
 import { CONNECTOR_FIT_OFFSET_MIN, CONNECTOR_FIT_OFFSET_MAX } from '@/shared/constants/connectors';
 import { CONSTRAINTS } from './constants';
@@ -128,6 +137,8 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
   }
   // Validate and clamp all fields from persisted/imported data
   const stackPrint = migrateStackPrint(obj.stackPrint);
+  const splitOverride = migrateSplitOverride(obj.splitOverride);
+  const screwHoles = migrateScrewHoles(obj.screwHoles);
   const radii = obj.cornerRadii;
   const hasRadii =
     radii !== null &&
@@ -224,6 +235,86 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
     // independently so toggling detach off/on doesn't lose the connector intent.
     ...(obj.detachMarginConnector === true ? { detachMarginConnector: true } : {}),
     ...(stackPrint ? { stackPrint } : {}),
+    ...(isFractionalEdge(obj.fractionalEdgeX) ? { fractionalEdgeX: obj.fractionalEdgeX } : {}),
+    ...(isFractionalEdge(obj.fractionalEdgeY) ? { fractionalEdgeY: obj.fractionalEdgeY } : {}),
+    ...(splitOverride ? { splitOverride } : {}),
+    ...(screwHoles ? { screwHoles } : {}),
+  };
+}
+
+function isFractionalEdge(value: unknown): value is FractionalEdge {
+  return value === 'start' || value === 'end';
+}
+
+/**
+ * Shape check only: whether the chunks still describe the current plate
+ * (sum to its dims, cuts on cell boundaries) is `normalizeSplitOverride`'s
+ * call at build time, which has the resolved dimensions this layer does not.
+ */
+function migrateSplitOverride(value: unknown): SplitOverride | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const o = value as Record<string, unknown>;
+  const isChunkArray = (v: unknown): v is number[] =>
+    Array.isArray(v) &&
+    v.length > 0 &&
+    v.every((c) => typeof c === 'number' && Number.isFinite(c) && c > 0);
+  if (!isChunkArray(o.cols) || !isChunkArray(o.rows)) return undefined;
+  return { cols: o.cols.map(gridUnits), rows: o.rows.map(gridUnits) };
+}
+
+/** Validate + clamp persisted screw-hole params, or undefined if absent/invalid. */
+function migrateScrewHoles(value: unknown): ScrewHoleParams | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const o = value as Record<string, unknown>;
+  if (typeof o.enabled !== 'boolean') return undefined;
+  if (o.headStyle !== 'countersink' && o.headStyle !== 'counterbore') return undefined;
+  return {
+    enabled: o.enabled,
+    diameter: mm(
+      clampNumber(
+        o.diameter,
+        SCREW_HOLE_MIN_DIAMETER_MM,
+        SCREW_HOLE_MAX_DIAMETER_MM,
+        SCREW_HOLE_DEFAULT_DIAMETER_MM
+      )
+    ),
+    headStyle: o.headStyle,
+    ...(typeof o.headDiameter === 'number' && Number.isFinite(o.headDiameter)
+      ? {
+          headDiameter: mm(
+            clampNumber(
+              o.headDiameter,
+              SCREW_HEAD_MIN_DIAMETER_MM,
+              SCREW_HEAD_MAX_DIAMETER_MM,
+              SCREW_HEAD_MIN_DIAMETER_MM
+            )
+          ),
+        }
+      : {}),
+    ...(typeof o.counterboreDepth === 'number' && Number.isFinite(o.counterboreDepth)
+      ? {
+          counterboreDepth: mm(
+            clampNumber(
+              o.counterboreDepth,
+              0,
+              SCREW_COUNTERBORE_MAX_DEPTH_MM,
+              SCREW_COUNTERBORE_DEFAULT_DEPTH_MM
+            )
+          ),
+        }
+      : {}),
+    ...(typeof o.screwsPerPiece === 'number' && Number.isFinite(o.screwsPerPiece)
+      ? {
+          screwsPerPiece: Math.round(
+            clampNumber(
+              o.screwsPerPiece,
+              SCREWS_PER_PIECE_MIN,
+              SCREWS_PER_PIECE_MAX,
+              SCREWS_PER_PIECE_DEFAULT
+            )
+          ),
+        }
+      : {}),
   };
 }
 
@@ -242,6 +333,18 @@ function migrateStackPrint(value: unknown): StackPrintParams | undefined {
         STACK_PRINT_DEFAULT_GAP_MM
       )
     ),
+    ...(typeof o.copies === 'number' && Number.isFinite(o.copies)
+      ? {
+          copies: Math.round(
+            clampNumber(
+              o.copies,
+              STACK_PRINT_MIN_COPIES,
+              STACK_PRINT_MAX_COPIES,
+              STACK_PRINT_MIN_COPIES
+            )
+          ),
+        }
+      : {}),
   };
 }
 
