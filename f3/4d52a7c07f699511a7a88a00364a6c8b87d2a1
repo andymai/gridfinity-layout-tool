@@ -1,0 +1,21 @@
+src/shared/components/MoreDisclosure/MoreDisclosure.tsx
+  s_9a500d3ffa116a::t_0b4b5447a27fc0 85-89,102-103,107-112
+src/shared/components/MoreDisclosure/MoreDisclosure.test.tsx
+  s_9a500d3ffa116a::t_0b4b5447a27fc0 48-49,53,55-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f34d52a7c07f699511a7a88a00364a6c8b87d2a1",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
