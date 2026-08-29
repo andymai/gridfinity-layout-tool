@@ -17,5 +17,14 @@ describe('FeaturesPage', () => {
   it('composes its sections with their help targets', () => {
     const { container } = render(<FeaturesPage />);
     expect(container.querySelector('[data-help-target="bd-lid"]'), 'bd-lid').not.toBeNull();
+    expect(container.querySelector('[data-help-target="bd-handles"]'), 'bd-handles').not.toBeNull();
+    expect(
+      container.querySelector('[data-help-target="bd-wall-cutouts"]'),
+      'bd-wall-cutouts'
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-help-target="bd-slide-tray"]'),
+      'bd-slide-tray'
+    ).not.toBeNull();
   });
 });

@@ -1,22 +1,13 @@
 /**
- * Walls section: Wall thickness and pattern selection.
- *
- * Shows discrete wall thickness options (multiples of common FDM nozzle sizes)
- * using a snapping slider with tick marks and helpful descriptions.
- *
- * Also allows selection of wall patterns (honeycomb, etc.) via dropdown, which
- * walls carry them, and their scale.
+ * Wall surface styling: carved patterns and auto-fit surface text on the outer
+ * walls. Lives on the Style page; thickness stays with Shape.
  */
 
 import { SliderInput, SegmentedControl, Checkbox } from '@/design-system';
 import type { TextMode } from '@/features/bin-designer/types';
 import { WALL_PATTERN_SIDES, WALL_TEXT_SIDES } from '@/features/bin-designer/types';
-import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
-import { WallCutoutsSection } from '../WallCutoutsSection';
-import { HandleSection } from '../HandleSection';
-import { SlideTraySection } from '../SlideTraySection';
 import { FeatureToggle } from '../FeatureToggle';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { AnchorPicker } from '../../controls/AnchorPicker';
@@ -25,12 +16,8 @@ import { SideSelector, type SideState } from '../shared';
 /** Mode options for the wall-text picker, in the shared textMode order. */
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
 
-export function WallsSection() {
+export function WallSurfaceSection() {
   const { state, handlers, t } = useWallsSection();
-  // Wall cutouts and handles auto-snap to the outermost matching polygon
-  // edge on custom shapes. Wall patterns tile across *every* axis-aligned
-  // outer edge; outermost-per-cardinal matching is used only for border
-  // clipping around cutouts/handles, not to limit tiling itself.
 
   // A slot-blocked wall can't carry a pattern, and SideSelector renders a
   // disabled side as off — so the stored selection passes through unchanged and
@@ -47,14 +34,6 @@ export function WallsSection() {
 
   return (
     <div className="space-y-4">
-      <SnappingSlider
-        label={t('binDesigner.wallThickness')}
-        value={state.wallThickness}
-        onChange={handlers.handleChange}
-        options={state.options}
-        unit="mm"
-        tip={t('binDesigner.wallThickness.nozzleTip')}
-      />
       <div>
         <PatternSelector
           selectedPattern={state.patternEnabled ? state.pattern : null}
@@ -193,9 +172,6 @@ export function WallsSection() {
           </>
         }
       />
-      <WallCutoutsSection />
-      <HandleSection />
-      <SlideTraySection />
     </div>
   );
 }

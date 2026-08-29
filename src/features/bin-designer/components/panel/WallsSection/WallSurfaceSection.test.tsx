@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { WallsSection } from './WallsSection';
+import { WallSurfaceSection } from './WallSurfaceSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import type { WallPatternSides } from '@/features/bin-designer/types';
 
-describe('WallsSection', () => {
+describe('WallSurfaceSection', () => {
   beforeEach(() => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
@@ -13,13 +13,8 @@ describe('WallsSection', () => {
     });
   });
 
-  it('renders wall thickness slider', () => {
-    const { container } = render(<WallsSection />);
-    expect(container.querySelector('div[role="slider"]')).toBeInTheDocument();
-  });
-
   it('renders pattern selector with all options', () => {
-    render(<WallsSection />);
+    render(<WallSurfaceSection />);
     expect(screen.getByText('Wall pattern')).toBeInTheDocument();
     expect(screen.getByText('Solid')).toBeInTheDocument();
     expect(screen.getByText('Honeycomb')).toBeInTheDocument();
@@ -39,18 +34,13 @@ describe('WallsSection', () => {
       },
     });
 
-    render(<WallsSection />);
+    render(<WallSurfaceSection />);
     expect(screen.getByText('Walls with divider slots will keep solid walls')).toBeInTheDocument();
-  });
-
-  it('always renders handle section', () => {
-    render(<WallsSection />);
-    expect(screen.getByText('Handles')).toBeInTheDocument();
   });
 
   describe('wall text (#2695)', () => {
     it('hides the inputs until the toggle is switched on', () => {
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.getByText('Wall text')).toBeInTheDocument();
       expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
 
@@ -65,12 +55,12 @@ describe('WallsSection', () => {
         params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
         ui: { ...DEFAULT_UI_STATE },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.getByRole('textbox', { name: 'Front wall text' })).toBeInTheDocument();
     });
 
     it('commits a wall string on blur', () => {
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
       const input = screen.getByRole('textbox', { name: 'Front wall text' });
       fireEvent.change(input, { target: { value: 'Cables' } });
@@ -79,7 +69,7 @@ describe('WallsSection', () => {
     });
 
     it('collapses an opened-but-empty toggle when the active design switches', () => {
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
       expect(screen.getByRole('textbox', { name: 'Front wall text' })).toBeInTheDocument();
 
@@ -100,7 +90,7 @@ describe('WallsSection', () => {
         },
         ui: { ...DEFAULT_UI_STATE },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       // Auto-opened because text exists; toggling off clears every wall.
       fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
       expect(useDesignerStore.getState().params.surfaceText?.walls).toBeUndefined();
@@ -109,7 +99,7 @@ describe('WallsSection', () => {
     });
 
     it('shows mode + anchor pickers only when text is present', () => {
-      const { unmount } = render(<WallsSection />);
+      const { unmount } = render(<WallSurfaceSection />);
       expect(screen.queryByRole('radio', { name: 'Emboss' })).not.toBeInTheDocument();
       unmount();
 
@@ -117,7 +107,7 @@ describe('WallsSection', () => {
         params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
         ui: { ...DEFAULT_UI_STATE },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.getByRole('radio', { name: 'Emboss' })).toBeInTheDocument();
       expect(screen.getByRole('radio', { name: 'Top left' })).toBeInTheDocument();
     });
@@ -127,7 +117,7 @@ describe('WallsSection', () => {
         params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
         ui: { ...DEFAULT_UI_STATE },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       // Not 'Bottom left': the default preset already anchors there, so the
       // setter's no-op guard would (correctly) swallow it and the test would
       // pass without the picker being wired to anything.
@@ -140,7 +130,7 @@ describe('WallsSection', () => {
         params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
         ui: { ...DEFAULT_UI_STATE },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       fireEvent.click(screen.getByRole('radio', { name: 'Emboss' }));
       expect(useDesignerStore.getState().params.surfaceText?.style?.mode).toBe('emboss');
     });
@@ -150,7 +140,7 @@ describe('WallsSection', () => {
         params: { ...DEFAULT_BIN_PARAMS, cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } },
         ui: { ...DEFAULT_UI_STATE },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
       expect(screen.getByText('Not available for custom-shape bins.')).toBeInTheDocument();
     });
@@ -167,7 +157,7 @@ describe('WallsSection', () => {
         },
         ui: { ...DEFAULT_UI_STATE },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.getByRole('textbox', { name: 'Front wall text' })).toHaveValue('BITS');
       expect(screen.queryByText('Not available for solid bins.')).not.toBeInTheDocument();
     });
@@ -184,13 +174,13 @@ describe('WallsSection', () => {
     });
 
     it('hides the side selector until a pattern is picked', () => {
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.queryByRole('switch', { name: 'Front' })).not.toBeInTheDocument();
     });
 
     it('shows all four walls selected for a freshly enabled pattern', () => {
       useDesignerStore.setState({ params: patterned() });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.getByText('Patterned walls')).toBeInTheDocument();
       for (const side of ['Left', 'Right', 'Front', 'Back']) {
         expect(screen.getByRole('switch', { name: side })).toHaveAttribute('aria-checked', 'true');
@@ -199,7 +189,7 @@ describe('WallsSection', () => {
 
     it('writes the full side record when a wall is toggled off', () => {
       useDesignerStore.setState({ params: patterned() });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       fireEvent.click(screen.getByRole('switch', { name: 'Back' }));
       expect(useDesignerStore.getState().params.wallPattern.sides).toEqual({
         left: true,
@@ -218,7 +208,7 @@ describe('WallsSection', () => {
           compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
         },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(
         screen.getByText('Pick a wall, or pattern the divider walls below')
       ).toBeInTheDocument();
@@ -237,7 +227,7 @@ describe('WallsSection', () => {
           },
         },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(
         screen.getByText('Outer walls stay solid — only the dividers are patterned')
       ).toBeInTheDocument();
@@ -249,7 +239,7 @@ describe('WallsSection', () => {
       useDesignerStore.setState({
         params: patterned({ left: false, right: false, front: false, back: false }),
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.getByText('Nothing is patterned — pick at least one wall')).toBeInTheDocument();
       expect(
         screen.queryByText('Pick a wall, or pattern the divider walls below')
@@ -266,7 +256,7 @@ describe('WallsSection', () => {
           wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'mitsukude' },
         },
       });
-      const { unmount } = render(<WallsSection />);
+      const { unmount } = render(<WallSurfaceSection />);
       expect(screen.queryByRole('switch', { name: 'Front' })).not.toBeInTheDocument();
       expect(
         screen.getByText('Kumiko patterns need a rectangular bin, so these walls stay solid')
@@ -286,7 +276,7 @@ describe('WallsSection', () => {
           wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'mitsukude' },
         },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.queryByRole('switch', { name: 'Front' })).not.toBeInTheDocument();
       expect(
         screen.getByText(
@@ -302,7 +292,7 @@ describe('WallsSection', () => {
           wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'mitsukude' },
         },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       expect(screen.getByRole('switch', { name: 'Front' })).toBeInTheDocument();
     });
 
@@ -318,7 +308,7 @@ describe('WallsSection', () => {
           },
         },
       });
-      render(<WallsSection />);
+      render(<WallSurfaceSection />);
       const left = screen.getByRole('switch', { name: 'Left' });
       expect(left).toBeDisabled();
       // Disabled reads as off even though the stored selection is untouched.
@@ -336,7 +326,7 @@ describe('WallsSection', () => {
       },
     });
 
-    render(<WallsSection />);
+    render(<WallSurfaceSection />);
     const select = screen.getByRole<HTMLSelectElement>('combobox');
     expect(select.value).toBe('honeycomb');
   });

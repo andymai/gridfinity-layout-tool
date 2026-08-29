@@ -1,20 +1,24 @@
-import { useTranslation } from '@/i18n';
 import { PanelSection } from '../../PanelSection';
 import { LidSection } from '../../LidSection';
+import { WallCutoutsSection } from '../../WallCutoutsSection';
+import { HandleSection } from '../../HandleSection';
+import { SlideTraySection } from '../../SlideTraySection';
 
-/**
- * Feature parts: the lid today; handles, wall cutouts and the slide tray move
- * here from Walls when that section splits.
- */
+/** Feature parts: the lid, handles, wall cutouts, slide tray. */
 export function FeaturesPage() {
-  const t = useTranslation();
   return (
     <div className="divide-y divide-stroke-subtle/50">
-      <p className="px-4 py-2 text-label text-content-tertiary">
-        {t('binDesigner.category.featuresInterim')}
-      </p>
       <PanelSection helpTarget="bd-lid">
         <LidSection />
+      </PanelSection>
+      <PanelSection helpTarget="bd-handles">
+        <HandleSection />
+      </PanelSection>
+      <PanelSection helpTarget="bd-wall-cutouts">
+        <WallCutoutsSection />
+      </PanelSection>
+      <PanelSection helpTarget="bd-slide-tray">
+        <SlideTraySection />
       </PanelSection>
     </div>
   );

@@ -30,7 +30,6 @@ describe('BaseSection', () => {
     expect(screen.getByText('Screw holes')).toBeInTheDocument();
     expect(screen.getByText('Stacking lip')).toBeInTheDocument();
     expect(screen.getByText('Lightweight floor')).toBeInTheDocument();
-    expect(screen.getByText('Drainage holes')).toBeInTheDocument();
   });
 
   describe('body type', () => {
@@ -222,34 +221,5 @@ describe('BaseSection', () => {
       expect(screen.queryByText(/Foot lattice/)).not.toBeInTheDocument();
       expect(screen.getByText(/A fractional axis keeps the on-grid lattice/)).toBeInTheDocument();
     });
-  });
-
-  it('reveals the hole picker only once drainage is on', () => {
-    const { unmount } = render(<BaseSection />);
-    expect(screen.queryByLabelText('Hole shape')).not.toBeInTheDocument();
-    unmount();
-
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        floorPattern: { enabled: true, pattern: 'round', scale: 0.5 },
-      },
-    });
-    render(<BaseSection />);
-
-    expect(screen.getByLabelText('Hole shape')).toBeInTheDocument();
-  });
-
-  it('disables drainage holes on a lightweight floor', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
-      },
-    });
-
-    render(<BaseSection />);
-
-    expect(screen.getByRole('switch', { name: 'Drainage holes' })).toBeDisabled();
   });
 });
