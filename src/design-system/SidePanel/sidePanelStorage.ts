@@ -2,7 +2,7 @@
  * Best-effort persistence for a SidePanel's width and collapsed state.
  * Keys are `${prefix}-width` / `${prefix}-collapsed`, matching the legacy
  * cutout inspector keys when the prefix is `gridfinity-cutout-inspector`,
- * so adopting panels keep users' saved layouts.
+ * so adopting panels keep users' saved panel widths and collapsed state.
  */
 
 interface WidthBounds {

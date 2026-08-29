@@ -27,9 +27,11 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Escape' && value !== '') {
         // Claim Escape only while there is text to clear, so an enclosing
-        // dialog still closes on Escape from an empty field.
+        // dialog still closes on Escape from an empty field. A claimed key is
+        // not forwarded either — the caller's handler must not also act on it.
         e.stopPropagation();
         onValueChange('');
+        return;
       }
       onKeyDown?.(e);
     };

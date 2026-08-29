@@ -138,7 +138,7 @@ function SidePanelRoot({
     (e: React.PointerEvent) => {
       e.preventDefault();
       draggingRef.current = true;
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      e.currentTarget.setPointerCapture(e.pointerId);
 
       const handleMove = (moveEvent: PointerEvent) => {
         if (!draggingRef.current || !panelRef.current) return;
