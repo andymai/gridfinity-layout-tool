@@ -1,0 +1,28 @@
+src/features/generation/export/threemfColor.ts
+  s_e0e831152f36ca::t_3d868377fa2196 10-16,18-25,27-29,31,33-53,55-58,60-71
+src/features/generation/export/threemfExporter.test.ts
+  s_e0e831152f36ca::t_02d260d79c09cf 697-703,712,721-788
+  s_e0e831152f36ca::t_fc7646ef916c62 793
+src/features/generation/export/threemfExporter.ts
+  s_e0e831152f36ca::t_1670c0da6d9878 46-47,50,57
+  s_e0e831152f36ca::t_e365b28c28a1d6 69
+  s_e0e831152f36ca::t_cc6d8048ac6a9b 7
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_e0e831152f36ca::t_485f5293658f3f 334-335
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "0af011ebffd414dd559ccb5221a686cfe7f6d6d1",
+  "prompts": {},
+  "sessions": {
+    "s_e0e831152f36ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9807da34-2a8c-46dd-80b9-32757e28c49d",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
