@@ -612,6 +612,128 @@ describe('migrateBaseplateParams', () => {
     const result = migrateBaseplateParams(stored);
     expect(result.cornerRadii).toBeUndefined();
   });
+
+  const currentShapeBase = {
+    magnetHoles: false,
+    magnetDiameter: 6.5,
+    magnetDepth: 2,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+  };
+
+  // Without this a reload reverts a hand-drawn split to the automatic plan.
+  it('preserves splitOverride across a save/load round-trip', () => {
+    const result = migrateBaseplateParams({
+      ...currentShapeBase,
+      splitOverride: { cols: [2, 3], rows: [4, 0.5] },
+    });
+    expect(result.splitOverride).toEqual({ cols: [2, 3], rows: [4, 0.5] });
+  });
+
+  it('drops a malformed splitOverride instead of crashing', () => {
+    expect(
+      migrateBaseplateParams({ ...currentShapeBase, splitOverride: 'oops' }).splitOverride
+    ).toBeUndefined();
+    expect(
+      migrateBaseplateParams({ ...currentShapeBase, splitOverride: { cols: [2] } }).splitOverride
+    ).toBeUndefined();
+    expect(
+      migrateBaseplateParams({
+        ...currentShapeBase,
+        splitOverride: { cols: [2, -1], rows: [3] },
+      }).splitOverride
+    ).toBeUndefined();
+    expect(
+      migrateBaseplateParams({
+        ...currentShapeBase,
+        splitOverride: { cols: [], rows: [3] },
+      }).splitOverride
+    ).toBeUndefined();
+  });
+
+  it('preserves screwHoles across a save/load round-trip', () => {
+    const full = {
+      enabled: true,
+      diameter: 3.4,
+      headStyle: 'counterbore',
+      headDiameter: 5.5,
+      counterboreDepth: 3,
+      screwsPerPiece: 6,
+    };
+    expect(migrateBaseplateParams({ ...currentShapeBase, screwHoles: full }).screwHoles).toEqual(
+      full
+    );
+    const minimal = { enabled: false, diameter: 3.4, headStyle: 'countersink' };
+    const migrated = migrateBaseplateParams({
+      ...currentShapeBase,
+      screwHoles: minimal,
+    }).screwHoles;
+    expect(migrated).toEqual(minimal);
+    expect(migrated).not.toHaveProperty('headDiameter');
+  });
+
+  it('clamps screwHoles numbers and drops an invalid object', () => {
+    const result = migrateBaseplateParams({
+      ...currentShapeBase,
+      screwHoles: {
+        enabled: true,
+        diameter: 999,
+        headStyle: 'counterbore',
+        counterboreDepth: 99,
+        screwsPerPiece: 0,
+      },
+    });
+    expect(result.screwHoles).toEqual({
+      enabled: true,
+      diameter: 8,
+      headStyle: 'counterbore',
+      counterboreDepth: 6,
+      screwsPerPiece: 1,
+    });
+    expect(
+      migrateBaseplateParams({
+        ...currentShapeBase,
+        screwHoles: { enabled: true, diameter: 3.4, headStyle: 'oops' },
+      }).screwHoles
+    ).toBeUndefined();
+    expect(
+      migrateBaseplateParams({
+        ...currentShapeBase,
+        screwHoles: { diameter: 3.4, headStyle: 'countersink' },
+      }).screwHoles
+    ).toBeUndefined();
+  });
+
+  it('preserves fractionalEdgeX/Y and drops invalid values', () => {
+    const result = migrateBaseplateParams({
+      ...currentShapeBase,
+      fractionalEdgeX: 'start',
+      fractionalEdgeY: 'end',
+    });
+    expect(result.fractionalEdgeX).toBe('start');
+    expect(result.fractionalEdgeY).toBe('end');
+    const invalid = migrateBaseplateParams({ ...currentShapeBase, fractionalEdgeX: 'middle' });
+    expect(invalid.fractionalEdgeX).toBeUndefined();
+  });
+
+  it('preserves stackPrint.copies, rounded and clamped', () => {
+    const base = { ...currentShapeBase, stackPrint: { enabled: true, gapMm: 0.2 } };
+    expect(migrateBaseplateParams(base).stackPrint).toEqual({ enabled: true, gapMm: 0.2 });
+    expect(
+      migrateBaseplateParams({
+        ...currentShapeBase,
+        stackPrint: { enabled: true, gapMm: 0.2, copies: 3 },
+      }).stackPrint
+    ).toEqual({ enabled: true, gapMm: 0.2, copies: 3 });
+    expect(
+      migrateBaseplateParams({
+        ...currentShapeBase,
+        stackPrint: { enabled: true, gapMm: 0.2, copies: 999 },
+      }).stackPrint?.copies
+    ).toBe(20);
+  });
 });
 
 describe('getDefaultDrawerSize', () => {
