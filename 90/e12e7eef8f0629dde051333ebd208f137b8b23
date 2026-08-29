@@ -1,0 +1,27 @@
+src/design-system/SidePanel/sidePanelStorage.ts
+  s_9a500d3ffa116a::t_09198f4889b327 5
+src/design-system/SidePanel/SidePanel.tsx
+  s_9a500d3ffa116a::t_09198f4889b327 141
+src/design-system/SearchInput/SearchInput.tsx
+  s_9a500d3ffa116a::t_09198f4889b327 30-31,34
+src/features/bin-designer/components/CutoutWorkspace/inspectorDockStorage.ts
+  s_9a500d3ffa116a::t_09198f4889b327 4
+scripts/doc-budget.json
+  s_9a500d3ffa116a::t_278c218daae99f 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "90e12e7eef8f0629dde051333ebd208f137b8b23",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
