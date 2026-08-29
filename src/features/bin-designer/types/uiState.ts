@@ -32,6 +32,9 @@ export type ColorTool = 'eyedropper' | 'swap-pick-first' | 'swap-pick-second' | 
 /** Active tab in the parameter panel */
 export type DesignerTab = 'dimensions' | 'base' | 'compartments' | 'walls' | 'style';
 
+/** Rail categories of the designer panel; 'selection' is the contextual slot. */
+export type DesignerCategory = 'selection' | 'shape' | 'interior' | 'features' | 'style' | 'print';
+
 /** View mode for split bin preview: assembled (no gaps) or exploded (gaps between pieces). */
 export type SplitViewMode = 'assembled' | 'exploded';
 
@@ -61,6 +64,7 @@ export interface MeasureState {
 
 export interface DesignerUIState {
   readonly activeTab: DesignerTab;
+  readonly activeCategory: DesignerCategory;
   readonly exportDialogOpen: boolean;
   readonly designListOpen: boolean;
   /** Whether the version-history dialog is open. */

@@ -10,6 +10,7 @@ import type {
   ColorTool,
   CutoutTarget,
   DesignerTab,
+  DesignerCategory,
   PickerOverlayState,
   MeasureMode,
   SplitViewMode,
@@ -31,6 +32,12 @@ export function createUISlice(set: Set) {
     setActiveTab: (tab: DesignerTab) => {
       set((state) => {
         state.ui.activeTab = tab;
+      });
+    },
+
+    setActiveCategory: (category: DesignerCategory) => {
+      set((state) => {
+        state.ui.activeCategory = category;
       });
     },
 

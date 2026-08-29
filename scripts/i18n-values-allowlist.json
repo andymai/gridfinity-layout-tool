@@ -39,6 +39,8 @@
     "binDesigner.bento.stashTitle",
     "binDesigner.bento.wallAngle",
     "binDesigner.cart.cost",
+    "binDesigner.category.interior",
+    "binDesigner.category.style",
     "binDesigner.colors.base",
     "binDesigner.colors.group.exterior",
     "binDesigner.colors.group.interior",

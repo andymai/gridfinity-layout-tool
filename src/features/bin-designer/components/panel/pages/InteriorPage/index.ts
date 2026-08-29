@@ -1,0 +1,1 @@
+export { InteriorPage } from './InteriorPage';
