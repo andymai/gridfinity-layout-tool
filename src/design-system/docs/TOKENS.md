@@ -64,17 +64,34 @@ CSS variables and design tokens used throughout the design system.
 | `2xl` | `--space-2xl` | `24px` |
 | `3xl` | `--space-3xl` | `32px` |
 
-## Typography Scale
+## Typography
 
-| Token  | Variable      | Value  | Use Case         |
-| ------ | ------------- | ------ | ---------------- |
-| `xxs`  | `--text-xxs`  | `10px` | Tiny labels      |
-| `xs`   | `--text-xs`   | `12px` | Subtle labels    |
-| `sm`   | `--text-sm`   | `13px` | Secondary text   |
-| `base` | `--text-base` | `14px` | Body text        |
-| `lg`   | `--text-lg`   | `16px` | Section headings |
-| `xl`   | `--text-xl`   | `18px` | Panel titles     |
-| `2xl`  | `--text-2xl`  | `24px` | Page title       |
+Face: Inter variable (self-hosted, 400–700), IBM Plex Mono for code/kbd. All type tokens live in the `@theme` block of `src/index.css`; each carries its own line-height (roles also carry tracking and weight), so one class styles the whole role.
+
+### Role ramp (preferred — `typeRamp` in `variants.ts`)
+
+| Role      | Class          | Size/LH | Weight | Use                               |
+| --------- | -------------- | ------- | ------ | --------------------------------- |
+| `micro`   | `text-micro`   | 10/14   | 500    | Unit suffixes, tiny badges        |
+| `label`   | `text-label`   | 11/16   | 500    | Control labels                    |
+| `value`   | `text-value`   | 12/16   | 500    | Numeric values (+ `tabular-nums`) |
+| `body`    | `text-body`    | 13/20   | 400    | Panel copy                        |
+| `section` | `text-section` | 11/16   | 600    | Section headers (+ `uppercase`)   |
+| `title`   | `text-title`   | 14/20   | 600    | Panel/dialog titles               |
+| `page`    | `text-page`    | 18/24   | 600    | Page titles                       |
+
+### Legacy scale (retuned line-heights, sizes unchanged)
+
+| Token  | Size/LH | Use Case         |
+| ------ | ------- | ---------------- |
+| `xs`   | 12/16   | Subtle labels    |
+| `sm`   | 13/20   | Secondary text   |
+| `base` | 14/20   | Body text        |
+| `lg`   | 16/24   | Section headings |
+| `xl`   | 18/24   | Panel titles     |
+| `2xl`  | 24/32   | Page title       |
+
+`text-xxs` is a transitional alias for `text-micro` and is being removed.
 
 ## Component Size Scale
 
