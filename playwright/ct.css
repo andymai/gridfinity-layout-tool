@@ -9,3 +9,15 @@
  */
 @import '../src/index.css';
 @source '../src';
+
+/* The app declares its font faces in index.html, which this harness never
+   loads; declare Inter here so snapshots render the shipped typeface.
+   `block` rather than the app's `optional` so screenshots never race the
+   font load and silently capture the fallback. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url('/fonts/inter-var-latin.woff2') format('woff2');
+}

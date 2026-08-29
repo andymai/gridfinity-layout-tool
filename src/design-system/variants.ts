@@ -120,6 +120,30 @@ export const sizeText = {
 } as const;
 
 /**
+ * Role-based type ramp. Each class carries size, line-height, tracking and
+ * weight for one UI role (tokens defined in src/index.css @theme). Prefer
+ * these over raw text-* sizes for UI chrome:
+ * - micro: unit suffixes, tiny badges (10px)
+ * - label: control labels (11px)
+ * - value: numeric values, tabular figures (12px)
+ * - body: panel copy (13px)
+ * - section: uppercase section headers (11px, wide tracking)
+ * - title: panel/dialog titles (14px)
+ * - page: page titles (18px)
+ */
+export const typeRamp = {
+  micro: 'text-micro',
+  label: 'text-label',
+  value: 'text-value tabular-nums',
+  body: 'text-body',
+  section: 'text-section uppercase',
+  title: 'text-title',
+  page: 'text-page',
+} as const;
+
+export type TypeRole = keyof typeof typeRamp;
+
+/**
  * Gap classes for icon spacing at each size.
  */
 export const sizeGaps = {

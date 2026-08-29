@@ -7,9 +7,63 @@
 /* Extend Tailwind with CSS variable mappings using semantic naming */
 @theme {
   /* Font families - include fallback fonts with size-adjust for CLS prevention */
+  --font-sans:
+    'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, sans-serif;
   --font-mono:
     'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, monospace;
+
+  /* Legacy type scale, retuned: sizes preserved, line-heights made deliberate.
+     These override Tailwind's defaults for text-xs/sm/base and pin lg/xl to the
+     app's historical 16/18px (Tailwind defaults are 18/20px). */
+  --text-xs: 0.75rem; /* 12px */
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem; /* 13px */
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.875rem; /* 14px */
+  --text-base--line-height: 1.25rem;
+  --text-lg: 1rem; /* 16px */
+  --text-lg--line-height: 1.5rem;
+  --text-xl: 1.125rem; /* 18px */
+  --text-xl--line-height: 1.5rem;
+  --text-2xl: 1.5rem; /* 24px */
+  --text-2xl--line-height: 2rem;
+
+  /* Role-based type ramp: one class carries size, line-height, tracking and
+     weight for a UI role. Prefer these over raw sizes in new code; the
+     `typeRamp` constants in design-system/variants.ts are the canonical entry. */
+  --text-micro: 0.625rem; /* 10px - unit suffixes, tiny badges */
+  --text-micro--line-height: 0.875rem;
+  --text-micro--letter-spacing: 0.02em;
+  --text-micro--font-weight: 500;
+  --text-label: 0.6875rem; /* 11px - control labels */
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.01em;
+  --text-label--font-weight: 500;
+  --text-value: 0.75rem; /* 12px - numeric values, pair with tabular-nums */
+  --text-value--line-height: 1rem;
+  --text-value--font-weight: 500;
+  --text-body: 0.8125rem; /* 13px - panel copy */
+  --text-body--line-height: 1.25rem;
+  --text-body--font-weight: 400;
+  --text-section: 0.6875rem; /* 11px - section headers, compose with uppercase */
+  --text-section--line-height: 1rem;
+  --text-section--letter-spacing: 0.06em;
+  --text-section--font-weight: 600;
+  --text-title: 0.875rem; /* 14px - panel/dialog titles */
+  --text-title--line-height: 1.25rem;
+  --text-title--letter-spacing: -0.01em;
+  --text-title--font-weight: 600;
+  --text-page: 1.125rem; /* 18px - page titles */
+  --text-page--line-height: 1.5rem;
+  --text-page--letter-spacing: -0.015em;
+  --text-page--font-weight: 600;
+
+  /* TODO: remove when the text-xxs call sites migrate to text-micro in the
+     ramp-adoption PR. Until then this makes the previously dead class real. */
+  --text-xxs: 0.625rem;
+  --text-xxs--line-height: 0.875rem;
 
   /* Surface colors (backgrounds) - use as bg-surface, bg-surface-secondary, etc. */
   --color-surface: var(--bg-primary);
@@ -186,16 +240,10 @@
   --space-row-y: 6px 8px;
 
   /* ===========================================
-     TYPOGRAPHY SCALE
+     TYPOGRAPHY
+     Sizes live in the @theme block above; only weights remain here because
+     the --font-* @theme namespace means font FAMILY, not weight.
      =========================================== */
-  --text-xxs: 0.625rem; /* 10px - Tiny labels, compact UI */
-  --text-xs: 0.75rem; /* 12px - Subtle labels */
-  --text-sm: 0.8125rem; /* 13px - Secondary text */
-  --text-base: 0.875rem; /* 14px - Body text */
-  --text-lg: 1rem; /* 16px - Section headings */
-  --text-xl: 1.125rem; /* 18px - Panel titles */
-  --text-2xl: 1.5rem; /* 24px - Page title */
-
   /* Font Weights */
   --font-normal: 400;
   --font-medium: 500;
@@ -420,17 +468,9 @@
    BASE STYLES
    =========================================== */
 body {
-  /* Include fallback font with size-adjust to minimize CLS when fonts load */
-  font-family:
-    'IBM Plex Sans',
-    'IBM Plex Sans Fallback',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    sans-serif;
+  /* Single source of truth: the @theme --font-sans stack (Inter + metric-matched
+     fallback declared inline in index.html). */
+  font-family: var(--font-sans);
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-size: var(--text-base);
