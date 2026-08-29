@@ -1,0 +1,70 @@
+src/design-system/NumberField/NumberField.visual.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1-34
+src/design-system/NumberField/index.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-3
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 25,173,183,193,203,213
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 64-66,84-85,111-112,135-136,160-161
+src/design-system/docs/COMPONENTS.md
+  s_9a500d3ffa116a::t_7c59ec165a547f 228-233
+src/features/bin-designer/components/panel/VariantSection/VariantSection.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,10-12
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,78,90
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 1,10-12
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 31,454,465,476,488,500,513,524,535,549
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 10,46
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 39,208,254,264,275
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 21,243,254,265,277
+src/features/drawer-shape/components/PenShapeDialog/PenControls.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 72-73
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 30,107,117,135,151,167,198
+src/features/bin-designer/components/CutoutWorkspace/CutoutScoopControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 18,126,136
+src/design-system/index.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 125-128
+src/design-system/NumberField/NumberField.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 4-8,12-14,16,41-48,59-60,68,81-87,91-92,101-105,143-147,149-156,168,173-174,177-178,182-186,201,204-209,212-221,229,238-250,255,283,289,292-293,297-298,300-301,307,317-344,346-347,350-351,354
+src/design-system/NumberField/NumberField.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 2,4,6-8,10,16,18,22,24,28,34,36,39,41,43,45-48,51,53,55-57,60,63,65,67-69,72,75,77,79-81,89,91,100,102,111,113,122,124,130,132,134-136,141,143,145-147,152-209,213,215-217,224,226-228,236,238,248,251,263,265,270,280,282-284,293,295-297,308,310-311,318,321,323-325,333,336-338,346,348-350,353-357,361-364,368-372,377,379-381,393,395-396,404,406-408,417,419,431,433-435,443,445,448-449,457,459,468,470,476,478,480-482,484-485,491,493,499-503,508,510-511,517,519,521-522,526-537,548,550-551,558,560-562,569,571-573,584,586-587,589-590,597-602,605-612,614-618
+  s_9a500d3ffa116a::t_c45e5f61ee1a98 613
+src/features/bin-designer/components/CutoutWorkspace/CutoutScoopControls.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 7-9
+src/design-system/NumberField/numberExpression.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-112
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.test.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 9,12-14
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 2,136,224
+src/features/bin-designer/components/CutoutWorkspace/CutoutEngraveLabelControls.test.tsx
+  s_9a500d3ffa116a::t_2d92e82fb7d285 52-53,70-71,78
+src/features/bin-designer/README.md
+  s_9a500d3ffa116a::t_8993f1831603c7 52-53
+src/design-system/NumberField/numberExpression.test.ts
+  s_9a500d3ffa116a::t_530698d4d45aed 1-70
+src/features/drawer-shape/components/PenShapeDialog/PenControls.tsx
+  s_9a500d3ffa116a::t_530698d4d45aed 9,88,97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "96ae62dda57eab0d7790647b7a15de78db9a6cf5",
+  "prompts": {},
+  "sessions": {
+    "s_9a500d3ffa116a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23380cc5-04be-41f5-9d62-e4392e97f536",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
