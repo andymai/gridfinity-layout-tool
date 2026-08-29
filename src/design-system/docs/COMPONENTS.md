@@ -225,6 +225,14 @@ interface SelectOption {
 
 ---
 
+## SidePanel
+
+Resizable, collapsible docked column (compound: `Root`, `Header`, `Body`), generalized from the cutout workspace's inspector dock. Drag or keyboard-resize the inner edge (`role="separator"`, arrows ±16px, Home/End), collapse to a 48px rail with a vertical title, width + collapsed state persisted under `persistKey` (`${key}-width` / `${key}-collapsed`). The Header auto-renders the collapse button and paints a shadow once the Body scrolls. All strings via the `labels` prop.
+
+## SearchInput
+
+Input preset for search fields: magnifier leftIcon, a clear button while text is present (Escape also clears, claiming the key only while non-empty so dialogs still close), and an optional `shortcutHint` Kbd chip while empty. Controlled via `value` / `onValueChange`.
+
 ## NumberField
 
 Compact scrub/type/nudge numeric input (Figma-style): the value is a persistent spinbutton input, the label doubles as a drag-to-scrub handle, arrows nudge with Shift ×10 / Alt ÷10, and typed entries may be small expressions ("42/2", "42mm"). `softMax` lets typed entries exceed `max` without truncation while gestures stay capped. Promoted from the bin designer's CompactNumberInput; its clamp/ceiling behavior is contract, covered by tests.

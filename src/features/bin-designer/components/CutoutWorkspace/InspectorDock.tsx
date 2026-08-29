@@ -3,29 +3,21 @@
  *
  * Replaces the old free-floating inspector overlay: a fixed column between the
  * 2D canvas and the app's 3D preview, so the panel never covers the shapes
- * being edited. Drag the left edge to resize; collapse to a thin rail to
- * reclaim canvas width. Width + collapsed state persist across sessions.
- *
- * Chrome mirrors the layout planner's RightPanel / bin inspector (scroll-shadow
- * header, shared icon set, ghost icon buttons) for visual consistency.
+ * being edited. Frame behavior (drag/keyboard resize, collapse-to-rail,
+ * persisted width + collapsed state) comes from the design system's SidePanel;
+ * the persistKey below reproduces this dock's original storage keys, so saved
+ * layouts survive the migration.
  */
 
-import { useCallback, useRef, useState, type ReactNode } from 'react';
-import { IconButton, Tabs } from '@/design-system';
+import { useState, type ReactNode } from 'react';
+import { IconButton, SidePanel, Tabs } from '@/design-system';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { InspectorContent, type BoardSettings } from './InspectorContent';
-import {
-  INSPECTOR_MAX_WIDTH,
-  INSPECTOR_MIN_WIDTH,
-  loadInspectorCollapsed,
-  loadInspectorWidth,
-  saveInspectorCollapsed,
-  saveInspectorWidth,
-} from './inspectorDockStorage';
+import { INSPECTOR_MAX_WIDTH, INSPECTOR_MIN_WIDTH } from './inspectorDockStorage';
 
 interface InspectorDockProps {
   readonly cutouts: readonly Cutout[];
@@ -100,160 +92,59 @@ export function InspectorDock({
   ...content
 }: InspectorDockProps) {
   const t = useTranslation();
-  const [width, setWidth] = useState(loadInspectorWidth);
-  const [collapsed, setCollapsed] = useState(loadInspectorCollapsed);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [tab, setTab] = useState<DockTab>('properties');
-  const dockRef = useRef<HTMLDivElement>(null);
-  const draggingRef = useRef(false);
   const hasSelection = content.selection.size > 0;
 
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      saveInspectorCollapsed(next);
-      onCollapsedChange?.(next);
-      return next;
-    });
-  }, [onCollapsedChange]);
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setIsScrolled(e.currentTarget.scrollTop > 0);
-  }, []);
-
-  const handleResizeStart = useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
-    draggingRef.current = true;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-
-    const handleMove = (moveEvent: PointerEvent) => {
-      if (!draggingRef.current || !dockRef.current) return;
-      const rightEdge = dockRef.current.getBoundingClientRect().right;
-      const next = Math.max(
-        INSPECTOR_MIN_WIDTH,
-        Math.min(INSPECTOR_MAX_WIDTH, rightEdge - moveEvent.clientX)
-      );
-      setWidth(next);
-    };
-
-    const handleUp = () => {
-      draggingRef.current = false;
-      document.removeEventListener('pointermove', handleMove);
-      document.removeEventListener('pointerup', handleUp);
-      document.removeEventListener('pointercancel', handleUp);
-      if (dockRef.current) {
-        saveInspectorWidth(dockRef.current.getBoundingClientRect().width);
-      }
-    };
-
-    document.addEventListener('pointermove', handleMove);
-    document.addEventListener('pointerup', handleUp);
-    // Cancelled gestures (OS interruption, lost capture) must also end the drag,
-    // otherwise draggingRef stays true and the dock keeps resizing on later moves.
-    document.addEventListener('pointercancel', handleUp);
-  }, []);
-
-  if (collapsed) {
-    return (
-      <aside className="flex w-12 flex-shrink-0 flex-col items-center border-l border-stroke-subtle bg-surface-secondary py-2">
-        <IconButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          touchTarget={false}
-          onClick={toggleCollapsed}
-          className={ICON_BTN}
-          aria-expanded={false}
-          aria-label={t('binDesigner.cutoutEditor.inspectorExpand')}
-          title={t('binDesigner.cutoutEditor.inspectorExpand')}
-        >
-          <Icon paths={ICON_PATHS.chevronDoubleLeft} />
-        </IconButton>
-        <span
-          className="mt-3 text-micro font-semibold uppercase tracking-wider text-content-tertiary"
-          style={{ writingMode: 'vertical-rl' }}
-        >
+  return (
+    <SidePanel.Root
+      side="right"
+      minWidth={INSPECTOR_MIN_WIDTH}
+      maxWidth={INSPECTOR_MAX_WIDTH}
+      persistKey="gridfinity-cutout-inspector"
+      labels={{
+        collapse: t('binDesigner.cutoutEditor.inspectorCollapse'),
+        expand: t('binDesigner.cutoutEditor.inspectorExpand'),
+        resize: t('binDesigner.cutoutEditor.inspectorResize'),
+      }}
+      railTitle={t('binDesigner.cutoutEditor.inspectorTitle')}
+      onCollapsedChange={onCollapsedChange}
+      className="animate-fade-in"
+    >
+      <SidePanel.Header>
+        <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
           {t('binDesigner.cutoutEditor.inspectorTitle')}
         </span>
-      </aside>
-    );
-  }
-
-  return (
-    <aside
-      ref={dockRef}
-      className="animate-fade-in relative flex flex-shrink-0 flex-col overflow-hidden border-l border-stroke-subtle bg-surface-secondary"
-      style={{ width }}
-    >
-      {/* Left-edge resize handle */}
-      <div
-        className="group absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize select-none"
-        onPointerDown={handleResizeStart}
-        role="separator"
-        aria-orientation="vertical"
-        aria-label={t('binDesigner.cutoutEditor.inspectorResize')}
-        aria-valuenow={Math.round(width)}
-        aria-valuemin={INSPECTOR_MIN_WIDTH}
-        aria-valuemax={INSPECTOR_MAX_WIDTH}
-      >
-        <div className="absolute inset-y-0 left-1 w-px bg-transparent transition-colors group-hover:bg-accent/60" />
-      </div>
-
-      {/* Header */}
-      <div
-        className={`flex flex-shrink-0 flex-col border-b border-stroke-subtle transition-shadow duration-200 ${
-          isScrolled ? 'shadow-elevated' : ''
-        }`}
-      >
-        <div className="flex items-center gap-2 px-4 py-2">
-          <IconButton
-            type="button"
-            variant="ghost"
-            size="sm"
-            touchTarget={false}
-            onClick={toggleCollapsed}
-            className={ICON_BTN}
-            aria-expanded
-            aria-label={t('binDesigner.cutoutEditor.inspectorCollapse')}
-            title={t('binDesigner.cutoutEditor.inspectorCollapse')}
-          >
-            <Icon paths={ICON_PATHS.chevronDoubleRight} />
-          </IconButton>
-          <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
-            {t('binDesigner.cutoutEditor.inspectorTitle')}
-          </span>
-          {hasSelection && (
-            <div className="ml-auto flex items-center gap-0.5">
-              <IconButton
-                type="button"
-                variant="ghost"
-                size="sm"
-                touchTarget={false}
-                onClick={onDuplicate}
-                disabled={!onDuplicate}
-                className={ICON_BTN}
-                aria-label={t('binDesigner.cutoutEditor.duplicate')}
-                title={t('binDesigner.cutoutEditor.duplicate')}
-              >
-                <Icon paths={ICON_PATHS.duplicate} />
-              </IconButton>
-              <IconButton
-                type="button"
-                variant="dangerGhost"
-                size="sm"
-                touchTarget={false}
-                onClick={onDelete}
-                disabled={!onDelete}
-                className={`${ICON_BTN} hover:bg-error-muted hover:text-error`}
-                aria-label={t('binDesigner.cutoutEditor.delete')}
-                title={t('binDesigner.cutoutEditor.delete')}
-              >
-                <Icon paths={ICON_PATHS.trash} />
-              </IconButton>
-            </div>
-          )}
-        </div>
-      </div>
+        {hasSelection && (
+          <div className="ml-auto flex items-center gap-0.5">
+            <IconButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              touchTarget={false}
+              onClick={onDuplicate}
+              disabled={!onDuplicate}
+              className={ICON_BTN}
+              aria-label={t('binDesigner.cutoutEditor.duplicate')}
+              title={t('binDesigner.cutoutEditor.duplicate')}
+            >
+              <Icon paths={ICON_PATHS.duplicate} />
+            </IconButton>
+            <IconButton
+              type="button"
+              variant="dangerGhost"
+              size="sm"
+              touchTarget={false}
+              onClick={onDelete}
+              disabled={!onDelete}
+              className={`${ICON_BTN} hover:bg-error-muted hover:text-error`}
+              aria-label={t('binDesigner.cutoutEditor.delete')}
+              title={t('binDesigner.cutoutEditor.delete')}
+            >
+              <Icon paths={ICON_PATHS.trash} />
+            </IconButton>
+          </div>
+        )}
+      </SidePanel.Header>
 
       {/* Body. With a shape list present the dock becomes tabbed; the design
           system's Tabs owns the full ARIA pattern (tab/panel ids, roving
@@ -269,10 +160,7 @@ export function InspectorDock({
               aria-label={t('binDesigner.cutoutEditor.inspectorTitle')}
             />
           </div>
-          <div
-            onScroll={handleScroll}
-            className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin pt-0 pb-3"
-          >
+          <SidePanel.Body className="pt-0 pb-3">
             <Tabs.Panel tabId="properties" activeTab={tab} keepMounted>
               <div className="px-4">
                 <InspectorContent {...content} board={board} />
@@ -282,16 +170,13 @@ export function InspectorDock({
             <Tabs.Panel tabId="shapes" activeTab={tab} keepMounted>
               {shapeList}
             </Tabs.Panel>
-          </div>
+          </SidePanel.Body>
         </Tabs.Root>
       ) : (
-        <div
-          onScroll={handleScroll}
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 pt-0 pb-3"
-        >
+        <SidePanel.Body className="px-4 pt-0 pb-3">
           <InspectorContent {...content} board={board} />
-        </div>
+        </SidePanel.Body>
       )}
-    </aside>
+    </SidePanel.Root>
   );
 }

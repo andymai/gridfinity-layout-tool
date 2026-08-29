@@ -27,6 +27,10 @@ export type { ArrowLeftRightIconProps } from './icons/ArrowLeftRight';
 
 export { ChevronDownIcon } from './icons/ChevronDown';
 export type { ChevronDownIconProps } from './icons/ChevronDown';
+export { ChevronDoubleLeftIcon } from './icons/ChevronDoubleLeft';
+export type { ChevronDoubleLeftIconProps } from './icons/ChevronDoubleLeft';
+export { ChevronDoubleRightIcon } from './icons/ChevronDoubleRight';
+export type { ChevronDoubleRightIconProps } from './icons/ChevronDoubleRight';
 
 export { CheckIcon } from './icons/Check';
 export type { CheckIconProps } from './icons/Check';
