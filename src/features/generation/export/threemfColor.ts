@@ -24,7 +24,7 @@ export interface UnifiedColorConfigs {
  * first-seen order — shared colors collapse onto one filament — and each
  * config's triangle slots are rewritten to reference the merged palette.
  *
- * Returns an undefined palette when no object carries colors, so single-color
+ * Returns an undefined palette when no object carries colors, so uncolored
  * exports skip the sidecar entirely. Throws only when the merged union
  * exceeds the slicer's filament cap, which no remapping can represent.
  */
