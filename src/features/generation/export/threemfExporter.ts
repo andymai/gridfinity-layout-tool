@@ -4,7 +4,7 @@ import { deduplicateVertices } from './threemfGeometry';
 import {
   buildModelSettingsConfig,
   buildProjectSettingsConfig,
-  unifiedPalette,
+  unifyColorConfigs,
 } from './threemfColor';
 import { buildModelXML, buildMultiObjectModelXML } from './threemfXml';
 import { packageFiles, THREEMF_MIME, toArrayBuffer } from './threemfPackage';
@@ -43,18 +43,18 @@ export function build3MFMultiObjectBuffer(
     validateMeshData(obj.vertices, obj.normals);
   }
 
-  const meshes = objects.map((obj) => ({
+  const unified = unifyColorConfigs(objects.map((obj) => obj.colorConfig));
+  const meshes = objects.map((obj, i) => ({
     mesh: deduplicateVertices(obj.vertices),
     name: obj.name,
-    colorConfig: obj.colorConfig,
+    colorConfig: unified.configs[i],
     placement: obj.placement,
   }));
 
-  const palette = unifiedPalette(meshes.map((m) => m.colorConfig));
   return packageFiles(
     buildMultiObjectModelXML(meshes, options),
     options.thumbnail,
-    palette && buildProjectSettingsConfig(palette),
+    unified.palette && buildProjectSettingsConfig(unified.palette),
     buildModelSettingsConfig(meshes)
   );
 }
@@ -66,7 +66,7 @@ export function build3MFBuffer(
 ): Uint8Array {
   validateMeshData(vertices, normals);
   const mesh = deduplicateVertices(vertices);
-  const palette = unifiedPalette([options.colorConfig]);
+  const { palette } = unifyColorConfigs([options.colorConfig]);
   return packageFiles(
     buildModelXML(mesh, options),
     options.thumbnail,

@@ -331,8 +331,8 @@ function layoutPieceRightOf(
 
 /**
  * Build a uniform-color colorConfig for an ancillary piece (lid or divider).
- * Materials match the bin's palette so `unifiedPalette`'s same-materials
- * invariant holds across all objects in the 3MF.
+ * Materials match the bin's palette so `unifyColorConfigs` takes its no-remap
+ * fast path and slot indices line up across all objects in the 3MF.
  */
 function uniformColorConfig(
   zone: ColorZone,

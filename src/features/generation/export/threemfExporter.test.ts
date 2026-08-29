@@ -694,11 +694,13 @@ describe('threemfExporter', () => {
       expect(config.filament_colour).toEqual(['#111111', '#ff0000']);
     });
 
-    it('multi-object: throws when colored objects have mismatched material arrays', () => {
-      // Per-triangle paint_color codes are object-local. If two objects ship
-      // different palettes, code "4" (slot 1) means different filaments in
-      // each object — and the unified filament_colour list can only honor
-      // one mapping. Fail loudly rather than silently produce wrong colors.
+    it('multi-object: merges mismatched palettes and remaps paint codes', () => {
+      // Per-triangle paint_color codes are object-local slot references, so
+      // objects with different palettes can't share one filament_colour list
+      // as-is. The exporter merges distinct colors (first-seen order, shared
+      // colors deduped to one filament) and remaps each object's triangle
+      // slots into the merged space — two bins with different zone palettes
+      // in one project file is a normal layout export.
       const tri = createSingleTriangle();
       const objects = [
         {
@@ -707,7 +709,7 @@ describe('threemfExporter', () => {
           name: 'bin',
           colorConfig: {
             materials: [{ color: '#111111' }, { color: '#ff0000' }],
-            triangleMaterialIndices: [0],
+            triangleMaterialIndices: [1],
           },
         },
         {
@@ -716,13 +718,79 @@ describe('threemfExporter', () => {
           name: 'lid',
           colorConfig: {
             materials: [{ color: '#111111' }, { color: '#00ff00' }],
+            triangleMaterialIndices: [1],
+          },
+        },
+      ];
+      const files = unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi' }));
+
+      // Shared #111111 collapses to one filament; the union keeps first-seen order.
+      const config = JSON.parse(strFromU8(files['Metadata/project_settings.config']));
+      expect(config.filament_colour).toEqual(['#111111', '#ff0000', '#00ff00']);
+
+      // Bin slot 1 keeps filament 2 ("8"); lid slot 1 remaps to merged
+      // slot 2 → filament 3 ("0C") instead of colliding on filament 2.
+      const model = strFromU8(files['3D/3dmodel.model']);
+      const codes = model.match(/paint_color="([^"]+)"/g) ?? [];
+      expect(codes).toEqual(['paint_color="8"', 'paint_color="0C"']);
+    });
+
+    it('multi-object: bases per-object extruder on the merged palette', () => {
+      const tri = createSingleTriangle();
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'bin',
+          colorConfig: {
+            materials: [{ color: '#d4d8dc' }, { color: '#ff0000' }],
+            triangleMaterialIndices: [0],
+          },
+        },
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'lid',
+          colorConfig: {
+            materials: [{ color: '#d4d8dc' }, { color: '#00ff00' }],
+            triangleMaterialIndices: [1],
+          },
+        },
+      ];
+      const files = unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi' }));
+      const xml = strFromU8(files['Metadata/model_settings.config']);
+      // Bin → body (merged slot 0) → extruder 1; lid → green (merged slot 2,
+      // after #d4d8dc and #ff0000) → extruder 3, not its object-local 2.
+      expect(xml).toMatch(/<object id="1">[\s\S]*?key="extruder" value="1"[\s\S]*?<\/object>/);
+      expect(xml).toMatch(/<object id="2">[\s\S]*?key="extruder" value="3"[\s\S]*?<\/object>/);
+    });
+
+    it('multi-object: throws when distinct colors across objects exceed the filament cap', () => {
+      // Each object individually fits the 16-slot cap, but the merged union
+      // is 17 distinct colors — one more filament than paint_color can encode.
+      const tri = createSingleTriangle();
+      const colorAt = (i: number) => `#${i.toString(16).padStart(6, '0')}`;
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'a',
+          colorConfig: {
+            materials: Array.from({ length: 9 }, (_, i) => ({ color: colorAt(i + 1) })),
+            triangleMaterialIndices: [0],
+          },
+        },
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'b',
+          colorConfig: {
+            materials: Array.from({ length: 9 }, (_, i) => ({ color: colorAt(i + 100) })),
             triangleMaterialIndices: [0],
           },
         },
       ];
-      expect(() => build3MFMultiObjectBuffer(objects, { name: 'multi' })).toThrow(
-        /must share the same materials array/
-      );
+      expect(() => build3MFMultiObjectBuffer(objects, { name: 'multi' })).toThrow(/filament cap/);
     });
 
     it('multi-object: omits project_settings.config when no object has a colorConfig', () => {

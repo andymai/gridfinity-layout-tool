@@ -7,38 +7,68 @@ export function activeColorConfig(
   return c && c.materials.length > 0 ? c : undefined;
 }
 
-/**
- * Resolve the palette emitted into `Metadata/project_settings.config` from one
- * or more colorConfigs. Returns undefined when no palette would be emitted —
- * single-color exports skip the sidecar entirely.
- *
- * **Invariant:** every colored object in a multi-object export must share the
- * same materials array (same order, same colors). Per-triangle `paint_color`
- * codes are object-local references into the object's own slot list, so two
- * objects with differently-ordered palettes would resolve the same code to
- * different filaments in the unified `filament_colour` list. Throws on
- * mismatch rather than silently producing wrong colors. Today only the bin
- * carries a colorConfig in the multi-object path, but locking down the
- * invariant lets that change safely later.
- */
-export function unifiedPalette(
-  configs: readonly (ThreeMFColorConfig | undefined)[]
-): readonly string[] | undefined {
-  const actives = configs
-    .map(activeColorConfig)
-    .filter((c): c is ThreeMFColorConfig => c !== undefined);
-  if (actives.length === 0) return undefined;
+export interface UnifiedColorConfigs {
+  /** `filament_colour` list, or undefined when no object carries colors. */
+  readonly palette: readonly string[] | undefined;
+  /** Per input config, remapped into the merged palette's slot space. */
+  readonly configs: readonly (ThreeMFColorConfig | undefined)[];
+}
 
-  const first = actives[0].materials;
-  for (let i = 1; i < actives.length; i++) {
-    if (!materialsMatch(first, actives[i].materials)) {
-      throw new Error(
-        '3MF multi-object: all colored objects must share the same materials array (same order, same colors); ' +
-          'per-object paint_color slot indices would otherwise misalign with the unified filament palette.'
-      );
-    }
+/**
+ * Resolve one shared palette from the objects' colorConfigs. Per-triangle
+ * `paint_color` codes are object-local references into the object's own slot
+ * list, so objects with different palettes cannot share the file's single
+ * `filament_colour` list as-is: the same code would resolve to different
+ * filaments per object. When palettes differ (two bins with different zone
+ * colors in one layout project file), the distinct colors are merged in
+ * first-seen order — shared colors collapse onto one filament — and each
+ * config's triangle slots are rewritten to reference the merged palette.
+ *
+ * Returns an undefined palette when no object carries colors, so single-color
+ * exports skip the sidecar entirely. Throws only when the merged union
+ * exceeds the slicer's filament cap, which no remapping can represent.
+ */
+export function unifyColorConfigs(
+  configs: readonly (ThreeMFColorConfig | undefined)[]
+): UnifiedColorConfigs {
+  const actives = configs.map(activeColorConfig);
+  const present = actives.filter((c): c is ThreeMFColorConfig => c !== undefined);
+  if (present.length === 0) return { palette: undefined, configs: actives };
+
+  // Identical arrays need no remap; pass them through untouched so a palette
+  // that deliberately repeats a color keeps its slot layout.
+  const first = present[0].materials;
+  if (present.every((c) => materialsMatch(first, c.materials))) {
+    return { palette: first.map((m) => m.color.toLowerCase()), configs: actives };
   }
-  return first.map((m) => m.color.toLowerCase());
+
+  const slotByColor = new Map<string, number>();
+  const mergedSlot = (color: string): number => {
+    const key = color.toLowerCase();
+    const existing = slotByColor.get(key);
+    if (existing !== undefined) return existing;
+    slotByColor.set(key, slotByColor.size);
+    return slotByColor.size - 1;
+  };
+  const slotMaps = actives.map((c) => c?.materials.map((m) => mergedSlot(m.color)));
+
+  if (slotByColor.size > MAX_COLOR_SLOTS) {
+    throw new Error(
+      `3MF multi-object: ${slotByColor.size} distinct colors across objects exceeds slicer filament cap of ${MAX_COLOR_SLOTS}`
+    );
+  }
+
+  const palette = [...slotByColor.keys()];
+  const mergedMaterials = palette.map((color) => ({ color }));
+  const remapped = actives.map((config, i) => {
+    const slotMap = slotMaps[i];
+    if (!config || !slotMap) return undefined;
+    return {
+      materials: mergedMaterials,
+      triangleMaterialIndices: config.triangleMaterialIndices.map((slot) => slotMap[slot]),
+    };
+  });
+  return { palette, configs: remapped };
 }
 
 function materialsMatch(
