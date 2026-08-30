@@ -17,6 +17,7 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { HELP_JUMP_EVENT_PREFIX, type HelpJumpEventDetail } from '@/shared/help/helpJumpDispatcher';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
+import { binHasText } from '@/features/bin-designer/utils/binText';
 
 import { StickyGroupHeader } from '../../panel/StickyGroupHeader';
 import { PanelSection } from '../../panel/PanelSection';
@@ -91,10 +92,11 @@ const GROUP_OF_CONTROL: Readonly<Record<string, PanelGroup>> = {
 export function BinScrollPanel({ frame, toolbar, header, wrapContent, dock }: BinScrollPanelProps) {
   const t = useTranslation();
   const modified = useDesignerStore(useShallow((s) => modifiedGroups(s.params)));
-  const { showLabelTabs, isCustomShape } = useDesignerStore(
+  const { showLabelTabs, isCustomShape, hasText } = useDesignerStore(
     useShallow((s) => ({
       showLabelTabs: s.params.style === 'standard',
       isCustomShape: isPartialMask(s.params.cellMask),
+      hasText: binHasText(s.params),
     }))
   );
   const { needsSplit } = useSplitOptionsSection();
@@ -246,9 +248,13 @@ export function BinScrollPanel({ frame, toolbar, header, wrapContent, dock }: Bi
         modifiedLabel={markIf(modified.finishing)}
       >
         <div className="divide-y divide-stroke-subtle/50">
-          <PanelSection helpTarget="bd-type">
-            <TypeSection />
-          </PanelSection>
+          {/* Type settings govern captions; with nothing to style they only add
+              noise, so they appear once the design carries text. */}
+          {hasText && (
+            <PanelSection helpTarget="bd-type">
+              <TypeSection />
+            </PanelSection>
+          )}
           <PanelSection helpTarget="bd-colors">
             <ColorsSection />
           </PanelSection>

@@ -26,7 +26,7 @@ describe('BinScrollPanel', () => {
     const targets = Array.from(container.querySelectorAll('[data-help-target]')).map((el) =>
       el.getAttribute('data-help-target')
     );
-    const order = ['bd-dimensions', 'bd-lid', 'bd-interior', 'bd-base', 'bd-type'];
+    const order = ['bd-dimensions', 'bd-lid', 'bd-interior', 'bd-base', 'bd-colors'];
     const positions = order.map((target) => targets.indexOf(target));
     expect(
       positions.every((p) => p >= 0),
@@ -38,5 +38,21 @@ describe('BinScrollPanel', () => {
   it('keeps split out of the scroll until the bin overflows the bed', () => {
     const { container } = render(<BinScrollPanel frame="plain" />);
     expect(container.querySelector('[data-help-target="bd-print-fit"]')).toBeNull();
+  });
+
+  it('hides typography until the design carries text', () => {
+    const { container } = render(<BinScrollPanel frame="plain" />);
+    expect(container.querySelector('[data-help-target="bd-type"]')).toBeNull();
+  });
+
+  it('shows typography once the design carries text', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, compartmentTexts: ['A'] },
+      },
+    });
+    const { container } = render(<BinScrollPanel frame="plain" />);
+    expect(container.querySelector('[data-help-target="bd-type"]')).not.toBeNull();
   });
 });

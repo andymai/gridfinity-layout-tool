@@ -14,17 +14,23 @@ describe('StylePage', () => {
     });
   });
 
-  it('composes its sections with their help targets', () => {
+  it('hides typography until the design carries text', () => {
     const { container } = render(<StylePage />);
-    expect(container.querySelector('[data-help-target="bd-type"]'), 'bd-type').not.toBeNull();
-    expect(container.querySelector('[data-help-target="bd-colors"]'), 'bd-colors').not.toBeNull();
-    expect(
-      container.querySelector('[data-help-target="bd-wall-style"]'),
-      'bd-wall-style'
-    ).not.toBeNull();
-    expect(
-      container.querySelector('[data-help-target="bd-floor-pattern"]'),
-      'bd-floor-pattern'
-    ).not.toBeNull();
+    expect(container.querySelector('[data-help-target="bd-type"]')).toBeNull();
+    // The rest of Style still renders.
+    expect(container.querySelector('[data-help-target="bd-colors"]')).not.toBeNull();
+  });
+
+  it('composes its sections with their help targets once text exists', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, compartmentTexts: ['A'] },
+      },
+    });
+    const { container } = render(<StylePage />);
+    for (const target of ['bd-type', 'bd-colors', 'bd-wall-style', 'bd-floor-pattern']) {
+      expect(container.querySelector(`[data-help-target="${target}"]`), target).not.toBeNull();
+    }
   });
 });
