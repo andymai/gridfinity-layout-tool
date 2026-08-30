@@ -8,9 +8,7 @@
  */
 
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import type { BinParams } from '@/features/bin-designer/types';
-
-import type { DesignerCategory } from '@/features/bin-designer/types';
+import type { BinParams, DesignerCategory } from '@/features/bin-designer/types';
 
 import { paramFieldModified } from './paramFieldModified';
 
