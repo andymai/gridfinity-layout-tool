@@ -64,23 +64,33 @@ export function useOwnDesignPrefill(
         // session is live before severing the local publishedId link, mirroring
         // publishedIdReconcile. On an unconfirmed session, keep the link and
         // block the form rather than mint a duplicate.
-        void getMe().then((me) => {
-          if (cancelled) return;
-          if (me === null) {
+        void getMe().then(
+          (me) => {
+            if (cancelled) return;
+            if (me === null) {
+              setFailed(true);
+              setResolved(true);
+              return;
+            }
+            const publish = useCommunityPublishStore.getState();
+            publish.handlers?.onUnpublished();
+            publish.clearContextPublishedId();
+            usePublishDialogStore.getState().switchToCreate();
+            useToastStore.getState().addToast({
+              message: t('community.publish.error.republishAsNew'),
+              type: 'info',
+            });
+            setResolved(true);
+          },
+          () => {
+            // A network failure confirming the session leaves it unconfirmed,
+            // like a null session: keep the link and block the form. Without
+            // this arm the getMe rejection escapes as an unhandled rejection.
+            if (cancelled) return;
             setFailed(true);
             setResolved(true);
-            return;
           }
-          const publish = useCommunityPublishStore.getState();
-          publish.handlers?.onUnpublished();
-          publish.clearContextPublishedId();
-          usePublishDialogStore.getState().switchToCreate();
-          useToastStore.getState().addToast({
-            message: t('community.publish.error.republishAsNew'),
-            type: 'info',
-          });
-          setResolved(true);
-        });
+        );
         return;
       }
       // Without the live record, submitting would overwrite the published
