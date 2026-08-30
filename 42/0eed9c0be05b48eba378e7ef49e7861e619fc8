@@ -1,0 +1,19 @@
+src/features/bin-designer/components/ParameterPanel/categoryModified.ts
+  s_64a9c9d2b13bb9::t_da9ff6cc2e0a03 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "420eed9c0be05b48eba378e7ef49e7861e619fc8",
+  "prompts": {},
+  "sessions": {
+    "s_64a9c9d2b13bb9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5db43615-bca4-444a-b16b-23a843ecf919",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
