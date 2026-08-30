@@ -1,12 +1,10 @@
 /**
  * Parameter panel for the bin designer.
  *
- * A rail shell of task categories (BinPanelShell), each holding a short page:
- * - Shape:    dimensions, drawer fit, custom footprint, walls, body/base
- * - Interior: layout mode, label tabs, scoop, knife rest
- * - Features: the lid (wall features join it when Walls splits)
- * - Style:    typography and colors
- * - Print:    bed-fit splitting, physical units, defaults
+ * A persisted view toggle picks the layout: `BinScrollPanel` (the default) lays
+ * the sections out as one top-to-bottom scroll of collapsible groups, while
+ * `BinPanelShell` puts them behind a task-category rail. Both draw on the same
+ * section components and share the community card, variant controls, and dock.
  *
  * The non-bin item kinds keep their own single-page panels inside the same
  * resizable frame.
@@ -263,9 +261,8 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
     </>
   );
 
-  // A compact two-option view switch shared by both layouts: the single scroll
-  // of grouped sections, or the compact category rail. IconButton's `active`
-  // gives the pressed segment its fill and the aria-pressed state.
+  // One view switch, reused by both layouts: the scroll's pinned toolbar and the
+  // rail's header.
   const viewModes = [
     { mode: 'scroll' as const, paths: ICON_PATHS.menu, label: t('binDesigner.panel.viewAsScroll') },
     {

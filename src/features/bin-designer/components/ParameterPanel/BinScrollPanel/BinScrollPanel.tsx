@@ -43,6 +43,7 @@ import { ColorsSection } from '../../panel/ColorsSection';
 import { PhysicalUnitsSection } from '../../panel/PhysicalUnitsSection';
 import { SetDefaultFooter } from '../../panel/SetDefaultFooter';
 import { modifiedGroups, type PanelGroup } from '../groupModified';
+import { GROUP_OF_CONTROL, HELP_SURFACES } from './groupControls';
 
 export interface BinScrollPanelProps {
   /** docked = desktop frame (resizable, collapsible); plain = fill the parent. */
@@ -56,38 +57,6 @@ export interface BinScrollPanelProps {
   /** Pinned below the scroll: the user dock. */
   readonly dock?: ReactNode;
 }
-
-/** The five help surfaces the groups listen on, plus the umbrella surface. */
-const HELP_SURFACES = [
-  'binDesigner',
-  'binDesigner:shape',
-  'binDesigner:interior',
-  'binDesigner:base',
-  'binDesigner:lid',
-  'binDesigner:finishing',
-] as const;
-
-/** Which group owns a help-jump target, so a deep link opens the right one. */
-const GROUP_OF_CONTROL: Readonly<Record<string, PanelGroup>> = {
-  'bd-dimensions': 'shape',
-  'bd-overhang': 'shape',
-  'bd-shape': 'shape',
-  'bd-walls': 'shape',
-  'bd-wall-cutouts': 'shape',
-  'bd-print-fit': 'shape',
-  'bd-lid': 'lid',
-  'bd-handles': 'lid',
-  'bd-interior': 'interior',
-  'bd-label-tabs': 'interior',
-  'bd-scoop': 'interior',
-  'bd-knife-rest': 'interior',
-  'bd-base': 'base',
-  'bd-type': 'finishing',
-  'bd-colors': 'finishing',
-  'bd-wall-style': 'finishing',
-  'bd-floor-pattern': 'finishing',
-  'bd-physical-units': 'finishing',
-};
 
 export function BinScrollPanel({ frame, toolbar, header, wrapContent, dock }: BinScrollPanelProps) {
   const t = useTranslation();
@@ -169,8 +138,7 @@ export function BinScrollPanel({ frame, toolbar, header, wrapContent, dock }: Bi
           <PanelSection helpTarget="bd-wall-cutouts">
             <WallCutoutsSection />
           </PanelSection>
-          {/* Split only surfaces when the bin overflows the bed — same conditional
-              the pre-rail panel used, kept in Shape rather than a trailing group. */}
+          {/* Shown only when the bin overflows the bed; no all-clear row when it fits. */}
           {needsSplit && (
             <PanelSection helpTarget="bd-print-fit">
               <SplitOptionsSection />
