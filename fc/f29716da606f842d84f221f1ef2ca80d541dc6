@@ -1,0 +1,45 @@
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_6148963e599b14::t_f3ed2c26b40e66 293,301-303
+  s_6148963e599b14::t_07929020fd6706 157-161,165,168,176
+  s_6148963e599b14::t_02b33b12028d15 104
+  s_6148963e599b14::t_c210b090ffd067 29-34
+  s_6148963e599b14::t_77b8e010fb04f6 247-250,252-260
+  s_6148963e599b14::t_fcd3f2ce83f20a 93-94
+  s_6148963e599b14::t_2090a675eca463 204-210
+  s_6148963e599b14::t_5428fe36a17e70 87-92,95-103
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dividerPatterns.test.ts.snap
+  s_6148963e599b14::t_a08acf61ac3373 11
+src/features/generation/worker/generators/scenarios/index.ts
+  s_6148963e599b14::t_38a12a5ff3189e 68
+  s_6148963e599b14::t_83b78a4838904f 16
+src/features/generation/worker/generators/binGenerator.export.scoops.test.ts
+  s_6148963e599b14::t_756d5d17b044e4 3
+  s_6148963e599b14::t_b266667acef542 5
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.snap
+  s_6148963e599b14::t_b0f581d5010e71 9
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_6148963e599b14::t_49e195f555c4ce 3,5,7,11,13,15,17,19,21,23,25,27,29,31-41
+src/features/generation/worker/generators/scenarios/scoops.ts
+  s_6148963e599b14::t_e35127878190cb 65-66,70-105
+  s_6148963e599b14::t_b99f6146e68787 67-69
+src/features/generation/worker/generators/binGenerator.scenario.scoops.test.ts
+  s_6148963e599b14::t_0c10c4df183e53 3-9,11-17
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.floorPatterns.test.ts.snap
+  s_6148963e599b14::t_04d6b76b04a6dc 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "fcf29716da606f842d84f221f1ef2ca80d541dc6",
+  "prompts": {},
+  "sessions": {
+    "s_6148963e599b14": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f17a4562-3b13-45c4-ae59-090a809690bb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    }
+  }
+}
