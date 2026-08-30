@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ParameterPanel } from './ParameterPanel';
+import { saveViewMode } from './binViewModeStorage';
 import { useDesignerStore } from '../../store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE, DESIGNER_CONSTRAINTS } from '../../constants';
 
@@ -21,15 +22,33 @@ describe('ParameterPanel', () => {
     });
   });
 
-  it('renders the category rail', () => {
+  it('defaults to the single-scroll layout, not the rail', () => {
     render(<ParameterPanel />);
 
-    for (const name of ['Shape', 'Interior', 'Features', 'Style', 'Print']) {
-      expect(screen.getByRole('tab', { name })).toBeInTheDocument();
-    }
+    expect(screen.queryByRole('tab', { name: 'Shape' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Finishing' })).toBeInTheDocument();
+  });
+
+  it('switches to the compact rail from the view toggle', () => {
+    render(<ParameterPanel />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Compact sections' }));
+    expect(screen.getByRole('tab', { name: 'Shape' })).toBeInTheDocument();
   });
 
   describe('category rail', () => {
+    beforeEach(() => {
+      saveViewMode('rail');
+    });
+
+    it('renders the category rail', () => {
+      render(<ParameterPanel />);
+
+      for (const name of ['Shape', 'Interior', 'Features', 'Style', 'Print']) {
+        expect(screen.getByRole('tab', { name })).toBeInTheDocument();
+      }
+    });
+
     it('starts on Shape with the Selection slot disabled', () => {
       render(<ParameterPanel />);
 
