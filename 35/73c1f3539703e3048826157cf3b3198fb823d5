@@ -1,0 +1,25 @@
+src/features/bin-designer/components/ParameterPanel/categoryModified.ts
+  s_64a9c9d2b13bb9::t_3df4d1aae185ba 70-72
+  s_64a9c9d2b13bb9::t_a7d7b3ab7ffd11 15-16
+src/features/bin-designer/components/ParameterPanel/groupModified.ts
+  s_64a9c9d2b13bb9::t_acb3e361bafe39 77-79
+  s_64a9c9d2b13bb9::t_7fd8ab3d2465cd 14-15
+src/features/bin-designer/components/ParameterPanel/paramFieldModified.ts
+  s_64a9c9d2b13bb9::t_91b7cd9fefa5c3 1-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "3573c1f3539703e3048826157cf3b3198fb823d5",
+  "prompts": {},
+  "sessions": {
+    "s_64a9c9d2b13bb9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5db43615-bca4-444a-b16b-23a843ecf919",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
