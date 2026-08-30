@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.481.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.480.1...gridfinity-layout-tool-v4.481.0) (2026-08-30)
+
+
+### Features
+
+* **bin-designer:** default the parameter panel to a single top-to-bottom scroll ([#4020](https://github.com/andymai/gridfinity-layout-tool/issues/4020)) ([9fc7575](https://github.com/andymai/gridfinity-layout-tool/commit/9fc7575a9c0809bde305bf918d0e6410132620fe))
+* **spacemouse:** add 3Dconnexion SpaceMouse navigation behind a labs flag ([#4018](https://github.com/andymai/gridfinity-layout-tool/issues/4018)) ([ab77d91](https://github.com/andymai/gridfinity-layout-tool/commit/ab77d912c0a7a4e2287ee520cb20103d603e9768)), closes [#4012](https://github.com/andymai/gridfinity-layout-tool/issues/4012)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep a compound angled + leaned divider's foot on its run ([#4016](https://github.com/andymai/gridfinity-layout-tool/issues/4016)) ([39f7580](https://github.com/andymai/gridfinity-layout-tool/commit/39f758002f45f555062a31ac9735932ea305ca3e))
+* **bin-designer:** weld finger-scoop faces into the walls so a flat-base export has no gap ([#4014](https://github.com/andymai/gridfinity-layout-tool/issues/4014)) ([4ef2dbe](https://github.com/andymai/gridfinity-layout-tool/commit/4ef2dbe8bb151f704d6e1916abf20b3e78c38707))
+* **community:** handle a session-check network failure in update-mode prefill ([#4019](https://github.com/andymai/gridfinity-layout-tool/issues/4019)) ([e2c7b6a](https://github.com/andymai/gridfinity-layout-tool/commit/e2c7b6ae3db55c2ab9034d1004f9d9ea54f169c6))
+
 ## [4.480.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.480.0...gridfinity-layout-tool-v4.480.1) (2026-08-30)
 
 
