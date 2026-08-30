@@ -1,0 +1,157 @@
+src/core/labs/features.ts
+  s_a14b9a6e26f321::t_27cc6d768ec749 253-264
+src/shared/spacemouse/types.ts
+  s_a14b9a6e26f321::t_9bab3106bbef6f 1-65,67-68,70-71
+  s_a14b9a6e26f321::t_1eb94219c7097e 66,69
+knip.json
+  s_a14b9a6e26f321::t_b0d09ec1f9df00 3
+src/i18n/locales/zh-CN.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/shared/spacemouse/buttonMap.ts
+  s_a14b9a6e26f321::t_a6126bc50095b4 1-31
+src/shared/spacemouse/spaceMouseBus.ts
+  s_a14b9a6e26f321::t_447f9c793faf4b 1-104
+src/i18n/locales/nb.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/i18n/locales/en.ts
+  s_a14b9a6e26f321::t_2e931aeebb9f72 5407-5423
+src/shared/spacemouse/index.ts
+  s_a14b9a6e26f321::t_fc452b7af996dd 1-15
+src/shell/Modals/SettingsModal/tabs/LabsTab/LabsTab.tsx
+  s_a14b9a6e26f321::t_cc29c0aa4de8d1 13-14
+  s_a14b9a6e26f321::t_5c1d8648e455a0 50-64
+src/shared/spacemouse/commands.ts
+  s_a14b9a6e26f321::t_4fe180a052c334 1-15
+src/shared/spacemouse/spaceMouseBus.test.ts
+  s_a14b9a6e26f321::t_d7cdf8697ac250 1-97
+tsconfig.test.json
+  s_a14b9a6e26f321::t_a3c47c785efcb1 5
+src/shared/spacemouse/settingsStore.test.ts
+  s_a14b9a6e26f321::t_d0f4cc80d3b289 1-52
+src/i18n/locales/pt-BR.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/i18n/locales/uk.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/shared/spacemouse/mapping.test.ts
+  s_a14b9a6e26f321::t_b2025f116ae57c 91
+  s_a14b9a6e26f321::t_6bcba7099c5ed2 1-90,92-105
+src/shared/spacemouse/components/SpaceMouseController/index.ts
+  s_a14b9a6e26f321::t_eef0bfcdca3a09 1
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_a14b9a6e26f321::t_2d54beb598f366 338
+  s_a14b9a6e26f321::t_93cc4f08c4eb49 30
+package.json
+  s_a14b9a6e26f321::t_03893619931e02 141,155
+  s_a14b9a6e26f321::t_d19f79b96cbd8d 116
+  s_a14b9a6e26f321::t_bd765f75a1bfd5 190
+src/i18n/locales/ja.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/shared/components/GlbViewer/GlbViewer.tsx
+  s_a14b9a6e26f321::t_cf79253202f668 147
+  s_a14b9a6e26f321::t_603c2d1c2a6f2d 18
+src/i18n/locales/sv.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+vite.config.ts
+  s_a14b9a6e26f321::t_e8f8a0b6d623a3 92-94
+  s_a14b9a6e26f321::t_e1ef2f63ba4eda 89-91
+src/features/labs/components/FeatureCard/FeatureCard.tsx
+  s_a14b9a6e26f321::t_c469f86d9018dc 60-61
+  s_a14b9a6e26f321::t_b18bf41a223783 1,12-13,16
+src/shared/spacemouse/cameraCommands.ts
+  s_a14b9a6e26f321::t_660dc2cc7b2893 49-50
+  s_a14b9a6e26f321::t_1705d1d55e9ab9 1-36,38-48,51-160
+  s_a14b9a6e26f321::t_774b08ba1b1f85 37
+src/shared/components/GlbViewer/GlbViewer.test.tsx
+  s_a14b9a6e26f321::t_359a0b0ad3a49f 27-31
+src/shared/spacemouse/deviceManager.ts
+  s_a14b9a6e26f321::t_1d4ca2b3252dee 2-4,6-103,109-143,145-148,150-153
+  s_a14b9a6e26f321::t_015d37a03b7243 104-108
+  s_a14b9a6e26f321::t_3c5822e8c6df91 1,5
+  s_a14b9a6e26f321::t_a4df3454b547f6 144,149
+src/shared/spacemouse/cameraCommands.test.ts
+  s_a14b9a6e26f321::t_9f6b2921950ed1 1-99
+src/shared/spacemouse/useSpaceMouseDevice.ts
+  s_a14b9a6e26f321::t_3e29de0f467be7 1-15
+src/shared/spacemouse/bufferShim.test.ts
+  s_a14b9a6e26f321::t_03840012a9dd65 1-40
+src/i18n/locales/ko.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/shared/spacemouse/constants.ts
+  s_a14b9a6e26f321::t_e559df0fdd997c 1-42
+src/features/labs/components/LabsDrawer/LabsDrawer.tsx
+  s_a14b9a6e26f321::t_aea3e6ef536fac 102-116
+  s_a14b9a6e26f321::t_03c73808a45fa6 11-12
+src/shared/spacemouse/components/SpaceMouseSettings/SpaceMouseSettings.tsx
+  s_a14b9a6e26f321::t_767b235fdbbc6e 1-112
+src/i18n/locales/de.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/shared/spacemouse/mapping.ts
+  s_a14b9a6e26f321::t_4e3e8e7ad0d5c5 1-7,9-76
+  s_a14b9a6e26f321::t_1eb94219c7097e 8
+src/i18n/locales/pl.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/i18n/locales/nl.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/shared/spacemouse/components/SpaceMouseController/SpaceMouseController.test.tsx
+  s_a14b9a6e26f321::t_d0b3d7974af9e1 1-90
+src/shared/spacemouse/buttonMap.test.ts
+  s_a14b9a6e26f321::t_7f96bbd837f3cb 1-30
+src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
+  s_a14b9a6e26f321::t_ec8fe6016ad499 41
+  s_a14b9a6e26f321::t_16ac4e6ce82293 331
+scripts/i18n-values-allowlist.json
+  s_a14b9a6e26f321::t_4e34f39b153475 315
+src/shared/spacemouse/settingsStore.ts
+  s_a14b9a6e26f321::t_1eb94219c7097e 5,35,38
+  s_a14b9a6e26f321::t_73cc7c3b11e343 1-4,6-34,36-37,39-81
+src/i18n/locales/it.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/shared/spacemouse/components/SpaceMouseController/SpaceMouseController.tsx
+  s_a14b9a6e26f321::t_1c9ac17b6439f4 78,80,82
+  s_a14b9a6e26f321::t_3cbd391bf4e7b3 1-53,57-77,79,81,83-103
+  s_a14b9a6e26f321::t_f8a93b52ec8c18 54-56
+tsconfig.app.json
+  s_a14b9a6e26f321::t_4b137e868b76c8 7
+src/i18n/locales/fr.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_a14b9a6e26f321::t_b17dfa96a8cf8e 484
+  s_a14b9a6e26f321::t_a5d33cc010ccfc 87
+src/shared/spacemouse/components/SpaceMouseSettings/index.ts
+  s_a14b9a6e26f321::t_5cd8966904e9f9 1
+src/i18n/locales/es.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/i18n/locales/cs.json
+  s_a14b9a6e26f321::t_bdb275535444f6 4508-4523
+src/App.tsx
+  s_a14b9a6e26f321::t_43c0e2bf1f4800 322
+  s_a14b9a6e26f321::t_ffc4f2c0c73818 67
+src/shared/spacemouse/bufferShim.ts
+  s_a14b9a6e26f321::t_4a64180249d524 8-25,27-33,36,42-44
+  s_a14b9a6e26f321::t_75586a94840945 1-7,26,34-35,37-41,45-46
+src/shared/spacemouse/components/SpaceMouseSettings/SpaceMouseSettings.test.tsx
+  s_a14b9a6e26f321::t_1e5ab11d537c6d 1-59
+src/features/bin-designer/components/Workshop/WorkshopCanvas.tsx
+  s_a14b9a6e26f321::t_076918f1740805 269
+  s_a14b9a6e26f321::t_3570bdf498027d 32
+src/shared/spacemouse/commands.test.ts
+  s_a14b9a6e26f321::t_34feb3556a018d 1-59
+pnpm-lock.yaml
+  s_a14b9a6e26f321::t_b00ab04b82fdb1 98-100,140-142,213-215,2416-2419,2648-2650,3742-3745,5303-5306,7995-7998,8214-8215,9402-9403,10989-10993
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "74d72503a8a8e5594c4e4c9834a524ea050bffc4",
+  "prompts": {},
+  "sessions": {
+    "s_a14b9a6e26f321": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3bdfc83c-d754-431c-bef7-ad6a6040546b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
