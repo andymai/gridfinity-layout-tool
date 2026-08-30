@@ -15,6 +15,7 @@ import '@/shared/webgl/configureTroikaText';
 import { Button, ProgressBar, cn } from '@/design-system';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useTranslation } from '@/i18n';
+import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { ensureVertexNormals } from './ensureVertexNormals';
 
 // Self-hosted Draco decoder (public/draco/): CSP forbids the default gstatic CDN.
@@ -143,6 +144,7 @@ export function GlbViewer({
             enableDamping
             makeDefault
           />
+          <SpaceMouseController />
         </Canvas>
       ) : null}
 

@@ -4505,5 +4505,20 @@
   "common.more": "Więcej",
   "binDesigner.printFit.fits": "Mieści się na stole {width} × {depth} mm.",
   "binDesigner.dependency.enableStackingLip": "Włącz krawędź piętrowania",
-  "binDesigner.dependency.editFootprint": "Edytuj obrys"
+  "binDesigner.dependency.editFootprint": "Edytuj obrys",
+  "spacemouse.connect": "Połącz",
+  "spacemouse.sensitivity": "Czułość",
+  "spacemouse.speed.translate": "Prędkość przesuwania i powiększania",
+  "spacemouse.speed.rotate": "Prędkość obracania",
+  "spacemouse.invertAxes": "Odwróć osie",
+  "spacemouse.axis.panX": "Przesuwanie poziome",
+  "spacemouse.axis.panY": "Przesuwanie pionowe",
+  "spacemouse.axis.zoom": "Powiększenie",
+  "spacemouse.axis.orbitH": "Obrót poziomy",
+  "spacemouse.axis.orbitV": "Obrót pionowy",
+  "spacemouse.status.connected": "Połączono: {device}",
+  "spacemouse.status.connecting": "Łączenie…",
+  "spacemouse.status.idle": "Nie podłączono urządzenia",
+  "spacemouse.status.unsupported": "Wymaga przeglądarki Chromium",
+  "spacemouse.status.error": "Połączenie nie powiodło się"
 }

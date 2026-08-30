@@ -250,6 +250,18 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-08',
     requiresRefresh: false,
   },
+  {
+    id: 'spacemouse',
+    name: 'SpaceMouse Navigation',
+    description:
+      'Fly the 3D previews with a 3Dconnexion SpaceMouse. Push, tilt and twist the puck to pan, zoom and orbit, and map its buttons to fit, view presets and undo. Tune speed and axis direction below.',
+    status: 'experimental',
+    risk: 'low',
+    warning:
+      'Needs a Chromium browser (Chrome, Edge or Opera) with WebHID. After turning this on, click Connect and pick your device once.',
+    addedAt: '2026-08',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

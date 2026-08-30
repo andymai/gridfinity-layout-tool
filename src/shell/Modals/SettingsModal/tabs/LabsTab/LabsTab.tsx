@@ -10,6 +10,8 @@ import {
   SparklesIcon,
 } from '@/features/labs/components';
 import { useTranslation } from '@/i18n';
+import { SPACEMOUSE_FEATURE_ID } from '@/shared/spacemouse/constants';
+import { SpaceMouseSettings } from '@/shared/spacemouse/components/SpaceMouseSettings';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 
 export function LabsTab() {
@@ -45,14 +47,21 @@ export function LabsTab() {
 
         {toggleableFeatures.length > 0 ? (
           <div className="space-y-3">
-            {toggleableFeatures.map((feature) => (
-              <FeatureCard
-                key={feature.id}
-                feature={feature}
-                isEnabled={enabledFeatures[feature.id as FeatureId] ?? false}
-                onToggle={() => toggleFeature(feature.id as FeatureId)}
-              />
-            ))}
+            {toggleableFeatures.map((feature) => {
+              const isEnabled = enabledFeatures[feature.id as FeatureId] ?? false;
+              return (
+                <FeatureCard
+                  key={feature.id}
+                  feature={feature}
+                  isEnabled={isEnabled}
+                  onToggle={() => toggleFeature(feature.id as FeatureId)}
+                >
+                  {feature.id === SPACEMOUSE_FEATURE_ID && isEnabled ? (
+                    <SpaceMouseSettings />
+                  ) : null}
+                </FeatureCard>
+              );
+            })}
           </div>
         ) : (
           <div className="py-6 text-center text-content-tertiary">

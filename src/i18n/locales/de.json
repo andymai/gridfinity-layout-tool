@@ -4505,5 +4505,20 @@
   "common.more": "Mehr",
   "binDesigner.printFit.fits": "Passt auf dein {width} × {depth} mm Druckbett.",
   "binDesigner.dependency.enableStackingLip": "Stapelrand aktivieren",
-  "binDesigner.dependency.editFootprint": "Grundriss bearbeiten"
+  "binDesigner.dependency.editFootprint": "Grundriss bearbeiten",
+  "spacemouse.connect": "Verbinden",
+  "spacemouse.sensitivity": "Empfindlichkeit",
+  "spacemouse.speed.translate": "Schwenk- und Zoomgeschwindigkeit",
+  "spacemouse.speed.rotate": "Rotationsgeschwindigkeit",
+  "spacemouse.invertAxes": "Achsen umkehren",
+  "spacemouse.axis.panX": "Horizontal schwenken",
+  "spacemouse.axis.panY": "Vertikal schwenken",
+  "spacemouse.axis.zoom": "Zoom",
+  "spacemouse.axis.orbitH": "Horizontal rotieren",
+  "spacemouse.axis.orbitV": "Vertikal rotieren",
+  "spacemouse.status.connected": "Verbunden: {device}",
+  "spacemouse.status.connecting": "Wird verbunden…",
+  "spacemouse.status.idle": "Kein Gerät verbunden",
+  "spacemouse.status.unsupported": "Erfordert einen Chromium-Browser",
+  "spacemouse.status.error": "Verbindung fehlgeschlagen"
 }

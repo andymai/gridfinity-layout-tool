@@ -4505,5 +4505,20 @@
   "common.more": "Meer",
   "binDesigner.printFit.fits": "Past op je printbed van {width} × {depth} mm.",
   "binDesigner.dependency.enableStackingLip": "Stapelrand inschakelen",
-  "binDesigner.dependency.editFootprint": "Omtrek bewerken"
+  "binDesigner.dependency.editFootprint": "Omtrek bewerken",
+  "spacemouse.connect": "Verbinden",
+  "spacemouse.sensitivity": "Gevoeligheid",
+  "spacemouse.speed.translate": "Pan- en zoomsnelheid",
+  "spacemouse.speed.rotate": "Draaisnelheid",
+  "spacemouse.invertAxes": "Assen omkeren",
+  "spacemouse.axis.panX": "Horizontaal pannen",
+  "spacemouse.axis.panY": "Verticaal pannen",
+  "spacemouse.axis.zoom": "Zoomen",
+  "spacemouse.axis.orbitH": "Horizontaal draaien",
+  "spacemouse.axis.orbitV": "Verticaal draaien",
+  "spacemouse.status.connected": "Verbonden: {device}",
+  "spacemouse.status.connecting": "Verbinden…",
+  "spacemouse.status.idle": "Geen apparaat verbonden",
+  "spacemouse.status.unsupported": "Vereist een Chromium-browser",
+  "spacemouse.status.error": "Verbinding mislukt"
 }

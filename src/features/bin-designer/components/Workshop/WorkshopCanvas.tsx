@@ -29,6 +29,7 @@ import {
 import { useDesignerKeyboard } from '@/features/bin-designer/hooks/useDesignerKeyboard';
 import { usePresetTransition } from '@/features/bin-designer/components/PreviewCanvas/previewCanvasCamera';
 import type { Projection } from '@/shared/components/preview/CameraRig';
+import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { assemblyHeightUnits } from '@/shared/types/assemblyPlacement';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { WorkshopScene, type MarqueeRect } from './WorkshopScene';
@@ -265,6 +266,7 @@ export function WorkshopCanvas() {
           }}
         >
           <WorkshopContextSync />
+          <SpaceMouseController />
           <WorkshopScene
             structure={structure}
             envelope={envelope}

@@ -38,6 +38,7 @@ import { MarginMeshes } from './MarginMeshes';
 import { SceneLighting } from './SceneLighting';
 import { CameraController } from './CameraController';
 import { CameraRig, type Projection } from '@/shared/components/preview/CameraRig';
+import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { DimensionLabels } from './DimensionLabels';
 import { useBaseplatePresetTransition } from './useBaseplatePresetTransition';
 import { BaseplatePreviewControls } from './BaseplatePreviewControls';
@@ -327,6 +328,7 @@ export function BaseplatePreview({
                 onPointerMissed={handlePointerMissed}
               >
                 <BaseplatePreviewContextSync />
+                <SpaceMouseController />
                 <CameraRig
                   projection={projection}
                   initialPosition={[100, -100, 80]}

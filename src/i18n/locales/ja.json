@@ -4505,5 +4505,20 @@
   "common.more": "その他",
   "binDesigner.printFit.fits": "{width} × {depth} mm のプリントベッドに収まります。",
   "binDesigner.dependency.enableStackingLip": "スタッキングリップを有効化",
-  "binDesigner.dependency.editFootprint": "外形を編集"
+  "binDesigner.dependency.editFootprint": "外形を編集",
+  "spacemouse.connect": "接続",
+  "spacemouse.sensitivity": "感度",
+  "spacemouse.speed.translate": "パン・ズーム速度",
+  "spacemouse.speed.rotate": "回転速度",
+  "spacemouse.invertAxes": "軸を反転",
+  "spacemouse.axis.panX": "水平パン",
+  "spacemouse.axis.panY": "垂直パン",
+  "spacemouse.axis.zoom": "ズーム",
+  "spacemouse.axis.orbitH": "水平回転",
+  "spacemouse.axis.orbitV": "垂直回転",
+  "spacemouse.status.connected": "接続済み: {device}",
+  "spacemouse.status.connecting": "接続中…",
+  "spacemouse.status.idle": "デバイスが接続されていません",
+  "spacemouse.status.unsupported": "Chromium ブラウザが必要です",
+  "spacemouse.status.error": "接続に失敗しました"
 }

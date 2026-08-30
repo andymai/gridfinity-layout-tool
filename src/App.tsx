@@ -64,6 +64,7 @@ import {
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 import { useBackgroundThumbnailRegen } from '@/features/bin-designer';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { useSpaceMouseDevice } from '@/shared/spacemouse/useSpaceMouseDevice';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
 import { useCommunityLikeReturn } from '@/shared/hooks/useCommunityLikeReturn';
 import { useCommunityDigestCheck } from '@/shared/hooks/useCommunityDigestCheck';
@@ -318,6 +319,7 @@ export default function App() {
   }, [activeLayerId, activeCategoryId, layers, categories, setActiveLayer, setActiveCategory]);
 
   useKeyboard({ disabled: isNonLayoutRoute });
+  useSpaceMouseDevice(useFeatureFlag('spacemouse'));
   const saveStatus = useAutoSave();
   useCrossTabSync();
   useLayoutRouting({ skip: isNonLayoutRoute });

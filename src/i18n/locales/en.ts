@@ -5404,6 +5404,23 @@ const en: Record<string, string> = {
   'binDesigner.handles.widthAria': 'Handle width',
   'binDesigner.handles.heightAria': 'Handle height',
   'binDesigner.handles.countAria': 'Handle count',
+
+  // SpaceMouse navigation (labs)
+  'spacemouse.connect': 'Connect',
+  'spacemouse.sensitivity': 'Sensitivity',
+  'spacemouse.speed.translate': 'Pan & zoom speed',
+  'spacemouse.speed.rotate': 'Orbit speed',
+  'spacemouse.invertAxes': 'Invert axes',
+  'spacemouse.axis.panX': 'Pan horizontal',
+  'spacemouse.axis.panY': 'Pan vertical',
+  'spacemouse.axis.zoom': 'Zoom',
+  'spacemouse.axis.orbitH': 'Orbit horizontal',
+  'spacemouse.axis.orbitV': 'Orbit vertical',
+  'spacemouse.status.connected': 'Connected: {device}',
+  'spacemouse.status.connecting': 'Connecting…',
+  'spacemouse.status.idle': 'No device connected',
+  'spacemouse.status.unsupported': 'Needs a Chromium browser',
+  'spacemouse.status.error': 'Connection failed',
 };
 
 export default en;
