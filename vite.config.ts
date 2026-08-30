@@ -86,6 +86,12 @@ export default defineConfig({
       '@gridfinity/branded-types': fileURLToPath(
         new URL('./packages/branded-types/src/index.ts', import.meta.url)
       ),
+      // spacemouse-webhid's @spacemouse-lib/core imports `node:events`; map it to
+      // the browser `events` shim so the lazy SpaceMouse chunk bundles.
+      'node:events': 'events',
+      // spacemouse-webhid needs only a handful of Buffer methods; a tiny shim
+      // keeps the full buffer polyfill out of the bundle (nothing else uses it).
+      buffer: fileURLToPath(new URL('./src/shared/spacemouse/bufferShim.ts', import.meta.url)),
     },
   },
   optimizeDeps: {

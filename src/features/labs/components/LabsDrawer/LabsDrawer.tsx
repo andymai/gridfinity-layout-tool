@@ -8,6 +8,8 @@ import { GraduatedSection } from '../GraduatedSection';
 import { SparklesIcon, CloseIcon } from '../icons';
 import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SPACEMOUSE_FEATURE_ID } from '@/shared/spacemouse/constants';
+import { SpaceMouseSettings } from '@/shared/spacemouse/components/SpaceMouseSettings';
 
 export function LabsDrawer() {
   const t = useTranslation();
@@ -97,14 +99,21 @@ export function LabsDrawer() {
 
             {toggleableFeatures.length > 0 ? (
               <div className="space-y-3">
-                {toggleableFeatures.map((feature) => (
-                  <FeatureCard
-                    key={feature.id}
-                    feature={feature}
-                    isEnabled={enabledFeatures[feature.id as FeatureId] ?? false}
-                    onToggle={() => toggleFeature(feature.id as FeatureId)}
-                  />
-                ))}
+                {toggleableFeatures.map((feature) => {
+                  const isEnabled = enabledFeatures[feature.id as FeatureId] ?? false;
+                  return (
+                    <FeatureCard
+                      key={feature.id}
+                      feature={feature}
+                      isEnabled={isEnabled}
+                      onToggle={() => toggleFeature(feature.id as FeatureId)}
+                    >
+                      {feature.id === SPACEMOUSE_FEATURE_ID && isEnabled ? (
+                        <SpaceMouseSettings />
+                      ) : null}
+                    </FeatureCard>
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-8 text-content-tertiary">

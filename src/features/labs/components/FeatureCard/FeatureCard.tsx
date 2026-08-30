@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { FeatureFlag } from '@/core/labs';
 import { FeatureStatusBadge } from '../FeatureStatusBadge';
 import { InfoIcon } from '../icons';
@@ -8,9 +9,11 @@ interface FeatureCardProps {
   feature: FeatureFlag;
   isEnabled: boolean;
   onToggle: () => void;
+  /** Optional per-feature settings rendered inside the card when enabled. */
+  children?: ReactNode;
 }
 
-export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) {
+export function FeatureCard({ feature, isEnabled, onToggle, children }: FeatureCardProps) {
   const t = useTranslation();
   const isGraduated = feature.status === 'graduated';
   const isToggleable = !isGraduated;
@@ -54,6 +57,8 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
           </div>
         ) : null}
       </div>
+
+      {children}
     </article>
   );
 }

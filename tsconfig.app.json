@@ -4,7 +4,7 @@
     "target": "ES2024",
     "lib": ["ES2024", "DOM"],
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "w3c-web-hid"],
     "skipLibCheck": true,
 
     /* Bundler mode */

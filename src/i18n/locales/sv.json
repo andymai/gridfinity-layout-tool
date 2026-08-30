@@ -4505,5 +4505,20 @@
   "common.more": "Mer",
   "binDesigner.printFit.fits": "Får plats på din skrivarbädd på {width} × {depth} mm.",
   "binDesigner.dependency.enableStackingLip": "Aktivera stapelkant",
-  "binDesigner.dependency.editFootprint": "Redigera kontur"
+  "binDesigner.dependency.editFootprint": "Redigera kontur",
+  "spacemouse.connect": "Anslut",
+  "spacemouse.sensitivity": "Känslighet",
+  "spacemouse.speed.translate": "Panorerings- och zoomhastighet",
+  "spacemouse.speed.rotate": "Roteringshastighet",
+  "spacemouse.invertAxes": "Invertera axlar",
+  "spacemouse.axis.panX": "Vågrät panorering",
+  "spacemouse.axis.panY": "Lodrät panorering",
+  "spacemouse.axis.zoom": "Zoom",
+  "spacemouse.axis.orbitH": "Vågrät rotation",
+  "spacemouse.axis.orbitV": "Lodrät rotation",
+  "spacemouse.status.connected": "Ansluten: {device}",
+  "spacemouse.status.connecting": "Ansluter…",
+  "spacemouse.status.idle": "Ingen enhet ansluten",
+  "spacemouse.status.unsupported": "Kräver en Chromium-webbläsare",
+  "spacemouse.status.error": "Anslutningen misslyckades"
 }

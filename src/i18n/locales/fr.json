@@ -4505,5 +4505,20 @@
   "common.more": "Plus",
   "binDesigner.printFit.fits": "Tient sur votre plateau de {width} × {depth} mm.",
   "binDesigner.dependency.enableStackingLip": "Activer la lèvre d’empilage",
-  "binDesigner.dependency.editFootprint": "Modifier l’empreinte"
+  "binDesigner.dependency.editFootprint": "Modifier l’empreinte",
+  "spacemouse.connect": "Connecter",
+  "spacemouse.sensitivity": "Sensibilité",
+  "spacemouse.speed.translate": "Vitesse de panoramique et de zoom",
+  "spacemouse.speed.rotate": "Vitesse d'orbite",
+  "spacemouse.invertAxes": "Inverser les axes",
+  "spacemouse.axis.panX": "Panoramique horizontal",
+  "spacemouse.axis.panY": "Panoramique vertical",
+  "spacemouse.axis.zoom": "Zoom",
+  "spacemouse.axis.orbitH": "Orbite horizontale",
+  "spacemouse.axis.orbitV": "Orbite verticale",
+  "spacemouse.status.connected": "Connecté : {device}",
+  "spacemouse.status.connecting": "Connexion…",
+  "spacemouse.status.idle": "Aucun appareil connecté",
+  "spacemouse.status.unsupported": "Nécessite un navigateur Chromium",
+  "spacemouse.status.error": "Échec de la connexion"
 }

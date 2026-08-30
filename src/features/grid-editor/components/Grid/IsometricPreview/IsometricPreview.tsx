@@ -27,6 +27,7 @@ import {
 } from './LinkedBinMeshes';
 import { useTranslation } from '@/i18n';
 import { useSettingsStore } from '@/core/store/settings';
+import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { useBinsToRender } from './useBinsToRender';
 import { getPreviewSummary } from './previewSummary';
 import { usePreviewSize } from './usePreviewSize';
@@ -334,6 +335,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         }}
         style={{ background: threeColors.canvasBg }}
       >
+        <SpaceMouseController />
         <Scene
           ref={sceneRef}
           drawerWidth={drawer.width}

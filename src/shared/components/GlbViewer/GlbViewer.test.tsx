@@ -24,6 +24,11 @@ vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children?: ReactNode }) => (
     <div data-testid="glb-canvas">{children}</div>
   ),
+  useThree: (selector?: (state: unknown) => unknown) => {
+    const state = { controls: null, invalidate: () => {}, gl: { domElement: null } };
+    return selector ? selector(state) : state;
+  },
+  useFrame: () => {},
 }));
 
 vi.mock('@react-three/drei', () => ({

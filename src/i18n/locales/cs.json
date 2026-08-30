@@ -4505,5 +4505,20 @@
   "common.more": "Více",
   "binDesigner.printFit.fits": "Vejde se na vaši tiskovou podložku {width} × {depth} mm.",
   "binDesigner.dependency.enableStackingLip": "Zapnout stohovací okraj",
-  "binDesigner.dependency.editFootprint": "Upravit půdorys"
+  "binDesigner.dependency.editFootprint": "Upravit půdorys",
+  "spacemouse.connect": "Připojit",
+  "spacemouse.sensitivity": "Citlivost",
+  "spacemouse.speed.translate": "Rychlost posunu a přiblížení",
+  "spacemouse.speed.rotate": "Rychlost otáčení",
+  "spacemouse.invertAxes": "Převrátit osy",
+  "spacemouse.axis.panX": "Vodorovný posun",
+  "spacemouse.axis.panY": "Svislý posun",
+  "spacemouse.axis.zoom": "Přiblížení",
+  "spacemouse.axis.orbitH": "Vodorovné otáčení",
+  "spacemouse.axis.orbitV": "Svislé otáčení",
+  "spacemouse.status.connected": "Připojeno: {device}",
+  "spacemouse.status.connecting": "Připojování…",
+  "spacemouse.status.idle": "Není připojeno žádné zařízení",
+  "spacemouse.status.unsupported": "Vyžaduje prohlížeč Chromium",
+  "spacemouse.status.error": "Připojení se nezdařilo"
 }

@@ -84,6 +84,7 @@ import {
   CAMERA_FOV,
 } from './previewCanvasCamera';
 import { CameraRig } from '@/shared/components/preview/CameraRig';
+import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
 import { WorkshopCanvas } from '../Workshop/WorkshopCanvas';
@@ -480,6 +481,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 )}
               />
               <PreviewContextSync />
+              <SpaceMouseController />
 
               <GradientBackground />
 

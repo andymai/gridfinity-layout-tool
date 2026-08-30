@@ -4505,5 +4505,20 @@
   "common.more": "Mer",
   "binDesigner.printFit.fits": "Får plass på skriveplaten din på {width} × {depth} mm.",
   "binDesigner.dependency.enableStackingLip": "Slå på stablekant",
-  "binDesigner.dependency.editFootprint": "Rediger omriss"
+  "binDesigner.dependency.editFootprint": "Rediger omriss",
+  "spacemouse.connect": "Koble til",
+  "spacemouse.sensitivity": "Følsomhet",
+  "spacemouse.speed.translate": "Panorerings- og zoomhastighet",
+  "spacemouse.speed.rotate": "Rotasjonshastighet",
+  "spacemouse.invertAxes": "Inverter akser",
+  "spacemouse.axis.panX": "Vannrett panorering",
+  "spacemouse.axis.panY": "Loddrett panorering",
+  "spacemouse.axis.zoom": "Zoom",
+  "spacemouse.axis.orbitH": "Vannrett rotasjon",
+  "spacemouse.axis.orbitV": "Loddrett rotasjon",
+  "spacemouse.status.connected": "Tilkoblet: {device}",
+  "spacemouse.status.connecting": "Kobler til…",
+  "spacemouse.status.idle": "Ingen enhet tilkoblet",
+  "spacemouse.status.unsupported": "Krever en Chromium-nettleser",
+  "spacemouse.status.error": "Tilkobling mislyktes"
 }

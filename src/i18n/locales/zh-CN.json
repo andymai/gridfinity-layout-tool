@@ -4505,5 +4505,20 @@
   "common.more": "更多",
   "binDesigner.printFit.fits": "可放入您的 {width} × {depth} mm 打印床。",
   "binDesigner.dependency.enableStackingLip": "启用堆叠边缘",
-  "binDesigner.dependency.editFootprint": "编辑轮廓"
+  "binDesigner.dependency.editFootprint": "编辑轮廓",
+  "spacemouse.connect": "连接",
+  "spacemouse.sensitivity": "灵敏度",
+  "spacemouse.speed.translate": "平移和缩放速度",
+  "spacemouse.speed.rotate": "环绕旋转速度",
+  "spacemouse.invertAxes": "反转轴向",
+  "spacemouse.axis.panX": "水平平移",
+  "spacemouse.axis.panY": "垂直平移",
+  "spacemouse.axis.zoom": "缩放",
+  "spacemouse.axis.orbitH": "水平环绕",
+  "spacemouse.axis.orbitV": "垂直环绕",
+  "spacemouse.status.connected": "已连接：{device}",
+  "spacemouse.status.connecting": "连接中…",
+  "spacemouse.status.idle": "未连接设备",
+  "spacemouse.status.unsupported": "需要 Chromium 浏览器",
+  "spacemouse.status.error": "连接失败"
 }

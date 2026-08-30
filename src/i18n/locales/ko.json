@@ -4505,5 +4505,20 @@
   "common.more": "더보기",
   "binDesigner.printFit.fits": "{width} × {depth} mm 프린트 베드에 들어갑니다.",
   "binDesigner.dependency.enableStackingLip": "스태킹 립 켜기",
-  "binDesigner.dependency.editFootprint": "외곽선 편집"
+  "binDesigner.dependency.editFootprint": "외곽선 편집",
+  "spacemouse.connect": "연결",
+  "spacemouse.sensitivity": "감도",
+  "spacemouse.speed.translate": "이동 및 확대/축소 속도",
+  "spacemouse.speed.rotate": "궤도 회전 속도",
+  "spacemouse.invertAxes": "축 반전",
+  "spacemouse.axis.panX": "수평 이동",
+  "spacemouse.axis.panY": "수직 이동",
+  "spacemouse.axis.zoom": "확대/축소",
+  "spacemouse.axis.orbitH": "수평 회전",
+  "spacemouse.axis.orbitV": "수직 회전",
+  "spacemouse.status.connected": "연결됨: {device}",
+  "spacemouse.status.connecting": "연결 중…",
+  "spacemouse.status.idle": "연결된 장치 없음",
+  "spacemouse.status.unsupported": "Chromium 브라우저가 필요합니다",
+  "spacemouse.status.error": "연결 실패"
 }

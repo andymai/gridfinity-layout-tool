@@ -4505,5 +4505,20 @@
   "common.more": "Más",
   "binDesigner.printFit.fits": "Cabe en tu cama de impresión de {width} × {depth} mm.",
   "binDesigner.dependency.enableStackingLip": "Activar borde apilable",
-  "binDesigner.dependency.editFootprint": "Editar contorno"
+  "binDesigner.dependency.editFootprint": "Editar contorno",
+  "spacemouse.connect": "Conectar",
+  "spacemouse.sensitivity": "Sensibilidad",
+  "spacemouse.speed.translate": "Velocidad de paneo y zoom",
+  "spacemouse.speed.rotate": "Velocidad de órbita",
+  "spacemouse.invertAxes": "Invertir ejes",
+  "spacemouse.axis.panX": "Paneo horizontal",
+  "spacemouse.axis.panY": "Paneo vertical",
+  "spacemouse.axis.zoom": "Zoom",
+  "spacemouse.axis.orbitH": "Órbita horizontal",
+  "spacemouse.axis.orbitV": "Órbita vertical",
+  "spacemouse.status.connected": "Conectado: {device}",
+  "spacemouse.status.connecting": "Conectando…",
+  "spacemouse.status.idle": "Ningún dispositivo conectado",
+  "spacemouse.status.unsupported": "Requiere un navegador Chromium",
+  "spacemouse.status.error": "Error de conexión"
 }

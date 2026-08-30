@@ -4505,5 +4505,20 @@
   "common.more": "Більше",
   "binDesigner.printFit.fits": "Вміщується на ваш стіл друку {width} × {depth} мм.",
   "binDesigner.dependency.enableStackingLip": "Увімкнути стековий обід",
-  "binDesigner.dependency.editFootprint": "Редагувати контур"
+  "binDesigner.dependency.editFootprint": "Редагувати контур",
+  "spacemouse.connect": "Підключити",
+  "spacemouse.sensitivity": "Чутливість",
+  "spacemouse.speed.translate": "Швидкість панорамування та масштабування",
+  "spacemouse.speed.rotate": "Швидкість обертання",
+  "spacemouse.invertAxes": "Інвертувати осі",
+  "spacemouse.axis.panX": "Горизонтальне панорамування",
+  "spacemouse.axis.panY": "Вертикальне панорамування",
+  "spacemouse.axis.zoom": "Масштабування",
+  "spacemouse.axis.orbitH": "Горизонтальне обертання",
+  "spacemouse.axis.orbitV": "Вертикальне обертання",
+  "spacemouse.status.connected": "Підключено: {device}",
+  "spacemouse.status.connecting": "Підключення…",
+  "spacemouse.status.idle": "Пристрій не підключено",
+  "spacemouse.status.unsupported": "Потрібен браузер Chromium",
+  "spacemouse.status.error": "Помилка підключення"
 }
