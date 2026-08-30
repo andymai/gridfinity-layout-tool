@@ -16,6 +16,7 @@ import {
   cut,
   rotate,
   translate,
+  applyMatrix,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import type { BinParams, DividerOverride } from '@/shared/types/bin';
@@ -431,14 +432,16 @@ interface WallSegmentPlan {
 }
 
 /**
- * Build a tilted divider wall as a parallelogram prism whose long axis runs
- * from `(startX, startY)` to `(endX, endY)`. Thickness is applied
- * perpendicular to that axis (not world-aligned) so the divider looks like
- * a tilted ribbon, not a squished box.
+ * Build a tilted divider wall whose top edge runs from `(startX, startY)` to
+ * `(endX, endY)` and whose foot edge is that top edge translated by the plan's
+ * full drift vector. Thickness is applied perpendicular to the wall PLANE (not
+ * world-aligned) so the divider reads as a tilted ribbon of constant thickness,
+ * not a squished box — true even when the wall is both angled in plan and leaned
+ * off vertical (a general oblique parallelepiped, not just a parallelogram
+ * prism).
  *
- * Clipped to the bin interior so any parallelogram corners that overshoot
- * the bin wall (which happens whenever the tilt is non-zero) are sliced
- * cleanly at the wall plane.
+ * Clipped to the bin interior so any corners that overshoot the bin wall (which
+ * happens whenever the tilt is non-zero) are sliced cleanly at the wall plane.
  */
 function buildTiltedWallSegment(scope: DisposalScope, plan: WallSegmentPlan): Shape3D | null {
   const { startX, startY, endX, endY, thickness, height, binInnerW, binInnerD } = plan;
@@ -454,13 +457,20 @@ function buildTiltedWallSegment(scope: DisposalScope, plan: WallSegmentPlan): Sh
   const py = dx / len;
   const half = thickness / 2;
 
-  // Component of the foot's drift across the wall. The along-run component is
-  // a slide of the foot line within its own plane, so it changes nothing but
-  // where the ears fall, and the interior clip takes those anyway.
+  // Split the foot's drift into components across and along the run. The foot
+  // line is the top line translated by the full drift vector, so BOTH matter:
+  // `across` leans the wall off vertical; `along` shears it lengthwise (the
+  // foot line slides parallel to itself down the run). When a divider is only
+  // angled OR only leaned `along` is zero, but combine Angle and Lean and the
+  // offset axis no longer lines up with the run, so a real along-run component
+  // appears. Dropping it (keeping only `across`) is what put a compound
+  // divider's foot outside the bin: the wall then leaned the wrong way and the
+  // interior clip sliced it into a wedge.
   const leanAcross = plan.driftX * px + plan.driftY * py;
+  const driftAlong = (plan.driftX * dx + plan.driftY * dy) / len;
 
   let prism: Shape3D;
-  if (leanAcross === 0) {
+  if (leanAcross === 0 && driftAlong === 0) {
     const pen = draw([startX + px * half, startY + py * half])
       .lineTo([endX + px * half, endY + py * half])
       .lineTo([endX - px * half, endY - py * half])
@@ -468,9 +478,31 @@ function buildTiltedWallSegment(scope: DisposalScope, plan: WallSegmentPlan): Sh
       .close();
     prism = scope.register(sketch(pen, 'XY', 0).extrude(height));
   } else {
+    // `buildLeaningPrism` builds the across-run lean in a canonical frame (run
+    // along +X, top edge on the X axis at `height`), preserving perpendicular
+    // thickness. The along-run drift is then a shear parallel to the run,
+    // `x += driftAlong · (1 − z/height)`: the top edge (z=height) stays put and
+    // the foot (z=0) slides `driftAlong` down +X. Because the shear direction
+    // lies in the wall plane, it does not change the plane's normal and so keeps
+    // the perpendicular thickness exactly `thickness` (see __kernel-tests__/
+    // dividerRake). Composing lean + shear reproduces the true foot line where a
+    // single rigid tilt cannot.
     const canonical = scope.register(buildLeaningPrism(len, leanAcross, thickness, height));
+    const sheared =
+      driftAlong === 0
+        ? canonical
+        : scope.register(
+            unwrap(
+              applyMatrix(canonical, [
+                [1, 0, -driftAlong / height, driftAlong],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1],
+              ])
+            )
+          );
     const oriented = scope.register(
-      rotate(canonical, (Math.atan2(dy, dx) * 180) / Math.PI, { axis: [0, 0, 1] })
+      rotate(sheared, (Math.atan2(dy, dx) * 180) / Math.PI, { axis: [0, 0, 1] })
     );
     prism = scope.register(translate(oriented, [(startX + endX) / 2, (startY + endY) / 2, 0]));
   }

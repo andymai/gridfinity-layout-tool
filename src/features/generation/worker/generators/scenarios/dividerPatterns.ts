@@ -213,6 +213,28 @@ export const dividerPatterns: ScenarioCase[] = [
     },
   }),
 
+  // Angle AND Lean on the same divider. The foot line is the top line
+  // translated by the whole drift; keeping only its across-run component
+  // sheared the foot off its run and out of the bin. Exercises the full
+  // pipeline + export integrity (watertight / manifold) for the compound case.
+  defineScenario('divider patterns', 'compound angled + leaned divider stays inside the bin', {
+    params: {
+      width: 2,
+      depth: 2,
+      height: 6,
+      compartments: {
+        cols: 2,
+        rows: 1,
+        cells: [0, 1],
+        thickness: 1.2,
+        dividerOverrides: [
+          { compartmentA: 0, compartmentB: 1, offsetStart: -6, offsetEnd: 6, rakeDeg: 25 },
+        ],
+      },
+      walls: ALL_SIDES_OFF,
+    },
+  }),
+
   defineScenario('divider patterns', 'half-grid footprint with patterned dividers', {
     params: {
       width: 2.5,

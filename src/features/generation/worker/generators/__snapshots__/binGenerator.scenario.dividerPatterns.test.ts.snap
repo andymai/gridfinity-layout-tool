@@ -2,6 +2,8 @@
 
 exports[`divider patterns > 2×2 honeycomb dividers 1`] = `10036`;
 
+exports[`divider patterns > compound angled + leaned divider stays inside the bin 1`] = `3100`;
+
 exports[`divider patterns > dividers + interior cutouts 1`] = `9096`;
 
 exports[`divider patterns > dividers + label tabs keep the shelf anchorage solid 1`] = `10520`;
