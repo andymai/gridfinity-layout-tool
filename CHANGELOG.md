@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.480.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.480.0...gridfinity-layout-tool-v4.480.1) (2026-08-30)
+
+
+### Bug Fixes
+
+* **pwa:** let a stale-bundle crash reload onto the current build ([#4008](https://github.com/andymai/gridfinity-layout-tool/issues/4008)) ([79561f3](https://github.com/andymai/gridfinity-layout-tool/commit/79561f32e63d7d73d5a15a3a419933b108458ea9))
+
 ## [4.480.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.479.0...gridfinity-layout-tool-v4.480.0) (2026-08-29)
 
 
