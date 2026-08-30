@@ -1,0 +1,29 @@
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_64a9c9d2b13bb9::t_8e2b4ccaeb8bb3 46
+  s_64a9c9d2b13bb9::t_26e724c35dab34 141
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_64a9c9d2b13bb9::t_a2ccbbe3655928 264-265
+  s_64a9c9d2b13bb9::t_940c3dc1a780dc 4-7
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/groupControls.ts
+  s_64a9c9d2b13bb9::t_d053d14f663070 1-42
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.test.tsx
+  s_64a9c9d2b13bb9::t_188ee9fe055cc1 6
+  s_64a9c9d2b13bb9::t_50ee04ff30b769 50-57
+  s_64a9c9d2b13bb9::t_4f42e7fc50dfcd 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "33ab0dfaa71715f114417458f3f464393652fde6",
+  "prompts": {},
+  "sessions": {
+    "s_64a9c9d2b13bb9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5db43615-bca4-444a-b16b-23a843ecf919",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
