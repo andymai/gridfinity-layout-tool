@@ -153,6 +153,33 @@ describe('useOwnDesignPrefill', () => {
     expect(useCommunityPublishStore.getState().context?.publishedId).toBe('Pub123456789');
   });
 
+  it('keeps the link when the session check fails at the network layer', async () => {
+    // getMe() rejecting (offline, DNS, dropped connection) is not a confirmed
+    // sign-out, so the 404 stays unconfirmed: keep the link and block the form,
+    // exactly as for a null session. The rejection must be handled here, not
+    // left to escape as an unhandled promise rejection.
+    const onUnpublished = vi.fn();
+    useCommunityPublishStore.getState().open(
+      {
+        designId: 'design-1',
+        designName: 'Screw Bin',
+        params,
+        paramsHash: 'hash',
+        publishedId: 'Pub123456789',
+        lineage: null,
+        draft: null,
+      },
+      undefined,
+      { onPublished: vi.fn().mockResolvedValue(true), onUnpublished, requestRecapture: vi.fn() }
+    );
+    vi.mocked(getMe).mockRejectedValue(new TypeError('Failed to fetch'));
+    vi.mocked(fetchOwnDesign).mockResolvedValue(err({ kind: 'notFound' }));
+    const { result } = renderHook(() => useOwnDesignPrefill('Pub123456789', 'authenticated'));
+    await waitFor(() => expect(result.current.failed).toBe(true));
+    expect(onUnpublished).not.toHaveBeenCalled();
+    expect(useCommunityPublishStore.getState().context?.publishedId).toBe('Pub123456789');
+  });
+
   it('fails closed on a server error rather than editing blind', async () => {
     vi.mocked(fetchOwnDesign).mockResolvedValue(err({ kind: 'server' }));
     const { result } = renderHook(() => useOwnDesignPrefill('Pub123456789', 'authenticated'));
