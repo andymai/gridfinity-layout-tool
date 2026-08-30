@@ -4,7 +4,6 @@ export type BinPanelViewMode = 'scroll' | 'rail';
 
 const VIEW_MODE_KEY = 'gridfinity-designer-view-mode-v1';
 
-/** The single long scroll is the default; the compact rail is opt-in. */
 export function loadViewMode(): BinPanelViewMode {
   try {
     return localStorage.getItem(VIEW_MODE_KEY) === 'rail' ? 'rail' : 'scroll';
