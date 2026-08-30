@@ -216,8 +216,6 @@ export function BinScrollPanel({ frame, toolbar, header, wrapContent, dock }: Bi
         modifiedLabel={markIf(modified.finishing)}
       >
         <div className="divide-y divide-stroke-subtle/50">
-          {/* Type settings govern captions; with nothing to style they only add
-              noise, so they appear once the design carries text. */}
           {hasText && (
             <PanelSection helpTarget="bd-type">
               <TypeSection />

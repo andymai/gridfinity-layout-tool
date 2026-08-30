@@ -11,8 +11,6 @@ export function StylePage() {
   const hasText = useDesignerStore((s) => binHasText(s.params));
   return (
     <div className="divide-y divide-stroke-subtle/50">
-      {/* Type settings govern captions; with nothing to style they only add
-          noise, so they appear once the design carries text. */}
       {hasText && (
         <PanelSection helpTarget="bd-type">
           <TypeSection />

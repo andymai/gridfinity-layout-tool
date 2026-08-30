@@ -4,7 +4,25 @@ import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { binHasText } from './binText';
 
 const withParams = (over: Partial<BinParams>): BinParams => ({ ...DEFAULT_BIN_PARAMS, ...over });
-const cut = (over: Partial<Cutout>): Cutout => over as Cutout;
+
+// A fully-typed base so the compiler keeps these inputs honest if binHasText
+// grows to read more cutout fields.
+const cut = (over: Partial<Cutout>): Cutout => ({
+  id: 'c1',
+  shape: 'rectangle',
+  x: 10,
+  y: 10,
+  width: 20,
+  depth: 20,
+  cutDepth: 5,
+  rotation: 0,
+  cornerRadius: 2,
+  label: '',
+  groupId: null,
+  locked: false,
+  hidden: false,
+  ...over,
+});
 
 describe('binHasText', () => {
   it('is false for a stock bin with no captions', () => {
