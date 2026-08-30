@@ -1,0 +1,41 @@
+src/shared/pwa/staleRecovery.test.ts
+  s_4385eec40352ba::t_83c7a78e952112 3
+  s_4385eec40352ba::t_5b96669ba4895b 117-156
+src/shared/pwa/staleRecovery.ts
+  s_4385eec40352ba::t_a1e9e4c7dc3395 124-150
+src/shell/ErrorBoundary/ErrorBoundary.tsx
+  s_4385eec40352ba::t_cbf12c006153d9 8-9
+  s_4385eec40352ba::t_9cc9ed67c689ab 56-64
+  s_4385eec40352ba::t_c5e3a6d2ca2660 89-91
+  s_4385eec40352ba::t_2191b0d1c6236d 133-142,148
+src/shared/analytics/posthog/errorFilters.ts
+  s_4385eec40352ba::t_ff36fb215185dd 29-32,34-37
+  s_4385eec40352ba::t_3893230c5e440a 267
+  s_4385eec40352ba::t_b634b48ad4ff90 4
+src/shared/pwa/chunkLoadError.ts
+  s_4385eec40352ba::t_6ff1ad6ddb5985 1-16
+src/shared/pwa/chunkLoadError.test.ts
+  s_4385eec40352ba::t_6ebcdb1e7c4b03 1-24
+src/shell/ErrorBoundary/ErrorBoundary.test.tsx
+  s_4385eec40352ba::t_a15cb807f5b93a 5,8-12
+  s_4385eec40352ba::t_ea372323edd16a 230,237-269
+  s_4385eec40352ba::t_56ca94640b9af8 73
+  s_4385eec40352ba::t_2f192da4536315 231-236
+  s_4385eec40352ba::t_acdf6d385a2d7e 56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "2fe1e5f6aba442f0fb8035d3672db1f37d87fe16",
+  "prompts": {},
+  "sessions": {
+    "s_4385eec40352ba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d707a96e-9c2f-48f3-a9aa-9ab49f266efe",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
