@@ -14,7 +14,7 @@
 
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Button, SidePanel } from '@/design-system';
+import { Button, IconButton, SidePanel, Tooltip } from '@/design-system';
 import { isErr, isOk } from '@/core/result';
 import { designId as toDesignId } from '@/core/types';
 import { useToastStore } from '@/core/store/toast';
@@ -33,6 +33,8 @@ import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useIntentPrefetch } from '@/shared/hooks/useIntentPrefetch';
 import { warmDesignGallery } from '@/shared/hooks/usePrefetchChunks';
 import { BinPanelShell } from '../BinPanelShell';
+import { BinScrollPanel } from './BinScrollPanel';
+import { loadViewMode, saveViewMode, type BinPanelViewMode } from './binViewModeStorage';
 import { ShapePage } from '../panel/pages/ShapePage';
 import { InteriorPage } from '../panel/pages/InteriorPage';
 import { FeaturesPage } from '../panel/pages/FeaturesPage';
@@ -121,6 +123,12 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   const [variantBusy, setVariantBusy] = useState(false);
   const addToast = useToastStore((s) => s.addToast);
 
+  const [viewMode, setViewMode] = useState<BinPanelViewMode>(loadViewMode);
+  const selectViewMode = useCallback((mode: BinPanelViewMode) => {
+    setViewMode(mode);
+    saveViewMode(mode);
+  }, []);
+
   // Every variant action rewrites the design's params in storage, so the open
   // design is reloaded from there rather than patched in place: the store would
   // otherwise hold the pre-propagation params and autosave them straight back.
@@ -183,10 +191,8 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
 
   const galleryIntent = useIntentPrefetch('modal:designGallery', warmDesignGallery);
 
-  const header = (
-    // Scrolls on its own when the variant section runs long — this region is
-    // pinned above the rail, not part of any page's scroll.
-    <div className="max-h-[45%] flex-shrink-0 overflow-y-auto scrollbar-thin">
+  const communityAndVariant = (
+    <>
       {/* Community entry, first in the panel. It is the app's main way into
           the showcase now that the tool switcher holds only the three
           editors, so it opens the gallery on the tab it names rather than on
@@ -254,13 +260,99 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
           onClearOrphans={handleClearOrphans}
         />
       )}
+    </>
+  );
+
+  // A compact two-option view switch shared by both layouts: the single scroll
+  // of grouped sections, or the compact category rail. IconButton's `active`
+  // gives the pressed segment its fill and the aria-pressed state.
+  const viewModes = [
+    { mode: 'scroll' as const, paths: ICON_PATHS.menu, label: t('binDesigner.panel.viewAsScroll') },
+    {
+      mode: 'rail' as const,
+      paths: ICON_PATHS.dashboard,
+      label: t('binDesigner.panel.viewAsRail'),
+    },
+  ];
+  const viewSwitch = (
+    <div className="flex flex-shrink-0 items-center justify-end px-3 py-1.5">
+      <div className="inline-flex items-center gap-0.5 rounded-md border border-stroke-subtle p-0.5">
+        {viewModes.map(({ mode, paths, label }) => (
+          <Tooltip key={mode} content={label} placement="bottom">
+            <IconButton
+              variant="ghost"
+              size="sm"
+              touchTarget={false}
+              pressed={viewMode === mode}
+              aria-label={label}
+              onClick={() => selectViewMode(mode)}
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden
+              >
+                {paths.map((d) => (
+                  <path
+                    key={d}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={d}
+                  />
+                ))}
+              </svg>
+            </IconButton>
+          </Tooltip>
+        ))}
+      </div>
     </div>
   );
+
+  // Every section edits the PARENT's params for a variant. `inert` via one
+  // VariantLock gate rather than a `disabled` prop on each control: a variant's
+  // params is a materialized cache the next propagation rewrites, and one gate
+  // is the only version of this guard that cannot be forgotten when a section is
+  // added. Also locked WHILE RESOLVING — staying editable until the IndexedDB
+  // read returns leaves exactly the window the guard closes.
+  const wrapEditable = (content: React.ReactNode, fill: boolean) => (
+    <VariantLock
+      locked={variant.isVariant || variant.isLoading}
+      parentName={variant.parentName}
+      onOpenParent={variant.parentId ? () => void openParentDesign(variant.parentId) : undefined}
+      fill={fill}
+    >
+      {content}
+    </VariantLock>
+  );
+
+  if (viewMode === 'scroll') {
+    return (
+      <BinScrollPanel
+        frame={frame}
+        toolbar={viewSwitch}
+        header={communityAndVariant}
+        wrapContent={(content) => wrapEditable(content, false)}
+        dock={<UserDock />}
+      />
+    );
+  }
 
   return (
     <BinPanelShell
       frame={frame}
-      header={header}
+      header={
+        <>
+          {viewSwitch}
+          {/* Scrolls on its own when the variant section runs long — pinned
+              above the rail, not part of any page's scroll. */}
+          <div className="max-h-[45%] flex-shrink-0 overflow-y-auto scrollbar-thin">
+            {communityAndVariant}
+          </div>
+        </>
+      }
       pages={{
         shape: <ShapePage />,
         interior: <InteriorPage />,
@@ -269,24 +361,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
         print: <PrintPage />,
       }}
       pageFooter={<AttributionFooter />}
-      // Every page edits the PARENT's params for a variant. `inert` via one
-      // gate rather than a `disabled` prop on each control: a variant's params
-      // is a materialized cache the next propagation rewrites, and one gate is
-      // the only version of this guard that cannot be forgotten when a section
-      // is added. Also locked WHILE RESOLVING — staying editable until the
-      // IndexedDB read returns leaves exactly the window the guard closes.
-      wrapPages={(pages) => (
-        <VariantLock
-          locked={variant.isVariant || variant.isLoading}
-          parentName={variant.parentName}
-          onOpenParent={
-            variant.parentId ? () => void openParentDesign(variant.parentId) : undefined
-          }
-          fill
-        >
-          {pages}
-        </VariantLock>
-      )}
+      wrapPages={(pages) => wrapEditable(pages, true)}
       summaries={{
         shape: shapeSummary,
         interior: interiorSummary,
