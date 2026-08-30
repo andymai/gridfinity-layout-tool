@@ -1,0 +1,38 @@
+src/shell/ErrorBoundary/ErrorBoundary.tsx
+  s_4385eec40352ba::t_76715543402e92 8,11-15
+  s_4385eec40352ba::t_508e60e61acff7 96
+  s_4385eec40352ba::t_ecc291e57c275d 64-65,67
+  s_4385eec40352ba::t_0ab7f8d760c26a 61-63,66,68-69,94-95,138-147,153
+  s_4385eec40352ba::t_1f03046fae38e5 16
+src/shared/analytics/posthog/errorFilters.ts
+  s_4385eec40352ba::t_ef6a7e5fdc074b 39-43
+src/shell/ErrorBoundary/ErrorBoundary.test.tsx
+  s_4385eec40352ba::t_e35c3d8dbf84cf 73
+  s_4385eec40352ba::t_b4856c370d1acf 259,266-269
+  s_4385eec40352ba::t_9dfd97d52acada 5,8,12
+  s_4385eec40352ba::t_0ab7f8d760c26a 11,56,230-258,260-265,270
+  s_4385eec40352ba::t_a15cb807f5b93a 9-10
+  s_4385eec40352ba::t_ea372323edd16a 271-272
+src/shared/pwa/staleRecovery.ts
+  s_4385eec40352ba::t_90eb16df112ce3 86-93,97-100,111,113-117,122
+src/shared/pwa/staleRecovery.test.ts
+  s_4385eec40352ba::t_0ab7f8d760c26a 117,119-123,125-133,135,142-143,146-149
+  s_4385eec40352ba::t_d06bcdeeebd329 118,124,134,136-141,144-145
+  s_4385eec40352ba::t_5b96669ba4895b 150-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "96859db2c2cde1ca6f5e738f0cd72df07b0dbd13",
+  "prompts": {},
+  "sessions": {
+    "s_4385eec40352ba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d707a96e-9c2f-48f3-a9aa-9ab49f266efe",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    }
+  }
+}
