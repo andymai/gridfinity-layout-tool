@@ -1,0 +1,32 @@
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.test.tsx
+  s_64a9c9d2b13bb9::t_8c102af3b307f6 29
+  s_64a9c9d2b13bb9::t_2f028a8aa3a658 42-57
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.tsx
+  s_64a9c9d2b13bb9::t_dd3c1edf6bab54 1-2,11,14-20
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_64a9c9d2b13bb9::t_8363408a0dc1d7 20
+  s_64a9c9d2b13bb9::t_571c6f084f3243 251-257
+  s_64a9c9d2b13bb9::t_252e7a6f290dda 95,99
+src/features/bin-designer/utils/binText.ts
+  s_64a9c9d2b13bb9::t_9132fd1134eff9 1-33
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.test.tsx
+  s_64a9c9d2b13bb9::t_afebe482902bcf 17,19-34
+src/features/bin-designer/utils/binText.test.ts
+  s_64a9c9d2b13bb9::t_9111b020fccfd6 1-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e7ade046a2a1ce3d18ce4b3f41df678ebb240fae",
+  "prompts": {},
+  "sessions": {
+    "s_64a9c9d2b13bb9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5db43615-bca4-444a-b16b-23a843ecf919",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
