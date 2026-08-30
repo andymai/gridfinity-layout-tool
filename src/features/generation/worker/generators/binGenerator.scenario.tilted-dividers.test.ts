@@ -119,4 +119,69 @@ describe('tilted dividers through full pipeline', () => {
     }
     expect(foundTiltVertex).toBe(true);
   }, 60_000);
+
+  // A divider carrying BOTH an Angle (offsetStart ≠ offsetEnd) and a Lean
+  // (rakeDeg) is one plane, so its foot line is the top line translated by the
+  // WHOLE drift and still spans the full run at the floor. Keeping only the
+  // across-run component of the drift sheared the foot off its run and left it
+  // short of a wall, a wedge that poked past the compartment. Built from the
+  // isolated divider walls so the check reads the divider's own foot,
+  // not the bin body around it. (dividerRake.test.ts proves thickness and exact
+  // placement under the profile kernel harness; this is the CI-gated tripwire.)
+  it('compound angle + lean divider keeps its foot spanning the full run', async () => {
+    const { mesh } = await import('brepjs');
+    const { buildCompartmentWalls } = await import('./compartmentBuilder');
+    const INNER_W = 80;
+    const INNER_D = 60;
+    const WALL_H = 30;
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: {
+        cols: 2,
+        rows: 1,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [
+          { compartmentA: 0, compartmentB: 1, offsetStart: -8, offsetEnd: 8, rakeDeg: 30 },
+        ],
+      },
+    };
+    const walls = buildCompartmentWalls(params, INNER_W, INNER_D, WALL_H);
+    expect(walls).not.toBeNull();
+    if (!walls) return;
+    try {
+      const m = mesh(walls, { tolerance: 0.01, angularTolerance: 5, cache: false });
+      // Y-extent the divider surface reaches at z (slicing edges, since a prism
+      // only carries vertices on its end caps).
+      const ySpanAt = (z: number): [number, number] => {
+        let lo = Infinity;
+        let hi = -Infinity;
+        const v = m.vertices;
+        const tri = m.triangles;
+        const edge = (a: number, b: number): void => {
+          const za = v[a + 2];
+          const zb = v[b + 2];
+          if (za === zb || z < Math.min(za, zb) || z > Math.max(za, zb)) return;
+          const t = (z - za) / (zb - za);
+          lo = Math.min(lo, v[a + 1] + t * (v[b + 1] - v[a + 1]));
+          hi = Math.max(hi, v[a + 1] + t * (v[b + 1] - v[a + 1]));
+        };
+        for (let i = 0; i < tri.length; i += 3) {
+          const a = tri[i] * 3;
+          const b = tri[i + 1] * 3;
+          const c = tri[i + 2] * 3;
+          edge(a, b);
+          edge(b, c);
+          edge(c, a);
+        }
+        return [lo, hi];
+      };
+      // Reaches both walls at the floor; the dropped-drift bug fell short.
+      const [lo, hi] = ySpanAt(0.5);
+      expect(lo).toBeCloseTo(-INNER_D / 2, 0);
+      expect(hi).toBeCloseTo(INNER_D / 2, 0);
+    } finally {
+      walls.delete();
+    }
+  }, 60_000);
 });

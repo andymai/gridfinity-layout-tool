@@ -109,6 +109,23 @@ function sectionYSpan({ vertices, triangles }: Mesh, z: number): [number, number
   return [lo, hi];
 }
 
+/** Range of the mesh's projection onto a unit vector — the extent of the solid
+ *  along that direction. Fed the wall-plane normal, it reads the PERPENDICULAR
+ *  thickness of a compound (angled + leaned) divider, which no axis-aligned
+ *  span can, because such a wall's normal points along none of X/Y/Z. */
+function projectionRange({ vertices }: Mesh, n: readonly [number, number, number]): number {
+  const mag = Math.hypot(n[0], n[1], n[2]);
+  const [ux, uy, uz] = [n[0] / mag, n[1] / mag, n[2] / mag];
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    const p = vertices[i] * ux + vertices[i + 1] * uy + vertices[i + 2] * uz;
+    lo = Math.min(lo, p);
+    hi = Math.max(hi, p);
+  }
+  return hi - lo;
+}
+
 async function meshWalls(params: BinParams): Promise<Mesh> {
   const { mesh } = await import('brepjs');
   const { buildCompartmentWalls } = await import('../compartmentBuilder');
@@ -172,17 +189,49 @@ describe(`leaning compartment dividers on ${getKernelName()}`, () => {
     }
   });
 
-  it('composes with a plan tilt', async () => {
-    // Diagonal in plan AND leaning: still one plane, so the section is still a
-    // constant-thickness band, only rotated about Z.
-    const m = await meshWalls(makeParams(lean(30, { offsetStart: -8, offsetEnd: 8 })));
+  it('composes a plan tilt with a lean, without spilling the foot off its run', async () => {
+    // Diagonal in plan (Angle) AND leaning (Lean): still ONE plane. The foot
+    // line is the top line translated by the WHOLE drift, so it still spans the
+    // full run at the floor. Keeping only the across-run component of the drift
+    // (the old bug) sheared the foot along its own run, leaving it short of a
+    // wall — a wedge that the interior clip could not save.
+    const rakeDeg = 30;
+    const offsetStart = -8;
+    const offsetEnd = 8;
+    const m = await meshWalls(makeParams(lean(rakeDeg, { offsetStart, offsetEnd })));
     for (let i = 0; i < m.vertices.length; i++) expect(Number.isFinite(m.vertices[i])).toBe(true);
-    const top = sectionXSpan(m, WALL_HEIGHT - 0.5);
-    const foot = sectionXSpan(m, 0.5);
-    // The plan tilt spreads the top band across the run; the lean moves the
-    // whole thing +X without collapsing it.
-    expect(top[1] - top[0]).toBeGreaterThan(THICKNESS);
-    expect((foot[0] + foot[1]) / 2).toBeGreaterThan((top[0] + top[1]) / 2);
+
+    const drift = WALL_HEIGHT * Math.tan((rakeDeg * Math.PI) / 180);
+
+    // Spans wall to wall along its run at EVERY height (the direct catch for the
+    // dropped along-run drift — the old build fell short of a wall at the floor).
+    for (const z of PROBE_Z) {
+      const [lo, hi] = sectionYSpan(m, z);
+      expect(lo).toBeCloseTo(-INNER_D / 2, 1);
+      expect(hi).toBeCloseTo(INNER_D / 2, 1);
+    }
+
+    // Plan centre travels the FULL drift from top to floor. The top line is
+    // centred at (offsetStart+offsetEnd)/2 = 0, so the floor centre is `drift`.
+    const mid = (z: number): number => {
+      const [lo, hi] = sectionXSpan(m, z);
+      return (lo + hi) / 2;
+    };
+    expect(mid(WALL_HEIGHT - 0.5)).toBeCloseTo(0, 0);
+    expect(mid(0.5)).toBeCloseTo(drift, 0);
+
+    // Perpendicular thickness holds across the compound tilt. The wall plane
+    // contains the top-line run and the top→foot direction; its normal points
+    // along none of the axes, so the whole solid's projection onto that normal
+    // IS the wall thickness.
+    const runDir: [number, number, number] = [offsetEnd - offsetStart, INNER_D, 0];
+    const topToFoot: [number, number, number] = [drift, 0, -WALL_HEIGHT];
+    const normal: [number, number, number] = [
+      runDir[1] * topToFoot[2] - runDir[2] * topToFoot[1],
+      runDir[2] * topToFoot[0] - runDir[0] * topToFoot[2],
+      runDir[0] * topToFoot[1] - runDir[1] * topToFoot[0],
+    ];
+    expect(projectionRange(m, normal)).toBeCloseTo(THICKNESS, 1);
   });
 
   it('builds an upright wall when the lean is zero', async () => {
