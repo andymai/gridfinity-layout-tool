@@ -1,5 +1,5 @@
 // @vitest-environment node
 import { runExportIntegrity } from './__kernel-tests__/exportIntegrityRunner';
-import { scoop, scoopTwoVariable, scoopLipInteraction } from './scenarios/scoops';
+import { scoop, scoopTwoVariable, scoopFlatBase, scoopLipInteraction } from './scenarios/scoops';
 
-runExportIntegrity([...scoop, ...scoopTwoVariable, ...scoopLipInteraction]);
+runExportIntegrity([...scoop, ...scoopTwoVariable, ...scoopFlatBase, ...scoopLipInteraction]);

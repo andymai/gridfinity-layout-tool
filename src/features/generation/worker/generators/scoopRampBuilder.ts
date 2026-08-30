@@ -26,7 +26,12 @@ import {
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
-import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH, BOX_CORNER_RADIUS } from './generatorConstants';
+import {
+  LIP_SMALL_TAPER,
+  LIP_TAPER_WIDTH,
+  BOX_CORNER_RADIUS,
+  COPLANAR_MARGIN,
+} from './generatorConstants';
 import { findCompartmentBounds } from './compartmentBuilder';
 import { compartmentHasTiltedEdge, isRectangularCompartment } from '@/shared/types/bin';
 /**
@@ -78,6 +83,24 @@ function buildScoopRampsInScope(
 ): Shape3D | null {
   const hasLip = params.base.stackingLip;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
+
+  // The ramp's back edge and its two span ends sit on the surrounding walls'
+  // inner faces. Merely TOUCHING those faces leaves zero-thickness coincident
+  // faces when the ramp is fused into the body — non-manifold membranes (they
+  // surface as degenerate slivers where the ramp arc meets a side wall).
+  // Socketed bins hide it: the export-time deferred-socket fuse recomputes the
+  // boundary and heals it. A socketless base (flat / tray) never runs that fuse,
+  // so the membrane ships straight into the STL as a gap. Push the contact
+  // faces INTO the surrounding material so the fuse overlaps instead,
+  // following the COPLANAR_MARGIN pattern used throughout the pipeline. Clamp
+  // below the outer wall thickness (never breach it) AND below 0.4× the divider
+  // thickness so two neighbouring compartments penetrating a shared divider from
+  // opposite sides still cannot meet through it.
+  const wallPenetration = Math.min(
+    COPLANAR_MARGIN,
+    wallThickness * 0.6,
+    params.compartments.thickness * 0.4
+  );
 
   const { cols, rows, cells } = params.compartments;
   const side = resolveScoopSide(params.scoop);
@@ -131,13 +154,18 @@ function buildScoopRampsInScope(
       //   (0, 0) -> (0, wH) -> (lo, wH) -> (lo, H) -> ramp -> (lo+run, 0) -> close
       //   Goes up the wall to wallHeight, across to the lip's inner face,
       //   down to ramp start at H, then descends to floor. Fills solid.
+      // The wall-hugging back edge is authored at `-wallPenetration` (inside the
+      // wall) rather than 0 (on its inner face) so the fuse overlaps material;
+      // see `wallPenetration` above. The visible ramp surface (arc + top edge at
+      // Y=lipOffset) is unchanged.
+      const backY = -wallPenetration;
       const segments = 24;
       const points: [number, number][] = [];
       // Start at wall/floor corner
-      points.push([0, 0]);
+      points.push([backY, 0]);
       if (lipOffset > 0) {
         // Up the wall to wallHeight (lip base), across to lip inner face
-        points.push([0, wallHeight]);
+        points.push([backY, wallHeight]);
         points.push([lipOffset, wallHeight]);
         // Down to ramp start (only needed when height < wallHeight)
         if (height < wallHeight) {
@@ -145,7 +173,7 @@ function buildScoopRampsInScope(
         }
       } else {
         // Standard: up the wall to scoop height
-        points.push([0, height]);
+        points.push([backY, height]);
       }
       if (style === 'curved') {
         // Concave quarter-ellipse from (lipOffset, height) to (lipOffset+run, 0)
@@ -173,7 +201,13 @@ function buildScoopRampsInScope(
       // tangent to the wall and floor at those points, so the edges sit at
       // polygon cusps — brepjs `fillet()` returns Ok but produces degenerate
       // topology that fails STL export.
-      const scoopSolid = scope.register(sketch(profile, 'YZ', -span / 2).extrude(span));
+      // Extrude longer than the span so both ends bury into the perpendicular
+      // walls/dividers rather than landing coincident on their inner faces (see
+      // `wallPenetration`). Centred, so `placement.alongCenter` still aligns it.
+      const spanExtruded = span + 2 * wallPenetration;
+      const scoopSolid = scope.register(
+        sketch(profile, 'YZ', -spanExtruded / 2).extrude(spanExtruded)
+      );
 
       // The profile above is authored facing front (wall at Y=0, ramp running
       // toward +Y). Rotating about +Z maps it onto whichever wall was chosen,
@@ -210,10 +244,20 @@ function buildScoopRampsInScope(
   if (wallThickness < BOX_CORNER_RADIUS * (1 - Math.SQRT1_2)) {
     try {
       const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
+      // Expand the clip by `wallPenetration` so it trims the corner overshoot
+      // without also shaving off the intentional back-edge penetration — which
+      // would restore the coincident wall face this fix removes. Still inside
+      // the outer wall because `wallPenetration < wallThickness`.
       const footprint = scope.register(
-        sketch(drawRoundedRectangle(innerW, innerD, cavityCornerR), 'XY', -1).extrude(
-          wallHeight + 2
-        )
+        sketch(
+          drawRoundedRectangle(
+            innerW + 2 * wallPenetration,
+            innerD + 2 * wallPenetration,
+            cavityCornerR + wallPenetration
+          ),
+          'XY',
+          -1
+        ).extrude(wallHeight + 2)
       );
       return scope.register(unwrap(intersect(fused as ValidSolid, footprint as ValidSolid)));
     } catch {
@@ -246,7 +290,7 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v3',
+        'v4',
         dim.shellKey,
         stableSerialize(params.scoop),
         params.style,
@@ -254,6 +298,9 @@ export const scoopRampsFeature: FeatureBuilder = {
         quantize(dim.innerD),
         quantize(dim.wallHeight),
         quantize(params.wallThickness),
+        // The wall/divider penetration that welds the ramp to its host scales
+        // with the divider thickness, so a thickness edit moves the geometry.
+        quantize(params.compartments.thickness),
         dim.hasLip,
         params.compartments.cols,
         params.compartments.rows,
