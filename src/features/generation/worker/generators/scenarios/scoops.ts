@@ -62,6 +62,47 @@ export const scoopSides: ScenarioCase[] = [
   }),
 ];
 
+// A socketless base (flat / tray) never gets the export-time deferred-socket
+// fuse that heals an additive feature's coincident-face contact, so a scoop's
+// wall-hugging faces shipped straight into the STL as a non-manifold gap. These
+// exercise the export-integrity manifold/boundary assertions against that class
+// directly.
+export const scoopFlatBase: ScenarioCase[] = [
+  defineScenario('scoop flat base', '1×1 flat base scoop with lip', {
+    params: {
+      width: 1,
+      depth: 1,
+      scoop: { enabled: true, radius: 'auto' as const },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' as const },
+    },
+  }),
+  defineScenario('scoop flat base', '2×2 flat base scoop with lip', {
+    params: {
+      scoop: { enabled: true, radius: 'auto' as const },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' as const },
+    },
+  }),
+  defineScenario('scoop flat base', '2×2 flat base scoop no lip', {
+    params: {
+      scoop: { enabled: true, radius: 'auto' as const },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' as const, stackingLip: false },
+    },
+  }),
+  defineScenario('scoop flat base', '2×2 flat base thin-wall scoop (corner clip active)', {
+    params: {
+      wallThickness: 0.8,
+      scoop: { enabled: true, radius: 'auto' as const },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' as const },
+    },
+  }),
+  defineScenario('scoop flat base', '2×2 tray-bottom (lid) base scoop with lip', {
+    params: {
+      scoop: { enabled: true, radius: 'auto' as const },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'lid' as const },
+    },
+  }),
+];
+
 export const scoopLipInteraction: ScenarioCase[] = [
   defineScenario(
     'scoop + lip interaction',
