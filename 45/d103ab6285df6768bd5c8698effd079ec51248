@@ -1,0 +1,23 @@
+src/features/community/components/PublishDialog/useOwnDesignPrefill.test.ts
+  s_78b503d9a25fd5::t_61636866334acd 156-178
+  s_78b503d9a25fd5::t_be0ea3eebe57ff 153-155
+  s_78b503d9a25fd5::t_60448efac1d4f9 152
+src/features/community/components/PublishDialog/useOwnDesignPrefill.ts
+  s_78b503d9a25fd5::t_c01a6591878dc7 67-89,93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "45d103ab6285df6768bd5c8698effd079ec51248",
+  "prompts": {},
+  "sessions": {
+    "s_78b503d9a25fd5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d540a7bc-53f0-443d-bd82-0f0ce577b9f4",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
