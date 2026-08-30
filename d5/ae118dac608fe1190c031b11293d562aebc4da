@@ -1,0 +1,74 @@
+src/features/bin-designer/components/ParameterPanel/groupModified.test.ts
+  s_64a9c9d2b13bb9::t_ce45ac02006615 1-60
+  s_64a9c9d2b13bb9::t_d9f6e0336f4fe7 61-62
+src/i18n/locales/pt-BR.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/en.ts
+  s_64a9c9d2b13bb9::t_66df198372dbb8 2583-2584
+  s_64a9c9d2b13bb9::t_f8555c30bc33e2 2566-2571
+src/i18n/locales/nb.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/fr.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/features/bin-designer/components/ParameterPanel/binViewModeStorage.ts
+  s_64a9c9d2b13bb9::t_519873f748f7b3 1-22
+src/i18n/locales/sv.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/index.ts
+  s_64a9c9d2b13bb9::t_12a441fb177825 1-2
+src/features/bin-designer/components/ParameterPanel/groupModified.ts
+  s_64a9c9d2b13bb9::t_49055136ac1b43 1-125
+src/i18n/locales/de.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/es.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/it.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/nl.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/pl.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/cs.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/uk.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/zh-CN.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_64a9c9d2b13bb9::t_c8e17c42c6a6a9 120
+  s_64a9c9d2b13bb9::t_441fa50d7c08c8 1-119,121-305
+src/i18n/locales/ja.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/i18n/locales/ko.json
+  s_64a9c9d2b13bb9::t_2a5e81c810fc8d 1014,1016-1020,4511-4512
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_64a9c9d2b13bb9::t_055abf6be568b9 17
+  s_64a9c9d2b13bb9::t_04f5f9d5449025 266-298,302-330,334-337
+  s_64a9c9d2b13bb9::t_3d0d13824192bc 126-134
+  s_64a9c9d2b13bb9::t_21bcf028c1269f 36-37
+  s_64a9c9d2b13bb9::t_3379dd2fe8093c 197-198
+  s_64a9c9d2b13bb9::t_ac957d425c0bd6 338-340
+  s_64a9c9d2b13bb9::t_45ba0a893bda4b 341-343,352
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.test.tsx
+  s_64a9c9d2b13bb9::t_5f60b0c0aa0c52 1-39
+  s_64a9c9d2b13bb9::t_7e773c4c327fdf 40-42
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.test.tsx
+  s_64a9c9d2b13bb9::t_cc3b6635ac73d4 4
+  s_64a9c9d2b13bb9::t_0a47d1891f0289 25,28-36,40-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d5ae118dac608fe1190c031b11293d562aebc4da",
+  "prompts": {},
+  "sessions": {
+    "s_64a9c9d2b13bb9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5db43615-bca4-444a-b16b-23a843ecf919",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
