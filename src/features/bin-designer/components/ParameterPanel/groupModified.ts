@@ -11,6 +11,8 @@
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
 
+import { paramFieldModified } from './paramFieldModified';
+
 export type PanelGroup = 'shape' | 'lid' | 'interior' | 'base' | 'finishing';
 
 /**
@@ -57,51 +59,6 @@ const GROUP_OF: Partial<Record<keyof BinParams, PanelGroup>> = {
  */
 const SPANS_GROUPS: ReadonlySet<string> = new Set(['surfaceText', 'textDefaults']);
 
-/**
- * Order-insensitive structural compare.
- *
- * Keys are sorted before serialising because params are rebuilt by spreading,
- * which does not preserve insertion order. Serialising also drops
- * undefined-valued keys, so an explicitly-undefined field compares equal to an
- * absent one, the same "absent is the default" convention the community
- * fingerprint relies on.
- */
-function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical);
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    return Object.fromEntries(
-      Object.keys(record)
-        .sort()
-        .map((key) => [key, canonical(record[key])])
-    );
-  }
-  return value;
-}
-
-function matchesDefault(params: BinParams, key: string): boolean {
-  const defaults = DEFAULT_BIN_PARAMS as unknown as Record<string, unknown>;
-  const current = params as unknown as Record<string, unknown>;
-
-  // A design that omits a key runs on the default, so absent IS unmodified.
-  // Legacy persisted designs omit `featureColors` and `floorPattern` (both have
-  // runtime fallbacks at every read site), and comparing an absent key against
-  // a populated default marked their group changed over a field the owner never
-  // touched. A dot that is sometimes wrong cannot be trusted anywhere, which is
-  // the same reason the SPANS keys above are excluded outright.
-  if (current[key] === undefined) return true;
-
-  // Identity before structure. Params start as a shallow copy of the defaults
-  // and the store updates them immutably with structural sharing, so a field
-  // nobody has touched is still the DEFAULT object itself, and an edit changes
-  // the identity of only the branch it touched. Without this the serialisation
-  // below ran over every field on every params change, including `meshAssets`,
-  // whose entries each hold a base64-deflated mesh.
-  if (current[key] === defaults[key]) return true;
-
-  return JSON.stringify(canonical(current[key])) === JSON.stringify(canonical(defaults[key]));
-}
-
 export function modifiedGroups(params: BinParams): Record<PanelGroup, boolean> {
   const modified: Record<PanelGroup, boolean> = {
     shape: false,
@@ -117,8 +74,9 @@ export function modifiedGroups(params: BinParams): Record<PanelGroup, boolean> {
 
   for (const key of keys) {
     if (SPANS_GROUPS.has(key)) continue;
-    if (matchesDefault(params, key)) continue;
-    modified[GROUP_OF[key as keyof BinParams] ?? 'shape'] = true;
+    if (paramFieldModified(params, key)) {
+      modified[GROUP_OF[key as keyof BinParams] ?? 'shape'] = true;
+    }
   }
 
   return modified;
