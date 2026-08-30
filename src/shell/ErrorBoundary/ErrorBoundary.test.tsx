@@ -2,9 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorBoundary } from './ErrorBoundary';
 
-const { undoMock, historyState } = vi.hoisted(() => ({
+const { undoMock, historyState, recoverStaleBundleMock } = vi.hoisted(() => ({
   undoMock: vi.fn(),
   historyState: { canUndo: true },
+  recoverStaleBundleMock: vi.fn().mockResolvedValue(true),
+}));
+
+vi.mock('@/shared/pwa/staleRecovery', () => ({
+  recoverStaleBundle: recoverStaleBundleMock,
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({
@@ -48,6 +53,7 @@ vi.mock('@/i18n', async (importOriginal) => {
         'errorBoundary.downloadBackup': 'Download Backup',
         'errorBoundary.backupDone': 'Backup downloaded.',
         'errorBoundary.backupError': "Couldn't create a backup.",
+        'pwaUpdate.reload': 'Reload',
       };
       return translations[key] ?? key;
     },
@@ -64,6 +70,7 @@ describe('ErrorBoundary', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     historyState.canUndo = true;
     undoMock.mockClear();
+    recoverStaleBundleMock.mockClear();
   });
 
   it('renders children when no error occurs', () => {
@@ -218,6 +225,49 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
     expect(screen.getByText('Child content')).toBeInTheDocument();
+  });
+
+  describe('stale-bundle chunk-load crash', () => {
+    function ChunkChild({ shouldThrow = true }: { shouldThrow?: boolean }) {
+      if (shouldThrow)
+        throw new Error(
+          'Failed to fetch dynamically imported module: https://x/assets/BaseplateLibraryModal-B9a2phkz.js'
+        );
+      return <div>Child content</div>;
+    }
+
+    it('offers Reload instead of a retry that would re-throw the same miss', () => {
+      render(
+        <ErrorBoundary>
+          <ChunkChild />
+        </ErrorBoundary>
+      );
+      expect(screen.getByText('Reload')).toBeInTheDocument();
+      expect(screen.queryByText('Try Again')).not.toBeInTheDocument();
+    });
+
+    it('hides Undo, which cannot fix a missing chunk', () => {
+      historyState.canUndo = true;
+      render(
+        <ErrorBoundary>
+          <ChunkChild />
+        </ErrorBoundary>
+      );
+      expect(screen.queryByText('Undo Last Change')).not.toBeInTheDocument();
+    });
+
+    it('forces a cache-dropping reload on Reload click', () => {
+      render(
+        <ErrorBoundary>
+          <ChunkChild />
+        </ErrorBoundary>
+      );
+      fireEvent.click(screen.getByText('Reload'));
+      expect(recoverStaleBundleMock).toHaveBeenCalledWith('error_boundary_chunk_load', {
+        force: true,
+        dropWasmCache: true,
+      });
+    });
   });
 
   it('has aria-live assertive on error fallback for screen readers', () => {

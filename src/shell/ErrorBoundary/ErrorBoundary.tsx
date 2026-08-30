@@ -5,7 +5,14 @@ import { captureException } from '@/shared/analytics/posthog';
 import { downloadArchive } from '@/core/storage';
 import { useLibraryStore } from '@/core/store/library';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
+import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 import { getStaticTranslation } from '@/i18n';
+
+// A lazy chunk that failed to import — the returning-user stale-bundle miss.
+// Keep in sync with `CHUNK_LOAD_ERROR` in `errorFilters.ts` (inlined in both to
+// avoid a new eager import edge against a total-JS budget at its ceiling).
+const CHUNK_LOAD_ERROR =
+  /(?:Failed to fetch|error loading) dynamically imported module|Importing a module script failed/;
 
 interface Props {
   children: ReactNode;
@@ -51,6 +58,15 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ hasError: false, error: null, backupState: 'idle', canUndo: false });
   };
 
+  // A stale-bundle chunk-load crash can't be re-rendered away: React.lazy caches
+  // the rejected import, so `handleReset` would only re-throw it. The escape is to
+  // drop the precache, unregister the SW, and reload onto the current build. The
+  // automatic recovery is one-shot per session and may already be spent (it ran on
+  // the first miss), so this user-initiated reload forces past that guard.
+  handleReloadForUpdate = () => {
+    void recoverStaleBundle('error_boundary_chunk_load', { force: true, dropWasmCache: true });
+  };
+
   // `undo()` dispatches synchronously, so the layout store is restored before
   // handleReset re-mounts the children. Recovers without a reload or data loss
   // when the crash came from the last edit (the change stays redoable).
@@ -75,6 +91,9 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const { backupState, canUndo, error } = this.state;
+      // A stale lazy-chunk import, not an app fault: offer a reload onto the
+      // current build instead of a retry that would just re-throw the same miss.
+      const isStaleBundle = error !== null && CHUNK_LOAD_ERROR.test(error.message);
       return (
         <div
           className="h-screen flex items-center justify-center bg-surface p-8"
@@ -116,16 +135,22 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
             {/* eslint-disable i18next/no-literal-string -- translation keys */}
             <div className="flex flex-wrap gap-3 justify-center">
-              <Button variant="secondary" onClick={this.handleReset}>
-                {getStaticTranslation('errorBoundary.tryAgain')}
-              </Button>
-              {canUndo && (
+              {isStaleBundle ? (
+                <Button variant="primary" onClick={this.handleReloadForUpdate}>
+                  {getStaticTranslation('pwaUpdate.reload')}
+                </Button>
+              ) : (
+                <Button variant="secondary" onClick={this.handleReset}>
+                  {getStaticTranslation('errorBoundary.tryAgain')}
+                </Button>
+              )}
+              {!isStaleBundle && canUndo && (
                 <Button variant="secondary" onClick={this.handleUndo}>
                   {getStaticTranslation('errorBoundary.undoLastChange')}
                 </Button>
               )}
               <Button
-                variant="primary"
+                variant={isStaleBundle ? 'secondary' : 'primary'}
                 onClick={this.handleDownloadBackup}
                 disabled={backupState === 'working'}
               >

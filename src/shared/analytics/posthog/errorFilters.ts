@@ -36,6 +36,11 @@ const WEBGL_CONTEXT_FINGERPRINT = 'webgl-context-creation-failed';
  * `Load failed` / `Failed to fetch` because it is only ever asked about an error
  * that already failed to load the kernel. This runs against every exception, so
  * those phrasings would drag genuine API failures into the chunk bucket.
+ *
+ * Keep in sync with `CHUNK_LOAD_ERROR` in `ErrorBoundary.tsx`, which shows a
+ * reload-to-update action for the same class. Inlined in both rather than shared
+ * from one module: a new import edge into either eager consumer is not worth the
+ * bytes against a total-JS budget that sits at its ceiling.
  */
 const CHUNK_LOAD_ERROR =
   /(?:Failed to fetch|error loading) dynamically imported module|Importing a module script failed/;

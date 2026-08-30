@@ -83,12 +83,21 @@ interface RecoverOptions {
    * wasm binary (see the module docstring).
    */
   readonly dropWasmCache?: boolean;
+  /**
+   * User-initiated recovery: skip the once-per-session guard and the
+   * `navigator.onLine` check. A person clicking "reload" can't loop the way an
+   * automatic retry can, and an offline reload failing visibly is the outcome
+   * they asked for. Used by the ErrorBoundary's chunk-load "Reload" action,
+   * where the automatic guard is typically already spent.
+   */
+  readonly force?: boolean;
 }
 
 /**
- * Attempt a one-time stale-bundle recovery. Returns true if a recovery was
- * started (caches cleared + reload triggered), false if it was skipped because
- * one already ran this session or the browser reports no network.
+ * Attempt a stale-bundle recovery. Returns true if a recovery was started
+ * (caches cleared + reload triggered), false if it was skipped because one
+ * already ran this session or the browser reports no network. A `force` caller
+ * is never skipped.
  *
  * Recovery ends by unregistering the service worker, so running it offline
  * would trade an in-app error for the browser's own network error page and
@@ -99,15 +108,18 @@ interface RecoverOptions {
  */
 export async function recoverStaleBundle(
   reason: string,
-  { dropWasmCache = false }: RecoverOptions = {}
+  { dropWasmCache = false, force = false }: RecoverOptions = {}
 ): Promise<boolean> {
-  if (alreadyRecovered()) return false;
-  if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
-  markRecovered();
+  if (!force) {
+    if (alreadyRecovered()) return false;
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
+    markRecovered();
+  }
 
   try {
     getPosthogInstance()?.capture('pwa_stale_recovery', {
       reason,
+      forced: force,
       from_version: __APP_VERSION__,
       from_sha: __GIT_SHA__,
     });

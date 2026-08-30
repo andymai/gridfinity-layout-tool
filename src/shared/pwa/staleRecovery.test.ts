@@ -114,3 +114,38 @@ describe('recoverStaleBundle', () => {
     expect(sessionStorage.getItem(STALE_RECOVERY_FLAG)).not.toBeNull();
   });
 });
+
+describe('recoverStaleBundle with force', () => {
+  it('ignores the once-per-session guard so a user can always retry the reload', async () => {
+    // Spend the automatic guard, as the first chunk miss would.
+    await recoverStaleBundle('chunk_load_failure');
+    reload.mockClear();
+
+    expect(await recoverStaleBundle('error_boundary_chunk_load', { force: true })).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('reloads even offline, since the user asked for it', async () => {
+    vi.stubGlobal('navigator', {
+      onLine: false,
+      serviceWorker: { getRegistrations: vi.fn().mockResolvedValue([{ unregister }]) },
+    });
+
+    expect(await recoverStaleBundle('error_boundary_chunk_load', { force: true })).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops the wasm cache when the caller asks (a full get-latest reload)', async () => {
+    await recoverStaleBundle('error_boundary_chunk_load', { force: true, dropWasmCache: true });
+    expect(cacheDelete).toHaveBeenCalledWith('gridfinity-v1-precache-abc');
+    expect(cacheDelete).toHaveBeenCalledWith('wasm-binaries');
+  });
+
+  it('marks the telemetry event as forced', async () => {
+    await recoverStaleBundle('error_boundary_chunk_load', { force: true });
+    expect(capture).toHaveBeenCalledWith(
+      'pwa_stale_recovery',
+      expect.objectContaining({ reason: 'error_boundary_chunk_load', forced: true })
+    );
+  });
+});
