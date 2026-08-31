@@ -1,0 +1,29 @@
+src/features/generation/bridge/types.ts
+  s_65f0a251961ae8::t_0a65da6161ac50 48-57
+src/features/bin-designer/hooks/useGeneration.ts
+  s_65f0a251961ae8::t_11e4d9646d50da 315
+  s_65f0a251961ae8::t_3b6151ad9044be 282-286,293
+  s_65f0a251961ae8::t_e1877564904132 11
+  s_65f0a251961ae8::t_0ddb18a8ccd98c 146-149
+src/shared/generation/bridge.ts
+  s_65f0a251961ae8::t_7070a0bb9a026a 16
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_65f0a251961ae8::t_528524ee1c1236 41
+  s_65f0a251961ae8::t_db6bdf20923c68 502-552
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "eef9b64b9ea74872c5560acd731b4a5be3ce761c",
+  "prompts": {},
+  "sessions": {
+    "s_65f0a251961ae8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "70be2d35-ae8a-4d41-8031-f8fa81cfefae",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
