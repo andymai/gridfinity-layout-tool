@@ -45,3 +45,13 @@ export const BURST_EXACT_SKIP_MS = 300;
  * charge (it coalesces scrubs and the Manifold draft masks its latency).
  */
 export const EXACT_IMMEDIATE_MAX_MS = 600;
+
+/**
+ * Once an exact generation has taken at least this long, force the Manifold
+ * draft on the next edits regardless of the cache-aware estimate. A heavy
+ * design's estimate can under-predict (it keys off cache state that a dimension
+ * edit invalidates), and a wrongly-skipped draft leaves a multi-second exact
+ * with no interim feedback at all. The last exact's own duration is the most
+ * reliable signal that this design is one where the draft earns its flicker.
+ */
+export const FORCE_DRAFT_AFTER_EXACT_MS = 1000;
