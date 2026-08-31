@@ -1,0 +1,52 @@
+src/features/bin-designer/search/useDesignerSettingsSearch.test.tsx
+  s_4569edaeaa7255::t_8a51347cf2cfb4 39-45,48-55,60,65-67,69-70,72-73,76
+  s_4569edaeaa7255::t_d8862dfec940ad 77
+  s_4569edaeaa7255::t_ae1ac94322fb33 26,29,32,79-80
+src/features/bin-designer/search/designerControlRegistry.test.ts
+  s_4569edaeaa7255::t_8789bd246e1a20 44-54
+  s_4569edaeaa7255::t_87121f2b051054 4,10
+  s_4569edaeaa7255::t_5ff3bb75135758 11
+src/features/bin-designer/search/useDesignerSettingsSearch.ts
+  s_4569edaeaa7255::t_d1dff51cd532ef 81,94
+  s_4569edaeaa7255::t_8dfe8f02674b2f 112,127-128
+  s_4569edaeaa7255::t_9f93d6d30a7a25 10,14,16-18,21-22,25-27,30-38,40-45,47-56,59-64,69,73-80,82,86-91,93,99-100,103-104,106,109-111,113-126,129-132
+  s_4569edaeaa7255::t_8bf375238daf4e 46
+src/features/bin-designer/search/searchCoverage.test.tsx
+  s_4569edaeaa7255::t_fbb1120b73f05e 38
+  s_4569edaeaa7255::t_af4525173878c9 1-37,39-57
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.test.tsx
+  s_4569edaeaa7255::t_250181ca991c09 36-37,44
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_4569edaeaa7255::t_59878372a0c2ee 2,4-14
+  s_4569edaeaa7255::t_839096500ce34d 149-396,400,408,410,416
+  s_4569edaeaa7255::t_5ac29fd2424fe7 397-399
+  s_4569edaeaa7255::t_3f9bc6a2b37a6f 401-403,405-407
+  s_4569edaeaa7255::t_f8fdddc4f39e40 409
+  s_4569edaeaa7255::t_2602c437286fc5 411-415
+  s_4569edaeaa7255::t_28731a85440896 417-419
+  s_4569edaeaa7255::t_73daf8a14bc89f 404,420-431
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
+  s_4569edaeaa7255::t_9f627625c346aa 1,11,13,20-37,40-43,168,174,192,196,201,205-207,230,234-235
+  s_4569edaeaa7255::t_f8b9631187d9f6 237
+src/features/bin-designer/search/matcher.test.ts
+  s_4569edaeaa7255::t_ec7ef3e3d0a138 21-22
+  s_4569edaeaa7255::t_8da98b8a4a315d 1-20,23-48
+src/features/bin-designer/search/matcher.ts
+  s_4569edaeaa7255::t_538a7c801fe186 1-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "a96eaee3cb25d5308bb2a43b425c4fcdcc75398a",
+  "prompts": {},
+  "sessions": {
+    "s_4569edaeaa7255": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f1083a0-1d11-431c-93be-2cfbee923db1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
