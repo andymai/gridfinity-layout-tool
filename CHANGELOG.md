@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.482.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.0...gridfinity-layout-tool-v4.482.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **generation:** retain slotted dividers with a tab neck relief ([#4028](https://github.com/andymai/gridfinity-layout-tool/issues/4028)) ([8c4eade](https://github.com/andymai/gridfinity-layout-tool/commit/8c4eade78e1084e3f4c1bf0735d218b0ac148cb5))
+
 ## [4.482.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.481.0...gridfinity-layout-tool-v4.482.0) (2026-08-31)
 
 
