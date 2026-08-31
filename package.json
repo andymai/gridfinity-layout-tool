@@ -66,6 +66,7 @@
     "gen:example-thumbnails": "tsx --tsconfig tsconfig.app.json scripts/gen-example-thumbnails.ts",
     "bench": "vitest bench",
     "bench:json": "vitest bench --outputJson benchmarks/latest.json",
+    "profile:matrix": "vitest run --config vitest.profile.config.ts matrixProfile.perf",
     "knip": "knip",
     "knip:fix": "knip --fix",
     "typecheck": "tsgo -b --noEmit",
