@@ -1121,6 +1121,49 @@ const en: Record<string, string> = {
     'Width and depth of your printer bed in millimeters. Bins larger than the bed are split for printing.',
   'help.target.binDesigner.printBedSize.keywords':
     'bed|bed size|print bed|printer size|printer bed|build plate|build volume',
+  'help.target.binDesigner.overhang.title': 'Drawer-fit overhang',
+  'help.target.binDesigner.overhang.description':
+    'Expand the bin body outward on any side by a few millimeters so it fills a drawer snugly. Advanced — leave at zero for standard Gridfinity fit.',
+  'help.target.binDesigner.overhang.keywords':
+    'overhang|drawer fit|expand|outward|oversize|snug|fill drawer|clearance|tolerance',
+  'help.target.binDesigner.labelTabs.title': 'Label tabs',
+  'help.target.binDesigner.labelTabs.description':
+    'Add the sloped tab along a compartment edge where a printed or written label sits. Pick the edge, width, and support style. Standard bins only.',
+  'help.target.binDesigner.labelTabs.keywords':
+    'label|tab|label tab|name|title|sticker|caption|tag',
+  'help.target.binDesigner.handles.title': 'Handles',
+  'help.target.binDesigner.handles.description':
+    'Add a pull handle to the bin so you can lift it out of a deep drawer or off a stack.',
+  'help.target.binDesigner.handles.keywords': 'handle|pull|grip|lift|grab|carry',
+  'help.target.binDesigner.wallCutouts.title': 'Wall cutouts',
+  'help.target.binDesigner.wallCutouts.description':
+    'Cut openings through the bin walls for cables, front access, or airflow. Position and size each cutout per side.',
+  'help.target.binDesigner.wallCutouts.keywords':
+    'wall cutout|cutout|opening|window|cable|access|slot|hole|notch|front opening',
+  'help.target.binDesigner.slideTray.title': 'Slide tray',
+  'help.target.binDesigner.slideTray.description':
+    'Turn the bin into a sliding tray that rides on rails, pulling out from a surround or lid instead of lifting straight up.',
+  'help.target.binDesigner.slideTray.keywords': 'slide|sliding|tray|rail|pull out|glide|drawer',
+  'help.target.binDesigner.type.title': 'Typography',
+  'help.target.binDesigner.type.description':
+    'Set the font, engrave or emboss depth, alignment, and casing for the text on the bin. Appears once the design has text.',
+  'help.target.binDesigner.type.keywords':
+    'text|font|typography|typeface|engrave|emboss|letters|writing|caption style',
+  'help.target.binDesigner.wallStyle.title': 'Wall surface pattern',
+  'help.target.binDesigner.wallStyle.description':
+    'Apply a decorative pattern — hex, ribbed, grid, and more — to the outer bin walls.',
+  'help.target.binDesigner.wallStyle.keywords':
+    'wall pattern|surface|texture|hex|honeycomb|ribbed|grid|decorative|finish|style',
+  'help.target.binDesigner.floorPattern.title': 'Floor pattern',
+  'help.target.binDesigner.floorPattern.description':
+    'Perforate the bin floor with a drainage or ventilation pattern so water and air pass through.',
+  'help.target.binDesigner.floorPattern.keywords':
+    'floor|pattern|drainage|drain|vent|ventilation|holes|perforation|mesh|airflow',
+  'help.target.binDesigner.printFit.title': 'Print bed fit and splitting',
+  'help.target.binDesigner.printFit.description':
+    'Check whether the bin fits your printer bed, and split it into joinable pieces when it does not.',
+  'help.target.binDesigner.printFit.keywords':
+    'split|splitting|print bed|fit|too big|oversize|pieces|join|connector|tile|sections',
   'help.target.baseplate.printBedSize.title': 'Print bed size (baseplate)',
   'help.target.baseplate.printBedSize.description':
     'Width and depth of your printer bed. Baseplates larger than the bed are split into tileable pieces.',
