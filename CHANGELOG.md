@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.482.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.1...gridfinity-layout-tool-v4.482.2) (2026-08-31)
+
+
+### Bug Fixes
+
+* **bin-designer:** don't crash new-design when the start button forwards its event ([#4047](https://github.com/andymai/gridfinity-layout-tool/issues/4047)) ([0dd106b](https://github.com/andymai/gridfinity-layout-tool/commit/0dd106bc46d80d214008124d5081da41b4e59f07)), closes [#4032](https://github.com/andymai/gridfinity-layout-tool/issues/4032)
+* **bin-designer:** inline the view toggle into the search row ([#4052](https://github.com/andymai/gridfinity-layout-tool/issues/4052)) ([835dda0](https://github.com/andymai/gridfinity-layout-tool/commit/835dda0b8a00388ce6aa2da6c2dd9b7db7471af3))
+* **generation:** engrave labels on imported-STL (mesh) cutouts ([#4043](https://github.com/andymai/gridfinity-layout-tool/issues/4043)) ([7db3068](https://github.com/andymai/gridfinity-layout-tool/commit/7db30689411c292fbe3a65e1921dc43a339dca8d))
+* **generation:** scoop no longer pokes through the outer wall corner ([#4035](https://github.com/andymai/gridfinity-layout-tool/issues/4035)) ([07d2ec1](https://github.com/andymai/gridfinity-layout-tool/commit/07d2ec1f4bf900c8c101a47383846ba16703a23b))
+* **shell:** make the settings cog available on every view ([#4049](https://github.com/andymai/gridfinity-layout-tool/issues/4049)) ([4b54508](https://github.com/andymai/gridfinity-layout-tool/commit/4b54508974bea699c87b2f926b2c8914e318b9fe))
+* **spacemouse:** correct pan/zoom axis roles and left-right direction ([#4048](https://github.com/andymai/gridfinity-layout-tool/issues/4048)) ([381cc12](https://github.com/andymai/gridfinity-layout-tool/commit/381cc1281f239be0ab5f18b779fff39c569f7fa4)), closes [#4041](https://github.com/andymai/gridfinity-layout-tool/issues/4041)
+
 ## [4.482.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.0...gridfinity-layout-tool-v4.482.1) (2026-08-31)
 
 
