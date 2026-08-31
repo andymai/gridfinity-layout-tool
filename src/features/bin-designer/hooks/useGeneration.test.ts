@@ -39,6 +39,8 @@ vi.mock('@/shared/generation/bridge', () => ({
   FAST_EXACT_SKIP_MS: 1000,
   EXACT_IMMEDIATE_MAX_MS: 600,
   FORCE_DRAFT_AFTER_EXACT_MS: 1000,
+  MAX_TIMEOUT_MS: 180_000,
+  PREVIEW_TIMEOUT_SAFETY: 1.5,
   // Stable threshold — burst behavior is covered by draftPolicy's own tests.
   createDraftSkipGate: () => () => ({ skipBelowMs: 1000, scrubbing: false }),
 }));
@@ -477,7 +479,12 @@ describe('useGeneration', () => {
       await vi.advanceTimersByTimeAsync(1);
     });
 
-    expect(mockBridge.generateImmediate).toHaveBeenCalledWith(expect.anything(), undefined, true);
+    expect(mockBridge.generateImmediate).toHaveBeenCalledWith(
+      expect.anything(),
+      undefined,
+      true,
+      expect.any(Number)
+    );
     expect(mockBridge.generate).not.toHaveBeenCalled();
     expect(useDesignerStore.getState().generation.status).toBe('complete');
   });
@@ -548,6 +555,55 @@ describe('useGeneration', () => {
 
     // The slow last exact forced the draft despite the fast estimate.
     expect(previewGenerate).toHaveBeenCalled();
+  });
+
+  it('shows a draft-only preview and skips the exact when the estimate exceeds the ceiling', async () => {
+    const draftVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const meshOf = (vertices: Float32Array, timingMs = 1) => ({
+      mesh: {
+        vertices,
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs,
+    });
+    const previewGenerate = vi.fn().mockResolvedValue(meshOf(draftVerts));
+    const previewBridge = {
+      isDestroyed: false,
+      generateImmediate: previewGenerate,
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge;
+    mockAcquirePreview.mockResolvedValue(previewBridge);
+
+    // The device-aware estimate says the exact would exceed the 180s preview
+    // ceiling on this device, so the exact is skipped and the draft is final.
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(200_000);
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Isolate the edit from whatever the initial (pre-preview) generation did.
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockClear();
+    (mockBridge.generateImmediate as ReturnType<typeof vi.fn>).mockClear();
+    previewGenerate.mockClear();
+
+    // Scoop so the bin is not direct-mesh-eligible (forces the async path).
+    await act(async () => {
+      useDesignerStore.setState((s) => ({
+        params: { ...s.params, scoop: { ...s.params.scoop, enabled: true } },
+        generation: { ...s.generation, epoch: 1 },
+      }));
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    expect(previewGenerate, 'the draft is shown as the final preview').toHaveBeenCalled();
+    expect(mockBridge.generate, 'the exact is skipped').not.toHaveBeenCalled();
+    expect(mockBridge.generateImmediate, 'the exact is skipped').not.toHaveBeenCalled();
+    expect(useDesignerStore.getState().generation.status).toBe('complete');
   });
 
   it('persists the exact preview mesh after generation completes', async () => {

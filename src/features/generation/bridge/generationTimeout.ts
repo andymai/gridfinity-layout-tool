@@ -342,13 +342,29 @@ function binRawBudgetMs(params: BinParams): number {
 }
 
 /**
+ * Multiplier applied to the device-aware estimate to derive `minTimeoutMs`.
+ *
+ * The estimate predicts this device's actual generation time from its own last
+ * observed stage timings. Arming the preview timeout at `estimate * this` gives
+ * a genuinely slow device proportional headroom over its own measured speed, so
+ * a slow-but-progressing build is not hard-reset just because the static budget
+ * (tuned on a faster reference machine) is tighter than the device needs.
+ */
+export const PREVIEW_TIMEOUT_SAFETY = 1.5;
+
+/**
  * Compute the timeout budget for a live bin **preview** generation, in
  * milliseconds. Clamped to `[BASE_TIMEOUT_MS, MAX_TIMEOUT_MS]`.
+ *
+ * `minTimeoutMs` raises the budget floor (before the ceiling clamp) so a slow
+ * device's own measured cost can win over the reference-tuned static budget. It
+ * never lowers the budget, and the `MAX_TIMEOUT_MS` ceiling still bounds it.
  */
-export function computeGenerationTimeoutMs(params: BinParams): number {
+export function computeGenerationTimeoutMs(params: BinParams, minTimeoutMs = 0): number {
   // The raw budget is finite by construction (guards in binRawBudgetMs), so this
   // clamp also makes the documented contract self-enforcing.
-  return Math.max(BASE_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, binRawBudgetMs(params)));
+  const floor = Math.max(binRawBudgetMs(params), Number.isFinite(minTimeoutMs) ? minTimeoutMs : 0);
+  return Math.max(BASE_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, floor));
 }
 
 /**
