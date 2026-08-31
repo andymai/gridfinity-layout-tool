@@ -37,37 +37,45 @@ describe('applyDeadzone', () => {
   });
 });
 
+/** Device translation axes: x+ right, y+ pulled back toward the user, z+ down. */
+const deflect = (translation: Partial<RawDeflection['translation']>): RawDeflection => ({
+  translation: { x: 0, y: 0, z: 0, ...translation },
+  rotation: { pitch: 0, roll: 0, yaw: 0 },
+});
+
 describe('toDeflection', () => {
   it('is idle for a centered puck', () => {
     expect(isDeflectionIdle(toDeflection(zeroRaw, DEFAULT_SETTINGS))).toBe(true);
   });
 
-  it('maps device axes to semantic axes with correct signs', () => {
-    const raw: RawDeflection = {
-      translation: { x: 350, y: -350, z: -350 },
-      rotation: { pitch: 350, roll: 0, yaw: 350 },
-    };
-    const d = toDeflection(raw, DEFAULT_SETTINGS);
-    expect(d.panX).toBeCloseTo(-1); // x+ pans left (puck follows the model)
-    expect(d.panY).toBeCloseTo(1); // -y (lift) pans screen up
-    expect(d.zoom).toBeCloseTo(1); // -z (push forward) zooms in
-    expect(d.orbitH).toBeCloseTo(1);
-    expect(d.orbitV).toBeCloseTo(1);
+  // Signs are stated as what the user sees, because pan moves the camera and so
+  // reads backwards from the deflection. Matches Fusion/PrusaSlicer (#4041).
+  it('slides the model right when the puck goes right', () => {
+    const d = toDeflection(deflect({ x: 350 }), DEFAULT_SETTINGS);
+    expect(d.panX).toBeCloseTo(-1); // camera left, so the model tracks right
+    expect(d.panY).toBe(0);
+    expect(d.zoom).toBe(0);
   });
 
-  it('drives pan from lift (y) and zoom from push (z), not the reverse (#4041)', () => {
-    const lift = toDeflection(
-      { translation: { x: 0, y: 350, z: 0 }, rotation: { pitch: 0, roll: 0, yaw: 0 } },
+  it('slides the model up when the puck is lifted, never zooms', () => {
+    const d = toDeflection(deflect({ z: -350 }), DEFAULT_SETTINGS);
+    expect(d.panY).toBeCloseTo(-1); // camera down, so the model tracks up
+    expect(d.zoom).toBe(0);
+  });
+
+  it('zooms in when the puck is pulled back, never pans', () => {
+    const d = toDeflection(deflect({ y: 350 }), DEFAULT_SETTINGS);
+    expect(d.zoom).toBeCloseTo(1); // positive dollies toward the target
+    expect(d.panY).toBe(0);
+  });
+
+  it('maps yaw and pitch to orbit unchanged', () => {
+    const d = toDeflection(
+      { translation: { x: 0, y: 0, z: 0 }, rotation: { pitch: 350, roll: 350, yaw: 350 } },
       DEFAULT_SETTINGS
     );
-    expect(Math.abs(lift.panY)).toBeCloseTo(1); // the lift axis drives vertical pan
-    expect(lift.zoom).toBeCloseTo(0); // ...never zoom
-    const push = toDeflection(
-      { translation: { x: 0, y: 0, z: 350 }, rotation: { pitch: 0, roll: 0, yaw: 0 } },
-      DEFAULT_SETTINGS
-    );
-    expect(Math.abs(push.zoom)).toBeCloseTo(1); // the push axis drives zoom
-    expect(push.panY).toBeCloseTo(0); // ...never pan
+    expect(d.orbitH).toBeCloseTo(1);
+    expect(d.orbitV).toBeCloseTo(1);
   });
 
   it('honors per-axis inversion', () => {
@@ -88,7 +96,7 @@ describe('toDeflection', () => {
 describe('computeFrameMotion', () => {
   const full = toDeflection(
     {
-      translation: { x: 350, y: -350, z: -350 },
+      translation: { x: 350, y: 350, z: -350 },
       rotation: { pitch: 350, roll: 0, yaw: 350 },
     },
     DEFAULT_SETTINGS
@@ -98,7 +106,7 @@ describe('computeFrameMotion', () => {
     const near = computeFrameMotion(full, DEFAULT_SETTINGS, 1 / 60, 10);
     const far = computeFrameMotion(full, DEFAULT_SETTINGS, 1 / 60, 100);
     expect(far.panX).toBeCloseTo(near.panX * 10);
-    expect(far.panX).toBeLessThan(0); // x+ now pans left (negative panX)
+    expect(far.panX).toBeLessThan(0); // camera left, so the model tracks the puck right
   });
 
   it('scales all motion by sensitivity', () => {
