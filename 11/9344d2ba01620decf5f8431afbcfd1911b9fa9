@@ -1,0 +1,34 @@
+src/features/generation/worker/generators/binGenerator.scenario.scoopContainment.test.ts
+  s_f355eac7e0c076::t_94792465b8d28a 1-5,8-75,77-79,81-95
+  s_f355eac7e0c076::t_52e70a66ece2e7 6-7
+  s_f355eac7e0c076::t_116da6cbb9dcfc 76
+  s_f355eac7e0c076::t_f8ccf4d6065cd6 80
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_f355eac7e0c076::t_cbf3afd30f4753 290
+  s_f355eac7e0c076::t_4d7bf07370d7b6 235-244,246-266
+  s_f355eac7e0c076::t_e3dcb92453530e 245
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.snap
+  s_f355eac7e0c076::t_f3f86fad7d3323 9
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dividerPatterns.test.ts.snap
+  s_f355eac7e0c076::t_9de5132201fce5 13
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.floorPatterns.test.ts.snap
+  s_f355eac7e0c076::t_7e205d342f2629 17
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_f355eac7e0c076::t_7d3ccc07ad8614 3,5,7,11,13,15,17,21,23,25,27,29,31,33,35,37,39,41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "119344d2ba01620decf5f8431afbcfd1911b9fa9",
+  "prompts": {},
+  "sessions": {
+    "s_f355eac7e0c076": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e2e02f-5810-4320-85da-73aa13005f4a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
