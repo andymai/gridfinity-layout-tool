@@ -48,6 +48,8 @@ import { GROUP_OF_CONTROL, HELP_SURFACES } from './groupControls';
 export interface BinScrollPanelProps {
   /** docked = desktop frame (resizable, collapsible); plain = fill the parent. */
   readonly frame: 'docked' | 'plain';
+  /** Pinned at the very top, above the toolbar: the control search bar. */
+  readonly searchBar?: ReactNode;
   /** Pinned above the scroll: the view-mode toggle bar. */
   readonly toolbar?: ReactNode;
   /** Scrolls at the top of the list: community card + variant section. */
@@ -58,7 +60,14 @@ export interface BinScrollPanelProps {
   readonly dock?: ReactNode;
 }
 
-export function BinScrollPanel({ frame, toolbar, header, wrapContent, dock }: BinScrollPanelProps) {
+export function BinScrollPanel({
+  frame,
+  searchBar,
+  toolbar,
+  header,
+  wrapContent,
+  dock,
+}: BinScrollPanelProps) {
   const t = useTranslation();
   const modified = useDesignerStore(useShallow((s) => modifiedGroups(s.params)));
   const { showLabelTabs, isCustomShape, hasText } = useDesignerStore(
@@ -242,6 +251,7 @@ export function BinScrollPanel({ frame, toolbar, header, wrapContent, dock }: Bi
 
   const column = (
     <div className="flex h-full min-h-0 flex-col">
+      {searchBar}
       {toolbar}
       {/* `relative` is the containing block for the `sr-only` (position:absolute)
           toggle inputs the sections render; without it their block is the

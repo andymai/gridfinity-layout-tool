@@ -48,6 +48,8 @@ export interface BinPanelShellProps {
    * plain = a plain column for the narrow shells, rail rendered horizontally.
    */
   readonly frame: 'docked' | 'plain';
+  /** Pinned at the very top, above the header: the control search bar. */
+  readonly searchBar?: ReactNode;
   /** Pinned above the rail: community card, variant section. */
   readonly header?: ReactNode;
   /** Page content per category. */
@@ -68,6 +70,7 @@ export interface BinPanelShellProps {
 
 export function BinPanelShell({
   frame,
+  searchBar,
   header,
   pages,
   pageFooter,
@@ -204,6 +207,7 @@ export function BinPanelShell({
 
   const column = (
     <div className="flex h-full min-h-0 flex-col">
+      {searchBar}
       {header}
       {body}
       {dock}

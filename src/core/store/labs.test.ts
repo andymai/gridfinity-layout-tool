@@ -165,11 +165,12 @@ describe('Labs Store', () => {
     it('counts every active experimental feature, opted in or on by default', () => {
       const store = useLabsStore.getState();
 
-      // community_showcase ships defaultEnabled, so it is active without an
-      // opt-in. The count has to agree with isFeatureEnabled or the badge
-      // reports a different reality than the app runs on.
+      // community_showcase and designer_settings_search both ship
+      // defaultEnabled, so they are active without an opt-in. The count has to
+      // agree with isFeatureEnabled or the badge reports a different reality
+      // than the app runs on.
       const base = store.getEnabledCount();
-      expect(base).toBe(1);
+      expect(base).toBe(2);
       expect(store.isFeatureEnabled('community_showcase')).toBe(true);
 
       store.enableFeature('show_generation_perf');

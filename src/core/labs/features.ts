@@ -214,6 +214,17 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
   },
   {
+    id: 'designer_settings_search',
+    name: 'Designer settings search',
+    description:
+      'Search every bin-designer control by name or synonym from a bar at the top of the panel, then jump straight to it. An empty field lists every control for browsing.',
+    status: 'preview',
+    risk: 'low',
+    addedAt: '2026-08',
+    defaultEnabled: true,
+    requiresRefresh: false,
+  },
+  {
     id: 'baseplate_screw_holes',
     name: 'Screw a Baseplate Down',
     description:

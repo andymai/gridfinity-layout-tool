@@ -45,7 +45,9 @@ import { usePrintSummary } from './usePrintSummary';
 import { useStyleSummary } from './useStyleSummary';
 import { modifiedCategories } from './categoryModified';
 import { useTranslation } from '@/i18n';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { DesignerSearchBar } from './DesignerSearchBar/DesignerSearchBar';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
@@ -113,6 +115,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   // runs per write; the render only happens when a flag flips.
   const modified = useDesignerStore(useShallow((s) => modifiedCategories(s.params)));
   const { needsSplit } = useSplitOptionsSection();
+  const searchEnabled = useFeatureFlag('designer_settings_search');
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
@@ -325,10 +328,15 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
     </VariantLock>
   );
 
+  const searchBar = searchEnabled ? (
+    <DesignerSearchBar viewMode={viewMode} needsSplit={needsSplit} />
+  ) : null;
+
   if (viewMode === 'scroll') {
     return (
       <BinScrollPanel
         frame={frame}
+        searchBar={searchBar}
         toolbar={viewSwitch}
         header={communityAndVariant}
         wrapContent={(content) => wrapEditable(content, false)}
@@ -340,6 +348,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   return (
     <BinPanelShell
       frame={frame}
+      searchBar={searchBar}
       header={
         <>
           {viewSwitch}
