@@ -893,39 +893,55 @@ export function resolveKumikoCalculator(params: BinParams): WrappedLatticeCalcul
 }
 
 /**
- * Build the wrapped kumiko pattern cut targets for the whole perimeter.
- * Returns [] when no wrapped-lattice pattern applies (stamp patterns and
- * solid walls take the other paths).
+ * Wrapped kumiko cut targets plus the geometry identity of the whole set.
+ *
+ * `key` is empty when no kumiko cut applies, and otherwise fully identifies the
+ * returned shapes: it composes the per-wall cache key the cutters are stored
+ * under (which already captures the lattice, perimeter, selected sides and every
+ * wall clip) with the post-cache interior offset. The resume cache in
+ * `booleanStage` keys on this so a patterned bin can skip the whole boolean
+ * stage on an edit that leaves the cut set unchanged.
  */
-export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
+export interface KumikoWallPatternResult {
+  readonly shapes: Shape3D[];
+  readonly key: string;
+}
+
+/**
+ * Build the wrapped kumiko pattern cut targets for the whole perimeter.
+ * `shapes` is empty (and `key` blank) when no wrapped-lattice pattern applies
+ * (stamp patterns and solid walls take the other paths).
+ */
+export function buildKumikoWallPatterns(ctx: PipelineContext): KumikoWallPatternResult {
   const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
   const { innerW, innerD, innerOffsetX, innerOffsetY } = dim;
+  const NONE: KumikoWallPatternResult = { shapes: [], key: '' };
 
   const calculator = resolveKumikoCalculator(params);
-  if (!calculator) return [];
+  if (!calculator) return NONE;
 
   // PR-1 scope: the wrap needs the rectangular perimeter; polygon footprints
   // and slotted walls fall back to solid walls for kumiko patterns.
-  if (isPartialMask(params.cellMask)) return [];
+  if (isPartialMask(params.cellMask)) return NONE;
   const slotFree = getSlotFreeWalls(params);
-  if (!slotFree.front || !slotFree.back || !slotFree.left || !slotFree.right) return [];
+  if (!slotFree.front || !slotFree.back || !slotFree.left || !slotFree.right) return NONE;
 
   const wallThickness = params.wallThickness;
   const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT;
   const patternHeight = dim.interiorHeight - TOP_KEEP_OUT - bottomKeepOut;
-  if (patternHeight < calculator.getMinPatternHeight()) return [];
+  if (patternHeight < calculator.getMinPatternHeight()) return NONE;
 
   const outerW = innerW + 2 * wallThickness;
   const outerD = innerD + 2 * wallThickness;
   const cornerRadius = Math.min(BOX_CORNER_RADIUS, Math.min(outerW, outerD) / 2 - 0.1);
-  if (cornerRadius <= 0.2) return [];
+  if (cornerRadius <= 0.2) return NONE;
 
   const layout = computePerimeterLayout(outerW, outerD, innerW, innerD, cornerRadius);
   const lattice = calculator.getLattice({
     perimeter: layout.perimeter,
     bandHeight: patternHeight,
   });
-  if (lattice.segments.length === 0) return [];
+  if (lattice.segments.length === 0) return NONE;
 
   const bandZ0 = bottomKeepOut;
   const patternCenterZ = bottomKeepOut + patternHeight / 2;
@@ -977,6 +993,14 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
     buildCacheKey('v1', baseKey, ...wallClips.map((wc) => wc.clips.keyPart))
   );
 
+  // Resume identity for the whole cut set: the per-wall cache key (lattice +
+  // sides + clips) plus the interior offset applied after the cache. The cutter
+  // count is deterministic from the layout the cache key already captures, so
+  // this key changes whenever the emitted shapes would.
+  const resumeKey = compactKey(
+    buildCacheKey(clippedKey, 'off', quantize(innerOffsetX), quantize(innerOffsetY))
+  );
+
   // The cutters stay SEPARATE all the way into the final pattern-cut boolean:
   // handing OCCT one whole-perimeter compound forces it to treat the tool set
   // as a single operand, defeating its per-tool bounding-box pruning (measured
@@ -989,7 +1013,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
   const slabSelected = (s: PerimeterSlab): boolean =>
     s.kind === 'flat' ? chosen[s.side] : chosen[s.prevSide] && chosen[s.nextSide];
   const activeSlabs = layout.slabs.filter((s) => (s.kind === 'flat' || exact) && slabSelected(s));
-  if (activeSlabs.length === 0) return [];
+  if (activeSlabs.length === 0) return NONE;
   // One planned cutter per flat window / corner — the plan is deterministic
   // from layout + lattice, so cache entries index it directly.
   const plan: Array<{ slab: PerimeterSlab; windowA: number; windowB: number }> = [];
@@ -1065,7 +1089,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
           );
           if (!cutter) {
             for (const c of cutters) c.delete();
-            return [];
+            return NONE;
           }
           cutters.push(cutter);
           if (perfCollector) {
@@ -1127,7 +1151,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
       }
       if (failed) {
         for (const s of clipped) s.delete();
-        return [];
+        return NONE;
       }
       shapes = cacheSetAll(KUMIKO_WRAP_CLIPPED_CACHE, clippedKey, clipped);
     }
@@ -1141,7 +1165,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
     perfCollector.setPatternCutToolCount(shapes.length);
   }
 
-  return shapes.map((cutter) => {
+  const placedShapes = shapes.map((cutter) => {
     let placed = cutter;
     if (innerOffsetX !== 0 || innerOffsetY !== 0) {
       const old = placed;
@@ -1151,4 +1175,5 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
     collectOrigins(placed, FeatureTag.WALL_PATTERN, originToTag);
     return placed;
   });
+  return { shapes: placedShapes, key: resumeKey };
 }

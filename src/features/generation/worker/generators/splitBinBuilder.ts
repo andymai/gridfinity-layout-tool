@@ -343,7 +343,7 @@ function splitSolidIntoPieces(
       const patternCtx = createInitialContext(params, undefined, true, undefined, undefined, true);
       const patternShapes = [
         ...buildWallPatterns(patternCtx).shapes,
-        ...buildKumikoWallPatterns(patternCtx),
+        ...buildKumikoWallPatterns(patternCtx).shapes,
       ];
       // Lowest lip material anywhere: the bottom of the support wedge, in the
       // cutters' own body-local frame. Read off `wallTopZ` (less the floor lift
