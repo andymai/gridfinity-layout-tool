@@ -202,15 +202,25 @@ describe('getDividerLockPlan', () => {
   it('captures the standard divider below a narrower printable throat', () => {
     const lock = getDividerLockPlan(1.6, 0.25);
     expect(lock.pocketWidth).toBeCloseTo(2.1, 10);
-    expect(lock.throatWidth).toBeCloseTo(1.2, 10);
+    expect(lock.throatWidth).toBeCloseTo(1.3, 10);
     expect(lock.throatWidth).toBeLessThan(1.6);
     expect(lock.headHeight).toBeGreaterThan(lock.throatHeight);
   });
 
-  it('keeps a usable throat on thin custom dividers', () => {
+  it('relieves the tab neck clear of the throat so it re-closes over the head', () => {
+    const lock = getDividerLockPlan(1.6, 0.25);
+    // Neck narrower than the throat (throat clears it, never plowed) and the
+    // full-thickness head wider than the throat (the shoulder that retains it).
+    expect(lock.neckWidth).toBeLessThan(lock.throatWidth);
+    expect(lock.throatWidth).toBeLessThan(1.6);
+  });
+
+  it('keeps a usable throat and neck on thin custom dividers', () => {
     const lock = getDividerLockPlan(1, 0.2);
     expect(lock.throatWidth).toBeGreaterThanOrEqual(0.8);
     expect(lock.throatWidth).toBeLessThan(1);
+    expect(lock.neckWidth).toBeGreaterThanOrEqual(0.6);
+    expect(lock.neckWidth).toBeLessThan(lock.throatWidth);
   });
 });
 

@@ -24,6 +24,7 @@ import {
   calculateShortDividerLengths,
   calculateShortDividerSpans,
   calculateSlotPositions,
+  getDividerLockPlan,
   getReceptacleDepth,
   getSnapScoreDepth,
   resolveCrossDividerMode,
@@ -31,6 +32,7 @@ import {
   SNAP_SCORE_WIDTH,
   tabEngagement,
 } from '@/shared/utils/slotMath';
+import type { DividerLockPlan } from '@/shared/utils/slotMath';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { getEffectiveSlotDimensions } from './slotBuilder';
@@ -157,6 +159,64 @@ function cutFaceGrooves(
 }
 
 /**
+ * Relieve the divider tab across the slot's throat band so retention works.
+ *
+ * The wall slot narrows to a throat a short way above the floor (getDividerLockPlan):
+ * the full-thickness head seats in the pocket below it and the throat is meant to
+ * re-close over the tab and trap the head. A uniform tab defeats that: its full
+ * thickness plows the throat open on the way down and nothing holds it. Cutting the
+ * tab back to the neck width across the throat band leaves the throat free to close
+ * over the neck, with the head's shoulder captured beneath it (a geometric stop, not
+ * friction).
+ *
+ * In flat orientation the piece is centered at the origin: length along X, installed
+ * height along Y (−Y = installed bottom, resting on the floor), thickness along Z.
+ * Both faces are relieved at both ends; a relief near a receptacle or free end seats
+ * in empty space and is inert, so pieces need not track which ends land in a wall
+ * slot. Skips pieces shorter than the lock stack, matching the slot builder's own
+ * fall-back to a plain slot.
+ */
+function cutDividerNeckRelief(
+  piece: Shape3D,
+  length: number,
+  height: number,
+  thickness: number,
+  tabDepth: number,
+  lock: DividerLockPlan
+): Shape3D {
+  const depthPerFace = (thickness - lock.neckWidth) / 2;
+  const lockHeight = lock.headHeight + lock.throatHeight;
+  if (depthPerFace <= 0 || height <= lockHeight) return piece;
+
+  // Relieve a hair beyond the throat band (headHeight..headHeight+throatHeight
+  // above the floor-resting bottom edge) so a piece seated slightly high or low
+  // still lands the throat on relieved material.
+  const bandSlack = 0.2;
+  const bandLow = -height / 2 + lock.headHeight - bandSlack;
+  const bandHigh = -height / 2 + lockHeight + bandSlack;
+  const bandCenterY = (bandLow + bandHigh) / 2;
+  const bandHeight = bandHigh - bandLow;
+
+  // Relief spans the engaged tab depth (plus a margin so it always underlies the
+  // throat) and overruns the tip so the cutter leaves no coplanar faces.
+  const margin = 0.6;
+  const cutZ = depthPerFace + COPLANAR_OVERLAP;
+  const faceZ = (depthPerFace - COPLANAR_OVERLAP) / 2;
+  const cutters: Shape3D[] = [];
+  for (const sign of [-1, 1] as const) {
+    const outer = sign * (length / 2 + COPLANAR_OVERLAP);
+    const inner = sign * (length / 2 - tabDepth - margin);
+    const cx = (outer + inner) / 2;
+    const clen = Math.abs(outer - inner);
+    cutters.push(
+      box(clen, bandHeight, cutZ, { at: [cx, bandCenterY, faceZ] }),
+      box(clen, bandHeight, cutZ, { at: [cx, bandCenterY, thickness - faceZ] })
+    );
+  }
+  return applyCuts(piece, cutters);
+}
+
+/**
  * Build one divider piece per unique shape for a slotted bin.
  *
  * Single-axis bins get one piece. Both-axes bins get either two
@@ -237,16 +297,27 @@ export function buildUniqueDividerPieces(
     positions.map((offset) => ({ offset, width }));
   const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D =>
     patternCtx ? cutPiecePattern(piece, patternCtx, geometry) : piece;
+  // Every wall tab seats past a retention throat, so relieve every piece's tab
+  // neck (inert at receptacle/free ends). Length varies per piece.
+  const lock = getDividerLockPlan(thickness, clearance);
+  const relief = (piece: Shape3D, length: number): Shape3D =>
+    cutDividerNeckRelief(piece, length, dividerHeight, thickness, tabDepth, lock);
 
   if (!bothAxes) {
     if (slotConfig.x.enabled)
       addPiece(
-        pattern(buildFullPiece('x'), { length: fullLength('x'), tabEngagement: tabDepth }),
+        relief(
+          pattern(buildFullPiece('x'), { length: fullLength('x'), tabEngagement: tabDepth }),
+          fullLength('x')
+        ),
         axisLabel('x')
       );
     if (slotConfig.y.enabled)
       addPiece(
-        pattern(buildFullPiece('y'), { length: fullLength('y'), tabEngagement: tabDepth }),
+        relief(
+          pattern(buildFullPiece('y'), { length: fullLength('y'), tabEngagement: tabDepth }),
+          fullLength('y')
+        ),
         axisLabel('y')
       );
     return pieces;
@@ -277,7 +348,7 @@ export function buildUniqueDividerPieces(
       tabEngagement: tabDepth,
       grooves: columns(groovePositions, slotWidth),
     });
-    addPiece(longPiece, axisLabel(longAxis));
+    addPiece(relief(longPiece, fullLength(longAxis)), axisLabel(longAxis));
 
     // Short pieces only exist where there are rows to seat them —
     // groovePositions are also the short direction's wall slot rows.
@@ -298,14 +369,20 @@ export function buildUniqueDividerPieces(
         );
       }
       if (lengths.edge !== null && lengths.edge > 0) {
+        // One end seats in a wall slot (relieve so its throat catches); the
+        // piece is symmetric/reversible, so relieving both ends keeps the wall
+        // end covered whichever way it goes in.
         addPiece(
-          pattern(buildDividerPiece(lengths.edge, thickness, dividerHeight), {
-            length: lengths.edge,
-            // One end seats in a wall slot, the other in a receptacle, and
-            // `calculateShortDividerLengths` builds this piece with the SHALLOWER
-            // of the two at both ends — so mirror that rather than the deeper one.
-            tabEngagement: Math.min(tabDepth, tabEngagement(grooveDepth, clearance)),
-          }),
+          relief(
+            pattern(buildDividerPiece(lengths.edge, thickness, dividerHeight), {
+              length: lengths.edge,
+              // One end seats in a wall slot, the other in a receptacle, and
+              // `calculateShortDividerLengths` builds this piece with the SHALLOWER
+              // of the two at both ends — so mirror that rather than the deeper one.
+              tabEngagement: Math.min(tabDepth, tabEngagement(grooveDepth, clearance)),
+            }),
+            lengths.edge
+          ),
           `${axisLabel(shortAxis)}-compartment-edge`
         );
       }
@@ -348,13 +425,16 @@ export function buildUniqueDividerPieces(
         clearance
       );
       for (const seg of segments) {
-        const piece = pattern(
-          notch(buildDividerPiece(seg.length, thickness, dividerHeight), seg.notchOffsets),
-          {
-            length: seg.length,
-            tabEngagement: tabDepth,
-            notches: columns(seg.notchOffsets, slotWidth),
-          }
+        const piece = relief(
+          pattern(
+            notch(buildDividerPiece(seg.length, thickness, dividerHeight), seg.notchOffsets),
+            {
+              length: seg.length,
+              tabEngagement: tabDepth,
+              notches: columns(seg.notchOffsets, slotWidth),
+            }
+          ),
+          seg.length
         );
         const label = seg.labelSuffix ? `${axisLabel(axis)}-${seg.labelSuffix}` : axisLabel(axis);
         addPiece(piece, label);
@@ -381,7 +461,7 @@ export function buildUniqueDividerPieces(
       notches: columns(crossings, slotWidth),
       grooves: columns(snapPositions, SNAP_SCORE_WIDTH),
     });
-    addPiece(piece, axisLabel(axis));
+    addPiece(relief(piece, fullLength(axis)), axisLabel(axis));
   }
 
   return pieces;
@@ -420,6 +500,7 @@ export function buildAuthoredDividerPieces(
   // a tab there, so holding the full tab depth at both ends is conservative —
   // a little extra solid margin, never a perforated tab.
   const tabDepth = tabEngagement(slotDepth, clearance);
+  const lock = getDividerLockPlan(thickness, clearance);
 
   const pieces: LabeledDividerPiece[] = [];
   let yOffset = 0;
@@ -440,6 +521,9 @@ export function buildAuthoredDividerPieces(
         notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
       });
     }
+    // Relieve the tab neck so a wall-anchored end's throat catches; inert at
+    // abutting/T-junction ends that carry no tab.
+    shape = cutDividerNeckRelief(shape, spec.length, dividerHeight, thickness, tabDepth, lock);
     if (yOffset > 0) {
       const translated = translate(shape, [0, yOffset, 0]);
       shape.delete();
