@@ -1,0 +1,35 @@
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_65f0a251961ae8::t_efc7a2bfc8a958 896-909,912-913,915,918,921
+  s_65f0a251961ae8::t_bef96f967bf16b 925,927,932,937,944,1016,1092,1154
+  s_65f0a251961ae8::t_707bd123625439 1168,1178
+  s_65f0a251961ae8::t_5c31e3e302712a 996-1003
+  s_65f0a251961ae8::t_5559d2c83da6bf 895
+src/features/generation/worker/generators/__kernel-tests__/resumeCacheCorrectness.test.ts
+  s_65f0a251961ae8::t_10e03afcec6231 1-143
+src/features/generation/worker/generators/dividerPatternBuilder.ts
+  s_65f0a251961ae8::t_e27b0bce20aed7 325-331
+  s_65f0a251961ae8::t_379520d331c1ae 441-453,457-459,461,463,466,469-470,477,483-500,519-520
+  s_65f0a251961ae8::t_b947f4f1fd3f9b 376-406,412-413,415,433-435
+  s_65f0a251961ae8::t_168196cd0621ab 436
+  s_65f0a251961ae8::t_ca8b02a2c5ea59 440
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_65f0a251961ae8::t_33205b81399a45 145,150-152,157-169,172-176
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_65f0a251961ae8::t_2e8a1877da94c1 346
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "dede041bf3fce15c5f29b22d5efe144f026f31ea",
+  "prompts": {},
+  "sessions": {
+    "s_65f0a251961ae8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "70be2d35-ae8a-4d41-8031-f8fa81cfefae",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
