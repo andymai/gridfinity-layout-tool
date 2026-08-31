@@ -92,7 +92,9 @@ export function HeaderSupportLinks({
   };
 
   const handleSettingsClick = () => {
-    window.dispatchEvent(new Event('open-settings-modal'));
+    // CustomEvent (not plain Event) to match the contract: the listener reads an
+    // optional `detail.tab`. This dispatcher opens the default tab.
+    window.dispatchEvent(new CustomEvent('open-settings-modal'));
   };
 
   const handleKofiClick = () => {
