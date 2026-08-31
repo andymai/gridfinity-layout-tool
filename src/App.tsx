@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useLayoutEffect, useState, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { GlobalSettingsModal } from '@/shell/Modals/SettingsModal/GlobalSettingsModal';
 import {
@@ -28,8 +28,29 @@ import {
 } from '@/shared/hooks';
 import { useLayoutRouting } from '@/features/layout-library';
 import { useOwnedShareSync } from '@/features/cloud-share/hooks/useOwnedShareSync';
-import { downloadLayoutAsFile, reconcileLibraryAsync } from '@/core/storage';
-import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+import { reconcileLibraryAsync } from '@/core/storage';
+import {
+  LazySyncSessionMount,
+  CommandPalette,
+  DesignLinkingDialogs,
+  SharedLayoutImporter,
+  SharedLayoutBanner,
+  LabsDrawer,
+  DesignerPage,
+  BaseplatePage,
+  BaseplateLibraryInitMount,
+  SupportersPage,
+  CommunityPage,
+  DevThumbnailRoute,
+  HelpModal,
+  MobileLayout,
+  CollabProvider,
+  WhatsNewModal,
+  DesignGalleryModal,
+  CommunityPublishDialog,
+} from './App.lazyComponents';
+import { useRouteMeta } from '@/shared/hooks/useRouteMeta';
+import { useAppWindowEvents } from '@/shared/hooks/useAppWindowEvents';
 import { Grid } from '@/features/grid-editor';
 import { Sidebar } from '@/shell/Sidebar';
 import { Header } from '@/shell/Header';
@@ -69,76 +90,6 @@ import { useSpaceMouseDevice } from '@/shared/spacemouse/useSpaceMouseDevice';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
 import { useCommunityLikeReturn } from '@/shared/hooks/useCommunityLikeReturn';
 import { useCommunityDigestCheck } from '@/shared/hooks/useCommunityDigestCheck';
-import { SHORTCUTS } from '@/core/constants';
-
-// Lazy-loaded so the sync chunk stays off the first-paint path.
-const LazySyncSessionMount = lazyWithRetry(() =>
-  import('@/shared/sync/SyncSessionMount').then(namedExport('SyncSessionMount'))
-);
-
-const CommandPalette = lazyWithRetry(() =>
-  import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
-);
-const DesignLinkingDialogs = lazyWithRetry(() =>
-  import('@/features/design-linking/components/DesignLinkingDialogs').then(
-    namedExport('DesignLinkingDialogs')
-  )
-);
-const SharedLayoutImporter = lazyWithRetry(() =>
-  import('@/features/cloud-share/components/SharedLayoutImporter').then(
-    namedExport('SharedLayoutImporter')
-  )
-);
-const SharedLayoutBanner = lazyWithRetry(() =>
-  import('@/features/cloud-share/components/SharedLayoutBanner').then(
-    namedExport('SharedLayoutBanner')
-  )
-);
-const LabsDrawer = lazyWithRetry(() =>
-  import('@/features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
-);
-const DesignerPage = lazyWithRetry(() =>
-  import('@/features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
-);
-const BaseplatePage = lazyWithRetry(() =>
-  import('@/features/baseplate').then(namedExport('BaseplatePage'))
-);
-const BaseplateLibraryInitMount = lazyWithRetry(() =>
-  import('@/features/baseplate/components/BaseplateLibraryInitMount').then(
-    namedExport('BaseplateLibraryInitMount')
-  )
-);
-const SupportersPage = lazyWithRetry(() =>
-  import('@/features/supporters').then(namedExport('SupportersPage'))
-);
-const CommunityPage = lazyWithRetry(() =>
-  import('@/features/community').then(namedExport('CommunityPage'))
-);
-// Dev-only: pre-renders one gallery example for the thumbnail generator.
-// Inert in production via the `import.meta.env.DEV` gate at the route below.
-const DevThumbnailRoute = lazyWithRetry(() =>
-  import('@/features/bin-designer/components/DevThumbnailRoute').then(
-    namedExport('DevThumbnailRoute')
-  )
-);
-const HelpModal = lazyWithRetry(() =>
-  import('@/shell/Modals/HelpModal').then(namedExport('HelpModal'))
-);
-const MobileLayout = lazyWithRetry(() =>
-  import('@/shell/layouts/MobileLayout').then(namedExport('MobileLayout'))
-);
-const CollabProvider = lazyWithRetry(() =>
-  import('@/shell/Collab/CollabProvider').then(namedExport('CollabProvider'))
-);
-const WhatsNewModal = lazyWithRetry(() =>
-  import('@/shell/Modals/WhatsNewModal').then(namedExport('WhatsNewModal'))
-);
-const DesignGalleryModal = lazyWithRetry(() =>
-  import('@/shell/Modals/DesignGalleryModal').then(namedExport('DesignGalleryModal'))
-);
-const CommunityPublishDialog = lazyWithRetry(() =>
-  import('@/features/community/components/PublishDialog').then(namedExport('PublishDialog'))
-);
 
 let hasRenderedInitialLayout = false;
 
@@ -176,78 +127,13 @@ export default function App() {
   const communityShowcaseEnabled = useFeatureFlag('community_showcase');
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
-  // Allow external surfaces (e.g. HelpModal's empty-state fall-through) to open
-  // the command palette pre-filled with a query via a window event — matches
-  // the existing `open-settings-modal` / `switch-to-designer` dispatch pattern.
-  useEffect(() => {
-    const handler = (e: CustomEvent<{ query?: string }>) => {
-      setCommandPaletteInitialQuery(e.detail.query ?? '');
-      setCommandPaletteOpen(true);
-    };
-    window.addEventListener('open-command-palette', handler as EventListener);
-    return () => window.removeEventListener('open-command-palette', handler as EventListener);
-  }, [setCommandPaletteOpen]);
-
-  // Navigate to the /supporters page from the command palette (matches the
-  // `switch-to-designer` window-event pattern for cross-tree navigation).
-  useEffect(() => {
-    const handler = () => navigateToSupporters();
-    window.addEventListener('view-supporters', handler);
-    return () => window.removeEventListener('view-supporters', handler);
-  }, [navigateToSupporters]);
-
-  // Route-aware SEO meta. Owns title/description across SPA navigation: the
-  // i18n context only re-fires on locale change, so without this an in-app
-  // jump from /designer back to / would leave the generator title up. We
-  // always resolve to *some* route-appropriate value (homepage, designer, or
-  // baseplate) — no early return — so back-navigation restores the homepage
-  // meta. Depends on `t` so it re-applies when locale flips mid-session.
-  useEffect(() => {
-    // On /community/d/<id> the meta in the document is the design's own, served
-    // by api/community/page.ts. Overwriting it with the gallery's generic title
-    // would give every design page the same title in the rendered DOM, which is
-    // what Google indexes — so the route could not be indexed at all. The server
-    // value is authoritative here; leave it alone.
-    //
-    // Gated on isCommunityRoute as well: the design id comes straight off the
-    // URL and is not flag-aware, so with community_showcase off this route falls
-    // through to the planner, and skipping the swap would leave a design's title
-    // over the planner UI.
-    if (isCommunityRoute && communityDesignIdFromUrl !== null) return;
-    const titleKey = isDesignerRoute
-      ? 'seo.designer.title'
-      : isBaseplateRoute
-        ? 'seo.baseplate.title'
-        : isSupportersRoute
-          ? 'seo.supporters.title'
-          : isCommunityRoute
-            ? 'seo.community.title'
-            : 'seo.title';
-    const descKey = isDesignerRoute
-      ? 'seo.designer.description'
-      : isBaseplateRoute
-        ? 'seo.baseplate.description'
-        : isSupportersRoute
-          ? 'seo.supporters.description'
-          : isCommunityRoute
-            ? 'seo.community.description'
-            : 'seo.description';
-    const title = t(titleKey);
-    const desc = t(descKey);
-    document.title = title;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
-    document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
-    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
-    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
-    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
-  }, [
+  useRouteMeta({
     isDesignerRoute,
     isBaseplateRoute,
     isSupportersRoute,
     isCommunityRoute,
     communityDesignIdFromUrl,
-    t,
-  ]);
+  });
   const { isMobile, isTablet } = useResponsive();
 
   const { shouldShowDrawTutorial } = useOnboarding();
@@ -350,42 +236,13 @@ export default function App() {
     hasRenderedInitialLayout = true;
   }, []);
 
-  const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-      return;
-    }
-    if ((SHORTCUTS.HELP as readonly string[]).includes(e.key)) {
-      e.preventDefault();
-      setIsHelpOpen((prev) => !prev);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleHelpKeyboard);
-    return () => window.removeEventListener('keydown', handleHelpKeyboard);
-  }, [handleHelpKeyboard]);
-
-  useEffect(() => {
-    const handleOpenHelp = () => setIsHelpOpen(true);
-    window.addEventListener('open-help-modal', handleOpenHelp);
-    return () => window.removeEventListener('open-help-modal', handleOpenHelp);
-  }, []);
-
-  useEffect(() => {
-    const handleSwitchToDesigner = () => navigateToDesigner();
-    window.addEventListener('switch-to-designer', handleSwitchToDesigner);
-    return () => window.removeEventListener('switch-to-designer', handleSwitchToDesigner);
-  }, [navigateToDesigner]);
-
-  useEffect(() => {
-    const handleDownloadLayout = () => {
-      const layout = useLayoutStore.getState().layout;
-      const filename = `${layout.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
-      void downloadLayoutAsFile(layout, filename);
-    };
-    window.addEventListener('download-layout', handleDownloadLayout);
-    return () => window.removeEventListener('download-layout', handleDownloadLayout);
-  }, []);
+  useAppWindowEvents({
+    setIsHelpOpen,
+    setCommandPaletteOpen,
+    setCommandPaletteInitialQuery,
+    navigateToSupporters,
+    navigateToDesigner,
+  });
 
   const wrapWithMutations = (content: React.ReactNode) => {
     const dialogs = (
