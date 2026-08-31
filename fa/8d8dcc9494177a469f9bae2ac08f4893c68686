@@ -1,0 +1,24 @@
+src/shared/spacemouse/mapping.test.ts
+  s_f355eac7e0c076::t_8bee960924af96 101
+  s_f355eac7e0c076::t_0ffd29bddb4e81 51-53,58-70
+  s_f355eac7e0c076::t_1bab5d422536f3 83
+  s_f355eac7e0c076::t_bca8e539a7fb91 71-72
+src/shared/spacemouse/mapping.ts
+  s_f355eac7e0c076::t_233a48f2349070 36-43,48-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "fa8d8dcc9494177a469f9bae2ac08f4893c68686",
+  "prompts": {},
+  "sessions": {
+    "s_f355eac7e0c076": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e2e02f-5810-4320-85da-73aa13005f4a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
