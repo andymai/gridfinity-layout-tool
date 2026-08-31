@@ -13,6 +13,7 @@ import { OrbitControls } from '@react-three/drei';
 import '@/shared/webgl/configureTroikaText';
 import { Badge, Button, Dialog } from '@/design-system';
 import { ExportDialog } from '@/shared/components/ExportDialog';
+import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
@@ -185,7 +186,8 @@ export function LabelPlatesControls() {
                 <ambientLight intensity={0.7} />
                 <directionalLight position={[40, -40, 80]} intensity={1.2} />
                 <PlatesMesh mesh={previewMesh} />
-                <OrbitControls enablePan={false} />
+                <OrbitControls makeDefault enablePan={false} />
+                <SpaceMouseController modal />
               </Canvas>
             )}
           </div>

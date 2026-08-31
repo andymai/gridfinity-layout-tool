@@ -16,6 +16,7 @@ import * as THREE from 'three';
 // Side-effect: must run before any <Text> mounts under this Canvas.
 import '@/shared/webgl/configureTroikaText';
 import { Dialog, Button, Stepper } from '@/design-system';
+import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { useTranslation } from '@/i18n';
 import type { MeshImportRotation } from '@/shared/generation/meshAsset';
 import type { PendingStlImport } from './useStlImport';
@@ -82,6 +83,7 @@ export function StlImportDialog({
               <directionalLight position={[-2, -1, 1]} intensity={0.4} />
               <ToolMesh pending={pending} />
               <OrbitControls makeDefault enablePan={false} />
+              <SpaceMouseController modal />
             </Canvas>
             {importing && (
               <div className="absolute inset-0 flex items-center justify-center bg-surface/60 text-sm text-content-secondary">

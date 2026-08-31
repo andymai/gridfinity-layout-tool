@@ -98,6 +98,15 @@ function onHidDisconnect(): void {
   if (device) handleDeviceLost();
 }
 
+/**
+ * `hasFocus()` is the gate rather than `visibilityState`: the case reported in
+ * #4041 is a window that is fully visible but not frontmost, which still counts
+ * as `visible`. The listeners below are only triggers to re-read it.
+ */
+function syncFocus(): void {
+  spaceMouseBus.setFocused(document.hasFocus());
+}
+
 export function startSpaceMouse(): void {
   if (started) return;
   started = true;
@@ -112,6 +121,10 @@ export function startSpaceMouse(): void {
   }
   navigator.hid.addEventListener('connect', onHidConnect);
   navigator.hid.addEventListener('disconnect', onHidDisconnect);
+  window.addEventListener('focus', syncFocus);
+  window.addEventListener('blur', syncFocus);
+  document.addEventListener('visibilitychange', syncFocus);
+  syncFocus();
   void tryAutoConnect();
 }
 
@@ -121,7 +134,11 @@ export function stopSpaceMouse(): void {
   if (isWebHidSupported()) {
     navigator.hid.removeEventListener('connect', onHidConnect);
     navigator.hid.removeEventListener('disconnect', onHidDisconnect);
+    window.removeEventListener('focus', syncFocus);
+    window.removeEventListener('blur', syncFocus);
+    document.removeEventListener('visibilitychange', syncFocus);
   }
+  spaceMouseBus.setFocused(true);
   detachCurrent();
   spaceMouseBus.setGlobalHandler(null);
   spaceMouseBus.resetDeflection();

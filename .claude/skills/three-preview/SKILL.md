@@ -1,6 +1,6 @@
 ---
 name: three-preview
-description: The 3D render systems (layout IsometricPreview vs worker-mesh bin-designer/baseplate previews), view store, camera, disposal/memory rules. Load when touching IsometricPreview.tsx, Scene.tsx, BinMesh.tsx, PreviewCanvas.tsx, useBinGeometry.ts, view.ts, or debugging z-fighting/flicker, GPU memory growth, a preview frozen until you orbit, wrong scene scale (42x off), theme-wrong scene colors, or bins replaying drop animations on every edit.
+description: The 3D render systems (layout IsometricPreview vs worker-mesh bin-designer/baseplate previews), view store, camera, SpaceMouse navigation, disposal/memory rules. Load when touching IsometricPreview.tsx, Scene.tsx, BinMesh.tsx, PreviewCanvas.tsx, useBinGeometry.ts, view.ts, src/shared/spacemouse/, or debugging z-fighting/flicker, GPU memory growth, a preview frozen until you orbit, wrong scene scale (42x off), theme-wrong scene colors, bins replaying drop animations on every edit, or a SpaceMouse moving the wrong canvas or the wrong way.
 ---
 
 # 3D Preview Systems
@@ -31,6 +31,8 @@ Facts you cannot derive from types:
 - **Every imperatively created BufferGeometry/Material must be disposed.** Patterns to copy: prev-ref + unmount cleanup in `MergedBinMeshes.tsx`; dispose-on-change in `src/shared/components/preview/useMeshGeometry.ts`; LRU eviction + `clearGeometryCache()` in `MergedBinMeshes/geometryCache.ts` (max 100, key `w|d|h|color` with `toFixed(2)`).
 - **Scene colors come from `THREE_COLORS`** in `src/shared/hooks/useThemeEffect.ts` via `useThreeColors()`. CSS variables do not exist inside WebGL. New colors go in BOTH dark and light palettes.
 - **Bin transition identity is `bin.id`** (`useBinTransitions.ts`, `useSyncExternalStore`). Regenerated IDs read as remove-all+add-all; the <20%-ID-overlap heuristic suppresses animation only on layout switches. Preserve bin IDs across edits.
+- **A SpaceMouse drives one canvas, not always the hovered one.** `spacemouse/spaceMouseBus.ts` fans one puck to the newest `claim: true` registration (a canvas in a modal), else the last hovered, else the first registered. `<SpaceMouseController />` reads `useThree(s => s.controls)`, so a `<Canvas>` whose `OrbitControls` omits `makeDefault` silently no-ops; pass `modal` inside a `Dialog.Root` or the covered canvas keeps moving unseen. Input is gated on `document.hasFocus()` (WebHID delivers to backgrounded windows), and `applyFrameMotion` honours the host's `enablePan`/`enableZoom`/`enableRotate`.
+- **Puck axis signs invert twice** (`spacemouse/mapping.ts`): device translation is x+ right, y+ pulled back, z+ down, and pan moves the _camera_, so an object-centric sign is the opposite of the puck's. Read the gesture tests before "correcting" one — #4048 swapped the axis roles when only the signs were wrong.
 - **OrbitControls azimuth syncs to the view store only on interaction end** (`Scene.tsx` `handleEnd` → `setIsometricRotation`, degrees normalized 0–360). Mid-drag readers see a stale value by design. `snapToIsometric()` in `view.ts` is store-only — no UI caller today.
 
 ## Recipes
