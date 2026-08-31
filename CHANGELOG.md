@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.482.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.481.0...gridfinity-layout-tool-v4.482.0) (2026-08-31)
+
+
+### Features
+
+* **bin-designer:** add a searchable control finder to the parameter panel ([#4023](https://github.com/andymai/gridfinity-layout-tool/issues/4023)) ([d0a78ae](https://github.com/andymai/gridfinity-layout-tool/commit/d0a78ae370269ed035f9374ea4916aba569a8268))
+* **bin-designer:** finer, Algolia-style search over designer sub-options ([#4024](https://github.com/andymai/gridfinity-layout-tool/issues/4024)) ([a88af19](https://github.com/andymai/gridfinity-layout-tool/commit/a88af19e806fe0da664537657c4ff0a2441702f8))
+
 ## [4.481.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.480.1...gridfinity-layout-tool-v4.481.0) (2026-08-30)
 
 
