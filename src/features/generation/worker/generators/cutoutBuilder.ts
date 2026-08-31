@@ -1158,9 +1158,14 @@ export function buildCutoutCuts(
   const labelable = params.cutouts.filter((c) => c.hidden !== true);
   const buildable = labelable.filter((c) => c.shape !== 'mesh');
   // Emit nothing only when there is neither a buildable cavity nor a labelled
-  // mesh imprint (whose label this function still owns).
+  // mesh imprint (whose label this function still owns). Check per-instance
+  // labels, not just the master's, so a repeated mesh cutout labelled only
+  // through `array.labels` still counts.
   const hasMeshLabel = labelable.some(
-    (c) => c.shape === 'mesh' && isCutoutEngraveMode(c) && c.label.trim() !== ''
+    (c) =>
+      c.shape === 'mesh' &&
+      isCutoutEngraveMode(c) &&
+      labelledInstances(c).some((i) => i.label.trim() !== '')
   );
   if (buildable.length === 0 && !hasMeshLabel) return { cutTools: [], fuseTools: [] };
   params = { ...params, cutouts: buildable };
@@ -1260,8 +1265,6 @@ export function buildCutoutCuts(
     }
   }
 
-  // Labels iterate `labelable` (incl. mesh imprints) so a mesh cutout's text
-  // engraves on the bin top even though its cavity is built in the mesh domain.
   const rawFuseShapes: Shape3D[] = [];
   for (const master of labelable) {
     if (!isCutoutEngraveMode(master)) continue;

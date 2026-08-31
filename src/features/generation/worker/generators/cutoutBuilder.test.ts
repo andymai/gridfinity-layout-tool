@@ -50,9 +50,11 @@ describe('mesh (STL) cutout labels (#4030)', () => {
     // The mesh imprint itself is subtracted post-tessellation, so the ONLY BREP
     // tool here is the engraved label, which regressed to nothing for mesh.
     const withLabel = buildCutoutCuts(meshCutoutParams(), 80, 80, 35);
-    const total = withLabel.cutTools.length + withLabel.fuseTools.length;
-    expect(total).toBeGreaterThan(0);
-    for (const t of [...withLabel.cutTools, ...withLabel.fuseTools]) t.delete();
+    try {
+      expect(withLabel.cutTools.length + withLabel.fuseTools.length).toBeGreaterThan(0);
+    } finally {
+      for (const t of [...withLabel.cutTools, ...withLabel.fuseTools]) t.delete();
+    }
   }, 60_000);
 
   it('builds nothing for a mesh cutout with no label (cavity stays mesh-domain)', () => {
