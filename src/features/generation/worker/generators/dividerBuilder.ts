@@ -169,9 +169,10 @@ function cutFaceGrooves(
  * over the neck, with the head's shoulder captured beneath it (a geometric stop, not
  * friction).
  *
- * In flat orientation the piece is centered at the origin: length along X, installed
- * height along Y (−Y = installed bottom, resting on the floor), thickness along Z.
- * Both faces are relieved at both ends; a relief near a receptacle or free end seats
+ * In flat orientation the piece is centered in X (length) and Y (installed height,
+ * −Y = installed bottom, resting on the floor); Z (thickness) spans [0, thickness]
+ * with the build plate at Z=0, so the two faces recessed here sit at Z=0 and
+ * Z=thickness. Both faces are relieved at both ends; a relief near a free end seats
  * in empty space and is inert, so pieces need not track which ends land in a wall
  * slot. Skips pieces shorter than the lock stack, matching the slot builder's own
  * fall-back to a plain slot.

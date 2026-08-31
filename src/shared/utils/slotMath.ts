@@ -54,13 +54,13 @@ export const DIVIDER_LOCK_THROAT_HEIGHT = 0.6;
 export const DIVIDER_LOCK_INTERFERENCE_PER_SIDE = 0.15;
 
 /**
- * Per-side gap between the divider neck and the slot throat.
+ * Total width by which the divider neck is cut narrower than the slot throat
+ * (so half of it per face).
  *
- * The neck is cut this much narrower than the throat so the throat clears it
- * on both faces and can never be plowed open by the tab as the piece seats
- * (the whole point of relieving the tab). Retention comes from the full-thickness
- * head below the neck, which the throat catches; the neck itself is a clearance
- * groove, so it does not need to grip.
+ * The neck clears the throat by this much so the throat can never be plowed
+ * open by the tab as the piece seats (the whole point of relieving the tab).
+ * Retention comes from the full-thickness head below the neck, which the throat
+ * catches; the neck itself is a clearance groove, so it does not need to grip.
  */
 export const DIVIDER_LOCK_NECK_RELIEF_GAP = 0.1;
 

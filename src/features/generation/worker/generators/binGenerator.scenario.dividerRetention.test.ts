@@ -64,27 +64,30 @@ describe('divider retention neck relief through the real kernel', () => {
     const bottomY = min[1];
     const topFaceZ = max[2];
 
-    // Z-extent of solid found in a thin sliver just inside the outer (top) face
-    // at the tab tip, over an installed-height band. ~0 means the face is relieved.
-    const faceProbe = (hLow: number, hHigh: number): number => {
-      const probe = box(0.4, hHigh - hLow, depthPerFace * 0.6, {
-        at: [
-          max[0] - 0.5,
-          bottomY + (hLow + hHigh) / 2,
-          topFaceZ - (depthPerFace * 0.6) / 2 + 0.02,
-        ],
+    // Z-extent of solid found in a thin sliver just inside one thickness face at
+    // the tab tip, over an installed-height band. ~0 means the face is relieved.
+    // The relief cuts BOTH faces, so probe each: 'top' near Z=thickness, 'bottom'
+    // near Z=0.
+    const faceProbe = (hLow: number, hHigh: number, face: 'top' | 'bottom'): number => {
+      const sliverH = depthPerFace * 0.6;
+      const z = face === 'top' ? topFaceZ - sliverH / 2 + 0.02 : sliverH / 2 - 0.02;
+      const probe = box(0.4, hHigh - hLow, sliverH, {
+        at: [max[0] - 0.5, bottomY + (hLow + hHigh) / 2, z],
       });
       try {
         const s = unwrap(intersect(piece, probe, { optimisation: 'none' }));
-        const m = mesh(s, { tolerance: 0.02, angularTolerance: 8, cache: false });
-        let zmin = Infinity;
-        let zmax = -Infinity;
-        for (let i = 2; i < m.vertices.length; i += 3) {
-          zmin = Math.min(zmin, m.vertices[i]);
-          zmax = Math.max(zmax, m.vertices[i]);
+        try {
+          const m = mesh(s, { tolerance: 0.02, angularTolerance: 8, cache: false });
+          let zmin = Infinity;
+          let zmax = -Infinity;
+          for (let i = 2; i < m.vertices.length; i += 3) {
+            zmin = Math.min(zmin, m.vertices[i]);
+            zmax = Math.max(zmax, m.vertices[i]);
+          }
+          return Number.isFinite(zmin) ? zmax - zmin : 0;
+        } finally {
+          s.delete();
         }
-        s.delete();
-        return Number.isFinite(zmin) ? zmax - zmin : 0;
       } catch {
         return 0; // empty intersection
       } finally {
@@ -92,14 +95,20 @@ describe('divider retention neck relief through the real kernel', () => {
       }
     };
 
-    const headHit = faceProbe(0.1, lock.headHeight - 0.35); // below the throat band
-    const throatHit = faceProbe(lock.headHeight + 0.1, lock.headHeight + lock.throatHeight - 0.1);
-    const topHit = faceProbe(WALL_HEIGHT - 1.0, WALL_HEIGHT - 0.4); // near the rim
+    for (const face of ['top', 'bottom'] as const) {
+      const headHit = faceProbe(0.1, lock.headHeight - 0.35, face); // below the throat
+      const throatHit = faceProbe(
+        lock.headHeight + 0.1,
+        lock.headHeight + lock.throatHeight - 0.1,
+        face
+      );
+      const topHit = faceProbe(WALL_HEIGHT - 1.0, WALL_HEIGHT - 0.4, face); // near the rim
 
-    // Outer face solid at the head and rim, relieved only across the throat band.
-    expect(headHit).toBeGreaterThan(depthPerFace * 0.4);
-    expect(topHit).toBeGreaterThan(depthPerFace * 0.4);
-    expect(throatHit).toBeLessThan(depthPerFace * 0.2);
+      // Face solid at the head and rim, relieved only across the throat band.
+      expect(headHit).toBeGreaterThan(depthPerFace * 0.4);
+      expect(topHit).toBeGreaterThan(depthPerFace * 0.4);
+      expect(throatHit).toBeLessThan(depthPerFace * 0.2);
+    }
 
     for (const p of pieces) p.shape.delete();
   }, 120_000);

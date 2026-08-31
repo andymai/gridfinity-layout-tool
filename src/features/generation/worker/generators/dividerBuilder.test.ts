@@ -91,10 +91,10 @@ describe('buildUniqueDividerPieces', () => {
     });
     buildUniqueDividerPieces(params, 80, 80, 30, false);
     // 80mm interior at 40mm pitch → 2 compartments → 1 crossing per piece.
-    // Per piece: one notch cut + one neck-relief cut → 4 cuts across both.
+    // Each piece takes one notch cut and one neck-relief cut.
     expect(cut).toHaveBeenCalledTimes(4);
     // The single notch cutter is used directly (no fuse), but each piece's
-    // neck relief fuses its four cutters → one fuse per piece.
+    // neck relief fuses its four cutters.
     expect(fuseAll).toHaveBeenCalledTimes(2);
   });
 
@@ -208,7 +208,7 @@ describe('buildUniqueDividerPieces', () => {
       });
       const pieces = buildUniqueDividerPieces(params, 80, 60, 30, false);
       expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
-      // Each piece takes a cross-lap notch cut plus a neck-relief cut → 4 cuts.
+      // Each piece takes a cross-lap notch cut plus a neck-relief cut.
       expect(cut).toHaveBeenCalledTimes(4);
     });
 
