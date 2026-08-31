@@ -103,7 +103,7 @@ export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarPro
   };
 
   return (
-    <div className="relative flex-shrink-0 border-b border-stroke-subtle px-3 py-2">
+    <div className="relative min-w-0 flex-1">
       <div className="relative">
         <Input
           ref={inputRef}

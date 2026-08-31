@@ -264,8 +264,8 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
     </>
   );
 
-  // One view switch, reused by both layouts: the scroll's pinned toolbar and the
-  // rail's header.
+  // One view switch, shared by both layouts. It rides inline in the top row next
+  // to the search field so no empty band opens up between them.
   const viewModes = [
     { mode: 'scroll' as const, paths: ICON_PATHS.menu, label: t('binDesigner.panel.viewAsScroll') },
     {
@@ -274,40 +274,32 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
       label: t('binDesigner.panel.viewAsRail'),
     },
   ];
-  const viewSwitch = (
-    <div className="flex flex-shrink-0 items-center justify-end px-3 py-1.5">
-      <div className="inline-flex items-center gap-0.5 rounded-md border border-stroke-subtle p-0.5">
-        {viewModes.map(({ mode, paths, label }) => (
-          <Tooltip key={mode} content={label} placement="bottom">
-            <IconButton
-              variant="ghost"
-              size="sm"
-              touchTarget={false}
-              pressed={viewMode === mode}
-              aria-label={label}
-              onClick={() => selectViewMode(mode)}
+  const viewSwitchPill = (
+    <div className="inline-flex flex-shrink-0 items-center gap-0.5 rounded-md border border-stroke-subtle p-0.5">
+      {viewModes.map(({ mode, paths, label }) => (
+        <Tooltip key={mode} content={label} placement="bottom">
+          <IconButton
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
+            pressed={viewMode === mode}
+            aria-label={label}
+            onClick={() => selectViewMode(mode)}
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden
-              >
-                {paths.map((d) => (
-                  <path
-                    key={d}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={d}
-                  />
-                ))}
-              </svg>
-            </IconButton>
-          </Tooltip>
-        ))}
-      </div>
+              {paths.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
+            </svg>
+          </IconButton>
+        </Tooltip>
+      ))}
     </div>
   );
 
@@ -328,16 +320,20 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
     </VariantLock>
   );
 
-  const searchBar = searchEnabled ? (
-    <DesignerSearchBar viewMode={viewMode} needsSplit={needsSplit} />
-  ) : null;
+  // Search field and view toggle on one row, sharing a single divider. The row
+  // is `justify-end`, so with search off the lone pill still sits on the right.
+  const topBar = (
+    <div className="flex flex-shrink-0 items-center justify-end gap-2 border-b border-stroke-subtle px-3 py-2">
+      {searchEnabled && <DesignerSearchBar viewMode={viewMode} needsSplit={needsSplit} />}
+      {viewSwitchPill}
+    </div>
+  );
 
   if (viewMode === 'scroll') {
     return (
       <BinScrollPanel
         frame={frame}
-        searchBar={searchBar}
-        toolbar={viewSwitch}
+        searchBar={topBar}
         header={communityAndVariant}
         wrapContent={(content) => wrapEditable(content, false)}
         dock={<UserDock />}
@@ -348,16 +344,11 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   return (
     <BinPanelShell
       frame={frame}
-      searchBar={searchBar}
+      searchBar={topBar}
       header={
-        <>
-          {viewSwitch}
-          {/* Scrolls on its own when the variant section runs long — pinned
-              above the rail, not part of any page's scroll. */}
-          <div className="max-h-[45%] flex-shrink-0 overflow-y-auto scrollbar-thin">
-            {communityAndVariant}
-          </div>
-        </>
+        <div className="max-h-[45%] flex-shrink-0 overflow-y-auto scrollbar-thin">
+          {communityAndVariant}
+        </div>
       }
       pages={{
         shape: <ShapePage />,
