@@ -232,19 +232,14 @@ function buildScoopRampsInScope(
       ? scoopShapes[0] // already scope-registered
       : scope.register(unwrap(fuseAll(scoopShapes as ValidSolid[])));
 
-  // The inner cavity rounds its corners to radius (BOX_CORNER_RADIUS −
-  // wallThickness), but the scoop is a straight full-width prism with SQUARE
-  // corners, pushed `wallPenetration` into the surrounding walls to weld it
-  // (above). At the bin's outer corners a square corner driven diagonally into
-  // the wall overshoots the rounded outer arc and pokes out of the bin. With the
-  // penetration that happens at ANY wall thickness, not only the thin walls the
-  // old geometric threshold assumed, so always clip the scoop to the inner
-  // cavity footprint grown by the same penetration: its rounded corners
-  // (cavityCornerR + wallPenetration) stay inside the outer wall (because
-  // wallPenetration < wallThickness) while its straight edges sit exactly at the
-  // intended penetration depth, trimming the corner overshoot without shaving
-  // the flat-face weld. Interior scoops sit well inside the footprint, so this
-  // is a no-op for them.
+  // The scoop is a square-cornered full-width prism, pushed `wallPenetration`
+  // into the surrounding walls to weld it (above). At the bin's rounded outer
+  // corners a square corner driven diagonally into the wall overshoots the outer
+  // arc and pokes out of the bin, at any wall thickness once the penetration is
+  // applied. Clip it to the inner cavity footprint grown by the penetration: the
+  // rounded corners stay inside the outer wall (wallPenetration < wallThickness)
+  // and the straight edges keep the weld depth, so the overshoot is trimmed but
+  // the flat-face weld is not. Interior scoops sit inside the footprint (no-op).
   try {
     const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
     const footprint = scope.register(

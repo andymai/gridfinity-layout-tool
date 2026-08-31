@@ -18,10 +18,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
-import { BOX_CORNER_RADIUS } from './generatorConstants';
-
-const GRID = 42;
-const TOL = 0.5;
+import type { Shape3D } from 'brepjs';
+import { BOX_CORNER_RADIUS, CLEARANCE } from './generatorConstants';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -34,13 +32,16 @@ async function verticesOutsideOuterWall(params: BinParams): Promise<number> {
   const { buildScoopRamps } = await import('./scoopRampBuilder');
 
   const wt = params.wallThickness;
-  const outerW = params.width * GRID - TOL;
-  const outerD = params.depth * GRID - TOL;
+  // Match the pipeline's own footprint (context.ts): outer = units·pitch − clearance.
+  const unitX = params.gridUnitMm;
+  const unitY = params.gridUnitMmY ?? unitX;
+  const outerW = params.width * unitX - CLEARANCE;
+  const outerD = params.depth * unitY - CLEARANCE;
   const innerW = outerW - 2 * wt;
   const innerD = outerD - 2 * wt;
   const wallHeight = params.height * params.heightUnitMm;
 
-  const ramp = buildScoopRamps(params, innerW, innerD, wallHeight, wt);
+  const ramp: Shape3D | null = buildScoopRamps(params, innerW, innerD, wallHeight, wt);
   if (!ramp) return 0;
 
   const footprint = sketch(
@@ -48,16 +49,17 @@ async function verticesOutsideOuterWall(params: BinParams): Promise<number> {
     'XY',
     -1
   ).extrude(wallHeight + 2);
+  let outside: Shape3D | undefined;
   try {
-    const outside = unwrap(cut(ramp as never, footprint));
-    try {
-      const m = mesh(outside, { tolerance: 0.02, angularTolerance: 8, cache: false });
-      return m.vertices.length / 3;
-    } catch {
-      return 0; // empty intersection: nothing outside
-    }
+    outside = unwrap(cut(ramp, footprint));
+    const m = mesh(outside, { tolerance: 0.02, angularTolerance: 8, cache: false });
+    return m.vertices.length / 3;
+  } catch {
+    return 0; // empty intersection: nothing outside
   } finally {
-    (ramp as { delete(): void }).delete();
+    ramp.delete();
+    footprint.delete();
+    outside?.delete();
   }
 }
 
