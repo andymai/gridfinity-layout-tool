@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.482.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.2...gridfinity-layout-tool-v4.482.3) (2026-08-31)
+
+
+### Bug Fixes
+
+* **bin-designer:** force the draft after a slow exact build ([#4059](https://github.com/andymai/gridfinity-layout-tool/issues/4059)) ([b802b01](https://github.com/andymai/gridfinity-layout-tool/commit/b802b01af09b4a497a81c7edb792d4b57da8c279))
+* **bin-designer:** show the attribution footer in the scroll view ([#4054](https://github.com/andymai/gridfinity-layout-tool/issues/4054)) ([1af8970](https://github.com/andymai/gridfinity-layout-tool/commit/1af8970b40f4f801412ce9367c65e68ef8375fd5))
+* **spacemouse:** ignore a backgrounded window, stop driving covered canvases ([#4057](https://github.com/andymai/gridfinity-layout-tool/issues/4057)) ([9e22796](https://github.com/andymai/gridfinity-layout-tool/commit/9e22796246dc438633d58fed62f990422a224f59)), closes [#4041](https://github.com/andymai/gridfinity-layout-tool/issues/4041)
+* **spacemouse:** pan and zoom follow the puck the way CAD apps do ([#4055](https://github.com/andymai/gridfinity-layout-tool/issues/4055)) ([ed0c2d9](https://github.com/andymai/gridfinity-layout-tool/commit/ed0c2d93162a396d25a88c098037a5c431096fee)), closes [#4041](https://github.com/andymai/gridfinity-layout-tool/issues/4041)
+
+
+### Performance
+
+* **bin-designer:** adapt the preview timeout to device speed, draft-only over the ceiling ([#4062](https://github.com/andymai/gridfinity-layout-tool/issues/4062)) ([45dd4f5](https://github.com/andymai/gridfinity-layout-tool/commit/45dd4f5d0b42d514994a56d31128578a0a1a3ed5))
+* **bin-designer:** fire cheap exact generations without the debounce ([#4058](https://github.com/andymai/gridfinity-layout-tool/issues/4058)) ([0c347b8](https://github.com/andymai/gridfinity-layout-tool/commit/0c347b8c0cf211ad577a8e90a354f020f3595a25))
+* **generation:** let floor-pattern bins resume the post-boolean body ([#4061](https://github.com/andymai/gridfinity-layout-tool/issues/4061)) ([b2bacd7](https://github.com/andymai/gridfinity-layout-tool/commit/b2bacd7902b3b8b1df96527638a96550564943b7))
+* **generation:** let kumiko and divider bins resume the post-boolean body ([#4060](https://github.com/andymai/gridfinity-layout-tool/issues/4060)) ([6861716](https://github.com/andymai/gridfinity-layout-tool/commit/6861716fe2698864839d88b39c7846dd6a693bef))
+
 ## [4.482.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.1...gridfinity-layout-tool-v4.482.2) (2026-08-31)
 
 
