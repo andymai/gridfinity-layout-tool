@@ -1,0 +1,23 @@
+package.json
+  s_65f0a251961ae8::t_96c0b17b622553 69
+src/features/generation/worker/generators/__kernel-tests__/matrixProfile.perf.test.ts
+  s_65f0a251961ae8::t_43c2b75e6342b0 226-234,332-435
+  s_65f0a251961ae8::t_3f0aa0451a6973 459
+  s_65f0a251961ae8::t_b94e5f45d3c9b1 1-225,235-331,436-458,460-529
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "92f4d45d0424a51d86bde480ce47083d3a416d4c",
+  "prompts": {},
+  "sessions": {
+    "s_65f0a251961ae8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "70be2d35-ae8a-4d41-8031-f8fa81cfefae",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
