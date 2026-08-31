@@ -457,7 +457,7 @@ export const slotCutsFeature: FeatureBuilder = {
     );
     return compactKey(
       buildCacheKey(
-        'v3',
+        'v4',
         dim.shellKey,
         stableSerialize(params.slotConfig),
         quantize(slotWidth),

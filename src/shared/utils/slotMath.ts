@@ -41,20 +41,53 @@ export const DIVIDER_LOCK_HEAD_HEIGHT = 0.8;
 /** Installed height of the elastic throat that retains the divider head. */
 export const DIVIDER_LOCK_THROAT_HEIGHT = 0.6;
 
-/** Per-face interference at the throat for the shipped 1.6 mm divider. */
-export const DIVIDER_LOCK_INTERFERENCE_PER_SIDE = 0.2;
+/**
+ * Per-face interference at the throat for a full-thickness divider.
+ *
+ * Sized as an ELASTIC detent, not a press fit: the throat is a short,
+ * floor-anchored wall segment printed across the layer lines, so it barely
+ * flexes and does not spring back from an aggressive squeeze, so it plows open
+ * and stops gripping. The head only has to deflect it by this much to pass,
+ * and it re-closes into the divider neck ({@link getDividerLockPlan}) once the
+ * head is below it. Retention is the geometric shoulder, not friction.
+ */
+export const DIVIDER_LOCK_INTERFERENCE_PER_SIDE = 0.15;
+
+/**
+ * Total width by which the divider neck is cut narrower than the slot throat
+ * (so half of it per face).
+ *
+ * The neck clears the throat by this much so the throat can never be plowed
+ * open by the tab as the piece seats (the whole point of relieving the tab).
+ * Retention comes from the full-thickness head below the neck, which the throat
+ * catches; the neck itself is a clearance groove, so it does not need to grip.
+ */
+export const DIVIDER_LOCK_NECK_RELIEF_GAP = 0.1;
+
+/** Floor on the relieved neck width so a thin divider keeps a printable web. */
+const MIN_NECK_WIDTH = 0.6;
 
 export interface DividerLockPlan {
   readonly pocketWidth: number;
   readonly throatWidth: number;
+  /**
+   * Relieved thickness of the divider tab across the throat band. Narrower than
+   * {@link throatWidth} so the throat re-closes past it; the full-thickness head
+   * below (a shoulder, not friction) is what actually resists lifting.
+   */
+  readonly neckWidth: number;
   readonly headHeight: number;
   readonly throatHeight: number;
 }
 
 /**
  * Resolve the paired snap geometry shared by wall slots and divider tips.
+ *
  * The full-thickness head seats in the clearance pocket below a narrower
- * throat. The short wall tabs flex while the head is pressed through.
+ * throat. The tab is relieved to {@link DividerLockPlan.neckWidth} across the
+ * throat band so the throat closes back over the neck once the head passes,
+ * leaving the head's upper shoulder captured below it. Without that relief the
+ * uniform tab plows the throat open on the way in and nothing retains the head.
  */
 export function getDividerLockPlan(
   dividerThickness: number,
@@ -62,12 +95,14 @@ export function getDividerLockPlan(
 ): DividerLockPlan {
   const interference = Math.min(
     DIVIDER_LOCK_INTERFERENCE_PER_SIDE,
-    Math.max(0.08, dividerThickness * 0.125)
+    Math.max(0.1, dividerThickness * 0.125)
   );
   const throatWidth = Math.max(0.8, dividerThickness - 2 * interference);
+  const neckWidth = Math.max(MIN_NECK_WIDTH, throatWidth - DIVIDER_LOCK_NECK_RELIEF_GAP);
   return {
     pocketWidth: dividerThickness + 2 * dividerClearance,
     throatWidth,
+    neckWidth,
     headHeight: DIVIDER_LOCK_HEAD_HEIGHT,
     throatHeight: DIVIDER_LOCK_THROAT_HEIGHT,
   };

@@ -101,8 +101,14 @@ describe('authored divider pieces through the real kernel', () => {
         const vol = meshVolume(m.vertices, m.triangles);
         const solid = specs[i].length * WALL_HEIGHT * thickness;
         const notchVol = specs[i].notchOffsets.length * slotWidth * notchDepth * thickness;
+        // Each piece is its solid box minus its cross-lap notches and a small
+        // tab neck relief at each wall-anchored end (getDividerLockPlan). The
+        // relief is under a mm³, so the piece sits just below solid − notchVol;
+        // a dropped notch (~50 mm³) still falls far outside this window.
+        const expected = solid - notchVol;
         expect(vol).toBeGreaterThan(0);
-        expect(vol).toBeCloseTo(solid - notchVol, 0);
+        expect(vol).toBeLessThanOrEqual(expected + 0.01);
+        expect(vol).toBeGreaterThan(expected - 2);
       }
     } finally {
       for (const p of pieces) p.shape.delete();

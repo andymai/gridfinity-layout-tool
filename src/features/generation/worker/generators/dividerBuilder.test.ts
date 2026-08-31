@@ -76,7 +76,9 @@ describe('buildUniqueDividerPieces', () => {
       },
     });
     buildUniqueDividerPieces(params, 80, 80, 30, false);
-    expect(cut).not.toHaveBeenCalled();
+    // The one cut is the tab neck relief; a single-axis piece carries no
+    // cross-lap notch, so there is no second (notch) cut.
+    expect(cut).toHaveBeenCalledTimes(1);
   });
 
   it('cuts cross-lap notches into both pieces when both axes are enabled', () => {
@@ -88,10 +90,12 @@ describe('buildUniqueDividerPieces', () => {
       },
     });
     buildUniqueDividerPieces(params, 80, 80, 30, false);
-    // 80mm interior at 40mm pitch → 2 compartments → 1 crossing per piece
-    expect(cut).toHaveBeenCalledTimes(2);
-    // Single crossing per piece → cutter used directly, no fuse needed
-    expect(fuseAll).not.toHaveBeenCalled();
+    // 80mm interior at 40mm pitch → 2 compartments → 1 crossing per piece.
+    // Each piece takes one notch cut and one neck-relief cut.
+    expect(cut).toHaveBeenCalledTimes(4);
+    // The single notch cutter is used directly (no fuse), but each piece's
+    // neck relief fuses its four cutters.
+    expect(fuseAll).toHaveBeenCalledTimes(2);
   });
 
   it('notches X pieces from the top and Y pieces from the bottom', () => {
@@ -105,21 +109,25 @@ describe('buildUniqueDividerPieces', () => {
     });
     buildUniqueDividerPieces(params, 80, 80, 30, false);
 
-    // box calls: [0] X piece, [1] X notch cutter, [2] Y piece, [3] Y notch cutter
+    // The two cross-lap notch cutters are the only boxes reaching just past
+    // mid-height (Y-dim ≈ h/2); piece bodies are Y=30 and neck-relief cutters
+    // are shallow, so filter by that depth rather than a fixed call index.
     const calls = vi.mocked(box).mock.calls;
-    expect(calls).toHaveLength(4);
+    const notchCutters = calls.filter((c) => c[1] > 15 && c[1] < 15.5);
+    expect(notchCutters).toHaveLength(2);
 
-    const xCutterAt = (calls[1][3] as { at: [number, number, number] }).at;
-    const yCutterAt = (calls[3][3] as { at: [number, number, number] }).at;
+    // First piece is X (notched from the top), second is Y (from the bottom).
+    const xCutterAt = (notchCutters[0][3] as { at: [number, number, number] }).at;
+    const yCutterAt = (notchCutters[1][3] as { at: [number, number, number] }).at;
     // dividerHeight = wallHeight (30, no lip); notch centers mirror across mid-height
     expect(xCutterAt[1]).toBeGreaterThan(0);
     expect(yCutterAt[1]).toBeLessThan(0);
     expect(xCutterAt[1]).toBeCloseTo(-yCutterAt[1], 5);
 
     // Notch opening matches the wall slot width (thickness + 2×clearance)
-    expect(calls[1][0]).toBeCloseTo(1.6 + 2 * 0.25, 5);
+    expect(notchCutters[0][0]).toBeCloseTo(1.6 + 2 * 0.25, 5);
     // Notch reaches just past half height: depth = h/2 + clearance (+overlap)
-    const notchCutterDepth = calls[1][1];
+    const notchCutterDepth = notchCutters[0][1];
     expect(notchCutterDepth).toBeGreaterThan(15);
     expect(notchCutterDepth).toBeLessThan(15.5);
   });
@@ -134,7 +142,9 @@ describe('buildUniqueDividerPieces', () => {
     });
     // 80mm at 20mm pitch → 4 compartments → 3 crossings on the X piece
     buildUniqueDividerPieces(params, 80, 80, 30, false);
-    expect(fuseAll).toHaveBeenCalledTimes(1);
+    // Fuses: X-piece 3-notch compound, then each piece's 4-cutter neck relief.
+    expect(fuseAll).toHaveBeenCalledTimes(3);
+    // The first fuse is still the X piece's notch compound (3 crossings).
     expect(vi.mocked(fuseAll).mock.calls[0][0]).toHaveLength(3);
   });
 
@@ -173,8 +183,10 @@ describe('buildUniqueDividerPieces', () => {
       ]);
       // Grooves sit at the short-axis positions along the long piece
       // (innerD=60 at 20mm x-pitch → 2 positions), cut into both faces
-      // → 4 cutters fused, one boolean cut; short pieces stay uncut
-      expect(cut).toHaveBeenCalledTimes(1);
+      // → 4 cutters fused as the first boolean cut. Then the wall-tab pieces
+      // take a neck-relief cut: long piece (+1) and edge piece (+1); the
+      // interior piece seats in receptacles only, so it is not relieved.
+      expect(cut).toHaveBeenCalledTimes(3);
       expect(vi.mocked(fuseAll).mock.calls[0][0]).toHaveLength(4);
     });
 
@@ -196,8 +208,8 @@ describe('buildUniqueDividerPieces', () => {
       });
       const pieces = buildUniqueDividerPieces(params, 80, 60, 30, false);
       expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
-      // Cross-lap cuts both pieces
-      expect(cut).toHaveBeenCalledTimes(2);
+      // Each piece takes a cross-lap notch cut plus a neck-relief cut.
+      expect(cut).toHaveBeenCalledTimes(4);
     });
 
     it('emits only the long piece when the short axis has no rows', () => {
@@ -213,7 +225,8 @@ describe('buildUniqueDividerPieces', () => {
       // innerD=40 at x-pitch 50 → 0 rows → no grooves, no short pieces
       const pieces = buildUniqueDividerPieces(params, 80, 40, 30, false);
       expect(pieces.map((p) => p.label)).toEqual(['divider-vertical']);
-      expect(cut).not.toHaveBeenCalled();
+      // No grooves, but the lone long piece still takes its neck-relief cut.
+      expect(cut).toHaveBeenCalledTimes(1);
     });
 
     it('falls back to cross-lap when the long axis has no dividers', () => {
@@ -250,8 +263,9 @@ describe('buildUniqueDividerPieces', () => {
       // per piece. The score cuts both faces → 2 groove cutters fused per piece.
       buildUniqueDividerPieces(lapParams('snappable'), 80, 80, 30, false);
       const fuseArgLengths = vi.mocked(fuseAll).mock.calls.map((c) => c[0].length);
-      // Two pieces each fuse a 2-cutter score compound
-      expect(fuseArgLengths).toEqual([2, 2]);
+      // Per piece: a 2-cutter score compound, then a 4-cutter neck-relief
+      // compound → [2, 4] repeated for the two pieces.
+      expect(fuseArgLengths).toEqual([2, 4, 2, 4]);
       // Two pieces are still emitted (not a family)
     });
 
