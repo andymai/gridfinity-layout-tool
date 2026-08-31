@@ -9,12 +9,64 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { box, getBounds } from 'brepjs';
-import { findBottomEdges } from './cutoutBuilder';
+import { findBottomEdges, buildCutoutCuts } from './cutoutBuilder';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { loadTestFonts } from '@/test/loadTestFonts';
+import type { BinParams, Cutout } from '@/shared/types/bin';
 
 beforeAll(async () => {
   const { initBrepjs } = await import('./__kernel-tests__/wasmInit');
   await initBrepjs();
+  await loadTestFonts();
 }, 60_000);
+
+function meshCutoutParams(over: Partial<Cutout> = {}): BinParams {
+  const cutout: Cutout = {
+    id: 'm1',
+    shape: 'mesh',
+    meshId: 'asset-1',
+    x: 10,
+    y: 10,
+    width: 20,
+    depth: 12,
+    cutDepth: 6,
+    rotation: 0,
+    cornerRadius: 0,
+    label: 'AB',
+    engraveLabel: true,
+    groupId: null,
+    ...over,
+  };
+  return {
+    ...DEFAULT_BIN_PARAMS,
+    style: 'solid',
+    base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+    cutouts: [cutout],
+  };
+}
+
+describe('mesh (STL) cutout labels (#4030)', () => {
+  it('engraves a label on a mesh cutout even though its cavity is mesh-domain', () => {
+    // The mesh imprint itself is subtracted post-tessellation, so the ONLY BREP
+    // tool here is the engraved label, which regressed to nothing for mesh.
+    const withLabel = buildCutoutCuts(meshCutoutParams(), 80, 80, 35);
+    try {
+      expect(withLabel.cutTools.length + withLabel.fuseTools.length).toBeGreaterThan(0);
+    } finally {
+      for (const t of [...withLabel.cutTools, ...withLabel.fuseTools]) t.delete();
+    }
+  }, 60_000);
+
+  it('builds nothing for a mesh cutout with no label (cavity stays mesh-domain)', () => {
+    const noLabel = buildCutoutCuts(
+      meshCutoutParams({ engraveLabel: false, label: '' }),
+      80,
+      80,
+      35
+    );
+    expect(noLabel.cutTools.length + noLabel.fuseTools.length).toBe(0);
+  }, 60_000);
+});
 
 describe('findBottomEdges', () => {
   it('selects only the flat bottom edges, excluding vertical corner edges', () => {

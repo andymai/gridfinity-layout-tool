@@ -1151,8 +1151,23 @@ export function buildCutoutCuts(
   // apply, and the one the store's epoch bump has always assumed. Group MEMBERS
   // are dropped too, so a hidden subtract-member stops subtracting and a group
   // whose members are all hidden builds nothing.
-  const buildable = params.cutouts.filter((c) => c.shape !== 'mesh' && c.hidden !== true);
-  if (buildable.length === 0) return { cutTools: [], fuseTools: [] };
+  // Mesh imprints stay in `labelable` for the LABEL loop below (their text
+  // engraves on the bin top like any other cutout's), but are dropped from
+  // `buildable` because their cavity is not profile-extrudable: it subtracts
+  // post-tessellation in the mesh domain (meshImprint stage), never here.
+  const labelable = params.cutouts.filter((c) => c.hidden !== true);
+  const buildable = labelable.filter((c) => c.shape !== 'mesh');
+  // Emit nothing only when there is neither a buildable cavity nor a labelled
+  // mesh imprint (whose label this function still owns). Check per-instance
+  // labels, not just the master's, so a repeated mesh cutout labelled only
+  // through `array.labels` still counts.
+  const hasMeshLabel = labelable.some(
+    (c) =>
+      c.shape === 'mesh' &&
+      isCutoutEngraveMode(c) &&
+      labelledInstances(c).some((i) => i.label.trim() !== '')
+  );
+  if (buildable.length === 0 && !hasMeshLabel) return { cutTools: [], fuseTools: [] };
   params = { ...params, cutouts: buildable };
 
   // Cutout x,y are relative to interior bottom-left corner (0,0).
@@ -1244,14 +1259,14 @@ export function buildCutoutCuts(
   // Group op per groupId, keyed off the first member in cutouts order — the
   // same member buildGroupedCutouts reads it from.
   const groupOps = new Map<string, GroupOp>();
-  for (const c of params.cutouts) {
+  for (const c of labelable) {
     if (c.groupId !== null && !groupOps.has(c.groupId)) {
       groupOps.set(c.groupId, c.groupOp ?? DEFAULT_GROUP_OP);
     }
   }
 
   const rawFuseShapes: Shape3D[] = [];
-  for (const master of params.cutouts) {
+  for (const master of labelable) {
     if (!isCutoutEngraveMode(master)) continue;
     // A repeat with a label list engraves once per instance, each with its own
     // word; without one it engraves once beside the master, which is what every
@@ -1518,7 +1533,8 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
       return pointInPolyline(outline, lx, ly);
     }
     case 'mesh':
-      // Mesh imprints are filtered out before the label loop; unreachable.
+      // The imported pocket floor is an arbitrary surface with no flat plane to
+      // engrave into, so a mesh cutout's label always lands on the bin top.
       return false;
     case 'text':
       // A text element has no cavity, so its caption always lands on the
