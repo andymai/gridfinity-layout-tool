@@ -124,9 +124,9 @@
   ],
   "dependencies": {
     "@gridfinity/branded-types": "workspace:*",
-    "@liveblocks/client": "^3.24.0",
-    "@liveblocks/node": "^3.24.0",
-    "@liveblocks/react": "^3.24.0",
+    "@liveblocks/client": "^3.24.1",
+    "@liveblocks/node": "^3.24.1",
+    "@liveblocks/react": "^3.24.1",
     "@mediapipe/tasks-vision": "1.0.1",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",

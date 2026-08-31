@@ -54,14 +54,14 @@ importers:
         specifier: workspace:*
         version: link:packages/branded-types
       '@liveblocks/client':
-        specifier: ^3.24.0
-        version: 3.24.0(@types/json-schema@7.0.15)
+        specifier: ^3.24.1
+        version: 3.24.1(@types/json-schema@7.0.15)
       '@liveblocks/node':
-        specifier: ^3.24.0
-        version: 3.24.0(@types/json-schema@7.0.15)
+        specifier: ^3.24.1
+        version: 3.24.1(@types/json-schema@7.0.15)
       '@liveblocks/react':
-        specifier: ^3.24.0
-        version: 3.24.0(@types/json-schema@7.0.15)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react@19.2.8)
+        specifier: ^3.24.1
+        version: 3.24.1(@types/json-schema@7.0.15)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react@19.2.8)
       '@mediapipe/tasks-vision':
         specifier: 1.0.1
         version: 1.0.1
@@ -1431,19 +1431,19 @@ packages:
   '@jscadui/3mf-export@0.5.0':
     resolution: {integrity: sha512-y5vZktqCjyi7wA38zqNlLIdZUIRZoOO9vCjLzwmL4bR0hk7B/Zm1IeffzJPFe1vFc0C1IEv3hm8caDv3doRk9g==}
 
-  '@liveblocks/client@3.24.0':
-    resolution: {integrity: sha512-nSNqo/CbsOzekH68r1VCoI9OWh/2nPmdpcmG7eEuShM5stRjILBYBr3O5HOnoL6+dlmc0ZKYV4DO8IxYgoT9Yg==}
+  '@liveblocks/client@3.24.1':
+    resolution: {integrity: sha512-7q+4hE7Kl/ogARd/y73ja7Es3yUReDDK4MBsvp/DXMmF0LHlRe86vxGZUG0SNqytYYvzeTnqwNHwfrOEtMvftQ==}
 
-  '@liveblocks/core@3.24.0':
-    resolution: {integrity: sha512-bJSkMZCUNdP862xkg7xgZgGkn/TCyEQ4mgmvF6uuW0YgGMZr0PoyDVPMevnbt754wXYFnsJGHfxa4IcKHmmN+A==}
+  '@liveblocks/core@3.24.1':
+    resolution: {integrity: sha512-Jyzm+vZVX+ONEHgqICXPVS82yQ/CEflh44KtwuiPzT5L5vktAGUUH1tz+2tvP1xiJZaf5DgdAoR40VMBp2cW1Q==}
     peerDependencies:
       '@types/json-schema': ^7
 
-  '@liveblocks/node@3.24.0':
-    resolution: {integrity: sha512-d24Ox+G6Q6SmU3hxgFGmmlZaRvisBSgZSUKQQnMI3GSorFMOdecHzyBcngU8pBMdShN1V6dKTeiE7FneO3H1EQ==}
+  '@liveblocks/node@3.24.1':
+    resolution: {integrity: sha512-Tc8ynd/NpVjm+cf259HuBAwr8mvQU3MbD2QayTRO6GBQoMjfyijRkNHqCop0H8WaHE4Cj70waCRsONvLDbjfjg==}
 
-  '@liveblocks/react@3.24.0':
-    resolution: {integrity: sha512-xTNqnJDlYILbrErULTqQfEMBCt64Ng2gI071Aw19+9kXheg9RspqsBBB6v/5iFphb9y+iUkUfvwxIohge/JYSA==}
+  '@liveblocks/react@3.24.1':
+    resolution: {integrity: sha512-m/bcqw+/vPfNxTRosgs0iqXBcVCK0ZdkMIk0ojGQYYZDUFy+NBCmUVohSRjmA7AuxRlve+jZvcsFi88pbCXTwg==}
     peerDependencies:
       '@types/react': ^18 || ^19
       '@types/react-dom': ^18 || ^19
@@ -7270,19 +7270,19 @@ snapshots:
 
   '@jscadui/3mf-export@0.5.0': {}
 
-  '@liveblocks/client@3.24.0(@types/json-schema@7.0.15)':
+  '@liveblocks/client@3.24.1(@types/json-schema@7.0.15)':
     dependencies:
-      '@liveblocks/core': 3.24.0(@types/json-schema@7.0.15)
+      '@liveblocks/core': 3.24.1(@types/json-schema@7.0.15)
     transitivePeerDependencies:
       - '@types/json-schema'
 
-  '@liveblocks/core@3.24.0(@types/json-schema@7.0.15)':
+  '@liveblocks/core@3.24.1(@types/json-schema@7.0.15)':
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@liveblocks/node@3.24.0(@types/json-schema@7.0.15)':
+  '@liveblocks/node@3.24.1(@types/json-schema@7.0.15)':
     dependencies:
-      '@liveblocks/core': 3.24.0(@types/json-schema@7.0.15)
+      '@liveblocks/core': 3.24.1(@types/json-schema@7.0.15)
       '@stablelib/base64': 1.0.1
       fast-sha256: 1.3.0
       marked: 15.0.12
@@ -7291,10 +7291,10 @@ snapshots:
       - '@types/json-schema'
       - encoding
 
-  '@liveblocks/react@3.24.0(@types/json-schema@7.0.15)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react@19.2.8)':
+  '@liveblocks/react@3.24.1(@types/json-schema@7.0.15)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react@19.2.8)':
     dependencies:
-      '@liveblocks/client': 3.24.0(@types/json-schema@7.0.15)
-      '@liveblocks/core': 3.24.0(@types/json-schema@7.0.15)
+      '@liveblocks/client': 3.24.1(@types/json-schema@7.0.15)
+      '@liveblocks/core': 3.24.1(@types/json-schema@7.0.15)
       react: 19.2.8
     optionalDependencies:
       '@types/react': 19.2.18
