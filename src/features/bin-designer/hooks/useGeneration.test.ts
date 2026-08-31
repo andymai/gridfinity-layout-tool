@@ -37,8 +37,9 @@ vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: vi.fn(),
   getActiveKernel: () => mockActiveKernel,
   FAST_EXACT_SKIP_MS: 1000,
+  EXACT_IMMEDIATE_MAX_MS: 600,
   // Stable threshold — burst behavior is covered by draftPolicy's own tests.
-  createDraftSkipGate: () => () => 1000,
+  createDraftSkipGate: () => () => ({ skipBelowMs: 1000, scrubbing: false }),
 }));
 
 // Mock the cross-session mesh cache so pre-draft/persist behavior is
@@ -64,7 +65,7 @@ describe('useGeneration', () => {
     vi.useFakeTimers();
 
     (mockBridge as { isDestroyed: boolean }).isDestroyed = false;
-    (mockBridge.generate as ReturnType<typeof vi.fn>).mockResolvedValue({
+    const defaultExactResult = {
       mesh: {
         vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
         normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
@@ -73,7 +74,13 @@ describe('useGeneration', () => {
         triangleCount: 1,
       },
       timingMs: 5,
-    });
+    };
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockResolvedValue(defaultExactResult);
+    // A cheap exact fires through generateImmediate (see EXACT_IMMEDIATE_MAX_MS);
+    // both paths yield the same mesh.
+    (mockBridge.generateImmediate as ReturnType<typeof vi.fn>).mockResolvedValue(
+      defaultExactResult
+    );
     (mockBridge.getThreadingInfo as ReturnType<typeof vi.fn>).mockReturnValue({
       isThreaded: false,
       hardwareConcurrency: 4,
@@ -454,6 +461,41 @@ describe('useGeneration', () => {
     const gen = useDesignerStore.getState().generation;
     expect(gen.isDraft).toBe(false);
     expect(gen.status).toBe('complete');
+  });
+
+  it('fires the exact immediately (skips the debounce) when the estimate is cheap', async () => {
+    // Cheap prediction, worker idle (non-null) → the exact takes the immediate
+    // path instead of the adaptive debounce.
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockClear();
+    (mockBridge.generateImmediate as ReturnType<typeof vi.fn>).mockClear();
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(200);
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      useDesignerStore.setState((s) => ({ generation: { ...s.generation, epoch: 1 } }));
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    expect(mockBridge.generateImmediate).toHaveBeenCalledWith(expect.anything(), undefined, true);
+    expect(mockBridge.generate).not.toHaveBeenCalled();
+    expect(useDesignerStore.getState().generation.status).toBe('complete');
+  });
+
+  it('keeps the debounced exact when the estimate says the build is not cheap', async () => {
+    // A prediction at/above the immediate ceiling → the worker is busy enough
+    // that firing early could wedge it, so the debounced path stays in charge.
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockClear();
+    (mockBridge.generateImmediate as ReturnType<typeof vi.fn>).mockClear();
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(5000);
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      useDesignerStore.setState((s) => ({ generation: { ...s.generation, epoch: 1 } }));
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    expect(mockBridge.generate).toHaveBeenCalled();
+    expect(mockBridge.generateImmediate).not.toHaveBeenCalled();
   });
 
   it('persists the exact preview mesh after generation completes', async () => {

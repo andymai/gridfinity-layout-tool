@@ -16,12 +16,12 @@ import { FAST_EXACT_SKIP_MS, EDIT_BURST_WINDOW_MS, BURST_EXACT_SKIP_MS } from '.
  * settles, so the bar drops — draft unless the exact is genuinely
  * realtime-fast, otherwise the preview is dead for the whole scrub.
  */
-export function createDraftSkipGate(): () => number {
+export function createDraftSkipGate(): () => { skipBelowMs: number; scrubbing: boolean } {
   let lastEditAt = 0;
   return () => {
     const now = performance.now();
     const scrubbing = now - lastEditAt < EDIT_BURST_WINDOW_MS;
     lastEditAt = now;
-    return scrubbing ? BURST_EXACT_SKIP_MS : FAST_EXACT_SKIP_MS;
+    return { skipBelowMs: scrubbing ? BURST_EXACT_SKIP_MS : FAST_EXACT_SKIP_MS, scrubbing };
   };
 }

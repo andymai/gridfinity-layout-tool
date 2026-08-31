@@ -36,7 +36,7 @@ vi.mock('@/shared/generation/bridge', () => ({
     estimateGenerate: mockEstimateGenerate,
     isDestroyed: false,
   }),
-  createDraftSkipGate: () => () => 1000,
+  createDraftSkipGate: () => () => ({ skipBelowMs: 1000, scrubbing: false }),
   workerPoolManager: {
     get: () => null,
     acquire: () => Promise.reject(new Error('No pool in test')),
