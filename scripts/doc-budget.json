@@ -1,6 +1,10 @@
 {
   "tolerance": "1.1",
-  "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
+  "allowedMissingRefs": [
+    "b17779575",
+    "components/Foo.tsx",
+    "diffProps"
+  ],
   "words": {
     ".claude/skills/analytics-and-labs/SKILL.md": 1270,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
@@ -13,6 +17,7 @@
     ".claude/skills/grid-editor/SKILL.md": 1168,
     ".claude/skills/i18n-changes/SKILL.md": 1155,
     ".claude/skills/json-schemas/SKILL.md": 872,
+    ".claude/skills/manual-deploy/SKILL.md": 463,
     ".claude/skills/print-export/SKILL.md": 1587,
     ".claude/skills/quality-gates/SKILL.md": 1761,
     ".claude/skills/release-and-ci/SKILL.md": 1579,
