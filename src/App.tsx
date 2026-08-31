@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { GlobalSettingsModal } from '@/shell/Modals/SettingsModal/GlobalSettingsModal';
 import {
   useLayoutStore,
   useLibraryStore,
@@ -694,6 +695,7 @@ export default function App() {
           <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet={isTablet} />
         </Suspense>
       )}
+      <GlobalSettingsModal />
     </>
   );
 }
