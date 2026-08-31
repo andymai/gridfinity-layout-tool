@@ -33,15 +33,21 @@ function axis(raw: number, invert: boolean): number {
 
 /**
  * Map raw device axes to the five semantic navigation axes, applying the
- * deadzone and per-axis inversion. Device axis meanings (from spacemouse-webhid):
- * translate x = right, y = forward/back, z = up/down; rotate pitch/yaw.
+ * deadzone and per-axis inversion.
+ *
+ * Axis roles corrected against a SpaceMouse Pro hardware test (#4041): left/right
+ * translation followed the puck backwards, and the lift and push axes drove the
+ * wrong pair (lift zoomed, push panned). So left/right is negated, and the up/down
+ * (y) and forward/back (z) axes now drive pan and zoom respectively. Rotations
+ * (orbit) already tested correct and are unchanged. Any residual per-axis sign a
+ * given device disagrees on is the user's `invert.*` override.
  */
 export function toDeflection(raw: RawDeflection, settings: SpaceMouseSettings): Deflection {
   const { invert } = settings;
   return {
-    panX: axis(raw.translation.x, invert.panX),
-    panY: axis(-raw.translation.z, invert.panY), // device z+ is down; screen up is +
-    zoom: axis(-raw.translation.y, invert.zoom), // push forward (y-) zooms in
+    panX: axis(-raw.translation.x, invert.panX), // puck left pans the view left
+    panY: axis(-raw.translation.y, invert.panY), // lift (up/down) pans vertically
+    zoom: axis(-raw.translation.z, invert.zoom), // push forward zooms in
     orbitH: axis(raw.rotation.yaw, invert.orbitH),
     orbitV: axis(raw.rotation.pitch, invert.orbitV),
   };
