@@ -10,10 +10,13 @@ describe('DesignListEmptyState', () => {
     expect(screen.getByRole('button', { name: /Start a new design/ })).toBeInTheDocument();
   });
 
-  it('fires onNewDesign when the start button is clicked', () => {
+  it('fires onNewDesign with no argument when the start button is clicked', () => {
     const onNewDesign = vi.fn();
     render(<DesignListEmptyState onNewDesign={onNewDesign} />);
     fireEvent.click(screen.getByRole('button', { name: /Start a new design/ }));
     expect(onNewDesign).toHaveBeenCalledTimes(1);
+    // Must NOT forward the click event: the parent reads the first argument as
+    // the item kind, and an event object has no descriptor (crashes new-design).
+    expect(onNewDesign).toHaveBeenCalledWith();
   });
 });
