@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/cutoutBuilder.test.ts
+  s_f355eac7e0c076::t_e137ab45f24de0 53-57
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_f355eac7e0c076::t_d5c8c23cb8c6c2 1161-1163,1165-1168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e83f8a6ca83d850f33c3b8c280615d41ab1c5b9e",
+  "prompts": {},
+  "sessions": {
+    "s_f355eac7e0c076": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e2e02f-5810-4320-85da-73aa13005f4a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
