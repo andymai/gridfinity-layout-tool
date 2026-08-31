@@ -336,6 +336,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
         searchBar={topBar}
         header={communityAndVariant}
         wrapContent={(content) => wrapEditable(content, false)}
+        footer={<AttributionFooter />}
         dock={<UserDock />}
       />
     );
