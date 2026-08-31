@@ -35,19 +35,18 @@ function axis(raw: number, invert: boolean): number {
  * Map raw device axes to the five semantic navigation axes, applying the
  * deadzone and per-axis inversion.
  *
- * Axis roles corrected against a SpaceMouse Pro hardware test (#4041): left/right
- * translation followed the puck backwards, and the lift and push axes drove the
- * wrong pair (lift zoomed, push panned). So left/right is negated, and the up/down
- * (y) and forward/back (z) axes now drive pan and zoom respectively. Rotations
- * (orbit) already tested correct and are unchanged. Any residual per-axis sign a
- * given device disagrees on is the user's `invert.*` override.
+ * Device translation axes, per `@spacemouse-lib/core`: x+ is right, y+ is pulled
+ * back toward the user, z+ is pressed down. Navigation is object-centric like
+ * Fusion and PrusaSlicer, so the model tracks the puck; since `applyFrameMotion`
+ * translates the camera, every pan sign is the opposite of the puck's. Verified
+ * against a SpaceMouse Pro (#4041).
  */
 export function toDeflection(raw: RawDeflection, settings: SpaceMouseSettings): Deflection {
   const { invert } = settings;
   return {
-    panX: axis(-raw.translation.x, invert.panX), // puck left pans the view left
-    panY: axis(-raw.translation.y, invert.panY), // lift (up/down) pans vertically
-    zoom: axis(-raw.translation.z, invert.zoom), // push forward zooms in
+    panX: axis(-raw.translation.x, invert.panX), // puck right, model right
+    panY: axis(raw.translation.z, invert.panY), // puck lifted, model up
+    zoom: axis(raw.translation.y, invert.zoom), // puck pulled back, zoom in
     orbitH: axis(raw.rotation.yaw, invert.orbitH),
     orbitV: axis(raw.rotation.pitch, invert.orbitV),
   };
