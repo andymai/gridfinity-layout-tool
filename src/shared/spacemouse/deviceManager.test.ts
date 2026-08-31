@@ -41,11 +41,14 @@ afterEach(() => {
 });
 
 describe('deviceManager focus tracking', () => {
-  it('drops puck input once the window is backgrounded (#4041)', () => {
+  it('drops puck input for a visible window that is not frontmost (#4041)', () => {
     registerCanvas();
     startSpaceMouse();
     hasFocus.mockReturnValue(false);
     window.dispatchEvent(new Event('blur'));
+    // The reported case: the window is on screen, another CAD app just has the
+    // keyboard. Gating on visibilityState instead would let the puck through.
+    expect(document.visibilityState).toBe('visible');
     spaceMouseBus.setTranslation(FULL_DEFLECTION);
     expect(spaceMouseBus.getRaw().translation).toEqual({ x: 0, y: 0, z: 0 });
   });
