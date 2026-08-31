@@ -1,0 +1,22 @@
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_cca76c9e4c3e59::t_d682d98a355343 55,57-58,68
+  s_cca76c9e4c3e59::t_b063af5b743cce 262
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_cca76c9e4c3e59::t_18de15217972cb 339
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "96a7288a1f4660a65cf704a25ee7fce91ed4ca9b",
+  "prompts": {},
+  "sessions": {
+    "s_cca76c9e4c3e59": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1097ed93-8b0e-455a-80be-71cb837ed37e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
