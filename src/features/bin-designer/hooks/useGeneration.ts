@@ -9,6 +9,8 @@ import {
   getActiveKernel,
   EXACT_IMMEDIATE_MAX_MS,
   FORCE_DRAFT_AFTER_EXACT_MS,
+  MAX_TIMEOUT_MS,
+  PREVIEW_TIMEOUT_SAFETY,
 } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
@@ -176,8 +178,8 @@ export function useGeneration(): void {
   const pushPerfSnapshot = useDesignerStore((state) => state.pushPerfSnapshot);
 
   const dispatchDraft = useCallback(
-    (preview: GenerationBridge, currentParams: BinParams, token: number) => {
-      void preview
+    (preview: GenerationBridge, currentParams: BinParams, token: number): Promise<void> => {
+      return preview
         .generateImmediate(
           withSocketNozzle(
             currentParams,
@@ -285,6 +287,20 @@ export function useGeneration(): void {
       // exact with no interim feedback.
       const lastExactSlow = lastExactMsRef.current >= FORCE_DRAFT_AFTER_EXACT_MS;
       const preview = previewBridgeRef.current;
+
+      // Draft-only fallback: when the device-aware estimate says the exact would
+      // blow the preview time ceiling on THIS device, running it just burns the
+      // whole budget and then hard-resets the worker. Show the Manifold draft as
+      // the final preview instead; export still builds the exact on its own,
+      // larger budget. Needs a preview bridge to have anything to show.
+      if (preview && !preview.isDestroyed && predictedMs !== null && predictedMs > MAX_TIMEOUT_MS) {
+        await dispatchDraft(preview, genParams, token);
+        if (token !== genTokenRef.current) return;
+        finalizedTokenRef.current = token;
+        setGenerationStatus('complete');
+        return;
+      }
+
       if (
         preview &&
         !preview.isDestroyed &&
@@ -292,8 +308,14 @@ export function useGeneration(): void {
         token > finalizedTokenRef.current &&
         (lastExactSlow || !(predictedMs !== null && predictedMs < skipBelowMs))
       ) {
-        dispatchDraft(preview, genParams, token);
+        void dispatchDraft(preview, genParams, token);
       }
+
+      // Arm a device-aware timeout floor: on a slow device the estimate is large,
+      // so the exact gets headroom over its own measured cost even when the static
+      // budget (tuned on a faster reference machine) is tighter. No effect on fast
+      // devices or cheap builds, where the static budget already dominates.
+      const minTimeoutMs = predictedMs !== null ? predictedMs * PREVIEW_TIMEOUT_SAFETY : 0;
 
       // Fire the exact immediately (no debounce) only when it is predicted
       // cheap, the worker is idle (non-null estimate), and this is not a scrub.
@@ -306,8 +328,8 @@ export function useGeneration(): void {
       try {
         // Only the designer preview renders label plates (preview).
         const result = fireImmediate
-          ? await bridge.generateImmediate(genParams, undefined, true)
-          : await bridge.generate(genParams, undefined, true);
+          ? await bridge.generateImmediate(genParams, undefined, true, minTimeoutMs)
+          : await bridge.generate(genParams, undefined, true, minTimeoutMs);
 
         // A newer edit superseded this one; let its results win instead.
         if (token !== genTokenRef.current) return;
@@ -498,7 +520,7 @@ export function useGeneration(): void {
         previewBridgeRef.current = preview;
         if (genTokenRef.current === 0) {
           const token = ++genTokenRef.current;
-          dispatchDraft(preview, useDesignerStore.getState().params, token);
+          void dispatchDraft(preview, useDesignerStore.getState().params, token);
         }
       })
       .catch(() => {

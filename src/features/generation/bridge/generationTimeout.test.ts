@@ -64,6 +64,18 @@ describe('computeGenerationTimeoutMs', () => {
     expect(computeGenerationTimeoutMs(params({ height: 3 }))).toBe(BASE_TIMEOUT_MS);
   });
 
+  it('raises the budget floor to minTimeoutMs, but never below the static budget or above the ceiling', () => {
+    const p = params({ height: 3 }); // static budget = BASE_TIMEOUT_MS
+    // A device floor above the static budget wins.
+    expect(computeGenerationTimeoutMs(p, BASE_TIMEOUT_MS + 20_000)).toBe(BASE_TIMEOUT_MS + 20_000);
+    // A device floor below the static budget does not lower it.
+    expect(computeGenerationTimeoutMs(p, 1_000)).toBe(BASE_TIMEOUT_MS);
+    // The ceiling still bounds it.
+    expect(computeGenerationTimeoutMs(p, MAX_TIMEOUT_MS * 5)).toBe(MAX_TIMEOUT_MS);
+    // A non-finite floor is ignored.
+    expect(computeGenerationTimeoutMs(p, NaN)).toBe(BASE_TIMEOUT_MS);
+  });
+
   it('adds a pattern bonus when the hex pattern is enabled', () => {
     const t = computeGenerationTimeoutMs(
       params({

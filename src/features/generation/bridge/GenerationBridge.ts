@@ -261,22 +261,29 @@ export class GenerationBridge {
     });
   }
 
-  /** Generate bin mesh — debounced. */
+  /**
+   * Generate bin mesh — debounced. `minTimeoutMs` raises the generation-timeout
+   * floor (never lowers it, still bounded by the preview ceiling) so a slow
+   * device can arm its own measured-cost budget over the reference-tuned static
+   * one; see `computeGenerationTimeoutMs`.
+   */
   generate(
     params: BinParams,
     onProgress?: ProgressCallback,
-    withLabelPlates = false
+    withLabelPlates = false,
+    minTimeoutMs = 0
   ): Promise<GenerationResult> {
-    return generateBinImpl(this, params, onProgress, true, withLabelPlates);
+    return generateBinImpl(this, params, onProgress, true, withLabelPlates, minTimeoutMs);
   }
 
   /** Generate immediately without debounce — for initial generation or user-triggered regeneration. */
   generateImmediate(
     params: BinParams,
     onProgress?: ProgressCallback,
-    withLabelPlates = false
+    withLabelPlates = false,
+    minTimeoutMs = 0
   ): Promise<GenerationResult> {
-    return generateBinImpl(this, params, onProgress, false, withLabelPlates);
+    return generateBinImpl(this, params, onProgress, false, withLabelPlates, minTimeoutMs);
   }
 
   /**

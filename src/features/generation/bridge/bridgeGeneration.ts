@@ -92,7 +92,8 @@ export function generateBin(
   params: BinParams,
   onProgress: ProgressCallback | undefined,
   debounce: boolean,
-  withLabelPlates = false
+  withLabelPlates = false,
+  minTimeoutMs = 0
 ): Promise<GenerationResult> {
   if (ctx.isDestroyed) {
     return Promise.reject(new Error('Bridge has been destroyed'));
@@ -124,7 +125,7 @@ export function generateBin(
       const requestId = ctx.nextRequestId();
       ctx.currentRequestId = requestId;
       ctx.binCache.setPending(fingerprint);
-      sendWhenReady(ctx, requestId, computeGenerationTimeoutMs(params), {
+      sendWhenReady(ctx, requestId, computeGenerationTimeoutMs(params, minTimeoutMs), {
         type: 'GENERATE',
         payload: { params, requestId, withLabelPlates },
       });
