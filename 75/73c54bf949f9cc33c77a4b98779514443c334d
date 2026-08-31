@@ -1,0 +1,21 @@
+.claude/skills/manual-deploy/SKILL.md
+  s_4569edaeaa7255::t_b9b25a59f6acd9 1-77
+scripts/doc-budget.json
+  s_4569edaeaa7255::t_f3d43c3a7fcb02 3-7,20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "7573c54bf949f9cc33c77a4b98779514443c334d",
+  "prompts": {},
+  "sessions": {
+    "s_4569edaeaa7255": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f1083a0-1d11-431c-93be-2cfbee923db1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
