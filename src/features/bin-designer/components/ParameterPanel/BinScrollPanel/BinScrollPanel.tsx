@@ -52,8 +52,10 @@ export interface BinScrollPanelProps {
   readonly searchBar?: ReactNode;
   /** Scrolls at the top of the list: community card + variant section. */
   readonly header?: ReactNode;
-  /** Wraps the editable groups (VariantLock); searchBar/header/dock stay outside. */
+  /** Wraps the editable groups (VariantLock); searchBar/header/footer/dock stay outside. */
   readonly wrapContent?: (node: ReactNode) => ReactNode;
+  /** Last thing in the scroll, below the groups: the attribution footer. */
+  readonly footer?: ReactNode;
   /** Pinned below the scroll: the user dock. */
   readonly dock?: ReactNode;
 }
@@ -63,6 +65,7 @@ export function BinScrollPanel({
   searchBar,
   header,
   wrapContent,
+  footer,
   dock,
 }: BinScrollPanelProps) {
   const t = useTranslation();
@@ -256,6 +259,7 @@ export function BinScrollPanel({
       <div className="relative min-h-0 flex-1 overflow-y-auto scrollbar-thin">
         {header}
         {wrapContent ? wrapContent(groups) : groups}
+        {footer}
       </div>
       {dock}
     </div>
