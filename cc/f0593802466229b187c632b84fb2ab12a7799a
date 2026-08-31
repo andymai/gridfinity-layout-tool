@@ -1,0 +1,40 @@
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_65f0a251961ae8::t_69ca53aa670340 42-43
+  s_65f0a251961ae8::t_479028e5a4db2d 560-608
+  s_65f0a251961ae8::t_81596702d7fc40 482-487
+src/features/generation/bridge/bridgeGeneration.ts
+  s_65f0a251961ae8::t_a5b12be692a556 128
+  s_65f0a251961ae8::t_e5dcb0627664ad 95-96
+src/features/bin-designer/hooks/useGeneration.ts
+  s_65f0a251961ae8::t_fd547397706674 12-13
+  s_65f0a251961ae8::t_9d3a2201c9e6f9 290-303,314-319,331-332
+  s_65f0a251961ae8::t_5f8f8eaf3329fc 181-182
+  s_65f0a251961ae8::t_1b46e2879138e3 523
+  s_65f0a251961ae8::t_a5c9fadeab1960 311
+src/shared/generation/bridge.ts
+  s_65f0a251961ae8::t_b5623ce520a820 20-22
+  s_65f0a251961ae8::t_d8ed228ba37082 19
+src/features/generation/bridge/generationTimeout.test.ts
+  s_65f0a251961ae8::t_f8dde45035be75 67-78
+src/features/generation/bridge/generationTimeout.ts
+  s_65f0a251961ae8::t_9340556d22071e 345-354,358-361,363,366-367
+  s_65f0a251961ae8::t_818c60a076ef1c 344
+src/features/generation/bridge/GenerationBridge.ts
+  s_65f0a251961ae8::t_6f60d83cb273ec 264-269,273-274,276,283-284,286
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ccf0593802466229b187c632b84fb2ab12a7799a",
+  "prompts": {},
+  "sessions": {
+    "s_65f0a251961ae8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "70be2d35-ae8a-4d41-8031-f8fa81cfefae",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
