@@ -1,0 +1,26 @@
+src/shell/Modals/SettingsModal/GlobalSettingsModal.tsx
+  s_f355eac7e0c076::t_08b766ea595c1e 1-46
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
+  s_f355eac7e0c076::t_b0c7725d255eba 95-97
+src/App.tsx
+  s_f355eac7e0c076::t_861a7d8fd376c9 698
+  s_f355eac7e0c076::t_daae5c306b0816 3
+src/shell/Modals/SettingsModal/GlobalSettingsModal.test.tsx
+  s_f355eac7e0c076::t_691b5255cbc701 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d91fefa87708da8799b7a0fe9e0cda36cfd2faa5",
+  "prompts": {},
+  "sessions": {
+    "s_f355eac7e0c076": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e2e02f-5810-4320-85da-73aa13005f4a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
