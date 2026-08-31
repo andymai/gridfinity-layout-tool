@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/binGenerator.scenario.scoopContainment.test.ts
+  s_f355eac7e0c076::t_b05552a62d6dcd 22,35-39,56-58,62
+  s_f355eac7e0c076::t_f023c4fb2525ec 21
+  s_f355eac7e0c076::t_92fc35a7f5fb04 44,52,54-55,60-61
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_f355eac7e0c076::t_93fdc73dc1d4df 235-242
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "97f3af56c4b63c332dc30ad93d728174811366a7",
+  "prompts": {},
+  "sessions": {
+    "s_f355eac7e0c076": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e2e02f-5810-4320-85da-73aa13005f4a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
