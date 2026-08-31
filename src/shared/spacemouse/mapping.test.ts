@@ -48,11 +48,26 @@ describe('toDeflection', () => {
       rotation: { pitch: 350, roll: 0, yaw: 350 },
     };
     const d = toDeflection(raw, DEFAULT_SETTINGS);
-    expect(d.panX).toBeCloseTo(1); // x+ = right
-    expect(d.panY).toBeCloseTo(1); // z- (lift) = screen up
-    expect(d.zoom).toBeCloseTo(1); // y- (push forward) = zoom in
+    expect(d.panX).toBeCloseTo(-1); // x+ pans left (puck follows the model)
+    expect(d.panY).toBeCloseTo(1); // -y (lift) pans screen up
+    expect(d.zoom).toBeCloseTo(1); // -z (push forward) zooms in
     expect(d.orbitH).toBeCloseTo(1);
     expect(d.orbitV).toBeCloseTo(1);
+  });
+
+  it('drives pan from lift (y) and zoom from push (z), not the reverse (#4041)', () => {
+    const lift = toDeflection(
+      { translation: { x: 0, y: 350, z: 0 }, rotation: { pitch: 0, roll: 0, yaw: 0 } },
+      DEFAULT_SETTINGS
+    );
+    expect(Math.abs(lift.panY)).toBeCloseTo(1); // the lift axis drives vertical pan
+    expect(lift.zoom).toBeCloseTo(0); // ...never zoom
+    const push = toDeflection(
+      { translation: { x: 0, y: 0, z: 350 }, rotation: { pitch: 0, roll: 0, yaw: 0 } },
+      DEFAULT_SETTINGS
+    );
+    expect(Math.abs(push.zoom)).toBeCloseTo(1); // the push axis drives zoom
+    expect(push.panY).toBeCloseTo(0); // ...never pan
   });
 
   it('honors per-axis inversion', () => {
@@ -65,7 +80,7 @@ describe('toDeflection', () => {
       rotation: { pitch: 0, roll: 0, yaw: 350 },
     };
     const d = toDeflection(raw, settings);
-    expect(d.panX).toBeCloseTo(-1);
+    expect(d.panX).toBeCloseTo(1); // invert flips the corrected base sign back
     expect(d.orbitH).toBeCloseTo(-1);
   });
 });
@@ -83,7 +98,7 @@ describe('computeFrameMotion', () => {
     const near = computeFrameMotion(full, DEFAULT_SETTINGS, 1 / 60, 10);
     const far = computeFrameMotion(full, DEFAULT_SETTINGS, 1 / 60, 100);
     expect(far.panX).toBeCloseTo(near.panX * 10);
-    expect(far.panX).toBeGreaterThan(0);
+    expect(far.panX).toBeLessThan(0); // x+ now pans left (negative panX)
   });
 
   it('scales all motion by sensitivity', () => {
