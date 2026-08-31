@@ -98,6 +98,10 @@ function onHidDisconnect(): void {
   if (device) handleDeviceLost();
 }
 
+function syncFocus(): void {
+  spaceMouseBus.setFocused(document.hasFocus());
+}
+
 export function startSpaceMouse(): void {
   if (started) return;
   started = true;
@@ -112,6 +116,12 @@ export function startSpaceMouse(): void {
   }
   navigator.hid.addEventListener('connect', onHidConnect);
   navigator.hid.addEventListener('disconnect', onHidDisconnect);
+  // Both events are needed: switching windows fires focus/blur, switching tabs
+  // within the same window only fires visibilitychange.
+  window.addEventListener('focus', syncFocus);
+  window.addEventListener('blur', syncFocus);
+  document.addEventListener('visibilitychange', syncFocus);
+  syncFocus();
   void tryAutoConnect();
 }
 
@@ -121,7 +131,11 @@ export function stopSpaceMouse(): void {
   if (isWebHidSupported()) {
     navigator.hid.removeEventListener('connect', onHidConnect);
     navigator.hid.removeEventListener('disconnect', onHidDisconnect);
+    window.removeEventListener('focus', syncFocus);
+    window.removeEventListener('blur', syncFocus);
+    document.removeEventListener('visibilitychange', syncFocus);
   }
+  spaceMouseBus.setFocused(true);
   detachCurrent();
   spaceMouseBus.setGlobalHandler(null);
   spaceMouseBus.resetDeflection();

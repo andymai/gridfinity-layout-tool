@@ -9,11 +9,18 @@ import {
 import { MIN_POLAR } from './constants';
 import type { CameraViewPreset, FrameMotion } from './types';
 
-/** OrbitControls surface the controller needs. */
+/**
+ * OrbitControls surface the controller needs. The `enable*` flags are the host
+ * canvas's own limits: a preview that turns off mouse panning means it, so the
+ * puck honours them too. Absent means enabled, matching OrbitControls' defaults.
+ */
 export interface OrbitLike {
   target: Vector3;
   update: () => void;
   autoRotate?: boolean;
+  enablePan?: boolean;
+  enableZoom?: boolean;
+  enableRotate?: boolean;
 }
 
 const FIT_PADDING = 1.25;
@@ -120,7 +127,7 @@ export function frameBox(
 export function applyFrameMotion(camera: Camera, controls: OrbitLike, motion: FrameMotion): void {
   const target = controls.target;
 
-  if (motion.panX !== 0 || motion.panY !== 0) {
+  if (controls.enablePan !== false && (motion.panX !== 0 || motion.panY !== 0)) {
     const right = new Vector3().setFromMatrixColumn(camera.matrix, 0);
     const up = new Vector3().setFromMatrixColumn(camera.matrix, 1);
     const pan = right.multiplyScalar(motion.panX).add(up.multiplyScalar(motion.panY));
@@ -128,7 +135,7 @@ export function applyFrameMotion(camera: Camera, controls: OrbitLike, motion: Fr
     target.add(pan);
   }
 
-  if (motion.orbitH !== 0 || motion.orbitV !== 0) {
+  if (controls.enableRotate !== false && (motion.orbitH !== 0 || motion.orbitV !== 0)) {
     const up = camera.up.clone().normalize();
     const offset = camera.position.clone().sub(target);
     if (motion.orbitH !== 0) offset.applyAxisAngle(up, motion.orbitH);
@@ -144,7 +151,7 @@ export function applyFrameMotion(camera: Camera, controls: OrbitLike, motion: Fr
     camera.position.copy(target).add(offset);
   }
 
-  if (motion.zoom !== 0) {
+  if (controls.enableZoom !== false && motion.zoom !== 0) {
     if (camera instanceof OrthographicCamera) {
       camera.zoom = Math.max(1e-4, camera.zoom * Math.exp(motion.zoom));
       camera.updateProjectionMatrix();

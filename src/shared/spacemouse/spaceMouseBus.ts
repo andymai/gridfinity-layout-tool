@@ -8,6 +8,12 @@ export interface SpaceMouseController {
   runCommand: (command: SpaceMouseCommand) => void;
   /** Wake this canvas so a demand-frameloop renders. */
   invalidate: () => void;
+  /**
+   * Hold the puck for as long as this canvas is mounted instead of waiting to be
+   * hovered. Set by canvases inside a modal, which cover the canvas that would
+   * otherwise keep moving unseen behind the overlay.
+   */
+  claim?: boolean;
 }
 
 const zeroTranslation = (): RawTranslation => ({ x: 0, y: 0, z: 0 });
@@ -23,7 +29,9 @@ class SpaceMouseBus {
   private translation = zeroTranslation();
   private rotation = zeroRotation();
   private readonly controllers = new Map<string, SpaceMouseController>();
-  private activeId: string | null = null;
+  private hoveredId: string | null = null;
+  private readonly claims: string[] = [];
+  private focused = true;
   private globalHandler: ((command: SpaceMouseCommand) => void) | null = null;
 
   setGlobalHandler(handler: ((command: SpaceMouseCommand) => void) | null): void {
@@ -32,31 +40,61 @@ class SpaceMouseBus {
 
   register(controller: SpaceMouseController): () => void {
     this.controllers.set(controller.id, controller);
-    if (this.activeId === null) this.activeId = controller.id;
+    if (controller.claim) this.claims.push(controller.id);
+    else if (this.hoveredId === null) this.hoveredId = controller.id;
     return () => this.unregister(controller.id);
   }
 
   private unregister(id: string): void {
     this.controllers.delete(id);
-    if (this.activeId === id) {
-      this.activeId = this.controllers.keys().next().value ?? null;
+    const claim = this.claims.lastIndexOf(id);
+    if (claim !== -1) this.claims.splice(claim, 1);
+    if (this.hoveredId === id) this.hoveredId = null;
+  }
+
+  /**
+   * Who the puck drives: the newest mounted modal claim, else the last canvas
+   * hovered, else whichever registered first.
+   */
+  private active(): SpaceMouseController | null {
+    for (let i = this.claims.length - 1; i >= 0; i--) {
+      const claimed = this.controllers.get(this.claims[i]);
+      if (claimed) return claimed;
     }
+    const hovered = this.hoveredId ? this.controllers.get(this.hoveredId) : undefined;
+    return hovered ?? this.controllers.values().next().value ?? null;
   }
 
   setActive(id: string): void {
-    if (this.controllers.has(id)) this.activeId = id;
+    if (this.controllers.has(id)) this.hoveredId = id;
   }
 
   isActive(id: string): boolean {
-    return this.activeId === id;
+    return this.active()?.id === id;
+  }
+
+  /**
+   * Gate input on the app actually being frontmost. WebHID keeps delivering while
+   * the window is backgrounded, so without this a puck driving another CAD app
+   * silently drives whatever canvas is mounted here too (#4041).
+   */
+  setFocused(focused: boolean): void {
+    if (this.focused === focused) return;
+    this.focused = focused;
+    // Forget the deflection we last saw. A puck at rest reports nothing (the
+    // device only emits on change), so a stale one would otherwise sit there and
+    // replay the moment focus returns.
+    if (!focused) this.resetDeflection();
   }
 
   setTranslation(translation: RawTranslation): void {
+    if (!this.focused) return;
     this.translation = translation;
     this.wake();
   }
 
   setRotation(rotation: RawRotation): void {
+    if (!this.focused) return;
     this.rotation = rotation;
     this.wake();
   }
@@ -73,6 +111,7 @@ class SpaceMouseBus {
   }
 
   pressButton(buttonIndex: number): void {
+    if (!this.focused) return;
     const command = resolveButtonCommand(buttonIndex);
     if (command) this.dispatch(command);
   }
@@ -82,19 +121,19 @@ class SpaceMouseBus {
       this.globalHandler?.(command);
       return;
     }
-    const active = this.activeId ? this.controllers.get(this.activeId) : null;
-    active?.runCommand(command);
+    this.active()?.runCommand(command);
   }
 
   private wake(): void {
-    const active = this.activeId ? this.controllers.get(this.activeId) : null;
-    active?.invalidate();
+    this.active()?.invalidate();
   }
 
   /** Test-only: clear all registrations and state. */
   _resetForTests(): void {
     this.controllers.clear();
-    this.activeId = null;
+    this.claims.length = 0;
+    this.hoveredId = null;
+    this.focused = true;
     this.globalHandler = null;
     this.translation = zeroTranslation();
     this.rotation = zeroRotation();

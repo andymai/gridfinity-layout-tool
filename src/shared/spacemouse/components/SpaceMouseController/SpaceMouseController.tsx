@@ -34,12 +34,22 @@ function directionForCommand(command: SpaceMouseCommand, up: Vector3): Vector3 |
   }
 }
 
+interface SpaceMouseControllerProps {
+  /**
+   * Marks a canvas that lives inside a modal. It holds the puck for as long as
+   * it is mounted, so the canvas it covers stops moving unseen behind it rather
+   * than waiting for this one to be hovered.
+   */
+  modal?: boolean;
+}
+
 /**
  * Drives its host canvas's camera from the shared SpaceMouse bus. Mount one
  * inside every OrbitControls-backed `<Canvas>`; it no-ops where there are no
- * controls (e.g. the 2D cutout editor). Renders nothing.
+ * controls (e.g. the 2D cutout editor), which includes controls that skipped
+ * `makeDefault`. Renders nothing.
  */
-export function SpaceMouseController(): null {
+export function SpaceMouseController({ modal = false }: SpaceMouseControllerProps): null {
   const enabled = useFeatureFlag(SPACEMOUSE_FEATURE_ID);
   const controls = useThree((s) => s.controls) as OrbitLike | null;
   const camera = useThree((s) => s.camera);
@@ -74,15 +84,16 @@ export function SpaceMouseController(): null {
       id,
       runCommand,
       invalidate: () => stateRef.current.invalidate(),
+      claim: modal,
     });
     const dom = gl.domElement;
-    const claim = (): void => spaceMouseBus.setActive(id);
-    dom.addEventListener('pointerenter', claim);
+    const claimOnHover = (): void => spaceMouseBus.setActive(id);
+    dom.addEventListener('pointerenter', claimOnHover);
     return () => {
-      dom.removeEventListener('pointerenter', claim);
+      dom.removeEventListener('pointerenter', claimOnHover);
       unregister();
     };
-  }, [enabled, id, gl]);
+  }, [enabled, id, gl, modal]);
 
   useFrame((_, dt) => {
     const st = stateRef.current;

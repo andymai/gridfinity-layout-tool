@@ -28,6 +28,7 @@ graph TB
 | `fonts/`         | The bundled OFL type faces and their licences, plus the family-to-URL map both the worker and the designer load from                                                                                                                                 |
 | `constants/`     | Re-exports `DEFAULT_BIN_PARAMS`, `GRIDFINITY` from `bin-designer`; owns label plate geometry (`labelPlates`), the label icon SVG catalog (`labelIconPaths`) and the outer-wall keep-out band (`wallBands`) so the worker and the UI share one source |
 | `generation/`    | Re-exports `GenerationBridge`, the direct-mesh drafts, and the brepjs-free pattern metrics (wall element sizes + `stampPatternOpenArea`, and the floor pattern's window rule) for cross-feature use                                                  |
+| `spacemouse/`    | 3Dconnexion puck support behind the `spacemouse` labs flag: WebHID device manager, the bus that fans one puck out to the active canvas, axis mapping and camera commands                                                                             |
 
 ## Key Components (`components/`)
 
@@ -102,3 +103,4 @@ behaviour and `InlineEditText` for the styled preset over it, both from
 4. **getDisplayLayers reverses** — UI display order is the reverse of array order; always use this for rendering
 5. **useAutoSave debounce** — 1000ms debounce + 2000ms idle callback; saves skip if no changes detected
 6. **MutationsContext fallback** — `useMutations()` returns store mutations directly when no provider is present (safe default)
+7. **SpaceMouse needs `makeDefault`** — `<SpaceMouseController />` reads `useThree(s => s.controls)`, so a `<Canvas>` whose `OrbitControls` omits `makeDefault` silently no-ops; pass `modal` inside a `Dialog.Root` (see the three-preview skill)

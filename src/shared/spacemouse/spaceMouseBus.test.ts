@@ -42,6 +42,79 @@ describe('spaceMouseBus registration', () => {
   });
 });
 
+describe('spaceMouseBus modal claims', () => {
+  it('hands the puck to a modal canvas the moment it mounts', () => {
+    spaceMouseBus.register(makeController('page'));
+    const unregisterModal = spaceMouseBus.register({ ...makeController('modal'), claim: true });
+    expect(spaceMouseBus.isActive('modal')).toBe(true);
+    expect(spaceMouseBus.isActive('page')).toBe(false);
+    unregisterModal();
+    expect(spaceMouseBus.isActive('page')).toBe(true);
+  });
+
+  it('outranks a hover claim, since the modal covers what was hovered', () => {
+    spaceMouseBus.register(makeController('page'));
+    spaceMouseBus.register({ ...makeController('modal'), claim: true });
+    spaceMouseBus.setActive('page');
+    expect(spaceMouseBus.isActive('modal')).toBe(true);
+  });
+
+  it('falls back to the outer modal when a nested one closes', () => {
+    spaceMouseBus.register(makeController('page'));
+    spaceMouseBus.register({ ...makeController('outer'), claim: true });
+    const unregisterInner = spaceMouseBus.register({ ...makeController('inner'), claim: true });
+    expect(spaceMouseBus.isActive('inner')).toBe(true);
+    unregisterInner();
+    expect(spaceMouseBus.isActive('outer')).toBe(true);
+  });
+
+  it('routes motion and commands to the modal canvas', () => {
+    const page = makeController('page');
+    const modal = makeController('modal');
+    spaceMouseBus.register(page);
+    spaceMouseBus.register({ ...modal, claim: true });
+    spaceMouseBus.setTranslation({ x: 10, y: 0, z: 0 });
+    spaceMouseBus.pressButton(0); // fit
+    expect(modal.invalidate).toHaveBeenCalled();
+    expect(modal.runCommand).toHaveBeenCalledWith('fit');
+    expect(page.invalidate).not.toHaveBeenCalled();
+    expect(page.runCommand).not.toHaveBeenCalled();
+  });
+});
+
+describe('spaceMouseBus focus gating', () => {
+  it('ignores motion and buttons while the app is not frontmost (#4041)', () => {
+    const a = makeController('a');
+    spaceMouseBus.register(a);
+    const handler = vi.fn();
+    spaceMouseBus.setGlobalHandler(handler);
+    spaceMouseBus.setFocused(false);
+    spaceMouseBus.setTranslation({ x: 350, y: 0, z: 0 });
+    spaceMouseBus.setRotation({ pitch: 350, roll: 0, yaw: 0 });
+    spaceMouseBus.pressButton(0); // fit
+    spaceMouseBus.pressButton(6); // undo
+    expect(spaceMouseBus.getRaw().translation).toEqual({ x: 0, y: 0, z: 0 });
+    expect(spaceMouseBus.getRaw().rotation).toEqual({ pitch: 0, roll: 0, yaw: 0 });
+    expect(a.runCommand).not.toHaveBeenCalled();
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it('drops the deflection it was holding when focus is lost', () => {
+    spaceMouseBus.register(makeController('a'));
+    spaceMouseBus.setTranslation({ x: 350, y: 0, z: 0 });
+    spaceMouseBus.setFocused(false);
+    expect(spaceMouseBus.getRaw().translation).toEqual({ x: 0, y: 0, z: 0 });
+  });
+
+  it('accepts input again once focus returns', () => {
+    spaceMouseBus.register(makeController('a'));
+    spaceMouseBus.setFocused(false);
+    spaceMouseBus.setFocused(true);
+    spaceMouseBus.setTranslation({ x: 350, y: 0, z: 0 });
+    expect(spaceMouseBus.getRaw().translation).toEqual({ x: 350, y: 0, z: 0 });
+  });
+});
+
 describe('spaceMouseBus motion', () => {
   it('stores the latest raw deflection and wakes the active canvas', () => {
     const a = makeController('a');

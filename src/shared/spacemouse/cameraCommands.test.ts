@@ -88,6 +88,28 @@ describe('applyFrameMotion', () => {
     applyFrameMotion(camera, controls, noMotion);
     expect(camera.position.toArray()).toEqual([1, 2, 3]);
   });
+
+  it('skips the families the host canvas disables', () => {
+    const camera = new PerspectiveCamera();
+    camera.position.set(0, 0, 10);
+    camera.up.set(0, 1, 0);
+    const controls: OrbitLike = {
+      ...orbit(),
+      enablePan: false,
+      enableZoom: false,
+      enableRotate: false,
+    };
+    applyFrameMotion(camera, controls, { panX: 2, panY: -1, zoom: 0.5, orbitH: 1, orbitV: 0.5 });
+    expect(camera.position.toArray()).toEqual([0, 0, 10]);
+    expect(controls.target.toArray()).toEqual([0, 0, 0]);
+  });
+
+  it('treats an unset enable flag as enabled', () => {
+    const camera = new PerspectiveCamera();
+    camera.position.set(0, 0, 10);
+    applyFrameMotion(camera, orbit(), { ...noMotion, panX: 2 });
+    expect(camera.position.x).toBeCloseTo(2);
+  });
 });
 
 describe('computeContentBox', () => {

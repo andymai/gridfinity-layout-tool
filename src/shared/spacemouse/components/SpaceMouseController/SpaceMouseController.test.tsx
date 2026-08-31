@@ -87,4 +87,29 @@ describe('SpaceMouseController', () => {
     h.frameCb?.({}, 1 / 60);
     expect(camera.position.equals(before)).toBe(true);
   });
+
+  it('takes the puck off the covered canvas when mounted as a modal', () => {
+    const covered = { id: 'covered', runCommand: vi.fn(), invalidate: vi.fn() };
+    spaceMouseBus.register(covered);
+    const { unmount } = render(<SpaceMouseController modal />);
+    const camera = h.state.camera as PerspectiveCamera;
+    const before = camera.position.clone();
+    spaceMouseBus.setTranslation({ x: 350, y: 0, z: 0 });
+    h.frameCb?.({}, 1 / 60);
+    expect(camera.position.x).not.toBeCloseTo(before.x);
+    expect(covered.invalidate).not.toHaveBeenCalled();
+    unmount();
+    expect(spaceMouseBus.isActive('covered')).toBe(true);
+  });
+
+  it('leaves motion the host controls disable alone', () => {
+    const controls = h.state.controls as { enablePan?: boolean };
+    controls.enablePan = false;
+    render(<SpaceMouseController />);
+    const camera = h.state.camera as PerspectiveCamera;
+    const before = camera.position.clone();
+    spaceMouseBus.setTranslation({ x: 350, y: 0, z: 0 }); // pan only
+    h.frameCb?.({}, 1 / 60);
+    expect(camera.position.equals(before)).toBe(true);
+  });
 });
