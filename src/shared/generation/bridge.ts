@@ -12,6 +12,7 @@ export {
   FAST_EXACT_SKIP_MS,
   EDIT_BURST_WINDOW_MS,
   BURST_EXACT_SKIP_MS,
+  EXACT_IMMEDIATE_MAX_MS,
 } from '@/features/generation/bridge/types';
 export { createDraftSkipGate } from '@/features/generation/bridge/draftPolicy';
 export {

@@ -33,3 +33,15 @@ export const EDIT_BURST_WINDOW_MS = 350;
  * drafting for continuous feedback.
  */
 export const BURST_EXACT_SKIP_MS = 300;
+
+/**
+ * Fire the exact generation immediately (skip the adaptive debounce) when its
+ * cache-aware estimate predicts a cost below this, the worker is idle (estimate
+ * is non-null), and the edit is not part of a scrub. A wasted immediate exact
+ * then costs at most this long and cannot wedge the single-threaded worker,
+ * whereas a heavier exact fired early could be superseded mid-op by the next
+ * edit and — since a long boolean/pattern_cut can't be cancelled — block the
+ * worker until it finishes. Above this bound the adaptive debounce stays in
+ * charge (it coalesces scrubs and the Manifold draft masks its latency).
+ */
+export const EXACT_IMMEDIATE_MAX_MS = 600;

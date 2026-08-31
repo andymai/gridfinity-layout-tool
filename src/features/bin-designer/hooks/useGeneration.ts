@@ -3,7 +3,12 @@ import { useShallow } from 'zustand/react/shallow';
 import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
 import { useSettingsStore } from '@/core/store';
-import { bridgeManager, createDraftSkipGate, getActiveKernel } from '@/shared/generation/bridge';
+import {
+  bridgeManager,
+  createDraftSkipGate,
+  getActiveKernel,
+  EXACT_IMMEDIATE_MAX_MS,
+} from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
@@ -254,27 +259,46 @@ export function useGeneration(): void {
         }
       }
 
-      // Fast draft on the leading edge (best-effort): renders while the exact
-      // geometry computes. Skipped when the exact worker's cache-aware estimate
-      // predicts a build faster than the gate's threshold — a draft replaced
-      // almost immediately is just flicker, and the threshold drops during a
-      // scrub (see draftPolicy). The estimate resolves in a few ms when the
-      // worker is idle; null (no history / worker busy mid-generation /
-      // timeout) means slow, so the draft proceeds. Suppressed when the
+      // One cache-aware estimate serves two decisions: whether to show the fast
+      // Manifold draft on the leading edge, and whether the exact is cheap
+      // enough to fire immediately (skipping the debounce). A null estimate
+      // means the worker is busy or has no history, treated as slow. That also
+      // keeps the immediate path unreachable, so a heavy in-flight op is never
+      // pre-empted by an early exact it cannot cancel.
+      const { skipBelowMs, scrubbing } = draftSkipGate();
+      const predictedMs = await bridge.estimateGenerate(genParams);
+      // A newer edit superseded this one during the estimate round-trip.
+      if (token !== genTokenRef.current) return;
+
+      // Fast draft (best-effort): renders while the exact geometry computes.
+      // Skipped when the estimate predicts a build faster than the gate's
+      // threshold (a draft replaced almost immediately is just flicker), and the
+      // threshold drops during a scrub (see draftPolicy). Suppressed when the
       // synchronous direct mesh already painted this edit.
-      const skipBelowMs = draftSkipGate();
       const preview = previewBridgeRef.current;
-      if (preview && !preview.isDestroyed && directShownTokenRef.current !== token) {
-        void bridge.estimateGenerate(genParams).then((predictedMs) => {
-          if (predictedMs !== null && predictedMs < skipBelowMs) return;
-          if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
-          dispatchDraft(preview, genParams, token);
-        });
+      if (
+        preview &&
+        !preview.isDestroyed &&
+        directShownTokenRef.current !== token &&
+        token > finalizedTokenRef.current &&
+        !(predictedMs !== null && predictedMs < skipBelowMs)
+      ) {
+        dispatchDraft(preview, genParams, token);
       }
+
+      // Fire the exact immediately (no debounce) only when it is predicted
+      // cheap, the worker is idle (non-null estimate), and this is not a scrub.
+      // A wasted immediate exact then costs at most EXACT_IMMEDIATE_MAX_MS and
+      // cannot wedge the worker. Everything heavier keeps the adaptive debounce,
+      // whose latency the draft masks.
+      const fireImmediate =
+        predictedMs !== null && predictedMs < EXACT_IMMEDIATE_MAX_MS && !scrubbing;
 
       try {
         // Only the designer preview renders label plates (preview).
-        const result = await bridge.generate(genParams, undefined, true);
+        const result = fireImmediate
+          ? await bridge.generateImmediate(genParams, undefined, true)
+          : await bridge.generate(genParams, undefined, true);
 
         // A newer edit superseded this one; let its results win instead.
         if (token !== genTokenRef.current) return;

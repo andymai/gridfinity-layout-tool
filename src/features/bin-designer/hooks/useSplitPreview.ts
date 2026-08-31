@@ -191,7 +191,7 @@ export function useSplitPreview(): void {
     // (large), so in practice this rarely skips — matching the bin draft's
     // behavior for consistency. null (no history / worker busy mid-generation /
     // timeout) means slow, so the draft proceeds.
-    const skipBelowMs = draftSkipGateRef.current();
+    const { skipBelowMs } = draftSkipGateRef.current();
     const exact = getActiveBridge();
     if (exact && !exact.isDestroyed) {
       void exact.estimateGenerate(params).then((predictedMs) => {

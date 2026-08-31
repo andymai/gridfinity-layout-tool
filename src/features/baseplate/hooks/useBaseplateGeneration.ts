@@ -781,7 +781,7 @@ export function useBaseplateGeneration(): void {
       const epoch = ++generationEpochRef.current;
       // Track edit cadence on every regen, preview bridge or not, so a scrub
       // is recognized from its first rapid edit (see draftPolicy).
-      const skipBelowMs = draftSkipGate();
+      const { skipBelowMs } = draftSkipGate();
       // Flip to 'generating' before BREP starts so the bottom pill is visible
       // during the draft-only window (when the bridge isn't ready yet).
       // Without this, the pill is hidden for the whole 4-8 s WASM-load period
