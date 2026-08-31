@@ -1,10 +1,7 @@
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
-// Route-, modal- and mount-level components lazy-loaded by App, split out so the
-// shell file stays within its line budget. Kept lazy so their chunks stay off
-// the first-paint path.
-
-// Lazy-loaded so the sync chunk stays off the first-paint path.
+// Route-, modal- and mount-level components App loads lazily so their chunks
+// stay off the first-paint path.
 export const LazySyncSessionMount = lazyWithRetry(() =>
   import('@/shared/sync/SyncSessionMount').then(namedExport('SyncSessionMount'))
 );

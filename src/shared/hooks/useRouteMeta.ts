@@ -12,9 +12,11 @@ export interface RouteMetaFlags {
 /**
  * Route-aware SEO meta. Owns title/description across SPA navigation: the i18n
  * context only re-fires on locale change, so without this an in-app jump from
- * /designer back to / would leave the generator title up. Always resolves to
- * some route-appropriate value (no early return) so back-navigation restores the
- * homepage meta. Re-applies when the locale flips mid-session (depends on `t`).
+ * /designer back to / would leave the generator title up. It resolves a
+ * route-appropriate title/description for every route so back-navigation
+ * restores the homepage meta, except on a server-rendered community design page
+ * (/community/d/<id>), where the document's per-design meta is authoritative and
+ * left untouched. Re-applies when the locale flips mid-session (depends on `t`).
  */
 export function useRouteMeta(flags: RouteMetaFlags): void {
   const t = useTranslation();
