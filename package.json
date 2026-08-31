@@ -185,7 +185,7 @@
     "@types/node": "^26.2.0",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "@types/three": "^0.185.4",
     "@types/w3c-web-hid": "^1.0.7",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
