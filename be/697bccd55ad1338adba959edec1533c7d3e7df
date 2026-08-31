@@ -1,0 +1,26 @@
+src/features/bin-designer/store/slices/persistenceSlice.test.ts
+  s_f355eac7e0c076::t_4d300884347776 104-110
+src/features/bin-designer/store/slices/persistenceSlice.ts
+  s_f355eac7e0c076::t_f67395ec1deee1 123-127,137,144
+  s_f355eac7e0c076::t_ddc963cc954fd8 155
+src/features/bin-designer/components/DesignListDialog/DesignListEmptyState.tsx
+  s_f355eac7e0c076::t_f3fa9b40e15e7c 38-41
+src/features/bin-designer/components/DesignListDialog/DesignListEmptyState.test.tsx
+  s_f355eac7e0c076::t_7f799bcbcb4a02 13,18-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "be697bccd55ad1338adba959edec1533c7d3e7df",
+  "prompts": {},
+  "sessions": {
+    "s_f355eac7e0c076": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e2e02f-5810-4320-85da-73aa13005f4a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
