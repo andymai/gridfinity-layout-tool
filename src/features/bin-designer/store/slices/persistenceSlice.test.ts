@@ -101,6 +101,13 @@ describe('persistenceSlice.loadDesign — UI derivation from params', () => {
     expect(useDesignerStore.getState().ui.shapeEditorOpen).toBe(false);
   });
 
+  it('newDesign coerces a malformed kind to bin rather than crashing (#4032)', () => {
+    // A mis-wired `onClick={onNewDesign}` forwards the click event as the kind;
+    // it has no item descriptor, which used to throw and crash new-design.
+    expect(() => useDesignerStore.getState().newDesign({} as never)).not.toThrow();
+    expect(useDesignerStore.getState().itemKind).toBe('bin');
+  });
+
   it('drops a structurally-invalid cellMask on load (defends against crafted shares)', () => {
     // Mask with a disconnected component — validateMask rejects this.
     // Two isolated cells with no 4-connected path between them.

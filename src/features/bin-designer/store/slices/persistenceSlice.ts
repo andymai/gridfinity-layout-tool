@@ -120,6 +120,11 @@ export function createPersistenceSlice(set: Set) {
     },
 
     newDesign: (kind: ItemKind = 'bin') => {
+      // Coerce a malformed kind back to 'bin' so a missing descriptor can never
+      // crash new-design. A mis-wired `onClick={onNewDesign}` forwards the click
+      // event as this argument, which would otherwise reach getItemDescriptor as
+      // a `[object Object]` with no descriptor.
+      const safeKind: ItemKind = kind === 'bin' || hasItemDescriptor(kind) ? kind : 'bin';
       set((state) => {
         state.history.past = [];
         state.history.future = [];
@@ -129,14 +134,14 @@ export function createPersistenceSlice(set: Set) {
         state.pendingBinLink = null;
         state.needsThumbnailUpdate = false;
         state.generation.epoch += 1;
-        state.itemKind = kind;
+        state.itemKind = safeKind;
         state.ui.shapeEditorOpen = false;
         state.ui.bentoWorkspaceOpen = false;
         state.ui.interiorCard = 'standard';
 
         state.lineage = null;
 
-        if (kind === 'bin') {
+        if (safeKind === 'bin') {
           state.params = { ...defaultsForNewDesign() };
           state.envelope = null;
           state.structure = null;
@@ -147,7 +152,7 @@ export function createPersistenceSlice(set: Set) {
           state.ui.halfGridMode = paramsNeedHalfGridMode(state.params);
         } else {
           // Non-bin kind: live editable state is envelope + structure.
-          state.structure = getItemDescriptor(kind).defaults();
+          state.structure = getItemDescriptor(safeKind).defaults();
           state.envelope = createDefaultEnvelope(DEFAULT_BIN_PARAMS.featureColors);
           state.designName = 'Untitled';
           state.ui.halfGridMode = false;

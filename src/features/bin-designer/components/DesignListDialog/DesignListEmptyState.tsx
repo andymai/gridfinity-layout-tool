@@ -35,7 +35,10 @@ export function DesignListEmptyState({ onNewDesign }: DesignListEmptyStateProps)
       </p>
       <Button
         variant="primary"
-        onClick={onNewDesign}
+        // Call with no args: wiring `onClick={onNewDesign}` passes the click
+        // event as the first argument, which the parent reads as the item kind
+        // (a `[object Object]` that has no descriptor, crashing new-design).
+        onClick={() => onNewDesign()}
         className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
         leftIcon={<PlusIcon className="h-4 w-4" />}
       >
