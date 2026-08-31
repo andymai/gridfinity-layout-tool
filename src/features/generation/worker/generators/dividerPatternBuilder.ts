@@ -322,6 +322,13 @@ export interface PanelFactory {
     bandHeight: number,
     cutDepth: number
   ): Shape3D | null;
+  /**
+   * The cache key `build` would use for this spec, without building the panel.
+   * It fully identifies the local panel geometry (pattern variant, span,
+   * keep-outs, band, cut depth), so a caller can fold it into a resume key that
+   * lets the boolean stage skip the whole cut when nothing changed.
+   */
+  keyFor(spec: PatternPanelSpec, bandZ0: number, bandHeight: number, cutDepth: number): string;
 }
 
 /** Which pattern a factory should build. Defaults to the bin's wall pattern. */
@@ -366,29 +373,46 @@ export function resolvePanelFactory(
   // whose pieces share a height resolves one lattice for all of them.
   const latticeByBand = new Map<number, Parameters<typeof buildFlatSlabCutter>[1]>();
 
+  // Resolve (and memoize) the kumiko lattice for a band height; null for stamp
+  // patterns, which have no lattice.
+  const latticeFor = (bandHeight: number): Parameters<typeof buildFlatSlabCutter>[1] | null => {
+    if (!kumiko) return null;
+    const cached = latticeByBand.get(bandHeight);
+    if (cached) return cached;
+    const lattice = kumiko.getLattice({ perimeter: latticePerimeter ?? 0, bandHeight });
+    latticeByBand.set(bandHeight, lattice);
+    return lattice;
+  };
+
+  // The cache key for a panel, shared by `build` and `keyFor` so the two never
+  // drift.
+  const computeKey = (
+    spec: PatternPanelSpec,
+    bandZ0: number,
+    bandHeight: number,
+    cutDepth: number
+  ): string => {
+    const lattice = latticeFor(bandHeight);
+    const variantKey = stamp
+      ? shapeDescriptorKey(stamp.getShapeDescriptor({ fillW: 0, fillH: bandHeight }))
+      : buildCacheKey(
+          'kumiko',
+          quantize(latticePerimeter ?? 0),
+          quantize(lattice?.columnPitch ?? 0),
+          quantize(lattice?.strutWidth ?? 0)
+        );
+    return panelKey(patternType, variantKey, scale, spec, bandZ0, bandHeight, cutDepth);
+  };
+
   return {
     minPatternHeight: calculator.getMinPatternHeight(),
     border: Math.max(CUTOUT_BORDER_WIDTH, calculator.getShapeRadius()),
 
     build(spec, bandZ0, bandHeight, cutDepth) {
-      let lattice: Parameters<typeof buildFlatSlabCutter>[1] | null = null;
-      if (kumiko) {
-        const cached = latticeByBand.get(bandHeight);
-        lattice = cached ?? kumiko.getLattice({ perimeter: latticePerimeter ?? 0, bandHeight });
-        if (!cached) latticeByBand.set(bandHeight, lattice);
-        if (lattice.segments.length === 0) return null;
-      }
+      const lattice = latticeFor(bandHeight);
+      if (kumiko && (!lattice || lattice.segments.length === 0)) return null;
 
-      const variantKey = stamp
-        ? shapeDescriptorKey(stamp.getShapeDescriptor({ fillW: 0, fillH: bandHeight }))
-        : buildCacheKey(
-            'kumiko',
-            quantize(latticePerimeter ?? 0),
-            quantize(lattice?.columnPitch ?? 0),
-            quantize(lattice?.strutWidth ?? 0)
-          );
-      const key = panelKey(patternType, variantKey, scale, spec, bandZ0, bandHeight, cutDepth);
-
+      const key = computeKey(spec, bandZ0, bandHeight, cutDepth);
       const cachedPanel = getFeatureCache(DIVIDER_PATTERN_CACHE, key);
       if (cachedPanel) return cachedPanel;
 
@@ -406,35 +430,73 @@ export function resolvePanelFactory(
       setFeatureCache(DIVIDER_PATTERN_CACHE, key, built);
       return unwrap(clone(built));
     },
+
+    keyFor(spec, bandZ0, bandHeight, cutDepth) {
+      return computeKey(spec, bandZ0, bandHeight, cutDepth);
+    },
   };
+}
+
+/**
+ * Divider pattern cut targets plus the geometry identity of the whole set.
+ *
+ * `key` is empty when no divider cut applies, and otherwise identifies every
+ * placed panel: the factory's local-panel key (motif variant, span, keep-outs,
+ * band, cut depth) composed with each target's rigid placement and the interior
+ * offset. The resume cache in `booleanStage` keys on this so a divider-patterned
+ * bin can skip the whole boolean stage when the cut set is unchanged.
+ */
+export interface DividerPatternResult {
+  readonly shapes: Shape3D[];
+  readonly key: string;
 }
 
 /**
  * Build the divider pattern cut targets for a bin.
  *
- * Returns [] whenever the feature is off, unavailable for this bin, or no
- * divider offers a band large enough for a single element. Each returned
- * shape is owned by the caller.
+ * `shapes` is empty (and `key` blank) whenever the feature is off, unavailable
+ * for this bin, or no divider offers a band large enough for a single element.
+ * Each returned shape is owned by the caller.
  */
-export function buildDividerPatterns(ctx: PipelineContext): Shape3D[] {
+export function buildDividerPatterns(ctx: PipelineContext): DividerPatternResult {
   const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
+  const NONE: DividerPatternResult = { shapes: [], key: '' };
 
   const factory = resolvePanelFactory(params, dim.innerW, dim.innerD);
-  if (!factory) return [];
+  if (!factory) return NONE;
 
   const plan = planDividerPatterns(params, dim, factory.border);
-  if (!plan) return [];
-  if (plan.bandHeight < factory.minPatternHeight) return [];
+  if (!plan) return NONE;
+  if (plan.bandHeight < factory.minPatternHeight) return NONE;
 
   const cutDepth = plan.thickness + 2 * DIVIDER_CUT_OVERSHOOT;
   const bandCenterZ = plan.bandZ0 + plan.bandHeight / 2;
 
   const start = perfCollector ? performance.now() : 0;
   const shapes: Shape3D[] = [];
+  const keyParts: string[] = [];
   for (const target of plan.targets) {
     checkCancelled(signal);
     const panel = factory.build(target, plan.bandZ0, plan.bandHeight, cutDepth);
     if (!panel) continue;
+
+    // Identity of this placed cut: the factory's local-panel key plus the rigid
+    // placement (position, in-plane rotation, span) and the interior offset
+    // applied after the local cache.
+    keyParts.push(
+      compactKey(
+        buildCacheKey(
+          factory.keyFor(target, plan.bandZ0, plan.bandHeight, cutDepth),
+          quantize(target.x),
+          quantize(target.y),
+          quantize(target.rotateZ),
+          quantize(target.wallLen),
+          quantize(bandCenterZ),
+          quantize(dim.innerOffsetX),
+          quantize(dim.innerOffsetY)
+        )
+      )
+    );
 
     let placed = placePanel(panel, target, bandCenterZ);
     if (dim.innerOffsetX !== 0 || dim.innerOffsetY !== 0) {
@@ -454,5 +516,6 @@ export function buildDividerPatterns(ctx: PipelineContext): Shape3D[] {
     );
   }
 
-  return shapes;
+  if (shapes.length === 0) return NONE;
+  return { shapes, key: compactKey(buildCacheKey('divider-v1', ...keyParts)) };
 }

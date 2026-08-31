@@ -142,37 +142,38 @@ export const featuresStage: PipelineStage = {
     // only bind clipping to the outermost edge per cardinal — non-outermost
     // step walls get pure pattern.
     const wallPatternEnabled = params.wallPattern.enabled;
-    let wallPatternKeys: string[] = [];
-    let unkeyedPatternCuts = false;
+    const wallPatternKeys: string[] = [];
     if (wallPatternEnabled) {
       // Stamp patterns and kumiko wrapped-lattice patterns are mutually
       // exclusive per pattern type; each builder no-ops for the other's types.
       const patterns = buildWallPatterns(ctx);
-      // The two arrays are appended in lockstep; a mismatch would mean a shape
-      // whose identity is missing from the resume key, which is the one failure
-      // that surfaces as wrong geometry rather than a slow rebuild.
+      // Stamp shapes carry a per-shape identity in lockstep; a mismatch would
+      // mean a shape whose identity is missing from the resume key, which is the
+      // one failure that surfaces as wrong geometry rather than a slow rebuild.
       if (patterns.keys.length !== patterns.shapes.length) {
         throw new Error('wall pattern targets and keys are misaligned');
       }
       targets.patternCutTargets.push(...patterns.shapes);
-      wallPatternKeys = patterns.keys;
-      const kumikoShapes = buildKumikoWallPatterns(ctx);
-      targets.patternCutTargets.push(...kumikoShapes);
-      // Divider walls carry the same pattern when opted in. Both
-      // pipelines are handled inside, so this is one call for either type.
-      const dividerShapes = buildDividerPatterns(ctx);
-      targets.patternCutTargets.push(...dividerShapes);
-      // Neither builder reports the identity of what it emitted (both compute
-      // it internally, the divider one inside a panel-factory closure), so a
-      // bin carrying either keeps the resume cache off.
-      unkeyedPatternCuts = kumikoShapes.length > 0 || dividerShapes.length > 0;
+      wallPatternKeys.push(...patterns.keys);
+
+      // Kumiko and divider cuts each report a single key that fully identifies
+      // their whole set (see the builders). A blank key means no cut was emitted,
+      // so there is nothing to fold in. Divider walls carry the same pattern when
+      // opted in; both stamp and kumiko divider panels are handled inside.
+      const kumiko = buildKumikoWallPatterns(ctx);
+      targets.patternCutTargets.push(...kumiko.shapes);
+      if (kumiko.key) wallPatternKeys.push(kumiko.key);
+
+      const dividers = buildDividerPatterns(ctx);
+      targets.patternCutTargets.push(...dividers.shapes);
+      if (dividers.key) wallPatternKeys.push(dividers.key);
     }
 
-    // The floor pattern stays unkeyed regardless: its shapes also carve the
-    // deferred socket, and a resume hit would be worse than stale — the cached
-    // body would come back with holes while the freshly built socket flowed
-    // through uncut.
-    const resumable = !unkeyedPatternCuts && floorPatternShapes.length === 0;
+    // The floor pattern stays unkeyed: its shapes also carve the deferred
+    // socket, and a resume hit would be worse than stale (the cached body would
+    // come back with holes while the freshly built socket flowed through uncut).
+    // Every other pattern cut now reports its identity.
+    const resumable = floorPatternShapes.length === 0;
 
     return {
       ...ctx,
