@@ -6,7 +6,6 @@ import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
 import { Button, Collapsible, IconButton, Stepper } from '@/design-system';
-import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { ActiveBaseplatePanel } from '@/features/baseplate/components/ActiveBaseplatePanel';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
@@ -35,19 +34,12 @@ import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 const InspirationGallery = lazyWithRetry(() =>
   import('@/features/inspiration-gallery').then(namedExport('InspirationGallery'))
 );
-const SettingsModal = lazyWithRetry(() =>
-  import('@/shell/Modals/SettingsModal').then(namedExport('SettingsModal'))
-);
 
 export function Sidebar() {
   const t = useTranslation();
   const { locale } = useLocale();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsTabId | undefined>(
-    undefined
-  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [gridSizeExpanded, setGridSizeExpanded] = useState(true);
   const [physicalUnitsExpanded, setPhysicalUnitsExpanded] = useState(true);
@@ -111,19 +103,6 @@ export function Sidebar() {
 
   // Onboarding — sidebar gallery pulse for low-engagement users
   const { shouldPulseGallery, dismissGalleryPulse } = useOnboarding();
-
-  // Listen for command palette open-settings-modal event (supports optional tab)
-  useEffect(() => {
-    const handleOpenSettings = (e: CustomEvent<{ tab?: SettingsTabId } | null>) => {
-      // The command-palette dispatcher fires this event without a `detail`
-      // payload, so guard against a null detail before reading `tab`.
-      setSettingsInitialTab(e.detail?.tab);
-      setShowSettingsModal(true);
-    };
-    window.addEventListener('open-settings-modal', handleOpenSettings as EventListener);
-    return () =>
-      window.removeEventListener('open-settings-modal', handleOpenSettings as EventListener);
-  }, []);
 
   // Help modal deep-links: expand the destination section so the highlighted
   // control is visible when the dispatcher applies its pulse. Also ensure the
@@ -200,26 +179,6 @@ export function Sidebar() {
             <h2 className="flex-1 text-xs leading-none font-semibold text-content-tertiary tracking-wide">
               {t('sidebar.tools')}
             </h2>
-            <IconButton
-              size="sm"
-              touchTarget={false}
-              onClick={() => setShowSettingsModal(true)}
-              className="h-8 w-8 text-content-tertiary"
-              title={t('sidebar.settings')}
-              aria-label={t('sidebar.openSettings')}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {ICON_PATHS.settings.map((d) => (
-                  <path
-                    key={d}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={d}
-                  />
-                ))}
-              </svg>
-            </IconButton>
             <IconButton
               size="sm"
               touchTarget={false}
@@ -584,10 +543,11 @@ export function Sidebar() {
             </div>
           </div>
           <UserDock
-            onOpenSettings={() => {
-              setSettingsInitialTab('account');
-              setShowSettingsModal(true);
-            }}
+            onOpenSettings={() =>
+              window.dispatchEvent(
+                new CustomEvent('open-settings-modal', { detail: { tab: 'account' } })
+              )
+            }
           />
         </div>
       )}
@@ -606,19 +566,6 @@ export function Sidebar() {
           <InspirationGallery
             isOpen={showInspirationGallery}
             onClose={() => setShowInspirationGallery(false)}
-          />
-        </Suspense>
-      )}
-
-      {showSettingsModal && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.settings')} />}>
-          <SettingsModal
-            isOpen={showSettingsModal}
-            onClose={() => {
-              setShowSettingsModal(false);
-              setSettingsInitialTab(undefined);
-            }}
-            initialTab={settingsInitialTab}
           />
         </Suspense>
       )}

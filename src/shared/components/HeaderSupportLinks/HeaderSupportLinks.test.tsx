@@ -46,6 +46,13 @@ describe('HeaderSupportLinks', () => {
     expect(screen.getByLabelText('header.helpAndShortcuts')).toBeInTheDocument();
   });
 
+  it('renders the settings cog and opens settings via the global event (#4034)', () => {
+    const dispatch = vi.spyOn(window, 'dispatchEvent');
+    render(<HeaderSupportLinks />);
+    fireEvent.click(screen.getByLabelText('sidebar.openSettings'));
+    expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'open-settings-modal' }));
+  });
+
   it('renders Ko-fi support button', () => {
     render(<HeaderSupportLinks />);
     expect(screen.getByLabelText('header.supportOnKofi')).toBeInTheDocument();

@@ -1,6 +1,6 @@
 import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from '@/shell/Sidebar';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
@@ -77,17 +77,6 @@ vi.mock('@/shell/Modals/HalfGridModeBlockedModal', () => ({
         </button>
         <button data-testid="remediate-btn" onClick={onRemediate}>
           Remediate
-        </button>
-      </div>
-    ) : null,
-}));
-
-vi.mock('@/shell/Modals/SettingsModal', () => ({
-  SettingsModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
-    isOpen ? (
-      <div data-testid="settings-modal">
-        <button data-testid="close-settings" onClick={onClose}>
-          Close
         </button>
       </div>
     ) : null,
@@ -408,59 +397,6 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       expect(screen.getByLabelText('Grid unit X')).toBeInTheDocument();
-    });
-  });
-
-  describe('settings modal', () => {
-    it('renders settings button in header', () => {
-      render(<Sidebar />);
-
-      expect(screen.getByLabelText('Open settings')).toBeInTheDocument();
-    });
-
-    it('opens settings modal when settings button clicked', async () => {
-      render(<Sidebar />);
-
-      fireEvent.click(screen.getByLabelText('Open settings'));
-
-      // SettingsModal is lazy-loaded, so use findBy which waits
-      expect(await screen.findByTestId('settings-modal')).toBeInTheDocument();
-    });
-
-    it('closes settings modal when close button clicked', async () => {
-      render(<Sidebar />);
-
-      fireEvent.click(screen.getByLabelText('Open settings'));
-      // Wait for lazy-loaded modal to appear
-      expect(await screen.findByTestId('settings-modal')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByTestId('close-settings'));
-
-      expect(screen.queryByTestId('settings-modal')).not.toBeInTheDocument();
-    });
-
-    it('opens settings modal from a detail-less open-settings-modal event', async () => {
-      render(<Sidebar />);
-
-      // The command-palette dispatcher fires this event with no `detail`,
-      // which previously threw reading `e.detail.tab` on a null detail.
-      act(() => {
-        window.dispatchEvent(new CustomEvent('open-settings-modal'));
-      });
-
-      expect(await screen.findByTestId('settings-modal')).toBeInTheDocument();
-    });
-
-    it('opens settings modal from an open-settings-modal event carrying a tab', async () => {
-      render(<Sidebar />);
-
-      act(() => {
-        window.dispatchEvent(
-          new CustomEvent('open-settings-modal', { detail: { tab: 'account' } })
-        );
-      });
-
-      expect(await screen.findByTestId('settings-modal')).toBeInTheDocument();
     });
   });
 

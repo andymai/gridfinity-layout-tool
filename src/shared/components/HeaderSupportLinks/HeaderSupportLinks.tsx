@@ -91,6 +91,10 @@ export function HeaderSupportLinks({
     window.dispatchEvent(new Event('open-help-modal'));
   };
 
+  const handleSettingsClick = () => {
+    window.dispatchEvent(new Event('open-settings-modal'));
+  };
+
   const handleKofiClick = () => {
     trackEvent('kofi_clicked', { source: 'header' });
     window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
@@ -129,6 +133,7 @@ export function HeaderSupportLinks({
         <>
           <Menu.Item onClick={handleFeedbackClick}>{t('header.sendFeedback')}</Menu.Item>
           <Menu.Item onClick={handleHelpClick}>{t('header.helpAndShortcuts')}</Menu.Item>
+          <Menu.Item onClick={handleSettingsClick}>{t('sidebar.settings')}</Menu.Item>
         </>
       )}
       <Menu.Item
@@ -226,6 +231,23 @@ export function HeaderSupportLinks({
         </svg>
         <span className="hidden lg:inline">{t('header.help')}</span>
       </Button>
+
+      {/* Settings: app-wide, so it lives here on every view rather than only in
+          the layout sidebar (#4034). Opens the global modal via window event. */}
+      <IconButton
+        size="sm"
+        touchTarget={false}
+        onClick={handleSettingsClick}
+        className="h-8 w-8 text-content-secondary"
+        title={t('sidebar.settings')}
+        aria-label={t('sidebar.openSettings')}
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          {ICON_PATHS.settings.map((d) => (
+            <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+          ))}
+        </svg>
+      </IconButton>
 
       {overflowTrigger}
       {overflowMenu}

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import {
   useLayoutStore,
   useLibraryStore,
@@ -123,6 +124,9 @@ const DevThumbnailRoute = lazyWithRetry(() =>
 const HelpModal = lazyWithRetry(() =>
   import('@/shell/Modals/HelpModal').then(namedExport('HelpModal'))
 );
+const SettingsModal = lazyWithRetry(() =>
+  import('@/shell/Modals/SettingsModal').then(namedExport('SettingsModal'))
+);
 const MobileLayout = lazyWithRetry(() =>
   import('@/shell/layouts/MobileLayout').then(namedExport('MobileLayout'))
 );
@@ -145,6 +149,13 @@ export default function App() {
   const t = useTranslation();
   useThemeEffect();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  // App-wide settings are global so the header cog reaches them from every view,
+  // not just the layout sidebar (#4034). initialTab lets the account link and the
+  // command palette deep-link a specific tab.
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsTabId | undefined>(
+    undefined
+  );
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
 
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
@@ -368,6 +379,17 @@ export default function App() {
     const handleOpenHelp = () => setIsHelpOpen(true);
     window.addEventListener('open-help-modal', handleOpenHelp);
     return () => window.removeEventListener('open-help-modal', handleOpenHelp);
+  }, []);
+
+  useEffect(() => {
+    const handleOpenSettings = (e: Event) => {
+      // Dispatchers (header cog, account link, command palette) may omit detail.
+      const detail = (e as CustomEvent<{ tab?: SettingsTabId } | null>).detail;
+      setSettingsInitialTab(detail?.tab);
+      setIsSettingsOpen(true);
+    };
+    window.addEventListener('open-settings-modal', handleOpenSettings);
+    return () => window.removeEventListener('open-settings-modal', handleOpenSettings);
   }, []);
 
   useEffect(() => {
@@ -692,6 +714,18 @@ export default function App() {
       {isHelpOpen && (
         <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
           <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet={isTablet} />
+        </Suspense>
+      )}
+      {isSettingsOpen && (
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.settings')} />}>
+          <SettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => {
+              setIsSettingsOpen(false);
+              setSettingsInitialTab(undefined);
+            }}
+            initialTab={settingsInitialTab}
+          />
         </Suspense>
       )}
     </>
