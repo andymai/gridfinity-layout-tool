@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import {
   DESIGNER_CONTROL_SEARCH,
+  DESIGNER_OPTION_RECORDS,
   isDesignerControlAvailable,
   type ControlAvailabilityContext,
 } from './designerControlRegistry';
 import { DESIGNER_SETTINGS } from '../settingsManifest';
+
+const SECTION_IDS = new Set(DESIGNER_CONTROL_SEARCH.map((s) => s.controlId));
 
 const baseCtx: ControlAvailabilityContext = {
   style: 'standard',
@@ -35,6 +38,17 @@ describe('designerControlRegistry', () => {
       expect(entry.titleKey).toMatch(/^help\.target\.binDesigner\./);
       expect(entry.descriptionKey).toMatch(/^help\.target\.binDesigner\./);
       expect(entry.keywordsKey).toMatch(/^help\.target\.binDesigner\./);
+    }
+  });
+
+  it('anchors every sub-option to a real section and gives it synonyms', () => {
+    const ids = new Set<string>();
+    for (const opt of DESIGNER_OPTION_RECORDS) {
+      expect(SECTION_IDS.has(opt.section)).toBe(true);
+      expect(opt.labelKey.length).toBeGreaterThan(0);
+      expect(opt.keywords.length).toBeGreaterThan(0);
+      expect(ids.has(opt.id)).toBe(false); // ids are unique
+      ids.add(opt.id);
     }
   });
 

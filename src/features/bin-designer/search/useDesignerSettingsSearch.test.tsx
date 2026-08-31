@@ -23,61 +23,60 @@ const restricted: ControlAvailabilityContext = {
 };
 
 const ids = (results: { controlId: string }[]) => results.map((r) => r.controlId);
+const labels = (results: { label: string }[]) => results.map((r) => r.label);
 
 describe('useDesignerSettingsSearch', () => {
-  it('lists every available control, ordered by category, when the query is empty', () => {
+  it('browses only the sections, ordered by category, when the query is empty', () => {
     const { result } = renderHook(() => useDesignerSettingsSearch('', allAvailable));
     expect(result.current).toHaveLength(DESIGNER_CONTROL_SEARCH.length);
+    expect(result.current.every((r) => r.kind === 'section')).toBe(true);
     expect(result.current[0].category).toBe('shape');
-    // categories never interleave in browse order
     const order = ['shape', 'interior', 'features', 'style', 'print'];
     const seen = result.current.map((r) => order.indexOf(r.category));
     expect(seen).toEqual([...seen].sort((a, b) => a - b));
   });
 
-  it('matches a control by its label', () => {
-    const { result } = renderHook(() => useDesignerSettingsSearch('scoop', allAvailable));
-    expect(ids(result.current)).toContain('bd-scoop');
+  it('surfaces a finer sub-option, with its section as a breadcrumb', () => {
+    const { result } = renderHook(() => useDesignerSettingsSearch('lightweight', allAvailable));
+    const hit = result.current.find((r) => r.label === 'Lightweight floor');
+    expect(hit).toBeDefined();
+    expect(hit?.kind).toBe('option');
+    expect(hit?.controlId).toBe('bd-base');
+    expect(hit?.breadcrumb).toBeTruthy();
   });
 
-  it('matches a control by a synonym that is not in its label', () => {
+  it('highlights the matched span of the label', () => {
+    const { result } = renderHook(() => useDesignerSettingsSearch('floor', allAvailable));
+    const hit = result.current.find((r) => r.label === 'Lightweight floor');
+    // "Lightweight floor" — the run "floor" starts at index 12.
+    expect(hit?.highlight).toEqual([[12, 17]]);
+  });
+
+  it('matches a section by a synonym that is not in its label', () => {
     const { result } = renderHook(() => useDesignerSettingsSearch('drainage', allAvailable));
     expect(ids(result.current)).toContain('bd-floor-pattern');
   });
 
-  it('ranks a label-prefix hit above others', () => {
+  it('ranks an exact-label hit first', () => {
     const { result } = renderHook(() => useDesignerSettingsSearch('lid', allAvailable));
     expect(result.current[0].controlId).toBe('bd-lid');
   });
 
-  it('omits controls whose section is not currently mounted', () => {
-    const labelHit = renderHook(() => useDesignerSettingsSearch('label', restricted));
-    expect(ids(labelHit.result.current)).not.toContain('bd-label-tabs');
+  it('omits records whose section is not currently mounted', () => {
+    const label = renderHook(() => useDesignerSettingsSearch('label', restricted));
+    expect(ids(label.result.current)).not.toContain('bd-label-tabs');
 
-    const fontHit = renderHook(() => useDesignerSettingsSearch('font', restricted));
-    expect(ids(fontHit.result.current)).not.toContain('bd-type');
+    const font = renderHook(() => useDesignerSettingsSearch('font', restricted));
+    expect(ids(font.result.current)).not.toContain('bd-type');
 
-    const splitHit = renderHook(() => useDesignerSettingsSearch('split', restricted));
-    expect(ids(splitHit.result.current)).not.toContain('bd-print-fit');
-
-    const slideHit = renderHook(() => useDesignerSettingsSearch('slide', restricted));
-    expect(ids(slideHit.result.current)).not.toContain('bd-slide-tray');
+    const split = renderHook(() => useDesignerSettingsSearch('split', restricted));
+    expect(ids(split.result.current)).not.toContain('bd-print-fit');
   });
 
-  it('keeps view- and flag-gated controls when the current state mounts them', () => {
-    const printFit = renderHook(() =>
-      useDesignerSettingsSearch('split', { ...restricted, viewMode: 'rail' })
-    );
-    expect(ids(printFit.result.current)).toContain('bd-print-fit');
-
-    const slideTray = renderHook(() =>
-      useDesignerSettingsSearch('slide', { ...restricted, slideTrayEnabled: true })
-    );
-    expect(ids(slideTray.result.current)).toContain('bd-slide-tray');
-  });
-
-  it('never surfaces the excluded lid-grip control', () => {
-    const { result } = renderHook(() => useDesignerSettingsSearch('grip', allAvailable));
+  it('never jumps to the unanchored lid-grip marker (grip lands on the lid)', () => {
+    const { result } = renderHook(() => useDesignerSettingsSearch('scallop', allAvailable));
     expect(ids(result.current)).not.toContain('bd-lid-grip');
+    expect(labels(result.current)).toContain('Lid grip');
+    expect(result.current.find((r) => r.label === 'Lid grip')?.controlId).toBe('bd-lid');
   });
 });

@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Input, IconButton, SearchIcon, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -8,19 +8,39 @@ import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest'
 import { binHasText } from '@/features/bin-designer/utils/binText';
 import {
   useDesignerSettingsSearch,
-  type DesignerControlSearchResult,
+  type DesignerSearchResult,
 } from '@/features/bin-designer/search/useDesignerSettingsSearch';
+import type { HighlightRange } from '@/features/bin-designer/search/matcher';
 
 interface DesignerSearchBarProps {
   readonly viewMode: 'scroll' | 'rail';
   readonly needsSplit: boolean;
 }
 
+/** Renders `label` with the matched ranges emphasized. */
+function highlighted(label: string, ranges: readonly HighlightRange[]): ReactNode {
+  if (ranges.length === 0) return label;
+  const parts: ReactNode[] = [];
+  let cursor = 0;
+  for (const [start, end] of ranges) {
+    if (start > cursor) parts.push(label.slice(cursor, start));
+    parts.push(
+      <span key={start} className="font-semibold text-content">
+        {label.slice(start, end)}
+      </span>
+    );
+    cursor = end;
+  }
+  if (cursor < label.length) parts.push(label.slice(cursor));
+  return parts;
+}
+
 /**
  * A search field pinned at the top of the designer panel. Typing matches any
- * control by name or synonym; an empty field lists every available control
- * grouped by category, so the bar doubles as a browse-all. Selecting a result
- * jumps the panel to that control (the same deep-link the Help modal uses).
+ * control or sub-option by name or synonym, ranked, with the match highlighted
+ * and the owning section shown as a breadcrumb; an empty field lists the
+ * sections by category to browse. Selecting a result jumps the panel to the
+ * section that holds it (the same deep-link the Help modal uses).
  */
 export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarProps) {
   const t = useTranslation();
@@ -145,13 +165,13 @@ export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarPro
             >
               {results.map((result, index) => (
                 <ResultRow
-                  key={result.controlId}
+                  key={result.id}
                   result={result}
                   index={index}
                   active={index === activeOption}
                   listboxId={listboxId}
                   showCategoryHeader={browsing && result.category !== results[index - 1]?.category}
-                  showCategoryBadge={!browsing}
+                  searching={!browsing}
                   onChoose={() => choose(index)}
                   onHover={() => setActiveIndex(index)}
                 />
@@ -169,19 +189,22 @@ function ResultRow({
   active,
   listboxId,
   showCategoryHeader,
-  showCategoryBadge,
+  searching,
   onChoose,
   onHover,
 }: {
-  readonly result: DesignerControlSearchResult;
+  readonly result: DesignerSearchResult;
   readonly index: number;
   readonly active: boolean;
   readonly listboxId: string;
   readonly showCategoryHeader: boolean;
-  readonly showCategoryBadge: boolean;
+  readonly searching: boolean;
   readonly onChoose: () => void;
   readonly onHover: () => void;
 }) {
+  // In search mode every row states where it lives: a sub-option shows its
+  // parent section, a section shows its category.
+  const location = result.breadcrumb ?? result.categoryLabel;
   return (
     <>
       {showCategoryHeader && (
@@ -204,23 +227,14 @@ function ResultRow({
         onMouseDown={(e) => e.preventDefault()}
         onClick={onChoose}
         onMouseEnter={onHover}
-        className={`flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-left ${
+        className={`flex w-full cursor-pointer flex-col px-3 py-1.5 text-left ${
           active ? 'bg-surface-hover' : ''
         }`}
       >
-        <span className="min-w-0 flex-1">
-          <span
-            className={`block truncate text-sm ${active ? 'text-content' : 'text-content-secondary'}`}
-          >
-            {result.label}
-          </span>
-          <span className="block truncate text-xs text-content-tertiary">{result.description}</span>
+        <span className={`truncate text-sm ${active ? 'text-content' : 'text-content-secondary'}`}>
+          {highlighted(result.label, result.highlight)}
         </span>
-        {showCategoryBadge && (
-          <span className="flex-shrink-0 text-xs text-content-tertiary">
-            {result.categoryLabel}
-          </span>
-        )}
+        {searching && <span className="truncate text-xs text-content-tertiary">{location}</span>}
       </div>
     </>
   );
