@@ -8,6 +8,7 @@ import {
   createDraftSkipGate,
   getActiveKernel,
   EXACT_IMMEDIATE_MAX_MS,
+  FORCE_DRAFT_AFTER_EXACT_MS,
 } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
@@ -142,6 +143,10 @@ export function useGeneration(): void {
   // suppresses the slower Manifold draft so a simple bin doesn't flash
   // direct → manifold → exact (two visible swaps).
   const directShownTokenRef = useRef(0);
+  // Duration of the most recent exact build. A slow last exact forces the draft
+  // on the next edit even if the estimate predicts fast, so a heavy design whose
+  // estimate under-predicts still gets interim feedback.
+  const lastExactMsRef = useRef(0);
   const draftSkipGate = useRef(createDraftSkipGate()).current;
   // After the exact result settles, idle-warm the export-quality (fused) shell
   // so the first export skips the deferred socket↔body fuse. Cancelled (timer
@@ -274,14 +279,18 @@ export function useGeneration(): void {
       // Skipped when the estimate predicts a build faster than the gate's
       // threshold (a draft replaced almost immediately is just flicker), and the
       // threshold drops during a scrub (see draftPolicy). Suppressed when the
-      // synchronous direct mesh already painted this edit.
+      // synchronous direct mesh already painted this edit. Forced regardless of
+      // the estimate once the last exact was slow: the estimate can under-predict
+      // a heavy design, and skipping the draft there strands a multi-second
+      // exact with no interim feedback.
+      const lastExactSlow = lastExactMsRef.current >= FORCE_DRAFT_AFTER_EXACT_MS;
       const preview = previewBridgeRef.current;
       if (
         preview &&
         !preview.isDestroyed &&
         directShownTokenRef.current !== token &&
         token > finalizedTokenRef.current &&
-        !(predictedMs !== null && predictedMs < skipBelowMs)
+        (lastExactSlow || !(predictedMs !== null && predictedMs < skipBelowMs))
       ) {
         dispatchDraft(preview, genParams, token);
       }
@@ -303,6 +312,7 @@ export function useGeneration(): void {
         // A newer edit superseded this one; let its results win instead.
         if (token !== genTokenRef.current) return;
         finalizedTokenRef.current = token;
+        lastExactMsRef.current = result.timingMs;
 
         if (result.perfSnapshot) pushPerfSnapshot(result.perfSnapshot);
 

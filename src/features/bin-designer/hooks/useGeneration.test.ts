@@ -38,6 +38,7 @@ vi.mock('@/shared/generation/bridge', () => ({
   getActiveKernel: () => mockActiveKernel,
   FAST_EXACT_SKIP_MS: 1000,
   EXACT_IMMEDIATE_MAX_MS: 600,
+  FORCE_DRAFT_AFTER_EXACT_MS: 1000,
   // Stable threshold — burst behavior is covered by draftPolicy's own tests.
   createDraftSkipGate: () => () => ({ skipBelowMs: 1000, scrubbing: false }),
 }));
@@ -496,6 +497,57 @@ describe('useGeneration', () => {
 
     expect(mockBridge.generate).toHaveBeenCalled();
     expect(mockBridge.generateImmediate).not.toHaveBeenCalled();
+  });
+
+  it('forces the draft after a slow exact even when the next estimate predicts fast', async () => {
+    const draftVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const exactVerts = new Float32Array([0, 0, 0, 2, 0, 0, 0, 2, 0]);
+    const meshOf = (vertices: Float32Array, timingMs = 1) => ({
+      mesh: {
+        vertices,
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs,
+    });
+
+    const previewGenerate = vi.fn().mockResolvedValue(meshOf(draftVerts));
+    const previewBridge = {
+      isDestroyed: false,
+      generateImmediate: previewGenerate,
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge;
+    mockAcquirePreview.mockResolvedValue(previewBridge);
+
+    // The initial exact is slow (>= FORCE_DRAFT_AFTER_EXACT_MS), marking the
+    // design as slow. The preview bridge is only acquired after that first
+    // generation, so the initial render is exact-only.
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockResolvedValue(meshOf(exactVerts, 5000));
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(useDesignerStore.getState().generation.isDraft).toBe(false);
+
+    // The next estimate predicts a fast build, which alone would skip the draft.
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(200);
+    previewGenerate.mockClear();
+
+    // Enable a scoop so the bin is not direct-mesh-eligible: that forces the
+    // async Manifold draft path rather than the synchronous direct mesh.
+    await act(async () => {
+      useDesignerStore.setState((s) => ({
+        params: { ...s.params, scoop: { ...s.params.scoop, enabled: true } },
+        generation: { ...s.generation, epoch: 1 },
+      }));
+      await vi.advanceTimersByTimeAsync(201);
+    });
+
+    // The slow last exact forced the draft despite the fast estimate.
+    expect(previewGenerate).toHaveBeenCalled();
   });
 
   it('persists the exact preview mesh after generation completes', async () => {
