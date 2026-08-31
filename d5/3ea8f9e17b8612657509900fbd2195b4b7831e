@@ -1,0 +1,21 @@
+src/App.lazyComponents.ts
+  s_f355eac7e0c076::t_a6fa3844fa9e16 3-4
+src/shared/hooks/useRouteMeta.ts
+  s_f355eac7e0c076::t_c14f918703887f 15-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d53ea8f9e17b8612657509900fbd2195b4b7831e",
+  "prompts": {},
+  "sessions": {
+    "s_f355eac7e0c076": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e2e02f-5810-4320-85da-73aa13005f4a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
