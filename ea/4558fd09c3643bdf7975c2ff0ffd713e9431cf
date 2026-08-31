@@ -1,0 +1,26 @@
+src/features/generation/worker/generators/binGenerator.scenario.dividerRetention.test.ts
+  s_f355eac7e0c076::t_6607e28ebe8565 67-75,79-89,98-105,107-111
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_f355eac7e0c076::t_ab56ff0d775688 172-175
+src/shared/utils/slotMath.ts
+  s_f355eac7e0c076::t_7b8a8d779581dc 57-58,60-63
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_f355eac7e0c076::t_8e4ad028d98974 94,97
+  s_f355eac7e0c076::t_9b837b42f89251 211
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ea4558fd09c3643bdf7975c2ff0ffd713e9431cf",
+  "prompts": {},
+  "sessions": {
+    "s_f355eac7e0c076": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e2e02f-5810-4320-85da-73aa13005f4a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
