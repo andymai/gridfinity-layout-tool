@@ -33,14 +33,15 @@ describe('DesignerSearchBar', () => {
     const input = open();
     fireEvent.change(input, { target: { value: 'scoop' } });
     const listbox = screen.getByRole('listbox');
-    expect(within(listbox).getByText('Finger scoop')).toBeInTheDocument();
+    // The matched span splits the label across nodes, so match by option name.
+    expect(within(listbox).getByRole('option', { name: /finger scoop/i })).toBeInTheDocument();
     expect(within(listbox).queryByText('Bin dimensions')).not.toBeInTheDocument();
   });
 
   it('jumps to the control and clears the query when a result is chosen', () => {
     const input = open();
     fireEvent.change(input, { target: { value: 'scoop' } });
-    fireEvent.click(screen.getByText('Finger scoop'));
+    fireEvent.click(screen.getByRole('option', { name: /finger scoop/i }));
     expect(jumpToDesignerControl).toHaveBeenCalledWith('bd-scoop');
     expect((input as HTMLInputElement).value).toBe('');
   });

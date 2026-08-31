@@ -1,12 +1,17 @@
 /**
- * Search index for the bin designer's controls: one entry per `data-help-target`
- * section, carrying the i18n keys the search bar matches and shows. The category
- * a control belongs to is not duplicated here — it comes from `categoryForControl`
- * in the settings manifest, which stays the single source of truth.
+ * The bin designer's search index, in two layers:
  *
- * Reuses the `help.target.binDesigner.*` keys the Help modal already owns for the
- * controls it covers, and adds keys for the ones it does not, so both surfaces
- * draw synonyms from one place.
+ * - `DESIGNER_CONTROL_SEARCH` — one record per `data-help-target` SECTION, with
+ *   i18n title/description/synonyms. These are the browse-level entries.
+ * - `DESIGNER_OPTION_RECORDS` — finer sub-options inside those sections
+ *   (Lightweight floor, Screw holes, Lid grip, …). Each reuses an existing
+ *   translated label key and carries English-only synonyms, so richer coverage
+ *   costs no new translation. An option's `section` is both its breadcrumb
+ *   parent and its jump target: only section-level markers exist in the DOM, so
+ *   selecting an option lands the user on the section that holds it.
+ *
+ * A control's category is not duplicated here — it comes from `categoryForControl`
+ * in the settings manifest, the single source of truth.
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
@@ -138,6 +143,289 @@ export const DESIGNER_CONTROL_SEARCH: readonly DesignerControlSearchEntry[] = [
     titleKey: 'help.target.binDesigner.printFit.title',
     descriptionKey: 'help.target.binDesigner.printFit.description',
     keywordsKey: 'help.target.binDesigner.printFit.keywords',
+  },
+];
+
+export interface DesignerOptionRecord {
+  /** Unique id (also the React key for the result row). */
+  readonly id: string;
+  /** An existing, already-translated i18n key for the visible label. */
+  readonly labelKey: string;
+  /** The owning section's controlId — the breadcrumb parent and the jump target. */
+  readonly section: string;
+  /** English-only, match-only synonyms; never displayed, so they need no locale. */
+  readonly keywords: readonly string[];
+}
+
+/**
+ * Finer sub-options, curated to the terms users actually type. Labels reuse
+ * existing translated keys; synonyms are English (domain terms stay English in
+ * every locale anyway). Add an entry here, and its coverage is pinned by the
+ * golden-set eval in `searchCoverage.test.tsx`.
+ */
+export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
+  // Base
+  {
+    id: 'opt-lightweight',
+    labelKey: 'binDesigner.lightweight',
+    section: 'bd-base',
+    keywords: [
+      'lightweight',
+      'lightweight floor',
+      'weight savings',
+      'honeycomb',
+      'infill',
+      'hollow',
+      'gyroid',
+    ],
+  },
+  {
+    id: 'opt-stacking-lip',
+    labelKey: 'assembledHeight.stackingLip',
+    section: 'bd-base',
+    keywords: ['stacking lip', 'stack', 'lip', 'rim', 'stackable', 'mating'],
+  },
+  {
+    id: 'opt-magnets',
+    labelKey: 'binDesigner.base.magnetHoles',
+    section: 'bd-base',
+    keywords: ['magnet', 'magnets', 'magnetic', 'magnet holes', 'hold down', 'mount'],
+  },
+  {
+    id: 'opt-screws',
+    labelKey: 'binDesigner.base.screwHoles',
+    section: 'bd-base',
+    keywords: ['screw', 'screws', 'screw holes', 'mounting', 'fasten', 'countersink'],
+  },
+  {
+    id: 'opt-detachable-feet',
+    labelKey: 'binDesigner.detachableFeet',
+    section: 'bd-base',
+    keywords: ['detachable feet', 'removable feet', 'pin feet', 'snap feet', 'modular feet'],
+  },
+  {
+    id: 'opt-half-sockets',
+    labelKey: 'binDesigner.halfSockets',
+    section: 'bd-base',
+    keywords: ['half sockets', 'half grid feet', 'half pockets'],
+  },
+  {
+    id: 'opt-foot-lattice',
+    labelKey: 'binDesigner.footLattice',
+    section: 'bd-base',
+    keywords: ['foot lattice', 'foot layout', 'foot pattern'],
+  },
+  {
+    id: 'opt-flat-base',
+    labelKey: 'binDesigner.flatFloor',
+    section: 'bd-base',
+    keywords: ['flat base', 'flat bottom', 'no feet', 'solid base'],
+  },
+  {
+    id: 'opt-spacer',
+    labelKey: 'binDesigner.spacer',
+    section: 'bd-base',
+    keywords: ['spacer', 'filler', 'riser', 'shim', 'gap filler'],
+  },
+  {
+    id: 'opt-base-only',
+    labelKey: 'binDesigner.tile',
+    section: 'bd-base',
+    keywords: ['base only', 'tile', 'plate', 'foot tile'],
+  },
+  {
+    id: 'opt-lid-base',
+    labelKey: 'binDesigner.lidBottom',
+    section: 'bd-base',
+    keywords: ['lid base', 'tray bottom', 'matching tray'],
+  },
+  // Lid
+  {
+    id: 'opt-lid-attachment',
+    labelKey: 'binDesigner.lid.attachment',
+    section: 'bd-lid',
+    keywords: [
+      'attachment',
+      'friction',
+      'click rails',
+      'magnetic lid',
+      'slide lid',
+      'hinged',
+      'snap',
+      'flip',
+    ],
+  },
+  {
+    id: 'opt-lid-grip',
+    labelKey: 'help.target.binDesigner.lidGrip.title',
+    section: 'bd-lid',
+    keywords: [
+      'grip',
+      'pry',
+      'thumb',
+      'chamfer',
+      'shadow line',
+      'scallop',
+      'notch',
+      'open lid',
+      'remove lid',
+      'fingernail',
+    ],
+  },
+  {
+    id: 'opt-lid-top-surface',
+    labelKey: 'binDesigner.lid.section.topSurface',
+    section: 'bd-lid',
+    keywords: ['top surface', 'flat top', 'stackable top', 'tray top', 'recessed'],
+  },
+  {
+    id: 'opt-lid-extra-height',
+    labelKey: 'binDesigner.lid.extraHeight',
+    section: 'bd-lid',
+    keywords: ['extra lid height', 'deeper lid', 'cavity', 'headroom'],
+  },
+  // Walls
+  {
+    id: 'opt-wall-thickness',
+    labelKey: 'binDesigner.wallThickness',
+    section: 'bd-walls',
+    keywords: ['wall thickness', 'thickness', 'wall width', 'perimeters'],
+  },
+  {
+    id: 'opt-wall-text',
+    labelKey: 'binDesigner.walls.text.heading',
+    section: 'bd-wall-style',
+    keywords: ['wall text', 'engrave walls', 'emboss', 'sign', 'caption'],
+  },
+  // Interior
+  {
+    id: 'opt-interior-bento',
+    labelKey: 'binDesigner.interior.bento.title',
+    section: 'bd-interior',
+    keywords: ['bento', 'freeform', 'custom sizes', 'mixed compartments'],
+  },
+  {
+    id: 'opt-interior-slotted',
+    labelKey: 'binDesigner.interior.slotted.title',
+    section: 'bd-interior',
+    keywords: ['removable dividers', 'slotted', 'slots', 'adjustable dividers'],
+  },
+  {
+    id: 'opt-interior-solid',
+    labelKey: 'binDesigner.interior.solid.title',
+    section: 'bd-interior',
+    keywords: ['solid', 'cutout', 'pockets', 'custom shapes'],
+  },
+  {
+    id: 'opt-interior-grid',
+    labelKey: 'binDesigner.interior.standard.title',
+    section: 'bd-interior',
+    keywords: ['grid dividers', 'compartments', 'rows', 'columns'],
+  },
+  // Label tabs
+  {
+    id: 'opt-label-support',
+    labelKey: 'binDesigner.tabSupport',
+    section: 'bd-label-tabs',
+    keywords: ['bracket', 'solid', 'fillet', 'underhang', 'tab support'],
+  },
+  {
+    id: 'opt-label-mode',
+    labelKey: 'binDesigner.tabMode',
+    section: 'bd-label-tabs',
+    keywords: ['engraved', 'socket', 'plate', 'label style'],
+  },
+  {
+    id: 'opt-label-edges',
+    labelKey: 'binDesigner.tabEdges',
+    section: 'bd-label-tabs',
+    keywords: ['front', 'back', 'both ends', 'tab placement'],
+  },
+  // Dimensions
+  {
+    id: 'opt-half-grid',
+    labelKey: 'binDesigner.halfBinMode',
+    section: 'bd-dimensions',
+    keywords: ['half grid', 'half bin', 'half unit', 'fractional', 'half size'],
+  },
+  {
+    id: 'opt-extra-wall-height',
+    labelKey: 'binDesigner.extraWallHeight',
+    section: 'bd-dimensions',
+    keywords: ['extra wall height', 'collar', 'taller walls', 'headroom'],
+  },
+  {
+    id: 'opt-fractional-edge',
+    labelKey: 'sidebar.halfUnitEdgePosition',
+    section: 'bd-dimensions',
+    keywords: ['fractional edge', 'half foot side', 'edge offset'],
+  },
+  // Overhang
+  {
+    id: 'opt-taper',
+    labelKey: 'binDesigner.overhang.taper.title',
+    section: 'bd-overhang',
+    keywords: ['taper', 'flare', 'angled walls', 'draft'],
+  },
+  // Shape
+  {
+    id: 'opt-custom-shape',
+    labelKey: 'binDesigner.shape.customShape',
+    section: 'bd-shape',
+    keywords: [
+      'custom shape',
+      'l shape',
+      't shape',
+      'u shape',
+      'footprint',
+      'non-rectangular',
+      'notch',
+    ],
+  },
+  // Type
+  {
+    id: 'opt-font',
+    labelKey: 'binDesigner.type.font',
+    section: 'bd-type',
+    keywords: ['font', 'typeface', 'family'],
+  },
+  {
+    id: 'opt-text-mode',
+    labelKey: 'binDesigner.textMode',
+    section: 'bd-type',
+    keywords: ['engrave', 'emboss', 'through cut', 'deboss', 'raised', 'stencil'],
+  },
+  // Physical units
+  {
+    id: 'opt-grid-unit',
+    labelKey: 'binDesigner.gridUnit',
+    section: 'bd-physical-units',
+    keywords: ['grid unit', 'cell size', 'pitch', 'module'],
+  },
+  {
+    id: 'opt-height-unit',
+    labelKey: 'binDesigner.heightUnit',
+    section: 'bd-physical-units',
+    keywords: ['height unit', 'z unit'],
+  },
+  {
+    id: 'opt-nozzle',
+    labelKey: 'settings.nozzleSize',
+    section: 'bd-physical-units',
+    keywords: ['nozzle', 'line width'],
+  },
+  // Print split
+  {
+    id: 'opt-split-connectors',
+    labelKey: 'binDesigner.splitConnectors',
+    section: 'bd-print-fit',
+    keywords: ['split', 'connectors', 'dowel', 'pin', 'alignment', 'registration'],
+  },
+  {
+    id: 'opt-wall-connectors',
+    labelKey: 'binDesigner.splitWallConnectors',
+    section: 'bd-print-fit',
+    keywords: ['wall connectors', 'key', 'joint', 'glue joint', 'lock'],
   },
 ];
 
