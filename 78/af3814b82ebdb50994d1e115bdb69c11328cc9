@@ -1,0 +1,38 @@
+src/shared/generation/bridge.ts
+  s_65f0a251961ae8::t_1fa33e0927cf11 15
+src/features/bin-designer/hooks/useSplitPreview.ts
+  s_65f0a251961ae8::t_d633dfa33a9105 194
+src/features/bin-designer/hooks/useGeneration.ts
+  s_65f0a251961ae8::t_21eba4cb6d8b5f 262-276,279-286,289-296,299-301
+  s_65f0a251961ae8::t_bb7cf13617a6a0 6-11
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_65f0a251961ae8::t_96c406717c074d 40,42
+  s_65f0a251961ae8::t_2088392d11635a 469-470
+  s_65f0a251961ae8::t_0f6d4b3e53b458 487-488
+  s_65f0a251961ae8::t_2ec1f090b200a4 68,77-83
+  s_65f0a251961ae8::t_df437e63798275 466-468,471-486,489-500
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_65f0a251961ae8::t_f6894fa0b70d7b 784
+src/features/bin-designer/hooks/useSplitPreview.test.ts
+  s_65f0a251961ae8::t_eb8d0ca9531f24 39
+src/features/generation/bridge/draftPolicy.ts
+  s_65f0a251961ae8::t_657be1fcc0e9c5 19,25
+src/features/generation/bridge/types.ts
+  s_65f0a251961ae8::t_c2dafe36c1f0e4 36-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "78af3814b82ebdb50994d1e115bdb69c11328cc9",
+  "prompts": {},
+  "sessions": {
+    "s_65f0a251961ae8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "70be2d35-ae8a-4d41-8031-f8fa81cfefae",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
