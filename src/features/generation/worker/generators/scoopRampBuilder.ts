@@ -232,42 +232,34 @@ function buildScoopRampsInScope(
       ? scoopShapes[0] // already scope-registered
       : scope.register(unwrap(fuseAll(scoopShapes as ValidSolid[])));
 
-  // Thin-walled bins round the inner cavity corners to radius
-  // (BOX_CORNER_RADIUS − wallThickness), but the scoop is a straight full-width
-  // prism with SQUARE corners. At the bin's front-outer corners those square
-  // corners poke through the rounded outer wall and stick out of the bin. Below
-  // the geometric threshold wallThickness < BOX_CORNER_RADIUS·(1 − 1/√2) the
-  // square corner overshoots the outer arc (same condition the cavity cut
-  // guards in compartmentBuilder,). Clip the scoop to the rounded inner
-  // footprint so its corners follow the wall; skip the boolean above the
-  // threshold where there is nothing to trim.
-  if (wallThickness < BOX_CORNER_RADIUS * (1 - Math.SQRT1_2)) {
-    try {
-      const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
-      // Expand the clip by `wallPenetration` so it trims the corner overshoot
-      // without also shaving off the intentional back-edge penetration — which
-      // would restore the coincident wall face this fix removes. Still inside
-      // the outer wall because `wallPenetration < wallThickness`.
-      const footprint = scope.register(
-        sketch(
-          drawRoundedRectangle(
-            innerW + 2 * wallPenetration,
-            innerD + 2 * wallPenetration,
-            cavityCornerR + wallPenetration
-          ),
-          'XY',
-          -1
-        ).extrude(wallHeight + 2)
-      );
-      return scope.register(unwrap(intersect(fused as ValidSolid, footprint as ValidSolid)));
-    } catch {
-      // The clip only trims a sub-mm corner overshoot — best-effort, like the
-      // other booleans here. A kernel failure must not sink the whole bin
-      // build, so fall back to the un-clipped scoop.
-      return fused;
-    }
+  // The scoop is a square-cornered full-width prism, pushed `wallPenetration`
+  // into the surrounding walls to weld it (above). At the bin's rounded outer
+  // corners a square corner driven diagonally into the wall overshoots the outer
+  // arc and pokes out of the bin, at any wall thickness once the penetration is
+  // applied. Clip it to the inner cavity footprint grown by the penetration: the
+  // rounded corners stay inside the outer wall (wallPenetration < wallThickness)
+  // and the straight edges keep the weld depth, so the overshoot is trimmed but
+  // the flat-face weld is not. Interior scoops sit inside the footprint (no-op).
+  try {
+    const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
+    const footprint = scope.register(
+      sketch(
+        drawRoundedRectangle(
+          innerW + 2 * wallPenetration,
+          innerD + 2 * wallPenetration,
+          cavityCornerR + wallPenetration
+        ),
+        'XY',
+        -1
+      ).extrude(wallHeight + 2)
+    );
+    return scope.register(unwrap(intersect(fused as ValidSolid, footprint as ValidSolid)));
+  } catch {
+    // The clip only trims a sub-mm corner overshoot — best-effort, like the
+    // other booleans here. A kernel failure must not sink the whole bin
+    // build, so fall back to the un-clipped scoop.
+    return fused;
   }
-  return fused;
 }
 
 // --- FeatureBuilder protocol ---
@@ -290,7 +282,7 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v4',
+        'v5',
         dim.shellKey,
         stableSerialize(params.scoop),
         params.style,
