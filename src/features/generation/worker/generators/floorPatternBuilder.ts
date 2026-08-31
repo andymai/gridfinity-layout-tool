@@ -22,6 +22,7 @@ import { rotate, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { PipelineContext } from './pipeline/types';
 import { resolvePanelFactory } from './dividerPatternBuilder';
+import { buildCacheKey, compactKey, quantize } from './cacheKeyUtils';
 import { planFloorPattern } from './floorPatterns';
 import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
 import { checkCancelled } from './utils/abort';
@@ -29,36 +30,67 @@ import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 
 /**
+ * Floor-pattern cut targets plus the geometry identity of the whole set.
+ *
+ * `key` is empty when no floor cut applies, and otherwise identifies every
+ * placed window: the factory's local-panel key (motif variant, span, keep-outs,
+ * band, cut depth) composed with each window's placement. These cuts also carve
+ * the deferred socket, so `booleanStage` uses this key both for the body resume
+ * and for caching the carved socket.
+ */
+export interface FloorPatternResult {
+  readonly shapes: Shape3D[];
+  readonly key: string;
+}
+
+/**
  * Build the floor-pattern cut targets for a bin.
  *
- * Returns `[]` whenever the feature is off, unavailable for this bin, or no
- * window is large enough for a single element. Each returned shape is owned by
- * the caller and must be cut from BOTH the body and the deferred socket.
+ * `shapes` is empty (and `key` blank) whenever the feature is off, unavailable
+ * for this bin, or no window is large enough for a single element. Each returned
+ * shape is owned by the caller and must be cut from BOTH the body and the
+ * deferred socket.
  */
-export function buildFloorPattern(ctx: PipelineContext): Shape3D[] {
+export function buildFloorPattern(ctx: PipelineContext): FloorPatternResult {
   const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
+  const NONE: FloorPatternResult = { shapes: [], key: '' };
 
   const floorPattern = params.floorPattern;
-  if (floorPattern?.enabled !== true) return [];
+  if (floorPattern?.enabled !== true) return NONE;
 
   const plan = planFloorPattern(params, dim);
-  if (!plan) return [];
+  if (!plan) return NONE;
 
   const factory = resolvePanelFactory(params, dim.innerW, dim.innerD, {
     pattern: floorPattern.pattern,
     scale: floorPattern.scale ?? DEFAULT_PATTERN_SCALE,
   });
-  if (!factory) return [];
+  if (!factory) return NONE;
 
   const cutDepth = plan.cutZ1 - plan.cutZ0;
   const centerZ = (plan.cutZ0 + plan.cutZ1) / 2;
 
   const start = perfCollector ? performance.now() : 0;
   const shapes: Shape3D[] = [];
+  const keyParts: string[] = [];
   for (const window of plan.windows) {
     checkCancelled(signal);
-    const panel = factory.build(window, -window.patternDepth / 2, window.patternDepth, cutDepth);
+    const bandZ0 = -window.patternDepth / 2;
+    const panel = factory.build(window, bandZ0, window.patternDepth, cutDepth);
     if (!panel) continue;
+
+    // Identity of this placed cut: the factory's local-panel key plus the
+    // window's placement (its x/y already fold in the interior offset).
+    keyParts.push(
+      compactKey(
+        buildCacheKey(
+          factory.keyFor(window, bandZ0, window.patternDepth, cutDepth),
+          quantize(window.x),
+          quantize(window.y),
+          quantize(centerZ)
+        )
+      )
+    );
 
     // Stand the panel down onto the floor: (x, y, z) -> (x, z, -y), so the
     // factory's band axis becomes Y and its thickness axis becomes Z.
@@ -79,5 +111,6 @@ export function buildFloorPattern(ctx: PipelineContext): Shape3D[] {
     );
   }
 
-  return shapes;
+  if (shapes.length === 0) return NONE;
+  return { shapes, key: compactKey(buildCacheKey('floor-v1', ...keyParts)) };
 }

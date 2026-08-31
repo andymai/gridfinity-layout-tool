@@ -102,21 +102,53 @@ describe('bin-body resume cache with wall patterns', () => {
     expect(plain.triangleCount).not.toBe(patterned.triangleCount);
   }, 120_000);
 
-  it('leaves the resume cache untouched for floor patterns', () => {
-    // The floor pattern's shapes also carve the deferred socket, so a resume hit
-    // would pair a holed body with an uncut socket. It stays opted out.
+  it('resumes the booleaned body for a floor-patterned bin', () => {
+    // The floor pattern reports its identity, so an unchanged regen resumes the
+    // body. Its shapes also carve the deferred socket, but booleanStage
+    // re-derives that carve from the same shapes on every build, so the resumed
+    // body and the freshly cut socket stay consistent.
     const generateBin = getGenerateBin();
     const withFloor = {
       ...HONEYCOMB,
       wallPattern: { enabled: false, pattern: 'honeycomb' as const },
-      floorPattern: { ...DEFAULT_FLOOR_PATTERN_CONFIG, enabled: true },
+      floorPattern: {
+        ...DEFAULT_FLOOR_PATTERN_CONFIG,
+        enabled: true,
+        pattern: 'honeycomb' as const,
+      },
     };
 
-    generateBin(withFloor);
+    const first = generateBin(withFloor);
     resetAllShapeCacheStats();
-    generateBin(withFloor);
+    const second = generateBin(withFloor);
 
-    const stats = binBodyStats();
-    expect(stats.hits + stats.misses, 'floor-patterned bins must not consult the cache').toBe(0);
+    expect(
+      binBodyStats().hits,
+      'identical re-gen of a floor-patterned bin must resume the body'
+    ).toBe(1);
+    expect(second.triangleCount).toBe(first.triangleCount);
+  }, 120_000);
+
+  it('rebuilds rather than resuming when the floor pattern changes', () => {
+    const generateBin = getGenerateBin();
+    const withFloor = {
+      ...HONEYCOMB,
+      wallPattern: { enabled: false, pattern: 'honeycomb' as const },
+      floorPattern: {
+        ...DEFAULT_FLOOR_PATTERN_CONFIG,
+        enabled: true,
+        pattern: 'honeycomb' as const,
+      },
+    };
+
+    const first = generateBin(withFloor);
+    resetAllShapeCacheStats();
+    const changed = generateBin({
+      ...withFloor,
+      floorPattern: { ...DEFAULT_FLOOR_PATTERN_CONFIG, enabled: true, pattern: 'diamond' as const },
+    });
+
+    expect(binBodyStats().hits, 'a different floor pattern must not resume').toBe(0);
+    expect(changed.triangleCount).not.toBe(first.triangleCount);
   }, 120_000);
 });

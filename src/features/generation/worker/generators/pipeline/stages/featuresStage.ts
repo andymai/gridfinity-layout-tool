@@ -131,11 +131,11 @@ export const featuresStage: PipelineStage = {
 
     const targets = runFeatureBuilders(builders, ctx);
 
-    // Floor pattern: drainage/ventilation holes through the floor slab
-    // AND the base socket, so they're handed to the boolean stage twice — once
-    // for the body, once for the deferred socket.
-    const floorPatternShapes = buildFloorPattern(ctx);
-    targets.patternCutTargets.push(...floorPatternShapes);
+    // Floor pattern: drainage/ventilation holes through the floor slab AND the
+    // base socket, so they are handed to the boolean stage twice (once for the
+    // body, once for the deferred socket).
+    const floorPattern = buildFloorPattern(ctx);
+    targets.patternCutTargets.push(...floorPattern.shapes);
 
     // Wall patterns: special case with per-wall caching + cutout clipping.
     // Polygon bins enumerate outer polygon edges (see wallPatterns.ts) and
@@ -169,28 +169,28 @@ export const featuresStage: PipelineStage = {
       if (dividers.key) wallPatternKeys.push(dividers.key);
     }
 
-    // The floor pattern stays unkeyed: its shapes also carve the deferred
-    // socket, and a resume hit would be worse than stale (the cached body would
-    // come back with holes while the freshly built socket flowed through uncut).
-    // Every other pattern cut now reports its identity.
-    const resumable = floorPatternShapes.length === 0;
+    // The floor cut reports its identity too, so a floor-patterned bin can
+    // resume the post-boolean body like any other. Its shapes also carve the
+    // deferred socket, but booleanStage re-derives that carve from the same
+    // shapes on every build, so a resumed body and the freshly cut socket always
+    // agree (caching the socket carve itself is a separate follow-up).
+    if (floorPattern.key) wallPatternKeys.push(floorPattern.key);
 
     return {
       ...ctx,
       fuseTargets: targets.fuseTargets,
       cutTargets: targets.cutTargets,
       patternCutTargets: targets.patternCutTargets,
-      deferredCutTargets: floorPatternShapes,
-      // Wall-pattern cuts ride in `featuresKey` via the same per-wall identity
-      // the pattern cache trusts, so a patterned bin can resume the post-boolean
-      // body like any other. That matters most here: the honeycomb-plus-cutouts
-      // bins are both the slowest to boolean and, until now, the only ones
-      // barred from the cache that exists to skip it.
-      featuresKey: resumable
-        ? wallPatternKeys.length > 0
+      deferredCutTargets: floorPattern.shapes,
+      // Pattern cuts ride in `featuresKey` via the same per-shape identity the
+      // pattern caches trust, so any patterned bin can resume the post-boolean
+      // body. The honeycomb-plus-cutouts, kumiko, divider and floor bins are the
+      // slowest to boolean and were the last barred from the cache built to skip
+      // it.
+      featuresKey:
+        wallPatternKeys.length > 0
           ? JSON.stringify(['wallpattern-v1', targets.featuresKey, wallPatternKeys])
-          : targets.featuresKey
-        : null,
+          : targets.featuresKey,
     };
   },
 };
