@@ -68,6 +68,38 @@ const CASES: Case[] = [
     ],
   },
   {
+    name: 'wall+floor-honeycomb',
+    base: buildParams({
+      width: 3,
+      depth: 3,
+      height: 5,
+      wallPattern: { enabled: true, pattern: 'honeycomb' },
+      floorPattern: { enabled: true, pattern: 'honeycomb', scale: 0.5 },
+    }),
+    variants: [
+      {
+        name: 'floor-scale',
+        params: buildParams({
+          width: 3,
+          depth: 3,
+          height: 5,
+          wallPattern: { enabled: true, pattern: 'honeycomb' },
+          floorPattern: { enabled: true, pattern: 'honeycomb', scale: 0.7 },
+        }),
+      },
+      {
+        name: 'floor-pattern',
+        params: buildParams({
+          width: 3,
+          depth: 3,
+          height: 5,
+          wallPattern: { enabled: true, pattern: 'honeycomb' },
+          floorPattern: { enabled: true, pattern: 'diamond', scale: 0.5 },
+        }),
+      },
+    ],
+  },
+  {
     name: 'divider-honeycomb',
     base: buildParams({
       width: 3,
