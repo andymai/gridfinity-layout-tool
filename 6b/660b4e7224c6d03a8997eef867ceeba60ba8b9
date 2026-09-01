@@ -1,0 +1,19 @@
+src/shared/spacemouse/navlib/commands.test.ts
+  s_f32f6b4786090b::t_988ba41ff205f3 1-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "6b660b4e7224c6d03a8997eef867ceeba60ba8b9",
+  "prompts": {},
+  "sessions": {
+    "s_f32f6b4786090b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f05d11c6-0dfe-4fee-a6b6-66c7772e08b0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
