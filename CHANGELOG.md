@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.482.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.3...gridfinity-layout-tool-v4.482.4) (2026-09-01)
+
+
+### Bug Fixes
+
+* **spacemouse:** claim the puck for the example-preview dialog ([#4065](https://github.com/andymai/gridfinity-layout-tool/issues/4065)) ([364da16](https://github.com/andymai/gridfinity-layout-tool/commit/364da1642767b895a6cb68b4b1486b26792434b1)), closes [#4041](https://github.com/andymai/gridfinity-layout-tool/issues/4041)
+
 ## [4.482.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.2...gridfinity-layout-tool-v4.482.3) (2026-08-31)
 
 
