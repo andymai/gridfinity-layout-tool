@@ -6,6 +6,7 @@ import {
   scoopSides,
   scoopFlatBase,
   scoopLipInteraction,
+  scoopMultiCompartment,
 } from './scenarios/scoops';
 
 runScenarios([
@@ -14,4 +15,5 @@ runScenarios([
   ...scoopSides,
   ...scoopFlatBase,
   ...scoopLipInteraction,
+  ...scoopMultiCompartment,
 ]);
