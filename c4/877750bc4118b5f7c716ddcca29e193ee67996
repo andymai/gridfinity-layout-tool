@@ -1,0 +1,23 @@
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_f32f6b4786090b::t_581c2983060d9d 175-177
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_f32f6b4786090b::t_560efb11416465 19-21
+  s_f32f6b4786090b::t_7b0aa3e8c74d25 169,173
+  s_f32f6b4786090b::t_cf9e82fe40fd9c 209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "c4877750bc4118b5f7c716ddcca29e193ee67996",
+  "prompts": {},
+  "sessions": {
+    "s_f32f6b4786090b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f05d11c6-0dfe-4fee-a6b6-66c7772e08b0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
