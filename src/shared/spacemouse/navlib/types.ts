@@ -20,6 +20,8 @@ export interface NavlibViewAccessors {
   getPivotPosition(): number[] | null;
   getCoordinateSystem(): number[];
   getFrontView(): number[];
+  getConstructionPlane(): number[];
+  getFloorPlane(): number[];
   getViewRotatable(): boolean;
   // Hit testing: the driver sets a ray, then reads back where it lands so it can
   // pivot around the surface under the cursor.

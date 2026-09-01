@@ -11,6 +11,8 @@ let modulePromise: Promise<WebHidModule> | null = null;
 let device: SpaceMouseDevice | null = null;
 let started = false;
 let activeTransport: SpaceMouseTransport | null = null;
+// Bumped on every start/stop so an in-flight async probe can tell it was superseded.
+let generation = 0;
 
 function setConnection(
   ...args: Parameters<ReturnType<typeof useSpaceMouseStore.getState>['setConnection']>
@@ -147,6 +149,7 @@ function stopWebHid(): void {
 /** navlib was unavailable or dropped: switch to the raw-HID path, once. */
 function fallbackToWebHid(): void {
   if (!started || activeTransport === 'webhid') return;
+  stopNavlib(); // idempotent; clears navlib state so it can reconnect on a later start
   startWebHid();
 }
 
@@ -155,9 +158,11 @@ function fallbackToWebHid(): void {
  * the control panel); fall back to WebHID when the driver is absent or won't
  * serve this origin. One transport is active at a time.
  */
-async function selectTransport(): Promise<void> {
+async function selectTransport(gen: number): Promise<void> {
   const hasDriver = await probeDriver();
-  if (!started) return; // stopped while probing
+  // A stop (or a stop+restart) during the probe supersedes this result; applying
+  // it could start a second transport against the new session.
+  if (gen !== generation) return;
   if (hasDriver) {
     setTransport('navlib');
     await startNavlib({ onDisconnect: fallbackToWebHid });
@@ -169,19 +174,21 @@ async function selectTransport(): Promise<void> {
 export function startSpaceMouse(): void {
   if (started) return;
   started = true;
+  const gen = ++generation;
   // Load the undo/redo handler lazily so importing this module (e.g. for the
   // Labs pairing button) doesn't drag in the command/history store graph. Needed
   // by both transports.
   void import('./commands').then((m) => {
     if (started) spaceMouseBus.setGlobalHandler(m.runGlobalCommand);
   });
-  void selectTransport();
+  void selectTransport(gen);
 }
 
 export function stopSpaceMouse(): void {
   if (!started) return;
   started = false;
-  if (activeTransport === 'navlib') stopNavlib();
+  generation++; // supersede any in-flight probe
+  stopNavlib(); // idempotent; also covers a session that fell back to WebHID
   stopWebHid();
   setTransport(null);
   spaceMouseBus.setGlobalHandler(null);

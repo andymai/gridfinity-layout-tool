@@ -113,8 +113,9 @@ function buildClient(): NavlibClient {
       if (command) spaceMouseBus.dispatch(command);
     },
 
-    // View reads (fall back to safe values when no canvas is active).
-    getViewMatrix: () => acc()?.getViewMatrix() ?? IDENTITY,
+    // View reads (fall back to safe values when no canvas is active). Fallbacks
+    // return fresh arrays so a mutating driver can't corrupt a shared constant.
+    getViewMatrix: () => acc()?.getViewMatrix() ?? IDENTITY.slice(),
     getPerspective: () => acc()?.getPerspective() ?? true,
     getViewExtents: () => acc()?.getViewExtents() ?? [-1, -1, -1, 1, 1, 1],
     getViewTarget: () => acc()?.getViewTarget() ?? [0, 0, 0],
@@ -123,14 +124,13 @@ function buildClient(): NavlibClient {
     getViewFrustum: () => acc()?.getViewFrustum() ?? [-1, 1, -1, 1, 0.1, 1000],
     getModelExtents: () => acc()?.getModelExtents() ?? null,
     getPivotPosition: () => acc()?.getPivotPosition() ?? null,
-    getCoordinateSystem: () => acc()?.getCoordinateSystem() ?? IDENTITY,
-    getFrontView: () => acc()?.getFrontView() ?? IDENTITY,
+    getCoordinateSystem: () => acc()?.getCoordinateSystem() ?? IDENTITY.slice(),
+    getFrontView: () => acc()?.getFrontView() ?? IDENTITY.slice(),
+    getConstructionPlane: () => acc()?.getConstructionPlane() ?? [0, 0, 1, 0],
+    getFloorPlane: () => acc()?.getFloorPlane() ?? [0, 0, 1, 0],
     getPointerPosition: () => acc()?.getPointerPosition() ?? null,
     getLookAt: () => acc()?.getLookAt() ?? null,
-    // Minor properties the navigation models rarely need; safe constants.
     getUnitsToMeters: () => 1,
-    getConstructionPlane: () => [0, 1, 0, 0],
-    getFloorPlane: () => [0, 1, 0, 0],
 
     // View writes (the driver's computed camera).
     setViewMatrix(data) {
@@ -168,9 +168,12 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
     const ctor = await loadModule();
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- stopNavlib() can flip `started` during the await
     if (!started) return; // stopped while loading
+    let instance: Navlib | null = null;
     const wrapped: NavlibClient = {
       ...buildClient(),
       onDisconnect() {
+        // Ignore a disconnect from a superseded connection (stop/start race).
+        if (nav !== instance) return;
         // Reset our own state (so a later probe can reconnect the driver) before
         // handing off to the caller's WebHID fallback.
         stopPump();
@@ -180,27 +183,34 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
         opts.onDisconnect();
       },
     };
-    nav = new ctor(wrapped);
+    instance = new ctor(wrapped);
+    nav = instance;
     if (!nav.connect()) {
       setConnection('error');
       started = false;
+      nav = null;
       opts.onDisconnect();
     }
   } catch {
     setConnection('error');
     started = false;
+    nav = null;
     opts.onDisconnect();
   }
 }
 
+/** Idempotent: safe to call when navlib is already stopped or was never started. */
 export function stopNavlib(): void {
-  if (!started) return;
+  if (!nav && !started) return;
   started = false;
   stopPump();
+  // Null `nav` before delete3dmouse so its close→onDisconnect sees a superseded
+  // instance and doesn't re-enter the fallback.
+  const instance = nav;
+  nav = null;
   try {
-    nav?.delete3dmouse();
+    instance?.delete3dmouse();
   } catch {
     // Socket may already be gone.
   }
-  nav = null;
 }

@@ -23,6 +23,11 @@ const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 // App coordinate system for a Z-up canvas (X right, Z up, Y into the screen).
 const Z_UP = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1];
 
+/** The app's previews are Z-up; a Y-up canvas is possible, so read the up axis. */
+function isZUp(d: NavlibViewDeps | null): boolean {
+  return !!d && Math.abs(d.camera.up.z) > 0.9;
+}
+
 /** Meshes that frame the scene rather than being the model (see computeContentBox). */
 function isScaffold(obj: Object3D): boolean {
   const name = obj.name.toLowerCase();
@@ -134,12 +139,18 @@ export function createNavlibViewAccessors(
       return box.getCenter(new Vector3()).toArray();
     },
     getCoordinateSystem() {
-      const d = getDeps();
-      if (d && Math.abs(d.camera.up.z) > 0.9) return Z_UP.slice();
-      return IDENTITY.slice();
+      return isZUp(getDeps()) ? Z_UP.slice() : IDENTITY.slice();
     },
     getFrontView() {
-      return IDENTITY.slice();
+      // Front view = the app's world pose expressed in its coordinate system.
+      return isZUp(getDeps()) ? Z_UP.slice() : IDENTITY.slice();
+    },
+    getConstructionPlane() {
+      // Ground plane through the origin, normal along the up axis.
+      return isZUp(getDeps()) ? [0, 0, 1, 0] : [0, 1, 0, 0];
+    },
+    getFloorPlane() {
+      return isZUp(getDeps()) ? [0, 0, 1, 0] : [0, 1, 0, 0];
     },
     getViewRotatable() {
       const d = getDeps();
@@ -159,8 +170,12 @@ export function createNavlibViewAccessors(
     },
     getLookAt() {
       const d = getDeps();
-      if (!d || look.direction.lengthSq() === 0) return null;
+      // No selection set exists in this app, so a selection-only probe never hits.
+      if (!d || look.selectionOnly || look.direction.lengthSq() === 0) return null;
       raycaster.set(look.origin, tmpForward.copy(look.direction).normalize());
+      const threshold = look.aperture / 2;
+      raycaster.params.Line = { threshold };
+      raycaster.params.Points = { threshold };
       for (const hit of raycaster.intersectObjects(d.scene.children, true)) {
         if (hit.object.visible && !isScaffold(hit.object)) return hit.point.toArray();
       }

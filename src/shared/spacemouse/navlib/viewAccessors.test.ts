@@ -102,6 +102,21 @@ describe('createNavlibViewAccessors', () => {
     expect(createNavlibViewAccessors(() => deps(zUp)).getCoordinateSystem()[6]).toBe(-1);
   });
 
+  it('derives the ground plane and front view from the up axis', () => {
+    const yUp = new PerspectiveCamera();
+    yUp.up.set(0, 1, 0);
+    const zUp = new PerspectiveCamera();
+    zUp.up.set(0, 0, 1);
+    const y = createNavlibViewAccessors(() => deps(yUp));
+    const z = createNavlibViewAccessors(() => deps(zUp));
+    expect(y.getConstructionPlane()).toEqual([0, 1, 0, 0]);
+    expect(z.getConstructionPlane()).toEqual([0, 0, 1, 0]);
+    expect(z.getFloorPlane()).toEqual([0, 0, 1, 0]);
+    // Front view tracks the coordinate system, so Z-up is not the identity.
+    expect(z.getFrontView()[6]).toBe(-1);
+    expect(y.getFrontView()[6]).toBe(0);
+  });
+
   it('returns the model bounding box, or null for an empty scene', () => {
     const camera = new PerspectiveCamera();
     const withModel = createNavlibViewAccessors(() => deps(camera, makeScene(true)));
