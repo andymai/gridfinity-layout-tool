@@ -14,10 +14,14 @@ export const RAW_AXIS_FULL_SCALE = 350;
 /** Fraction of full scale below which an axis is treated as centered (jitter). */
 export const AXIS_DEADZONE = 0.06;
 
-/** Per-second rates at full deflection, before user speed/sensitivity scaling. */
-export const TRANSLATE_RATE = 1.2; // fraction of camera-to-target distance / s
-export const ZOOM_RATE = 1.6; // e-fold dolly factor / s
-export const ORBIT_RATE = 2.2; // radians / s
+/**
+ * Per-second rates at full deflection, before user speed/sensitivity scaling.
+ * The mapping is linear with no acceleration curve, so these stay brisk enough
+ * that a normal partial push keeps pace with CAD-app navigation.
+ */
+export const TRANSLATE_RATE = 2.0; // fraction of camera-to-target distance / s
+export const ZOOM_RATE = 2.6; // e-fold dolly factor / s
+export const ORBIT_RATE = 3.6; // radians / s
 
 /** Keeps the orbit from tumbling over the pole, matching OrbitControls' clamp. */
 export const MIN_POLAR = 0.01;
@@ -35,8 +39,8 @@ export const DEFAULT_SETTINGS: SpaceMouseSettings = {
   },
 };
 
-export const SENSITIVITY_RANGE = { min: 0.1, max: 3, step: 0.1 } as const;
-export const SPEED_RANGE = { min: 0, max: 2, step: 0.05 } as const;
+export const SENSITIVITY_RANGE = { min: 0.1, max: 5, step: 0.1 } as const;
+export const SPEED_RANGE = { min: 0, max: 3, step: 0.05 } as const;
 
 /** 3Dconnexion (0x256f) and the Logitech-era vendor id (0x046d) its pucks use. */
 export const SPACEMOUSE_VENDOR_IDS = [0x256f, 0x046d] as const;
