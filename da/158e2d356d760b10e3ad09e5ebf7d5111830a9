@@ -1,0 +1,21 @@
+src/shared/spacemouse/constants.ts
+  s_f32f6b4786090b::t_40bf2dd184a007 19-20
+  s_f32f6b4786090b::t_9aea0fd8be62c1 42-43
+  s_f32f6b4786090b::t_7d934dd44c2cc1 17-18,21-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "da158e2d356d760b10e3ad09e5ebf7d5111830a9",
+  "prompts": {},
+  "sessions": {
+    "s_f32f6b4786090b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f05d11c6-0dfe-4fee-a6b6-66c7772e08b0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
