@@ -195,6 +195,7 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
       opts.onDisconnect();
     }
   } catch {
+    if (gen !== navGeneration) return; // superseded start; don't clobber the live session
     setConnection('error');
     started = false;
     nav = null;
