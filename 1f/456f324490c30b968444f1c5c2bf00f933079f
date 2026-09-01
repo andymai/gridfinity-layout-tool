@@ -1,0 +1,27 @@
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_f32f6b4786090b::t_e9d88942fa97f2 172-179
+src/shared/spacemouse/components/SpaceMouseSettings/SpaceMouseSettings.test.tsx
+  s_f32f6b4786090b::t_817f19b66ef51d 23
+src/shared/spacemouse/navlib/viewAccessors.test.ts
+  s_f32f6b4786090b::t_e50fbe2f4966ff 85-94
+src/shared/spacemouse/components/SpaceMouseSettings/SpaceMouseSettings.tsx
+  s_f32f6b4786090b::t_b1d705593f96e9 62
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_f32f6b4786090b::t_3801d90fb1971d 96-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1f456f324490c30b968444f1c5c2bf00f933079f",
+  "prompts": {},
+  "sessions": {
+    "s_f32f6b4786090b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f05d11c6-0dfe-4fee-a6b6-66c7772e08b0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
