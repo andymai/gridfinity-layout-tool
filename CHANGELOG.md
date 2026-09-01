@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.483.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.4...gridfinity-layout-tool-v4.483.0) (2026-09-01)
+
+
+### Features
+
+* **spacemouse:** driver-native navigation via the 3Dconnexion NL-Proxy ([#4072](https://github.com/andymai/gridfinity-layout-tool/issues/4072)) ([c5045f5](https://github.com/andymai/gridfinity-layout-tool/commit/c5045f52affc51dddd1772d7f4ac1b07178419c9))
+
+
+### Bug Fixes
+
+* **spacemouse:** raise navigation speed and tuning headroom ([#4071](https://github.com/andymai/gridfinity-layout-tool/issues/4071)) ([14fea7b](https://github.com/andymai/gridfinity-layout-tool/commit/14fea7b0131128035bd2f8fb4c9c77ec5bc40d8b))
+
 ## [4.482.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.3...gridfinity-layout-tool-v4.482.4) (2026-09-01)
 
 
