@@ -1,6 +1,8 @@
 import type * as SpaceMouseWebHid from 'spacemouse-webhid';
+import { probeDriver, startNavlib, stopNavlib } from './navlib/navlibClient';
 import { useSpaceMouseStore } from './settingsStore';
 import { spaceMouseBus } from './spaceMouseBus';
+import type { SpaceMouseTransport } from './types';
 
 type WebHidModule = typeof SpaceMouseWebHid;
 type SpaceMouseDevice = Awaited<ReturnType<WebHidModule['setupSpaceMouse']>>;
@@ -8,11 +10,19 @@ type SpaceMouseDevice = Awaited<ReturnType<WebHidModule['setupSpaceMouse']>>;
 let modulePromise: Promise<WebHidModule> | null = null;
 let device: SpaceMouseDevice | null = null;
 let started = false;
+let activeTransport: SpaceMouseTransport | null = null;
+// Bumped on every start/stop so an in-flight async probe can tell it was superseded.
+let generation = 0;
 
 function setConnection(
   ...args: Parameters<ReturnType<typeof useSpaceMouseStore.getState>['setConnection']>
 ) {
   useSpaceMouseStore.getState().setConnection(...args);
+}
+
+function setTransport(transport: SpaceMouseTransport | null): void {
+  activeTransport = transport;
+  useSpaceMouseStore.getState().setTransport(transport);
 }
 
 export function isWebHidSupported(): boolean {
@@ -107,14 +117,9 @@ function syncFocus(): void {
   spaceMouseBus.setFocused(document.hasFocus());
 }
 
-export function startSpaceMouse(): void {
-  if (started) return;
-  started = true;
-  // Load the undo/redo handler lazily so importing this module (e.g. for the
-  // Labs pairing button) doesn't drag in the command/history store graph.
-  void import('./commands').then((m) => {
-    if (started) spaceMouseBus.setGlobalHandler(m.runGlobalCommand);
-  });
+/** Start the raw-HID transport (the fallback when no driver is present). */
+function startWebHid(): void {
+  setTransport('webhid');
   if (!isWebHidSupported()) {
     setConnection('unsupported', null);
     return;
@@ -128,9 +133,7 @@ export function startSpaceMouse(): void {
   void tryAutoConnect();
 }
 
-export function stopSpaceMouse(): void {
-  if (!started) return;
-  started = false;
+function stopWebHid(): void {
   if (isWebHidSupported()) {
     navigator.hid.removeEventListener('connect', onHidConnect);
     navigator.hid.removeEventListener('disconnect', onHidDisconnect);
@@ -140,8 +143,55 @@ export function stopSpaceMouse(): void {
   }
   spaceMouseBus.setFocused(true);
   detachCurrent();
-  spaceMouseBus.setGlobalHandler(null);
   spaceMouseBus.resetDeflection();
+}
+
+/** navlib was unavailable or dropped: switch to the raw-HID path, once. */
+function fallbackToWebHid(): void {
+  if (!started || activeTransport === 'webhid') return;
+  stopNavlib(); // idempotent; clears navlib state so it can reconnect on a later start
+  startWebHid();
+}
+
+/**
+ * Prefer the 3Dconnexion driver (per-app speed/axis config, appears by name in
+ * the control panel); fall back to WebHID when the driver is absent or won't
+ * serve this origin. One transport is active at a time.
+ */
+async function selectTransport(gen: number): Promise<void> {
+  const hasDriver = await probeDriver();
+  // A stop (or a stop+restart) during the probe supersedes this result; applying
+  // it could start a second transport against the new session.
+  if (gen !== generation) return;
+  if (hasDriver) {
+    setTransport('navlib');
+    await startNavlib({ onDisconnect: fallbackToWebHid });
+  } else {
+    startWebHid();
+  }
+}
+
+export function startSpaceMouse(): void {
+  if (started) return;
+  started = true;
+  const gen = ++generation;
+  // Load the undo/redo handler lazily so importing this module (e.g. for the
+  // Labs pairing button) doesn't drag in the command/history store graph. Needed
+  // by both transports.
+  void import('./commands').then((m) => {
+    if (started) spaceMouseBus.setGlobalHandler(m.runGlobalCommand);
+  });
+  void selectTransport(gen);
+}
+
+export function stopSpaceMouse(): void {
+  if (!started) return;
+  started = false;
+  generation++; // supersede any in-flight probe
+  stopNavlib(); // idempotent; also covers a session that fell back to WebHID
+  stopWebHid();
+  setTransport(null);
+  spaceMouseBus.setGlobalHandler(null);
   setConnection(isWebHidSupported() ? 'idle' : 'unsupported', null);
 }
 

@@ -4555,5 +4555,6 @@
   "spacemouse.status.connecting": "Připojování…",
   "spacemouse.status.idle": "Není připojeno žádné zařízení",
   "spacemouse.status.unsupported": "Vyžaduje prohlížeč Chromium",
-  "spacemouse.status.error": "Připojení se nezdařilo"
+  "spacemouse.status.error": "Připojení se nezdařilo",
+  "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel."
 }

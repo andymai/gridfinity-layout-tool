@@ -2,7 +2,12 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import { DEFAULT_SETTINGS, SPACEMOUSE_SETTINGS_STORAGE_KEY } from './constants';
-import type { SpaceMouseConnectionStatus, SpaceMouseInvert, SpaceMouseSettings } from './types';
+import type {
+  SpaceMouseConnectionStatus,
+  SpaceMouseInvert,
+  SpaceMouseSettings,
+  SpaceMouseTransport,
+} from './types';
 
 interface SpaceMouseState {
   /** Persisted tuning. */
@@ -10,6 +15,8 @@ interface SpaceMouseState {
   /** Transient connection state (never persisted). */
   status: SpaceMouseConnectionStatus;
   deviceName: string | null;
+  /** Which transport is active, or null when nothing is connected. */
+  transport: SpaceMouseTransport | null;
 
   setSensitivity: (value: number) => void;
   setTranslateSpeed: (value: number) => void;
@@ -17,6 +24,7 @@ interface SpaceMouseState {
   toggleInvert: (axis: keyof SpaceMouseInvert) => void;
   resetSettings: () => void;
   setConnection: (status: SpaceMouseConnectionStatus, deviceName?: string | null) => void;
+  setTransport: (transport: SpaceMouseTransport | null) => void;
 }
 
 const noopStorage = {
@@ -31,6 +39,7 @@ export const useSpaceMouseStore = create<SpaceMouseState>()(
       settings: DEFAULT_SETTINGS,
       status: 'idle',
       deviceName: null,
+      transport: null,
 
       setSensitivity: (value) => set((s) => ({ settings: { ...s.settings, sensitivity: value } })),
       setTranslateSpeed: (value) =>
@@ -46,6 +55,7 @@ export const useSpaceMouseStore = create<SpaceMouseState>()(
       resetSettings: () => set({ settings: DEFAULT_SETTINGS }),
       setConnection: (status, deviceName) =>
         set((s) => ({ status, deviceName: deviceName === undefined ? s.deviceName : deviceName })),
+      setTransport: (transport) => set({ transport }),
     }),
     {
       name: SPACEMOUSE_SETTINGS_STORAGE_KEY,
@@ -76,6 +86,9 @@ export function useSpaceMouseSettings(): SpaceMouseSettings {
 export function useSpaceMouseConnection(): {
   status: SpaceMouseConnectionStatus;
   deviceName: string | null;
+  transport: SpaceMouseTransport | null;
 } {
-  return useSpaceMouseStore(useShallow((s) => ({ status: s.status, deviceName: s.deviceName })));
+  return useSpaceMouseStore(
+    useShallow((s) => ({ status: s.status, deviceName: s.deviceName, transport: s.transport }))
+  );
 }

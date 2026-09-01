@@ -4555,5 +4555,6 @@
   "spacemouse.status.connecting": "接続中…",
   "spacemouse.status.idle": "デバイスが接続されていません",
   "spacemouse.status.unsupported": "Chromium ブラウザが必要です",
-  "spacemouse.status.error": "接続に失敗しました"
+  "spacemouse.status.error": "接続に失敗しました",
+  "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel."
 }

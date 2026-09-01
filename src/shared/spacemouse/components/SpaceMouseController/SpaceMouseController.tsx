@@ -11,6 +11,7 @@ import {
 } from '../../cameraCommands';
 import { SPACEMOUSE_FEATURE_ID } from '../../constants';
 import { computeFrameMotion, isDeflectionIdle, toDeflection } from '../../mapping';
+import { createNavlibViewAccessors, type NavlibViewDeps } from '../../navlib/viewAccessors';
 import { useSpaceMouseSettings } from '../../settingsStore';
 import { spaceMouseBus } from '../../spaceMouseBus';
 import type { SpaceMouseCommand } from '../../types';
@@ -80,11 +81,21 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
       });
       st.invalidate();
     };
+    // Camera accessors for the driver-native transport, delegating to this
+    // canvas's live state. Created here (not in render) so the deferred ref read
+    // stays out of the render phase.
+    const navlib = createNavlibViewAccessors((): NavlibViewDeps | null => {
+      const st = stateRef.current;
+      return st.controls
+        ? { camera: st.camera, controls: st.controls, scene: st.scene, invalidate: st.invalidate }
+        : null;
+    });
     const unregister = spaceMouseBus.register({
       id,
       runCommand,
       invalidate: () => stateRef.current.invalidate(),
       claim: modal,
+      navlib,
     });
     const dom = gl.domElement;
     const claimOnHover = (): void => spaceMouseBus.setActive(id);

@@ -16,7 +16,12 @@ vi.mock('../../deviceManager', () => ({
 
 beforeEach(() => {
   h.supported = true;
-  useSpaceMouseStore.setState({ settings: DEFAULT_SETTINGS, status: 'idle', deviceName: null });
+  useSpaceMouseStore.setState({
+    settings: DEFAULT_SETTINGS,
+    status: 'idle',
+    deviceName: null,
+    transport: 'webhid',
+  });
 });
 
 afterEach(() => {
@@ -55,5 +60,19 @@ describe('SpaceMouseSettings', () => {
     render(<SpaceMouseSettings />);
     fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
     expect(useSpaceMouseStore.getState().settings.sensitivity).toBe(DEFAULT_SETTINGS.sensitivity);
+  });
+
+  it('hides in-app tuning in driver mode, deferring to the control panel', () => {
+    useSpaceMouseStore.setState({
+      status: 'connected',
+      deviceName: '3Dconnexion driver',
+      transport: 'navlib',
+    });
+    render(<SpaceMouseSettings />);
+    expect(
+      screen.getByText('Speed and axis direction are set in the 3Dconnexion control panel.')
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: 'Pan horizontal' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Connect' })).not.toBeInTheDocument();
   });
 });

@@ -4555,5 +4555,6 @@
   "spacemouse.status.connecting": "Connessione…",
   "spacemouse.status.idle": "Nessun dispositivo connesso",
   "spacemouse.status.unsupported": "Richiede un browser Chromium",
-  "spacemouse.status.error": "Connessione non riuscita"
+  "spacemouse.status.error": "Connessione non riuscita",
+  "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel."
 }
