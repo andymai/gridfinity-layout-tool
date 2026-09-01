@@ -16,6 +16,9 @@ const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 let modulePromise: Promise<NavlibConstructor> | null = null;
 let nav: Navlib | null = null;
 let started = false;
+// Bumped on every start/stop so a continuation after the async module load can
+// tell it was superseded by a stop or restart.
+let navGeneration = 0;
 let animating = false;
 let rafId = 0;
 
@@ -163,11 +166,11 @@ function buildClient(): NavlibClient {
 export async function startNavlib(opts: { onDisconnect: () => void }): Promise<void> {
   if (started) return;
   started = true;
+  const gen = ++navGeneration;
   setConnection('connecting');
   try {
     const ctor = await loadModule();
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- stopNavlib() can flip `started` during the await
-    if (!started) return; // stopped while loading
+    if (gen !== navGeneration) return; // stopped or restarted while loading
     let instance: Navlib | null = null;
     const wrapped: NavlibClient = {
       ...buildClient(),
@@ -203,6 +206,7 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
 export function stopNavlib(): void {
   if (!nav && !started) return;
   started = false;
+  navGeneration++; // supersede an in-flight module load
   stopPump();
   // Null `nav` before delete3dmouse so its close→onDisconnect sees a superseded
   // instance and doesn't re-enter the fallback.

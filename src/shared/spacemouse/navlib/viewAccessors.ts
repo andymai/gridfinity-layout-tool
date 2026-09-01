@@ -172,10 +172,10 @@ export function createNavlibViewAccessors(
       const d = getDeps();
       // No selection set exists in this app, so a selection-only probe never hits.
       if (!d || look.selectionOnly || look.direction.lengthSq() === 0) return null;
+      // look.aperture is an angular point/line picking tolerance; our content is
+      // solid meshes, for which a plain ray hit is the correct test, so it does
+      // not apply here.
       raycaster.set(look.origin, tmpForward.copy(look.direction).normalize());
-      const threshold = look.aperture / 2;
-      raycaster.params.Line = { threshold };
-      raycaster.params.Points = { threshold };
       for (const hit of raycaster.intersectObjects(d.scene.children, true)) {
         if (hit.object.visible && !isScaffold(hit.object)) return hit.point.toArray();
       }
