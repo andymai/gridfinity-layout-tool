@@ -14,11 +14,7 @@ export const RAW_AXIS_FULL_SCALE = 350;
 /** Fraction of full scale below which an axis is treated as centered (jitter). */
 export const AXIS_DEADZONE = 0.06;
 
-/**
- * Per-second rates at full deflection, before user speed/sensitivity scaling.
- * The mapping is linear with no acceleration curve, so these stay brisk enough
- * that a normal partial push keeps pace with CAD-app navigation.
- */
+/** Per-second rates at full deflection, before user speed/sensitivity scaling. */
 export const TRANSLATE_RATE = 2.0; // fraction of camera-to-target distance / s
 export const ZOOM_RATE = 2.6; // e-fold dolly factor / s
 export const ORBIT_RATE = 3.6; // radians / s
