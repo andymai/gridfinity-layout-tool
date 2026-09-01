@@ -1,0 +1,32 @@
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_f32f6b4786090b::t_b11587a6b3d3fb 173-174,176-178
+  s_f32f6b4786090b::t_1b37b0c18ae43c 142,145-153
+  s_f32f6b4786090b::t_0eccdbe7635af5 26-30
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_f32f6b4786090b::t_bdc4ebc56f0500 171,175-176,186-187,191,197,202,204,207-210,212
+  s_f32f6b4786090b::t_72220cf84d98e3 116-118,127-130
+src/shared/spacemouse/deviceManager.ts
+  s_f32f6b4786090b::t_c36ad3615a807a 14-15
+  s_f32f6b4786090b::t_c44c4c1b68c09c 152
+  s_f32f6b4786090b::t_46d172f6399c95 161,163-165,177,184,190-191
+src/shared/spacemouse/navlib/viewAccessors.test.ts
+  s_f32f6b4786090b::t_968024746c31ff 105-119
+src/shared/spacemouse/navlib/types.ts
+  s_f32f6b4786090b::t_acca236f86782b 23-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "47aac4da7e6c6fdca9df739f23aebb74b795f9ac",
+  "prompts": {},
+  "sessions": {
+    "s_f32f6b4786090b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f05d11c6-0dfe-4fee-a6b6-66c7772e08b0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
