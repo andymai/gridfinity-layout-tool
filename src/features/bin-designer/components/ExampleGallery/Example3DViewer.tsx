@@ -26,7 +26,15 @@ export function Example3DViewer({ example }: Example3DViewerProps) {
 
   return (
     <div className="relative w-full" style={{ aspectRatio: '1 / 1', maxHeight: '40vh' }}>
-      <GlbViewer meshUrl={url} posterUrl={thumb} alt={t(example.nameKey)} className="h-full w-full">
+      {/* Always hosted in ExamplePreviewOverlay (a dialog over the designer's live
+          preview), so claim the puck or it keeps driving the canvas behind. */}
+      <GlbViewer
+        meshUrl={url}
+        posterUrl={thumb}
+        alt={t(example.nameKey)}
+        className="h-full w-full"
+        modal
+      >
         {/* Bin-designer-local 2-stop gradient, same one the thumbnails were captured with. */}
         <GradientBackground />
       </GlbViewer>

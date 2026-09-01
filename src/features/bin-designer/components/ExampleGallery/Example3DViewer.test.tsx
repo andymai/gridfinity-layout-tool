@@ -59,4 +59,10 @@ describe('Example3DViewer', () => {
     expect(glbViewerProps.current.loadBehavior).toBeUndefined();
     expect(screen.getByTestId('gradient-background')).toBeInTheDocument();
   });
+
+  it('claims the SpaceMouse, since it renders in a dialog over the live preview', () => {
+    render(<Example3DViewer example={makeExample('with-mesh')} />);
+
+    expect(glbViewerProps.current.modal).toBe(true);
+  });
 });

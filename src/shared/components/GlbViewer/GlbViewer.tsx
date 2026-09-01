@@ -31,6 +31,13 @@ interface GlbViewerProps {
   autoRotate?: boolean;
   /** Fires once when the model has loaded and the poster is fading out. */
   onModelReady?: () => void;
+  /**
+   * Claim SpaceMouse priority over any canvas mounted behind this one. Set it
+   * when the viewer lives in a dialog layered over another 3D canvas (the
+   * example preview over the designer), or the puck keeps driving the covered
+   * canvas instead of this one.
+   */
+  modal?: boolean;
   className?: string;
   children?: ReactNode;
 }
@@ -95,6 +102,7 @@ export function GlbViewer({
   loadBehavior = 'auto',
   autoRotate = true,
   onModelReady,
+  modal = false,
   className,
   children,
 }: GlbViewerProps) {
@@ -144,7 +152,7 @@ export function GlbViewer({
             enableDamping
             makeDefault
           />
-          <SpaceMouseController />
+          <SpaceMouseController modal={modal} />
         </Canvas>
       ) : null}
 
