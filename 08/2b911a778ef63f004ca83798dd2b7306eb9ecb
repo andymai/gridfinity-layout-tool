@@ -1,0 +1,116 @@
+src/shared/spacemouse/navlib/types.ts
+  s_f32f6b4786090b::t_ff341ec03400d1 1-71
+  s_f32f6b4786090b::t_2ce07a8d1f2c26 72-74
+  s_f32f6b4786090b::t_590b6a40ffebe5 75-96
+src/i18n/locales/en.ts
+  s_f32f6b4786090b::t_16da779b48c021 5475
+src/i18n/locales/pt-BR.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/shared/spacemouse/deviceManager.ts
+  s_f32f6b4786090b::t_ec5a8e10307e0d 2,5
+  s_f32f6b4786090b::t_b80eb2cbb0f2b5 13,21-23
+  s_f32f6b4786090b::t_99af351bd0f651 24,118-120,134,145-187
+  s_f32f6b4786090b::t_07de499d92567d 25
+src/shared/spacemouse/components/SpaceMouseController/SpaceMouseController.tsx
+  s_f32f6b4786090b::t_36ddb8a89bd766 84-92,98
+  s_f32f6b4786090b::t_259d92fe3e163b 14
+src/i18n/locales/zh-CN.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/shared/spacemouse/navlib/types.test.ts
+  s_f32f6b4786090b::t_c86f8ba0704796 1-20
+src/shared/spacemouse/components/SpaceMouseSettings/SpaceMouseSettings.tsx
+  s_f32f6b4786090b::t_b05977bb3df82d 100-101
+  s_f32f6b4786090b::t_0e17bbbd831be3 62,69-71,73-74,120
+  s_f32f6b4786090b::t_586866ff88ebdc 20-23
+  s_f32f6b4786090b::t_b62e6ca7ee605e 75-77
+  s_f32f6b4786090b::t_812f1980a5f47b 102-104,117-119
+  s_f32f6b4786090b::t_3da528379e4a6b 78-98,105-116
+src/i18n/locales/ja.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+package.json
+  s_f32f6b4786090b::t_c0b7d90606db10 127
+scripts/i18n-values-allowlist.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 321-322
+src/shared/spacemouse/navlib/tdxTypes.ts
+  s_f32f6b4786090b::t_f957f22046806a 1-89
+src/i18n/locales/it.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/i18n/locales/es.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/i18n/locales/ko.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+vercel.json
+  s_f32f6b4786090b::t_d635fce8ed9739 53
+src/i18n/locales/cs.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/i18n/locales/pl.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_f32f6b4786090b::t_3ba7d4f2c8a1f4 1-175
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_f32f6b4786090b::t_b8c696b9e6b9de 4-5
+  s_f32f6b4786090b::t_d778eadd6b66b4 1-3,6-28,30-173,175-207
+  s_f32f6b4786090b::t_965cb84520bb48 174
+  s_f32f6b4786090b::t_10a4910a2f4e3c 29
+src/i18n/locales/fr.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/shared/spacemouse/navlib/commands.ts
+  s_f32f6b4786090b::t_39dac1f2431aca 2-24
+  s_f32f6b4786090b::t_c8ac8ae8dfd404 1
+src/shared/spacemouse/types.ts
+  s_f32f6b4786090b::t_e5d6614f4479b2 68-74
+src/shared/spacemouse/components/SpaceMouseSettings/SpaceMouseSettings.test.tsx
+  s_f32f6b4786090b::t_5b0e5bb6d2e675 19-24
+  s_f32f6b4786090b::t_cd32fbc479e21f 64-77
+src/i18n/locales/nl.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/shared/spacemouse/deviceManager.test.ts
+  s_f32f6b4786090b::t_2584d65ddbbf25 98,101
+  s_f32f6b4786090b::t_da2649419952f8 77,80
+  s_f32f6b4786090b::t_f3aaf9cfab02e3 89,93
+  s_f32f6b4786090b::t_8aa0903a8ff460 54,57
+  s_f32f6b4786090b::t_ae625519884b28 67,70
+  s_f32f6b4786090b::t_9a49ff3686fffd 14-20,25-26
+  s_f32f6b4786090b::t_c90569150f3ee3 27
+src/core/labs/features.ts
+  s_f32f6b4786090b::t_c9e14db9246a23 268,272
+src/shared/spacemouse/settingsStore.ts
+  s_f32f6b4786090b::t_ea0a94a7a1711e 42
+  s_f32f6b4786090b::t_bb7bfc85b85a78 58
+  s_f32f6b4786090b::t_011f7ee3acaef8 5-10,18-19,27
+  s_f32f6b4786090b::t_835419e1052056 89,91-93
+src/i18n/locales/nb.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/shared/spacemouse/spaceMouseBus.ts
+  s_f32f6b4786090b::t_2f9d368ad54598 82-86
+  s_f32f6b4786090b::t_864415d2a1edcf 2,18-22
+src/shared/spacemouse/navlib/viewAccessors.test.ts
+  s_f32f6b4786090b::t_5d1577d676596f 1-110
+src/i18n/locales/de.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/i18n/locales/sv.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+src/shared/spacemouse/navlib/tdx.ts
+  s_f32f6b4786090b::t_8bdbd7003de75f 1-11,13-15
+  s_f32f6b4786090b::t_970d95a14b7b72 12
+src/i18n/locales/uk.json
+  s_f32f6b4786090b::t_b5f5ae0b4c5202 4558-4559
+pnpm-lock.yaml
+  s_f32f6b4786090b::t_f295841604e704 53-55,345-347,6120-6121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "082b911a778ef63f004ca83798dd2b7306eb9ecb",
+  "prompts": {},
+  "sessions": {
+    "s_f32f6b4786090b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f05d11c6-0dfe-4fee-a6b6-66c7772e08b0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
