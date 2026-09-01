@@ -265,11 +265,11 @@ export const FEATURE_FLAGS = [
     id: 'spacemouse',
     name: 'SpaceMouse Navigation',
     description:
-      'Fly the 3D previews with a 3Dconnexion SpaceMouse. Push, tilt and twist the puck to pan, zoom and orbit, and map its buttons to fit, view presets and undo. Tune speed and axis direction below.',
+      'Fly the 3D previews with a 3Dconnexion SpaceMouse. Push, tilt and twist the puck to pan, zoom and orbit, and map its buttons to fit, view presets and undo.',
     status: 'experimental',
     risk: 'low',
     warning:
-      'Needs a Chromium browser (Chrome, Edge or Opera) with WebHID. After turning this on, click Connect and pick your device once.',
+      'Uses the 3Dconnexion driver when installed (any browser; speed and axis direction live in its control panel). Without the driver it falls back to WebHID, which needs a Chromium browser (Chrome, Edge or Opera) and a one-time Connect.',
     addedAt: '2026-08',
     requiresRefresh: false,
   },

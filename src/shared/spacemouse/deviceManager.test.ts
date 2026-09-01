@@ -11,9 +11,19 @@ vi.mock('spacemouse-webhid', () => ({
 
 vi.mock('./commands', () => ({ runGlobalCommand: vi.fn() }));
 
+// No driver in the test env, so the transport selector falls through to WebHID.
+vi.mock('./navlib/navlibClient', () => ({
+  probeDriver: vi.fn(async () => false),
+  startNavlib: vi.fn(async () => {}),
+  stopNavlib: vi.fn(),
+}));
+
 import { startSpaceMouse, stopSpaceMouse } from './deviceManager';
 
 const FULL_DEFLECTION = { x: 350, y: 0, z: 0 };
+
+/** Let the async transport probe resolve and WebHID attach its listeners. */
+const flushTransport = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function registerCanvas() {
   spaceMouseBus.register({ id: 'canvas', runCommand: vi.fn(), invalidate: vi.fn() });
@@ -41,9 +51,10 @@ afterEach(() => {
 });
 
 describe('deviceManager focus tracking', () => {
-  it('drops puck input for a visible window that is not frontmost (#4041)', () => {
+  it('drops puck input for a visible window that is not frontmost (#4041)', async () => {
     registerCanvas();
     startSpaceMouse();
+    await flushTransport();
     hasFocus.mockReturnValue(false);
     window.dispatchEvent(new Event('blur'));
     // The reported case: the window is on screen, another CAD app just has the
@@ -53,18 +64,20 @@ describe('deviceManager focus tracking', () => {
     expect(spaceMouseBus.getRaw().translation).toEqual({ x: 0, y: 0, z: 0 });
   });
 
-  it('also tracks tab switches, which fire visibilitychange rather than blur', () => {
+  it('also tracks tab switches, which fire visibilitychange rather than blur', async () => {
     registerCanvas();
     startSpaceMouse();
+    await flushTransport();
     hasFocus.mockReturnValue(false);
     document.dispatchEvent(new Event('visibilitychange'));
     spaceMouseBus.setTranslation(FULL_DEFLECTION);
     expect(spaceMouseBus.getRaw().translation).toEqual({ x: 0, y: 0, z: 0 });
   });
 
-  it('takes input again when the window comes back', () => {
+  it('takes input again when the window comes back', async () => {
     registerCanvas();
     startSpaceMouse();
+    await flushTransport();
     hasFocus.mockReturnValue(false);
     window.dispatchEvent(new Event('blur'));
     hasFocus.mockReturnValue(true);
@@ -73,17 +86,19 @@ describe('deviceManager focus tracking', () => {
     expect(spaceMouseBus.getRaw().translation).toEqual(FULL_DEFLECTION);
   });
 
-  it('starts gated when the app loads in the background', () => {
+  it('starts gated when the app loads in the background', async () => {
     registerCanvas();
     hasFocus.mockReturnValue(false);
     startSpaceMouse();
+    await flushTransport();
     spaceMouseBus.setTranslation(FULL_DEFLECTION);
     expect(spaceMouseBus.getRaw().translation).toEqual({ x: 0, y: 0, z: 0 });
   });
 
-  it('unsubscribes on stop, leaving the bus ungated', () => {
+  it('unsubscribes on stop, leaving the bus ungated', async () => {
     registerCanvas();
     startSpaceMouse();
+    await flushTransport();
     stopSpaceMouse();
     hasFocus.mockReturnValue(false);
     window.dispatchEvent(new Event('blur'));

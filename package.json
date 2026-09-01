@@ -124,6 +124,7 @@
     }
   ],
   "dependencies": {
+    "@3dconnexion/3dconnexionjs": "^0.8.1",
     "@gridfinity/branded-types": "workspace:*",
     "@liveblocks/client": "^3.24.1",
     "@liveblocks/node": "^3.24.1",

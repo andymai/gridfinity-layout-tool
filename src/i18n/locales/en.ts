@@ -5472,6 +5472,7 @@ const en: Record<string, string> = {
   'spacemouse.status.idle': 'No device connected',
   'spacemouse.status.unsupported': 'Needs a Chromium browser',
   'spacemouse.status.error': 'Connection failed',
+  'spacemouse.driverManaged': 'Speed and axis direction are set in the 3Dconnexion control panel.',
 };
 
 export default en;

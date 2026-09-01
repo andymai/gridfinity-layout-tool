@@ -65,6 +65,13 @@ export interface FrameMotion {
 export type SpaceMouseConnectionStatus =
   'unsupported' | 'idle' | 'connecting' | 'connected' | 'error';
 
+/**
+ * Which transport is driving the previews. `navlib` is the 3Dconnexion driver
+ * (per-app speed/axis config lives in its control panel); `webhid` is the raw-HID
+ * fallback that keeps the in-app tuning controls.
+ */
+export type SpaceMouseTransport = 'navlib' | 'webhid';
+
 export type SpaceMouseCommand =
   'fit' | 'reset' | 'view-top' | 'view-front' | 'view-right' | 'view-iso' | 'undo' | 'redo';
 

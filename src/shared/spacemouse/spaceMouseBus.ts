@@ -1,4 +1,5 @@
 import { isGlobalCommand, resolveButtonCommand } from './buttonMap';
+import type { NavlibViewAccessors } from './navlib/types';
 import type { RawDeflection, RawRotation, RawTranslation, SpaceMouseCommand } from './types';
 
 /** A per-canvas controller registered with the bus. */
@@ -14,6 +15,11 @@ export interface SpaceMouseController {
    * otherwise keep moving unseen behind the overlay.
    */
   claim?: boolean;
+  /**
+   * Camera read/write surface for the driver-native (navlib) transport. Absent on
+   * canvases that predate the accessor wiring; the WebHID transport ignores it.
+   */
+  navlib?: NavlibViewAccessors;
 }
 
 const zeroTranslation = (): RawTranslation => ({ x: 0, y: 0, z: 0 });
@@ -71,6 +77,11 @@ class SpaceMouseBus {
 
   isActive(id: string): boolean {
     return this.active()?.id === id;
+  }
+
+  /** The active canvas's navlib accessors, for the driver-native transport. */
+  activeNavlib(): NavlibViewAccessors | null {
+    return this.active()?.navlib ?? null;
   }
 
   /**

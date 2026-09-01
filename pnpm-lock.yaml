@@ -50,6 +50,9 @@ importers:
 
   .:
     dependencies:
+      '@3dconnexion/3dconnexionjs':
+        specifier: ^0.8.1
+        version: 0.8.1
       '@gridfinity/branded-types':
         specifier: workspace:*
         version: link:packages/branded-types
@@ -338,6 +341,9 @@ importers:
         version: 4.1.11(@edge-runtime/vm@3.2.0)(@types/node@26.2.0)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))
 
 packages:
+
+  '@3dconnexion/3dconnexionjs@0.8.1':
+    resolution: {integrity: sha512-cQ3eCbIH9u1V9sFA+y+2ZmQzYddMC5oSOUKkWqETqfFFbFXtsesazTZ92tkWxJVndhMTumkGvMW7IyWJ1op59g==}
 
   '@adobe/css-tools@4.5.0':
     resolution: {integrity: sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q==}
@@ -6110,6 +6116,8 @@ packages:
         optional: true
 
 snapshots:
+
+  '@3dconnexion/3dconnexionjs@0.8.1': {}
 
   '@adobe/css-tools@4.5.0': {}
 

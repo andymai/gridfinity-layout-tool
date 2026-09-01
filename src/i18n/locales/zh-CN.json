@@ -4555,5 +4555,6 @@
   "spacemouse.status.connecting": "连接中…",
   "spacemouse.status.idle": "未连接设备",
   "spacemouse.status.unsupported": "需要 Chromium 浏览器",
-  "spacemouse.status.error": "连接失败"
+  "spacemouse.status.error": "连接失败",
+  "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel."
 }

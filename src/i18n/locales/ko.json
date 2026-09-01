@@ -4555,5 +4555,6 @@
   "spacemouse.status.connecting": "연결 중…",
   "spacemouse.status.idle": "연결된 장치 없음",
   "spacemouse.status.unsupported": "Chromium 브라우저가 필요합니다",
-  "spacemouse.status.error": "연결 실패"
+  "spacemouse.status.error": "연결 실패",
+  "spacemouse.driverManaged": "Speed and axis direction are set in the 3Dconnexion control panel."
 }

@@ -17,7 +17,10 @@ import type { SpaceMouseInvert } from '../../types';
 export function SpaceMouseSettings(): React.ReactElement {
   const t = useTranslation();
   const settings = useSpaceMouseSettings();
-  const { status, deviceName } = useSpaceMouseConnection();
+  const { status, deviceName, transport } = useSpaceMouseConnection();
+  // In driver mode the 3Dconnexion control panel owns speed/axis config, so the
+  // in-app tuning (and WebHID pairing) is hidden.
+  const driverMode = transport === 'navlib';
   const setSensitivity = useSpaceMouseStore((s) => s.setSensitivity);
   const setTranslateSpeed = useSpaceMouseStore((s) => s.setTranslateSpeed);
   const setRotateSpeed = useSpaceMouseStore((s) => s.setRotateSpeed);
@@ -56,57 +59,65 @@ export function SpaceMouseSettings(): React.ReactElement {
     <div className="mt-3 flex flex-col gap-3 border-t border-stroke-subtle pt-3">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-content-secondary">{statusText}</span>
-        {supported && status !== 'connecting' && (
+        {supported && status !== 'connecting' && !driverMode && (
           <Button variant="secondary" size="sm" onClick={() => void requestSpaceMousePairing()}>
             {t('spacemouse.connect')}
           </Button>
         )}
       </div>
 
-      <SliderInput
-        label={t('spacemouse.sensitivity')}
-        value={settings.sensitivity}
-        onChange={setSensitivity}
-        min={SENSITIVITY_RANGE.min}
-        max={SENSITIVITY_RANGE.max}
-        step={SENSITIVITY_RANGE.step}
-      />
-      <SliderInput
-        label={t('spacemouse.speed.translate')}
-        value={settings.translateSpeed}
-        onChange={setTranslateSpeed}
-        min={SPEED_RANGE.min}
-        max={SPEED_RANGE.max}
-        step={SPEED_RANGE.step}
-      />
-      <SliderInput
-        label={t('spacemouse.speed.rotate')}
-        value={settings.rotateSpeed}
-        onChange={setRotateSpeed}
-        min={SPEED_RANGE.min}
-        max={SPEED_RANGE.max}
-        step={SPEED_RANGE.step}
-      />
+      {driverMode && (
+        <p className="text-xs text-content-secondary">{t('spacemouse.driverManaged')}</p>
+      )}
 
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-content">{t('spacemouse.invertAxes')}</span>
-        {invertRows.map((row) => (
-          <label key={row.axis} className="flex items-center justify-between gap-2">
-            <span className="text-xs text-content-secondary">{row.label}</span>
-            <Switch
-              checked={settings.invert[row.axis]}
-              onChange={() => toggleInvert(row.axis)}
-              aria-label={row.label}
-            />
-          </label>
-        ))}
-      </div>
+      {!driverMode && (
+        <>
+          <SliderInput
+            label={t('spacemouse.sensitivity')}
+            value={settings.sensitivity}
+            onChange={setSensitivity}
+            min={SENSITIVITY_RANGE.min}
+            max={SENSITIVITY_RANGE.max}
+            step={SENSITIVITY_RANGE.step}
+          />
+          <SliderInput
+            label={t('spacemouse.speed.translate')}
+            value={settings.translateSpeed}
+            onChange={setTranslateSpeed}
+            min={SPEED_RANGE.min}
+            max={SPEED_RANGE.max}
+            step={SPEED_RANGE.step}
+          />
+          <SliderInput
+            label={t('spacemouse.speed.rotate')}
+            value={settings.rotateSpeed}
+            onChange={setRotateSpeed}
+            min={SPEED_RANGE.min}
+            max={SPEED_RANGE.max}
+            step={SPEED_RANGE.step}
+          />
 
-      <div className="flex justify-end">
-        <Button variant="ghost" size="sm" onClick={resetSettings}>
-          {t('common.reset')}
-        </Button>
-      </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-medium text-content">{t('spacemouse.invertAxes')}</span>
+            {invertRows.map((row) => (
+              <label key={row.axis} className="flex items-center justify-between gap-2">
+                <span className="text-xs text-content-secondary">{row.label}</span>
+                <Switch
+                  checked={settings.invert[row.axis]}
+                  onChange={() => toggleInvert(row.axis)}
+                  aria-label={row.label}
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="flex justify-end">
+            <Button variant="ghost" size="sm" onClick={resetSettings}>
+              {t('common.reset')}
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
