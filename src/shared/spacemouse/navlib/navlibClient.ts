@@ -95,11 +95,6 @@ function buildClient(): NavlibClient {
         if (nav) void nav.update3dcontroller({ commands: buildCommandTree(ctor) });
       });
     },
-    onDisconnect() {
-      stopPump();
-      setConnection(started ? 'idle' : 'error', null);
-    },
-
     onStartMotion() {
       if (!animating) {
         animating = true;
@@ -173,11 +168,15 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
     const ctor = await loadModule();
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- stopNavlib() can flip `started` during the await
     if (!started) return; // stopped while loading
-    const client = buildClient();
     const wrapped: NavlibClient = {
-      ...client,
-      onDisconnect(reason) {
-        client.onDisconnect?.(reason);
+      ...buildClient(),
+      onDisconnect() {
+        // Reset our own state (so a later probe can reconnect the driver) before
+        // handing off to the caller's WebHID fallback.
+        stopPump();
+        nav = null;
+        started = false;
+        setConnection('idle', null);
         opts.onDisconnect();
       },
     };

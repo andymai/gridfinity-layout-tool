@@ -82,6 +82,16 @@ describe('createNavlibViewAccessors', () => {
     expect(acc.getViewExtents()).toEqual([-2, -5, -50, 3, 4, -0.5]);
   });
 
+  it('round-trips orthographic extents including clip planes', () => {
+    const source = new OrthographicCamera(-2, 3, 4, -5, 0.5, 50);
+    const extents = createNavlibViewAccessors(() => deps(source)).getViewExtents();
+    const target = new OrthographicCamera();
+    createNavlibViewAccessors(() => deps(target)).setViewExtents(extents);
+    expect([target.left, target.bottom, target.right, target.top]).toEqual([-2, -5, 3, 4]);
+    expect(target.near).toBeCloseTo(0.5);
+    expect(target.far).toBeCloseTo(50);
+  });
+
   it('picks the coordinate system from the up axis', () => {
     const yUp = new PerspectiveCamera();
     yUp.up.set(0, 1, 0);

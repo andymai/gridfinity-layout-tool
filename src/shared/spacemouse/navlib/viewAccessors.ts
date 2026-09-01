@@ -93,6 +93,9 @@ export function createNavlibViewAccessors(
         c.bottom = data[1];
         c.right = data[3];
         c.top = data[4];
+        // Mirror getViewExtents' encoding so the clip planes round-trip.
+        c.far = -data[2];
+        c.near = -data[5];
         c.updateProjectionMatrix();
       }
     },

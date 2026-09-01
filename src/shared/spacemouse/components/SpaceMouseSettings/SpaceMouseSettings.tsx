@@ -59,7 +59,7 @@ export function SpaceMouseSettings(): React.ReactElement {
     <div className="mt-3 flex flex-col gap-3 border-t border-stroke-subtle pt-3">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-content-secondary">{statusText}</span>
-        {supported && status !== 'connecting' && !driverMode && (
+        {supported && transport === 'webhid' && status !== 'connecting' && (
           <Button variant="secondary" size="sm" onClick={() => void requestSpaceMousePairing()}>
             {t('spacemouse.connect')}
           </Button>

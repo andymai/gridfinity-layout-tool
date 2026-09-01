@@ -20,7 +20,7 @@ beforeEach(() => {
     settings: DEFAULT_SETTINGS,
     status: 'idle',
     deviceName: null,
-    transport: null,
+    transport: 'webhid',
   });
 });
 
