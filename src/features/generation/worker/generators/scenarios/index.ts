@@ -13,7 +13,14 @@ import { binStyles } from './binStyles';
 import { heightVariations } from './heights';
 import { wallThickness } from './wallThickness';
 import { compartments } from './compartments';
-import { scoop, scoopTwoVariable, scoopSides, scoopFlatBase, scoopLipInteraction } from './scoops';
+import {
+  scoop,
+  scoopTwoVariable,
+  scoopSides,
+  scoopFlatBase,
+  scoopLipInteraction,
+  scoopMultiCompartment,
+} from './scoops';
 import { labelTabs } from './labelTabs';
 import { inserts, multipleInserts } from './inserts';
 import { solidCutouts } from './solidCutouts';
@@ -108,4 +115,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...cutoutRepeatOverlap,
   ...cutoutLean,
   ...variantOverrides,
+  ...scoopMultiCompartment,
 ];

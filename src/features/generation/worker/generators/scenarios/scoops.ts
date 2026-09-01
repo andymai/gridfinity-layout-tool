@@ -126,3 +126,43 @@ export const scoopLipInteraction: ScenarioCase[] = [
     }
   ),
 ];
+
+// Multi-compartment GRID scoops (cols > 1 AND rows > 1): the bento-box shape.
+// scoopSides only reaches cols > 1 with a single row, and scoopLipInteraction a
+// single column with two rows, so a scoop rising from an INTERIOR divider (a
+// back-row compartment) with INTERIOR span-ends on both sides went through
+// export integrity here for the first time. Covers the socketed default (where
+// the deferred-socket fuse heals the floor) and a flat socketless base (which
+// does not), plus an irregular layout mixing a tall column with two stacked
+// compartments.
+export const scoopMultiCompartment: ScenarioCase[] = [
+  defineScenario('scoop multi-compartment', '2×2 grid front scoop (standard base + lip)', {
+    params: {
+      scoop: { enabled: true, radius: 'auto' },
+      compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+    },
+  }),
+  defineScenario('scoop multi-compartment', '2×2 grid front scoop (flat base)', {
+    params: {
+      scoop: { enabled: true, radius: 'auto' },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+      compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+    },
+  }),
+  defineScenario('scoop multi-compartment', '2×2 grid left scoop (interior column span-ends)', {
+    params: {
+      scoop: { enabled: true, radius: 'auto', side: 'left' },
+      compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+    },
+  }),
+  defineScenario(
+    'scoop multi-compartment',
+    'irregular grid (tall column + 2 stacked) front scoop',
+    {
+      params: {
+        scoop: { enabled: true, radius: 'auto' },
+        compartments: { cols: 2, rows: 2, cells: [0, 1, 0, 2], thickness: 1.2 },
+      },
+    }
+  ),
+];
