@@ -1,0 +1,73 @@
+src/features/bin-designer/components/panel/ScoopSection/useScoopSection.ts
+  s_23d015945aa0c8::t_b582feb5d9305d 15,17,81,84-88
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.ts
+  s_23d015945aa0c8::t_7697f1417479a2 11,16,59
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.snap
+  s_23d015945aa0c8::t_e4ec347aa935ee 7,9,11
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_dfbb6dedf71d28::t_0a236e742acd5f 3,5,7,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.tsx
+  s_23d015945aa0c8::t_658374fab37a40 25,27,74-82,150,152-153,155-156,187
+src/features/generation/worker/generators/shapeCache.ts
+  s_23d015945aa0c8::t_91e91771eb9977 258-272
+src/shared/utils/scoopCalculations.ts
+  s_23d015945aa0c8::t_838bc4996a5d05 168-186
+src/features/generation/worker/generators/featureBuilder.test.ts
+  s_23d015945aa0c8::t_bd62585d7558f3 39-40,540,550,559,570
+src/features/generation/worker/generators/slideRailBuilder.ts
+  s_23d015945aa0c8::t_58105bf978a8a8 10,55-60
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.floorPatterns.test.ts.snap
+  s_dfbb6dedf71d28::t_e7eb1678631915 17
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_23d015945aa0c8::t_507336028708e3 39,50,194-200
+src/features/generation/worker/generators/binGenerator.scenario.scoopFloor.test.ts
+  s_23d015945aa0c8::t_bd15727b9b5ee1 1-142
+src/shared/generation/meshPersistence.ts
+  s_23d015945aa0c8::t_0882f738370376 78-81,96
+src/features/generation/worker/generators/binGenerator.scenario.scoopContainment.test.ts
+  s_23d015945aa0c8::t_ab60c323b3bdb5 21,45-52
+src/features/generation/worker/generators/pipeline/stages/booleanStage.ts
+  s_23d015945aa0c8::t_454c15fc3a7bd2 4-13,19,155-176
+src/features/generation/worker/generators/binGenerator.scenario.overhang.test.ts
+  s_23d015945aa0c8::t_8a4c46d0aca5fb 15-22,96-98,100-110,112-120,122-141
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_23d015945aa0c8::t_b046a10efbedd4 28,58,66-67,73-81,93-94,97-103,108-111,156-157,178-181,184-185,188-189,191,209-210,212,243-244,307,314,333-334
+src/features/generation/worker/generators/dividerPatterns.test.ts
+  s_23d015945aa0c8::t_09787c267228b8 3,8-9,132,144-145
+src/features/generation/worker/generators/__kernel-tests__/exportIntegrityRunner.ts
+  s_23d015945aa0c8::t_f5d96b67f7e3fd 33,38-44,105-108,130-131,138-139,145-154,167,170-202,266,294-297,324-348
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_23d015945aa0c8::t_f134636615d977 26,169,173-177,201-202,213-214
+src/features/generation/worker/generators/utils/outerShell.test.ts
+  s_23d015945aa0c8::t_7595eeb836fac6 10,28-40,91-94,99-100
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelTabs.test.ts.snap
+  s_dfbb6dedf71d28::t_49268aadbde554 5,7,9,13,15,17,19,21,23,25,27
+src/features/bin-designer/utils/printEstimates.ts
+  s_23d015945aa0c8::t_53cb7e0725c684 48,630-635
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelSockets.test.ts.snap
+  s_dfbb6dedf71d28::t_23873bfb158afd 3,5,7,9,11,13,15,17,19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "b864d3c071c6e5c3ba501935f8d926bbbe3b28bb",
+  "prompts": {},
+  "sessions": {
+    "s_23d015945aa0c8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e8f2ea-cfb7-49a4-b131-eae06e8842ea",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_dfbb6dedf71d28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a3673f9-d147-427d-a487-a185629985b7",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
