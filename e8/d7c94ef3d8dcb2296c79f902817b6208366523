@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.binStyles.test.ts.snap
+  s_23d015945aa0c8::t_c250ab8867c652 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e8d7c94ef3d8dcb2296c79f902817b6208366523",
+  "prompts": {},
+  "sessions": {
+    "s_23d015945aa0c8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e8f2ea-cfb7-49a4-b131-eae06e8842ea",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
