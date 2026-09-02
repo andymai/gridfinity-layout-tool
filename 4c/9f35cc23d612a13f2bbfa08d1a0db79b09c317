@@ -1,0 +1,33 @@
+src/features/bin-designer/components/panel/ScoopSection/useScoopSection.ts
+  s_23d015945aa0c8::t_cd8bd510b0cb27 17
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_23d015945aa0c8::t_1c21eaffc45e90 39
+src/features/generation/worker/generators/binGenerator.scenario.scoopFloor.test.ts
+  s_23d015945aa0c8::t_235ee830c63dd3 4-7,9,110,120,128
+src/features/generation/worker/generators/pipeline/stages/booleanStage.ts
+  s_23d015945aa0c8::t_850448fbcd17d8 7-13,19,93-95,155-159
+src/shared/generation/meshPersistence.ts
+  s_23d015945aa0c8::t_c8725992140a4d 45-47,72,95
+src/shared/utils/scoopCalculations.ts
+  s_23d015945aa0c8::t_2605f730cf1268 220-222
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.tsx
+  s_23d015945aa0c8::t_befd3b0f88d289 12,27,48,63,225-226
+src/features/generation/worker/generators/__kernel-tests__/exportIntegrityRunner.ts
+  s_23d015945aa0c8::t_cf1703c0e60052 172-174,176,178-191,334-338
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "4c9f35cc23d612a13f2bbfa08d1a0db79b09c317",
+  "prompts": {},
+  "sessions": {
+    "s_23d015945aa0c8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e8f2ea-cfb7-49a4-b131-eae06e8842ea",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
