@@ -154,7 +154,7 @@ export const booleanStage: PipelineStage = {
       for (const target of ctx.fuseTargets) {
         checkCancelled(signal);
         const fused = fuse(bin as ValidSolid, target as ValidSolid, boolOpts);
-        if (isErr(fused)) continue;
+        if (isErr(fused) || fused.value === bin) continue;
         if (bin !== originalSolid) bin.delete();
         bin = fused.value;
       }
