@@ -169,22 +169,26 @@ function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
 
 /**
  * Scenarios whose export body legitimately carries more than one shell before
- * `keepOuterShell`. Keyed by `${category} › ${name}`, each with the reason;
- * anything else with extra shells is a boolean that glued instead of unioning
- * (occt-wasm's fuseAll did exactly that through 4.3.2, and the collapse then
- * shipped a body with its additive features carved out).
+ * `keepOuterShell`, keyed by `${category} › ${name}` with the exact count and
+ * the reason. Anything else with extra shells is a fuse that glued instead of
+ * unioning, which the collapse turns into a body with its features carved out.
  */
-const MULTI_SHELL_SCENARIOS = new Map<string, string>([
-  // The rim track's two top bars fuse as their own closed solids (they meet
-  // the support bars along a face the fuse does not merge), so the body
-  // reaches the exporter as three closed shells. The collapse leaves it alone
-  // and the STL carries all three; the same result on every kernel so far.
-  ['slide tray › rim track on a lipped bin', 'rim-track top bars are separate closed solids'],
+const MULTI_SHELL_SCENARIOS = new Map<string, { readonly shells: number; readonly reason: string }>(
   [
-    'slide tray › rim track without a stacking lip',
-    'rim-track top bars are separate closed solids',
-  ],
-]);
+    // The rim track's two top bars fuse as their own closed solids (they meet
+    // the support bars along a face the fuse does not merge), so the body
+    // reaches the exporter as three closed shells; the collapse leaves it alone
+    // and the STL carries all three.
+    [
+      'slide tray › rim track on a lipped bin',
+      { shells: 3, reason: 'rim-track top bars are separate closed solids' },
+    ],
+    [
+      'slide tray › rim track without a stacking lip',
+      { shells: 3, reason: 'rim-track top bars are separate closed solids' },
+    ],
+  ]
+);
 
 /**
  * Zero-area triangles tolerated per export. A fillet along a boolean seam can
@@ -327,12 +331,11 @@ export function runExportIntegrity(scenarios: readonly ScenarioCase[]): void {
             //    instead of unioning them, `keepOuterShell` collapses the tangle to
             //    its largest shell and ships a body with those features subtracted.
             const shells = getLastExportShellCount();
-            const multiShellReason = MULTI_SHELL_SCENARIOS.get(label);
-            if (multiShellReason === undefined) {
-              expect(shells, `${scenario.name}: shells before outer-shell collapse`).toBe(1);
-            } else {
-              expect(shells, `${scenario.name}: ${multiShellReason}`).toBeGreaterThan(1);
-            }
+            const multiShell = MULTI_SHELL_SCENARIOS.get(label);
+            expect(
+              shells,
+              `${scenario.name}: ${multiShell?.reason ?? 'shells before outer-shell collapse'}`
+            ).toBe(multiShell?.shells ?? 1);
 
             // 7. The mesh is the solid: its volume matches the BREP's to within
             //    tessellation error, so nothing was dropped or inverted on the way

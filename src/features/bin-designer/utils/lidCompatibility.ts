@@ -36,7 +36,7 @@ import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 // shelf datum both need it and both are reached from here.
 export { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
-import { binFloorMm } from '@/shared/types/bin';
+import { binFloorMm } from '@/features/bin-designer/types/base';
 import {
   calculateDividerPieceHeight,
   dividerGrooveDepth,

@@ -14,7 +14,7 @@ import {
   computeInteriorHeight,
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
-import { binFloorMm } from '@/shared/types/bin';
+import { binFloorMm } from '@/features/bin-designer/types/base';
 import type { ScoopStyle, ScoopSide } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 

@@ -9,7 +9,7 @@
  */
 
 import { useMemo, useEffect } from 'react';
-import { baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
+import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
@@ -24,7 +24,7 @@ import {
   computeInteriorHeight,
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
-import { binFloorMm } from '@/shared/types/bin';
+import { binFloorMm } from '@/features/bin-designer/types/base';
 
 const GHOST_COLOR = '#f97316';
 const GHOST_OPACITY = 0.35;
@@ -45,6 +45,7 @@ export function GhostScoops() {
     compartments,
     scoop,
     base,
+    lid,
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -59,6 +60,7 @@ export function GhostScoops() {
       compartments: s.params.compartments,
       scoop: s.params.scoop,
       base: s.params.base,
+      lid: s.params.lid,
       generationStatus: s.generation.status,
     }))
   );
@@ -220,8 +222,6 @@ export function GhostScoops() {
   if (!geometry || !material) return null;
 
   // Position at socket height so Z=0 in local coords = bin floor
-  const socketZ = GRIDFINITY.SOCKET_HEIGHT;
-  return (
-    <mesh geometry={geometry} material={material} position={[0, 0, socketZ]} renderOrder={2} />
-  );
+  const floorZ = baseFloorZ(base, heightUnitMm, lid);
+  return <mesh geometry={geometry} material={material} position={[0, 0, floorZ]} renderOrder={2} />;
 }

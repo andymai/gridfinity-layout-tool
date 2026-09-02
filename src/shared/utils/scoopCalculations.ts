@@ -217,8 +217,9 @@ export interface ResolvedScoopProfile {
  * @param depth - Compartment extent away from that wall in mm (the run axis)
  * @param isOuter - Whether this compartment touches the bin's outer wall on this side
  * @param hasLip - Whether the bin has a stacking lip
- * @param wallHeight - Full wall height in mm
- * @param interiorHeight - Interior height in mm (wallHeight - lip taper)
+ * @param wallHeight - Wall height in mm measured from the interior floor top, i.e.
+ *   after {@link scoopFrameHeights}; a box-bottom height buries the ramp in the floor
+ * @param interiorHeight - Interior height in mm from the same floor (wallHeight - lip taper)
  * @param lipOffset - Lip offset in mm (for outer-wall scoops with lip)
  * @returns Resolved profile, or null if the scoop is degenerate (< 1mm on either axis)
  */

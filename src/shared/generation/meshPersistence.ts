@@ -42,6 +42,9 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
+ * `v14`: additive features union pairwise instead of through the kernel's
+ * n-way fuse, and the scoop ramp stands on the floor top; both move every
+ * kernel's output for any bin with a scoop, label tab, emboss or rail.
  * `v13`: a half foot now carries magnet/screw holes, so any bin, lid, or plate
  * with a fractional dimension and attachment holes enabled generates different
  * bytes for params it already has an entry under.
@@ -66,7 +69,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v13';
+const MESH_CACHE_VERSION = 'v14';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
@@ -75,10 +78,6 @@ const MESH_CACHE_VERSION = 'v13';
  * (and its warm entries) untouched.
  *
  * occt-wasm `r1`: brepjs 18.124.8.
- * occt-wasm `r2`: the boolean stage unions additive features pairwise instead
- * of through the kernel's n-way fuse, which only glued, so every bin with a
- * scoop, label tab, emboss or rail meshes as one solid instead of overlapping
- * shells; the scoop ramp also moved onto the floor top.
  * brepkit `r1`: brepkit-wasm 3.2.28 — the interface-family winding and
  * cap-synthesis fixes move insert/cutout output that reaches a coplanar
  * interface, and the deep-cutout chain is now exact.
@@ -93,7 +92,7 @@ const MESH_CACHE_VERSION = 'v13';
  * the map is total so a future caller cannot fall through to `undefined`.
  */
 const KERNEL_MESH_REVISION: Record<KernelName, string> = {
-  'occt-wasm': 'r2',
+  'occt-wasm': 'r1',
   brepkit: 'r3',
   manifold: 'r1',
 };

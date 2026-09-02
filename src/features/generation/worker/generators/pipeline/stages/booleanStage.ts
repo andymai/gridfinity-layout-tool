@@ -4,19 +4,19 @@
  * Cuts go through brepjs's `cutAllBisect`, which tries a single n-way batch op
  * first, then recursively bisects on failure down to pairwise ops.
  *
- * Fuses fold pairwise on purpose. occt-wasm's n-way fuse (through 4.3.2) is
- * OCCT's General Fuse, which splits the inputs and keeps every cell rather than
- * unioning them, so a body with a feature came back as overlapping shells whose
- * volume was the plain sum. Socketed bins were rescued by the export-time
- * socket fuse; a flat base shipped its outer shell with the feature carved
- * out (#4068). The two-argument fuse is a real union and keeps the face-origin
- * tags; `fuseAllBisect` stays as the fallback when a pairwise step fails.
+ * Fuses fold pairwise. occt-wasm's n-way fuse is OCCT's General Fuse: it
+ * splits the inputs and keeps every cell rather than unioning them, so a body
+ * with a feature comes back as overlapping shells, and the export's outer-shell
+ * collapse can then ship the feature carved out. The two-argument fuse is a
+ * real union and keeps the face-origin tags. A target whose step fails is
+ * dropped, the same recovery the bisect gives a failed input, never handed to
+ * the n-way fuse.
  *
  * booleanPipeline() is still used by socketBuilder and baseplateGenerator
  * for simpler fuse→cut chains where bisect's recovery would be wasted.
  */
 
-import { unwrap, fuse, fuseAllBisect, cutAllBisect, translate, isErr } from 'brepjs';
+import { unwrap, fuse, cutAllBisect, translate, isErr } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
@@ -90,9 +90,9 @@ export const booleanStage: PipelineStage = {
 
   execute(ctx: PipelineContext): PipelineContext {
     const { signal, forExport, featuresKey } = ctx;
-    let bin = ctx.solid;
-    if (!bin) return ctx;
-    const originalSolid = bin;
+    const originalSolid = ctx.solid;
+    if (!originalSolid) return ctx;
+    let bin: Shape3D = originalSolid;
 
     checkCancelled(signal);
 
@@ -151,28 +151,12 @@ export const booleanStage: PipelineStage = {
     const boolOpts = { simplify: forExport, signal } as BooleanOpts;
 
     if (ctx.fuseTargets.length > 0) {
-      checkCancelled(signal);
-      let acc: Shape3D = bin;
-      let folded = true;
-      // Each step's output replaces the previous accumulator; the original
-      // shell is disposed with the rest of the inputs below.
       for (const target of ctx.fuseTargets) {
-        const fused = fuse(acc as ValidSolid, target as ValidSolid, boolOpts);
-        if (isErr(fused)) {
-          folded = false;
-          break;
-        }
-        if (acc !== bin) acc.delete();
-        acc = fused.value;
-      }
-      if (folded) {
-        bin = acc;
-      } else {
-        if (acc !== bin) acc.delete();
-        const { shape } = unwrap(
-          fuseAllBisect([bin, ...ctx.fuseTargets] as ValidSolid[], boolOpts)
-        );
-        bin = shape;
+        checkCancelled(signal);
+        const fused = fuse(bin as ValidSolid, target as ValidSolid, boolOpts);
+        if (isErr(fused)) continue;
+        if (bin !== originalSolid) bin.delete();
+        bin = fused.value;
       }
     }
 

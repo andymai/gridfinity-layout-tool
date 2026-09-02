@@ -1,15 +1,12 @@
 /**
  * Scenario test: a finger scoop stands on the floor and lands on it tangentially.
  *
- * Two things went wrong here and neither showed up in the export-integrity
- * suite, because both leave a watertight mesh. The ramp was authored from the
- * box bottom, so its lower two millimetres were buried in the floor and the
- * visible arc met the floor at an angle, well short of its nominal run. And on
- * a flat base the body reached the exporter as a multi-shell tangle whose
- * outer shell had the ramp SUBTRACTED, so the floor under the scoop was gone.
+ * A watertight, manifold export can still be the wrong solid: a ramp authored
+ * from the box bottom buries its lower floor-thickness and meets the floor at
+ * an angle short of its run, and a body whose fuse glued instead of unioned
+ * collapses to an outer shell with the ramp subtracted and no floor under it.
  * This probes the real export body: floor solid under the ramp, ramp solid
- * above the floor at mid-run, and only a hair of ramp left just before the
- * run ends.
+ * above the floor at mid-run, and only a hair of ramp just before the run ends.
  *
  * Cross-kernel:
  *   BREPJS_KERNEL=brepkit pnpm exec vitest run --project=generators scoopFloor
@@ -110,7 +107,7 @@ describe('finger scoop on the floor through the real kernel', () => {
       };
 
       // Floor under the ramp: the slab between the bin bottom and the floor top
-      // is solid where the ramp sits (the flat-base regression carved it out).
+      // is solid where the ramp sits.
       expect(
         solidFraction(10, run * 0.4, dim.floorThickness * 0.8, [
           0,
@@ -120,8 +117,7 @@ describe('finger scoop on the floor through the real kernel', () => {
       ).toBeGreaterThan(0.95);
 
       // Ramp on the floor: at mid-run a quarter arc of rise `height` stands
-      // height·(1−sin 60°) ≈ 0.134·height above the floor. Buried two
-      // millimetres, most of that was inside the slab.
+      // height·(1−sin 60°) ≈ 0.134·height above the floor.
       const midRise = height * (1 - Math.sin(Math.PI / 3));
       expect(
         solidFraction(10, 1, midRise * 0.8, [0, rampStartY + run / 2, floorTop + midRise * 0.4])
@@ -129,8 +125,7 @@ describe('finger scoop on the floor through the real kernel', () => {
 
       // Tangent landing: one millimetre before the run ends the arc is only
       // ~1/(2·run) mm tall, so a probe a full millimetre above the floor there
-      // must be empty. A ramp buried in the floor ended several millimetres
-      // short of this point with a visible kink instead.
+      // must be empty.
       expect(solidFraction(10, 0.6, 0.6, [0, rampStartY + run - 1, floorTop + 1.3])).toBeLessThan(
         0.02
       );
