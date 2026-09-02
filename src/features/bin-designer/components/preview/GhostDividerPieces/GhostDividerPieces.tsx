@@ -123,6 +123,9 @@ export function GhostDividerPieces() {
     lid,
     overhang,
     cellMask,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    magnetAnchor,
   } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
@@ -140,6 +143,9 @@ export function GhostDividerPieces() {
       lid: s.params.lid,
       overhang: s.params.overhang,
       cellMask: s.params.cellMask,
+      fractionalEdgeX: s.params.fractionalEdgeX,
+      fractionalEdgeY: s.params.fractionalEdgeY,
+      magnetAnchor: s.params.magnetAnchor,
     }))
   );
 
@@ -157,7 +163,22 @@ export function GhostDividerPieces() {
   // Socketed bases are translated up by SOCKET_HEIGHT in preview. The pieces
   // seat on the interior floor top, or the groove floor below it, never on the
   // body's Z=0. Flat bases have no offset.
-  const seatZ = dividerSeatZ(wallThickness, dividerGrooveDepth({ style, dividerPieces, base }));
+  const seatZ = dividerSeatZ(
+    wallThickness,
+    dividerGrooveDepth({
+      style,
+      dividerPieces,
+      base,
+      width,
+      depth,
+      gridUnitMm,
+      gridUnitMmY,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      magnetAnchor,
+      cellMask,
+    })
+  );
   const floorZ = baseFloorZ(base, heightUnitMm, lid) + seatZ;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;

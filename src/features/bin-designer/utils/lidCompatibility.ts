@@ -36,7 +36,11 @@ import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 // shelf datum both need it and both are reached from here.
 export { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
-import { dividerGrooveDepth, dividerSeatZ } from '@/shared/utils/slotMath';
+import {
+  calculateDividerPieceHeight,
+  dividerGrooveDepth,
+  dividerSeatZ,
+} from '@/shared/utils/slotMath';
 import {
   computeLipOffset,
   resolveScoopPlacement,
@@ -436,7 +440,12 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     params.style === 'slotted' &&
     typeof params.dividerPieces.height === 'number' &&
     params.dividerPieces.height >
-      computeInteriorHeight(params) - dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+      calculateDividerPieceHeight(
+        { height: 'auto' },
+        binDimensions(params).wallHeight,
+        params.base.stackingLip,
+        dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+      )
   ) {
     issues.push({ id: 'tallDividerPieces', severity: 'blocker' });
   }

@@ -33,7 +33,7 @@ beforeAll(async () => {
 describe('removable divider seat through the real kernel', () => {
   for (const floorGroove of [true, false]) {
     it(`slots open at the seat and the throat sits above the floor (groove ${floorGroove ? 'on' : 'off'})`, async () => {
-      const { box, intersect, measureVolume, unwrap } = await import('brepjs');
+      const { box, intersect, isErr, measureVolume, unwrap } = await import('brepjs');
       const { createInitialContext, runPipeline } = await import('./pipeline');
       const { shellStage } = await import('./pipeline/stages/shellStage');
       const { featuresStage } = await import('./pipeline/stages/featuresStage');
@@ -82,14 +82,19 @@ describe('removable divider seat through the real kernel', () => {
       ): number => {
         const probe = box(w, d, h, { at });
         try {
-          const hit = unwrap(intersect(bin, probe, { optimisation: 'none' }));
-          try {
-            return unwrap(measureVolume(hit)) / (w * d * h);
-          } finally {
-            hit.delete();
+          const hit = intersect(bin, probe, { optimisation: 'none' });
+          if (isErr(hit)) {
+            // A probe clear of the body intersects to nothing, which the kernel
+            // reports as "not a 3D shape". Anything else is a boolean failure
+            // and must fail the probe, not read as open space.
+            if (hit.error.code === 'INTERSECT_NOT_3D') return 0;
+            throw new Error(`${hit.error.code}: ${hit.error.message}`);
           }
-        } catch {
-          return 0;
+          try {
+            return unwrap(measureVolume(hit.value)) / (w * d * h);
+          } finally {
+            hit.value.delete();
+          }
         } finally {
           probe.delete();
         }

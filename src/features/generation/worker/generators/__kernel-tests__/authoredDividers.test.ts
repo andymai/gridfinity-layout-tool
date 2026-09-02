@@ -11,7 +11,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getKernelName } from './wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
-import { getEffectiveSlotDimensions } from '@/shared/utils/slotMath';
+import {
+  calculateDividerPieceHeight,
+  dividerGrooveDepth,
+  dividerSeatZ,
+  getEffectiveSlotDimensions,
+} from '@/shared/utils/slotMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 
@@ -63,7 +68,13 @@ describe(`authored divider pieces on ${getKernelName()}`, () => {
       thickness,
       clearance
     );
-    const notchDepth = WALL_HEIGHT / 2 + clearance;
+    const pieceHeight = calculateDividerPieceHeight(
+      params.dividerPieces,
+      WALL_HEIGHT,
+      false,
+      dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+    );
+    const notchDepth = pieceHeight / 2 + clearance;
 
     const segments = deriveWallSegments(
       { cols: 2, rows: 2, cells: [0, 1, 2, 3] },
@@ -89,7 +100,7 @@ describe(`authored divider pieces on ${getKernelName()}`, () => {
         const m = mesh(pieces[i].shape, { tolerance: 0.01, angularTolerance: 5, cache: false });
         for (const v of m.vertices) expect(Number.isFinite(v)).toBe(true);
         const vol = meshVolume(m.vertices, m.triangles);
-        const solid = specs[i].length * WALL_HEIGHT * thickness;
+        const solid = specs[i].length * pieceHeight * thickness;
         const notchVol = specs[i].notchOffsets.length * slotWidth * notchDepth * thickness;
         expect(vol).toBeGreaterThan(0);
         expect(vol).toBeCloseTo(solid - notchVol, 0);

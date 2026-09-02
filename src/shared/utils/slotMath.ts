@@ -13,6 +13,8 @@ import type {
   SlotConfig,
 } from '@/shared/types/bin';
 import { binFloorMm, hasDetachableFeet, isUndersideRelief } from '@/shared/types/bin';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import type { DetachableFeetParams } from '@/shared/utils/detachableFeetPlan';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hasOverhang, overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 
@@ -166,18 +168,23 @@ export const DIVIDER_FLOOR_GROOVE_DEPTH = 0.8;
 /**
  * Resolved floor-groove depth for a design: 0 unless the style is slotted, the
  * groove is on, and there is a closed floor to cut it into. The floor test
- * mirrors the pipeline's `liteFloorOpen` (an interior lightweight floor is
- * cups, not a slab) so the preview ghosts and the worker agree; the pipeline
- * gates on its own resolved flag as well.
+ * mirrors the pipeline's `liteFloorOpen` in `deriveDimensions` term for term
+ * (an interior lightweight floor is cups, not a slab; detachable feet count
+ * only when a foot is actually placed) so the preview ghosts, the piece
+ * builder and the worker agree; the pipeline gates on its own flag as well.
  */
 export function dividerGrooveDepth(
-  params: Pick<BinParams, 'style' | 'dividerPieces' | 'base'>
+  params: Pick<BinParams, 'style' | 'dividerPieces' | 'base'> & DetachableFeetParams
 ): number {
   if (params.style !== 'slotted' || !params.dividerPieces.floorGroove) return 0;
   const { base } = params;
   const socketless = base.style === 'flat' || base.style === 'lid';
-  const lightweight = (base.lightweight || base.spacer) && !socketless && !hasDetachableFeet(base);
-  return lightweight && !isUndersideRelief(base) ? 0 : DIVIDER_FLOOR_GROOVE_DEPTH;
+  const detachableFeet =
+    hasDetachableFeet(base) && resolveDetachableFeet(params).placements.length > 0;
+  const lightweight = (base.lightweight || base.spacer) && !socketless && !detachableFeet;
+  const solid = base.solid || (base.tile === true && !socketless);
+  const liteFloorOpen = lightweight && !isUndersideRelief(base) && !solid;
+  return liteFloorOpen ? 0 : DIVIDER_FLOOR_GROOVE_DEPTH;
 }
 
 /**
