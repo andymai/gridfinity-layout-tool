@@ -1,0 +1,123 @@
+src/i18n/locales/ja.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/i18n/locales/uk.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/features/bin-designer/types/dividers.ts
+  s_23d015945aa0c8::t_3b3560cfc63f3b 84-88
+src/features/generation/worker/generators/pipeline/types.ts
+  s_23d015945aa0c8::t_079d300eef437e 133-138
+  s_23d015945aa0c8::t_93a32129c84d7c 132
+src/features/generation/worker/generators/__kernel-tests__/authoredDividers.test.ts
+  s_23d015945aa0c8::t_43913c11731214 46
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_23d015945aa0c8::t_b8304d493eb2c4 14,19,23-24,29,56-57,145-146,152-153,678-695
+  s_23d015945aa0c8::t_494f63b6d085d9 696-697
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_23d015945aa0c8::t_760f6a07bb03bc 26,29-30
+  s_23d015945aa0c8::t_1ba64e9e6fe77a 157-161,200,314-315
+  s_23d015945aa0c8::t_122385a9679f7e 290
+src/features/generation/worker/generators/pipeline/context.ts
+  s_23d015945aa0c8::t_079d300eef437e 17,197,424
+docs/schemas/examples/bin-design-full.json
+  s_23d015945aa0c8::t_079d300eef437e 140
+src/features/generation/worker/generators/slotBuilder.ts
+  s_23d015945aa0c8::t_1ba64e9e6fe77a 20,23,46-55,153-176,235-239,247,333-334,339-345,347-349,379,384-400,447,455-464,551
+  s_23d015945aa0c8::t_dbc2ccca935ca4 465-473,542,552,569-572
+src/i18n/locales/es.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_23d015945aa0c8::t_122385a9679f7e 147
+  s_23d015945aa0c8::t_ec93d365b5b0f2 57-67
+  s_23d015945aa0c8::t_3600db6ae49544 54
+  s_23d015945aa0c8::t_43913c11731214 306,372,392
+  s_23d015945aa0c8::t_85f479824ac003 55-56
+src/features/generation/worker/generators/binGenerator.scenario.dividerSeat.test.ts
+  s_23d015945aa0c8::t_0e6ac4e7bb5df5 1-151
+src/shared/schema/binDesignKeys.ts
+  s_23d015945aa0c8::t_3b3560cfc63f3b 294
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_23d015945aa0c8::t_3600db6ae49544 6-10,38-46,127-128,130-131,137,146-147,214
+  s_23d015945aa0c8::t_43913c11731214 122,188,222,273,313,338
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_23d015945aa0c8::t_079d300eef437e 22,28-29,254-259,501-506
+src/features/generation/worker/generators/__kernel-tests__/matrixProfile.perf.test.ts
+  s_23d015945aa0c8::t_43913c11731214 276
+src/features/generation/worker/generators/__kernel-tests__/dividerCrossLap.test.ts
+  s_23d015945aa0c8::t_43913c11731214 40
+src/i18n/locales/nl.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.test.tsx
+  s_23d015945aa0c8::t_43913c11731214 152
+  s_23d015945aa0c8::t_7087f17af59ba7 153-157,195-200
+src/features/generation/worker/generators/binGenerator.scenario.authoredDividers.test.ts
+  s_23d015945aa0c8::t_43913c11731214 61
+  s_23d015945aa0c8::t_306e3c4df7c7fe 23-28,81-89,115
+src/i18n/locales/nb.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/i18n/locales/ko.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/i18n/locales/zh-CN.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/shared/utils/slotMath.ts
+  s_23d015945aa0c8::t_3b3560cfc63f3b 15,159-207,210
+  s_23d015945aa0c8::t_e764a5b90810b3 208-209,211
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_23d015945aa0c8::t_760f6a07bb03bc 39
+  s_23d015945aa0c8::t_079d300eef437e 438-439
+public/schema/bin-design.schema.json
+  s_23d015945aa0c8::t_1ba64e9e6fe77a 976-979
+src/i18n/locales/fr.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/features/generation/worker/generators/binGenerator.scenario.dividerRetention.test.ts
+  s_23d015945aa0c8::t_43913c11731214 43
+  s_23d015945aa0c8::t_e57ef90c923083 65,106
+src/i18n/locales/pt-BR.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/i18n/locales/sv.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/features/bin-designer/constants/defaults.ts
+  s_23d015945aa0c8::t_3b3560cfc63f3b 53
+src/i18n/locales/de.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/i18n/locales/cs.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+api/lib/communityExampleParamHashes.ts
+  s_23d015945aa0c8::t_09575546081ba0 15-26
+src/i18n/locales/it.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/i18n/locales/pl.json
+  s_23d015945aa0c8::t_122385a9679f7e 942-943
+src/features/generation/worker/generators/slotBuilder.test.ts
+  s_23d015945aa0c8::t_ec93d365b5b0f2 5-6,74-123
+  s_23d015945aa0c8::t_b8304d493eb2c4 39
+  s_23d015945aa0c8::t_527f2269ece3b2 124
+src/i18n/locales/en.ts
+  s_23d015945aa0c8::t_122385a9679f7e 1784-1786
+docs/schemas/bin-design.md
+  s_23d015945aa0c8::t_ec93d365b5b0f2 427
+src/features/bin-designer/utils/dividerPatternFit.ts
+  s_23d015945aa0c8::t_95b39f240bcd21 23-25
+  s_23d015945aa0c8::t_122385a9679f7e 183-188
+src/features/generation/worker/generators/binGenerator.scenario.overhangDividers.test.ts
+  s_23d015945aa0c8::t_43913c11731214 32
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.slotted.test.ts.snap
+  s_23d015945aa0c8::t_9c57fa0c8282b9 3,5,7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.snap
+  s_23d015945aa0c8::t_2e8404b8112f7e 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "51cb093aedd1654dcd669640ad2896ecc2488bf8",
+  "prompts": {},
+  "sessions": {
+    "s_23d015945aa0c8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e8f2ea-cfb7-49a4-b131-eae06e8842ea",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
