@@ -1781,6 +1781,9 @@ const en: Record<string, string> = {
   'binDesigner.dividerHeight': 'Divider height',
   'binDesigner.dividerThickness': 'Divider thickness',
   'binDesigner.dividerClearance': 'Fit tolerance',
+  'binDesigner.dividerFloorGroove': 'Floor groove',
+  'binDesigner.dividerFloorGrooveHint':
+    "A {depth}mm channel in the floor seats each divider's bottom edge. Turn off to print dividers for a bin made without one.",
   'binDesigner.dividerAutoHeight': 'Auto',
   'binDesigner.dividerDimensions': '{length} × {height}mm',
   'binDesigner.dividerHeightOnly': '{height}mm tall',

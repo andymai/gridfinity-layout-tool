@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Odrzuć wskazówki dotykowe",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Tolerancja dopasowania",
+  "binDesigner.dividerFloorGroove": "Rowek w podłodze",
+  "binDesigner.dividerFloorGrooveHint": "Kanał o głębokości {depth} mm w podłodze osadza dolną krawędź każdej przegrody. Wyłącz, aby wydrukować przegrody do binu wykonanego bez rowka.",
   "binDesigner.dividerDimensions": "{length} × {height} mm",
   "binDesigner.dividerHeight": "Wysokość przegródki",
   "binDesigner.dividerHeightOnly": "{height} mm wysokości",

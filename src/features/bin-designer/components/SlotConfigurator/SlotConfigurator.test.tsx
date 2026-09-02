@@ -51,7 +51,20 @@ describe('SlotConfigurator', () => {
 
   it('shows slot count', () => {
     render(<SlotConfigurator />);
-    expect(screen.getByText(/dividers/i)).toBeInTheDocument();
+    expect(screen.getByText(/^\d+ dividers$/i)).toBeInTheDocument();
+  });
+
+  it('turns the floor groove off through the divider piece config', () => {
+    const setParam = vi.fn();
+    useDesignerStore.setState({ setParam });
+
+    render(<SlotConfigurator />);
+    fireEvent.click(screen.getByLabelText(/floor groove/i));
+
+    expect(setParam).toHaveBeenCalledWith(
+      'dividerPieces',
+      expect.objectContaining({ floorGroove: false })
+    );
   });
 
   it('shows slot spacing control', () => {
@@ -131,6 +144,7 @@ describe('SlotConfigurator', () => {
           height: 'auto',
           thickness: 1.2,
           clearance: 0.2,
+          floorGroove: true,
         },
       },
     });
@@ -289,7 +303,7 @@ describe('SlotConfigurator', () => {
           y: { enabled: true, pitch: 20 },
           crossStyle: 'insert',
         },
-        dividerPieces: { height: 'auto', thickness: 1.0, clearance: 0.25 },
+        dividerPieces: { height: 'auto', thickness: 1.0, clearance: 0.25, floorGroove: true },
       },
     });
     render(<SlotConfigurator />);
@@ -355,7 +369,7 @@ describe('SlotConfigurator', () => {
             crossStyle: 'insert' as const,
             longAxis: 'y' as const,
           },
-          dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+          dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
         },
       });
       render(<SlotConfigurator />);
@@ -375,7 +389,7 @@ describe('SlotConfigurator', () => {
       useDesignerStore.setState({
         params: {
           ...bothLap('snappable'),
-          dividerPieces: { height: 'auto', thickness: 0.8, clearance: 0.25 },
+          dividerPieces: { height: 'auto', thickness: 0.8, clearance: 0.25, floorGroove: true },
         },
       });
       render(<SlotConfigurator />);

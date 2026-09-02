@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { getEffectiveSlotDimensions, buildSlotCuts } from './slotBuilder';
+import { box } from 'brepjs';
+import { DIVIDER_FLOOR_GROOVE_DEPTH, getDividerLockPlan } from '@/shared/utils/slotMath';
 
 // Mock brepjs — slotBuilder imports it at module level.
 // Vitest hoists vi.mock calls above imports automatically.
@@ -34,7 +36,7 @@ describe('getEffectiveSlotDimensions', () => {
   it('delegates to shared slotMath with params extracted', () => {
     const params = makeSlottedParams({
       wallThickness: 0.95,
-      dividerPieces: { thickness: 1.2, clearance: 0.1, height: 'auto' },
+      dividerPieces: { thickness: 1.2, clearance: 0.1, height: 'auto', floorGroove: true },
     });
     const result = getEffectiveSlotDimensions(params);
     expect(result.slotWidth).toBeCloseTo(1.4);
@@ -67,6 +69,57 @@ describe('buildSlotCuts', () => {
   it('returns null when wall thickness is just below threshold', () => {
     const params = makeSlottedParams({ wallThickness: 0.79 });
     expect(buildSlotCuts(params, 80, 80, 30)).toBeNull();
+  });
+
+  it('starts the wall slots at the seat and channels the floor along each divider', () => {
+    const params = makeSlottedParams({
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 40 },
+        y: { enabled: false, pitch: 40 },
+      },
+    });
+    vi.mocked(box).mockClear();
+    buildSlotCuts(params, 80, 80, 30, undefined, { floorZ: 2, grooveDepth: 0.8 });
+    const calls = vi.mocked(box).mock.calls;
+    const at = (c: (typeof calls)[number]): [number, number, number] =>
+      (c[3] as { at: [number, number, number] }).at;
+
+    // Head pocket: the first lock segment, headHeight tall, rising from the seat
+    // (floor top less the groove) rather than from inside the floor.
+    const { headHeight } = getDividerLockPlan(1.6, 0.25);
+    const pockets = calls.filter((c) => c[2] === headHeight);
+    expect(pockets).toHaveLength(2);
+    for (const p of pockets) expect(at(p)[2]).toBeCloseTo(2 - 0.8 + headHeight / 2, 5);
+
+    // One groove per divider line: slot-width wide, spanning the interior plus
+    // its reach into both wall slots, overrunning the floor top by the overlap.
+    const grooves = calls.filter((c) => c[2] > 0.8 && c[2] < 0.82);
+    expect(grooves).toHaveLength(1);
+    expect(grooves[0][1]).toBeCloseTo(1.6 + 2 * 0.25, 5);
+    expect(grooves[0][0]).toBeGreaterThan(80);
+    expect(at(grooves[0])[2]).toBeCloseTo(2 - 0.8 + grooves[0][2] / 2, 5);
+  });
+
+  it('cuts no groove when the divider config turns it off', () => {
+    const params = makeSlottedParams({
+      dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, floorGroove: false },
+    });
+    vi.mocked(box).mockClear();
+    buildSlotCuts(params, 80, 80, 30);
+    const calls = vi.mocked(box).mock.calls;
+    expect(calls.filter((c) => c[2] > 0.8 && c[2] < 0.82)).toHaveLength(0);
+    // Without a groove the slots start at the floor top itself.
+    const { headHeight } = getDividerLockPlan(1.6, 0.25);
+    const pockets = calls.filter((c) => c[2] === headHeight);
+    expect(pockets.length).toBeGreaterThan(0);
+    for (const p of pockets) {
+      expect((p[3] as { at: [number, number, number] }).at[2]).toBeCloseTo(2 + headHeight / 2, 5);
+    }
+  });
+
+  it('defaults the groove depth from the divider config', () => {
+    expect(DIVIDER_FLOOR_GROOVE_DEPTH).toBe(0.8);
   });
 
   it('does not return null when wall thickness equals MIN_WALL_FOR_SLOTS', () => {

@@ -37,7 +37,7 @@ function makeParams(overrides: Partial<BinParams> = {}): BinParams {
       x: { enabled: true, pitch: 20 },
       y: { enabled: true, pitch: 20 },
     },
-    dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+    dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
     ...overrides,
   };
 }

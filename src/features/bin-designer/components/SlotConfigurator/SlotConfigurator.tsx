@@ -11,19 +11,22 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '@/features/bin-designer/constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
-import { Button, Stepper } from '@/design-system';
+import { Button, Stepper, Switch } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import {
   calculateSlotPositions,
   calculateDividerLength,
-  calculateDividerHeight,
+  calculateDividerPieceHeight,
   calculateLapPartialSegments,
   calculateShortDividerLengths,
   calculateShortDividerSpans,
+  dividerGrooveDepth,
+  dividerSeatZ,
   getEffectiveSlotDimensions,
   getReceptacleDepth,
   resolveCrossDividerMode,
   resolvePartialStyle,
+  DIVIDER_FLOOR_GROOVE_DEPTH,
   MIN_DIVIDER_FOR_RECEPTACLES,
   MIN_DIVIDER_FOR_SNAP,
   MIN_WALL_FOR_SLOTS,
@@ -50,6 +53,8 @@ export function SlotConfigurator() {
   );
   const { slotConfig, dividerPieces } = params;
   const stackingLip = params.base.stackingLip;
+  const grooveDepth = dividerGrooveDepth(params);
+  const seatZ = dividerSeatZ(params.wallThickness, grooveDepth);
   const t = useTranslation();
 
   // ── Dimension calculations ──────────────────────────────────────────
@@ -137,15 +142,15 @@ export function SlotConfigurator() {
   );
 
   const dividerHeight = useMemo(
-    () => calculateDividerHeight(dividerPieces, wallHeight, stackingLip),
-    [dividerPieces, wallHeight, stackingLip]
+    () => calculateDividerPieceHeight(dividerPieces, wallHeight, stackingLip, seatZ),
+    [dividerPieces, wallHeight, stackingLip, seatZ]
   );
 
   // Maximum height when set to 'auto' — used for the stepper max bound
   // so the up button stays enabled when height is below auto.
   const maxDividerHeight = useMemo(
-    () => calculateDividerHeight({ height: 'auto' }, wallHeight, stackingLip),
-    [wallHeight, stackingLip]
+    () => calculateDividerPieceHeight({ height: 'auto' }, wallHeight, stackingLip, seatZ),
+    [wallHeight, stackingLip, seatZ]
   );
   const maxHeightRounded = Math.round(maxDividerHeight * 10) / 10;
 
@@ -668,6 +673,26 @@ export function SlotConfigurator() {
             aria-label={t('binDesigner.dividerClearance')}
           />
         </div>
+      </div>
+
+      {/* Floor groove */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <span className="block text-xs text-content-tertiary">
+            {t('binDesigner.dividerFloorGroove')}
+          </span>
+          <p className="mt-0.5 text-xs text-content-tertiary">
+            {t('binDesigner.dividerFloorGrooveHint', {
+              depth: String(DIVIDER_FLOOR_GROOVE_DEPTH),
+            })}
+          </p>
+        </div>
+        <Switch
+          checked={dividerPieces.floorGroove}
+          onChange={(next) => updateDividerPieces({ floorGroove: next })}
+          size="sm"
+          aria-label={t('binDesigner.dividerFloorGroove')}
+        />
       </div>
 
       {/* Calculated divider dimensions (parametric readout; custom shows its own) */}

@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "タッチヒントを閉じる",
   "binDesigner.dividerAutoHeight": "自動",
   "binDesigner.dividerClearance": "はめあい公差",
+  "binDesigner.dividerFloorGroove": "底面の溝",
+  "binDesigner.dividerFloorGrooveHint": "底面に深さ{depth}mmの溝を切り、各仕切りの下端を固定します。溝のないbin用に仕切りを印刷する場合はオフにしてください。",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "仕切り板の高さ",
   "binDesigner.dividerHeightOnly": "高さ{height}mm",

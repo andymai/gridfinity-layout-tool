@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "关闭触控提示",
   "binDesigner.dividerAutoHeight": "自动",
   "binDesigner.dividerClearance": "贴合公差",
+  "binDesigner.dividerFloorGroove": "底部凹槽",
+  "binDesigner.dividerFloorGrooveHint": "在底部开一条 {depth}mm 深的凹槽，以固定每个隔板的下边缘。若要为没有凹槽的 bin 打印隔板，请关闭。",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "隔板高度",
   "binDesigner.dividerHeightOnly": "{height}mm 高",

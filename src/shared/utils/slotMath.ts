@@ -12,6 +12,9 @@ import type {
   PartialDividerStyle,
   SlotConfig,
 } from '@/shared/types/bin';
+import { binFloorMm, hasDetachableFeet, isUndersideRelief } from '@/shared/types/bin';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import type { DetachableFeetParams } from '@/shared/utils/detachableFeetPlan';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { hasOverhang, overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 
@@ -151,6 +154,64 @@ export function calculateDividerHeight(
 ): number {
   if (config.height === 'auto') {
     return hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
+  }
+  return config.height;
+}
+
+/**
+ * Depth of the floor channel that seats a removable divider's bottom edge.
+ * Leaves 1.2mm of the 2mm floor every base style carries (`binFloorMm`), the
+ * same as the default wall.
+ */
+export const DIVIDER_FLOOR_GROOVE_DEPTH = 0.8;
+
+/**
+ * Resolved floor-groove depth for a design: 0 unless the style is slotted, the
+ * groove is on, and there is a closed floor to cut it into. The floor test
+ * mirrors the pipeline's `liteFloorOpen` in `deriveDimensions` term for term
+ * (an interior lightweight floor is cups, not a slab; detachable feet count
+ * only when a foot is actually placed) so the preview ghosts, the piece
+ * builder and the worker agree; the pipeline gates on its own flag as well.
+ */
+export function dividerGrooveDepth(
+  params: Pick<BinParams, 'style' | 'dividerPieces' | 'base'> & DetachableFeetParams
+): number {
+  if (params.style !== 'slotted' || !params.dividerPieces.floorGroove) return 0;
+  const { base } = params;
+  const socketless = base.style === 'flat' || base.style === 'lid';
+  const detachableFeet =
+    hasDetachableFeet(base) && resolveDetachableFeet(params).placements.length > 0;
+  const lightweight = (base.lightweight || base.spacer) && !socketless && !detachableFeet;
+  const solid = base.solid || (base.tile === true && !socketless);
+  const liteFloorOpen = lightweight && !isUndersideRelief(base) && !solid;
+  return liteFloorOpen ? 0 : DIVIDER_FLOOR_GROOVE_DEPTH;
+}
+
+/**
+ * Z of the surface a removable divider rests on, in the body frame (box bottom
+ * at 0): the interior floor top, dropped by the groove depth when the floor
+ * carries one. The wall slots, the floor groove and the piece height all key
+ * off this one value so the lock lands on the throat instead of inside the
+ * floor.
+ */
+export function dividerSeatZ(wallThickness: number, grooveDepth: number): number {
+  return binFloorMm(wallThickness) - grooveDepth;
+}
+
+/**
+ * Installed height of a removable divider piece. 'auto' fills from the seat to
+ * the interior top (below the lip taper). `calculateDividerHeight` measures
+ * from the box bottom, which is right for the baked compartment walls but
+ * leaves a piece standing on the floor proud by the floor thickness.
+ */
+export function calculateDividerPieceHeight(
+  config: { height: number | 'auto' },
+  wallHeight: number,
+  hasLip: boolean,
+  seatZ: number
+): number {
+  if (config.height === 'auto') {
+    return calculateDividerHeight(config, wallHeight, hasLip) - seatZ;
   }
   return config.height;
 }

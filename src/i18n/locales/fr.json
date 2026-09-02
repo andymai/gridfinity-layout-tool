@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Masquer les indications tactiles",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Tolérance",
+  "binDesigner.dividerFloorGroove": "Rainure de fond",
+  "binDesigner.dividerFloorGrooveHint": "Une rainure de {depth} mm dans le fond cale le bord inférieur de chaque séparateur. Désactivez-la pour imprimer des séparateurs pour un bin fabriqué sans rainure.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "Hauteur du séparateur",
   "binDesigner.dividerHeightOnly": "{height}mm de haut",

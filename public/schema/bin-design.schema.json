@@ -973,6 +973,10 @@
             "maximum": "DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE"
           },
           "description": "Fit clearance in mm between divider and slot."
+        },
+        "floorGroove": {
+          "type": "boolean",
+          "description": "Cut a 0.8mm channel into the floor under each divider to seat its bottom edge. Defaults to true; set false to print dividers for a bin made without the groove."
         }
       }
     },
