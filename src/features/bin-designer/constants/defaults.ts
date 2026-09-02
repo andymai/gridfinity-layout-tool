@@ -50,6 +50,7 @@ export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
   height: 'auto',
   thickness: 1.6,
   clearance: 0.25,
+  floorGroove: true,
 } as const;
 
 /** Valid wall pattern members — used to coerce crafted/removed values on load. */

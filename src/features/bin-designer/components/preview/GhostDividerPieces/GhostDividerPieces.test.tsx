@@ -149,7 +149,12 @@ describe('GhostDividerPieces', () => {
         y: { enabled: true, pitch: 20 },
         ...slotOverrides,
       },
-      dividerPieces: { height: 'auto' as const, thickness: 1.6, clearance: 0.25 },
+      dividerPieces: {
+        height: 'auto' as const,
+        thickness: 1.6,
+        clearance: 0.25,
+        floorGroove: true,
+      },
     });
 
     it('lap mode renders in-bin ghosts plus one reference piece per axis', () => {
@@ -187,7 +192,12 @@ describe('GhostDividerPieces', () => {
       useDesignerStore.setState({
         params: {
           ...bothAxesParams({ crossStyle: 'insert', longAxis: 'y' }),
-          dividerPieces: { height: 'auto' as const, thickness: 1.0, clearance: 0.25 },
+          dividerPieces: {
+            height: 'auto' as const,
+            thickness: 1.0,
+            clearance: 0.25,
+            floorGroove: true,
+          },
         },
       });
       const { container } = render(<GhostDividerPieces />);

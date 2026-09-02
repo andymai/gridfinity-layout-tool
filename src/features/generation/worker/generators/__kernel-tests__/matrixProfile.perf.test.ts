@@ -273,7 +273,7 @@ const slotted = buildParams({
     partialStyle: 'full',
     layout: 'even',
   },
-  dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+  dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
 });
 
 const maxgrid = buildParams({

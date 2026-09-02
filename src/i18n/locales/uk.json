@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Закрити сенсорні підказки",
   "binDesigner.dividerAutoHeight": "Авто",
   "binDesigner.dividerClearance": "Допуск посадки",
+  "binDesigner.dividerFloorGroove": "Паз у дні",
+  "binDesigner.dividerFloorGrooveHint": "Канал глибиною {depth} мм у дні фіксує нижній край кожної перегородки. Вимкніть, щоб надрукувати перегородки для bin, зробленого без паза.",
   "binDesigner.dividerDimensions": "{length} × {height}мм",
   "binDesigner.dividerHeight": "Висота розділювача",
   "binDesigner.dividerHeightOnly": "висота {height}мм",

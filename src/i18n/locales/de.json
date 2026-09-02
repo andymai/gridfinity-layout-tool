@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Touch-Hinweise schließen",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Passtoleranz",
+  "binDesigner.dividerFloorGroove": "Bodennut",
+  "binDesigner.dividerFloorGrooveHint": "Eine {depth} mm tiefe Nut im Boden fasst die Unterkante jedes Trenners. Ausschalten, um Trenner für einen Bin ohne Nut zu drucken.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "Trennwandhöhe",
   "binDesigner.dividerHeightOnly": "{height}mm hoch",

@@ -81,4 +81,9 @@ export interface DividerPieceConfig {
   readonly thickness: number;
   /** Fit clearance in mm (subtracted from each side) */
   readonly clearance: number;
+  /**
+   * Cut a channel into the floor under each divider so its bottom edge is
+   * seated. Off prints dividers for a bin made before the groove existed.
+   */
+  readonly floorGroove: boolean;
 }

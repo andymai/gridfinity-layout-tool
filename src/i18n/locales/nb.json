@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Avvis berøringshintet",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Toleranse",
+  "binDesigner.dividerFloorGroove": "Bunnspor",
+  "binDesigner.dividerFloorGrooveHint": "Et {depth} mm dypt spor i bunnen holder underkanten av hver skillevegg. Slå av for å skrive ut skillevegger til en bin laget uten spor.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "Skillehøyde",
   "binDesigner.dividerHeightOnly": "{height}mm høy",

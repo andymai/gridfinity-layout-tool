@@ -22,10 +22,12 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
   calculateSlotPositions,
-  calculateDividerHeight,
   calculateDividerLength,
+  calculateDividerPieceHeight,
   calculateShortDividerLengths,
   calculateShortDividerSpans,
+  dividerGrooveDepth,
+  dividerSeatZ,
   getEffectiveSlotDimensions,
   getReceptacleDepth,
   resolveCrossDividerMode,
@@ -152,9 +154,11 @@ export function GhostDividerPieces() {
   });
   const totalH = height * heightUnitMm;
   const wallHeight = baseWallHeight(base, totalH);
-  // Socketed bases are translated up by SOCKET_HEIGHT in preview, placing the
-  // cavity floor at SOCKET_HEIGHT + wallThickness. Flat bases have no offset.
-  const floorZ = baseFloorZ(base, heightUnitMm, lid) + wallThickness;
+  // Socketed bases are translated up by SOCKET_HEIGHT in preview. The pieces
+  // seat on the interior floor top, or the groove floor below it, never on the
+  // body's Z=0. Flat bases have no offset.
+  const seatZ = dividerSeatZ(wallThickness, dividerGrooveDepth({ style, dividerPieces, base }));
+  const floorZ = baseFloorZ(base, heightUnitMm, lid) + seatZ;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;
@@ -193,7 +197,7 @@ export function GhostDividerPieces() {
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
-    const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
+    const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
     const { thickness, clearance } = dividerPieces;
     const crossMode = resolveCrossDividerMode(slotConfig, thickness);
     const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
@@ -283,6 +287,7 @@ export function GhostDividerPieces() {
     wallHeight,
     hasLip,
     floorZ,
+    seatZ,
     lipOverhang,
   ]);
 
@@ -306,8 +311,8 @@ export function GhostDividerPieces() {
   // bottom) — modeled here as merged box segments to match the export.
   const dividerHeight = useMemo(() => {
     if (!shouldShow) return 0;
-    return calculateDividerHeight(dividerPieces, wallHeight, hasLip);
-  }, [shouldShow, dividerPieces, wallHeight, hasLip]);
+    return calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
+  }, [shouldShow, dividerPieces, wallHeight, hasLip, seatZ]);
 
   const referencePieces = useMemo(() => {
     if (!shouldShow) return [];

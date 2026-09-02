@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Avfärda pektips",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Passningstolerans",
+  "binDesigner.dividerFloorGroove": "Bottenspår",
+  "binDesigner.dividerFloorGrooveHint": "Ett {depth} mm djupt spår i botten håller underkanten på varje avdelare. Stäng av för att skriva ut avdelare till en bin gjord utan spår.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "Avdelarhöjd",
   "binDesigner.dividerHeightOnly": "{height}mm hög",

@@ -130,6 +130,13 @@ export interface BinDimensions {
    */
   readonly liteFloorOpen: boolean;
   /**
+   * Depth of the floor channel under each removable divider, 0 when the bin is
+   * not slotted, the groove is off, or there is no closed floor to cut it into.
+   * The wall slots start this far below the floor top so the divider's head
+   * seats at groove depth with the throat closing over it at the surface.
+   */
+  readonly dividerGrooveDepth: number;
+  /**
    * True for a spacer/riser: a floorless frame that lifts a bin so
    * mismatched bin heights line up. Feet and stacking lip are untouched — only
    * the floor is gone — so every height and stacking rule a normal bin follows

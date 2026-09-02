@@ -29,7 +29,7 @@ function slottedParams(overhang?: BinParams['overhang']): BinParams {
       x: { enabled: true, pitch: 21 },
       y: { enabled: false, pitch: 42 },
     },
-    dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+    dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
     overhang,
   };
 }

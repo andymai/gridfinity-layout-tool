@@ -20,7 +20,9 @@ import type { BinParams } from '@/features/bin-designer/types';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { binDimensions } from './binDimensions';
 import {
-  calculateDividerHeight,
+  calculateDividerPieceHeight,
+  dividerGrooveDepth,
+  dividerSeatZ,
   calculateDividerLength,
   calculateShortDividerLengths,
   calculateShortDividerSpans,
@@ -178,7 +180,12 @@ function resolveSlottedBand(
   );
   const clearance = dividerPieces.clearance;
   const tab = tabEngagement(slotDepth, clearance);
-  const height = calculateDividerHeight(dividerPieces, wallHeight, params.base.stackingLip);
+  const height = calculateDividerPieceHeight(
+    dividerPieces,
+    wallHeight,
+    params.base.stackingLip,
+    dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+  );
   const usable = (length: number, endTab: number): number => length - 2 * (endTab + border);
 
   const spans: number[] = [];

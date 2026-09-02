@@ -17,8 +17,10 @@ import { box, unwrap, fuseAll, withScope, clone } from 'brepjs';
 import type { DisposalScope } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
+import { binFloorMm } from '@/shared/types/bin';
 import {
   calculateSlotPositions,
+  dividerGrooveDepth,
   getDividerLockPlan,
   getEffectiveSlotDimensions as getEffectiveSlotDimensionsRaw,
   MIN_WALL_FOR_SLOTS,
@@ -39,6 +41,16 @@ export function getEffectiveSlotDimensions(params: BinParams): {
 } {
   const { thickness, clearance } = params.dividerPieces;
   return getEffectiveSlotDimensionsRaw(params.wallThickness, thickness, clearance);
+}
+
+/**
+ * Where the removable dividers rest, in the body frame (box bottom at Z=0).
+ */
+export interface DividerSeat {
+  /** Interior floor top */
+  readonly floorZ: number;
+  /** Floor channel depth under each divider; 0 when there is none */
+  readonly grooveDepth: number;
 }
 
 /**
@@ -139,6 +151,30 @@ function createMirroredLockingCutters(
 }
 
 /**
+ * Channel in the floor under one divider line. `alongStart`/`alongEnd` are
+ * relative to the interior center and already carry any reach into the wall
+ * slots; the cutter overruns the floor top so the cut shares no face with the
+ * cavity floor.
+ */
+function createGrooveCutter(
+  axis: 'x' | 'y',
+  alongStart: number,
+  alongEnd: number,
+  crossPos: number,
+  slotWidth: number,
+  grooveDepth: number,
+  slotStartZ: number
+): Shape3D {
+  const length = alongEnd - alongStart;
+  const alongCenter = (alongStart + alongEnd) / 2;
+  const height = grooveDepth + COPLANAR_OVERLAP;
+  const zCenter = slotStartZ + height / 2;
+  return axis === 'x'
+    ? box(length, slotWidth, height, { at: [alongCenter, crossPos, zCenter] })
+    : box(slotWidth, length, height, { at: [crossPos, alongCenter, zCenter] });
+}
+
+/**
  * Create a mirrored pair of lip overhang cutters along one axis.
  *
  * These remove the interior lip overhang so dividers can slide in from the
@@ -196,7 +232,11 @@ export function buildSlotCuts(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  lipInfo?: LipCutInfo
+  lipInfo?: LipCutInfo,
+  seat: DividerSeat = {
+    floorZ: binFloorMm(params.wallThickness),
+    grooveDepth: dividerGrooveDepth(params),
+  }
 ): Shape3D | null {
   if (params.style !== 'slotted') return null;
 
@@ -204,7 +244,7 @@ export function buildSlotCuts(
   if (params.wallThickness < MIN_WALL_FOR_SLOTS) return null;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
-    const fused = buildSlotCutsInScope(scope, params, innerW, innerD, wallHeight, lipInfo);
+    const fused = buildSlotCutsInScope(scope, params, innerW, innerD, wallHeight, lipInfo, seat);
     return fused ? unwrap(clone(fused)) : null;
   });
 }
@@ -290,17 +330,23 @@ function buildSlotCutsInScope(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  lipInfo?: LipCutInfo
+  lipInfo: LipCutInfo | undefined,
+  seat: DividerSeat
 ): Shape3D | null {
   const { slotConfig } = params;
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
 
-  // The bin floor plate extends from Z=0 to Z=wallThickness (shell thickness).
-  // Wall slots must start at the floor surface, not Z=0, to avoid cutting
-  // through the floor into the socket below.
-  const floorZ = params.wallThickness;
-  const slotHeight = wallHeight - floorZ;
+  // Wall slots start where the divider seats: the floor top, dropped by the
+  // groove depth when the floor carries one. That puts the lock's head pocket
+  // at groove level with the throat closing over the tab right at the surface;
+  // a slot that starts inside the floor buries the pocket where no divider can
+  // reach it, and one that starts at Z=0 cuts into the socket below.
+  const slotStartZ = seat.floorZ - seat.grooveDepth;
+  const slotHeight = wallHeight - slotStartZ;
   if (slotHeight <= 0) return null;
+  // The groove runs on into each wall slot's pocket, stopping short of the
+  // pocket's outer face so the two cutters overlap instead of sharing it.
+  const grooveReach = slotDepth - SLOT_EXTENSION;
 
   // Lip overhang: the lip taper extends inward past the inner wall surface.
   // Only cut the interior overhang — leave the outer rim intact.
@@ -330,10 +376,27 @@ function buildSlotCutsInScope(
         slotHeight,
         halfSpan,
         crossPos,
-        floorZ,
+        slotStartZ,
         axis
       );
       for (const c of wallCutters) slots.push(scope.register(c));
+
+      if (seat.grooveDepth > 0) {
+        const reach = halfSpan + grooveReach;
+        slots.push(
+          scope.register(
+            createGrooveCutter(
+              axis,
+              -reach,
+              reach,
+              crossPos,
+              slotWidth,
+              seat.grooveDepth,
+              slotStartZ
+            )
+          )
+        );
+      }
 
       // Lip cutouts: remove the interior overhang above AND below wallHeight.
       // The lip profile extends below wallHeight (wall-replacement extension),
@@ -381,12 +444,31 @@ function buildSlotCutsInScope(
         slotHeight,
         halfSpan,
         crossPos,
-        floorZ,
+        slotStartZ,
         axis
       );
       for (let i = 0; i < wallCutters.length; i += 2) {
         keepSide(lowTouch, wallCutters[i]);
         keepSide(highTouch, wallCutters[i + 1]);
+      }
+
+      if (seat.grooveDepth > 0) {
+        // A wall-anchored end reaches into its slot pocket; an abutting end
+        // stops at the crossing divider, whose own groove runs through the
+        // junction.
+        slots.push(
+          scope.register(
+            createGrooveCutter(
+              axis,
+              low - halfSpan - (lowTouch ? grooveReach : 0),
+              low + seg.length - halfSpan + (highTouch ? grooveReach : 0),
+              crossPos,
+              slotWidth,
+              seat.grooveDepth,
+              slotStartZ
+            )
+          )
+        );
       }
 
       if (lipInfo && lipOverhang > 0) {
@@ -457,7 +539,7 @@ export const slotCutsFeature: FeatureBuilder = {
     );
     return compactKey(
       buildCacheKey(
-        'v4',
+        'v5',
         dim.shellKey,
         stableSerialize(params.slotConfig),
         quantize(slotWidth),
@@ -466,6 +548,8 @@ export const slotCutsFeature: FeatureBuilder = {
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.interiorHeight),
+        quantize(dim.floorThickness),
+        quantize(dim.dividerGrooveDepth),
         lipInfo
           ? buildCacheKey(
               'lip',
@@ -482,7 +566,10 @@ export const slotCutsFeature: FeatureBuilder = {
     const lipInfo = dim.hasLip
       ? { wallHeight: dim.wallHeight, lipHeight: LIP_HEIGHT, lipTaperWidth: LIP_TAPER_WIDTH }
       : undefined;
-    const result = buildSlotCuts(params, dim.innerW, dim.innerD, dim.interiorHeight, lipInfo);
+    const result = buildSlotCuts(params, dim.innerW, dim.innerD, dim.interiorHeight, lipInfo, {
+      floorZ: dim.floorThickness,
+      grooveDepth: dim.dividerGrooveDepth,
+    });
     return result ? [result] : null;
   },
 };

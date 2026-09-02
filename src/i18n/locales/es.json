@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Ocultar indicaciones táctiles",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Tolerancia de ajuste",
+  "binDesigner.dividerFloorGroove": "Ranura en el suelo",
+  "binDesigner.dividerFloorGrooveHint": "Un canal de {depth} mm en el suelo asienta el borde inferior de cada divisor. Desactívalo para imprimir divisores para un bin hecho sin ranura.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "Altura del divisor",
   "binDesigner.dividerHeightOnly": "{height}mm de alto",

@@ -137,7 +137,7 @@
       "depth": 1,
       "layout": "even"
     },
-    "dividerPieces": { "height": 20, "thickness": 1.6, "clearance": 0.15 },
+    "dividerPieces": { "height": 20, "thickness": 1.6, "clearance": 0.15, "floorGroove": true },
     "inserts": [],
     "cutouts": [],
     "cutoutConfig": { "topOffset": 0, "fillReference": "rim" },

@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Zavřít dotykové rady",
   "binDesigner.dividerAutoHeight": "Automaticky",
   "binDesigner.dividerClearance": "Tolerance uložení",
+  "binDesigner.dividerFloorGroove": "Drážka v podlaze",
+  "binDesigner.dividerFloorGrooveHint": "Kanál hluboký {depth} mm v podlaze usadí spodní hranu každé přepážky. Vypněte pro tisk přepážek do binu vyrobeného bez drážky.",
   "binDesigner.dividerDimensions": "{length} × {height} mm",
   "binDesigner.dividerHeight": "Výška přepážky",
   "binDesigner.dividerHeightOnly": "{height} mm vysoké",

@@ -20,7 +20,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
-import { getEffectiveSlotDimensions } from '@/shared/utils/slotMath';
+import {
+  calculateDividerPieceHeight,
+  dividerGrooveDepth,
+  dividerSeatZ,
+  getEffectiveSlotDimensions,
+} from '@/shared/utils/slotMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 
@@ -53,7 +58,7 @@ function customParams(cols: number, rows: number, cells: number[]): BinParams {
       layout: 'custom',
       customGrid: { cols, rows, cells },
     },
-    dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+    dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
   };
 }
 
@@ -73,7 +78,15 @@ describe('authored divider pieces through the real kernel', () => {
       thickness,
       clearance
     );
-    const notchDepth = WALL_HEIGHT / 2 + clearance;
+    // Pieces stand on the divider seat, not the box bottom, so they are shorter
+    // than the wall by the floor above that seat.
+    const pieceHeight = calculateDividerPieceHeight(
+      params.dividerPieces,
+      WALL_HEIGHT,
+      false,
+      dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+    );
+    const notchDepth = pieceHeight / 2 + clearance;
 
     const segments = deriveWallSegments(
       { cols: 2, rows: 2, cells: [0, 1, 2, 3] },
@@ -99,7 +112,7 @@ describe('authored divider pieces through the real kernel', () => {
         const m = mesh(pieces[i].shape, { tolerance: 0.01, angularTolerance: 5, cache: false });
         for (const v of m.vertices) expect(Number.isFinite(v)).toBe(true);
         const vol = meshVolume(m.vertices, m.triangles);
-        const solid = specs[i].length * WALL_HEIGHT * thickness;
+        const solid = specs[i].length * pieceHeight * thickness;
         const notchVol = specs[i].notchOffsets.length * slotWidth * notchDepth * thickness;
         // Each piece is its solid box minus its cross-lap notches and a small
         // tab neck relief at each wall-anchored end (getDividerLockPlan). The

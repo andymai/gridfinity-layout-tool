@@ -291,7 +291,7 @@ export type _AxisSlotKeys = Assert<
   KeysMatch<keyof AxisSlotConfig, (typeof AXIS_SLOT_KEYS)[number]>
 >;
 
-export const DIVIDER_PIECE_KEYS = ['height', 'thickness', 'clearance'] as const;
+export const DIVIDER_PIECE_KEYS = ['height', 'thickness', 'clearance', 'floorGroove'] as const;
 export type _DividerPieceKeys = Assert<
   KeysMatch<keyof DividerPieceConfig, (typeof DIVIDER_PIECE_KEYS)[number]>
 >;

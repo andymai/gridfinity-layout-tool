@@ -3,6 +3,11 @@ import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { buildDividerPiece, buildUniqueDividerPieces } from './dividerBuilder';
 import { box, cut, fuseAll } from 'brepjs';
+import {
+  DIVIDER_FLOOR_GROOVE_DEPTH,
+  calculateDividerPieceHeight,
+  dividerSeatZ,
+} from '@/shared/utils/slotMath';
 
 // Mock brepjs — dividerBuilder imports it at module level.
 // Vitest hoists vi.mock calls above imports automatically.
@@ -29,6 +34,15 @@ function makeSlottedParams(overrides: Partial<BinParams> = {}): BinParams {
 beforeEach(() => {
   vi.clearAllMocks();
 });
+
+const WALL_HEIGHT = 30;
+/** 'auto' piece height for the default wall: seat is the 2mm floor top less the groove. */
+const AUTO_HEIGHT = calculateDividerPieceHeight(
+  { height: 'auto' },
+  WALL_HEIGHT,
+  false,
+  dividerSeatZ(DEFAULT_BIN_PARAMS.wallThickness, DIVIDER_FLOOR_GROOVE_DEPTH)
+);
 
 describe('buildDividerPiece', () => {
   it('creates a divider piece with correct dimensions', () => {
@@ -105,21 +119,22 @@ describe('buildUniqueDividerPieces', () => {
         x: { enabled: true, pitch: 40 },
         y: { enabled: true, pitch: 40 },
       },
-      dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+      dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
     });
     buildUniqueDividerPieces(params, 80, 80, 30, false);
 
     // The two cross-lap notch cutters are the only boxes reaching just past
-    // mid-height (Y-dim ≈ h/2); piece bodies are Y=30 and neck-relief cutters
-    // are shallow, so filter by that depth rather than a fixed call index.
+    // mid-height (Y-dim ≈ h/2); piece bodies are Y=AUTO_HEIGHT and neck-relief
+    // cutters are shallow, so filter by that depth rather than a fixed call index.
     const calls = vi.mocked(box).mock.calls;
-    const notchCutters = calls.filter((c) => c[1] > 15 && c[1] < 15.5);
+    const half = AUTO_HEIGHT / 2;
+    const notchCutters = calls.filter((c) => c[1] > half && c[1] < half + 0.5);
     expect(notchCutters).toHaveLength(2);
 
     // First piece is X (notched from the top), second is Y (from the bottom).
     const xCutterAt = (notchCutters[0][3] as { at: [number, number, number] }).at;
     const yCutterAt = (notchCutters[1][3] as { at: [number, number, number] }).at;
-    // dividerHeight = wallHeight (30, no lip); notch centers mirror across mid-height
+    // dividerHeight = AUTO_HEIGHT (no lip); notch centers mirror across mid-height
     expect(xCutterAt[1]).toBeGreaterThan(0);
     expect(yCutterAt[1]).toBeLessThan(0);
     expect(xCutterAt[1]).toBeCloseTo(-yCutterAt[1], 5);
@@ -128,8 +143,8 @@ describe('buildUniqueDividerPieces', () => {
     expect(notchCutters[0][0]).toBeCloseTo(1.6 + 2 * 0.25, 5);
     // Notch reaches just past half height: depth = h/2 + clearance (+overlap)
     const notchCutterDepth = notchCutters[0][1];
-    expect(notchCutterDepth).toBeGreaterThan(15);
-    expect(notchCutterDepth).toBeLessThan(15.5);
+    expect(notchCutterDepth).toBeGreaterThan(half);
+    expect(notchCutterDepth).toBeLessThan(half + 0.5);
   });
 
   it('fuses notch cutters when a piece has multiple crossings', () => {
@@ -170,7 +185,7 @@ describe('buildUniqueDividerPieces', () => {
           crossStyle: 'insert',
           longAxis: 'y',
         },
-        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
         ...overrides,
       });
 
@@ -196,7 +211,7 @@ describe('buildUniqueDividerPieces', () => {
       // Piece boxes (skip groove cutters, which have cutterHeight > height):
       // interior span = 20 − 1.6 = 18.4 plus two receptacle tabs (0.3 min
       // each) → 19.0; edge span = 20 − 0.8 = 19.2 plus wall+receptacle tabs
-      const pieceLengths = boxCalls.filter((c) => c[1] === 30).map((c) => c[0]);
+      const pieceLengths = boxCalls.filter((c) => c[1] === AUTO_HEIGHT).map((c) => c[0]);
       expect(pieceLengths.length).toBe(3);
       expect(pieceLengths[1]).toBeCloseTo(19.0, 5);
       expect(pieceLengths[2]).toBeCloseTo(19.8, 5);
@@ -204,7 +219,7 @@ describe('buildUniqueDividerPieces', () => {
 
     it('falls back to cross-lap when the divider is too thin for receptacles', () => {
       const params = insertParams({
-        dividerPieces: { height: 'auto', thickness: 1.0, clearance: 0.25 },
+        dividerPieces: { height: 'auto', thickness: 1.0, clearance: 0.25, floorGroove: true },
       });
       const pieces = buildUniqueDividerPieces(params, 80, 60, 30, false);
       expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
@@ -255,7 +270,7 @@ describe('buildUniqueDividerPieces', () => {
           crossStyle: 'lap',
           partialStyle,
         },
-        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
       });
 
     it('scores both full pieces at snap positions in snappable mode', () => {
@@ -295,7 +310,7 @@ describe('buildUniqueDividerPieces', () => {
           crossStyle: 'lap',
           partialStyle: 'lengthSet',
         },
-        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
       });
       // 80mm at 20mm pitch → 4 compartments, 3 crossings per axis.
       const pieces = buildUniqueDividerPieces(params, 80, 80, 30, false);
@@ -320,7 +335,7 @@ describe('buildUniqueDividerPieces', () => {
           longAxis: 'y',
           partialStyle: 'lengthSet',
         },
-        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
       });
       const pieces = buildUniqueDividerPieces(params, 80, 60, 30, false);
       // Insert topology stands — grooved long piece + per-compartment shorts

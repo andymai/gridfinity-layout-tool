@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Aanraaktips sluiten",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Passingstolerantie",
+  "binDesigner.dividerFloorGroove": "Bodemgroef",
+  "binDesigner.dividerFloorGrooveHint": "Een groef van {depth} mm in de bodem vangt de onderrand van elke scheidingswand. Zet uit om scheidingswanden te printen voor een bin zonder groef.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "Scheidingshoogte",
   "binDesigner.dividerHeightOnly": "{height}mm hoog",

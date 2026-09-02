@@ -40,7 +40,7 @@ describe('divider retention neck relief through the real kernel', () => {
         x: { enabled: true, pitch: 40 },
         y: { enabled: false, pitch: 40 },
       },
-      dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+      dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
     };
     const { thickness, clearance } = params.dividerPieces;
     const lock = getDividerLockPlan(thickness, clearance);
@@ -62,6 +62,7 @@ describe('divider retention neck relief through the real kernel', () => {
       }
     }
     const bottomY = min[1];
+    const pieceHeight = max[1] - min[1];
     const topFaceZ = max[2];
 
     // Z-extent of solid found in a thin sliver just inside one thickness face at
@@ -102,7 +103,7 @@ describe('divider retention neck relief through the real kernel', () => {
         lock.headHeight + lock.throatHeight - 0.1,
         face
       );
-      const topHit = faceProbe(WALL_HEIGHT - 1.0, WALL_HEIGHT - 0.4, face); // near the rim
+      const topHit = faceProbe(pieceHeight - 1.0, pieceHeight - 0.4, face); // near the rim
 
       // Face solid at the head and rim, relieved only across the throat band.
       expect(headHit).toBeGreaterThan(depthPerFace * 0.4);

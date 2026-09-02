@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Dispensar dicas de toque",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Tolerância de encaixe",
+  "binDesigner.dividerFloorGroove": "Ranhura no fundo",
+  "binDesigner.dividerFloorGrooveHint": "Um canal de {depth} mm no fundo assenta a borda inferior de cada divisória. Desative para imprimir divisórias para um bin feito sem ranhura.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "Altura do divisor",
   "binDesigner.dividerHeightOnly": "{height}mm de altura",

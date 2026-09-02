@@ -19,11 +19,14 @@ import type { BinParams } from '@/shared/types/bin';
 import {
   calculateDividerHeight,
   calculateDividerLength,
+  calculateDividerPieceHeight,
   calculateLapPartialSegments,
   calculateLapSnapPositions,
   calculateShortDividerLengths,
   calculateShortDividerSpans,
   calculateSlotPositions,
+  dividerGrooveDepth,
+  dividerSeatZ,
   getDividerLockPlan,
   getReceptacleDepth,
   getSnapScoreDepth,
@@ -248,7 +251,12 @@ export function buildUniqueDividerPieces(
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
 
-  const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
+  const dividerHeight = calculateDividerPieceHeight(
+    dividerPieces,
+    wallHeight,
+    hasLip,
+    dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+  );
 
   const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
   const { style: crossStyle, longAxis } = resolveCrossDividerMode(slotConfig, thickness);
@@ -490,7 +498,12 @@ export function buildAuthoredDividerPieces(
 
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
-  const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
+  const dividerHeight = calculateDividerPieceHeight(
+    dividerPieces,
+    wallHeight,
+    hasLip,
+    dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+  );
   const notchDepth = dividerHeight / 2 + clearance;
 
   const segments = deriveWallSegments(grid, innerW, innerD);

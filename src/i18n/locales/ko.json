@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "터치 힌트 닫기",
   "binDesigner.dividerAutoHeight": "자동",
   "binDesigner.dividerClearance": "맞춤 공차",
+  "binDesigner.dividerFloorGroove": "바닥 홈",
+  "binDesigner.dividerFloorGrooveHint": "바닥에 {depth}mm 깊이의 홈을 파서 각 칸막이의 아랫면을 고정합니다. 홈 없이 만든 bin용 칸막이를 출력하려면 끄세요.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "칸막이 높이",
   "binDesigner.dividerHeightOnly": "{height}mm 높이",

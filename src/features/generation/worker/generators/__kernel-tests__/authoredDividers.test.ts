@@ -43,7 +43,7 @@ function customParams(cols: number, rows: number, cells: number[]): BinParams {
       layout: 'custom',
       customGrid: { cols, rows, cells },
     },
-    dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+    dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25, floorGroove: true },
   };
 }
 

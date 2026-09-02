@@ -939,6 +939,8 @@
   "binDesigner.dismissTouchHints": "Ignora i suggerimenti touch",
   "binDesigner.dividerAutoHeight": "Auto",
   "binDesigner.dividerClearance": "Tolleranza di accoppiamento",
+  "binDesigner.dividerFloorGroove": "Scanalatura sul fondo",
+  "binDesigner.dividerFloorGrooveHint": "Un canale di {depth} mm nel fondo alloggia il bordo inferiore di ogni divisorio. Disattivalo per stampare divisori per un bin realizzato senza scanalatura.",
   "binDesigner.dividerDimensions": "{length} × {height}mm",
   "binDesigner.dividerHeight": "Altezza divisore",
   "binDesigner.dividerHeightOnly": "{height}mm di altezza",

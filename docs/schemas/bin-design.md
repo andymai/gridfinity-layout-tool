@@ -424,7 +424,7 @@ printed separately and ride in them.
 
 <a id="dividerpiececonfig"></a>
 
-3 fields, in `src/features/bin-designer/types/dividers.ts`.
+4 fields, in `src/features/bin-designer/types/dividers.ts`.
 
 ## Cutouts
 
