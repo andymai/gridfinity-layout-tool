@@ -23,6 +23,7 @@ import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import {
   computeInteriorHeight,
+  scoopFrameHeights,
   computeLipOffset,
   resolveScoopProfile,
 } from '@/shared/utils/scoopCalculations';
@@ -165,11 +166,15 @@ function projectFootprint(
  */
 export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   if (!params.scoop.enabled) return [];
-  const { innerW, innerD, wallHeight, hasLip } = dim;
+  const { innerW, innerD, wallHeight, hasLip, floorThickness } = dim;
   const { cols, rows, cells } = params.compartments;
   const cellW = innerW / cols;
   const cellD = innerD / rows;
-  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
+  const frame = scoopFrameHeights(
+    wallHeight,
+    computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER),
+    floorThickness
+  );
 
   const out: WorldKeepOut[] = [];
   const seen = new Set<number>();
@@ -193,8 +198,8 @@ export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepO
       compD,
       isMinRow,
       hasLip,
-      wallHeight,
-      interiorHeight,
+      frame.wallHeight,
+      frame.interiorHeight,
       lipOffset
     );
     if (!profile) continue;
@@ -205,8 +210,8 @@ export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepO
       xMax: centerX + compW / 2,
       yMin: frontY,
       yMax: frontY + lipOffset + profile.run,
-      zMin: 0,
-      zMax: profile.height,
+      zMin: floorThickness,
+      zMax: floorThickness + profile.height,
     });
   }
   return out;

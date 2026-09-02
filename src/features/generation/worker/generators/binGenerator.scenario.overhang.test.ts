@@ -12,6 +12,14 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import { deriveDimensions } from './pipeline/context';
+import {
+  computeInteriorHeight,
+  computeLipOffset,
+  resolveScoopProfile,
+  scoopFrameHeights,
+} from '@/shared/utils/scoopCalculations';
+import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -85,33 +93,52 @@ describe('overhang with interior features', () => {
     const generateBin = getGenerateBin();
     const SCOOP = { enabled: true as const, radius: 'auto' as const };
     const OVH = { left: 5, right: 5, front: 5, back: 5 };
-
-    // Build all four combinations to isolate the scoop-delta under each condition.
-    const base = generateBin(buildParams({ width: 2, depth: 2 }), undefined, true);
-    const baseScoop = generateBin(
-      buildParams({ width: 2, depth: 2, scoop: SCOOP }),
-      undefined,
-      true
-    );
-    const ovh = generateBin(buildParams({ width: 2, depth: 2, overhang: OVH }), undefined, true);
-    const ovhScoop = generateBin(
-      buildParams({ width: 2, depth: 2, scoop: SCOOP, overhang: OVH }),
-      undefined,
-      true
-    );
-
-    assertStructurallyValid(baseScoop, 'scoop no overhang');
+    const params = buildParams({ width: 2, depth: 2, scoop: SCOOP, overhang: OVH });
+    const ovhScoop = generateBin(params, undefined, true);
     assertStructurallyValid(ovhScoop, 'scoop with overhang');
 
-    // The scoop-delta is how many triangles the scoop adds to the plain shell.
-    // Before the fix, innerD was nominal regardless of overhang, so both deltas
-    // would be identical. After the fix, the overhang shell has a larger inner
-    // cavity, so the scoop carves more geometry and its delta is different.
-    const scoopDeltaNoOverhang = baseScoop.triangleCount - base.triangleCount;
-    const scoopDeltaWithOverhang = ovhScoop.triangleCount - ovh.triangleCount;
-    expect(scoopDeltaNoOverhang).toBeGreaterThan(0);
-    expect(scoopDeltaWithOverhang).toBeGreaterThan(0);
-    expect(scoopDeltaWithOverhang).not.toBe(scoopDeltaNoOverhang);
+    // The ramp's top edge runs along the front wall at the lip offset, one
+    // ramp-height above the floor. The overhang deepens the cavity by 5mm each
+    // way, so that edge must sit at the EXPANDED wall; a ramp sized for the
+    // nominal cavity would float 5mm inboard of the real wall, and the nominal
+    // position would carry its top edge instead.
+    const dim = deriveDimensions(params, true);
+    const lipOffset = computeLipOffset(dim.hasLip, true, LIP_TAPER_WIDTH, params.wallThickness);
+    const frame = scoopFrameHeights(
+      dim.wallHeight,
+      computeInteriorHeight(dim.wallHeight, dim.hasLip, LIP_SMALL_TAPER),
+      dim.floorThickness
+    );
+    const profile = resolveScoopProfile(
+      params.scoop,
+      dim.innerW,
+      dim.innerD,
+      true,
+      dim.hasLip,
+      frame.wallHeight,
+      frame.interiorHeight,
+      lipOffset
+    );
+    expect(profile).not.toBeNull();
+    if (!profile) return;
+    const topZ = dim.baseOffsetZ + dim.floorThickness + profile.height;
+    const expandedWallY = -dim.innerD / 2;
+    const nominalWallY = expandedWallY + OVH.front;
+    const { vertices } = ovhScoop;
+    const hasTopEdgeAt = (y: number): boolean => {
+      for (let i = 0; i < vertices.length; i += 3) {
+        if (
+          Math.abs(vertices[i + 1] - y) < 0.05 &&
+          Math.abs(vertices[i + 2] - topZ) < 0.05 &&
+          Math.abs(vertices[i]) <= dim.innerW / 2 + 0.1
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+    expect(hasTopEdgeAt(expandedWallY + lipOffset)).toBe(true);
+    expect(hasTopEdgeAt(nominalWallY + lipOffset)).toBe(false);
   });
 
   it('asymmetric overhang: interior features are structurally valid (centering offset applied)', () => {

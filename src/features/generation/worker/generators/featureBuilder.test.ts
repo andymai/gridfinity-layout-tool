@@ -36,7 +36,8 @@ type BuildScoopRampsFn = (
   innerW: number,
   innerD: number,
   wallHeight: number,
-  wallThickness: number
+  wallThickness: number,
+  floorZ: number
 ) => Shape3D | null;
 type BuildWallCutoutCutsFn = (
   params: BinParams,
@@ -536,7 +537,7 @@ describe('buildScoopRamps', () => {
       ...DEFAULT_BIN_PARAMS,
       scoop: { enabled: false, radius: 'auto' },
     };
-    const result = buildScoopRamps(params, 80, 80, 16, 1.2);
+    const result = buildScoopRamps(params, 80, 80, 16, 1.2, 2);
     expect(result).toBeNull();
   });
 
@@ -546,7 +547,7 @@ describe('buildScoopRamps', () => {
       style: 'slotted',
       scoop: { enabled: true, radius: 'auto' },
     };
-    const result = buildScoopRamps(params, 80, 80, 16, 1.2);
+    const result = buildScoopRamps(params, 80, 80, 16, 1.2, 2);
     expect(result).toBeNull();
   });
 
@@ -555,7 +556,7 @@ describe('buildScoopRamps', () => {
       ...DEFAULT_BIN_PARAMS,
       scoop: { enabled: true, radius: 'auto' },
     };
-    const result = buildScoopRamps(params, 80, 80, 16, 1.2);
+    const result = buildScoopRamps(params, 80, 80, 16, 1.2, 2);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
@@ -566,7 +567,7 @@ describe('buildScoopRamps', () => {
       ...DEFAULT_BIN_PARAMS,
       scoop: { enabled: true, radius: 10 },
     };
-    const result = buildScoopRamps(params, 80, 80, 16, 1.2);
+    const result = buildScoopRamps(params, 80, 80, 16, 1.2, 2);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);

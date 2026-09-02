@@ -165,6 +165,25 @@ export function autoScoopCeiling(isOuter: boolean, hasLip: boolean, wallHeight: 
   return Math.max(1, wallHeight - LID_CLICK_RAIL_BAND_BELOW_WALL_TOP);
 }
 
+/**
+ * Heights a scoop profile clamps against, measured from the interior floor top
+ * rather than the box bottom. The ramp stands on that floor: sized against the
+ * box-bottom heights its lower `floorThickness` is buried in the floor and the
+ * arc meets the floor at an angle instead of tangentially. Every consumer of
+ * `resolveScoopProfile` (builder, keep-outs, ghost, readouts, lid check) goes
+ * through this so they agree on the same ramp.
+ */
+export function scoopFrameHeights(
+  wallHeight: number,
+  interiorHeight: number,
+  floorThickness: number
+): { readonly wallHeight: number; readonly interiorHeight: number } {
+  return {
+    wallHeight: Math.max(0, wallHeight - floorThickness),
+    interiorHeight: Math.max(0, interiorHeight - floorThickness),
+  };
+}
+
 /** A scoop resolved to concrete geometry: run along the floor, rise up the wall, and profile shape. */
 export interface ResolvedScoopProfile {
   /** Length along the compartment floor in mm. */
@@ -198,8 +217,9 @@ export interface ResolvedScoopProfile {
  * @param depth - Compartment extent away from that wall in mm (the run axis)
  * @param isOuter - Whether this compartment touches the bin's outer wall on this side
  * @param hasLip - Whether the bin has a stacking lip
- * @param wallHeight - Full wall height in mm
- * @param interiorHeight - Interior height in mm (wallHeight - lip taper)
+ * @param wallHeight - Wall height in mm measured from the interior floor top, i.e.
+ *   after {@link scoopFrameHeights}; a box-bottom height buries the ramp in the floor
+ * @param interiorHeight - Interior height in mm from the same floor (wallHeight - lip taper)
  * @param lipOffset - Lip offset in mm (for outer-wall scoops with lip)
  * @returns Resolved profile, or null if the scoop is degenerate (< 1mm on either axis)
  */

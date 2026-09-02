@@ -7,7 +7,7 @@
  * bearing surfaces are.
  */
 
-import { draw, translate, withScope, clone, unwrap, fuseAll, cut } from 'brepjs';
+import { draw, translate, withScope, clone, unwrap, fuse, cut } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
@@ -52,8 +52,12 @@ export function buildSlideRails(input: SlideGeometryInput): Shape3D | null {
   return withScope((scope: DisposalScope): Shape3D | null => {
     const bars = geometry.rails.map((bar) => railSolid(scope, bar));
     if (bars.length === 0) return null;
-    const fused =
-      bars.length === 1 ? bars[0] : scope.register(unwrap(fuseAll(bars as ValidSolid[])));
+    // Pairwise: the n-way fuse leaves sealed inner shells where bars overlap
+    // end to end, which the export then has to collapse away.
+    let fused = bars[0];
+    for (const bar of bars.slice(1)) {
+      fused = scope.register(unwrap(fuse(fused as ValidSolid, bar as ValidSolid)));
+    }
     return unwrap(clone(fused));
   });
 }

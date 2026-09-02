@@ -30,11 +30,18 @@
  * could not.
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { measureVolume, unwrap } from 'brepjs';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { buildParams } from './scenarioTypes';
 import type { ScenarioCase } from './scenarioTypes';
-import { setLastSolid, clearAllCaches } from '../shapeCache';
+import {
+  setLastSolid,
+  clearAllCaches,
+  getLastSolid,
+  getLastExportShellCount,
+  setLastExportShellCount,
+} from '../shapeCache';
 import type * as BinExporterModule from '../binExporter';
 
 let exportBin: typeof BinExporterModule.exportBin;
@@ -95,6 +102,10 @@ interface ManifoldStats {
   nonManifoldEdges: number;
   boundaryEdges: number;
   minFinite: boolean;
+  /** Signed volume of the triangle soup (positive for outward-facing triangles). */
+  volume: number;
+  /** Zero-area triangles, left out of the edge bookkeeping. */
+  degenerateTriangles: number;
 }
 
 /** Parse a binary STL and compute manifold/finiteness stats. Throws on parse failure. */
@@ -116,17 +127,31 @@ function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
   const eKey = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
   let minFinite = true;
+  let volume = 0;
+  let degenerateTriangles = 0;
   const edgeCount = new Map<string, number>();
   for (let t = 0; t < triangleCount; t++) {
     const base = t * 9;
     for (let i = 0; i < 9; i++) {
       if (!Number.isFinite(vertices[base + i])) minFinite = false;
     }
+    const [ax, ay, az, bx, by, bz, cx, cy, cz] = vertices.subarray(base, base + 9);
+    volume += (ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)) / 6;
     const keys = [
       vKey(vertices[base], vertices[base + 1], vertices[base + 2]),
       vKey(vertices[base + 3], vertices[base + 4], vertices[base + 5]),
       vKey(vertices[base + 6], vertices[base + 7], vertices[base + 8]),
     ];
+    // A zero-area triangle (two quantized corners coincide) has no surface
+    // and cannot open a hole, but its collapsed edge counts once and its two
+    // coincident edges land twice on a real edge, which reads as a boundary
+    // plus a non-manifold edge. Slivers left by a fillet along a boolean seam
+    // tessellate this way; they are counted and capped below, not scored as
+    // edges.
+    if (keys[0] === keys[1] || keys[1] === keys[2] || keys[2] === keys[0]) {
+      degenerateTriangles++;
+      continue;
+    }
     for (let i = 0; i < 3; i++) {
       const k = eKey(keys[i], keys[(i + 1) % 3]);
       edgeCount.set(k, (edgeCount.get(k) ?? 0) + 1);
@@ -139,8 +164,45 @@ function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
     if (count === 1) boundaryEdges++;
     else if (count > 2) nonManifoldEdges++;
   }
-  return { triangleCount, nonManifoldEdges, boundaryEdges, minFinite };
+  return { triangleCount, nonManifoldEdges, boundaryEdges, minFinite, volume, degenerateTriangles };
 }
+
+/**
+ * Scenarios whose export body legitimately carries more than one shell before
+ * `keepOuterShell`, keyed by `${category} › ${name}` with the exact count and
+ * the reason. Anything else with extra shells is a fuse that glued instead of
+ * unioning, which the collapse turns into a body with its features carved out.
+ */
+const MULTI_SHELL_SCENARIOS = new Map<string, { readonly shells: number; readonly reason: string }>(
+  [
+    // The rim track's two top bars fuse as their own closed solids (they meet
+    // the support bars along a face the fuse does not merge), so the body
+    // reaches the exporter as three closed shells; the collapse leaves it alone
+    // and the STL carries all three.
+    [
+      'slide tray › rim track on a lipped bin',
+      { shells: 3, reason: 'rim-track top bars are separate closed solids' },
+    ],
+    [
+      'slide tray › rim track without a stacking lip',
+      { shells: 3, reason: 'rim-track top bars are separate closed solids' },
+    ],
+  ]
+);
+
+/**
+ * Zero-area triangles tolerated per export. A fillet along a boolean seam can
+ * leave a sliver face that tessellates to one or two collapsed triangles; a
+ * regression that sprays them across a feature blows through this.
+ */
+const MAX_DEGENERATE_TRIANGLES = 4;
+
+/**
+ * How far the exported mesh's volume may sit from the BREP solid's. Chordal
+ * tessellation at export tolerance loses a few tenths of a percent on curved
+ * faces; a dropped or inverted shell moves it by whole features.
+ */
+const MAX_VOLUME_DRIFT = 0.01;
 
 /**
  * Scenarios that export a CLOSED (hole-free) mesh which is nonetheless
@@ -205,6 +267,7 @@ export function runExportIntegrity(scenarios: readonly ScenarioCase[]): void {
     // caches (socket/lip/box) stay warm for speed.
     beforeEach(async () => {
       setLastSolid(null);
+      setLastExportShellCount(null);
       // Recover if the prior scenario stranded the kernel — detected by the
       // borrow-flag poison signature in its error (`poisoned`, covers both the
       // panic-abort and non-panic stranding) OR by a recorded Rust panic that
@@ -232,6 +295,10 @@ export function runExportIntegrity(scenarios: readonly ScenarioCase[]): void {
 
             // 3. No NaN/Infinity coordinates.
             expect(stats.minFinite, `${scenario.name}: finite coordinates`).toBe(true);
+            expect(
+              stats.degenerateTriangles,
+              `${scenario.name}: zero-area triangles`
+            ).toBeLessThanOrEqual(MAX_DEGENERATE_TRIANGLES);
 
             // 4. Hole-free: no boundary edges. This is the real printable-watertight
             //    guarantee and holds for EVERY scenario, including the measure-zero
@@ -257,6 +324,30 @@ export function runExportIntegrity(scenarios: readonly ScenarioCase[]): void {
               ).toBeLessThanOrEqual(MAX_MEASURE_ZERO_CONTACT_EDGES);
             } else {
               expect(stats.nonManifoldEdges, `${scenario.name}: non-manifold edges`).toBe(0);
+            }
+
+            // 6. The body reached the exporter as ONE shell. A watertight mesh can
+            //    still be the wrong solid: when the boolean stage glues features
+            //    instead of unioning them, `keepOuterShell` collapses the tangle to
+            //    its largest shell and ships a body with those features subtracted.
+            const shells = getLastExportShellCount();
+            const multiShell = MULTI_SHELL_SCENARIOS.get(label);
+            expect(
+              shells,
+              `${scenario.name}: ${multiShell?.reason ?? 'shells before outer-shell collapse'}`
+            ).toBe(multiShell?.shells ?? 1);
+
+            // 7. The mesh is the solid: its volume matches the BREP's to within
+            //    tessellation error, so nothing was dropped or inverted on the way
+            //    from solid to triangles.
+            const solid = getLastSolid();
+            if (solid) {
+              const brepVolume = unwrap(measureVolume(solid));
+              expect(brepVolume, `${scenario.name}: BREP volume`).toBeGreaterThan(0);
+              expect(
+                Math.abs(stats.volume - brepVolume) / brepVolume,
+                `${scenario.name}: mesh volume ${stats.volume.toFixed(1)} vs BREP ${brepVolume.toFixed(1)}`
+              ).toBeLessThan(MAX_VOLUME_DRIFT);
             }
           } catch (e) {
             // Flag borrow-flag poison so beforeEach recreates the kernel before

@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import { binFloorMm } from '@/shared/types/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { deriveDimensions } from './pipeline/context';
 import { dividerPatternsApply, planDividerPatterns, widestClearRun } from './dividerPatterns';
+
+const FLOOR_TOP = binFloorMm(DEFAULT_BIN_PARAMS.wallThickness);
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return {
@@ -126,7 +129,7 @@ describe('planDividerPatterns', () => {
     const result = plan(params);
     const target = result?.targets[0];
     expect(target?.rotateZ).toBe(90);
-    const ramp = target?.keepOuts.find((k) => k.zMin <= 0);
+    const ramp = target?.keepOuts.find((k) => k.zMin <= FLOOR_TOP);
     expect(ramp?.uMin).toBeLessThanOrEqual(-(target?.wallLen ?? 0) / 2);
   });
 
@@ -138,7 +141,8 @@ describe('planDividerPatterns', () => {
     const result = plan(params);
     const target = result?.targets[0];
     expect(target).toBeDefined();
-    const ramp = target?.keepOuts.find((k) => k.zMin <= 0);
+    // The ramp stands on the floor, so its keep-out starts at the floor top.
+    const ramp = target?.keepOuts.find((k) => k.zMin <= FLOOR_TOP);
     expect(ramp, 'the ramp footing must be kept solid').toBeDefined();
     // A ramp is a floor feature — it must not swallow the whole band.
     expect(ramp?.zMax).toBeLessThan((result?.bandZ0 ?? 0) + (result?.bandHeight ?? 0));

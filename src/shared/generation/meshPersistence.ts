@@ -42,6 +42,9 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
+ * `v14`: additive features union pairwise instead of through the kernel's
+ * n-way fuse, and the scoop ramp stands on the floor top; both move every
+ * kernel's output for any bin with a scoop, label tab, emboss or rail.
  * `v13`: a half foot now carries magnet/screw holes, so any bin, lid, or plate
  * with a fractional dimension and attachment holes enabled generates different
  * bytes for params it already has an entry under.
@@ -66,7 +69,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v13';
+const MESH_CACHE_VERSION = 'v14';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

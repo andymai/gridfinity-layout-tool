@@ -7,14 +7,11 @@
  * Exercised against real brepjs/WASM per CLAUDE.md's "real dependencies only".
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getShells, fuseAllBisect, unwrap } from 'brepjs';
-import type { ValidSolid } from 'brepjs';
+import { box, cut, getShells, measureVolume, unwrap } from 'brepjs';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { buildParams } from '../__kernel-tests__/scenarioTypes';
 import { setLastSolid, getLastSolid } from '../shapeCache';
-import { buildBinBox } from '../boxBuilder';
-import { buildScoopRamps } from '../scoopRampBuilder';
 import { exportSolidToStl } from './stlMeshFallback';
 import { EXPORT_ANGULAR_TOLERANCE_RAD, EXPORT_TOLERANCE } from './tolerances';
 import { keepOuterShell } from './outerShell';
@@ -28,30 +25,19 @@ beforeAll(async () => {
   generateBin = (await import('../binOrchestrator')).generateBin;
 }, 60_000);
 
-/** Body+scoop fuse, which leaves interior void shells — the raw geometry the
- *  export pipeline now repairs via keepOuterShell. */
-function buildRawMultiShellScoopSolid(): unknown {
-  const params = buildParams({ scoop: { enabled: true, radius: 10 } });
-  const wallHeight = params.height * params.heightUnitMm;
-  const wt = params.wallThickness;
-  const innerW = params.width * params.gridUnitMm - 2 * wt;
-  const innerD = params.depth * params.gridUnitMm - 2 * wt;
-  const body = buildBinBox(
-    params.width,
-    params.depth,
-    wallHeight,
-    wt,
-    false,
-    0,
-    params.gridUnitMm,
-    params.cellMask,
-    undefined,
-    undefined,
-    { left: 0, right: 0, front: 0, back: 0, feet: false, taper: null }
-  );
-  const scoop = buildScoopRamps(params, innerW, innerD, wallHeight, wt);
-  if (!scoop) throw new Error('scoop not built');
-  return unwrap(fuseAllBisect([body, scoop] as ValidSolid[], {})).shape;
+const VOID_VOLUME = 10 * 10 * 10;
+
+/** A box with a sealed cavity: the outer shell plus one interior void shell,
+ *  the topology an additive fuse can leave behind inside a wall. */
+function buildSolidWithVoid(): unknown {
+  const outer = box(40, 40, 40, { at: [0, 0, 0] });
+  const hole = box(10, 10, 10, { at: [0, 0, 0] });
+  try {
+    return unwrap(cut(outer, hole));
+  } finally {
+    outer.delete();
+    hole.delete();
+  }
 }
 
 /** Count STL edges shared by >2 triangles (non-manifold) and by 1 (boundary). */
@@ -102,16 +88,16 @@ describe('keepOuterShell', () => {
     expect(keepOuterShell(solid as never)).toBe(solid);
   }, 60_000);
 
-  it('collapses a multi-shell scoop solid to one watertight shell', async () => {
-    const solid = buildRawMultiShellScoopSolid();
-    // The raw scoop fuse leaves interior void shells.
-    expect(getShells(solid as never).length).toBeGreaterThan(1);
-    const before = await meshDefects(solid);
-    expect(before.nonManifold).toBeGreaterThan(0);
+  it('drops a sealed interior void and keeps the outer shell watertight', async () => {
+    const solid = buildSolidWithVoid();
+    expect(getShells(solid as never).length).toBe(2);
+    const outerVolume = unwrap(measureVolume(solid as never));
 
     const fixed = keepOuterShell(solid as never);
     expect(fixed).not.toBe(solid);
     expect(getShells(fixed as never).length).toBe(1);
+    // Filling the void adds its volume back: the shell is the box itself.
+    expect(unwrap(measureVolume(fixed))).toBeCloseTo(outerVolume + VOID_VOLUME, 3);
     const after = await meshDefects(fixed);
     expect(after.nonManifold).toBe(0);
     expect(after.boundary).toBe(0);
