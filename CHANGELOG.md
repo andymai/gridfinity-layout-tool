@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.483.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.483.0...gridfinity-layout-tool-v4.483.1) (2026-09-02)
+
+
+### Bug Fixes
+
+* **generation:** seat slotted dividers on the real floor and groove it ([#4076](https://github.com/andymai/gridfinity-layout-tool/issues/4076)) ([42b1da6](https://github.com/andymai/gridfinity-layout-tool/commit/42b1da68aa97b528777465e954b26a38dccb69b8))
+* **generation:** union additive features and stand the scoop on the floor ([#4077](https://github.com/andymai/gridfinity-layout-tool/issues/4077)) ([cc85055](https://github.com/andymai/gridfinity-layout-tool/commit/cc8505561dcd5ba4157b522c6fddc88ead4ccfec))
+
 ## [4.483.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.482.4...gridfinity-layout-tool-v4.483.0) (2026-09-01)
 
 
