@@ -1,0 +1,28 @@
+src/features/generation/worker/generators/binGenerator.scenario.dividerSeat.test.ts
+  s_23d015945aa0c8::t_7324391674a933 36,85-92,94,96
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_23d015945aa0c8::t_7324391674a933 126-128,146-148,166-181
+src/shared/utils/slotMath.ts
+  s_23d015945aa0c8::t_7324391674a933 16-17,171-174,177,182-187
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_23d015945aa0c8::t_8ab7f320ca363d 40-43,443-448
+  s_23d015945aa0c8::t_7a6357e43cc5ad 39
+src/features/generation/worker/generators/__kernel-tests__/authoredDividers.test.ts
+  s_23d015945aa0c8::t_7324391674a933 14-19,71-77,103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ae50eef5254b0d8b76d284eb60b828853c28436c",
+  "prompts": {},
+  "sessions": {
+    "s_23d015945aa0c8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31e8f2ea-cfb7-49a4-b131-eae06e8842ea",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
