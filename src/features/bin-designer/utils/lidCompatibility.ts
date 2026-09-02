@@ -36,6 +36,7 @@ import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 // shelf datum both need it and both are reached from here.
 export { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
+import { binFloorMm } from '@/shared/types/bin';
 import {
   calculateDividerPieceHeight,
   dividerGrooveDepth,
@@ -46,6 +47,7 @@ import {
   resolveScoopPlacement,
   resolveScoopProfile,
   resolveScoopSide,
+  scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
 import type { BinParams, ScoopSide } from '../types';
 import { isUndersideRelief } from '../types/base';
@@ -189,8 +191,13 @@ const LIP_TAPER_WIDTH = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
  */
 function scoopReachesRailBand(params: BinParams, side: ScoopSide): boolean {
   const { cols, rows, cells } = params.compartments;
-  const { innerW, innerD, wallHeight } = binDimensions(params);
-  const interiorHeight = computeInteriorHeight(params);
+  const { innerW, innerD, wallHeight: boxWallHeight } = binDimensions(params);
+  // Ramp heights are measured from the interior floor, like the builder's.
+  const { wallHeight, interiorHeight } = scoopFrameHeights(
+    boxWallHeight,
+    computeInteriorHeight(params),
+    binFloorMm(params.wallThickness)
+  );
   const idAt = (col: number, row: number): number => cells[row * cols + col];
   const against =
     side === 'front' || side === 'back'

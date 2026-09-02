@@ -1,16 +1,22 @@
 /**
  * Boolean stage — applies additive fuses and subtractive cuts.
  *
- * Uses brepjs's `fuseAllBisect` / `cutAllBisect` primitives, which try a
- * single n-way batch op first, then recursively bisect on failure down to
- * pairwise ops — strictly better than the prior `batchWithFallback`
- * sequential fallback (2.4× faster at N=16 per the upstream bench).
+ * Cuts go through brepjs's `cutAllBisect`, which tries a single n-way batch op
+ * first, then recursively bisects on failure down to pairwise ops.
+ *
+ * Fuses fold pairwise on purpose. occt-wasm's n-way fuse (through 4.3.2) is
+ * OCCT's General Fuse, which splits the inputs and keeps every cell rather than
+ * unioning them, so a body with a feature came back as overlapping shells whose
+ * volume was the plain sum. Socketed bins were rescued by the export-time
+ * socket fuse; a flat base shipped its outer shell with the feature carved
+ * out (#4068). The two-argument fuse is a real union and keeps the face-origin
+ * tags; `fuseAllBisect` stays as the fallback when a pairwise step fails.
  *
  * booleanPipeline() is still used by socketBuilder and baseplateGenerator
  * for simpler fuse→cut chains where bisect's recovery would be wasted.
  */
 
-import { unwrap, fuseAllBisect, cutAllBisect, translate } from 'brepjs';
+import { unwrap, fuse, fuseAllBisect, cutAllBisect, translate, isErr } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
@@ -146,8 +152,28 @@ export const booleanStage: PipelineStage = {
 
     if (ctx.fuseTargets.length > 0) {
       checkCancelled(signal);
-      const { shape } = unwrap(fuseAllBisect([bin, ...ctx.fuseTargets] as ValidSolid[], boolOpts));
-      bin = shape;
+      let acc: Shape3D = bin;
+      let folded = true;
+      // Each step's output replaces the previous accumulator; the original
+      // shell is disposed with the rest of the inputs below.
+      for (const target of ctx.fuseTargets) {
+        const fused = fuse(acc as ValidSolid, target as ValidSolid, boolOpts);
+        if (isErr(fused)) {
+          folded = false;
+          break;
+        }
+        if (acc !== bin) acc.delete();
+        acc = fused.value;
+      }
+      if (folded) {
+        bin = acc;
+      } else {
+        if (acc !== bin) acc.delete();
+        const { shape } = unwrap(
+          fuseAllBisect([bin, ...ctx.fuseTargets] as ValidSolid[], boolOpts)
+        );
+        bin = shape;
+      }
     }
 
     if (ctx.cutTargets.length > 0) {

@@ -45,6 +45,7 @@ import {
   resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
+  scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
@@ -626,8 +627,12 @@ function computeScoopVolume(
 
   const hasLip = params.base.stackingLip;
   const totalH = params.height * params.heightUnitMm;
-  const wallHeight = baseWallHeight(params.base, totalH);
-  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
+  const boxWallHeight = baseWallHeight(params.base, totalH);
+  const { wallHeight, interiorHeight } = scoopFrameHeights(
+    boxWallHeight,
+    computeInteriorHeight(boxWallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER),
+    binFloorMm(wallThickness)
+  );
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 
   // Front/back scoops run along the row axis, left/right along the column axis.

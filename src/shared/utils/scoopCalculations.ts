@@ -165,6 +165,25 @@ export function autoScoopCeiling(isOuter: boolean, hasLip: boolean, wallHeight: 
   return Math.max(1, wallHeight - LID_CLICK_RAIL_BAND_BELOW_WALL_TOP);
 }
 
+/**
+ * Heights a scoop profile clamps against, measured from the interior floor top
+ * rather than the box bottom. The ramp stands on that floor: sized against the
+ * box-bottom heights its lower `floorThickness` is buried in the floor and the
+ * arc meets the floor at an angle instead of tangentially. Every consumer of
+ * `resolveScoopProfile` (builder, keep-outs, ghost, readouts, lid check) goes
+ * through this so they agree on the same ramp.
+ */
+export function scoopFrameHeights(
+  wallHeight: number,
+  interiorHeight: number,
+  floorThickness: number
+): { readonly wallHeight: number; readonly interiorHeight: number } {
+  return {
+    wallHeight: Math.max(0, wallHeight - floorThickness),
+    interiorHeight: Math.max(0, interiorHeight - floorThickness),
+  };
+}
+
 /** A scoop resolved to concrete geometry: run along the floor, rise up the wall, and profile shape. */
 export interface ResolvedScoopProfile {
   /** Length along the compartment floor in mm. */

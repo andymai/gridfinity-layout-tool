@@ -255,6 +255,21 @@ export function getLastSolid(): Shape3D | null {
   return lastSolid;
 }
 
+let lastExportShellCount: number | null = null;
+
+/**
+ * Shells the last export body carried BEFORE `keepOuterShell` collapsed it to
+ * one. A fuse that glued instead of unioned leaves extra shells here while the
+ * shipped mesh stays watertight; this is the only place that count survives.
+ */
+export function getLastExportShellCount(): number | null {
+  return lastExportShellCount;
+}
+
+export function setLastExportShellCount(count: number | null): void {
+  lastExportShellCount = count;
+}
+
 /**
  * Whether the cached `lastSolid` was produced by a `forExport=true` pass.
  *

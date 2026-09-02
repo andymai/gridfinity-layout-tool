@@ -18,6 +18,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
+import { binFloorMm } from '@/shared/types/bin';
 import type { Shape3D } from 'brepjs';
 import { BOX_CORNER_RADIUS, CLEARANCE } from './generatorConstants';
 
@@ -41,7 +42,14 @@ async function verticesOutsideOuterWall(params: BinParams): Promise<number> {
   const innerD = outerD - 2 * wt;
   const wallHeight = params.height * params.heightUnitMm;
 
-  const ramp: Shape3D | null = buildScoopRamps(params, innerW, innerD, wallHeight, wt);
+  const ramp: Shape3D | null = buildScoopRamps(
+    params,
+    innerW,
+    innerD,
+    wallHeight,
+    wt,
+    binFloorMm(wt)
+  );
   if (!ramp) return 0;
 
   const footprint = sketch(

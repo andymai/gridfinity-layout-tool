@@ -22,7 +22,9 @@ import {
   resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
+  scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
+import { binFloorMm } from '@/shared/types/bin';
 
 const GHOST_COLOR = '#f97316';
 const GHOST_OPACITY = 0.35;
@@ -69,8 +71,15 @@ export function GhostScoops() {
 
   const hasLip = base.stackingLip;
   const totalH = height * heightUnitMm;
-  const wallHeight = baseWallHeight(base, totalH);
-  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
+  const boxWallHeight = baseWallHeight(base, totalH);
+  // The ramp stands on the interior floor: its rise clamps against the heights
+  // above that floor and the strip is drawn from there, matching the worker.
+  const floorThickness = binFloorMm(wallThickness);
+  const { wallHeight, interiorHeight } = scoopFrameHeights(
+    boxWallHeight,
+    computeInteriorHeight(boxWallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER),
+    floorThickness
+  );
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 
   const shouldShow =
@@ -138,12 +147,13 @@ export function GhostScoops() {
 
         for (const [dRun, dz] of profilePoints) {
           const runCoord = edge + runSign * dRun;
+          const z = floorThickness + dz;
           if (runsAlongY) {
-            allPositions.push(alongMin, runCoord, dz);
-            allPositions.push(alongMax, runCoord, dz);
+            allPositions.push(alongMin, runCoord, z);
+            allPositions.push(alongMax, runCoord, z);
           } else {
-            allPositions.push(runCoord, alongMin, dz);
-            allPositions.push(runCoord, alongMax, dz);
+            allPositions.push(runCoord, alongMin, z);
+            allPositions.push(runCoord, alongMax, z);
           }
         }
 
@@ -174,6 +184,7 @@ export function GhostScoops() {
     innerD,
     interiorHeight,
     wallHeight,
+    floorThickness,
     wallThickness,
     hasLip,
     lipTaperWidth,

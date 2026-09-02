@@ -4,8 +4,8 @@ exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`
 
 exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `3616`;
 
-exports[`combined features > 2×2 label tabs with merged compartments 1`] = `4548`;
+exports[`combined features > 2×2 label tabs with merged compartments 1`] = `3292`;
 
-exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `6920`;
+exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `3426`;
 
-exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `30756`;
+exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `30424`;

@@ -25,6 +25,7 @@ import {
   resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
+  scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
 import {
   LIP_SMALL_TAPER,
@@ -54,6 +55,7 @@ import { compartmentHasTiltedEdge, isRectangularCompartment } from '@/shared/typ
  * @param innerD - Interior depth in mm
  * @param wallHeight - Full wall height in mm (box body Z extent)
  * @param wallThickness - Outer wall thickness in mm
+ * @param floorZ - Interior floor top in mm above the box bottom; the ramps stand on it
  * @returns Fused ramp shape, or null if no scoops were built
  */
 export function buildScoopRamps(
@@ -61,13 +63,22 @@ export function buildScoopRamps(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  wallThickness: number
+  wallThickness: number,
+  floorZ: number
 ): Shape3D | null {
   if (!params.scoop.enabled) return null;
   if (params.style !== 'standard') return null;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
-    const fused = buildScoopRampsInScope(scope, params, innerW, innerD, wallHeight, wallThickness);
+    const fused = buildScoopRampsInScope(
+      scope,
+      params,
+      innerW,
+      innerD,
+      wallHeight,
+      wallThickness,
+      floorZ
+    );
     // Clone so scope can dispose the fused original on exit.
     return fused ? unwrap(clone(fused)) : null;
   });
@@ -79,20 +90,25 @@ function buildScoopRampsInScope(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  wallThickness: number
+  wallThickness: number,
+  floorZ: number
 ): Shape3D | null {
   const hasLip = params.base.stackingLip;
-  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
+  // The profile is authored with its floor at local Z=0 and the solid lifted
+  // onto the interior floor, so every height here is measured from that floor.
+  const frame = scoopFrameHeights(
+    wallHeight,
+    computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER),
+    floorZ
+  );
 
   // The ramp's back edge and its two span ends sit on the surrounding walls'
   // inner faces. Merely TOUCHING those faces leaves zero-thickness coincident
   // faces when the ramp is fused into the body — non-manifold membranes (they
-  // surface as degenerate slivers where the ramp arc meets a side wall).
-  // Socketed bins hide it: the export-time deferred-socket fuse recomputes the
-  // boundary and heals it. A socketless base (flat / tray) never runs that fuse,
-  // so the membrane ships straight into the STL as a gap. Push the contact
-  // faces INTO the surrounding material so the fuse overlaps instead,
-  // following the COPLANAR_MARGIN pattern used throughout the pipeline. Clamp
+  // surface as degenerate slivers where the ramp arc meets a side wall). Push
+  // the contact faces INTO the surrounding material so the fuse overlaps
+  // instead, following the COPLANAR_MARGIN pattern used throughout the
+  // pipeline. Clamp
   // below the outer wall thickness (never breach it) AND below 0.4× the divider
   // thickness so two neighbouring compartments penetrating a shared divider from
   // opposite sides still cannot meet through it.
@@ -137,8 +153,8 @@ function buildScoopRampsInScope(
         depth,
         isOuter,
         hasLip,
-        wallHeight,
-        interiorHeight,
+        frame.wallHeight,
+        frame.interiorHeight,
         lipOffset
       );
       if (!scoopProfile) continue;
@@ -159,16 +175,20 @@ function buildScoopRampsInScope(
       // see `wallPenetration` above. The visible ramp surface (arc + top edge at
       // Y=lipOffset) is unchanged.
       const backY = -wallPenetration;
+      // The ramp's underside is buried into the floor the same way its back is
+      // buried into the wall: landing it exactly on the floor top leaves a
+      // coplanar face for the fuse. Never deeper than half the floor.
+      const floorPenetration = Math.min(COPLANAR_MARGIN, floorZ * 0.5);
       const segments = 24;
       const points: [number, number][] = [];
-      // Start at wall/floor corner
-      points.push([backY, 0]);
+      // Start below the wall/floor corner, inside the floor
+      points.push([backY, -floorPenetration]);
       if (lipOffset > 0) {
         // Up the wall to wallHeight (lip base), across to lip inner face
-        points.push([backY, wallHeight]);
-        points.push([lipOffset, wallHeight]);
+        points.push([backY, frame.wallHeight]);
+        points.push([lipOffset, frame.wallHeight]);
         // Down to ramp start (only needed when height < wallHeight)
-        if (height < wallHeight) {
+        if (height < frame.wallHeight) {
           points.push([lipOffset, height]);
         }
       } else {
@@ -186,8 +206,10 @@ function buildScoopRampsInScope(
       }
       // Floor, lipOffset + run away from wall. For 'straight' style the segment
       // from the last wall point (lipOffset, height) to here is the bevel face;
-      // no intermediate arc points are added.
+      // no intermediate arc points are added. Then straight down into the floor
+      // so the closing edge back to the wall runs inside solid material.
       points.push([lipOffset + run, 0]);
+      points.push([lipOffset + run, -floorPenetration]);
 
       // Draw the profile (will be sketched on YZ and extruded along X)
       let pen = draw(points[0]);
@@ -218,8 +240,8 @@ function buildScoopRampsInScope(
           : scope.register(rotate(scoopSolid, placement.rotationDeg, { axis: [0, 0, 1] }));
 
       const offset: [number, number, number] = placement.runsAlongY
-        ? [placement.alongCenter, placement.edge, 0]
-        : [placement.edge, placement.alongCenter, 0];
+        ? [placement.alongCenter, placement.edge, floorZ]
+        : [placement.edge, placement.alongCenter, floorZ];
 
       scoopShapes.push(scope.register(translate(oriented, offset)));
     }
@@ -282,13 +304,14 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v5',
+        'v6',
         dim.shellKey,
         stableSerialize(params.scoop),
         params.style,
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.wallHeight),
+        quantize(dim.floorThickness),
         quantize(params.wallThickness),
         // The wall/divider penetration that welds the ramp to its host scales
         // with the divider thickness, so a thickness edit moves the geometry.
@@ -307,7 +330,8 @@ export const scoopRampsFeature: FeatureBuilder = {
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,
       ctx.dimensions.wallHeight,
-      ctx.params.wallThickness
+      ctx.params.wallThickness,
+      ctx.dimensions.floorThickness
     );
     return result ? [result] : null;
   },

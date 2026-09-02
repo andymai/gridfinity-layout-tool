@@ -75,6 +75,10 @@ const MESH_CACHE_VERSION = 'v13';
  * (and its warm entries) untouched.
  *
  * occt-wasm `r1`: brepjs 18.124.8.
+ * occt-wasm `r2`: the boolean stage unions additive features pairwise instead
+ * of through the kernel's n-way fuse, which only glued, so every bin with a
+ * scoop, label tab, emboss or rail meshes as one solid instead of overlapping
+ * shells; the scoop ramp also moved onto the floor top.
  * brepkit `r1`: brepkit-wasm 3.2.28 — the interface-family winding and
  * cap-synthesis fixes move insert/cutout output that reaches a coplanar
  * interface, and the deep-cutout chain is now exact.
@@ -89,7 +93,7 @@ const MESH_CACHE_VERSION = 'v13';
  * the map is total so a future caller cannot fall through to `undefined`.
  */
 const KERNEL_MESH_REVISION: Record<KernelName, string> = {
-  'occt-wasm': 'r1',
+  'occt-wasm': 'r2',
   brepkit: 'r3',
   manifold: 'r1',
 };

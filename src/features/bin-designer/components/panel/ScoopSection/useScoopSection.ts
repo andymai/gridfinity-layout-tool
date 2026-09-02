@@ -12,7 +12,9 @@ import {
   resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
+  scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
+import { binFloorMm } from '@/shared/types/bin';
 import type { ScoopStyle, ScoopSide } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 
@@ -76,10 +78,14 @@ export function useScoopSection() {
     if (!isAutoRadius) return '';
 
     const { base, compartments } = params;
-    const { innerW, innerD, wallHeight } = binDimensions(params);
+    const { innerW, innerD, wallHeight: boxWallHeight } = binDimensions(params);
 
     const hasLip = base.stackingLip;
-    const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
+    const { wallHeight, interiorHeight } = scoopFrameHeights(
+      boxWallHeight,
+      computeInteriorHeight(boxWallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER),
+      binFloorMm(params.wallThickness)
+    );
     const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 
     const processedCompartments = new Set<number>();

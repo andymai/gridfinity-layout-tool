@@ -8,12 +8,12 @@
  * tessellation cost. Enable by setting coarseMesh in the return value.
  */
 
-import { mesh, meshEdges, getKernelCapabilities, unwrap, fuse } from 'brepjs';
+import { mesh, meshEdges, getKernelCapabilities, getShells, unwrap, fuse } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/mesh';
 import { creaseEdges } from '../../utils';
 import { computeTessellationTolerances } from '../../utils/tolerances';
-import { setLastSolid } from '../../shapeCache';
+import { setLastExportShellCount, setLastSolid } from '../../shapeCache';
 import { paramsFingerprint } from '@/shared/generation/paramsFingerprint';
 import { getSocketMesh, setSocketMesh, socketMeshKey } from '../../socketMeshCache';
 import { keepOuterShell } from '../../utils/outerShell';
@@ -56,6 +56,7 @@ export const tessellateStage: PipelineStage = {
     // Collapse to the single outer shell so the exported mesh is watertight.
     // Export only — the preview path meshes the body and deferred socket
     // separately and never feeds this solid to an exporter.
+    if (forExport) setLastExportShellCount(getShells(rawSolid).length);
     const solid = forExport ? keepOuterShell(rawSolid) : rawSolid;
     if (solid !== rawSolid) rawSolid.delete();
 
