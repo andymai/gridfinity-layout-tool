@@ -3,7 +3,7 @@ import { spaceMouseBus } from '../spaceMouseBus';
 import { buildCommandTree } from './commands';
 import { loadNavlib } from './tdx';
 import type { Navlib, NavlibClient, NavlibConstructor } from './tdxTypes';
-import { commandForId } from './types';
+import { commandForId, type NavlibViewAccessors } from './types';
 
 /** Shown in the 3Dconnexion control panel as this app's profile. */
 const APP_NAME = 'Gridfinity Layout Tool';
@@ -75,7 +75,9 @@ function pump(now: number): void {
     })
     .catch(() => {
       stopPump();
-      void nav?.update3dcontroller({ motion: false });
+      void nav
+        ?.update3dcontroller({ motion: false })
+        .catch((e: unknown) => reportOnce('motion', e));
     });
 }
 
@@ -83,166 +85,136 @@ function pump(now: number): void {
  * The 3Dconnexion library calls every accessor straight from its WebSocket
  * message handler with no try/catch, so an exception here is never answered on
  * the wire and the driver blocks on its 2 s reply timeout with the puck dead.
- * Nothing crossing this boundary may throw: a failing accessor is reported once
- * and the driver gets the value it would see with no canvas.
+ * Nothing crossing this boundary may throw.
  */
 const reported = new Set<string>();
+const warned = new Set<string>();
+
+interface ErrorModule {
+  captureException: (error: Error, context?: Record<string, unknown>) => void;
+}
+let loadingErrorModule: Promise<ErrorModule> | null = null;
+
+/**
+ * Loaded on demand: the error module pulls the layout and labs stores into its
+ * graph, which must not become a static dependency of the device layer. One
+ * in-flight import is shared so a burst of failures does not race the loader.
+ */
+function loadErrorModule(): Promise<ErrorModule> {
+  loadingErrorModule ??= import('@/shared/analytics/posthog/eventsErrors').finally(() => {
+    loadingErrorModule = null;
+  });
+  return loadingErrorModule;
+}
 
 function reportOnce(property: string, error: unknown): void {
   if (reported.has(property)) return;
   reported.add(property);
   const err = error instanceof Error ? error : new Error(String(error));
-  console.warn(
-    `[spacemouse] ${property} accessor threw; answering the driver with a fallback`,
-    err
-  );
-  // Loaded on demand: the error module pulls the layout and labs stores into
-  // its graph, which must not become a static dependency of the device layer.
-  void import('@/shared/analytics/posthog/eventsErrors')
+  if (!warned.has(property)) {
+    warned.add(property);
+    console.warn(`[spacemouse] ${property} failed at the navlib boundary`, err);
+  }
+  void loadErrorModule()
     .then((m) => m.captureException(err, { boundary: 'spacemouse-navlib', property }))
-    .catch(() => {
-      // The chunk did not load; let the next failure try to report again.
-      reported.delete(property);
-    });
+    // The chunk did not load; let the next failure try to report again.
+    .catch(() => reported.delete(property));
 }
 
-export function guardRead<R>(
-  property: string,
-  read: () => R | null | undefined,
-  fallback: () => R
-): () => R {
+/** The driver may write into an array it is handed, so it never gets one we keep. */
+function freshCopy<R>(value: R): R {
+  return Array.isArray(value) ? (value.slice() as R) : value;
+}
+
+export function guardRead<R>(property: string, fallback: R, read: () => R | undefined): () => R {
   return () => {
     try {
-      return read() ?? fallback();
+      return freshCopy(read() ?? fallback);
     } catch (error) {
       reportOnce(property, error);
-      return fallback();
+      return freshCopy(fallback);
     }
   };
 }
 
-export function guardWrite<A>(property: string, write: (data: A) => void): (data: A) => void {
-  return (data) => {
+export function guardCall<A extends unknown[]>(
+  property: string,
+  fn: (...args: A) => void
+): (...args: A) => void {
+  return (...args) => {
     try {
-      write(data);
+      fn(...args);
     } catch (error) {
       reportOnce(property, error);
     }
   };
 }
 
-function buildClient(): NavlibClient {
-  const acc = () => spaceMouseBus.activeNavlib();
-  const point = (): number[] | null => null;
-
+/** Exported so a test can prove every entry is guarded; `acc` resolves the active canvas. */
+export function buildClient(acc: () => NavlibViewAccessors | null): NavlibClient {
   return {
-    onConnect() {
+    onConnect: guardCall('connect', () => {
       // Bind to the window: the lib reports focus for the whole app and our bus
       // routes to the active canvas, so one controller drives whichever preview
       // is live (rather than a socket per canvas).
       nav?.create3dmouse(window, APP_NAME);
-    },
-    on3dmouseCreated() {
+    }),
+    on3dmouseCreated: guardCall('3dmouseCreated', () => {
       if (!nav) return;
       setConnection('connected', '3Dconnexion driver');
       // Drive frame timing ourselves (see pump()).
-      void nav.update3dcontroller({ frame: { timingSource: 1 } });
-      void loadModule().then((ctor) => {
-        if (nav) void nav.update3dcontroller({ commands: buildCommandTree(ctor) });
-      });
-    },
-    onStartMotion() {
+      void nav
+        .update3dcontroller({ frame: { timingSource: 1 } })
+        .catch((e: unknown) => reportOnce('frame.timingSource', e));
+      void loadModule()
+        .then((ctor) => nav?.update3dcontroller({ commands: buildCommandTree(ctor) }))
+        .catch((e: unknown) => reportOnce('commands.tree', e));
+    }),
+    onStartMotion: guardCall('motion.start', () => {
       if (!animating) {
         animating = true;
         rafId = requestAnimationFrame(pump);
       }
-    },
-    onStopMotion() {
-      stopPump();
-    },
+    }),
+    onStopMotion: guardCall('motion.stop', stopPump),
     // 0 marks the end of a frame's changes: render the result.
-    setTransaction: guardWrite<number>('transaction', (transaction) => {
+    setTransaction: guardCall('transaction', (transaction: number) => {
       if (transaction === 0) acc()?.invalidate();
     }),
-    setActiveCommand: guardWrite<string>('commands.activeCommand', (id) => {
+    setActiveCommand: guardCall('commands.activeCommand', (id: string) => {
       const command = commandForId(id);
       if (command) spaceMouseBus.dispatch(command);
     }),
 
-    // View reads (fall back to safe values when no canvas is active). Fallbacks
-    // return fresh arrays so a mutating driver can't corrupt a shared constant.
-    getViewMatrix: guardRead(
-      'view.affine',
-      () => acc()?.getViewMatrix(),
-      () => IDENTITY.slice()
+    getViewMatrix: guardRead('view.affine', IDENTITY, () => acc()?.getViewMatrix()),
+    getPerspective: guardRead('view.perspective', true, () => acc()?.getPerspective()),
+    getViewExtents: guardRead('view.extents', [-1, -1, -1, 1, 1, 1], () => acc()?.getViewExtents()),
+    getViewTarget: guardRead('view.target', [0, 0, 0], () => acc()?.getViewTarget()),
+    getViewRotatable: guardRead('view.rotatable', true, () => acc()?.getViewRotatable()),
+    getFov: guardRead('view.fov', Math.PI / 4, () => acc()?.getFov()),
+    getViewFrustum: guardRead('view.frustum', [-1, 1, -1, 1, 0.1, 1000], () =>
+      acc()?.getViewFrustum()
     ),
-    getPerspective: guardRead(
-      'view.perspective',
-      () => acc()?.getPerspective(),
-      () => true
+    getModelExtents: guardRead('model.extents', null, () => acc()?.getModelExtents()),
+    getPivotPosition: guardRead('pivot.position', null, () => acc()?.getPivotPosition()),
+    getCoordinateSystem: guardRead('coordinateSystem', IDENTITY, () =>
+      acc()?.getCoordinateSystem()
     ),
-    getViewExtents: guardRead(
-      'view.extents',
-      () => acc()?.getViewExtents(),
-      () => [-1, -1, -1, 1, 1, 1]
+    getFrontView: guardRead('views.front', IDENTITY, () => acc()?.getFrontView()),
+    getConstructionPlane: guardRead('view.constructionPlane', [0, 0, 1, 0], () =>
+      acc()?.getConstructionPlane()
     ),
-    getViewTarget: guardRead(
-      'view.target',
-      () => acc()?.getViewTarget(),
-      () => [0, 0, 0]
-    ),
-    getViewRotatable: guardRead(
-      'view.rotatable',
-      () => acc()?.getViewRotatable(),
-      () => true
-    ),
-    getFov: guardRead(
-      'view.fov',
-      () => acc()?.getFov(),
-      () => Math.PI / 4
-    ),
-    getViewFrustum: guardRead(
-      'view.frustum',
-      () => acc()?.getViewFrustum(),
-      () => [-1, 1, -1, 1, 0.1, 1000]
-    ),
-    getModelExtents: guardRead('model.extents', () => acc()?.getModelExtents(), point),
-    getPivotPosition: guardRead('pivot.position', () => acc()?.getPivotPosition(), point),
-    getCoordinateSystem: guardRead(
-      'coordinateSystem',
-      () => acc()?.getCoordinateSystem(),
-      () => IDENTITY.slice()
-    ),
-    getFrontView: guardRead(
-      'views.front',
-      () => acc()?.getFrontView(),
-      () => IDENTITY.slice()
-    ),
-    getConstructionPlane: guardRead(
-      'view.constructionPlane',
-      () => acc()?.getConstructionPlane(),
-      () => [0, 0, 1, 0]
-    ),
-    getFloorPlane: guardRead(
-      'model.floorPlane',
-      () => acc()?.getFloorPlane(),
-      () => [0, 0, 1, 0]
-    ),
-    getPointerPosition: guardRead('pointer.position', () => acc()?.getPointerPosition(), point),
-    getLookAt: guardRead('hit.lookat', () => acc()?.getLookAt(), point),
-    getUnitsToMeters: () => 1,
+    getFloorPlane: guardRead('model.floorPlane', [0, 0, 1, 0], () => acc()?.getFloorPlane()),
+    getPointerPosition: guardRead('pointer.position', null, () => acc()?.getPointerPosition()),
+    getLookAt: guardRead('hit.lookat', null, () => acc()?.getLookAt()),
+    getUnitsToMeters: guardRead('model.unitsToMeters', 1, () => 1),
 
-    // View writes (the driver's computed camera).
-    setViewMatrix: guardWrite<number[]>('view.affine', (data) => acc()?.setViewMatrix(data)),
-    setViewExtents: guardWrite<number[]>('view.extents', (data) => acc()?.setViewExtents(data)),
-    // Hit testing: the driver sets a ray, then reads getLookAt to pivot on the
-    // surface under the cursor.
-    setLookFrom: guardWrite<number[]>('hit.lookfrom', (data) => acc()?.setLookFrom(data)),
-    setLookDirection: guardWrite<number[]>('hit.direction', (data) =>
-      acc()?.setLookDirection(data)
-    ),
-    setLookAperture: guardWrite<number>('hit.aperture', (data) => acc()?.setLookAperture(data)),
-    setSelectionOnly: guardWrite<boolean>('hit.selectionOnly', (data) =>
+    setViewMatrix: guardCall('view.affine', (data: number[]) => acc()?.setViewMatrix(data)),
+    setViewExtents: guardCall('view.extents', (data: number[]) => acc()?.setViewExtents(data)),
+    setLookFrom: guardCall('hit.lookfrom', (data: number[]) => acc()?.setLookFrom(data)),
+    setLookDirection: guardCall('hit.direction', (data: number[]) => acc()?.setLookDirection(data)),
+    setLookAperture: guardCall('hit.aperture', (data: number) => acc()?.setLookAperture(data)),
+    setSelectionOnly: guardCall('hit.selectionOnly', (data: boolean) =>
       acc()?.setSelectionOnly(data)
     ),
   };
@@ -257,13 +229,19 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
   started = true;
   const gen = ++navGeneration;
   setConnection('connecting');
+  const fail = guardCall('disconnect', () => {
+    setConnection('error');
+    started = false;
+    nav = null;
+    opts.onDisconnect();
+  });
   try {
     const ctor = await loadModule();
     if (gen !== navGeneration) return; // stopped or restarted while loading
     let instance: Navlib | null = null;
     const wrapped: NavlibClient = {
-      ...buildClient(),
-      onDisconnect() {
+      ...buildClient(() => spaceMouseBus.activeNavlib()),
+      onDisconnect: guardCall('disconnect', () => {
         // Ignore a disconnect from a superseded connection (stop/start race).
         if (nav !== instance) return;
         // Reset our own state (so a later probe can reconnect the driver) before
@@ -273,27 +251,21 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
         started = false;
         setConnection('idle', null);
         opts.onDisconnect();
-      },
+      }),
     };
     instance = new ctor(wrapped);
     nav = instance;
-    if (!nav.connect()) {
-      setConnection('error');
-      started = false;
-      nav = null;
-      opts.onDisconnect();
-    }
+    if (!nav.connect()) fail();
   } catch {
     if (gen !== navGeneration) return; // superseded start; don't clobber the live session
-    setConnection('error');
-    started = false;
-    nav = null;
-    opts.onDisconnect();
+    fail();
   }
 }
 
 /** Idempotent: safe to call when navlib is already stopped or was never started. */
 export function stopNavlib(): void {
+  reported.clear();
+  warned.clear();
   if (!nav && !started) return;
   started = false;
   navGeneration++; // supersede an in-flight module load

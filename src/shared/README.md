@@ -28,7 +28,7 @@ graph TB
 | `fonts/`         | The bundled OFL type faces and their licences, plus the family-to-URL map both the worker and the designer load from                                                                                                                                 |
 | `constants/`     | Re-exports `DEFAULT_BIN_PARAMS`, `GRIDFINITY` from `bin-designer`; owns label plate geometry (`labelPlates`), the label icon SVG catalog (`labelIconPaths`) and the outer-wall keep-out band (`wallBands`) so the worker and the UI share one source |
 | `generation/`    | Re-exports `GenerationBridge`, the direct-mesh drafts, and the brepjs-free pattern metrics (wall element sizes + `stampPatternOpenArea`, and the floor pattern's window rule) for cross-feature use                                                  |
-| `spacemouse/`    | 3Dconnexion puck support behind the `spacemouse` labs flag: WebHID device manager, the bus that fans one puck out to the active canvas, axis mapping and camera commands                                                                             |
+| `spacemouse/`    | 3Dconnexion puck support behind the `spacemouse` labs flag: driver-native `navlib/` transport with a WebHID fallback, the bus that fans one puck out to the active canvas, axis mapping and camera commands                                          |
 
 ## Key Components (`components/`)
 

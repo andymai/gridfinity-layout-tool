@@ -1,10 +1,6 @@
 {
   "tolerance": "1.1",
-  "allowedMissingRefs": [
-    "b17779575",
-    "components/Foo.tsx",
-    "diffProps"
-  ],
+  "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
   "words": {
     ".claude/skills/analytics-and-labs/SKILL.md": 1270,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
@@ -24,7 +20,7 @@
     ".claude/skills/share-api-collab/SKILL.md": 1838,
     ".claude/skills/state-and-cqrs/SKILL.md": 1486,
     ".claude/skills/testing/SKILL.md": 1669,
-    ".claude/skills/three-preview/SKILL.md": 1605,
+    ".claude/skills/three-preview/SKILL.md": 1806,
     "CLAUDE.md": 901,
     "api/.greptile/rules.md": 177,
     "api/README.md": 1864,
@@ -72,7 +68,7 @@
     "src/features/supporters/README.md": 1606,
     "src/features/whats-new/README.md": 331,
     "src/shared/.greptile/rules.md": 238,
-    "src/shared/README.md": 1155,
+    "src/shared/README.md": 1219,
     "src/shared/hooks/README.hooks.md": 555,
     "src/shared/hooks/interactions/README.md": 515,
     "src/shell/README.md": 574,

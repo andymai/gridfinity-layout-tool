@@ -1,12 +1,14 @@
 import {
   BoxGeometry,
   type Camera,
+  type Intersection,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
   OrthographicCamera,
   PerspectiveCamera,
-  Raycaster,
+  PlaneGeometry,
+  type Raycaster,
   Scene,
   Vector3,
 } from 'three';
@@ -28,6 +30,14 @@ function makeScene(withModel = true): Scene {
     scene.updateMatrixWorld(true);
   }
   return scene;
+}
+
+/** Stands in for any Mesh subclass whose raycast reads the camera, as fat lines do. */
+class CameraBoundMesh extends Mesh {
+  override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    if ((raycaster as { camera: Camera | null }).camera === null) throw new Error('needs a camera');
+    super.raycast(raycaster, intersects);
+  }
 }
 
 function deps(camera: Camera, scene = makeScene()): NavlibViewDeps {
@@ -140,26 +150,43 @@ describe('createNavlibViewAccessors', () => {
     const material = new LineMaterial({ linewidth: 2 });
     material.resolution.set(800, 600);
     scene.add(new Line2(geometry, material));
+    const aside = new CameraBoundMesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial());
+    aside.position.set(20, 0, 0);
+    scene.add(aside);
     scene.updateMatrixWorld(true);
     const acc = createNavlibViewAccessors(() => deps(camera, scene));
     acc.setSelectionOnly(false);
     acc.setLookAperture(0.01);
-
-    // Control: a bare raycaster without a camera does throw on the fat line.
-    const bare = new Raycaster(new Vector3(0, 3, 10), new Vector3(0, 0, -1));
-    expect(() => bare.intersectObjects(scene.children, true)).toThrow();
 
     // Through the model: hits its front face.
     acc.setLookFrom([0, 0, 10]);
     acc.setLookDirection([0, 0, -1]);
     const onModel = acc.getLookAt();
     expect(onModel).not.toBeNull();
-    expect((onModel as number[])[2]).toBeCloseTo(1, 5);
+    expect(onModel?.[2]).toBeCloseTo(1, 5);
 
-    // Through the line only: no pivot target, no throw.
-    acc.setLookFrom([0, 3, 10]);
-    acc.setLookDirection([0, 0, -1]);
+    // Through the line at (0, 3, 0), clear of the box: a stroke is no pivot target.
+    acc.setLookDirection([0, 3, -10]);
     expect(acc.getLookAt()).toBeNull();
+  });
+
+  it('does not pivot on a text label in front of the model', () => {
+    const camera = new PerspectiveCamera(45, 4 / 3, 0.1, 1000);
+    camera.position.set(0, 0, 10);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld(true);
+    const scene = makeScene(true);
+    const label = new Mesh(
+      new PlaneGeometry(4, 1),
+      Object.assign(new MeshBasicMaterial(), { isTroikaTextMaterial: true })
+    );
+    label.position.set(0, 0, 5);
+    scene.add(label);
+    scene.updateMatrixWorld(true);
+    const acc = createNavlibViewAccessors(() => deps(camera, scene));
+    acc.setLookFrom([0, 0, 10]);
+    acc.setLookDirection([0, 0, -1]);
+    expect(acc.getLookAt()?.[2]).toBeCloseTo(1, 5);
   });
 
   it('degrades safely when no canvas is active', () => {

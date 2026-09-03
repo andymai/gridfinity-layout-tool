@@ -5,6 +5,7 @@ import {
   boundingSphere,
   computeContentBox,
   fitPerspectiveDistance,
+  isScaffoldName,
   type OrbitLike,
   presetDirection,
 } from './cameraCommands';
@@ -117,5 +118,16 @@ describe('computeContentBox', () => {
     const scene = new PerspectiveCamera(); // any Object3D with no meshes
     const box = computeContentBox(scene);
     expect(box.isEmpty()).toBe(true);
+  });
+});
+
+describe('isScaffoldName', () => {
+  it('matches the framing meshes by name, case-insensitively', () => {
+    for (const name of ['Grid', 'drop-shadow', 'FloorPlane', 'axesHelper']) {
+      expect(isScaffoldName(name), name).toBe(true);
+    }
+    for (const name of ['bin', 'baseplate', '']) {
+      expect(isScaffoldName(name), name).toBe(false);
+    }
   });
 });
