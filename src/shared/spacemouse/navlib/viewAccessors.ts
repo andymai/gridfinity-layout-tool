@@ -28,6 +28,15 @@ function isZUp(d: NavlibViewDeps | null): boolean {
   return !!d && Math.abs(d.camera.up.z) > 0.9;
 }
 
+/**
+ * A mesh with real surface to pivot on. Fat lines extend Mesh but are screen
+ * space strokes (dimensions, split lines), and a pivot on one is meaningless.
+ */
+function isSolidMesh(obj: Object3D): boolean {
+  const o = obj as { isMesh?: boolean; isLineSegments2?: boolean; isSprite?: boolean };
+  return o.isMesh === true && o.isLineSegments2 !== true && o.isSprite !== true;
+}
+
 /** Meshes that frame the scene rather than being the model (see computeContentBox). */
 function isScaffold(obj: Object3D): boolean {
   const name = obj.name.toLowerCase();
@@ -176,10 +185,16 @@ export function createNavlibViewAccessors(
       // solid meshes, for which a plain ray hit is the correct test, so it does
       // not apply here.
       raycaster.set(look.origin, tmpForward.copy(look.direction).normalize());
-      for (const hit of raycaster.intersectObjects(d.scene.children, true)) {
-        if (hit.object.visible && !isScaffold(hit.object)) return hit.point.toArray();
-      }
-      return null;
+      // Sprites and drei fat lines dereference raycaster.camera and throw
+      // without it, so the ray is cast against solid meshes only, and the
+      // camera is set so no later addition to the scene can re-introduce that.
+      raycaster.camera = d.camera;
+      const candidates: Object3D[] = [];
+      d.scene.traverseVisible((obj) => {
+        if (isSolidMesh(obj) && !isScaffold(obj)) candidates.push(obj);
+      });
+      const hits = raycaster.intersectObjects(candidates, false);
+      return hits.length > 0 ? hits[0].point.toArray() : null;
     },
     getPointerPosition() {
       // Pointer-anchored pivot is not wired up; the driver falls back to the
