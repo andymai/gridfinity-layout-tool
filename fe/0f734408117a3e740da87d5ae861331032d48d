@@ -1,0 +1,36 @@
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_40607b2445c00b::t_318ea495f358a5 363-365
+src/features/baseplate/utils/stackPrint.test.ts
+  s_40607b2445c00b::t_b5896560bbc41e 729-731,739,749-752
+  s_40607b2445c00b::t_2fbdc79f926184 386-417
+  s_40607b2445c00b::t_3d6a2db29ab2b5 589-591,600,653-728,732-738,740-748,753-757
+  s_40607b2445c00b::t_c76309cfcbb34d 758
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_40607b2445c00b::t_2fbdc79f926184 464-477,523,527
+src/shared/generation/baseplateCorners.ts
+  s_40607b2445c00b::t_318ea495f358a5 16,35-46,48
+  s_40607b2445c00b::t_2fbdc79f926184 47
+  s_40607b2445c00b::t_703efc3b7b5ec3 49
+src/features/baseplate/utils/stackPrint.ts
+  s_40607b2445c00b::t_318ea495f358a5 9,188-201,225-231,235,237-242
+src/features/baseplate/README.md
+  s_40607b2445c00b::t_318ea495f358a5 64,66,69
+src/features/baseplate/utils/buildFullParams.ts
+  s_40607b2445c00b::t_318ea495f358a5 271-277,304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "fe0f734408117a3e740da87d5ae861331032d48d",
+  "prompts": {},
+  "sessions": {
+    "s_40607b2445c00b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "649dd45a-8030-46cb-b6dc-3c571e8ab0f8",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
