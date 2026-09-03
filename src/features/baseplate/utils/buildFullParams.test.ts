@@ -461,6 +461,27 @@ describe('buildFullParams', () => {
       expect(result.connectorNubs).toBe(true);
       expect(result.magnetHoles).toBe(true);
     });
+
+    it('keeps plain corner rounding when stacking (#4081)', () => {
+      // Only exterior corners round, so the fingerprint already tells corner
+      // tiles apart; flattening a radius the user set bought nothing.
+      const stored = {
+        ...storedBase,
+        cornerRadius: mm(4),
+        cornerRadii: { tl: mm(4), tr: mm(4), bl: mm(0), br: mm(0) },
+        stackPrint: { enabled: true, gapMm: mm(0.2) },
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.cornerRadius).toBe(mm(4));
+      expect(result.cornerRadii).toEqual(stored.cornerRadii);
+    });
+
+    it('still squares the implicit default radius when stacking, so even tiles dedupe', () => {
+      const stored = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.cornerRadius).toBe(0);
+      expect(result.cornerRadii).toBeUndefined();
+    });
   });
 
   describe('detach margins × stack-print composition (#2641)', () => {
@@ -506,11 +527,11 @@ describe('buildFullParams', () => {
       expect(result.detachMarginConnector).toBe(false);
     });
 
-    it('still strips rounding while stacking, so rails inherit square corners', () => {
+    it('keeps rounding while stacking, so rails round the corner they carry', () => {
       const stored = { ...detached, cornerRadius: mm(4) };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.detachMargins).toBe(true);
-      expect(result.cornerRadius).toBe(0);
+      expect(result.cornerRadius).toBe(mm(4));
     });
   });
 });

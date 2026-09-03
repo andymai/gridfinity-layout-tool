@@ -383,6 +383,38 @@ describe('planPlateFlip', () => {
       offsetMm: -8.5,
     });
   });
+
+  it('breaks a padding tie toward the turn that keeps rounded corners in place (#4081)', () => {
+    // A full-width front row of an unpadded split rounds its two front corners
+    // only. Turning about X carries them to the back edge; Y swaps them.
+    const frontRow = {
+      left: 'exterior',
+      right: 'exterior',
+      front: 'exterior',
+      back: 'join',
+    } as const;
+    expect(planPlateFlip(plate({ edges: frontRow }))).toEqual({ axis: 'y', offsetMm: 0 });
+    // Unlinked radii on an unsplit plate.
+    expect(planPlateFlip(plate({ cornerRadii: { tl: 8, tr: 8, bl: 0, br: 0 } }))).toEqual({
+      axis: 'y',
+      offsetMm: 0,
+    });
+    expect(planPlateFlip(plate({ cornerRadii: { tl: 8, tr: 0, bl: 8, br: 0 } }))).toEqual({
+      axis: 'x',
+      offsetMm: 0,
+    });
+  });
+
+  it('never lets rounding override lattice congruence', () => {
+    // A corner tile's lone rounded corner is congruent about neither axis, so
+    // the padding decides as before and the corner lands on the opposite side.
+    const corner = { left: 'exterior', right: 'join', front: 'exterior', back: 'join' } as const;
+    expect(planPlateFlip(plate({ edges: corner }))).toEqual({ axis: 'x', offsetMm: 0 });
+    expect(planPlateFlip(plate({ edges: corner, paddingFront: 8.5 }))).toEqual({
+      axis: 'y',
+      offsetMm: 0,
+    });
+  });
 });
 
 describe('stackGroupsFromTiling', () => {
@@ -554,9 +586,9 @@ describe('flip congruence on real plate geometry (#3235)', () => {
 
   // The reported drawer: 7×12 with symmetric fit padding, which the split hands
   // to the outer pieces one side at a time. Resolved through buildFullParams so
-  // stacking strips what it strips in the app (magnets, plain corner rounding) —
-  // a hand-built param set leaves rounded exterior corners on, which is a real
-  // asymmetry no turn can undo.
+  // stacking strips what it strips in the app (magnets). Corners are square so
+  // the test isolates the lattice: a corner tile's rounded corner is a real
+  // asymmetry no turn undoes, covered by the rounding cases below.
   const parent = buildFullParams(
     {
       ...DEFAULT_BASEPLATE_PARAMS,
@@ -565,6 +597,7 @@ describe('flip congruence on real plate geometry (#3235)', () => {
       paddingRight: mm(0),
       paddingFront: mm(8.5),
       paddingBack: mm(8.5),
+      cornerRadius: mm(0),
       overTile: true,
       overTileHalfGrid: true,
       stackPrint: { enabled: true, gapMm: mm(0.2), copies: 10 },
@@ -615,5 +648,111 @@ describe('flip congruence on real plate geometry (#3235)', () => {
     });
     expect(meshBounds(aboutX[1].vertices).minY).toBeCloseTo(meshBounds(aboutX[0].vertices).minY, 5);
     expect(footprint(aboutX[1].vertices)).not.toEqual(footprint(aboutX[0].vertices));
+  });
+});
+
+describe('rounded corners under stacking (#4081)', () => {
+  function footprint(vertices: Float32Array): Set<string> {
+    const seen = new Set<string>();
+    for (let i = 0; i < vertices.length; i += 3) {
+      seen.add(`${vertices[i].toFixed(3)},${vertices[i + 1].toFixed(3)}`);
+    }
+    return seen;
+  }
+
+  function stackedDrawer(width: number, depth: number): ResolvedBaseplateParams {
+    return buildFullParams(
+      {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        syncWithLayout: true,
+        paddingLeft: mm(0),
+        paddingRight: mm(0),
+        paddingFront: mm(8.5),
+        paddingBack: mm(8.5),
+        cornerRadius: mm(8),
+        stackPrint: { enabled: true, gapMm: mm(0.2), copies: 10 },
+      },
+      width,
+      depth,
+      42,
+      'end',
+      'end'
+    );
+  }
+
+  async function towerFootprints(
+    parent: ResolvedBaseplateParams,
+    piece: BaseplatePiece
+  ): Promise<{
+    upright: Set<string>;
+    flipped: Set<string>;
+    bounds: ReturnType<typeof meshBounds>;
+  }> {
+    const { generateBaseplateDirect } =
+      await import('@/features/generation/worker/generators/baseplateDirectMesh');
+    const pieceParams = pieceToBaseplateParams(piece, parent);
+    const mesh = generateBaseplateDirect(pieceParams, () => {});
+    const layers = buildTowerLayers(
+      { ...mesh, edgeVertices: new Float32Array(0) },
+      2,
+      10,
+      planPlateFlip(pieceParams)
+    );
+    return {
+      upright: footprint(layers[0].vertices),
+      flipped: footprint(layers[1].vertices),
+      bounds: meshBounds(layers[0].vertices),
+    };
+  }
+
+  it('keeps the radius on the resolved plate', () => {
+    expect(stackedDrawer(5, 12).cornerRadius).toBe(mm(8));
+  });
+
+  it('full-width rows round two corners the Y turn swaps, so every plate matches the one below', async () => {
+    // 5 units fit a 256mm bed, so the split is rows only: front and back rows
+    // each round two corners, interior rows none.
+    const parent = stackedDrawer(5, 12);
+    const tiling = computeBaseplateTiling(parent, 256, 256);
+    expect(tiling.isSplit).toBe(true);
+    expect(
+      tiling.pieces.every((p) => p.edges.left === 'exterior' && p.edges.right === 'exterior')
+    ).toBe(true);
+    for (const piece of tiling.pieces) {
+      const { upright, flipped } = await towerFootprints(parent, piece);
+      expect(flipped, `piece ${piece.label}`).toEqual(upright);
+    }
+  });
+
+  it('a corner tile carries its lone rounded corner across, and nothing else moves', async () => {
+    // Two columns, so every outer-row piece is a corner tile with one rounded
+    // corner. No turn keeps it in place; the accepted cost is that corner alone:
+    // every vertex that moves is the arc or the padding strip fanning off it,
+    // never the socket lattice.
+    const parent = stackedDrawer(7, 12);
+    const tiling = computeBaseplateTiling(parent, 256, 256);
+    const radius = parent.cornerRadius ?? 0;
+    expect(radius).toBeGreaterThan(0);
+    let movedCorners = 0;
+    for (const piece of tiling.pieces) {
+      const { upright, flipped, bounds } = await towerFootprints(parent, piece);
+      const reach = radius + Math.max(piece.paddingFront, piece.paddingBack) + 0.01;
+      const corners = [
+        [bounds.minX, bounds.minY],
+        [bounds.minX, bounds.maxY],
+        [bounds.maxX, bounds.minY],
+        [bounds.maxX, bounds.maxY],
+      ];
+      const moved = [...upright, ...flipped].filter((v) => !(upright.has(v) && flipped.has(v)));
+      for (const v of moved) {
+        const [x, y] = v.split(',').map(Number);
+        const nearest = Math.min(
+          ...corners.map(([cx, cy]) => Math.max(Math.abs(x - cx), Math.abs(y - cy)))
+        );
+        expect(nearest, `piece ${piece.label} vertex ${v}`).toBeLessThanOrEqual(reach);
+      }
+      if (moved.length > 0) movedCorners++;
+    }
+    expect(movedCorners).toBeGreaterThan(0);
   });
 });
