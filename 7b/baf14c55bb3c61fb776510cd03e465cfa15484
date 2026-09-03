@@ -1,0 +1,50 @@
+src/shared/README.md
+  s_dee77136de7bea::t_967edfd2a92f24 31
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_dee77136de7bea::t_8199eb36a27257 6,88,91,114-115,117,120-121,124-129,132,135,140-144,146,153-154,156,161-162,166-172,178,181,184,189-196,198-201,203-205,207-209,212-217,237,269
+  s_dee77136de7bea::t_613d532466372a 93-95
+  s_dee77136de7bea::t_e6e2ef74f0e763 78-80
+  s_dee77136de7bea::t_1ce971469393ba 96-108,118
+  s_dee77136de7bea::t_50278bff642975 116,173,179,238,248
+  s_dee77136de7bea::t_793409e0ea973a 92
+src/shared/spacemouse/cameraCommands.ts
+  s_dee77136de7bea::t_50278bff642975 37-44,52
+scripts/doc-budget.json
+  s_dee77136de7bea::t_d09d2ed48a7829 23,71
+  s_dee77136de7bea::t_3e70eb3cd3349f 3
+src/shared/spacemouse/navlib/viewAccessors.test.ts
+  s_dee77136de7bea::t_cf9243d66aef45 9,155-156,160-176
+  s_dee77136de7bea::t_b825fc4bc8eb78 153
+  s_dee77136de7bea::t_f5ec28ec4aa6d8 177-178
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_dee77136de7bea::t_b825fc4bc8eb78 40,183-184,191
+  s_dee77136de7bea::t_52bb2e6bae99aa 4,32-36,41-46,186-187
+  s_dee77136de7bea::t_50278bff642975 11,47
+  s_dee77136de7bea::t_2be82756c645bc 39
+src/shared/spacemouse/navlib/navlibClient.test.ts
+  s_dee77136de7bea::t_1ce971469393ba 177-178
+  s_dee77136de7bea::t_cf9243d66aef45 3-4,58-59,65,72,101-102,109-111,118-119,121-133,163,182-185,188-189,192,195,197-199,202-206
+  s_dee77136de7bea::t_2f50a3b9f5c0f3 174-176
+  s_dee77136de7bea::t_135b7ca1bc2d5e 160,162,179,181
+  s_dee77136de7bea::t_b825fc4bc8eb78 76-85,89-91,190-191
+  s_dee77136de7bea::t_e6e2ef74f0e763 2,11-56,60-61,112-117,120,134-159,161,164-173,180
+  s_dee77136de7bea::t_1ed0caf8882e4a 57
+.claude/skills/three-preview/SKILL.md
+  s_dee77136de7bea::t_1d99009d68feb1 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "7bbaf14c55bb3c61fb776510cd03e465cfa15484",
+  "prompts": {},
+  "sessions": {
+    "s_dee77136de7bea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "769db55d-67fa-4ea4-94ec-652c5234372e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
