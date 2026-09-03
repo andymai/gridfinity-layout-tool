@@ -1,0 +1,23 @@
+src/features/baseplate/README.md
+  s_40607b2445c00b::t_e471bd88ed333d 66
+src/features/baseplate/utils/buildFullParams.ts
+  s_40607b2445c00b::t_e471bd88ed333d 271-278,305-309
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_40607b2445c00b::t_e471bd88ed333d 478-484
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "0ea651e936823ea2f212a0c4371ca05f4c65faed",
+  "prompts": {},
+  "sessions": {
+    "s_40607b2445c00b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "649dd45a-8030-46cb-b6dc-3c571e8ab0f8",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
