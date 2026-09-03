@@ -6,9 +6,11 @@ import {
   MeshBasicMaterial,
   OrthographicCamera,
   PerspectiveCamera,
+  Raycaster,
   Scene,
   Vector3,
 } from 'three';
+import { Line2, LineGeometry, LineMaterial } from 'three-stdlib';
 import { describe, expect, it } from 'vitest';
 import type { OrbitLike } from '../cameraCommands';
 import { createNavlibViewAccessors, type NavlibViewDeps } from './viewAccessors';
@@ -123,6 +125,41 @@ describe('createNavlibViewAccessors', () => {
     expect(withModel.getModelExtents()).toEqual([-1, -1, -1, 1, 1, 1]);
     const empty = createNavlibViewAccessors(() => deps(camera, makeScene(false)));
     expect(empty.getModelExtents()).toBeNull();
+  });
+
+  it('hit-tests solid meshes only, and survives drei fat lines in the scene', () => {
+    // Line2 extends Mesh and its raycast dereferences raycaster.camera; a throw
+    // here is never answered on the wire and stalls the driver.
+    const camera = new PerspectiveCamera(45, 4 / 3, 0.1, 1000);
+    camera.position.set(0, 0, 10);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld(true);
+    const scene = makeScene(true);
+    const geometry = new LineGeometry();
+    geometry.setPositions([-5, 3, 0, 5, 3, 0]);
+    const material = new LineMaterial({ linewidth: 2 });
+    material.resolution.set(800, 600);
+    scene.add(new Line2(geometry, material));
+    scene.updateMatrixWorld(true);
+    const acc = createNavlibViewAccessors(() => deps(camera, scene));
+    acc.setSelectionOnly(false);
+    acc.setLookAperture(0.01);
+
+    // Control: a bare raycaster without a camera does throw on the fat line.
+    const bare = new Raycaster(new Vector3(0, 3, 10), new Vector3(0, 0, -1));
+    expect(() => bare.intersectObjects(scene.children, true)).toThrow();
+
+    // Through the model: hits its front face.
+    acc.setLookFrom([0, 0, 10]);
+    acc.setLookDirection([0, 0, -1]);
+    const onModel = acc.getLookAt();
+    expect(onModel).not.toBeNull();
+    expect((onModel as number[])[2]).toBeCloseTo(1, 5);
+
+    // Through the line only: no pivot target, no throw.
+    acc.setLookFrom([0, 3, 10]);
+    acc.setLookDirection([0, 0, -1]);
+    expect(acc.getLookAt()).toBeNull();
   });
 
   it('degrades safely when no canvas is active', () => {

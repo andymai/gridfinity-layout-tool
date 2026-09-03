@@ -79,8 +79,61 @@ function pump(now: number): void {
     });
 }
 
+/**
+ * The 3Dconnexion library calls every accessor straight from its WebSocket
+ * message handler with no try/catch, so an exception here is never answered on
+ * the wire and the driver blocks on its 2 s reply timeout with the puck dead.
+ * Nothing crossing this boundary may throw: a failing accessor is reported once
+ * and the driver gets the value it would see with no canvas.
+ */
+const reported = new Set<string>();
+
+function reportOnce(property: string, error: unknown): void {
+  if (reported.has(property)) return;
+  reported.add(property);
+  const err = error instanceof Error ? error : new Error(String(error));
+  console.warn(
+    `[spacemouse] ${property} accessor threw; answering the driver with a fallback`,
+    err
+  );
+  // Loaded on demand: the error module pulls the layout and labs stores into
+  // its graph, which must not become a static dependency of the device layer.
+  void import('@/shared/analytics/posthog/eventsErrors')
+    .then((m) => m.captureException(err, { boundary: 'spacemouse-navlib', property }))
+    .catch(() => {
+      // The chunk did not load; let the next failure try to report again.
+      reported.delete(property);
+    });
+}
+
+export function guardRead<R>(
+  property: string,
+  read: () => R | null | undefined,
+  fallback: () => R
+): () => R {
+  return () => {
+    try {
+      return read() ?? fallback();
+    } catch (error) {
+      reportOnce(property, error);
+      return fallback();
+    }
+  };
+}
+
+export function guardWrite<A>(property: string, write: (data: A) => void): (data: A) => void {
+  return (data) => {
+    try {
+      write(data);
+    } catch (error) {
+      reportOnce(property, error);
+    }
+  };
+}
+
 function buildClient(): NavlibClient {
   const acc = () => spaceMouseBus.activeNavlib();
+  const point = (): number[] | null => null;
 
   return {
     onConnect() {
@@ -107,55 +160,91 @@ function buildClient(): NavlibClient {
     onStopMotion() {
       stopPump();
     },
-    setTransaction(transaction) {
-      // 0 marks the end of a frame's changes: render the result.
+    // 0 marks the end of a frame's changes: render the result.
+    setTransaction: guardWrite<number>('transaction', (transaction) => {
       if (transaction === 0) acc()?.invalidate();
-    },
-    setActiveCommand(id) {
+    }),
+    setActiveCommand: guardWrite<string>('commands.activeCommand', (id) => {
       const command = commandForId(id);
       if (command) spaceMouseBus.dispatch(command);
-    },
+    }),
 
     // View reads (fall back to safe values when no canvas is active). Fallbacks
     // return fresh arrays so a mutating driver can't corrupt a shared constant.
-    getViewMatrix: () => acc()?.getViewMatrix() ?? IDENTITY.slice(),
-    getPerspective: () => acc()?.getPerspective() ?? true,
-    getViewExtents: () => acc()?.getViewExtents() ?? [-1, -1, -1, 1, 1, 1],
-    getViewTarget: () => acc()?.getViewTarget() ?? [0, 0, 0],
-    getViewRotatable: () => acc()?.getViewRotatable() ?? true,
-    getFov: () => acc()?.getFov() ?? Math.PI / 4,
-    getViewFrustum: () => acc()?.getViewFrustum() ?? [-1, 1, -1, 1, 0.1, 1000],
-    getModelExtents: () => acc()?.getModelExtents() ?? null,
-    getPivotPosition: () => acc()?.getPivotPosition() ?? null,
-    getCoordinateSystem: () => acc()?.getCoordinateSystem() ?? IDENTITY.slice(),
-    getFrontView: () => acc()?.getFrontView() ?? IDENTITY.slice(),
-    getConstructionPlane: () => acc()?.getConstructionPlane() ?? [0, 0, 1, 0],
-    getFloorPlane: () => acc()?.getFloorPlane() ?? [0, 0, 1, 0],
-    getPointerPosition: () => acc()?.getPointerPosition() ?? null,
-    getLookAt: () => acc()?.getLookAt() ?? null,
+    getViewMatrix: guardRead(
+      'view.affine',
+      () => acc()?.getViewMatrix(),
+      () => IDENTITY.slice()
+    ),
+    getPerspective: guardRead(
+      'view.perspective',
+      () => acc()?.getPerspective(),
+      () => true
+    ),
+    getViewExtents: guardRead(
+      'view.extents',
+      () => acc()?.getViewExtents(),
+      () => [-1, -1, -1, 1, 1, 1]
+    ),
+    getViewTarget: guardRead(
+      'view.target',
+      () => acc()?.getViewTarget(),
+      () => [0, 0, 0]
+    ),
+    getViewRotatable: guardRead(
+      'view.rotatable',
+      () => acc()?.getViewRotatable(),
+      () => true
+    ),
+    getFov: guardRead(
+      'view.fov',
+      () => acc()?.getFov(),
+      () => Math.PI / 4
+    ),
+    getViewFrustum: guardRead(
+      'view.frustum',
+      () => acc()?.getViewFrustum(),
+      () => [-1, 1, -1, 1, 0.1, 1000]
+    ),
+    getModelExtents: guardRead('model.extents', () => acc()?.getModelExtents(), point),
+    getPivotPosition: guardRead('pivot.position', () => acc()?.getPivotPosition(), point),
+    getCoordinateSystem: guardRead(
+      'coordinateSystem',
+      () => acc()?.getCoordinateSystem(),
+      () => IDENTITY.slice()
+    ),
+    getFrontView: guardRead(
+      'views.front',
+      () => acc()?.getFrontView(),
+      () => IDENTITY.slice()
+    ),
+    getConstructionPlane: guardRead(
+      'view.constructionPlane',
+      () => acc()?.getConstructionPlane(),
+      () => [0, 0, 1, 0]
+    ),
+    getFloorPlane: guardRead(
+      'model.floorPlane',
+      () => acc()?.getFloorPlane(),
+      () => [0, 0, 1, 0]
+    ),
+    getPointerPosition: guardRead('pointer.position', () => acc()?.getPointerPosition(), point),
+    getLookAt: guardRead('hit.lookat', () => acc()?.getLookAt(), point),
     getUnitsToMeters: () => 1,
 
     // View writes (the driver's computed camera).
-    setViewMatrix(data) {
-      acc()?.setViewMatrix(data);
-    },
-    setViewExtents(data) {
-      acc()?.setViewExtents(data);
-    },
+    setViewMatrix: guardWrite<number[]>('view.affine', (data) => acc()?.setViewMatrix(data)),
+    setViewExtents: guardWrite<number[]>('view.extents', (data) => acc()?.setViewExtents(data)),
     // Hit testing: the driver sets a ray, then reads getLookAt to pivot on the
     // surface under the cursor.
-    setLookFrom(data) {
-      acc()?.setLookFrom(data);
-    },
-    setLookDirection(data) {
-      acc()?.setLookDirection(data);
-    },
-    setLookAperture(data) {
-      acc()?.setLookAperture(data);
-    },
-    setSelectionOnly(data) {
-      acc()?.setSelectionOnly(data);
-    },
+    setLookFrom: guardWrite<number[]>('hit.lookfrom', (data) => acc()?.setLookFrom(data)),
+    setLookDirection: guardWrite<number[]>('hit.direction', (data) =>
+      acc()?.setLookDirection(data)
+    ),
+    setLookAperture: guardWrite<number>('hit.aperture', (data) => acc()?.setLookAperture(data)),
+    setSelectionOnly: guardWrite<boolean>('hit.selectionOnly', (data) =>
+      acc()?.setSelectionOnly(data)
+    ),
   };
 }
 
