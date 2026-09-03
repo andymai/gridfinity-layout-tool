@@ -1,0 +1,32 @@
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_dee77136de7bea::t_d117a0a633d02e 1
+  s_dee77136de7bea::t_04e507cbc9d8ee 83-85,89-127,130
+  s_dee77136de7bea::t_e88347b7d37b28 157-158,160-161,164,178-181,192,198-207,213-219,225-226,230-231,234,238-241
+  s_dee77136de7bea::t_9a715b7f457a96 86-88,168-177,182-191,193-197,208-212,220-224,235-237
+src/shared/spacemouse/navlib/viewAccessors.test.ts
+  s_dee77136de7bea::t_e0488d924560a9 130-131,133-164
+  s_dee77136de7bea::t_9a715b7f457a96 132
+  s_dee77136de7bea::t_7856761b84ec9e 9,13
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_dee77136de7bea::t_f7f207261224dd 188-197
+  s_dee77136de7bea::t_b9090505dea21b 31-39
+src/shared/spacemouse/navlib/navlibClient.test.ts
+  s_dee77136de7bea::t_9a715b7f457a96 1-47
+  s_dee77136de7bea::t_5469fdad2d430a 48-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e1cfad426645d206da56e86e3b89ffd0a1083e43",
+  "prompts": {},
+  "sessions": {
+    "s_dee77136de7bea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "769db55d-67fa-4ea4-94ec-652c5234372e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
