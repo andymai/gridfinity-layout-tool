@@ -1,0 +1,27 @@
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_40607b2445c00b::t_a3e2bb644ae600 204-205,214,217-220
+src/features/bin-designer/utils/printEstimates.ts
+  s_40607b2445c00b::t_d91dc5925767bf 257,615-618,620-622,624-630,632,653-657,660-661,666,668-672,680,684,698,715,717-721
+  s_40607b2445c00b::t_a3e2bb644ae600 8,41-45,49,146,255,278,650-652,663-664,667,677,685,687-697,699-714,722-723
+  s_40607b2445c00b::t_8192377163c6d6 633-649,658-659,665,716
+  s_40607b2445c00b::t_3c67cc485f7122 662
+src/features/generation/worker/generators/printEstimates.scoop.scenario.test.ts
+  s_40607b2445c00b::t_3bde07e784e656 23-27,35-43,53,66-72,74-75,77,79-90,100
+  s_40607b2445c00b::t_a3e2bb644ae600 1-22,28-34,44-52,54-65,73,76,78,91-99,101-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "3d7a90d3d6788d8106a6e2320da3d7492c5a33df",
+  "prompts": {},
+  "sessions": {
+    "s_40607b2445c00b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "649dd45a-8030-46cb-b6dc-3c571e8ab0f8",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
