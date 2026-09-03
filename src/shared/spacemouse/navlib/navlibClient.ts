@@ -100,7 +100,10 @@ function reportOnce(property: string, error: unknown): void {
   // its graph, which must not become a static dependency of the device layer.
   void import('@/shared/analytics/posthog/eventsErrors')
     .then((m) => m.captureException(err, { boundary: 'spacemouse-navlib', property }))
-    .catch(() => {});
+    .catch(() => {
+      // The chunk did not load; let the next failure try to report again.
+      reported.delete(property);
+    });
 }
 
 export function guardRead<R>(
