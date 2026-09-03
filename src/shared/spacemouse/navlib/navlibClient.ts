@@ -88,6 +88,7 @@ function pump(now: number): void {
  * Nothing crossing this boundary may throw.
  */
 const reported = new Set<string>();
+// Not cleared on stop, unlike `reported`, so the console line stays once per page.
 const warned = new Set<string>();
 
 interface ErrorModule {
@@ -229,6 +230,12 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
   started = true;
   const gen = ++navGeneration;
   setConnection('connecting');
+  const fail = (): void => {
+    setConnection('error');
+    started = false;
+    nav = null;
+    opts.onDisconnect();
+  };
   try {
     const ctor = await loadModule();
     if (gen !== navGeneration) return; // stopped or restarted while loading
@@ -249,18 +256,10 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
     };
     instance = new ctor(wrapped);
     nav = instance;
-    if (!nav.connect()) {
-      setConnection('error');
-      started = false;
-      nav = null;
-      opts.onDisconnect();
-    }
+    if (!nav.connect()) fail();
   } catch {
     if (gen !== navGeneration) return; // superseded start; don't clobber the live session
-    setConnection('error');
-    started = false;
-    nav = null;
-    opts.onDisconnect();
+    fail();
   }
 }
 

@@ -42,15 +42,12 @@ export function isScaffoldName(name: string): boolean {
   return SCAFFOLD_NAMES.some((part) => lower.includes(part));
 }
 
-/**
- * Content bounding box: real meshes only, skipping grids, shadows, floors and
- * helpers by name so a fit frames the model rather than the scaffolding.
- */
+/** Content bounding box: meshes only, so a fit frames the model, not the scaffolding. */
 export function computeContentBox(scene: Object3D): Box3 {
   const box = new Box3();
-  scene.traverse((obj: Object3D) => {
-    if (!(obj as { isMesh?: boolean }).isMesh || isScaffoldName(obj.name)) return;
-    box.expandByObject(obj);
+  scene.traverse((obj) => {
+    const isMesh = (obj as { isMesh?: boolean }).isMesh === true;
+    if (isMesh && !isScaffoldName(obj.name)) box.expandByObject(obj);
   });
   // No content meshes matched; frame whatever is in the scene.
   if (box.isEmpty()) box.setFromObject(scene);

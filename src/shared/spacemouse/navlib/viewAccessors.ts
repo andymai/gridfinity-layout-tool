@@ -43,8 +43,12 @@ function isTextMaterial(material: Mesh['material'] | undefined): boolean {
  */
 function isPivotTarget(obj: Object3D): obj is Mesh {
   const o = obj as Partial<Mesh> & { isLineSegments2?: boolean };
-  if (o.isMesh !== true || o.isLineSegments2 === true || isTextMaterial(o.material)) return false;
-  return !isScaffoldName(obj.name);
+  return (
+    o.isMesh === true &&
+    o.isLineSegments2 !== true &&
+    !isTextMaterial(o.material) &&
+    !isScaffoldName(obj.name)
+  );
 }
 
 /**
