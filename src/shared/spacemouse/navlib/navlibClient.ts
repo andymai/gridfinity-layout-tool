@@ -1,4 +1,3 @@
-import { captureException } from '@/shared/analytics/posthog/eventsErrors';
 import { useSpaceMouseStore } from '../settingsStore';
 import { spaceMouseBus } from '../spaceMouseBus';
 import { buildCommandTree } from './commands';
@@ -97,7 +96,11 @@ function reportOnce(property: string, error: unknown): void {
     `[spacemouse] ${property} accessor threw; answering the driver with a fallback`,
     err
   );
-  captureException(err, { boundary: 'spacemouse-navlib', property });
+  // Loaded on demand: the error module pulls the layout and labs stores into
+  // its graph, which must not become a static dependency of the device layer.
+  void import('@/shared/analytics/posthog/eventsErrors')
+    .then((m) => m.captureException(err, { boundary: 'spacemouse-navlib', property }))
+    .catch(() => {});
 }
 
 export function guardRead<R>(

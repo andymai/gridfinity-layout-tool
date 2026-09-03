@@ -44,7 +44,7 @@ describe('navlib wire-boundary guards', () => {
     ).toBe(false);
   });
 
-  it('answers with the fallback when the read throws, and reports once per property', () => {
+  it('answers with the fallback when the read throws, and reports once per property', async () => {
     const read = guardRead(
       'hit.lookat',
       () => {
@@ -54,18 +54,18 @@ describe('navlib wire-boundary guards', () => {
     );
     expect(read()).toBeNull();
     expect(read()).toBeNull();
-    expect(captureException).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(captureException).toHaveBeenCalledTimes(1));
     expect(captureException.mock.calls[0][1]).toMatchObject({
       boundary: 'spacemouse-navlib',
       property: 'hit.lookat',
     });
   });
 
-  it('swallows a throwing write', () => {
+  it('swallows a throwing write', async () => {
     const write = guardWrite<number>('transaction', () => {
       throw new Error('boom');
     });
     expect(() => write(0)).not.toThrow();
-    expect(captureException).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(captureException).toHaveBeenCalledTimes(1));
   });
 });
