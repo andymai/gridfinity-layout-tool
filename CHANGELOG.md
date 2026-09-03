@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.483.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.483.1...gridfinity-layout-tool-v4.483.2) (2026-09-03)
+
+
+### Bug Fixes
+
+* **baseplate:** keep corner rounding under vertical stacking ([#4082](https://github.com/andymai/gridfinity-layout-tool/issues/4082)) ([2bd0bc8](https://github.com/andymai/gridfinity-layout-tool/commit/2bd0bc84f1d907a2fbdf7dba1e7e1e4eed6655fc))
+* **bin-designer:** price scoop ramps as the material they add ([#4086](https://github.com/andymai/gridfinity-layout-tool/issues/4086)) ([e2740eb](https://github.com/andymai/gridfinity-layout-tool/commit/e2740ebb8740f4e4c5aa3916be01a738f9bc16c7))
+* **generation:** grow mesh cutouts in 3D and bevel their real opening ([#4083](https://github.com/andymai/gridfinity-layout-tool/issues/4083)) ([8a7ad65](https://github.com/andymai/gridfinity-layout-tool/commit/8a7ad65fab71821553b3f5fc8dd808ea1351df7c)), closes [#4079](https://github.com/andymai/gridfinity-layout-tool/issues/4079) [#4080](https://github.com/andymai/gridfinity-layout-tool/issues/4080)
+* **spacemouse:** answer every driver read even when an accessor throws ([#4087](https://github.com/andymai/gridfinity-layout-tool/issues/4087)) ([c9a74da](https://github.com/andymai/gridfinity-layout-tool/commit/c9a74da7ed19c853dc41e2e38a7d7b267b0d19f2))
+
 ## [4.483.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.483.0...gridfinity-layout-tool-v4.483.1) (2026-09-02)
 
 
