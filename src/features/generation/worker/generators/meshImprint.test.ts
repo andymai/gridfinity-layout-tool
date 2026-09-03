@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { ManifoldToplevel } from 'manifold-3d';
+import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
 import { setManifoldModuleForTests } from '../manifoldRuntime';
@@ -488,4 +488,237 @@ describe('mesh imprint generation (occt + manifold)', () => {
       expect(minZInRegion(imprinted, region)).toBeLessThan(solidTop - toolAsset.sizeMm.z + 0.5);
     }
   }, 120_000);
+});
+
+describe('mesh imprint clearance and chamfer on curved tools', () => {
+  interface Box2 {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+  }
+
+  function soupOf(shape: Manifold): Float32Array {
+    const gm = shape.getMesh();
+    const soup = new Float32Array(gm.triVerts.length * 3);
+    for (let i = 0; i < gm.triVerts.length; i++) {
+      const v = gm.triVerts[i];
+      soup[i * 3] = gm.vertProperties[v * gm.numProp];
+      soup[i * 3 + 1] = gm.vertProperties[v * gm.numProp + 1];
+      soup[i * 3 + 2] = gm.vertProperties[v * gm.numProp + 2];
+    }
+    return soup;
+  }
+
+  async function importTool(
+    name: string,
+    shape: Manifold,
+    rotation: { x: number; y: number; z: number }
+  ): Promise<MeshAsset> {
+    const soup = soupOf(shape);
+    shape.delete();
+    const imported = await importMeshFromStl(
+      buildSTLBuffer(soup, new Float32Array(soup.length), name),
+      `${name}.stl`,
+      rotation,
+      module
+    );
+    if (!isOk(imported)) throw new Error(`${name} import failed: ${imported.error.message}`);
+    return imported.value.asset;
+  }
+
+  /** A wick spool: two Ø46 flanges on a Ø16 hub, 15mm long. Built axis-up
+   *  (its lay-flat pose) and imported turned 90° about X, so it lies on its
+   *  side the way the report placed it: every pocket wall is curved. */
+  function buildSpool(): Manifold {
+    const flangeA = module.Manifold.cylinder(1.5, 23, 23, 96);
+    const hub = module.Manifold.cylinder(12, 8, 8, 64).translate([0, 0, 1.5]);
+    const flangeB = module.Manifold.cylinder(1.5, 23, 23, 96).translate([0, 0, 13.5]);
+    const spool = module.Manifold.union([flangeA, hub, flangeB]);
+    flangeA.delete();
+    hub.delete();
+    flangeB.delete();
+    return spool;
+  }
+
+  /** Bounding boxes of the pocket holes in the bin's section at world `z`,
+   *  restricted to those overlapping `within`, front to back. */
+  function holeBoxesAt(
+    mesh: { vertices: Float32Array; indices: Uint32Array },
+    z: number,
+    within: Box2
+  ): Box2[] {
+    const m = new module.Mesh({
+      numProp: 3,
+      vertProperties: mesh.vertices,
+      triVerts: mesh.indices,
+    });
+    m.merge();
+    const solid = new module.Manifold(m);
+    const section = solid.slice(z);
+    const rings = section.toPolygons();
+    section.delete();
+    solid.delete();
+    const boxes: Box2[] = [];
+    for (const ring of rings) {
+      let area = 0;
+      const box: Box2 = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+      for (let i = 0; i < ring.length; i++) {
+        const [x1, y1] = ring[i];
+        const [x2, y2] = ring[(i + 1) % ring.length];
+        area += x1 * y2 - x2 * y1;
+        box.minX = Math.min(box.minX, x1);
+        box.maxX = Math.max(box.maxX, x1);
+        box.minY = Math.min(box.minY, y1);
+        box.maxY = Math.max(box.maxY, y1);
+      }
+      if (area >= 0) continue;
+      const outside =
+        box.maxX < within.minX ||
+        box.minX > within.maxX ||
+        box.maxY < within.minY ||
+        box.minY > within.maxY;
+      if (!outside) boxes.push(box);
+    }
+    return boxes.sort((a, b) => a.minY - b.minY);
+  }
+
+  const width = (b: Box2): number => b.maxX - b.minX;
+  const depth = (b: Box2): number => b.maxY - b.minY;
+
+  let spool: MeshAsset;
+  let solidTop = 0;
+  let within: Box2 = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+
+  const spoolCutout = (overrides: Partial<Cutout>): Cutout =>
+    meshCutout({
+      meshId: 'spool',
+      x: 10,
+      y: 20,
+      width: spool.sizeMm.x,
+      depth: spool.sizeMm.y,
+      cutDepth: 24,
+      ...overrides,
+    });
+  const spoolBin = (overrides: Partial<Cutout>): BinParams =>
+    solidBinParams([spoolCutout(overrides)], { spool });
+
+  beforeAll(async () => {
+    spool = await importTool('spool', buildSpool(), { x: 90, y: 0, z: 0 });
+    const { innerW, innerD, wallHeight } = deriveDimensions(spoolBin({}), true);
+    solidTop = SOCKET_HEIGHT + wallHeight;
+    within = {
+      minX: -innerW / 2 + 10 - 5,
+      maxX: -innerW / 2 + 10 + spool.sizeMm.x + 5,
+      minY: -innerD / 2 + 20 - 5,
+      maxY: -innerD / 2 + 20 + spool.sizeMm.y + 5,
+    };
+  }, 120_000);
+
+  it('lies on its side after import', () => {
+    expect(spool.sizeMm.x).toBeCloseTo(46, 0);
+    expect(spool.sizeMm.y).toBeCloseTo(15, 0);
+    expect(spool.sizeMm.z).toBeCloseTo(46, 0);
+  });
+
+  it('grows a curved trough by the clearance instead of skirting the silhouette (#4080)', async () => {
+    clearMeshImprintCache();
+    await prepareMeshImprints(spoolBin({ clearance: 1 }), module);
+    const generate = getGenerateBin();
+    const tight = generate(spoolBin({}), undefined, true);
+    const loose = generate(spoolBin({ clearance: 1 }), undefined, true);
+
+    // Halfway down only the two flange discs reach: two slots, thin in Y. The
+    // old silhouette skirt showed up here as a third ring around the whole
+    // tool, 1mm wide and the full depth, touching neither slot.
+    const z = solidTop - 12;
+    const tightSlots = holeBoxesAt(tight, z, within);
+    const looseSlots = holeBoxesAt(loose, z, within);
+    expect(tightSlots).toHaveLength(2);
+    expect(looseSlots).toHaveLength(2);
+    for (let i = 0; i < 2; i++) {
+      // 1mm of slack against each flange face, the way a straight wall gets it.
+      expect(depth(looseSlots[i]) - depth(tightSlots[i])).toBeGreaterThan(1.9);
+      expect(depth(looseSlots[i]) - depth(tightSlots[i])).toBeLessThan(2.1);
+      // Along the chord the disc curves away, so the growth is a ball's.
+      expect(width(looseSlots[i]) - width(tightSlots[i])).toBeGreaterThan(1.6);
+      expect(width(looseSlots[i]) - width(tightSlots[i])).toBeLessThan(2.8);
+    }
+
+    // The floor stays where the cut depth put it: the spool rests on it.
+    const slot = tightSlots[0];
+    const region = {
+      minX: (slot.minX + slot.maxX) / 2 - 4,
+      maxX: (slot.minX + slot.maxX) / 2 + 4,
+      minY: slot.minY - 1,
+      maxY: slot.maxY + 1,
+    };
+    const tightFloor = minZInRegion(tight, region);
+    const looseFloor = minZInRegion(loose, region);
+    expect(tightFloor).toBeLessThan(solidTop - 23);
+    expect(looseFloor).toBeGreaterThan(solidTop - 24 - 0.05);
+    expect(looseFloor).toBeLessThan(solidTop - 23);
+  }, 180_000);
+
+  it('bevels the real opening at 45° instead of ringing the silhouette (#4079)', async () => {
+    clearMeshImprintCache();
+    await prepareMeshImprints(spoolBin({}), module);
+    const generate = getGenerateBin();
+
+    // A 5mm cut opens as two chords far narrower than the 46mm silhouette; the
+    // old rings of the silhouette floated in solid material around them.
+    // The bevel is measured against the plain opening at the surface: a 45°
+    // cone from the rim reaches `chamfer - depth` past it, while the chord
+    // itself keeps narrowing with depth as the disc curves in.
+    const plain = generate(spoolBin({ cutDepth: 5 }), undefined, true);
+    const beveled = generate(spoolBin({ cutDepth: 5, chamferWidth: 2 }), undefined, true);
+    const opening = holeBoxesAt(plain, solidTop - 0.02, within);
+    expect(opening).toHaveLength(2);
+    for (const [below, reach] of [
+      [0.2, 1.8],
+      [1.0, 1.0],
+      [1.8, 0.2],
+    ] as const) {
+      const b = holeBoxesAt(beveled, solidTop - below, within);
+      expect(b, `depth ${below}`).toHaveLength(2);
+      for (let i = 0; i < 2; i++) {
+        const dx = width(b[i]) - width(opening[i]);
+        const dy = depth(b[i]) - depth(opening[i]);
+        expect(Math.abs(dx - 2 * reach), `depth ${below} slot ${i} dx=${dx}`).toBeLessThan(0.3);
+        expect(Math.abs(dy - 2 * reach), `depth ${below} slot ${i} dy=${dy}`).toBeLessThan(0.3);
+        expect(width(b[i])).toBeLessThan(spool.sizeMm.x - 8);
+      }
+    }
+    // Below the bevel the pocket is the tool's own section again.
+    const under = holeBoxesAt(plain, solidTop - 2.6, within);
+    const underBeveled = holeBoxesAt(beveled, solidTop - 2.6, within);
+    expect(underBeveled).toHaveLength(2);
+    for (let i = 0; i < 2; i++) {
+      expect(Math.abs(width(underBeveled[i]) - width(under[i]))).toBeLessThan(0.1);
+      expect(Math.abs(depth(underBeveled[i]) - depth(under[i]))).toBeLessThan(0.1);
+    }
+
+    // The reported 24mm cut opens as one ring; the bevel is a continuous 45°
+    // rim around it, not a staircase of offset rings.
+    const deepPlain = generate(spoolBin({}), undefined, true);
+    const deep = generate(spoolBin({ chamferWidth: 2 }), undefined, true);
+    const deepOpening = holeBoxesAt(deepPlain, solidTop - 0.02, within);
+    expect(deepOpening).toHaveLength(1);
+    for (const [below, reach] of [
+      [0.2, 1.8],
+      [1.0, 1.0],
+      [1.8, 0.2],
+    ] as const) {
+      const b = holeBoxesAt(deep, solidTop - below, within);
+      expect(b, `depth ${below}`).toHaveLength(1);
+      expect(
+        Math.abs(width(b[0]) - width(deepOpening[0]) - 2 * reach),
+        `depth ${below}`
+      ).toBeLessThan(0.3);
+      expect(
+        Math.abs(depth(b[0]) - depth(deepOpening[0]) - 2 * reach),
+        `depth ${below}`
+      ).toBeLessThan(0.3);
+    }
+  }, 240_000);
 });

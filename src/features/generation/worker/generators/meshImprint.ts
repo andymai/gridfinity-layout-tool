@@ -16,7 +16,7 @@
  * feature-color tags carry through and tool-carved faces are identifiable.
  */
 
-import type { CrossSection, Manifold, ManifoldToplevel, Vec2 } from 'manifold-3d';
+import type { CrossSection, Manifold, ManifoldToplevel, Vec2, Vec3 } from 'manifold-3d';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import {
@@ -40,10 +40,36 @@ import { getLoadedManifoldModule, getManifoldModule } from '../manifoldRuntime';
 
 /** FeatureTag.UNKNOWN — faces with no recorded provenance. */
 const TAG_UNKNOWN = 255;
-/** Entry-chamfer bevel is approximated as a stack of offset rings this thick
- *  (≈ one print layer, so the printed result is identical to a true 45° cone). */
-const CHAMFER_SLICE_MM = 0.2;
-const MAX_CHAMFER_SLICES = 5;
+/** Facets on the cone each opening edge is swept with for the entry chamfer;
+ *  the bevel's convex corners round with this many segments per turn. */
+const CHAMFER_CONE_SEGMENTS = 16;
+/** The opening is read this far under the surface, so a tool face lying in
+ *  the surface plane cannot make the section ambiguous. */
+const OPENING_PROBE_MM = 0.01;
+/** The opening is simplified to this tolerance before the sweep (one hull per
+ *  edge), doubling until the edge budget is met: a scanned rim carries
+ *  thousands of edges that print identically. */
+const OPENING_SIMPLIFY_MM = 0.05;
+const MAX_CHAMFER_EDGES = 600;
+/** Clearance grows the tool along these 26 unit directions (cube faces, edges
+ *  and corners). The union of the translated copies approximates the Minkowski
+ *  sum with a ball at a fraction of its cost: exact along the axes, within
+ *  cos 20° between them. */
+const DILATION_DIRECTIONS: readonly Vec3[] = [-1, 0, 1].flatMap((x) =>
+  [-1, 0, 1].flatMap((y) =>
+    [-1, 0, 1]
+      .filter((z) => x !== 0 || y !== 0 || z !== 0)
+      .map((z): Vec3 => {
+        const len = Math.hypot(x, y, z);
+        return [x / len, y / len, z / len];
+      })
+  )
+);
+/** The copies come from a decimated tool (never coarser than a quarter of the
+ *  clearance) unioned with the exact one, so a fine mesh pays for one copy. */
+const DILATION_SIMPLIFY_MM = 0.05;
+/** Dilated tools kept per prepared asset, keyed by clearance. */
+const MAX_DILATIONS_PER_TOOL = 4;
 /** Tools extend this far above the solid surface so the cut never leaves a
  *  coplanar skin film at the opening. */
 const TOP_OVERSHOOT_MM = 0.5;
@@ -64,6 +90,8 @@ interface PreparedTool {
   /** Lowest top-shoulder (mm) of the decoded mesh; the silhouette is filled
    *  flat above it. 0 when unavailable (flattens the whole pocket). */
   readonly topShoulder: number;
+  /** Clearance-grown copies of `manifold`, keyed by quantized clearance. */
+  readonly dilations: Map<string, Manifold>;
 }
 
 const preparedTools = new Map<string, PreparedTool>();
@@ -76,9 +104,16 @@ let activeModule: ManifoldToplevel | null = null;
  */
 export { hasMeshImprints };
 
+function disposeTool(tool: PreparedTool | undefined): void {
+  if (!tool) return;
+  tool.manifold?.delete();
+  for (const dilated of tool.dilations.values()) dilated.delete();
+  tool.dilations.clear();
+}
+
 /** Drop all prepared tool manifolds (worker CLEANUP path). */
 export function clearMeshImprintCache(): void {
-  for (const tool of preparedTools.values()) tool.manifold?.delete();
+  for (const tool of preparedTools.values()) disposeTool(tool);
   preparedTools.clear();
 }
 
@@ -124,11 +159,11 @@ export async function prepareMeshImprints(
     if (preparedTools.size >= MAX_PREPARED_TOOLS) {
       const oldest = preparedTools.keys().next().value;
       if (oldest !== undefined) {
-        preparedTools.get(oldest)?.manifold?.delete();
+        disposeTool(preparedTools.get(oldest));
         preparedTools.delete(oldest);
       }
     }
-    preparedTools.set(asset.data, { manifold, topShoulder });
+    preparedTools.set(asset.data, { manifold, topShoulder, dilations: new Map() });
   }
 }
 
@@ -167,7 +202,11 @@ function frameFromDimensions(
 function instanceBounds(cutout: Cutout, frame: ImprintFrame): Bounds2D {
   const cx = frame.originX + cutout.x + cutout.width / 2;
   const cy = frame.originY + cutout.y + cutout.depth / 2;
-  const halfDiag = Math.hypot(cutout.width, cutout.depth) / 2 + (cutout.clearance ?? 0) + 5;
+  const halfDiag =
+    Math.hypot(cutout.width, cutout.depth) / 2 +
+    (cutout.clearance ?? 0) +
+    (cutout.chamferWidth ?? 0) +
+    5;
   return { minX: cx - halfDiag, minY: cy - halfDiag, maxX: cx + halfDiag, maxY: cy + halfDiag };
 }
 
@@ -266,11 +305,99 @@ function triangleTopZ(
 }
 
 /**
+ * The tool grown by `clearance` on every side but its floor: the union of the
+ * tool with 26 translated copies (a discrete ball), trimmed at z=0 so the
+ * pocket floor stays where the cut depth put it and the tool still rests on
+ * it. A silhouette skirt only ever reached vertical walls; a curved or sloped
+ * flank got no slack and a detached slit around the outline instead. Cached
+ * per prepared asset: the union costs ~0.4s for a 1.5k-triangle tool and every
+ * instance of the cutout shares it.
+ */
+function dilatedTool(
+  module: ManifoldToplevel,
+  prepared: PreparedTool,
+  tool: Manifold,
+  clearance: number
+): Manifold {
+  const key = clearance.toFixed(3);
+  const cached = prepared.dilations.get(key);
+  if (cached) return cached;
+
+  const coarse = tool.simplify(Math.min(DILATION_SIMPLIFY_MM, clearance / 4));
+  const copies = DILATION_DIRECTIONS.map(([x, y, z]) =>
+    coarse.translate([x * clearance, y * clearance, z * clearance])
+  );
+  const grown = module.Manifold.union([tool, ...copies]);
+  const trimmed = grown.trimByPlane([0, 0, 1], 0);
+  grown.delete();
+  for (const copy of copies) copy.delete();
+  coarse.delete();
+
+  if (prepared.dilations.size >= MAX_DILATIONS_PER_TOOL) {
+    const oldest = prepared.dilations.keys().next().value;
+    if (oldest !== undefined) {
+      prepared.dilations.get(oldest)?.delete();
+      prepared.dilations.delete(oldest);
+    }
+  }
+  prepared.dilations.set(key, trimmed);
+  return trimmed;
+}
+
+/**
+ * A 45° bevel from `opening` (the pocket section at z=0) out to its offset by
+ * `bevel` at z=bevel, plus the overshoot above it: the interior extruded, each
+ * opening edge swept with a cone (the hull of the edge and the cone's rim at
+ * both ends, which is the edge's Minkowski sum with the cone), and the rim
+ * prism on top. Concave corners come out sharp, where neighbouring sweeps
+ * overlap. Returned detached from its inputs; the caller owns it.
+ */
+function buildChamferSweep(
+  module: ManifoldToplevel,
+  opening: CrossSection,
+  bevel: number
+): Manifold {
+  const cone: Vec2[] = [];
+  for (let k = 0; k < CHAMFER_CONE_SEGMENTS; k++) {
+    const angle = (2 * Math.PI * k) / CHAMFER_CONE_SEGMENTS;
+    cone.push([bevel * Math.cos(angle), bevel * Math.sin(angle)]);
+  }
+  const pieces: Manifold[] = [module.Manifold.extrude(opening, bevel + TOP_OVERSHOOT_MM)];
+  for (const ring of opening.toPolygons()) {
+    for (let i = 0; i < ring.length; i++) {
+      const [ax, ay] = ring[i];
+      const [bx, by] = ring[(i + 1) % ring.length];
+      const points: Vec3[] = [
+        [ax, ay, 0],
+        [bx, by, 0],
+      ];
+      for (const [dx, dy] of cone) {
+        points.push([ax + dx, ay + dy, bevel], [bx + dx, by + dy, bevel]);
+      }
+      pieces.push(module.Manifold.hull(points));
+    }
+  }
+  const rim = opening.offset(bevel, 'Round');
+  const rimPrism = module.Manifold.extrude(rim, TOP_OVERSHOOT_MM);
+  pieces.push(rimPrism.translate([0, 0, bevel]));
+  rimPrism.delete();
+  rim.delete();
+  const sweep = module.Manifold.union(pieces);
+  const detached = sweep.translate([0, 0, 0]);
+  sweep.delete();
+  for (const piece of pieces) piece.delete();
+  return detached;
+}
+
+const edgeCount = (section: CrossSection): number =>
+  section.toPolygons().reduce((count, ring) => count + ring.length, 0);
+
+/**
  * Build the full subtract tool for one placed cutout instance in world space:
- * the contoured tool with the silhouette filled flat above its lowest
- * top-shoulder, a lateral-clearance skirt around the silhouette, and the
- * entry-chamfer ring stack. Falls back to a flat outline-prism pocket when the
- * asset's manifold failed to build.
+ * the tool (grown by the clearance) with the silhouette filled flat above its
+ * lowest top-shoulder, and the entry chamfer swept around the opening the
+ * pocket actually has at the surface. Falls back to a flat outline-prism
+ * pocket when the asset's manifold failed to build.
  *
  * Filling above the shoulder keeps the underside/lower relief the user can
  * actually nest onto while flattening only the trapped upper recesses — cheap
@@ -279,16 +406,15 @@ function triangleTopZ(
  */
 function buildInstanceTool(
   module: ManifoldToplevel,
-  tool: Manifold | null,
-  topShoulder: number,
+  prepared: PreparedTool | undefined,
   asset: MeshAsset,
   cutout: Cutout,
   frame: ImprintFrame
 ): Manifold | null {
   const clearance = Math.max(0, cutout.clearance ?? 0);
-  const chamfer = Math.max(0, cutout.chamferWidth ?? 0);
   const cutDepth = Math.min(Math.max(0, cutout.cutDepth), frame.solidTopZ);
   if (cutDepth <= 0) return null;
+  const chamfer = Math.min(Math.max(0, cutout.chamferWidth ?? 0), cutDepth);
 
   const cx = asset.sizeMm.x / 2;
   const cy = asset.sizeMm.y / 2;
@@ -301,6 +427,10 @@ function buildInstanceTool(
   const track = (m: Manifold): Manifold => {
     scratch.push(m);
     return m;
+  };
+  const section = (s: CrossSection): CrossSection => {
+    crossSections.push(s);
+    return s;
   };
 
   try {
@@ -316,71 +446,56 @@ function buildInstanceTool(
       return track(rotated.translate([worldX, worldY, zBottom]));
     };
 
-    const parts: Manifold[] = [];
+    const silhouette = section(new module.CrossSection(outlinesToPolygons(asset), 'Positive'));
+    const opening = clearance > 0 ? section(silhouette.offset(clearance, 'Round')) : silhouette;
 
-    const baseSection = new module.CrossSection(outlinesToPolygons(asset), 'Positive');
-    crossSections.push(baseSection);
-
-    if (tool) {
-      const sizeZ = asset.sizeMm.z;
-      // Fill the silhouette from just below the lowest top-shoulder up past the
-      // opening: recesses above it become flat opening (no roofs, no stranded
-      // bosses) while the relief below survives. Extrude starts at z=0, so lift
-      // the cap to the fill line. The +overshoot pokes above the surface.
-      const fillFrom = Math.max(0, Math.min(topShoulder - SHOULDER_MARGIN_MM, sizeZ));
-      const cap = track(module.Manifold.extrude(baseSection, sizeZ + TOP_OVERSHOOT_MM - fillFrom));
+    const tool = prepared?.manifold ?? null;
+    let pocket: Manifold;
+    if (tool && prepared) {
+      const grownTool = clearance > 0 ? dilatedTool(module, prepared, tool, clearance) : tool;
+      // Growing lifts the shoulders by the clearance too. Fill the silhouette
+      // from just below the lowest top-shoulder up past the opening: recesses
+      // above it become flat opening (no roofs, no stranded bosses) while the
+      // relief below survives. The cap reaches the surface even when the
+      // pocket is deeper than the tool is tall, so a buried tool never roofs.
+      const sizeZ = asset.sizeMm.z + clearance;
+      const fillFrom = Math.max(
+        0,
+        Math.min(prepared.topShoulder + clearance - SHOULDER_MARGIN_MM, sizeZ)
+      );
+      const capTop = Math.max(sizeZ, cutDepth) + TOP_OVERSHOOT_MM;
+      const cap = track(module.Manifold.extrude(opening, capTop - fillFrom));
       const filled = track(cap.translate([0, 0, fillFrom]));
-      let grown = track(module.Manifold.union([tool, filled]));
-      if (clearance > 0) {
-        // Lateral fit slack: widen only the outer wall with a hollow silhouette
-        // ring extruded full-depth (a 3D offset of the mesh is far costlier).
-        const offsetSection = baseSection.offset(clearance, 'Round');
-        crossSections.push(offsetSection);
-        const ring = offsetSection.subtract(baseSection);
-        crossSections.push(ring);
-        const skirt = track(module.Manifold.extrude(ring, cutDepth + TOP_OVERSHOOT_MM));
-        grown = track(module.Manifold.union([grown, skirt]));
-      }
-      parts.push(placeLocal(grown));
+      pocket = track(module.Manifold.union([grownTool, filled]));
     } else {
       // Fallback: the asset's manifold failed to build — flat outline-prism
       // pocket (no relief available to preserve).
-      let section = baseSection;
-      if (clearance > 0) {
-        section = baseSection.offset(clearance, 'Round');
-        crossSections.push(section);
-      }
-      const prism = track(module.Manifold.extrude(section, cutDepth + TOP_OVERSHOOT_MM));
-      parts.push(placeLocal(prism));
+      pocket = track(module.Manifold.extrude(opening, cutDepth + TOP_OVERSHOOT_MM));
     }
+    const parts: Manifold[] = [placeLocal(pocket)];
 
     if (chamfer > 0) {
-      // Stepped bevel: N thin rings widening toward the opening. At print
-      // time a 45° bevel IS a layer staircase, so ~0.2mm steps reproduce the
-      // printed part exactly.
-      const sliceCount = Math.min(
-        MAX_CHAMFER_SLICES,
-        Math.max(1, Math.ceil(chamfer / CHAMFER_SLICE_MM))
-      );
-      const sliceT = chamfer / sliceCount;
-      for (let j = 0; j < sliceCount; j++) {
-        const offset = clearance + (chamfer * (sliceCount - j)) / sliceCount;
-        const section = baseSection.offset(offset, 'Round');
-        crossSections.push(section);
-        const topExtra = j === 0 ? TOP_OVERSHOOT_MM : 0;
-        const ring = track(module.Manifold.extrude(section, sliceT + topExtra));
-        const localZ = cutDepth - (j + 1) * sliceT;
-        parts.push(placeLocal(track(ring.translate([0, 0, localZ]))));
+      // The bevel follows the opening the pocket really has at the surface. A
+      // tool cut shallower than its widest section opens narrower than its
+      // silhouette, and rings of the silhouette floated in solid there.
+      const rim = section(pocket.slice(cutDepth - OPENING_PROBE_MM));
+      let epsilon = OPENING_SIMPLIFY_MM;
+      let simplified = section(rim.simplify(epsilon));
+      while (edgeCount(simplified) > MAX_CHAMFER_EDGES && epsilon < 1) {
+        epsilon *= 2;
+        simplified = section(rim.simplify(epsilon));
+      }
+      if (edgeCount(simplified) > 0) {
+        const sweep = track(buildChamferSweep(module, simplified, chamfer));
+        parts.push(placeLocal(track(sweep.translate([0, 0, cutDepth - chamfer]))));
       }
     }
 
-    if (parts.length === 0) return null;
     const union = parts.length === 1 ? parts[0] : track(module.Manifold.union(parts));
     // Detach the result from scratch disposal.
-    const result = union.translate([0, 0, 0]);
-    return result;
+    return union.translate([0, 0, 0]);
   } finally {
-    for (const section of crossSections) section.delete();
+    for (const cs of crossSections) cs.delete();
     for (const m of scratch) m.delete();
   }
 }
@@ -472,14 +587,7 @@ export function imprintArrays(
       const cutoutParts: Manifold[] = [];
       for (const instance of expandCutoutArray(cutout)) {
         if (clip && !boundsOverlap(instanceBounds(instance, frame), clip)) continue;
-        const placed = buildInstanceTool(
-          module,
-          prepared?.manifold ?? null,
-          prepared?.topShoulder ?? 0,
-          asset,
-          instance,
-          frame
-        );
+        const placed = buildInstanceTool(module, prepared, asset, instance, frame);
         if (placed) cutoutParts.push(placed);
       }
       if (cutoutParts.length === 0) continue;
