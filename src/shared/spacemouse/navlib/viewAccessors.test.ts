@@ -1,12 +1,14 @@
 import {
   BoxGeometry,
   type Camera,
+  type Intersection,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
   OrthographicCamera,
   PerspectiveCamera,
   PlaneGeometry,
+  type Raycaster,
   Scene,
   Vector3,
 } from 'three';
@@ -28,6 +30,14 @@ function makeScene(withModel = true): Scene {
     scene.updateMatrixWorld(true);
   }
   return scene;
+}
+
+/** Stands in for any Mesh subclass whose raycast reads the camera, as fat lines do. */
+class CameraBoundMesh extends Mesh {
+  override raycast(raycaster: Raycaster, intersects: Intersection[]): void {
+    if ((raycaster as { camera: Camera | null }).camera === null) throw new Error('needs a camera');
+    super.raycast(raycaster, intersects);
+  }
 }
 
 function deps(camera: Camera, scene = makeScene()): NavlibViewDeps {
@@ -140,6 +150,9 @@ describe('createNavlibViewAccessors', () => {
     const material = new LineMaterial({ linewidth: 2 });
     material.resolution.set(800, 600);
     scene.add(new Line2(geometry, material));
+    const aside = new CameraBoundMesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial());
+    aside.position.set(20, 0, 0);
+    scene.add(aside);
     scene.updateMatrixWorld(true);
     const acc = createNavlibViewAccessors(() => deps(camera, scene));
     acc.setSelectionOnly(false);

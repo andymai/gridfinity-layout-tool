@@ -88,7 +88,6 @@ function pump(now: number): void {
  * Nothing crossing this boundary may throw.
  */
 const reported = new Set<string>();
-// Not cleared on stop, unlike `reported`, so the console line stays once per page.
 const warned = new Set<string>();
 
 interface ErrorModule {
@@ -266,6 +265,7 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
 /** Idempotent: safe to call when navlib is already stopped or was never started. */
 export function stopNavlib(): void {
   reported.clear();
+  warned.clear();
   if (!nav && !started) return;
   started = false;
   navGeneration++; // supersede an in-flight module load

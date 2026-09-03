@@ -178,7 +178,19 @@ describe('navlib wire-boundary guards', () => {
       expect(reportedProperties()).toEqual(['commands.tree', 'frame.timingSource'])
     );
     expect(onDisconnect).not.toHaveBeenCalled();
-    stopNavlib();
+    driver.client?.onDisconnect?.('closed');
+    expect(onDisconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('swallows a throwing disconnect fallback and reports it', async () => {
+    vi.stubGlobal('window', globalThis);
+    await startNavlib({
+      onDisconnect: () => {
+        throw new Error('no WebHID');
+      },
+    });
+    expect(() => driver.client?.onDisconnect?.('closed')).not.toThrow();
+    await vi.waitFor(() => expect(reportedProperties()).toEqual(['disconnect']));
   });
 
   it('reports again once the error module loads after a failed attempt', async () => {
