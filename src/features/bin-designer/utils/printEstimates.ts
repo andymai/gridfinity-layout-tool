@@ -275,7 +275,6 @@ function computeBinVolume(params: BinParams): number {
     volume += (outerW * outerD - innerW * innerD) * collarMm;
   }
 
-  // Volume cannot be negative (a wall pattern on a tiny bin)
   return Math.max(0, volume);
 }
 /**
@@ -656,12 +655,9 @@ function lipSupportArea(wallThickness: number): number {
  * leaves (1 − π/4)·run·height under it, a straight bevel half the rectangle;
  * against a lipped outer wall the profile also climbs to the wall top across
  * `lipOffset`, less the lip support it lands inside. A ramp on an interior
- * side starts on the divider's centreline
- * and its span ends on the side dividers' centrelines, so the half-thickness
- * it shares with each divider is already priced there and comes off here.
- *
- * Pricing one representative grid cell times cols × rows, and subtracting it,
- * put a 5x5 bento bin at 5 g against 210 g sliced.
+ * side starts on the divider's centreline and its span ends on the side
+ * dividers' centrelines, so the half-thickness it shares with each divider is
+ * already priced there and comes off here.
  */
 function computeScoopVolume(params: BinParams, outerW: number, outerD: number): number {
   if (params.style !== 'standard') return 0;
