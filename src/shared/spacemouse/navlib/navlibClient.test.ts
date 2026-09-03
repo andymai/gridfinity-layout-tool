@@ -10,6 +10,7 @@ vi.mock('@/shared/analytics/posthog/eventsErrors', () => ({
 
 const driver = vi.hoisted(() => ({
   client: null as NavlibClient | null,
+  connects: true,
   created: 0,
   writes: [] as unknown[],
 }));
@@ -34,6 +35,7 @@ vi.mock('./tdx', () => {
       driver.client = client;
     }
     connect(): number {
+      if (!driver.connects) return 0;
       this.client.onConnect();
       return 1;
     }
@@ -79,10 +81,14 @@ describe('navlib wire-boundary guards', () => {
     expect(guardRead('d', true, () => false)()).toBe(false);
   });
 
-  it('hands out a fresh copy of an array fallback', () => {
-    const read = guardRead('a', [0, 0], () => undefined);
+  it('hands out a fresh copy of an array, read or fallback', () => {
+    const kept = [1, 1];
+    const read = guardRead('a', [0, 0], () => kept);
     read()[0] = 9;
-    expect(read()).toEqual([0, 0]);
+    expect(kept).toEqual([1, 1]);
+    const fallback = guardRead('b', [0, 0], () => undefined);
+    fallback()[0] = 9;
+    expect(fallback()).toEqual([0, 0]);
   });
 
   it('answers with the fallback when the read throws, and reports once per property', async () => {
@@ -180,6 +186,20 @@ describe('navlib wire-boundary guards', () => {
     expect(onDisconnect).not.toHaveBeenCalled();
     driver.client?.onDisconnect?.('closed');
     expect(onDisconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('runs a throwing fallback once when the driver refuses the connection', async () => {
+    driver.connects = false;
+    const onDisconnect = vi.fn(() => {
+      throw new Error('no WebHID');
+    });
+    try {
+      await expect(startNavlib({ onDisconnect })).resolves.toBeUndefined();
+    } finally {
+      driver.connects = true;
+    }
+    expect(onDisconnect).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(reportedProperties()).toEqual(['disconnect']));
   });
 
   it('swallows a throwing disconnect fallback and reports it', async () => {

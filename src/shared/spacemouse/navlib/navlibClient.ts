@@ -121,15 +121,15 @@ function reportOnce(property: string, error: unknown): void {
     .catch(() => reported.delete(property));
 }
 
-/** The driver may write into an array it is handed, so it never gets ours. */
-function freshCopy<R>(fallback: R): R {
-  return Array.isArray(fallback) ? (fallback.slice() as R) : fallback;
+/** The driver may write into an array it is handed, so it never gets one we keep. */
+function freshCopy<R>(value: R): R {
+  return Array.isArray(value) ? (value.slice() as R) : value;
 }
 
 export function guardRead<R>(property: string, fallback: R, read: () => R | undefined): () => R {
   return () => {
     try {
-      return read() ?? freshCopy(fallback);
+      return freshCopy(read() ?? fallback);
     } catch (error) {
       reportOnce(property, error);
       return freshCopy(fallback);
@@ -229,12 +229,12 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
   started = true;
   const gen = ++navGeneration;
   setConnection('connecting');
-  const fail = (): void => {
+  const fail = guardCall('disconnect', () => {
     setConnection('error');
     started = false;
     nav = null;
     opts.onDisconnect();
-  };
+  });
   try {
     const ctor = await loadModule();
     if (gen !== navGeneration) return; // stopped or restarted while loading
