@@ -1,0 +1,19 @@
+src/features/bin-designer/utils/printEstimates.ts
+  s_40607b2445c00b::t_9eb54f886db3a9 658-660
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d913d89b825733897bf2fcde1078165dd23bd76d",
+  "prompts": {},
+  "sessions": {
+    "s_40607b2445c00b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "649dd45a-8030-46cb-b6dc-3c571e8ab0f8",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
