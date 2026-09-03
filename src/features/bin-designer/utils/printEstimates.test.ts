@@ -201,7 +201,8 @@ describe('printEstimates', () => {
       expect(withLabel.volumeMm3).toBeGreaterThan(withoutLabel.volumeMm3);
     });
 
-    it('scoop removes volume when enabled', () => {
+    it('scoop adds volume when enabled (#4085)', () => {
+      // A ramp is fused into the wall-floor corner; it is material, not a cut.
       const withScoop = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
         scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
@@ -210,12 +211,13 @@ describe('printEstimates', () => {
         ...DEFAULT_BIN_PARAMS,
         scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: false },
       });
-      expect(withScoop.volumeMm3).toBeLessThan(withoutScoop.volumeMm3);
+      expect(withScoop.volumeMm3).toBeGreaterThan(withoutScoop.volumeMm3);
     });
 
-    it('straight scoop removes less material than a curved scoop of the same size', () => {
-      // Curved void is π/4·run·height (≈0.785); straight void is ½·run·height.
-      // The curved scoop carves away more, so it leaves less printed material.
+    it('a straight scoop adds more material than a curved one of the same size', () => {
+      // Under a straight bevel the whole triangle (½·run·height) is filled;
+      // under a curved arc only the wedge outside the quarter-ellipse
+      // ((1 − π/4)·run·height ≈ 0.215).
       const base = {
         ...DEFAULT_BIN_PARAMS,
         scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 12, run: 12 },

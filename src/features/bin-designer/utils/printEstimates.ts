@@ -5,7 +5,7 @@
  * then derives filament usage and print time estimates.
  *
  * Volume is computed as:
- *   shell + base socket + stacking lip + dividers + label tabs − scoops
+ *   shell + base socket + stacking lip + dividers + label tabs + scoop ramps
  *
  * This avoids expensive mesh-based volume integration.
  */
@@ -38,10 +38,15 @@ import {
   detachableFeetVolume,
   type PrintSettings,
 } from '@/shared/printSettings';
-import { hasDetachableFeet } from '@/shared/types/bin';
+import {
+  compartmentHasTiltedEdge,
+  hasDetachableFeet,
+  isRectangularCompartment,
+} from '@/shared/types/bin';
 import { footKind, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import {
   resolveScoopProfile,
+  resolveScoopPlacement,
   resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
@@ -138,7 +143,7 @@ export function formatFilament(meters: number): string {
  * base geometry. Feature deltas are layered on top:
  *   + Divider walls
  *   + Label tabs
- *   − Scoops (removes material)
+ *   + Scoop ramps (fill the wall-floor corner of each compartment)
  *   − Honeycomb wall reduction
  *
  * (The previous local hollow-box model treated the bottom 7mm as a solid slab,
@@ -247,9 +252,9 @@ function computeBinVolume(params: BinParams): number {
     volume += computeLabelTabVolume(params, outerW, outerD, wallThickness);
   }
 
-  // Scoops (remove material from compartment front walls)
+  // Scoop ramps are fused into the wall-floor corner of each compartment.
   if (isFeatureActive(params, 'scoop')) {
-    volume -= computeScoopVolume(params, outerW, outerD, wallThickness);
+    volume += computeScoopVolume(params, outerW, outerD);
   }
 
   // Wall pattern: perforation reduces wall material (all pattern types).
@@ -270,7 +275,7 @@ function computeBinVolume(params: BinParams): number {
     volume += (outerW * outerD - innerW * innerD) * collarMm;
   }
 
-  // Volume cannot be negative (scoops on tiny bins)
+  // Volume cannot be negative (a wall pattern on a tiny bin)
   return Math.max(0, volume);
 }
 /**
@@ -607,67 +612,115 @@ function findCollidingFrontIds(
 }
 
 /**
- * Volume removed by scoop ramp (negative contribution).
- *
- * Each scoop's cross-section is a concave quarter-ellipse (curved) or a right
- * triangle (straight), extruded across the compartment width.
+ * Material under one ramp's profile between the wall and `a` mm out along the
+ * run: the part a divider's near half swallows when the ramp starts on its
+ * centreline. Curved: the quarter-ellipse arc y = run(1 − cos θ),
+ * z = height(1 − sin θ), so ∫z dy = run·height·[(1 − cos θa) − (θa/2 − sin 2θa/4)].
  */
-function computeScoopVolume(
-  params: BinParams,
-  outerW: number,
-  outerD: number,
-  wallThickness: number
+function rampAreaWithin(
+  profile: { run: number; height: number; style: string },
+  a: number
 ): number {
-  const { rows, cols } = params.compartments;
+  const reach = Math.min(Math.max(0, a), profile.run);
+  if (profile.style !== 'curved') return profile.height * reach * (1 - reach / (2 * profile.run));
+  const theta = Math.acos(1 - reach / profile.run);
+  return (
+    profile.run * profile.height * (1 - Math.cos(theta) - (theta / 2 - Math.sin(2 * theta) / 4))
+  );
+}
 
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
-  const colWidth = innerW / cols;
-  const rowDepth = innerD / rows;
+/**
+ * Cross-section (mm²) of the stacking lip's angled support below the wall top:
+ * the integrated lip's inner loft steps in from the wall face 2.65mm under the
+ * top to the full overhang inset 1.2mm under it, then runs vertical. A lipped
+ * outer ramp's strip climbs that same band flush with the lip base, so the
+ * support's area is material the shell already prices. Mirrors
+ * `integratedLipBuilder` (LIP_EXTENSION, FOOT: cross-feature import not allowed).
+ */
+function lipSupportArea(wallThickness: number): number {
+  const LIP_EXTENSION = 1.2;
+  const FOOT = 0.05;
+  const top = Math.max(0, GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER - wallThickness);
+  const foot = Math.max(0, LIP_EXTENSION - wallThickness);
+  const rampHeight = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER - LIP_EXTENSION - FOOT;
+  return ((foot + top) / 2) * rampHeight + top * (LIP_EXTENSION + GRIDFINITY.LIP_OVERLAP);
+}
+
+/**
+ * Material the scoop ramps add: the wedge under each arc, spanning the merged
+ * extent of every compartment the builder actually ramps. Mirrors
+ * `buildScoopRamps` compartment by compartment: standard style only, one ramp
+ * per rectangular, untilted compartment on the chosen side, placed on the
+ * design's own wall thickness (the style constant above is what the shell model
+ * was calibrated on; the pipeline builds `params.wallThickness`). A curved arc
+ * leaves (1 − π/4)·run·height under it, a straight bevel half the rectangle;
+ * against a lipped outer wall the profile also climbs to the wall top across
+ * `lipOffset`, less the lip support it lands inside. A ramp on an interior
+ * side starts on the divider's centreline
+ * and its span ends on the side dividers' centrelines, so the half-thickness
+ * it shares with each divider is already priced there and comes off here.
+ *
+ * Pricing one representative grid cell times cols × rows, and subtracting it,
+ * put a 5x5 bento bin at 5 g against 210 g sliced.
+ */
+function computeScoopVolume(params: BinParams, outerW: number, outerD: number): number {
+  if (params.style !== 'standard') return 0;
+  const { rows, cols, cells, thickness } = params.compartments;
+  const wall = params.wallThickness;
+
+  const innerW = outerW - 2 * wall;
+  const innerD = outerD - 2 * wall;
 
   const hasLip = params.base.stackingLip;
   const totalH = params.height * params.heightUnitMm;
   const boxWallHeight = baseWallHeight(params.base, totalH);
-  const { wallHeight, interiorHeight } = scoopFrameHeights(
+  const frame = scoopFrameHeights(
     boxWallHeight,
     computeInteriorHeight(boxWallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER),
-    binFloorMm(wallThickness)
+    binFloorMm(wall)
   );
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
-
-  // Front/back scoops run along the row axis, left/right along the column axis.
   const side = resolveScoopSide(params.scoop);
-  const runsAlongY = side === 'front' || side === 'back';
-  const span = runsAlongY ? colWidth : rowDepth;
-  const depth = runsAlongY ? rowDepth : colWidth;
+  const alongX = side === 'front' || side === 'back';
+  const grid = { cols, rows, innerW, innerD };
 
-  // Use a representative compartment: it only touches the outer wall on the
-  // scoop's axis when the bin is a single track along that axis.
-  const isRepresentativeOuter = runsAlongY ? rows === 1 : cols === 1;
-  const lipOffset = computeLipOffset(hasLip, isRepresentativeOuter, lipTaperWidth, wallThickness);
-  const profile = resolveScoopProfile(
-    params.scoop,
-    span,
-    depth,
-    isRepresentativeOuter,
-    hasLip,
-    wallHeight,
-    interiorHeight,
-    lipOffset
-  );
-  if (!profile) return 0;
+  let volume = 0;
+  const seen = new Set<number>();
+  for (const compId of cells) {
+    if (seen.has(compId)) continue;
+    seen.add(compId);
+    if (compartmentHasTiltedEdge(params.compartments, compId)) continue;
+    if (!isRectangularCompartment(params.compartments, compId)) continue;
+    const bounds = getCompartmentBounds(params.compartments, compId);
+    if (!bounds) continue;
 
-  const numScoops = cols * rows;
+    const { span, depth, isOuter } = resolveScoopPlacement(side, bounds, grid);
+    const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, wall);
+    const profile = resolveScoopProfile(
+      params.scoop,
+      span,
+      depth,
+      isOuter,
+      hasLip,
+      frame.wallHeight,
+      frame.interiorHeight,
+      lipOffset
+    );
+    if (!profile) continue;
 
-  // Cross-section area × span. Curved: quarter-ellipse (π/4 × run × height);
-  // straight: right triangle (½ × run × height).
-  const area =
-    profile.style === 'curved'
-      ? (Math.PI / 4) * profile.run * profile.height
-      : 0.5 * profile.run * profile.height;
-  const volumePerScoop = area * span;
-
-  return numScoops * volumePerScoop;
+    const wedge =
+      profile.style === 'curved'
+        ? (1 - Math.PI / 4) * profile.run * profile.height
+        : 0.5 * profile.run * profile.height;
+    const buriedBack = isOuter ? 0 : rampAreaWithin(profile, thickness / 2);
+    const lipStrip = lipOffset > 0 ? lipOffset * frame.wallHeight - lipSupportArea(wall) : 0;
+    const dividerEnds = alongX
+      ? (bounds.minCol > 0 ? 1 : 0) + (bounds.maxCol < cols - 1 ? 1 : 0)
+      : (bounds.minRow > 0 ? 1 : 0) + (bounds.maxRow < rows - 1 ? 1 : 0);
+    const exposedSpan = Math.max(0, span - (thickness / 2) * dividerEnds);
+    volume += (wedge - buriedBack + lipStrip) * exposedSpan;
+  }
+  return volume;
 }
 /**
  * Approximate open-area fraction of each pattern at neutral scale — the share
