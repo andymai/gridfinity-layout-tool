@@ -78,23 +78,27 @@ describe('navlib wire-boundary guards', () => {
     vi.doMock('@/shared/analytics/posthog/eventsErrors', () => {
       throw new Error('chunk load failed');
     });
-    const fresh = await import('./navlibClient');
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const read = fresh.guardRead(
-      'view.fov',
-      () => {
-        throw new Error('boom');
-      },
-      () => 1
-    );
-    expect(read()).toBe(1);
-    expect(warn).toHaveBeenCalledTimes(1);
-    // Once the rejected import settles the property is released, so a retry
-    // warns again instead of staying silent for the rest of the session.
-    await vi.waitFor(() => {
-      read();
-      expect(warn).toHaveBeenCalledTimes(2);
-    });
-    vi.doUnmock('@/shared/analytics/posthog/eventsErrors');
+    try {
+      const fresh = await import('./navlibClient');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const read = fresh.guardRead(
+        'view.fov',
+        () => {
+          throw new Error('boom');
+        },
+        () => 1
+      );
+      expect(read()).toBe(1);
+      expect(warn).toHaveBeenCalledTimes(1);
+      // Once the rejected import settles the property is released, so a retry
+      // warns again instead of staying silent for the rest of the session.
+      await vi.waitFor(() => {
+        read();
+        expect(warn).toHaveBeenCalledTimes(2);
+      });
+    } finally {
+      vi.doUnmock('@/shared/analytics/posthog/eventsErrors');
+      vi.resetModules();
+    }
   });
 });
