@@ -1,0 +1,27 @@
+src/features/generation/README.md
+  s_40607b2445c00b::t_781c8ce9cd570f 77
+src/shared/generation/meshPersistence.ts
+  s_40607b2445c00b::t_781c8ce9cd570f 72
+src/features/generation/worker/generators/meshImprint.ts
+  s_40607b2445c00b::t_781c8ce9cd570f 19,43-72,93-94,107-113,116,162,166,205-209,307-394,397-400,409,417,431-434,449-467,469,473,475,478-490,496,498,590
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_40607b2445c00b::t_0c977d136bf5b4 670-672,675-676,682,685-686,692-699,705-706,712,714-721
+  s_40607b2445c00b::t_12063a9b71401b 8,492-669,673-674,677-681,683-684,687-691,700-704,707-711,713,722-723
+  s_40607b2445c00b::t_d5b2e9272ded13 724
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "80b267eab377b4270da3f167bc2d4597ce4fc156",
+  "prompts": {},
+  "sessions": {
+    "s_40607b2445c00b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "649dd45a-8030-46cb-b6dc-3c571e8ab0f8",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
