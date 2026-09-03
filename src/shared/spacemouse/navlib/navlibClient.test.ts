@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const captureException = vi.fn();
 vi.mock('@/shared/analytics/posthog/eventsErrors', () => ({
@@ -11,6 +11,10 @@ describe('navlib wire-boundary guards', () => {
   beforeEach(() => {
     captureException.mockClear();
     vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('passes a value through and substitutes the fallback for null or undefined', () => {
