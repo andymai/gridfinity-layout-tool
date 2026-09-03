@@ -475,6 +475,13 @@ describe('buildFullParams', () => {
       expect(result.cornerRadius).toBe(mm(4));
       expect(result.cornerRadii).toEqual(stored.cornerRadii);
     });
+
+    it('still squares the implicit default radius when stacking, so even tiles dedupe', () => {
+      const stored = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.cornerRadius).toBe(0);
+      expect(result.cornerRadii).toBeUndefined();
+    });
   });
 
   describe('detach margins × stack-print composition (#2641)', () => {

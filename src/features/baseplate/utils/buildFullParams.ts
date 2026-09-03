@@ -268,13 +268,14 @@ export function buildFullParams(
   // Stack printing flips every plate above the bottom upside down. Magnet
   // pockets become downward bridges when flipped (audited ~10% bridge area, vs
   // 0% for a magnet-free plate), so magnets are stripped. A custom perimeter is
-  // NOT stripped, and neither is corner rounding, plain or converted to a
-  // radius-cut outline: the tiles split and dedupe by fingerprint, so identical
-  // ones stack into towers (an unsplit rounded plate stacks whole) while the
-  // unique corner tiles print singly. A corner tile's lone rounded corner is
-  // congruent about neither flip axis, so its flipped copies carry it on the
-  // opposite side of the tower (a few mm of overhang at one seam); that beats
-  // flattening a radius the user set, which is what stripping did.
+  // NOT stripped, and neither is a corner radius the user set, plain or
+  // converted to a radius-cut outline: the tiles split and dedupe by
+  // fingerprint, so identical ones stack into towers (an unsplit rounded plate
+  // stacks whole) while the unique corner tiles print singly. A corner tile's
+  // lone rounded corner is congruent about neither flip axis, so its flipped
+  // copies carry it on the opposite side of the tower (a few mm of overhang at
+  // one seam); that beats flattening a radius the user asked for. Only the
+  // implicit spec radius is squared, via `roundingOn` below.
   // Dovetail connectors survive: tongues, grooves, and the dovetail key are
   // full-height vertical prisms that flip cleanly. Only snap clip is
   // incompatible — its blind top pocket (sealed floor + undercut ledge) inverts
@@ -301,7 +302,11 @@ export function buildFullParams(
   // An outline carries its own corner geometry as arcs and shares the same
   // post-cache intersect slot, so rounding is zeroed whenever one is active —
   // whether it came from the drawer shape or from the radius conversion above.
-  const roundingOn = outline === undefined;
+  // Under stacking the implicit spec radius is squared as well, so the tiles of
+  // an evenly split drawer stay identical and stack as one tower; a radius the
+  // user set is kept, and its corner tiles print as their own towers.
+  const explicitRadius = stored.cornerRadius !== undefined || stored.cornerRadii !== undefined;
+  const roundingOn = outline === undefined && (!stackingOn || explicitRadius);
   // Detach is mutually exclusive with any active outline (rails have no outline
   // awareness — margins would need arc-clipped rail geometry). It COMPOSES with
   // stacking: rails never enter the flipped towers — they export as
