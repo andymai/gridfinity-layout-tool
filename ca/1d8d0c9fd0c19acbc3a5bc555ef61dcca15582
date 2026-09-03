@@ -1,0 +1,21 @@
+src/shared/spacemouse/cameraCommands.test.ts
+  s_dee77136de7bea::t_b981e23fdd9cf7 8,123-133
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_dee77136de7bea::t_de1d1c17289439 210
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ca1d8d0c9fd0c19acbc3a5bc555ef61dcca15582",
+  "prompts": {},
+  "sessions": {
+    "s_dee77136de7bea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "769db55d-67fa-4ea4-94ec-652c5234372e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
