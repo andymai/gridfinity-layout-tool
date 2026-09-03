@@ -360,9 +360,9 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     cornerRadii: bp.cornerRadii,
     invertDovetails: bp.invertDovetails,
     preferIdenticalPieces: bp.preferIdenticalPieces,
-    // Toggling stacking strips connectors/magnets/rounding in `buildFullParams`,
-    // so it must re-run generation — otherwise the preview keeps the pre-strip
-    // mesh (rounded corners + magnet holes that the export no longer has).
+    // Toggling stacking strips magnets, screws, the solid floor and snap clips
+    // in `buildFullParams`, so it must re-run generation — otherwise the preview
+    // keeps the pre-strip mesh (magnet holes that the export no longer has).
     stackEnabled: bp.stackPrint?.enabled ?? false,
     // Detaching margins changes the body mesh (padding-free on detached sides)
     // and emits separate rails, so it must re-trigger generation.

@@ -13,6 +13,7 @@
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { GRIDFINITY } from '@/shared/constants/bin';
 
 export type CornerKey = 'tl' | 'tr' | 'bl' | 'br';
 
@@ -30,4 +31,19 @@ export function exteriorCorners(
     bl: edges.left === 'exterior' && edges.front === 'exterior',
     br: edges.right === 'exterior' && edges.front === 'exterior',
   };
+}
+
+/**
+ * Nominal radius each corner rounds with: the per-corner override, else the
+ * uniform radius, else the spec plate radius, and zero on a corner that is not
+ * exterior. Unclamped, since callers compare corners for symmetry rather than
+ * cut with the value.
+ */
+export function effectiveCornerRadii(
+  params: Pick<ResolvedBaseplateParams, 'cornerRadius' | 'cornerRadii' | 'edges'>
+): Record<CornerKey, number> {
+  const exterior = exteriorCorners(params.edges);
+  const uniform = params.cornerRadius ?? GRIDFINITY.SOCKET_CORNER_RADIUS;
+  const radius = (k: CornerKey): number => (exterior[k] ? (params.cornerRadii?.[k] ?? uniform) : 0);
+  return { tl: radius('tl'), tr: radius('tr'), bl: radius('bl'), br: radius('br') };
 }

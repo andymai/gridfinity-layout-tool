@@ -6,6 +6,7 @@
 import type { StackPrintParams } from '@/core/types';
 import { STACK_PRINT_MAX_STACK_HEIGHT } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { effectiveCornerRadii } from '@/shared/generation/baseplateCorners';
 import type { BaseplateTiling } from '../types/tiling';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 
@@ -184,6 +185,20 @@ export interface PlateFlip {
 /** Turn about X with no re-seat — correct for any plate padded symmetrically. */
 export const DEFAULT_PLATE_FLIP: PlateFlip = { axis: 'x', offsetMm: 0 };
 
+export type PlateFlipInput = Pick<
+  ResolvedBaseplateParams,
+  | 'width'
+  | 'depth'
+  | 'paddingLeft'
+  | 'paddingRight'
+  | 'paddingFront'
+  | 'paddingBack'
+  | 'outline'
+  | 'cornerRadius'
+  | 'cornerRadii'
+  | 'edges'
+>;
+
 /**
  * Whether turning about one axis maps the socket lattice back onto itself. The
  * lattice is centred on the origin while the slab is centred on the padding
@@ -207,19 +222,24 @@ function turnsOntoItself(padA: number, padB: number, extentUnits: number): boole
  * the bottom plate visibly out of step with the rest of the tower even though
  * the outer footprints still line up.
  *
+ * Rounded corners only break a tie the padding leaves open: a full-width row
+ * rounds its two outer corners, which the Y turn swaps with each other and the
+ * X turn carries to the far edge. Rounding never overrides the lattice, because
+ * a corner tile's lone rounded corner is congruent about neither axis and a few
+ * millimetres of corner overhang at one seam costs less than sockets landing
+ * over voids.
+ *
  * A custom perimeter is never assumed congruent (its mirror symmetry isn't
  * derivable from padding), so shaped plates keep the X-axis turn.
  */
-export function planPlateFlip(
-  params: Pick<
-    ResolvedBaseplateParams,
-    'width' | 'depth' | 'paddingLeft' | 'paddingRight' | 'paddingFront' | 'paddingBack' | 'outline'
-  >
-): PlateFlip {
+export function planPlateFlip(params: PlateFlipInput): PlateFlip {
   const plain = params.outline === undefined;
-  const aboutX = plain && turnsOntoItself(params.paddingFront, params.paddingBack, params.depth);
-  const aboutY = plain && turnsOntoItself(params.paddingLeft, params.paddingRight, params.width);
-  if (!aboutX && aboutY) {
+  const latticeX = plain && turnsOntoItself(params.paddingFront, params.paddingBack, params.depth);
+  const latticeY = plain && turnsOntoItself(params.paddingLeft, params.paddingRight, params.width);
+  const r = effectiveCornerRadii(params);
+  const roundingX = r.tl === r.bl && r.tr === r.br;
+  const roundingY = r.tl === r.tr && r.bl === r.br;
+  if (latticeY && (!latticeX || (roundingY && !roundingX))) {
     return { axis: 'y', offsetMm: 2 * bodyCenterXMm(params.paddingLeft, params.paddingRight) };
   }
   return { axis: 'x', offsetMm: 2 * bodyCenterYMm(params.paddingFront, params.paddingBack) };
