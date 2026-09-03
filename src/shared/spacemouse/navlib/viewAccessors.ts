@@ -1,13 +1,14 @@
 import {
   type Camera,
   Matrix4,
+  type Mesh,
   type Object3D,
   OrthographicCamera,
   PerspectiveCamera,
   Raycaster,
   Vector3,
 } from 'three';
-import { computeContentBox, type OrbitLike } from '../cameraCommands';
+import { computeContentBox, isScaffoldName, type OrbitLike } from '../cameraCommands';
 import type { NavlibViewAccessors } from './types';
 
 /** Live per-frame handles for the active canvas. */
@@ -28,24 +29,22 @@ function isZUp(d: NavlibViewDeps | null): boolean {
   return !!d && Math.abs(d.camera.up.z) > 0.9;
 }
 
-/**
- * A mesh with real surface to pivot on. Fat lines extend Mesh but are screen
- * space strokes (dimensions, split lines), and a pivot on one is meaningless.
- */
-function isSolidMesh(obj: Object3D): boolean {
-  const o = obj as { isMesh?: boolean; isLineSegments2?: boolean; isSprite?: boolean };
-  return o.isMesh === true && o.isLineSegments2 !== true && o.isSprite !== true;
+function isTextMaterial(material: Mesh['material'] | undefined): boolean {
+  const list = Array.isArray(material) ? material : [material];
+  return list.some(
+    (m) => (m as { isTroikaTextMaterial?: boolean } | undefined)?.isTroikaTextMaterial === true
+  );
 }
 
-/** Meshes that frame the scene rather than being the model (see computeContentBox). */
-function isScaffold(obj: Object3D): boolean {
-  const name = obj.name.toLowerCase();
-  return (
-    name.includes('grid') ||
-    name.includes('shadow') ||
-    name.includes('floor') ||
-    name.includes('helper')
-  );
+/**
+ * A real surface to pivot on. Fat lines extend Mesh but are screen-space strokes
+ * (dimensions, split lines) and troika text is an annotation, so a pivot on
+ * either is meaningless.
+ */
+function isPivotTarget(obj: Object3D): obj is Mesh {
+  const o = obj as Partial<Mesh> & { isLineSegments2?: boolean };
+  if (o.isMesh !== true || o.isLineSegments2 === true || isTextMaterial(o.material)) return false;
+  return !isScaffoldName(obj.name);
 }
 
 /**
@@ -181,17 +180,15 @@ export function createNavlibViewAccessors(
       const d = getDeps();
       // No selection set exists in this app, so a selection-only probe never hits.
       if (!d || look.selectionOnly || look.direction.lengthSq() === 0) return null;
-      // look.aperture is an angular point/line picking tolerance; our content is
-      // solid meshes, for which a plain ray hit is the correct test, so it does
-      // not apply here.
+      // look.aperture is an angular point/line picking tolerance, which does not
+      // apply to the solid meshes we cast against.
       raycaster.set(look.origin, tmpForward.copy(look.direction).normalize());
-      // Sprites and drei fat lines dereference raycaster.camera and throw
-      // without it, so the ray is cast against solid meshes only, and the
-      // camera is set so no later addition to the scene can re-introduce that.
+      // Some Mesh subclasses (fat lines) read raycaster.camera; isPivotTarget
+      // skips the ones we know of, the camera covers any the scene gains later.
       raycaster.camera = d.camera;
       const candidates: Object3D[] = [];
       d.scene.traverseVisible((obj) => {
-        if (isSolidMesh(obj) && !isScaffold(obj)) candidates.push(obj);
+        if (isPivotTarget(obj)) candidates.push(obj);
       });
       const hits = raycaster.intersectObjects(candidates, false);
       return hits.length > 0 ? hits[0].point.toArray() : null;

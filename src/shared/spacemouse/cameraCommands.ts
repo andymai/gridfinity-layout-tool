@@ -34,6 +34,14 @@ export function boundingSphere(box: Box3): { center: Vector3; radius: number } {
   return { center, radius: Math.max(size.length() / 2, 1e-3) };
 }
 
+const SCAFFOLD_NAMES = ['grid', 'shadow', 'floor', 'helper'];
+
+/** Meshes that frame the scene rather than being the model, matched by name. */
+export function isScaffoldName(name: string): boolean {
+  const lower = name.toLowerCase();
+  return SCAFFOLD_NAMES.some((part) => lower.includes(part));
+}
+
 /**
  * Content bounding box: real meshes only, skipping grids, shadows, floors and
  * helpers by name so a fit frames the model rather than the scaffolding.
@@ -41,16 +49,7 @@ export function boundingSphere(box: Box3): { center: Vector3; radius: number } {
 export function computeContentBox(scene: Object3D): Box3 {
   const box = new Box3();
   scene.traverse((obj: Object3D) => {
-    if (!(obj as { isMesh?: boolean }).isMesh) return;
-    const name = obj.name.toLowerCase();
-    if (
-      name.includes('grid') ||
-      name.includes('shadow') ||
-      name.includes('floor') ||
-      name.includes('helper')
-    ) {
-      return;
-    }
+    if (!(obj as { isMesh?: boolean }).isMesh || isScaffoldName(obj.name)) return;
     box.expandByObject(obj);
   });
   // No content meshes matched; frame whatever is in the scene.
