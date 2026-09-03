@@ -1,0 +1,20 @@
+src/shared/spacemouse/navlib/navlibClient.test.ts
+  s_dee77136de7bea::t_4829ada907eb11 16-19
+  s_dee77136de7bea::t_238e2fc23653a1 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "355ae96a18a61292329629d4e4594eebeee1961b",
+  "prompts": {},
+  "sessions": {
+    "s_dee77136de7bea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "769db55d-67fa-4ea4-94ec-652c5234372e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
