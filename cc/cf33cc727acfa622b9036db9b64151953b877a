@@ -1,0 +1,57 @@
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 27,161,167
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/useSvgImport.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 21,85
+src/features/bin-designer/utils/workshopTemplates.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 14,51,62,85,103,122,147,154,186,214,287,313
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 41,164
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 16,37
+src/core/store/sharedWithMe.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 14,53
+src/features/bin-designer/utils/assemblyTree.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 9,174
+src/features/bin-designer/storage/DesignVersionService.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 29,103
+.claude/skills/release-and-ci/SKILL.md
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 62
+src/shared/analytics/mlTelemetry/computations.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 10,419
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPathTool.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 32,108
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPointerHandlers.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 35,237,311
+src/features/design-linking/hooks/useKnifeRestPairing.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 21,82
+scripts/check-secure-context-uuid.test.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 1-36
+docs/self-hosting.md
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 94-97
+src/core/sync/session/useSession.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 7,87
+src/liveblocks.config.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 13,89,93
+src/shared/items/assembly/descriptor.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 19,454
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_fe1facdf521af7::t_9b2b0bc5f4f88e 34,53-54,184
+scripts/doc-budget.json
+  s_fe1facdf521af7::t_8cad029efb2e70 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "cccf33cc727acfa622b9036db9b64151953b877a",
+  "prompts": {},
+  "sessions": {
+    "s_fe1facdf521af7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fba5d1bb-993e-4b63-a4f3-94b23e47963f",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
