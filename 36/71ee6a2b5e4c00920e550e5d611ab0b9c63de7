@@ -1,0 +1,35 @@
+src/shared/analytics/VercelAnalytics.tsx
+  s_fe1facdf521af7::t_70b7fd4d4e920e 8
+src/shared/analytics/useMLTracking.ts
+  s_fe1facdf521af7::t_70b7fd4d4e920e 65-66
+src/core/sync/session/useSession.ts
+  s_fe1facdf521af7::t_70b7fd4d4e920e 32
+.env.example
+  s_fe1facdf521af7::t_70b7fd4d4e920e 24-25
+docker/smoke.sh
+  s_fe1facdf521af7::t_70b7fd4d4e920e 22
+src/shared/analytics/VercelAnalytics.test.tsx
+  s_fe1facdf521af7::t_70b7fd4d4e920e 15-16
+docker/nginx.conf
+  s_fe1facdf521af7::t_70b7fd4d4e920e 90-94
+scripts/check-docker-parity.test.ts
+  s_fe1facdf521af7::t_70b7fd4d4e920e 264-266
+src/shared/analytics/posthog/init.ts
+  s_fe1facdf521af7::t_70b7fd4d4e920e 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "3671ee6a2b5e4c00920e550e5d611ab0b9c63de7",
+  "prompts": {},
+  "sessions": {
+    "s_fe1facdf521af7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fba5d1bb-993e-4b63-a4f3-94b23e47963f",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
