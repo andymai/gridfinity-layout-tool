@@ -1,0 +1,26 @@
+src/shared/spacemouse/cameraCommands.test.ts
+  s_b2c6bf07491888::t_e47a2591b24817 1-9,259-267
+  s_b2c6bf07491888::t_d788693038e60c 268-269
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_b2c6bf07491888::t_54e2275a1e7788 102-103
+src/shared/spacemouse/components/SpaceMouseController/SpaceMouseController.tsx
+  s_b2c6bf07491888::t_54e2275a1e7788 121-123
+src/shared/spacemouse/cameraCommands.ts
+  s_b2c6bf07491888::t_54e2275a1e7788 146-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "afe4bcd742eeed609b66b089840701e7679035ae",
+  "prompts": {},
+  "sessions": {
+    "s_b2c6bf07491888": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1b7a713b-af95-4c96-88f9-61065481600d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
