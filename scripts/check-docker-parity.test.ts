@@ -261,7 +261,9 @@ describe('docker/nginx.conf mirrors vercel.json', () => {
   });
 
   describe('content routes', () => {
-    const [english, localized] = rewrites;
+    const english = rewrites.find((r) => r.source.startsWith('/:slug('));
+    const localized = rewrites.find((r) => r.source.startsWith('/:locale('));
+    if (!english || !localized) throw new Error('vercel.json lost a content-page rewrite');
     const alt = (source: string, name: string): string[] =>
       (new RegExp(`:${name}\\(([^)]+)\\)`).exec(source)?.[1] ?? '').split('|');
 

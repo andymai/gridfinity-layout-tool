@@ -41,7 +41,7 @@ export function initAnalytics(): void {
   const key = import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string | undefined;
 
   if (!key) {
-    if (!(import.meta.env.VITE_SELF_HOSTED as string | undefined)) {
+    if ((import.meta.env.VITE_SELF_HOSTED as string | undefined) !== '1') {
       console.warn('Posthog API key not set, analytics disabled');
     }
     return;

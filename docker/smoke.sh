@@ -19,7 +19,7 @@ HDR_FILE="$(mktemp)"
 trap 'rm -f "$BODY_FILE" "$HDR_FILE"' EXIT
 fetch() {
   local path="$1"; shift
-  STATUS="$(curl -s -o "$BODY_FILE" -D "$HDR_FILE" -w '%{http_code}' "$@" "$BASE$path")"
+  STATUS="$(curl -s --connect-timeout 5 --max-time 30 -o "$BODY_FILE" -D "$HDR_FILE" -w '%{http_code}' "$@" "$BASE$path")"
   HEADERS="$(tr -d '\r' < "$HDR_FILE")"
 }
 header() { printf '%s\n' "$HEADERS" | awk -v k="$(printf '%s' "$1" | tr 'A-Z' 'a-z')" 'BEGIN{IGNORECASE=0} { h=$1; sub(":$","",h); if (tolower(h)==k) { $1=""; sub(/^ /,""); print } }' | head -1; }

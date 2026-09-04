@@ -29,7 +29,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     // throws, the status never leaves 'unknown', and every sign-in surface
     // sits behind a permanent skeleton. Not broadcast: it is a local default,
     // not a server answer.
-    if (import.meta.env.VITE_SELF_HOSTED as string | undefined) {
+    if ((import.meta.env.VITE_SELF_HOSTED as string | undefined) === '1') {
       set({ status: 'anonymous', user: null });
       return;
     }

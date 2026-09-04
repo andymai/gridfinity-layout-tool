@@ -5,6 +5,6 @@ import { Analytics } from '@vercel/analytics/react';
 // page load. A literal branch, not a shared helper, so a self-hosted build folds
 // it away and the chunk is not emitted.
 export function VercelAnalytics(): JSX.Element | null {
-  if (import.meta.env.VITE_SELF_HOSTED as string | undefined) return null;
+  if ((import.meta.env.VITE_SELF_HOSTED as string | undefined) === '1') return null;
   return <Analytics />;
 }

@@ -12,8 +12,8 @@ afterEach(() => {
 });
 
 describe('VercelAnalytics', () => {
-  it('renders the Vercel component on a hosted build', () => {
-    vi.stubEnv('VITE_SELF_HOSTED', '');
+  it('renders the Vercel component on a hosted build, including for a "0" value', () => {
+    vi.stubEnv('VITE_SELF_HOSTED', '0');
     const { queryByTestId } = render(<VercelAnalytics />);
     expect(queryByTestId('vercel-analytics')).not.toBeNull();
   });
