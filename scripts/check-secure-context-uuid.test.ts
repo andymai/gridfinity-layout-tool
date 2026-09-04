@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -14,9 +14,9 @@ const HELPER = 'shared/utils/uuid.ts';
 // or a container, and the match is the bare identifier on comment-stripped
 // source, so destructuring, bracket access and line breaks cannot slip past.
 describe('randomUUID is only reached through generateUUID', () => {
-  const files = readdirSync(join(ROOT, 'src'), { recursive: true, encoding: 'utf8' }).filter(
-    (f) => /\.(ts|tsx)$/.test(f) && !/\.test\.tsx?$/.test(f) && f !== HELPER
-  );
+  const files = readdirSync(join(ROOT, 'src'), { recursive: true, encoding: 'utf8' })
+    .map((f) => f.split(sep).join('/'))
+    .filter((f) => /\.(ts|tsx)$/.test(f) && !/\.test\.tsx?$/.test(f) && f !== HELPER);
 
   it('finds the source tree', () => {
     expect(files.length).toBeGreaterThan(500);
