@@ -14,6 +14,7 @@ import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { ICON_MAX_WIDTH_MM, TEXT_BAND_MM } from './labelPlateBuilder';
 import { buildIconSolid, measureIconBox } from './labelPlateIcons';
+import { sketch } from './meshUtils';
 import { drawingFromSvgPath } from './svgDrawing';
 import { TEXT_BOOLEAN_EPSILON } from './textBuilder';
 
@@ -151,6 +152,69 @@ describe('SVG conversion fidelity', () => {
     const actual = solidVolume('magnet');
     expect(actual).toBeGreaterThan(expected * 0.99);
     expect(actual).toBeLessThan(expected * 1.01);
+  });
+
+  /**
+   * Enclosed area of a design-frame path, via a unit-height extrusion. brepjs
+   * has no 2D area measure, and volume of a known height is exact.
+   */
+  const pathArea = (d: string): number => {
+    const drawing = drawingFromSvgPath(d);
+    if (!drawing) throw new Error('drawingFromSvgPath returned null');
+    const solid = sketch(drawing, 'XY', 0).extrude(1);
+    try {
+      const r = measureVolume(solid);
+      if (!isOk(r)) throw new Error('measureVolume failed');
+      return r.value;
+    } finally {
+      solid.delete();
+    }
+  };
+
+  /**
+   * Icons whose outline imports at the wrong size, so an area-based expectation
+   * cannot be stated for them. Both use an SVG large-arc flag, which the
+   * importer drops: it takes the minor arc instead, and `clip` comes in as a
+   * 1.8x3.4 sliver of the 10x10 circlip the picker draws. Their printed
+   * geometry does not match their preview — a defect of its own, not this
+   * test's to assert around.
+   */
+  const MINOR_ARC_IMPORT = new Set<LabelPlateIconId>(['clip', 'lockWasher']);
+
+  // Generalises the nut and washer checks above to every other holed icon,
+  // including ones whose boundaries are curves with no closed-form area. Area
+  // is measured in the design frame and carried across by scale², because holes
+  // take the same transform as the outline they sit in.
+  //
+  // Bounded rather than exact: `eyeBolt`'s bore crosses its own outline where
+  // the eye meets the shank, so the part of it outside the silhouette removes
+  // nothing, and full-hole equality would fail on an icon that is fine. The
+  // floor still fails a bore that cut nothing at all, which is the defect —
+  // this is how the washer shipped as a disc.
+  it('cuts every declared hole in every holed icon', () => {
+    const checked: LabelPlateIconId[] = [];
+    for (const icon of LABEL_PLATE_ICONS) {
+      const def = LABEL_ICON_PATHS[icon];
+      if (!def.holes?.length || MINOR_ARC_IMPORT.has(icon)) continue;
+
+      const outline = drawingFromSvgPath(def.outline);
+      const box = measureIconBox(icon, TEXT_BAND_MM, ICON_MAX_WIDTH_MM);
+      expect(outline, icon).not.toBeNull();
+      expect(box, icon).not.toBeNull();
+      if (!outline || !box) continue;
+
+      const perMm2 = (box.heightMm / outline.boundingBox.height) ** 2 * SOLID_HEIGHT_MM;
+      const declared = def.holes.reduce((sum, hole) => sum + pathArea(hole), 0) * perMm2;
+      const removed = pathArea(def.outline) * perMm2 - solidVolume(icon);
+
+      expect(removed, `${icon} bore did not cut`).toBeGreaterThan(declared * 0.75);
+      expect(removed, `${icon} removed more than its holes`).toBeLessThan(declared * 1.001);
+      checked.push(icon);
+    }
+    // Guards the guard: a rename that emptied this loop would pass silently.
+    expect(checked).toEqual(
+      expect.arrayContaining(['spatula', 'whisk', 'bottleOpener', 'peeler', 'nut', 'washer'])
+    );
   });
 
   it('returns null rather than throwing on unparseable path data', () => {

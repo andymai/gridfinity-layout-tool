@@ -78,6 +78,20 @@ export const LABEL_PLATE_ICONS = [
   'file',
   'endMill',
   'clip',
+  'screwdriverBit',
+  // Kitchen
+  'teaspoon',
+  'tablespoon',
+  'fork',
+  'knife',
+  'spatula',
+  'whisk',
+  'tongs',
+  'ladle',
+  'chopsticks',
+  'bottleOpener',
+  'peeler',
+  'rollingPin',
 ] as const;
 
 export type LabelPlateIconId = (typeof LABEL_PLATE_ICONS)[number];
