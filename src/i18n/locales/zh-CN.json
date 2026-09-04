@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "重量",
   "binDesigner.export.engine.preparing": "正在准备引擎…",
   "binDesigner.export.error.body": "几何引擎处理此收纳盒时遇到问题。请重试，若问题持续，请报告问题。",
+  "binDesigner.export.error.outOfMemory": "几何引擎内存不足：此设计过大，无法以完整质量导出。请尝试降低高度、使用更粗的壁图案或关闭壁图案，然后再次导出。",
   "binDesigner.export.error.report": "报告问题",
   "binDesigner.export.error.retry": "重试",
   "binDesigner.export.error.timeout": "导出超时 — 此设计可能过于复杂。请尝试降低高度或关闭壁图案，然后再次导出。",

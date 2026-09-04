@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "Poids",
   "binDesigner.export.engine.preparing": "Préparation du moteur…",
   "binDesigner.export.error.body": "Le moteur de géométrie a rencontré un problème avec ce bin. Réessayez ou signalez le problème s'il persiste.",
+  "binDesigner.export.error.outOfMemory": "Le moteur de géométrie a manqué de mémoire : ce modèle est trop volumineux pour être exporté en pleine qualité. Essayez de réduire la hauteur, d'utiliser un motif de paroi plus grossier ou de le désactiver, puis exportez à nouveau.",
   "binDesigner.export.error.report": "Signaler un problème",
   "binDesigner.export.error.retry": "Réessayer",
   "binDesigner.export.error.timeout": "Délai d'exportation dépassé — ce modèle est peut-être trop complexe. Essayez de réduire la hauteur ou de désactiver le motif de paroi, puis exportez à nouveau.",

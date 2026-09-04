@@ -66,9 +66,21 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** How many recovery attempts have been spent so far. */
+export interface ResilienceAttempts {
+  readonly retryCount: number;
+  readonly restartCount: number;
+}
+
 interface ResilienceOptions {
   /** Override the default retryability test (e.g. to widen non-retryable cases). */
   isRetryable?: (err: Error) => boolean;
+  /**
+   * Fires before every retry and before the post-restart attempt. A caller
+   * that ends up failing has no result to read the counts from, so this is
+   * how its failure telemetry learns what the export actually cost.
+   */
+  onAttempt?: (attempts: ResilienceAttempts) => void;
 }
 
 /**
@@ -98,8 +110,14 @@ export async function exportWithResilience<T>(
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       if (!isRetryable(error)) throw error;
+      // A trapped kernel refuses every later request until the worker is
+      // replaced, and a heap at the wasm32 ceiling never shrinks, so the
+      // in-process retries can only fail; go straight to the restart.
+      const code = extractErrorCode(error);
+      if (code === 'KERNEL_CRASHED' || code === 'OUT_OF_MEMORY') break;
       if (attempt === RETRY_DELAYS_MS.length) break; // out of in-process retries
       retryCount++;
+      options.onAttempt?.({ retryCount, restartCount });
       await delay(RETRY_DELAYS_MS[attempt]);
     }
   }
@@ -110,6 +128,7 @@ export async function exportWithResilience<T>(
   // and throw "Bridge not available" before any new worker boots.
   bridgeManager.refresh();
   restartCount++;
+  options.onAttempt?.({ retryCount, restartCount });
   await bridgeManager.acquire();
   try {
     const result = await operation();

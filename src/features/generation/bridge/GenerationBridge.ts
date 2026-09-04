@@ -368,7 +368,7 @@ export class GenerationBridge {
    * generation queues behind it and times out in turn. A replacement worker is
    * started eagerly so the next generation doesn't pay the full init latency.
    */
-  hardResetWorker(): void {
+  hardResetWorker(reason = 'Worker was reset after a generation timeout'): void {
     if (this.destroyed) return;
     this.isWarming = false;
     if (this.worker) {
@@ -380,7 +380,7 @@ export class GenerationBridge {
     // so its caller fails fast instead of hanging until its own export timeout.
     for (const pending of this.pendingExports.values()) {
       this.clearExportTimer(pending);
-      pending.reject(new Error('Worker was reset after a generation timeout'));
+      pending.reject(new Error(reason));
     }
     this.pendingExports.clear();
     for (const pending of this.pendingImports.values()) {

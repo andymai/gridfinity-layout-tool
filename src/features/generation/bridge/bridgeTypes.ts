@@ -156,3 +156,17 @@ export class ExportTimeoutError extends Error {
     this.name = 'ExportTimeoutError';
   }
 }
+
+/**
+ * Rejection built from a worker `ERROR` response. Carries the worker's
+ * {@link ExportErrorCode} as `code`, the same field {@link ExportTimeoutError}
+ * uses, so `getErrorCode()` reads both alike.
+ */
+export class WorkerRequestError extends Error {
+  readonly code: ExportErrorCode | undefined;
+  constructor(message: string, code?: ExportErrorCode) {
+    super(message);
+    this.name = 'WorkerRequestError';
+    this.code = code;
+  }
+}
