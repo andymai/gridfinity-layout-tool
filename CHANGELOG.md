@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.484.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.483.3...gridfinity-layout-tool-v4.484.0) (2026-09-04)
+
+
+### Features
+
+* **docker:** publish a self-hosting image to GHCR ([#4092](https://github.com/andymai/gridfinity-layout-tool/issues/4092)) ([7301c2c](https://github.com/andymai/gridfinity-layout-tool/commit/7301c2c7b57504f70018c8c8dca8cd30d51ca974))
+
+
+### Bug Fixes
+
+* **bin-designer:** generate ids through the guarded helper outside secure contexts ([#4098](https://github.com/andymai/gridfinity-layout-tool/issues/4098)) ([b4db158](https://github.com/andymai/gridfinity-layout-tool/commit/b4db1584c49c26e615cf3c2cf3e65fd7572144fd))
+
 ## [4.483.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.483.2...gridfinity-layout-tool-v4.483.3) (2026-09-04)
 
 
