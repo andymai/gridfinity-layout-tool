@@ -99,7 +99,8 @@ export function createNavlibViewAccessors(
       // The driver navigates unbounded, so its pose arrives without the limits
       // this canvas puts on the mouse; it reads the corrected pose back next
       // frame and continues from there.
-      constrainPose(d.camera, d.controls, prevOffset, contentBox(d.scene));
+      const box = d.controls.enablePan === false ? null : contentBox(d.scene);
+      constrainPose(d.camera, d.controls, prevOffset, box);
       d.controls.update();
     },
     getPerspective() {

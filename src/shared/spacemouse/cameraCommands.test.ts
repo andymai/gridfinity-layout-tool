@@ -1,4 +1,12 @@
-import { Box3, type Camera, Frustum, Matrix4, PerspectiveCamera, Vector3 } from 'three';
+import {
+  Box3,
+  type Camera,
+  Frustum,
+  Matrix4,
+  OrthographicCamera,
+  PerspectiveCamera,
+  Vector3,
+} from 'three';
 import { describe, expect, it } from 'vitest';
 import {
   applyFrameMotion,
@@ -246,6 +254,17 @@ describe('pan limits', () => {
     const { target } = panHard(model);
     const nearest = model.clampPoint(target, new Vector3());
     expect(target.distanceTo(nearest)).toBeCloseTo(boundingSphere(model).radius, 6);
+  });
+
+  it('keeps the leash positive when the driver writes inverted view extents', () => {
+    const camera = new OrthographicCamera(1, -1, -1, 1, 0.1, 1000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(0, -300, 200);
+    const controls = aimingOrbit(camera);
+    controls.target.set(900, 0, 0);
+    applyFrameMotion(camera, controls, { ...noMotion, panX: 1 }, model);
+    const nearest = model.clampPoint(controls.target, new Vector3());
+    expect(controls.target.distanceTo(nearest)).toBeCloseTo(1, 6);
   });
 
   it('leaves the leash to a canvas that panned, not one that forbids it', () => {

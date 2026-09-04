@@ -143,7 +143,11 @@ function visibleRadius(camera: Camera, distance: number): number {
     return Math.min(halfHeight, halfHeight * camera.aspect);
   }
   if (camera instanceof OrthographicCamera) {
-    return Math.min(camera.top - camera.bottom, camera.right - camera.left) / (2 * camera.zoom);
+    // The driver writes these extents through `setViewExtents`, so they are not
+    // guaranteed to arrive with min below max or with a usable zoom.
+    const height = Math.abs(camera.top - camera.bottom);
+    const width = Math.abs(camera.right - camera.left);
+    return Math.min(height, width) / (2 * Math.max(Math.abs(camera.zoom), 1e-6));
   }
   return Infinity;
 }
