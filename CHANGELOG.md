@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.483.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.483.2...gridfinity-layout-tool-v4.483.3) (2026-09-04)
+
+
+### Bug Fixes
+
+* **generation:** replace a crashed kernel instead of retrying on it ([#4090](https://github.com/andymai/gridfinity-layout-tool/issues/4090)) ([4019ae4](https://github.com/andymai/gridfinity-layout-tool/commit/4019ae41a0645155998f97c0fcae7de89ff2dd67))
+
 ## [4.483.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.483.1...gridfinity-layout-tool-v4.483.2) (2026-09-03)
 
 
