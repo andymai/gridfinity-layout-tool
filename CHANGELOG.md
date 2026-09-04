@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.485.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.484.0...gridfinity-layout-tool-v4.485.0) (2026-09-04)
+
+
+### Features
+
+* **labels:** add a kitchen label-icon group and a screwdriver bit ([#4103](https://github.com/andymai/gridfinity-layout-tool/issues/4103)) ([76fc6f5](https://github.com/andymai/gridfinity-layout-tool/commit/76fc6f5a19d676e5c4e07134101abe4f96bced3e))
+
+
+### Bug Fixes
+
+* **spacemouse:** stall the puck at the pole and keep the model in frame ([#4105](https://github.com/andymai/gridfinity-layout-tool/issues/4105)) ([dbe737d](https://github.com/andymai/gridfinity-layout-tool/commit/dbe737d34df88c29eec8f2e745a430fd9de73b54))
+
 ## [4.484.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.483.3...gridfinity-layout-tool-v4.484.0) (2026-09-04)
 
 
