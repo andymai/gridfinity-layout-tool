@@ -17,6 +17,18 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
+
+describe('getMlTelemetry on a self-hosted build', () => {
+  it('resolves null without ever importing the module', async () => {
+    vi.stubEnv('VITE_SELF_HOSTED', '1');
+    vi.resetModules();
+    const runsBefore = state.factoryRuns;
+    const { getMlTelemetry: fresh } = await import('./useMLTracking');
+    await expect(fresh()).resolves.toBeNull();
+    expect(state.factoryRuns).toBe(runsBefore);
+  });
 });
 
 describe('getMlTelemetry', () => {

@@ -214,6 +214,7 @@
     "knip": "^6.32.2",
     "lint-staged": "^17.3.0",
     "marked": "^18.0.10",
+    "path-to-regexp": "6.3.0",
     "postcss": "^8.5.26",
     "prettier": "^3.9.5",
     "rollup-plugin-visualizer": "^7.1.1",

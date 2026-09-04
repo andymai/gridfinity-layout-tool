@@ -25,6 +25,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   status: 'unknown',
   user: null,
   refresh: async () => {
+    // A self-hosted build has no auth API. Without this the first refresh
+    // throws, the status never leaves 'unknown', and every sign-in surface
+    // sits behind a permanent skeleton. Not broadcast: it is a local default,
+    // not a server answer.
+    if (import.meta.env.VITE_SELF_HOSTED as string | undefined) {
+      set({ status: 'anonymous', user: null });
+      return;
+    }
     const next = await refreshFromServer();
     if (!next) return;
     set(next.state);

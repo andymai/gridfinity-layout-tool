@@ -14,6 +14,7 @@ describe('useSessionStore', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   it('starts in "unknown" status', () => {
@@ -62,6 +63,21 @@ describe('useSessionStore', () => {
     });
     // Stays authenticated rather than spuriously signing the user out.
     expect(useSessionStore.getState().status).toBe('authenticated');
+  });
+
+  it('resolves to anonymous without calling the API or broadcasting on a self-hosted build', async () => {
+    vi.stubEnv('VITE_SELF_HOSTED', '1');
+    const channel = new BroadcastChannel('gflt-session');
+    const received: unknown[] = [];
+    channel.addEventListener('message', (e) => received.push(e.data));
+    await act(async () => {
+      await useSessionStore.getState().refresh();
+    });
+    expect(useSessionStore.getState().status).toBe('anonymous');
+    expect(fetchMock).not.toHaveBeenCalled();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(received).toEqual([]);
+    channel.close();
   });
 });
 

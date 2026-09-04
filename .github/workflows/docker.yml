@@ -1,0 +1,203 @@
+name: Docker
+
+# Builds the self-hosting image (see docs/self-hosting.md), smokes it, and on a
+# release publishes it to GHCR. Path-filtered on PRs, so it is not a required
+# check: a required check that never runs would sit pending and block merging.
+#
+# The build cache is a tag on the public package rather than the GHA cache:
+# mode=max exports the whole ~1 GB build stage, which would evict the pnpm-store
+# and ESLint caches CI relies on. Only non-PR runs write it; PRs read it.
+
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - docker/**
+      - docker-compose.yml
+      - vercel.json
+      - vite.config.ts
+      - scripts/contentRoutes.ts
+      - scripts/build-content.ts
+      - scripts/build-route-entries.ts
+      - scripts/vite-plugin-*.ts
+      - tsconfig*.json
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .npmrc
+      - .nvmrc
+      - .github/workflows/docker.yml
+  # Writes the shared build cache. The two package manifests are left out here
+  # so the daily release commits (each bumps package.json) do not add a main
+  # build on top of the release build.
+  push:
+    branches:
+      - main
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - docker/**
+      - docker-compose.yml
+      - vercel.json
+      - vite.config.ts
+      - scripts/contentRoutes.ts
+      - scripts/build-content.ts
+      - scripts/build-route-entries.ts
+      - scripts/vite-plugin-*.ts
+      - tsconfig*.json
+      - pnpm-workspace.yaml
+      - .npmrc
+      - .nvmrc
+      - .github/workflows/docker.yml
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Full release tag to publish (gridfinity-layout-tool-vX.Y.Z)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE: ghcr.io/andymai/gridfinity-layout-tool
+  CACHE_REF: ghcr.io/andymai/gridfinity-layout-tool:buildcache
+
+jobs:
+  smoke:
+    name: Build and smoke
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # packages: write is only exercised by the cache export on non-PR events; fork
+    # and Dependabot PRs get a read-only token from GitHub regardless.
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      sha: ${{ steps.meta.outputs.sha }}
+      time: ${{ steps.meta.outputs.time }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      # The image has no .git; these feed version.json and the OCI labels.
+      - name: Resolve build metadata
+        id: meta
+        run: |
+          {
+            echo "sha=$(git rev-parse HEAD)"
+            echo "time=$(git log -1 --format=%cI)"
+            echo "version=$(node -p "require('./package.json').version")"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+      - name: Build
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          load: true
+          platforms: linux/amd64
+          provenance: false
+          tags: ${{ env.IMAGE }}:smoke
+          build-args: |
+            GIT_SHA=${{ steps.meta.outputs.sha }}
+            GIT_COMMIT_TIME=${{ steps.meta.outputs.time }}
+            VERSION=${{ steps.meta.outputs.version }}
+          cache-from: type=registry,ref=${{ env.CACHE_REF }}
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=registry,ref={0},mode=max', env.CACHE_REF) || '' }}
+
+      # Same hardening as docker-compose.yml. The probe interval is shortened
+      # here so the health wait does not race the first 30 s probe.
+      - name: Run
+        run: |
+          docker run -d --name smoke --read-only --tmpfs /tmp -p 8080:8080 \
+            --health-interval=5s --health-start-period=2s \
+            "$IMAGE:smoke"
+          for i in $(seq 1 30); do
+            status="$(docker inspect --format '{{.State.Health.Status}}' smoke)"
+            [ "$status" = "healthy" ] && exit 0
+            sleep 2
+          done
+          echo "container never became healthy (last: $status)" >&2
+          docker logs smoke
+          exit 1
+
+      - name: Smoke
+        env:
+          EXPECTED_SHA: ${{ steps.meta.outputs.sha }}
+          EXPECTED_VERSION: ${{ steps.meta.outputs.version }}
+        run: docker/smoke.sh http://127.0.0.1:8080 "$IMAGE:smoke"
+
+      - name: Container logs
+        if: failure()
+        run: docker logs smoke
+
+  publish:
+    name: Publish to GHCR
+    if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+      # Release tags carry the package name (gridfinity-layout-tool-vX.Y.Z);
+      # `match` strips it so the image tags are plain semver. `value` is empty
+      # on a release event and falls back to the ref.
+      - name: Image tags
+        id: tags
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE }}
+          flavor: latest=auto
+          tags: |
+            type=semver,pattern={{version}},value=${{ inputs.tag }},match=v(\d+\.\d+\.\d+)$
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }},match=v(\d+\.\d+\.\d+)$
+
+      - name: Build and push
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          provenance: false
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: ${{ steps.tags.outputs.labels }}
+          build-args: |
+            GIT_SHA=${{ needs.smoke.outputs.sha }}
+            GIT_COMMIT_TIME=${{ needs.smoke.outputs.time }}
+            VERSION=${{ needs.smoke.outputs.version }}
+          cache-from: type=registry,ref=${{ env.CACHE_REF }}

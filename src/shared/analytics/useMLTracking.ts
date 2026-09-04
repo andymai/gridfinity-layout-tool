@@ -59,6 +59,10 @@ let _mlTelemetryUnavailable = false;
  * condition for the whole session, so the first failure latches tracking off.
  */
 export function getMlTelemetry(): Promise<MlTelemetryModule | null> {
+  // A self-hosted instance has no /api/ml-telemetry; every tracking call and
+  // the boot in main.tsx come through here, so this is the one place to stop
+  // the module from loading and beaconing.
+  if (import.meta.env.VITE_SELF_HOSTED as string | undefined) return Promise.resolve(null);
   if (_mlTelemetry) return Promise.resolve(_mlTelemetry);
   if (_mlTelemetryUnavailable) return Promise.resolve(null);
   return import('./mlTelemetry').then(

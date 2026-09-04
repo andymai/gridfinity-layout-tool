@@ -288,6 +288,9 @@ importers:
       marked:
         specifier: ^18.0.10
         version: 18.0.10
+      path-to-regexp:
+        specifier: 6.3.0
+        version: 6.3.0
       postcss:
         specifier: ^8.5.26
         version: 8.5.26

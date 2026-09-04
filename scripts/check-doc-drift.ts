@@ -63,7 +63,9 @@ export const wordCount = (s: string): number => s.split(/\s+/).filter(Boolean).l
 let haystackCache: string | null = null;
 export function haystack(): string {
   if (haystackCache !== null) return haystackCache;
-  const files = tracked(/\.(ts|tsx|js|mjs|cjs|py|sh|json|yml|yaml)$|^\.env\.example$/).filter(
+  const files = tracked(
+    /\.(ts|tsx|js|mjs|cjs|py|sh|json|yml|yaml|conf)$|^\.env\.example$|^Dockerfile$/
+  ).filter(
     (f) =>
       !f.endsWith('.md') &&
       !f.startsWith('src/i18n/locales/') &&
