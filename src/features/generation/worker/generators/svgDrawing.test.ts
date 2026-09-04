@@ -2,8 +2,14 @@
 /**
  * The SVG path -> brepjs Drawing bridge. Covers the properties the icon
  * catalog depends on: the full path grammar parses, arcs stay analytic rather
- * than faceted, Y is flipped from SVG's convention, and unparseable input
- * yields null instead of throwing inside the worker.
+ * than faceted, both arc flags pick the arc the browser would draw, Y is
+ * flipped from SVG's convention, and unparseable input yields null instead of
+ * throwing inside the worker.
+ *
+ * The arc cases are stated as enclosed area against a closed form, because
+ * that is the only measure the failure they guard against moves: the four
+ * candidate arcs through one pair of endpoints share a radius, and two of them
+ * share a bounding box as well.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume } from 'brepjs';
@@ -38,6 +44,36 @@ describe('drawingFromSvgPath', () => {
   it('keeps arcs analytic rather than faceting them', () => {
     // A polyline approximation lands short of pi*r^2 by far more than this.
     expect(areaOf('M 0 -5 A 5 5 0 0 1 0 5 A 5 5 0 0 1 0 -5 Z')).toBeCloseTo(Math.PI * 25, 9);
+  });
+
+  /**
+   * Circular segment cut off by a chord `2 * halfChord` long, on radius `r`.
+   * The minor arc plus that chord encloses exactly this.
+   */
+  const segmentArea = (r: number, halfChord: number): number => {
+    const theta = 2 * Math.asin(halfChord / r);
+    return ((r * r) / 2) * (theta - Math.sin(theta));
+  };
+
+  it('takes the long way round when the large-arc flag is set', () => {
+    // Endpoints (3, +/-4) on a radius-5 circle. The minor arc encloses the
+    // segment; the large one encloses everything else.
+    const minor = segmentArea(5, 4);
+    expect(areaOf('M 3 -4 A 5 5 0 0 1 3 4 Z')).toBeCloseTo(minor, 6);
+    expect(areaOf('M 3 -4 A 5 5 0 1 1 3 4 Z')).toBeCloseTo(Math.PI * 25 - minor, 6);
+  });
+
+  it('takes the long way round on a relative arc too', () => {
+    expect(areaOf('M 3 -4 a 5 5 0 1 1 0 8 Z')).toBeCloseTo(Math.PI * 25 - segmentArea(5, 4), 6);
+  });
+
+  it('puts the arc on the side the sweep flag asks for', () => {
+    // A 6x8 box with its top edge replaced by an arc. Sweep 1 bows the arc into
+    // the box and sweep 0 bows it out, so the same radius lands 2x the segment
+    // apart. Both were the outward answer before the flags were honoured.
+    const bulge = segmentArea(5, 3);
+    expect(areaOf('M 0 0 A 5 5 0 0 1 6 0 L 6 -8 L 0 -8 Z')).toBeCloseTo(48 - bulge, 6);
+    expect(areaOf('M 0 0 A 5 5 0 0 0 6 0 L 6 -8 L 0 -8 Z')).toBeCloseTo(48 + bulge, 6);
   });
 
   it('parses cubic and quadratic segments', () => {

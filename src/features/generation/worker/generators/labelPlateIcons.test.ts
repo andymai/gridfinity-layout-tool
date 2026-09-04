@@ -171,16 +171,6 @@ describe('SVG conversion fidelity', () => {
     }
   };
 
-  /**
-   * Icons whose outline imports at the wrong size, so an area-based expectation
-   * cannot be stated for them. Both use an SVG large-arc flag, which the
-   * importer drops: it takes the minor arc instead, and `clip` comes in as a
-   * 1.8x3.4 sliver of the 10x10 circlip the picker draws. Their printed
-   * geometry does not match their preview — a defect of its own, not this
-   * test's to assert around.
-   */
-  const MINOR_ARC_IMPORT = new Set<LabelPlateIconId>(['clip', 'lockWasher']);
-
   // Generalises the nut and washer checks above to every other holed icon,
   // including ones whose boundaries are curves with no closed-form area. Area
   // is measured in the design frame and carried across by scale², because holes
@@ -195,7 +185,7 @@ describe('SVG conversion fidelity', () => {
     const checked: LabelPlateIconId[] = [];
     for (const icon of LABEL_PLATE_ICONS) {
       const def = LABEL_ICON_PATHS[icon];
-      if (!def.holes?.length || MINOR_ARC_IMPORT.has(icon)) continue;
+      if (!def.holes?.length) continue;
 
       const outline = drawingFromSvgPath(def.outline);
       const box = measureIconBox(icon, TEXT_BAND_MM, ICON_MAX_WIDTH_MM);
@@ -213,7 +203,15 @@ describe('SVG conversion fidelity', () => {
     }
     // Guards the guard: a rename that emptied this loop would pass silently.
     expect(checked).toEqual(
-      expect.arrayContaining(['spatula', 'whisk', 'bottleOpener', 'peeler', 'nut', 'washer'])
+      expect.arrayContaining([
+        'spatula',
+        'whisk',
+        'bottleOpener',
+        'peeler',
+        'nut',
+        'washer',
+        'clip',
+      ])
     );
   });
 
