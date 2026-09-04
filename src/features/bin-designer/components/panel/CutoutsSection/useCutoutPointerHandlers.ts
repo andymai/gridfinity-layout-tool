@@ -32,6 +32,7 @@ import { MIN_CUTOUT_SIZE, type AlignmentGuide } from './geometry';
 import { cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import { createDefaultCutout, defaultPlaceSize } from './cutoutHelpers';
 import { type InteractionMode, type PreviewMap } from './cutoutInteractionTypes';
+import { generateUUID } from '@/shared/utils/uuid';
 
 interface DrawingPreviewState {
   readonly x: number;
@@ -233,7 +234,7 @@ export function useCutoutPointerHandlers(
       const x = Math.max(0, Math.min(snap(placeMode.startMmX - defaultW / 2), binWidth - defaultW));
       const y = Math.max(0, Math.min(snap(placeMode.startMmY - defaultD / 2), binDepth - defaultD));
 
-      const newId = crypto.randomUUID();
+      const newId = generateUUID();
       const created = createDefaultCutout(newId, placeMode.shape, x, y, defaultW, defaultD);
 
       // Polygon mask: reject click-to-place inside an unfilled notch, testing
@@ -307,7 +308,7 @@ export function useCutoutPointerHandlers(
       drawingPreview.width >= MIN_CUTOUT_SIZE &&
       drawingPreview.depth >= MIN_CUTOUT_SIZE
     ) {
-      const newId = crypto.randomUUID();
+      const newId = generateUUID();
       const created = createDefaultCutout(
         newId,
         drawingPreview.shape,

@@ -18,6 +18,7 @@ import { STAGING_ID } from '@/core/constants';
 import { gridUnits, heightUnits, type Bin, type GridUnits } from '@/core/types';
 import { pairPartner } from '@/shared/utils/binPairs';
 import { useCustomBins, type CustomBinRef } from '@/features/bin-designer';
+import { generateUUID } from '@/shared/utils/uuid';
 
 type RestMeta = NonNullable<CustomBinRef['knifeRest']>;
 
@@ -78,7 +79,7 @@ export function useKnifeRestPairing(): void {
       const rest = restFootprint(meta);
       const gapU = Math.max(0, Math.round((meta.gapMm / layout.gridUnitMm) * 2) / 2);
       const at = restPosition(bin, meta, gapU, rest);
-      const pairId = crypto.randomUUID();
+      const pairId = generateUUID();
       batch(() => {
         const base = {
           width: gridUnits(rest.w),

@@ -16,6 +16,7 @@ import type {
 } from '@/shared/types/assembly';
 import { ASSEMBLY_PART_TYPES } from '@/shared/types/assembly';
 import { isRecord } from '@/shared/utils/isRecord';
+import { generateUUID } from '@/shared/utils/uuid';
 
 /** Hard ceiling on total nodes; the printability checker advises far below it. */
 export const MAX_ASSEMBLY_PARTS = 256;
@@ -450,7 +451,7 @@ function normalizePartNode(raw: unknown, depth: number): AssemblyPartNode | null
   if (!isAssemblyPartType(raw.type)) return null;
   const array = arraySchema.safeParse(raw.array);
   const candidate = {
-    id: typeof raw.id === 'string' && raw.id.length > 0 ? raw.id : crypto.randomUUID(),
+    id: typeof raw.id === 'string' && raw.id.length > 0 ? raw.id : generateUUID(),
     type: raw.type,
     params: { ...defaultPartParams(raw.type), ...(isRecord(raw.params) ? raw.params : {}) },
     transform: { ...DEFAULT_PART_TRANSFORM, ...(isRecord(raw.transform) ? raw.transform : {}) },

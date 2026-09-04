@@ -91,11 +91,10 @@ The app is built for the site root. Hosting it under a path such as
 ### Plain HTTP on a LAN IP
 
 Use HTTPS, or open the app on `localhost` (browsers treat it as secure). On
-`http://<lan-ip>:8080` the browser refuses the secure-context APIs the app
-relies on: no service worker, so no install, offline use, or update prompt;
-no SpaceMouse; and the bin designer's cutout tools, STL and scan import,
-version history, assemblies and knife-rest pairing fail because they generate
-IDs with a secure-context-only API. The planner, exports and imports work.
+`http://<lan-ip>:8080` the browser withholds the secure-context APIs: no
+service worker, so no install, offline use, or update prompt; no SpaceMouse;
+and copying the print list to the clipboard does nothing. Everything else,
+including the bin designer, works.
 
 ### Updating
 

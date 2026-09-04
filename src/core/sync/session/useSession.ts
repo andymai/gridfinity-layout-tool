@@ -4,6 +4,7 @@ import { FORCED_SIGN_OUT_EVENT } from '../apiFetch';
 import { clearAll as clearOutbox } from '../outbox';
 import { resetPullState } from '../poller';
 import { getMe, type SessionUser } from './sessionApi';
+import { generateUUID } from '@/shared/utils/uuid';
 
 export type SessionStatus = 'unknown' | 'anonymous' | 'authenticated';
 
@@ -83,10 +84,7 @@ interface SessionBroadcast {
   source: string;
 }
 
-const TAB_ID = (() => {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
-  return Math.random().toString(36).slice(2);
-})();
+const TAB_ID = generateUUID();
 
 let channel: BroadcastChannel | null = null;
 

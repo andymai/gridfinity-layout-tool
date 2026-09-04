@@ -7,6 +7,7 @@ import type {
 } from './types';
 import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { layoutSession } from './sessionState';
+import { generateUUID } from '@/shared/utils/uuid';
 
 // LAYOUT QUALITY ASSESSMENT
 
@@ -415,7 +416,7 @@ export function getUserHash(): string {
   try {
     let hash = localStorage.getItem(USER_HASH_STORAGE_KEY);
     if (!hash) {
-      hash = crypto.randomUUID();
+      hash = generateUUID();
       localStorage.setItem(USER_HASH_STORAGE_KEY, hash);
     }
     return hash;

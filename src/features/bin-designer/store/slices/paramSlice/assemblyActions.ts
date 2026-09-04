@@ -38,6 +38,7 @@ import {
 } from '@/features/bin-designer/utils/assemblyTree';
 import { pushHistoryEntry, setAssemblySelection } from '@/features/bin-designer/store/helpers';
 import type { Set, Get } from './types';
+import { generateUUID } from '@/shared/utils/uuid';
 
 function transformsEqual(a: PartTransform, b: PartTransform): boolean {
   return a.x === b.x && a.y === b.y && a.seatZ === b.seatZ && a.rotZDeg === b.rotZDeg;
@@ -160,7 +161,7 @@ export function createAssemblyActions(set: Set, get: Get) {
       if (!current) return null;
       const base = createAssemblyPartNode(
         type,
-        crypto.randomUUID(),
+        generateUUID(),
         clampPartTransform({ ...DEFAULT_PART_TRANSFORM, ...transform })
       );
       const node = params

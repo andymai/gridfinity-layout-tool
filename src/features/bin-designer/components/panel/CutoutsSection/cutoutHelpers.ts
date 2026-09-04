@@ -31,6 +31,7 @@ import {
   DEFAULT_SLOT_WIDTH,
   DEFAULT_SLOT_DEPTH,
 } from './cutoutInteractionTypes';
+import { generateUUID } from '@/shared/utils/uuid';
 
 export interface ClonedCutout extends Cutout {
   readonly originalId: string;
@@ -49,8 +50,8 @@ export function cloneCutoutsWithGroups(
   return originals.map((original) => {
     const pos = offsetFn ? offsetFn(original) : { x: original.x, y: original.y };
     return {
-      ...remapGroupChain(original, groupMap, () => crypto.randomUUID()),
-      id: crypto.randomUUID(),
+      ...remapGroupChain(original, groupMap, generateUUID),
+      id: generateUUID(),
       x: pos.x,
       y: pos.y,
       originalId: original.id,
@@ -180,7 +181,7 @@ export function flattenCutoutArray(master: Cutout): {
 } {
   if (!master.array) return { masterPatch: {}, added: [] };
   const instances = expandCutoutArray(master);
-  const added = instances.slice(1).map((inst) => ({ ...inst, id: crypto.randomUUID() }));
+  const added = instances.slice(1).map((inst) => ({ ...inst, id: generateUUID() }));
   // The master's own label comes out of the list like every other instance's.
   // It is rarely list entry 0 (a grid's master is the BOTTOM-left hole while
   // the list is written top row first), so carrying the stored `label` through

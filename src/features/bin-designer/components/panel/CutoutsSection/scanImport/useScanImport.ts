@@ -13,6 +13,7 @@ import { defaultEntryChamfer } from '@/features/bin-designer/types';
 import { specToCutout, DEFAULT_CUT_DEPTH } from '../svgImport/specToCutout';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 import { byDescendingArea } from '../importStackOrder';
+import { generateUUID } from '@/shared/utils/uuid';
 
 /** Default insertion clearance (mm) applied to a scanned tool outline. */
 const SCAN_DEFAULT_CLEARANCE_MM = 0.4;
@@ -33,7 +34,7 @@ export function useScanImport(): UseScanImportReturn {
 
   const addScanCutouts = useCallback(
     (specs: readonly ParsedCutoutSpec[], cutDepth: number = DEFAULT_CUT_DEPTH): number => {
-      const hydrationOptions = { cutDepth, idFactory: () => crypto.randomUUID() };
+      const hydrationOptions = { cutDepth, idFactory: generateUUID };
 
       // Checked before the history push, the same rule the store's own batch
       // paths state: a batch that cannot land a single shape must not spend an
