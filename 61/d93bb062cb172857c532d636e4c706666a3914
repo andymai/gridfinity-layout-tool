@@ -1,0 +1,23 @@
+pnpm-workspace.yaml
+  s_5f5062e5aa717e::t_6c58fe1817f176 78
+pnpm-lock.yaml
+  s_5f5062e5aa717e::t_541e17ee08f07d 16,3785-3786,8627,9433
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dividerPatterns.test.ts.snap
+  s_5f5062e5aa717e::t_224ec64c2177ed 5,9,13,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "61d93bb062cb172857c532d636e4c706666a3914",
+  "prompts": {},
+  "sessions": {
+    "s_5f5062e5aa717e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53f830b5-71e7-4661-8c84-ef8df2d6fe77",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
