@@ -55,6 +55,17 @@ describe('LabelIconPicker', () => {
     expect(within(dialog).getAllByRole('button')).toHaveLength(LABEL_PLATE_ICONS.length + 1);
     expect(within(dialog).getByText('Fasteners')).toBeInTheDocument();
     expect(within(dialog).getByText('Tooling')).toBeInTheDocument();
+    expect(within(dialog).getByText('Kitchen')).toBeInTheDocument();
+  });
+
+  it('groups an icon under the domain its path data declares', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    await user.type(within(dialog).getByRole('textbox'), 'spoon');
+    expect(within(dialog).getByText('Kitchen')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Fasteners')).not.toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Teaspoon' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Tablespoon' })).toBeInTheDocument();
   });
 
   it('reports the chosen icon and closes', async () => {

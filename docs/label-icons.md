@@ -8,7 +8,8 @@ means sending a path — no CAD, no knowledge of the geometry kernel.
 ## What an icon has to be
 
 An icon is a **solid filled silhouette**, the way a road sign is: one shape,
-optionally with holes punched in it. It is not line art.
+optionally with holes punched in it. It is not line art. Curves are welcome —
+what has to go is the stroke.
 
 That constraint comes from the plate. The readable band is **7.8 mm tall**, an
 icon may be at most **11.5 mm wide**, and it stands **0.4 mm** proud of the
@@ -91,11 +92,16 @@ extrusion where the boolean has no such gap.
 1. Draw the silhouette in any vector editor. Convert strokes to fills, flatten
    transforms, and union everything into a single outer shape.
 2. Copy the `d` attribute for the outline and for each hole.
-3. Open a pull request adding the entry to `LABEL_ICON_PATHS`, the id to
+3. Open a pull request adding the entry to `LABEL_ICON_PATHS` (with a
+   `domain`, which is the group it appears under in the picker), the id to
    `LABEL_PLATE_ICONS` in [`labelPlates.ts`](../src/shared/constants/labelPlates.ts),
+   the same id to `VALID_LABEL_PLATE_ICONS` in
+   [`designerValidationConstants.ts`](../api/lib/designerValidationConstants.ts),
    and a display name to `binDesigner.plateIcon.<id>` in
-   [`src/i18n/locales/en.ts`](../src/i18n/locales/en.ts). Translations for the
-   other locales can follow separately — say so in the PR and we'll handle them.
+   [`src/i18n/locales/en.ts`](../src/i18n/locales/en.ts). Miss the server list
+   and the picker offers an icon that makes the whole design 400 on sync.
+   Translations for the other locales can follow separately — say so in the PR
+   and we'll handle them.
 
 Or just post the path data on
 [discussion #2877](https://github.com/andymai/gridfinity-layout-tool/discussions/2877)

@@ -163,6 +163,19 @@ export const VALID_LABEL_PLATE_ICONS: readonly string[] = [
   'file',
   'endMill',
   'clip',
+  'screwdriverBit',
+  'teaspoon',
+  'tablespoon',
+  'fork',
+  'knife',
+  'spatula',
+  'whisk',
+  'tongs',
+  'ladle',
+  'chopsticks',
+  'bottleOpener',
+  'peeler',
+  'rollingPin',
 ];
 
 /**
