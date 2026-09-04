@@ -1,0 +1,27 @@
+src/features/generation/worker/generators/svgDrawing.ts
+  s_ee6c83a60fd890::t_b2da97195b75f4 26-43,53-59,64-73,77-79,81,89,91-99,101-104,110-114,118-133,146-148,150,155,164-167,169-170,172-174,176-177,179-181,203,234,281,283-284,286
+  s_ee6c83a60fd890::t_c0342370815b22 168,171
+  s_ee6c83a60fd890::t_7b4d1cc8ad4573 4-13,15-19,22-25,44-52,60-63,74-76,80,82-88,90,100,105-109,115-117,134-145,149,151-154,156-163,175,178,182-202,204-233,235-280,282,285,289-296
+src/features/generation/worker/generators/labelPlateIcons.test.ts
+  s_ee6c83a60fd890::t_045263d1302019 188
+  s_ee6c83a60fd890::t_c0342370815b22 206-214
+src/features/generation/worker/generators/svgDrawing.test.ts
+  s_ee6c83a60fd890::t_4649e423b80ad9 5-12,49-77
+  s_ee6c83a60fd890::t_41fef5207b4378 78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "88e14e5ca2b1d06b02d48a87a6aa179951fdf2d4",
+  "prompts": {},
+  "sessions": {
+    "s_ee6c83a60fd890": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4fa12182-a69e-4389-8180-b6a7e0d4db6c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
