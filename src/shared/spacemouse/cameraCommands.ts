@@ -38,9 +38,6 @@ export function boundingSphere(box: Box3): { center: Vector3; radius: number } {
   return { center, radius: Math.max(size.length() / 2, 1e-3) };
 }
 
-/** `Spherical` measures its polar angle from +Y, so any up-vector is rotated onto it. */
-const SPHERICAL_UP = new Vector3(0, 1, 0);
-
 const SCAFFOLD_NAMES = ['grid', 'shadow', 'floor', 'helper'];
 
 /** Meshes that frame the scene rather than being the model, matched by name. */
@@ -169,9 +166,10 @@ export function constrainPose(
   const offset = camera.position.clone().sub(controls.target);
   const distance = offset.length();
   if (distance > 1e-9) {
+    // `Spherical` measures its polar angle from +Y, so put the up axis there.
     const toSpherical = new Quaternion().setFromUnitVectors(
       camera.up.clone().normalize(),
-      SPHERICAL_UP
+      new Vector3(0, 1, 0)
     );
     const spherical = new Spherical().setFromVector3(offset.applyQuaternion(toSpherical));
     // A pose that went over a pole comes back mirrored: the polar angle folds
