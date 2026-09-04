@@ -44,7 +44,8 @@ type BuildWallCutoutCutsFn = (
   innerW: number,
   innerD: number,
   wallHeight: number,
-  hasLip: boolean
+  hasLip: boolean,
+  dividerTopZ: number
 ) => Shape3D | null;
 
 let buildCompartmentWalls: BuildCompartmentWallsFn;
@@ -580,7 +581,7 @@ describe('buildWallCutoutCuts', () => {
       ...DEFAULT_BIN_PARAMS,
       walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: false },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).toBeNull();
   });
 
@@ -599,7 +600,7 @@ describe('buildWallCutoutCuts', () => {
         interior: DISABLED_WALL_CUTOUT,
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
@@ -620,7 +621,7 @@ describe('buildWallCutoutCuts', () => {
         interior: DISABLED_WALL_CUTOUT,
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).toBeNull();
   });
 
@@ -639,7 +640,7 @@ describe('buildWallCutoutCuts', () => {
         interior: DISABLED_WALL_CUTOUT,
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
@@ -660,7 +661,7 @@ describe('buildWallCutoutCuts', () => {
         interior: DISABLED_WALL_CUTOUT,
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).toBeNull();
   });
 
@@ -680,7 +681,7 @@ describe('buildWallCutoutCuts', () => {
         interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
@@ -701,7 +702,7 @@ describe('buildWallCutoutCuts', () => {
         interior: DISABLED_WALL_CUTOUT,
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, true);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, true, 16);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
@@ -722,7 +723,7 @@ describe('buildWallCutoutCuts', () => {
         interior: DISABLED_WALL_CUTOUT,
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
@@ -743,7 +744,7 @@ describe('buildWallCutoutCuts', () => {
         interior: DISABLED_WALL_CUTOUT,
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
@@ -764,7 +765,7 @@ describe('buildWallCutoutCuts', () => {
         interior: DISABLED_WALL_CUTOUT,
       },
     };
-    const result = buildWallCutoutCuts(params, 80, 80, 16, false);
+    const result = buildWallCutoutCuts(params, 80, 80, 16, false, 16);
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);

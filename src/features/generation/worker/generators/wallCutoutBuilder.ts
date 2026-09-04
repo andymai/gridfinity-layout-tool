@@ -7,6 +7,7 @@
 
 import { draw, translate, rotate, clone, unwrap, withScope, fuseAll } from 'brepjs';
 import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
+import { binFloorMm } from '@/shared/types/bin';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH, CUT_RIM_CLEARANCE } from './generatorConstants';
@@ -252,12 +253,21 @@ export function buildWallCutoutCuts(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  hasLip: boolean
+  hasLip: boolean,
+  dividerTopZ: number
 ): Shape3D | null {
   if (!params.walls.enabled) return null;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
-    const result = buildWallCutoutCutsInScope(scope, params, innerW, innerD, wallHeight, hasLip);
+    const result = buildWallCutoutCutsInScope(
+      scope,
+      params,
+      innerW,
+      innerD,
+      wallHeight,
+      hasLip,
+      dividerTopZ
+    );
     // The fused/returned shape is registered in `scope` (directly or via
     // fuseAllOrNull's single-element passthrough). Clone it so the original
     // can be safely disposed when the scope exits, while the caller receives
@@ -270,7 +280,7 @@ export function buildWallCutoutCuts(
 export interface InteriorDividerCutout {
   /** Cut span along the divider's length. */
   readonly cutW: number;
-  /** Cut depth (vertical, into the wall from its top). */
+  /** Cut depth, measured down from the divider's own top. */
   readonly cutH: number;
   readonly x: number;
   readonly y: number;
@@ -295,15 +305,18 @@ export function computeInteriorDividerCutouts(
   params: BinParams,
   innerW: number,
   innerD: number,
-  wallHeight: number
+  dividerTopZ: number
 ): InteriorDividerCutout[] {
   const cfg = params.walls.interior;
   if (!cfg.enabled || isPartialMask(params.cellMask)) return [];
   if (cfg.width <= 0 || cfg.depth <= 0) return [];
 
-  const interiorH = wallHeight - params.wallThickness;
+  // What the user can see of the divider: its top down to the cavity floor,
+  // which is thicker than the wall on a spec base. Measured against the wall
+  // instead, a cut at 100% carries on past the divider and slots the floor.
+  const dividerH = dividerTopZ - binFloorMm(params.wallThickness);
   const out: InteriorDividerCutout[] = [];
-  for (const seg of interiorDividerSegments(params, innerW, innerD, interiorH)) {
+  for (const seg of interiorDividerSegments(params, innerW, innerD, dividerTopZ)) {
     // `seg.x/y` is the wall's TOP edge. A leaning divider is a non-vertical
     // plane, so a feature placed against that line lands in open air lower
     // down; stand down until the placement can express the plane.
@@ -314,7 +327,7 @@ export function computeInteriorDividerCutouts(
     // otherwise percentage of it.
     const cutW =
       cfg.widthMm !== null ? Math.min(cfg.widthMm, seg.wallLen) : seg.wallLen * (cfg.width / 100);
-    const cutH = interiorH * (cfg.depth / 100);
+    const cutH = dividerH * (cfg.depth / 100);
     if (cutW < 0.1 || cutH < 0.1) continue;
     // Honour alignment + offset like outer walls. The cutout's span axis points
     // along the (possibly tilted) divider, so project the along-wall centre
@@ -346,7 +359,8 @@ function buildWallCutoutCutsInScope(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  hasLip: boolean
+  hasLip: boolean,
+  dividerTopZ: number
 ): Shape3D | null {
   const wallThickness = params.wallThickness;
   const cutShapes: Shape3D[] = [];
@@ -431,16 +445,20 @@ function buildWallCutoutCutsInScope(
   // material would be wasted boolean work (and risks carving the shell
   // if a cut crosses it). Placement honours tilted dividers (dividerOverrides)
   // so the window lands ON the angled wall instead of slicing it at a slant.
-  for (const c of computeInteriorDividerCutouts(params, innerW, innerD, wallHeight)) {
+  for (const c of computeInteriorDividerCutouts(params, innerW, innerD, dividerTopZ)) {
     cutShapes.push(
       buildSingleCutoutInScope(
         scope,
         cutoutShape,
         c.cutW,
         c.cutH,
-        overshoot,
+        // A divider carries no stacking lip, so its own top face IS the rim the
+        // shoulder round-over is tangent to. Given the wall's rim instead, the
+        // blend runs its whole radius through the air above the divider and
+        // reaches it — if at all — as a sliver hundredths of a millimetre wide.
+        CUT_RIM_CLEARANCE,
         extrudeDepth,
-        wallHeight,
+        dividerTopZ,
         c,
         c.cornerSlack,
         c.radii
@@ -459,8 +477,24 @@ function buildWallCutoutCutsInScope(
 // --- FeatureBuilder protocol ---
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';
+import type { BinDimensions } from './pipeline/types';
 import { FeatureTag } from './featureTags';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
+import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+
+/**
+ * Where the interior dividers actually end, in the body frame.
+ *
+ * The two divider paths do not agree: the multi-cavity cut leaves pockets that
+ * reach the rim, so those dividers stand to the wall top, while divider-wall
+ * boxes stop at the interior height — a lip taper short of it — or lower still
+ * when a design shortens them.
+ */
+export function interiorDividerTopZ(params: BinParams, dim: BinDimensions): number {
+  return dim.compartmentsBakedIntoShell
+    ? dim.wallHeight
+    : resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight);
+}
 
 export const wallCutoutsFeature: FeatureBuilder = {
   name: 'wallCutoutCuts',
@@ -475,7 +509,9 @@ export const wallCutoutsFeature: FeatureBuilder = {
     // rect-bin cache bleed into polygon bins with identical wall config.
     return compactKey(
       buildCacheKey(
-        'v1',
+        // `v2`: interior cutouts are cut from the divider's own top rather than
+        // the wall's rim, so the same wall config yields a different cut.
+        'v2',
         dim.shellKey,
         stableSerialize(params.walls),
         quantize(dim.innerW),
@@ -487,7 +523,8 @@ export const wallCutoutsFeature: FeatureBuilder = {
         params.compartments.cells.join(','),
         // Tilted dividers move interior cutouts off the grid line; omitting this
         // would reuse the stale grid-aligned cut.
-        stableSerialize(params.compartments.dividerOverrides ?? [])
+        stableSerialize(params.compartments.dividerOverrides ?? []),
+        quantize(interiorDividerTopZ(params, dim))
       )
     );
   },
@@ -497,7 +534,8 @@ export const wallCutoutsFeature: FeatureBuilder = {
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,
       ctx.dimensions.wallHeight,
-      ctx.dimensions.hasLip
+      ctx.dimensions.hasLip,
+      interiorDividerTopZ(ctx.params, ctx.dimensions)
     );
     return result ? [result] : null;
   },

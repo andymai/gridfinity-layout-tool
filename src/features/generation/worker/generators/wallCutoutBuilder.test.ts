@@ -26,7 +26,8 @@ const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: num
 
 const INNER_W = 80;
 const INNER_D = 40;
-const WALL_HEIGHT = 21;
+/** Divider top, in the body frame: what an interior window is measured from. */
+const DIVIDER_TOP_Z = 21;
 
 /** Bin with the interior-divider cutout enabled and a given compartment grid. */
 function makeParams(
@@ -52,7 +53,7 @@ function makeParams(
 describe('computeInteriorDividerCutouts', () => {
   it('returns nothing when there is only one compartment', () => {
     const params = makeParams({ cols: 1, rows: 1, cells: [0] });
-    expect(computeInteriorDividerCutouts(params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+    expect(computeInteriorDividerCutouts(params, INNER_W, INNER_D, DIVIDER_TOP_Z)).toEqual([]);
   });
 
   it('returns nothing when the interior cutout is disabled', () => {
@@ -61,12 +62,12 @@ describe('computeInteriorDividerCutouts', () => {
       ...params,
       walls: { ...params.walls, interior: { ...params.walls.interior, enabled: false } },
     };
-    expect(computeInteriorDividerCutouts(disabled, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+    expect(computeInteriorDividerCutouts(disabled, INNER_W, INNER_D, DIVIDER_TOP_Z)).toEqual([]);
   });
 
   it('places a straight vertical divider cutout on the grid line (rotateZ 90)', () => {
     const params = makeParams({ cols: 2, rows: 1, cells: [0, 1] });
-    const cuts = computeInteriorDividerCutouts(params, INNER_W, INNER_D, WALL_HEIGHT);
+    const cuts = computeInteriorDividerCutouts(params, INNER_W, INNER_D, DIVIDER_TOP_Z);
     expect(cuts).toHaveLength(1);
     expect(cuts[0].x).toBeCloseTo(0, 6); // boundary 1 of 2 → centre
     expect(cuts[0].rotateZ).toBe(90);
@@ -80,7 +81,7 @@ describe('computeInteriorDividerCutouts', () => {
       offsetEnd: 5,
     };
     const params = makeParams({ cols: 2, rows: 1, cells: [0, 1] }, [override]);
-    const [cut] = computeInteriorDividerCutouts(params, INNER_W, INNER_D, WALL_HEIGHT);
+    const [cut] = computeInteriorDividerCutouts(params, INNER_W, INNER_D, DIVIDER_TOP_Z);
     // Pure translation: midpoint shifts by the offset, no rotation.
     expect(cut.x).toBeCloseTo(5, 6);
     expect(cut.rotateZ).toBeCloseTo(90, 6);
@@ -94,7 +95,7 @@ describe('computeInteriorDividerCutouts', () => {
       offsetEnd: -5,
     };
     const params = makeParams({ cols: 2, rows: 1, cells: [0, 1] }, [override]);
-    const [cut] = computeInteriorDividerCutouts(params, INNER_W, INNER_D, WALL_HEIGHT);
+    const [cut] = computeInteriorDividerCutouts(params, INNER_W, INNER_D, DIVIDER_TOP_Z);
     // segLen = 1 cell = INNER_D/1 = 40; dx = offsetEnd - offsetStart = -10.
     const expected = (Math.atan2(40, -10) * 180) / Math.PI;
     expect(cut.x).toBeCloseTo(0, 6); // symmetric tilt → midpoint unchanged
@@ -107,7 +108,7 @@ describe('computeInteriorDividerCutouts', () => {
     // these stay merged into a single centered window per boundary (historical
     // behavior), not one per pair.
     const params = makeParams({ cols: 2, rows: 2, cells: [0, 1, 2, 3] });
-    const cuts = computeInteriorDividerCutouts(params, INNER_W, INNER_D, WALL_HEIGHT);
+    const cuts = computeInteriorDividerCutouts(params, INNER_W, INNER_D, DIVIDER_TOP_Z);
     expect(cuts).toHaveLength(2); // one vertical + one horizontal
     const vertical = cuts.filter((c) => c.rotateZ === 90);
     const horizontal = cuts.filter((c) => c.rotateZ === 0);
@@ -127,7 +128,7 @@ describe('computeInteriorDividerCutouts', () => {
       offsetEnd: -5,
     };
     const params = makeParams({ cols: 2, rows: 2, cells: [0, 1, 2, 3] }, [override]);
-    const cuts = computeInteriorDividerCutouts(params, INNER_W, INNER_D, WALL_HEIGHT);
+    const cuts = computeInteriorDividerCutouts(params, INNER_W, INNER_D, DIVIDER_TOP_Z);
     expect(cuts).toHaveLength(4); // 2 vertical (per pair) + 2 horizontal (per pair)
     const tilted = cuts.filter((c) => c.rotateZ !== 90 && c.rotateZ !== 0);
     expect(tilted).toHaveLength(1); // only the 0|1 segment is angled
@@ -141,7 +142,7 @@ describe('computeInteriorDividerCutouts', () => {
       offsetEnd: -4,
     };
     const params = makeParams({ cols: 1, rows: 2, cells: [0, 1] }, [override]);
-    const [cut] = computeInteriorDividerCutouts(params, INNER_W, INNER_D, WALL_HEIGHT);
+    const [cut] = computeInteriorDividerCutouts(params, INNER_W, INNER_D, DIVIDER_TOP_Z);
     // Horizontal segLen = 1 cell = INNER_W/1 = 80; dy = -8.
     const expected = (Math.atan2(-8, 80) * 180) / Math.PI;
     expect(cut.y).toBeCloseTo(0, 6);
@@ -167,19 +168,19 @@ describe('computeInteriorDividerCutouts', () => {
       withInterior(base, { alignment: 'left', offset: 0 }),
       INNER_W,
       INNER_D,
-      WALL_HEIGHT
+      DIVIDER_TOP_Z
     );
     const [center] = computeInteriorDividerCutouts(
       withInterior(base, { alignment: 'center', offset: 0 }),
       INNER_W,
       INNER_D,
-      WALL_HEIGHT
+      DIVIDER_TOP_Z
     );
     const [right] = computeInteriorDividerCutouts(
       withInterior(base, { alignment: 'right', offset: 0 }),
       INNER_W,
       INNER_D,
-      WALL_HEIGHT
+      DIVIDER_TOP_Z
     );
     // Vertical divider runs along Y (rotateZ 90): alignment moves the window
     // along Y, never off the grid line in X.
@@ -197,13 +198,13 @@ describe('computeInteriorDividerCutouts', () => {
       withInterior(base, { alignment: 'center', offset: 0 }),
       INNER_W,
       INNER_D,
-      WALL_HEIGHT
+      DIVIDER_TOP_Z
     );
     const [offset] = computeInteriorDividerCutouts(
       withInterior(base, { alignment: 'center', offset: 3 }),
       INNER_W,
       INNER_D,
-      WALL_HEIGHT
+      DIVIDER_TOP_Z
     );
     // Horizontal divider runs along X (rotateZ 0): a +offset slides it +X.
     expect(centered.x).toBeCloseTo(0, 6);
@@ -225,7 +226,7 @@ describe('computeInteriorDividerCutouts', () => {
       withInterior(base, { width: 70, alignment: 'center', offset: 0 }),
       INNER_W,
       INNER_D,
-      WALL_HEIGHT
+      DIVIDER_TOP_Z
     );
     expect(cut.rotateZ).toBeCloseTo(45, 4);
     expect(cut.cutW).toBeCloseTo(Math.hypot(40, 40) * 0.7, 4);
@@ -238,7 +239,7 @@ describe('computeInteriorDividerCutouts', () => {
       withInterior(base, { widthMm: 10 }),
       INNER_W,
       INNER_D,
-      WALL_HEIGHT
+      DIVIDER_TOP_Z
     );
     expect(cut.cutW).toBeCloseTo(10, 6);
   });
