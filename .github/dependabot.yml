@@ -66,6 +66,11 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: 'typescript'
         update-types: ['version-update:semver-major']
+      # Vercel compiles vercel.json sources with path-to-regexp 6, and
+      # scripts/check-docker-parity.test.ts mirrors that. 8.x drops the
+      # `:name(regex)` syntax those sources use, so the pin tracks Vercel's line.
+      - dependency-name: 'path-to-regexp'
+        update-types: ['version-update:semver-major']
       # brepjs upgrades are coupled to the brepkit kernel investigation —
       # always pin manually, never auto-bump
       - dependency-name: 'brepjs'
