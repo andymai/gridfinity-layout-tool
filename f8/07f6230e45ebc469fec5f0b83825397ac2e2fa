@@ -1,0 +1,19 @@
+scripts/check-secure-context-uuid.test.ts
+  s_fe1facdf521af7::t_68bfa001623a8d 1,6,12-19,25-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f807f6230e45ebc469fec5f0b83825397ac2e2fa",
+  "prompts": {},
+  "sessions": {
+    "s_fe1facdf521af7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fba5d1bb-993e-4b63-a4f3-94b23e47963f",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
