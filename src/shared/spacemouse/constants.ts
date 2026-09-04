@@ -22,6 +22,14 @@ export const ORBIT_RATE = 3.6; // radians / s
 /** Keeps the orbit from tumbling over the pole, matching OrbitControls' clamp. */
 export const MIN_POLAR = 0.01;
 
+/**
+ * How far the orbit target may drift outside the model's bounding box before
+ * panning stops, in model radii. One radius lets the model be pushed to the
+ * edge of the viewport without letting it leave. Also capped by what the
+ * viewport actually shows, so the leash tightens as you zoom in.
+ */
+export const PAN_LEASH_RADII = 1;
+
 export const DEFAULT_SETTINGS: SpaceMouseSettings = {
   sensitivity: 1,
   translateSpeed: 1,

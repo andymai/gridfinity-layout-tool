@@ -8,7 +8,13 @@ import {
   Raycaster,
   Vector3,
 } from 'three';
-import { computeContentBox, isScaffoldName, type OrbitLike } from '../cameraCommands';
+import {
+  computeContentBox,
+  constrainPose,
+  createContentBoxCache,
+  isScaffoldName,
+  type OrbitLike,
+} from '../cameraCommands';
 import type { NavlibViewAccessors } from './types';
 
 /** Live per-frame handles for the active canvas. */
@@ -69,6 +75,7 @@ export function createNavlibViewAccessors(
   const raycaster = new Raycaster();
   const tmpMatrix = new Matrix4();
   const tmpForward = new Vector3();
+  const contentBox = createContentBoxCache();
 
   return {
     getViewMatrix() {
@@ -80,7 +87,8 @@ export function createNavlibViewAccessors(
     setViewMatrix(data) {
       const d = getDeps();
       if (!d) return;
-      const prevDist = d.camera.position.distanceTo(d.controls.target) || 1;
+      const prevOffset = d.camera.position.clone().sub(d.controls.target);
+      const prevDist = prevOffset.length() || 1;
       tmpMatrix.fromArray(data);
       tmpMatrix.decompose(d.camera.position, d.camera.quaternion, d.camera.scale);
       d.camera.updateMatrixWorld(true);
@@ -88,6 +96,10 @@ export function createNavlibViewAccessors(
       // cleanly after the puck moves it.
       tmpForward.set(0, 0, -1).applyQuaternion(d.camera.quaternion);
       d.controls.target.copy(d.camera.position).addScaledVector(tmpForward, prevDist);
+      // The driver navigates unbounded, so its pose arrives without the limits
+      // this canvas puts on the mouse; it reads the corrected pose back next
+      // frame and continues from there.
+      constrainPose(d.camera, d.controls, prevOffset, contentBox(d.scene));
       d.controls.update();
     },
     getPerspective() {
