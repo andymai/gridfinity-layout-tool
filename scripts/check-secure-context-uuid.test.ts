@@ -1,36 +1,34 @@
-import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = join(import.meta.dirname, '..');
+const HELPER = 'shared/utils/uuid.ts';
 
 // crypto.randomUUID is a secure-context API: absent over plain HTTP on a LAN
 // address, which is how a self-hosted instance is often first opened. Adding a
 // cutout, importing an STL or building an assembly threw there. generateUUID()
 // falls back to getRandomValues, which every context has.
-describe('crypto.randomUUID is only called through generateUUID', () => {
-  const files = execFileSync('git', ['ls-files', 'src'], { cwd: ROOT, encoding: 'utf8' })
-    .split('\n')
-    .filter(
-      (f) => /\.(ts|tsx)$/.test(f) && !/\.test\.tsx?$/.test(f) && f !== 'src/shared/utils/uuid.ts'
-    );
+//
+// The walk uses the filesystem rather than git so the suite runs in a tarball
+// or a container, and the match is the bare identifier on comment-stripped
+// source, so destructuring, bracket access and line breaks cannot slip past.
+describe('randomUUID is only reached through generateUUID', () => {
+  const files = readdirSync(join(ROOT, 'src'), { recursive: true, encoding: 'utf8' }).filter(
+    (f) => /\.(ts|tsx)$/.test(f) && !/\.test\.tsx?$/.test(f) && f !== HELPER
+  );
 
   it('finds the source tree', () => {
     expect(files.length).toBeGreaterThan(500);
   });
 
-  it('has no direct caller outside src/shared/utils/uuid.ts', () => {
-    const offenders: string[] = [];
-    for (const file of files) {
-      readFileSync(join(ROOT, file), 'utf8')
-        .split('\n')
-        .forEach((line, i) => {
-          const code = line.trim();
-          if (code.startsWith('*') || code.startsWith('//')) return;
-          if (code.includes('crypto.randomUUID(')) offenders.push(`${file}:${i + 1}`);
-        });
-    }
+  it('has no direct caller outside the helper', () => {
+    const offenders = files.filter((file) => {
+      const source = readFileSync(join(ROOT, 'src', file), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*\/\/.*$/gm, '');
+      return /\brandomUUID\b/.test(source);
+    });
     expect(offenders, 'use generateUUID() from @/shared/utils/uuid').toEqual([]);
   });
 });
