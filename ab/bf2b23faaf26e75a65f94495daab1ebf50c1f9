@@ -1,0 +1,19 @@
+src/shared/spacemouse/cameraCommands.ts
+  s_b2c6bf07491888::t_128ef2446dfb0d 169,172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "abbf2b23faaf26e75a65f94495daab1ebf50c1f9",
+  "prompts": {},
+  "sessions": {
+    "s_b2c6bf07491888": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1b7a713b-af95-4c96-88f9-61065481600d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
