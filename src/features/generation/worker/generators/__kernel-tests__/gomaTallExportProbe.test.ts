@@ -257,7 +257,7 @@ describe('goma tall bin export probe', () => {
       clearAllCaches();
       setLastSolid(null);
       const t0 = performance.now();
-      let preview;
+      let preview: ReturnType<typeof generateBin>;
       try {
         preview = generateBin(gomaBin(4, 4, 36, true), undefined, false);
       } catch (e) {
