@@ -9,17 +9,24 @@ interface VersionInfo {
   buildTime: string;
 }
 
+function isoOrNull(value: string | undefined): string | null {
+  if (!value) return null;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? null : new Date(parsed).toISOString();
+}
+
 function readVersionInfo(): VersionInfo {
   const pkgPath = fileURLToPath(new URL('../package.json', import.meta.url));
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { version: string };
 
   // git may be unavailable in tarball builds or detached environments — fall back gracefully.
   // execFileSync (not execSync) bypasses the shell, so no injection surface despite fixed args.
+  // A container build has no .git at all; the Dockerfile passes what it knows as env.
   let gitSha = 'unknown';
   try {
     gitSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf-8' }).trim();
   } catch {
-    // ignore
+    gitSha = process.env.GIT_SHA || 'unknown';
   }
 
   // The commit's timestamp, NOT the wall clock. `__BUILD_TIME__` is inlined into
@@ -34,7 +41,7 @@ function readVersionInfo(): VersionInfo {
       execFileSync('git', ['log', '-1', '--format=%cI'], { encoding: 'utf-8' }).trim()
     ).toISOString();
   } catch {
-    // ignore
+    buildTime = isoOrNull(process.env.GIT_COMMIT_TIME);
   }
 
   return {

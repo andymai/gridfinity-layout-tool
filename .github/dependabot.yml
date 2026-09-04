@@ -77,6 +77,23 @@ updates:
       - dependency-name: '@playwright/*'
         update-types: ['version-update:semver-minor', 'version-update:semver-patch']
 
+  - package-ecosystem: 'docker'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    commit-message:
+      prefix: 'chore(deps)'
+    labels:
+      - 'dependencies'
+    cooldown:
+      default-days: 7
+    ignore:
+      # The tag `24-bookworm-slim` reads as major 24, so Node 25 would be offered
+      # weekly; .nvmrc and the parity test pin the major.
+      - dependency-name: 'node'
+        update-types: ['version-update:semver-major']
+
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:

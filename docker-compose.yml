@@ -1,0 +1,9 @@
+services:
+  app:
+    image: ghcr.io/andymai/gridfinity-layout-tool:latest
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp

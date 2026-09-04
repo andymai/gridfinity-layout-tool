@@ -57,6 +57,10 @@ The workflow files themselves (`ci.yml`, `release.yml`, `smoke-*.yml`, `vite.con
 4. If SPA paths changed, production deploys immediately; post-promote smoke guards it. release.yml then updates/merges the release PR unattended. Users see the new version (`version.json` / `__APP_VERSION__`, emitted by `scripts/vite-plugin-version.ts`) after the release-merge deploy.
 5. Verify production: `curl -s https://gridfinitylayouttool.com/version.json` — `gitSha` should match the deployed commit (the file is no-store by `vercel.json` design).
 
+## Docker image
+
+`.github/workflows/docker.yml` builds and smokes the self-hosting image on path-filtered PRs and publishes it to GHCR on `release: published`, tagged from the release tag. `scripts/check-docker-parity.test.ts` fails when `vercel.json` and `docker/nginx.conf` disagree, so a header or rewrite change edits both. One-time after the first publish: set the package public.
+
 ## Recipe: unstick a stalled release
 
 Symptom: a `chore(main): release gridfinity-layout-tool x.y.z` PR sits open; no versions ship.

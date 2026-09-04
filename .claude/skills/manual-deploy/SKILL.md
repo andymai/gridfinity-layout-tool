@@ -70,6 +70,9 @@ curl -s https://gridfinitylayouttool.com/version.json    # gitSha matches the de
 `.github/workflows/smoke-postpromote.yml` smokes production after every release
 deploy and rolls back on failure.
 
+The Docker image publishes from the same release event. If it did not, run
+`.github/workflows/docker.yml` via workflow_dispatch with the full release tag.
+
 ## Roll back
 
 `npx vercel rollback --yes` (mirrors `smoke-postpromote.yml`), or Vercel

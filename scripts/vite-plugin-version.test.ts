@@ -62,22 +62,45 @@ describe('versionPlugin without git', () => {
   afterEach(() => {
     vi.doUnmock('node:child_process');
     vi.resetModules();
+    vi.unstubAllEnvs();
   });
 
-  it('still builds, falling back to the wall clock and an unknown sha', async () => {
+  async function pluginWithoutGit(): Promise<() => Plugin> {
     vi.resetModules();
     vi.doMock('node:child_process', () => ({
       execFileSync: () => {
         throw new Error('git: command not found');
       },
     }));
-
     const { versionPlugin: plugin } = await import('./vite-plugin-version');
-    const d = defines(plugin());
+    return plugin;
+  }
+
+  it('still builds, falling back to the wall clock and an unknown sha', async () => {
+    vi.stubEnv('GIT_SHA', '');
+    vi.stubEnv('GIT_COMMIT_TIME', '');
+    const d = defines((await pluginWithoutGit())());
 
     expect(d.__GIT_SHA__).toBe(JSON.stringify('unknown'));
     expect(d.__APP_VERSION__).toMatch(/^"\d+\.\d+\.\d+"$/);
     // A real ISO instant, just not a reproducible one — the documented tradeoff.
+    expect(Number.isNaN(Date.parse(JSON.parse(d.__BUILD_TIME__) as string))).toBe(false);
+  });
+
+  it('takes the sha and commit time from the environment, as a container build passes them', async () => {
+    vi.stubEnv('GIT_SHA', 'abc123');
+    vi.stubEnv('GIT_COMMIT_TIME', '2026-09-03T10:00:00+02:00');
+    const d = defines((await pluginWithoutGit())());
+
+    expect(d.__GIT_SHA__).toBe(JSON.stringify('abc123'));
+    expect(d.__BUILD_TIME__).toBe(JSON.stringify('2026-09-03T08:00:00.000Z'));
+  });
+
+  it('ignores an unparseable commit time instead of failing the build', async () => {
+    vi.stubEnv('GIT_SHA', '');
+    vi.stubEnv('GIT_COMMIT_TIME', 'not a date');
+    const d = defines((await pluginWithoutGit())());
+
     expect(Number.isNaN(Date.parse(JSON.parse(d.__BUILD_TIME__) as string))).toBe(false);
   });
 });

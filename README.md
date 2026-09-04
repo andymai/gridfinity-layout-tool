@@ -65,6 +65,14 @@ pnpm run test:coverage # Unit tests with coverage
 pnpm run test:e2e      # Playwright end-to-end tests
 ```
 
+## Self-Hosting
+
+```bash
+docker run -d -p 8080:8080 ghcr.io/andymai/gridfinity-layout-tool:latest
+```
+
+The image serves the whole planner, designer and every exporter from your own machine; features that need the cloud backend (sharing by link, sign-in, community) stay off. See [docs/self-hosting.md](./docs/self-hosting.md) for Compose, reverse proxies, updating and building from source.
+
 ## Contributing
 
 This project is open source but not open contribution — see [CONTRIBUTING.md](./CONTRIBUTING.md) for details on bug reports, feature requests, and the pull request policy.

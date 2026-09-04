@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { Analytics } from '@vercel/analytics/react';
+import { VercelAnalytics } from '@/shared/analytics/VercelAnalytics';
 import App from '@/App';
 import { ErrorBoundary } from '@/shell/ErrorBoundary';
 import { SmokeReporter } from '@/shell/SmokeReporter';
@@ -146,7 +146,7 @@ export function runSmokeBoot(): void {
         <App />
         <SmokeReporter />
       </LocaleProvider>
-      <Analytics />
+      <VercelAnalytics />
     </ErrorBoundary>
   );
 }

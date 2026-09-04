@@ -9,6 +9,7 @@ import { versionPlugin } from './scripts/vite-plugin-version';
 import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
+import { CONTENT_LOCALES, CONTENT_SLUGS } from './scripts/contentRoutes';
 
 // The prerendered content pages, mirroring the rewrites in vercel.json. They are
 // standalone static HTML, reachable from search rather than from inside the app,
@@ -16,27 +17,13 @@ import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
 // every install put 85 requests on each cold load and 12 more on each deploy that
 // touched content. Being out of the precache means navigation to one has to be
 // denied the SPA fallback, or the service worker answers it with the app shell.
-const CONTENT_LOCALES = 'cs|de|es|fr|ko|nb|nl|pl|pt-BR|sv|uk|zh-CN';
-const CONTENT_SLUGS = [
-  'what-is-gridfinity',
-  'guide',
-  'privacy',
-  'terms',
-  'gridfinity-generator',
-  'gridfinity-bin-generator',
-  'gridfinity-baseplate-generator',
-  'gridfinity-calculator',
-  'gridfinity-sizes',
-  'gridfinity-tool-drawer',
-  'gridfinity-kitchen-drawer',
-  'gridfinity-software',
-  'gridfinity-cutout-generator',
-].join('|');
+const CONTENT_LOCALES_ALT = CONTENT_LOCALES.join('|');
+const CONTENT_SLUGS_ALT = CONTENT_SLUGS.join('|');
 // Two anchorings of one route set. A workbox urlPattern must be a RegExp value,
 // never a closure: vite-plugin-pwa serializes the service worker by stringifying
 // functions, so an identifier referenced from inside one resolves to nothing at
 // runtime and every matching navigation throws.
-const CONTENT_ROUTE_SOURCE = `/(?:(?:${CONTENT_LOCALES})/)?(?:${CONTENT_SLUGS})(?:[/?#]|$)`;
+const CONTENT_ROUTE_SOURCE = `/(?:(?:${CONTENT_LOCALES_ALT})/)?(?:${CONTENT_SLUGS_ALT})(?:[/?#]|$)`;
 // NavigationRoute tests its denylist against the pathname, so this one anchors.
 const CONTENT_ROUTE = new RegExp(`^${CONTENT_ROUTE_SOURCE}`);
 // RegExpRoute tests against the full href, where a leading ^ could never match.
