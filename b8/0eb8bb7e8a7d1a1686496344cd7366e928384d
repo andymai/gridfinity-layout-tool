@@ -1,0 +1,86 @@
+vite.config.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 12,20-21,26
+src/main.tsx
+  s_fe1facdf521af7::t_b88ca7bfffe968 2,161
+docker/self-hosted/503.json
+  s_fe1facdf521af7::t_0e4ba8ea51047a 1
+  s_fe1facdf521af7::t_db5fabe380a8ac 2-4
+src/shell/smokeBoot.tsx
+  s_fe1facdf521af7::t_b88ca7bfffe968 2,149
+src/shared/analytics/posthog/init.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 44-46
+scripts/vite-plugin-version.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 12-17,24,29,44
+src/shared/analytics/useMLTracking.test.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 20-31
+src/shared/analytics/useMLTracking.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 62-65
+docker-compose.yml
+  s_fe1facdf521af7::t_0e4ba8ea51047a 1-9
+README.md
+  s_fe1facdf521af7::t_00f0becfefe53d 68-75
+scripts/check-docker-parity.test.ts
+  s_fe1facdf521af7::t_77665816ed9373 1-50,57-60,64-123,127-194,199-218,224-227,232-241,246-274,279-293,297-317,336,338-348,353-380
+  s_fe1facdf521af7::t_9e640319823f0c 51-56,61-63,124-126,195-198,219-223,228-231,242-245,275-278,294-296,318-335,337,349-352
+src/shared/analytics/VercelAnalytics.tsx
+  s_fe1facdf521af7::t_b88ca7bfffe968 1-10
+src/shared/analytics/VercelAnalytics.test.tsx
+  s_fe1facdf521af7::t_b88ca7bfffe968 1-26
+.github/dependabot.yml
+  s_fe1facdf521af7::t_c8871bcceb3e14 80-96
+src/core/sync/session/useSession.test.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 17,67-80
+  s_fe1facdf521af7::t_75d1d00fb5c605 81
+.github/workflows/docker.yml
+  s_fe1facdf521af7::t_c8871bcceb3e14 1-203
+.dockerignore
+  s_fe1facdf521af7::t_0e4ba8ea51047a 1-24
+src/core/sync/session/useSession.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 28-35
+scripts/contentRoutes.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 1-33
+package.json
+  s_fe1facdf521af7::t_c3fe2b3d756b92 217
+docker/nginx.conf
+  s_fe1facdf521af7::t_b85656bb661985 1-157
+.claude/skills/release-and-ci/SKILL.md
+  s_fe1facdf521af7::t_00f0becfefe53d 60-63
+scripts/check-doc-drift.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 66-68
+Dockerfile
+  s_fe1facdf521af7::t_0e4ba8ea51047a 1-44
+.env.example
+  s_fe1facdf521af7::t_b88ca7bfffe968 21-25
+docs/self-hosting.md
+  s_fe1facdf521af7::t_0b559499697b65 1-46,62-149
+  s_fe1facdf521af7::t_9e640319823f0c 47-61
+scripts/vite-plugin-version.test.ts
+  s_fe1facdf521af7::t_b88ca7bfffe968 65,68,76-82,89-103,105
+  s_fe1facdf521af7::t_cff2a15e3e59ae 104
+docker/self-hosted/503.html
+  s_fe1facdf521af7::t_0e4ba8ea51047a 1-21
+.claude/skills/manual-deploy/SKILL.md
+  s_fe1facdf521af7::t_00f0becfefe53d 73-75
+docker/smoke.sh
+  s_fe1facdf521af7::t_4bc183e8fe5392 1-105
+pnpm-lock.yaml
+  s_fe1facdf521af7::t_10e0e16660094d 291-293
+scripts/doc-budget.json
+  s_fe1facdf521af7::t_7c0fca8a4c81b9 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "b80eb8bb7e8a7d1a1686496344cd7366e928384d",
+  "prompts": {},
+  "sessions": {
+    "s_fe1facdf521af7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fba5d1bb-993e-4b63-a4f3-94b23e47963f",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
