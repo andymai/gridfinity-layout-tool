@@ -75,7 +75,7 @@ overrides:
   'workbox-build>@rollup/plugin-node-resolve': '^16.0.0'
   '@apideck/better-ajv-errors>ajv': '^8.17.1'
   # ajv pins ^3.0.1; the 4.x line has separate advisories fixed at 4.1.2.
-  'fast-uri@>=3.0.0 <3.1.5': '^3.1.5'
+  'fast-uri@>=3.0.0 <3.1.6': '^3.1.6'
   # sharp <0.35.0 inherits libvips CVE-2026-33327/33328/35590/35591
   # (GHSA-f88m-g3jw-g9cj). Only reachable transitively via
   # manifold-3d>@gltf-transform/functions>ndarray-pixels (build-time glTF

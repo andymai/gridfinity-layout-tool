@@ -2,15 +2,15 @@
 
 exports[`divider patterns > 2×2 honeycomb dividers 1`] = `10036`;
 
-exports[`divider patterns > compound angled + leaned divider stays inside the bin 1`] = `3100`;
+exports[`divider patterns > compound angled + leaned divider stays inside the bin 1`] = `2944`;
 
 exports[`divider patterns > dividers + interior cutouts 1`] = `9096`;
 
-exports[`divider patterns > dividers + label tabs keep the shelf anchorage solid 1`] = `10520`;
+exports[`divider patterns > dividers + label tabs keep the shelf anchorage solid 1`] = `9616`;
 
 exports[`divider patterns > dividers + outer cutouts + handles 1`] = `13580`;
 
-exports[`divider patterns > dividers + scoops keep the ramp footings solid 1`] = `14542`;
+exports[`divider patterns > dividers + scoops keep the ramp footings solid 1`] = `9802`;
 
 exports[`divider patterns > half-grid footprint with patterned dividers 1`] = `10430`;
 
@@ -20,6 +20,6 @@ exports[`divider patterns > overhang shifts the interior with the dividers 1`] =
 
 exports[`divider patterns > round pattern on a single column divider 1`] = `20268`;
 
-exports[`divider patterns > shortened dividers re-fit the band 1`] = `8576`;
+exports[`divider patterns > shortened dividers re-fit the band 1`] = `8376`;
 
 exports[`divider patterns > tilted dividers carry the pattern in-plane 1`] = `10138`;
