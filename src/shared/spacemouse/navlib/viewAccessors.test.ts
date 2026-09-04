@@ -1,6 +1,7 @@
 import {
   BoxGeometry,
   type Camera,
+  Frustum,
   type Intersection,
   Matrix4,
   Mesh,
@@ -8,13 +9,15 @@ import {
   OrthographicCamera,
   PerspectiveCamera,
   PlaneGeometry,
+  Quaternion,
   type Raycaster,
   Scene,
   Vector3,
 } from 'three';
 import { Line2, LineGeometry, LineMaterial } from 'three-stdlib';
 import { describe, expect, it } from 'vitest';
-import type { OrbitLike } from '../cameraCommands';
+import { computeContentBox, type OrbitLike } from '../cameraCommands';
+import { MIN_POLAR } from '../constants';
 import { createNavlibViewAccessors, type NavlibViewDeps } from './viewAccessors';
 
 function makeControls(): OrbitLike {
@@ -63,7 +66,8 @@ describe('createNavlibViewAccessors', () => {
 
     const arr = acc.getViewMatrix();
     const moved = new PerspectiveCamera(45, 1, 0.1, 1000);
-    const acc2 = createNavlibViewAccessors(() => deps(moved));
+    // No model, so no pan leash: this is about matrix plumbing, not framing.
+    const acc2 = createNavlibViewAccessors(() => deps(moved, makeScene(false)));
     acc2.setViewMatrix(arr);
     expect(moved.position.x).toBeCloseTo(0);
     expect(moved.position.y).toBeCloseTo(0);
@@ -73,7 +77,7 @@ describe('createNavlibViewAccessors', () => {
   it('writes a translation matrix straight onto the camera', () => {
     const camera = new PerspectiveCamera();
     camera.position.set(0, 0, 5);
-    const acc = createNavlibViewAccessors(() => deps(camera));
+    const acc = createNavlibViewAccessors(() => deps(camera, makeScene(false)));
     acc.setViewMatrix(new Matrix4().makeTranslation(5, 6, 7).toArray());
     expect(camera.position.toArray()).toEqual([5, 6, 7]);
   });
@@ -195,5 +199,102 @@ describe('createNavlibViewAccessors', () => {
     expect(acc.getModelExtents()).toBeNull();
     expect(acc.getPivotPosition()).toBeNull();
     expect(() => acc.setViewMatrix(new Matrix4().toArray())).not.toThrow();
+  });
+});
+
+/**
+ * One frame of the driver's own navigation: it rotates the whole pose about the
+ * pivot, position and orientation together, so unlike the mouse it can carry
+ * the camera over a pole and roll the horizon on the way.
+ */
+function drivePitch(pose: number[], pivot: Vector3, up: Vector3, delta: number): number[] {
+  const m = new Matrix4().fromArray(pose);
+  const offset = new Vector3().setFromMatrixPosition(m).sub(pivot);
+  const step = new Quaternion().setFromAxisAngle(
+    new Vector3().crossVectors(up, offset).normalize(),
+    delta
+  );
+  const rotated = new Quaternion().setFromRotationMatrix(m).premultiply(step);
+  return new Matrix4()
+    .compose(pivot.clone().add(offset.applyQuaternion(step)), rotated, new Vector3(1, 1, 1))
+    .toArray();
+}
+
+function driveTranslate(pose: number[], delta: Vector3): number[] {
+  const m = new Matrix4().fromArray(pose);
+  return m.setPosition(new Vector3().setFromMatrixPosition(m).add(delta)).toArray();
+}
+
+/** A canvas whose controls re-aim the camera on update, as OrbitControls do. */
+function aimedDeps(camera: Camera, scene: Scene): NavlibViewDeps {
+  const controls: OrbitLike = {
+    target: new Vector3(),
+    update: () => {
+      camera.lookAt(controls.target);
+      camera.updateMatrixWorld(true);
+    },
+  };
+  controls.update();
+  return { camera, controls, scene, invalidate: () => {} };
+}
+
+function bigModel(): Scene {
+  const scene = new Scene();
+  const mesh = new Mesh(new BoxGeometry(168, 168, 42), new MeshBasicMaterial());
+  mesh.name = 'model';
+  scene.add(mesh);
+  scene.updateMatrixWorld(true);
+  return scene;
+}
+
+describe('driver-written poses', () => {
+  it('stalls at the zenith while the driver keeps pitching over the top', () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(200, 0, 60);
+    const d = aimedDeps(camera, bigModel());
+    const acc = createNavlibViewAccessors(() => d);
+
+    let pose = acc.getViewMatrix();
+    let right = new Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+    let maxTwist = 0;
+    let minPolar = Math.PI;
+    for (let i = 0; i < 80; i++) {
+      acc.setViewMatrix(drivePitch(pose, d.controls.target.clone(), camera.up, -0.12));
+      // The driver reads the view back each frame, so it continues from the
+      // pose we allowed rather than from the one it asked for.
+      pose = acc.getViewMatrix();
+      const next = new Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+      maxTwist = Math.max(maxTwist, next.angleTo(right));
+      right = next;
+      minPolar = Math.min(
+        minPolar,
+        camera.position.clone().sub(d.controls.target).angleTo(camera.up)
+      );
+    }
+    expect(minPolar).toBeGreaterThanOrEqual(MIN_POLAR - 1e-9);
+    expect(maxTwist).toBeLessThan(0.05);
+  });
+
+  it('keeps the model in frame while the driver keeps panning', () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 4000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(0, -300, 200);
+    const scene = bigModel();
+    const d = aimedDeps(camera, scene);
+    const acc = createNavlibViewAccessors(() => d);
+
+    let pose = acc.getViewMatrix();
+    for (let i = 0; i < 200; i++) {
+      acc.setViewMatrix(driveTranslate(pose, new Vector3(8, 0, 4)));
+      pose = acc.getViewMatrix();
+    }
+    camera.updateMatrixWorld(true);
+    const frustum = new Frustum().setFromProjectionMatrix(
+      new Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
+    );
+    expect(frustum.intersectsBox(computeContentBox(scene))).toBe(true);
+    // The drive asked for 1600 units of travel; the leash stopped it far short.
+    expect(camera.position.x).toBeLessThan(400);
   });
 });

@@ -5,6 +5,7 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import {
   applyFrameMotion,
   computeContentBox,
+  createContentBoxCache,
   frameBox,
   type OrbitLike,
   presetDirection,
@@ -60,6 +61,7 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
   const gl = useThree((s) => s.gl);
   const settings = useSpaceMouseSettings();
   const id = useId();
+  const contentBox = useRef(createContentBoxCache());
 
   const stateRef = useRef({ enabled, controls, camera, scene, size, invalidate, settings });
   useEffect(() => {
@@ -116,7 +118,9 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
     if (st.controls.autoRotate) st.controls.autoRotate = false;
     const distance = st.camera.position.distanceTo(st.controls.target);
     const motion = computeFrameMotion(deflection, st.settings, dt, distance);
-    applyFrameMotion(st.camera, st.controls, motion);
+    // Only a canvas that can pan needs the box, and finding it walks the scene.
+    const box = st.controls.enablePan === false ? null : contentBox.current(st.scene);
+    applyFrameMotion(st.camera, st.controls, motion, box);
     // Keep the demand-frameloop canvases rendering while the puck is deflected.
     st.invalidate();
   });
