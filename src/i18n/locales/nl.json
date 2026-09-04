@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "Gewicht",
   "binDesigner.export.engine.preparing": "Engine wordt voorbereid…",
   "binDesigner.export.error.body": "De geometrie-engine had problemen met deze bin. Probeer het opnieuw of meld een probleem als dit blijft gebeuren.",
+  "binDesigner.export.error.outOfMemory": "De geometrie-engine heeft geen geheugen meer: dit ontwerp is te groot om in volledige kwaliteit te exporteren. Probeer de hoogte te verlagen, een grover wandpatroon te kiezen of het uit te schakelen en exporteer opnieuw.",
   "binDesigner.export.error.report": "Probleem melden",
   "binDesigner.export.error.retry": "Opnieuw proberen",
   "binDesigner.export.error.timeout": "Export verlopen — dit ontwerp is mogelijk te complex. Probeer de hoogte te verlagen of het wandpatroon uit te schakelen en exporteer opnieuw.",

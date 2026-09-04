@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "Gewicht",
   "binDesigner.export.engine.preparing": "Engine wird vorbereitet…",
   "binDesigner.export.error.body": "Die Geometrie-Engine hatte Schwierigkeiten mit diesem Bin. Bitte erneut versuchen oder ein Problem melden, falls der Fehler bestehen bleibt.",
+  "binDesigner.export.error.outOfMemory": "Der Geometrie-Engine ist der Speicher ausgegangen: Dieses Design ist zu groß für einen Export in voller Qualität. Verringere die Höhe, wähle ein gröberes Wandmuster oder deaktiviere es und exportiere dann erneut.",
   "binDesigner.export.error.report": "Problem melden",
   "binDesigner.export.error.retry": "Erneut versuchen",
   "binDesigner.export.error.timeout": "Export-Zeitüberschreitung — dieses Design ist möglicherweise zu komplex. Verringere die Höhe oder deaktiviere das Wandmuster und exportiere dann erneut.",

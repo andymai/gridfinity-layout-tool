@@ -15,6 +15,7 @@ import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 import { hasMeshImprints, prepareMeshImprints } from './meshImprint';
 import { buildSTLBufferFromIndexed } from '../../export/stlExporter';
+import { isWasmTrap } from '@/shared/generation/wasmTrap';
 
 /** Export result with binary data and suggested file name. */
 export interface ExportResult {
@@ -145,6 +146,9 @@ export async function exportBin(
   try {
     return await runExportAttempt(params, format, name, onProgress);
   } catch (firstError) {
+    // A trap (see isWasmTrap) leaves nothing to retry on: the second attempt
+    // would rerun the whole pipeline on the corrupted instance.
+    if (isWasmTrap(firstError)) throw firstError;
     // Discard any cached state and try once more with a completely fresh
     // solid. If this second attempt also fails, rethrow the second error
     // — it's the one the user's export was actually blocked on, and the

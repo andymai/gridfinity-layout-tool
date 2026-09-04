@@ -297,7 +297,9 @@ export function useExport(): UseExportReturn {
       const message =
         errorCode === 'TIMEOUT'
           ? t('binDesigner.export.error.timeout')
-          : t('binDesigner.export.error.body');
+          : errorCode === 'OUT_OF_MEMORY'
+            ? t('binDesigner.export.error.outOfMemory')
+            : t('binDesigner.export.error.body');
       addToast({
         message,
         type: 'error',
@@ -374,16 +376,24 @@ export function useExport(): UseExportReturn {
         // Worker exports BREP only as 'stl' or 'step'; 3MF is packaged on the
         // main thread from the STL output.
         const workerFormat = format === 'step' ? 'step' : 'stl';
-        const exportResult = await exportWithResilience(() => {
-          const bridge = getActiveBridge();
-          if (!bridge) throw new Error('Bridge not available');
-          // Reset per attempt so a resilience retry restarts the bar at 0
-          // rather than jumping backwards from where the failed attempt left off.
-          setExportProgress(0);
-          return bridge.exportCombined(exportParams, workerFormat, {
-            onProgress: setExportProgress,
-          });
-        });
+        const exportResult = await exportWithResilience(
+          () => {
+            const bridge = getActiveBridge();
+            if (!bridge) throw new Error('Bridge not available');
+            // Reset per attempt so a resilience retry restarts the bar at 0
+            // rather than jumping backwards from where the failed attempt left off.
+            setExportProgress(0);
+            return bridge.exportCombined(exportParams, workerFormat, {
+              onProgress: setExportProgress,
+            });
+          },
+          {
+            onAttempt: (attempts) => {
+              retryCount = attempts.retryCount;
+              restartCount = attempts.restartCount;
+            },
+          }
+        );
         retryCount = exportResult.retryCount;
         restartCount = exportResult.restartCount;
 
@@ -498,15 +508,22 @@ export function useExport(): UseExportReturn {
         // Wrap the split-export call in resilience. The pool/bridge fallback
         // is encapsulated in `runSplitBinExport`; resilience treats the whole
         // thing as a single retryable operation.
-        const splitExport = await exportWithResilience(() =>
-          runSplitBinExport(
-            splitParams,
-            cutPlanesX,
-            cutPlanesY,
-            totalPieceCount,
-            connectorConfig,
-            format
-          )
+        const splitExport = await exportWithResilience(
+          () =>
+            runSplitBinExport(
+              splitParams,
+              cutPlanesX,
+              cutPlanesY,
+              totalPieceCount,
+              connectorConfig,
+              format
+            ),
+          {
+            onAttempt: (attempts) => {
+              retryCount = attempts.retryCount;
+              restartCount = attempts.restartCount;
+            },
+          }
         );
         retryCount = splitExport.retryCount;
         restartCount = splitExport.restartCount;
@@ -529,16 +546,26 @@ export function useExport(): UseExportReturn {
         // feet the same way — an archive of bins that cannot stand. The knife
         // block's handle rest is in all three for the same reason.
         if (hasDividers || hasLid || hasFeet || hasKnifeRest) {
-          const combined = await exportWithResilience(() => {
-            const bridge = getActiveBridge();
-            if (!bridge) throw new Error('Bridge not available');
-            return format === 'step'
-              ? bridge.exportCombined(splitParams, 'step', { separatePieces: true })
-              : bridge.exportCombined(splitParams, 'stl');
-          });
-          // Companion retries roll into the totals.
-          retryCount += combined.retryCount;
-          restartCount += combined.restartCount;
+          // Companion retries roll into the totals, on top of what the split
+          // export itself already spent.
+          const splitAttempts = { retryCount, restartCount };
+          const combined = await exportWithResilience(
+            () => {
+              const bridge = getActiveBridge();
+              if (!bridge) throw new Error('Bridge not available');
+              return format === 'step'
+                ? bridge.exportCombined(splitParams, 'step', { separatePieces: true })
+                : bridge.exportCombined(splitParams, 'stl');
+            },
+            {
+              onAttempt: (attempts) => {
+                retryCount = splitAttempts.retryCount + attempts.retryCount;
+                restartCount = splitAttempts.restartCount + attempts.restartCount;
+              },
+            }
+          );
+          retryCount = splitAttempts.retryCount + combined.retryCount;
+          restartCount = splitAttempts.restartCount + combined.restartCount;
           for (const piece of combined.result.pieces) {
             if (piece.label !== 'bin') {
               companionPieces.push({ data: piece.data, label: piece.label });

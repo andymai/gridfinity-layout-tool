@@ -1025,6 +1025,62 @@ describe('GenerationBridge', () => {
 
       await expect(genPromise).rejects.toThrow('out-of-memory');
     });
+
+    it.each(['KERNEL_CRASHED', 'OUT_OF_MEMORY'] as const)(
+      'replaces the worker when it reports %s',
+      async (errorCode) => {
+        const initPromise = bridge.init();
+        await vi.advanceTimersByTimeAsync(10);
+        await initPromise;
+        const crashed = getWorker();
+
+        const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+        await vi.advanceTimersByTimeAsync(300);
+        const msg = crashed.messages.find((m) => (m as { type: string }).type === 'GENERATE') as {
+          payload: { requestId: string };
+        };
+
+        const rejection = genPromise.catch((e: unknown) => e);
+        crashed.simulateResponse({
+          type: 'ERROR',
+          requestId: msg.payload.requestId,
+          error: 'table index is out of bounds',
+          errorCode,
+        });
+        const error = (await rejection) as Error & { code?: string };
+
+        expect(error.message).toBe('table index is out of bounds');
+        expect(error.code).toBe(errorCode);
+        // The trapped instance is unusable: it is torn down and a replacement
+        // is started without waiting for the next request to fail on it.
+        expect(crashed.terminated).toBe(true);
+        expect(workersCreated).toBe(2);
+      }
+    );
+
+    it('leaves the worker alone when an error carries no crash code', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+      const worker = getWorker();
+
+      const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      await vi.advanceTimersByTimeAsync(300);
+      const msg = worker.messages.find((m) => (m as { type: string }).type === 'GENERATE') as {
+        payload: { requestId: string };
+      };
+
+      worker.simulateResponse({
+        type: 'ERROR',
+        requestId: msg.payload.requestId,
+        error: 'BRep boolean operation failed',
+        errorCode: 'BREP_BOOLEAN_FAILED',
+      });
+      await expect(genPromise).rejects.toThrow('boolean');
+
+      expect(worker.terminated).toBe(false);
+      expect(workersCreated).toBe(1);
+    });
   });
 
   describe('generation timeout', () => {

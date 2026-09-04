@@ -10,8 +10,9 @@ import type { WorkerResponse, MeshData, KernelName, ExportErrorCode } from '../.
 import { clearAllCaches } from '../generators/shapeCache';
 import { clearBaseplateCaches } from '../generators/baseplateGenerator';
 import { clearMeshImprintCache } from '../generators/meshImprint';
-import { recoverBrepkitKernel, getLastBrepkitPanic } from '../wasmInstantiator';
+import { recoverBrepkitKernel, getLastBrepkitPanic, getKernelHeapBytes } from '../wasmInstantiator';
 import { isAbortError } from '../generators/utils/abort';
+import { isWasmTrap } from '@/shared/generation/wasmTrap';
 import { PerfCollector } from '../generators/pipeline/perfCollector';
 import { recordCompletedGeneration } from '../generators/estimateBin';
 
@@ -19,6 +20,7 @@ import { recordCompletedGeneration } from '../generators/estimateBin';
 let activeRequestId: string | null = null;
 let activeController: AbortController | null = null;
 let kernelInitialized = false;
+let kernelCrashed = false;
 let activeKernel: KernelName = 'occt-wasm';
 let isThreaded = false;
 let hardwareConcurrency = 4;
@@ -78,8 +80,50 @@ function maybeRecoverPoisonedKernel(errorMsg: string): void {
   }
 }
 
+const KERNEL_CRASHED_MESSAGE = 'Geometry kernel crashed and must be restarted';
+
+/** occt-wasm links with MAXIMUM_MEMORY at the wasm32 ceiling. */
+const WASM32_HEAP_CEILING_BYTES = 4 * 1024 * 1024 * 1024;
+
+type KernelCrashCode = Extract<ExportErrorCode, 'KERNEL_CRASHED' | 'OUT_OF_MEMORY'>;
+
+function heapAtCeiling(): boolean {
+  const heapBytes = getKernelHeapBytes();
+  return heapBytes !== null && heapBytes >= WASM32_HEAP_CEILING_BYTES;
+}
+
+/**
+ * Latch a WASM trap (see `isWasmTrap`) so every later request on this worker
+ * is refused with `KERNEL_CRASHED` until the main thread replaces the worker,
+ * instead of running on the corrupted instance.
+ *
+ * A trap with the heap grown to the ceiling is the allocator failing, not a
+ * kernel bug (a 4x4x36 goma bin needs more than 4 GB to tessellate): report
+ * that as `OUT_OF_MEMORY` so the caller can say so instead of retrying.
+ */
+function noteKernelCrash(e: unknown): KernelCrashCode | null {
+  if (!isWasmTrap(e)) return null;
+  kernelCrashed = true;
+  return heapAtCeiling() ? 'OUT_OF_MEMORY' : 'KERNEL_CRASHED';
+}
+
+function describeCrash(code: KernelCrashCode, e: unknown): string {
+  return code === 'OUT_OF_MEMORY'
+    ? `Geometry kernel ran out of memory at the ${WASM32_HEAP_CEILING_BYTES / 1048576} MB WebAssembly limit (${formatError(e)})`
+    : `Geometry kernel crashed (${formatError(e)})`;
+}
+
 /** Check kernel init state, responding with error if not ready. */
 function requireKernel(requestId: string): boolean {
+  if (kernelCrashed) {
+    respond({
+      type: 'ERROR',
+      requestId,
+      error: KERNEL_CRASHED_MESSAGE,
+      errorCode: 'KERNEL_CRASHED',
+    });
+    return false;
+  }
   if (!kernelInitialized) {
     respond({ type: 'ERROR', requestId, error: 'Geometry kernel not initialized' });
     return false;
@@ -374,13 +418,21 @@ export function runGeneration(
     // next request isn't cascaded into "recursive use" — even when this request
     // was already superseded (the poison is global to the kernel).
     maybeRecoverPoisonedKernel(errorMsg);
-    if (activeRequestId !== requestId) return;
+    // A superseded request's error is normally dropped, but a crash has to reach
+    // the main thread regardless: nothing else tells it to replace the worker.
+    const crash = noteKernelCrash(e);
+    if (activeRequestId !== requestId && !crash) return;
 
     console.error(`[${logPrefix}] Generation failed:`, errorMsg);
     if (e instanceof Error && e.stack) {
       console.error(`[${logPrefix}] Stack:`, e.stack);
     }
-    respond({ type: 'ERROR', requestId, error: errorMsg });
+    respond({
+      type: 'ERROR',
+      requestId,
+      error: crash ? describeCrash(crash, e) : errorMsg,
+      ...(crash ? { errorCode: crash } : {}),
+    });
   } finally {
     if (activeRequestId === requestId) {
       activeRequestId = null;
@@ -402,7 +454,12 @@ export function runWarm(requestId: string, generator: (signal: AbortSignal) => v
   try {
     generator(activeController.signal);
   } catch (e) {
-    if (!isAbortError(e)) {
+    const crash = noteKernelCrash(e);
+    if (crash) {
+      // The warm has no caller waiting, but the trap still poisoned the
+      // instance; an ERROR with the code is what makes the bridge replace it.
+      respond({ type: 'ERROR', requestId, error: describeCrash(crash, e), errorCode: crash });
+    } else if (!isAbortError(e)) {
       console.warn('[Warm] export warm failed (non-fatal):', formatError(e));
     }
   } finally {
@@ -426,6 +483,7 @@ export function runWarm(requestId: string, generator: (signal: AbortSignal) => v
  * across kernel versions. `UNKNOWN` is the safe default for unmatched errors.
  */
 export function classifyExportError(e: unknown): ExportErrorCode {
+  if (isWasmTrap(e)) return heapAtCeiling() ? 'OUT_OF_MEMORY' : 'KERNEL_CRASHED';
   const msg = e instanceof Error ? e.message : String(e);
   if (/boolean.*fail|union.*fail|cut.*fail|fuse.*fail/i.test(msg)) {
     return 'BREP_BOOLEAN_FAILED';
@@ -473,11 +531,12 @@ export async function runExport<TPayload extends Record<string, unknown>>(
     // Recreate the kernel if this export stranded brepkit's borrow flag, so the
     // next request isn't cascaded into "recursive use".
     maybeRecoverPoisonedKernel(formatError(e));
-    const errorCode = classifyError?.(e);
+    const crash = noteKernelCrash(e);
+    const errorCode = crash ?? classifyError?.(e);
     respond({
       type: 'ERROR',
       requestId,
-      error: `${errorPrefix}: ${formatError(e)}`,
+      error: `${errorPrefix}: ${crash ? describeCrash(crash, e) : formatError(e)}`,
       ...(errorCode ? { errorCode } : {}),
     });
   }

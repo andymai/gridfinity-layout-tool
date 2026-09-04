@@ -165,4 +165,39 @@ describe('exportWithResilience', () => {
     expect(op).toHaveBeenCalledTimes(1);
     expect(refreshMock).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['KERNEL_CRASHED', 'Geometry kernel crashed (table index is out of bounds)'],
+    ['OUT_OF_MEMORY', 'Geometry kernel ran out of memory at the 4096 MB WebAssembly limit'],
+  ])('skips the in-process retries and restarts the worker on %s', async (code, message) => {
+    const crash = Object.assign(new Error(message), { code });
+    const op = vi.fn().mockRejectedValueOnce(crash).mockResolvedValue('ok');
+
+    const promise = exportWithResilience(op);
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(op).toHaveBeenCalledTimes(2);
+    expect(refreshMock).toHaveBeenCalledTimes(1);
+    expect(result.result).toBe('ok');
+    expect(result.retryCount).toBe(0);
+    expect(result.restartCount).toBe(1);
+  });
+
+  it('reports the attempts spent before each retry so a failed export can still count them', async () => {
+    const op = vi.fn().mockRejectedValue(new Error('persistent boolean failure'));
+    const attempts: Array<{ retryCount: number; restartCount: number }> = [];
+
+    const settled = exportWithResilience(op, {
+      onAttempt: (a) => attempts.push({ ...a }),
+    }).catch((e: unknown) => e);
+    await vi.runAllTimersAsync();
+    await settled;
+
+    expect(attempts).toEqual([
+      { retryCount: 1, restartCount: 0 },
+      { retryCount: 2, restartCount: 0 },
+      { retryCount: 2, restartCount: 1 },
+    ]);
+  });
 });

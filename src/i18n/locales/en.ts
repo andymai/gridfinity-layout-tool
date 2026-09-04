@@ -3486,6 +3486,8 @@ const en: Record<string, string> = {
   'binDesigner.export.error.report': 'Report issue',
   'binDesigner.export.error.timeout':
     'Export timed out: this design may be too complex. Try lowering the height or turning off the wall pattern, then export again.',
+  'binDesigner.export.error.outOfMemory':
+    'The geometry engine ran out of memory: this design is too large to export at full quality. Try lowering the height, making the wall pattern bolder, or turning it off, then export again.',
   'binDesigner.generateAMeshFirstToEnableExport': 'Generate a mesh first to enable export',
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',

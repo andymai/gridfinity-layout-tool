@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "Hmotnost",
   "binDesigner.export.engine.preparing": "Připravuji engine…",
   "binDesigner.export.error.body": "Geometrický engine měl s tímto binem potíže. Zkus to znovu nebo nahlas problém, pokud přetrvává.",
+  "binDesigner.export.error.outOfMemory": "Geometrickému enginu došla paměť: tento návrh je příliš velký na export v plné kvalitě. Zkus snížit výšku, zvolit výraznější vzor stěny nebo ho vypnout a exportuj znovu.",
   "binDesigner.export.error.report": "Nahlásit problém",
   "binDesigner.export.error.retry": "Zkusit znovu",
   "binDesigner.export.error.timeout": "Export vypršel — tento návrh může být příliš složitý. Zkus snížit výšku nebo vypnout vzor stěny a exportuj znovu.",

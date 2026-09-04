@@ -10,11 +10,18 @@ import {
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 import { recordCommunityExport } from '@/shared/api/communityAttribution';
 import type { CommunityDesignLineage } from '@/shared/types/community';
+import type * as PosthogModule from '@/shared/analytics/posthog';
 
 vi.mock('@/shared/api/communityAttribution', () => ({
   recordCommunityExport: vi.fn().mockResolvedValue(undefined),
 }));
 const mockRecordCommunityExport = vi.mocked(recordCommunityExport);
+
+const mockTrackBinExportFailure = vi.fn();
+vi.mock('@/shared/analytics/posthog', async (importOriginal) => ({
+  ...(await importOriginal<typeof PosthogModule>()),
+  trackBinExportFailure: (...args: unknown[]) => mockTrackBinExportFailure(...args),
+}));
 
 // Mock the bridge module
 const mockExportBin = vi.fn();
@@ -36,6 +43,8 @@ vi.mock('@/shared/generation/bridge', () => ({
       return () => {};
     },
     refresh: () => {},
+    acquire: () => Promise.resolve(),
+    release: () => {},
   },
   workerPoolManager: {
     get: () => null,
@@ -725,6 +734,37 @@ describe('useExport', () => {
       });
 
       expect(mockRecordCommunityExport).not.toHaveBeenCalled();
+
+      restoreDom();
+    });
+
+    it('reports the restart a kernel crash cost when the export still fails', async () => {
+      Object.defineProperty(globalThis, 'URL', { value: originalURL, writable: true });
+      // A worker-reported crash skips the in-process retries and restarts the
+      // worker once; both attempts fail here, so only the failure path can
+      // carry the counts to telemetry.
+      mockExportCombined.mockRejectedValue(
+        Object.assign(new Error('Combined export failed: table index is out of bounds'), {
+          code: 'KERNEL_CRASHED',
+        })
+      );
+      const restoreDom = mockDownloadDom();
+
+      const { result } = renderHook(() => useExport());
+
+      await act(async () => {
+        const succeeded = await result.current.downloadBin('stl', EXPORT_CONFIG);
+        expect(succeeded).toBe(false);
+      });
+
+      expect(mockExportCombined).toHaveBeenCalledTimes(2);
+      expect(mockTrackBinExportFailure).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error_code: 'KERNEL_CRASHED',
+          retry_count: 0,
+          restart_count: 1,
+        })
+      );
 
       restoreDom();
     });

@@ -22,6 +22,7 @@ import type {
   ThreadingInfo,
   MeshImportOutcome,
 } from './bridgeTypes';
+import { WorkerRequestError } from './bridgeTypes';
 
 export interface MessageHandlerContext {
   worker: Worker | null;
@@ -49,6 +50,7 @@ export interface MessageHandlerContext {
   clearExportTimer: (pending: PendingExport<unknown>) => void;
   resolveExport: (slot: ExportSlot, requestId: string, result: unknown) => boolean;
   rejectExportByRequestId: (requestId: string, error: Error) => boolean;
+  hardResetWorker: (reason?: string) => void;
 }
 
 /**
@@ -279,15 +281,25 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
         }
         break;
 
-      case 'ERROR':
+      case 'ERROR': {
+        const error = new WorkerRequestError(response.error, response.errorCode);
         if (response.requestId === ctx.currentRequestId && ctx.pendingReject) {
           const reject = ctx.pendingReject;
           ctx.clearPending();
-          reject(new Error(response.error));
+          reject(error);
         } else {
-          ctx.rejectExportByRequestId(response.requestId, new Error(response.error));
+          ctx.rejectExportByRequestId(response.requestId, error);
+        }
+        // A trapped kernel refuses every later request (see isWasmTrap), and a
+        // heap grown to the wasm32 ceiling never shrinks; replace the worker
+        // now rather than after the next request fails on it.
+        if (response.errorCode === 'KERNEL_CRASHED') {
+          ctx.hardResetWorker('Worker was reset after a geometry kernel crash');
+        } else if (response.errorCode === 'OUT_OF_MEMORY') {
+          ctx.hardResetWorker('Worker was reset after the geometry kernel ran out of memory');
         }
         break;
+      }
 
       case 'EXPORT_RESULT':
         ctx.resolveExport('export', response.requestId, {

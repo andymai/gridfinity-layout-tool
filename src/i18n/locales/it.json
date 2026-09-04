@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "Peso",
   "binDesigner.export.engine.preparing": "Preparazione del motore…",
   "binDesigner.export.error.body": "Il motore di geometria ha avuto problemi con questo bin. Riprova o segnala un problema se persiste.",
+  "binDesigner.export.error.outOfMemory": "Il motore geometrico ha esaurito la memoria: questo design è troppo grande per essere esportato a piena qualità. Prova ad abbassare l'altezza, a usare un motivo delle pareti più grande o a disattivarlo, poi esporta di nuovo.",
   "binDesigner.export.error.report": "Segnala problema",
   "binDesigner.export.error.retry": "Riprova",
   "binDesigner.export.error.timeout": "Esportazione scaduta; questo design potrebbe essere troppo complesso. Prova ad abbassare l'altezza o a disattivare il motivo delle pareti, poi esporta di nuovo.",

@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "Waga",
   "binDesigner.export.engine.preparing": "Przygotowywanie silnika…",
   "binDesigner.export.error.body": "Silnik geometrii miał kłopot z tym binem. Spróbuj ponownie lub zgłoś problem, jeśli się utrzymuje.",
+  "binDesigner.export.error.outOfMemory": "Silnikowi geometrii zabrakło pamięci: ten projekt jest zbyt duży, aby wyeksportować go w pełnej jakości. Spróbuj obniżyć wysokość, wybrać grubszy wzór ścianki lub go wyłączyć, a potem wyeksportuj ponownie.",
   "binDesigner.export.error.report": "Zgłoś problem",
   "binDesigner.export.error.retry": "Ponów",
   "binDesigner.export.error.timeout": "Eksport przekroczył limit czasu — ten projekt może być zbyt złożony. Spróbuj obniżyć wysokość lub wyłączyć wzór ścianki, a potem wyeksportuj ponownie.",

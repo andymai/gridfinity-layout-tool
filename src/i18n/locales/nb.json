@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "Vekt",
   "binDesigner.export.engine.preparing": "Klargjør motor…",
   "binDesigner.export.error.body": "Geometrimotoren hadde problemer med denne bin-en. Prøv igjen, eller meld inn et problem hvis det vedvarer.",
+  "binDesigner.export.error.outOfMemory": "Geometrimotoren gikk tom for minne: denne utformingen er for stor til å eksporteres i full kvalitet. Prøv å redusere høyden, bruke et grovere veggmønster eller slå det av, og eksporter på nytt.",
   "binDesigner.export.error.report": "Meld inn problem",
   "binDesigner.export.error.retry": "Prøv igjen",
   "binDesigner.export.error.timeout": "Eksport tidsavbrudd — denne utformingen kan være for kompleks. Prøv å redusere høyden eller slå av veggmønsteret, og eksporter på nytt.",

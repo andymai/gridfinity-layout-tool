@@ -14,6 +14,7 @@ import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
 import { getManifoldModule } from './manifoldRuntime';
 import { TEXT_FONT_URLS } from '@/shared/fonts/fontAssets';
 import type { TextFontFamily } from '@/shared/types/bin';
+import type { OcctWasmModule } from 'occt-wasm';
 import { EAGER_TEXT_FONT_FAMILIES } from '@/shared/types/bin';
 import { isErr } from '@/core/result';
 import { stableAssetName } from '@/shared/generation/wasmLoadError';
@@ -251,6 +252,18 @@ export async function loadManifold(): Promise<WasmLoadResult> {
  *
  * Registered under kernel id `'occt-wasm'` — the production default kernel.
  */
+let occtModule: OcctWasmModule | null = null;
+
+/**
+ * Current size of the occt-wasm linear memory, or `null` on another kernel.
+ * Emscripten only ever grows it, so this is the high-water mark; a trap while
+ * it sits at the module's MAXIMUM_MEMORY is the allocator failing.
+ */
+export function getKernelHeapBytes(): number | null {
+  const heap: Uint32Array | undefined = occtModule?.HEAPU32;
+  return heap ? heap.byteLength : null;
+}
+
 export async function loadOcctWasm(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();
 
@@ -267,6 +280,7 @@ export async function loadOcctWasm(): Promise<WasmLoadResult> {
   // of OcctKernel.init aborting with "module doesn't start with '\0asm'".
   const wasmBinary = await fetchWasmBinary(occtWasmUrlMod.default, 'OCCT');
   const kernel = await OcctKernel.init({ wasm: wasmBinary });
+  occtModule = kernel.getRawModule();
   // fromKernel retains the wrapper for the worker's lifetime, so no manual GC
   // pin is needed (worker.terminate() frees the whole WASM heap).
   registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));

@@ -964,6 +964,7 @@
   "binDesigner.estimate.weight": "Vikt",
   "binDesigner.export.engine.preparing": "Förbereder motor…",
   "binDesigner.export.error.body": "Geometrimotorn hade problem med detta fack. Försök igen, eller rapportera ett problem om det kvarstår.",
+  "binDesigner.export.error.outOfMemory": "Geometrimotorn fick slut på minne: den här designen är för stor för att exporteras i full kvalitet. Försök att minska höjden, välja ett grövre väggmönster eller stänga av det och exportera igen.",
   "binDesigner.export.error.report": "Rapportera problem",
   "binDesigner.export.error.retry": "Försök igen",
   "binDesigner.export.error.timeout": "Exporten avbröts — den här designen kan vara för komplex. Försök att minska höjden eller stänga av väggmönstret och exportera igen.",

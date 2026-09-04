@@ -332,6 +332,7 @@ export type ExportErrorCode =
   | 'EMPTY_GEOMETRY'
   | 'OUT_OF_MEMORY'
   | 'TIMEOUT'
+  | 'KERNEL_CRASHED'
   | 'UNKNOWN';
 
 export interface ErrorResponse {
