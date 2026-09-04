@@ -10,6 +10,7 @@
 import { createClient } from '@liveblocks/client';
 import { createRoomContext } from '@liveblocks/react';
 import type { Layout, Coord, ResizeHandle } from './core/types';
+import { generateUUID } from '@/shared/utils/uuid';
 
 /**
  * User presence data - ephemeral state visible to other users.
@@ -85,11 +86,11 @@ function getLiveblocksUserId(): string {
   try {
     const stored = localStorage.getItem(LIVEBLOCKS_USER_ID_KEY);
     if (stored) return stored;
-    const id = crypto.randomUUID();
+    const id = generateUUID();
     localStorage.setItem(LIVEBLOCKS_USER_ID_KEY, id);
     return id;
   } catch {
-    return crypto.randomUUID();
+    return generateUUID();
   }
 }
 

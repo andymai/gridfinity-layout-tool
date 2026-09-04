@@ -18,6 +18,7 @@ import { specToCutout, DEFAULT_CUT_DEPTH } from './specToCutout';
 import { MAX_SVG_FILE_SIZE } from './types';
 import type { SvgImportErrorCode } from './types';
 import { byDescendingArea } from '../importStackOrder';
+import { generateUUID } from '@/shared/utils/uuid';
 
 /** Maps error codes to i18n toast keys. */
 const ERROR_TOAST_KEYS: Record<SvgImportErrorCode, string> = {
@@ -81,7 +82,7 @@ export function useSvgImport(): UseSvgImportReturn {
         const specs = result.value;
         const hydrationOptions = {
           cutDepth: DEFAULT_CUT_DEPTH,
-          idFactory: () => crypto.randomUUID(),
+          idFactory: generateUUID,
         };
 
         // Checked before the history push, the same rule the store's own batch

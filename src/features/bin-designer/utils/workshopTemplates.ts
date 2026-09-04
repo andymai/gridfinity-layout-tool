@@ -11,6 +11,7 @@ import {
   createAssemblyPartNode,
   defaultCutterProfile,
 } from '@/shared/items/assembly/descriptor';
+import { generateUUID } from '@/shared/utils/uuid';
 
 export type WorkshopTemplateId =
   | 'pliersRack'
@@ -47,7 +48,7 @@ function pliersRack(envelope: ItemEnvelope): AssemblyPartNode[] {
   const inset = 10;
   const count = Math.max(2, Math.min(64, Math.floor((w - 2 * inset) / pitch) + 1));
 
-  const rail = createAssemblyPartNode('block', crypto.randomUUID(), {
+  const rail = createAssemblyPartNode('block', generateUUID(), {
     x: w / 2,
     y: railY,
     seatZ: 0,
@@ -58,7 +59,7 @@ function pliersRack(envelope: ItemEnvelope): AssemblyPartNode[] {
     params: { ...rail.params, width: w - 8, depth: railDepth, height: 30, wedgeAngleDeg: 0 },
   };
 
-  const fin = createAssemblyPartNode('fin', crypto.randomUUID(), {
+  const fin = createAssemblyPartNode('fin', generateUUID(), {
     x: inset,
     y: railY - railDepth / 2 - finLength / 2,
     seatZ: 0,
@@ -81,7 +82,7 @@ function screwdriverBlock(envelope: ItemEnvelope): AssemblyPartNode[] {
   const pitch = 18;
   const count = Math.max(2, Math.min(64, Math.floor((blockW - 20) / pitch) + 1));
 
-  const hole = createAssemblyPartNode('cutter', crypto.randomUUID(), {
+  const hole = createAssemblyPartNode('cutter', generateUUID(), {
     x: -((count - 1) * pitch) / 2,
     y: 0,
     seatZ: 0,
@@ -99,7 +100,7 @@ function screwdriverBlock(envelope: ItemEnvelope): AssemblyPartNode[] {
     array: { count, dx: pitch, dy: 0 },
   };
 
-  const block = createAssemblyPartNode('block', crypto.randomUUID(), {
+  const block = createAssemblyPartNode('block', generateUUID(), {
     x: w / 2,
     y: d / 2,
     seatZ: 0,
@@ -118,7 +119,7 @@ function plierComb(envelope: ItemEnvelope): AssemblyPartNode[] {
   const { w, d } = extent(envelope);
   const width = w - 16;
   const slotCount = Math.max(2, Math.min(15, Math.floor(width / 26)));
-  const comb = createAssemblyPartNode('comb', crypto.randomUUID(), {
+  const comb = createAssemblyPartNode('comb', generateUUID(), {
     x: w / 2,
     y: d / 2,
     seatZ: 0,
@@ -143,14 +144,14 @@ function plierComb(envelope: ItemEnvelope): AssemblyPartNode[] {
 function screwdriverStation(envelope: ItemEnvelope): AssemblyPartNode[] {
   const { w, d } = extent(envelope);
   const stepDepth = Math.min(24, Math.max(14, d / 3));
-  const riser = createAssemblyPartNode('riser', crypto.randomUUID(), {
+  const riser = createAssemblyPartNode('riser', generateUUID(), {
     x: w / 2,
     y: d - stepDepth - 6,
     seatZ: 0,
     rotZDeg: 0,
   });
   const bankDepth = Math.min(22, stepDepth);
-  const bank = createAssemblyPartNode('boreBank', crypto.randomUUID(), {
+  const bank = createAssemblyPartNode('boreBank', generateUUID(), {
     x: 0,
     y: stepDepth / 2,
     seatZ: 0,
@@ -182,7 +183,7 @@ function screwdriverStation(envelope: ItemEnvelope): AssemblyPartNode[] {
 
 function angledBitBank(envelope: ItemEnvelope): AssemblyPartNode[] {
   const { w, d } = extent(envelope);
-  const bank = createAssemblyPartNode('boreBank', crypto.randomUUID(), {
+  const bank = createAssemblyPartNode('boreBank', generateUUID(), {
     x: w / 2,
     y: d / 2,
     seatZ: 0,
@@ -210,7 +211,7 @@ function angledBitBank(envelope: ItemEnvelope): AssemblyPartNode[] {
 function wrenchRail(envelope: ItemEnvelope): AssemblyPartNode[] {
   const { w, d } = extent(envelope);
   const width = w - 16;
-  const comb = createAssemblyPartNode('comb', crypto.randomUUID(), {
+  const comb = createAssemblyPartNode('comb', generateUUID(), {
     x: w / 2,
     y: d / 2,
     seatZ: 0,
@@ -283,7 +284,7 @@ export function convertToolRackToAssembly(
     // the rail entirely on the next load.
     const rail = createAssemblyPartNode(
       'block',
-      crypto.randomUUID(),
+      generateUUID(),
       clampPartTransform({
         x: w / 2,
         y: d - rack.backRail.thickness / 2,
@@ -309,7 +310,7 @@ export function convertToolRackToAssembly(
   const finLength = Math.max(12, Math.min(d, 400));
   const fin = createAssemblyPartNode(
     'fin',
-    crypto.randomUUID(),
+    generateUUID(),
     clampPartTransform({
       x: rack.slotInsetMm,
       y: d / 2,

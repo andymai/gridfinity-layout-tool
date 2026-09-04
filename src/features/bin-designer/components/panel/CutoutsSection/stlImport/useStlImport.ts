@@ -24,6 +24,7 @@ import type {
 import { MAX_MESH_ASSETS_PER_DESIGN, MAX_MESH_FILE_BYTES } from '@/shared/generation/meshAsset';
 import { defaultEntryChamfer } from '@/features/bin-designer/types';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import { generateUUID } from '@/shared/utils/uuid';
 
 /** Default insertion clearance (mm) for an imported tool, matching scans. */
 const STL_DEFAULT_CLEARANCE_MM = 0.4;
@@ -157,13 +158,13 @@ export function useStlImport(): UseStlImportReturn {
 
   const place = useCallback(() => {
     if (!pending) return;
-    const meshId = crypto.randomUUID();
+    const meshId = generateUUID();
     const { asset, suggestedCutDepth } = pending;
     const current = useDesignerStore.getState().params;
     const { innerW, innerD } = cutoutInterior(current);
     addMeshCutout(
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         shape: 'mesh',
         meshId,
         x: Math.max(0, (innerW - asset.sizeMm.x) / 2),

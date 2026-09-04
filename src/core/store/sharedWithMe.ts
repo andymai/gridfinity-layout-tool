@@ -11,6 +11,7 @@ import { immer } from 'zustand/middleware/immer';
 import type { SharedWithMeEntry, SharePermission, LayoutPreview } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { saveSharedWithMe } from '@/core/storage/SharedWithMeService';
+import { generateUUID } from '@/shared/utils/uuid';
 
 /** Mutable fields on SharedWithMeEntry (excludes id, sourceShareId, addedAt). */
 type SharedWithMeUpdates = Partial<
@@ -49,7 +50,7 @@ export const useSharedWithMeStore = create<SharedWithMeState>()(
 
     add: (entry) => {
       const newEntry: SharedWithMeEntry = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         sourceShareId: entry.sourceShareId,
         name: entry.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
         authorName: entry.authorName,

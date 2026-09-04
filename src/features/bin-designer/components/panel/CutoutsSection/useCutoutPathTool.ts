@@ -29,6 +29,7 @@ import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import { createDefaultCutout } from './cutoutHelpers';
 import type { InteractionMode, PreviewMap } from './cutoutInteractionTypes';
+import { generateUUID } from '@/shared/utils/uuid';
 
 interface UseCutoutPathToolOptions {
   readonly mode: InteractionMode;
@@ -104,7 +105,7 @@ export function useCutoutPathTool({
       }
 
       const { minX, minY, maxX, maxY } = getPathBounds(clamped);
-      const newId = crypto.randomUUID();
+      const newId = generateUUID();
       const created: Cutout = {
         ...createDefaultCutout(newId, 'path', minX, minY, maxX - minX, maxY - minY),
         path: clamped,

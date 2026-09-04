@@ -26,6 +26,7 @@ import type {
 import { MAX_VERSIONS_PER_DESIGN } from '@/features/bin-designer/types';
 import { getDb, DESIGN_VERSIONS_STORE } from './designerDb';
 import { emit as announce } from '@/features/bin-designer/sync/designVersionEvents';
+import { generateUUID } from '@/shared/utils/uuid';
 
 /** Strip the compressed body so the history list never holds every design in memory. */
 function toSummary(version: DesignVersion): DesignVersionSummary {
@@ -99,7 +100,7 @@ export async function createDesignVersion(
     }
 
     const version: DesignVersion = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       designId,
       name,
       content: compressString(JSON.stringify(content)),

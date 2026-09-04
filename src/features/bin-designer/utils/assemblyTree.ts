@@ -6,6 +6,7 @@
  */
 import type { AssemblyPartNode } from '@/shared/types/assembly';
 import { MAX_ASSEMBLY_DEPTH, MAX_ASSEMBLY_PARTS } from '@/shared/items/assembly/descriptor';
+import { generateUUID } from '@/shared/utils/uuid';
 
 export function findAssemblyPart(
   parts: readonly AssemblyPartNode[],
@@ -170,7 +171,7 @@ export function findAssemblySiblings(
 export function cloneAssemblySubtree(node: AssemblyPartNode): AssemblyPartNode {
   const reId = (n: AssemblyPartNode): AssemblyPartNode => ({
     ...n,
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     children: n.children.map(reId),
   });
   return reId(structuredClone(node));

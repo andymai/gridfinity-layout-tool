@@ -59,7 +59,7 @@ The workflow files themselves (`ci.yml`, `release.yml`, `smoke-*.yml`, `vite.con
 
 ## Docker image
 
-`.github/workflows/docker.yml` builds and smokes the self-hosting image on path-filtered PRs and publishes it to GHCR on `release: published`, tagged from the release tag. `scripts/check-docker-parity.test.ts` fails when `vercel.json` and `docker/nginx.conf` disagree, so a header or rewrite change edits both. One-time after the first publish: set the package public.
+`.github/workflows/docker.yml` builds and smokes the self-hosting image on path-filtered PRs and publishes it to GHCR on `release: published`, tagged from the release tag. `scripts/check-docker-parity.test.ts` fails when `vercel.json` and `docker/nginx.conf` disagree, so a header or rewrite change edits both.
 
 ## Recipe: unstick a stalled release
 
