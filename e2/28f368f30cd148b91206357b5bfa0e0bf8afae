@@ -1,0 +1,127 @@
+src/features/generation/worker/generators/binExporter.ts
+  s_592ace276ffcb1::t_f85b63f8d3c6b4 149-151
+  s_592ace276ffcb1::t_7e13628c1feef6 18
+src/i18n/locales/uk.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/features/bin-designer/utils/exportWithResilience.ts
+  s_592ace276ffcb1::t_908af78d1fdf41 69-74,78-83
+  s_592ace276ffcb1::t_5243c472605c14 114-117
+  s_592ace276ffcb1::t_4e9cf520f50dd0 113,120,131
+.claude/skills/geometry-debugging/SKILL.md
+  s_592ace276ffcb1::t_1d787183d127ce 45
+src/features/generation/worker/generators/__kernel-tests__/gomaTallExportProbe.test.ts
+  s_592ace276ffcb1::t_7a698fd374c8dd 1-2,11-16,19-30,33-35,37-182,184-205,207-233,235-241,243-244,294-299
+  s_592ace276ffcb1::t_c95502e5e05dfd 3-4
+  s_592ace276ffcb1::t_48cc9315d4d103 5-10,17-18,260-268
+  s_592ace276ffcb1::t_ebb7dc9761eeda 31-32,245-259,269-293
+  s_592ace276ffcb1::t_bc243f9c696888 36,183,206
+  s_592ace276ffcb1::t_93faea6d8666ba 234
+  s_592ace276ffcb1::t_0e0317346e69fe 242
+src/features/bin-designer/utils/exportWithResilience.test.ts
+  s_592ace276ffcb1::t_e193a8744c3cc6 169-173
+  s_592ace276ffcb1::t_00ca24d912eb23 168,174-202
+src/features/generation/bridge/responses.ts
+  s_592ace276ffcb1::t_af5735a943cfab 335
+src/i18n/locales/ko.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/features/generation/worker/handlers/workerContext.ts
+  s_592ace276ffcb1::t_03b620a5ec3ef5 83-84,95-98,103,106,114-115,118-126
+  s_592ace276ffcb1::t_42c777dde5303e 486
+  s_592ace276ffcb1::t_591253ba9774fa 13
+  s_592ace276ffcb1::t_e86fa0454e2e35 85-94,99-100,104-105,107-113
+  s_592ace276ffcb1::t_65bddf741986cc 534-535,539
+  s_592ace276ffcb1::t_6b8537314ff81f 101-102
+  s_592ace276ffcb1::t_0b19700d64ae03 15,23
+  s_592ace276ffcb1::t_61abda84ff96f9 421-422,430-432,435
+  s_592ace276ffcb1::t_a2f9d73a24811e 457-458,461
+  s_592ace276ffcb1::t_89ae0b0f36074c 459-460,462
+  s_592ace276ffcb1::t_163b55a5f35327 423-424,433-434
+src/features/bin-designer/hooks/useExport.ts
+  s_592ace276ffcb1::t_f587b9f3745d71 549-568
+  s_592ace276ffcb1::t_f68df207f2b952 300-302
+  s_592ace276ffcb1::t_1bc332ea141b38 379-396
+  s_592ace276ffcb1::t_8d31a6651c4ca5 511-526
+src/features/generation/worker/wasmInstantiator.ts
+  s_592ace276ffcb1::t_46402cb9ed8c59 17
+  s_592ace276ffcb1::t_d285e1d3f5708d 283
+  s_592ace276ffcb1::t_169c465c5178cd 255-266
+src/shared/generation/wasmTrap.ts
+  s_592ace276ffcb1::t_49db8f8659b99e 20-21
+  s_229a35bbae3466::t_6d9c9b348e5ee5 1-19,22-26
+src/i18n/locales/es.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/i18n/locales/nl.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/features/generation/worker/generators/binExporter.trap.test.ts
+  s_592ace276ffcb1::t_2f67a775b53c85 1-51
+src/i18n/locales/pl.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/i18n/locales/zh-CN.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/i18n/locales/en.ts
+  s_592ace276ffcb1::t_0b224cd87e4f68 3489-3490
+src/i18n/locales/cs.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/i18n/locales/de.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/features/generation/bridge/bridgeTypes.ts
+  s_592ace276ffcb1::t_2bb3c82d421b2f 159-172
+src/i18n/locales/nb.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/i18n/locales/fr.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_592ace276ffcb1::t_699123131b4298 293-295,298-299
+  s_592ace276ffcb1::t_f50d0728e71f86 53
+  s_592ace276ffcb1::t_2aa687647f51ec 25
+  s_592ace276ffcb1::t_01c13c24f6ccf9 284-285,289,291,296-297,302
+  s_592ace276ffcb1::t_80dd38a6aadae3 292
+src/features/generation/bridge/GenerationBridge.test.ts
+  s_592ace276ffcb1::t_19516386c6d86f 1029-1035,1037-1041,1043-1050,1052-1053
+  s_592ace276ffcb1::t_a81518a150bb0a 1028,1036,1042,1051,1054-1082
+  s_592ace276ffcb1::t_ba16645fbff172 1083
+src/i18n/locales/it.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/i18n/locales/ja.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/i18n/locales/pt-BR.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/features/bin-designer/hooks/useExport.test.ts
+  s_592ace276ffcb1::t_647432cf03a4ba 13
+  s_592ace276ffcb1::t_61cd7a234e4402 20-21,23-25
+  s_592ace276ffcb1::t_7e7228f8fb3f06 22
+  s_592ace276ffcb1::t_8b5097702ff90b 46-47
+  s_592ace276ffcb1::t_0885ea9a3facaa 741-771
+src/features/generation/worker/handlers/workerContext.test.ts
+  s_592ace276ffcb1::t_de8695d4874952 1-49
+src/i18n/locales/sv.json
+  s_592ace276ffcb1::t_0b224cd87e4f68 967
+src/features/generation/bridge/GenerationBridge.ts
+  s_592ace276ffcb1::t_5b9e61daf0659e 371,383
+src/shared/generation/wasmTrap.test.ts
+  s_592ace276ffcb1::t_35aabbf464359a 1-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e228f368f30cd148b91206357b5bfa0e0bf8afae",
+  "prompts": {},
+  "sessions": {
+    "s_229a35bbae3466": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6805407e-2253-4ca1-ae18-1a7413cd6397",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_592ace276ffcb1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cead2754-702a-446b-b3b9-f75da6a6aba7",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
