@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/__kernel-tests__/gomaTallExportProbe.test.ts
+  s_592ace276ffcb1::t_dd091d390178d9 260
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "4c9618344ad28c867bd42018089e235568e28a4c",
+  "prompts": {},
+  "sessions": {
+    "s_592ace276ffcb1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cead2754-702a-446b-b3b9-f75da6a6aba7",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
