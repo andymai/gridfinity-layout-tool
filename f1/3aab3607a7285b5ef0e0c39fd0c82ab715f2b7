@@ -1,0 +1,24 @@
+src/features/bin-designer/types/base.ts
+  s_ee6c83a60fd890::t_ce28e61d4b1194 291-292
+src/features/generation/worker/generators/socketBuilder.ts
+  s_ee6c83a60fd890::t_ce28e61d4b1194 30-31,358
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_ee6c83a60fd890::t_ce28e61d4b1194 169-172,182-184
+  s_ee6c83a60fd890::t_982b619b216a1e 87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f13aab3607a7285b5ef0e0c39fd0c82ab715f2b7",
+  "prompts": {},
+  "sessions": {
+    "s_ee6c83a60fd890": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4fa12182-a69e-4389-8180-b6a7e0d4db6c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
