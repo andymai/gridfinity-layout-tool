@@ -41,6 +41,8 @@ import {
 
 import type { DetachableFeetGeometry, DetachableFeetOptions } from './detachableFeetBuilder';
 
+let MATING_RIM_RELIEF_MM: number;
+
 type BuildFeet = (opts: DetachableFeetOptions) => DetachableFeetGeometry;
 type BuildCell = (w: number, d: number) => Shape3D;
 
@@ -50,7 +52,9 @@ let meshOf: (shape: Shape3D) => MeshData;
 
 beforeAll(async () => {
   await initTestKernel();
-  buildDetachableFeet = (await import('./detachableFeetBuilder')).buildDetachableFeet;
+  const feetModule = await import('./detachableFeetBuilder');
+  buildDetachableFeet = feetModule.buildDetachableFeet;
+  MATING_RIM_RELIEF_MM = feetModule.MATING_RIM_RELIEF_MM;
   buildSingleCellSocket = (await import('./socketBuilder')).buildSingleCellSocket;
   const { mesh } = await import('brepjs');
   const { toIndexedMeshData } = await import('./meshUtils');
@@ -74,11 +78,13 @@ const MAGNET_DEPTH = 2;
 const ARM = footArmMm({ magnetDiameterMm: MAGNET_D, magnetInsetFromEdgeMm: 8, pinDiameterMm: PIN });
 
 /**
- * Z of every breakpoint in the socket profile, measured from the foot's top.
- * The loft's sections land exactly here, so a vertex-level comparison at these
- * depths is comparing the profile itself rather than the tessellation.
+ * Z of every socket-profile breakpoint at or below the foot's widest section,
+ * measured from the foot's top. The loft's sections land exactly here, so a
+ * vertex-level comparison at these depths is comparing the profile itself
+ * rather than the tessellation. Everything a baseplate touches is in this
+ * range: only the top 0.25mm, above the widest section, is relieved.
  */
-const PROFILE_Z = [0, -0.25, -2.4, -4.2, -5];
+const PROFILE_Z = [-(CLEARANCE / 2), -2.4, -4.2, -5];
 
 /** A single L foot on a cell centred at the origin, hugging its +X/+Y corner. */
 const CORNER_L: FootPlacement = {
@@ -132,7 +138,7 @@ function extremeAt(m: MeshData, z: number, axis: 0 | 1): number {
 }
 
 describe('detachable foot geometry', () => {
-  it('reproduces the integral foot profile exactly on the faces it keeps', () => {
+  it('reproduces the integral foot profile exactly below the mating rim', () => {
     const { feet, pinHoles } = feetOf();
     const full = buildSingleCellSocket(PITCH - CLEARANCE, PITCH - CLEARANCE);
     try {
@@ -143,6 +149,46 @@ describe('detachable foot geometry', () => {
         expect(extremeAt(footMesh, z, 0)).toBeCloseTo(extremeAt(fullMesh, z, 0), 6);
         expect(extremeAt(footMesh, z, 1)).toBeCloseTo(extremeAt(fullMesh, z, 1), 6);
       }
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles?.delete();
+      full.delete();
+    }
+  });
+
+  it('sets the mating face back from the rim that curls', () => {
+    const { feet, pinHoles } = feetOf();
+    const full = buildSingleCellSocket(PITCH - CLEARANCE, PITCH - CLEARANCE);
+    try {
+      const footMesh = meshOf(feet[0]);
+      const fullMesh = meshOf(full);
+      for (const axis of [0, 1] as const) {
+        const integral = extremeAt(fullMesh, 0, axis);
+        // The face the bin sits on, inset by the relief.
+        expect(extremeAt(footMesh, 0, axis)).toBeCloseTo(integral - MATING_RIM_RELIEF_MM, 6);
+        // ...while the widest section, where the profile's top step ends, is
+        // untouched: a relief that narrowed the whole foot would be one that
+        // loosened it in a baseplate.
+        expect(extremeAt(footMesh, -(CLEARANCE / 2), axis)).toBeCloseTo(integral, 6);
+      }
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles?.delete();
+      full.delete();
+    }
+  });
+
+  it('relieves the preview foot too, so the two do not read differently', () => {
+    // The preview's simplified profile is a different solid through the same
+    // intersection, so the mating face can go back to full width in the
+    // viewport while the exported part stays set back.
+    const { feet, pinHoles } = feetOf({ forExport: false });
+    const full = buildSingleCellSocket(PITCH - CLEARANCE, PITCH - CLEARANCE);
+    try {
+      const footMesh = meshOf(feet[0]);
+      const integral = extremeAt(meshOf(full), 0, 0);
+      expect(extremeAt(footMesh, 0, 0)).toBeCloseTo(integral - MATING_RIM_RELIEF_MM, 6);
+      expect(boundingBox(footMesh.vertices).minZ).toBeCloseTo(-5, 4);
     } finally {
       feet.forEach((f) => f.delete());
       pinHoles?.delete();
@@ -200,6 +246,33 @@ describe('detachable foot geometry', () => {
       expect(widest * 2).toBeLessThanOrEqual(PIN + 1e-4);
       // And reaches it: the bound alone would pass an undersized pin.
       expect(widest * 2).toBeCloseTo(PIN, 3);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles?.delete();
+    }
+  });
+
+  /**
+   * The shaft holds its stated diameter for its whole length, rather than
+   * dipping between crests. A ridged pin passes every other check here — it is
+   * closed, the right height, and never wider than stated — while presenting
+   * the slicer with a diameter that changes every layer, which is what made the
+   * printed pin measure 2.0mm against a 2.8mm model.
+   */
+  it('holds the full pin diameter all the way up the shaft', () => {
+    // The deep floor, so the shaft is long enough for a column probe to say
+    // something: at the default 1.2mm floor a pin is 0.8mm tall in total.
+    const { feet, pinHoles } = feetOf({ floorThicknessMm: 2.4 });
+    try {
+      const m = meshOf(feet[0]);
+      const [pin] = footPinPositions(CORNER_L, ARM, PIN);
+      const shaftTop = 2.4 - MEMBRANE - DETACHABLE_PIN_LEAD_IN_MM;
+      // Just inside the pin's own surface: solid for the shaft's whole length
+      // on a cylinder, interrupted at every valley on a ridged one.
+      const inside = PIN / 2 - 0.02;
+      expect(isSolidThrough(m, pin.x + inside, pin.y, 0.02, shaftTop - 0.02)).toBe(true);
+      // Just outside it, so the probe above cannot be passing on a fat pin.
+      expect(isSolidThrough(m, pin.x + PIN / 2 + 0.02, pin.y, 0.02, shaftTop - 0.02)).toBe(false);
     } finally {
       feet.forEach((f) => f.delete());
       pinHoles?.delete();

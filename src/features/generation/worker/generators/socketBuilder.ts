@@ -27,6 +27,8 @@ import {
   SIZE,
   CLEARANCE,
   CORNER_RADIUS,
+  COPLANAR_MARGIN,
+  pocketCornerRadius,
   SOCKET_HEIGHT,
   SOCKET_BIG_TAPER,
   SOCKET_VERTICAL_PART,
@@ -333,6 +335,43 @@ export function buildSocketTopPrism(cellW_mm: number, cellD_mm: number, heightMm
       0
     ) as Sketch
   ).extrude(heightMm);
+}
+
+/**
+ * Tool that relieves a cell socket's top outer rim.
+ *
+ * Intersect a foot with this and its mating face is set back by `insetMm`, on
+ * the cell boundary only — the tool spans the whole cell, so the faces where a
+ * foot was clipped out of one are not touched.
+ *
+ * The relief lands on the profile's own widest breakpoint, `-CLEARANCE / 2`, so
+ * the widest section and every face a baseplate meets survive it untouched.
+ *
+ * The tool continues above Z=0 rather than stopping on the foot's top plane, so
+ * the intersection never has two coincident faces to resolve.
+ */
+export function buildSocketRimReliefTool(
+  cellW_mm: number,
+  cellD_mm: number,
+  insetMm: number
+): Shape3D {
+  const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
+  const sectionAt = (z: number, inset: number): Sketch =>
+    drawRoundedRectangle(
+      cellW_mm - 2 * inset,
+      cellD_mm - 2 * inset,
+      Math.max(cornerR - inset, 0.1)
+    ).sketchOnPlane('XY', z) as Sketch;
+
+  const below = sectionAt(-SOCKET_HEIGHT - COPLANAR_MARGIN, 0);
+  try {
+    return below.loftWith(
+      [sectionAt(-(CLEARANCE / 2), 0), sectionAt(0, insetMm), sectionAt(COPLANAR_MARGIN, insetMm)],
+      { ruled: true }
+    );
+  } finally {
+    below.delete();
+  }
 }
 
 export function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {

@@ -34,20 +34,35 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Sketch, DisposalScope } from 'brepjs';
 import { CLEARANCE, SOCKET_HEIGHT, COPLANAR_MARGIN, COPLANAR_OVERLAP } from './generatorConstants';
-import { buildSingleCellSocket, buildSimplifiedCellSocket } from './socketBuilder';
+import {
+  buildSingleCellSocket,
+  buildSimplifiedCellSocket,
+  buildSocketRimReliefTool,
+} from './socketBuilder';
 import {
   footCellCentre,
   footPinPositions,
   type FootPlacement,
 } from '@/shared/utils/detachableFeetPlan';
-import {
-  DETACHABLE_PIN_LEAD_IN_MM,
-  DETACHABLE_PIN_RIDGE_STEP_MM,
-  detachablePinEngagementMm,
-} from '@/shared/types/bin';
+import { DETACHABLE_PIN_LEAD_IN_MM, detachablePinEngagementMm } from '@/shared/types/bin';
 
 /** How far a clip box overshoots the cell it trims, so no face is coplanar. */
 const CLIP_MARGIN = 2;
+
+/**
+ * How far the mating face is set back from the foot's widest point, in mm.
+ *
+ * A foot prints bottom-down, which leaves the face the bin sits on as the last
+ * thing off the nozzle, straight after a 2.15mm run of 45-degree overhang. That
+ * rim curls, and a curled rim makes the foot rock.
+ *
+ * The relief does not stop the curl — it puts the mating plane inboard of the
+ * edge that curls, so whatever that edge does happens below the surface that
+ * has to be flat. It comes out of the profile's top vertical step, which ends
+ * 0.25mm down, leaving the widest section and every baseplate-facing face
+ * untouched.
+ */
+export const MATING_RIM_RELIEF_MM = 0.5;
 
 export interface DetachableFeetOptions {
   readonly placements: readonly FootPlacement[];
@@ -126,26 +141,25 @@ function coveredCorners(
 }
 
 /**
- * A pin, as a stack of alternating radii under a tapered tip.
+ * A pin: a plain cylinder at the stated diameter, under a tapered tip.
  *
- * Steps IN from `diameterMm` rather than out past it, so the pin is never wider
- * than the diameter the caller asked for. Sections land every half-ridge, which
- * puts a crest mid-layer rather than on the boundary between two.
+ * Featureless on purpose. Compliance ridges are the obvious way to tighten a
+ * press fit and do not survive slicing at this scale — a crest and its valley
+ * fall inside one extrusion, so the slicer holds the shaft to neither and the
+ * printed pin lands short of its stated diameter. A cylinder is a diameter the
+ * printer can hold to.
  */
 function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): Shape3D {
   const r = diameterMm / 2;
-  const step = DETACHABLE_PIN_RIDGE_STEP_MM / 2;
+  const lead = Math.min(DETACHABLE_PIN_LEAD_IN_MM, heightMm / 3);
 
-  // Too short to carry a ridge: a plain cylinder rather than a degenerate loft.
-  if (heightMm < 2 * step) {
+  // Too short for a lead-in worth lofting: a bare cylinder.
+  if (lead < 0.05) {
     return scope.register(
       translate(scope.register(cylinder(r, heightMm + COPLANAR_OVERLAP)), [0, 0, -COPLANAR_OVERLAP])
     );
   }
 
-  const valley = r - DETACHABLE_PIN_RIDGE_STEP_MM;
-  const lead = Math.min(DETACHABLE_PIN_LEAD_IN_MM, heightMm / 3);
-  const ridgeTopZ = heightMm - lead;
   const section = (radius: number, z: number): Sketch =>
     drawCircle(radius).sketchOnPlane('XY', z) as Sketch;
 
@@ -153,21 +167,12 @@ function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): S
   // volumetric overlap rather than two coincident planes. Without it OCCT
   // leaves non-manifold junctions all round every pin — the solid stays closed,
   // so only an edge-manifold check sees it, and a slicer would quietly repair
-  // it into something else. Root at the valley radius: the first layer off the
-  // foot's top face squishes out, so it is the last place for the tight fit.
+  // it into something else.
   const sections: Array<[number, number]> = [
-    [-COPLANAR_OVERLAP, valley],
-    [0, valley],
+    [-COPLANAR_OVERLAP, r],
+    [heightMm - lead, r],
+    [heightMm, r - lead],
   ];
-  let ridge = 0;
-  // Half a step short, so the closing section cannot land on the last ridge and
-  // loft between two coincident circles.
-  for (let z = step; z < ridgeTopZ - step / 2; z += step) {
-    sections.push([z, ridge % 2 === 0 ? r : valley]);
-    ridge++;
-  }
-  sections.push([ridgeTopZ, valley]);
-  sections.push([heightMm, valley - lead]);
 
   const start = section(sections[0][1], sections[0][0]);
   try {
@@ -260,11 +265,13 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       const cellW = p.cellW - CLEARANCE;
       const cellD = p.cellD - CLEARANCE;
 
-      const full = scope.register(
+      const profile = scope.register(
         opts.forExport
           ? buildSingleCellSocket(cellW, cellD)
           : buildSimplifiedCellSocket(cellW, cellD)
       );
+      const rimTool = scope.register(buildSocketRimReliefTool(cellW, cellD, MATING_RIM_RELIEF_MM));
+      const full = scope.register(unwrap(intersect(profile, rimTool)));
       // The clip is expressed about the cell centre, so trim before moving the
       // foot into place rather than translating the clip to meet it.
       const clip = buildClip(scope, p, armMm);
