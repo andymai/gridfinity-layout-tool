@@ -683,18 +683,20 @@ describe('validateCompartmentSizes', () => {
     expect(error.field).toBe('compartments.rows');
   });
 
-  it('rejects a fractional cols', () => {
+  it('rejects a fractional cols, naming only that axis', () => {
     const result = validateCompartmentSizes(2, 2, 1.2, 2.5, 3, 1.2);
     const error = expectErr(result);
     expect(error.code).toBe('COMPARTMENT_GRID_INVALID');
     expect(error.field).toBe('compartments.cols');
+    expect(error.message).toBe('Compartment grid columns must be a whole number.');
   });
 
-  it('rejects a fractional rows', () => {
+  it('rejects a fractional rows, naming only that axis', () => {
     const result = validateCompartmentSizes(2, 2, 1.2, 3, 2.5, 1.2);
     const error = expectErr(result);
     expect(error.code).toBe('COMPARTMENT_GRID_INVALID');
     expect(error.field).toBe('compartments.rows');
+    expect(error.message).toBe('Compartment grid rows must be a whole number.');
   });
 
   it('rejects NaN, which the range check alone lets through', () => {

@@ -366,10 +366,11 @@ export function validateCompartmentSizes(
   // false, so a NaN would otherwise reach the grid builders, where a
   // fractional or NaN `cols * rows` throws RangeError from `new Array()`.
   if (!Number.isInteger(cols) || !Number.isInteger(rows)) {
+    const axis = Number.isInteger(cols) ? 'rows' : 'columns';
     return err({
       code: 'COMPARTMENT_GRID_INVALID',
-      message: 'Compartment grid columns and rows must be whole numbers.',
-      field: Number.isInteger(cols) ? 'compartments.rows' : 'compartments.cols',
+      message: `Compartment grid ${axis} must be a whole number.`,
+      field: axis === 'columns' ? 'compartments.cols' : 'compartments.rows',
     });
   }
   if (cols < 1 || rows < 1) {
