@@ -10,12 +10,18 @@
  * of the same extent — so every check here probes INSIDE the wall and states
  * its result as a delta against the same bin with the radius left off.
  *
- * The bins carry no stacking lip on purpose. With one, the rim is the lip's
- * top face and the wall's cross-section up there is the lip's own taper, so a
- * column probe would be reading the lip profile rather than the blend. Without
- * one the rim is the wall top and the wall is a plain slab beneath it, which is
- * the cleanest place to ask the only question that matters: at a given depth,
- * how far outboard of the cut has material been taken away?
+ * The outer-wall bins carry no stacking lip on purpose. With one, the rim is
+ * the lip's top face and the wall's cross-section up there is the lip's own
+ * taper, so a column probe would be reading the lip profile rather than the
+ * blend. Without one the rim is the wall top and the wall is a plain slab
+ * beneath it, which is the cleanest place to ask the only question that
+ * matters: at a given depth, how far outboard of the cut has material been
+ * taken away?
+ *
+ * The interior-divider bins at the bottom of the file do carry one, because
+ * that is the case a divider cut anchored to the WALL's rim gets wrong: the
+ * lip stands 4.4mm above the divider's own top, and a round-over given the
+ * wrong rim spends its whole radius in the air above the divider.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
@@ -23,6 +29,7 @@ import {
   assertStructurallyValid,
   assertWatertight,
   boundingBox,
+  columnCrossings,
   isSolidThrough,
 } from './__kernel-tests__/meshAssertions';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
@@ -159,4 +166,147 @@ describe('wall cutout rounded shoulders', () => {
     expect(openingAt(depth)).toBeLessThan(1);
     expect(wallSolidAt(rounded, CUT_HALF + 1, depth)).toBe(true);
   });
+});
+
+/**
+ * The same round-over, on an interior divider.
+ *
+ * A divider has no stacking lip over it, so its own top face is the rim its
+ * shoulder blend is tangent to. Given the wall's rim instead — 4.4mm higher on
+ * a bin with a lip — a 5mm blend spends its radius in the air above the
+ * divider and reaches its top face 0.036mm wide, which is why these bins carry
+ * a lip where the ones above deliberately do not.
+ *
+ * Every number here is read off the mesh rather than restated from the
+ * constant chain, because the chain is the thing under test: the divider's top
+ * is measured on the divider, and the floor on a compartment's own floor.
+ */
+describe('interior divider cutout', () => {
+  const D_WIDTH = 3;
+  const D_DEPTH = 1;
+  const D_HEIGHT = 3;
+  const D_RADIUS = 5;
+  const D_CUT_FRACTION = 0.5;
+  const D_DEPTH_PCT = 60;
+
+  const D_INNER_W = D_WIDTH * GRID_SIZE - TOLERANCE - 2 * WALL_THICKNESS;
+  const D_INNER_D = D_DEPTH * GRID_SIZE - TOLERANCE - 2 * WALL_THICKNESS;
+  /** Along-divider half-span of the window: the divider runs the full interior. */
+  const D_CUT_HALF = (D_INNER_D * D_CUT_FRACTION) / 2;
+  /** First column boundary of a 3-column grid, where a divider stands. */
+  const DIVIDER_X = -D_INNER_W / 2 + D_INNER_W / 3;
+
+  function interiorWalls(over: Partial<WallCutout> = {}): BinParams['walls'] {
+    const base = buildParams({}).walls;
+    const off = { ...base.front, enabled: false };
+    return {
+      ...base,
+      enabled: true,
+      shape: 'u-shape',
+      front: off,
+      back: off,
+      left: off,
+      right: off,
+      interior: {
+        ...base.interior,
+        enabled: true,
+        width: D_CUT_FRACTION * 100,
+        depth: D_DEPTH_PCT,
+        alignment: 'center',
+        offset: 0,
+        widthMm: null,
+        ...over,
+      },
+    };
+  }
+
+  function genDivided(walls: BinParams['walls'], dividerHeight?: number): MeshData {
+    const defaults = buildParams({});
+    return getGenerateBin()(
+      buildParams({
+        width: D_WIDTH,
+        depth: D_DEPTH,
+        height: D_HEIGHT,
+        wallThickness: WALL_THICKNESS,
+        base: { ...defaults.base, stackingLip: true },
+        compartments: {
+          ...defaults.compartments,
+          cols: 3,
+          rows: 1,
+          cells: [0, 1, 2],
+          thickness: WALL_THICKNESS,
+          ...(dividerHeight === undefined ? {} : { dividerHeight }),
+        },
+        walls,
+      }),
+      undefined,
+      true
+    );
+  }
+
+  /** Highest surface over a column — the top face of whatever stands there. */
+  const topAt = (mesh: MeshData, x: number, y: number): number => {
+    const crossings = columnCrossings(mesh, x, y);
+    return crossings[crossings.length - 1] ?? NaN;
+  };
+
+  let square: MeshData;
+  let rounded: MeshData;
+  let dividerTopZ: number;
+
+  beforeAll(async () => {
+    await initBrepjs();
+    square = genDivided(interiorWalls());
+    rounded = genDivided(interiorWalls({ cornerRadiusTop: D_RADIUS }));
+    // Well past the blend's reach, so it reads the untouched divider.
+    dividerTopZ = topAt(square, DIVIDER_X, D_CUT_HALF + D_RADIUS + 2);
+  }, 180_000);
+
+  it('produces a valid solid either way', () => {
+    assertStructurallyValid(square, 'square divider shoulder');
+    assertStructurallyValid(rounded, 'rounded divider shoulder');
+    assertWatertight(rounded, 'rounded divider shoulder');
+  });
+
+  it('leaves the two bins the same size', () => {
+    const a = boundingBox(square.vertices);
+    const b = boundingBox(rounded.vertices);
+    for (const k of ['minX', 'maxX', 'minY', 'maxY', 'minZ', 'maxZ'] as const) {
+      expect(b[k], k).toBeCloseTo(a[k], 3);
+    }
+  });
+
+  it('rounds the divider shoulder tangent to the divider top', () => {
+    // Quarter arc, centred a radius into the standing material and a radius
+    // below the top face: widest where it meets that face, gone a radius down.
+    // Read against the wall's rim, every one of these drops is zero.
+    for (const out of [0.3, 1, 3]) {
+      const expected = D_RADIUS - Math.sqrt(D_RADIUS ** 2 - (D_RADIUS - out) ** 2);
+      const drop = dividerTopZ - topAt(rounded, DIVIDER_X, D_CUT_HALF + out);
+      // Loose to the mesh's own facet sag on a curved face, tight enough that a
+      // chamfer (2mm at 3mm out, against the arc's 0.42) could not pass.
+      expect(drop, `${out}mm outboard`).toBeCloseTo(expected, 1);
+      expect(topAt(square, DIVIDER_X, D_CUT_HALF + out), `square at ${out}mm`).toBeCloseTo(
+        dividerTopZ,
+        3
+      );
+    }
+  });
+
+  it('leaves the divider standing past the blend', () => {
+    expect(topAt(rounded, DIVIDER_X, D_CUT_HALF + D_RADIUS + 1)).toBeCloseTo(dividerTopZ, 3);
+  });
+
+  it('cuts the asked-for fraction of the divider a shortened one leaves standing', () => {
+    // A numeric divider height takes the additive path, where the divider ends
+    // well below the rim. Measured against the rim the cut used to take 13% of
+    // this divider; the contract is that it takes the depth percentage of what
+    // stands above the floor.
+    const short = genDivided(interiorWalls(), 8);
+    const floorZ = topAt(short, 0, 0);
+    const topZ = topAt(short, DIVIDER_X, D_CUT_HALF + 2);
+    const cutFloorZ = topAt(short, DIVIDER_X, 0);
+    expect(topZ).toBeLessThan(dividerTopZ);
+    expect(topZ - cutFloorZ).toBeCloseTo((topZ - floorZ) * (D_DEPTH_PCT / 100), 3);
+  }, 120_000);
 });

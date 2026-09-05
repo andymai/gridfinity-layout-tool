@@ -35,7 +35,7 @@ import { getLastSolid, setLastSolid } from './shapeCache';
 import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
 import type { BinGeometryContext } from './splitConnectorBuilder';
 import { buildLipSlotCuts } from './slotBuilder';
-import { buildWallCutoutCuts } from './wallCutoutBuilder';
+import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
 import { isAbortError } from './utils/abort';
 import { resolveOverhang } from './overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -379,7 +379,14 @@ function splitSolidIntoPieces(
     // `hasLip=true` cutter, shifted up by floorZ to convert body-local Z (floor
     // at Z=0) into absolute bin Z (socket bottom at Z=0).
     if (params.walls.enabled) {
-      const wallCuts = buildWallCutoutCuts(params, innerW, innerD, wallHeight, true);
+      const wallCuts = buildWallCutoutCuts(
+        params,
+        innerW,
+        innerD,
+        wallHeight,
+        true,
+        interiorDividerTopZ(params, splitDims)
+      );
       if (wallCuts) {
         const positioned = shiftToInterior(wallCuts, floorZ);
         try {
