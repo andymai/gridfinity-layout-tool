@@ -362,6 +362,16 @@ export function validateCompartmentSizes(
   // Y-axis pitch for non-square grids; defaults to the X pitch (square).
   gridUnitMmY: number = gridUnitMm
 ): Result<undefined, DesignerValidationError> {
+  // Ahead of the range check because NaN fails every comparison: `NaN < 1` is
+  // false, so a NaN would otherwise reach the grid builders, where a
+  // fractional or NaN `cols * rows` throws RangeError from `new Array()`.
+  if (!Number.isInteger(cols) || !Number.isInteger(rows)) {
+    return err({
+      code: 'COMPARTMENT_GRID_INVALID',
+      message: 'Compartment grid columns and rows must be whole numbers.',
+      field: Number.isInteger(cols) ? 'compartments.rows' : 'compartments.cols',
+    });
+  }
   if (cols < 1 || rows < 1) {
     return err({
       code: 'COMPARTMENT_GRID_INVALID',

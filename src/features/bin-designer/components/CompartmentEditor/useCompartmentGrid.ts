@@ -322,7 +322,10 @@ export function useCompartmentGrid() {
   // warning is shown consistently and the selection is reset once.
   const applyGrid = useCallback(
     (newCols: number, newRows: number) => {
-      const droppedLabels = setCompartmentGrid(newCols, newRows);
+      // Rounded for the same reason as the bento header: the Stepper commits
+      // decimals, and a fractional cols/rows builds a cells array shorter than
+      // cols * rows.
+      const droppedLabels = setCompartmentGrid(Math.round(newCols), Math.round(newRows));
       if (droppedLabels > 0) {
         addToast({
           message: t('binDesigner.compartmentEditor.labelsCleared', { count: droppedLabels }),

@@ -135,6 +135,16 @@ describe('CompartmentEditor', () => {
     expect(setCompartmentGrid).toHaveBeenCalledWith(3, DEFAULT_BIN_PARAMS.compartments.rows);
   });
 
+  it('rounds a typed decimal to a whole column count', () => {
+    const setCompartmentGrid = vi.fn();
+    useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS, setCompartmentGrid });
+    render(<CompartmentEditor />);
+    const cols = screen.getByRole('spinbutton', { name: /columns/i });
+    fireEvent.change(cols, { target: { value: '2.5' } });
+    fireEvent.blur(cols);
+    expect(setCompartmentGrid).toHaveBeenCalledWith(3, DEFAULT_BIN_PARAMS.compartments.rows);
+  });
+
   it('shows 2D grid editor when grid is larger than 1x1', () => {
     useDesignerStore.setState({ params: TWO_BY_TWO });
     render(<CompartmentEditor />);

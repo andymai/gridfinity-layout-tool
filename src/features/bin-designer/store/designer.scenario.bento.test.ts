@@ -166,6 +166,12 @@ describe('DesignerStore - bento draw actions', () => {
       expect(useDesignerStore.getState().history.past).toHaveLength(historyLen);
     });
 
+    it('rejects a fractional dimension rather than sizing a cell array by it', () => {
+      expect(useDesignerStore.getState().setBentoGridPreserving(2.5, 3)).toBeNull();
+      expect(params().compartments.cols).toBe(4);
+      expect(params().compartments.cells).toHaveLength(12);
+    });
+
     it('rejects dimensions that fail the min-compartment-size pre-flight', () => {
       useDesignerStore.getState().setParam('width', 1);
       useDesignerStore.getState().setParam('depth', 1);

@@ -124,15 +124,25 @@ export function validateCompartments(compartments: unknown): string | null {
   if (!isObject(compartments)) return 'compartments must be an object';
   if (
     !isNumber(compartments.cols) ||
-    !inRange(compartments.cols, CONSTRAINTS.MIN_COMPARTMENT_GRID, CONSTRAINTS.MAX_COMPARTMENT_GRID)
+    !inRange(
+      compartments.cols,
+      CONSTRAINTS.MIN_COMPARTMENT_GRID,
+      CONSTRAINTS.MAX_COMPARTMENT_GRID
+    ) ||
+    !Number.isInteger(compartments.cols)
   ) {
-    return `compartments.cols must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+    return `compartments.cols must be integer ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
   }
   if (
     !isNumber(compartments.rows) ||
-    !inRange(compartments.rows, CONSTRAINTS.MIN_COMPARTMENT_GRID, CONSTRAINTS.MAX_COMPARTMENT_GRID)
+    !inRange(
+      compartments.rows,
+      CONSTRAINTS.MIN_COMPARTMENT_GRID,
+      CONSTRAINTS.MAX_COMPARTMENT_GRID
+    ) ||
+    !Number.isInteger(compartments.rows)
   ) {
-    return `compartments.rows must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+    return `compartments.rows must be integer ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
   }
   if (
     !isNumber(compartments.thickness) ||

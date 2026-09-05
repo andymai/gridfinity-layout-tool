@@ -250,7 +250,7 @@ describe('validateCompartments', () => {
 
   it('rejects cols = 0', () => {
     expect(validateCompartments({ cols: 0, rows: 1, thickness: 1.2, cells: [] })).toBe(
-      `compartments.cols must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
+      `compartments.cols must be integer ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
     );
   });
 
@@ -263,13 +263,13 @@ describe('validateCompartments', () => {
         cells: [],
       })
     ).toBe(
-      `compartments.cols must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
+      `compartments.cols must be integer ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
     );
   });
 
   it('rejects rows = 0', () => {
     expect(validateCompartments({ cols: 1, rows: 0, thickness: 1.2, cells: [] })).toBe(
-      `compartments.rows must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
+      `compartments.rows must be integer ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
     );
   });
 
@@ -282,7 +282,23 @@ describe('validateCompartments', () => {
         cells: [],
       })
     ).toBe(
-      `compartments.rows must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
+      `compartments.rows must be integer ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
+    );
+  });
+
+  it('rejects a fractional cols', () => {
+    expect(
+      validateCompartments({ cols: 2.5, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 4] })
+    ).toBe(
+      `compartments.cols must be integer ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
+    );
+  });
+
+  it('rejects a fractional rows', () => {
+    expect(
+      validateCompartments({ cols: 2, rows: 2.5, thickness: 1.2, cells: [0, 1, 2, 3, 4] })
+    ).toBe(
+      `compartments.rows must be integer ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
     );
   });
 
