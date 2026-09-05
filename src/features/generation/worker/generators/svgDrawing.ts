@@ -24,20 +24,29 @@ import type { Drawing, DrawingPen, Point2D } from 'brepjs';
 
 /** Command letter plus its argument run. */
 const COMMAND_RE = /([MmLlHhVvCcSsQqTtAaZz])([^MmLlHhVvCcSsQqTtAaZz]*)/g;
-const NUMBER_RE = /[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/g;
+/** Sticky, so the scanner can require a token AT the cursor rather than after it. */
+const NUMBER_AT = /[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/y;
+/** An arc's two flags are single digits, and may be written with nothing between. */
+const FLAG_AT = /[01]/y;
+const SEPARATORS_AT = /[\s,]*/y;
 
-/** Arguments per repeated group, keyed by lowercased command. */
-const ARGS_PER_GROUP: Readonly<Record<string, number>> = {
-  m: 2,
-  l: 2,
-  h: 1,
-  v: 1,
-  c: 6,
-  s: 4,
-  q: 4,
-  t: 2,
-  a: 7,
-  z: 0,
+/** What one slot in a command's argument group may hold. */
+type ArgKind = 'number' | 'flag';
+
+const N = 'number' as const;
+
+/** The argument group each command repeats, keyed by lowercased command. */
+const ARG_GROUP: Readonly<Record<string, readonly ArgKind[]>> = {
+  m: [N, N],
+  l: [N, N],
+  h: [N],
+  v: [N],
+  c: [N, N, N, N, N, N],
+  s: [N, N, N, N],
+  q: [N, N, N, N],
+  t: [N, N],
+  a: [N, N, N, 'flag', 'flag', N, N],
+  z: [],
 };
 
 const DEG2RAD = Math.PI / 180;
@@ -45,11 +54,19 @@ const DEG2RAD = Math.PI / 180;
 /** Two points this close are the same point, and the run between them is not a curve. */
 const COINCIDENT = 1e-10;
 
-/** One arc, as the three points that pin it down. Both in SVG coordinates. */
-interface ArcRun {
-  readonly via: Point2D;
-  readonly end: Point2D;
-}
+/** Radii closer than this in proportion are one radius, and the arc is circular. */
+const CIRCULAR_TOLERANCE = 1e-9;
+
+/**
+ * One piece of an arc, in SVG coordinates.
+ *
+ * A circular piece is stated as the three points that pin it down, which is
+ * exact. An elliptical one is a cubic, because the exact primitive for it —
+ * the pen's `ellipseTo` — returns the whole ellipse rather than the arc.
+ */
+type ArcRun =
+  | { readonly kind: 'arc'; readonly via: Point2D; readonly end: Point2D }
+  | { readonly kind: 'cubic'; readonly c1: Point2D; readonly c2: Point2D; readonly end: Point2D };
 
 interface Cursor {
   x: number;
@@ -63,11 +80,43 @@ interface Cursor {
   lastCmd: string;
 }
 
-function parseNumbers(argStr: string): number[] {
+/**
+ * Read one command's argument run as whole groups, or `null` if it is not one.
+ *
+ * Strict on purpose. An icon path is authored by hand or exported from a vector
+ * tool, and a run scanned for anything number-shaped turns `L 1O 20` into a
+ * line to (1, 20): geometry that is wrong rather than absent, which is the
+ * failure this whole module exists to stop. A rejected path is a missing icon,
+ * and a missing icon is loud.
+ *
+ * Arc flags are read as single digits, so the compact `a5 5 0 11 4.7-1.7` that
+ * path optimisers emit parses as the seven arguments it is.
+ */
+function scanArgs(argStr: string, group: readonly ArgKind[]): number[] | null {
+  let pos = 0;
+  const skipSeparators = (): void => {
+    SEPARATORS_AT.lastIndex = pos;
+    if (SEPARATORS_AT.exec(argStr)) pos = SEPARATORS_AT.lastIndex;
+  };
+  const take = (re: RegExp): number | null => {
+    re.lastIndex = pos;
+    const m = re.exec(argStr);
+    if (!m) return null;
+    pos = re.lastIndex;
+    skipSeparators();
+    return Number(m[0]);
+  };
+
   const out: number[] = [];
-  NUMBER_RE.lastIndex = 0;
-  let m: RegExpExecArray | null;
-  while ((m = NUMBER_RE.exec(argStr)) !== null) out.push(parseFloat(m[0]));
+  skipSeparators();
+  while (pos < argStr.length) {
+    if (group.length === 0) return null;
+    for (const kind of group) {
+      const value = take(kind === 'flag' ? FLAG_AT : NUMBER_AT);
+      if (value === null) return null;
+      out.push(value);
+    }
+  }
   return out;
 }
 
@@ -77,12 +126,16 @@ function flip(x: number, y: number): Point2D {
 }
 
 /**
- * Split an SVG elliptical arc into runs the three-point constructor can state.
+ * Split an SVG arc into runs the pen can state exactly.
  *
  * Centre parameterisation per SVG 1.1 F.6.5, including the radius up-scaling a
- * chord too long for the given radii calls for. Anything over a half turn is
- * cut in two, since three points on a circle only name one arc unambiguously
- * while that arc is the shorter way round.
+ * chord too long for the given radii calls for. A circular arc comes back as
+ * three-point arcs, cut in two past a half turn — three points on a circle name
+ * one arc unambiguously only while that arc is the shorter way round. An
+ * elliptical one comes back as cubics, a quarter turn each, since no exact
+ * elliptical primitive is available; that fit holds a 5x3 arc's area to within
+ * 0.03%, while treating it as a circle — what the radii being merged would
+ * amount to — is the same class of silent mis-shape this module exists to stop.
  *
  * `null` for the degenerate inputs the spec resolves without an arc: a zero
  * radius (a straight line) and coincident endpoints (nothing at all).
@@ -135,14 +188,46 @@ function arcRuns(
     cx + ax * cosPhi * Math.cos(theta) - ay * sinPhi * Math.sin(theta),
     cy + ax * sinPhi * Math.cos(theta) + ay * cosPhi * Math.sin(theta),
   ];
-  const halves = Math.abs(delta) > Math.PI ? 2 : 1;
+  /** Derivative of `at`, the tangent a cubic's control points ride out along. */
+  const slopeAt = (theta: number): Point2D => [
+    -ax * cosPhi * Math.sin(theta) - ay * sinPhi * Math.cos(theta),
+    -ax * sinPhi * Math.sin(theta) + ay * cosPhi * Math.cos(theta),
+  ];
+
+  const circular = Math.abs(ax - ay) <= CIRCULAR_TOLERANCE * Math.max(ax, ay);
+  const pieces = circular
+    ? Math.abs(delta) > Math.PI
+      ? 2
+      : 1
+    : Math.max(1, Math.ceil(Math.abs(delta) / (Math.PI / 2)));
+  const step = delta / pieces;
+
   const runs: ArcRun[] = [];
-  for (let i = 0; i < halves; i++) {
-    const step = delta / halves;
-    const end = i === halves - 1 ? ([x2, y2] as Point2D) : at(theta1 + step * (i + 1));
-    runs.push({ via: at(theta1 + step * (i + 0.5)), end });
+  for (let i = 0; i < pieces; i++) {
+    const from = theta1 + step * i;
+    const to = theta1 + step * (i + 1);
+    const end = i === pieces - 1 ? ([x2, y2] as Point2D) : at(to);
+    if (circular) {
+      runs.push({ kind: 'arc', via: at(from + step / 2), end });
+      continue;
+    }
+    // Standard cubic fit to an elliptical arc: control points a third of the
+    // way out along the endpoint tangents, scaled by tan(step / 4).
+    const alpha = (4 / 3) * Math.tan(step / 4);
+    const [px, py] = at(from);
+    const [sx0, sy0] = slopeAt(from);
+    const [sx1, sy1] = slopeAt(to);
+    runs.push({
+      kind: 'cubic',
+      c1: [px + alpha * sx0, py + alpha * sy0],
+      c2: [end[0] - alpha * sx1, end[1] - alpha * sy1],
+      end,
+    });
   }
-  return runs.every((run) => run.via.every(Number.isFinite)) ? runs : null;
+  const finite = (p: Point2D): boolean => p.every(Number.isFinite);
+  return runs.every((run) => finite(run.end) && finite(run.kind === 'arc' ? run.via : run.c1))
+    ? runs
+    : null;
 }
 
 /**
@@ -168,8 +253,11 @@ function tracePath(pen: DrawingPen, pathD: string): number {
     const cmd = match[1];
     const lower = cmd.toLowerCase();
     const relative = cmd !== cmd.toUpperCase();
-    const args = parseNumbers(match[2]);
-    const step = ARGS_PER_GROUP[lower] ?? 0;
+    const group = ARG_GROUP[lower] ?? [];
+    const args = scanArgs(match[2], group);
+    // Malformed, or a command that takes arguments and was given none.
+    if (args === null || (group.length > 0 && args.length === 0)) return -1;
+    const step = group.length;
 
     if (lower === 'z') {
       if (Math.hypot(cur.x - cur.sx, cur.y - cur.sy) > COINCIDENT) lineTo(cur.sx, cur.sy);
@@ -264,7 +352,11 @@ function tracePath(pen: DrawingPen, pathD: string): number {
           );
           if (runs) {
             for (const run of runs) {
-              pen.threePointsArcTo(flip(run.end[0], run.end[1]), flip(run.via[0], run.via[1]));
+              const end = flip(run.end[0], run.end[1]);
+              if (run.kind === 'arc') pen.threePointsArcTo(end, flip(run.via[0], run.via[1]));
+              else {
+                pen.cubicBezierCurveTo(end, flip(run.c1[0], run.c1[1]), flip(run.c2[0], run.c2[1]));
+              }
               curves++;
             }
             cur.x = x;

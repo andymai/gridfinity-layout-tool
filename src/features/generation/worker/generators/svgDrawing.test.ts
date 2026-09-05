@@ -94,6 +94,35 @@ describe('drawingFromSvgPath', () => {
     expect(small?.boundingBox.width).toBeCloseTo(24, 6);
   });
 
+  it('reads an arc whose flags are written without separators', () => {
+    // What a path optimiser emits: the two single-digit flags run together, and
+    // the endpoint's sign is its own separator.
+    expect(areaOf('M 3 -4 A5 5 0 11 3 4 Z')).toBeCloseTo(Math.PI * 25 - segmentArea(5, 4), 6);
+    expect(areaOf('M 3 -4a5 5 0 110 8Z')).toBeCloseTo(Math.PI * 25 - segmentArea(5, 4), 6);
+  });
+
+  it('keeps an elliptical arc elliptical', () => {
+    // Half an ellipse closed by its own major axis: half of pi*a*b, to within
+    // the cubic fit's own error. Collapsing the radii to one would land 67%
+    // high or 40% low depending on which of the two won, and the bounding box
+    // says which shape it is rather than only how big.
+    const half = (Math.PI * 5 * 3) / 2;
+    const path = 'M -5 0 A 5 3 0 0 1 5 0 Z';
+    expect(Math.abs(areaOf(path) - half) / half).toBeLessThan(1e-3);
+    expect(drawingFromSvgPath(path)?.boundingBox.height).toBeCloseTo(3, 3);
+    expect(drawingFromSvgPath(path)?.boundingBox.width).toBeCloseTo(10, 3);
+  });
+
+  it('rejects a path it can only read part of', () => {
+    // Junk inside an argument run used to be skipped, which turned a typo into
+    // geometry rather than a missing icon.
+    expect(drawingFromSvgPath('M 0 0 L 1O 20 Z')).toBeNull();
+    expect(drawingFromSvgPath('M 0 0 L 10 20 30 Z')).toBeNull();
+    expect(drawingFromSvgPath('M 0 0 L 10 10 Z 1 2')).toBeNull();
+    expect(drawingFromSvgPath('M 0 0 L 10 10 A 5 5 0 3 1 0 0 Z')).toBeNull();
+    expect(drawingFromSvgPath('M 0 0 L 10 10 L Z')).toBeNull();
+  });
+
   it('returns null instead of throwing on unusable input', () => {
     expect(drawingFromSvgPath('')).toBeNull();
     expect(drawingFromSvgPath('   ')).toBeNull();
