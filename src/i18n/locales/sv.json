@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Dölj grenar",
   "binDesigner.designs.showBranches": "Visa grenar",
   "binDesigner.detachableFeet": "Avtagbara fötter",
-  "binDesigner.detachableFeet.pinHint": "Största diameter, i ett 3 mm hål. Om en fot inte sitter, välj en storlek mindre.",
+  "binDesigner.detachableFeet.pinHint": "Största diameter, hålet är 3 mm. Om en fot inte sitter, välj en storlek mindre; om den lossnar, en storlek större.",
   "binDesigner.detachableFeet.pinSize": "Stiftstorlek",
   "binDesigner.detachableFeet.saving": "Använder {percent} % mindre material än inbyggda fötter",
   "binDesigner.detachableFeet.savingSuperseded": "Den lätta basen täcker redan denna besparing",

@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Zweige ausblenden",
   "binDesigner.designs.showBranches": "Zweige anzeigen",
   "binDesigner.detachableFeet": "Abnehmbare Füße",
-  "binDesigner.detachableFeet.pinHint": "Größter Durchmesser, für eine 3-mm-Bohrung. Sitzt ein Fuß nicht, eine Größe kleiner wählen.",
+  "binDesigner.detachableFeet.pinHint": "Größter Durchmesser, für eine 3-mm-Bohrung. Sitzt ein Fuß nicht, eine Größe kleiner wählen; löst er sich, eine Größe größer.",
   "binDesigner.detachableFeet.pinSize": "Stiftgröße",
   "binDesigner.detachableFeet.saving": "Verbraucht {percent} % weniger Material als feste Füße",
   "binDesigner.detachableFeet.savingSuperseded": "Der Leichtbau-Boden deckt diese Einsparung bereits ab",

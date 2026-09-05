@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Nascondi i rami",
   "binDesigner.designs.showBranches": "Mostra i rami",
   "binDesigner.detachableFeet": "Piedini staccabili",
-  "binDesigner.detachableFeet.pinHint": "Diametro massimo, per un foro da 3 mm. Se un piedino non entra, scendi di una misura.",
+  "binDesigner.detachableFeet.pinHint": "Diametro massimo, per un foro da 3 mm. Se un piedino non entra, scendi di una misura; se si allenta, sali di una.",
   "binDesigner.detachableFeet.pinSize": "Misura del perno",
   "binDesigner.detachableFeet.saving": "Usa il {percent}% di materiale in meno rispetto ai piedini integrati",
   "binDesigner.detachableFeet.savingSuperseded": "La base alleggerita copre già questo risparmio",

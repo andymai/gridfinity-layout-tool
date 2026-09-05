@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Ocultar ramas",
   "binDesigner.designs.showBranches": "Mostrar ramas",
   "binDesigner.detachableFeet": "Patas desmontables",
-  "binDesigner.detachableFeet.pinHint": "Diámetro máximo, para un orificio de 3 mm. Si un pie no encaja, baja una talla.",
+  "binDesigner.detachableFeet.pinHint": "Diámetro máximo, para un orificio de 3 mm. Si un pie no encaja, baja una talla; si queda flojo, sube una.",
   "binDesigner.detachableFeet.pinSize": "Tamaño del pasador",
   "binDesigner.detachableFeet.saving": "Usa un {percent} % menos de material que las patas integradas",
   "binDesigner.detachableFeet.savingSuperseded": "La base aligerada ya cubre este ahorro",

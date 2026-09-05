@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Сховати гілки",
   "binDesigner.designs.showBranches": "Показати гілки",
   "binDesigner.detachableFeet": "Знімні ніжки",
-  "binDesigner.detachableFeet.pinHint": "Найбільший діаметр, в отвір 3 мм. Якщо ніжка не входить, оберіть менший розмір.",
+  "binDesigner.detachableFeet.pinHint": "Найбільший діаметр, отвір 3 мм. Якщо ніжка не входить, оберіть менший розмір; якщо вона розбовтується, більший.",
   "binDesigner.detachableFeet.pinSize": "Розмір штифта",
   "binDesigner.detachableFeet.saving": "Витрачає на {percent}% менше матеріалу, ніж вбудовані ніжки",
   "binDesigner.detachableFeet.savingSuperseded": "Полегшена основа вже забезпечує цю економію",

@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Skrýt větve",
   "binDesigner.designs.showBranches": "Zobrazit větve",
   "binDesigner.detachableFeet": "Odnímatelné nožičky",
-  "binDesigner.detachableFeet.pinHint": "Největší průměr, do otvoru 3 mm. Pokud nožka nedosedne, zvolte o velikost méně.",
+  "binDesigner.detachableFeet.pinHint": "Největší průměr, otvor má 3 mm. Pokud nožka nedosedne, zvolte o velikost méně; pokud se uvolňuje, o velikost více.",
   "binDesigner.detachableFeet.pinSize": "Průměr kolíku",
   "binDesigner.detachableFeet.saving": "Spotřebuje o {percent} % méně materiálu než pevné nožičky",
   "binDesigner.detachableFeet.savingSuperseded": "Odlehčená základna už tuto úsporu pokrývá",
