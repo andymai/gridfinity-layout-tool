@@ -1,0 +1,21 @@
+src/features/bin-designer/utils/validation.ts
+  s_b055bbc4735e96::t_54250ec48859a1 369,372-373
+src/features/bin-designer/utils/validation.test.ts
+  s_b055bbc4735e96::t_ada8bd40c51dab 686,691,694,699
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "f9738c5420ca7e921cfb84a1196cae8a82190d22",
+  "prompts": {},
+  "sessions": {
+    "s_b055bbc4735e96": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b863576f-611b-48a9-a43c-d74f0f4c1ecd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
