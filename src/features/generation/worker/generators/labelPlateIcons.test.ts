@@ -140,6 +140,18 @@ describe('SVG conversion fidelity', () => {
     expect(solidVolume('washer')).toBeLessThan(uncutDisc * 0.95);
   });
 
+  // A split washer differs from a plain one by its gap alone, so an outline
+  // that closed the gap — or opened it into a C — would still be a ring of the
+  // right size on the plate. Enclosed area is the only measure that sees it.
+  it('leaves the lock washer a ring with a gap in it', () => {
+    const scale = TEXT_BAND_MM / 10;
+    const gapFraction = 20 / 360;
+    const annulus = Math.PI * (5 ** 2 - 2.6 ** 2) * scale ** 2;
+    // Loose to the path's own 3dp endpoints, tight against what it guards: a
+    // closed gap is 5.6% high, and the C the outline used to draw is 40% low.
+    expect(solidVolume('lockWasher')).toBeCloseTo(annulus * (1 - gapFraction) * SOLID_HEIGHT_MM, 2);
+  });
+
   // The horseshoe's outer boundary meets its legs tangentially, which collapses
   // a true-arc wire to roughly half its area while leaving the bounding box
   // correct. Hence the polyline arch — and hence this guard. A 1% band is far
