@@ -1,19 +1,16 @@
 /**
  * Bridge from SVG path data to a brepjs `Drawing`.
  *
- * Drawn with the pen rather than `importSVGPathD`, because that importer's arc
- * handling reads neither flag: it always takes the minor-arc sagitta on one
- * fixed side of the chord, which is the right answer only for the
- * (large-arc 0, sweep 0) quarter of the cases. `clip` and `lockWasher` imported
- * as slivers of themselves that way, while their picker previews — the browser
- * rendering the SAME string — looked correct. `ellipseTo`, the pen's own
- * SVG-flavoured arc, is no help: it returns the whole ellipse rather than the
- * arc between the endpoints. So the arc is centre-parameterised here (SVG 1.1
- * F.6.5) and handed to `threePointsArcTo`, which takes three points and no
- * flags at all.
+ * Drawn with the pen rather than through `importSVGPathD`, which reads neither
+ * arc flag: it takes the minor-arc sagitta on one fixed side of the chord, so
+ * it is right only for a (large-arc 0, sweep 0) arc and silently mis-shapes
+ * every other one. `ellipseTo`, the pen's own SVG-flavoured arc, is no help
+ * either — it returns the whole ellipse rather than the arc between the
+ * endpoints. So arcs are centre-parameterised here (SVG 1.1 F.6.5) and handed
+ * to primitives that take points rather than flags.
  *
- * Arcs stay exact analytic circles — a full-circle path extrudes to π·r²·h to
- * double precision — so curved silhouettes are never faceted.
+ * Circular arcs stay exact — a full-circle path extrudes to π·r²·h to double
+ * precision — so curved silhouettes are never faceted.
  *
  * Paths are authored in SVG convention (Y down) and brepjs is Y up, so every
  * point is flipped on the way to the pen.
@@ -224,10 +221,9 @@ function arcRuns(
       end,
     });
   }
-  const finite = (p: Point2D): boolean => p.every(Number.isFinite);
-  return runs.every((run) => finite(run.end) && finite(run.kind === 'arc' ? run.via : run.c1))
-    ? runs
-    : null;
+  const points = (run: ArcRun): Point2D[] =>
+    run.kind === 'arc' ? [run.via, run.end] : [run.c1, run.c2, run.end];
+  return runs.every((run) => points(run).every((p) => p.every(Number.isFinite))) ? runs : null;
 }
 
 /**
@@ -355,7 +351,7 @@ function tracePath(pen: DrawingPen, pathD: string): number {
               const end = flip(run.end[0], run.end[1]);
               if (run.kind === 'arc') pen.threePointsArcTo(end, flip(run.via[0], run.via[1]));
               else {
-                pen.cubicBezierCurveTo(end, flip(run.c1[0], run.c1[1]), flip(run.c2[0], run.c2[1]));
+                pen.bezierCurveTo(end, [flip(run.c1[0], run.c1[1]), flip(run.c2[0], run.c2[1])]);
               }
               curves++;
             }
