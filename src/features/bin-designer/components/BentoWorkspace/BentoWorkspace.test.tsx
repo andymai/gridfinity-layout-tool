@@ -166,6 +166,18 @@ describe('BentoWorkspace', () => {
     expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(true);
   });
 
+  it('rounds a decimal typed into a grid stepper rather than sizing a cell array by it', () => {
+    render(<BentoWorkspace />);
+
+    const cols = screen.getByRole('spinbutton', { name: /columns/i });
+    fireEvent.change(cols, { target: { value: '2.5' } });
+    fireEvent.blur(cols);
+
+    const { compartments } = useDesignerStore.getState().params;
+    expect(compartments.cols).toBe(3);
+    expect(compartments.cells).toHaveLength(3 * compartments.rows);
+  });
+
   it('grid steppers preserve drawn compartments and stash the displaced', () => {
     const id = drawViaStore();
     useDesignerStore.getState().drawBentoCompartment({ col: 3, row: 0, w: 1, h: 2 });

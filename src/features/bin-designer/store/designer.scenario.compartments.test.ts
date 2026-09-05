@@ -34,6 +34,15 @@ describe('DesignerStore - compartment actions', () => {
       expect(params.compartments.cells).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     });
 
+    it('rejects a fractional grid, which would leave cells shorter than cols x rows', () => {
+      const before = useDesignerStore.getState().params.compartments;
+      useDesignerStore.getState().setCompartmentGrid(2.5, 3);
+
+      const { compartments } = useDesignerStore.getState().params;
+      expect(compartments.cols).toBe(before.cols);
+      expect(compartments.cells).toHaveLength(before.cols * before.rows);
+    });
+
     it('pushes current params to history', () => {
       const { setCompartmentGrid, history } = useDesignerStore.getState();
       expect(history.past).toHaveLength(0);

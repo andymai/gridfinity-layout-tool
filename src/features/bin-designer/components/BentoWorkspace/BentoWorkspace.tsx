@@ -260,7 +260,11 @@ export function BentoWorkspace() {
 
   const handleGridChange = useCallback(
     (nextCols: number, nextRows: number) => {
-      const result = setBentoGridPreserving(nextCols, nextRows);
+      // The Stepper commits whatever parses, decimals included (it deliberately
+      // doesn't snap to `step`, so mm fields keep off-grid entries). Cell counts
+      // are whole numbers, so round here rather than let the validator reject a
+      // typed "2.5" and leave the field showing a value the grid never took.
+      const result = setBentoGridPreserving(Math.round(nextCols), Math.round(nextRows));
       if (result === null) {
         addToast({
           message: t('binDesigner.bento.toastGridTooSmall'),
