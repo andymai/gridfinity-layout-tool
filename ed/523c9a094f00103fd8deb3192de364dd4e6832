@@ -1,0 +1,27 @@
+src/features/bin-designer/types/base.ts
+  s_ee6c83a60fd890::t_09c4c299c7ed64 291
+src/features/generation/worker/generators/socketBuilder.ts
+  s_ee6c83a60fd890::t_77e9543a426a00 347,349-350
+src/features/generation/worker/generators/detachableFeetBuilder.ts
+  s_ee6c83a60fd890::t_77e9543a426a00 55-57,59,61-63,146-150
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_ee6c83a60fd890::t_e03ca173426582 181-198
+src/features/bin-designer/types/base.test.ts
+  s_ee6c83a60fd890::t_09c4c299c7ed64 32,34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ed523c9a094f00103fd8deb3192de364dd4e6832",
+  "prompts": {},
+  "sessions": {
+    "s_ee6c83a60fd890": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4fa12182-a69e-4389-8180-b6a7e0d4db6c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
