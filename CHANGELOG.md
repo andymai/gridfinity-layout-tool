@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.485.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.1...gridfinity-layout-tool-v4.485.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* **designer:** reject a fractional compartment grid instead of crashing ([#4116](https://github.com/andymai/gridfinity-layout-tool/issues/4116)) ([ed74186](https://github.com/andymai/gridfinity-layout-tool/commit/ed74186531d3e05c599d35627ff16864a7da39a1))
+* **feet:** offer pin diameters on both sides of the hole ([#4117](https://github.com/andymai/gridfinity-layout-tool/issues/4117)) ([35402e9](https://github.com/andymai/gridfinity-layout-tool/commit/35402e9d38e4e6be7426dba8362595ed35375b2c))
+
 ## [4.485.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.0...gridfinity-layout-tool-v4.485.1) (2026-09-05)
 
 
