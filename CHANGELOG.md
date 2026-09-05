@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.485.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.0...gridfinity-layout-tool-v4.485.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **bins:** cut a divider's wall cutout from the divider's own top ([#4111](https://github.com/andymai/gridfinity-layout-tool/issues/4111)) ([76c16da](https://github.com/andymai/gridfinity-layout-tool/commit/76c16da94aedfc6c11890a188aca0af03e766fe2))
+* **feet:** print the pin at its stated diameter and keep the mating face flat ([#4112](https://github.com/andymai/gridfinity-layout-tool/issues/4112)) ([db4cffc](https://github.com/andymai/gridfinity-layout-tool/commit/db4cffcc46c9624e167ca5471e0519e057015ef3))
+* **labels:** draw the lock washer as a split ring ([#4113](https://github.com/andymai/gridfinity-layout-tool/issues/4113)) ([7e8fd7e](https://github.com/andymai/gridfinity-layout-tool/commit/7e8fd7eca7c3a7367148fcd69dd7fc3375d9b5b0))
+* **labels:** honour both SVG arc flags when importing an icon outline ([#4110](https://github.com/andymai/gridfinity-layout-tool/issues/4110)) ([6188af8](https://github.com/andymai/gridfinity-layout-tool/commit/6188af89fc0913934d147b89d29ad250684cf9e3))
+
 ## [4.485.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.484.0...gridfinity-layout-tool-v4.485.0) (2026-09-04)
 
 
