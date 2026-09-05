@@ -266,12 +266,17 @@ export function detachableFeetFitFloor(wallThicknessMm: number): boolean {
 }
 
 /**
- * Pin diameters offered for the press fit, in mm — each the pin's WIDEST
+ * Pin diameters offered for the press fit, in mm. Each is the pin's WIDEST
  * diameter, which is what decides whether it enters
- * {@link DETACHABLE_PIN_HOLE_DIAMETER_MM}. FDM prints a small hole undersize and
- * a small pin oversize, so the printed fit runs tighter than these figures.
+ * {@link DETACHABLE_PIN_HOLE_DIAMETER_MM}.
+ *
+ * The range straddles the hole on purpose. FDM tends to print a small hole
+ * undersize and a small pin oversize, which tightens the joint past these
+ * figures, but a machine that errs the other way leaves every option below the
+ * hole loose with nothing tighter to select. The values at and above the hole
+ * diameter are an interference fit on paper and exist for that case.
  */
-export const DETACHABLE_PIN_DIAMETERS_MM = [2.7, 2.8, 2.9, 3] as const;
+export const DETACHABLE_PIN_DIAMETERS_MM = [2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2] as const;
 
 /** Applied when a BaseConfig's `feetPinDiameter` is missing. */
 export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 2.8;

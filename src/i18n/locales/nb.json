@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Skjul grener",
   "binDesigner.designs.showBranches": "Vis grener",
   "binDesigner.detachableFeet": "Avtakbare føtter",
-  "binDesigner.detachableFeet.pinHint": "Største diameter, i et 3 mm hull. Går ikke en fot på plass, velg én størrelse mindre.",
+  "binDesigner.detachableFeet.pinHint": "Største diameter, i et 3 mm hull. Går ikke en fot på plass, velg én størrelse mindre; løsner den, én størrelse større.",
   "binDesigner.detachableFeet.pinSize": "Pinnestørrelse",
   "binDesigner.detachableFeet.saving": "Bruker {percent} % mindre materiale enn innebygde føtter",
   "binDesigner.detachableFeet.savingSuperseded": "Den lette bunnen dekker allerede denne besparelsen",

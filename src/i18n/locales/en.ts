@@ -2581,7 +2581,7 @@ const en: Record<string, string> = {
   'binDesigner.detachableFeet.saving': 'Uses {percent}% less material than built-in feet',
   'binDesigner.detachableFeet.pinSize': 'Pin size',
   'binDesigner.detachableFeet.pinHint':
-    'Widest diameter, into a 3mm hole. Step down a size if a foot will not seat.',
+    'Widest diameter, into a 3mm hole. Step down a size if a foot will not seat, up a size if it works loose.',
   'binDesigner.detachableFeet.supersedes': 'Not used with detachable feet',
   'binDesigner.detachableFeet.savingSuperseded': 'The lightweight base already covers this saving',
   'binDesigner.detachableFeet.unplaceable': 'No whole grid cell for a foot to sit in at this size',

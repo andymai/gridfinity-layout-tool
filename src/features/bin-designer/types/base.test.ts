@@ -13,10 +13,19 @@ import {
 } from './base';
 
 describe('detachable pin sizes', () => {
-  it('offers nothing wider than the hole it has to enter', () => {
-    for (const diameter of DETACHABLE_PIN_DIAMETERS_MM) {
-      expect(diameter).toBeLessThanOrEqual(DETACHABLE_PIN_HOLE_DIAMETER_MM);
-    }
+  it('offers sizes both under and over the hole, so either print bias has somewhere to go', () => {
+    expect(DETACHABLE_PIN_DIAMETERS_MM.some((d) => d < DETACHABLE_PIN_HOLE_DIAMETER_MM)).toBe(true);
+    expect(DETACHABLE_PIN_DIAMETERS_MM.some((d) => d > DETACHABLE_PIN_HOLE_DIAMETER_MM)).toBe(true);
+  });
+
+  it('keeps the interference end modest', () => {
+    // The floor around a 3mm hole is thin, and the pin bottoms out under a
+    // 0.4mm membrane. A wedge sized well over the hole splits it rather than
+    // gripping, so the over-size options are a nudge, not a range in themselves.
+    const MAX_INTERFERENCE_MM = 0.2;
+    expect(Math.max(...DETACHABLE_PIN_DIAMETERS_MM)).toBeLessThanOrEqual(
+      DETACHABLE_PIN_HOLE_DIAMETER_MM + MAX_INTERFERENCE_MM
+    );
   });
 
   it('keeps the default off the tight end, where a printer has no room to be off', () => {

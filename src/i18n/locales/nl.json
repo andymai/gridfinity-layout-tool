@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Vertakkingen verbergen",
   "binDesigner.designs.showBranches": "Vertakkingen tonen",
   "binDesigner.detachableFeet": "Afneembare voetjes",
-  "binDesigner.detachableFeet.pinHint": "Grootste diameter, in een gat van 3 mm. Past een voet niet, kies dan een maat kleiner.",
+  "binDesigner.detachableFeet.pinHint": "Grootste diameter, in een gat van 3 mm. Past een voet niet, kies dan een maat kleiner; zit hij los, een maat groter.",
   "binDesigner.detachableFeet.pinSize": "Pengrootte",
   "binDesigner.detachableFeet.saving": "Gebruikt {percent}% minder materiaal dan vaste voetjes",
   "binDesigner.detachableFeet.savingSuperseded": "De lichtgewicht bodem dekt deze besparing al",

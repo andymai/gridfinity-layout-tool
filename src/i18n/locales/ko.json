@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "분기 숨기기",
   "binDesigner.designs.showBranches": "분기 표시",
   "binDesigner.detachableFeet": "분리형 발",
-  "binDesigner.detachableFeet.pinHint": "최대 지름이며 구멍은 3mm입니다. 다리가 들어가지 않으면 한 치수 작게 선택하세요.",
+  "binDesigner.detachableFeet.pinHint": "최대 지름이며 구멍은 3mm입니다. 다리가 들어가지 않으면 한 치수 작게, 헐거우면 한 치수 크게 선택하세요.",
   "binDesigner.detachableFeet.pinSize": "핀 크기",
   "binDesigner.detachableFeet.saving": "일체형 발보다 재료를 {percent}% 적게 사용합니다",
   "binDesigner.detachableFeet.savingSuperseded": "경량 베이스가 이미 이 절감을 제공합니다",

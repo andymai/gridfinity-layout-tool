@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Masquer les branches",
   "binDesigner.designs.showBranches": "Afficher les branches",
   "binDesigner.detachableFeet": "Pieds amovibles",
-  "binDesigner.detachableFeet.pinHint": "Diamètre maximal, pour un trou de 3 mm. Si un pied ne s’emboîte pas, descendez d’une taille.",
+  "binDesigner.detachableFeet.pinHint": "Diamètre maximal, pour un trou de 3 mm. Si un pied ne s’emboîte pas, descendez d’une taille ; s’il prend du jeu, montez d’une taille.",
   "binDesigner.detachableFeet.pinSize": "Taille des ergots",
   "binDesigner.detachableFeet.saving": "Utilise {percent} % de matière en moins que des pieds intégrés",
   "binDesigner.detachableFeet.savingSuperseded": "La base allégée couvre déjà cette économie",

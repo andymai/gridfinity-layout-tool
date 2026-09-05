@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Ocultar ramificações",
   "binDesigner.designs.showBranches": "Mostrar ramificações",
   "binDesigner.detachableFeet": "Pés destacáveis",
-  "binDesigner.detachableFeet.pinHint": "Diâmetro máximo, para um furo de 3 mm. Se um pé não encaixar, use um tamanho menor.",
+  "binDesigner.detachableFeet.pinHint": "Diâmetro máximo, para um furo de 3 mm. Se um pé não encaixar, use um tamanho menor; se ficar solto, um maior.",
   "binDesigner.detachableFeet.pinSize": "Tamanho do pino",
   "binDesigner.detachableFeet.saving": "Usa {percent}% menos material do que pés integrados",
   "binDesigner.detachableFeet.savingSuperseded": "A base leve já cobre essa economia",

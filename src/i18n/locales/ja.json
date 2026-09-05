@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "分岐を非表示",
   "binDesigner.designs.showBranches": "分岐を表示",
   "binDesigner.detachableFeet": "取り外し式の脚",
-  "binDesigner.detachableFeet.pinHint": "最大径です（穴は3mm）。脚が入らない場合は1サイズ小さくしてください。",
+  "binDesigner.detachableFeet.pinHint": "最大径です（穴は3mm）。脚が入らない場合は1サイズ小さく、緩む場合は1サイズ大きくしてください。",
   "binDesigner.detachableFeet.pinSize": "ピンの太さ",
   "binDesigner.detachableFeet.saving": "一体型の脚より材料を{percent}%節約します",
   "binDesigner.detachableFeet.savingSuperseded": "軽量ベースで既にこの節約は実現されています",
