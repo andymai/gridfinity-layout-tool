@@ -1,0 +1,37 @@
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.tsx
+  s_b055bbc4735e96::t_0380a6c0a72646 263-267
+src/features/bin-designer/components/CompartmentEditor/useCompartmentGrid.ts
+  s_b055bbc4735e96::t_a2a893a0e4db94 325-328
+src/features/bin-designer/store/designer.scenario.bento.test.ts
+  s_b055bbc4735e96::t_0d548bd257fca3 169-174
+src/features/bin-designer/store/designer.scenario.compartments.test.ts
+  s_b055bbc4735e96::t_1bdd318dbce041 37-45
+api/lib/designerCompartmentValidation.ts
+  s_b055bbc4735e96::t_25d8f17f0a5be0 127-132,134,138-143,145
+api/lib/designerCompartmentValidation.test.ts
+  s_b055bbc4735e96::t_b8c062d4aeee71 253,266,272,285-289,293-297,301
+  s_b055bbc4735e96::t_8a99c728a9ddbd 290-292,298-300
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.test.tsx
+  s_b055bbc4735e96::t_5b7b2328c06faf 138-144
+  s_b055bbc4735e96::t_64a8f22fcdd480 135-137
+src/features/bin-designer/utils/validation.ts
+  s_b055bbc4735e96::t_2c151e7a112a1f 365-374
+src/features/bin-designer/utils/validation.test.ts
+  s_b055bbc4735e96::t_6a6209cac88de9 685-704
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "262539d03a95669df2d3716efa5307cd4da2cee4",
+  "prompts": {},
+  "sessions": {
+    "s_b055bbc4735e96": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b863576f-611b-48a9-a43c-d74f0f4c1ecd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
