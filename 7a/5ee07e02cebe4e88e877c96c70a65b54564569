@@ -1,0 +1,34 @@
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_ee6c83a60fd890::t_c23936f02dc317 382-389
+  s_ee6c83a60fd890::t_afe48a8dff48d4 38
+src/features/generation/worker/generators/featureBuilder.test.ts
+  s_ee6c83a60fd890::t_8ba06d3f58cd77 584,603,624,643,664,684,705,726,747,768
+  s_ee6c83a60fd890::t_c23936f02dc317 47-48
+src/features/generation/worker/generators/binGenerator.scenario.wallCutoutCorners.test.ts
+  s_ee6c83a60fd890::t_8aabe761c27a69 285-287
+  s_ee6c83a60fd890::t_9ba2cf8af57e91 13-24,32,170-284,288-310
+  s_ee6c83a60fd890::t_036dcf58198fd0 311
+src/features/generation/worker/generators/wallCutoutBuilder.test.ts
+  s_ee6c83a60fd890::t_73dcd07903b524 29-30,56,65,70,84,98,111,131,145,171,177,183,201,207,229,242
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_ee6c83a60fd890::t_70b71a54e1b568 483-492,494-497,512-514,526,537
+  s_ee6c83a60fd890::t_249462249523a1 256-257,262-270,283,308,319,330,362-363,448,455-459,461
+  s_ee6c83a60fd890::t_c23936f02dc317 480,493,527,538
+  s_ee6c83a60fd890::t_8aabe761c27a69 10,314-317
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "7a5ee07e02cebe4e88e877c96c70a65b54564569",
+  "prompts": {},
+  "sessions": {
+    "s_ee6c83a60fd890": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4fa12182-a69e-4389-8180-b6a7e0d4db6c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
