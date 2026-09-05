@@ -311,9 +311,9 @@ export function computeInteriorDividerCutouts(
   if (!cfg.enabled || isPartialMask(params.cellMask)) return [];
   if (cfg.width <= 0 || cfg.depth <= 0) return [];
 
-  // What the user can see of the divider: its top down to the cavity floor,
-  // which is thicker than the wall on a spec base. Measured against the wall
-  // instead, a cut at 100% carries on past the divider and slots the floor.
+  // The divider standing above the cavity floor, which is thicker than the wall
+  // on a spec base. Measured against the wall, a cut at 100% carries on past
+  // the divider and slots the floor.
   const dividerH = dividerTopZ - binFloorMm(params.wallThickness);
   const out: InteriorDividerCutout[] = [];
   for (const seg of interiorDividerSegments(params, innerW, innerD, dividerTopZ)) {

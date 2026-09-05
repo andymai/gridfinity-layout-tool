@@ -172,9 +172,10 @@ describe('wall cutout rounded shoulders', () => {
  * The same round-over, on an interior divider.
  *
  * A divider has no stacking lip over it, so its own top face is the rim its
- * shoulder blend is tangent to. Cut against the wall's rim instead — 4.4mm
- * higher on a bin with a lip — a 5mm blend reaches the divider 0.036mm wide,
- * which is what "the dividers don't have the correct shape" looked like.
+ * shoulder blend is tangent to. Given the wall's rim instead — 4.4mm higher on
+ * a bin with a lip — a 5mm blend spends its radius in the air above the
+ * divider and reaches its top face 0.036mm wide, which is why these bins carry
+ * a lip where the ones above deliberately do not.
  *
  * Every number here is read off the mesh rather than restated from the
  * constant chain, because the chain is the thing under test: the divider's top
@@ -276,9 +277,9 @@ describe('interior divider cutout', () => {
   });
 
   it('rounds the divider shoulder tangent to the divider top', () => {
-    // Quarter arc centred a radius inboard and a radius down from the corner:
-    // it reaches full width at the divider's top face and dies out a radius
-    // below it. Anchored to the wall's rim instead, every one of these is 0.
+    // Quarter arc, centred a radius into the standing material and a radius
+    // below the top face: widest where it meets that face, gone a radius down.
+    // Read against the wall's rim, every one of these drops is zero.
     for (const out of [0.3, 1, 3]) {
       const expected = D_RADIUS - Math.sqrt(D_RADIUS ** 2 - (D_RADIUS - out) ** 2);
       const drop = dividerTopZ - topAt(rounded, DIVIDER_X, D_CUT_HALF + out);
