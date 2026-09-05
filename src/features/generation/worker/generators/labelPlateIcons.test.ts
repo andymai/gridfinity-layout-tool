@@ -147,8 +147,8 @@ describe('SVG conversion fidelity', () => {
     const scale = TEXT_BAND_MM / 10;
     const gapFraction = 20 / 360;
     const annulus = Math.PI * (5 ** 2 - 2.6 ** 2) * scale ** 2;
-    // Loose to the path's own 3dp endpoints, tight against what it guards: a
-    // closed gap is 5.6% high, and the C the outline used to draw is 40% low.
+    // Loose to the path's own 3dp endpoints, tight enough to reject both a ring
+    // with no gap and one opened out into a C.
     expect(solidVolume('lockWasher')).toBeCloseTo(annulus * (1 - gapFraction) * SOLID_HEIGHT_MM, 2);
   });
 

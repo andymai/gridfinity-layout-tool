@@ -189,9 +189,8 @@ export const LABEL_ICON_PATHS: Readonly<Record<LabelPlateIconId, LabelIconDef>> 
   },
   lockWasher: {
     domain: 'fastener',
-    // Split ring: a 20-degree gap on the right is the whole of what separates
-    // it from `washer` at this size, so the ends are radial and nothing else
-    // competes with them.
+    // The gap is the whole of what separates this from `washer` at plate size,
+    // so nothing else competes with it: plain radial ends, no spring offset.
     outline: 'M 4.924 0.868 A 5 5 0 1 1 4.924 -0.868 L 2.561 -0.451 A 2.6 2.6 0 1 0 2.561 0.451 Z',
   },
   wingNut: {
