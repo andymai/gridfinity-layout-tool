@@ -1,0 +1,21 @@
+src/shared/constants/labelIconPaths.ts
+  s_ee6c83a60fd890::t_40ad425a35f2a8 192-193
+src/features/generation/worker/generators/labelPlateIcons.test.ts
+  s_ee6c83a60fd890::t_40ad425a35f2a8 150-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "475c705742da7a80ad56f4292d8e97fc22dd0136",
+  "prompts": {},
+  "sessions": {
+    "s_ee6c83a60fd890": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4fa12182-a69e-4389-8180-b6a7e0d4db6c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
