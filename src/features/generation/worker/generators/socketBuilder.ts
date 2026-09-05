@@ -27,6 +27,8 @@ import {
   SIZE,
   CLEARANCE,
   CORNER_RADIUS,
+  COPLANAR_MARGIN,
+  pocketCornerRadius,
   SOCKET_HEIGHT,
   SOCKET_BIG_TAPER,
   SOCKET_VERTICAL_PART,
@@ -45,7 +47,6 @@ import {
   setCellSocketTemplateCache,
 } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
-import { COPLANAR_MARGIN } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import type { MagnetAnchor } from '@/core/types';
@@ -354,8 +355,7 @@ export function buildSocketRimReliefTool(
   cellD_mm: number,
   insetMm: number
 ): Shape3D {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
+  const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const sectionAt = (z: number, inset: number): Sketch =>
     drawRoundedRectangle(
       cellW_mm - 2 * inset,

@@ -84,7 +84,7 @@ const ARM = footArmMm({ magnetDiameterMm: MAGNET_D, magnetInsetFromEdgeMm: 8, pi
  * rather than the tessellation. Everything a baseplate touches is in this
  * range: only the top 0.25mm, above the widest section, is relieved.
  */
-const PROFILE_Z = [-0.25, -2.4, -4.2, -5];
+const PROFILE_Z = [-(CLEARANCE / 2), -2.4, -4.2, -5];
 
 /** A single L foot on a cell centred at the origin, hugging its +X/+Y corner. */
 const CORNER_L: FootPlacement = {
@@ -166,10 +166,10 @@ describe('detachable foot geometry', () => {
         const integral = extremeAt(fullMesh, 0, axis);
         // The face the bin sits on, inset by the relief.
         expect(extremeAt(footMesh, 0, axis)).toBeCloseTo(integral - MATING_RIM_RELIEF_MM, 6);
-        // ...while the widest section is untouched, which is what the relief
-        // landing on the profile's own breakpoint buys: a relief that narrowed
-        // the whole foot would be one that loosened it in a baseplate.
-        expect(extremeAt(footMesh, -0.25, axis)).toBeCloseTo(integral, 6);
+        // ...while the widest section, where the profile's top step ends, is
+        // untouched: a relief that narrowed the whole foot would be one that
+        // loosened it in a baseplate.
+        expect(extremeAt(footMesh, -(CLEARANCE / 2), axis)).toBeCloseTo(integral, 6);
       }
     } finally {
       feet.forEach((f) => f.delete());
@@ -179,9 +179,9 @@ describe('detachable foot geometry', () => {
   });
 
   it('relieves the preview foot too, so the two do not read differently', () => {
-    // The preview is built from the simplified profile — one taper, no vertical
-    // step — and takes the same relief. Without this the mating face could go
-    // back to full width in the viewport while the exported part was set back.
+    // The preview's simplified profile is a different solid through the same
+    // intersection, so the mating face can go back to full width in the
+    // viewport while the exported part stays set back.
     const { feet, pinHoles } = feetOf({ forExport: false });
     const full = buildSingleCellSocket(PITCH - CLEARANCE, PITCH - CLEARANCE);
     try {

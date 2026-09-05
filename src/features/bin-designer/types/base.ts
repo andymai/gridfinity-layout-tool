@@ -288,7 +288,8 @@ export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 3;
  * stand on the floor, and a floor pattern is cut from the same surface. None of
  * that has to be reasoned about if the interior surface is never broken.
  *
- * Two 0.2mm layers, which is what bridges cleanly over the hole below it. It costs engagement depth — a pin reaches
+ * Two 0.2mm layers, which is what bridges cleanly over the hole
+ * below it. It costs engagement depth — a pin reaches
  * `wallThickness - this` — and that is the right way round: a shallow joint is
  * recoverable with glue, a hole through the scoop is not.
  */
