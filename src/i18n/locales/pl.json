@@ -927,7 +927,7 @@
   "binDesigner.designs.hideBranches": "Ukryj gałęzie",
   "binDesigner.designs.showBranches": "Pokaż gałęzie",
   "binDesigner.detachableFeet": "Odczepiane nóżki",
-  "binDesigner.detachableFeet.pinHint": "Największa średnica, do otworu 3 mm. Jeśli nóżka nie wchodzi, wybierz mniejszy rozmiar; jeśli się luzuje, większy.",
+  "binDesigner.detachableFeet.pinHint": "Największa średnica, otwór ma 3 mm. Jeśli nóżka nie wchodzi, wybierz mniejszy rozmiar; jeśli się luzuje, większy.",
   "binDesigner.detachableFeet.pinSize": "Rozmiar kołka",
   "binDesigner.detachableFeet.saving": "Zużywa o {percent}% mniej materiału niż nóżki wbudowane",
   "binDesigner.detachableFeet.savingSuperseded": "Odchudzona podstawa już zapewnia tę oszczędność",
