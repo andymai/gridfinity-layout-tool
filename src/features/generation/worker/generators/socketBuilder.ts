@@ -344,13 +344,10 @@ export function buildSocketTopPrism(cellW_mm: number, cellD_mm: number, heightMm
  * foot was clipped out of one are not touched.
  *
  * The relief lands on the profile's own widest breakpoint, `-CLEARANCE / 2`, so
- * it consumes the socket's top vertical step and nothing below it: the widest
- * section, and every face a baseplate meets, comes out bit-identical to an
- * integral foot's.
+ * the widest section and every face a baseplate meets survive it untouched.
  *
- * The tool continues above Z=0 at the inset section rather than stopping on the
- * foot's top plane, so the intersection never has two coincident faces to
- * resolve.
+ * The tool continues above Z=0 rather than stopping on the foot's top plane, so
+ * the intersection never has two coincident faces to resolve.
  */
 export function buildSocketRimReliefTool(
   cellW_mm: number,

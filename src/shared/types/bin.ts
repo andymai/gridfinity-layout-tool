@@ -297,7 +297,6 @@ export {
   detachableFeetFitFloor,
   binFloorMm,
   DETACHABLE_PIN_TARGET_ENGAGEMENT_MM,
-  DETACHABLE_PIN_RIDGE_STEP_MM,
   DETACHABLE_PIN_LEAD_IN_MM,
 } from '@/features/bin-designer/types';
 

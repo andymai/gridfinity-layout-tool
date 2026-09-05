@@ -6,7 +6,6 @@ import {
   DETACHABLE_PIN_LEAD_IN_MM,
   DETACHABLE_PIN_MEMBRANE_MM,
   DETACHABLE_PIN_MIN_ENGAGEMENT_MM,
-  DETACHABLE_PIN_RIDGE_STEP_MM,
   DETACHABLE_PIN_TARGET_ENGAGEMENT_MM,
   detachableFeetFitFloor,
   binFloorMm,
@@ -30,11 +29,9 @@ describe('detachable pin sizes', () => {
     );
   });
 
-  it('leaves every pin solid under its ridges and its taper', () => {
+  it('leaves every pin solid under its lead-in taper', () => {
     const narrowest = Math.min(...DETACHABLE_PIN_DIAMETERS_MM);
-    const tipDiameter =
-      narrowest - 2 * DETACHABLE_PIN_RIDGE_STEP_MM - 2 * DETACHABLE_PIN_LEAD_IN_MM;
-    expect(tipDiameter).toBeGreaterThan(0);
+    expect(narrowest - 2 * DETACHABLE_PIN_LEAD_IN_MM).toBeGreaterThan(0);
   });
 });
 

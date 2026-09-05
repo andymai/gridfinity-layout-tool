@@ -288,8 +288,7 @@ export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 3;
  * stand on the floor, and a floor pattern is cut from the same surface. None of
  * that has to be reasoned about if the interior surface is never broken.
  *
- * Two layers at {@link DETACHABLE_PIN_ASSUMED_LAYER_MM}, which is what bridges
- * cleanly over the hole below it. It costs engagement depth — a pin reaches
+ * Two 0.2mm layers, which is what bridges cleanly over the hole below it. It costs engagement depth — a pin reaches
  * `wallThickness - this` — and that is the right way round: a shallow joint is
  * recoverable with glue, a hole through the scoop is not.
  */
@@ -325,17 +324,6 @@ export function binFloorMm(wallThicknessMm: number): number {
 /** Least engagement a detachable bin gives a pin; a thicker wall gives more. */
 export const DETACHABLE_PIN_TARGET_ENGAGEMENT_MM =
   GRIDFINITY.BASE_HEIGHT - GRIDFINITY.SOCKET_HEIGHT - DETACHABLE_PIN_MEMBRANE_MM;
-
-/**
- * How far the pin is relieved between ridge crests, in mm. Steps INWARD from the
- * selected diameter, so {@link DETACHABLE_PIN_DIAMETERS_MM} stays the widest
- * point. Ridge pitch assumes {@link DETACHABLE_PIN_ASSUMED_LAYER_MM}; other
- * layer heights degrade the fit rather than failing visibly.
- */
-export const DETACHABLE_PIN_RIDGE_STEP_MM = 0.2;
-
-/** The layer height {@link DETACHABLE_PIN_RIDGE_STEP_MM} is pitched for. */
-export const DETACHABLE_PIN_ASSUMED_LAYER_MM = 0.2;
 
 /**
  * Length of the tapered lead-in at a pin's tip, in mm. An L foot's three pins

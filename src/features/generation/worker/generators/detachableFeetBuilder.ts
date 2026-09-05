@@ -52,17 +52,15 @@ const CLIP_MARGIN = 2;
 /**
  * How far the mating face is set back from the foot's widest point, in mm.
  *
- * A foot prints bottom-down, so the last thing off the nozzle is a rim that has
- * just finished a 2.15mm run of 45-degree overhang. Those top layers cool
- * unsupported on their outboard side and curl up — and that rim is the surface
- * the bin sits on, so a foot with a lifted edge rocks instead of seating flat.
+ * A foot prints bottom-down, which leaves the face the bin sits on as the last
+ * thing off the nozzle, straight after a 2.15mm run of 45-degree overhang. That
+ * rim curls, and a curled rim makes the foot rock.
  *
- * The relief does not stop the curl. It moves the mating plane inboard of the
+ * The relief does not stop the curl — it puts the mating plane inboard of the
  * edge that curls, so whatever that edge does happens below the surface that
- * has to be flat. Taken out of the profile's top vertical step, which ends
- * 0.25mm down, so the widest section and every baseplate-facing face are
- * untouched. Sized to clear the two or three layers that lift; larger would
- * eat the contact patch for no more benefit.
+ * has to be flat. It comes out of the profile's top vertical step, which ends
+ * 0.25mm down, leaving the widest section and every baseplate-facing face
+ * untouched.
  */
 export const MATING_RIM_RELIEF_MM = 0.5;
 
@@ -145,15 +143,11 @@ function coveredCorners(
 /**
  * A pin: a plain cylinder at the stated diameter, under a tapered tip.
  *
- * Deliberately featureless. Compliance ridges are the obvious way to tighten a
- * press fit, and at this scale they do not survive slicing: a 0.2mm crest and
- * its valley fall inside one 0.6mm extrusion, so the slicer resolves the shaft
- * as a single thin loop somewhere between the two and the pin prints at 2.0mm
- * against a 2.8mm model. A fit sized off a diameter the printer never produces
- * is a loose one; a cylinder is a diameter it can hold to.
- *
- * {@link DETACHABLE_PIN_DIAMETERS_MM} names the pin's widest point, and with a
- * cylinder that is its only point.
+ * Featureless on purpose. Compliance ridges are the obvious way to tighten a
+ * press fit and do not survive slicing at this scale — a crest and its valley
+ * fall inside one extrusion, so the slicer holds the shaft to neither and the
+ * printed pin lands short of its stated diameter. A cylinder is a diameter the
+ * printer can hold to.
  */
 function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): Shape3D {
   const r = diameterMm / 2;

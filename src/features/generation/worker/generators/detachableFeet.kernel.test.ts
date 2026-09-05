@@ -178,6 +178,24 @@ describe('detachable foot geometry', () => {
     }
   });
 
+  it('relieves the preview foot too, so the two do not read differently', () => {
+    // The preview is built from the simplified profile — one taper, no vertical
+    // step — and takes the same relief. Without this the mating face could go
+    // back to full width in the viewport while the exported part was set back.
+    const { feet, pinHoles } = feetOf({ forExport: false });
+    const full = buildSingleCellSocket(PITCH - CLEARANCE, PITCH - CLEARANCE);
+    try {
+      const footMesh = meshOf(feet[0]);
+      const integral = extremeAt(meshOf(full), 0, 0);
+      expect(extremeAt(footMesh, 0, 0)).toBeCloseTo(integral - MATING_RIM_RELIEF_MM, 6);
+      expect(boundingBox(footMesh.vertices).minZ).toBeCloseTo(-5, 4);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles?.delete();
+      full.delete();
+    }
+  });
+
   it('is one closed solid once its pins are on', () => {
     const { feet, pinHoles } = feetOf();
     try {
