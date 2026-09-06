@@ -728,9 +728,9 @@ function buildTopShapeLoft(
       innerSections.push(sectionAt(Z_ANGLE_BOTTOM, INNER_ANGLE));
       innerSections.push(sectionAt(Z_EXT, INNER_BASE));
     } else {
-      // Matches the outer tube's bottom, so the skirt comes out as a ring. Let
-      // the inner loft start at the base plane instead and the cut leaves the
-      // skirt solid: a 0.1mm membrane sealing the bin's mouth.
+      // The inner loft has to reach the outer tube's bottom, or the cut
+      // leaves the skirt solid rather than a ring: a 0.1mm membrane sealing
+      // the bin's mouth.
       innerSections.push(sectionAt(Z_SKIRT, INNER_BASE));
     }
     innerSections.push(sectionAt(Z_BASE, INNER_BASE));

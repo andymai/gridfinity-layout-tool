@@ -1121,7 +1121,7 @@ export interface LidConfig {
    * Carve the lid's seating envelope out of the bin's interior.
    *
    * The top of the cavity's perimeter belongs to the lid: a seated rail hangs
-   * 3.15mm below the wall top and reaches inboard of the inner wall face. With
+   * 3.05mm below the wall top and reaches inboard of the inner wall face. With
    * this on, that ring is cut from the interior as the last operation on the
    * bin, so dividers, label shelves and scoop arcs step aside by construction
    * and the rails run unbroken. With it off, the rails notch around each

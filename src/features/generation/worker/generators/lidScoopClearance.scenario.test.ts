@@ -2,7 +2,7 @@
  * Lid-vs-finger-scoop clearance.
  *
  * A scoop against an outer wall of a lipped bin rises toward the lip. Where its
- * arc reaches the top ~3.15mm of the wall it fills the pocket the lid's click
+ * arc reaches the top ~3.05mm of the wall it fills the pocket the lid's click
  * rail bump drops into, so that edge never clicks and the lid is propped off
  * the rim. `autoScoopCeiling` holds an auto scoop clear of that band, and
  * `checkLidCompatibility` drops the rail only for a height the user typed that

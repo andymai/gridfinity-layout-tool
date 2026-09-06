@@ -78,7 +78,7 @@ describe('isStandardStackHeight', () => {
   });
 });
 
-/** What each junction costs against the body height: 4.75 − 4.3. */
+/** What each junction costs against the body height: 4.75 − 4.4. */
 const SHORTFALL_MM = STACK_JUNCTION_MM - LIP_PROTRUSION_MM;
 
 describe('stackPitchMm', () => {

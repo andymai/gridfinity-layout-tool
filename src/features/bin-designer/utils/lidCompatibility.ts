@@ -524,7 +524,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
 
   // 9. Compartment dividers. A divider is built from the cavity floor
   //    to the interior ceiling, whose top is only `LIP_SMALL_TAPER` below the
-  //    bin's wall top, and a seated click rail hangs 3.15mm under that same
+  //    bin's wall top, and a seated click rail hangs 3.05mm under that same
   //    plane while reaching inboard of the inner wall face. A rail run straight
   //    through a divider's end is therefore 3.1mm of solid-on-solid overlap and
   //    the lid cannot close at all. `dividerRailBlocks` notches the run around
@@ -545,7 +545,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
 
   // 10. Finger scoop reaching the click rail's band. A ramp
   //     against an outer wall of a lipped bin rises toward the lip, and where
-  //     it reaches the top ~3.15mm of the wall its arc fills the pocket the
+  //     it reaches the top ~3.05mm of the wall its arc fills the pocket the
   //     rail's bump drops into to hook the lip's underside — so that edge of
   //     the lid is propped off the rim.
   //
