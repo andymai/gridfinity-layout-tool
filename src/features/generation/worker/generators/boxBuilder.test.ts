@@ -152,12 +152,9 @@ describe('buildTopShape', () => {
     const noStackBounds = shapeBounds(lipNoStack);
     const withStackBounds = shapeBounds(lipWithStack);
 
-    // With the support the lip reaches LIP_TAPER_WIDTH below its base plane;
-    // without one it reaches LIP_OVERLAP, the skirt that gives the fuse a
-    // volume. So the delta is the difference of the two, not LIP_TAPER_WIDTH
-    // itself. The pre-fix loft built only the extension flange and produced a
-    // delta of LIP_EXTENSION (1.2mm), which the band still excludes. Comparing
-    // the delta cancels the BREP getBounds epsilon (~0.3mm) present in both.
+    // Both arms reach below the base plane, so the delta is the difference of
+    // their reaches rather than LIP_TAPER_WIDTH itself. Taking a delta also
+    // cancels the BREP getBounds epsilon (~0.3mm) present in both.
     const expectedDelta = LIP_TAPER_WIDTH - LIP_OVERLAP;
     const lipDepthDelta = noStackBounds.zMin - withStackBounds.zMin;
     expect(lipDepthDelta).toBeGreaterThan(expectedDelta - 0.1);

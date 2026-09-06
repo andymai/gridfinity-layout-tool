@@ -42,6 +42,8 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
+ * `v16`: the stacking lip's base plane seats on the wall top rather than
+ * `LIP_OVERLAP` under it, so every lipped bin is 0.1mm taller on both kernels.
  * `v14`: additive features union pairwise instead of through the kernel's
  * n-way fuse, and the scoop ramp stands on the floor top; both move every
  * kernel's output for any bin with a scoop, label tab, emboss or rail.
@@ -69,7 +71,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v15';
+const MESH_CACHE_VERSION = 'v16';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

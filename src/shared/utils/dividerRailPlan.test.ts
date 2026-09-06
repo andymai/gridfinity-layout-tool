@@ -11,7 +11,7 @@ import {
 
 /**
  * A default 2x2x3 bin: innerW = innerD = 2*42 - 0.5 - 2*1.2 = 81.1mm, interior
- * ceiling at 15.3mm, and the rail band's floor at 12.85mm above the cavity
+ * ceiling at 15.3mm, and the rail band's floor at 12.95mm above the cavity
  * floor. Every expectation below is stated against those, not re-derived.
  */
 function bin(compartments: CompartmentConfig, overrides: Partial<BinParams> = {}): BinParams {

@@ -16,7 +16,7 @@
  *
  * Neither is visible to a bounding-box, triangle-count or watertight assertion:
  * both solids are fine, the bin is exactly as tall as it should be, and the extra
- * material is a 0.7mm wedge tucked under the wall. So this mates the bin to a
+ * material is a 0.6mm wedge tucked under the wall. So this mates the bin to a
  * generated plate and lets it fall, reusing the `binSeating` probe rather than
  * restating the profile arithmetic the defect lives in.
  *
@@ -99,7 +99,7 @@ function makeBin(overrides: BinOverrides, stackingLip: boolean): MeshData {
  * A DELTA, because the lip is the only variable: the same feet, the same plate,
  * the same placement. Anything positive is the lip's support pushing the foot out
  * of its pocket, and the sign of the answer does not depend on picking a
- * seated/proud threshold correctly — which is what let a 0.7mm defect ship.
+ * seated/proud threshold correctly — which is what let a 0.6mm defect ship.
  */
 function lipSeatCost(overrides: BinOverrides): number {
   const withLip = seatDepth(makeBin(overrides, true), plateMesh(), ON_GRID);
@@ -109,13 +109,13 @@ function lipSeatCost(overrides: BinOverrides): number {
 
 describe('stacking lip support vs. the socket taper', () => {
   it('costs a 1u spacer nothing', () => {
-    // Wall 2.0mm, so the support overreaches by 0.7mm: small enough that a fixed
+    // Wall 2.0mm, so the support overreaches by 0.6mm: small enough that a fixed
     // seated/proud threshold reads the result as seated.
     expect(lipSeatCost({ height: 1, base: { spacer: true } })).toBeLessThan(SEAT_TOLERANCE_MM);
   }, 240_000);
 
   it('costs a 2u bin at a 3mm height unit nothing', () => {
-    // Wall 1.0mm — the shortest an ordinary socketed bin can have, and a 1.7mm
+    // Wall 1.0mm — the shortest an ordinary socketed bin can have, and a 1.6mm
     // overreach. Nothing relaxed about this input: MIN_HEIGHT is 2u.
     expect(lipSeatCost({ height: 2, heightUnitMm: 3 })).toBeLessThan(SEAT_TOLERANCE_MM);
   }, 240_000);
