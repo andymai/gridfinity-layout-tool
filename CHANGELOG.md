@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.485.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.2...gridfinity-layout-tool-v4.485.3) (2026-09-06)
+
+
+### Bug Fixes
+
+* **designer:** keep the cut editor reachable under an underside lightweight floor ([#4125](https://github.com/andymai/gridfinity-layout-tool/issues/4125)) ([bdfd3dd](https://github.com/andymai/gridfinity-layout-tool/commit/bdfd3dd5ba71af92ad5c900384bb04a4f0159c58))
+* **generation:** give a lipped bin its full Gridfinity height ([#4126](https://github.com/andymai/gridfinity-layout-tool/issues/4126)) ([207f643](https://github.com/andymai/gridfinity-layout-tool/commit/207f6436984f6fb81b8e459f961894199ac673be))
+
 ## [4.485.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.1...gridfinity-layout-tool-v4.485.2) (2026-09-05)
 
 
