@@ -125,9 +125,10 @@ function SolidModeContent() {
   );
   const t = useTranslation();
 
-  // Asking the engine rather than reading `base.lightweight` directly: three
-  // separate rules rule cutouts out, and the lightweight one fires only in its
-  // interior mode, because the underside relief leaves the floor a cutout cuts.
+  // Asking the engine rather than reading `base.lightweight` directly. Three
+  // separate rules can withhold cutouts, and the lightweight one fires in its
+  // interior mode only, because the underside relief leaves the floor intact
+  // for a cutout to cut into.
   const cutoutStatus = getFeatureStatus(params, 'cutouts');
   if (!cutoutStatus.available) {
     return (

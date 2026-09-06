@@ -212,6 +212,16 @@ describe('InteriorModeCard', () => {
       render(<InteriorModeCard card="solid" isExpanded={true} onSelect={vi.fn()} />);
 
       expect(screen.getByText('binDesigner.spacerDisablesInterior')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('binDesigner.editCutouts'));
+      expect(mocks.setCutoutEditorOpen).not.toHaveBeenCalled();
+    });
+
+    it('blocks the editor on a base-only bin', () => {
+      setParams({ tile: true });
+      render(<InteriorModeCard card="solid" isExpanded={true} onSelect={vi.fn()} />);
+
+      expect(screen.getByText('binDesigner.tileDisablesInterior')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('binDesigner.editCutouts'));
       expect(mocks.setCutoutEditorOpen).not.toHaveBeenCalled();
     });
   });
