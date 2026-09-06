@@ -46,7 +46,7 @@ import {
   LID_GRIP_MIN_WALL_MM,
 } from '@/shared/types/bin';
 import { checkCancelled } from '../../utils/abort';
-import { LIP_HEIGHT, LIP_OVERLAP, LIP_TAPER_WIDTH } from '../../generatorConstants';
+import { LIP_HEIGHT, LIP_TAPER_WIDTH } from '../../generatorConstants';
 import { LID_COPLANAR_MARGIN } from '../../lidConstants';
 import { resolveLidInputs } from '../../lidInputs';
 import { gripPlacements } from '../../lidGripRelief';
@@ -93,14 +93,14 @@ export const lidGripDipStage: PipelineStage = {
     );
     if (depthMm <= 0) return ctx;
 
-    // The lip's own base plane: `shellStage` fuses the lip `LIP_OVERLAP` below
-    // the body top, which `dimensions.wallTopZ` derives once. Do not restate it
-    // from `totalHeight` — that is `height * heightUnitMm`, which excludes the
-    // collar and does not track `wallHeight` across base styles, and a cutter
-    // `LIP_TAPER_WIDTH` deep landed a millimetre off opens a slot straight into
-    // the cavity through a 1.2mm wall. The result is still watertight, so only
-    // a probe finds it.
-    const lipBottomZ = dim.wallTopZ - LIP_OVERLAP;
+    // The lip's own base plane, which `shellStage` seats on the body top and
+    // `dimensions.wallTopZ` derives once. Do not restate it from `totalHeight`
+    // — that is `height * heightUnitMm`, which excludes the collar and does not
+    // track `wallHeight` across base styles, and a cutter `LIP_TAPER_WIDTH`
+    // deep landed a millimetre off opens a slot straight into the cavity
+    // through a 1.2mm wall. The result is still watertight, so only a probe
+    // finds it.
+    const lipBottomZ = dim.wallTopZ;
     // Outward overshoot: the coplanar margin PLUS however far the lid's
     // footprint is inboard of the bin's, so the cut reaches the bin face on a
     // magnetic lid as well as a flush one.

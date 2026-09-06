@@ -208,7 +208,7 @@ describe('rim-anchored features sit where the unsplit bin puts them', () => {
 
 describe('a wall pattern is not plugged by the lip fused on after it', () => {
   // Bold enough that the top row of stamps reaches above
-  // `wallHeight - LIP_OVERLAP - LIP_TAPER_WIDTH`, which is where the lip's
+  // `wallHeight - LIP_TAPER_WIDTH`, which is where the lip's
   // angled support reaches DOWN to. At the default scale the row stops short and
   // nothing is plugged, which is why this needs a scale of its own.
   const params: BinParams = {

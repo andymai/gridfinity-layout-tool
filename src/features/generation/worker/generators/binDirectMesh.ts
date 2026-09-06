@@ -21,7 +21,7 @@
  * - Z=SOCKET_HEIGHT: foot top / socket interface (mates with the body).
  * - Z=SOCKET_HEIGHT + wallThickness: interior cavity floor.
  * - Z=totalHeight (= SOCKET_HEIGHT + wallHeight): body wall top.
- * - With a lip: the outer wall extends to totalHeight + LIP_HEIGHT − LIP_OVERLAP.
+ * - With a lip: the outer wall extends to totalHeight + LIP_HEIGHT.
  * - XY centered at the origin; per-cell feet are CLEARANCE smaller than the
  *   nominal cell so they seat in a baseplate pocket.
  */
@@ -47,7 +47,6 @@ import {
   SOCKET_TAPER_WIDTH,
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
-  LIP_OVERLAP,
 } from './generatorConstants';
 
 type Pt = readonly [number, number];
@@ -199,7 +198,7 @@ function addBinBody(mb: MeshBuilder, dims: BinBodyDims): void {
   const zBodyBot = SOCKET_HEIGHT;
   const zFloorTop = SOCKET_HEIGHT + wallThickness;
   const zWallTop = totalHeight; // = SOCKET_HEIGHT + wallHeight
-  const zOuterTop = hasLip ? totalHeight + LIP_HEIGHT - LIP_OVERLAP : zWallTop;
+  const zOuterTop = hasLip ? totalHeight + LIP_HEIGHT : zWallTop;
 
   // Outer wall: flush from the socket interface up to the wall top (or lip peak).
   addOuterWalls(mb, outerPts, 0, 0, zOuterTop, zBodyBot);

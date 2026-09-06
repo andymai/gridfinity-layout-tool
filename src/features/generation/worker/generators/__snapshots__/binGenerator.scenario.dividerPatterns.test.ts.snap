@@ -1,25 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`divider patterns > 2×2 honeycomb dividers 1`] = `10036`;
+exports[`divider patterns > 2×2 honeycomb dividers 1`] = `10020`;
 
 exports[`divider patterns > compound angled + leaned divider stays inside the bin 1`] = `2944`;
 
-exports[`divider patterns > dividers + interior cutouts 1`] = `9096`;
+exports[`divider patterns > dividers + interior cutouts 1`] = `9080`;
 
-exports[`divider patterns > dividers + label tabs keep the shelf anchorage solid 1`] = `9616`;
+exports[`divider patterns > dividers + label tabs keep the shelf anchorage solid 1`] = `9600`;
 
-exports[`divider patterns > dividers + outer cutouts + handles 1`] = `13580`;
+exports[`divider patterns > dividers + outer cutouts + handles 1`] = `13568`;
 
-exports[`divider patterns > dividers + scoops keep the ramp footings solid 1`] = `9802`;
+exports[`divider patterns > dividers + scoops keep the ramp footings solid 1`] = `9754`;
 
-exports[`divider patterns > half-grid footprint with patterned dividers 1`] = `10430`;
+exports[`divider patterns > half-grid footprint with patterned dividers 1`] = `10428`;
 
-exports[`divider patterns > mitsukude lattice on dividers 1`] = `16316`;
+exports[`divider patterns > mitsukude lattice on dividers 1`] = `16334`;
 
-exports[`divider patterns > overhang shifts the interior with the dividers 1`] = `10940`;
+exports[`divider patterns > overhang shifts the interior with the dividers 1`] = `10924`;
 
-exports[`divider patterns > round pattern on a single column divider 1`] = `20268`;
+exports[`divider patterns > round pattern on a single column divider 1`] = `20244`;
 
 exports[`divider patterns > shortened dividers re-fit the band 1`] = `8376`;
 
-exports[`divider patterns > tilted dividers carry the pattern in-plane 1`] = `10138`;
+exports[`divider patterns > tilted dividers carry the pattern in-plane 1`] = `10118`;

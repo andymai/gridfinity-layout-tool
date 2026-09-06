@@ -147,7 +147,7 @@ describe('lip multi-color splitter (generated bin)', () => {
     // 4. The color floor lands above the wall top, so no lip cell reaches the
     //    support skirt or the bin's top surface (#3705). The wall top is the
     //    lip apex less its protrusion; both come from the generated mesh.
-    const wallTopZ = origMaxZ - (GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP);
+    const wallTopZ = origMaxZ - GRIDFINITY_SPEC.LIP_HEIGHT;
     expect(geom!.floorZ).toBeGreaterThan(wallTopZ);
     expect(geom!.floorZ).toBeLessThan(origMaxZ);
     expect(coloredLipArea).toBeLessThan(outputLipArea);

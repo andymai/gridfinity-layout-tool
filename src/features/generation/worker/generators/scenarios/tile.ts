@@ -18,7 +18,7 @@
  *    leaving a foot that will not seat in a baseplate.
  */
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { SOCKET_HEIGHT, LIP_HEIGHT, LIP_OVERLAP } from '../generatorConstants';
+import { SOCKET_HEIGHT, LIP_HEIGHT } from '../generatorConstants';
 import {
   boundingBox,
   assertWatertight,
@@ -46,7 +46,7 @@ const RING_MASK: CellMask = {
 /** Feet plus the floor slab — the whole body, lip aside. */
 const BODY_MM = SOCKET_HEIGHT + DEFAULT_BIN_PARAMS.wallThickness;
 /** Body plus the lip's net rise above it. */
-const LIPPED_HEIGHT_MM = BODY_MM + LIP_HEIGHT - LIP_OVERLAP;
+const LIPPED_HEIGHT_MM = BODY_MM + LIP_HEIGHT;
 
 function assertTotalZ(expected: number, label: string) {
   return (result: MeshData): void => {

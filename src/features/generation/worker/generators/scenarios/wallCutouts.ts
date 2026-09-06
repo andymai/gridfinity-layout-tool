@@ -148,7 +148,7 @@ export const wallCutouts: ScenarioCase[] = [
   }),
   defineScenario('wall cutouts', 'full-height u-shape through a stacking lip (#3173)', {
     // Same cut against a lipped wall: the true rim is the lip peak at
-    // wallHeight + LIP_HEIGHT - LIP_OVERLAP, which the overshoot clears by only
+    // wallHeight + LIP_HEIGHT, which the overshoot clears by only
     // ~2.1mm — the case where a 5mm corner radius left the most arc behind.
     assert: 'structural',
     params: {

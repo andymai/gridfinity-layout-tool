@@ -39,7 +39,7 @@ describe('lidKeepoutRing', () => {
   });
 
   it('is deep enough for the rail band plus a clearance', () => {
-    expect(ring.depthBelowWallTop).toBeCloseTo(3.15 + LID_KEEPOUT_CLEARANCE, 6);
+    expect(ring.depthBelowWallTop).toBeCloseTo(3.05 + LID_KEEPOUT_CLEARANCE, 6);
   });
 
   it('measures the label datum from the ceiling, a lip taper below the rim', () => {

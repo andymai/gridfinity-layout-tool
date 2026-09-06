@@ -214,7 +214,7 @@ export interface LidInputs {
    * which walls they take).
    *
    * Two unrelated reasons, applied identically. A compartment divider
-   * is built to the interior ceiling and a seated rail hangs 3.15mm below the
+   * is built to the interior ceiling and a seated rail hangs 3.05mm below the
    * wall top, so a run straight through one is 3.1mm of solid-on-solid overlap
    * and the lid cannot close. A wall cutout or a high handle hole is
    * the opposite — it has taken the lip away, so a rail there grips nothing.

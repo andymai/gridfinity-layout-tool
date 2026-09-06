@@ -29,7 +29,7 @@ function setDrawerHeight(heightMm: number | undefined): void {
 describe('useAssembledHeight', () => {
   beforeEach(() => {
     useDesignerStore.setState({
-      // 6u body (42mm) with a 4.3mm lip = 46.3mm assembled on a plain plate.
+      // 6u body (42mm) with a 4.4mm lip = 46.4mm assembled on a plain plate.
       params: {
         ...DEFAULT_BIN_PARAMS,
         height: 6,
@@ -46,20 +46,20 @@ describe('useAssembledHeight', () => {
 
   it('derives the total from the design and the layout plate', () => {
     const { result } = renderHook(() => useAssembledHeight());
-    expect(result.current.breakdown.totalMm).toBeCloseTo(46.3, 6);
+    expect(result.current.breakdown.totalMm).toBeCloseTo(46.4, 6);
   });
 
   it('reads the layout baseplate rather than assuming a plain one', () => {
     setPlate({ ...DEFAULT_BASEPLATE_PARAMS, magnetHoles: true, magnetDepth: mm(2) });
     const { result } = renderHook(() => useAssembledHeight());
-    expect(result.current.breakdown.totalMm).toBeCloseTo(48.8, 6);
+    expect(result.current.breakdown.totalMm).toBeCloseTo(48.9, 6);
   });
 
   it('falls back to a standard plate when the layout has none', () => {
     setPlate(undefined);
     const { result } = renderHook(() => useAssembledHeight());
     expect(result.current.breakdown.baseplatePrintedMm).toBe(5);
-    expect(result.current.breakdown.totalMm).toBeCloseTo(46.3, 6);
+    expect(result.current.breakdown.totalMm).toBeCloseTo(46.4, 6);
   });
 
   describe('expansion', () => {
@@ -96,18 +96,18 @@ describe('useAssembledHeight', () => {
       setDrawerHeight(60);
       const { result } = renderHook(() => useAssembledHeight());
       expect(result.current.clearance?.fits).toBe(true);
-      expect(result.current.clearance?.slackMm).toBeCloseTo(13.7, 6);
+      expect(result.current.clearance?.slackMm).toBeCloseTo(13.6, 6);
     });
 
     it('reports negative slack when it does not fit', () => {
       setDrawerHeight(40);
       const { result } = renderHook(() => useAssembledHeight());
       expect(result.current.clearance?.fits).toBe(false);
-      expect(result.current.clearance?.slackMm).toBeCloseTo(-6.3, 6);
+      expect(result.current.clearance?.slackMm).toBeCloseTo(-6.4, 6);
     });
 
     it('counts an exact match as fitting', () => {
-      setDrawerHeight(46.3);
+      setDrawerHeight(46.4);
       const { result } = renderHook(() => useAssembledHeight());
       expect(result.current.clearance?.fits).toBe(true);
     });

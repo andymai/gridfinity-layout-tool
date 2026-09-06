@@ -2,7 +2,7 @@
  * Lid-vs-compartment-divider clearance.
  *
  * A divider is built from the cavity floor to the interior ceiling, whose top
- * sits 0.7mm below the bin's wall top, and a seated click rail hangs 3.15mm
+ * sits 0.7mm below the bin's wall top, and a seated click rail hangs 3.05mm
  * below that same plane while reaching 2.8mm inboard of the inner wall face.
  * Every point where a divider meets a perimeter wall was therefore 3.1mm of
  * solid-on-solid overlap: any bin with a compartment grid and the default

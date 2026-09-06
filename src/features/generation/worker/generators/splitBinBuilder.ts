@@ -24,7 +24,7 @@ import type { ExportFormat } from '../../bridge/types';
 
 import { CLEARANCE } from './generatorTypes';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
-import { LIP_HEIGHT, LIP_OVERLAP, LIP_TAPER_WIDTH } from './generatorConstants';
+import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { pitchFromParams, type GridPitch } from './gridPitch';
 import { toIndexedMeshData } from './utils/mesh';
 import { creaseEdges } from './utils';
@@ -243,9 +243,9 @@ function splitSolidIntoPieces(
   // partial masks, matching the geometry pipeline.
   const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
 
-  // Build lip solid separately if needed. The lip is positioned at
+  // Build lip solid separately if needed. The lip's base plane is seated on
   // wallTopZ (= totalHeight for both flat and socket bases after the
-  // socket Z-offset applied in generateBin), shifted down by LIP_OVERLAP.
+  // socket Z-offset applied in generateBin).
   //
   // Pass cellMask + overhang so the lip footprint matches the body. A no-op for
   // a plain rectangular bin with no overhang; for a custom shape (L/U) or any
@@ -285,12 +285,11 @@ function splitSolidIntoPieces(
       params.cellMask,
       overhang
     );
-    // `-LIP_OVERLAP`, the same drop `shellStage` fuses an unsplit bin's lip at:
-    // it penetrates the wall so the fuse has a volumetric overlap rather than a
-    // shared edge (which comes out as degenerate faces at the junction), and
-    // taking the same value puts the piece's rim on the plane the whole bin's
-    // sits on rather than 0.05mm above it.
-    lipSolid = translate(lipBase, [0, 0, wallTopZ - LIP_OVERLAP]);
+    // The same plane `shellStage` seats an unsplit bin's lip on, so the
+    // piece's rim lands where the whole bin's does. `buildTopShape` carries its
+    // own material below that plane, so the fuse gets a volumetric overlap
+    // rather than a shared edge (which comes out as degenerate faces).
+    lipSolid = translate(lipBase, [0, 0, wallTopZ]);
     lipBase.delete();
 
     // For slotted bins, cut divider notches through the lip so removable
@@ -329,7 +328,7 @@ function splitSolidIntoPieces(
     // Wall patterns cut the lip for the same reason, and it is easy to miss
     // why: a hex sits well below the rim, so it looks like it could not reach
     // the lip at all. The lip's angled support hangs `LIP_TAPER_WIDTH` BELOW
-    // its own base plane, down to `wallHeight - LIP_OVERLAP - LIP_TAPER_WIDTH`,
+    // its own base plane, down to `wallHeight - LIP_TAPER_WIDTH`,
     // and the pattern band's top always clears that by ~0.5mm. Whether any
     // element actually lands in the overlap is down to how the stamp calculator
     // laid the rows out, so a bin at one scale is untouched and the same bin one
@@ -350,7 +349,7 @@ function splitSolidIntoPieces(
       // that converts to it) rather than restated from `wallHeight`, which is
       // one term short of the rim on a bin carrying an `extraWallHeightMm`
       // collar or a tray's floor.
-      const lipReach = wallTopZ - floorZ - LIP_OVERLAP - LIP_TAPER_WIDTH;
+      const lipReach = wallTopZ - floorZ - LIP_TAPER_WIDTH;
       // Asked of the built solids rather than recomputed from the layout, so it
       // cannot drift from where the stamps actually ended up. A bin whose top
       // row stops short of the wedge (the default scale does) skips the fuse and

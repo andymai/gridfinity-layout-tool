@@ -37,6 +37,7 @@ import {
   LIP_BIG_TAPER,
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
+  LIP_OVERLAP,
   TOP_FILLET,
   COPLANAR_MARGIN,
   sketch,
@@ -666,6 +667,12 @@ function buildTopShapeLoft(
   const Z_ANGLE_BOTTOM = includeLip ? -LIP_TAPER_WIDTH : 0;
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
+  // Material below the base plane, so the caller can seat that plane ON the
+  // wall top and still hand the fuse a volume to work with rather than two
+  // touching faces. With a support there is already LIP_TAPER_WIDTH of it; the
+  // supportless profile bottoms out at the base plane and needs the skirt.
+  // Buried inside the wall either way, so it never reaches the silhouette.
+  const Z_SKIRT = includeLip ? Z_ANGLE_BOTTOM : -LIP_OVERLAP;
   const Z_TAPER1 = LIP_SMALL_TAPER; // 0.7
   const Z_VERT = LIP_SMALL_TAPER + LIP_VERTICAL_PART; // 2.5
   const Z_PEAK = LIP_HEIGHT; // 4.4
@@ -688,7 +695,7 @@ function buildTopShapeLoft(
   };
 
   // Outer: rectangular tube at bin outer edge (2 sections → no extra edges)
-  const zBottom = includeLip ? Z_ANGLE_BOTTOM : Z_BASE;
+  const zBottom = Z_SKIRT;
   const outerSections: Sketch[] = [sectionAt(zBottom, 0), sectionAt(Z_PEAK, 0)];
 
   // For O-shape footprints, pre-compute the hole drawings at every inset
@@ -720,6 +727,11 @@ function buildTopShapeLoft(
     if (includeLip) {
       innerSections.push(sectionAt(Z_ANGLE_BOTTOM, INNER_ANGLE));
       innerSections.push(sectionAt(Z_EXT, INNER_BASE));
+    } else {
+      // The inner loft has to reach the outer tube's bottom, or the cut
+      // leaves the skirt solid rather than a ring: a 0.1mm membrane sealing
+      // the bin's mouth.
+      innerSections.push(sectionAt(Z_SKIRT, INNER_BASE));
     }
     innerSections.push(sectionAt(Z_BASE, INNER_BASE));
     innerSections.push(sectionAt(Z_TAPER1, INNER_MID));
@@ -749,6 +761,8 @@ function buildTopShapeLoft(
       if (includeLip) {
         bigSections.push(atAngle.sketchOnPlane('XY', Z_ANGLE_BOTTOM) as Sketch);
         bigSections.push(atBase.sketchOnPlane('XY', Z_EXT) as Sketch);
+      } else {
+        bigSections.push(atBase.sketchOnPlane('XY', Z_SKIRT) as Sketch);
       }
       bigSections.push(atBase.sketchOnPlane('XY', Z_BASE) as Sketch);
       bigSections.push(atMid.sketchOnPlane('XY', Z_TAPER1) as Sketch);
@@ -817,13 +831,16 @@ function buildTopShapeSweep(
         .vLineTo(-(LIP_TAPER_WIDTH + LIP_EXTENSION))
         .lineTo([-LIP_TAPER_WIDTH, -LIP_EXTENSION]);
     } else {
-      sketcher = sketcher.vLineTo(0);
+      // Down past the base plane by LIP_OVERLAP and back, the skirt the loft
+      // path builds. Both paths have to hand the caller the same solid, or
+      // whether the loft threw would decide how tall the bin comes out.
+      sketcher = sketcher.vLineTo(-LIP_OVERLAP).hLineTo(-LIP_TAPER_WIDTH);
     }
 
     const basicShape = sketcher.close();
 
     let topProfileShape = basicShape.intersect(
-      drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5)
+      drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5 - LIP_OVERLAP)
     );
 
     if (includeLip) {
@@ -883,7 +900,10 @@ function buildTopShapeSweep(
  * fallback if loft throws.
  *
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
- * Built at Z=0 locally, caller translates to wallHeight.
+ * The base plane is Z=0 locally and the caller translates it to the wall top,
+ * so the peak lands exactly `LIP_HEIGHT` above it. Material hangs BELOW Z=0
+ * (the angled support, or `LIP_OVERLAP` of skirt without one) to give the fuse
+ * a volume; it is buried in the wall and never reaches the silhouette.
  */
 export function buildTopShape(
   gridW: number,
@@ -899,7 +919,7 @@ export function buildTopShape(
   const exp = ov && hasOverhang(ov) ? overhangExpansion(ov) : null;
   const pitch = resolvePitch(gridUnitMm);
   const lipKey = buildCacheKey(
-    'v4',
+    'v5',
     quantize(gridW),
     quantize(gridD),
     quantize(pitch.x),

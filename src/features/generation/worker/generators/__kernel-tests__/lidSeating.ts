@@ -11,7 +11,7 @@
  */
 
 import { boundingBox, columnCrossings, verticalSolidSpans } from './meshAssertions';
-import { LIP_HEIGHT, LIP_OVERLAP } from '../generatorConstants';
+import { LIP_HEIGHT } from '../generatorConstants';
 import {
   lidAnchorZ,
   resolveLidCavityExtraMm,
@@ -46,7 +46,7 @@ export function lidZOffset(p: BinParams): number {
 /** Z of the bin's lip top in world coords. The plane a seated lid registers on. */
 export function binLipTopZ(p: BinParams): number {
   const wallTop = p.height * p.heightUnitMm + Math.max(0, p.extraWallHeightMm ?? 0);
-  return wallTop + LIP_HEIGHT - LIP_OVERLAP;
+  return wallTop + LIP_HEIGHT;
 }
 
 /** Total mm of bin and lid material sharing the same Z at this column. */

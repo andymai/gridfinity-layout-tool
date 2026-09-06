@@ -16,7 +16,7 @@ import type { LipCorner, LipBand, LipAxisCount, LipCellZone } from '../types/fea
  * can be recovered from the lip's own peak without the caller passing the bin's
  * dimensions in.
  */
-const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP;
+const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT;
 
 /**
  * Gap between the wall top and the first colourable lip geometry.

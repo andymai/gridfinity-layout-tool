@@ -15,9 +15,7 @@ const triAt = (x: number, y: number, z: number): number[] => [x, y, z, x, y, z, 
 
 /** The rule under test: one max layer above the wall the lip is fused onto. */
 const expectedFloorZ = (peakZ: number): number =>
-  peakZ -
-  (GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP) +
-  PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX;
+  peakZ - GRIDFINITY_SPEC.LIP_HEIGHT + PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX;
 
 describe('classifyLipCorner', () => {
   const cx = 50;

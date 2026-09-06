@@ -12,9 +12,9 @@ exports[`label tabs > 2×2 label disabled 1`] = `2892`;
 
 exports[`label tabs > 2×2 label front edge 1`] = `3044`;
 
-exports[`label tabs > 2×2 label lip bracket 1`] = `3048`;
+exports[`label tabs > 2×2 label lip bracket 1`] = `3064`;
 
-exports[`label tabs > 2×2 label lip solid 2mm 1`] = `2924`;
+exports[`label tabs > 2×2 label lip solid 2mm 1`] = `2964`;
 
 exports[`label tabs > 2×2 label solid left 1`] = `2870`;
 
@@ -22,6 +22,6 @@ exports[`label tabs > 2×2×4 label both + inset 5mm 1`] = `2972`;
 
 exports[`label tabs > 2×2×4 label both edges 1`] = `3196`;
 
-exports[`label tabs > 2×2×4 label lip both edges 1`] = `3204`;
+exports[`label tabs > 2×2×4 label lip both edges 1`] = `3236`;
 
 exports[`label tabs > 2×2×6 label dropped (height = 20mm) 1`] = `3068`;

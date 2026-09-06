@@ -463,7 +463,7 @@ export function slidePlateTopBelowWallTopMm(
 ): number {
   const roofTop = clearanceMm + SLIDE_ROOF_TIP_MM;
   if (placement === 'flush' || !hasLip) return roofTop;
-  return GRIDFINITY_SPEC.LIP_OVERLAP + LIP_TAPER_WIDTH + roofTop;
+  return LIP_TAPER_WIDTH + roofTop;
 }
 
 /**
@@ -642,9 +642,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   // So the stacking lip really is interrupted on this one wall. That is the
   // trade `grip.binDip` already makes, `slideRimInterrupted` reports it, and
   // the bin still stacks on its other three walls and its corners.
-  const notchTopAboveWallTop = input.hasLip
-    ? GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP + 1
-    : 1;
+  const notchTopAboveWallTop = input.hasLip ? GRIDFINITY_SPEC.LIP_HEIGHT + 1 : 1;
   const entryNotch: SlideLidBox = {
     xMin: travelInner / 2 - 0.1,
     xMax: trailingX + 1,

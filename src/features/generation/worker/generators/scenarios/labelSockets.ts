@@ -28,7 +28,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
-import { COPLANAR_OVERLAP, LIP_HEIGHT, LIP_OVERLAP, LIP_SMALL_TAPER } from '../generatorConstants';
+import { COPLANAR_OVERLAP, LIP_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 
 const SOCKET_LABEL = {
   ...DEFAULT_BIN_PARAMS.label,
@@ -144,9 +144,9 @@ function assertRelievedPocketFloor(result: MeshData, label: string): void {
   for (let i = 2; i < vertices.length; i += 3) {
     if (vertices[i] > maxZ) maxZ = vertices[i];
   }
-  // maxZ is the lip peak: wallTop + LIP_HEIGHT − LIP_OVERLAP. Walk down to the
+  // maxZ is the lip peak: wallTop + LIP_HEIGHT. Walk down to the
   // interior ceiling, then apply relief + pocket depth.
-  const interiorTopZ = maxZ - (LIP_HEIGHT - LIP_OVERLAP) - LIP_SMALL_TAPER;
+  const interiorTopZ = maxZ - LIP_HEIGHT - LIP_SMALL_TAPER;
   const relievedFloorZ =
     interiorTopZ - LABEL_SOCKET_STACK_RELIEF_MM - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
   const unrelievedFloorZ = interiorTopZ - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;

@@ -3,7 +3,7 @@
  *
  * A divider wall is built from the cavity floor to the interior ceiling, whose
  * top sits `LIP_SMALL_TAPER` below the bin's wall top. A seated rail hangs
- * `LID_CLICK_RAIL_BAND_BELOW_WALL_TOP` (3.15mm) under that same wall top and
+ * `LID_CLICK_RAIL_BAND_BELOW_WALL_TOP` (3.05mm) under that same wall top and
  * reaches inboard past the inner wall face, so every point where a divider
  * terminates on a perimeter wall is solid-on-solid overlap — measured at 3.1mm
  * on a stock 3x2 grid, which is a lid that cannot close at all.

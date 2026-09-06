@@ -32,7 +32,6 @@ import {
 } from '../../compartmentBuilder';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { getShellCache, setShellCache } from '../../shapeCache';
-import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
 import { applyPinHoles, buildDetachableFeet } from '../../detachableFeetBuilder';
@@ -231,10 +230,10 @@ export const shellStage: PipelineStage = {
               dim.overhang
             )
           );
-          // Same `-LIP_OVERLAP` drop the fuse path below uses: without it the
-          // ring merely TOUCHES the slab, and a coplanar contact fuses into a
-          // non-manifold solid instead of a single watertight one.
-          const top = scope.register(translate(lipBase, [0, 0, dim.tileFloorHeight - LIP_OVERLAP]));
+          // Seated ON the slab top: `buildTopShape` hangs its own material
+          // below the base plane, so the fuse still gets a volume rather than
+          // the coplanar contact that would come out non-manifold.
+          const top = scope.register(translate(lipBase, [0, 0, dim.tileFloorHeight]));
           collectOrigins(top, FeatureTag.LIP, originToTag);
           scope.register(floor); // consumed by fuse
           return unwrap(fuse(floor, top));
@@ -295,7 +294,7 @@ export const shellStage: PipelineStage = {
                 dim.overhang
               )
             );
-            const top = scope.register(translate(lipBase, [0, 0, boxWallHeight - LIP_OVERLAP]));
+            const top = scope.register(translate(lipBase, [0, 0, boxWallHeight]));
             collectOrigins(top, FeatureTag.LIP, originToTag);
             scope.register(binBody); // consumed by fuse
             return unwrap(

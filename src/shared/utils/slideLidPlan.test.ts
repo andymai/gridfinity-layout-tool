@@ -239,12 +239,12 @@ describe('resolveSlideLidPlan', () => {
 
     it('drops a recessed channel clear of the lip’s angled support', () => {
       // The support reaches LIP_TAPER_WIDTH (2.6mm) below the lip's own base
-      // plane, which sits LIP_OVERLAP (0.1mm) under the wall top. A retainer
+      // plane, which is the wall top. A retainer
       // fused inside that band would back-fill the taper a foot has to seat in,
       // and no mesh check would show it (CLAUDE.md gotcha #10).
       const recessed = slidePlateTopBelowWallTopMm('recessed', 0.25, true);
       const flush = slidePlateTopBelowWallTopMm('flush', 0.25, true);
-      expect(recessed - flush).toBeCloseTo(0.1 + 2.6, 9);
+      expect(recessed - flush).toBeCloseTo(2.6, 9);
     });
 
     it('collapses the two placements on a lipless bin', () => {
@@ -383,9 +383,9 @@ describe('resolveSlideLidPlan', () => {
       // worst overhang on the part.
       //
       // `zMax` is measured from the PLATE's top plane, so the lip's top face
-      // sits `plateTopBelowWallTopMm + LIP_HEIGHT - LIP_OVERLAP` above it.
+      // sits `plateTopBelowWallTopMm + LIP_HEIGHT` above it.
       const g = geometryOf();
-      const lipTopAbovePlate = g.plateTopBelowWallTopMm + 4.4 - 0.1;
+      const lipTopAbovePlate = g.plateTopBelowWallTopMm + 4.4;
       expect(g.entryNotch.zMax).toBeGreaterThan(lipTopAbovePlate);
     });
 
