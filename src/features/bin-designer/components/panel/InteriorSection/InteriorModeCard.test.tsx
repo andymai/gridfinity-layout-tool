@@ -1,6 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { InteriorModeCard } from './InteriorModeCard';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import type { BinParams } from '@/shared/types/bin';
 
 vi.mock('./icons', () => ({
   Grid3x3Icon: () => <div data-testid="grid-icon" />,
@@ -23,22 +25,35 @@ vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 const mocks = vi.hoisted(() => ({
   setBentoWorkspaceOpen: vi.fn(),
   setCutoutEditorOpen: vi.fn(),
+  params: {} as BinParams,
 }));
 
-// Mock store — runs the selector against a minimal fake so the workspace
-// launcher cards render (they read compartments and the open actions).
+// Real DEFAULT_BIN_PARAMS rather than a hand-built stub: the solid card asks the
+// constraint engine about `cutouts`, and the engine reads across the whole
+// params tree, so a partial fake answers a different question than the app does.
 vi.mock('@/features/bin-designer/store', () => ({
   useDesignerStore: vi.fn((selector: (s: unknown) => unknown) =>
     selector({
-      params: {
-        compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 0, 1, 2, 3, 4] },
-        base: { lightweight: false },
-      },
+      params: mocks.params,
       setBentoWorkspaceOpen: mocks.setBentoWorkspaceOpen,
       setCutoutEditorOpen: mocks.setCutoutEditorOpen,
     })
   ),
 }));
+
+function setParams(base: Partial<BinParams['base']> = {}, rest: Partial<BinParams> = {}): void {
+  mocks.params = {
+    ...DEFAULT_BIN_PARAMS,
+    ...rest,
+    compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 0, 1, 2, 3, 4] },
+    base: { ...DEFAULT_BIN_PARAMS.base, ...base },
+  };
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  setParams();
+});
 
 describe('InteriorModeCard', () => {
   it('renders collapsed card with icon, title, and description', () => {
@@ -162,6 +177,52 @@ describe('InteriorModeCard', () => {
 
       rerender(<InteriorModeCard card="standard" isExpanded={false} onSelect={vi.fn()} />);
       expect(screen.queryByText('common.experimental')).not.toBeInTheDocument();
+    });
+  });
+  describe('solid card cutout editor', () => {
+    it('opens the editor on a plain bin', () => {
+      render(<InteriorModeCard card="solid" isExpanded={true} onSelect={vi.fn()} />);
+
+      fireEvent.click(screen.getByText('binDesigner.editCutouts'));
+      expect(mocks.setCutoutEditorOpen).toHaveBeenCalledWith(true);
+    });
+
+    it('blocks the editor under an interior lightweight floor', () => {
+      setParams({ lightweight: true, lightweightMode: 'interior' });
+      render(<InteriorModeCard card="solid" isExpanded={true} onSelect={vi.fn()} />);
+
+      expect(screen.getByText('binDesigner.lightweightDisablesCutouts')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('binDesigner.editCutouts'));
+      expect(mocks.setCutoutEditorOpen).not.toHaveBeenCalled();
+    });
+
+    it('keeps the editor open-able under an underside lightweight relief', () => {
+      // The relief shells from below and leaves the interior floor a cutout
+      // cuts into, so it is not one of the things that rules cutouts out.
+      setParams({ lightweight: true, lightweightMode: 'underside' });
+      render(<InteriorModeCard card="solid" isExpanded={true} onSelect={vi.fn()} />);
+
+      expect(screen.queryByText('binDesigner.lightweightDisablesCutouts')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByText('binDesigner.editCutouts'));
+      expect(mocks.setCutoutEditorOpen).toHaveBeenCalledWith(true);
+    });
+
+    it('blocks the editor on a spacer', () => {
+      setParams({ spacer: true });
+      render(<InteriorModeCard card="solid" isExpanded={true} onSelect={vi.fn()} />);
+
+      expect(screen.getByText('binDesigner.spacerDisablesInterior')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('binDesigner.editCutouts'));
+      expect(mocks.setCutoutEditorOpen).not.toHaveBeenCalled();
+    });
+
+    it('blocks the editor on a base-only bin', () => {
+      setParams({ tile: true });
+      render(<InteriorModeCard card="solid" isExpanded={true} onSelect={vi.fn()} />);
+
+      expect(screen.getByText('binDesigner.tileDisablesInterior')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('binDesigner.editCutouts'));
+      expect(mocks.setCutoutEditorOpen).not.toHaveBeenCalled();
     });
   });
 });

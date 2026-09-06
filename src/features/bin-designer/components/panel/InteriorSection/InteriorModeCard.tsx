@@ -12,7 +12,9 @@ import { useTranslation } from '@/i18n';
 import { Badge } from '@/design-system';
 import { ModeCard } from '../shared';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { getFeatureStatus } from '@/shared/constraints';
 import { getDrawnCompartmentIds } from '@/features/bin-designer/utils/bentoDraw';
 import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
@@ -115,22 +117,30 @@ function BentoModeContent() {
 }
 
 function SolidModeContent() {
-  const setCutoutEditorOpen = useDesignerStore((s) => s.setCutoutEditorOpen);
-  const lightweight = useDesignerStore((s) => s.params.base.lightweight);
+  const { setCutoutEditorOpen, params } = useDesignerStore(
+    useShallow((s) => ({
+      setCutoutEditorOpen: s.setCutoutEditorOpen,
+      params: s.params,
+    }))
+  );
   const t = useTranslation();
 
-  // Cutouts cut into the solid top, which is incompatible with a lightweight
-  // floor (mutually exclusive in the constraint engine) — disable the editor
-  // entry with a reason instead of opening it.
-  if (lightweight) {
+  // Asking the engine rather than reading `base.lightweight` directly. Three
+  // separate rules can withhold cutouts, and the lightweight one fires in its
+  // interior mode only, because the underside relief leaves the floor intact
+  // for a cutout to cut into.
+  const cutoutStatus = getFeatureStatus(params, 'cutouts');
+  if (!cutoutStatus.available) {
     return (
       <div className="w-full rounded-lg border border-stroke-subtle bg-surface/40 p-3 text-left opacity-70">
         <span className="text-xs font-semibold text-content-secondary">
           {t('binDesigner.editCutouts')}
         </span>
-        <p className="mt-0.5 text-micro leading-relaxed text-content-tertiary">
-          {t('binDesigner.lightweightDisablesCutouts')}
-        </p>
+        {cutoutStatus.reason ? (
+          <p className="mt-0.5 text-micro leading-relaxed text-content-tertiary">
+            {t(cutoutStatus.reason)}
+          </p>
+        ) : null}
       </div>
     );
   }
