@@ -1,0 +1,144 @@
+src/shared/printSettings/assembledHeight.test.ts
+  s_829980681f3250::t_c80f1d3725e6a9 19
+  s_829980681f3250::t_862ad75d467fad 166,174-175,180,283-284
+src/features/bin-designer/components/preview/BinDimensions/AssembledBinDimensions.test.tsx
+  s_829980681f3250::t_d8f4d34398099c 34,50,56
+  s_829980681f3250::t_120e0e5e7b43c1 69
+src/shared/printSettings/assembledHeight.ts
+  s_829980681f3250::t_22c349536f18c9 205
+src/features/generation/worker/generators/pipeline/types.ts
+  s_829980681f3250::t_040aa1e7df0bb2 197-198
+src/features/generation/worker/generators/scenarios/heights.ts
+  s_829980681f3250::t_b800dd52c50dec 2,6,10-35,68-72
+  s_829980681f3250::t_30d7f9560603a5 73-75
+src/features/bin-designer/components/preview/LidMesh/lidAnchorZ.ts
+  s_829980681f3250::t_22c349536f18c9 66
+  s_829980681f3250::t_040aa1e7df0bb2 54
+src/features/generation/worker/generators/integratedLipBuilder.ts
+  s_829980681f3250::t_4fffcaddac6164 82-85
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_829980681f3250::t_3a6b15660ddb32 246,248,288-291,331
+  s_829980681f3250::t_4fffcaddac6164 27,292,352
+src/features/generation/worker/generators/__kernel-tests__/lidSeating.ts
+  s_829980681f3250::t_22c349536f18c9 14,49
+src/features/generation/worker/generators/boxBuilder.ts
+  s_829980681f3250::t_e5ededa92e3a0e 670-675,698,730-734,764-765
+  s_829980681f3250::t_cef734a33e1e7f 40,834-837,843,903-906,922
+src/features/generation/worker/generators/scenarios/spacer.ts
+  s_829980681f3250::t_22c349536f18c9 11,31
+src/shared/utils/heightUnits.test.ts
+  s_829980681f3250::t_862ad75d467fad 91
+src/features/bin-designer/components/panel/AssembledHeightBreakdown/AssembledHeightBreakdown.test.tsx
+  s_829980681f3250::t_d8f4d34398099c 56-57,84,91,115,121,125
+src/shared/constants/lidKeepout.test.ts
+  s_829980681f3250::t_d8f4d34398099c 42
+src/features/generation/worker/generators/lidGripDip.scenario.test.ts
+  s_829980681f3250::t_cf7078ddb7aada 264
+src/features/generation/worker/generators/boxBuilder.test.ts
+  s_829980681f3250::t_990c7e210a6aaf 5,155-161,163-164
+src/features/generation/worker/generators/pipeline/context.ts
+  s_829980681f3250::t_aff77f15c8513a 227-229,236-238
+  s_829980681f3250::t_22c349536f18c9 242
+src/features/bin-designer/utils/lipCornerClassifier.ts
+  s_829980681f3250::t_22c349536f18c9 19
+src/features/generation/worker/generators/__kernel-tests__/shellStageBreakdown.test.ts
+  s_829980681f3250::t_c80f1d3725e6a9 68
+src/features/bin-designer/types/lid.ts
+  s_829980681f3250::t_d8f4d34398099c 1317
+  s_829980681f3250::t_040aa1e7df0bb2 1320
+  s_829980681f3250::t_22c349536f18c9 1329
+src/features/generation/worker/generators/binGenerator.scenario.split-matches-whole.test.ts
+  s_829980681f3250::t_cf7078ddb7aada 211
+src/features/generation/worker/generators/pipeline/stages/lidGripDipStage.ts
+  s_829980681f3250::t_4fffcaddac6164 49,96-103
+src/features/generation/worker/generators/lipMultiColor.test.ts
+  s_829980681f3250::t_c80f1d3725e6a9 150
+src/features/generation/worker/generators/pipeline/stages/shellStage.test.ts
+  s_829980681f3250::t_3a83410f396415 10-13
+  s_829980681f3250::t_c80f1d3725e6a9 9
+src/features/generation/worker/generators/lipSupportSeating.kernel.test.ts
+  s_829980681f3250::t_cf7078ddb7aada 6-7,49-50
+src/shared/utils/slideLidPlan.test.ts
+  s_829980681f3250::t_cf7078ddb7aada 242,386,388
+  s_829980681f3250::t_862ad75d467fad 247
+src/features/bin-designer/utils/printEstimates.ts
+  s_829980681f3250::t_040aa1e7df0bb2 645
+src/features/generation/worker/generators/scenarios/wallCutouts.ts
+  s_829980681f3250::t_040aa1e7df0bb2 151
+src/features/generation/worker/generators/binDirectMesh.test.ts
+  s_829980681f3250::t_c80f1d3725e6a9 7,159-163
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_829980681f3250::t_cf7078ddb7aada 80-81
+  s_829980681f3250::t_990c7e210a6aaf 133-137
+src/features/bin-designer/types/base.ts
+  s_829980681f3250::t_040aa1e7df0bb2 438
+src/shared/utils/labelTabPlan.test.ts
+  s_829980681f3250::t_c9f5332c22ee63 57,61
+  s_829980681f3250::t_862ad75d467fad 59
+src/features/generation/worker/generators/scenarios/tile.ts
+  s_829980681f3250::t_22c349536f18c9 21,49
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_829980681f3250::t_4fffcaddac6164 233-236,297
+src/features/generation/worker/generators/scenarios/labelSockets.ts
+  s_829980681f3250::t_22c349536f18c9 31,149
+  s_829980681f3250::t_040aa1e7df0bb2 147
+src/shared/utils/drawerCeiling.test.ts
+  s_829980681f3250::t_028e6a35a7d37d 52,56,58
+src/features/bin-designer/hooks/useAssembledHeight.test.ts
+  s_829980681f3250::t_247829797033eb 32,49,55,62,99,106,110
+src/shared/utils/heightUnits.ts
+  s_829980681f3250::t_040aa1e7df0bb2 26-28
+  s_829980681f3250::t_22c349536f18c9 13
+src/shared/utils/dividerRailPlan.test.ts
+  s_829980681f3250::t_028e6a35a7d37d 128-130
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_829980681f3250::t_22c349536f18c9 201
+  s_829980681f3250::t_040aa1e7df0bb2 24
+src/shared/utils/slideLidPlan.ts
+  s_829980681f3250::t_22c349536f18c9 466
+  s_829980681f3250::t_6c5270ff0c4b7b 645
+src/features/bin-designer/utils/lipCornerClassifier.test.ts
+  s_829980681f3250::t_c21eb0ad4d1e6e 18
+src/shared/utils/labelTabPlan.ts
+  s_829980681f3250::t_4d6455990c62f5 574
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.binStyles.test.ts.snap
+  s_829980681f3250::t_6dbde53f15c9f1 3
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.snap
+  s_829980681f3250::t_ab797ad093431d 3,5,7,9
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.customShape.test.ts.snap
+  s_829980681f3250::t_8ee426417bcd50 3,5,7,13,25
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dividerPatterns.test.ts.snap
+  s_829980681f3250::t_60c3df3d0b54ae 3,7,9,11,13,15,17,19,21,25
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.floorPatterns.test.ts.snap
+  s_829980681f3250::t_7dcef5d27338f5 3,17
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.honeycombJunction.test.ts.snap
+  s_829980681f3250::t_f34dc20356ad29 3,5,7,9,11,13
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelTabs.test.ts.snap
+  s_829980681f3250::t_6c54dd37057a59 15,17,25
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_829980681f3250::t_ae97d334539969 3,5,7,11,13,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.solidCutouts.test.ts.snap
+  s_829980681f3250::t_66f0b3c3cd8858 11
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.compartments.test.ts.snap
+  s_829980681f3250::t_614b16c50bfcee 5,7,9
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.knifeBlock.test.ts.snap
+  s_829980681f3250::t_49746178f61427 5,7,9,11
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.slotted.test.ts.snap
+  s_829980681f3250::t_bbd325ec0e6fad 3,5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "745789063a4fe96d41ab29e8902d3a143911e220",
+  "prompts": {},
+  "sessions": {
+    "s_829980681f3250": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "509fb84c-dac7-4e9a-92bc-97cbc106fe9f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
