@@ -1,0 +1,34 @@
+src/features/generation/worker/generators/lidInputs.ts
+  s_829980681f3250::t_63836d37a24a82 217
+src/features/generation/worker/generators/boxBuilder.ts
+  s_829980681f3250::t_63836d37a24a82 731
+  s_829980681f3250::t_588f21c6c97051 732-733
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_829980681f3250::t_63836d37a24a82 527,548
+src/features/generation/worker/generators/lidDividerClearance.scenario.test.ts
+  s_829980681f3250::t_63836d37a24a82 5
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_829980681f3250::t_63836d37a24a82 5
+src/shared/utils/heightUnits.test.ts
+  s_829980681f3250::t_63836d37a24a82 81
+src/shared/utils/dividerRailPlan.ts
+  s_829980681f3250::t_63836d37a24a82 6
+src/features/bin-designer/types/lid.ts
+  s_829980681f3250::t_63836d37a24a82 1124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "0598d68e1f0008e5e1ca81c45bbd2ce69206a113",
+  "prompts": {},
+  "sessions": {
+    "s_829980681f3250": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "509fb84c-dac7-4e9a-92bc-97cbc106fe9f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
