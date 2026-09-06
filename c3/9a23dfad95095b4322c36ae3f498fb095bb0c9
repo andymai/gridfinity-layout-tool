@@ -1,0 +1,24 @@
+src/features/bin-designer/components/panel/InteriorSection/InteriorModeCard.test.tsx
+  s_829980681f3250::t_02054b6f85e6ad 1,4-5,28,31-33,37,44-53,55-57,182-209,211-216
+  s_829980681f3250::t_4cfb1c5c0f3143 54,210
+  s_829980681f3250::t_4dac81465057d2 217
+src/features/bin-designer/components/panel/InteriorSection/InteriorModeCard.tsx
+  s_829980681f3250::t_e495a9ea564827 15,17,120-125,131-132
+  s_829980681f3250::t_28f941adcde390 128-130,138-142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "c39a23dfad95095b4322c36ae3f498fb095bb0c9",
+  "prompts": {},
+  "sessions": {
+    "s_829980681f3250": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "509fb84c-dac7-4e9a-92bc-97cbc106fe9f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
