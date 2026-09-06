@@ -202,7 +202,7 @@ export function assembledHeight(
     : params.height * params.heightUnitMm +
       Math.max(0, params.extraWallHeightMm ?? 0) +
       (params.base.style === 'lid' ? skirtMm : 0);
-  const lipMm = params.base.stackingLip ? GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP : 0;
+  const lipMm = params.base.stackingLip ? GRIDFINITY.LIP_HEIGHT : 0;
   const lidMm = hasSeatedLid(params) ? lidRiseMm(params) : 0;
   // The stack grid is a SOCKET_HEIGHT slab above the lid's top face, whether it
   // is fused on or printed separately and glued. With nothing stacked on it, its

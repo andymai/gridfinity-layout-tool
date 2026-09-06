@@ -22,7 +22,6 @@ import {
   CLEARANCE,
   SOCKET_HEIGHT,
   LIP_HEIGHT,
-  LIP_OVERLAP,
   LIP_SMALL_TAPER,
   LIP_TAPER_WIDTH,
   MIN_BODY_WALL_MM,
@@ -225,22 +224,22 @@ export function deriveDimensions(
   // slab, not on a wall; every other base carries it on the collar-extended wall
   // the box is extruded to. See `lipHasSupport` for what the number decides.
   const wallUnderLipMm = isTile ? tileFloorHeight : wallHeight + collarHeight;
-  const lipHasSupport = hasLip && wallUnderLipMm >= LIP_TAPER_WIDTH + LIP_OVERLAP;
-  // Safety: LIP_OVERLAP (0.1mm) < LIP_SMALL_TAPER (0.7mm) so interiorHeight
-  // already clears the actual lip base at wallHeight - LIP_OVERLAP.
+  const lipHasSupport = hasLip && wallUnderLipMm >= LIP_TAPER_WIDTH;
+  // The lip's base plane is the wall top, so subtracting any positive amount
+  // leaves the interior below it.
   // Floored at 0 for base-only, whose wallHeight is 0: the subtraction would
   // otherwise hand every downstream stage a -0.7mm interior, and a negative
   // extrude is a degenerate solid rather than an empty one.
   const interiorHeight = Math.max(0, hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight);
 
   // The rim, derived once. `shellStage` extrudes the outer box to `wallHeight +
-  // collarHeight` (or a base-only bin's slab to `tileFloorHeight`) and fuses
-  // the lip `LIP_OVERLAP` below its top; `translateStage` then lifts the whole
-  // body by `baseOffsetZ`. Every consumer that anchors to the rim reads these
+  // collarHeight` (or a base-only bin's slab to `tileFloorHeight`) and seats the
+  // lip's base plane on that top; `translateStage` then lifts the whole body by
+  // `baseOffsetZ`. Every consumer that anchors to the rim reads these
   // rather than restating that chain — the restatements landed a lid's magnet
   // posts 0.7mm proud on a socketed bin and 4.3mm short on a flat one.
   const wallTopZ = baseOffsetZ + wallHeight + tileFloorHeight + collarHeight;
-  const lipTopZ = wallTopZ + (hasLip ? LIP_HEIGHT - LIP_OVERLAP : 0);
+  const lipTopZ = wallTopZ + (hasLip ? LIP_HEIGHT : 0);
 
   // Bake compartment walls into the shell as a single multi-cavity cut when
   // the shape is amenable to that path: rectangular footprint (no polygon

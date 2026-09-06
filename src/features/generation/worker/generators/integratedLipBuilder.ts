@@ -22,7 +22,6 @@ import {
   LIP_BIG_TAPER,
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
-  LIP_OVERLAP,
   sketch,
 } from './generatorTypes';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
@@ -80,10 +79,10 @@ export function buildBinBoxWithLip(
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6
   const INNER_MID = LIP_BIG_TAPER; // 1.9
 
-  // Lip profile breakpoints in GLOBAL Z. The lip base sits LIP_OVERLAP below the
-  // wall top; the angled support runs LIP_TAPER_WIDTH below that, alongside the
-  // upper wall (this is the coincident region the fuse z-fights on).
-  const lipBaseZ = wallHeight - LIP_OVERLAP;
+  // Lip profile breakpoints in GLOBAL Z. The lip base sits ON the wall top; the
+  // angled support runs LIP_TAPER_WIDTH below it, alongside the upper wall
+  // (this is the coincident region the fuse z-fights on).
+  const lipBaseZ = wallHeight;
   const zAngleBottom = lipBaseZ - LIP_TAPER_WIDTH;
   const zExt = lipBaseZ - LIP_EXTENSION;
   const zTaper1 = lipBaseZ + LIP_SMALL_TAPER;

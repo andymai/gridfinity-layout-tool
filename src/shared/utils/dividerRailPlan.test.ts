@@ -125,9 +125,9 @@ describe('dividerRailBlocks', () => {
   });
 
   describe('a leaning divider sweeps across the rail band', () => {
-    // Divider top at the 15.3mm ceiling, band floor at 12.85mm: the rail sees
-    // 2.45mm of the wall, over which a lean travels 2.45 * tan(lean).
-    const BAND_DEPTH = 15.3 - 12.85;
+    // Divider top at the 15.3mm ceiling, band floor at 12.95mm: the rail sees
+    // 2.35mm of the wall, over which a lean travels 2.35 * tan(lean).
+    const BAND_DEPTH = 15.3 - 12.95;
     const leaning = (rakeDeg: number): readonly DividerRailBlock[] =>
       dividerRailBlocks(
         bin({

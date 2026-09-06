@@ -435,7 +435,7 @@ export interface BaseConfig {
    * narrower than their cells with rounded tops, so nothing else bridges them.
    *
    * That puts the printed height at `SOCKET_HEIGHT + wallThickness` (plus
-   * `LIP_HEIGHT − LIP_OVERLAP` with the lip), which is a fraction of a height
+   * `LIP_HEIGHT` with the lip), which is a fraction of a height
    * unit and therefore NOT expressible via {@link BinParams.height} — `height`
    * is pinned to 1 purely so the existing range validators and their server
    * mirror keep working, and the geometry ignores it. Anything reporting a

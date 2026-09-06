@@ -54,11 +54,11 @@ describe('labelTabInteriorDims', () => {
 describe('clickRailZBandAboveFloor', () => {
   it('places the band where the mated lid actually puts its rails', () => {
     // Measured on the real assembly for a 2x3x6 bin (interiorHeight 36.3):
-    // the lid's rail solid spans [33.85, 37.60] above the cavity floor.
+    // the lid's rail solid spans [33.95, 37.70] above the cavity floor.
     const band = clickRailZBandAboveFloor(36.3);
-    expect(band.lo).toBeCloseTo(33.85, 2);
+    expect(band.lo).toBeCloseTo(33.95, 2);
     // `hi` carries the 0.8mm top chamfer above the rail's own top face.
-    expect(band.hi).toBeCloseTo(38.4, 2);
+    expect(band.hi).toBeCloseTo(38.5, 2);
   });
 });
 

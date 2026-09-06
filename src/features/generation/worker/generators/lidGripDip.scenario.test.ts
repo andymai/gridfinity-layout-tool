@@ -261,7 +261,7 @@ describe('bin lip dip face provenance', () => {
 
 describe('bin lip dip across base styles', () => {
   /**
-   * The lip's Z is `baseOffsetZ + wallHeight + collarHeight - LIP_OVERLAP`,
+   * The lip's Z is `baseOffsetZ + wallHeight + collarHeight`,
    * and `baseOffsetZ + totalHeight` is a different number on every one of
    * these: 0.7mm high on a standard bin, 4.3mm low on a flat one, 8.3mm low
    * with a collar. Low enough and the cutter is inside the WALL, where

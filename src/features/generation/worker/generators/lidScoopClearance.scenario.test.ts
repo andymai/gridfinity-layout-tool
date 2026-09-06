@@ -77,8 +77,8 @@ describe('lid click rails clear the scoop', () => {
       expect(new Set(railPlacements(resolveLidInputs(params)).map((p) => p.rotationDeg))).toContain(
         ROTATION[side]
       );
-      // 0.15mm covers tessellation noise plus the 0.1mm ledge the chute leaves
-      // where it runs to the wall top while the lip fuses LIP_OVERLAP below it.
+      // 0.15mm covers tessellation noise on the chute where it runs to the
+      // wall top, which is the plane the lip's base now sits on.
       // The defect this guards against measured 1.1mm.
       expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(0.15);
     },
@@ -130,6 +130,10 @@ describe('lid click rails clear the scoop', () => {
     if (!bin) throw new Error('expected the bin to build');
     if (!blindLid) throw new Error('expected the lid to build');
 
-    expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(1);
+    // The clash measures ~1.0mm. Asserted at 0.9 so the control still has room
+    // to move: it only has to stay far clear of the 0.15mm the seating cases
+    // above allow, and pinning it to its exact reading would make any change to
+    // where the lid seats look like a broken probe.
+    expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(0.9);
   }, 300000);
 });

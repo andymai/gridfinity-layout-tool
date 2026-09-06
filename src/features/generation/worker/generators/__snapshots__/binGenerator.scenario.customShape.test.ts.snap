@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`custom-shape > 1.5×1.5 half-bin L user halfSockets off 1`] = `2964`;
+exports[`custom-shape > 1.5×1.5 half-bin L user halfSockets off 1`] = `2966`;
 
-exports[`custom-shape > 1.5×1.5 half-bin L with lip 1`] = `5424`;
+exports[`custom-shape > 1.5×1.5 half-bin L with lip 1`] = `5426`;
 
-exports[`custom-shape > 2×2 mixed-detail per-cell half sockets 1`] = `4442`;
+exports[`custom-shape > 2×2 mixed-detail per-cell half sockets 1`] = `4440`;
 
 exports[`custom-shape > 3×3 L flat base no lip 1`] = `380`;
 
 exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`] = `5750`;
 
-exports[`custom-shape > 3×3 L with front handle (polygon-aware side mapping) 1`] = `5868`;
+exports[`custom-shape > 3×3 L with front handle (polygon-aware side mapping) 1`] = `5856`;
 
 exports[`custom-shape > 3×3 L with honeycomb + front cutout (outermost-edge clip) 1`] = `8688`;
 
@@ -22,7 +22,7 @@ exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `5680`;
 
 exports[`custom-shape > 3×3 T with lip 1`] = `4436`;
 
-exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `5908`;
+exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `5896`;
 
 exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `5790`;
 

@@ -642,7 +642,7 @@ function lipSupportArea(wallThickness: number): number {
   const top = Math.max(0, GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER - wallThickness);
   const foot = Math.max(0, LIP_EXTENSION - wallThickness);
   const rampHeight = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER - LIP_EXTENSION - FOOT;
-  return ((foot + top) / 2) * rampHeight + top * (LIP_EXTENSION + GRIDFINITY.LIP_OVERLAP);
+  return ((foot + top) / 2) * rampHeight + top * LIP_EXTENSION;
 }
 
 /**

@@ -8,7 +8,7 @@
  * of a 4u one).
  */
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { SOCKET_HEIGHT, MIN_BODY_WALL_MM, LIP_HEIGHT, LIP_OVERLAP } from '../generatorConstants';
+import { SOCKET_HEIGHT, MIN_BODY_WALL_MM, LIP_HEIGHT } from '../generatorConstants';
 import {
   assertBoundingBoxMatchesParams,
   assertWatertight,
@@ -28,7 +28,7 @@ const liteBase = { ...DEFAULT_BIN_PARAMS.base, lightweight: true };
 function assertFlooredSpacer(result: MeshData, label: string): void {
   assertWatertight(result, label);
   const bbox = boundingBox(result.vertices);
-  const expected = SOCKET_HEIGHT + MIN_BODY_WALL_MM + LIP_HEIGHT - LIP_OVERLAP;
+  const expected = SOCKET_HEIGHT + MIN_BODY_WALL_MM + LIP_HEIGHT;
   const actual = bbox.maxZ - bbox.minZ;
   if (Math.abs(actual - expected) > 0.05) {
     throw new Error(

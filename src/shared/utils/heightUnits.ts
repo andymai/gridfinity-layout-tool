@@ -10,7 +10,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings';
  * {@link STACK_JUNCTION_MM}, and conflating the two is what made every stack
  * readout 0.45mm per junction too tall (#3525).
  */
-export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP;
+export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT;
 
 /**
  * How far a stacked bin settles below the lip top of the bin under it, in mm.
@@ -23,9 +23,9 @@ export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LI
  *
  * It is the base profile that sets this, never the lip: at 4.4mm of profile
  * against the base's 4.75mm the lip is the shorter of the two, so the bin above
- * settles 0.35mm past the lip's base plane (0.45mm here, `LIP_OVERLAP` sinking
- * the lip a further 0.1mm into the wall). Both figures come from the reference
- * profiles, so a canonical Gridfinity stack does not add body height either.
+ * settles 0.35mm past the lip's base plane. Both figures come from the
+ * reference profiles, so a canonical Gridfinity stack does not add body height
+ * either.
  *
  * Measured on the mated solids rather than trusted from this arithmetic —
  * `binStackSeating.kernel.test.ts`.

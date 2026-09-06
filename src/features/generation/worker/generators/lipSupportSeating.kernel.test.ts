@@ -3,8 +3,8 @@
  * The stacking lip's angled support must not reach past the wall it sits on.
  *
  * `buildTopShapeLoft` builds that 45° wedge hanging `LIP_TAPER_WIDTH` (2.6mm)
- * BELOW the lip's own base plane, and the lip fuses at `wallTop - LIP_OVERLAP`.
- * So on a wall shorter than 2.7mm the wedge reaches below the wall bottom — which
+ * BELOW the lip's own base plane, and that plane is the wall top.
+ * So on a wall shorter than 2.6mm the wedge reaches below the wall bottom — which
  * IS the socket top — and back-fills the socket's upper 45° taper out to full
  * outer width. The bin then rests on the baseplate's pocket mouth instead of
  * dropping in.
@@ -46,8 +46,8 @@ beforeAll(async () => {
 /**
  * Tolerance on a seat-depth COMPARISON, in mm. Not a seated/proud threshold: the
  * whole point below is that a fixed threshold hides this defect. The overreach a
- * short wall produces equals `LIP_TAPER_WIDTH + LIP_OVERLAP - wall`, which is
- * 0.7mm for a 1u spacer — comfortably inside the 1mm of slack a
+ * short wall produces equals `LIP_TAPER_WIDTH - wall`, which is
+ * 0.6mm for a 1u spacer — comfortably inside the 1mm of slack a
  * "seated is within 4mm of a 5mm pocket" rule leaves, and invisible to it.
  */
 const SEAT_TOLERANCE_MM = 0.15;

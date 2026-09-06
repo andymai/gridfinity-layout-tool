@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
 import { initTestKernel } from '@/test/initTestKernel';
+import { LIP_TAPER_WIDTH, LIP_OVERLAP } from './generatorConstants';
 
 type BuildBinBoxFn = (
   gridW: number,
@@ -151,15 +152,15 @@ describe('buildTopShape', () => {
     const noStackBounds = shapeBounds(lipNoStack);
     const withStackBounds = shapeBounds(lipWithStack);
 
-    // The added depth of the stacking lip below Z = 0 is the lip
-    // extension PLUS the angled support, which spans LIP_TAPER_WIDTH
-    // (2.6mm). The pre-fix loft only built the extension flange and
-    // produced a delta of LIP_EXTENSION (1.2mm), which would fail the
-    // lower bound below. Comparing the delta cancels out the small
-    // BREP getBounds tolerance epsilon (~0.3mm) that's present in
-    // both the with-stack and no-stack cases.
+    // With the support the lip reaches LIP_TAPER_WIDTH below its base plane;
+    // without one it reaches LIP_OVERLAP, the skirt that gives the fuse a
+    // volume. So the delta is the difference of the two, not LIP_TAPER_WIDTH
+    // itself. The pre-fix loft built only the extension flange and produced a
+    // delta of LIP_EXTENSION (1.2mm), which the band still excludes. Comparing
+    // the delta cancels the BREP getBounds epsilon (~0.3mm) present in both.
+    const expectedDelta = LIP_TAPER_WIDTH - LIP_OVERLAP;
     const lipDepthDelta = noStackBounds.zMin - withStackBounds.zMin;
-    expect(lipDepthDelta).toBeGreaterThan(2.5); // ≈ LIP_TAPER_WIDTH (2.6)
-    expect(lipDepthDelta).toBeLessThan(2.7);
+    expect(lipDepthDelta).toBeGreaterThan(expectedDelta - 0.1);
+    expect(lipDepthDelta).toBeLessThan(expectedDelta + 0.1);
   }, 60000);
 });

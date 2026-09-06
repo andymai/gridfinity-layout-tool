@@ -4,7 +4,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { generateBinDirect, canBinUseDirectMesh } from './binDirectMesh';
 import { CORNER_SEGMENTS } from './directMeshBuilder';
-import { LIP_HEIGHT, LIP_OVERLAP, CLEARANCE } from './generatorConstants';
+import { LIP_HEIGHT, CLEARANCE } from './generatorConstants';
 
 const bin = (overrides: Partial<BinParams> = {}): BinParams => ({
   ...DEFAULT_BIN_PARAMS,
@@ -156,8 +156,11 @@ describe('binDirectMesh — geometry sanity', () => {
     expect(bb.minY).toBeCloseTo(-outerD / 2, 1);
     expect(bb.maxY).toBeCloseTo(outerD / 2, 1);
     expect(bb.minZ).toBeCloseTo(0, 2);
-    // 3U body (21mm) + lip peak (4.4 − 0.1mm overlap).
-    expect(bb.maxZ).toBeCloseTo(3 * 7 + LIP_HEIGHT - LIP_OVERLAP, 2);
+    // The Gridfinity figure exactly: 3U body (21mm) + a 4.4mm lip = 25.4mm.
+    // The fuse overlap hangs BELOW the lip's base plane, so it never shows up
+    // here.
+    expect(bb.maxZ).toBeCloseTo(3 * 7 + LIP_HEIGHT, 2);
+    expect(bb.maxZ).toBeCloseTo(25.4, 2);
   });
 
   it('top sits at the body wall when the lip is disabled', () => {

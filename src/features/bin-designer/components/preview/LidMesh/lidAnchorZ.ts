@@ -51,7 +51,7 @@ export const PREVIEW_Z_OFFSET = 0.1;
  * height double-counts it. The two agree only for a socketless base,
  * where `floorZ` is the skirt or zero. An exterior-wall collar
  * (`extraWallHeightMm`,) raises the walls and the lip with them. With the
- * stacking lip the top face lands `LIP_HEIGHT − LIP_OVERLAP` above the wall;
+ * stacking lip the top face lands `LIP_HEIGHT` above the wall;
  * without it the lid mates with the bare wall. `PREVIEW_Z_OFFSET` accounts for
  * BinMesh's group offset.
  *
@@ -63,7 +63,7 @@ export function binLipTopWorldZ(params: LidSeatSource): number {
 }
 
 /** How far the stacking lip's top face sits above the wall top. */
-const LIP_ABOVE_WALL_MM = GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP;
+const LIP_ABOVE_WALL_MM = GRIDFINITY.LIP_HEIGHT;
 
 /**
  * World-Z of the bin's WALL TOP in the preview frame.

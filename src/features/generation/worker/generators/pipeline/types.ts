@@ -194,8 +194,8 @@ export interface BinDimensions {
    * the lip's inward jut down into the wall it sits on.
    *
    * `buildTopShapeLoft` builds that support hanging `LIP_TAPER_WIDTH` BELOW the
-   * lip's own base plane, and the lip fuses at `boxWallHeight - LIP_OVERLAP`, so
-   * on a wall shorter than `LIP_TAPER_WIDTH + LIP_OVERLAP` the support reaches
+   * lip's own base plane, and that plane is `boxWallHeight`, so
+   * on a wall shorter than `LIP_TAPER_WIDTH` the support reaches
    * past the wall bottom and lands inside the socket's upper taper, back-filling
    * it to full width. The foot then stops seating in a baseplate (CLAUDE.md
    * gotcha #10) — and the solid stays watertight and correctly sized, so no

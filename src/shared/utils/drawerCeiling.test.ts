@@ -49,13 +49,13 @@ describe('drawerCeilingFit', () => {
   });
 
   // The reported case: a drawer measured at 55mm floors to 7.85u, the inspector
-  // offers 7.85u as the max, and the part prints 4.25mm proud of the drawer.
+  // offers 7.85u as the max, and the part prints 4.35mm proud of the drawer.
   it('flags the bin that exactly fills the unit budget as overflowing', () => {
     const result = fit([bin({ height: heightUnits(7.85), layerId: layerId('l1') })], 55);
     expect(result?.fits).toBe(false);
-    expect(result?.slackMm).toBeCloseTo(-4.25, 5);
+    expect(result?.slackMm).toBeCloseTo(-4.35, 5);
     expect(result?.overflowing).toHaveLength(1);
-    expect(result?.overflowing[0]?.overflowMm).toBeCloseTo(4.25, 5);
+    expect(result?.overflowing[0]?.overflowMm).toBeCloseTo(4.35, 5);
   });
 
   it('nests a stacked bin into the one below rather than summing printed heights', () => {

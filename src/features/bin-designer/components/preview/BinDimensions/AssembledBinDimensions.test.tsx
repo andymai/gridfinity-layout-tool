@@ -31,7 +31,7 @@ function setPlate(plate: typeof DEFAULT_BASEPLATE_PARAMS | undefined): void {
 describe('AssembledBinDimensions', () => {
   beforeEach(() => {
     useDesignerStore.setState({
-      // 6u body (42mm) + 4.3mm lip.
+      // 6u body (42mm) + 4.4mm lip.
       params: {
         ...DEFAULT_BIN_PARAMS,
         height: 6,
@@ -47,13 +47,13 @@ describe('AssembledBinDimensions', () => {
 
   it('labels the height with the assembled total from the stores', () => {
     render(<AssembledBinDimensions width={2} depth={2} gridUnitMm={42} />);
-    expect(texts()).toContain('46.3mm');
+    expect(texts()).toContain('46.4mm');
   });
 
   it('follows the layout baseplate rather than assuming a plain one', () => {
     setPlate({ ...DEFAULT_BASEPLATE_PARAMS, magnetHoles: true, magnetDepth: mm(2) });
     render(<AssembledBinDimensions width={2} depth={2} gridUnitMm={42} />);
-    expect(texts()).toContain('48.8mm');
+    expect(texts()).toContain('48.9mm');
   });
 
   it('shows no band labels while collapsed', () => {
@@ -66,7 +66,7 @@ describe('AssembledBinDimensions', () => {
       settings: { ...s.settings, showAssembledHeightBreakdown: true },
     }));
     render(<AssembledBinDimensions width={2} depth={2} gridUnitMm={42} />);
-    expect(texts()).toEqual(expect.arrayContaining(['Bin 42mm', 'Stacking lip 4.3mm']));
+    expect(texts()).toEqual(expect.arrayContaining(['Bin 42mm', 'Stacking lip 4.4mm']));
   });
 
   it('passes the stack pitch label straight through', () => {

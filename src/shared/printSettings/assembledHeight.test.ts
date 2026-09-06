@@ -16,7 +16,7 @@ function bandOf(kind: AssembledSegmentKind, result: ReturnType<typeof assembledH
   return result.segments.find((s) => s.kind === kind)?.mm ?? 0;
 }
 
-const LIP_RISE = GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP;
+const LIP_RISE = GRIDFINITY.LIP_HEIGHT;
 
 describe('assembledHeight', () => {
   describe('band bookkeeping', () => {
@@ -163,7 +163,7 @@ describe('assembledHeight', () => {
   });
 
   describe('stacking lip', () => {
-    it('adds LIP_HEIGHT minus the fuse overlap', () => {
+    it('adds the full LIP_HEIGHT above the wall', () => {
       const result = assembledHeight(
         params({ height: 6, base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true } })
       );
@@ -171,13 +171,13 @@ describe('assembledHeight', () => {
       expect(result.totalMm).toBeCloseTo(42 + LIP_RISE, 6);
     });
 
-    it('reproduces the 67.3mm reading from issue #3037', () => {
-      // 9u at 7mm = 63mm body, plus the 4.3mm lip rise.
+    it('reports the 9u lipped stack at its Gridfinity height (#3037)', () => {
+      // 9u at 7mm = 63mm body, plus the spec's full 4.4mm lip.
       const result = assembledHeight(
         params({ height: 9, base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true } }),
         PLAIN_PLATE
       );
-      expect(result.totalMm).toBeCloseTo(67.3, 6);
+      expect(result.totalMm).toBeCloseTo(67.4, 6);
     });
 
     it('omits the band when the lip is off', () => {
@@ -280,8 +280,8 @@ describe('assembledHeight', () => {
         'lid',
         'lidStackGrid',
       ]);
-      // 2.5 plate floor + 42 bin + 4.3 lip + ~2.093 lid + 5 grid
-      expect(result.totalMm).toBeCloseTo(55.893, 3);
+      // 2.5 plate floor + 42 bin + 4.4 lip + ~2.093 lid + 5 grid
+      expect(result.totalMm).toBeCloseTo(55.993, 3);
     });
   });
 });

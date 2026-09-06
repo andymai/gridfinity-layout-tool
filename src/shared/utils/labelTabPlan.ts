@@ -571,11 +571,7 @@ export function clickRailZBandAboveFloor(
   readonly hi: number;
 } {
   const lipTop =
-    interiorHeight +
-    collarHeight +
-    GRIDFINITY_SPEC.LIP_SMALL_TAPER +
-    GRIDFINITY_SPEC.LIP_HEIGHT -
-    GRIDFINITY_SPEC.LIP_OVERLAP;
+    interiorHeight + collarHeight + GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_HEIGHT;
   const wallBottom = lipTop - GRIDFINITY_SPEC.LIP_BIG_TAPER - GRIDFINITY_SPEC.LIP_VERTICAL_PART;
   return {
     lo: wallBottom - LID_CLICK_RAIL_DROP_BELOW_WALL,

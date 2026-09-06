@@ -1314,10 +1314,10 @@ export const LID_CLICK_RAIL_DROP_BELOW_WALL =
 /**
  * How far below the BIN's wall top a seated lid's click rail reaches (mm) —
  * the band inside the bin's mouth that has to stay clear for the rail to drop
- * into (3.15mm).
+ * into (3.05mm).
  *
  * Seating maps the lid's `anchorZ` onto the bin's lip top, so measuring from
- * the wall top means walking down the lip (`LIP_HEIGHT - LIP_OVERLAP`) and back
+ * the wall top means walking down the lip (`LIP_HEIGHT`) and back
  * up through the mating wall's own depth (`lidWallBottomZ`) before adding the
  * rail's drop. Bin-side code needs the number in bin terms, which is why it is
  * resolved here rather than left as the lid-local pieces.
@@ -1326,7 +1326,7 @@ export const LID_CLICK_RAIL_BAND_BELOW_WALL_TOP =
   LID_CLICK_RAIL_DROP_BELOW_WALL +
   GRIDFINITY_SPEC.LIP_BIG_TAPER +
   GRIDFINITY_SPEC.LIP_VERTICAL_PART -
-  (GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP);
+  GRIDFINITY_SPEC.LIP_HEIGHT;
 
 /**
  * The magnet mating plane in LID-LOCAL Z — the boss's downward face, and one

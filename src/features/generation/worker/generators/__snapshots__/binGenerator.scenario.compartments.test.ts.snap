@@ -2,8 +2,8 @@
 
 exports[`compartments > 2×2 bin with 1×1 (none) compartments 1`] = `2892`;
 
-exports[`compartments > 2×2 bin with 2×2 compartments 1`] = `3004`;
+exports[`compartments > 2×2 bin with 2×2 compartments 1`] = `2988`;
 
-exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `3032`;
+exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `3012`;
 
-exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `3292`;
+exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `3244`;

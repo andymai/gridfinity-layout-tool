@@ -30,7 +30,6 @@ import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from '../socketBuilder';
 import { clearAllCaches } from '../shapeCache';
 
 const OUT = process.env['PERF_OUT'] ?? '/tmp/perfbench/shell.txt';
-const LIP_OVERLAP = 0.1;
 
 beforeAll(async () => {
   await initBrepjs();
@@ -66,7 +65,7 @@ function buildShellOnce(gridW: number, gridD: number, wallHeight: number): Split
   const lipBase = buildTopShape(gridW, gridD, true, pitch);
   const t2 = performance.now();
 
-  const top = translate(lipBase, [0, 0, wallHeight - LIP_OVERLAP]);
+  const top = translate(lipBase, [0, 0, wallHeight]);
   const body = unwrap(fuse(box, top));
   const t3 = performance.now();
 

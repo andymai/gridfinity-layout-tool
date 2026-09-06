@@ -88,7 +88,7 @@ describe('stackPitchMm', () => {
   });
 
   it('the shortfall is the base profile standing proud of the lip', () => {
-    expect(SHORTFALL_MM).toBeCloseTo(0.45, 5);
+    expect(SHORTFALL_MM).toBeCloseTo(0.35, 5);
   });
 });
 

@@ -53,8 +53,8 @@ describe('AssembledHeightBreakdown', () => {
 
   it('shows the assembled total collapsed by default', () => {
     render(<AssembledHeightBreakdown />);
-    // 6u × 7mm = 42mm body + 4.3mm lip; a plain plate adds nothing.
-    expect(screen.getByText('46.3mm')).toBeInTheDocument();
+    // 6u × 7mm = 42mm body + 4.4mm lip; a plain plate adds nothing.
+    expect(screen.getByText('46.4mm')).toBeInTheDocument();
     expect(screen.queryByText('Stacking lip')).not.toBeInTheDocument();
   });
 
@@ -81,14 +81,14 @@ describe('AssembledHeightBreakdown', () => {
     setPlate({ ...DEFAULT_BASEPLATE_PARAMS, magnetHoles: true, magnetDepth: mm(2) });
     render(<AssembledHeightBreakdown />);
     // MAGNET_FLOOR (0.5) + 2mm sits under the sockets, so the bin rises 2.5mm.
-    expect(screen.getByText('48.8mm')).toBeInTheDocument();
+    expect(screen.getByText('48.9mm')).toBeInTheDocument();
     expect(screen.getByText('7.5mm plate, bin sinks 5mm into it')).toBeInTheDocument();
   });
 
   it('falls back to a standard plate when the layout has none', () => {
     setPlate(undefined);
     render(<AssembledHeightBreakdown />);
-    expect(screen.getByText('46.3mm')).toBeInTheDocument();
+    expect(screen.getByText('46.4mm')).toBeInTheDocument();
   });
 
   it('adds the lid and its stack grid', () => {
@@ -112,17 +112,17 @@ describe('AssembledHeightBreakdown', () => {
     it('reports the spare room when it fits', () => {
       setDrawerHeight(60);
       render(<AssembledHeightBreakdown />);
-      expect(screen.getByText('Fits drawer, 13.7mm to spare')).toBeInTheDocument();
+      expect(screen.getByText('Fits drawer, 13.6mm to spare')).toBeInTheDocument();
     });
 
     it('reports the overflow when it does not', () => {
       setDrawerHeight(40);
       render(<AssembledHeightBreakdown />);
-      expect(screen.getByText('6.3mm taller than drawer')).toBeInTheDocument();
+      expect(screen.getByText('6.4mm taller than drawer')).toBeInTheDocument();
     });
 
     it('treats an exact fit as fitting', () => {
-      setDrawerHeight(46.3);
+      setDrawerHeight(46.4);
       render(<AssembledHeightBreakdown />);
       expect(screen.getByText('Fits drawer, 0mm to spare')).toBeInTheDocument();
     });
