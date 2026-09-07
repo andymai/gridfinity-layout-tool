@@ -148,7 +148,7 @@ with `pnpm run validate:json`.
   - The mode selector nests inside the `FeatureToggle`. Safe only because a "Use underside relief" action renders beside the greyed toggle when `undersideReliefUnblocks`, and `showFloor` includes that flag so the control can't be unmounted with the feature it would unblock.
 - **Lid-compatible bottom (`base.style: 'lid'`)**: a fully editable bin whose underside is lid mating geometry instead of a Gridfinity socket, so a shallow organiser caps the bin below it. `base.trayBottom` is a narrow subset of `LidConfig` sharing field names and units; the lid's top-face fields are omitted because a tray's top is its own interior.
   - `trayBottomInputs` synthesises a `lid` config and calls the real `resolveLidInputs`; `trayBottomStage` fuses `buildMatingShell` + `addClickRails` + `addLidRetentionMagnets` under the body.
-  - **That reuse is only sound because the profiles coincide**: body outer is `w*grid - CLEARANCE` (0.5mm), lid outer is `w*grid - 2*LID_FIT_CLEARANCE`, and both corner radii are 3.75mm (`BOX_CORNER_RADIUS` vs `LID_CORNER_RADIUS - fitClearance`). `trayBottomStage.geometry.test.ts` keeps that honest if either constant moves.
+  - **That reuse is only sound because the profiles coincide**: body outer is `w*grid - CLEARANCE` (0.5mm), lid outer is `w*grid - 2*LID_FIT_CLEARANCE`, and both corner radii are 3.75mm (`BOX_CORNER_RADIUS` vs `LID_CORNER_RADIUS - LID_FIT_CLEARANCE`). `trayBottomStage.geometry.test.ts` keeps that honest if either constant moves.
   - `resolveLidInputs` is fed `base.stackingLip: true` regardless of the tray's own lip: the field means "does the thing I mate with have a lip", which is true by construction. `disabledRails` is forced empty, since the rail-conflict check reads the COVERED bin's features, which live in a different design.
   - `dimensions.baseOffsetZ` is the depth of whatever sits under the floor (`SOCKET_HEIGHT`, skirt depth, or 0); `translateStage`/`floorPatterns`/`meshImprint` read it rather than re-deriving `isFlat ? 0 : SOCKET_HEIGHT`.
   - Traps: `trayBottom` is **absent** from `DEFAULT_BIN_PARAMS` (fingerprint, as above); `shellStage` gated the socket on `isFlat` alone, so tray bins grew feet AND a skirt while passing every structural check, hence `dimensions.socketless` and the dimensional `sits on Z=0` test. `CLICK_RAIL_DROP_BELOW_WALL` ties skirt depth to the rail profile. `utils/matchingTray.ts` is the only link between a tray and the bin it caps.
@@ -228,7 +228,10 @@ with `pnpm run validate:json`.
   `resolveLidCavityExtraMm` in `types/lid.ts`, never a local `Math.max`, or the
   plate will eat the space the bin's lip needs (gotcha 10 in the generation
   README). A magnetic lid also gets `LID_MAGNETIC_EXTRA_CLEARANCE` (0.15mm/side,
-  XY only) so the magnets aren't fighting a friction fit. Magnetic retention anchors its
+  XY only) so the magnets aren't fighting a friction fit; it insets the plug
+  below `anchorZ` only (`resolveLidMateRelief` → `LidInputs.mateRelief`), because
+  the perimeter above the seam is the visible joint with the bin and has to stay
+  flush on every attachment. Magnetic retention anchors its
   bosses to the cavity BOTTOM, so a deep cavity lengthens the pillar rather than
   lifting the magnets out of the bin's reach — the bin's pads land in the same
   place whatever the lid's depth knobs say. `retentionMagnet.edgeMagnets`

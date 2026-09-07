@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "뚜껑이 이 벽에서 위로 젖혀지고 수직을 넘어선 위치에서 멈춥니다. 몸에서 가장 먼 벽을 고르면 열린 뚜껑이 손에서 멀어집니다.",
   "binDesigner.lid.magnetHoles": "자석 포켓",
   "binDesigner.lid.magnetSpec": "포켓: ⌀{diameter}mm × 깊이 {depth}mm (수납통 자석 사양과 일치).",
-  "binDesigner.lid.magneticClearanceHint": "자석 뚜껑은 자석이 마찰로 버티는 대신 끌어당겨 닫히도록 한 변당 {clearance}mm 작게 만들어집니다.",
+  "binDesigner.lid.magneticClearanceHint": "자석 뚜껑은 립을 무는 부분만 한 변당 {clearance}mm 여유를 두어, 자석이 마찰로 버티는 대신 끌어당겨 닫힙니다. 바깥 치수는 통과 그대로 맞습니다.",
   "binDesigner.lid.matchingTrayHint": "뚜껑은 먼지를 막고, 트레이는 내용물이 미끄러지지 않게 합니다. 이 수납통 크기에 맞춘 새 디자인을 뚜껑 바닥이 설정된 상태로 시작합니다.",
   "binDesigner.lid.matchingTrayName": "정리 트레이",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

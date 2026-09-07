@@ -59,9 +59,16 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
  * Cross-section (Y vertical, going up from wall bottom to floor top):
  *   - Y ∈ [anchor, 0]: wall thickness = lidCornerR (full corner-radius)
  *   - Y ∈ [anchor - LIP_BIG_TAPER, anchor]: outer face chamfers inward by
- *     LIP_BIG_TAPER (matches the lip's top chamfer)
+ *     LIP_BIG_TAPER + mateRelief (matches the lip's top chamfer)
  *   - Y ∈ [wallBottom, anchor - LIP_BIG_TAPER]: wall thickness =
- *     lidCornerR - LIP_BIG_TAPER, matching the lip's vertical part
+ *     lidCornerR - LIP_BIG_TAPER - mateRelief, matching the lip's vertical part
+ *
+ * `mateRelief` is zero on every lid but a magnetic one, where it backs the plug
+ * off the lip so the magnets aren't fighting a friction fit. It stops at the
+ * anchor by design: above the seam the profile is the visible perimeter, and
+ * that has to stay flush with the bin whatever the attachment. The chamfer
+ * between the two therefore runs slightly steeper than the lip's 45°, which is
+ * the direction that opens clearance rather than closing it.
  *
  * Inner cavity boundary is constant at lidCornerR inset from outer (so the
  * lid corners are solid pillars that don't engage the bin's lip — engagement
@@ -72,15 +79,17 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
  * code path that's been validated against OCCT non-square sweep bugs.
  */
 export function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { cavityInset, anchorZ, wallBottomZ } = inputs;
+  const { cavityInset, anchorZ, wallBottomZ, mateRelief } = inputs;
   const zVertTop = anchorZ - LIP_BIG_TAPER;
+  const plugInset = LIP_BIG_TAPER + mateRelief;
 
   // OUTER profile — 4 sections in ASCENDING Z (loftWith expects this):
-  //  Z=wallBottom and Z=zVertTop : chamfered inward by LIP_BIG_TAPER
+  //  Z=wallBottom and Z=zVertTop : chamfered inward by LIP_BIG_TAPER, plus the
+  //                                magnetic plug relief when there is one
   //  Z=anchor and Z=0            : full outer (no chamfer)
   const outerSections: readonly Sketch[] = [
-    sectionAt(inputs, wallBottomZ, LIP_BIG_TAPER),
-    sectionAt(inputs, zVertTop, LIP_BIG_TAPER),
+    sectionAt(inputs, wallBottomZ, plugInset),
+    sectionAt(inputs, zVertTop, plugInset),
     sectionAt(inputs, anchorZ, 0),
     sectionAt(inputs, 0, 0),
   ];

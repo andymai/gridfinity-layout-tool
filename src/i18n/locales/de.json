@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "Der Deckel klappt an dieser Wand nach oben und bleibt über der Senkrechten offen stehen. Wähle die Wand, die am weitesten von dir weg liegt, damit der offene Deckel nicht über die Öffnung fällt.",
   "binDesigner.lid.magnetHoles": "Magnettaschen",
   "binDesigner.lid.magnetSpec": "Tasche: ⌀{diameter}mm × {depth}mm tief (entspricht Bin-Magnetangaben).",
-  "binDesigner.lid.magneticClearanceHint": "Magnetische Deckel werden pro Seite {clearance} mm kleiner gefertigt, damit die Magnete sie zuziehen, statt gegen einen Reibsitz zu arbeiten.",
+  "binDesigner.lid.magneticClearanceHint": "Magnetische Deckel bekommen dort, wo sie den Rand greifen, pro Seite {clearance} mm mehr Spiel, damit die Magnete sie zuziehen, statt gegen einen Reibsitz zu arbeiten. Außen bleiben sie bündig mit der Box.",
   "binDesigner.lid.matchingTrayHint": "Ein Deckel hält Staub fern, ein Tablett hält Dinge an ihrem Platz. Dies startet ein neues Design in der Größe dieses Bins, mit bereits eingerichteter Deckelbasis.",
   "binDesigner.lid.matchingTrayName": "Organizer-Tablett",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

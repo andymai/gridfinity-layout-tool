@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "Il coperchio si solleva da questa parete e resta aperto oltre la verticale. Scegli la parete più lontana da te, così il coperchio aperto si allontana dalla mano.",
   "binDesigner.lid.magnetHoles": "Tasche per magneti",
   "binDesigner.lid.magnetSpec": "Tasca: ⌀{diameter}mm × {depth}mm di profondità (corrisponde alle specifiche dei magneti del bin).",
-  "binDesigner.lid.magneticClearanceHint": "I coperchi magnetici vengono realizzati {clearance} mm più piccoli per lato, così i magneti li chiudono invece di contrastare un accoppiamento ad attrito.",
+  "binDesigner.lid.magneticClearanceHint": "I coperchi magnetici hanno {clearance} mm di gioco in più per lato dove afferrano il labbro, così i magneti li chiudono invece di contrastare un accoppiamento ad attrito. All'esterno restano a filo con il contenitore.",
   "binDesigner.lid.matchingTrayHint": "Un coperchio tiene fuori la polvere; un vassoio impedisce alle cose di scivolare. Questo avvia un nuovo design della misura di questo bin, con la base coperchio già impostata.",
   "binDesigner.lid.matchingTrayName": "Vassoio organizer",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

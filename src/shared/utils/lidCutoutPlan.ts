@@ -37,7 +37,7 @@
 import type { BinParams } from '@/shared/types/bin';
 import {
   LID_CORNER_RADIUS,
-  resolveLidFootprintClearance,
+  LID_FIT_CLEARANCE,
   resolveLidPlateThickness,
   retentionBossRadius,
   retentionMagnetInset,
@@ -189,9 +189,9 @@ export function lidCutoutHostFace(params: BinParams): LidCutoutHostFace {
 /**
  * The drawable window, or null when {@link lidCutoutsAllowed} refuses.
  *
- * The lid's outer footprint is `width * pitch - 2 * fitClearance` plus the
+ * The lid's outer footprint is `width * pitch - 2 * LID_FIT_CLEARANCE` plus the
  * overhang expansion, and its mating cavity sits a constant `LID_CORNER_RADIUS -
- * fitClearance` inside that (`buildMatingShell` holds the inner face at
+ * LID_FIT_CLEARANCE` inside that (`buildMatingShell` holds the inner face at
  * `cavityInset` for every Z). The window is that cavity, pulled in one more
  * {@link LID_CUTOUT_WALL_MARGIN_MM} so the shell keeps a printable top.
  */
@@ -200,8 +200,7 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
   if (isSlideLid(params.lid)) return slideCutoutWindow(params);
 
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-  const fitClearance = resolveLidFootprintClearance(params);
-  const cavityInset = LID_CORNER_RADIUS - fitClearance;
+  const cavityInset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
 
   // A lip-only stack top is GRID-anchored, not perimeter-anchored: its recessed
   // floor is cut from the nominal socket grid, so it does NOT move with overhang.
@@ -253,8 +252,8 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
   const trayInset = tray.enabled && !params.lid.stackableTop ? tray.wallMm : 0;
   const inset = Math.max(cavityInset, trayInset) + LID_CUTOUT_WALL_MARGIN_MM;
 
-  const outerW = params.width * params.gridUnitMm - 2 * fitClearance + expansion.addW;
-  const outerD = params.depth * gridUnitMmY - 2 * fitClearance + expansion.addD;
+  const outerW = params.width * params.gridUnitMm - 2 * LID_FIT_CLEARANCE + expansion.addW;
+  const outerD = params.depth * gridUnitMmY - 2 * LID_FIT_CLEARANCE + expansion.addD;
 
   const spanW = outerW - 2 * inset;
   const spanD = outerD - 2 * inset;
@@ -364,7 +363,7 @@ function resolveKeepouts(
   windowCentreX: number,
   windowCentreY: number
 ): readonly LidCutoutKeepout[] {
-  // Same geometric predicate `resolveLidFootprintClearance` uses: a magnetic
+  // Same geometric predicate `resolveLidMateRelief` uses: a magnetic
   // lid on a lip-less or polygon bin gets no bosses at all.
   if (params.lid.attachment !== 'magnetic') return [];
   if (!params.base.stackingLip) return [];

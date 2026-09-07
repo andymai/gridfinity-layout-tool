@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "Víko se vyklápí nahoru od této stěny a zůstane otevřené za svislicí. Vyber stěnu nejdál od sebe, aby otevřené víko padalo pryč od ruky.",
   "binDesigner.lid.magnetHoles": "Kapsy na magnety",
   "binDesigner.lid.magnetSpec": "Kapsa: ⌀{diameter} mm × {depth} mm hluboká (odpovídá specifikaci magnetů binu).",
-  "binDesigner.lid.magneticClearanceHint": "Magnetická víka se dělají o {clearance} mm menší na každé straně, aby je magnety přitáhly k zavření, místo aby bojovaly s třecím uložením.",
+  "binDesigner.lid.magneticClearanceHint": "Magnetická víka mají v místě, kde svírají lem, o {clearance} mm větší vůli na každé straně, takže je magnety přitáhnou k zavření, místo aby bojovaly s třecím uložením. Zvenku zůstávají zarovnaná s nádobou.",
   "binDesigner.lid.matchingTrayHint": "Víko chrání před prachem, tácek brání věcem v klouzání. Tímto začneš nový návrh o velikosti tohohle binu s už nastavenou víkovou základnou.",
   "binDesigner.lid.matchingTrayName": "Organizační tácek",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

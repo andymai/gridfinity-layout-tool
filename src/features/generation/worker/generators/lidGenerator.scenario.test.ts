@@ -13,7 +13,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
+import {
+  LID_FIT_CLEARANCE,
+  LID_MAGNETIC_EXTRA_CLEARANCE,
+  lidWallBottomZ,
+  resolveLidCavityExtraMm,
+} from '@/shared/types/bin';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 
@@ -132,19 +137,40 @@ describe('lid generation and export scenarios', () => {
     expect(bb.maxZ - bb.minZ).toBeGreaterThan(4); // at least lip-height tall
   });
 
-  it('a magnetic lid prints 0.3mm smaller per axis than a friction one (#2761)', async () => {
+  it('relieves a magnetic lid on its plug, not its perimeter (#2761, #4118)', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     const dims = { width: 6, depth: 4, height: 6 } as const;
-    const friction = generateLid(makeParams({ enabled: true, attachment: 'friction' }, dims));
-    const magnetic = generateLid(makeParams({ enabled: true, attachment: 'magnetic' }, dims));
+    const frictionParams = makeParams({ enabled: true, attachment: 'friction' }, dims);
+    const magneticParams = makeParams({ enabled: true, attachment: 'magnetic' }, dims);
+    const friction = generateLid(frictionParams);
+    const magnetic = generateLid(magneticParams);
     expect(friction).not.toBeNull();
     expect(magnetic).not.toBeNull();
     assertStructurallyValid(magnetic!, '6x4 magnetic lid');
 
     const f = boundingBox(friction!.vertices);
     const m = boundingBox(magnetic!.vertices);
-    expect(f.maxX - f.minX - (m.maxX - m.minX)).toBeCloseTo(0.3, 3);
-    expect(f.maxY - f.minY - (m.maxY - m.minY)).toBeCloseTo(0.3, 3);
+    // The perimeter is the seam the user looks at, so it is the bin's own
+    // `w*42 - CLEARANCE` whatever holds the lid on.
+    expect(m.maxX - m.minX).toBeCloseTo(6 * 42 - 2 * LID_FIT_CLEARANCE, 3);
+    expect(m.maxY - m.minY).toBeCloseTo(4 * 42 - 2 * LID_FIT_CLEARANCE, 3);
+    expect(m.maxX - m.minX).toBeCloseTo(f.maxX - f.minX, 3);
+    expect(m.maxY - m.minY).toBeCloseTo(f.maxY - f.minY, 3);
+
+    // The relief is still there, one band down: the plug that grips the lip
+    // stands 0.15mm/side clear of where a friction lid's grips. Both lids put
+    // that band at the same Z, since the anchor never took the relief.
+    const wallBottom = lidWallBottomZ(
+      DEFAULT_BIN_PARAMS.heightUnitMm,
+      LID_FIT_CLEARANCE,
+      resolveLidCavityExtraMm(magneticParams)
+    );
+    const mPlug = xRangeAtZ(magnetic!.vertices, wallBottom);
+    const fPlug = xRangeAtZ(friction!.vertices, wallBottom);
+    expect(mPlug.maxX).toBeLessThan(Infinity);
+    expect(fPlug.maxX).toBeLessThan(Infinity);
+    expect(fPlug.maxX - mPlug.maxX).toBeCloseTo(LID_MAGNETIC_EXTRA_CLEARANCE, 3);
+
     // The seated plane must not move — the relief is XY-only so the corner
     // magnets keep their LID_MAGNET_SEAT_GAP. Bosses hang below the friction
     // lid's floor, so compare the TOP face rather than the full Z extent.

@@ -55,35 +55,36 @@ export const LID_FIT_CLEARANCE = 0.25;
 export const LID_MIN_CORNER_RADIUS = 0.1;
 
 /**
- * Additional per-side footprint clearance (mm) given to a magnetic lid
- *. Magnets supply all the retention, so the mating shell only
- * needs to locate the lid — any residual friction fights the magnets and makes
- * the lid feel like it has to be pressed and prised rather than snapped.
+ * Additional per-side relief (mm) given to the band of a magnetic lid that
+ * plugs into the stacking lip. Magnets supply all the retention, so that band
+ * only needs to locate the lid — any residual friction fights the magnets and
+ * makes the lid feel like it has to be pressed and prised rather than snapped.
  *
- * Applies to the XY footprint ONLY. It deliberately does NOT feed
- * {@link lidAnchorZ}: that would raise the seated plane by
- * `2·√2·0.15 ≈ 0.42mm` and eat the `LID_MAGNET_SEAT_GAP` (0.2mm) the corner
- * posts rely on. Use {@link resolveLidFootprintClearance} for footprint work
- * and the bare {@link LID_FIT_CLEARANCE} for anchor/Z work.
+ * Confined to the plug. It deliberately does NOT shrink the lid's outer
+ * perimeter, which stays flush with the bin's on every attachment: the
+ * perimeter is the visible seam, and a lid narrower than the bin it caps reads
+ * as a mis-sized part however well it fits. Nor does it feed {@link lidAnchorZ}:
+ * that would raise the seated plane by `2·√2·0.15 ≈ 0.42mm` and eat the
+ * `LID_MAGNET_SEAT_GAP` (0.2mm) the corner posts rely on.
  */
 export const LID_MAGNETIC_EXTRA_CLEARANCE = 0.15;
 
 /**
- * Per-side clearance applied to the lid's OUTER FOOTPRINT — the base value
- * plus the magnetic relief when the design actually gets retention magnets.
+ * The plug relief this design actually gets — {@link LID_MAGNETIC_EXTRA_CLEARANCE}
+ * on a magnetic lid, zero on every other.
  *
  * The predicate mirrors the GEOMETRIC half of `usesMagneticLid` — a magnetic
  * lid on a lip-less or polygon bin falls back to a plain friction fit (no
- * corner bosses are generated), so it must keep the base clearance or it would
+ * corner bosses are generated), so it must keep the full grip or it would
  * rattle. It deliberately omits that helper's `lid.enabled` term: a disabled
- * lid is never generated, so its clearance is never consumed.
+ * lid is never generated, so its relief is never consumed.
  */
-export function resolveLidFootprintClearance(params: LidGeometrySource): number {
+export function resolveLidMateRelief(params: LidGeometrySource): number {
   const magnetic =
     params.lid.attachment === 'magnetic' &&
     params.base.stackingLip &&
     !isPartialMask(params.cellMask);
-  return magnetic ? LID_FIT_CLEARANCE + LID_MAGNETIC_EXTRA_CLEARANCE : LID_FIT_CLEARANCE;
+  return magnetic ? LID_MAGNETIC_EXTRA_CLEARANCE : 0;
 }
 
 /** Lid outer corner radius (mm) BEFORE clearance subtraction. Lid-specific —
@@ -1355,8 +1356,8 @@ export const LID_CLICK_RAIL_BAND_BELOW_WALL_TOP =
  * the magnets themselves, and the skirt's bottom ring is the LAST layer printed
  * (the lid rotates 180° for print), so nothing squishes into it.
  *
- * The bare {@link LID_FIT_CLEARANCE}, never `resolveLidFootprintClearance`: the
- * magnetic relief is XY-only, and feeding it here would lift the plane
+ * The bare {@link LID_FIT_CLEARANCE}, never plus {@link resolveLidMateRelief}:
+ * the magnetic relief is XY-only, and feeding it here would lift the plane
  * ~0.42mm, eating twice the seat gap it is measured against.
  */
 export function lidRetentionInterfaceZ(
@@ -1492,7 +1493,7 @@ export function resolveLidGripDepth(params: LidGeometrySource): LidGripDepthPlan
 
   const budgets: GripDepthBudget[] = [
     {
-      limit: LID_CORNER_RADIUS - resolveLidFootprintClearance(params) - LID_GRIP_MIN_WALL_MM,
+      limit: LID_CORNER_RADIUS - LID_FIT_CLEARANCE - LID_GRIP_MIN_WALL_MM,
       by: 'cavity',
     },
   ];

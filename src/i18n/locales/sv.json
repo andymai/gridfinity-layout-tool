@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "Locket fälls upp från den här väggen och blir stående öppet förbi lodrätt. Välj väggen längst bort från dig, så faller det öppna locket bort från handen.",
   "binDesigner.lid.magnetHoles": "Magnetfickor",
   "binDesigner.lid.magnetSpec": "Ficka: ⌀{diameter}mm × {depth}mm djup (matchar magnetspecifikationer för fack).",
-  "binDesigner.lid.magneticClearanceHint": "Magnetiska lock görs {clearance} mm mindre per sida så att magneterna drar igen dem i stället för att kämpa mot en friktionspassning.",
+  "binDesigner.lid.magneticClearanceHint": "Magnetiska lock får {clearance} mm extra spel per sida där de greppar läppen, så att magneterna drar igen dem i stället för att kämpa mot en friktionspassning. Utvändigt ligger de fortfarande i liv med lådan.",
   "binDesigner.lid.matchingTrayHint": "Ett lock håller damm ute; en bricka hindrar saker från att glida. Det här startar en ny design i det här fackets storlek, med lockbas redan inställd.",
   "binDesigner.lid.matchingTrayName": "Organiseringsbricka",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

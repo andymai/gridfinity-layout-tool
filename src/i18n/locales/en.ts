@@ -2095,7 +2095,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.trayBreakdownFloor': 'Remaining tray floor',
   'binDesigner.lid.trayBreakdownOverall': 'Overall lid thickness',
   'binDesigner.lid.magneticClearanceHint':
-    'Magnetic lids are made {clearance}mm smaller per side so the magnets pull them shut instead of fighting a friction fit.',
+    'Magnetic lids are relieved {clearance}mm per side where they grip the lip, so the magnets pull them shut instead of fighting a friction fit. The outside still matches the bin.',
   'binDesigner.lid.clickRailCoverage': 'Rail coverage',
   'binDesigner.lid.clickRailCoverage.50': 'Compact rails: saves the most filament',
   'binDesigner.lid.clickRailCoverage.75': 'Three-quarter rails: balanced grip and savings',

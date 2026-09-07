@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "Le couvercle bascule vers le haut depuis cette paroi et reste ouvert au-delà de la verticale. Choisissez la paroi la plus éloignée de vous pour que le couvercle ouvert s’écarte de votre main.",
   "binDesigner.lid.magnetHoles": "Logements d'aimants",
   "binDesigner.lid.magnetSpec": "Logement : ⌀{diameter}mm × {depth}mm de profondeur (correspond aux aimants du bac).",
-  "binDesigner.lid.magneticClearanceHint": "Les couvercles magnétiques sont réduits de {clearance} mm par côté pour que les aimants les referment au lieu de lutter contre un ajustement par friction.",
+  "binDesigner.lid.magneticClearanceHint": "Les couvercles magnétiques reçoivent {clearance} mm de jeu supplémentaire par côté là où ils saisissent la lèvre, pour que les aimants les referment au lieu de lutter contre un ajustement par friction. À l'extérieur, ils restent alignés sur le bac.",
   "binDesigner.lid.matchingTrayHint": "Un couvercle garde la poussière dehors ; un plateau empêche le contenu de glisser. Ceci crée un nouveau design à la taille de ce bac, avec une base couvercle déjà configurée.",
   "binDesigner.lid.matchingTrayName": "Plateau organiseur",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

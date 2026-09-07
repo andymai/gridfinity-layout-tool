@@ -4,7 +4,7 @@ import {
   LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
   LID_TRAY_FLOOR,
-  resolveLidFootprintClearance,
+  resolveLidMateRelief,
   resolveLidPlateThickness,
   retentionBossRadius,
 } from '@/shared/types/bin';
@@ -120,12 +120,11 @@ describe('lidCutoutWindow', () => {
     const w = lidCutoutWindow(p);
     expect(w).not.toBeNull();
 
-    const fit = resolveLidFootprintClearance(p);
-    const lidOuterW = 2 * p.gridUnitMm - 2 * fit;
-    const lidOuterD = 3 * p.gridUnitMm - 2 * fit;
-    // Cavity inset is a constant `LID_CORNER_RADIUS - fitClearance` at every Z
-    // (`buildMatingShell` holds the inner face there), plus the printability band.
-    const inset = LID_CORNER_RADIUS - fit + LID_CUTOUT_WALL_MARGIN_MM;
+    const lidOuterW = 2 * p.gridUnitMm - 2 * LID_FIT_CLEARANCE;
+    const lidOuterD = 3 * p.gridUnitMm - 2 * LID_FIT_CLEARANCE;
+    // Cavity inset is a constant `LID_CORNER_RADIUS - LID_FIT_CLEARANCE` at every
+    // Z (`buildMatingShell` holds the inner face there), plus the printability band.
+    const inset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE + LID_CUTOUT_WALL_MARGIN_MM;
     expect(w!.spanW).toBeCloseTo(lidOuterW - 2 * inset, 5);
     expect(w!.spanD).toBeCloseTo(lidOuterD - 2 * inset, 5);
     // The point of the whole exercise: strictly inside the plate.
@@ -164,8 +163,7 @@ describe('lidCutoutWindow', () => {
     const withTray = lidCutoutWindow(tray)!;
     expect(withTray.spanW).toBeLessThan(plain.spanW);
     // Bounded by the rim once it is wider than the cavity inset.
-    const fit = resolveLidFootprintClearance(tray);
-    const outerW = tray.width * tray.gridUnitMm - 2 * fit;
+    const outerW = tray.width * tray.gridUnitMm - 2 * LID_FIT_CLEARANCE;
     expect(withTray.spanW).toBeCloseTo(outerW - 2 * (wallMm + LID_CUTOUT_WALL_MARGIN_MM), 5);
   });
 
@@ -260,18 +258,14 @@ describe('lidCutoutWindow', () => {
   });
 
   it('is the same width whatever the attachment costs in fit clearance', () => {
-    // Not a coincidence, and worth pinning: the fit clearance CANCELS. The outer
-    // footprint shrinks by it and the cavity inset (`LID_CORNER_RADIUS -
-    // fitClearance`) grows by the same amount, leaving
-    // `span = width * pitch - 2 * LID_CORNER_RADIUS - 2 * margin`.
-    //
-    // So a magnetic lid, which pays an extra LID_MAGNETIC_EXTRA_CLEARANCE per side,
-    // still offers exactly the drawable area a click-rail lid does — switching
-    // attachment mode cannot silently move a user's holes.
+    // `span = width * pitch - 2 * LID_CORNER_RADIUS - 2 * margin`: the outer
+    // footprint and the cavity inset are both measured off LID_FIT_CLEARANCE,
+    // and a magnetic lid's relief lands below the seam, nowhere near the window.
+    // So switching attachment mode cannot silently move a user's holes.
     const magnetic = params({ attachment: 'magnetic' });
     const rails = params({ attachment: 'clickRails' });
-    expect(resolveLidFootprintClearance(magnetic)).toBeGreaterThan(LID_FIT_CLEARANCE);
-    expect(resolveLidFootprintClearance(rails)).toBe(LID_FIT_CLEARANCE);
+    expect(resolveLidMateRelief(magnetic)).toBeGreaterThan(0);
+    expect(resolveLidMateRelief(rails)).toBe(0);
 
     const w = lidCutoutWindow(magnetic)!;
     expect(w.spanW).toBeCloseTo(lidCutoutWindow(rails)!.spanW, 5);

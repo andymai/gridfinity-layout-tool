@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolveLidInputs, chamferApexXForCavityWall } from './lidBuilder';
+import { LIP_BIG_TAPER } from './generatorConstants';
 import {
   LID_CLICK_RAIL_INNER,
   LID_CLICK_RAIL_TOP_CHAMFER,
@@ -107,20 +108,37 @@ describe('resolveLidInputs', () => {
     expect(inputs.topThickness).toBeCloseTo(7, 4);
   });
 
-  it('gives a magnetic lid extra footprint clearance without moving the seated plane', () => {
+  it('relieves a magnetic lid on the plug alone, not on the visible perimeter', () => {
     const friction = resolveLidInputs(
       makeParams({ enabled: true, attachment: 'friction' }, { width: 6, depth: 4 })
     );
     const magnetic = resolveLidInputs(
       makeParams({ enabled: true, attachment: 'magnetic' }, { width: 6, depth: 4 })
     );
-    // 0.15mm per side on both axes so the magnets aren't fighting friction…
-    expect(friction.lidOuterW - magnetic.lidOuterW).toBeCloseTo(0.3, 6);
-    expect(friction.lidOuterD - magnetic.lidOuterD).toBeCloseTo(0.3, 6);
+    // The perimeter is the seam the user sees, and it matches the bin's
+    // `w*42 - CLEARANCE` body on every attachment.
+    expect(magnetic.lidOuterW).toBeCloseTo(6 * 42 - 0.5, 6);
+    expect(magnetic.lidOuterD).toBeCloseTo(4 * 42 - 0.5, 6);
+    expect(magnetic.lidOuterW).toBeCloseTo(friction.lidOuterW, 9);
+    expect(magnetic.lidOuterD).toBeCloseTo(friction.lidOuterD, 9);
+    // 0.15mm per side on the plug so the magnets aren't fighting friction…
+    expect(magnetic.mateRelief).toBeCloseTo(0.15, 6);
+    expect(friction.mateRelief).toBe(0);
     // …but the anchor stays put, or the relief would eat LID_MAGNET_SEAT_GAP
     // and the corner posts would hold the lid off its lip.
     expect(magnetic.anchorZ).toBeCloseTo(friction.anchorZ, 9);
     expect(magnetic.wallBottomZ).toBeCloseTo(friction.wallBottomZ, 9);
+  });
+
+  it('lands the magnetic plug face where the pre-relief profile put it', () => {
+    const magnetic = resolveLidInputs(
+      makeParams({ enabled: true, attachment: 'magnetic' }, { width: 6, depth: 4 })
+    );
+    // Moving the relief off the perimeter must not move the surface it exists
+    // to relieve: the plug's outer face still sits 2.3mm inside the nominal
+    // grid edge, which is 0.15mm clear of the lip's 2.15mm vertical band.
+    const plugFaceX = magnetic.lidOuterW / 2 - (LIP_BIG_TAPER + magnetic.mateRelief);
+    expect((6 * 42) / 2 - plugFaceX).toBeCloseTo(2.3, 6);
   });
 
   it('withholds the magnetic relief when the bin has no stacking lip to mate with', () => {
@@ -130,7 +148,7 @@ describe('resolveLidInputs', () => {
         { base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } }
       )
     );
-    expect(noLip.fitClearance).toBeCloseTo(0.25, 4);
+    expect(noLip.mateRelief).toBe(0);
     expect(noLip.retentionMagnets).toBe(false);
   });
 

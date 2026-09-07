@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "Het deksel klapt vanaf deze wand omhoog en blijft voorbij verticaal openstaan. Kies de wand die het verst van je af ligt, zodat het open deksel van je hand af valt.",
   "binDesigner.lid.magnetHoles": "Magneetholtes",
   "binDesigner.lid.magnetSpec": "Holte: ⌀{diameter}mm × {depth}mm diep (komt overeen met bin-magneetspecificaties).",
-  "binDesigner.lid.magneticClearanceHint": "Magnetische deksels worden per zijde {clearance} mm kleiner gemaakt, zodat de magneten ze dichttrekken in plaats van te vechten tegen een klempassing.",
+  "binDesigner.lid.magneticClearanceHint": "Magnetische deksels krijgen per zijde {clearance} mm extra speling waar ze de rand grijpen, zodat de magneten ze dichttrekken in plaats van te vechten tegen een klempassing. Aan de buitenkant blijven ze gelijk met de bak.",
   "binDesigner.lid.matchingTrayHint": "Een deksel houdt stof buiten; een lade houdt spullen op hun plek. Dit start een nieuw ontwerp op maat van deze bin, met een dekselbasis al ingesteld.",
   "binDesigner.lid.matchingTrayName": "Organizerlade",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",
