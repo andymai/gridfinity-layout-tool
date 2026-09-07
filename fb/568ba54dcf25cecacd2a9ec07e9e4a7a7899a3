@@ -1,0 +1,21 @@
+src/shell/Modals/WhatsNewModal/WhatsNewModal.test.tsx
+  s_563ccfba5edeab::t_c1be83a05f393a 40-44
+src/features/whats-new/entries.ts
+  s_563ccfba5edeab::t_7ed2ee592225d2 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "fb568ba54dcf25cecacd2a9ec07e9e4a7a7899a3",
+  "prompts": {},
+  "sessions": {
+    "s_563ccfba5edeab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "621060ae-d917-4362-8cf9-911003accb8d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
