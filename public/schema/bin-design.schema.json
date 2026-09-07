@@ -1514,7 +1514,7 @@
         "topThicknessMm": {
           "type": "number",
           "minimum": 0.8,
-          "maximum": 5,
+          "maximum": 10,
           "x-constant": {
             "minimum": "LID_TOP_THICKNESS_MIN_MM",
             "maximum": "LID_TOP_THICKNESS_MAX_MM"

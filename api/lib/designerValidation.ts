@@ -512,9 +512,9 @@ function validateLid(lid: unknown): string | null {
   }
   if (
     lid.topThicknessMm !== undefined &&
-    (!isNumber(lid.topThicknessMm) || !inRange(lid.topThicknessMm, 0.8, 5))
+    (!isNumber(lid.topThicknessMm) || !inRange(lid.topThicknessMm, 0.8, 10))
   ) {
-    return 'lid.topThicknessMm must be 0.8-5';
+    return 'lid.topThicknessMm must be 0.8-10';
   }
   if (lid.relieveInterior !== undefined && typeof lid.relieveInterior !== 'boolean') {
     return 'lid.relieveInterior must be a boolean';

@@ -14,6 +14,7 @@ import {
   WALL_PATTERN_TYPES,
 } from '../types';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
+import { LID_TOP_THICKNESS_MAX_MM } from '../types';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
@@ -1261,7 +1262,9 @@ describe('migrateParams', () => {
   });
 
   it('clamps an out-of-range topThicknessMm into the valid range', () => {
-    expect(migrateParams({ lid: { topThicknessMm: 99 } as any }).lid.topThicknessMm).toBe(5);
+    expect(migrateParams({ lid: { topThicknessMm: 99 } as any }).lid.topThicknessMm).toBe(
+      LID_TOP_THICKNESS_MAX_MM
+    );
     expect(migrateParams({ lid: { topThicknessMm: 0.1 } as any }).lid.topThicknessMm).toBe(0.8);
     expect(migrateParams({ lid: { topThicknessMm: 'thick' } as any }).lid.topThicknessMm).toBe(0.8);
   });

@@ -219,7 +219,7 @@ with `pnpm run validate:json`.
   option, so dropping 75 would silently re-render every design saved at
   three-quarter coverage as 70**; only 50/75/100 carry description copy, the
   rest render bare like `gripCoverageOptions`), and the floor-plate
-  thickness (`topThicknessMm`, 0.8–5mm — a thicker top for a stiffer, less
+  thickness (`topThicknessMm`, 0.8–10mm — a thicker top for a stiffer, less
   translucent lid on large bins; 0.8 = the historical plate). Wall thickness and
   fit clearance stay locked-down constants in `lidConstants.ts` (a single
   validated set — exposing them invited mis-prints); the plate is the exception
