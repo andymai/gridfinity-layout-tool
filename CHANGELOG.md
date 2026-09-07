@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.486.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.3...gridfinity-layout-tool-v4.486.0) (2026-09-07)
+
+
+### Features
+
+* **bins:** offer a rounded or chamfered stacking lip peak ([#4133](https://github.com/andymai/gridfinity-layout-tool/issues/4133)) ([abe04df](https://github.com/andymai/gridfinity-layout-tool/commit/abe04df6474ccb143971147ad7584f8533fefabd))
+* **bins:** put finger scoops on more than one wall ([#4134](https://github.com/andymai/gridfinity-layout-tool/issues/4134)) ([012867d](https://github.com/andymai/gridfinity-layout-tool/commit/012867d38906ea170ae2e5973fb6971847809429)), closes [#4123](https://github.com/andymai/gridfinity-layout-tool/issues/4123)
+* **lid:** raise the floor plate ceiling to 10mm ([#4132](https://github.com/andymai/gridfinity-layout-tool/issues/4132)) ([62645ab](https://github.com/andymai/gridfinity-layout-tool/commit/62645ab9daf850cc79a5b677847be2f69437d0c5))
+
+
+### Bug Fixes
+
+* **lid:** keep a magnetic lid flush with the bin it caps ([#4130](https://github.com/andymai/gridfinity-layout-tool/issues/4130)) ([4c30b5a](https://github.com/andymai/gridfinity-layout-tool/commit/4c30b5af2ca451482508912aab0d4757e46a5287)), closes [#4118](https://github.com/andymai/gridfinity-layout-tool/issues/4118)
+* **ui:** fill the panel width with the bin dimension steppers ([#4137](https://github.com/andymai/gridfinity-layout-tool/issues/4137)) ([6231da7](https://github.com/andymai/gridfinity-layout-tool/commit/6231da7d01293f9652cb07e6ff4e1de1f370abbe))
+
 ## [4.485.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.2...gridfinity-layout-tool-v4.485.3) (2026-09-06)
 
 
