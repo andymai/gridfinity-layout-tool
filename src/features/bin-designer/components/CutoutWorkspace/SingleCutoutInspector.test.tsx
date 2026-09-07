@@ -92,6 +92,31 @@ describe('SingleCutoutInspector', () => {
     expect(onUpdate).toHaveBeenCalledWith('c1', { width: 156, depth: 10, x: -68, y: 5 });
   });
 
+  // #4122: a shape bigger than the board has no valid offset, so X/Y's ceiling
+  // collapses to 0. Truncating there pins the shape in the corner, and the axis
+  // the user is trying to line up is the one that stops responding.
+  it('commits a typed Y for a cutout deeper than the board', () => {
+    const onUpdate = vi.fn();
+    render(
+      <SingleCutoutInspector
+        cutout={makeCutout({ shape: 'rectangle', x: 5, y: 0, width: 10, depth: 156 })}
+        preview={new Map()}
+        binWidth={123.1}
+        binDepth={123.1}
+        maxCutDepth={20}
+        onUpdate={onUpdate}
+        disabled={false}
+      />
+    );
+
+    const input = screen.getByRole('spinbutton', { name: 'Y' });
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: '12' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(onUpdate).toHaveBeenCalledWith('c1', { y: 12 });
+  });
+
   // The router-bit case from the issue: only the size was meant to change, so
   // the hole must not walk out from under the part it was drilled for.
   it('holds a cutout center when a typed size changes', () => {

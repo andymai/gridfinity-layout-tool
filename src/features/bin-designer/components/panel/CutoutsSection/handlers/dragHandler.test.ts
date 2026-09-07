@@ -186,3 +186,42 @@ describe('handleDragMove polygon-mask rejection', () => {
     expect(setters.preview?.get('c-1')?.x).toBe(25);
   });
 });
+
+describe('handleDragMove on an axis with no room', () => {
+  // #4122: an imported outline is routinely deeper than the bin it lands in.
+  // The board's own controls keep that state — W/H are `softMax` and the
+  // off-board banner offers to grow the bin — so the shape has to stay
+  // draggable while it waits to be dealt with.
+  const OVERSIZED = { x: 0, y: 0, width: 20, depth: 60 };
+
+  function dragOversized(dx: number, dy: number) {
+    const cutout = makeCutout(OVERSIZED);
+    const bounds: BinBounds = {
+      binWidth: 100,
+      binDepth: 40,
+      cellMask: undefined,
+      maskCellSize: undefined,
+      meshAssets: undefined,
+    };
+    const setters = makeSetters();
+    handleDragMove(
+      makeMode(cutout.x, cutout.y, [[cutout.id, 0, 0]]),
+      { mmX: cutout.x + dx, mmY: cutout.y + dy, shiftKey: false },
+      [cutout],
+      bounds,
+      noopSnap,
+      NO_DEAD_ZONE,
+      setters as unknown as PreviewSetters
+    );
+    return setters.preview?.get(cutout.id);
+  }
+
+  it('still moves a cutout deeper than the board', () => {
+    expect(dragOversized(0, 12)?.y).toBeCloseTo(12, 6);
+    expect(dragOversized(0, -8)?.y).toBeCloseTo(-8, 6);
+  });
+
+  it('keeps clamping the axis that does have room', () => {
+    expect(dragOversized(500, 5)?.x).toBeCloseTo(80, 6);
+  });
+});

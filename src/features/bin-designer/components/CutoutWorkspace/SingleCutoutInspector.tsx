@@ -101,15 +101,18 @@ export function SingleCutoutInspector({
       <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
         <Collapsible title={t('binDesigner.cutouts.section.transform')} size="sm">
           <div className="grid grid-cols-2 gap-1">
-            {/* A cutout wider than the board leaves no valid offset, and a
-                negative ceiling would report a nonsense aria-valuemax — pin the
-                axis to 0 until the board grows or the cutout shrinks. */}
+            {/* softMax for the same reason W/H carry it: a shape bigger than
+                the board leaves no valid offset, and a hard ceiling then pins
+                the axis at 0 — so the shape that most needs positioning is the
+                one that cannot be moved (#4122). The off-board banner is what
+                resolves the state, by growing the bin. */}
             <NumberField
               label="X"
               value={getEffective(cutout, preview, 'x')}
               onChange={(x) => onUpdate(cutout.id, { x })}
               min={0}
               max={Math.max(0, binWidth - cutout.width)}
+              softMax
               step={0.5}
               unit="mm"
               disabled={disabled}
@@ -120,6 +123,7 @@ export function SingleCutoutInspector({
               onChange={(y) => onUpdate(cutout.id, { y })}
               min={0}
               max={Math.max(0, binDepth - cutout.depth)}
+              softMax
               step={0.5}
               unit="mm"
               disabled={disabled}

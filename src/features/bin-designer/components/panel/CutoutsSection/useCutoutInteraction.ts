@@ -18,7 +18,7 @@ import {
   isWithin,
   unitSelectionIds,
 } from '@/features/bin-designer/utils/cutoutHierarchy';
-import { snapToGrid, getRotatedBounds, type AlignmentGuide } from './geometry';
+import { clampToBoardAxis, snapToGrid, getRotatedBounds, type AlignmentGuide } from './geometry';
 import { cutoutFitsInMask } from './maskFit';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import { buildSnapModel } from './handlers/rulerHandler';
@@ -243,8 +243,8 @@ export function useCutoutInteraction({
         const maxX = binWidth - cutout.width - overhangX;
         const maxY = binDepth - cutout.depth - overhangY;
         updates.set(id, {
-          x: Math.max(minX, Math.min(cutout.x + dx, maxX)),
-          y: Math.max(minY, Math.min(cutout.y + dy, maxY)),
+          x: clampToBoardAxis(cutout.x + dx, minX, maxX),
+          y: clampToBoardAxis(cutout.y + dy, minY, maxY),
         });
       }
 

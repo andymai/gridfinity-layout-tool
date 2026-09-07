@@ -14,6 +14,7 @@ import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geometryAlign';
 import { expandSelectionToGroups } from '../panel/CutoutsSection/cutoutGroups';
 import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
+import { clampToBoardAxis } from '../panel/CutoutsSection/geometry';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
 import {
   arrayInstanceCount,
@@ -341,9 +342,8 @@ export function InspectorContent({
         );
         continue;
       }
-      // An oversize cutout leaves no valid offset on this axis; pin it to 0.
-      const limit = Math.max(0, key === 'x' ? binWidth - c.width : binDepth - c.depth);
-      updates.set(c.id, { [key]: Math.max(0, Math.min(value, limit)) });
+      const limit = key === 'x' ? binWidth - c.width : binDepth - c.depth;
+      updates.set(c.id, { [key]: clampToBoardAxis(value, 0, limit) });
     }
     if (updates.size > 0) onUpdateBatch(updates);
   };

@@ -7,6 +7,7 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import {
+  clampToBoardAxis,
   constrainGroupDrag,
   computeBounds,
   findAlignmentGuides,
@@ -80,8 +81,8 @@ export function handleDragMove(
     const maxX = bounds.binWidth - cutout.width - overhangX;
     const maxY = bounds.binDepth - cutout.depth - overhangY;
     nextPreview.set(id, {
-      x: Math.max(overhangX, Math.min(snap(mode.startX + dx + offset.dx), maxX)),
-      y: Math.max(overhangY, Math.min(snap(mode.startY + dy + offset.dy), maxY)),
+      x: clampToBoardAxis(snap(mode.startX + dx + offset.dx), overhangX, maxX),
+      y: clampToBoardAxis(snap(mode.startY + dy + offset.dy), overhangY, maxY),
     });
   }
 
