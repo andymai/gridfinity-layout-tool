@@ -210,7 +210,7 @@ describe('lid generation and export scenarios', () => {
       [
         ['baseline', {}, {}, 0.8],
         ['thick plate', { topThicknessMm: 2.4 }, {}, 2.4],
-        ['max plate', { topThicknessMm: 5 }, {}, 5],
+        ['max plate', { topThicknessMm: 10 }, {}, 10],
         ['extra height + thick plate', { topThicknessMm: 3, extraHeightMm: 10 }, {}, 3],
         [
           // 2.5mm magnet + the 0.6mm sealed ceiling.

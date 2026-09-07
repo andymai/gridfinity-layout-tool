@@ -99,12 +99,19 @@ export const LID_TOP_THICKNESS_BASE = 0.8;
 /**
  * Bounds for {@link LidConfig.topThicknessMm}. The floor at 0.8mm is four
  * layers at 0.2mm — enough to bridge, but thin enough to read as flimsy and
- * translucent on a large lid. The ceiling keeps a 6×4 lid from
- * turning into an hour of solid infill; the step lands on common layer
- * heights so the plate comes out at a whole number of layers.
+ * translucent on a large lid. The step lands on common layer heights so the
+ * plate comes out at a whole number of layers.
+ *
+ * The ceiling only prices print time — nothing geometric binds it, because
+ * {@link resolveLidCavityExtraMm} deepens the anchor by whatever the plate
+ * grew, so a thicker plate makes the lid taller instead of filling the cavity
+ * the lip has to enter. It sat at 5mm to keep a 6x4 lid off an hour of solid
+ * infill, which is the wrong trade to make for the user: a lid that big is
+ * exactly the one that bends, stiffness goes as the cube of thickness, and the
+ * person reaching for this knob is spending print time on purpose (#4128).
  */
 export const LID_TOP_THICKNESS_MIN_MM = LID_TOP_THICKNESS_BASE;
-export const LID_TOP_THICKNESS_MAX_MM = 5;
+export const LID_TOP_THICKNESS_MAX_MM = 10;
 export const LID_TOP_THICKNESS_STEP_MM = 0.2;
 
 /** Minimum solid material above a magnet pocket (mm) so it can't punch
