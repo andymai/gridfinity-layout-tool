@@ -1,0 +1,100 @@
+src/shared/utils/scoopCalculations.ts
+  s_563ccfba5edeab::t_70209140e3ad10 61-62
+  s_563ccfba5edeab::t_5530166386ba1c 78-103
+  s_563ccfba5edeab::t_5108eb7a8221fe 77
+src/i18n/locales/nb.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/shared/utils/scoopCalculations.test.ts
+  s_563ccfba5edeab::t_2afcb1b35720d7 11,286-330
+  s_563ccfba5edeab::t_fbd23317126b8b 331-332
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.tsx
+  s_563ccfba5edeab::t_9a91d9fb23618d 22,96,111-150,153-162,165-173,175-176
+src/features/whats-new/latest.ts
+  s_563ccfba5edeab::t_de2f32e97c8960 9
+src/features/bin-designer/utils/printEstimates.ts
+  s_563ccfba5edeab::t_308f792052a924 50,679,692-723
+src/i18n/locales/ja.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/i18n/locales/en.ts
+  s_563ccfba5edeab::t_bb7ec007998d1a 2488
+src/features/generation/worker/generators/scenarios/index.ts
+  s_563ccfba5edeab::t_ca377757c0e9cc 40,98-99
+docs/schemas/bin-design.md
+  s_563ccfba5edeab::t_d020fa2873c6ed 248-256
+src/i18n/locales/uk.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/features/bin-designer/README.md
+  s_563ccfba5edeab::t_59c452916664e3 82-93
+src/i18n/locales/de.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/i18n/locales/zh-CN.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/features/generation/worker/generators/scenarios/scoopMultiSide.ts
+  s_563ccfba5edeab::t_3121575d051867 20-24,35,63
+  s_563ccfba5edeab::t_ca377757c0e9cc 1-19,25-34,36-62,64-82
+src/shared/schema/binDesignKeys.ts
+  s_563ccfba5edeab::t_0ba01cca9b7e91 179
+src/i18n/locales/cs.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/features/bin-designer/types/compartments.ts
+  s_563ccfba5edeab::t_c7da7a70b20a99 250-252,255-267
+  s_563ccfba5edeab::t_0ba01cca9b7e91 268
+src/features/bin-designer/components/panel/ScoopSection/useScoopSection.ts
+  s_563ccfba5edeab::t_96ad0d7c0ad166 12,38,54-64,74,110-132,146,179-187,189-201,203,233,247
+  s_563ccfba5edeab::t_82e3ac4a831a9f 13
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_563ccfba5edeab::t_8f83b1109bebdc 25,122,150
+  s_563ccfba5edeab::t_ac56ffe7a85dde 146-149,151-152,154-166,168-201,203-210,212-217,219-224,226-237,239-245,247-249,251
+  s_563ccfba5edeab::t_912076dfab11ee 252
+src/i18n/locales/sv.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/features/bin-designer/components/panel/ScoopSection/ScoopSection.tsx
+  s_563ccfba5edeab::t_9bec625eb377cc 4,13,15
+  s_563ccfba5edeab::t_2c37a0a2db36f3 33-39,54-66
+src/i18n/locales/ko.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+public/schema/bin-design.schema.json
+  s_563ccfba5edeab::t_2382d48f7a8305 1871,1880-1893
+src/i18n/locales/es.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/features/generation/worker/generators/binGenerator.export.scoopMultiSide.test.ts
+  s_563ccfba5edeab::t_ca377757c0e9cc 1-5
+src/features/generation/worker/generators/binGenerator.scenario.scoopMultiSide.test.ts
+  s_563ccfba5edeab::t_ca377757c0e9cc 1-5
+src/i18n/locales/it.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/features/whats-new/entries.ts
+  s_563ccfba5edeab::t_de2f32e97c8960 17-25
+  s_563ccfba5edeab::t_ee5d391fde4d24 16
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_563ccfba5edeab::t_c02fc111194f44 49,587-593
+docs/schemas/constraints.md
+  s_563ccfba5edeab::t_d020fa2873c6ed 152
+src/i18n/locales/pt-BR.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/i18n/locales/nl.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/i18n/locales/fr.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+src/i18n/locales/pl.json
+  s_563ccfba5edeab::t_bb7ec007998d1a 1548
+scripts/schema/bounds.test.ts
+  s_563ccfba5edeab::t_d020fa2873c6ed 45
+  s_563ccfba5edeab::t_bcd3bf97121474 128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "ce29c3114a97595db98a3462881144bb954f67d0",
+  "prompts": {},
+  "sessions": {
+    "s_563ccfba5edeab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "621060ae-d917-4362-8cf9-911003accb8d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
