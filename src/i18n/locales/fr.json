@@ -1545,7 +1545,7 @@
   "binDesigner.scoop.heightAria": "Hauteur de la rampe",
   "binDesigner.scoop.maxHeightAria": "Hauteur maximale de la rampe",
   "binDesigner.scoop.runAria": "Longueur de la rampe",
-  "binDesigner.scoop.sideAria": "Paroi vers laquelle monte la rampe",
+  "binDesigner.scoop.sideAria": "Parois vers lesquelles remonte la prise de doigt",
   "binDesigner.scoopDisablesLightweight": "Une rampe a besoin d’un fond plein — passez le mode sur Dessous pour garder les deux",
   "binDesigner.scoopHeight": "Hauteur",
   "binDesigner.scoopMaxHeight": "Hauteur max.",

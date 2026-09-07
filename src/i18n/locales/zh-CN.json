@@ -1545,7 +1545,7 @@
   "binDesigner.scoop.heightAria": "取物斜面高度",
   "binDesigner.scoop.maxHeightAria": "取物斜面最大高度",
   "binDesigner.scoop.runAria": "取物斜面水平距离",
-  "binDesigner.scoop.sideAria": "取物斜面上升到的壁面",
+  "binDesigner.scoop.sideAria": "手指凹槽向上延伸到的侧壁",
   "binDesigner.scoopDisablesLightweight": "取物斜面需要实心底面 — 将方式切换为底部即可两者兼得",
   "binDesigner.scoopHeight": "高度",
   "binDesigner.scoopMaxHeight": "最大高度",

@@ -19,7 +19,7 @@ import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments
 import {
   resolveScoopProfile,
   resolveScoopPlacement,
-  resolveScoopSide,
+  resolveScoopSides,
   computeLipOffset,
   computeInteriorHeight,
   scoopFrameHeights,
@@ -93,7 +93,7 @@ export function GhostScoops() {
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
-    const side = resolveScoopSide(scoop);
+    const sides = resolveScoopSides(scoop);
     const processedCompartments = new Set<number>();
     const allPositions: number[] = [];
     const allIndices: number[] = [];
@@ -108,68 +108,72 @@ export function GhostScoops() {
         const bounds = getCompartmentBounds(compartments, compId);
         if (!bounds) continue;
 
-        const placement = resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
-        const { span, depth, isOuter, alongCenter, edge, runsAlongY, runSign } = placement;
+        // One ghost per selected wall, mirroring `scoopRampBuilder`'s loop so
+        // the overlay shows what the worker will build.
+        for (const side of sides) {
+          const placement = resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
+          const { span, depth, isOuter, alongCenter, edge, runsAlongY, runSign } = placement;
 
-        const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, wallThickness);
-        const profile = resolveScoopProfile(
-          scoop,
-          span,
-          depth,
-          isOuter,
-          hasLip,
-          wallHeight,
-          interiorHeight,
-          lipOffset
-        );
-        if (!profile) continue;
-        const { run, height, style } = profile;
+          const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, wallThickness);
+          const profile = resolveScoopProfile(
+            scoop,
+            span,
+            depth,
+            isOuter,
+            hasLip,
+            wallHeight,
+            interiorHeight,
+            lipOffset
+          );
+          if (!profile) continue;
+          const { run, height, style } = profile;
 
-        // Build the ramp surface as a triangle strip: two rows of vertices, one
-        // at each end of the compartment along the scooped wall.
-        const alongMin = alongCenter - span / 2;
-        const alongMax = alongCenter + span / 2;
+          // Build the ramp surface as a triangle strip: two rows of vertices, one
+          // at each end of the compartment along the scooped wall.
+          const alongMin = alongCenter - span / 2;
+          const alongMax = alongCenter + span / 2;
 
-        // Ramp profile points (offset by lipOffset so the scoop top meets the
-        // lip): a concave quarter-ellipse for 'curved', a single bevel edge for
-        // 'straight'. Runs from the wall top (dz = height) down to the floor.
-        const profilePoints: [number, number][] = [];
-        if (style === 'curved') {
-          for (let i = 0; i <= ARC_SEGMENTS; i++) {
-            const angle = (Math.PI / 2) * (i / ARC_SEGMENTS);
-            profilePoints.push([
-              lipOffset + run * (1 - Math.cos(angle)),
-              height * (1 - Math.sin(angle)),
-            ]);
-          }
-        } else {
-          profilePoints.push([lipOffset, height]);
-          profilePoints.push([lipOffset + run, 0]);
-        }
-
-        for (const [dRun, dz] of profilePoints) {
-          const runCoord = edge + runSign * dRun;
-          const z = floorThickness + dz;
-          if (runsAlongY) {
-            allPositions.push(alongMin, runCoord, z);
-            allPositions.push(alongMax, runCoord, z);
+          // Ramp profile points (offset by lipOffset so the scoop top meets the
+          // lip): a concave quarter-ellipse for 'curved', a single bevel edge for
+          // 'straight'. Runs from the wall top (dz = height) down to the floor.
+          const profilePoints: [number, number][] = [];
+          if (style === 'curved') {
+            for (let i = 0; i <= ARC_SEGMENTS; i++) {
+              const angle = (Math.PI / 2) * (i / ARC_SEGMENTS);
+              profilePoints.push([
+                lipOffset + run * (1 - Math.cos(angle)),
+                height * (1 - Math.sin(angle)),
+              ]);
+            }
           } else {
-            allPositions.push(runCoord, alongMin, z);
-            allPositions.push(runCoord, alongMax, z);
+            profilePoints.push([lipOffset, height]);
+            profilePoints.push([lipOffset + run, 0]);
           }
-        }
 
-        // Build triangle indices for the strip
-        for (let i = 0; i < profilePoints.length - 1; i++) {
-          const bl = vertexOffset + i * 2;
-          const br = bl + 1;
-          const tl = bl + 2;
-          const tr = bl + 3;
-          allIndices.push(bl, br, tl);
-          allIndices.push(br, tr, tl);
-        }
+          for (const [dRun, dz] of profilePoints) {
+            const runCoord = edge + runSign * dRun;
+            const z = floorThickness + dz;
+            if (runsAlongY) {
+              allPositions.push(alongMin, runCoord, z);
+              allPositions.push(alongMax, runCoord, z);
+            } else {
+              allPositions.push(runCoord, alongMin, z);
+              allPositions.push(runCoord, alongMax, z);
+            }
+          }
 
-        vertexOffset += profilePoints.length * 2;
+          // Build triangle indices for the strip
+          for (let i = 0; i < profilePoints.length - 1; i++) {
+            const bl = vertexOffset + i * 2;
+            const br = bl + 1;
+            const tl = bl + 2;
+            const tr = bl + 3;
+            allIndices.push(bl, br, tl);
+            allIndices.push(br, tr, tl);
+          }
+
+          vertexOffset += profilePoints.length * 2;
+        }
       }
     }
 

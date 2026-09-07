@@ -8,6 +8,7 @@ import {
   resolveScoopProfile,
   resolveScoopPlacement,
   resolveScoopSide,
+  resolveScoopSides,
   computeLipOffset,
   computeInteriorHeight,
 } from './scoopCalculations';
@@ -279,6 +280,53 @@ describe('resolveScoopSide', () => {
         { cols: 1, rows: 1, innerW: 40, innerD: 40 }
       )
     ).toBeDefined();
+  });
+});
+
+describe('resolveScoopSides', () => {
+  it('reads the single side when a design carries no `sides`', () => {
+    expect(resolveScoopSides(scoop())).toEqual(['front']);
+    expect(resolveScoopSides(scoop({ side: 'right' }))).toEqual(['right']);
+  });
+
+  it('returns every listed wall', () => {
+    expect(resolveScoopSides(scoop({ side: 'front', sides: ['front', 'left'] }))).toEqual([
+      'front',
+      'left',
+    ]);
+  });
+
+  // Two designs that picked the same walls in a different order must build the
+  // same solid and hash the same, so the answer is in SCOOP_SIDES order rather
+  // than the order they happen to be stored in.
+  it('answers in canonical order, not stored order', () => {
+    expect(resolveScoopSides(scoop({ sides: ['right', 'front', 'back'] }))).toEqual([
+      'front',
+      'back',
+      'right',
+    ]);
+  });
+
+  // A repeat would build one ramp twice in the same place: a coincident pair
+  // the fuse turns into a sliver rather than an error.
+  it('collapses a repeated wall', () => {
+    expect(resolveScoopSides(scoop({ sides: ['left', 'left', 'left'] }))).toEqual(['left']);
+  });
+
+  // Same reasoning as `resolveScoopSide`'s fallback: the API passes `scoop`
+  // through without deep validation.
+  it('drops values the server never validated, and falls back when none survive', () => {
+    const mixed = { enabled: true, radius: 'auto', side: 'back', sides: ['left', 'sideways'] };
+    expect(resolveScoopSides(mixed as unknown as ScoopConfig)).toEqual(['left']);
+
+    const allBad = { enabled: true, radius: 'auto', side: 'back', sides: ['nowhere'] };
+    expect(resolveScoopSides(allBad as unknown as ScoopConfig)).toEqual(['back']);
+
+    const notAnArray = { enabled: true, radius: 'auto', side: 'back', sides: 'left' };
+    expect(resolveScoopSides(notAnArray as unknown as ScoopConfig)).toEqual(['back']);
+
+    const empty = { enabled: true, radius: 'auto', side: 'right', sides: [] };
+    expect(resolveScoopSides(empty as unknown as ScoopConfig)).toEqual(['right']);
   });
 });
 

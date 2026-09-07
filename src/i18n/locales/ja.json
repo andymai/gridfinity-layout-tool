@@ -1545,7 +1545,7 @@
   "binDesigner.scoop.heightAria": "スクープの高さ",
   "binDesigner.scoop.maxHeightAria": "スクープの最大高さ",
   "binDesigner.scoop.runAria": "スクープの長さ",
-  "binDesigner.scoop.sideAria": "すくい上げが立ち上がる壁",
+  "binDesigner.scoop.sideAria": "フィンガースクープが立ち上がる壁",
   "binDesigner.scoopDisablesLightweight": "スクープには固い床が必要です。モードを「底面」に切り替えると両方使えます",
   "binDesigner.scoopHeight": "高さ",
   "binDesigner.scoopMaxHeight": "最大高さ",

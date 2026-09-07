@@ -9,7 +9,8 @@ import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments
 import {
   resolveScoopProfile,
   resolveScoopPlacement,
-  resolveScoopSide,
+  resolveScoopSides,
+  SCOOP_SIDES,
   computeLipOffset,
   computeInteriorHeight,
   scoopFrameHeights,
@@ -34,7 +35,7 @@ export function useScoopSection() {
   const isUnavailable = !scoopStatus.available;
   const isAutoRadius = scoop.radius === 'auto';
   const style: ScoopStyle = scoop.style ?? 'curved';
-  const side: ScoopSide = resolveScoopSide(scoop);
+  const sides: readonly ScoopSide[] = resolveScoopSides(scoop);
   const manualHeight = typeof scoop.radius === 'number' ? scoop.radius : DEFAULT_MANUAL_RADIUS;
   const manualRun = scoop.run ?? manualHeight;
   const autoMaxHeight = scoop.autoMaxHeight ?? DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS;
@@ -50,11 +51,17 @@ export function useScoopSection() {
     );
     const min = DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS;
     // The run travels away from the scooped wall, so its ceiling comes from the
-    // compartment extent on that axis — depth for front/back, width for left/right.
-    const runsAlongY = side === 'front' || side === 'back';
-    const runExtent = runsAlongY
-      ? innerD / params.compartments.rows
-      : innerW / params.compartments.cols;
+    // compartment extent on that axis — depth for front/back, width for
+    // left/right. One run serves every selected wall, so the tightest axis wins:
+    // a ceiling taken from the roomier one would offer a run the other wall's
+    // compartment cannot hold.
+    const runExtent = Math.min(
+      ...sides.map((s) =>
+        s === 'front' || s === 'back'
+          ? innerD / params.compartments.rows
+          : innerW / params.compartments.cols
+      )
+    );
     return {
       heightMax: clamp(Math.round(wallHeight), min, DESIGNER_CONSTRAINTS.MAX_SCOOP_HEIGHT),
       runMax: clamp(Math.round(runExtent), min, DESIGNER_CONSTRAINTS.MAX_SCOOP_RUN),
@@ -64,7 +71,7 @@ export function useScoopSection() {
         DESIGNER_CONSTRAINTS.MAX_SCOOP_HEIGHT
       ),
     };
-  }, [params, side]);
+  }, [params, sides]);
 
   // Very steep scoops (tall rise, short run) print with rough overhangs and are
   // awkward to reach into. Warn (non-blocking) only in custom mode; auto stays
@@ -100,25 +107,29 @@ export function useScoopSection() {
         const compBounds = getCompartmentBounds(compartments, compId);
         if (!compBounds) continue;
 
-        const { span, depth, isOuter } = resolveScoopPlacement(side, compBounds, {
-          cols: compartments.cols,
-          rows: compartments.rows,
-          innerW,
-          innerD,
-        });
-        const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, params.wallThickness);
+        // Every selected wall contributes, so the readout's range covers what
+        // the whole scoop actually builds rather than one wall of it.
+        for (const side of sides) {
+          const { span, depth, isOuter } = resolveScoopPlacement(side, compBounds, {
+            cols: compartments.cols,
+            rows: compartments.rows,
+            innerW,
+            innerD,
+          });
+          const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, params.wallThickness);
 
-        const profile = resolveScoopProfile(
-          scoop,
-          span,
-          depth,
-          isOuter,
-          hasLip,
-          wallHeight,
-          interiorHeight,
-          lipOffset
-        );
-        if (profile) heights.push(profile.height);
+          const profile = resolveScoopProfile(
+            scoop,
+            span,
+            depth,
+            isOuter,
+            hasLip,
+            wallHeight,
+            interiorHeight,
+            lipOffset
+          );
+          if (profile) heights.push(profile.height);
+        }
       }
     }
 
@@ -132,7 +143,7 @@ export function useScoopSection() {
       return t('binDesigner.scoopRadiusAutoValue', { value: String(min) });
     }
     return t('binDesigner.scoopRadiusAutoRange', { min: String(min), max: String(max) });
-  }, [isAutoRadius, params, scoop, side, t]);
+  }, [isAutoRadius, params, scoop, sides, t]);
 
   const toggleScoop = useCallback(() => {
     updateScoop({ enabled: !scoop.enabled });
@@ -165,11 +176,31 @@ export function useScoopSection() {
     [updateScoop]
   );
 
-  const setSide = useCallback(
+  /**
+   * Toggle one wall, never leaving the scoop with none: a scoop that is enabled
+   * and builds nothing is a state the feature toggle above already expresses.
+   *
+   * A selection of one writes `side` alone and clears `sides`, so a design that
+   * visits this control and comes back to one wall is byte-identical to one that
+   * never did — `communityParamsFingerprint` hashes `params` wholesale.
+   */
+  const toggleSide = useCallback(
     (next: ScoopSide) => {
-      updateScoop({ side: next });
+      const on = new Set(sides);
+      if (on.has(next)) {
+        if (on.size === 1) return;
+        on.delete(next);
+      } else {
+        on.add(next);
+      }
+      const picked = SCOOP_SIDES.filter((s) => on.has(s));
+      updateScoop(
+        picked.length === 1
+          ? { side: picked[0], sides: undefined }
+          : { side: picked[0], sides: [...picked] }
+      );
     },
-    [updateScoop]
+    [sides, updateScoop]
   );
 
   const setAutoMaxHeight = useCallback(
@@ -199,7 +230,7 @@ export function useScoopSection() {
       scoop,
       isAutoRadius,
       style,
-      side,
+      sides,
       manualHeight,
       manualRun,
       autoMaxHeight,
@@ -213,7 +244,7 @@ export function useScoopSection() {
       setHeight,
       setRun,
       setStyle,
-      setSide,
+      toggleSide,
       setAutoMaxHeight,
     },
     meta,

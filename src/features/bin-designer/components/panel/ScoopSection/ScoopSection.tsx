@@ -1,7 +1,7 @@
 /**
  * Finger scoop section: ramp from bin floor to a chosen wall.
  *
- * Controls: toggle on/off, which wall the ramp rises to, profile style
+ * Controls: toggle on/off, which walls the ramp rises to, profile style
  * (curved/straight), and either an auto
  * height (with a raisable max) or independent height + run steppers for a
  * custom steep/shallow profile. Available only in standard compartment mode.
@@ -10,7 +10,9 @@
 import { Button, SegmentedControl, Stepper } from '@/design-system';
 import type { SegmentedControlOption } from '@/design-system';
 import type { ScoopStyle, ScoopSide } from '@/shared/types/bin';
+import { SCOOP_SIDES } from '@/shared/utils/scoopCalculations';
 import { FeatureToggle } from '../FeatureToggle';
+import { SideSelector } from '../shared';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useScoopSection } from './useScoopSection';
 
@@ -28,12 +30,13 @@ export function ScoopSection() {
     { value: 'straight', label: t('binDesigner.scoopStyleStraight') },
   ];
 
-  const sideOptions: SegmentedControlOption<ScoopSide>[] = [
-    { value: 'front', label: t('binDesigner.scoopSideFront') },
-    { value: 'back', label: t('binDesigner.scoopSideBack') },
-    { value: 'left', label: t('binDesigner.scoopSideLeft') },
-    { value: 'right', label: t('binDesigner.scoopSideRight') },
-  ];
+  const SIDE_LABEL: Record<ScoopSide, string> = {
+    front: t('binDesigner.scoopSideFront'),
+    back: t('binDesigner.scoopSideBack'),
+    left: t('binDesigner.scoopSideLeft'),
+    right: t('binDesigner.scoopSideRight'),
+  };
+  const selected = new Set(state.sides);
 
   return (
     <FeatureToggle
@@ -48,13 +51,19 @@ export function ScoopSection() {
         <span className="mb-1 block text-xs text-content-tertiary">
           {t('binDesigner.scoopSide')}
         </span>
-        <SegmentedControl
-          options={sideOptions}
-          value={state.side}
-          onChange={handlers.setSide}
-          aria-label={t('binDesigner.scoop.sideAria')}
-          size="sm"
-          fullWidth
+        <SideSelector
+          ariaLabel={t('binDesigner.scoop.sideAria')}
+          sides={SCOOP_SIDES.map((side) => ({
+            side,
+            label: SIDE_LABEL[side],
+            active: selected.has(side),
+            // The last wall standing cannot be switched off — that would be a
+            // scoop that is on and builds nothing, which the feature toggle
+            // above already says properly.
+            disabled: selected.size === 1 && selected.has(side),
+            title: SIDE_LABEL[side],
+          }))}
+          onToggle={handlers.toggleSide}
         />
       </div>
 

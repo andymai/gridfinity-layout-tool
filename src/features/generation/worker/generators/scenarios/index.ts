@@ -37,6 +37,7 @@ import { cutoutOffset } from './cutoutOffset';
 import { groupedScoop } from './groupedScoop';
 import { lipWall } from './lipWall';
 import { lipTip } from './lipTip';
+import { scoopMultiSide, scoopSidesDeduped } from './scoopMultiSide';
 import { handles } from './handles';
 import { honeycombJunction } from './honeycombJunction';
 import { customShapes } from './customShape';
@@ -94,6 +95,8 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...groupedScoop,
   ...lipWall,
   ...lipTip,
+  ...scoopMultiSide,
+  ...scoopSidesDeduped,
   ...handles,
   ...honeycombJunction,
   ...customShapes,

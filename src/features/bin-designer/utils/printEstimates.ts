@@ -47,7 +47,7 @@ import { footKind, resolveDetachableFeet } from '@/shared/utils/detachableFeetPl
 import {
   resolveScoopProfile,
   resolveScoopPlacement,
-  resolveScoopSide,
+  resolveScoopSides,
   computeLipOffset,
   computeInteriorHeight,
   scoopFrameHeights,
@@ -676,8 +676,7 @@ function computeScoopVolume(params: BinParams, outerW: number, outerD: number): 
     binFloorMm(wall)
   );
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
-  const side = resolveScoopSide(params.scoop);
-  const alongX = side === 'front' || side === 'back';
+  const sides = resolveScoopSides(params.scoop);
   const grid = { cols, rows, innerW, innerD };
 
   let volume = 0;
@@ -690,31 +689,38 @@ function computeScoopVolume(params: BinParams, outerW: number, outerD: number): 
     const bounds = getCompartmentBounds(params.compartments, compId);
     if (!bounds) continue;
 
-    const { span, depth, isOuter } = resolveScoopPlacement(side, bounds, grid);
-    const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, wall);
-    const profile = resolveScoopProfile(
-      params.scoop,
-      span,
-      depth,
-      isOuter,
-      hasLip,
-      frame.wallHeight,
-      frame.interiorHeight,
-      lipOffset
-    );
-    if (!profile) continue;
+    // Summed per wall. Ramps on adjacent walls share the corner between them,
+    // which this counts twice — under 1% of a bin's volume at the worst case
+    // (all four walls), and well inside what an estimate built from wedge areas
+    // and a void fraction already claims.
+    for (const side of sides) {
+      const { span, depth, isOuter } = resolveScoopPlacement(side, bounds, grid);
+      const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, wall);
+      const profile = resolveScoopProfile(
+        params.scoop,
+        span,
+        depth,
+        isOuter,
+        hasLip,
+        frame.wallHeight,
+        frame.interiorHeight,
+        lipOffset
+      );
+      if (!profile) continue;
 
-    const wedge =
-      profile.style === 'curved'
-        ? (1 - Math.PI / 4) * profile.run * profile.height
-        : 0.5 * profile.run * profile.height;
-    const buriedBack = isOuter ? 0 : rampAreaWithin(profile, thickness / 2);
-    const lipStrip = lipOffset > 0 ? lipOffset * frame.wallHeight - lipSupportArea(wall) : 0;
-    const dividerEnds = alongX
-      ? (bounds.minCol > 0 ? 1 : 0) + (bounds.maxCol < cols - 1 ? 1 : 0)
-      : (bounds.minRow > 0 ? 1 : 0) + (bounds.maxRow < rows - 1 ? 1 : 0);
-    const exposedSpan = Math.max(0, span - (thickness / 2) * dividerEnds);
-    volume += (wedge - buriedBack + lipStrip) * exposedSpan;
+      const wedge =
+        profile.style === 'curved'
+          ? (1 - Math.PI / 4) * profile.run * profile.height
+          : 0.5 * profile.run * profile.height;
+      const buriedBack = isOuter ? 0 : rampAreaWithin(profile, thickness / 2);
+      const lipStrip = lipOffset > 0 ? lipOffset * frame.wallHeight - lipSupportArea(wall) : 0;
+      const dividerEnds =
+        side === 'front' || side === 'back'
+          ? (bounds.minCol > 0 ? 1 : 0) + (bounds.maxCol < cols - 1 ? 1 : 0)
+          : (bounds.minRow > 0 ? 1 : 0) + (bounds.maxRow < rows - 1 ? 1 : 0);
+      const exposedSpan = Math.max(0, span - (thickness / 2) * dividerEnds);
+      volume += (wedge - buriedBack + lipStrip) * exposedSpan;
+    }
   }
   return volume;
 }

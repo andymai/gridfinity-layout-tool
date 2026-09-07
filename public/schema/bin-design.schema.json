@@ -1868,7 +1868,7 @@
     },
     "ScoopConfig": {
       "type": "object",
-      "description": "A curved or straight ramp at one wall so contents can be scooped out.",
+      "description": "A curved or straight ramp at one or more walls so contents can be scooped out.",
       "required": ["enabled", "side", "radius"],
       "properties": {
         "enabled": {
@@ -1877,7 +1877,20 @@
         },
         "side": {
           "enum": ["front", "back", "left", "right"],
-          "description": "Which wall the scoop rises from."
+          "description": "Which wall the scoop rises from. Read alone unless \"sides\" is present."
+        },
+        "sides": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["front", "back", "left", "right"],
+            "x-constant": {
+              "enum": "SCOOP_SIDES"
+            }
+          },
+          "description": "Walls the scoop rises from, when there is more than one. Omitted for a single-sided scoop, which stores \"side\" alone."
         },
         "radius": {
           "type": "number",

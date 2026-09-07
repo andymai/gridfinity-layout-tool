@@ -79,6 +79,18 @@ graph TB
   On slotted bins it assesses the REMOVABLE pieces instead (free-standing, so no floor-slab term),
   and the panel notes that the pattern only shows on the exported pieces — `GhostDividerPieces`
   renders merged boxes with no CSG and cannot subtract the holes
+- **Multi-wall finger scoops (`scoop.sides`, #4123)**: `resolveScoopSides` is the only
+  reader — it returns `sides` when set and `[side]` otherwise, so a single-sided scoop
+  keeps writing `side` alone and stays byte-identical (and fingerprint-identical) to a
+  design that never opened the control. `scoopRampBuilder` loops the per-compartment
+  body over the resolved walls and hands the whole set to one `fuseAll`. That fuse is the
+  thing to be careful about: ramps on ADJACENT walls overlap in the corner between them,
+  which is the first overlapping pair this builder has ever produced, and an n-way fuse
+  of overlapping solids can come back a multi-shell sum rather than a union. It does not
+  — `scoopMultiSide` measures the Euler characteristic on the EXPORT solid, where χ = 2
+  is one shell and a sum would read 4. It must stay on `forExport`: the draft path meshes
+  the socket separately and concatenates it, so a healthy draft bin reads χ = 10 and the
+  count says nothing at all.
 - **Lip peak finish (`base.lipTip`, #4119)**: `'sharp'` (absent, the spec knife edge),
   `'round'` or `'chamfer'`, taking `LIP_TIP_MM` off the peak so the top layer has a
   perimeter instead of a sliver. `finishLipPeak` in `boxBuilder` applies it to both lip
