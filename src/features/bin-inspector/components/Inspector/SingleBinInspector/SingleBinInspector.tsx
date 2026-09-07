@@ -138,9 +138,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
       <div className="space-y-4">
         {/* Size inputs with flip button between */}
-        <div className="flex items-end justify-center gap-2">
+        <div className="flex items-end gap-2">
           {/* Width control */}
-          <div className="flex flex-col">
+          <div className="flex min-w-0 flex-1 flex-col">
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.width')}
             </label>
@@ -153,6 +153,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               step={stepSize}
               disabled={locked}
               size={isMobile ? 'lg' : 'md'}
+              fullWidth
               aria-label={t('common.width')}
             />
           </div>
@@ -177,7 +178,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           </IconButton>
 
           {/* Depth control */}
-          <div className="flex flex-col">
+          <div className="flex min-w-0 flex-1 flex-col">
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.depth')}
             </label>
@@ -190,6 +191,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               step={stepSize}
               disabled={locked}
               size={isMobile ? 'lg' : 'md'}
+              fullWidth
               aria-label={t('common.depth')}
             />
           </div>
@@ -250,6 +252,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 inputDecimals={2}
                 disabled={locked}
                 size={isMobile ? 'lg' : 'md'}
+                fullWidth
                 aria-label={t('inspector.single.heightAria')}
               />
               <div className="mt-1 text-micro text-content-disabled">{heightEquiv}</div>
@@ -283,6 +286,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                   step={layout.heightUnitMm}
                   inputDecimals={2}
                   size={isMobile ? 'lg' : 'md'}
+                  fullWidth
                   aria-label={t('inspector.single.clearanceAria')}
                 />
                 <div className="mt-1 text-micro text-content-disabled">
