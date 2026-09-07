@@ -212,6 +212,22 @@ describe('useCutoutInteraction', () => {
       expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ x: 10.5 }));
     });
 
+    // #4122: the arrow keys clamp against the same empty range the drag does,
+    // so a shape deeper than the board lost its only fine-positioning control.
+    it('nudges a cutout deeper than the board', () => {
+      const tall = createCutout('tall', { y: 4, depth: 160 });
+      const { result } = renderHook(() =>
+        useCutoutInteraction({ ...defaultOpts, cutouts: [tall] })
+      );
+      act(() => result.current.selectCutout('tall', false));
+
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+      });
+
+      expect(onUpdate).toHaveBeenCalledWith('tall', expect.objectContaining({ y: 4.5 }));
+    });
+
     it('nudges selected up on ArrowUp (increases model Y)', () => {
       const { result } = renderHook(() => useCutoutInteraction(defaultOpts));
       act(() => result.current.selectCutout('a', false));

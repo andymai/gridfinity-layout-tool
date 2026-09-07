@@ -21,6 +21,7 @@ import { expandCutoutArray, expandCutoutGroup } from '@/shared/utils/cutoutArray
 import { DEFAULT_KNIFE_PRESET } from './knifeSlotPresets';
 import { KNIFE_SLOT_DEFAULT_CHAMFER, knifeSlotDimensions } from '@/features/bin-designer/types';
 import { translatePathPoints } from './pathGeometry';
+import { clampToBoardAxis } from './geometryCore';
 // Re-exported: the implementation moved to `shared/` so the variant resolver can
 // reach it, and every existing caller keeps importing it from here.
 export { resizeAroundCenter } from '@/shared/utils/cutoutResize';
@@ -97,8 +98,8 @@ export function clampedDelta(
   binDepth: number
 ): { x: number; y: number } {
   return {
-    x: Math.max(0, Math.min(original.x + dx, binWidth - original.width)),
-    y: Math.max(0, Math.min(original.y + dy, binDepth - original.depth)),
+    x: clampToBoardAxis(original.x + dx, 0, binWidth - original.width),
+    y: clampToBoardAxis(original.y + dy, 0, binDepth - original.depth),
   };
 }
 

@@ -173,6 +173,21 @@ export function computeBounds(cutouts: readonly Cutout[]): Bounds {
 }
 
 /**
+ * Clamp one axis to `[min, max]`, or pass the value through when that range is
+ * empty.
+ *
+ * An empty range means the shape is bigger than the board on this axis, which
+ * the editor treats as a state to work in rather than an error: `W`/`H` are
+ * `softMax` so a measured size past the board is kept (#3061), and the off-board
+ * banner offers to grow the bin to fit. Clamping an empty range collapses to
+ * `min`, so the shape that most needs positioning is the one that cannot be
+ * moved — the axis is simply dead under the cursor (#4122).
+ */
+export function clampToBoardAxis(value: number, min: number, max: number): number {
+  return max < min ? value : Math.min(Math.max(value, min), max);
+}
+
+/**
  * Clamp a cutout position to keep it within the bin interior.
  */
 export function clampPosition(
@@ -181,8 +196,8 @@ export function clampPosition(
   binDepth: number
 ): { x: number; y: number } {
   return {
-    x: Math.max(0, Math.min(cutout.x, binWidth - cutout.width)),
-    y: Math.max(0, Math.min(cutout.y, binDepth - cutout.depth)),
+    x: clampToBoardAxis(cutout.x, 0, binWidth - cutout.width),
+    y: clampToBoardAxis(cutout.y, 0, binDepth - cutout.depth),
   };
 }
 

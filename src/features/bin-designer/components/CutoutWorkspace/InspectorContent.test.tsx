@@ -47,6 +47,8 @@ vi.mock('@/design-system', async () => ({
 }));
 
 vi.mock('../panel/CutoutsSection/geometry', () => ({
+  clampToBoardAxis: (value: number, min: number, max: number) =>
+    max < min ? value : Math.min(Math.max(value, min), max),
   clampRotationToBounds: (_c: Cutout, rotation: number) => rotation,
   getRotatedBounds: (c: Cutout) => ({
     minX: c.x,
@@ -452,7 +454,10 @@ describe('InspectorContent multi-select editing', () => {
     expect(updates.get('a')?.width).toBe(2);
   });
 
-  it('pins a batch X to 0 for a cutout wider than the board', () => {
+  // A cutout wider than the board leaves no valid offset, so the clamp has no
+  // range to hold it in. Pinning it to 0 there took away the only way to line it
+  // up before growing the bin (#4122).
+  it('still moves a batch X for a cutout wider than the board', () => {
     const onUpdateBatch = renderMulti([
       createCutout({ id: 'oversize', width: 156 }),
       createCutout({ id: 'normal' }),
@@ -461,7 +466,9 @@ describe('InspectorContent multi-select editing', () => {
     fireEvent.change(screen.getByTestId('compact-input-X'), { target: { value: '20' } });
 
     const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
-    expect(updates.get('oversize')?.x).toBe(0);
+    expect(updates.get('oversize')?.x).toBe(20);
+    // The one that does fit is still held inside the board.
+    expect(updates.get('normal')?.x).toBe(20);
   });
 
   it('skips meshes when batch-resizing, since their geometry is baked', () => {

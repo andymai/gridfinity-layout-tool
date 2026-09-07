@@ -21,6 +21,7 @@ export {
   clampRotationToBounds,
   getEffectiveBounds,
   computeBounds,
+  clampToBoardAxis,
   clampPosition,
   getEffectiveWidth,
   getEffectiveDepth,
