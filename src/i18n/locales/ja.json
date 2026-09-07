@@ -334,7 +334,6 @@
   "binDesigner.base.stacking.floorFeaturesUnavailable": "積み重ね用の低い底面では使用できません",
   "binDesigner.base.stacking.hint": "同じサイズで積み重ね用リップのあるbinに重ねられます。連続したベースはGridfinityベースプレートには適合しません。",
   "binDesigner.base.stacking.magnetHint": "磁石のサイズは蓋と共通です。上部にも対応する穴を設けるには、磁石式の蓋を選択してください。",
-  "binDesigner.base.stacking.magnets": "四隅の磁石",
   "binDesigner.base.bodyType.tray.description": "底面がふたなので、別のビンの上に載ります",
   "binDesigner.base.floorPattern": "水抜き穴",
   "binDesigner.base.floorPattern.hint": "底面とその下の脚を貫通させ、水やほこりをそのまま落とします",

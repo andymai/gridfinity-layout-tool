@@ -134,6 +134,10 @@ describe('resolveConstraints — base constraints', () => {
     expect(FEATURE_MANIFESTS['base.magnet'].isEnabled(on)).toBe(true);
     expect(on.base.style).toBe('lid');
     expect(on.base.trayBottom?.floorAtBed).toBe(true);
+    expect(getFeatureStatus(on, 'floorPattern').available).toBe(true);
+    const custom: BinParams = { ...on, cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } };
+    expect(getFeatureStatus(custom, 'base.magnet').available).toBe(false);
+    expect(getFeatureStatus(custom, 'floorPattern').available).toBe(false);
     const off = resolveConstraints(on, { feature: 'base.magnet', enabled: false }).params;
     expect(FEATURE_MANIFESTS['base.magnet'].isEnabled(off)).toBe(false);
     expect(off.base.style).toBe('lid');

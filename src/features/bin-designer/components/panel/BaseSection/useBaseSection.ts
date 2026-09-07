@@ -35,6 +35,10 @@ import {
   LID_MAGNET_DIAMETER_MAX_MM,
   LID_MAGNET_DEPTH_MIN_MM,
   LID_MAGNET_DEPTH_MAX_MM,
+  LID_MAGNET_EDGE_COUNT_MIN,
+  LID_MAGNET_EDGE_COUNT_MAX,
+  LID_MAGNET_EDGE_COUNT_STEP,
+  LID_MAGNET_DIMENSION_STEP_MM,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
 import { DESIGNER_CONSTRAINTS, minHeightUnits } from '@/features/bin-designer/constants';
@@ -449,15 +453,25 @@ export function useBaseSection() {
   );
 
   const setStackingMagnet = useCallback(
-    (key: 'diameter' | 'depth', value: number) => {
-      const retentionMagnet = { ...params.lid.retentionMagnet, [key]: value };
+    (key: 'diameter' | 'depth' | 'edgeMagnets', value: number) => {
+      const [min, max] =
+        key === 'diameter'
+          ? [LID_MAGNET_DIAMETER_MIN_MM, LID_MAGNET_DIAMETER_MAX_MM]
+          : key === 'depth'
+            ? [LID_MAGNET_DEPTH_MIN_MM, LID_MAGNET_DEPTH_MAX_MM]
+            : [LID_MAGNET_EDGE_COUNT_MIN, LID_MAGNET_EDGE_COUNT_MAX];
+      const clamped = Math.min(
+        max,
+        Math.max(min, key === 'edgeMagnets' ? Math.round(value) : value)
+      );
+      const retentionMagnet = { ...params.lid.retentionMagnet, [key]: clamped };
       setParams({
         lid: { ...params.lid, retentionMagnet },
         base: {
           ...base,
           trayBottom: {
             ...trayBottom,
-            retentionMagnet: { ...retentionMagnet, edgeMagnets: 0 },
+            retentionMagnet,
           },
         },
       });
@@ -536,6 +550,14 @@ export function useBaseSection() {
     [stackingBase, setStackingMagnet, updateBase]
   );
 
+  const setMagnetEdgeCount = useCallback(
+    (count: number) => {
+      if (!stackingBase) return;
+      setStackingMagnet('edgeMagnets', count);
+    },
+    [stackingBase, setStackingMagnet]
+  );
+
   const setScrewDiameter = useCallback(
     (diameter: number) => {
       updateBase({ screwDiameter: diameter });
@@ -583,8 +605,16 @@ export function useBaseSection() {
       magnetDepthMax: stackingBase
         ? LID_MAGNET_DEPTH_MAX_MM
         : DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT,
-      magnetDiameterStep: stackingBase ? 0.1 : DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP,
-      magnetDepthStep: stackingBase ? 0.1 : DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP,
+      magnetDiameterStep: stackingBase
+        ? LID_MAGNET_DIMENSION_STEP_MM
+        : DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP,
+      magnetDepthStep: stackingBase
+        ? LID_MAGNET_DIMENSION_STEP_MM
+        : DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP,
+      magnetEdgeCount: trayBottom.retentionMagnet.edgeMagnets,
+      magnetEdgeMin: LID_MAGNET_EDGE_COUNT_MIN,
+      magnetEdgeMax: LID_MAGNET_EDGE_COUNT_MAX,
+      magnetEdgeStep: LID_MAGNET_EDGE_COUNT_STEP,
       hasScrew,
       bodyType,
       trayBottom,
@@ -658,6 +688,7 @@ export function useBaseSection() {
       toggleTrayRail,
       setMagnetDiameter,
       setMagnetHeight,
+      setMagnetEdgeCount,
       setScrewDiameter,
       toggleFloorPattern,
       setFloorPatternType,

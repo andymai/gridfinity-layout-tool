@@ -334,7 +334,6 @@
   "binDesigner.base.stacking.floorFeaturesUnavailable": "Ikke tilgjengelig med den senkede bunnen i stablebar utførelse",
   "binDesigner.base.stacking.hint": "Stables på en like stor bin med stablekant. Den sammenhengende basen passer ikke på en Gridfinity-baseplate.",
   "binDesigner.base.stacking.magnetHint": "Magnetstørrelsen deles med lokket. Velg et magnetisk lokk for tilsvarende lommer øverst.",
-  "binDesigner.base.stacking.magnets": "Fire hjørnemagneter",
   "binDesigner.base.bodyType.tray.description": "Undersiden er et lokk, så den står oppå en annen boks",
   "binDesigner.base.floorPattern": "Dreneringshull",
   "binDesigner.base.floorPattern.hint": "Perforerer bunnen og føttene under, slik at vann og støv faller rett gjennom",

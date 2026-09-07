@@ -22,6 +22,9 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
+import { isStackingBase, retentionBossRadius, retentionMagnetInset } from '@/shared/types/bin';
+import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
+import { resolveTrayBottomInputs } from './trayBottomInputs';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PatternPanelSpec } from './dividerPatterns';
 import type { WorldKeepOut } from './dividerPatterns';
@@ -76,6 +79,7 @@ export interface FloorPatternPlan {
  */
 export function floorPatternApplies(params: BinParams, dim: BinDimensions): boolean {
   if (params.floorPattern?.enabled !== true) return false;
+  if (isStackingBase(params.base) && isPartialMask(params.cellMask)) return false;
   if (dim.solid || params.style === 'solid' || dim.liteFloorOpen) return false;
   return dim.innerW > 0 && dim.innerD > 0;
 }
@@ -125,6 +129,33 @@ function pinKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
  * they keep mating with the baseplate.
  */
 function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
+  if (isStackingBase(params.base)) {
+    const inputs = resolveTrayBottomInputs(params);
+    if (!inputs.retentionMagnets) return [];
+    const radius = retentionBossRadius(inputs.retentionMagnetDiameter);
+    return retentionMagnetPositions(
+      inputs.cellsX,
+      inputs.cellsY,
+      inputs.gridUnitMm,
+      inputs.gridUnitMmY,
+      retentionMagnetInset(inputs.retentionMagnetDiameter),
+      inputs.retentionMagnetEdgeMagnets,
+      radius,
+      {
+        addW: inputs.overhangAddW,
+        addD: inputs.overhangAddD,
+        offsetX: inputs.outerOffsetX,
+        offsetY: inputs.outerOffsetY,
+      }
+    ).map(({ x, y }) => ({
+      xMin: x - radius,
+      xMax: x + radius,
+      yMin: y - radius,
+      yMax: y + radius,
+      zMin: 0,
+      zMax: 0,
+    }));
+  }
   if (!dim.withMagnet && !dim.withScrew) return [];
   const radius = Math.max(
     dim.withMagnet ? params.base.magnetDiameter / 2 : 0,
@@ -269,7 +300,18 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
     });
   };
 
-  if (dim.socketless) {
+  if (isStackingBase(params.base)) {
+    // The lower mouth is narrower than the body interior. Keep the mating
+    // skirt intact instead of using the ordinary wall-thickness inset.
+    const inputs = resolveTrayBottomInputs(params);
+    const rim = inputs.cavityInset + border;
+    addWindow(
+      inputs.outerOffsetX,
+      inputs.outerOffsetY,
+      inputs.lidOuterW - 2 * rim,
+      inputs.lidOuterD - 2 * rim
+    );
+  } else if (dim.socketless) {
     // No socket to thread the holes through — the whole cavity floor is fair
     // game, minus the rim that bonds it to the walls.
     addWindow(dim.innerOffsetX, dim.innerOffsetY, dim.innerW - 2 * border, dim.innerD - 2 * border);
@@ -306,6 +348,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
   return {
     windows,
     cutZ0: dim.undersideRelief ? -COPLANAR_MARGIN : -dim.baseOffsetZ - COPLANAR_MARGIN,
-    cutZ1: dim.floorThickness + COPLANAR_MARGIN,
+    cutZ1:
+      dim.floorThickness + COPLANAR_MARGIN - (isStackingBase(params.base) ? dim.baseOffsetZ : 0),
   };
 }

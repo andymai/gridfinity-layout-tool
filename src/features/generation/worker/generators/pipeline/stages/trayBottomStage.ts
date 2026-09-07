@@ -21,7 +21,7 @@
  * stays the absolute bottom.
  */
 
-import { translate, unwrap, fuse, withScope } from 'brepjs';
+import { translate, unwrap, fuse, cut, withScope } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../utils/abort';
@@ -30,6 +30,8 @@ import { addClickRails, hasAnyClickRail } from '../../lidClickRail';
 import { addLidRetentionMagnets } from '../../lidRetentionMagnets';
 import { resolveTrayBottomInputs } from '../../trayBottomInputs';
 import { addStackingFloor } from '../../stackingFloorBuilder';
+import { buildFloorPattern } from '../../floorPatternBuilder';
+import { isStackingBase } from '@/shared/types/bin';
 
 export const trayBottomStage: PipelineStage = {
   name: 'merge',
@@ -50,11 +52,20 @@ export const trayBottomStage: PipelineStage = {
       let skirt: Shape3D = buildMatingShell(scope, inputs);
       scope.register(skirt);
 
-      if (ctx.params.base.trayBottom?.floorAtBed) {
+      if (isStackingBase(ctx.params.base)) {
         skirt = addStackingFloor(scope, skirt, body, inputs, ctx);
         // The floor is present BEFORE drilling: unioning it after the magnets
         // would cap their downward openings.
-        if (inputs.retentionMagnets) skirt = addLidRetentionMagnets(scope, skirt, inputs);
+        if (inputs.retentionMagnets) {
+          skirt = addLidRetentionMagnets(scope, skirt, inputs, ctx.originToTag);
+        }
+        // These tools use the same lid-local frame as the lowered floor and
+        // keep solid material under dividers and around retention bosses.
+        for (const tool of buildFloorPattern(ctx).shapes) {
+          scope.register(tool);
+          checkCancelled(ctx.signal);
+          skirt = scope.register(unwrap(cut(skirt as ValidSolid, tool as ValidSolid)));
+        }
         return translate(skirt, [0, 0, ctx.dimensions.baseOffsetZ]);
       }
 

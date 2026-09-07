@@ -23,6 +23,8 @@ describe('useBaseSection', () => {
     act(() => result.current.handlers.toggleMagnet());
     act(() => result.current.handlers.setMagnetDiameter(8));
     act(() => result.current.handlers.setMagnetHeight(3));
+    act(() => result.current.handlers.setMagnetEdgeCount(2));
+    expect(result.current.state.magnetEdgeCount).toBe(2);
     expect(result.current.state.bodyType).toBe('stacking');
     expect(result.current.state.hasMagnet).toBe(true);
     expect(result.current.state.magnetDiameter).toBe(8);
@@ -30,6 +32,7 @@ describe('useBaseSection', () => {
     expect(useDesignerStore.getState().params.lid.retentionMagnet).toMatchObject({
       diameter: 8,
       depth: 3,
+      edgeMagnets: 2,
     });
     // Editing from the other end must immediately update Mounting too.
     act(() => {
@@ -42,6 +45,20 @@ describe('useBaseSection', () => {
     act(() => result.current.handlers.toggleMagnet());
     expect(result.current.state.bodyType).toBe('stacking');
     expect(result.current.state.hasMagnet).toBe(false);
+  });
+
+  it('bounds Stacking magnet inputs with the lid limits', () => {
+    const { result } = renderHook(() => useBaseSection());
+    act(() => result.current.handlers.setBodyType('stacking'));
+    act(() => result.current.handlers.setMagnetDiameter(100));
+    act(() => result.current.handlers.setMagnetHeight(-1));
+    act(() => result.current.handlers.setMagnetEdgeCount(100));
+    expect(useDesignerStore.getState().params.lid.retentionMagnet).toEqual({
+      diameter: 15,
+      depth: 1,
+      edgeMagnets: 3,
+    });
+    expect(result.current.state.magnetDiameterStep).toBe(0.5);
   });
 
   it('derives hasMagnet and hasScrew from base style', () => {

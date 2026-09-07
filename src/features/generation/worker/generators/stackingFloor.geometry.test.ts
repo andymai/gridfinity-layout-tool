@@ -1,19 +1,27 @@
 // @vitest-environment node
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_TRAY_BOTTOM, retentionMagnetInset } from '@/shared/types/bin';
+import {
+  DEFAULT_TRAY_BOTTOM,
+  DEFAULT_FLOOR_PATTERN_CONFIG,
+  retentionMagnetInset,
+  retentionBossRadius,
+} from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin, type GenerateBinFn } from './__kernel-tests__/wasmInit';
-import { buildParams } from './__kernel-tests__/scenarioTypes';
+import { buildParams, makeInsert } from './__kernel-tests__/scenarioTypes';
 import {
   assertWatertight,
   assertNoDegenerateTriangles,
   boundingBox,
   verticalSolidSpans,
 } from './__kernel-tests__/meshAssertions';
-import { deriveDimensions } from './pipeline/context';
+import { deriveDimensions, createInitialContext } from './pipeline/context';
 import { resolveTrayBottomInputs } from './trayBottomInputs';
 import { retentionSeatPlanes } from './retentionMagnetGeometry';
 import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
+import { scoopRampsFeature } from './scoopRampBuilder';
+import { insertCutsFeature } from './insertBuilder';
 import { isOk } from '@/core/result';
 
 let generateBin: GenerateBinFn;
@@ -45,6 +53,65 @@ function paramsFor(depth = 2) {
 }
 
 describe('stacking body', () => {
+  it('guards the lowered floor when imported parameters bypass the UI', () => {
+    const p = paramsFor();
+    const ctx = createInitialContext({
+      ...p,
+      style: 'slotted',
+      inserts: [makeInsert({})],
+      scoop: { ...p.scoop, enabled: true },
+    });
+    expect(ctx.dimensions.isSlotted).toBe(false);
+    expect(scoopRampsFeature.shouldBuild(ctx)).toBe(false);
+    expect(insertCutsFeature.shouldBuild(ctx)).toBe(false);
+  });
+
+  it('drains through the bed floor while keeping corner and edge magnet pockets closed above', () => {
+    const p = paramsFor();
+    const patterned = {
+      ...p,
+      width: 3,
+      depth: 2,
+      lid: { ...p.lid, retentionMagnet: { ...p.lid.retentionMagnet, edgeMagnets: 2 } },
+      floorPattern: {
+        ...DEFAULT_FLOOR_PATTERN_CONFIG,
+        enabled: true,
+        scale: 1,
+        pattern: 'round' as const,
+      },
+    };
+    const mesh = generateBin(patterned, undefined, true);
+    assertWatertight(mesh, 'stacking drainage');
+    assertNoDegenerateTriangles(mesh, 'stacking drainage');
+    let openings = 0;
+    for (let x = -40.3; x < 40; x += 5.1) {
+      for (let y = -20.7; y < 20; y += 5.1) {
+        if (verticalSolidSpans(mesh, x, y).length === 0) openings++;
+      }
+    }
+    expect(openings).toBeGreaterThan(20);
+    const positions = retentionMagnetPositions(
+      3,
+      2,
+      42,
+      42,
+      retentionMagnetInset(6),
+      2,
+      retentionBossRadius(6)
+    );
+    expect(positions.length).toBeGreaterThan(4);
+    for (const { x, y } of positions) {
+      const spans = verticalSolidSpans(mesh, x + 0.1, y + 0.1);
+      expect(spans[0][0]).toBeCloseTo(2, 3);
+      expect(spans[0][1]).toBeGreaterThan(2.5);
+    }
+    // The preview path must cut the same floor as fused export geometry.
+    const preview = generateBin(patterned, undefined, false);
+    expect(
+      verticalSolidSpans(preview, positions[0].x + 0.1, positions[0].y + 0.1)[0][0]
+    ).toBeCloseTo(2, 3);
+  });
+
   it.each([
     [0.8, 2],
     [1.2, 2],

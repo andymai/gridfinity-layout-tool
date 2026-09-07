@@ -12,6 +12,9 @@ import {
   compartmentsAreRectangular,
 } from './compartmentBuilder';
 
+// Overlap the old floor just enough to avoid coincident Boolean faces.
+const FLOOR_OVERLAP_MM = 0.01;
+
 export function addStackingFloor(
   scope: DisposalScope,
   skirt: Shape3D,
@@ -26,7 +29,7 @@ export function addStackingFloor(
   const fill = scope.register(
     buildOutlineDrawing(inputs, LIP_BIG_TAPER + inputs.mateRelief)
       .sketchOnPlane('XY', bottom)
-      .extrude(dim.baseOffsetZ + 0.01)
+      .extrude(dim.baseOffsetZ + FLOOR_OVERLAP_MM)
   );
   let local = scope.register(unwrap(fuse(skirt as ValidSolid, fill as ValidSolid)));
   const localBody = scope.register(translate(body, [0, 0, -dim.baseOffsetZ]));
@@ -34,7 +37,7 @@ export function addStackingFloor(
 
   if (!dim.solid) {
     const start = bottom + dim.floorThickness;
-    const depth = dim.floorThickness + 0.02 - start;
+    const depth = dim.baseOffsetZ + 2 * FLOOR_OVERLAP_MM;
     const mouth = scope.register(
       buildOutlineDrawing(inputs, inputs.cavityInset).sketchOnPlane('XY', start).extrude(depth)
     );

@@ -334,7 +334,6 @@
   "binDesigner.base.stacking.floorFeaturesUnavailable": "Niet beschikbaar met de verlaagde bodem van het stapelbare model",
   "binDesigner.base.stacking.hint": "Past op een even grote bin met stapelrand. De doorlopende basis past niet op een Gridfinity-basisplaat.",
   "binDesigner.base.stacking.magnetHint": "De magneetmaat wordt gedeeld met het deksel. Kies een magnetisch deksel voor bijpassende uitsparingen bovenaan.",
-  "binDesigner.base.stacking.magnets": "Vier hoekmagneten",
   "binDesigner.base.bodyType.tray.description": "De onderkant is een deksel, dus hij staat op een andere bak",
   "binDesigner.base.floorPattern": "Afvoergaten",
   "binDesigner.base.floorPattern.hint": "Perforeert de bodem en de voetjes eronder, zodat water en stof er recht doorheen vallen",

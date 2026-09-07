@@ -219,7 +219,18 @@ export function BaseSection() {
               unit="mm"
             />
             {state.bodyType === 'stacking' && (
-              <Hint>{`${t('binDesigner.base.stacking.magnets')}. ${t('binDesigner.base.stacking.magnetHint')}`}</Hint>
+              <>
+                <SliderInput
+                  label={t('binDesigner.lid.retentionEdgeMagnets')}
+                  value={state.magnetEdgeCount}
+                  onChange={handlers.setMagnetEdgeCount}
+                  min={state.magnetEdgeMin}
+                  max={state.magnetEdgeMax}
+                  step={state.magnetEdgeStep}
+                />
+                <Hint>{t('binDesigner.lid.retentionEdgeMagnetsHint')}</Hint>
+                <Hint>{t('binDesigner.base.stacking.magnetHint')}</Hint>
+              </>
             )}
           </FeatureToggle>
 
@@ -246,7 +257,7 @@ export function BaseSection() {
       )}
 
       {/* ── Feet ──────────────────────────────────────────────────────── */}
-      {state.bodyType !== 'stacking' && !state.showFeet && state.feetUnavailable && (
+      {!state.showFeet && state.feetUnavailable && (
         <UnavailableFamily
           title={t('binDesigner.base.section.feet')}
           reason={state.feetUnavailable}
@@ -368,7 +379,7 @@ export function BaseSection() {
 
       {/* ── Floor ── lightweight relief only; the drainage pattern lives on
           the Style page with the other surface patterns. */}
-      {state.bodyType !== 'stacking' && !state.showFloor && state.floorUnavailable && (
+      {!state.showFloor && state.floorUnavailable && (
         <UnavailableFamily
           title={t('binDesigner.base.section.floor')}
           reason={state.floorUnavailable}

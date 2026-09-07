@@ -15,14 +15,22 @@ import {
   isUndersideRelief,
   undersideReliefSelected,
 } from '@/features/bin-designer/types/base';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import type { ConstraintRule, ImplicationRule } from './types';
 
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   {
+    description: 'Custom Stacking outlines have no rectangular retention or drainage layout',
+    source: 'base.lid',
+    when: (p) => isStackingBase(p.base) && isPartialMask(p.cellMask),
+    disables: ['base.magnet', 'floorPattern'],
+    reason: 'binDesigner.walls.pattern.dividers.notPolygon',
+  },
+  {
     description: 'Stacking floor has a different floor plane from floor-mounted features',
     source: 'base.lid',
     when: (p) => isStackingBase(p.base),
-    disables: ['scoop', 'inserts', 'floorPattern', 'style.slotted'],
+    disables: ['scoop', 'inserts', 'style.slotted'],
     reason: 'binDesigner.base.stacking.floorFeaturesUnavailable',
   },
   // ── Base: flat ↔ everything else ─────────────────────────────────────────

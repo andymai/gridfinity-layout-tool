@@ -5,6 +5,7 @@
  * to help slide items out of the bin.
  */
 
+import { isStackingBase } from '@/shared/types/bin';
 import {
   draw,
   drawRoundedRectangle,
@@ -305,7 +306,8 @@ export const scoopRampsFeature: FeatureBuilder = {
   // recesses, while the underside relief keeps the floor a standard bin has, so
   // the ramp lands on solid material exactly as it always did. Mirrors the
   // constraint rule; suppressed here too for any legacy design carrying both.
-  shouldBuild: (ctx) => !ctx.dimensions.isSlotted && !ctx.dimensions.liteFloorOpen,
+  shouldBuild: (ctx) =>
+    !isStackingBase(ctx.params.base) && !ctx.dimensions.isSlotted && !ctx.dimensions.liteFloorOpen,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(

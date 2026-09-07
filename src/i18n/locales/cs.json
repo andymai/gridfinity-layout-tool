@@ -334,7 +334,6 @@
   "binDesigner.base.stacking.floorFeaturesUnavailable": "Není dostupné se sníženým dnem stohovacího provedení",
   "binDesigner.base.stacking.hint": "Stohuje se na bin stejné velikosti se stohovacím lemem. Souvislá základna nepasuje do základové desky Gridfinity.",
   "binDesigner.base.stacking.magnetHint": "Velikost magnetů je společná s víkem. Pro odpovídající otvory nahoře zvolte magnetické víko.",
-  "binDesigner.base.stacking.magnets": "Čtyři rohové magnety",
   "binDesigner.base.bodyType.tray.description": "Jeho spodek je víko, takže sedí na jiném boxu",
   "binDesigner.base.floorPattern": "Odtokové otvory",
   "binDesigner.base.floorPattern.hint": "Perforuje dno a nožky pod ním, takže voda a prach propadnou přímo skrz",

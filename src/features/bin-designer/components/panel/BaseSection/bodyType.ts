@@ -118,7 +118,7 @@ export function bodyTypeParams(params: BinParams, next: BodyType): BinParams {
             (params.base.style === 'lid' && params.base.trayBottom?.attachment === 'magnetic')
               ? 'magnetic'
               : 'friction',
-          retentionMagnet: { ...params.lid.retentionMagnet, edgeMagnets: 0 },
+          retentionMagnet: params.lid.retentionMagnet,
         },
       },
     };

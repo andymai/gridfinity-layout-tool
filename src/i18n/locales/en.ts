@@ -3554,7 +3554,6 @@ const en: Record<string, string> = {
     'One continuous tapered base with a bed-supported floor',
   'binDesigner.base.stacking.hint':
     'Stacks on a bin of the same size with a stacking lip. The continuous base does not fit a Gridfinity baseplate.',
-  'binDesigner.base.stacking.magnets': 'Four corner magnets',
   'binDesigner.base.stacking.magnetHint':
     'Magnet size is shared with the lid. Choose a magnetic lid for matching pockets at the top.',
   'binDesigner.base.stacking.floorFeaturesUnavailable':

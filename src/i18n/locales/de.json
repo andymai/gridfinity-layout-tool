@@ -334,7 +334,6 @@
   "binDesigner.base.stacking.floorFeaturesUnavailable": "Mit dem abgesenkten Stapelboden nicht verfügbar",
   "binDesigner.base.stacking.hint": "Passt auf einen gleich großen Bin mit Stapelrand. Der durchgehende Boden passt nicht auf eine Gridfinity-Grundplatte.",
   "binDesigner.base.stacking.magnetHint": "Die Magnetgröße wird mit dem Deckel geteilt. Wähle einen magnetischen Deckel für passende Taschen oben.",
-  "binDesigner.base.stacking.magnets": "Vier Eckmagnete",
   "binDesigner.base.bodyType.tray.description": "Seine Unterseite ist ein Deckel, also sitzt er auf einem anderen Behälter",
   "binDesigner.base.floorPattern": "Ablauflöcher",
   "binDesigner.base.floorPattern.hint": "Durchbricht den Boden und die Füße darunter, sodass Wasser und Staub direkt hindurchfallen",

@@ -155,7 +155,7 @@ export const DEFAULT_TRAY_BOTTOM: TrayBottomConfig = {
   },
 } as const;
 
-/** Stacking always has a bed-level floor, no hanging rails, and four magnets.
+/** Stacking always has a bed-level floor, no hanging rails, and shared retention magnets.
  * Share the lid's magnet dimensions so changing them cannot misalign the pair. */
 export function resolveTrayBottomConfig(
   stored: TrayBottomConfig | undefined,
@@ -167,7 +167,7 @@ export function resolveTrayBottomConfig(
     ...config,
     extraHeightMm: 0,
     attachment: config.attachment === 'magnetic' ? 'magnetic' : 'friction',
-    retentionMagnet: { ...lidMagnet, edgeMagnets: 0 },
+    retentionMagnet: lidMagnet,
   };
 }
 

@@ -334,7 +334,6 @@
   "binDesigner.base.stacking.floorFeaturesUnavailable": "Недоступно зі зниженим дном корпусу для штабелювання",
   "binDesigner.base.stacking.hint": "Ставиться на bin такого самого розміру з бортиком для штабелювання. Суцільна основа не підходить до базової пластини Gridfinity.",
   "binDesigner.base.stacking.magnetHint": "Розмір магнітів спільний із кришкою. Виберіть магнітну кришку, щоб отримати відповідні гнізда зверху.",
-  "binDesigner.base.stacking.magnets": "Чотири кутові магніти",
   "binDesigner.base.bodyType.tray.description": "Його низ це кришка, тож він стоїть на іншому контейнері",
   "binDesigner.base.floorPattern": "Дренажні отвори",
   "binDesigner.base.floorPattern.hint": "Перфорує дно та ніжки під ним, щоб вода й пил падали наскрізь",

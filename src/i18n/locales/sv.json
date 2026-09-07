@@ -334,7 +334,6 @@
   "binDesigner.base.stacking.floorFeaturesUnavailable": "Inte tillgängligt med den sänkta botten i stapelbart utförande",
   "binDesigner.base.stacking.hint": "Staplas på en lika stor bin med staplingskant. Den sammanhängande basen passar inte på en Gridfinity-basplatta.",
   "binDesigner.base.stacking.magnetHint": "Magnetstorleken delas med locket. Välj ett magnetiskt lock för motsvarande urtag upptill.",
-  "binDesigner.base.stacking.magnets": "Fyra hörnmagneter",
   "binDesigner.base.bodyType.tray.description": "Undersidan är ett lock, så den står ovanpå en annan låda",
   "binDesigner.base.floorPattern": "Dräneringshål",
   "binDesigner.base.floorPattern.hint": "Perforerar botten och fötterna under, så att vatten och damm faller rakt igenom",

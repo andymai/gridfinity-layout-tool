@@ -334,7 +334,6 @@
   "binDesigner.base.stacking.floorFeaturesUnavailable": "Indisponible avec le fond abaissé du corps empilable",
   "binDesigner.base.stacking.hint": "Se pose sur un bin de même taille avec un rebord d’empilage. La base continue ne convient pas à une plaque de base Gridfinity.",
   "binDesigner.base.stacking.magnetHint": "La taille des aimants est partagée avec le couvercle. Choisissez un couvercle magnétique pour des logements correspondants en haut.",
-  "binDesigner.base.stacking.magnets": "Quatre aimants aux coins",
   "binDesigner.base.bodyType.tray.description": "Son dessous est un couvercle, il se pose donc sur un autre bac",
   "binDesigner.base.floorPattern": "Trous de drainage",
   "binDesigner.base.floorPattern.hint": "Perfore le fond et les pieds situés en dessous, pour que l’eau et la poussière tombent directement",
