@@ -15,6 +15,7 @@ import type {
   FloorPatternType,
   FootLattice,
   LightweightMode,
+  LipTipStyle,
   LidAttachment,
   LidRailSide,
   TrayBottomConfig,
@@ -35,6 +36,7 @@ import { minHeightUnits } from '@/features/bin-designer/constants';
 import {
   DEFAULT_FOOT_LATTICE,
   DEFAULT_LIGHTWEIGHT_MODE,
+  resolveLipTip,
   isEffectiveTile,
   isSocketlessBase,
 } from '@/features/bin-designer/types/base';
@@ -50,6 +52,12 @@ function omitTile(base: BinParams['base']): BinParams['base'] {
 /** Strip a `lightweightMode` that just restates the default. */
 function omitDefaultLightweightMode(base: BinParams['base']): BinParams['base'] {
   const { lightweightMode: _mode, ...rest } = base;
+  return rest;
+}
+
+/** Strip a `lipTip` that just restates the default. */
+function omitDefaultLipTip(base: BinParams['base']): BinParams['base'] {
+  const { lipTip: _tip, ...rest } = base;
   return rest;
 }
 
@@ -271,10 +279,17 @@ export function useBaseSection() {
       // bin differently from an identical one whose owner never opened the
       // control. Stripped here rather than in `setLightweightMode` so no future
       // path can reintroduce it.
-      const next =
+      const withoutMode =
         withoutTile.base.lightweightMode === 'interior'
           ? { ...withoutTile, base: omitDefaultLightweightMode(withoutTile.base) }
           : withoutTile;
+      // And the lip's peak finish, for the third time and the same reason:
+      // 'sharp' is what an absent field already means, so a bin that visited the
+      // control and came back must fingerprint as one that never did.
+      const next =
+        withoutMode.base.lipTip === 'sharp'
+          ? { ...withoutMode, base: omitDefaultLipTip(withoutMode.base) }
+          : withoutMode;
       const minHeight = minHeightUnits(next.base, next.heightUnitMm);
       setParams(next.height < minHeight ? { ...next, height: minHeight } : next);
     },
@@ -319,6 +334,13 @@ export function useBaseSection() {
   const toggleStackingLip = useCallback(() => {
     updateBase({ stackingLip: !base.stackingLip });
   }, [base.stackingLip, updateBase]);
+
+  const setLipTip = useCallback(
+    (tip: LipTipStyle) => {
+      commit({ ...params, base: { ...params.base, lipTip: tip } });
+    },
+    [params, commit]
+  );
 
   const toggleLightweight = useCallback(() => {
     if (!base.lightweight && !lightweightStatus.available) return;
@@ -532,6 +554,7 @@ export function useBaseSection() {
       footLatticeLockedY,
       hasLightweight: base.lightweight,
       lightweightMode: base.lightweightMode ?? DEFAULT_LIGHTWEIGHT_MODE,
+      lipTip: resolveLipTip(base),
       undersideReliefUnblocks,
       // Which families of controls this body actually has. A hidden one is
       // never hiding a live setting: the engine clears what it disables.
@@ -575,6 +598,7 @@ export function useBaseSection() {
       toggleMagnet,
       toggleScrew,
       toggleStackingLip,
+      setLipTip,
       toggleLightweight,
       setLightweightMode,
       toggleHalfSockets,

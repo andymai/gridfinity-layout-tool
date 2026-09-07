@@ -21,6 +21,7 @@ import {
   fuseAll,
   intersect,
   fillet,
+  chamfer,
   faceFinder,
   edgeFinder,
   getBounds,
@@ -38,7 +39,6 @@ import {
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
   LIP_OVERLAP,
-  TOP_FILLET,
   COPLANAR_MARGIN,
   sketch,
 } from './generatorTypes';
@@ -46,6 +46,7 @@ import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { DEFAULT_LIP_TIP, LIP_TIP_MM, type LipTipStyle } from '@/shared/types/bin';
 import {
   hasOverhang,
   overhangExpansion,
@@ -643,6 +644,50 @@ export function buildBinBox(
  * from zero overhang at Z_ANGLE_BOTTOM up to (LIP_TAPER_WIDTH −
  * wallThickness) overhang at Z_EXT — printable without supports.
  */
+/**
+ * Take the requested finish off the lip's peak edge.
+ *
+ * The peak is where the vertical outer face meets the 45 degree inner chamfer,
+ * so it comes out of the loft (or sweep) as a knife edge — a sliver the slicer
+ * has to draw with nothing under it, which is what scars and lifts. Rounding or
+ * chamfering it removes {@link LIP_TIP_MM} of that tip and nothing else: the
+ * inner chamfer a stacked bin lands on and the vertical band a lid's plug meets
+ * both sit well below the treated edge.
+ *
+ * Selecting by Z band rather than by orientation is deliberate: an O-shaped or
+ * polygon footprint has a peak ring per hole, and they all need the same
+ * treatment. A kernel that refuses the operation returns the untreated solid —
+ * a sharp lip prints, and losing the whole bin over a cosmetic edge does not.
+ */
+function finishLipPeak(
+  scope: DisposalScope,
+  solid: Shape3D,
+  peakZ: number,
+  lipTip: LipTipStyle
+): Shape3D {
+  if (lipTip === 'sharp') return solid;
+
+  const lipEdges = edgeFinder()
+    .when((e) => {
+      const bounds = getBounds(e);
+      return bounds.zMax >= peakZ - 1 && bounds.zMin <= peakZ;
+    })
+    .findAll(solid);
+  if (lipEdges.length === 0) return solid;
+
+  try {
+    const treated =
+      lipTip === 'round'
+        ? fillet(solid as ValidSolid, lipEdges, LIP_TIP_MM)
+        : chamfer(solid as ValidSolid, lipEdges, LIP_TIP_MM);
+    const next = unwrap(treated);
+    scope.register(solid); // consumed by the operation above
+    return next;
+  } catch {
+    return solid;
+  }
+}
+
 function buildTopShapeLoft(
   outerW: number,
   outerD: number,
@@ -650,7 +695,8 @@ function buildTopShapeLoft(
   cellMask?: CellMask,
   gridUnitMm: GridUnitInput = SIZE,
   offX: number = 0,
-  offY: number = 0
+  offY: number = 0,
+  lipTip: LipTipStyle = DEFAULT_LIP_TIP
 ): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
   const polygon = isPartialMask(cellMask);
@@ -783,21 +829,7 @@ function buildTopShapeLoft(
       result = unwrap(fuse(result, holeRing));
     }
 
-    // Fillet the peak edge (only when TOP_FILLET > 0; spec default is 0)
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TOP_FILLET is a tunable constant; default is 0 but build can override
-    if (TOP_FILLET > 0) {
-      const lipEdges = edgeFinder()
-        .when((e) => {
-          const bounds = getBounds(e);
-          return bounds.zMax >= Z_PEAK - 1 && bounds.zMin <= Z_PEAK;
-        })
-        .findAll(result);
-
-      if (lipEdges.length > 0) {
-        scope.register(result); // consumed by fillet
-        result = unwrap(fillet(result as ValidSolid, lipEdges, TOP_FILLET));
-      }
-    }
+    result = finishLipPeak(scope, result, Z_PEAK, lipTip);
 
     return result;
   });
@@ -816,7 +848,8 @@ function buildTopShapeSweep(
   cellMask?: CellMask,
   gridUnitMm: GridUnitInput = SIZE,
   offX: number = 0,
-  offY: number = 0
+  offY: number = 0,
+  lipTip: LipTipStyle = DEFAULT_LIP_TIP
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
@@ -873,21 +906,7 @@ function buildTopShapeSweep(
       swept = unwrap(fuse(swept, holeLip));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TOP_FILLET is a tunable constant; default is 0 but build can override
-    if (TOP_FILLET > 0) {
-      const lipEdges = edgeFinder()
-        .when((e) => {
-          const bounds = getBounds(e);
-          return bounds.zMax >= LIP_HEIGHT - 1 && bounds.zMin <= LIP_HEIGHT;
-        })
-        .findAll(swept);
-
-      if (lipEdges.length > 0) {
-        scope.register(swept); // consumed by fillet
-        return unwrap(fillet(swept as ValidSolid, lipEdges, TOP_FILLET));
-      }
-    }
-    return swept;
+    return finishLipPeak(scope, swept, LIP_HEIGHT, lipTip);
   });
 }
 
@@ -911,7 +930,8 @@ export function buildTopShape(
   includeLip: boolean,
   gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
-  overhang?: ResolvedOverhang
+  overhang?: ResolvedOverhang,
+  lipTip: LipTipStyle = DEFAULT_LIP_TIP
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   // Overhang is suppressed for polygon masks (the mask defines the footprint).
@@ -926,7 +946,8 @@ export function buildTopShape(
     ...pitchKeySegments(pitch, quantize),
     includeLip,
     polygon ? hashMask(cellMask) : 'rect',
-    ov ? overhangKey(ov) : '0'
+    ov ? overhangKey(ov) : '0',
+    lipTip
   );
   const cached = getLipCache(lipKey);
   if (cached) {
@@ -945,11 +966,29 @@ export function buildTopShape(
   // certain non-square aspect ratios, causing the lip to overhang.
   let result: Shape3D;
   try {
-    result = buildTopShapeLoft(outerW, outerD, includeLip, cellMask, gridUnitMm, offX, offY);
+    result = buildTopShapeLoft(
+      outerW,
+      outerD,
+      includeLip,
+      cellMask,
+      gridUnitMm,
+      offX,
+      offY,
+      lipTip
+    );
   } catch {
     // Loft failed — fall back to sweep path (kernel regression).
     // NOTE: sweep has the OCCT profile-flip bug on non-square spines
-    result = buildTopShapeSweep(outerW, outerD, includeLip, cellMask, gridUnitMm, offX, offY);
+    result = buildTopShapeSweep(
+      outerW,
+      outerD,
+      includeLip,
+      cellMask,
+      gridUnitMm,
+      offX,
+      offY,
+      lipTip
+    );
   }
 
   return setLipCache(lipKey, result);

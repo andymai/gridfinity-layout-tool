@@ -3554,6 +3554,16 @@ const en: Record<string, string> = {
   'binDesigner.base.section.feet': 'Feet',
   'binDesigner.base.section.floor': 'Floor',
   'binDesigner.base.stackingLip.hint': "Lets another bin's feet sit on top of this one",
+  'binDesigner.base.lipTip': 'Lip peak',
+  'binDesigner.base.lipTip.sharp': 'Sharp',
+  'binDesigner.base.lipTip.round': 'Rounded',
+  'binDesigner.base.lipTip.chamfer': 'Chamfered',
+  'binDesigner.base.lipTip.sharp.hint':
+    'The standard profile: the lip comes to a point. Prints as a thin sliver on top, which can scar or lift.',
+  'binDesigner.base.lipTip.round.hint':
+    'Rounds the point off so the top layer has something solid under it. Bins stack exactly as before.',
+  'binDesigner.base.lipTip.chamfer.hint':
+    'Cuts a flat off the point so the top layer has something solid under it. Bins stack exactly as before.',
   'binDesigner.base.magnetHoles': 'Magnet holes',
   'binDesigner.base.magnetDiameter': 'Magnet diameter',
   'binDesigner.base.magnetDepth': 'Magnet depth',

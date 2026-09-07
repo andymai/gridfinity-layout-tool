@@ -77,6 +77,8 @@ const VALID_BASE_STYLES = [
 export const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
 // Mirrors `LIGHTWEIGHT_MODES` in the same file.
 export const VALID_LIGHTWEIGHT_MODES = ['interior', 'underside'] as const;
+// Mirrors `LIP_TIP_STYLES` in the same file.
+export const VALID_LIP_TIPS = ['sharp', 'round', 'chamfer'] as const;
 // Mirrors `FEET_MODES` and `DETACHABLE_PIN_DIAMETERS_MM` in the same file.
 export const VALID_FEET_MODES = ['integral', 'detachable'] as const;
 export const VALID_PIN_DIAMETERS = [2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2] as const;
@@ -321,6 +323,15 @@ function validateBase(base: unknown): string | null {
     )
   ) {
     return `base.lightweightMode must be one of: ${VALID_LIGHTWEIGHT_MODES.join(', ')}`;
+  }
+  // Lip tip: a closed set. Cosmetically small, but an unknown value silently
+  // falling back to 'sharp' would publish a bin whose printed peak is not the
+  // one the publisher previewed.
+  if (
+    base.lipTip !== undefined &&
+    !VALID_LIP_TIPS.includes(base.lipTip as (typeof VALID_LIP_TIPS)[number])
+  ) {
+    return `base.lipTip must be one of: ${VALID_LIP_TIPS.join(', ')}`;
   }
   // Feet mode: a closed set, and a consequential one — a detachable-feet bin
   // has no socket under it at all, so an unknown value falling back to

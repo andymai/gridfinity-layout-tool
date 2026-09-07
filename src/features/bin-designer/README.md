@@ -79,7 +79,16 @@ graph TB
   On slotted bins it assesses the REMOVABLE pieces instead (free-standing, so no floor-slab term),
   and the panel notes that the pattern only shows on the exported pieces — `GhostDividerPieces`
   renders merged boxes with no CSG and cannot subtract the holes
-- `components/panel/BaseSection/` — the body-type cards (standard / flat / tray-bottom / base-only / spacer) plus magnet/screw/lip/half-socket/lightweight/detachable-feet controls and the
+- **Lip peak finish (`base.lipTip`, #4119)**: `'sharp'` (absent, the spec knife edge),
+  `'round'` or `'chamfer'`, taking `LIP_TIP_MM` off the peak so the top layer has a
+  perimeter instead of a sliver. `finishLipPeak` in `boxBuilder` applies it to both lip
+  paths and returns the untreated solid if the kernel refuses. Three things it must keep
+  doing: stay out of the `shellKey` for a sharp bin (appended only when non-sharp, so no
+  cache churn), force the fuse path in `shellStage` (the integrated draft builder authors
+  its own profile and would show a sharp tip against a rounded export), and leave the
+  stack PITCH alone — `binStackSeating.kernel.test.ts` measures that on assembled solids,
+  because `junctionMm` moves by design here and asserting it would assert nothing.
+- `components/panel/BaseSection/` — the body-type cards (standard / flat / tray-bottom / base-only / spacer) plus magnet/screw/lip peak/half-socket/lightweight/detachable-feet controls and the
   "Drainage holes" floor pattern (`floorPattern`, #2816), which perforates the floor slab AND the
   feet under it. Reuses `WallsSection`'s `PatternSelector` narrowed to `FLOOR_PATTERN_TYPES` — the
   kumiko lattices are perimeter-wrapped and have no meaning on a floor. Its too-small copy comes

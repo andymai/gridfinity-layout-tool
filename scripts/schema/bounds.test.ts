@@ -39,6 +39,7 @@ import {
   FEET_MODES,
   FOOT_LATTICES,
   LIGHTWEIGHT_MODES,
+  LIP_TIP_STYLES,
   BIN_STYLES,
 } from '@/features/bin-designer/types/base';
 import {
@@ -122,6 +123,7 @@ const SOURCES: Record<string, unknown> = {
   LID_SLIDE_PLACEMENTS,
   LID_SLIDE_PULLS,
   LIGHTWEIGHT_MODES,
+  LIP_TIP_STYLES,
   PARTIAL_DIVIDER_STYLES,
   SLIDE_RAIL_MOUNTS,
   SLOT_LAYOUTS,

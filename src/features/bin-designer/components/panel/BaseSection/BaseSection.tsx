@@ -30,6 +30,7 @@ import {
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_RAIL_SIDES,
+  LIP_TIP_STYLES,
   LIGHTWEIGHT_MODES,
   DETACHABLE_PIN_DIAMETERS_MM,
 } from '@/features/bin-designer/types';
@@ -153,6 +154,28 @@ export function BaseSection() {
           onChange={handlers.toggleStackingLip}
         />
         <Hint>{t('binDesigner.base.stackingLip.hint')}</Hint>
+        {/* Only while there IS a lip. The finish is a property of its peak, and
+            offering it on a lipless bin would be a control with nothing to act
+            on. */}
+        {state.base.stackingLip && (
+          <div className="space-y-1 pt-1">
+            <span className="block text-xs text-content-tertiary">
+              {t('binDesigner.base.lipTip')}
+            </span>
+            <SegmentedControl
+              options={LIP_TIP_STYLES.map((tip) => ({
+                value: tip,
+                label: t(`binDesigner.base.lipTip.${tip}`),
+              }))}
+              value={state.lipTip}
+              onChange={handlers.setLipTip}
+              aria-label={t('binDesigner.base.lipTip')}
+              size="sm"
+              fullWidth
+            />
+            <Hint>{t(`binDesigner.base.lipTip.${state.lipTip}.hint`)}</Hint>
+          </div>
+        )}
       </section>
 
       {/* ── Mounting ──────────────────────────────────────────────────── */}

@@ -36,6 +36,7 @@ import { cutoutLabelSockets } from './cutoutLabelSockets';
 import { cutoutOffset } from './cutoutOffset';
 import { groupedScoop } from './groupedScoop';
 import { lipWall } from './lipWall';
+import { lipTip } from './lipTip';
 import { handles } from './handles';
 import { honeycombJunction } from './honeycombJunction';
 import { customShapes } from './customShape';
@@ -92,6 +93,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...cutoutOffset,
   ...groupedScoop,
   ...lipWall,
+  ...lipTip,
   ...handles,
   ...honeycombJunction,
   ...customShapes,

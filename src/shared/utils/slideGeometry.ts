@@ -184,12 +184,16 @@ const MIN_TRAY_INTERIOR_MM = 2;
 /**
  * How far a `rim` strip is sunk below the nominal lip top so it always welds.
  *
- * The lip's peak is filleted (`TOP_FILLET`), so the surface actually sits ~0.1mm
- * below `wallHeight + LIP_HEIGHT`. A strip placed at the nominal height floats
- * clear of it and fuses as a DISCONNECTED island: still watertight, still the
- * right bounding box, still passes every structural assertion, and the tray
- * would ride on a part that falls off the print. The margin is buried inside
- * the lip, so the track's height above the rim is unchanged.
+ * A strip placed at exactly the nominal height meets the surface below it on a
+ * shared face rather than a volume, and fuses as a DISCONNECTED island: still
+ * watertight, still the right bounding box, still passes every structural
+ * assertion, and the tray would ride on a part that falls off the print. The
+ * margin is buried in the material below, so the track's height above the rim
+ * is unchanged.
+ *
+ * A `rim` track and a stacking lip do not coexist — `flush` placement reports
+ * `slideFlushNeedsNoLip` as a blocker — so the margin never has to reach past a
+ * finished lip peak, which `base.lipTip` can lower by more than this.
  */
 const RAIL_FUSION_MARGIN_MM = 0.5;
 

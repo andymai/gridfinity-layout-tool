@@ -24,7 +24,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, LipTipStyle } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { STACK_JUNCTION_MM, stackPitchMm, stackedTotalMm } from '@/shared/utils/heightUnits';
@@ -62,13 +62,21 @@ interface Spec {
   height?: number;
   heightUnitMm?: number;
   stackingLip?: boolean;
+  lipTip?: LipTipStyle;
 }
 
 const cache = new Map<string, MeshData>();
 
 function bin(spec: Spec = {}): MeshData {
-  const { width = 2, depth = 2, height = 3, heightUnitMm = 7, stackingLip = true } = spec;
-  const key = `${width}x${depth}x${height}/${heightUnitMm}/${stackingLip}`;
+  const {
+    width = 2,
+    depth = 2,
+    height = 3,
+    heightUnitMm = 7,
+    stackingLip = true,
+    lipTip = 'sharp',
+  } = spec;
+  const key = `${width}x${depth}x${height}/${heightUnitMm}/${stackingLip}/${lipTip}`;
   let mesh = cache.get(key);
   if (!mesh) {
     // Export fidelity, not preview: the preview path meshes the base socket
@@ -82,7 +90,7 @@ function bin(spec: Spec = {}): MeshData {
         depth,
         height,
         heightUnitMm,
-        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip },
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip, lipTip },
       },
       undefined,
       true
@@ -132,6 +140,26 @@ describe('bin-on-bin stacking (#2374)', () => {
     ];
     for (const spec of cases) {
       expect(junctionOf(spec, COARSE_STEP_MM), JSON.stringify(spec)).toBeCloseTo(JUNCTION_MM, 1);
+    }
+  }, 600000);
+
+  // #4119 takes LIP_TIP_MM off the peak so the top layer has a real perimeter to
+  // print instead of a knife edge. PITCH is the claim, not junction: the foot's
+  // flare mates the funnel below the treated zone, so the bin above comes to
+  // rest at the same absolute height and adds the same millimetres to a stack —
+  // which is what the readouts quote and what lets a finished bin stack with
+  // anyone else's. `junctionMm` necessarily moves, because it is measured from a
+  // peak this feature deliberately lowers; asserting it here would be asserting
+  // the treatment did not happen.
+  //
+  // Fine step on purpose. The coarse grid lands columns on the rounded corner
+  // and reads a junction a millimetre off, which is harmless for a full-face
+  // mate and not for this.
+  it('stacks at the same pitch whatever finish the lip peak carries', () => {
+    const sharpPitch = stackSeat(bin(), bin()).pitchMm;
+    for (const lipTip of ['round', 'chamfer'] as const) {
+      const mesh = bin({ lipTip });
+      expect(stackSeat(mesh, mesh).pitchMm, lipTip).toBeCloseTo(sharpPitch, 1);
     }
   }, 600000);
 

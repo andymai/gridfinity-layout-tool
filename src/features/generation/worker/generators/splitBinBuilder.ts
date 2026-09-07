@@ -20,6 +20,7 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
+import { resolveLipTip } from '@/shared/types/bin';
 import type { ExportFormat } from '../../bridge/types';
 
 import { CLEARANCE } from './generatorTypes';
@@ -283,7 +284,8 @@ function splitSolidIntoPieces(
       !splitDims.isTile,
       { x: gridUnitMmX, y: gridUnitMmY },
       params.cellMask,
-      overhang
+      overhang,
+      resolveLipTip(params.base)
     );
     // The same plane `shellStage` seats an unsplit bin's lip on, so the
     // piece's rim lands where the whole bin's does. `buildTopShape` carries its

@@ -145,6 +145,14 @@
           "type": "boolean",
           "description": "Remove material to save filament."
         },
+        "lipTip": {
+          "enum": ["sharp", "round", "chamfer"],
+          "default": "sharp",
+          "description": "Finish on the stacking lip's peak. Rounding or chamfering it gives the top layer a printable perimeter instead of a knife edge; stacking is unaffected.",
+          "x-constant": {
+            "enum": "LIP_TIP_STYLES"
+          }
+        },
         "lightweightMode": {
           "enum": ["interior", "underside"],
           "default": "interior",
