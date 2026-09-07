@@ -22,10 +22,11 @@ import type {
   OverhangConfig,
 } from '@/features/bin-designer/types';
 import {
-  DEFAULT_TRAY_BOTTOM,
+  resolveTrayBottomConfig,
   LID_FIT_CLEARANCE,
   resolveLidCavityExtraMm,
   trayBottomSkirtDepth,
+  lidRetentionInterfaceZ,
 } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -108,9 +109,9 @@ export function baseWallHeight(base: Pick<BaseConfig, 'style' | 'tile'>, totalH:
  */
 function trayFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: LidConfig): number | null {
   if (base.style !== 'lid') return null;
-  const trayBottom = base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
+  const trayBottom = resolveTrayBottomConfig(base.trayBottom, lid.retentionMagnet);
   const rails = trayBottom.clickRails;
-  return trayBottomSkirtDepth(
+  const skirt = trayBottomSkirtDepth(
     heightUnitMm,
     LID_FIT_CLEARANCE,
     // The TRAY's own attachment, not the top lid's. `resolveLidCavityExtraMm`
@@ -131,6 +132,9 @@ function trayFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: LidConfig)
     trayBottom.attachment === 'clickRails' &&
       (rails.front || rails.back || rails.left || rails.right)
   );
+  return trayBottom.floorAtBed && trayBottom.attachment === 'magnetic'
+    ? Math.max(skirt, -lidRetentionInterfaceZ(heightUnitMm, 0, lid.retentionMagnet.depth))
+    : skirt;
 }
 
 export function binDimensions(params: BinParams): BinDimensions {

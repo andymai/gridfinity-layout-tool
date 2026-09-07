@@ -34,6 +34,26 @@ describe('deriveBodyType', () => {
 });
 
 describe('bodyTypeParams', () => {
+  it('preserves the magnet mounting choice between Standard and Stacking', () => {
+    const plain = bodyTypeParams(DEFAULT_BIN_PARAMS, 'stacking');
+    expect(plain.base.trayBottom?.attachment).toBe('friction');
+    const magnetic = bodyTypeParams(withBase({ style: 'magnet' }), 'stacking');
+    expect(magnetic.base.trayBottom?.attachment).toBe('magnetic');
+    expect(bodyTypeParams(magnetic, 'standard').base.style).toBe('magnet');
+  });
+  it('keeps Stacking separate from the raised lid base across a save/load round trip', () => {
+    const stacking = bodyTypeParams(DEFAULT_BIN_PARAMS, 'stacking');
+    const saved = JSON.parse(JSON.stringify(stacking)) as BinParams;
+    expect(deriveBodyType(saved.base)).toBe('stacking');
+    const tray = bodyTypeParams(saved, 'tray');
+    expect(tray.base.trayBottom?.floorAtBed).toBeUndefined();
+    expect(deriveBodyType(tray.base)).toBe('tray');
+  });
+
+  it('clears features that would float above the lowered floor', () => {
+    const p = { ...DEFAULT_BIN_PARAMS, scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } };
+    expect(bodyTypeParams(p, 'stacking').scoop.enabled).toBe(false);
+  });
   it('is a no-op when the type is already selected', () => {
     const params = withBase({ spacer: true });
     expect(bodyTypeParams(params, 'spacer')).toBe(params);

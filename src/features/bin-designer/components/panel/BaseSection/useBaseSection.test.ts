@@ -15,6 +15,35 @@ describe('useBaseSection', () => {
     });
   });
 
+  it('uses common Mounting handlers for Stacking and shares dimensions with the lid', () => {
+    const { result } = renderHook(() => useBaseSection());
+    act(() => result.current.handlers.setBodyType('stacking'));
+    expect(result.current.state.showMounting).toBe(true);
+    expect(result.current.state.hasMagnet).toBe(false);
+    act(() => result.current.handlers.toggleMagnet());
+    act(() => result.current.handlers.setMagnetDiameter(8));
+    act(() => result.current.handlers.setMagnetHeight(3));
+    expect(result.current.state.bodyType).toBe('stacking');
+    expect(result.current.state.hasMagnet).toBe(true);
+    expect(result.current.state.magnetDiameter).toBe(8);
+    expect(result.current.state.magnetDepth).toBe(3);
+    expect(useDesignerStore.getState().params.lid.retentionMagnet).toMatchObject({
+      diameter: 8,
+      depth: 3,
+    });
+    // Editing from the other end must immediately update Mounting too.
+    act(() => {
+      const lid = useDesignerStore.getState().params.lid;
+      useDesignerStore
+        .getState()
+        .setParams({ lid: { ...lid, retentionMagnet: { ...lid.retentionMagnet, diameter: 10 } } });
+    });
+    expect(result.current.state.magnetDiameter).toBe(10);
+    act(() => result.current.handlers.toggleMagnet());
+    expect(result.current.state.bodyType).toBe('stacking');
+    expect(result.current.state.hasMagnet).toBe(false);
+  });
+
   it('derives hasMagnet and hasScrew from base style', () => {
     const { result } = renderHook(() => useBaseSection());
 

@@ -26,13 +26,18 @@ import { isFractional } from '@/core/constants';
 import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_PATTERN_SCALE,
-  DEFAULT_TRAY_BOTTOM,
+  resolveTrayBottomConfig,
   FLOOR_PATTERN_TYPES,
-  isMagnetStyle,
+  hasMountingMagnets,
+  isStackingBase,
   isScrewStyle,
+  LID_MAGNET_DIAMETER_MIN_MM,
+  LID_MAGNET_DIAMETER_MAX_MM,
+  LID_MAGNET_DEPTH_MIN_MM,
+  LID_MAGNET_DEPTH_MAX_MM,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
-import { minHeightUnits } from '@/features/bin-designer/constants';
+import { DESIGNER_CONSTRAINTS, minHeightUnits } from '@/features/bin-designer/constants';
 import {
   DEFAULT_FOOT_LATTICE,
   DEFAULT_LIGHTWEIGHT_MODE,
@@ -92,9 +97,10 @@ export function useBaseSection() {
   );
 
   const base = params.base;
-  const hasMagnet = isMagnetStyle(base.style);
+  const hasMagnet = hasMountingMagnets(base);
+  const stackingBase = isStackingBase(base);
   const hasScrew = isScrewStyle(base.style);
-  const trayBottom = base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
+  const trayBottom = resolveTrayBottomConfig(base.trayBottom, params.lid.retentionMagnet);
   const hasHalfSockets = base.halfSockets;
   // The foot lattice is inert in two cases, and the picker shows what the part
   // will actually be built with rather than the stored choice. The stored value
@@ -442,6 +448,23 @@ export function useBaseSection() {
     [updateTrayBottom]
   );
 
+  const setStackingMagnet = useCallback(
+    (key: 'diameter' | 'depth', value: number) => {
+      const retentionMagnet = { ...params.lid.retentionMagnet, [key]: value };
+      setParams({
+        lid: { ...params.lid, retentionMagnet },
+        base: {
+          ...base,
+          trayBottom: {
+            ...trayBottom,
+            retentionMagnet: { ...retentionMagnet, edgeMagnets: 0 },
+          },
+        },
+      });
+    },
+    [params.lid, base, trayBottom, setParams]
+  );
+
   const setTrayExtraHeight = useCallback(
     (extraHeightMm: number) => updateTrayBottom({ extraHeightMm }),
     [updateTrayBottom]
@@ -499,16 +522,18 @@ export function useBaseSection() {
 
   const setMagnetDiameter = useCallback(
     (diameter: number) => {
-      updateBase({ magnetDiameter: diameter });
+      if (stackingBase) setStackingMagnet('diameter', diameter);
+      else updateBase({ magnetDiameter: diameter });
     },
-    [updateBase]
+    [stackingBase, setStackingMagnet, updateBase]
   );
 
   const setMagnetHeight = useCallback(
     (depth: number) => {
-      updateBase({ magnetDepth: depth });
+      if (stackingBase) setStackingMagnet('depth', depth);
+      else updateBase({ magnetDepth: depth });
     },
-    [updateBase]
+    [stackingBase, setStackingMagnet, updateBase]
   );
 
   const setScrewDiameter = useCallback(
@@ -544,6 +569,22 @@ export function useBaseSection() {
       detachableUnplaceable,
       detachableSavingPercent,
       hasMagnet,
+      magnetDiameter: stackingBase ? trayBottom.retentionMagnet.diameter : base.magnetDiameter,
+      magnetDepth: stackingBase ? trayBottom.retentionMagnet.depth : base.magnetDepth,
+      magnetDiameterMin: stackingBase
+        ? LID_MAGNET_DIAMETER_MIN_MM
+        : DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER,
+      magnetDiameterMax: stackingBase
+        ? LID_MAGNET_DIAMETER_MAX_MM
+        : DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER,
+      magnetDepthMin: stackingBase
+        ? LID_MAGNET_DEPTH_MIN_MM
+        : DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT,
+      magnetDepthMax: stackingBase
+        ? LID_MAGNET_DEPTH_MAX_MM
+        : DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT,
+      magnetDiameterStep: stackingBase ? 0.1 : DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP,
+      magnetDepthStep: stackingBase ? 0.1 : DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP,
       hasScrew,
       bodyType,
       trayBottom,
@@ -559,6 +600,7 @@ export function useBaseSection() {
       // Which families of controls this body actually has. A hidden one is
       // never hiding a live setting: the engine clears what it disables.
       showMounting,
+      showScrewMounting: applies(screwStatus),
       showFeet,
       showFloor,
       // A family this body cannot have keeps its heading and says why, so a

@@ -32,6 +32,19 @@ export function isMagnetStyle(style: BaseStyle): boolean {
   return style === 'magnet' || style === 'magnet_and_screw';
 }
 
+/** A continuous lid-mating base closed by a bed-supported floor. */
+export function isStackingBase(base: Pick<BaseConfig, 'style' | 'trayBottom'>): boolean {
+  return base.style === 'lid' && base.trayBottom?.floorAtBed === true;
+}
+
+/** Mounting magnets: per-foot pockets on Standard, four corner pockets on Stacking.
+ * Raised lid bases keep their attachment controls in the body card. */
+export function hasMountingMagnets(base: Pick<BaseConfig, 'style' | 'trayBottom'>): boolean {
+  return isStackingBase(base)
+    ? base.trayBottom?.attachment === 'magnetic'
+    : isMagnetStyle(base.style);
+}
+
 /** True when `style` includes screw mounts — paired with `isMagnetStyle`. */
 export function isScrewStyle(style: BaseStyle): boolean {
   return style === 'screw' || style === 'magnet_and_screw';
@@ -114,6 +127,9 @@ export function isUndersideRelief(base: {
  * validation to drift apart over.
  */
 export interface TrayBottomConfig {
+  /** Stacking body: close the tapered underside at the print bed and open
+   * the body floor into it. Absent preserves the original raised lid base. */
+  readonly floorAtBed?: boolean;
   readonly attachment: LidAttachment;
   /** Extra skirt depth (mm) to clear contents protruding from the bin below. */
   readonly extraHeightMm: number;
@@ -138,6 +154,22 @@ export const DEFAULT_TRAY_BOTTOM: TrayBottomConfig = {
     edgeMagnets: LID_MAGNET_EDGE_COUNT_DEFAULT,
   },
 } as const;
+
+/** Stacking always has a bed-level floor, no hanging rails, and four magnets.
+ * Share the lid's magnet dimensions so changing them cannot misalign the pair. */
+export function resolveTrayBottomConfig(
+  stored: TrayBottomConfig | undefined,
+  lidMagnet: LidMagnetConfig
+): TrayBottomConfig {
+  const config = stored ?? DEFAULT_TRAY_BOTTOM;
+  if (!config.floorAtBed) return config;
+  return {
+    ...config,
+    extraHeightMm: 0,
+    attachment: config.attachment === 'magnetic' ? 'magnetic' : 'friction',
+    retentionMagnet: { ...lidMagnet, edgeMagnets: 0 },
+  };
+}
 
 /**
  * Where one axis's feet fall relative to the baseplate's cell boundaries.

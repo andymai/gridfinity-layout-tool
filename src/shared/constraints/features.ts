@@ -7,6 +7,11 @@
  */
 
 import { DEFAULT_FLOOR_PATTERN_CONFIG } from '@/shared/types/bin';
+import {
+  DEFAULT_TRAY_BOTTOM,
+  hasMountingMagnets,
+  isStackingBase,
+} from '@/features/bin-designer/types/base';
 import type { FeatureKey, FeatureManifest } from './types';
 
 /**
@@ -48,8 +53,19 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
   'base.magnet': {
     key: 'base.magnet',
     label: 'Magnet Holes',
-    isEnabled: (p) => p.base.style === 'magnet' || p.base.style === 'magnet_and_screw',
+    isEnabled: (p) => hasMountingMagnets(p.base),
     apply: (p, enabled) => {
+      if (isStackingBase(p.base)) {
+        return {
+          base: {
+            ...p.base,
+            trayBottom: {
+              ...(p.base.trayBottom ?? DEFAULT_TRAY_BOTTOM),
+              attachment: enabled ? 'magnetic' : 'friction',
+            },
+          },
+        };
+      }
       const hasScrew = p.base.style === 'screw' || p.base.style === 'magnet_and_screw';
       const style = enabled
         ? hasScrew

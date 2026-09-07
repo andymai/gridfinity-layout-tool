@@ -366,6 +366,9 @@ function validateBase(base: unknown): string | null {
  */
 function validateTrayBottom(trayBottom: unknown): string | null {
   if (!isObject(trayBottom)) return 'base.trayBottom must be an object';
+  if (trayBottom.floorAtBed !== undefined && !isBoolean(trayBottom.floorAtBed)) {
+    return 'base.trayBottom.floorAtBed must be boolean';
+  }
   if (
     !VALID_LID_ATTACHMENTS.includes(trayBottom.attachment as (typeof VALID_LID_ATTACHMENTS)[number])
   ) {

@@ -18,7 +18,9 @@ export function describeBin(params: BinParams): string {
   const features: string[] = [];
 
   // Base style
-  if (params.base.style !== 'standard') {
+  if (params.base.style === 'lid' && params.base.trayBottom?.floorAtBed) {
+    features.push('stacking base');
+  } else if (params.base.style !== 'standard') {
     features.push(`${params.base.style} base`);
   }
   if (params.base.stackingLip) {

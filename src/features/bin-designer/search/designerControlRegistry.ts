@@ -239,6 +239,12 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     section: 'bd-base',
     keywords: ['lid base', 'tray bottom', 'matching tray'],
   },
+  {
+    id: 'opt-stacking-body',
+    labelKey: 'binDesigner.base.bodyType.stacking',
+    section: 'bd-base',
+    keywords: ['stacking', 'continuous base', 'four corner magnets', 'bed floor'],
+  },
   // Lid
   {
     id: 'opt-lid-attachment',

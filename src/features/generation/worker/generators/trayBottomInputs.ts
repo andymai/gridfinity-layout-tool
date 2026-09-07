@@ -16,7 +16,7 @@
 
 import {
   DEFAULT_LID_CONFIG,
-  DEFAULT_TRAY_BOTTOM,
+  resolveTrayBottomConfig,
   LID_FIT_CLEARANCE,
   trayBottomSkirtDepth as skirtDepth,
 } from '@/shared/types/bin';
@@ -25,6 +25,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { hasAnyClickRail } from './lidClickRail';
 import { resolveLidInputs } from './lidInputs';
 import type { LidInputs } from './lidInputs';
+import { retentionInterfaceZ } from './retentionMagnetGeometry';
 
 /**
  * `BinParams` shaped so `resolveLidInputs` reads the tray's mating config.
@@ -37,7 +38,7 @@ import type { LidInputs } from './lidInputs';
  * an ordinary Gridfinity bin can still stack on top of a tray.
  */
 function trayBottomParams(params: BinParams): BinParams {
-  const trayBottom = params.base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
+  const trayBottom = resolveTrayBottomConfig(params.base.trayBottom, params.lid.retentionMagnet);
   return {
     ...params,
     base: { ...params.base, stackingLip: true },
@@ -70,17 +71,20 @@ function trayBottomParams(params: BinParams): BinParams {
  * point is still the skirt — see `trayBottomSkirtDepth` in the shared
  * lid module for the deep-magnet exception it does not cover.
  */
-export function trayBottomSkirtDepth(inputs: LidInputs): number {
+export function trayBottomSkirtDepth(inputs: LidInputs, floorAtBed = false): number {
   // LID_FIT_CLEARANCE, not `inputs.fitClearance`: the magnetic relief is
   // XY-only, and `resolveLidInputs` derives `wallBottomZ` from the base value
   // for the same reason. Feeding the relieved value here would lift the seated
   // plane into the corner magnets' seat gap.
-  return skirtDepth(
+  const skirt = skirtDepth(
     inputs.heightUnitMm,
     LID_FIT_CLEARANCE,
     inputs.cavityExtraMm,
     hasAnyClickRail(inputs.clickRails)
   );
+  return floorAtBed && inputs.retentionMagnets
+    ? Math.max(skirt, -retentionInterfaceZ(inputs))
+    : skirt;
 }
 
 export function resolveTrayBottomInputs(params: BinParams): LidInputs {

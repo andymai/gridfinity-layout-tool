@@ -1360,9 +1360,11 @@ function migrateBentoCompartmentFields(config: CompartmentConfig): CompartmentCo
  * carrying only `{ clickRails: { front: true } }` drop the other three sides.
  */
 function migrateTrayBottom(stored: Partial<TrayBottomConfig> | undefined): TrayBottomConfig {
+  const { floorAtBed, ...rest } = stored ?? {};
   return {
     ...DEFAULT_TRAY_BOTTOM,
-    ...stored,
+    ...rest,
+    ...(floorAtBed === true ? { floorAtBed: true } : {}),
     clickRails: { ...DEFAULT_TRAY_BOTTOM.clickRails, ...stored?.clickRails },
     retentionMagnet: { ...DEFAULT_TRAY_BOTTOM.retentionMagnet, ...stored?.retentionMagnet },
   };

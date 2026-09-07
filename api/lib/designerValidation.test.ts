@@ -2008,6 +2008,11 @@ describe('base.trayBottom (#3036)', () => {
     expect(withTray(tray()).valid).toBe(true);
   });
 
+  it('preserves the optional Stacking floor flag and rejects non-booleans', () => {
+    expect(withTray(tray({ floorAtBed: true, attachment: 'magnetic' })).valid).toBe(true);
+    expect(withTray(tray({ floorAtBed: 'true' })).valid).toBe(false);
+  });
+
   it('rejects an unknown attachment', () => {
     expect(withTray(tray({ attachment: 'welded' })).valid).toBe(false);
   });

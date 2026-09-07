@@ -10,6 +10,7 @@
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
+import { getFeatureStatus } from '@/shared/constraints';
 import { InteriorModeCard } from './InteriorModeCard';
 import { useInteriorSection } from './useInteriorSection';
 import { FeatureGate } from '../FeatureGate';
@@ -35,6 +36,9 @@ export function InteriorSection() {
     (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
   );
   const customShapeReason = t('binDesigner.shape.custom.hint');
+  const slottedBlockedReason = useDesignerStore(
+    (s) => getFeatureStatus(s.params, 'style.slotted').reason
+  );
   // Slot mode uses divider slots, not the compartment grid — angled
   // dividers don't translate to slot-mode geometry yet. Gate the slotted
   // card while any override exists so the user gets an explanation
@@ -62,6 +66,13 @@ export function InteriorSection() {
         if (card === 'slotted' && hasAngledDividers) {
           return (
             <FeatureGate key={card} disabled reason={slottedAngledReason}>
+              {element}
+            </FeatureGate>
+          );
+        }
+        if (card === 'slotted' && slottedBlockedReason) {
+          return (
+            <FeatureGate key={card} disabled reason={t(slottedBlockedReason)}>
               {element}
             </FeatureGate>
           );

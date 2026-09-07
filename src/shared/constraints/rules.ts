@@ -10,10 +10,21 @@
  * and any constraint rules here.
  */
 
-import { isUndersideRelief, undersideReliefSelected } from '@/features/bin-designer/types/base';
+import {
+  isStackingBase,
+  isUndersideRelief,
+  undersideReliefSelected,
+} from '@/features/bin-designer/types/base';
 import type { ConstraintRule, ImplicationRule } from './types';
 
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
+  {
+    description: 'Stacking floor has a different floor plane from floor-mounted features',
+    source: 'base.lid',
+    when: (p) => isStackingBase(p.base),
+    disables: ['scoop', 'inserts', 'floorPattern', 'style.slotted'],
+    reason: 'binDesigner.base.stacking.floorFeaturesUnavailable',
+  },
   // ── Base: flat ↔ everything else ─────────────────────────────────────────
   {
     description: 'Flat base disables attachment features',
@@ -57,10 +68,17 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   // are values of `base.style`, so one replacing the other is not a conflict
   // for the engine to resolve.
   {
-    description: 'Lid-compatible bottom disables attachment features (no feet to drill)',
+    description: 'Raised lid base uses its own attachment controls',
+    source: 'base.lid',
+    when: (p) => p.base.style === 'lid' && !isStackingBase(p.base),
+    disables: ['base.magnet'],
+    reason: 'binDesigner.lidBaseDisablesAttachment',
+  },
+  {
+    description: 'Lid-mating bases have no screw-mounting feet',
     source: 'base.lid',
     when: (p) => p.base.style === 'lid',
-    disables: ['base.magnet', 'base.screw'],
+    disables: ['base.screw'],
     reason: 'binDesigner.lidBaseDisablesAttachment',
   },
   {

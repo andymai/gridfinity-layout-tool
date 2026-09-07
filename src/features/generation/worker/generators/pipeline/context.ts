@@ -55,7 +55,11 @@ import { resolveTrayBottomInputs, trayBottomSkirtDepth } from '../trayBottomInpu
  * skirt, or nothing at all under a flat base.
  */
 function resolveBaseOffsetZ(params: BinParams): number {
-  if (params.base.style === 'lid') return trayBottomSkirtDepth(resolveTrayBottomInputs(params));
+  if (params.base.style === 'lid')
+    return trayBottomSkirtDepth(
+      resolveTrayBottomInputs(params),
+      params.base.trayBottom?.floorAtBed
+    );
   if (params.base.style === 'flat') return 0;
   return SOCKET_HEIGHT;
 }

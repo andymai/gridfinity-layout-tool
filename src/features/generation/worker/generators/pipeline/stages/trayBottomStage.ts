@@ -29,6 +29,7 @@ import { buildMatingShell } from '../../lidProfile';
 import { addClickRails, hasAnyClickRail } from '../../lidClickRail';
 import { addLidRetentionMagnets } from '../../lidRetentionMagnets';
 import { resolveTrayBottomInputs } from '../../trayBottomInputs';
+import { addStackingFloor } from '../../stackingFloorBuilder';
 
 export const trayBottomStage: PipelineStage = {
   name: 'merge',
@@ -48,6 +49,14 @@ export const trayBottomStage: PipelineStage = {
     const fused = withScope((scope: DisposalScope) => {
       let skirt: Shape3D = buildMatingShell(scope, inputs);
       scope.register(skirt);
+
+      if (ctx.params.base.trayBottom?.floorAtBed) {
+        skirt = addStackingFloor(scope, skirt, body, inputs, ctx);
+        // The floor is present BEFORE drilling: unioning it after the magnets
+        // would cap their downward openings.
+        if (inputs.retentionMagnets) skirt = addLidRetentionMagnets(scope, skirt, inputs);
+        return translate(skirt, [0, 0, ctx.dimensions.baseOffsetZ]);
+      }
 
       if (hasAnyClickRail(inputs.clickRails)) {
         skirt = addClickRails(scope, skirt, inputs);
