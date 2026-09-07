@@ -1,0 +1,46 @@
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_563ccfba5edeab::t_f6ce7991121a10 104-108,115,126
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.test.tsx
+  s_563ccfba5edeab::t_a18ad4c0e5e745 95-119
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.test.tsx
+  s_563ccfba5edeab::t_57b8974e9b505e 50-51,457-460,469-471
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_563ccfba5edeab::t_f6ce7991121a10 17,345-346
+src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.ts
+  s_563ccfba5edeab::t_b7d2ad2026226d 10,84-85
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.ts
+  s_563ccfba5edeab::t_b7d2ad2026226d 246-247
+  s_563ccfba5edeab::t_636123216f0f24 21
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_563ccfba5edeab::t_a18e671798c583 24
+  s_563ccfba5edeab::t_b7d2ad2026226d 101-102
+src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.test.ts
+  s_563ccfba5edeab::t_fe5260215ea1c9 189-213,215-227
+  s_563ccfba5edeab::t_6d99e2b8239a82 214
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.test.ts
+  s_563ccfba5edeab::t_eca13cf6f4ddcf 215-230
+src/features/bin-designer/components/panel/CutoutsSection/geometryCore.ts
+  s_563ccfba5edeab::t_41a41eba33c103 176-189,199-200
+  s_563ccfba5edeab::t_dbc9313ecdf72b 175
+src/features/bin-designer/components/panel/CutoutsSection/geometryResize.ts
+  s_563ccfba5edeab::t_636123216f0f24 15
+  s_563ccfba5edeab::t_b7d2ad2026226d 172-175
+src/features/bin-designer/components/panel/CutoutsSection/geometry.ts
+  s_563ccfba5edeab::t_41a41eba33c103 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "8bc66e9e13a271088e39918d9cb16d508bf946af",
+  "prompts": {},
+  "sessions": {
+    "s_563ccfba5edeab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "621060ae-d917-4362-8cf9-911003accb8d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
