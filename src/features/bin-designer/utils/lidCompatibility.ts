@@ -46,7 +46,7 @@ import {
   computeLipOffset,
   resolveScoopPlacement,
   resolveScoopProfile,
-  resolveScoopSide,
+  resolveScoopSides,
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
 import type { BinParams, ScoopSide } from '../types';
@@ -584,9 +584,13 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     !liteFloor &&
     params.lid.attachment === 'clickRails'
   ) {
-    const side = resolveScoopSide(params.scoop);
-    if (scoopReachesRailBand(params, side)) {
-      issues.push({ id: 'scoopFillsLip', severity: 'warning', sides: [side] });
+    // Per wall: a four-sided scoop can reach the rail band on some walls and
+    // not others, and the warning names the walls it applies to.
+    const reaching = resolveScoopSides(params.scoop).filter((side) =>
+      scoopReachesRailBand(params, side)
+    );
+    if (reaching.length > 0) {
+      issues.push({ id: 'scoopFillsLip', severity: 'warning', sides: reaching });
     }
   }
 

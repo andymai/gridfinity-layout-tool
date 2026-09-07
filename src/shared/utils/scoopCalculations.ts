@@ -58,7 +58,8 @@ export interface ScoopPlacement {
   readonly runSign: 1 | -1;
 }
 
-const SCOOP_SIDES: readonly ScoopSide[] = ['front', 'back', 'left', 'right'];
+/** Canonical wall order. The UI renders in it and `resolveScoopSides` sorts to it. */
+export const SCOOP_SIDES: readonly ScoopSide[] = ['front', 'back', 'left', 'right'];
 
 /**
  * Normalize a scoop config to a concrete side.
@@ -71,6 +72,33 @@ const SCOOP_SIDES: readonly ScoopSide[] = ['front', 'back', 'left', 'right'];
 export function resolveScoopSide(scoop: ScoopConfig): ScoopSide {
   const side = scoop.side;
   return side !== undefined && SCOOP_SIDES.includes(side) ? side : 'front';
+}
+
+/**
+ * Every wall this scoop ramps to, in a stable order.
+ *
+ * The one reader of `sides` (#4123). A single-sided scoop stores `side` alone
+ * and reaches here through the fallback, so nothing downstream has to know
+ * which field a design happens to carry.
+ *
+ * Filtered against SCOOP_SIDES and de-duplicated for the same reason
+ * `resolveScoopSide` clamps: the server passes `scoop` through without deep
+ * validation, so a corrupt or crafted payload can put an unknown string or a
+ * repeat in here, and a repeat would build one ramp twice in the same place —
+ * a coincident pair the fuse turns into a sliver rather than an error. An
+ * `sides` that survives none of that falls back to the single-side answer.
+ */
+export function resolveScoopSides(scoop: ScoopConfig): readonly ScoopSide[] {
+  const raw = scoop.sides;
+  if (!Array.isArray(raw)) return [resolveScoopSide(scoop)];
+  const seen = new Set<ScoopSide>();
+  for (const side of raw) {
+    if (SCOOP_SIDES.includes(side)) seen.add(side);
+  }
+  if (seen.size === 0) return [resolveScoopSide(scoop)];
+  // SCOOP_SIDES order, not the stored order: two designs that picked the same
+  // walls in a different sequence must build the same solid and hash the same.
+  return SCOOP_SIDES.filter((side) => seen.has(side));
 }
 
 /**

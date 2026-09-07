@@ -247,8 +247,25 @@ export interface ScoopConfig {
   /**
    * Wall the ramp rises to. Omitted on designs saved before the side was
    * selectable, which were all front-scooped — treat undefined as 'front'.
+   *
+   * Still the whole answer for a one-sided scoop, which is most of them. See
+   * {@link sides} for why a single side is never written there.
    */
   readonly side?: ScoopSide;
+  /**
+   * Walls the ramps rise to, when there is more than one (#4123).
+   *
+   * Absent for a single-sided scoop, which keeps writing {@link side} alone —
+   * so every design saved before this existed builds byte-identical geometry,
+   * and a design that visits the control and comes back to one side
+   * fingerprints as one that never did (`communityParamsFingerprint` hashes
+   * `params` wholesale).
+   *
+   * `resolveScoopSides` is the only reader: it returns this when set and
+   * `[side]` otherwise, so nothing downstream has to know which field a design
+   * happens to use.
+   */
+  readonly sides?: ScoopSide[];
   /**
    * Scoop rise up the wall in mm, or 'auto'. In auto mode the ramp is
    * proportional (run === height); 'auto' = min(compartmentSize/3, 15mm, …).

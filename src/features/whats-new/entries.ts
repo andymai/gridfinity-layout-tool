@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'multi-side-finger-scoops',
+    date: '2026-09-07',
+    kind: 'improved',
+    title: { en: 'Finger scoops on more than one wall' },
+    body: {
+      en: 'A scoop used to pick one wall. Tap as many as you want on the wall picker and each compartment gets a ramp on every one, so a bin you reach into from two sides is no longer a choice between them. Ramps meeting in a corner blend into one another.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'lip-peak-finish',
     date: '2026-09-07',
     kind: 'new',

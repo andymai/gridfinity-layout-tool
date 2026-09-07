@@ -1545,7 +1545,7 @@
   "binDesigner.scoop.heightAria": "Висота захвату",
   "binDesigner.scoop.maxHeightAria": "Максимальна висота захвату",
   "binDesigner.scoop.runAria": "Довжина захвату",
-  "binDesigner.scoop.sideAria": "Стінка, до якої піднімається виїмка",
+  "binDesigner.scoop.sideAria": "Стінки, до яких піднімається виїмка для пальців",
   "binDesigner.scoopDisablesLightweight": "Виїмка для пальців потребує суцільного дна — перемкніть режим на Знизу, щоб зберегти обидва",
   "binDesigner.scoopHeight": "Висота",
   "binDesigner.scoopMaxHeight": "Макс. висота",

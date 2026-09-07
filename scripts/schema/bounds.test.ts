@@ -42,6 +42,7 @@ import {
   LIP_TIP_STYLES,
   BIN_STYLES,
 } from '@/features/bin-designer/types/base';
+import { SCOOP_SIDES } from '@/shared/utils/scoopCalculations';
 import {
   CROSS_DIVIDER_STYLES,
   PARTIAL_DIVIDER_STYLES,
@@ -124,6 +125,7 @@ const SOURCES: Record<string, unknown> = {
   LID_SLIDE_PULLS,
   LIGHTWEIGHT_MODES,
   LIP_TIP_STYLES,
+  SCOOP_SIDES,
   PARTIAL_DIVIDER_STYLES,
   SLIDE_RAIL_MOUNTS,
   SLOT_LAYOUTS,

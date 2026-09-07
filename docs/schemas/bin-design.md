@@ -245,14 +245,15 @@ A ramp at one wall so contents can be scooped out.
 
 <!-- generated:start -->
 
-| Field           | Type                                           | Required | Default    | Constraint   | Notes                                                                      |
-| --------------- | ---------------------------------------------- | -------- | ---------- | ------------ | -------------------------------------------------------------------------- |
-| `enabled`       | `boolean`                                      | yes      |            |              | Enable the scoop.                                                          |
-| `side`          | `"front"` \| `"back"` \| `"left"` \| `"right"` | yes      |            |              | Which wall the scoop rises from.                                           |
-| `radius`        | `number`                                       | yes      |            | >= 5, <= 25  | Scoop radius in mm.                                                        |
-| `run`           | `number`                                       |          |            | >= 0, <= 140 | Horizontal run of the scoop in mm.                                         |
-| `style`         | `"curved"` \| `"straight"`                     |          | `"curved"` |              | Scoop cross-section.                                                       |
-| `autoMaxHeight` | `boolean`                                      |          |            |              | Let the scoop rise to the tallest printable height instead of a fixed one. |
+| Field           | Type                                             | Required | Default    | Constraint             | Notes                                                                                                                 |
+| --------------- | ------------------------------------------------ | -------- | ---------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `enabled`       | `boolean`                                        | yes      |            |                        | Enable the scoop.                                                                                                     |
+| `side`          | `"front"` \| `"back"` \| `"left"` \| `"right"`   | yes      |            |                        | Which wall the scoop rises from. Read alone unless "sides" is present.                                                |
+| `sides`         | `"front"` \| `"back"` \| `"left"` \| `"right"`[] |          |            | items >= 1, items <= 4 | Walls the scoop rises from, when there is more than one. Omitted for a single-sided scoop, which stores "side" alone. |
+| `radius`        | `number`                                         | yes      |            | >= 5, <= 25            | Scoop radius in mm.                                                                                                   |
+| `run`           | `number`                                         |          |            | >= 0, <= 140           | Horizontal run of the scoop in mm.                                                                                    |
+| `style`         | `"curved"` \| `"straight"`                       |          | `"curved"` |                        | Scoop cross-section.                                                                                                  |
+| `autoMaxHeight` | `boolean`                                        |          |            |                        | Let the scoop rise to the tallest printable height instead of a fixed one.                                            |
 
 <!-- generated:end -->
 

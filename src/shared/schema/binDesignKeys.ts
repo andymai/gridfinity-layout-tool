@@ -176,6 +176,7 @@ export type _StashedCompartmentKeys = Assert<
 export const SCOOP_CONFIG_KEYS = [
   'enabled',
   'side',
+  'sides',
   'radius',
   'run',
   'style',

@@ -1545,7 +1545,7 @@
   "binDesigner.scoop.heightAria": "Altura da rampa",
   "binDesigner.scoop.maxHeightAria": "Altura máxima da rampa",
   "binDesigner.scoop.runAria": "Comprimento da rampa",
-  "binDesigner.scoop.sideAria": "Parede para a qual a rampa sobe",
+  "binDesigner.scoop.sideAria": "Paredes para as quais a rampa de dedo sobe",
   "binDesigner.scoopDisablesLightweight": "Uma rampa precisa de piso sólido — mude o modo para Por baixo e mantenha os dois",
   "binDesigner.scoopHeight": "Altura",
   "binDesigner.scoopMaxHeight": "Altura máx.",

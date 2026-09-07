@@ -2485,7 +2485,7 @@ const en: Record<string, string> = {
   'binDesigner.scoopSideBack': 'Back',
   'binDesigner.scoopSideLeft': 'Left',
   'binDesigner.scoopSideRight': 'Right',
-  'binDesigner.scoop.sideAria': 'Wall the finger scoop rises to',
+  'binDesigner.scoop.sideAria': 'Walls the finger scoop rises to',
   'binDesigner.scoopHeight': 'Height',
   'binDesigner.scoopRun': 'Run',
   'binDesigner.scoopMaxHeight': 'Max height',
