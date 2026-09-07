@@ -23,9 +23,9 @@ export function DimensionsSection() {
   return (
     <div className="space-y-3">
       {/* Width and Depth on same row with swap button */}
-      <div className="flex items-end justify-center gap-2">
+      <div className="flex items-end gap-2">
         {/* Width */}
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <span className="mb-1 block text-xs text-content-tertiary">{t('common.width')}</span>
           <Stepper
             value={state.width}
@@ -35,6 +35,7 @@ export function DimensionsSection() {
             max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
             step={state.dimensionStep}
             size={stepperSize}
+            fullWidth
             aria-label={t('common.width')}
           />
         </div>
@@ -53,7 +54,7 @@ export function DimensionsSection() {
         </IconButton>
 
         {/* Depth */}
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <span className="mb-1 block text-xs text-content-tertiary">{t('common.depth')}</span>
           <Stepper
             value={state.depth}
@@ -63,6 +64,7 @@ export function DimensionsSection() {
             max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
             step={state.dimensionStep}
             size={stepperSize}
+            fullWidth
             aria-label={t('common.depth')}
           />
         </div>
