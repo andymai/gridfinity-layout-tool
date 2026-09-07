@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { LidSection } from './LidSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import { LID_TOP_THICKNESS_MAX_MM } from '@/features/bin-designer/types';
 
 function resetStore(overrides: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {
   useDesignerStore.setState({
@@ -180,7 +181,7 @@ describe('LidSection', () => {
       });
       fireEvent.change(input, { target: { value: '99' } });
       fireEvent.blur(input);
-      expect(useDesignerStore.getState().params.lid.topThicknessMm).toBe(5);
+      expect(useDesignerStore.getState().params.lid.topThicknessMm).toBe(LID_TOP_THICKNESS_MAX_MM);
     });
 
     // The knob is a floor; a 2.5mm magnet pocket needs 3.1mm of plate. The
