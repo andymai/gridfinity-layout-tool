@@ -37,7 +37,11 @@ function rewindPastFirstFeatured(): void {
   const index = WHATS_NEW_ENTRIES.findIndex((entry) => entry.featured === true);
   expect(index).toBeGreaterThanOrEqual(0);
   expect(index).toBeLessThan(DIGEST_MAX);
-  rewind(index + 1);
+  // Never fewer than two. `index + 1` is a single entry when the featured one is
+  // also the newest — an ordinary thing for a release to do — and a digest of
+  // one is a lead card with no list under it, which silently empties what the
+  // grouping assertions below are measuring.
+  rewind(Math.max(index + 1, 2));
 }
 
 /** The lead card is the digest's only article. */

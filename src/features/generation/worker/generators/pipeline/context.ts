@@ -11,6 +11,7 @@ import {
   binFloorMm,
   hasDividerLean,
   isUndersideRelief,
+  resolveLipTip,
   resolveTileFloorThickness,
 } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
@@ -220,6 +221,9 @@ export function deriveDimensions(
   // `hasLip: false, omitLipSolid: true`, and so a lipless bin cannot be given
   // two shell-cache keys for one shape.
   const omitsLipSolid = omitLipSolid && hasLip;
+  // Resolved once here so the cache key and the builders cannot disagree about
+  // which finish this shell carries.
+  const lipTip = resolveLipTip(params.base);
   // Material actually under the lip. A base-only bin's lip bears on its floor
   // slab, not on a wall; every other base carries it on the collar-extended wall
   // the box is extruded to. See `lipHasSupport` for what the number decides.
@@ -373,6 +377,12 @@ export function deriveDimensions(
       // Appended only when set, so every ordinary bin keeps a byte-identical
       // key.
       ...(omitsLipSolid ? ['nolipsolid'] : []),
+      // The lip's peak finish is cut into the lip before it is fused, so it is
+      // part of THIS shell and not of any later feature. Without the segment a
+      // bin switched from sharp to round reuses the sharp body and the setting
+      // does nothing at all from the second render on. Appended only when
+      // non-sharp, so every existing v7 key stays byte-identical.
+      ...(lipTip !== 'sharp' ? [`liptip${lipTip}`] : []),
       // A solid bin's fill surface is part of its BODY (shellStage folds it into
       // `cutoutTopOffset`), so two bins differing only in the top offset are two
       // different shells. Without this the second one silently reuses the first

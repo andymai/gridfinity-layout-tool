@@ -36,7 +36,7 @@ import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
 import { applyPinHoles, buildDetachableFeet } from '../../detachableFeetBuilder';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
-import { DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
+import { DETACHABLE_PIN_HOLE_DIAMETER_MM, resolveLipTip } from '@/shared/types/bin';
 
 /**
  * Which way the lite cups open.
@@ -176,7 +176,12 @@ export const shellStage: PipelineStage = {
         // The integrated builder mirrors the angled support unconditionally, so a
         // wall too short to carry one has to take the fuse path, where
         // `buildTopShape` can be told to leave it off.
-        dim.lipHasSupport;
+        dim.lipHasSupport &&
+        // Same reasoning as the taper above: the integrated builder authors its
+        // own lip profile and has no peak treatment, so a rounded or chamfered
+        // tip would show in the export and not in the draft. Take the fuse path
+        // and let `buildTopShape` own the finish for both.
+        resolveLipTip(params.base) === 'sharp';
 
       let built = withScope((scope: DisposalScope) => {
         // Base-only bin: `boxWallHeight` is 0, and extruding a zero-length
@@ -227,7 +232,8 @@ export const shellStage: PipelineStage = {
               dim.lipHasSupport,
               pitch,
               params.cellMask,
-              dim.overhang
+              dim.overhang,
+              resolveLipTip(params.base)
             )
           );
           // Seated ON the slab top: `buildTopShape` hangs its own material
@@ -291,7 +297,8 @@ export const shellStage: PipelineStage = {
                 dim.lipHasSupport,
                 pitch,
                 params.cellMask,
-                dim.overhang
+                dim.overhang,
+                resolveLipTip(params.base)
               )
             );
             const top = scope.register(translate(lipBase, [0, 0, boxWallHeight]));

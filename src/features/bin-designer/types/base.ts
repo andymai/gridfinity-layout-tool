@@ -350,6 +350,48 @@ export const DETACHABLE_PIN_LEAD_IN_MM = 0.4;
  */
 export const MAX_FOOT_SPAN_MM = 140;
 
+/**
+ * How the stacking lip's peak is finished.
+ *
+ * The Gridfinity profile brings a vertical outer face and a 45 degree inner
+ * chamfer together at the top, so the peak is a knife edge: the last perimeter
+ * a slicer draws up there is a sliver with nothing under it, which is why it
+ * scars, curls, or lifts away from the layer below.
+ *
+ * `'round'` and `'chamfer'` take {@link LIP_TIP_MM} off that edge. Both cut
+ * material only from the tip, so the lip's seating surfaces are untouched: a
+ * bin stacked on top still lands on the same inner chamfer, and a lid's plug
+ * still meets the same vertical band. `'sharp'` is the spec profile.
+ */
+export const LIP_TIP_STYLES = ['sharp', 'round', 'chamfer'] as const;
+
+/** Finish applied to the stacking lip's peak. See {@link LIP_TIP_STYLES}. */
+export type LipTipStyle = (typeof LIP_TIP_STYLES)[number];
+
+/** Applied when a BaseConfig's `lipTip` is missing. */
+export const DEFAULT_LIP_TIP: LipTipStyle = 'sharp';
+
+/**
+ * How much the peak loses to a round or chamfered tip, in mm.
+ *
+ * Bounded by the shorter of the two faces meeting at the peak — the inner
+ * chamfer, `LIP_BIG_TAPER` (1.9mm) of run — so it has to stay a small fraction
+ * of that or the tip treatment eats into the seating chamfer a stacked bin
+ * lands on. 0.4mm is two 0.2mm layers: enough that the slicer has a real
+ * perimeter to lay down instead of a sliver, and far enough inside the taper
+ * that the mating geometry never notices.
+ *
+ * Not a knob. It is a print-quality detail with one right answer, and every
+ * value it could take that still mates is visually indistinguishable.
+ */
+export const LIP_TIP_MM = 0.4;
+
+/** The lip tip finish this base actually builds. */
+export function resolveLipTip(base: Pick<BaseConfig, 'lipTip'>): LipTipStyle {
+  const tip = base.lipTip;
+  return tip !== undefined && LIP_TIP_STYLES.includes(tip) ? tip : DEFAULT_LIP_TIP;
+}
+
 /** Bin wall/style variants — single source of truth for the `BinStyle` union. */
 export const BIN_STYLES = ['standard', 'slotted', 'solid'] as const;
 
@@ -363,6 +405,17 @@ export interface BaseConfig {
   readonly magnetDepth: number;
   readonly screwDiameter: number;
   readonly stackingLip: boolean;
+  /**
+   * Finish on the stacking lip's peak. Missing/undefined = `'sharp'`, so every
+   * design saved before the setting existed builds byte-identical geometry —
+   * and, because `communityParamsFingerprint` hashes `params` wholesale, an
+   * always-present field would shift the fingerprint of every already-published
+   * design (the same reason {@link lightweightMode} and {@link feet} are
+   * optional).
+   *
+   * Inert while {@link stackingLip} is off: there is no peak to finish.
+   */
+  readonly lipTip?: LipTipStyle;
   /** When true, the bin body is a solid block (no cavity). Used by cutouts feature. */
   readonly solid: boolean;
   /** When true, subdivides the base into 0.5u half sockets per {@link halfSocketMode}. */

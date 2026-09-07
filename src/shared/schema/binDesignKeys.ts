@@ -108,6 +108,7 @@ export const BASE_CONFIG_KEYS = [
   'magnetDepth',
   'screwDiameter',
   'stackingLip',
+  'lipTip',
   'solid',
   'halfSockets',
   'footLatticeX',

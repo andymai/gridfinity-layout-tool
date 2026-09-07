@@ -25,6 +25,7 @@ export type {
   FootLattice,
   LightweightMode,
   FeetMode,
+  LipTipStyle,
   BinStyle,
   CompartmentConfig,
   StashedCompartment,
@@ -288,6 +289,12 @@ export {
   // the foot builder and the floor's hole cutter both have to agree about.
   hasDetachableFeet,
   DEFAULT_FEET_MODE,
+  // Stacking-lip peak finish: the worker builds it, the panel offers it, and
+  // the print-quality note beside the control quotes the same millimetre.
+  LIP_TIP_STYLES,
+  LIP_TIP_MM,
+  DEFAULT_LIP_TIP,
+  resolveLipTip,
   DETACHABLE_PIN_DIAMETERS_MM,
   DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
   DETACHABLE_PIN_HOLE_DIAMETER_MM,
