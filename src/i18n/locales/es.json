@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "La tapa se abre hacia arriba desde esta pared y se queda abierta más allá de la vertical. Elige la pared más alejada de ti para que la tapa abierta se aparte de tu mano.",
   "binDesigner.lid.magnetHoles": "Bolsillos para imanes",
   "binDesigner.lid.magnetSpec": "Hueco: ⌀{diameter}mm × {depth}mm de profundidad (coincide con los imanes del bin).",
-  "binDesigner.lid.magneticClearanceHint": "Las tapas magnéticas se hacen {clearance} mm más pequeñas por lado para que los imanes las cierren en lugar de luchar contra un ajuste por fricción.",
+  "binDesigner.lid.magneticClearanceHint": "Las tapas magnéticas llevan {clearance} mm más de holgura por lado donde agarran el labio, para que los imanes las cierren en lugar de luchar contra un ajuste por fricción. Por fuera siguen coincidiendo con la caja.",
   "binDesigner.lid.matchingTrayHint": "Una tapa mantiene fuera el polvo; una bandeja evita que las cosas se deslicen. Esto crea un diseño nuevo del tamaño de este bin, con la base de tapa ya configurada.",
   "binDesigner.lid.matchingTrayName": "Bandeja organizadora",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

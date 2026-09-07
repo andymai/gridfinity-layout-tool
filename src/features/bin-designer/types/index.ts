@@ -136,7 +136,7 @@ export {
   LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
   trayBottomSkirtDepth,
   LID_MAGNETIC_EXTRA_CLEARANCE,
-  resolveLidFootprintClearance,
+  resolveLidMateRelief,
   resolveLidPlateThickness,
   resolveLidTrayBreakdown,
   resolveLidCavityExtraMm,

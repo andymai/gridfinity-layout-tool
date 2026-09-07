@@ -10,7 +10,7 @@ import {
   LID_TOP_THICKNESS_MIN_MM,
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_STEP_MM,
-  resolveLidFootprintClearance,
+  resolveLidMateRelief,
   resolveLidPlateThickness,
   resolveLidTrayBreakdown,
   LID_MAGNET_CEILING,
@@ -105,25 +105,21 @@ describe('LID_TOP_THICKNESS bounds', () => {
   });
 });
 
-describe('resolveLidFootprintClearance', () => {
+describe('resolveLidMateRelief', () => {
   const params = (lid: Partial<BinParams['lid']>, rest: Partial<BinParams> = {}): BinParams => ({
     ...DEFAULT_BIN_PARAMS,
     ...rest,
     lid: { ...DEFAULT_BIN_PARAMS.lid, ...lid },
   });
 
-  it('returns the base clearance for friction and click-rail lids', () => {
-    expect(resolveLidFootprintClearance(params({ attachment: 'friction' }))).toBe(
-      LID_FIT_CLEARANCE
-    );
-    expect(resolveLidFootprintClearance(params({ attachment: 'clickRails' }))).toBe(
-      LID_FIT_CLEARANCE
-    );
+  it('relieves nothing on friction and click-rail lids', () => {
+    expect(resolveLidMateRelief(params({ attachment: 'friction' }))).toBe(0);
+    expect(resolveLidMateRelief(params({ attachment: 'clickRails' }))).toBe(0);
   });
 
-  it('adds the magnetic relief when the design actually gets retention magnets', () => {
-    expect(resolveLidFootprintClearance(params({ attachment: 'magnetic' }))).toBeCloseTo(
-      LID_FIT_CLEARANCE + LID_MAGNETIC_EXTRA_CLEARANCE,
+  it('relieves the plug when the design actually gets retention magnets', () => {
+    expect(resolveLidMateRelief(params({ attachment: 'magnetic' }))).toBeCloseTo(
+      LID_MAGNETIC_EXTRA_CLEARANCE,
       6
     );
   });
@@ -136,7 +132,7 @@ describe('resolveLidFootprintClearance', () => {
       { attachment: 'magnetic' },
       { base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } }
     );
-    expect(resolveLidFootprintClearance(noLip)).toBe(LID_FIT_CLEARANCE);
+    expect(resolveLidMateRelief(noLip)).toBe(0);
 
     const polygon = params(
       { attachment: 'magnetic' },
@@ -151,13 +147,15 @@ describe('resolveLidFootprintClearance', () => {
         },
       }
     );
-    expect(resolveLidFootprintClearance(polygon)).toBe(LID_FIT_CLEARANCE);
+    expect(resolveLidMateRelief(polygon)).toBe(0);
   });
 
-  it('shrinks a 6×4 magnetic lid by 0.3mm per axis versus a friction one', () => {
-    const frictionW = 6 * 42 - 2 * resolveLidFootprintClearance(params({ attachment: 'friction' }));
-    const magneticW = 6 * 42 - 2 * resolveLidFootprintClearance(params({ attachment: 'magnetic' }));
-    expect(frictionW - magneticW).toBeCloseTo(0.3, 6);
+  // The relief backs the plug off the lip; it must never reach the perimeter,
+  // which is the visible joint with the bin. Sub-millimetre so it relieves the
+  // grip without letting the lid wander on its magnets.
+  it('stays well under the wall it is cut from', () => {
+    expect(LID_MAGNETIC_EXTRA_CLEARANCE).toBeGreaterThan(0);
+    expect(LID_MAGNETIC_EXTRA_CLEARANCE).toBeLessThan(LID_FIT_CLEARANCE);
   });
 });
 

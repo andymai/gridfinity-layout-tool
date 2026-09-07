@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "盖子从这面墙向上翻开，越过垂直后停住。选离你最远的一面，翻开的盖子就会避开你的手。",
   "binDesigner.lid.magnetHoles": "磁铁凹槽",
   "binDesigner.lid.magnetSpec": "凹槽：⌀{diameter}mm × 深 {depth}mm（与收纳盒磁铁规格匹配）。",
-  "binDesigner.lid.magneticClearanceHint": "磁性盖子每侧做小 {clearance}mm，让磁铁把它吸紧，而不是与摩擦贴合对抗。",
+  "binDesigner.lid.magneticClearanceHint": "磁性盖子只在扣住卡口的部位每侧留出 {clearance}mm 余量，让磁铁把它吸紧，而不是与摩擦贴合对抗。外形尺寸仍与收纳盒一致。",
   "binDesigner.lid.matchingTrayHint": "盖子挡灰，托盘防滑。此操作将按该收纳盒的尺寸新建一个设计，并已配置好盖式底座。",
   "binDesigner.lid.matchingTrayName": "整理托盘",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

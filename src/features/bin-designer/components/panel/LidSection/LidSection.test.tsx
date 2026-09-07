@@ -296,7 +296,7 @@ describe('LidSection', () => {
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'magnetic' },
       });
       render(<LidSection />);
-      expect(screen.getByText(/0\.15mm smaller per side/)).toBeInTheDocument();
+      expect(screen.getByText(/relieved 0\.15mm per side/)).toBeInTheDocument();
     });
 
     it('omits the explanation when the relief is not applied', () => {

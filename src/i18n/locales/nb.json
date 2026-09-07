@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "Lokket svinger opp fra denne veggen og blir stående åpent forbi loddrett. Velg veggen lengst fra deg, så faller det åpne lokket bort fra hånden.",
   "binDesigner.lid.magnetHoles": "Magnetlommer",
   "binDesigner.lid.magnetSpec": "Lomme: ⌀{diameter}mm × {depth}mm dyp (matcher bingens magnetspesifikasjoner).",
-  "binDesigner.lid.magneticClearanceHint": "Magnetiske lokk lages {clearance} mm mindre per side slik at magnetene trekker dem igjen i stedet for å kjempe mot en friksjonspasning.",
+  "binDesigner.lid.magneticClearanceHint": "Magnetiske lokk får {clearance} mm ekstra klaring per side der de griper leppen, slik at magnetene trekker dem igjen i stedet for å kjempe mot en friksjonspasning. Utvendig flukter de fortsatt med boksen.",
   "binDesigner.lid.matchingTrayHint": "Et lokk holder støv ute; en skuff hindrer ting i å skli. Dette starter et nytt design i denne binens størrelse, med lokkbunn allerede satt opp.",
   "binDesigner.lid.matchingTrayName": "Organiseringsskuff",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

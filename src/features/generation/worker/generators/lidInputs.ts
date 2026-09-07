@@ -20,7 +20,7 @@ import type { LidRailSide } from '@/shared/types/bin';
 import {
   checkLidCompatibility,
   computeDisabledRails,
-  resolveLidFootprintClearance,
+  resolveLidMateRelief,
   resolveLidPlateThickness,
   resolveLidCavityExtraMm,
   resolveLidGripDepth,
@@ -86,15 +86,21 @@ export interface LidInputs {
   readonly lidOuterD: number;
   readonly lidCornerR: number;
   /**
-   * Per-side FOOTPRINT clearance. `LID_FIT_CLEARANCE`, plus
-   * `LID_MAGNETIC_EXTRA_CLEARANCE` on a lid that actually gets retention
-   * magnets, so they aren't fighting a friction fit. NOT every
-   * `attachment: 'magnetic'` config: a lip-less or polygon bin generates no
-   * corner bosses and keeps the base value — see
-   * `resolveLidFootprintClearance`. Not the anchor clearance either;
-   * `anchorZ`/`wallBottomZ` are deliberately computed from the base value.
+   * Per-side FOOTPRINT clearance, so the lid's outer perimeter lands flush
+   * with the bin's `bin*42 - CLEARANCE` body. The same on every attachment —
+   * a magnetic lid's relief is a plug-only inset, {@link mateRelief}.
    */
   readonly fitClearance: number;
+  /**
+   * Extra per-side inset on the mating skirt — the band below `anchorZ` that
+   * plugs into the stacking lip. `LID_MAGNETIC_EXTRA_CLEARANCE` on a lid that
+   * actually gets retention magnets, so they aren't fighting a friction fit,
+   * and 0 on every other. NOT every `attachment: 'magnetic'` config: a
+   * lip-less or polygon bin generates no corner bosses and keeps the full
+   * grip — see `resolveLidMateRelief`. Not an anchor clearance either;
+   * `anchorZ`/`wallBottomZ` are deliberately computed without it.
+   */
+  readonly mateRelief: number;
   readonly topThickness: number;
   /**
    * Total cavity depth added below the standard one-grid-unit lid — the
@@ -357,10 +363,12 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const { gridUnitMm, heightUnitMm } = params;
   // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
   const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
-  // Footprint clearance: the locked-down base, plus the magnetic relief when
-  // the design gets retention magnets. XY only — `anchorZ`/
+  // Footprint clearance: the locked-down base, on every lid. The magnetic
+  // relief rides on the plug instead (`mateRelief`), so a magnetic lid's
+  // perimeter still matches the bin's. XY only either way — `anchorZ`/
   // `wallBottomZ` below stay on the base value so the magnet seat gap holds.
-  const fitClearance = resolveLidFootprintClearance(params);
+  const fitClearance = LID_FIT_CLEARANCE;
+  const mateRelief = resolveLidMateRelief(params);
 
   // Polygon path activates when the mask is partially filled. A fully-filled
   // mask is treated as rectangular (matches the bin generator's convention).
@@ -470,6 +478,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     lidOuterD,
     lidCornerR,
     fitClearance,
+    mateRelief,
     topThickness,
     cavityExtraMm: cavityExtra,
     cavityInset,

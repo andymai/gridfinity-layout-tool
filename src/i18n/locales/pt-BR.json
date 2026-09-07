@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "A tampa abre para cima a partir desta parede e fica aberta além da vertical. Escolha a parede mais distante de você para que a tampa aberta saia da frente da sua mão.",
   "binDesigner.lid.magnetHoles": "Cavidades de ímãs",
   "binDesigner.lid.magnetSpec": "Cavidade: ⌀{diameter}mm × {depth}mm de profundidade (coincide com os ímãs do bin).",
-  "binDesigner.lid.magneticClearanceHint": "Tampas magnéticas são feitas {clearance} mm menores por lado para que os ímãs as fechem em vez de disputar com um ajuste por atrito.",
+  "binDesigner.lid.magneticClearanceHint": "Tampas magnéticas ganham {clearance} mm de folga por lado onde agarram o lábio, para que os ímãs as fechem em vez de disputar com um ajuste por atrito. Por fora continuam alinhadas com a caixa.",
   "binDesigner.lid.matchingTrayHint": "Uma tampa mantém a poeira fora; uma bandeja impede que as coisas deslizem. Isto inicia um novo design do tamanho deste bin, com a base tampa já configurada.",
   "binDesigner.lid.matchingTrayName": "Bandeja organizadora",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

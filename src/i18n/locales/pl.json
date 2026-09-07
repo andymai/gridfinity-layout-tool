@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "Pokrywa odchyla się w górę od tej ścianki i zostaje otwarta poza pionem. Wybierz ściankę najdalszą od siebie, żeby otwarta pokrywa odchylała się od ręki.",
   "binDesigner.lid.magnetHoles": "Kieszenie na magnesy",
   "binDesigner.lid.magnetSpec": "Kieszeń: ⌀{diameter} mm × {depth} mm głębokości (zgodne ze specyfikacją magnesów bina).",
-  "binDesigner.lid.magneticClearanceHint": "Magnetyczne pokrywy są robione o {clearance} mm mniejsze z każdej strony, aby magnesy je domykały, zamiast walczyć z dopasowaniem na tarcie.",
+  "binDesigner.lid.magneticClearanceHint": "Magnetyczne pokrywy mają o {clearance} mm większy luz z każdej strony tam, gdzie chwytają kołnierz, aby magnesy je domykały, zamiast walczyć z dopasowaniem na tarcie. Na zewnątrz nadal licują z pojemnikiem.",
   "binDesigner.lid.matchingTrayHint": "Pokrywa chroni przed kurzem; taca zapobiega przesuwaniu się rzeczy. To tworzy nowy projekt w rozmiarze tego binu, z gotową podstawą-pokrywą.",
   "binDesigner.lid.matchingTrayName": "Taca organizera",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",

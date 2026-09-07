@@ -6,13 +6,11 @@
  * fingertip gets UNDER the lid's skirt rather than only against it.
  *
  * Registration comes free from reusing `gripPlacements`: the dip and the lid's
- * own relief are derived from one span, so they cannot drift apart. But the
- * placements are on the LID's perimeter, and only a friction or click-rail lid
- * shares the bin's — `width * pitch - 2 * LID_FIT_CLEARANCE` equals
- * `width * pitch - CLEARANCE` at the base clearance and no other. A magnetic
- * lid sits `LID_MAGNETIC_EXTRA_CLEARANCE` further in per side, so the cutter
- * has to reach back out that far or it stops short of the bin's face and
- * leaves a skin of lip standing across the whole dip.
+ * own relief are derived from one span, so they cannot drift apart. The
+ * placements are on the LID's perimeter, which every attachment holds at
+ * `width * pitch - 2 * LID_FIT_CLEARANCE` — the bin's own
+ * `width * pitch - CLEARANCE` — so the cutter reaches the bin's face on a
+ * coplanar margin alone.
  *
  * Two bounds, both deliberate:
  *
@@ -38,13 +36,7 @@
 import { draw, rotate, translate, unwrap, cutAll } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
-import {
-  hasBinLipDip,
-  shouldGenerateLid,
-  resolveLidFootprintClearance,
-  LID_FIT_CLEARANCE,
-  LID_GRIP_MIN_WALL_MM,
-} from '@/shared/types/bin';
+import { hasBinLipDip, shouldGenerateLid, LID_GRIP_MIN_WALL_MM } from '@/shared/types/bin';
 import { checkCancelled } from '../../utils/abort';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from '../../generatorConstants';
 import { LID_COPLANAR_MARGIN } from '../../lidConstants';
@@ -101,11 +93,6 @@ export const lidGripDipStage: PipelineStage = {
     // through a 1.2mm wall. The result is still watertight, so only a probe
     // finds it.
     const lipBottomZ = dim.wallTopZ;
-    // Outward overshoot: the coplanar margin PLUS however far the lid's
-    // footprint is inboard of the bin's, so the cut reaches the bin face on a
-    // magnetic lid as well as a flush one.
-    const M = LID_COPLANAR_MARGIN + (resolveLidFootprintClearance(params) - LID_FIT_CLEARANCE);
-
     // Every `rotate`/`translate` returns a NEW OCCT shape. This stage runs
     // outside a DisposalScope, so each intermediate has to be freed by hand or
     // it leaks on every regeneration — and the designer regenerates on each
@@ -127,13 +114,13 @@ export const lidGripDipStage: PipelineStage = {
       const half = place.spanMm / 2;
       const elevation = draw([-half, 0])
         .lineTo([half, 0])
-        .lineTo([half + DIP_RAMP_MM, LIP_HEIGHT + M])
-        .lineTo([-half - DIP_RAMP_MM, LIP_HEIGHT + M])
+        .lineTo([half + DIP_RAMP_MM, LIP_HEIGHT + LID_COPLANAR_MARGIN])
+        .lineTo([-half - DIP_RAMP_MM, LIP_HEIGHT + LID_COPLANAR_MARGIN])
         .close();
 
-      const slab = elevation.sketchOnPlane('XY', 0).extrude(depthMm + M);
+      const slab = elevation.sketchOnPlane('XY', 0).extrude(depthMm + LID_COPLANAR_MARGIN);
       const upright = rotate(slab, 90, { axis: [1, 0, 0] });
-      const centred = translate(upright, [0, M, lipBottomZ]);
+      const centred = translate(upright, [0, LID_COPLANAR_MARGIN, lipBottomZ]);
       scratch.push(slab, upright, centred);
       const oriented =
         place.rotationDeg === 0 ? centred : rotate(centred, place.rotationDeg, { axis: [0, 0, 1] });

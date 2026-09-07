@@ -13,7 +13,7 @@ import {
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_STEP_MM,
   LID_MAGNETIC_EXTRA_CLEARANCE,
-  resolveLidFootprintClearance,
+  resolveLidMateRelief,
   resolveLidPlateThickness,
   resolveLidTrayBreakdown,
   resolveLidCavityExtraMm,
@@ -603,14 +603,10 @@ export function useLidSection() {
   // generated geometry. Plate thickness and cavity depth come from the shared
   // resolvers rather than a local copy of the same arithmetic.
   const lidDimensions = useMemo(() => {
-    // Footprint uses the mode-aware clearance so the readout shrinks by
-    // 0.3mm when the user switches to magnetic retention; the
-    // anchor math below stays on the base value, as in `resolveLidInputs`.
-    const fitClearance = resolveLidFootprintClearance(params);
     // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
     const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-    const lidOuterW = params.width * params.gridUnitMm - 2 * fitClearance;
-    const lidOuterD = params.depth * gridUnitMmY - 2 * fitClearance;
+    const lidOuterW = params.width * params.gridUnitMm - 2 * LID_FIT_CLEARANCE;
+    const lidOuterD = params.depth * gridUnitMmY - 2 * LID_FIT_CLEARANCE;
     // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate. Both
     // grow with the cavity knobs, so the readout shows the user why the lid
     // gets taller when they add height, magnets, a tray, or plate thickness.
@@ -959,12 +955,12 @@ export function useLidSection() {
       // plate and the value differ by the recess depth. Null for every other
       // lid, where the two are the same number and a breakdown says nothing.
       trayBreakdown: resolveLidTrayBreakdown(params),
-      // Magnetic lids get extra footprint clearance so the magnets aren't
+      // Magnetic lids back their plug off the lip so the magnets aren't
       // fighting a friction fit; surfaced as a hint next to the mode. Derived
       // from the resolver rather than re-testing the predicate, so the hint
       // can't claim a relief the geometry didn't actually apply.
       magneticClearanceMm: LID_MAGNETIC_EXTRA_CLEARANCE,
-      hasMagneticRelief: resolveLidFootprintClearance(params) > LID_FIT_CLEARANCE,
+      hasMagneticRelief: resolveLidMateRelief(params) > 0,
       disabledReason,
       stackingLipMissing,
       disabledRails,

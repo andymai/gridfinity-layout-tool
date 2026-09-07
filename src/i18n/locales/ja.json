@@ -1237,7 +1237,7 @@
   "binDesigner.lid.hinge.sideHint": "フタはこの壁から上に開き、垂直を越えた位置で止まります。手前から最も遠い壁を選ぶと、開いたフタが手をよけて倒れます。",
   "binDesigner.lid.magnetHoles": "マグネットポケット",
   "binDesigner.lid.magnetSpec": "ポケット:⌀{diameter}mm × 深さ{depth}mm(ビンのマグネット仕様に対応)。",
-  "binDesigner.lid.magneticClearanceHint": "マグネット式のフタは片側あたり {clearance}mm 小さく作られ、摩擦にあらがうことなくマグネットの力で閉まります。",
+  "binDesigner.lid.magneticClearanceHint": "マグネット式のフタは、リップをつかむ部分だけ片側あたり {clearance}mm 逃がしてあり、摩擦にあらがうことなくマグネットの力で閉まります。外形はビンとそろったままです。",
   "binDesigner.lid.matchingTrayHint": "フタはホコリを防ぎ、トレイは中身のずれを防ぎます。このビンのサイズに合わせた新しいデザインを、ふたベースを設定した状態で作成します。",
   "binDesigner.lid.matchingTrayName": "整理トレイ",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",
