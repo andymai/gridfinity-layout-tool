@@ -17,6 +17,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     id: 'lip-peak-finish',
     date: '2026-09-07',
     kind: 'new',
+    featured: true,
     title: { en: 'A stacking lip that prints cleanly at the top' },
     body: {
       en: 'The stacking lip comes to a point, and that point prints as a thin sliver with nothing under it, which is the bit that scars, curls, or lifts off the layer below. Under Base you can now round that edge off or cut a chamfer on it, so the top layer has something solid to sit on. Bins stack exactly the same either way.',
