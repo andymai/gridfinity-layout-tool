@@ -23,7 +23,7 @@ let mockNeedRefresh = false;
 let mockUpdateServiceWorker: Mock;
 let mockOnRegisteredSW:
   ((swUrl: string, registration: ServiceWorkerRegistration) => void) | undefined;
-let mockOnRegisterError: ((error: Error) => void) | undefined;
+let mockOnRegisterError: ((error: unknown) => void) | undefined;
 
 // Mock the new PWA-gate modules so existing tests exercise the original
 // flag-disabled flow with the same timing they were written for. The gate
@@ -41,7 +41,7 @@ vi.mock('@/shared/pwa/smokeGate', () => ({
 vi.mock('virtual:pwa-register/react', () => ({
   useRegisterSW: (options?: {
     onRegisteredSW?: (swUrl: string, registration: ServiceWorkerRegistration) => void;
-    onRegisterError?: (error: Error) => void;
+    onRegisterError?: (error: unknown) => void;
   }) => {
     // Capture callbacks for testing
     mockOnRegisteredSW = options?.onRegisteredSW;
@@ -535,6 +535,46 @@ describe('usePWAUpdate', () => {
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('private browsing'));
 
       consoleSpy.mockRestore();
+      errorSpy.mockRestore();
+    });
+
+    it.each([
+      ['undefined', undefined],
+      ['null', null],
+      ['a string', 'SecurityError: blocked'],
+      ['a DOMException-like object', { name: 'SecurityError' }],
+    ])('survives a rejection that is %s', (_label, rejected) => {
+      // The handler runs on an unhandled rejection, so anything it throws has
+      // nothing left to catch it: reading `.message` off a non-Error took the
+      // page down with a TypeError of its own.
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      renderHook(() => usePWAUpdate());
+
+      expect(() => {
+        act(() => {
+          mockOnRegisterError?.(rejected);
+        });
+      }).not.toThrow();
+
+      errorSpy.mockRestore();
+      warnSpy.mockRestore();
+    });
+
+    it('still recognises a SecurityError delivered as a bare string', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisterError?.('SecurityError: blocked');
+      });
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('private browsing'));
+
+      warnSpy.mockRestore();
       errorSpy.mockRestore();
     });
   });
