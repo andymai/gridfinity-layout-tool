@@ -83,11 +83,9 @@ export function PhysicalUnitsSection() {
     >
       <div className="space-y-3 px-4 py-3">
         <div className="text-xs text-content-secondary space-y-2">
-          {/* The same linked pair the drawer sidebar and designer use, over the
-              same layout pitch. A plate is only ever a reflection of that grid,
-              so editing it here and there has to mean one thing. The range is
-              the store's own clamp (1-200mm), wider than the sidebar's
-              authoring range, because a plate is printable well outside it. */}
+          {/* Bounds are the store's own clamp, not the component default: the
+              sidebar offers the narrower layout-authoring range, and a plate
+              prints well outside it. */}
           <SettingsRow
             label={t('baseplate.gridUnit')}
             htmlFor="bp-gridUnit"

@@ -34,8 +34,6 @@ describe('PhysicalUnitsSection', () => {
     expect(screen.queryByText('baseplate.magnetAnchor')).not.toBeInTheDocument();
   });
 
-  // The whole point of #4142: a square grid gave no hint that Y was separately
-  // settable, so the unlink control has to be reachable before X !== Y.
   it('offers the unlink control on a square grid', () => {
     render(<PhysicalUnitsSection />);
     expect(
