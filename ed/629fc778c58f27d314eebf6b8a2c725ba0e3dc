@@ -1,0 +1,39 @@
+src/shared/hooks/useGridUnitChange.ts
+  s_a6ff8b9bd49044::t_5a9c3226111223 1-30
+src/shared/utils/drawerOutline.ts
+  s_a6ff8b9bd49044::t_08843dd945678d 582
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.test.tsx
+  s_a6ff8b9bd49044::t_c8119e43f65e9c 36-57,66-72
+  s_a6ff8b9bd49044::t_48dc6d7f19feda 5-6
+  s_a6ff8b9bd49044::t_201fac37517bff 58-65
+src/shared/hooks/useGridUnitChange.test.ts
+  s_a6ff8b9bd49044::t_56101fb6263760 11
+  s_a6ff8b9bd49044::t_297c52b595bd74 1-10,12-48
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  s_a6ff8b9bd49044::t_4777a4d3d7bcf4 25-34
+  s_a6ff8b9bd49044::t_2d061c2da52dae 75-80
+  s_a6ff8b9bd49044::t_8740e5cbd95d58 86-90,97,99-104
+  s_a6ff8b9bd49044::t_729f53dc8f6e9d 16,18-19,49
+  s_a6ff8b9bd49044::t_c95dee4a90443b 50
+src/shared/hooks/useDrawerSettings.ts
+  s_a6ff8b9bd49044::t_e48d37c6bf1981 13
+  s_a6ff8b9bd49044::t_c29fcac5481c09 635
+src/shared/hooks/index.ts
+  s_a6ff8b9bd49044::t_d295b1d90d4dba 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "ed629fc778c58f27d314eebf6b8a2c725ba0e3dc",
+  "prompts": {},
+  "sessions": {
+    "s_a6ff8b9bd49044": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c62b2a3e-6f57-49cf-b67d-f8fadbd48f53",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
