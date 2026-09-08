@@ -107,8 +107,6 @@
   "baseplate.gridDepth": "Hloubka",
   "baseplate.gridUnit": "Jednotka mřížky",
   "baseplate.gridUnitTooltip": "Šířka jednoho čtverce mřížky (standard: 42 mm)",
-  "baseplate.gridUnitY": "Jednotka mřížky Y",
-  "baseplate.gridUnitYTooltip": "Hloubka jedné buňky mřížky (mm) pro nečtvercovou mřížku. Přepni a uprav to v nastavení zásuvky.",
   "baseplate.gridWidth": "Šířka",
   "baseplate.halfGridHint": "Zaplní každý okraj buňkami poloviční mřížky 21 mm; zbytek pod 21 mm se vyplní jako oříznutá dlaždice mřížky.",
   "baseplate.halfGridHintSolid": "Zaplní každý okraj buňkami poloviční mřížky 21 mm; zbytek pod 21 mm zůstane plný.",

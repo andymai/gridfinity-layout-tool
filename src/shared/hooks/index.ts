@@ -14,6 +14,7 @@ export { usePrefersReducedMotion } from './usePrefersReducedMotion';
 // Grid & layout hooks
 export { useGridTemplate } from './useGridTemplate';
 export type { GridTemplateState, UseGridTemplateOptions } from './useGridTemplate';
+export { useGridUnitChange } from './useGridUnitChange';
 export { useDrawerSettings } from './useDrawerSettings';
 export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 // useBinGeometry / createBinGeometry import the full `three` namespace and are

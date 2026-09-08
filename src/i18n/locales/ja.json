@@ -107,8 +107,6 @@
   "baseplate.gridDepth": "奥行き",
   "baseplate.gridUnit": "グリッドユニット",
   "baseplate.gridUnitTooltip": "グリッド1マスの幅(標準:42mm)",
-  "baseplate.gridUnitY": "グリッドユニット Y",
-  "baseplate.gridUnitYTooltip": "Y方向のグリッドセル1つの奥行き（mm）。42mmの正確な倍数でない引き出しに合わせるにはXと異なる値に設定します（例：42x22）。",
   "baseplate.gridWidth": "幅",
   "baseplate.halfGridHint": "各余白を21mmのハーフグリッドセルで埋めます。21mm未満の余りは切り取られたタイルとして埋められます。",
   "baseplate.halfGridHintSolid": "各余白を21mmのハーフグリッドセルで埋めます。21mm未満の余りはソリッドのまま残ります。",

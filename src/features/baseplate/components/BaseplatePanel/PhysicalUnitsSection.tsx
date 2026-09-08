@@ -13,16 +13,25 @@ import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
+import { useGridUnitChange } from '@/shared/hooks';
+import { GRID_PITCH_MM_MIN, GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';
 import { SegmentedControl } from '@/design-system';
 import { HelpTargetMarker } from '@/shared/help/HelpTargetMarker';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { effectiveGridUnitMmY } from '@/core/types';
 
-/** Print Settings header summary: "{gridUnit}mm · {bed}mm" or "{gridUnit}mm · {w}×{d}mm" for asymmetric beds. */
-function formatPrintSettingsSummary(gridUnitMm: number, bedW: number, bedD: number): string {
-  const bed = bedW === bedD ? `${bedW}mm` : `${bedW}×${bedD}mm`;
-  return `${gridUnitMm}mm · ${bed}`;
+/** Print Settings header summary: "{grid}mm · {bed}mm", each half widening to
+ *  "{x}×{y}mm" when that pair is asymmetric. */
+function formatPrintSettingsSummary(
+  gridUnitMm: number,
+  gridUnitMmY: number,
+  bedW: number,
+  bedD: number
+): string {
+  const pair = (a: number, b: number): string => (a === b ? `${a}mm` : `${a}×${b}mm`);
+  return `${pair(gridUnitMm, gridUnitMmY)} · ${pair(bedW, bedD)}`;
 }
 
 export function PhysicalUnitsSection() {
@@ -36,6 +45,8 @@ export function PhysicalUnitsSection() {
       printBedDepth: state.layout.printBedDepth,
     }))
   );
+
+  const handleGridUnitChange = useGridUnitChange();
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
   const handleNozzleChange = useCallback((value: number) => {
@@ -61,41 +72,38 @@ export function PhysicalUnitsSection() {
   return (
     <StickyGroupHeader
       title={t('common.physicalUnits')}
-      summary={formatPrintSettingsSummary(gridUnitMm, printBedSize, printBedDepth ?? printBedSize)}
+      summary={formatPrintSettingsSummary(
+        gridUnitMm,
+        gridUnitMmY,
+        printBedSize,
+        printBedDepth ?? printBedSize
+      )}
       expanded={printSettingsExpanded}
       onExpandedChange={setPrintSettingsExpanded}
     >
       <div className="space-y-3 px-4 py-3">
         <div className="text-xs text-content-secondary space-y-2">
+          {/* The same linked pair the drawer sidebar and designer use, over the
+              same layout pitch. A plate is only ever a reflection of that grid,
+              so editing it here and there has to mean one thing. The range is
+              the store's own clamp (1-200mm), wider than the sidebar's
+              authoring range, because a plate is printable well outside it. */}
           <SettingsRow
             label={t('baseplate.gridUnit')}
             htmlFor="bp-gridUnit"
             unit="mm"
             tooltip={t('baseplate.gridUnitTooltip')}
           >
-            <DeferredNumberInput
+            <GridUnitInput
               id="bp-gridUnit"
-              value={gridUnitMm}
-              onChange={(mm) => useLayoutStore.getState().setGridUnitMm(mm)}
-              min={1}
-              max={200}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
+              x={gridUnitMm}
+              y={gridUnitMmY}
+              onChange={handleGridUnitChange}
+              variant="compact"
+              min={GRID_PITCH_MM_MIN}
+              max={GRID_PITCH_MM_MAX}
             />
           </SettingsRow>
-          {/* Non-square grids get a read-only Y-pitch echo — the toggle and
-              edit live in the drawer's Physical Units, so the plate stays a
-              reflection of the layout grid. */}
-          {gridUnitMmY !== gridUnitMm && (
-            <SettingsRow
-              label={t('baseplate.gridUnitY')}
-              unit="mm"
-              tooltip={t('baseplate.gridUnitYTooltip')}
-            >
-              <span className="px-1 text-xs text-content-secondary tabular-nums">
-                {gridUnitMmY}
-              </span>
-            </SettingsRow>
-          )}
           {/* Progressive disclosure: the anchor only diverges above the
               standard 42mm grid (below that 'edge' and 'center' are identical),
               so the control stays hidden until then — and its caption reveals
