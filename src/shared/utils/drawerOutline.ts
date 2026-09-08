@@ -579,7 +579,7 @@ export function drawerSizeFloors(
 }
 
 /** Range a grid pitch may be set to (mm), either axis. */
-const GRID_PITCH_MM_MIN = 1;
+export const GRID_PITCH_MM_MIN = 1;
 export const GRID_PITCH_MM_MAX = 200;
 
 /**

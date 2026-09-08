@@ -10,6 +10,7 @@ import {
   useHalfGridModeStore,
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
+import { useGridUnitChange } from './useGridUnitChange';
 import {
   calcMaxGridUnits,
   CONSTRAINTS,
@@ -631,23 +632,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     });
   }, [setGridUnitMm, setGridUnitMmY, setHeightUnitMm]);
 
-  // Linked grid-pitch control: y === undefined means a square grid (clears the
-  // stored Y pitch). Each write is guarded so a no-op edit (e.g. re-committing
-  // the linked X input) emits no undo/analytics events; batched so an X+Y edit
-  // is one undo step.
-  const handleGridUnitChange = useCallback(
-    (x: number, y?: number) => {
-      const current = useLayoutStore.getState().layout;
-      const xChanged = x !== (current.gridUnitMm as number);
-      const yChanged = y !== (current.gridUnitMmY as number | undefined);
-      if (!xChanged && !yChanged) return;
-      batch(() => {
-        if (xChanged) setGridUnitMm(x);
-        if (yChanged) setGridUnitMmY(y ?? null);
-      });
-    },
-    [setGridUnitMm, setGridUnitMmY]
-  );
+  const handleGridUnitChange = useGridUnitChange();
 
   const handleSaveCategoriesAsDefaults = useCallback(() => {
     saveCategoriesAsDefaults(currentCategories);

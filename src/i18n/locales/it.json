@@ -107,8 +107,6 @@
   "baseplate.gridDepth": "Profondità",
   "baseplate.gridUnit": "Unità griglia",
   "baseplate.gridUnitTooltip": "Larghezza di un quadrato della griglia (standard: 42mm)",
-  "baseplate.gridUnitY": "Unità griglia Y",
-  "baseplate.gridUnitYTooltip": "Profondità di una cella della griglia in mm lungo Y. Impostala diversa da X per riempire un cassetto che non è un multiplo esatto di 42mm (es. 42x22).",
   "baseplate.gridWidth": "Larghezza",
   "baseplate.halfGridHint": "Riempie ogni margine con celle a mezza griglia da 21mm; il residuo sotto i 21mm viene riempito come tessera di griglia ritagliata.",
   "baseplate.halfGridHintSolid": "Riempie ogni margine con celle a mezza griglia da 21mm; il residuo sotto i 21mm resta pieno.",

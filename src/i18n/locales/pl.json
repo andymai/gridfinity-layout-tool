@@ -107,8 +107,6 @@
   "baseplate.gridDepth": "Głębokość",
   "baseplate.gridUnit": "Jednostka siatki",
   "baseplate.gridUnitTooltip": "Szerokość jednego kwadratu siatki (standard: 42 mm)",
-  "baseplate.gridUnitY": "Jednostka siatki Y",
-  "baseplate.gridUnitYTooltip": "Głębokość jednej komórki siatki (mm) dla siatki niekwadratowej. Przełącz i edytuj to w ustawieniach szuflady.",
   "baseplate.gridWidth": "Szerokość",
   "baseplate.halfGridHint": "Zapełnia każdy margines komórkami półsiatki 21 mm; resztka poniżej 21 mm wypełnia się jako przycięty kafelek siatki.",
   "baseplate.halfGridHintSolid": "Zapełnia każdy margines komórkami półsiatki 21 mm; resztka poniżej 21 mm pozostaje lita.",
