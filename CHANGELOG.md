@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.487.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.486.0...gridfinity-layout-tool-v4.487.0) (2026-09-08)
+
+
+### Features
+
+* **baseplate:** edit X and Y grid units from the baseplate panel ([#4143](https://github.com/andymai/gridfinity-layout-tool/issues/4143)) ([557b799](https://github.com/andymai/gridfinity-layout-tool/commit/557b7994664216894d8dacb252f33d31d186947d))
+
 ## [4.486.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.3...gridfinity-layout-tool-v4.486.0) (2026-09-07)
 
 
