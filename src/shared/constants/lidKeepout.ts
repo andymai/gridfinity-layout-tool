@@ -99,6 +99,22 @@ export function railInboardReachMm(wallThickness: number): number {
 }
 
 /**
+ * Signed offset from the inner wall face out to the lip's inner face, at the
+ * plane the ring's top sits on (mm). Negative: the lip juts into the cavity.
+ *
+ * Measured at the WALL TOP, which is where the lip reaches deepest. Its inner
+ * face runs vertically at `LIP_TAPER_WIDTH` from the outer face for the 1.2mm
+ * under the base plane, and only above that does the small taper open it back
+ * out to `LIP_BIG_TAPER`. Taking the jut from the big taper describes the lip
+ * 0.7mm higher than anything this ring touches, and the 0.7mm of difference is
+ * the angled support — which a cutter reaching to the wall top then shears
+ * into a 90° overhang.
+ */
+function lipInsetAtWallTopMm(wallThickness: number): number {
+  return wallThickness - (GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER);
+}
+
+/**
  * Radial width of the ring, inward from the lip's inner face.
  *
  * Depends on nothing but the wall, so a polygon footprint takes the same band
@@ -107,10 +123,12 @@ export function railInboardReachMm(wallThickness: number): number {
  * {@link lidKeepoutRing}.
  */
 export function lidKeepoutWidthMm(wallThickness: number): number {
-  const lipInset = wallThickness - GRIDFINITY_SPEC.LIP_BIG_TAPER;
+  const lipInset = lipInsetAtWallTopMm(wallThickness);
   // Both terms are measured from the INNER WALL FACE while the ring starts at
   // the lip line, so the jut is already spent: `lipInset` is negative and
-  // adding it shortens the width by the head start.
+  // adding it shortens the width by the head start. That keeps the ring's INNER
+  // edge invariant under the choice of lip plane above — only its outer
+  // boundary moves — so nothing the rail needs cleared can be given up here.
   return railInboardReachMm(wallThickness) + LID_KEEPOUT_CLEARANCE + lipInset;
 }
 
@@ -119,29 +137,31 @@ export function lidKeepoutWidthMm(wallThickness: number): number {
  * sits, for a polygon edge.
  *
  * A mask outline spans the full grid-unit extent, so the bin's real outer face
- * is already `TOLERANCE / 2` inside it; the lip's inner face is a further
- * `LIP_BIG_TAPER` in. The rectangle path reaches the same line by a different
- * route (`innerW / 2 + lipInset` = `outerW / 2 - LIP_BIG_TAPER`), which is the
+ * is already `TOLERANCE / 2` inside it; the lip's inner face on the ring's top
+ * plane is a further `LIP_TAPER_WIDTH` in ({@link lipInsetAtWallTopMm}). The
+ * rectangle path reaches the same line by a different route
+ * (`innerW / 2 + lipInset` = `outerW / 2 - LIP_TAPER_WIDTH`), which is the
  * arithmetic `lidKeepoutSlabs` must agree with and the reason this is stated
  * once here.
  */
 export const LID_KEEPOUT_OUTLINE_INSET_MM =
-  GRIDFINITY_SPEC.TOLERANCE / 2 + GRIDFINITY_SPEC.LIP_BIG_TAPER;
+  GRIDFINITY_SPEC.TOLERANCE / 2 + (GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER);
 
 /**
  * Resolve the keep-out ring for a bin's interior.
  *
  * Two bounds, both chosen so the cut can never touch what makes the joint work:
  *
- * - OUTER, at the stacking lip's inner face rather than the wall's. The lip
- *   juts into the cavity by `LIP_BIG_TAPER - wallThickness` (0.7mm at the
- *   default), and the void beneath that jut IS the undercut the rail's bump
- *   hooks. Starting the ring at the wall face would put the cutter over that
- *   material, and extending it upward to cut cleanly would then shave the
- *   undercut away and quietly disable the snap. Starting at the lip line
- *   leaves open air above the ring at every radius it spans, so the top can
- *   overshoot freely. The rail's own outer face sits 0.25mm inboard of this
- *   line, so nothing is given up.
+ * - OUTER, at the stacking lip's inner face rather than the wall's, taken on
+ *   the ring's own top plane ({@link lipInsetAtWallTopMm}): 1.4mm into the
+ *   cavity at the default wall. The void beneath that jut IS the undercut the
+ *   rail's bump hooks. Starting the ring at the wall face would put the cutter
+ *   over that material, and extending it upward to cut cleanly would then
+ *   shave the undercut away and quietly disable the snap. Starting at the lip
+ *   line leaves open air above the ring at every radius it spans, so the top
+ *   can overshoot freely. The rail's own outer face sits inboard of this line,
+ *   so nothing is given up — and the band between the two planes is filled by
+ *   the lip's angled support on every bin, which a seated lid already clears.
  * - DEPTH, the rail band plus one clearance. Measured from the WALL TOP, which
  *   is what {@link LID_CLICK_RAIL_BAND_BELOW_WALL_TOP} is stated against, so a
  *   collar carries the whole envelope up with it for free.
@@ -154,19 +174,26 @@ export function lidKeepoutRing(
   wallThickness: number
 ): LidKeepoutRing {
   // Distance from the interior centre out to the lip's inner face.
-  const lipInset = wallThickness - GRIDFINITY_SPEC.LIP_BIG_TAPER;
+  const lipInset = lipInsetAtWallTopMm(wallThickness);
   const outerHalfX = innerW / 2 + lipInset;
   const outerHalfY = innerD / 2 + lipInset;
   // Inward to the rail's deepest reach, plus clearance. Subtracting `lipInset`
-  // instead of adding it makes the ring 2x0.7mm too wide, which cuts more
-  // divider than the lid needs and passes every geometry check.
+  // instead of adding it makes the ring too wide, which cuts more divider than
+  // the lid needs and passes every geometry check.
   const width = lidKeepoutWidthMm(wallThickness);
   return {
     outerHalfX,
     outerHalfY,
     width,
     depthBelowWallTop: LID_CLICK_RAIL_BAND_BELOW_WALL_TOP + LID_KEEPOUT_CLEARANCE,
-    cornerRadius: Math.max(GRIDFINITY_SPEC.BOX_CORNER_RADIUS - GRIDFINITY_SPEC.LIP_BIG_TAPER, 0),
+    // Concentric with the boundary above: a rounded rect inset by d loses d of
+    // radius, and this boundary is inset from the outer face by the same lip
+    // reach, so the ring turns the corner along the lip rather than across it.
+    cornerRadius: Math.max(
+      GRIDFINITY_SPEC.BOX_CORNER_RADIUS -
+        (GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER),
+      0
+    ),
   };
 }
 
