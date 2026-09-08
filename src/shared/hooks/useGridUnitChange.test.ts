@@ -39,40 +39,45 @@ describe('useGridUnitChange', () => {
     expect(useHistoryStore.getState().past.length).toBe(before + 1);
   });
 
-  // A custom outline floors each axis independently, but a SQUARE grid's X
-  // floor honours the Y bound too (gridPitchFloors). Unlinking therefore has to
-  // store Y before X, or X clamps against a floor that only applied while the
-  // axes were still tied together.
-  it('unlinks to a narrower X than the square-grid floor would allow', () => {
-    useLayoutStore.setState({
-      layout: {
-        ...createTestLayout(),
-        gridUnitMm: mm(42),
-        gridUnitMmY: undefined,
-        drawer: {
-          ...createTestLayout().drawer,
-          width: gridUnits(10),
-          depth: gridUnits(5),
-          outline: {
-            vertices: [
-              { x: 0, y: 0 },
-              { x: 200, y: 0 },
-              { x: 200, y: 210 },
-              { x: 0, y: 210 },
-            ],
-          },
-        },
+  /**
+   * Both ordering cases need a custom outline: without one `gridPitchFloors`
+   * returns the 1mm floor on both axes and neither clamp can fire, so the
+   * assertions would hold whichever write lands first.
+   *
+   * 200mm over 10 units floors X at 20; 210mm over 5 units floors Y at 42.
+   */
+  const flooredLayout = (gridUnitMm: number, gridUnitMmY: number | undefined) => ({
+    ...createTestLayout(),
+    gridUnitMm: mm(gridUnitMm),
+    gridUnitMmY: gridUnitMmY === undefined ? undefined : mm(gridUnitMmY),
+    drawer: {
+      ...createTestLayout().drawer,
+      width: gridUnits(10),
+      depth: gridUnits(5),
+      outline: {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 200, y: 0 },
+          { x: 200, y: 210 },
+          { x: 0, y: 210 },
+        ],
       },
-    });
+    },
+  });
+
+  // A square grid's X floor honours the Y bound too, so X must land AFTER Y or
+  // it clamps to 42 against a floor that only applied while the axes were tied.
+  it('unlinks to a narrower X than the square-grid floor would allow', () => {
+    useLayoutStore.setState({ layout: flooredLayout(42, undefined) });
     const { result } = renderHook(() => useGridUnitChange());
     act(() => result.current(30, 42));
     expect(pitch()).toEqual({ x: 30, y: 42 });
   });
 
+  // The mirror: clearing Y refuses to collapse onto an X below the Y floor, so
+  // X must land FIRST. Writing Y first leaves the refused Y at 42.
   it('relinks to a square pitch that clears the stored Y', () => {
-    useLayoutStore.setState({
-      layout: { ...createTestLayout(), gridUnitMm: mm(30), gridUnitMmY: mm(42) },
-    });
+    useLayoutStore.setState({ layout: flooredLayout(30, 42) });
     const { result } = renderHook(() => useGridUnitChange());
     act(() => result.current(50));
     expect(pitch()).toEqual({ x: 50, y: undefined });
