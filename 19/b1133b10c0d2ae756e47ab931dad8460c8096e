@@ -1,0 +1,24 @@
+src/shared/hooks/usePWAUpdate.ts
+  s_aec671593afe18::t_8a2f220bb72295 457-462,465
+src/shared/hooks/usePWAUpdate.test.ts
+  s_aec671593afe18::t_7e9d8f17e37ed0 26,44
+  s_aec671593afe18::t_1bf840ad21ca77 540-579
+src/vite-env.d.ts
+  s_aec671593afe18::t_dfffeb6ab512a6 16-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "19b1133b10c0d2ae756e47ab931dad8460c8096e",
+  "prompts": {},
+  "sessions": {
+    "s_aec671593afe18": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aafd8ab0-716b-467e-8d75-c8757f51bcf2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
