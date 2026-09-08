@@ -1,0 +1,27 @@
+src/features/generation/worker/generators/slottedLipPocket.kernel.test.ts
+  s_aec671593afe18::t_a67895d04aedf7 1-131
+src/features/generation/worker/generators/slotBuilder.ts
+  s_aec671593afe18::t_a00415d55cac36 180-182,186,194-208,294,305,414,485
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.binStyles.test.ts.snap
+  s_aec671593afe18::t_a96d85174633e6 3
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.snap
+  s_aec671593afe18::t_f215a262b83b2a 3
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.slotted.test.ts.snap
+  s_aec671593afe18::t_274e7b184a7b7a 3,5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "a07791d84712237de8159f5a7ff86bee376d9b1f",
+  "prompts": {},
+  "sessions": {
+    "s_aec671593afe18": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aafd8ab0-716b-467e-8d75-c8757f51bcf2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
