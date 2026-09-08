@@ -1,0 +1,19 @@
+src/shared/hooks/useGridUnitChange.test.ts
+  s_a6ff8b9bd49044::t_6242742f87dd87 42-63,65-71,77-78,80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "cbfca29b755daeca4f64161535b124a675a1b0ee",
+  "prompts": {},
+  "sessions": {
+    "s_a6ff8b9bd49044": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c62b2a3e-6f57-49cf-b67d-f8fadbd48f53",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
