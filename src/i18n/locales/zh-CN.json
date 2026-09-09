@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "尺寸",
   "binDesigner.bento.smallScreenNote": "绘图工作区需要更宽的屏幕。可以在这里设置均匀网格，再把单元格合并成更大的隔层。",
   "binDesigner.bento.stashAction": "移入暂存区",
+  "binDesigner.bento.floorRaise": "底部抬高",
+  "binDesigner.bento.floorRaiseHint": "抬高此隔间的底部，让矮小物品更靠近边缘，更容易取出。下方为实心，切片软件的填充可保持轻量。",
   "binDesigner.bento.stashDropHint": "松开即可将此隔层放入暂存区",
   "binDesigner.bento.stashEmptyHint": "把隔层拖到这里，留着以后再用",
   "binDesigner.bento.stashEntryLabel": "暂存的隔层，{w} × {h} 单元格 {label}",

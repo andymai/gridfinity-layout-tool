@@ -6,7 +6,10 @@
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types/text';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { DEFAULT_COMPARTMENT_COLOR_SCOPE } from '@/features/bin-designer/types/compartments';
+import {
+  DEFAULT_COMPARTMENT_COLOR_SCOPE,
+  MAX_COMPARTMENT_FLOOR_RAISE_MM,
+} from '@/features/bin-designer/types/compartments';
 import type {
   CompartmentColorScope,
   DividerOverride,
@@ -236,6 +239,28 @@ export function createCompartmentActions(set: Set, get: Get) {
         state.params.compartments = {
           ...state.params.compartments,
           compartmentColors: next.length > 0 ? next : undefined,
+        };
+      });
+    },
+
+    setCompartmentFloorRaise: (compartmentId: number, raiseMm: number | null) => {
+      const { params } = get();
+      const prev = params.compartments.floorRaises ?? [];
+      const value =
+        raiseMm === null || !Number.isFinite(raiseMm) || raiseMm <= 0
+          ? null
+          : Math.min(MAX_COMPARTMENT_FLOOR_RAISE_MM, raiseMm);
+      if ((prev[compartmentId] ?? null) === value) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        const next = prev.slice();
+        while (next.length <= compartmentId) next.push(null);
+        next[compartmentId] = value;
+        while (next.length > 0 && next[next.length - 1] === null) next.pop();
+        state.params.compartments = {
+          ...state.params.compartments,
+          floorRaises: next.length > 0 ? next : undefined,
         };
       });
     },

@@ -23,6 +23,7 @@ import {
   remapBackgroundIds,
   remapCompartmentColors,
   remapCompartmentColorScopes,
+  remapFloorRaises,
   remapCompartmentTexts,
   remapDividerOverrides,
   remapDrawnUnitCells,
@@ -756,6 +757,9 @@ export function mergeCells(
     ...(config.compartmentColorScopes && {
       compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
     }),
+    ...(config.floorRaises && {
+      floorRaises: remapFloorRaises(config.floorRaises, remap),
+    }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
     }),
@@ -809,6 +813,9 @@ export function splitCompartment(
     }),
     ...(config.compartmentColorScopes && {
       compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
+    }),
+    ...(config.floorRaises && {
+      floorRaises: remapFloorRaises(config.floorRaises, remap),
     }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
@@ -874,6 +881,7 @@ export {
   remapBackgroundIds,
   remapCompartmentColors,
   remapCompartmentColorScopes,
+  remapFloorRaises,
   remapCompartmentTexts,
   remapDividerOverrides,
   remapDrawnUnitCells,

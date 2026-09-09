@@ -219,6 +219,7 @@ export interface DesignerState {
   setCompartmentPlateIcon: (compartmentId: number, icon: LabelPlateIconId | null) => void;
   /** Shadow-box colour for one compartment; null clears it. */
   setCompartmentColor: (compartmentId: number, color: string | null) => void;
+  setCompartmentFloorRaise: (compartmentId: number, raiseMm: number | null) => void;
   /** Which surfaces that compartment's colour paints. */
   setCompartmentColorScope: (compartmentId: number, scope: CompartmentColorScope) => void;
   /** Set the global interior divider height in mm, or 'auto' for full height. */

@@ -544,6 +544,18 @@
           },
           "description": "Whether a compartment's colour covers just its floor or its walls too."
         },
+        "floorRaises": {
+          "type": "array",
+          "items": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 100,
+            "x-constant": {
+              "maximum": "MAX_COMPARTMENT_FLOOR_RAISE_MM"
+            }
+          },
+          "description": "Per-compartment floor raise in mm, indexed by compartment id. Lifts that compartment's floor on a solid slab so short items sit nearer the rim; null or omitted stays on the standard floor."
+        },
         "dividerOverrides": {
           "type": "array",
           "items": {

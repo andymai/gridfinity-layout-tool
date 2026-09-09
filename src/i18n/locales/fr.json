@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Taille",
   "binDesigner.bento.smallScreenNote": "L'espace de dessin demande un écran plus large. Définissez ici une grille régulière, puis fusionnez des cellules en compartiments plus grands.",
   "binDesigner.bento.stashAction": "Déplacer vers le stash",
+  "binDesigner.bento.floorRaise": "Rehausse du fond",
+  "binDesigner.bento.floorRaiseHint": "Relève le fond de ce compartiment pour qu’un objet bas se trouve plus près du bord et soit plus facile à saisir. Plein en dessous ; le remplissage du slicer le garde léger.",
   "binDesigner.bento.stashDropHint": "Relâcher pour mettre ce compartiment dans le stash",
   "binDesigner.bento.stashEmptyHint": "Faites glisser un compartiment ici pour le mettre de côté",
   "binDesigner.bento.stashEntryLabel": "Compartiment dans le stash, {w} sur {h} cellules {label}",

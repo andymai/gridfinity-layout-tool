@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Rozmiar",
   "binDesigner.bento.smallScreenNote": "Obszar rysowania wymaga szerszego ekranu. Ustaw tu równomierną siatkę, a potem scalaj komórki w większe przegrody.",
   "binDesigner.bento.stashAction": "Przenieś do Stash",
+  "binDesigner.bento.floorRaise": "Podniesienie dna",
+  "binDesigner.bento.floorRaiseHint": "Podnosi dno tej przegródki, by niski przedmiot leżał bliżej krawędzi i łatwiej było go wyjąć. Pod spodem pełny materiał; wypełnienie w slicerze utrzyma niską wagę.",
   "binDesigner.bento.stashDropHint": "Puść, aby odłożyć tę przegrodę do Stash",
   "binDesigner.bento.stashEmptyHint": "Przeciągnij tutaj przegrodę, aby odłożyć ją na później",
   "binDesigner.bento.stashEntryLabel": "Odłożona przegroda, {w} na {h} komórek {label}",

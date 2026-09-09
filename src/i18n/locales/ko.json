@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "크기",
   "binDesigner.bento.smallScreenNote": "그리기 작업 공간은 더 넓은 화면이 필요합니다. 여기서는 균일한 격자를 설정한 뒤 셀을 합쳐 더 큰 칸을 만들 수 있습니다.",
   "binDesigner.bento.stashAction": "임시 보관함으로 이동",
+  "binDesigner.bento.floorRaise": "바닥 높이기",
+  "binDesigner.bento.floorRaiseHint": "이 칸의 바닥을 올려 낮은 물건이 테두리 가까이 놓이고 꺼내기 쉬워집니다. 아래는 채워지며 슬라이서의 인필이 무게를 줄여 줍니다.",
   "binDesigner.bento.stashDropHint": "놓으면 이 칸이 임시 보관함에 담깁니다",
   "binDesigner.bento.stashEmptyHint": "칸을 여기로 드래그하면 나중을 위해 보관됩니다",
   "binDesigner.bento.stashEntryLabel": "보관된 칸, {w}×{h} 셀 {label}",

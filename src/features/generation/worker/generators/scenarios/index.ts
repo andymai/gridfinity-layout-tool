@@ -47,6 +47,7 @@ import { solidCutoutMatrix } from './solidCutoutMatrix';
 import { pathfinderOps } from './pathfinderOps';
 import { lightweight } from './lightweight';
 import { spacer } from './spacer';
+import { floorRaise } from './floorRaise';
 import { tile } from './tile';
 import { trayBottom } from './trayBottom';
 import { slideTray } from './slideTray';
@@ -121,4 +122,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...cutoutLean,
   ...variantOverrides,
   ...scoopMultiCompartment,
+  ...floorRaise,
 ];

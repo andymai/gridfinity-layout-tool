@@ -27,6 +27,7 @@ import { CompartmentTextInput } from '@/features/bin-designer/components/panel/L
 import { useDividerTiltSubsection } from '@/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection';
 import { BentoBinWideSection } from './BentoBinWideSection';
 import { BentoCompartmentColorControls } from './BentoCompartmentColorControls';
+import { BentoCompartmentFloorControls } from './BentoCompartmentFloorControls';
 import {
   BENTO_DOCK_MAX_WIDTH,
   BENTO_DOCK_MIN_WIDTH,
@@ -386,6 +387,8 @@ export function BentoDock({
                   : `${selectedRow.rect.w} × ${selectedRow.rect.h}`}
               </dd>
             </dl>
+
+            <BentoCompartmentFloorControls compartmentId={selectedRow.id} />
 
             <BentoCompartmentColorControls compartmentId={selectedRow.id} />
 

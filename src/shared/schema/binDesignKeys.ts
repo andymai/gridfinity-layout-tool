@@ -147,6 +147,7 @@ export const COMPARTMENT_CONFIG_KEYS = [
   'labelIcons',
   'compartmentColors',
   'compartmentColorScopes',
+  'floorRaises',
   'dividerOverrides',
   'drawnUnitCells',
   'stash',

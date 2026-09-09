@@ -874,6 +874,28 @@ describe('validateCompartments — shadow-box colours', () => {
     ).toBeNull();
   });
 
+  it('accepts per-compartment floor raises within range', () => {
+    expect(validateCompartments({ ...base(), floorRaises: [null, 12] })).toBeNull();
+  });
+
+  it('rejects a floor raise outside the printable range or of the wrong type', () => {
+    expect(validateCompartments({ ...base(), floorRaises: [-1] })).toContain(
+      'compartments.floorRaises[0]'
+    );
+    expect(validateCompartments({ ...base(), floorRaises: [500] })).toContain(
+      'compartments.floorRaises[0]'
+    );
+    expect(validateCompartments({ ...base(), floorRaises: ['tall'] })).toContain(
+      'compartments.floorRaises[0]'
+    );
+    expect(validateCompartments({ ...base(), floorRaises: 12 })).toBe(
+      'compartments.floorRaises must be an array'
+    );
+    expect(validateCompartments({ ...base(), floorRaises: [1, 2, 3] })).toContain(
+      'must not exceed cols × rows'
+    );
+  });
+
   it('rejects a non-hex colour', () => {
     expect(
       validateCompartments({ ...base(), compartmentColors: ['javascript:alert(1)', null] })

@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Formaat",
   "binDesigner.bento.smallScreenNote": "De tekenwerkruimte heeft een breder scherm nodig. Stel hier een gelijkmatig raster in en voeg cellen samen tot grotere vakken.",
   "binDesigner.bento.stashAction": "Naar de stash verplaatsen",
+  "binDesigner.bento.floorRaise": "Bodemverhoging",
+  "binDesigner.bento.floorRaiseHint": "Verhoogt de bodem van dit vak zodat een laag voorwerp dichter bij de rand ligt en makkelijker te pakken is. Massief eronder; de infill van de slicer houdt het licht.",
   "binDesigner.bento.stashDropHint": "Laat los om dit vak in de stash te zetten",
   "binDesigner.bento.stashEmptyHint": "Sleep hier een vak naartoe om het voor later te bewaren",
   "binDesigner.bento.stashEntryLabel": "Vak in de stash, {w} bij {h} cellen {label}",

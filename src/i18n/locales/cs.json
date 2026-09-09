@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Velikost",
   "binDesigner.bento.smallScreenNote": "Kreslicí plocha potřebuje širší obrazovku. Nastav tu rovnoměrnou mřížku a pak slučuj buňky do větších přihrádek.",
   "binDesigner.bento.stashAction": "Přesunout do Stash",
+  "binDesigner.bento.floorRaise": "Zvýšení dna",
+  "binDesigner.bento.floorRaiseHint": "Zvedne dno této přihrádky, aby nízký předmět seděl blíž k okraji a šel snáz vyndat. Pod ním je plný materiál; výplň ve sliceru ho udrží lehký.",
   "binDesigner.bento.stashDropHint": "Pusť pro odložení této přihrádky do Stash",
   "binDesigner.bento.stashEmptyHint": "Přetáhni sem přihrádku, ať počká na později",
   "binDesigner.bento.stashEntryLabel": "Odložená přihrádka, {w} × {h} buněk {label}",
