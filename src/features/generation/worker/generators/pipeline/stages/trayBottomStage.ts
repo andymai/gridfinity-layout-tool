@@ -57,7 +57,9 @@ export const trayBottomStage: PipelineStage = {
         // The floor is present BEFORE drilling: unioning it after the magnets
         // would cap their downward openings.
         if (inputs.retentionMagnets) {
-          skirt = scope.register(addLidRetentionMagnets(scope, skirt, inputs, ctx.originToTag));
+          skirt = scope.register(
+            addLidRetentionMagnets(scope, skirt, inputs, ctx.originToTag, true)
+          );
         }
         // These tools use the same lid-local frame as the lowered floor and
         // keep solid material under dividers and around retention bosses.

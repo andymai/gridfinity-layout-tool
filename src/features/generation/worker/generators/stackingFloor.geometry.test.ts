@@ -53,6 +53,37 @@ function paramsFor(depth = 2) {
 }
 
 describe('stacking body', () => {
+  it.each([2, 6])(
+    'joins all four magnet corners to the walls with straight tangents (%s mm pockets)',
+    (depth) => {
+      const p = { ...paramsFor(depth), width: 2, depth: 2 };
+      const mesh = generateBin(p, undefined, true);
+      assertWatertight(mesh, 'tangent corner supports');
+      const r = retentionBossRadius(6);
+      const c = 42 - retentionMagnetInset(6);
+      for (const sx of [-1, 1])
+        for (const sy of [-1, 1]) {
+          const x = sx * c;
+          const y = sy * c;
+          // These points lie outside the old cylinder but inside the straight
+          // flanks that now run from its tangent points to each wall.
+          for (const [px, py] of [
+            [x - sx * (r - 0.1), y + sy],
+            [x + sx, y - sy * (r - 0.1)],
+          ]) {
+            expect(verticalSolidSpans(mesh, px, py)[0][1]).toBeGreaterThan(
+              deriveDimensions(p, true).floorThickness + 0.5
+            );
+          }
+          // Keep the rounded inward corner and the original pocket depth.
+          expect(
+            verticalSolidSpans(mesh, x - sx * (r - 0.1), y - sy * (r - 0.1))[0][1]
+          ).toBeCloseTo(2, 4);
+          expect(verticalSolidSpans(mesh, x + 0.1, y + 0.1)[0][0]).toBeCloseTo(depth, 4);
+        }
+    }
+  );
+
   it.each([false, true])(
     'has a flat underside around magnet pockets without boss seams (export=%s)',
     (forExport) => {

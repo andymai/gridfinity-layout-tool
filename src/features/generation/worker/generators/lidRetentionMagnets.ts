@@ -30,12 +30,14 @@ import {
   retentionMagnetPlacementsFor,
 } from './retentionMagnetGeometry';
 import type { LidInputs } from './lidInputs';
+import { buildStackingMagnetBoss } from './stackingMagnetBoss';
 
 export function addLidRetentionMagnets(
   scope: DisposalScope,
   body: Shape3D,
   inputs: LidInputs,
-  originToTag?: Map<number, number>
+  originToTag?: Map<number, number>,
+  wallSupportedCorners = false
 ): Shape3D {
   const {
     cellsX,
@@ -94,9 +96,11 @@ export function addLidRetentionMagnets(
   // 1. Fuse every boss onto the floor (welds along the floor plate). Four
   // corners, plus any mid-edge magnets.
   let result = body;
-  for (const { x: px, y: py } of positions) {
+  for (const { x: px, y: py, anchor } of positions) {
     const boss = scope.register(
-      cylinder(bossRadius, bossHeight, { at: [px, py, interfaceZ], axis: [0, 0, 1] })
+      wallSupportedCorners && anchor === 'corner'
+        ? buildStackingMagnetBoss(scope, inputs, px, py, bossRadius, interfaceZ, bossHeight)
+        : cylinder(bossRadius, bossHeight, { at: [px, py, interfaceZ], axis: [0, 0, 1] })
     );
     if (originToTag) {
       collectOrigins(boss, FeatureTag.LID_BODY, originToTag);
