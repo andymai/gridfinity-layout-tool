@@ -58,6 +58,16 @@ const base = (over: Partial<{ lightweight: boolean; spacer: boolean; style: stri
 });
 
 describe('splitConnectorsSuppressedByBase', () => {
+  it('suppresses connectors targeting the old floor plane of a Nesting body', () => {
+    expect(
+      splitConnectorsSuppressedByBase({
+        ...base(),
+        style: 'lid',
+        trayBottom: { floorAtBed: true },
+      })
+    ).toBe(true);
+    expect(splitConnectorsSuppressedByBase({ ...base(), style: 'lid' })).toBe(false);
+  });
   it('suppresses on a lightweight or spacer base — no solid floor for the scarf', () => {
     expect(splitConnectorsSuppressedByBase(base({ lightweight: true }))).toBe(true);
     expect(splitConnectorsSuppressedByBase(base({ spacer: true }))).toBe(true);

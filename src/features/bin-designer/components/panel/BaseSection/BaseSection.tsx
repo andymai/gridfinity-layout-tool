@@ -136,6 +136,7 @@ export function BaseSection() {
             spacer: <Hint>{t('binDesigner.spacerHint')}</Hint>,
             tile: <Hint>{t('binDesigner.tileHint')}</Hint>,
             tray: trayOptions,
+            nesting: <Hint>{t('binDesigner.base.nesting.hint')}</Hint>,
           }}
         />
       </section>
@@ -195,47 +196,63 @@ export function BaseSection() {
             onChange={handlers.toggleMagnet}
             disabledReason={handlers.magnetDisabledReason}
             valueSummary={t('binDesigner.base.magnetSummary', {
-              diameter: state.base.magnetDiameter,
-              depth: state.base.magnetDepth,
+              diameter: state.magnetDiameter,
+              depth: state.magnetDepth,
             })}
           >
             <SliderInput
               label={t('binDesigner.base.magnetDiameter')}
-              value={state.base.magnetDiameter}
+              value={state.magnetDiameter}
               onChange={handlers.setMagnetDiameter}
-              min={DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER}
-              max={DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER}
-              step={DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP}
+              min={state.magnetDiameterMin}
+              max={state.magnetDiameterMax}
+              step={state.magnetDiameterStep}
               unit="mm"
             />
             <SliderInput
               label={t('binDesigner.base.magnetDepth')}
-              value={state.base.magnetDepth}
+              value={state.magnetDepth}
               onChange={handlers.setMagnetHeight}
-              min={DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT}
-              max={DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT}
-              step={DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP}
+              min={state.magnetDepthMin}
+              max={state.magnetDepthMax}
+              step={state.magnetDepthStep}
               unit="mm"
             />
+            {state.bodyType === 'nesting' && (
+              <>
+                <SliderInput
+                  label={t('binDesigner.lid.retentionEdgeMagnets')}
+                  value={state.magnetEdgeCount}
+                  onChange={handlers.setMagnetEdgeCount}
+                  min={state.magnetEdgeMin}
+                  max={state.magnetEdgeMax}
+                  step={state.magnetEdgeStep}
+                />
+                <Hint>{t('binDesigner.lid.retentionEdgeMagnetsHint')}</Hint>
+                <Hint>{t('binDesigner.base.nesting.magnetHint')}</Hint>
+              </>
+            )}
           </FeatureToggle>
 
-          <FeatureToggle
-            label={t('binDesigner.base.screwHoles')}
-            checked={state.hasScrew}
-            onChange={handlers.toggleScrew}
-            disabledReason={handlers.screwDisabledReason}
-            valueSummary={`\u00f8${state.base.screwDiameter}mm`}
-          >
-            <SliderInput
-              label={t('binDesigner.base.screwDiameter')}
-              value={state.base.screwDiameter}
-              onChange={handlers.setScrewDiameter}
-              min={DESIGNER_CONSTRAINTS.MIN_SCREW_DIAMETER}
-              max={DESIGNER_CONSTRAINTS.MAX_SCREW_DIAMETER}
-              step={DESIGNER_CONSTRAINTS.SCREW_DIAMETER_STEP}
-              unit="mm"
-            />
-          </FeatureToggle>
+          {state.showScrewMounting && (
+            <FeatureToggle
+              label={t('binDesigner.base.screwHoles')}
+              checked={state.hasScrew}
+              onChange={handlers.toggleScrew}
+              disabledReason={handlers.screwDisabledReason}
+              valueSummary={`\u00f8${state.base.screwDiameter}mm`}
+            >
+              <SliderInput
+                label={t('binDesigner.base.screwDiameter')}
+                value={state.base.screwDiameter}
+                onChange={handlers.setScrewDiameter}
+                min={DESIGNER_CONSTRAINTS.MIN_SCREW_DIAMETER}
+                max={DESIGNER_CONSTRAINTS.MAX_SCREW_DIAMETER}
+                step={DESIGNER_CONSTRAINTS.SCREW_DIAMETER_STEP}
+                unit="mm"
+              />
+            </FeatureToggle>
+          )}
         </section>
       )}
 

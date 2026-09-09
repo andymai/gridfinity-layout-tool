@@ -18,6 +18,7 @@ import {
 } from './engine';
 import { CONSTRAINT_RULES } from './rules';
 import { validateConstraints } from './validation';
+import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 
 // =============================================================================
 // Helpers
@@ -119,6 +120,29 @@ describe('FEATURE_MANIFESTS', () => {
 // =============================================================================
 
 describe('resolveConstraints — base constraints', () => {
+  it('treats Nesting corner magnets as mounting without changing the body type', () => {
+    const params = makeParams({
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true, attachment: 'friction' },
+      },
+    });
+    expect(getFeatureStatus(params, 'base.magnet').available).toBe(true);
+    expect(getFeatureStatus(params, 'base.screw').available).toBe(false);
+    const on = resolveConstraints(params, { feature: 'base.magnet', enabled: true }).params;
+    expect(FEATURE_MANIFESTS['base.magnet'].isEnabled(on)).toBe(true);
+    expect(on.base.style).toBe('lid');
+    expect(on.base.trayBottom?.floorAtBed).toBe(true);
+    expect(getFeatureStatus(on, 'floorPattern').available).toBe(true);
+    const custom: BinParams = { ...on, cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } };
+    expect(getFeatureStatus(custom, 'base.magnet').available).toBe(false);
+    expect(getFeatureStatus(custom, 'floorPattern').available).toBe(false);
+    const off = resolveConstraints(on, { feature: 'base.magnet', enabled: false }).params;
+    expect(FEATURE_MANIFESTS['base.magnet'].isEnabled(off)).toBe(false);
+    expect(off.base.style).toBe('lid');
+    expect(off.base.trayBottom?.floorAtBed).toBe(true);
+  });
   it('half sockets + magnet coexist (magnets use original cell layout)', () => {
     const params = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } });
     const result = resolveConstraints(params, {

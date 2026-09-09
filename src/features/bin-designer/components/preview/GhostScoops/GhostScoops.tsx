@@ -45,6 +45,7 @@ export function GhostScoops() {
     compartments,
     scoop,
     base,
+    cellMask,
     lid,
     generationStatus,
   } = useDesignerStore(
@@ -60,6 +61,7 @@ export function GhostScoops() {
       compartments: s.params.compartments,
       scoop: s.params.scoop,
       base: s.params.base,
+      cellMask: s.params.cellMask,
       lid: s.params.lid,
       generationStatus: s.generation.status,
     }))
@@ -226,6 +228,6 @@ export function GhostScoops() {
   if (!geometry || !material) return null;
 
   // Position at socket height so Z=0 in local coords = bin floor
-  const floorZ = baseFloorZ(base, heightUnitMm, lid);
+  const floorZ = baseFloorZ(base, heightUnitMm, lid, cellMask);
   return <mesh geometry={geometry} material={material} position={[0, 0, floorZ]} renderOrder={2} />;
 }

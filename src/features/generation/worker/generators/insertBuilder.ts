@@ -5,6 +5,7 @@
  * that are boolean-subtracted from the bin interior.
  */
 
+import { isNestingBase } from '@/shared/types/bin';
 import {
   drawRoundedRectangle,
   drawRectangle,
@@ -117,7 +118,8 @@ export const insertCutsFeature: FeatureBuilder = {
   // Inserts cut recesses into the interior floor; a lightweight floor is a thin
   // shell over a hollow base, so the cut would punch through. Mutually exclusive
   // in the UI; suppress here too for any legacy design carrying both.
-  shouldBuild: (ctx) => ctx.params.inserts.length > 0 && !ctx.dimensions.lightweight,
+  shouldBuild: (ctx) =>
+    !isNestingBase(ctx.params.base) && ctx.params.inserts.length > 0 && !ctx.dimensions.lightweight,
   cacheKey: (ctx) =>
     compactKey(
       buildCacheKey(

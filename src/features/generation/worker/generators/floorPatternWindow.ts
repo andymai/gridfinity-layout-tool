@@ -15,6 +15,7 @@
 
 import { CUTOUT_BORDER_WIDTH } from './wallPatterns';
 import { CLEARANCE, INSET_BOT } from './generatorConstants';
+import { LID_CORNER_RADIUS } from './lidConstants';
 
 /**
  * Solid margin held around every window edge and obstruction (mm).
@@ -40,4 +41,17 @@ export function floorWindowInset(wallThickness: number): number {
 /** Window extent (mm) on one axis of a socket cell `cellUnits` grid units wide. */
 export function floorWindowSpan(cellUnits: number, pitch: number, wallThickness: number): number {
   return Math.max(0, cellUnits * pitch - CLEARANCE - 2 * floorWindowInset(wallThickness));
+}
+
+/**
+ * Window extent (mm) on one axis of a Nesting body's bed floor, `units` grid
+ * units wide plus any overhang `expansion` on that axis.
+ *
+ * The mating skirt is a lid shell, so the floor's usable span is set by the
+ * lid's corner radius rather than by the wall: the shell's fit clearance
+ * widens the cavity by exactly what it narrows the outer footprint, so it
+ * cancels out of the span and only the corner radius remains.
+ */
+export function nestingFloorWindowSpan(units: number, pitch: number, expansion = 0): number {
+  return Math.max(0, units * pitch + expansion - 2 * (LID_CORNER_RADIUS + FLOOR_PATTERN_BORDER));
 }

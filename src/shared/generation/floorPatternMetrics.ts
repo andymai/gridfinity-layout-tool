@@ -16,4 +16,5 @@ export {
   FLOOR_PATTERN_BORDER,
   floorWindowInset,
   floorWindowSpan,
+  nestingFloorWindowSpan,
 } from '@/features/generation/worker/generators/floorPatternWindow';

@@ -34,6 +34,7 @@ export function OverhangHighlight() {
     heightUnitMm,
     stackingLip,
     base,
+    cellMask,
     lid,
     overhang,
   } = useDesignerStore(
@@ -47,6 +48,7 @@ export function OverhangHighlight() {
       heightUnitMm: s.params.heightUnitMm,
       stackingLip: s.params.base.stackingLip,
       base: s.params.base,
+      cellMask: s.params.cellMask,
       lid: s.params.lid,
       overhang: s.params.overhang ?? ZERO_OVERHANG,
     }))
@@ -74,7 +76,7 @@ export function OverhangHighlight() {
     const outerD = depth * gridUnitMmYEff - GRIDFINITY.TOLERANCE;
     // The overhang's flat bottom sits at the socket top (feet stay put); a flat
     // base has no socket, so it starts at z=0. Top includes the stacking lip.
-    const wallBottomZ = baseFloorZ(base, heightUnitMm, lid);
+    const wallBottomZ = baseFloorZ(base, heightUnitMm, lid, cellMask);
     const wallTopZ = height * heightUnitMm + (stackingLip ? GRIDFINITY.LIP_HEIGHT : 0);
     return computeOverhangHighlightBoxes(side, {
       outerW,
@@ -100,6 +102,7 @@ export function OverhangHighlight() {
     base,
     lid,
     overhang,
+    cellMask,
   ]);
 
   // frameloop is "demand" — nudge a render whenever the highlight changes or clears.

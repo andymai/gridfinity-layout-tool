@@ -126,6 +126,7 @@ export type _BaseConfigKeys = Assert<
 >;
 
 export const TRAY_BOTTOM_KEYS = [
+  'floorAtBed',
   'attachment',
   'extraHeightMm',
   'clickRails',

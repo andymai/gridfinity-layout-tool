@@ -188,7 +188,7 @@ export function assembledHeight(
   // A tray's skirt is printed material below its floor, so it counts toward the
   // assembly's height. `extraHeightMm` is the whole point of the feature —
   // turning it up to clear protruding contents has to move this number.
-  const skirtMm = baseFloorZ(params.base, params.heightUnitMm, params.lid);
+  const skirtMm = baseFloorZ(params.base, params.heightUnitMm, params.lid, params.cellMask);
   // A base-only bin's body is its feet plus a `wallThickness` floor slab and
   // nothing more, so its height is `baseFloorZ` (SOCKET_HEIGHT) plus that slab
   // rather than `height * heightUnitMm`. Reading `height` here would report 7mm

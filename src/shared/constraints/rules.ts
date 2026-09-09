@@ -10,10 +10,29 @@
  * and any constraint rules here.
  */
 
-import { isUndersideRelief, undersideReliefSelected } from '@/features/bin-designer/types/base';
+import {
+  isNestingBase,
+  isUndersideRelief,
+  undersideReliefSelected,
+} from '@/features/bin-designer/types/base';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import type { ConstraintRule, ImplicationRule } from './types';
 
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
+  {
+    description: 'Custom Nesting outlines have no rectangular retention or drainage layout',
+    source: 'base.lid',
+    when: (p) => isNestingBase(p.base) && isPartialMask(p.cellMask),
+    disables: ['base.magnet', 'floorPattern'],
+    reason: 'binDesigner.walls.pattern.dividers.notPolygon',
+  },
+  {
+    description: 'Nesting floor has a different floor plane from floor-mounted features',
+    source: 'base.lid',
+    when: (p) => isNestingBase(p.base),
+    disables: ['scoop', 'inserts', 'style.slotted'],
+    reason: 'binDesigner.base.nesting.floorFeaturesUnavailable',
+  },
   // ── Base: flat ↔ everything else ─────────────────────────────────────────
   {
     description: 'Flat base disables attachment features',
@@ -57,10 +76,17 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   // are values of `base.style`, so one replacing the other is not a conflict
   // for the engine to resolve.
   {
-    description: 'Lid-compatible bottom disables attachment features (no feet to drill)',
+    description: 'Raised lid base uses its own attachment controls',
+    source: 'base.lid',
+    when: (p) => p.base.style === 'lid' && !isNestingBase(p.base),
+    disables: ['base.magnet'],
+    reason: 'binDesigner.lidBaseDisablesAttachment',
+  },
+  {
+    description: 'Lid-mating bases have no screw-mounting feet',
     source: 'base.lid',
     when: (p) => p.base.style === 'lid',
-    disables: ['base.magnet', 'base.screw'],
+    disables: ['base.screw'],
     reason: 'binDesigner.lidBaseDisablesAttachment',
   },
   {

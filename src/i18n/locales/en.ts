@@ -3549,7 +3549,16 @@ const en: Record<string, string> = {
   'binDesigner.base.bodyType.tile.description':
     'Just the Gridfinity base: feet and floor, no walls',
   'binDesigner.base.bodyType.tray.description': 'Its underside is a lid, so it sits on another bin',
-  'binDesigner.base.section.stacking': 'Stacking',
+  'binDesigner.base.bodyType.nesting': 'Nesting',
+  'binDesigner.base.bodyType.nesting.description':
+    'One continuous tapered base with a bed-supported floor',
+  'binDesigner.base.nesting.hint':
+    'Nests in the stacking lip of a bin the same size. The continuous base does not fit a Gridfinity baseplate.',
+  'binDesigner.base.nesting.magnetHint':
+    'Magnet size is shared with the lid. Choose a magnetic lid for matching pockets at the top.',
+  'binDesigner.base.nesting.floorFeaturesUnavailable':
+    'Not available with the lowered Nesting floor',
+  'binDesigner.base.section.stacking': 'Top rim',
   'binDesigner.base.section.mounting': 'Mounting',
   'binDesigner.base.section.feet': 'Feet',
   'binDesigner.base.section.floor': 'Floor',

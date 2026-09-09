@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
+import { resolveTrayBottomInputs } from './trayBottomInputs';
 import type { BinParams } from '@/shared/types/bin';
 import { deriveDimensions } from './pipeline/context';
 import { floorPatternApplies, planFloorPattern } from './floorPatterns';
-import { floorWindowInset } from './floorPatternWindow';
+import { floorWindowInset, nestingFloorWindowSpan } from './floorPatternWindow';
 import { CLEARANCE, INSET_BOT, SIZE, SOCKET_HEIGHT } from './generatorConstants';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
@@ -53,6 +55,37 @@ describe('floorPatternApplies', () => {
 });
 
 describe('planFloorPattern windows', () => {
+  it('keeps Nesting drainage inside its mating skirt and at the lowered floor', () => {
+    const params = makeParams({
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true, attachment: 'magnetic' },
+      },
+    });
+    const dim = deriveDimensions(params, false);
+    const inputs = resolveTrayBottomInputs(params);
+    const result = plan(params);
+    expect(result?.windows).toHaveLength(1);
+    const window = result!.windows[0];
+    expect(window.patternSpan).toBeLessThan(inputs.lidOuterW - 2 * inputs.cavityInset);
+    expect(window.patternDepth).toBeLessThan(inputs.lidOuterD - 2 * inputs.cavityInset);
+    // The panel predicts fit from this helper, so the two must agree exactly.
+    expect(window.patternSpan).toBeCloseTo(
+      nestingFloorWindowSpan(params.width, params.gridUnitMm),
+      6
+    );
+    expect(window.patternDepth).toBeCloseTo(
+      nestingFloorWindowSpan(params.depth, params.gridUnitMmY ?? params.gridUnitMm),
+      6
+    );
+    expect(window.keepOuts).toHaveLength(4);
+    expect(result!.cutZ0).toBeLessThan(-dim.baseOffsetZ);
+    expect(result!.cutZ1).toBeGreaterThan(dim.floorThickness - dim.baseOffsetZ);
+    expect(result!.cutZ1).toBeLessThan(dim.floorThickness);
+    expect(plan({ ...params, cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } })).toBeNull();
+  });
+
   it('emits one window per socket cell, inset for the foot underside', () => {
     const result = plan(makeParams());
     expect(result?.windows).toHaveLength(4);

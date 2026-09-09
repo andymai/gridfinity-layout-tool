@@ -2445,6 +2445,10 @@
       "description": "Turns the bin underside into a lid-like tray bottom that mates with the bin below.",
       "required": ["attachment", "extraHeightMm"],
       "properties": {
+        "floorAtBed": {
+          "type": "boolean",
+          "description": "Close the nesting underside at the print bed. Omit to preserve the raised lid-base floor."
+        },
         "attachment": {
           "enum": ["friction", "clickRails", "magnetic", "slide", "hinge"],
           "description": "How the tray bottom attaches to the bin below."

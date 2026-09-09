@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'nesting-body',
+    date: '2026-09-09',
+    kind: 'new',
+    featured: true,
+    title: { en: 'A Nesting body for boxes that stack on each other' },
+    body: {
+      en: 'A new body type in the Base section for boxes that live on top of one another rather than on a baseplate. Its continuous tapered underside seats in the stacking lip of a bin the same size, and the floor prints flat on the bed with no bridging. Turn on Mounting for four corner magnets, with edge magnets on larger boxes, and the stack holds together. Drainage patterns, dividers and a magnetic lid all still work.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'baseplate-grid-unit-xy',
     date: '2026-09-07',
     kind: 'improved',

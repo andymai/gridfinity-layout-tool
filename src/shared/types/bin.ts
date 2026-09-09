@@ -128,6 +128,9 @@ export {
   // Tray-bin mating defaults: the worker synthesises a lid config from
   // `base.trayBottom`, so it needs both baselines on this side of the boundary.
   DEFAULT_TRAY_BOTTOM,
+  resolveTrayBottomConfig,
+  isNestingBase,
+  hasMountingMagnets,
   DEFAULT_LID_CONFIG,
   DEFAULT_LID_SLIDE_CONFIG,
   LID_SLIDE_PLACEMENTS,

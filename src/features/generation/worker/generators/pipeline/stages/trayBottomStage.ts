@@ -21,7 +21,7 @@
  * stays the absolute bottom.
  */
 
-import { translate, unwrap, fuse, withScope } from 'brepjs';
+import { translate, unwrap, fuse, cut, simplify, withScope } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../utils/abort';
@@ -29,6 +29,9 @@ import { buildMatingShell } from '../../lidProfile';
 import { addClickRails, hasAnyClickRail } from '../../lidClickRail';
 import { addLidRetentionMagnets } from '../../lidRetentionMagnets';
 import { resolveTrayBottomInputs } from '../../trayBottomInputs';
+import { addNestingFloor } from '../../nestingFloorBuilder';
+import { buildFloorPattern } from '../../floorPatternBuilder';
+import { isNestingBase } from '@/shared/types/bin';
 
 export const trayBottomStage: PipelineStage = {
   name: 'merge',
@@ -48,6 +51,29 @@ export const trayBottomStage: PipelineStage = {
     const fused = withScope((scope: DisposalScope) => {
       let skirt: Shape3D = buildMatingShell(scope, inputs);
       scope.register(skirt);
+
+      if (isNestingBase(ctx.params.base)) {
+        skirt = addNestingFloor(scope, skirt, body, inputs, ctx);
+        // The floor is present BEFORE drilling: unioning it after the magnets
+        // would cap their downward openings.
+        // No tag map: these bosses are part of the bin's body, not a lid, so
+        // they take the body colour like the skirt they weld into.
+        if (inputs.retentionMagnets) {
+          skirt = scope.register(addLidRetentionMagnets(scope, skirt, inputs, undefined, true));
+        }
+        // These tools use the same lid-local frame as the lowered floor and
+        // keep solid material under dividers and around retention bosses.
+        for (const tool of buildFloorPattern(ctx).shapes) {
+          scope.register(tool);
+          checkCancelled(ctx.signal);
+          skirt = scope.register(unwrap(cut(skirt as ValidSolid, tool as ValidSolid)));
+        }
+        // The boss and bed floor share a plane. Merge their coplanar faces
+        // so previews and CAD exports show only the actual pocket boundary,
+        // not a second circle from the otherwise invisible boss footprint.
+        const unified = scope.register(unwrap(simplify(skirt)));
+        return translate(unified, [0, 0, ctx.dimensions.baseOffsetZ]);
+      }
 
       if (hasAnyClickRail(inputs.clickRails)) {
         skirt = addClickRails(scope, skirt, inputs);

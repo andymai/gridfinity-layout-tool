@@ -22,10 +22,12 @@ import type {
   OverhangConfig,
 } from '@/features/bin-designer/types';
 import {
-  DEFAULT_TRAY_BOTTOM,
+  DEFAULT_LID_CONFIG,
+  resolveTrayBottomConfig,
   LID_FIT_CLEARANCE,
   resolveLidCavityExtraMm,
   trayBottomSkirtDepth,
+  lidRetentionInterfaceZ,
 } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -77,14 +79,19 @@ export type BaseFloorSource = Pick<BaseConfig, 'style' | 'trayBottom' | 'feet'>;
  * store scalars rather than calling {@link binDimensions}; sharing this keeps
  * the ghosts on the same plane as the mesh.
  */
-export function baseFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: LidConfig): number {
+export function baseFloorZ(
+  base: BaseFloorSource,
+  heightUnitMm: number,
+  lid: LidConfig,
+  cellMask?: CellMask
+): number {
   if (base.style === 'flat') return 0;
   // Detachable feet take the socket out of the BODY, so the mesh puts its floor
   // on Z=0 exactly as a flat base does. Reading SOCKET_HEIGHT here would put
   // every overlay that builds its own frame from this - the lid, the tray, and
   // all six ghosts - 5mm above the geometry they annotate.
   if (hasDetachableFeet(base)) return 0;
-  const skirt = trayFloorZ(base, heightUnitMm, lid);
+  const skirt = trayFloorZ(base, heightUnitMm, lid, cellMask);
   return skirt ?? GRIDFINITY.SOCKET_HEIGHT;
 }
 
@@ -106,31 +113,44 @@ export function baseWallHeight(base: Pick<BaseConfig, 'style' | 'tile'>, totalH:
  * shared formula the worker's `deriveDimensions` does, so the preview and the
  * mesh cannot disagree about where a tray's floor is.
  */
-function trayFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: LidConfig): number | null {
+function trayFloorZ(
+  base: BaseFloorSource,
+  heightUnitMm: number,
+  lid: LidConfig,
+  cellMask?: CellMask
+): number | null {
   if (base.style !== 'lid') return null;
-  const trayBottom = base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
+  const trayBottom = resolveTrayBottomConfig(base.trayBottom, lid.retentionMagnet);
   const rails = trayBottom.clickRails;
-  return trayBottomSkirtDepth(
+  // The TRAY's own attachment, not the top lid's. `resolveLidCavityExtraMm`
+  // now branches on it — a sliding lid has no cavity, so it answers 0 — and
+  // the tray bottom is a different joint that happens to reuse the formula.
+  // Inheriting `attachment` from the spread would collapse a tray bin's skirt
+  // to nothing the moment its owner chose a sliding lid for the TOP, moving
+  // the floor of every ghost overlay and editor that reads this.
+  // `trayBottomInputs` scopes it the same way on the worker side.
+  const cavityExtraMm = resolveLidCavityExtraMm({
+    lid: {
+      ...DEFAULT_LID_CONFIG,
+      attachment: trayBottom.attachment,
+      extraHeightMm: trayBottom.extraHeightMm,
+      retentionMagnet: trayBottom.retentionMagnet,
+    },
+    base: { stackingLip: true, magnetDepth: 0 },
+  });
+  const skirt = trayBottomSkirtDepth(
     heightUnitMm,
     LID_FIT_CLEARANCE,
-    // The TRAY's own attachment, not the top lid's. `resolveLidCavityExtraMm`
-    // now branches on it — a sliding lid has no cavity, so it answers 0 — and
-    // the tray bottom is a different joint that happens to reuse the formula.
-    // Inheriting `attachment` from the spread would collapse a tray bin's skirt
-    // to nothing the moment its owner chose a sliding lid for the TOP, moving
-    // the floor of every ghost overlay and editor that reads this.
-    // `trayBottomInputs` scopes it the same way on the worker side.
-    resolveLidCavityExtraMm({
-      lid: {
-        ...lid,
-        attachment: trayBottom.attachment,
-        extraHeightMm: trayBottom.extraHeightMm,
-      },
-      base: { stackingLip: true, magnetDepth: 0 },
-    }),
+    cavityExtraMm,
     trayBottom.attachment === 'clickRails' &&
       (rails.front || rails.back || rails.left || rails.right)
   );
+  return trayBottom.floorAtBed && trayBottom.attachment === 'magnetic' && !isPartialMask(cellMask)
+    ? Math.max(
+        skirt,
+        -lidRetentionInterfaceZ(heightUnitMm, cavityExtraMm, trayBottom.retentionMagnet.depth)
+      )
+    : skirt;
 }
 
 export function binDimensions(params: BinParams): BinDimensions {
@@ -149,7 +169,7 @@ export function binDimensions(params: BinParams): BinDimensions {
   // overlays, the cutout and divider editors, the scoop bounds — reads these
   // two numbers, so getting them wrong here misplaces all of them at once.
   const wallHeight = baseWallHeight(params.base, totalH);
-  const floorZ = baseFloorZ(params.base, params.heightUnitMm, params.lid);
+  const floorZ = baseFloorZ(params.base, params.heightUnitMm, params.lid, params.cellMask);
   return { outerW, outerD, innerW, innerD, totalH, wallHeight, floorZ, isFlat };
 }
 

@@ -103,7 +103,7 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     //     interface, pockets opening down toward the bin's mating posts.
     //     Mutually exclusive with rails via the attachment mode.
     if (inputs.retentionMagnets) {
-      body = addLidRetentionMagnets(scope, body, inputs, originToTag);
+      body = addLidRetentionMagnets(scope, body, inputs, originToTag, true);
     }
 
     // 2c. Grip relief — the seam treatment that gives a fingernail or

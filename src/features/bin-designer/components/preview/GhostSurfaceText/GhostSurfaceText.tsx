@@ -129,7 +129,7 @@ function buildWallTextOutline(
   const innerD = outerD - 2 * params.wallThickness;
   const totalH = params.height * params.heightUnitMm;
   const wallHeight = baseWallHeight(params.base, totalH);
-  const floorZ = baseFloorZ(params.base, params.heightUnitMm, params.lid);
+  const floorZ = baseFloorZ(params.base, params.heightUnitMm, params.lid, params.cellMask);
 
   const layouts = computeWallTextLayouts(
     params,

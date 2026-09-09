@@ -13,6 +13,7 @@ import {
   isUndersideRelief,
   resolveLipTip,
   resolveTileFloorThickness,
+  isNestingBase,
 } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import { dividerGrooveDepth } from '@/shared/utils/slotMath';
@@ -55,7 +56,11 @@ import { resolveTrayBottomInputs, trayBottomSkirtDepth } from '../trayBottomInpu
  * skirt, or nothing at all under a flat base.
  */
 function resolveBaseOffsetZ(params: BinParams): number {
-  if (params.base.style === 'lid') return trayBottomSkirtDepth(resolveTrayBottomInputs(params));
+  if (params.base.style === 'lid')
+    return trayBottomSkirtDepth(
+      resolveTrayBottomInputs(params),
+      params.base.trayBottom?.floorAtBed
+    );
   if (params.base.style === 'flat') return 0;
   return SOCKET_HEIGHT;
 }
@@ -193,7 +198,7 @@ export function deriveDimensions(
   const innerD = outerD + (ovhExp?.addD ?? 0) - 2 * params.wallThickness;
   const innerOffsetX = ovhExp?.offsetX ?? 0;
   const innerOffsetY = ovhExp?.offsetY ?? 0;
-  const isSlotted = params.style === 'slotted';
+  const isSlotted = params.style === 'slotted' && !isNestingBase(params.base);
   const grooveDepth = liteFloorOpen ? 0 : dividerGrooveDepth(params);
 
   // A spacer has no floor for a magnet/screw boss to stand on — a pad inside a

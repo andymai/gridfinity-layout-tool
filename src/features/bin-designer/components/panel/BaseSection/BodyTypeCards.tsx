@@ -17,7 +17,14 @@ import { useTranslation } from '@/i18n';
 import { ModeCard } from '../shared';
 import { BODY_TYPES } from './bodyType';
 import type { BodyType } from './bodyType';
-import { BaseOnlyIcon, BinProfileIcon, FlatBaseIcon, LidBaseIcon, SpacerIcon } from './icons';
+import {
+  BaseOnlyIcon,
+  BinProfileIcon,
+  FlatBaseIcon,
+  LidBaseIcon,
+  SpacerIcon,
+  NestingIcon,
+} from './icons';
 
 /**
  * Titles reuse the keys the four toggles already had, so the existing
@@ -25,6 +32,7 @@ import { BaseOnlyIcon, BinProfileIcon, FlatBaseIcon, LidBaseIcon, SpacerIcon } f
  */
 const TITLE_KEY: Record<BodyType, string> = {
   standard: 'binDesigner.base.bodyType.standard',
+  nesting: 'binDesigner.base.bodyType.nesting',
   flat: 'binDesigner.flatFloor',
   spacer: 'binDesigner.spacer',
   tile: 'binDesigner.tile',
@@ -33,6 +41,7 @@ const TITLE_KEY: Record<BodyType, string> = {
 
 const DESCRIPTION_KEY: Record<BodyType, string> = {
   standard: 'binDesigner.base.bodyType.standard.description',
+  nesting: 'binDesigner.base.bodyType.nesting.description',
   flat: 'binDesigner.base.bodyType.flat.description',
   spacer: 'binDesigner.base.bodyType.spacer.description',
   tile: 'binDesigner.base.bodyType.tile.description',
@@ -41,6 +50,7 @@ const DESCRIPTION_KEY: Record<BodyType, string> = {
 
 const ICON: Record<BodyType, ReactNode> = {
   standard: <BinProfileIcon className="text-content-secondary" />,
+  nesting: <NestingIcon className="text-content-secondary" />,
   flat: <FlatBaseIcon className="text-content-secondary" />,
   spacer: <SpacerIcon className="text-content-secondary" />,
   tile: <BaseOnlyIcon className="text-content-secondary" />,

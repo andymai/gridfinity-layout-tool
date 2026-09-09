@@ -37,6 +37,7 @@ export function GhostHandles() {
     handles,
     label,
     base,
+    cellMask,
     lid,
     wallConfig,
     generationStatus,
@@ -53,6 +54,7 @@ export function GhostHandles() {
       handles: s.params.handles,
       label: s.params.label,
       base: s.params.base,
+      cellMask: s.params.cellMask,
       lid: s.params.lid,
       wallConfig: s.params.walls,
       generationStatus: s.generation.status,
@@ -202,7 +204,7 @@ export function GhostHandles() {
 
   if (!geometry || !material) return null;
 
-  const socketZ = baseFloorZ(base, heightUnitMm, lid);
+  const socketZ = baseFloorZ(base, heightUnitMm, lid, cellMask);
   // Use variable vertical position for ghost mesh world-space position
   const holeZ = socketZ + interiorHeight * handles.verticalPosition;
 

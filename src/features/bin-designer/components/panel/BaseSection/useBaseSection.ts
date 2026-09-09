@@ -26,13 +26,22 @@ import { isFractional } from '@/core/constants';
 import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_PATTERN_SCALE,
-  DEFAULT_TRAY_BOTTOM,
+  resolveTrayBottomConfig,
   FLOOR_PATTERN_TYPES,
-  isMagnetStyle,
+  hasMountingMagnets,
+  isNestingBase,
   isScrewStyle,
+  LID_MAGNET_DIAMETER_MIN_MM,
+  LID_MAGNET_DIAMETER_MAX_MM,
+  LID_MAGNET_DEPTH_MIN_MM,
+  LID_MAGNET_DEPTH_MAX_MM,
+  LID_MAGNET_EDGE_COUNT_MIN,
+  LID_MAGNET_EDGE_COUNT_MAX,
+  LID_MAGNET_EDGE_COUNT_STEP,
+  LID_MAGNET_DIMENSION_STEP_MM,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
-import { minHeightUnits } from '@/features/bin-designer/constants';
+import { DESIGNER_CONSTRAINTS, minHeightUnits } from '@/features/bin-designer/constants';
 import {
   DEFAULT_FOOT_LATTICE,
   DEFAULT_LIGHTWEIGHT_MODE,
@@ -92,9 +101,10 @@ export function useBaseSection() {
   );
 
   const base = params.base;
-  const hasMagnet = isMagnetStyle(base.style);
+  const hasMagnet = hasMountingMagnets(base);
+  const nestingBase = isNestingBase(base);
   const hasScrew = isScrewStyle(base.style);
-  const trayBottom = base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
+  const trayBottom = resolveTrayBottomConfig(base.trayBottom, params.lid.retentionMagnet);
   const hasHalfSockets = base.halfSockets;
   // The foot lattice is inert in two cases, and the picker shows what the part
   // will actually be built with rather than the stored choice. The stored value
@@ -442,6 +452,33 @@ export function useBaseSection() {
     [updateTrayBottom]
   );
 
+  const setNestingMagnet = useCallback(
+    (key: 'diameter' | 'depth' | 'edgeMagnets', value: number) => {
+      const [min, max] =
+        key === 'diameter'
+          ? [LID_MAGNET_DIAMETER_MIN_MM, LID_MAGNET_DIAMETER_MAX_MM]
+          : key === 'depth'
+            ? [LID_MAGNET_DEPTH_MIN_MM, LID_MAGNET_DEPTH_MAX_MM]
+            : [LID_MAGNET_EDGE_COUNT_MIN, LID_MAGNET_EDGE_COUNT_MAX];
+      const clamped = Math.min(
+        max,
+        Math.max(min, key === 'edgeMagnets' ? Math.round(value) : value)
+      );
+      const retentionMagnet = { ...params.lid.retentionMagnet, [key]: clamped };
+      setParams({
+        lid: { ...params.lid, retentionMagnet },
+        base: {
+          ...base,
+          trayBottom: {
+            ...trayBottom,
+            retentionMagnet,
+          },
+        },
+      });
+    },
+    [params.lid, base, trayBottom, setParams]
+  );
+
   const setTrayExtraHeight = useCallback(
     (extraHeightMm: number) => updateTrayBottom({ extraHeightMm }),
     [updateTrayBottom]
@@ -499,16 +536,26 @@ export function useBaseSection() {
 
   const setMagnetDiameter = useCallback(
     (diameter: number) => {
-      updateBase({ magnetDiameter: diameter });
+      if (nestingBase) setNestingMagnet('diameter', diameter);
+      else updateBase({ magnetDiameter: diameter });
     },
-    [updateBase]
+    [nestingBase, setNestingMagnet, updateBase]
   );
 
   const setMagnetHeight = useCallback(
     (depth: number) => {
-      updateBase({ magnetDepth: depth });
+      if (nestingBase) setNestingMagnet('depth', depth);
+      else updateBase({ magnetDepth: depth });
     },
-    [updateBase]
+    [nestingBase, setNestingMagnet, updateBase]
+  );
+
+  const setMagnetEdgeCount = useCallback(
+    (count: number) => {
+      if (!nestingBase) return;
+      setNestingMagnet('edgeMagnets', count);
+    },
+    [nestingBase, setNestingMagnet]
   );
 
   const setScrewDiameter = useCallback(
@@ -544,6 +591,30 @@ export function useBaseSection() {
       detachableUnplaceable,
       detachableSavingPercent,
       hasMagnet,
+      magnetDiameter: nestingBase ? trayBottom.retentionMagnet.diameter : base.magnetDiameter,
+      magnetDepth: nestingBase ? trayBottom.retentionMagnet.depth : base.magnetDepth,
+      magnetDiameterMin: nestingBase
+        ? LID_MAGNET_DIAMETER_MIN_MM
+        : DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER,
+      magnetDiameterMax: nestingBase
+        ? LID_MAGNET_DIAMETER_MAX_MM
+        : DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER,
+      magnetDepthMin: nestingBase
+        ? LID_MAGNET_DEPTH_MIN_MM
+        : DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT,
+      magnetDepthMax: nestingBase
+        ? LID_MAGNET_DEPTH_MAX_MM
+        : DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT,
+      magnetDiameterStep: nestingBase
+        ? LID_MAGNET_DIMENSION_STEP_MM
+        : DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP,
+      magnetDepthStep: nestingBase
+        ? LID_MAGNET_DIMENSION_STEP_MM
+        : DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP,
+      magnetEdgeCount: trayBottom.retentionMagnet.edgeMagnets,
+      magnetEdgeMin: LID_MAGNET_EDGE_COUNT_MIN,
+      magnetEdgeMax: LID_MAGNET_EDGE_COUNT_MAX,
+      magnetEdgeStep: LID_MAGNET_EDGE_COUNT_STEP,
       hasScrew,
       bodyType,
       trayBottom,
@@ -559,6 +630,7 @@ export function useBaseSection() {
       // Which families of controls this body actually has. A hidden one is
       // never hiding a live setting: the engine clears what it disables.
       showMounting,
+      showScrewMounting: applies(screwStatus),
       showFeet,
       showFloor,
       // A family this body cannot have keeps its heading and says why, so a
@@ -616,6 +688,7 @@ export function useBaseSection() {
       toggleTrayRail,
       setMagnetDiameter,
       setMagnetHeight,
+      setMagnetEdgeCount,
       setScrewDiameter,
       toggleFloorPattern,
       setFloorPatternType,

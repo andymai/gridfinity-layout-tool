@@ -19,11 +19,43 @@ import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
 import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
-import { DEFAULT_DETACHABLE_PIN_DIAMETER_MM } from '../types/base';
+import { DEFAULT_DETACHABLE_PIN_DIAMETER_MM, DEFAULT_TRAY_BOTTOM } from '../types/base';
 import { expectOk } from '@/test/testUtils';
 import type { BinParams, CutoutArrayConfig } from '../types';
 
 const defaults = DEFAULT_BIN_PARAMS.walls;
+
+describe('Nesting body migration', () => {
+  it('preserves saved Nesting geometry without adding fields to existing designs', () => {
+    expect(migrateParams(DEFAULT_BIN_PARAMS).base.trayBottom).toBeUndefined();
+    const saved: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: {
+          ...DEFAULT_TRAY_BOTTOM,
+          floorAtBed: true,
+          attachment: 'magnetic',
+        },
+      },
+    };
+    expect(migrateParams(JSON.parse(JSON.stringify(saved)) as BinParams).base.trayBottom).toEqual(
+      saved.base.trayBottom
+    );
+    const raised = migrateParams({
+      ...saved,
+      base: {
+        ...saved.base,
+        trayBottom: {
+          ...DEFAULT_TRAY_BOTTOM,
+          floorAtBed: false,
+        },
+      },
+    });
+    expect(raised.base.trayBottom).not.toHaveProperty('floorAtBed');
+  });
+});
 const migrate = (raw: Parameters<typeof migrateWalls>[0]): ReturnType<typeof migrateWalls> =>
   migrateWalls(raw, defaults, DISABLED_WALL_CUTOUT);
 

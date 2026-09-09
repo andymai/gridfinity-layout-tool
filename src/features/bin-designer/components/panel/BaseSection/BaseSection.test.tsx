@@ -17,7 +17,7 @@ describe('BaseSection', () => {
     render(<BaseSection />);
 
     expect(screen.getByText('Body type')).toBeInTheDocument();
-    expect(screen.getByText('Stacking')).toBeInTheDocument();
+    expect(screen.getByText('Top rim')).toBeInTheDocument();
     expect(screen.getByText('Mounting')).toBeInTheDocument();
     expect(screen.getByText('Feet')).toBeInTheDocument();
     expect(screen.getByText('Floor')).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe('BaseSection', () => {
       const cards = within(group).getAllByRole('button');
       const chosen = cards.filter((c) => c.getAttribute('aria-pressed') === 'true');
 
-      expect(cards).toHaveLength(5);
+      expect(cards).toHaveLength(6);
       expect(chosen).toHaveLength(1);
     });
 
@@ -51,6 +51,30 @@ describe('BaseSection', () => {
       await user.click(screen.getByText('Spacer'));
 
       expect(useDesignerStore.getState().params.base.spacer).toBe(true);
+    });
+
+    it('unlocks Mounting outside the Nesting body card without enabling hardware', async () => {
+      const user = userEvent.setup();
+      render(<BaseSection />);
+      await user.click(screen.getByRole('button', { name: /^Nesting One continuous/ }));
+      expect(useDesignerStore.getState().params.base.trayBottom?.floorAtBed).toBe(true);
+      const bodyTypes = screen.getByRole('group', { name: 'Body type' });
+      expect(
+        within(bodyTypes).queryByRole('switch', { name: 'Magnet holes' })
+      ).not.toBeInTheDocument();
+      expect(screen.getByText('Mounting')).toBeInTheDocument();
+      const magnets = screen.getByRole('switch', { name: 'Magnet holes' });
+      expect(magnets).not.toBeChecked();
+      expect(magnets).toBeEnabled();
+      expect(screen.queryByRole('switch', { name: 'Screw holes' })).not.toBeInTheDocument();
+      expect(screen.queryByText('Clearance above the bin below')).not.toBeInTheDocument();
+      await user.click(magnets);
+      expect(magnets).toBeChecked();
+      expect(useDesignerStore.getState().params.base.style).toBe('lid');
+      expect(useDesignerStore.getState().params.base.trayBottom?.floorAtBed).toBe(true);
+      expect(useDesignerStore.getState().params.base.trayBottom?.attachment).toBe('magnetic');
+      await user.click(magnets);
+      expect(useDesignerStore.getState().params.base.trayBottom?.attachment).toBe('friction');
     });
 
     it("shows only the chosen archetype's own options", async () => {

@@ -25,7 +25,11 @@ export function splitConnectorsSuppressedByBase(base: {
   readonly lightweight: boolean;
   readonly spacer: boolean;
   readonly style: string;
+  readonly trayBottom?: { readonly floorAtBed?: boolean };
 }): boolean {
+  // The scarf still targets the original body-floor plane. A Nesting floor
+  // is below it, so this connector would be suspended over the cavity.
+  if (base.style === 'lid' && base.trayBottom?.floorAtBed) return true;
   return (base.lightweight || base.spacer) && !isSocketlessBase(base.style as BaseStyle);
 }
 
@@ -41,6 +45,7 @@ export function splitHasConnectors(params: {
     readonly lightweight: boolean;
     readonly spacer: boolean;
     readonly style: string;
+    readonly trayBottom?: { readonly floorAtBed?: boolean };
   };
   readonly splitConnectors?: { readonly enabled: boolean };
 }): boolean {

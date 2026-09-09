@@ -10,6 +10,7 @@
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
+import { getFeatureStatus } from '@/shared/constraints';
 import { InteriorModeCard } from './InteriorModeCard';
 import { useInteriorSection } from './useInteriorSection';
 import { FeatureGate } from '../FeatureGate';
@@ -35,6 +36,13 @@ export function InteriorSection() {
     (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
   );
   const customShapeReason = t('binDesigner.shape.custom.hint');
+  // Only the base can make slot mode unreachable. The solid/slotted exclusion
+  // also reports here, but selecting the card resolves that one, so gating on
+  // it would strand a Solid bin with no way back to Removable.
+  const slottedBlockedReason = useDesignerStore((s) => {
+    const status = getFeatureStatus(s.params, 'style.slotted');
+    return status.conflicts.includes('base.lid') ? status.reason : undefined;
+  });
   // Slot mode uses divider slots, not the compartment grid — angled
   // dividers don't translate to slot-mode geometry yet. Gate the slotted
   // card while any override exists so the user gets an explanation
@@ -62,6 +70,13 @@ export function InteriorSection() {
         if (card === 'slotted' && hasAngledDividers) {
           return (
             <FeatureGate key={card} disabled reason={slottedAngledReason}>
+              {element}
+            </FeatureGate>
+          );
+        }
+        if (card === 'slotted' && slottedBlockedReason) {
+          return (
+            <FeatureGate key={card} disabled reason={t(slottedBlockedReason)}>
               {element}
             </FeatureGate>
           );
