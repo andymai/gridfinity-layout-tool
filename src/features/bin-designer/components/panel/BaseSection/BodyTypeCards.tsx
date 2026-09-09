@@ -17,7 +17,14 @@ import { useTranslation } from '@/i18n';
 import { ModeCard } from '../shared';
 import { BODY_TYPES } from './bodyType';
 import type { BodyType } from './bodyType';
-import { BaseOnlyIcon, BinProfileIcon, FlatBaseIcon, LidBaseIcon, SpacerIcon } from './icons';
+import {
+  BaseOnlyIcon,
+  BinProfileIcon,
+  FlatBaseIcon,
+  LidBaseIcon,
+  SpacerIcon,
+  StackingIcon,
+} from './icons';
 
 /**
  * Titles reuse the keys the four toggles already had, so the existing
@@ -43,7 +50,7 @@ const DESCRIPTION_KEY: Record<BodyType, string> = {
 
 const ICON: Record<BodyType, ReactNode> = {
   standard: <BinProfileIcon className="text-content-secondary" />,
-  stacking: <LidBaseIcon className="text-content-secondary" />,
+  stacking: <StackingIcon className="text-content-secondary" />,
   flat: <FlatBaseIcon className="text-content-secondary" />,
   spacer: <SpacerIcon className="text-content-secondary" />,
   tile: <BaseOnlyIcon className="text-content-secondary" />,

@@ -348,7 +348,7 @@
   "binDesigner.base.section.feet": "Ніжки",
   "binDesigner.base.section.floor": "Дно",
   "binDesigner.base.section.mounting": "Кріплення",
-  "binDesigner.base.section.stacking": "Штабелювання",
+  "binDesigner.base.section.stacking": "Верхній край",
   "binDesigner.base.stackingLip.hint": "Дає змогу ніжкам іншого контейнера стояти зверху",
   "binDesigner.base.lipTip": "Вершина бортика",
   "binDesigner.base.lipTip.sharp": "Гостра",

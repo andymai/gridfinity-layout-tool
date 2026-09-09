@@ -53,6 +53,29 @@ function paramsFor(depth = 2) {
 }
 
 describe('stacking body', () => {
+  it.each([false, true])(
+    'has a flat underside around magnet pockets without boss seams (export=%s)',
+    (forExport) => {
+      const p = { ...paramsFor(), width: 2, depth: 2 };
+      const mesh = generateBin(p, undefined, forExport);
+      const center = 42 - retentionMagnetInset(6);
+      const bossRadius = retentionBossRadius(6);
+      // The pocket is the only circle on the bed face. A coplanar boss seam
+      // should not be exported as another circular edge around it.
+      let seamVertices = 0;
+      for (let i = 0; i < mesh.edgeVertices.length; i += 3) {
+        const radius = Math.hypot(mesh.edgeVertices[i] - center, mesh.edgeVertices[i + 1] - center);
+        if (Math.abs(mesh.edgeVertices[i + 2]) < 0.001 && Math.abs(radius - bossRadius) < 0.01)
+          seamVertices++;
+      }
+      expect(seamVertices).toBe(0);
+      for (const radius of [3.2, bossRadius - 0.2, bossRadius + 0.2]) {
+        const spans = verticalSolidSpans(mesh, center - radius, center + 0.1);
+        expect(spans[0][0]).toBeCloseTo(0, 4);
+      }
+    }
+  );
+
   it('guards the lowered floor when imported parameters bypass the UI', () => {
     const p = paramsFor();
     const ctx = createInitialContext({

@@ -348,7 +348,7 @@
   "binDesigner.base.section.feet": "Pés",
   "binDesigner.base.section.floor": "Fundo",
   "binDesigner.base.section.mounting": "Fixação",
-  "binDesigner.base.section.stacking": "Empilhamento",
+  "binDesigner.base.section.stacking": "Borda superior",
   "binDesigner.base.stackingLip.hint": "Permite que os pés de outro compartimento fiquem em cima deste",
   "binDesigner.base.lipTip": "Ponta do lábio",
   "binDesigner.base.lipTip.sharp": "Viva",

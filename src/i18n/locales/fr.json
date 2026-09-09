@@ -348,7 +348,7 @@
   "binDesigner.base.section.feet": "Pieds",
   "binDesigner.base.section.floor": "Fond",
   "binDesigner.base.section.mounting": "Fixation",
-  "binDesigner.base.section.stacking": "Empilage",
+  "binDesigner.base.section.stacking": "Bord supérieur",
   "binDesigner.base.stackingLip.hint": "Permet aux pieds d'un autre bac de reposer dessus",
   "binDesigner.base.lipTip": "Pointe de la lèvre",
   "binDesigner.base.lipTip.sharp": "Vive",

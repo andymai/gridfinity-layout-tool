@@ -348,7 +348,7 @@
   "binDesigner.base.section.feet": "脚",
   "binDesigner.base.section.floor": "底面",
   "binDesigner.base.section.mounting": "固定",
-  "binDesigner.base.section.stacking": "スタッキング",
+  "binDesigner.base.section.stacking": "上部の縁",
   "binDesigner.base.stackingLip.hint": "別のビンの脚がこの上に載るようになります",
   "binDesigner.base.lipTip": "リップ先端",
   "binDesigner.base.lipTip.sharp": "シャープ",

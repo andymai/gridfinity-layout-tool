@@ -3558,7 +3558,7 @@ const en: Record<string, string> = {
     'Magnet size is shared with the lid. Choose a magnetic lid for matching pockets at the top.',
   'binDesigner.base.stacking.floorFeaturesUnavailable':
     'Not available with the lowered Stacking floor',
-  'binDesigner.base.section.stacking': 'Stacking',
+  'binDesigner.base.section.stacking': 'Top rim',
   'binDesigner.base.section.mounting': 'Mounting',
   'binDesigner.base.section.feet': 'Feet',
   'binDesigner.base.section.floor': 'Floor',

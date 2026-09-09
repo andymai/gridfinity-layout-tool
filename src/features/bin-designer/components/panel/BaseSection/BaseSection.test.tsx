@@ -17,7 +17,8 @@ describe('BaseSection', () => {
     render(<BaseSection />);
 
     expect(screen.getByText('Body type')).toBeInTheDocument();
-    expect(screen.getAllByText('Stacking')).toHaveLength(2);
+    expect(screen.getByText('Stacking')).toBeInTheDocument();
+    expect(screen.getByText('Top rim')).toBeInTheDocument();
     expect(screen.getByText('Mounting')).toBeInTheDocument();
     expect(screen.getByText('Feet')).toBeInTheDocument();
     expect(screen.getByText('Floor')).toBeInTheDocument();

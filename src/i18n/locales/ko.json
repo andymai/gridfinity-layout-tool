@@ -348,7 +348,7 @@
   "binDesigner.base.section.feet": "발",
   "binDesigner.base.section.floor": "바닥",
   "binDesigner.base.section.mounting": "고정",
-  "binDesigner.base.section.stacking": "적층",
+  "binDesigner.base.section.stacking": "상단 테두리",
   "binDesigner.base.stackingLip.hint": "다른 통의 발이 이 위에 올라앉을 수 있게 합니다",
   "binDesigner.base.lipTip": "립 끝",
   "binDesigner.base.lipTip.sharp": "날카롭게",

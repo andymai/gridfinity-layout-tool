@@ -348,7 +348,7 @@
   "binDesigner.base.section.feet": "Pies",
   "binDesigner.base.section.floor": "Suelo",
   "binDesigner.base.section.mounting": "Fijación",
-  "binDesigner.base.section.stacking": "Apilado",
+  "binDesigner.base.section.stacking": "Borde superior",
   "binDesigner.base.stackingLip.hint": "Permite que los pies de otro contenedor se apoyen encima",
   "binDesigner.base.lipTip": "Punta del labio",
   "binDesigner.base.lipTip.sharp": "Afilada",

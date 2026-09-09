@@ -348,7 +348,7 @@
   "binDesigner.base.section.feet": "底脚",
   "binDesigner.base.section.floor": "底板",
   "binDesigner.base.section.mounting": "固定",
-  "binDesigner.base.section.stacking": "堆叠",
+  "binDesigner.base.section.stacking": "顶部边缘",
   "binDesigner.base.stackingLip.hint": "让另一个收纳盒的底脚可以叠放在上面",
   "binDesigner.base.lipTip": "卡口尖端",
   "binDesigner.base.lipTip.sharp": "尖角",

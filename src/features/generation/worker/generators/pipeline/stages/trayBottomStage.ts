@@ -21,7 +21,7 @@
  * stays the absolute bottom.
  */
 
-import { translate, unwrap, fuse, cut, withScope } from 'brepjs';
+import { translate, unwrap, fuse, cut, simplify, withScope } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../utils/abort';
@@ -57,7 +57,7 @@ export const trayBottomStage: PipelineStage = {
         // The floor is present BEFORE drilling: unioning it after the magnets
         // would cap their downward openings.
         if (inputs.retentionMagnets) {
-          skirt = addLidRetentionMagnets(scope, skirt, inputs, ctx.originToTag);
+          skirt = scope.register(addLidRetentionMagnets(scope, skirt, inputs, ctx.originToTag));
         }
         // These tools use the same lid-local frame as the lowered floor and
         // keep solid material under dividers and around retention bosses.
@@ -66,7 +66,11 @@ export const trayBottomStage: PipelineStage = {
           checkCancelled(ctx.signal);
           skirt = scope.register(unwrap(cut(skirt as ValidSolid, tool as ValidSolid)));
         }
-        return translate(skirt, [0, 0, ctx.dimensions.baseOffsetZ]);
+        // The boss and bed floor share a plane. Merge their coplanar faces
+        // so previews and CAD exports show only the actual pocket boundary,
+        // not a second circle from the otherwise invisible boss footprint.
+        const unified = scope.register(unwrap(simplify(skirt)));
+        return translate(unified, [0, 0, ctx.dimensions.baseOffsetZ]);
       }
 
       if (hasAnyClickRail(inputs.clickRails)) {
