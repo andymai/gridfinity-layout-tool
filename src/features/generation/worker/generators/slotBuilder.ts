@@ -177,12 +177,13 @@ function createGrooveCutter(
 /**
  * Create a mirrored pair of lip overhang cutters along one axis.
  *
- * These remove the interior lip overhang so dividers can slide in from the
- * top. Extended by SLOT_EXTENSION into the wall for volumetric fuse overlap
- * with the wall slot cutter.
+ * These carry the divider's channel through the lip zone so a piece can slide
+ * in from the top: the lip's inward jut on one side of the wall face, and the
+ * wall pocket's own depth on the other.
  */
 function createMirroredLipCutters(
   lipOverhang: number,
+  slotDepth: number,
   slotWidth: number,
   lipCutHeight: number,
   halfSpan: number,
@@ -190,16 +191,21 @@ function createMirroredLipCutters(
   lipCutStartZ: number,
   axis: 'x' | 'y'
 ): [Shape3D, Shape3D] {
-  const extOverhang = lipOverhang + SLOT_EXTENSION;
+  // Reaches `slotDepth` PAST the inner wall face, not merely up to it. The tab
+  // that engages the wall slot rides at that depth the whole way down, so a
+  // lip cut that stops at the face leaves the pocket roofed over: the wall's
+  // own top stub (the slot ends at the interior ceiling, a small taper below
+  // the wall top) and then the lip body above it. Both sit outboard of the
+  // face, and neither is visible to a check on the slot's own width.
+  const reach = lipOverhang + slotDepth;
 
-  const rectW = axis === 'x' ? extOverhang : slotWidth;
-  const rectD = axis === 'x' ? slotWidth : extOverhang;
+  const rectW = axis === 'x' ? reach : slotWidth;
+  const rectD = axis === 'x' ? slotWidth : reach;
 
-  // Lip cutter sits inside the interior: centered at halfSpan - lipOverhang/2,
-  // shifted outward by SLOT_EXTENSION/2 so the outer face extends past the
-  // inner wall surface (halfSpan) for overlap with the wall slot cutter.
-  const negCenter = -(halfSpan - lipOverhang / 2 + SLOT_EXTENSION / 2);
-  const posCenter = halfSpan - lipOverhang / 2 + SLOT_EXTENSION / 2;
+  // Centred so the cutter spans [halfSpan - lipOverhang, halfSpan + slotDepth]:
+  // the lip's inward jut on one side, the wall pocket's floor on the other.
+  const negCenter = -(halfSpan - lipOverhang / 2 + slotDepth / 2);
+  const posCenter = halfSpan - lipOverhang / 2 + slotDepth / 2;
 
   const zCenter = lipCutStartZ + lipCutHeight / 2;
   const pos = (primary: number): [number, number, number] =>
@@ -285,7 +291,7 @@ export function buildLipSlotCuts(
 
   return withScope((scope: DisposalScope): Shape3D | null => {
     const { slotConfig } = params;
-    const { slotWidth } = getEffectiveSlotDimensions(params);
+    const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
     const lipCutStartZ = lipInfo.wallHeight - lipInfo.lipTaperWidth;
     const lipCutHeight = lipInfo.lipTaperWidth + lipInfo.lipHeight + 1;
 
@@ -296,6 +302,7 @@ export function buildLipSlotCuts(
       for (const crossPos of positions) {
         const lipCutters = createMirroredLipCutters(
           lipOverhang,
+          slotDepth,
           slotWidth,
           lipCutHeight,
           halfSpan,
@@ -404,6 +411,7 @@ function buildSlotCutsInScope(
       if (lipInfo && lipOverhang > 0) {
         const lipCutters = createMirroredLipCutters(
           lipOverhang,
+          slotDepth,
           slotWidth,
           lipCutHeight,
           halfSpan,
@@ -474,6 +482,7 @@ function buildSlotCutsInScope(
       if (lipInfo && lipOverhang > 0) {
         const [negLip, posLip] = createMirroredLipCutters(
           lipOverhang,
+          slotDepth,
           slotWidth,
           lipCutHeight,
           halfSpan,
