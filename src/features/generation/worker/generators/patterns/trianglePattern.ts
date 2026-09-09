@@ -21,7 +21,7 @@ import type {
   ShapeDescriptor,
   StampPatternCalculator,
 } from './types';
-import { PATTERN_WEB_THICKNESS, resolveElementRadius } from './patternScale';
+import { PATTERN_WEB_THICKNESS, clampWebThickness, resolveElementRadius } from './patternScale';
 
 /** drawPolysides(R, 3) already points its apex up (vertex 0 at +Y); 180° flips it down. */
 const APEX_UP_DEG = 0;
@@ -111,8 +111,12 @@ export class TrianglePatternCalculator implements StampPatternCalculator {
 /** Factory with size-adaptive, scale-driven radius. */
 export function createTriangleCalculator(
   binHeight: number,
-  scale = 0.5
+  scale = 0.5,
+  webThickness?: number
 ): TrianglePatternCalculator {
   const base = binHeight <= 3 ? 2.6 : 4.0;
-  return new TrianglePatternCalculator(resolveElementRadius(base, binHeight, scale));
+  return new TrianglePatternCalculator(
+    resolveElementRadius(base, binHeight, scale),
+    clampWebThickness(webThickness)
+  );
 }

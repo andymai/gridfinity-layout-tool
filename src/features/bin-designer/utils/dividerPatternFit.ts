@@ -100,7 +100,8 @@ export function assessDividerPatternFit(params: BinParams): DividerPatternFit {
   const { minPatternHeight, shapeRadius } = wallPatternElementMetrics(
     wallPattern.pattern,
     params.height,
-    wallPattern.scale ?? DEFAULT_PATTERN_SCALE
+    wallPattern.scale ?? DEFAULT_PATTERN_SCALE,
+    wallPattern.webThickness
   );
   const border = Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
   // One element plus its two junction margins — the least a divider can carry.

@@ -120,3 +120,20 @@ describe('createHoneycombCalculator', () => {
     expect(calculator.getShapeRadius()).toBeCloseTo(3.6);
   });
 });
+
+describe('createHoneycombCalculator web thickness', () => {
+  it('threads a requested strut width into the calculator', () => {
+    expect(createHoneycombCalculator(4, 0.5, 2.0).getWebThickness()).toBe(2.0);
+  });
+
+  it('keeps the legacy web when none is requested', () => {
+    expect(createHoneycombCalculator(4, 0.5).getWebThickness()).toBe(DEFAULT_HEX_WEB_THICKNESS);
+  });
+
+  it('spaces hexes further apart with a thicker strut', () => {
+    const config = { fillW: 60, fillH: 20 };
+    const thin = createHoneycombCalculator(4, 0.5).calculateCenters(config).length;
+    const thick = createHoneycombCalculator(4, 0.5, 2.0).calculateCenters(config).length;
+    expect(thick).toBeLessThan(thin);
+  });
+});

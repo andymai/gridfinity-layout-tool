@@ -94,6 +94,21 @@ describe('wallPatternBuilder cache split', () => {
     ).toBe(4);
   }, 60_000);
 
+  it('rebuilds the base compound when the strut width changes', () => {
+    const generateBin = getGenerateBin();
+
+    generateBin(HONEYCOMB_2x2x4);
+    resetAllShapeCacheStats();
+    generateBin({
+      ...HONEYCOMB_2x2x4,
+      wallPattern: { ...HONEYCOMB_2x2x4.wallPattern, webThickness: 2.0 },
+    });
+
+    const base = getStats('feature-wallPatternBase');
+    expect(base.hits, 'a wider strut moves every hex, so no wall may reuse its compound').toBe(0);
+    expect(base.misses).toBe(4);
+  }, 60_000);
+
   it('rebuilds the clipped pattern when a cutout corner radius changes', () => {
     // The radius reshapes the clip solid's flared top; a key without it served
     // the square-corner clip and left hex prisms standing in the flare

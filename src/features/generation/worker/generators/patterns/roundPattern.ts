@@ -13,7 +13,7 @@ import type {
   StampPatternCalculator,
 } from './types';
 import { calculateStaggeredGrid } from './gridUtils';
-import { PATTERN_WEB_THICKNESS, resolveElementRadius } from './patternScale';
+import { PATTERN_WEB_THICKNESS, clampWebThickness, resolveElementRadius } from './patternScale';
 
 /** Polygon sides used to approximate a circular hole. */
 export const ROUND_SIDES = 16;
@@ -63,7 +63,14 @@ export class RoundPatternCalculator implements StampPatternCalculator {
 }
 
 /** Factory with size-adaptive, scale-driven radius. */
-export function createRoundCalculator(binHeight: number, scale = 0.5): RoundPatternCalculator {
+export function createRoundCalculator(
+  binHeight: number,
+  scale = 0.5,
+  webThickness?: number
+): RoundPatternCalculator {
   const base = binHeight <= 3 ? 1.6 : 2.6;
-  return new RoundPatternCalculator(resolveElementRadius(base, binHeight, scale));
+  return new RoundPatternCalculator(
+    resolveElementRadius(base, binHeight, scale),
+    clampWebThickness(webThickness)
+  );
 }

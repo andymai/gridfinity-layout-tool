@@ -3180,6 +3180,9 @@ const en: Record<string, string> = {
   'binDesigner.style.section.walls': 'Walls',
   'binDesigner.walls.pattern.scale': 'Pattern scale',
   'binDesigner.walls.pattern.scaleHint': 'Finer holes to the left, bolder to the right',
+  'binDesigner.walls.pattern.strutWidth': 'Strut width',
+  'binDesigner.walls.pattern.strutWidthHint':
+    'Solid material between the openings. 0.8 mm is two perimeters at a 0.4 mm nozzle; go thicker for a wall that gets knocked about.',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',
   'binDesigner.walls.pattern.someSlotted': 'Walls with divider slots will keep solid walls',
   'binDesigner.walls.pattern.sides': 'Patterned walls',

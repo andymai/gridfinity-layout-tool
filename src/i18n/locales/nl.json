@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Wanden",
   "binDesigner.walls.pattern.scale": "Patroonschaal",
   "binDesigner.walls.pattern.scaleHint": "Fijnere gaten links, grover rechts",
+  "binDesigner.walls.pattern.strutWidth": "Breedte van de ribben",
+  "binDesigner.walls.pattern.strutWidthHint": "Massief materiaal tussen de openingen. 0,8 mm is twee omtrekken bij een 0,4 mm nozzle; kies breder voor wanden die stoten krijgen.",
   "binDesigner.walls.pattern.sides": "Wanden met patroon",
   "binDesigner.walls.pattern.sides.dividersOnly": "De buitenwanden blijven massief — alleen de tussenschotten krijgen het patroon",
   "binDesigner.walls.pattern.sides.none": "Kies een wand, of geef de tussenschotten hieronder een patroon",

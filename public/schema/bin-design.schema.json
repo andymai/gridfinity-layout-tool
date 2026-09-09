@@ -2622,6 +2622,16 @@
           },
           "description": "Pattern cell scale. Smaller means more, finer cells and a slower cut."
         },
+        "webThickness": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 2.4,
+          "x-constant": {
+            "minimum": "PATTERN_WEB_THICKNESS_MIN",
+            "maximum": "PATTERN_WEB_THICKNESS_MAX"
+          },
+          "description": "Strut width in mm between stamped elements (honeycomb, round, diamond, triangle, slots). Omit for the 0.8 mm web every earlier design used. Kumiko lattices ignore it."
+        },
         "dividers": {
           "type": "boolean",
           "description": "Also apply the pattern to interior divider walls."

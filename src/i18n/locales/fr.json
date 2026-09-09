@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Parois",
   "binDesigner.walls.pattern.scale": "Échelle du motif",
   "binDesigner.walls.pattern.scaleHint": "Trous plus fins à gauche, plus grands à droite",
+  "binDesigner.walls.pattern.strutWidth": "Largeur des entretoises",
+  "binDesigner.walls.pattern.strutWidthHint": "Matière pleine entre les ouvertures. 0,8 mm correspond à deux périmètres avec une buse de 0,4 mm ; élargissez pour une paroi qui prend des coups.",
   "binDesigner.walls.pattern.sides": "Parois à motif",
   "binDesigner.walls.pattern.sides.dividersOnly": "Les parois extérieures restent pleines — seules les cloisons ont le motif",
   "binDesigner.walls.pattern.sides.none": "Choisissez une paroi ou appliquez le motif aux cloisons ci-dessous",

@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'wall-pattern-strut-width',
+    date: '2026-09-09',
+    kind: 'improved',
+    title: { en: 'Thicker struts for patterned walls' },
+    body: {
+      en: 'Honeycomb, round, diamond, triangle and slot walls now have a Strut width slider next to Pattern scale. The material between openings has always been 0.8 mm, two perimeters at a 0.4 mm nozzle, and a few of those walls have snapped in use. Existing designs keep 0.8 mm; drag it up to 2.4 mm for a bin that gets knocked about, and the print estimate follows.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'nesting-body',
     date: '2026-09-09',
     kind: 'new',

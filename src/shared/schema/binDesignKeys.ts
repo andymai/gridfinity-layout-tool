@@ -218,7 +218,14 @@ export type _WallCutoutKeys = Assert<
   KeysMatch<keyof WallCutout, (typeof WALL_CUTOUT_KEYS)[number]>
 >;
 
-export const WALL_PATTERN_KEYS = ['enabled', 'pattern', 'scale', 'dividers', 'sides'] as const;
+export const WALL_PATTERN_KEYS = [
+  'enabled',
+  'pattern',
+  'scale',
+  'webThickness',
+  'dividers',
+  'sides',
+] as const;
 export type _WallPatternKeys = Assert<
   KeysMatch<keyof WallPatternConfig, (typeof WALL_PATTERN_KEYS)[number]>
 >;

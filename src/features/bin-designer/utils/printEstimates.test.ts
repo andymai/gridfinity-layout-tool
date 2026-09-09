@@ -832,6 +832,21 @@ describe('printEstimates', () => {
       expect(savings.savingsPercent).toBeGreaterThan(0);
       expect(savings.patternEstimate.volumeMm3).toBeLessThan(savings.standardEstimate.volumeMm3);
     });
+
+    it('removes less material as the struts thicken', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        height: 6,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      };
+      const thin = calculateWallPatternSavings(base);
+      const thick = calculateWallPatternSavings({
+        ...base,
+        wallPattern: { ...base.wallPattern, webThickness: 2.4 },
+      });
+      expect(thick.patternEstimate.volumeMm3).toBeGreaterThan(thin.patternEstimate.volumeMm3);
+      expect(thick.savingsPercent).toBeLessThan(thin.savingsPercent);
+    });
   });
 
   describe('formatPrintTime', () => {

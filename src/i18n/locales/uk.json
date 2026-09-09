@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Стінки",
   "binDesigner.walls.pattern.scale": "Масштаб візерунка",
   "binDesigner.walls.pattern.scaleHint": "Дрібніші отвори ліворуч, більші праворуч",
+  "binDesigner.walls.pattern.strutWidth": "Ширина перемичок",
+  "binDesigner.walls.pattern.strutWidthHint": "Суцільний матеріал між отворами. 0,8 мм — це два периметри для сопла 0,4 мм; для стінок, що зазнають ударів, оберіть ширші.",
   "binDesigner.walls.pattern.sides": "Стіни з візерунком",
   "binDesigner.walls.pattern.sides.dividersOnly": "Зовнішні стіни залишаться суцільними — візерунок буде лише на перегородках",
   "binDesigner.walls.pattern.sides.none": "Виберіть стіну або нанесіть візерунок на перегородки нижче",

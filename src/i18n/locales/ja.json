@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "壁面",
   "binDesigner.walls.pattern.scale": "パターンの大きさ",
   "binDesigner.walls.pattern.scaleHint": "左ほど細かく、右ほど大きく",
+  "binDesigner.walls.pattern.strutWidth": "支柱の幅",
+  "binDesigner.walls.pattern.strutWidthHint": "開口部の間の充填部分です。0.8 mmは0.4 mmノズルで2周分に相当します。ぶつかりやすい壁には太めにしてください。",
   "binDesigner.walls.pattern.sides": "パターンを適用する壁",
   "binDesigner.walls.pattern.sides.dividersOnly": "外壁は無垢のままで、仕切りにのみパターンが入ります",
   "binDesigner.walls.pattern.sides.none": "壁を選ぶか、下の仕切り壁にパターンを適用してください",

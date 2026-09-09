@@ -5,6 +5,7 @@ import {
   elementRadiusFloor,
   resolveElementRadius,
   PATTERN_WEB_THICKNESS,
+  clampWebThickness,
 } from './patternScale';
 
 describe('clampScale', () => {
@@ -50,5 +51,22 @@ describe('resolveElementRadius', () => {
 describe('PATTERN_WEB_THICKNESS', () => {
   it('is a fixed positive structural constant', () => {
     expect(PATTERN_WEB_THICKNESS).toBeGreaterThan(0);
+  });
+});
+
+describe('clampWebThickness', () => {
+  it('falls back to the default web for a value that is not a number', () => {
+    expect(clampWebThickness(Number.NaN)).toBe(PATTERN_WEB_THICKNESS);
+    expect(clampWebThickness(undefined)).toBe(PATTERN_WEB_THICKNESS);
+  });
+
+  it('clamps into the strut range', () => {
+    expect(clampWebThickness(0.1)).toBe(0.8);
+    expect(clampWebThickness(9)).toBe(2.4);
+    expect(clampWebThickness(Number.POSITIVE_INFINITY)).toBe(2.4);
+  });
+
+  it('passes an in-range value through', () => {
+    expect(clampWebThickness(1.6)).toBe(1.6);
   });
 });

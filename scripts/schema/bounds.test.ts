@@ -99,7 +99,12 @@ import {
   TEXT_FONT_FAMILIES,
   TEXT_MAX_LENGTH,
 } from '@/features/bin-designer/types/text';
-import { DEFAULT_PATTERN_SCALE, WALL_PATTERN_TYPES } from '@/features/bin-designer/types/walls';
+import {
+  DEFAULT_PATTERN_SCALE,
+  PATTERN_WEB_THICKNESS_MAX,
+  PATTERN_WEB_THICKNESS_MIN,
+  WALL_PATTERN_TYPES,
+} from '@/features/bin-designer/types/walls';
 import { isRecord, loadSchemas, walkSubschemas } from './loadSchemas';
 
 /**
@@ -140,6 +145,8 @@ const SOURCES: Record<string, unknown> = {
   DEFAULT_CUTOUT_CLEARANCE,
   DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
   DEFAULT_PATTERN_SCALE,
+  PATTERN_WEB_THICKNESS_MAX,
+  PATTERN_WEB_THICKNESS_MIN,
   DEFAULT_POLYGON_SIDES,
   DETACHABLE_PIN_DIAMETERS_MM,
   KNIFE_REST_DEFAULT_GAP_MM,

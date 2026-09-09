@@ -5,7 +5,14 @@
 
 import { SliderInput, SegmentedControl, Checkbox } from '@/design-system';
 import type { TextMode } from '@/features/bin-designer/types';
-import { WALL_PATTERN_SIDES, WALL_TEXT_SIDES } from '@/features/bin-designer/types';
+import {
+  PATTERN_WEB_THICKNESS_MAX,
+  PATTERN_WEB_THICKNESS_MIN,
+  PATTERN_WEB_THICKNESS_STEP,
+  WALL_PATTERN_SIDES,
+  WALL_TEXT_SIDES,
+  isKumikoPattern,
+} from '@/features/bin-designer/types';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { FeatureToggle } from '../FeatureToggle';
@@ -59,6 +66,20 @@ export function WallSurfaceSection() {
                 info={t('binDesigner.walls.pattern.scaleHint')}
               />
             </div>
+            {!isKumikoPattern(state.pattern) && (
+              <div className="mt-3">
+                <SliderInput
+                  label={t('binDesigner.walls.pattern.strutWidth')}
+                  value={state.patternWebThickness}
+                  onChange={handlers.handleWebThicknessChange}
+                  min={PATTERN_WEB_THICKNESS_MIN}
+                  max={PATTERN_WEB_THICKNESS_MAX}
+                  step={PATTERN_WEB_THICKNESS_STEP}
+                  unit="mm"
+                  info={t('binDesigner.walls.pattern.strutWidthHint')}
+                />
+              </div>
+            )}
             {/* ── Patterned walls (#2966) — pick which outer walls carry the
                 pattern, same spatial selector the cutout/handle sections use.
                 Suppressed when the pattern renders nothing on this bin, so the

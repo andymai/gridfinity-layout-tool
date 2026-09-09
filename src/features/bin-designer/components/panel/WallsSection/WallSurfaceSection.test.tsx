@@ -38,6 +38,24 @@ describe('WallSurfaceSection', () => {
     expect(screen.getByText('Walls with divider slots will keep solid walls')).toBeInTheDocument();
   });
 
+  describe('strut width', () => {
+    it('offers a strut width slider for a stamped pattern', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, wallPattern: { enabled: true, pattern: 'honeycomb' } },
+      });
+      render(<WallSurfaceSection />);
+      expect(screen.getByText('Strut width')).toBeInTheDocument();
+    });
+
+    it('hides it for a kumiko lattice, which has its own strut model', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, wallPattern: { enabled: true, pattern: 'goma' } },
+      });
+      render(<WallSurfaceSection />);
+      expect(screen.queryByText('Strut width')).not.toBeInTheDocument();
+    });
+  });
+
   describe('wall text (#2695)', () => {
     it('hides the inputs until the toggle is switched on', () => {
       render(<WallSurfaceSection />);

@@ -24,9 +24,10 @@ export interface WallPatternElementMetrics {
 export function wallPatternElementMetrics(
   pattern: WallPatternType,
   binHeightUnits: number,
-  scale: number
+  scale: number,
+  webThickness?: number
 ): WallPatternElementMetrics {
-  const calculator = getPatternCalculator(pattern, binHeightUnits, scale);
+  const calculator = getPatternCalculator(pattern, binHeightUnits, scale, webThickness);
   return {
     minPatternHeight: calculator.getMinPatternHeight(),
     shapeRadius: calculator.getShapeRadius(),
@@ -51,10 +52,11 @@ export function stampPatternOpenArea(
   binHeightUnits: number,
   scale: number,
   fillW: number,
-  fillH: number
+  fillH: number,
+  webThickness?: number
 ): number {
   if (fillW <= 0 || fillH <= 0) return 0;
-  const calculator = getPatternCalculator(pattern, binHeightUnits, scale);
+  const calculator = getPatternCalculator(pattern, binHeightUnits, scale, webThickness);
   if (!isStampCalculator(calculator)) return 0;
 
   const count = calculator.calculateCenters({ fillW, fillH }).length;

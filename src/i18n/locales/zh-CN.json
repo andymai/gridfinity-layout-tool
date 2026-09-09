@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "壁面",
   "binDesigner.walls.pattern.scale": "图案比例",
   "binDesigner.walls.pattern.scaleHint": "越往左孔越细，越往右越粗",
+  "binDesigner.walls.pattern.strutWidth": "筋条宽度",
+  "binDesigner.walls.pattern.strutWidthHint": "开口之间的实心部分。0.8 mm 相当于 0.4 mm 喷嘴的两圈轮廓；经常磕碰的壁面请选更宽。",
   "binDesigner.walls.pattern.sides": "应用图案的壁",
   "binDesigner.walls.pattern.sides.dividersOnly": "外壁保持实心，仅隔板加图案",
   "binDesigner.walls.pattern.sides.none": "选择一个壁，或为下方的隔板壁加图案",

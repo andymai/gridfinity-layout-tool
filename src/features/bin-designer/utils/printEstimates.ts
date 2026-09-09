@@ -17,7 +17,10 @@ import {
   isUndersideRelief,
 } from '@/features/bin-designer/types/base';
 import { baseWallHeight } from './binDimensions';
-import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
+import {
+  DEFAULT_PATTERN_SCALE,
+  DEFAULT_PATTERN_WEB_THICKNESS,
+} from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import {
   compartmentHasTiltedBackWall,
@@ -796,16 +799,44 @@ function computeWallPatternReduction(
 
   const wallFaceArea = patternedWallLength * patternHeight;
 
-  // Pattern open-area fraction, modulated by scale (0.5 = neutral, factor 1.0).
+  // Pattern open-area fraction, modulated by scale (0.5 = neutral, factor 1.0)
+  // and by the strut width, which the table's fractions assume at 0.8mm.
   const scale = params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
   const base = PATTERN_VOID_FRACTION[params.wallPattern.pattern];
-  const coverageFraction = Math.min(0.95, Math.max(0, base * (0.85 + 0.3 * scale)));
+  const coverageFraction = Math.min(
+    0.95,
+    Math.max(0, base * (0.85 + 0.3 * scale) * strutWidthFactor(params, patternHeight))
+  );
   const coverage = wallFaceArea * coverageFraction;
 
   // Material removed per unit area = wall thickness (prisms cut through wall)
   const cutDepth = wallThickness;
 
   return coverage * cutDepth + dividerPatternReduction(params, innerW, innerD, coverageFraction);
+}
+
+/**
+ * How much of the default-web open area survives at this design's strut width.
+ *
+ * Read off the exact stamp model over a band one metre long, so it tracks the
+ * real element spacing rather than a guessed curve. 1 for a kumiko lattice,
+ * which has no stamped web, and whenever the design keeps the default.
+ */
+function strutWidthFactor(params: BinParams, patternHeight: number): number {
+  const { pattern, webThickness } = params.wallPattern;
+  if (webThickness === undefined || webThickness === DEFAULT_PATTERN_WEB_THICKNESS) return 1;
+  const scale = params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
+  const reference = stampPatternOpenArea(pattern, params.height, scale, 1000, patternHeight);
+  if (reference <= 0) return 1;
+  const actual = stampPatternOpenArea(
+    pattern,
+    params.height,
+    scale,
+    1000,
+    patternHeight,
+    webThickness
+  );
+  return actual / reference;
 }
 
 /**

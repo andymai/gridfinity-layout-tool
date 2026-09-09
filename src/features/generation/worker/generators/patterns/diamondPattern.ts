@@ -14,7 +14,7 @@ import type {
   StampPatternCalculator,
 } from './types';
 import { calculateStaggeredGrid } from './gridUtils';
-import { PATTERN_WEB_THICKNESS, resolveElementRadius } from './patternScale';
+import { PATTERN_WEB_THICKNESS, clampWebThickness, resolveElementRadius } from './patternScale';
 
 export class DiamondPatternCalculator implements StampPatternCalculator {
   readonly strategy = 'stamp' as const;
@@ -64,7 +64,14 @@ export class DiamondPatternCalculator implements StampPatternCalculator {
 }
 
 /** Factory with size-adaptive, scale-driven radius. */
-export function createDiamondCalculator(binHeight: number, scale = 0.5): DiamondPatternCalculator {
+export function createDiamondCalculator(
+  binHeight: number,
+  scale = 0.5,
+  webThickness?: number
+): DiamondPatternCalculator {
   const base = binHeight <= 3 ? 2.0 : 3.2;
-  return new DiamondPatternCalculator(resolveElementRadius(base, binHeight, scale));
+  return new DiamondPatternCalculator(
+    resolveElementRadius(base, binHeight, scale),
+    clampWebThickness(webThickness)
+  );
 }

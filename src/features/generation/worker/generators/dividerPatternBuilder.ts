@@ -335,6 +335,8 @@ export interface PanelFactory {
 export interface PanelPatternSource {
   readonly pattern: WallPatternType;
   readonly scale: number;
+  /** Strut width (mm) for stamp patterns; absent means the legacy web. */
+  readonly webThickness?: number;
 }
 
 /**
@@ -355,10 +357,16 @@ export function resolvePanelFactory(
   const resolved: PanelPatternSource = source ?? {
     pattern: params.wallPattern.pattern,
     scale: params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE,
+    webThickness: params.wallPattern.webThickness,
   };
   if (!(resolved.pattern in PATTERN_REGISTRY)) return null;
   const scale = resolved.scale;
-  const calculator = getPatternCalculator(resolved.pattern, params.height, scale);
+  const calculator = getPatternCalculator(
+    resolved.pattern,
+    params.height,
+    scale,
+    resolved.webThickness
+  );
   const stamp = isStampCalculator(calculator) ? calculator : null;
   const kumiko = stamp ? null : resolveKumikoCalculator(params);
   if (!stamp && !kumiko) return null;
@@ -393,8 +401,12 @@ export function resolvePanelFactory(
     cutDepth: number
   ): string => {
     const lattice = latticeFor(bandHeight);
+    // The web reaches neither the descriptor nor `scale`, so it rides here.
     const variantKey = stamp
-      ? shapeDescriptorKey(stamp.getShapeDescriptor({ fillW: 0, fillH: bandHeight }))
+      ? buildCacheKey(
+          shapeDescriptorKey(stamp.getShapeDescriptor({ fillW: 0, fillH: bandHeight })),
+          quantize(stamp.getWebThickness())
+        )
       : buildCacheKey(
           'kumiko',
           quantize(latticePerimeter ?? 0),

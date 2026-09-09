@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Paredes",
   "binDesigner.walls.pattern.scale": "Escala del patrón",
   "binDesigner.walls.pattern.scaleHint": "Agujeros más finos a la izquierda, más grandes a la derecha",
+  "binDesigner.walls.pattern.strutWidth": "Ancho de los puentes",
+  "binDesigner.walls.pattern.strutWidthHint": "Material sólido entre las aberturas. 0,8 mm son dos perímetros con una boquilla de 0,4 mm; elige más ancho para paredes que reciben golpes.",
   "binDesigner.walls.pattern.sides": "Paredes con patrón",
   "binDesigner.walls.pattern.sides.dividersOnly": "Las paredes exteriores siguen sólidas: solo se aplica a los separadores",
   "binDesigner.walls.pattern.sides.none": "Elige una pared o aplica el patrón a los separadores de abajo",
