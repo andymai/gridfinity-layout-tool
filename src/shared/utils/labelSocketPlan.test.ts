@@ -419,3 +419,56 @@ describe('planLabelPlates for a shadow board', () => {
     ).toEqual([]);
   });
 });
+
+describe('planLabelPlates wall slots', () => {
+  const slots = (
+    width: number,
+    depth: number,
+    sides = { front: true, back: false, left: false, right: false },
+    everyCells = 1
+  ): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width,
+    depth,
+    cutouts: [],
+    wallLabelSlots: { enabled: true, sides, everyCells },
+  });
+  const plan = (params: BinParams, wallHeightMm = 40) =>
+    planLabelPlates({
+      params,
+      innerWmm: 100,
+      innerDmm: INNER_D,
+      wallHeightMm,
+      clearanceMm: CLEARANCE,
+      fallbackText: '',
+    });
+
+  it('adds one blank 1u plate per slot, after the socket plates', () => {
+    const entries = plan(slots(3, 2));
+    expect(entries).toEqual([
+      { scope: 'wall', side: 'front', widthU: 1, text: '' },
+      { scope: 'wall', side: 'front', widthU: 1, text: '' },
+      { scope: 'wall', side: 'front', widthU: 1, text: '' },
+    ]);
+  });
+
+  it('keeps the socket plates and appends the wall plates', () => {
+    const params: BinParams = {
+      ...slots(2, 2, { front: false, back: false, left: true, right: false }, 2),
+      compartments: grid(1, 1, [0], { compartmentTexts: ['Bits'] }),
+      label: label(),
+    };
+    const entries = plan(params);
+    expect(entries.map((e) => e.scope)).toEqual(['compartment', 'wall']);
+    expect(entries[0].text).toBe('Bits');
+  });
+
+  it('plans none while the slots are off or refused', () => {
+    expect(plan({ ...slots(3, 2), wallLabelSlots: undefined })).toEqual([]);
+    expect(plan(slots(3, 2), 10)).toEqual([]);
+  });
+
+  it('lifts the wall by the collar so a short bin with one still fits', () => {
+    expect(plan({ ...slots(2, 2), extraWallHeightMm: 8 }, 8)).toHaveLength(2);
+  });
+});

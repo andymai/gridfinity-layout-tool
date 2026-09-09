@@ -303,6 +303,12 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     section: 'bd-wall-style',
     keywords: ['wall text', 'engrave walls', 'emboss', 'sign', 'caption'],
   },
+  {
+    id: 'opt-wall-label-slots',
+    labelKey: 'binDesigner.walls.labelSlots.heading',
+    section: 'bd-wall-style',
+    keywords: ['label slot', 'vertical label', 'label plate', 'cullenect', 'window', 'name plate'],
+  },
   // Interior
   {
     id: 'opt-interior-bento',

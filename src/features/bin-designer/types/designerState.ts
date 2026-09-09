@@ -43,6 +43,7 @@ import type {
   OverhangConfig,
   OverhangHighlightSide,
   WallPatternConfig,
+  WallLabelSlotsConfig,
 } from './walls';
 import type { SlideConfig } from './slide';
 import type { FloorPatternConfig } from './floor';
@@ -276,6 +277,7 @@ export interface DesignerState {
 
   // Wall pattern actions
   updateWallPattern: (partial: Partial<WallPatternConfig>) => void;
+  updateWallLabelSlots: (partial: Partial<WallLabelSlotsConfig>) => void;
   updateFloorPattern: (partial: Partial<FloorPatternConfig>) => void;
 
   // Cutout configuration actions

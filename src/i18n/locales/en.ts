@@ -3283,6 +3283,29 @@ const en: Record<string, string> = {
   'binDesigner.walls.text.disabledPolygon': 'Not available for custom-shape bins.',
   'binDesigner.walls.text.hint':
     'Text is placed in the clear area of each wall, avoiding cutouts and handles. Wall patterns are cleared behind it.',
+  'binDesigner.walls.labelSlots.heading': 'Label slots',
+  'binDesigner.walls.labelSlots.hint':
+    'A vertical slot in each cell of a chosen wall takes a 1u label plate, the same plate a click-in socket uses. The plate drops in from the top and shows through a window in the wall.',
+  'binDesigner.walls.labelSlots.sides': 'Walls with label slots',
+  'binDesigner.walls.labelSlots.sides.narrow': 'These cells are too narrow for a 1u plate',
+  'binDesigner.walls.labelSlots.sides.none': 'Nothing is cut: pick at least one wall',
+  'binDesigner.walls.labelSlots.sides.noneFit':
+    'Nothing is cut: pick a wall whose cells can hold a plate',
+  'binDesigner.walls.labelSlots.spacing': 'Slot spacing',
+  'binDesigner.walls.labelSlots.spacing.one': 'Every cell',
+  'binDesigner.walls.labelSlots.spacing.other': 'Every {count} cells',
+  'binDesigner.walls.labelSlots.count.one': '1 slot for a 1u label plate',
+  'binDesigner.walls.labelSlots.count.other': '{count} slots for 1u label plates',
+  'binDesigner.walls.labelSlots.lipNote':
+    'Each slot notches the stacking lip so the plate can drop in from the top.',
+  'binDesigner.walls.labelSlots.bossNote':
+    'A {depth} mm rib on the inside of the wall backs each slot.',
+  'binDesigner.walls.labelSlots.thinWall':
+    'A wall under {min} mm leaves a fragile frame in front of the plate.',
+  'binDesigner.walls.labelSlots.disabledPolygon': 'Not available for custom-shape bins.',
+  'binDesigner.walls.labelSlots.disabledOverhang': 'Not available on a bin with an overhang.',
+  'binDesigner.walls.labelSlots.disabledTooShort':
+    'The walls are too short for an {height} mm label plate.',
   'binDesigner.slideTray.fitSample.button': 'Print fit test',
   'binDesigner.slideTray.fitSample.dialogTitle': 'Sliding tray fit test',
   'binDesigner.slideTray.fitSample.dialogDescription':

@@ -114,9 +114,19 @@ export function buildClippedWallPattern(
   handleClip: HandleClipParams | null,
   rampClip: RampZoneClipParams | null,
   textClip: HandleClipParams | null = null,
-  slideClip: HandleClipParams | null = null
+  slideClip: HandleClipParams | null = null,
+  labelSlotClip: HandleClipParams | null = null
 ): Shape3D | null {
   const base = getCachedBaseCompound(shapeTemplate, wall, halfDepth, baseKey);
   if (!base) return null;
-  return applyWallPatternClips(base, wall, clip, handleClip, rampClip, textClip, slideClip);
+  return applyWallPatternClips(
+    base,
+    wall,
+    clip,
+    handleClip,
+    rampClip,
+    textClip,
+    slideClip,
+    labelSlotClip
+  );
 }

@@ -57,6 +57,7 @@ export const CONSTRAINTS = {
   MAX_COMPARTMENT_GRID: 12,
   MIN_COMPARTMENT_THICKNESS: 0.4,
   MAX_COMPARTMENT_THICKNESS: 2.4,
+  MAX_WALL_LABEL_SLOT_PITCH_CELLS: 6,
   MAX_COMPARTMENT_FLOOR_RAISE_MM: 100,
   // Bento stash cap; mirrors DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES in
   // src/features/bin-designer/constants/gridfinity.ts (client refuses past it).

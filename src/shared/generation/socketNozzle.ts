@@ -23,11 +23,11 @@ import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 export function withSocketNozzle(params: BinParams, nozzleSizeMm: number): BinParams {
   // Nozzle only changes geometry for an ENABLED socket tab above baseline;
   // keying it in otherwise is pure cache churn.
+  const socketed =
+    (params.label.enabled && params.label.mode === 'socket') ||
+    params.wallLabelSlots?.enabled === true;
   const wanted =
-    params.label.enabled &&
-    params.label.mode === 'socket' &&
-    Number.isFinite(nozzleSizeMm) &&
-    nozzleSizeMm > NOZZLE_BASELINE
+    socketed && Number.isFinite(nozzleSizeMm) && nozzleSizeMm > NOZZLE_BASELINE
       ? nozzleSizeMm
       : undefined;
   if (params.nozzleSizeMm === wanted) return params;

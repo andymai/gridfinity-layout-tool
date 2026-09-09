@@ -64,6 +64,8 @@ import {
   type RampZoneClipParams,
 } from './wallPatternTypes';
 import { buildClippedWallPattern } from './wallPatternCompound';
+import { planForContext } from './wallLabelSlotBuilder';
+import { resolveWallLabelSlots } from '@/shared/utils/wallLabelSlotPlan';
 import { computeWallTextLayouts } from './wallTextLayout';
 import type { WallTextLayout } from './wallTextLayout';
 import type { BinParams } from '@/shared/types/bin';
@@ -118,6 +120,8 @@ export interface WallClipSet {
   readonly textClip: HandleClipParams | null;
   /** Keep-out for the sliding-tray rail, which the pattern would otherwise cut away. */
   readonly slideClip: HandleClipParams | null;
+  /** Keep-out for each label slot's boss and frame, fused and cut around the pattern. */
+  readonly labelSlotClip: HandleClipParams | null;
   readonly rampClip: RampZoneClipParams | null;
   /** True when the expanded cutout consumes the whole wall — emit no pattern. */
   readonly skipWall: boolean;
@@ -190,7 +194,8 @@ export function computeWallClipContext(
   // Built for wall TEXT originally, and now also for the sliding-tray rail's
   // keep-out. Gating them on text alone left the rail clip silently unbuildable
   // on every bin without text, which is nearly all of them.
-  const needsWallDefs = wallTextLayouts.length > 0 || params.slide.enabled;
+  const needsWallDefs =
+    wallTextLayouts.length > 0 || params.slide.enabled || resolveWallLabelSlots(params).enabled;
   const textWallDefs = needsWallDefs && !isPolygon ? buildHandleWallDefs(innerW, innerD) : [];
   const textWallDefForSide = new Map(textWallDefs.map((d) => [d.side, d]));
 
@@ -357,6 +362,26 @@ export function computeWallClips(
     }
   }
 
+  // Label slots: the boss is fused and the socket cut on their own passes, so
+  // the pattern has to stay clear of the whole joint or it perforates the
+  // plate's backing and the frame around the window.
+  let labelSlotClip: HandleClipParams | null = null;
+  const slotWall = clipCtx.textWallDefForSide.get(wall.side);
+  if (wall.allowClip && slotWall && resolveWallLabelSlots(params).enabled) {
+    const plan = planForContext(params, dim);
+    const onWall = plan.slots.filter((s) => s.side === wall.side);
+    if (onWall.length > 0) {
+      const bleed = 2 * Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
+      labelSlotClip = {
+        segments: onWall.map((s) => ({ offset: s.offset, width: plan.bossWidthMm + bleed })),
+        effectiveHeight: plan.wallTopZ - plan.bossBottomZ + bleed,
+        centerZ: (plan.wallTopZ + plan.bossBottomZ) / 2,
+        clipExtrudeDepth,
+        handleWall: slotWall,
+      };
+    }
+  }
+
   // The same resolver call the clip solid consumes (line above), so the key
   // and the geometry read one answer — a corner-radius edit reshapes the
   // clip's flared top, and a key without the radii served the square-corner
@@ -450,6 +475,15 @@ export function computeWallClips(
       )
     : 'noslide';
 
+  const labelSlotKeyPart = labelSlotClip
+    ? buildCacheKey(
+        'wls',
+        labelSlotClip.segments.map((s) => `${quantize(s.offset)}:${quantize(s.width)}`).join(','),
+        quantize(labelSlotClip.centerZ),
+        quantize(labelSlotClip.effectiveHeight)
+      )
+    : 'nowls';
+
   const textKeyPart = textClip
     ? buildCacheKey(
         'txt',
@@ -465,9 +499,17 @@ export function computeWallClips(
     handleClip,
     textClip,
     slideClip,
+    labelSlotClip,
     rampClip,
     skipWall,
-    keyPart: buildCacheKey(cutoutKeyPart, handleKeyPart, rampKeyPart, textKeyPart, slideKeyPart),
+    keyPart: buildCacheKey(
+      cutoutKeyPart,
+      handleKeyPart,
+      rampKeyPart,
+      textKeyPart,
+      slideKeyPart,
+      labelSlotKeyPart
+    ),
   };
 }
 
@@ -578,7 +620,8 @@ export function buildWallPatterns(ctx: PipelineContext): WallPatternTargets {
         clips.handleClip,
         clips.rampClip,
         clips.textClip,
-        clips.slideClip
+        clips.slideClip,
+        clips.labelSlotClip
       );
       if (built) {
         setFeatureCache(WALL_PATTERN_CLIPPED_CACHE, clippedKey, built);

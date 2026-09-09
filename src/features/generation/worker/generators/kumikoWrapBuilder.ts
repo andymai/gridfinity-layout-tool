@@ -1140,7 +1140,8 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): KumikoWallPattern
             wc.clips.handleClip,
             wc.clips.rampClip,
             wc.clips.textClip,
-            wc.clips.slideClip
+            wc.clips.slideClip,
+            wc.clips.labelSlotClip
           );
         }
         if (!current) {

@@ -106,6 +106,7 @@ or rides along in a shared design.
 | `surfaceText`           | [`SurfaceTextConfig`](#surfacetextconfig)       |          |          |                         |                                                                                                                                                                                                                                                                           |
 | `lid`                   | [`LidConfig`](#lidconfig)                       |          |          |                         |                                                                                                                                                                                                                                                                           |
 | `knifeRest`             | [`KnifeRestConfig`](#kniferestconfig)           |          |          |                         |                                                                                                                                                                                                                                                                           |
+| `wallLabelSlots`        | [`WallLabelSlotsConfig`](#walllabelslotsconfig) |          |          |                         |                                                                                                                                                                                                                                                                           |
 | `cellMask`              | [`CellMask`](#cellmask)                         |          |          |                         |                                                                                                                                                                                                                                                                           |
 | `overhang`              | [`OverhangConfig`](#overhangconfig)             |          |          |                         |                                                                                                                                                                                                                                                                           |
 | `extraWallHeightMm`     | `number`                                        |          | `0`      | >= 0, <= 100            | Extra exterior wall height in mm ABOVE the nominal bin height. Outer walls and stacking lip rise; the interior floor, cutouts, dividers, scoops and label tabs stay anchored at the original top plane. A collar of dead headroom. 0 reproduces the standard bin exactly. |
@@ -337,6 +338,14 @@ it, so holes drain rather than ending in a blind pocket.
 <a id="wallpatternsides"></a>
 
 4 fields, in `src/features/bin-designer/types/walls.ts`.
+
+### WallLabelSlotsConfig
+
+<!-- schema:WallLabelSlotsConfig indexed -->
+
+<a id="walllabelslotsconfig"></a>
+
+3 fields, in `src/features/bin-designer/types/walls.ts`.
 
 ### FloorPatternConfig
 

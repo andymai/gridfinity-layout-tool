@@ -58,6 +58,7 @@ import {
   TRAY_BOTTOM_KEYS,
   WALL_CONFIG_KEYS,
   WALL_CUTOUT_KEYS,
+  WALL_LABEL_SLOTS_KEYS,
   WALL_PATTERN_KEYS,
   WALL_PATTERN_SIDES_KEYS,
   WALL_TAPER_KEYS,
@@ -169,6 +170,7 @@ export const INDEXED_DEFS = [
   'TextStyleDefaults',
   'TextStyleOverride',
   'TrayBottomConfig',
+  'WallLabelSlotsConfig',
   'WallPatternConfig',
   'WallPatternSides',
 ] as const;
@@ -250,6 +252,7 @@ export const SCHEMA_KEYS = {
   TrayBottomConfig: TRAY_BOTTOM_KEYS,
   WallConfig: WALL_CONFIG_KEYS,
   WallCutout: WALL_CUTOUT_KEYS,
+  WallLabelSlotsConfig: WALL_LABEL_SLOTS_KEYS,
   WallPatternConfig: WALL_PATTERN_KEYS,
   WallPatternSides: WALL_PATTERN_SIDES_KEYS,
   WallTaperConfig: WALL_TAPER_KEYS,

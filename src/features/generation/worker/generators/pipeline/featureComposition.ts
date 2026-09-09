@@ -22,6 +22,7 @@ import { wallCutoutsFeature } from '../wallCutoutBuilder';
 import { slideRailsFeature } from '../slideRailBuilder';
 import { dividerBlendFeature } from '../dividerBlendBuilder';
 import { wallTextCutFeature, wallTextEmbossFeature } from '../wallTextBuilder';
+import { wallLabelSlotBossesFeature, wallLabelSlotCutsFeature } from '../wallLabelSlotBuilder';
 
 export const BIN_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
   compartmentWallsFeature,
@@ -36,6 +37,8 @@ export const BIN_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
   dividerBlendFeature,
   wallTextCutFeature,
   wallTextEmbossFeature,
+  wallLabelSlotBossesFeature,
+  wallLabelSlotCutsFeature,
 ] as const;
 
 /**
@@ -46,4 +49,6 @@ export const BIN_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
 export const SOLID_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
   wallTextCutFeature,
   wallTextEmbossFeature,
+  wallLabelSlotBossesFeature,
+  wallLabelSlotCutsFeature,
 ] as const;

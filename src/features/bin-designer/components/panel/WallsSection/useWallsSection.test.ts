@@ -274,3 +274,141 @@ describe('useWallsSection strut width', () => {
     expect(useDesignerStore.getState().params.wallPattern.webThickness).toBe(2.4);
   });
 });
+
+describe('useWallsSection label slots', () => {
+  beforeEach(() => {
+    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2 } });
+  });
+
+  it('reads the defaults when a design carries no config', () => {
+    const { result } = renderHook(() => useWallsSection());
+    expect(result.current.state.labelSlotsEnabled).toBe(false);
+    expect(result.current.state.labelSlotSides).toEqual({
+      front: true,
+      back: false,
+      left: false,
+      right: false,
+    });
+    expect(result.current.state.labelSlotEveryCells).toBe(1);
+    expect(result.current.state.labelSlotsDisabledReason).toBeUndefined();
+  });
+
+  it('toggles the feature through the store', () => {
+    const { result } = renderHook(() => useWallsSection());
+    act(() => {
+      result.current.handlers.toggleLabelSlots();
+    });
+    expect(useDesignerStore.getState().params.wallLabelSlots?.enabled).toBe(true);
+    expect(result.current.state.labelSlotsEnabled).toBe(true);
+    act(() => {
+      result.current.handlers.toggleLabelSlots();
+    });
+    expect(useDesignerStore.getState().params.wallLabelSlots).toBeUndefined();
+  });
+
+  it('flips one side and keeps the others', () => {
+    const { result } = renderHook(() => useWallsSection());
+    act(() => {
+      result.current.handlers.toggleLabelSlots();
+      result.current.handlers.toggleLabelSlotSide('left');
+    });
+    expect(result.current.state.labelSlotSides).toEqual({
+      front: true,
+      back: false,
+      left: true,
+      right: false,
+    });
+  });
+
+  it('steps the pitch inside its range', () => {
+    const { result } = renderHook(() => useWallsSection());
+    act(() => {
+      result.current.handlers.toggleLabelSlots();
+      result.current.handlers.stepLabelSlotEveryCells(1);
+    });
+    expect(result.current.state.labelSlotEveryCells).toBe(2);
+    act(() => {
+      result.current.handlers.stepLabelSlotEveryCells(-5);
+    });
+    expect(result.current.state.labelSlotEveryCells).toBe(1);
+    act(() => {
+      result.current.handlers.stepLabelSlotEveryCells(50);
+    });
+    expect(result.current.state.labelSlotEveryCells).toBe(6);
+  });
+
+  it('counts the slots the worker will cut', () => {
+    const { result } = renderHook(() => useWallsSection());
+    act(() => {
+      result.current.handlers.toggleLabelSlots();
+    });
+    expect(result.current.state.labelSlotCount).toBe(3);
+    act(() => {
+      result.current.handlers.toggleLabelSlotSide('right');
+    });
+    expect(result.current.state.labelSlotCount).toBe(5);
+  });
+
+  it('refuses a custom shape and a bin too short for a plate', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+      },
+    });
+    const polygon = renderHook(() => useWallsSection());
+    expect(polygon.result.current.state.labelSlotsDisabledReason).toBe(
+      'Not available for custom-shape bins.'
+    );
+
+    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, height: 2 } });
+    const short = renderHook(() => useWallsSection());
+    expect(short.result.current.state.labelSlotsDisabledReason).toBe(
+      'The walls are too short for an 11 mm label plate.'
+    );
+  });
+
+  it('blocks a wall whose cells are too narrow for a plate', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, gridUnitMm: 30, gridUnitMmY: 42 },
+    });
+    const { result } = renderHook(() => useWallsSection());
+    expect(result.current.state.labelSlotSideBlocked).toEqual({
+      front: true,
+      back: true,
+      left: false,
+      right: false,
+    });
+  });
+
+  it('explains the boss, the lip notch and a thin wall', () => {
+    const { result } = renderHook(() => useWallsSection());
+    act(() => {
+      result.current.handlers.toggleLabelSlots();
+    });
+    expect(result.current.state.labelSlotNotes).toEqual([
+      'Each slot notches the stacking lip so the plate can drop in from the top.',
+      'A 2.4 mm rib on the inside of the wall backs each slot.',
+    ]);
+
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        wallThickness: 0.6,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+        wallLabelSlots: {
+          enabled: true,
+          sides: { front: true, back: false, left: false, right: false },
+          everyCells: 1,
+        },
+      },
+    });
+    const thin = renderHook(() => useWallsSection());
+    expect(thin.result.current.state.labelSlotNotes).toEqual([
+      'A 2.4 mm rib on the inside of the wall backs each slot.',
+      'A wall under 0.8 mm leaves a fragile frame in front of the plate.',
+    ]);
+  });
+});

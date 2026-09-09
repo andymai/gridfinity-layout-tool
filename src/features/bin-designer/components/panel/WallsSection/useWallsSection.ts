@@ -1,14 +1,21 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
-import type { TextMode, WallPatternType, TextAnchor } from '@/features/bin-designer/types';
+import type {
+  TextMode,
+  WallPatternType,
+  TextAnchor,
+  WallPatternSides,
+} from '@/features/bin-designer/types';
 import type { Side } from '../shared';
 import {
   DEFAULT_PATTERN_SCALE,
   DEFAULT_PATTERN_WEB_THICKNESS,
+  MAX_WALL_LABEL_SLOT_PITCH_CELLS,
   PATTERN_WEB_THICKNESS_MAX,
   PATTERN_WEB_THICKNESS_MIN,
   WALL_PATTERN_SIDES,
@@ -16,6 +23,17 @@ import {
   isKumikoPattern,
 } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import {
+  LABEL_PLATE_HEIGHT_MM,
+  effectiveLabelSocketClearance,
+} from '@/shared/constants/labelPlates';
+import {
+  WALL_LABEL_SLOT_FRAME_MIN_MM,
+  WALL_LABEL_SLOT_SIDES,
+  planWallLabelSlots,
+  resolveWallLabelSlots,
+} from '@/shared/utils/wallLabelSlotPlan';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { slottedWalls } from '@/shared/utils/slotMath';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { assessDividerPatternFit } from '@/features/bin-designer/utils/dividerPatternFit';
@@ -33,6 +51,7 @@ export function useWallsSection() {
     clearWallText,
     setSurfaceTextAnchor,
     setSurfaceTextStyle,
+    updateWallLabelSlots,
     currentDesignId,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -45,9 +64,11 @@ export function useWallsSection() {
       clearWallText: s.clearWallText,
       setSurfaceTextAnchor: s.setSurfaceTextAnchor,
       setSurfaceTextStyle: s.setSurfaceTextStyle,
+      updateWallLabelSlots: s.updateWallLabelSlots,
       currentDesignId: s.currentDesignId,
     }))
   );
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
   const t = useTranslation();
 
   const options: SnappingSliderOption[] = useMemo(
@@ -272,6 +293,98 @@ export function useWallsSection() {
     [params.surfaceText, setSurfaceTextStyle]
   );
 
+  // ── Vertical label slots ──────────────────────────────────────────
+  const labelSlots = useMemo(() => resolveWallLabelSlots(params), [params]);
+  // Planned as if on, so the refusals that disable the toggle are known
+  // before the user reaches for it. The worker plans the real config.
+  const labelSlotPlan = useMemo(() => {
+    const collarMm = params.base.tile === true ? 0 : Math.max(0, params.extraWallHeightMm ?? 0);
+    return planWallLabelSlots(
+      { ...params, wallLabelSlots: { ...labelSlots, enabled: true } },
+      {
+        wallHeightMm: binDimensions(params).wallHeight + collarMm,
+        gridUnitMmX: params.gridUnitMm,
+        gridUnitMmY: params.gridUnitMmY ?? params.gridUnitMm,
+      },
+      effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset)
+    );
+  }, [params, labelSlots, nozzleSizeMm]);
+
+  const labelSlotsDisabledReason = useMemo(() => {
+    switch (labelSlotPlan.refusal) {
+      case 'polygon':
+        return t('binDesigner.walls.labelSlots.disabledPolygon');
+      case 'overhang':
+        return t('binDesigner.walls.labelSlots.disabledOverhang');
+      case 'tooShort':
+        return t('binDesigner.walls.labelSlots.disabledTooShort', {
+          height: LABEL_PLATE_HEIGHT_MM,
+        });
+      case 'cellTooNarrow':
+      case null:
+        return undefined;
+    }
+  }, [labelSlotPlan.refusal, t]);
+
+  const labelSlotSideBlocked = useMemo<WallPatternSides>(() => {
+    const fits = (pitch: number): boolean => labelSlotPlan.bossWidthMm <= pitch;
+    const alongX = fits(params.gridUnitMm);
+    const alongY = fits(params.gridUnitMmY ?? params.gridUnitMm);
+    return { front: !alongX, back: !alongX, left: !alongY, right: !alongY };
+  }, [labelSlotPlan.bossWidthMm, params.gridUnitMm, params.gridUnitMmY]);
+
+  const labelSlotCount = labelSlots.enabled ? labelSlotPlan.slots.length : 0;
+
+  const labelSlotSidesNote = useMemo(() => {
+    if (!labelSlots.enabled || labelSlotCount > 0) return undefined;
+    const anyPicked = WALL_LABEL_SLOT_SIDES.some((side) => labelSlots.sides[side]);
+    return anyPicked
+      ? t('binDesigner.walls.labelSlots.sides.noneFit')
+      : t('binDesigner.walls.labelSlots.sides.none');
+  }, [labelSlots, labelSlotCount, t]);
+
+  const labelSlotNotes = useMemo(() => {
+    if (!labelSlots.enabled || labelSlotCount === 0) return [];
+    const notes: string[] = [];
+    if (params.base.stackingLip) notes.push(t('binDesigner.walls.labelSlots.lipNote'));
+    if (labelSlotPlan.bossDepthMm > 0) {
+      notes.push(
+        t('binDesigner.walls.labelSlots.bossNote', {
+          depth: Number(labelSlotPlan.bossDepthMm.toFixed(1)),
+        })
+      );
+    }
+    if (labelSlotPlan.thinWall) {
+      notes.push(t('binDesigner.walls.labelSlots.thinWall', { min: WALL_LABEL_SLOT_FRAME_MIN_MM }));
+    }
+    return notes;
+  }, [labelSlots.enabled, labelSlotCount, labelSlotPlan, params.base.stackingLip, t]);
+
+  const toggleLabelSlots = useCallback(
+    () => updateWallLabelSlots({ enabled: !labelSlots.enabled }),
+    [updateWallLabelSlots, labelSlots.enabled]
+  );
+  const toggleLabelSlotSide = useCallback(
+    (side: Side) =>
+      updateWallLabelSlots({ sides: { ...labelSlots.sides, [side]: !labelSlots.sides[side] } }),
+    [updateWallLabelSlots, labelSlots.sides]
+  );
+  const stepLabelSlotEveryCells = useCallback(
+    (delta: number) =>
+      updateWallLabelSlots({
+        everyCells: Math.min(
+          MAX_WALL_LABEL_SLOT_PITCH_CELLS,
+          Math.max(1, labelSlots.everyCells + delta)
+        ),
+      }),
+    [updateWallLabelSlots, labelSlots.everyCells]
+  );
+
+  // The plate list and download live with the sockets when label tabs are in
+  // socket mode; otherwise the slots are the only thing that needs plates.
+  const labelSlotPlatesHere =
+    !(params.label.enabled && params.label.mode === 'socket') && labelSlotCount > 0;
+
   return {
     state: {
       wallThickness,
@@ -296,6 +409,15 @@ export function useWallsSection() {
       hasAnyWallText,
       wallTextDisabledReason,
       isWallTextOpen,
+      labelSlotsEnabled: labelSlots.enabled,
+      labelSlotSides: labelSlots.sides,
+      labelSlotEveryCells: labelSlots.everyCells,
+      labelSlotsDisabledReason,
+      labelSlotSideBlocked,
+      labelSlotSidesNote,
+      labelSlotCount,
+      labelSlotNotes,
+      labelSlotPlatesHere,
     },
     handlers: {
       handleChange,
@@ -308,6 +430,9 @@ export function useWallsSection() {
       setSurfaceTextAnchor,
       setTextMode,
       toggleWallText,
+      toggleLabelSlots,
+      toggleLabelSlotSide,
+      stepLabelSlotEveryCells,
     },
     t,
   };

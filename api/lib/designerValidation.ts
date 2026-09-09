@@ -208,6 +208,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'meshAssets',
   'cutoutGroupNames',
   'knifeRest',
+  'wallLabelSlots',
 ]);
 
 /**
@@ -1005,6 +1006,34 @@ const ALLOWED_KNIFE_REST_KEYS = new Set<string>([
   'grooveDepthMm',
   'color',
 ]);
+
+const ALLOWED_WALL_LABEL_SLOTS_KEYS = new Set<string>(['enabled', 'sides', 'everyCells']);
+const WALL_LABEL_SLOT_SIDES = ['front', 'back', 'left', 'right'] as const;
+
+function validateWallLabelSlots(value: unknown): string | null {
+  if (!isObject(value)) return 'wallLabelSlots must be an object';
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_WALL_LABEL_SLOTS_KEYS.has(key)) return `wallLabelSlots has unknown key: ${key}`;
+  }
+  if (!isBoolean(value.enabled)) return 'wallLabelSlots.enabled must be boolean';
+  if (!isObject(value.sides)) return 'wallLabelSlots.sides must be an object';
+  for (const key of Object.keys(value.sides)) {
+    if (!(WALL_LABEL_SLOT_SIDES as readonly string[]).includes(key)) {
+      return `wallLabelSlots.sides has unknown key: ${key}`;
+    }
+  }
+  for (const side of WALL_LABEL_SLOT_SIDES) {
+    if (!isBoolean(value.sides[side])) return `wallLabelSlots.sides.${side} must be boolean`;
+  }
+  if (
+    !isNumber(value.everyCells) ||
+    !Number.isInteger(value.everyCells) ||
+    !inRange(value.everyCells, 1, CONSTRAINTS.MAX_WALL_LABEL_SLOT_PITCH_CELLS)
+  ) {
+    return `wallLabelSlots.everyCells must be an integer 1-${CONSTRAINTS.MAX_WALL_LABEL_SLOT_PITCH_CELLS}`;
+  }
+  return null;
+}
 
 function validateKnifeRest(value: unknown): string | null {
   if (!isObject(value)) return 'knifeRest must be an object';
@@ -1846,6 +1875,10 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     if (stErr) return validationError('INVALID_PARAMS', stErr);
   }
 
+  if (params.wallLabelSlots !== undefined) {
+    const slotsErr = validateWallLabelSlots(params.wallLabelSlots);
+    if (slotsErr) return validationError('INVALID_PARAMS', slotsErr);
+  }
   if (params.knifeRest !== undefined) {
     const krErr = validateKnifeRest(params.knifeRest);
     if (krErr) return validationError('INVALID_PARAMS', krErr);
