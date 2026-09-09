@@ -1,0 +1,143 @@
+src/features/bin-designer/components/panel/BaseSection/bodyType.test.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 37-38,40,44,47,55
+  s_24b1f7fd65ccc8::t_128400a0d847a4 45-46
+src/features/bin-designer/utils/a11y.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 22
+src/shared/generation/floorPatternMetrics.ts
+  s_24b1f7fd65ccc8::t_d432b65f8a99e3 19
+src/features/whats-new/latest.ts
+  s_24b1f7fd65ccc8::t_13675cce89dce7 9
+src/features/generation/worker/generators/retentionMagnetBoss.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 1
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 17,138,140
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+public/schema/bin-design.schema.json
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 2450
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/shared/generation/splitUtils.test.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 61
+src/features/generation/worker/generators/floorPatterns.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 25,82,132,303,352
+src/features/generation/worker/generators/floorPatternWindow.ts
+  s_24b1f7fd65ccc8::t_d432b65f8a99e3 18,45-56
+  s_24b1f7fd65ccc8::t_743987f4486795 57
+src/features/bin-designer/components/panel/BaseSection/BodyTypeCards.tsx
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 26
+  s_24b1f7fd65ccc8::t_128400a0d847a4 35,44,53
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 18,20,28,46,50,52
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 28-29
+src/i18n/locales/en.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 3552-3553,3555-3557,3559-3560
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/features/bin-designer/README.md
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 171-172
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_24b1f7fd65ccc8::t_128400a0d847a4 139
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 221,232
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 243-244
+  s_24b1f7fd65ccc8::t_54eca8afcfe2a0 246
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 8,310
+src/features/whats-new/entries.ts
+  s_24b1f7fd65ccc8::t_03f59e2afa98e9 17-26
+  s_24b1f7fd65ccc8::t_c857d26d023ffa 16
+src/features/bin-designer/utils/floorPatternFit.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 24,47
+  s_24b1f7fd65ccc8::t_fc38d972668686 19,28-32,62-86,92-98
+  s_24b1f7fd65ccc8::t_526f28961bb779 99-101
+src/shared/constraints/engine.test.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 123
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/features/generation/worker/generators/nestingFloor.geometry.test.ts
+  s_24b1f7fd65ccc8::t_98e856f8c5eade 28,58-65,185-186,245-246,287,308,332
+src/features/generation/worker/generators/floorPatterns.test.ts
+  s_24b1f7fd65ccc8::t_628c2580fc8386 73-81
+  s_24b1f7fd65ccc8::t_98e856f8c5eade 8
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 58
+src/features/generation/worker/generators/pipeline/context.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 16,201
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 56,59
+src/features/bin-designer/utils/floorPatternFit.test.ts
+  s_24b1f7fd65ccc8::t_98e856f8c5eade 5-11,47-66
+  s_24b1f7fd65ccc8::t_2600c6211e715d 67-68
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 32,105,455,539,542,547,550,555-556,558,594-596,599,602,605,608,611
+src/features/generation/worker/generators/insertBuilder.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 8,122
+src/features/bin-designer/types/base.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 36,40,43,130,158
+src/features/bin-designer/components/panel/BaseSection/bodyType.ts
+  s_24b1f7fd65ccc8::t_128400a0d847a4 39,109,125
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 23,26,54,108,131
+src/shared/constraints/features.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 13,58
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
+  s_24b1f7fd65ccc8::t_d432b65f8a99e3 39-45
+src/features/generation/worker/generators/pipeline/stages/trayBottomStage.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 32,34,55-56
+  s_24b1f7fd65ccc8::t_bf47865c4dfd44 59-60,62
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_24b1f7fd65ccc8::t_628c2580fc8386 1,4-6,75-113
+  s_24b1f7fd65ccc8::t_061016364fcdef 114
+src/shared/constraints/rules.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 14,23,25,30,32,34,81
+src/features/generation/README.md
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 29-30
+src/features/bin-designer/utils/binDimensions.ts
+  s_24b1f7fd65ccc8::t_d432b65f8a99e3 125-140,144,149-152
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/shared/generation/splitUtils.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 30
+src/features/bin-designer/components/panel/BaseSection/icons.tsx
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 93
+src/shared/types/bin.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 132
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+api/lib/designerValidation.test.ts
+  s_24b1f7fd65ccc8::t_1d3dfa53322776 2011
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_a12c37ad3c12e3 330-334
+src/features/generation/worker/generators/nestingFloorBuilder.ts
+  s_24b1f7fd65ccc8::t_19d09c1d47f169 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "505033785c17a66bfe9ec1c4d4dc477f5abd5506",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
