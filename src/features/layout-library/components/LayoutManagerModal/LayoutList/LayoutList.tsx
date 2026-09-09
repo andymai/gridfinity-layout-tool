@@ -403,7 +403,7 @@ export function LayoutList({
 
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-stroke text-sm text-content-tertiary flex items-center justify-between">
-        <span>{t('layouts.layoutCount', { count: entries.length })}</span>
+        <span>{t('layouts.layoutCount', { count: sortedEntries.length })}</span>
         <div className="flex items-center gap-2">
           <Select
             value={sortBy}

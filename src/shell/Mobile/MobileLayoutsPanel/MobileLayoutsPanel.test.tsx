@@ -34,7 +34,7 @@ vi.mock('@/core/storage', async (importOriginal) => {
     loadLayoutSync: vi.fn(),
     loadLayoutAsync: vi.fn(),
     deleteLayoutSync: vi.fn(),
-    saveLibrary: vi.fn(),
+    saveLibrary: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
     computeLayoutPreview: vi.fn(() => mockPreview),
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
     generateShareableURL: vi.fn(() => 'https://example.com/share'),
@@ -803,6 +803,7 @@ describe('MobileLayoutsPanel folders', () => {
   };
 
   beforeEach(() => {
+    vi.clearAllMocks();
     useLayoutStore.setState({ layout: createDefaultLayout(), activeLayoutId: TEST_LAYOUT_ID });
     useLibraryStore.setState({
       library: {

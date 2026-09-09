@@ -132,17 +132,21 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
   // Grouped by folder path, unfiled layouts first, so a long library reads
   // the way the tree does. A library without folders is one unlabelled group.
   const groups = useMemo(() => {
-    const byPath = new Map<string, { label: string; entries: LayoutEntry[] }>();
+    const byPath = new Map<string, { key: string; label: string; entries: LayoutEntry[] }>();
     for (const entry of library.entries) {
       const path = folderPath(library, entry.folderId ?? null);
       const key = path.map((f) => f.id).join('/');
-      const group = byPath.get(key) ?? { label: path.map((f) => f.name).join(' / '), entries: [] };
+      const group = byPath.get(key) ?? {
+        key,
+        label: path.map((f) => f.name).join(' / '),
+        entries: [],
+      };
       group.entries.push(entry);
       byPath.set(key, group);
     }
-    return [...byPath.entries()]
-      .sort(([a], [b]) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b)))
-      .map(([, group]) => group);
+    return [...byPath.values()].sort((a, b) =>
+      a.key === '' ? -1 : b.key === '' ? 1 : a.label.localeCompare(b.label)
+    );
   }, [library]);
 
   return (
@@ -168,7 +172,7 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
           className="absolute left-0 top-full z-50 mt-1 max-h-[70vh] w-64 overflow-auto rounded-lg border border-stroke bg-surface-elevated py-1 shadow-lg"
         >
           {groups.map((group) => (
-            <div key={group.label} role="group" aria-label={group.label || undefined}>
+            <div key={group.key} role="group" aria-label={group.label || undefined}>
               {group.label && (
                 <div className="truncate px-2.5 pb-0.5 pt-2 text-xs font-medium uppercase tracking-wider text-content-tertiary">
                   {group.label}

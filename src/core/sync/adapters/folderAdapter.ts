@@ -1,7 +1,7 @@
 import { isErr } from '@/core/result';
 import { useLibraryStore } from '@/core/store';
 import type { LayoutFolder, LayoutLibrary } from '@/core/types';
-import { saveLibrary } from '@/core/storage';
+import { folderPath, saveLibrary } from '@/core/storage';
 import { CONSTRAINTS } from '@/core/constants';
 import type {
   AdapterChange,
@@ -74,10 +74,19 @@ export const folderAdapter: FolderAdapter = {
     const { library } = useLibraryStore.getState();
     const folders = library.folders ?? [];
     const existing = folders.find((f) => f.id === item.id);
+    // The server checks the parent's shape, not its place: a parent that is
+    // this folder or sits below it would close a loop and hide the subtree,
+    // so it lands at the root instead.
+    const parentId =
+      payload.parentId === item.id ||
+      (payload.parentId !== null &&
+        folderPath(library, payload.parentId).some((f) => f.id === item.id))
+        ? null
+        : payload.parentId;
     const folder: LayoutFolder = {
       id: item.id,
       name: payload.name,
-      parentId: payload.parentId,
+      parentId,
       ...(payload.color !== undefined ? { color: payload.color } : {}),
       createdAt: existing?.createdAt ?? (payload.createdAt || item.modifiedAt),
       modifiedAt: item.modifiedAt,

@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useLibraryStore } from '@/core/store';
 import type { LayoutFolder, LayoutId, LayoutLibrary } from '@/core/types';
+import type * as Storage from '@/core/storage';
 
 const saveLibraryMock = vi.fn();
-vi.mock('@/core/storage', () => ({
+vi.mock('@/core/storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof Storage>()),
   saveLibrary: (lib: unknown) => saveLibraryMock(lib),
 }));
 
@@ -80,6 +82,29 @@ describe('folderAdapter.applyRemote', () => {
     expect(folders[0]).toMatchObject({ name: 'Office', createdAt: 1, modifiedAt: 3000 });
   });
 
+  it('roots a folder whose wire parent would close a loop', async () => {
+    setFolders([
+      folder('folder_1_a', 1000),
+      folder('folder_2_b', 1000, { parentId: 'folder_1_a' }),
+    ]);
+    await folderAdapter.applyRemote({
+      id: 'folder_1_a',
+      payload: { name: 'Study', parentId: 'folder_2_b', createdAt: 1 },
+      modifiedAt: 2000,
+    });
+    expect(
+      useLibraryStore.getState().library.folders?.find((f) => f.id === 'folder_1_a')?.parentId
+    ).toBeNull();
+    await folderAdapter.applyRemote({
+      id: 'folder_2_b',
+      payload: { name: 'Desk', parentId: 'folder_2_b', createdAt: 1 },
+      modifiedAt: 2000,
+    });
+    expect(
+      useLibraryStore.getState().library.folders?.find((f) => f.id === 'folder_2_b')?.parentId
+    ).toBeNull();
+  });
+
   it('drops a payload without a usable name', async () => {
     await folderAdapter.applyRemote({
       id: 'folder_9_z',
@@ -128,12 +153,13 @@ describe('folderAdapter.subscribe', () => {
     const unsubscribe = folderAdapter.subscribe((c) => seen.push(c));
     setFolders([folder('folder_1_a', 1000), folder('folder_2_b', 1500)]);
     setFolders([folder('folder_1_a', 1200)]);
-    unsubscribe();
-    setFolders([]);
     expect(seen.map((c) => `${c.kind}:${c.id}:${c.kind === 'put' ? c.modifiedAt : ''}`)).toEqual([
       'put:folder_2_b:1500',
       'put:folder_1_a:1200',
       'delete:folder_2_b:',
     ]);
+    unsubscribe();
+    setFolders([]);
+    expect(seen).toHaveLength(3);
   });
 });
