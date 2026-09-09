@@ -1,0 +1,95 @@
+src/features/generation/worker/handlers/workerContext.ts
+  s_24b1f7fd65ccc8::t_37689b9c158cbd 279
+src/shared/utils/wallLabelSlotPlan.ts
+  s_24b1f7fd65ccc8::t_5d6564504ede26 128-140,142-143,147-162,221-222,239-242,261-263
+public/schema/bin-design.schema.json
+  s_24b1f7fd65ccc8::t_5077ce6c88ed29 2669-2670,2685
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/features/generation/worker/handlers/generateHandler.ts
+  s_24b1f7fd65ccc8::t_36f4c178bbb61b 119-121,124,131-139,141-142
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 166-170
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 47,929-931
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/features/generation/worker/generators/labelPlateGenerator.ts
+  s_24b1f7fd65ccc8::t_f679e76f1b3847 22-26,33-34,45,80-84,86-95,97-137
+  s_24b1f7fd65ccc8::t_585e638334f008 138-140
+  s_24b1f7fd65ccc8::t_005d837eb39d5d 177-178,247
+src/features/bin-designer/components/preview/LabelPlateMeshes/platePoses.ts
+  s_24b1f7fd65ccc8::t_37689b9c158cbd 27-28,48,70-74
+src/features/bin-designer/constants/paramMigration.ts
+  s_24b1f7fd65ccc8::t_61010324759b44 1196-1219
+  s_24b1f7fd65ccc8::t_780d1299282c78 1220-1221
+src/shared/utils/wallLabelSlotPlan.test.ts
+  s_24b1f7fd65ccc8::t_5d6564504ede26 118-126,180-187
+  s_24b1f7fd65ccc8::t_d6cf4d3ddd6a35 188
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_24b1f7fd65ccc8::t_e3dd95e9289387 563-566
+src/features/generation/worker/generators/labelPlateGenerator.test.ts
+  s_24b1f7fd65ccc8::t_2f0d6153405aa3 16-18,160-237
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.tsx
+  s_24b1f7fd65ccc8::t_37689b9c158cbd 69
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_61010324759b44 2011
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.test.tsx
+  s_24b1f7fd65ccc8::t_61010324759b44 8-14,170,405
+src/features/bin-designer/components/preview/LabelPlateMeshes/platePoses.test.ts
+  s_24b1f7fd65ccc8::t_4b5212857487a0 22,51-67,126-130
+  s_24b1f7fd65ccc8::t_e710e293b16d4f 131
+src/shared/generation/socketNozzle.ts
+  s_24b1f7fd65ccc8::t_ff5c6a9805e555 24-26
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.test.ts
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 386-403
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+  s_24b1f7fd65ccc8::t_61010324759b44 2014
+src/features/generation/worker/generators/scenarios/wallLabelSlots.ts
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 174-177,187-197
+  s_24b1f7fd65ccc8::t_6586fce000d2a1 178-186,198-201
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/features/generation/bridge/meshData.ts
+  s_24b1f7fd65ccc8::t_37689b9c158cbd 115-119
+src/i18n/locales/en.ts
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 3201-3202
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_a2f0817eb870fb 1974
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.test.tsx
+  s_24b1f7fd65ccc8::t_4b5212857487a0 63-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "729b2c276c438b2464a66c06f66bf6b56eed74ad",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
