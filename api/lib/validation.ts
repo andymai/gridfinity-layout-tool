@@ -150,6 +150,14 @@ interface LayoutShape {
   gridUnitMmY?: number;
   heightUnitMm?: number;
   magnetAnchor?: 'edge' | 'center';
+  /** Library folder, carried for cloud sync only; shares strip it. */
+  folderId?: string;
+}
+
+const FOLDER_ID_PATTERN = /^folder_\d+_[a-z0-9]{1,8}$/;
+
+export function isValidFolderId(value: unknown): value is string {
+  return typeof value === 'string' && FOLDER_ID_PATTERN.test(value);
 }
 
 export interface ValidationError {
@@ -397,6 +405,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
         layout.magnetAnchor === 'edge' || layout.magnetAnchor === 'center'
           ? layout.magnetAnchor
           : undefined,
+      ...(isValidFolderId(layout.folderId) ? { folderId: layout.folderId } : {}),
     },
   };
 }

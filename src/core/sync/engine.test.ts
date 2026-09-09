@@ -20,6 +20,7 @@ import type {
   DesignAdapter,
   BaseplateAdapter,
   DesignVersionAdapter,
+  FolderAdapter,
 } from './adapters/types';
 
 const fetchMock = vi.fn();
@@ -95,6 +96,7 @@ beforeEach(async () => {
     designs: designsAdapter as DesignAdapter,
     baseplates: baseplatesAdapter as BaseplateAdapter,
     designVersions: baseplatesAdapter as unknown as DesignVersionAdapter,
+    folders: baseplatesAdapter as unknown as FolderAdapter,
   };
   // Default: every fetch resolves with 200 + empty body.
   fetchMock.mockResolvedValue(new Response(null, { status: 200 }));

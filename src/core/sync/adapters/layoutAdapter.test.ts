@@ -76,6 +76,41 @@ describe('layoutAdapter.list', () => {
   });
 });
 
+describe('layoutAdapter placement', () => {
+  it('sends the entry’s folder on the wire, over whatever the document carries', async () => {
+    setLibrary([{ ...entry('lay-1', 1000), folderId: 'folder_1_abc' }]);
+    loadLayoutAsyncMock.mockResolvedValue({ ...minimalLayout('L'), folderId: 'folder_stale' });
+    const listed = await layoutAdapter.list();
+    expect((listed[0].payload as { folderId?: string | null }).folderId).toBe('folder_1_abc');
+    const got = await layoutAdapter.get('lay-1');
+    expect((got?.payload as { folderId?: string | null }).folderId).toBe('folder_1_abc');
+  });
+
+  it('sends null for a layout at the root', async () => {
+    loadLayoutAsyncMock.mockResolvedValue(minimalLayout('L'));
+    const got = await layoutAdapter.get('lay-1');
+    expect((got?.payload as { folderId?: string | null }).folderId).toBeNull();
+  });
+
+  it('files a pulled layout by its wire folder and keeps the folder off the document', async () => {
+    computePreviewMock.mockReturnValue({ binCount: 0 });
+    saveLayoutAsyncMock.mockResolvedValue({ ok: true });
+    saveLibraryMock.mockResolvedValue({ ok: true });
+    await layoutAdapter.applyRemote({
+      id: 'lay-1',
+      payload: {
+        ...minimalLayout('Renamed'),
+        bins: [],
+        folderId: 'folder_1_abc',
+      } as unknown as Layout,
+      modifiedAt: 2000,
+    });
+    const saved = useLibraryStore.getState().library.entries.find((e) => e.id === 'lay-1');
+    expect(saved?.folderId).toBe('folder_1_abc');
+    expect(saveLayoutAsyncMock.mock.calls[0][1]).not.toHaveProperty('folderId');
+  });
+});
+
 describe('layoutAdapter.get', () => {
   it('returns null when the entry is absent', async () => {
     expect(await layoutAdapter.get('not-here')).toBe(null);

@@ -11,6 +11,7 @@ import type {
   DesignAdapter,
   BaseplateAdapter,
   DesignVersionAdapter,
+  FolderAdapter,
 } from './adapters/types';
 
 const fetchMock = vi.fn();
@@ -66,6 +67,7 @@ beforeEach(() => {
     designs: designs as DesignAdapter,
     baseplates: baseplates as BaseplateAdapter,
     designVersions: baseplates as unknown as DesignVersionAdapter,
+    folders: baseplates as unknown as FolderAdapter,
   };
 });
 

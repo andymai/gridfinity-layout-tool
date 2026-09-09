@@ -9,6 +9,7 @@ import type {
   DesignAdapter,
   BaseplateAdapter,
   DesignVersionAdapter,
+  FolderAdapter,
 } from '../adapters/types';
 
 const getPendingEntriesMock = vi.fn();
@@ -70,6 +71,7 @@ function makeAdapters(layoutPayload: Record<string, unknown> | null = { v: 1 }):
     designs: designs as DesignAdapter,
     baseplates: baseplates as BaseplateAdapter,
     designVersions: designVersions as unknown as DesignVersionAdapter,
+    folders: designVersions as unknown as FolderAdapter,
   };
 }
 

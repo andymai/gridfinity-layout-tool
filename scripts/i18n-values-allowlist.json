@@ -263,6 +263,7 @@
     "layers.rectangles",
     "layouts.announce.fallbackName",
     "layouts.announce.fallbackNameCapitalized",
+    "layouts.folders.itemCount.one",
     "layouts.import.placeholder",
     "layouts.layoutJson",
     "layouts.layouts",

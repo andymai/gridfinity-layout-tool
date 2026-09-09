@@ -130,6 +130,7 @@ describe('GET /api/sync/manifest', () => {
       designs: {},
       baseplates: {},
       designVersions: {},
+      folders: {},
       indexUpdatedAt: 0,
     });
   });

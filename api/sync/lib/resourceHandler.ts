@@ -32,7 +32,7 @@ import { compareForTiebreaker } from '../../lib/lwwTiebreaker.js';
 
 type RedisClient = NonNullable<ReturnType<typeof getRedis>>;
 
-export type SyncResourceKind = 'layouts' | 'designs' | 'baseplates' | 'designVersions';
+export type SyncResourceKind = 'layouts' | 'designs' | 'baseplates' | 'designVersions' | 'folders';
 
 export interface SyncEnvelope {
   modifiedAt: number;

@@ -40,6 +40,7 @@ export const LAYOUT_KEYS = [
   'purpose',
   'baseplateParams',
   'activeBaseplateId',
+  'folderId',
 ] as const;
 export type _LayoutKeys = Assert<KeysMatch<keyof Layout, (typeof LAYOUT_KEYS)[number]>>;
 

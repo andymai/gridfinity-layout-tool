@@ -137,7 +137,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         );
       }
 
-      sharePayload = validationResult.layout;
+      // A folder is the owner's library structure, meaningless to whoever
+      // opens the link.
+      const { folderId: _folderId, ...shareable } = validationResult.layout;
+      sharePayload = shareable;
 
       const designsResult = validateSharedDesigns(linkedDesigns);
       if (isSharedDesignsError(designsResult)) {

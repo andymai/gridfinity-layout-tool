@@ -19,6 +19,9 @@ const QUOTA: Record<SyncItemKind, { maxCount: number; maxBytes: number }> = {
   // whole-account ceiling. Bodies are compressed params with no thumbnail, so
   // they are far smaller than a design envelope.
   designVersions: { maxCount: 500, maxBytes: 25 * 1024 * 1024 },
+  // A folder is a name and a parent pointer; the count matches the client's
+  // FOLDERS_MAX so the two limits never disagree about which folder is one too many.
+  folders: { maxCount: 200, maxBytes: 256 * 1024 },
 };
 
 export type QuotaErrorReason = 'count' | 'bytes';

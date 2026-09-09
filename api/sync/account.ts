@@ -111,6 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const designIds = await redis.hkeys(userIndexKey(userId, 'designs'));
     const baseplateIds = await redis.hkeys(userIndexKey(userId, 'baseplates'));
     const designVersionIds = await redis.hkeys(userIndexKey(userId, 'designVersions'));
+    const folderIds = await redis.hkeys(userIndexKey(userId, 'folders'));
 
     await Promise.all([
       ...layoutIds.map((id) => deleteBlobSafe(`users/${userId}/layouts/${id}.json`, userId)),
@@ -119,6 +120,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       ...designVersionIds.map((id) =>
         deleteBlobSafe(`users/${userId}/designVersions/${id}.json`, userId)
       ),
+      ...folderIds.map((id) => deleteBlobSafe(`users/${userId}/folders/${id}.json`, userId)),
     ]);
 
     // 3. Community cascade. The record blob is read first because it is the
@@ -256,6 +258,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userIndexKey(userId, 'designs'),
       userIndexKey(userId, 'baseplates'),
       userIndexKey(userId, 'designVersions'),
+      userIndexKey(userId, 'folders'),
       userIndexUpdatedAtKey(userId),
       userProfileKey(userId),
       userSessionsKey(userId),

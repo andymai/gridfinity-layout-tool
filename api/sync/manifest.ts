@@ -48,14 +48,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return;
     }
 
-    const [layouts, designs, baseplates, designVersions] = await Promise.all([
+    const [layouts, designs, baseplates, designVersions, folders] = await Promise.all([
       getIndex(redis, session.userId, 'layouts'),
       getIndex(redis, session.userId, 'designs'),
       getIndex(redis, session.userId, 'baseplates'),
       getIndex(redis, session.userId, 'designVersions'),
+      getIndex(redis, session.userId, 'folders'),
     ]);
 
-    res.status(200).json({ layouts, designs, baseplates, designVersions, indexUpdatedAt });
+    res.status(200).json({ layouts, designs, baseplates, designVersions, folders, indexUpdatedAt });
   } catch (error) {
     logger.error('sync/manifest failed', {
       userId: session.userId,

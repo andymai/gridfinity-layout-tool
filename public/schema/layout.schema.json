@@ -141,6 +141,10 @@
       "type": ["string", "null"],
       "description": "Pointer to the active baseplate library design. null means a detached inline draft."
     },
+    "folderId": {
+      "type": ["string", "null"],
+      "description": "Library folder holding the layout, present only on the cloud sync wire. The library entry is authoritative; exports and shares omit it, and the importer ignores it."
+    },
     "linkedDesigns": {
       "type": "array",
       "items": {

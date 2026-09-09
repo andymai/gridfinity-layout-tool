@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLayoutSwitcher } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store';
-import { computePreview } from '@/core/storage';
+import { computePreview, folderPath } from '@/core/storage';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
-import type { LayoutPreview } from '@/core/types';
+import type { LayoutEntry, LayoutPreview } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
@@ -129,6 +129,22 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
     await createNewLayout();
   }, [createNewLayout]);
 
+  // Grouped by folder path, unfiled layouts first, so a long library reads
+  // the way the tree does. A library without folders is one unlabelled group.
+  const groups = useMemo(() => {
+    const byPath = new Map<string, { label: string; entries: LayoutEntry[] }>();
+    for (const entry of library.entries) {
+      const path = folderPath(library, entry.folderId ?? null);
+      const key = path.map((f) => f.id).join('/');
+      const group = byPath.get(key) ?? { label: path.map((f) => f.name).join(' / '), entries: [] };
+      group.entries.push(entry);
+      byPath.set(key, group);
+    }
+    return [...byPath.entries()]
+      .sort(([a], [b]) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b)))
+      .map(([, group]) => group);
+  }, [library]);
+
   return (
     <div ref={containerRef} className="relative">
       <Button
@@ -151,28 +167,39 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
           onKeyDown={onMenuKeyDown}
           className="absolute left-0 top-full z-50 mt-1 max-h-[70vh] w-64 overflow-auto rounded-lg border border-stroke bg-surface-elevated py-1 shadow-lg"
         >
-          {library.entries.map((entry) => {
-            const isActive = entry.id === activeLayoutId;
-            return (
-              <Button
-                key={entry.id}
-                variant="ghost"
-                fullWidth
-                role="menuitem"
-                aria-current={isActive ? 'true' : undefined}
-                onClick={() => void handleSwitch(entry.id)}
-                className={`justify-start gap-2.5 rounded-none px-2.5 py-2 text-left text-sm font-normal hover:bg-surface-hover ${
-                  isActive ? 'text-content' : 'text-content-secondary'
-                }`}
-              >
-                <Thumb preview={entry.preview} size={38} className="h-8 w-10 flex-shrink-0" />
-                <span className="min-w-0 flex-1 truncate" title={entry.name}>
-                  {entry.name}
-                </span>
-                {isActive && <Icon name="check" className="h-4 w-4 flex-shrink-0 text-accent" />}
-              </Button>
-            );
-          })}
+          {groups.map((group) => (
+            <div key={group.label} role="group" aria-label={group.label || undefined}>
+              {group.label && (
+                <div className="truncate px-2.5 pb-0.5 pt-2 text-xs font-medium uppercase tracking-wider text-content-tertiary">
+                  {group.label}
+                </div>
+              )}
+              {group.entries.map((entry) => {
+                const isActive = entry.id === activeLayoutId;
+                return (
+                  <Button
+                    key={entry.id}
+                    variant="ghost"
+                    fullWidth
+                    role="menuitem"
+                    aria-current={isActive ? 'true' : undefined}
+                    onClick={() => void handleSwitch(entry.id)}
+                    className={`justify-start gap-2.5 rounded-none px-2.5 py-2 text-left text-sm font-normal hover:bg-surface-hover ${
+                      isActive ? 'text-content' : 'text-content-secondary'
+                    }`}
+                  >
+                    <Thumb preview={entry.preview} size={38} className="h-8 w-10 flex-shrink-0" />
+                    <span className="min-w-0 flex-1 truncate" title={entry.name}>
+                      {entry.name}
+                    </span>
+                    {isActive && (
+                      <Icon name="check" className="h-4 w-4 flex-shrink-0 text-accent" />
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          ))}
 
           {library.entries.length > 0 && <div className="my-1 border-t border-stroke-subtle" />}
 

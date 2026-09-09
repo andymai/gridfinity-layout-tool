@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type * as Storage from '@/core/storage';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MobileLayoutsPanel } from '@/shell/Mobile/MobileLayoutsPanel';
 import { useLibraryStore } from '@/core/store/library';
@@ -12,7 +13,10 @@ import type { LayoutLibrary, LayoutEntry, LayoutId } from '@/core/types';
 import { gridUnits, heightUnits, layoutId as toLayoutId } from '@/core/types';
 
 // Mock the storage module
-vi.mock('@/core/storage', () => {
+vi.mock('@/core/storage', async (importOriginal) => {
+  // The folder helpers are pure and run for real; everything that touches
+  // storage stays mocked below.
+  const actual = await importOriginal<typeof Storage>();
   const mockPreview = {
     drawerWidth: 10,
     drawerDepth: 8,
@@ -23,6 +27,7 @@ vi.mock('@/core/storage', () => {
   };
 
   return {
+    ...actual,
     // Storage functions
     saveLayoutSync: vi.fn(),
     saveLayoutAsync: vi.fn().mockResolvedValue(undefined),
@@ -785,5 +790,83 @@ describe('MobileLayoutsPanel', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       });
     });
+  });
+});
+
+describe('MobileLayoutsPanel folders', () => {
+  const study = {
+    id: 'folder_1_study',
+    name: 'Study',
+    parentId: null,
+    createdAt: 1,
+    modifiedAt: 1,
+  };
+
+  beforeEach(() => {
+    useLayoutStore.setState({ layout: createDefaultLayout(), activeLayoutId: TEST_LAYOUT_ID });
+    useLibraryStore.setState({
+      library: {
+        ...createTestLibrary([
+          createTestEntry(TEST_LAYOUT_ID, 'Test Layout'),
+          { ...createTestEntry(SECOND_LAYOUT_ID, 'Second Layout'), folderId: study.id },
+        ]),
+        folders: [study],
+      },
+      isLoaded: true,
+    });
+    useMobileStore.setState({ activeMobilePanel: 'layouts' });
+  });
+
+  it('shows folders at the root and drills into one', () => {
+    render(<MobileLayoutsPanel />);
+    expect(screen.getByText('Test Layout')).toBeInTheDocument();
+    expect(screen.queryByText('Second Layout')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Open folder Study' }));
+    expect(screen.getByText('Second Layout')).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Folder path' })).toHaveTextContent('Study');
+    fireEvent.click(screen.getByRole('button', { name: 'All layouts' }));
+    expect(screen.getByText('Test Layout')).toBeInTheDocument();
+  });
+
+  it('creates a folder from the sheet', async () => {
+    render(<MobileLayoutsPanel />);
+    fireEvent.click(screen.getByRole('button', { name: 'New folder' }));
+    const input = screen.getByRole('textbox', { name: 'Folder name' });
+    fireEvent.change(input, { target: { value: 'Kitchen' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Open folder Kitchen' })).toBeInTheDocument();
+    });
+  });
+
+  it('moves a layout into a folder from its swipe action', async () => {
+    render(<MobileLayoutsPanel />);
+    fireEvent.click(screen.getByRole('button', { name: 'Move Test Layout' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Study' }));
+    await waitFor(() => {
+      expect(
+        useLibraryStore.getState().library.entries.find((e) => e.id === TEST_LAYOUT_ID)?.folderId
+      ).toBe(study.id);
+    });
+  });
+
+  it('renames and deletes a folder from its menu, lifting its layouts out', async () => {
+    render(<MobileLayoutsPanel />);
+    fireEvent.click(screen.getByRole('button', { name: 'Folder actions for Study' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rename folder' }));
+    const input = screen.getByRole('textbox', { name: 'Folder name' });
+    fireEvent.change(input, { target: { value: 'Office' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Rename' }).at(-1) as HTMLElement);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Open folder Office' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Folder actions for Office' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete folder' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete folder' }).at(-1) as HTMLElement);
+    await waitFor(() => {
+      expect(useLibraryStore.getState().library.folders).toHaveLength(0);
+    });
+    expect(screen.getByText('Second Layout')).toBeInTheDocument();
   });
 });

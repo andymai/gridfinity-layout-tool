@@ -14,6 +14,8 @@ interface LayoutActionsProps {
   onRename: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  /** Present once the library has folders to move into. */
+  onMoveToFolder?: () => void;
 }
 
 /**
@@ -28,6 +30,7 @@ export function LayoutActions({
   onRename,
   onDuplicate,
   onDelete,
+  onMoveToFolder,
 }: LayoutActionsProps) {
   const t = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -208,6 +211,31 @@ export function LayoutActions({
                 </svg>
                 {t('common.duplicate')}
               </Button>
+              {onMoveToFolder && (
+                <Button
+                  variant="ghost"
+                  fullWidth
+                  role="menuitem"
+                  onClick={handleAction(onMoveToFolder)}
+                  className="justify-start rounded-none px-3 py-2 text-left text-sm font-normal text-content hover:bg-surface"
+                >
+                  <svg
+                    className="w-4 h-4 text-content-secondary"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                    />
+                  </svg>
+                  {t('layouts.folders.moveTo')}
+                </Button>
+              )}
               {/* Copy Link */}
               <Button
                 variant="ghost"

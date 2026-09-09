@@ -246,23 +246,17 @@ async function handleConflict(
   res: Response,
   s: EngineState
 ): Promise<void> {
-  let stored: {
-    layout?: unknown;
-    design?: unknown;
-    baseplate?: unknown;
-    modifiedAt?: number;
-  } | null;
+  let stored: (Record<string, unknown> & { modifiedAt?: number }) | null;
   try {
     const body = (await res.json()) as {
-      stored?: { layout?: unknown; design?: unknown; baseplate?: unknown; modifiedAt?: number };
+      stored?: Record<string, unknown> & { modifiedAt?: number };
     };
     stored = body.stored ?? null;
   } catch {
     stored = null;
   }
   if (stored && typeof stored.modifiedAt === 'number') {
-    const payload =
-      kind === 'layouts' ? stored.layout : kind === 'baseplates' ? stored.baseplate : stored.design;
+    const payload = stored[PAYLOAD_KEY[kind]];
     if (payload !== undefined) {
       await adapter.applyRemote({
         id: entry.id,

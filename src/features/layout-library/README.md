@@ -26,6 +26,8 @@ graph TB
 - `components/LayoutManagerModal/ImportView.tsx` — JSON import UI
 - `components/LayoutManagerModal/NewLayoutCard.tsx` — "Create New" card
 - `components/LayoutManagerModal/ViewModeToggle.tsx` — grid/list toggle
+- `components/LayoutManagerModal/FolderTree.tsx` — folder rail beside the list: every layout, then nested folders, inline rename, two-click delete, a draft row for a new folder under the selection
+- `components/LayoutManagerModal/FolderBreadcrumb.tsx`, `FolderPickList.tsx`, `MoveToFolderDialog.tsx` — the path above the list, the indented destination list, and the move dialog; the mobile Layouts panel reuses the first two
 - `components/LayoutManagerModal/SharedWithMeList/` — shared layouts. No surface mounts it, so it is unreferenced outside its own test.
 - `components/LayoutManagerModal/SharedWithMeItem.tsx` — shared layout item
 
@@ -50,6 +52,16 @@ switchLayout(id) → save current, load target
 duplicateLayout(id) → copy data, new UUID, "(copy)" suffix
 deleteLayout(id) → remove from IndexedDB + library
 ```
+
+## Folders
+
+The tree lives in `LayoutLibrary.folders` with `LayoutEntry.folderId`; the rules
+(name limits, no cycles, a deleted folder lifts its contents to its parent) are pure
+functions in `@/core/storage` (`libraryFolders.ts`), and `useLayoutFolders` in
+`@/shared/hooks` applies one and saves. A `folderId` that names no folder reads as
+the root and is kept, not rewritten: on a fresh device a layout can arrive before
+its folder. Folders sync as their own kind; membership rides on each layout's
+envelope as `folderId`, which the entry owns locally and exports never carry.
 
 ## Gotchas
 
