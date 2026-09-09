@@ -12,7 +12,7 @@ import { getIndex, getIndexUpdatedAt } from '../lib/userIndex.js';
  * Returns the user's full per-kind index plus an `indexUpdatedAt`
  * timestamp the client uses for `If-Modified-Since` polling.
  *
- *   200  → { layouts, designs, baseplates, designVersions: { [id]: IndexEntry }, indexUpdatedAt }
+ *   200  → { layouts, designs, baseplates, designVersions, folders: { [id]: IndexEntry }, indexUpdatedAt }
  *   304  → empty body when the client's `If-Modified-Since` >= the
  *          server's `users:{uid}:indexUpdatedAt` (no scan needed).
  *
@@ -48,14 +48,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return;
     }
 
-    const [layouts, designs, baseplates, designVersions] = await Promise.all([
+    const [layouts, designs, baseplates, designVersions, folders] = await Promise.all([
       getIndex(redis, session.userId, 'layouts'),
       getIndex(redis, session.userId, 'designs'),
       getIndex(redis, session.userId, 'baseplates'),
       getIndex(redis, session.userId, 'designVersions'),
+      getIndex(redis, session.userId, 'folders'),
     ]);
 
-    res.status(200).json({ layouts, designs, baseplates, designVersions, indexUpdatedAt });
+    res.status(200).json({ layouts, designs, baseplates, designVersions, folders, indexUpdatedAt });
   } catch (error) {
     logger.error('sync/manifest failed', {
       userId: session.userId,

@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import {
   validateShareLayout,
+  withoutLibraryPlacement,
   isValidationError,
   validateSharedDesigns,
   isSharedDesignsError,
@@ -253,7 +254,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     // Update share data (preserve original deleteTokenHash and createdAt;
     // drop legacy lastAccessedAt — see note above).
     const updatedData: ShareData = {
-      layout: validationResult.layout,
+      layout: withoutLibraryPlacement(validationResult.layout),
       ...(designsResult.designs.length > 0 ? { linkedDesigns: designsResult.designs } : {}),
       metadata: {
         ...metadataWithoutAccess,

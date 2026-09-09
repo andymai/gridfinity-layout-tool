@@ -10,9 +10,13 @@ import type { SyncKind } from './adapters/types';
  * of ternaries whose fallback arm was `design`, so a kind added after
  * `baseplates` was silently sent and read under the wrong name.
  */
-export const PAYLOAD_KEY: Record<SyncKind, 'layout' | 'design' | 'baseplate' | 'designVersion'> = {
+export const PAYLOAD_KEY: Record<
+  SyncKind,
+  'layout' | 'design' | 'baseplate' | 'designVersion' | 'folder'
+> = {
   layouts: 'layout',
   designs: 'design',
   baseplates: 'baseplate',
   designVersions: 'designVersion',
+  folders: 'folder',
 };

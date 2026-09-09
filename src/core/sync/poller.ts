@@ -22,6 +22,7 @@ interface ItemFetchResponse {
     design?: unknown;
     baseplate?: unknown;
     designVersion?: unknown;
+    folder?: unknown;
     modifiedAt: number;
     schemaVersion: number;
   };
@@ -119,6 +120,9 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     'baseplates',
     manifest.baseplates ?? {}
   );
+  // Folders before layouts for the same reason: a layout names its folder,
+  // and it should land somewhere that exists.
+  const folderChanges = await diffKind(adapters.folders, 'folders', manifest.folders ?? {});
   const layoutChanges = await diffKind(adapters.layouts, 'layouts', manifest.layouts ?? {});
   const designChanges = await diffKind(adapters.designs, 'designs', manifest.designs ?? {});
   // Versions last: a pulled version is only reachable through its design's
@@ -128,7 +132,7 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     'designVersions',
     manifest.designVersions ?? {}
   );
-  const applied = layoutChanges + designChanges + baseplateChanges + versionChanges;
+  const applied = layoutChanges + designChanges + baseplateChanges + versionChanges + folderChanges;
 
   // Reset happened mid-flight — drop our results to avoid re-installing the
   // prior user's high-water mark or applying writes that belong to a session

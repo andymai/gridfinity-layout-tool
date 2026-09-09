@@ -53,6 +53,12 @@ export interface Layout {
   // Pointer to the active baseplate library design. null = detached inline draft
   // (unsaved New/Fork, or orphaned after the source design was deleted).
   activeBaseplateId?: BaseplateDesignId | null;
+  /**
+   * Library folder holding the layout, present only on the cloud sync wire so
+   * the placement survives the round-trip. The library entry is authoritative;
+   * the editor's document, exports and shares never carry it.
+   */
+  folderId?: string | null;
 }
 
 /**

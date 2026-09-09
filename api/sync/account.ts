@@ -51,7 +51,8 @@ import { unlinkSupporterAccount } from '../lib/supporterLink.js';
  *
  *   1. Sessions   : DEL session:{token} for every token in the user's set
  *                   (so other tabs/devices flip to anonymous on next sync)
- *   2. Blobs      : del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json, designVersions/{id}.json
+ *   2. Blobs      : del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json,
+ *                   designVersions/{id}.json, folders/{id}.json
  *   3. Community  : delete each published design (record/thumbnail/mesh blobs,
  *                   card hash, per-design sets, membership in the parent's
  *                   children set, every liker's reverse liked set, sort-index
@@ -111,6 +112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const designIds = await redis.hkeys(userIndexKey(userId, 'designs'));
     const baseplateIds = await redis.hkeys(userIndexKey(userId, 'baseplates'));
     const designVersionIds = await redis.hkeys(userIndexKey(userId, 'designVersions'));
+    const folderIds = await redis.hkeys(userIndexKey(userId, 'folders'));
 
     await Promise.all([
       ...layoutIds.map((id) => deleteBlobSafe(`users/${userId}/layouts/${id}.json`, userId)),
@@ -119,6 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       ...designVersionIds.map((id) =>
         deleteBlobSafe(`users/${userId}/designVersions/${id}.json`, userId)
       ),
+      ...folderIds.map((id) => deleteBlobSafe(`users/${userId}/folders/${id}.json`, userId)),
     ]);
 
     // 3. Community cascade. The record blob is read first because it is the
@@ -256,6 +259,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userIndexKey(userId, 'designs'),
       userIndexKey(userId, 'baseplates'),
       userIndexKey(userId, 'designVersions'),
+      userIndexKey(userId, 'folders'),
       userIndexUpdatedAtKey(userId),
       userProfileKey(userId),
       userSessionsKey(userId),

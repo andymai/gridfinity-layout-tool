@@ -76,6 +76,23 @@ function createValidLayout() {
 }
 
 describe('validateShareLayout', () => {
+  describe('folder placement', () => {
+    it('carries a well-formed folder id through for sync', () => {
+      const layout = { ...createValidLayout(), folderId: 'folder_1700000000000_ab12cd' };
+      const result = validateShareLayout(layout, 1000);
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.layout.folderId).toBe('folder_1700000000000_ab12cd');
+    });
+
+    it('drops a folder id that is not one of ours', () => {
+      for (const folderId of ['../etc', 'folder_x', 42, null]) {
+        const result = validateShareLayout({ ...createValidLayout(), folderId }, 1000);
+        expect(result.valid).toBe(true);
+        if (result.valid) expect(result.layout).not.toHaveProperty('folderId');
+      }
+    });
+  });
+
   describe('size limits', () => {
     it('rejects layouts exceeding 500KB', () => {
       const layout = createValidLayout();

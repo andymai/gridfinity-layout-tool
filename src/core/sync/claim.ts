@@ -48,6 +48,7 @@ interface ItemFetchResponse {
     design?: unknown;
     baseplate?: unknown;
     designVersion?: unknown;
+    folder?: unknown;
     modifiedAt: number;
   };
 }

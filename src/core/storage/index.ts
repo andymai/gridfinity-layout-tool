@@ -136,3 +136,21 @@ export { createDbAccessor } from './backends/openSingleton';
 export type { DbAccessor, DbAccessorOptions } from './backends/openSingleton';
 
 export { getStorageBackend, resetStorageBackendCache } from './backend';
+
+// Folder tree over the library index (pure; the hook in shared/ persists)
+export {
+  childFolders,
+  createFolder,
+  deleteFolder,
+  entriesInFolder,
+  entryFolderId,
+  folderById,
+  folderPath,
+  generateFolderId,
+  isDescendantFolder,
+  liftContents,
+  moveFolder,
+  renameFolder,
+  setEntryFolder,
+  wouldLoop,
+} from './libraryFolders';

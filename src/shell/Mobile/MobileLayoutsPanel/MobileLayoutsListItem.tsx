@@ -33,6 +33,8 @@ interface LayoutListItemProps {
   readonly onShare: (id: string) => void;
   readonly onDuplicate: (id: string) => void;
   readonly onDelete: (id: string) => void;
+  /** Present once the library has folders to move into. */
+  readonly onMove?: (id: string) => void;
   readonly onTouchStart: (e: React.TouchEvent, id: string) => void;
   readonly onTouchMove: (e: React.TouchEvent) => void;
   readonly onTouchEnd: () => void;
@@ -50,6 +52,7 @@ export function LayoutListItem({
   onShare,
   onDuplicate,
   onDelete,
+  onMove,
   onTouchStart,
   onTouchMove,
   onTouchEnd,
@@ -77,6 +80,14 @@ export function LayoutListItem({
           bgColor="bg-accent"
           label={`Duplicate ${entry.name}`}
         />
+        {onMove && (
+          <SwipeActionButton
+            onClick={() => onMove(entry.id)}
+            iconPath={ICON_PATHS.folder}
+            bgColor="bg-info"
+            label={`Move ${entry.name}`}
+          />
+        )}
         <SwipeActionButton
           onClick={() => onDelete(entry.id)}
           iconPath={ICON_PATHS.delete}
@@ -142,6 +153,7 @@ export function LayoutListItem({
             onRename={onRename}
             onShare={onShare}
             onDuplicate={onDuplicate}
+            onMove={onMove}
           />
         )}
       </div>

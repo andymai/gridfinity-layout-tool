@@ -9,6 +9,7 @@ import type {
   DesignAdapter,
   BaseplateAdapter,
   DesignVersionAdapter,
+  FolderAdapter,
 } from './adapters/types';
 
 const flushNowMock = vi.fn();
@@ -78,6 +79,7 @@ beforeEach(() => {
     designs: designs as DesignAdapter,
     baseplates: baseplates as BaseplateAdapter,
     designVersions: baseplates as unknown as DesignVersionAdapter,
+    folders: baseplates as unknown as FolderAdapter,
   };
   flushNowMock.mockResolvedValue(undefined);
   getPendingEntriesMock.mockResolvedValue([]);

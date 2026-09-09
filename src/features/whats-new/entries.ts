@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'layout-folders',
+    date: '2026-09-09',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Folders for your layouts' },
+    body: {
+      en: 'The layout library now has folders, and folders inside folders, so a house can be rooms, a room its units, a unit its drawers. Make them in the tree beside the layout list, or from the Layouts panel on a phone, and file a layout from its menu. Folders and where each layout sits sync to your other devices with the rest of the library.',
+    },
+    action: { kind: 'openTool', tool: 'layout' },
+  },
+  {
     id: 'wall-label-slots',
     date: '2026-09-09',
     kind: 'new',

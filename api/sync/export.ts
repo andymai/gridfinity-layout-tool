@@ -55,6 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       designsIndex,
       baseplatesIndex,
       designVersionsIndex,
+      foldersIndex,
       indexUpdatedAt,
       publishedIds,
     ] = await Promise.all([
@@ -62,6 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       getIndex(redis, session.userId, 'designs'),
       getIndex(redis, session.userId, 'baseplates'),
       getIndex(redis, session.userId, 'designVersions'),
+      getIndex(redis, session.userId, 'folders'),
       getIndexUpdatedAt(redis, session.userId),
       redis.smembers(communityPublishedKey(session.userId)),
     ]);
@@ -71,6 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const liveDesigns = filterLive(designsIndex);
     const liveBaseplates = filterLive(baseplatesIndex);
     const liveDesignVersions = filterLive(designVersionsIndex);
+    const liveFolders = filterLive(foldersIndex);
 
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader(
@@ -89,6 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
               designs: liveDesigns,
               baseplates: liveBaseplates,
               designVersions: liveDesignVersions,
+              folders: liveFolders,
               community: communityIds,
               indexUpdatedAt,
               exportedAt: Date.now(),
@@ -104,6 +108,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         streamEnvelopes(addFile, session.userId, 'designs', Object.keys(liveDesigns)),
         streamEnvelopes(addFile, session.userId, 'baseplates', Object.keys(liveBaseplates)),
         streamEnvelopes(addFile, session.userId, 'designVersions', Object.keys(liveDesignVersions)),
+        streamEnvelopes(addFile, session.userId, 'folders', Object.keys(liveFolders)),
         streamCommunityRecords(addFile, communityIds),
       ]);
     });

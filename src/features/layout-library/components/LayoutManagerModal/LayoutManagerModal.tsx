@@ -7,6 +7,11 @@ import { useResponsive } from '@/shared/hooks';
 import { useLibraryStore } from '@/core/store/library';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
+import { FolderTree } from './FolderTree';
+import { FolderBreadcrumb } from './FolderBreadcrumb';
+import { MoveToFolderDialog } from './MoveToFolderDialog';
+import { useLayoutFolders } from '@/shared/hooks/useLayoutFolders';
+import { childFolders, entriesInFolder, entryFolderId, folderPath } from '@/core/storage';
 import type { ViewMode } from './ViewModeToggle';
 import type { Layout } from '@/core/types';
 import { layoutId } from '@/core/types';
@@ -56,6 +61,9 @@ function LayoutManagerModalContent({
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [isExporting, setIsExporting] = useState(false);
+  // null is every layout, flat; a folder shows only what is filed directly in it.
+  const [folderId, setFolderId] = useState<string | null>(null);
+  const [movingId, setMovingId] = useState<string | null>(null);
   const handleSortChange = useCallback((value: SortOption) => setSortBy(value), []);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -87,6 +95,40 @@ function LayoutManagerModalContent({
 
   const setLibrary = useLibraryStore((state) => state.setLibrary);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
+  const folderOps = useLayoutFolders();
+  const hasFolders = folderOps.folders.length > 0;
+  // A folder that vanished under the selection (deleted here, or elsewhere and
+  // pulled) falls back to every layout rather than an empty, unnamed view.
+  const currentPath = folderPath(library, folderId);
+  const currentFolderId = folderId === null || currentPath.length > 0 ? folderId : null;
+  const shownEntries =
+    currentFolderId === null ? library.entries : entriesInFolder(library, currentFolderId);
+  const subfolders = currentFolderId === null ? [] : childFolders(library, currentFolderId);
+  const movingEntry = movingId ? library.entries.find((e) => e.id === movingId) : undefined;
+
+  const handleMove = useCallback(
+    async (destination: string | null) => {
+      if (!movingEntry) return;
+      const moved = await folderOps.moveLayout(movingEntry.id, destination);
+      setMovingId(null);
+      if (moved) {
+        const target = destination ? folderPath(library, destination).at(-1)?.name : undefined;
+        announceToScreenReader(
+          target ? t('layouts.folders.movedTo', { name: target }) : t('layouts.folders.movedToRoot')
+        );
+      }
+    },
+    [movingEntry, folderOps, library, announceToScreenReader, t]
+  );
+
+  const handleDeleteFolder = useCallback(
+    async (id: string) => {
+      const parent = folderPath(library, id).at(-2)?.id ?? null;
+      const removed = await folderOps.deleteFolder(id);
+      if (removed && currentPath.some((f) => f.id === id)) setFolderId(parent);
+    },
+    [folderOps, library, currentPath]
+  );
 
   // Announce modal opened
   useEffect(() => {
@@ -325,21 +367,62 @@ function LayoutManagerModalContent({
         {/* Content */}
         <div className="min-h-0 overflow-hidden flex flex-col px-6 pb-6">
           {activeTab === 'layouts' && (
-            <div className="flex-1 min-h-0 overflow-auto">
-              <LayoutList
-                entries={library.entries}
-                activeLayoutId={activeLayoutId}
-                viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-                showViewToggle={!isMobile}
-                sortBy={sortBy}
-                onSortChange={handleSortChange}
-                onSwitch={handleSwitch}
-                onRename={handleRename}
-                onDuplicate={handleDuplicate}
-                onDelete={handleDelete}
-                onShare={handleShare}
-              />
+            <div className="flex min-h-0 flex-1 gap-4">
+              {/* The tree needs width; a phone gets the breadcrumb and the
+                  subfolder chips above the list instead. */}
+              {!isMobile && (
+                <aside className="w-60 shrink-0 border-r border-stroke-subtle pr-3 pt-1">
+                  <FolderTree
+                    library={library}
+                    selectedId={currentFolderId}
+                    onSelect={setFolderId}
+                    onCreate={(name, parentId) => void folderOps.createFolder(name, parentId)}
+                    onRename={(id, name) => void folderOps.renameFolder(id, name)}
+                    onDelete={(id) => void handleDeleteFolder(id)}
+                  />
+                </aside>
+              )}
+              <div className="flex min-h-0 flex-1 flex-col">
+                {(currentFolderId !== null || (isMobile && hasFolders)) && (
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <FolderBreadcrumb path={currentPath} onNavigate={setFolderId} />
+                    {isMobile &&
+                      (currentFolderId === null ? childFolders(library, null) : subfolders).map(
+                        (folder) => (
+                          <Button
+                            key={folder.id}
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setFolderId(folder.id)}
+                            aria-label={t('layouts.folders.open', { name: folder.name })}
+                            className="h-7 px-2 text-xs"
+                          >
+                            {folder.name}
+                          </Button>
+                        )
+                      )}
+                  </div>
+                )}
+                <div className="min-h-0 flex-1 overflow-auto">
+                  <LayoutList
+                    entries={shownEntries}
+                    searchEntries={library.entries}
+                    emptyFolder={currentFolderId !== null}
+                    activeLayoutId={activeLayoutId}
+                    viewMode={viewMode}
+                    onViewModeChange={handleViewModeChange}
+                    showViewToggle={!isMobile}
+                    sortBy={sortBy}
+                    onSortChange={handleSortChange}
+                    onSwitch={handleSwitch}
+                    onRename={handleRename}
+                    onDuplicate={handleDuplicate}
+                    onDelete={handleDelete}
+                    onShare={handleShare}
+                    onMoveToFolder={hasFolders ? setMovingId : undefined}
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -354,6 +437,18 @@ function LayoutManagerModalContent({
           )}
         </div>
       </div>
+
+      {movingEntry && (
+        <MoveToFolderDialog
+          key={movingEntry.id}
+          open
+          library={library}
+          name={movingEntry.name}
+          currentFolderId={entryFolderId(library, movingEntry)}
+          onClose={() => setMovingId(null)}
+          onMove={handleMove}
+        />
+      )}
 
       {/* Share Modal - rendered via dependency injection */}
       {renderShareModal?.({

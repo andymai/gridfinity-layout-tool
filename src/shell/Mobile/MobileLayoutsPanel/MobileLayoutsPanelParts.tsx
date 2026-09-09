@@ -30,6 +30,8 @@ export const ICON_PATHS = {
   chevronLeft: 'M15 19l-7-7 7-7',
   chevronRight: 'M9 5l7 7-7 7',
   plus: 'M12 4v16m8-8H4',
+  folder: 'M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z',
+  more: 'M12 5v.01M12 12v.01M12 19v.01',
   close: 'M6 18L18 6M6 6l12 12',
   check: 'M5 13l4 4L19 7',
 } as const;
@@ -109,7 +111,7 @@ export function ShareOptionButton({
   );
 }
 
-type SwipeActionBgColor = 'bg-warning' | 'bg-success' | 'bg-accent' | 'bg-danger';
+type SwipeActionBgColor = 'bg-warning' | 'bg-success' | 'bg-accent' | 'bg-danger' | 'bg-info';
 
 /**
  * Literal `hover:` overrides for each swipe-action badge color.
@@ -125,7 +127,11 @@ const SWIPE_HOVER_BG: Record<SwipeActionBgColor, string> = {
   'bg-success': 'hover:bg-success',
   'bg-accent': 'hover:bg-accent',
   'bg-danger': 'hover:bg-danger',
+  'bg-info': 'hover:bg-info',
 };
+
+/** Width of one swipe action; the panel reveals `count * this` on a full swipe. */
+export const SWIPE_ACTION_WIDTH_PX = 48;
 
 interface SwipeActionButtonProps {
   readonly onClick: () => void;
@@ -146,7 +152,7 @@ export function SwipeActionButton({
     <IconButton
       variant="ghost"
       onClick={onClick}
-      className={`w-15 h-full rounded-none ${bgColor} ${SWIPE_HOVER_BG[bgColor]} text-on-dark hover:text-on-dark`}
+      className={`w-12 h-full rounded-none ${bgColor} ${SWIPE_HOVER_BG[bgColor]} text-on-dark hover:text-on-dark`}
       aria-label={label}
       disabled={disabled}
     >
@@ -160,6 +166,8 @@ interface ActiveLayoutActionsProps {
   readonly onRename: (id: string) => void;
   readonly onShare: (id: string) => void;
   readonly onDuplicate: (id: string) => void;
+  /** Present once the library has folders to move into. */
+  readonly onMove?: (id: string) => void;
 }
 
 export function ActiveLayoutActions({
@@ -167,6 +175,7 @@ export function ActiveLayoutActions({
   onRename,
   onShare,
   onDuplicate,
+  onMove,
 }: ActiveLayoutActionsProps) {
   const t = useTranslation();
 
@@ -174,7 +183,10 @@ export function ActiveLayoutActions({
     { handler: onRename, icon: ICON_PATHS.rename, label: t('common.rename') },
     { handler: onShare, icon: ICON_PATHS.share, label: t('common.share') },
     { handler: onDuplicate, icon: ICON_PATHS.duplicate, label: t('common.duplicate') },
-  ] as const;
+    ...(onMove
+      ? [{ handler: onMove, icon: ICON_PATHS.folder, label: t('layouts.folders.move') }]
+      : []),
+  ];
 
   return (
     <div className="flex items-center gap-2 px-4 pb-4">
@@ -183,10 +195,10 @@ export function ActiveLayoutActions({
           key={action.label}
           variant="secondary"
           onClick={() => action.handler(entryId)}
-          className="flex-1 min-w-0 h-11 px-2"
+          className="h-12 min-w-0 flex-1 flex-col gap-0.5 px-1"
         >
-          <SvgIcon path={action.icon} className="w-4 h-4 mr-1.5 flex-shrink-0" />
-          <span className="truncate">{action.label}</span>
+          <SvgIcon path={action.icon} className="h-4 w-4 flex-shrink-0" />
+          <span className="max-w-full truncate text-xs leading-tight">{action.label}</span>
         </Button>
       ))}
     </div>

@@ -141,6 +141,18 @@ describe('share (create)', () => {
     expect(res._status).toBe(429);
   });
 
+  it('stores the layout without its library folder placement', async () => {
+    mocks.validateShareLayout.mockReturnValue({
+      layout: { name: 'My Drawer', folderId: 'folder_1_abc' },
+    });
+    const res = await handle(layoutBody());
+    expect(res._status).toBe(201);
+    const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as {
+      layout: Record<string, unknown>;
+    };
+    expect(written.layout).toEqual({ name: 'My Drawer' });
+  });
+
   it('400s on a missing or malformed layoutId', async () => {
     const res = await handle(layoutBody({ layoutId: '../evil' }));
     expect(res._status).toBe(400);

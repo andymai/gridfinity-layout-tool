@@ -11,18 +11,26 @@ import { PAYLOAD_KEY as API_LAYOUTS_PAYLOAD_KEY } from '../../../api/sync/layout
 import { PAYLOAD_KEY as API_DESIGNS_PAYLOAD_KEY } from '../../../api/sync/designs/[id].js';
 import { PAYLOAD_KEY as API_BASEPLATES_PAYLOAD_KEY } from '../../../api/sync/baseplates/[id].js';
 import { PAYLOAD_KEY as API_DESIGN_VERSIONS_PAYLOAD_KEY } from '../../../api/sync/designVersions/[id].js';
+import { PAYLOAD_KEY as API_FOLDERS_PAYLOAD_KEY } from '../../../api/sync/folders/[id].js';
 
-const ALL_SYNC_KINDS: readonly SyncKind[] = ['layouts', 'designs', 'baseplates', 'designVersions'];
+const ALL_SYNC_KINDS: readonly SyncKind[] = [
+  'layouts',
+  'designs',
+  'baseplates',
+  'designVersions',
+  'folders',
+];
 
 const API_PAYLOAD_KEY: Record<SyncKind, string> = {
   layouts: API_LAYOUTS_PAYLOAD_KEY,
   designs: API_DESIGNS_PAYLOAD_KEY,
   baseplates: API_BASEPLATES_PAYLOAD_KEY,
   designVersions: API_DESIGN_VERSIONS_PAYLOAD_KEY,
+  folders: API_FOLDERS_PAYLOAD_KEY,
 };
 
 describe('PAYLOAD_KEY', () => {
-  it('has exactly the four known sync kinds as keys, no more, no less', () => {
+  it('has exactly the five known sync kinds as keys, no more, no less', () => {
     const keys = Object.keys(PAYLOAD_KEY);
     expect(keys).toHaveLength(ALL_SYNC_KINDS.length);
     for (const kind of ALL_SYNC_KINDS) {

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
+import { folderAdapter } from '@/core/sync/adapters/folderAdapter';
 // Deep imports, not the feature barrels. This module is statically reachable from
 // the entry (App → Sidebar → UserDock), so pulling either barrel drags its whole
 // feature onto first paint — the baseplate barrel re-exports BaseplatePage and the
@@ -17,6 +18,7 @@ const ADAPTERS = {
   designs: designAdapter,
   baseplates: baseplateAdapter,
   designVersions: designVersionAdapter,
+  folders: folderAdapter,
 };
 
 interface SignOutFlow {

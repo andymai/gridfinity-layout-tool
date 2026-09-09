@@ -18,19 +18,21 @@ export interface LayoutEntry {
   };
   preview: LayoutPreview; // Cached preview data
   cloudShare?: CloudShareInfo; // Cloud sharing metadata (if shared)
-  /** Optional folder ID for organization. null/undefined = root level (future feature) */
+  /** Folder holding this layout; absent or null at the root. */
   folderId?: string | null;
 }
 
 /**
- * Folder definition for layout organization.
- * @future Implement folder creation/management UI
+ * A folder in the layout library. Folders nest through `parentId`; the tree
+ * is the user's rooms, units and drawers, so a layout's place in it is part
+ * of the library and syncs with it.
  */
 export interface LayoutFolder {
   id: string;
-  name: string; // max 32 chars
+  name: string; // max FOLDER_NAME_MAX_LENGTH chars
   color?: string; // optional accent color
-  parentId?: string | null; // for nested folders (future)
+  /** Parent folder; absent or null at the root. */
+  parentId?: string | null;
   createdAt: number;
   modifiedAt: number;
 }
@@ -46,6 +48,6 @@ export interface LayoutLibrary {
     authorName?: string; // Default author name for new layouts
   };
   entries: LayoutEntry[]; // All layout entries (metadata only)
-  /** Folder definitions for layout organization (future feature) */
+  /** Folder tree the entries are filed into; absent on libraries that never made one. */
   folders?: LayoutFolder[];
 }

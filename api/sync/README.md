@@ -6,20 +6,23 @@ Server endpoints for the multi-device sync feature. Stores per-user layouts and 
 
 ## Endpoints
 
-| Endpoint                        | Method | Rate Limit | Purpose                                          |
-| ------------------------------- | ------ | ---------- | ------------------------------------------------ |
-| `/api/sync/layouts/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                 |
-| `/api/sync/layouts/[id]`        | PUT    | 60/min     | LWW write; 409 stale-write, 410 stale-resurrect  |
-| `/api/sync/layouts/[id]`        | DELETE | 60/min     | Tombstone + blob delete                          |
-| `/api/sync/designs/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                 |
-| `/api/sync/designs/[id]`        | PUT    | 60/min     | LWW write; reuses designer-payload validator     |
-| `/api/sync/designs/[id]`        | DELETE | 60/min     | Tombstone + blob delete                          |
-| `/api/sync/designVersions/[id]` | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                 |
-| `/api/sync/designVersions/[id]` | PUT    | 60/min     | LWW write; reuses the designer-payload validator |
-| `/api/sync/designVersions/[id]` | DELETE | 60/min     | Tombstone + blob delete                          |
-| `/api/sync/manifest`            | GET    | 240/min    | Full per-user index + `If-Modified-Since` 304    |
-| `/api/sync/export`              | GET    | 240/min    | ZIP of all live items + manifest.json            |
-| `/api/sync/account`             | DELETE | 60/min     | Cascade-delete sessions + KV + blobs             |
+| Endpoint                        | Method | Rate Limit | Purpose                                            |
+| ------------------------------- | ------ | ---------- | -------------------------------------------------- |
+| `/api/sync/layouts/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                   |
+| `/api/sync/layouts/[id]`        | PUT    | 60/min     | LWW write; 409 stale-write, 410 stale-resurrect    |
+| `/api/sync/layouts/[id]`        | DELETE | 60/min     | Tombstone + blob delete                            |
+| `/api/sync/designs/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                   |
+| `/api/sync/designs/[id]`        | PUT    | 60/min     | LWW write; reuses designer-payload validator       |
+| `/api/sync/designs/[id]`        | DELETE | 60/min     | Tombstone + blob delete                            |
+| `/api/sync/designVersions/[id]` | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                   |
+| `/api/sync/designVersions/[id]` | PUT    | 60/min     | LWW write; reuses the designer-payload validator   |
+| `/api/sync/designVersions/[id]` | DELETE | 60/min     | Tombstone + blob delete                            |
+| `/api/sync/folders/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                   |
+| `/api/sync/folders/[id]`        | PUT    | 60/min     | LWW write; `{ name, parentId, color?, createdAt }` |
+| `/api/sync/folders/[id]`        | DELETE | 60/min     | Tombstone + blob delete                            |
+| `/api/sync/manifest`            | GET    | 240/min    | Full per-user index + `If-Modified-Since` 304      |
+| `/api/sync/export`              | GET    | 240/min    | ZIP of all live items + manifest.json              |
+| `/api/sync/account`             | DELETE | 60/min     | Cascade-delete sessions + KV + blobs               |
 
 Rate limits are keyed by `userId`, not IP — each authenticated user gets their own budget.
 
@@ -76,6 +79,14 @@ use `CONSTRAINTS.MAX_PAYLOAD_BYTES` (100 KB, measured on
 subset of the request body, not the full HTTP payload — its only job is to gate
 the validator's workload.
 
+### Folders
+
+A layout-library folder is `{ name, parentId, color?, createdAt }`. Which layouts
+sit in it travels on each layout's own envelope as `folderId`, so moving a layout
+re-pushes the layout and two devices filing into one folder never conflict on
+the folder. A `parentId` is not checked against the index: a parent missing on
+the reading device reads as the root there.
+
 ### Design versions
 
 `content` travels **uncompressed**, unlike the LZ string the client keeps in
@@ -109,6 +120,7 @@ Every write supplies a `modifiedAt` (ms epoch) representing the client's view of
 | Layouts bytes | 10 MB per user |
 | Designs count | 100 per user   |
 | Designs bytes | 10 MB per user |
+| Folders count | 200 per user   |
 
 Tombstones don't count. Quotas are independent per kind. Concurrent writes can briefly exceed by one item — caps are soft ceilings at this scale, not hard invariants.
 
@@ -121,7 +133,7 @@ The existing share endpoints (`/api/share`) run `filterLayoutContent` because sh
 `DELETE /api/sync/account` runs in this order:
 
 1. `SMEMBERS users:{uid}:sessions` → `DEL session:{token}` for each
-2. `HKEYS users:{uid}:index:{layouts|designs}` → `del()` each blob
+2. `HKEYS users:{uid}:index:{layouts|designs|baseplates|designVersions|folders}` → `del()` each blob
 3. Release the Ko-fi supporter link and pull the public badge (`unlinkSupporterAccount`)
 4. `DEL users:{uid}:*` (indexes, profile, sessions set, indexUpdatedAt, tombstoneSweptAt)
 5. Clear session cookie on responding device

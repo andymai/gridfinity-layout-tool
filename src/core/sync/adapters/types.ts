@@ -163,10 +163,23 @@ export interface DesignVersionPayload {
   pinned?: boolean;
 }
 
+/**
+ * A folder in the layout library. Membership is not here: each layout carries
+ * its own `folderId` on the wire, so moving a layout re-pushes the layout and
+ * two devices filing different layouts into one folder never collide on it.
+ */
+export interface LayoutFolderPayload {
+  name: string;
+  parentId: string | null;
+  color?: string;
+  createdAt: number;
+}
+
 export type LayoutAdapter = SyncAdapter<Layout>;
 export type DesignAdapter = SyncAdapter<DesignSyncPayload>;
 export type BaseplateAdapter = SyncAdapter<BaseplatePayload>;
 export type DesignVersionAdapter = SyncAdapter<DesignVersionPayload>;
+export type FolderAdapter = SyncAdapter<LayoutFolderPayload>;
 
 /**
  * All adapters bundled together — what the engine takes at start time.
@@ -183,6 +196,7 @@ export interface SyncAdapters {
   designs: DesignAdapter;
   baseplates: BaseplateAdapter;
   designVersions: DesignVersionAdapter;
+  folders: FolderAdapter;
 }
 
 export type SyncKind = keyof SyncAdapters;

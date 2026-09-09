@@ -2,7 +2,7 @@ import { deleteAccount as apiDeleteAccount } from './session/sessionApi';
 import { stop as stopEngine } from './engine';
 import { clearAll as clearOutbox } from './outbox';
 import { clearLastSignedInUserId } from './claim';
-import type { SyncAdapters } from './adapters/types';
+import type { SyncAdapters, SyncKind } from './adapters/types';
 
 export type DeleteAccountConfirmResult = 'confirm' | 'cancel';
 export type DeleteAccountConfirmPrompt = (input: {
@@ -56,10 +56,10 @@ export async function runDeleteAccount(ctx: DeleteAccountContext): Promise<Delet
 }
 
 async function countLocalItems(adapters: SyncAdapters): Promise<number> {
-  const [layouts, designs, baseplates] = await Promise.all([
-    adapters.layouts.list(),
-    adapters.designs.list(),
-    adapters.baseplates.list(),
-  ]);
-  return layouts.length + designs.length + baseplates.length;
+  // Every kind, as the sign-out flow counts: a kind missed here under-reports
+  // what stays on the device.
+  const lists = await Promise.all(
+    (Object.keys(adapters) as SyncKind[]).map((kind) => adapters[kind].list())
+  );
+  return lists.reduce((total, items) => total + items.length, 0);
 }

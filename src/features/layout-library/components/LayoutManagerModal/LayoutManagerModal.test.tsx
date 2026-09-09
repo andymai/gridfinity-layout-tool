@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type * as Storage from '@/core/storage';
 import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { LayoutManagerModal } from '@/features/layout-library/components/LayoutManagerModal';
 import { useLibraryStore } from '@/core/store/library';
@@ -11,7 +12,10 @@ import type { LayoutLibrary, LayoutEntry } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
 // Mock the storage module
-vi.mock('@/core/storage', () => {
+vi.mock('@/core/storage', async (importOriginal) => {
+  // The folder helpers are pure and run for real; everything that touches
+  // storage stays mocked below.
+  const actual = await importOriginal<typeof Storage>();
   const mockPreview = {
     drawerWidth: 10,
     drawerDepth: 8,
@@ -22,13 +26,14 @@ vi.mock('@/core/storage', () => {
   };
 
   return {
+    ...actual,
     // Storage functions
     saveLayoutSync: vi.fn(),
     saveLayoutAsync: vi.fn().mockResolvedValue(undefined),
     loadLayoutSync: vi.fn(),
     loadLayoutAsync: vi.fn(),
     deleteLayoutSync: vi.fn(),
-    saveLibrary: vi.fn(),
+    saveLibrary: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
     computeLayoutPreview: vi.fn(() => mockPreview),
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
     downloadLayoutAsFile: vi.fn(),
@@ -712,5 +717,131 @@ describe('LayoutManagerModal Accessibility', () => {
 
       expect(mockOnClose).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('LayoutManagerModal folders', () => {
+  const study = {
+    id: 'folder_1_study',
+    name: 'Study',
+    parentId: null,
+    createdAt: 1,
+    modifiedAt: 1,
+  };
+  const desk = {
+    id: 'folder_2_desk',
+    name: 'Desk',
+    parentId: study.id,
+    createdAt: 1,
+    modifiedAt: 1,
+  };
+
+  function seed(): void {
+    const entries = [
+      createTestEntry(layoutId('layout-1'), 'Kitchen'),
+      { ...createTestEntry(layoutId('layout-2'), 'Top drawer'), folderId: desk.id },
+      { ...createTestEntry(layoutId('layout-3'), 'Pens'), folderId: study.id },
+    ];
+    useLibraryStore.setState({
+      library: { ...createTestLibrary(entries), folders: [study, desk] },
+      isLoaded: true,
+    });
+    useLayoutStore.setState({
+      layout: createDefaultLayout(),
+      activeLayoutId: layoutId('layout-1'),
+    });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    seed();
+  });
+
+  it('shows every layout at the root and filters to a folder from the tree', () => {
+    render(<LayoutManagerModal isOpen onClose={() => {}} />);
+    const list = screen.getByRole('listbox', { name: 'Available layouts' });
+    expect(within(list).getAllByRole('option')).toHaveLength(3);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open folder Study' }));
+    expect(
+      within(screen.getByRole('listbox', { name: 'Available layouts' })).getAllByRole('option')
+    ).toHaveLength(1);
+    expect(screen.getByText('Pens')).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Folder path' })).toHaveTextContent('Study');
+  });
+
+  it('searches across every folder while inside one', () => {
+    seed();
+    const more = Array.from({ length: 4 }, (_, i) =>
+      createTestEntry(layoutId(`extra-${i}`), `Extra ${i}`)
+    );
+    const { library } = useLibraryStore.getState();
+    useLibraryStore.setState({ library: { ...library, entries: [...library.entries, ...more] } });
+    render(<LayoutManagerModal isOpen onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open folder Study' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search layouts' }), {
+      target: { value: 'Top' },
+    });
+    expect(screen.getByText('Top drawer')).toBeInTheDocument();
+  });
+
+  it('moves a layout into a folder from its menu', async () => {
+    render(<LayoutManagerModal isOpen onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'More actions for Kitchen' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move to folder' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Desk' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Move' }));
+    await waitFor(() => {
+      const moved = useLibraryStore.getState().library.entries.find((e) => e.id === 'layout-1');
+      expect(moved?.folderId).toBe(desk.id);
+    });
+    expect(storage.saveLibrary).toHaveBeenCalled();
+  });
+
+  it('keeps the move dialog inert until the move has saved', async () => {
+    let finish: (() => void) | undefined;
+    vi.mocked(storage.saveLibrary).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () => resolve({ ok: true, value: undefined });
+        })
+    );
+    render(<LayoutManagerModal isOpen onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'More actions for Kitchen' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move to folder' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Desk' }));
+    const move = screen.getByRole('button', { name: 'Move' });
+    fireEvent.click(move);
+    await act(async () => {});
+    expect(move).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    fireEvent.click(move);
+    expect(storage.saveLibrary).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      finish?.();
+    });
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Move' })).toBeNull());
+  });
+
+  it('creates a folder under the selection and falls back to all layouts when the selection is deleted', async () => {
+    render(<LayoutManagerModal isOpen onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open folder Study' }));
+    fireEvent.click(screen.getByRole('button', { name: 'New folder' }));
+    const input = screen.getByRole('textbox', { name: 'Folder name' });
+    fireEvent.change(input, { target: { value: 'Cupboard' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => {
+      expect(useLibraryStore.getState().library.folders?.map((f) => f.name)).toContain('Cupboard');
+    });
+    expect(screen.getByRole('button', { name: 'Open folder Cupboard' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete folder: Study' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete?: Study' }));
+    await waitFor(() => {
+      expect(useLibraryStore.getState().library.folders?.map((f) => f.name)).not.toContain('Study');
+    });
+    expect(
+      within(screen.getByRole('listbox', { name: 'Available layouts' })).getAllByRole('option')
+    ).toHaveLength(3);
   });
 });

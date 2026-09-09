@@ -69,7 +69,11 @@ export const layoutAdapter: LayoutAdapter = {
     for (const entry of library.entries) {
       const payload = await loadLayoutAsync(entry.id);
       if (!payload) continue;
-      items.push({ id: entry.id, payload, modifiedAt: entry.modifiedAt });
+      items.push({
+        id: entry.id,
+        payload: withPlacement(payload, entry),
+        modifiedAt: entry.modifiedAt,
+      });
     }
     return items;
   },
@@ -79,11 +83,13 @@ export const layoutAdapter: LayoutAdapter = {
     if (!entry) return null;
     const payload = await loadLayoutAsync(id);
     if (!payload) return null;
-    return { id, payload, modifiedAt: entry.modifiedAt };
+    return { id, payload: withPlacement(payload, entry), modifiedAt: entry.modifiedAt };
   },
 
   async applyRemote(item: SyncableItem<Layout>): Promise<void> {
-    const layout = normalizeIncomingLayout(item.payload);
+    // The folder rides on the wire only; locally the entry holds it.
+    const { folderId, ...document } = normalizeIncomingLayout(item.payload);
+    const layout: Layout = document;
     const saveResult = await saveLayoutAsync(item.id, layout);
     if (!saveResult.ok) {
       throw new Error(`saveLayoutAsync failed for ${item.id}`);
@@ -105,6 +111,7 @@ export const layoutAdapter: LayoutAdapter = {
                   modifiedAt: item.modifiedAt,
                   name: layout.name || e.name,
                   preview,
+                  folderId: folderId ?? null,
                 }
               : e
           )
@@ -116,6 +123,7 @@ export const layoutAdapter: LayoutAdapter = {
               createdAt: item.modifiedAt,
               modifiedAt: item.modifiedAt,
               preview,
+              folderId: folderId ?? null,
             } satisfies LayoutEntry,
           ];
     const nextLibrary: LayoutLibrary = { ...library, entries: nextEntries };
@@ -179,6 +187,11 @@ export const layoutAdapter: LayoutAdapter = {
     });
   },
 };
+
+/** The entry's folder is authoritative; the stored document may carry a stale one. */
+function withPlacement(payload: Layout, entry: LayoutEntry): Layout {
+  return { ...payload, folderId: entry.folderId ?? null };
+}
 
 function findEntry(library: LayoutLibrary, id: string): LayoutEntry | null {
   return library.entries.find((e) => e.id === id) ?? null;

@@ -12,6 +12,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type * as Validation from '../lib/validation.js';
+import type * as ContentFilter from '../lib/contentFilter.js';
 import { hashToken } from '../lib/shared.js';
 
 const mocks = vi.hoisted(() => ({
@@ -41,12 +43,14 @@ vi.mock('@vercel/blob', () => ({
   del: mocks.del,
 }));
 
-vi.mock('../lib/validation.js', () => ({
+vi.mock('../lib/validation.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof Validation>()),
   validateShareLayout: mocks.validateShareLayout,
   isValidationError: mocks.isValidationError,
 }));
 
-vi.mock('../lib/contentFilter.js', () => ({
+vi.mock('../lib/contentFilter.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof ContentFilter>()),
   filterLayoutContent: mocks.filterLayoutContent,
 }));
 
@@ -238,6 +242,22 @@ describe('share/[id]', () => {
       expect(written.metadata.lastAccessedAt).toBeUndefined();
       expect(written.metadata.createdAt).toBe('2026-01-01T00:00:00.000Z');
       expect(written.metadata.permission).toBe('edit');
+    });
+
+    it('stores a full update without the library folder placement', async () => {
+      primeBlobFetch(shareBlob());
+      mocks.redisGet.mockResolvedValue(correctHash);
+      mocks.validateShareLayout.mockReturnValue({
+        layout: { name: 'Updated', folderId: 'folder_1_abc' },
+      });
+      const res = await handle('PUT', {
+        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+      });
+      expect(res._status).toBe(200);
+      const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as {
+        layout: Record<string, unknown>;
+      };
+      expect(written.layout).toEqual({ name: 'Updated' });
     });
 
     it('full updates validate and content-filter the new layout', async () => {

@@ -15,6 +15,8 @@ export const CONSTRAINTS = {
   LABEL_MAX_LENGTH: 24,
   NOTES_MAX_LENGTH: 256,
   NAME_MAX_LENGTH: 64,
+  FOLDER_NAME_MAX_LENGTH: 32,
+  FOLDERS_MAX: 200,
   QUICK_FILL_MAX_BINS: 2500,
   QUICK_FILL_CONFIRM_THRESHOLD: 100,
   MIN_BIN_HEIGHT: 2, // Minimum bin height in units (1U = base only, no usable cavity)

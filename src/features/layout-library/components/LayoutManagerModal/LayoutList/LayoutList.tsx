@@ -16,6 +16,14 @@ const SEARCH_THRESHOLD = 6;
 
 interface LayoutListProps {
   entries: LayoutEntry[];
+  /**
+   * Every layout, when `entries` is one folder's worth: a search should find a
+   * layout wherever it is filed, and the search box shows once the whole
+   * library is big enough, not once a folder is.
+   */
+  searchEntries?: LayoutEntry[];
+  /** Shown instead of the no-layouts copy when a folder is empty. */
+  emptyFolder?: boolean;
   activeLayoutId: string | null;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
@@ -27,6 +35,7 @@ interface LayoutListProps {
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
   onShare: (id: string) => void;
+  onMoveToFolder?: (id: string) => void;
 }
 
 /**
@@ -34,6 +43,8 @@ interface LayoutListProps {
  */
 export function LayoutList({
   entries,
+  searchEntries,
+  emptyFolder = false,
   activeLayoutId,
   viewMode,
   sortBy,
@@ -42,6 +53,7 @@ export function LayoutList({
   onDuplicate,
   onDelete,
   onShare,
+  onMoveToFolder,
   onViewModeChange,
   showViewToggle,
   onSortChange,
@@ -57,12 +69,13 @@ export function LayoutList({
   const currentLayout = useLayoutStore((state) => state.layout);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
-  const showSearch = entries.length >= SEARCH_THRESHOLD;
+  const searchScope = searchEntries ?? entries;
+  const showSearch = searchScope.length >= SEARCH_THRESHOLD;
 
   // Filter and sort entries based on sortBy option
   const sortedEntries = useMemo(
     () =>
-      [...entries]
+      [...(searchQuery.trim() ? searchScope : entries)]
         .filter((entry) => {
           if (!searchQuery.trim()) return true;
           const query = searchQuery.toLowerCase();
@@ -88,7 +101,7 @@ export function LayoutList({
               return b.modifiedAt - a.modifiedAt;
           }
         }),
-    [entries, searchQuery, activeLayoutId, sortBy]
+    [entries, searchScope, searchQuery, activeLayoutId, sortBy]
   );
 
   // Handle search input change - reset focus to first item
@@ -205,7 +218,7 @@ export function LayoutList({
 
   const handleDuplicate = useCallback(
     (id: string) => {
-      const entry = entries.find((e) => e.id === id);
+      const entry = searchScope.find((e) => e.id === id);
       onDuplicate(id);
       announceToScreenReader(
         t('layouts.announce.duplicated', {
@@ -213,12 +226,12 @@ export function LayoutList({
         })
       );
     },
-    [entries, onDuplicate, announceToScreenReader, t]
+    [searchScope, onDuplicate, announceToScreenReader, t]
   );
 
   const handleDelete = useCallback(
     (id: string) => {
-      const entry = entries.find((e) => e.id === id);
+      const entry = searchScope.find((e) => e.id === id);
       onDelete(id);
       announceToScreenReader(
         t('layouts.announce.deleted', {
@@ -226,7 +239,7 @@ export function LayoutList({
         })
       );
     },
-    [entries, onDelete, announceToScreenReader, t]
+    [searchScope, onDelete, announceToScreenReader, t]
   );
 
   return (
@@ -281,7 +294,27 @@ export function LayoutList({
         </div>
       )}
 
-      {sortedEntries.length === 0 && !searchQuery && (
+      {sortedEntries.length === 0 && !searchQuery && emptyFolder && (
+        <div className="text-center py-12 text-content-tertiary">
+          <svg
+            className="w-12 h-12 mx-auto mb-3 opacity-50"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+            />
+          </svg>
+          <p>{t('layouts.folders.empty')}</p>
+          <p className="text-sm mt-1">{t('layouts.folders.emptyHint')}</p>
+        </div>
+      )}
+
+      {sortedEntries.length === 0 && !searchQuery && !emptyFolder && (
         <div className="text-center py-12 text-content-tertiary">
           <svg
             className="w-12 h-12 mx-auto mb-3 opacity-50"
@@ -307,7 +340,7 @@ export function LayoutList({
           role="listbox"
           tabIndex={0}
           aria-label={t('layouts.availableLayouts')}
-          className="overflow-y-auto min-h-0 [scrollbar-gutter:stable] grid grid-cols-[repeat(auto-fill,minmax(225px,1fr))] gap-3 content-start"
+          className="overflow-y-auto min-h-0 [scrollbar-gutter:stable] grid grid-cols-[repeat(auto-fill,minmax(225px,1fr))] auto-rows-max gap-3 content-start"
           onKeyDown={handleListKeyDown}
         >
           {sortedEntries.map((entry, index) => (
@@ -316,13 +349,14 @@ export function LayoutList({
               entry={entry}
               isActive={entry.id === activeLayoutId}
               isFocused={index === focusedIndex}
-              isOnlyLayout={entries.length <= 1}
+              isOnlyLayout={searchScope.length <= 1}
               onSelect={() => handleSwitch(entry.id)}
               onRename={(newName) => handleRename(entry.id, newName)}
               onDuplicate={() => handleDuplicate(entry.id)}
               onDelete={() => handleDelete(entry.id)}
               onCopyLink={() => onShare(entry.id)}
               onDownload={() => handleDownload(entry)}
+              onMoveToFolder={onMoveToFolder ? () => onMoveToFolder(entry.id) : undefined}
               onFocus={() => setFocusedIndex(index)}
               itemRef={(el) => {
                 if (el) itemRefs.current.set(entry.id, el);
@@ -349,13 +383,14 @@ export function LayoutList({
               entry={entry}
               isActive={entry.id === activeLayoutId}
               isFocused={index === focusedIndex}
-              isOnlyLayout={entries.length <= 1}
+              isOnlyLayout={searchScope.length <= 1}
               onSelect={() => handleSwitch(entry.id)}
               onRename={(newName) => handleRename(entry.id, newName)}
               onDuplicate={() => handleDuplicate(entry.id)}
               onDelete={() => handleDelete(entry.id)}
               onCopyLink={() => onShare(entry.id)}
               onDownload={() => handleDownload(entry)}
+              onMoveToFolder={onMoveToFolder ? () => onMoveToFolder(entry.id) : undefined}
               onFocus={() => setFocusedIndex(index)}
               itemRef={(el) => {
                 if (el) itemRefs.current.set(entry.id, el);
@@ -368,7 +403,7 @@ export function LayoutList({
 
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-stroke text-sm text-content-tertiary flex items-center justify-between">
-        <span>{t('layouts.layoutCount', { count: entries.length })}</span>
+        <span>{t('layouts.layoutCount', { count: sortedEntries.length })}</span>
         <div className="flex items-center gap-2">
           <Select
             value={sortBy}

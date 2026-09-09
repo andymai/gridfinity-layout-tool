@@ -4,6 +4,9 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLayoutSwitcher } from '@/shared/hooks';
+import { useLayoutFolders } from '@/shared/hooks/useLayoutFolders';
+import { childFolders, entriesInFolder, entryFolderId, folderPath } from '@/core/storage';
+import { FolderBreadcrumb, FolderPickList } from '@/features/layout-library';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
@@ -24,7 +27,13 @@ import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation, useFormatting } from '@/i18n';
 import { Button, Input } from '@/design-system';
-import { SvgIcon, ActionSheet, ShareOptionButton, ICON_PATHS } from './MobileLayoutsPanelParts';
+import {
+  SvgIcon,
+  ActionSheet,
+  ShareOptionButton,
+  ICON_PATHS,
+  SWIPE_ACTION_WIDTH_PX,
+} from './MobileLayoutsPanelParts';
 import { LayoutListItem, findEntry } from './MobileLayoutsListItem';
 import { MobileCloudSharePanel } from './MobileCloudSharePanel';
 
@@ -49,6 +58,14 @@ export function MobileLayoutsPanel() {
   const [renameValue, setRenameValue] = useState('');
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  // Drill-down: the root shows the top-level folders and the unfiled layouts.
+  const [folderId, setFolderId] = useState<string | null>(null);
+  const [newFolderName, setNewFolderName] = useState<string | null>(null);
+  const [folderMenuId, setFolderMenuId] = useState<string | null>(null);
+  const [renameFolderId, setRenameFolderId] = useState<string | null>(null);
+  const [renameFolderValue, setRenameFolderValue] = useState('');
+  const [deleteFolderId, setDeleteFolderId] = useState<string | null>(null);
+  const [moveLayoutId, setMoveLayoutId] = useState<string | null>(null);
 
   useEffect(() => {
     if (renameLayoutId && renameInputRef.current) {
@@ -72,8 +89,21 @@ export function MobileLayoutsPanel() {
   const currentLayout = useLayoutStore((state) => state.layout);
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
+  const folderOps = useLayoutFolders();
 
   const entries = library.entries;
+  const hasFolders = folderOps.folders.length > 0;
+  const path = folderPath(library, folderId);
+  // A folder that vanished under the view (deleted here or elsewhere) drops
+  // back to the root rather than an empty, unnamed view.
+  const currentFolderId = folderId === null || path.length > 0 ? folderId : null;
+  const subfolders = childFolders(library, currentFolderId);
+  const shownEntries = entriesInFolder(library, currentFolderId);
+  const folderMenu = folderMenuId ? folderPath(library, folderMenuId).at(-1) : undefined;
+  const folderToDelete = deleteFolderId ? folderPath(library, deleteFolderId).at(-1) : undefined;
+  const movingEntry = moveLayoutId ? findEntry(entries, moveLayoutId) : null;
+  // Rename, share, duplicate, delete, and move once there is somewhere to move to.
+  const swipeRevealPx = (hasFolders ? 5 : 4) * SWIPE_ACTION_WIDTH_PX;
 
   const resetSwipe = useCallback(() => {
     setSwipingId(null);
@@ -82,12 +112,52 @@ export function MobileLayoutsPanel() {
 
   const sortedEntries = useMemo(
     () =>
-      [...entries].sort((a, b) => {
+      [...shownEntries].sort((a, b) => {
         if (a.id === activeLayoutId) return -1;
         if (b.id === activeLayoutId) return 1;
         return b.modifiedAt - a.modifiedAt;
       }),
-    [entries, activeLayoutId]
+    [shownEntries, activeLayoutId]
+  );
+
+  const handleCreateFolder = useCallback(async () => {
+    const name = newFolderName?.trim() ?? '';
+    setNewFolderName(null);
+    if (name === '') return;
+    const created = await folderOps.createFolder(name, currentFolderId);
+    if (created) announceToScreenReader(t('layouts.folders.newFolder'));
+  }, [newFolderName, folderOps, currentFolderId, announceToScreenReader, t]);
+
+  const handleRenameFolderConfirm = useCallback(() => {
+    if (!renameFolderId) return;
+    const name = renameFolderValue.trim();
+    if (name) void folderOps.renameFolder(renameFolderId, name);
+    setRenameFolderId(null);
+    setRenameFolderValue('');
+  }, [renameFolderId, renameFolderValue, folderOps]);
+
+  const confirmDeleteFolder = useCallback(async () => {
+    if (!deleteFolderId) return;
+    const parent = folderPath(library, deleteFolderId).at(-2)?.id ?? null;
+    const inside = path.some((f) => f.id === deleteFolderId);
+    setDeleteFolderId(null);
+    const removed = await folderOps.deleteFolder(deleteFolderId);
+    if (removed && inside) setFolderId(parent);
+  }, [deleteFolderId, library, path, folderOps]);
+
+  const handleMoveLayout = useCallback(
+    async (destination: string | null) => {
+      if (!movingEntry) return;
+      setMoveLayoutId(null);
+      resetSwipe();
+      const moved = await folderOps.moveLayout(layoutId(movingEntry.id), destination);
+      if (!moved) return;
+      const target = destination ? folderPath(library, destination).at(-1)?.name : undefined;
+      announceToScreenReader(
+        target ? t('layouts.folders.movedTo', { name: target }) : t('layouts.folders.movedToRoot')
+      );
+    },
+    [movingEntry, folderOps, library, announceToScreenReader, resetSwipe, t]
   );
 
   const handleSelectLayout = useCallback(
@@ -226,9 +296,11 @@ export function MobileLayoutsPanel() {
     setDeleteLayoutId(null);
   }, [deleteLayoutId, deleteLayout, entries, announceToScreenReader, t]);
 
+  const swipeStartX = useRef(0);
   const handleTouchStart = useCallback(
-    (_e: React.TouchEvent, id: string) => {
+    (e: React.TouchEvent, id: string) => {
       if (id === activeLayoutId) return;
+      swipeStartX.current = e.touches[0].clientX;
       setSwipingId(id);
       setSwipeX(0);
     },
@@ -238,22 +310,20 @@ export function MobileLayoutsPanel() {
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (!swipingId) return;
-      const touch = e.touches[0];
-      const startX = e.currentTarget.getBoundingClientRect().left;
-      const deltaX = touch.clientX - startX - e.currentTarget.clientWidth / 2;
-      setSwipeX(Math.min(0, Math.max(-160, deltaX)));
+      const deltaX = e.touches[0].clientX - swipeStartX.current;
+      setSwipeX(Math.min(0, Math.max(-swipeRevealPx, deltaX)));
     },
-    [swipingId]
+    [swipingId, swipeRevealPx]
   );
 
   const handleTouchEnd = useCallback(() => {
     if (!swipingId) return;
-    if (swipeX < -80) {
-      setSwipeX(-160);
+    if (swipeX < -swipeRevealPx / 2) {
+      setSwipeX(-swipeRevealPx);
     } else {
       resetSwipe();
     }
-  }, [swipingId, swipeX, resetSwipe]);
+  }, [swipingId, swipeX, swipeRevealPx, resetSwipe]);
 
   const layoutToDelete = deleteLayoutId ? findEntry(entries, deleteLayoutId) : null;
 
@@ -266,11 +336,77 @@ export function MobileLayoutsPanel() {
 
   return (
     <div className="pb-4">
-      <div className="text-sm text-content-tertiary mb-3">
-        {entries.length === 1
-          ? t('mobile.layouts.layoutCountOne')
-          : t('mobile.layouts.layoutCount', { count: entries.length })}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="text-sm text-content-tertiary">
+          {entries.length === 1
+            ? t('mobile.layouts.layoutCountOne')
+            : t('mobile.layouts.layoutCount', { count: entries.length })}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setNewFolderName('')}
+          leftIcon={<SvgIcon path={ICON_PATHS.folder} className="w-4 h-4" />}
+          className="h-8 px-2 text-content-secondary"
+        >
+          {t('layouts.folders.newFolder')}
+        </Button>
       </div>
+
+      {hasFolders && (
+        <div className="mb-3">
+          <FolderBreadcrumb path={path} onNavigate={setFolderId} />
+        </div>
+      )}
+
+      {subfolders.length > 0 && (
+        <div className="mb-3 space-y-2">
+          {subfolders.map((folder) => {
+            const count = entriesInFolder(library, folder.id).length;
+            return (
+              <div
+                key={folder.id}
+                className="flex items-stretch overflow-hidden rounded-lg bg-surface-elevated"
+              >
+                <Button
+                  variant="ghost"
+                  onClick={() => setFolderId(folder.id)}
+                  aria-label={t('layouts.folders.open', { name: folder.name })}
+                  className="min-w-0 flex-1 justify-start gap-3 rounded-none p-4 text-left hover:bg-transparent"
+                >
+                  <SvgIcon path={ICON_PATHS.folder} className="w-5 h-5 shrink-0 text-accent" />
+                  <span className="min-w-0 flex-1 truncate text-base font-medium text-content">
+                    {folder.name}
+                  </span>
+                  <span className="shrink-0 text-xs text-content-tertiary">
+                    {count === 1
+                      ? t('layouts.folders.itemCount.one')
+                      : t('layouts.folders.itemCount.other', { count })}
+                  </span>
+                  <SvgIcon
+                    path={ICON_PATHS.chevronRight}
+                    className="w-4 h-4 shrink-0 text-content-disabled"
+                  />
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setFolderMenuId(folder.id)}
+                  aria-label={t('layouts.folders.moreActions', { name: folder.name })}
+                  className="w-12 shrink-0 rounded-none px-0 text-content-tertiary"
+                >
+                  <SvgIcon path={ICON_PATHS.more} className="w-5 h-5" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {currentFolderId !== null && sortedEntries.length === 0 && subfolders.length === 0 && (
+        <div className="mb-3 rounded-lg bg-surface-elevated p-4 text-sm text-content-tertiary">
+          {t('layouts.folders.empty')}
+        </div>
+      )}
 
       <div className="space-y-2">
         {sortedEntries.map((entry) => (
@@ -287,6 +423,7 @@ export function MobileLayoutsPanel() {
             onShare={handleShare}
             onDuplicate={handleDuplicate}
             onDelete={handleDeleteRequest}
+            onMove={hasFolders ? setMoveLayoutId : undefined}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -415,6 +552,144 @@ export function MobileLayoutsPanel() {
               {t('common.rename')}
             </Button>
           </div>
+        </ActionSheet>
+      )}
+
+      {newFolderName !== null && (
+        <ActionSheet onClose={() => setNewFolderName(null)}>
+          <h3 className="text-lg font-semibold text-content mb-4">
+            {t('layouts.folders.newFolder')}
+          </h3>
+          <Input
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void handleCreateFolder();
+              else if (e.key === 'Escape') setNewFolderName(null);
+            }}
+            fullWidth
+            size="lg"
+            className="text-base"
+            placeholder={t('layouts.folders.namePlaceholder')}
+            aria-label={t('layouts.folders.namePlaceholder')}
+            maxLength={32}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
+            autoFocus
+          />
+          <div className="flex gap-2 mt-4">
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => setNewFolderName(null)}
+              className="flex-1 py-3 text-content-secondary bg-surface rounded-lg"
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={() => void handleCreateFolder()}
+              disabled={newFolderName.trim() === ''}
+              className="flex-1 py-3 text-on-dark bg-accent rounded-lg disabled:opacity-50"
+            >
+              {t('layouts.folders.create')}
+            </Button>
+          </div>
+        </ActionSheet>
+      )}
+
+      {folderMenu && (
+        <ActionSheet onClose={() => setFolderMenuId(null)}>
+          <h3 className="text-lg font-semibold text-content mb-4">{folderMenu.name}</h3>
+          <div className="space-y-2">
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => {
+                setRenameFolderValue(folderMenu.name);
+                setRenameFolderId(folderMenu.id);
+                setFolderMenuId(null);
+              }}
+              className="h-12 justify-start"
+            >
+              {t('layouts.folders.rename')}
+            </Button>
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => {
+                setDeleteFolderId(folderMenu.id);
+                setFolderMenuId(null);
+              }}
+              className="h-12 justify-start text-danger"
+            >
+              {t('layouts.folders.delete')}
+            </Button>
+          </div>
+        </ActionSheet>
+      )}
+
+      {renameFolderId && (
+        <ActionSheet onClose={() => setRenameFolderId(null)}>
+          <h3 className="text-lg font-semibold text-content mb-4">{t('layouts.folders.rename')}</h3>
+          <Input
+            value={renameFolderValue}
+            onChange={(e) => setRenameFolderValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleRenameFolderConfirm();
+              else if (e.key === 'Escape') setRenameFolderId(null);
+            }}
+            fullWidth
+            size="lg"
+            className="text-base"
+            placeholder={t('layouts.folders.namePlaceholder')}
+            aria-label={t('layouts.folders.namePlaceholder')}
+            maxLength={32}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
+            autoFocus
+          />
+          <div className="flex gap-2 mt-4">
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => setRenameFolderId(null)}
+              className="flex-1 py-3 text-content-secondary bg-surface rounded-lg"
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={handleRenameFolderConfirm}
+              disabled={!renameFolderValue.trim()}
+              className="flex-1 py-3 text-on-dark bg-accent rounded-lg disabled:opacity-50"
+            >
+              {t('common.rename')}
+            </Button>
+          </div>
+        </ActionSheet>
+      )}
+
+      <ConfirmDialog
+        isOpen={deleteFolderId !== null}
+        title={t('layouts.folders.delete')}
+        message={`${folderToDelete?.name ?? ''}: ${t('layouts.folders.deleteHint')}`}
+        confirmText={t('layouts.folders.delete')}
+        destructive
+        onConfirm={() => void confirmDeleteFolder()}
+        onCancel={() => setDeleteFolderId(null)}
+      />
+
+      {movingEntry && (
+        <ActionSheet onClose={() => setMoveLayoutId(null)}>
+          <h3 className="text-lg font-semibold text-content mb-4">
+            {t('layouts.folders.moveTitle', { name: movingEntry.name })}
+          </h3>
+          <FolderPickList
+            library={library}
+            value={entryFolderId(library, movingEntry)}
+            onPick={(destination) => void handleMoveLayout(destination)}
+          />
         </ActionSheet>
       )}
 

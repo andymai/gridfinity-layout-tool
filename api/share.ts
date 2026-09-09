@@ -4,6 +4,7 @@ import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
 import {
   validateShareLayout,
+  withoutLibraryPlacement,
   isValidationError,
   validateSharedDesigns,
   isSharedDesignsError,
@@ -137,7 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         );
       }
 
-      sharePayload = validationResult.layout;
+      sharePayload = withoutLibraryPlacement(validationResult.layout);
 
       const designsResult = validateSharedDesigns(linkedDesigns);
       if (isSharedDesignsError(designsResult)) {

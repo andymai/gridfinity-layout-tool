@@ -16,6 +16,7 @@ interface LayoutListItemProps {
   onDelete: () => void;
   onCopyLink: () => void;
   onDownload: () => void;
+  onMoveToFolder?: () => void;
   onFocus: () => void;
   itemRef?: (el: HTMLDivElement | null) => void;
 }
@@ -35,6 +36,7 @@ export function LayoutListItem({
   onDelete,
   onCopyLink,
   onDownload,
+  onMoveToFolder,
   onFocus,
   itemRef,
 }: LayoutListItemProps) {
@@ -150,6 +152,7 @@ export function LayoutListItem({
             onRename={startEditing}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
+            onMoveToFolder={onMoveToFolder}
           />
         </div>
       </div>

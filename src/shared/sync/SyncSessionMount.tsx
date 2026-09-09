@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
+import { folderAdapter } from '@/core/sync/adapters/folderAdapter';
 import { designAdapter } from '@/features/bin-designer';
 import { designVersionAdapter } from '@/features/bin-designer/sync/designVersionAdapter';
 import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
@@ -33,6 +34,7 @@ export function SyncSessionMount() {
       designs: designAdapter,
       baseplates: baseplateAdapter,
       designVersions: designVersionAdapter,
+      folders: folderAdapter,
     }),
     []
   );

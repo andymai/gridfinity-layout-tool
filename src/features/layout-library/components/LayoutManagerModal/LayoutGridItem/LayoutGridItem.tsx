@@ -15,6 +15,7 @@ interface LayoutGridItemProps {
   onDelete: () => void;
   onCopyLink: () => void;
   onDownload: () => void;
+  onMoveToFolder?: () => void;
   onFocus: () => void;
   itemRef?: (el: HTMLDivElement | null) => void;
 }
@@ -34,6 +35,7 @@ export function LayoutGridItem({
   onDelete,
   onCopyLink,
   onDownload,
+  onMoveToFolder,
   onFocus,
   itemRef,
 }: LayoutGridItemProps) {
@@ -139,6 +141,7 @@ export function LayoutGridItem({
             onRename={startEditing}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
+            onMoveToFolder={onMoveToFolder}
           />
         </div>
 
