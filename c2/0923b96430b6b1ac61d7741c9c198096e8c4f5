@@ -1,0 +1,105 @@
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/features/generation/worker/generators/patterns/trianglePattern.ts
+  s_24b1f7fd65ccc8::t_7a8655c91c2d22 24,114-115,118-121
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.test.ts
+  s_24b1f7fd65ccc8::t_0c789993d7aa82 244-276
+src/features/bin-designer/constants/paramMigration.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1500,1513-1522
+  s_24b1f7fd65ccc8::t_dc0f141c45ab39 34-35
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_24b1f7fd65ccc8::t_7a8655c91c2d22 69-82
+  s_24b1f7fd65ccc8::t_dc0f141c45ab39 8-15
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 551
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/features/generation/worker/generators/patterns/slotPattern.ts
+  s_24b1f7fd65ccc8::t_7a8655c91c2d22 18,84-88,91
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_24b1f7fd65ccc8::t_7a8655c91c2d22 11-13,71-82,282,304
+src/features/generation/worker/generators/patterns/patternScale.test.ts
+  s_24b1f7fd65ccc8::t_0c789993d7aa82 8,56-71
+  s_24b1f7fd65ccc8::t_0d187319f4229a 72
+src/features/generation/worker/generators/dividerPatternBuilder.ts
+  s_24b1f7fd65ccc8::t_dc0f141c45ab39 338-339,360,364-369,404,406-409
+src/features/generation/worker/generators/patterns/registry.test.ts
+  s_24b1f7fd65ccc8::t_0c789993d7aa82 1-31
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/features/generation/worker/generators/wallPatternBuilder.cache.test.ts
+  s_24b1f7fd65ccc8::t_0c789993d7aa82 97-111
+src/features/bin-designer/types/walls.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 121-132,149-156
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/i18n/locales/en.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 3183-3185
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_24b1f7fd65ccc8::t_0c789993d7aa82 835-849
+src/features/generation/worker/generators/scenarios/wallPatterns.ts
+  s_24b1f7fd65ccc8::t_0c789993d7aa82 124-150,153
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/features/bin-designer/utils/dividerPatternFit.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 103-104
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/shared/generation/wallPatternMetrics.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 27-28,30,55-56,59
+src/features/generation/worker/generators/wallPatterns.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 383-388
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_24b1f7fd65ccc8::t_82f9cb782755b4 492-513
+src/features/bin-designer/utils/printEstimates.ts
+  s_24b1f7fd65ccc8::t_dc0f141c45ab39 799-800,803-806,815-836
+  s_24b1f7fd65ccc8::t_c8512d0de16a12 837-838
+src/features/generation/worker/generators/patterns/honeycombPattern.test.ts
+  s_24b1f7fd65ccc8::t_0c789993d7aa82 123-139
+src/features/generation/worker/generators/patterns/honeycombPattern.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 25,104-105,110
+src/shared/schema/binDesignKeys.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 220-227
+src/features/generation/worker/generators/patterns/diamondPattern.ts
+  s_24b1f7fd65ccc8::t_7a8655c91c2d22 17,67-71,73-76
+src/features/generation/worker/generators/patterns/patternScale.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 17-32
+src/features/generation/worker/generators/patterns/roundPattern.ts
+  s_24b1f7fd65ccc8::t_7a8655c91c2d22 16,66-70,72-75
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 1975-1976
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.test.tsx
+  s_24b1f7fd65ccc8::t_0c789993d7aa82 41-58
+src/features/generation/worker/generators/patterns/registry.ts
+  s_24b1f7fd65ccc8::t_1b08bb4a31acab 35-39,105-106,112-113,121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c20923b96430b6b1ac61d7741c9c198096e8c4f5",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
