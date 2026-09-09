@@ -1,0 +1,114 @@
+src/core/storage/libraryFolders.ts
+  s_24b1f7fd65ccc8::t_f37ee93a1a1b27 201-202
+  s_24b1f7fd65ccc8::t_1946ed0a36d25a 74-92,162,182-200,205,207,209-216
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+api/sync/lib/resourceHandler.ts
+  s_24b1f7fd65ccc8::t_31e04b7f3bf21a 62,116
+src/features/layout-library/components/LayoutManagerModal/FolderPickList/FolderPickList.tsx
+  s_24b1f7fd65ccc8::t_edc3b76e7ca1ef 1-2,32-39,42,44-50,52-77,89-93,98-99
+  s_24b1f7fd65ccc8::t_db3f8e95f066ec 51,101
+api/lib/validation.ts
+  s_24b1f7fd65ccc8::t_5330c479e17a60 163,167-170
+  s_24b1f7fd65ccc8::t_f37ee93a1a1b27 164-166
+src/core/sync/adapters/folderAdapter.ts
+  s_24b1f7fd65ccc8::t_1946ed0a36d25a 4,80,95-97,100-103
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+api/share/[id].ts
+  s_24b1f7fd65ccc8::t_5330c479e17a60 6,257
+src/core/sync/adapters/folderAdapter.test.ts
+  s_24b1f7fd65ccc8::t_f96e0d452681df 108-124,150,152-153,158-159
+api/sync/folders/[id].test.ts
+  s_24b1f7fd65ccc8::t_f37ee93a1a1b27 192-197,200-205
+  s_24b1f7fd65ccc8::t_6fa4f82103606d 191,198-199,206
+src/shared/hooks/useLayoutFolders.ts
+  s_24b1f7fd65ccc8::t_6fa4f82103606d 43,48-49
+  s_24b1f7fd65ccc8::t_edc3b76e7ca1ef 47,50-52
+src/features/layout-library/components/LayoutManagerModal/FolderPickList/FolderPickList.test.tsx
+  s_24b1f7fd65ccc8::t_edc3b76e7ca1ef 47-48,52,58,60-61,63,65-67
+  s_24b1f7fd65ccc8::t_f37ee93a1a1b27 49-51,53-55
+  s_24b1f7fd65ccc8::t_26a56fdc756af7 56-57,59,62,64
+src/shared/hooks/useLayoutFolders.test.ts
+  s_24b1f7fd65ccc8::t_6fa4f82103606d 105
+  s_24b1f7fd65ccc8::t_edc3b76e7ca1ef 93-104,106-107
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.tsx
+  s_24b1f7fd65ccc8::t_a7d1e5643492cf 221,229,234,242
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+src/core/sync/deleteAccount.ts
+  s_24b1f7fd65ccc8::t_a7d1e5643492cf 5,59-64
+api/sync/account.ts
+  s_24b1f7fd65ccc8::t_a7d1e5643492cf 54-55
+src/i18n/locales/en.ts
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 251
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+src/features/layout-library/components/LayoutManagerModal/MoveToFolderDialog/MoveToFolderDialog.test.tsx
+  s_24b1f7fd65ccc8::t_5330c479e17a60 2,45-71,80-81,90-93
+  s_24b1f7fd65ccc8::t_f37ee93a1a1b27 72-79,82-89
+  s_24b1f7fd65ccc8::t_ea3d109fbb8102 94
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+api/share.ts
+  s_24b1f7fd65ccc8::t_5330c479e17a60 7,141
+src/core/storage/libraryFolders.test.ts
+  s_24b1f7fd65ccc8::t_d1127a3b9f9a7c 14,17,205-236
+src/features/layout-library/components/LayoutManagerModal/MoveToFolderDialog/MoveToFolderDialog.tsx
+  s_24b1f7fd65ccc8::t_5330c479e17a60 17-18,36-51,68,73-75
+api/share/[id].test.ts
+  s_24b1f7fd65ccc8::t_fc722414561a2d 247-262
+  s_24b1f7fd65ccc8::t_b211bd05748b3a 15-16,46-47,52-53
+src/core/storage/index.ts
+  s_24b1f7fd65ccc8::t_1946ed0a36d25a 151,155
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+api/sync/README.md
+  s_24b1f7fd65ccc8::t_a7d1e5643492cf 136
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanelParts.tsx
+  s_24b1f7fd65ccc8::t_a7d1e5643492cf 133-135,155
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.test.tsx
+  s_24b1f7fd65ccc8::t_31e04b7f3bf21a 2,83-106
+  s_24b1f7fd65ccc8::t_6f2b199dd4d66b 107-117
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+  s_24b1f7fd65ccc8::t_a7d1e5643492cf 30-36,105-106,314,316,321-322,326
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+api/sync/manifest.ts
+  s_24b1f7fd65ccc8::t_a7d1e5643492cf 15
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+api/share.test.ts
+  s_24b1f7fd65ccc8::t_fc722414561a2d 144-155
+api/sync/folders/[id].ts
+  s_24b1f7fd65ccc8::t_f37ee93a1a1b27 66,68-69,78-86
+  s_24b1f7fd65ccc8::t_31e04b7f3bf21a 44
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_97f5d5bd45e454 4219
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e6ad7b3061984d9b6a0663b31c0adb1c6ada8708",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
