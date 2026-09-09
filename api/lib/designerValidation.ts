@@ -360,7 +360,7 @@ function validateBase(base: unknown): string | null {
 
 /**
  * Validate `base.trayBottom`. Mirrors `TrayBottomConfig` in
- * `src/features/bin-designer/types/base.ts`. Every field is required: unlike
+ * `src/features/bin-designer/types/base.ts`. Every field except the optional `floorAtBed` is required: unlike
  * `lid`, this object has no legacy payloads to tolerate — `migrateParams` only
  * ever writes it whole.
  */

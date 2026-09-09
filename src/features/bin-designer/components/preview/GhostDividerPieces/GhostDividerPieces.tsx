@@ -179,7 +179,7 @@ export function GhostDividerPieces() {
       cellMask,
     })
   );
-  const floorZ = baseFloorZ(base, heightUnitMm, lid) + seatZ;
+  const floorZ = baseFloorZ(base, heightUnitMm, lid, cellMask) + seatZ;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;

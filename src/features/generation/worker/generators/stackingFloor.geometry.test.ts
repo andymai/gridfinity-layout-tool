@@ -13,11 +13,13 @@ import {
   assertNoDegenerateTriangles,
   boundingBox,
   verticalSolidSpans,
+  columnCrossings,
 } from './__kernel-tests__/meshAssertions';
 import { deriveDimensions, createInitialContext } from './pipeline/context';
 import { resolveTrayBottomInputs } from './trayBottomInputs';
 import { retentionSeatPlanes } from './retentionMagnetGeometry';
-import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
+import { buildFullMask } from '@/shared/utils/cellMask';
+import { binDimensions, baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import { scoopRampsFeature } from './scoopRampBuilder';
@@ -53,6 +55,43 @@ function paramsFor(depth = 2) {
 }
 
 describe('stacking body', () => {
+  it.each(['rectangle', 'full mask', 'partial mask'])(
+    'keeps UI floor coordinates aligned with the worker for %s and independent lid settings',
+    (outline) => {
+      const p = { ...paramsFor(2), width: 2, depth: 2 };
+      const full = buildFullMask(2, 2);
+      const cellMask =
+        outline === 'rectangle'
+          ? undefined
+          : outline === 'full mask'
+            ? full
+            : { ...full, cells: full.cells.map((cell, i) => (i === 0 ? (0 as const) : cell)) };
+      for (const topThicknessMm of [1, 5]) {
+        const params = {
+          ...p,
+          cellMask,
+          lid: {
+            ...p.lid,
+            topThicknessMm,
+            extraHeightMm: 8,
+            tray: { ...p.lid.tray, enabled: true, depthMm: 5 },
+          },
+          base: {
+            ...p.base,
+            trayBottom: {
+              ...p.base.trayBottom,
+              retentionMagnet: { diameter: 6, depth: 6, edgeMagnets: 0 },
+            },
+          },
+        };
+        expect(binDimensions(params).floorZ).toBeCloseTo(
+          deriveDimensions(params, true).baseOffsetZ,
+          6
+        );
+      }
+    }
+  );
+
   it.each([2, 6])(
     'joins all four magnet corners to the walls with straight tangents (%s mm pockets)',
     (depth) => {
@@ -161,9 +200,10 @@ describe('stacking body', () => {
     }
     // The preview path must cut the same floor as fused export geometry.
     const preview = generateBin(patterned, undefined, false);
-    expect(
-      verticalSolidSpans(preview, positions[0].x + 0.1, positions[0].y + 0.1)[0][0]
-    ).toBeCloseTo(2, 3);
+    expect(columnCrossings(preview, positions[0].x + 0.1, positions[0].y + 0.1)[0]).toBeCloseTo(
+      2,
+      3
+    );
   });
 
   it.each([

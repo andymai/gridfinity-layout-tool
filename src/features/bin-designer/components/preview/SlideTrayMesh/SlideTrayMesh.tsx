@@ -49,7 +49,7 @@ export function SlideTrayMesh({
   const { slideTrayMesh, floorZ } = useDesignerStore(
     useShallow((s) => ({
       slideTrayMesh: s.generation.mesh?.slideTrayMesh ?? null,
-      floorZ: baseFloorZ(s.params.base, s.params.heightUnitMm, s.params.lid),
+      floorZ: baseFloorZ(s.params.base, s.params.heightUnitMm, s.params.lid, s.params.cellMask),
     }))
   );
 

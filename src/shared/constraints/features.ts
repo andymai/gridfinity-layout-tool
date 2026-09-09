@@ -6,12 +6,12 @@
  * This is the foundation for the constraint engine's resolution logic.
  */
 
-import { DEFAULT_FLOOR_PATTERN_CONFIG } from '@/shared/types/bin';
 import {
+  DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_TRAY_BOTTOM,
   hasMountingMagnets,
   isStackingBase,
-} from '@/features/bin-designer/types/base';
+} from '@/shared/types/bin';
 import type { FeatureKey, FeatureManifest } from './types';
 
 /**

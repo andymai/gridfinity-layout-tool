@@ -130,6 +130,7 @@ export {
   DEFAULT_TRAY_BOTTOM,
   resolveTrayBottomConfig,
   isStackingBase,
+  hasMountingMagnets,
   DEFAULT_LID_CONFIG,
   DEFAULT_LID_SLIDE_CONFIG,
   LID_SLIDE_PLACEMENTS,

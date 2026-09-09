@@ -28,7 +28,7 @@ import type { LidRailSide } from '@/features/bin-designer/types/lid';
 /** The params {@link binLipTopWorldZ} reads — narrow so partial callers fit. */
 export type LidSeatSource = Pick<
   BinParams,
-  'height' | 'heightUnitMm' | 'base' | 'lid' | 'extraWallHeightMm'
+  'height' | 'heightUnitMm' | 'base' | 'lid' | 'extraWallHeightMm' | 'cellMask'
 >;
 
 // The anchor formulas now live in `@/features/bin-designer/types/lid` — a
@@ -75,7 +75,7 @@ const LIP_ABOVE_WALL_MM = GRIDFINITY.LIP_HEIGHT;
 export function binWallTopWorldZ(params: LidSeatSource): number {
   const { height, heightUnitMm, base, lid } = params;
   const wallTop =
-    baseFloorZ(base, heightUnitMm, lid) +
+    baseFloorZ(base, heightUnitMm, lid, params.cellMask) +
     baseWallHeight(base, height * heightUnitMm) +
     Math.max(0, params.extraWallHeightMm ?? 0);
   return wallTop + PREVIEW_Z_OFFSET;

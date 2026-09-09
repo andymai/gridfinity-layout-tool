@@ -82,7 +82,7 @@ export function GhostLabelTabs() {
   // top is at totalH in both cases (the socket extends below the floor).
   // Mirrors `binDimensions`.
   const wallHeightMm = baseWallHeight(base, totalH);
-  const floorZ = baseFloorZ(base, heightUnitMm, lid);
+  const floorZ = baseFloorZ(base, heightUnitMm, lid, params.cellMask);
   // World Z of the shelf TOP — the same resolution the BREP builder runs
   // (interior ceiling under the lip taper, stacking relief for click-in
   // sockets, an explicit `label.height` capped at that plane), so the ghost

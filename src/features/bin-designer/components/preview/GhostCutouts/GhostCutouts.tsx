@@ -72,7 +72,7 @@ export function GhostCutouts() {
   const isSolid = base.solid;
   const totalH = height * heightUnitMm;
   const wallHeight = baseWallHeight(base, totalH);
-  const floorZ = baseFloorZ(base, heightUnitMm, lid);
+  const floorZ = baseFloorZ(base, heightUnitMm, lid, cellMask);
   // The worker cuts from the solid FILL surface, which the global top offset
   // lowers below the rim — and skips every cutout when nothing of it remains.
   const fillSurface = wallHeight - cutoutConfig.topOffset;
