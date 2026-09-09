@@ -2160,7 +2160,7 @@ const en: Record<string, string> = {
     'A lug reaching out past the bin’s face, in the lid’s own plane. Easiest to grab with gloves on.',
   'binDesigner.lid.slide.pull.catch': 'Finger catch',
   'binDesigner.lid.slide.pull.catchHint':
-    'A moveable section of the stacking rim on the lid’s outer edge. It completes the rim when shut, and gives you a broad pull to open it.',
+    'A movable section of the stacking rim on the lid’s outer edge. It completes the rim when shut, and gives you a broad pull to open it.',
   'binDesigner.lid.slide.detent': 'Click shut',
   'binDesigner.lid.slide.detentHint':
     'A small ramp on each runner that the lid clicks past, so a knock or a tipped drawer can’t slide it open. You can still pull it straight out.',
