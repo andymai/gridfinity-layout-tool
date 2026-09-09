@@ -479,11 +479,12 @@ estimates), and the source file name.
 ## Gotchas
 
 1. **Compartment cells must form ONE CONNECTED region, not a rectangle** — `isContiguousSelection()` is the invariant (`mergeCells` and `validateCompartmentGrid` enforce it); two islands under one id would print as two pockets sharing a label. A merged L/S/T/U is valid geometry, since divider walls fall out of the boundaries between differing ids. Anything that positions itself from `getCompartmentBounds` must gate on `isRectangularCompartment()` — scoop ramps, label tabs and divider tilt already do, because on an L the bounding box crosses the notch into a neighbour. Bento's `mergeBackground` mode applies the same idea to leftover grid: connected runs collapse to one pocket, marked in `backgroundIds` so a multi-cell region nobody drew still reads as background. A stashed shape keeps its footprint in `StashedCompartment.cells`, row-major with row 0 at the FRONT of the bin — omitted means the plain `w × h` rectangle, which is what keeps a rectangular entry serializing byte-identically to before the field existed (and its `communityParamsFingerprint` stable). Every path that copies a compartment — move, clone, stash, restore, migration — has to carry `cells` and its row order across, or a merged L comes back as a rectangle or mirrored front-to-back
-2. **Min compartment size is 5mm** - smaller cells skip wall generation
-3. **Auto-save only for saved designs** - "Untitled" bins don't persist
-4. **Half-cells get no magnet holes** - only full 1×1 unit cells
-5. **Solid style skips shell** - `buildBinBox`'s `solid` flag bypasses `.shell()`, so wallThickness is irrelevant
-6. **Label tabs skip solid bins** - both generation and ghost overlay guard against `style === 'solid'`. Tabs default to `edges: 'back'` (legacy); `'front'` and `'both'` enable tuck-under ledges (#1898). `inset` (mm) slides the tab inward from its anchor wall for shorter coverage. In `'both'` mode the front tab silently drops when `2·depth + 2·inset > compartmentDepth` and the panel surfaces an inline warning.
+2. **`compartments.floorRaises` is one more id-keyed parallel array** — remapped through `remapFloorRaises` in every mutation like `compartmentTexts`, absent when empty, and clamped at generation so `MIN_RAISED_CAVITY_MM` of pocket survives; the panel's ceiling (`maxCompartmentFloorRaiseMm`) measures from the same lip-taper-adjusted interior height, so the slider never names a raise the slab then loses.
+3. **Min compartment size is 5mm** - smaller cells skip wall generation
+4. **Auto-save only for saved designs** - "Untitled" bins don't persist
+5. **Half-cells get no magnet holes** - only full 1×1 unit cells
+6. **Solid style skips shell** - `buildBinBox`'s `solid` flag bypasses `.shell()`, so wallThickness is irrelevant
+7. **Label tabs skip solid bins** - both generation and ghost overlay guard against `style === 'solid'`. Tabs default to `edges: 'back'` (legacy); `'front'` and `'both'` enable tuck-under ledges (#1898). `inset` (mm) slides the tab inward from its anchor wall for shorter coverage. In `'both'` mode the front tab silently drops when `2·depth + 2·inset > compartmentDepth` and the panel surfaces an inline warning.
    - **Swappable-label socket mode**: `label.mode: 'socket'` replaces printed-in
      text with a click-in pocket for standard interchange label plates (dims in
      `@/shared/constants/labelPlates`, Cullenect v2-compatible). Fit math is shared
@@ -551,35 +552,35 @@ estimates), and the source file name.
        the plate set plus `tabsWithoutText`, a DESIGN-level fact rather than a
        per-tab blank count, because counting individual blanks needs the worker's tab
        plan and a guess would over-report.
-7. **cellMask dimensions must track width × depth** - `cols` must equal
+8. **cellMask dimensions must track width × depth** - `cols` must equal
    `Math.round(width × MASK_CELLS_PER_UNIT)` and `rows` the depth equivalent.
    `paramSlice.setCellMask` rejects mismatched masks outright. When the bin
    is resized, `reshapeOrClearMask` (in `paramSlice`) grows/crops the stored
    mask to the new dimensions — if the result would be empty or invalid it
    falls back to `undefined` (rectangle fast-path).
-8. **Custom shapes disable most features** - `FeatureGate` (`inert`
+9. **Custom shapes disable most features** - `FeatureGate` (`inert`
    - visual de-emphasis) blocks pattern/cutouts/handle/compartments/label
      tabs/scoop on `isPartialMask(cellMask)`. Wall thickness and stacking
      lip still work for any footprint.
-9. **Lid requires a stacking lip** — `params.lid.enabled` is gated on
-   `params.base.stackingLip` at every layer (orchestrator, export handler,
-   `useLidSection`). The mating cavity wraps the lip; without a lip there is
-   nothing for the lid to clip onto, so the lid is silently skipped.
-   `lid.enabled` stays persisted through all of it, so the skip is invisible
-   in the params — any surface that lets the lip be cleared owes the user that
-   warning. The Lid section carries it in the main panel; the cutout editor's
-   `BinFeaturesSection` repeats it, because that panel is off screen there.
-10. **Two-piece export** — when `hasLid`, the `EXPORT_COMBINED` flow emits the
+10. **Lid requires a stacking lip** — `params.lid.enabled` is gated on
+    `params.base.stackingLip` at every layer (orchestrator, export handler,
+    `useLidSection`). The mating cavity wraps the lip; without a lip there is
+    nothing for the lid to clip onto, so the lid is silently skipped.
+    `lid.enabled` stays persisted through all of it, so the skip is invisible
+    in the params — any surface that lets the lip be cleared owes the user that
+    warning. The Lid section carries it in the main panel; the cutout editor's
+    `BinFeaturesSection` repeats it, because that panel is off screen there.
+11. **Two-piece export** — when `hasLid`, the `EXPORT_COMBINED` flow emits the
     lid as its own labeled piece for STL/3MF (main thread ZIPs them) and
     folds it into the STEP compound. The STEP path must `translate()` the
     lid solid by `totalHeight - lidAnchorZ(...)`; the lid is built in
     lid-local coordinates (Z=0 = lid floor top).
-11. **`lidAnchorZ` is duplicated across the worker boundary** — the canonical
+12. **`lidAnchorZ` is duplicated across the worker boundary** — the canonical
     formula lives in `generation/worker/generators/lidConstants.ts`; the
     main-thread copy in `LidMesh.tsx` mirrors it because the worker module
     isn't importable here. **Update both in lockstep** — silent drift causes
     the preview to misalign vs. the exported geometry.
-12. **SVG import unit contract** — `svgImport/svgParser.ts` treats user units
+13. **SVG import unit contract** — `svgImport/svgParser.ts` treats user units
     as mm 1:1 unless the SVG declares a physical `width`/`height`
     (mm/cm/in/pt/pc/Q) **and** carries an explicit `viewBox`. Without a real
     viewBox the fallback parses width/height with `parseFloat` (drops unit
@@ -588,7 +589,7 @@ estimates), and the source file name.
     to identity — a single uniform scalar would distort circles and rotated
     shapes. Path bounds use `getPathBounds` (flattened bezier) so curves that
     bow outward beyond their anchors aren't clipped.
-13. **Physical-units print bed is dual-axis** — the section uses the shared
+14. **Physical-units print bed is dual-axis** — the section uses the shared
     `PrintBedInput`, so width and depth round-trip independently when the
     link toggle is off. The linked state is encoded by
     `settings.defaultPrintBedDepth === undefined` (`undefined` = "follow
@@ -596,7 +597,7 @@ estimates), and the source file name.
     must call the setter with `depth: undefined` when relinking — otherwise
     a stale depth lingers in localStorage and the bed silently stays
     non-square on the next load.
-14. **`BinMesh` multi↔single material switch needs distinct keys** — the
+15. **`BinMesh` multi↔single material switch needs distinct keys** — the
     multi-color branch passes `material` as a `<mesh>` **prop** (array of
     `MeshStandardMaterial`), the single-color branch declares the material as
     a `<meshStandardMaterial>` **child**. Without keys, R3F (9.x) reuses the
@@ -608,7 +609,7 @@ estimates), and the source file name.
     no longer takes. Don't remove the `key="multi-color"` /
     `key="single-color"` props — and if you add a third branch (e.g. a new
     material strategy) give it its own key too.
-15. **Split connectors have two independent joints** — two sibling toggles in
+16. **Split connectors have two independent joints** — two sibling toggles in
     `SplitOptionsSection`, gated separately (neither is a child of the other):
     - **Alignment connectors** (`splitConnectors.enabled`) — a 45° floor scarf lap.
     - **Wall connectors** (`splitConnectors.wallConnector`, a `WallConnectorStyle`:
@@ -632,7 +633,7 @@ estimates), and the source file name.
     `generation/worker/generators/splitConnectorBuilder.ts` (the compiler flags it
     until handled), reuse `perimeterWalls()` for placement, and add it to the UI.
 
-16. **Design tags sync as a `name`-sibling, not inside `params`** — `tags` rides
+17. **Design tags sync as a `name`-sibling, not inside `params`** — `tags` rides
     alongside `name` in the design envelope (`{ name, params, tags }`), so it
     never passes through the BinParams share validator. `saveDesign` normalizes
     and persists it; an omitted `tags` on update **preserves** the stored set,
@@ -641,13 +642,13 @@ estimates), and the source file name.
     local). `normalizeTags` (client) and `sanitizeTags` (server) **must** stay
     identical — same 12×32 caps **and** the same control-char stripping — or a
     tag the client keeps but the server rewrites would flicker on the next pull.
-17. **Draft preview is best-effort and supersedable** — the `manifold_preview`
+18. **Draft preview is best-effort and supersedable** — the `manifold_preview`
     path (graduated, always on) has `useGeneration` render a fast Manifold draft (`setDraftResult`,
     `generation.isDraft = true`) on each edit, then the exact occt-wasm result
     supersedes it. A monotonic token drops a draft once a newer edit starts or the
     exact for its edit has landed (covers the exact-resolves-before-draft race).
     Drafts skip the undo/redo mesh cache — history holds exact geometry only.
-18. **Diagonal dividers are an advanced opt-in gating the panel, not the canvas** —
+19. **Diagonal dividers are an advanced opt-in gating the panel, not the canvas** —
     the `DividerTiltSubsection` list/inspector renders only while
     `settings.angledDividersEnabled` is on (default `false`, persisted); off, the
     section shows a teaser instead. The on-grid `DividerHitTargets` overlay in
@@ -683,7 +684,7 @@ estimates), and the source file name.
     swept band between them (`overlayLeanBandPoints`) — the plan view cannot
     show a lean any other way, and without it a leaning divider draws
     identically to a straight one in the view the user edits in.
-19. **WebGL context failure is terminal for the session, by design** — the
+20. **WebGL context failure is terminal for the session, by design** — the
     `PreviewCanvas` `<Canvas>` is wrapped in `WebGLErrorBoundary` (inside
     `PanelErrorBoundary`). When three.js can't acquire a GL context (slot
     exhaustion, GPU-process loss), the boundary renders `WebGLFallback` with
@@ -691,7 +692,7 @@ estimates), and the source file name.
     skip the canvas — re-mounting would just re-throw, which previously produced
     rapid error bursts. Recovery requires a page reload. Non-WebGL render errors
     still bubble to `PanelErrorBoundary`'s generic retry UI.
-20. **Resizing can strand cutouts off-board** — the cutout workspace inspector
+21. **Resizing can strand cutouts off-board** — the cutout workspace inspector
     now hosts the bin Width/Depth/Height controls (`BinSizeSection` wrapping the
     shared `DimensionsSection`), so the bin can be resized mid-edit. Cutouts are
     stored in **absolute interior-mm and are never auto-rescaled**, so shrinking
@@ -721,7 +722,7 @@ estimates), and the source file name.
     region — honest rather than a silent false-fix). The banner says what will
     happen ("will be clipped") rather than why, since one message now covers
     three causes.
-21. **A masked board is concave, so a bounding box can't decide containment** —
+22. **A masked board is concave, so a bounding box can't decide containment** —
     an axis-aligned box proves a fit but never a miss once the board has a
     notch: an L-shaped cutout nested in an L-shaped bin has a box spanning the
     notch. `cutoutFitsInMask` therefore uses `rectFitsInMask` as a **fast
@@ -736,9 +737,9 @@ estimates), and the source file name.
     vertices with x/y (`translateCutoutPreview`), or the outline is validated
     where the cutout used to be.
 
-22. **Wall taper is stored rim-anchored but authored base-anchored** — the taper lives on `OverhangConfig.taper` (per-side inset from the rim, chamfer or fillet, shared band height). **What is stored is not what the panel shows**: `OverhangConfig.overhang` is the width at the rim and `taper` the inset back down, while `OverhangSection` presents the drawer-measurable view (`base` fills the flat gap, `flare` adds width above it), deriving `base = overhang - taper` on read and writing back `overhang = base + flare`, `taper = flare`. Any new control must write **both** fields in one `paramSlice.updateOverhang` call or it silently moves the base the user set. `resolveOverhang` reads `params.overhang.taper`; only an _enabled_ taper is subtracted, which is why toggling either way rewrites the four overhang sides. Flare does not require overhang on a side: `resolveTaper`'s `clamp(taper, overhang)` reads as "the base never drops below nominal". Composes with overhang feet, which `buildOverhangFeet` frames from `overhangBaseSides` rather than the stored rim values, as must anything else sitting under the bin.
+23. **Wall taper is stored rim-anchored but authored base-anchored** — the taper lives on `OverhangConfig.taper` (per-side inset from the rim, chamfer or fillet, shared band height). **What is stored is not what the panel shows**: `OverhangConfig.overhang` is the width at the rim and `taper` the inset back down, while `OverhangSection` presents the drawer-measurable view (`base` fills the flat gap, `flare` adds width above it), deriving `base = overhang - taper` on read and writing back `overhang = base + flare`, `taper = flare`. Any new control must write **both** fields in one `paramSlice.updateOverhang` call or it silently moves the base the user set. `resolveOverhang` reads `params.overhang.taper`; only an _enabled_ taper is subtracted, which is why toggling either way rewrites the four overhang sides. Flare does not require overhang on a side: `resolveTaper`'s `clamp(taper, overhang)` reads as "the base never drops below nominal". Composes with overhang feet, which `buildOverhangFeet` frames from `overhangBaseSides` rather than the stored rim values, as must anything else sitting under the bin.
 
-23. **`Cutout.rotation` is clockwise-positive, every trig helper is counter-clockwise** — `CutoutShapeMesh` renders at `rotationZ = -rotation` and `cutoutBuilder` extrudes at `rotate(shape, -rotation)`, while `rotatePoint` / `rotateAroundCenter` / `booleanGeometry`'s `rotatePair` are standard CCW. **Anything rotating a selection as a group must negate exactly one of the two** (the position swing or the per-member angle), or member centers travel one way while each member spins the other and the group shears. `handlers/groupRotateHandler` subtracts the drag delta because positions rotate CCW with the cursor; `pathfinderHelpers.buildGroupRotationUpdates` and the R key add to the rotation and rotate positions by `-deg`. A sign error is invisible at 180° and on rectangles at 90°, so test at an odd angle with asymmetric shapes. `booleanGeometry` must build outlines with the renderer's clockwise sense, or every rotated member gets a mirrored Pathfinder result.
+24. **`Cutout.rotation` is clockwise-positive, every trig helper is counter-clockwise** — `CutoutShapeMesh` renders at `rotationZ = -rotation` and `cutoutBuilder` extrudes at `rotate(shape, -rotation)`, while `rotatePoint` / `rotateAroundCenter` / `booleanGeometry`'s `rotatePair` are standard CCW. **Anything rotating a selection as a group must negate exactly one of the two** (the position swing or the per-member angle), or member centers travel one way while each member spins the other and the group shears. `handlers/groupRotateHandler` subtracts the drag delta because positions rotate CCW with the cursor; `pathfinderHelpers.buildGroupRotationUpdates` and the R key add to the rotation and rotate positions by `-deg`. A sign error is invisible at 180° and on rectangles at 90°, so test at an odd angle with asymmetric shapes. `booleanGeometry` must build outlines with the renderer's clockwise sense, or every rotated member gets a mirrored Pathfinder result.
 
 ## Version History
 

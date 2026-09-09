@@ -12,6 +12,22 @@ describe('maxCompartmentFloorRaiseMm', () => {
     expect(max).toBeLessThanOrEqual(binDimensions(params).wallHeight - MIN_RAISED_CAVITY_MM);
   });
 
+  it('stays under the generator clamp on a lipped bin', () => {
+    const lipped = {
+      ...DEFAULT_BIN_PARAMS,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    };
+    const lipless = { ...lipped, base: { ...lipped.base, stackingLip: false } };
+    const { wallHeight } = binDimensions(lipped);
+    const workerCeiling =
+      wallHeight - 0.7 - Math.max(lipped.wallThickness, 2) - MIN_RAISED_CAVITY_MM;
+    expect(maxCompartmentFloorRaiseMm(lipped)).toBeLessThanOrEqual(workerCeiling);
+    expect(maxCompartmentFloorRaiseMm(lipped)).toBeLessThanOrEqual(
+      maxCompartmentFloorRaiseMm(lipless)
+    );
+  });
+
   it('never exceeds the persisted ceiling on a tall bin', () => {
     expect(maxCompartmentFloorRaiseMm({ ...DEFAULT_BIN_PARAMS, height: 30 })).toBe(
       MAX_COMPARTMENT_FLOOR_RAISE_MM
