@@ -30,7 +30,7 @@ import {
   retentionMagnetPlacementsFor,
 } from './retentionMagnetGeometry';
 import type { LidInputs } from './lidInputs';
-import { buildStackingMagnetBoss } from './stackingMagnetBoss';
+import { buildRetentionMagnetBoss } from './retentionMagnetBoss';
 
 export function addLidRetentionMagnets(
   scope: DisposalScope,
@@ -99,7 +99,7 @@ export function addLidRetentionMagnets(
   for (const { x: px, y: py, anchor } of positions) {
     const boss = scope.register(
       wallSupportedCorners && anchor === 'corner'
-        ? buildStackingMagnetBoss(scope, inputs, px, py, bossRadius, interfaceZ, bossHeight)
+        ? buildRetentionMagnetBoss(scope, inputs, px, py, bossRadius, interfaceZ, bossHeight)
         : cylinder(bossRadius, bossHeight, { at: [px, py, interfaceZ], axis: [0, 0, 1] })
     );
     if (originToTag) {

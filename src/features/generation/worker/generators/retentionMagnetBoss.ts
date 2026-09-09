@@ -1,4 +1,4 @@
-/** Wall-supported corner boss for a Stacking body, in lid-local coordinates. */
+/** Wall-supported corner boss for lids and Stacking bodies, in lid-local coordinates. */
 import { draw, intersect, unwrap } from 'brepjs';
 import type { DisposalScope, Shape3D } from 'brepjs';
 import type { LidInputs } from './lidInputs';
@@ -8,7 +8,7 @@ import { LID_COPLANAR_MARGIN } from './lidConstants';
 /** Straight wall tangents with only the cavity-facing corner rounded.
  * Clipping the outward corner to the mating shell keeps thin walls and the
  * stacking taper intact, including on an overhang-shifted footprint. */
-export function buildStackingMagnetBoss(
+export function buildRetentionMagnetBoss(
   scope: DisposalScope,
   inputs: LidInputs,
   x: number,

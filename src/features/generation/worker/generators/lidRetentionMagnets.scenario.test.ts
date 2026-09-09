@@ -15,6 +15,7 @@ import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   assertStructurallyValid,
   boundingBox,
+  verticalSolidSpans,
   triangleArea,
   triangleNormalZ,
 } from './__kernel-tests__/meshAssertions';
@@ -64,6 +65,37 @@ function maxProfileProtrusion(mesh: MeshData, halfW: number, halfD: number): num
 }
 
 describe('magnetic-retention lid geometry', () => {
+  it.each([2, 6])(
+    'fills the wall-to-pocket gaps in all four lid corners (%s mm deep)',
+    async (depth) => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const params = makeParams(
+        { attachment: 'magnetic', retentionMagnet: { diameter: 6, depth, edgeMagnets: 0 } },
+        { width: 2, depth: 2, height: 12 }
+      );
+      const lid = generateLid(params);
+      expect(lid).not.toBeNull();
+      assertStructurallyValid(lid!);
+      // Preview coordinates have the lid face at Z=0, with bosses below it.
+      // Probe outside the old 4mm-radius cylinder along both wall tangents.
+      for (const sx of [-1, 1])
+        for (const sy of [-1, 1]) {
+          const x = sx * 34.5;
+          const y = sy * 34.5;
+          const pocket = verticalSolidSpans(lid!, x + 0.1, y + 0.1)[0];
+          for (const [px, py] of [
+            [x - sx * 3.9, y + sy],
+            [x + sx, y - sy * 3.9],
+          ]) {
+            const support = verticalSolidSpans(lid!, px, py)[0];
+            expect(pocket[0] - support[0]).toBeCloseTo(depth, 3);
+          }
+          const inward = verticalSolidSpans(lid!, x - sx * 3.9, y - sy * 3.9)[0];
+          expect(inward[0]).toBeCloseTo(-params.lid.topThicknessMm, 3);
+        }
+    }
+  );
+
   it('produces a valid mesh for a 2x2 magnetic lid', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     const result = generateLid(
