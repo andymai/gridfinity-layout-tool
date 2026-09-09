@@ -8,6 +8,9 @@ import type { TextMode, WallPatternType, TextAnchor } from '@/features/bin-desig
 import type { Side } from '../shared';
 import {
   DEFAULT_PATTERN_SCALE,
+  DEFAULT_PATTERN_WEB_THICKNESS,
+  PATTERN_WEB_THICKNESS_MAX,
+  PATTERN_WEB_THICKNESS_MIN,
   WALL_PATTERN_SIDES,
   WALL_TEXT_SIDES,
   isKumikoPattern,
@@ -62,6 +65,18 @@ export function useWallsSection() {
   const patternScalePercent = Math.round((wallPattern.scale ?? DEFAULT_PATTERN_SCALE) * 100);
   const handleScaleChange = useCallback(
     (percent: number) => updateWallPattern({ scale: Math.min(1, Math.max(0, percent / 100)) }),
+    [updateWallPattern]
+  );
+
+  // Strut width between stamped elements (mm). Absent on older designs, which
+  // read as the legacy 0.8; the geometry clamps too, this just keeps the
+  // stored value honest.
+  const patternWebThickness = wallPattern.webThickness ?? DEFAULT_PATTERN_WEB_THICKNESS;
+  const handleWebThicknessChange = useCallback(
+    (mm: number) =>
+      updateWallPattern({
+        webThickness: Math.min(PATTERN_WEB_THICKNESS_MAX, Math.max(PATTERN_WEB_THICKNESS_MIN, mm)),
+      }),
     [updateWallPattern]
   );
 
@@ -264,6 +279,7 @@ export function useWallsSection() {
       patternEnabled: wallPattern.enabled,
       pattern: wallPattern.pattern,
       patternScalePercent,
+      patternWebThickness,
       patternDisabled: !patternStatus.available,
       patternDisabledReason,
       patternPartialNote,
@@ -285,6 +301,7 @@ export function useWallsSection() {
       handleChange,
       handlePatternChange,
       handleScaleChange,
+      handleWebThicknessChange,
       togglePatternSide,
       handleDividersChange,
       commitWallTextAt,

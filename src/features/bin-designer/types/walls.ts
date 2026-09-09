@@ -118,6 +118,16 @@ export function isKumikoPattern(pattern: WallPatternType): boolean {
 /** Neutral pattern scale — reproduces each pattern's legacy element size. */
 export const DEFAULT_PATTERN_SCALE = 0.5;
 
+/**
+ * Strut between stamped elements, in mm. A design without the field builds
+ * the default, so raising it here would move every saved pattern; the ceiling
+ * keeps a pattern from thinning into isolated holes.
+ */
+export const DEFAULT_PATTERN_WEB_THICKNESS = 0.8;
+export const PATTERN_WEB_THICKNESS_MIN = 0.8;
+export const PATTERN_WEB_THICKNESS_MAX = 2.4;
+export const PATTERN_WEB_THICKNESS_STEP = 0.1;
+
 /** The four outer walls a pattern can be applied to, in side-selector order. */
 export const WALL_PATTERN_SIDES = ['left', 'right', 'front', 'back'] as const;
 
@@ -134,6 +144,14 @@ export interface WallPatternConfig {
    * backfills it and the geometry layer defaults + clamps untrusted values.
    */
   readonly scale?: number;
+  /**
+   * Strut width (mm) between stamped elements, honoured by the stamp patterns
+   * only; a kumiko lattice has its own strut model. Absent on every design
+   * saved before the control existed and means
+   * {@link DEFAULT_PATTERN_WEB_THICKNESS}; the geometry layer clamps untrusted
+   * values.
+   */
+  readonly webThickness?: number;
   /**
    * Carry the same pattern (and scale) through the compartment divider walls,
    * not just the outer walls. Optional for back-compat with saved designs;

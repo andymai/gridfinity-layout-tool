@@ -521,6 +521,28 @@ describe('migrateParams', () => {
     expectOk(validateBinParams(result));
   });
 
+  it('carries a finite wall pattern strut width through and clamps it', () => {
+    const kept = migrateParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb', scale: 0.5, webThickness: 1.6 },
+    });
+    expect(kept.wallPattern.webThickness).toBe(1.6);
+    const clamped = migrateParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb', scale: 0.5, webThickness: 9 },
+    });
+    expect(clamped.wallPattern.webThickness).toBe(2.4);
+  });
+
+  it('leaves the strut width absent when a design never set one', () => {
+    const untouched = migrateParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb', scale: 0.5 },
+    });
+    expect('webThickness' in untouched.wallPattern).toBe(false);
+    const junk = migrateParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb', scale: 0.5, webThickness: 'x' },
+    });
+    expect('webThickness' in junk.wallPattern).toBe(false);
+  });
+
   it('should migrate legacy eco mode string to wallPattern enabled', () => {
     const result = migrateParams({
       eco: { honeycombWall: { mode: 'pocketed' } },

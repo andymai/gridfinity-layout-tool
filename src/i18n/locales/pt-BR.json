@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Paredes",
   "binDesigner.walls.pattern.scale": "Escala do padrão",
   "binDesigner.walls.pattern.scaleHint": "Furos mais finos à esquerda, maiores à direita",
+  "binDesigner.walls.pattern.strutWidth": "Largura das nervuras",
+  "binDesigner.walls.pattern.strutWidthHint": "Material sólido entre as aberturas. 0,8 mm equivale a dois perímetros com um bico de 0,4 mm; aumente para paredes que levam pancadas.",
   "binDesigner.walls.pattern.sides": "Paredes com padrão",
   "binDesigner.walls.pattern.sides.dividersOnly": "As paredes externas continuam sólidas: só as divisórias recebem o padrão",
   "binDesigner.walls.pattern.sides.none": "Escolha uma parede ou aplique o padrão às divisórias abaixo",

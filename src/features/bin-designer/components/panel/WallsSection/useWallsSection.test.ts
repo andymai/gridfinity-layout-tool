@@ -241,3 +241,36 @@ describe('useWallsSection', () => {
     });
   });
 });
+
+describe('useWallsSection strut width', () => {
+  beforeEach(() => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        wallPattern: { enabled: true, pattern: 'honeycomb' },
+      },
+    });
+  });
+
+  it('reads the legacy 0.8 mm when a design carries no strut width', () => {
+    const { result } = renderHook(() => useWallsSection());
+    expect(result.current.state.patternWebThickness).toBe(0.8);
+  });
+
+  it('writes the strut width to the wall pattern', () => {
+    const { result } = renderHook(() => useWallsSection());
+    act(() => {
+      result.current.handlers.handleWebThicknessChange(1.6);
+    });
+    expect(useDesignerStore.getState().params.wallPattern.webThickness).toBe(1.6);
+    expect(result.current.state.patternWebThickness).toBe(1.6);
+  });
+
+  it('clamps a strut width into range', () => {
+    const { result } = renderHook(() => useWallsSection());
+    act(() => {
+      result.current.handlers.handleWebThicknessChange(9);
+    });
+    expect(useDesignerStore.getState().params.wallPattern.webThickness).toBe(2.4);
+  });
+});

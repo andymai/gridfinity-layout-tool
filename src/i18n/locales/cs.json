@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Stěny",
   "binDesigner.walls.pattern.scale": "Měřítko vzoru",
   "binDesigner.walls.pattern.scaleHint": "Jemnější otvory doleva, výraznější doprava",
+  "binDesigner.walls.pattern.strutWidth": "Šířka příček",
+  "binDesigner.walls.pattern.strutWidthHint": "Plný materiál mezi otvory. 0,8 mm jsou dva obvody při trysce 0,4 mm; pro stěny, které dostávají rány, zvolte silnější.",
   "binDesigner.walls.pattern.sides": "Vzorované stěny",
   "binDesigner.walls.pattern.sides.dividersOnly": "Vnější stěny zůstanou plné — vzorují se jen přepážky",
   "binDesigner.walls.pattern.sides.none": "Vyber stěnu nebo níže vzoruj stěny přepážek",

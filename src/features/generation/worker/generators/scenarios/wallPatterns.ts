@@ -121,8 +121,38 @@ function frontOnlyCase(): ScenarioCase {
   });
 }
 
+/**
+ * A thicker strut must still carve the wall, and must leave MORE material
+ * behind than the legacy 0.8mm web: that surplus is the whole point of the
+ * control, so the comparison is against the thin-strut bin, not the solid one.
+ */
+function thickStrutCase(): ScenarioCase {
+  const params = {
+    width: 3,
+    depth: 3,
+    height: 5,
+    wallPattern: { enabled: true, pattern: 'honeycomb' as const, webThickness: 2.0 },
+    walls: ALL_SIDES_OFF,
+  };
+  return defineScenario('wall patterns', 'a 2mm strut keeps more wall than the 0.8mm web', {
+    params,
+    assert: 'structural',
+    compareWith: {
+      params: { ...params, wallPattern: { ...params.wallPattern, webThickness: 0.8 } },
+      assert: (thick, thin) => {
+        // The margin sits between tessellation drift (under 0.1%) and the
+        // real difference (near 1%).
+        expect(meshVolume(thick), 'thicker struts must leave more wall material').toBeGreaterThan(
+          meshVolume(thin) * 1.005
+        );
+      },
+    },
+  });
+}
+
 export const wallPatterns: ScenarioCase[] = [
   frontOnlyCase(),
+  thickStrutCase(),
   patternCase('round'),
   patternCase('diamond'),
   patternCase('triangle'),

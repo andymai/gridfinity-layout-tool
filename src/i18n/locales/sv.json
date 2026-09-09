@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Väggar",
   "binDesigner.walls.pattern.scale": "Mönsterskala",
   "binDesigner.walls.pattern.scaleHint": "Finare hål till vänster, grövre till höger",
+  "binDesigner.walls.pattern.strutWidth": "Stagbredd",
+  "binDesigner.walls.pattern.strutWidthHint": "Massivt material mellan öppningarna. 0,8 mm är två perimetrar med ett 0,4 mm-munstycke; välj bredare för väggar som får stötar.",
   "binDesigner.walls.pattern.sides": "Väggar med mönster",
   "binDesigner.walls.pattern.sides.dividersOnly": "Ytterväggarna förblir massiva — bara mellanväggarna får mönster",
   "binDesigner.walls.pattern.sides.none": "Välj en vägg, eller ge mellanväggarna nedan mönster",

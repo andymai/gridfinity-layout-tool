@@ -15,7 +15,7 @@ import type {
   ShapeDescriptor,
   StampPatternCalculator,
 } from './types';
-import { PATTERN_WEB_THICKNESS, scaleFactor } from './patternScale';
+import { PATTERN_WEB_THICKNESS, clampWebThickness, scaleFactor } from './patternScale';
 
 /** Minimum wall height (mm) worth cutting a slot into. */
 const MIN_SLOT_HEIGHT = 4;
@@ -81,8 +81,12 @@ export class SlotPatternCalculator implements StampPatternCalculator {
 }
 
 /** Factory with size-adaptive, scale-driven slot width. */
-export function createSlotCalculator(binHeight: number, scale = 0.5): SlotPatternCalculator {
+export function createSlotCalculator(
+  binHeight: number,
+  scale = 0.5,
+  webThickness?: number
+): SlotPatternCalculator {
   const base = binHeight <= 3 ? 3.0 : 4.0;
   const slotWidth = Math.max(base * scaleFactor(scale), MIN_SLOT_WIDTH);
-  return new SlotPatternCalculator(slotWidth);
+  return new SlotPatternCalculator(slotWidth, clampWebThickness(webThickness));
 }

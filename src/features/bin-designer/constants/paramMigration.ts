@@ -31,6 +31,8 @@ import type { CutoutArrayConfig } from '../types';
 import {
   CUTOUT_FILL_REFERENCES,
   DEFAULT_PATTERN_SCALE,
+  PATTERN_WEB_THICKNESS_MAX,
+  PATTERN_WEB_THICKNESS_MIN,
   MAX_ARRAY_INSTANCES,
   MAX_CUTOUT_GROUP_NAMES,
   MAX_GROUP_NAME_LENGTH,
@@ -770,6 +772,7 @@ interface LegacyWallPatternConfig {
   enabled?: boolean;
   pattern?: string;
   scale?: number;
+  webThickness?: unknown;
   dividers?: unknown;
   sides?: unknown;
 }
@@ -1497,6 +1500,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   // Coerce an unknown/removed pattern back to a valid member, and clamp a
   // crafted or out-of-range scale into [0, 1] so persisted data stays honest.
   const rawScale = wallPatternRaw.scale;
+  const rawWeb = wallPatternRaw.webThickness;
   const rawPattern = wallPatternRaw.pattern;
   const rawSides = wallPatternRaw.sides as Partial<WallPatternSides> | undefined;
   const wallPatternConfig: WallPatternConfig = {
@@ -1509,6 +1513,16 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       typeof rawScale === 'number' && Number.isFinite(rawScale)
         ? Math.min(1, Math.max(0, rawScale))
         : DEFAULT_PATTERN_SCALE,
+    // Absent stays absent: a backfilled default would shift the fingerprint of
+    // every design that never touched the strut control.
+    ...(typeof rawWeb === 'number' && Number.isFinite(rawWeb)
+      ? {
+          webThickness: Math.min(
+            PATTERN_WEB_THICKNESS_MAX,
+            Math.max(PATTERN_WEB_THICKNESS_MIN, rawWeb)
+          ),
+        }
+      : {}),
     dividers: wallPatternRaw.dividers === true,
     // Absent on every design saved, which patterned all four
     // walls — so a missing side reads as ON, not off.

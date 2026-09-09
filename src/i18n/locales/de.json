@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Wände",
   "binDesigner.walls.pattern.scale": "Mustergröße",
   "binDesigner.walls.pattern.scaleHint": "Feinere Löcher links, gröbere rechts",
+  "binDesigner.walls.pattern.strutWidth": "Stegbreite",
+  "binDesigner.walls.pattern.strutWidthHint": "Massives Material zwischen den Öffnungen. 0,8 mm sind zwei Perimeter bei einer 0,4-mm-Düse; für Wände, die Stöße abbekommen, breiter wählen.",
   "binDesigner.walls.pattern.sides": "Gemusterte Wände",
   "binDesigner.walls.pattern.sides.dividersOnly": "Die Außenwände bleiben massiv — nur die Trennwände werden gemustert",
   "binDesigner.walls.pattern.sides.none": "Wähle eine Wand oder mustere unten die Trennwände",

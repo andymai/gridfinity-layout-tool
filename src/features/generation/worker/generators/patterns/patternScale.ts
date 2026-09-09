@@ -14,9 +14,22 @@
  * Pure-math module — no brepjs imports.
  */
 
-/** Solid web thickness between adjacent elements (mm). Fixed by design so the
- *  structural backbone never thins to fragile lace as elements scale. */
-export const PATTERN_WEB_THICKNESS = 0.8;
+import {
+  DEFAULT_PATTERN_WEB_THICKNESS,
+  PATTERN_WEB_THICKNESS_MAX,
+  PATTERN_WEB_THICKNESS_MIN,
+} from '@/shared/types/bin';
+
+/** Solid web thickness between adjacent elements (mm) when a design sets none.
+ *  Independent of `scale` so the structural backbone never thins to fragile
+ *  lace as elements shrink. */
+export const PATTERN_WEB_THICKNESS = DEFAULT_PATTERN_WEB_THICKNESS;
+
+/** Clamp an untrusted strut width into range. NaN or absent means the default; infinities clamp like any other out-of-range value. */
+export function clampWebThickness(webThickness: number | undefined): number {
+  if (webThickness === undefined || Number.isNaN(webThickness)) return PATTERN_WEB_THICKNESS;
+  return Math.min(PATTERN_WEB_THICKNESS_MAX, Math.max(PATTERN_WEB_THICKNESS_MIN, webThickness));
+}
 
 /** Clamp an untrusted scale to [0, 1]; NaN falls back to neutral, ±Infinity to the bounds. */
 export function clampScale(scale: number): number {

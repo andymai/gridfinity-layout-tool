@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Ścianki",
   "binDesigner.walls.pattern.scale": "Skala wzoru",
   "binDesigner.walls.pattern.scaleHint": "Drobniejsze otwory po lewej, śmielsze po prawej",
+  "binDesigner.walls.pattern.strutWidth": "Szerokość mostków",
+  "binDesigner.walls.pattern.strutWidthHint": "Pełny materiał między otworami. 0,8 mm to dwa obrysy przy dyszy 0,4 mm; wybierz szersze dla ścianek narażonych na uderzenia.",
   "binDesigner.walls.pattern.sides": "Ścianki ze wzorem",
   "binDesigner.walls.pattern.sides.dividersOnly": "Ścianki zewnętrzne pozostaną lite — wzór trafi tylko na przegródki",
   "binDesigner.walls.pattern.sides.none": "Wybierz ściankę albo nadaj wzór przegródkom poniżej",

@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Pareti",
   "binDesigner.walls.pattern.scale": "Scala del motivo",
   "binDesigner.walls.pattern.scaleHint": "Fori più fini a sinistra, più grandi a destra",
+  "binDesigner.walls.pattern.strutWidth": "Larghezza dei ponti",
+  "binDesigner.walls.pattern.strutWidthHint": "Materiale pieno tra le aperture. 0,8 mm equivale a due perimetri con un ugello da 0,4 mm; aumenta per pareti che prendono colpi.",
   "binDesigner.walls.pattern.sides": "Pareti con motivo",
   "binDesigner.walls.pattern.sides.dividersOnly": "Le pareti esterne restano piene: il motivo va solo sui divisori",
   "binDesigner.walls.pattern.sides.none": "Scegli una parete oppure applica il motivo ai divisori qui sotto",

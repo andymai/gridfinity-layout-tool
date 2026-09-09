@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "벽면",
   "binDesigner.walls.pattern.scale": "패턴 크기",
   "binDesigner.walls.pattern.scaleHint": "왼쪽으로 갈수록 촘촘한 구멍, 오른쪽으로 갈수록 큰 구멍",
+  "binDesigner.walls.pattern.strutWidth": "지지대 너비",
+  "binDesigner.walls.pattern.strutWidthHint": "개구부 사이의 채워진 부분입니다. 0.8 mm는 0.4 mm 노즐 기준 두 겹의 외곽선입니다. 충격을 받는 벽에는 더 두껍게 하세요.",
   "binDesigner.walls.pattern.sides": "패턴 적용 벽",
   "binDesigner.walls.pattern.sides.dividersOnly": "외벽은 솔리드로 유지되고 칸막이에만 패턴이 적용됩니다",
   "binDesigner.walls.pattern.sides.none": "벽을 선택하거나 아래에서 칸막이 벽에 패턴을 적용하세요",

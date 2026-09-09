@@ -1977,6 +1977,8 @@
   "binDesigner.style.section.walls": "Vegger",
   "binDesigner.walls.pattern.scale": "Mønsterskala",
   "binDesigner.walls.pattern.scaleHint": "Finere hull til venstre, grovere til høyre",
+  "binDesigner.walls.pattern.strutWidth": "Stagbredde",
+  "binDesigner.walls.pattern.strutWidthHint": "Massivt materiale mellom åpningene. 0,8 mm er to omkretser med en 0,4 mm dyse; velg bredere for vegger som får støt.",
   "binDesigner.walls.pattern.sides": "Vegger med mønster",
   "binDesigner.walls.pattern.sides.dividersOnly": "Ytterveggene forblir solide — bare skilleveggene får mønster",
   "binDesigner.walls.pattern.sides.none": "Velg en vegg, eller gi skilleveggene nedenfor mønster",

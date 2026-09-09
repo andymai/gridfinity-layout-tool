@@ -32,8 +32,11 @@ import { createTsumiishiKikkoCalculator } from './kumiko/tsumiishiKikko';
  * Registry entry for a pattern type.
  */
 export interface PatternRegistryEntry {
-  /** Factory: builds a calculator with size- and scale-adaptive parameters. */
-  createCalculator: (binHeight: number, scale: number) => PatternCalculator;
+  /**
+   * Factory: builds a calculator with size- and scale-adaptive parameters.
+   * Stamp calculators honour `webThickness`; a kumiko lattice ignores it.
+   */
+  createCalculator: (binHeight: number, scale: number, webThickness?: number) => PatternCalculator;
   /** Human-readable display name (for debugging) */
   displayName: string;
 }
@@ -99,12 +102,15 @@ export const PATTERN_REGISTRY: Record<WallPatternType, PatternRegistryEntry> = {
  * @param binHeight - Bin height in grid units (affects element size)
  * @param scale - Normalized pattern scale in [0, 1] (0.5 = neutral). Untrusted
  *   values are clamped inside each factory.
+ * @param webThickness - Strut width in mm between stamped elements. Untrusted
+ *   values are clamped inside each factory; kumiko lattices ignore it.
  * @returns PatternCalculator instance configured for the pattern
  */
 export function getPatternCalculator(
   pattern: WallPatternType,
   binHeight: number,
-  scale = 0.5
+  scale = 0.5,
+  webThickness?: number
 ): PatternCalculator {
   // Runtime guard: pattern may come from saved data that doesn't match current types
   const entry = (PATTERN_REGISTRY as Record<string, PatternRegistryEntry | undefined>)[pattern];
@@ -112,5 +118,5 @@ export function getPatternCalculator(
     const available = Object.keys(PATTERN_REGISTRY).join(', ');
     throw new Error(`Unknown wall pattern type: "${pattern}". Available patterns: ${available}`);
   }
-  return entry.createCalculator(binHeight, scale);
+  return entry.createCalculator(binHeight, scale, webThickness);
 }

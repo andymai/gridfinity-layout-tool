@@ -22,7 +22,7 @@ import type {
   StampPatternCalculator,
 } from './types';
 import { calculateStaggeredGrid } from './gridUtils';
-import { PATTERN_WEB_THICKNESS, resolveElementRadius } from './patternScale';
+import { PATTERN_WEB_THICKNESS, clampWebThickness, resolveElementRadius } from './patternScale';
 
 /** Default circumradius of each hex hole (center to vertex, mm). ~3.1mm flat-to-flat. */
 export const DEFAULT_HEX_RADIUS = 1.8;
@@ -101,11 +101,12 @@ export class HoneycombPatternCalculator implements StampPatternCalculator {
  */
 export function createHoneycombCalculator(
   binHeight: number,
-  scale = 0.5
+  scale = 0.5,
+  webThickness?: number
 ): HoneycombPatternCalculator {
   const base = binHeight <= 3 ? 2.1 : 3.6;
   return new HoneycombPatternCalculator(
     resolveElementRadius(base, binHeight, scale),
-    DEFAULT_HEX_WEB_THICKNESS
+    clampWebThickness(webThickness)
   );
 }

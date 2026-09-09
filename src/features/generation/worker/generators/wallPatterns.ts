@@ -380,7 +380,12 @@ export function getPatternDescriptors(
   }
 
   const scale = wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
-  const calculator = getPatternCalculator(wallPattern.pattern, params.height, scale);
+  const calculator = getPatternCalculator(
+    wallPattern.pattern,
+    params.height,
+    scale,
+    wallPattern.webThickness
+  );
 
   // Motif (tiled 2D) patterns don't use the stamp descriptor pipeline — they're
   // built by motifBuilder.buildMotifCut (unit-tested standalone) and not yet

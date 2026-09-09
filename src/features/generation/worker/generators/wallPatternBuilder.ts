@@ -548,6 +548,7 @@ export function buildWallPatterns(ctx: PipelineContext): WallPatternTargets {
         'v2',
         patternType,
         descriptorKey,
+        quantize(calculator.getWebThickness()),
         quantize(cutDepth),
         wall.centers.length,
         quantize(c0.x),
