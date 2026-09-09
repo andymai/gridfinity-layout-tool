@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'baseplate-grid-unit-xy',
+    date: '2026-09-07',
+    kind: 'improved',
+    title: { en: 'Set the X and Y grid pitch without leaving Baseplate' },
+    body: {
+      en: 'Grid unit in the Baseplate panel now has the same link control as Print bed size: tap it to set X and Y separately, so a plate that fills a drawer at 40mm across and 42mm deep takes a couple of seconds. It used to mean going to Layout, unlinking there, and coming back, which was hard to find if you never left Baseplate.',
+    },
+    action: { kind: 'openTool', tool: 'baseplate' },
+  },
+  {
     id: 'multi-side-finger-scoops',
     date: '2026-09-07',
     kind: 'improved',

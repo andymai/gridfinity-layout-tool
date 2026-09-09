@@ -454,9 +454,15 @@ export function usePWAUpdate(): void {
       if (skipRegistration) return;
       console.error('SW registration failed:', error);
 
+      // Typed as an Error, but it arrives as whatever the registration promise
+      // rejected with — including `undefined`. Reading `.message` off that
+      // throws out of an unhandled rejection handler, which is the one place
+      // nothing is left to catch it.
+      const message = error instanceof Error ? error.message : String(error ?? '');
+
       // App still works without SW, but offline features won't be available
       // Only warn if it seems like a persistent issue
-      if (error.message.includes('SecurityError')) {
+      if (message.includes('SecurityError')) {
         console.warn('SW blocked - may be in private browsing or SW disabled');
       }
     },

@@ -25,16 +25,24 @@ describe('railInboardReachMm', () => {
 describe('lidKeepoutRing', () => {
   const ring = lidKeepoutRing(INNER, INNER, 1.2);
 
-  it('starts at the stacking lip’s inner face, not the wall’s', () => {
-    // The lip juts 0.7mm into the cavity at the default wall, and the void
-    // under that jut is the undercut the rail hooks. Starting the ring here
-    // means every radius it spans has open air above it.
-    expect(ring.outerHalfX).toBeCloseTo(INNER / 2 - 0.7, 6);
-    expect(ring.outerHalfX).toBeCloseTo(INNER / 2 + 1.2 - GRIDFINITY_SPEC.LIP_BIG_TAPER, 6);
+  it('starts at the lip’s inner face on the ring’s own top plane', () => {
+    // The lip reaches deepest at the wall top, which is where the ring's top
+    // sits: 1.4mm into the cavity at the default wall, not the 0.7mm it holds
+    // a small taper higher up. Taking the shallower plane puts the cutter over
+    // the lip's angled support and shears it into a 90° overhang (#4146).
+    expect(ring.outerHalfX).toBeCloseTo(INNER / 2 - 1.4, 6);
+    expect(ring.outerHalfX).toBeCloseTo(
+      INNER / 2 + 1.2 - (GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER),
+      6
+    );
   });
 
   it('reaches past the rail’s deepest point by one clearance', () => {
-    const innerEdgeFromWall = 0.7 + ring.width;
+    // Stated from the ring's own outer boundary rather than a repeated
+    // constant: the width absorbs the lip inset, so the INNER edge lands on
+    // the rail's reach whatever plane the outer boundary is taken on. That
+    // invariant is why correcting the outer boundary cannot give up clearance.
+    const innerEdgeFromWall = INNER / 2 - (ring.outerHalfX - ring.width);
     expect(innerEdgeFromWall).toBeCloseTo(railInboardReachMm(1.2) + LID_KEEPOUT_CLEARANCE, 6);
   });
 

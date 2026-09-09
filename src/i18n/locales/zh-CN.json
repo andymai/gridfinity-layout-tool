@@ -107,8 +107,6 @@
   "baseplate.gridDepth": "深度",
   "baseplate.gridUnit": "网格单位",
   "baseplate.gridUnitTooltip": "一个网格方格的宽度（标准：42mm）",
-  "baseplate.gridUnitY": "网格单位 Y",
-  "baseplate.gridUnitYTooltip": "非正方形网格中一个网格单元的深度（mm）。可在抽屉设置中开启并编辑此项。",
   "baseplate.gridWidth": "宽度",
   "baseplate.halfGridHint": "用 21mm 半网格单元填满每条留边；不足 21mm 的余量作为裁剪过的网格拼块填充。",
   "baseplate.halfGridHintSolid": "用 21mm 半网格单元填满每条留边；不足 21mm 的余量保持实心。",

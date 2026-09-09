@@ -13,7 +13,9 @@ declare module 'virtual:pwa-register/react' {
       swScriptUrl: string,
       registration: ServiceWorkerRegistration | undefined
     ) => void;
-    onRegisterError?: (error: Error) => void;
+    // Whatever the registration promise rejected with, which is not always an
+    // Error and is sometimes nothing at all.
+    onRegisterError?: (error: unknown) => void;
   }
 
   export function useRegisterSW(options?: RegisterSWOptions): {

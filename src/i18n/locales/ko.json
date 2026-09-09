@@ -107,8 +107,6 @@
   "baseplate.gridDepth": "깊이",
   "baseplate.gridUnit": "그리드 단위",
   "baseplate.gridUnitTooltip": "그리드 한 칸의 너비(표준: 42mm)",
-  "baseplate.gridUnitY": "그리드 단위 Y",
-  "baseplate.gridUnitYTooltip": "정사각형이 아닌 그리드를 위한 그리드 한 셀의 깊이(mm). 서랍 설정에서 켜고 편집하세요.",
   "baseplate.gridWidth": "너비",
   "baseplate.halfGridHint": "각 여백을 21mm 하프 그리드 셀로 채웁니다. 21mm 미만의 나머지는 잘린 그리드 타일로 채워집니다.",
   "baseplate.halfGridHintSolid": "각 여백을 21mm 하프 그리드 셀로 채웁니다. 21mm 미만의 나머지는 솔리드로 유지됩니다.",

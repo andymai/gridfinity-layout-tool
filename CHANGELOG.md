@@ -1,5 +1,38 @@
 # Changelog
 
+## [4.487.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.487.0...gridfinity-layout-tool-v4.487.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* **bins:** carry a slotted bin's divider pocket through the stacking lip ([#4153](https://github.com/andymai/gridfinity-layout-tool/issues/4153)) ([4f72793](https://github.com/andymai/gridfinity-layout-tool/commit/4f7279346bdf0d64f924867f87e0e5f5108a1fcf)), closes [#4148](https://github.com/andymai/gridfinity-layout-tool/issues/4148)
+* **lid:** keep the stacking lip's angled support on a relieved bin ([#4151](https://github.com/andymai/gridfinity-layout-tool/issues/4151)) ([0e299f6](https://github.com/andymai/gridfinity-layout-tool/commit/0e299f6dd6fb505d3a1d237d766f152fb56619dc)), closes [#4146](https://github.com/andymai/gridfinity-layout-tool/issues/4146)
+* **pwa:** survive a service-worker rejection that is not an Error ([#4154](https://github.com/andymai/gridfinity-layout-tool/issues/4154)) ([a616b34](https://github.com/andymai/gridfinity-layout-tool/commit/a616b343699937af47ee69ee62e96c866078a589)), closes [#4145](https://github.com/andymai/gridfinity-layout-tool/issues/4145)
+* **spacemouse:** keep the model in frame when the puck pans away from it ([#4156](https://github.com/andymai/gridfinity-layout-tool/issues/4156)) ([dda64cb](https://github.com/andymai/gridfinity-layout-tool/commit/dda64cb7e8cdf68603f3f3df00884be455c79f38)), closes [#4041](https://github.com/andymai/gridfinity-layout-tool/issues/4041)
+* **spacemouse:** stop reading a fast horizontal spin as a pole crossing ([#4155](https://github.com/andymai/gridfinity-layout-tool/issues/4155)) ([92963e3](https://github.com/andymai/gridfinity-layout-tool/commit/92963e351b5dbbb58851b733d77ba941bcf2de0f)), closes [#4041](https://github.com/andymai/gridfinity-layout-tool/issues/4041)
+
+## [4.487.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.486.0...gridfinity-layout-tool-v4.487.0) (2026-09-08)
+
+
+### Features
+
+* **baseplate:** edit X and Y grid units from the baseplate panel ([#4143](https://github.com/andymai/gridfinity-layout-tool/issues/4143)) ([557b799](https://github.com/andymai/gridfinity-layout-tool/commit/557b7994664216894d8dacb252f33d31d186947d))
+
+## [4.486.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.3...gridfinity-layout-tool-v4.486.0) (2026-09-07)
+
+
+### Features
+
+* **bins:** offer a rounded or chamfered stacking lip peak ([#4133](https://github.com/andymai/gridfinity-layout-tool/issues/4133)) ([abe04df](https://github.com/andymai/gridfinity-layout-tool/commit/abe04df6474ccb143971147ad7584f8533fefabd))
+* **bins:** put finger scoops on more than one wall ([#4134](https://github.com/andymai/gridfinity-layout-tool/issues/4134)) ([012867d](https://github.com/andymai/gridfinity-layout-tool/commit/012867d38906ea170ae2e5973fb6971847809429)), closes [#4123](https://github.com/andymai/gridfinity-layout-tool/issues/4123)
+* **lid:** raise the floor plate ceiling to 10mm ([#4132](https://github.com/andymai/gridfinity-layout-tool/issues/4132)) ([62645ab](https://github.com/andymai/gridfinity-layout-tool/commit/62645ab9daf850cc79a5b677847be2f69437d0c5))
+
+
+### Bug Fixes
+
+* **lid:** keep a magnetic lid flush with the bin it caps ([#4130](https://github.com/andymai/gridfinity-layout-tool/issues/4130)) ([4c30b5a](https://github.com/andymai/gridfinity-layout-tool/commit/4c30b5af2ca451482508912aab0d4757e46a5287)), closes [#4118](https://github.com/andymai/gridfinity-layout-tool/issues/4118)
+* **ui:** fill the panel width with the bin dimension steppers ([#4137](https://github.com/andymai/gridfinity-layout-tool/issues/4137)) ([6231da7](https://github.com/andymai/gridfinity-layout-tool/commit/6231da7d01293f9652cb07e6ff4e1de1f370abbe))
+
 ## [4.485.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.485.2...gridfinity-layout-tool-v4.485.3) (2026-09-06)
 
 

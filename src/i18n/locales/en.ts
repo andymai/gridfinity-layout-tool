@@ -3938,9 +3938,6 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.perPiece.info':
     'Holes placed in every split piece, so no printed piece is left unfastened. Four fill the corners; higher counts add the edge midpoints.',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
-  'baseplate.gridUnitY': 'Grid unit Y',
-  'baseplate.gridUnitYTooltip':
-    'Depth of one grid cell (mm) for a non-square grid. Toggle and edit this in the drawer settings.',
   'baseplate.magnetAnchor': 'Magnet anchor',
   'baseplate.magnetAnchorTooltip':
     'Where magnet holes sit in each cell on grids larger than 42mm. Applies to the baseplate, bins, and lids together so their magnets stay aligned.',

@@ -8,7 +8,12 @@ import {
   Spherical,
   Vector3,
 } from 'three';
-import { MIN_POLAR, PAN_LEASH_RADII } from './constants';
+import {
+  FOLD_SWEEP_TOLERANCE,
+  MIN_POLAR,
+  PAN_LEASH_RADII,
+  PAN_LEASH_VIEWPORT_FRACTION,
+} from './constants';
 import type { CameraViewPreset, FrameMotion } from './types';
 
 /**
@@ -152,6 +157,43 @@ function visibleRadius(camera: Camera, distance: number): number {
   return Infinity;
 }
 
+type PoleCrossing = 'zenith' | 'nadir' | null;
+
+/** Which pole a known vertical step carried the view over, if either. */
+function foldFromStep(prevPhi: number, polarStep: number): PoleCrossing {
+  const intended = prevPhi + polarStep;
+  if (intended < 0) return 'zenith';
+  if (intended > Math.PI) return 'nadir';
+  return null;
+}
+
+/**
+ * Which pole a finished pose appears to have crossed, from how far the view
+ * swept getting there.
+ *
+ * Over a pole the two directions are separated by exactly the two polar angles
+ * added together, because the path runs up one meridian and down the opposite
+ * one, and every other route between the same pair is shorter. The azimuth jump
+ * on its own proves nothing: a horizontal spin past a quarter turn in a frame
+ * jumps just as far, and reading it that way threw the view flat onto the pole
+ * on motions with no vertical component in them at all.
+ *
+ * Only sound while the frame's own azimuth motion is small, which is what a
+ * pose arriving from the driver's pitch is. A caller integrating its own orbit
+ * passes the step instead and this is not consulted.
+ */
+function foldFromSweep(prevPhi: number, phi: number, swept: number): PoleCrossing {
+  const overZenith = prevPhi + phi;
+  if (overZenith <= Math.PI && Math.abs(swept - overZenith) < FOLD_SWEEP_TOLERANCE) {
+    return 'zenith';
+  }
+  const overNadir = 2 * Math.PI - overZenith;
+  if (overNadir <= Math.PI && Math.abs(swept - overNadir) < FOLD_SWEEP_TOLERANCE) {
+    return 'nadir';
+  }
+  return null;
+}
+
 /**
  * Pull a camera that has already moved back inside its canvas's navigation
  * limits, `prevOffset` being the target-to-camera vector from before the move.
@@ -160,12 +202,20 @@ function visibleRadius(camera: Camera, distance: number): number {
  * only limits the moves it makes itself: a WebHID frame integrates its own
  * orbit, and the driver hands over a finished pose. Without it the puck reaches
  * poses the mouse refuses on the same canvas.
+ *
+ * `polarStep` is the vertical orbit the caller just applied, when it applied
+ * one itself. Whether the pose went over a pole is NOT recoverable from the two
+ * poses: the folded and unfolded readings describe the same final vector, so
+ * both hypotheses predict every measurable thing about it. A caller that
+ * integrated the step knows the answer outright and should say so; one handed a
+ * finished pose has {@link foldFromSweep} to fall back on.
  */
 export function constrainPose(
   camera: Camera,
   controls: OrbitLike,
   prevOffset: Vector3,
-  contentBox?: Box3 | null
+  contentBox?: Box3 | null,
+  polarStep?: number
 ): void {
   const offset = camera.position.clone().sub(controls.target);
   const distance = offset.length();
@@ -175,20 +225,21 @@ export function constrainPose(
       camera.up.clone().normalize(),
       new Vector3(0, 1, 0)
     );
-    const spherical = new Spherical().setFromVector3(offset.applyQuaternion(toSpherical));
+    const spherical = new Spherical().setFromVector3(offset.clone().applyQuaternion(toSpherical));
     // A pose that went over a pole comes back mirrored: the polar angle folds
     // back into [0, PI] and the azimuth jumps half a turn. Unfolding it is what
     // makes the clamp below stall the orbit rather than pin it facing backwards.
-    // Half a turn of azimuth within one frame is not reachable at any puck
-    // speed, so it can only be the fold; which pole it went over is whichever
-    // unfolding continues from where the view already was.
     if (prevOffset.lengthSq() > 1e-18) {
       const prev = new Spherical().setFromVector3(prevOffset.clone().applyQuaternion(toSpherical));
-      if (Math.abs(wrapPi(spherical.theta - prev.theta)) > Math.PI / 2) {
-        const overZenith = -spherical.phi;
-        const overNadir = 2 * Math.PI - spherical.phi;
-        spherical.phi =
-          Math.abs(overZenith - prev.phi) < Math.abs(overNadir - prev.phi) ? overZenith : overNadir;
+      const crossed =
+        polarStep === undefined
+          ? foldFromSweep(prev.phi, spherical.phi, prevOffset.angleTo(offset))
+          : foldFromStep(prev.phi, polarStep);
+      if (crossed === 'zenith') {
+        spherical.phi = -spherical.phi;
+        spherical.theta = wrapPi(spherical.theta + Math.PI);
+      } else if (crossed === 'nadir') {
+        spherical.phi = 2 * Math.PI - spherical.phi;
         spherical.theta = wrapPi(spherical.theta + Math.PI);
       }
     }
@@ -210,7 +261,7 @@ export function constrainPose(
   if (controls.enablePan !== false && contentBox && !contentBox.isEmpty()) {
     const leash = Math.min(
       boundingSphere(contentBox).radius * PAN_LEASH_RADII,
-      visibleRadius(camera, distance)
+      visibleRadius(camera, distance) * PAN_LEASH_VIEWPORT_FRACTION
     );
     const away = controls.target.clone().sub(contentBox.clampPoint(controls.target, new Vector3()));
     const overshoot = away.length() - leash;
@@ -286,6 +337,11 @@ export function applyFrameMotion(
     }
   }
 
-  constrainPose(camera, controls, prevOffset, contentBox);
+  // The vertical orbit is applied as a rotation about an axis perpendicular to
+  // both up and the offset, so it moves the polar angle by exactly its own
+  // value and the horizontal one cannot move it at all. That makes the pole
+  // crossing a fact here rather than something to infer from the result.
+  const polarStep = controls.enableRotate !== false ? motion.orbitV : 0;
+  constrainPose(camera, controls, prevOffset, contentBox, polarStep);
   controls.update();
 }
