@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Dit verwijdert je account, alle gesynchroniseerde lay-outs en alle gesynchroniseerde ontwerpen permanent van onze servers. Dit kan niet ongedaan worden gemaakt.",
   "syncDialog.deleteAccount.title": "Je account verwijderen?",
   "syncDialog.signOut.keep": "Behouden en afmelden",
-  "syncDialog.signOut.message": "De {count} lokale indelingen, ontwerpen, baseplates en mappen op dit apparaat bewaren? Je kunt ze ook wissen.",
+  "syncDialog.signOut.message": "Wil je je {count} lokale lay-outs, ontwerpen, basisplaten en mappen op dit apparaat behouden? Je kunt ze ook verwijderen.",
   "syncDialog.signOut.title": "Afmelden",
   "syncDialog.signOut.wipe": "Verwijderen en afmelden",
   "tablet.layersCategories": "Layers & categorieën",

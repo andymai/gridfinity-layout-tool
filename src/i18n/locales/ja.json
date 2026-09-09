@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "これはアカウント、同期されたすべてのレイアウト、同期されたすべてのビンデザインを当社サーバーから完全に削除します。この操作は元に戻せません。",
   "syncDialog.deleteAccount.title": "アカウントを削除しますか?",
   "syncDialog.signOut.keep": "保持してサインアウト",
-  "syncDialog.signOut.message": "この端末にあるローカルのレイアウト・デザイン・ベースプレート・フォルダー {count} 件を残しますか？削除することもできます。",
+  "syncDialog.signOut.message": "このデバイスの{count}件のローカルレイアウト、デザイン、ベースプレート、フォルダーを保持しますか?消去することもできます。",
   "syncDialog.signOut.title": "サインアウト",
   "syncDialog.signOut.wipe": "消去してサインアウト",
   "tablet.layersCategories": "レイヤー&カテゴリー",

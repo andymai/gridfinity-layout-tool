@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "这会从我们的服务器永久删除你的账号、每一个已同步的布局，以及每一个已同步的收纳盒设计。此操作无法撤销。",
   "syncDialog.deleteAccount.title": "删除你的账号？",
   "syncDialog.signOut.keep": "保留并退出",
-  "syncDialog.signOut.message": "保留此设备上的 {count} 个本地布局、设计、底板和文件夹？你也可以清除它们。",
+  "syncDialog.signOut.message": "在此设备上保留你的 {count} 个本地布局、设计、底板和文件夹吗？你也可以将它们清除。",
   "syncDialog.signOut.title": "退出登录",
   "syncDialog.signOut.wipe": "清除并退出",
   "tablet.layersCategories": "层与分类",

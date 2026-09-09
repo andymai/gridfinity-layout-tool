@@ -798,6 +798,31 @@ describe('LayoutManagerModal folders', () => {
     expect(storage.saveLibrary).toHaveBeenCalled();
   });
 
+  it('keeps the move dialog inert until the move has saved', async () => {
+    let finish: (() => void) | undefined;
+    vi.mocked(storage.saveLibrary).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () => resolve({ ok: true, value: undefined });
+        })
+    );
+    render(<LayoutManagerModal isOpen onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'More actions for Kitchen' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move to folder' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Desk' }));
+    const move = screen.getByRole('button', { name: 'Move' });
+    fireEvent.click(move);
+    await act(async () => {});
+    expect(move).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    fireEvent.click(move);
+    expect(storage.saveLibrary).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      finish?.();
+    });
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Move' })).toBeNull());
+  });
+
   it('creates a folder under the selection and falls back to all layouts when the selection is deleted', async () => {
     render(<LayoutManagerModal isOpen onClose={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: 'Open folder Study' }));

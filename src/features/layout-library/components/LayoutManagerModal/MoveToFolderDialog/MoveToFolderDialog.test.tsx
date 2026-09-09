@@ -67,6 +67,31 @@ describe('MoveToFolderDialog', () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled();
   });
 
+  it('cannot be dismissed while a move is in flight', async () => {
+    let finish: () => void = () => {};
+    const onMove = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)));
+    const onClose = vi.fn();
+    render(
+      <MoveToFolderDialog
+        open
+        library={library}
+        name="X"
+        currentFolderId={null}
+        onClose={onClose}
+        onMove={onMove}
+      />
+    );
+    fireEvent.click(screen.getByRole('radio', { name: 'Desk' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Move' }));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
+    await act(async () => {
+      finish();
+    });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('follows a folder change made elsewhere while open', () => {
     const { rerender } = render(
       <MoveToFolderDialog

@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "To trwale usunie z naszych serwerów Twoje konto, każdy zsynchronizowany układ i każdy zsynchronizowany projekt bina. Tego nie da się cofnąć.",
   "syncDialog.deleteAccount.title": "Usunąć konto?",
   "syncDialog.signOut.keep": "Zachowaj i wyloguj",
-  "syncDialog.signOut.message": "Zachować {count} lokalnych układów, projektów, baseplate’ów i folderów na tym urządzeniu? Możesz je też usunąć.",
+  "syncDialog.signOut.message": "Zachować Twoje {count} lokalnych układów, projektów, płyt bazowych i folderów na tym urządzeniu? Możesz je też wymazać.",
   "syncDialog.signOut.title": "Wyloguj się",
   "syncDialog.signOut.wipe": "Wymaż i wyloguj",
   "tablet.layersCategories": "Warstwy i kategorie",

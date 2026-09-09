@@ -446,7 +446,7 @@ function LayoutManagerModalContent({
           name={movingEntry.name}
           currentFolderId={entryFolderId(library, movingEntry)}
           onClose={() => setMovingId(null)}
-          onMove={(destination) => void handleMove(destination)}
+          onMove={handleMove}
         />
       )}
 

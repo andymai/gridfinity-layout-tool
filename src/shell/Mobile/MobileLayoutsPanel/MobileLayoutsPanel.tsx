@@ -296,9 +296,11 @@ export function MobileLayoutsPanel() {
     setDeleteLayoutId(null);
   }, [deleteLayoutId, deleteLayout, entries, announceToScreenReader, t]);
 
+  const swipeStartX = useRef(0);
   const handleTouchStart = useCallback(
-    (_e: React.TouchEvent, id: string) => {
+    (e: React.TouchEvent, id: string) => {
       if (id === activeLayoutId) return;
+      swipeStartX.current = e.touches[0].clientX;
       setSwipingId(id);
       setSwipeX(0);
     },
@@ -308,9 +310,7 @@ export function MobileLayoutsPanel() {
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (!swipingId) return;
-      const touch = e.touches[0];
-      const startX = e.currentTarget.getBoundingClientRect().left;
-      const deltaX = touch.clientX - startX - e.currentTarget.clientWidth / 2;
+      const deltaX = e.touches[0].clientX - swipeStartX.current;
       setSwipeX(Math.min(0, Math.max(-swipeRevealPx, deltaX)));
     },
     [swipingId, swipeRevealPx]

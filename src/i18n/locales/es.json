@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Esto elimina permanentemente tu cuenta, todos los planos sincronizados y todos los diseños sincronizados de nuestros servidores. Esto no se puede deshacer.",
   "syncDialog.deleteAccount.title": "¿Eliminar tu cuenta?",
   "syncDialog.signOut.keep": "Mantener y cerrar sesión",
-  "syncDialog.signOut.message": "¿Conservar los {count} diseños, layouts, baseplates y carpetas locales en este dispositivo? También puedes borrarlos.",
+  "syncDialog.signOut.message": "¿Mantener tus {count} diseños, planos, bases y carpetas locales en este dispositivo? También puedes borrarlos.",
   "syncDialog.signOut.title": "Cerrar sesión",
   "syncDialog.signOut.wipe": "Borrar y cerrar sesión",
   "tablet.layersCategories": "Layers y Categorías",

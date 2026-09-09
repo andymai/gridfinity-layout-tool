@@ -105,6 +105,30 @@ describe('useLayoutFolders', () => {
     expect(useLibraryStore.getState().library.folders?.map((f) => f.name)).toEqual(['Study']);
   });
 
+  it('keeps a library that changed while the failed save was in flight', async () => {
+    let arrived: LayoutLibrary | null = null;
+    vi.mocked(storage.saveLibrary).mockImplementationOnce(() => {
+      const { library } = useLibraryStore.getState();
+      arrived = {
+        ...library,
+        folders: [
+          ...(library.folders ?? []),
+          { id: 'folder_9_pulled', name: 'Pulled', parentId: null, createdAt: 1, modifiedAt: 1 },
+        ],
+      };
+      useLibraryStore.setState({ library: arrived });
+      return Promise.resolve({
+        ok: false,
+        error: { kind: 'StorageError', code: 'STORAGE_UNAVAILABLE', message: 'x', timestamp: 0 },
+      } as never);
+    });
+    const { result } = renderHook(() => useLayoutFolders());
+    await act(async () => {
+      await result.current.createFolder('Desk', 'study');
+    });
+    expect(useLibraryStore.getState().library).toBe(arrived);
+  });
+
   it('toasts instead of throwing when a rule refuses the change', async () => {
     const { result } = renderHook(() => useLayoutFolders());
     await act(async () => {

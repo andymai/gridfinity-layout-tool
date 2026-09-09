@@ -45,8 +45,9 @@ export function useLayoutFolders() {
       setLibrary(next);
       const saved = await saveLibrary(next);
       if (isErr(saved)) {
-        // What the store shows must be what a reload will show.
-        setLibrary(previous);
+        // What the store shows must be what a reload will show, unless a
+        // newer library landed meanwhile; that one saves itself.
+        if (useLibraryStore.getState().library === next) setLibrary(previous);
         addToast(t('layouts.folders.saveFailed'), 'error');
         return null;
       }

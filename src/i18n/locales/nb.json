@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Dette sletter kontoen din, alle synkroniserte oppsett og alle synkroniserte design permanent fra serverne våre. Dette kan ikke angres.",
   "syncDialog.deleteAccount.title": "Slette kontoen din?",
   "syncDialog.signOut.keep": "Behold og logg ut",
-  "syncDialog.signOut.message": "Beholde de {count} lokale oppsettene, designene, baseplatene og mappene på denne enheten? Du kan også slette dem.",
+  "syncDialog.signOut.message": "Behold de {count} lokale oppsettene, designene, bunnplatene og mappene på denne enheten? Du kan også slette dem.",
   "syncDialog.signOut.title": "Logg ut",
   "syncDialog.signOut.wipe": "Slett og logg ut",
   "tablet.layersCategories": "Lag og kategorier",

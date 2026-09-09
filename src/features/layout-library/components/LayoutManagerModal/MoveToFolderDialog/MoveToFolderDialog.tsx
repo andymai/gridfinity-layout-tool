@@ -51,7 +51,7 @@ export function MoveToFolderDialog({
   };
 
   return (
-    <Dialog.Root open={open} onClose={onClose} size="sm">
+    <Dialog.Root open={open} onClose={onClose} size="sm" dismissable={!busy}>
       <Dialog.Header
         title={t('layouts.folders.moveTitle', { name })}
         closeAriaLabel={t('common.closeDialog')}

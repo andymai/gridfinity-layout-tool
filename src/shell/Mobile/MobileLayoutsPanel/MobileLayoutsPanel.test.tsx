@@ -248,6 +248,15 @@ describe('MobileLayoutsPanel', () => {
       expect(screen.getByText('2 layouts')).toBeInTheDocument();
     });
 
+    it('reveals the swipe actions by the distance the finger travelled', () => {
+      render(<MobileLayoutsPanel />);
+      const row = screen.getByText('Second Layout').closest('button')?.parentElement;
+      if (!row) throw new Error('row not rendered');
+      fireEvent.touchStart(row, { touches: [{ clientX: 300 }] });
+      fireEvent.touchMove(row, { touches: [{ clientX: 200 }] });
+      expect(row.style.transform).toBe('translateX(-100px)');
+    });
+
     it('renders all layouts', () => {
       render(<MobileLayoutsPanel />);
       expect(screen.getByText('Test Layout')).toBeInTheDocument();

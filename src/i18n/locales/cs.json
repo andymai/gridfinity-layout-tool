@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Tímto trvale smažeš svůj účet, každé synchronizované rozvržení a každý synchronizovaný návrh binu z našich serverů. Toto nelze vrátit zpět.",
   "syncDialog.deleteAccount.title": "Smazat tvůj účet?",
   "syncDialog.signOut.keep": "Ponechat a odhlásit",
-  "syncDialog.signOut.message": "Ponechat {count} místních layoutů, designů, baseplate a složek v tomto zařízení? Můžeš je také smazat.",
+  "syncDialog.signOut.message": "Ponechat tvých {count} lokálních rozvržení, návrhů, základních desek a složek v tomto zařízení? Můžeš je také smazat.",
   "syncDialog.signOut.title": "Odhlásit se",
   "syncDialog.signOut.wipe": "Smazat a odhlásit",
   "tablet.layersCategories": "Vrstvy a kategorie",
