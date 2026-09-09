@@ -188,6 +188,58 @@ describe('navlib wire-boundary guards', () => {
     expect(onDisconnect).toHaveBeenCalledTimes(1);
   });
 
+  it('hands the pose to the mouse on every way out of the driver', async () => {
+    vi.stubGlobal('window', globalThis);
+    const endMotion = vi.fn();
+    const unregister = spaceMouseBus.register({
+      id: 'handoff-canvas',
+      runCommand: () => {},
+      invalidate: () => {},
+      navlib: { endMotion } as unknown as NavlibViewAccessors,
+    });
+    try {
+      const onDisconnect = vi.fn();
+      await startNavlib({ onDisconnect });
+      driver.client?.onStopMotion?.();
+      expect(endMotion).toHaveBeenCalledTimes(1);
+      driver.client?.onDisconnect?.('closed');
+      expect(endMotion).toHaveBeenCalledTimes(2);
+      expect(onDisconnect).toHaveBeenCalledTimes(1);
+      await startNavlib({ onDisconnect });
+      stopNavlib();
+      expect(endMotion).toHaveBeenCalledTimes(3);
+    } finally {
+      unregister();
+    }
+  });
+
+  it('still falls back to WebHID when the handoff throws on disconnect', async () => {
+    vi.stubGlobal('window', globalThis);
+    const unregister = spaceMouseBus.register({
+      id: 'throwing-handoff',
+      runCommand: () => {},
+      invalidate: () => {},
+      navlib: {
+        endMotion: () => {
+          throw new Error('no camera');
+        },
+      } as unknown as NavlibViewAccessors,
+    });
+    try {
+      const onDisconnect = vi.fn();
+      await startNavlib({ onDisconnect });
+      expect(() => driver.client?.onDisconnect?.('closed')).not.toThrow();
+      expect(onDisconnect).toHaveBeenCalledTimes(1);
+      await vi.waitFor(() => expect(reportedProperties()).toEqual(['motion.end']));
+      // The session is fully torn down: a fresh start connects again.
+      driver.created = 0;
+      await startNavlib({ onDisconnect });
+      expect(driver.created).toBe(1);
+    } finally {
+      unregister();
+    }
+  });
+
   it('runs a throwing fallback once when the driver refuses the connection', async () => {
     driver.connects = false;
     const onDisconnect = vi.fn(() => {

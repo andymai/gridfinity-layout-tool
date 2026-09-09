@@ -1,3 +1,4 @@
+import type { Vector3 } from 'three';
 import type { SpaceMouseCommand } from '../types';
 
 /**
@@ -35,6 +36,8 @@ export interface NavlibViewAccessors {
   invalidate(): void;
   /** The puck stopped: hand the pose to the mouse. */
   endMotion(): void;
+  /** Put the canvas's own up back on the camera, for a fit or a preset, and return it. */
+  restoreUp(): Vector3;
 }
 
 /** Commands exported to the driver UI so pucks can bind buttons to them. */

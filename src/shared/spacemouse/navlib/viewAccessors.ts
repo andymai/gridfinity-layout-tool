@@ -27,8 +27,6 @@ export interface NavlibViewDeps {
   camera: Camera;
   controls: OrbitLike;
   scene: Object3D;
-  /** The canvas's own up axis; `camera.up` follows the puck while it moves. */
-  worldUp: Vector3;
   invalidate: () => void;
 }
 
@@ -38,8 +36,8 @@ const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 const Z_UP = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1];
 
 /** The app's previews are Z-up; a Y-up canvas is possible, so read the up axis. */
-function isZUp(d: NavlibViewDeps | null): boolean {
-  return !!d && Math.abs(d.worldUp.z) > 0.9;
+function isZUp(up: Vector3 | null): boolean {
+  return !!up && Math.abs(up.z) > 0.9;
 }
 
 function isTextMaterial(material: Mesh['material'] | undefined): boolean {
@@ -84,6 +82,19 @@ export function createNavlibViewAccessors(
   const tmpForward = new Vector3();
   const tmpPivot = new Vector3();
   const contentBox = createContentBoxCache();
+  // The canvas's own up axis. Read live until the driver leaves a pose's up on
+  // the camera, then held until the mouse gets the camera back: a projection
+  // switch may build its camera from the rolled one.
+  const worldUp = new Vector3(0, 0, 1);
+  let puckOwnsUp = false;
+  const canvasUp = (d: NavlibViewDeps): Vector3 => {
+    if (!puckOwnsUp) worldUp.copy(d.camera.up);
+    return worldUp;
+  };
+  const canvasUpOrNull = (): Vector3 | null => {
+    const d = getDeps();
+    return d ? canvasUp(d) : null;
+  };
 
   return {
     getViewMatrix() {
@@ -95,7 +106,10 @@ export function createNavlibViewAccessors(
     setViewMatrix(data) {
       const d = getDeps();
       if (!d) return;
+      const up = canvasUp(d);
       const prevDist = d.camera.position.distanceTo(d.controls.target) || 1;
+      // OrbitControls would add its own turn to every pose on update.
+      if (d.controls.autoRotate) d.controls.autoRotate = false;
       tmpMatrix.fromArray(data);
       tmpMatrix.decompose(d.camera.position, d.camera.quaternion, d.camera.scale);
       tmpForward.set(0, 0, -1).applyQuaternion(d.camera.quaternion);
@@ -113,26 +127,37 @@ export function createNavlibViewAccessors(
       // The driver owns the pose: the horizon, the pole, roll. What it cannot
       // know is this canvas's own limits, applied as tilts and slides that keep
       // its heading, and it reads the result back next frame.
-      clampElevation(d.camera, d.controls, d.worldUp, canvasPolarLimits(d.controls));
+      clampElevation(d.camera, d.controls, up, canvasPolarLimits(d.controls));
       if (d.controls.enablePan !== false && !box.isEmpty()) clampPan(d.camera, d.controls, box);
       // OrbitControls re-aims the camera at the target every frame with whatever
       // up the camera carries; only the pose's own up reproduces the pose.
       d.camera.up.set(0, 1, 0).applyQuaternion(d.camera.quaternion);
+      puckOwnsUp = true;
       d.camera.updateMatrixWorld(true);
       d.controls.update();
     },
     endMotion() {
       const d = getDeps();
       if (!d) return;
+      const up = canvasUp(d);
       // A rolled pose has no orbit-controls equivalent: the mouse continues on
       // the pose's own up. A level one goes back to world up, kept just off the
       // pole, where a `lookAt` on world up has a heading to reproduce.
-      if (!isLevelPose(d.camera, d.worldUp, LEVEL_ROLL_TOLERANCE)) return;
-      clampElevation(d.camera, d.controls, d.worldUp, polarLimits(d.controls));
-      d.camera.up.copy(d.worldUp);
+      if (!isLevelPose(d.camera, up, LEVEL_ROLL_TOLERANCE)) return;
+      clampElevation(d.camera, d.controls, up, polarLimits(d.controls));
+      d.camera.up.copy(up);
+      puckOwnsUp = false;
       d.camera.updateMatrixWorld(true);
       d.controls.update();
       d.invalidate();
+    },
+    restoreUp() {
+      const d = getDeps();
+      if (!d) return worldUp.clone();
+      const up = canvasUp(d).clone();
+      d.camera.up.copy(up);
+      puckOwnsUp = false;
+      return up;
     },
     getPerspective() {
       const d = getDeps();
@@ -195,18 +220,18 @@ export function createNavlibViewAccessors(
       return box.getCenter(new Vector3()).toArray();
     },
     getCoordinateSystem() {
-      return isZUp(getDeps()) ? Z_UP.slice() : IDENTITY.slice();
+      return isZUp(canvasUpOrNull()) ? Z_UP.slice() : IDENTITY.slice();
     },
     getFrontView() {
       // Front view = the app's world pose expressed in its coordinate system.
-      return isZUp(getDeps()) ? Z_UP.slice() : IDENTITY.slice();
+      return isZUp(canvasUpOrNull()) ? Z_UP.slice() : IDENTITY.slice();
     },
     getConstructionPlane() {
       // Ground plane through the origin, normal along the up axis.
-      return isZUp(getDeps()) ? [0, 0, 1, 0] : [0, 1, 0, 0];
+      return isZUp(canvasUpOrNull()) ? [0, 0, 1, 0] : [0, 1, 0, 0];
     },
     getFloorPlane() {
-      return isZUp(getDeps()) ? [0, 0, 1, 0] : [0, 1, 0, 0];
+      return isZUp(canvasUpOrNull()) ? [0, 0, 1, 0] : [0, 1, 0, 0];
     },
     getViewRotatable() {
       const d = getDeps();

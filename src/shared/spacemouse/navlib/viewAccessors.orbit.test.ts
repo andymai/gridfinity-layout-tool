@@ -45,7 +45,7 @@ function canvas(): NavlibViewDeps & { controls: OrbitControls } {
   mesh.name = 'model';
   scene.add(mesh);
   scene.updateMatrixWorld(true);
-  return { camera, controls, scene, worldUp: Z.clone(), invalidate: () => {} };
+  return { camera, controls, scene, invalidate: () => {} };
 }
 
 describe('driver poses through OrbitControls', () => {

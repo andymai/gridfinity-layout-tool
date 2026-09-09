@@ -44,13 +44,7 @@ class CameraBoundMesh extends Mesh {
 }
 
 function deps(camera: Camera, scene = makeScene()): NavlibViewDeps {
-  return {
-    camera,
-    controls: makeControls(),
-    scene,
-    worldUp: camera.up.clone(),
-    invalidate: () => {},
-  };
+  return { camera, controls: makeControls(), scene, invalidate: () => {} };
 }
 
 describe('createNavlibViewAccessors', () => {
@@ -266,7 +260,6 @@ function driveRoll(pose: number[], delta: number): number[] {
  * using whatever up vector the camera carries at the time.
  */
 function aimedDeps(camera: Camera, scene: Scene, extra: Partial<OrbitLike> = {}): NavlibViewDeps {
-  const worldUp = camera.up.clone();
   const controls: OrbitLike = {
     target: new Vector3(),
     update: () => {
@@ -276,7 +269,7 @@ function aimedDeps(camera: Camera, scene: Scene, extra: Partial<OrbitLike> = {})
     ...extra,
   };
   controls.update();
-  return { camera, controls, scene, worldUp, invalidate: () => {} };
+  return { camera, controls, scene, invalidate: () => {} };
 }
 
 function bigModel(): Scene {
@@ -294,7 +287,10 @@ function screenRight(camera: Camera): Vector3 {
 }
 
 function polarOf(camera: Camera, d: NavlibViewDeps): number {
-  return camera.position.clone().sub(d.controls.target).angleTo(d.worldUp);
+  return camera.position
+    .clone()
+    .sub(d.controls.target)
+    .angleTo(new Vector3(0, 0, 1));
 }
 
 function expectPose(actual: number[], asked: number[], digits = 5): void {
@@ -465,13 +461,43 @@ describe('driver-written poses', () => {
     expect(camera.up.distanceTo(Z)).toBeGreaterThan(0.1);
   });
 
-  it("reads the coordinate system from the canvas up, not the driver's", () => {
-    const camera = new PerspectiveCamera();
+  it("keeps a rolled pose's up near the pole too", () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
     camera.up.set(0, 0, 1);
-    const d = deps(camera);
-    camera.up.set(0, 1, 0);
+    camera.position.set(3, 0, 300);
+    const d = aimedDeps(camera, bigModel());
     const acc = createNavlibViewAccessors(() => d);
+    const rolled = driveRoll(acc.getViewMatrix(), Math.PI / 2);
+    acc.setViewMatrix(rolled);
+    d.controls.update();
+    acc.endMotion();
+    d.controls.update();
+    expectPose(acc.getViewMatrix(), rolled);
+    expect(camera.up.distanceTo(Z)).toBeGreaterThan(0.1);
+  });
+
+  it('turns auto-rotate off when the driver writes a pose', () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(200, 0, 60);
+    const d = aimedDeps(camera, bigModel(), { autoRotate: true });
+    const acc = createNavlibViewAccessors(() => d);
+    acc.setViewMatrix(acc.getViewMatrix());
+    expect(d.controls.autoRotate).toBe(false);
+  });
+
+  it("reads the coordinate system from the canvas up, not the driver's", () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(200, 0, 60);
+    const d = aimedDeps(camera, bigModel());
+    const acc = createNavlibViewAccessors(() => d);
+    acc.setViewMatrix(driveRoll(acc.getViewMatrix(), Math.PI / 2));
+    expect(camera.up.distanceTo(Z)).toBeGreaterThan(0.5);
     expect(acc.getCoordinateSystem()[6]).toBe(-1);
     expect(acc.getConstructionPlane()).toEqual([0, 0, 1, 0]);
+    // A fit puts the canvas's up back and reports it.
+    expect(acc.restoreUp().toArray()).toEqual([0, 0, 1]);
+    expect(camera.up.toArray()).toEqual([0, 0, 1]);
   });
 });

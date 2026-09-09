@@ -1,5 +1,14 @@
 import { render } from '@testing-library/react';
-import { BoxGeometry, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, Vector3 } from 'three';
+import {
+  BoxGeometry,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  PerspectiveCamera,
+  Quaternion,
+  Scene,
+  Vector3,
+} from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { spaceMouseBus } from '../../spaceMouseBus';
 import { SpaceMouseController } from './SpaceMouseController';
@@ -19,6 +28,16 @@ vi.mock('@react-three/fiber', () => ({
 vi.mock('@/shared/hooks/useFeatureFlag', () => ({
   useFeatureFlag: () => true,
 }));
+
+/** The camera's pose rolled a quarter turn about its view direction, as a column-major matrix. */
+function rolledPose(camera: PerspectiveCamera): number[] {
+  camera.updateMatrixWorld(true);
+  const forward = new Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+  const roll = new Quaternion().setFromAxisAngle(forward, Math.PI / 2);
+  return new Matrix4()
+    .compose(camera.position, camera.quaternion.clone().premultiply(roll), new Vector3(1, 1, 1))
+    .toArray();
+}
 
 function makeState() {
   const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
@@ -74,6 +93,29 @@ describe('SpaceMouseController', () => {
     // Target snaps to the mesh center at (5, 0, 0).
     expect(controls.target.x).toBeCloseTo(5);
     expect(h.state.invalidate).toHaveBeenCalled();
+  });
+
+  it('restores the canvas up on a fit command after the driver rolled the camera', () => {
+    const camera = h.state.camera as PerspectiveCamera;
+    camera.up.set(0, 0, 1);
+    render(<SpaceMouseController />);
+    spaceMouseBus.activeNavlib()?.setViewMatrix(rolledPose(camera));
+    expect(camera.up.z).toBeLessThan(0.5);
+    spaceMouseBus.pressButton(0); // fit
+    expect(camera.up.toArray()).toEqual([0, 0, 1]);
+  });
+
+  it('keeps the canvas up across a camera swap', () => {
+    const camera = h.state.camera as PerspectiveCamera;
+    camera.up.set(0, 0, 1);
+    const { rerender } = render(<SpaceMouseController />);
+    spaceMouseBus.activeNavlib()?.setViewMatrix(rolledPose(camera));
+    // A projection switch builds its camera from the current one, up included.
+    const swapped = new PerspectiveCamera(50, 1, 0.1, 1000);
+    swapped.up.copy(camera.up);
+    h.state = { ...h.state, camera: swapped };
+    rerender(<SpaceMouseController />);
+    expect(spaceMouseBus.activeNavlib()?.getCoordinateSystem()[6]).toBe(-1);
   });
 
   it('does not drive a canvas that is not active', () => {

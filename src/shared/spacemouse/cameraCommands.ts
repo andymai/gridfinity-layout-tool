@@ -317,11 +317,20 @@ function tiltAboutAxis(offset: Vector3, axis: Vector3, up: Vector3, height: numb
   return Math.abs(first) < Math.abs(second) ? first : second;
 }
 
-/** Whether a pose's horizon is level enough to hand to the mouse on world up. */
+/**
+ * Whether a pose's horizon is level enough to hand to the mouse on world up.
+ * Roll is read against world up projected into the image plane, so it does not
+ * shrink with the view's tilt toward a pole; at the pole itself every heading
+ * is level.
+ */
 export function isLevelPose(camera: Camera, worldUp: Vector3, tolerance: number): boolean {
-  const right = new Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+  const forward = new Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
   const up = new Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
-  return Math.abs(right.dot(worldUp)) < tolerance && up.dot(worldUp) >= 0;
+  const horizonUp = worldUp.clone().addScaledVector(forward, -worldUp.dot(forward));
+  const length = horizonUp.length();
+  if (length < 1e-6) return true;
+  const right = new Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+  return Math.abs(right.dot(horizonUp)) / length < tolerance && up.dot(worldUp) >= 0;
 }
 
 /**
