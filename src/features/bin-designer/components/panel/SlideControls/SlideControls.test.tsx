@@ -59,7 +59,7 @@ describe('SlideControls', () => {
     for (const label of ['Under the lip', 'At the rim']) {
       expect(screen.getByRole('radio', { name: label })).toBeInTheDocument();
     }
-    for (const label of ['None', 'Finger notch', 'Tab']) {
+    for (const label of ['None', 'Finger notch', 'Tab', 'Finger catch']) {
       expect(screen.getByRole('radio', { name: label })).toBeInTheDocument();
     }
   });

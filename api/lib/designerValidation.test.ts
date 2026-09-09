@@ -2197,6 +2197,10 @@ describe('validateDesignerShare — lid.slide', () => {
     ).toBe(true);
   });
 
+  it('accepts the finger catch pull', () => {
+    expect(withLidSlide({ pull: 'catch' }).valid).toBe(true);
+  });
+
   it('accepts an absent slide, which is what most designs carry', () => {
     const p = validPayload();
     const payload = { ...p, params: { ...p.params, lid: { enabled: true } } };

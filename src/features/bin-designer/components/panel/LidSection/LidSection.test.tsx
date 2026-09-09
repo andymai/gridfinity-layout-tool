@@ -4,6 +4,8 @@ import { LidSection } from './LidSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { LID_TOP_THICKNESS_MAX_MM } from '@/features/bin-designer/types';
+import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
+import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
 
 function resetStore(overrides: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {
   useDesignerStore.setState({
@@ -877,5 +879,41 @@ describe('LidSection lid cutouts', () => {
     });
     render(<LidSection />);
     expect(screen.getByRole('button', { name: /Cut holes in the lid/i })).toBeEnabled();
+  });
+});
+
+describe('LidSection size readout for a sliding lid', () => {
+  const slideParams = (pull: 'none' | 'catch') => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 2,
+    height: 6,
+    lid: {
+      ...DEFAULT_BIN_PARAMS.lid,
+      enabled: true,
+      attachment: 'slide' as const,
+      slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull },
+    },
+  });
+
+  it('reports the plate, not a cap shell', () => {
+    const params = slideParams('none');
+    useDesignerStore.setState({ params, ui: { ...DEFAULT_UI_STATE } });
+    render(<LidSection />);
+    const { geometry } = slideLidPlanForParams(params);
+    if (!geometry) throw new Error('expected slide geometry');
+    expect(
+      screen.getByText(new RegExp(`× ${geometry.plate.thicknessMm.toFixed(1)} mm$`))
+    ).toBeInTheDocument();
+  });
+
+  it('adds the finger catch to the height', () => {
+    const params = slideParams('catch');
+    useDesignerStore.setState({ params, ui: { ...DEFAULT_UI_STATE } });
+    render(<LidSection />);
+    const { geometry } = slideLidPlanForParams(params);
+    if (!geometry) throw new Error('expected slide geometry');
+    const height = (geometry.plate.thicknessMm + geometry.plate.pullReachMm).toFixed(1);
+    expect(screen.getByText(new RegExp(`× ${height} mm$`))).toBeInTheDocument();
   });
 });

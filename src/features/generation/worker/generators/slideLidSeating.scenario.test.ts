@@ -196,6 +196,25 @@ describe('sliding lid seating', () => {
     expect(entryLipRemnantMm({ ...pair, bin: bare })).toBeGreaterThan(3);
   }, 300000);
 
+  it('a finger catch fills the rim it took away, and still travels free', async () => {
+    const params = slideParams({}, { pull: 'catch', detent: false });
+    expect(await travelOverlap(params)).toBeLessThan(CONTACT_FLOOR_MM3);
+
+    const { canonicalToBin } = await import('./__kernel-tests__/slideLidSeating');
+    const pair = await build(params);
+    const { plate } = pair.geometry;
+    const [x, y] = canonicalToBin(pair.geometry, plate.trailingX - plate.pullDepthMm / 2, 0);
+    const topOf = (p: SlidePair): number =>
+      Math.max(...columnCrossings(p.lid, x, y)) + slideLidZOffset(p.params, p.geometry);
+    // Shut, the bar's top lands on the lip's own top plane, so the rim reads
+    // continuous across the entry wall.
+    const lipTop = binWallTopZ(params) + GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP;
+    expect(topOf(pair)).toBeCloseTo(lipTop, 1);
+    // Stated as a delta: the plain plate at the same column stops far lower.
+    const plain = await build(slideParams({}, { pull: 'none', detent: false }));
+    expect(topOf(pair) - topOf(plain)).toBeGreaterThan(GRIDFINITY_SPEC.LIP_HEIGHT);
+  }, 600000);
+
   it('keeps the lip intact on the walls the notch does not touch', async () => {
     // The travel-envelope cutter stops at the retainer's top plane.
     // Overshooting into the lip's angled support would back-fill the taper a

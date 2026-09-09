@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'slide-lid-finger-catch',
+    date: '2026-09-09',
+    kind: 'improved',
+    title: { en: 'A finger catch for sliding lids' },
+    body: {
+      en: 'The Pull control on a sliding lid has a fourth option. Finger catch is a bar along the lid’s outer edge, as wide as the lid and as tall as the stacking rim: shut, it fills the gap the lid needs in the rim; open, the whole width is something to push on. It stays inside the wall’s thickness, so bins still stack on top, and it prints flat with the lid.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'wall-pattern-strut-width',
     date: '2026-09-09',
     kind: 'improved',

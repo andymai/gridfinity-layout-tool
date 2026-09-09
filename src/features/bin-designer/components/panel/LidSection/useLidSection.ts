@@ -613,7 +613,12 @@ export function useLidSection() {
     const cavityExtra = resolveLidCavityExtraMm(params);
     const wallBottomZ = lidWallBottomZ(params.heightUnitMm, LID_FIT_CLEARANCE, cavityExtra);
     const topThickness = resolveLidPlateThickness(params);
-    const lidH = Math.abs(wallBottomZ) + topThickness;
+    // A sliding lid is its plate alone, plus whatever the pull stands up from
+    // it; the shell depth below describes a cap it does not have.
+    const slidePlate = slideLidPlanForParams(params).geometry?.plate;
+    const lidH = slidePlate
+      ? slidePlate.thicknessMm + (slidePlate.pull === 'catch' ? slidePlate.pullReachMm : 0)
+      : Math.abs(wallBottomZ) + topThickness;
     // The seam plane, which is what bounds how tall a grip relief can be:
     // everything between it and Z=0 is the lid's visible skirt.
     const anchorZ = lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, cavityExtra);
@@ -752,6 +757,7 @@ export function useLidSection() {
         case 'slideInteriorBlocked':
         case 'slideLongSpan':
         case 'slideRimInterrupted':
+        case 'slideCatchThin':
         case 'slideChannelInterrupted':
         case 'slideWallPattern':
           return;

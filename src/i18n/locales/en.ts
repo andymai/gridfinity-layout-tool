@@ -2158,6 +2158,9 @@ const en: Record<string, string> = {
     'A rounded bite out of the lid’s outer edge. Keeps the lid flush with the bin.',
   'binDesigner.lid.slide.pull.tabHint':
     'A lug reaching out past the bin’s face, in the lid’s own plane. Easiest to grab with gloves on.',
+  'binDesigner.lid.slide.pull.catch': 'Finger catch',
+  'binDesigner.lid.slide.pull.catchHint':
+    'A moveable section of the stacking rim on the lid’s outer edge. It completes the rim when shut, and gives you a broad pull to open it.',
   'binDesigner.lid.slide.detent': 'Click shut',
   'binDesigner.lid.slide.detentHint':
     'A small ramp on each runner that the lid clicks past, so a knock or a tipped drawer can’t slide it open. You can still pull it straight out.',
@@ -2247,6 +2250,8 @@ const en: Record<string, string> = {
     'The lid is wide enough to bow between its runners. Increase its thickness under Advanced.',
   'binDesigner.lid.compat.slideRimInterrupted':
     'The stacking lip is cut away on the {sides} wall so the lid can slide in. Bins still stack on the other three.',
+  'binDesigner.lid.compat.slideCatchThin':
+    'The finger catch can only be as thick as the entry wall, which leaves it too thin to print well here. A 1.2 mm wall or thicker gives it some strength.',
   'binDesigner.lid.compat.slideChannelInterrupted':
     'A cutout or handle opens the {sides} wall the lid runs along. The runner will bridge that opening, blocking part of it and standing unsupported across it.',
   'binDesigner.lid.compat.slideWallPattern':

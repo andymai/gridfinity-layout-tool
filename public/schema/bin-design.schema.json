@@ -1669,7 +1669,7 @@
           "description": "Fit clearance in mm."
         },
         "pull": {
-          "enum": ["none", "notch", "tab"],
+          "enum": ["none", "notch", "tab", "catch"],
           "description": "Pull feature so the lid can be gripped.",
           "x-constant": {
             "enum": "LID_SLIDE_PULLS"
