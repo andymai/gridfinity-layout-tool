@@ -1,0 +1,63 @@
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/shared/hooks/useLayoutFolders.test.ts
+  s_24b1f7fd65ccc8::t_e7d5bc26322bd8 108-131
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/features/layout-library/components/LayoutManagerModal/MoveToFolderDialog/MoveToFolderDialog.test.tsx
+  s_24b1f7fd65ccc8::t_6d0970806017ac 70-94
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_24b1f7fd65ccc8::t_76edc3c133efc3 251-259
+src/shared/hooks/useLayoutFolders.ts
+  s_24b1f7fd65ccc8::t_2d3f0b9f0622d1 48-50
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.test.tsx
+  s_24b1f7fd65ccc8::t_e7d5bc26322bd8 801-814,820-825
+  s_24b1f7fd65ccc8::t_2d3f0b9f0622d1 815,818-819
+  s_24b1f7fd65ccc8::t_6d0970806017ac 816-817
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.tsx
+  s_24b1f7fd65ccc8::t_2d3f0b9f0622d1 449
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/features/layout-library/components/LayoutManagerModal/MoveToFolderDialog/MoveToFolderDialog.tsx
+  s_24b1f7fd65ccc8::t_6d0970806017ac 54
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_87633ab35741df 4219
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+  s_24b1f7fd65ccc8::t_6d0970806017ac 299,301,303,313
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "77e4e01ecc787cae394bbd566cb479ec4240df2c",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
