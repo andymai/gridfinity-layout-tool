@@ -1,0 +1,31 @@
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.tsx
+  s_24b1f7fd65ccc8::t_38b73c99fb4111 135,139-143,147-149,175
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.test.tsx
+  s_24b1f7fd65ccc8::t_4f60adcfbff378 36
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_24b1f7fd65ccc8::t_222b1636069b13 806
+  s_24b1f7fd65ccc8::t_4f60adcfbff378 37
+src/core/sync/adapters/folderAdapter.ts
+  s_24b1f7fd65ccc8::t_38b73c99fb4111 4,77-85,89
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.tsx
+  s_24b1f7fd65ccc8::t_842342fff4f791 406
+src/core/sync/adapters/folderAdapter.test.ts
+  s_24b1f7fd65ccc8::t_222b1636069b13 4,7-8,161-163
+  s_24b1f7fd65ccc8::t_38b73c99fb4111 85-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "10bf0217aaacdbac29d63174db63d9eabc5c6f7f",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
