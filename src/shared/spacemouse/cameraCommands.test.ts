@@ -214,6 +214,44 @@ describe('vertical orbit limits', () => {
     expect(Math.min(...polars)).toBeCloseTo(Math.PI * 0.05, 6);
   });
 
+  it.each([1.6, 2.0, 2.5, 3.0, 5.0])(
+    'keeps the polar angle when the puck spins %s rad horizontally in one frame',
+    (orbitH) => {
+      // Pure azimuth: `applyFrameMotion` turns the offset about the up axis,
+      // which cannot change the polar angle by construction. Reading the fold
+      // off the azimuth jump alone said otherwise past a quarter turn and threw
+      // the view flat onto the pole, which is where it then stuck (#4041).
+      const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
+      camera.up.set(0, 0, 1);
+      camera.position.set(60, 0, 20);
+      const controls = aimingOrbit(camera);
+      const before = polarOf(camera, controls);
+
+      for (let i = 0; i < 8; i++) {
+        applyFrameMotion(camera, controls, { ...noMotion, orbitH });
+        expect(polarOf(camera, controls)).toBeCloseTo(before, 6);
+      }
+      expect(camera.position.length()).toBeCloseTo(Math.sqrt(60 * 60 + 20 * 20), 6);
+    }
+  );
+
+  it('still stalls at the pole when the spin is fast and the push is vertical', () => {
+    // The pair to the case above: the fold detection has to keep working while
+    // the azimuth moves fast, or the fix for one is the other's regression.
+    const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(60, 0, 20);
+    const controls = aimingOrbit(camera);
+
+    const polars: number[] = [];
+    for (let i = 0; i < 40; i++) {
+      applyFrameMotion(camera, controls, { ...noMotion, orbitV: -0.15, orbitH: 1.6 });
+      polars.push(polarOf(camera, controls));
+    }
+    expect(Math.min(...polars)).toBeGreaterThanOrEqual(MIN_POLAR - 1e-9);
+    expect(polars[polars.length - 1]).toBeCloseTo(MIN_POLAR, 6);
+  });
+
   it('leaves an orbit that stays inside the limits untouched', () => {
     const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
     camera.up.set(0, 0, 1);
