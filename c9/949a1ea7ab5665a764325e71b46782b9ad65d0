@@ -1,0 +1,27 @@
+src/features/generation/worker/generators/scenarios/wallPatterns.ts
+  s_24b1f7fd65ccc8::t_b8abd24e072954 143-144
+src/features/bin-designer/types/walls.ts
+  s_24b1f7fd65ccc8::t_b8abd24e072954 122-124
+src/features/bin-designer/utils/printEstimates.ts
+  s_24b1f7fd65ccc8::t_b8abd24e072954 63-66,824-828,834-835
+  s_24b1f7fd65ccc8::t_d963cb396a9a2e 836-838
+  s_24b1f7fd65ccc8::t_ff3cec6a2b8111 839-840
+src/features/generation/worker/generators/patterns/patternScale.ts
+  s_24b1f7fd65ccc8::t_b8abd24e072954 28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c9949a1ea7ab5665a764325e71b46782b9ad65d0",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
