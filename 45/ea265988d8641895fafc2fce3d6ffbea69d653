@@ -1,0 +1,148 @@
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/features/bin-designer/types/binParams.ts
+  s_24b1f7fd65ccc8::t_193a42fa9a7b0f 9,127-128
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_24b1f7fd65ccc8::t_d9b2c32ea0cbe5 1143-1144
+src/features/bin-designer/types/walls.ts
+  s_24b1f7fd65ccc8::t_193a42fa9a7b0f 137-153
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.test.ts
+  s_24b1f7fd65ccc8::t_7aab78ca42af29 277-353,355-404,406-410
+  s_24b1f7fd65ccc8::t_fdb0d8edffdd65 354
+  s_24b1f7fd65ccc8::t_5c5b68b8b10461 405
+src/features/generation/worker/generators/scenarios/wallLabelSlots.ts
+  s_24b1f7fd65ccc8::t_124c2fd60a8e1c 18,121
+  s_24b1f7fd65ccc8::t_8d083645f66716 12-15,151-165
+  s_24b1f7fd65ccc8::t_e3b0b75915e045 50-59,65-66,90-94,96-98
+  s_24b1f7fd65ccc8::t_595dd4e861e85d 60-64
+  s_24b1f7fd65ccc8::t_152c9a236ba01e 1-11,16-17,19-49,67-89,95,99-120,122-150,166-168
+public/schema/bin-design.schema.json
+  s_24b1f7fd65ccc8::t_0f6fc95802eb50 426-428,2647-2673
+src/shared/utils/labelSocketPlan.ts
+  s_24b1f7fd65ccc8::t_83ede7d0edebc0 29,92,98-99,132-141,143-156
+  s_24b1f7fd65ccc8::t_dac7049c6488c5 142
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_24b1f7fd65ccc8::t_8280a021ecc2ff 306-311
+src/shared/utils/wallLabelSlotPlan.ts
+  s_24b1f7fd65ccc8::t_444169898696f4 1-53,58-102,109-196,237
+  s_24b1f7fd65ccc8::t_be5e376b9dfb11 54-57,103-108,197-236
+src/i18n/locales/en.ts
+  s_24b1f7fd65ccc8::t_de506b52e558fb 3286-3307
+src/features/bin-designer/constants/paramMigration.ts
+  s_24b1f7fd65ccc8::t_3e6b5b7cfbb297 140
+  s_24b1f7fd65ccc8::t_589074c66172f4 28,139,1161-1186,1800
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_24b1f7fd65ccc8::t_d9b2c32ea0cbe5 623-624
+  s_24b1f7fd65ccc8::t_3c30080e1b66ef 67-68,123-124,197-198,365-384,478-486,502,505-512
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/features/whats-new/latest.ts
+  s_24b1f7fd65ccc8::t_8280a021ecc2ff 9
+src/features/generation/worker/generators/scenarios/index.ts
+  s_24b1f7fd65ccc8::t_152c9a236ba01e 50,125
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/shared/schema/binDesignKeys.ts
+  s_24b1f7fd65ccc8::t_193a42fa9a7b0f 100
+  s_24b1f7fd65ccc8::t_fa63734375b064 30,240-244
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/features/bin-designer/store/designer.scenario.walls.test.ts
+  s_24b1f7fd65ccc8::t_72f2e3a977687d 162-203
+src/shared/types/bin.ts
+  s_24b1f7fd65ccc8::t_193a42fa9a7b0f 62,283
+api/lib/designerValidation.ts
+  s_24b1f7fd65ccc8::t_0f6fc95802eb50 211,1010-1037,1878-1879,1881
+  s_24b1f7fd65ccc8::t_8e3b34ee492556 1880
+src/features/bin-designer/hooks/useLabelPlateExport.test.ts
+  s_24b1f7fd65ccc8::t_5d149ad37d236c 89
+src/features/generation/worker/generators/binGenerator.scenario.wallLabelSlots.test.ts
+  s_24b1f7fd65ccc8::t_152c9a236ba01e 1-5
+docs/schemas/constraints.md
+  s_24b1f7fd65ccc8::t_3e6b5b7cfbb297 149
+src/features/generation/worker/generators/wallPatternClips.ts
+  s_24b1f7fd65ccc8::t_3c30080e1b66ef 183-184,207-210
+  s_24b1f7fd65ccc8::t_162e849fb277a5 211
+docs/schemas/bin-design.md
+  s_24b1f7fd65ccc8::t_3e6b5b7cfbb297 109
+  s_24b1f7fd65ccc8::t_115a60351f13f1 341-348
+src/features/generation/worker/generators/wallPatternCompound.ts
+  s_24b1f7fd65ccc8::t_3c30080e1b66ef 117-118,122-131
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_24b1f7fd65ccc8::t_02ee8fc4f84549 6,9,21,23,44-53,209-263
+  s_24b1f7fd65ccc8::t_2ba2dfbe1157db 264-266
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/features/whats-new/entries.ts
+  s_24b1f7fd65ccc8::t_8280a021ecc2ff 17-26
+  s_24b1f7fd65ccc8::t_d6cc68efb95f36 16
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_24b1f7fd65ccc8::t_5c5b68b8b10461 4,8-13,18,26-36,54,67,71,296-389,414-422,435-437
+src/features/generation/worker/generators/pipeline/featureComposition.ts
+  s_24b1f7fd65ccc8::t_152c9a236ba01e 24
+  s_24b1f7fd65ccc8::t_124c2fd60a8e1c 38-39,50-51
+src/features/generation/worker/generators/binGenerator.export.wallLabelSlots.test.ts
+  s_24b1f7fd65ccc8::t_152c9a236ba01e 1-5
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.test.tsx
+  s_24b1f7fd65ccc8::t_7aab78ca42af29 351-389,391-393,395-410,412
+  s_24b1f7fd65ccc8::t_5d149ad37d236c 163,394
+  s_24b1f7fd65ccc8::t_fdb0d8edffdd65 390
+src/shared/utils/labelSocketPlan.test.ts
+  s_24b1f7fd65ccc8::t_6a185e5d55ff5f 422-475
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+scripts/schema/bounds.test.ts
+  s_24b1f7fd65ccc8::t_3e6b5b7cfbb297 104,149
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_1b3767cd6baad7 2000-2016
+src/features/generation/worker/generators/wallLabelSlotBuilder.ts
+  s_24b1f7fd65ccc8::t_152c9a236ba01e 1-21,23-122,125-126,129-151,169-223,225-229
+  s_24b1f7fd65ccc8::t_063306d7ad9e58 22,123-124,127-128,152-168,224
+src/shared/utils/wallLabelSlotPlan.test.ts
+  s_24b1f7fd65ccc8::t_0a4719db1f4ab4 81
+  s_24b1f7fd65ccc8::t_444169898696f4 1-9,11-80,82-104
+  s_24b1f7fd65ccc8::t_2f37368a811bed 10,105-131,136-142,145-158
+  s_24b1f7fd65ccc8::t_8d083645f66716 132-135,143-144
+api/lib/designerValidationConstants.ts
+  s_24b1f7fd65ccc8::t_05db54934c7970 60
+src/features/bin-designer/store/slices/paramSlice/scopedUpdaters.ts
+  s_24b1f7fd65ccc8::t_4da1a345fde864 18,39,181-190
+src/features/bin-designer/types/designerState.ts
+  s_24b1f7fd65ccc8::t_72223bb3733018 46,279
+src/features/generation/worker/generators/pipeline/featureCacheKeyDiscipline.test.ts
+  s_24b1f7fd65ccc8::t_681c7044d55bf5 144-148
+src/shared/generation/socketNozzle.ts
+  s_24b1f7fd65ccc8::t_b2cd7ccbcfd9c4 26-28,30
+src/shared/schema/keys.ts
+  s_24b1f7fd65ccc8::t_f92aa13212bf84 61,173,255
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "45ea265988d8641895fafc2fce3d6ffbea69d653",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
