@@ -1,0 +1,128 @@
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/features/bin-designer/utils/bentoDraw.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 39,222-223
+  s_24b1f7fd65ccc8::t_c9ad05e47cf870 224
+src/features/bin-designer/utils/compartments.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 26,760-762,817-819,884
+src/features/generation/worker/generators/binGenerator.scenario.floorRaise.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-5
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+docs/schemas/constraints.md
+  s_24b1f7fd65ccc8::t_288702d66a2efc 142
+src/features/bin-designer/components/BentoWorkspace/BentoDock.tsx
+  s_24b1f7fd65ccc8::t_288702d66a2efc 30,391
+  s_24b1f7fd65ccc8::t_eb7298778a8216 392
+src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 9-12,246-263
+  s_24b1f7fd65ccc8::t_6b1f1ec9d64c3f 264-267
+api/lib/designerValidationConstants.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 61
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 819-835
+src/features/bin-designer/store/designer.scenario.compartments.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 4,1010-1040
+  s_24b1f7fd65ccc8::t_025c951e182746 1041
+src/features/bin-designer/utils/compartmentFloorRaise.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-40
+src/features/whats-new/entries.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 28-34
+  s_24b1f7fd65ccc8::t_d0aadb70e9b826 27
+  s_24b1f7fd65ccc8::t_325a3a7edfae5f 26,35-36
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/i18n/locales/en.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 3465-3467
+  s_24b1f7fd65ccc8::t_ee7b8b7db40185 3301-3302
+api/lib/designerCompartmentValidation.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 877-898
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 38,69-70,83-84,98-99,103-105,148-150,191,253-254,335-337,342-346,353-354
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/features/bin-designer/utils/printEstimates.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 20,255,368-388
+  s_24b1f7fd65ccc8::t_ca249ad0126a02 389-390
+src/features/generation/worker/generators/scenarios/index.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 51,127
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/features/generation/worker/generators/pipeline/featureCacheKeyDiscipline.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 153
+  s_24b1f7fd65ccc8::t_d726e70a6cc790 147-151
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+api/lib/designerCompartmentValidation.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 245-262
+src/features/generation/worker/generators/binGenerator.export.floorRaise.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-5
+docs/schemas/bin-design.md
+  s_24b1f7fd65ccc8::t_288702d66a2efc 196-213
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/features/bin-designer/types/designerState.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 223
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentFloorControls.test.tsx
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-37
+src/features/bin-designer/README.md
+  s_24b1f7fd65ccc8::t_288702d66a2efc 482-487,555,561,565-573,578,583,592,600,612,636,645,651,687,695,725,740,742
+src/shared/schema/binDesignKeys.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 152
+src/shared/types/bin.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 279-280
+src/features/bin-designer/components/BentoWorkspace/BentoDock.test.tsx
+  s_24b1f7fd65ccc8::t_288702d66a2efc 168-188
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentFloorControls.tsx
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-42
+public/schema/bin-design.schema.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 550-561,2671,2674
+  s_24b1f7fd65ccc8::t_1dc3b9ab187c97 2659-2670,2672-2673,2675-2678,2680-2681
+src/features/generation/worker/generators/floorRaiseBuilder.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-169
+src/features/bin-designer/types/compartments.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 10-15,97-108
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+scripts/schema/bounds.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 109,151
+src/features/bin-designer/utils/compartmentFloorRaise.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-23
+src/features/bin-designer/utils/compartmentRemap.test.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-43
+src/features/bin-designer/utils/compartmentRemap.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 105-129
+  s_24b1f7fd65ccc8::t_0bac07e64046f5 104
+src/features/generation/worker/generators/scenarios/floorRaise.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 1-120
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_288702d66a2efc 412-413
+src/features/generation/worker/generators/pipeline/featureComposition.ts
+  s_24b1f7fd65ccc8::t_288702d66a2efc 20,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "97b23f99ba9f59be63fe271b068acefd843df663",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
