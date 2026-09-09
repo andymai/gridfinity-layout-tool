@@ -36,11 +36,24 @@ export const FOLD_SWEEP_TOLERANCE = 0.01;
 
 /**
  * How far the orbit target may drift outside the model's bounding box before
- * panning stops, in model radii. One radius lets the model be pushed to the
- * edge of the viewport without letting it leave. Also capped by what the
- * viewport actually shows, so the leash tightens as you zoom in.
+ * panning stops. The smaller of two bounds, and each one answers a case the
+ * other cannot:
+ *
+ * - {@link PAN_LEASH_RADII}, in model radii, is the absolute bound. Without it
+ *   the leash grows with viewing distance, so zooming out first buys a target
+ *   thousands of millimetres away and the dolly back in drags it home in one
+ *   long lurch.
+ * - {@link PAN_LEASH_VIEWPORT_FRACTION}, of what the viewport shows, tightens
+ *   as you zoom in, and is what keeps a large layout pannable: a target inside
+ *   the box overshoots by nothing, so this only governs leaving the model.
+ *
+ * Both are halves rather than wholes. At a whole radius the nearest face of a
+ * small model sat right on the edge of the screen and everything past it was
+ * off, which is the "still possible to move the model out of view" in #4041 —
+ * a bound that let the model leave while reporting that it had not.
  */
-export const PAN_LEASH_RADII = 1;
+export const PAN_LEASH_RADII = 0.5;
+export const PAN_LEASH_VIEWPORT_FRACTION = 0.5;
 
 export const DEFAULT_SETTINGS: SpaceMouseSettings = {
   sensitivity: 1,
