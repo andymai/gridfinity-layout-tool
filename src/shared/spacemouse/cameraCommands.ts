@@ -8,12 +8,7 @@ import {
   Spherical,
   Vector3,
 } from 'three';
-import {
-  FOLD_SWEEP_TOLERANCE,
-  MIN_POLAR,
-  PAN_LEASH_RADII,
-  PAN_LEASH_VIEWPORT_FRACTION,
-} from './constants';
+import { MIN_POLAR, PAN_LEASH_RADII, PAN_LEASH_VIEWPORT_FRACTION } from './constants';
 import type { CameraViewPreset, FrameMotion } from './types';
 
 /**
@@ -129,15 +124,26 @@ function wrapPi(angle: number): number {
   return ((((angle + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
 }
 
+export interface PolarLimits {
+  min: number;
+  max: number;
+}
+
+/** The elevation band the host canvas itself imposes; absent means the whole sphere. */
+export function canvasPolarLimits(controls: OrbitLike): PolarLimits {
+  return { min: controls.minPolarAngle ?? 0, max: controls.maxPolarAngle ?? Math.PI };
+}
+
 /**
- * The polar band this canvas allows, never reaching a pole itself: a view
- * direction parallel to the up axis has no defined horizon, so `lookAt` picks
- * one arbitrarily and the scene appears to spin.
+ * The canvas's band, never reaching a pole itself: a view direction parallel
+ * to the up axis has no defined horizon, so `lookAt` picks one arbitrarily and
+ * the scene appears to spin.
  */
-function polarLimits(controls: OrbitLike): { min: number; max: number } {
+export function polarLimits(controls: OrbitLike): PolarLimits {
+  const canvas = canvasPolarLimits(controls);
   return {
-    min: Math.max(controls.minPolarAngle ?? 0, MIN_POLAR),
-    max: Math.min(controls.maxPolarAngle ?? Math.PI, Math.PI - MIN_POLAR),
+    min: Math.max(canvas.min, MIN_POLAR),
+    max: Math.min(canvas.max, Math.PI - MIN_POLAR),
   };
 }
 
@@ -168,54 +174,22 @@ function foldFromStep(prevPhi: number, polarStep: number): PoleCrossing {
 }
 
 /**
- * Which pole a finished pose appears to have crossed, from how far the view
- * swept getting there.
+ * Pull a camera that integrated its own orbit back inside the canvas's limits,
+ * `prevOffset` being the target-to-camera vector from before the move and
+ * `polarStep` the vertical orbit just applied.
  *
- * Over a pole the two directions are separated by exactly the two polar angles
- * added together, because the path runs up one meridian and down the opposite
- * one, and every other route between the same pair is shorter. The azimuth jump
- * on its own proves nothing: a horizontal spin past a quarter turn in a frame
- * jumps just as far, and reading it that way threw the view flat onto the pole
- * on motions with no vertical component in them at all.
- *
- * Only sound while the frame's own azimuth motion is small, which is what a
- * pose arriving from the driver's pitch is. A caller integrating its own orbit
- * passes the step instead and this is not consulted.
- */
-function foldFromSweep(prevPhi: number, phi: number, swept: number): PoleCrossing {
-  const overZenith = prevPhi + phi;
-  if (overZenith <= Math.PI && Math.abs(swept - overZenith) < FOLD_SWEEP_TOLERANCE) {
-    return 'zenith';
-  }
-  const overNadir = 2 * Math.PI - overZenith;
-  if (overNadir <= Math.PI && Math.abs(swept - overNadir) < FOLD_SWEEP_TOLERANCE) {
-    return 'nadir';
-  }
-  return null;
-}
-
-/**
- * Pull a camera that has already moved back inside its canvas's navigation
- * limits, `prevOffset` being the target-to-camera vector from before the move.
- *
- * Both puck transports need this and neither gets it from OrbitControls, which
- * only limits the moves it makes itself: a WebHID frame integrates its own
- * orbit, and the driver hands over a finished pose. Without it the puck reaches
- * poses the mouse refuses on the same canvas.
- *
- * `polarStep` is the vertical orbit the caller just applied, when it applied
- * one itself. Whether the pose went over a pole is NOT recoverable from the two
- * poses: the folded and unfolded readings describe the same final vector, so
- * both hypotheses predict every measurable thing about it. A caller that
- * integrated the step knows the answer outright and should say so; one handed a
- * finished pose has {@link foldFromSweep} to fall back on.
+ * OrbitControls only limits the moves it makes itself, so a WebHID frame gets
+ * nothing from it. Whether the step went over a pole is NOT recoverable from
+ * the two poses: the folded and unfolded readings describe the same final
+ * vector, so both hypotheses predict every measurable thing about it. The
+ * caller integrated the step, so it knows the answer outright and says so.
  */
 export function constrainPose(
   camera: Camera,
   controls: OrbitLike,
   prevOffset: Vector3,
-  contentBox?: Box3 | null,
-  polarStep?: number
+  contentBox: Box3 | null | undefined,
+  polarStep: number
 ): void {
   const offset = camera.position.clone().sub(controls.target);
   const distance = offset.length();
@@ -231,10 +205,7 @@ export function constrainPose(
     // makes the clamp below stall the orbit rather than pin it facing backwards.
     if (prevOffset.lengthSq() > 1e-18) {
       const prev = new Spherical().setFromVector3(prevOffset.clone().applyQuaternion(toSpherical));
-      const crossed =
-        polarStep === undefined
-          ? foldFromSweep(prev.phi, spherical.phi, prevOffset.angleTo(offset))
-          : foldFromStep(prev.phi, polarStep);
+      const crossed = foldFromStep(prev.phi, polarStep);
       if (crossed === 'zenith') {
         spherical.phi = -spherical.phi;
         spherical.theta = wrapPi(spherical.theta + Math.PI);
@@ -259,18 +230,98 @@ export function constrainPose(
   // The leash is a limit on panning, so a canvas that forbids panning must not
   // be pulled by it either.
   if (controls.enablePan !== false && contentBox && !contentBox.isEmpty()) {
-    const leash = Math.min(
-      boundingSphere(contentBox).radius * PAN_LEASH_RADII,
-      visibleRadius(camera, distance) * PAN_LEASH_VIEWPORT_FRACTION
-    );
-    const away = controls.target.clone().sub(contentBox.clampPoint(controls.target, new Vector3()));
-    const overshoot = away.length() - leash;
-    if (overshoot > 0) {
-      const shift = away.setLength(overshoot).negate();
-      controls.target.add(shift);
-      camera.position.add(shift);
-    }
+    clampPan(camera, controls, contentBox);
   }
+}
+
+/**
+ * Stop a pan at the leash: slide camera and target back together, by the
+ * overshoot only, so the view stops at the edge like a wall and its orientation
+ * is untouched.
+ */
+export function clampPan(camera: Camera, controls: OrbitLike, contentBox: Box3): void {
+  const distance = camera.position.distanceTo(controls.target);
+  const leash = Math.min(
+    boundingSphere(contentBox).radius * PAN_LEASH_RADII,
+    visibleRadius(camera, distance) * PAN_LEASH_VIEWPORT_FRACTION
+  );
+  const away = controls.target.clone().sub(contentBox.clampPoint(controls.target, new Vector3()));
+  const overshoot = away.length() - leash;
+  if (overshoot > 0) {
+    const shift = away.setLength(overshoot).negate();
+    controls.target.add(shift);
+    camera.position.add(shift);
+  }
+}
+
+/**
+ * Tilt a finished pose back inside an elevation band, as one rotation of
+ * position and orientation together about the pose's own right axis, so the
+ * screen keeps its heading and any roll the pose carries.
+ *
+ * The right axis, not the horizontal one: the driver pitched about the pose's
+ * right, and the tilt back has to be about the same axis or the pair leaves a
+ * residual turn that compounds frame over frame until the view flips over.
+ * Of the two angles that reach the limit the smaller wins, being the one that
+ * undoes the overshoot. At the pole itself they tie and the positive one moves
+ * the camera to the screen-down side, which is the pose a `lookAt` on world up
+ * reproduces. A pose rolled too far to reach the band about its right axis
+ * tilts about the horizontal instead.
+ */
+export function clampElevation(
+  camera: Camera,
+  controls: OrbitLike,
+  worldUp: Vector3,
+  limits: PolarLimits
+): void {
+  const offset = camera.position.clone().sub(controls.target);
+  const distance = offset.length();
+  if (distance < 1e-9) return;
+  const phi = offset.angleTo(worldUp);
+  const clamped = Math.min(limits.max, Math.max(limits.min, phi));
+  if (clamped === phi) return;
+
+  const right = new Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+  const step = new Quaternion();
+  const angle = tiltAboutAxis(offset, right, worldUp, distance * Math.cos(clamped));
+  if (angle !== null) {
+    step.setFromAxisAngle(right, angle);
+  } else {
+    const axis = new Vector3().crossVectors(worldUp, offset);
+    if (axis.lengthSq() < 1e-12) return;
+    step.setFromAxisAngle(axis.normalize(), clamped - phi);
+  }
+  camera.position.copy(controls.target).add(offset.applyQuaternion(step));
+  camera.quaternion.premultiply(step);
+}
+
+/**
+ * The smallest rotation of `offset` about unit `axis` whose result has the
+ * given height along `up`, or null when no rotation about that axis reaches
+ * it. Rodrigues' formula makes the height `A cos t + B sin t + C (1 - cos t)`.
+ */
+function tiltAboutAxis(offset: Vector3, axis: Vector3, up: Vector3, height: number): number | null {
+  const a = up.dot(offset);
+  const b = up.dot(new Vector3().crossVectors(axis, offset));
+  const c = up.dot(axis) * axis.dot(offset);
+  const reach = Math.hypot(a - c, b);
+  if (reach < 1e-12) return null;
+  const ratio = (height - c) / reach;
+  if (Math.abs(ratio) > 1) return null;
+  const phase = Math.atan2(b, a - c);
+  const spread = Math.acos(ratio);
+  const candidates = [phase + spread, phase - spread].map(wrapPi);
+  const [first, second] = candidates;
+  const tie = Math.abs(Math.abs(first) - Math.abs(second)) < 1e-9;
+  if (tie) return Math.max(first, second);
+  return Math.abs(first) < Math.abs(second) ? first : second;
+}
+
+/** Whether a pose's horizon is level enough to hand to the mouse on world up. */
+export function isLevelPose(camera: Camera, worldUp: Vector3, tolerance: number): boolean {
+  const right = new Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+  const up = new Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+  return Math.abs(right.dot(worldUp)) < tolerance && up.dot(worldUp) >= 0;
 }
 
 /**

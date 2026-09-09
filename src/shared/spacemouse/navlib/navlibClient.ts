@@ -176,7 +176,10 @@ export function buildClient(acc: () => NavlibViewAccessors | null): NavlibClient
         rafId = requestAnimationFrame(pump);
       }
     }),
-    onStopMotion: guardCall('motion.stop', stopPump),
+    onStopMotion: guardCall('motion.stop', () => {
+      stopPump();
+      acc()?.endMotion();
+    }),
     // 0 marks the end of a frame's changes: render the result.
     setTransaction: guardCall('transaction', (transaction: number) => {
       if (transaction === 0) acc()?.invalidate();
@@ -247,6 +250,7 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
         // Reset our own state (so a later probe can reconnect the driver) before
         // handing off to the caller's WebHID fallback.
         stopPump();
+        spaceMouseBus.activeNavlib()?.endMotion();
         nav = null;
         started = false;
         setConnection('idle', null);

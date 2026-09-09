@@ -9,12 +9,17 @@ import {
   Vector3,
 } from 'three';
 import {
+  canvasPolarLimits,
+  clampElevation,
+  clampPan,
   computeContentBox,
-  constrainPose,
   createContentBoxCache,
+  isLevelPose,
   isScaffoldName,
   type OrbitLike,
+  polarLimits,
 } from '../cameraCommands';
+import { LEVEL_ROLL_TOLERANCE } from '../constants';
 import type { NavlibViewAccessors } from './types';
 
 /** Live per-frame handles for the active canvas. */
@@ -22,6 +27,8 @@ export interface NavlibViewDeps {
   camera: Camera;
   controls: OrbitLike;
   scene: Object3D;
+  /** The canvas's own up axis; `camera.up` follows the puck while it moves. */
+  worldUp: Vector3;
   invalidate: () => void;
 }
 
@@ -32,7 +39,7 @@ const Z_UP = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1];
 
 /** The app's previews are Z-up; a Y-up canvas is possible, so read the up axis. */
 function isZUp(d: NavlibViewDeps | null): boolean {
-  return !!d && Math.abs(d.camera.up.z) > 0.9;
+  return !!d && Math.abs(d.worldUp.z) > 0.9;
 }
 
 function isTextMaterial(material: Mesh['material'] | undefined): boolean {
@@ -75,6 +82,7 @@ export function createNavlibViewAccessors(
   const raycaster = new Raycaster();
   const tmpMatrix = new Matrix4();
   const tmpForward = new Vector3();
+  const tmpPivot = new Vector3();
   const contentBox = createContentBoxCache();
 
   return {
@@ -87,21 +95,44 @@ export function createNavlibViewAccessors(
     setViewMatrix(data) {
       const d = getDeps();
       if (!d) return;
-      const prevOffset = d.camera.position.clone().sub(d.controls.target);
-      const prevDist = prevOffset.length() || 1;
+      const prevDist = d.camera.position.distanceTo(d.controls.target) || 1;
       tmpMatrix.fromArray(data);
       tmpMatrix.decompose(d.camera.position, d.camera.quaternion, d.camera.scale);
-      d.camera.updateMatrixWorld(true);
-      // Keep OrbitControls' target in front of the camera so mouse orbit resumes
-      // cleanly after the puck moves it.
       tmpForward.set(0, 0, -1).applyQuaternion(d.camera.quaternion);
-      d.controls.target.copy(d.camera.position).addScaledVector(tmpForward, prevDist);
-      // The driver navigates unbounded, so its pose arrives without the limits
-      // this canvas puts on the mouse; it reads the corrected pose back next
-      // frame and continues from there.
-      const box = d.controls.enablePan === false ? null : contentBox(d.scene);
-      constrainPose(d.camera, d.controls, prevOffset, box);
+      // OrbitControls' target sits at the model's depth along the view axis, so
+      // an orbit keeps it there and a dolly changes the distance rather than
+      // pushing it through the model; a target a fixed distance ahead read
+      // every dolly as a pan.
+      const box = contentBox(d.scene);
+      const depth = box.isEmpty()
+        ? prevDist
+        : box.getCenter(tmpPivot).sub(d.camera.position).dot(tmpForward);
+      d.controls.target
+        .copy(d.camera.position)
+        .addScaledVector(tmpForward, depth > 1e-3 ? depth : prevDist);
+      // The driver owns the pose: the horizon, the pole, roll. What it cannot
+      // know is this canvas's own limits, applied as tilts and slides that keep
+      // its heading, and it reads the result back next frame.
+      clampElevation(d.camera, d.controls, d.worldUp, canvasPolarLimits(d.controls));
+      if (d.controls.enablePan !== false && !box.isEmpty()) clampPan(d.camera, d.controls, box);
+      // OrbitControls re-aims the camera at the target every frame with whatever
+      // up the camera carries; only the pose's own up reproduces the pose.
+      d.camera.up.set(0, 1, 0).applyQuaternion(d.camera.quaternion);
+      d.camera.updateMatrixWorld(true);
       d.controls.update();
+    },
+    endMotion() {
+      const d = getDeps();
+      if (!d) return;
+      // A rolled pose has no orbit-controls equivalent: the mouse continues on
+      // the pose's own up. A level one goes back to world up, kept just off the
+      // pole, where a `lookAt` on world up has a heading to reproduce.
+      if (!isLevelPose(d.camera, d.worldUp, LEVEL_ROLL_TOLERANCE)) return;
+      clampElevation(d.camera, d.controls, d.worldUp, polarLimits(d.controls));
+      d.camera.up.copy(d.worldUp);
+      d.camera.updateMatrixWorld(true);
+      d.controls.update();
+      d.invalidate();
     },
     getPerspective() {
       const d = getDeps();

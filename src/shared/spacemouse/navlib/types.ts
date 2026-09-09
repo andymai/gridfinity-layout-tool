@@ -33,6 +33,8 @@ export interface NavlibViewAccessors {
   getPointerPosition(): number[] | null;
   /** Wake the (demand) frameloop after the driver writes a new camera. */
   invalidate(): void;
+  /** The puck stopped: hand the pose to the mouse. */
+  endMotion(): void;
 }
 
 /** Commands exported to the driver UI so pucks can bind buttons to them. */

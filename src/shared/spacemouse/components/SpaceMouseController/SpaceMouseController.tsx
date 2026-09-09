@@ -1,6 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useId, useRef } from 'react';
-import type { Vector3 } from 'three';
+import type { Camera, Vector3 } from 'three';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import {
   applyFrameMotion,
@@ -62,6 +62,17 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
   const settings = useSpaceMouseSettings();
   const id = useId();
   const contentBox = useRef(createContentBoxCache());
+  // The canvas's up axis, taken before the puck can touch `camera.up`: the
+  // driver path leaves the pose's own up on the camera while it moves.
+  const worldUps = useRef(new WeakMap<Camera, Vector3>());
+  const worldUpOf = (cam: Camera): Vector3 => {
+    let up = worldUps.current.get(cam);
+    if (!up) {
+      up = cam.up.clone();
+      worldUps.current.set(cam, up);
+    }
+    return up;
+  };
 
   const stateRef = useRef({ enabled, controls, camera, scene, size, invalidate, settings });
   useEffect(() => {
@@ -76,8 +87,10 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
       const box = computeContentBox(st.scene);
       if (box.isEmpty()) return;
       const aspect = st.size.height > 0 ? st.size.width / st.size.height : 1;
+      const up = worldUpOf(st.camera);
+      st.camera.up.copy(up);
       frameBox(st.camera, st.controls, box, {
-        direction: directionForCommand(command, st.camera.up),
+        direction: directionForCommand(command, up),
         viewportHeight: st.size.height,
         aspect,
       });
@@ -89,7 +102,13 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
     const navlib = createNavlibViewAccessors((): NavlibViewDeps | null => {
       const st = stateRef.current;
       return st.controls
-        ? { camera: st.camera, controls: st.controls, scene: st.scene, invalidate: st.invalidate }
+        ? {
+            camera: st.camera,
+            controls: st.controls,
+            scene: st.scene,
+            worldUp: worldUpOf(st.camera),
+            invalidate: st.invalidate,
+          }
         : null;
     });
     const unregister = spaceMouseBus.register({
@@ -116,6 +135,7 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
     if (isDeflectionIdle(deflection)) return;
     // A SpaceMouse and auto-rotate can't coexist; the puck wins once used.
     if (st.controls.autoRotate) st.controls.autoRotate = false;
+    st.camera.up.copy(worldUpOf(st.camera));
     const distance = st.camera.position.distanceTo(st.controls.target);
     const motion = computeFrameMotion(deflection, st.settings, dt, distance);
     // Only a canvas that can pan needs the box, and finding it walks the scene.
