@@ -1,0 +1,251 @@
+src/core/sync/claim.ts
+  s_24b1f7fd65ccc8::t_3e96cb8d9026cb 51
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.tsx
+  s_24b1f7fd65ccc8::t_2caf7a5bc5a298 19-26,38,46-47,56,72-73,78,104,297-317,352,359,386,393
+  s_24b1f7fd65ccc8::t_efd5cb42caf95a 343
+src/core/sync/engine.ts
+  s_24b1f7fd65ccc8::t_e98de9d01f2d00 249,252,259
+src/core/sync/adapters/folderAdapter.test.ts
+  s_24b1f7fd65ccc8::t_dd68a2904c517f 1-132
+  s_24b1f7fd65ccc8::t_39276bf8765f09 133-135
+  s_24b1f7fd65ccc8::t_856187b6bd0658 136-139
+src/shared/sync/useSignOutFlow.tsx
+  s_24b1f7fd65ccc8::t_5476de6fbf5e56 3,21
+scripts/doc-budget.json
+  s_24b1f7fd65ccc8::t_9b014e308e0e69 63
+  s_24b1f7fd65ccc8::t_3e96cb8d9026cb 28
+src/features/layout-library/components/LayoutManagerModal/FolderTree/FolderTree.test.tsx
+  s_24b1f7fd65ccc8::t_1996f052e54f7c 1-137
+src/features/layout-library/components/LayoutManagerModal/FolderBreadcrumb/FolderBreadcrumb.tsx
+  s_24b1f7fd65ccc8::t_78900cb557f96f 1-53
+src/features/layout-library/index.ts
+  s_24b1f7fd65ccc8::t_d9079c94d1a48b 3-4
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanelParts.tsx
+  s_24b1f7fd65ccc8::t_54f7f66ba5a28a 33,114,130,166-167,175,183-184
+  s_24b1f7fd65ccc8::t_83ab7cfd6d6bcd 34
+  s_24b1f7fd65ccc8::t_5f259d27783fcb 195
+  s_24b1f7fd65ccc8::t_058e1a2027ff60 185-186
+  s_24b1f7fd65ccc8::t_109855bbeb0df9 197-198
+api/lib/validation.ts
+  s_24b1f7fd65ccc8::t_b994a3453ea34d 153-160,408
+src/core/sync/payloadKey.test.ts
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 14,16-22,29,33
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+api/sync/manifest.test.ts
+  s_24b1f7fd65ccc8::t_579a078dcc3026 133
+src/features/layout-library/components/LayoutManagerModal/FolderPickList/index.ts
+  s_24b1f7fd65ccc8::t_78900cb557f96f 1
+src/shared/schema/layoutKeys.ts
+  s_24b1f7fd65ccc8::t_91d3badaa426e0 43
+src/features/layout-library/components/LayoutManagerModal/LayoutGridItem/LayoutGridItem.tsx
+  s_24b1f7fd65ccc8::t_2caf7a5bc5a298 18,38,144
+docs/schemas/layout.md
+  s_24b1f7fd65ccc8::t_91d3badaa426e0 43
+api/sync/README.md
+  s_24b1f7fd65ccc8::t_6bce04be99c3a1 9-25,82-89,123
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.test.tsx
+  s_24b1f7fd65ccc8::t_ac3730fcc274d3 3,43
+  s_24b1f7fd65ccc8::t_9e370e1f82e1d6 19-25,94-96
+  s_24b1f7fd65ccc8::t_5c40a092a4f7e2 42,44-45
+  s_24b1f7fd65ccc8::t_b1633c5889b66d 4,31,83-93,97-98
+  s_24b1f7fd65ccc8::t_abefa41e1c9615 99-100
+src/features/layout-library/components/LayoutManagerModal/FolderPickList/FolderPickList.tsx
+  s_24b1f7fd65ccc8::t_7dd9c71e1455f8 35-39,58-60,63-66
+  s_24b1f7fd65ccc8::t_78900cb557f96f 1-34,40-57,61-62,67-73
+api/sync/account.ts
+  s_24b1f7fd65ccc8::t_579a078dcc3026 114,123,261
+src/core/sync/adapters/types.ts
+  s_24b1f7fd65ccc8::t_e98de9d01f2d00 166-177,182,199
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+package.json
+  s_24b1f7fd65ccc8::t_5078c550388187 117
+api/sync/folders/[id].test.ts
+  s_24b1f7fd65ccc8::t_d84163016e8679 1-203,207-209,211-215
+  s_24b1f7fd65ccc8::t_042d6c663e8e87 204-206
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 210
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/features/layout-library/components/LayoutManagerModal/FolderBreadcrumb/index.ts
+  s_24b1f7fd65ccc8::t_78900cb557f96f 1
+api/share.ts
+  s_24b1f7fd65ccc8::t_b994a3453ea34d 140-143
+src/core/sync/payloadKey.ts
+  s_24b1f7fd65ccc8::t_e98de9d01f2d00 13-16,21
+src/shared/sync/useDeleteAccountFlow.tsx
+  s_24b1f7fd65ccc8::t_5476de6fbf5e56 3,20
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_24b1f7fd65ccc8::t_5c40a092a4f7e2 16-18,30
+  s_24b1f7fd65ccc8::t_ac3730fcc274d3 2,19
+  s_24b1f7fd65ccc8::t_7bcd2fc4b2a36b 795-796,804-858,860-872
+  s_24b1f7fd65ccc8::t_9e370e1f82e1d6 797-803
+  s_24b1f7fd65ccc8::t_4a3bced7f19d83 859
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/core/sync/adapters/layoutAdapter.ts
+  s_24b1f7fd65ccc8::t_dd68a2904c517f 72-76,86
+  s_24b1f7fd65ccc8::t_626dd75ab8a5e9 90-92,114,126,191-195
+src/core/sync/signOut.test.ts
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 12,82
+src/core/sync/deleteAccount.test.ts
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 12,71
+src/features/whats-new/entries.ts
+  s_24b1f7fd65ccc8::t_66bfb1f3538c2e 17-24,26
+  s_24b1f7fd65ccc8::t_4a3bced7f19d83 25
+  s_24b1f7fd65ccc8::t_8ec212ed20b659 16
+api/lib/quota.ts
+  s_24b1f7fd65ccc8::t_579a078dcc3026 22-24
+src/core/sync/triggers/usePeriodicPoll.test.ts
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 27
+src/shared/hooks/useLayoutFolders.ts
+  s_24b1f7fd65ccc8::t_3f33f7258a297c 13,40
+  s_24b1f7fd65ccc8::t_b065d998e6ff2e 1-12,14-39,41-84
+  s_24b1f7fd65ccc8::t_8cca0582a7a852 85
+src/core/sync/engine.test.ts
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 23,99
+public/schema/layout.schema.json
+  s_24b1f7fd65ccc8::t_91d3badaa426e0 144-147
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+api/lib/redisKeys.ts
+  s_24b1f7fd65ccc8::t_579a078dcc3026 50
+src/i18n/locales/en.ts
+  s_24b1f7fd65ccc8::t_7090e3ded412cd 779-780
+  s_24b1f7fd65ccc8::t_2a7c6185eeb679 755-778
+src/core/sync/poller.test.ts
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 14,70
+src/core/sync/poller.ts
+  s_24b1f7fd65ccc8::t_042d6c663e8e87 25
+  s_24b1f7fd65ccc8::t_e98de9d01f2d00 123-125,135
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/core/types/library.ts
+  s_24b1f7fd65ccc8::t_91d3badaa426e0 21,26-28,32,34-35,51
+src/shared/sync/SyncSessionMount.tsx
+  s_24b1f7fd65ccc8::t_5476de6fbf5e56 3,37
+src/shared/hooks/useLayoutFolders.test.ts
+  s_24b1f7fd65ccc8::t_ac3730fcc274d3 2,13
+  s_24b1f7fd65ccc8::t_9e370e1f82e1d6 88-90
+  s_24b1f7fd65ccc8::t_8e0640d98b63a8 1,3-12,14-87,91-101
+src/core/sync/adapters/folderAdapter.ts
+  s_24b1f7fd65ccc8::t_7dd9c71e1455f8 62-63,66,68
+  s_24b1f7fd65ccc8::t_e1ac9e5e2fba4f 1-61,64-65,67,69-128
+api/lib/validation.test.ts
+  s_24b1f7fd65ccc8::t_b994a3453ea34d 79-95
+src/features/layout-library/components/LayoutManagerModal/MoveToFolderDialog/index.ts
+  s_24b1f7fd65ccc8::t_3bcdb55b5a0047 1
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/core/sync/adapters/layoutAdapter.test.ts
+  s_24b1f7fd65ccc8::t_dd68a2904c517f 79-109,113
+  s_24b1f7fd65ccc8::t_c8fb5a2da45900 110-112
+src/core/constants.ts
+  s_24b1f7fd65ccc8::t_91d3badaa426e0 18-19
+src/core/sync/claim.test.ts
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 12,72
+src/features/layout-library/components/LayoutManagerModal/FolderTree/index.ts
+  s_24b1f7fd65ccc8::t_172ae580b24959 1
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.test.tsx
+  s_24b1f7fd65ccc8::t_5c40a092a4f7e2 15-17,29
+  s_24b1f7fd65ccc8::t_ac3730fcc274d3 2,18
+  s_24b1f7fd65ccc8::t_b1633c5889b66d 722-723,738-748,753-765,769-817,821-822
+  s_24b1f7fd65ccc8::t_9e370e1f82e1d6 724-737,749-752,766-768,818-820
+api/sync/folders/[id].ts
+  s_24b1f7fd65ccc8::t_579a078dcc3026 1-87
+  s_24b1f7fd65ccc8::t_5e50923cb27bca 88-90
+  s_24b1f7fd65ccc8::t_b2f28d9dc3e2ee 91-94
+src/features/layout-library/components/LayoutManagerModal/LayoutListItem/LayoutListItem.tsx
+  s_24b1f7fd65ccc8::t_2caf7a5bc5a298 19,39,155
+src/core/types/layout.ts
+  s_24b1f7fd65ccc8::t_91d3badaa426e0 56-61
+src/features/layout-library/README.md
+  s_24b1f7fd65ccc8::t_cc6eaecabb1011 29-30,56-64
+  s_24b1f7fd65ccc8::t_9f01506e92a6cc 65
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.tsx
+  s_24b1f7fd65ccc8::t_54f7f66ba5a28a 36-37,55,83-90,156
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/features/whats-new/latest.ts
+  s_24b1f7fd65ccc8::t_66bfb1f3538c2e 9
+api/sync/lib/resourceHandler.ts
+  s_24b1f7fd65ccc8::t_579a078dcc3026 35
+src/core/storage/index.ts
+  s_24b1f7fd65ccc8::t_3f33f7258a297c 139-154
+src/features/layout-library/components/LayoutManagerModal/MoveToFolderDialog/MoveToFolderDialog.test.tsx
+  s_24b1f7fd65ccc8::t_3bcdb55b5a0047 1-61
+src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.tsx
+  s_24b1f7fd65ccc8::t_2caf7a5bc5a298 17-18,33,214-238
+src/features/layout-library/components/LayoutManagerModal/MoveToFolderDialog/MoveToFolderDialog.tsx
+  s_24b1f7fd65ccc8::t_ac3730fcc274d3 1,20-23
+  s_24b1f7fd65ccc8::t_3bcdb55b5a0047 2-19,24-64
+src/core/storage/libraryFolders.test.ts
+  s_24b1f7fd65ccc8::t_ba4988f618b2cb 1-12,14-161,164-187,190-192,198-199
+  s_24b1f7fd65ccc8::t_07f9b15de77d6d 162-163
+  s_24b1f7fd65ccc8::t_3f4ea83d915660 13,188-189,193-197
+  s_24b1f7fd65ccc8::t_0991cd81431122 200-202
+api/sync/export.ts
+  s_24b1f7fd65ccc8::t_579a078dcc3026 58,66,76,95,111
+src/core/sync/triggers/useBeaconFlush.test.ts
+  s_24b1f7fd65ccc8::t_c35a29ca0b6081 12,74
+src/features/layout-library/components/LayoutManagerModal/FolderBreadcrumb/FolderBreadcrumb.test.tsx
+  s_24b1f7fd65ccc8::t_78900cb557f96f 1-35
+src/core/storage/libraryFolders.ts
+  s_24b1f7fd65ccc8::t_3f4ea83d915660 32-37,39-40,44,76-81
+  s_24b1f7fd65ccc8::t_7dd9c71e1455f8 38
+  s_24b1f7fd65ccc8::t_b9ba8e05da8dcd 1-31,41-43,45-75,82-193
+src/features/layout-library/components/LayoutManagerModal/FolderTree/FolderTree.tsx
+  s_24b1f7fd65ccc8::t_7dd9c71e1455f8 22-23,72-80,84-88,91-97,99,108-111,116,118-122,133,146,149-151,157,166-168,170,172-176,223,261-265,321-323
+  s_24b1f7fd65ccc8::t_9e370e1f82e1d6 1
+  s_24b1f7fd65ccc8::t_7090e3ded412cd 105
+  s_24b1f7fd65ccc8::t_5f259d27783fcb 98
+  s_24b1f7fd65ccc8::t_83ab7cfd6d6bcd 222,224-230,288
+  s_24b1f7fd65ccc8::t_172ae580b24959 2-21,24-71,81-83,89-90,100-104,106-107,112-115,117,123-132,134-145,147-148,152-156,158-165,169,171,177-221,231-260,266-287,289-320,324-330
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.tsx
+  s_24b1f7fd65ccc8::t_76b44144cddc4a 5,7,132-147,170-202
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+  s_24b1f7fd65ccc8::t_d9079c94d1a48b 7-9,55-62,86,89-98,107,112-152,331-345,348-358,363-377,382-388,390-402,418,550-551,555-686
+  s_24b1f7fd65ccc8::t_83ab7cfd6d6bcd 359-362,378-381,389,552-554
+  s_24b1f7fd65ccc8::t_dba21ef05fab21 687
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.tsx
+  s_24b1f7fd65ccc8::t_ac3730fcc274d3 445
+  s_24b1f7fd65ccc8::t_5f259d27783fcb 376
+  s_24b1f7fd65ccc8::t_5a58f4799f52fc 10-14,64-66,98-131,370-375,377-425,441-444,446-452
+scripts/i18n-values-allowlist.json
+  s_24b1f7fd65ccc8::t_53a4ff06176b12 266
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+src/features/layout-library/components/LayoutManagerModal/FolderPickList/FolderPickList.test.tsx
+  s_24b1f7fd65ccc8::t_4ec1949eafd068 31
+  s_24b1f7fd65ccc8::t_78900cb557f96f 1-30,32-50
+  s_24b1f7fd65ccc8::t_8716033b81756a 51-53
+  s_24b1f7fd65ccc8::t_99bb1cae4391bc 54-55
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_896e6a7bf50807 3550-3575
+api/sync/manifest.ts
+  s_24b1f7fd65ccc8::t_579a078dcc3026 51,56,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9037786cb91655a9be38f64b3f2af1e7a06061ae",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
