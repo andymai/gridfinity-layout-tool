@@ -1,0 +1,39 @@
+src/shared/spacemouse/components/SpaceMouseController/SpaceMouseController.tsx
+  s_24b1f7fd65ccc8::t_b6cc35d18df089 3,73-81,88-90
+src/shared/spacemouse/components/SpaceMouseController/SpaceMouseController.test.tsx
+  s_24b1f7fd65ccc8::t_b6cc35d18df089 2-11,32-41,102-103,112-113,115
+  s_24b1f7fd65ccc8::t_e3d43064d94204 98-101,104-111,114,116-120
+src/shared/spacemouse/navlib/types.ts
+  s_24b1f7fd65ccc8::t_b6cc35d18df089 1,39-40
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_24b1f7fd65ccc8::t_b6cc35d18df089 39-40,85-97,109,130,135,142,146-149,154-161,223,227,231,234
+  s_24b1f7fd65ccc8::t_22da9fbedcab69 111-112
+src/shared/spacemouse/navlib/navlibClient.test.ts
+  s_24b1f7fd65ccc8::t_e3d43064d94204 191-242
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_24b1f7fd65ccc8::t_22da9fbedcab69 153-158,187,259,283
+src/shared/spacemouse/cameraCommands.ts
+  s_24b1f7fd65ccc8::t_22da9fbedcab69 321-325,327,329-333
+  s_24b1f7fd65ccc8::t_42e3d68952bdf2 320
+src/shared/spacemouse/navlib/viewAccessors.orbit.test.ts
+  s_24b1f7fd65ccc8::t_b6cc35d18df089 48
+src/shared/spacemouse/navlib/viewAccessors.test.ts
+  s_24b1f7fd65ccc8::t_b6cc35d18df089 47,272,290-293,490,492-493,495-496,499-501
+  s_24b1f7fd65ccc8::t_22da9fbedcab69 464-488
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5300be066acd710886ec27f31dd7f0ac0f3378e6",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
