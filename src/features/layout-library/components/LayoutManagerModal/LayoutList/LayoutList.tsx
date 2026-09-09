@@ -218,7 +218,7 @@ export function LayoutList({
 
   const handleDuplicate = useCallback(
     (id: string) => {
-      const entry = entries.find((e) => e.id === id);
+      const entry = searchScope.find((e) => e.id === id);
       onDuplicate(id);
       announceToScreenReader(
         t('layouts.announce.duplicated', {
@@ -226,12 +226,12 @@ export function LayoutList({
         })
       );
     },
-    [entries, onDuplicate, announceToScreenReader, t]
+    [searchScope, onDuplicate, announceToScreenReader, t]
   );
 
   const handleDelete = useCallback(
     (id: string) => {
-      const entry = entries.find((e) => e.id === id);
+      const entry = searchScope.find((e) => e.id === id);
       onDelete(id);
       announceToScreenReader(
         t('layouts.announce.deleted', {
@@ -239,7 +239,7 @@ export function LayoutList({
         })
       );
     },
-    [entries, onDelete, announceToScreenReader, t]
+    [searchScope, onDelete, announceToScreenReader, t]
   );
 
   return (

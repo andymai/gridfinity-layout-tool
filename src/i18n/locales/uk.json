@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Це назавжди видалить ваш обліковий запис, усі синхронізовані макети та всі синхронізовані дизайни з наших серверів. Цю дію неможливо скасувати.",
   "syncDialog.deleteAccount.title": "Видалити ваш обліковий запис?",
   "syncDialog.signOut.keep": "Залишити та вийти",
-  "syncDialog.signOut.message": "Залишити {count} локальних макетів, дизайнів і базових плит на цьому пристрої? Ви також можете видалити їх.",
+  "syncDialog.signOut.message": "Залишити {count} локальних розкладок, дизайнів, базових пластин і тек на цьому пристрої? Їх також можна стерти.",
   "syncDialog.signOut.title": "Вийти",
   "syncDialog.signOut.wipe": "Видалити та вийти",
   "tablet.layersCategories": "Шари та категорії",

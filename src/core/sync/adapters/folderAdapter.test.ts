@@ -105,6 +105,23 @@ describe('folderAdapter.applyRemote', () => {
     ).toBeNull();
   });
 
+  it('breaks a loop between two folders that arrive with each other as parent', async () => {
+    setFolders([]);
+    await folderAdapter.applyRemote({
+      id: 'folder_1_a',
+      payload: { name: 'A', parentId: 'folder_2_b', createdAt: 1 },
+      modifiedAt: 2000,
+    });
+    await folderAdapter.applyRemote({
+      id: 'folder_2_b',
+      payload: { name: 'B', parentId: 'folder_1_a', createdAt: 1 },
+      modifiedAt: 2000,
+    });
+    const folders = useLibraryStore.getState().library.folders ?? [];
+    expect(folders.find((f) => f.id === 'folder_1_a')?.parentId).toBe('folder_2_b');
+    expect(folders.find((f) => f.id === 'folder_2_b')?.parentId).toBeNull();
+  });
+
   it('drops a payload without a usable name', async () => {
     await folderAdapter.applyRemote({
       id: 'folder_9_z',
@@ -130,15 +147,16 @@ describe('folderAdapter.applyRemote', () => {
 });
 
 describe('folderAdapter.applyRemoteDelete', () => {
-  it('removes the folder and leaves the rest of the library alone', async () => {
+  it('removes the folder and lifts its subfolders to its parent, timestamps untouched', async () => {
     setFolders([
-      folder('folder_1_a', 1000),
+      folder('folder_0_root', 1000),
+      folder('folder_1_a', 1000, { parentId: 'folder_0_root' }),
       folder('folder_2_b', 1000, { parentId: 'folder_1_a' }),
     ]);
     await folderAdapter.applyRemoteDelete('folder_1_a');
     const folders = useLibraryStore.getState().library.folders ?? [];
-    expect(folders.map((f) => f.id)).toEqual(['folder_2_b']);
-    expect(folders[0].parentId).toBe('folder_1_a');
+    expect(folders.map((f) => f.id)).toEqual(['folder_0_root', 'folder_2_b']);
+    expect(folders[1]).toMatchObject({ parentId: 'folder_0_root', modifiedAt: 1000 });
   });
 
   it('is a no-op for an unknown id', async () => {

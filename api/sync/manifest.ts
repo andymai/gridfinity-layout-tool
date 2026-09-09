@@ -12,7 +12,7 @@ import { getIndex, getIndexUpdatedAt } from '../lib/userIndex.js';
  * Returns the user's full per-kind index plus an `indexUpdatedAt`
  * timestamp the client uses for `If-Modified-Since` polling.
  *
- *   200  → { layouts, designs, baseplates, designVersions: { [id]: IndexEntry }, indexUpdatedAt }
+ *   200  → { layouts, designs, baseplates, designVersions, folders: { [id]: IndexEntry }, indexUpdatedAt }
  *   304  → empty body when the client's `If-Modified-Since` >= the
  *          server's `users:{uid}:indexUpdatedAt` (no scan needed).
  *

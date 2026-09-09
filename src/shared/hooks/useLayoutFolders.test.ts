@@ -90,6 +90,21 @@ describe('useLayoutFolders', () => {
     ).toBeNull();
   });
 
+  it('reports a failed save as a failure, after toasting', async () => {
+    vi.mocked(storage.saveLibrary).mockResolvedValueOnce({
+      ok: false,
+      error: { kind: 'StorageError', code: 'STORAGE_UNAVAILABLE', message: 'x', timestamp: 0 },
+    } as never);
+    const { result } = renderHook(() => useLayoutFolders());
+    let created: unknown = 'unset';
+    await act(async () => {
+      created = await result.current.createFolder('Desk', 'study');
+    });
+    expect(created).toBeNull();
+    expect(useToastStore.getState().toasts.some((t) => t.type === 'error')).toBe(true);
+    expect(useLibraryStore.getState().library.folders?.map((f) => f.name)).toEqual(['Study']);
+  });
+
   it('toasts instead of throwing when a rule refuses the change', async () => {
     const { result } = renderHook(() => useLayoutFolders());
     await act(async () => {

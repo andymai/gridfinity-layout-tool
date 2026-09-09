@@ -1,7 +1,7 @@
 import { isErr } from '@/core/result';
 import { useLibraryStore } from '@/core/store';
 import type { LayoutFolder, LayoutLibrary } from '@/core/types';
-import { folderPath, saveLibrary } from '@/core/storage';
+import { liftContents, saveLibrary, wouldLoop } from '@/core/storage';
 import { CONSTRAINTS } from '@/core/constants';
 import type {
   AdapterChange,
@@ -77,12 +77,7 @@ export const folderAdapter: FolderAdapter = {
     // The server checks the parent's shape, not its place: a parent that is
     // this folder or sits below it would close a loop and hide the subtree,
     // so it lands at the root instead.
-    const parentId =
-      payload.parentId === item.id ||
-      (payload.parentId !== null &&
-        folderPath(library, payload.parentId).some((f) => f.id === item.id))
-        ? null
-        : payload.parentId;
+    const parentId = wouldLoop(library, item.id, payload.parentId) ? null : payload.parentId;
     const folder: LayoutFolder = {
       id: item.id,
       name: payload.name,
@@ -97,13 +92,15 @@ export const folderAdapter: FolderAdapter = {
     await commit({ ...library, folders: nextFolders }, item.id);
   },
 
-  // The layouts that sat in it keep their folderId: they read as root until
-  // their own updated envelopes arrive, or forever if the deleting device
-  // already moved them, which is the same answer.
+  // The deleting device lifted the folder's layouts and subfolders to its
+  // parent and pushed them; the same lift here, with timestamps untouched so
+  // nothing echoes back, shows that result before those envelopes arrive.
   async applyRemoteDelete(id: string): Promise<void> {
     const { library } = useLibraryStore.getState();
-    if (!library.folders?.some((f) => f.id === id)) return;
-    await commit({ ...library, folders: library.folders.filter((f) => f.id !== id) }, id);
+    const folder = library.folders?.find((f) => f.id === id);
+    if (!folder) return;
+    const lifted = liftContents(library, folder, null).library;
+    await commit({ ...lifted, folders: lifted.folders?.filter((f) => f.id !== id) }, id);
   },
 
   subscribe(listener: AdapterChangeListener): () => void {

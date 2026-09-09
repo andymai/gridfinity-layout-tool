@@ -71,6 +71,25 @@ export function isDescendantFolder(
     .some((f) => f.id === ancestorId);
 }
 
+/**
+ * Whether filing `id` under `parentId` would close a loop. Follows parent
+ * pointers rather than resolved folders, so a chain that runs through a
+ * folder the library has not received yet still counts: the pointer back to
+ * `id` is what makes the loop, present folder or not.
+ */
+export function wouldLoop(library: LayoutLibrary, id: string, parentId: string | null): boolean {
+  const seen = new Set<string>();
+  let current = parentId;
+  while (current !== null && !seen.has(current)) {
+    if (current === id) return true;
+    seen.add(current);
+    const folder = folderById(library, current);
+    if (!folder) return false;
+    current = parentOf(folder);
+  }
+  return false;
+}
+
 /** Entries filed directly in `folderId` (null for the root). */
 export function entriesInFolder(library: LayoutLibrary, folderId: string | null): LayoutEntry[] {
   return library.entries.filter((e) => resolvedParent(library, e.folderId) === folderId);
@@ -140,7 +159,7 @@ export function moveFolder(
   }
   const missingParent = requireParent(library, parentId, 'moveFolder');
   if (missingParent) return missingParent;
-  if (parentId !== null && (parentId === id || isDescendantFolder(library, parentId, id))) {
+  if (wouldLoop(library, id, parentId)) {
     return err(layoutInvalidOperation('moveFolder', 'A folder cannot move into itself'));
   }
   return ok({
@@ -160,17 +179,41 @@ export function deleteFolder(
 ): Result<{ library: LayoutLibrary; movedLayoutIds: LayoutId[] }, LayoutError> {
   const folder = folderById(library, id);
   if (!folder) return err(layoutInvalidOperation('deleteFolder', 'Folder not found'));
-  const parentId = parentOf(folder);
+  const lifted = liftContents(library, folder, now);
+  return ok({
+    library: { ...lifted.library, folders: lifted.library.folders?.filter((f) => f.id !== id) },
+    movedLayoutIds: lifted.movedLayoutIds,
+  });
+}
+
+/**
+ * Move a folder's direct layouts and subfolders to its parent. Stored data
+ * that already loops (the parent sitting inside the folder) lifts to the root
+ * instead, so nothing is ever reparented onto itself. `now` of null keeps
+ * every timestamp, for mirroring a delete another device already made.
+ */
+export function liftContents(
+  library: LayoutLibrary,
+  folder: LayoutFolder,
+  now: number | null
+): { library: LayoutLibrary; movedLayoutIds: LayoutId[] } {
+  const rawParent = parentOf(folder);
+  const parentId =
+    rawParent !== null && wouldLoop(library, folder.id, rawParent) ? null : rawParent;
   const movedLayoutIds: LayoutId[] = [];
   const entries = library.entries.map((e) => {
-    if ((e.folderId ?? null) !== id) return e;
+    if ((e.folderId ?? null) !== folder.id) return e;
     movedLayoutIds.push(e.id);
-    return { ...e, folderId: parentId, modifiedAt: now };
+    return { ...e, folderId: parentId, ...(now !== null ? { modifiedAt: now } : {}) };
   });
-  const remaining = folders(library)
-    .filter((f) => f.id !== id)
-    .map((f) => (parentOf(f) === id ? { ...f, parentId, modifiedAt: now } : f));
-  return ok({ library: { ...library, entries, folders: remaining }, movedLayoutIds });
+  const next = folders(library).map((f) =>
+    parentOf(f) === folder.id && f.id !== parentId
+      ? { ...f, parentId, ...(now !== null ? { modifiedAt: now } : {}) }
+      : parentOf(f) === folder.id
+        ? { ...f, parentId: null, ...(now !== null ? { modifiedAt: now } : {}) }
+        : f
+  );
+  return { library: { ...library, entries, folders: next }, movedLayoutIds };
 }
 
 export function setEntryFolder(

@@ -188,6 +188,22 @@ describe('PUT', () => {
       400
     );
     expect((await put({ folder: 'nope', modifiedAt: 1000 }))._status).toBe(400);
+    expect(
+      (
+        await put({
+          folder: { name: 'A', parentId: ['folder_1771464121030_9ltk1f'] },
+          modifiedAt: 1000,
+        })
+      )._status
+    ).toBe(400);
+    expect(
+      (
+        await put({
+          folder: { name: 'A', parentId: 'folder_1771464121030_9ltk1f' },
+          modifiedAt: 1000,
+        })
+      )._status
+    ).toBe(400);
     expect((await put({ folder: { name: 'A' }, modifiedAt: 1000 }, 'notafolder'))._status).toBe(
       400
     );

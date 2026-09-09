@@ -51,7 +51,8 @@ import { unlinkSupporterAccount } from '../lib/supporterLink.js';
  *
  *   1. Sessions   : DEL session:{token} for every token in the user's set
  *                   (so other tabs/devices flip to anonymous on next sync)
- *   2. Blobs      : del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json, designVersions/{id}.json
+ *   2. Blobs      : del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json,
+ *                   designVersions/{id}.json, folders/{id}.json
  *   3. Community  : delete each published design (record/thumbnail/mesh blobs,
  *                   card hash, per-design sets, membership in the parent's
  *                   children set, every liker's reverse liked set, sort-index

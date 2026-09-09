@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Ceci supprime définitivement votre compte, tous les plans synchronisés et toutes les créations synchronisées de nos serveurs. Cette action est irréversible.",
   "syncDialog.deleteAccount.title": "Supprimer votre compte ?",
   "syncDialog.signOut.keep": "Conserver et se déconnecter",
-  "syncDialog.signOut.message": "Conserver vos {count} plans, créations et platines sur cet appareil ? Vous pouvez aussi les effacer.",
+  "syncDialog.signOut.message": "Conserver les {count} agencements, designs, baseplates et dossiers locaux sur cet appareil ? Vous pouvez aussi les effacer.",
   "syncDialog.signOut.title": "Se déconnecter",
   "syncDialog.signOut.wipe": "Effacer et se déconnecter",
   "tablet.layersCategories": "Layers et Catégories",

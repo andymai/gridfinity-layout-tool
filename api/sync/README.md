@@ -133,7 +133,7 @@ The existing share endpoints (`/api/share`) run `filterLayoutContent` because sh
 `DELETE /api/sync/account` runs in this order:
 
 1. `SMEMBERS users:{uid}:sessions` → `DEL session:{token}` for each
-2. `HKEYS users:{uid}:index:{layouts|designs}` → `del()` each blob
+2. `HKEYS users:{uid}:index:{layouts|designs|baseplates|designVersions|folders}` → `del()` each blob
 3. Release the Ko-fi supporter link and pull the public badge (`unlinkSupporterAccount`)
 4. `DEL users:{uid}:*` (indexes, profile, sessions set, indexUpdatedAt, tombstoneSweptAt)
 5. Clear session cookie on responding device

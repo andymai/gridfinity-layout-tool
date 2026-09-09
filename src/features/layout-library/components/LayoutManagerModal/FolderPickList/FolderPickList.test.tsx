@@ -44,6 +44,27 @@ describe('FolderPickList', () => {
     expect(onPick).toHaveBeenCalledWith(null);
   });
 
+  it('keeps one row in the tab order and walks the enabled rows with the arrow keys', () => {
+    const onPick = vi.fn();
+    render(
+      <FolderPickList library={library} value="study" movingFolderId="kitchen" onPick={onPick} />
+    );
+    const radios = screen.getAllByRole('radio');
+    expect(
+      radios.filter((r) => r.getAttribute('tabindex') === '0').map((r) => r.textContent)
+    ).toEqual(['Study']);
+    const study = screen.getByRole('radio', { name: 'Study' });
+    fireEvent.keyDown(study, { key: 'ArrowDown' });
+    expect(onPick).toHaveBeenLastCalledWith('desk');
+    fireEvent.keyDown(study, { key: 'ArrowUp' });
+    // Kitchen is disabled, so up from Study lands on the root.
+    expect(onPick).toHaveBeenLastCalledWith(null);
+    fireEvent.keyDown(study, { key: 'End' });
+    expect(onPick).toHaveBeenLastCalledWith('desk');
+    fireEvent.keyDown(study, { key: 'Home' });
+    expect(onPick).toHaveBeenLastCalledWith(null);
+  });
+
   it('disables a moving folder and its subtree as destinations', () => {
     render(
       <FolderPickList library={library} value={null} movingFolderId="study" onPick={() => {}} />

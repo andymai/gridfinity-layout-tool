@@ -27,7 +27,13 @@ import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation, useFormatting } from '@/i18n';
 import { Button, Input } from '@/design-system';
-import { SvgIcon, ActionSheet, ShareOptionButton, ICON_PATHS } from './MobileLayoutsPanelParts';
+import {
+  SvgIcon,
+  ActionSheet,
+  ShareOptionButton,
+  ICON_PATHS,
+  SWIPE_ACTION_WIDTH_PX,
+} from './MobileLayoutsPanelParts';
 import { LayoutListItem, findEntry } from './MobileLayoutsListItem';
 import { MobileCloudSharePanel } from './MobileCloudSharePanel';
 
@@ -96,6 +102,8 @@ export function MobileLayoutsPanel() {
   const folderMenu = folderMenuId ? folderPath(library, folderMenuId).at(-1) : undefined;
   const folderToDelete = deleteFolderId ? folderPath(library, deleteFolderId).at(-1) : undefined;
   const movingEntry = moveLayoutId ? findEntry(entries, moveLayoutId) : null;
+  // Rename, share, duplicate, delete, and move once there is somewhere to move to.
+  const swipeRevealPx = (hasFolders ? 5 : 4) * SWIPE_ACTION_WIDTH_PX;
 
   const resetSwipe = useCallback(() => {
     setSwipingId(null);
@@ -303,19 +311,19 @@ export function MobileLayoutsPanel() {
       const touch = e.touches[0];
       const startX = e.currentTarget.getBoundingClientRect().left;
       const deltaX = touch.clientX - startX - e.currentTarget.clientWidth / 2;
-      setSwipeX(Math.min(0, Math.max(-160, deltaX)));
+      setSwipeX(Math.min(0, Math.max(-swipeRevealPx, deltaX)));
     },
-    [swipingId]
+    [swipingId, swipeRevealPx]
   );
 
   const handleTouchEnd = useCallback(() => {
     if (!swipingId) return;
-    if (swipeX < -80) {
-      setSwipeX(-160);
+    if (swipeX < -swipeRevealPx / 2) {
+      setSwipeX(-swipeRevealPx);
     } else {
       resetSwipe();
     }
-  }, [swipingId, swipeX, resetSwipe]);
+  }, [swipingId, swipeX, swipeRevealPx, resetSwipe]);
 
   const layoutToDelete = deleteLayoutId ? findEntry(entries, deleteLayoutId) : null;
 

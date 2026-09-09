@@ -14,7 +14,8 @@ interface MoveToFolderDialogProps {
   /** Set when a folder is being moved, so its own subtree is off limits. */
   readonly movingFolderId?: string;
   readonly onClose: () => void;
-  readonly onMove: (folderId: string | null) => void;
+  /** Resolves once the move is stored; the dialog stays inert until then. */
+  readonly onMove: (folderId: string | null) => Promise<void> | void;
 }
 
 /**
@@ -32,6 +33,22 @@ export function MoveToFolderDialog({
 }: MoveToFolderDialogProps) {
   const t = useTranslation();
   const [picked, setPicked] = useState<string | null>(currentFolderId);
+  const [busy, setBusy] = useState(false);
+  // A move applied elsewhere while the dialog is open (sync) resets the
+  // choice, or Move would file the layout back where it just came from.
+  const [seenCurrent, setSeenCurrent] = useState(currentFolderId);
+  if (seenCurrent !== currentFolderId) {
+    setSeenCurrent(currentFolderId);
+    setPicked(currentFolderId);
+  }
+  const move = async () => {
+    setBusy(true);
+    try {
+      await onMove(picked);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <Dialog.Root open={open} onClose={onClose} size="sm">
@@ -48,13 +65,14 @@ export function MoveToFolderDialog({
         />
       </Dialog.Body>
       <Dialog.Footer>
-        <Button variant="secondary" onClick={onClose}>
+        <Button variant="secondary" onClick={onClose} disabled={busy}>
           {t('common.cancel')}
         </Button>
         <Button
           variant="primary"
-          disabled={picked === currentFolderId}
-          onClick={() => onMove(picked)}
+          disabled={busy || picked === currentFolderId}
+          loading={busy}
+          onClick={() => void move()}
         >
           {t('layouts.folders.move')}
         </Button>

@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "이 작업은 계정과 동기화된 모든 레이아웃 및 수납통 디자인을 서버에서 영구적으로 삭제합니다. 되돌릴 수 없습니다.",
   "syncDialog.deleteAccount.title": "계정을 삭제할까요?",
   "syncDialog.signOut.keep": "유지하고 로그아웃",
-  "syncDialog.signOut.message": "이 기기의 로컬 레이아웃, 디자인, 베이스플레이트 {count}개를 유지할까요? 모두 지울 수도 있습니다.",
+  "syncDialog.signOut.message": "이 기기의 로컬 레이아웃, 디자인, 베이스플레이트, 폴더 {count}개를 유지할까요? 지울 수도 있습니다.",
   "syncDialog.signOut.title": "로그아웃",
   "syncDialog.signOut.wipe": "지우고 로그아웃",
   "tablet.layersCategories": "레이어 & 카테고리",

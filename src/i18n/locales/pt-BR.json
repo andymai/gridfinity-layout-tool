@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Isso exclui permanentemente sua conta, todos os layouts sincronizados e todos os designs sincronizados dos nossos servidores. Esta ação não pode ser desfeita.",
   "syncDialog.deleteAccount.title": "Excluir sua conta?",
   "syncDialog.signOut.keep": "Manter e sair",
-  "syncDialog.signOut.message": "Manter seus {count} layouts, designs e placas base locais neste dispositivo? Você também pode apagá-los.",
+  "syncDialog.signOut.message": "Manter os {count} layouts, designs, baseplates e pastas locais neste dispositivo? Você também pode apagá-los.",
   "syncDialog.signOut.title": "Sair",
   "syncDialog.signOut.wipe": "Apagar e sair",
   "tablet.layersCategories": "Layers e Categorias",

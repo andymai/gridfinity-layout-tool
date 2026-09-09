@@ -160,6 +160,14 @@ export function isValidFolderId(value: unknown): value is string {
   return typeof value === 'string' && FOLDER_ID_PATTERN.test(value);
 }
 
+/** A share is public; the owner's library placement stays home. */
+export function withoutLibraryPlacement<T extends { folderId?: string }>(
+  layout: T
+): Omit<T, 'folderId'> {
+  const { folderId: _folderId, ...rest } = layout;
+  return rest;
+}
+
 export interface ValidationError {
   code: 'VALIDATION_ERROR' | 'SIZE_LIMIT' | 'BIN_LIMIT' | 'INVALID_EXPIRATION';
   message: string;

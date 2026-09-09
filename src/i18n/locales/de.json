@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Dies löscht dauerhaft dein Konto, alle synchronisierten Layouts und alle synchronisierten Bin-Designs von unseren Servern. Dies kann nicht rückgängig gemacht werden.",
   "syncDialog.deleteAccount.title": "Konto löschen?",
   "syncDialog.signOut.keep": "Behalten & Abmelden",
-  "syncDialog.signOut.message": "Deine {count} lokalen Layouts, Designs und Grundplatten auf diesem Gerät behalten? Du kannst sie auch löschen.",
+  "syncDialog.signOut.message": "{count} lokale Layouts, Designs, Baseplates und Ordner auf diesem Gerät behalten? Du kannst sie auch löschen.",
   "syncDialog.signOut.title": "Abmelden",
   "syncDialog.signOut.wipe": "Löschen & Abmelden",
   "tablet.layersCategories": "Layers & Kategorien",

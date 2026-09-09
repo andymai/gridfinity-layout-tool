@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Questo elimina definitivamente il tuo account, ogni layout sincronizzato e ogni design di bin sincronizzato dai nostri server. L'azione non può essere annullata.",
   "syncDialog.deleteAccount.title": "Eliminare il tuo account?",
   "syncDialog.signOut.keep": "Mantieni ed esci",
-  "syncDialog.signOut.message": "Mantenere i tuoi {count} layout, design e baseplate locali su questo dispositivo? Puoi anche cancellarli.",
+  "syncDialog.signOut.message": "Conservare i {count} layout, design, baseplate e cartelle locali su questo dispositivo? Puoi anche cancellarli.",
   "syncDialog.signOut.title": "Esci",
   "syncDialog.signOut.wipe": "Cancella ed esci",
   "tablet.layersCategories": "Livelli e categorie",

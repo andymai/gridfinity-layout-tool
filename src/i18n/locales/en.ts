@@ -248,7 +248,7 @@ const en: Record<string, string> = {
   // Sign-out + account-mismatch dialogs
   'syncDialog.signOut.title': 'Sign out',
   'syncDialog.signOut.message':
-    'Keep your {count} local layouts, designs, and baseplates on this device? You can also wipe them.',
+    'Keep your {count} local layouts, designs, baseplates and folders on this device? You can also wipe them.',
   'syncDialog.signOut.keep': 'Keep & sign out',
   'syncDialog.signOut.wipe': 'Wipe & sign out',
   'syncDialog.deleteAccount.title': 'Delete your account?',

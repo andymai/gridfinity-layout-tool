@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type * as Storage from '@/core/storage';
 import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 import type * as SharedHooks from '@/shared/hooks';
@@ -80,22 +80,41 @@ describe('LayoutQuickSwitch', () => {
     expect(items[1]).toHaveFocus();
   });
 
-  it('groups filed layouts under their folder path, unfiled first', () => {
-    entries.push({ id: 'l3', name: 'Top drawer', preview: {}, folderId: 'folder_2_desk' } as never);
-    folders.push(
-      { id: 'folder_1_study', name: 'Study', parentId: null, createdAt: 1, modifiedAt: 1 },
-      { id: 'folder_2_desk', name: 'Desk', parentId: 'folder_1_study', createdAt: 1, modifiedAt: 1 }
-    );
-    render(<LayoutQuickSwitch onManage={() => {}} />);
-    fireEvent.click(screen.getByRole('button', { name: /Switch layout/ }));
-    const group = screen.getByRole('group', { name: 'Study / Desk' });
-    expect(within(group).getByRole('menuitem', { name: /Top drawer/ })).toBeInTheDocument();
-    const items = screen.getAllByRole('menuitem').map((m) => m.textContent);
-    expect(items.indexOf('Kitchen Drawer')).toBeLessThan(
-      items.findIndex((t) => t?.includes('Top drawer'))
-    );
-    entries.pop();
-    folders.length = 0;
+  describe('with folders', () => {
+    const baseline = entries.length;
+    beforeEach(() => {
+      entries.push({
+        id: 'l3',
+        name: 'Top drawer',
+        preview: {},
+        folderId: 'folder_2_desk',
+      } as never);
+      folders.push(
+        { id: 'folder_1_study', name: 'Study', parentId: null, createdAt: 1, modifiedAt: 1 },
+        {
+          id: 'folder_2_desk',
+          name: 'Desk',
+          parentId: 'folder_1_study',
+          createdAt: 1,
+          modifiedAt: 1,
+        }
+      );
+    });
+    afterEach(() => {
+      entries.length = baseline;
+      folders.length = 0;
+    });
+
+    it('groups filed layouts under their folder path, unfiled first', () => {
+      render(<LayoutQuickSwitch onManage={() => {}} />);
+      fireEvent.click(screen.getByRole('button', { name: /Switch layout/ }));
+      const group = screen.getByRole('group', { name: 'Study / Desk' });
+      expect(within(group).getByRole('menuitem', { name: /Top drawer/ })).toBeInTheDocument();
+      const items = screen.getAllByRole('menuitem').map((m) => m.textContent);
+      expect(items.indexOf('Kitchen Drawer')).toBeLessThan(
+        items.findIndex((t) => t?.includes('Top drawer'))
+      );
+    });
   });
 
   it('switches to a different layout on click', () => {

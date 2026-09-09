@@ -4216,7 +4216,7 @@
   "syncDialog.deleteAccount.message": "Detta raderar permanent ditt konto, alla synkroniserade layouter och alla synkroniserade designs från våra servrar. Detta kan inte ångras.",
   "syncDialog.deleteAccount.title": "Radera ditt konto?",
   "syncDialog.signOut.keep": "Behåll & logga ut",
-  "syncDialog.signOut.message": "Behåll dina {count} lokala layouter, designer och bottenplattor på den här enheten? Du kan också radera dem.",
+  "syncDialog.signOut.message": "Behålla de {count} lokala layouterna, designerna, baseplatesen och mapparna på den här enheten? Du kan också rensa dem.",
   "syncDialog.signOut.title": "Logga ut",
   "syncDialog.signOut.wipe": "Radera & logga ut",
   "tablet.layersCategories": "Lager och kategorier",

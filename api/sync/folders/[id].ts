@@ -41,7 +41,7 @@ export default createSyncResourceHandler<FolderEnvelope>({
   isValidId: (id) => FOLDER_ID_PATTERN.test(id),
   invalidIdError: 'Invalid folder id',
   deletedError: 'This folder was deleted on another device',
-  buildPut: (payload, modifiedAt) => {
+  buildPut: (payload, modifiedAt, id) => {
     if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
       return {
         ok: false,
@@ -63,10 +63,10 @@ export default createSyncResourceHandler<FolderEnvelope>({
         code: ErrorCode.VALIDATION_ERROR,
       };
     }
+    const rawParent = body.parentId ?? null;
     if (
-      body.parentId !== undefined &&
-      body.parentId !== null &&
-      !FOLDER_ID_PATTERN.test(String(body.parentId))
+      rawParent !== null &&
+      (typeof rawParent !== 'string' || !FOLDER_ID_PATTERN.test(rawParent))
     ) {
       return {
         ok: false,
@@ -75,7 +75,15 @@ export default createSyncResourceHandler<FolderEnvelope>({
         code: ErrorCode.VALIDATION_ERROR,
       };
     }
-    const parentId = typeof body.parentId === 'string' ? body.parentId : null;
+    if (rawParent === id) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'folder.parentId cannot be the folder itself',
+        code: ErrorCode.VALIDATION_ERROR,
+      };
+    }
+    const parentId = rawParent;
     const color =
       typeof body.color === 'string' && COLOR_PATTERN.test(body.color) ? body.color : undefined;
     const createdAt =

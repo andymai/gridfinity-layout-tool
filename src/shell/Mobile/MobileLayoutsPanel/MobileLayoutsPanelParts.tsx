@@ -130,6 +130,9 @@ const SWIPE_HOVER_BG: Record<SwipeActionBgColor, string> = {
   'bg-info': 'hover:bg-info',
 };
 
+/** Width of one swipe action; the panel reveals `count * this` on a full swipe. */
+export const SWIPE_ACTION_WIDTH_PX = 48;
+
 interface SwipeActionButtonProps {
   readonly onClick: () => void;
   readonly iconPath: string;
@@ -149,7 +152,7 @@ export function SwipeActionButton({
     <IconButton
       variant="ghost"
       onClick={onClick}
-      className={`w-15 h-full rounded-none ${bgColor} ${SWIPE_HOVER_BG[bgColor]} text-on-dark hover:text-on-dark`}
+      className={`w-12 h-full rounded-none ${bgColor} ${SWIPE_HOVER_BG[bgColor]} text-on-dark hover:text-on-dark`}
       aria-label={label}
       disabled={disabled}
     >

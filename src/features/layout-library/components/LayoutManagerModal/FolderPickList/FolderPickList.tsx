@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { LayoutFolder, LayoutLibrary } from '@/core/types';
 import { childFolders, isDescendantFolder } from '@/core/storage';
 import { useTranslation } from '@/i18n';
@@ -27,10 +29,52 @@ function flatten(library: LayoutLibrary, parentId: string | null, depth: number)
   ]);
 }
 
-/** The folder tree as one indented list of radio buttons, root first. */
+const ROOT_KEY = '';
+const keyOf = (id: string | null): string => id ?? ROOT_KEY;
+
+/**
+ * The folder tree as one indented list of radio buttons, root first. One row
+ * is in the tab order; the arrow keys move the choice through the enabled
+ * rows, Home and End jump to the ends.
+ */
 export function FolderPickList({ library, value, movingFolderId, onPick }: FolderPickListProps) {
   const t = useTranslation();
+  const buttons = useRef(new Map<string, HTMLButtonElement>());
   const rows: Row[] = [{ folder: null, depth: 0 }, ...flatten(library, null, 1)];
+  const isDisabled = (id: string | null): boolean =>
+    movingFolderId !== undefined &&
+    id !== null &&
+    (id === movingFolderId || isDescendantFolder(library, id, movingFolderId));
+  const enabled = rows.map((r) => r.folder?.id ?? null).filter((id) => !isDisabled(id));
+  const tabbable = enabled.includes(value) ? value : (enabled[0] ?? null);
+
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const at = enabled.indexOf(value);
+    let next: number;
+    switch (e.key) {
+      case 'ArrowDown':
+      case 'ArrowRight':
+        next = at < 0 ? 0 : (at + 1) % enabled.length;
+        break;
+      case 'ArrowUp':
+      case 'ArrowLeft':
+        next = at < 0 ? enabled.length - 1 : (at - 1 + enabled.length) % enabled.length;
+        break;
+      case 'Home':
+        next = 0;
+        break;
+      case 'End':
+        next = enabled.length - 1;
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+    const id = enabled[next] ?? null;
+    onPick(id);
+    buttons.current.get(keyOf(id))?.focus();
+  };
+
   return (
     <div
       role="radiogroup"
@@ -40,19 +84,21 @@ export function FolderPickList({ library, value, movingFolderId, onPick }: Folde
       {rows.map(({ folder, depth }) => {
         const id = folder?.id ?? null;
         const checked = id === value;
-        const disabled =
-          movingFolderId !== undefined &&
-          id !== null &&
-          (id === movingFolderId || isDescendantFolder(library, id, movingFolderId));
         return (
           <Button
-            key={id ?? 'root'}
+            key={keyOf(id)}
+            ref={(el) => {
+              if (el) buttons.current.set(keyOf(id), el);
+              else buttons.current.delete(keyOf(id));
+            }}
             variant="ghost"
             fullWidth
             role="radio"
             aria-checked={checked}
-            disabled={disabled}
+            tabIndex={id === tabbable ? 0 : -1}
+            disabled={isDisabled(id)}
             onClick={() => onPick(id)}
+            onKeyDown={onKeyDown}
             style={{ paddingLeft: `${8 + depth * 16}px` }}
             className={`h-9 justify-start gap-2 rounded-md text-sm font-normal ${
               checked

@@ -11,8 +11,10 @@ import {
   folderPath,
   isDescendantFolder,
   entryFolderId,
+  liftContents,
   moveFolder,
   renameFolder,
+  wouldLoop,
   setEntryFolder,
 } from './libraryFolders';
 
@@ -198,5 +200,37 @@ describe('dangling references', () => {
     expect(childFolders(lib, null).map((f) => f.id)).toEqual(['orphan', 'study']);
     // The stored reference survives, so the folder resolves once it arrives.
     expect(lib.entries[3].folderId).toBe('gone');
+  });
+});
+
+describe('wouldLoop', () => {
+  it('follows parent pointers through a folder the library does not have yet', () => {
+    const lib = library();
+    // A's parent M is unknown here; filing M under A would still close a loop.
+    lib.folders?.push(folder('a', 'A', 'missing'));
+    expect(wouldLoop(lib, 'missing', 'a')).toBe(true);
+    expect(wouldLoop(lib, 'a', 'a')).toBe(true);
+    expect(wouldLoop(lib, 'a', 'study')).toBe(false);
+    expect(wouldLoop(lib, 'kitchen', null)).toBe(false);
+  });
+});
+
+describe('liftContents', () => {
+  it('lifts to the root when stored data already loops through the parent', () => {
+    const lib = library();
+    lib.folders = [folder('x', 'X', 'y'), folder('y', 'Y', 'x')];
+    lib.entries = [entry('a', 'x'), entry('b', 'y')];
+    const lifted = liftContents(lib, lib.folders[0], 9);
+    expect(lifted.library.folders?.find((f) => f.id === 'y')?.parentId).toBeNull();
+    expect(lifted.library.entries.find((e) => e.id === 'a')?.folderId).toBeNull();
+  });
+
+  it('keeps every timestamp when mirroring a delete made elsewhere', () => {
+    const lib = library();
+    const lifted = liftContents(lib, folder('cupboard', 'Cupboard', 'study'), null);
+    expect(lifted.library.folders?.find((f) => f.id === 'top')).toMatchObject({
+      parentId: 'study',
+      modifiedAt: 1,
+    });
   });
 });
