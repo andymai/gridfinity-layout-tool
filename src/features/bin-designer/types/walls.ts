@@ -134,6 +134,23 @@ export const WALL_PATTERN_SIDES = ['left', 'right', 'front', 'back'] as const;
 /** Which outer walls carry the wall pattern. */
 export type WallPatternSides = Record<(typeof WALL_PATTERN_SIDES)[number], boolean>;
 
+/** Most cells between two label slots on one wall. */
+export const MAX_WALL_LABEL_SLOT_PITCH_CELLS = 6;
+
+/**
+ * Vertical label slots in the outer walls: a Cullenect-standard 1u plate
+ * standing in each chosen wall, one per grid cell, dropped in from the top.
+ * Absent on a design that never used the feature, and dropped again when it
+ * returns to the default, so `communityParamsFingerprint` does not move.
+ */
+export interface WallLabelSlotsConfig {
+  readonly enabled: boolean;
+  /** Which outer walls carry slots. */
+  readonly sides: WallPatternSides;
+  /** Cells between slots along a wall: 1 puts a slot on every cell. */
+  readonly everyCells: number;
+}
+
 /** Wall pattern configuration — stored per design in BinParams */
 export interface WallPatternConfig {
   readonly enabled: boolean;

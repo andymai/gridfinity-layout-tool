@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'wall-label-slots',
+    date: '2026-09-09',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Label slots in the outer walls' },
+    body: {
+      en: 'Label slots, under Wall text in the Style section, put a vertical slot in every cell of the walls you pick. Each takes a 1u label plate, the same plate a click-in socket uses: it drops in from the top and shows through a window in the wall. A rib on the inside backs each slot, so it works on a standard 1.2 mm wall, and the plates ride along in the plate export and the layout ZIP.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'compartment-floor-raise',
     date: '2026-09-09',
     kind: 'new',

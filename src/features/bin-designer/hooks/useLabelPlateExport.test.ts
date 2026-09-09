@@ -85,9 +85,12 @@ describe('useLabelPlateExport', () => {
       },
     });
     const { result } = renderHook(() => useLabelPlateExport());
-    expect(
-      result.current.plates.map((p) => `${p.text}:${p.scope === 'cutout' ? '' : p.anchor}`)
-    ).toEqual(['SCREWS:back', 'SCREWS:front', 'BOLTS:back', 'BOLTS:front']);
+    expect(result.current.plates.map((p) => `${p.text}:${'anchor' in p ? p.anchor : ''}`)).toEqual([
+      'SCREWS:back',
+      'SCREWS:front',
+      'BOLTS:back',
+      'BOLTS:front',
+    ]);
   });
 
   it('cannot export without an active bridge', () => {

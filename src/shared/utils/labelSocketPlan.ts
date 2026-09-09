@@ -26,6 +26,7 @@ import {
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { planCutoutSocketsForParams } from '@/shared/utils/cutoutLabelSocketPlan';
+import { planWallLabelSlots, type WallLabelSlotSide } from './wallLabelSlotPlan';
 
 /**
  * One plate per socket a shadow board's cutouts get. The caption is the
@@ -88,13 +89,14 @@ interface WallHungPlate extends LabelPlatePlanBase {
  * One printable plate derived from a socket-mode design, discriminated by what
  * it labels: a single compartment, one full-width row (`label.span`), the
  * whole bin (the spanning-socket fallback, whose caption the caller supplies),
- * or one cutout on a shadow board.
+ * one cutout on a shadow board, or one vertical slot in an outer wall.
  */
 export type LabelPlatePlanEntry =
   | (WallHungPlate & { readonly scope: 'compartment'; readonly compartmentId: number })
   | (WallHungPlate & { readonly scope: 'row'; readonly row: number })
   | (WallHungPlate & { readonly scope: 'bin' })
-  | (LabelPlatePlanBase & { readonly scope: 'cutout'; readonly cutoutId: string });
+  | (LabelPlatePlanBase & { readonly scope: 'cutout'; readonly cutoutId: string })
+  | (LabelPlatePlanBase & { readonly scope: 'wall'; readonly side: WallLabelSlotSide });
 
 export interface LabelPlatePlanInput {
   /**
@@ -127,6 +129,31 @@ export interface LabelPlatePlanInput {
  * click into and every cut socket gets a plate.
  */
 export function planLabelPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
+  return [...planSocketPlates(input), ...planWallSlotPlates(input)];
+}
+
+/**
+ * The wall slots take the same 1u plate as a click-in socket, so their plates
+ * ride in every consumer's set without a second enumeration. `wallHeightMm`
+ * is the interior ceiling; the slots open through the collar above it too.
+ */
+function planWallSlotPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
+  const { params, wallHeightMm, clearanceMm } = input;
+  if (params.wallLabelSlots?.enabled !== true) return [];
+  const collarMm = params.base.tile === true ? 0 : Math.max(0, params.extraWallHeightMm ?? 0);
+  const plan = planWallLabelSlots(
+    params,
+    {
+      wallHeightMm: wallHeightMm + collarMm,
+      gridUnitMmX: params.gridUnitMm,
+      gridUnitMmY: params.gridUnitMmY ?? params.gridUnitMm,
+    },
+    clearanceMm
+  );
+  return plan.slots.map((slot) => ({ scope: 'wall', side: slot.side, widthU: 1, text: '' }));
+}
+
+function planSocketPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
   const { params, innerWmm, innerDmm, wallHeightMm, clearanceMm, fallbackText } = input;
   const { compartments, label } = params;
 

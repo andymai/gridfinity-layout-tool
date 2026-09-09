@@ -159,3 +159,45 @@ describe('DesignerStore - wall cutout actions', () => {
     });
   });
 });
+
+describe('DesignerStore - wall label slots', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('stores nothing for the default config', () => {
+    const { updateWallLabelSlots } = useDesignerStore.getState();
+    updateWallLabelSlots({ enabled: true });
+    updateWallLabelSlots({ enabled: false });
+    expect(useDesignerStore.getState().params.wallLabelSlots).toBeUndefined();
+  });
+
+  it('fills the defaults around a partial update', () => {
+    const { updateWallLabelSlots } = useDesignerStore.getState();
+    updateWallLabelSlots({ enabled: true });
+    expect(useDesignerStore.getState().params.wallLabelSlots).toEqual({
+      enabled: true,
+      sides: { front: true, back: false, left: false, right: false },
+      everyCells: 1,
+    });
+  });
+
+  it('keeps the sides and pitch across a toggle', () => {
+    const { updateWallLabelSlots } = useDesignerStore.getState();
+    updateWallLabelSlots({ enabled: true, everyCells: 2 });
+    updateWallLabelSlots({ sides: { front: false, back: true, left: false, right: false } });
+    updateWallLabelSlots({ enabled: false });
+    expect(useDesignerStore.getState().params.wallLabelSlots).toEqual({
+      enabled: false,
+      sides: { front: false, back: true, left: false, right: false },
+      everyCells: 2,
+    });
+  });
+
+  it('undoes an update', () => {
+    const { updateWallLabelSlots } = useDesignerStore.getState();
+    updateWallLabelSlots({ enabled: true });
+    useDesignerStore.getState().undo();
+    expect(useDesignerStore.getState().params.wallLabelSlots).toBeUndefined();
+  });
+});

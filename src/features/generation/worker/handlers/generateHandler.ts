@@ -116,34 +116,30 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
         console.warn('[BinGen] Knife rest generation failed; skipping rest:', e);
       }
 
-      if (!lidMesh) {
-        // Lid generation failed (or is disabled) → bin-only. The baseplate is a
-        // companion to the lid, so emitting it here would leave a lone
-        // baseplate with no lid; skip it and degrade cleanly to bin-only.
-        return {
-          ...binMesh,
-          ...(slideTrayMesh ? { slideTrayMesh } : {}),
-          ...(detachableFeetMesh ? { detachableFeetMesh } : {}),
-          ...(knifeRestMesh ? { knifeRestMesh } : {}),
-        };
-      }
+      // Lid generation failed (or is disabled) → bin-only. The label plates
+      // and the text warnings below are about the bin, not the lid, so they
+      // wrap both branches: a lidless bin must still preview its plates.
       let result: MeshData = {
         ...binMesh,
-        lidMesh,
+        ...(lidMesh ? { lidMesh } : {}),
         ...(slideTrayMesh ? { slideTrayMesh } : {}),
         ...(detachableFeetMesh ? { detachableFeetMesh } : {}),
         ...(knifeRestMesh ? { knifeRestMesh } : {}),
       };
       // Separate stack-grid baseplate (glue-on companion). Same secondary-
       // feature contract as the lid: a build failure degrades to lid+bin, but
-      // a cancellation still aborts the whole request.
-      try {
-        const stackPlateMesh = generateStackPlate(params, signal);
-        if (stackPlateMesh) result = { ...result, stackPlateMesh };
-      } catch (e) {
-        if (isAbortError(e)) throw e;
+      // a cancellation still aborts the whole request. Skipped without a lid:
+      // the baseplate is the lid's companion, and emitting it alone would
+      // leave a lone baseplate with no lid.
+      if (lidMesh) {
+        try {
+          const stackPlateMesh = generateStackPlate(params, signal);
+          if (stackPlateMesh) result = { ...result, stackPlateMesh };
+        } catch (e) {
+          if (isAbortError(e)) throw e;
 
-        console.warn('[BinGen] Stack-plate generation failed; skipping baseplate:', e);
+          console.warn('[BinGen] Stack-plate generation failed; skipping baseplate:', e);
+        }
       }
       return withTypeStemWarning(
         withLabelTextOverflow(

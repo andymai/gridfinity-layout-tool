@@ -19,7 +19,7 @@ function plate(over: Partial<LabelPlateMeshData> = {}): LabelPlateMeshData {
 
 describe('seatedPose', () => {
   it('sits exactly at the socket when assembled', () => {
-    expect(seatedPose(plate(), 0)).toEqual({ position: [10, -20, 30], yawDeg: 0 });
+    expect(seatedPose(plate(), 0)).toEqual({ position: [10, -20, 30], yawDeg: 0, pitchDeg: 0 });
   });
 
   // Back- and front-anchored shelves protrude opposite ways, so their plates
@@ -46,6 +46,23 @@ describe('seatedPose', () => {
 
   it('carries a 90° socket’s yaw onto the seated draw', () => {
     expect(seatedPose(plate({ yawDeg: 90 }), 0).yawDeg).toBe(90);
+  });
+
+  it('lies flat unless the plate stands in a wall slot', () => {
+    expect(seatedPose(plate(), 0).pitchDeg).toBe(0);
+  });
+
+  // A wall-slot plate stands on edge with its text facing out of the wall;
+  // the yaw then turns it onto its wall, so the pitch has to be applied first.
+  it('stands a wall-slot plate on edge and lifts it out along Z', () => {
+    const standing = plate({ standing: true, slideY: 0, slideZ: 1, yawDeg: 90 });
+
+    expect(seatedPose(standing, 0)).toEqual({
+      position: [10, -20, 30],
+      yawDeg: 90,
+      pitchDeg: 90,
+    });
+    expect(seatedPose(standing, 10).position).toEqual([10, -20, 40]);
   });
 
   it('caps withdrawal so a large explode cannot fling plates off-screen', () => {
@@ -104,6 +121,12 @@ describe('referenceRowPoses', () => {
     const [pose] = referenceRowPoses([plate({ yawDeg: 90 })], 84);
 
     expect(pose.yawDeg).toBe(0);
+  });
+
+  it('lays a standing wall-slot plate flat too', () => {
+    const [pose] = referenceRowPoses([plate({ standing: true, slideY: 0, slideZ: 1 })], 84);
+
+    expect(pose.pitchDeg).toBe(0);
   });
 
   it('lays the row flat on the floor plane', () => {

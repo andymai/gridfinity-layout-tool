@@ -112,6 +112,11 @@ export interface LabelPlateMeshData {
   readonly slideZ?: 1;
   /** Yaw applied to the seated draw (deg). Present on 90° board sockets. */
   readonly yawDeg?: number;
+  /**
+   * The plate stands on edge in a wall slot: pitched 90° about X before the
+   * yaw, so its text faces out through the wall's window.
+   */
+  readonly standing?: true;
   /** Footprint width (mm), so the preview can lay the reference row out. */
   readonly widthMm: number;
 }

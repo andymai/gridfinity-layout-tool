@@ -27,6 +27,7 @@ import type {
   TrayBottomConfig,
   WallConfig,
   WallCutout,
+  WallLabelSlotsConfig,
   WallPatternConfig,
   WallPatternSides,
   WallTaperConfig,
@@ -96,6 +97,7 @@ export const BIN_PARAMS_KEYS = [
   'surfaceText',
   'lid',
   'knifeRest',
+  'wallLabelSlots',
   'cellMask',
   'overhang',
   'extraWallHeightMm',
@@ -234,6 +236,11 @@ export type _WallPatternKeys = Assert<
 export const WALL_PATTERN_SIDES_KEYS = ['left', 'right', 'front', 'back'] as const;
 export type _WallPatternSidesKeys = Assert<
   KeysMatch<keyof WallPatternSides, (typeof WALL_PATTERN_SIDES_KEYS)[number]>
+>;
+
+export const WALL_LABEL_SLOTS_KEYS = ['enabled', 'sides', 'everyCells'] as const;
+export type _WallLabelSlotsKeys = Assert<
+  KeysMatch<keyof WallLabelSlotsConfig, (typeof WALL_LABEL_SLOTS_KEYS)[number]>
 >;
 
 export const LABEL_TAB_KEYS = [

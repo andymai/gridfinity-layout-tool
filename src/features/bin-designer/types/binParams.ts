@@ -6,7 +6,7 @@ import type { SlotConfig, DividerPieceConfig } from './dividers';
 import type { CompartmentConfig, ScoopConfig } from './compartments';
 import type { LabelTabConfig } from './labelTabs';
 import type { HandleConfig } from './handles';
-import type { WallConfig, WallPatternConfig, OverhangConfig } from './walls';
+import type { WallLabelSlotsConfig, WallConfig, WallPatternConfig, OverhangConfig } from './walls';
 import type { SlideConfig } from './slide';
 import type { FloorPatternConfig } from './floor';
 import type { SplitConnectorConfig } from './splitConnector';
@@ -124,6 +124,8 @@ export interface BinParams {
    * serialize byte-identically.
    */
   readonly knifeRest?: KnifeRestConfig;
+  /** Vertical label slots in the outer walls. See {@link WallLabelSlotsConfig}. */
+  readonly wallLabelSlots?: WallLabelSlotsConfig;
   /**
    * Optional custom footprint mask (non-rectangular bins).
    *

@@ -180,7 +180,8 @@ export function applyWallPatternClips(
   handleClip: HandleClipParams | null,
   rampClip: RampZoneClipParams | null,
   textClip: HandleClipParams | null = null,
-  slideClip: HandleClipParams | null = null
+  slideClip: HandleClipParams | null = null,
+  labelSlotClip: HandleClipParams | null = null
 ): Shape3D | null {
   const tools: Shape3D[] = [];
 
@@ -202,6 +203,11 @@ export function applyWallPatternClips(
     // silently disappears. Same box shape as a handle/text clip.
     if (slideClip && slideClip.segments.length > 0) {
       tools.push(...buildHandleClipBoxes(slideClip));
+    }
+    // Label slots: the boss is fused and the socket cut on their own passes,
+    // so the band each one occupies must stay solid through the pattern.
+    if (labelSlotClip && labelSlotClip.segments.length > 0) {
+      tools.push(...buildHandleClipBoxes(labelSlotClip));
     }
     if (rampClip && rampClip.zones.length > 0) {
       tools.push(...buildRampClipBoxes(wall, rampClip));

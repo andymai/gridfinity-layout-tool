@@ -423,6 +423,9 @@
         "knifeRest": {
           "$ref": "#/$defs/KnifeRestConfig"
         },
+        "wallLabelSlots": {
+          "$ref": "#/$defs/WallLabelSlotsConfig"
+        },
         "cellMask": {
           "$ref": "#/$defs/CellMask"
         },
@@ -2653,9 +2656,33 @@
         }
       }
     },
+    "WallLabelSlotsConfig": {
+      "type": "object",
+      "description": "Vertical label slots in the outer walls: a Cullenect-standard 1u plate stands in each chosen wall, one per grid cell, dropped in from the top. Omit for none.",
+      "required": ["enabled", "sides", "everyCells"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Cut the slots."
+        },
+        "sides": {
+          "$ref": "#/$defs/WallPatternSides",
+          "description": "Which outer walls carry slots."
+        },
+        "everyCells": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6,
+          "x-constant": {
+            "maximum": "MAX_WALL_LABEL_SLOT_PITCH_CELLS"
+          },
+          "description": "Cells between slots along a wall. 1 puts a slot on every cell."
+        }
+      }
+    },
     "WallPatternSides": {
       "type": "object",
-      "description": "Which walls carry the pattern.",
+      "description": "Which outer walls a feature covers: the wall pattern, or the label slots.",
       "required": ["left", "right", "front", "back"],
       "properties": {
         "left": {

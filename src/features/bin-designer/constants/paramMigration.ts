@@ -25,6 +25,7 @@ import type {
   WallConfig,
   WallCutoutShape,
   KnifeRestConfig,
+  WallLabelSlotsConfig,
   KnifeSpec,
 } from '../types';
 import type { CutoutArrayConfig } from '../types';
@@ -135,6 +136,8 @@ import type { TextStyleDefaults } from '../types/text';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { MAX_CUTOUT_TOP_OFFSET_MM } from '../utils/cutoutFill';
 import { isUsableFootprintMask } from '../utils/compartments';
+import { isDefaultWallLabelSlots } from '@/shared/utils/wallLabelSlotPlan';
+import { MAX_WALL_LABEL_SLOT_PITCH_CELLS } from '../types/walls';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import {
   DEFAULT_BIN_PARAMS,
@@ -1190,6 +1193,32 @@ function migrateKnifeRest(raw: unknown): KnifeRestConfig | undefined {
   };
 }
 
+/**
+ * Normalize persisted `wallLabelSlots`. An invalid shape drops to `undefined`,
+ * and so does the default: a design that switched the slots on and off again
+ * must fingerprint like one that never did.
+ */
+function migrateWallLabelSlots(raw: unknown): WallLabelSlotsConfig | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const value = raw as Record<string, unknown>;
+  if (typeof value.enabled !== 'boolean') return undefined;
+  const rawSides =
+    typeof value.sides === 'object' && value.sides !== null
+      ? (value.sides as Record<string, unknown>)
+      : {};
+  const config: WallLabelSlotsConfig = {
+    enabled: value.enabled,
+    sides: {
+      front: rawSides.front === true,
+      back: rawSides.back === true,
+      left: rawSides.left === true,
+      right: rawSides.right === true,
+    },
+    everyCells: Math.round(clampNumber(value.everyCells, 1, MAX_WALL_LABEL_SLOT_PITCH_CELLS, 1)),
+  };
+  return isDefaultWallLabelSlots(config) ? undefined : config;
+}
+
 function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
   const { lidText, walls, wallAlign, style, lidStyle, wallStyles } = raw as {
@@ -1768,6 +1797,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     surfaceText: migrateSurfaceText(params.surfaceText),
     // Same contract as surfaceText: normalized or stripped, never raw.
     knifeRest: migrateKnifeRest(params.knifeRest),
+    wallLabelSlots: migrateWallLabelSlots(params.wallLabelSlots),
     // Clamp the exterior-wall collar so a corrupt design can't drive a runaway
     // box/lip height. `...rest` carried the raw value through; this overrides it.
     extraWallHeightMm: migrateExtraWallHeightMm(

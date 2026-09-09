@@ -3,9 +3,10 @@
  * walls. Lives on the Style page; thickness stays with Shape.
  */
 
-import { SliderInput, SegmentedControl, Checkbox } from '@/design-system';
+import { SliderInput, SegmentedControl, Checkbox, Stepper } from '@/design-system';
 import type { TextMode } from '@/features/bin-designer/types';
 import {
+  MAX_WALL_LABEL_SLOT_PITCH_CELLS,
   PATTERN_WEB_THICKNESS_MAX,
   PATTERN_WEB_THICKNESS_MIN,
   PATTERN_WEB_THICKNESS_STEP,
@@ -17,8 +18,9 @@ import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { FeatureToggle } from '../FeatureToggle';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
+import { LabelPlatesControls } from '../LabelTabsSection/LabelPlatesControls';
 import { AnchorPicker } from '../../controls/AnchorPicker';
-import { SideSelector, SubHeader, type SideState } from '../shared';
+import { Hint, Readout, SideSelector, SubHeader, type SideState } from '../shared';
 
 /** Mode options for the wall-text picker, in the shared textMode order. */
 const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
@@ -36,6 +38,16 @@ export function WallSurfaceSection() {
     disabled: state.patternSideBlocked[side],
     title: state.patternSideBlocked[side]
       ? t('binDesigner.walls.pattern.sides.slotted')
+      : undefined,
+  }));
+
+  const labelSlotSideStates: SideState[] = WALL_PATTERN_SIDES.map((side) => ({
+    side,
+    label: t(`binDesigner.lid.side.${side}`),
+    active: state.labelSlotSides[side],
+    disabled: state.labelSlotSideBlocked[side],
+    title: state.labelSlotSideBlocked[side]
+      ? t('binDesigner.walls.labelSlots.sides.narrow')
       : undefined,
   }));
 
@@ -191,6 +203,64 @@ export function WallSurfaceSection() {
                 </p>
               </>
             )}
+          </>
+        }
+      />
+      <FeatureToggle
+        label={t('binDesigner.walls.labelSlots.heading')}
+        checked={state.labelSlotsEnabled}
+        onChange={handlers.toggleLabelSlots}
+        disabledReason={state.labelSlotsDisabledReason}
+        primaryControls={
+          <>
+            <Hint>{t('binDesigner.walls.labelSlots.hint')}</Hint>
+            <div>
+              <span className="mb-1 block text-label text-content-tertiary">
+                {t('binDesigner.walls.labelSlots.sides')}
+              </span>
+              <SideSelector
+                sides={labelSlotSideStates}
+                onToggle={handlers.toggleLabelSlotSide}
+                ariaLabel={t('binDesigner.walls.labelSlots.sides')}
+              />
+              {state.labelSlotSidesNote && (
+                <p className="mt-1 text-label leading-relaxed text-content-tertiary">
+                  {state.labelSlotSidesNote}
+                </p>
+              )}
+            </div>
+            <div>
+              <span className="mb-1 block text-label text-content-tertiary">
+                {t('binDesigner.walls.labelSlots.spacing')}
+              </span>
+              <Stepper
+                aria-label={t('binDesigner.walls.labelSlots.spacing')}
+                value={state.labelSlotEveryCells}
+                onStep={handlers.stepLabelSlotEveryCells}
+                min={1}
+                max={MAX_WALL_LABEL_SLOT_PITCH_CELLS}
+                displayValue={
+                  state.labelSlotEveryCells === 1
+                    ? t('binDesigner.walls.labelSlots.spacing.one')
+                    : t('binDesigner.walls.labelSlots.spacing.other', {
+                        count: state.labelSlotEveryCells,
+                      })
+                }
+                size="sm"
+                fullWidth
+              />
+            </div>
+            {state.labelSlotCount > 0 && (
+              <Readout>
+                {state.labelSlotCount === 1
+                  ? t('binDesigner.walls.labelSlots.count.one')
+                  : t('binDesigner.walls.labelSlots.count.other', { count: state.labelSlotCount })}
+              </Readout>
+            )}
+            {state.labelSlotNotes.map((note) => (
+              <Hint key={note}>{note}</Hint>
+            ))}
+            {state.labelSlotPlatesHere && <LabelPlatesControls />}
           </>
         }
       />

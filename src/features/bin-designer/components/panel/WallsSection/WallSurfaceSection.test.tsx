@@ -5,6 +5,13 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import type { WallPatternSides } from '@/features/bin-designer/types';
 
+/** A FeatureToggle's block: the switch row plus the reason text under it. */
+function toggleBlock(name: string): HTMLElement {
+  const block = screen.getByRole('switch', { name }).parentElement?.parentElement;
+  if (!block) throw new Error(`no toggle block for ${name}`);
+  return block;
+}
+
 describe('WallSurfaceSection', () => {
   beforeEach(() => {
     useDesignerStore.setState({
@@ -160,7 +167,7 @@ describe('WallSurfaceSection', () => {
       });
       render(<WallSurfaceSection />);
       expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
-      expect(screen.getByText('Not available for custom-shape bins.')).toBeInTheDocument();
+      expect(toggleBlock('Wall text')).toHaveTextContent('Not available for custom-shape bins.');
     });
 
     // A solid body has the same outer wall a hollow one does; only the interior
@@ -347,5 +354,69 @@ describe('WallSurfaceSection', () => {
     render(<WallSurfaceSection />);
     const select = screen.getByRole<HTMLSelectElement>('combobox');
     expect(select.value).toBe('honeycomb');
+  });
+
+  describe('label slots', () => {
+    const on = {
+      enabled: true,
+      sides: { front: true, back: false, left: false, right: false },
+      everyCells: 1,
+    };
+
+    it('hides the controls until the toggle is switched on', () => {
+      render(<WallSurfaceSection />);
+      expect(
+        screen.queryByRole('group', { name: 'Walls with label slots' })
+      ).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('switch', { name: 'Label slots' }));
+      expect(screen.getByRole('group', { name: 'Walls with label slots' })).toBeInTheDocument();
+      expect(screen.getByRole('switch', { name: 'Front' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('switch', { name: 'Back' })).toHaveAttribute('aria-checked', 'false');
+      expect(useDesignerStore.getState().params.wallLabelSlots?.enabled).toBe(true);
+    });
+
+    it('opens expanded and reports the plate count for a saved config', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2, wallLabelSlots: on },
+      });
+      render(<WallSurfaceSection />);
+      expect(screen.getByText('3 slots for 1u label plates')).toBeInTheDocument();
+      expect(screen.getByText('Every cell')).toBeInTheDocument();
+    });
+
+    it('steps the pitch and shows it in words', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 4, wallLabelSlots: on },
+      });
+      render(<WallSurfaceSection />);
+      fireEvent.click(screen.getByLabelText('Increase Slot spacing'));
+      expect(useDesignerStore.getState().params.wallLabelSlots?.everyCells).toBe(2);
+      expect(screen.getByText('Every 2 cells')).toBeInTheDocument();
+      expect(screen.getByText('2 slots for 1u label plates')).toBeInTheDocument();
+    });
+
+    it('disables the toggle on a custom shape and says why', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } },
+      });
+      render(<WallSurfaceSection />);
+      expect(screen.getByRole('switch', { name: 'Label slots' })).toBeDisabled();
+      expect(toggleBlock('Label slots')).toHaveTextContent('Not available for custom-shape bins.');
+    });
+
+    it('greys out a wall whose cells are too narrow', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, gridUnitMm: 30, gridUnitMmY: 42, wallLabelSlots: on },
+      });
+      render(<WallSurfaceSection />);
+      const front = screen.getByRole('switch', { name: 'Front' });
+      expect(front).toBeDisabled();
+      expect(front).toHaveAttribute('title', 'These cells are too narrow for a 1u plate');
+      expect(screen.getByRole('switch', { name: 'Left' })).toBeEnabled();
+      expect(
+        screen.getByText('Nothing is cut: pick a wall whose cells can hold a plate')
+      ).toBeInTheDocument();
+    });
   });
 });

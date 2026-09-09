@@ -15,6 +15,7 @@ import type {
   WallCutout,
   WallSide,
   WallPatternConfig,
+  WallLabelSlotsConfig,
   FloorPatternConfig,
   CutoutConfig,
   HandleConfig,
@@ -35,6 +36,7 @@ import {
   DEFAULT_ACCENT_BAND,
   DEFAULT_FLOOR_PATTERN_CONFIG,
 } from '@/features/bin-designer/constants';
+import { isDefaultWallLabelSlots, resolveWallLabelSlots } from '@/shared/utils/wallLabelSlotPlan';
 import {
   applyCutoutFillAnchor,
   captureCutoutFill,
@@ -173,6 +175,16 @@ export function createScopedUpdaters(set: Set) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.wallPattern = { ...state.params.wallPattern, ...partial };
+      });
+    },
+
+    updateWallLabelSlots: (partial: Partial<WallLabelSlotsConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const next = { ...resolveWallLabelSlots(state.params), ...partial };
+        // Back at the default the field goes away, so a design that tried the
+        // slots and gave them up fingerprints like one that never did.
+        state.params.wallLabelSlots = isDefaultWallLabelSlots(next) ? undefined : next;
       });
     },
 
