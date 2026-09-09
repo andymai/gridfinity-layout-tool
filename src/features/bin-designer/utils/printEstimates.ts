@@ -60,7 +60,10 @@ import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { cutoutDisplacementMm3 } from '@/shared/utils/fitTestPlan';
 import { FLOOR_PATTERN_BORDER, floorWindowSpan } from '@/shared/generation/floorPatternMetrics';
-import { stampPatternOpenArea } from '@/shared/generation/wallPatternMetrics';
+import {
+  stampPatternOpenArea,
+  wallPatternElementMetrics,
+} from '@/shared/generation/wallPatternMetrics';
 export interface PrintEstimate {
   /** Estimated material volume in mm³ */
   readonly volumeMm3: number;
@@ -818,14 +821,23 @@ function computeWallPatternReduction(
 /**
  * How much of the default-web open area survives at this design's strut width.
  *
- * Read off the exact stamp model over a band one metre long, so it tracks the
- * real element spacing rather than a guessed curve. 1 for a kumiko lattice,
- * which has no stamped web, and whenever the design keeps the default.
+ * Read off the exact stamp model over a metre of band, where the edge margin
+ * is noise, so the factor follows the real element spacing. 1 for a kumiko
+ * lattice, which has no stamped web, and whenever the design keeps the
+ * default; 0 when the wider strut lifts the pattern's minimum band height
+ * past this wall, which is the case the worker leaves solid.
  */
 function strutWidthFactor(params: BinParams, patternHeight: number): number {
   const { pattern, webThickness } = params.wallPattern;
   if (webThickness === undefined || webThickness === DEFAULT_PATTERN_WEB_THICKNESS) return 1;
   const scale = params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
+  const { minPatternHeight } = wallPatternElementMetrics(
+    pattern,
+    params.height,
+    scale,
+    webThickness
+  );
+  if (patternHeight < minPatternHeight) return 0;
   const reference = stampPatternOpenArea(pattern, params.height, scale, 1000, patternHeight);
   if (reference <= 0) return 1;
   const actual = stampPatternOpenArea(

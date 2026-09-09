@@ -140,8 +140,8 @@ function thickStrutCase(): ScenarioCase {
     compareWith: {
       params: { ...params, wallPattern: { ...params.wallPattern, webThickness: 0.8 } },
       assert: (thick, thin) => {
-        // Two dozen fewer hexes on a 3×3×5: under 1% of the bin, but far
-        // outside tessellation drift, which stays below 0.1%.
+        // The margin sits between tessellation drift (under 0.1%) and the
+        // real difference (near 1%).
         expect(meshVolume(thick), 'thicker struts must leave more wall material').toBeGreaterThan(
           meshVolume(thin) * 1.005
         );

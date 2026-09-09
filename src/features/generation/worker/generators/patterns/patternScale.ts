@@ -25,7 +25,7 @@ import {
  *  lace as elements shrink. */
 export const PATTERN_WEB_THICKNESS = DEFAULT_PATTERN_WEB_THICKNESS;
 
-/** Clamp an untrusted strut width into range; anything but a finite number falls back to the default. */
+/** Clamp an untrusted strut width into range. NaN or absent means the default; infinities clamp like any other out-of-range value. */
 export function clampWebThickness(webThickness: number | undefined): number {
   if (webThickness === undefined || Number.isNaN(webThickness)) return PATTERN_WEB_THICKNESS;
   return Math.min(PATTERN_WEB_THICKNESS_MAX, Math.max(PATTERN_WEB_THICKNESS_MIN, webThickness));

@@ -119,11 +119,9 @@ export function isKumikoPattern(pattern: WallPatternType): boolean {
 export const DEFAULT_PATTERN_SCALE = 0.5;
 
 /**
- * Solid strut between adjacent stamped elements, in mm. 0.8 is the width the
- * patterns have always had (two perimeters at a 0.4mm nozzle), and it is what
- * a design without the field builds, so raising the default here would move
- * every saved pattern. The ceiling keeps a pattern from collapsing into a
- * field of isolated holes.
+ * Strut between stamped elements, in mm. A design without the field builds
+ * the default, so raising it here would move every saved pattern; the ceiling
+ * keeps a pattern from thinning into isolated holes.
  */
 export const DEFAULT_PATTERN_WEB_THICKNESS = 0.8;
 export const PATTERN_WEB_THICKNESS_MIN = 0.8;
