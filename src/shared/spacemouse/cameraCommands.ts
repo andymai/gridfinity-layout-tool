@@ -8,7 +8,12 @@ import {
   Spherical,
   Vector3,
 } from 'three';
-import { FOLD_SWEEP_TOLERANCE, MIN_POLAR, PAN_LEASH_RADII } from './constants';
+import {
+  FOLD_SWEEP_TOLERANCE,
+  MIN_POLAR,
+  PAN_LEASH_RADII,
+  PAN_LEASH_VIEWPORT_FRACTION,
+} from './constants';
 import type { CameraViewPreset, FrameMotion } from './types';
 
 /**
@@ -256,7 +261,7 @@ export function constrainPose(
   if (controls.enablePan !== false && contentBox && !contentBox.isEmpty()) {
     const leash = Math.min(
       boundingSphere(contentBox).radius * PAN_LEASH_RADII,
-      visibleRadius(camera, distance)
+      visibleRadius(camera, distance) * PAN_LEASH_VIEWPORT_FRACTION
     );
     const away = controls.target.clone().sub(contentBox.clampPoint(controls.target, new Vector3()));
     const overshoot = away.length() - leash;

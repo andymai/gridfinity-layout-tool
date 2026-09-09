@@ -17,7 +17,7 @@ import {
   type OrbitLike,
   presetDirection,
 } from './cameraCommands';
-import { MIN_POLAR } from './constants';
+import { MIN_POLAR, PAN_LEASH_RADII, PAN_LEASH_VIEWPORT_FRACTION } from './constants';
 import type { FrameMotion } from './types';
 
 const noMotion: FrameMotion = { panX: 0, panY: 0, zoom: 0, orbitH: 0, orbitV: 0 };
@@ -280,6 +280,12 @@ describe('pan limits', () => {
 
   it('stops panning while the model is still in frame', () => {
     const { camera } = panHard(model);
+    // The model's CENTRE, not merely some corner of its box. `intersectsBox`
+    // alone passes on a sliver clipping the frustum edge, which is exactly the
+    // state a leash of a whole model radius left it in (#4041).
+    const centre = new Vector3();
+    model.getCenter(centre);
+    expect(frustumOf(camera).containsPoint(centre)).toBe(true);
     expect(frustumOf(camera).intersectsBox(model)).toBe(true);
   });
 
@@ -288,10 +294,64 @@ describe('pan limits', () => {
     expect(frustumOf(camera).intersectsBox(model)).toBe(false);
   });
 
-  it('leashes the target to one model radius outside the content box', () => {
+  it('leashes the target to half a model radius outside the content box', () => {
     const { target } = panHard(model);
     const nearest = model.clampPoint(target, new Vector3());
-    expect(target.distanceTo(nearest)).toBeCloseTo(boundingSphere(model).radius, 6);
+    expect(target.distanceTo(nearest)).toBeCloseTo(
+      boundingSphere(model).radius * PAN_LEASH_RADII,
+      6
+    );
+  });
+
+  it('bounds the leash in absolute terms however far out the view is', () => {
+    // Zooming out raises what the viewport shows without limit, so a leash
+    // resting on that alone buys a target thousands of millimetres away — and
+    // the dolly back in then drags it home in one lurch. The model-radius term
+    // is what caps it, and this is the case that needs it.
+    const camera = new PerspectiveCamera(50, 1, 0.1, 100000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(0, -300, 200);
+    const controls = aimingOrbit(camera);
+    for (let i = 0; i < 30; i++) {
+      applyFrameMotion(camera, controls, { ...noMotion, zoom: -0.1 }, model);
+    }
+    for (let i = 0; i < 200; i++) {
+      applyFrameMotion(camera, controls, { ...noMotion, panX: 8, panY: 4 }, model);
+    }
+    const nearest = model.clampPoint(controls.target, new Vector3());
+    expect(controls.target.distanceTo(nearest)).toBeCloseTo(
+      boundingSphere(model).radius * PAN_LEASH_RADII,
+      6
+    );
+
+    // And the way home is walked, not jumped.
+    let prev = controls.target.clone();
+    let worstJump = 0;
+    for (let i = 0; i < 40; i++) {
+      applyFrameMotion(camera, controls, { ...noMotion, zoom: 0.1 }, model);
+      worstJump = Math.max(worstJump, controls.target.distanceTo(prev));
+      prev = controls.target.clone();
+    }
+    expect(worstJump).toBeLessThan(boundingSphere(model).radius * 0.1);
+  });
+
+  it('keeps the model in frame when the view orbits after panning out', () => {
+    // The leash only ever fires on a pan, but orbit swings the model around a
+    // target the pan already pushed away from it.
+    const camera = new PerspectiveCamera(50, 1, 0.1, 4000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(0, -300, 200);
+    const controls = aimingOrbit(camera);
+    for (let i = 0; i < 200; i++) {
+      applyFrameMotion(camera, controls, { ...noMotion, panX: 8, panY: 4 }, model);
+    }
+    const centre = new Vector3();
+    model.getCenter(centre);
+    for (let i = 0; i < 40; i++) {
+      applyFrameMotion(camera, controls, { ...noMotion, orbitH: 0.15 }, model);
+      expect(frustumOf(camera).intersectsBox(model)).toBe(true);
+    }
+    expect(frustumOf(camera).containsPoint(centre)).toBe(true);
   });
 
   it('keeps the leash positive when the driver writes inverted view extents', () => {
@@ -302,7 +362,7 @@ describe('pan limits', () => {
     controls.target.set(900, 0, 0);
     applyFrameMotion(camera, controls, { ...noMotion, panX: 1 }, model);
     const nearest = model.clampPoint(controls.target, new Vector3());
-    expect(controls.target.distanceTo(nearest)).toBeCloseTo(1, 6);
+    expect(controls.target.distanceTo(nearest)).toBeCloseTo(PAN_LEASH_VIEWPORT_FRACTION, 6);
   });
 
   it('leaves the leash to a canvas that panned, not one that forbids it', () => {
