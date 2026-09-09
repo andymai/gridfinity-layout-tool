@@ -1,0 +1,103 @@
+src/i18n/locales/sv.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/features/whats-new/latest.ts
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 9
+public/schema/bin-design.schema.json
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1672
+src/shared/utils/slideLidPlan.ts
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 174-175,177
+  s_24b1f7fd65ccc8::t_c59ed7c8fff165 173,176,178,264,266-270,679-695,717
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 107
+  s_24b1f7fd65ccc8::t_f7d091be067f48 62
+  s_24b1f7fd65ccc8::t_c59ed7c8fff165 108,300-303
+  s_24b1f7fd65ccc8::t_bdead58c9a328d 304-305
+src/i18n/locales/nb.json
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+src/shared/utils/slideLidPlan.test.ts
+  s_24b1f7fd65ccc8::t_258dbf71ba8a76 484,500
+  s_24b1f7fd65ccc8::t_beed40e54e13b3 14,473-483,485-499,501-508
+  s_24b1f7fd65ccc8::t_2347d4de1acf4a 509-511
+api/lib/designerValidation.ts
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 111
+src/features/generation/worker/generators/slideLidPlate.ts
+  s_24b1f7fd65ccc8::t_c59ed7c8fff165 297-318,363-366,376,380
+src/i18n/locales/ja.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/i18n/locales/es.json
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+src/i18n/locales/de.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/features/whats-new/entries.ts
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 17-25
+  s_24b1f7fd65ccc8::t_79754ca1fe3620 16
+src/features/generation/worker/generators/slideLidSeating.scenario.test.ts
+  s_24b1f7fd65ccc8::t_258dbf71ba8a76 199-217
+src/i18n/locales/zh-CN.json
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+src/i18n/locales/uk.json
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+docs/schemas/constraints.md
+  s_24b1f7fd65ccc8::t_f7d091be067f48 135
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1090
+  s_24b1f7fd65ccc8::t_beed40e54e13b3 1091-1101
+api/lib/designerValidation.test.ts
+  s_24b1f7fd65ccc8::t_258dbf71ba8a76 2200-2203
+src/i18n/locales/fr.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/i18n/locales/en.ts
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 2254
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 2161-2163,2253
+src/i18n/locales/it.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_24b1f7fd65ccc8::t_4f6b1799b5cbe9 616-621
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 760
+src/features/bin-designer/components/panel/SlideControls/SlideControls.test.tsx
+  s_24b1f7fd65ccc8::t_beed40e54e13b3 62
+src/i18n/locales/pl.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/i18n/locales/ko.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/i18n/locales/nl.json
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+src/features/bin-designer/types/lid.ts
+  s_24b1f7fd65ccc8::t_c59ed7c8fff165 271-275,277-278
+src/i18n/locales/cs.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/i18n/locales/pt-BR.json
+  s_24b1f7fd65ccc8::t_955dcea4538a2e 1195
+  s_24b1f7fd65ccc8::t_daa117fef92a4d 1302-1303
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_24b1f7fd65ccc8::t_5707f6243f3f3a 7-8,884-919
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "27bf506e8d6fc1cb0c1dcc783657a563561e2c66",
+  "prompts": {},
+  "sessions": {
+    "s_24b1f7fd65ccc8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82159306-be22-4350-a4a3-73f5c463c154",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
