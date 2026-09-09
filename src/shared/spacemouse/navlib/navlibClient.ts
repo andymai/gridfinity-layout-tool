@@ -150,6 +150,12 @@ export function guardCall<A extends unknown[]>(
   };
 }
 
+/**
+ * Hand the pose to the mouse. Guarded on its own so a throw here can never
+ * abort the detach path that called it.
+ */
+const handOff = guardCall('motion.end', () => spaceMouseBus.activeNavlib()?.endMotion());
+
 /** Exported so a test can prove every entry is guarded; `acc` resolves the active canvas. */
 export function buildClient(acc: () => NavlibViewAccessors | null): NavlibClient {
   return {
@@ -176,7 +182,10 @@ export function buildClient(acc: () => NavlibViewAccessors | null): NavlibClient
         rafId = requestAnimationFrame(pump);
       }
     }),
-    onStopMotion: guardCall('motion.stop', stopPump),
+    onStopMotion: guardCall('motion.stop', () => {
+      stopPump();
+      handOff();
+    }),
     // 0 marks the end of a frame's changes: render the result.
     setTransaction: guardCall('transaction', (transaction: number) => {
       if (transaction === 0) acc()?.invalidate();
@@ -247,6 +256,7 @@ export async function startNavlib(opts: { onDisconnect: () => void }): Promise<v
         // Reset our own state (so a later probe can reconnect the driver) before
         // handing off to the caller's WebHID fallback.
         stopPump();
+        handOff();
         nav = null;
         started = false;
         setConnection('idle', null);
@@ -270,6 +280,7 @@ export function stopNavlib(): void {
   started = false;
   navGeneration++; // supersede an in-flight module load
   stopPump();
+  handOff();
   // Null `nav` before delete3dmouse so its close→onDisconnect sees a superseded
   // instance and doesn't re-enter the fallback.
   const instance = nav;

@@ -23,16 +23,11 @@ export const ORBIT_RATE = 3.6; // radians / s
 export const MIN_POLAR = 0.01;
 
 /**
- * How far the swept angle may sit from the over-a-pole distance and still be
- * read as a pole crossing (radians).
- *
- * A crossing sweeps the two polar angles added together and every other route
- * between the same pair is shorter, so the only competing motion is a spin of
- * very nearly half a turn IN ONE FRAME, which closes the gap to nothing. This
- * sits below where that becomes a risk: a 143 deg/frame spin still reads a
- * quarter radian short, while a real crossing matches to float precision.
+ * How much roll (sine of the angle) a driver-written pose may carry and still
+ * be handed to the mouse on the world up axis. OrbitControls cannot represent
+ * roll, so a pose past this keeps its own up vector instead.
  */
-export const FOLD_SWEEP_TOLERANCE = 0.01;
+export const LEVEL_ROLL_TOLERANCE = 0.01;
 
 /**
  * How far the orbit target may drift outside the model's bounding box before

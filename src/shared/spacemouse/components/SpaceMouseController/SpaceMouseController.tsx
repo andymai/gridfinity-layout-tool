@@ -70,19 +70,6 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
 
   useEffect(() => {
     if (!enabled) return;
-    const runCommand = (command: SpaceMouseCommand): void => {
-      const st = stateRef.current;
-      if (!st.controls) return;
-      const box = computeContentBox(st.scene);
-      if (box.isEmpty()) return;
-      const aspect = st.size.height > 0 ? st.size.width / st.size.height : 1;
-      frameBox(st.camera, st.controls, box, {
-        direction: directionForCommand(command, st.camera.up),
-        viewportHeight: st.size.height,
-        aspect,
-      });
-      st.invalidate();
-    };
     // Camera accessors for the driver-native transport, delegating to this
     // canvas's live state. Created here (not in render) so the deferred ref read
     // stays out of the render phase.
@@ -92,6 +79,22 @@ export function SpaceMouseController({ modal = false }: SpaceMouseControllerProp
         ? { camera: st.camera, controls: st.controls, scene: st.scene, invalidate: st.invalidate }
         : null;
     });
+    const runCommand = (command: SpaceMouseCommand): void => {
+      const st = stateRef.current;
+      if (!st.controls) return;
+      const box = computeContentBox(st.scene);
+      if (box.isEmpty()) return;
+      const aspect = st.size.height > 0 ? st.size.width / st.size.height : 1;
+      // The driver may have left a pose's up on the camera; a preset is framed
+      // on the canvas's own.
+      const up = navlib.restoreUp();
+      frameBox(st.camera, st.controls, box, {
+        direction: directionForCommand(command, up),
+        viewportHeight: st.size.height,
+        aspect,
+      });
+      st.invalidate();
+    };
     const unregister = spaceMouseBus.register({
       id,
       runCommand,

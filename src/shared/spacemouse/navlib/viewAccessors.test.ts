@@ -204,16 +204,28 @@ describe('createNavlibViewAccessors', () => {
 
 /**
  * One frame of the driver's own navigation: it rotates the whole pose about the
- * pivot, position and orientation together, so unlike the mouse it can carry
- * the camera over a pole and roll the horizon on the way.
+ * pivot, position and orientation together, about the camera's own right axis,
+ * so unlike the mouse it can carry the camera over a pole and roll the horizon
+ * on the way.
  */
-function drivePitch(pose: number[], pivot: Vector3, up: Vector3, delta: number): number[] {
+function drivePitch(pose: number[], pivot: Vector3, delta: number): number[] {
   const m = new Matrix4().fromArray(pose);
   const offset = new Vector3().setFromMatrixPosition(m).sub(pivot);
   const step = new Quaternion().setFromAxisAngle(
-    new Vector3().crossVectors(up, offset).normalize(),
+    new Vector3().setFromMatrixColumn(m, 0).normalize(),
     delta
   );
+  const rotated = new Quaternion().setFromRotationMatrix(m).premultiply(step);
+  return new Matrix4()
+    .compose(pivot.clone().add(offset.applyQuaternion(step)), rotated, new Vector3(1, 1, 1))
+    .toArray();
+}
+
+/** The driver turning the whole pose about the world up axis through the pivot. */
+function driveYaw(pose: number[], pivot: Vector3, up: Vector3, delta: number): number[] {
+  const m = new Matrix4().fromArray(pose);
+  const offset = new Vector3().setFromMatrixPosition(m).sub(pivot);
+  const step = new Quaternion().setFromAxisAngle(up.clone().normalize(), delta);
   const rotated = new Quaternion().setFromRotationMatrix(m).premultiply(step);
   return new Matrix4()
     .compose(pivot.clone().add(offset.applyQuaternion(step)), rotated, new Vector3(1, 1, 1))
@@ -225,14 +237,36 @@ function driveTranslate(pose: number[], delta: Vector3): number[] {
   return m.setPosition(new Vector3().setFromMatrixPosition(m).add(delta)).toArray();
 }
 
-/** A canvas whose controls re-aim the camera on update, as OrbitControls do. */
-function aimedDeps(camera: Camera, scene: Scene): NavlibViewDeps {
+/** The driver dollying along the view direction. */
+function driveDolly(pose: number[], distance: number): number[] {
+  const m = new Matrix4().fromArray(pose);
+  const forward = new Vector3().setFromMatrixColumn(m, 2).negate().normalize();
+  return driveTranslate(pose, forward.multiplyScalar(distance));
+}
+
+/** The driver rolling the pose about its own view direction. */
+function driveRoll(pose: number[], delta: number): number[] {
+  const m = new Matrix4().fromArray(pose);
+  const forward = new Vector3().setFromMatrixColumn(m, 2).negate().normalize();
+  const step = new Quaternion().setFromAxisAngle(forward, delta);
+  const rotated = new Quaternion().setFromRotationMatrix(m).premultiply(step);
+  return new Matrix4()
+    .compose(new Vector3().setFromMatrixPosition(m), rotated, new Vector3(1, 1, 1))
+    .toArray();
+}
+
+/**
+ * A canvas whose controls re-aim the camera on update, as OrbitControls do,
+ * using whatever up vector the camera carries at the time.
+ */
+function aimedDeps(camera: Camera, scene: Scene, extra: Partial<OrbitLike> = {}): NavlibViewDeps {
   const controls: OrbitLike = {
     target: new Vector3(),
     update: () => {
       camera.lookAt(controls.target);
       camera.updateMatrixWorld(true);
     },
+    ...extra,
   };
   controls.update();
   return { camera, controls, scene, invalidate: () => {} };
@@ -247,8 +281,36 @@ function bigModel(): Scene {
   return scene;
 }
 
+function screenRight(camera: Camera): Vector3 {
+  camera.updateMatrixWorld(true);
+  return new Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+}
+
+function polarOf(camera: Camera, d: NavlibViewDeps): number {
+  return camera.position
+    .clone()
+    .sub(d.controls.target)
+    .angleTo(new Vector3(0, 0, 1));
+}
+
+function expectPose(actual: number[], asked: number[], digits = 5): void {
+  for (let i = 0; i < 16; i++) expect(actual[i]).toBeCloseTo(asked[i], digits);
+}
+
+/** A camera looking straight down the world up axis with north up the screen. */
+function topView(camera: Camera): void {
+  camera.position.set(0, 0, 300);
+  camera.up.set(0, 1, 0);
+  camera.lookAt(0, 0, 0);
+  camera.up.set(0, 0, 1);
+  camera.updateMatrixWorld(true);
+}
+
 describe('driver-written poses', () => {
-  it('stalls at the zenith while the driver keeps pitching over the top', () => {
+  const Z = new Vector3(0, 0, 1);
+  const centre = new Vector3(0, 0, 0);
+
+  it('follows the driver exactly, over the top included, on a canvas without limits', () => {
     const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
     camera.up.set(0, 0, 1);
     camera.position.set(200, 0, 60);
@@ -256,24 +318,86 @@ describe('driver-written poses', () => {
     const acc = createNavlibViewAccessors(() => d);
 
     let pose = acc.getViewMatrix();
-    let right = new Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+    let right = screenRight(camera);
     let maxTwist = 0;
     let minPolar = Math.PI;
     for (let i = 0; i < 80; i++) {
-      acc.setViewMatrix(drivePitch(pose, d.controls.target.clone(), camera.up, -0.12));
-      // The driver reads the view back each frame, so it continues from the
-      // pose we allowed rather than from the one it asked for.
+      const asked = drivePitch(pose, centre, -0.12);
+      acc.setViewMatrix(asked);
+      d.controls.update();
       pose = acc.getViewMatrix();
-      const next = new Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+      expectPose(pose, asked);
+      const next = screenRight(camera);
       maxTwist = Math.max(maxTwist, next.angleTo(right));
       right = next;
-      minPolar = Math.min(
-        minPolar,
-        camera.position.clone().sub(d.controls.target).angleTo(camera.up)
-      );
+      minPolar = Math.min(minPolar, polarOf(camera, d));
     }
-    expect(minPolar).toBeGreaterThanOrEqual(MIN_POLAR - 1e-9);
-    expect(maxTwist).toBeLessThan(0.05);
+    // 80 steps of 0.12 rad is well over a full turn: the view went over the top.
+    expect(minPolar).toBeLessThan(0.05);
+    expect(maxTwist).toBeLessThan(0.01);
+  });
+
+  it("stops at the canvas's own elevation limit without turning the view", () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(200, 0, 60);
+    const d = aimedDeps(camera, bigModel(), { minPolarAngle: Math.PI * 0.05 });
+    const acc = createNavlibViewAccessors(() => d);
+
+    let pose = acc.getViewMatrix();
+    let right = screenRight(camera);
+    let maxTwist = 0;
+    const polars: number[] = [];
+    for (let i = 0; i < 40; i++) {
+      acc.setViewMatrix(drivePitch(pose, centre, -0.12));
+      d.controls.update();
+      pose = acc.getViewMatrix();
+      const next = screenRight(camera);
+      maxTwist = Math.max(maxTwist, next.angleTo(right));
+      right = next;
+      polars.push(polarOf(camera, d));
+    }
+    expect(Math.min(...polars)).toBeGreaterThanOrEqual(Math.PI * 0.05 - 1e-9);
+    expect(polars[polars.length - 1]).toBeCloseTo(Math.PI * 0.05, 6);
+    expect(maxTwist).toBeLessThan(0.01);
+    expect(Math.abs(right.dot(Z))).toBeLessThan(1e-6);
+  });
+
+  it('yaws freely in a top view instead of snapping to a fixed heading', () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    topView(camera);
+    const d = aimedDeps(camera, bigModel());
+    const acc = createNavlibViewAccessors(() => d);
+
+    let pose = acc.getViewMatrix();
+    let right = screenRight(camera);
+    for (let i = 0; i < 30; i++) {
+      const asked = driveYaw(pose, centre, Z, 0.1);
+      acc.setViewMatrix(asked);
+      d.controls.update();
+      pose = acc.getViewMatrix();
+      expectPose(pose, asked);
+      const next = screenRight(camera);
+      expect(next.angleTo(right)).toBeCloseTo(0.1, 5);
+      right = next;
+    }
+  });
+
+  it("places the orbit target at the model's depth, so a dolly is not a pan", () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 4000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(0, -300, 200);
+    const d = aimedDeps(camera, bigModel());
+    const acc = createNavlibViewAccessors(() => d);
+
+    let pose = acc.getViewMatrix();
+    for (let i = 0; i < 60; i++) {
+      acc.setViewMatrix(driveDolly(pose, 4));
+      d.controls.update();
+      pose = acc.getViewMatrix();
+      expect(d.controls.target.distanceTo(centre)).toBeLessThan(1);
+    }
+    expect(camera.position.distanceTo(centre)).toBeLessThan(150);
   });
 
   it('keeps the model in frame while the driver keeps panning', () => {
@@ -287,6 +411,7 @@ describe('driver-written poses', () => {
     let pose = acc.getViewMatrix();
     for (let i = 0; i < 200; i++) {
       acc.setViewMatrix(driveTranslate(pose, new Vector3(8, 0, 4)));
+      d.controls.update();
       pose = acc.getViewMatrix();
     }
     camera.updateMatrixWorld(true);
@@ -296,5 +421,83 @@ describe('driver-written poses', () => {
     expect(frustum.intersectsBox(computeContentBox(scene))).toBe(true);
     // The drive asked for 1600 units of travel; the leash stopped it far short.
     expect(camera.position.x).toBeLessThan(400);
+  });
+
+  it('hands a level pose to the mouse on world up, just off the pole', () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    topView(camera);
+    const d = aimedDeps(camera, bigModel());
+    const acc = createNavlibViewAccessors(() => d);
+    let pose = acc.getViewMatrix();
+    for (let i = 0; i < 7; i++) {
+      acc.setViewMatrix(driveYaw(pose, centre, Z, 0.1));
+      d.controls.update();
+      pose = acc.getViewMatrix();
+    }
+    const before = screenRight(camera);
+
+    acc.endMotion();
+    expect(camera.up.distanceTo(Z)).toBeLessThan(1e-9);
+    expect(polarOf(camera, d)).toBeGreaterThanOrEqual(MIN_POLAR - 1e-9);
+    expect(polarOf(camera, d)).toBeLessThan(MIN_POLAR + 1e-6);
+    expect(screenRight(camera).angleTo(before)).toBeLessThan(0.02);
+    // The mouse's own re-aim, on world up, changes nothing further.
+    d.controls.update();
+    expect(screenRight(camera).angleTo(before)).toBeLessThan(0.02);
+  });
+
+  it("keeps a rolled pose's up for the mouse", () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(200, 0, 60);
+    const d = aimedDeps(camera, bigModel());
+    const acc = createNavlibViewAccessors(() => d);
+    const rolled = driveRoll(acc.getViewMatrix(), 0.5);
+    acc.setViewMatrix(rolled);
+    d.controls.update();
+    acc.endMotion();
+    d.controls.update();
+    expectPose(acc.getViewMatrix(), rolled);
+    expect(camera.up.distanceTo(Z)).toBeGreaterThan(0.1);
+  });
+
+  it("keeps a rolled pose's up near the pole too", () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(3, 0, 300);
+    const d = aimedDeps(camera, bigModel());
+    const acc = createNavlibViewAccessors(() => d);
+    const rolled = driveRoll(acc.getViewMatrix(), Math.PI / 2);
+    acc.setViewMatrix(rolled);
+    d.controls.update();
+    acc.endMotion();
+    d.controls.update();
+    expectPose(acc.getViewMatrix(), rolled);
+    expect(camera.up.distanceTo(Z)).toBeGreaterThan(0.1);
+  });
+
+  it('turns auto-rotate off when the driver writes a pose', () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(200, 0, 60);
+    const d = aimedDeps(camera, bigModel(), { autoRotate: true });
+    const acc = createNavlibViewAccessors(() => d);
+    acc.setViewMatrix(acc.getViewMatrix());
+    expect(d.controls.autoRotate).toBe(false);
+  });
+
+  it("reads the coordinate system from the canvas up, not the driver's", () => {
+    const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(200, 0, 60);
+    const d = aimedDeps(camera, bigModel());
+    const acc = createNavlibViewAccessors(() => d);
+    acc.setViewMatrix(driveRoll(acc.getViewMatrix(), Math.PI / 2));
+    expect(camera.up.distanceTo(Z)).toBeGreaterThan(0.5);
+    expect(acc.getCoordinateSystem()[6]).toBe(-1);
+    expect(acc.getConstructionPlane()).toEqual([0, 0, 1, 0]);
+    // A fit puts the canvas's up back and reports it.
+    expect(acc.restoreUp().toArray()).toEqual([0, 0, 1]);
+    expect(camera.up.toArray()).toEqual([0, 0, 1]);
   });
 });
