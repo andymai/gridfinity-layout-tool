@@ -141,6 +141,7 @@ const PERTURBATIONS: Record<string, unknown> = {
   'slotConfig.layout': 'edge',
   'dividerPieces.height': 12,
   'compartments.dividerHeight': 12,
+  'compartments.floorRaises': [6],
   'wallPattern.pattern': 'grid',
   'floorPattern.pattern': 'grid',
   'lid.attachment': 'magnets',

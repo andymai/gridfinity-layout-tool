@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'compartment-floor-raise',
+    date: '2026-09-09',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Raise a compartment’s floor' },
+    body: {
+      en: 'Each compartment in the Bento workspace now has a Floor raise. Lift the small pockets in a deep bin so short items sit near the rim while the tall ones keep the full depth, instead of digging for the little parts at the bottom. Finger scoops climb from the raised floor, the print estimate counts the slab, and a Grid Dividers bin gets the same control by opening it in Bento.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'slide-lid-finger-catch',
     date: '2026-09-09',
     kind: 'improved',

@@ -35,6 +35,7 @@ import {
   COPLANAR_MARGIN,
 } from './generatorConstants';
 import { findCompartmentBounds } from './compartmentBuilder';
+import { resolveFloorRaises } from './floorRaiseBuilder';
 import { compartmentHasTiltedEdge, isRectangularCompartment } from '@/shared/types/bin';
 /**
  * Build finger scoop ramps that curve from the bin floor up to `scoop.side`.
@@ -65,7 +66,8 @@ export function buildScoopRamps(
   innerD: number,
   wallHeight: number,
   wallThickness: number,
-  floorZ: number
+  floorZ: number,
+  floorRaiseFor: (compartmentId: number) => number = () => 0
 ): Shape3D | null {
   if (!params.scoop.enabled) return null;
   if (params.style !== 'standard') return null;
@@ -78,7 +80,8 @@ export function buildScoopRamps(
       innerD,
       wallHeight,
       wallThickness,
-      floorZ
+      floorZ,
+      floorRaiseFor
     );
     // Clone so scope can dispose the fused original on exit.
     return fused ? unwrap(clone(fused)) : null;
@@ -92,16 +95,14 @@ function buildScoopRampsInScope(
   innerD: number,
   wallHeight: number,
   wallThickness: number,
-  floorZ: number
+  floorZ: number,
+  floorRaiseFor: (compartmentId: number) => number
 ): Shape3D | null {
   const hasLip = params.base.stackingLip;
   // The profile is authored with its floor at local Z=0 and the solid lifted
-  // onto the interior floor, so every height here is measured from that floor.
-  const frame = scoopFrameHeights(
-    wallHeight,
-    computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER),
-    floorZ
-  );
+  // onto the interior floor, so every height here is measured from that floor,
+  // which a raised compartment moves up.
+  const interiorHeightRaw = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
 
   // The ramp's back edge and its two span ends sit on the surrounding walls'
   // inner faces. Merely TOUCHING those faces leaves zero-thickness coincident
@@ -144,6 +145,9 @@ function buildScoopRampsInScope(
       const bounds = findCompartmentBounds(compId, cols, rows, cells);
       if (!bounds) continue;
 
+      const compFloorZ = floorZ + floorRaiseFor(compId);
+      const frame = scoopFrameHeights(wallHeight, interiorHeightRaw, compFloorZ);
+
       // One ramp per selected wall. Ramps on adjacent walls overlap in the
       // corner between them, which the `fuseAll` below has to resolve into one
       // solid rather than a pair meeting at a shared face — `scoopMultiSide`
@@ -184,7 +188,7 @@ function buildScoopRampsInScope(
         // The ramp's underside is buried into the floor the same way its back is
         // buried into the wall: landing it exactly on the floor top leaves a
         // coplanar face for the fuse. Never deeper than half the floor.
-        const floorPenetration = Math.min(COPLANAR_MARGIN, floorZ * 0.5);
+        const floorPenetration = Math.min(COPLANAR_MARGIN, compFloorZ * 0.5);
         const segments = 24;
         const points: [number, number][] = [];
         // Start below the wall/floor corner, inside the floor
@@ -246,8 +250,8 @@ function buildScoopRampsInScope(
             : scope.register(rotate(scoopSolid, placement.rotationDeg, { axis: [0, 0, 1] }));
 
         const offset: [number, number, number] = placement.runsAlongY
-          ? [placement.alongCenter, placement.edge, floorZ]
-          : [placement.edge, placement.alongCenter, floorZ];
+          ? [placement.alongCenter, placement.edge, compFloorZ]
+          : [placement.edge, placement.alongCenter, compFloorZ];
 
         scoopShapes.push(scope.register(translate(oriented, offset)));
       }
@@ -328,18 +332,26 @@ export const scoopRampsFeature: FeatureBuilder = {
         params.compartments.cols,
         params.compartments.rows,
         params.compartments.cells.join(','),
-        stableSerialize(params.compartments.dividerOverrides ?? [])
+        stableSerialize(params.compartments.dividerOverrides ?? []),
+        quantize(dim.interiorHeight),
+        stableSerialize(params.compartments.floorRaises ?? [])
       )
     );
   },
   build: (ctx) => {
+    const raises = resolveFloorRaises(
+      ctx.params,
+      ctx.dimensions.floorThickness,
+      ctx.dimensions.interiorHeight
+    );
     const result = buildScoopRamps(
       ctx.params,
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,
       ctx.dimensions.wallHeight,
       ctx.params.wallThickness,
-      ctx.dimensions.floorThickness
+      ctx.dimensions.floorThickness,
+      (id) => raises.get(id) ?? 0
     );
     return result ? [result] : null;
   },

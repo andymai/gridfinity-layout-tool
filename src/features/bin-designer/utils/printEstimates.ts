@@ -17,6 +17,7 @@ import {
   isUndersideRelief,
 } from '@/features/bin-designer/types/base';
 import { baseWallHeight } from './binDimensions';
+import { maxCompartmentFloorRaiseMm } from './compartmentFloorRaise';
 import {
   DEFAULT_PATTERN_SCALE,
   DEFAULT_PATTERN_WEB_THICKNESS,
@@ -251,6 +252,7 @@ function computeBinVolume(params: BinParams): number {
   // Divider volumes (standard style only — slotted/solid don't use interior dividers)
   if (params.style === 'standard') {
     volume += computeDividerVolume(params, outerW, outerD, wallThickness);
+    volume += raisedFloorVolume(params, outerW, outerD, wallThickness);
   }
 
   // Label tabs (shelf + support structure)
@@ -361,6 +363,29 @@ function effectiveDividerHeight(params: BinParams): number {
     GRIDFINITY.LIP_SMALL_TAPER
   );
   return resolveCompartmentDividerHeight(params.compartments.dividerHeight, interiorHeight);
+}
+
+/**
+ * Volume of the slabs under raised compartments. Cell footprints rather than
+ * cavity footprints: the divider insets are a couple of percent of a slab.
+ */
+function raisedFloorVolume(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  wallThickness: number
+): number {
+  const raises = params.compartments.floorRaises;
+  if (!raises) return 0;
+  const ceiling = maxCompartmentFloorRaiseMm(params);
+  const { cols, rows, cells } = params.compartments;
+  const cellArea = ((outerW - 2 * wallThickness) / cols) * ((outerD - 2 * wallThickness) / rows);
+  let volume = 0;
+  for (const id of cells) {
+    const raise = raises[id];
+    if (typeof raise === 'number' && raise > 0) volume += cellArea * Math.min(raise, ceiling);
+  }
+  return volume;
 }
 
 /**

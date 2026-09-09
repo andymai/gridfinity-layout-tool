@@ -3439,6 +3439,9 @@ const en: Record<string, string> = {
   'binDesigner.bento.sizeMerged': 'Merged shape',
   'binDesigner.bento.cellsReadout': 'Cells',
   'binDesigner.bento.stashAction': 'Move to stash',
+  'binDesigner.bento.floorRaise': 'Floor raise',
+  'binDesigner.bento.floorRaiseHint':
+    'Lifts this compartment’s floor so a short item sits nearer the rim and is easier to pick out. Solid underneath; the slicer’s infill keeps it light.',
   'binDesigner.bento.wallsTitle': 'Walls',
   'binDesigner.bento.binWideTitle': 'Bin-wide',
   'binDesigner.bento.mergeBackground': 'Merge leftover space',

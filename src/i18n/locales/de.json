@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Größe",
   "binDesigner.bento.smallScreenNote": "Der Zeichenbereich braucht einen breiteren Bildschirm. Lege hier stattdessen ein gleichmäßiges Raster an und führe Zellen zu größeren Fächern zusammen.",
   "binDesigner.bento.stashAction": "In die Ablage verschieben",
+  "binDesigner.bento.floorRaise": "Bodenerhöhung",
+  "binDesigner.bento.floorRaiseHint": "Hebt den Boden dieses Fachs an, damit ein flaches Teil näher am Rand sitzt und sich leichter greifen lässt. Darunter massiv; das Infill des Slicers hält es leicht.",
   "binDesigner.bento.stashDropHint": "Loslassen, um dieses Fach in die Ablage zu legen",
   "binDesigner.bento.stashEmptyHint": "Zieh ein Fach hierher, um es für später beiseitezulegen",
   "binDesigner.bento.stashEntryLabel": "Fach in der Ablage, {w} mal {h} Zellen {label}",

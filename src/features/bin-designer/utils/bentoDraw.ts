@@ -36,6 +36,7 @@ import {
   remapDividerOverrides,
   remapBackgroundIds,
   remapDrawnUnitCells,
+  remapFloorRaises,
   remapLabelIcons,
   remapLabelPlateWidths,
   validateDividerOverride,
@@ -217,6 +218,9 @@ function rebuild(
     }),
     ...(config.compartmentColorScopes && {
       compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
+    }),
+    ...(config.floorRaises && {
+      floorRaises: remapFloorRaises(config.floorRaises, remap),
     }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),

@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Розмір",
   "binDesigner.bento.smallScreenNote": "Робоча область малювання потребує ширшого екрана. Тут можна задати рівномірну сітку, а потім обʼєднувати комірки у більші відділення.",
   "binDesigner.bento.stashAction": "Перемістити до сховку",
+  "binDesigner.bento.floorRaise": "Підняття дна",
+  "binDesigner.bento.floorRaiseHint": "Піднімає дно цього відділення, щоб низький предмет лежав ближче до краю і його було легше дістати. Знизу суцільне; заповнення слайсера робить його легким.",
   "binDesigner.bento.stashDropHint": "Відпустіть, щоб покласти це відділення у сховок",
   "binDesigner.bento.stashEmptyHint": "Перетягніть сюди відділення, щоб відкласти його на потім",
   "binDesigner.bento.stashEntryLabel": "Відділення у сховку, {w} на {h} клітинок {label}",

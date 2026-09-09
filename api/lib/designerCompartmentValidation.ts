@@ -242,6 +242,24 @@ export function validateCompartments(compartments: unknown): string | null {
       }
     }
   }
+  // Optional per-compartment floor raise in mm, parallel to the arrays above.
+  if (compartments.floorRaises !== undefined) {
+    if (!Array.isArray(compartments.floorRaises)) {
+      return 'compartments.floorRaises must be an array';
+    }
+    if (compartments.floorRaises.length > expectedLength) {
+      return `compartments.floorRaises length must not exceed cols × rows (${expectedLength})`;
+    }
+    for (let i = 0; i < compartments.floorRaises.length; i++) {
+      const r = compartments.floorRaises[i] as unknown;
+      if (
+        r !== null &&
+        !(isNumber(r) && inRange(r, 0, CONSTRAINTS.MAX_COMPARTMENT_FLOOR_RAISE_MM))
+      ) {
+        return `compartments.floorRaises[${i}] must be null or 0-${CONSTRAINTS.MAX_COMPARTMENT_FLOOR_RAISE_MM}`;
+      }
+    }
+  }
   // Optional per-compartment paint scope, parallel to the colours above.
   if (compartments.compartmentColorScopes !== undefined) {
     if (!Array.isArray(compartments.compartmentColorScopes)) {

@@ -816,6 +816,23 @@ describe('printEstimates', () => {
     });
   });
 
+  describe('raised compartment floors', () => {
+    it('adds the raised slab to the volume', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 1,
+        height: 6,
+        compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
+      };
+      const raised: BinParams = {
+        ...base,
+        compartments: { ...base.compartments, floorRaises: [10, null] },
+      };
+      expect(estimatePrint(raised).volumeMm3).toBeGreaterThan(estimatePrint(base).volumeMm3);
+    });
+  });
+
   describe('calculateWallPatternSavings', () => {
     it('returns zero savings when wall pattern disabled', () => {
       const savings = calculateWallPatternSavings(DEFAULT_BIN_PARAMS);

@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "サイズ",
   "binDesigner.bento.smallScreenNote": "描画ワークスペースにはより広い画面が必要です。ここでは均等なグリッドを設定し、セルを結合して大きな仕切りにできます。",
   "binDesigner.bento.stashAction": "ステージングへ移動",
+  "binDesigner.bento.floorRaise": "底上げ",
+  "binDesigner.bento.floorRaiseHint": "この仕切りの底を上げて、背の低い物を縁の近くに置き、取り出しやすくします。下は中実で、スライサーのインフィルで軽く保てます。",
   "binDesigner.bento.stashDropHint": "離すとこの仕切りをステージングに置きます",
   "binDesigner.bento.stashEmptyHint": "仕切りをここにドラッグすると後のために取っておけます",
   "binDesigner.bento.stashEntryLabel": "ステージング中の仕切り、{w}×{h}セル {label}",

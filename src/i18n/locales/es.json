@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Tamaño",
   "binDesigner.bento.smallScreenNote": "El espacio de dibujo necesita una pantalla más ancha. Aquí puedes definir una cuadrícula uniforme y luego combinar celdas en compartimentos más grandes.",
   "binDesigner.bento.stashAction": "Mover al stash",
+  "binDesigner.bento.floorRaise": "Elevación del fondo",
+  "binDesigner.bento.floorRaiseHint": "Eleva el fondo de este compartimento para que un objeto bajo quede más cerca del borde y sea más fácil de sacar. Sólido por debajo; el relleno del laminador lo mantiene ligero.",
   "binDesigner.bento.stashDropHint": "Suelta para guardar este compartimento en el stash",
   "binDesigner.bento.stashEmptyHint": "Arrastra un compartimento aquí para apartarlo para más tarde",
   "binDesigner.bento.stashEntryLabel": "Compartimento en el stash, {w} por {h} celdas {label}",

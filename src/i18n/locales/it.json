@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Dimensione",
   "binDesigner.bento.smallScreenNote": "L'area di disegno richiede uno schermo più largo. Qui puoi impostare una griglia uniforme e poi unire le celle in scomparti più grandi.",
   "binDesigner.bento.stashAction": "Sposta nell'area di sosta",
+  "binDesigner.bento.floorRaise": "Rialzo del fondo",
+  "binDesigner.bento.floorRaiseHint": "Solleva il fondo di questo scomparto così un oggetto basso sta più vicino al bordo ed è più facile da prendere. Pieno sotto; il riempimento dello slicer lo mantiene leggero.",
   "binDesigner.bento.stashDropHint": "Rilascia per mettere in sosta questo scomparto",
   "binDesigner.bento.stashEmptyHint": "Trascina qui uno scomparto per metterlo da parte",
   "binDesigner.bento.stashEntryLabel": "Scomparto in sosta, {w} per {h} celle {label}",

@@ -102,6 +102,32 @@ export function remapLabelPlateWidths(
 }
 
 /**
+ * Remap per-compartment floor raises across a `normalizeIdsWithRemap`
+ * renumbering, exactly like `remapLabelPlateWidths`: a raise whose compartment
+ * vanished drops; new IDs stay on the standard floor.
+ */
+export function remapFloorRaises(
+  oldRaises: readonly (number | null)[] | undefined,
+  remap: ReadonlyMap<number, number>
+): (number | null)[] | undefined {
+  if (!oldRaises || oldRaises.length === 0) return undefined;
+  let maxNewId = -1;
+  for (const newId of remap.values()) {
+    if (newId > maxNewId) maxNewId = newId;
+  }
+  const out: (number | null)[] = new Array<number | null>(maxNewId + 1).fill(null);
+  let anySet = false;
+  for (const [oldId, newId] of remap) {
+    const raise = oldRaises[oldId];
+    if (typeof raise === 'number' && raise > 0) {
+      out[newId] = raise;
+      anySet = true;
+    }
+  }
+  return anySet ? out : undefined;
+}
+
+/**
  * Remap per-compartment plate icons across a `normalizeIdsWithRemap`
  * renumbering, exactly like `remapLabelPlateWidths` — icons whose
  * compartment vanished drop; new IDs get no icon.

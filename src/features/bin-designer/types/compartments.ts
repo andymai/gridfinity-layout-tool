@@ -7,6 +7,12 @@ export type CompartmentColorScope = 'floor' | 'floorAndWalls';
 
 export const DEFAULT_COMPARTMENT_COLOR_SCOPE: CompartmentColorScope = 'floor';
 
+/** Ceiling on a per-compartment floor raise (mm). */
+export const MAX_COMPARTMENT_FLOOR_RAISE_MM = 100;
+
+/** Pocket depth (mm) a raise must leave, so a raised compartment is still a pocket. */
+export const MIN_RAISED_CAVITY_MM = 3;
+
 /** Divider configuration for compartment splitting (legacy — use CompartmentConfig) */
 export interface DividerConfig {
   readonly x: number;
@@ -88,6 +94,18 @@ export interface CompartmentConfig {
    * {@link compartmentColors} and remapped with it.
    */
   readonly compartmentColorScopes?: (CompartmentColorScope | null)[];
+  /**
+   * Optional per-compartment floor raise (mm), indexed by compartment ID after
+   * `normalizeIds`, so a short item sits nearer the rim than its neighbours.
+   * Missing / null entries stay on the standard floor. Solid beneath; the
+   * slicer's infill decides its weight. Kept in lockstep with `cells` via
+   * `normalizeIdsWithRemap`, like `compartmentTexts`, and absent when empty
+   * (fingerprint rule above). Generation clamps it so
+   * {@link MIN_RAISED_CAVITY_MM} of pocket survives above it.
+   *
+   * Mutable element type mirrors sibling arrays (Immer `Draft` requirement).
+   */
+  readonly floorRaises?: (number | null)[];
   /**
    * Optional per-divider tilt overrides. Each entry shifts the endpoints of
    * one interior divider away from its axis-aligned grid position, producing

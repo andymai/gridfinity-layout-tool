@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Storlek",
   "binDesigner.bento.smallScreenNote": "Ritytan behöver en bredare skärm. Ställ in ett jämnt rutnät här i stället och slå ihop celler till större fack.",
   "binDesigner.bento.stashAction": "Flytta till förråd",
+  "binDesigner.bento.floorRaise": "Höjd botten",
+  "binDesigner.bento.floorRaiseHint": "Höjer botten i detta fack så att ett lågt föremål ligger närmare kanten och är lättare att ta upp. Massivt under; slicerns infill håller det lätt.",
   "binDesigner.bento.stashDropHint": "Släpp för att lägga det här facket i förrådet",
   "binDesigner.bento.stashEmptyHint": "Dra ett fack hit för att lägga undan det till senare",
   "binDesigner.bento.stashEntryLabel": "Fack i förrådet, {w} gånger {h} celler {label}",

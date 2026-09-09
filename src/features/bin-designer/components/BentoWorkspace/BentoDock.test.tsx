@@ -165,3 +165,24 @@ describe('BentoDock', () => {
     expect(screen.getByText('binDesigner.wallThickness')).toBeInTheDocument();
   });
 });
+
+describe('BentoDock floor raise', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('offers a floor raise for the selected compartment and writes it to the store', () => {
+    const { id } = setupStoreWithDrawn();
+    render(<BentoDock {...makeProps({ selectedId: id })} />);
+    const slider = screen.getByRole('slider', { name: 'binDesigner.bento.floorRaise' });
+    fireEvent.change(slider, { target: { value: '8' } });
+    expect(useDesignerStore.getState().params.compartments.floorRaises?.[id]).toBe(8);
+  });
+
+  it('shows nothing when no compartment is selected', () => {
+    setupStoreWithDrawn();
+    render(<BentoDock {...makeProps()} />);
+    expect(screen.queryByRole('slider', { name: 'binDesigner.bento.floorRaise' })).toBeNull();
+  });
+});

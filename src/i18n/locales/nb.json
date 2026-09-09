@@ -409,6 +409,8 @@
   "binDesigner.bento.sizeReadout": "Størrelse",
   "binDesigner.bento.smallScreenNote": "Tegneområdet trenger en bredere skjerm. Sett opp et jevnt rutenett her i stedet, og slå celler sammen til større rom.",
   "binDesigner.bento.stashAction": "Flytt til stash",
+  "binDesigner.bento.floorRaise": "Hevet bunn",
+  "binDesigner.bento.floorRaiseHint": "Hever bunnen i dette rommet så en lav gjenstand ligger nærmere kanten og er lettere å ta opp. Massiv under; slicerens infill holder den lett.",
   "binDesigner.bento.stashDropHint": "Slipp for å legge dette rommet i stashen",
   "binDesigner.bento.stashEmptyHint": "Dra et rom hit for å legge det til side til senere",
   "binDesigner.bento.stashEntryLabel": "Rom i stashen, {w} ganger {h} celler {label}",

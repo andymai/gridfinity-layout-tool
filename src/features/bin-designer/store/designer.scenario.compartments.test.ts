@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
+import { MAX_COMPARTMENT_FLOOR_RAISE_MM } from '@/features/bin-designer/types';
 
 describe('DesignerStore - compartment actions', () => {
   beforeEach(() => {
@@ -1004,5 +1005,37 @@ describe('DesignerStore - compartment actions', () => {
       setCompartmentDividerHeight('auto');
       expect(useDesignerStore.getState().history.past).toHaveLength(0);
     });
+  });
+});
+
+describe('setCompartmentFloorRaise', () => {
+  it('stores a raise per compartment and trims trailing nulls', () => {
+    const { setCompartmentGrid, setCompartmentFloorRaise } = useDesignerStore.getState();
+    setCompartmentGrid(2, 1);
+    setCompartmentFloorRaise(1, 10);
+    expect(useDesignerStore.getState().params.compartments.floorRaises).toEqual([null, 10]);
+    setCompartmentFloorRaise(1, null);
+    expect(useDesignerStore.getState().params.compartments.floorRaises).toBeUndefined();
+  });
+
+  it('clamps a raise into range and treats zero as none', () => {
+    const { setCompartmentGrid, setCompartmentFloorRaise } = useDesignerStore.getState();
+    setCompartmentGrid(2, 1);
+    setCompartmentFloorRaise(0, 999);
+    expect(useDesignerStore.getState().params.compartments.floorRaises?.[0]).toBe(
+      MAX_COMPARTMENT_FLOOR_RAISE_MM
+    );
+    setCompartmentFloorRaise(0, 0);
+    expect(useDesignerStore.getState().params.compartments.floorRaises).toBeUndefined();
+  });
+
+  it('follows the compartment through a merge', () => {
+    const { setCompartmentGrid, setCompartmentFloorRaise, mergeCells } =
+      useDesignerStore.getState();
+    setCompartmentGrid(3, 1);
+    setCompartmentFloorRaise(2, 7);
+    mergeCells([0, 1]);
+    expect(useDesignerStore.getState().params.compartments.cells).toEqual([0, 0, 1]);
+    expect(useDesignerStore.getState().params.compartments.floorRaises).toEqual([null, 7]);
   });
 });

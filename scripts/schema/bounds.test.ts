@@ -105,6 +105,7 @@ import {
   PATTERN_WEB_THICKNESS_MIN,
   WALL_PATTERN_TYPES,
 } from '@/features/bin-designer/types/walls';
+import { MAX_COMPARTMENT_FLOOR_RAISE_MM } from '@/features/bin-designer/types/compartments';
 import { isRecord, loadSchemas, walkSubschemas } from './loadSchemas';
 
 /**
@@ -145,6 +146,7 @@ const SOURCES: Record<string, unknown> = {
   DEFAULT_CUTOUT_CLEARANCE,
   DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
   DEFAULT_PATTERN_SCALE,
+  MAX_COMPARTMENT_FLOOR_RAISE_MM,
   PATTERN_WEB_THICKNESS_MAX,
   PATTERN_WEB_THICKNESS_MIN,
   DEFAULT_POLYGON_SIDES,
