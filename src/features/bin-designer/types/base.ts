@@ -33,14 +33,14 @@ export function isMagnetStyle(style: BaseStyle): boolean {
 }
 
 /** A continuous lid-mating base closed by a bed-supported floor. */
-export function isStackingBase(base: Pick<BaseConfig, 'style' | 'trayBottom'>): boolean {
+export function isNestingBase(base: Pick<BaseConfig, 'style' | 'trayBottom'>): boolean {
   return base.style === 'lid' && base.trayBottom?.floorAtBed === true;
 }
 
-/** Mounting magnets: per-foot pockets on Standard, four corner pockets on Stacking.
+/** Mounting magnets: per-foot pockets on Standard, four corner pockets on Nesting.
  * Raised lid bases keep their attachment controls in the body card. */
 export function hasMountingMagnets(base: Pick<BaseConfig, 'style' | 'trayBottom'>): boolean {
-  return isStackingBase(base)
+  return isNestingBase(base)
     ? base.trayBottom?.attachment === 'magnetic'
     : isMagnetStyle(base.style);
 }
@@ -127,7 +127,7 @@ export function isUndersideRelief(base: {
  * validation to drift apart over.
  */
 export interface TrayBottomConfig {
-  /** Stacking body: close the tapered underside at the print bed and open
+  /** Nesting body: close the tapered underside at the print bed and open
    * the body floor into it. Absent preserves the original raised lid base. */
   readonly floorAtBed?: boolean;
   readonly attachment: LidAttachment;
@@ -155,7 +155,7 @@ export const DEFAULT_TRAY_BOTTOM: TrayBottomConfig = {
   },
 } as const;
 
-/** Stacking always has a bed-level floor, no hanging rails, and shared retention magnets.
+/** Nesting always has a bed-level floor, no hanging rails, and shared retention magnets.
  * Share the lid's magnet dimensions so changing them cannot misalign the pair. */
 export function resolveTrayBottomConfig(
   stored: TrayBottomConfig | undefined,

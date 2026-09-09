@@ -29,7 +29,7 @@ import {
   resolveTrayBottomConfig,
   FLOOR_PATTERN_TYPES,
   hasMountingMagnets,
-  isStackingBase,
+  isNestingBase,
   isScrewStyle,
   LID_MAGNET_DIAMETER_MIN_MM,
   LID_MAGNET_DIAMETER_MAX_MM,
@@ -102,7 +102,7 @@ export function useBaseSection() {
 
   const base = params.base;
   const hasMagnet = hasMountingMagnets(base);
-  const stackingBase = isStackingBase(base);
+  const nestingBase = isNestingBase(base);
   const hasScrew = isScrewStyle(base.style);
   const trayBottom = resolveTrayBottomConfig(base.trayBottom, params.lid.retentionMagnet);
   const hasHalfSockets = base.halfSockets;
@@ -452,7 +452,7 @@ export function useBaseSection() {
     [updateTrayBottom]
   );
 
-  const setStackingMagnet = useCallback(
+  const setNestingMagnet = useCallback(
     (key: 'diameter' | 'depth' | 'edgeMagnets', value: number) => {
       const [min, max] =
         key === 'diameter'
@@ -536,26 +536,26 @@ export function useBaseSection() {
 
   const setMagnetDiameter = useCallback(
     (diameter: number) => {
-      if (stackingBase) setStackingMagnet('diameter', diameter);
+      if (nestingBase) setNestingMagnet('diameter', diameter);
       else updateBase({ magnetDiameter: diameter });
     },
-    [stackingBase, setStackingMagnet, updateBase]
+    [nestingBase, setNestingMagnet, updateBase]
   );
 
   const setMagnetHeight = useCallback(
     (depth: number) => {
-      if (stackingBase) setStackingMagnet('depth', depth);
+      if (nestingBase) setNestingMagnet('depth', depth);
       else updateBase({ magnetDepth: depth });
     },
-    [stackingBase, setStackingMagnet, updateBase]
+    [nestingBase, setNestingMagnet, updateBase]
   );
 
   const setMagnetEdgeCount = useCallback(
     (count: number) => {
-      if (!stackingBase) return;
-      setStackingMagnet('edgeMagnets', count);
+      if (!nestingBase) return;
+      setNestingMagnet('edgeMagnets', count);
     },
-    [stackingBase, setStackingMagnet]
+    [nestingBase, setNestingMagnet]
   );
 
   const setScrewDiameter = useCallback(
@@ -591,24 +591,24 @@ export function useBaseSection() {
       detachableUnplaceable,
       detachableSavingPercent,
       hasMagnet,
-      magnetDiameter: stackingBase ? trayBottom.retentionMagnet.diameter : base.magnetDiameter,
-      magnetDepth: stackingBase ? trayBottom.retentionMagnet.depth : base.magnetDepth,
-      magnetDiameterMin: stackingBase
+      magnetDiameter: nestingBase ? trayBottom.retentionMagnet.diameter : base.magnetDiameter,
+      magnetDepth: nestingBase ? trayBottom.retentionMagnet.depth : base.magnetDepth,
+      magnetDiameterMin: nestingBase
         ? LID_MAGNET_DIAMETER_MIN_MM
         : DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER,
-      magnetDiameterMax: stackingBase
+      magnetDiameterMax: nestingBase
         ? LID_MAGNET_DIAMETER_MAX_MM
         : DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER,
-      magnetDepthMin: stackingBase
+      magnetDepthMin: nestingBase
         ? LID_MAGNET_DEPTH_MIN_MM
         : DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT,
-      magnetDepthMax: stackingBase
+      magnetDepthMax: nestingBase
         ? LID_MAGNET_DEPTH_MAX_MM
         : DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT,
-      magnetDiameterStep: stackingBase
+      magnetDiameterStep: nestingBase
         ? LID_MAGNET_DIMENSION_STEP_MM
         : DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP,
-      magnetDepthStep: stackingBase
+      magnetDepthStep: nestingBase
         ? LID_MAGNET_DIMENSION_STEP_MM
         : DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP,
       magnetEdgeCount: trayBottom.retentionMagnet.edgeMagnets,

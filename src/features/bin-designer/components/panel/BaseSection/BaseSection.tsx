@@ -136,7 +136,7 @@ export function BaseSection() {
             spacer: <Hint>{t('binDesigner.spacerHint')}</Hint>,
             tile: <Hint>{t('binDesigner.tileHint')}</Hint>,
             tray: trayOptions,
-            stacking: <Hint>{t('binDesigner.base.stacking.hint')}</Hint>,
+            nesting: <Hint>{t('binDesigner.base.nesting.hint')}</Hint>,
           }}
         />
       </section>
@@ -218,7 +218,7 @@ export function BaseSection() {
               step={state.magnetDepthStep}
               unit="mm"
             />
-            {state.bodyType === 'stacking' && (
+            {state.bodyType === 'nesting' && (
               <>
                 <SliderInput
                   label={t('binDesigner.lid.retentionEdgeMagnets')}
@@ -229,7 +229,7 @@ export function BaseSection() {
                   step={state.magnetEdgeStep}
                 />
                 <Hint>{t('binDesigner.lid.retentionEdgeMagnetsHint')}</Hint>
-                <Hint>{t('binDesigner.base.stacking.magnetHint')}</Hint>
+                <Hint>{t('binDesigner.base.nesting.magnetHint')}</Hint>
               </>
             )}
           </FeatureToggle>

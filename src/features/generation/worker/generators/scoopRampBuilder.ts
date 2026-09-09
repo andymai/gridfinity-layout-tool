@@ -5,7 +5,7 @@
  * to help slide items out of the bin.
  */
 
-import { isStackingBase } from '@/shared/types/bin';
+import { isNestingBase } from '@/shared/types/bin';
 import {
   draw,
   drawRoundedRectangle,
@@ -307,7 +307,7 @@ export const scoopRampsFeature: FeatureBuilder = {
   // the ramp lands on solid material exactly as it always did. Mirrors the
   // constraint rule; suppressed here too for any legacy design carrying both.
   shouldBuild: (ctx) =>
-    !isStackingBase(ctx.params.base) && !ctx.dimensions.isSlotted && !ctx.dimensions.liteFloorOpen,
+    !isNestingBase(ctx.params.base) && !ctx.dimensions.isSlotted && !ctx.dimensions.liteFloorOpen,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(

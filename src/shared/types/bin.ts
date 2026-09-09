@@ -129,7 +129,7 @@ export {
   // `base.trayBottom`, so it needs both baselines on this side of the boundary.
   DEFAULT_TRAY_BOTTOM,
   resolveTrayBottomConfig,
-  isStackingBase,
+  isNestingBase,
   hasMountingMagnets,
   DEFAULT_LID_CONFIG,
   DEFAULT_LID_SLIDE_CONFIG,

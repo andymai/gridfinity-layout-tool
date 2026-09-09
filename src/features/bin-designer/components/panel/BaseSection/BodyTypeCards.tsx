@@ -23,7 +23,7 @@ import {
   FlatBaseIcon,
   LidBaseIcon,
   SpacerIcon,
-  StackingIcon,
+  NestingIcon,
 } from './icons';
 
 /**
@@ -32,7 +32,7 @@ import {
  */
 const TITLE_KEY: Record<BodyType, string> = {
   standard: 'binDesigner.base.bodyType.standard',
-  stacking: 'binDesigner.base.bodyType.stacking',
+  nesting: 'binDesigner.base.bodyType.nesting',
   flat: 'binDesigner.flatFloor',
   spacer: 'binDesigner.spacer',
   tile: 'binDesigner.tile',
@@ -41,7 +41,7 @@ const TITLE_KEY: Record<BodyType, string> = {
 
 const DESCRIPTION_KEY: Record<BodyType, string> = {
   standard: 'binDesigner.base.bodyType.standard.description',
-  stacking: 'binDesigner.base.bodyType.stacking.description',
+  nesting: 'binDesigner.base.bodyType.nesting.description',
   flat: 'binDesigner.base.bodyType.flat.description',
   spacer: 'binDesigner.base.bodyType.spacer.description',
   tile: 'binDesigner.base.bodyType.tile.description',
@@ -50,7 +50,7 @@ const DESCRIPTION_KEY: Record<BodyType, string> = {
 
 const ICON: Record<BodyType, ReactNode> = {
   standard: <BinProfileIcon className="text-content-secondary" />,
-  stacking: <StackingIcon className="text-content-secondary" />,
+  nesting: <NestingIcon className="text-content-secondary" />,
   flat: <FlatBaseIcon className="text-content-secondary" />,
   spacer: <SpacerIcon className="text-content-secondary" />,
   tile: <BaseOnlyIcon className="text-content-secondary" />,

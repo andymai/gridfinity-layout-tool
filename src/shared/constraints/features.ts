@@ -10,7 +10,7 @@ import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_TRAY_BOTTOM,
   hasMountingMagnets,
-  isStackingBase,
+  isNestingBase,
 } from '@/shared/types/bin';
 import type { FeatureKey, FeatureManifest } from './types';
 
@@ -55,7 +55,7 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     label: 'Magnet Holes',
     isEnabled: (p) => hasMountingMagnets(p.base),
     apply: (p, enabled) => {
-      if (isStackingBase(p.base)) {
+      if (isNestingBase(p.base)) {
         return {
           base: {
             ...p.base,

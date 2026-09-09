@@ -1,4 +1,4 @@
-/** Wall-supported corner boss for lids and Stacking bodies, in lid-local coordinates. */
+/** Wall-supported corner boss for lids and Nesting bodies, in lid-local coordinates. */
 import { draw, intersect, unwrap } from 'brepjs';
 import type { DisposalScope, Shape3D } from 'brepjs';
 import type { LidInputs } from './lidInputs';

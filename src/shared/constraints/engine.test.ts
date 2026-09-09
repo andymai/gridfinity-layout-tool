@@ -120,7 +120,7 @@ describe('FEATURE_MANIFESTS', () => {
 // =============================================================================
 
 describe('resolveConstraints — base constraints', () => {
-  it('treats Stacking corner magnets as mounting without changing the body type', () => {
+  it('treats Nesting corner magnets as mounting without changing the body type', () => {
     const params = makeParams({
       base: {
         ...DEFAULT_BIN_PARAMS.base,

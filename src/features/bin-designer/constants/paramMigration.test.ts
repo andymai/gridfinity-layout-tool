@@ -25,8 +25,8 @@ import type { BinParams, CutoutArrayConfig } from '../types';
 
 const defaults = DEFAULT_BIN_PARAMS.walls;
 
-describe('Stacking body migration', () => {
-  it('preserves saved Stacking geometry without adding fields to existing designs', () => {
+describe('Nesting body migration', () => {
+  it('preserves saved Nesting geometry without adding fields to existing designs', () => {
     expect(migrateParams(DEFAULT_BIN_PARAMS).base.trayBottom).toBeUndefined();
     const saved: BinParams = {
       ...DEFAULT_BIN_PARAMS,

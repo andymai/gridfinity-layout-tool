@@ -2,6 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '../constants';
 import type { BinParams } from '../types';
 import { assessFloorPatternFit } from './floorPatternFit';
+import { DEFAULT_TRAY_BOTTOM } from '../types';
+import {
+  FLOOR_PATTERN_BORDER,
+  nestingFloorWindowSpan,
+} from '@/shared/generation/floorPatternMetrics';
+import { wallPatternElementMetrics } from '@/shared/generation/wallPatternMetrics';
+import { LID_CORNER_RADIUS } from '../types/lid';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return {
@@ -35,6 +42,28 @@ describe('assessFloorPatternFit', () => {
 
   it('fits a standard foot at neutral scale', () => {
     expect(assessFloorPatternFit(makeParams())).toBe('fits');
+  });
+
+  it('measures a Nesting body against its narrower mating-skirt window', () => {
+    const { shapeRadius } = wallPatternElementMetrics('round', 4, 0.5);
+    // A pitch where one element clears the socketless cavity window (inset by
+    // the wall) but not the nesting window, which the worker insets by the lid
+    // corner radius instead.
+    const gridUnitMm = 2 * shapeRadius + 2 * (LID_CORNER_RADIUS + FLOOR_PATTERN_BORDER) - 0.5;
+    const size = { width: 1, depth: 1, gridUnitMm, gridUnitMmY: gridUnitMm };
+    const flat = makeParams({ ...size, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } });
+    const nesting = makeParams({
+      ...size,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+      },
+    });
+
+    expect(nestingFloorWindowSpan(1, gridUnitMm)).toBeLessThan(2 * shapeRadius);
+    expect(assessFloorPatternFit(flat)).toBe('fits');
+    expect(assessFloorPatternFit(nesting)).toBe('none');
   });
 
   it('reports no fit when the element outgrows the window', () => {

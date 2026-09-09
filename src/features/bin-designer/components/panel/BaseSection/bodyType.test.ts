@@ -34,17 +34,17 @@ describe('deriveBodyType', () => {
 });
 
 describe('bodyTypeParams', () => {
-  it('preserves the magnet mounting choice between Standard and Stacking', () => {
-    const plain = bodyTypeParams(DEFAULT_BIN_PARAMS, 'stacking');
+  it('preserves the magnet mounting choice between Standard and Nesting', () => {
+    const plain = bodyTypeParams(DEFAULT_BIN_PARAMS, 'nesting');
     expect(plain.base.trayBottom?.attachment).toBe('friction');
-    const magnetic = bodyTypeParams(withBase({ style: 'magnet' }), 'stacking');
+    const magnetic = bodyTypeParams(withBase({ style: 'magnet' }), 'nesting');
     expect(magnetic.base.trayBottom?.attachment).toBe('magnetic');
     expect(bodyTypeParams(magnetic, 'standard').base.style).toBe('magnet');
   });
-  it('keeps Stacking separate from the raised lid base across a save/load round trip', () => {
-    const stacking = bodyTypeParams(DEFAULT_BIN_PARAMS, 'stacking');
-    const saved = JSON.parse(JSON.stringify(stacking)) as BinParams;
-    expect(deriveBodyType(saved.base)).toBe('stacking');
+  it('keeps Nesting separate from the raised lid base across a save/load round trip', () => {
+    const nesting = bodyTypeParams(DEFAULT_BIN_PARAMS, 'nesting');
+    const saved = JSON.parse(JSON.stringify(nesting)) as BinParams;
+    expect(deriveBodyType(saved.base)).toBe('nesting');
     const tray = bodyTypeParams(saved, 'tray');
     expect(tray.base.trayBottom?.floorAtBed).toBeUndefined();
     expect(deriveBodyType(tray.base)).toBe('tray');
@@ -52,7 +52,7 @@ describe('bodyTypeParams', () => {
 
   it('clears features that would float above the lowered floor', () => {
     const p = { ...DEFAULT_BIN_PARAMS, scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } };
-    expect(bodyTypeParams(p, 'stacking').scoop.enabled).toBe(false);
+    expect(bodyTypeParams(p, 'nesting').scoop.enabled).toBe(false);
   });
   it('is a no-op when the type is already selected', () => {
     const params = withBase({ spacer: true });

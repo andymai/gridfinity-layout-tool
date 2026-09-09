@@ -22,7 +22,7 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { isStackingBase, retentionBossRadius, retentionMagnetInset } from '@/shared/types/bin';
+import { isNestingBase, retentionBossRadius, retentionMagnetInset } from '@/shared/types/bin';
 import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacement';
 import { resolveTrayBottomInputs } from './trayBottomInputs';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -79,7 +79,7 @@ export interface FloorPatternPlan {
  */
 export function floorPatternApplies(params: BinParams, dim: BinDimensions): boolean {
   if (params.floorPattern?.enabled !== true) return false;
-  if (isStackingBase(params.base) && isPartialMask(params.cellMask)) return false;
+  if (isNestingBase(params.base) && isPartialMask(params.cellMask)) return false;
   if (dim.solid || params.style === 'solid' || dim.liteFloorOpen) return false;
   return dim.innerW > 0 && dim.innerD > 0;
 }
@@ -129,7 +129,7 @@ function pinKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
  * they keep mating with the baseplate.
  */
 function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
-  if (isStackingBase(params.base)) {
+  if (isNestingBase(params.base)) {
     const inputs = resolveTrayBottomInputs(params);
     if (!inputs.retentionMagnets) return [];
     const radius = retentionBossRadius(inputs.retentionMagnetDiameter);
@@ -300,7 +300,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
     });
   };
 
-  if (isStackingBase(params.base)) {
+  if (isNestingBase(params.base)) {
     // The lower mouth is narrower than the body interior. Keep the mating
     // skirt intact instead of using the ordinary wall-thickness inset.
     const inputs = resolveTrayBottomInputs(params);
@@ -349,6 +349,6 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
     windows,
     cutZ0: dim.undersideRelief ? -COPLANAR_MARGIN : -dim.baseOffsetZ - COPLANAR_MARGIN,
     cutZ1:
-      dim.floorThickness + COPLANAR_MARGIN - (isStackingBase(params.base) ? dim.baseOffsetZ : 0),
+      dim.floorThickness + COPLANAR_MARGIN - (isNestingBase(params.base) ? dim.baseOffsetZ : 0),
   };
 }

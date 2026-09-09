@@ -20,10 +20,10 @@ import type { BinParams } from '@/features/bin-designer/types';
 import {
   hasMountingMagnets,
   isEffectiveTile,
-  isStackingBase,
+  isNestingBase,
 } from '@/features/bin-designer/types/base';
 
-export const BODY_TYPES = ['standard', 'stacking', 'flat', 'spacer', 'tile', 'tray'] as const;
+export const BODY_TYPES = ['standard', 'nesting', 'flat', 'spacer', 'tile', 'tray'] as const;
 
 export type BodyType = (typeof BODY_TYPES)[number];
 
@@ -36,7 +36,7 @@ const FEATURE_BY_BODY_TYPE: Record<Exclude<BodyType, 'standard'>, FeatureKey> = 
   spacer: 'base.spacer',
   tile: 'base.tile',
   tray: 'base.lid',
-  stacking: 'base.lid',
+  nesting: 'base.lid',
 };
 
 /**
@@ -51,7 +51,7 @@ const FEATURE_BY_BODY_TYPE: Record<Exclude<BodyType, 'standard'>, FeatureKey> = 
 export function deriveBodyType(base: BinParams['base']): BodyType {
   if (base.spacer) return 'spacer';
   if (isEffectiveTile(base)) return 'tile';
-  if (base.style === 'lid') return isStackingBase(base) ? 'stacking' : 'tray';
+  if (base.style === 'lid') return isNestingBase(base) ? 'nesting' : 'tray';
   if (base.style === 'flat') return 'flat';
   return 'standard';
 }
@@ -105,8 +105,8 @@ export function bodyTypeParams(params: BinParams, next: BodyType): BinParams {
     }).params;
   }
   resolved = withTrayConfig(resolved);
-  if (next === 'stacking') {
-    const stacking: BinParams = {
+  if (next === 'nesting') {
+    const nesting: BinParams = {
       ...resolved,
       base: {
         ...resolved.base,
@@ -122,13 +122,13 @@ export function bodyTypeParams(params: BinParams, next: BodyType): BinParams {
         },
       },
     };
-    return resolveConstraints(stacking, { feature: 'base.lid', enabled: true }).params;
+    return resolveConstraints(nesting, { feature: 'base.lid', enabled: true }).params;
   }
   if (next === 'tray' && resolved.base.trayBottom) {
     const { floorAtBed: _dropped, ...trayBottom } = resolved.base.trayBottom;
     return { ...resolved, base: { ...resolved.base, trayBottom } };
   }
-  if (next === 'standard' && isStackingBase(params.base) && hasMountingMagnets(params.base)) {
+  if (next === 'standard' && isNestingBase(params.base) && hasMountingMagnets(params.base)) {
     return resolveConstraints(resolved, { feature: 'base.magnet', enabled: true }).params;
   }
   return resolved;

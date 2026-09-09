@@ -2447,7 +2447,7 @@
       "properties": {
         "floorAtBed": {
           "type": "boolean",
-          "description": "Close the stacking underside at the print bed. Omit to preserve the raised lid-base floor."
+          "description": "Close the nesting underside at the print bed. Omit to preserve the raised lid-base floor."
         },
         "attachment": {
           "enum": ["friction", "clickRails", "magnetic", "slide", "hinge"],

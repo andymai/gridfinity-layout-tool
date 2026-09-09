@@ -27,7 +27,7 @@ export function splitConnectorsSuppressedByBase(base: {
   readonly style: string;
   readonly trayBottom?: { readonly floorAtBed?: boolean };
 }): boolean {
-  // The scarf still targets the original body-floor plane. A Stacking floor
+  // The scarf still targets the original body-floor plane. A Nesting floor
   // is below it, so this connector would be suspended over the cavity.
   if (base.style === 'lid' && base.trayBottom?.floorAtBed) return true;
   return (base.lightweight || base.spacer) && !isSocketlessBase(base.style as BaseStyle);

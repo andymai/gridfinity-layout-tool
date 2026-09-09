@@ -90,7 +90,7 @@ export function LidBaseIcon(props: IconProps) {
 }
 
 /** Two continuous tapered bases seated above one another, without grid feet. */
-export function StackingIcon(props: IconProps) {
+export function NestingIcon(props: IconProps) {
   return (
     <Elevation {...props}>
       <path d="M3 3v5l2 2h14l2-2V3" />

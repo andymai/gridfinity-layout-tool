@@ -14,7 +14,7 @@
  */
 
 import { translate } from 'brepjs';
-import { isStackingBase } from '@/shared/types/bin';
+import { isNestingBase } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PipelineContext, PipelineStage } from '../types';
 import { buildCutoutCuts } from '../../featureBuilder';
@@ -135,9 +135,9 @@ export const featuresStage: PipelineStage = {
     // Floor pattern: drainage/ventilation holes through the floor slab AND the
     // base socket, so they are handed to the boolean stage twice (once for the
     // body, once for the deferred socket).
-    // Stacking replaces the floor after translation. Cut its pattern there so
+    // Nesting replaces the floor after translation. Cut its pattern there so
     // adding the bed-supported slab cannot refill the drainage holes.
-    const floorPattern = isStackingBase(params.base)
+    const floorPattern = isNestingBase(params.base)
       ? { shapes: [], key: '' }
       : buildFloorPattern(ctx);
     targets.patternCutTargets.push(...floorPattern.shapes);

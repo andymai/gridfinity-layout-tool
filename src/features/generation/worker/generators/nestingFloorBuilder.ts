@@ -15,7 +15,7 @@ import {
 // Overlap the old floor just enough to avoid coincident Boolean faces.
 const FLOOR_OVERLAP_MM = 0.01;
 
-export function addStackingFloor(
+export function addNestingFloor(
   scope: DisposalScope,
   skirt: Shape3D,
   body: Shape3D,

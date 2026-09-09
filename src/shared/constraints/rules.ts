@@ -11,7 +11,7 @@
  */
 
 import {
-  isStackingBase,
+  isNestingBase,
   isUndersideRelief,
   undersideReliefSelected,
 } from '@/features/bin-designer/types/base';
@@ -20,18 +20,18 @@ import type { ConstraintRule, ImplicationRule } from './types';
 
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   {
-    description: 'Custom Stacking outlines have no rectangular retention or drainage layout',
+    description: 'Custom Nesting outlines have no rectangular retention or drainage layout',
     source: 'base.lid',
-    when: (p) => isStackingBase(p.base) && isPartialMask(p.cellMask),
+    when: (p) => isNestingBase(p.base) && isPartialMask(p.cellMask),
     disables: ['base.magnet', 'floorPattern'],
     reason: 'binDesigner.walls.pattern.dividers.notPolygon',
   },
   {
-    description: 'Stacking floor has a different floor plane from floor-mounted features',
+    description: 'Nesting floor has a different floor plane from floor-mounted features',
     source: 'base.lid',
-    when: (p) => isStackingBase(p.base),
+    when: (p) => isNestingBase(p.base),
     disables: ['scoop', 'inserts', 'style.slotted'],
-    reason: 'binDesigner.base.stacking.floorFeaturesUnavailable',
+    reason: 'binDesigner.base.nesting.floorFeaturesUnavailable',
   },
   // ── Base: flat ↔ everything else ─────────────────────────────────────────
   {
@@ -78,7 +78,7 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   {
     description: 'Raised lid base uses its own attachment controls',
     source: 'base.lid',
-    when: (p) => p.base.style === 'lid' && !isStackingBase(p.base),
+    when: (p) => p.base.style === 'lid' && !isNestingBase(p.base),
     disables: ['base.magnet'],
     reason: 'binDesigner.lidBaseDisablesAttachment',
   },

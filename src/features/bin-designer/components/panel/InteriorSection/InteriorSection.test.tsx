@@ -1,6 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { InteriorSection } from './InteriorSection';
+import { useDesignerStore } from '@/features/bin-designer/store';
+import { DEFAULT_BIN_PARAMS } from '../../../constants';
+import { DEFAULT_TRAY_BOTTOM } from '../../../types';
 import type { InteriorCard } from '../../../types';
 
 vi.mock('./InteriorModeCard', () => ({
@@ -68,5 +71,45 @@ describe('InteriorSection', () => {
     fireEvent.click(screen.getByText('Select bento'));
 
     expect(mockSelectCard).toHaveBeenCalledWith('bento');
+  });
+
+  describe('Removable card gate', () => {
+    const initial = useDesignerStore.getState().params;
+    afterEach(() => {
+      useDesignerStore.setState({ params: initial });
+    });
+
+    it('stays clickable while Solid is the current style', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          style: 'solid',
+          base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        },
+      });
+      render(<InteriorSection />);
+
+      expect(screen.getByTestId('card-slotted').closest('[inert]')).toBeNull();
+      fireEvent.click(screen.getByText('Select slotted'));
+      expect(mockSelectCard).toHaveBeenCalledWith('slotted');
+    });
+
+    it('is gated on a Nesting body, with the floor reason', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: {
+            ...DEFAULT_BIN_PARAMS.base,
+            style: 'lid',
+            trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+          },
+        },
+      });
+      render(<InteriorSection />);
+
+      const gate = screen.getByTestId('card-slotted').closest('[inert]');
+      expect(gate).not.toBeNull();
+      expect(gate).toHaveAttribute('title', 'Not available with the lowered Nesting floor');
+    });
   });
 });

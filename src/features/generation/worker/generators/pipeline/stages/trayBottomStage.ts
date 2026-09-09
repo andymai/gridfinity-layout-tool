@@ -29,9 +29,9 @@ import { buildMatingShell } from '../../lidProfile';
 import { addClickRails, hasAnyClickRail } from '../../lidClickRail';
 import { addLidRetentionMagnets } from '../../lidRetentionMagnets';
 import { resolveTrayBottomInputs } from '../../trayBottomInputs';
-import { addStackingFloor } from '../../stackingFloorBuilder';
+import { addNestingFloor } from '../../nestingFloorBuilder';
 import { buildFloorPattern } from '../../floorPatternBuilder';
-import { isStackingBase } from '@/shared/types/bin';
+import { isNestingBase } from '@/shared/types/bin';
 
 export const trayBottomStage: PipelineStage = {
   name: 'merge',
@@ -52,14 +52,14 @@ export const trayBottomStage: PipelineStage = {
       let skirt: Shape3D = buildMatingShell(scope, inputs);
       scope.register(skirt);
 
-      if (isStackingBase(ctx.params.base)) {
-        skirt = addStackingFloor(scope, skirt, body, inputs, ctx);
+      if (isNestingBase(ctx.params.base)) {
+        skirt = addNestingFloor(scope, skirt, body, inputs, ctx);
         // The floor is present BEFORE drilling: unioning it after the magnets
         // would cap their downward openings.
+        // No tag map: these bosses are part of the bin's body, not a lid, so
+        // they take the body colour like the skirt they weld into.
         if (inputs.retentionMagnets) {
-          skirt = scope.register(
-            addLidRetentionMagnets(scope, skirt, inputs, ctx.originToTag, true)
-          );
+          skirt = scope.register(addLidRetentionMagnets(scope, skirt, inputs, undefined, true));
         }
         // These tools use the same lid-local frame as the lowered floor and
         // keep solid material under dividers and around retention bosses.

@@ -25,6 +25,7 @@ import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacemen
 import { scoopRampsFeature } from './scoopRampBuilder';
 import { insertCutsFeature } from './insertBuilder';
 import { isOk } from '@/core/result';
+import { FeatureTag } from './featureTags';
 
 let generateBin: GenerateBinFn;
 beforeAll(async () => {
@@ -54,7 +55,14 @@ function paramsFor(depth = 2) {
   };
 }
 
-describe('stacking body', () => {
+describe('nesting body', () => {
+  it('paints its magnet bosses as body, not as lid', () => {
+    const mesh = generateBin(paramsFor(2), undefined, false);
+    const tags = new Set((mesh.faceGroups ?? []).map((g) => g.tag));
+    expect(tags.size).toBeGreaterThan(0);
+    expect(tags.has(FeatureTag.LID_BODY)).toBe(false);
+  });
+
   it.each(['rectangle', 'full mask', 'partial mask'])(
     'keeps UI floor coordinates aligned with the worker for %s and independent lid settings',
     (outline) => {
@@ -174,8 +182,8 @@ describe('stacking body', () => {
       },
     };
     const mesh = generateBin(patterned, undefined, true);
-    assertWatertight(mesh, 'stacking drainage');
-    assertNoDegenerateTriangles(mesh, 'stacking drainage');
+    assertWatertight(mesh, 'nesting drainage');
+    assertNoDegenerateTriangles(mesh, 'nesting drainage');
     let openings = 0;
     for (let x = -40.3; x < 40; x += 5.1) {
       for (let y = -20.7; y < 20; y += 5.1) {
@@ -234,8 +242,8 @@ describe('stacking body', () => {
   it.each([2, 6])('prints its floor on the bed with %s mm deep corner magnets', (depth) => {
     const p = paramsFor(depth);
     const mesh = generateBin(p, undefined, true);
-    assertWatertight(mesh, 'stacking body');
-    assertNoDegenerateTriangles(mesh, 'stacking body');
+    assertWatertight(mesh, 'nesting body');
+    assertNoDegenerateTriangles(mesh, 'nesting body');
     expect(boundingBox(mesh.vertices).minZ).toBeCloseTo(0, 4);
     const dim = deriveDimensions(p, true);
     expect(baseFloorZ(p.base, p.heightUnitMm, p.lid)).toBeCloseTo(dim.baseOffsetZ, 6);
@@ -276,7 +284,7 @@ describe('stacking body', () => {
     const p = paramsFor();
     const divided = { ...p, compartments: { ...p.compartments, cols: 2, rows: 1, cells: [0, 1] } };
     const mesh = generateBin(divided, undefined, true);
-    assertWatertight(mesh, 'stacking divider');
+    assertWatertight(mesh, 'nesting divider');
     const spans = verticalSolidSpans(mesh, 0.1, 15.7);
     expect(spans[0][0]).toBeCloseTo(0, 4);
     expect(spans[0][1]).toBeGreaterThan(70);
@@ -297,7 +305,7 @@ describe('stacking body', () => {
       undefined,
       true
     );
-    assertWatertight(mesh, 'merged stacking compartments');
+    assertWatertight(mesh, 'merged nesting compartments');
     const floor = verticalSolidSpans(mesh, -30.1, -20.7);
     expect(floor[0][0]).toBeCloseTo(0, 4);
     expect(floor[0][1]).toBeCloseTo(deriveDimensions(p, true).floorThickness, 4);
@@ -321,7 +329,7 @@ describe('stacking body', () => {
         },
       };
       const mesh = generateBin(plain, undefined, true);
-      assertWatertight(mesh, 'plain stacking floor');
+      assertWatertight(mesh, 'plain nesting floor');
       const floor = verticalSolidSpans(mesh, 0.3, 0.7);
       expect(floor[0][0]).toBeCloseTo(0, 4);
       expect(floor[0][1]).toBeCloseTo(deriveDimensions(plain, true).floorThickness, 4);

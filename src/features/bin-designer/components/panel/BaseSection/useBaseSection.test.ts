@@ -15,9 +15,9 @@ describe('useBaseSection', () => {
     });
   });
 
-  it('uses common Mounting handlers for Stacking and shares dimensions with the lid', () => {
+  it('uses common Mounting handlers for Nesting and shares dimensions with the lid', () => {
     const { result } = renderHook(() => useBaseSection());
-    act(() => result.current.handlers.setBodyType('stacking'));
+    act(() => result.current.handlers.setBodyType('nesting'));
     expect(result.current.state.showMounting).toBe(true);
     expect(result.current.state.hasMagnet).toBe(false);
     act(() => result.current.handlers.toggleMagnet());
@@ -25,7 +25,7 @@ describe('useBaseSection', () => {
     act(() => result.current.handlers.setMagnetHeight(3));
     act(() => result.current.handlers.setMagnetEdgeCount(2));
     expect(result.current.state.magnetEdgeCount).toBe(2);
-    expect(result.current.state.bodyType).toBe('stacking');
+    expect(result.current.state.bodyType).toBe('nesting');
     expect(result.current.state.hasMagnet).toBe(true);
     expect(result.current.state.magnetDiameter).toBe(8);
     expect(result.current.state.magnetDepth).toBe(3);
@@ -43,13 +43,13 @@ describe('useBaseSection', () => {
     });
     expect(result.current.state.magnetDiameter).toBe(10);
     act(() => result.current.handlers.toggleMagnet());
-    expect(result.current.state.bodyType).toBe('stacking');
+    expect(result.current.state.bodyType).toBe('nesting');
     expect(result.current.state.hasMagnet).toBe(false);
   });
 
-  it('bounds Stacking magnet inputs with the lid limits', () => {
+  it('bounds Nesting magnet inputs with the lid limits', () => {
     const { result } = renderHook(() => useBaseSection());
-    act(() => result.current.handlers.setBodyType('stacking'));
+    act(() => result.current.handlers.setBodyType('nesting'));
     act(() => result.current.handlers.setMagnetDiameter(100));
     act(() => result.current.handlers.setMagnetHeight(-1));
     act(() => result.current.handlers.setMagnetEdgeCount(100));

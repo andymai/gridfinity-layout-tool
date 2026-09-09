@@ -58,7 +58,7 @@ const base = (over: Partial<{ lightweight: boolean; spacer: boolean; style: stri
 });
 
 describe('splitConnectorsSuppressedByBase', () => {
-  it('suppresses connectors targeting the old floor plane of a Stacking body', () => {
+  it('suppresses connectors targeting the old floor plane of a Nesting body', () => {
     expect(
       splitConnectorsSuppressedByBase({
         ...base(),

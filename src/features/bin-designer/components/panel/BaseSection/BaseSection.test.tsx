@@ -17,7 +17,6 @@ describe('BaseSection', () => {
     render(<BaseSection />);
 
     expect(screen.getByText('Body type')).toBeInTheDocument();
-    expect(screen.getByText('Stacking')).toBeInTheDocument();
     expect(screen.getByText('Top rim')).toBeInTheDocument();
     expect(screen.getByText('Mounting')).toBeInTheDocument();
     expect(screen.getByText('Feet')).toBeInTheDocument();
@@ -54,10 +53,10 @@ describe('BaseSection', () => {
       expect(useDesignerStore.getState().params.base.spacer).toBe(true);
     });
 
-    it('unlocks Mounting outside the Stacking body card without enabling hardware', async () => {
+    it('unlocks Mounting outside the Nesting body card without enabling hardware', async () => {
       const user = userEvent.setup();
       render(<BaseSection />);
-      await user.click(screen.getByRole('button', { name: /^Stacking One continuous/ }));
+      await user.click(screen.getByRole('button', { name: /^Nesting One continuous/ }));
       expect(useDesignerStore.getState().params.base.trayBottom?.floorAtBed).toBe(true);
       const bodyTypes = screen.getByRole('group', { name: 'Body type' });
       expect(

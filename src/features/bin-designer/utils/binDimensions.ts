@@ -122,30 +122,34 @@ function trayFloorZ(
   if (base.style !== 'lid') return null;
   const trayBottom = resolveTrayBottomConfig(base.trayBottom, lid.retentionMagnet);
   const rails = trayBottom.clickRails;
+  // The TRAY's own attachment, not the top lid's. `resolveLidCavityExtraMm`
+  // now branches on it — a sliding lid has no cavity, so it answers 0 — and
+  // the tray bottom is a different joint that happens to reuse the formula.
+  // Inheriting `attachment` from the spread would collapse a tray bin's skirt
+  // to nothing the moment its owner chose a sliding lid for the TOP, moving
+  // the floor of every ghost overlay and editor that reads this.
+  // `trayBottomInputs` scopes it the same way on the worker side.
+  const cavityExtraMm = resolveLidCavityExtraMm({
+    lid: {
+      ...DEFAULT_LID_CONFIG,
+      attachment: trayBottom.attachment,
+      extraHeightMm: trayBottom.extraHeightMm,
+      retentionMagnet: trayBottom.retentionMagnet,
+    },
+    base: { stackingLip: true, magnetDepth: 0 },
+  });
   const skirt = trayBottomSkirtDepth(
     heightUnitMm,
     LID_FIT_CLEARANCE,
-    // The TRAY's own attachment, not the top lid's. `resolveLidCavityExtraMm`
-    // now branches on it — a sliding lid has no cavity, so it answers 0 — and
-    // the tray bottom is a different joint that happens to reuse the formula.
-    // Inheriting `attachment` from the spread would collapse a tray bin's skirt
-    // to nothing the moment its owner chose a sliding lid for the TOP, moving
-    // the floor of every ghost overlay and editor that reads this.
-    // `trayBottomInputs` scopes it the same way on the worker side.
-    resolveLidCavityExtraMm({
-      lid: {
-        ...DEFAULT_LID_CONFIG,
-        attachment: trayBottom.attachment,
-        extraHeightMm: trayBottom.extraHeightMm,
-        retentionMagnet: trayBottom.retentionMagnet,
-      },
-      base: { stackingLip: true, magnetDepth: 0 },
-    }),
+    cavityExtraMm,
     trayBottom.attachment === 'clickRails' &&
       (rails.front || rails.back || rails.left || rails.right)
   );
   return trayBottom.floorAtBed && trayBottom.attachment === 'magnetic' && !isPartialMask(cellMask)
-    ? Math.max(skirt, -lidRetentionInterfaceZ(heightUnitMm, 0, trayBottom.retentionMagnet.depth))
+    ? Math.max(
+        skirt,
+        -lidRetentionInterfaceZ(heightUnitMm, cavityExtraMm, trayBottom.retentionMagnet.depth)
+      )
     : skirt;
 }
 
