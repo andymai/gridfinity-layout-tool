@@ -248,13 +248,16 @@ describe('MobileLayoutsPanel', () => {
       expect(screen.getByText('2 layouts')).toBeInTheDocument();
     });
 
-    it('reveals the swipe actions by the distance the finger travelled', () => {
+    it('tracks the finger from where it touched down and snaps open on release', () => {
       render(<MobileLayoutsPanel />);
       const row = screen.getByText('Second Layout').closest('button')?.parentElement;
       if (!row) throw new Error('row not rendered');
+      const offset = () => Number(/translateX\((-?\d+)px\)/.exec(row.style.transform)?.[1]);
       fireEvent.touchStart(row, { touches: [{ clientX: 300 }] });
-      fireEvent.touchMove(row, { touches: [{ clientX: 200 }] });
-      expect(row.style.transform).toBe('translateX(-100px)');
+      fireEvent.touchMove(row, { touches: [{ clientX: 180 }] });
+      expect(offset()).toBe(-120);
+      fireEvent.touchEnd(row);
+      expect(offset()).toBeLessThan(-120);
     });
 
     it('renders all layouts', () => {
