@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   resolveSlideLidPlan,
   slidePlateTopBelowWallTopMm,
@@ -467,5 +468,44 @@ describe('slideWallThicknessMm', () => {
     const shifted = { ...dims, innerOffsetX: 3 };
     expect(slideWallThicknessMm('right', shifted)).toBeCloseTo(2, 9);
     expect(slideWallThicknessMm('left', shifted)).toBeCloseTo(8, 9);
+  });
+});
+
+describe('finger catch', () => {
+  const catchConfig = { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'catch' as const };
+
+  it('spans the whole plate and fills the rim on a recessed, lipped bin', () => {
+    const g = geometryOf({ slide: catchConfig });
+    expect(g.plate.pull).toBe('catch');
+    expect(g.plate.pullSpanMm).toBeCloseTo(g.plate.spanMm, 9);
+    // From the plate's top to the lip's top: the section of rim the notch
+    // removed, moved onto the lid.
+    expect(g.plate.pullReachMm).toBeCloseTo(
+      g.plateTopBelowWallTopMm + GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP,
+      9
+    );
+  });
+
+  it('stays inside the entry wall, one clearance off the notch', () => {
+    const g = geometryOf({ slide: catchConfig });
+    expect(g.plate.pullDepthMm).toBeCloseTo(input().entryWallThicknessMm - g.clearanceMm, 9);
+    // Never past the wall's inner face: the lip's inward overhang is still
+    // there above the cavity, and the bar has to pass under it.
+    expect(g.plate.trailingX - g.plate.pullDepthMm).toBeGreaterThan(TRAVEL_INNER / 2);
+  });
+
+  it('stands the lip height above the rim on a flush lid', () => {
+    const g = geometryOf({ slide: { ...catchConfig, placement: 'flush' }, hasLip: false });
+    expect(g.plate.pullReachMm).toBeCloseTo(
+      g.plateTopBelowWallTopMm + GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP,
+      9
+    );
+  });
+
+  it('has no depth on the other pulls', () => {
+    expect(geometryOf().plate.pullDepthMm).toBe(0);
+    expect(
+      geometryOf({ slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'tab' } }).plate.pullDepthMm
+    ).toBe(0);
   });
 });

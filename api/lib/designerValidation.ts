@@ -108,7 +108,7 @@ const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
  */
 export const VALID_LID_ATTACHMENTS_TOP = [...VALID_LID_ATTACHMENTS, 'slide', 'hinge'] as const;
 export const VALID_LID_SLIDE_PLACEMENTS = ['recessed', 'flush'] as const;
-export const VALID_LID_SLIDE_PULLS = ['none', 'notch', 'tab'] as const;
+export const VALID_LID_SLIDE_PULLS = ['none', 'notch', 'tab', 'catch'] as const;
 /** Wall sides `lid.slide.entrySide` may name. Mirrors `LID_RAIL_SIDES`. */
 export const VALID_LID_RAIL_SIDES = ['front', 'back', 'left', 'right'] as const;
 const ALLOWED_LID_SLIDE_KEYS = new Set(['placement', 'entrySide', 'clearanceMm', 'pull', 'detent']);

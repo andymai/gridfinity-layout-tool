@@ -1087,6 +1087,18 @@ describe('checkLidCompatibility — sliding attachment', () => {
     expect(rim?.sides).toEqual(['right']);
   });
 
+  it('warns when a finger catch would be thinner than two perimeters', () => {
+    const thin = slideParams({ wallThickness: 0.8 }, { pull: 'catch' });
+    const issue = checkLidCompatibility(thin).find((i) => i.id === 'slideCatchThin');
+    expect(issue?.severity).toBe('warning');
+    expect(ids(slideParams({ wallThickness: 1.2 }, { pull: 'catch' }))).not.toContain(
+      'slideCatchThin'
+    );
+    expect(ids(slideParams({ wallThickness: 0.8 }, { pull: 'tab' }))).not.toContain(
+      'slideCatchThin'
+    );
+  });
+
   it('says nothing about the rim on a lipless bin', () => {
     const p = slideParams({ base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } });
     expect(ids(p)).not.toContain('slideRimInterrupted');

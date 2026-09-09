@@ -294,6 +294,28 @@ function tabSolid(scope: DisposalScope, geometry: SlideLidGeometry): Shape3D | n
   );
 }
 
+/**
+ * The finger catch: a bar standing up from the trailing edge to the rim's top,
+ * across the whole plate.
+ *
+ * Confined to the entry wall's thickness so it passes under the lip's inward
+ * overhang and never meets a stacked bin's feet. Overlaps down into the plate
+ * so the fuse has volume to merge, and is added BEFORE the footprint clip: its
+ * ends have to follow the bin's rounded corners exactly as the plate's do.
+ */
+function catchSolid(scope: DisposalScope, geometry: SlideLidGeometry): Shape3D | null {
+  const { plate } = geometry;
+  if (plate.pull !== 'catch' || plate.pullReachMm <= 0 || plate.pullDepthMm <= 0) return null;
+  const depth = plate.pullDepthMm;
+  const outline = drawRoundedRectangle(depth, plate.pullSpanMm, 0.01);
+  return scope.register(
+    outline
+      .translate(plate.trailingX - depth / 2, 0)
+      .sketchOnPlane('XY', -plate.thicknessMm / 2)
+      .extrude(plate.thicknessMm / 2 + plate.pullReachMm)
+  );
+}
+
 /** Rotate a canonical solid onto the entry wall and centre it on the cavity. */
 function place(
   scope: DisposalScope,
@@ -338,6 +360,10 @@ export function buildSlideLidPlate(
   if (cutters.length > 0) {
     shaped = scope.register(unwrap(cutAll(shaped as ValidSolid, cutters as ValidSolid[])));
   }
+  const catchBar = catchSolid(scope, geometry);
+  if (catchBar) {
+    shaped = scope.register(unwrap(fuse(shaped, catchBar)));
+  }
 
   // The plate travels along the CAVITY's axis, so it is centred on the cavity —
   // which asymmetric overhang moves off the bin's origin.
@@ -347,10 +373,11 @@ export function buildSlideLidPlate(
 
   // Clip to the lid's own footprint. See the file header: without it the
   // trailing corners sit outside the bin's rounded silhouette.
+  const rise = catchBar ? plate.pullReachMm : 0;
   const window = scope.register(
     buildOutlineDrawing(inputs, 0)
       .sketchOnPlane('XY', -plate.thicknessMm - OVERSHOOT_MM)
-      .extrude(plate.thicknessMm + 2 * OVERSHOOT_MM)
+      .extrude(plate.thicknessMm + rise + 2 * OVERSHOOT_MM)
   );
   placed = scope.register(unwrap(intersect(placed, window)));
 

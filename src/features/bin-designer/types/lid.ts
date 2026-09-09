@@ -268,9 +268,14 @@ export const LID_SLIDE_PLACEMENTS: readonly LidSlidePlacement[] = ['recessed', '
  *   NOT above it, so the plate still prints flat and a flush lid still clears
  *   anything stacked over it. It reaches out past the bin's face, which is what
  *   makes it grabbable with gloves on.
+ * - `catch`: a bar standing up from the plate's outer edge to the top of the
+ *   stacking rim, as wide as the plate. It is the section of rim the entry
+ *   notch removed, carried on the lid: shut, the rim reads continuous; open,
+ *   the whole width is a pull. Confined to the entry wall's thickness so it
+ *   passes under the lip's inward overhang and clears a stacked bin's feet.
  */
-export type LidSlidePull = 'none' | 'notch' | 'tab';
-export const LID_SLIDE_PULLS: readonly LidSlidePull[] = ['none', 'notch', 'tab'] as const;
+export type LidSlidePull = 'none' | 'notch' | 'tab' | 'catch';
+export const LID_SLIDE_PULLS: readonly LidSlidePull[] = ['none', 'notch', 'tab', 'catch'] as const;
 
 /**
  * Per-side sliding clearance (mm) between the plate and its channel.

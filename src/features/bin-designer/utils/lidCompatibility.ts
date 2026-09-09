@@ -59,7 +59,7 @@ import {
   resolveLidCavityExtraMm,
   resolveLidSlide,
 } from '../types/lid';
-import { SLIDE_SAG_SPAN_MM } from '@/shared/utils/slideLidPlan';
+import { SLIDE_CATCH_MIN_DEPTH_MM, SLIDE_SAG_SPAN_MM } from '@/shared/utils/slideLidPlan';
 import { slideLidPlanForParams } from './slideLidPlanForParams';
 import { compartmentHasTiltedEdge, getCompartmentBounds } from './compartments';
 import { binDimensions } from './binDimensions';
@@ -104,6 +104,8 @@ export type LidCompatibilityId =
   | 'slideLongSpan'
   /** The entry wall loses its stacking lip across the opening. */
   | 'slideRimInterrupted'
+  /** The finger catch is thinner than two perimeters at this wall thickness. */
+  | 'slideCatchThin'
   /** A cutout or handle opens a window in a wall the channel runs along. */
   | 'slideChannelInterrupted'
   /** A wall pattern perforates the walls the channel welds to. */
@@ -293,6 +295,12 @@ function checkSlideLidCompatibility(params: BinParams): LidCompatibilityIssue[] 
   // channel, and the panel names the thickness that would carry it.
   if (geometry.freeSpanMm > SLIDE_SAG_SPAN_MM) {
     issues.push({ id: 'slideLongSpan', severity: 'warning' });
+  }
+
+  // The catch cannot be thicker than the wall it fills, so a thin wall leaves
+  // it a single perimeter. Named here because the wall control is the fix.
+  if (geometry.plate.pull === 'catch' && geometry.plate.pullDepthMm < SLIDE_CATCH_MIN_DEPTH_MM) {
+    issues.push({ id: 'slideCatchThin', severity: 'warning' });
   }
 
   // The entry window has to break the rim — see the note on the notch in

@@ -170,6 +170,12 @@ const DETENT_POCKET_SLACK_MM = 0.15;
  */
 export const SLIDE_SAG_SPAN_MM = 90;
 
+/**
+ * Two perimeters at a 0.4mm nozzle. A finger catch cannot be made thicker than
+ * the entry wall, so below this the panel says so instead of printing lace.
+ */
+export const SLIDE_CATCH_MIN_DEPTH_MM = 0.8;
+
 /** Plate thickness (mm) recommended for a given free span. */
 export function slideSagSafeThicknessMm(spanMm: number): number {
   // Bending stiffness goes as thickness cubed, so the span it carries goes as
@@ -255,8 +261,13 @@ export interface SlideLidPlate {
   readonly pull: LidSlidePull;
   /** Span (mm) of the pull feature across the trailing edge. */
   readonly pullSpanMm: number;
-  /** How far the pull cuts in, or stands out. */
+  /** How far the pull cuts in, or stands out — for a catch, how far it rises above the plate. */
   readonly pullReachMm: number;
+  /**
+   * Thickness (mm) of a catch along the travel axis, measured inward from the
+   * trailing edge. Zero for every other pull.
+   */
+  readonly pullDepthMm: number;
   /**
    * The detent pockets cut into the plate's underside, one per shelf, that the
    * bumps drop into when the lid is shut. Empty when the design has no detent.
@@ -665,8 +676,23 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
     zMax: c + SLIDE_ROOF_TIP_MM,
   };
 
-  const pullSpan = Math.min(Math.max(plateSpan * 0.3, 12), 40);
-  const pullReach = slide.pull === 'tab' ? 6 : slide.pull === 'notch' ? 5 : 0;
+  // A catch is the rim section the notch removed, moved onto the plate: the
+  // plate's full width, up to the lip's top plane, and only as thick as the
+  // entry wall less one clearance. Not a millimetre deeper: the lip's inward
+  // overhang is still there above the cavity and the bar has to slide under it.
+  // On a flush or lipless bin nothing is above the rim, so the same rise reads
+  // as a rim of its own.
+  const isCatch = slide.pull === 'catch';
+  const pullSpan = isCatch ? plateSpan : Math.min(Math.max(plateSpan * 0.3, 12), 40);
+  const pullReach =
+    slide.pull === 'tab'
+      ? 6
+      : slide.pull === 'notch'
+        ? 5
+        : isCatch
+          ? plateTopBelowWallTop + GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP
+          : 0;
+  const pullDepth = isCatch ? Math.max(0, input.entryWallThicknessMm - c) : 0;
 
   return {
     rejection: null,
@@ -688,6 +714,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
         pull: slide.pull,
         pullSpanMm: pullSpan,
         pullReachMm: pullReach,
+        pullDepthMm: pullDepth,
         detentPockets,
       },
       plateTopBelowWallTopMm: plateTopBelowWallTop,
