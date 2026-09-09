@@ -23,6 +23,18 @@ export const ORBIT_RATE = 3.6; // radians / s
 export const MIN_POLAR = 0.01;
 
 /**
+ * How far the swept angle may sit from the over-a-pole distance and still be
+ * read as a pole crossing (radians).
+ *
+ * A crossing sweeps the two polar angles added together and every other route
+ * between the same pair is shorter, so the only competing motion is a spin of
+ * very nearly half a turn IN ONE FRAME, which closes the gap to nothing. This
+ * sits below where that becomes a risk: a 143 deg/frame spin still reads a
+ * quarter radian short, while a real crossing matches to float precision.
+ */
+export const FOLD_SWEEP_TOLERANCE = 0.01;
+
+/**
  * How far the orbit target may drift outside the model's bounding box before
  * panning stops, in model radii. One radius lets the model be pushed to the
  * edge of the viewport without letting it leave. Also capped by what the
