@@ -89,6 +89,7 @@ src/shared/types/bin.ts
 src/features/generation/worker/generators/floorRaiseBuilder.ts
   s_24b1f7fd65ccc8::t_259ee14bef7d5e 1-163
   s_24b1f7fd65ccc8::t_d3df55c0b2e9ba 164-166
+  s_24b1f7fd65ccc8::t_7fce58dcf39a26 167-169
 src/i18n/locales/nb.json
   s_24b1f7fd65ccc8::t_259ee14bef7d5e 412-413
 docs/schemas/bin-design.md
@@ -104,6 +105,8 @@ public/schema/bin-design.schema.json
   s_24b1f7fd65ccc8::t_963fd88a97bd2a 547-558
 src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
   s_24b1f7fd65ccc8::t_9b4ceb177c216c 9-12,246-267
+api/lib/designerCompartmentValidation.ts
+  s_24b1f7fd65ccc8::t_7fce58dcf39a26 245-262
 ---
 {
   "schema_version": "authorship/3.0.0",
