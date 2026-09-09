@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "벌집",
   "binDesigner.walls.pattern.kumiko.notPolygon": "쿠미코 패턴은 직사각형 빈이 필요하므로 이 벽들은 솔리드로 유지됩니다",
   "binDesigner.walls.pattern.kumiko.notSlotted": "쿠미코 패턴은 네 벽 모두에 칸막이 슬롯이 없어야 하므로 이 벽들은 솔리드로 유지됩니다",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "쿠미코 패턴은 라벨 슬롯이 없는 벽이 필요하므로 이 벽들은 솔리드로 유지됩니다",
   "binDesigner.walls.pattern.label": "벽 패턴",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",

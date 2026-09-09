@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "ハニカム",
   "binDesigner.walls.pattern.kumiko.notPolygon": "組子パターンは長方形のビンが必要なため、これらの壁は無垢のままです",
   "binDesigner.walls.pattern.kumiko.notSlotted": "組子パターンは四方の壁すべてに仕切り板スロットがないことが必要なため、これらの壁は無垢のままです",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "組子パターンはラベルスロットのない壁が必要なため、これらの壁は無垢のままです",
   "binDesigner.walls.pattern.label": "壁パターン",
   "binDesigner.walls.pattern.mikado": "帝つなぎ",
   "binDesigner.walls.pattern.mitsukude": "三つ組手",

@@ -163,8 +163,11 @@ export function useWallsSection() {
     const anySlotted =
       params.style === 'slotted' &&
       (slotBlocked.front || slotBlocked.back || slotBlocked.left || slotBlocked.right);
-    return anySlotted ? t('binDesigner.walls.pattern.kumiko.notSlotted') : undefined;
-  }, [wallPattern.pattern, params.cellMask, params.style, slotBlocked, t]);
+    if (anySlotted) return t('binDesigner.walls.pattern.kumiko.notSlotted');
+    if (resolveWallLabelSlots(params).enabled)
+      return t('binDesigner.walls.pattern.kumiko.notLabelSlots');
+    return undefined;
+  }, [wallPattern.pattern, params, slotBlocked, t]);
 
   // ── Divider walls ─────────────────────────────────────────────────
   // The same pattern and scale carried through the compartment dividers, so a

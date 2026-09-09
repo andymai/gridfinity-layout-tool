@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "Waben",
   "binDesigner.walls.pattern.kumiko.notPolygon": "Kumiko-Muster brauchen eine rechteckige Box, daher bleiben diese Wände massiv",
   "binDesigner.walls.pattern.kumiko.notSlotted": "Kumiko-Muster brauchen alle vier Wände ohne Trennschlitze, daher bleiben diese Wände massiv",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "Kumiko-Muster brauchen Wände ohne Etikettenschlitze, daher bleiben diese Wände massiv",
   "binDesigner.walls.pattern.label": "Wandmuster",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",

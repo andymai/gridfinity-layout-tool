@@ -60,4 +60,15 @@ describe('LabelPlateMeshes', () => {
 
     expect(container.querySelectorAll('mesh')).toHaveLength(4);
   });
+
+  // The pitch stands the plate up before the yaw turns it onto its wall, so the
+  // Euler order has to apply X first.
+  it('pitches a standing plate before yawing it, and lays its row copy flat', () => {
+    setPlates([plate({ standing: true, slideY: 0, slideZ: 1, yawDeg: 90 })]);
+    const { container } = render(<LabelPlateMeshes color="#ccc" lidOffsetMm={0} />);
+
+    const [seated, row] = Array.from(container.querySelectorAll('mesh'));
+    expect(seated.getAttribute('rotation')).toBe(`${Math.PI / 2},0,${Math.PI / 2},ZYX`);
+    expect(row.getAttribute('rotation')).toBe('0,0,0,ZYX');
+  });
 });

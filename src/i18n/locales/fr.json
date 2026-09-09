@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "Alvéoles",
   "binDesigner.walls.pattern.kumiko.notPolygon": "Les motifs kumiko exigent un bac rectangulaire, ces parois restent donc pleines",
   "binDesigner.walls.pattern.kumiko.notSlotted": "Les motifs kumiko exigent les quatre parois sans fentes de séparation, ces parois restent donc pleines",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "Les motifs kumiko exigent des parois sans fentes d'étiquette, ces parois restent donc pleines",
   "binDesigner.walls.pattern.label": "Motif de mur",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",

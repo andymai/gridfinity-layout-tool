@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "Nido d'ape",
   "binDesigner.walls.pattern.kumiko.notPolygon": "I motivi kumiko richiedono un contenitore rettangolare, quindi queste pareti restano piene",
   "binDesigner.walls.pattern.kumiko.notSlotted": "I motivi kumiko richiedono tutte e quattro le pareti senza fessure per divisori, quindi queste pareti restano piene",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "I motivi kumiko richiedono pareti senza fessure per etichette, quindi queste pareti restano piene",
   "binDesigner.walls.pattern.label": "Motivo pareti",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",

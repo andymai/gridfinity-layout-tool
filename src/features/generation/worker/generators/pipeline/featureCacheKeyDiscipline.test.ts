@@ -141,15 +141,6 @@ const PERTURBATIONS: Record<string, unknown> = {
   'slotConfig.layout': 'edge',
   'dividerPieces.height': 12,
   'compartments.dividerHeight': 12,
-  // Read as one unit by the slot builders, and absent by default.
-  wallLabelSlots: (v: unknown) =>
-    v === undefined
-      ? {
-          enabled: true,
-          sides: { front: true, back: false, left: false, right: false },
-          everyCells: 1,
-        }
-      : undefined,
   'compartments.floorRaises': [6],
   'wallPattern.pattern': 'grid',
   'floorPattern.pattern': 'grid',

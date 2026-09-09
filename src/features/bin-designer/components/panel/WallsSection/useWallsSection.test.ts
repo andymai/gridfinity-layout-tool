@@ -383,6 +383,24 @@ describe('useWallsSection label slots', () => {
     });
   });
 
+  it('tells a kumiko pattern it stays solid while slots are on', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        wallPattern: { enabled: true, pattern: 'asanoha' },
+        wallLabelSlots: {
+          enabled: true,
+          sides: { front: true, back: false, left: false, right: false },
+          everyCells: 1,
+        },
+      },
+    });
+    const { result } = renderHook(() => useWallsSection());
+    expect(result.current.state.patternInertReason).toBe(
+      'Kumiko patterns need walls without label slots, so these walls stay solid'
+    );
+  });
+
   it('explains the boss, the lip notch and a thin wall', () => {
     const { result } = renderHook(() => useWallsSection());
     act(() => {

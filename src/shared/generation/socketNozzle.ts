@@ -21,8 +21,9 @@ import type { BinParams } from '@/shared/types/bin';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 
 export function withSocketNozzle(params: BinParams, nozzleSizeMm: number): BinParams {
-  // Nozzle only changes geometry for an ENABLED socket tab above baseline;
-  // keying it in otherwise is pure cache churn.
+  // Nozzle only changes geometry where a plate has to fit: an enabled socket
+  // tab or wall label slots, above baseline. Keying it in otherwise is pure
+  // cache churn.
   const socketed =
     (params.label.enabled && params.label.mode === 'socket') ||
     params.wallLabelSlots?.enabled === true;

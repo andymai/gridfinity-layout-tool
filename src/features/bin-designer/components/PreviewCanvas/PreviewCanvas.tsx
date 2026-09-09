@@ -560,7 +560,10 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 slider — it withdraws the seated ones, the row stays put. */}
               <LabelPlateMeshes
                 color={previewColor}
-                lidOffsetMm={lidOffsetMm}
+                // The slider only exists with a lid; without one the parent
+                // still holds its default, which would leave every plate
+                // hovering out of its slot.
+                lidOffsetMm={params.lid.enabled ? lidOffsetMm : 0}
                 wireframe={wireframe}
               />
               {/* Dashed guide line between bin's lip top and lid's mating opening,

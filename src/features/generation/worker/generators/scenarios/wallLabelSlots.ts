@@ -171,4 +171,32 @@ export const wallLabelSlots: ScenarioCase[] = [
       }
     },
   }),
+  // The wrapped lattice steps aside for label slots the way it does for
+  // divider slots: its corner cutters cannot take the slot keep-out, so the
+  // walls stay solid rather than perforating the plate's backing.
+  defineScenario('wall label slots', 'a kumiko lattice steps aside for label slots', {
+    timeout: 180_000,
+    params: {
+      width: 2,
+      depth: 2,
+      height: 6,
+      wallPattern: { enabled: true, pattern: 'asanoha', scale: 0.5 },
+      wallLabelSlots: { enabled: true, sides: { ...SIDES_OFF, front: true }, everyCells: 1 },
+    },
+    assert: 'structural',
+    compareWith: {
+      params: {
+        width: 2,
+        depth: 2,
+        height: 6,
+        wallLabelSlots: { enabled: true, sides: { ...SIDES_OFF, front: true }, everyCells: 1 },
+      },
+      assert: (result, plain) => {
+        expect(result.triangleCount).toBe(plain.triangleCount);
+      },
+    },
+    customAssert: (mesh, params) => {
+      assertSockets(mesh, params);
+    },
+  }),
 ];

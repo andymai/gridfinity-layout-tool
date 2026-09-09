@@ -125,11 +125,39 @@ export function wallLabelSlotJointDepthMm(frameMm: number, slotThicknessMm: numb
   return frameMm + slotThicknessMm + WALL_LABEL_SLOT_BACK_MM;
 }
 
-function cellOffsets(cells: number, pitch: number, every: number): number[] {
-  const out: number[] = [];
+/**
+ * Centres of the whole cells along an axis, from the bin's centre. A fractional
+ * remainder is skipped: a half cell cannot hold a 1u plate, and which end it
+ * sits on (`edge`) shifts where the whole cells start.
+ */
+export function wallLabelSlotCellOffsets(
+  cells: number,
+  pitch: number,
+  edge: 'start' | 'end',
+  every = 1
+): number[] {
+  const whole = Math.floor(cells + 1e-9);
+  const origin = edge === 'start' ? cells - whole : 0;
   const step = Math.max(1, Math.floor(every));
-  for (let i = 0; i < cells; i += step) out.push((i + 0.5 - cells / 2) * pitch);
+  const out: number[] = [];
+  for (let i = 0; i < whole; i += step) out.push((origin + i + 0.5 - cells / 2) * pitch);
   return out;
+}
+
+/** The whole cell touching the wall at the `sign` end of an axis, or null when the remainder sits there. */
+function cornerCellOffset(
+  cells: number,
+  pitch: number,
+  edge: 'start' | 'end',
+  sign: number
+): number | null {
+  const whole = Math.floor(cells + 1e-9);
+  if (whole === 0) return null;
+  const fractional = cells - whole > 1e-9;
+  if (fractional && edge === (sign > 0 ? 'end' : 'start')) return null;
+  const origin = edge === 'start' ? cells - whole : 0;
+  const index = sign > 0 ? whole - 1 : 0;
+  return (origin + index + 0.5 - cells / 2) * pitch;
 }
 
 export function planWallLabelSlots(
@@ -190,7 +218,8 @@ export function planWallLabelSlots(
       continue;
     }
     const cells = alongX ? params.width : params.depth;
-    for (const offset of cellOffsets(cells, pitch, config.everyCells)) {
+    const edge = alongX ? params.fractionalEdgeX : params.fractionalEdgeY;
+    for (const offset of wallLabelSlotCellOffsets(cells, pitch, edge, config.everyCells)) {
       slots.push({ side, offset });
     }
   }
@@ -207,7 +236,10 @@ export function planWallLabelSlots(
  */
 export function planWallLabelSlotCorners(
   plan: WallLabelSlotPlan,
-  params: Pick<BinParams, 'width' | 'depth' | 'wallThickness'>,
+  params: Pick<
+    BinParams,
+    'width' | 'depth' | 'wallThickness' | 'fractionalEdgeX' | 'fractionalEdgeY'
+  >,
   dims: Pick<WallLabelSlotDims, 'gridUnitMmX' | 'gridUnitMmY'>,
   inner: { readonly innerW: number; readonly innerD: number }
 ): WallLabelSlotCorner[] {
@@ -226,8 +258,9 @@ export function planWallLabelSlotCorners(
   const corners: WallLabelSlotCorner[] = [];
   for (const sx of [-1, 1]) {
     for (const sy of [-1, 1]) {
-      const xOff = (sx * ((params.width - 1) * dims.gridUnitMmX)) / 2;
-      const yOff = (sy * ((params.depth - 1) * dims.gridUnitMmY)) / 2;
+      const xOff = cornerCellOffset(params.width, dims.gridUnitMmX, params.fractionalEdgeX, sx);
+      const yOff = cornerCellOffset(params.depth, dims.gridUnitMmY, params.fractionalEdgeY, sy);
+      if (xOff === null || yOff === null) continue;
       if (!has(sy > 0 ? 'back' : 'front', xOff) || !has(sx > 0 ? 'right' : 'left', yOff)) continue;
       const endX = Math.abs(xOff) + half;
       const endY = Math.abs(yOff) + half;

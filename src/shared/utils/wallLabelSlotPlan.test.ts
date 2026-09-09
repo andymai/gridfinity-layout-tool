@@ -115,6 +115,15 @@ describe('planWallLabelSlots', () => {
     expect(planWallLabelSlots(params(), narrow, 0.3).refusal).toBe('cellTooNarrow');
   });
 
+  // A half cell is 21 mm wide: nothing to slot into, and a slot centred on it
+  // would open into the corner.
+  it('skips the fractional cell and keeps the whole ones on their centres', () => {
+    const end = planWallLabelSlots(params({ width: 2.5, fractionalEdgeX: 'end' }), DIMS, 0.3);
+    expect(end.slots.map((s) => s.offset)).toEqual([-31.5, 10.5]);
+    const start = planWallLabelSlots(params({ width: 2.5, fractionalEdgeX: 'start' }), DIMS, 0.3);
+    expect(start.slots.map((s) => s.offset)).toEqual([-10.5, 31.5]);
+  });
+
   it('flags a wall thinner than the frame minimum', () => {
     expect(planWallLabelSlots(params({ wallThickness: 0.6 }), DIMS, 0.3).thinWall).toBe(true);
     expect(planWallLabelSlots(params(), DIMS, 0.3).thinWall).toBe(false);
@@ -166,6 +175,15 @@ describe('planWallLabelSlotCorners', () => {
     expect(corners).toHaveLength(1);
     expect(corners[0].x[1]).toBeLessThan(0);
     expect(corners[0].y[1]).toBeLessThan(0);
+  });
+
+  it('skips a corner where the fractional cell sits against the wall', () => {
+    const p = params({ width: 2.5, depth: 2, fractionalEdgeX: 'end' }, ALL);
+    const plan = planWallLabelSlots(p, DIMS, 0.3);
+    // 2.5 x 2 on the 42 mm grid: inner 102.1 x 81.1.
+    const corners = planWallLabelSlotCorners(plan, p, DIMS, { innerW: 102.1, innerD: 81.1 });
+    expect(corners).toHaveLength(2);
+    expect(corners.every((c) => c.x[1] < 0)).toBe(true);
   });
 
   it('leaves a printable block alone', () => {

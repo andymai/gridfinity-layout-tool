@@ -3198,6 +3198,8 @@ const en: Record<string, string> = {
     'Kumiko patterns need a rectangular bin, so these walls stay solid',
   'binDesigner.walls.pattern.kumiko.notSlotted':
     'Kumiko patterns need all four walls free of divider slots, so these walls stay solid',
+  'binDesigner.walls.pattern.kumiko.notLabelSlots':
+    'Kumiko patterns need walls without label slots, so these walls stay solid',
   'binDesigner.walls.pattern.sides.dividersOnly':
     'Outer walls stay solid: only the dividers are patterned',
   'binDesigner.walls.pattern.dividers': 'Pattern divider walls',

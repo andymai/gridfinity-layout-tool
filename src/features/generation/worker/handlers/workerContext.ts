@@ -276,6 +276,7 @@ export function runGeneration(
             slideY: plate.slideY,
             ...(plate.slideZ !== undefined ? { slideZ: plate.slideZ } : {}),
             ...(plate.yawDeg !== undefined ? { yawDeg: plate.yawDeg } : {}),
+            ...(plate.standing ? { standing: true as const } : {}),
             widthMm: plate.widthMm,
           })),
           omittedCount: meshData.labelPlates.omittedCount,

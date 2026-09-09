@@ -1158,32 +1158,6 @@ function migrateTextStyleOverride(raw: unknown): TextStyleOverride | undefined {
  * editor bounds so a hand-edited share can't drive runaway rest geometry.
  * Fields at their defaults are dropped rather than persisted.
  */
-/**
- * Normalize persisted `wallLabelSlots`. An invalid shape drops to `undefined`,
- * and so does the default: a design that switched the slots on and off again
- * must fingerprint like one that never did.
- */
-function migrateWallLabelSlots(raw: unknown): WallLabelSlotsConfig | undefined {
-  if (typeof raw !== 'object' || raw === null) return undefined;
-  const value = raw as Record<string, unknown>;
-  if (typeof value.enabled !== 'boolean') return undefined;
-  const rawSides =
-    typeof value.sides === 'object' && value.sides !== null
-      ? (value.sides as Record<string, unknown>)
-      : {};
-  const config: WallLabelSlotsConfig = {
-    enabled: value.enabled,
-    sides: {
-      front: rawSides.front === true,
-      back: rawSides.back === true,
-      left: rawSides.left === true,
-      right: rawSides.right === true,
-    },
-    everyCells: Math.round(clampNumber(value.everyCells, 1, MAX_WALL_LABEL_SLOT_PITCH_CELLS, 1)),
-  };
-  return isDefaultWallLabelSlots(config) ? undefined : config;
-}
-
 function migrateKnifeRest(raw: unknown): KnifeRestConfig | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
   const value = raw as Record<string, unknown>;
@@ -1217,6 +1191,32 @@ function migrateKnifeRest(raw: unknown): KnifeRestConfig | undefined {
     ...(grooveDepthMm !== undefined ? { grooveDepthMm } : {}),
     ...(color !== undefined ? { color } : {}),
   };
+}
+
+/**
+ * Normalize persisted `wallLabelSlots`. An invalid shape drops to `undefined`,
+ * and so does the default: a design that switched the slots on and off again
+ * must fingerprint like one that never did.
+ */
+function migrateWallLabelSlots(raw: unknown): WallLabelSlotsConfig | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const value = raw as Record<string, unknown>;
+  if (typeof value.enabled !== 'boolean') return undefined;
+  const rawSides =
+    typeof value.sides === 'object' && value.sides !== null
+      ? (value.sides as Record<string, unknown>)
+      : {};
+  const config: WallLabelSlotsConfig = {
+    enabled: value.enabled,
+    sides: {
+      front: rawSides.front === true,
+      back: rawSides.back === true,
+      left: rawSides.left === true,
+      right: rawSides.right === true,
+    },
+    everyCells: Math.round(clampNumber(value.everyCells, 1, MAX_WALL_LABEL_SLOT_PITCH_CELLS, 1)),
+  };
+  return isDefaultWallLabelSlots(config) ? undefined : config;
 }
 
 function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {

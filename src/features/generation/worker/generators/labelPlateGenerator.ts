@@ -19,13 +19,19 @@ import type { LabelPlatesMeshData, LabelPlateMeshData } from '../../bridge/types
 import { toIndexedMeshData } from './utils';
 import { computeTessellationTolerances } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
-import { labelPlateWidthMm } from '@/shared/constants/labelPlates';
+import {
+  LABEL_PLATE_HEIGHT_MM,
+  LABEL_PLATE_THICKNESS_MM,
+  labelPlateWidthMm,
+} from '@/shared/constants/labelPlates';
 import { buildLabelPlate, resolveUniformPlateTextSize } from './labelPlateBuilder';
 import type { LabelPlateSpec } from './labelPlateBuilder';
 import { planLabelPlateSeats } from './labelTabBuilder';
 import type { LabelPlateSeat } from './labelTabBuilder';
 import { LABEL_SOCKET_CLICK_POCKET_DEPTH_MM } from '@/shared/constants/labelPlates';
 import { cutoutSocketTopZ, planCutoutSocketsForParams } from '@/shared/utils/cutoutLabelSocketPlan';
+import type { WallLabelSlotSide } from '@/shared/utils/wallLabelSlotPlan';
+import { planForContext as planWallLabelSlots } from './wallLabelSlotBuilder';
 
 /**
  * A seat the preview can draw, from either mechanism. `slideY: 0` is the board
@@ -36,6 +42,7 @@ type PreviewPlateSeat = Omit<LabelPlateSeat, 'slideY'> & {
   readonly slideY: 1 | -1 | 0;
   readonly slideZ?: 1;
   readonly yawDeg?: number;
+  readonly standing?: true;
 };
 import { deriveDimensions } from './pipeline/context';
 
@@ -70,17 +77,67 @@ function planPlateSeats(
   // places every cavity against. Measuring from the lip-relieved interior
   // would seat every plate the lip taper's depth below its own pocket.
   const cutoutSeats = planCutoutPlateSeats(params, dim.innerW, dim.innerD, dim.wallHeight);
-  if (cutoutSeats.length > 0) return cutoutSeats;
+  // Wall slots are independent of both socket mechanisms, so their seats are
+  // appended after whichever one the design uses, in the order the plate
+  // planner lists them.
+  const wallSeats = planWallSlotSeats(params, dim);
+  if (cutoutSeats.length > 0) return [...cutoutSeats, ...wallSeats];
   if (params.label.enabled && (params.label.mode ?? 'text') === 'socket') {
-    return planLabelPlateSeats(
-      params,
-      dim.innerW,
-      dim.innerD,
-      dim.interiorHeight,
-      params.wallThickness
-    );
+    return [
+      ...planLabelPlateSeats(
+        params,
+        dim.innerW,
+        dim.innerD,
+        dim.interiorHeight,
+        params.wallThickness
+      ),
+      ...wallSeats,
+    ];
   }
-  return [];
+  return wallSeats;
+}
+
+const WALL_YAW_DEG: Record<WallLabelSlotSide, number> = {
+  front: 0,
+  back: 180,
+  left: -90,
+  right: 90,
+};
+
+/**
+ * A blank 1u plate standing in each wall slot: its text face against the
+ * frame so it shows through the window, its bottom on the slot floor, lifting
+ * straight up out of the slot as the explode slider opens.
+ */
+function planWallSlotSeats(
+  params: BinParams,
+  dim: ReturnType<typeof deriveDimensions>
+): PreviewPlateSeat[] {
+  const plan = planWallLabelSlots(params, dim);
+  return plan.slots.map((slot, index) => {
+    const alongX = slot.side === 'front' || slot.side === 'back';
+    // Distance from the interior centre to the plate's back face: the plate
+    // is pitched about its own back edge, so the seat is that face.
+    const inward =
+      (alongX ? dim.innerD : dim.innerW) / 2 +
+      params.wallThickness -
+      plan.frameMm -
+      LABEL_PLATE_THICKNESS_MM;
+    const outward = slot.side === 'back' || slot.side === 'right' ? inward : -inward;
+    return {
+      x: alongX ? slot.offset : outward,
+      y: alongX ? outward : slot.offset,
+      z: plan.floorZ + LABEL_PLATE_HEIGHT_MM / 2,
+      slideY: 0 as const,
+      slideZ: 1 as const,
+      yawDeg: WALL_YAW_DEG[slot.side],
+      standing: true as const,
+      plateWidthU: 1 as const,
+      text: '',
+      scope: 'compartment' as const,
+      index,
+    };
+  });
 }
 
 /**
@@ -117,8 +174,8 @@ function planCutoutPlateSeats(
 /**
  * Build preview meshes for a bin's swappable label plates.
  *
- * Returns null when the design has no sockets — text-mode tabs, labels off, or
- * no compartment wide enough to host a plate.
+ * Returns null when the design has nowhere to seat a plate: text-mode tabs or
+ * labels off with no wall slots, or no compartment wide enough to host one.
  */
 export function generateLabelPlates(
   params: BinParams,
@@ -187,6 +244,7 @@ export function generateLabelPlates(
         slideY: seat.slideY,
         ...(seat.slideZ !== undefined ? { slideZ: seat.slideZ } : {}),
         ...(seat.yawDeg !== undefined ? { yawDeg: seat.yawDeg } : {}),
+        ...(seat.standing ? { standing: true as const } : {}),
         widthMm: labelPlateWidthMm(seat.plateWidthU),
       });
     } finally {

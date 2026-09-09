@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "Colmeia",
   "binDesigner.walls.pattern.kumiko.notPolygon": "Os padrões kumiko exigem uma caixa retangular, então estas paredes continuam sólidas",
   "binDesigner.walls.pattern.kumiko.notSlotted": "Os padrões kumiko exigem as quatro paredes sem ranhuras divisórias, então estas paredes continuam sólidas",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "Os padrões kumiko exigem paredes sem fendas para rótulos, então estas paredes continuam sólidas",
   "binDesigner.walls.pattern.label": "Padrão de parede",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",

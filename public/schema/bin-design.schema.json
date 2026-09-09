@@ -2666,7 +2666,8 @@
           "description": "Cut the slots."
         },
         "sides": {
-          "$ref": "#/$defs/WallPatternSides"
+          "$ref": "#/$defs/WallPatternSides",
+          "description": "Which outer walls carry slots."
         },
         "everyCells": {
           "type": "integer",
@@ -2681,7 +2682,7 @@
     },
     "WallPatternSides": {
       "type": "object",
-      "description": "Which walls carry the pattern.",
+      "description": "Which outer walls a feature covers: the wall pattern, or the label slots.",
       "required": ["left", "right", "front", "back"],
       "properties": {
         "left": {

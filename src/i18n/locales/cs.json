@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "Plástev",
   "binDesigner.walls.pattern.kumiko.notPolygon": "Vzory kumiko potřebují hranatý box, takže tyto stěny zůstanou plné",
   "binDesigner.walls.pattern.kumiko.notSlotted": "Vzory kumiko potřebují všechny čtyři stěny bez drážek pro přepážky, takže tyto stěny zůstanou plné",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "Vzory kumiko potřebují stěny bez drážek na štítky, takže tyto stěny zůstanou plné",
   "binDesigner.walls.pattern.label": "Vzor stěny",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",

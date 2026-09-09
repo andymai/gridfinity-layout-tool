@@ -44,6 +44,7 @@ type RevolveProfile = OrientedFace & PlanarFace;
 import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolveWallLabelSlots } from '@/shared/utils/wallLabelSlotPlan';
 import type { PipelineContext } from './pipeline/types';
 import type { PerfCollector } from './pipeline/perfCollector';
 import type { WallPatternDescriptor } from './wallPatterns';
@@ -925,6 +926,9 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): KumikoWallPattern
   if (isPartialMask(params.cellMask)) return NONE;
   const slotFree = getSlotFreeWalls(params);
   if (!slotFree.front || !slotFree.back || !slotFree.left || !slotFree.right) return NONE;
+  // The slot keep-out reaches the corner slabs, whose curved cutters do not
+  // survive the box cut as closed solids; the stamp patterns take it instead.
+  if (resolveWallLabelSlots(params).enabled) return NONE;
 
   const wallThickness = params.wallThickness;
   const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT;

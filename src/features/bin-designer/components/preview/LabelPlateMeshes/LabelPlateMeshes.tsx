@@ -66,7 +66,7 @@ function PlateInstance({
           geometry={geometry}
           material={material}
           position={pose.position}
-          rotation={[0, 0, (pose.yawDeg * Math.PI) / 180]}
+          rotation={[(pose.pitchDeg * Math.PI) / 180, 0, (pose.yawDeg * Math.PI) / 180, 'ZYX']}
           renderOrder={2}
         />
       ))}

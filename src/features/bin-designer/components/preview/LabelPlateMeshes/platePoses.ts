@@ -24,6 +24,8 @@ export interface Pose {
   readonly position: readonly [number, number, number];
   /** Yaw about Z in degrees; 0 for every plate that reads left-to-right. */
   readonly yawDeg: number;
+  /** Pitch about X in degrees, applied before the yaw; 90 stands a plate on edge. */
+  readonly pitchDeg: number;
 }
 
 /**
@@ -43,6 +45,7 @@ export function seatedPose(plate: LabelPlateMeshData, explodeMm: number): Pose {
       plate.seatZ + (plate.slideZ ?? 0) * slide,
     ],
     yawDeg: plate.yawDeg ?? 0,
+    pitchDeg: plate.standing ? 90 : 0,
   };
 }
 
@@ -64,7 +67,11 @@ export function referenceRowPoses(
   for (const plate of plates) {
     // Always laid out flat, whatever yaw the plate takes when seated: the row
     // shows what comes off the print bed, not how it is installed.
-    poses.push({ position: [-totalW / 2 + offset + plate.widthMm / 2, y, 0], yawDeg: 0 });
+    poses.push({
+      position: [-totalW / 2 + offset + plate.widthMm / 2, y, 0],
+      yawDeg: 0,
+      pitchDeg: 0,
+    });
     offset += plate.widthMm + ROW_GAP;
   }
   return poses;

@@ -5,6 +5,13 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import type { WallPatternSides } from '@/features/bin-designer/types';
 
+/** A FeatureToggle's block: the switch row plus the reason text under it. */
+function toggleBlock(name: string): HTMLElement {
+  const block = screen.getByRole('switch', { name }).parentElement?.parentElement;
+  if (!block) throw new Error(`no toggle block for ${name}`);
+  return block;
+}
+
 describe('WallSurfaceSection', () => {
   beforeEach(() => {
     useDesignerStore.setState({
@@ -160,7 +167,7 @@ describe('WallSurfaceSection', () => {
       });
       render(<WallSurfaceSection />);
       expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
-      expect(screen.getAllByText('Not available for custom-shape bins.')).toHaveLength(2);
+      expect(toggleBlock('Wall text')).toHaveTextContent('Not available for custom-shape bins.');
     });
 
     // A solid body has the same outer wall a hollow one does; only the interior
@@ -395,7 +402,7 @@ describe('WallSurfaceSection', () => {
       });
       render(<WallSurfaceSection />);
       expect(screen.getByRole('switch', { name: 'Label slots' })).toBeDisabled();
-      expect(screen.getAllByText('Not available for custom-shape bins.')).toHaveLength(2);
+      expect(toggleBlock('Label slots')).toHaveTextContent('Not available for custom-shape bins.');
     });
 
     it('greys out a wall whose cells are too narrow', () => {

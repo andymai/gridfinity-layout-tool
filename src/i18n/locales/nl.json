@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "Honingraat",
   "binDesigner.walls.pattern.kumiko.notPolygon": "Kumiko-patronen vereisen een rechthoekige bak, dus deze wanden blijven massief",
   "binDesigner.walls.pattern.kumiko.notSlotted": "Kumiko-patronen vereisen alle vier de wanden zonder verdeelsleuven, dus deze wanden blijven massief",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "Kumiko-patronen vereisen wanden zonder labelsleuven, dus deze wanden blijven massief",
   "binDesigner.walls.pattern.label": "Wandpatroon",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",

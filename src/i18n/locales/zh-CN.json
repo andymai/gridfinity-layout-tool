@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "蜂窝",
   "binDesigner.walls.pattern.kumiko.notPolygon": "组子图案需要矩形收纳盒，因此这些壁保持实心",
   "binDesigner.walls.pattern.kumiko.notSlotted": "组子图案需要四个壁都没有隔板槽，因此这些壁保持实心",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "组子图案需要没有标签插槽的壁，因此这些壁保持实心",
   "binDesigner.walls.pattern.label": "壁图案",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",

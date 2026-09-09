@@ -1971,6 +1971,7 @@
   "binDesigner.walls.pattern.honeycomb": "Bikakemönster",
   "binDesigner.walls.pattern.kumiko.notPolygon": "Kumiko-mönster kräver en rektangulär låda, så dessa väggar förblir massiva",
   "binDesigner.walls.pattern.kumiko.notSlotted": "Kumiko-mönster kräver alla fyra väggar utan avdelarslitsar, så dessa väggar förblir massiva",
+  "binDesigner.walls.pattern.kumiko.notLabelSlots": "Kumiko-mönster kräver väggar utan etikettspår, så dessa väggar förblir massiva",
   "binDesigner.walls.pattern.label": "Väggmönster",
   "binDesigner.walls.pattern.mikado": "Mikado (帝つなぎ)",
   "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",
