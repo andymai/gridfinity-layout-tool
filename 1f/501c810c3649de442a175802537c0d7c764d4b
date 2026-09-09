@@ -1,0 +1,25 @@
+src/shared/spacemouse/constants.ts
+  s_aec671593afe18::t_ac68ad27b82b8b 26-36
+  s_aec671593afe18::t_a9394ef2445025 25
+src/shared/spacemouse/cameraCommands.test.ts
+  s_aec671593afe18::t_e6256fb7b6d695 217
+  s_aec671593afe18::t_4c86cfa1c672d9 218-254
+src/shared/spacemouse/cameraCommands.ts
+  s_aec671593afe18::t_ac68ad27b82b8b 11,155-191,200-206,212-213,223,229-237,335-340
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "1f501c810c3649de442a175802537c0d7c764d4b",
+  "prompts": {},
+  "sessions": {
+    "s_aec671593afe18": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aafd8ab0-716b-467e-8d75-c8757f51bcf2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
