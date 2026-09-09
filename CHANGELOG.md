@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.488.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.487.1...gridfinity-layout-tool-v4.488.0) (2026-09-09)
+
+
+### Features
+
+* **bins:** add a Nesting body with a bed-supported floor ([#4159](https://github.com/andymai/gridfinity-layout-tool/issues/4159)) ([c2aabe5](https://github.com/andymai/gridfinity-layout-tool/commit/c2aabe59d6c92479eaee628a6560f803f0810737))
+* **bins:** add a strut width control for stamped wall patterns ([#4161](https://github.com/andymai/gridfinity-layout-tool/issues/4161)) ([da94bba](https://github.com/andymai/gridfinity-layout-tool/commit/da94bba94ec5832c50edc0baf1bf4103a53d62f5)), closes [#4160](https://github.com/andymai/gridfinity-layout-tool/issues/4160)
+* **bins:** raise a compartment's floor on its own slab ([#4163](https://github.com/andymai/gridfinity-layout-tool/issues/4163)) ([799142d](https://github.com/andymai/gridfinity-layout-tool/commit/799142de376c0b1bca3ba87c06fe45d3eeafb0fa)), closes [#4152](https://github.com/andymai/gridfinity-layout-tool/issues/4152)
+* **bins:** vertical label slots in the outer walls ([#4164](https://github.com/andymai/gridfinity-layout-tool/issues/4164)) ([78830e2](https://github.com/andymai/gridfinity-layout-tool/commit/78830e236fea3b657a1271dee730b6d1b9262c49))
+* **layouts:** nested folders in the layout library, synced ([#4166](https://github.com/andymai/gridfinity-layout-tool/issues/4166)) ([8a19a80](https://github.com/andymai/gridfinity-layout-tool/commit/8a19a80c7a4fe27ef77d3c87573ffe8079140dea))
+* **lid:** add a finger catch pull to the sliding lid ([#4162](https://github.com/andymai/gridfinity-layout-tool/issues/4162)) ([15862a1](https://github.com/andymai/gridfinity-layout-tool/commit/15862a1205bdfabd6702e750d627ce4655870403)), closes [#4157](https://github.com/andymai/gridfinity-layout-tool/issues/4157)
+
+
+### Bug Fixes
+
+* **spacemouse:** apply the driver's pose as given instead of second-guessing it ([#4167](https://github.com/andymai/gridfinity-layout-tool/issues/4167)) ([6a2ad24](https://github.com/andymai/gridfinity-layout-tool/commit/6a2ad2440ae0b66ba21810fed3ba639c1ea4cd2e))
+
 ## [4.487.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.487.0...gridfinity-layout-tool-v4.487.1) (2026-09-09)
 
 
