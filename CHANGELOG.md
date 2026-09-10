@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.488.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.488.0...gridfinity-layout-tool-v4.488.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* **import:** keep drag state over child nodes and accept upper-case .JSON ([#4180](https://github.com/andymai/gridfinity-layout-tool/issues/4180)) ([d7919ab](https://github.com/andymai/gridfinity-layout-tool/commit/d7919ab25b3b54152e7b5d51b1c87d07ba3dbc89))
+
 ## [4.488.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.487.1...gridfinity-layout-tool-v4.488.0) (2026-09-09)
 
 
