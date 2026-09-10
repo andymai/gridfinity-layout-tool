@@ -80,8 +80,9 @@ describe('ImportView', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
       const file = new File(['{}'], 'LAYOUT.JSON', { type: 'application/json' });
       const dropZone = screen.getByText('Drag and drop JSON file here').closest('div');
+      if (!dropZone) throw new Error('drop zone not rendered');
 
-      fireEvent.drop(dropZone!, { dataTransfer: { files: [file], types: ['Files'] } });
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file], types: ['Files'] } });
 
       expect(screen.queryByText(/Please drop a JSON file/)).not.toBeInTheDocument();
     });
