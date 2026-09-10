@@ -55,7 +55,7 @@ import { useMutations } from '@/shared/contexts';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useGridNavigation } from '@/features/grid-editor';
 import { useTranslation } from '@/i18n';
-import type { KeyboardContext, KeyboardHandler } from './keyboard/types';
+import type { KeyboardContext, KeyboardHandler } from './types';
 
 import {
   handleDelete,
@@ -73,7 +73,7 @@ import {
   handleQuickLabel,
   handleHalfBinToggle,
   handleNudge,
-} from './keyboard/handlers';
+} from './handlers';
 
 /**
  * Handler dispatch order. Handlers are tried in sequence; the first

@@ -31,6 +31,13 @@ done < <(git diff --cached --name-only -z --diff-filter=d 2>/dev/null)
 # No staged files - allow
 [[ ${#TS_FILES[@]} -eq 0 ]] && exit 0
 
+# One rename-aware diff for every file: a path-limited `git diff <file>` cannot
+# pair a moved file with its old path, so a pure move read as all-new code.
+FULL_DIFF=$(git diff --cached -M 2>/dev/null)
+file_diff() {
+  printf '%s\n' "$FULL_DIFF" | awk -v f="b/$1" '/^diff --git /{p=($NF==f)} p'
+}
+
 ISSUES=""
 
 # Functions that return Result types (from src/core/store/layout.ts and others)
@@ -40,7 +47,7 @@ for file in "${TS_FILES[@]}"; do
   [[ ! -f "$file" ]] && continue
 
   # Get only added lines from staged changes
-  ADDED_LINES=$(git diff --cached "$file" 2>/dev/null | grep '^+' | grep -v '^+++')
+  ADDED_LINES=$(file_diff "$file" | grep '^+' | grep -v '^+++')
 
   [[ -z "$ADDED_LINES" ]] && continue
 
@@ -59,7 +66,7 @@ for file in "${TS_FILES[@]}"; do
   # Pattern 2: Result assigned but never checked
   # Look for: const result = addBin(...) without subsequent isOk/isErr
   # Get the full diff with context for better analysis
-  DIFF_CONTENT=$(git diff --cached "$file" 2>/dev/null)
+  DIFF_CONTENT=$(file_diff "$file")
 
   # Find variable names assigned Result values in added lines
   RESULT_VARS=$(echo "$ADDED_LINES" | grep -oE "(const|let)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(${RESULT_FUNCTIONS})" | grep -oE '(const|let)\s+[a-zA-Z_][a-zA-Z0-9_]*' | awk '{print $2}')

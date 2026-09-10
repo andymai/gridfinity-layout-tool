@@ -41,14 +41,14 @@ describe('LinkedRiseRegistration', () => {
       assembledRiseMm: 4 * 7 + LIP_PROTRUSION_MM + 14,
       updatedAt: '2026-01-01T00:00:00.000Z',
     });
-    await import('@/shared/storage/LinkedRiseRegistration');
+    await import('@/shell/registrations/LinkedRiseRegistration');
 
     const rect = getBin3DRectResult(linkedBin, layers);
     expect(rect.ok && rect.value.zEnd).toBeCloseTo(6, 6);
   });
 
   it('re-reads the registry after a change notification', async () => {
-    await import('@/shared/storage/LinkedRiseRegistration');
+    await import('@/shell/registrations/LinkedRiseRegistration');
     registry.length = 0;
     subscribers.forEach((cb) => cb());
 
@@ -57,7 +57,7 @@ describe('LinkedRiseRegistration', () => {
   });
 
   it('re-reads the registry after a cross-tab storage event', async () => {
-    await import('@/shared/storage/LinkedRiseRegistration');
+    await import('@/shell/registrations/LinkedRiseRegistration');
     registry.push({
       id: designId('lidded'),
       name: 'Lidded',
@@ -74,7 +74,7 @@ describe('LinkedRiseRegistration', () => {
   });
 
   it('renders nothing', async () => {
-    const { LinkedRiseRegistration } = await import('@/shared/storage/LinkedRiseRegistration');
+    const { LinkedRiseRegistration } = await import('@/shell/registrations/LinkedRiseRegistration');
     expect(LinkedRiseRegistration()).toBeNull();
   });
 });

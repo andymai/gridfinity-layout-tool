@@ -9,8 +9,8 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { loadPendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import type { PendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import { loadCommunityReopenDesign, loadAuthReturnPath } from '@/shared/utils/communityReturnPath';
-import { useFeatureFlag } from './useFeatureFlag';
-import { dispatchSyntheticPopstate } from './useDesignerRouting';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
 
 type Translate = (key: string) => string;
 

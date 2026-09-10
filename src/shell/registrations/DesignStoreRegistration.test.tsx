@@ -20,12 +20,13 @@ afterEach(() => {
 
 describe('DesignStoreRegistration', () => {
   it('registers the bin-designer adapter with the core port on import', async () => {
-    await import('@/shared/storage/DesignStoreRegistration');
+    await import('@/shell/registrations/DesignStoreRegistration');
     expect(getDesignStorePort()).toBe(fakeAdapter);
   });
 
   it('renders nothing', async () => {
-    const { DesignStoreRegistration } = await import('@/shared/storage/DesignStoreRegistration');
+    const { DesignStoreRegistration } =
+      await import('@/shell/registrations/DesignStoreRegistration');
     expect(DesignStoreRegistration()).toBeNull();
   });
 });

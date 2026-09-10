@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useKeyboard } from '@/shared/hooks';
+import { useKeyboard } from './useKeyboard';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
