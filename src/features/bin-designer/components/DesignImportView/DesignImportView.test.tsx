@@ -224,6 +224,16 @@ describe('DesignImportView', () => {
     expect(screen.getByText('• Please drop a JSON file')).toBeInTheDocument();
   });
 
+  it('accepts an upper-case .JSON extension on drop', () => {
+    render(<DesignImportView {...defaultProps} />);
+    const file = new File(['{}'], 'DESIGN.JSON', { type: 'application/json' });
+    const dropZone = screen.getByText('Drag & drop a design JSON file here').closest('div');
+
+    fireEvent.drop(dropZone!, { dataTransfer: { files: [file], types: ['Files'] } });
+
+    expect(screen.queryByText('• Please drop a JSON file')).not.toBeInTheDocument();
+  });
+
   it('shows drag styling on drag over', () => {
     render(<DesignImportView {...defaultProps} />);
 

@@ -76,6 +76,16 @@ describe('ImportView', () => {
       expect(screen.getByText('Drag and drop JSON file here')).toBeInTheDocument();
     });
 
+    it('accepts an upper-case .JSON extension on drop', () => {
+      render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
+      const file = new File(['{}'], 'LAYOUT.JSON', { type: 'application/json' });
+      const dropZone = screen.getByText('Drag and drop JSON file here').closest('div');
+
+      fireEvent.drop(dropZone!, { dataTransfer: { files: [file], types: ['Files'] } });
+
+      expect(screen.queryByText(/Please drop a JSON file/)).not.toBeInTheDocument();
+    });
+
     it('renders Browse Files button', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
