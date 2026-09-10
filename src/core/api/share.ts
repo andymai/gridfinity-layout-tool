@@ -172,7 +172,9 @@ function validateFetchShareResponse(
 }
 
 function isSuccessMessage(data: unknown): data is { success: true; message: string } {
-  return typeof data === 'object' && data !== null && 'success' in data && 'message' in data;
+  if (typeof data !== 'object' || data === null) return false;
+  const record = data as Record<string, unknown>;
+  return record.success === true && typeof record.message === 'string';
 }
 
 function jsonInit(
