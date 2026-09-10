@@ -14,12 +14,6 @@ export interface GhostLineStyle {
   readonly throughSolid?: boolean;
 }
 
-/**
- * Owns the fat-line material and `LineSegments2` for a ghost outline: built
- * alongside the geometry, kept at the canvas resolution, a frame requested when
- * they appear, and both disposed when the geometry changes or the overlay
- * unmounts.
- */
 export function useGhostLineSegments(
   geometry: LineSegmentsGeometry | null,
   style: GhostLineStyle
@@ -42,12 +36,8 @@ export function useGhostLineSegments(
 
   useLineMaterialResolution(material);
 
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      material?.dispose();
-    };
-  }, [geometry, material]);
+  useEffect(() => () => geometry?.dispose(), [geometry]);
+  useEffect(() => () => material?.dispose(), [material]);
 
   useEffect(() => {
     if (geometry && material) invalidate();

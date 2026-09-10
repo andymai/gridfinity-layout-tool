@@ -7,11 +7,6 @@ export interface GhostMeshStyle {
   readonly opacity: number;
 }
 
-/**
- * Owns the translucent material for a ghost mesh: built alongside the
- * geometry, a frame requested when they appear, and both disposed when the
- * geometry changes or the overlay unmounts.
- */
 export function useGhostMeshMaterial(
   geometry: THREE.BufferGeometry | null,
   style: GhostMeshStyle
@@ -30,12 +25,8 @@ export function useGhostMeshMaterial(
     });
   }, [geometry, color, opacity]);
 
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      material?.dispose();
-    };
-  }, [geometry, material]);
+  useEffect(() => () => geometry?.dispose(), [geometry]);
+  useEffect(() => () => material?.dispose(), [material]);
 
   useEffect(() => {
     if (geometry && material) invalidate();

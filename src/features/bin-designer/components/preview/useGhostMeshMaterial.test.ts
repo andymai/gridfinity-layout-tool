@@ -30,7 +30,7 @@ describe('useGhostMeshMaterial', () => {
     expect(invalidateMock).toHaveBeenCalled();
   });
 
-  it('disposes the geometry and material together when the geometry changes or unmounts', () => {
+  it('disposes geometry and material when the geometry changes or the hook unmounts', () => {
     const first = new THREE.BufferGeometry();
     const second = new THREE.BufferGeometry();
     const firstDispose = vi.spyOn(first, 'dispose');
@@ -47,7 +47,24 @@ describe('useGhostMeshMaterial', () => {
     expect(firstMaterialDispose).toHaveBeenCalledOnce();
     expect(result.current).not.toBe(firstMaterial);
 
+    const secondMaterialDispose = vi.spyOn(result.current as THREE.MeshBasicMaterial, 'dispose');
     unmount();
     expect(secondDispose).toHaveBeenCalledOnce();
+    expect(secondMaterialDispose).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the geometry when only the style changes', () => {
+    const geometry = new THREE.BufferGeometry();
+    const dispose = vi.spyOn(geometry, 'dispose');
+    const { result, rerender } = renderHook(
+      ({ opacity }: { opacity: number }) => useGhostMeshMaterial(geometry, { ...STYLE, opacity }),
+      { initialProps: { opacity: 0.4 } }
+    );
+    const firstMaterial = result.current;
+
+    rerender({ opacity: 0.2 });
+    expect(dispose).not.toHaveBeenCalled();
+    expect(result.current).not.toBe(firstMaterial);
+    expect(result.current?.opacity).toBe(0.2);
   });
 });
