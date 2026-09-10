@@ -425,7 +425,9 @@ export function applyLidHinge(
   const bores: Shape3D[] = [];
 
   for (const run of g.runs) {
-    cutters.push(orient(scope, trimHalfSpace(scope, g, frame, run.lo, run.hi), frame.rotationDeg));
+    cutters.push(
+      orient(scope, trimHalfSpace(scope, g, frame, run.trimLo, run.trimHi), frame.rotationDeg)
+    );
     for (const cutter of slotCutters(scope, g, frame, run, 'bin')) {
       cutters.push(orient(scope, cutter, frame.rotationDeg));
     }
@@ -443,9 +445,14 @@ export function applyLidHinge(
     bores.push(...boresFor(scope, g, frame, run).map((b) => orient(scope, b, frame.rotationDeg)));
   }
 
-  // A run's trim only spans that run, so a wall segmented by a cutout keeps
-  // its shell across the gap between runs — which is correct: there is no
-  // barrel there to swing about, and the material is what the gap needs.
+  // The trim reaches `run.trimLo/trimHi`, not `run.lo/hi`: those only bound
+  // where a KNUCKLE may sit, inset from the wall's ends for corner clearance,
+  // and the bin's lip is fully present under that margin. The trim cut has to
+  // reach it too, or the untouched strip there keeps its full closed-position
+  // profile and sweeps into the bin's corner on every hinge wall, obstructed
+  // or not. Only where an obstruction (a cutout, a handle) actually removes
+  // the lip does the trim stop short, at `trimLo`/`trimHi` — the plan states
+  // that boundary, not this builder.
   //
   // The scope owns each body this REPLACES, never the one it returns: a
   // registered result would be freed the moment the scope closes, and the

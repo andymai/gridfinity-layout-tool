@@ -173,6 +173,28 @@ describe('planHingeLid — segmentation around absences', () => {
     expect(one.geometry?.runs).toHaveLength(1);
   });
 
+  it("reaches the trim to the cutout's true edge, not the rail's safety margin", async () => {
+    // `LIP_GAP_RAIL_MARGIN` widens a gap for knuckle-root clearance, but the
+    // lip is only actually absent where the cutout itself removed it. The
+    // trim must key off the raw gap bounds, not the margin-widened ones, or
+    // it stops short of the cutout's real edge — an untrimmed strip next to
+    // every cutout or handle on a hinge wall.
+    const { lipGaps } = await import('./lipGapPlan');
+    const p = withCutout('back', 'back', 30);
+    const gap = lipGaps(p).find((g) => g.side === 'back');
+    if (!gap) throw new Error('expected a lip gap on the cutout wall');
+
+    const plan = planHingeLid(p);
+    if (!plan.geometry) throw new Error('expected hinge geometry');
+    expect(plan.geometry.runs).toHaveLength(2);
+    const [left, right] = plan.geometry.runs;
+    // The run below the cutout reaches up to the cutout's own lower edge;
+    // the run above it starts at the cutout's own upper edge — not 1mm short
+    // on either side.
+    expect(left.trimHi).toBeCloseTo(gap.lo, 6);
+    expect(right.trimLo).toBeCloseTo(gap.hi, 6);
+  });
+
   it('does NOT segment around dividers or label tabs', () => {
     // Both live inboard of the inner wall face and below the rim; the barrel is
     // above the rim and hard against the outer face. Which walls an obstruction

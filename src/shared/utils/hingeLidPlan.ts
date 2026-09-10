@@ -185,6 +185,22 @@ export interface HingeKnuckle {
 export interface HingeRun {
   readonly lo: number;
   readonly hi: number;
+  /**
+   * The lid's trim cut's own extent — wider than `[lo, hi]` whenever an end
+   * is not adjacent to a real obstruction.
+   *
+   * `lo`/`hi` reserve {@link LID_HINGE_CORNER_INSET_MM} off each end for
+   * knuckle placement, but that margin does not remove the bin's lip — only an
+   * obstruction does. An end not adjacent to an obstruction still carries the
+   * bin's lip at full closed-position profile past `lo`/`hi`, so the trim
+   * must reach past it too or that untrimmed strip sweeps into the bin's
+   * rounded corner mid-swing, on every plain hinge wall regardless of
+   * obstruction. An end that IS adjacent to an obstruction keeps `lo`/`hi`
+   * exactly — the bin's lip is genuinely gone there, so there is nothing left
+   * to collide with, and the material past it is what the gap needs.
+   */
+  readonly trimLo: number;
+  readonly trimHi: number;
   readonly knuckles: readonly HingeKnuckle[];
   /**
    * Length (mm) of the filament offcut this run takes.
@@ -343,25 +359,79 @@ function layKnuckles(lo: number, hi: number): readonly HingeKnuckle[] | null {
   return out;
 }
 
+/** A knuckle-placement run paired with the wider extent its trim cut reaches. */
+interface ClearRun extends RailSegment {
+  readonly trimLo: number;
+  readonly trimHi: number;
+}
+
+/**
+ * How far past a wall's natural end the trim cutter reaches when that end is
+ * not adjacent to an obstruction. A cutter, so overshooting the lid's actual
+ * corner costs nothing — see {@link HingeRun.trimLo}.
+ */
+const HINGE_TRIM_AXIAL_REACH_MM = 400;
+
+const CLEAR_RUN_EPSILON_MM = 1e-6;
+
 /**
  * Stretches of the hinge wall no absence has taken.
  *
- * Only {@link lipGapRailBlocks} feeds this — see the module header on why
- * dividers and label tabs are deliberately absent from the list.
+ * The narrow (knuckle-placement) pass subtracts {@link lipGapRailBlocks} —
+ * each obstruction widened by `LIP_GAP_RAIL_MARGIN` — the same margin every
+ * other rail consumer keeps a knuckle root clear of a cutout's edge by. The
+ * wide (trim) pass subtracts the RAW {@link LipGap} bounds instead: widening
+ * there would tell the trim the lip is absent for that extra margin too,
+ * when it is not, and the trim would stop short of the true obstruction edge
+ * by exactly that margin — an untrimmed strip left next to every cutout or
+ * handle on a hinge wall, the same corner-collision failure this file exists
+ * to prevent, just narrower. See the module header on why dividers and label
+ * tabs are deliberately absent from both lists.
+ *
+ * Runs the obstruction subtraction twice, from two different starting
+ * intervals: once from the full span for the wide stretches where the bin's
+ * lip genuinely exists, and once from the span already narrowed by
+ * {@link LID_HINGE_CORNER_INSET_MM} for where a knuckle may sit. Every
+ * narrow segment nests inside exactly one wide one — the margin only makes
+ * the narrow pass's blocks a superset of the wide pass's, so it can still
+ * only shrink further, never cross a wide boundary — which is what lets each
+ * narrow run look up the wide extent its trim cut needs.
  */
-function clearRuns(params: BinParams, side: LidCompatibilitySide, span: number): RailSegment[] {
-  const lo = -span / 2 + LID_HINGE_CORNER_INSET_MM;
-  const hi = span / 2 - LID_HINGE_CORNER_INSET_MM;
-  if (hi <= lo) return [];
+function clearRuns(params: BinParams, side: LidCompatibilitySide, span: number): ClearRun[] {
+  const gaps = lipGaps(params).filter((g) => g.side === side);
+  const railBlocks: readonly WallSpanBlock[] = lipGapRailBlocks(gaps);
 
-  let segments: RailSegment[] = [{ lo, hi }];
-  const blocks: readonly WallSpanBlock[] = lipGapRailBlocks(lipGaps(params));
-  for (const b of blocks) {
-    if (b.side !== side) continue;
-    segments = subtractSpan(segments, b.lo, b.hi);
-    if (segments.length === 0) break;
+  let wide: RailSegment[] = [{ lo: -span / 2, hi: span / 2 }];
+  for (const g of gaps) {
+    wide = subtractSpan(wide, g.lo, g.hi);
+    if (wide.length === 0) break;
   }
-  return segments.filter((s) => s.hi - s.lo >= LID_HINGE_MIN_RUN_MM);
+
+  const narrowLo = -span / 2 + LID_HINGE_CORNER_INSET_MM;
+  const narrowHi = span / 2 - LID_HINGE_CORNER_INSET_MM;
+  if (narrowHi <= narrowLo) return [];
+  let narrow: RailSegment[] = [{ lo: narrowLo, hi: narrowHi }];
+  for (const b of railBlocks) {
+    narrow = subtractSpan(narrow, b.lo, b.hi);
+    if (narrow.length === 0) break;
+  }
+
+  return narrow
+    .filter((s) => s.hi - s.lo >= LID_HINGE_MIN_RUN_MM)
+    .map((s) => {
+      const w =
+        wide.find(
+          (c) => c.lo <= s.lo + CLEAR_RUN_EPSILON_MM && s.hi <= c.hi + CLEAR_RUN_EPSILON_MM
+        ) ?? s;
+      return {
+        lo: s.lo,
+        hi: s.hi,
+        trimLo:
+          w.lo <= -span / 2 + CLEAR_RUN_EPSILON_MM ? -span / 2 - HINGE_TRIM_AXIAL_REACH_MM : w.lo,
+        trimHi:
+          w.hi >= span / 2 - CLEAR_RUN_EPSILON_MM ? span / 2 + HINGE_TRIM_AXIAL_REACH_MM : w.hi,
+      };
+    });
 }
 
 /** Clamp a stored fit clearance into the range the panel offers. */
@@ -407,6 +477,8 @@ export function planHingeLid(params: BinParams): HingePlan {
     runs.push({
       lo: seg.lo,
       hi: seg.hi,
+      trimLo: seg.trimLo,
+      trimHi: seg.trimHi,
       knuckles,
       pinLengthMm: Math.round((seg.hi - seg.lo - 2 * PIN_END_RECESS_MM) * 10) / 10,
     });
