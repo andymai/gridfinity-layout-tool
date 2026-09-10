@@ -1,7 +1,9 @@
 src/features/bin-designer/components/DesignImportView/DesignImportView.test.tsx
   s_80593ce0b07ec4::t_310294b78c8515 231,233
+  s_80593ce0b07ec4::t_5c9d89e82bea1e 231,233
 src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.test.tsx
   s_80593ce0b07ec4::t_f986e47a407a86 83,85
+  s_80593ce0b07ec4::t_041293b2918fc1 83,85
 ---
 {
   "schema_version": "authorship/3.0.0",
