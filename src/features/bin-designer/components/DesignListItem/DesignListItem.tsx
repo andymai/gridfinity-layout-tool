@@ -1,10 +1,10 @@
 import { useTranslation, useFormatting } from '@/i18n';
-import { Checkbox, IconButton, Input, useInlineEdit } from '@/design-system';
+import { Checkbox, IconButton, Input } from '@/design-system';
 import { BinDesignThumbnail } from '../BinDesignThumbnail';
 import { DesignActions } from '../DesignActions';
 import { DesignTagChips } from '../DesignTagChips';
 import type { SavedDesign } from '../../types';
-import { designFootprint } from '../../utils/designKind';
+import { useDesignItem } from '../../hooks/useDesignItem';
 
 interface DesignListItemProps {
   design: SavedDesign;
@@ -69,35 +69,11 @@ export function DesignListItem({
     handleChange,
     handleFinish,
     handleKeyDown,
-  } = useInlineEdit({
-    initialValue: design.name,
-    onSave: onRename,
-  });
-
-  const { width, depth, height } = designFootprint(design);
-  const numCompartments = design.params ? new Set(design.params.compartments.cells).size : 0;
-
-  const activate = () => {
-    if (selectionActive) onToggleSelect?.();
-    else onSelect();
-  };
-
-  const handleClick = () => {
-    if (!isEditing) {
-      activate();
-    }
-  };
-
-  const handleItemKeyDown = (e: React.KeyboardEvent) => {
-    if (isEditing) {
-      handleKeyDown(e);
-      return;
-    }
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      activate();
-    }
-  };
+    footprint: { width, depth, height },
+    numCompartments,
+    handleClick,
+    handleItemKeyDown,
+  } = useDesignItem({ design, onSelect, onRename, selectionActive, onToggleSelect });
 
   return (
     <li

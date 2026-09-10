@@ -120,41 +120,12 @@ export class WorkerPool {
       signal?: AbortSignal;
     }
   ): Promise<SplitPreviewResult> {
-    await this.ensureWorkers();
-
-    // Cap active workers to the piece count: each worker regenerates the full
-    // solid, so spinning up more workers than pieces only adds redundant
-    // full-gen work with no piece to show for it.
-    const activeWorkers = Math.min(totalPieceCount, this.bridges.length);
-    const groups = distributeRoundRobin(totalPieceCount, activeWorkers);
-    let completed = 0;
-
-    const taskGroups = groups.map((pieceIndices, bridgeIdx) => {
-      if (pieceIndices.length === 0) return [];
-      const bridge = this.bridges[bridgeIdx];
-      return [
-        async (): Promise<SplitPreviewResult> => {
-          const result = await bridge.generateSplitPreviewRange(
-            params,
-            cutPlanesX,
-            cutPlanesY,
-            pieceIndices,
-            { splitConnectorConfig: options?.splitConnectorConfig }
-          );
-          completed += pieceIndices.length;
-          options?.onProgress?.(completed, totalPieceCount);
-          return result;
-        },
-      ];
-    });
-
-    const results = await runGrouped(taskGroups, options?.signal);
-
-    // Merge and sort pieces back to col-major grid order for consistency
-    // with the non-pool single-bridge path
-    const allPieces = results.flatMap((r) => r.pieces);
-    allPieces.sort((a, b) => a.col - b.col || a.row - b.row);
-    return { pieces: allPieces };
+    const pieces = await this.runSplitPieces(totalPieceCount, options, (bridge, pieceIndices) =>
+      bridge.generateSplitPreviewRange(params, cutPlanesX, cutPlanesY, pieceIndices, {
+        splitConnectorConfig: options?.splitConnectorConfig,
+      })
+    );
+    return { pieces };
   }
 
   /**
@@ -177,9 +148,35 @@ export class WorkerPool {
       signal?: AbortSignal;
     }
   ): Promise<SplitExportResult> {
+    const pieces = await this.runSplitPieces(totalPieceCount, options, (bridge, pieceIndices) =>
+      bridge.exportSplitBinRange(params, cutPlanesX, cutPlanesY, pieceIndices, {
+        tolerance: options?.tolerance,
+        angularTolerance: options?.angularTolerance,
+        splitConnectorConfig: options?.splitConnectorConfig,
+        format: options?.format,
+      })
+    );
+    return { pieces };
+  }
+
+  /**
+   * Fan one split job out across the pool: each bridge regenerates the full
+   * solid and produces only its assigned pieces, then the pieces come back in
+   * col-major grid order to match the single-bridge path.
+   */
+  private async runSplitPieces<
+    R extends { readonly pieces: readonly { readonly col: number; readonly row: number }[] },
+  >(
+    totalPieceCount: number,
+    options:
+      { onProgress?: (completed: number, total: number) => void; signal?: AbortSignal } | undefined,
+    generate: (bridge: GenerationBridge, pieceIndices: number[]) => Promise<R>
+  ): Promise<R['pieces'][number][]> {
     await this.ensureWorkers();
 
-    // Cap active workers to the piece count (see generateSplitPreview).
+    // Cap active workers to the piece count: each worker regenerates the full
+    // solid, so spinning up more workers than pieces only adds redundant
+    // full-gen work with no piece to show for it.
     const activeWorkers = Math.min(totalPieceCount, this.bridges.length);
     const groups = distributeRoundRobin(totalPieceCount, activeWorkers);
     let completed = 0;
@@ -188,19 +185,8 @@ export class WorkerPool {
       if (pieceIndices.length === 0) return [];
       const bridge = this.bridges[bridgeIdx];
       return [
-        async (): Promise<SplitExportResult> => {
-          const result = await bridge.exportSplitBinRange(
-            params,
-            cutPlanesX,
-            cutPlanesY,
-            pieceIndices,
-            {
-              tolerance: options?.tolerance,
-              angularTolerance: options?.angularTolerance,
-              splitConnectorConfig: options?.splitConnectorConfig,
-              format: options?.format,
-            }
-          );
+        async (): Promise<R> => {
+          const result = await generate(bridge, pieceIndices);
           completed += pieceIndices.length;
           options?.onProgress?.(completed, totalPieceCount);
           return result;
@@ -209,11 +195,9 @@ export class WorkerPool {
     });
 
     const results = await runGrouped(taskGroups, options?.signal);
-
-    // Merge and sort pieces back to col-major grid order
     const allPieces = results.flatMap((r) => r.pieces);
     allPieces.sort((a, b) => a.col - b.col || a.row - b.row);
-    return { pieces: allPieces };
+    return allPieces;
   }
   /**
    * Generate multiple baseplate pieces in parallel across pool workers.
