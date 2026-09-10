@@ -21,7 +21,6 @@ interface SampleExportButtonProps {
   formatStates?: ExportDialogProps['formatStates'];
 }
 
-/** A "print a calibration sample" button and the export dialog it opens. */
 export function SampleExportButton({
   isExporting,
   canExport,
