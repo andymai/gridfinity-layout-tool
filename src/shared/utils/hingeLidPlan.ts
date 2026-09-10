@@ -191,14 +191,13 @@ export interface HingeRun {
    *
    * `lo`/`hi` reserve {@link LID_HINGE_CORNER_INSET_MM} off each end for
    * knuckle placement, but that margin does not remove the bin's lip — only an
-   * obstruction does. Trimming the lid only to `[lo, hi]` left the corner
-   * margin's lid material un-trimmed, still carrying its full closed-position
-   * profile, which is what the lid swept into the bin's rounded corner on
-   * every plain hinge wall (#4147): nothing had to be obstructed for the bug
-   * to fire, because the untrimmed strip is there on every design. An end that
-   * IS adjacent to an obstruction keeps `lo`/`hi` exactly — the bin's lip is
-   * genuinely gone there, so there is nothing left to collide with, and the
-   * material past it is what the gap needs.
+   * obstruction does. An end not adjacent to an obstruction still carries the
+   * bin's lip at full closed-position profile past `lo`/`hi`, so the trim
+   * must reach past it too or that untrimmed strip sweeps into the bin's
+   * rounded corner mid-swing, on every plain hinge wall regardless of
+   * obstruction. An end that IS adjacent to an obstruction keeps `lo`/`hi`
+   * exactly — the bin's lip is genuinely gone there, so there is nothing left
+   * to collide with, and the material past it is what the gap needs.
    */
   readonly trimLo: number;
   readonly trimHi: number;
@@ -384,10 +383,10 @@ const CLEAR_RUN_EPSILON_MM = 1e-6;
  * wide (trim) pass subtracts the RAW {@link LipGap} bounds instead: widening
  * there would tell the trim the lip is absent for that extra margin too,
  * when it is not, and the trim would stop short of the true obstruction edge
- * by exactly that margin — an untrimmed strip next to every cutout or handle
- * on a hinge wall, the same class of bug this file exists to fix (#4147),
- * just narrower. See the module header on why dividers and label tabs are
- * deliberately absent from both lists.
+ * by exactly that margin — an untrimmed strip left next to every cutout or
+ * handle on a hinge wall, the same corner-collision failure this file exists
+ * to prevent, just narrower. See the module header on why dividers and label
+ * tabs are deliberately absent from both lists.
  *
  * Runs the obstruction subtraction twice, from two different starting
  * intervals: once from the full span for the wide stretches where the bin's

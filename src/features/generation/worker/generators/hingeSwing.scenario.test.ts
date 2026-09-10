@@ -73,14 +73,9 @@ const STOP_CONTACT_FLOOR_MM3 = 0.3;
  *
  * Tighter than {@link CONTACT_FLOOR_MM3}, on purpose: that floor has to
  * tolerate the coincident-face noise a boolean leaves AT 0°, which is a
- * closed-pose artifact, not a mid-swing one. #4147 shipped a sliver of
- * exactly that shape — the lid's corner-inset margin (no obstruction narrows
- * the run there, so nothing trimmed it) swinging into the bin's corner,
- * measured 0.0000mm³ through 1°, then 0.04-0.15mm³ from 2° through 30° on the
- * reported design and the default params here alike, comfortably under the
- * coarser floor. Sampling only once the closed-pose noise has cleared catches
- * that class without retuning the floor every other angle in the suite
- * depends on.
+ * closed-pose artifact, not a mid-swing one. Sampling only once the
+ * closed-pose noise has cleared catches a genuine corner collision without
+ * retuning the floor every other angle in the suite depends on.
  */
 const CORNER_CONTACT_FLOOR_MM3 = 0.05;
 
@@ -162,13 +157,12 @@ describe('hinged lid', () => {
   );
 
   it.each<LidRailSide>(['back', 'front', 'left', 'right'])(
-    'clears the bin corner where no obstruction narrows the hinge run, on the %s wall (#4147)',
+    'clears the bin corner where no obstruction narrows the hinge run, on the %s wall',
     async (side) => {
       // A plain box: no cutout or handle to create a genuine obstruction gap,
-      // so the run's ends sit at the corner-inset margin on both sides — the
-      // one case #4147's fix has to hold for. `CONTACT_FLOOR_MM3` alone would
-      // not have caught this: the collision peaks under 0.2mm³, two orders of
-      // magnitude below it.
+      // so the run's ends sit at the corner-inset margin on both sides.
+      // `CONTACT_FLOOR_MM3` alone would not catch a collision here: it peaks
+      // two orders of magnitude below that floor.
       const params = hingeParams({}, { side, catchMode: 'none' });
       const { bin, lid, dz } = await buildSolids(params);
       const axis = swingAxis(params, 0, 0);
@@ -270,11 +264,11 @@ describe('hinged lid', () => {
     // The hinge must add nothing to a footprint the overhang has already
     // widened — the barrel is inset from wherever the face ended up, not hung
     // off the nominal one. The lid's own cross-axis span (Y, for a back-wall
-    // hinge) is a deliberate exception: the trim now reaches the wall's
-    // corners (#4147), so the nose there — like everywhere else along the
-    // wall — sits `LID_HINGE_FACE_RELIEF_MM` inboard of the friction control,
-    // the same relief that keeps the barrel off a boolean-hostile tangent
-    // line. A shrink, never a growth, which is what this test guards against.
+    // hinge) is a deliberate exception: the trim reaches the wall's corners,
+    // so the nose there — like everywhere else along the wall — sits
+    // `LID_HINGE_FACE_RELIEF_MM` inboard of the friction control, the same
+    // relief that keeps the barrel off a boolean-hostile tangent line. A
+    // shrink, never a growth, which is what this test guards against.
     const over = { enabled: true, left: 0, right: 2, front: 0, back: 3 };
     const params = hingeParams({ overhang: over }, { side: 'back', catchMode: 'none' });
     const hinged = await meshes(params);
@@ -303,10 +297,10 @@ describe('hinged lid', () => {
     //
     // The lid's own footprint on its CROSS axis (perpendicular to the hinge
     // wall — Y for back/front, X for left/right) is the one deliberate
-    // exception: since #4147, the trim reaches the wall's corners too, so the
-    // nose sits `LID_HINGE_FACE_RELIEF_MM` inboard of spec there, same as
-    // along the rest of the wall. Every other axis, and the bin on every
-    // axis, still hits spec exactly.
+    // exception: the trim reaches the wall's corners too, so the nose sits
+    // `LID_HINGE_FACE_RELIEF_MM` inboard of spec there, same as along the
+    // rest of the wall. Every other axis, and the bin on every axis, still
+    // hits spec exactly.
     for (const side of ['back', 'front', 'left', 'right'] as const) {
       const params = hingeParams({}, { side, catchMode: 'none' });
       const hinged = await meshes(params);

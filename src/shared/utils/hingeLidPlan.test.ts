@@ -174,14 +174,11 @@ describe('planHingeLid — segmentation around absences', () => {
   });
 
   it("reaches the trim to the cutout's true edge, not the rail's safety margin", async () => {
-    // #4211 review: `clearRuns` used to subtract `lipGapRailBlocks` — each
-    // gap widened by `LIP_GAP_RAIL_MARGIN` (1mm) — for BOTH the knuckle span
-    // AND the trim span. That margin is right for a knuckle root (stay clear
-    // of the cutout edge), but told the trim the lip was absent for that
-    // extra 1mm too. The lip is not absent there — only the cutout itself
-    // removed it — so the trim stopped 1mm short of the cutout's real edge,
-    // reintroducing this file's own bug (#4147) in miniature next to every
-    // cutout or handle on a hinge wall.
+    // `LIP_GAP_RAIL_MARGIN` widens a gap for knuckle-root clearance, but the
+    // lip is only actually absent where the cutout itself removed it. The
+    // trim must key off the raw gap bounds, not the margin-widened ones, or
+    // it stops short of the cutout's real edge — an untrimmed strip next to
+    // every cutout or handle on a hinge wall.
     const { lipGaps } = await import('./lipGapPlan');
     const p = withCutout('back', 'back', 30);
     const gap = lipGaps(p).find((g) => g.side === 'back');

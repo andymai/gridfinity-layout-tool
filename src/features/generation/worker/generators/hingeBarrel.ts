@@ -450,9 +450,9 @@ export function applyLidHinge(
   // and the bin's lip is fully present under that margin. The trim cut has to
   // reach it too, or the untouched strip there keeps its full closed-position
   // profile and sweeps into the bin's corner on every hinge wall, obstructed
-  // or not (#4147). Only where an obstruction (a cutout, a handle) actually
-  // removes the lip does the trim stop short, at `trimLo`/`trimHi` — the plan
-  // states that boundary, not this builder.
+  // or not. Only where an obstruction (a cutout, a handle) actually removes
+  // the lip does the trim stop short, at `trimLo`/`trimHi` — the plan states
+  // that boundary, not this builder.
   //
   // The scope owns each body this REPLACES, never the one it returns: a
   // registered result would be freed the moment the scope closes, and the
