@@ -242,6 +242,25 @@ export function LayoutList({
     [searchScope, onDelete, announceToScreenReader, t]
   );
 
+  const layoutItemProps = (entry: LayoutEntry, index: number) => ({
+    entry,
+    isActive: entry.id === activeLayoutId,
+    isFocused: index === focusedIndex,
+    isOnlyLayout: searchScope.length <= 1,
+    onSelect: () => handleSwitch(entry.id),
+    onRename: (newName: string) => handleRename(entry.id, newName),
+    onDuplicate: () => handleDuplicate(entry.id),
+    onDelete: () => handleDelete(entry.id),
+    onCopyLink: () => onShare(entry.id),
+    onDownload: () => handleDownload(entry),
+    onMoveToFolder: onMoveToFolder ? () => onMoveToFolder(entry.id) : undefined,
+    onFocus: () => setFocusedIndex(index),
+    itemRef: (el: HTMLDivElement | null) => {
+      if (el) itemRefs.current.set(entry.id, el);
+      else itemRefs.current.delete(entry.id);
+    },
+  });
+
   return (
     <div className="h-full grid grid-rows-[auto_1fr_auto]">
       {/* Header: Search */}
@@ -344,25 +363,7 @@ export function LayoutList({
           onKeyDown={handleListKeyDown}
         >
           {sortedEntries.map((entry, index) => (
-            <LayoutGridItem
-              key={entry.id}
-              entry={entry}
-              isActive={entry.id === activeLayoutId}
-              isFocused={index === focusedIndex}
-              isOnlyLayout={searchScope.length <= 1}
-              onSelect={() => handleSwitch(entry.id)}
-              onRename={(newName) => handleRename(entry.id, newName)}
-              onDuplicate={() => handleDuplicate(entry.id)}
-              onDelete={() => handleDelete(entry.id)}
-              onCopyLink={() => onShare(entry.id)}
-              onDownload={() => handleDownload(entry)}
-              onMoveToFolder={onMoveToFolder ? () => onMoveToFolder(entry.id) : undefined}
-              onFocus={() => setFocusedIndex(index)}
-              itemRef={(el) => {
-                if (el) itemRefs.current.set(entry.id, el);
-                else itemRefs.current.delete(entry.id);
-              }}
-            />
+            <LayoutGridItem key={entry.id} {...layoutItemProps(entry, index)} />
           ))}
         </div>
       )}
@@ -378,25 +379,7 @@ export function LayoutList({
           onKeyDown={handleListKeyDown}
         >
           {sortedEntries.map((entry, index) => (
-            <LayoutListItem
-              key={entry.id}
-              entry={entry}
-              isActive={entry.id === activeLayoutId}
-              isFocused={index === focusedIndex}
-              isOnlyLayout={searchScope.length <= 1}
-              onSelect={() => handleSwitch(entry.id)}
-              onRename={(newName) => handleRename(entry.id, newName)}
-              onDuplicate={() => handleDuplicate(entry.id)}
-              onDelete={() => handleDelete(entry.id)}
-              onCopyLink={() => onShare(entry.id)}
-              onDownload={() => handleDownload(entry)}
-              onMoveToFolder={onMoveToFolder ? () => onMoveToFolder(entry.id) : undefined}
-              onFocus={() => setFocusedIndex(index)}
-              itemRef={(el) => {
-                if (el) itemRefs.current.set(entry.id, el);
-                else itemRefs.current.delete(entry.id);
-              }}
-            />
+            <LayoutListItem key={entry.id} {...layoutItemProps(entry, index)} />
           ))}
         </div>
       )}
