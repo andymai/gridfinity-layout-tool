@@ -1,0 +1,36 @@
+src/features/generation/worker/generators/lidClickRailLabelClip.test.ts
+  s_c7b201dddd6c90::t_5f92c9e7f9e728 49,55,60
+src/features/generation/worker/generators/lidClickRailSeating.scenario.test.ts
+  s_c7b201dddd6c90::t_dd4c7c50c69b90 26
+  s_c7b201dddd6c90::t_9d8e44c96f2445 37,65,90,93-94,96
+  s_c7b201dddd6c90::t_996e82b3330c1b 16-25,32-33,35,42-45,48-53,64,66-71,73-77
+  s_c7b201dddd6c90::t_9029d62fca3cae 1-15,27-31,34,36,38-41,46-47,54-63,78-89,91-92,95,97-100
+  s_c7b201dddd6c90::t_65e6a51f8f1798 72
+src/features/generation/worker/generators/lidConstants.ts
+  s_c7b201dddd6c90::t_689027008223cf 103
+  s_c7b201dddd6c90::t_f1a959b9abe039 97-102
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_c7b201dddd6c90::t_dc0ddba75ee826 92-107
+  s_c7b201dddd6c90::t_24a157b84c7d69 370-374,376
+src/features/bin-designer/types/lid.ts
+  s_c7b201dddd6c90::t_ca2f9be6e3871a 1324
+  s_c7b201dddd6c90::t_92bc46ada547e7 1309-1323
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_c7b201dddd6c90::t_c74ea13473253d 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "380c7d32e8d6a6b5511ec21a0f67deb10bae2fb3",
+  "prompts": {},
+  "sessions": {
+    "s_c7b201dddd6c90": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99577357-eb42-4c8e-a6e3-1123e78ea682",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
