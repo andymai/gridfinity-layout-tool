@@ -113,7 +113,7 @@ export function ShapeList({
   }, [nodes, collapsed]);
 
   const [activeId, setActiveId] = useState<string | null>(null);
-  const active = activeId ?? visibleRows[0]?.id ?? null;
+  const active = activeId ?? visibleRows.at(0)?.id ?? null;
 
   const focusRow = useCallback((id: string) => {
     setActiveId(id);

@@ -109,7 +109,7 @@ function buildTools(cutouts: LidCutoutInputs): Shape3D[] {
     // Text elements cut nothing; their captions are applied by
     // `applyLidTextElements` after the holes.
     if (c.shape === 'text') continue;
-    if (c.groupId === null || c.groupId === undefined) {
+    if (c.groupId === null) {
       singles.push(c);
       continue;
     }

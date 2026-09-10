@@ -81,7 +81,7 @@ export function PartProxyMesh({
     const height = partSeatHeight(node);
     const isCutter = node.type === 'cutter';
     return {
-      from: isCutter && node.type === 'cutter' ? placed.z - node.params.depth : placed.z,
+      from: node.type === 'cutter' ? placed.z - node.params.depth : placed.z,
       to: isCutter ? placed.z + 0.5 : placed.z + Math.max(height, 1),
     };
   }, [node, placed.z]);

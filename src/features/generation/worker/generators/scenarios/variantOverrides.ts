@@ -72,7 +72,7 @@ export const variantOverrides: ScenarioCase[] = [
     customAssert: (result, params) => {
       // The resolver held the pocket's center rather than its corner, so the
       // widened pocket is still centered on 33.175 and not shifted to 36.35.
-      const pocket = params.cutouts?.[0];
+      const pocket = params.cutouts.at(0);
       expect(pocket?.width).toBe(12.7);
       expect((pocket?.x ?? 0) + (pocket?.width ?? 0) / 2).toBeCloseTo(33.175, 6);
       expect(result.triangleCount).toBeGreaterThan(0);

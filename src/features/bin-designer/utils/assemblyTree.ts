@@ -42,6 +42,15 @@ export function collectAssemblyIds(parts: readonly AssemblyPartNode[]): string[]
   return parts.flatMap((n) => [n.id, ...collectAssemblyIds(n.children)]);
 }
 
+/** Map that keeps the input array when no node changed identity. */
+function mapNodes(
+  nodes: AssemblyPartNode[],
+  fn: (node: AssemblyPartNode) => AssemblyPartNode
+): AssemblyPartNode[] {
+  const next = nodes.map(fn);
+  return next.some((n, i) => n !== nodes[i]) ? next : nodes;
+}
+
 export function withAssemblyPartAdded(
   parts: AssemblyPartNode[],
   parentId: string | null,
@@ -52,20 +61,12 @@ export function withAssemblyPartAdded(
   if (parentId !== null && parentDepth === 0) return null;
   if (parentDepth + subtreeDepth(node) > MAX_ASSEMBLY_DEPTH) return null;
   if (parentId === null) return [...parts, node];
-  const attach = (nodes: AssemblyPartNode[]): AssemblyPartNode[] => {
-    let changed = false;
-    const next = nodes.map((n) => {
-      if (n.id === parentId) {
-        changed = true;
-        return { ...n, children: [...n.children, node] };
-      }
+  const attach = (nodes: AssemblyPartNode[]): AssemblyPartNode[] =>
+    mapNodes(nodes, (n) => {
+      if (n.id === parentId) return { ...n, children: [...n.children, node] };
       const children = attach(n.children);
-      if (children === n.children) return n;
-      changed = true;
-      return { ...n, children };
+      return children === n.children ? n : { ...n, children };
     });
-    return changed ? next : nodes;
-  };
   return attach(parts);
 }
 
@@ -73,27 +74,17 @@ export function withAssemblyPartRemoved(
   parts: AssemblyPartNode[],
   id: string
 ): AssemblyPartNode[] | null {
-  let removed = false;
   const strip = (nodes: AssemblyPartNode[]): AssemblyPartNode[] => {
-    const kept = nodes.filter((n) => {
-      if (n.id === id) {
-        removed = true;
-        return false;
-      }
-      return true;
-    });
+    const kept = nodes.filter((n) => n.id !== id);
     if (kept.length !== nodes.length) return kept;
-    let changed = false;
-    const next = nodes.map((n) => {
+    return mapNodes(nodes, (n) => {
       const children = strip(n.children);
-      if (children === n.children) return n;
-      changed = true;
-      return { ...n, children };
+      return children === n.children ? n : { ...n, children };
     });
-    return changed ? next : nodes;
   };
   const next = strip(parts);
-  return removed ? next : null;
+  // Every change strip makes is a removal, so an unchanged tree means no match.
+  return next === parts ? null : next;
 }
 
 export function withAssemblyPartUpdated(
@@ -101,24 +92,18 @@ export function withAssemblyPartUpdated(
   id: string,
   update: (node: AssemblyPartNode) => AssemblyPartNode
 ): AssemblyPartNode[] | null {
-  let found = false;
-  const walk = (nodes: AssemblyPartNode[]): AssemblyPartNode[] => {
-    let changed = false;
-    const next = nodes.map((n) => {
+  const hit = { found: false };
+  const walk = (nodes: AssemblyPartNode[]): AssemblyPartNode[] =>
+    mapNodes(nodes, (n) => {
       if (n.id === id) {
-        found = true;
-        changed = true;
+        hit.found = true;
         return update(n);
       }
       const children = walk(n.children);
-      if (children === n.children) return n;
-      changed = true;
-      return { ...n, children };
+      return children === n.children ? n : { ...n, children };
     });
-    return changed ? next : nodes;
-  };
   const next = walk(parts);
-  return found ? next : null;
+  return hit.found ? next : null;
 }
 
 /**

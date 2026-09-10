@@ -151,10 +151,9 @@ describe('WhatsNewModal', () => {
     const assign = vi.fn();
     // Restored in afterEach: nothing here auto-restores mocks, and a leaked
     // window.location getter would follow into every later test.
-    vi.spyOn(window, 'location', 'get').mockReturnValue({
-      ...window.location,
-      assign,
-    });
+    vi.spyOn(window, 'location', 'get').mockReturnValue(
+      Object.assign({}, window.location, { assign })
+    );
 
     rewindPastFirstFeatured();
     open();

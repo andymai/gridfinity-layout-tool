@@ -779,10 +779,11 @@ async function handleSetCoverAction(
         'photoUrl must be a photo from a live print of this design'
       );
     }
-    // Optional-chained: a record that reached here without going through
+    // Read as optional: a record that reached here without going through
     // parsePrint has no normalised array, and a missing browsing copy must
     // cost the optimisation, not 500 the promote.
-    coverPhotoThumbUrl = owner.photoThumbs?.[owner.photos.indexOf(photoUrl)] ?? '';
+    const thumbs = (owner as { photoThumbs?: readonly string[] }).photoThumbs;
+    coverPhotoThumbUrl = thumbs?.[owner.photos.indexOf(photoUrl)] ?? '';
   }
 
   await redis.hset(communityDesignKey(id), {

@@ -148,6 +148,9 @@ export function SharedLayoutImporter() {
   const hasStartedCloudFetch = useRef(false);
   // Track mounted state across effect re-runs (not just a local variable that resets on cleanup)
   const isMountedRef = useRef(true);
+  // Read behind a function boundary so checks after an await see the current
+  // value rather than the `true` the effect assigned before it.
+  const isMounted = (): boolean => isMountedRef.current;
 
   // Set mounted ref on mount/unmount (not on effect re-runs)
   useEffect(() => {
@@ -202,7 +205,7 @@ export function SharedLayoutImporter() {
 
       // Prevent state updates if component unmounted during fetch
       // Use ref instead of local variable so it survives effect re-runs
-      if (!isMountedRef.current) {
+      if (!isMounted()) {
         return;
       }
 
@@ -240,7 +243,7 @@ export function SharedLayoutImporter() {
         }
       }
 
-      if (!isMountedRef.current) {
+      if (!isMounted()) {
         return;
       }
 

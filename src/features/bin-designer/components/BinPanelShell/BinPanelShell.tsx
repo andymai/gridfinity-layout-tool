@@ -103,7 +103,7 @@ export function BinPanelShell({
   // dispatcher's DOM watch finds the target visible.
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<HelpJumpEventDetail>).detail;
+      const detail = (e as CustomEvent<HelpJumpEventDetail | undefined>).detail;
       const category = detail?.controlId ? categoryForControl(detail.controlId) : undefined;
       if (category) {
         setActiveCategory(category);

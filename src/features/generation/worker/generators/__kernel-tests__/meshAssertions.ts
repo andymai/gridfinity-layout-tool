@@ -83,14 +83,14 @@ export function hasNoNaNOrInfinity(arr: Float32Array): boolean {
 export function meshVolume({ vertices, indices }: MeshData): number {
   let volume = 0;
   const vertexIndex = (i: number): number => {
-    const value = indices[i];
+    const value = indices.at(i);
     if (value === undefined) {
       throw new Error(`meshVolume: index buffer length ${indices.length} is not a multiple of 3`);
     }
     return value;
   };
   const at = (index: number, axis: number): number => {
-    const value = vertices[index * 3 + axis];
+    const value = vertices.at(index * 3 + axis);
     if (value === undefined) {
       throw new Error(`meshVolume: vertex index ${index} is out of range`);
     }

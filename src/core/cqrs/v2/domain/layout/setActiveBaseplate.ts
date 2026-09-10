@@ -13,6 +13,7 @@ import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { defineCommand } from '../../defineCommand';
 import { computeDisplacedBins } from '../drawer/displacement';
+import type { ActiveBaseplateSetEvent } from '../../../events/drawerEvents';
 
 const payloadSchema = z.object({
   designId: z.string().min(1).nullable(),
@@ -60,12 +61,16 @@ export const setActiveBaseplate = defineCommand({
           )
         : [];
 
-    return ok({
-      value: undefined,
-      event: {
-        payload: { designId, params, previousActiveBaseplateId, previousParams, displacedBinIds },
-      },
-    });
+    // Typed as the declared event so apply() sees the same optional
+    // `displacedBinIds` that persisted events predating the field carry.
+    const eventPayload: ActiveBaseplateSetEvent['payload'] = {
+      designId,
+      params,
+      previousActiveBaseplateId,
+      previousParams,
+      displacedBinIds,
+    };
+    return ok({ value: undefined, event: { payload: eventPayload } });
   },
   apply: (event, draft) => {
     draft.activeBaseplateId = event.payload.designId;

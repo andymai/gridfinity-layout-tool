@@ -36,7 +36,7 @@ function span(units: number, cellSize: number, gap: number): number {
  * the count beside it still said three.
  */
 export function SplitPreview({ width, depth, pieces, cellSize = 16, gap = 2 }: SplitPreviewProps) {
-  const piece = pieces[0];
+  const piece = pieces.at(0);
   if (!piece || piece.width <= 0 || piece.depth <= 0) return null;
 
   // Recovered rather than passed: the pieces tile the bin exactly, so the grid

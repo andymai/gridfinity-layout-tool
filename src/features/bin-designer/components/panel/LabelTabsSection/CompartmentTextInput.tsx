@@ -107,9 +107,8 @@ export function CompartmentTextInput({
   // geometry when the user merely collapses the section or navigates away.
   useEffect(() => clearIdleTimer, [clearIdleTimer]);
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const next = e.target.value;
+  const handleValue = useCallback(
+    (next: string) => {
       setDraft(next);
       clearIdleTimer();
       idleTimerRef.current = setTimeout(() => {
@@ -118,6 +117,11 @@ export function CompartmentTextInput({
       }, COMMIT_IDLE_MS);
     },
     [clearIdleTimer, commit]
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleValue(e.target.value),
+    [handleValue]
   );
 
   const handleFocus = useCallback(() => {
@@ -194,13 +198,8 @@ export function CompartmentTextInput({
   // Normalising on the way in keeps the field showing exactly what will be
   // stored, rather than letting the store silently truncate a paste later.
   const handleAreaChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      handleChange({
-        ...e,
-        target: { ...e.target, value: normalizeTextInput(e.target.value) },
-      } as unknown as React.ChangeEvent<HTMLInputElement>);
-    },
-    [handleChange]
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => handleValue(normalizeTextInput(e.target.value)),
+    [handleValue]
   );
 
   if (multiline) {

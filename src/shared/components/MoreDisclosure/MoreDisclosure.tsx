@@ -51,7 +51,7 @@ export function MoreDisclosure({
 
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<HelpJumpEventDetail>).detail;
+      const detail = (e as CustomEvent<HelpJumpEventDetail | undefined>).detail;
       if (!detail?.controlId || !contentRef.current) return;
       const selector = `[${HELP_TARGET_ATTR}="${CSS.escape(detail.controlId)}"]`;
       const target = document.querySelector(selector);

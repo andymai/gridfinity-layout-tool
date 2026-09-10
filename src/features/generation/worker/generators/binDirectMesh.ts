@@ -316,7 +316,7 @@ export function generateBinDirect(
         cell.depthUnits * gridUnitY - CLEARANCE
       );
     },
-    { x: params.fractionalEdgeX ?? 'end', y: params.fractionalEdgeY ?? 'end' }
+    { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
   );
 
   onProgress?.('base', 0.9);

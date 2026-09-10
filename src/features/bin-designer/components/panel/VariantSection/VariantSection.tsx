@@ -50,7 +50,9 @@ export function VariantSection({
 
   const setDimension = (field: DimensionOverrideField, value: number | undefined) => {
     const dimensions = Object.fromEntries(
-      Object.entries({ ...overrides.dimensions, [field]: value }).filter(([, v]) => v !== undefined)
+      Object.entries<number | undefined>({ ...overrides.dimensions, [field]: value }).filter(
+        ([, v]) => v !== undefined
+      )
     );
     onChange({ ...overrides, dimensions });
   };
@@ -61,9 +63,10 @@ export function VariantSection({
     value: number | undefined
   ) => {
     const current = Object.fromEntries(
-      Object.entries({ ...overrides.cutouts?.[cutoutId], [field]: value }).filter(
-        ([, v]) => v !== undefined
-      )
+      Object.entries<number | undefined>({
+        ...overrides.cutouts?.[cutoutId],
+        [field]: value,
+      }).filter(([, v]) => v !== undefined)
     );
     // A cutout entry with nothing left in it is dropped, so `isEmptyOverrides`
     // and the claimed-count badge cannot report a claim that no longer exists.
@@ -75,7 +78,7 @@ export function VariantSection({
     onChange({ ...overrides, cutouts });
   };
 
-  const cutouts = parentParams.cutouts ?? [];
+  const cutouts = parentParams.cutouts;
 
   return (
     <PanelSection>

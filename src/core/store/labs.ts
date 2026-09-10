@@ -60,8 +60,9 @@ function savePreferences(prefs: LabsPreferences): Result<void, StorageError> {
  * what remains if it is ever un-graduated.
  */
 function resolveStoredEnabled(preferences: LabsPreferences, featureId: string): boolean {
-  const stored = preferences.enabledFeatures[featureId];
-  if (stored !== undefined) return stored;
+  if (Object.hasOwn(preferences.enabledFeatures, featureId)) {
+    return preferences.enabledFeatures[featureId];
+  }
   return getFeature(featureId)?.defaultEnabled ?? false;
 }
 

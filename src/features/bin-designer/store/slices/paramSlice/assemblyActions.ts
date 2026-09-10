@@ -352,15 +352,15 @@ export function createAssemblyActions(set: Set, get: Get) {
       const siblings = findAssemblySiblings(current, id);
       if (!siblings || siblings.length < 3) return;
       const sorted = [...siblings].sort((a, b) => a.transform[axis] - b.transform[axis]);
-      const first = sorted[0];
-      const last = sorted[sorted.length - 1];
+      const first = sorted.at(0);
+      const last = sorted.at(-1);
       if (!first || !last) return;
       const span = last.transform[axis] - first.transform[axis];
       const step = span / (sorted.length - 1);
       let next: AssemblyPartNode[] | null = current;
       let changed = false;
       for (let i = 1; i < sorted.length - 1; i += 1) {
-        const sibling = sorted[i];
+        const sibling = sorted.at(i);
         if (!sibling) continue;
         const target = first.transform[axis] + step * i;
         if (sibling.transform[axis] === target) continue;
@@ -477,8 +477,8 @@ export function createAssemblyActions(set: Set, get: Get) {
       const placements = top.flatMap((id) => map.get(id) ?? []);
       if (placements.length < 3) return;
       const sorted = [...placements].sort((a, b) => a[axis] - b[axis]);
-      const first = sorted[0];
-      const last = sorted[sorted.length - 1];
+      const first = sorted.at(0);
+      const last = sorted.at(-1);
       if (!first || !last) return;
       const step = (last[axis] - first[axis]) / (sorted.length - 1);
       applyWorldTargets(

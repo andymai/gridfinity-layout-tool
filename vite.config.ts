@@ -42,8 +42,9 @@ const collectEagerChunks = (): PluginOption => ({
     eagerChunks.clear();
     const walk = (fileName: string): void => {
       if (eagerChunks.has(fileName)) return;
+      if (!Object.hasOwn(bundle, fileName)) return;
       const chunk = bundle[fileName];
-      if (!chunk || chunk.type !== 'chunk') return;
+      if (chunk.type !== 'chunk') return;
       eagerChunks.add(fileName);
       for (const imported of chunk.imports) walk(imported);
     };

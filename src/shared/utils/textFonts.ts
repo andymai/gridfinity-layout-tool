@@ -23,7 +23,7 @@ export function collectTextFontFamilies(params: BinParams): Set<TextFontFamily> 
   add(params.surfaceText?.lidStyle);
   for (const style of Object.values(params.surfaceText?.wallStyles ?? {})) add(style);
   add(params.label.textStyle);
-  for (const cutout of params.cutouts ?? []) add(cutout.textStyle);
+  for (const cutout of params.cutouts) add(cutout.textStyle);
 
   // Through-cut swaps to the stencil whatever the pick, and the swap is decided
   // per style deep inside the builders. Adding it unconditionally is cheaper

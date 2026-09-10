@@ -68,15 +68,16 @@ export function applyOverrides(
   const overriddenIds = Object.keys(cutoutOverrides);
   if (overriddenIds.length === 0) return { params, orphans: [] };
 
-  const present = new Set((params.cutouts ?? []).map((c) => c.id));
+  const present = new Set(params.cutouts.map((c) => c.id));
   const orphans: OrphanedOverride[] = overriddenIds
     .filter((id) => !present.has(id))
     .map((id) => ({ cutoutId: id, override: cutoutOverrides[id] }));
 
-  const cutouts = (params.cutouts ?? []).map((cutout) => {
-    const override = cutoutOverrides[cutout.id];
-    return override ? applyCutoutOverride(cutout, override) : cutout;
-  });
+  const cutouts = params.cutouts.map((cutout) =>
+    Object.hasOwn(cutoutOverrides, cutout.id)
+      ? applyCutoutOverride(cutout, cutoutOverrides[cutout.id])
+      : cutout
+  );
 
   return { params: { ...params, cutouts }, orphans };
 }

@@ -65,7 +65,7 @@ export function classifyCommunityDescription(
   // Code points, not UTF-16 code units: `.length` counts an emoji or a
   // supplementary-plane kanji as 2, so "ab😀😃😄😁😆" would clear a floor
   // documented in characters with seven of them.
-  if ([...trimmed].length < COMMUNITY_DESCRIPTION_MIN_LENGTH) return 'too-short';
+  if (Array.from(trimmed).length < COMMUNITY_DESCRIPTION_MIN_LENGTH) return 'too-short';
   if (!/\p{L}/u.test(trimmed)) return 'low-effort';
   if (new Set(trimmed.replace(/\s+/gu, '')).size < COMMUNITY_DESCRIPTION_MIN_DISTINCT_CHARS) {
     return 'low-effort';

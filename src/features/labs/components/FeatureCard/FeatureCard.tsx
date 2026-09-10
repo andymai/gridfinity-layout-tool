@@ -50,12 +50,12 @@ export function FeatureCard({ feature, isEnabled, onToggle, children }: FeatureC
               status: isEnabled ? t('labs.enabled') : t('labs.disabled'),
             })}
           />
-        ) : isGraduated ? (
+        ) : (
           <div className="flex items-center gap-2 text-xs text-success">
             <CheckIcon className="w-4 h-4" />
             <span>{t('labs.alwaysOn')}</span>
           </div>
-        ) : null}
+        )}
       </div>
 
       {children}

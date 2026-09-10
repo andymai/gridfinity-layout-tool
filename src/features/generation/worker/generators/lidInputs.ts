@@ -394,7 +394,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const hingeDetentSide =
     hingePlan !== null && hingePlan.catchMode === 'detent' ? hingePlan.catchSide : null;
   const hingeMagnetCatch = hingePlan !== null && hingePlan.catchMode === 'magnets';
-  const retentionMagnetSide = hingeMagnetCatch && hingePlan ? hingePlan.catchSide : null;
+  const retentionMagnetSide = hingePlan?.catchMode === 'magnets' ? hingePlan.catchSide : null;
   // Magnetic attachment OR a hinged lid's magnet catch. Both put the same
   // bosses on the lid; only how many and on which wall differs, and
   // `retentionMagnetPlacementsFor` owns that.

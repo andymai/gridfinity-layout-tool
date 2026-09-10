@@ -458,7 +458,8 @@ export function usePWAUpdate(): void {
       // rejected with — including `undefined`. Reading `.message` off that
       // throws out of an unhandled rejection handler, which is the one place
       // nothing is left to catch it.
-      const message = error instanceof Error ? error.message : String(error ?? '');
+      const message =
+        error instanceof Error ? error.message : typeof error === 'string' ? error : '';
 
       // App still works without SW, but offline features won't be available
       // Only warn if it seems like a persistent issue
