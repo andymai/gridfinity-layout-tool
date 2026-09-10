@@ -1,0 +1,21 @@
+src/features/bin-designer/constants/paramMigrationWalls.ts
+  s_80593ce0b07ec4::t_1012cb07f6f137 8,49
+src/features/bin-designer/constants/paramMigrationCutouts.ts
+  s_80593ce0b07ec4::t_9a92585287aaf4 207-209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "69ae929daa202ec4076fa07afb2624f15e73fc47",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
