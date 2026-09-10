@@ -1,0 +1,39 @@
+src/shared/components/ImportDropZone/ImportDropZone.test.tsx
+  s_80593ce0b07ec4::t_8d5941505f7876 1-34
+src/shared/components/ImportDropZone/ImportDropZone.tsx
+  s_80593ce0b07ec4::t_dacce21364fe99 1-95
+src/shared/components/ImportDropZone/index.ts
+  s_80593ce0b07ec4::t_b4715b9eef24ff 1
+src/shared/components/ImportPreviewPanel/ImportPreviewPanel.test.tsx
+  s_80593ce0b07ec4::t_615115d5363d1e 1-22
+src/shared/components/ImportPreviewPanel/ImportPreviewPanel.tsx
+  s_80593ce0b07ec4::t_9428cb204b255d 1-40
+src/shared/components/ImportPreviewPanel/index.ts
+  s_80593ce0b07ec4::t_2b3741689bd0ae 1-2
+src/shared/components/ImportValidationErrors/ImportValidationErrors.test.tsx
+  s_80593ce0b07ec4::t_8563ba389bb555 1-23
+src/shared/components/ImportValidationErrors/ImportValidationErrors.tsx
+  s_80593ce0b07ec4::t_a9faccffec3d5d 1-28
+src/shared/components/ImportValidationErrors/index.ts
+  s_80593ce0b07ec4::t_92e426cb19d28a 1
+src/features/bin-designer/components/DesignImportView/DesignImportView.tsx
+  s_80593ce0b07ec4::t_a3be07d8642d2d 9,14-16,84-85,120-126,161,164-171
+src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.tsx
+  s_80593ce0b07ec4::t_83c257ab213f90 2,9-11,147-148,197,233,236-247,251-260
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3976bc2f201114ba009009fb69a511ba857c2d55",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
