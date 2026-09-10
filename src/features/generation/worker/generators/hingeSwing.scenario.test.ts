@@ -35,7 +35,12 @@ import {
 import { lidZOffset } from './__kernel-tests__/lidSeating';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { DEFAULT_LID_HINGE_CONFIG, LID_HINGE_PIN_MM } from '@/features/bin-designer/types/lid';
+import {
+  DEFAULT_LID_HINGE_CONFIG,
+  hingeOppositeSide,
+  LID_HINGE_DETENT_COVERAGE,
+  LID_HINGE_PIN_MM,
+} from '@/features/bin-designer/types/lid';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -87,6 +92,36 @@ function hingeParams(
 /** The same design with the hinge swapped for a plain friction lid. */
 function control(params: BinParams): BinParams {
   return { ...params, lid: { ...params.lid, attachment: 'friction', hinge: undefined } };
+}
+
+/**
+ * The same design with the hinge swapped for click rails matching whatever
+ * catch a `catchMode: 'detent'` hinge lid would have built: one rail, on the
+ * wall opposite the hinge, at `LID_HINGE_DETENT_COVERAGE`. A `'none'` or
+ * `'magnets'` hinge has no rail at all, so the control gets none either.
+ *
+ * The apples-to-apples control for a VOLUME comparison, where {@link control}
+ * is not: a friction control drops the catch-side rail a detent hinge relies
+ * on, rather than isolating the hinge mechanism's own contribution. Since
+ * #4207 gave that rail a real catch, the friction control's difference is no
+ * longer ~0mm³.
+ */
+function clickRailControl(params: BinParams): BinParams {
+  const hinge = params.lid.hinge ?? DEFAULT_LID_HINGE_CONFIG;
+  const catchSide = hingeOppositeSide(hinge.side);
+  const detentOnly = hinge.catchMode === 'detent';
+  return {
+    ...params,
+    lid: {
+      ...params.lid,
+      attachment: 'clickRails',
+      hinge: undefined,
+      clickRails: detentOnly
+        ? { front: false, back: false, left: false, right: false, [catchSide]: true }
+        : { front: false, back: false, left: false, right: false },
+      clickRailCoverage: LID_HINGE_DETENT_COVERAGE * 100,
+    },
+  };
 }
 
 interface Solids {
@@ -351,11 +386,13 @@ describe('hinged lid', () => {
     // cylinders fused into a flat wall. The boolean says the shared volume is
     // zero, and a boolean has no parity to get wrong.
     //
-    // Still a DELTA against the friction control, because a capping lid's
-    // lip-in-cavity fit is legitimately not zero on every footprint (CLAUDE.md
-    // gotcha #18). The question is only whether the hinge made it worse.
+    // Still a DELTA against a control, because a capping lid's lip-in-cavity
+    // fit is legitimately not zero on every footprint (CLAUDE.md gotcha #18).
+    // The control carries the SAME click rails this design does — see
+    // `clickRailControl` — so the question stays only whether the hinge made
+    // it worse, not whether working rails engage the lip at all.
     const hinged = await measure(params);
-    const plain = await measure(control(params));
+    const plain = await measure(clickRailControl(params));
     expect(hinged).toBeLessThan(plain + CONTACT_FLOOR_MM3);
   }, 600_000);
 
