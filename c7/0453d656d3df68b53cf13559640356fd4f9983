@@ -1,0 +1,49 @@
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 8,16,33-36
+src/features/bin-designer/components/Workshop/WorkshopScene.tsx
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 7,25-31
+src/features/generation/worker/generators/meshImprint.ts
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 19-20
+  s_80593ce0b07ec4::t_c810b26a24d4f5 39-46
+src/features/bin-designer/components/Workshop/WorkshopSceneBridges.test.tsx
+  s_80593ce0b07ec4::t_b0b6d9fc5479bb 1-3,5-10,18-44,46-72
+  s_80593ce0b07ec4::t_dfd67afa946df3 4,11-17,45
+src/features/generation/worker/generators/connectorShapes.ts
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 1-519
+  s_80593ce0b07ec4::t_baa251abb644c0 520-522
+  s_80593ce0b07ec4::t_2af71086d6974d 523-538
+src/features/bin-designer/components/Workshop/WorkshopSceneBridges.tsx
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 1-200
+  s_80593ce0b07ec4::t_bd58abe3a11659 201-203
+  s_80593ce0b07ec4::t_b50ca6262b7d66 204
+src/features/bin-designer/components/Workshop/WorkshopCatchPlanes.tsx
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 1-72
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 37-38,41
+  s_80593ce0b07ec4::t_69bc080c180a17 55-73
+src/features/generation/worker/generators/splitPieceExport.ts
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 1-269
+src/features/generation/worker/generators/meshImprintTools.ts
+  s_80593ce0b07ec4::t_331b0b7e9c5298 306
+  s_80593ce0b07ec4::t_7f1e7d8a7d3e02 1-305,307-414
+src/features/bin-designer/components/Workshop/WorkshopCatchPlanes.test.tsx
+  s_80593ce0b07ec4::t_b0b6d9fc5479bb 1-48
+  s_80593ce0b07ec4::t_bf56b175be1c1b 49-51
+  s_80593ce0b07ec4::t_afce9974a78ca1 52-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c70453d656d3df68b53cf13559640356fd4f9983",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
