@@ -1,0 +1,34 @@
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.test.tsx
+  s_80593ce0b07ec4::t_0e7d1ab39865cf 11,13-42
+  s_80593ce0b07ec4::t_9d824132025026 1-10,12,43
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabShapeControls.test.tsx
+  s_80593ce0b07ec4::t_2c73788dc9976f 1-42
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabShapeControls.tsx
+  s_80593ce0b07ec4::t_86b0a8ff6f3b11 1-230
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabTextStyleControls.test.tsx
+  s_80593ce0b07ec4::t_3a3abe9d355040 1-40
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabTextStyleControls.tsx
+  s_80593ce0b07ec4::t_038ad62b38e461 1-151
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_80593ce0b07ec4::t_9041d1e835ee34 13,15,30-31,370-373,379,384-387,392
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.tsx
+  s_80593ce0b07ec4::t_b921e16d1df483 1-270
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_80593ce0b07ec4::t_27758e4d5155d9 19,44,393
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9319faa663fc5e3d611249417dc8a8b4356d1d45",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
