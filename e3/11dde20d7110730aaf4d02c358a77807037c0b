@@ -1,0 +1,102 @@
+src/shared/hooks/usePWAUpdate.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 461-462
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 151-153,208,246
+src/shell/Print/SplitPreview/SplitPreview.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 39
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 104-105,133,280
+  s_80593ce0b07ec4::t_ef5a457a8c6cdf 106-109
+src/features/bin-designer/components/BinPanelShell/BinPanelShell.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 106
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 86,93
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 53-55,66-68
+  s_80593ce0b07ec4::t_d999e5a24dc6d5 69
+  s_80593ce0b07ec4::t_3205752939e50b 81
+src/features/labs/components/FeatureCard/FeatureCard.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 53,58
+api/lib/communityLowEffort.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 66
+src/shared/utils/textFonts.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 26
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 290
+src/features/generation/worker/generators/lidInputs.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 397
+src/core/store/labs.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 63-65
+api/lib/assemblyValidation.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 424
+src/shared/analytics/posthog/eventsPerson.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 91,96
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 105
+src/features/bin-designer/utils/assemblyTree.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 45-53,64-66,68,78,80,82,86-87,95-97,99,103,106
+src/features/drawer-shape/utils/penShape.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 430
+api/auth/providers/github.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 56,68-73,85,89,96
+src/shared/components/MoreDisclosure/MoreDisclosure.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 54
+src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 186
+src/features/bin-designer/components/Workshop/PartProxyMesh.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 84
+src/features/generation/worker/generators/lidCutoutBuilder.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 112
+vite.config.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 45,47
+src/features/bin-designer/components/panel/LabelTabsSection/CompartmentTextInput.tsx
+  s_80593ce0b07ec4::t_3b9a9aee23da66 110-111,122-126,201-202
+src/shared/analytics/posthog/eventsCore.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 268
+src/features/bin-designer/hooks/useVariantContext.ts
+  s_80593ce0b07ec4::t_ef5a457a8c6cdf 58-60,66,70,77
+  s_80593ce0b07ec4::t_91781e0a2e6f79 57,103
+src/core/cqrs/v2/domain/layout/setActiveBaseplate.ts
+  s_80593ce0b07ec4::t_f6e1c7398c1e9f 16,64-73
+src/shared/utils/applyOverrides.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 71,76-80
+src/core/cqrs/v2/domain/layout/setBaseplateParams.ts
+  s_80593ce0b07ec4::t_ef5a457a8c6cdf 18,130-137
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 201
+src/features/baseplate/utils/connectorKeys.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 162
+src/features/bin-designer/components/CutoutWorkspace/ShapeList/ShapeList.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 116
+src/features/bin-designer/store/slices/paramSlice/assemblyActions.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 355-356,363,480-481
+api/community/[id].ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 782,785-786
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/LinkedBinMesh.tsx
+  s_80593ce0b07ec4::t_91781e0a2e6f79 44-45,47
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 319
+src/features/generation/worker/generators/scenarios/variantOverrides.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 75
+src/shared/utils/communityLowEffort.ts
+  s_80593ce0b07ec4::t_91781e0a2e6f79 68
+src/shell/Modals/WhatsNewModal/WhatsNewModal.test.tsx
+  s_80593ce0b07ec4::t_ef5a457a8c6cdf 155
+  s_80593ce0b07ec4::t_91781e0a2e6f79 154,156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e311dde20d7110730aaf4d02c358a77807037c0b",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
