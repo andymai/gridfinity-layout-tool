@@ -7,7 +7,14 @@
 
 import type { Layout, SharePermission } from '@/core/types';
 import type { Result, ApiError, ValidationError } from '@/core/result';
-import { ok, err, apiServerError, apiNetworkError, validationImportFailed } from '@/core/result';
+import {
+  ok,
+  err,
+  isErr,
+  apiServerError,
+  apiNetworkError,
+  validationImportFailed,
+} from '@/core/result';
 import { isApiErrorResponse, mapApiErrorResponse } from './mapApiError';
 import { validateImport } from '@/shared/utils/validation';
 
@@ -164,6 +171,51 @@ function validateFetchShareResponse(
   return { valid: true, data: { ...data, linkedDesigns } };
 }
 
+function isSuccessMessage(data: unknown): data is { success: true; message: string } {
+  return typeof data === 'object' && data !== null && 'success' in data && 'message' in data;
+}
+
+function jsonInit(
+  method: string,
+  body: unknown,
+  headers: Record<string, string> = {}
+): RequestInit {
+  return {
+    method,
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify(body),
+  };
+}
+
+async function withNetworkErrors<T, E>(
+  run: () => Promise<Result<T, E>>
+): Promise<Result<T, E | ApiError>> {
+  try {
+    return await run();
+  } catch (error) {
+    return err(apiNetworkError(error));
+  }
+}
+
+async function requestJson(input: string, init?: RequestInit): Promise<Result<unknown, ApiError>> {
+  const response = await fetch(input, init);
+  const data: unknown = await response.json();
+  if (!response.ok) {
+    return err(isApiErrorResponse(data) ? mapApiErrorResponse(data) : apiServerError());
+  }
+  return ok(data);
+}
+
+async function requestShare<T>(
+  input: string,
+  init: RequestInit | undefined,
+  isValid: (data: unknown) => data is T
+): Promise<Result<T, ApiError>> {
+  const result = await requestJson(input, init);
+  if (isErr(result)) return result;
+  return isValid(result.value) ? ok(result.value) : err(apiServerError());
+}
+
 /**
  * Create a new cloud share.
  *
@@ -188,30 +240,14 @@ export async function createShare(
   permission: SharePermission = 'view',
   authorName?: string
 ): Promise<Result<ShareResponse, ApiError>> {
-  try {
+  return withNetworkErrors(async () => {
     const linkedDesigns = await collectDesignsForShare(layout);
-    const response = await fetch('/api/share', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layoutId, layout, permission, authorName, linkedDesigns }),
-    });
-
-    const data: unknown = await response.json();
-
-    if (!response.ok) {
-      if (isApiErrorResponse(data)) {
-        return err(mapApiErrorResponse(data));
-      }
-      return err(apiServerError());
-    }
-
-    if (isShareResponse(data)) {
-      return ok(data);
-    }
-    return err(apiServerError());
-  } catch (error) {
-    return err(apiNetworkError(error));
-  }
+    return requestShare(
+      '/api/share',
+      jsonInit('POST', { layoutId, layout, permission, authorName, linkedDesigns }),
+      isShareResponse
+    );
+  });
 }
 
 /**
@@ -223,30 +259,14 @@ export async function updateShare(
   layout: Layout,
   permission?: SharePermission
 ): Promise<Result<UpdateShareResponse, ApiError>> {
-  try {
+  return withNetworkErrors(async () => {
     const linkedDesigns = await collectDesignsForShare(layout);
-    const response = await fetch(`/api/share/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layout, permission, deleteToken, linkedDesigns }),
-    });
-
-    const data: unknown = await response.json();
-
-    if (!response.ok) {
-      if (isApiErrorResponse(data)) {
-        return err(mapApiErrorResponse(data));
-      }
-      return err(apiServerError());
-    }
-
-    if (isUpdateShareResponse(data)) {
-      return ok(data);
-    }
-    return err(apiServerError());
-  } catch (error) {
-    return err(apiNetworkError(error));
-  }
+    return requestShare(
+      `/api/share/${id}`,
+      jsonInit('PUT', { layout, permission, deleteToken, linkedDesigns }),
+      isUpdateShareResponse
+    );
+  });
 }
 
 /**
@@ -257,29 +277,13 @@ export async function updatePermission(
   deleteToken: string,
   permission: SharePermission
 ): Promise<Result<UpdateShareResponse, ApiError>> {
-  try {
-    const response = await fetch(`/api/share/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ permission, deleteToken }),
-    });
-
-    const data: unknown = await response.json();
-
-    if (!response.ok) {
-      if (isApiErrorResponse(data)) {
-        return err(mapApiErrorResponse(data));
-      }
-      return err(apiServerError());
-    }
-
-    if (isUpdateShareResponse(data)) {
-      return ok(data);
-    }
-    return err(apiServerError());
-  } catch (error) {
-    return err(apiNetworkError(error));
-  }
+  return withNetworkErrors(() =>
+    requestShare(
+      `/api/share/${id}`,
+      jsonInit('PUT', { permission, deleteToken }),
+      isUpdateShareResponse
+    )
+  );
 }
 
 /**
@@ -289,27 +293,12 @@ export async function updatePermission(
 export async function fetchShare(
   id: string
 ): Promise<Result<FetchShareResponse, ApiError | ValidationError>> {
-  try {
-    const response = await fetch(`/api/share/${id}`);
-    const data: unknown = await response.json();
-
-    if (!response.ok) {
-      if (isApiErrorResponse(data)) {
-        return err(mapApiErrorResponse(data));
-      }
-      return err(apiServerError());
-    }
-
-    // Validate both structure and layout contents
-    const validation = validateFetchShareResponse(data);
-    if (!validation.valid) {
-      return err(validationImportFailed(validation.errors));
-    }
-
-    return ok(validation.data);
-  } catch (error) {
-    return err(apiNetworkError(error));
-  }
+  return withNetworkErrors<FetchShareResponse, ApiError | ValidationError>(async () => {
+    const result = await requestJson(`/api/share/${id}`);
+    if (isErr(result)) return result;
+    const validation = validateFetchShareResponse(result.value);
+    return validation.valid ? ok(validation.data) : err(validationImportFailed(validation.errors));
+  });
 }
 
 /**
@@ -319,32 +308,16 @@ export async function deleteShare(
   id: string,
   deleteToken: string
 ): Promise<Result<{ success: true; message: string }, ApiError>> {
-  try {
-    const response = await fetch(`/api/share/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Delete-Token': deleteToken,
+  return withNetworkErrors(() =>
+    requestShare(
+      `/api/share/${id}`,
+      {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'X-Delete-Token': deleteToken },
       },
-    });
-
-    const data: unknown = await response.json();
-
-    if (!response.ok) {
-      if (isApiErrorResponse(data)) {
-        return err(mapApiErrorResponse(data));
-      }
-      return err(apiServerError());
-    }
-
-    // Validate success response structure
-    if (typeof data === 'object' && data !== null && 'success' in data && 'message' in data) {
-      return ok(data as { success: true; message: string });
-    }
-    return err(apiServerError());
-  } catch (error) {
-    return err(apiNetworkError(error));
-  }
+      isSuccessMessage
+    )
+  );
 }
 
 /**
@@ -354,28 +327,7 @@ export async function reportShare(
   id: string,
   reason?: string
 ): Promise<Result<{ success: true; message: string }, ApiError>> {
-  try {
-    const response = await fetch(`/api/report/${id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason }),
-    });
-
-    const data: unknown = await response.json();
-
-    if (!response.ok) {
-      if (isApiErrorResponse(data)) {
-        return err(mapApiErrorResponse(data));
-      }
-      return err(apiServerError());
-    }
-
-    // Validate success response structure
-    if (typeof data === 'object' && data !== null && 'success' in data && 'message' in data) {
-      return ok(data as { success: true; message: string });
-    }
-    return err(apiServerError());
-  } catch (error) {
-    return err(apiNetworkError(error));
-  }
+  return withNetworkErrors(() =>
+    requestShare(`/api/report/${id}`, jsonInit('POST', { reason }), isSuccessMessage)
+  );
 }

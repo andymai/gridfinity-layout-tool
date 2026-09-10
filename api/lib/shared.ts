@@ -1,3 +1,4 @@
+import { head } from '@vercel/blob';
 import { timingSafeEqual as nodeTimingSafeEqual } from 'node:crypto';
 import type { VercelResponse } from '@vercel/node';
 
@@ -214,4 +215,17 @@ export function getBaseUrl(): string {
     return `https://${process.env.VERCEL_URL}`;
   }
   return 'https://localhost:3000';
+}
+
+/**
+ * The stored share, or null when the blob is missing or unreadable. Any Blob
+ * failure reads as "not found": the handlers answer 404 rather than leak the
+ * storage error, which is the behaviour they each had inline.
+ */
+export async function loadShare(blobPath: string): Promise<ShareData | null> {
+  const blobInfo = await head(blobPath).catch(() => null);
+  if (!blobInfo) return null;
+  const response = await fetch(blobInfo.url);
+  if (!response.ok) return null;
+  return (await response.json()) as ShareData;
 }
