@@ -1,0 +1,21 @@
+src/shared/hooks/useAnchoredMenu.test.tsx
+  s_80593ce0b07ec4::t_60757c553ba5e9 94-117
+src/shared/hooks/useAnchoredMenu.ts
+  s_80593ce0b07ec4::t_aa086df7cb79f4 24,27,31-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "59482aa3d8bf9df0dbbc1229348924592979909d",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
