@@ -426,8 +426,10 @@ function clearRuns(params: BinParams, side: LidCompatibilitySide, span: number):
       return {
         lo: s.lo,
         hi: s.hi,
-        trimLo: w.lo <= -span / 2 + CLEAR_RUN_EPSILON_MM ? -HINGE_TRIM_AXIAL_REACH_MM : w.lo,
-        trimHi: w.hi >= span / 2 - CLEAR_RUN_EPSILON_MM ? HINGE_TRIM_AXIAL_REACH_MM : w.hi,
+        trimLo:
+          w.lo <= -span / 2 + CLEAR_RUN_EPSILON_MM ? -span / 2 - HINGE_TRIM_AXIAL_REACH_MM : w.lo,
+        trimHi:
+          w.hi >= span / 2 - CLEAR_RUN_EPSILON_MM ? span / 2 + HINGE_TRIM_AXIAL_REACH_MM : w.hi,
       };
     });
 }

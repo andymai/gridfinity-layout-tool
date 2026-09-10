@@ -185,8 +185,9 @@ describe('planHingeLid — segmentation around absences', () => {
     if (!gap) throw new Error('expected a lip gap on the cutout wall');
 
     const plan = planHingeLid(p);
-    expect(plan.geometry?.runs).toHaveLength(2);
-    const [left, right] = plan.geometry!.runs;
+    if (!plan.geometry) throw new Error('expected hinge geometry');
+    expect(plan.geometry.runs).toHaveLength(2);
+    const [left, right] = plan.geometry.runs;
     // The run below the cutout reaches up to the cutout's own lower edge;
     // the run above it starts at the cutout's own upper edge — not 1mm short
     // on either side.
