@@ -12,7 +12,7 @@
  */
 
 import type { CompartmentColorScope, CompartmentConfig, DividerOverride } from '../types';
-import { getCompartmentBounds, getCompartmentIds } from './compartments';
+import { getCompartmentBounds, getCompartmentIds } from './compartmentGrid';
 
 /**
  * Normalize compartment IDs to be contiguous starting from 0.

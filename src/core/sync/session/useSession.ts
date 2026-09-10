@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { useEffect } from 'react';
 import { FORCED_SIGN_OUT_EVENT } from '../apiFetch';
 import { clearAll as clearOutbox } from '../outbox';
-import { resetPullState } from '../poller';
+import { resetPullState } from '../pullState';
 import { getMe, type SessionUser } from './sessionApi';
 import { generateUUID } from '@/shared/utils/uuid';
 

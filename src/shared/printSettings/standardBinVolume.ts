@@ -34,7 +34,7 @@ import {
   scalePrintTime,
   type PrintSettings,
   DEFAULT_PRINT_SETTINGS,
-} from '@/shared/printSettings';
+} from './printSettings';
 import { GRIDFINITY_SPEC } from './gridfinityGeometry';
 
 /**

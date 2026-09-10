@@ -1,3 +1,4 @@
+import { pullState, resetPullState } from './pullState';
 import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
 import { useSessionStore } from './session/useSession';
@@ -36,34 +37,16 @@ export interface PullResult {
   indexUpdatedAt?: number;
 }
 
-let lastIndexUpdatedAt = 0;
-let inFlight: Promise<PullResult> | null = null;
-// Bumped by `resetPullState`. `run()` captures the value at call time;
-// if it changes before the run finishes, the run abandons its writes.
-// Prevents a pre-reset pull from re-installing the prior user's
-// `lastIndexUpdatedAt` after sign-out.
-let generation = 0;
-
 /**
  * Single-flight pull. Concurrent callers (timer + on-focus) await the
  * same promise so we never send two manifest fetches at once.
  */
 export async function pullNow(adapters: SyncAdapters): Promise<PullResult> {
-  if (inFlight) return inFlight;
-  inFlight = run(adapters, generation).finally(() => {
-    inFlight = null;
+  if (pullState.inFlight) return pullState.inFlight;
+  pullState.inFlight = run(adapters, pullState.generation).finally(() => {
+    pullState.inFlight = null;
   });
-  return inFlight;
-}
-
-// Reset on sign-out: without this the next user's first poll would send
-// the prior user's `lastIndexUpdatedAt` as `If-Modified-Since`. Bumping
-// `generation` also poisons any in-flight `run()` so its late completion
-// can't re-install stale state.
-export function resetPullState(): void {
-  lastIndexUpdatedAt = 0;
-  inFlight = null;
-  generation++;
+  return pullState.inFlight;
 }
 
 export function __resetForTests(): void {
@@ -80,16 +63,19 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   let manifestRes: Response;
   try {
     manifestRes = await apiFetch('/api/sync/manifest', {
-      headers: lastIndexUpdatedAt > 0 ? { 'If-Modified-Since': String(lastIndexUpdatedAt) } : {},
+      headers:
+        pullState.lastIndexUpdatedAt > 0
+          ? { 'If-Modified-Since': String(pullState.lastIndexUpdatedAt) }
+          : {},
     });
   } catch {
-    if (capturedGeneration === generation) {
+    if (capturedGeneration === pullState.generation) {
       useSyncStatusStore.getState().reportOffline('manifest fetch failed');
     }
     return { status: 'offline' };
   }
 
-  if (capturedGeneration !== generation) return { status: 'offline' };
+  if (capturedGeneration !== pullState.generation) return { status: 'offline' };
 
   if (manifestRes.status === 304) {
     useSyncStatusStore.getState().succeed();
@@ -137,9 +123,9 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   // Reset happened mid-flight — drop our results to avoid re-installing the
   // prior user's high-water mark or applying writes that belong to a session
   // that's been torn down.
-  if (capturedGeneration !== generation) return { status: 'offline' };
+  if (capturedGeneration !== pullState.generation) return { status: 'offline' };
 
-  lastIndexUpdatedAt = manifest.indexUpdatedAt;
+  pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
   useSyncStatusStore.getState().succeed();
   return { status: 'applied', applied, indexUpdatedAt: manifest.indexUpdatedAt };
 }
@@ -203,3 +189,5 @@ async function fetchEnvelope(kind: SyncKind, id: string): Promise<ItemFetchRespo
     return null;
   }
 }
+
+export { resetPullState };

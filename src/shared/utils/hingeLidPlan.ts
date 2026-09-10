@@ -142,13 +142,10 @@ import {
   resolveLidCavityExtraMm,
   resolveLidHinge,
   resolveLidPlateThickness,
-} from '@/shared/types/bin';
-import type {
-  BinParams,
-  LidCompatibilitySide,
-  LidHingeCatch,
-  LidRailSide,
-} from '@/shared/types/bin';
+} from '@/features/bin-designer/types/lid';
+import type { BinParams } from '@/features/bin-designer/types';
+import type { LidHingeCatch, LidRailSide } from '@/features/bin-designer/types/lid';
+import type { LidCompatibilitySide } from '@/features/bin-designer/utils/lidCompatibility';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { labelTabInteriorDims, subtractSpan } from '@/shared/utils/labelTabPlan';

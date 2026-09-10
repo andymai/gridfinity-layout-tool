@@ -3,6 +3,8 @@
  * Adapted from client-side validation but with stricter limits.
  */
 
+import { sanitizeString } from './sanitize.js';
+export { sanitizeString } from './sanitize.js';
 import { isNumber, isObject, inRange, validationError } from './validationUtils.js';
 import { validateDesignerShare } from './designerValidation.js';
 import { validateAssemblyEnvelope, validateAssemblyStructure } from './assemblyValidation.js';
@@ -814,17 +816,6 @@ function isValidCategory(value: unknown): value is CategoryShape {
     typeof value.id === 'string' &&
     typeof value.name === 'string' &&
     typeof value.color === 'string'
-  );
-}
-
-export function sanitizeString(str: string, maxLength: number): string {
-  // Remove null bytes and control characters, trim, truncate
-  return (
-    str
-      // eslint-disable-next-line no-control-regex -- stripping control bytes is the point
-      .replace(/[\x00-\x1F\x7F]/g, '')
-      .trim()
-      .slice(0, maxLength)
   );
 }
 

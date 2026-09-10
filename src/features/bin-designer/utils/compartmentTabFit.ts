@@ -9,7 +9,7 @@
  */
 
 import type { CompartmentConfig } from '../types';
-import { getCompartmentBounds, isRectangularCompartment } from './compartments';
+import { getCompartmentBounds, isRectangularCompartment } from './compartmentGrid';
 
 /** Which wall of a row a label tab hangs from. */
 export type TabAnchorSide = 'back' | 'front';
