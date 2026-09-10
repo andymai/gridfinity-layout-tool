@@ -1,0 +1,45 @@
+src/features/bin-designer/components/BentoWorkspace/useBentoWorkspace.ts
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 1-496
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 9,19-20,23,25-26,29-59
+src/features/grid-editor/components/Grid/IsometricPreview/useIsometricPreview.ts
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 1-323
+src/features/bin-designer/components/SlotConfigurator/useSlotConfigurator.ts
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 1-390
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 4,9,16-17,23-24,26-31,41-44,51,53-55,57-66
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.tsx
+  s_80593ce0b07ec4::t_f5177d70100f10 53
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 310
+  s_80593ce0b07ec4::t_06246af428fa1f 21,52,55-95
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.tsx
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 20,27,31,49-56,67,69-73,77-93
+src/features/community/components/CommunityGalleryTab/useCommunityGalleryTab.ts
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 44
+  s_80593ce0b07ec4::t_7ae04fd9fc4f82 1-43,45-401
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 8,12,19-20,31-44,69-83
+src/features/community/components/PublishDialog/PublishDialog.tsx
+  s_80593ce0b07ec4::t_07513f7a46a2fb 35,91,93-94,97,100-102,104-107
+  s_80593ce0b07ec4::t_8539e7d5446154 49,79-90,92,95-96,98-99,103,108
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutEditor.ts
+  s_80593ce0b07ec4::t_6cbf5ff9671b19 1-540
+src/features/community/components/PublishDialog/usePublishDialog.ts
+  s_80593ce0b07ec4::t_4d043f4cdbba19 1-157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cc2e27b88ceed975832b86e56e62ef25feb80826",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
