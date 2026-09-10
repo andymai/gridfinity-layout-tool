@@ -68,12 +68,12 @@ export default defineConfig([
         allowBoolean: true,
       }],
       '@typescript-eslint/no-confusing-void-expression': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'warn',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/no-deprecated': 'warn',
       '@typescript-eslint/no-misused-promises': ['error', {
         checksVoidReturn: { attributes: false },
       }],
-      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
       '@typescript-eslint/restrict-plus-operands': ['error', {
         allowNumberAndString: true,
       }],
@@ -85,8 +85,8 @@ export default defineConfig([
       '@typescript-eslint/no-unnecessary-type-arguments': 'warn',
       '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'warn',
       '@typescript-eslint/no-unnecessary-type-parameters': 'warn',
-      '@typescript-eslint/no-base-to-string': 'warn',
-      '@typescript-eslint/no-misused-spread': 'warn',
+      '@typescript-eslint/no-base-to-string': 'error',
+      '@typescript-eslint/no-misused-spread': 'error',
 
       // Accessibility
       'jsx-a11y/click-events-have-key-events': 'error',
