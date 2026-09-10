@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.488.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.488.1...gridfinity-layout-tool-v4.488.2) (2026-09-10)
+
+
+### Bug Fixes
+
+* **migration:** guard migrateWalls against non-object input and correct a docblock ([#4197](https://github.com/andymai/gridfinity-layout-tool/issues/4197)) ([bf6abb7](https://github.com/andymai/gridfinity-layout-tool/commit/bf6abb777cae533e78091be2a2b65a67ba67203f))
+
 ## [4.488.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.488.0...gridfinity-layout-tool-v4.488.1) (2026-09-10)
 
 
