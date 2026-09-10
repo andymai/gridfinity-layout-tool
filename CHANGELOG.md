@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.489.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.488.2...gridfinity-layout-tool-v4.489.0) (2026-09-10)
+
+
+### Features
+
+* **i18n:** add Georgian locale ([#4205](https://github.com/andymai/gridfinity-layout-tool/issues/4205)) ([2fab1e6](https://github.com/andymai/gridfinity-layout-tool/commit/2fab1e6b65dd02c2abaec052296c69f2854f050f)), closes [#4106](https://github.com/andymai/gridfinity-layout-tool/issues/4106)
+
+
+### Bug Fixes
+
+* clamp anchored overflow menus to the viewport ([#4210](https://github.com/andymai/gridfinity-layout-tool/issues/4210)) ([9ccf7f0](https://github.com/andymai/gridfinity-layout-tool/commit/9ccf7f024adcc41f901fb590393ea23d5b65e08f)), closes [#4209](https://github.com/andymai/gridfinity-layout-tool/issues/4209)
+* clear an exact-tangency sliver in the lid's stack grid ([#4217](https://github.com/andymai/gridfinity-layout-tool/issues/4217)) ([41885e4](https://github.com/andymai/gridfinity-layout-tool/commit/41885e458acc84199b738e9ccdd3ed6cb3b52d1d))
+* give the click rail a real catch under the stacking lip ([#4213](https://github.com/andymai/gridfinity-layout-tool/issues/4213)) ([f4bee3a](https://github.com/andymai/gridfinity-layout-tool/commit/f4bee3ab9171b21882ad01566f84bce18aa80e36))
+* reach the hinge trim cut to the wall's corners, not just the run ([#4211](https://github.com/andymai/gridfinity-layout-tool/issues/4211)) ([3dc39b8](https://github.com/andymai/gridfinity-layout-tool/commit/3dc39b84c6c1575a584949ab6d776159756e4b80))
+
 ## [4.488.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.488.1...gridfinity-layout-tool-v4.488.2) (2026-09-10)
 
 
