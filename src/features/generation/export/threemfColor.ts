@@ -1,5 +1,5 @@
 import type { ThreeMFColorConfig } from './threemfTypes';
-import { escapeXml } from './threemfXml';
+import { escapeXml } from './xmlEscape';
 
 export function activeColorConfig(
   c: ThreeMFColorConfig | undefined

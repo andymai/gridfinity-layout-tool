@@ -13,7 +13,7 @@ import {
   isObject,
   validationError,
 } from './validationUtils.js';
-import { sanitizeString } from './validation.js';
+import { sanitizeString } from './sanitize.js';
 import {
   CONSTRAINTS,
   SLIDE_CONSTRAINTS,

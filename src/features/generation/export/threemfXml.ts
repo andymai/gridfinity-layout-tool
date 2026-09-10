@@ -1,3 +1,4 @@
+import { escapeXml } from './xmlEscape';
 import type {
   IndexedMesh,
   ThreeMFColorConfig,
@@ -203,15 +204,6 @@ function buildObjectXml(
   }
   xml += '        </triangles>\n      </mesh>\n    </object>\n';
   return xml;
-}
-
-export function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
 }
 
 function formatFloat(n: number): string {
