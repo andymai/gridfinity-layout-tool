@@ -5,6 +5,7 @@ import { DEFAULT_LID_CONFIG, LID_CLICK_RAIL_COVERAGE_OPTIONS } from '../types/li
 import type { LidClickRails } from '../types/lid';
 import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
+import { isObj } from './paramMigrationHelpers';
 
 /** Legacy wall config where sides could be numbers instead of WallCutout objects. */
 export interface LegacyWallConfig {
@@ -45,7 +46,7 @@ export function migrateWalls(
   defaults: WallConfig,
   disabledCutout: WallCutout
 ): WallConfig {
-  if (rawWalls === undefined) return defaults;
+  if (!isObj(rawWalls)) return defaults;
   const raw = rawWalls as LegacyWallConfig;
 
   // Helper: infer enabled from non-zero values

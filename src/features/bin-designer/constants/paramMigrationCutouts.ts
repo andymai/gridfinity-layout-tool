@@ -204,8 +204,9 @@ export function migrateCutoutGroupNames(
  * declines to repeat it, and rewriting one member's pattern onto the others
  * would move cuts in a design nothing in this app produced.
  *
- * Returns the input by reference when nothing needed changing, so a design that
- * was already consistent serializes byte-identically.
+ * When nothing needed changing the result is a fresh array holding the same
+ * cutout objects, so a design that was already consistent serializes
+ * byte-identically.
  */
 export function shareGroupArrays(cutouts: readonly Cutout[]): Cutout[] {
   const byGroup = new Map<string, Cutout[]>();

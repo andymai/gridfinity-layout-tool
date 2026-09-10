@@ -64,6 +64,10 @@ describe('migrateWalls', () => {
     expect(migrate(undefined)).toBe(defaults);
   });
 
+  it.each([null, 0, 12, 'walls', true])('returns the defaults for the non-object %j', (raw) => {
+    expect(migrate(raw as unknown as Parameters<typeof migrate>[0])).toBe(defaults);
+  });
+
   it('expands legacy numeric sides into WallCutout objects', () => {
     const result = migrate({ front: 12, back: 0 });
     expect(result.front.enabled).toBe(true);
