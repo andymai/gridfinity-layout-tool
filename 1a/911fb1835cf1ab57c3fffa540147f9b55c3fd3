@@ -1,0 +1,19 @@
+.claude/hooks/result-exhaustion-check.sh
+  s_80593ce0b07ec4::t_e3328f41a5b2f0 38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1a911fb1835cf1ab57c3fffa540147f9b55c3fd3",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
