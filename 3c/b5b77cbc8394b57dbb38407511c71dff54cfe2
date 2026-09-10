@@ -1,0 +1,29 @@
+src/features/generation/worker/generators/assemblyPartTemplate.ts
+  s_80593ce0b07ec4::t_8b1c241f7f0c6b 21-22,24,26-27
+src/features/community/components/CommunityDetail/CommunityDetail.tsx
+  s_80593ce0b07ec4::t_b07b4d89635190 103,105-107
+  s_80593ce0b07ec4::t_48fbab6e76c17e 8,18,25-26,65-102,104,108-119
+src/features/community/components/CommunityDetail/useCommunityDetailDialog.ts
+  s_80593ce0b07ec4::t_48fbab6e76c17e 1-52,63-467,521
+  s_80593ce0b07ec4::t_b07b4d89635190 53-62,468-520
+eslint.config.js
+  s_80593ce0b07ec4::t_8b1c241f7f0c6b 1-11,16,22-38,71-84,88-94,98-103,105-110,140,149-159,161-168,170-260,262,315-334,337-405,430-462,472-490,498-516,590-592,618
+src/features/generation/worker/generators/assemblyPartCutter.ts
+  s_80593ce0b07ec4::t_8b1c241f7f0c6b 1-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3cb5b77cbc8394b57dbb38407511c71dff54cfe2",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
