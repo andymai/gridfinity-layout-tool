@@ -1,0 +1,42 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PathShapeMesh.tsx
+  s_80593ce0b07ec4::t_5e0e5cf7284559 9,13-14,49-57
+  s_80593ce0b07ec4::t_3dae17510d5003 58-60
+  s_80593ce0b07ec4::t_4345362b0c8d86 61-62,73-74,206
+src/features/bin-designer/components/panel/CutoutsSection/renderer/MeshFootprintMesh.tsx
+  s_80593ce0b07ec4::t_5e0e5cf7284559 10,14-15,43-56
+  s_80593ce0b07ec4::t_292563b6ebf9e9 61-62,120,133-134
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PolygonShapeMesh.tsx
+  s_80593ce0b07ec4::t_5e0e5cf7284559 9,15-16,50-58
+  s_80593ce0b07ec4::t_6c89e873e4d139 59-61
+  s_80593ce0b07ec4::t_eb971304f444e2 62-63,86-87,156,173-174
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutShapeMesh.tsx
+  s_80593ce0b07ec4::t_5e0e5cf7284559 9,26,144-152
+  s_80593ce0b07ec4::t_8e0b57db9e9210 153-155
+  s_80593ce0b07ec4::t_b198c29f2cf90c 156-157,168
+src/features/bin-designer/components/panel/CutoutsSection/renderer/TextElementMesh.tsx
+  s_80593ce0b07ec4::t_5e0e5cf7284559 12,15-16,44-54
+  s_80593ce0b07ec4::t_e568c355245549 55-57
+  s_80593ce0b07ec4::t_50bab6ad4a0cad 59,80,92-93
+src/features/bin-designer/components/panel/CutoutsSection/renderer/shapeInteraction.test.ts
+  s_80593ce0b07ec4::t_5e0e5cf7284559 1-113
+src/features/bin-designer/components/panel/CutoutsSection/renderer/shapeInteraction.ts
+  s_80593ce0b07ec4::t_5e0e5cf7284559 1-89
+  s_80593ce0b07ec4::t_c566abaf02165b 90-92
+  s_80593ce0b07ec4::t_c43e6c8816515e 93-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6666b6171b91963b3432c5e18526674c56c37c71",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
