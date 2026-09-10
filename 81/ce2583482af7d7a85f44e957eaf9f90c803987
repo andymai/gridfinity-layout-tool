@@ -1,0 +1,58 @@
+api/lib/sanitize.ts
+  s_80593ce0b07ec4::t_e058e450977f85 1-10
+src/core/sync/poller.ts
+  s_80593ce0b07ec4::t_e058e450977f85 1,45-47,49,66-69
+  s_80593ce0b07ec4::t_74565d303b4856 72,78,126,128,192-193
+src/core/sync/pullState.ts
+  s_80593ce0b07ec4::t_e058e450977f85 1-25
+api/lib/validation.ts
+  s_80593ce0b07ec4::t_e058e450977f85 6-7
+api/lib/designerValidation.ts
+  s_80593ce0b07ec4::t_e058e450977f85 16
+src/core/sync/session/useSession.ts
+  s_80593ce0b07ec4::t_e058e450977f85 5
+src/features/bin-designer/utils/compartmentGrid.test.ts
+  s_80593ce0b07ec4::t_306bb743b9a586 1-23
+  s_80593ce0b07ec4::t_45461a408ba162 24-26
+  s_80593ce0b07ec4::t_8c485ed1858ec1 27
+src/core/sync/session/useSession.test.ts
+  s_80593ce0b07ec4::t_aa0aabcfcbac7c 135
+src/features/bin-designer/utils/compartmentGrid.ts
+  s_80593ce0b07ec4::t_856fae0183196d 1-139
+src/features/bin-designer/utils/compartmentRemap.ts
+  s_80593ce0b07ec4::t_482fe6e7b63699 15
+src/features/bin-designer/utils/compartmentTabFit.ts
+  s_80593ce0b07ec4::t_41957a9c986c84 12
+src/features/bin-designer/utils/compartments.ts
+  s_80593ce0b07ec4::t_cd99ee71956605 22-37
+src/features/generation/export/threemfColor.ts
+  s_80593ce0b07ec4::t_55522d31c29b02 2
+src/features/generation/export/threemfXml.ts
+  s_80593ce0b07ec4::t_87a633519d4895 1
+src/features/generation/export/xmlEscape.ts
+  s_80593ce0b07ec4::t_5fbc9c172d3900 1-8
+src/shared/printSettings/index.ts
+  s_80593ce0b07ec4::t_66fe4dd2ec2c09 1
+src/shared/printSettings/printSettings.ts
+  s_80593ce0b07ec4::t_dfa218aab7e76e 1-112
+src/shared/printSettings/standardBinVolume.ts
+  s_80593ce0b07ec4::t_171a23dc1cfb72 37
+src/shared/utils/hingeLidPlan.ts
+  s_80593ce0b07ec4::t_05429ea6a035f6 145-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "81ce2583482af7d7a85f44e957eaf9f90c803987",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
