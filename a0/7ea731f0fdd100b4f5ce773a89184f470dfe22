@@ -1,0 +1,23 @@
+api/lib/validation.ts
+  s_80593ce0b07ec4::t_ceceb20b8293eb 11-12
+src/core/sync/poller.ts
+  s_80593ce0b07ec4::t_02a5b49e902b99 46-48,50-51
+src/core/sync/session/useSession.test.ts
+  s_80593ce0b07ec4::t_48623503eedadd 135,137-139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a07ea731f0fdd100b4f5ce773a89184f470dfe22",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
