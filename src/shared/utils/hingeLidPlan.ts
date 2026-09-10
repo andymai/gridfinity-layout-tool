@@ -378,26 +378,33 @@ const CLEAR_RUN_EPSILON_MM = 1e-6;
 /**
  * Stretches of the hinge wall no absence has taken.
  *
- * Only {@link lipGapRailBlocks} feeds this — see the module header on why
- * dividers and label tabs are deliberately absent from the list.
+ * The narrow (knuckle-placement) pass subtracts {@link lipGapRailBlocks} —
+ * each obstruction widened by `LIP_GAP_RAIL_MARGIN` — the same margin every
+ * other rail consumer keeps a knuckle root clear of a cutout's edge by. The
+ * wide (trim) pass subtracts the RAW {@link LipGap} bounds instead: widening
+ * there would tell the trim the lip is absent for that extra margin too,
+ * when it is not, and the trim would stop short of the true obstruction edge
+ * by exactly that margin — an untrimmed strip next to every cutout or handle
+ * on a hinge wall, the same class of bug this file exists to fix (#4147),
+ * just narrower. See the module header on why dividers and label tabs are
+ * deliberately absent from both lists.
  *
- * Runs the same obstruction subtraction twice, from two different starting
- * intervals: once from the full span, for the wide stretches where the bin's
+ * Runs the obstruction subtraction twice, from two different starting
+ * intervals: once from the full span for the wide stretches where the bin's
  * lip genuinely exists, and once from the span already narrowed by
- * {@link LID_HINGE_CORNER_INSET_MM}, for where a knuckle may sit. Every
- * narrow segment nests inside exactly one wide one — the narrow pass
- * subtracts the identical blocks from a tighter interval, so it can only
- * shrink further, never cross a wide boundary — which is what lets each
+ * {@link LID_HINGE_CORNER_INSET_MM} for where a knuckle may sit. Every
+ * narrow segment nests inside exactly one wide one — the margin only makes
+ * the narrow pass's blocks a superset of the wide pass's, so it can still
+ * only shrink further, never cross a wide boundary — which is what lets each
  * narrow run look up the wide extent its trim cut needs.
  */
 function clearRuns(params: BinParams, side: LidCompatibilitySide, span: number): ClearRun[] {
-  const blocks: readonly WallSpanBlock[] = lipGapRailBlocks(lipGaps(params)).filter(
-    (b) => b.side === side
-  );
+  const gaps = lipGaps(params).filter((g) => g.side === side);
+  const railBlocks: readonly WallSpanBlock[] = lipGapRailBlocks(gaps);
 
   let wide: RailSegment[] = [{ lo: -span / 2, hi: span / 2 }];
-  for (const b of blocks) {
-    wide = subtractSpan(wide, b.lo, b.hi);
+  for (const g of gaps) {
+    wide = subtractSpan(wide, g.lo, g.hi);
     if (wide.length === 0) break;
   }
 
@@ -405,7 +412,7 @@ function clearRuns(params: BinParams, side: LidCompatibilitySide, span: number):
   const narrowHi = span / 2 - LID_HINGE_CORNER_INSET_MM;
   if (narrowHi <= narrowLo) return [];
   let narrow: RailSegment[] = [{ lo: narrowLo, hi: narrowHi }];
-  for (const b of blocks) {
+  for (const b of railBlocks) {
     narrow = subtractSpan(narrow, b.lo, b.hi);
     if (narrow.length === 0) break;
   }

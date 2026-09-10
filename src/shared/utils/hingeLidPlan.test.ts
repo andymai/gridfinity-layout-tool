@@ -173,6 +173,30 @@ describe('planHingeLid — segmentation around absences', () => {
     expect(one.geometry?.runs).toHaveLength(1);
   });
 
+  it("reaches the trim to the cutout's true edge, not the rail's safety margin", async () => {
+    // #4211 review: `clearRuns` used to subtract `lipGapRailBlocks` — each
+    // gap widened by `LIP_GAP_RAIL_MARGIN` (1mm) — for BOTH the knuckle span
+    // AND the trim span. That margin is right for a knuckle root (stay clear
+    // of the cutout edge), but told the trim the lip was absent for that
+    // extra 1mm too. The lip is not absent there — only the cutout itself
+    // removed it — so the trim stopped 1mm short of the cutout's real edge,
+    // reintroducing this file's own bug (#4147) in miniature next to every
+    // cutout or handle on a hinge wall.
+    const { lipGaps } = await import('./lipGapPlan');
+    const p = withCutout('back', 'back', 30);
+    const gap = lipGaps(p).find((g) => g.side === 'back');
+    if (!gap) throw new Error('expected a lip gap on the cutout wall');
+
+    const plan = planHingeLid(p);
+    expect(plan.geometry?.runs).toHaveLength(2);
+    const [left, right] = plan.geometry!.runs;
+    // The run below the cutout reaches up to the cutout's own lower edge;
+    // the run above it starts at the cutout's own upper edge — not 1mm short
+    // on either side.
+    expect(left.trimHi).toBeCloseTo(gap.lo, 6);
+    expect(right.trimLo).toBeCloseTo(gap.hi, 6);
+  });
+
   it('does NOT segment around dividers or label tabs', () => {
     // Both live inboard of the inner wall face and below the rim; the barrel is
     // above the rim and hard against the outer face. Which walls an obstruction
