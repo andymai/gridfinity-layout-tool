@@ -53,7 +53,7 @@ describe('renumberCompartments', () => {
   } as unknown as Parameters<typeof renumberCompartments>[0];
 
   it('normalises ids and carries every id-keyed array through the same remap', () => {
-    const { config, remap } = renumberCompartments(base, [...base.cells]);
+    const { config, remap } = renumberCompartments(base, [...base.cells], base.backgroundIds);
     expect(config.cells).toEqual([0, 0, 1, 1]);
     expect(config.compartmentTexts).toEqual(['top', 'bottom']);
     expect(config.backgroundIds).toEqual([1]);
@@ -64,5 +64,10 @@ describe('renumberCompartments', () => {
   it('remaps a caller-supplied background set instead of the config own', () => {
     const { config } = renumberCompartments(base, [...base.cells], [3]);
     expect(config.backgroundIds).toEqual([0]);
+  });
+
+  it('leaves the background field untouched when the caller passes undefined', () => {
+    const { config } = renumberCompartments(base, [...base.cells], undefined);
+    expect(config.backgroundIds).toBe(base.backgroundIds);
   });
 });

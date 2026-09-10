@@ -344,13 +344,14 @@ export function remapDividerOverrides(
 /**
  * Renumber `cells` contiguously and carry every id-keyed parallel array across.
  * Every mutation that rebuilds `cells` ends here, so a new compartment-keyed
- * field is added in exactly one place. `backgroundIds` defaults to the
- * config's own; a caller that recomputed them passes the fresh set.
+ * field is added in exactly one place. `backgroundIds` is explicit rather than
+ * defaulted: a caller passes the config's own set, a freshly recomputed set, or
+ * `undefined` to leave the field exactly as it is.
  */
 export function renumberCompartments(
   config: CompartmentConfig,
   newCells: number[],
-  backgroundIds: readonly number[] | undefined = config.backgroundIds
+  backgroundIds: readonly number[] | undefined
 ): { config: CompartmentConfig; remap: Map<number, number> } {
   const { cells, remap } = normalizeIdsWithRemap(newCells);
   return {

@@ -727,7 +727,7 @@ export function mergeCells(
   // selection being connected says nothing about what it leaves behind.
   if (!allCompartmentsContiguous(config.cols, newCells)) return null;
 
-  return renumberCompartments(config, newCells).config;
+  return renumberCompartments(config, newCells, config.backgroundIds).config;
 }
 
 /**
@@ -753,7 +753,7 @@ export function splitCompartment(
     }
   }
 
-  return renumberCompartments(config, newCells).config;
+  return renumberCompartments(config, newCells, config.backgroundIds).config;
 }
 
 /**
