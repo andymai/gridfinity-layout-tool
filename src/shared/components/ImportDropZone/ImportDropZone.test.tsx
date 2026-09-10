@@ -31,4 +31,22 @@ describe('ImportDropZone', () => {
     expect(input.value).toBe('');
     expect(input).toHaveAttribute('accept', '.json');
   });
+
+  it('keeps the drag state while moving between the zone and its children', () => {
+    render(<ImportDropZone accept=".json" prompt="Drop it" onFile={vi.fn()} />);
+    const prompt = screen.getByText('Drop it');
+    const zone = prompt.parentElement as HTMLElement;
+
+    // jsdom has no DragEvent; a MouseEvent carries relatedTarget and React
+    // dispatches it by name.
+    const leave = (relatedTarget: Element) =>
+      fireEvent(zone, new MouseEvent('dragleave', { bubbles: true, relatedTarget }));
+
+    fireEvent.dragOver(zone);
+    leave(screen.getByText('layouts.browseFiles'));
+    expect(screen.getByText('layouts.dropFileHere')).toBeInTheDocument();
+
+    leave(document.body);
+    expect(screen.getByText('Drop it')).toBeInTheDocument();
+  });
 });
