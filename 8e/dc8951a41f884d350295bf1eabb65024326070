@@ -1,0 +1,21 @@
+src/shared/utils/hingeLidPlan.test.ts
+  s_c7b201dddd6c90::t_c54a8fd09ee3b8 176-199
+src/shared/utils/hingeLidPlan.ts
+  s_c7b201dddd6c90::t_1cd85eea602a10 381-393,395-398,402-403,406-407,415
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8edc8951a41f884d350295bf1eabb65024326070",
+  "prompts": {},
+  "sessions": {
+    "s_c7b201dddd6c90": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99577357-eb42-4c8e-a6e3-1123e78ea682",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
