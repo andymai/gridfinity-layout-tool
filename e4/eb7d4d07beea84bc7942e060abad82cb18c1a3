@@ -1,0 +1,45 @@
+.claude/skills/auth-and-sync/SKILL.md
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 26
+src/shell/registrations/LinkedRiseRegistration.test.tsx
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 1-80
+src/App.lazyComponents.ts
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 6
+src/shared/hooks/README.hooks.md
+  s_80593ce0b07ec4::t_9c09f4a083cbbf 70-72
+src/shell/keyboard/index.ts
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 1
+src/App.tsx
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 28,68-69,91-92
+src/shell/keyboard/useKeyboard.test.ts
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 1-1538
+src/shell/Modals/SettingsModal/tabs/AccountTab/AccountTab.tsx
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 8
+src/shell/hooks/useCommunityLikeReturn.ts
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 1-103
+src/shell/keyboard/useKeyboard.ts
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 1-249
+src/shell/hooks/useCommunityDigestCheck.ts
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 1-95
+src/shell/registrations/DesignStoreRegistration.test.tsx
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 1-31
+src/shell/README.md
+  s_80593ce0b07ec4::t_4b8801c0afcfc7 41-44
+.claude/hooks/result-exhaustion-check.sh
+  s_80593ce0b07ec4::t_d04f90228d4202 34-40,50,69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e4eb7d4d07beea84bc7942e060abad82cb18c1a3",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
