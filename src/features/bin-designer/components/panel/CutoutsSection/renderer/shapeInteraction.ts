@@ -12,7 +12,6 @@ export interface ShapeColors {
   readonly strokeHover: THREE.Color;
 }
 
-/** Fill and outline shades of one shape, all darkened from the bin's surface colour. */
 export function useShapeColors(binColor: string): ShapeColors {
   return useMemo(() => {
     const base = new THREE.Color(binColor);
@@ -50,7 +49,6 @@ interface ShapePointerOptions {
   readonly onDoubleClick?: (id: string) => void;
 }
 
-/** Selection, drag start, double-click and hover for one shape on the board. */
 export function useShapePointerHandlers({
   cutoutId,
   isSelected,

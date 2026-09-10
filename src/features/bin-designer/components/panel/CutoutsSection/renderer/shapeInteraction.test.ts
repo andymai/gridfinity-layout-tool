@@ -32,8 +32,8 @@ describe('useShapeColors', () => {
 });
 
 describe('pickStrokeColor', () => {
-  const colors = renderHook(() => useShapeColors('#808080')).result.current;
   it('prefers selected, then hover, then grouped, then default', () => {
+    const colors = renderHook(() => useShapeColors('#808080')).result.current;
     expect(pickStrokeColor({ isSelected: true, isHovered: true, isGrouped: true }, colors)).toBe(
       STROKE_SELECTED
     );
