@@ -9,14 +9,12 @@
  * impossible to find again.
  */
 
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import * as THREE from 'three';
-import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
-import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { RENDER_ORDER } from './constants';
+import { useShapePointerHandlers, useShapeColors, pickStrokeColor } from './shapeInteraction';
 import { shapePosZ, shapeRenderOrder } from './zLayer';
-
-const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
 interface TextElementMeshProps {
   readonly cutout: Cutout;
@@ -43,16 +41,22 @@ export const TextElementMesh = memo(function TextElementMesh({
   onDragStart,
   disablePointerEvents,
 }: TextElementMeshProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const {
+    isHovered,
+    handlePointerDown,
+    handleDoubleClick,
+    handlePointerEnter,
+    handlePointerLeave,
+  } = useShapePointerHandlers({
+    cutoutId: cutout.id,
+    isSelected,
+    disablePointerEvents,
+    onSelect,
+    onDragStart,
+    onDoubleClick,
+  });
 
-  const { strokeDefault, strokeGrouped, strokeHover } = useMemo(() => {
-    const base = new THREE.Color(binColor);
-    return {
-      strokeDefault: base.clone().multiplyScalar(0.5),
-      strokeGrouped: base.clone().multiplyScalar(0.35),
-      strokeHover: base.clone().multiplyScalar(0.4),
-    };
-  }, [binColor]);
+  const shapeColors = useShapeColors(binColor);
 
   const effective = previewOverrides ? { ...cutout, ...previewOverrides } : cutout;
   const groupX = effective.x + effective.width / 2;
@@ -73,30 +77,7 @@ export const TextElementMesh = memo(function TextElementMesh({
 
   const isEmpty = effective.label.trim() === '';
   const showFrame = isSelected || isHovered || isGrouped || isEmpty;
-  const strokeColor = isSelected
-    ? STROKE_SELECTED
-    : isHovered
-      ? strokeHover
-      : isGrouped
-        ? strokeGrouped
-        : strokeDefault;
-
-  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    if (e.nativeEvent.button !== 0) return;
-    if (disablePointerEvents) return;
-    e.stopPropagation();
-    const additive = e.nativeEvent.shiftKey;
-    onSelect(cutout.id, additive);
-    if (onDragStart && !additive) {
-      onDragStart(cutout.id, e.point.x, e.point.y, e.nativeEvent.altKey);
-    }
-  };
-
-  const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
-    if (disablePointerEvents) return;
-    e.stopPropagation();
-    onDoubleClick?.(cutout.id);
-  };
+  const strokeColor = pickStrokeColor({ isSelected, isHovered, isGrouped }, shapeColors);
 
   return (
     <group
@@ -108,10 +89,8 @@ export const TextElementMesh = memo(function TextElementMesh({
         renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
         onPointerDown={handlePointerDown}
         onDoubleClick={handleDoubleClick}
-        onPointerEnter={() => {
-          if (!isSelected) setIsHovered(true);
-        }}
-        onPointerLeave={() => setIsHovered(false)}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       >
         <planeGeometry args={[effective.width, effective.depth]} />
         <meshBasicMaterial transparent opacity={0} depthTest={false} depthWrite={false} />

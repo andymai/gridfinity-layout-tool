@@ -7,15 +7,13 @@
  * itself is derived from the mesh and never point-edited or resized.
  */
 
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { RENDER_ORDER } from './constants';
+import { useShapePointerHandlers, useShapeColors, pickStrokeColor } from './shapeInteraction';
 import { shapePosZ, shapeRenderOrder } from './zLayer';
-
-const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
 interface MeshFootprintMeshProps {
   readonly cutout: Cutout;
@@ -42,20 +40,26 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
   onDragStart,
   disablePointerEvents,
 }: MeshFootprintMeshProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const {
+    isHovered,
+    handlePointerDown,
+    handleDoubleClick,
+    handlePointerEnter,
+    handlePointerLeave,
+  } = useShapePointerHandlers({
+    cutoutId: cutout.id,
+    isSelected,
+    disablePointerEvents,
+    onSelect,
+    onDragStart,
+    onDoubleClick,
+  });
   const asset = useDesignerStore((s) =>
     cutout.meshId !== undefined ? s.params.meshAssets?.[cutout.meshId] : undefined
   );
 
-  const { cutFillColor, strokeDefault, strokeGrouped, strokeHover } = useMemo(() => {
-    const base = new THREE.Color(binColor);
-    return {
-      cutFillColor: base.clone().multiplyScalar(0.7),
-      strokeDefault: base.clone().multiplyScalar(0.5),
-      strokeGrouped: base.clone().multiplyScalar(0.35),
-      strokeHover: base.clone().multiplyScalar(0.4),
-    };
-  }, [binColor]);
+  const shapeColors = useShapeColors(binColor);
+  const { cutFillColor } = shapeColors;
 
   // Fill: one triangulated ShapeGeometry per outline ring, in a local frame
   // centered on the footprint (rings live in asset space [0..w]×[0..d]).
@@ -113,30 +117,7 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
   // smaller-shape-wins tiebreaker instead of pinning to its layer floor.
   const area = effective.width * effective.depth;
 
-  const strokeColor = isSelected
-    ? STROKE_SELECTED
-    : isHovered
-      ? strokeHover
-      : isGrouped
-        ? strokeGrouped
-        : strokeDefault;
-
-  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    if (e.nativeEvent.button !== 0) return;
-    if (disablePointerEvents) return;
-    e.stopPropagation();
-    const additive = e.nativeEvent.shiftKey;
-    onSelect(cutout.id, additive);
-    if (onDragStart && !additive) {
-      onDragStart(cutout.id, e.point.x, e.point.y, e.nativeEvent.altKey);
-    }
-  };
-
-  const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
-    if (disablePointerEvents) return;
-    e.stopPropagation();
-    onDoubleClick?.(cutout.id);
-  };
+  const strokeColor = pickStrokeColor({ isSelected, isHovered, isGrouped }, shapeColors);
 
   return (
     <group
@@ -149,10 +130,8 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
         renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
         onPointerDown={handlePointerDown}
         onDoubleClick={handleDoubleClick}
-        onPointerEnter={() => {
-          if (!isSelected) setIsHovered(true);
-        }}
-        onPointerLeave={() => setIsHovered(false)}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       >
         <meshBasicMaterial
           color={cutFillColor}

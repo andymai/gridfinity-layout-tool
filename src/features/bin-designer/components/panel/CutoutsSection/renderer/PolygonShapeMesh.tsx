@@ -6,14 +6,14 @@
  * paths via the shared `outlineShapeGeometry` helpers.
  */
 
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { DEFAULT_POLYGON_SIDES } from '@/features/bin-designer/types';
 import { regularPolygonPoints, clampPolygonSides } from '@/shared/utils/cutoutPolygon';
 import { triangulatePath } from '../pathGeometry';
-import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { RENDER_ORDER } from './constants';
+import { useShapePointerHandlers, useShapeColors, pickStrokeColor } from './shapeInteraction';
 import { shapePosZ, shapeRenderOrder } from './zLayer';
 import {
   outlineVertexShader,
@@ -21,8 +21,6 @@ import {
   bakeDistanceField,
   MIN_POLYLINE_POINTS,
 } from './outlineShapeGeometry';
-
-const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
 interface PolygonShapeMeshProps {
   readonly cutout: Cutout;
@@ -49,7 +47,20 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
   onDragStart,
   disablePointerEvents,
 }: PolygonShapeMeshProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const {
+    isHovered,
+    handlePointerDown,
+    handleDoubleClick,
+    handlePointerEnter,
+    handlePointerLeave,
+  } = useShapePointerHandlers({
+    cutoutId: cutout.id,
+    isSelected,
+    disablePointerEvents,
+    onSelect,
+    onDragStart,
+    onDoubleClick,
+  });
 
   const effective = useMemo(
     () => (previewOverrides ? { ...cutout, ...previewOverrides } : cutout),
@@ -72,15 +83,8 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
   const centerY = effective.y + effective.depth / 2;
   const area = effective.width * effective.depth;
 
-  const { cutFillColor, strokeDefault, strokeGrouped, strokeHover } = useMemo(() => {
-    const base = new THREE.Color(binColor);
-    return {
-      cutFillColor: base.clone().multiplyScalar(0.7),
-      strokeDefault: base.clone().multiplyScalar(0.5),
-      strokeGrouped: base.clone().multiplyScalar(0.35),
-      strokeHover: base.clone().multiplyScalar(0.4),
-    };
-  }, [binColor]);
+  const shapeColors = useShapeColors(binColor);
+  const { cutFillColor } = shapeColors;
 
   const fillGeometry = useMemo(() => {
     if (points.length < MIN_POLYLINE_POINTS) return null;
@@ -149,32 +153,9 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
 
   if (points.length < MIN_POLYLINE_POINTS) return null;
 
-  const strokeColor = isSelected
-    ? STROKE_SELECTED
-    : isHovered
-      ? strokeHover
-      : isGrouped
-        ? strokeGrouped
-        : strokeDefault;
+  const strokeColor = pickStrokeColor({ isSelected, isHovered, isGrouped }, shapeColors);
   const rotationZ = -(effective.rotation * Math.PI) / 180;
   const posZ = shapePosZ(cutout.zIndex, area);
-
-  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    if (e.nativeEvent.button !== 0) return;
-    if (disablePointerEvents) return;
-    e.stopPropagation();
-    const additive = e.nativeEvent.shiftKey;
-    onSelect(cutout.id, additive);
-    if (onDragStart && !additive) {
-      onDragStart(cutout.id, e.point.x, e.point.y, e.nativeEvent.altKey);
-    }
-  };
-
-  const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
-    if (disablePointerEvents) return;
-    e.stopPropagation();
-    onDoubleClick?.(cutout.id);
-  };
 
   return (
     <group
@@ -189,8 +170,8 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
           renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
           onPointerDown={handlePointerDown}
           onDoubleClick={handleDoubleClick}
-          onPointerEnter={() => !isSelected && setIsHovered(true)}
-          onPointerLeave={() => setIsHovered(false)}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
         />
       )}
       {strokeGeometry && (

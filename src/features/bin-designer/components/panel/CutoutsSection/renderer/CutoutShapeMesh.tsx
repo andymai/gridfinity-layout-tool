@@ -6,10 +6,9 @@
  * coordinates (mm, Y-up).
  */
 
-import { memo, useMemo, useRef, useEffect, useState } from 'react';
+import { memo, useMemo, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
-import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import {
   sdfVertexShader,
@@ -19,20 +18,18 @@ import {
 } from './shapeGeometry';
 import {
   RENDER_ORDER,
-  ACCENT_COLOR_HEX,
   STROKE_WIDTH_SELECTED_PX,
   STROKE_WIDTH_DEFAULT_PX,
   STROKE_WIDTH_HOVER_PX,
   STROKE_WIDTH_GROUPED_PX,
 } from './constants';
+import { useShapePointerHandlers, useShapeColors, STROKE_SELECTED } from './shapeInteraction';
 import { shapePosZ, shapeRenderOrder } from './zLayer';
 import { PathShapeMesh } from './PathShapeMesh';
 import { PolygonShapeMesh } from './PolygonShapeMesh';
 import { MeshFootprintMesh } from './MeshFootprintMesh';
 import { TextElementMesh } from './TextElementMesh';
 import { slotCornerRadius } from '@/shared/utils/cutoutPolygon';
-
-const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
 /** Render mode for grouped cutout visual merge via stencil buffer */
 export type ShapeRenderMode = 'normal' | 'fill' | 'stroke';
@@ -144,7 +141,20 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
 }: CutoutShapeMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const [isHovered, setIsHovered] = useState(false);
+  const {
+    isHovered,
+    handlePointerDown,
+    handleDoubleClick,
+    handlePointerEnter,
+    handlePointerLeave,
+  } = useShapePointerHandlers({
+    cutoutId: cutout.id,
+    isSelected,
+    disablePointerEvents,
+    onSelect,
+    onDragStart,
+    onDoubleClick,
+  });
   const { camera } = useThree();
   const zoom = camera.zoom;
 
@@ -155,14 +165,7 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   );
 
   // Cutout colors derived from the bin surface color
-  const { cutFillColor, strokeDefault, strokeHover } = useMemo(() => {
-    const base = new THREE.Color(binColor);
-    return {
-      cutFillColor: base.clone().multiplyScalar(0.7), // darkened — bottom of cut
-      strokeDefault: base.clone().multiplyScalar(0.5), // outline for contrast
-      strokeHover: base.clone().multiplyScalar(0.4), // darker on hover
-    };
-  }, [binColor]);
+  const { cutFillColor, strokeDefault, strokeHover } = useShapeColors(binColor);
 
   // Visual styling — screen-space stroke width converted to world mm
   const fillOpacity = isDragging ? 0.85 : 0.95; // Opaque — these are physical cuts
@@ -278,34 +281,6 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   // Rotation in radians around Z axis
   // SVG used clockwise degrees; Three.js uses counter-clockwise radians
   const rotationZ = -(effective.rotation * Math.PI) / 180;
-
-  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    if (e.nativeEvent.button !== 0) return; // Only left-click
-    if (disablePointerEvents) return; // Let click fall through to background
-    e.stopPropagation();
-    const additive = e.nativeEvent.shiftKey;
-    onSelect(cutout.id, additive);
-
-    if (onDragStart && !additive) {
-      onDragStart(cutout.id, e.point.x, e.point.y, e.nativeEvent.altKey);
-    }
-  };
-
-  const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
-    if (disablePointerEvents) return;
-    e.stopPropagation();
-    onDoubleClick?.(cutout.id);
-  };
-
-  const handlePointerEnter = () => {
-    if (!isSelected) {
-      setIsHovered(true);
-    }
-  };
-
-  const handlePointerLeave = () => {
-    setIsHovered(false);
-  };
 
   const renderBand =
     renderMode === 'fill'
