@@ -146,7 +146,7 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
 
   const handleFile = useCallback(
     (file: File) => {
-      if (!file.name.endsWith('.json')) {
+      if (!file.name.toLowerCase().endsWith('.json')) {
         setErrors([t('binDesigner.designJson.error.mustBeJsonFile')]);
         return;
       }

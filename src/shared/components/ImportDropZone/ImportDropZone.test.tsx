@@ -31,4 +31,17 @@ describe('ImportDropZone', () => {
     expect(input.value).toBe('');
     expect(input).toHaveAttribute('accept', '.json');
   });
+
+  it('keeps the drag state while moving between the zone and its children', () => {
+    render(<ImportDropZone accept=".json" prompt="Drop it" onFile={vi.fn()} />);
+    const prompt = screen.getByText('Drop it');
+    const zone = prompt.parentElement as HTMLElement;
+
+    fireEvent.dragOver(zone);
+    fireEvent.dragLeave(zone, { relatedTarget: screen.getByText('layouts.browseFiles') });
+    expect(screen.getByText('layouts.dropFileHere')).toBeInTheDocument();
+
+    fireEvent.dragLeave(zone, { relatedTarget: document.body });
+    expect(screen.getByText('Drop it')).toBeInTheDocument();
+  });
 });
