@@ -104,6 +104,19 @@ export async function readSession(redis: Redis, token: string): Promise<SessionR
   return parsed;
 }
 
+/** The session behind the request's cookie, or null when there is none or Redis is unavailable. */
+export async function readOptionalSession(req: VercelRequest): Promise<SessionRecord | null> {
+  const token = readSessionCookie(req);
+  if (!token) return null;
+  const redis = getRedis();
+  if (!redis) return null;
+  try {
+    return await readSession(redis, token);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Delete a session token. Also removes it from the per-user set.
  */
