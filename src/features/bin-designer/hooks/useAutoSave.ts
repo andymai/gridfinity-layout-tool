@@ -101,6 +101,12 @@ export function useAutoSave(): void {
   // updates once the write resolves, so without this the unmount flush would
   // re-issue an identical write for a save already in flight.
   const inFlight = useRef<{ params: BinParams; config: ExportFileNameConfig } | null>(null);
+  // Read behind a function boundary so a check after an await sees the slot as
+  // it is now, not as it was narrowed to at the assignment above the await.
+  const isInFlight = (params: BinParams, config: ExportFileNameConfig): boolean => {
+    const current = inFlight.current;
+    return current !== null && current.params === params && current.config === config;
+  };
 
   // The write itself plus the bookkeeping every consumer downstream depends on
   // (registry entry for the planner palette, `design-saved` for linked bins).
@@ -124,10 +130,7 @@ export function useAutoSave(): void {
         );
       } finally {
         // Only clear if a newer persist hasn't already claimed the slot.
-        if (
-          inFlight.current?.params === paramsToSave &&
-          inFlight.current?.config === configToSave
-        ) {
+        if (isInFlight(paramsToSave, configToSave)) {
           inFlight.current = null;
         }
       }
@@ -274,10 +277,7 @@ export function useAutoSave(): void {
       }
       // A save already writing exactly this will land on its own; an in-flight
       // save for older params still needs the flush.
-      if (
-        inFlight.current?.params === state.params &&
-        inFlight.current?.config === state.exportFileNameConfig
-      ) {
+      if (isInFlight(state.params, state.exportFileNameConfig)) {
         return;
       }
       void persist(state.params, state.exportFileNameConfig, id, undefined);

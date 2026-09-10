@@ -15,6 +15,7 @@ import { effectiveGridUnitMmY } from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { defineCommand } from '../../defineCommand';
 import { computeDisplacedBins } from '../drawer/displacement';
+import type { BaseplateParamsSetEvent } from '../../../events/drawerEvents';
 
 /**
  * Chunk sizes for one axis of a custom split plan. A plate caps at
@@ -126,10 +127,14 @@ export const setBaseplateParams = defineCommand({
           )
         : [];
 
-    return ok({
-      value: undefined,
-      event: { payload: { params, previousParams, displacedBinIds } },
-    });
+    // Typed as the declared event so apply() sees the same optional
+    // `displacedBinIds` that persisted events predating the field carry.
+    const eventPayload: BaseplateParamsSetEvent['payload'] = {
+      params,
+      previousParams,
+      displacedBinIds,
+    };
+    return ok({ value: undefined, event: { payload: eventPayload } });
   },
   apply: (event, draft) => {
     draft.baseplateParams = event.payload.params;

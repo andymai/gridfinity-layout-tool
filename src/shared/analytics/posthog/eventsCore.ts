@@ -265,7 +265,7 @@ function checkEngagementMilestones(): void {
 export function trackDesignCreated(): void {
   try {
     const data = loadAnalyticsData();
-    data.designsCreated = (data.designsCreated ?? 0) + 1;
+    data.designsCreated += 1;
 
     for (const { key, min } of DESIGNER_MILESTONE_THRESHOLDS) {
       if (data.designsCreated >= min && !data.milestones[key]) {

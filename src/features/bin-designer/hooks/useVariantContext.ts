@@ -54,24 +54,27 @@ export function useVariantContext(currentDesignId: string | null): VariantContex
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
+    // Read through a function so a check after an await is not narrowed by the
+    // check before it.
+    const isCancelled = (): boolean => controller.signal.aborted;
 
     // Every write happens in the async body, including the reset: a synchronous
     // setState here would cascade a render before the effect has done anything.
     void (async () => {
       if (!currentDesignId) {
-        if (!cancelled) setResolved({ forId: null, context: NONE });
+        if (!isCancelled()) setResolved({ forId: null, context: NONE });
         return;
       }
       const self = await loadDesign(toDesignId(currentDesignId));
-      if (cancelled) return;
+      if (isCancelled()) return;
       if (!isOk(self) || !self.value.variantOf) {
         setResolved({ forId: currentDesignId, context: NONE });
         return;
       }
 
       const parent = await loadDesign(self.value.variantOf);
-      if (cancelled) return;
+      if (isCancelled()) return;
       // A variant whose parent is gone keeps the params it has and stops
       // reporting as a variant: there is nothing left to inherit from, and
       // showing an inherit UI against a design that does not exist is worse
@@ -97,7 +100,7 @@ export function useVariantContext(currentDesignId: string | null): VariantContex
     })();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [currentDesignId, generation]);
 

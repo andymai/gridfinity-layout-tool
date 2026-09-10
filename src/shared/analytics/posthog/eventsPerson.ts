@@ -88,12 +88,12 @@ export function updatePersonProperties(): void {
       uses_fill_operations: flag('fill'),
       uses_paint_mode: flag('paint_mode'),
 
-      engagement_tier: computeEngagementTier(layoutCount, data.designsCreated ?? 0),
+      engagement_tier: computeEngagementTier(layoutCount, data.designsCreated),
 
       // Distinct designs made. The designer milestone ladder keys on this, so
       // it has to be segmentable here too — a milestone that fires into an
       // event stream nobody can cohort on answers nothing.
-      designs_created: data.designsCreated ?? 0,
+      designs_created: data.designsCreated,
 
       // Device preference
       primary_device: getDeviceType(),

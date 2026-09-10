@@ -53,7 +53,7 @@ async function fetchProfile(accessToken: string): Promise<ProviderProfile> {
   const user = (await userRes.json()) as GitHubUser;
 
   const verified = await fetchVerifiedEmails(headers, !user.email);
-  const email = user.email ?? verified[0] ?? null;
+  const email = user.email ?? verified.at(0) ?? null;
   if (!email) throw new Error('GitHub account has no verified email');
 
   return {
@@ -63,6 +63,12 @@ async function fetchProfile(accessToken: string): Promise<ProviderProfile> {
     displayName: user.name ?? user.login,
     handle: user.login,
   };
+}
+
+function isVerifiedEmail(e: unknown): e is GitHubEmail & { email: string } {
+  if (typeof e !== 'object' || e === null) return false;
+  const record = e as Partial<GitHubEmail>;
+  return record.verified === true && typeof record.email === 'string';
 }
 
 /**
@@ -76,18 +82,18 @@ async function fetchVerifiedEmails(
   headers: Record<string, string>,
   required: boolean
 ): Promise<string[]> {
-  let emails: GitHubEmail[];
+  let emails: unknown;
   try {
     const res = await fetch('https://api.github.com/user/emails', { headers });
     if (!res.ok) throw new Error(`GitHub /user/emails ${res.status}`);
-    emails = (await res.json()) as GitHubEmail[];
+    emails = await res.json();
   } catch (error) {
     if (required) throw error;
     return [];
   }
   if (!Array.isArray(emails)) return [];
   return emails
-    .filter((e) => e?.verified && typeof e.email === 'string')
+    .filter(isVerifiedEmail)
     .sort((a, b) => Number(b.primary) - Number(a.primary))
     .map((e) => e.email);
 }

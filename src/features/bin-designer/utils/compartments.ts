@@ -12,11 +12,6 @@
  * path for the compartment model.
  */
 
-/* eslint-disable max-lines -- The grid model and the divider geometry that reads it are one
-   mutually recursive unit: override validation, divider eligibility and merge/split all call
-   back into the contiguity and bounds rules they sit above. Splitting further would buy line
-   count with an import cycle. */
-
 import type { CompartmentConfig, DividerOverride } from '../types';
 import { renumberCompartments } from './compartmentRemap';
 import {

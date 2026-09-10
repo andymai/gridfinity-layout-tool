@@ -427,7 +427,7 @@ export function clampGroupDelta(
   let lo = { x: Infinity, y: Infinity };
   let hi = { x: -Infinity, y: -Infinity };
   for (const i of indices) {
-    const v = vertices[i];
+    const v = vertices.at(i);
     if (v === undefined) continue;
     lo = { x: Math.min(lo.x, v.x), y: Math.min(lo.y, v.y) };
     hi = { x: Math.max(hi.x, v.x), y: Math.max(hi.y, v.y) };

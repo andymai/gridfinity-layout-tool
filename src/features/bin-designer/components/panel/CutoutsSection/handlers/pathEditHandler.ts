@@ -198,7 +198,7 @@ export function handleVertexEditPointerMove(
     // Same stale-index hazard as the pointer-down hit test: the path can
     // shrink mid-drag (an undo, a remote edit), and reading past its end threw
     // rather than simply dropping the frame.
-    const pt = path[dragTarget.index];
+    const pt = path.at(dragTarget.index);
     if (pt === undefined) {
       // Dropping the frame is not enough. The last preview was computed
       // against the longer path and pointer-up commits whatever it finds, so

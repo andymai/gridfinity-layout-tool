@@ -421,7 +421,7 @@ function seatHeightMm(type: string, params: Record<string, unknown>): number {
   if (type === 'riser') {
     return (params.stepCount as number) * (params.stepHeight as number);
   }
-  return (params.height as number) ?? 0;
+  return typeof params.height === 'number' ? params.height : 0;
 }
 
 export interface SanitizedAssembly {

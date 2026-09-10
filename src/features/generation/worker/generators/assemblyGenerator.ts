@@ -287,7 +287,7 @@ function buildPartTemplate(node: AssemblyPartNode): Shape3D | null {
         taperDeg > 0
           ? cone(rBottom, rTop, total, { at: [0, 0, -sink] })
           : cylinder(rBottom, total, { at: [0, 0, -sink] });
-      const tip = Math.min(tipChamfer ?? 1, rTop - 0.3, height / 4);
+      const tip = Math.min(tipChamfer, rTop - 0.3, height / 4);
       return chamferedOrOriginal(body, edgesNearPlane(body, height), tip);
     }
     case 'fin': {

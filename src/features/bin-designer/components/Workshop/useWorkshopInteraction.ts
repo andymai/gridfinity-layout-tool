@@ -183,7 +183,7 @@ export function useWorkshopInteraction(
   const rotationHub = useMemo((): RotationHub | null => {
     if (topLevelSelected.length === 0) return null;
     if (topLevelSelected.length === 1) {
-      const placed = topLevelSelected[0];
+      const placed = topLevelSelected.at(0);
       if (!placed) return null;
       const footprint = partFootprint(placed.node);
       return {

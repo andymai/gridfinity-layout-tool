@@ -159,7 +159,7 @@ function marginSeamJunctions(
   const halfDmm = (tiling.totalDepthUnits * gy) / 2;
   const junctions: SeamJunction[] = [];
 
-  for (const margin of tiling.margins ?? []) {
+  for (const margin of tiling.margins) {
     const seam = margin.seamConnector;
     if (margin.role !== 'long' || !seam) continue;
     // A front/back rail runs along X, so its `cellUnits` are width cells (X

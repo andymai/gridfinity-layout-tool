@@ -102,7 +102,7 @@ export function ColorsSection() {
   const setColorTool = useDesignerStore((s) => s.setColorTool);
   const swapZoneWithToast = useSwapZoneWithToast();
   const multiColorEnabled = rawColors.enabled;
-  const topAccent = rawColors.topAccent ?? DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
+  const topAccent = rawColors.topAccent;
   const bottomAccent = rawColors.bottomAccent;
   // Cap a band at the wall top — nominal height (units × mm/unit) plus any
   // exterior-wall collar — so it can't exceed the bin yet still reaches the top
