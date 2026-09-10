@@ -1,4 +1,4 @@
-import { put, del, head } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import {
@@ -24,6 +24,7 @@ import {
   type ShareData,
   rateLimited,
   sendError,
+  loadShare,
 } from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -62,19 +63,10 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
       return rateLimited(res, rateLimit.retryAfterSeconds);
     }
 
-    // Check if blob exists
-    const blobInfo = await head(blobPath).catch(() => null);
-    if (!blobInfo) {
+    const shareData = await loadShare(blobPath);
+    if (!shareData) {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-
-    // Fetch the blob content
-    const response = await fetch(blobInfo.url);
-    if (!response.ok) {
-      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
-    }
-
-    const shareData = (await response.json()) as ShareData;
 
     // Track lastAccessedAt in Redis instead of rewriting the blob on every GET.
     // Cheap, atomic, and avoids the per-view Blob-write amplification that
@@ -137,31 +129,16 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Delete token required for updates');
     }
 
-    // Fetch existing share
-    const blobInfo = await head(blobPath).catch(() => null);
-    if (!blobInfo) {
+    const existingData = await loadShare(blobPath);
+    if (!existingData) {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
-    const response = await fetch(blobInfo.url);
-    if (!response.ok) {
+    const tokenCheck = await verifyDeleteToken(id, existingData, deleteToken);
+    if (tokenCheck === 'missing') {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-
-    const existingData = (await response.json()) as ShareData;
-
-    // Fetch the stored hash — check Redis first (new shares), fall back to blob (pre-migration shares)
-    const redis = getRedis();
-    const storedHash =
-      (redis ? await redis.get(shareHashKey(id)) : null) ?? existingData.metadata.deleteTokenHash;
-
-    if (!storedHash) {
-      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
-    }
-
-    // Verify delete token (constant-time comparison prevents timing attacks)
-    const tokenHash = await hashToken(deleteToken);
-    if (!timingSafeCompare(tokenHash, storedHash)) {
+    if (tokenCheck === 'mismatch') {
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
@@ -195,20 +172,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         },
       };
 
-      await put(blobPath, JSON.stringify(updatedData), {
-        access: 'public',
-        contentType: 'application/json',
-        addRandomSuffix: false,
-        allowOverwrite: true,
-      });
-
-      const shareUrl = `${getBaseUrl()}/l/${id}`;
-
-      return res.status(200).json({
-        id,
-        url: shareUrl,
-        permission: newPermission,
-      });
+      return await writeShareAndRespond(res, id, blobPath, updatedData, newPermission);
     }
 
     // Full update with layout
@@ -263,20 +227,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       },
     };
 
-    await put(blobPath, JSON.stringify(updatedData), {
-      access: 'public',
-      contentType: 'application/json',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    });
-
-    const shareUrl = `${getBaseUrl()}/l/${id}`;
-
-    return res.status(200).json({
-      id,
-      url: shareUrl,
-      permission: newPermission,
-    });
+    return await writeShareAndRespond(res, id, blobPath, updatedData, newPermission);
   } catch (error) {
     logger.error('Share update error', {
       error: error instanceof Error ? error.message : String(error),
@@ -318,36 +269,22 @@ async function handleDelete(
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Delete token required');
     }
 
-    // Fetch existing share
-    const blobInfo = await head(blobPath).catch(() => null);
-    if (!blobInfo) {
+    const existingData = await loadShare(blobPath);
+    if (!existingData) {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
-    const response = await fetch(blobInfo.url);
-    if (!response.ok) {
+    const tokenCheck = await verifyDeleteToken(_id, existingData, deleteToken);
+    if (tokenCheck === 'missing') {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-
-    const existingData = (await response.json()) as ShareData;
-
-    // Fetch the stored hash — check Redis first (new shares), fall back to blob (pre-migration shares)
-    const redis = getRedis();
-    const storedHash =
-      (redis ? await redis.get(shareHashKey(_id)) : null) ?? existingData.metadata.deleteTokenHash;
-
-    if (!storedHash) {
-      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
-    }
-
-    // Verify delete token (constant-time comparison prevents timing attacks)
-    const tokenHash = await hashToken(deleteToken);
-    if (!timingSafeCompare(tokenHash, storedHash)) {
+    if (tokenCheck === 'mismatch') {
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
     // Delete the blob and clean up Redis keys
     await del(blobPath);
+    const redis = getRedis();
     if (redis) {
       await redis.del(shareHashKey(_id), shareReportKey(_id), shareLastAccessedKey(_id));
     }
@@ -363,4 +300,33 @@ async function handleDelete(
     });
     return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to delete share');
   }
+}
+
+async function verifyDeleteToken(
+  id: string,
+  existing: ShareData,
+  deleteToken: string
+): Promise<'ok' | 'missing' | 'mismatch'> {
+  // New shares keep the hash in Redis; pre-migration shares carry it in the blob.
+  const redis = getRedis();
+  const storedHash =
+    (redis ? await redis.get(shareHashKey(id)) : null) ?? existing.metadata.deleteTokenHash;
+  if (!storedHash) return 'missing';
+  return timingSafeCompare(await hashToken(deleteToken), storedHash) ? 'ok' : 'mismatch';
+}
+
+async function writeShareAndRespond(
+  res: VercelResponse,
+  id: string,
+  blobPath: string,
+  data: ShareData,
+  permission: ShareData['metadata']['permission']
+) {
+  await put(blobPath, JSON.stringify(data), {
+    access: 'public',
+    contentType: 'application/json',
+    addRandomSuffix: false,
+    allowOverwrite: true,
+  });
+  return res.status(200).json({ id, url: `${getBaseUrl()}/l/${id}`, permission });
 }

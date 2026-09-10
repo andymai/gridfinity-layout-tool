@@ -1,5 +1,4 @@
 import { Liveblocks } from '@liveblocks/node';
-import { head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
 import {
@@ -8,9 +7,9 @@ import {
   isValidShareId,
   methodNotAllowed,
   sendError,
+  loadShare,
 } from './lib/shared.js';
 import { logger } from './lib/logger.js';
-import type { ShareData } from './lib/shared.js';
 
 /**
  * Liveblocks authentication endpoint.
@@ -124,18 +123,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Fetch share metadata from Vercel Blob to check permission
     const blobPath = `shares/${shareId}.json`;
-    const blobInfo = await head(blobPath).catch(() => null);
-
-    if (!blobInfo) {
+    const shareData = await loadShare(blobPath);
+    if (!shareData) {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-
-    const blobResponse = await fetch(blobInfo.url);
-    if (!blobResponse.ok) {
-      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
-    }
-
-    const shareData = (await blobResponse.json()) as ShareData;
     const permission = shareData.metadata.permission;
 
     const session = getLiveblocks().prepareSession(userId, {
