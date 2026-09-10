@@ -15,7 +15,7 @@
 
 import { drawRoundedRectangle, unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, Drawing, Sketch, ValidSolid } from 'brepjs';
-import { pocketCornerRadius } from './generatorConstants';
+import { COPLANAR_OVERLAP, pocketCornerRadius } from './generatorConstants';
 import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
 import { LID_COPLANAR_MARGIN, LID_MIN_CORNER_RADIUS } from './lidConstants';
 import { isRegionFilled } from '@/shared/utils/cellMask';
@@ -63,6 +63,34 @@ function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
 }
 
 /**
+ * Growth (mm, per side) on a per-cell pocket cutter's footprint.
+ *
+ * An edge cell's rounded corner (from the NOMINAL socket grid) and the
+ * slab's own outer corner (from the `fitClearance`-shrunk perimeter) land
+ * EXACTLY tangent, because the grid shrink and the two corner radii differ
+ * by the identical `fitClearance`. Two arcs meeting at exact tangency, not a
+ * real overlap, is the same trap `COPLANAR_OVERLAP` exists for on flat faces
+ * (generatorConstants.ts): it produces sliver triangles no topology or
+ * watertight check catches. Growing every pocket by this — cheap, since it
+ * is a cutter — breaks the tangency everywhere at once.
+ *
+ * Bigger than `COPLANAR_OVERLAP` itself because the loft is RULED between
+ * breakpoints: the near-tangent corner recurs, slightly smaller, down the
+ * whole ruled segment into the big taper, not just at one Z plane.
+ *
+ * Clears the case where one cell edge's straight run meets the slab's
+ * corner arc; does NOT clear a corner cell's own 90° corner, where the
+ * pocket's arc and the slab's corner arc are tangent to each other on BOTH
+ * axes at once — that needs a different fix than growing the rectangle.
+ *
+ * `buildStackLipCutter` below has the identical tangency by the same math
+ * but stays unmodified: its exact peak position is pinned by
+ * `lidGenerator.scenario`'s stacking-lip-only assertions, and growing it the
+ * same way shifts that pinned edge and breaks them.
+ */
+const POCKET_EDGE_GROWTH_MM = 5 * COPLANAR_OVERLAP;
+
+/**
  * Build a single pocket cutter for one cell. Multi-section loft with
  * the same five sections + two coplanar caps that
  * `baseplateGenerator.buildPocketCutter` uses, just translated UP by
@@ -73,8 +101,8 @@ function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D 
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   return loftPocket((inset) =>
     drawRoundedRectangle(
-      Math.max(cellW_mm - 2 * inset, MIN_POCKET_MM),
-      Math.max(cellD_mm - 2 * inset, MIN_POCKET_MM),
+      Math.max(cellW_mm + 2 * POCKET_EDGE_GROWTH_MM - 2 * inset, MIN_POCKET_MM),
+      Math.max(cellD_mm + 2 * POCKET_EDGE_GROWTH_MM - 2 * inset, MIN_POCKET_MM),
       Math.max(cornerR - inset, MIN_POCKET_MM)
     )
   );

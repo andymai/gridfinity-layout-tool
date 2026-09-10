@@ -374,14 +374,25 @@ describe('lid generation and export scenarios', () => {
       expect(l.maxZ).toBeCloseTo(LIP_EDGE_Z, 3);
     });
 
-    it('is a no-op at 1x1, where the grid is already a single pocket', async () => {
+    it('is a near-no-op at 1x1, where the grid is already a single pocket', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       const one = { width: 1, depth: 1, height: 2 } as const;
       const grid = generateLid(makeParams({ stackableTop: true }, one));
       const lipOnly = generateLid(makeParams({ stackableTop: true, stackLipOnly: true }, one));
       expect(grid).not.toBeNull();
       expect(lipOnly).not.toBeNull();
-      expect(lipOnly!.triangleCount).toBe(grid!.triangleCount);
+      // Not exactly equal: the per-cell path grows its pocket by
+      // POCKET_EDGE_GROWTH_MM to clear an exact-tangency sliver against
+      // the slab's own outer edge, which `stackLipOnly`'s dedicated cutter
+      // does not (see lidStackGrid.ts). The two remain the same SHAPE within
+      // that sub-mm margin — same footprint, same top height.
+      const g = boundingBox(grid!.vertices);
+      const l = boundingBox(lipOnly!.vertices);
+      expect(l.minX).toBeCloseTo(g.minX, 1);
+      expect(l.maxX).toBeCloseTo(g.maxX, 1);
+      expect(l.minY).toBeCloseTo(g.minY, 1);
+      expect(l.maxY).toBeCloseTo(g.maxY, 1);
+      expect(l.maxZ).toBeCloseTo(g.maxZ, 0);
     });
 
     it('follows the polygon outline on a cellMask lid', async () => {
