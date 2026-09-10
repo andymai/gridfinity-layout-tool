@@ -2,13 +2,6 @@
 
 import { isNumber, inRange, isString, isBoolean, isObject } from './validationUtils.js';
 
-/**
- * Validates a single insert object from the payload and returns a descriptive error message when invalid.
- *
- * @param insert - The insert value to validate (expected object with id, shape, x, y, width, depth, cutDepth, rotation, cornerRadius, and label)
- * @param index - The index of the insert in the inserts array (used to build precise error messages)
- * @returns A validation error message describing the first detected problem, or `null` if the insert is valid
- */
 // 3- or 6-digit CSS hex, plus the legacy slot IDs we migrate client-side.
 // Anything else is rejected before it lands in the blob.
 export const HEX_COLOR_REGEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
