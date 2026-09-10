@@ -13,15 +13,8 @@ import { SHARE_CONSTRAINTS } from './shareConstraints.js';
 import type { ValidExpiration, ValidationError } from './shareConstraints.js';
 export { SHARE_CONSTRAINTS } from './shareConstraints.js';
 export type { ValidExpiration, ValidationError } from './shareConstraints.js';
-export {
-  DESIGN_ID_MAX_LENGTH,
-  RESERVED_PROPERTY_KEYS,
-  validateSharedDesigns,
-  isSharedDesignsError,
-} from './sharedDesignsValidation.js';
+export { validateSharedDesigns, isSharedDesignsError } from './sharedDesignsValidation.js';
 export type { SharedDesignShape, SharedDesignsResult } from './sharedDesignsValidation.js';
-export { isValidDrawer, sanitizeDrawer } from './drawerValidation.js';
-export type { DrawerShape } from './drawerValidation.js';
 
 interface LayerShape {
   id: string;
