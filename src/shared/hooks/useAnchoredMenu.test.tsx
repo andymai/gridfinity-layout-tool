@@ -91,6 +91,30 @@ describe('useAnchoredMenu', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('closes on Escape from inside the menu and reports it', () => {
+    const onClose = vi.fn();
+    render(<Harness onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'more' }));
+
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('ignores close while already closed', () => {
+    const onClose = vi.fn();
+    function Closer() {
+      const { close } = useAnchoredMenu({ onClose });
+      return <button onClick={close}>close</button>;
+    }
+    render(<Closer />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'close' }));
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('toggles closed from the button and reports it', () => {
     const onClose = vi.fn();
     render(<Harness onClose={onClose} />);

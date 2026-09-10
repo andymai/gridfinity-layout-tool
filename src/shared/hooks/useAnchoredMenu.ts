@@ -7,7 +7,6 @@ interface UseAnchoredMenuOptions {
   onClose?: () => void;
 }
 
-/** Below this much room under the button the menu opens upward instead. */
 const MIN_SPACE_BELOW_PX = 200;
 const GAP_PX = 4;
 
@@ -22,11 +21,15 @@ export function useAnchoredMenu({ onClose }: UseAnchoredMenuOptions = {}) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
+  const isOpenRef = useRef(false);
   useEffect(() => {
     onCloseRef.current = onClose;
+    isOpenRef.current = isOpen;
   });
 
   const close = useCallback(() => {
+    if (!isOpenRef.current) return;
+    isOpenRef.current = false;
     setIsOpen(false);
     onCloseRef.current?.();
   }, []);
