@@ -35,7 +35,7 @@ done < <(git diff --cached --name-only -z --diff-filter=d 2>/dev/null)
 # pair a moved file with its old path, so a pure move read as all-new code.
 FULL_DIFF=$(git diff --cached -M 2>/dev/null)
 file_diff() {
-  printf '%s\n' "$FULL_DIFF" | awk -v f="b/$1" '/^diff --git /{p=($NF==f)} p'
+  printf '%s\n' "$FULL_DIFF" | awk -v f="b/$1" '/^diff --git /{p=0} /^\+\+\+ /{p=(substr($0,5)==f)} p'
 }
 
 ISSUES=""
