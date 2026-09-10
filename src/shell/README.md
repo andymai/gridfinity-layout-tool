@@ -38,6 +38,10 @@ graph TB
 | `DropZones/`     | Trash drop target (shows after first pointermove)                                           |
 | `ErrorBoundary/` | Root error boundary with full-page recovery                                                 |
 | `LiveRegion/`    | ARIA live announcements for screen readers                                                  |
+| `keyboard/`      | Global shortcut dispatch (`useKeyboard`); skips events while focus is in a text field       |
+| `sync/`          | Sign-in session mount and the delete-account flow, wired to every feature's sync adapter    |
+| `registrations/` | Mount-time registrations that hand feature stores to the storage layer                      |
+| `hooks/`         | App-level hooks that span features: community like-return and digest checks                 |
 
 ## Responsive Strategy
 

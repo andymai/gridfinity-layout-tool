@@ -23,9 +23,9 @@ import {
   useSnapshotAutoSave,
   useLocalStorageCleanup,
   useTabletPanels,
-  useKeyboard,
   useCollabMode,
 } from '@/shared/hooks';
+import { useKeyboard } from '@/shell/keyboard';
 import { useLayoutRouting } from '@/features/layout-library';
 import { useOwnedShareSync } from '@/features/cloud-share/hooks/useOwnedShareSync';
 import { reconcileLibraryAsync } from '@/core/storage';
@@ -65,8 +65,8 @@ import { TabletPanelOverlay, TabletPanelTriggers } from '@/shell/Tablet';
 import { LiveRegion } from '@/shell/LiveRegion';
 import { ShellGrid } from '@/shell/layouts/ShellGrid';
 import { LocalMutationsProvider } from '@/shared/contexts';
-import { DesignStoreRegistration } from '@/shared/storage/DesignStoreRegistration';
-import { LinkedRiseRegistration } from '@/shared/storage/LinkedRiseRegistration';
+import { DesignStoreRegistration } from '@/shell/registrations/DesignStoreRegistration';
+import { LinkedRiseRegistration } from '@/shell/registrations/LinkedRiseRegistration';
 import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
 import { useEngagementNudges } from '@/features/engagement';
@@ -88,8 +88,8 @@ import { useBackgroundThumbnailRegen } from '@/features/bin-designer';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useSpaceMouseDevice } from '@/shared/spacemouse/useSpaceMouseDevice';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
-import { useCommunityLikeReturn } from '@/shared/hooks/useCommunityLikeReturn';
-import { useCommunityDigestCheck } from '@/shared/hooks/useCommunityDigestCheck';
+import { useCommunityLikeReturn } from '@/shell/hooks/useCommunityLikeReturn';
+import { useCommunityDigestCheck } from '@/shell/hooks/useCommunityDigestCheck';
 
 let hasRenderedInitialLayout = false;
 

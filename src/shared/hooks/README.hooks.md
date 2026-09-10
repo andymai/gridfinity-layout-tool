@@ -12,7 +12,6 @@ graph TB
         UI --> SDRAG[useStagingDragInteraction]
     end
 
-    KB[useKeyboard] -->|shortcuts| LAY[(layout store)]
     DS[useDrawerSettings] -->|dimensions, half-bin| LAY
     LS[useLayoutSwitcher] -->|CRUD, switch| LIB[(library store)] & LAY
     subgraph "Collaborative"
@@ -27,7 +26,6 @@ graph TB
 
 | File                    | Purpose                                                                  |
 | ----------------------- | ------------------------------------------------------------------------ |
-| `useKeyboard.ts`        | 40+ global shortcuts (delete, undo, nudge, rotate, zoom, layer nav)      |
 | `useDrawerSettings.ts`  | Drawer dimensions, half-bin toggle/remediation, physical units, defaults |
 | `useLayoutSwitcher.ts`  | Atomic layout CRUD: switch, create, delete, duplicate, import            |
 | `useBinGeometry.ts`     | Three.js geometry generation for 3D bin preview                          |
@@ -67,12 +65,11 @@ See [`interactions/README.md`](./interactions/README.md) for the FSM architectur
 3. **Stale closure prevention** — callbacks in `useLayoutSwitcher` use `getState()` for fresh state, not closure captures
 4. **Collab sync loop prevention** — `lastEditSource === 'local'` skips re-sync of own edits
 5. **View-only shares stay local** — `permission === 'view'` never connects to Liveblocks
-6. **Keyboard skips inputs** — `useKeyboard` ignores events when focus is in `<input>` or `<textarea>`
    — but a `<canvas>` passes that check, so `App.tsx` gates the whole listener behind
    `isNonLayoutRoute`; without it a Bin Designer `Delete`/`r`/`w` also reaches the layout (#2896)
-7. **Half-bin remediation** — `handleRemediate()` moves fractional bins to staging before disabling mode
-8. **Layout switch side effects** — clears undo history, resets selection, updates URL slug, resets ML session
-9. **`role="menu"` obliges keyboard nav** — any container with `role="menu"` MUST attach
+6. **Half-bin remediation** — `handleRemediate()` moves fractional bins to staging before disabling mode
+7. **Layout switch side effects** — clears undo history, resets selection, updates URL slug, resets ML session
+8. **`role="menu"` obliges keyboard nav** — any container with `role="menu"` MUST attach
    `useMenuKeyboardNav`, or use the `Menu` design-system primitive which has it built in.
    Declaring the role without arrow traversal is worse than declaring nothing: AT announces
    navigation that does not exist and the user follows it into a dead end (#3277). The hook

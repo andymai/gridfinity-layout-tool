@@ -5,7 +5,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
 import type { CommunityMilestoneKind } from '@/shared/types/community';
-import { useFeatureFlag } from './useFeatureFlag';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 
 /** Longer than the 5s default: a milestone deserves more read time than a routine toast. */
 const MILESTONE_TOAST_DURATION_MS = 8000;
