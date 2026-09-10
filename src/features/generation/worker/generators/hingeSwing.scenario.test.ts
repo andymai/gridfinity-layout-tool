@@ -35,7 +35,11 @@ import {
 import { lidZOffset } from './__kernel-tests__/lidSeating';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { DEFAULT_LID_HINGE_CONFIG, LID_HINGE_PIN_MM } from '@/features/bin-designer/types/lid';
+import {
+  DEFAULT_LID_HINGE_CONFIG,
+  LID_HINGE_FACE_RELIEF_MM,
+  LID_HINGE_PIN_MM,
+} from '@/features/bin-designer/types/lid';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -62,6 +66,23 @@ const CONTACT_FLOOR_MM3 = 5;
  * Measured 0.0mm³ through 104° and 0.1 at 106, so this sits in the gap.
  */
 const STOP_CONTACT_FLOOR_MM3 = 0.3;
+
+/**
+ * Shared-volume floor (mm³) for corner clearance once the lid has actually
+ * lifted off its closed pose.
+ *
+ * Tighter than {@link CONTACT_FLOOR_MM3}, on purpose: that floor has to
+ * tolerate the coincident-face noise a boolean leaves AT 0°, which is a
+ * closed-pose artifact, not a mid-swing one. #4147 shipped a sliver of
+ * exactly that shape — the lid's corner-inset margin (no obstruction narrows
+ * the run there, so nothing trimmed it) swinging into the bin's corner,
+ * measured 0.0000mm³ through 1°, then 0.04-0.15mm³ from 2° through 30° on the
+ * reported design and the default params here alike, comfortably under the
+ * coarser floor. Sampling only once the closed-pose noise has cleared catches
+ * that class without retuning the floor every other angle in the suite
+ * depends on.
+ */
+const CORNER_CONTACT_FLOOR_MM3 = 0.05;
 
 function hingeParams(
   over: Partial<BinParams> = {},
@@ -133,6 +154,29 @@ describe('hinged lid', () => {
         const samples = await sweepSwing(bin, lid, axis, dz, [0, 5, 10, 20, 40, 60, 80, 95, 100]);
         const worst = samples.reduce((a, b) => (b.mm3 > a.mm3 ? b : a));
         expect(worst.mm3).toBeLessThan(CONTACT_FLOOR_MM3);
+      } finally {
+        lid.delete();
+      }
+    },
+    600_000
+  );
+
+  it.each<LidRailSide>(['back', 'front', 'left', 'right'])(
+    'clears the bin corner where no obstruction narrows the hinge run, on the %s wall (#4147)',
+    async (side) => {
+      // A plain box: no cutout or handle to create a genuine obstruction gap,
+      // so the run's ends sit at the corner-inset margin on both sides — the
+      // one case #4147's fix has to hold for. `CONTACT_FLOOR_MM3` alone would
+      // not have caught this: the collision peaks under 0.2mm³, two orders of
+      // magnitude below it.
+      const params = hingeParams({}, { side, catchMode: 'none' });
+      const { bin, lid, dz } = await buildSolids(params);
+      const axis = swingAxis(params, 0, 0);
+      if (!axis) throw new Error('expected an axis');
+      try {
+        const samples = await sweepSwing(bin, lid, axis, dz, [2, 5, 8, 10, 12, 15, 18, 20, 25, 30]);
+        const worst = samples.reduce((a, b) => (b.mm3 > a.mm3 ? b : a));
+        expect(worst.mm3).toBeLessThan(CORNER_CONTACT_FLOOR_MM3);
       } finally {
         lid.delete();
       }
@@ -225,7 +269,12 @@ describe('hinged lid', () => {
   it('grows the footprint by the overhang and not by the hinge', async () => {
     // The hinge must add nothing to a footprint the overhang has already
     // widened — the barrel is inset from wherever the face ended up, not hung
-    // off the nominal one.
+    // off the nominal one. The lid's own cross-axis span (Y, for a back-wall
+    // hinge) is a deliberate exception: the trim now reaches the wall's
+    // corners (#4147), so the nose there — like everywhere else along the
+    // wall — sits `LID_HINGE_FACE_RELIEF_MM` inboard of the friction control,
+    // the same relief that keeps the barrel off a boolean-hostile tangent
+    // line. A shrink, never a growth, which is what this test guards against.
     const over = { enabled: true, left: 0, right: 2, front: 0, back: 3 };
     const params = hingeParams({ overhang: over }, { side: 'back', catchMode: 'none' });
     const hinged = await meshes(params);
@@ -237,9 +286,10 @@ describe('hinged lid', () => {
         what,
         x: +(b.maxX - b.minX).toFixed(3),
       });
-      expect({ what, y: +(a.maxY - a.minY).toFixed(3) }).toEqual({
+      const yShrink = +(b.maxY - b.minY - (a.maxY - a.minY)).toFixed(3);
+      expect({ what, yShrink }).toEqual({
         what,
-        y: +(b.maxY - b.minY).toFixed(3),
+        yShrink: what === 'lid' ? LID_HINGE_FACE_RELIEF_MM : 0,
       });
     }
   }, 600_000);
@@ -250,6 +300,13 @@ describe('hinged lid', () => {
     // print, still swing, and still take its pin — and would foul the bin
     // behind it and refuse to seat in its own baseplate cell. Nothing else in
     // the suite would notice.
+    //
+    // The lid's own footprint on its CROSS axis (perpendicular to the hinge
+    // wall — Y for back/front, X for left/right) is the one deliberate
+    // exception: since #4147, the trim reaches the wall's corners too, so the
+    // nose sits `LID_HINGE_FACE_RELIEF_MM` inboard of spec there, same as
+    // along the rest of the wall. Every other axis, and the bin on every
+    // axis, still hits spec exactly.
     for (const side of ['back', 'front', 'left', 'right'] as const) {
       const params = hingeParams({}, { side, catchMode: 'none' });
       const hinged = await meshes(params);
@@ -259,11 +316,14 @@ describe('hinged lid', () => {
         x: params.width * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE,
         y: params.depth * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE,
       };
+      const alongX = side === 'back' || side === 'front';
       for (const [what, mesh] of [
         ['bin', hinged.bin],
         ['lid', hinged.lid],
       ] as const) {
         const bb = boundingBox(mesh.vertices);
+        const reliefX = what === 'lid' && !alongX ? LID_HINGE_FACE_RELIEF_MM : 0;
+        const reliefY = what === 'lid' && alongX ? LID_HINGE_FACE_RELIEF_MM : 0;
         // Against the SPEC, not against the control: the control proves the
         // hinge changed nothing, the spec proves what it did not change was
         // already right. Either alone would pass a pair that agreed and were
@@ -271,12 +331,12 @@ describe('hinged lid', () => {
         expect({ side, what, x: +(bb.maxX - bb.minX).toFixed(3) }).toEqual({
           side,
           what,
-          x: spec.x,
+          x: +(spec.x - reliefX).toFixed(3),
         });
         expect({ side, what, y: +(bb.maxY - bb.minY).toFixed(3) }).toEqual({
           side,
           what,
-          y: spec.y,
+          y: +(spec.y - reliefY).toFixed(3),
         });
       }
 
