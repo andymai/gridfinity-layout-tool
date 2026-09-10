@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
-import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
+import { useAnchoredMenu } from '@/shared/hooks/useAnchoredMenu';
 import { Button, IconButton } from '@/design-system';
 import { useTwoClickDelete } from '@/shared/components';
 import type { SavedDesign } from '../../types';
@@ -38,72 +37,25 @@ export function DesignActions({
   onDelete,
 }: DesignActionsProps) {
   const t = useTranslation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
-  const onMenuKeyDown = useMenuKeyboardNav({ isOpen: isMenuOpen, menuRef, onClose: closeMenu });
+  const {
+    isOpen: isMenuOpen,
+    menuStyle,
+    menuButtonRef,
+    menuRef,
+    toggle: handleMenuToggle,
+    close: closeMenu,
+    withClose: handleAction,
+    onMenuKeyDown,
+  } = useAnchoredMenu({ onClose: () => resetDelete() });
 
-  // Two-click delete state
   const {
     isConfirming: isConfirmingDelete,
     handleClick: handleDeleteClick,
     reset: resetDelete,
   } = useTwoClickDelete(() => {
     onDelete();
-    setIsMenuOpen(false);
+    closeMenu();
   });
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        menuButtonRef.current &&
-        !menuButtonRef.current.contains(e.target as Node)
-      ) {
-        setIsMenuOpen(false);
-        resetDelete();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen, resetDelete]);
-
-  const handleMenuToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (isMenuOpen) {
-      setIsMenuOpen(false);
-      resetDelete();
-    } else {
-      const button = menuButtonRef.current;
-      if (button) {
-        const rect = button.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - rect.bottom;
-        const openAbove = spaceBelow < 200;
-
-        setMenuStyle({
-          position: 'fixed',
-          right: window.innerWidth - rect.right,
-          ...(openAbove ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
-        });
-      }
-      setIsMenuOpen(true);
-    }
-  };
-
-  const handleAction = (action: () => void) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    action();
-    setIsMenuOpen(false);
-    resetDelete();
-  };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -204,7 +156,7 @@ export function DesignActions({
                 variant="ghost"
                 fullWidth
                 role="menuitem"
-                onClick={handleAction(onDownloadJSON ?? (() => {}))}
+                onClick={handleAction(onDownloadJSON)}
                 className="w-full px-3 py-2.5 justify-start text-left text-sm text-content hover:bg-surface flex items-center gap-2"
               >
                 <svg

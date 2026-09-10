@@ -16,7 +16,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
-import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
+import { useAnchoredMenu } from '@/shared/hooks/useAnchoredMenu';
 import { useResponsive } from '@/shared/hooks';
 import { Button, IconButton, Input, XIcon, useInlineEdit } from '@/design-system';
 import type { BaseplateDesignId } from '@/core/types';
@@ -353,53 +353,15 @@ function BaseplateCardActions({
 }: BaseplateCardActionsProps) {
   const t = useTranslation();
   const { isMobile } = useResponsive();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
-  const onMenuKeyDown = useMenuKeyboardNav({ isOpen: isMenuOpen, menuRef, onClose: closeMenu });
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        menuButtonRef.current &&
-        !menuButtonRef.current.contains(e.target as Node)
-      ) {
-        setIsMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
-
-  const handleMenuToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isMenuOpen) {
-      setIsMenuOpen(false);
-      return;
-    }
-    const button = menuButtonRef.current;
-    if (button) {
-      const rect = button.getBoundingClientRect();
-      const openAbove = window.innerHeight - rect.bottom < 200;
-      setMenuStyle({
-        position: 'fixed',
-        right: window.innerWidth - rect.right,
-        ...(openAbove ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
-      });
-    }
-    setIsMenuOpen(true);
-  };
-
-  const handleAction = (action: () => void) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    action();
-    setIsMenuOpen(false);
-  };
+  const {
+    isOpen: isMenuOpen,
+    menuStyle,
+    menuButtonRef,
+    menuRef,
+    toggle: handleMenuToggle,
+    withClose: handleAction,
+    onMenuKeyDown,
+  } = useAnchoredMenu();
 
   return (
     <div className="relative" role="presentation" onClick={(e) => e.stopPropagation()}>
