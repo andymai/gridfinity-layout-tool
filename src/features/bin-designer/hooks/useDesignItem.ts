@@ -33,10 +33,8 @@ export function useDesignItem({
   };
 
   const handleItemKeyDown = (e: ReactKeyboardEvent) => {
-    if (edit.isEditing) {
-      edit.handleKeyDown(e);
-      return;
-    }
+    // The rename input handles its own keys; the bubbled event must not commit again.
+    if (edit.isEditing) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       activate();

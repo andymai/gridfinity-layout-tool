@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { SavedDesign } from '@/features/bin-designer/types';
@@ -48,5 +48,19 @@ describe('useDesignItem', () => {
     bulk.result.current.handleItemKeyDown(key(' '));
     expect(onToggleSelect).toHaveBeenCalledOnce();
     expect(onSelect).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores container key events while the name is being edited', () => {
+    const onRename = vi.fn();
+    const onSelect = vi.fn();
+    const { result } = renderHook(() =>
+      useDesignItem({ design, onSelect, onRename, selectionActive: false })
+    );
+    act(() => result.current.startEditing());
+    const enter = key('Enter');
+    act(() => result.current.handleItemKeyDown(enter));
+    expect(onRename).not.toHaveBeenCalled();
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(enter.preventDefault).not.toHaveBeenCalled();
   });
 });
