@@ -1,7 +1,7 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { useResponsive } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
-import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shared/components/LayoutThumbnail';
 import { computePreview } from '@/core/storage';
 import { THEME_CONFIG } from '../../types';
 import { INSPIRATION_LAYOUTS } from '../../data';

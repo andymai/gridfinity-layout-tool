@@ -21,7 +21,7 @@ import type { Projection } from '../preview';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
-import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { PanelErrorBoundary } from '@/shared/components/PanelErrorBoundary';
 import {
   BinMesh,
   LidMesh,

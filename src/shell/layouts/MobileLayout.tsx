@@ -2,10 +2,10 @@ import { Suspense } from 'react';
 import { useMobileStore } from '@/core/store/mobile';
 import { useViewStore } from '@/core/store/view';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
-import { Grid } from '@/features/grid-editor';
+import { ShellGrid } from './ShellGrid';
 import { Staging } from '@/features/staging/components/Staging';
 import { DragPreview } from '@/shell/DragPreview';
-import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { PanelErrorBoundary } from '@/shared/components/PanelErrorBoundary';
 import { SharedLayoutImporter, SharedLayoutBanner } from '@/features/cloud-share/components';
 import {
   MobileHeader,
@@ -65,7 +65,7 @@ export function MobileLayout({
 
       {/* Main content area - Grid takes full width */}
       <main className="flex-1 flex flex-col overflow-hidden bg-surface">
-        <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
+        <ShellGrid shouldShowDrawTutorial={shouldShowDrawTutorial} />
         <Staging />
       </main>
 

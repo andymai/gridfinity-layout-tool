@@ -15,7 +15,7 @@ import { Button, Checkbox, IconButton, XIcon } from '@/design-system';
 import { getBinCountByLayer } from '@/features/print-export/utils/printLayout';
 import { getDisplayLayers } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import '@/shell/styles/print.css';
+import '../../styles/print.css';
 
 // Style constants
 const ORIENTATION_OPTIONS = ['portrait', 'landscape'] as const;

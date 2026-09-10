@@ -10,6 +10,7 @@ export { CollabCursors } from './CollabCursors';
 export { CollabCursor } from './CollabCursor';
 export { CollabGhosts } from './CollabGhosts';
 export { CollabSelectionRings } from './CollabSelectionRings';
+export { CollabGridOverlay } from './CollabGridOverlay';
 
 // Presence UI components
 export { PresenceAvatars } from './PresenceAvatars';

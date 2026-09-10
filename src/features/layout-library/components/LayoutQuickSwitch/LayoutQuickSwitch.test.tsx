@@ -44,7 +44,7 @@ vi.mock('@/core/storage', async (orig) => ({
   computePreview: () => ({}),
 }));
 
-vi.mock('@/shell/LayoutThumbnail', () => ({
+vi.mock('@/shared/components/LayoutThumbnail', () => ({
   LayoutThumbnail: () => <div data-testid="thumb" />,
 }));
 

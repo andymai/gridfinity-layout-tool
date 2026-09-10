@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { SharedWithMeEntry } from '@/core/types';
-import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shared/components/LayoutThumbnail';
 import { useTranslation, useFormatting } from '@/i18n';
 import { IconButton } from '@/design-system';
 

@@ -43,6 +43,9 @@ graph TB
 | `ToolSwitcher`             | Segmented nav across Layout / Bins / Baseplate / Community                             |
 | `HeaderSupportLinks`       | Shared top-right cluster; outbound links in its overflow, `compact` folds all of it in |
 | `SupporterBadge`           | Accent pill marking a Ko-fi supporter beside an author name; links to `/supporters`    |
+| `PanelErrorBoundary`       | Panel-level error boundary with inline retry                                           |
+| `LayoutThumbnail`          | SVG mini preview of layout bins                                                        |
+| `STLSearchDropdown`        | STL search site selection menu                                                         |
 
 ## Key Hooks (`hooks/`)
 

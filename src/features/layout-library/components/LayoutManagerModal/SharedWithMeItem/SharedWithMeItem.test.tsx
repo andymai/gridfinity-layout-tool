@@ -5,7 +5,7 @@ import type { SharedWithMeEntry } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
 
 // Mock LayoutThumbnail since it's visual-only
-vi.mock('@/shell/LayoutThumbnail', () => ({
+vi.mock('@/shared/components/LayoutThumbnail', () => ({
   LayoutThumbnail: ({ preview, size }: { preview: unknown; size: number }) => (
     <div data-testid="layout-thumbnail" data-size={size} data-preview={JSON.stringify(preview)} />
   ),

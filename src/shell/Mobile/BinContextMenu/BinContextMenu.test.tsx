@@ -23,7 +23,7 @@ vi.mock('@/shared/components/ContextMenu', () => ({
   ContextMenuDivider: () => <div data-testid="divider" />,
 }));
 
-vi.mock('@/shell/STLSearchDropdown', () => ({
+vi.mock('@/shared/components/STLSearchDropdown', () => ({
   STLSearchDropdown: () => <div data-testid="stl-search" />,
 }));
 

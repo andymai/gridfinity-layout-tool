@@ -1,5 +1,5 @@
 import type { LayoutEntry } from '@/core/types';
-import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shared/components/LayoutThumbnail';
 import { LayoutActions } from '../LayoutActions';
 import { useTranslation, useFormatting } from '@/i18n';
 import { Input, useInlineEdit } from '@/design-system';

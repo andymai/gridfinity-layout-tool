@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shared/components/LayoutThumbnail';
 import { computePreview } from '@/core/storage';
 import { THEME_CONFIG } from '../../types';
 import type { InspirationLayout } from '../../types';

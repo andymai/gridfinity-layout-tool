@@ -21,7 +21,7 @@ import {
   ContextMenuItem,
   ContextMenuDivider,
 } from '@/shared/components/ContextMenu';
-import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
+import { STLSearchDropdown } from '@/shared/components/STLSearchDropdown';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById } from '@/shared/utils/entity';
 import { isErr, isOk, getUserMessage } from '@/core/result';

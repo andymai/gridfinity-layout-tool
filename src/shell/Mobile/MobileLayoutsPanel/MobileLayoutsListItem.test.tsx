@@ -11,7 +11,7 @@ beforeEach(() => {
   resetAllStores();
 });
 
-vi.mock('@/shell/LayoutThumbnail', () => ({
+vi.mock('@/shared/components/LayoutThumbnail', () => ({
   LayoutThumbnail: () => <div data-testid="thumbnail" />,
 }));
 

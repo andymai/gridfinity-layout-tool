@@ -17,7 +17,7 @@ import { BinLabelField } from '../BinLabelField';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { ExtendToMarginToggle } from '../ExtendToMarginToggle';
 import { ExpandedFootprint } from '../ExpandedFootprint';
-import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
+import { STLSearchDropdown } from '@/shared/components/STLSearchDropdown';
 import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';

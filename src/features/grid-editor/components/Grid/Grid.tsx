@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect, Suspense, useMemo } from 'react';
+import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
@@ -32,7 +33,7 @@ import { GridToolbar } from './GridToolbar';
 import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { PanelErrorBoundary } from '@/shared/components/PanelErrorBoundary';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { useCollabPresence } from '@/shared/hooks/useCollabPresence';
 import { useTranslation } from '@/i18n';
@@ -42,23 +43,6 @@ const IsometricPreview = lazyWithRetry(() =>
   import('./IsometricPreview').then(namedExport('IsometricPreview'))
 );
 
-// Lazy load mobile toolbar (only used on mobile)
-const MobileGridToolbar = lazyWithRetry(() =>
-  import('@/shell/Mobile').then(namedExport('MobileGridToolbar'))
-);
-
-// Collab overlays pull the Liveblocks client; collaboration is opt-in, so load
-// them only when a session is active instead of in the eager Grid bundle.
-const CollabCursors = lazyWithRetry(() =>
-  import('@/shell/Collab/CollabCursors').then(namedExport('CollabCursors'))
-);
-const CollabGhosts = lazyWithRetry(() =>
-  import('@/shell/Collab/CollabGhosts').then(namedExport('CollabGhosts'))
-);
-const CollabSelectionRings = lazyWithRetry(() =>
-  import('@/shell/Collab/CollabSelectionRings').then(namedExport('CollabSelectionRings'))
-);
-
 /**
  * Main grid container with zoom controls, layer indicator, and row/column numbering.
  * Displays the drawer grid with bins, handles user interactions.
@@ -66,9 +50,17 @@ const CollabSelectionRings = lazyWithRetry(() =>
 interface GridProps {
   /** When true, show the animated drag-to-draw gesture on empty first-layer grids */
   shouldShowDrawTutorial?: boolean;
+  /** Shell-owned toolbar shown above the grid on mobile; receives the fit-to-screen action */
+  renderMobileToolbar?: (fitToScreen: () => void) => ReactNode;
+  /** Shell-owned overlays drawn in grid space while a collaborative session is active */
+  collabOverlay?: ReactNode;
 }
 
-export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
+export function Grid({
+  shouldShowDrawTutorial = false,
+  renderMobileToolbar,
+  collabOverlay,
+}: GridProps) {
   const t = useTranslation();
   const { isMobile, viewportWidth } = useResponsive();
   const gridRef = useRef<HTMLDivElement>(null);
@@ -285,9 +277,9 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-surface relative">
       {/* Mobile toolbar - always at very top */}
-      {isMobile && (
+      {isMobile && renderMobileToolbar && (
         <Suspense fallback={<div className="h-12 bg-surface-secondary" />}>
-          <MobileGridToolbar onFitToScreen={zoomState.fitToScreen} />
+          {renderMobileToolbar(zoomState.fitToScreen)}
         </Suspense>
       )}
 
@@ -416,14 +408,8 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
                     onStartResize={startResize}
                   />
                   <Overlay cellSize={cellSize} gap={gap} />
-                  {/* Collaborative overlays — selection rings, operation ghosts, and
-                      remote cursors. Lazy-loaded with the Liveblocks client. */}
-                  {isCollaborative && (
-                    <Suspense fallback={null}>
-                      <CollabSelectionRings />
-                      <CollabGhosts />
-                      <CollabCursors />
-                    </Suspense>
+                  {isCollaborative && collabOverlay && (
+                    <Suspense fallback={null}>{collabOverlay}</Suspense>
                   )}
 
                   {/* Empty state overlay */}
