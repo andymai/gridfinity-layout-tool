@@ -7,29 +7,18 @@
  * the text and little else.
  */
 
-import { CheckboxRow } from '@/design-system';
 import { useCallback, useState } from 'react';
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, Select, Stepper, InfoIcon, Collapsible } from '@/design-system';
-import { LabelSizeControl } from '../../controls';
-import type { SelectOption } from '@/design-system';
+import { Button, Stepper, InfoIcon, Collapsible } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
-import type {
-  LabelTabAlignment,
-  LabelTabEdges,
-  LabelTabSupport,
-  TextFontFamily,
-  TextMode,
-} from '../../../types';
+import type { LabelTabAlignment, LabelTabEdges } from '../../../types';
 import {
   LABEL_PLATE_FIT_OFFSET_MAX,
   LABEL_PLATE_FIT_OFFSET_MIN,
   LABEL_PLATE_FIT_OFFSET_STEP,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
-import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
-import { DependencyHint } from '../shared';
 import { LabelTextList } from './LabelTextList';
 import { LabelSectionWarnings } from './LabelSectionWarnings';
 import { LabelColorControls } from './LabelColorControls';
@@ -38,26 +27,13 @@ import { LabelFitSampleButton } from './LabelFitSampleButton';
 import { useLabelTabsSection } from './useLabelTabsSection';
 import type { LabelWarningGroup } from './useLabelTabsSection';
 import type { LabelTabMode } from '../../../types';
+import { LabelTabShapeControls } from './LabelTabShapeControls';
+import { LabelTabTextStyleControls } from './LabelTabTextStyleControls';
 
 const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
-const SUPPORT_OPTIONS: LabelTabSupport[] = ['bracket', 'solid', 'fillet'];
 const EDGES_OPTIONS: LabelTabEdges[] = ['back', 'front', 'both'];
-const MODE_OPTIONS: TextMode[] = ['engrave', 'emboss', 'through-cut'];
 const TAB_MODE_OPTIONS: LabelTabMode[] = ['text', 'socket'];
 const SOCKET_STYLE_OPTIONS: readonly LabelSocketStyle[] = ['clickIn', 'slideChannel'];
-
-const FONT_OPTIONS: readonly TextFontFamily[] = [
-  'atkinson',
-  'jetbrains-mono',
-  'allerta-stencil',
-] as const;
-
-/** Per-mode bounds for the engrave/emboss depth stepper. Through-cut ignores
- *  `depth` (cuts through the full shelf), so the picker is hidden in that
- *  mode rather than disabled. */
-const TEXT_DEPTH_MIN = 0.2;
-const TEXT_DEPTH_MAX = 5;
-const TEXT_DEPTH_STEP = 0.1;
 
 /** Collapsible groups below the label text. Every one starts closed: the text
  *  IS the section, and these are how it gets shaped. */
@@ -391,315 +367,29 @@ export function LabelTabsSection() {
             </div>
           </Collapsible>
 
-          <Collapsible
+          <LabelTabShapeControls
+            state={state}
+            handlers={handlers}
+            t={t}
             title={groupTitles.shape}
             summary={dimensionsReadout}
             expanded={expandedGroups.has('shape')}
             onExpandedChange={(open) => setGroupExpanded('shape', open)}
-            size="sm"
             badge={warningBadge('shape')}
-          >
-            <div className="space-y-3">
-              {/* Support */}
-              <div>
-                <span className="mb-1 block text-label text-content-tertiary">
-                  {t('binDesigner.tabSupport')}
-                </span>
-                <div
-                  role="group"
-                  aria-label={t('binDesigner.tabSupport')}
-                  className={SEGMENT_GROUP_CLASS}
-                >
-                  {SUPPORT_OPTIONS.map((option) => (
-                    <Button
-                      key={option}
-                      type="button"
-                      variant="ghost"
-                      touchTarget={false}
-                      onClick={() => handlers.setTabSupport(option)}
-                      aria-pressed={state.label.support === option}
-                      className={`flex-1 ${getSegmentClass(state.label.support === option)}`}
-                    >
-                      {t(`binDesigner.tabSupport.${option}`)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="min-w-0">
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.tabWidth')}
-                  </span>
-                  <Stepper
-                    value={state.label.width}
-                    onChange={handlers.setTabWidth}
-                    onStep={(delta) =>
-                      handlers.setTabWidth(
-                        Math.min(
-                          DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH,
-                          Math.max(
-                            DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH,
-                            state.label.width + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP
-                          )
-                        )
-                      )
-                    }
-                    min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}
-                    max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}
-                    step={DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP}
-                    size="md"
-                    aria-label={t('binDesigner.labelTabs.widthAria')}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.tabDepth')}
-                  </span>
-                  <Stepper
-                    value={state.label.depth}
-                    onChange={handlers.setTabDepth}
-                    onStep={(delta) =>
-                      handlers.setTabDepth(
-                        Math.min(
-                          state.tabDepthMax,
-                          Math.max(
-                            state.tabDepthMin,
-                            state.label.depth + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP
-                          )
-                        )
-                      )
-                    }
-                    min={state.tabDepthMin}
-                    max={state.tabDepthMax}
-                    step={DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP}
-                    size="md"
-                    aria-label={t('binDesigner.labelTabs.depthAria')}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.tabHeight')}
-                  </span>
-                  <Stepper
-                    value={state.tabHeightMm}
-                    onChange={handlers.setTabHeight}
-                    onStep={(delta) =>
-                      handlers.setTabHeight(
-                        Math.min(
-                          state.tabHeightMax,
-                          Math.max(
-                            state.tabHeightMin,
-                            state.tabHeightMm + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_HEIGHT_STEP
-                          )
-                        )
-                      )
-                    }
-                    min={state.tabHeightMin}
-                    max={state.tabHeightMax}
-                    step={DESIGNER_CONSTRAINTS.LABEL_TAB_HEIGHT_STEP}
-                    size="md"
-                    aria-label={t('binDesigner.labelTabs.heightAria')}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.tabInset')}
-                  </span>
-                  <Stepper
-                    value={state.label.inset ?? 0}
-                    onChange={handlers.setTabInset}
-                    onStep={(delta) =>
-                      handlers.setTabInset(
-                        Math.min(
-                          state.tabInsetMax,
-                          Math.max(
-                            DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_INSET,
-                            (state.label.inset ?? 0) +
-                              delta * DESIGNER_CONSTRAINTS.LABEL_TAB_INSET_STEP
-                          )
-                        )
-                      )
-                    }
-                    min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_INSET}
-                    max={state.tabInsetMax}
-                    step={DESIGNER_CONSTRAINTS.LABEL_TAB_INSET_STEP}
-                    size="md"
-                    aria-label={t('binDesigner.labelTabs.insetAria')}
-                  />
-                </div>
-              </div>
-              {/* Label lip: raised rim to retain loose labels (#2971).
-                    Text-mode only — socket plates retain themselves. */}
-              {state.lipAvailable && (
-                <div className="mt-3 border-t border-border-subtle pt-3">
-                  <CheckboxRow
-                    label={t('binDesigner.tabLip')}
-                    checked={state.lipEnabled}
-                    onChange={handlers.toggleLabelLip}
-                  />
-                  <p className="mt-0.5 pl-7 text-label leading-snug text-content-tertiary">
-                    {t('binDesigner.tabLipHint')}
-                  </p>
-                  {state.lipEnabled && (
-                    <div className="mt-2 min-w-0 pl-7">
-                      <span className="mb-1 block text-xs text-content-tertiary">
-                        {t('binDesigner.tabLipHeight')}
-                      </span>
-                      <Stepper
-                        value={state.lipHeightMm}
-                        onChange={handlers.setLabelLipHeight}
-                        onStep={(delta) =>
-                          handlers.setLabelLipHeight(
-                            Math.min(
-                              state.lipMax,
-                              Math.max(state.lipMin, state.lipHeightMm + delta * state.lipStep)
-                            )
-                          )
-                        }
-                        min={state.lipMin}
-                        max={state.lipMax}
-                        step={state.lipStep}
-                        size="md"
-                        aria-label={t('binDesigner.labelTabs.lipHeightAria')}
-                      />
-                    </div>
-                  )}
-                  {state.lipWontFit && (
-                    <div className="mt-1 flex items-start gap-2 pl-7 text-xs text-warning">
-                      <InfoIcon size="xs" className="mt-0.5 shrink-0" />
-                      <span className="flex-1">{t('binDesigner.tabLipTooTallWarning')}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        touchTarget={false}
-                        onClick={handlers.autoFixLip}
-                        className="shrink-0 px-0 font-medium text-accent hover:bg-transparent hover:text-accent/80"
-                      >
-                        {t('binDesigner.tabAutoFix')}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </Collapsible>
+          />
 
           {/* Engraving styles the printed-in text; irrelevant when the tab
               face carries a socket instead. */}
           {!state.isSocketMode && (
-            <Collapsible
+            <LabelTabTextStyleControls
+              state={state}
+              handlers={handlers}
+              t={t}
               title={groupTitles.text}
               summary={textStyleReadout}
               expanded={expandedGroups.has('text')}
               onExpandedChange={(open) => setGroupExpanded('text', open)}
-              size="sm"
-            >
-              <div className="space-y-2">
-                {/* Mode picker */}
-                <div>
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.textMode')}
-                  </span>
-                  <div
-                    role="group"
-                    aria-label={t('binDesigner.textMode')}
-                    className={SEGMENT_GROUP_CLASS}
-                  >
-                    {MODE_OPTIONS.map((option) => (
-                      <Button
-                        key={option}
-                        type="button"
-                        variant="ghost"
-                        touchTarget={false}
-                        onClick={() => handlers.setTextMode(option)}
-                        aria-pressed={state.textDefaults.mode === option}
-                        className={`flex-1 ${getSegmentClass(state.textDefaults.mode === option)}`}
-                      >
-                        {t(`binDesigner.textMode.${option}`)}
-                      </Button>
-                    ))}
-                  </div>
-                  {state.textDefaults.mode === 'through-cut' && (
-                    <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
-                      <InfoIcon size="xs" className="mt-0.5 shrink-0" />
-                      <span>{t('binDesigner.textMode.throughCutStencilNote')}</span>
-                    </p>
-                  )}
-                </div>
-
-                {/* Font + (conditional) depth, side by side when both visible */}
-                <div className="flex items-end gap-2">
-                  <div className="min-w-0 flex-1">
-                    <span className="mb-1 block text-xs text-content-tertiary">
-                      {t('binDesigner.textFont')}
-                    </span>
-                    <Select
-                      size="sm"
-                      fullWidth
-                      // Through-cut forces Allerta Stencil at render time; show
-                      // that as the value so the disabled state isn't misleading.
-                      // The user's font preference is preserved in
-                      // `textDefaults.font` and restored on switching back.
-                      value={
-                        state.textDefaults.mode === 'through-cut'
-                          ? 'allerta-stencil'
-                          : state.textDefaults.font
-                      }
-                      onChange={(e) => handlers.setTextFont(e.target.value as TextFontFamily)}
-                      disabled={state.textDefaults.mode === 'through-cut'}
-                      aria-label={t('binDesigner.textFont')}
-                      options={FONT_OPTIONS.map((f): SelectOption => ({
-                        id: f,
-                        name: t(`binDesigner.type.font.${f}`),
-                      }))}
-                    />
-                  </div>
-                  {state.textDefaults.mode !== 'through-cut' && (
-                    <div className="min-w-0 flex-1">
-                      <span className="mb-1 block text-xs text-content-tertiary">
-                        {t('binDesigner.textDepth')}
-                      </span>
-                      <Stepper
-                        value={state.textDefaults.depth}
-                        onChange={handlers.setTextDepth}
-                        onStep={(delta) =>
-                          handlers.setTextDepth(
-                            Math.min(
-                              TEXT_DEPTH_MAX,
-                              Math.max(
-                                TEXT_DEPTH_MIN,
-                                state.textDefaults.depth + delta * TEXT_DEPTH_STEP
-                              )
-                            )
-                          )
-                        }
-                        min={TEXT_DEPTH_MIN}
-                        max={TEXT_DEPTH_MAX}
-                        step={TEXT_DEPTH_STEP}
-                        size="md"
-                        aria-label={t('binDesigner.textDepth')}
-                      />
-                    </div>
-                  )}
-                </div>
-                <LabelSizeControl
-                  className="mt-3"
-                  labelClassName="text-xs text-content-tertiary"
-                  value={state.label.textStyle?.fontSizeOverride}
-                  onChange={handlers.setTextSize}
-                  min={state.textDefaults.minFontSize}
-                  max={state.textDefaults.maxFontSize}
-                  explainShared
-                />
-                <DependencyHint
-                  reason={t('binDesigner.tabText.sharedTypeNote')}
-                  actionLabel={t('binDesigner.tabText.editTypography')}
-                  onAction={() => jumpToDesignerControl('bd-type')}
-                />
-              </div>
-            </Collapsible>
+            />
           )}
 
           <Collapsible
