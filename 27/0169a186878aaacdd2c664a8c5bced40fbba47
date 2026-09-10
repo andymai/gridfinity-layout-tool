@@ -1,13 +1,18 @@
 src/features/bin-designer/components/DesignImportView/DesignImportView.tsx
   s_80593ce0b07ec4::t_76d2a95bf957b3 90
+  s_80593ce0b07ec4::t_8073937f57d286 90
 src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.tsx
   s_80593ce0b07ec4::t_874d298a284619 149
+  s_80593ce0b07ec4::t_e00314570a32dd 149
 src/shared/components/ImportDropZone/ImportDropZone.test.tsx
   s_80593ce0b07ec4::t_58ad9ac51c0d80 34-51
+  s_80593ce0b07ec4::t_9b122056e6218a 34-39,45,47-48,50-51
 src/shared/components/ImportDropZone/ImportDropZone.tsx
   s_80593ce0b07ec4::t_f3f2a218e7c32e 26-27
+  s_80593ce0b07ec4::t_1a3e26253f8e59 26-27
 src/shared/components/ImportPreviewPanel/ImportPreviewPanel.tsx
   s_80593ce0b07ec4::t_56c4cb3b35226b 31-32
+  s_80593ce0b07ec4::t_f259d3e22fbc7a 31-32
 ---
 {
   "schema_version": "authorship/3.0.0",
