@@ -1,0 +1,21 @@
+src/features/bin-designer/components/DesignImportView/DesignImportView.test.tsx
+  s_80593ce0b07ec4::t_5c9d89e82bea1e 231,233
+src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.test.tsx
+  s_80593ce0b07ec4::t_041293b2918fc1 83,85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0567ddfea4c4d5d5589ec33911be4eacb92d30f3",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
