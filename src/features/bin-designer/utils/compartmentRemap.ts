@@ -340,3 +340,51 @@ export function remapDividerOverrides(
   }
   return out;
 }
+
+/**
+ * Renumber `cells` contiguously and carry every id-keyed parallel array across.
+ * Every mutation that rebuilds `cells` ends here, so a new compartment-keyed
+ * field is added in exactly one place. `backgroundIds` defaults to the
+ * config's own; a caller that recomputed them passes the fresh set.
+ */
+export function renumberCompartments(
+  config: CompartmentConfig,
+  newCells: number[],
+  backgroundIds: readonly number[] | undefined = config.backgroundIds
+): { config: CompartmentConfig; remap: Map<number, number> } {
+  const { cells, remap } = normalizeIdsWithRemap(newCells);
+  return {
+    remap,
+    config: {
+      ...config,
+      cells,
+      ...(config.compartmentTexts && {
+        compartmentTexts: remapCompartmentTexts(config.compartmentTexts, remap),
+      }),
+      ...(config.labelPlateWidths && {
+        labelPlateWidths: remapLabelPlateWidths(config.labelPlateWidths, remap),
+      }),
+      ...(config.labelIcons && {
+        labelIcons: remapLabelIcons(config.labelIcons, remap),
+      }),
+      ...(config.compartmentColors && {
+        compartmentColors: remapCompartmentColors(config.compartmentColors, remap),
+      }),
+      ...(config.compartmentColorScopes && {
+        compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
+      }),
+      ...(config.floorRaises && {
+        floorRaises: remapFloorRaises(config.floorRaises, remap),
+      }),
+      ...(config.dividerOverrides && {
+        dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
+      }),
+      ...(config.drawnUnitCells && {
+        drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, cells),
+      }),
+      ...(backgroundIds && {
+        backgroundIds: remapBackgroundIds(backgroundIds, remap),
+      }),
+    },
+  };
+}

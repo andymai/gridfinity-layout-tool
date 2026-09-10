@@ -47,39 +47,8 @@ export function useCollabMode(): CollabModeState {
 
   // Check for shared layout preview (viewing via /s/{shareId} URL)
   const sharedPreview = useSharedPreviewStore((state) => state.sharedPreview);
-  const sharedLayoutCloudShareId = sharedPreview?.cloudShareId ?? null;
-  const sharedLayoutPermission = sharedPreview?.permission ?? null;
 
-  // Check for shared preview mode first (viewer opened via /s/{shareId} URL)
-  // Only connect to Liveblocks if permission is "edit"
-  if (sharedLayoutCloudShareId) {
-    const canEdit = sharedLayoutPermission === 'edit';
-    return {
-      // Only collaborative (Liveblocks) for edit permission
-      isCollaborative: canEdit,
-      canEdit,
-      shareId: sharedLayoutCloudShareId,
-    };
-  }
-
-  // Check for saved layout with cloud share (owner's layout)
-  // Only connect to Liveblocks if permission is "edit"
-  if (cloudShare) {
-    const canEdit = cloudShare.permission === 'edit';
-    return {
-      // Only collaborative (Liveblocks) for edit permission
-      isCollaborative: canEdit,
-      canEdit,
-      shareId: cloudShare.id,
-    };
-  }
-
-  // No cloud share - local mode
-  return {
-    isCollaborative: false,
-    canEdit: true,
-    shareId: null,
-  };
+  return resolveCollabMode(sharedPreview, cloudShare);
 }
 
 /**
@@ -89,37 +58,29 @@ export function useCollabMode(): CollabModeState {
 export function getCollabMode(): CollabModeState {
   const { activeLayoutId, entries } = useLibraryStore.getState().library;
   const sharedPreview = useSharedPreviewStore.getState().sharedPreview;
-  const sharedLayoutCloudShareId = sharedPreview?.cloudShareId ?? null;
-  const sharedLayoutPermission = sharedPreview?.permission ?? null;
 
   const activeEntry = entries.find((e) => e.id === activeLayoutId);
-  const cloudShare = activeEntry?.cloudShare;
+  return resolveCollabMode(sharedPreview, activeEntry?.cloudShare);
+}
 
-  // Check for shared preview mode first
-  // Only connect to Liveblocks if permission is "edit"
-  if (sharedLayoutCloudShareId) {
-    const canEdit = sharedLayoutPermission === 'edit';
-    return {
-      isCollaborative: canEdit,
-      canEdit,
-      shareId: sharedLayoutCloudShareId,
-    };
+/**
+ * A shared preview (viewer arrived through a share URL) outranks the owner's
+ * own cloud share; either connects to Liveblocks only with edit permission.
+ */
+export function resolveCollabMode(
+  sharedPreview:
+    | { readonly cloudShareId?: string | null; readonly permission?: string | null }
+    | null
+    | undefined,
+  cloudShare: { readonly id: string; readonly permission: string } | null | undefined
+): CollabModeState {
+  if (sharedPreview?.cloudShareId) {
+    const canEdit = sharedPreview.permission === 'edit';
+    return { isCollaborative: canEdit, canEdit, shareId: sharedPreview.cloudShareId };
   }
-
-  // Check for saved layout with cloud share
-  // Only connect to Liveblocks if permission is "edit"
   if (cloudShare) {
     const canEdit = cloudShare.permission === 'edit';
-    return {
-      isCollaborative: canEdit,
-      canEdit,
-      shareId: cloudShare.id,
-    };
+    return { isCollaborative: canEdit, canEdit, shareId: cloudShare.id };
   }
-
-  return {
-    isCollaborative: false,
-    canEdit: true,
-    shareId: null,
-  };
+  return { isCollaborative: false, canEdit: true, shareId: null };
 }
