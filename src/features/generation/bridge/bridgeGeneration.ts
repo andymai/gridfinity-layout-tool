@@ -95,10 +95,6 @@ export function generateBin(
   withLabelPlates = false,
   minTimeoutMs = 0
 ): Promise<GenerationResult> {
-  if (ctx.isDestroyed) {
-    return Promise.reject(new Error('Bridge has been destroyed'));
-  }
-
   // The flag is part of the identity, not just the request: the same params
   // requested without plates (layout planner, thumbnail regeneration) produce a
   // result that does NOT satisfy a later designer request. Sharing one entry
@@ -106,39 +102,12 @@ export function generateBin(
   const fingerprint = withLabelPlates
     ? `${paramsFingerprint(params)}|plates`
     : paramsFingerprint(params);
-  const cached = ctx.binCache.get(fingerprint);
-  if (cached) return Promise.resolve(cached);
-
-  if (ctx.debounceTimer !== null) {
-    clearTimeout(ctx.debounceTimer);
-    ctx.debounceTimer = null;
-  }
-
-  ctx.cancelCurrentRequest();
-  ctx.onProgress = onProgress ?? null;
-
-  return new Promise<GenerationResult>((resolve, reject) => {
-    ctx.pendingResolve = resolve;
-    ctx.pendingReject = reject;
-
-    const send = (): void => {
-      const requestId = ctx.nextRequestId();
-      ctx.currentRequestId = requestId;
-      ctx.binCache.setPending(fingerprint);
-      sendWhenReady(ctx, requestId, computeGenerationTimeoutMs(params, minTimeoutMs), {
-        type: 'GENERATE',
-        payload: { params, requestId, withLabelPlates },
-      });
-    };
-
-    if (debounce) {
-      ctx.debounceTimer = setTimeout(() => {
-        ctx.debounceTimer = null;
-        send();
-      }, ctx.adaptiveDebounce.getDelay());
-    } else {
-      send();
-    }
+  return dispatchGeneration(ctx, {
+    dedup: { cache: ctx.binCache, fingerprint },
+    timeoutMs: computeGenerationTimeoutMs(params, minTimeoutMs),
+    onProgress,
+    debounce,
+    message: (requestId) => ({ type: 'GENERATE', payload: { params, requestId, withLabelPlates } }),
   });
 }
 
@@ -148,44 +117,12 @@ export function generateBaseplate(
   onProgress: ProgressCallback | undefined,
   debounce: boolean
 ): Promise<GenerationResult> {
-  if (ctx.isDestroyed) {
-    return Promise.reject(new Error('Bridge has been destroyed'));
-  }
-
-  const fingerprint = paramsFingerprint(params);
-  const cached = ctx.baseplateCache.get(fingerprint);
-  if (cached) return Promise.resolve(cached);
-
-  if (ctx.debounceTimer !== null) {
-    clearTimeout(ctx.debounceTimer);
-    ctx.debounceTimer = null;
-  }
-
-  ctx.cancelCurrentRequest();
-  ctx.onProgress = onProgress ?? null;
-
-  return new Promise<GenerationResult>((resolve, reject) => {
-    ctx.pendingResolve = resolve;
-    ctx.pendingReject = reject;
-
-    const send = (): void => {
-      const requestId = ctx.nextRequestId();
-      ctx.currentRequestId = requestId;
-      ctx.baseplateCache.setPending(fingerprint);
-      sendWhenReady(ctx, requestId, computeBaseplateTimeoutMs(params), {
-        type: 'GENERATE_BASEPLATE',
-        payload: { params, requestId },
-      });
-    };
-
-    if (debounce) {
-      ctx.debounceTimer = setTimeout(() => {
-        ctx.debounceTimer = null;
-        send();
-      }, ctx.adaptiveDebounce.getDelay());
-    } else {
-      send();
-    }
+  return dispatchGeneration(ctx, {
+    dedup: { cache: ctx.baseplateCache, fingerprint: paramsFingerprint(params) },
+    timeoutMs: computeBaseplateTimeoutMs(params),
+    onProgress,
+    debounce,
+    message: (requestId) => ({ type: 'GENERATE_BASEPLATE', payload: { params, requestId } }),
   });
 }
 
@@ -200,27 +137,14 @@ export function generateMargin(
   params: ResolvedBaseplateParams,
   margin: MarginPiece
 ): Promise<GenerationResult> {
-  if (ctx.isDestroyed) {
-    return Promise.reject(new Error('Bridge has been destroyed'));
-  }
-
-  if (ctx.debounceTimer !== null) {
-    clearTimeout(ctx.debounceTimer);
-    ctx.debounceTimer = null;
-  }
-
-  ctx.cancelCurrentRequest();
-  ctx.onProgress = null;
-
-  return new Promise<GenerationResult>((resolve, reject) => {
-    ctx.pendingResolve = resolve;
-    ctx.pendingReject = reject;
-    const requestId = ctx.nextRequestId();
-    ctx.currentRequestId = requestId;
-    sendWhenReady(ctx, requestId, computeBaseplateTimeoutMs(params), {
+  return dispatchGeneration(ctx, {
+    timeoutMs: computeBaseplateTimeoutMs(params),
+    onProgress: undefined,
+    debounce: false,
+    message: (requestId) => ({
       type: 'GENERATE_BASEPLATE_MARGIN',
       payload: { params, margin, requestId },
-    });
+    }),
   });
 }
 
@@ -240,13 +164,42 @@ export function generateItem(
   onProgress: ProgressCallback | undefined,
   debounce: boolean
 ): Promise<GenerationResult> {
+  return dispatchGeneration(ctx, {
+    dedup: { cache: ctx.itemCache, fingerprint: paramsFingerprint(item) },
+    timeoutMs: computeItemTimeoutMs(item),
+    onProgress,
+    debounce,
+    message: (requestId) => ({ type: 'GENERATE_ITEM', payload: { item, requestId } }),
+  });
+}
+
+interface GenerationDispatch {
+  /** Absent for requests that are never deduplicated (margin rails). */
+  readonly dedup?: { readonly cache: GenerationResultCache; readonly fingerprint: string };
+  readonly timeoutMs: number;
+  readonly onProgress: ProgressCallback | undefined;
+  readonly debounce: boolean;
+  readonly message: (requestId: string) => WorkerMessage;
+}
+
+/**
+ * The single-pending-request channel every generator shares: a new request
+ * cancels the one in flight, optionally waits out the adaptive debounce, and
+ * only then claims a request id and posts to the worker.
+ */
+function dispatchGeneration(
+  ctx: BridgeGenerationContext,
+  dispatch: GenerationDispatch
+): Promise<GenerationResult> {
   if (ctx.isDestroyed) {
     return Promise.reject(new Error('Bridge has been destroyed'));
   }
 
-  const fingerprint = paramsFingerprint(item);
-  const cached = ctx.itemCache.get(fingerprint);
-  if (cached) return Promise.resolve(cached);
+  const { dedup } = dispatch;
+  if (dedup) {
+    const cached = dedup.cache.get(dedup.fingerprint);
+    if (cached) return Promise.resolve(cached);
+  }
 
   if (ctx.debounceTimer !== null) {
     clearTimeout(ctx.debounceTimer);
@@ -254,7 +207,7 @@ export function generateItem(
   }
 
   ctx.cancelCurrentRequest();
-  ctx.onProgress = onProgress ?? null;
+  ctx.onProgress = dispatch.onProgress ?? null;
 
   return new Promise<GenerationResult>((resolve, reject) => {
     ctx.pendingResolve = resolve;
@@ -263,14 +216,11 @@ export function generateItem(
     const send = (): void => {
       const requestId = ctx.nextRequestId();
       ctx.currentRequestId = requestId;
-      ctx.itemCache.setPending(fingerprint);
-      sendWhenReady(ctx, requestId, computeItemTimeoutMs(item), {
-        type: 'GENERATE_ITEM',
-        payload: { item, requestId },
-      });
+      dedup?.cache.setPending(dedup.fingerprint);
+      sendWhenReady(ctx, requestId, dispatch.timeoutMs, dispatch.message(requestId));
     };
 
-    if (debounce) {
+    if (dispatch.debounce) {
       ctx.debounceTimer = setTimeout(() => {
         ctx.debounceTimer = null;
         send();
