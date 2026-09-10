@@ -1,10 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Zip, ZipDeflate, strToU8 } from 'fflate';
-import { requireMethod } from '../lib/method.js';
-import { rateLimited, serviceUnavailable, serverError } from '../lib/shared.js';
+import { serverError } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
-import { checkRateLimit, getRedis } from '../lib/rateLimit.js';
-import { requireSession } from '../lib/session.js';
 import { getJson } from '../lib/blobStore.js';
 import {
   getIndex,
@@ -14,6 +11,7 @@ import {
 } from '../lib/userIndex.js';
 import { readCommunityDesignBlob } from '../lib/communityStore.js';
 import { communityPublishedKey } from '../lib/redisKeys.js';
+import { requireSyncContext } from './lib/requireSyncContext.js';
 
 /**
  * GET /api/sync/export
@@ -32,22 +30,9 @@ import { communityPublishedKey } from '../lib/redisKeys.js';
  * the audit trail of deletions.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  if (!requireMethod(req, res, ['GET'])) return;
-
-  const session = await requireSession(req, res);
-  if (!session) return;
-
-  const rate = await checkRateLimit(session.userId, 'sync.read');
-  if (!rate.allowed) {
-    rateLimited(res, rate.retryAfterSeconds);
-    return;
-  }
-
-  const redis = getRedis();
-  if (!redis) {
-    serviceUnavailable(res);
-    return;
-  }
+  const context = await requireSyncContext(req, res, ['GET'], 'sync.read');
+  if (!context) return;
+  const { session, redis } = context;
 
   try {
     const [

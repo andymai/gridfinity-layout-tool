@@ -1,10 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireMethod } from '../lib/method.js';
-import { rateLimited, serviceUnavailable, serverError } from '../lib/shared.js';
+import { serverError } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
-import { checkRateLimit, getRedis } from '../lib/rateLimit.js';
-import { requireSession } from '../lib/session.js';
 import { getIndex, getIndexUpdatedAt } from '../lib/userIndex.js';
+import { requireSyncContext } from './lib/requireSyncContext.js';
 
 /**
  * GET /api/sync/manifest
@@ -22,22 +20,9 @@ import { getIndex, getIndexUpdatedAt } from '../lib/userIndex.js';
  * hashes themselves.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  if (!requireMethod(req, res, ['GET'])) return;
-
-  const session = await requireSession(req, res);
-  if (!session) return;
-
-  const rate = await checkRateLimit(session.userId, 'sync.read');
-  if (!rate.allowed) {
-    rateLimited(res, rate.retryAfterSeconds);
-    return;
-  }
-
-  const redis = getRedis();
-  if (!redis) {
-    serviceUnavailable(res);
-    return;
-  }
+  const context = await requireSyncContext(req, res, ['GET'], 'sync.read');
+  if (!context) return;
+  const { session, redis } = context;
 
   try {
     const indexUpdatedAt = await getIndexUpdatedAt(redis, session.userId);
