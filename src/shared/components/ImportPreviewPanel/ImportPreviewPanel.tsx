@@ -28,8 +28,8 @@ export function ImportPreviewPanel({
         {title}
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-success/80">
-        {rows.map((row) => (
-          <Fragment key={row.label}>
+        {rows.map((row, index) => (
+          <Fragment key={index}>
             <div>{row.label}</div>
             <div className={row.emphasis ? 'font-medium' : undefined}>{row.value}</div>
           </Fragment>

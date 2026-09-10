@@ -87,7 +87,7 @@ export function DesignImportView({ onImport, onCancel, onStlFile }: DesignImport
         onStlFile(file);
         return;
       }
-      if (!file.name.endsWith('.json')) {
+      if (!file.name.toLowerCase().endsWith('.json')) {
         setErrors([t('binDesigner.designJson.error.mustBeJsonFile')]);
         return;
       }

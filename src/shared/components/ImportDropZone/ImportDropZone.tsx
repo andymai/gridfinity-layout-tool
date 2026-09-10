@@ -4,9 +4,7 @@ import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
 
 interface ImportDropZoneProps {
-  /** Accept list for the hidden file input, e.g. `.json` or `.json,.stl`. */
   accept: string;
-  /** Prompt shown at rest; while a file is dragged over, the shared drop prompt replaces it. */
   prompt: string;
   onFile: (file: File) => void;
 }
@@ -25,6 +23,8 @@ export function ImportDropZone({ accept, prompt, onFile }: ImportDropZoneProps) 
   const handleDragLeave = useCallback((e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    // Leaving the icon or the button for the zone itself is not leaving the zone.
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
     setIsDragging(false);
   }, []);
 
