@@ -1,0 +1,33 @@
+src/features/bin-designer/types/lid.ts
+  s_c7b201dddd6c90::t_3522236a92e03f 1309-1324
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_c7b201dddd6c90::t_8faff699fe6a78 21
+src/features/generation/worker/generators/lidClickRailLabelClip.test.ts
+  s_c7b201dddd6c90::t_2e59a098b3f473 49,55,60
+src/features/generation/worker/generators/lidClickRailSeating.scenario.test.ts
+  s_c7b201dddd6c90::t_e74165b33202ae 1-100
+src/features/generation/worker/generators/lidConstants.ts
+  s_c7b201dddd6c90::t_956ca4480a2e6c 97-103
+src/shared/hooks/useAnchoredMenu.test.tsx
+  s_c7b201dddd6c90::t_87f6b3eb2a6f28 61-84
+src/shared/hooks/useAnchoredMenu.ts
+  s_c7b201dddd6c90::t_4d362b2a4743b7 62-63,67-71
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_c7b201dddd6c90::t_9ea8e10b93d0ef 40-41,110-139,440-444,446
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a6f153895b2cf74f44cbfb3ff14e722bfcfa77b3",
+  "prompts": {},
+  "sessions": {
+    "s_c7b201dddd6c90": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99577357-eb42-4c8e-a6e3-1123e78ea682",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
