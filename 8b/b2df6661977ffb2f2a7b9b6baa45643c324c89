@@ -1,0 +1,44 @@
+src/features/generation/worker/generators/generatorConstants.ts
+  s_4b89562300d976::t_b75edacf70322a 100-101,105-119,141
+src/features/generation/worker/generators/socketBuilder.ts
+  s_4b89562300d976::t_e801642367afec 436-441
+src/features/generation/worker/generators/taperedOuter.ts
+  s_4b89562300d976::t_bf0c1b2c636348 20,92-96,100-102,177-181
+src/features/generation/worker/generators/__kernel-tests__/roundedRectLimit.test.ts
+  s_4b89562300d976::t_42a7bfa587c8dc 3-5,7-9,11,19-28,34-39,42-43,49-51,55
+  s_4b89562300d976::t_5e5477dc63fd6f 12,29-30,32-33,40-41,48,53-54
+src/features/generation/worker/generators/generatorConstants.test.ts
+  s_4b89562300d976::t_2b7f10e6b8a4e9 8,20,52,76
+  s_4b89562300d976::t_365cecfa9efa8b 3,21,27,34-45,58
+src/features/generation/worker/generators/maskPolygon.ts
+  s_4b89562300d976::t_2ba03a15628c6a 36
+src/features/generation/worker/generators/smallGridPitch.scenario.test.ts
+  s_4b89562300d976::t_2f11fe51860bb0 132-143,145
+  s_4b89562300d976::t_6fd7dca3064409 2,4-14,20-21,24-25,33-39,58-65,82-97,99-113,115-131,144,146-147,156-172,174-194
+  s_4b89562300d976::t_e3f389bc774731 98,114,173
+  s_4b89562300d976::t_650ed46ad7ea55 195
+src/features/generation/worker/generators/boxTopShape.ts
+  s_4b89562300d976::t_bf0c1b2c636348 27,130-135,292-293
+src/features/generation/worker/generators/boxBuilder.ts
+  s_4b89562300d976::t_ce4b6efb0abade 32
+  s_4b89562300d976::t_e801642367afec 247-251
+src/features/generation/worker/generators/baseplatePockets.ts
+  s_4b89562300d976::t_e801642367afec 56-61
+  s_4b89562300d976::t_ce4b6efb0abade 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8bb2df6661977ffb2f2a7b9b6baa45643c324c89",
+  "prompts": {},
+  "sessions": {
+    "s_4b89562300d976": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fb2a005-e7be-459f-b6a3-6dc246a4f425",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
