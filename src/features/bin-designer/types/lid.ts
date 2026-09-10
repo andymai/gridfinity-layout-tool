@@ -1306,8 +1306,22 @@ export const LID_CLICK_RAIL_DROP = 0.8;
 export const LID_CLICK_RAIL_TAIL = 1.25;
 /** Shoulder between the rail bump and its exit chamfer. */
 export const LID_CLICK_RAIL_SHOULDER = 0.1;
-/** How far the rail's outer face protrudes from the corner-radius line. */
-export const LID_CLICK_RAIL_OUT = 1.85;
+/**
+ * How far the rail's outer face protrudes from the corner-radius line.
+ *
+ * `OUT - LID_CLICK_RAIL_INSET` is the bump body's own reach, and that number
+ * has to land inside the lip's actual overhang — the small-taper undercut
+ * `boxTopShape.ts` cuts, not merely a budget against the fit clearance. At
+ * the previous 1.85/0.8 the bump reached `lidCornerR - (OUT - INSET)` =
+ * 2.70mm inset from the wall face, past the lip's own ~2.6mm maximum reach:
+ * a snap-fit lid built with clean geometry, correctly seated, and analytic
+ * catch-depth checks all green, whose rail met the bin nowhere at all
+ * (#4207). These values put the bump's reach at 2.20mm — inside the
+ * confirmed, non-marginal band (measured 19.40-21.40mm world Z at that
+ * inset, on a stock bin, comfortably containing the bump body's own Z band)
+ * rather than at the lip's ragged asymptotic edge.
+ */
+export const LID_CLICK_RAIL_OUT = 2.1;
 /** Inner face of the rail, inside the bin cavity (negative = inboard). */
 export const LID_CLICK_RAIL_INNER = -0.8;
 /** Top entry chamfer: the rail's apex climbs this far above its own top face,

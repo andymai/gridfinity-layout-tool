@@ -94,8 +94,13 @@ export {
   LID_CLICK_RAIL_INNER,
 } from '@/shared/types/bin';
 
-/** Inward shift for the rail's body relative to outer protrusion. */
-export const LID_CLICK_RAIL_INSET = 0.8;
+/**
+ * Inward shift for the rail's body relative to outer protrusion.
+ *
+ * Paired with `LID_CLICK_RAIL_OUT` — see that constant's note (#4207) for why
+ * `OUT - INSET` is the number that actually has to land under the bin's lip.
+ */
+export const LID_CLICK_RAIL_INSET = 0.55;
 
 /* ──────────────────────────────────────────────────────────────────────
  * Magnet positions are shared with the bin base via magnetPositionsForCell

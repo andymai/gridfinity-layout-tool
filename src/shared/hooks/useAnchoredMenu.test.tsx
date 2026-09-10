@@ -58,6 +58,30 @@ describe('useAnchoredMenu', () => {
     expect(menu.style.top).toBe('');
   });
 
+  it('clamps max-height to the room below and scrolls, so content taller than the viewport never lands off-screen', () => {
+    render(<Harness />);
+    const button = screen.getByRole('button', { name: 'more' });
+    vi.spyOn(button, 'getBoundingClientRect').mockReturnValue(rectAt(100));
+
+    fireEvent.click(button);
+
+    const menu = screen.getByRole('menu');
+    expect(menu.style.maxHeight).toBe('676px');
+    expect(menu.style.overflowY).toBe('auto');
+  });
+
+  it('clamps max-height to the room above when opening upward', () => {
+    render(<Harness />);
+    const button = screen.getByRole('button', { name: 'more' });
+    vi.spyOn(button, 'getBoundingClientRect').mockReturnValue(rectAt(700));
+
+    fireEvent.click(button);
+
+    const menu = screen.getByRole('menu');
+    expect(menu.style.maxHeight).toBe('696px');
+    expect(menu.style.overflowY).toBe('auto');
+  });
+
   it('closes on a click outside and reports it', () => {
     const onClose = vi.fn();
     render(<Harness onClose={onClose} />);
