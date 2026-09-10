@@ -15,9 +15,9 @@
 
 import { drawRoundedRectangle, unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, Drawing, Sketch, ValidSolid } from 'brepjs';
-import { COPLANAR_OVERLAP, pocketCornerRadius } from './generatorConstants';
+import { COPLANAR_OVERLAP, pocketCornerRadius, safeSectionRect } from './generatorConstants';
 import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
-import { LID_COPLANAR_MARGIN, LID_MIN_CORNER_RADIUS } from './lidConstants';
+import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { isRegionFilled } from '@/shared/utils/cellMask';
 import { forEachCell, type CellInfo } from './cellDecomposition';
 import { buildMaskDrawingAtInset } from './maskPolygon';
@@ -31,11 +31,6 @@ const STACK_INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
  *  lip's inner face sits inside the nominal socket grid. `lidTextBuilder` sizes
  *  the text fit box from it. */
 export const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
-
-/** Floor for every inset-derived pocket dimension. The deepest inset is
- *  STACK_INSET_BOT (2.95mm per side), which a small enough cell or grid unit
- *  would otherwise drive to zero or negative. */
-const MIN_POCKET_MM = 0.1;
 
 /**
  * Z breakpoints of the pocket profile, paired with their per-side inset — the
@@ -54,7 +49,7 @@ const POCKET_PROFILE: readonly (readonly [z: number, inset: number])[] = [
 
 /** `outlineAt` must return sections that share a vertex topology at every
  *  inset — a ruled loft can't bridge differing curve counts, which is why both
- *  callers floor their corner radius rather than let it reach zero. */
+ *  callers size their sections through `safeSectionRect`. */
 function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
   const [first, ...rest] = POCKET_PROFILE.map(
     ([z, inset]) => outlineAt(inset).sketchOnPlane('XY', z) as Sketch
@@ -99,13 +94,14 @@ const POCKET_EDGE_GROWTH_MM = 5 * COPLANAR_OVERLAP;
  */
 function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
-  return loftPocket((inset) =>
-    drawRoundedRectangle(
-      Math.max(cellW_mm + 2 * POCKET_EDGE_GROWTH_MM - 2 * inset, MIN_POCKET_MM),
-      Math.max(cellD_mm + 2 * POCKET_EDGE_GROWTH_MM - 2 * inset, MIN_POCKET_MM),
-      Math.max(cornerR - inset, MIN_POCKET_MM)
-    )
-  );
+  return loftPocket((inset) => {
+    const { width, depth, radius } = safeSectionRect(
+      cellW_mm + 2 * POCKET_EDGE_GROWTH_MM - 2 * inset,
+      cellD_mm + 2 * POCKET_EDGE_GROWTH_MM - 2 * inset,
+      cornerR - inset
+    );
+    return drawRoundedRectangle(width, depth, radius);
+  });
 }
 
 /**
@@ -125,14 +121,14 @@ function buildStackLipCutter(inputs: LidInputs): Shape3D {
   const cornerR = pocketCornerRadius(totalW, totalD);
 
   return loftPocket((inset) => {
-    const radius = Math.max(cornerR - inset, LID_MIN_CORNER_RADIUS);
+    const { width, depth, radius } = safeSectionRect(
+      totalW - 2 * inset,
+      totalD - 2 * inset,
+      cornerR - inset
+    );
     return cellMask
       ? buildMaskDrawingAtInset(cellMask, { x: gridUnitMm, y: gridUnitMmY }, inset, radius)
-      : drawRoundedRectangle(
-          Math.max(totalW - 2 * inset, MIN_POCKET_MM),
-          Math.max(totalD - 2 * inset, MIN_POCKET_MM),
-          radius
-        );
+      : drawRoundedRectangle(width, depth, radius);
   });
 }
 

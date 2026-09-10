@@ -24,6 +24,7 @@ import {
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
   LIP_OVERLAP,
+  safeSectionRect,
 } from './generatorTypes';
 import { getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
@@ -126,10 +127,12 @@ function buildTopShapeLoft(
           : buildMaskDrawingInset(cellMask, gridUnitMm, inset);
       return d.sketchOnPlane('XY', z) as Sketch;
     }
-    const w = outerW - 2 * inset;
-    const d = outerD - 2 * inset;
-    const r = Math.max(BOX_CORNER_RADIUS - inset, 0.1);
-    const rect = drawRoundedRectangle(w, d, r);
+    const { width, depth, radius } = safeSectionRect(
+      outerW - 2 * inset,
+      outerD - 2 * inset,
+      BOX_CORNER_RADIUS - inset
+    );
+    const rect = drawRoundedRectangle(width, depth, radius);
     return translateDrawing(rect, offX, offY).sketchOnPlane('XY', z) as Sketch;
   };
 
@@ -286,7 +289,8 @@ function buildTopShapeSweep(
   const holeDrawings = polygon ? buildMaskHoleDrawings(cellMask, gridUnitMm) : [];
 
   return withScope((scope: DisposalScope) => {
-    const outerRect = drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS);
+    const outerSafe = safeSectionRect(outerW, outerD, BOX_CORNER_RADIUS);
+    const outerRect = drawRoundedRectangle(outerSafe.width, outerSafe.depth, outerSafe.radius);
     const boxSketch = polygon
       ? (buildMaskDrawing(cellMask, gridUnitMm).sketchOnPlane() as Sketch)
       : (translateDrawing(outerRect, offX, offY).sketchOnPlane() as Sketch);

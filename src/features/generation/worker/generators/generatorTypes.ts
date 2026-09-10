@@ -37,6 +37,8 @@ export {
   HOLE_OFFSET,
   INSET_BOT,
   pocketCornerRadius,
+  safeSectionRect,
+  capSectionRadius,
   resolveCornerRadii,
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,

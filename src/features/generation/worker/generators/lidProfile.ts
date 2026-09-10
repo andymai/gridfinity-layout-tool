@@ -10,8 +10,8 @@
 
 import { drawRoundedRectangle, unwrap, cut } from 'brepjs';
 import type { Shape3D, DisposalScope, Sketch, Drawing } from 'brepjs';
-import { LIP_BIG_TAPER } from './generatorConstants';
-import { LID_COPLANAR_MARGIN, LID_MIN_CORNER_RADIUS } from './lidConstants';
+import { LIP_BIG_TAPER, safeSectionRect } from './generatorConstants';
+import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { buildMaskDrawingAtInset } from './maskPolygon';
 import type { LidInputs } from './lidInputs';
 
@@ -25,7 +25,11 @@ export function buildOutlineDrawing(inputs: LidInputs, outerInset: number): Draw
   const { lidOuterW, lidOuterD, lidCornerR, gridUnitMm, gridUnitMmY, fitClearance, cellMask } =
     inputs;
   const { outerOffsetX, outerOffsetY } = inputs;
-  const radius = Math.max(lidCornerR - outerInset, LID_MIN_CORNER_RADIUS);
+  const { width, depth, radius } = safeSectionRect(
+    lidOuterW - 2 * outerInset,
+    lidOuterD - 2 * outerInset,
+    lidCornerR - outerInset
+  );
 
   const outline = cellMask
     ? // Polygon path: total inset from the base (full grid) polygon =
@@ -39,7 +43,7 @@ export function buildOutlineDrawing(inputs: LidInputs, outerInset: number): Draw
         radius
       )
     : // Rectangular path
-      drawRoundedRectangle(lidOuterW - 2 * outerInset, lidOuterD - 2 * outerInset, radius);
+      drawRoundedRectangle(width, depth, radius);
 
   // Asymmetric overhang shifts the bin's outer body off the socket grid; the
   // lid's perimeter follows so it wraps the lip. Symmetric/absent overhang

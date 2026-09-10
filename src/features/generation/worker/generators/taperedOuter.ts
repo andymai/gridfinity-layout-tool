@@ -17,7 +17,7 @@
 
 import { drawRoundedRectangle, cut, unwrap } from 'brepjs';
 import type { Shape3D, Sketch, ValidSolid, DisposalScope } from 'brepjs';
-import { BOX_CORNER_RADIUS, COPLANAR_MARGIN } from './generatorTypes';
+import { BOX_CORNER_RADIUS, COPLANAR_MARGIN, safeSectionRect } from './generatorTypes';
 import type { ResolvedTaper } from './overhang';
 
 const FILLET_SECTION_MM = 2.5;
@@ -89,13 +89,17 @@ function taperSampler(
     const ir = insetAt(taper.right, z);
     const iFront = insetAt(taper.front, z);
     const ib = insetAt(taper.back, z);
-    const w = Math.max(outerW - il - ir - 2 * shrink, 0.2);
-    const d = Math.max(outerD - iFront - ib - 2 * shrink, 0.2);
+    const { width, depth, radius } = safeSectionRect(
+      outerW - il - ir - 2 * shrink,
+      outerD - iFront - ib - 2 * shrink,
+      BOX_CORNER_RADIUS - shrink
+    );
     // Asymmetric insets shift the section center; add the overhang recenter.
     const cx = offX + (il - ir) / 2;
     const cy = offY + (iFront - ib) / 2;
-    const r = Math.max(Math.min(BOX_CORNER_RADIUS - shrink, w / 2 - 0.1, d / 2 - 0.1), 0.1);
-    return drawRoundedRectangle(w, d, r).translate(cx, cy).sketchOnPlane('XY', z) as Sketch;
+    return drawRoundedRectangle(width, depth, radius)
+      .translate(cx, cy)
+      .sketchOnPlane('XY', z) as Sketch;
   };
 
   // z-levels from `bottom` to `top`: chamfer needs only the band break; fillet
@@ -170,8 +174,11 @@ export function buildTaperedLofts(
   const nr = insetAt(taper.right, zNarrow);
   const nf = insetAt(taper.front, zNarrow);
   const nb = insetAt(taper.back, zNarrow);
-  const nw = Math.max(outerW - nl - nr - 2 * wallThickness, 0.2);
-  const nd = Math.max(outerD - nf - nb - 2 * wallThickness, 0.2);
+  const { width: nw, depth: nd } = safeSectionRect(
+    outerW - nl - nr - 2 * wallThickness,
+    outerD - nf - nb - 2 * wallThickness,
+    BOX_CORNER_RADIUS - wallThickness
+  );
   const ncx = offX + (nl - nr) / 2;
   const ncy = offY + (nf - nb) / 2;
 

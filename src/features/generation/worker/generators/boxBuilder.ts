@@ -23,7 +23,15 @@ import {
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
-import { SIZE, CLEARANCE, BOX_CORNER_RADIUS, COPLANAR_MARGIN, sketch } from './generatorTypes';
+import {
+  SIZE,
+  CLEARANCE,
+  BOX_CORNER_RADIUS,
+  COPLANAR_MARGIN,
+  capSectionRadius,
+  safeSectionRect,
+  sketch,
+} from './generatorTypes';
 import { getBoxCache, setBoxCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
@@ -236,21 +244,24 @@ export function buildBinBox(
   // wider side reaches further out; symmetric/zero overhang leaves it centered.
   const recenter = (d: Drawing): Drawing => translateDrawing(d, offX, offY);
 
-  const makeFootprint = (): Drawing =>
-    polygon
-      ? buildMaskDrawing(cellMask, gridUnitMm)
-      : recenter(drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS));
+  const makeFootprint = (): Drawing => {
+    if (polygon) return buildMaskDrawing(cellMask, gridUnitMm);
+    const { width, depth, radius } = safeSectionRect(outerW, outerD, BOX_CORNER_RADIUS);
+    return recenter(drawRoundedRectangle(width, depth, radius));
+  };
 
-  const makeInnerFootprint = (): Drawing =>
-    polygon
-      ? buildMaskDrawingInset(cellMask, gridUnitMm, wallThickness)
-      : recenter(
-          drawRoundedRectangle(
-            Math.max(outerW - 2 * wallThickness, 0.1),
-            Math.max(outerD - 2 * wallThickness, 0.1),
-            Math.max(BOX_CORNER_RADIUS - wallThickness, 0)
-          )
-        );
+  const makeInnerFootprint = (): Drawing => {
+    if (polygon) return buildMaskDrawingInset(cellMask, gridUnitMm, wallThickness);
+    const w = Math.max(outerW - 2 * wallThickness, 0.1);
+    const d = Math.max(outerD - 2 * wallThickness, 0.1);
+    return recenter(
+      drawRoundedRectangle(
+        w,
+        d,
+        capSectionRadius(w, d, Math.max(BOX_CORNER_RADIUS - wallThickness, 0))
+      )
+    );
+  };
 
   // Holes in the mask (O-shape-style interiors) — pre-extracted so every
   // branch below can decide whether it needs to subtract them. Empty for
