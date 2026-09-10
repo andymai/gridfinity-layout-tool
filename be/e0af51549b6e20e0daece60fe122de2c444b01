@@ -1,0 +1,31 @@
+src/features/baseplate/hooks/generationMeshEntries.ts
+  s_80593ce0b07ec4::t_6b93013a744444 1-112
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_80593ce0b07ec4::t_6b93013a744444 57-65
+src/shared/hooks/useDrawerFitSuggestion.ts
+  s_80593ce0b07ec4::t_c09a21a153a71e 1-7,9-239
+  s_80593ce0b07ec4::t_50cfa78631fb41 8
+src/shared/hooks/useDrawerSettings.ts
+  s_80593ce0b07ec4::t_c09a21a153a71e 37,39,248-265
+  s_80593ce0b07ec4::t_50cfa78631fb41 38
+  s_80593ce0b07ec4::t_e3fe2ec9a6cb9a 266
+src/features/baseplate/hooks/generationTriggers.ts
+  s_80593ce0b07ec4::t_191f108b2f70e1 3
+  s_80593ce0b07ec4::t_6b93013a744444 1-2,4-220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bee0af51549b6e20e0daece60fe122de2c444b01",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
