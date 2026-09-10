@@ -14,10 +14,9 @@
 import { del, put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { Redis } from 'ioredis';
-import { readSessionCookie } from '../lib/cookies.js';
 import { logger } from '../lib/logger.js';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
-import { readSession, requireSession } from '../lib/session.js';
+import { readOptionalSession, requireSession } from '../lib/session.js';
 import type { SessionRecord } from '../lib/session.js';
 import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
 import {
@@ -127,19 +126,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
  */
 async function requireLiveDesign(redis: Redis, designId: string): Promise<boolean> {
   return (await redis.hget(communityDesignKey(designId), 'status')) === 'live';
-}
-
-/** Public surface: an absent or unreadable session degrades to anonymous, never 401. */
-async function readOptionalSession(req: VercelRequest): Promise<SessionRecord | null> {
-  const token = readSessionCookie(req);
-  if (!token) return null;
-  const redis = getRedis();
-  if (!redis) return null;
-  try {
-    return await readSession(redis, token);
-  } catch {
-    return null;
-  }
 }
 
 async function handleList(

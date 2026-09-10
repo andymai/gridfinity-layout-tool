@@ -71,6 +71,15 @@ vi.mock('../lib/rateLimit.js', () => ({
 vi.mock('../lib/session.js', () => ({
   requireSession: mocks.requireSession,
   readSession: mocks.readSession,
+  readOptionalSession: async (req: VercelRequest) => {
+    const token = mocks.readSessionCookie(req);
+    if (!token) return null;
+    try {
+      return await mocks.readSession(mocks.getRedis(), token);
+    } catch {
+      return null;
+    }
+  },
 }));
 
 vi.mock('../lib/cookies.js', () => ({
