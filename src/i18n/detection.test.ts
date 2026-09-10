@@ -19,6 +19,7 @@ describe('isLocale', () => {
     expect(isLocale('it')).toBe(true);
     expect(isLocale('sv')).toBe(true);
     expect(isLocale('ja')).toBe(true);
+    expect(isLocale('ka')).toBe(true);
   });
 
   it('returns false for invalid locale codes', () => {
@@ -32,7 +33,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(15);
+    expect(SUPPORTED_LOCALES).toHaveLength(16);
   });
 
   it('has required properties for each locale', () => {
@@ -138,6 +139,11 @@ describe('detectBrowserLocale', () => {
     it('detects Korean', () => {
       vi.stubGlobal('navigator', { languages: ['ko'], language: 'ko' });
       expect(detectBrowserLocale()).toBe('ko');
+    });
+
+    it('detects Georgian', () => {
+      vi.stubGlobal('navigator', { languages: ['ka'], language: 'ka' });
+      expect(detectBrowserLocale()).toBe('ka');
     });
   });
 
@@ -270,6 +276,11 @@ describe('detectBrowserLocale', () => {
     it('maps ko-KR to ko', () => {
       vi.stubGlobal('navigator', { languages: ['ko-KR'], language: 'ko-KR' });
       expect(detectBrowserLocale()).toBe('ko');
+    });
+
+    it('maps ka-GE to ka', () => {
+      vi.stubGlobal('navigator', { languages: ['ka-GE'], language: 'ka-GE' });
+      expect(detectBrowserLocale()).toBe('ka');
     });
   });
 
