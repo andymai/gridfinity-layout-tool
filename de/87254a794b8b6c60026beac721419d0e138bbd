@@ -1,0 +1,31 @@
+src/features/generation/worker/generators/hingeBarrel.ts
+  s_c7b201dddd6c90::t_35d245926b3867 428-430
+  s_c7b201dddd6c90::t_80112cce0c20ff 448-455
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_c7b201dddd6c90::t_809c20c703c54e 165-186
+  s_c7b201dddd6c90::t_0c2a767fa392bd 272-277,289-290,292
+  s_c7b201dddd6c90::t_14b2a83c4e0e8c 303-309,319,325-326,334,339
+  s_c7b201dddd6c90::t_a2638ace759747 70-86
+  s_c7b201dddd6c90::t_ecfa452f4e6d9e 38-42
+  s_c7b201dddd6c90::t_7cc6ecfef8cbb5 164
+src/shared/utils/hingeLidPlan.ts
+  s_c7b201dddd6c90::t_9852e3674e244e 472-473
+  s_c7b201dddd6c90::t_c9f21e37fc1089 188-204
+  s_c7b201dddd6c90::t_862f3ebe336663 363-377,383-391,393-396,398,400-401,403-426
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "de87254a794b8b6c60026beac721419d0e138bbd",
+  "prompts": {},
+  "sessions": {
+    "s_c7b201dddd6c90": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99577357-eb42-4c8e-a6e3-1123e78ea682",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
