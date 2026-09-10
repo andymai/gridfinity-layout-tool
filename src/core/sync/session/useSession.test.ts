@@ -132,9 +132,11 @@ describe('useSessionLifecycle', () => {
     // sign-in that picks 'merge' in the mismatch dialog, leaking A's
     // edits into B's account.
     const outboxModule = await import('../outbox');
-    const pollerModule = await import('../pullState');
+    const pullStateModule = await import('../pullState');
     const clearAllSpy = vi.spyOn(outboxModule, 'clearAll').mockResolvedValueOnce();
-    const resetPullStateSpy = vi.spyOn(pollerModule, 'resetPullState').mockImplementation(() => {});
+    const resetPullStateSpy = vi
+      .spyOn(pullStateModule, 'resetPullState')
+      .mockImplementation(() => {});
 
     fetchMock.mockResolvedValueOnce(
       new Response(

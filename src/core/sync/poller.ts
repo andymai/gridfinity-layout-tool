@@ -43,10 +43,12 @@ export interface PullResult {
  */
 export async function pullNow(adapters: SyncAdapters): Promise<PullResult> {
   if (pullState.inFlight) return pullState.inFlight;
-  pullState.inFlight = run(adapters, pullState.generation).finally(() => {
-    pullState.inFlight = null;
+  const pull = run(adapters, pullState.generation).finally(() => {
+    // A reset during this pull may have started a newer one; leave its slot alone.
+    if (pullState.inFlight === pull) pullState.inFlight = null;
   });
-  return pullState.inFlight;
+  pullState.inFlight = pull;
+  return pull;
 }
 
 export function __resetForTests(): void {

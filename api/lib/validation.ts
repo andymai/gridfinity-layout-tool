@@ -4,10 +4,11 @@
  */
 
 import { sanitizeString } from './sanitize.js';
-export { sanitizeString } from './sanitize.js';
 import { isNumber, isObject, inRange, validationError } from './validationUtils.js';
 import { validateDesignerShare } from './designerValidation.js';
 import { validateAssemblyEnvelope, validateAssemblyStructure } from './assemblyValidation.js';
+
+export { sanitizeString } from './sanitize.js';
 
 // Constraints for shared layouts
 const SHARE_CONSTRAINTS = {
