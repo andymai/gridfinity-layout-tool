@@ -89,6 +89,22 @@ function control(params: BinParams): BinParams {
   return { ...params, lid: { ...params.lid, attachment: 'friction', hinge: undefined } };
 }
 
+/**
+ * The same design with the hinge swapped for click rails on all four walls.
+ *
+ * The apples-to-apples control for a VOLUME comparison, where {@link control}
+ * is not: `hingeParams` carries `clickRails: {front,back,left,right: true}`
+ * by default (a hinge lid can catch on its non-hinge walls too), and a
+ * friction control silently drops every one of those rails rather than
+ * isolating the hinge's own contribution. Since #4207 gave the rail a real
+ * catch, that difference is no longer ~0mm³ — measured ~46mm³ on the default
+ * hinge footprint, which is the rails legitimately engaging the lip on three
+ * walls, not the hinge making anything worse.
+ */
+function clickRailControl(params: BinParams): BinParams {
+  return { ...params, lid: { ...params.lid, attachment: 'clickRails', hinge: undefined } };
+}
+
 interface Solids {
   readonly bin: Shape3D;
   readonly lid: Shape3D;
@@ -351,11 +367,13 @@ describe('hinged lid', () => {
     // cylinders fused into a flat wall. The boolean says the shared volume is
     // zero, and a boolean has no parity to get wrong.
     //
-    // Still a DELTA against the friction control, because a capping lid's
-    // lip-in-cavity fit is legitimately not zero on every footprint (CLAUDE.md
-    // gotcha #18). The question is only whether the hinge made it worse.
+    // Still a DELTA against a control, because a capping lid's lip-in-cavity
+    // fit is legitimately not zero on every footprint (CLAUDE.md gotcha #18).
+    // The control carries the SAME click rails this design does — see
+    // `clickRailControl` — so the question stays only whether the hinge made
+    // it worse, not whether working rails engage the lip at all.
     const hinged = await measure(params);
-    const plain = await measure(control(params));
+    const plain = await measure(clickRailControl(params));
     expect(hinged).toBeLessThan(plain + CONTACT_FLOOR_MM3);
   }, 600_000);
 
