@@ -1,0 +1,41 @@
+api/community.ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 3-4,6-7
+api/lib/communityDesignActions.ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 1-386
+api/lib/communityList.ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 1-432
+api/lib/communityPublish.ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 1-453
+api/community.test.ts
+  s_80593ce0b07ec4::t_24124db76400e6 28-36
+api/lib/communityDesignShared.ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 1-63
+api/community/prints.ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 19
+api/lib/session.ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 107-119
+api/community/[id].test.ts
+  s_80593ce0b07ec4::t_24124db76400e6 74-82
+api/lib/communityDesignMutations.ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 1-423
+api/community/prints.test.ts
+  s_80593ce0b07ec4::t_24124db76400e6 23-31
+api/community/[id].ts
+  s_80593ce0b07ec4::t_c3889e30265cbb 11,13,19-20,23-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8df2435f56fc5491c4b007e9f3cf371ebb4cb126",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
