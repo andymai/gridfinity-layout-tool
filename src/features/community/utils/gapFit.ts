@@ -8,7 +8,7 @@
  */
 
 import type { CommunityDesignMetrics } from '@/shared/types/community';
-import type { FitsGapContext } from '../store/browseStore';
+import type { FitsGapContext } from '../store/browseFilters';
 import { cardDimensionUnits } from '../components/CommunityCard/cardDims';
 
 export type GapFitVerdict =
