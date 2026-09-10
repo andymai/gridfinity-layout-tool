@@ -324,7 +324,11 @@ async function writeShareAndRespond(
 ): Promise<VercelResponse> {
   // Every rewrite strips library placement, so a legacy blob that still
   // carries a folderId loses it on its next permission-only update too.
-  const stored: ShareData = { ...data, layout: withoutLibraryPlacement(data.layout) };
+  const layout = data.layout;
+  const stored: ShareData =
+    typeof layout === 'object' && layout !== null
+      ? { ...data, layout: withoutLibraryPlacement(layout as { folderId?: string }) }
+      : data;
   await put(blobPath, JSON.stringify(stored), {
     access: 'public',
     contentType: 'application/json',
