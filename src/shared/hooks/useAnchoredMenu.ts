@@ -59,10 +59,16 @@ export function useAnchoredMenu({ onClose }: UseAnchoredMenuOptions = {}) {
       const button = menuButtonRef.current;
       if (button) {
         const rect = button.getBoundingClientRect();
-        const openAbove = window.innerHeight - rect.bottom < MIN_SPACE_BELOW_PX;
+        const spaceBelowPx = window.innerHeight - rect.bottom;
+        const openAbove = spaceBelowPx < MIN_SPACE_BELOW_PX;
         setMenuStyle({
           position: 'fixed',
           right: window.innerWidth - rect.right,
+          // Clamps content taller than the available side regardless of cause
+          // (a longer-language label set, a deep menu, a short viewport) so the
+          // last item scrolls into view instead of landing off-screen.
+          maxHeight: Math.max(0, (openAbove ? rect.top : spaceBelowPx) - GAP_PX),
+          overflowY: 'auto',
           ...(openAbove
             ? { bottom: window.innerHeight - rect.top + GAP_PX }
             : { top: rect.bottom + GAP_PX }),
