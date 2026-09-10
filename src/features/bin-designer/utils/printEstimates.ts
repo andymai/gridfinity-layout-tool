@@ -57,7 +57,6 @@ import {
   effectiveDividerHeight,
   totalDividerLength,
 } from './printPatternSavings';
-export { computeLabelTabVolume, rampAreaWithin, lipSupportArea } from './printLabelTabVolume';
 export interface PrintEstimate {
   /** Estimated material volume in mm³ */
   readonly volumeMm3: number;
