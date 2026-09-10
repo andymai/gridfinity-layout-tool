@@ -1,0 +1,56 @@
+src/features/bin-designer/components/preview/GhostLidCutouts/GhostLidCutouts.tsx
+  s_80593ce0b07ec4::t_573d92a375dc5f 22,25,97
+  s_80593ce0b07ec4::t_966a6bec134c34 98-100
+  s_80593ce0b07ec4::t_742520503e2d0b 101-104,109
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.tsx
+  s_80593ce0b07ec4::t_573d92a375dc5f 11,14,204
+src/features/bin-designer/components/preview/GhostSlotLines/GhostSlotLines.tsx
+  s_80593ce0b07ec4::t_573d92a375dc5f 10,14,155-159
+  s_80593ce0b07ec4::t_25924134402393 163
+src/features/bin-designer/components/preview/GhostWallCutouts/GhostWallCutouts.tsx
+  s_80593ce0b07ec4::t_573d92a375dc5f 10,15,344-348
+  s_80593ce0b07ec4::t_59bff003cc173e 352
+src/features/bin-designer/components/preview/GhostDividers/GhostDividers.tsx
+  s_80593ce0b07ec4::t_5cc5f44c7f1742 11,15,93-97
+  s_80593ce0b07ec4::t_53a8b55e2618a6 101
+src/features/bin-designer/components/preview/useGhostLineSegments.test.ts
+  s_80593ce0b07ec4::t_5cc5f44c7f1742 1-71
+  s_80593ce0b07ec4::t_299d1477d0cb28 72-74
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_80593ce0b07ec4::t_573d92a375dc5f 11,14,323
+src/features/bin-designer/components/preview/GhostCutouts/GhostCutouts.tsx
+  s_80593ce0b07ec4::t_5cc5f44c7f1742 13,17,125-129
+  s_80593ce0b07ec4::t_94c7b681ca5340 130-131
+  s_80593ce0b07ec4::t_212715f8f72ce9 135
+src/features/bin-designer/components/preview/GhostWireframe/GhostWireframe.tsx
+  s_80593ce0b07ec4::t_573d92a375dc5f 11,16,143-147
+  s_80593ce0b07ec4::t_a5471799245133 151
+src/features/bin-designer/components/preview/useGhostMeshMaterial.test.ts
+  s_80593ce0b07ec4::t_5cc5f44c7f1742 1-53
+src/features/bin-designer/components/preview/useGhostMeshMaterial.ts
+  s_80593ce0b07ec4::t_5cc5f44c7f1742 1-45
+src/features/bin-designer/components/preview/GhostHandles/GhostHandles.tsx
+  s_80593ce0b07ec4::t_573d92a375dc5f 8,11,182
+src/features/bin-designer/components/preview/useGhostLineSegments.ts
+  s_80593ce0b07ec4::t_5cc5f44c7f1742 1-60
+src/features/bin-designer/components/preview/GhostKnives/GhostKnives.tsx
+  s_80593ce0b07ec4::t_573d92a375dc5f 17,21,46
+  s_80593ce0b07ec4::t_0dfe769bf47b09 47-49
+  s_80593ce0b07ec4::t_eed790602f970e 50-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f21679fd3ecbc2a911ff92819884d10c1bb06c6a",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
