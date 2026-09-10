@@ -21,6 +21,16 @@ import {
 } from '../../utils/cutoutHierarchy';
 
 /**
+ * Read-only view of the target's cutouts, for guards that run BEFORE any write.
+ * Unlike {@link cutoutOwner} it never materializes `lid.cutouts`, so an action
+ * that bails early leaves no `[]` behind on a lid that has none.
+ */
+export function cutoutList(state: Draft<DesignerState>): readonly Cutout[] {
+  if (state.ui.cutoutTarget !== 'lid') return state.params.cutouts;
+  return state.params.lid.cutouts ?? [];
+}
+
+/**
  * The cutout array every action in this slice reads and writes, chosen by
  * `ui.cutoutTarget`.
  *
@@ -36,11 +46,6 @@ import {
  * leave `[]` behind on a lid that has none — enough to shift the design's
  * `communityParamsFingerprint` for a no-op.
  */
-export function cutoutList(state: Draft<DesignerState>): readonly Cutout[] {
-  if (state.ui.cutoutTarget !== 'lid') return state.params.cutouts;
-  return state.params.lid.cutouts ?? [];
-}
-
 export function cutoutOwner(state: Draft<DesignerState>): { cutouts: Cutout[] } {
   if (state.ui.cutoutTarget !== 'lid') return state.params;
   const lid = state.params.lid;
