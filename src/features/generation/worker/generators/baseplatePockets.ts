@@ -20,6 +20,7 @@ import {
   INSET_BOT,
   pocketCornerRadius,
   COPLANAR_MARGIN,
+  safeSectionRect,
 } from './generatorTypes';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { pocketTemplateCache } from './baseplateCaches';
@@ -52,10 +53,12 @@ function pocketSection(
   z: number,
   inset: number
 ): Sketch {
-  const w = cellW_mm - 2 * inset;
-  const d = cellD_mm - 2 * inset;
-  const r = Math.max(cornerR - inset, 0.1);
-  return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
+  const { width, depth, radius } = safeSectionRect(
+    cellW_mm - 2 * inset,
+    cellD_mm - 2 * inset,
+    cornerR - inset
+  );
+  return drawRoundedRectangle(width, depth, radius).sketchOnPlane('XY', z) as Sketch;
 }
 
 /**

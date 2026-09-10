@@ -93,17 +93,29 @@ export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   return Math.min(CORNER_RADIUS, maxRadius);
 }
 
-/** Smallest side, and smallest corner radius, an inset-derived section may reach. */
-const MIN_SECTION_MM = 0.1;
-
 /**
  * Radius ceiling as a fraction of the shorter side. `drawRoundedRectangle`
  * sketches each corner arc tangent to the side before it, so at exactly half
  * the shorter side that side has no length left and brepjs raises
- * `Bug in Sketcher2d.tangentArc` instead of clamping. Measured stable up to
- * 0.499 at every scale; 0.4 leaves a real straight run between arcs.
+ * `Bug in Sketcher2d.tangentArc` instead of clamping. This leaves each straight
+ * run a fifth of its side rather than a sliver.
  */
 const MAX_SECTION_RADIUS_FRACTION = 0.4;
+
+/**
+ * Smallest corner radius a section may carry. Above `MIN_ARC_RADIUS`, so the
+ * polygon builder rounds every section of a loft rather than squaring off the
+ * small ones — mixing the two inside one loft gives its sections different
+ * curve counts, which a ruled loft cannot bridge.
+ */
+const MIN_SECTION_RADIUS_MM = 0.1;
+
+/**
+ * Smallest side a section may shrink to, DERIVED so the cap above can never
+ * push a radius below its own floor. Choosing the two independently is the bug
+ * this module exists to prevent, one level up.
+ */
+const MIN_SECTION_MM = MIN_SECTION_RADIUS_MM / MAX_SECTION_RADIUS_FRACTION;
 
 /**
  * Clamp a rounded rectangle's width, depth and corner radius together so it is
@@ -115,10 +127,6 @@ const MAX_SECTION_RADIUS_FRACTION = 0.4;
  * rectangle it is rounding. Returning them as a set is what keeps them
  * consistent — the radius is capped against the size that survived ITS floor,
  * not the raw one.
- *
- * The radius never reaches zero: a squared corner carries four fewer curves
- * than a rounded one, and a ruled loft cannot bridge sections whose curve
- * counts differ.
  */
 export function safeSectionRect(
   width: number,
@@ -130,7 +138,7 @@ export function safeSectionRect(
   return {
     width: w,
     depth: d,
-    radius: capSectionRadius(w, d, Math.max(radius, MIN_SECTION_MM)),
+    radius: capSectionRadius(w, d, Math.max(radius, MIN_SECTION_RADIUS_MM)),
   };
 }
 

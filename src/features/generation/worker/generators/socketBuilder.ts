@@ -433,10 +433,12 @@ export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): S
   const Z3 = -SOCKET_HEIGHT;
 
   const sectionAt = (z: number, inset: number): Sketch => {
-    const w = cellW_mm - 2 * inset;
-    const d = cellD_mm - 2 * inset;
-    const r = Math.max(cornerR - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
+    const { width, depth, radius } = safeSectionRect(
+      cellW_mm - 2 * inset,
+      cellD_mm - 2 * inset,
+      cornerR - inset
+    );
+    return drawRoundedRectangle(width, depth, radius).sketchOnPlane('XY', z) as Sketch;
   };
 
   const s1 = sectionAt(Z1, INSET_TOP);

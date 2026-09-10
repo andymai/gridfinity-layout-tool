@@ -33,7 +33,7 @@ interface Point2Mm {
 }
 
 /** Minimum arc radius — below this we emit a sharp corner instead. */
-const MIN_ARC_RADIUS = 0.05;
+export const MIN_ARC_RADIUS = 0.05;
 
 /**
  * Inset an axis-aligned CCW polygon by `inset` mm, moving every edge

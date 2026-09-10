@@ -1,49 +1,59 @@
 // @vitest-environment node
 /**
- * Diagnostic (not a CI gate): re-measure the radius/size ratio at which
- * brepjs's `drawRoundedRectangle` stops building, which is where
- * `MAX_SECTION_RADIUS_FRACTION` (generatorConstants.ts) comes from.
+ * Re-measures the radius/size ratio at which brepjs's `drawRoundedRectangle`
+ * stops building, which is the threshold `MAX_SECTION_RADIUS_FRACTION`
+ * (generatorConstants.ts) sits under.
  *
- * Worth re-running on a brepjs bump: the constant is a measured limit, not a
- * documented one, and the failure it guards is a hard throw rather than a
- * clamp.
+ * Worth re-running on a brepjs bump: the limit is a measured property of the
+ * sketcher rather than a documented one, and it fails as a hard throw rather
+ * than a clamp.
  */
-import { describe, it, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
+import { drawRoundedRectangle, mesh } from 'brepjs';
 import { initBrepjs } from './wasmInit';
 
 beforeAll(async () => {
   await initBrepjs();
 }, 120_000);
 
+/** Whether brepjs will build a rounded rectangle at these proportions. */
+function builds(size: number, radius: number): boolean {
+  try {
+    drawRoundedRectangle(size, size, radius);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const SCALES = [0.1, 1, 42];
+
 describe('drawRoundedRectangle limit', () => {
-  it('sweeps radius as a fraction of the shorter side', async () => {
-    const { drawRoundedRectangle } = await import('brepjs');
-    for (const size of [0.1, 1, 42]) {
-      const results: string[] = [];
-      for (const frac of [0.1, 0.25, 0.4, 0.45, 0.49, 0.499, 0.5, 0.5001, 0.51, 0.6, 1.0]) {
-        try {
-          drawRoundedRectangle(size, size, size * frac);
-          results.push(`${frac}:ok`);
-        } catch {
-          results.push(`${frac}:THROW`);
-        }
+  it('accepts any radius under half the shorter side, at every scale', () => {
+    for (const size of SCALES) {
+      for (const frac of [0.1, 0.25, 0.4, 0.45, 0.49, 0.499]) {
+        expect(builds(size, size * frac), `size=${size} frac=${frac}`).toBe(true);
       }
-      console.log(`\nsize=${size}mm  ${results.join('  ')}`);
     }
   });
 
-  it('confirms a capped section still lofts against a full-size one', async () => {
-    const brepjs = await import('brepjs');
-    const { drawRoundedRectangle } = brepjs;
+  it('throws at half the shorter side and beyond', () => {
+    for (const size of SCALES) {
+      for (const frac of [0.5, 0.5001, 0.51, 0.6, 1.0]) {
+        expect(builds(size, size * frac), `size=${size} frac=${frac}`).toBe(false);
+      }
+    }
+  });
+
+  it('lofts a floored section against a full-size one', () => {
+    const top = drawRoundedRectangle(42, 42, 4).sketchOnPlane('XY', 5);
+    const bot = drawRoundedRectangle(0.25, 0.25, 0.1).sketchOnPlane('XY', 0);
+    const solid = bot.loftWith([top], { ruled: true });
     try {
-      const top = drawRoundedRectangle(42, 42, 4).sketchOnPlane('XY', 5);
-      const bot = drawRoundedRectangle(0.1, 0.1, 0.04).sketchOnPlane('XY', 0);
-      const solid = bot.loftWith([top], { ruled: true });
-      const m = brepjs.mesh(solid, { tolerance: 0.01, angularTolerance: 0.05 });
-      console.log(`\nloft 0.1mm section -> 42mm section: ok, ${m.vertices.length / 3} vertices`);
+      const m = mesh(solid, { tolerance: 0.01, angularTolerance: 0.05 });
+      expect(m.vertices.length).toBeGreaterThan(0);
+    } finally {
       solid.delete();
-    } catch (e) {
-      console.log(`\nloft 0.1mm section -> 42mm section: THREW ${String(e).slice(0, 120)}`);
     }
   });
 });
