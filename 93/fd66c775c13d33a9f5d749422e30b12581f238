@@ -1,0 +1,19 @@
+src/features/generation/bridge/bridgeGeneration.ts
+  s_80593ce0b07ec4::t_a57ec1e0e53577 105-110,120-125,140-144,147,166-192,198-202,210,219-220,223
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "93fd66c775c13d33a9f5d749422e30b12581f238",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
