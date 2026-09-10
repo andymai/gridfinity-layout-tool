@@ -10,8 +10,6 @@ import { buildOverrideLookup, overrideKey } from '@/shared/types/bin';
 
 import { BOX_CORNER_RADIUS } from './generatorConstants';
 
-// Re-export for backwards compatibility with existing imports
-
 interface CavityCorners {
   bl: [number, number];
   br: [number, number];

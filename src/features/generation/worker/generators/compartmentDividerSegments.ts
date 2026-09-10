@@ -15,8 +15,6 @@ import {
 
 import { sketch } from './meshUtils';
 
-// Re-export for backwards compatibility with existing imports
-
 /** One divider wall segment: its top line, how far its foot leans off that
  *  line, and the interior it gets clipped to. */
 interface WallSegmentPlan {
