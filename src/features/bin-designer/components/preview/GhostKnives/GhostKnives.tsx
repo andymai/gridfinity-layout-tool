@@ -14,15 +14,11 @@
  * ghost would be baked into every published knife block (CLAUDE.md #16).
  */
 
-import { useMemo, useEffect } from 'react';
-import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
-import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
+import { useMemo } from 'react';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { planKnifeRest } from '@/shared/utils/knifeRestPlan';
-import { useLineMaterialResolution } from '../useLineMaterialResolution';
+import { useGhostLineSegments } from '../useGhostLineSegments';
 import { PREVIEW_Z_OFFSET } from '../LidMesh/lidAnchorZ';
 import { buildKnifeGhostPositions } from './knifeGhostGeometry';
 
@@ -32,8 +28,6 @@ const GHOST_OPACITY = 0.55;
 const LINE_WIDTH = 2;
 
 export function GhostKnives() {
-  const { invalidate } = useThree();
-
   const params = useDesignerStore((s) => s.params);
 
   // No rest to plan means no open-ended slot on a solid host, so there is no
@@ -49,38 +43,14 @@ export function GhostKnives() {
     return geo;
   }, [hasRest, params]);
 
-  const material = useMemo(() => {
-    if (!geometry) return null;
-    return new LineMaterial({
-      color: new THREE.Color(GHOST_COLOR).getHex(),
-      linewidth: LINE_WIDTH,
-      transparent: true,
-      opacity: GHOST_OPACITY,
-      // The blade is inside the block by design, so the profile has to draw
-      // through the solid or the only visible part is the handle.
-      depthTest: false,
-      depthWrite: false,
-      resolution: new THREE.Vector2(),
-    });
-  }, [geometry]);
-
-  useLineMaterialResolution(material);
-
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      material?.dispose();
-    };
-  }, [geometry, material]);
-
-  useEffect(() => {
-    if (geometry && material) invalidate();
-  }, [geometry, material, invalidate]);
-
-  const lineSegments = useMemo(
-    () => (geometry && material ? new LineSegments2(geometry, material) : null),
-    [geometry, material]
-  );
+  // The blade is inside the block by design, so the profile has to draw
+  // through the solid or the only visible part is the handle.
+  const lineSegments = useGhostLineSegments(geometry, {
+    color: GHOST_COLOR,
+    opacity: GHOST_OPACITY,
+    lineWidth: LINE_WIDTH,
+    throughSolid: true,
+  });
 
   if (!lineSegments) return null;
 

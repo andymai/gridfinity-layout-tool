@@ -8,10 +8,10 @@
  * Position math mirrors binGenerator.ts buildLabelTabs.
  */
 
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
+import { useGhostMeshMaterial } from '../useGhostMeshMaterial';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
@@ -31,8 +31,6 @@ const GHOST_COLOR = '#fbbf24';
 const GHOST_OPACITY = 0.45;
 
 export function GhostLabelTabs() {
-  const { invalidate } = useThree();
-
   const {
     width,
     depth,
@@ -322,30 +320,7 @@ export function GhostLabelTabs() {
     label.lipHeight,
   ]);
 
-  const material = useMemo(() => {
-    if (!shouldShow) return null;
-
-    return new THREE.MeshBasicMaterial({
-      color: GHOST_COLOR,
-      transparent: true,
-      opacity: GHOST_OPACITY,
-      side: THREE.DoubleSide,
-      depthTest: true,
-    });
-  }, [shouldShow]);
-
-  // Dispose resources on unmount or change
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      material?.dispose();
-    };
-  }, [geometry, material]);
-
-  // Invalidate frame when geometry changes
-  useEffect(() => {
-    if (geometry && material) invalidate();
-  }, [geometry, material, invalidate]);
+  const material = useGhostMeshMaterial(geometry, { color: GHOST_COLOR, opacity: GHOST_OPACITY });
 
   if (!geometry || !material) return null;
 

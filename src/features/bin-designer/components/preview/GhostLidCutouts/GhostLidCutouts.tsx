@@ -19,14 +19,10 @@
  *   arithmetic that CLAUDE.md gotcha #14 is about.
  */
 
-import { useMemo, useEffect, useRef } from 'react';
-import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { useDesignerStore, useCutoutSelection } from '@/features/bin-designer/store';
-import { useLineMaterialResolution } from '../useLineMaterialResolution';
+import { useGhostLineSegments } from '../useGhostLineSegments';
 import { lidGroupPosition } from '../LidMesh/lidAnchorZ';
 import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import type { Cutout } from '@/features/bin-designer/types';
@@ -43,9 +39,6 @@ interface GhostLidCutoutsProps {
 }
 
 export function GhostLidCutouts({ lidOffsetMm }: GhostLidCutoutsProps) {
-  const { invalidate } = useThree();
-  const lineRef = useRef<LineSegments2 | null>(null);
-
   const { params, generationStatus } = useDesignerStore(
     useShallow((s) => ({ params: s.params, generationStatus: s.generation.status }))
   );
@@ -101,46 +94,18 @@ export function GhostLidCutouts({ lidOffsetMm }: GhostLidCutoutsProps) {
     return buildCutoutGeometry(cutoutsToRender, originX, originY, lidCutoutHostFace(params).topZ);
   }, [window, cutoutsToRender, params]);
 
-  const material = useMemo(() => {
-    if (!geometry) return null;
-    return new LineMaterial({
-      color: new THREE.Color(GHOST_COLOR).getHex(),
-      linewidth: LINE_WIDTH,
-      transparent: true,
-      opacity: GHOST_OPACITY,
-      // Through the lid's own plate, so the far outline stays readable when the
-      // lid is closed over the bin.
-      depthTest: false,
-      depthWrite: false,
-      resolution: new THREE.Vector2(),
-    });
-  }, [geometry]);
-
-  useLineMaterialResolution(material);
-
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      material?.dispose();
-    };
-  }, [geometry, material]);
-
-  useEffect(() => {
-    if (geometry && material) invalidate();
-  }, [geometry, material, invalidate]);
-
-  const lineSegments = useMemo(
-    () => (geometry && material ? new LineSegments2(geometry, material) : null),
-    [geometry, material]
-  );
+  // Through the lid's own plate, so the far outline stays readable when the
+  // lid is closed over the bin.
+  const lineSegments = useGhostLineSegments(geometry, {
+    color: GHOST_COLOR,
+    opacity: GHOST_OPACITY,
+    lineWidth: LINE_WIDTH,
+    throughSolid: true,
+  });
 
   if (!lineSegments) return null;
 
   return (
-    <primitive
-      ref={lineRef}
-      object={lineSegments}
-      position={[lidPosition[0], lidPosition[1], lidPosition[2]]}
-    />
+    <primitive object={lineSegments} position={[lidPosition[0], lidPosition[1], lidPosition[2]]} />
   );
 }
