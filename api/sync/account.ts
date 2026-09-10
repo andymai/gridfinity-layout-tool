@@ -1,10 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { Redis } from 'ioredis';
-import { requireMethod } from '../lib/method.js';
-import { rateLimited, serviceUnavailable, serverError } from '../lib/shared.js';
+import { serverError } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
-import { checkRateLimit, getRedis } from '../lib/rateLimit.js';
-import { requireSession } from '../lib/session.js';
 import { clearSessionCookie } from '../lib/cookies.js';
 import { deleteBlob } from '../lib/blobStore.js';
 import {
@@ -43,6 +40,7 @@ import {
 } from '../lib/communityPrintStore.js';
 import { deriveAuthorPublicId } from '../lib/communityIds.js';
 import { unlinkSupporterAccount } from '../lib/supporterLink.js';
+import { requireSyncContext } from './lib/requireSyncContext.js';
 
 /**
  * DELETE /api/sync/account
@@ -79,23 +77,9 @@ import { unlinkSupporterAccount } from '../lib/supporterLink.js';
  * case, within budget.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  if (!requireMethod(req, res, ['DELETE'])) return;
-
-  // CSRF defense is enforced inside `requireSession` (see api/lib/session.ts).
-  const session = await requireSession(req, res);
-  if (!session) return;
-
-  const rate = await checkRateLimit(session.userId, 'sync.write');
-  if (!rate.allowed) {
-    rateLimited(res, rate.retryAfterSeconds);
-    return;
-  }
-
-  const redis = getRedis();
-  if (!redis) {
-    serviceUnavailable(res);
-    return;
-  }
+  const context = await requireSyncContext(req, res, ['DELETE'], 'sync.write');
+  if (!context) return;
+  const { session, redis } = context;
 
   const { userId } = session;
   try {
