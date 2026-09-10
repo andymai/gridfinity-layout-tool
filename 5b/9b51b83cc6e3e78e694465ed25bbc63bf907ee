@@ -1,0 +1,96 @@
+src/features/print-export/components/PrintModal/PrintModal.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 18
+src/shell/Collab/CollabGridOverlay/index.ts
+  s_80593ce0b07ec4::t_a56f78d2106a8d 1
+src/shell/README.md
+  s_80593ce0b07ec4::t_a56f78d2106a8d 21
+  s_80593ce0b07ec4::t_8d6a57efc61f45 27-40
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 2
+src/features/inspiration-gallery/components/LayoutPreviewOverlay/LayoutPreviewOverlay.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 4
+src/features/snapshots/components/RestoreDialog/RestoreDialog.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 3
+src/shell/Collab/CollabGridOverlay/CollabGridOverlay.test.tsx
+  s_80593ce0b07ec4::t_a56f78d2106a8d 1-23
+src/features/inspiration-gallery/components/LayoutPreviewOverlay/LayoutPreviewOverlay.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 14
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 24
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 47
+src/shell/Mobile/BinContextMenu/BinContextMenu.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 26
+src/features/layout-library/components/LayoutManagerModal/LayoutListItem/LayoutListItem.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 3
+src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 48
+src/shell/layouts/ShellGrid.tsx
+  s_80593ce0b07ec4::t_5a5ea8342f98d2 1-22
+eslint.config.js
+  s_80593ce0b07ec4::t_a56f78d2106a8d 215-220,273-275
+  s_80593ce0b07ec4::t_cdbd63810e823c 276
+src/shell/Collab/CollabGridOverlay/CollabGridOverlay.tsx
+  s_80593ce0b07ec4::t_a56f78d2106a8d 1-23
+  s_80593ce0b07ec4::t_dc6518d1dc1ea7 24-25
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 14
+src/features/inspiration-gallery/components/LayoutCard/LayoutCard.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 8
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 20
+src/App.tsx
+  s_80593ce0b07ec4::t_ab4376736655df 66,359,444
+  s_80593ce0b07ec4::t_914f123ed88b0e 61
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 27
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 11
+src/shell/layouts/ShellGrid.test.tsx
+  s_80593ce0b07ec4::t_5a5ea8342f98d2 1-32
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 6
+src/features/inspiration-gallery/components/LayoutCard/LayoutCard.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 2
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 36
+  s_80593ce0b07ec4::t_a56f78d2106a8d 2,53-56,59-63,280,282,411-412
+src/features/grid-editor/components/Grid/Grid.test.tsx
+  s_80593ce0b07ec4::t_a56f78d2106a8d 151,153,240-242,244,388-400,402
+  s_80593ce0b07ec4::t_914f123ed88b0e 84
+src/features/layout-library/components/LayoutManagerModal/LayoutListItem/LayoutListItem.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 7
+src/features/layout-library/components/LayoutManagerModal/LayoutGridItem/LayoutGridItem.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 8
+src/shell/layouts/MobileLayout.tsx
+  s_80593ce0b07ec4::t_ab4376736655df 5,68
+  s_80593ce0b07ec4::t_914f123ed88b0e 8
+src/shared/README.md
+  s_80593ce0b07ec4::t_a56f78d2106a8d 46-48
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 24
+src/shell/Collab/index.ts
+  s_80593ce0b07ec4::t_a56f78d2106a8d 13
+src/features/layout-library/components/LayoutManagerModal/SharedWithMeItem/SharedWithMeItem.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 3
+src/features/layout-library/components/LayoutManagerModal/LayoutGridItem/LayoutGridItem.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 2
+src/features/layout-library/components/LayoutManagerModal/SharedWithMeItem/SharedWithMeItem.test.tsx
+  s_80593ce0b07ec4::t_914f123ed88b0e 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5b9b51b83cc6e3e78e694465ed25bbc63bf907ee",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
