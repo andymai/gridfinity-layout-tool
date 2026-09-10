@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import type { LayoutEntry } from '@/core/types';
 import { useTranslation } from '@/i18n';
-import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
+import { useAnchoredMenu } from '@/shared/hooks/useAnchoredMenu';
 import { useTwoClickDelete } from '@/shared/components';
 import { Button, IconButton } from '@/design-system';
 
@@ -33,76 +32,29 @@ export function LayoutActions({
   onMoveToFolder,
 }: LayoutActionsProps) {
   const t = useTranslation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
-  const onMenuKeyDown = useMenuKeyboardNav({ isOpen: isMenuOpen, menuRef, onClose: closeMenu });
+  const {
+    isOpen: isMenuOpen,
+    menuStyle,
+    menuButtonRef,
+    menuRef,
+    toggle: handleMenuToggle,
+    close: closeMenu,
+    withClose: handleAction,
+    onMenuKeyDown,
+  } = useAnchoredMenu({ onClose: () => resetDelete() });
 
-  // Two-click delete state
   const {
     isConfirming: isConfirmingDelete,
     handleClick: handleDeleteClick,
     reset: resetDelete,
   } = useTwoClickDelete(() => {
     onDelete();
-    setIsMenuOpen(false);
+    closeMenu();
   });
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        menuButtonRef.current &&
-        !menuButtonRef.current.contains(e.target as Node)
-      ) {
-        setIsMenuOpen(false);
-        resetDelete();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen, resetDelete]);
-
-  const handleMenuToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (isMenuOpen) {
-      setIsMenuOpen(false);
-      resetDelete();
-    } else {
-      // Calculate fixed position based on button location
-      const button = menuButtonRef.current;
-      if (button) {
-        const rect = button.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - rect.bottom;
-        const openAbove = spaceBelow < 200;
-
-        setMenuStyle({
-          position: 'fixed',
-          right: window.innerWidth - rect.right,
-          ...(openAbove ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
-        });
-      }
-      setIsMenuOpen(true);
-    }
-  };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     handleDeleteClick();
-  };
-
-  const handleAction = (action: () => void) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    action();
-    setIsMenuOpen(false);
   };
 
   return (
