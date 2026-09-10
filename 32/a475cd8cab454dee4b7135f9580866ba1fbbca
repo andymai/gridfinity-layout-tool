@@ -1,0 +1,30 @@
+api/lib/shared.ts
+  s_80593ce0b07ec4::t_4835c6b5cf5e1b 1,219-230
+  s_80593ce0b07ec4::t_9a77a5abcd6941 231
+src/core/api/share.ts
+  s_80593ce0b07ec4::t_02b0d60bbd8f7d 10-17,174-218,243,245-250,262,264-269,280-286,296-301,311-315,318
+  s_80593ce0b07ec4::t_f4967fab39b5dd 316
+  s_80593ce0b07ec4::t_7f11e8bf158aa0 319-320
+  s_80593ce0b07ec4::t_45944dd6e948a5 330-332
+api/liveblocks-auth.ts
+  s_80593ce0b07ec4::t_4835c6b5cf5e1b 126-127
+  s_80593ce0b07ec4::t_24426e947b97ac 10
+api/share/[id].ts
+  s_80593ce0b07ec4::t_4835c6b5cf5e1b 1,27,66-67,132-133,137-138,141,175,230,272-273,277-278,281,287,304-332
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "32a475cd8cab454dee4b7135f9580866ba1fbbca",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
