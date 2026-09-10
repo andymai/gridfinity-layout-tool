@@ -6,12 +6,12 @@
  * coordinates (mm, Y-up).
  */
 
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { flattenPath, triangulatePath, getPathBounds, MIN_PATH_POINTS } from '../pathGeometry';
-import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { RENDER_ORDER } from './constants';
+import { useShapePointerHandlers, useShapeColors, pickStrokeColor } from './shapeInteraction';
 import { shapePosZ, shapeRenderOrder } from './zLayer';
 import {
   outlineVertexShader as pathVertexShader,
@@ -19,8 +19,6 @@ import {
   bakeDistanceField,
   MIN_POLYLINE_POINTS,
 } from './outlineShapeGeometry';
-
-const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
 interface PathShapeMeshProps {
   readonly cutout: Cutout;
@@ -48,7 +46,20 @@ export const PathShapeMesh = memo(function PathShapeMesh({
   onDragStart,
   disablePointerEvents,
 }: PathShapeMeshProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const {
+    isHovered,
+    handlePointerDown,
+    handleDoubleClick,
+    handlePointerEnter,
+    handlePointerLeave,
+  } = useShapePointerHandlers({
+    cutoutId: cutout.id,
+    isSelected,
+    disablePointerEvents,
+    onSelect,
+    onDragStart,
+    onDoubleClick,
+  });
 
   const path = cutout.path;
 
@@ -59,15 +70,8 @@ export const PathShapeMesh = memo(function PathShapeMesh({
   );
 
   // Cutout colors derived from the bin surface color
-  const { cutFillColor, strokeDefault, strokeGrouped, strokeHover } = useMemo(() => {
-    const base = new THREE.Color(binColor);
-    return {
-      cutFillColor: base.clone().multiplyScalar(0.7), // darkened — bottom of cut
-      strokeDefault: base.clone().multiplyScalar(0.5), // outline for contrast
-      strokeGrouped: base.clone().multiplyScalar(0.35), // darker for grouped emphasis
-      strokeHover: base.clone().multiplyScalar(0.4), // darker on hover
-    };
-  }, [binColor]);
+  const shapeColors = useShapeColors(binColor);
+  const { cutFillColor } = shapeColors;
 
   // Geometry center from committed path — stable reference for local coords
   const { geoCenterX, geoCenterY, area } = useMemo(() => {
@@ -199,43 +203,9 @@ export const PathShapeMesh = memo(function PathShapeMesh({
     return null;
 
   const effective = previewOverrides ? { ...cutout, ...previewOverrides } : cutout;
-  const strokeColor = isSelected
-    ? STROKE_SELECTED
-    : isHovered
-      ? strokeHover
-      : isGrouped
-        ? strokeGrouped
-        : strokeDefault;
+  const strokeColor = pickStrokeColor({ isSelected, isHovered, isGrouped }, shapeColors);
   const rotationZ = -(effective.rotation * Math.PI) / 180;
   const posZ = shapePosZ(cutout.zIndex, area);
-
-  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    if (e.nativeEvent.button !== 0) return;
-    if (disablePointerEvents) return; // Let click fall through to background
-    e.stopPropagation();
-    const additive = e.nativeEvent.shiftKey;
-    onSelect(cutout.id, additive);
-
-    if (onDragStart && !additive) {
-      onDragStart(cutout.id, e.point.x, e.point.y, e.nativeEvent.altKey);
-    }
-  };
-
-  const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
-    if (disablePointerEvents) return;
-    e.stopPropagation();
-    onDoubleClick?.(cutout.id);
-  };
-
-  const handlePointerEnter = () => {
-    if (!isSelected) {
-      setIsHovered(true);
-    }
-  };
-
-  const handlePointerLeave = () => {
-    setIsHovered(false);
-  };
 
   return (
     <group
