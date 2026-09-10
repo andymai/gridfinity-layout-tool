@@ -1,4 +1,4 @@
-/** SVG icons for the bin-designer 3D preview controls. */
+/** SVG icons for the 3D preview overlay controls, shared by the bin and baseplate previews. */
 
 /** Front preset — cube with front face highlighted */
 export function IconFront() {

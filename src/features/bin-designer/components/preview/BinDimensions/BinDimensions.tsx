@@ -17,6 +17,7 @@ import { Line, Text } from '@react-three/drei';
 import { useMemo } from 'react';
 import type { AssembledSegment } from '@/shared/printSettings/assembledHeight';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
+import { DimensionLine } from '@/shared/components/preview/DimensionLine';
 
 interface BinDimensionsProps {
   /** Bin width in grid units */
@@ -216,107 +217,46 @@ export function BinDimensions({
     });
   }, [expanded, segments, originOffset, bottomZ, dimensions.height, segmentLabel]);
 
+  const dimensionStyle = {
+    color: colors.lineColor,
+    fontSize: FONT_SIZE,
+    lineOpacity: LINE_OPACITY,
+    textOpacity: TEXT_OPACITY,
+  };
+
   return (
     <group>
-      {/* Width dimension line */}
-      <Line
-        points={[dimensions.width.start, dimensions.width.end]}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
-      />
-      <Line
-        points={dimensions.width.endCaps.left}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
-      />
-      <Line
-        points={dimensions.width.endCaps.right}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
-      />
-      <Text
-        position={dimensions.width.labelPos}
-        fontSize={FONT_SIZE}
-        color={colors.lineColor}
-        fillOpacity={TEXT_OPACITY}
+      <DimensionLine
+        start={dimensions.width.start}
+        end={dimensions.width.end}
+        endCaps={[dimensions.width.endCaps.left, dimensions.width.endCaps.right]}
+        labelPos={dimensions.width.labelPos}
+        label={dimensions.width.label}
         anchorX="center"
         anchorY="top"
-      >
-        {dimensions.width.label}
-      </Text>
-
-      {/* Depth dimension line */}
-      <Line
-        points={[dimensions.depth.start, dimensions.depth.end]}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
+        {...dimensionStyle}
       />
-      <Line
-        points={dimensions.depth.endCaps.left}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
-      />
-      <Line
-        points={dimensions.depth.endCaps.right}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
-      />
-      <Text
-        position={dimensions.depth.labelPos}
-        fontSize={FONT_SIZE}
-        color={colors.lineColor}
-        fillOpacity={TEXT_OPACITY}
+      <DimensionLine
+        start={dimensions.depth.start}
+        end={dimensions.depth.end}
+        endCaps={[dimensions.depth.endCaps.left, dimensions.depth.endCaps.right]}
+        labelPos={dimensions.depth.labelPos}
+        label={dimensions.depth.label}
         anchorX="right"
         anchorY="middle"
         rotation={[0, 0, Math.PI / 2]}
-      >
-        {dimensions.depth.label}
-      </Text>
-
-      {/* Height dimension line — spans the whole assembled stack */}
-      <Line
-        points={[dimensions.height.start, dimensions.height.end]}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
+        {...dimensionStyle}
       />
-      <Line
-        points={dimensions.height.endCaps.bottom}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
-      />
-      <Line
-        points={dimensions.height.endCaps.top}
-        color={colors.lineColor}
-        lineWidth={1}
-        transparent
-        opacity={LINE_OPACITY}
-      />
-      <Text
-        position={dimensions.height.labelPos}
-        fontSize={FONT_SIZE}
-        color={colors.lineColor}
-        fillOpacity={TEXT_OPACITY}
+      <DimensionLine
+        start={dimensions.height.start}
+        end={dimensions.height.end}
+        endCaps={[dimensions.height.endCaps.bottom, dimensions.height.endCaps.top]}
+        labelPos={dimensions.height.labelPos}
+        label={dimensions.height.label}
         anchorX="right"
         anchorY="middle"
-      >
-        {dimensions.height.label}
-      </Text>
+        {...dimensionStyle}
+      />
 
       {/* Per-band boundary marks and labels */}
       {bands.map((band) => (

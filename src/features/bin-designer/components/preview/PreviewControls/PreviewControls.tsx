@@ -22,9 +22,10 @@ import {
   IconAssembled,
   IconExploded,
   IconMeasure,
-} from './icons';
+} from '@/shared/components/preview/previewIcons';
 
 import type { Projection } from '@/shared/components/preview/CameraRig';
+import { PreviewColorPicker } from '@/shared/components/preview/PreviewColorPicker';
 
 export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
 
@@ -77,42 +78,6 @@ const PRESET_ICONS: Record<CameraPreset, () => ReactNode> = {
   top: IconTop,
   isometric: IconIso,
 };
-
-/** Shared color picker content used in both desktop and mobile popovers */
-function ColorPickerContent({
-  previewColor,
-  onColorSelect,
-}: {
-  previewColor: string;
-  onColorSelect: (color: string) => void;
-}) {
-  const t = useTranslation();
-  return (
-    <div className="grid grid-cols-7 gap-1.5">
-      {CATEGORY_COLOR_PALETTE.map(({ color, nameKey }) => (
-        <Button
-          key={color}
-          type="button"
-          variant="ghost"
-          onClick={() => onColorSelect(color)}
-          className={`h-auto w-auto rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
-            previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
-          }`}
-          aria-label={t('colors.colorAriaLabel', { name: t(nameKey) })}
-          aria-selected={previewColor === color}
-          role="option"
-        >
-          <span
-            className={`inline-block h-6 w-6 rounded border transition-transform hover:scale-105 ${
-              previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
-            }`}
-            style={{ backgroundColor: color }}
-          />
-        </Button>
-      ))}
-    </div>
-  );
-}
 
 export function PreviewControls({
   wireframe,
@@ -379,7 +344,11 @@ export function PreviewControls({
             role="listbox"
             aria-label={t('binDesigner.previewColorOptions')}
           >
-            <ColorPickerContent previewColor={previewColor} onColorSelect={handleColorSelect} />
+            <PreviewColorPicker
+              colors={CATEGORY_COLOR_PALETTE}
+              previewColor={previewColor}
+              onColorSelect={handleColorSelect}
+            />
           </div>
         )}
       </div>
@@ -561,7 +530,11 @@ export function PreviewControls({
               {t('binDesigner.changePreviewColor')}
             </p>
             <div role="listbox" aria-label={t('binDesigner.previewColorOptions')}>
-              <ColorPickerContent previewColor={previewColor} onColorSelect={handleColorSelect} />
+              <PreviewColorPicker
+                colors={CATEGORY_COLOR_PALETTE}
+                previewColor={previewColor}
+                onColorSelect={handleColorSelect}
+              />
             </div>
           </div>
         </div>
