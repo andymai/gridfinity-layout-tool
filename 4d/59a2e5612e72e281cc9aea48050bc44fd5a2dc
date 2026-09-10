@@ -1,0 +1,84 @@
+src/features/baseplate/utils/splitMargins.ts
+  s_80593ce0b07ec4::t_547c741de31af0 9-10
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-8,11-235
+src/features/generation/worker/generators/kumikoCornerSlab.ts
+  s_80593ce0b07ec4::t_547c741de31af0 21,33-36
+  s_80593ce0b07ec4::t_07fb5038e7072a 15
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-14,16,22-32,37-323
+  s_80593ce0b07ec4::t_616da2a308645f 17-20
+src/features/generation/worker/generators/compartmentDividerSegments.ts
+  s_80593ce0b07ec4::t_547c741de31af0 3-4,9-14,16
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-2,5-8,15,17-322
+src/features/generation/worker/generators/kumikoFlatSlab.ts
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-2,4-5,9-17,19-142
+  s_80593ce0b07ec4::t_07fb5038e7072a 3
+  s_80593ce0b07ec4::t_342cea3686dd89 18
+  s_80593ce0b07ec4::t_547c741de31af0 8
+  s_80593ce0b07ec4::t_616da2a308645f 6-7
+src/features/generation/worker/generators/assemblyPartTemplate.ts
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-55,64-65,67-611
+  s_80593ce0b07ec4::t_547c741de31af0 56-63
+  s_80593ce0b07ec4::t_342cea3686dd89 66
+src/features/baseplate/utils/splitPlanner.ts
+  s_80593ce0b07ec4::t_547c741de31af0 38-39,47
+  s_80593ce0b07ec4::t_6a3fee92a021cb 31-32,36-37,40-46,48
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_80593ce0b07ec4::t_547c741de31af0 22,34
+  s_80593ce0b07ec4::t_616da2a308645f 44-51
+src/features/baseplate/utils/splitTiling.ts
+  s_80593ce0b07ec4::t_547c741de31af0 3,8,15-35
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-2,4-6,9-14,36-521
+  s_80593ce0b07ec4::t_87452634b97e60 7
+src/features/generation/worker/generators/spanningDividerClips.ts
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-102
+src/features/generation/worker/generators/boxTopShape.ts
+  s_80593ce0b07ec4::t_547c741de31af0 16,35-38
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-15,17-34,39-388
+src/features/generation/worker/generators/compartmentBuilder.ts
+  s_80593ce0b07ec4::t_547c741de31af0 8-9,34-43
+  s_80593ce0b07ec4::t_6a3fee92a021cb 10
+src/features/generation/worker/generators/boxBuilder.ts
+  s_80593ce0b07ec4::t_547c741de31af0 46-47
+  s_80593ce0b07ec4::t_6a3fee92a021cb 25-27
+src/features/generation/worker/generators/assemblyGenerator.ts
+  s_80593ce0b07ec4::t_342cea3686dd89 50
+  s_80593ce0b07ec4::t_6a3fee92a021cb 31-32,46
+  s_80593ce0b07ec4::t_547c741de31af0 51-52
+src/features/generation/worker/generators/labelSocketCutter.ts
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-2,24-250
+  s_80593ce0b07ec4::t_547c741de31af0 3-23
+src/features/generation/worker/generators/kumikoSegments.ts
+  s_80593ce0b07ec4::t_f8ad2e73b2d485 3
+  s_80593ce0b07ec4::t_616da2a308645f 6-7
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-2,4-5,8-257
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_80593ce0b07ec4::t_547c741de31af0 57
+  s_80593ce0b07ec4::t_616da2a308645f 49,51-56
+  s_80593ce0b07ec4::t_6a3fee92a021cb 27-28,39-40
+  s_80593ce0b07ec4::t_f8ad2e73b2d485 50
+src/features/generation/worker/generators/compartmentCavities.ts
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1-277
+src/features/generation/worker/generators/assemblyPartLabel.ts
+  s_80593ce0b07ec4::t_6a3fee92a021cb 1,3-164
+  s_80593ce0b07ec4::t_87452634b97e60 2
+src/features/generation/worker/generators/kumikoPerimeter.ts
+  s_80593ce0b07ec4::t_342cea3686dd89 5-6
+  s_80593ce0b07ec4::t_616da2a308645f 3-4
+  s_80593ce0b07ec4::t_547c741de31af0 1-2,7-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4d59a2e5612e72e281cc9aea48050bc44fd5a2dc",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
