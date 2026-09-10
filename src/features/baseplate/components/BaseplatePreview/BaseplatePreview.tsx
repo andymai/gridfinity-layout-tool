@@ -45,7 +45,7 @@ import { BaseplatePreviewControls } from './BaseplatePreviewControls';
 import { overlayStatusText } from './overlayStatusText';
 import { useGenerationElapsed } from './useGenerationElapsed';
 import { useBaseplateKeyboard } from '../../hooks/useBaseplateKeyboard';
-import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { PanelErrorBoundary } from '@/shared/components/PanelErrorBoundary';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 

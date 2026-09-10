@@ -20,14 +20,6 @@ vi.mock('./IsometricPreview', () => ({
   ),
 }));
 
-vi.mock('@/shell/Mobile', () => ({
-  MobileGridToolbar: ({ onFitToScreen }: { onFitToScreen: () => void }) => (
-    <div data-testid="mobile-toolbar">
-      <button onClick={onFitToScreen}>Fit Mobile</button>
-    </div>
-  ),
-}));
-
 // Mock child components
 vi.mock('./GridCanvas', () => ({
   GridCanvas: ({
@@ -89,15 +81,8 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-vi.mock('@/shell/PanelErrorBoundary', () => ({
+vi.mock('@/shared/components/PanelErrorBoundary', () => ({
   PanelErrorBoundary: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
-
-// Mock collaborative components
-vi.mock('@/shell/Collab', () => ({
-  CollabCursors: () => <div data-testid="collab-cursors">Cursors</div>,
-  CollabGhosts: () => <div data-testid="collab-ghosts">Ghosts</div>,
-  CollabSelectionRings: () => <div data-testid="collab-selection-rings">Selection Rings</div>,
 }));
 
 vi.mock('@/features/grid-editor/hooks', () => ({
@@ -163,8 +148,9 @@ vi.mock('@/shared/hooks', () => ({
   }),
 }));
 
+const useCollabModeMock = vi.hoisted(() => vi.fn(() => ({ isCollaborative: false })));
 vi.mock('@/shared/hooks/useCollabMode', () => ({
-  useCollabMode: () => ({ isCollaborative: false }),
+  useCollabMode: useCollabModeMock,
 }));
 
 vi.mock('@/shared/hooks/useCollabPresence', () => ({
@@ -251,9 +237,11 @@ describe('Grid', () => {
       expect(screen.getByTestId('grid-toolbar')).toBeInTheDocument();
     });
 
-    it('does not render mobile toolbar on desktop', () => {
-      render(<Grid />);
+    it('does not render the mobile toolbar slot on desktop', () => {
+      const renderMobileToolbar = vi.fn(() => <div data-testid="mobile-toolbar" />);
+      render(<Grid renderMobileToolbar={renderMobileToolbar} />);
 
+      expect(renderMobileToolbar).not.toHaveBeenCalled();
       expect(screen.queryByTestId('mobile-toolbar')).not.toBeInTheDocument();
     });
 
@@ -397,12 +385,21 @@ describe('Grid', () => {
   });
 
   describe('collaborative features', () => {
-    it('does not render collab components when not collaborative', () => {
-      render(<Grid />);
+    afterEach(() => {
+      useCollabModeMock.mockReturnValue({ isCollaborative: false });
+    });
 
-      expect(screen.queryByTestId('collab-cursors')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('collab-ghosts')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('collab-selection-rings')).not.toBeInTheDocument();
+    it('does not render the collab overlay slot when not collaborative', () => {
+      render(<Grid collabOverlay={<div data-testid="collab-overlay" />} />);
+
+      expect(screen.queryByTestId('collab-overlay')).not.toBeInTheDocument();
+    });
+
+    it('renders the collab overlay slot while collaborative', () => {
+      useCollabModeMock.mockReturnValue({ isCollaborative: true });
+      render(<Grid collabOverlay={<div data-testid="collab-overlay" />} />);
+
+      expect(screen.getByTestId('collab-overlay')).toBeInTheDocument();
     });
   });
 

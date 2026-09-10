@@ -5,7 +5,7 @@ import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { InspirationLayout } from '../../types';
 
 // Mock LayoutThumbnail to avoid complex SVG rendering in tests
-vi.mock('@/shell/LayoutThumbnail', () => ({
+vi.mock('@/shared/components/LayoutThumbnail', () => ({
   LayoutThumbnail: ({ preview }: { preview: unknown }) => (
     <div data-testid="layout-thumbnail" data-preview={JSON.stringify(preview)} />
   ),

@@ -24,7 +24,7 @@ vi.mock('@/core/storage', () => ({
   downloadLayoutAsFile: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock('@/shell/LayoutThumbnail', () => ({
+vi.mock('@/shared/components/LayoutThumbnail', () => ({
   LayoutThumbnail: ({ size }: { size: number }) => (
     <div data-testid="layout-thumbnail" style={{ width: size, height: size }}>
       Thumbnail

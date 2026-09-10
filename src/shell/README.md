@@ -18,30 +18,26 @@ graph TB
 
     subgraph "Shared"
         COLLAB[Collab/] --- DP[DragPreview] --- DZ[DropZones]
-        EB[ErrorBoundary] --- PEB[PanelErrorBoundary]
-        MOD[Modals/] --- LT[LayoutThumbnail] --- LR[LiveRegion]
+        EB[ErrorBoundary] --- MOD[Modals/] --- LR[LiveRegion]
     end
 ```
 
 ## Subdirectories
 
-| Directory             | Purpose                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| `Collab/`             | Liveblocks integration: CollabProvider, cursors, ghosts, presence avatars, selection rings  |
-| `Mobile/`             | Mobile-specific UI: MobileHeader, BottomNavBar, BottomSheet, MobileInspector, context menus |
-| `Modals/`             | Full-screen overlays: SettingsModal (5 tabs), HelpModal, ImportModal                        |
-| `Tablet/`             | TabletPanelOverlay (slide-in 85vw panels), TabletPanelTriggers (FABs)                       |
-| `Header/`             | App header with layout name, undo/redo, tool buttons, presence, sign-in / user menu         |
-| `Sidebar/`            | Desktop left panel: layers, categories, drawer settings, inspiration gallery                |
-| `RightPanel/`         | Desktop right panel: bin inspector, print list, split preview                               |
-| `Print/`              | Print preview split view                                                                    |
-| `DragPreview/`        | Floating ghost following cursor during drag/stagingDrag                                     |
-| `DropZones/`          | Trash drop target (shows after first pointermove)                                           |
-| `ErrorBoundary/`      | Root error boundary with full-page recovery                                                 |
-| `PanelErrorBoundary/` | Panel-level error boundary with inline retry                                                |
-| `LayoutThumbnail/`    | SVG mini preview of layout bins                                                             |
-| `LiveRegion/`         | ARIA live announcements for screen readers                                                  |
-| `STLSearchDropdown/`  | STL search site selection menu                                                              |
+| Directory        | Purpose                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| `Collab/`        | Liveblocks integration: CollabProvider, cursors, ghosts, presence avatars, selection rings  |
+| `Mobile/`        | Mobile-specific UI: MobileHeader, BottomNavBar, BottomSheet, MobileInspector, context menus |
+| `Modals/`        | Full-screen overlays: SettingsModal (5 tabs), HelpModal, ImportModal                        |
+| `Tablet/`        | TabletPanelOverlay (slide-in 85vw panels), TabletPanelTriggers (FABs)                       |
+| `Header/`        | App header with layout name, undo/redo, tool buttons, presence, sign-in / user menu         |
+| `Sidebar/`       | Desktop left panel: layers, categories, drawer settings, inspiration gallery                |
+| `RightPanel/`    | Desktop right panel: bin inspector, print list, split preview                               |
+| `Print/`         | Print preview split view                                                                    |
+| `DragPreview/`   | Floating ghost following cursor during drag/stagingDrag                                     |
+| `DropZones/`     | Trash drop target (shows after first pointermove)                                           |
+| `ErrorBoundary/` | Root error boundary with full-page recovery                                                 |
+| `LiveRegion/`    | ARIA live announcements for screen readers                                                  |
 
 ## Responsive Strategy
 

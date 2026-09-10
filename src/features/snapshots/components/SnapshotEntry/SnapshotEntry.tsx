@@ -1,5 +1,5 @@
 import { Button, IconButton, InlineEditText } from '@/design-system';
-import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shared/components/LayoutThumbnail';
 import { useRelativeTime } from '@/shared/hooks/useRelativeTime';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';

@@ -51,7 +51,6 @@ import {
 } from './App.lazyComponents';
 import { useRouteMeta } from '@/shared/hooks/useRouteMeta';
 import { useAppWindowEvents } from '@/shared/hooks/useAppWindowEvents';
-import { Grid } from '@/features/grid-editor';
 import { Sidebar } from '@/shell/Sidebar';
 import { Header } from '@/shell/Header';
 import { Staging } from '@/features/staging/components/Staging';
@@ -59,11 +58,12 @@ import { RightPanel } from '@/shell/RightPanel';
 import { DragPreview } from '@/shell/DragPreview';
 import { ToastContainer } from '@/shared/components/Toast';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
-import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { PanelErrorBoundary } from '@/shared/components/PanelErrorBoundary';
 import { BackgroundMountBoundary } from '@/shell/BackgroundMountBoundary';
 import { BinContextMenuWrapper } from '@/shell/Mobile/BinContextMenuWrapper';
 import { TabletPanelOverlay, TabletPanelTriggers } from '@/shell/Tablet';
 import { LiveRegion } from '@/shell/LiveRegion';
+import { ShellGrid } from '@/shell/layouts/ShellGrid';
 import { LocalMutationsProvider } from '@/shared/contexts';
 import { DesignStoreRegistration } from '@/shared/storage/DesignStoreRegistration';
 import { LinkedRiseRegistration } from '@/shared/storage/LinkedRiseRegistration';
@@ -356,7 +356,7 @@ export default function App() {
 
           <div className="flex-1 flex overflow-hidden">
             <main className="flex-1 flex flex-col overflow-hidden bg-surface">
-              <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
+              <ShellGrid shouldShowDrawTutorial={shouldShowDrawTutorial} />
               <Staging />
             </main>
           </div>
@@ -441,7 +441,7 @@ export default function App() {
             className="flex-1 flex flex-col overflow-hidden bg-surface"
             tabIndex={-1}
           >
-            <Grid shouldShowDrawTutorial={shouldShowDrawTutorial} />
+            <ShellGrid shouldShowDrawTutorial={shouldShowDrawTutorial} />
             <Staging />
           </main>
 

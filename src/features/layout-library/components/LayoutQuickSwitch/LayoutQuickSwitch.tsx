@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLayoutSwitcher } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store';
 import { computePreview, folderPath } from '@/core/storage';
-import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
+import { LayoutThumbnail } from '@/shared/components/LayoutThumbnail';
 import type { LayoutEntry, LayoutPreview } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { useTranslation } from '@/i18n';

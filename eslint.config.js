@@ -212,8 +212,12 @@ export default defineConfig([
       // scripts/check-module-boundaries.sh — it also inspects exports,
       // require calls, and dynamic imports (the plugin's default
       // dependency-nodes; deliberately not pinned in settings above).
-      // Remaining edges (shared→feature, feature→shell) are intentionally
-      // unrestricted today; tightening them needs a per-violator cleanup pass.
+      //   4. `shell/` composes features; a feature never reaches back up into
+      //      it. Shell UI that lives inside a feature's tree (the mobile grid
+      //      toolbar, collab overlays) arrives through slot props instead.
+      //
+      // The shared→feature edge is intentionally unrestricted today;
+      // tightening it needs a per-violator cleanup pass.
       'boundaries/dependencies': ['error', {
         default: 'allow',
         policies: [
@@ -265,6 +269,10 @@ export default defineConfig([
               { to: { element: { type: 'feature' } } },
               { to: { element: { type: 'shell' } } },
             ],
+          },
+          {
+            from: { element: { type: 'feature' } },
+            disallow: [{ to: { element: { type: 'shell' } } }],
           },
           // `design-system/` is UI primitives — it must not depend on any
           // application-level layer. UI primitives take strings via props;
