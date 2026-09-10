@@ -1,0 +1,23 @@
+src/features/bin-designer/components/DesignImportView/DesignImportView.test.tsx
+  s_80593ce0b07ec4::t_4e43329d996bf7 227-236
+src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.test.tsx
+  s_80593ce0b07ec4::t_11d15db28137e3 79-88
+src/shared/components/ImportPreviewPanel/ImportPreviewPanel.tsx
+  s_80593ce0b07ec4::t_8e987f5dca5257 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e4f6ff435c37514309bcacb40af47bda522bc3dc",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
