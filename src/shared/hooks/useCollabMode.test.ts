@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useCollabMode, getCollabMode } from '@/shared/hooks/useCollabMode';
+import { useCollabMode, getCollabMode, resolveCollabMode } from '@/shared/hooks/useCollabMode';
 import { useLabsStore, useLibraryStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import type { CloudShareInfo, LayoutLibrary, LayoutEntry, Layout } from '@/core/types';
@@ -357,5 +357,37 @@ describe('getCollabMode', () => {
     expect(result.isCollaborative).toBe(false);
     expect(result.canEdit).toBe(false);
     expect(result.shareId).toBe(TEST_SHARE_ID);
+  });
+});
+
+describe('resolveCollabMode', () => {
+  it('lets a shared preview outrank the owner cloud share', () => {
+    expect(
+      resolveCollabMode(
+        { cloudShareId: 'shared', permission: 'view' },
+        { id: 'own', permission: 'edit' }
+      )
+    ).toEqual({ isCollaborative: false, canEdit: false, shareId: 'shared' });
+  });
+
+  it('connects only for edit permission on either source', () => {
+    expect(resolveCollabMode({ cloudShareId: 's', permission: 'edit' }, null)).toEqual({
+      isCollaborative: true,
+      canEdit: true,
+      shareId: 's',
+    });
+    expect(resolveCollabMode(null, { id: 'own', permission: 'view' })).toEqual({
+      isCollaborative: false,
+      canEdit: false,
+      shareId: 'own',
+    });
+  });
+
+  it('is local and editable with neither', () => {
+    expect(resolveCollabMode(null, undefined)).toEqual({
+      isCollaborative: false,
+      canEdit: true,
+      shareId: null,
+    });
   });
 });

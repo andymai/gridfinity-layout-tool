@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { remapFloorRaises } from './compartmentRemap';
+import { remapFloorRaises, renumberCompartments } from './compartmentRemap';
 import { mergeCells } from './compartments';
 import type { CompartmentConfig } from '../types';
 
@@ -39,5 +39,35 @@ describe('mergeCells keeps floor raises in lockstep', () => {
     const merged = mergeCells(config, [0, 1]);
     expect(merged?.cells).toEqual([0, 0, 1]);
     expect(merged?.floorRaises).toEqual([null, 9]);
+  });
+});
+
+describe('renumberCompartments', () => {
+  const base = {
+    cols: 2,
+    rows: 2,
+    thickness: 1.2,
+    cells: [3, 3, 7, 7],
+    compartmentTexts: ['', '', '', 'top', '', '', '', 'bottom'],
+    backgroundIds: [7],
+  } as unknown as Parameters<typeof renumberCompartments>[0];
+
+  it('normalises ids and carries every id-keyed array through the same remap', () => {
+    const { config, remap } = renumberCompartments(base, [...base.cells], base.backgroundIds);
+    expect(config.cells).toEqual([0, 0, 1, 1]);
+    expect(config.compartmentTexts).toEqual(['top', 'bottom']);
+    expect(config.backgroundIds).toEqual([1]);
+    expect(remap.get(3)).toBe(0);
+    expect(remap.get(7)).toBe(1);
+  });
+
+  it('remaps a caller-supplied background set instead of the config own', () => {
+    const { config } = renumberCompartments(base, [...base.cells], [3]);
+    expect(config.backgroundIds).toEqual([0]);
+  });
+
+  it('leaves the background field untouched when the caller passes undefined', () => {
+    const { config } = renumberCompartments(base, [...base.cells], undefined);
+    expect(config.backgroundIds).toBe(base.backgroundIds);
   });
 });

@@ -29,18 +29,9 @@ import {
   getCellsForCompartment,
   getCompartmentBounds,
   getCompartmentReadingOrder,
-  normalizeIdsWithRemap,
-  remapCompartmentColors,
-  remapCompartmentColorScopes,
-  remapCompartmentTexts,
-  remapDividerOverrides,
-  remapBackgroundIds,
-  remapDrawnUnitCells,
-  remapFloorRaises,
-  remapLabelIcons,
-  remapLabelPlateWidths,
   validateDividerOverride,
 } from './compartments';
+import { renumberCompartments } from './compartmentRemap';
 
 export interface DrawResult {
   readonly config: CompartmentConfig;
@@ -200,38 +191,12 @@ function rebuild(
   const merged = config.mergeBackground
     ? mergeBackgroundRuns(config, newCells)
     : { cells: newCells, backgroundIds: [] };
-  const { cells, remap } = normalizeIdsWithRemap(merged.cells);
-  let next: CompartmentConfig = {
-    ...config,
-    cells,
-    ...(config.compartmentTexts && {
-      compartmentTexts: remapCompartmentTexts(config.compartmentTexts, remap),
-    }),
-    ...(config.labelPlateWidths && {
-      labelPlateWidths: remapLabelPlateWidths(config.labelPlateWidths, remap),
-    }),
-    ...(config.labelIcons && {
-      labelIcons: remapLabelIcons(config.labelIcons, remap),
-    }),
-    ...(config.compartmentColors && {
-      compartmentColors: remapCompartmentColors(config.compartmentColors, remap),
-    }),
-    ...(config.compartmentColorScopes && {
-      compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
-    }),
-    ...(config.floorRaises && {
-      floorRaises: remapFloorRaises(config.floorRaises, remap),
-    }),
-    ...(config.dividerOverrides && {
-      dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
-    }),
-    ...(config.drawnUnitCells && {
-      drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, cells),
-    }),
-    ...(merged.backgroundIds.length > 0 && {
-      backgroundIds: remapBackgroundIds(merged.backgroundIds, remap),
-    }),
-  };
+  const { config: renumbered, remap } = renumberCompartments(
+    config,
+    merged.cells,
+    merged.backgroundIds.length > 0 ? merged.backgroundIds : undefined
+  );
+  let next: CompartmentConfig = renumbered;
   const overrides = next.dividerOverrides;
   if (overrides && overrides.length > 0) {
     const kept = overrides.filter((o) => validateDividerOverride(next, o) === null);

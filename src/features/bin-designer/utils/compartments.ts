@@ -18,18 +18,7 @@
    count with an import cycle. */
 
 import type { CompartmentConfig, DividerOverride } from '../types';
-import {
-  normalizeIdsWithRemap,
-  remapBackgroundIds,
-  remapCompartmentColors,
-  remapCompartmentColorScopes,
-  remapFloorRaises,
-  remapCompartmentTexts,
-  remapDividerOverrides,
-  remapDrawnUnitCells,
-  remapLabelIcons,
-  remapLabelPlateWidths,
-} from './compartmentRemap';
+import { renumberCompartments } from './compartmentRemap';
 
 // Grid Creation
 
@@ -738,38 +727,7 @@ export function mergeCells(
   // selection being connected says nothing about what it leaves behind.
   if (!allCompartmentsContiguous(config.cols, newCells)) return null;
 
-  const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
-  return {
-    ...config,
-    cells: normalized,
-    ...(config.compartmentTexts && {
-      compartmentTexts: remapCompartmentTexts(config.compartmentTexts, remap),
-    }),
-    ...(config.labelPlateWidths && {
-      labelPlateWidths: remapLabelPlateWidths(config.labelPlateWidths, remap),
-    }),
-    ...(config.labelIcons && {
-      labelIcons: remapLabelIcons(config.labelIcons, remap),
-    }),
-    ...(config.compartmentColors && {
-      compartmentColors: remapCompartmentColors(config.compartmentColors, remap),
-    }),
-    ...(config.compartmentColorScopes && {
-      compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
-    }),
-    ...(config.floorRaises && {
-      floorRaises: remapFloorRaises(config.floorRaises, remap),
-    }),
-    ...(config.dividerOverrides && {
-      dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
-    }),
-    ...(config.drawnUnitCells && {
-      drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, normalized),
-    }),
-    ...(config.backgroundIds && {
-      backgroundIds: remapBackgroundIds(config.backgroundIds, remap),
-    }),
-  };
+  return renumberCompartments(config, newCells, config.backgroundIds).config;
 }
 
 /**
@@ -795,38 +753,7 @@ export function splitCompartment(
     }
   }
 
-  const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
-  return {
-    ...config,
-    cells: normalized,
-    ...(config.compartmentTexts && {
-      compartmentTexts: remapCompartmentTexts(config.compartmentTexts, remap),
-    }),
-    ...(config.labelPlateWidths && {
-      labelPlateWidths: remapLabelPlateWidths(config.labelPlateWidths, remap),
-    }),
-    ...(config.labelIcons && {
-      labelIcons: remapLabelIcons(config.labelIcons, remap),
-    }),
-    ...(config.compartmentColors && {
-      compartmentColors: remapCompartmentColors(config.compartmentColors, remap),
-    }),
-    ...(config.compartmentColorScopes && {
-      compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
-    }),
-    ...(config.floorRaises && {
-      floorRaises: remapFloorRaises(config.floorRaises, remap),
-    }),
-    ...(config.dividerOverrides && {
-      dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
-    }),
-    ...(config.drawnUnitCells && {
-      drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, normalized),
-    }),
-    ...(config.backgroundIds && {
-      backgroundIds: remapBackgroundIds(config.backgroundIds, remap),
-    }),
-  };
+  return renumberCompartments(config, newCells, config.backgroundIds).config;
 }
 
 /**
