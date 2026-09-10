@@ -1,0 +1,29 @@
+api/lib/designerBaseValidation.ts
+  s_80593ce0b07ec4::t_47e3a5b50a87e9 1-183
+api/lib/designerTextValidation.ts
+  s_80593ce0b07ec4::t_47e3a5b50a87e9 1-450
+api/lib/designerLidValidation.ts
+  s_80593ce0b07ec4::t_47e3a5b50a87e9 1-362
+api/lib/designerCutoutValidation.ts
+  s_80593ce0b07ec4::t_47e3a5b50a87e9 1-288
+api/lib/designerValidation.ts
+  s_80593ce0b07ec4::t_47e3a5b50a87e9 27-75
+api/lib/designerColorValidation.ts
+  s_80593ce0b07ec4::t_47e3a5b50a87e9 1-176
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9e30989bcd1409df95c59731be4bc740e7041867",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
