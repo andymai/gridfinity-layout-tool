@@ -1,0 +1,23 @@
+src/features/bin-designer/utils/compartmentRemap.test.ts
+  s_80593ce0b07ec4::t_e0d41b7a0c2deb 56,68-72
+src/features/bin-designer/utils/compartmentRemap.ts
+  s_80593ce0b07ec4::t_f519f32c4d6db5 347-349,354
+src/features/bin-designer/utils/compartments.ts
+  s_80593ce0b07ec4::t_6fa5317eb5fca4 730,756
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3efd4e7a1f0de300d3e3cc809e823cbf65d74d34",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
