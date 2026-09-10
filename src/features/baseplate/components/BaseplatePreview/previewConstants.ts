@@ -1,6 +1,13 @@
 import type { SplitViewMode } from '../../store/baseplatePageStore';
 import type { CameraPreset } from './cameraUtils';
-import { IconAssembled, IconExploded, IconFront, IconSide, IconTop, IconIso } from './previewIcons';
+import {
+  IconAssembled,
+  IconExploded,
+  IconFront,
+  IconSide,
+  IconTop,
+  IconIso,
+} from '@/shared/components/preview/previewIcons';
 
 export const VIEW_MODE_ICONS: Record<SplitViewMode, () => React.ReactNode> = {
   assembled: IconAssembled,

@@ -6,73 +6,14 @@ import { useTranslation } from '@/i18n';
 import type { SplitViewMode } from '../../store/baseplatePageStore';
 import type { CameraPreset } from './cameraUtils';
 import type { Projection } from '@/shared/components/preview/CameraRig';
-import { IconReset } from './previewIcons';
+import {
+  IconReset,
+  IconXray,
+  IconPerspective,
+  IconOrthographic,
+} from '@/shared/components/preview/previewIcons';
+import { PreviewColorPicker } from '@/shared/components/preview/PreviewColorPicker';
 import { VIEW_MODE_ICONS, PRESET_ICONS, PRESETS } from './previewConstants';
-
-/** SVG icon for X-ray — eye with pupil */
-function IconXray() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 8s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4z" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="8" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
-    </svg>
-  );
-}
-
-/** SVG icon for Perspective projection — converging lines */
-function IconPerspective() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 13l5-9 5 9M4.5 9.5h6.5" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
-/** SVG icon for Orthographic projection — parallel verticals */
-function IconOrthographic() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="10" height="10" rx="1" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M3 8h10M8 3v10" stroke="currentColor" strokeWidth="0.8" opacity="0.7" />
-    </svg>
-  );
-}
-
-/** Shared color picker content used in both desktop dropdown and mobile bottom sheet */
-function ColorPickerContent({
-  previewColor,
-  onColorSelect,
-}: {
-  previewColor: string;
-  onColorSelect: (color: string) => void;
-}) {
-  const t = useTranslation();
-  return (
-    <div className="grid grid-cols-7 gap-1.5">
-      {FILAMENT_COLORS.map(({ color, nameKey }) => (
-        <Button
-          key={color}
-          type="button"
-          variant="ghost"
-          onClick={() => onColorSelect(color)}
-          className={`h-auto w-auto rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
-            previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
-          }`}
-          aria-label={t('colors.colorAriaLabel', { name: t(nameKey) })}
-          aria-selected={previewColor === color}
-          role="option"
-        >
-          <span
-            className={`inline-block h-6 w-6 rounded border transition-transform hover:scale-105 ${
-              previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
-            }`}
-            style={{ backgroundColor: color }}
-          />
-        </Button>
-      ))}
-    </div>
-  );
-}
 
 /** Floating toolbar overlay for camera presets and assembled/exploded toggle. */
 export function BaseplatePreviewControls({
@@ -284,7 +225,11 @@ export function BaseplatePreviewControls({
             role="listbox"
             aria-label={t('baseplate.filamentColor')}
           >
-            <ColorPickerContent previewColor={filamentColor} onColorSelect={handleColorSelect} />
+            <PreviewColorPicker
+              colors={FILAMENT_COLORS}
+              previewColor={filamentColor}
+              onColorSelect={handleColorSelect}
+            />
           </div>
         )}
       </div>
@@ -420,7 +365,11 @@ export function BaseplatePreviewControls({
             <div className="mx-auto mb-3 h-1 w-8 rounded-full bg-stroke-subtle/50" />
             <p className="mb-3 text-sm font-medium text-content">{t('baseplate.filamentColor')}</p>
             <div role="listbox" aria-label={t('baseplate.filamentColor')}>
-              <ColorPickerContent previewColor={filamentColor} onColorSelect={handleColorSelect} />
+              <PreviewColorPicker
+                colors={FILAMENT_COLORS}
+                previewColor={filamentColor}
+                onColorSelect={handleColorSelect}
+              />
             </div>
           </div>
         </div>
