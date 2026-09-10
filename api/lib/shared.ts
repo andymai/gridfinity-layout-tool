@@ -218,9 +218,10 @@ export function getBaseUrl(): string {
 }
 
 /**
- * The stored share, or null when the blob is missing or unreadable. Any Blob
- * failure reads as "not found": the handlers answer 404 rather than leak the
- * storage error, which is the behaviour they each had inline.
+ * The stored share, or null when `head` fails or the blob fetch is not OK,
+ * which the handlers answer with 404 (the behaviour they each had inline). A
+ * rejected fetch or an unparsable body still throws, and the handler's own
+ * catch turns that into a 500.
  */
 export async function loadShare(blobPath: string): Promise<ShareData | null> {
   const blobInfo = await head(blobPath).catch(() => null);
