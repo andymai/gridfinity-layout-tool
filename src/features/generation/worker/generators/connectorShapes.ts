@@ -25,7 +25,7 @@
  * into the seam. Two opposing PUZZLE grooves across a seam form one dogbone
  * cavity — narrow at the seam, flaring to a rounded lobe inside each piece —
  * that the key locks into (the legacy trapezoid grooves' 0.3 mm/side undercut
- * printed away to nothing,; see {@link buildDovetailKey}). The groove uses
+ * printed away to nothing; see {@link buildDovetailKey}). The groove uses
  * the tighter `DOVETAIL_KEY_CLEARANCE` for a press fit. `invertDovetails` and
  * `preferIdenticalPieces` are ignored in this mode (seams are symmetric).
  *

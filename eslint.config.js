@@ -432,6 +432,7 @@ export default defineConfig([
       'src/features/generation/worker/generators/wallPatternBuilder.ts', // single per-wall pattern builder
       'src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgParser.ts', // SVG element-conversion pipeline; helpers separated where useful
       'src/features/inspiration-gallery/data/themes/workshop.ts', // pure theme data, large by nature
+      'src/features/whats-new/entries.ts', // release-notes data, one entry per release
       // Component files dense with conditional rendering / inline handlers; sub-components
       // exist where useful but the orchestration layer remains in the main file:
       'src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.tsx',
