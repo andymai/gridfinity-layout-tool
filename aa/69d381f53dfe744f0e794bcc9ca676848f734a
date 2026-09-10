@@ -1,0 +1,33 @@
+src/features/bin-designer/constants/paramMigrationCutouts.ts
+  s_80593ce0b07ec4::t_29d165bd95a5d3 1-325
+src/features/bin-designer/constants/paramMigrationCompartments.ts
+  s_80593ce0b07ec4::t_29d165bd95a5d3 1-96
+src/features/bin-designer/constants/paramMigrationWalls.ts
+  s_80593ce0b07ec4::t_29d165bd95a5d3 1-237
+src/features/bin-designer/constants/paramMigrationColors.ts
+  s_80593ce0b07ec4::t_29d165bd95a5d3 1-194
+src/features/bin-designer/constants/paramMigrationLid.ts
+  s_80593ce0b07ec4::t_29d165bd95a5d3 1-244
+src/features/bin-designer/constants/paramMigration.ts
+  s_80593ce0b07ec4::t_29d165bd95a5d3 30-31,34-35,43-44,60-91
+src/features/bin-designer/constants/paramMigrationText.ts
+  s_80593ce0b07ec4::t_29d165bd95a5d3 1-202
+src/features/bin-designer/constants/paramMigrationHelpers.ts
+  s_80593ce0b07ec4::t_29d165bd95a5d3 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "aa69d381f53dfe744f0e794bcc9ca676848f734a",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
