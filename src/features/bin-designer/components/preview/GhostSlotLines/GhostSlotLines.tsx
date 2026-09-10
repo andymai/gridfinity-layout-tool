@@ -7,15 +7,11 @@
  * Pattern matches GhostDividers.tsx (LineSegments2 with LineMaterial).
  */
 
-import { useMemo, useEffect, useRef } from 'react';
-import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useLineMaterialResolution } from '../useLineMaterialResolution';
+import { useGhostLineSegments } from '../useGhostLineSegments';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
   calculateSlotPositions,
@@ -29,9 +25,6 @@ const GHOST_OPACITY = 0.75;
 const LINE_WIDTH = 2;
 
 export function GhostSlotLines() {
-  const { invalidate } = useThree();
-  const lineRef = useRef<LineSegments2 | null>(null);
-
   const {
     width,
     depth,
@@ -159,38 +152,13 @@ export function GhostSlotLines() {
     dividerPieces.clearance,
   ]);
 
-  const material = useMemo(() => {
-    if (!shouldShow) return null;
-
-    return new LineMaterial({
-      color: new THREE.Color(GHOST_COLOR).getHex(),
-      linewidth: LINE_WIDTH,
-      transparent: true,
-      opacity: GHOST_OPACITY,
-      depthTest: true,
-      resolution: new THREE.Vector2(),
-    });
-  }, [shouldShow]);
-
-  useLineMaterialResolution(material);
-
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      material?.dispose();
-    };
-  }, [geometry, material]);
-
-  useEffect(() => {
-    if (geometry && material) invalidate();
-  }, [geometry, material, invalidate]);
-
-  const lineSegments = useMemo(
-    () => (geometry && material ? new LineSegments2(geometry, material) : null),
-    [geometry, material]
-  );
+  const lineSegments = useGhostLineSegments(geometry, {
+    color: GHOST_COLOR,
+    opacity: GHOST_OPACITY,
+    lineWidth: LINE_WIDTH,
+  });
 
   if (!lineSegments) return null;
 
-  return <primitive ref={lineRef} object={lineSegments} position={[0, 0, 0.1]} renderOrder={2} />;
+  return <primitive object={lineSegments} position={[0, 0, 0.1]} renderOrder={2} />;
 }

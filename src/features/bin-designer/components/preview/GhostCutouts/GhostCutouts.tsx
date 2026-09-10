@@ -10,15 +10,11 @@
  * Uses Line2 for proper line width support across WebGL implementations.
  */
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
-import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
-import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { useDesignerStore, useCutoutSelection } from '@/features/bin-designer/store';
-import { useLineMaterialResolution } from '../useLineMaterialResolution';
+import { useGhostLineSegments } from '../useGhostLineSegments';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { expandInteriorForOverhang } from '@/features/bin-designer/utils/binDimensions';
 import type { Cutout } from '@/features/bin-designer/types';
@@ -29,9 +25,6 @@ const GHOST_COLOR = '#fbbf24';
 const GHOST_OPACITY = 0.6;
 const LINE_WIDTH = 2;
 export function GhostCutouts() {
-  const { invalidate } = useThree();
-  const lineRef = useRef<LineSegments2 | null>(null);
-
   const {
     width,
     depth,
@@ -129,41 +122,15 @@ export function GhostCutouts() {
     return buildCutoutGeometry(cutoutsToRender, originX, originY, floorZ + fillSurface);
   }, [shouldShow, cutoutsToRender, floorZ, fillSurface, originX, originY]);
 
-  const material = useMemo(() => {
-    if (!shouldShow) return null;
-
-    return new LineMaterial({
-      color: new THREE.Color(GHOST_COLOR).getHex(),
-      linewidth: LINE_WIDTH,
-      transparent: true,
-      opacity: GHOST_OPACITY,
-      // Disable depth test so ghost lines render on top of bin walls,
-      // making cutout depth clearly visible from any angle.
-      depthTest: false,
-      depthWrite: false,
-      resolution: new THREE.Vector2(),
-    });
-  }, [shouldShow]);
-
-  useLineMaterialResolution(material);
-
-  useEffect(() => {
-    return () => {
-      geometry?.dispose();
-      material?.dispose();
-    };
-  }, [geometry, material]);
-
-  useEffect(() => {
-    if (geometry && material) invalidate();
-  }, [geometry, material, invalidate]);
-
-  const lineSegments = useMemo(
-    () => (geometry && material ? new LineSegments2(geometry, material) : null),
-    [geometry, material]
-  );
+  // Drawn through the walls so the cutout depth reads from any angle.
+  const lineSegments = useGhostLineSegments(geometry, {
+    color: GHOST_COLOR,
+    opacity: GHOST_OPACITY,
+    lineWidth: LINE_WIDTH,
+    throughSolid: true,
+  });
 
   if (!lineSegments) return null;
 
-  return <primitive ref={lineRef} object={lineSegments} position={[0, 0, 0.1]} renderOrder={3} />;
+  return <primitive object={lineSegments} position={[0, 0, 0.1]} renderOrder={3} />;
 }
