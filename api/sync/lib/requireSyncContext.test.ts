@@ -42,6 +42,13 @@ describe('requireSyncContext', () => {
   });
 
   it('stops at the first failing gate without touching the later ones', async () => {
+    mocks.requireMethod.mockReturnValue(false);
+    expect(await requireSyncContext(req, res, ['GET'], 'sync.read')).toBeNull();
+    expect(mocks.requireSession).not.toHaveBeenCalled();
+    expect(mocks.checkRateLimit).not.toHaveBeenCalled();
+    expect(mocks.getRedis).not.toHaveBeenCalled();
+
+    mocks.requireMethod.mockReturnValue(true);
     mocks.requireSession.mockResolvedValue(null);
     expect(await requireSyncContext(req, res, ['GET'], 'sync.read')).toBeNull();
     expect(mocks.checkRateLimit).not.toHaveBeenCalled();
