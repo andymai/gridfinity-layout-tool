@@ -1,0 +1,67 @@
+src/features/supporters/components/SupportersPage/useCountUp.ts
+  s_80593ce0b07ec4::t_88307563d8e771 1-19
+src/features/community/store/browseStore.ts
+  s_80593ce0b07ec4::t_88307563d8e771 1-7
+  s_80593ce0b07ec4::t_5118c316b9f5ca 8-10
+  s_80593ce0b07ec4::t_9afa3c1d81961e 11-21,24
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_80593ce0b07ec4::t_88307563d8e771 21,23,97
+src/features/community/api/clientGuards.ts
+  s_80593ce0b07ec4::t_88307563d8e771 1-168
+api/community/prints.ts
+  s_80593ce0b07ec4::t_88307563d8e771 63-64
+src/features/bin-designer/utils/binDownloadNaming.ts
+  s_80593ce0b07ec4::t_88307563d8e771 1-104
+src/features/bin-designer/components/CompartmentEditor/DividerTiltList.tsx
+  s_80593ce0b07ec4::t_88307563d8e771 1-113
+  s_80593ce0b07ec4::t_cf1fe08d9d9bfc 114-116
+  s_80593ce0b07ec4::t_adbf91ee492407 117-120
+api/lib/communityPrintResponse.ts
+  s_80593ce0b07ec4::t_88307563d8e771 1-51
+src/features/community/api/client.ts
+  s_80593ce0b07ec4::t_88307563d8e771 1-3
+  s_80593ce0b07ec4::t_41daf05f9d46e3 4-6
+  s_80593ce0b07ec4::t_c7ea79157e3b2e 7-10
+src/features/bin-designer/components/CompartmentEditor/DividerTiltList.test.tsx
+  s_80593ce0b07ec4::t_88307563d8e771 1-64
+src/features/supporters/components/SupportersPage/SupportersFlourishes.tsx
+  s_80593ce0b07ec4::t_88307563d8e771 1-154
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_80593ce0b07ec4::t_88307563d8e771 9-10
+src/features/community/store/browseFilters.ts
+  s_80593ce0b07ec4::t_3c9c2fe20f5c37 263
+  s_80593ce0b07ec4::t_88307563d8e771 1-262,264-295
+  s_80593ce0b07ec4::t_9dc7ce8087c8c9 296-298
+  s_80593ce0b07ec4::t_e90603f322c769 299
+src/shell/layoutExport/layoutExportFiles.ts
+  s_80593ce0b07ec4::t_3c9c2fe20f5c37 12
+  s_80593ce0b07ec4::t_88307563d8e771 1-11,13-104
+  s_80593ce0b07ec4::t_d463dc9efa7af5 105-107
+  s_80593ce0b07ec4::t_700e48e2502fe0 108
+src/shell/layoutExport/useLayoutExport.ts
+  s_80593ce0b07ec4::t_3c9c2fe20f5c37 23,48
+  s_80593ce0b07ec4::t_88307563d8e771 44,57
+src/features/community/utils/gapFit.ts
+  s_80593ce0b07ec4::t_88307563d8e771 11
+src/features/supporters/components/SupportersPage/SupportersFlourishes.test.tsx
+  s_80593ce0b07ec4::t_3c9c2fe20f5c37 10-12
+  s_80593ce0b07ec4::t_88307563d8e771 1-9,13-45
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_80593ce0b07ec4::t_97dc518df834f3 27-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5aa6e2d4f932c1abec7e7e30323ebb3930054c9a",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
