@@ -28,7 +28,8 @@ interface MarginLayout {
  * corners, extending over any perpendicular padding so they reach the true outer
  * corner); the perpendicular pair runs `short`, fitting between — and a short
  * end segment claims a corner only when its perpendicular long side is absent.
- * A side detaches only when its padding ≥ {@link MARGIN_MIN_DETACH_MM}.
+ * A side detaches only when its padding reaches `MARGIN_MIN_DETACH_MM` from
+ * `@/core/baseplateDefaults`.
  *
  * World positions are in the plate-centered, padding-free body frame (mm) so they
  * line up with how the preview/export place the body pieces.
