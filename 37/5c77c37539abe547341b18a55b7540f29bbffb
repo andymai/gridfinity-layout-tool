@@ -1,0 +1,43 @@
+src/features/baseplate/components/BaseplatePreview/previewConstants.ts
+  s_80593ce0b07ec4::t_a5fd6601231df9 3
+  s_80593ce0b07ec4::t_99fc52157c1c7e 4-6
+  s_80593ce0b07ec4::t_6a716b75af6115 7-10
+src/shared/components/preview/DimensionLine.test.tsx
+  s_80593ce0b07ec4::t_027a732ff1226f 1-74
+src/shared/components/preview/PreviewColorPicker.test.tsx
+  s_80593ce0b07ec4::t_123b7c72a9bf0f 24
+  s_80593ce0b07ec4::t_027a732ff1226f 1-23,25-27
+src/shared/components/preview/PreviewColorPicker.tsx
+  s_80593ce0b07ec4::t_027a732ff1226f 1-38
+  s_80593ce0b07ec4::t_fa0874a1b88540 39-41
+  s_80593ce0b07ec4::t_991d57e7d63a74 42
+src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx
+  s_80593ce0b07ec4::t_decc07eda3dd28 28,347-351,533-537
+  s_80593ce0b07ec4::t_a5fd6601231df9 25
+src/shared/components/preview/previewIcons.tsx
+  s_80593ce0b07ec4::t_a5fd6601231df9 1-155
+src/features/baseplate/components/BaseplatePreview/BaseplatePreviewControls.tsx
+  s_80593ce0b07ec4::t_decc07eda3dd28 9-15,228-232,368-372
+src/features/grid-editor/components/Grid/IsometricPreview/DrawerDimensions/DrawerDimensions.tsx
+  s_80593ce0b07ec4::t_decc07eda3dd28 3,111-117,120-125,128,130-135,139,141-146,149-150
+src/shared/components/preview/DimensionLine.tsx
+  s_80593ce0b07ec4::t_027a732ff1226f 1-56
+src/features/bin-designer/components/preview/BinDimensions/BinDimensions.tsx
+  s_80593ce0b07ec4::t_decc07eda3dd28 20,220-226,229-234,237,239-244,248,250-255,258-259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "375c77c37539abe547341b18a55b7540f29bbffb",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
