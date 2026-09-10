@@ -1,25 +1,41 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import jsxA11y from 'eslint-plugin-jsx-a11y'
-import { fixupPluginRules } from '@eslint/compat'
-import i18next from 'eslint-plugin-i18next'
-import boundaries from 'eslint-plugin-boundaries'
-import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
-import noInitTimeImportedCall from './eslint-rules/no-init-time-imported-call.js'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import { fixupPluginRules } from '@eslint/compat';
+import i18next from 'eslint-plugin-i18next';
+import boundaries from 'eslint-plugin-boundaries';
+import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import noInitTimeImportedCall from './eslint-rules/no-init-time-imported-call.js';
 
 // i18next@6.1.5 anchors each words.exclude entry as a raw `^…$` regex source, so
 // literal metacharacters (+, ., $, ~) must be escaped to match the intended text
 // and to avoid crashing the linter on bare quantifiers like "+".
-const literal = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const literal = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export default defineConfig([
   // `.worktrees` / `.claude/worktrees` hold git worktrees — each is a full copy
   // of the repo. Both are gitignored, but flat config does not read .gitignore,
   // so without these `eslint .` type-checks every checkout at once and OOMs.
-  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'brep-parts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx', 'src/test/setup.ts', '.worktrees', '.claude/worktrees']),
+  globalIgnores([
+    'dist',
+    'coverage',
+    'e2e',
+    'scripts',
+    'benchmarks',
+    'reports',
+    'brep-parts',
+    'playwright.config.ts',
+    'playwright.smoke.config.ts',
+    'playwright-ct.config.ts',
+    'playwright',
+    '**/*.visual.tsx',
+    'src/test/setup.ts',
+    '.worktrees',
+    '.claude/worktrees',
+  ]),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -52,31 +68,46 @@ export default defineConfig([
       'local/no-init-time-imported-call': 'error',
       // TypeScript strict rules
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-      }],
-      '@typescript-eslint/consistent-type-imports': ['error', {
-        prefer: 'type-imports',
-        fixStyle: 'separate-type-imports',
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          fixStyle: 'separate-type-imports',
+        },
+      ],
       '@typescript-eslint/no-non-null-assertion': 'error',
 
       // Pragmatic type-checked rule tuning
-      '@typescript-eslint/restrict-template-expressions': ['error', {
-        allowNumber: true,
-        allowBoolean: true,
-      }],
+      '@typescript-eslint/restrict-template-expressions': [
+        'error',
+        {
+          allowNumber: true,
+          allowBoolean: true,
+        },
+      ],
       '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/no-deprecated': 'warn',
-      '@typescript-eslint/no-misused-promises': ['error', {
-        checksVoidReturn: { attributes: false },
-      }],
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          checksVoidReturn: { attributes: false },
+        },
+      ],
       '@typescript-eslint/no-unnecessary-type-assertion': 'error',
-      '@typescript-eslint/restrict-plus-operands': ['error', {
-        allowNumberAndString: true,
-      }],
+      '@typescript-eslint/restrict-plus-operands': [
+        'error',
+        {
+          allowNumberAndString: true,
+        },
+      ],
       '@typescript-eslint/no-unsafe-assignment': 'warn',
       '@typescript-eslint/no-unsafe-member-access': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
@@ -106,7 +137,7 @@ export default defineConfig([
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'prefer-const': 'error',
       'no-var': 'error',
-      'eqeqeq': ['error', 'always'],
+      eqeqeq: ['error', 'always'],
       'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
 
       // Force every lazy() through lazyWithRetry so chunk-load failures on
@@ -115,57 +146,120 @@ export default defineConfig([
       //   - `import { lazy } from 'react'` → no-restricted-imports (resolves
       //     through module graph, won't false-flag a locally-named `lazy`).
       //   - `React.lazy(...)` member call → no-restricted-syntax.
-      'no-restricted-imports': ['error', {
-        paths: [{
-          name: 'react',
-          importNames: ['lazy'],
-          message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
-        }],
-      }],
-      'no-restricted-syntax': ['error', {
-        selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="lazy"][callee.object.name="React"]',
-        message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
-      }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              importNames: ['lazy'],
+              message:
+                'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'CallExpression[callee.type="MemberExpression"][callee.property.name="lazy"][callee.object.name="React"]',
+          message:
+            'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
+        },
+      ],
 
       // i18n: Enforce localization of user-facing strings
-      'i18next/no-literal-string': ['error', {
-        mode: 'jsx-only',
-        'jsx-attributes': {
-          include: ['title', 'aria-label', 'placeholder', 'alt'],
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            include: ['title', 'aria-label', 'placeholder', 'alt'],
+          },
+          'jsx-components': {
+            exclude: ['code', 'kbd', 'pre'],
+          },
+          words: {
+            exclude: [
+              // Symbols and punctuation
+              '×',
+              '·',
+              '—',
+              '→',
+              '←',
+              '↔',
+              '↑',
+              '↓',
+              '½',
+              '~',
+              '•',
+              '%',
+              '+',
+              '/',
+              ', ',
+              ':',
+              // Technical terms kept in English
+              'Gridfinity',
+              'STL',
+              '3MF',
+              'PLA',
+              'JSON',
+              'TSV',
+              'CSV',
+              '3D',
+              // Unit abbreviations and numeric fragments
+              'mm',
+              'px',
+              'u',
+              'm',
+              'h',
+              'x',
+              'pcs',
+              '.5',
+              '+.5',
+              'g',
+              // Ordered-list markers and loading ellipsis (presentational, not translatable)
+              '1.',
+              '2.',
+              '3.',
+              '...',
+              // CSS/SVG values
+              'normal',
+              '0.02em',
+              '100%',
+              'xMidYMid meet',
+              'xMinYMin meet',
+              'xMinYMid meet',
+              'xMidYMax meet',
+              // Currency symbol
+              '$',
+              // Numeric indicators
+              '9+',
+              // Brand names
+              'Zack Freedman',
+              'Andy Aragon',
+              // Keyboard shortcuts displayed as-is
+              'Ctrl',
+              'Shift',
+              'Esc',
+              'Enter',
+              'Space',
+              'WASD',
+              'H',
+              'R',
+              'V',
+              'L',
+              'M',
+              // Arrow key display
+              '↑↓←→',
+            ].map(literal),
+          },
+          callees: {
+            exclude: ['t', 'console.log', 'console.warn', 'console.error', 'Error', 'TypeError'],
+          },
         },
-        'jsx-components': {
-          exclude: ['code', 'kbd', 'pre'],
-        },
-        words: {
-          exclude: [
-            // Symbols and punctuation
-            '×', '·', '—', '→', '←', '↔', '↑', '↓', '½', '~', '•', '%', '+', '/', ', ', ':',
-            // Technical terms kept in English
-            'Gridfinity', 'STL', '3MF', 'PLA', 'JSON', 'TSV', 'CSV', '3D',
-            // Unit abbreviations and numeric fragments
-            'mm', 'px', 'u', 'm', 'h', 'x', 'pcs', '.5', '+.5', 'g',
-            // Ordered-list markers and loading ellipsis (presentational, not translatable)
-            '1.', '2.', '3.', '...',
-            // CSS/SVG values
-            'normal', '0.02em', '100%',
-            'xMidYMid meet', 'xMinYMin meet', 'xMinYMid meet', 'xMidYMax meet',
-            // Currency symbol
-            '$',
-            // Numeric indicators
-            '9+',
-            // Brand names
-            'Zack Freedman', 'Andy Aragon',
-            // Keyboard shortcuts displayed as-is
-            'Ctrl', 'Shift', 'Esc', 'Enter', 'Space',
-            'WASD', 'H', 'R', 'V', 'L', 'M',
-            // Arrow key display
-            '↑↓←→',
-          ].map(literal),
-        },
-        callees: {
-          exclude: ['t', 'console.log', 'console.warn', 'console.error', 'Error', 'TypeError'],
-        },
-      }],
+      ],
     },
   },
   // Architectural boundaries: enforce import rules between modules
@@ -218,78 +312,97 @@ export default defineConfig([
       //
       // The shared→feature edge is intentionally unrestricted today;
       // tightening it needs a per-violator cleanup pass.
-      'boundaries/dependencies': ['error', {
-        default: 'allow',
-        policies: [
-          // Features: disallow importing other features (cross-feature coupling)
-          {
-            from: { element: { type: 'feature' } },
-            disallow: [{ to: { element: { type: 'feature' } } }],
-          },
-          // Same feature is OK
-          {
-            from: { element: { type: 'feature' } },
-            allow: [
-              {
-                to: {
-                  element: {
-                    type: 'feature',
-                    captured: { featureName: '{{ from.captured.featureName }}' },
+      'boundaries/dependencies': [
+        'error',
+        {
+          default: 'allow',
+          policies: [
+            // Features: disallow importing other features (cross-feature coupling)
+            {
+              from: { element: { type: 'feature' } },
+              disallow: [{ to: { element: { type: 'feature' } } }],
+            },
+            // Same feature is OK
+            {
+              from: { element: { type: 'feature' } },
+              allow: [
+                {
+                  to: {
+                    element: {
+                      type: 'feature',
+                      captured: { featureName: '{{ from.captured.featureName }}' },
+                    },
                   },
                 },
-              },
-            ],
-          },
-          // Exception: design-linking -> bin-designer (integration layer)
-          {
-            from: { element: { type: 'feature', captured: { featureName: 'design-linking' } } },
-            allow: [{ to: { element: { type: 'feature', captured: { featureName: 'bin-designer' } } } }],
-          },
-          // Exception: bin-inspector -> design-linking (lazy-loaded linked design section)
-          {
-            from: { element: { type: 'feature', captured: { featureName: 'bin-inspector' } } },
-            allow: [{ to: { element: { type: 'feature', captured: { featureName: 'design-linking' } } } }],
-          },
-          // Exception: bin-inspector -> bin-recommender (lazy-loaded size suggestion)
-          {
-            from: { element: { type: 'feature', captured: { featureName: 'bin-inspector' } } },
-            allow: [{ to: { element: { type: 'feature', captured: { featureName: 'bin-recommender' } } } }],
-          },
-          // Exception: layers -> design-linking (lazy-loaded Make Bento dialog)
-          {
-            from: { element: { type: 'feature', captured: { featureName: 'layers' } } },
-            allow: [{ to: { element: { type: 'feature', captured: { featureName: 'design-linking' } } } }],
-          },
-          // `core/` is infrastructure — it must not depend on features or the
-          // app shell. (`core/` -> `shared/` is intentionally allowed; many
-          // `core/storage/*` modules use shared utilities/analytics.)
-          {
-            from: { element: { type: 'core' } },
-            disallow: [
-              { to: { element: { type: 'feature' } } },
-              { to: { element: { type: 'shell' } } },
-            ],
-          },
-          {
-            from: { element: { type: 'feature' } },
-            disallow: [{ to: { element: { type: 'shell' } } }],
-          },
-          // `design-system/` is UI primitives — it must not depend on any
-          // application-level layer. UI primitives take strings via props;
-          // they never read translations themselves, so `i18n` is in the
-          // disallow list alongside the app layers.
-          {
-            from: { element: { type: 'design-system' } },
-            disallow: [
-              { to: { element: { type: 'feature' } } },
-              { to: { element: { type: 'shell' } } },
-              { to: { element: { type: 'i18n' } } },
-              { to: { element: { type: 'shared' } } },
-              { to: { element: { type: 'core' } } },
-            ],
-          },
-        ],
-      }],
+              ],
+            },
+            // Exception: design-linking -> bin-designer (integration layer)
+            {
+              from: { element: { type: 'feature', captured: { featureName: 'design-linking' } } },
+              allow: [
+                { to: { element: { type: 'feature', captured: { featureName: 'bin-designer' } } } },
+              ],
+            },
+            // Exception: bin-inspector -> design-linking (lazy-loaded linked design section)
+            {
+              from: { element: { type: 'feature', captured: { featureName: 'bin-inspector' } } },
+              allow: [
+                {
+                  to: { element: { type: 'feature', captured: { featureName: 'design-linking' } } },
+                },
+              ],
+            },
+            // Exception: bin-inspector -> bin-recommender (lazy-loaded size suggestion)
+            {
+              from: { element: { type: 'feature', captured: { featureName: 'bin-inspector' } } },
+              allow: [
+                {
+                  to: {
+                    element: { type: 'feature', captured: { featureName: 'bin-recommender' } },
+                  },
+                },
+              ],
+            },
+            // Exception: layers -> design-linking (lazy-loaded Make Bento dialog)
+            {
+              from: { element: { type: 'feature', captured: { featureName: 'layers' } } },
+              allow: [
+                {
+                  to: { element: { type: 'feature', captured: { featureName: 'design-linking' } } },
+                },
+              ],
+            },
+            // `core/` is infrastructure — it must not depend on features or the
+            // app shell. (`core/` -> `shared/` is intentionally allowed; many
+            // `core/storage/*` modules use shared utilities/analytics.)
+            {
+              from: { element: { type: 'core' } },
+              disallow: [
+                { to: { element: { type: 'feature' } } },
+                { to: { element: { type: 'shell' } } },
+              ],
+            },
+            {
+              from: { element: { type: 'feature' } },
+              disallow: [{ to: { element: { type: 'shell' } } }],
+            },
+            // `design-system/` is UI primitives — it must not depend on any
+            // application-level layer. UI primitives take strings via props;
+            // they never read translations themselves, so `i18n` is in the
+            // disallow list alongside the app layers.
+            {
+              from: { element: { type: 'design-system' } },
+              disallow: [
+                { to: { element: { type: 'feature' } } },
+                { to: { element: { type: 'shell' } } },
+                { to: { element: { type: 'i18n' } } },
+                { to: { element: { type: 'shared' } } },
+                { to: { element: { type: 'core' } } },
+              ],
+            },
+          ],
+        },
+      ],
     },
   },
   // Bin-dimension discipline: every UI / validator / estimator that needs
@@ -314,22 +427,39 @@ export default defineConfig([
     rules: {
       // Flat-config replaces (does not merge) per-rule values, so the
       // React.lazy guard from the global block is duplicated here.
-      'no-restricted-syntax': ['error', {
-        selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="lazy"][callee.object.name="React"]',
-        message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
-      }, {
-        selector: "BinaryExpression > MemberExpression[object.name='GRIDFINITY'][property.name='GRID_SIZE']",
-        message: 'Do not multiply/divide GRIDFINITY.GRID_SIZE directly — use binDimensions(params) (or thread params.gridUnitMm through) so the math tracks the user-configured grid unit. See src/features/bin-designer/utils/binDimensions.ts.',
-      }, {
-        selector: "BinaryExpression > MemberExpression[object.name='GRIDFINITY'][property.name='HEIGHT_UNIT']",
-        message: 'Do not multiply/divide GRIDFINITY.HEIGHT_UNIT directly — use binDimensions(params) (or thread params.heightUnitMm through) so the math tracks the user-configured height unit. See src/features/bin-designer/utils/binDimensions.ts.',
-      }, {
-        selector: "BinaryExpression > MemberExpression[object.name='GRIDFINITY_SPEC'][property.name='GRID_SIZE']",
-        message: 'Do not multiply/divide GRIDFINITY_SPEC.GRID_SIZE directly — thread the per-layout gridUnitMm through instead. See src/features/bin-designer/utils/binDimensions.ts.',
-      }, {
-        selector: "BinaryExpression > MemberExpression[object.name='GRIDFINITY_SPEC'][property.name='HEIGHT_UNIT']",
-        message: 'Do not multiply/divide GRIDFINITY_SPEC.HEIGHT_UNIT directly — thread the per-layout heightUnitMm through instead. See src/features/bin-designer/utils/binDimensions.ts.',
-      }],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'CallExpression[callee.type="MemberExpression"][callee.property.name="lazy"][callee.object.name="React"]',
+          message:
+            'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
+        },
+        {
+          selector:
+            "BinaryExpression > MemberExpression[object.name='GRIDFINITY'][property.name='GRID_SIZE']",
+          message:
+            'Do not multiply/divide GRIDFINITY.GRID_SIZE directly — use binDimensions(params) (or thread params.gridUnitMm through) so the math tracks the user-configured grid unit. See src/features/bin-designer/utils/binDimensions.ts.',
+        },
+        {
+          selector:
+            "BinaryExpression > MemberExpression[object.name='GRIDFINITY'][property.name='HEIGHT_UNIT']",
+          message:
+            'Do not multiply/divide GRIDFINITY.HEIGHT_UNIT directly — use binDimensions(params) (or thread params.heightUnitMm through) so the math tracks the user-configured height unit. See src/features/bin-designer/utils/binDimensions.ts.',
+        },
+        {
+          selector:
+            "BinaryExpression > MemberExpression[object.name='GRIDFINITY_SPEC'][property.name='GRID_SIZE']",
+          message:
+            'Do not multiply/divide GRIDFINITY_SPEC.GRID_SIZE directly — thread the per-layout gridUnitMm through instead. See src/features/bin-designer/utils/binDimensions.ts.',
+        },
+        {
+          selector:
+            "BinaryExpression > MemberExpression[object.name='GRIDFINITY_SPEC'][property.name='HEIGHT_UNIT']",
+          message:
+            'Do not multiply/divide GRIDFINITY_SPEC.HEIGHT_UNIT directly — thread the per-layout heightUnitMm through instead. See src/features/bin-designer/utils/binDimensions.ts.',
+        },
+      ],
     },
   },
   // Barrel-only restriction: design-linking may only import bin-designer barrel.
@@ -339,17 +469,25 @@ export default defineConfig([
     files: ['src/features/design-linking/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     rules: {
-      'no-restricted-imports': ['error', {
-        paths: [{
-          name: 'react',
-          importNames: ['lazy'],
-          message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy().',
-        }],
-        patterns: [{
-          group: ['@/features/bin-designer/*', '@/features/bin-designer/**'],
-          message: 'Import from @/features/bin-designer barrel only',
-        }],
-      }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              importNames: ['lazy'],
+              message:
+                'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy().',
+            },
+          ],
+          patterns: [
+            {
+              group: ['@/features/bin-designer/*', '@/features/bin-designer/**'],
+              message: 'Import from @/features/bin-designer barrel only',
+            },
+          ],
+        },
+      ],
     },
   },
   // Barrel-only restriction: bin-inspector may only import design-linking barrel.
@@ -357,17 +495,25 @@ export default defineConfig([
     files: ['src/features/bin-inspector/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     rules: {
-      'no-restricted-imports': ['error', {
-        paths: [{
-          name: 'react',
-          importNames: ['lazy'],
-          message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy().',
-        }],
-        patterns: [{
-          group: ['@/features/design-linking/*', '@/features/design-linking/**'],
-          message: 'Import from @/features/design-linking barrel only',
-        }],
-      }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              importNames: ['lazy'],
+              message:
+                'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy().',
+            },
+          ],
+          patterns: [
+            {
+              group: ['@/features/design-linking/*', '@/features/design-linking/**'],
+              message: 'Import from @/features/design-linking barrel only',
+            },
+          ],
+        },
+      ],
     },
   },
   // Design system: compound components are valid exports, and English
@@ -441,6 +587,9 @@ export default defineConfig([
       'src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx',
       'src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx',
       'src/features/bin-inspector/hooks/useBinInspector.ts', // single coordinating hook
+      'src/features/bin-designer/components/panel/LidSection/useLidSection.ts', // single coordinating hook: one state/handlers pair for the whole lid section
+      'src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts', // single coordinating hook: label plan, warnings and every setter in one closure
+      'src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts', // single coordinating hook: drag, rotate and hover share one pointer state machine
       'src/features/cloud-share/components/ShareButton/ShareButton.tsx',
       'src/features/command-palette/components/CommandPalette/CommandPalette.tsx',
       'src/features/grid-editor/components/Grid/Overlay/Overlay.tsx',
@@ -466,4 +615,4 @@ export default defineConfig([
       'no-console': 'off',
     },
   },
-])
+]);

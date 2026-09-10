@@ -1,6 +1,5 @@
 /** Store selections, camera and interaction state behind the isometric preview; the component keeps the markup. */
 import { useMemo, useCallback, useRef, useState, useEffect } from 'react';
-// Side-effect: must run before any <Text> mounts under this Canvas.
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
