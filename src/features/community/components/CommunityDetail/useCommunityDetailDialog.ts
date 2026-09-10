@@ -26,20 +26,20 @@ import type { OwnerModeration, ParentResolution } from './CommunityDetailContent
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
 
-export type DetailPhase = 'loading' | 'ready' | 'gone' | 'error';
+type DetailPhase = 'loading' | 'ready' | 'gone' | 'error';
 
 /** Stable empty reference so the media memo does not churn every render. */
-export const EMPTY_PRINTS: readonly CommunityPrint[] = [];
+const EMPTY_PRINTS: readonly CommunityPrint[] = [];
 
-export type BusyAction = 'remix' | 'edit' | 'duplicate' | 'place' | null;
+type BusyAction = 'remix' | 'edit' | 'duplicate' | 'place' | null;
 
 /** Detail-payload stats fallback for designs the capped browse index lacks. */
-export interface DetailStats {
+interface DetailStats {
   counts: CommunityDesignCounts;
   likedByMe: boolean;
 }
 
-export function publicDesignUrl(id: string): string {
+function publicDesignUrl(id: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return `${origin}/community/d/${id}`;
 }
