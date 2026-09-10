@@ -35,7 +35,12 @@ import {
 import { lidZOffset } from './__kernel-tests__/lidSeating';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { DEFAULT_LID_HINGE_CONFIG, LID_HINGE_PIN_MM } from '@/features/bin-designer/types/lid';
+import {
+  DEFAULT_LID_HINGE_CONFIG,
+  hingeOppositeSide,
+  LID_HINGE_DETENT_COVERAGE,
+  LID_HINGE_PIN_MM,
+} from '@/features/bin-designer/types/lid';
 import { planHingeLid } from '@/shared/utils/hingeLidPlan';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -90,19 +95,33 @@ function control(params: BinParams): BinParams {
 }
 
 /**
- * The same design with the hinge swapped for click rails on all four walls.
+ * The same design with the hinge swapped for click rails matching whatever
+ * catch a `catchMode: 'detent'` hinge lid would have built: one rail, on the
+ * wall opposite the hinge, at `LID_HINGE_DETENT_COVERAGE`. A `'none'` or
+ * `'magnets'` hinge has no rail at all, so the control gets none either.
  *
  * The apples-to-apples control for a VOLUME comparison, where {@link control}
- * is not: `hingeParams` carries `clickRails: {front,back,left,right: true}`
- * by default (a hinge lid can catch on its non-hinge walls too), and a
- * friction control silently drops every one of those rails rather than
- * isolating the hinge's own contribution. Since #4207 gave the rail a real
- * catch, that difference is no longer ~0mm³ — measured ~46mm³ on the default
- * hinge footprint, which is the rails legitimately engaging the lip on three
- * walls, not the hinge making anything worse.
+ * is not: a friction control drops the catch-side rail a detent hinge relies
+ * on, rather than isolating the hinge mechanism's own contribution. Since
+ * #4207 gave that rail a real catch, the friction control's difference is no
+ * longer ~0mm³.
  */
 function clickRailControl(params: BinParams): BinParams {
-  return { ...params, lid: { ...params.lid, attachment: 'clickRails', hinge: undefined } };
+  const hinge = params.lid.hinge ?? DEFAULT_LID_HINGE_CONFIG;
+  const catchSide = hingeOppositeSide(hinge.side);
+  const detentOnly = hinge.catchMode === 'detent';
+  return {
+    ...params,
+    lid: {
+      ...params.lid,
+      attachment: 'clickRails',
+      hinge: undefined,
+      clickRails: detentOnly
+        ? { front: false, back: false, left: false, right: false, [catchSide]: true }
+        : { front: false, back: false, left: false, right: false },
+      clickRailCoverage: LID_HINGE_DETENT_COVERAGE * 100,
+    },
+  };
 }
 
 interface Solids {
