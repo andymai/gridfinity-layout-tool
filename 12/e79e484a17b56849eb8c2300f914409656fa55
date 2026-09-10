@@ -1,0 +1,31 @@
+src/features/bin-designer/utils/compartmentRemap.test.ts
+  s_80593ce0b07ec4::t_9a77329974d985 2,44-67
+  s_80593ce0b07ec4::t_8cedf289aa1c58 68
+src/features/bin-designer/utils/bentoDraw.ts
+  s_80593ce0b07ec4::t_bc826dc1922d45 34,194-199
+src/features/bin-designer/utils/compartments.ts
+  s_80593ce0b07ec4::t_9a77329974d985 21
+  s_80593ce0b07ec4::t_88a9eacc2d6979 730,756
+src/shared/hooks/useCollabMode.ts
+  s_80593ce0b07ec4::t_9a77329974d985 51,63-64,66-79,83,85
+src/features/bin-designer/utils/compartmentRemap.ts
+  s_80593ce0b07ec4::t_4bd1b00b55b7ba 343-390
+src/shared/hooks/useCollabMode.test.ts
+  s_80593ce0b07ec4::t_a617585733c5b9 3,362-393
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "12e79e484a17b56849eb8c2300f914409656fa55",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
