@@ -97,10 +97,9 @@ export function toSingleMesh(result: GenerationResult) {
  * it visible and surface the BREP error as a toast instead of replacing the
  * canvas with a red error overlay.
  *
- * The null-check expansion is deliberate: an earlier version used
- * `mesh?.vertices !== null`, which short-circuits to `undefined !== null` (i.e.
- * `true`) when `mesh` itself is `null` — wrongly reporting a preview on a
- * blank canvas. Exported for regression test.
+ * The null checks are spelled out on purpose: `mesh?.vertices !== null`
+ * short-circuits to `undefined !== null` (true) when `mesh` itself is null and
+ * would report a preview on a blank canvas.
  */
 export function hasMeshOnScreen(state: {
   pieceMeshes: { length: number };

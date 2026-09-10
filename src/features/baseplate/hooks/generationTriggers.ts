@@ -1,13 +1,11 @@
 /** The layout-store selection that decides when a baseplate regenerates. */
 
-import type { useLayoutStore } from '@/core/store/layout';
+import type { LayoutState } from '@/core/store/layout/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { StoredBaseplateParams, DrawerOutline } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { hasEffectivePerimeter } from '../utils/buildFullParams';
 import { isSeatedConnectorStyle } from '@/shared/types/bin';
-
-type LayoutStoreState = ReturnType<typeof useLayoutStore.getState>;
 
 /**
  * Single-slot memo for {@link hasEffectivePerimeter}, which resolves and pads
@@ -72,14 +70,12 @@ function hasEffectivePerimeterMemoized(
 }
 
 /**
- * The layout fields whose change must trigger a baseplate regeneration. Used as
- * the single source of truth for BOTH the `useShallow` selection and the regen
- * effect's dependency — they previously duplicated this list, and a geometry
- * param (`connectorStyle`) dropped from one half silently stopped regeneration
- * (the exploded preview kept its stale dovetail pieces). Keeping it in one place
- * means a new geometry param is wired in by adding it here once.
+ * The layout fields whose change must trigger a baseplate regeneration: the
+ * single source of truth for BOTH the `useShallow` selection and the regen
+ * effect's dependency. A geometry param missing here silently stops
+ * regeneration, so a new one is wired in by adding it here once.
  */
-export function selectGenerationTriggers(state: LayoutStoreState) {
+export function selectGenerationTriggers(state: LayoutState) {
   const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
   // Stacking strips screws AND magnets in buildFullParams (a flipped tile
   // would put the head recess and the magnet bridges on the underside), so

@@ -5,7 +5,7 @@
 import { useState, useCallback } from 'react';
 import { batch } from '@/core/cqrs';
 import { useLayoutStore, useToastStore } from '@/core/store';
-import type { useMutations } from '@/shared/contexts';
+import type { Mutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
 import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
 import {
@@ -31,7 +31,7 @@ export interface DrawerFitSuggestion {
 }
 
 export interface DrawerFitInputs {
-  updateDrawer: ReturnType<typeof useMutations>['updateDrawer'];
+  updateDrawer: Mutations['updateDrawer'];
   halfGridMode: boolean;
   setHalfGridMode: (enabled: boolean) => unknown;
   gridUnitMm: number;
