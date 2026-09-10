@@ -1,9 +1,12 @@
 src/features/bin-designer/components/DesignImportView/DesignImportView.test.tsx
   s_80593ce0b07ec4::t_6b1e3430714a74 227-236
+  s_80593ce0b07ec4::t_4e43329d996bf7 227-236
 src/shared/components/ImportPreviewPanel/ImportPreviewPanel.tsx
   s_80593ce0b07ec4::t_6b1e3430714a74 32
+  s_80593ce0b07ec4::t_8e987f5dca5257 32
 src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.test.tsx
   s_80593ce0b07ec4::t_6b1e3430714a74 79-88
+  s_80593ce0b07ec4::t_11d15db28137e3 79,81-88
 ---
 {
   "schema_version": "authorship/3.0.0",
