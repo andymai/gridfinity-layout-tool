@@ -1,12 +1,14 @@
 import { useState, useRef, useCallback } from 'react';
-import type { ChangeEvent, DragEvent } from 'react';
+import type { ChangeEvent } from 'react';
 import { validateImport } from '@/shared/utils/validation';
 import { decodeLayoutFromURL, isArchiveFormat } from '@/core/storage';
 import type { Layout } from '@/core/types';
 import type { LayoutArchive } from '@/core/storage';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
-import { SchemaDocsLink } from '@/shared/components/SchemaDocsLink';
+import { ImportDropZone } from '@/shared/components/ImportDropZone';
+import { ImportValidationErrors } from '@/shared/components/ImportValidationErrors';
+import { ImportPreviewPanel } from '@/shared/components/ImportPreviewPanel';
 
 interface ImportViewProps {
   onImport: (layout: Layout) => void;
@@ -38,12 +40,10 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
   const [errors, setErrors] = useState<string[]>([]);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [archivePreview, setArchivePreview] = useState<ArchivePreview | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [validLayout, setValidLayout] = useState<Layout | null>(null);
   const [validArchive, setValidArchive] = useState<LayoutArchive | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processInput = useCallback(
     (text: string) => {
@@ -144,42 +144,12 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
     [processInput, t]
   );
 
-  const handleFileUpload = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      readFile(file);
-    },
-    [readFile]
-  );
-
-  const handleDragOver = useCallback((e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  }, []);
-
-  const handleDrop = useCallback(
-    (e: DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-
-      const files = e.dataTransfer.files;
-      if (files.length === 0) return;
-
-      const file = files[0];
+  const handleFile = useCallback(
+    (file: File) => {
       if (!file.name.endsWith('.json')) {
         setErrors([t('binDesigner.designJson.error.mustBeJsonFile')]);
         return;
       }
-
       readFile(file);
     },
     [readFile, t]
@@ -224,46 +194,7 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
         {t('layouts.importedLayoutsAreSavedToMyLayouts')}
       </p>
 
-      {/* Drop Zone */}
-      <div
-        className={`
-          relative border-2 border-dashed rounded-lg p-8 mb-4 text-center transition-colors
-          ${isDragging ? 'border-accent bg-accent/10' : 'border-stroke hover:border-stroke-subtle'}
-        `}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-
-        <svg
-          className={`w-12 h-12 mx-auto mb-3 transition-colors ${isDragging ? 'text-accent' : 'text-content-tertiary'}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          />
-        </svg>
-
-        <p className="text-content-secondary mb-2">
-          {isDragging ? t('layouts.dropFileHere') : t('layouts.dragDropJson')}
-        </p>
-        <p className="text-content-tertiary text-sm mb-4">{t('layouts.or')}</p>
-        <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-          {t('layouts.browseFiles')}
-        </Button>
-      </div>
+      <ImportDropZone accept=".json" prompt={t('layouts.dragDropJson')} onFile={handleFile} />
 
       {/* Divider */}
       <div className="flex items-center gap-4 mb-4">
@@ -299,80 +230,34 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
         />
       </div>
 
-      {/* Validation Errors */}
-      {errors.length > 0 && (
-        <div className="bg-danger-muted border border-danger rounded-lg p-3 mb-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-danger mb-1">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            {t('layouts.validationErrors')}
-          </div>
-          <ul className="text-sm text-danger/80 space-y-1 ml-6">
-            {errors.map((error, index) => (
-              <li key={index}>• {error}</li>
-            ))}
-          </ul>
-          <SchemaDocsLink className="mt-2 ml-6 inline-block text-danger/80 hover:text-danger" />
-        </div>
-      )}
+      <ImportValidationErrors errors={errors} />
 
-      {/* Preview (single layout) */}
       {preview && (
-        <div className="bg-success-muted border border-success rounded-lg p-4 mb-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            {t('layouts.readyToImport')}
-          </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-success/80">
-            <div>{t('layouts.name')}</div>
-            <div className="font-medium">{preview.name}</div>
-            <div>{t('layouts.drawerSize')}</div>
-            <div>{preview.drawerSize}</div>
-            <div>{t('layouts.layers')}</div>
-            <div>{preview.layerCount}</div>
-            <div>{t('layouts.bins')}</div>
-            <div>{preview.binCount}</div>
-            {preview.linkedDesignCount !== undefined && preview.linkedDesignCount > 0 && (
-              <>
-                <div>{t('layouts.binDesigns')}</div>
-                <div>{preview.linkedDesignCount}</div>
-              </>
-            )}
-          </div>
-        </div>
+        <ImportPreviewPanel
+          title={t('layouts.readyToImport')}
+          rows={[
+            { label: t('layouts.name'), value: preview.name, emphasis: true },
+            { label: t('layouts.drawerSize'), value: preview.drawerSize },
+            { label: t('layouts.layers'), value: preview.layerCount },
+            { label: t('layouts.bins'), value: preview.binCount },
+            ...(preview.linkedDesignCount !== undefined && preview.linkedDesignCount > 0
+              ? [{ label: t('layouts.binDesigns'), value: preview.linkedDesignCount }]
+              : []),
+          ]}
+        />
       )}
 
       {archivePreview && (
-        <div className="bg-success-muted border border-success rounded-lg p-4 mb-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            {t('layouts.archiveDetected')}
-          </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-success/80">
-            <div>{t('layouts.layoutsInArchive')}</div>
-            <div className="font-medium">{archivePreview.layoutCount}</div>
-          </div>
-        </div>
+        <ImportPreviewPanel
+          title={t('layouts.archiveDetected')}
+          rows={[
+            {
+              label: t('layouts.layoutsInArchive'),
+              value: archivePreview.layoutCount,
+              emphasis: true,
+            },
+          ]}
+        />
       )}
 
       {/* Action Buttons */}
