@@ -76,6 +76,7 @@ const OG_LOCALE_MAP: Record<Locale, string> = {
   'zh-CN': 'zh_CN',
   cs: 'cs_CZ',
   ko: 'ko_KR',
+  ka: 'ka_GE',
 };
 
 /** Translation function signature */
@@ -168,6 +169,7 @@ const localeLoaders: Record<Locale, () => Promise<{ default: Translations }>> = 
   'zh-CN': () => import('./locales/zh-CN.json'),
   cs: () => import('./locales/cs.json'),
   ko: () => import('./locales/ko.json'),
+  ka: () => import('./locales/ka.json'),
 };
 
 interface LocaleProviderProps {

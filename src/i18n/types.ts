@@ -22,7 +22,8 @@ export type Locale =
   | 'pl'
   | 'zh-CN'
   | 'cs'
-  | 'ko';
+  | 'ko'
+  | 'ka';
 
 /** Locale metadata for UI display */
 export interface LocaleInfo {
@@ -51,6 +52,7 @@ export const SUPPORTED_LOCALES: readonly LocaleInfo[] = [
   { code: 'zh-CN', nativeName: '简体中文', englishName: 'Chinese (Simplified)' },
   { code: 'cs', nativeName: 'Čeština', englishName: 'Czech' },
   { code: 'ko', nativeName: '한국어', englishName: 'Korean' },
+  { code: 'ka', nativeName: 'ქართული', englishName: 'Georgian' },
 ] as const;
 
 /** Flat key-value map of translations */
