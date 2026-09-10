@@ -65,43 +65,30 @@ function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
 /**
  * Growth (mm, per side) on a per-cell pocket cutter's footprint.
  *
- * An edge cell's rounded corner (radius `CORNER_RADIUS`, from the NOMINAL
- * socket grid) and the slab's own outer corner (radius `lidCornerR`, from
- * the `fitClearance`-shrunk perimeter) land EXACTLY tangent: the grid shrink
- * and the two radii differ by the identical `fitClearance` (0.25mm), so
- * `nominalHalf - CORNER_RADIUS === shrunkHalf - lidCornerR` to the bit. Two
- * arcs meeting at exact tangency, not a real overlap, is the same trap
- * `COPLANAR_OVERLAP` exists for on flat faces (generatorConstants.ts) — here
- * it produced sub-mm² sliver triangles at every edge cell's outer corner
- * (aspect ratio ~11:1, #4208), not a topology break `assertNoDegenerateTriangles`
- * or a watertight check would catch. Growing every pocket by this — cheap,
- * since it is a cutter — breaks the tangency everywhere at once rather than
- * needing to single out which cells sit on the boundary.
+ * An edge cell's rounded corner (from the NOMINAL socket grid) and the
+ * slab's own outer corner (from the `fitClearance`-shrunk perimeter) land
+ * EXACTLY tangent, because the grid shrink and the two corner radii differ
+ * by the identical `fitClearance`. Two arcs meeting at exact tangency, not a
+ * real overlap, is the same trap `COPLANAR_OVERLAP` exists for on flat faces
+ * (generatorConstants.ts): it produces sliver triangles no topology or
+ * watertight check catches. Growing every pocket by this — cheap, since it
+ * is a cutter — breaks the tangency everywhere at once.
  *
- * `COPLANAR_OVERLAP` (0.01mm) alone thinned the sliver but did not clear it:
- * the loft is RULED between breakpoints, so the near-tangent corner recurs,
- * slightly smaller, all the way down the ruled segment into the big taper —
- * not one Z plane to overlap but a whole interpolated run of them. 5x that
- * margin clears every sampled Z along a cell's STRAIGHT edge, where one
- * curve meets a straight run — the case #4208 reported and this fixes.
+ * Bigger than `COPLANAR_OVERLAP` itself because the loft is RULED between
+ * breakpoints: the near-tangent corner recurs, slightly smaller, down the
+ * whole ruled segment into the big taper, not just at one Z plane.
  *
- * It does not clear the corner CELLS' own 90° corner, where the pocket's
- * arc and the slab's own corner arc are tangent to each other on BOTH axes
- * at once — measured two orders of magnitude worse (aspect ~350-1600) than
- * the straight-edge case, unmoved by growing this well past what a cutter
- * should reasonably need. Two arcs tangent on two axes wants a different
- * fix than "grow the rectangle" — filed separately as #4215 rather than
- * folded into this one blind.
+ * Clears the case where one cell edge's straight run meets the slab's
+ * corner arc; does NOT clear a corner cell's own 90° corner, where the
+ * pocket's arc and the slab's corner arc are tangent to each other on BOTH
+ * axes at once — that needs a different fix than growing the rectangle.
  *
- * `buildStackLipCutter` below has the identical straight-edge tangency by
- * the same math,
+ * `buildStackLipCutter` below has the identical tangency by the same math
  * but stays unmodified: its exact peak position is pinned by
- * `lidGenerator.scenario`'s stacking-lip-only assertions, and nobody has
- * reported a visible defect there — a corner grown by this same margin
- * shifted its measured edge by exactly that margin and broke them. Worth
- * revisiting together if that mode ever gets its own report.
+ * `lidGenerator.scenario`'s stacking-lip-only assertions, and growing it the
+ * same way shifts that pinned edge and breaks them.
  */
-const POCKET_RADIAL_OVERLAP_MM = 5 * COPLANAR_OVERLAP;
+const POCKET_EDGE_GROWTH_MM = 5 * COPLANAR_OVERLAP;
 
 /**
  * Build a single pocket cutter for one cell. Multi-section loft with
@@ -114,8 +101,8 @@ function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D 
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   return loftPocket((inset) =>
     drawRoundedRectangle(
-      Math.max(cellW_mm + 2 * POCKET_RADIAL_OVERLAP_MM - 2 * inset, MIN_POCKET_MM),
-      Math.max(cellD_mm + 2 * POCKET_RADIAL_OVERLAP_MM - 2 * inset, MIN_POCKET_MM),
+      Math.max(cellW_mm + 2 * POCKET_EDGE_GROWTH_MM - 2 * inset, MIN_POCKET_MM),
+      Math.max(cellD_mm + 2 * POCKET_EDGE_GROWTH_MM - 2 * inset, MIN_POCKET_MM),
       Math.max(cornerR - inset, MIN_POCKET_MM)
     )
   );

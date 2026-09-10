@@ -381,15 +381,17 @@ describe('lid generation and export scenarios', () => {
       const lipOnly = generateLid(makeParams({ stackableTop: true, stackLipOnly: true }, one));
       expect(grid).not.toBeNull();
       expect(lipOnly).not.toBeNull();
-      // Not exactly equal since #4208: the per-cell path grows its pocket by
-      // POCKET_RADIAL_OVERLAP_MM to clear an exact-tangency sliver against
+      // Not exactly equal: the per-cell path grows its pocket by
+      // POCKET_EDGE_GROWTH_MM to clear an exact-tangency sliver against
       // the slab's own outer edge, which `stackLipOnly`'s dedicated cutter
       // does not (see lidStackGrid.ts). The two remain the same SHAPE within
       // that sub-mm margin — same footprint, same top height.
       const g = boundingBox(grid!.vertices);
       const l = boundingBox(lipOnly!.vertices);
-      expect(l.maxX - l.minX).toBeCloseTo(g.maxX - g.minX, 1);
-      expect(l.maxY - l.minY).toBeCloseTo(g.maxY - g.minY, 1);
+      expect(l.minX).toBeCloseTo(g.minX, 1);
+      expect(l.maxX).toBeCloseTo(g.maxX, 1);
+      expect(l.minY).toBeCloseTo(g.minY, 1);
+      expect(l.maxY).toBeCloseTo(g.maxY, 1);
       expect(l.maxZ).toBeCloseTo(g.maxZ, 0);
     });
 
