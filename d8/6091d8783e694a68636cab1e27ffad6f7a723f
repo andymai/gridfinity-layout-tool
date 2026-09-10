@@ -1,0 +1,23 @@
+src/shared/hooks/useDrawerFitSuggestion.ts
+  s_80593ce0b07ec4::t_6d6ca218cda2b8 8,34
+src/features/baseplate/hooks/generationTriggers.ts
+  s_80593ce0b07ec4::t_6d6ca218cda2b8 3,73-76,78
+src/features/baseplate/hooks/generationMeshEntries.ts
+  s_80593ce0b07ec4::t_b0621d294823cf 100-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d86091d8783e694a68636cab1e27ffad6f7a723f",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
