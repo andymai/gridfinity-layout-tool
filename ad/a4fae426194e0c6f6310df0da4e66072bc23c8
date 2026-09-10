@@ -1,0 +1,19 @@
+api/sync/lib/requireSyncContext.test.ts
+  s_80593ce0b07ec4::t_238259a90b4ed6 45-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ada4fae426194e0c6f6310df0da4e66072bc23c8",
+  "prompts": {},
+  "sessions": {
+    "s_80593ce0b07ec4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f927e233-2668-4869-a2ff-db754ea3ce2b",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
