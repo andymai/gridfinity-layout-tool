@@ -220,6 +220,19 @@ rim, so trimming it removes the weld rather than the obstruction. Its datum sink
 `LID_KEEPOUT_BELOW_CEILING_MM` instead. Features reference the interface; they are not
 cut by it.
 
+### Flush fill is not an obstruction, and a column cannot tell
+
+`worstRailInterference` measures shared Z in a column, so it counts material lying
+FLUSH with the lip's inner face (2.6mm in from the outer face) the same as material in
+the rail's way, and it saturates: once a column is solid through the band, a good bin
+and a grossly bad one both read 2.30mm. A seated rail has already been deflected past
+that plane by the lip, so flush fill costs it no travel. The scoop's chute and the
+tongue the relief ring leaves outboard of itself are both exactly that, both read
++0.60mm, and both are benign (#4224, #4225). `railKeepoutIntrusionMm` is what
+discriminates: how far INBOARD of the lip line bin material reaches inside the rail's
+band, wherever the LID carries rail. Zero on every clean pairing, 0.20mm on a
+deliberately mispaired one.
+
 ### An absence is an obstruction the interference probes cannot see
 
 A wall cutout or high handle hole takes the lip a rail hooks, so a rail over one grips
