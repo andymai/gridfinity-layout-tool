@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.489.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.489.0...gridfinity-layout-tool-v4.489.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* build bins and lids at grid pitches below 6.5mm ([#4219](https://github.com/andymai/gridfinity-layout-tool/issues/4219)) ([8902951](https://github.com/andymai/gridfinity-layout-tool/commit/8902951e70f0e6e90e04780bb685faf837bc12bf))
+
 ## [4.489.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.488.2...gridfinity-layout-tool-v4.489.0) (2026-09-10)
 
 
