@@ -17,6 +17,7 @@ import {
   resolveLidCavityExtraMm,
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
+  LID_CLICK_RAIL_INNER,
 } from '@/shared/types/bin';
 import {
   retentionBossRadius,
@@ -76,6 +77,16 @@ export interface SeatedPair {
 }
 
 /**
+ * Distance from the lid's outer face to a click rail's spine.
+ *
+ * `railPlacementsForRectangle` insets every rail by `lidCornerR`, which
+ * `resolveLidInputs` derives as `LID_CORNER_RADIUS - LID_FIT_CLEARANCE`. A
+ * probe aimed at `LID_CORNER_RADIUS` sits 0.25mm inboard of that and reads the
+ * cavity wall instead of the bump, so it reports clean through real engagement.
+ */
+const RAIL_SPINE_INSET = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
+
+/**
  * Every probe position {@link worstRailInterference} visits, for a given lid.
  *
  * A fixed discrete set derived from the lid's own bounds, which is what lets
@@ -85,8 +96,8 @@ function railProbePositions(lid: MeshData): Array<readonly [number, number]> {
   const bb = boundingBox(lid.vertices);
   const cx = (bb.minX + bb.maxX) / 2;
   const cy = (bb.minY + bb.maxY) / 2;
-  const spineX = (bb.maxX - bb.minX) / 2 - LID_CORNER_RADIUS;
-  const spineY = (bb.maxY - bb.minY) / 2 - LID_CORNER_RADIUS;
+  const spineX = (bb.maxX - bb.minX) / 2 - RAIL_SPINE_INSET;
+  const spineY = (bb.maxY - bb.minY) / 2 - RAIL_SPINE_INSET;
   const out: Array<readonly [number, number]> = [];
   for (const off of RAIL_PROBE_OFFSETS) {
     for (let y = cy - spineY; y <= cy + spineY; y += 1) {
@@ -139,6 +150,30 @@ export function worstRailInterferenceDelta(probe: SeatedPair, reference: SeatedP
 }
 
 /**
+ * Highest {@link worstRailInterference} a correctly seating bin reads.
+ *
+ * A clean bin does not read zero. The rail bump protrudes
+ * `LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET` (1.55mm) past its spine and sits
+ * inside the lip's undercut, which is the snap fit engaging rather than a
+ * clash. Measured 1.70mm on every footprint that carries a full rail, so a
+ * clearance assertion is `< RAIL_ENGAGEMENT_CEILING + tolerance` and keeps
+ * whatever sensitivity its tolerance buys.
+ *
+ * Do NOT state these as a delta against the same bin with the feature off.
+ * Notching is what these suites exercise, and it splits one rail into several:
+ * the probe then carries rail at positions the unsegmented reference does not,
+ * and the difference reads as interference with nothing colliding. Measured on
+ * a 2x1 grid at 50% coverage, where both bins read 1.70mm absolute while the
+ * delta reads 0.60mm.
+ *
+ * A 1x1 reads 0.60mm instead, so a suite that adds one needs its own datum
+ * rather than this ceiling. None of the current rail suites goes below 2u.
+ *
+ * `railEngagement.kernel.test.ts` pins the number.
+ */
+export const RAIL_ENGAGEMENT_CEILING = 1.7;
+
+/**
  * Worst interference anywhere along the four rail lines.
  *
  * Sweeps a small band of X/Y offsets around each rail's spine rather than the
@@ -156,8 +191,8 @@ export function worstRailInterference(bin: MeshData, lid: MeshData, dz: number):
   const bb = boundingBox(lid.vertices);
   const cx = (bb.minX + bb.maxX) / 2;
   const cy = (bb.minY + bb.maxY) / 2;
-  const spineX = (bb.maxX - bb.minX) / 2 - LID_CORNER_RADIUS;
-  const spineY = (bb.maxY - bb.minY) / 2 - LID_CORNER_RADIUS;
+  const spineX = (bb.maxX - bb.minX) / 2 - RAIL_SPINE_INSET;
+  const spineY = (bb.maxY - bb.minY) / 2 - RAIL_SPINE_INSET;
 
   let worst = 0;
   for (const off of RAIL_PROBE_OFFSETS) {
@@ -257,7 +292,7 @@ const LIP_PROBE_INBOARD = 1;
  * run, where `computeCutoutCenter` holds a cutout a `wallThickness` clear of
  * the corner anyway.
  */
-const CORNER_SKIP = LID_CORNER_RADIUS + 1.5;
+const CORNER_SKIP = RAIL_SPINE_INSET - LID_CLICK_RAIL_INNER + 0.95;
 
 export function ungrippedRailMm(
   bin: MeshData,
@@ -269,7 +304,7 @@ export function ungrippedRailMm(
   const lipTop = binLipTopZ(p);
   const lidBB = boundingBox(lid.vertices);
   const binBB = boundingBox(bin.vertices);
-  const railInset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE + RAIL_PROBE_INBOARD;
+  const railInset = RAIL_SPINE_INSET + RAIL_PROBE_INBOARD;
 
   const hasRail = (x: number, y: number): boolean => {
     const lowest = columnCrossings(lid, x, y).at(0);

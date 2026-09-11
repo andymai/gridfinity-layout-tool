@@ -17,7 +17,11 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { lidZOffset, worstRailInterference } from './__kernel-tests__/lidSeating';
+import {
+  lidZOffset,
+  RAIL_ENGAGEMENT_CEILING,
+  worstRailInterference,
+} from './__kernel-tests__/lidSeating';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, LabelTabEdges, LabelTabSupport } from '@/features/bin-designer/types';
 
@@ -198,7 +202,9 @@ describe('lid click rails clear label tabs', () => {
 
       // 0.05mm absorbs mesh tessellation noise on the curved corner blends;
       // the defect this guards against measured 1.25mm.
-      expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(0.05);
+      expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(
+        RAIL_ENGAGEMENT_CEILING + 0.05
+      );
 
       if (c.expectAnchorRails !== undefined) {
         const { railPlacements } = await import('./lidClickRail');
@@ -236,6 +242,8 @@ describe('lid click rails clear label tabs', () => {
     if (!bin) throw new Error('expected the bin to build');
     if (!blindLid) throw new Error('expected the lid to build');
 
-    expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(1);
+    expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(
+      RAIL_ENGAGEMENT_CEILING + 0.4
+    );
   }, 300000);
 });
