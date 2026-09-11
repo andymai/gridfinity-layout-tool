@@ -18,6 +18,7 @@ import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   interferenceAt,
   lidZOffset,
+  railKeepoutIntrusionMm,
   RAIL_ENGAGEMENT_CEILING,
   worstRailInterference,
 } from './__kernel-tests__/lidSeating';
@@ -92,6 +93,40 @@ describe('rail engagement datum', () => {
     },
     300_000
   );
+
+  it('the keep-out sweep answers the same on a preview and an export mesh', async () => {
+    // Every suite that uses the sweep hands it the preview mesh, whose base
+    // socket rides unfused: a column over a foot crosses that seam and would
+    // pair into spans reporting the cavity solid. Reading the topmost crossing
+    // is what makes the answer independent of which mesh arrives, and nothing
+    // else asserts that. Both a clean pairing and an obstructed one, since
+    // agreeing on zero would prove nothing.
+    const { generateLid } = await import('./lidOrchestrator');
+    const clean = featureFree(3, 2);
+    const obstructed: BinParams = {
+      ...clean,
+      compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] },
+    };
+    // Built from `clean`, so the lid keeps whole rails over dividers it does
+    // not know about. Rails notched around them would gate the sweep out.
+    const lid = generateLid(clean);
+    if (!lid) throw new Error('expected the lid to build');
+
+    const readings = [clean, obstructed].map((params) => {
+      const preview = getGenerateBin()(params, undefined, false);
+      const exported = getGenerateBin()(params, undefined, true);
+      if (!preview || !exported) throw new Error('expected both meshes to build');
+      const dz = lidZOffset(params);
+      return {
+        preview: railKeepoutIntrusionMm(preview, lid, params, dz),
+        exported: railKeepoutIntrusionMm(exported, lid, params, dz),
+      };
+    });
+
+    expect(readings[0]).toEqual({ preview: 0, exported: 0 });
+    expect(readings[1].preview).toBeCloseTo(readings[1].exported, 2);
+    expect(readings[1].preview).toBeGreaterThan(1);
+  }, 300_000);
 
   it('reads the same on all four walls, which a clash would not', async () => {
     // What identifies the figure as the rail's own profile rather than a clash

@@ -12,12 +12,14 @@
 
 import { boundingBox, columnCrossings, verticalSolidSpans } from './meshAssertions';
 import { LIP_HEIGHT } from '../generatorConstants';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   lidAnchorZ,
   resolveLidCavityExtraMm,
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
   LID_CLICK_RAIL_INNER,
+  LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
 } from '@/shared/types/bin';
 import {
   retentionBossRadius,
@@ -171,8 +173,31 @@ export function worstRailInterferenceDelta(probe: SeatedPair, reference: SeatedP
  * Notching is what these suites exercise, and it splits one rail into several,
  * so the bin under test carries rail at positions an unsegmented reference does
  * not and the difference reads as interference with nothing colliding.
+ *
+ * A reading above this is not by itself a defect, and
+ * {@link railKeepoutIntrusionMm} is what tells the two apart. A column measures
+ * shared Z, so material merely lying FLUSH with the lip's inner face lower down
+ * counts the same as material the rail cannot pass, when the lip has already
+ * pushed the rail that far and the flush material costs it nothing. The reading
+ * also saturates: once a column is solid through the whole band, a grossly
+ * worse bin reads the same as a good one.
  */
 export const RAIL_ENGAGEMENT_CEILING = 1.7;
+
+/**
+ * The reading a scoop's chute or a relieved bin's perimeter tongue produces.
+ *
+ * Both are material standing in the void under the lip with its inner face on
+ * the lip line, so both add exactly this much to
+ * {@link RAIL_ENGAGEMENT_CEILING} while leaving
+ * {@link railKeepoutIntrusionMm} at zero.
+ *
+ * On the lip line by construction, not by measurement: `computeLipOffset`
+ * holds the ramp `LIP_TAPER_WIDTH - wallThickness` off the cavity face, and
+ * `lidKeepoutRing` puts its outer boundary on the same plane from the other
+ * side. Both resolve to `LIP_TAPER_WIDTH` from the bin's outer face.
+ */
+export const RAIL_FLUSH_FILL_MM = 0.6;
 
 /**
  * Worst interference anywhere along the four rail lines.
@@ -210,6 +235,141 @@ export function worstRailInterference(bin: MeshData, lid: MeshData, dz: number):
       }
     }
   }
+  return worst;
+}
+
+/**
+ * How far in from the bin's outer face the stacking lip's inner face sits.
+ *
+ * The plane every rail has ALREADY been forced past by the time it is seated,
+ * which is what makes it the datum for {@link railKeepoutIntrusionMm} rather
+ * than the wall face: the lip juts this far in, and a rail that could not
+ * deflect to clear it would never have got down there at all.
+ */
+const LIP_INNER_FACE = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
+
+/** Radial sweep rates: fine where flush-vs-proud is decided, coarse past it. */
+const NEAR_LIP_SPAN = 0.5;
+const NEAR_LIP_STEP = 0.05;
+const DEEP_STEP = 0.25;
+
+/**
+ * How far inside the lid's rail spine a column has to sit to read the rail
+ * itself, and how far below the seat plane the surface it finds must be.
+ *
+ * The lid's lowest surface at that column is the rail's underside, ~7.5mm below
+ * the seat plane; with no rail on that wall the same column sees only the floor
+ * plate, ~1mm ABOVE it. {@link RAIL_PRESENT_BELOW} splits the two with 2mm to
+ * spare, which is what lets both sweeps here ask "is there rail here" of the
+ * mesh rather than of a re-derived rail plan.
+ */
+const RAIL_PROBE_INBOARD = 0.35;
+const RAIL_PRESENT_BELOW = 5.5;
+
+/**
+ * How far in from each end of a wall a sweep starts, measured from the lid's
+ * outer face.
+ *
+ * Not tidiness: a PERPENDICULAR wall's rail occupies the band 1.9mm to 4.55mm
+ * from the lid's outer face along this axis (`lidCornerR`, less
+ * `LID_CLICK_RAIL_OUT` outward and plus `LID_CLICK_RAIL_INNER` inboard), and a
+ * column landing in it reads that rail while checking THIS wall's lip. Sweeping
+ * from 5.5mm clears it by ~1mm, and clears the corner ARC by the same margin.
+ * That second clearance is what a probe measuring depth along an axis needs,
+ * since the wall's inward normal stops being that axis at an arc. The cost is
+ * the first 1.75mm of
+ * each rail's own run, where `computeCutoutCenter` holds a cutout a
+ * `wallThickness` clear of the corner anyway.
+ */
+const CORNER_SKIP = RAIL_SPINE_INSET - LID_CLICK_RAIL_INNER + 0.95;
+
+/** Is the lid carrying rail at this column? Shared with {@link ungrippedRailMm}. */
+function railPresentAt(lid: MeshData, x: number, y: number, dz: number, lipTop: number): boolean {
+  const lowest = columnCrossings(lid, x, y).at(0);
+  return lowest !== undefined && lowest + dz < lipTop - RAIL_PRESENT_BELOW;
+}
+
+/**
+ * How far past the lip's inner face bin material reaches inside the seated
+ * rail's band, wherever the lid actually carries a rail (mm).
+ *
+ * The question {@link worstRailInterference} cannot answer, for the reasons on
+ * {@link RAIL_ENGAGEMENT_CEILING}. Radially, a lid paired with the wrong bin
+ * separates from a correctly paired one again, which a column no longer does.
+ *
+ * Zero is the whole assertion, and it is exactly the volume `lidKeepoutRing`
+ * describes, read off the built solid rather than restated from the arithmetic
+ * that cut it. That is the only form of the claim that can fail.
+ *
+ * Two bounds keep it honest:
+ *
+ *  - Only where the LID has rail. An unrelieved bin's dividers fill this band
+ *    and are supposed to: the rail is notched away around them, so nothing is
+ *    in anything's path. Without the gate every notched bin reads as a defect.
+ *  - Only the straight run, {@link CORNER_SKIP} in from each end. The sweep
+ *    measures depth along an axis, and at a corner arc the wall's inward normal
+ *    is not that axis, so the lip itself reads as though it juts further.
+ *
+ * Reads the topmost crossing, never {@link verticalSolidSpans}, for the reason
+ * {@link ungrippedRailMm} does: a column over a base foot picks up the preview
+ * path's coincident socket seam, and pairing that into spans reports the whole
+ * cavity as solid, which here would read a clean bin as the worst possible
+ * intrusion. Sound as the direct question too, because outboard of the ring
+ * there is nothing above the band for the topmost surface to be: anything up
+ * there IS the obstruction.
+ */
+export function railKeepoutIntrusionMm(
+  bin: MeshData,
+  lid: MeshData,
+  p: BinParams,
+  dz: number,
+  step = 1
+): number {
+  const lipTop = binLipTopZ(p);
+  const bandLo = lipTop - LIP_HEIGHT - LID_CLICK_RAIL_BAND_BELOW_WALL_TOP;
+  const binBB = boundingBox(bin.vertices);
+  const lidBB = boundingBox(lid.vertices);
+  const railInner = RAIL_SPINE_INSET - LID_CLICK_RAIL_INNER;
+
+  const depths: number[] = [];
+  for (
+    let u = LIP_INNER_FACE + NEAR_LIP_STEP;
+    u <= LIP_INNER_FACE + NEAR_LIP_SPAN;
+    u += NEAR_LIP_STEP
+  ) {
+    depths.push(u);
+  }
+  for (let u = LIP_INNER_FACE + NEAR_LIP_SPAN + DEEP_STEP; u <= railInner; u += DEEP_STEP) {
+    depths.push(u);
+  }
+
+  let worst = 0;
+  // Both parts move together under overhang, so the along-wall coordinate
+  // addresses the same place on each; the cross-axis lines come from each
+  // part's own bounds, which keeps each probe on its own feature.
+  const sweep = (alongX: boolean, far: boolean): void => {
+    const lo = alongX ? lidBB.minX : lidBB.minY;
+    const hi = alongX ? lidBB.maxX : lidBB.maxY;
+    const sign = far ? -1 : 1;
+    const railCross =
+      (far ? (alongX ? lidBB.maxY : lidBB.maxX) : alongX ? lidBB.minY : lidBB.minX) +
+      sign * (RAIL_SPINE_INSET + RAIL_PROBE_INBOARD);
+    const binFace = far ? (alongX ? binBB.maxY : binBB.maxX) : alongX ? binBB.minY : binBB.minX;
+    for (let s = lo + CORNER_SKIP; s <= hi - CORNER_SKIP; s += step) {
+      if (!railPresentAt(lid, alongX ? s : railCross, alongX ? railCross : s, dz, lipTop)) continue;
+      for (const u of depths) {
+        const cross = binFace + sign * u;
+        // 0.01mm above the band's floor, not level with it: a feature trimmed
+        // to exactly the ring's own bottom is outside the band, not in it.
+        const top = columnCrossings(bin, alongX ? s : cross, alongX ? cross : s).at(-1);
+        if (top !== undefined && top > bandLo + 0.01) worst = Math.max(worst, u - LIP_INNER_FACE);
+      }
+    }
+  };
+  sweep(true, true);
+  sweep(true, false);
+  sweep(false, true);
+  sweep(false, false);
   return worst;
 }
 
@@ -268,32 +428,13 @@ export function worstSeatInterference(
  *
  * Two columns per sample, each chosen by measuring the real section:
  *
- *  - RAIL, {@link RAIL_PROBE_INBOARD} inside the lid's rail spine. The lid's
- *    lowest surface there is the rail's underside, ~7.5mm below the seat plane;
- *    with no rail on that wall the same column sees only the floor plate, ~1mm
- *    ABOVE it. {@link RAIL_PRESENT_BELOW} splits the two with 2mm to spare.
+ *  - RAIL, {@link RAIL_PROBE_INBOARD} inside the lid's rail spine.
  *  - LIP, {@link LIP_PROBE_INBOARD} inside the bin's outer face. The lip's
  *    outer chamfer descends 1:1, so an intact rim's top surface lands exactly
  *    that far below the lip top, while a cutout — whose overshoot clears the
  *    lip entirely — drops the column to the cut floor or the cavity.
  */
-const RAIL_PROBE_INBOARD = 0.35;
-const RAIL_PRESENT_BELOW = 5.5;
 const LIP_PROBE_INBOARD = 1;
-
-/**
- * How far in from each end of a wall the sweep starts, measured from the lid's
- * outer face.
- *
- * Not tidiness: a PERPENDICULAR wall's rail occupies the band 1.9mm to 4.55mm
- * from the lid's outer face along this axis (`lidCornerR`, less
- * `LID_CLICK_RAIL_OUT` outward and plus `LID_CLICK_RAIL_INNER` inboard), and a
- * column landing in it reads that rail while checking THIS wall's lip. Sweeping
- * from 5.5mm clears it by ~1mm. The cost is the first 1.75mm of each rail's own
- * run, where `computeCutoutCenter` holds a cutout a `wallThickness` clear of
- * the corner anyway.
- */
-const CORNER_SKIP = RAIL_SPINE_INSET - LID_CLICK_RAIL_INNER + 0.95;
 
 export function ungrippedRailMm(
   bin: MeshData,
@@ -307,10 +448,7 @@ export function ungrippedRailMm(
   const binBB = boundingBox(bin.vertices);
   const railInset = RAIL_SPINE_INSET + RAIL_PROBE_INBOARD;
 
-  const hasRail = (x: number, y: number): boolean => {
-    const lowest = columnCrossings(lid, x, y).at(0);
-    return lowest !== undefined && lowest + dz < lipTop - RAIL_PRESENT_BELOW;
-  };
+  const hasRail = (x: number, y: number): boolean => railPresentAt(lid, x, y, dz, lipTop);
   const hasLip = (x: number, y: number): boolean => {
     const top = columnCrossings(bin, x, y).at(-1);
     // 0.2mm absorbs tessellation on the chamfer; the defect is whole

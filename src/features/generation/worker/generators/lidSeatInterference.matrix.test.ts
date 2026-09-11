@@ -30,12 +30,18 @@
  *    (0.2-0.8mm on configurations with no defect). Matching rail positions have
  *    neither problem: the set is discrete and identical for one footprint.
  *
- * The scope this buys is the rail band, where three of the four defects lived
- *. A pad on the skirt line away from any rail
- * needs the footprint sweep, and keeps its own dedicated test. Widening this
- * gate to cover that too means first making `verticalSolidSpans` robust to the
- * odd crossing counts that interior features leave at coincident faces — its
- * own known weakness, and its own piece of work.
+ * That delta says how MUCH shared Z a feature adds. `railKeepoutIntrusionMm`,
+ * run over the same cases, says whether any of it is somewhere the rail cannot
+ * deflect to reach. That is the question a column cannot answer, since it
+ * counts material lying flush with the lip line the same as material in the
+ * way.
+ *
+ * The scope this buys is the rail band, where three of the four defects lived.
+ * A pad on the skirt line away from any rail needs the footprint sweep, and
+ * keeps its own dedicated test. Widening this gate to cover that too means
+ * first making `verticalSolidSpans` robust to the odd crossing counts that
+ * interior features leave at coincident faces: its own known weakness, and its
+ * own piece of work.
  *
  *   pnpm run test:run src/features/generation/worker/generators/lidSeatInterference.matrix
  */
@@ -44,7 +50,9 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   lidZOffset,
+  railKeepoutIntrusionMm,
   worstRailInterferenceDelta,
+  RAIL_FLUSH_FILL_MM,
   type SeatedPair,
 } from './__kernel-tests__/lidSeating';
 import { allPairs, uncoveredPairs, type Axis } from '@/test/pairwise';
@@ -58,24 +66,13 @@ import type { BinParams, CompartmentConfig } from '@/features/bin-designer/types
 const TOLERANCE_MM = 0.05;
 
 /**
- * Rail intrusion a scoop contributes, on its own wall. Whether it is acceptable
- * is an open geometry question, so this pins current behaviour rather than
- * asserting the geometry is right.
+ * How many scooped cases read {@link RAIL_FLUSH_FILL_MM}.
  *
- * Reported separately rather than absorbed into {@link TOLERANCE_MM}, so every
- * other pairing keeps its 0.05mm sensitivity.
+ * A scoop's chute only lies under a rail on some pairings; the rest read clean.
+ * Pinned as a count so both directions fail: a case that stops carrying it, and
+ * a new one that starts.
  */
-const SCOOP_RAIL_INTRUSION_MM = 0.6;
-
-/**
- * How many scooped cases carry that intrusion.
- *
- * A scoop only reaches the rail on some pairings; the rest read clean. Pinned
- * as a count so both directions fail: a case that stops carrying it, and a new
- * one that starts. Corrected geometry takes this to zero, and this assertion is
- * what says so rather than passing quietly.
- */
-const SCOOP_CASES_AT_INTRUSION = 3;
+const SCOOP_CASES_AT_FLUSH_FILL = 3;
 
 const grid = (cols: number, rows: number): CompartmentConfig => ({
   cols,
@@ -259,6 +256,11 @@ describe('nothing intrudes into the lid seating volume', () => {
     expect(
       worstRailInterferenceDelta({ bin, lid: blindLid, dz }, { bin: plainBin, lid: blindLid, dz })
     ).toBeGreaterThan(2.5);
+    // Same control, for the keep-out sweep the case loop runs. Without it that
+    // sweep's empty result could mean "nothing intrudes" or "the rail gate
+    // matched nothing", and a gate that matched nothing would report every
+    // configuration in the matrix as clean.
+    expect(railKeepoutIntrusionMm(bin, blindLid, params, dz)).toBeGreaterThan(1);
   }, 300000);
 
   it("no case puts bin material in a rail's path", async () => {
@@ -275,6 +277,7 @@ describe('nothing intrudes into the lid seating volume', () => {
     const measured: Case[] = [];
     const intruding: Array<{ case: string; mm: number }> = [];
     const scooped: Array<{ case: string; mm: number }> = [];
+    const blocked: Array<{ case: string; mm: number }> = [];
 
     for (const c of CASES) {
       const built = build(c);
@@ -292,6 +295,8 @@ describe('nothing intrudes into the lid seating volume', () => {
         baselines.set(baseKey, baseline);
       }
       measured.push(c);
+      const keepout = railKeepoutIntrusionMm(built.bin, built.lid, paramsFor(c), built.dz);
+      if (keepout > 0) blocked.push({ case: key(c), mm: Number(keepout.toFixed(2)) });
       const mm = worstRailInterferenceDelta(built, baseline);
       if (c.scoop !== 'off') scooped.push({ case: key(c), mm: Number(mm.toFixed(3)) });
       if (mm >= TOLERANCE_MM) intruding.push({ case: key(c), mm: Number(mm.toFixed(3)) });
@@ -300,10 +305,8 @@ describe('nothing intrudes into the lid seating volume', () => {
     // Classified from every scooped case, not from `intruding`: a scooped case
     // reading below the tolerance never enters that list, so filtering it would
     // let such a case vanish from both sides of the check.
-    const atIntrusion = scooped.filter(
-      (i) => Math.abs(i.mm - SCOOP_RAIL_INTRUSION_MM) < TOLERANCE_MM
-    );
-    const unexplained = intruding.filter((i) => !atIntrusion.some((a) => a.case === i.case));
+    const atFlushFill = scooped.filter((i) => Math.abs(i.mm - RAIL_FLUSH_FILL_MM) < TOLERANCE_MM);
+    const unexplained = intruding.filter((i) => !atFlushFill.some((a) => a.case === i.case));
 
     // Completeness is asserted above over the GENERATED cases; a build that
     // fails silently removes its case from the measured set, and enough of
@@ -315,12 +318,19 @@ describe('nothing intrudes into the lid seating volume', () => {
       skipped: [],
       uncovered: [],
     });
+    // The column delta above says how much shared Z a feature adds; this says
+    // whether any of it is somewhere the rail cannot deflect to reach. A scoop
+    // chute or a relieved bin's perimeter tongue lies flush with the lip line,
+    // so it scores here as zero while still adding to the delta. The two
+    // together separate a feature that costs the rail travel from one that
+    // costs it only contact.
+    expect(blocked).toEqual([]);
     expect(unexplained).toEqual([]);
 
-    // A scooped case reads the intrusion or it reads clean, never a value in
+    // A scooped case reads the flush fill or it reads clean, never a value in
     // between: that quantisation is what makes this one finding rather than a
     // spread the tolerance happens to cover.
-    expect(scooped.filter((i) => i.mm >= TOLERANCE_MM && !atIntrusion.includes(i))).toEqual([]);
-    expect(atIntrusion).toHaveLength(SCOOP_CASES_AT_INTRUSION);
+    expect(scooped.filter((i) => i.mm >= TOLERANCE_MM && !atFlushFill.includes(i))).toEqual([]);
+    expect(atFlushFill).toHaveLength(SCOOP_CASES_AT_FLUSH_FILL);
   }, 900000);
 });

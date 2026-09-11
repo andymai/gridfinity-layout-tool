@@ -1,6 +1,10 @@
 {
   "tolerance": "1.1",
-  "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
+  "allowedMissingRefs": [
+    "b17779575",
+    "components/Foo.tsx",
+    "diffProps"
+  ],
   "words": {
     ".claude/skills/analytics-and-labs/SKILL.md": 1270,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
@@ -70,7 +74,7 @@
     "src/features/whats-new/README.md": 331,
     "src/shared/.greptile/rules.md": 238,
     "src/shared/README.md": 1219,
-    "src/shared/hooks/README.hooks.md": 555,
+    "src/shared/hooks/README.hooks.md": 522,
     "src/shared/hooks/interactions/README.md": 515,
     "src/shell/README.md": 574,
     "src/test/README.md": 444
