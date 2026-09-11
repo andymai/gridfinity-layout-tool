@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.489.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.489.1...gridfinity-layout-tool-v4.489.2) (2026-09-11)
+
+
+### Bug Fixes
+
+* finger catch lip height is now flush when stacking lip is disabled ([#4221](https://github.com/andymai/gridfinity-layout-tool/issues/4221)) ([dd3fb71](https://github.com/andymai/gridfinity-layout-tool/commit/dd3fb7164ab461db0b3ce91207d9d835a9b87e0a))
+* **test:** probe the click rail on its own spine ([#4226](https://github.com/andymai/gridfinity-layout-tool/issues/4226)) ([7403b58](https://github.com/andymai/gridfinity-layout-tool/commit/7403b581c8b455f77e6a0f8392babc2868dd0080))
+
 ## [4.489.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.489.0...gridfinity-layout-tool-v4.489.1) (2026-09-11)
 
 
