@@ -23,6 +23,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   lidZOffset,
+  RAIL_ENGAGEMENT_CEILING,
   worstRailInterference,
   worstSeatInterference,
 } from './__kernel-tests__/lidSeating';
@@ -305,7 +306,7 @@ describe('lid click rails clear compartment dividers', () => {
 
       // 0.05mm absorbs mesh tessellation noise on the curved corner blends;
       // the defect this guards against measured 3.10mm.
-      expect(worstRailInterference(bin, lid, dz)).toBeLessThan(0.05);
+      expect(worstRailInterference(bin, lid, dz)).toBeLessThan(RAIL_ENGAGEMENT_CEILING + 0.05);
 
       if (c.fullSweep) {
         const plain = { ...params, compartments: ONE };
@@ -349,7 +350,7 @@ describe('lid click rails clear compartment dividers', () => {
     const dz = lidZOffset(params);
     // 2.8mm on the rail lines; the footprint sweep sees the same clash plus
     // the 0.5mm lip fit every bin has.
-    expect(worstRailInterference(bin, blindLid, dz)).toBeGreaterThan(2.5);
+    expect(worstRailInterference(bin, blindLid, dz)).toBeGreaterThan(RAIL_ENGAGEMENT_CEILING + 1);
     expect(worstSeatInterference(bin, blindLid, dz).mm).toBeGreaterThan(2.5);
   }, 300000);
 });

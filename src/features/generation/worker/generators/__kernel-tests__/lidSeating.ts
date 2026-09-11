@@ -17,6 +17,7 @@ import {
   resolveLidCavityExtraMm,
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
+  LID_CLICK_RAIL_INNER,
 } from '@/shared/types/bin';
 import {
   retentionBossRadius,
@@ -76,6 +77,16 @@ export interface SeatedPair {
 }
 
 /**
+ * Distance from the lid's outer face to a click rail's spine.
+ *
+ * `railPlacementsForRectangle` insets every rail by `lidCornerR`, which
+ * `resolveLidInputs` derives as `LID_CORNER_RADIUS - LID_FIT_CLEARANCE`. Aim a
+ * probe at `LID_CORNER_RADIUS` instead and it lands on the cavity wall, where
+ * it reads clean whatever the rail is doing.
+ */
+const RAIL_SPINE_INSET = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
+
+/**
  * Every probe position {@link worstRailInterference} visits, for a given lid.
  *
  * A fixed discrete set derived from the lid's own bounds, which is what lets
@@ -85,8 +96,8 @@ function railProbePositions(lid: MeshData): Array<readonly [number, number]> {
   const bb = boundingBox(lid.vertices);
   const cx = (bb.minX + bb.maxX) / 2;
   const cy = (bb.minY + bb.maxY) / 2;
-  const spineX = (bb.maxX - bb.minX) / 2 - LID_CORNER_RADIUS;
-  const spineY = (bb.maxY - bb.minY) / 2 - LID_CORNER_RADIUS;
+  const spineX = (bb.maxX - bb.minX) / 2 - RAIL_SPINE_INSET;
+  const spineY = (bb.maxY - bb.minY) / 2 - RAIL_SPINE_INSET;
   const out: Array<readonly [number, number]> = [];
   for (const off of RAIL_PROBE_OFFSETS) {
     for (let y = cy - spineY; y <= cy + spineY; y += 1) {
@@ -105,10 +116,15 @@ function railProbePositions(lid: MeshData): Array<readonly [number, number]> {
  *
  * {@link worstRailInterference} is not zero on a good bin at every footprint:
  * its outer offsets sample the rail bump inside the lip's undercut, and that
- * overlap is the snap fit engaging, not a defect. Measured at 0.7mm on a plain
- * 1x2 with no interior features whatever, and 0 on a 2x2 — a property of the
- * footprint, which is why an absolute threshold cannot serve a matrix that
- * varies the footprint.
+ * overlap is the snap fit engaging, not a defect. It is
+ * {@link RAIL_ENGAGEMENT_CEILING} on every footprint from 1x2 up and 0.60mm on
+ * a 1x1 — a property of the footprint, which is why an absolute threshold
+ * cannot serve a matrix that varies the footprint.
+ *
+ * Only sound where the feature leaves rail PLACEMENT alone. A feature that
+ * notches rails changes which positions carry one, and the difference then
+ * reads as interference with nothing colliding; those suites compare against
+ * the ceiling instead.
  *
  * Comparing the two maxima would hide a small real clash behind a larger floor,
  * so this walks matching positions instead. Sound here in a way the same trick
@@ -139,6 +155,26 @@ export function worstRailInterferenceDelta(probe: SeatedPair, reference: SeatedP
 }
 
 /**
+ * Highest {@link worstRailInterference} a correctly seating bin reads.
+ *
+ * A clean bin does not read zero: the rail bump sits inside the lip's undercut,
+ * and that shared Z is the snap fit engaging rather than a clash. So a
+ * clearance assertion is `< RAIL_ENGAGEMENT_CEILING + tolerance`, keeping
+ * whatever sensitivity its tolerance buys.
+ *
+ * Every footprint from 1x2 up reads this. A 1x1 reads 0.60mm, so a suite that
+ * adds one needs its own datum; none of the current rail suites goes below 2u.
+ * `railEngagement.kernel.test.ts` pins the figure and checks it stands on all
+ * four walls, which is what separates the rail's own profile from a clash.
+ *
+ * Do NOT restate these as a delta against the same bin with the feature off.
+ * Notching is what these suites exercise, and it splits one rail into several,
+ * so the bin under test carries rail at positions an unsegmented reference does
+ * not and the difference reads as interference with nothing colliding.
+ */
+export const RAIL_ENGAGEMENT_CEILING = 1.7;
+
+/**
  * Worst interference anywhere along the four rail lines.
  *
  * Sweeps a small band of X/Y offsets around each rail's spine rather than the
@@ -156,8 +192,8 @@ export function worstRailInterference(bin: MeshData, lid: MeshData, dz: number):
   const bb = boundingBox(lid.vertices);
   const cx = (bb.minX + bb.maxX) / 2;
   const cy = (bb.minY + bb.maxY) / 2;
-  const spineX = (bb.maxX - bb.minX) / 2 - LID_CORNER_RADIUS;
-  const spineY = (bb.maxY - bb.minY) / 2 - LID_CORNER_RADIUS;
+  const spineX = (bb.maxX - bb.minX) / 2 - RAIL_SPINE_INSET;
+  const spineY = (bb.maxY - bb.minY) / 2 - RAIL_SPINE_INSET;
 
   let worst = 0;
   for (const off of RAIL_PROBE_OFFSETS) {
@@ -257,7 +293,7 @@ const LIP_PROBE_INBOARD = 1;
  * run, where `computeCutoutCenter` holds a cutout a `wallThickness` clear of
  * the corner anyway.
  */
-const CORNER_SKIP = LID_CORNER_RADIUS + 1.5;
+const CORNER_SKIP = RAIL_SPINE_INSET - LID_CLICK_RAIL_INNER + 0.95;
 
 export function ungrippedRailMm(
   bin: MeshData,
@@ -269,7 +305,7 @@ export function ungrippedRailMm(
   const lipTop = binLipTopZ(p);
   const lidBB = boundingBox(lid.vertices);
   const binBB = boundingBox(bin.vertices);
-  const railInset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE + RAIL_PROBE_INBOARD;
+  const railInset = RAIL_SPINE_INSET + RAIL_PROBE_INBOARD;
 
   const hasRail = (x: number, y: number): boolean => {
     const lowest = columnCrossings(lid, x, y).at(0);

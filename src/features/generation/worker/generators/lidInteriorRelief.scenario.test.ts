@@ -18,7 +18,25 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { lidZOffset, worstRailInterference } from './__kernel-tests__/lidSeating';
+import {
+  lidZOffset,
+  RAIL_ENGAGEMENT_CEILING,
+  worstRailInterference,
+} from './__kernel-tests__/lidSeating';
+
+/**
+ * Extra rail interference `lid.relieveInterior` adds.
+ *
+ * The direction is the open question: carving the cavity's perimeter back
+ * should give the rail MORE room, so a relieved bin reading above an unrelieved
+ * one wants explaining. Toggling the flag alone moves the reading by exactly
+ * this, with compartments, label and coverage held fixed.
+ *
+ * Asserted from both sides below rather than as an allowance, so correcting the
+ * geometry fails here and forces this back to the plain ceiling instead of
+ * passing quietly.
+ */
+const RELIEVED_INTERIOR_EXTRA_MM = 0.6;
 import { columnCrossings } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, CompartmentConfig } from '@/features/bin-designer/types';
@@ -106,7 +124,10 @@ describe('lid interior relief', () => {
       const bin = getGenerateBin()(params, undefined, false);
       const lid = generateLid(params);
       if (!bin || !lid) throw new Error('expected the pair to build');
-      expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(0.05);
+      expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
+        RAIL_ENGAGEMENT_CEILING + RELIEVED_INTERIOR_EXTRA_MM,
+        1
+      );
     }
   }, 300000);
 

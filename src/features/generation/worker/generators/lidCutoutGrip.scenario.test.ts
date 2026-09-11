@@ -22,6 +22,7 @@ import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   lidZOffset,
   ungrippedRailMm,
+  RAIL_ENGAGEMENT_CEILING,
   worstRailInterference,
   worstSeatInterference,
 } from './__kernel-tests__/lidSeating';
@@ -232,7 +233,7 @@ describe('lid click rails keep lip to grip', () => {
       expect(ungrippedRailMm(bin, lid, params, dz)).toBe(0);
 
       // Controls. Segmenting must not have moved a rail into something.
-      expect(worstRailInterference(bin, lid, dz)).toBeLessThan(0.05);
+      expect(worstRailInterference(bin, lid, dz)).toBeLessThan(RAIL_ENGAGEMENT_CEILING + 0.05);
       if (c.fullSweep) {
         const plain = { ...params, walls: DEFAULT_BIN_PARAMS.walls, handles: handles([]) };
         const plainBin = getGenerateBin()(plain, undefined, false);
@@ -270,6 +271,6 @@ describe('lid click rails keep lip to grip', () => {
     // The whole front rail hangs over the opening. Interference sees none of
     // it, which is the reason this probe exists.
     expect(ungrippedRailMm(bin, blindLid, params, dz)).toBeGreaterThan(30);
-    expect(worstRailInterference(bin, blindLid, dz)).toBeLessThan(0.05);
+    expect(worstRailInterference(bin, blindLid, dz)).toBeLessThan(RAIL_ENGAGEMENT_CEILING + 0.05);
   }, 300000);
 });
