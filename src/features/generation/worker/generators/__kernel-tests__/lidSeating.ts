@@ -193,6 +193,11 @@ export const RAIL_ENGAGEMENT_CEILING = 1.7;
  * the lip line, so both add exactly this much to
  * {@link RAIL_ENGAGEMENT_CEILING} while leaving
  * {@link railKeepoutIntrusionMm} at zero.
+ *
+ * On the lip line by construction, not by measurement: `computeLipOffset`
+ * holds the ramp `LIP_TAPER_WIDTH - wallThickness` off the cavity face, and
+ * `lidKeepoutRing` puts its outer boundary on the same plane from the other
+ * side. Both resolve to `LIP_TAPER_WIDTH` from the bin's outer face.
  */
 export const RAIL_FLUSH_FILL_MM = 0.6;
 

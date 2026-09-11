@@ -37,11 +37,11 @@
  * (#4224, #4225).
  *
  * The scope this buys is the rail band, where three of the four defects lived.
- * A pad on the skirt line away from any rail
- * needs the footprint sweep, and keeps its own dedicated test. Widening this
- * gate to cover that too means first making `verticalSolidSpans` robust to the
- * odd crossing counts that interior features leave at coincident faces — its
- * own known weakness, and its own piece of work.
+ * A pad on the skirt line away from any rail needs the footprint sweep, and
+ * keeps its own dedicated test. Widening this gate to cover that too means
+ * first making `verticalSolidSpans` robust to the odd crossing counts that
+ * interior features leave at coincident faces: its own known weakness, and its
+ * own piece of work.
  *
  *   pnpm run test:run src/features/generation/worker/generators/lidSeatInterference.matrix
  */
