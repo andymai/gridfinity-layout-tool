@@ -27,14 +27,14 @@ import {
 /**
  * Extra rail interference `lid.relieveInterior` adds.
  *
- * Measured, NOT validated, and the direction is the surprising part: carving
- * the cavity's perimeter back should give the rail MORE room, so a relieved bin
- * reading above an unrelieved one wants explaining. Toggling the flag alone on
- * otherwise identical params moves the reading between the ceiling and this,
- * with compartments, label and coverage held fixed.
+ * The direction is the open question: carving the cavity's perimeter back
+ * should give the rail MORE room, so a relieved bin reading above an unrelieved
+ * one wants explaining. Toggling the flag alone moves the reading by exactly
+ * this, with compartments, label and coverage held fixed.
  *
- * Pinned as its own named number so the figure stays greppable while that is
- * settled, rather than disappearing into a wider threshold.
+ * Asserted from both sides below rather than as an allowance, so correcting the
+ * geometry fails here and forces this back to the plain ceiling instead of
+ * passing quietly.
  */
 const RELIEVED_INTERIOR_EXTRA_MM = 0.6;
 import { columnCrossings } from './__kernel-tests__/meshAssertions';
@@ -124,8 +124,9 @@ describe('lid interior relief', () => {
       const bin = getGenerateBin()(params, undefined, false);
       const lid = generateLid(params);
       if (!bin || !lid) throw new Error('expected the pair to build');
-      expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(
-        RAIL_ENGAGEMENT_CEILING + RELIEVED_INTERIOR_EXTRA_MM + 0.05
+      expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
+        RAIL_ENGAGEMENT_CEILING + RELIEVED_INTERIOR_EXTRA_MM,
+        1
       );
     }
   }, 300000);

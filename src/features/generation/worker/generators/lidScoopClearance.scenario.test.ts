@@ -28,19 +28,14 @@ import {
 } from './__kernel-tests__/lidSeating';
 
 /**
- * Extra rail interference a scoop adds, on its own wall only.
+ * Extra rail interference a scoop adds, on its own wall only. Back, left and
+ * right read `RAIL_ENGAGEMENT_CEILING` on the same bin, so it is localised to
+ * the scooped side, at the outermost probe offset where the lip sits.
  *
- * Measured, NOT validated. The probe only became able to see it once it moved
- * onto the rail's true spine; before that it sat 0.25mm inboard and read the
- * cavity wall. Back, left and right all read `RAIL_ENGAGEMENT_CEILING` on the
- * same bin, so the contribution is localised to the scooped side, at the
- * outermost probe offset where the lip sits.
- *
- * Pinned as its own named number rather than folded into a rounder threshold
- * because whether 0.60mm of extra material in the rail's path is acceptable
- * snap resistance is an open geometry question, and a round threshold would
- * bury it. If the scoop's chute is corrected, this drops to zero and the
- * assertions below should tighten back to the ceiling.
+ * Whether that much extra material in the rail's path is acceptable snap
+ * resistance is an open geometry question. Asserted from both sides rather than
+ * as an allowance, so correcting the chute fails here and forces this back to
+ * the plain ceiling instead of passing quietly.
  */
 const SCOOP_WALL_EXTRA_MM = 0.6;
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
@@ -101,8 +96,9 @@ describe('lid click rails clear the scoop', () => {
       // 0.15mm covers tessellation noise on the chute where it runs to the
       // wall top, which is the plane the lip's base now sits on.
       // The defect this guards against measured 1.1mm.
-      expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(
-        RAIL_ENGAGEMENT_CEILING + SCOOP_WALL_EXTRA_MM + 0.15
+      expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
+        RAIL_ENGAGEMENT_CEILING + SCOOP_WALL_EXTRA_MM,
+        1
       );
     },
     300000
@@ -133,8 +129,13 @@ describe('lid click rails clear the scoop', () => {
     if (!bin) throw new Error('expected the bin to build');
     if (!lid) throw new Error('expected the lid to build');
 
-    expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(
-      RAIL_ENGAGEMENT_CEILING + SCOOP_WALL_EXTRA_MM + 0.15
+    // The plain ceiling, not the scooped one: with the rail dropped from this
+    // wall there is no bump on it to push through the extra material, which is
+    // the clearest evidence that SCOOP_WALL_EXTRA_MM is a rail-vs-scoop
+    // interaction rather than the scoop's own geometry reaching the lid.
+    expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
+      RAIL_ENGAGEMENT_CEILING,
+      1
     );
   }, 300000);
 
@@ -143,6 +144,12 @@ describe('lid click rails clear the scoop', () => {
     // paired with a lid built as though the scoop were not there, which is what
     // shipped. Without it, every case above passes if the probe
     // stops finding a solid or `lidZOffset` drifts.
+    //
+    // Weaker than it was. On the scoop's own wall this pairing reads the same
+    // as the clean one, so all this can still say is that the reading clears
+    // the plain ceiling. Separating the two there is the open question the
+    // scoop datum above describes; until it is settled the rail-placement
+    // assertions in this file carry the discrimination.
     const { generateLid } = await import('./lidOrchestrator');
     const params = makeParams({
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40, side: 'front' },
@@ -159,11 +166,6 @@ describe('lid click rails clear the scoop', () => {
     // to move: it only has to stay far clear of the 0.15mm the seating cases
     // above allow, and pinning it to its exact reading would make any change to
     // where the lid seats look like a broken probe.
-    // Only that the clash clears the plain ceiling. On the scoop's own wall the
-    // clean and the mispaired lid now read the SAME 2.30mm, so this probe no
-    // longer separates them there — which is itself the open question above.
-    // The rail-placement assertions in this file carry the discrimination until
-    // it is settled.
     expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(
       RAIL_ENGAGEMENT_CEILING
     );

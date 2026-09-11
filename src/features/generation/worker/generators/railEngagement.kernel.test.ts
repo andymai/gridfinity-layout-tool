@@ -16,13 +16,15 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
+  interferenceAt,
   lidZOffset,
   RAIL_ENGAGEMENT_CEILING,
   worstRailInterference,
 } from './__kernel-tests__/lidSeating';
+import { boundingBox } from './__kernel-tests__/meshAssertions';
+import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS } from '@/shared/types/bin';
+import type { MeshData } from '@/features/generation/bridge/types';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { LID_CLICK_RAIL_OUT } from '@/shared/types/bin';
-import { LID_CLICK_RAIL_INSET } from './lidConstants';
 import type { BinParams } from '@/shared/types/bin';
 
 beforeAll(async () => {
@@ -55,6 +57,28 @@ async function floorFor(width: number, depth: number): Promise<number> {
   return worstRailInterference(bin, lid, lidZOffset(params));
 }
 
+/** Worst reading on each of the four rail lines, taken separately. */
+function wallReadings(bin: MeshData, lid: MeshData, dz: number): number[] {
+  const bb = boundingBox(lid.vertices);
+  const cx = (bb.minX + bb.maxX) / 2;
+  const cy = (bb.minY + bb.maxY) / 2;
+  const inset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
+  const sx = (bb.maxX - bb.minX) / 2 - inset;
+  const sy = (bb.maxY - bb.minY) / 2 - inset;
+  const walls = [0, 0, 0, 0];
+  for (const off of [-0.6, -0.2, 0, 0.6, 1.4]) {
+    for (let s = -sx; s <= sx; s += 1) {
+      walls[0] = Math.max(walls[0], interferenceAt(bin, lid, cx + s, cy - sy - off, dz));
+      walls[1] = Math.max(walls[1], interferenceAt(bin, lid, cx + s, cy + sy + off, dz));
+    }
+    for (let s = -sy; s <= sy; s += 1) {
+      walls[2] = Math.max(walls[2], interferenceAt(bin, lid, cx - sx - off, cy + s, dz));
+      walls[3] = Math.max(walls[3], interferenceAt(bin, lid, cx + sx + off, cy + s, dz));
+    }
+  }
+  return walls;
+}
+
 describe('rail engagement datum', () => {
   it.each([
     [2, 2],
@@ -69,12 +93,17 @@ describe('rail engagement datum', () => {
     300_000
   );
 
-  it('the ceiling is the rail bump reaching into the lip, not slack', () => {
-    // The bump protrudes OUT - INSET past the spine. The measured ceiling sits
-    // just above it, which is what identifies the reading as the snap fit
-    // rather than a clash someone tuned a threshold around.
-    const designedReach = LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET;
-    expect(RAIL_ENGAGEMENT_CEILING).toBeGreaterThanOrEqual(designedReach);
-    expect(RAIL_ENGAGEMENT_CEILING - designedReach).toBeLessThan(0.5);
-  });
+  it('reads the same on all four walls, which a clash would not', async () => {
+    // What identifies the figure as the rail's own profile rather than a clash
+    // someone tuned a threshold around. A clash sits on the wall that carries
+    // the feature causing it; the snap fit is on every wall that carries rail.
+    const { generateLid } = await import('./lidOrchestrator');
+    const params = featureFree(3, 2);
+    const bin = getGenerateBin()(params, undefined, false);
+    const lid = generateLid(params);
+    if (!bin || !lid) throw new Error('expected the pair to build');
+    for (const mm of wallReadings(bin, lid, lidZOffset(params))) {
+      expect(mm).toBeCloseTo(RAIL_ENGAGEMENT_CEILING, 2);
+    }
+  }, 300_000);
 });

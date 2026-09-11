@@ -80,9 +80,9 @@ export interface SeatedPair {
  * Distance from the lid's outer face to a click rail's spine.
  *
  * `railPlacementsForRectangle` insets every rail by `lidCornerR`, which
- * `resolveLidInputs` derives as `LID_CORNER_RADIUS - LID_FIT_CLEARANCE`. A
- * probe aimed at `LID_CORNER_RADIUS` sits 0.25mm inboard of that and reads the
- * cavity wall instead of the bump, so it reports clean through real engagement.
+ * `resolveLidInputs` derives as `LID_CORNER_RADIUS - LID_FIT_CLEARANCE`. Aim a
+ * probe at `LID_CORNER_RADIUS` instead and it lands on the cavity wall, where
+ * it reads clean whatever the rail is doing.
  */
 const RAIL_SPINE_INSET = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
 
@@ -116,10 +116,15 @@ function railProbePositions(lid: MeshData): Array<readonly [number, number]> {
  *
  * {@link worstRailInterference} is not zero on a good bin at every footprint:
  * its outer offsets sample the rail bump inside the lip's undercut, and that
- * overlap is the snap fit engaging, not a defect. Measured at 0.7mm on a plain
- * 1x2 with no interior features whatever, and 0 on a 2x2 — a property of the
- * footprint, which is why an absolute threshold cannot serve a matrix that
- * varies the footprint.
+ * overlap is the snap fit engaging, not a defect. It is
+ * {@link RAIL_ENGAGEMENT_CEILING} on every footprint from 1x2 up and 0.60mm on
+ * a 1x1 — a property of the footprint, which is why an absolute threshold
+ * cannot serve a matrix that varies the footprint.
+ *
+ * Only sound where the feature leaves rail PLACEMENT alone. A feature that
+ * notches rails changes which positions carry one, and the difference then
+ * reads as interference with nothing colliding; those suites compare against
+ * the ceiling instead.
  *
  * Comparing the two maxima would hide a small real clash behind a larger floor,
  * so this walks matching positions instead. Sound here in a way the same trick
@@ -152,24 +157,20 @@ export function worstRailInterferenceDelta(probe: SeatedPair, reference: SeatedP
 /**
  * Highest {@link worstRailInterference} a correctly seating bin reads.
  *
- * A clean bin does not read zero. The rail bump protrudes
- * `LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET` (1.55mm) past its spine and sits
- * inside the lip's undercut, which is the snap fit engaging rather than a
- * clash. Measured 1.70mm on every footprint that carries a full rail, so a
- * clearance assertion is `< RAIL_ENGAGEMENT_CEILING + tolerance` and keeps
+ * A clean bin does not read zero: the rail bump sits inside the lip's undercut,
+ * and that shared Z is the snap fit engaging rather than a clash. So a
+ * clearance assertion is `< RAIL_ENGAGEMENT_CEILING + tolerance`, keeping
  * whatever sensitivity its tolerance buys.
  *
- * Do NOT state these as a delta against the same bin with the feature off.
- * Notching is what these suites exercise, and it splits one rail into several:
- * the probe then carries rail at positions the unsegmented reference does not,
- * and the difference reads as interference with nothing colliding. Measured on
- * a 2x1 grid at 50% coverage, where both bins read 1.70mm absolute while the
- * delta reads 0.60mm.
+ * Every footprint from 1x2 up reads this. A 1x1 reads 0.60mm, so a suite that
+ * adds one needs its own datum; none of the current rail suites goes below 2u.
+ * `railEngagement.kernel.test.ts` pins the figure and checks it stands on all
+ * four walls, which is what separates the rail's own profile from a clash.
  *
- * A 1x1 reads 0.60mm instead, so a suite that adds one needs its own datum
- * rather than this ceiling. None of the current rail suites goes below 2u.
- *
- * `railEngagement.kernel.test.ts` pins the number.
+ * Do NOT restate these as a delta against the same bin with the feature off.
+ * Notching is what these suites exercise, and it splits one rail into several,
+ * so the bin under test carries rail at positions an unsegmented reference does
+ * not and the difference reads as interference with nothing colliding.
  */
 export const RAIL_ENGAGEMENT_CEILING = 1.7;
 
