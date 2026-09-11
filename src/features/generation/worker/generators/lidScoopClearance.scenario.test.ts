@@ -8,10 +8,14 @@
  * `checkLidCompatibility` drops the rail only for a height the user typed that
  * still reaches it.
  *
- * The ramp's inward offset and the chute above it are NOT what does the damage:
- * they cost 0.07mm against a 0.64mm snap baseline, while a ramp taken to the
- * wall top costs 0.39mm. gated on the offset and dropped the rail on
- * every scooped wall for it.
+ * The ramp's inward offset and the chute above it are NOT what does the damage,
+ * and what makes that true is WHERE the chute stands rather than how thin it is
+ * (#4224): its face is on the lip's inner face, the plane the rail has already
+ * been deflected past by the time it is that deep. So it fills the void under
+ * the lip without asking the rail for a millimetre of extra travel. A ramp
+ * taken to the wall top is a different shape: its arc carries material inboard
+ * of that plane, where the rail cannot follow, and the rail is dropped on every
+ * wall carrying one.
  *
  * Both meshes stay watertight and plausibly sized either way, so only mating
  * them shows it.
@@ -23,21 +27,11 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   lidZOffset,
+  railKeepoutIntrusionMm,
   RAIL_ENGAGEMENT_CEILING,
+  RAIL_FLUSH_FILL_MM,
   worstRailInterference,
 } from './__kernel-tests__/lidSeating';
-
-/**
- * Extra rail interference a scoop adds, on its own wall only. Back, left and
- * right read `RAIL_ENGAGEMENT_CEILING` on the same bin, so it is localised to
- * the scooped side, at the outermost probe offset where the lip sits.
- *
- * Whether that much extra material in the rail's path is acceptable snap
- * resistance is an open geometry question. Asserted from both sides rather than
- * as an allowance, so correcting the chute fails here and forces this back to
- * the plain ceiling instead of passing quietly.
- */
-const SCOOP_WALL_EXTRA_MM = 0.6;
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, ScoopSide } from '@/features/bin-designer/types';
 
@@ -93,11 +87,17 @@ describe('lid click rails clear the scoop', () => {
       expect(new Set(railPlacements(resolveLidInputs(params)).map((p) => p.rotationDeg))).toContain(
         ROTATION[side]
       );
-      // 0.15mm covers tessellation noise on the chute where it runs to the
-      // wall top, which is the plane the lip's base now sits on.
-      // The defect this guards against measured 1.1mm.
+      // Nothing the rail has to deflect for: the chute stands ON the lip line,
+      // so the rail meets it already pushed that far in. This is the assertion
+      // that says the scoop seats, and the column reading below is a
+      // consequence of it rather than a second opinion.
+      expect(railKeepoutIntrusionMm(bin, lid, params, lidZOffset(params))).toBe(0);
+      // The chute's own height, in the column metric's terms. Asserted from
+      // both sides so a change to the chute has to be looked at, in either
+      // direction: a taller one is not free, and a shorter one is a
+      // regeneration of published geometry.
       expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
-        RAIL_ENGAGEMENT_CEILING + SCOOP_WALL_EXTRA_MM,
+        RAIL_ENGAGEMENT_CEILING + RAIL_FLUSH_FILL_MM,
         1
       );
     },
@@ -131,7 +131,7 @@ describe('lid click rails clear the scoop', () => {
 
     // The plain ceiling, not the scooped one: with the rail dropped from this
     // wall there is no bump on it to push through the extra material, which is
-    // the clearest evidence that SCOOP_WALL_EXTRA_MM is a rail-vs-scoop
+    // the clearest evidence that the extra reading is a rail-vs-scoop
     // interaction rather than the scoop's own geometry reaching the lid.
     expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
       RAIL_ENGAGEMENT_CEILING,
@@ -145,11 +145,10 @@ describe('lid click rails clear the scoop', () => {
     // shipped. Without it, every case above passes if the probe
     // stops finding a solid or `lidZOffset` drifts.
     //
-    // Weaker than it was. On the scoop's own wall this pairing reads the same
-    // as the clean one, so all this can still say is that the reading clears
-    // the plain ceiling. Separating the two there is the open question the
-    // scoop datum above describes; until it is settled the rail-placement
-    // assertions in this file carry the discrimination.
+    // The column metric cannot carry this on its own any more: it saturates
+    // once a column is solid through the whole band, so this pairing and a
+    // clean one both read 2.30mm (#4224). `railKeepoutIntrusionMm` is what
+    // separates them, and is asserted first for that reason.
     const { generateLid } = await import('./lidOrchestrator');
     const params = makeParams({
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40, side: 'front' },
@@ -162,10 +161,11 @@ describe('lid click rails clear the scoop', () => {
     if (!bin) throw new Error('expected the bin to build');
     if (!blindLid) throw new Error('expected the lid to build');
 
-    // The clash measures ~1.0mm. Asserted at 0.9 so the control still has room
-    // to move: it only has to stay far clear of the 0.15mm the seating cases
-    // above allow, and pinning it to its exact reading would make any change to
-    // where the lid seats look like a broken probe.
+    // The arc reaches 0.20mm inboard of the lip line under this rail, against
+    // the flat zero every correctly paired case above reads. Asserted loosely:
+    // it only has to be non-zero for those zeroes to mean anything, and pinning
+    // the figure would make any change to the ramp look like a broken probe.
+    expect(railKeepoutIntrusionMm(bin, blindLid, params, lidZOffset(params))).toBeGreaterThan(0);
     expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(
       RAIL_ENGAGEMENT_CEILING
     );

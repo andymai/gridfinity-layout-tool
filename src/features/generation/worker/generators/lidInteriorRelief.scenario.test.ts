@@ -20,23 +20,11 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   lidZOffset,
+  railKeepoutIntrusionMm,
   RAIL_ENGAGEMENT_CEILING,
+  RAIL_FLUSH_FILL_MM,
   worstRailInterference,
 } from './__kernel-tests__/lidSeating';
-
-/**
- * Extra rail interference `lid.relieveInterior` adds.
- *
- * The direction is the open question: carving the cavity's perimeter back
- * should give the rail MORE room, so a relieved bin reading above an unrelieved
- * one wants explaining. Toggling the flag alone moves the reading by exactly
- * this, with compartments, label and coverage held fixed.
- *
- * Asserted from both sides below rather than as an allowance, so correcting the
- * geometry fails here and forces this back to the plain ceiling instead of
- * passing quietly.
- */
-const RELIEVED_INTERIOR_EXTRA_MM = 0.6;
 import { columnCrossings } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, CompartmentConfig } from '@/features/bin-designer/types';
@@ -124,8 +112,19 @@ describe('lid interior relief', () => {
       const bin = getGenerateBin()(params, undefined, false);
       const lid = generateLid(params);
       if (!bin || !lid) throw new Error('expected the pair to build');
+      // The claim in the title, measured where the rail can actually be
+      // stopped: inboard of the lip's inner face, which is as far out as the
+      // ring cuts and as far in as the rail reaches.
+      expect(railKeepoutIntrusionMm(bin, lid, params, lidZOffset(params))).toBe(0);
+      // And the column reading that goes with it. Higher than an UNRELIEVED
+      // bin's, which looks like the wrong direction and is not (#4225): the
+      // ring stops at the lip line by design, leaving a tongue of divider
+      // between there and the wall face, and a whole rail to lie against it
+      // where the unrelieved bin had notched the rail away entirely. Flush
+      // material costs the rail no travel, which is what the zero above says,
+      // but a column counts the shared Z all the same.
       expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
-        RAIL_ENGAGEMENT_CEILING + RELIEVED_INTERIOR_EXTRA_MM,
+        RAIL_ENGAGEMENT_CEILING + RAIL_FLUSH_FILL_MM,
         1
       );
     }
