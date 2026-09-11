@@ -174,15 +174,13 @@ export function worstRailInterferenceDelta(probe: SeatedPair, reference: SeatedP
  * so the bin under test carries rail at positions an unsegmented reference does
  * not and the difference reads as interference with nothing colliding.
  *
- * A reading ABOVE this is not by itself a defect, and
+ * A reading above this is not by itself a defect, and
  * {@link railKeepoutIntrusionMm} is what tells the two apart. A column measures
- * shared Z, so it counts material that merely sits FLUSH with the lip's inner
- * face lower down, which costs the rail no deflection at all (the lip already
- * pushes it that far), the same as material the rail cannot pass. The finger
- * scoop's chute and the tongue `lid.relieveInterior` leaves between the wall
- * face and the lip line both read +0.60mm here and are both benign. The
- * reading also saturates: once a column is solid through the whole band, a
- * grossly worse bin reads the same 2.30mm as a good one (#4224, #4225).
+ * shared Z, so material merely lying FLUSH with the lip's inner face lower down
+ * counts the same as material the rail cannot pass, when the lip has already
+ * pushed the rail that far and the flush material costs it nothing. The reading
+ * also saturates: once a column is solid through the whole band, a grossly
+ * worse bin reads the same as a good one.
  */
 export const RAIL_ENGAGEMENT_CEILING = 1.7;
 
@@ -295,13 +293,9 @@ function railPresentAt(lid: MeshData, x: number, y: number, dz: number, lipTop: 
  * How far past the lip's inner face bin material reaches inside the seated
  * rail's band, wherever the lid actually carries a rail (mm).
  *
- * The question {@link worstRailInterference} cannot answer. That one measures
- * shared Z in a column, so it cannot separate material the rail must be
- * deflected past from material lying flush with the plane the lip already
- * deflects it past, and it saturates once a column is solid through the band,
- * which is why the scoop suite's deliberately-mispaired control stopped reading
- * differently from a clean pairing (#4224). Measured radially instead, the
- * clean pairings sit at 0.00mm and that control at 0.20mm.
+ * The question {@link worstRailInterference} cannot answer, for the reasons on
+ * {@link RAIL_ENGAGEMENT_CEILING}. Radially, a lid paired with the wrong bin
+ * separates from a correctly paired one again, which a column no longer does.
  *
  * Zero is the whole assertion, and it is exactly the volume `lidKeepoutRing`
  * describes, read off the built solid rather than restated from the arithmetic

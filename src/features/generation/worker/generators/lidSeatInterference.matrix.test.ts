@@ -33,8 +33,8 @@
  * That delta says how MUCH shared Z a feature adds. `railKeepoutIntrusionMm`,
  * run over the same cases, says whether any of it is somewhere the rail cannot
  * deflect to reach. That is the question a column cannot answer, since it
- * counts material lying flush with the lip line the same as material in the way
- * (#4224, #4225).
+ * counts material lying flush with the lip line the same as material in the
+ * way.
  *
  * The scope this buys is the rail band, where three of the four defects lived.
  * A pad on the skirt line away from any rail needs the footprint sweep, and
@@ -320,10 +320,10 @@ describe('nothing intrudes into the lid seating volume', () => {
     });
     // The column delta above says how much shared Z a feature adds; this says
     // whether any of it is somewhere the rail cannot deflect to reach. A scoop
-    // chute or a relieved bin's perimeter tongue lies flush with the lip line
-    // and scores here as zero while adding 0.60mm there (#4224, #4225), so the
-    // two together are what separate a feature that costs travel from one that
-    // costs only contact.
+    // chute or a relieved bin's perimeter tongue lies flush with the lip line,
+    // so it scores here as zero while still adding to the delta. The two
+    // together separate a feature that costs the rail travel from one that
+    // costs it only contact.
     expect(blocked).toEqual([]);
     expect(unexplained).toEqual([]);
 

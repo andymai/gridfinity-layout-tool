@@ -116,13 +116,10 @@ describe('lid interior relief', () => {
       // stopped: inboard of the lip's inner face, which is as far out as the
       // ring cuts and as far in as the rail reaches.
       expect(railKeepoutIntrusionMm(bin, lid, params, lidZOffset(params))).toBe(0);
-      // And the column reading that goes with it. Higher than an UNRELIEVED
-      // bin's, which looks like the wrong direction and is not (#4225): the
-      // ring stops at the lip line by design, leaving a tongue of divider
-      // between there and the wall face, and a whole rail to lie against it
-      // where the unrelieved bin had notched the rail away entirely. Flush
-      // material costs the rail no travel, which is what the zero above says,
-      // but a column counts the shared Z all the same.
+      // Higher than an UNRELIEVED bin reads, which looks like the wrong
+      // direction and is not. The ring stops at the lip line by design, leaving
+      // a tongue of divider outboard of it, and relief hands the wall back the
+      // whole rail that the unrelieved bin had notched away to lie against it.
       expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
         RAIL_ENGAGEMENT_CEILING + RAIL_FLUSH_FILL_MM,
         1

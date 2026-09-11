@@ -9,9 +9,9 @@
  * still reaches it.
  *
  * The ramp's inward offset and the chute above it are NOT what does the damage,
- * and what makes that true is WHERE the chute stands rather than how thin it is
- * (#4224): its face is on the lip's inner face, the plane the rail has already
- * been deflected past by the time it is that deep. So it fills the void under
+ * and what makes that true is WHERE the chute stands rather than how thin it is:
+ * its face is on the lip's inner face, the plane the rail has already been
+ * deflected past by the time it is that deep. So it fills the void under
  * the lip without asking the rail for a millimetre of extra travel. A ramp
  * taken to the wall top is a different shape: its arc carries material inboard
  * of that plane, where the rail cannot follow, and the rail is dropped on every
@@ -87,15 +87,12 @@ describe('lid click rails clear the scoop', () => {
       expect(new Set(railPlacements(resolveLidInputs(params)).map((p) => p.rotationDeg))).toContain(
         ROTATION[side]
       );
-      // Nothing the rail has to deflect for: the chute stands ON the lip line,
-      // so the rail meets it already pushed that far in. This is the assertion
-      // that says the scoop seats, and the column reading below is a
-      // consequence of it rather than a second opinion.
+      // The chute stands ON the lip line, so the rail meets it already pushed
+      // that far in and has nothing left to deflect for. This is what says the
+      // scoop seats; the column reading below follows from it.
       expect(railKeepoutIntrusionMm(bin, lid, params, lidZOffset(params))).toBe(0);
-      // The chute's own height, in the column metric's terms. Asserted from
-      // both sides so a change to the chute has to be looked at, in either
-      // direction: a taller one is not free, and a shorter one is a
-      // regeneration of published geometry.
+      // Pinned from both sides, so shortening the chute fails here too: that
+      // regenerates published geometry, and is a decision rather than a tidy-up.
       expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
         RAIL_ENGAGEMENT_CEILING + RAIL_FLUSH_FILL_MM,
         1
@@ -145,10 +142,9 @@ describe('lid click rails clear the scoop', () => {
     // shipped. Without it, every case above passes if the probe
     // stops finding a solid or `lidZOffset` drifts.
     //
-    // The column metric cannot carry this on its own any more: it saturates
-    // once a column is solid through the whole band, so this pairing and a
-    // clean one both read 2.30mm (#4224). `railKeepoutIntrusionMm` is what
-    // separates them, and is asserted first for that reason.
+    // The column metric cannot carry this alone any more: it saturates once a
+    // column is solid through the whole band, so this pairing and a clean one
+    // read alike. `railKeepoutIntrusionMm` is what still separates them.
     const { generateLid } = await import('./lidOrchestrator');
     const params = makeParams({
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40, side: 'front' },
@@ -161,10 +157,9 @@ describe('lid click rails clear the scoop', () => {
     if (!bin) throw new Error('expected the bin to build');
     if (!blindLid) throw new Error('expected the lid to build');
 
-    // The arc reaches 0.20mm inboard of the lip line under this rail, against
-    // the flat zero every correctly paired case above reads. Asserted loosely:
-    // it only has to be non-zero for those zeroes to mean anything, and pinning
-    // the figure would make any change to the ramp look like a broken probe.
+    // Asserted loosely: the arc only has to reach inboard of the lip line at
+    // all for the zeroes above to mean anything, and pinning how far would make
+    // any change to the ramp look like a broken probe.
     expect(railKeepoutIntrusionMm(bin, blindLid, params, lidZOffset(params))).toBeGreaterThan(0);
     expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(
       RAIL_ENGAGEMENT_CEILING
