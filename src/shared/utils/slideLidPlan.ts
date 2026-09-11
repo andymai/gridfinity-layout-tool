@@ -680,8 +680,8 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   // plate's full width, up to the lip's top plane, and only as thick as the
   // entry wall less one clearance. Not a millimetre deeper: the lip's inward
   // overhang is still there above the cavity and the bar has to slide under it.
-  // On a flush or lipless bin nothing is above the rim, so the same rise reads
-  // as a rim of its own.
+  // On a lipless bin the catch ends at the wall top: adding the absent lip's
+  // height would leave it standing far above the remaining sides.
   const isCatch = slide.pull === 'catch';
   const pullSpan = isCatch ? plateSpan : Math.min(Math.max(plateSpan * 0.3, 12), 40);
   const pullReach =
@@ -690,7 +690,8 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
       : slide.pull === 'notch'
         ? 5
         : isCatch
-          ? plateTopBelowWallTop + GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP
+          ? plateTopBelowWallTop +
+            (input.hasLip ? GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP : 0)
           : 0;
   const pullDepth = isCatch ? Math.max(0, input.entryWallThicknessMm - c) : 0;
 

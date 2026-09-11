@@ -494,12 +494,9 @@ describe('finger catch', () => {
     expect(g.plate.trailingX - g.plate.pullDepthMm).toBeGreaterThan(TRAVEL_INNER / 2);
   });
 
-  it('stands the lip height above the rim on a flush lid', () => {
+  it('ends flush with the wall top when the bin has no stacking lip', () => {
     const g = geometryOf({ slide: { ...catchConfig, placement: 'flush' }, hasLip: false });
-    expect(g.plate.pullReachMm).toBeCloseTo(
-      g.plateTopBelowWallTopMm + GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP,
-      9
-    );
+    expect(g.plate.pullReachMm).toBeCloseTo(g.plateTopBelowWallTopMm, 9);
   });
 
   it('has no depth on the other pulls', () => {
