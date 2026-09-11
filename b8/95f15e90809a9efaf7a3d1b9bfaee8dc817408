@@ -1,0 +1,42 @@
+src/features/generation/worker/generators/__kernel-tests__/lidSeating.ts
+  s_3cc82db3d89705::t_8e5dc870bd9c1c 15,22
+  s_3cc82db3d89705::t_1645c929111443 452
+  s_3cc82db3d89705::t_ba439bfd816c0a 313
+  s_3cc82db3d89705::t_a5b35861bfa305 238-252,283-295,297-301,304-312,321-329,331-362,367-376
+  s_3cc82db3d89705::t_c0de1f0e33205d 176-179,184-185,189-192,196-197
+  s_3cc82db3d89705::t_b8d42a4e6d9d2f 180-183,193-195,274-277,296,302-303,317
+  s_3cc82db3d89705::t_5f16485b96907c 314-316,318-320,330,363-366
+  s_3cc82db3d89705::t_fd5cd1a9132bf4 253-273,278-282,432
+  s_3cc82db3d89705::t_ae15595702863b 198
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_3cc82db3d89705::t_e5e8ed0f60a442 134,148-151,164-167
+  s_3cc82db3d89705::t_2c4bd4a4e89d7e 11-15
+  s_3cc82db3d89705::t_b684c943af4420 30,32
+  s_3cc82db3d89705::t_0284aa9018bcc6 90-93,95-98,100
+  s_3cc82db3d89705::t_dc41fba8b63840 94
+  s_3cc82db3d89705::t_b8d42a4e6d9d2f 16-18,168
+src/features/generation/worker/generators/lidSeatInterference.matrix.test.ts
+  s_3cc82db3d89705::t_a959c3c232bc20 33-34,37-40
+  s_3cc82db3d89705::t_b8d42a4e6d9d2f 35-36
+  s_3cc82db3d89705::t_458126c0faa4ac 53,55,69,71-73,75,280,298-299,308-309,321-327,330,333-334
+  s_3cc82db3d89705::t_124008da280696 259-263
+src/features/generation/worker/generators/lidInteriorRelief.scenario.test.ts
+  s_3cc82db3d89705::t_b8d42a4e6d9d2f 124
+  s_3cc82db3d89705::t_5013512e65c227 23,25,115-123,125,127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b895f15e90809a9efaf7a3d1b9bfaee8dc817408",
+  "prompts": {},
+  "sessions": {
+    "s_3cc82db3d89705": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "63671200-88a4-4fb1-808e-4fe445230194",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
