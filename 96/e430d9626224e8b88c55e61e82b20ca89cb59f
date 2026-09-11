@@ -1,0 +1,21 @@
+.claude/skills/geometry-debugging/SKILL.md
+  s_3cc82db3d89705::t_3fc90a729b9166 223-235
+scripts/doc-budget.json
+  s_3cc82db3d89705::t_5ae7cf7ba9f1b6 3-7,77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "96e430d9626224e8b88c55e61e82b20ca89cb59f",
+  "prompts": {},
+  "sessions": {
+    "s_3cc82db3d89705": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "63671200-88a4-4fb1-808e-4fe445230194",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
