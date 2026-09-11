@@ -1,0 +1,29 @@
+src/features/generation/worker/generators/lidSeatInterference.matrix.test.ts
+  s_3cc82db3d89705::t_2b1ded89c2c446 36-37,323-326
+src/features/generation/worker/generators/railEngagement.kernel.test.ts
+  s_3cc82db3d89705::t_1bf109a91aad29 21,97-129
+  s_3cc82db3d89705::t_4acaa43ba0ccfb 130
+src/features/generation/worker/generators/lidInteriorRelief.scenario.test.ts
+  s_3cc82db3d89705::t_e7d819de57296e 119-122
+src/features/generation/worker/generators/__kernel-tests__/lidSeating.ts
+  s_3cc82db3d89705::t_e7d819de57296e 177,179-183,296-298
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_3cc82db3d89705::t_2b1ded89c2c446 12-14
+  s_3cc82db3d89705::t_e7d819de57296e 90-92,94-95,145-147,160-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9bb1f853f8390fb66a3f97c336c6e09683653d0d",
+  "prompts": {},
+  "sessions": {
+    "s_3cc82db3d89705": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "63671200-88a4-4fb1-808e-4fe445230194",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
