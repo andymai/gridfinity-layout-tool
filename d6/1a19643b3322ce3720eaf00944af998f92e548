@@ -1,0 +1,31 @@
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_4b89562300d976::t_eac47644a71922 132-135,137
+  s_4b89562300d976::t_5d852556a7e10f 31-33,35-38,99-101,136,138
+  s_4b89562300d976::t_e46bb0a20c1371 147-152
+src/features/generation/worker/generators/lidInteriorRelief.scenario.test.ts
+  s_4b89562300d976::t_5d852556a7e10f 30-33,35-37,127-129
+src/features/generation/worker/generators/__kernel-tests__/lidSeating.ts
+  s_4b89562300d976::t_ac30ecb60fa1e3 83-85,119-127,160-162,165-168,170-173
+src/features/generation/worker/generators/lidSeatInterference.matrix.test.ts
+  s_4b89562300d976::t_c5361c5babccd2 25,319-324
+  s_4b89562300d976::t_4da8289d82fa1f 26-27
+  s_4b89562300d976::t_696b8962260ff7 61-63,65-66,70-79,277,296,300-304,306
+src/features/generation/worker/generators/railEngagement.kernel.test.ts
+  s_4b89562300d976::t_78576088cd1e2a 19,24-26,60-81,96-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d61a19643b3322ce3720eaf00944af998f92e548",
+  "prompts": {},
+  "sessions": {
+    "s_4b89562300d976": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fb2a005-e7be-459f-b6a3-6dc246a4f425",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
