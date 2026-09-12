@@ -1438,6 +1438,7 @@ const en: Record<string, string> = {
   'toast.scanImport.parseFailed':
     "Couldn't read that outline. Try a photo on a plain, high-contrast background.",
   'toast.scanImport.fileTooLarge': 'Outline file is too large (max 5 MB)',
+  'toast.svgExport.nothingToExport': 'Nothing in the selection has an outline to export',
   'scan.title': 'Scan a tool',
   'scan.step.capture': 'Capture',
   'scan.step.review': 'Review',
@@ -3057,6 +3058,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.distribute.vertical': 'Distribute vertically',
   'binDesigner.cutouts.penTool': 'Pen',
   'binDesigner.cutouts.importSvg': 'Import SVG',
+  'binDesigner.cutouts.exportSvg': 'Export SVG',
   'binDesigner.cutouts.importStl': 'Import STL',
   'binDesigner.cutouts.stlImport.title': 'Place STL imprint',
   'binDesigner.cutouts.stlImport.processing': 'Processing mesh…',

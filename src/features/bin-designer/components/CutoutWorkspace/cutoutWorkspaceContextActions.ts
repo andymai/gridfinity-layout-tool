@@ -33,6 +33,7 @@ interface BuildContextActionsArgs {
   copySelected: () => void;
   duplicateSelected: () => void;
   deleteSelected: () => void;
+  exportSelectedAsSvg: () => void;
   pasteFromClipboard: () => void;
   selectAll: () => void;
   updateCutout: (id: string, patch: Partial<Cutout>) => void;
@@ -65,6 +66,7 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     copySelected,
     duplicateSelected,
     deleteSelected,
+    exportSelectedAsSvg,
     pasteFromClipboard,
     selectAll,
     updateCutout,
@@ -95,6 +97,10 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
       label: t('common.duplicate'),
       onClick: duplicateSelected,
       shortcut: { keys: 'D', modifier: true },
+    });
+    actions.push({
+      label: t('binDesigner.cutouts.exportSvg'),
+      onClick: exportSelectedAsSvg,
     });
     actions.push({
       label: t('common.delete'),

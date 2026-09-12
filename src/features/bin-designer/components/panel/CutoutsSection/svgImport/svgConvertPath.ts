@@ -4,6 +4,11 @@
  * Splits the path's command stream into contours (each `M` starts a new
  * sub-path) and converts each contour independently. Quadratic beziers are
  * elevated to cubic; arcs are converted via `arcToCubicBeziers`.
+ *
+ * There is no close-path case: `NORMALIZE_HVZ` rewrites `Z` as an explicit line
+ * back to the sub-path start, so a closed shape reaches us as a duplicate
+ * anchor. `pathPointsToSpec` is what drops it, and what rescues the closing
+ * curve's handle from it.
  */
 
 import { SVGPathData, SVGPathDataTransformer } from 'svg-pathdata';
@@ -187,24 +192,6 @@ function convertContour(
 
         currentX = cmd.x;
         currentY = cmd.y;
-        break;
-      }
-
-      case SVGPathDataEnum.CLOSE_PATH: {
-        // Remove duplicate endpoint if it matches the first point
-        if (pathPoints.length >= 2) {
-          const first = pathPoints[0];
-          const last = pathPoints[pathPoints.length - 1];
-          const dx = Math.abs(first.x - last.x);
-          const dy = Math.abs(first.y - last.y);
-          if (dx < 0.01 && dy < 0.01) {
-            // Transfer handleIn from duplicate endpoint to first point
-            const removed = pathPoints.pop();
-            if (removed?.handleIn) {
-              pathPoints[0] = { ...pathPoints[0], handleIn: removed.handleIn };
-            }
-          }
-        }
         break;
       }
     }
