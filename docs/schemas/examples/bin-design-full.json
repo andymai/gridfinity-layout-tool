@@ -71,7 +71,8 @@
         "depth": 40,
         "alignment": "center",
         "offset": 0,
-        "widthMm": null
+        "widthMm": null,
+        "depthMm": null
       },
       "back": {
         "enabled": false,
@@ -79,7 +80,8 @@
         "depth": 40,
         "alignment": "center",
         "offset": 0,
-        "widthMm": null
+        "widthMm": null,
+        "depthMm": null
       },
       "left": {
         "enabled": false,
@@ -87,7 +89,8 @@
         "depth": 40,
         "alignment": "center",
         "offset": 0,
-        "widthMm": null
+        "widthMm": null,
+        "depthMm": null
       },
       "right": {
         "enabled": false,
@@ -95,7 +98,8 @@
         "depth": 40,
         "alignment": "center",
         "offset": 0,
-        "widthMm": null
+        "widthMm": null,
+        "depthMm": null
       },
       "interior": {
         "enabled": false,
@@ -103,7 +107,8 @@
         "depth": 40,
         "alignment": "center",
         "offset": 0,
-        "widthMm": null
+        "widthMm": null,
+        "depthMm": null
       }
     },
     "wallPattern": {

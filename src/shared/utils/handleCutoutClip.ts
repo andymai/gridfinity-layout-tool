@@ -1,5 +1,9 @@
 import type { HandleWallSide } from '@/features/bin-designer/types';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import {
+  computeCutoutCenter,
+  resolveCutoutSpan,
+  type CutoutSpanSource,
+} from '@/shared/utils/wallCutoutPosition';
 
 /** A handle segment: horizontal offset from wall center and width in mm. */
 export interface HandleSegment {
@@ -73,10 +77,8 @@ export function buildHandleWallDefs(innerW: number, innerD: number): readonly Ha
 }
 
 /** Minimal wall cutout info needed for segment computation. */
-interface WallCutoutInfo {
+interface WallCutoutInfo extends CutoutSpanSource {
   readonly enabled: boolean;
-  readonly width: number;
-  readonly widthMm: number | null;
   readonly alignment: 'left' | 'center' | 'right';
   readonly offset: number;
 }
@@ -93,10 +95,7 @@ export function computeWallHandleSegments(
   cutout: WallCutoutInfo | undefined
 ): HandleSegment[] | null {
   if (cutout?.enabled) {
-    const cutWidth =
-      cutout.widthMm !== null
-        ? Math.min(cutout.widthMm, wallSpan)
-        : wallSpan * (cutout.width / 100);
+    const cutWidth = resolveCutoutSpan(cutout, wallSpan);
     const cutCenter = computeCutoutCenter(
       wallSpan,
       cutWidth,

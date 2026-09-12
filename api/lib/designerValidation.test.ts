@@ -79,6 +79,18 @@ describe('validateDesignerShare — walls corner radii', () => {
   it('rejects a non-numeric radius', () => {
     expect(check({ cornerRadiusTop: '5' }).valid).toBe(false);
   });
+
+  it('accepts the absolute mm overrides, present or null', () => {
+    expect(check({ front: { width: 50, depth: 50, widthMm: 30, depthMm: 20 } }).valid).toBe(true);
+    expect(check({ front: { width: 50, depth: 50, widthMm: null, depthMm: null } }).valid).toBe(
+      true
+    );
+  });
+
+  it('rejects an mm override that would reach the kernel as a backwards cut', () => {
+    expect(check({ front: { width: 50, depth: 50, depthMm: -5 } }).valid).toBe(false);
+    expect(check({ front: { width: 50, depth: 50, widthMm: '30' } }).valid).toBe(false);
+  });
 });
 
 // Full-width label captions ride in `label`, not `compartments`, so they

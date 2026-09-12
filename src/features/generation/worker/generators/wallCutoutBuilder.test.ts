@@ -5,6 +5,7 @@ import { isOk } from '@/core/result';
 import {
   autoCornerRadius,
   buildSingleCutout,
+  buildWallCutoutCuts,
   computeInteriorDividerCutouts,
   cornerSlackFor,
 } from './wallCutoutBuilder';
@@ -243,6 +244,24 @@ describe('computeInteriorDividerCutouts', () => {
     );
     expect(cut.cutW).toBeCloseTo(10, 6);
   });
+
+  it('honours an absolute mm depth override instead of the percentage', () => {
+    const base = makeParams({ cols: 2, rows: 1, cells: [0, 1] });
+    const [cut] = computeInteriorDividerCutouts(
+      withInterior(base, { depthMm: 8 }),
+      INNER_W,
+      INNER_D,
+      DIVIDER_TOP_Z
+    );
+    expect(cut.cutH).toBeCloseTo(8, 6);
+  });
+
+  it('holds an absolute depth across divider heights where the percentage cannot', () => {
+    const base = withInterior(makeParams({ cols: 2, rows: 1, cells: [0, 1] }), { depthMm: 8 });
+    const [shallow] = computeInteriorDividerCutouts(base, INNER_W, INNER_D, DIVIDER_TOP_Z);
+    const [tall] = computeInteriorDividerCutouts(base, INNER_W, INNER_D, DIVIDER_TOP_Z * 2);
+    expect(tall.cutH).toBeCloseTo(shallow.cutH, 6);
+  });
 });
 
 describe('autoCornerRadius', () => {
@@ -274,6 +293,55 @@ describe('cornerSlackFor', () => {
     // Callers clamp cut width to the span, so this is a guard rather than a
     // reachable state: a negative radius cap would throw inside the pen.
     expect(cornerSlackFor(80, 100, 0)).toEqual({ left: 0, right: 0 });
+  });
+});
+
+describe('buildWallCutoutCuts outer-wall depth', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 120_000);
+
+  const OUTER_W = 84;
+  const OUTER_D = 42;
+
+  /** One front-wall cut, described by how far it reaches below the wall top. */
+  const dropBelowRim = (cfg: Partial<BinParams['walls']['front']>, wallHeight: number): number =>
+    withScope((scope: DisposalScope) => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
+          front: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true, ...cfg },
+        },
+      };
+      const cut = buildWallCutoutCuts(params, OUTER_W, OUTER_D, wallHeight, false, wallHeight);
+      expect(cut).not.toBeNull();
+      if (!cut) return NaN;
+      return wallHeight - getBounds(scope.register(cut)).zMin;
+    });
+
+  // The reported case: a 6U and a 12U bin standing side by side on a shelf,
+  // whose cutouts should read as one line across both.
+  const SIX_U = 6 * 7;
+  const TWELVE_U = 12 * 7;
+
+  it('holds one absolute drop across two bin heights', () => {
+    expect(dropBelowRim({ depthMm: 20 }, SIX_U)).toBeCloseTo(20, 3);
+    expect(dropBelowRim({ depthMm: 20 }, TWELVE_U)).toBeCloseTo(20, 3);
+  });
+
+  it('scales with the wall on the percentage it replaces', () => {
+    const short = dropBelowRim({ depth: 50, depthMm: null }, SIX_U);
+    const tall = dropBelowRim({ depth: 50, depthMm: null }, TWELVE_U);
+    expect(tall).toBeGreaterThan(short * 1.5);
+  });
+
+  it('clamps an overlong drop to the wall it is cutting', () => {
+    const interiorHeight = SIX_U - DEFAULT_BIN_PARAMS.wallThickness;
+    expect(dropBelowRim({ depthMm: 500 }, SIX_U)).toBeCloseTo(interiorHeight, 3);
   });
 });
 

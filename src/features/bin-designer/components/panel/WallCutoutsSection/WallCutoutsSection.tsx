@@ -134,7 +134,26 @@ function CornersDisclosure({
   );
 }
 
-/** Span + height steppers on one row, with a %/mm unit toggle on the span. */
+/** Seed value (mm) a stepper lands on when the user switches it out of %. */
+const MM_SEED = 30;
+/** Ceiling for either absolute dimension, in mm. Both clamp to the wall anyway. */
+const MM_MAX = 500;
+
+/** Switches one dimension between % of the wall and absolute mm. */
+function UnitToggle({ isMm, onClick }: { isMm: boolean; onClick: () => void }) {
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      onClick={onClick}
+      className="shrink-0 rounded-md border border-stroke-subtle bg-surface-elevated px-1.5 py-1 text-xs font-medium text-content-secondary transition-colors hover:bg-surface-hover"
+    >
+      {isMm ? 'mm' : '%'}
+    </Button>
+  );
+}
+
+/** Span + height steppers on one row, each with its own %/mm unit toggle. */
 function SizeControls({
   side,
   cfg,
@@ -154,11 +173,16 @@ function SizeControls({
 }) {
   const t = useTranslation();
   const widthMm = cfg.widthMm ?? 1;
-  const isMmMode = cfg.widthMm !== null;
+  const isSpanMm = cfg.widthMm !== null;
+  // Absent and null both mean "use the percentage" — a design saved before the
+  // control existed carries neither.
+  const storedDepthMm = cfg.depthMm ?? null;
+  const depthMm = storedDepthMm ?? 1;
+  const isHeightMm = storedDepthMm !== null;
 
   return (
     <div className="flex items-end gap-2">
-      {isMmMode ? (
+      {isSpanMm ? (
         <StepperField
           label={spanLabel}
           unit="mm"
@@ -166,7 +190,7 @@ function SizeControls({
           onChange={(v) => handlers.setSideWidthMm(side, Math.max(1, v))}
           onStep={(delta) => handlers.setSideWidthMm(side, Math.max(1, widthMm + delta))}
           min={1}
-          max={500}
+          max={MM_MAX}
           step={1}
           size="md"
           aria-label={t('binDesigner.wallCutouts.spanMmAria')}
@@ -190,31 +214,48 @@ function SizeControls({
         />
       )}
 
-      {/* %/mm unit toggle for the span */}
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={() => handlers.setSideWidthMm(side, isMmMode ? null : 30)}
-        className="shrink-0 rounded-md border border-stroke-subtle bg-surface-elevated px-1.5 py-1 text-xs font-medium text-content-secondary transition-colors hover:bg-surface-hover"
-      >
-        {isMmMode ? 'mm' : '%'}
-      </Button>
+      <UnitToggle
+        isMm={isSpanMm}
+        onClick={() => handlers.setSideWidthMm(side, isSpanMm ? null : MM_SEED)}
+      />
+
+      {!hideDepth &&
+        (isHeightMm ? (
+          <StepperField
+            label={heightLabel}
+            unit="mm"
+            value={depthMm}
+            onChange={(v) => handlers.setSideDepthMm(side, Math.max(1, v))}
+            onStep={(delta) => handlers.setSideDepthMm(side, Math.max(1, depthMm + delta))}
+            min={1}
+            max={MM_MAX}
+            step={1}
+            size="md"
+            aria-label={t('binDesigner.wallCutouts.heightMmAria')}
+            commitMode="deferred"
+          />
+        ) : (
+          <StepperField
+            label={heightLabel}
+            unit="%"
+            value={cfg.depth}
+            onChange={(v) => handlers.setSideDepth(side, v)}
+            onStep={(delta) =>
+              handlers.setSideDepth(side, Math.max(0, Math.min(100, cfg.depth + delta * step)))
+            }
+            min={0}
+            max={100}
+            step={step}
+            size="md"
+            aria-label={t('binDesigner.wallCutouts.heightPercentAria')}
+            commitMode="deferred"
+          />
+        ))}
 
       {!hideDepth && (
-        <StepperField
-          label={heightLabel}
-          unit="%"
-          value={cfg.depth}
-          onChange={(v) => handlers.setSideDepth(side, v)}
-          onStep={(delta) =>
-            handlers.setSideDepth(side, Math.max(0, Math.min(100, cfg.depth + delta * step)))
-          }
-          min={0}
-          max={100}
-          step={step}
-          size="md"
-          aria-label={t('binDesigner.wallCutouts.heightPercentAria')}
-          commitMode="deferred"
+        <UnitToggle
+          isMm={isHeightMm}
+          onClick={() => handlers.setSideDepthMm(side, isHeightMm ? null : MM_SEED)}
         />
       )}
     </div>

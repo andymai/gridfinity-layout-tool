@@ -11,7 +11,11 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import {
+  computeCutoutCenter,
+  resolveCutoutDrop,
+  resolveCutoutSpan,
+} from '@/shared/utils/wallCutoutPosition';
 import { findWallSegments, buildOverrideLookup, overrideKey } from './compartmentBuilder';
 import type { DividerInfo, OuterWallCutoutInfo } from './dividerBlendTypes';
 
@@ -47,12 +51,8 @@ export function resolveOuterCutouts(
     const cfg = params.walls[side.key];
     if (!cfg.enabled) continue;
 
-    const cutWidth =
-      cfg.widthMm !== null
-        ? Math.min(cfg.widthMm, side.wallSpan)
-        : side.wallSpan * (cfg.width / 100);
-
-    const userCutHeight = interiorHeight * (cfg.depth / 100);
+    const cutWidth = resolveCutoutSpan(cfg, side.wallSpan);
+    const userCutHeight = resolveCutoutDrop(cfg, interiorHeight);
     if (cutWidth < 0.1 || userCutHeight < 0.1) continue;
 
     const centerOffset = computeCutoutCenter(

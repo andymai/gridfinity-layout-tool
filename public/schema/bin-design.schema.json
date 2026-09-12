@@ -2555,7 +2555,7 @@
     },
     "WallCutout": {
       "type": "object",
-      "description": "One wall's cutout. Note the mixed units: width and depth are percentages, offset and widthMm are millimetres.",
+      "description": "One wall's cutout. Note the mixed units: width and depth are percentages, while offset, widthMm and depthMm are millimetres.",
       "required": ["enabled", "width", "depth", "alignment", "offset", "widthMm"],
       "properties": {
         "enabled": {
@@ -2572,7 +2572,7 @@
           "type": "number",
           "minimum": 0,
           "maximum": 100,
-          "description": "Cutout depth as a PERCENTAGE of wall height, from the top."
+          "description": "Cutout depth as a PERCENTAGE of wall height, from the top. Ignored when depthMm is set."
         },
         "alignment": {
           "enum": ["left", "center", "right"],
@@ -2586,6 +2586,11 @@
           "type": ["number", "null"],
           "minimum": 0,
           "description": "Absolute cutout width in mm. When null, the percentage width is used instead."
+        },
+        "depthMm": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Absolute cutout depth in mm, measured down from the wall top. When absent or null, the percentage depth is used instead. Set it to hold one cut line across bins of different heights."
         },
         "cornerRadiusTop": {
           "type": ["number", "null"],

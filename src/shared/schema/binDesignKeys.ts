@@ -214,6 +214,7 @@ export const WALL_CUTOUT_KEYS = [
   'alignment',
   'offset',
   'widthMm',
+  'depthMm',
   'cornerRadiusTop',
   'cornerRadiusBottom',
 ] as const;

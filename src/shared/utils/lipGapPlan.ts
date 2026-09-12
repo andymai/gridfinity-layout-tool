@@ -42,6 +42,8 @@ import {
   computeCutoutCenter,
   cornerSlackFor,
   resolveCutoutCornerRadii,
+  resolveCutoutDrop,
+  resolveCutoutSpan,
   safeCutoutCornerRadii,
 } from '@/shared/utils/wallCutoutPosition';
 import {
@@ -229,12 +231,11 @@ function wallGaps(
   // cutout the builder emits removes the lip across its whole span.
   const cfg = params.walls[side];
   if (params.walls.enabled && cfg.enabled) {
-    const cutWidth =
-      cfg.widthMm !== null ? Math.min(cfg.widthMm, wallSpan) : wallSpan * (cfg.width / 100);
+    const cutWidth = resolveCutoutSpan(cfg, wallSpan);
     // The builder measures depth against the wall MINUS one thickness, not
     // against the cavity ceiling. Only decides whether the cut is built.
-    const userCutHeight = (wallHeight - wallThickness) * (cfg.depth / 100);
-    if (cutWidth > 0 && cfg.depth > 0 && cutWidth >= 0.1 && userCutHeight >= 0.1) {
+    const userCutHeight = resolveCutoutDrop(cfg, wallHeight - wallThickness);
+    if (cutWidth >= 0.1 && userCutHeight >= 0.1) {
       const centre = computeCutoutCenter(
         wallSpan,
         cutWidth,

@@ -4,6 +4,8 @@ import {
   autoCornerRadius,
   computeCutoutCenter,
   resolveCutoutCornerRadii,
+  resolveCutoutDrop,
+  resolveCutoutSpan,
   safeCutoutCornerRadii,
 } from './wallCutoutPosition';
 
@@ -79,6 +81,48 @@ describe('computeCutoutCenter', () => {
     // wallSpan=20, cutWidth=8, margin=1.2 → left anchor = -10 + 1.2 + 4 = -4.8
     const result = computeCutoutCenter(20, 8, 1.2, 'left', 0);
     expect(result).toBeCloseTo(-4.8);
+  });
+});
+
+describe('resolveCutoutSpan', () => {
+  it('takes the percentage of the wall span when no override is set', () => {
+    expect(resolveCutoutSpan({ width: 70, widthMm: null }, 80)).toBeCloseTo(56);
+  });
+
+  it('prefers an absolute override over the percentage', () => {
+    expect(resolveCutoutSpan({ width: 70, widthMm: 30 }, 80)).toBe(30);
+  });
+
+  it('clamps an override to the wall it is cutting', () => {
+    expect(resolveCutoutSpan({ width: 70, widthMm: 500 }, 80)).toBe(80);
+  });
+});
+
+describe('resolveCutoutDrop', () => {
+  it('takes the percentage of the wall run when no override is set', () => {
+    expect(resolveCutoutDrop({ depth: 50, depthMm: null }, 40)).toBeCloseTo(20);
+  });
+
+  it('treats an absent field the same as null — pre-control designs carry neither', () => {
+    expect(resolveCutoutDrop({ depth: 50 }, 40)).toBeCloseTo(20);
+  });
+
+  it('holds one cut line across bins of different heights', () => {
+    const cfg = { depth: 50, depthMm: 20 };
+    // The whole point of the override: 6U and 12U walls, one opening.
+    expect(resolveCutoutDrop(cfg, 40)).toBe(resolveCutoutDrop(cfg, 82));
+  });
+
+  it('clamps an override to the wall it is cutting', () => {
+    expect(resolveCutoutDrop({ depth: 50, depthMm: 500 }, 40)).toBe(40);
+  });
+
+  it('falls back to the percentage for a value no design should hold', () => {
+    // A hand-authored file can carry anything, and Math.min(NaN, run) is NaN —
+    // which passes every downstream `< 0.1` guard and reaches the kernel.
+    expect(resolveCutoutDrop({ depth: 50, depthMm: Number.NaN }, 40)).toBeCloseTo(20);
+    expect(resolveCutoutDrop({ depth: 50, depthMm: -5 }, 40)).toBeCloseTo(20);
+    expect(resolveCutoutSpan({ width: 70, widthMm: Number.POSITIVE_INFINITY }, 80)).toBeCloseTo(56);
   });
 });
 

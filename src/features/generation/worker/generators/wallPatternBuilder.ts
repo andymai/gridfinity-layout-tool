@@ -54,7 +54,11 @@ import {
 import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { resolveCutoutCornerRadii } from '@/shared/utils/wallCutoutPosition';
+import {
+  resolveCutoutCornerRadii,
+  resolveCutoutDrop,
+  resolveCutoutSpan,
+} from '@/shared/utils/wallCutoutPosition';
 import { resolvePolygonSideGeometry } from './maskPolygonEdges';
 import { pitchFromParams } from './gridPitch';
 import {
@@ -237,12 +241,8 @@ export function computeWallClips(
   let expandedWidth = 0;
   let expandedHeight = 0;
   if (cutoutCfg?.enabled) {
-    cutWidth =
-      cutoutCfg.widthMm !== null
-        ? Math.min(cutoutCfg.widthMm, wallSpan)
-        : wallSpan * (cutoutCfg.width / 100);
-    const interiorWallHeight = dim.wallHeight - params.wallThickness;
-    userCutHeight = interiorWallHeight * (cutoutCfg.depth / 100);
+    cutWidth = resolveCutoutSpan(cutoutCfg, wallSpan);
+    userCutHeight = resolveCutoutDrop(cutoutCfg, dim.wallHeight - params.wallThickness);
 
     const expanded = getExpandedCutoutDimensions(cutWidth, userCutHeight, CUTOUT_BORDER_WIDTH);
     expandedWidth = expanded.expandedWidth;

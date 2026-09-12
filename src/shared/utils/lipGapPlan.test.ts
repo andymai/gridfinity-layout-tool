@@ -139,6 +139,20 @@ describe('lipGaps: wall cutouts', () => {
     ).toEqual([]);
   });
 
+  it('costs the lip its rail on an absolute depth the percentage zeroes out', () => {
+    // depth: 0 alone means "never built". With an absolute drop the cut IS
+    // built, and a rail planned off the percentage would hang over the opening
+    // while colliding with nothing — which no interference probe reports.
+    const gaps = lipGaps(
+      bin({
+        walls: walls({
+          front: { ...walls().front, enabled: true, width: 40, depth: 0, depthMm: 10 },
+        }),
+      })
+    );
+    expect(gaps.map((g) => g.source)).toEqual(['cutout']);
+  });
+
   it('reports nothing when the feature is off at the top level', () => {
     const off = walls({ front: { ...walls().front, enabled: true } });
     expect(lipGaps(bin({ walls: { ...off, enabled: false } }))).toEqual([]);

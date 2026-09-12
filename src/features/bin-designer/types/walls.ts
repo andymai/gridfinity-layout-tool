@@ -15,6 +15,16 @@ export interface WallCutout {
   /** Absolute cutout width in mm. When null, the percentage `width` field is used instead. */
   readonly widthMm: number | null;
   /**
+   * Absolute cutout depth in mm, measured down from the wall top. Holds one cut
+   * line across bins of different heights, which the percentage `depth` cannot.
+   *
+   * Optional, unlike its `widthMm` twin, and absent on every design saved
+   * before the control existed — which is what keeps those designs, the example
+   * gallery and the community dedupe fingerprints byte-identical. Absent and
+   * null mean the same thing: use the percentage.
+   */
+  readonly depthMm?: number | null;
+  /**
    * Round-over (mm) on the shoulder where this cut meets the top of the
    * material. Null defers to {@link WallConfig.cornerRadiusTop}.
    */

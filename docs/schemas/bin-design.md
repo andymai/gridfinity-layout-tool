@@ -262,8 +262,9 @@ A ramp at one wall so contents can be scooped out.
 ## Walls
 
 Cutouts taken out of the bin's walls. Watch the units: `width` and `depth` are
-**percentages** of the wall span and height, while `offset` and `widthMm` are
-millimetres. Setting `widthMm` overrides the percentage `width`.
+**percentages** of the wall span and height, while `offset`, `widthMm` and
+`depthMm` are millimetres. Each `Mm` field overrides the percentage beside it;
+absolute values are what hold one cut line across bins of different heights.
 
 A `null` corner radius is meaningful rather than absent: on `WallConfig` it
 means square (which is what every design saved before the control existed
@@ -300,16 +301,17 @@ already had), and on a per-side `WallCutout` it means "defer to the
 
 <!-- generated:start -->
 
-| Field                | Type                                | Required | Default | Constraint   | Notes                                                                                      |
-| -------------------- | ----------------------------------- | -------- | ------- | ------------ | ------------------------------------------------------------------------------------------ |
-| `enabled`            | `boolean`                           | yes      |         |              | Whether this side's cutout is on.                                                          |
-| `width`              | `number`                            | yes      |         | >= 0, <= 100 | Cutout width as a PERCENTAGE of the wall span. Ignored when widthMm is set.                |
-| `depth`              | `number`                            | yes      |         | >= 0, <= 100 | Cutout depth as a PERCENTAGE of wall height, from the top.                                 |
-| `alignment`          | `"left"` \| `"center"` \| `"right"` | yes      |         |              | Horizontal alignment within the wall span.                                                 |
-| `offset`             | `number`                            | yes      |         |              | Horizontal offset from the alignment anchor in MILLIMETRES. Positive is toward right/back. |
-| `widthMm`            | `number` \| `null`                  | yes      |         | >= 0         | Absolute cutout width in mm. When null, the percentage width is used instead.              |
-| `cornerRadiusTop`    | `number` \| `null`                  |          |         | >= 0         | Shoulder round-over in mm. null defers to WallConfig.cornerRadiusTop.                      |
-| `cornerRadiusBottom` | `number` \| `null`                  |          |         | >= 0         | Bottom fillet in mm. null defers to WallConfig.cornerRadiusBottom.                         |
+| Field                | Type                                | Required | Default | Constraint   | Notes                                                                                                                                                                                  |
+| -------------------- | ----------------------------------- | -------- | ------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`            | `boolean`                           | yes      |         |              | Whether this side's cutout is on.                                                                                                                                                      |
+| `width`              | `number`                            | yes      |         | >= 0, <= 100 | Cutout width as a PERCENTAGE of the wall span. Ignored when widthMm is set.                                                                                                            |
+| `depth`              | `number`                            | yes      |         | >= 0, <= 100 | Cutout depth as a PERCENTAGE of wall height, from the top. Ignored when depthMm is set.                                                                                                |
+| `alignment`          | `"left"` \| `"center"` \| `"right"` | yes      |         |              | Horizontal alignment within the wall span.                                                                                                                                             |
+| `offset`             | `number`                            | yes      |         |              | Horizontal offset from the alignment anchor in MILLIMETRES. Positive is toward right/back.                                                                                             |
+| `widthMm`            | `number` \| `null`                  | yes      |         | >= 0         | Absolute cutout width in mm. When null, the percentage width is used instead.                                                                                                          |
+| `depthMm`            | `number` \| `null`                  |          |         | >= 0         | Absolute cutout depth in mm, measured down from the wall top. When absent or null, the percentage depth is used instead. Set it to hold one cut line across bins of different heights. |
+| `cornerRadiusTop`    | `number` \| `null`                  |          |         | >= 0         | Shoulder round-over in mm. null defers to WallConfig.cornerRadiusTop.                                                                                                                  |
+| `cornerRadiusBottom` | `number` \| `null`                  |          |         | >= 0         | Bottom fillet in mm. null defers to WallConfig.cornerRadiusBottom.                                                                                                                     |
 
 <!-- generated:end -->
 
