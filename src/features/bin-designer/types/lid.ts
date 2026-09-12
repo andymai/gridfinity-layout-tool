@@ -70,25 +70,18 @@ export const LID_MIN_CORNER_RADIUS = 0.1;
 export const LID_MAGNETIC_EXTRA_CLEARANCE = 0.15;
 
 /**
- * Per-side plug relief (mm) for a snap-fit (click-rail) lid, for the same reason
- * a magnetic lid gets {@link LID_MAGNETIC_EXTRA_CLEARANCE}: the rail hooks the
- * lip's undercut and supplies the retention, so the plug only locates the lid.
- * At zero relief the plug's outer face lands flush on the lip's inner face, a
- * friction fit the rail has to press through before it can deflect and catch —
- * the lid reads as press-fit, not snap-fit (#4233). Held on the plug alone, off
- * {@link lidAnchorZ}, as the magnetic relief is: perimeter and seat plane stay put.
+ * Per-side plug relief (mm) for a snap-fit (click-rail) lid. The rail hooks the
+ * lip and supplies the retention, so the plug only locates the lid; at zero
+ * relief its outer face lands flush on the lip and the lid presses on rather
+ * than snapping. Confined to the plug like {@link LID_MAGNETIC_EXTRA_CLEARANCE}.
  */
 export const LID_SNAP_PLUG_CLEARANCE = 0.15;
 
 /**
- * Per-side plug relief — {@link LID_MAGNETIC_EXTRA_CLEARANCE} on a magnetic lid,
- * {@link LID_SNAP_PLUG_CLEARANCE} on a snap-fit one, zero on a friction lid.
- *
- * Both reliefs need the GEOMETRIC half of `usesMagneticLid` (stacking lip +
- * rectangular footprint): without a lip to hook or bosses to seat, either lid is
- * a plain friction fit that must keep full grip or rattle — and a click-rail lid
- * with every rail off is that same fallback. Omits `usesMagneticLid`'s
- * `lid.enabled` term: a disabled lid is never generated, so never consumes this.
+ * Per-side plug relief: a magnetic or snap-fit lid backs the plug off the lip so
+ * it does not fight the retention. Withheld without a lip to hook or a
+ * rectangular footprint, and from a click-rail lid with every rail off, since
+ * each of those is a plain friction fit that has to keep full grip.
  */
 export function resolveLidMateRelief(params: LidGeometrySource): number {
   if (!params.base.stackingLip || isPartialMask(params.cellMask)) return 0;

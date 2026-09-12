@@ -90,10 +90,9 @@ function clickShape2D(wallBottomZ: number, cavityWallX: number): Drawing {
       .lineTo([LID_CLICK_RAIL_OUT, yTop])
       .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y1])
       .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y2])
-      // Exit chamfer steps OUTWARD past the bump body on purpose: this lower ledge
-      // is the surface that hooks the lip's bottom chamfer, so it carries ~0.5mm of
-      // the rail's engagement (railEngagement.kernel pins the total). Relieving it
-      // inward reads as a cleaner profile but drops the catch (#4207 regression).
+      // Steps OUTWARD past the bump body on purpose: this lower ledge is the
+      // surface that hooks the lip, so relieving it inward (a cleaner-looking
+      // profile) loses the catch.
       .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET + LID_CLICK_RAIL_EXIT_CHAMFER, y3])
       .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET + LID_CLICK_RAIL_EXIT_CHAMFER, y4])
       .lineTo([0, y5])

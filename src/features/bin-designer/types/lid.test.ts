@@ -126,23 +126,19 @@ describe('resolveLidMateRelief', () => {
     );
   });
 
-  // A click rail hooks the lip and carries the retention, so the plug should
-  // clear the lip rather than grip it as a press fit (#4233).
   it('relieves the plug on a snap-fit (click-rail) lid', () => {
     expect(
       resolveLidMateRelief(params({ attachment: 'clickRails', clickRails: rails(true) }))
     ).toBeCloseTo(LID_SNAP_PLUG_CLEARANCE, 6);
   });
 
-  // A click-rail lid with every rail turned off has no snap to hold it, so it
-  // is really a friction fit and must keep the full grip.
+  // Every rail off is a friction fit, which keeps the full grip.
   it('withholds the relief from a click-rail lid with no rails', () => {
     expect(
       resolveLidMateRelief(params({ attachment: 'clickRails', clickRails: rails(false) }))
     ).toBe(0);
   });
 
-  // No lip to hook: the rail grips nothing, so the lid falls back to friction.
   it('withholds the relief from a click-rail lid on a lip-less bin', () => {
     const noLip = params(
       { attachment: 'clickRails', clickRails: rails(true) },
