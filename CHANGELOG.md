@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.490.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.489.2...gridfinity-layout-tool-v4.490.0) (2026-09-12)
+
+
+### Features
+
+* export cutouts as an editable SVG ([#4231](https://github.com/andymai/gridfinity-layout-tool/issues/4231)) ([93afb6c](https://github.com/andymai/gridfinity-layout-tool/commit/93afb6ce35d3a280a61db5e0975db585f2f55617))
+* set wall cutout height in absolute mm, not just percent ([#4229](https://github.com/andymai/gridfinity-layout-tool/issues/4229)) ([0f84ccf](https://github.com/andymai/gridfinity-layout-tool/commit/0f84ccf68bdf2a368de7ac08ec47cb3a028c12db))
+
 ## [4.489.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.489.1...gridfinity-layout-tool-v4.489.2) (2026-09-11)
 
 
