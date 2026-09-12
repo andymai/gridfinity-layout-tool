@@ -117,12 +117,18 @@ describe('resolveCutoutDrop', () => {
     expect(resolveCutoutDrop({ depth: 50, depthMm: 500 }, 40)).toBe(40);
   });
 
-  it('falls back to the percentage for a value no design should hold', () => {
+  it('falls back to the percentage only for a value that is no number at all', () => {
     // A hand-authored file can carry anything, and Math.min(NaN, run) is NaN —
     // which passes every downstream `< 0.1` guard and reaches the kernel.
     expect(resolveCutoutDrop({ depth: 50, depthMm: Number.NaN }, 40)).toBeCloseTo(20);
-    expect(resolveCutoutDrop({ depth: 50, depthMm: -5 }, 40)).toBeCloseTo(20);
-    expect(resolveCutoutSpan({ width: 70, widthMm: Number.POSITIVE_INFINITY }, 80)).toBeCloseTo(56);
+  });
+
+  it('keeps a zero override meaning no cut, not a fallback to the percentage', () => {
+    // `widthMm: 0` is schema-valid and already means "build nothing"; reading it
+    // as "unset" would open a 50% window in every design that carries one.
+    expect(resolveCutoutDrop({ depth: 50, depthMm: 0 }, 40)).toBe(0);
+    expect(resolveCutoutSpan({ width: 70, widthMm: 0 }, 80)).toBe(0);
+    expect(resolveCutoutDrop({ depth: 50, depthMm: -5 }, 40)).toBeLessThan(0.1);
   });
 });
 

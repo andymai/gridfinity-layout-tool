@@ -1927,6 +1927,8 @@
   "binDesigner.wallCutouts.height": "높이",
   "binDesigner.wallCutouts.heightPercentAria": "높이 (%)",
   "binDesigner.wallCutouts.heightMmAria": "높이 (mm)",
+  "binDesigner.wallCutouts.spanUnitAria": "폭 단위",
+  "binDesigner.wallCutouts.heightUnitAria": "높이 단위",
   "binDesigner.wallCutouts.independent": "독립",
   "binDesigner.wallCutouts.interior": "내부 벽",
   "binDesigner.wallCutouts.left": "왼쪽",

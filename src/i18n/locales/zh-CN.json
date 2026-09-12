@@ -1927,6 +1927,8 @@
   "binDesigner.wallCutouts.height": "高度",
   "binDesigner.wallCutouts.heightPercentAria": "高度（%）",
   "binDesigner.wallCutouts.heightMmAria": "高度（mm）",
+  "binDesigner.wallCutouts.spanUnitAria": "跨度单位",
+  "binDesigner.wallCutouts.heightUnitAria": "高度单位",
   "binDesigner.wallCutouts.independent": "独立",
   "binDesigner.wallCutouts.interior": "内壁",
   "binDesigner.wallCutouts.left": "左",

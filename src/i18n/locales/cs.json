@@ -1927,6 +1927,8 @@
   "binDesigner.wallCutouts.height": "Výška",
   "binDesigner.wallCutouts.heightPercentAria": "Výška (%)",
   "binDesigner.wallCutouts.heightMmAria": "Výška (mm)",
+  "binDesigner.wallCutouts.spanUnitAria": "Jednotka rozpětí",
+  "binDesigner.wallCutouts.heightUnitAria": "Výšková jednotka",
   "binDesigner.wallCutouts.independent": "Nezávisle",
   "binDesigner.wallCutouts.interior": "Vnitřní stěny",
   "binDesigner.wallCutouts.left": "Levá",

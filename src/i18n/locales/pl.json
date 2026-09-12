@@ -1927,6 +1927,8 @@
   "binDesigner.wallCutouts.height": "Wysokość",
   "binDesigner.wallCutouts.heightPercentAria": "Wysokość (%)",
   "binDesigner.wallCutouts.heightMmAria": "Wysokość (mm)",
+  "binDesigner.wallCutouts.spanUnitAria": "Jednostka rozpiętości",
+  "binDesigner.wallCutouts.heightUnitAria": "Jednostka wysokości",
   "binDesigner.wallCutouts.independent": "Niezależne",
   "binDesigner.wallCutouts.interior": "Ścianki wewnętrzne",
   "binDesigner.wallCutouts.left": "Lewo",

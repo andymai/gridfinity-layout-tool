@@ -1927,6 +1927,8 @@
   "binDesigner.wallCutouts.height": "Höjd",
   "binDesigner.wallCutouts.heightPercentAria": "Höjd (%)",
   "binDesigner.wallCutouts.heightMmAria": "Höjd (mm)",
+  "binDesigner.wallCutouts.spanUnitAria": "Spannenhet",
+  "binDesigner.wallCutouts.heightUnitAria": "Höjdenhet",
   "binDesigner.wallCutouts.independent": "Oberoende",
   "binDesigner.wallCutouts.interior": "Interiörväggar",
   "binDesigner.wallCutouts.left": "Vänster",

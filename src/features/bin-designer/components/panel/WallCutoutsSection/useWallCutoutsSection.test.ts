@@ -456,7 +456,7 @@ describe('useWallCutoutsSection', () => {
 
     const { walls } = useDesignerStore.getState().params;
     expect(walls.left.depthMm).toBe(20);
-    expect(walls.right.depthMm).toBe(20); // synced
+    expect(walls.right.depthMm).toBe(20);
   });
 
   it('setSideDepthMm sets null to switch back to percentage mode', () => {

@@ -3386,6 +3386,8 @@ const en: Record<string, string> = {
   'binDesigner.wallCutouts.spanPercentAria': 'Span (%)',
   'binDesigner.wallCutouts.heightPercentAria': 'Height (%)',
   'binDesigner.wallCutouts.heightMmAria': 'Height (mm)',
+  'binDesigner.wallCutouts.spanUnitAria': 'Span unit',
+  'binDesigner.wallCutouts.heightUnitAria': 'Height unit',
   'binDesigner.wallCutouts.offsetMmAria': 'Offset (mm)',
   'binDesigner.wallCutouts.front': 'Front',
   'binDesigner.wallCutouts.back': 'Back',

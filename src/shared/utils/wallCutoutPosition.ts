@@ -23,12 +23,15 @@ export interface CutoutDropSource {
 /**
  * Resolve an override/percentage pair against the run it is measured along.
  *
- * A stored override only counts when it is a positive finite number — a
- * hand-authored design can carry anything, and `Math.min(NaN, run)` is NaN,
- * which passes every downstream `< 0.1` guard and reaches the kernel.
+ * Any finite number counts, zero and negatives included: those resolve to a cut
+ * too small to build and the callers' `< 0.1` guards drop it, which is what a
+ * design carrying `widthMm: 0` already means. Only a value that is no number at
+ * all defers to the percentage — a hand-authored design can carry anything, and
+ * `Math.min(NaN, run)` is NaN, which passes those same guards and reaches the
+ * kernel.
  */
 function resolveOverride(mm: number | null | undefined, percent: number, run: number): number {
-  if (typeof mm === 'number' && Number.isFinite(mm) && mm > 0) return Math.min(mm, run);
+  if (typeof mm === 'number' && Number.isFinite(mm)) return Math.min(mm, run);
   return run * (percent / 100);
 }
 

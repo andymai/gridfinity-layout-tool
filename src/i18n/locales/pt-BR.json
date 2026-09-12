@@ -1927,6 +1927,8 @@
   "binDesigner.wallCutouts.height": "Altura",
   "binDesigner.wallCutouts.heightPercentAria": "Altura (%)",
   "binDesigner.wallCutouts.heightMmAria": "Altura (mm)",
+  "binDesigner.wallCutouts.spanUnitAria": "Unidade de extensão",
+  "binDesigner.wallCutouts.heightUnitAria": "Unidade de altura",
   "binDesigner.wallCutouts.independent": "Independente",
   "binDesigner.wallCutouts.interior": "Paredes internas",
   "binDesigner.wallCutouts.left": "Esquerda",

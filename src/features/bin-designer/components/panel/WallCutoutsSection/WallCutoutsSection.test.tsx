@@ -73,14 +73,12 @@ describe('WallCutoutsSection', () => {
 
       expect(screen.getByLabelText('Height (%)')).toBeDefined();
 
-      // Two unit toggles now: the span's, then the height's.
-      const toggles = screen.getAllByRole('button', { name: '%' });
-      fireEvent.click(toggles[toggles.length - 1]);
+      fireEvent.click(screen.getByRole('button', { name: 'Height unit' }));
 
       expect(useDesignerStore.getState().params.walls.left.depthMm).toBe(30);
       expect(screen.getByLabelText('Height (mm)')).toBeDefined();
 
-      fireEvent.click(screen.getByRole('button', { name: 'mm' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Height unit' }));
       expect(useDesignerStore.getState().params.walls.left.depthMm).toBeNull();
     });
 
@@ -88,8 +86,7 @@ describe('WallCutoutsSection', () => {
       enableWalls();
       render(<WallCutoutsSection />);
 
-      const toggles = screen.getAllByRole('button', { name: '%' });
-      fireEvent.click(toggles[toggles.length - 1]);
+      fireEvent.click(screen.getByRole('button', { name: 'Height unit' }));
 
       expect(useDesignerStore.getState().params.walls.left.widthMm).toBeNull();
       expect(screen.getByLabelText('Span (%)')).toBeDefined();

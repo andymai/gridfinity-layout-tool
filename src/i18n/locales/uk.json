@@ -1927,6 +1927,8 @@
   "binDesigner.wallCutouts.height": "Висота",
   "binDesigner.wallCutouts.heightPercentAria": "Висота (%)",
   "binDesigner.wallCutouts.heightMmAria": "Висота (mm)",
+  "binDesigner.wallCutouts.spanUnitAria": "Одиниця прольоту",
+  "binDesigner.wallCutouts.heightUnitAria": "Одиниця висоти",
   "binDesigner.wallCutouts.independent": "Незалежні",
   "binDesigner.wallCutouts.interior": "Внутрішні стіни",
   "binDesigner.wallCutouts.left": "Ліворуч",

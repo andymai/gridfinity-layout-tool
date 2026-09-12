@@ -139,13 +139,29 @@ const MM_SEED = 30;
 /** Ceiling for either absolute dimension, in mm. Both clamp to the wall anyway. */
 const MM_MAX = 500;
 
-/** Switches one dimension between % of the wall and absolute mm. */
-function UnitToggle({ isMm, onClick }: { isMm: boolean; onClick: () => void }) {
+/**
+ * Switches one dimension between % of the wall and absolute mm.
+ *
+ * `label` names the dimension: the two toggles sit side by side reading only
+ * "%" or "mm", so without it the accessible names are identical and nothing
+ * says which one is the height's.
+ */
+function UnitToggle({
+  isMm,
+  label,
+  onClick,
+}: {
+  isMm: boolean;
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <Button
       type="button"
       variant="secondary"
       onClick={onClick}
+      aria-label={label}
+      aria-pressed={isMm}
       className="shrink-0 rounded-md border border-stroke-subtle bg-surface-elevated px-1.5 py-1 text-xs font-medium text-content-secondary transition-colors hover:bg-surface-hover"
     >
       {isMm ? 'mm' : '%'}
@@ -216,6 +232,7 @@ function SizeControls({
 
       <UnitToggle
         isMm={isSpanMm}
+        label={t('binDesigner.wallCutouts.spanUnitAria')}
         onClick={() => handlers.setSideWidthMm(side, isSpanMm ? null : MM_SEED)}
       />
 
@@ -255,6 +272,7 @@ function SizeControls({
       {!hideDepth && (
         <UnitToggle
           isMm={isHeightMm}
+          label={t('binDesigner.wallCutouts.heightUnitAria')}
           onClick={() => handlers.setSideDepthMm(side, isHeightMm ? null : MM_SEED)}
         />
       )}

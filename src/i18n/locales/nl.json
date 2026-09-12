@@ -1927,6 +1927,8 @@
   "binDesigner.wallCutouts.height": "Hoogte",
   "binDesigner.wallCutouts.heightPercentAria": "Hoogte (%)",
   "binDesigner.wallCutouts.heightMmAria": "Hoogte (mm)",
+  "binDesigner.wallCutouts.spanUnitAria": "Overspanning-eenheid",
+  "binDesigner.wallCutouts.heightUnitAria": "Hoogte-eenheid",
   "binDesigner.wallCutouts.independent": "Onafhankelijk",
   "binDesigner.wallCutouts.interior": "Binnenwanden",
   "binDesigner.wallCutouts.left": "Links",
