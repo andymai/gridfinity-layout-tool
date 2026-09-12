@@ -1,11 +1,11 @@
 /**
  * Click rails — snap features extruded along each straight wall of the lid.
  *
- * Cross-section (X = outward from corner-radius line, Y = vertical):
- *   The polygon has its top at Z=wallBottom (just below the mating wall),
- *   protrudes OUTWARD by LID_CLICK_RAIL_OUT to form the rail bump that
- *   catches the lip's bottom chamfer, drops down, then has an inner shelf
- *   that gives the rail body structural depth.
+ * Cross-section (X = outward from corner-radius line, Y = vertical): the
+ * polygon's top sits at Z=wallBottom, flush with the plug wall's outer face,
+ * flares back to the shank at 45°, drops past the lip's throat, then puts a nub
+ * under the lip's angled support to hook it. `clickRailProfile` solves every
+ * one of those from the lip's own spec — see its notes.
  *
  * Each rail is built in a canonical orientation (extrusion along X axis,
  * profile in YZ plane), then translated/rotated to each straight wall.
@@ -15,17 +15,12 @@
 import { draw, unwrap, fuse, translate, rotate } from 'brepjs';
 import type { Shape3D, DisposalScope, Drawing } from 'brepjs';
 import {
-  LID_CLICK_RAIL_BUMP,
-  LID_CLICK_RAIL_ENTRY_CHAMFER,
-  LID_CLICK_RAIL_EXIT_CHAMFER,
-  LID_CLICK_RAIL_DROP,
-  LID_CLICK_RAIL_SHOULDER,
-  LID_CLICK_RAIL_DROP_BELOW_WALL,
-  LID_CLICK_RAIL_OUT,
-  LID_CLICK_RAIL_INSET,
+  clickRailProfile,
   LID_CLICK_RAIL_INNER,
   LID_CLICK_RAIL_TOP_CHAMFER,
+  type ClickRailProfile,
 } from './lidConstants';
+import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
@@ -64,6 +59,11 @@ export function chamferApexXForCavityWall(cavityWallX: number): number {
 /**
  * Build the rail's 2D cross-section.
  *
+ * Walks the outer side downward — shank, catch face, nub, lead-in ramp — then
+ * returns along the bottom and up the inner face. The outer points come from
+ * {@link clickRailProfile}, which solves them against the lip's own undercut;
+ * see its notes for why none of them is a free constant.
+ *
  * @param wallBottomZ Z of the rail's top face (= bottom of mating wall).
  * @param cavityWallX Rail-local X of the lid's cavity inner face. The rail
  *   spine sits at X=0 and is anchored at the lid's corner-radius line; the
@@ -72,35 +72,37 @@ export function chamferApexXForCavityWall(cavityWallX: number): number {
  *   this position so the rail attaches flush to the cavity wall instead
  *   of leaving an unsupported tongue hanging in midair.
  */
-function clickShape2D(wallBottomZ: number, cavityWallX: number): Drawing {
+function clickShape2D(
+  wallBottomZ: number,
+  cavityWallX: number,
+  profile: ClickRailProfile
+): Drawing {
   // Top of polygon = top of rail = bottom of mating wall.
   const yTop = wallBottomZ;
-  // Y heights stepping down from the rail's top.
-  const y1 = yTop - LID_CLICK_RAIL_ENTRY_CHAMFER; // -0.8
-  const y2 = y1 - LID_CLICK_RAIL_BUMP - LID_CLICK_RAIL_SHOULDER; // rail body bottom
-  const y3 = y2 - LID_CLICK_RAIL_EXIT_CHAMFER; // exit chamfer
-  const y4 = y3 - LID_CLICK_RAIL_DROP; // post-bump drop
-  const y5 = yTop - LID_CLICK_RAIL_DROP_BELOW_WALL; // bottom apex (== y4 - TAIL)
-
   const chamferApexX = chamferApexXForCavityWall(cavityWallX);
   const chamferTopY = yTop + (chamferApexX - LID_CLICK_RAIL_INNER);
 
-  return (
-    draw([chamferApexX, yTop])
-      .lineTo([LID_CLICK_RAIL_OUT, yTop])
-      .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y1])
-      .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y2])
-      // Steps OUTWARD past the bump body on purpose: this lower ledge is the
-      // surface that hooks the lip, so relieving it inward (a cleaner-looking
-      // profile) loses the catch.
-      .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET + LID_CLICK_RAIL_EXIT_CHAMFER, y3])
-      .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET + LID_CLICK_RAIL_EXIT_CHAMFER, y4])
-      .lineTo([0, y5])
-      .lineTo([LID_CLICK_RAIL_INNER, y5])
-      .lineTo([LID_CLICK_RAIL_INNER, yTop])
-      .lineTo([chamferApexX, chamferTopY])
-      .close()
+  // A rail the bin leaves no pocket for collapses the catch face to zero
+  // length; dropping the coincident pair keeps the wire buildable rather than
+  // handing OCCT a degenerate segment.
+  const outer = dropCoincidentPoints(
+    [
+      { x: profile.flareX, y: yTop },
+      { x: profile.shankX, y: yTop - profile.flareDrop },
+      { x: profile.shankX, y: yTop - profile.catchTopDrop },
+      { x: profile.catchX, y: yTop - profile.catchBottomDrop },
+      { x: profile.leadInX, y: yTop - profile.bottomDrop },
+    ],
+    false
   );
+
+  let d = draw([chamferApexX, yTop]);
+  for (const p of outer) d = d.lineTo([p.x, p.y]);
+  return d
+    .lineTo([LID_CLICK_RAIL_INNER, yTop - profile.bottomDrop])
+    .lineTo([LID_CLICK_RAIL_INNER, yTop])
+    .lineTo([chamferApexX, chamferTopY])
+    .close();
 }
 
 /**
@@ -113,12 +115,13 @@ function buildClickRailBar(
   scope: DisposalScope,
   wallBottomZ: number,
   cavityWallX: number,
+  profile: ClickRailProfile,
   length: number
 ): Shape3D {
   // Build polygon in a 2D plane where local X = outward, local Y = vertical.
   // Sketch on YZ plane (perpendicular to wall direction = X axis).
-  const profile = clickShape2D(wallBottomZ, cavityWallX);
-  const sketch = profile.sketchOnPlane('YZ', -length / 2);
+  const section = clickShape2D(wallBottomZ, cavityWallX, profile);
+  const sketch = section.sketchOnPlane('YZ', -length / 2);
   return scope.register(sketch.extrude(length));
 }
 
@@ -411,10 +414,13 @@ export function addClickRails(
   // wall sits at `cavityInset`. Their difference tells the rail's chamfer
   // how far outward it needs to climb to meet the wall flush.
   const cavityWallX = inputs.lidCornerR - inputs.cavityInset;
+  // One section for every rail on the lid: it is solved against the bin's lip
+  // and wall, neither of which varies per wall.
+  const profile = clickRailProfile(inputs.lidCornerR, inputs.binWallThickness, inputs.mateRelief);
 
   let result = body;
   for (const place of placements) {
-    const rail = buildClickRailBar(scope, inputs.wallBottomZ, cavityWallX, place.length);
+    const rail = buildClickRailBar(scope, inputs.wallBottomZ, cavityWallX, profile, place.length);
     const oriented =
       place.rotationDeg === 0
         ? rail

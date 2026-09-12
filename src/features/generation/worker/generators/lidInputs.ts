@@ -115,6 +115,15 @@ export interface LidInputs {
    * wall reads as the full `cavityInset` (= 3.75mm).
    */
   readonly cavityInset: number;
+  /**
+   * The BIN's wall thickness. The lip's 45 degree support dies into the bin's
+   * cavity face, so this is how far out the undercut pocket under the lip
+   * actually reaches — the bound on how much catch a click rail can take. On a
+   * stock 1.2mm wall the pocket is at its deepest; a thick-walled bin has
+   * almost none, and `clickRailProfile` gives the catch back rather than aiming
+   * the nub into solid wall.
+   */
+  readonly binWallThickness: number;
   readonly stackableTop: boolean;
   /**
    * Already gated on `stackableTop` here, so `buildStackGrid` can branch on the
@@ -478,6 +487,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     lidOuterD,
     lidCornerR,
     fitClearance,
+    binWallThickness: params.wallThickness,
     mateRelief,
     topThickness,
     cavityExtraMm: cavityExtra,

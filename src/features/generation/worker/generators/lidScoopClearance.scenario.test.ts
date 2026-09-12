@@ -29,7 +29,7 @@ import {
   lidZOffset,
   railKeepoutIntrusionMm,
   RAIL_ENGAGEMENT_CEILING,
-  RAIL_FLUSH_FILL_MM,
+  RAIL_ENGAGEMENT_FLOOR,
   worstRailInterference,
 } from './__kernel-tests__/lidSeating';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
@@ -91,10 +91,14 @@ describe('lid click rails clear the scoop', () => {
       // that far in and has nothing left to deflect for. This is what says the
       // scoop seats; the column reading below follows from it.
       expect(railKeepoutIntrusionMm(bin, lid, params, lidZOffset(params))).toBe(0);
-      // Pinned from both sides, so shortening the chute fails here too: that
-      // regenerates published geometry, and is a decision rather than a tidy-up.
+      // Pinned from both sides. An AUTO scoop is held clear of the rail band by
+      // `autoScoopCeiling`, so since the rail was reshaped to hook the lip its
+      // nub no longer reaches the chute at all and this reads exactly what a
+      // plain bin does — hence the floor, with no `RAIL_FLUSH_FILL_MM` term.
+      // A typed radius still reaches it; `lidSeatInterference.matrix` carries
+      // those cases and is where that figure is pinned.
       expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
-        RAIL_ENGAGEMENT_CEILING + RAIL_FLUSH_FILL_MM,
+        RAIL_ENGAGEMENT_FLOOR,
         1
       );
     },
@@ -131,7 +135,7 @@ describe('lid click rails clear the scoop', () => {
     // the clearest evidence that the extra reading is a rail-vs-scoop
     // interaction rather than the scoop's own geometry reaching the lid.
     expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
-      RAIL_ENGAGEMENT_CEILING,
+      RAIL_ENGAGEMENT_FLOOR,
       1
     );
   }, 300000);
@@ -161,7 +165,12 @@ describe('lid click rails clear the scoop', () => {
     // all for the zeroes above to mean anything, and pinning how far would make
     // any change to the ramp look like a broken probe.
     expect(railKeepoutIntrusionMm(bin, blindLid, params, lidZOffset(params))).toBeGreaterThan(0);
-    expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(
+    // No column assertion to pair with it. Since the rail was reshaped to hook
+    // the lip, its body no longer reaches down into the band the scoop's fill
+    // occupies — this pairing reads `RAIL_ENGAGEMENT_FLOOR` on the rail lines,
+    // the same as a clean bin. That is the geometry improving, not the probe
+    // failing, and `railKeepoutIntrusionMm` is what still separates the two.
+    expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeLessThan(
       RAIL_ENGAGEMENT_CEILING
     );
   }, 300000);

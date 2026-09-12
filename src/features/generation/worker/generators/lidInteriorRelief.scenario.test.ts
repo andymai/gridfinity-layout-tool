@@ -21,8 +21,7 @@ import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   lidZOffset,
   railKeepoutIntrusionMm,
-  RAIL_ENGAGEMENT_CEILING,
-  RAIL_FLUSH_FILL_MM,
+  RAIL_ENGAGEMENT_FLOOR,
   worstRailInterference,
 } from './__kernel-tests__/lidSeating';
 import { columnCrossings } from './__kernel-tests__/meshAssertions';
@@ -116,12 +115,14 @@ describe('lid interior relief', () => {
       // stopped: inboard of the lip's inner face, which is as far out as the
       // ring cuts and as far in as the rail reaches.
       expect(railKeepoutIntrusionMm(bin, lid, params, lidZOffset(params))).toBe(0);
-      // Higher than an UNRELIEVED bin reads, which looks like the wrong
-      // direction and is not. The ring stops at the lip line by design, leaving
-      // a tongue of divider outboard of it, and relief hands the wall back the
-      // whole rail that the unrelieved bin had notched away to lie against it.
+      // Exactly what a plain bin reads, with no `RAIL_FLUSH_FILL_MM` term. The
+      // ring stops at the lip line by design, leaving a tongue of divider
+      // outboard of it; since the rail was reshaped to hook the lip, its nub
+      // sits in the top of the undercut, above where that tongue reaches, so
+      // the two no longer share any Z. Before the reshape this read the tongue
+      // as an extra 0.6mm.
       expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeCloseTo(
-        RAIL_ENGAGEMENT_CEILING + RAIL_FLUSH_FILL_MM,
+        RAIL_ENGAGEMENT_FLOOR,
         1
       );
     }

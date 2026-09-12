@@ -24,6 +24,7 @@ import {
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
   LIP_OVERLAP,
+  LIP_SUPPORT_DROP,
   safeSectionRect,
 } from './generatorTypes';
 import { getLipCache, setLipCache } from './shapeCache';
@@ -92,7 +93,7 @@ function buildTopShapeLoft(
   offY: number = 0,
   lipTip: LipTipStyle = DEFAULT_LIP_TIP
 ): Shape3D {
-  const LIP_EXTENSION = includeLip ? 1.2 : 0;
+  const LIP_EXTENSION = includeLip ? LIP_SUPPORT_DROP : 0;
   const polygon = isPartialMask(cellMask);
 
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6mm
@@ -255,7 +256,7 @@ function buildTopShapeSweep(
       .line(LIP_BIG_TAPER, LIP_BIG_TAPER);
 
     if (includeLip) {
-      const LIP_EXTENSION = 1.2;
+      const LIP_EXTENSION = LIP_SUPPORT_DROP;
       sketcher = sketcher
         .vLineTo(-(LIP_TAPER_WIDTH + LIP_EXTENSION))
         .lineTo([-LIP_TAPER_WIDTH, -LIP_EXTENSION]);
@@ -273,7 +274,7 @@ function buildTopShapeSweep(
     );
 
     if (includeLip) {
-      const LIP_EXTENSION = 1.2;
+      const LIP_EXTENSION = LIP_SUPPORT_DROP;
       topProfileShape = topProfileShape.cut(
         drawRectangle(LIP_EXTENSION, 10).translate(-LIP_EXTENSION / 2, -5)
       );

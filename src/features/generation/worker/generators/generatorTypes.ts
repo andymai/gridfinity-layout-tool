@@ -28,6 +28,7 @@ export {
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
   LIP_OVERLAP,
+  LIP_SUPPORT_DROP,
   PLATE_CORNER_RADIUS,
   MAGNET_FLOOR,
   baseplateFloorDepth,
