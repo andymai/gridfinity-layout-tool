@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.490.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.0...gridfinity-layout-tool-v4.490.1) (2026-09-12)
+
+
+### Bug Fixes
+
+* clear the plug on a snap-fit lid so the rail is not fighting a press fit ([#4235](https://github.com/andymai/gridfinity-layout-tool/issues/4235)) ([2c7827d](https://github.com/andymai/gridfinity-layout-tool/commit/2c7827d70debfdff9dcba113a8c187cb28cc6b99))
+
 ## [4.490.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.489.2...gridfinity-layout-tool-v4.490.0) (2026-09-12)
 
 
