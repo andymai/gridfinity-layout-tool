@@ -6,6 +6,7 @@ import {
   DEFAULT_LID_CONFIG,
   LID_FIT_CLEARANCE,
   LID_MAGNETIC_EXTRA_CLEARANCE,
+  LID_SNAP_PLUG_CLEARANCE,
   LID_TOP_THICKNESS_BASE,
   LID_TOP_THICKNESS_MIN_MM,
   LID_TOP_THICKNESS_MAX_MM,
@@ -112,9 +113,10 @@ describe('resolveLidMateRelief', () => {
     lid: { ...DEFAULT_BIN_PARAMS.lid, ...lid },
   });
 
-  it('relieves nothing on friction and click-rail lids', () => {
+  const rails = (on: boolean) => ({ front: on, back: on, left: on, right: on });
+
+  it('relieves nothing on a friction lid', () => {
     expect(resolveLidMateRelief(params({ attachment: 'friction' }))).toBe(0);
-    expect(resolveLidMateRelief(params({ attachment: 'clickRails' }))).toBe(0);
   });
 
   it('relieves the plug when the design actually gets retention magnets', () => {
@@ -122,6 +124,31 @@ describe('resolveLidMateRelief', () => {
       LID_MAGNETIC_EXTRA_CLEARANCE,
       6
     );
+  });
+
+  // A click rail hooks the lip and carries the retention, so the plug should
+  // clear the lip rather than grip it as a press fit (#4233).
+  it('relieves the plug on a snap-fit (click-rail) lid', () => {
+    expect(
+      resolveLidMateRelief(params({ attachment: 'clickRails', clickRails: rails(true) }))
+    ).toBeCloseTo(LID_SNAP_PLUG_CLEARANCE, 6);
+  });
+
+  // A click-rail lid with every rail turned off has no snap to hold it, so it
+  // is really a friction fit and must keep the full grip.
+  it('withholds the relief from a click-rail lid with no rails', () => {
+    expect(
+      resolveLidMateRelief(params({ attachment: 'clickRails', clickRails: rails(false) }))
+    ).toBe(0);
+  });
+
+  // No lip to hook: the rail grips nothing, so the lid falls back to friction.
+  it('withholds the relief from a click-rail lid on a lip-less bin', () => {
+    const noLip = params(
+      { attachment: 'clickRails', clickRails: rails(true) },
+      { base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } }
+    );
+    expect(resolveLidMateRelief(noLip)).toBe(0);
   });
 
   // A magnetic lid without a lip, or on a polygon footprint, generates NO
@@ -154,8 +181,10 @@ describe('resolveLidMateRelief', () => {
   // which is the visible joint with the bin. Sub-millimetre so it relieves the
   // grip without letting the lid wander on its magnets.
   it('stays well under the wall it is cut from', () => {
-    expect(LID_MAGNETIC_EXTRA_CLEARANCE).toBeGreaterThan(0);
-    expect(LID_MAGNETIC_EXTRA_CLEARANCE).toBeLessThan(LID_FIT_CLEARANCE);
+    for (const relief of [LID_MAGNETIC_EXTRA_CLEARANCE, LID_SNAP_PLUG_CLEARANCE]) {
+      expect(relief).toBeGreaterThan(0);
+      expect(relief).toBeLessThan(LID_FIT_CLEARANCE);
+    }
   });
 });
 
