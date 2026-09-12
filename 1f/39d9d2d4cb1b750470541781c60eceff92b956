@@ -1,0 +1,20 @@
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgConvertPath.test.ts
+  s_72e1ee92eb5a90::t_5f60b1cb2fb10d 126-132
+  s_72e1ee92eb5a90::t_6d396b26f72e31 123,125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1f39d9d2d4cb1b750470541781c60eceff92b956",
+  "prompts": {},
+  "sessions": {
+    "s_72e1ee92eb5a90": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7e5a3d6-de40-48f7-83fe-c9001114cfa0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
