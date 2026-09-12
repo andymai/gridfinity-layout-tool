@@ -258,14 +258,12 @@ describe('lidCutoutWindow', () => {
   });
 
   it('is the same width whatever the attachment costs in fit clearance', () => {
-    // `span = width * pitch - 2 * LID_CORNER_RADIUS - 2 * margin`: the outer
-    // footprint and the cavity inset are both measured off LID_FIT_CLEARANCE,
-    // and a magnetic lid's relief lands below the seam, nowhere near the window.
-    // So switching attachment mode cannot silently move a user's holes.
+    // A magnetic or snap-fit lid's plug relief lands below the seam, clear of the
+    // cutout window, so switching attachment mode cannot silently move a user's holes.
     const magnetic = params({ attachment: 'magnetic' });
     const rails = params({ attachment: 'clickRails' });
     expect(resolveLidMateRelief(magnetic)).toBeGreaterThan(0);
-    expect(resolveLidMateRelief(rails)).toBe(0);
+    expect(resolveLidMateRelief(rails)).toBeGreaterThan(0);
 
     const w = lidCutoutWindow(magnetic)!;
     expect(w.spanW).toBeCloseTo(lidCutoutWindow(rails)!.spanW, 5);

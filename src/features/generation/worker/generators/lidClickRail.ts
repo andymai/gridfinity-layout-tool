@@ -85,17 +85,22 @@ function clickShape2D(wallBottomZ: number, cavityWallX: number): Drawing {
   const chamferApexX = chamferApexXForCavityWall(cavityWallX);
   const chamferTopY = yTop + (chamferApexX - LID_CLICK_RAIL_INNER);
 
-  return draw([chamferApexX, yTop])
-    .lineTo([LID_CLICK_RAIL_OUT, yTop])
-    .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y1])
-    .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y2])
-    .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET + LID_CLICK_RAIL_EXIT_CHAMFER, y3])
-    .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET + LID_CLICK_RAIL_EXIT_CHAMFER, y4])
-    .lineTo([0, y5])
-    .lineTo([LID_CLICK_RAIL_INNER, y5])
-    .lineTo([LID_CLICK_RAIL_INNER, yTop])
-    .lineTo([chamferApexX, chamferTopY])
-    .close();
+  return (
+    draw([chamferApexX, yTop])
+      .lineTo([LID_CLICK_RAIL_OUT, yTop])
+      .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y1])
+      .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y2])
+      // Steps OUTWARD past the bump body on purpose: this lower ledge is the
+      // surface that hooks the lip, so relieving it inward (a cleaner-looking
+      // profile) loses the catch.
+      .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET + LID_CLICK_RAIL_EXIT_CHAMFER, y3])
+      .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET + LID_CLICK_RAIL_EXIT_CHAMFER, y4])
+      .lineTo([0, y5])
+      .lineTo([LID_CLICK_RAIL_INNER, y5])
+      .lineTo([LID_CLICK_RAIL_INNER, yTop])
+      .lineTo([chamferApexX, chamferTopY])
+      .close()
+  );
 }
 
 /**

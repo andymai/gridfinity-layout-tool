@@ -966,7 +966,9 @@ export function useLidSection() {
       // from the resolver rather than re-testing the predicate, so the hint
       // can't claim a relief the geometry didn't actually apply.
       magneticClearanceMm: LID_MAGNETIC_EXTRA_CLEARANCE,
-      hasMagneticRelief: resolveLidMateRelief(params) > 0,
+      // Gated to magnetic: a snap-fit lid also carries a plug relief, but this
+      // hint renders only under the magnetic branch.
+      hasMagneticRelief: params.lid.attachment === 'magnetic' && resolveLidMateRelief(params) > 0,
       disabledReason,
       stackingLipMissing,
       disabledRails,

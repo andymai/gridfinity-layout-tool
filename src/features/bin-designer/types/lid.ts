@@ -70,21 +70,26 @@ export const LID_MIN_CORNER_RADIUS = 0.1;
 export const LID_MAGNETIC_EXTRA_CLEARANCE = 0.15;
 
 /**
- * The plug relief this design actually gets — {@link LID_MAGNETIC_EXTRA_CLEARANCE}
- * on a magnetic lid, zero on every other.
- *
- * The predicate mirrors the GEOMETRIC half of `usesMagneticLid` — a magnetic
- * lid on a lip-less or polygon bin falls back to a plain friction fit (no
- * corner bosses are generated), so it must keep the full grip or it would
- * rattle. It deliberately omits that helper's `lid.enabled` term: a disabled
- * lid is never generated, so its relief is never consumed.
+ * Per-side plug relief (mm) for a snap-fit (click-rail) lid. The rail hooks the
+ * lip and supplies the retention, so the plug only locates the lid; at zero
+ * relief its outer face lands flush on the lip and the lid presses on rather
+ * than snapping. Confined to the plug like {@link LID_MAGNETIC_EXTRA_CLEARANCE}.
+ */
+export const LID_SNAP_PLUG_CLEARANCE = 0.15;
+
+/**
+ * Per-side plug relief: a magnetic or snap-fit lid backs the plug off the lip so
+ * it does not fight the retention. Withheld without a lip to hook or a
+ * rectangular footprint, and from a click-rail lid with every rail off, since
+ * each of those is a plain friction fit that has to keep full grip.
  */
 export function resolveLidMateRelief(params: LidGeometrySource): number {
-  const magnetic =
-    params.lid.attachment === 'magnetic' &&
-    params.base.stackingLip &&
-    !isPartialMask(params.cellMask);
-  return magnetic ? LID_MAGNETIC_EXTRA_CLEARANCE : 0;
+  if (!params.base.stackingLip || isPartialMask(params.cellMask)) return 0;
+  if (params.lid.attachment === 'magnetic') return LID_MAGNETIC_EXTRA_CLEARANCE;
+  const rails = params.lid.clickRails;
+  const hasRail = rails.front || rails.back || rails.left || rails.right;
+  if (params.lid.attachment === 'clickRails' && hasRail) return LID_SNAP_PLUG_CLEARANCE;
+  return 0;
 }
 
 /** Lid outer corner radius (mm) BEFORE clearance subtraction. Lid-specific —
