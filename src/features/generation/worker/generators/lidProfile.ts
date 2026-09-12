@@ -11,7 +11,7 @@
 import { drawRoundedRectangle, unwrap, cut } from 'brepjs';
 import type { Shape3D, DisposalScope, Sketch, Drawing } from 'brepjs';
 import { LIP_BIG_TAPER, safeSectionRect } from './generatorConstants';
-import { LID_COPLANAR_MARGIN } from './lidConstants';
+import { LID_COPLANAR_MARGIN, plugInsetAtWallBottom } from './lidConstants';
 import { buildMaskDrawingAtInset } from './maskPolygon';
 import type { LidInputs } from './lidInputs';
 
@@ -61,18 +61,27 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
  * Mating shell — inverted-lip wall that wraps the bin's stacking lip.
  *
  * Cross-section (Y vertical, going up from wall bottom to floor top):
- *   - Y ∈ [anchor, 0]: wall thickness = lidCornerR (full corner-radius)
- *   - Y ∈ [anchor - LIP_BIG_TAPER, anchor]: outer face chamfers inward by
- *     LIP_BIG_TAPER + mateRelief (matches the lip's top chamfer)
- *   - Y ∈ [wallBottom, anchor - LIP_BIG_TAPER]: wall thickness =
+ *   - Y ∈ [chamferTop, 0]: wall thickness = lidCornerR (full corner-radius)
+ *   - Y ∈ [chamferTop - plugInset, chamferTop]: outer face chamfers inward by
+ *     LIP_BIG_TAPER + mateRelief, at 45° — parallel to the lip's top chamfer
+ *   - Y ∈ [wallBottom, chamferTop - plugInset]: wall thickness =
  *     lidCornerR - LIP_BIG_TAPER - mateRelief, matching the lip's vertical part
  *
- * `mateRelief` is zero on every lid but a magnetic one, where it backs the plug
- * off the lip so the magnets aren't fighting a friction fit. It stops at the
- * anchor by design: above the seam the profile is the visible perimeter, and
- * that has to stay flush with the bin whatever the attachment. The chamfer
- * between the two therefore runs slightly steeper than the lip's 45°, which is
- * the direction that opens clearance rather than closing it.
+ * `mateRelief` backs the plug off the lip on a snap-fit or magnetic lid so the
+ * retention isn't fighting a friction fit. It is a PERPENDICULAR offset of the
+ * mating face, which on the 45° chamfer means the break where that face meets
+ * the visible vertical skirt rises by `mateRelief * √2` — hence `chamferTopZ`
+ * rather than `anchorZ` here.
+ *
+ * Insetting the bottom of the chamfer without raising its top is what #4235
+ * did, and it left the chamfer running at 42.8° against the lip's 45°: the two
+ * faces met at the lip's peak and opened to a full `mateRelief` at the bottom,
+ * so the "clearance" was a wedge that vanished exactly where the parts touch.
+ * A relief only buys tolerance if it is the same everywhere along the face.
+ *
+ * `anchorZ` itself is untouched — it is the seating datum every other part of
+ * the lid is pinned to (rails, magnet bosses, grip reliefs), and moving it
+ * would shift all of them.
  *
  * Inner cavity boundary is constant at lidCornerR inset from outer (so the
  * lid corners are solid pillars that don't engage the bin's lip — engagement
@@ -84,17 +93,35 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
  */
 export function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
   const { cavityInset, anchorZ, wallBottomZ, mateRelief } = inputs;
-  const zVertTop = anchorZ - LIP_BIG_TAPER;
   const plugInset = LIP_BIG_TAPER + mateRelief;
+  // The plug is the lip offset PERPENDICULAR by `mateRelief`, so the lip's
+  // convex corner where its vertical part meets its small taper comes out
+  // moved diagonally: the vertical face ends this far above the wall bottom,
+  // and the 45 degree run takes the rest. The rail's flare continues the same
+  // line below the wall — see `plugInsetAtWallBottom`.
+  const bottomInset = plugInsetAtWallBottom(mateRelief);
+  const cornerRise = bottomInset - plugInset;
+  // Where the 45° mating face meets the vertical skirt. Offsetting that face
+  // perpendicular by `mateRelief` moves its intercept with the skirt up by
+  // `mateRelief * √2`; without this the chamfer's top stays pinned to the lip's
+  // peak and the relief only opens at the bottom. Exactly `anchorZ` when there
+  // is no relief, so a friction lid is untouched.
+  const chamferTopZ = anchorZ + mateRelief * Math.SQRT2;
+  // 45°: the horizontal run and the vertical drop are the same number, which is
+  // what keeps this face parallel to the lip's chamfer at any relief.
+  const zVertTop = chamferTopZ - plugInset;
 
   // OUTER profile — 4 sections in ASCENDING Z (loftWith expects this):
-  //  Z=wallBottom and Z=zVertTop : chamfered inward by LIP_BIG_TAPER, plus the
-  //                                magnetic plug relief when there is one
-  //  Z=anchor and Z=0            : full outer (no chamfer)
+  //  Z=wallBottom and Z=zVertTop  : chamfered inward by LIP_BIG_TAPER, plus the
+  //                                 plug relief when there is one
+  //  Z=chamferTop and Z=0         : full outer (no chamfer)
   const outerSections: readonly Sketch[] = [
-    sectionAt(inputs, wallBottomZ, plugInset),
+    sectionAt(inputs, wallBottomZ, bottomInset),
+    // Absent without relief, where the corner does not move and the two
+    // sections would land coincident on the same plane for the loft.
+    ...(cornerRise > 0 ? [sectionAt(inputs, wallBottomZ + cornerRise, plugInset)] : []),
     sectionAt(inputs, zVertTop, plugInset),
-    sectionAt(inputs, anchorZ, 0),
+    sectionAt(inputs, chamferTopZ, 0),
     sectionAt(inputs, 0, 0),
   ];
 

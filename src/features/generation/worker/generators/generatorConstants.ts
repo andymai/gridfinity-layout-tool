@@ -35,6 +35,7 @@ export const LIP_BIG_TAPER = GRIDFINITY.LIP_BIG_TAPER; // 1.9mm top chamfer
 export const LIP_HEIGHT = LIP_SMALL_TAPER + LIP_VERTICAL_PART + LIP_BIG_TAPER; // 4.4mm total
 export const LIP_TAPER_WIDTH = LIP_SMALL_TAPER + LIP_BIG_TAPER; // 2.6mm horizontal inset
 export const LIP_OVERLAP = GRIDFINITY.LIP_OVERLAP;
+export const LIP_SUPPORT_DROP = GRIDFINITY.LIP_SUPPORT_DROP; // 1.2mm to the support's top
 
 /**
  * Air left between a wall cutout's profile top and the highest material it

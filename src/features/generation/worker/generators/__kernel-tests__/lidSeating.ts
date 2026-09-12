@@ -16,6 +16,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   lidAnchorZ,
   resolveLidCavityExtraMm,
+  resolveLidMateRelief,
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
   LID_CLICK_RAIL_INNER,
@@ -30,7 +31,12 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 
 /**
- * Z shift that seats the lid on the bin.
+ * Z shift that puts the lid at its NOMINAL anchor — `anchorZ` on the lip top.
+ *
+ * Not where a lid with plug relief physically rests: see
+ * {@link lidSeatedZOffset}, which is the datum for anything asking about
+ * contact. This one stays the layout datum both parts are built against, and is
+ * the right frame for "does anything stand in the lid's way on the way down".
  *
  * `lidAnchorZ` is where the bin's lip top lands in lid-local Z, so the offset
  * is the bin's real lip top minus that. `PREVIEW_Z_OFFSET` is deliberately
@@ -44,6 +50,26 @@ import type { MeshData } from '@/features/generation/bridge/types';
  */
 export function lidZOffset(p: BinParams): number {
   return binLipTopZ(p) - lidAnchorZ(p.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(p));
+}
+
+/**
+ * Z shift that puts the lid where it actually RESTS on the bin.
+ *
+ * The plug clears the lip by `mateRelief` measured perpendicular to every face,
+ * so a lid with relief does not sit at `anchorZ`: it drops until its two 45
+ * degree faces — the big taper and the rail's root flare, which are parallel
+ * and equally offset — bear on the lip. That drop is `mateRelief * sqrt(2)`.
+ *
+ * Anything measuring a physical fit wants this: the magnet seat gap, the catch's
+ * engagement, how much play the lid has. Measured at {@link lidZOffset} instead,
+ * each reads `mateRelief * sqrt(2)` off, and always in the flattering direction
+ * for the magnets and the unflattering one for the catch.
+ *
+ * The two coincide exactly on a friction lid, which has no relief to settle
+ * into.
+ */
+export function lidSeatedZOffset(p: BinParams): number {
+  return lidZOffset(p) - resolveLidMateRelief(p) * Math.SQRT2;
 }
 
 /** Z of the bin's lip top in world coords. The plane a seated lid registers on. */
@@ -116,12 +142,11 @@ function railProbePositions(lid: MeshData): Array<readonly [number, number]> {
  * Worst EXTRA rail interference `probe` has over `reference`, position by
  * position.
  *
- * {@link worstRailInterference} is not zero on a good bin at every footprint:
- * its outer offsets sample the rail bump inside the lip's undercut, and that
- * overlap is the snap fit engaging, not a defect. It is
- * {@link RAIL_ENGAGEMENT_CEILING} on every footprint from 1x2 up and 0.60mm on
- * a 1x1 — a property of the footprint, which is why an absolute threshold
- * cannot serve a matrix that varies the footprint.
+ * {@link worstRailInterference} is not zero on a good bin: its outer offsets
+ * sample the nub sitting in the void under the lip, which the column metric
+ * cannot tell from solid — see {@link RAIL_ENGAGEMENT_CEILING} for why that is
+ * an artifact rather than contact. The floor varies with the footprint, which
+ * is why an absolute threshold cannot serve a matrix that varies it.
  *
  * Only sound where the feature leaves rail PLACEMENT alone. A feature that
  * notches rails changes which positions carry one, and the difference then
@@ -159,45 +184,83 @@ export function worstRailInterferenceDelta(probe: SeatedPair, reference: SeatedP
 /**
  * Highest {@link worstRailInterference} a correctly seating bin reads.
  *
- * A clean bin does not read zero: the rail bump sits inside the lip's undercut,
- * and that shared Z is the snap fit engaging rather than a clash. So a
- * clearance assertion is `< RAIL_ENGAGEMENT_CEILING + tolerance`, keeping
- * whatever sensitivity its tolerance buys.
+ * A clean bin does not read zero, and since the rail was reshaped to hook the
+ * lip properly the REASON has changed — read this before treating the figure as
+ * an engagement depth. The nub now sits in the lip's undercut, in the VOID
+ * beneath the overhang, and a column through that void crosses the bin's
+ * surface an odd number of times; {@link verticalSolidSpans} then pairs the
+ * void up as solid and scores the nub as shared material. It is an artifact of
+ * the column metric, not contact: {@link railKeepoutIntrusionMm} reads 0.00 on
+ * every bin below, and a parity-free sweep of the nub's band puts the gap to
+ * the lip's underside by the plug's own clearance along every rail's
+ * full run.
  *
- * Every footprint from 1x2 up reads this. A 1x1 reads 0.60mm, so a suite that
- * adds one needs its own datum; none of the current rail suites goes below 2u.
+ * So this is a CEILING for clearance assertions (`< CEILING + tolerance`) and
+ * nothing else. It is not how well the lid holds — for that, ask whether the
+ * lid is trapped, by seating it and lifting it, as
+ * `lidClickRailSeating.scenario.test.ts` does. And it is not a floor either:
+ * what a clean bin reads varies with the configuration (0.30mm plain, 0.45mm
+ * once dividers meet the side walls, 1.70mm under asymmetric overhang), which
+ * is why {@link RAIL_ENGAGEMENT_FLOOR} is a separate number and why only the
+ * plain-bin suites may pin one from both sides.
+ *
  * `railEngagement.kernel.test.ts` pins the figure and checks it stands on all
  * four walls, which is what separates the rail's own profile from a clash.
  *
  * Do NOT restate these as a delta against the same bin with the feature off.
- * Notching is what these suites exercise, and it splits one rail into several,
+ * Notching is what those suites exercise, and it splits one rail into several,
  * so the bin under test carries rail at positions an unsegmented reference does
  * not and the difference reads as interference with nothing colliding.
- *
- * A reading above this is not by itself a defect, and
- * {@link railKeepoutIntrusionMm} is what tells the two apart. A column measures
- * shared Z, so material merely lying FLUSH with the lip's inner face lower down
- * counts the same as material the rail cannot pass, when the lip has already
- * pushed the rail that far and the flush material costs it nothing. The reading
- * also saturates: once a column is solid through the whole band, a grossly
- * worse bin reads the same as a good one.
  */
 export const RAIL_ENGAGEMENT_CEILING = 1.7;
 
 /**
- * The reading a scoop's chute or a relieved bin's perimeter tongue produces.
+ * What {@link worstRailInterference} reads on a PLAIN correctly seating bin —
+ * the nub's own 0.30mm height, scored through the mis-paired column described
+ * on {@link RAIL_ENGAGEMENT_CEILING}.
+ *
+ * Separate from the ceiling because the two are different quantities now: the
+ * ceiling has to cover the worst clean configuration, this is what an
+ * unobstructed bin actually reads, and only a suite whose bin has neither
+ * dividers on the side walls nor overhang may pin it from both sides.
+ */
+export const RAIL_ENGAGEMENT_FLOOR = 0.3;
+
+/**
+ * What a scoop's chute or a relieved bin's perimeter tongue ADDS to a rail
+ * column, over the same bin without it.
  *
  * Both are material standing in the void under the lip with its inner face on
- * the lip line, so both add exactly this much to
- * {@link RAIL_ENGAGEMENT_CEILING} while leaving
- * {@link railKeepoutIntrusionMm} at zero.
+ * the lip line — the same void the rail's nub hooks into — so a rail-bearing
+ * wall reads its nub's full 0.30mm height against them, and a wall with no rail
+ * reads nothing. Quantised for that reason: a case reads this or it reads
+ * clean, never a value between, which is what makes it one finding rather than
+ * a spread the tolerance happens to cover.
+ *
+ * It was 0.60mm before the rail was reshaped to hook the lip properly. The old
+ * profile's body ran deeper through the same void, so it overlapped the chute
+ * by more; the nub is the shallower of the two. Whatever a scoop costs the snap
+ * on the wall it is cut into, it costs less than it used to.
  *
  * On the lip line by construction, not by measurement: `computeLipOffset`
  * holds the ramp `LIP_TAPER_WIDTH - wallThickness` off the cavity face, and
  * `lidKeepoutRing` puts its outer boundary on the same plane from the other
- * side. Both resolve to `LIP_TAPER_WIDTH` from the bin's outer face.
+ * side. Both resolve to `LIP_TAPER_WIDTH` from the bin's outer face — outboard
+ * of the plane {@link railKeepoutIntrusionMm} polices, which is why that reads
+ * 0.00 on these same cases.
  */
-export const RAIL_FLUSH_FILL_MM = 0.6;
+export const RAIL_FLUSH_FILL_MM = 0.3;
+
+/**
+ * The same reading on a ONE-CELL-WIDE footprint: `mateRelief * sqrt(2)`.
+ *
+ * A 1x2's rails are short enough that the fixed probe set lands on the root
+ * flare rather than on the nub, and the flare's overlap with the chute is the
+ * settle instead of the nub's own height. A property of the footprint, like the
+ * 0.60mm a 1x1 reads on {@link worstRailInterference} — not of the feature, so
+ * the matrix accepts either value and still refuses anything between them.
+ */
+export const RAIL_FLUSH_FILL_NARROW_MM = 0.212;
 
 /**
  * Worst interference anywhere along the four rail lines.

@@ -1292,41 +1292,101 @@ export function lidWallBottomZ(
 }
 
 /**
- * How far a click rail's profile hangs BELOW the mating wall's bottom.
+ * The click rail's cross-section, and why it is solved rather than tabulated.
  *
- * Summed from the steps `clickShape2D` walks down (entry chamfer, bump, its
- * 0.1 shoulder, exit chamfer, drop, tail). Lives here rather than in the
- * worker's `lidConstants` for the same reason the anchor formulas do: the
- * preview needs it and cannot import brepjs.
+ * A snap-fit lid holds because a nub on the rail sits UNDER the stacking lip's
+ * angled support: lifting the lid drives the nub into that face, and the rail
+ * has to flex inboard to let go. All of that is positional — the nub must be
+ * radially proud of the lip's throat, vertically below it, and clear of the lip
+ * everywhere on the way down. A tabulated cross-section states none of those,
+ * which is how the old one came to sit 0.25-0.6mm INSIDE the lip along its
+ * whole length: a solid press fit that could not seat, while every check stayed
+ * green because each scored the rail against the fit clearance instead of
+ * against where the lip actually is.
+ *
+ * So the profile is solved from the lip's own spec, in BIN-relative terms — `u`
+ * inboard from the bin's outer wall face, `z` from its wall top. The lip's inner
+ * boundary there (see `boxTopShape.ts`) is
+ *
+ *   z in [0.7, 2.5]     u = 1.9                (vertical part)
+ *   z in [0, 0.7]       u = 1.9 + (0.7 - z)    (small taper)
+ *   z in [-1.2, 0]      u = 2.6                (the throat)
+ *   z in [-2.6, -1.2]   u = 2.6 + (z + 1.2)    (the 45 degree support)
+ *
+ * which is a funnel with exactly ONE undercut: the throat at `LIP_TAPER_WIDTH`,
+ * below which the cavity opens back out at 45 degrees until it dies into the
+ * bin's own cavity face. That pocket is the only feature on a stock bin a lid
+ * can hook, and {@link clickRailProfile} aims the nub into it.
+ *
+ * The rail's top face lands at `z = LIP_SMALL_TAPER` on every bin, which is what
+ * lets a fixed profile be stated in bin terms at all: seating maps the lid's
+ * `anchorZ` onto the lip top, so `z(wallBottomZ)` reduces to
+ * `LIP_HEIGHT - LIP_BIG_TAPER - LIP_VERTICAL_PART` and the height unit, the
+ * extra cavity and the `Math.SQRT2` clearance term all cancel.
  */
-/** Click rail engagement depth (the snap "bump" height). */
-export const LID_CLICK_RAIL_BUMP = 0.6;
-/** Rail entry chamfer depth (lid slides on smoothly). */
-export const LID_CLICK_RAIL_ENTRY_CHAMFER = 0.8;
-/** Rail exit chamfer (geometry stability). */
-export const LID_CLICK_RAIL_EXIT_CHAMFER = 0.2;
-/** Vertical extension below the rail bump. */
-export const LID_CLICK_RAIL_DROP = 0.8;
-/** Final tail length below the rail body. */
-export const LID_CLICK_RAIL_TAIL = 1.25;
-/** Shoulder between the rail bump and its exit chamfer. */
-export const LID_CLICK_RAIL_SHOULDER = 0.1;
+
 /**
- * How far the rail's outer face protrudes from the corner-radius line.
+ * Radial engagement (mm): how far the nub reaches back out under the throat,
+ * and so how far the rail must flex for the lid to come off.
  *
- * `OUT - LID_CLICK_RAIL_INSET` is the bump body's own reach, and that number
- * has to land inside the lip's actual overhang — the small-taper undercut
- * `boxTopShape.ts` cuts, not merely a budget against the fit clearance. At
- * the previous 1.85/0.8 the bump reached `lidCornerR - (OUT - INSET)` =
- * 2.70mm inset from the wall face, past the lip's own ~2.6mm maximum reach:
- * a snap-fit lid built with clean geometry, correctly seated, and analytic
- * catch-depth checks all green, whose rail met the bin nowhere at all
- * (#4207). These values put the bump's reach at 2.20mm — inside the
- * confirmed, non-marginal band (measured 19.40-21.40mm world Z at that
- * inset, on a stock bin, comfortably containing the bump body's own Z band)
- * rather than at the lip's ragged asymptotic edge.
+ * 0.4mm against the 1.85mm mating wall is a firm but openable snap. What caps
+ * it is not comfort but the pocket — the support dies into the bin's cavity
+ * face, so a bin walled thicker than `LIP_TAPER_WIDTH - CATCH_DEPTH` has less
+ * undercut than this asks for, and {@link clickRailProfile} gives back what the
+ * bin does not have rather than driving the nub into the wall.
  */
-export const LID_CLICK_RAIL_OUT = 2.1;
+export const LID_CLICK_RAIL_CATCH_DEPTH = 0.4;
+
+/**
+ * Floor (mm) under the rail's perpendicular clearance off the lip.
+ *
+ * The rail takes `mateRelief` like every other face of the plug, so the whole
+ * offset path — chamfer, wall, flare, shank, catch — stands the same distance
+ * off the lip and the gap reads as one uniform band. This floor only bites
+ * where there is no relief to inherit: a polygon or lipless bin, which
+ * `resolveLidMateRelief` gives none, and where a rail laid on the lip would be
+ * a friction fit the snap has to fight.
+ *
+ * It buys the uniformity at the cost of engagement. The lid rests
+ * `clearance * sqrt(2)` below `anchorZ`, and the catch opens by the same amount
+ * as it drops, so seated play is twice the clearance rather than one gap of the
+ * designer's choosing. Holding the catch tighter than the rest of the profile
+ * was tried and rejected: it makes the nub foul the lip at the layout datum,
+ * and buying a firmer snap by breaking the one thing the profile promises is
+ * the wrong trade.
+ */
+export const LID_CLICK_RAIL_MIN_CLEARANCE = 0.1;
+
+/**
+ * Inset of the plug's outer face at the mating wall's bottom.
+ *
+ * The plug IS the lip's profile offset outward by `mateRelief`, measured
+ * PERPENDICULAR to each face. That distinction is the whole of it: on a 45
+ * degree face an inset applied horizontally leaves only `relief / sqrt(2)`, so
+ * the chamfered faces came out 29% tighter than the vertical ones and the
+ * clearance was visibly uneven along the profile. Worse, it made the rail's
+ * root flare the TIGHTEST face on the plug — 0.106mm against the big taper's
+ * 0.150mm — so a descending lid ran out of clearance there first and seated on
+ * the click rail's root instead of on its big-taper datum.
+ *
+ * Offsetting the lip's convex corner at (`LIP_BIG_TAPER`, `LIP_SMALL_TAPER`)
+ * moves it diagonally, which is why the plug's vertical face ends
+ * `relief * (sqrt(2) - 1)` ABOVE the wall bottom and the outer face is already
+ * this much further in by the time it gets there. `buildMatingShell` turns the
+ * last stretch into the 45 degree run, and the rail's flare continues the same
+ * line below — one unbroken offset of the lip.
+ */
+export function plugInsetAtWallBottom(mateRelief: number): number {
+  return GRIDFINITY_SPEC.LIP_BIG_TAPER + mateRelief * Math.SQRT2;
+}
+
+/** Below this a nub is a boolean sliver rather than a catch, and the rail is
+ *  built as an honest friction fit instead. */
+export const LID_CLICK_RAIL_MIN_CATCH = 0.15;
+
+/** Narrowest bottom face (mm) the lead-in ramp may leave on the rail. */
+export const LID_CLICK_RAIL_MIN_BOTTOM = 0.4;
+
 /** Inner face of the rail, inside the bin cavity (negative = inboard). */
 export const LID_CLICK_RAIL_INNER = -0.8;
 /** Top entry chamfer: the rail's apex climbs this far above its own top face,
@@ -1335,13 +1395,142 @@ export const LID_CLICK_RAIL_INNER = -0.8;
  *  has to stay clear of, and that check runs on the main thread too. */
 export const LID_CLICK_RAIL_TOP_CHAMFER = 0.8;
 
-export const LID_CLICK_RAIL_DROP_BELOW_WALL =
-  LID_CLICK_RAIL_ENTRY_CHAMFER +
-  LID_CLICK_RAIL_BUMP +
-  LID_CLICK_RAIL_SHOULDER +
-  LID_CLICK_RAIL_EXIT_CHAMFER +
-  LID_CLICK_RAIL_DROP +
-  LID_CLICK_RAIL_TAIL;
+/**
+ * How far a click rail's profile hangs BELOW the mating wall's bottom.
+ *
+ * Stated, not summed from the current cross-section. Every bin-side keep-out is
+ * measured off it — the scoop's ceiling, the divider notches, the label-tab
+ * band, `lidKeepoutRing` — so it is a reservation the BIN has already been
+ * built around, and re-deriving it would move all of them the next time the
+ * rail is reshaped. {@link clickRailProfile} spends the remainder on its
+ * lead-in ramp, so a shallower catch buys a gentler ramp, not a shorter rail.
+ */
+export const LID_CLICK_RAIL_DROP_BELOW_WALL = 3.75;
+
+/** The rail's cross-section in rail-local coordinates (+x outward, drops down
+ *  from the rail's own top face). */
+export interface ClickRailProfile {
+  /**
+   * The rail's top outer corner, flush with the plug wall's own outer face.
+   *
+   * The shank is set back from that face by the shank clearance plus the lip's
+   * small taper, and joining the two with a square step leaves a horizontal
+   * ledge on the rail's root — a 90 degree overhang printed skirt-down, and a
+   * stress riser at exactly the corner the catch levers against. {@link
+   * flareDrop} turns it into a 45 degree flare instead.
+   */
+  readonly flareX: number;
+  /**
+   * Drop from the rail's top face to where the flare meets the shank. Equal to
+   * `flareX - shankX` by construction, which is what makes the flare 45
+   * degrees — and so parallel to the lip's small taper, which it faces.
+   */
+  readonly flareDrop: number;
+  /** Outer face of the shank, which clears the lip the whole way down. */
+  readonly shankX: number;
+  /** Outer face of the nub — the rail's widest point. */
+  readonly catchX: number;
+  /** Where the lead-in ramp meets the rail's bottom face. */
+  readonly leadInX: number;
+  /** Drop below the rail's top face at which the catch face starts. */
+  readonly catchTopDrop: number;
+  /** Drop below the rail's top face at the nub's outer corner. */
+  readonly catchBottomDrop: number;
+  /** Drop below the rail's top face to the rail's bottom face. */
+  readonly bottomDrop: number;
+  /** Radial engagement actually achieved; 0 when the bin leaves no pocket. */
+  readonly catchDepth: number;
+}
+
+/**
+ * Solve the rail's cross-section against the lip it has to hook.
+ *
+ * @param lidCornerR Rail spine's inset from the lid's outer face. That face is
+ *   flush with the bin's, so bin-relative `u` converts as `x = lidCornerR - u`.
+ * @param binWallThickness The bin's wall. The lip's 45 degree support dies into
+ *   the cavity face, so this is how far out the undercut pocket really reaches;
+ *   a nub aimed past it would meet wall instead of air.
+ * @param mateRelief The plug's own relief, which sets where the wall's outer
+ *   face sits and so how far the rail's root has to flare back out to meet it.
+ */
+export function clickRailProfile(
+  lidCornerR: number,
+  binWallThickness: number,
+  mateRelief: number
+): ClickRailProfile {
+  const throat = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
+  // The shank holds the same perpendicular clearance off the throat that the
+  // plug holds everywhere else, so the profile reads as one uniform offset.
+  // The floor matters only where there is no relief to inherit — a polygon or
+  // lipless bin, which `resolveLidMateRelief` gives none — and there a rail
+  // pressing on the throat would be a friction fit the snap has to fight.
+  // One clearance for every face of the rail, so the shank, the flare and the
+  // catch all stand the same perpendicular distance off the lip that the plug
+  // above them does.
+  const clearance = Math.max(mateRelief, LID_CLICK_RAIL_MIN_CLEARANCE);
+  const shankInset = throat + clearance;
+  // Where the plug's outer face has already reached by the wall's bottom.
+  const wallInset = plugInsetAtWallBottom(mateRelief);
+
+  // As far out as the catch wants, held off the bin's cavity face by the same
+  // clearance the shank keeps off the lip.
+  const nubInset = Math.max(
+    throat - LID_CLICK_RAIL_CATCH_DEPTH,
+    binWallThickness + LID_CLICK_RAIL_MIN_CLEARANCE
+  );
+  const available = throat - nubInset;
+  const catchDepth = available >= LID_CLICK_RAIL_MIN_CATCH ? available : 0;
+
+  // The nub's top face is the lip's support offset by the same `clearance`; at
+  // this inset the support sits at z = -(LIP_SUPPORT_DROP + catchDepth), and a
+  // perpendicular offset on a 45 degree face costs `clearance * sqrt(2)` of
+  // height. Uniform with the rest of the path, which is what makes the gap read
+  // as one band rather than pinching at the catch.
+  const catchBottomDrop =
+    GRIDFINITY_SPEC.LIP_SMALL_TAPER +
+    GRIDFINITY_SPEC.LIP_SUPPORT_DROP +
+    catchDepth +
+    clearance * Math.SQRT2;
+  // 45 degrees, matching the support it beds against, so the two meet face to
+  // face rather than on a corner.
+  const catchTopDrop = catchBottomDrop - (shankInset - (throat - catchDepth));
+
+  // Whatever the reservation has left goes to the lead-in ramp, at 45 degrees
+  // until the bottom face would get too narrow to print cleanly.
+  const catchX = lidCornerR - (throat - catchDepth);
+  const leadInRise = LID_CLICK_RAIL_DROP_BELOW_WALL - catchBottomDrop;
+
+  // The root flare: out to the wall's own face at the rail's top, back to the
+  // shank 45 degrees later. Clamped at both ends — a relief wide enough to put
+  // the wall inboard of the shank would invert it, and it must not run past the
+  // catch face it sits above.
+  const shankX = lidCornerR - shankInset;
+  const flareDrop = Math.min(Math.max(shankInset - wallInset, 0), catchTopDrop);
+
+  return {
+    flareX: shankX + flareDrop,
+    flareDrop,
+    shankX,
+    catchX,
+    leadInX: Math.max(catchX - leadInRise, LID_CLICK_RAIL_INNER + LID_CLICK_RAIL_MIN_BOTTOM),
+    catchTopDrop,
+    catchBottomDrop,
+    bottomDrop: LID_CLICK_RAIL_DROP_BELOW_WALL,
+    catchDepth,
+  };
+}
+
+/**
+ * The furthest a rail's outer face ever reaches from its spine (mm).
+ *
+ * The root flare, not the nub: the flare runs out to the plug wall's own face,
+ * which is further out than the catch on every relief the lid offers. Taken at
+ * zero relief, the widest the wall itself ever sits. Stated rather than solved
+ * because the main-thread consumers that need the rail's swept width have no
+ * lid to resolve: `labelTabPlan` keeps tab footprints out of it.
+ */
+export const LID_CLICK_RAIL_MAX_OUT =
+  LID_CORNER_RADIUS - LID_FIT_CLEARANCE - GRIDFINITY_SPEC.LIP_BIG_TAPER;
 
 /**
  * How far below the BIN's wall top a seated lid's click rail reaches (mm) —
