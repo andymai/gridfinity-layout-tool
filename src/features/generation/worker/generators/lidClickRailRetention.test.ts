@@ -22,8 +22,7 @@ import { describe, it, expect } from 'vitest';
 import {
   clickRailProfile,
   LID_CLICK_RAIL_CATCH_DEPTH,
-  LID_CLICK_RAIL_CATCH_GAP,
-  LID_CLICK_RAIL_SHANK_CLEARANCE,
+  LID_CLICK_RAIL_MIN_CLEARANCE,
   LID_CLICK_RAIL_MIN_CATCH,
   LID_CLICK_RAIL_DROP_BELOW_WALL,
   LID_CLICK_RAIL_INNER,
@@ -92,13 +91,30 @@ describe('lid click-rail retention + insertion budget', () => {
     }
   });
 
-  it('seats the catch under the lip with slack, not interference', () => {
-    // The nub's top face is one gap below the support it beds against, so the
-    // lid registers on its plug and the snap takes up only when pulled.
+  it('stands the catch off the support by the same clearance as the rest', () => {
+    // The nub's top face is the lip's support offset by the plug's own
+    // clearance — not a gap of its own choosing. Perpendicular, because both
+    // faces are at 45 degrees and a vertical reading would be sqrt(2) larger.
     const nubZ = railZAt(stock.catchBottomDrop);
     const supportZ = -(G.LIP_SUPPORT_DROP + stock.catchDepth);
-    expect(supportZ - nubZ).toBeCloseTo(LID_CLICK_RAIL_CATCH_GAP, 6);
+    expect((supportZ - nubZ) / Math.SQRT2).toBeCloseTo(RELIEF, 6);
     expect(nubZ).toBeLessThan(-G.LIP_SUPPORT_DROP);
+  });
+
+  it('holds one clearance along the whole offset path', () => {
+    // The claim the profile exists to make, stated end to end: every face of
+    // the plug and the rail stands the same perpendicular distance off the lip,
+    // so the gap reads as one band instead of pinching at the 45 degree faces.
+    // A horizontal inset on a 45 degree face leaves only relief/sqrt(2), which
+    // is how the flare once came out the tightest face on the plug.
+    const perp = (d: number): number =>
+      (railInsetAt(d, stock, SPINE) - lipInsetAt(railZAt(d), STOCK_WALL)) / Math.SQRT2;
+    // Sample the flare (45 degrees) and the shank (vertical) either side of it.
+    expect(perp(stock.flareDrop / 2) * Math.SQRT2).toBeCloseTo(RELIEF * Math.SQRT2, 3);
+    const shankMid = (stock.flareDrop + stock.catchTopDrop) / 2;
+    expect(
+      railInsetAt(shankMid, stock, SPINE) - lipInsetAt(railZAt(shankMid), STOCK_WALL)
+    ).toBeCloseTo(RELIEF, 6);
   });
 
   it('beds the catch face flat against the support, not on a corner', () => {
@@ -127,8 +143,10 @@ describe('lid click-rail retention + insertion budget', () => {
     // printed skirt-down, and a stress riser right where the catch levers.
     expect(stock.flareDrop).toBeCloseTo(stock.flareX - stock.shankX, 6);
     expect(stock.flareDrop).toBeGreaterThan(0);
-    // It lands on the wall's own face, so the two are flush at the seam.
-    expect(SPINE - stock.flareX).toBeCloseTo(G.LIP_BIG_TAPER + RELIEF, 6);
+    // It lands on the plug's outer face where the wall bottoms out, so the two
+    // are flush at the seam. That face has already taken the diagonal half of
+    // the corner offset — see `plugInsetAtWallBottom`.
+    expect(SPINE - stock.flareX).toBeCloseTo(G.LIP_BIG_TAPER + RELIEF * Math.SQRT2, 6);
     // And being 45 degrees it runs parallel to the lip's small taper, which is
     // the face it passes — so the gap there is constant rather than pinching.
     const gapAt = (d: number): number =>
@@ -168,6 +186,6 @@ describe('lid click-rail retention + insertion budget', () => {
     const mid = clickRailProfile(SPINE, 2.2, RELIEF);
     expect(mid.catchDepth).toBeLessThan(LID_CLICK_RAIL_CATCH_DEPTH);
     expect(mid.catchDepth).toBeGreaterThanOrEqual(LID_CLICK_RAIL_MIN_CATCH);
-    expect(SPINE - mid.catchX).toBeCloseTo(2.2 + LID_CLICK_RAIL_SHANK_CLEARANCE, 6);
+    expect(SPINE - mid.catchX).toBeCloseTo(2.2 + LID_CLICK_RAIL_MIN_CLEARANCE, 6);
   });
 });

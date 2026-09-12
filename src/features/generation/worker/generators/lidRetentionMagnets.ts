@@ -24,7 +24,7 @@ import { collectOrigins } from './pipeline/collectOrigins';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 import {
   retentionBossRadius,
-  retentionInterfaceZ,
+  retentionBossFaceZ,
   retentionMagnetInset,
   retentionMagnetPositions,
   retentionMagnetPlacementsFor,
@@ -88,7 +88,7 @@ export function addLidRetentionMagnets(
   // The pocket is still only `retentionMagnetDepth` deep at the tip, so the
   // rest of the pillar is solid. It prints as a vertical column (the lid
   // exports floor-down, bosses up), needing no supports.
-  const interfaceZ = retentionInterfaceZ(inputs);
+  const interfaceZ = retentionBossFaceZ(inputs);
   // Weld up into the floor plate by a coplanar margin so the fuse is solid.
   const bossTopZ = -topThickness + LID_COPLANAR_MARGIN;
   const bossHeight = bossTopZ - interfaceZ;

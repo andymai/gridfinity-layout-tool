@@ -83,9 +83,9 @@ export const LID_WALL_THICKNESS = LID_CORNER_RADIUS - LID_FIT_CLEARANCE - LIP_BI
 // without pulling in brepjs; re-exported here to keep worker import paths.
 export {
   clickRailProfile,
+  plugInsetAtWallBottom,
   LID_CLICK_RAIL_CATCH_DEPTH,
-  LID_CLICK_RAIL_CATCH_GAP,
-  LID_CLICK_RAIL_SHANK_CLEARANCE,
+  LID_CLICK_RAIL_MIN_CLEARANCE,
   LID_CLICK_RAIL_MIN_CATCH,
   LID_CLICK_RAIL_MIN_BOTTOM,
   LID_SNAP_PLUG_CLEARANCE,

@@ -11,7 +11,7 @@
 import { drawRoundedRectangle, unwrap, cut } from 'brepjs';
 import type { Shape3D, DisposalScope, Sketch, Drawing } from 'brepjs';
 import { LIP_BIG_TAPER, safeSectionRect } from './generatorConstants';
-import { LID_COPLANAR_MARGIN } from './lidConstants';
+import { LID_COPLANAR_MARGIN, plugInsetAtWallBottom } from './lidConstants';
 import { buildMaskDrawingAtInset } from './maskPolygon';
 import type { LidInputs } from './lidInputs';
 
@@ -94,6 +94,13 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
 export function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
   const { cavityInset, anchorZ, wallBottomZ, mateRelief } = inputs;
   const plugInset = LIP_BIG_TAPER + mateRelief;
+  // The plug is the lip offset PERPENDICULAR by `mateRelief`, so the lip's
+  // convex corner where its vertical part meets its small taper comes out
+  // moved diagonally: the vertical face ends this far above the wall bottom,
+  // and the 45 degree run takes the rest. The rail's flare continues the same
+  // line below the wall — see `plugInsetAtWallBottom`.
+  const bottomInset = plugInsetAtWallBottom(mateRelief);
+  const cornerRise = bottomInset - plugInset;
   // Where the 45° mating face meets the vertical skirt. Offsetting that face
   // perpendicular by `mateRelief` moves its intercept with the skirt up by
   // `mateRelief * √2`; without this the chamfer's top stays pinned to the lip's
@@ -109,7 +116,10 @@ export function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape
   //                                 plug relief when there is one
   //  Z=chamferTop and Z=0         : full outer (no chamfer)
   const outerSections: readonly Sketch[] = [
-    sectionAt(inputs, wallBottomZ, plugInset),
+    sectionAt(inputs, wallBottomZ, bottomInset),
+    // Absent without relief, where the corner does not move and the two
+    // sections would land coincident on the same plane for the loft.
+    ...(cornerRise > 0 ? [sectionAt(inputs, wallBottomZ + cornerRise, plugInset)] : []),
     sectionAt(inputs, zVertTop, plugInset),
     sectionAt(inputs, chamferTopZ, 0),
     sectionAt(inputs, 0, 0),

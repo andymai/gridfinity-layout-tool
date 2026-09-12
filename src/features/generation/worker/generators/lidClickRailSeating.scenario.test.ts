@@ -37,11 +37,13 @@ import {
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import {
   clickRailProfile,
-  LID_CLICK_RAIL_CATCH_GAP,
   LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
   LID_SNAP_PLUG_CLEARANCE,
 } from '@/features/bin-designer/types/lid';
+
+/** The clearance every face of the plug and rail holds off the lip. */
+const CLEARANCE = LID_SNAP_PLUG_CLEARANCE;
 import { GRIDFINITY_SPEC as G } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -148,7 +150,10 @@ describe('click-rail lid seating', () => {
       expect(samples).toBeGreaterThan(20);
       // 0.02mm for tessellation on the 45 degree faces.
       expect(tightest).toBeGreaterThan(-0.02);
-      expect(tightest).toBeLessThan(LID_CLICK_RAIL_CATCH_GAP + 0.05);
+      // One uniform offset, so the catch stands off by the same clearance as
+      // every other face; on a 45 degree pair that is `clearance * sqrt(2)`
+      // of vertical separation.
+      expect(tightest).toBeLessThan(CLEARANCE * Math.SQRT2 + 0.05);
     },
     120_000
   );
@@ -173,7 +178,7 @@ describe('click-rail lid seating', () => {
       // nothing cannot pass: the same columns read clear above and fouled here.
       const dz = lidZOffset(params);
       const wallTop = binLipTopZ(params) - G.LIP_HEIGHT;
-      const lift = LID_CLICK_RAIL_CATCH_GAP + 0.1;
+      const lift = CLEARANCE * Math.SQRT2 + 0.1;
 
       let fouled = 0;
       let checked = 0;

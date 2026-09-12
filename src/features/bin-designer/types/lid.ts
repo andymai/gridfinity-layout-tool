@@ -1338,24 +1338,47 @@ export function lidWallBottomZ(
 export const LID_CLICK_RAIL_CATCH_DEPTH = 0.4;
 
 /**
- * Vertical gap (mm) between the nub's upper face and the lip's support directly
- * above it, once the lid is home.
+ * Floor (mm) under the rail's perpendicular clearance off the lip.
  *
- * The lid registers on its own datum — the plug against the lip's big taper —
- * rather than hanging from its rails, so the catch is built with slack and
- * takes up only when the lid is pulled.
+ * The rail takes `mateRelief` like every other face of the plug, so the whole
+ * offset path — chamfer, wall, flare, shank, catch — stands the same distance
+ * off the lip and the gap reads as one uniform band. This floor only bites
+ * where there is no relief to inherit: a polygon or lipless bin, which
+ * `resolveLidMateRelief` gives none, and where a rail laid on the lip would be
+ * a friction fit the snap has to fight.
+ *
+ * It buys the uniformity at the cost of engagement. The lid rests
+ * `clearance * sqrt(2)` below `anchorZ`, and the catch opens by the same amount
+ * as it drops, so seated play is twice the clearance rather than one gap of the
+ * designer's choosing. Holding the catch tighter than the rest of the profile
+ * was tried and rejected: it makes the nub foul the lip at the layout datum,
+ * and buying a firmer snap by breaking the one thing the profile promises is
+ * the wrong trade.
  */
-export const LID_CLICK_RAIL_CATCH_GAP = 0.15;
+export const LID_CLICK_RAIL_MIN_CLEARANCE = 0.1;
 
 /**
- * Radial clearance (mm) the shank holds off the lip's inner face on the way
- * past it.
+ * Inset of the plug's outer face at the mating wall's bottom.
  *
- * Everything above the nub is transit, not fit: the shank crosses the small
- * taper and the full height of the throat, and interference there is a press
- * fit fighting the snap rather than adding to it.
+ * The plug IS the lip's profile offset outward by `mateRelief`, measured
+ * PERPENDICULAR to each face. That distinction is the whole of it: on a 45
+ * degree face an inset applied horizontally leaves only `relief / sqrt(2)`, so
+ * the chamfered faces came out 29% tighter than the vertical ones and the
+ * clearance was visibly uneven along the profile. Worse, it made the rail's
+ * root flare the TIGHTEST face on the plug — 0.106mm against the big taper's
+ * 0.150mm — so a descending lid ran out of clearance there first and seated on
+ * the click rail's root instead of on its big-taper datum.
+ *
+ * Offsetting the lip's convex corner at (`LIP_BIG_TAPER`, `LIP_SMALL_TAPER`)
+ * moves it diagonally, which is why the plug's vertical face ends
+ * `relief * (sqrt(2) - 1)` ABOVE the wall bottom and the outer face is already
+ * this much further in by the time it gets there. `buildMatingShell` turns the
+ * last stretch into the 45 degree run, and the rail's flare continues the same
+ * line below — one unbroken offset of the lip.
  */
-export const LID_CLICK_RAIL_SHANK_CLEARANCE = 0.1;
+export function plugInsetAtWallBottom(mateRelief: number): number {
+  return GRIDFINITY_SPEC.LIP_BIG_TAPER + mateRelief * Math.SQRT2;
+}
 
 /** Below this a nub is a boolean sliver rather than a catch, and the rail is
  *  built as an honest friction fit instead. */
@@ -1436,26 +1459,38 @@ export function clickRailProfile(
   mateRelief: number
 ): ClickRailProfile {
   const throat = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
-  const shankInset = throat + LID_CLICK_RAIL_SHANK_CLEARANCE;
-  // The plug wall's outer face — `buildMatingShell` puts it here.
-  const wallInset = GRIDFINITY_SPEC.LIP_BIG_TAPER + mateRelief;
+  // The shank holds the same perpendicular clearance off the throat that the
+  // plug holds everywhere else, so the profile reads as one uniform offset.
+  // The floor matters only where there is no relief to inherit — a polygon or
+  // lipless bin, which `resolveLidMateRelief` gives none — and there a rail
+  // pressing on the throat would be a friction fit the snap has to fight.
+  // One clearance for every face of the rail, so the shank, the flare and the
+  // catch all stand the same perpendicular distance off the lip that the plug
+  // above them does.
+  const clearance = Math.max(mateRelief, LID_CLICK_RAIL_MIN_CLEARANCE);
+  const shankInset = throat + clearance;
+  // Where the plug's outer face has already reached by the wall's bottom.
+  const wallInset = plugInsetAtWallBottom(mateRelief);
 
   // As far out as the catch wants, held off the bin's cavity face by the same
   // clearance the shank keeps off the lip.
   const nubInset = Math.max(
     throat - LID_CLICK_RAIL_CATCH_DEPTH,
-    binWallThickness + LID_CLICK_RAIL_SHANK_CLEARANCE
+    binWallThickness + LID_CLICK_RAIL_MIN_CLEARANCE
   );
   const available = throat - nubInset;
   const catchDepth = available >= LID_CLICK_RAIL_MIN_CATCH ? available : 0;
 
-  // The nub's top face is parallel to the support and one gap below it; at this
-  // inset the support sits at z = -(LIP_SUPPORT_DROP + catchDepth).
+  // The nub's top face is the lip's support offset by the same `clearance`; at
+  // this inset the support sits at z = -(LIP_SUPPORT_DROP + catchDepth), and a
+  // perpendicular offset on a 45 degree face costs `clearance * sqrt(2)` of
+  // height. Uniform with the rest of the path, which is what makes the gap read
+  // as one band rather than pinching at the catch.
   const catchBottomDrop =
     GRIDFINITY_SPEC.LIP_SMALL_TAPER +
     GRIDFINITY_SPEC.LIP_SUPPORT_DROP +
     catchDepth +
-    LID_CLICK_RAIL_CATCH_GAP;
+    clearance * Math.SQRT2;
   // 45 degrees, matching the support it beds against, so the two meet face to
   // face rather than on a corner.
   const catchTopDrop = catchBottomDrop - (shankInset - (throat - catchDepth));

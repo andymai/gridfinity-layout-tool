@@ -158,8 +158,8 @@ describe('lid generation and export scenarios', () => {
     expect(m.maxY - m.minY).toBeCloseTo(f.maxY - f.minY, 3);
 
     // The relief is still there, one band down: the plug that grips the lip
-    // stands 0.15mm/side clear of where a friction lid's grips. Both lids put
-    // that band at the same Z, since the anchor never took the relief.
+    // stands clear of where a friction lid's grips. Both lids put that band at
+    // the same Z, since the anchor never took the relief.
     const wallBottom = lidWallBottomZ(
       DEFAULT_BIN_PARAMS.heightUnitMm,
       LID_FIT_CLEARANCE,
@@ -169,11 +169,17 @@ describe('lid generation and export scenarios', () => {
     const fPlug = xRangeAtZ(friction!.vertices, wallBottom);
     expect(mPlug.maxX).toBeLessThan(Infinity);
     expect(fPlug.maxX).toBeLessThan(Infinity);
-    expect(fPlug.maxX - mPlug.maxX).toBeCloseTo(LID_MAGNETIC_EXTRA_CLEARANCE, 3);
+    // Sampled at the wall's bottom, which is where the offset of the lip's
+    // convex corner has ALREADY swung diagonally: the relief is perpendicular
+    // to each face, so by this plane the plug has moved in by
+    // `relief * sqrt(2)` rather than the `relief` its vertical stretch shows
+    // higher up. Measuring the flat number here is what let the flare come out
+    // the tightest face on the plug.
+    expect(fPlug.maxX - mPlug.maxX).toBeCloseTo(LID_MAGNETIC_EXTRA_CLEARANCE * Math.SQRT2, 3);
 
-    // The seated plane must not move — the relief is XY-only so the corner
-    // magnets keep their LID_MAGNET_SEAT_GAP. Bosses hang below the friction
-    // lid's floor, so compare the TOP face rather than the full Z extent.
+    // The lid's own top must not move — the relief never touches the anchor, so
+    // both lids are the same height. Bosses hang below the friction lid's
+    // floor, so compare the TOP face rather than the full Z extent.
     expect(m.maxZ).toBeCloseTo(f.maxZ, 3);
   });
 

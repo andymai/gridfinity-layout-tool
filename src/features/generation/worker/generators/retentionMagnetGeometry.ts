@@ -147,6 +147,27 @@ export function retentionInterfaceZ(
 }
 
 /**
+ * The lid boss's own magnet face, in LID-LOCAL Z.
+ *
+ * {@link retentionInterfaceZ} is the NOMINAL plane both parts are laid out
+ * against; this is where the boss is actually built, one settle higher. The
+ * plug clears the lip by `mateRelief` all round, so the lid does not rest at
+ * `anchorZ` — it drops `mateRelief * sqrt(2)` onto its two 45 degree faces,
+ * carrying the boss down with it. Built on the nominal plane the stock 0.20mm
+ * seat gap measures -0.01mm once seated: bosses on pads, holding the lid off
+ * its own taper.
+ *
+ * Only the LID takes the correction. Moving the bin's pad down instead would
+ * close the same gap and regenerate every published magnetic bin to fix what is
+ * a lid-side error.
+ */
+export function retentionBossFaceZ(
+  inputs: Pick<LidInputs, 'retentionMagnetDepth' | 'cavityExtraMm' | 'heightUnitMm' | 'mateRelief'>
+): number {
+  return retentionInterfaceZ(inputs) + inputs.mateRelief * Math.SQRT2;
+}
+
+/**
  * The two magnet faces that mate when the lid is seated, in BIN-WORLD Z.
  *
  * Same discipline as {@link retentionMagnetPositions} for XY: the bin's pad and
@@ -155,11 +176,21 @@ export function retentionInterfaceZ(
  * and the magnets never touch.
  *
  * - `lidFaceZ` — the lid boss's downward magnet face, lifted by the seating
- *   transform (`lipTopZ - anchorZ`) that `exportHandler` applies to the lid.
+ *   transform (`lipTopZ - anchorZ`) that `exportHandler` applies to the lid,
+ *   and by the plug's settle on top of that.
  * - `binFaceZ` — the bin pad's upward magnet face, one {@link LID_MAGNET_SEAT_GAP}
- *   below, so the pads can't bottom out and hold the lid off its lip.
+ *   below where the boss ENDS UP, so the pads can't bottom out and hold the lid
+ *   off its lip.
  *
- * Their separation is `LID_MAGNET_SEAT_GAP` by construction; the scenario suite
+ * The settle is what makes the two asymmetric. `anchorZ` is not where a lid
+ * with plug relief rests: the plug clears the lip by `mateRelief` all round, so
+ * the lid drops `mateRelief * sqrt(2)` onto its two 45 degree faces and the
+ * boss rides down with it. Measured from the anchor the stock 0.20mm gap comes
+ * out at -0.01mm seated — bosses on pads, lid propped off its own taper. Only
+ * the LID side takes the correction; moving the bin's pad instead would
+ * regenerate every published magnetic bin to fix a lid-side error.
+ *
+ * Their separation is `LID_MAGNET_SEAT_GAP` once seated; the scenario suite
  * asserts it so a change to either side's derivation can't silently close it.
  */
 export function retentionSeatPlanes(
@@ -167,6 +198,9 @@ export function retentionSeatPlanes(
   lipTopZ: number
 ): { readonly lidFaceZ: number; readonly binFaceZ: number } {
   const lidInputs = resolveLidInputs(params);
-  const lidFaceZ = retentionInterfaceZ(lidInputs) + (lipTopZ - lidInputs.anchorZ);
-  return { lidFaceZ, binFaceZ: lidFaceZ - LID_MAGNET_SEAT_GAP };
+  const seat = lipTopZ - lidInputs.anchorZ;
+  return {
+    lidFaceZ: retentionBossFaceZ(lidInputs) + seat,
+    binFaceZ: retentionInterfaceZ(lidInputs) + seat - LID_MAGNET_SEAT_GAP,
+  };
 }

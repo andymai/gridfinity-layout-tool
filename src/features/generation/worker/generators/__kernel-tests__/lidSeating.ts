@@ -16,6 +16,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   lidAnchorZ,
   resolveLidCavityExtraMm,
+  resolveLidMateRelief,
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
   LID_CLICK_RAIL_INNER,
@@ -30,7 +31,12 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 
 /**
- * Z shift that seats the lid on the bin.
+ * Z shift that puts the lid at its NOMINAL anchor — `anchorZ` on the lip top.
+ *
+ * Not where a lid with plug relief physically rests: see
+ * {@link lidSeatedZOffset}, which is the datum for anything asking about
+ * contact. This one stays the layout datum both parts are built against, and is
+ * the right frame for "does anything stand in the lid's way on the way down".
  *
  * `lidAnchorZ` is where the bin's lip top lands in lid-local Z, so the offset
  * is the bin's real lip top minus that. `PREVIEW_Z_OFFSET` is deliberately
@@ -44,6 +50,26 @@ import type { MeshData } from '@/features/generation/bridge/types';
  */
 export function lidZOffset(p: BinParams): number {
   return binLipTopZ(p) - lidAnchorZ(p.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(p));
+}
+
+/**
+ * Z shift that puts the lid where it actually RESTS on the bin.
+ *
+ * The plug clears the lip by `mateRelief` measured perpendicular to every face,
+ * so a lid with relief does not sit at `anchorZ`: it drops until its two 45
+ * degree faces — the big taper and the rail's root flare, which are parallel
+ * and equally offset — bear on the lip. That drop is `mateRelief * sqrt(2)`.
+ *
+ * Anything measuring a physical fit wants this: the magnet seat gap, the catch's
+ * engagement, how much play the lid has. Measured at {@link lidZOffset} instead,
+ * each reads `mateRelief * sqrt(2)` off, and always in the flattering direction
+ * for the magnets and the unflattering one for the catch.
+ *
+ * The two coincide exactly on a friction lid, which has no relief to settle
+ * into.
+ */
+export function lidSeatedZOffset(p: BinParams): number {
+  return lidZOffset(p) - resolveLidMateRelief(p) * Math.SQRT2;
 }
 
 /** Z of the bin's lip top in world coords. The plane a seated lid registers on. */
@@ -166,7 +192,7 @@ export function worstRailInterferenceDelta(probe: SeatedPair, reference: SeatedP
  * void up as solid and scores the nub as shared material. It is an artifact of
  * the column metric, not contact: {@link railKeepoutIntrusionMm} reads 0.00 on
  * every bin below, and a parity-free sweep of the nub's band puts the gap to
- * the lip's underside at `LID_CLICK_RAIL_CATCH_GAP` (0.15mm) along every rail's
+ * the lip's underside by the plug's own clearance along every rail's
  * full run.
  *
  * So this is a CEILING for clearance assertions (`< CEILING + tolerance`) and
@@ -224,6 +250,17 @@ export const RAIL_ENGAGEMENT_FLOOR = 0.3;
  * 0.00 on these same cases.
  */
 export const RAIL_FLUSH_FILL_MM = 0.3;
+
+/**
+ * The same reading on a ONE-CELL-WIDE footprint: `mateRelief * sqrt(2)`.
+ *
+ * A 1x2's rails are short enough that the fixed probe set lands on the root
+ * flare rather than on the nub, and the flare's overlap with the chute is the
+ * settle instead of the nub's own height. A property of the footprint, like the
+ * 0.60mm a 1x1 reads on {@link worstRailInterference} — not of the feature, so
+ * the matrix accepts either value and still refuses anything between them.
+ */
+export const RAIL_FLUSH_FILL_NARROW_MM = 0.212;
 
 /**
  * Worst interference anywhere along the four rail lines.
