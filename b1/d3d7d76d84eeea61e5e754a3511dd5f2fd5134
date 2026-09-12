@@ -1,0 +1,27 @@
+src/shared/utils/lidCutoutPlan.test.ts
+  s_3eb0484df0a3d2::t_e1513169f759ef 261-262
+src/features/bin-designer/types/lid.test.ts
+  s_3eb0484df0a3d2::t_52629cf87f3a17 135
+src/features/bin-designer/types/lid.ts
+  s_3eb0484df0a3d2::t_324b404f04b8a9 73-76,81-84
+src/features/generation/worker/generators/lidClickRail.ts
+  s_3eb0484df0a3d2::t_f9bf1b232a664f 93-95
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_3eb0484df0a3d2::t_59ca98d04c8ff4 969-970
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b1d3d7d76d84eeea61e5e754a3511dd5f2fd5134",
+  "prompts": {},
+  "sessions": {
+    "s_3eb0484df0a3d2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9652bf79-e98e-434a-9e6a-17b6866d169f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
