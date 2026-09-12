@@ -41,6 +41,7 @@ import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
+import { useSvgExport } from '../panel/CutoutsSection/svgExport';
 import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
 import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
 import { InspectorDock } from './InspectorDock';
@@ -570,6 +571,11 @@ export function CutoutWorkspace() {
     mode.type === 'group-rotating' ||
     mode.type === 'group-scaling';
 
+  const { exportCutoutsAsSvg } = useSvgExport();
+  const exportSelectedAsSvg = useCallback(() => {
+    exportCutoutsAsSvg(cutouts.filter((c) => selection.has(c.id)));
+  }, [exportCutoutsAsSvg, cutouts, selection]);
+
   const contextMenuActions = useMemo(
     () =>
       buildCutoutContextActions({
@@ -581,6 +587,7 @@ export function CutoutWorkspace() {
         copySelected,
         duplicateSelected,
         deleteSelected,
+        exportSelectedAsSvg,
         pasteFromClipboard,
         selectAll,
         updateCutout,
@@ -604,6 +611,7 @@ export function CutoutWorkspace() {
       copySelected,
       duplicateSelected,
       deleteSelected,
+      exportSelectedAsSvg,
       pasteFromClipboard,
       selectAll,
       updateCutout,

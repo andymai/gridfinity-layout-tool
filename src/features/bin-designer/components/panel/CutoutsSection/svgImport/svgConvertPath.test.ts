@@ -103,11 +103,32 @@ describe('convertPath', () => {
   });
 
   it('Z deduplication: closing a path whose last point coincides with the first shrinks point count', () => {
-    // Explicitly place last point at same position as M to trigger dedup in CLOSE_PATH
+    // Explicitly place the last point where the M is, so the closing anchor is a duplicate
     const withDup = 'M 0 0 L 10 0 L 5 10 L 0 0 Z';
     const result = convertPath(makePath(withDup), IDENTITY, VIEW_BOX);
     expect(result).not.toBeNull();
     // The duplicate endpoint at (0,0) should be removed; we should have 3 points, not 4
     expect(result![0].path).toHaveLength(3);
+  });
+
+  it('keeps the closing curve: a C ending on the start anchor lands as its handleIn', () => {
+    // How every vector editor closes a curved shape. The final control point
+    // (30,10) arrives at an anchor coincident with the M, which dedup drops —
+    // the handle has to survive that or the closing span becomes a chord.
+    const result = convertPath(
+      makePath('M 0 0 C 10 0 20 0 30 0 C 30 10 10 10 0 0 Z'),
+      IDENTITY,
+      VIEW_BOX
+    );
+    const path = result?.[0].path;
+    expect(path).toHaveLength(2);
+
+    // cp2=(10,10) in SVG → (10, 90) flipped; anchor (0,0) → (0, 100).
+    // Asserted as a whole so a dropped handle fails here rather than reading
+    // as an absent-but-tolerated value.
+    expect(path?.[0].handleIn).toEqual({
+      dx: expect.closeTo(10, 5),
+      dy: expect.closeTo(-10, 5),
+    });
   });
 });

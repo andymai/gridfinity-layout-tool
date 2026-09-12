@@ -21,7 +21,7 @@ import {
   type Matrix,
 } from '@/shared/utils/svg';
 import { getPathBounds } from '../pathGeometry';
-import { dropCoincidentPoints } from '@/shared/utils/polyline';
+import { dropCoincidentPoints, COINCIDENT_POINT_EPSILON } from '@/shared/utils/polyline';
 
 export function wrapSingle(spec: ParsedCutoutSpec | null): ParsedCutoutSpec[] | null {
   return spec ? [spec] : null;
@@ -77,6 +77,35 @@ export function pointsToPathSpec(
 }
 
 /**
+ * Move the closing curve's incoming handle onto the first anchor.
+ *
+ * A closed curved path ends `C c1 c2 <start> Z`, so the final control point
+ * arrives at an anchor coincident with the first — one `dropCoincidentPoints`
+ * pops, taking the handle with it and flattening the closing span to a chord.
+ * On a four-segment circle that straightens a whole quadrant.
+ *
+ * The run can hold more than one anchor: `NORMALIZE_HVZ` rewrites `Z` as a line
+ * back to the start, so the curve's endpoint is followed by a plain corner. The
+ * handle belongs to the earliest of them.
+ */
+function carryClosingHandle(original: readonly PathPoint[], cleaned: PathPoint[]): PathPoint[] {
+  if (cleaned.length === 0) return cleaned;
+  const first = cleaned[0];
+  if (first.handleIn) return cleaned;
+
+  const eps2 = COINCIDENT_POINT_EPSILON * COINCIDENT_POINT_EPSILON;
+  let handle: PathPoint['handleIn'] = null;
+  for (let i = original.length - 1; i > 0; i--) {
+    const p = original[i];
+    if ((p.x - first.x) ** 2 + (p.y - first.y) ** 2 > eps2) break;
+    if (p === cleaned[cleaned.length - 1]) return cleaned;
+    if (p.handleIn) handle = p.handleIn;
+  }
+
+  return handle ? [{ ...first, handleIn: handle }, ...cleaned.slice(1)] : cleaned;
+}
+
+/**
  * Build a path spec with bounds from the flattened bezier curve.
  *
  * Anchor-only bounds clip cutouts whose curves bow outward beyond their
@@ -88,7 +117,7 @@ export function pathPointsToSpec(pathPoints: PathPoint[]): ParsedCutoutSpec | nu
   // SVG closes shapes by repeating the first vertex, and source art often has
   // duplicate/near-duplicate anchors; strip them so stored path data is
   // canonical instead of relying solely on render-time dedup.
-  const cleaned = dropCoincidentPoints(pathPoints);
+  const cleaned = carryClosingHandle(pathPoints, dropCoincidentPoints(pathPoints));
   if (cleaned.length < 2) return null;
 
   const { minX, minY, maxX, maxY } = getPathBounds(cleaned);

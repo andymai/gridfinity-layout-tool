@@ -29,6 +29,7 @@ function build(cutout: Cutout, overrides: Record<string, unknown> = {}) {
     copySelected: vi.fn(),
     duplicateSelected: vi.fn(),
     deleteSelected: vi.fn(),
+    exportSelectedAsSvg: vi.fn(),
     pasteFromClipboard: vi.fn(),
     selectAll: vi.fn(),
     updateCutout: vi.fn(),
@@ -220,5 +221,21 @@ describe('buildCutoutContextActions — centering', () => {
 
     byLabel('binDesigner.cutouts.centerInBin').onClick?.();
     expect(updateCutout).toHaveBeenLastCalledWith('c1', { x: 45, y: 45 });
+  });
+});
+
+describe('SVG export context action', () => {
+  it('is offered for a selection and runs the handler', () => {
+    const exportSelectedAsSvg = vi.fn();
+    const actions = build(makeCutout(), { exportSelectedAsSvg });
+
+    expect(labels(actions)).toContain('binDesigner.cutouts.exportSvg');
+    actions.find((a) => a.label === 'binDesigner.cutouts.exportSvg')?.onClick();
+    expect(exportSelectedAsSvg).toHaveBeenCalledTimes(1);
+  });
+
+  it('is withheld when nothing is selected', () => {
+    const actions = build(makeCutout(), { selection: new Set<string>() });
+    expect(labels(actions)).not.toContain('binDesigner.cutouts.exportSvg');
   });
 });

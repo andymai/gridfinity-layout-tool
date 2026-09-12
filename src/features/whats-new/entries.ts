@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-svg-export',
+    date: '2026-09-12',
+    kind: 'new',
+    title: { en: 'Export a cutout as an SVG' },
+    body: {
+      en: 'Right-click a cutout in the Cut Editor and choose Export SVG. The file is measured in millimetres, so a scanned tool outline opens at its real size in Inkscape or Illustrator, and comes back through Import SVG at that size once you have tidied the edges. Boxes and circles stay boxes and circles rather than arriving as a ring of points.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'wall-cutout-absolute-height',
     date: '2026-09-11',
     kind: 'improved',
