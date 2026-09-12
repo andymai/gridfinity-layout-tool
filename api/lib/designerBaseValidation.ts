@@ -163,6 +163,16 @@ export function validateWalls(walls: unknown): string | null {
       if (isNumber(sideConfig.depth) && !inRange(sideConfig.depth, 0, 100)) {
         return `walls.${side}.depth must be 0-100`;
       }
+      // The absolute overrides carry no upper bound of their own — the
+      // generator clamps each to the wall it is cutting — but a negative one
+      // would reach the kernel as a backwards profile.
+      for (const key of ['widthMm', 'depthMm'] as const) {
+        const value = sideConfig[key];
+        if (value === undefined || value === null) continue;
+        if (!isNumber(value) || value < 0) {
+          return `walls.${side}.${key} must be a non-negative number or null`;
+        }
+      }
       const sideCornerErr = validateCornerRadii(sideConfig, `walls.${side}`);
       if (sideCornerErr) return sideCornerErr;
     }

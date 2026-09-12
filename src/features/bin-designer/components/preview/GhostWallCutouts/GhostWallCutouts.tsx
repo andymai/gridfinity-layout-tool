@@ -19,6 +19,8 @@ import {
   computeCutoutCenter,
   cornerSlackFor,
   resolveCutoutCornerRadii,
+  resolveCutoutDrop,
+  resolveCutoutSpan,
   safeCutoutCornerRadii,
   type SafeCornerRadii,
 } from '@/shared/utils/wallCutoutPosition';
@@ -282,26 +284,16 @@ export function GhostWallCutouts() {
     for (const side of sides) {
       const sideConfig = walls[side.key];
       if (!sideConfig.enabled) continue;
-      const effectiveWidth = sideConfig.width;
-      const effectiveDepth = sideConfig.depth;
-      const effectiveAlignment = sideConfig.alignment;
-      const effectiveOffset = sideConfig.offset;
-      const effectiveWidthMm = sideConfig.widthMm;
-
-      const cutW =
-        effectiveWidthMm !== null
-          ? Math.min(effectiveWidthMm, side.wallSpan)
-          : side.wallSpan * (effectiveWidth / 100);
-      if (cutW <= 0 || effectiveDepth <= 0) continue;
-      const userCutH = wallHeight * (effectiveDepth / 100);
+      const cutW = resolveCutoutSpan(sideConfig, side.wallSpan);
+      const userCutH = resolveCutoutDrop(sideConfig, wallHeight);
       if (cutW < 0.1 || userCutH < 0.1) continue;
 
       const centerOffset = computeCutoutCenter(
         side.wallSpan,
         cutW,
         wallThickness,
-        effectiveAlignment,
-        effectiveOffset
+        sideConfig.alignment,
+        sideConfig.offset
       );
 
       // Ghost Z is in final mesh coordinates (translated up by SOCKET_HEIGHT).

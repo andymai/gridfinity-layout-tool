@@ -21,7 +21,11 @@
 import type { BinParams, TextMode, TextStyleDefaults, WallTextSide } from '@/shared/types/bin';
 import { WALL_TEXT_SIDES, resolveTextStyle } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import {
+  computeCutoutCenter,
+  resolveCutoutDrop,
+  resolveCutoutSpan,
+} from '@/shared/utils/wallCutoutPosition';
 import {
   computeHandleHoleGeometry,
   computeWallHandleSegments,
@@ -123,12 +127,8 @@ function obstacleRects(
 
   const cutout = params.walls.enabled ? params.walls[side] : undefined;
   if (cutout?.enabled) {
-    const cutWidth =
-      cutout.widthMm !== null
-        ? Math.min(cutout.widthMm, wallSpan)
-        : wallSpan * (cutout.width / 100);
-    const interiorWallHeight = wallHeight - params.wallThickness;
-    const cutHeight = interiorWallHeight * (cutout.depth / 100);
+    const cutWidth = resolveCutoutSpan(cutout, wallSpan);
+    const cutHeight = resolveCutoutDrop(cutout, wallHeight - params.wallThickness);
     if (cutWidth >= 0.1 && cutHeight >= 0.1) {
       const centerU = computeCutoutCenter(
         wallSpan,

@@ -57,6 +57,42 @@ describe('WallCutoutsSection', () => {
     expect(spanElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  describe('unit toggles', () => {
+    const enableWalls = (): void => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+        },
+      });
+    };
+
+    it('switches the height stepper to millimetres and back', () => {
+      enableWalls();
+      render(<WallCutoutsSection />);
+
+      expect(screen.getByLabelText('Height (%)')).toBeDefined();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Height unit' }));
+
+      expect(useDesignerStore.getState().params.walls.left.depthMm).toBe(30);
+      expect(screen.getByLabelText('Height (mm)')).toBeDefined();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Height unit' }));
+      expect(useDesignerStore.getState().params.walls.left.depthMm).toBeNull();
+    });
+
+    it('leaves the span in percent when only the height is switched', () => {
+      enableWalls();
+      render(<WallCutoutsSection />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Height unit' }));
+
+      expect(useDesignerStore.getState().params.walls.left.widthMm).toBeNull();
+      expect(screen.getByLabelText('Span (%)')).toBeDefined();
+    });
+  });
+
   describe('corner radii', () => {
     const enabled = () =>
       useDesignerStore.setState({

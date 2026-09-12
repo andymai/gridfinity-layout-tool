@@ -8,6 +8,56 @@
  * wide the opening is AT THE LIP before it can say what rail a lid keeps.
  */
 
+/** A cutout's stored span: an absolute mm override, or null to use the %. */
+export interface CutoutSpanSource {
+  readonly width: number;
+  readonly widthMm: number | null;
+}
+
+/** A cutout's stored drop: an absolute mm override, or absent to use the %. */
+export interface CutoutDropSource {
+  readonly depth: number;
+  readonly depthMm?: number | null;
+}
+
+/**
+ * Resolve an override/percentage pair against the run it is measured along.
+ *
+ * Any finite number counts, zero and negatives included: those resolve to a cut
+ * too small to build and the callers' `< 0.1` guards drop it, which is what a
+ * design carrying `widthMm: 0` already means. Only a value that is no number at
+ * all defers to the percentage — a hand-authored design can carry anything, and
+ * `Math.min(NaN, run)` is NaN, which passes those same guards and reaches the
+ * kernel.
+ */
+function resolveOverride(mm: number | null | undefined, percent: number, run: number): number {
+  if (typeof mm === 'number' && Number.isFinite(mm)) return Math.min(mm, run);
+  return run * (percent / 100);
+}
+
+/**
+ * How far a cutout spans along its wall, in mm.
+ *
+ * `wallSpan` is the wall's interior length, and doubles as the ceiling an
+ * absolute override is clamped to.
+ */
+export function resolveCutoutSpan(cfg: CutoutSpanSource, wallSpan: number): number {
+  return resolveOverride(cfg.widthMm, cfg.width, wallSpan);
+}
+
+/**
+ * How far a cutout reaches down from the top of its wall, in mm.
+ *
+ * `wallRun` is the material the cut is measured against, and it differs per
+ * caller — the outer walls use the interior height, an interior divider its
+ * own standing height. An absolute drop is what holds one cut line across bins
+ * of different heights; a percentage cannot, which is the point of the
+ * override.
+ */
+export function resolveCutoutDrop(cfg: CutoutDropSource, wallRun: number): number {
+  return resolveOverride(cfg.depthMm, cfg.depth, wallRun);
+}
+
 /**
  * Compute the horizontal center of a wall cutout accounting for alignment and offset.
  *

@@ -21,6 +21,8 @@ import {
   computeCutoutCenter,
   cornerSlackFor,
   resolveCutoutCornerRadii,
+  resolveCutoutDrop,
+  resolveCutoutSpan,
   safeCutoutCornerRadii,
   type CornerSlack,
   type CutoutCornerRadii,
@@ -309,7 +311,6 @@ export function computeInteriorDividerCutouts(
 ): InteriorDividerCutout[] {
   const cfg = params.walls.interior;
   if (!cfg.enabled || isPartialMask(params.cellMask)) return [];
-  if (cfg.width <= 0 || cfg.depth <= 0) return [];
 
   // The divider standing above the cavity floor, which is thicker than the wall
   // on a spec base. Measured against the wall, a cut at 100% carries on past
@@ -323,11 +324,9 @@ export function computeInteriorDividerCutouts(
     if (seg.leanDeg !== 0) continue;
     // Width and alignment are measured ALONG the wall, so use the true wall
     // length (`wallLen`), which exceeds the axis-projected `segLen` on tilted
-    // dividers. Match outer walls: absolute mm override clamps to the span,
-    // otherwise percentage of it.
-    const cutW =
-      cfg.widthMm !== null ? Math.min(cfg.widthMm, seg.wallLen) : seg.wallLen * (cfg.width / 100);
-    const cutH = dividerH * (cfg.depth / 100);
+    // dividers.
+    const cutW = resolveCutoutSpan(cfg, seg.wallLen);
+    const cutH = resolveCutoutDrop(cfg, dividerH);
     if (cutW < 0.1 || cutH < 0.1) continue;
     // Honour alignment + offset like outer walls. The cutout's span axis points
     // along the (possibly tilted) divider, so project the along-wall centre
@@ -366,13 +365,6 @@ function buildWallCutoutCutsInScope(
   const cutShapes: Shape3D[] = [];
   const cutoutShape = params.walls.shape;
 
-  const resolveEffective = (side: 'front' | 'back' | 'left' | 'right' | 'interior') => {
-    const cfg = params.walls[side];
-    return cfg.enabled
-      ? { effectiveWidth: cfg.width, effectiveDepth: cfg.depth }
-      : { effectiveWidth: 0, effectiveDepth: 0 };
-  };
-
   const maxThickness = Math.max(wallThickness, params.compartments.thickness);
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
   const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
@@ -398,16 +390,10 @@ function buildWallCutoutCutsInScope(
   for (const side of sides) {
     const cfg = params.walls[side.key];
     if (!cfg.enabled) continue;
-    const { effectiveWidth, effectiveDepth } = resolveEffective(side.key);
 
-    // Resolve cutout width: absolute mm override or percentage of wall span
-    const cutWidth =
-      cfg.widthMm !== null
-        ? Math.min(cfg.widthMm, side.wallSpan)
-        : side.wallSpan * (effectiveWidth / 100);
-    if (cutWidth <= 0 || effectiveDepth <= 0) continue;
+    const cutWidth = resolveCutoutSpan(cfg, side.wallSpan);
     const interiorHeight = wallHeight - wallThickness;
-    const userCutHeight = interiorHeight * (effectiveDepth / 100);
+    const userCutHeight = resolveCutoutDrop(cfg, interiorHeight);
     if (cutWidth < 0.1 || userCutHeight < 0.1) continue;
 
     // Resolve horizontal position from alignment + offset

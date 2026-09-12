@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'wall-cutout-absolute-height',
+    date: '2026-09-11',
+    kind: 'improved',
+    title: { en: 'Wall cutout height in millimetres' },
+    body: {
+      en: 'The height of a wall cutout has the same %/mm switch the span already had. In millimetres the opening is measured down from the rim, so a 6u bin and a 12u bin standing side by side cut to the same line instead of drifting apart with a percentage of each wall. A cutout deeper than its wall is trimmed to it.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'layout-folders',
     date: '2026-09-09',
     kind: 'new',

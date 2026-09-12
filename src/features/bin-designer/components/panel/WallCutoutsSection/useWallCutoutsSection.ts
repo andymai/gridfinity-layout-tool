@@ -91,6 +91,7 @@ export function useWallCutoutsSection() {
           alignment: source?.alignment ?? 'center',
           offset: source?.offset ?? 0,
           widthMm: source?.widthMm ?? null,
+          depthMm: source?.depthMm,
         },
       });
       return;
@@ -107,16 +108,14 @@ export function useWallCutoutsSection() {
         updateWallSide(side, DISABLED_WALL_CUTOUT);
       } else {
         // When linked, copy values from first active side; otherwise use defaults
-        const source =
-          linked && activeSides.length > 0
-            ? walls[activeSides[0]]
-            : {
-                width: DEFAULT_SPAN,
-                depth: DEFAULT_HEIGHT,
-                alignment: 'center' as const,
-                offset: 0,
-                widthMm: null,
-              };
+        const fallback: Omit<WallCutout, 'enabled'> = {
+          width: DEFAULT_SPAN,
+          depth: DEFAULT_HEIGHT,
+          alignment: 'center',
+          offset: 0,
+          widthMm: null,
+        };
+        const source = linked && activeSides.length > 0 ? walls[activeSides[0]] : fallback;
         updateWallSide(side, {
           enabled: true,
           width: source.width,
@@ -124,6 +123,7 @@ export function useWallCutoutsSection() {
           alignment: source.alignment,
           offset: source.offset,
           widthMm: source.widthMm,
+          depthMm: source.depthMm,
         });
       }
     },
@@ -187,6 +187,13 @@ export function useWallCutoutsSection() {
     [applySideUpdate]
   );
 
+  const setSideDepthMm = useCallback(
+    (side: WallSide, depthMm: number | null) => {
+      applySideUpdate(side, { depthMm });
+    },
+    [applySideUpdate]
+  );
+
   const setSideCornerTop = useCallback(
     (side: WallSide, radius: number) => {
       applySideUpdate(side, {
@@ -212,10 +219,11 @@ export function useWallCutoutsSection() {
     if (activeSides.length === 0) return undefined;
     const sideNames = activeSides.map((s) => t(`binDesigner.wallCutouts.${s}`)).join(', ');
     const first = walls[activeSides[0]];
+    const depthMm = first.depthMm ?? null;
     return t('binDesigner.wallCutouts.summary', {
       sides: sideNames,
-      span: String(first.width),
-      height: String(first.depth),
+      span: first.widthMm !== null ? `${first.widthMm}mm` : `${first.width}%`,
+      height: depthMm !== null ? `${depthMm}mm` : `${first.depth}%`,
     });
   }, [walls, activeSides, t]);
 
@@ -255,6 +263,7 @@ export function useWallCutoutsSection() {
       setSideAlignment,
       setSideOffset,
       setSideWidthMm,
+      setSideDepthMm,
       setSideCornerTop,
       setSideCornerBottom,
       toggleLinked,

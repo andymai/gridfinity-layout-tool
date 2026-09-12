@@ -251,8 +251,25 @@ describe('useWallCutoutsSection', () => {
 
     const { result } = renderHook(() => useWallCutoutsSection());
     expect(result.current.state.activeSides).toEqual(['left', 'right']);
-    expect(result.current.meta.summary).toContain('70');
-    expect(result.current.meta.summary).toContain('50');
+    expect(result.current.meta.summary).toContain('70%');
+    expect(result.current.meta.summary).toContain('50%');
+  });
+
+  it('summary reports each dimension in the unit it is actually set in', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, widthMm: 30, depthMm: 20 },
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+    expect(result.current.meta.summary).toContain('30mm');
+    expect(result.current.meta.summary).toContain('20mm');
   });
 
   it('toggleSide for interior works correctly', () => {
@@ -421,6 +438,46 @@ describe('useWallCutoutsSection', () => {
     });
 
     expect(useDesignerStore.getState().params.walls.left.widthMm).toBeNull();
+  });
+
+  it('setSideDepthMm updates all active sides when linked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setSideDepthMm('left', 20);
+    });
+
+    const { walls } = useDesignerStore.getState().params;
+    expect(walls.left.depthMm).toBe(20);
+    expect(walls.right.depthMm).toBe(20);
+  });
+
+  it('setSideDepthMm sets null to switch back to percentage mode', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, depthMm: 20 },
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useWallCutoutsSection());
+
+    act(() => {
+      result.current.handlers.setSideDepthMm('left', null);
+    });
+
+    expect(useDesignerStore.getState().params.walls.left.depthMm).toBeNull();
   });
 
   describe('interior auto-coupling on enable', () => {
