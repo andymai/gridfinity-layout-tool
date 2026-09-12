@@ -1,0 +1,24 @@
+src/features/whats-new/latest.ts
+  s_72e1ee92eb5a90::t_4ec8e4c21b6bfe 9
+src/features/whats-new/entries.ts
+  s_72e1ee92eb5a90::t_aa452f3bfa02d6 17-25
+  s_72e1ee92eb5a90::t_4ffc643641cd1a 16
+src/features/bin-designer/components/panel/CutoutsSection/svgExport/useSvgExport.test.ts
+  s_72e1ee92eb5a90::t_82245a1e0e8f24 1-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bbfb736acf1fa9cc373cba391e0285b810cdaebb",
+  "prompts": {},
+  "sessions": {
+    "s_72e1ee92eb5a90": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7e5a3d6-de40-48f7-83fe-c9001114cfa0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
