@@ -120,12 +120,15 @@ describe('convertPath', () => {
       IDENTITY,
       VIEW_BOX
     );
-    expect(result).not.toBeNull();
-    const path = result![0].path!;
+    const path = result?.[0].path;
     expect(path).toHaveLength(2);
-    // cp2=(10,10) in SVG → (10, 90) flipped; anchor (0,0) → (0, 100)
-    expect(path[0].handleIn).not.toBeNull();
-    expect(path[0].handleIn!.dx).toBeCloseTo(10, 5);
-    expect(path[0].handleIn!.dy).toBeCloseTo(-10, 5);
+
+    // cp2=(10,10) in SVG → (10, 90) flipped; anchor (0,0) → (0, 100).
+    // Asserted as a whole so a dropped handle fails here rather than reading
+    // as an absent-but-tolerated value.
+    expect(path?.[0].handleIn).toEqual({
+      dx: expect.closeTo(10, 5),
+      dy: expect.closeTo(-10, 5),
+    });
   });
 });
