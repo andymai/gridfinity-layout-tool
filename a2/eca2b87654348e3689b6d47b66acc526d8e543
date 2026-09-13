@@ -1,0 +1,139 @@
+src/shared/utils/drawerCeiling.test.ts
+  s_1cbc82b4f3936c::t_f27bb4d89c6141 7
+  s_1cbc82b4f3936c::t_fa0547f2f62f07 143-144
+  s_1cbc82b4f3936c::t_d4c4398e478480 130-131
+src/shared/utils/heightUnits.ts
+  s_1cbc82b4f3936c::t_ba4dd96509d528 24-27
+src/shared/utils/dividerRailPlan.test.ts
+  s_1cbc82b4f3936c::t_5203de5ed7b0ff 14
+  s_1cbc82b4f3936c::t_092149122b5a7b 100
+  s_1cbc82b4f3936c::t_33d2dbd6f8a026 128,130
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_1cbc82b4f3936c::t_814e541b1d33dc 60
+src/features/bin-designer/components/controls/CutoutFillControls/CutoutFillControls.test.tsx
+  s_1cbc82b4f3936c::t_052e2f57f64a13 4,9-11
+  s_1cbc82b4f3936c::t_9346e11a1518d5 65
+  s_1cbc82b4f3936c::t_54cd95f051caf5 53
+src/features/generation/worker/generators/binGenerator.scenario.taper.test.ts
+  s_1cbc82b4f3936c::t_944ebbe1fb3745 96-99
+src/features/bin-designer/utils/cutoutFill.test.ts
+  s_1cbc82b4f3936c::t_18be504e82db8a 124-129
+  s_1cbc82b4f3936c::t_36480f372791a5 3
+  s_1cbc82b4f3936c::t_3e35c9d1767b42 30-34,38-41
+src/shared/types/assemblyPlacement.test.ts
+  s_1cbc82b4f3936c::t_07d3e7e1e1a439 9
+  s_1cbc82b4f3936c::t_8ba8c466176cfc 70,72-74
+  s_1cbc82b4f3936c::t_bad717e89d2b02 56,58-60
+src/features/generation/worker/generators/socketBuilder.ts
+  s_1cbc82b4f3936c::t_a3409e04852fb5 383-384,388-391
+  s_1cbc82b4f3936c::t_2cd7d7a8746fff 311-313
+src/features/generation/worker/generators/binStackSeating.kernel.test.ts
+  s_1cbc82b4f3936c::t_3dc0ff493f1ec8 133
+  s_1cbc82b4f3936c::t_314400cc85a65a 14,16
+  s_1cbc82b4f3936c::t_ec05f1b7ec07c4 49
+src/features/bin-designer/hooks/useAssembledHeight.test.ts
+  s_1cbc82b4f3936c::t_edfd1a6ac7ad97 62
+  s_1cbc82b4f3936c::t_148014aab1aaac 9
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.test.ts
+  s_1cbc82b4f3936c::t_f74d0fc8e176dd 758-763
+  s_1cbc82b4f3936c::t_e5f5b0366cfd62 259,265
+  s_1cbc82b4f3936c::t_735c9525cf1334 96-101,103
+  s_1cbc82b4f3936c::t_88410e7726f69d 188-189,193-194,198-203,207-208
+  s_1cbc82b4f3936c::t_9deba15f580218 724-727
+  s_1cbc82b4f3936c::t_f36fd38f612071 234,245-246
+  s_1cbc82b4f3936c::t_3e6d7fb23518bc 5-17
+  s_1cbc82b4f3936c::t_bb665d8a483e1f 125
+  s_1cbc82b4f3936c::t_7b849a1a331947 175-177
+  s_1cbc82b4f3936c::t_d5a038277b75fb 269-272
+  s_1cbc82b4f3936c::t_e233ff77fc3487 286
+  s_1cbc82b4f3936c::t_a506cdc60b4486 751
+src/shared/utils/heightUnits.test.ts
+  s_1cbc82b4f3936c::t_e055fda9a94932 91
+  s_1cbc82b4f3936c::t_441b94b3ea5f8d 81
+src/features/bin-designer/components/panel/AssembledHeightBreakdown/AssembledHeightBreakdown.test.tsx
+  s_1cbc82b4f3936c::t_767aa210362298 76
+  s_1cbc82b4f3936c::t_2f40811e7ec932 85
+src/shared/utils/labelTabPlan.test.ts
+  s_1cbc82b4f3936c::t_02009e6381d39f 41-44
+  s_1cbc82b4f3936c::t_622932bb4fdacb 27-31
+  s_1cbc82b4f3936c::t_bd0fa691866eb0 51
+  s_1cbc82b4f3936c::t_238564f0aa3d02 3
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.test.ts
+  s_1cbc82b4f3936c::t_eaf51aa8170305 62,65,71
+  s_1cbc82b4f3936c::t_fa7f69cafa51aa 8
+api/lib/designerValidation.crossBoundary.test.ts
+  s_1cbc82b4f3936c::t_5a627ff275e842 41
+  s_1cbc82b4f3936c::t_425f8a2ff18f00 169
+src/features/bin-designer/utils/binDimensions.test.ts
+  s_1cbc82b4f3936c::t_b44b9018c5e94d 96-97
+  s_1cbc82b4f3936c::t_d09da79a1c5fac 17-19
+  s_1cbc82b4f3936c::t_0c72b1f8881378 36-37
+src/shared/printSettings/gridfinityGeometry.ts
+  s_1cbc82b4f3936c::t_d399c733ba047b 63,65,67
+src/shared/printSettings/gridfinityGeometry.test.ts
+  s_1cbc82b4f3936c::t_97868bb44c6024 32-41
+api/lib/assemblyValidation.ts
+  s_1cbc82b4f3936c::t_083e1d41e3654c 325-327
+api/lib/designerValidationConstants.ts
+  s_1cbc82b4f3936c::t_1a92fac8d86e5d 21
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_1cbc82b4f3936c::t_2c8cd2e94232a2 273-274
+  s_1cbc82b4f3936c::t_2274e21590482e 1000-1002,1005
+  s_1cbc82b4f3936c::t_0c7258162ff995 3
+  s_1cbc82b4f3936c::t_19ea4fd962fc88 1006-1008
+  s_4c07de50f947e1::t_d55c06b567acba 1009-1011
+src/shared/utils/fitTestPlan.test.ts
+  s_1cbc82b4f3936c::t_8f9908687dafa0 3
+  s_1cbc82b4f3936c::t_c2a718357256ed 111-114,119
+src/features/bin-designer/store/designer.scenario.cutouts.test.ts
+  s_1cbc82b4f3936c::t_d3386ed3b45699 3
+  s_1cbc82b4f3936c::t_9fb30a5a09a49a 428-430,433
+src/features/generation/worker/generators/scenarios/cutoutLabelSockets.ts
+  s_1cbc82b4f3936c::t_455e9457d6ebf6 15
+  s_1cbc82b4f3936c::t_5b90af1abb7a79 69
+src/shared/utils/detachableFeetPlan.test.ts
+  s_1cbc82b4f3936c::t_cb5c1bc8d57ff5 12-15
+  s_1cbc82b4f3936c::t_2ad8d0eb21bd5d 70-73
+src/features/generation/worker/generators/baseplatePockets.ts
+  s_1cbc82b4f3936c::t_21784d49deba2d 67-70
+  s_1cbc82b4f3936c::t_dc069162bc7a1b 95-98
+  s_1cbc82b4f3936c::t_7f7ef791c25e9e 30
+src/shared/printSettings/assembledHeight.test.ts
+  s_1cbc82b4f3936c::t_e1cf8784ca3680 283-284
+src/features/generation/worker/generators/__snapshots__/baseplateGenerator.scenario.magnetOversized.test.ts.snap
+  s_1cbc82b4f3936c::t_9019f7c08cf824 3,5
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.exportAndLarge.test.ts.snap
+  s_1cbc82b4f3936c::t_c972a3e88b586e 5,7
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.knifeBlock.test.ts.snap
+  s_1cbc82b4f3936c::t_e22f2e5a32210b 3,5,7,9,11
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.customShape.test.ts.snap
+  s_1cbc82b4f3936c::t_ea73970e62fdd5 15,27
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dividerPatterns.test.ts.snap
+  s_1cbc82b4f3936c::t_318cf35a29948a 3,7,9,17,19,21,25
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.honeycombJunction.test.ts.snap
+  s_1cbc82b4f3936c::t_59f8f858a58399 3,5,7,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a2eca2b87654348e3689b6d47b66acc526d8e543",
+  "prompts": {},
+  "sessions": {
+    "s_1cbc82b4f3936c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a2978186-35f9-44e7-962b-d9514ca96ffc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_4c07de50f947e1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a1652fc12e24096de",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
