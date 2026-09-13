@@ -57,7 +57,7 @@ const MIN_RING_DIM = 0.5;
 
 /** Inset of the foot bottom ring from the cell edge — matches `socketBuilder`'s
  *  simplified (preview) profile so the draft lines up with the on-screen exact. */
-const FOOT_BOTTOM_INSET = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+const FOOT_BOTTOM_INSET = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
 
 function abortIfCancelled(signal?: AbortSignal): void {
   if (signal?.aborted) throw new Error('Generation cancelled');

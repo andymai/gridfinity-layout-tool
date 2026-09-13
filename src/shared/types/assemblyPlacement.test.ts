@@ -6,6 +6,7 @@ import {
   DEFAULT_PART_TRANSFORM,
 } from '@/shared/items/assembly/descriptor';
 import { assemblyHeightUnits, assemblyOverhangMm, assemblyRiseMm } from './assemblyPlacement';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 function part(
   type: AssemblyPartNode['type'],
@@ -52,8 +53,11 @@ describe('assemblyRiseMm', () => {
       base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 10, lowEdge: 'front' } },
     };
     const rad = (10 * Math.PI) / 180;
+    // The socket never tilts; only the height above it (flat 50 − socket) rotates.
     expect(assemblyRiseMm(structure, 10, EXTENT)).toBeCloseTo(
-      5 + 45 * Math.cos(rad) + EXTENT.d * Math.sin(rad)
+      GRIDFINITY_SPEC.SOCKET_HEIGHT +
+        (50 - GRIDFINITY_SPEC.SOCKET_HEIGHT) * Math.cos(rad) +
+        EXTENT.d * Math.sin(rad)
     );
   });
 
@@ -63,8 +67,11 @@ describe('assemblyRiseMm', () => {
       base: { ...DEFAULT_ASSEMBLY_STRUCTURE.base, wedge: { angleDeg: 15, lowEdge: 'left' } },
     };
     const rad = (15 * Math.PI) / 180;
+    // The socket never tilts; only the height above it (flat 10 − socket) rotates.
     expect(assemblyRiseMm(structure, 10, EXTENT)).toBeCloseTo(
-      5 + 5 * Math.cos(rad) + EXTENT.w * Math.sin(rad)
+      GRIDFINITY_SPEC.SOCKET_HEIGHT +
+        (10 - GRIDFINITY_SPEC.SOCKET_HEIGHT) * Math.cos(rad) +
+        EXTENT.w * Math.sin(rad)
     );
   });
 

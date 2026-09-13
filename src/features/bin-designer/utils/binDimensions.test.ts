@@ -14,9 +14,9 @@ describe('binDimensions', () => {
     expect(dims.innerD).toBeCloseTo(81.1, 5);
     // totalH = 3 × 7 = 21
     expect(dims.totalH).toBeCloseTo(21, 5);
-    // socketed default → wallHeight = 21 − 5 = 16, floorZ = 5
-    expect(dims.wallHeight).toBeCloseTo(16, 5);
-    expect(dims.floorZ).toBeCloseTo(5, 5);
+    // socketed default → wallHeight = 21 − SOCKET_HEIGHT, floorZ = SOCKET_HEIGHT
+    expect(dims.wallHeight).toBeCloseTo(21 - GRIDFINITY.SOCKET_HEIGHT, 5);
+    expect(dims.floorZ).toBeCloseTo(GRIDFINITY.SOCKET_HEIGHT, 5);
     expect(dims.isFlat).toBe(false);
   });
 
@@ -33,8 +33,8 @@ describe('binDimensions', () => {
     const dims = binDimensions({ ...DEFAULT_BIN_PARAMS, heightUnitMm: 10 });
     // totalH = 3 × 10 = 30
     expect(dims.totalH).toBeCloseTo(30, 5);
-    // wallHeight = 30 − 5 = 25
-    expect(dims.wallHeight).toBeCloseTo(25, 5);
+    // wallHeight = 30 − SOCKET_HEIGHT
+    expect(dims.wallHeight).toBeCloseTo(30 - GRIDFINITY.SOCKET_HEIGHT, 5);
     // XY unchanged
     expect(dims.outerW).toBeCloseTo(83.5, 5);
   });
@@ -93,8 +93,8 @@ describe('binDimensions', () => {
     expect(dims.outerD).toBeCloseTo(59.5, 5);
     // totalH = 4 × 8 = 32
     expect(dims.totalH).toBeCloseTo(32, 5);
-    // wallHeight = 32 − 5 = 27 (socketed)
-    expect(dims.wallHeight).toBeCloseTo(27, 5);
+    // wallHeight = 32 − SOCKET_HEIGHT (socketed)
+    expect(dims.wallHeight).toBeCloseTo(32 - GRIDFINITY.SOCKET_HEIGHT, 5);
   });
 });
 

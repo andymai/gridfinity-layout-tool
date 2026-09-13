@@ -27,7 +27,7 @@ import { pocketTemplateCache } from './baseplateCaches';
 
 /** Insets at each Z breakpoint — same taper profile as bin socket but at full cell size */
 const INSET_TOP = 0;
-const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
+const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2;
 
 function pocketCacheKey(
   cellW: number,
@@ -64,13 +64,10 @@ function pocketSection(
 /**
  * Build a single pocket cutter at the origin using multi-section loft.
  *
- * Profile sections (same Z breakpoints as bin socket):
- *   Z=+ε:    extension above block (avoids coplanar boolean failures)
- *   Z=0:     full cell size (top opening)
- *   Z=-0.25: same as top (vertical clearance step)
- *   Z=-2.4:  inset by taper amount (end of big taper)
- *   Z=-4.2:  same inset (vertical wall section)
- *   Z=-5.0:  max inset (bottom)
+ * Profile sections (same Z breakpoints as the bin socket): an extension above
+ * the block that avoids coplanar boolean failures, the full-size top opening, a
+ * vertical clearance step, the end of the big taper, the vertical wall, and the
+ * max-inset bottom face.
  *
  * When throughCut is true the cutter extends past SOCKET_HEIGHT to clear the
  * whole slab; when false the pocket stops at SOCKET_HEIGHT, leaving a floor for
@@ -95,10 +92,10 @@ function buildPocketCutter(
   const s0 = s(COPLANAR_MARGIN, INSET_TOP);
   const sections = [
     s(0, INSET_TOP),
-    s(-(CLEARANCE / 2), INSET_TOP), // -0.25
-    s(-SOCKET_BIG_TAPER, INSET_MID), // -2.4
-    s(-(SOCKET_BIG_TAPER + (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH)), INSET_MID), // -4.2
-    s(-SOCKET_HEIGHT, INSET_BOT), // -5.0
+    s(-(CLEARANCE / 2), INSET_TOP),
+    s(-SOCKET_BIG_TAPER, INSET_MID),
+    s(-(SOCKET_BIG_TAPER + (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH)), INSET_MID),
+    s(-SOCKET_HEIGHT, INSET_BOT),
   ];
 
   if (throughCut) {

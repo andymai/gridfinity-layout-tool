@@ -11,7 +11,7 @@ import {
 
 /**
  * A default 2x2x3 bin: innerW = innerD = 2*42 - 0.5 - 2*1.2 = 81.1mm, interior
- * ceiling at 15.3mm, and the rail band's floor at 12.95mm above the cavity
+ * ceiling at 15.55mm, and the rail band's floor at 13.2mm above the cavity
  * floor. Every expectation below is stated against those, not re-derived.
  */
 function bin(compartments: CompartmentConfig, overrides: Partial<BinParams> = {}): BinParams {
@@ -97,7 +97,7 @@ describe('dividerRailBlocks', () => {
     });
 
     it('one just above it still does', () => {
-      expect(dividerRailBlocks(bin({ ...TWO_COLUMNS, dividerHeight: 13 }))).toHaveLength(2);
+      expect(dividerRailBlocks(bin({ ...TWO_COLUMNS, dividerHeight: 13.5 }))).toHaveLength(2);
     });
 
     it('a collar lifts the band clear without moving the divider', () => {
@@ -125,9 +125,9 @@ describe('dividerRailBlocks', () => {
   });
 
   describe('a leaning divider sweeps across the rail band', () => {
-    // Divider top at the 15.3mm ceiling, band floor at 12.95mm: the rail sees
+    // Divider top at the 15.55mm ceiling, band floor at 13.2mm: the rail sees
     // 2.35mm of the wall, over which a lean travels 2.35 * tan(lean).
-    const BAND_DEPTH = 15.3 - 12.95;
+    const BAND_DEPTH = 15.55 - 13.2;
     const leaning = (rakeDeg: number): readonly DividerRailBlock[] =>
       dividerRailBlocks(
         bin({

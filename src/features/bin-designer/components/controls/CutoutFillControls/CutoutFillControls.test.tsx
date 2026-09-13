@@ -1,11 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { CutoutFillControls } from './CutoutFillControls';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
-/** A 3u socketed bin walls 16mm, so a 4mm offset leaves a 12mm fill. */
+const WALL_3U = 21 - GRIDFINITY_SPEC.SOCKET_HEIGHT;
+
+/** A 3u socketed bin walls WALL_3U, so a 4mm offset leaves a WALL_3U − 4 fill. */
 function setBin(topOffset: number, fillReference: 'rim' | 'floor'): void {
   useDesignerStore.getState().setParam('height', 3);
   useDesignerStore.getState().updateCutoutConfig({ topOffset, fillReference });
@@ -47,7 +50,7 @@ describe('CutoutFillControls', () => {
     render(<CutoutFillControls />);
     const slider = screen.getByRole('slider');
     fireEvent.change(slider, { target: { value: '6' } });
-    expect(config().topOffset).toBeCloseTo(10, 6);
+    expect(config().topOffset).toBeCloseTo(WALL_3U - 6, 6);
   });
 
   it('shows the unselected reading, so the conversion is never hidden', () => {
@@ -59,6 +62,6 @@ describe('CutoutFillControls', () => {
   it('bounds the offset slider short of the wall, so a fill always survives', () => {
     setBin(4, 'rim');
     render(<CutoutFillControls />);
-    expect(screen.getByRole('slider')).toHaveAttribute('max', '15.5');
+    expect(screen.getByRole('slider')).toHaveAttribute('max', String(WALL_3U - 0.5));
   });
 });

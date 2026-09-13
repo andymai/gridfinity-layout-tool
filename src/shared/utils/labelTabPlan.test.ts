@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, LabelTabConfig } from '@/features/bin-designer/types';
 import {
   clickRailZBandAboveFloor,
@@ -23,8 +24,11 @@ function withLabel(label: Partial<LabelTabConfig>, over: Partial<BinParams> = {}
 describe('labelTabInteriorDims', () => {
   it('subtracts the socket and the lip taper from a socketed bin', () => {
     const dims = labelTabInteriorDims(withLabel({}));
-    // 6 x 7mm = 42 total, less the 5mm socket, less the 0.7mm lip taper.
-    expect(dims?.interiorHeight).toBeCloseTo(36.3, 5);
+    // 6 x 7mm = 42 total, less the socket, less the lip's bottom taper.
+    expect(dims?.interiorHeight).toBeCloseTo(
+      42 - GRIDFINITY_SPEC.SOCKET_HEIGHT - GRIDFINITY_SPEC.LIP_SMALL_TAPER,
+      5
+    );
     // 2 x 42 - 0.5 clearance - 2 x wallThickness.
     expect(dims?.innerW).toBeCloseTo(83.5 - 2 * DEFAULT_BIN_PARAMS.wallThickness, 5);
   });
@@ -34,14 +38,17 @@ describe('labelTabInteriorDims', () => {
     const flat = labelTabInteriorDims(
       withLabel({}, { base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } })
     );
-    expect((flat?.interiorHeight ?? 0) - (socketed?.interiorHeight ?? 0)).toBeCloseTo(5, 5);
+    expect((flat?.interiorHeight ?? 0) - (socketed?.interiorHeight ?? 0)).toBeCloseTo(
+      GRIDFINITY_SPEC.SOCKET_HEIGHT,
+      5
+    );
   });
 
   it('keeps the lip taper out of a bin that has no stacking lip', () => {
     const noLip = labelTabInteriorDims(
       withLabel({}, { base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } })
     );
-    expect(noLip?.interiorHeight).toBeCloseTo(37, 5);
+    expect(noLip?.interiorHeight).toBeCloseTo(42 - GRIDFINITY_SPEC.SOCKET_HEIGHT, 5);
   });
 
   it('has no interior to speak of for a base-only tile', () => {

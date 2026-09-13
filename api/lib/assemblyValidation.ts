@@ -322,8 +322,9 @@ function validLabel(label: unknown): boolean {
   );
 }
 
-/** Socket stack height above Z=0, mirroring GRIDFINITY_SPEC.SOCKET_HEIGHT. */
-const SOCKET_HEIGHT_MM = 5;
+/** Socket stack height above Z=0, mirroring GRIDFINITY_SPEC.SOCKET_HEIGHT.
+ *  Guarded against drift by designerValidation.crossBoundary.test.ts. */
+export const SOCKET_HEIGHT_MM = 4.75;
 
 const PART_PARAM_KEYS: Record<string, readonly string[]> = {
   post: ['diameter', 'height', 'taperDeg', 'tipChamfer'],

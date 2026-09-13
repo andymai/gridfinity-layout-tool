@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '../constants';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, LidSlideConfig } from '../types';
 import { DEFAULT_LID_SLIDE_CONFIG } from '../types/lid';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -269,7 +270,8 @@ describe('checkLidCompatibility', () => {
 
   describe('tall divider pieces', () => {
     it('flags slotted bin with manual height exceeding interior', () => {
-      const interior = DEFAULT_BIN_PARAMS.height * DEFAULT_BIN_PARAMS.heightUnitMm - 5; // SOCKET_HEIGHT
+      const interior =
+        DEFAULT_BIN_PARAMS.height * DEFAULT_BIN_PARAMS.heightUnitMm - GRIDFINITY_SPEC.SOCKET_HEIGHT;
       const params = withOverrides({
         style: 'slotted',
         dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, height: interior + 5 },
@@ -995,10 +997,18 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
   });
 
   it('warns when the retaining floor under the magnet gets marginal', () => {
-    // 1U bin interior ≈ 2mm; a 1.5mm magnet leaves only ~0.5mm floor (< 0.6mm).
+    // 1U bin interior = 7 − SOCKET_HEIGHT. Size the magnet to leave a 0.5mm
+    // floor (< the 0.6mm warning threshold). Derived from the interior so the
+    // socket change can't lift the floor back over the threshold and mute it.
     const params = magnetic(
       { height: 1 },
-      { retentionMagnet: { diameter: 6, depth: 1.5, edgeMagnets: 0 } }
+      {
+        retentionMagnet: {
+          diameter: 6,
+          depth: 7 - GRIDFINITY_SPEC.SOCKET_HEIGHT - 0.5,
+          edgeMagnets: 0,
+        },
+      }
     );
     const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetTooDeepForBin');
     expect(issue?.severity).toBe('warning');

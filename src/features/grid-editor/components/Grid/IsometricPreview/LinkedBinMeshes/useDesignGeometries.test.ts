@@ -5,6 +5,7 @@ import type { DesignId } from '@/core/types';
 import { designId } from '@/core/types';
 import type { MeshData } from '@/shared/types/generation';
 import type { LinkedDesignMesh } from '@/shared/hooks/useLinkedDesignMeshes';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   buildDesignGeometry,
   clearDesignGeometryCache,
@@ -58,15 +59,16 @@ describe('buildDesignGeometry', () => {
       ...makeMesh(true),
       vertices: new Float32Array([0, 0, 0, 10, 0, 0, 10, 10, 0, 0, 10, 10]),
     };
+    const s = GRIDFINITY_SPEC.SOCKET_HEIGHT;
     const feet: MeshData = {
       ...makeMesh(true),
-      vertices: new Float32Array([0, 0, -5, 10, 0, -5, 10, 10, -5, 0, 10, 0]),
+      vertices: new Float32Array([0, 0, -s, 10, 0, -s, 10, 10, -s, 0, 10, 0]),
     };
     const geometry = buildDesignGeometry({ ...body, detachableFeetMesh: feet });
     geometry.computeBoundingBox();
     expect(geometry.boundingBox?.min.z).toBeCloseTo(0, 6);
     // Body top (was 10) rides up with the lift.
-    expect(geometry.boundingBox?.max.z).toBeCloseTo(15, 6);
+    expect(geometry.boundingBox?.max.z).toBeCloseTo(10 + GRIDFINITY_SPEC.SOCKET_HEIGHT, 6);
     geometry.dispose();
   });
 

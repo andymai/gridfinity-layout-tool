@@ -4,6 +4,7 @@ import type { Bin, Layer } from '@/core/types';
 import type { BaseplateHeightParams } from '@/shared/printSettings/baseplateHeight';
 import { createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { drawerCeilingFit, type LinkedDesignRise } from './drawerCeiling';
 import { LIP_PROTRUSION_MM, STACK_JUNCTION_MM } from './heightUnits';
 
@@ -126,8 +127,8 @@ describe('drawerCeilingFit', () => {
 
   // A flat or tray base has no foot to drop into the pockets, so it rests on
   // the plate's TOP FACE — the full printed height, not the drawer floor. On
-  // the default plate that is a 5mm difference, larger than the 4.3mm lip
-  // overshoot this whole check exists to catch.
+  // the default plate that is a SOCKET_HEIGHT (4.75mm) difference, larger than
+  // the 4.3mm lip overshoot this whole check exists to catch.
   it('stands a socketless linked design on the plate top, not the drawer floor', () => {
     const linkedBin = bin({ id: binId('flat'), height: heightUnits(4) });
     const linkedRise = (): LinkedDesignRise => ({ riseMm: 50, socketless: true });
@@ -139,8 +140,8 @@ describe('drawerCeilingFit', () => {
       ceilingMm: 54,
       linkedRise,
     });
-    // Plain plate: SOCKET_HEIGHT (5mm) tall, floor depth 0.
-    expect(result?.tallestMm).toBeCloseTo(55, 5);
+    // Plain plate: SOCKET_HEIGHT tall, floor depth 0.
+    expect(result?.tallestMm).toBeCloseTo(50 + GRIDFINITY_SPEC.SOCKET_HEIGHT, 5);
     expect(result?.fits).toBe(false);
   });
 

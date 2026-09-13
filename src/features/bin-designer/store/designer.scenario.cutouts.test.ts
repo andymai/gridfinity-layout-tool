@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { Cutout } from '@/features/bin-designer/types';
 
 describe('DesignerStore - cutout actions', () => {
@@ -424,11 +425,12 @@ describe('DesignerStore - cutout fill anchoring (#3697)', () => {
     useDesignerStore.getState().setParam('height', 3);
     setFill(4, 'floor');
 
-    // 3u socketed walls 16mm, so the fill is 12mm. A flat base has no socket
-    // and walls the full 21mm, so the offset has to grow to 9 to hold it.
+    // 3u socketed walls 21 − SOCKET_HEIGHT, so a 4mm offset leaves that fill.
+    // A flat base reclaims the socket and walls the full 21mm, so the offset
+    // grows by SOCKET_HEIGHT to hold the same fill.
     useDesignerStore.getState().updateBase({ style: 'flat' });
 
-    expect(config().topOffset).toBeCloseTo(9, 6);
+    expect(config().topOffset).toBeCloseTo(4 + GRIDFINITY_SPEC.SOCKET_HEIGHT, 6);
   });
 
   it('leaves the offset alone when the change does not move the wall height', () => {

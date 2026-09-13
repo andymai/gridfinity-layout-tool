@@ -11,10 +11,9 @@
  * Mating the two solids says both were partly right. The junction IS one
  * constant, as the tool argued — it does not move with bin height, footprint or
  * height unit, so a per-configuration constant cannot be describing it. But the
- * constant is 4.75mm: the foot's flare and the lip's funnel are parallel 45
+ * constant is 4.5mm: the foot's flare and the lip's funnel are parallel 45
  * degree surfaces that mate face to face, so the bin above settles one BASE
- * profile below the lip top, not one lip. The old figure was 0.45mm shy of it
- * and every stack readout inherited the error.
+ * profile (less the clearance step) below the lip top, not one lip.
  *
  * The value is stated below as a measurement and never derived. Recomputing it
  * from the socket and lip profiles would only prove the arithmetic
@@ -47,7 +46,7 @@ beforeAll(async () => {
  * across every case below and unchanging; update it only from a fresh sweep,
  * never from `STACK_JUNCTION_MM` — the two agreeing is the assertion.
  */
-const JUNCTION_MM = 4.75;
+const JUNCTION_MM = 4.5;
 
 /**
  * Tessellation slack, in mm. The contact is taper-on-taper, so both faces are
@@ -131,7 +130,7 @@ describe('bin-on-bin stacking (#2374)', () => {
     // for halves, 4.87 for quarters, 5.00 for thirds — cannot be describing it.
     // One case per axis the junction could plausibly depend on: body height,
     // footprint, and a non-standard unit. Intermediate sizes are the same
-    // geometry extruded further and were measured at 4.75 too.
+    // geometry extruded further and were measured at 4.5 too.
     const cases: Spec[] = [
       { height: 12 },
       { width: 1, depth: 1 },

@@ -12,6 +12,7 @@
 
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_SOCKET_CLICK_POCKET_DEPTH_MM,
@@ -65,7 +66,7 @@ function interior(params: BinParams): { innerW: number; innerD: number; wallHeig
   const innerD = params.depth * params.gridUnitMm - 0.5 - 2 * params.wallThickness;
   // Solid boards fill to the interior ceiling; the socket hangs from there
   // less its own top offset, which the plan applies itself.
-  const wallHeight = params.height * params.heightUnitMm - 4.75;
+  const wallHeight = params.height * params.heightUnitMm - GRIDFINITY_SPEC.SOCKET_HEIGHT;
   return { innerW, innerD, wallHeight };
 }
 

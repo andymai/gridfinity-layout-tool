@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams } from '@/features/bin-designer/types';
 import {
   MIN_CUTOUT_FILL_MM,
@@ -26,12 +27,18 @@ function withFill(
 
 describe('cutoutWallHeightMm', () => {
   it('subtracts the socket from the total height', () => {
-    // 3u x 7mm = 21mm total, less the 5mm socket.
-    expect(cutoutWallHeightMm(params({ height: 3, heightUnitMm: 7 }))).toBeCloseTo(16, 6);
+    // 3u x 7mm = 21mm total, less the socket.
+    expect(cutoutWallHeightMm(params({ height: 3, heightUnitMm: 7 }))).toBeCloseTo(
+      21 - GRIDFINITY_SPEC.SOCKET_HEIGHT,
+      6
+    );
   });
 
   it('tracks a non-default height unit', () => {
-    expect(cutoutWallHeightMm(params({ height: 3, heightUnitMm: 10 }))).toBeCloseTo(25, 6);
+    expect(cutoutWallHeightMm(params({ height: 3, heightUnitMm: 10 }))).toBeCloseTo(
+      30 - GRIDFINITY_SPEC.SOCKET_HEIGHT,
+      6
+    );
   });
 });
 
@@ -114,8 +121,12 @@ describe('reanchorCutoutFill', () => {
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
       cutoutConfig: { topOffset: 4, fillReference: 'floor' },
     });
-    // A flat base has no socket, so the wall is the full 21mm.
-    expect(reanchorCutoutFill(after, heldCutoutFillMm(before))).toBeCloseTo(21 - 12, 6);
+    // A flat base reclaims the socket, so the wall grows the full 21mm and the
+    // 4mm offset grows by SOCKET_HEIGHT to hold the same fill.
+    expect(reanchorCutoutFill(after, heldCutoutFillMm(before))).toBeCloseTo(
+      4 + GRIDFINITY_SPEC.SOCKET_HEIGHT,
+      6
+    );
   });
 
   it('does nothing when the wall height is unchanged', () => {

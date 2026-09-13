@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import {
   FIT_TEST_MIN_THICKNESS_MM,
@@ -107,14 +108,15 @@ describe('thickness', () => {
   // exceed the material the body offers, and a card sliced past it reaches
   // into the base socket, whose feet are separate islands.
   it('never offers more thickness than the material below the fill surface', () => {
-    // 2x2x4u solid: wallHeight = 28 - 5 = 23. A through cut at the full 23.
-    const params = board({}, [cutout({ cutDepth: 23 })]);
-    expect(fitTestThicknessRangeMm(params).max).toBe(23);
+    // 2x2x4u solid: wallHeight = 28 - SOCKET_HEIGHT. A through cut at the full wall.
+    const wallHeight = 28 - GRIDFINITY_SPEC.SOCKET_HEIGHT;
+    const params = board({}, [cutout({ cutDepth: wallHeight })]);
+    expect(fitTestThicknessRangeMm(params).max).toBe(wallHeight);
   });
 
   it('charges the top offset against the usable material', () => {
     const params = board({ cutoutConfig: { topOffset: 6 } }, [cutout({ cutDepth: 23 })]);
-    expect(fitTestThicknessRangeMm(params).max).toBe(17);
+    expect(fitTestThicknessRangeMm(params).max).toBe(28 - GRIDFINITY_SPEC.SOCKET_HEIGHT - 6);
   });
 
   it('clamps an out-of-range value and falls back to the default on a non-number', () => {

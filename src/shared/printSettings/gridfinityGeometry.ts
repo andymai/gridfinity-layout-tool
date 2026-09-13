@@ -60,11 +60,11 @@ export const GRIDFINITY_SPEC = {
   WALL_THICKNESS: 0.95, // mm (d_wall from spec: outer_fillet - inner_fillet)
 
   // Base socket (per-cell interface that slides onto baseplate grid)
-  SOCKET_HEIGHT: 5, // mm total socket depth below bin floor
+  SOCKET_HEIGHT: 4.75, // mm total socket depth below bin floor
   SOCKET_SMALL_TAPER: 0.8, // mm bottom 45° chamfer (matches BASE_BOTTOM_FILLET)
-  SOCKET_BIG_TAPER: 2.4, // mm upper 45° chamfer
+  SOCKET_BIG_TAPER: 2.15, // mm upper 45° chamfer
   // Derived: SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SMALL_TAPER - BIG_TAPER = 1.8mm
-  // Derived: SOCKET_TAPER_WIDTH = SMALL_TAPER + BIG_TAPER = 3.2mm (inset from outer edge)
+  // Derived: SOCKET_TAPER_WIDTH = SMALL_TAPER + BIG_TAPER = 2.95mm (inset from outer edge)
 
   // Corner radius for socket profile
   SOCKET_CORNER_RADIUS: 4, // mm (r_base from spec)
