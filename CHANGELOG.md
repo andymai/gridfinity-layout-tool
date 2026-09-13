@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.490.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.1...gridfinity-layout-tool-v4.490.2) (2026-09-13)
+
+
+### Bug Fixes
+
+* level the proud nub at stack-grid cross junctions ([#4234](https://github.com/andymai/gridfinity-layout-tool/issues/4234)) ([#4239](https://github.com/andymai/gridfinity-layout-tool/issues/4239)) ([d50ac79](https://github.com/andymai/gridfinity-layout-tool/commit/d50ac794b1bf43e6fc132fdd404a0ca10591f9ff))
+
 ## [4.490.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.0...gridfinity-layout-tool-v4.490.1) (2026-09-12)
 
 
