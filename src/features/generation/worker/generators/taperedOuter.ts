@@ -235,6 +235,12 @@ export function buildTaperedOuter(
  *
  * `zTop` may exceed the wall — sections at/above the band repeat, so the loft
  * is prismatic up there and embossed text clips the same as it always did.
+ *
+ * `grow` widens the envelope by that much on every side (a smaller inset from
+ * the outer wall). A feature welded into the wall by a small penetration clips
+ * against `grow = penetration` so the taper trims its outward overshoot without
+ * shaving the weld overlap; it stays inside the wall as long as
+ * `grow < wallThickness`.
  */
 export function buildTaperedInnerEnvelope(
   outerW: number,
@@ -244,7 +250,8 @@ export function buildTaperedInnerEnvelope(
   taper: ResolvedTaper,
   zTop: number,
   offX: number,
-  offY: number
+  offY: number,
+  grow = 0
 ): Shape3D {
   const { bandLevels, loft } = taperSampler(
     outerW,
@@ -255,7 +262,7 @@ export function buildTaperedInnerEnvelope(
     offX,
     offY
   );
-  return loft([...bandLevels.filter((z) => z < zTop), zTop], wallThickness);
+  return loft([...bandLevels.filter((z) => z < zTop), zTop], wallThickness - grow);
 }
 
 /** Hollow tapered body for a single-cavity bin: the whole inner envelope removed. */
