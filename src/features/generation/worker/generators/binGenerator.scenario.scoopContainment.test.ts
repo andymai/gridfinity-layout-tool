@@ -33,7 +33,7 @@ beforeAll(async () => {
  * outer loft, not the rim-sized prism; with no taper the two coincide.
  */
 async function verticesOutsideOuterWall(params: BinParams): Promise<number> {
-  const { drawRoundedRectangle, cut, mesh, unwrap, withScope } = await import('brepjs');
+  const { drawRoundedRectangle, cut, mesh, unwrap, withScope, isEmpty } = await import('brepjs');
   const { sketch } = await import('./meshUtils');
   const { buildScoopRamps } = await import('./scoopRampBuilder');
   const { buildTaperedOuter } = await import('./taperedOuter');
@@ -77,13 +77,13 @@ async function verticesOutsideOuterWall(params: BinParams): Promise<number> {
               wallHeight + 2
             )
           );
-      try {
-        const outside = scope.register(unwrap(cut(ramp, outerBody as never)));
-        const m = mesh(outside, { tolerance: 0.02, angularTolerance: 8, cache: false });
-        return m.vertices.length / 3;
-      } catch {
-        return 0; // empty intersection: nothing outside
-      }
+      const outside = scope.register(unwrap(cut(ramp, outerBody as never)));
+      // A fully contained ramp cuts to an empty solid — that is the pass, and
+      // brepjs returns it normally. Only that case is zero; a `cut`/`mesh`
+      // failure must surface as a thrown error, not read as containment.
+      if (isEmpty(outside)) return 0;
+      const m = mesh(outside, { tolerance: 0.02, angularTolerance: 8, cache: false });
+      return m.vertices.length / 3;
     });
   } finally {
     ramp.delete();
