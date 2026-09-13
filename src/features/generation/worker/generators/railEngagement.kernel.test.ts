@@ -2,10 +2,11 @@
  * Pins the datum every rail-clearance assertion is stated against.
  *
  * `worstRailInterference` does not read zero on a bin that seats perfectly: the
- * click rail's bump protrudes past its spine and sits inside the stacking lip's
- * undercut, which is the snap fit engaging. Every clearance suite therefore
- * asserts `< RAIL_ENGAGEMENT_CEILING + tolerance`, and that only means anything
- * while the ceiling matches what a feature-free bin actually measures.
+ * click rail's nub sits in the void under the stacking lip's overhang, which a
+ * column probe cannot tell from solid. A feature-free bin scores
+ * `RAIL_ENGAGEMENT_FLOOR` there; the clearance suites assert
+ * `< RAIL_ENGAGEMENT_CEILING + tolerance` and only mean anything while this
+ * datum still matches what such a bin measures.
  *
  * If this fails, the rail profile or the probe moved. Re-measure and update the
  * constant deliberately — do not widen the tolerances that depend on it.
@@ -19,7 +20,7 @@ import {
   interferenceAt,
   lidZOffset,
   railKeepoutIntrusionMm,
-  RAIL_ENGAGEMENT_CEILING,
+  RAIL_ENGAGEMENT_FLOOR,
   worstRailInterference,
 } from './__kernel-tests__/lidSeating';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
@@ -87,9 +88,9 @@ describe('rail engagement datum', () => {
     [3, 2],
     [3, 3],
   ])(
-    'a feature-free %ix%i reads the ceiling',
+    'a feature-free %ix%i reads the floor',
     async (w, d) => {
-      expect(await floorFor(w, d)).toBeCloseTo(RAIL_ENGAGEMENT_CEILING, 2);
+      expect(await floorFor(w, d)).toBeCloseTo(RAIL_ENGAGEMENT_FLOOR, 2);
     },
     300_000
   );
@@ -138,7 +139,7 @@ describe('rail engagement datum', () => {
     const lid = generateLid(params);
     if (!bin || !lid) throw new Error('expected the pair to build');
     for (const mm of wallReadings(bin, lid, lidZOffset(params))) {
-      expect(mm).toBeCloseTo(RAIL_ENGAGEMENT_CEILING, 2);
+      expect(mm).toBeCloseTo(RAIL_ENGAGEMENT_FLOOR, 2);
     }
   }, 300_000);
 });

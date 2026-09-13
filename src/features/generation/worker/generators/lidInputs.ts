@@ -149,6 +149,14 @@ export interface LidInputs {
    */
   readonly retentionMagnets: boolean;
   /**
+   * True for a tray bottom printed floor-down on the bed (`base.trayBottom`),
+   * false for a detachable lid that seats on the bin's lip. A bed-anchored part
+   * does not drop `mateRelief * √2` onto the lip the way a seated lid does, so
+   * its retention bosses stay on the nominal `retentionInterfaceZ` plane (which
+   * its skirt is already sized against) rather than taking the seat settle.
+   */
+  readonly floorAtBed: boolean;
+  /**
    * The wall a hinged lid's magnet catch pins, or `null` for the four-corner
    * placement a magnetic attachment asks for. Resolved here so the boss builder
    * and the bin's pad stage filter through one call with the same answer.
@@ -508,6 +516,9 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     magnetAnchor: params.magnetAnchor,
     attachment,
     retentionMagnets,
+    // A detachable lid seats on the lip; `resolveTrayBottomInputs` overrides this
+    // for a bed-anchored tray bottom.
+    floorAtBed: false,
     retentionMagnetSide,
     retentionMagnetDiameter: params.lid.retentionMagnet.diameter,
     retentionMagnetDepth: params.lid.retentionMagnet.depth,

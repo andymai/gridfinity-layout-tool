@@ -90,6 +90,9 @@ export function trayBottomSkirtDepth(inputs: LidInputs, floorAtBed = false): num
 export function resolveTrayBottomInputs(params: BinParams): LidInputs {
   return {
     ...resolveLidInputs(trayBottomParams(params)),
+    // A tray bottom prints floor-down on the bed, so its retention bosses stay on
+    // the nominal interface plane rather than taking the lid-seat settle.
+    floorAtBed: params.base.trayBottom?.floorAtBed ?? false,
     // `computeDisabledRails` suppresses rails on sides where the COVERED bin's
     // features (label tabs, wall cutouts, handles) intrude into the lip zone.
     // A tray is a separate design from the bin it caps, so those features are

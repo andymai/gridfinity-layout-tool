@@ -25,6 +25,7 @@ import { LID_COPLANAR_MARGIN } from './lidConstants';
 import {
   retentionBossRadius,
   retentionBossFaceZ,
+  retentionInterfaceZ,
   retentionMagnetInset,
   retentionMagnetPositions,
   retentionMagnetPlacementsFor,
@@ -88,7 +89,11 @@ export function addLidRetentionMagnets(
   // The pocket is still only `retentionMagnetDepth` deep at the tip, so the
   // rest of the pillar is solid. It prints as a vertical column (the lid
   // exports floor-down, bosses up), needing no supports.
-  const interfaceZ = retentionBossFaceZ(inputs);
+  // A seated lid drops `mateRelief * √2` onto the lip, so its boss is built one
+  // settle high (`retentionBossFaceZ`) to land at the right gap. A tray bottom is
+  // anchored to the bed and never takes that drop; its boss stays on the nominal
+  // plane, matching the skirt `trayBottomSkirtDepth` sizes off `retentionInterfaceZ`.
+  const interfaceZ = inputs.floorAtBed ? retentionInterfaceZ(inputs) : retentionBossFaceZ(inputs);
   // Weld up into the floor plate by a coplanar margin so the fuse is solid.
   const bossTopZ = -topThickness + LID_COPLANAR_MARGIN;
   const bossHeight = bossTopZ - interfaceZ;
