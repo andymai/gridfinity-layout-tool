@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.490.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.2...gridfinity-layout-tool-v4.490.3) (2026-09-13)
+
+
+### Bug Fixes
+
+* **generation:** clip finger scoops to the tapered wall ([#4242](https://github.com/andymai/gridfinity-layout-tool/issues/4242)) ([08fa995](https://github.com/andymai/gridfinity-layout-tool/commit/08fa99593acc70aed735eafaffa4c0439433cb4c))
+* hook the snap-fit lid's click rail under the stacking lip ([#4237](https://github.com/andymai/gridfinity-layout-tool/issues/4237)) ([c7f6c89](https://github.com/andymai/gridfinity-layout-tool/commit/c7f6c89c8cef0ce192487a35412c76e4e354008f))
+
 ## [4.490.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.1...gridfinity-layout-tool-v4.490.2) (2026-09-13)
 
 
