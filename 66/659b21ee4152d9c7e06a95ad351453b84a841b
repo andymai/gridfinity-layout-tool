@@ -1,0 +1,32 @@
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_de1f6d75da2812::t_ede69b40a4eed4 72-75,89-92,107-110
+  s_de1f6d75da2812::t_a0513efc911b12 289-291
+  s_de1f6d75da2812::t_33f74f2ff98c8b 349
+  s_de1f6d75da2812::t_47d801c171ef4b 387
+  s_de1f6d75da2812::t_c5a9ba6414f2c8 40-41
+  s_de1f6d75da2812::t_2b275ff7a083ad 287-288,292-294,297-318
+  s_de1f6d75da2812::t_7ad09414f66fbc 384-386,388-390
+src/features/generation/worker/generators/taperedOuter.ts
+  s_de1f6d75da2812::t_084650580aa3ff 238-243,253-254,265
+src/features/generation/worker/generators/binGenerator.scenario.scoopContainment.test.ts
+  s_de1f6d75da2812::t_065075c529bb5e 99-113,129,131-165
+  s_de1f6d75da2812::t_85c84d980c7818 24,30-32,34,36,39,42-44,47-50,53-54,63-67,72-87
+  s_de1f6d75da2812::t_874fa0fc27cb4b 33
+  s_de1f6d75da2812::t_50b0678b6279a2 128,130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "66659b21ee4152d9c7e06a95ad351453b84a841b",
+  "prompts": {},
+  "sessions": {
+    "s_de1f6d75da2812": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ee59460-8700-4f75-a3e8-fd904a31ab74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
