@@ -37,6 +37,8 @@ import {
 import { findCompartmentBounds } from './compartmentBuilder';
 import { resolveFloorRaises } from './floorRaiseBuilder';
 import { compartmentHasTiltedEdge, isRectangularCompartment } from '@/shared/types/bin';
+import { buildTaperedInnerEnvelope } from './taperedOuter';
+import type { ResolvedTaper } from './overhang';
 /**
  * Build finger scoop ramps that curve from the bin floor up to `scoop.side`.
  *
@@ -67,7 +69,10 @@ export function buildScoopRamps(
   wallHeight: number,
   wallThickness: number,
   floorZ: number,
-  floorRaiseFor: (compartmentId: number) => number = () => 0
+  floorRaiseFor: (compartmentId: number) => number = () => 0,
+  taper: ResolvedTaper | null = null,
+  offX = 0,
+  offY = 0
 ): Shape3D | null {
   if (!params.scoop.enabled) return null;
   if (params.style !== 'standard') return null;
@@ -81,7 +86,10 @@ export function buildScoopRamps(
       wallHeight,
       wallThickness,
       floorZ,
-      floorRaiseFor
+      floorRaiseFor,
+      taper,
+      offX,
+      offY
     );
     // Clone so scope can dispose the fused original on exit.
     return fused ? unwrap(clone(fused)) : null;
@@ -96,7 +104,10 @@ function buildScoopRampsInScope(
   wallHeight: number,
   wallThickness: number,
   floorZ: number,
-  floorRaiseFor: (compartmentId: number) => number
+  floorRaiseFor: (compartmentId: number) => number,
+  taper: ResolvedTaper | null,
+  offX: number,
+  offY: number
 ): Shape3D | null {
   const hasLip = params.base.stackingLip;
   // The profile is authored with its floor at local Z=0 and the solid lifted
@@ -273,19 +284,38 @@ function buildScoopRampsInScope(
   // rounded corners stay inside the outer wall (wallPenetration < wallThickness)
   // and the straight edges keep the weld depth, so the overshoot is trimmed but
   // the flat-face weld is not. Interior scoops sit inside the footprint (no-op).
+  //
+  // A bottom-band taper narrows the outer wall toward the floor, exactly where
+  // the ramp stands, so a full-width ramp end on a tapered side would poke
+  // through the tapered wall. There the clip has to follow the wall down, so use
+  // the tapered inner envelope (grown by the same penetration) instead of a
+  // prism. The ramp never dips below z=0 (its underside buries UP into the
+  // floor), so the envelope's z=0 start contains it, and on untapered sides the
+  // envelope is prismatic — so it subsumes the rounded-corner clip too.
   try {
     const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
-    const footprint = scope.register(
-      sketch(
-        drawRoundedRectangle(
-          innerW + 2 * wallPenetration,
-          innerD + 2 * wallPenetration,
-          cavityCornerR + wallPenetration
-        ),
-        'XY',
-        -1
-      ).extrude(wallHeight + 2)
-    );
+    const clip = taper
+      ? buildTaperedInnerEnvelope(
+          innerW + 2 * wallThickness,
+          innerD + 2 * wallThickness,
+          wallHeight,
+          wallThickness,
+          taper,
+          wallHeight + 2,
+          offX,
+          offY,
+          wallPenetration
+        )
+      : sketch(
+          drawRoundedRectangle(
+            innerW + 2 * wallPenetration,
+            innerD + 2 * wallPenetration,
+            cavityCornerR + wallPenetration
+          ),
+          'XY',
+          -1
+        ).extrude(wallHeight + 2);
+    const footprint = scope.register(clip);
     return scope.register(unwrap(intersect(fused as ValidSolid, footprint as ValidSolid)));
   } catch {
     // The clip only trims a sub-mm corner overshoot — best-effort, like the
@@ -316,7 +346,7 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v6',
+        'v7',
         dim.shellKey,
         stableSerialize(params.scoop),
         params.style,
@@ -351,7 +381,13 @@ export const scoopRampsFeature: FeatureBuilder = {
       ctx.dimensions.wallHeight,
       ctx.params.wallThickness,
       ctx.dimensions.floorThickness,
-      (id) => raises.get(id) ?? 0
+      (id) => raises.get(id) ?? 0,
+      // A tapered outer wall narrows toward the floor, so the ramp clips against
+      // the tapered inner envelope (recentred by the overhang asymmetry) rather
+      // than a prism, or it pokes through the tapered wall.
+      ctx.dimensions.overhang.taper,
+      ctx.dimensions.innerOffsetX,
+      ctx.dimensions.innerOffsetY
     );
     return result ? [result] : null;
   },
