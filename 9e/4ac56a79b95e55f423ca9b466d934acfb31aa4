@@ -1,0 +1,20 @@
+src/features/generation/worker/generators/binGenerator.scenario.scoopContainment.test.ts
+  s_de1f6d75da2812::t_8c2a7b6cddaa05 36
+  s_de1f6d75da2812::t_b1b175f8bc914f 80-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9e4ac56a79b95e55f423ca9b466d934acfb31aa4",
+  "prompts": {},
+  "sessions": {
+    "s_de1f6d75da2812": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ee59460-8700-4f75-a3e8-fd904a31ab74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
