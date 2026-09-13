@@ -15,7 +15,12 @@
 
 import { drawRoundedRectangle, unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, Drawing, Sketch, ValidSolid } from 'brepjs';
-import { COPLANAR_OVERLAP, pocketCornerRadius, safeSectionRect } from './generatorConstants';
+import {
+  COPLANAR_OVERLAP,
+  CORNER_RADIUS,
+  pocketCornerRadius,
+  safeSectionRect,
+} from './generatorConstants';
 import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { isRegionFilled } from '@/shared/utils/cellMask';
@@ -132,6 +137,69 @@ function buildStackLipCutter(inputs: LidInputs): Shape3D {
   });
 }
 
+/**
+ * Junction relief: shave the proud nub off each grid junction.
+ *
+ * Where two dividers cross, or a divider meets the perimeter ring, the four
+ * surrounding pocket corners are rounded, so their cutters leave a small square
+ * of slab standing at the full `SOCKET_HEIGHT` while the straight divider runs
+ * on either side are shaved to the socket rim (`SOCKET_HEIGHT - CLEARANCE/2`) by
+ * the pockets' full-width top openings. That leftover nub reads as a raised flap
+ * on the grid top (it stands ~0.3mm proud of the dividers).
+ *
+ * Cutting from the rim height upward removes exactly the proud material:
+ * everything at or below the rim is already gone, so the cutter only bites the
+ * nub. That is why the footprint can be generous (over a divider run or a
+ * pocket it re-cuts empty space) without reaching the seating taper below the
+ * rim (no bin foot ever lands on a divider crossing) or narrowing the pockets.
+ */
+const JUNCTION_RELIEF_FLOOR_Z = SOCKET_HEIGHT - CLEARANCE / 2;
+// Half-footprint of the relief. The nub fans ~one pocket-corner-radius down each
+// divider arm from the crossing (the arms stay proud until the perpendicular
+// pockets' rounded corners have curved clear), so the cutter has to reach that
+// far to take the whole star, not just the centre.
+const JUNCTION_RELIEF_HALF_MM = CORNER_RADIUS;
+const JUNCTION_RELIEF_CORNER_MM = 0.5;
+
+/** One relief cutter at the origin; callers translate a copy to each junction. */
+function buildJunctionReliefCutter(): Shape3D {
+  const side = 2 * JUNCTION_RELIEF_HALF_MM;
+  const top = SOCKET_HEIGHT + LID_COPLANAR_MARGIN;
+  const sketch = drawRoundedRectangle(side, side, JUNCTION_RELIEF_CORNER_MM).sketchOnPlane(
+    'XY',
+    JUNCTION_RELIEF_FLOOR_Z
+  ) as Sketch;
+  return sketch.extrude(top - JUNCTION_RELIEF_FLOOR_Z);
+}
+
+/**
+ * Interior crossing positions that carry a proud junction nub: every crossing
+ * of an INTERIOR cell-boundary line with another. The outer boundary lines are
+ * excluded, so both the four ring corners and the T-junctions where a divider
+ * meets an edge are left alone. A crossing surrounded by pockets on all sides
+ * is where an over-generous relief only re-cuts empty pocket space, never the
+ * perimeter lip. Derived from the same cell decomposition the pockets use, so it
+ * tracks half and fractional cells without a second source of truth.
+ */
+export function collectJunctions(
+  cornerXs: readonly number[],
+  cornerYs: readonly number[]
+): Array<readonly [number, number]> {
+  const interior = (vals: readonly number[]): number[] => {
+    const uniq = [...new Set(vals.map((v) => Math.round(v * 1e4) / 1e4))].sort((a, b) => a - b);
+    return uniq.slice(1, -1); // drop the two outer boundary lines
+  };
+  const xs = interior(cornerXs);
+  const ys = interior(cornerYs);
+  const out: Array<readonly [number, number]> = [];
+  for (const x of xs) {
+    for (const y of ys) {
+      out.push([x, y] as const);
+    }
+  }
+  return out;
+}
+
 /** The slice of {@link LidInputs} that locates a cell against the mask. */
 export type LidCellGrid = Pick<
   LidInputs,
@@ -184,10 +252,16 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
   if (inputs.stackLipOnly) {
     pockets.push(scope.register(buildStackLipCutter(inputs)));
   } else {
+    const cornerXs: number[] = [];
+    const cornerYs: number[] = [];
     forEachCell(
       cellsX,
       cellsY,
       (cell) => {
+        const hx = (cell.widthUnits * gridUnitMm) / 2;
+        const hy = (cell.depthUnits * gridUnitMmY) / 2;
+        cornerXs.push(cell.centerX - hx, cell.centerX + hx);
+        cornerYs.push(cell.centerY - hy, cell.centerY + hy);
         if (!isLidCellFilled(inputs, cell)) return;
         const pocket = buildLidStackPocketCutter(
           cell.widthUnits * gridUnitMm,
@@ -205,6 +279,20 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
         fractionalEdgeY: inputs.fractionalEdgeY,
       }
     );
+
+    // Relief the proud junction nubs. Skipped for cellMask lids: their grid is
+    // irregular and the ring follows the polygon outline, so a square relief
+    // could bite a real edge rather than an interior crossing.
+    if (!inputs.cellMask) {
+      const junctions = collectJunctions(cornerXs, cornerYs);
+      if (junctions.length > 0) {
+        const base = buildJunctionReliefCutter();
+        for (const [x, y] of junctions) {
+          pockets.push(scope.register(translate(base, [x, y, 0])));
+        }
+        base.delete();
+      }
+    }
   }
 
   if (pockets.length > 0) {
