@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.490.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.3...gridfinity-layout-tool-v4.490.4) (2026-09-13)
+
+
+### Bug Fixes
+
+* **generation:** clip finger scoops to the tapered wall ([#4242](https://github.com/andymai/gridfinity-layout-tool/issues/4242)) ([491c4fa](https://github.com/andymai/gridfinity-layout-tool/commit/491c4fae9803bbb944c143780c920aba55cfca40))
+
 ## [4.490.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.2...gridfinity-layout-tool-v4.490.3) (2026-09-13)
 
 
