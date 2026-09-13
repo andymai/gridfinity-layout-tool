@@ -41,7 +41,7 @@ import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfini
 import {
   LID_CLICK_RAIL_DROP_BELOW_WALL,
   LID_CLICK_RAIL_TOP_CHAMFER,
-  LID_CLICK_RAIL_OUT,
+  LID_CLICK_RAIL_MAX_OUT,
   LID_CLICK_RAIL_INNER,
 } from '@/features/bin-designer/types/lid';
 
@@ -690,12 +690,12 @@ const LABEL_RAIL_MARGIN = 2;
  * footprint sits in its path.
  *
  * A deliberate symmetric over-estimate: the real profile is asymmetric,
- * reaching 0.8mm inboard and 1.85mm outboard, and this uses their mean in both
- * directions. Every resulting error over-blocks except one, which needs a tab
- * under ~1.2mm wide on a side wall — narrower than `MIN_LABEL_TAB_WIDTH` can
- * produce.
+ * reaching `LID_CLICK_RAIL_INNER` inboard and `LID_CLICK_RAIL_MAX_OUT`
+ * outboard, and this uses their mean in both directions. Every resulting error
+ * over-blocks except one, which needs a tab under ~1.2mm wide on a side wall —
+ * narrower than `MIN_LABEL_TAB_WIDTH` can produce.
  */
-const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INNER) / 2;
+const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_MAX_OUT - LID_CLICK_RAIL_INNER) / 2;
 
 /** One run of wall a rail may occupy, in along-axis coordinates. */
 export interface RailSegment {

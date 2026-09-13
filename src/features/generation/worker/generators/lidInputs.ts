@@ -115,6 +115,15 @@ export interface LidInputs {
    * wall reads as the full `cavityInset` (= 3.75mm).
    */
   readonly cavityInset: number;
+  /**
+   * The BIN's wall thickness. The lip's 45 degree support dies into the bin's
+   * cavity face, so this is how far out the undercut pocket under the lip
+   * actually reaches — the bound on how much catch a click rail can take. On a
+   * stock 1.2mm wall the pocket is at its deepest; a thick-walled bin has
+   * almost none, and `clickRailProfile` gives the catch back rather than aiming
+   * the nub into solid wall.
+   */
+  readonly binWallThickness: number;
   readonly stackableTop: boolean;
   /**
    * Already gated on `stackableTop` here, so `buildStackGrid` can branch on the
@@ -139,6 +148,14 @@ export interface LidInputs {
    * are excluded). Dedicated dims — independent of the stack `magnet*` fields.
    */
   readonly retentionMagnets: boolean;
+  /**
+   * True for a tray bottom printed floor-down on the bed (`base.trayBottom`),
+   * false for a detachable lid that seats on the bin's lip. A bed-anchored part
+   * does not drop `mateRelief * √2` onto the lip the way a seated lid does, so
+   * its retention bosses stay on the nominal `retentionInterfaceZ` plane (which
+   * its skirt is already sized against) rather than taking the seat settle.
+   */
+  readonly floorAtBed: boolean;
   /**
    * The wall a hinged lid's magnet catch pins, or `null` for the four-corner
    * placement a magnetic attachment asks for. Resolved here so the boss builder
@@ -478,6 +495,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     lidOuterD,
     lidCornerR,
     fitClearance,
+    binWallThickness: params.wallThickness,
     mateRelief,
     topThickness,
     cavityExtraMm: cavityExtra,
@@ -498,6 +516,9 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     magnetAnchor: params.magnetAnchor,
     attachment,
     retentionMagnets,
+    // A detachable lid seats on the lip; `resolveTrayBottomInputs` overrides this
+    // for a bed-anchored tray bottom.
+    floorAtBed: false,
     retentionMagnetSide,
     retentionMagnetDiameter: params.lid.retentionMagnet.diameter,
     retentionMagnetDepth: params.lid.retentionMagnet.depth,

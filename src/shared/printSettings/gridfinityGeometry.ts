@@ -40,6 +40,14 @@ export const GRIDFINITY_SPEC = {
   // − LIP_OVERLAP. Must remain < LIP_SMALL_TAPER so the interior cavity
   // still clears the lip base.
   LIP_OVERLAP: 0.1, // mm
+  // How far below the wall top the lip's 45° angled support starts — the
+  // bottom of the vertical throat, and so the ceiling of the undercut pocket
+  // a snap-fit lid's rail hooks into. Below this the inner face falls away at
+  // 45° until it meets the bin's own cavity face, which is what makes the
+  // pocket shallower on a thick-walled bin. `boxTopShape` builds the profile
+  // from this (its LIP_EXTENSION) and `clickRailProfile` aims the rail's catch
+  // at it; the two must not drift.
+  LIP_SUPPORT_DROP: 1.2, // mm
 
   // Magnet holes (spec defaults; configurable via BinParams.base)
   MAGNET_DIAMETER: 6.5, // mm (6mm magnet + tolerance)

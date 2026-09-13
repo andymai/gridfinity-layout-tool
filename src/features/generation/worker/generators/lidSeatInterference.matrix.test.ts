@@ -53,6 +53,7 @@ import {
   railKeepoutIntrusionMm,
   worstRailInterferenceDelta,
   RAIL_FLUSH_FILL_MM,
+  RAIL_FLUSH_FILL_NARROW_MM,
   type SeatedPair,
 } from './__kernel-tests__/lidSeating';
 import { allPairs, uncoveredPairs, type Axis } from '@/test/pairwise';
@@ -66,13 +67,14 @@ import type { BinParams, CompartmentConfig } from '@/features/bin-designer/types
 const TOLERANCE_MM = 0.05;
 
 /**
- * How many scooped cases read {@link RAIL_FLUSH_FILL_MM}.
+ * How many scooped cases read a flush fill — {@link RAIL_FLUSH_FILL_MM}, or
+ * {@link RAIL_FLUSH_FILL_NARROW_MM} on the one-cell-wide footprint.
  *
  * A scoop's chute only lies under a rail on some pairings; the rest read clean.
  * Pinned as a count so both directions fail: a case that stops carrying it, and
  * a new one that starts.
  */
-const SCOOP_CASES_AT_FLUSH_FILL = 3;
+const SCOOP_CASES_AT_FLUSH_FILL = 4;
 
 const grid = (cols: number, rows: number): CompartmentConfig => ({
   cols,
@@ -305,7 +307,11 @@ describe('nothing intrudes into the lid seating volume', () => {
     // Classified from every scooped case, not from `intruding`: a scooped case
     // reading below the tolerance never enters that list, so filtering it would
     // let such a case vanish from both sides of the check.
-    const atFlushFill = scooped.filter((i) => Math.abs(i.mm - RAIL_FLUSH_FILL_MM) < TOLERANCE_MM);
+    const atFlushFill = scooped.filter(
+      (i) =>
+        Math.abs(i.mm - RAIL_FLUSH_FILL_MM) < TOLERANCE_MM ||
+        Math.abs(i.mm - RAIL_FLUSH_FILL_NARROW_MM) < TOLERANCE_MM
+    );
     const unexplained = intruding.filter((i) => !atFlushFill.some((a) => a.case === i.case));
 
     // Completeness is asserted above over the GENERATED cases; a build that

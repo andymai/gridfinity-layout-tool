@@ -20,6 +20,7 @@ import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   lidZOffset,
   RAIL_ENGAGEMENT_CEILING,
+  RAIL_ENGAGEMENT_FLOOR,
   worstRailInterference,
 } from './__kernel-tests__/lidSeating';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
@@ -242,8 +243,14 @@ describe('lid click rails clear label tabs', () => {
     if (!bin) throw new Error('expected the bin to build');
     if (!blindLid) throw new Error('expected the lid to build');
 
+    // 1.21mm, against the 0.30mm a clean bin of this shape reads. It was 2.5mm
+    // before the rail was reshaped to hook the lip: the shelf fouls the rail's
+    // body, and the new body is shallower, so the same defect now shows up
+    // smaller. Stated against the plain-bin floor rather than the ceiling for
+    // that reason — the ceiling has to cover asymmetric overhang, which is a
+    // larger number than this clash produces.
     expect(worstRailInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(
-      RAIL_ENGAGEMENT_CEILING + 0.4
+      RAIL_ENGAGEMENT_FLOOR + 0.5
     );
   }, 300000);
 });

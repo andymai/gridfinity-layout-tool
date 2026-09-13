@@ -10,6 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { railSegmentsClearOfLabelTabs } from '@/shared/utils/labelTabPlan';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
+import { LID_CLICK_RAIL_MAX_OUT, LID_CLICK_RAIL_INNER } from '@/features/bin-designer/types/lid';
 
 /** A back-wall tab spanning the given X range, `depth` mm deep from `wallY`. */
 function backTab(xMin: number, xMax: number, wallY: number, depth: number): LabelTabFootprint {
@@ -46,18 +47,20 @@ describe('railSegmentsClearOfLabelTabs', () => {
   });
 
   it('decides on the rail line within the profile half-width, not loosely', () => {
-    // RAIL_HALF_WIDTH is 1.45mm. Without a case straddling it the constant
-    // could be anything from just above zero to tens of mm and every other
-    // case here would still pass.
+    // Straddles `RAIL_HALF_WIDTH`, derived here from the same two constants
+    // `labelTabPlan` builds it from rather than restated: without a case either
+    // side of it the number could be anything from just above zero to tens of
+    // mm and every other case in this file would still pass.
+    const halfWidth = (LID_CLICK_RAIL_MAX_OUT - LID_CLICK_RAIL_INNER) / 2;
     const railCross = 37.5;
     // Tab's cross span ends just INSIDE the rail's half-width: still blocks.
     const inside = railSegmentsClearOfLabelTabs(-50, 50, false, railCross, [
-      backTab(-40, railCross - 1.4, 50, 12),
+      backTab(-40, railCross - (halfWidth - 0.05), 50, 12),
     ]);
     expect(inside[0].hi).toBeLessThan(50);
     // Just OUTSIDE it: the rail is untouched.
     const outside = railSegmentsClearOfLabelTabs(-50, 50, false, railCross, [
-      backTab(-40, railCross - 1.5, 50, 12),
+      backTab(-40, railCross - (halfWidth + 0.05), 50, 12),
     ]);
     expect(outside).toEqual([{ lo: -50, hi: 50 }]);
   });

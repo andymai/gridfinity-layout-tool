@@ -13,7 +13,12 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { lidZOffset, magnetSeatGap, worstSeatInterference } from './__kernel-tests__/lidSeating';
+import {
+  lidZOffset,
+  lidSeatedZOffset,
+  magnetSeatGap,
+  worstSeatInterference,
+} from './__kernel-tests__/lidSeating';
 import { LID_MAGNET_SEAT_GAP } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
@@ -69,7 +74,16 @@ describe('a magnetic lid seats on its bin with the magnets a seat gap apart', ()
       // lip; the reported defect left the pads 0.5mm inside the bosses.
       // A gap much wider costs holding force — 4.5mm was the shipped value
       // moved it the other way.
-      expect(magnetSeatGap(bin, lid, params, dz)).toBeCloseTo(LID_MAGNET_SEAT_GAP, 1);
+      //
+      // Read at the SEATED offset, not the anchor. The plug's relief means the
+      // lid rests `relief * sqrt(2)` lower and the bosses ride down with it, so
+      // the anchor reading is that much rosier than the joint really is — it
+      // showed 0.20mm while the seated pair measured -0.01mm and the bosses sat
+      // on the pads.
+      expect(magnetSeatGap(bin, lid, params, lidSeatedZOffset(params))).toBeCloseTo(
+        LID_MAGNET_SEAT_GAP,
+        1
+      );
 
       //...and the magnets meeting is not the lid closing.'s fix put the
       // magnet faces exactly right and still shipped a lid that could not shut:

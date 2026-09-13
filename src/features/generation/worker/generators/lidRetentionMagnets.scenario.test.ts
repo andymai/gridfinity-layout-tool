@@ -419,7 +419,8 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     const { retentionSeatPlanes } = await import('./retentionMagnetGeometry');
     const { LID_MAGNET_SEAT_GAP } = await import('./lidConstants');
     const { deriveDimensions } = await import('./pipeline/context');
-    const { checkLidCompatibility, hasLidBlocker } = await import('@/shared/types/bin');
+    const { checkLidCompatibility, hasLidBlocker, resolveLidMateRelief } =
+      await import('@/shared/types/bin');
 
     const params = makeParams({ attachment: 'magnetic', ...lid }, extra);
     const dim = deriveDimensions(params, true);
@@ -430,8 +431,14 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     // refuses to generate.
     expect(hasLidBlocker(checkLidCompatibility(params))).toBe(false);
 
-    // The two magnet faces meet across exactly one seat gap.
-    expect(lidFaceZ - binFaceZ).toBeCloseTo(LID_MAGNET_SEAT_GAP, 9);
+    // The two magnet faces meet across exactly one seat gap — WITH THE LID
+    // SEATED. The plug clears the lip by `mateRelief` all round, so the lid
+    // rests `relief * sqrt(2)` below `anchorZ` and the boss rides down with it;
+    // the planes are laid out that much further apart so the gap is right where
+    // the joint actually closes. Only the lid side carries the correction, so
+    // `binFaceZ` is unmoved and no published bin is regenerated.
+    const settle = resolveLidMateRelief(params) * Math.SQRT2;
+    expect(lidFaceZ - binFaceZ - settle).toBeCloseTo(LID_MAGNET_SEAT_GAP, 9);
     // The bin's pad must have bin to sit in: recessed below the lip top, and
     // above the interior floor so its pocket can't punch through. Deepening the
     // cavity must never push it out of that band — the boss lengthens instead.
@@ -480,8 +487,8 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     const exportLift =
       dim.lipTopZ -
       lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
-    const { retentionInterfaceZ } = await import('./retentionMagnetGeometry');
-    const lidFaceViaExport = retentionInterfaceZ(resolveLidInputs(params)) + exportLift;
+    const { retentionBossFaceZ } = await import('./retentionMagnetGeometry');
+    const lidFaceViaExport = retentionBossFaceZ(resolveLidInputs(params)) + exportLift;
 
     expect(retentionSeatPlanes(params, dim.lipTopZ).lidFaceZ).toBeCloseTo(lidFaceViaExport, 9);
   });
