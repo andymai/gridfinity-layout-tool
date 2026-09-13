@@ -569,6 +569,38 @@ describe('lid generation and export scenarios', () => {
       // must still top out at SOCKET_HEIGHT for an upper bin to register on.
       expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(5, 3);
     });
+
+    it('relieves a half-grid crossing off the integer pitch', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      // 2.5×2.5, half cell at the end: forEachCell splits each axis into
+      // 1u + 1u + 0.5u, so the interior crossings land off the integer pitch.
+      // collectJunctions and the cutter placement run the same fractional
+      // coordinates the pockets do — the path the 3×3 case never exercises, and
+      // where a misplaced cutter would bite the ring or leave the nub standing.
+      const mesh = generateLid(
+        makeParams(
+          { stackableTop: true },
+          { width: 2.5, depth: 2.5, height: 3, fractionalEdgeX: 'end', fractionalEdgeY: 'end' }
+        )
+      );
+      expect(mesh).not.toBeNull();
+      assertStructurallyValid(mesh!, '2.5x2.5 stackable lid');
+      // Ring intact: a cutter that wandered onto the perimeter would drop maxZ.
+      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(5, 3);
+
+      // Sub-cell edges at pitch 42, centred: -52.5, -10.5, 31.5, 52.5 → interior
+      // lines at -10.5 and 31.5. Mid-run divider sample sets the flush baseline.
+      const baseline = crestZ(mesh!, -10.5, 10.5);
+      expect(baseline).toBeGreaterThan(0);
+      for (const [x, y] of [
+        [-10.5, -10.5],
+        [-10.5, 31.5],
+        [31.5, -10.5],
+        [31.5, 31.5],
+      ] as const) {
+        expect(crestNear(mesh!, x, y) - baseline).toBeLessThan(0.12);
+      }
+    });
   });
 
   describe('separate stack-grid baseplate', () => {

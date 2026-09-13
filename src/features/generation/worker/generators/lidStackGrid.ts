@@ -140,18 +140,16 @@ function buildStackLipCutter(inputs: LidInputs): Shape3D {
 /**
  * Junction relief: shave the proud nub off each grid junction.
  *
- * Where two dividers cross, or a divider meets the perimeter ring, the four
- * surrounding pocket corners are rounded, so their cutters leave a small square
- * of slab standing at the full `SOCKET_HEIGHT` while the straight divider runs
- * on either side are shaved to the socket rim (`SOCKET_HEIGHT - CLEARANCE/2`) by
- * the pockets' full-width top openings. That leftover nub reads as a raised flap
- * on the grid top (it stands ~0.3mm proud of the dividers).
+ * A pocket's top opening is the full cell width, so the pockets shave every
+ * divider run down to the socket rim (`SOCKET_HEIGHT - CLEARANCE/2`). But the
+ * four pocket corners around a crossing are rounded, so they leave a square of
+ * slab standing there at the full `SOCKET_HEIGHT` — a nub proud of the dividers.
  *
- * Cutting from the rim height upward removes exactly the proud material:
- * everything at or below the rim is already gone, so the cutter only bites the
- * nub. That is why the footprint can be generous (over a divider run or a
- * pocket it re-cuts empty space) without reaching the seating taper below the
- * rim (no bin foot ever lands on a divider crossing) or narrowing the pockets.
+ * The cutter starts at the rim, where everything below is already gone, so it
+ * bites only that proud material. That is why its footprint can be generous
+ * (re-cutting empty pocket space or a divider run) without reaching the seating
+ * taper below the rim — no bin foot ever lands on an interior crossing — or
+ * narrowing a pocket.
  */
 const JUNCTION_RELIEF_FLOOR_Z = SOCKET_HEIGHT - CLEARANCE / 2;
 // Half-footprint of the relief. The nub fans ~one pocket-corner-radius down each
@@ -165,11 +163,17 @@ const JUNCTION_RELIEF_CORNER_MM = 0.5;
 function buildJunctionReliefCutter(): Shape3D {
   const side = 2 * JUNCTION_RELIEF_HALF_MM;
   const top = SOCKET_HEIGHT + LID_COPLANAR_MARGIN;
+  // The shaved divider crests sit exactly at JUNCTION_RELIEF_FLOOR_Z, so a
+  // cutter floor on that plane is a face coplanar with them — the sliver /
+  // non-manifold interface COPLANAR_OVERLAP exists for. Drop the floor by that
+  // margin so the cut passes cleanly through the crest; the divider is notched
+  // only by COPLANAR_OVERLAP, well above the seating taper.
+  const floor = JUNCTION_RELIEF_FLOOR_Z - COPLANAR_OVERLAP;
   const sketch = drawRoundedRectangle(side, side, JUNCTION_RELIEF_CORNER_MM).sketchOnPlane(
     'XY',
-    JUNCTION_RELIEF_FLOOR_Z
+    floor
   ) as Sketch;
-  return sketch.extrude(top - JUNCTION_RELIEF_FLOOR_Z);
+  return sketch.extrude(top - floor);
 }
 
 /**
