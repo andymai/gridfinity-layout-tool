@@ -11,7 +11,11 @@ import { loadTestFonts } from '@/test/loadTestFonts';
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import {
+  assertStructurallyValid,
+  boundingBox,
+  verticalSolidSpans,
+} from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import {
   LID_FIT_CLEARANCE,
@@ -497,6 +501,73 @@ describe('lid generation and export scenarios', () => {
       expect(flat).not.toBeNull();
       expect(plain).not.toBeNull();
       expect(flat!.triangleCount).toBe(plain!.triangleCount);
+    });
+  });
+
+  describe('stack-grid junction relief (#4234)', () => {
+    // Highest solid top at (x,y) that sits within the stack-grid slab band.
+    const crestZ = (
+      mesh: { vertices: Float32Array; indices: Uint32Array },
+      x: number,
+      y: number
+    ) => {
+      let top = -Infinity;
+      for (const [lo, hi] of verticalSolidSpans(mesh as never, x, y)) {
+        if (hi <= 5.05 && hi > 0.01 && hi > top && lo < hi) top = hi;
+      }
+      return top;
+    };
+    // Max crest over a small disc. The nub fans a few mm down each divider arm.
+    const crestNear = (
+      mesh: { vertices: Float32Array; indices: Uint32Array },
+      x: number,
+      y: number
+    ) => {
+      let m = -Infinity;
+      for (let dx = -3.5; dx <= 3.5; dx += 0.5)
+        for (let dy = -3.5; dy <= 3.5; dy += 0.5) m = Math.max(m, crestZ(mesh, x + dx, y + dy));
+      return m;
+    };
+
+    it('a cross junction no longer stands proud of the divider crest', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      // 3×3: pitch-42 grid, dividers at x,y = ±21, interior crossings at
+      // (±21, ±21). Before the relief each crossing kept a ~0.3mm nub at the
+      // full SOCKET_HEIGHT while the divider runs were shaved to the socket rim.
+      const mesh = generateLid(
+        makeParams({ stackableTop: true }, { width: 3, depth: 3, height: 3 })
+      );
+      expect(mesh).not.toBeNull();
+      assertStructurallyValid(mesh!, '3x3 stackable lid');
+
+      const baseline = Math.max(
+        crestZ(mesh!, 21, 0),
+        crestZ(mesh!, -21, 0),
+        crestZ(mesh!, 0, 21),
+        crestZ(mesh!, 0, -21)
+      );
+      expect(baseline).toBeGreaterThan(0); // the divider is really there
+      for (const [x, y] of [
+        [21, 21],
+        [21, -21],
+        [-21, 21],
+        [-21, -21],
+      ] as const) {
+        // Flush with the divider (the relief floor sits one CLEARANCE/2 rim
+        // above the shaved crest), not the +0.3mm proud nub it replaced.
+        expect(crestNear(mesh!, x, y) - baseline).toBeLessThan(0.12);
+      }
+    });
+
+    it('leaves the perimeter ring lip at full height', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const mesh = generateLid(
+        makeParams({ stackableTop: true }, { width: 3, depth: 3, height: 3 })
+      );
+      expect(mesh).not.toBeNull();
+      // The relief only touches interior crossings; the ring's stacking lip
+      // must still top out at SOCKET_HEIGHT for an upper bin to register on.
+      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(5, 3);
     });
   });
 
