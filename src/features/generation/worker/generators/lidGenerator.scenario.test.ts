@@ -15,6 +15,7 @@ import {
   assertStructurallyValid,
   boundingBox,
   verticalSolidSpans,
+  triangleArea,
 } from './__kernel-tests__/meshAssertions';
 import { SOCKET_HEIGHT, CLEARANCE } from './generatorTypes';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
@@ -343,7 +344,7 @@ describe('lid generation and export scenarios', () => {
      * lid outline already sits inside the nominal socket grid, so the rim's
      * vertical land lands exactly on the slab edge and collapses. Lip material
      * survives only from the big taper's start down — i.e. `SOCKET_HEIGHT −
-     * CLEARANCE/2` (#4234; previously a further `LID_FIT_CLEARANCE` lower).
+     * CLEARANCE/2`.
      */
     const LIP_EDGE_Z = SOCKET_HEIGHT - CLEARANCE / 2;
 
@@ -515,7 +516,7 @@ describe('lid generation and export scenarios', () => {
   });
 
   describe('flat stack-grid top (#4234)', () => {
-    // Highest solid top at (x,y) that sits within the stack-grid slab band.
+    // Highest solid top at (x,y) within the stack-grid slab band.
     const crestZ = (
       mesh: { vertices: Float32Array; indices: Uint32Array },
       x: number,
@@ -527,60 +528,58 @@ describe('lid generation and export scenarios', () => {
       }
       return top;
     };
-    // Max crest over a small disc, robust to a probe landing a hair off a line.
+    // Max crest in a ±0.3mm box — tight enough that it cannot reach a neighbouring
+    // divider (21mm away) or the perimeter, so a flush reading is the target's own,
+    // yet wide enough to tolerate float noise on the exact line position.
     const crestNear = (
       mesh: { vertices: Float32Array; indices: Uint32Array },
       x: number,
       y: number
     ) => {
       let m = -Infinity;
-      for (let dx = -1; dx <= 1; dx += 0.5)
-        for (let dy = -1; dy <= 1; dy += 0.5) m = Math.max(m, crestZ(mesh, x + dx, y + dy));
+      for (let dx = -0.3; dx <= 0.3; dx += 0.15)
+        for (let dy = -0.3; dy <= 0.3; dy += 0.15) m = Math.max(m, crestZ(mesh, x + dx, y + dy));
       return m;
+    };
+    // Near-zero-area triangles are the sliver signature the dropped pocket growth
+    // used to fight; the land inset must keep them away on its own.
+    const sliverCount = (mesh: { vertices: Float32Array; indices: Uint32Array }) => {
+      const { vertices, indices } = mesh;
+      let n = 0;
+      for (let i = 0; i < indices.length; i += 3) {
+        const a = triangleArea(vertices, indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3);
+        if (a > 0 && a < 0.02) n++;
+      }
+      return n;
     };
 
     it('interior dividers, crossings and T-junctions all top out flush at SOCKET_HEIGHT', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       // 3×3: pitch-42 grid, interior divider lines at x,y = ±21, interior
-      // crossings at (±21, ±21). Slab edge at 3·42/2 − LID_FIT_CLEARANCE = 62.75.
-      // Before #4234 the divider runs were a knife edge reading ~CLEARANCE/2 shy
-      // of SOCKET_HEIGHT, the crossings kept a proud nub, and the T-junctions
-      // (with no overhang) stood a full ~0.3mm proud. They must now all be flush
-      // at the same SOCKET_HEIGHT, i.e. a genuinely flat top.
+      // crossings at (±21, ±21), slab edge at 3·42/2 − LID_FIT_CLEARANCE = 62.75.
+      // Dividers (mid-run), crossings and edge T-junctions must all read one
+      // height, and that height must be SOCKET_HEIGHT — a genuinely flat top.
       const mesh = generateLid(
         makeParams({ stackableTop: true }, { width: 3, depth: 3, height: 3 })
       );
       expect(mesh).not.toBeNull();
       assertStructurallyValid(mesh!, '3x3 stackable lid');
 
-      // The land at each divider mid-run reaches SOCKET_HEIGHT (the fix: it used
-      // to be a coincident-face knife edge reading ~SOCKET_HEIGHT − CLEARANCE/2).
       for (const [x, y] of [
-        [21, 0],
-        [0, 21],
-      ] as const) {
-        expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
-      }
-      // Interior crossings sit flush with the dividers, not proud.
-      for (const [x, y] of [
-        [21, 21],
+        [21, 0], // divider mid-run (X)
+        [0, 21], // divider mid-run (Y)
+        [21, 21], // interior crossing
         [21, -21],
         [-21, 21],
         [-21, -21],
-      ] as const) {
-        expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
-      }
-      // T-junctions (interior divider meeting the perimeter, just inside the
-      // 62.75 slab edge) are flush too — no overhang frame needed.
-      for (const [x, y] of [
-        [21, 62],
+        [21, 62], // T-junction: X divider into +Y edge
         [-21, 62],
-        [62, 21],
+        [62, 21], // T-junction: Y divider into +X edge
         [62, -21],
       ] as const) {
         expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
       }
-      // And the whole top's high-water mark is exactly SOCKET_HEIGHT.
+      // The whole top's high-water mark is exactly SOCKET_HEIGHT.
       expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
     });
 
@@ -610,6 +609,26 @@ describe('lid generation and export scenarios', () => {
       ] as const) {
         expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
       }
+    });
+
+    it('leaves no sliver triangles and a genuine hole per pocket (probe discriminates)', async () => {
+      // The standalone plate is only the grid, so this isolates its geometry.
+      // Dropping the pocket growth removed the sliver fix, so the land must keep
+      // slivers away on its own; and the crest probe must distinguish a solid land
+      // from an open pocket, or the flush assertions above would prove nothing.
+      const { generateStackPlate } = await import('./lidOrchestrator');
+      const plate = generateStackPlate(
+        makeParams(
+          { stackableTop: true, separateStackPlate: true },
+          { width: 3, depth: 3, height: 3 }
+        )
+      );
+      expect(plate).not.toBeNull();
+      expect(sliverCount(plate!)).toBe(0);
+      // The centre cell (0,0) is an open pocket: the probe finds no top there,
+      // where a divider or crossing reads SOCKET_HEIGHT.
+      expect(crestZ(plate!, 0, 0)).toBe(-Infinity);
+      expect(crestNear(plate!, 21, 0)).toBeCloseTo(SOCKET_HEIGHT, 1);
     });
   });
 
