@@ -1,0 +1,24 @@
+src/shell/bootScanPage.test.ts
+  s_b3d1acc07602ad::t_11b0da15fa954d 1-77
+src/shell/bootScanPage.ts
+  s_b3d1acc07602ad::t_7b0aff8e962b45 1-57
+src/main.tsx
+  s_b3d1acc07602ad::t_99953f20e38ee2 63
+  s_b3d1acc07602ad::t_b10f9e299aef3c 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3123dac6eb47218258db96191bae6880f33ff97b",
+  "prompts": {},
+  "sessions": {
+    "s_b3d1acc07602ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "794c02e7-503f-4dff-813b-fe98044740ca",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
