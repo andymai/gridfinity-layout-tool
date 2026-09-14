@@ -1,0 +1,29 @@
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_a53dd738bf5abd::t_2a268836d6fdb6 581-621
+src/features/generation/worker/generators/lidStackGrid.ts
+  s_a53dd738bf5abd::t_e26755b1661f36 208-212,221-227,232,238-247,249-254
+  s_a53dd738bf5abd::t_4b6cbe4fbd9c16 343-352
+  s_a53dd738bf5abd::t_b4f605bd113c3a 372
+  s_a53dd738bf5abd::t_6f0e193c557f8a 182-187
+  s_a53dd738bf5abd::t_af9749a787964d 213-220,228-231,233-237,248,255-257
+  s_a53dd738bf5abd::t_4a06d6a0b3bf14 342,353,355-356,359-371
+src/features/generation/worker/generators/lidStackGrid.test.ts
+  s_a53dd738bf5abd::t_871691614d11f5 2-7
+  s_a53dd738bf5abd::t_e09d1b96def1c5 114-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6fa780c44534db3d824d1eb1ceeaa13b553df39f",
+  "prompts": {},
+  "sessions": {
+    "s_a53dd738bf5abd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7daeb47-9640-46af-abef-ac2cc5e42c61",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    }
+  }
+}
