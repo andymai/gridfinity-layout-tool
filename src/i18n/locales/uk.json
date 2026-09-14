@@ -3851,6 +3851,7 @@
   "scan.step.done": "Готово",
   "scan.step.review": "Перевірка",
   "scan.takePhoto": "Зробити фото",
+  "scan.uploadPhoto": "Завантажити фото",
   "scan.title": "Сканувати інструмент",
   "scan.use": "Використати цей контур",
   "selectionToolbar.ariaLabel": "Дії з виділенням",

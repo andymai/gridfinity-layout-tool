@@ -3851,6 +3851,7 @@
   "scan.step.done": "Terminé",
   "scan.step.review": "Vérifier",
   "scan.takePhoto": "Prendre une photo",
+  "scan.uploadPhoto": "Importer une photo",
   "scan.title": "Scanner un outil",
   "scan.use": "Utiliser ce contour",
   "selectionToolbar.ariaLabel": "Actions de sélection",

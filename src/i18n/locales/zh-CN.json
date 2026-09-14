@@ -3851,6 +3851,7 @@
   "scan.step.done": "完成",
   "scan.step.review": "查看",
   "scan.takePhoto": "拍照",
+  "scan.uploadPhoto": "上传照片",
   "scan.title": "扫描工具",
   "scan.use": "使用此轮廓",
   "selectionToolbar.ariaLabel": "选择操作",
