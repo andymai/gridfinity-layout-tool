@@ -2,33 +2,36 @@
  * Boot the `/scan/:token` phone-capture route, hardened against a failed chunk
  * load.
  *
- * The capture UI lives in its own lazy chunk (`scanBoot`) so the route never
- * pulls the editor, the 3D bundle, or the store hydration. But `#root` holds
- * only a `display:none` SEO fallback, so an unhandled rejection from that import
- * renders nothing and logs nothing — a silently blank page (#4275). A returning
- * phone can hit a stale precache after a deploy, or a flaky mobile connection
- * can drop the chunk fetch. This mirrors the hardening every other lazy entry
- * point already has (`lazyWithRetry`, the `wwwMigration` import in `main.tsx`).
+ * `#root` holds only a `display:none` SEO fallback, so an unhandled rejection
+ * from the lazy `scanBoot` import renders nothing and logs nothing — a silently
+ * blank page (#4275). A returning phone can hit a stale precache after a deploy,
+ * or a flaky mobile connection can drop the chunk fetch. Every other lazy entry
+ * point is already hardened this way (`lazyWithRetry`, `main.tsx`'s
+ * `wwwMigration` import); this one was the gap.
  */
 import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
+import type * as ScanBoot from './scanBoot';
 
-/**
- * Import and run the scan boot chunk. On a chunk-load failure, reload onto fresh
- * chunks if the precache is stale; if recovery is skipped (offline, or already
- * tried this session — i.e. the failure is not a stale bundle) show a reload
- * prompt rather than leave the page blank.
- */
 export async function bootScanPage(): Promise<void> {
+  let scanBoot: typeof ScanBoot;
   try {
-    const { runScanBoot } = await import('./scanBoot');
-    runScanBoot();
-    return;
+    scanBoot = await import('./scanBoot');
   } catch {
-    // Fall through to recovery below.
+    // The chunk failed to load — most likely a stale precache after a deploy.
+    // Reload onto fresh chunks; if recovery is skipped (offline, or already
+    // tried this session) fall back to a prompt rather than a blank page.
+    const recovered = await recoverStaleBundle('scan_boot_chunk_load').catch(() => false);
+    if (!recovered) showScanBootError();
+    return;
   }
 
-  const recovered = await recoverStaleBundle('scan_boot_chunk_load').catch(() => false);
-  if (!recovered) showScanBootError();
+  // The chunk loaded, so a throw here is a real boot error, not a stale bundle:
+  // show the prompt directly rather than clearing caches and reloading.
+  try {
+    scanBoot.runScanBoot();
+  } catch {
+    showScanBootError();
+  }
 }
 
 /** Minimal, dependency-free reload prompt for a scan-page boot failure. */
