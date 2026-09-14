@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-locates the SettingsNav context Provider with its useSettingsNav accessor; splitting the hook out would scatter the modal's nav API across files */
 import { createContext, useContext } from 'react';
 import type { SettingsTabId } from './types';
 

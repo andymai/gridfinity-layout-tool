@@ -93,6 +93,11 @@ export default defineConfig([
         },
       ],
       '@typescript-eslint/no-confusing-void-expression': 'off',
+      // `void x;` is the house idiom for an intentional discard: `void error`
+      // for an unused catch binding, `void _exhaustive` for a `never`
+      // exhaustiveness sentinel. This rule flags those as meaningless and its
+      // autofix strips the `void`, which then trips no-unused-expressions.
+      '@typescript-eslint/no-meaningless-void-operator': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/no-deprecated': 'warn',
       '@typescript-eslint/no-misused-promises': [
