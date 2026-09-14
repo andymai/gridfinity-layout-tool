@@ -4,7 +4,7 @@ import { useViewStore } from '@/core/store/view';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
-import { exportPrintListTSV } from '@/core/storage';
+import { copyToClipboard, exportPrintListTSV } from '@/core/storage';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { Button, Collapsible, IconButton } from '@/design-system';
 import { ConfirmDialog } from '@/shared/components';
@@ -253,7 +253,7 @@ export function RightPanel() {
                             gridUnitMm: layout.gridUnitMm,
                             categories: layout.categories,
                           });
-                          void navigator.clipboard.writeText(tsv);
+                          void copyToClipboard(tsv);
                           setCopyFeedback(true);
                           trackEvent('ui.layoutExported', { format: 'tsv' });
                           setTimeout(() => setCopyFeedback(false), 2000);
