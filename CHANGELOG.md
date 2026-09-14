@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.491.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.5...gridfinity-layout-tool-v4.491.0) (2026-09-14)
+
+
+### Features
+
+* **scan:** let the outline scanner accept an existing photo ([#4257](https://github.com/andymai/gridfinity-layout-tool/issues/4257)) ([db2d97a](https://github.com/andymai/gridfinity-layout-tool/commit/db2d97ad428636a709f22297fd2168a3207cd435))
+
+
+### Bug Fixes
+
+* **generation:** relieve the stack-grid T-junction nub on framed lids ([#4234](https://github.com/andymai/gridfinity-layout-tool/issues/4234)) ([#4255](https://github.com/andymai/gridfinity-layout-tool/issues/4255)) ([5effca5](https://github.com/andymai/gridfinity-layout-tool/commit/5effca5e0c07fce24a205eb5aefbfe0fa626e6f5))
+* **generation:** stop split export from failing on wall-cutout pieces ([#4256](https://github.com/andymai/gridfinity-layout-tool/issues/4256)) ([cbda360](https://github.com/andymai/gridfinity-layout-tool/commit/cbda360a12a4faaa4ed8e4756660d84065dc3368))
+* **print-export:** route bin-list copy through copyToClipboard ([#4253](https://github.com/andymai/gridfinity-layout-tool/issues/4253)) ([770d1aa](https://github.com/andymai/gridfinity-layout-tool/commit/770d1aad317d70486262430da02695a514cfcc17))
+
 ## [4.490.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.4...gridfinity-layout-tool-v4.490.5) (2026-09-14)
 
 
