@@ -578,6 +578,47 @@ describe('lid generation and export scenarios', () => {
       expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
     });
 
+    it('relieves the T-junction nub when an overhang frame holds the top (#4234)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      // Where an interior divider meets the perimeter, the flanking pockets'
+      // rounded corners leave the same proud nub as an interior crossing. It is
+      // relieved only when the lid outline reaches past the nominal grid — i.e.
+      // an overhang grew a real frame at SOCKET_HEIGHT to hold the top. Without
+      // that frame the nubs are the only full-height material and are left in,
+      // so this case supplies the overhang.
+      const mesh = generateLid(
+        makeParams(
+          { stackableTop: true },
+          {
+            width: 3,
+            depth: 3,
+            height: 3,
+            overhang: { enabled: true, left: 2, right: 2, front: 2, back: 2 },
+          }
+        )
+      );
+      expect(mesh).not.toBeNull();
+      assertStructurallyValid(mesh!, '3x3 stackable lid + overhang frame');
+      // The frame survives at full height.
+      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
+
+      // The divider, sampled at points just inside the frame (its inner edge is
+      // the nominal boundary at |63|), sits at the shaved rim — no proud nub.
+      // Point probes, not a disc: a disc here would reach the frame's full top.
+      const rimZ = Math.max(crestZ(mesh!, 21, 0), crestZ(mesh!, 0, 21));
+      expect(rimZ).toBeGreaterThan(0);
+      for (const [x, y] of [
+        [21, 60],
+        [21, 55],
+        [-21, 60],
+        [60, 21],
+        [55, 21],
+        [60, -21],
+      ] as const) {
+        expect(crestZ(mesh!, x, y) - rimZ).toBeLessThan(0.12);
+      }
+    });
+
     it('relieves a half-grid crossing off the integer pitch', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       // 2.5×2.5, half cell at the end: forEachCell splits each axis into

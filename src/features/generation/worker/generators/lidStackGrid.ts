@@ -179,11 +179,12 @@ function buildJunctionReliefCutter(): Shape3D {
 /**
  * Interior crossing positions that carry a proud junction nub: every crossing
  * of an INTERIOR cell-boundary line with another. The outer boundary lines are
- * excluded, so both the four ring corners and the T-junctions where a divider
- * meets an edge are left alone. A crossing surrounded by pockets on all sides
- * is where an over-generous relief only re-cuts empty pocket space, never the
- * perimeter lip. Derived from the same cell decomposition the pockets use, so it
- * tracks half and fractional cells without a second source of truth.
+ * excluded, so the four ring corners are left alone (see {@link collectTJunctions}
+ * for the divider-meets-edge T-junctions, relieved separately with an inward
+ * bias). A crossing surrounded by pockets on all sides is where a centred,
+ * over-generous relief only re-cuts empty pocket space, never a real edge.
+ * Derived from the same cell decomposition the pockets use, so it tracks half
+ * and fractional cells without a second source of truth.
  */
 export function collectJunctions(
   cornerXs: readonly number[],
@@ -199,6 +200,56 @@ export function collectJunctions(
   for (const x of xs) {
     for (const y of ys) {
       out.push([x, y] as const);
+    }
+  }
+  return out;
+}
+
+/** A T-junction and the unit direction that points from its boundary line back
+ *  INTO the grid (one component is 0). The relief cutter is shifted this way so
+ *  its outer face lands on the boundary line and it only ever bites inward. */
+export type TJunction = readonly [x: number, y: number, inX: number, inY: number];
+
+/**
+ * T-junction positions: where an INTERIOR divider line runs into an outer
+ * boundary line. Same proud nub as an interior crossing (the flanking pockets'
+ * rounded corners leave a square of full-height slab where the divider meets
+ * the ring), but only three arms instead of four.
+ *
+ * Excludes the four ring corners (both coordinates on an outer line): those
+ * carry the perimeter stacking lip an upper bin registers on, at full
+ * `SOCKET_HEIGHT`, and must stay. Whether that lip exists depends on overhang
+ * (a bin with no overhang has its outer sockets flush with the edge, so there
+ * is no frame; an overhung one grows a frame past the nominal grid), so the
+ * relief must never assume either. Each junction carries the inward direction
+ * so its cutter can be pushed off the boundary line: it then bites only the nub
+ * standing above the shaved divider rim and never the frame outside the line or
+ * the seating taper below the rim.
+ */
+export function collectTJunctions(
+  cornerXs: readonly number[],
+  cornerYs: readonly number[]
+): TJunction[] {
+  const uniq = (vals: readonly number[]): number[] =>
+    [...new Set(vals.map((v) => Math.round(v * 1e4) / 1e4))].sort((a, b) => a - b);
+  const xs = uniq(cornerXs);
+  const ys = uniq(cornerYs);
+  if (xs.length < 3 && ys.length < 3) return []; // no interior line on either axis
+  const interiorXs = xs.length >= 3 ? xs.slice(1, -1) : [];
+  const interiorYs = ys.length >= 3 ? ys.slice(1, -1) : [];
+  const out: TJunction[] = [];
+  // Interior dividers meeting the front/back (outer-Y) edges. Inward = toward 0.
+  if (ys.length >= 2) {
+    for (const x of interiorXs) {
+      out.push([x, ys[0], 0, 1] as const);
+      out.push([x, ys[ys.length - 1], 0, -1] as const);
+    }
+  }
+  // Interior dividers meeting the left/right (outer-X) edges.
+  if (xs.length >= 2) {
+    for (const y of interiorYs) {
+      out.push([xs[0], y, 1, 0] as const);
+      out.push([xs[xs.length - 1], y, -1, 0] as const);
     }
   }
   return out;
@@ -288,11 +339,36 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
     // irregular and the ring follows the polygon outline, so a square relief
     // could bite a real edge rather than an interior crossing.
     if (!inputs.cellMask) {
-      const junctions = collectJunctions(cornerXs, cornerYs);
-      if (junctions.length > 0) {
+      const crossings = collectJunctions(cornerXs, cornerYs);
+      // A T-junction nub is only relieved when the lid outline reaches past the
+      // nominal socket grid, i.e. an overhang grew a perimeter frame. That frame
+      // holds the grid's SOCKET_HEIGHT top, so relieving the nub is pure cleanup.
+      // Without it the outer sockets breach the edge and the nubs are the only
+      // full-height material — relieving them would drop the whole grid below
+      // SOCKET_HEIGHT and shorten the assembled height, so they are left in.
+      const hasPerimeterFrame =
+        inputs.lidOuterW > cellsX * gridUnitMm + COPLANAR_OVERLAP ||
+        inputs.lidOuterD > cellsY * gridUnitMmY + COPLANAR_OVERLAP;
+      const tJunctions = hasPerimeterFrame ? collectTJunctions(cornerXs, cornerYs) : [];
+      if (crossings.length > 0 || tJunctions.length > 0) {
         const base = buildJunctionReliefCutter();
-        for (const [x, y] of junctions) {
+        // Interior crossings sit clear of every edge, so the cutter is centred.
+        for (const [x, y] of crossings) {
           pockets.push(scope.register(translate(base, [x, y, 0])));
+        }
+        // A T-junction cutter is pushed inward so its outer face lands on the
+        // boundary line: it takes the nub but never reaches the frame (if the
+        // config grew one) outside that line.
+        for (const [x, y, inX, inY] of tJunctions) {
+          pockets.push(
+            scope.register(
+              translate(base, [
+                x + inX * JUNCTION_RELIEF_HALF_MM,
+                y + inY * JUNCTION_RELIEF_HALF_MM,
+                0,
+              ])
+            )
+          );
         }
         base.delete();
       }
