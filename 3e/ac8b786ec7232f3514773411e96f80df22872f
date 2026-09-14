@@ -1,0 +1,23 @@
+patches/three-stdlib.patch
+  s_b3d1acc07602ad::t_e781dbd99cfde8 1-56
+pnpm-workspace.yaml
+  s_b3d1acc07602ad::t_e781dbd99cfde8 162
+pnpm-lock.yaml
+  s_b3d1acc07602ad::t_0d9f20a8199505 48,158,7982,11461
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3eac8b786ec7232f3514773411e96f80df22872f",
+  "prompts": {},
+  "sessions": {
+    "s_b3d1acc07602ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "794c02e7-503f-4dff-813b-fe98044740ca",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
