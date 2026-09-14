@@ -71,9 +71,14 @@ updates:
       # `:name(regex)` syntax those sources use, so the pin tracks Vercel's line.
       - dependency-name: 'path-to-regexp'
         update-types: ['version-update:semver-major']
-      # brepjs upgrades are coupled to the brepkit kernel investigation —
-      # always pin manually, never auto-bump
+      # brepjs and its CAD kernel WASM (brepkit/occt/manifold) are a matched
+      # set: brepjs is built against specific kernel versions, so bumping any of
+      # them alone breaks real-WASM geometry (FACE_BUILD_FAILED). Pin the whole
+      # set manually, never auto-bump.
       - dependency-name: 'brepjs'
+      - dependency-name: 'brepkit-wasm'
+      - dependency-name: 'occt-wasm'
+      - dependency-name: 'manifold-3d'
       # Each Playwright version pins one exact Chromium revision, so every
       # minor/patch bump forces a fresh ~120MB browser download on the next
       # `playwright install`. Bump manually so the browser cache is stable.
