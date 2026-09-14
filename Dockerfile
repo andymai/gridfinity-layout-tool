@@ -5,7 +5,7 @@
 
 # glibc on purpose: it is the toolchain CI and Vercel build with, and the
 # native TypeScript compiler has no musl build.
-FROM --platform=$BUILDPLATFORM node:24-bookworm-slim@sha256:ba849c60be29959425b8734d57b8b4b7d56f98edd9504c9af091d5281095a71e AS build
+FROM --platform=$BUILDPLATFORM node:24-bookworm-slim@sha256:2fe369e969550cde8e867afc3fe370b260140cab4a23d467074295b42163d553 AS build
 WORKDIR /app
 ENV PNPM_HOME=/pnpm COREPACK_ENABLE_DOWNLOAD_PROMPT=0 CI=true
 # corepack reads the pinned pnpm from package.json; it runs before .npmrc lands
