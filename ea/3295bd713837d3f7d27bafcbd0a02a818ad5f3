@@ -1,0 +1,61 @@
+src/features/generation/worker/generators/slotBuilder.test.ts
+  s_1cbc82b4f3936c::t_562e93edf42eae 3
+  s_1cbc82b4f3936c::t_aa9a59ea25999d 118-121
+src/features/generation/worker/generators/baseplateGenerator.test.ts
+  s_1cbc82b4f3936c::t_b380d6ce010cad 68
+  s_1cbc82b4f3936c::t_4a7e96334bf1f3 6
+src/features/generation/worker/generators/undersideRelief.kernel.test.ts
+  s_1cbc82b4f3936c::t_796829f31adb89 47
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_1cbc82b4f3936c::t_097b01f1d9bc94 597
+  s_1cbc82b4f3936c::t_29339ffbdfacd9 644
+  s_1cbc82b4f3936c::t_39ac6ee1879881 462,470
+  s_1cbc82b4f3936c::t_7306e75020ec72 19
+  s_1cbc82b4f3936c::t_6e35d2ca917ccf 578
+  s_1cbc82b4f3936c::t_a93b3bb83ed540 341
+  s_1cbc82b4f3936c::t_1fdea8d1a873a8 378-385
+src/features/generation/worker/generators/baseplateDirectMesh.test.ts
+  s_1cbc82b4f3936c::t_c79b192a8953f1 248
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_1cbc82b4f3936c::t_873054250db1b7 192
+  s_1cbc82b4f3936c::t_a898a32f8cbb57 221
+  s_1cbc82b4f3936c::t_10595d1946c22e 33
+  s_1cbc82b4f3936c::t_8327b0304dbb4f 623-628
+  s_1cbc82b4f3936c::t_288f261e9ef704 463-466
+  s_1cbc82b4f3936c::t_a17c5a4b07815f 629
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_1cbc82b4f3936c::t_b244e0d05ba89c 116-117,131-137
+  s_1cbc82b4f3936c::t_4123ac592ec0c3 342,347,356-361
+src/features/generation/worker/generators/generatorTypes.test.ts
+  s_1cbc82b4f3936c::t_68e535bcb675e5 13-14
+src/features/generation/worker/generators/nestingFloor.geometry.test.ts
+  s_1cbc82b4f3936c::t_8fae13dd69dcd7 126,129
+  s_1cbc82b4f3936c::t_8a11d3dd825143 219-221
+  s_1cbc82b4f3936c::t_ff845ca1d6647c 8
+src/features/generation/worker/generators/pipeline/context.test.ts
+  s_1cbc82b4f3936c::t_b8d0e6f4f7cbc7 199-201
+  s_1cbc82b4f3936c::t_2148b05dfac30f 84
+  s_1cbc82b4f3936c::t_15568326c6e512 27
+  s_1cbc82b4f3936c::t_28ae7eaf6a7aae 74
+  s_1cbc82b4f3936c::t_ff798bf1225263 363,367
+  s_1cbc82b4f3936c::t_50aff18f1a4f6a 390
+src/features/generation/worker/generators/lightweightFloorCutter.test.ts
+  s_1cbc82b4f3936c::t_6c516b8d53b5d5 203-205
+  s_1cbc82b4f3936c::t_654bcedd5489b0 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ea3295bd713837d3f7d27bafcbd0a02a818ad5f3",
+  "prompts": {},
+  "sessions": {
+    "s_1cbc82b4f3936c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a2978186-35f9-44e7-962b-d9514ca96ffc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
