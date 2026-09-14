@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/ShapeSection/ShapeGrid.test.tsx
+  s_b3d1acc07602ad::t_dabb162d6b3c21 76-88
+src/features/bin-designer/components/panel/ShapeSection/ShapeGrid.tsx
+  s_b3d1acc07602ad::t_e253c7e7f5a8bc 264-270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "11839450e0c33ca08da1102a8014570f6fffbb79",
+  "prompts": {},
+  "sessions": {
+    "s_b3d1acc07602ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "794c02e7-503f-4dff-813b-fe98044740ca",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
