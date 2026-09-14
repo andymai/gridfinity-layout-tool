@@ -129,8 +129,8 @@ importers:
         specifier: ^0.15.7
         version: 0.15.7
       posthog-js:
-        specifier: ^1.428.0
-        version: 1.428.0(@types/react@19.2.18)(react@19.2.8)
+        specifier: ^1.428.1
+        version: 1.428.1(@types/react@19.2.18)(react@19.2.8)
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -1787,8 +1787,8 @@ packages:
   '@posthog/browser-common@0.8.3':
     resolution: {integrity: sha512-4Hlbwyn+Hioc2+pjqSGWMTDrA5XsDshssPnGfv34khPKoJaeBe2YvPvsEPoH78jezOS6Wo3LJvCPhqyolg3S8w==}
 
-  '@posthog/core@1.53.3':
-    resolution: {integrity: sha512-ioBDeZtsFZej4vfX2bGGBud3DNCvSlmUUdk2KtQWOlpGytbdirMHVxG2iAFkxqemiukqcvf/Do6BtZb5hp9MYw==}
+  '@posthog/core@1.54.0':
+    resolution: {integrity: sha512-168MROFCM9YsGcCrbI4zukwR1lmLtKCvJk1NRuRS3PlhpMDBgmdNBxefPifb7nBCQz+61lrWq70saXdFhNdbiQ==}
 
   '@posthog/types@1.412.0':
     resolution: {integrity: sha512-EP+lSTnEmftW/slhGXsuGcYAygO4oho3hjWqObP+GeceZ+6qcwK9qZwVRqJjsiZAl0xLPy5s0U0SZqGKayFyeQ==}
@@ -4940,8 +4940,8 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.428.0:
-    resolution: {integrity: sha512-LQd8Ou0QaXIuSMpRk0GB+SJjFb0z94vlF1dz1EitirqRaKOBQbJ2zGRuuJSmj2AmYwb4zba7dd9PzwQbrcWhIg==}
+  posthog-js@1.428.1:
+    resolution: {integrity: sha512-lFdg5f7aB/3SB4vqLUHvRisJKflhduVpc/y6WGxNtc3HSHBXFFLvxiNoPJG9kqCqWHKlwczIKplFHr8H1I3L1w==}
     peerDependencies:
       '@types/react': '>=16.8.0'
       react: '>=16.8.0'
@@ -7556,10 +7556,10 @@ snapshots:
 
   '@posthog/browser-common@0.8.3':
     dependencies:
-      '@posthog/core': 1.53.3
+      '@posthog/core': 1.54.0
       '@posthog/types': 1.412.0
 
-  '@posthog/core@1.53.3':
+  '@posthog/core@1.54.0':
     dependencies:
       '@posthog/types': 1.412.0
 
@@ -10532,10 +10532,10 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.428.0(@types/react@19.2.18)(react@19.2.8):
+  posthog-js@1.428.1(@types/react@19.2.18)(react@19.2.8):
     dependencies:
       '@posthog/browser-common': 0.8.3
-      '@posthog/core': 1.53.3
+      '@posthog/core': 1.54.0
       '@posthog/types': 1.412.0
       core-js: 3.50.0
       dompurify: 3.4.15
