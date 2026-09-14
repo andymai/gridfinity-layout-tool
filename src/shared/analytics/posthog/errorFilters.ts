@@ -111,6 +111,17 @@ export function resetSessionCaptureCounts(): void {
   troikaSdfInstancingCaptured = false;
 }
 
+/**
+ * Deliberate control-flow rejections from the generation bridge, not failures.
+ * `prepareExport` rejects a pending export's promise when a newer one supersedes
+ * it on the same slot, and `cancelCurrentRequest` rejects the in-flight
+ * generation when the user moves on; a caller already onto the newer request
+ * leaves that rejection unhandled, so posthog-js auto-captures it. Both messages
+ * are exact app-internal literals never shown to a user, so an anchored match is
+ * safe to drop outright.
+ */
+const BRIDGE_CANCELLATION = /^(?:Export superseded|Generation cancelled)$/;
+
 const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   // Safari Web Extensions message bus
   /No Listener: tabs:/i,
@@ -229,8 +240,9 @@ function isNavigationAbort(exception: ExceptionLike): boolean {
 
 /**
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
- * exception matches the extension/noise filters, the R3F canvas teardown
- * race, or a stackless navigation abort; dedupes the WebGL context-creation
+ * exception matches the extension/noise filters, a deliberate bridge
+ * cancellation, the R3F canvas teardown race, or a stackless navigation abort;
+ * dedupes the WebGL context-creation
  * burst, pins chunk-load failures to one fingerprint and captures them once
  * per session, caps every exception identity's captures per session, and
  * passes everything else through unchanged.
@@ -260,6 +272,7 @@ export function filterExceptionForPosthog(
   const primaryException = event.properties?.$exception_list?.[0];
   const primary = primaryException?.value ?? event.properties?.$exception_values?.[0];
   if (shouldIgnoreError(primary)) return null;
+  if (primary !== undefined && BRIDGE_CANCELLATION.test(primary)) return null;
   if (primaryException && isExtensionSourced(primaryException)) return null;
   if (primaryException && isCanvasTeardownRace(primaryException)) return null;
   if (primaryException && isNavigationAbort(primaryException)) return null;
