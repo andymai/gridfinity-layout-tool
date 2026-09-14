@@ -1,0 +1,24 @@
+.github/dependabot.yml
+  s_47116d2d100327::t_e2c6d1083ac75e 74-77,79-81
+package.json
+  s_47116d2d100327::t_fa8b12b77ec7a3 151-152
+  s_47116d2d100327::t_eba9242b57f752 140
+pnpm-lock.yaml
+  s_47116d2d100327::t_0e1168d171ab65 88,90-91,123-124,126-127,3250-3251,4593-4594,4801-4802,8796,8801-8802,8804,10199,10367
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "068800bdf9359177351affa2be5fe2a83dd4c6c5",
+  "prompts": {},
+  "sessions": {
+    "s_47116d2d100327": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c31ba8bc-1493-48be-9960-24e041a84d2d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
