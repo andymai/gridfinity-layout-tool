@@ -1,0 +1,19 @@
+src/shell/RightPanel/RightPanel.test.tsx
+  s_a53dd738bf5abd::t_f39ebcdfc6b4b8 126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "50366532062c7221d6cd51343391090b8e21b280",
+  "prompts": {},
+  "sessions": {
+    "s_a53dd738bf5abd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7daeb47-9640-46af-abef-ac2cc5e42c61",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
