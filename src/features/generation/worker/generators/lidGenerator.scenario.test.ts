@@ -337,8 +337,15 @@ describe('lid generation and export scenarios', () => {
 
   describe('stacking-lip-only top (#2930)', () => {
     const DIMS = { width: 3, depth: 2, height: 3 } as const;
-    /** Z of the lip's knife edge — see the profile arithmetic below. */
-    const LIP_EDGE_Z = SOCKET_HEIGHT - CLEARANCE / 2 - LID_FIT_CLEARANCE;
+    /**
+     * Z the perimeter lip tops out at. The pocket's rim is pulled in by
+     * `STACK_LAND_INSET` (= CLEARANCE/2), which equals the `LID_FIT_CLEARANCE` the
+     * lid outline already sits inside the nominal socket grid, so the rim's
+     * vertical land lands exactly on the slab edge and collapses. Lip material
+     * survives only from the big taper's start down — i.e. `SOCKET_HEIGHT −
+     * CLEARANCE/2` (#4234; previously a further `LID_FIT_CLEARANCE` lower).
+     */
+    const LIP_EDGE_Z = SOCKET_HEIGHT - CLEARANCE / 2;
 
     /** Count vertices matching a predicate. Locates the pocket itself, which
      *  the bounding box can't: that only ever sees the slab. */
@@ -375,12 +382,9 @@ describe('lid generation and export scenarios', () => {
       expect(l.maxX - l.minX).toBeCloseTo(g.maxX - g.minX, 3);
       expect(l.maxY - l.minY).toBeCloseTo(g.maxY - g.minY, 3);
 
-      // The grid's high-water mark is its INTERIOR ridges — knife edges
-      // where two cells' tapers meet, topping out at SOCKET_HEIGHT. Its outer
-      // rim tops out lower, and that rim is exactly what lip-only keeps:
-      // SOCKET_HEIGHT, less the pocket's CLEARANCE/2 vertical run (0.25mm), less
-      // the LID_FIT_CLEARANCE (0.25mm) the lid outline sits inside the socket
-      // grid, down a 45° taper. A lip ending anywhere else would not be the full
+      // The full grid tops out at SOCKET_HEIGHT (flat interior lands + ring).
+      // Lip-only keeps only the outer rim, which tops out one LIP_EDGE_Z lower
+      // (see its definition) — a lip ending anywhere else would not be the full
       // socket profile.
       expect(g.maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
       expect(l.maxZ).toBeCloseTo(LIP_EDGE_Z, 3);
@@ -393,11 +397,9 @@ describe('lid generation and export scenarios', () => {
       const lipOnly = generateLid(makeParams({ stackableTop: true, stackLipOnly: true }, one));
       expect(grid).not.toBeNull();
       expect(lipOnly).not.toBeNull();
-      // Not exactly equal: the per-cell path grows its pocket by
-      // POCKET_EDGE_GROWTH_MM to clear an exact-tangency sliver against
-      // the slab's own outer edge, which `stackLipOnly`'s dedicated cutter
-      // does not (see lidStackGrid.ts). The two remain the same SHAPE within
-      // that sub-mm margin — same footprint, same top height.
+      // Same shape within float noise: at 1×1 the per-cell path cuts a single
+      // pocket on the nominal grid and `stackLipOnly` cuts one footprint-wide
+      // pocket on the same grid — same footprint, same top height.
       const g = boundingBox(grid!.vertices);
       const l = boundingBox(lipOnly!.vertices);
       expect(l.minX).toBeCloseTo(g.minX, 1);
@@ -512,7 +514,7 @@ describe('lid generation and export scenarios', () => {
     });
   });
 
-  describe('stack-grid junction relief (#4234)', () => {
+  describe('flat stack-grid top (#4234)', () => {
     // Highest solid top at (x,y) that sits within the stack-grid slab band.
     const crestZ = (
       mesh: { vertices: Float32Array; indices: Uint32Array },
@@ -525,107 +527,68 @@ describe('lid generation and export scenarios', () => {
       }
       return top;
     };
-    // Max crest over a small disc. The nub fans a few mm down each divider arm.
+    // Max crest over a small disc, robust to a probe landing a hair off a line.
     const crestNear = (
       mesh: { vertices: Float32Array; indices: Uint32Array },
       x: number,
       y: number
     ) => {
       let m = -Infinity;
-      for (let dx = -3.5; dx <= 3.5; dx += 0.5)
-        for (let dy = -3.5; dy <= 3.5; dy += 0.5) m = Math.max(m, crestZ(mesh, x + dx, y + dy));
+      for (let dx = -1; dx <= 1; dx += 0.5)
+        for (let dy = -1; dy <= 1; dy += 0.5) m = Math.max(m, crestZ(mesh, x + dx, y + dy));
       return m;
     };
 
-    it('a cross junction no longer stands proud of the divider crest', async () => {
+    it('interior dividers, crossings and T-junctions all top out flush at SOCKET_HEIGHT', async () => {
       const { generateLid } = await import('./lidOrchestrator');
-      // 3×3: pitch-42 grid, dividers at x,y = ±21, interior crossings at
-      // (±21, ±21). Before the relief each crossing kept a ~0.3mm nub at the
-      // full SOCKET_HEIGHT while the divider runs were shaved to the socket rim.
+      // 3×3: pitch-42 grid, interior divider lines at x,y = ±21, interior
+      // crossings at (±21, ±21). Slab edge at 3·42/2 − LID_FIT_CLEARANCE = 62.75.
+      // Before #4234 the divider runs were a knife edge reading ~CLEARANCE/2 shy
+      // of SOCKET_HEIGHT, the crossings kept a proud nub, and the T-junctions
+      // (with no overhang) stood a full ~0.3mm proud. They must now all be flush
+      // at the same SOCKET_HEIGHT, i.e. a genuinely flat top.
       const mesh = generateLid(
         makeParams({ stackableTop: true }, { width: 3, depth: 3, height: 3 })
       );
       expect(mesh).not.toBeNull();
       assertStructurallyValid(mesh!, '3x3 stackable lid');
 
-      const baseline = Math.max(
-        crestZ(mesh!, 21, 0),
-        crestZ(mesh!, -21, 0),
-        crestZ(mesh!, 0, 21),
-        crestZ(mesh!, 0, -21)
-      );
-      expect(baseline).toBeGreaterThan(0); // the divider is really there
+      // The land at each divider mid-run reaches SOCKET_HEIGHT (the fix: it used
+      // to be a coincident-face knife edge reading ~SOCKET_HEIGHT − CLEARANCE/2).
+      for (const [x, y] of [
+        [21, 0],
+        [0, 21],
+      ] as const) {
+        expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
+      }
+      // Interior crossings sit flush with the dividers, not proud.
       for (const [x, y] of [
         [21, 21],
         [21, -21],
         [-21, 21],
         [-21, -21],
       ] as const) {
-        // Flush with the divider (the relief floor sits one CLEARANCE/2 rim
-        // above the shaved crest), not the +0.3mm proud nub it replaced.
-        expect(crestNear(mesh!, x, y) - baseline).toBeLessThan(0.12);
+        expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
       }
-    });
-
-    it('leaves the perimeter ring lip at full height', async () => {
-      const { generateLid } = await import('./lidOrchestrator');
-      const mesh = generateLid(
-        makeParams({ stackableTop: true }, { width: 3, depth: 3, height: 3 })
-      );
-      expect(mesh).not.toBeNull();
-      // The relief only touches interior crossings; the ring's stacking lip
-      // must still top out at SOCKET_HEIGHT for an upper bin to register on.
-      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
-    });
-
-    it('relieves the T-junction nub when an overhang frame holds the top (#4234)', async () => {
-      const { generateLid } = await import('./lidOrchestrator');
-      // Where an interior divider meets the perimeter, the flanking pockets'
-      // rounded corners leave the same proud nub as an interior crossing. It is
-      // relieved only when the lid outline reaches past the nominal grid — i.e.
-      // an overhang grew a real frame at SOCKET_HEIGHT to hold the top. Without
-      // that frame the nubs are the only full-height material and are left in,
-      // so this case supplies the overhang.
-      const mesh = generateLid(
-        makeParams(
-          { stackableTop: true },
-          {
-            width: 3,
-            depth: 3,
-            height: 3,
-            overhang: { enabled: true, left: 2, right: 2, front: 2, back: 2 },
-          }
-        )
-      );
-      expect(mesh).not.toBeNull();
-      assertStructurallyValid(mesh!, '3x3 stackable lid + overhang frame');
-      // The frame survives at full height.
-      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
-
-      // The divider, sampled at points just inside the frame (its inner edge is
-      // the nominal boundary at |63|), sits at the shaved rim — no proud nub.
-      // Point probes, not a disc: a disc here would reach the frame's full top.
-      const rimZ = Math.max(crestZ(mesh!, 21, 0), crestZ(mesh!, 0, 21));
-      expect(rimZ).toBeGreaterThan(0);
+      // T-junctions (interior divider meeting the perimeter, just inside the
+      // 62.75 slab edge) are flush too — no overhang frame needed.
       for (const [x, y] of [
-        [21, 60],
-        [21, 55],
-        [-21, 60],
-        [60, 21],
-        [55, 21],
-        [60, -21],
+        [21, 62],
+        [-21, 62],
+        [62, 21],
+        [62, -21],
       ] as const) {
-        expect(crestZ(mesh!, x, y) - rimZ).toBeLessThan(0.12);
+        expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
       }
+      // And the whole top's high-water mark is exactly SOCKET_HEIGHT.
+      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
     });
 
-    it('relieves a half-grid crossing off the integer pitch', async () => {
+    it('keeps the flush top on a half-grid off the integer pitch', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       // 2.5×2.5, half cell at the end: forEachCell splits each axis into
-      // 1u + 1u + 0.5u, so the interior crossings land off the integer pitch.
-      // collectJunctions and the cutter placement run the same fractional
-      // coordinates the pockets do — the path the 3×3 case never exercises, and
-      // where a misplaced cutter would bite the ring or leave the nub standing.
+      // 1u + 1u + 0.5u, so the interior crossings land off the integer pitch —
+      // the path the 3×3 case never exercises.
       const mesh = generateLid(
         makeParams(
           { stackableTop: true },
@@ -634,20 +597,18 @@ describe('lid generation and export scenarios', () => {
       );
       expect(mesh).not.toBeNull();
       assertStructurallyValid(mesh!, '2.5x2.5 stackable lid');
-      // Ring intact: a cutter that wandered onto the perimeter would drop maxZ.
       expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
 
       // Sub-cell edges at pitch 42, centred: -52.5, -10.5, 31.5, 52.5 → interior
-      // lines at -10.5 and 31.5. Mid-run divider sample sets the flush baseline.
-      const baseline = crestZ(mesh!, -10.5, 10.5);
-      expect(baseline).toBeGreaterThan(0);
+      // lines at -10.5 and 31.5. Divider mid-run and every crossing are flush.
+      expect(crestNear(mesh!, -10.5, 10.5)).toBeCloseTo(SOCKET_HEIGHT, 1);
       for (const [x, y] of [
         [-10.5, -10.5],
         [-10.5, 31.5],
         [31.5, -10.5],
         [31.5, 31.5],
       ] as const) {
-        expect(crestNear(mesh!, x, y) - baseline).toBeLessThan(0.12);
+        expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
       }
     });
   });
