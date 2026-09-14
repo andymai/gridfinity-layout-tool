@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.491.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.491.0...gridfinity-layout-tool-v4.491.1) (2026-09-14)
+
+
+### Bug Fixes
+
+* **analytics:** drop benign bridge cancellations from error tracking ([#4273](https://github.com/andymai/gridfinity-layout-tool/issues/4273)) ([c3bd568](https://github.com/andymai/gridfinity-layout-tool/commit/c3bd568b4e82cc12d19e07888661a6341467f347))
+* **deps:** guard three-stdlib OrbitControls against a missing touch pointer ([#4274](https://github.com/andymai/gridfinity-layout-tool/issues/4274)) ([40bacb4](https://github.com/andymai/gridfinity-layout-tool/commit/40bacb43a9b1dd618dc36725fc33d8fd846ec47d))
+* **lid:** flatten stackable-grid top so every divider sits at socket height ([#4272](https://github.com/andymai/gridfinity-layout-tool/issues/4272)) ([a1c2709](https://github.com/andymai/gridfinity-layout-tool/commit/a1c270902f91a0778597779ea232f4158e47abc0))
+
 ## [4.491.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.5...gridfinity-layout-tool-v4.491.0) (2026-09-14)
 
 
