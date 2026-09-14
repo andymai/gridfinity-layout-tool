@@ -123,6 +123,7 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
 const mockExportPrintListTSV = vi.fn(() => 'Size\tHeight\tQty\n2×2\t3\t1');
 vi.mock('@/core/storage', () => ({
   exportPrintListTSV: () => mockExportPrintListTSV(),
+  copyToClipboard: (text: string) => navigator.clipboard.writeText(text).then(() => true),
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({

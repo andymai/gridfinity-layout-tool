@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import { exportPrintListTSV } from '@/core/storage';
+import { copyToClipboard, exportPrintListTSV } from '@/core/storage';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useLayoutStore } from '@/core/store';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
@@ -29,7 +29,7 @@ export function MobilePrintList() {
       gridUnitMm,
       categories: printList.categories,
     });
-    void navigator.clipboard.writeText(tsv);
+    void copyToClipboard(tsv);
     setCopyFeedback(true);
     setTimeout(() => setCopyFeedback(false), 2000);
   };
