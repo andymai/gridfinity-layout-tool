@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'scan-upload-photo',
+    date: '2026-09-13',
+    kind: 'improved',
+    title: { en: 'Trace a cutout from a photo you already have' },
+    body: {
+      en: 'The tool scanner no longer only opens the camera. Next to Take a photo there is now Upload a photo, so you can trace a picture already in your phone gallery or on your computer. Both run the same outline detection.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'cutout-svg-export',
     date: '2026-09-12',
     kind: 'new',

@@ -126,6 +126,29 @@ describe('ScanPage', () => {
     expect(screen.queryByText('scan.cardSteepAngle')).toBeNull();
   });
 
+  it('offers an upload option that accepts an existing photo without forcing the camera', async () => {
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+    render(<ScanPage token={TOKEN} />);
+
+    // Both options are on the capture screen.
+    expect(screen.getByText('scan.takePhoto')).toBeInTheDocument();
+    expect(screen.getByText('scan.uploadPhoto')).toBeInTheDocument();
+
+    // The upload input omits `capture`, so the OS offers the gallery / file
+    // picker instead of forcing the live camera (the camera input keeps it).
+    const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="file"]'));
+    expect(inputs).toHaveLength(2);
+    const uploadInput = inputs.find((i) => !i.hasAttribute('capture'));
+    expect(uploadInput).toBeDefined();
+
+    // Choosing an existing photo runs the same segmentation path as the camera.
+    const file = new File(['x'], 'gallery.jpg', { type: 'image/jpeg' });
+    Object.defineProperty(uploadInput!, 'files', { value: [file], configurable: true });
+    fireEvent.change(uploadInput!);
+
+    expect(await screen.findByText('scan.review.tapHint')).toBeInTheDocument();
+  });
+
   it('cautions about accuracy when the card was shot at a steep angle', async () => {
     mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
     mockCardSkew.mockReturnValue(0.5);

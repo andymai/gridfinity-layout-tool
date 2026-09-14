@@ -119,6 +119,7 @@ async function traceAt(
 export function ScanPage({ token }: ScanPageProps) {
   const t = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const imageBoxRef = useRef<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<Status>({ kind: 'capture' });
   const [cardSize, setCardSize] = useState<CardSizeMm>(loadCardSize);
@@ -445,15 +446,29 @@ export function ScanPage({ token }: ScanPageProps) {
       {status.kind !== 'processing' && status.kind !== 'finished' && (
         <footer className="shrink-0 border-t border-stroke-subtle bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
           {status.kind === 'capture' && (
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              fullWidth
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {t('scan.takePhoto')}
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {t('scan.takePhoto')}
+              </Button>
+              {/* Second input without `capture`, so the OS offers the gallery /
+                  file picker instead of forcing the live camera — lets the user
+                  trace an existing photo. */}
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                fullWidth
+                onClick={() => uploadInputRef.current?.click()}
+              >
+                {t('scan.uploadPhoto')}
+              </Button>
+            </div>
           )}
 
           {status.kind === 'review' && (
@@ -503,6 +518,17 @@ export function ScanPage({ token }: ScanPageProps) {
         type="file"
         accept="image/*"
         capture="environment"
+        hidden
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void handleFile(file);
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={uploadInputRef}
+        type="file"
+        accept="image/*"
         hidden
         onChange={(e) => {
           const file = e.target.files?.[0];

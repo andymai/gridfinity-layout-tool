@@ -1477,6 +1477,7 @@ const en: Record<string, string> = {
   'scan.noCardHint':
     'Lay a bank, transit, or ID card flat beside your tool — fully in frame, on a plain surface — for exact sizing.',
   'scan.takePhoto': 'Take a photo',
+  'scan.uploadPhoto': 'Upload a photo',
   'scan.photoAlt': 'Photo of the scanned tool',
   'scan.processing': 'Finding your tool…',
   'scan.review.confirmTitle': 'Is this your tool?',
