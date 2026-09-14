@@ -1,0 +1,35 @@
+src/features/generation/worker/generators/lidStackGrid.ts
+  s_b3d1acc07602ad::t_bc507483b16105 5,21,58-60,83-86,163-165
+  s_b3d1acc07602ad::t_06a8b48ff6e65b 65
+  s_b3d1acc07602ad::t_13f4086d916e1b 6-10
+  s_b3d1acc07602ad::t_3a9e29974157af 30
+  s_b3d1acc07602ad::t_536dffffa14d13 92-93
+  s_b3d1acc07602ad::t_710e7c9e318e55 63-64
+  s_b3d1acc07602ad::t_34917c702cecef 32,49-50
+  s_b3d1acc07602ad::t_f68ee31803adb1 11-12
+  s_b3d1acc07602ad::t_2477faac0e8510 33-38,40-48
+  s_b3d1acc07602ad::t_8443d2079096da 39
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_b3d1acc07602ad::t_d76dc7470bdda6 340-348
+  s_b3d1acc07602ad::t_7ae19d106c5cdd 385-387
+  s_b3d1acc07602ad::t_07ed3af47ae465 400-402
+  s_b3d1acc07602ad::t_ca036dadc47b01 517,530,537-538,542,544-549,556-564,571,573-574,576-579,581,583-584,587,590-591,603-604,611
+src/features/generation/worker/generators/lidStackGrid.test.ts
+  s_b3d1acc07602ad::t_cc276b696386fe 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9057bb4897ca5369f07836b488319b47600fdeb3",
+  "prompts": {},
+  "sessions": {
+    "s_b3d1acc07602ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "794c02e7-503f-4dff-813b-fe98044740ca",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
