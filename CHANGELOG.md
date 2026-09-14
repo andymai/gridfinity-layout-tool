@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.490.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.4...gridfinity-layout-tool-v4.490.5) (2026-09-14)
+
+
+### Bug Fixes
+
+* **generation:** correct bin base socket to the 4.75mm Gridfinity profile ([#4251](https://github.com/andymai/gridfinity-layout-tool/issues/4251)) ([16d2690](https://github.com/andymai/gridfinity-layout-tool/commit/16d2690d0874116565c04242c204c806cdfaeabf))
+
 ## [4.490.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.490.3...gridfinity-layout-tool-v4.490.4) (2026-09-13)
 
 
