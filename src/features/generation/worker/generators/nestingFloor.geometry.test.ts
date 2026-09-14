@@ -5,6 +5,7 @@ import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   retentionMagnetInset,
   retentionBossRadius,
+  binFloorMm,
 } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin, type GenerateBinFn } from './__kernel-tests__/wasmInit';
 import { buildParams, makeInsert } from './__kernel-tests__/scenarioTypes';
@@ -122,10 +123,10 @@ describe('nesting body', () => {
               deriveDimensions(p, true).floorThickness + 0.5
             );
           }
-          // Keep the rounded inward corner and the original pocket depth.
+          // Keep the rounded inward corner, its floor at the ordinary depth.
           expect(
             verticalSolidSpans(mesh, x - sx * (r - 0.1), y - sy * (r - 0.1))[0][1]
-          ).toBeCloseTo(2, 4);
+          ).toBeCloseTo(deriveDimensions(p, true).floorThickness, 4);
           expect(verticalSolidSpans(mesh, x + 0.1, y + 0.1)[0][0]).toBeCloseTo(depth, 4);
         }
     }
@@ -215,9 +216,9 @@ describe('nesting body', () => {
   });
 
   it.each([
-    [0.8, 2],
-    [1.2, 2],
-    [2.6, 2.6],
+    [0.8, binFloorMm(0.8)],
+    [1.2, binFloorMm(1.2)],
+    [2.6, binFloorMm(2.6)],
   ])(
     'uses the ordinary floor minimum with %s mm walls (%s mm floor)',
     (wallThickness, expectedFloor) => {

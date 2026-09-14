@@ -29,8 +29,16 @@ describe('gridfinityGeometry', () => {
       );
     });
 
-    it('has correct socket height', () => {
-      expect(GRIDFINITY_SPEC.SOCKET_HEIGHT).toBe(5);
+    it('has correct socket profile (0.8 + 1.8 + 2.15 = 4.75, the Gridfinity base profile)', () => {
+      expect(GRIDFINITY_SPEC.SOCKET_HEIGHT).toBeCloseTo(4.75, 10);
+      expect(GRIDFINITY_SPEC.SOCKET_SMALL_TAPER).toBe(0.8);
+      expect(GRIDFINITY_SPEC.SOCKET_BIG_TAPER).toBe(2.15);
+      // Vertical section = height minus the two 45° chamfers; must stay 1.8.
+      expect(
+        GRIDFINITY_SPEC.SOCKET_HEIGHT -
+          GRIDFINITY_SPEC.SOCKET_SMALL_TAPER -
+          GRIDFINITY_SPEC.SOCKET_BIG_TAPER
+      ).toBeCloseTo(1.8, 10);
     });
 
     it('has correct wall thickness', () => {

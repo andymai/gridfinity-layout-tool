@@ -21,11 +21,10 @@ export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT;
  * reaches full width `TOLERANCE/2` under the top of its socket, so that profile
  * is `SOCKET_HEIGHT - TOLERANCE/2`.
  *
- * It is the base profile that sets this, never the lip: at 4.4mm of profile
- * against the base's 4.75mm the lip is the shorter of the two, so the bin above
- * settles 0.35mm past the lip's base plane. Both figures come from the
- * reference profiles, so a canonical Gridfinity stack does not add body height
- * either.
+ * It is the base profile that sets this, never the lip: the base profile is the
+ * taller of the two, so the bin above settles just past the lip's base plane
+ * rather than onto it. Both come from the reference profiles, so a canonical
+ * Gridfinity stack does not add body height either.
  *
  * Measured on the mated solids rather than trusted from this arithmetic —
  * `binStackSeating.kernel.test.ts`.

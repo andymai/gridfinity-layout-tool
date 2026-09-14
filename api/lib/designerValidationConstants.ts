@@ -18,7 +18,7 @@ export const CONSTRAINTS = {
   // spacer asks for a zero or negative wall. Mirrors the client's
   // `MIN_BODY_WALL_MM` / `GRIDFINITY.SOCKET_HEIGHT`.
   MIN_BODY_WALL_MM: 1,
-  SOCKET_HEIGHT: 5,
+  SOCKET_HEIGHT: 4.75,
   DEFAULT_HEIGHT_UNIT_MM: 7,
   MAX_HEIGHT: 50,
   // Cutout fill level: how far the solid surface sits below the rim (mm). A

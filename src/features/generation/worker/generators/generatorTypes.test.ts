@@ -10,8 +10,8 @@ describe('constants (re-exported via generatorTypes barrel)', () => {
     expect(CLEARANCE).toBe(0.5);
   });
 
-  it('SOCKET_HEIGHT is 5mm', () => {
-    expect(SOCKET_HEIGHT).toBe(5);
+  it('SOCKET_HEIGHT is 4.75mm', () => {
+    expect(SOCKET_HEIGHT).toBe(4.75);
   });
 
   it('LIP_HEIGHT is 4.4mm total', () => {

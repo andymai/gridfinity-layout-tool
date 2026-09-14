@@ -9,6 +9,10 @@ import {
 } from './detachableFeetPlan';
 import { MAX_FOOT_SPAN_MM } from '@/features/bin-designer/types';
 import { buildFullMask, type CellMask } from '@/shared/utils/cellMask';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+
+/** How much narrower a foot's bottom face is than its top, per side (mm). */
+const SOCKET_TAPER_WIDTH_MM = GRIDFINITY_SPEC.SOCKET_SMALL_TAPER + GRIDFINITY_SPEC.SOCKET_BIG_TAPER;
 
 const STOCK_MAGNET_MM = 6.5;
 const PIN_MM = 5;
@@ -63,10 +67,10 @@ describe('footArmMm', () => {
 
   it('never gets so narrow that the foot stands on a knife edge', () => {
     // With no magnet the pin run alone would give 5.4mm at 3mm pins, and the
-    // socket taper takes 3.2mm of that off the bottom face — leaving 2.2mm of
-    // strip actually touching the pocket floor.
-    expect(footArmMm({ pinDiameterMm: 3 })).toBeCloseTo(7.2, 5);
-    expect(footArmMm({ pinDiameterMm: 3 }) - 3.2).toBeGreaterThanOrEqual(4);
+    // socket taper takes SOCKET_TAPER_WIDTH off the bottom face — leaving too
+    // little strip touching the pocket floor, so the 4mm bottom-face floor wins.
+    expect(footArmMm({ pinDiameterMm: 3 })).toBeCloseTo(SOCKET_TAPER_WIDTH_MM + 4, 5);
+    expect(footArmMm({ pinDiameterMm: 3 }) - SOCKET_TAPER_WIDTH_MM).toBeGreaterThanOrEqual(4);
   });
 
   it('shrinks with the inset, so a small cell does not oversize its foot', () => {

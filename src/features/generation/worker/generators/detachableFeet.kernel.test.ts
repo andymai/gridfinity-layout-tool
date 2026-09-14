@@ -30,6 +30,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { boundingBox, isSolidThrough, meshTopologyStats } from './__kernel-tests__/meshAssertions';
 import { seatDepth } from './__kernel-tests__/binSeating';
+import { SOCKET_HEIGHT } from './generatorTypes';
 import {
   DETACHABLE_PIN_HOLE_DIAMETER_MM,
   DETACHABLE_PIN_LEAD_IN_MM,
@@ -188,7 +189,7 @@ describe('detachable foot geometry', () => {
       const footMesh = meshOf(feet[0]);
       const integral = extremeAt(meshOf(full), 0, 0);
       expect(extremeAt(footMesh, 0, 0)).toBeCloseTo(integral - MATING_RIM_RELIEF_MM, 6);
-      expect(boundingBox(footMesh.vertices).minZ).toBeCloseTo(-5, 4);
+      expect(boundingBox(footMesh.vertices).minZ).toBeCloseTo(-SOCKET_HEIGHT, 4);
     } finally {
       feet.forEach((f) => f.delete());
       pinHoles?.delete();
@@ -217,7 +218,7 @@ describe('detachable foot geometry', () => {
       // keeps the interior floor unbroken.
       expect(box.maxZ).toBeCloseTo(FLOOR - MEMBRANE, 4);
       expect(box.maxZ).toBeLessThan(FLOOR);
-      expect(box.minZ).toBeCloseTo(-5, 4);
+      expect(box.minZ).toBeCloseTo(-SOCKET_HEIGHT, 4);
     } finally {
       feet.forEach((f) => f.delete());
       pinHoles?.delete();
@@ -459,7 +460,10 @@ describe('a bin built with detachable feet', () => {
   it('prints exactly one socket shorter than the same bin with integral feet', () => {
     const integral = boundingBox(bin('integral').vertices);
     const detachable = boundingBox(bin('detachable').vertices);
-    expect(integral.maxZ - integral.minZ - (detachable.maxZ - detachable.minZ)).toBeCloseTo(5, 3);
+    expect(integral.maxZ - integral.minZ - (detachable.maxZ - detachable.minZ)).toBeCloseTo(
+      SOCKET_HEIGHT,
+      3
+    );
     // Same footprint: the feet come off the bottom, not the sides.
     expect(detachable.maxX - detachable.minX).toBeCloseTo(integral.maxX - integral.minX, 4);
   });
@@ -616,9 +620,13 @@ describe('a floor too thin to hold a pin', () => {
       };
       const mesh = generateBin(params, undefined, true);
       expect(mesh.triangleCount).toBeGreaterThan(0);
-      // Still the detachable body: one socket shorter than its nominal height.
-      const { minZ, maxZ } = boundingBox(mesh.vertices);
-      expect(maxZ - minZ).toBeLessThan(21);
+      // Still the detachable body: the socket is gone, so the top sits one
+      // socket below the nominal socketed rim and clears the 3-unit height. The
+      // extent isn't the measure — a thin wall floats a raised-floor overlap a
+      // hair below Z=0, which is the socket-independent underside slab, not the
+      // body height.
+      const { maxZ } = boundingBox(mesh.vertices);
+      expect(maxZ).toBeLessThan(params.height * params.heightUnitMm);
     }
   });
 

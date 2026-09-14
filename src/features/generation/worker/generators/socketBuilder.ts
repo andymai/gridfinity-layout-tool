@@ -308,12 +308,9 @@ export function filledSocketCells(
  *
  * The socket is a frustum-like solid whose cross-section shrinks with depth,
  * following the standard Gridfinity tapered profile. Built as a ruled loft
- * through 5 sections corresponding to the profile breakpoints:
- *   Z=0:     outer boundary (top face, mates with bin body)
- *   Z=-0.25: same as top (vertical clearance step)
- *   Z=-2.4:  inset by 2.15mm (end of big taper)
- *   Z=-4.2:  same inset (vertical wall section)
- *   Z=-5.0:  inset by 2.95mm (end of small taper, bottom face)
+ * through 5 sections at the profile breakpoints (Z1..Z5 below): the top face
+ * that mates the bin body, a vertical clearance step, the end of the big taper,
+ * the vertical wall, and the inset bottom face.
  *
  * This approach avoids EdgeFinder limitations with non-square cells.
  *
@@ -383,15 +380,15 @@ export function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape
   // Profile insets from outer boundary at each Z breakpoint
   // (derived from socketProfile after translate(CLEARANCE/2, 0))
   const INSET_TOP = 0;
-  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2;
+  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
 
   // Z positions of profile breakpoints
   const Z1 = 0;
-  const Z2 = -(CLEARANCE / 2); // -0.25
-  const Z3 = -SOCKET_BIG_TAPER; // -2.4
-  const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART); // -4.2
-  const Z5 = -SOCKET_HEIGHT; // -5.0
+  const Z2 = -(CLEARANCE / 2);
+  const Z3 = -SOCKET_BIG_TAPER;
+  const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART);
+  const Z5 = -SOCKET_HEIGHT;
 
   // Helper to create a rounded rect sketch at a given Z with a given inset
   const sectionAt = (z: number, inset: number): Sketch => {

@@ -280,8 +280,8 @@ describe('assembledHeight', () => {
         'lid',
         'lidStackGrid',
       ]);
-      // 2.5 plate floor + 42 bin + 4.4 lip + ~2.093 lid + 5 grid
-      expect(result.totalMm).toBeCloseTo(55.993, 3);
+      // 2.5 plate floor + 42 bin + 4.4 lip + ~2.093 lid + 4.75 grid
+      expect(result.totalMm).toBeCloseTo(55.743, 3);
     });
   });
 });

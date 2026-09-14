@@ -2,7 +2,19 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLabelTabsSection } from './useLabelTabsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { LABEL_SOCKET_STACK_RELIEF_MM } from '@/shared/constants/labelPlates';
+
+/**
+ * Default 3u lipped socketed bin's interior ceiling: wall (3×7 − SOCKET_HEIGHT)
+ * less the lip's bottom taper. Derived from the live spec so a socket-depth
+ * change re-flows these expectations rather than stranding them.
+ */
+const INTERIOR_CEILING_3U =
+  3 * GRIDFINITY_SPEC.HEIGHT_UNIT - GRIDFINITY_SPEC.SOCKET_HEIGHT - GRIDFINITY_SPEC.LIP_SMALL_TAPER;
+/** The plane a click-in socket shelf settles to, sunk by the stacking relief. */
+const RELIEVED_SHELF_3U = INTERIOR_CEILING_3U - LABEL_SOCKET_STACK_RELIEF_MM;
 
 describe('useLabelTabsSection', () => {
   beforeEach(() => {
@@ -81,11 +93,14 @@ describe('useLabelTabsSection', () => {
     expect(useDesignerStore.getState().params.label.alignment).toBe('center');
   });
 
-  it('disabledReason set when wall height is at the label-tab minimum (default 2u = 9mm)', () => {
-    // Default 7mm height unit, socketed: 2u → wallHeight = 2×7 − 5 = 9mm,
-    // which equals MIN_LABEL_TAB_HEIGHT, so the tab still cannot fit.
+  it('disabledReason set when wall height sits exactly at the label-tab minimum', () => {
+    // Socketed: wallHeight = height×heightUnitMm − SOCKET_HEIGHT. Tune the unit
+    // so a 2u wall lands exactly on MIN_LABEL_TAB_HEIGHT, where the `<=` gate
+    // still disables the tab.
+    const heightUnitMm =
+      (DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_HEIGHT + GRIDFINITY_SPEC.SOCKET_HEIGHT) / 2;
     useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, height: 2 },
+      params: { ...DEFAULT_BIN_PARAMS, height: 2, heightUnitMm },
     });
 
     const { result } = renderHook(() => useLabelTabsSection());
@@ -107,7 +122,7 @@ describe('useLabelTabsSection', () => {
 
   it('available at a low unit count when heightUnitMm makes the wall tall enough (#2422)', () => {
     // Reporter's case: gating is on physical wall height (mm), not unit count.
-    // 2u × 20mm height unit, socketed → wallHeight = 2×20 − 5 = 35mm, well
+    // 2u × 20mm height unit, socketed → wallHeight = 2×20 − SOCKET_HEIGHT, well
     // above MIN_LABEL_TAB_HEIGHT (9mm). The old `height <= 2u` gate wrongly
     // disabled this tall-but-few-units bin.
     useDesignerStore.setState({
@@ -157,9 +172,9 @@ describe('useLabelTabsSection', () => {
     it('heightIsExplicit is false by default and tabHeightMm falls back to the interior ceiling', () => {
       const { result } = renderHook(() => useLabelTabsSection());
       expect(result.current.state.heightIsExplicit).toBe(false);
-      // Default bin: 3u tall × 7mm = 21mm minus 5mm socket = 16mm wallHeight,
-      // minus the 0.7mm lip bottom taper — the builder's interiorHeight.
-      expect(result.current.state.tabHeightMm).toBeCloseTo(15.3);
+      // Default bin: 3u × 7mm = 21mm minus the socket = wallHeight, minus the
+      // lip's bottom taper — the builder's interiorHeight.
+      expect(result.current.state.tabHeightMm).toBeCloseTo(INTERIOR_CEILING_3U);
     });
 
     it('tabHeightMm reflects the stacking relief in click-in socket mode', () => {
@@ -170,22 +185,27 @@ describe('useLabelTabsSection', () => {
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      // Interior ceiling 15.3mm sunk by the 0.8mm stacking relief.
-      expect(result.current.state.tabHeightMm).toBeCloseTo(14.5);
+      // Interior ceiling sunk by the click-in stacking relief.
+      expect(result.current.state.tabHeightMm).toBeCloseTo(RELIEVED_SHELF_3U);
     });
 
     it('caps an explicit height at the relieved plane in click-in socket mode', () => {
-      // The interior ceiling (15.3) parks a plate right where the next bin up
-      // seats, so the panel must read back the capped plane the builder cuts.
+      // The interior ceiling parks a plate right where the next bin up seats,
+      // so the panel must read back the capped plane the builder cuts.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
-          label: { ...DEFAULT_BIN_PARAMS.label, mode: 'socket', depth: 14, height: 15.3 },
+          label: {
+            ...DEFAULT_BIN_PARAMS.label,
+            mode: 'socket',
+            depth: 14,
+            height: INTERIOR_CEILING_3U,
+          },
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      expect(result.current.state.tabHeightMm).toBeCloseTo(14.5);
-      expect(result.current.state.tabHeightMax).toBeCloseTo(14.5);
+      expect(result.current.state.tabHeightMm).toBeCloseTo(RELIEVED_SHELF_3U);
+      expect(result.current.state.tabHeightMax).toBeCloseTo(RELIEVED_SHELF_3U);
       expect(result.current.state.tabsWillSilentlyDrop).toBe(false);
     });
 
@@ -211,7 +231,7 @@ describe('useLabelTabsSection', () => {
     });
 
     it('tabHeightMax never exceeds the interior ceiling even when depth + 1 would', () => {
-      // 3u lipped bin → interior ceiling = 16 − 0.7 = 15.3mm. depth = 20mm
+      // 3u lipped bin → interior ceiling = wall − 0.7 lip taper. depth = 20mm
       // pushes the depth-derived floor (21) past the ceiling; max must stay
       // at the ceiling and min must collapse to it so the stepper can't
       // request a Z the builder rejects.
@@ -222,8 +242,8 @@ describe('useLabelTabsSection', () => {
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      expect(result.current.state.tabHeightMax).toBeCloseTo(15.3);
-      expect(result.current.state.tabHeightMin).toBeCloseTo(15.3);
+      expect(result.current.state.tabHeightMax).toBeCloseTo(INTERIOR_CEILING_3U);
+      expect(result.current.state.tabHeightMin).toBeCloseTo(INTERIOR_CEILING_3U);
     });
 
     it('setTabDepth clamps explicit height up when depth invalidates it', () => {
@@ -236,20 +256,20 @@ describe('useLabelTabsSection', () => {
       const { result } = renderHook(() => useLabelTabsSection());
 
       // New depth 15 invalidates height 12 (gusset would have zero clearance).
-      // depth + 1 = 16 exceeds the 15.3mm interior ceiling, so the lift caps.
+      // depth + 1 = 16 exceeds the interior ceiling, so the lift caps.
       act(() => {
         result.current.handlers.setTabDepth(15);
       });
 
       expect(useDesignerStore.getState().params.label.depth).toBe(15);
-      expect(useDesignerStore.getState().params.label.height).toBeCloseTo(15.3);
+      expect(useDesignerStore.getState().params.label.height).toBeCloseTo(INTERIOR_CEILING_3U);
     });
 
     it('setTabDepth caps height clamp at the interior ceiling (no out-of-range writes)', () => {
-      // 3u lipped bin → interior ceiling = 15.3mm. Start with depth=10,
-      // height=11. Setting depth to 16 would naively clamp height to 17,
-      // which would exceed the ceiling and silently make the builder drop
-      // the tab once depth is reduced again. The cap keeps height ≤ 15.3.
+      // 3u lipped bin. Start with depth=10, height=11. Setting depth to 16
+      // would naively clamp height to 17, which would exceed the interior
+      // ceiling and silently make the builder drop the tab once depth is
+      // reduced again. The cap keeps height ≤ the interior ceiling.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -263,7 +283,7 @@ describe('useLabelTabsSection', () => {
       });
 
       expect(useDesignerStore.getState().params.label.depth).toBe(16);
-      expect(useDesignerStore.getState().params.label.height).toBeCloseTo(15.3);
+      expect(useDesignerStore.getState().params.label.height).toBeCloseTo(INTERIOR_CEILING_3U);
     });
 
     it('setTabDepth leaves height untouched when height is unset (default-at-top)', () => {
@@ -701,10 +721,10 @@ describe('useLabelTabsSection', () => {
 
     it('autoFix repairs a socket design whose explicit height the relief now caps', () => {
       // The old stepper let a 3u lipped bin reach depth 15 / height 15.3 (its
-      // ceiling was the interior ceiling, and tabHeightMin collapsed onto it).
-      // The shelf now caps at 14.5, so depth 15 leaves no gusset and the
-      // builder drops every tab. Auto-fix has to pull the design back under
-      // the capped plane, not switch the feature off.
+      // ceiling was the pre-relief interior ceiling, and tabHeightMin collapsed
+      // onto it). The shelf now caps at the relieved plane, so depth 15 leaves
+      // no gusset and the builder drops every tab. Auto-fix has to pull the
+      // design back under the capped plane, not switch the feature off.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -728,19 +748,19 @@ describe('useLabelTabsSection', () => {
       expect(label.enabled).toBe(true);
       expect(label.mode).toBe('socket');
       expect(label.depth).toBe(14);
-      expect(label.height).toBeCloseTo(14.5);
+      expect(label.height).toBeCloseTo(RELIEVED_SHELF_3U);
 
       const { result: after } = renderHook(() => useLabelTabsSection());
       expect(after.current.state.tabsWillSilentlyDrop).toBe(false);
     });
 
     it('autoFix keeps socket mode when only the inset is broken (fractional relieved shelf)', () => {
-      // 3u lipped bin in click-in socket mode: relieved default shelf =
-      // 14.5mm, which accepts the 14mm socket depth floor (14 < 14.5). A
-      // huge inset trips the silent-drop warning; auto-fix must zero the
-      // inset and KEEP socket mode — a flat `floor(shelf − 1)` ceiling (13)
-      // wrongly made socket mode look infeasible and demoted it to text
-      // (greptile review on the stacking-relief PR).
+      // 3u lipped bin in click-in socket mode: the relieved default shelf still
+      // accepts the 14mm socket depth floor (14 < relieved shelf). A huge inset
+      // trips the silent-drop warning; auto-fix must zero the inset and KEEP
+      // socket mode — a flat `floor(shelf − 1)` ceiling (13) wrongly made socket
+      // mode look infeasible and demoted it to text (greptile review on the
+      // stacking-relief PR).
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,

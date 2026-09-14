@@ -6,6 +6,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { StoredBaseplateParams } from '@/core/types';
 import { mm } from '@/core/types';
 
@@ -58,7 +59,7 @@ describe('useAssembledHeight', () => {
   it('falls back to a standard plate when the layout has none', () => {
     setPlate(undefined);
     const { result } = renderHook(() => useAssembledHeight());
-    expect(result.current.breakdown.baseplatePrintedMm).toBe(5);
+    expect(result.current.breakdown.baseplatePrintedMm).toBe(GRIDFINITY_SPEC.SOCKET_HEIGHT);
     expect(result.current.breakdown.totalMm).toBeCloseTo(46.4, 6);
   });
 

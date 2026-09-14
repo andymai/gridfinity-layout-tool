@@ -1,11 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`knife block > 3x1x4 steak slot row (repeat array) with open ends 1`] = `2856`;
+exports[`knife block > 3x1x4 steak slot row (repeat array) with open ends 1`] = `2940`;
 
-exports[`knife block > 6x1x8 chef slot open end breaches the +X wall and lip 1`] = `3160`;
+exports[`knife block > 6x1x8 chef slot open end breaches the +X wall and lip 1`] = `3188`;
 
-exports[`knife block > 6x1x8 chef slot with integrated rear rest shelf 1`] = `3064`;
+exports[`knife block > 6x1x8 chef slot with integrated rear rest shelf 1`] = `3092`;
 
-exports[`knife block > 6x1x8 open chef slot ignores wall patterns (solid host) 1`] = `3160`;
+exports[`knife block > 6x1x8 open chef slot ignores wall patterns (solid host) 1`] = `3188`;
 
-exports[`knife block > 6x1x8 solid with enclosed chef knife slot 1`] = `3184`;
+exports[`knife block > 6x1x8 solid with enclosed chef knife slot 1`] = `3180`;

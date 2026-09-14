@@ -113,7 +113,8 @@ function solidBinParams(cutouts: Cutout[], meshAssets?: Record<string, MeshAsset
  */
 function minZInRegion(
   mesh: { vertices: Float32Array; indices: Uint32Array },
-  region: { minX: number; maxX: number; minY: number; maxY: number }
+  region: { minX: number; maxX: number; minY: number; maxY: number },
+  aboveZ = -Infinity
 ): number {
   const { vertices, indices } = mesh;
   let minZ = Infinity;
@@ -127,7 +128,13 @@ function minZInRegion(
       cy += vertices[v * 3 + 1] / 3;
       cz += vertices[v * 3 + 2] / 3;
     }
-    if (cx > region.minX && cx < region.maxX && cy > region.minY && cy < region.maxY) {
+    if (
+      cz > aboveZ &&
+      cx > region.minX &&
+      cx < region.maxX &&
+      cy > region.minY &&
+      cy < region.maxY
+    ) {
       minZ = Math.min(minZ, cz);
     }
   }
@@ -332,12 +339,12 @@ describe('mesh imprint generation (occt + manifold)', () => {
     solid.delete();
     expect(componentCount).toBe(1);
 
-    const { innerW, innerD } = deriveDimensions(params, true);
+    const { innerW, innerD, wallHeight } = deriveDimensions(params, true);
     const ox = -innerW / 2 + 10;
     const oy = -innerD / 2 + 10;
     const sx = stepAsset.sizeMm.x;
     const sy = stepAsset.sizeMm.y;
-    // Center is covered by base + top → deepest floor (~zBottom).
+    // Center is covered by base + top → deepest pocket floor.
     const center = {
       minX: ox + sx / 2 - 2,
       maxX: ox + sx / 2 + 2,
@@ -346,8 +353,12 @@ describe('mesh imprint generation (occt + manifold)', () => {
     };
     // The x≈0 edge is covered by the top slab only → floor ~2mm shallower.
     const edge = { minX: ox + 0.5, maxX: ox + 3.5, minY: oy + sy / 2 - 2, maxY: oy + sy / 2 + 2 };
-    const centerFloor = minZInRegion(imprinted, center);
-    const edgeFloor = minZInRegion(imprinted, edge);
+    // Measure the POCKET floor, ignoring the bin's exterior bottom face: a socket
+    // corner triangle can fan a centroid into the probe window down at the base,
+    // and the deepest-centroid probe would read that instead of the shelf.
+    const aboveZ = (SOCKET_HEIGHT + wallHeight) / 2;
+    const centerFloor = minZInRegion(imprinted, center, aboveZ);
+    const edgeFloor = minZInRegion(imprinted, edge, aboveZ);
     expect(Number.isFinite(centerFloor)).toBe(true);
     expect(Number.isFinite(edgeFloor)).toBe(true);
     // Relief preserved: the edge floor sits ~2mm above the center floor. The

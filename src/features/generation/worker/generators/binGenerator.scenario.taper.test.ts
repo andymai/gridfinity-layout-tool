@@ -93,7 +93,10 @@ describe('bin wall taper geometry (#2933)', () => {
         height: 5,
         overhang: {
           ...ovh,
-          taper: { profile: 'fillet', bandHeight: 30, left: 21, right: 0, front: 0, back: 0 },
+          // Band set above the wall so `min(bandHeight, wallHeight)` clamps it to
+          // fill the whole wall — the strongest floor-reaching case, and stable
+          // when the socket height (hence wallHeight) shifts by a spec tweak.
+          taper: { profile: 'fillet', bandHeight: 35, left: 21, right: 0, front: 0, back: 0 },
         },
       }),
       undefined,
