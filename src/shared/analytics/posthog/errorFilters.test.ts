@@ -128,6 +128,36 @@ describe('filterExceptionForPosthog', () => {
   });
 });
 
+describe('filterExceptionForPosthog — bridge cancellations', () => {
+  it('drops a superseded export rejection', () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_list: [{ value: 'Export superseded' }] },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('drops a cancelled generation rejection', () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_values: ['Generation cancelled'] },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('keeps a real error that merely mentions the cancellation phrase', () => {
+    // Anchored match: only the exact bridge literal is benign, not any error
+    // whose message happens to contain the words.
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [{ value: 'Export superseded by an unexpected worker state' }],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+});
+
 describe('filterExceptionForPosthog — WebGL context-creation dedupe', () => {
   it('pins a stable fingerprint so all variants group into one issue', () => {
     const e = {
