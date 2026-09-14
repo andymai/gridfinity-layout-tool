@@ -27,7 +27,7 @@ RUN pnpm run build && find dist -name '*.map' -delete
 
 # COPY-only stage: nothing executes here, so the arm64 image builds without
 # emulation. The dist is arch-independent.
-FROM nginxinc/nginx-unprivileged:1.31.5-alpine-slim@sha256:c94666682d7ecbfa0a1767fbe882cd1d82509333d15716c765f42bbef0d3809f
+FROM nginxinc/nginx-unprivileged:1.31.5-alpine-slim@sha256:736aa11ab9f9c320825722e411661c64559881e15e77f37137eef168ebe9515c
 ARG GIT_SHA=""
 ARG VERSION="dev"
 LABEL org.opencontainers.image.source="https://github.com/andymai/gridfinity-layout-tool" \
