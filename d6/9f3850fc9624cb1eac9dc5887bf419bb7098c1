@@ -1,0 +1,22 @@
+src/shell/bootScanPage.test.ts
+  s_b3d1acc07602ad::t_e5e4f94dac1f0e 5,9-44,47,51,54-57,61-62,65-68,71-72,76,78-79,81-87,92-93,95-96,99-100
+src/shell/bootScanPage.ts
+  s_b3d1acc07602ad::t_afb4e8fb9b36b5 5-10,18,20-25,28-34
+  s_b3d1acc07602ad::t_39bd0c14f60eef 13,16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d69f3850fc9624cb1eac9dc5887bf419bb7098c1",
+  "prompts": {},
+  "sessions": {
+    "s_b3d1acc07602ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "794c02e7-503f-4dff-813b-fe98044740ca",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
