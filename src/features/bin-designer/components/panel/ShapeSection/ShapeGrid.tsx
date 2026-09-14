@@ -261,7 +261,13 @@ function ShapeCell({
       }}
       onPointerEnter={() => onPointerEnter(col, row)}
       onKeyDown={(e) => onKeyDown(e, col, row)}
-      className="relative transition-colors"
+      // The cell is a bare colour swatch that must fill its grid track, so it
+      // takes no padding. `min-w-0`/`min-h-0` override a grid item's default
+      // `min-*: auto`, whose min-content floor (the design-system Button's own
+      // padding) otherwise stops each 1fr column from shrinking — so a half-grid
+      // footprint's doubled column count overflowed the card and clipped the
+      // rightmost cells (#4271).
+      className="relative min-h-0 min-w-0 p-0 transition-colors"
       style={{
         backgroundColor: filled ? fillColor : 'var(--color-surface)',
         borderRadius: `${tl}px ${tr}px ${br}px ${bl}px`,

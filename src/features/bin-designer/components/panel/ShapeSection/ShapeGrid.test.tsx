@@ -73,6 +73,19 @@ describe('ShapeGrid', () => {
     expect(onToggleCell).toHaveBeenCalledTimes(1);
   });
 
+  it('lets every cell shrink below its content min so a wide grid does not overflow (#4271)', () => {
+    // A half-grid 8×5 footprint is a 16×10 cell grid. Each cell must carry
+    // `min-w-0` or CSS grid's default `min-width: auto` floors each 1fr column
+    // at the Button's own padding, overflowing the fixed-width card and clipping
+    // the rightmost cells. jsdom has no layout engine, so guard the class itself.
+    renderGrid({ mask: buildFullMask(8, 5) });
+    const cells = screen.getAllByRole('gridcell');
+    expect(cells).toHaveLength(16 * 10);
+    for (const cell of cells) {
+      expect(cell.className).toContain('min-w-0');
+    }
+  });
+
   it('ends the drag on pointer-up', () => {
     const onToggleCell = vi.fn();
     const { container } = renderGrid({ onToggleCell });
