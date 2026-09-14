@@ -1,0 +1,22 @@
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_b3d1acc07602ad::t_644a0fd88fe352 347
+  s_b3d1acc07602ad::t_f2b451d1378c5e 18
+  s_b3d1acc07602ad::t_43be8e88407b7e 519,531-533,540-541,544-554,559-561,569-571,575,577,582,613-631
+  s_b3d1acc07602ad::t_9f29e595a4589a 632
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "38b02ce8372a93151ae67fde1a3516cb0ff66f8e",
+  "prompts": {},
+  "sessions": {
+    "s_b3d1acc07602ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "794c02e7-503f-4dff-813b-fe98044740ca",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
