@@ -18,7 +18,12 @@ import {
   getGenerateSplitPreview,
   getExportSplitBin,
 } from './__kernel-tests__/wasmInit';
-import { boundingBox, hasNoNaNOrInfinity } from './__kernel-tests__/meshAssertions';
+import {
+  boundingBox,
+  hasNoNaNOrInfinity,
+  meshTopologyStats,
+  stlSolidVolume,
+} from './__kernel-tests__/meshAssertions';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { isOk } from '@/core/result';
 
@@ -219,6 +224,111 @@ describe('split export: geometry completeness', () => {
         triangleCount,
         `piece ${piece.label}: should have substantial geometry`
       ).toBeGreaterThan(100);
+    }
+  }, 90000);
+});
+
+describe('split export: wall cutouts legitimately shorten a piece', () => {
+  // A tall lipped bin with deep wall cutouts, split into a grid. Wall cutouts eat
+  // down from the wall top, so an edge-column piece whose only surviving perimeter
+  // wall carries a deep cutout comes out short — a valid solid, not an OCCT
+  // coplanar wall-drop. The body-loss guard used to hard-fail the whole export with
+  // "please report this bug" (auto-filed as issue #4243: "piece A2 lost geometry,
+  // expected 64.0mm got 41.7mm"). The piece must export instead.
+  const pos = { alignment: 'center' as const, offset: 0 };
+  const deepCut = { enabled: true, width: 100, depth: 40, widthMm: null, ...pos };
+  const off = { enabled: false, width: 0, depth: 0, widthMm: null, ...pos };
+
+  const params: BinParams = {
+    ...DEFAULT_BIN_PARAMS,
+    width: 4,
+    depth: 9,
+    height: 9,
+    base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    walls: {
+      ...DEFAULT_BIN_PARAMS.walls,
+      enabled: true,
+      shape: 'u-shape',
+      front: off,
+      back: off,
+      left: deepCut,
+      right: deepCut,
+    },
+  };
+
+  // 2 columns (x=0) × 3 rows (y=±63); A2 = column A (left edge), row 2 (middle).
+  // Its only perimeter wall is the LEFT one; front/back/right are all split cuts.
+  const cutPlanesX = [0];
+  const cutPlanesY = [-63, 63];
+  const connectors = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
+
+  it('exports piece A2 as a valid short solid instead of throwing', async () => {
+    const exportSplitBin = getExportSplitBin();
+    const exported = await exportSplitBin(params, cutPlanesX, cutPlanesY, 0.01, 5, connectors);
+    expect(exported.pieces).toHaveLength(6);
+
+    const a2 = exported.pieces.find((p) => p.label === 'A2');
+    expect(a2, 'A2 piece should be present').toBeDefined();
+    if (!a2) return;
+
+    const parsed = parseSTLBinary(a2.data);
+    expect(isOk(parsed), 'A2 STL parse should succeed').toBe(true);
+    if (!isOk(parsed)) return;
+    const { vertices } = parsed.value;
+    expect(hasNoNaNOrInfinity(vertices), 'A2 vertices have NaN/Infinity').toBe(true);
+
+    const bb = boundingBox(vertices);
+    const z = bb.maxZ - bb.minZ;
+    const body = params.height * GRIDFINITY.HEIGHT_UNIT;
+
+    // The cutout removes the wall top, so A2 lands well below the old
+    // `0.8 * body` guard that used to throw — but it keeps its lower wall,
+    // so it is far taller than a bare floor.
+    expect(
+      z,
+      `A2 Z=${z.toFixed(1)}mm should be short (below the old ${(body * 0.8).toFixed(1)}mm guard)`
+    ).toBeLessThan(body * 0.8);
+    expect(
+      z,
+      `A2 Z=${z.toFixed(1)}mm should keep its lower wall, not just a floor`
+    ).toBeGreaterThan(SOCKET_HEIGHT + 10);
+
+    // The short piece is a proper printable solid: watertight, 2-manifold,
+    // genus-0, positive volume — proof the boolean produced valid geometry.
+    const idx = new Uint32Array(vertices.length / 3);
+    for (let i = 0; i < idx.length; i++) idx[i] = i;
+    const topo = meshTopologyStats({
+      vertices,
+      normals: new Float32Array(vertices.length),
+      indices: idx,
+      edgeVertices: new Float32Array(0),
+      triangleCount: idx.length / 3,
+    });
+    expect(topo.boundaryEdges, 'A2 must be watertight').toBe(0);
+    expect(topo.nonManifoldEdges, 'A2 must be 2-manifold').toBe(0);
+    expect(topo.eulerCharacteristic, 'A2 must be a single genus-0 shell').toBe(2);
+    expect(stlSolidVolume(vertices), 'A2 must enclose positive volume').toBeGreaterThan(0);
+  }, 90000);
+
+  it('still reaches full height where the cutout is shallow', async () => {
+    const exportSplitBin = getExportSplitBin();
+    const shallow: BinParams = {
+      ...params,
+      walls: {
+        ...params.walls,
+        left: { enabled: true, width: 100, depth: 10, widthMm: null, ...pos },
+        right: { enabled: true, width: 100, depth: 10, widthMm: null, ...pos },
+      },
+    };
+    const exported = await exportSplitBin(shallow, cutPlanesX, cutPlanesY, 0.01, 5, connectors);
+    const body = shallow.height * GRIDFINITY.HEIGHT_UNIT;
+    for (const piece of exported.pieces) {
+      const { bb } = exportPieceBounds(piece.data);
+      const z = bb.maxZ - bb.minZ;
+      expect(
+        z,
+        `piece ${piece.label}: Z=${z.toFixed(1)}mm should stay near full height with a shallow cutout`
+      ).toBeGreaterThan(body * 0.8);
     }
   }, 90000);
 });
