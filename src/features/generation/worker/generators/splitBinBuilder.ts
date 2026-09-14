@@ -178,6 +178,17 @@ function splitSolidIntoPieces(
   // the exact threshold it had.
   const expectedBodyZ = Math.min(totalHeight + splitDims.collarHeight, wallTopZ);
 
+  // Wall cutouts eat down from the wall top (up to the interior height), so a
+  // split piece whose only surviving perimeter wall carries a deep cutout is
+  // legitimately shorter than the full body — the boolean did nothing wrong.
+  // Drop the loss threshold by the deepest a wall cutout can reach so those
+  // pieces export instead of tripping the coplanar-loss guard, which was built
+  // for an OCCT wall-drop that current kernels no longer produce.
+  const maxWallCutoutDropMm = params.walls.enabled
+    ? Math.max(0, wallHeight - params.wallThickness)
+    : 0;
+  const lossFloorZ = Math.max(0, expectedBodyZ - maxWallCutoutDropMm);
+
   // An overhang grows the outer body past the nominal grid footprint;
   // both the lip and the outermost cutting boxes must track it. Suppressed for
   // partial masks, matching the geometry pipeline.
@@ -430,15 +441,17 @@ function splitSolidIntoPieces(
         let piece = unwrap(intersect(bodySolid, cuttingBox));
 
         // Validate that the boolean intersection preserved the full geometry.
-        // The Z extent comes out far shorter than the bin height in two cases:
+        // The Z extent comes out far shorter than the bin height in a few cases:
         // (1) on a HOLLOW bin, a piece bounded by interior cuts on all four
         // sides sits entirely inside the open cavity, so it legitimately has
-        // only a floor and no walls — not a bug; (2) OCCT dropped walls because
-        // a cut plane went coplanar with an internal wall — a bug worth
-        // reporting. A solid bin has no cavity, so case (1) can't apply to it.
+        // only a floor and no walls — not a bug; (2) a wall cutout ate the top
+        // off the only perimeter wall the piece kept, handled by `lossFloorZ`;
+        // (3) OCCT dropped walls because a cut plane went coplanar with an
+        // internal wall — a bug worth reporting. A solid bin has no cavity, so
+        // case (1) can't apply to it.
         const pieceBounds = getBounds(piece);
         const actualZ = pieceBounds.zMax - pieceBounds.zMin;
-        if (actualZ < expectedBodyZ * 0.8) {
+        if (actualZ < lossFloorZ * 0.8) {
           piece.delete();
           cuttingBox.delete();
           const isFullyInterior = col > 0 && col < numCols - 1 && row > 0 && row < numRows - 1;
