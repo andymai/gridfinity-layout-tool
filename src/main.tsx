@@ -16,6 +16,7 @@ import { initializeLayoutLibrary, loadSharedWithMe } from '@/core/storage';
 import { isOk } from '@/core/result';
 import type { Locale } from '@/i18n/types.ts';
 import { recoverFromBadWwwMigration } from '@/core/storage/wwwMigrationRecovery';
+import { bootScanPage } from '@/shell/bootScanPage';
 import {
   connectEventStoreToBus,
   connectFillAnalytics,
@@ -59,7 +60,7 @@ if (isSmokeMode()) {
 } else if (isScanPath()) {
   // Lightweight phone capture route. Mounted from its own chunk so it never
   // pulls the editor, the 3D bundle, or the layout/library store hydration.
-  void import('./shell/scanBoot').then(({ runScanBoot }) => runScanBoot());
+  void bootScanPage();
 } else {
   // Initialize Posthog analytics (no-op in dev)
   initAnalytics();
