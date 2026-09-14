@@ -45,6 +45,7 @@ patchedDependencies:
   '@ts-morph/common@0.11.1': af8386da3c617c0b08a3cd3b93405261181b9cd4661197cd64e6d244543796bf
   brepjs@18.124.8: b093465b7360e6fe29f5e7136a059c6fcc9202184fc822672ae62b38533c5ff6
   eslint-plugin-jsx-a11y@6.10.2: b8ef271a4b50b7ee48a5e92a3ee36f8e5ca942682264a445d0b76b82b084e993
+  three-stdlib: 36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47
 
 importers:
 
@@ -154,7 +155,7 @@ importers:
         version: 0.185.1
       three-stdlib:
         specifier: ^2.36.1
-        version: 2.36.1(three@0.185.1)
+        version: 2.36.1(patch_hash=36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47)(three@0.185.1)
       troika-three-text:
         specifier: 0.52.5
         version: 0.52.5(three@0.185.1)
@@ -7978,7 +7979,7 @@ snapshots:
       suspend-react: 0.1.3(react@19.2.8)
       three: 0.185.1
       three-mesh-bvh: 0.8.3(three@0.185.1)
-      three-stdlib: 2.36.1(three@0.185.1)
+      three-stdlib: 2.36.1(patch_hash=36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47)(three@0.185.1)
       troika-three-text: 0.52.5(three@0.185.1)
       tunnel-rat: 0.1.2(@types/react@19.2.18)(immer@11.1.18)(react@19.2.8)
       use-sync-external-store: 1.6.0(react@19.2.8)
@@ -11457,7 +11458,7 @@ snapshots:
     dependencies:
       three: 0.185.1
 
-  three-stdlib@2.36.1(three@0.185.1):
+  three-stdlib@2.36.1(patch_hash=36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47)(three@0.185.1):
     dependencies:
       '@types/draco3d': 1.4.10
       '@types/offscreencanvas': 2019.7.3

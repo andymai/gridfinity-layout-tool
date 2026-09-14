@@ -1,0 +1,56 @@
+diff --git a/controls/OrbitControls.cjs b/controls/OrbitControls.cjs
+index aa730533bf788309b4a053358bdbbcf3603423f6..fa0cd4bf82d67ab88d495ae7f89bec5f7dbdc7d9 100644
+--- a/controls/OrbitControls.cjs
++++ b/controls/OrbitControls.cjs
+@@ -566,6 +566,7 @@ class OrbitControls extends EventDispatcher.EventDispatcher {
+         rotateEnd.set(event.pageX, event.pageY);
+       } else {
+         const position = getSecondPointerPosition(event);
++        if (!position) return;
+         const x = 0.5 * (event.pageX + position.x);
+         const y = 0.5 * (event.pageY + position.y);
+         rotateEnd.set(x, y);
+@@ -583,6 +584,7 @@ class OrbitControls extends EventDispatcher.EventDispatcher {
+         panEnd.set(event.pageX, event.pageY);
+       } else {
+         const position = getSecondPointerPosition(event);
++        if (!position) return;
+         const x = 0.5 * (event.pageX + position.x);
+         const y = 0.5 * (event.pageY + position.y);
+         panEnd.set(x, y);
+@@ -593,6 +595,7 @@ class OrbitControls extends EventDispatcher.EventDispatcher {
+     }
+     function handleTouchMoveDolly(event) {
+       const position = getSecondPointerPosition(event);
++      if (!position) return;
+       const dx = event.pageX - position.x;
+       const dy = event.pageY - position.y;
+       const distance = Math.sqrt(dx * dx + dy * dy);
+diff --git a/controls/OrbitControls.js b/controls/OrbitControls.js
+index 576ad6fcb972960d559c4d45e214a56fcdfbd95f..ed070481b7a143c314959776dda925d92701c49c 100644
+--- a/controls/OrbitControls.js
++++ b/controls/OrbitControls.js
+@@ -564,6 +564,7 @@ class OrbitControls extends EventDispatcher {
+         rotateEnd.set(event.pageX, event.pageY);
+       } else {
+         const position = getSecondPointerPosition(event);
++        if (!position) return;
+         const x = 0.5 * (event.pageX + position.x);
+         const y = 0.5 * (event.pageY + position.y);
+         rotateEnd.set(x, y);
+@@ -581,6 +582,7 @@ class OrbitControls extends EventDispatcher {
+         panEnd.set(event.pageX, event.pageY);
+       } else {
+         const position = getSecondPointerPosition(event);
++        if (!position) return;
+         const x = 0.5 * (event.pageX + position.x);
+         const y = 0.5 * (event.pageY + position.y);
+         panEnd.set(x, y);
+@@ -591,6 +593,7 @@ class OrbitControls extends EventDispatcher {
+     }
+     function handleTouchMoveDolly(event) {
+       const position = getSecondPointerPosition(event);
++      if (!position) return;
+       const dx = event.pageX - position.x;
+       const dy = event.pageY - position.y;
+       const distance = Math.sqrt(dx * dx + dy * dy);
