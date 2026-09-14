@@ -1,0 +1,23 @@
+src/shell/Mobile/MobilePrintList/MobilePrintList.tsx
+  s_a53dd738bf5abd::t_98e9d2dcbbd7c5 32
+  s_a53dd738bf5abd::t_09429ae40f96de 3
+src/shell/RightPanel/RightPanel.tsx
+  s_a53dd738bf5abd::t_dd8efe4cc70359 256
+  s_a53dd738bf5abd::t_f30792edde23a9 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "18dc6b43a0c9697160871f23642cd7f876d000b4",
+  "prompts": {},
+  "sessions": {
+    "s_a53dd738bf5abd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7daeb47-9640-46af-abef-ac2cc5e42c61",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
