@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { collectJunctions, isLidCellFilled, type LidCellGrid } from './lidStackGrid';
+import {
+  collectJunctions,
+  collectTJunctions,
+  isLidCellFilled,
+  type LidCellGrid,
+} from './lidStackGrid';
 import { buildFullMask, type CellMask } from '@/shared/utils/cellMask';
 import type { CellInfo } from './cellDecomposition';
 
@@ -104,5 +109,54 @@ describe('collectJunctions', () => {
     const xs = [-63, -21, -21, 21, 21, 63];
     const ys = [-63, -21, -21, 21, 21, 63];
     expect(collectJunctions(xs, ys)).toHaveLength(4);
+  });
+});
+
+describe('collectTJunctions', () => {
+  const lines = (n: number): number[] =>
+    Array.from({ length: n + 1 }, (_, k) => k * GRID - (n * GRID) / 2);
+
+  it('returns interior-divider-meets-edge points, never a corner or crossing', () => {
+    const ts = collectTJunctions(lines(3), lines(3));
+    // 3×3: interior lines at ±21 meet each of the four outer edges → 8.
+    expect(ts).toHaveLength(8);
+    const pts = ts.map(([x, y]) => [x, y]);
+    // Interior dividers meeting the front/back and left/right edges.
+    expect(pts).toEqual(
+      expect.arrayContaining([
+        [-21, -63],
+        [-21, 63],
+        [21, -63],
+        [21, 63],
+        [-63, -21],
+        [-63, 21],
+        [63, -21],
+        [63, 21],
+      ])
+    );
+    // Never a ring corner (both coords on an outer line) or an interior crossing.
+    for (const [x, y] of pts) {
+      expect(Math.abs(x) === 63 && Math.abs(y) === 63).toBe(false);
+      expect(Math.abs(x) === 21 && Math.abs(y) === 21).toBe(false);
+    }
+  });
+
+  it('points the inward offset back into the grid, off the boundary line', () => {
+    for (const [x, y, inX, inY] of collectTJunctions(lines(3), lines(3))) {
+      // Exactly one axis carries the inward push, toward the origin.
+      expect(Math.abs(inX) + Math.abs(inY)).toBe(1);
+      if (inX !== 0) expect(Math.sign(inX)).toBe(x > 0 ? -1 : 1);
+      if (inY !== 0) expect(Math.sign(inY)).toBe(y > 0 ? -1 : 1);
+    }
+  });
+
+  it('finds the side-edge T-junctions of a single-column grid', () => {
+    // 1×3: no interior X divider, but the two interior Y dividers each run into
+    // both side edges → four T-junctions.
+    expect(collectTJunctions(lines(1), lines(3))).toHaveLength(4);
+  });
+
+  it('has no T-junction on a 1×1 grid', () => {
+    expect(collectTJunctions(lines(1), lines(1))).toHaveLength(0);
   });
 });
