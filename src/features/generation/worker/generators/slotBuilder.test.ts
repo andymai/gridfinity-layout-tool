@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { BinParams } from '@/shared/types/bin';
+import { binFloorMm } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { getEffectiveSlotDimensions, buildSlotCuts } from './slotBuilder';
 import { box } from 'brepjs';
@@ -114,7 +115,10 @@ describe('buildSlotCuts', () => {
     const pockets = calls.filter((c) => c[2] === headHeight);
     expect(pockets.length).toBeGreaterThan(0);
     for (const p of pockets) {
-      expect((p[3] as { at: [number, number, number] }).at[2]).toBeCloseTo(2 + headHeight / 2, 5);
+      expect((p[3] as { at: [number, number, number] }).at[2]).toBeCloseTo(
+        binFloorMm(params.wallThickness) + headHeight / 2,
+        5
+      );
     }
   });
 

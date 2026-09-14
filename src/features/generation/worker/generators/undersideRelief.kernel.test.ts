@@ -44,7 +44,7 @@ beforeAll(async () => {
 }, 60000);
 
 /** Gridfinity socket depth (mm) — the band the relief opens. */
-const SOCKET_HEIGHT = 5;
+const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 /** Default wall/floor thickness (mm) for `DEFAULT_BIN_PARAMS`. */
 const WALL = 1.2;
 

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import { initTestKernel } from '@/test/initTestKernel';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 type GenerateFn = (
   params: ResolvedBaseplateParams,
@@ -64,7 +65,7 @@ function zBounds(vertices: Float32Array): { minZ: number; maxZ: number } {
   return { minZ, maxZ };
 }
 
-const SOCKET_HEIGHT = 5;
+const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 const MAGNET_FLOOR = 0.5;
 
 describe('baseplateGenerator', () => {

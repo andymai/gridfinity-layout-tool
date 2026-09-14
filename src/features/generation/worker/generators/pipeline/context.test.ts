@@ -24,7 +24,7 @@ describe('createInitialContext', () => {
     expect(dim.innerW).toBeCloseTo(81.1); // 83.5 - 2*1.2
     expect(dim.innerD).toBeCloseTo(81.1);
     expect(dim.totalHeight).toBe(21); // 3 * 7
-    expect(dim.wallHeight).toBe(16); // 21 - 5 (SOCKET_HEIGHT)
+    expect(dim.wallHeight).toBe(21 - GRIDFINITY.SOCKET_HEIGHT);
     expect(dim.isFlat).toBe(false);
     expect(dim.solid).toBe(false);
     expect(dim.isSlotted).toBe(false);
@@ -71,7 +71,7 @@ describe('createInitialContext', () => {
       6.5,
       2,
       3,
-      16,
+      16.25,
       1.2,
       false, // stackingLip
       false, // solid
@@ -81,7 +81,7 @@ describe('createInitialContext', () => {
       '0', // overhang segment (no overhang)
       // Floor segment: appended whenever the spec floor exceeds the wall, which
       // is every wall under 2mm. Absent on a bin already walled that thick.
-      'floor2',
+      'floor2.25',
     ].join('|');
 
     expect(ctx.dimensions.shellKey).toBe(expected);
@@ -196,7 +196,9 @@ describe('createInitialContext', () => {
     );
     expect(ctx.dimensions.hasLip).toBe(true);
     // interiorHeight = wallHeight - LIP_SMALL_TAPER (0.7)
-    expect(ctx.dimensions.interiorHeight).toBeCloseTo(15.3);
+    expect(ctx.dimensions.interiorHeight).toBeCloseTo(
+      21 - GRIDFINITY.SOCKET_HEIGHT - GRIDFINITY.LIP_SMALL_TAPER
+    );
   });
 
   describe('spacer flag in dimensions (issue #2869)', () => {
@@ -358,11 +360,11 @@ describe('createInitialContext', () => {
     });
 
     it('keeps the cut path when a numeric height clamps up to the full interior height', () => {
-      // No-lip 4x4x3 bin: wallHeight 16 == full interior height. A numeric value
+      // No-lip 4x4x3 bin: wallHeight == full interior height. A numeric value
       // at/above that is effectively full, so it should NOT pay for the slower
       // additive path or bust the cut-path cache bucket.
       const ctx = createInitialContext(fourCompartments({ dividerHeight: 999 }));
-      expect(ctx.dimensions.interiorHeight).toBe(16);
+      expect(ctx.dimensions.interiorHeight).toBe(21 - GRIDFINITY.SOCKET_HEIGHT);
       expect(ctx.dimensions.compartmentsBakedIntoShell).toBe(true);
     });
 
@@ -385,7 +387,7 @@ describe('createInitialContext', () => {
     it('defaults to a zero collar and leaves wall/interior height nominal', () => {
       const dim = createInitialContext(createTestParams()).dimensions;
       expect(dim.collarHeight).toBe(0);
-      expect(dim.wallHeight).toBe(16); // 3u * 7 - 5 socket, unchanged
+      expect(dim.wallHeight).toBe(21 - GRIDFINITY.SOCKET_HEIGHT); // nominal, no collar
     });
 
     it('resolves collarHeight without inflating the nominal wall/interior height', () => {

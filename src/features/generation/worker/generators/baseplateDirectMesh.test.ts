@@ -245,7 +245,7 @@ describe('baseplateDirectMesh', () => {
     // Draft and export must agree on the taller, floored slab.
     expect(directBB.minZ).toBeCloseTo(brepBB.minZ, 1);
     expect(directBB.maxZ).toBeCloseTo(brepBB.maxZ, 1);
-    expect(directBB.maxZ).toBeCloseTo(5.8, 1);
+    expect(directBB.maxZ).toBeCloseTo(SOCKET_HEIGHT + 0.8, 1);
   });
 
   // ─── Comparison: triangle counts ─────────────────────────────────────────
@@ -510,7 +510,6 @@ describe('baseplateDirectMesh', () => {
     const params = defaults({ width: grid, depth: grid, gridUnitMm: cell });
     const mesh = generateDirect(params, noop);
 
-    const SOCKET_HEIGHT = 5;
     const outerArea = roundedRectArea(grid * cell, grid * cell, 4); // PLATE_CORNER_RADIUS
     const pocketArea = roundedRectArea(cell, cell, pocketCornerRadius(cell, cell));
     const expected = outerArea - grid * grid * pocketArea;
@@ -524,7 +523,6 @@ describe('baseplateDirectMesh', () => {
     const params = defaults({ width: 2, depth: 2, magnetHoles: false });
     const mesh = generateDirect(params, noop);
 
-    const SOCKET_HEIGHT = 5;
     const top = horizontalFaceArea(mesh, 1, SOCKET_HEIGHT);
     const bottom = horizontalFaceArea(mesh, -1, 0);
 
@@ -560,7 +558,6 @@ describe('baseplateDirectMesh', () => {
     });
     const mesh = generateDirect(params, noop);
 
-    const SOCKET_HEIGHT = 5;
     const totalW = 2 * 42 + 5 + 15;
     const totalD = 2 * 42 + 8 + 4;
     const outerArea = roundedRectArea(totalW, totalD, 4);
