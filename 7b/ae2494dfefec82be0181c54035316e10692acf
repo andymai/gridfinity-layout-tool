@@ -1,0 +1,21 @@
+eslint.config.js
+  s_47116d2d100327::t_4f63dceb1bc6b6 96-100
+src/shell/Modals/SettingsModal/SettingsModalContext.tsx
+  s_47116d2d100327::t_17d38066e7744f 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7bae2494dfefec82be0181c54035316e10692acf",
+  "prompts": {},
+  "sessions": {
+    "s_47116d2d100327": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c31ba8bc-1493-48be-9960-24e041a84d2d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
