@@ -271,7 +271,13 @@ export function columnCrossings({ vertices, indices }: MeshData, x: number, y: n
     const w0 = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / det;
     const w1 = ((cy - ay) * (x - cx) + (ax - cx) * (y - cy)) / det;
     const w2 = 1 - w0 - w1;
-    if (w0 < 0 || w1 < 0 || w2 < 0) continue;
+    // A column on a shared triangle edge (a rail probe at exactly the lip
+    // corner's seam) computes a weight of -1e-16 for one vertex order and 0
+    // for another, so a strict test drops the crossing on one kernel's mesh
+    // and keeps it on the other's. Inclusive within rounding; the coincident
+    // crossings this admits collapse below.
+    const inside = -1e-12;
+    if (w0 < inside || w1 < inside || w2 < inside) continue;
     hits.push(w0 * vertices[a + 2] + w1 * vertices[b + 2] + w2 * vertices[c + 2]);
   }
   hits.sort((p, q) => p - q);
