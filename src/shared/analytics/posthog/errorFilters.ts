@@ -273,7 +273,10 @@ export function filterExceptionForPosthog(
   if (primaryException && isCanvasTeardownRace(primaryException)) return null;
   if (primaryException && isNavigationAbort(primaryException)) return null;
 
-  if (primary !== undefined && webglFailureReason(primary) !== null) {
+  const primarySource = (primaryException?.stacktrace?.frames ?? [])
+    .map((f) => f.filename ?? '')
+    .join('\n');
+  if (primary !== undefined && webglFailureReason(primary, primarySource) !== null) {
     // Detection already unavailable → the boundary handled this and we've
     // captured (or intentionally dropped) the first one; mute the rest.
     if (!detectWebGL().available) return null;

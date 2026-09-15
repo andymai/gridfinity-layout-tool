@@ -98,12 +98,19 @@ const CONTEXT_CREATION_ERROR = 'Error creating WebGL context';
 
 /**
  * three.js reading `.precision` off a null `getShaderPrecisionFormat()` result
- * while building its capabilities table, in each engine's wording. WebKit and
- * Gecko name the call; V8 names only the property, and nothing else in a
- * canvas subtree reads a `precision` field off null.
+ * while building its capabilities table, in the wordings that name the call
+ * (WebKit, Gecko).
  */
-const PRECISION_NULL_ERROR =
-  /getShaderPrecisionFormat\([^)]*\)(?:\.precision| is null)|\(reading 'precision'\)/;
+const PRECISION_NULL_ERROR = /getShaderPrecisionFormat\([^)]*\)(?:\.precision| is null)/;
+
+/**
+ * V8 names only the property, so its wording is accepted only when the stack
+ * runs through three.js: the `three-render` chunk in a build, the package in
+ * dev. Anything else reading a `precision` field off null is an app error and
+ * must reach the panel boundary.
+ */
+const PRECISION_NULL_V8 = /\(reading 'precision'\)/;
+const THREE_SOURCE = /three/;
 
 /**
  * Why a renderer threw at mount despite the cached probe passing, or null
@@ -113,9 +120,16 @@ const PRECISION_NULL_ERROR =
  * the context can be exhausted or lost by the time a later `<Canvas>` mounts.
  * Read by the WebGL boundary to choose the fallback over the generic panel
  * error, and by the exception filter to group both wordings into one issue.
+ *
+ * @param source The error's stack, or its frames' filenames joined. Only the
+ *   V8 wording needs it.
  */
-export function webglFailureReason(message: string): 'context-failed' | 'no-precision' | null {
+export function webglFailureReason(
+  message: string,
+  source = ''
+): 'context-failed' | 'no-precision' | null {
   if (message.includes(CONTEXT_CREATION_ERROR)) return 'context-failed';
   if (PRECISION_NULL_ERROR.test(message)) return 'no-precision';
+  if (PRECISION_NULL_V8.test(message) && THREE_SOURCE.test(source)) return 'no-precision';
   return null;
 }

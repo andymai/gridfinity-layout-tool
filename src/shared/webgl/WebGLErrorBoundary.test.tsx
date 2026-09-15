@@ -99,6 +99,18 @@ describe('WebGLErrorBoundary', () => {
     });
   });
 
+  it('rethrows an unrelated precision null read, since only three.js earns the fallback', () => {
+    render(
+      <Catcher>
+        <WebGLErrorBoundary>
+          <Thrower message="Cannot read properties of null (reading 'precision')" />
+        </WebGLErrorBoundary>
+      </Catcher>
+    );
+    expect(screen.getByText('outer-caught')).toBeInTheDocument();
+    expect(detectWebGL().available).toBe(true);
+  });
+
   it('rethrows non-WebGL errors for an outer boundary to handle', () => {
     render(
       <Catcher>

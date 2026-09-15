@@ -141,10 +141,25 @@ describe('webglFailureReason', () => {
         "null is not an object (evaluating 'e.getShaderPrecisionFormat(e.VERTEX_SHADER,e.HIGH_FLOAT).precision')"
       )
     ).toBe('no-precision');
-    expect(webglFailureReason("Cannot read properties of null (reading 'precision')")).toBe(
-      'no-precision'
-    );
+    expect(
+      webglFailureReason(
+        "Cannot read properties of null (reading 'precision')",
+        'TypeError: Cannot read properties of null\n    at new Wt (https://example.test/assets/three-render-CAmUYNoO.js:1:2)'
+      )
+    ).toBe('no-precision');
     expect(webglFailureReason('e.getShaderPrecisionFormat(...) is null')).toBe('no-precision');
+  });
+
+  it('keeps an unrelated precision null read out of the WebGL bucket', () => {
+    // V8 names only the property, so without a three.js frame this is an app
+    // error that has to reach the panel boundary.
+    expect(webglFailureReason("Cannot read properties of null (reading 'precision')")).toBeNull();
+    expect(
+      webglFailureReason(
+        "Cannot read properties of null (reading 'precision')",
+        'TypeError: Cannot read properties of null\n    at fmt (https://example.test/assets/index-abc.js:1:2)'
+      )
+    ).toBeNull();
   });
 
   it('is null for anything else', () => {

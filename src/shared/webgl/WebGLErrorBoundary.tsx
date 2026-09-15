@@ -35,7 +35,7 @@ export class WebGLErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error) {
-    const reason = webglFailureReason(error.message);
+    const reason = webglFailureReason(error.message, error.stack);
     if (reason !== null) {
       // Boundary-caught render throws don't reach window.onerror, so this
       // explicit capture is the path's only telemetry. It must run before
@@ -49,7 +49,7 @@ export class WebGLErrorBoundary extends Component<Props, State> {
   render() {
     const { error } = this.state;
     if (error) {
-      if (webglFailureReason(error.message) !== null) {
+      if (webglFailureReason(error.message, error.stack) !== null) {
         return <WebGLFallback />;
       }
       // Not a WebGL-context failure — re-throw from render() so React unwinds to

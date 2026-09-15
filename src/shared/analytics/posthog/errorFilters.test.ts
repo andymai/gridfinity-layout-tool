@@ -190,7 +190,6 @@ describe('filterExceptionForPosthog — WebGL context-creation dedupe', () => {
   it("groups the precision null read into the same issue, in every engine's wording", () => {
     const wordings = [
       "null is not an object (evaluating 'e.getShaderPrecisionFormat(e.VERTEX_SHADER,e.HIGH_FLOAT).precision')",
-      "Cannot read properties of null (reading 'precision')",
       'e.getShaderPrecisionFormat(...) is null',
     ];
     for (const value of wordings) {
@@ -200,6 +199,35 @@ describe('filterExceptionForPosthog — WebGL context-creation dedupe', () => {
       });
       expect(result?.properties?.$exception_fingerprint).toBe('webgl-context-creation-failed');
     }
+    const v8 = filterExceptionForPosthog({
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            type: 'TypeError',
+            value: "Cannot read properties of null (reading 'precision')",
+            stacktrace: { frames: [{ filename: '/assets/three-render-CAmUYNoO.js' }] },
+          },
+        ],
+      },
+    });
+    expect(v8?.properties?.$exception_fingerprint).toBe('webgl-context-creation-failed');
+  });
+
+  it('leaves an unrelated precision null read with its own grouping', () => {
+    const result = filterExceptionForPosthog({
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            type: 'TypeError',
+            value: "Cannot read properties of null (reading 'precision')",
+            stacktrace: { frames: [{ filename: '/assets/index-abc.js' }] },
+          },
+        ],
+      },
+    });
+    expect(result?.properties?.$exception_fingerprint).toBeUndefined();
   });
 
   it('drops the burst once detection has been flipped to unavailable', () => {
