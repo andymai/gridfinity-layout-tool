@@ -1171,7 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Resuelve el conflicto para activar la tapa: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "desactivar algunas asas",
   "binDesigner.lid.compat.fix.hingeStackableTop": "desactivar la parte superior apilable",
-  "binDesigner.lid.compat.fix.hingeUnbuildable": "mover la bisagra a una pared con el borde sin interrupciones",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "despejar la pared de la bisagra o elegir otra sujeción",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "usar una caja más grande o un imán más pequeño",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reducir la profundidad del imán de retención",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "desactivar el labio de apilado",

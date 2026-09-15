@@ -1171,7 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Résolvez le conflit pour activer le couvercle : {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "désactiver certaines poignées",
   "binDesigner.lid.compat.fix.hingeStackableTop": "désactiver le dessus empilable",
-  "binDesigner.lid.compat.fix.hingeUnbuildable": "déplacer la charnière sur une paroi au bord continu",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "libérer la paroi de charnière ou choisir une autre fixation",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "utiliser un bac plus grand ou un aimant plus petit",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "réduire la profondeur de l'aimant de maintien",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "désactiver la lèvre d’empilage",

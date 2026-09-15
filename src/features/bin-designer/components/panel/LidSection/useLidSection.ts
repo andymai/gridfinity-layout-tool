@@ -223,14 +223,8 @@ export function useLidSection() {
     ? t('binDesigner.lid.requiresStackingLip')
     : (blockerReason ?? undefined);
 
-  // The panel body follows the PERSISTED flag, not whether the worker will
-  // build the lid: `shouldGenerateLid` already gates the preview and export on
-  // the lip and the blockers. Gating the body on the same test hid the
-  // attachment picker, the top-surface picker and the compatibility list's fix
-  // actions behind the very conflict they resolve, so a lid switched to hinged
-  // with a stackable top could only be rescued from another section.
-  // The master toggle still reads disabled, with `disabledReason` naming the
-  // conflict, until the gate lifts.
+  // The body renders on the persisted flag alone: the hinge blockers are
+  // resolved by controls inside it, so it cannot share the worker's gate.
 
   // Bin has magnets when its base style includes them. Used as the smart
   // default for lid magnetHoles each time the lid is enabled (and as a

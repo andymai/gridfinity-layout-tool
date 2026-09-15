@@ -1171,7 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Lös konflikten för att aktivera lock: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "inaktivera vissa handtag",
   "binDesigner.lid.compat.fix.hingeStackableTop": "stäng av den stapelbara ovansidan",
-  "binDesigner.lid.compat.fix.hingeUnbuildable": "flytta gångjärnet till en vägg med obruten kant",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "frigör gångjärnsväggen eller välj en annan infästning",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "använd en större låda eller en mindre magnet",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "minska fästmagnetens djup",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "stänga av stapelläppen",

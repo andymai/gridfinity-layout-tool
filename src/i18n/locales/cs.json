@@ -1171,7 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Vyřeš konflikt pro povolení víka: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "vypni některá držadla",
   "binDesigner.lid.compat.fix.hingeStackableTop": "vypnout stohovatelný vršek",
-  "binDesigner.lid.compat.fix.hingeUnbuildable": "přesunout pant na stěnu s nepřerušeným okrajem",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "uvolněte stěnu pantu nebo zvolte jiné uchycení",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "použij větší bin nebo menší magnet",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "sniž hloubku přídržného magnetu",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "vypnout stohovací lem",

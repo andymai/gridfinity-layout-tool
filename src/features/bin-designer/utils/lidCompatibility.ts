@@ -683,11 +683,10 @@ export function hasLidBlocker(issues: readonly LidCompatibilityIssue[]): boolean
 /**
  * Should the worker actually generate/export a lid for these params?
  *
- * Single source of truth shared by `useLidSection.effectiveEnabled` (UI),
- * `lidOrchestrator.generateLid` (preview), and `exportHandler` (export).
- * Without this, a user who flips on the lid then enables a blocking
- * feature (e.g. wall cutouts on all 4 sides) would see the panel toggle
- * auto-disable but the worker would still emit a malformed lid.
+ * Single source of truth shared by `lidOrchestrator.generateLid` (preview)
+ * and `exportHandler` (export). The panel reads the same blockers for the
+ * toggle's disabled reason but keeps its controls on `lid.enabled` alone, so
+ * a conflict can be resolved from inside the section it disables.
  */
 export function shouldGenerateLid(params: BinParams): boolean {
   if (!params.lid.enabled) return false;

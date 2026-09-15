@@ -1171,7 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Risolvi il conflitto per abilitare il coperchio: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "disabilita alcune maniglie",
   "binDesigner.lid.compat.fix.hingeStackableTop": "disattivare la sommità impilabile",
-  "binDesigner.lid.compat.fix.hingeUnbuildable": "spostare la cerniera su una parete con il bordo continuo",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "liberare la parete della cerniera o scegliere un altro fissaggio",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "usa un contenitore più grande o un magnete più piccolo",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "riduci la profondità del magnete di ritenzione",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "disattivare il labbro di impilamento",

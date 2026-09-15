@@ -1171,7 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Los het conflict op om het deksel in te schakelen: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "schakel sommige handgrepen uit",
   "binDesigner.lid.compat.fix.hingeStackableTop": "stapelbare bovenkant uitzetten",
-  "binDesigner.lid.compat.fix.hingeUnbuildable": "verplaats het scharnier naar een wand met een ononderbroken rand",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "maak de scharnierwand vrij of kies een andere bevestiging",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "gebruik een grotere bak of een kleinere magneet",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "diepte van de retentiemagneet verkleinen",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "stapelrand uitzetten",

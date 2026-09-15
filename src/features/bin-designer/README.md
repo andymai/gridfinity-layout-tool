@@ -225,7 +225,9 @@ with `pnpm run validate:json`.
   override. Verified by mating real solids in
   `generation/worker/generators/__kernel-tests__/binSeating.ts`.
 - **Click-lock lid**: optional companion piece generated alongside the bin
-  when `params.lid.enabled && params.base.stackingLip`. Source of truth lives
+  when `params.lid.enabled && params.base.stackingLip`, gated by
+  `shouldGenerateLid`; the panel body renders on `lid.enabled` alone, so a
+  blocker's fix actions stay reachable. Source of truth lives
   in the worker (`generation/worker/generators/lidBuilder.ts` +
   `lidConstants.ts` + `lidOrchestrator.ts`); the result rides back as
   `lidMesh` on the same `MESH_RESULT` payload. The lid is rendered in
@@ -563,9 +565,9 @@ estimates), and the source file name.
      tabs/scoop on `isPartialMask(cellMask)`. Wall thickness and stacking
      lip still work for any footprint.
 10. **Lid requires a stacking lip** — `params.lid.enabled` is gated on
-    `params.base.stackingLip` at every layer (orchestrator, export handler,
-    `useLidSection`). The mating cavity wraps the lip; without a lip there is
-    nothing for the lid to clip onto, so the lid is silently skipped.
+    `params.base.stackingLip` in the orchestrator and export handler;
+    `useLidSection` disables the toggle but keeps the controls. The mating
+    cavity wraps the lip; without one the lid is silently skipped.
     `lid.enabled` stays persisted through all of it, so the skip is invisible
     in the params — any surface that lets the lip be cleared owes the user that
     warning. The Lid section carries it in the main panel; the cutout editor's
