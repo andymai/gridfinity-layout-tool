@@ -51,7 +51,6 @@ describe('LidAdvancedFields', () => {
   });
 
   it('shares the hinge floor with a tray, so the floor knob cannot undercut the plate', () => {
-    // A 1mm recess leaves 2.2 of the 3.2 floor for the material under it.
     seed({
       attachment: 'hinge',
       topThicknessMm: 0.8,
