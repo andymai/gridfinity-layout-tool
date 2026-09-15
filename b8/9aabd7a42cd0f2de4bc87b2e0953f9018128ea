@@ -1,0 +1,72 @@
+src/i18n/locales/zh-CN.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/shell/Sidebar/learnLinks.test.ts
+  s_9532a284b8d949::t_5b4de46138c8dc 25,28,33
+src/shell/Sidebar/learnLinks.ts
+  s_9532a284b8d949::t_3a9ebba120c25a 16-20
+  s_9532a284b8d949::t_8dbba967f3a0c2 26
+src/i18n/locales/cs.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/ja.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/fr.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/sv.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/shared/components/AboutGridfinity/AboutGridfinity.test.tsx
+  s_9532a284b8d949::t_3a9ebba120c25a 12-14
+  s_9532a284b8d949::t_8dbba967f3a0c2 1-11,15-24
+src/i18n/locales/ko.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/nb.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/shell/Mobile/MobileAboutStrip/MobileAboutStrip.tsx
+  s_9532a284b8d949::t_8dbba967f3a0c2 2-3,52-59
+src/shell/Sidebar/Sidebar.test.tsx
+  s_9532a284b8d949::t_3a9ebba120c25a 453-455
+  s_9532a284b8d949::t_8dbba967f3a0c2 440,442,449-452,456
+  s_9532a284b8d949::t_0fcc6bdff4f459 457
+src/i18n/locales/uk.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/de.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/es.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/ka.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 272-275,282-283
+src/i18n/locales/nl.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/en.ts
+  s_9532a284b8d949::t_8dbba967f3a0c2 341-347,354-355
+src/shared/components/AboutGridfinity/index.ts
+  s_9532a284b8d949::t_8dbba967f3a0c2 1
+src/shell/Sidebar/Sidebar.tsx
+  s_9532a284b8d949::t_8dbba967f3a0c2 25,520,523
+src/shell/Mobile/MobileAboutStrip/MobileAboutStrip.test.tsx
+  s_9532a284b8d949::t_5b4de46138c8dc 19
+  s_9532a284b8d949::t_8dbba967f3a0c2 34-44
+src/i18n/locales/pt-BR.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/shared/components/AboutGridfinity/AboutGridfinity.tsx
+  s_9532a284b8d949::t_8dbba967f3a0c2 1-28
+src/i18n/locales/it.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+src/i18n/locales/pl.json
+  s_9532a284b8d949::t_8dbba967f3a0c2 4060-4063,4094-4095
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b89aabd7a42cd0f2de4bc87b2e0953f9018128ea",
+  "prompts": {},
+  "sessions": {
+    "s_9532a284b8d949": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b15e5215-cf51-4ae9-8ead-b848ecaa0329",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
