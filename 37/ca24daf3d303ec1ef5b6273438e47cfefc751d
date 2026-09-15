@@ -1,0 +1,74 @@
+src/shared/utils/hingeLidPlan.test.ts
+  s_3cb842cf8fd0b6::t_bdf111e84ebeb9 11,13,250-264
+  s_3cb842cf8fd0b6::t_c8d63f445ff4ba 265-266
+src/features/bin-designer/types/lid.test.ts
+  s_3cb842cf8fd0b6::t_f84dd9fc3a34d0 308
+  s_3cb842cf8fd0b6::t_bdf111e84ebeb9 14-17,263-307
+src/features/generation/worker/generators/hingeSwing.scenario.test.ts
+  s_3cb842cf8fd0b6::t_e6de70ac5d3620 323-335
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_3cb842cf8fd0b6::t_34d94c3c906345 80,445-452
+src/i18n/locales/pl.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.tsx
+  s_3cb842cf8fd0b6::t_34d94c3c906345 39-43,104-106,108-112
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_3cb842cf8fd0b6::t_34d94c3c906345 656-660
+src/features/bin-designer/types/lid.ts
+  s_3cb842cf8fd0b6::t_e6de70ac5d3620 41-42,777-781,791,806,824
+  s_3cb842cf8fd0b6::t_ca24d97515ae58 488-507,761-763,768,774-776,782-790,792-805,807-823,825-827
+src/i18n/locales/zh-CN.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/pt-BR.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/cs.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/shared/utils/hingeLidPlan.ts
+  s_3cb842cf8fd0b6::t_34d94c3c906345 121,137,139,487,490-493,510-513
+src/i18n/locales/uk.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/ja.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/features/bin-designer/utils/binDimensions.ts
+  s_3cb842cf8fd0b6::t_cf6bd474c7333c 140
+src/i18n/locales/nl.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/ko.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/fr.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/nb.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/en.ts
+  s_3cb842cf8fd0b6::t_34d94c3c906345 2127-2128,2301
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.test.tsx
+  s_3cb842cf8fd0b6::t_e6de70ac5d3620 32-44
+src/i18n/locales/es.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/sv.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/ka.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1805,1927
+src/i18n/locales/de.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/i18n/locales/it.json
+  s_3cb842cf8fd0b6::t_34d94c3c906345 1185,1339
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_3cb842cf8fd0b6::t_0647d5e24f4844 656
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "37ca24daf3d303ec1ef5b6273438e47cfefc751d",
+  "prompts": {},
+  "sessions": {
+    "s_3cb842cf8fd0b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3c65c26-a24c-4c45-964f-1f824fc2a1b9",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
