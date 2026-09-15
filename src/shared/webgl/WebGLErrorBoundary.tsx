@@ -1,11 +1,8 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { captureException } from '@/shared/analytics/posthog';
-import { markWebGLUnavailable } from './detectWebGL';
+import { markWebGLUnavailable, webglFailureReason } from './detectWebGL';
 import { WebGLFallback } from './WebGLFallback';
-
-/** Substring of the error three.js throws when it can't acquire a GL context. */
-const WEBGL_CONTEXT_ERROR = 'Error creating WebGL context';
 
 interface Props {
   children: ReactNode;
@@ -16,10 +13,11 @@ interface State {
 }
 
 /**
- * Catches the synchronous `Error creating WebGL context.` that three.js throws
- * when the real `<Canvas>` can't acquire a GL context even though the cached
- * `detectWebGL()` probe passed — context-slot exhaustion across the app's
- * several canvases, or a GPU-process loss between probe and render.
+ * Catches the synchronous throw from three.js when the real `<Canvas>` can't
+ * use a GL context even though the cached `detectWebGL()` probe passed:
+ * `Error creating WebGL context.` from context-slot exhaustion across the
+ * app's several canvases, or the `getShaderPrecisionFormat` null read from a
+ * context the GPU process lost between probe and render.
  *
  * It flips detection to unavailable and renders the `WebGLFallback` WITHOUT a
  * retry affordance: re-mounting the canvas would just re-throw, which is the
@@ -37,20 +35,21 @@ export class WebGLErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error) {
-    if (error.message.includes(WEBGL_CONTEXT_ERROR)) {
+    const reason = webglFailureReason(error.message);
+    if (reason !== null) {
       // Boundary-caught render throws don't reach window.onerror, so this
       // explicit capture is the path's only telemetry. It must run before
       // markWebGLUnavailable: the exception filter drops WebGL-context
       // captures once detection reads unavailable.
       captureException(error, { boundary: 'webgl' });
-      markWebGLUnavailable('context-failed');
+      markWebGLUnavailable(reason);
     }
   }
 
   render() {
     const { error } = this.state;
     if (error) {
-      if (error.message.includes(WEBGL_CONTEXT_ERROR)) {
+      if (webglFailureReason(error.message) !== null) {
         return <WebGLFallback />;
       }
       // Not a WebGL-context failure — re-throw from render() so React unwinds to

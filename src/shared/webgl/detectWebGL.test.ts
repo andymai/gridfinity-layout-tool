@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { detectWebGL, markWebGLUnavailable, resetWebGLDetectionCacheForTests } from './detectWebGL';
+import {
+  detectWebGL,
+  markWebGLUnavailable,
+  resetWebGLDetectionCacheForTests,
+  webglFailureReason,
+} from './detectWebGL';
 
 afterEach(() => {
   resetWebGLDetectionCacheForTests();
@@ -122,5 +127,30 @@ describe('markWebGLUnavailable', () => {
     markWebGLUnavailable('context-failed');
 
     expect(detectWebGL()).toEqual({ available: false, reason: 'context-failed' });
+  });
+});
+
+describe('webglFailureReason', () => {
+  it('names context creation failure', () => {
+    expect(webglFailureReason('Error creating WebGL context.')).toBe('context-failed');
+  });
+
+  it("names the precision null read in each engine's wording", () => {
+    expect(
+      webglFailureReason(
+        "null is not an object (evaluating 'e.getShaderPrecisionFormat(e.VERTEX_SHADER,e.HIGH_FLOAT).precision')"
+      )
+    ).toBe('no-precision');
+    expect(webglFailureReason("Cannot read properties of null (reading 'precision')")).toBe(
+      'no-precision'
+    );
+    expect(webglFailureReason('e.getShaderPrecisionFormat(...) is null')).toBe('no-precision');
+  });
+
+  it('is null for anything else', () => {
+    expect(webglFailureReason('TypeError: foo is not a function')).toBeNull();
+    expect(
+      webglFailureReason("Cannot read properties of null (reading 'addEventListener')")
+    ).toBeNull();
   });
 });

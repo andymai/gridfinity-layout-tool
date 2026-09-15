@@ -76,6 +76,29 @@ describe('WebGLErrorBoundary', () => {
     );
   });
 
+  it('routes a context that broke after the probe to the fallback, not the panel error', () => {
+    // WebKit's wording for three.js reading `.precision` off a null
+    // getShaderPrecisionFormat() result: the probe passed at startup and the
+    // GPU process lost the context before this canvas mounted.
+    const message =
+      "null is not an object (evaluating 'e.getShaderPrecisionFormat(e.VERTEX_SHADER,e.HIGH_FLOAT).precision')";
+    render(
+      <Catcher>
+        <WebGLErrorBoundary>
+          <Thrower message={message} />
+        </WebGLErrorBoundary>
+      </Catcher>
+    );
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.queryByText('outer-caught')).not.toBeInTheDocument();
+    const result = detectWebGL();
+    expect(result.available).toBe(false);
+    expect(result.reason).toBe('no-precision');
+    expect(captureException).toHaveBeenCalledWith(expect.objectContaining({ message }), {
+      boundary: 'webgl',
+    });
+  });
+
   it('rethrows non-WebGL errors for an outer boundary to handle', () => {
     render(
       <Catcher>
