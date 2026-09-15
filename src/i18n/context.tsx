@@ -46,7 +46,7 @@ const fallback: Translations = {
   'common.loading': 'Loading...',
   'seo.title': 'Gridfinity Planner & Layout Tool — Free Online Drawer Organizer',
   'seo.description':
-    'Plan Gridfinity drawer layouts in your browser. Drag-and-drop bins, custom bin generator, 3D preview, STL/STEP/3MF export. Free, no account.',
+    'Plan drawer layouts and generate custom bins and baseplates to the official Gridfinity spec. 3D preview, STL/STEP/3MF export. Free, no account.',
   'seo.h1': 'Gridfinity Planner & Layout Tool',
   'seo.designer.title': 'Gridfinity Bin Designer — Free Custom Bin Builder',
   'seo.designer.description':

@@ -18,7 +18,7 @@ const en: Record<string, string> = {
   'seo.h1': 'Gridfinity Planner & Layout Tool',
   'seo.title': 'Gridfinity Planner & Layout Tool — Free Online Drawer Organizer',
   'seo.description':
-    'Plan Gridfinity drawer layouts in your browser. Drag-and-drop bins, custom bin generator, 3D preview, STL/STEP/3MF export. Free, no account.',
+    'Plan drawer layouts and generate custom bins and baseplates to the official Gridfinity spec. 3D preview, STL/STEP/3MF export. Free, no account.',
   // Per-route title overrides for the /designer and /baseplate app routes.
   // These deliberately use the "Designer"/"Maker" framing (matching the static
   // route entries in build-route-entries.ts) so the interactive tool routes
