@@ -157,6 +157,14 @@ describe('exportWithResilience', () => {
     expect(refreshMock).not.toHaveBeenCalled();
   });
 
+  it('does not retry an export a newer request superseded', async () => {
+    const op = vi.fn().mockRejectedValue(new Error('Export superseded'));
+
+    await expect(exportWithResilience(op)).rejects.toThrow('Export superseded');
+    expect(op).toHaveBeenCalledTimes(1);
+    expect(refreshMock).not.toHaveBeenCalled();
+  });
+
   it('honors a custom isRetryable predicate', async () => {
     const stop = new Error('halt');
     const op = vi.fn().mockRejectedValue(stop);

@@ -158,6 +158,19 @@ describe('GenerationBridge', () => {
       await assertion;
     });
 
+    it('settles a pending init when the bridge is destroyed instead of timing out later', async () => {
+      stallInit = true;
+      const initPromise = bridge.init();
+      const assertion = expect(initPromise).rejects.toThrow('Bridge destroyed');
+
+      bridge.destroy();
+      await assertion;
+
+      // The attempt's timeout is disarmed with it: no retry worker, no late rejection.
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(workersCreated).toBe(1);
+    });
+
     it('does not fire the init timeout once the worker reports ready', async () => {
       const initPromise = bridge.init();
       await vi.advanceTimersByTimeAsync(10);

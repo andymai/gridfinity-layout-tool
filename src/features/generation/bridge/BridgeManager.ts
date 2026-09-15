@@ -57,12 +57,20 @@ export class BridgeManager {
       this.initPromise = this.bridge.init();
     }
 
+    const bridge = this.bridge;
     try {
       await this.initPromise;
     } catch (error: unknown) {
       this.refCount--;
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- bridge may be nulled by concurrent release() during await
-      if (this.bridge) this.bridge.destroy();
+      if (this.bridge !== bridge) {
+        // `refresh()` or the idle timer retired the awaited bridge mid-init.
+        // Whatever holds the slot now is another caller's live worker, so
+        // join it rather than tear it down.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- the narrowing from before the await does not survive refresh()/release()
+        if (this.bridge) return this.acquire();
+        throw error;
+      }
+      bridge.destroy();
       this.bridge = null;
       this.initPromise = null;
       this.setEngineReady(false);
@@ -70,7 +78,7 @@ export class BridgeManager {
     }
 
     this.setEngineReady(true);
-    return this.bridge;
+    return bridge;
   }
 
   /**
@@ -109,20 +117,24 @@ export class BridgeManager {
       this.previewInitPromise = this.previewBridge.init();
     }
 
+    const bridge = this.previewBridge;
     try {
       await this.previewInitPromise;
     } catch {
       // Best-effort: a failed preview kernel is non-fatal. Clean up and return
       // null so callers silently fall back to exact-only (matches the contract).
       this.previewRefCount = Math.max(0, this.previewRefCount - 1);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- bridge may be nulled by a concurrent releasePreview() during await
-      if (this.previewBridge) this.previewBridge.destroy();
+      if (this.previewBridge !== bridge) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- the narrowing from before the await does not survive releasePreview()
+        return this.previewBridge ? this.acquirePreview() : null;
+      }
+      bridge.destroy();
       this.previewBridge = null;
       this.previewInitPromise = null;
       return null;
     }
 
-    return this.previewBridge;
+    return bridge;
   }
 
   /** Release a reference to the preview bridge; idle-destroys at zero refs. */

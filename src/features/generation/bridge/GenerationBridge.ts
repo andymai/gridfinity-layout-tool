@@ -119,6 +119,8 @@ export class GenerationBridge {
   onProgress: ProgressCallback | null = null;
   private requestCounter = 0;
   private destroyed = false;
+  /** Settles the in-flight `tryInit` attempt, if any; `destroy()` calls it. */
+  private abortInit: ((error: Error) => void) | null = null;
   readonly adaptiveDebounce = new AdaptiveDebounce();
   threadingInfo: ThreadingInfo | null = null;
 
@@ -199,8 +201,13 @@ export class GenerationBridge {
           clearTimeout(timer);
           timer = null;
         }
+        this.abortInit = null;
         this.worker?.removeEventListener('message', onInitMessage);
         this.worker?.removeEventListener('error', onInitError);
+      };
+      this.abortInit = (error: Error): void => {
+        teardown();
+        reject(error);
       };
 
       const onInitError = (e: ErrorEvent): void => {
@@ -397,6 +404,11 @@ export class GenerationBridge {
     if (this.destroyed) return;
     this.destroyed = true;
 
+    // An init attempt that outlives its bridge keeps a live timeout: it would
+    // fire minutes later as a bogus "did not report ready" on a worker that
+    // was terminated here, and its awaiter would tear down whatever bridge
+    // had replaced this one by then.
+    this.abortInit?.(new Error('Bridge destroyed'));
     this.cancel();
 
     for (const pending of this.pendingExports.values()) {
