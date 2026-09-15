@@ -178,7 +178,7 @@ function PieceMesh({
       </group>
       {splitViewMode === 'exploded' && (
         <Text
-          position={[0, 0, GRIDFINITY_SPEC.SOCKET_HEIGHT + 3]}
+          position={[0, 0, GRIDFINITY_SPEC.BASEPLATE_HEIGHT + 3]}
           fontSize={5}
           color={accentHex}
           fillOpacity={isActive ? 1 : 0.6}

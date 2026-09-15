@@ -238,8 +238,8 @@ export function minBandForHead(headDiameterMm: number): number {
  * once, at the edge, instead of open-coding a sign.
  *
  * A margin screw enters at the top face. A floor screw enters at the pocket
- * floor, which is `SOCKET_HEIGHT` below it, and both run out through the
- * underside so the screw can reach the drawer.
+ * floor, `pocketDepthMm` below it, and both run out through the underside so
+ * the screw can reach the drawer.
  */
 export interface ScrewCutDepths {
   /** Depth of the entry plane below the top face. */
@@ -253,10 +253,10 @@ export interface ScrewCutDepths {
 export function screwCutDepths(
   params: ScrewHoleParams,
   site: ScrewSite,
-  socketHeightMm: number,
+  pocketDepthMm: number,
   totalHeightMm: number
 ): ScrewCutDepths {
-  const entryBelowTop = site === 'margin' ? 0 : socketHeightMm;
+  const entryBelowTop = site === 'margin' ? 0 : pocketDepthMm;
   return {
     entryBelowTop,
     recessDepth: screwHeadRecessDepth(params),

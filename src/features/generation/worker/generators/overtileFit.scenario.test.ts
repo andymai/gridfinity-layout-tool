@@ -59,7 +59,7 @@ describe('overhang feet ↔ over-tile pocket compatibility', () => {
     // Bin overhang foot: socket built at O − CLEARANCE.
     const footWidth = widthOf(buildSingleCellSocket(M - CLEARANCE, M - CLEARANCE));
     // Baseplate over-tile pocket: cutter built at full size P.
-    const pocketWidth = widthOf(getPocketTemplate(M, M, true, true));
+    const pocketWidth = widthOf(getPocketTemplate(M, M, true));
 
     expect(footWidth).toBeCloseTo(M - CLEARANCE, 1);
     expect(pocketWidth).toBeCloseTo(M, 1);
@@ -87,7 +87,7 @@ describe('half-grid margin fill produces functional half-sockets', () => {
     const H = SIZE / 2; // 21mm — a true half cell
 
     const footWidth = widthOf(buildSingleCellSocket(H - CLEARANCE, H - CLEARANCE));
-    const pocketWidth = widthOf(getPocketTemplate(H, H, true, true));
+    const pocketWidth = widthOf(getPocketTemplate(H, H, true));
 
     expect(pocketWidth).toBeCloseTo(H, 1);
     expect(pocketWidth - footWidth).toBeCloseTo(CLEARANCE, 1);

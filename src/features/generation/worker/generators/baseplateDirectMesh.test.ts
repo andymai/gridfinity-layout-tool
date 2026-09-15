@@ -5,7 +5,7 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
 import { mm } from '@/core/types';
 import { pocketCornerRadius, MAGNET_FLOOR } from './generatorConstants';
-import { SOCKET_HEIGHT } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
 import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
 import {
   effectiveMarginBands,
@@ -245,7 +245,7 @@ describe('baseplateDirectMesh', () => {
     // Draft and export must agree on the taller, floored slab.
     expect(directBB.minZ).toBeCloseTo(brepBB.minZ, 1);
     expect(directBB.maxZ).toBeCloseTo(brepBB.maxZ, 1);
-    expect(directBB.maxZ).toBeCloseTo(SOCKET_HEIGHT + 0.8, 1);
+    expect(directBB.maxZ).toBeCloseTo(PLATE_PROFILE_HEIGHT + 0.8, 1);
   });
 
   // ─── Comparison: triangle counts ─────────────────────────────────────────
@@ -514,7 +514,7 @@ describe('baseplateDirectMesh', () => {
     const pocketArea = roundedRectArea(cell, cell, pocketCornerRadius(cell, cell));
     const expected = outerArea - grid * grid * pocketArea;
 
-    const actual = horizontalFaceArea(mesh, 1, SOCKET_HEIGHT);
+    const actual = horizontalFaceArea(mesh, 1, PLATE_PROFILE_HEIGHT);
     expect(actual).toBeGreaterThan(0);
     expect(Math.abs(actual - expected)).toBeLessThan(AREA_TOL_MM2);
   });
@@ -523,7 +523,7 @@ describe('baseplateDirectMesh', () => {
     const params = defaults({ width: 2, depth: 2, magnetHoles: false });
     const mesh = generateDirect(params, noop);
 
-    const top = horizontalFaceArea(mesh, 1, SOCKET_HEIGHT);
+    const top = horizontalFaceArea(mesh, 1, PLATE_PROFILE_HEIGHT);
     const bottom = horizontalFaceArea(mesh, -1, 0);
 
     expect(bottom).toBeGreaterThan(0);
@@ -564,7 +564,7 @@ describe('baseplateDirectMesh', () => {
     const pocketArea = roundedRectArea(42, 42, pocketCornerRadius(42, 42));
     const expected = outerArea - 4 * pocketArea;
 
-    const actual = horizontalFaceArea(mesh, 1, SOCKET_HEIGHT);
+    const actual = horizontalFaceArea(mesh, 1, PLATE_PROFILE_HEIGHT);
     expect(Math.abs(actual - expected)).toBeLessThan(AREA_TOL_MM2);
   });
 
@@ -855,7 +855,7 @@ describe('direct mesh mount-down screw holes (#3425)', () => {
     expect(holes.every((h) => h.site === 'margin')).toBe(true);
 
     const mesh = generateDirect(params, noop);
-    expect(keys(discCentresAt(mesh, SOCKET_HEIGHT - CANCEL_EPSILON, -1))).toEqual(
+    expect(keys(discCentresAt(mesh, PLATE_PROFILE_HEIGHT - CANCEL_EPSILON, -1))).toEqual(
       keys(holes.map((h) => [h.x, h.y] as const))
     );
     expect(keys(discCentresAt(mesh, CANCEL_EPSILON, 1))).toEqual(

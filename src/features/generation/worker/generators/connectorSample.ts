@@ -55,7 +55,7 @@ import {
   JBM_DIGIT_INK_PER_FONT,
 } from './couponHelpers';
 import {
-  SOCKET_HEIGHT,
+  PLATE_PROFILE_HEIGHT,
   MAGNET_FLOOR,
   COPLANAR_MARGIN,
   TONGUE_PROTRUSION,
@@ -257,7 +257,7 @@ function buildCoupon(
 
 function couponHeight(params: ResolvedBaseplateParams): number {
   const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
-  return SOCKET_HEIGHT + floorDepth;
+  return PLATE_PROFILE_HEIGHT + floorDepth;
 }
 
 /**

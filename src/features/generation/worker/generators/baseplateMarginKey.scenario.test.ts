@@ -17,7 +17,7 @@ import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildConnectors, buildMarginSeamGroove, buildDovetailKey } from './baseplateConnectors';
 import { computeCellBoundariesMm } from './cellDecomposition';
 import { generateMargin } from './baseplateMargin';
-import { SOCKET_HEIGHT } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
 
 const vol = (s: Parameters<typeof measureVolume>[0]): number => {
   const r = measureVolume(s);
@@ -124,7 +124,7 @@ function railGrooves(rail: MarginPiece): Shape3D[] {
         rail.side,
         railW,
         railD,
-        SOCKET_HEIGHT,
+        PLATE_PROFILE_HEIGHT,
         'dovetailKey',
         0,
         0.4,
@@ -143,10 +143,10 @@ function railGrooves(rail: MarginPiece): Shape3D[] {
  * by the slab height to match the grooves' top-at-Z=0 convention.
  */
 function seatedKeyAt(xMm: number): Shape3D {
-  const stock = buildDovetailKey(SOCKET_HEIGHT, GU);
+  const stock = buildDovetailKey(PLATE_PROFILE_HEIGHT, GU);
   const turned = rotate(stock, 90, { axis: [0, 0, 1] });
   stock.delete();
-  const placed = translate(turned, [xMm, -(DEPTH * GU) / 2, -SOCKET_HEIGHT]);
+  const placed = translate(turned, [xMm, -(DEPTH * GU) / 2, -PLATE_PROFILE_HEIGHT]);
   turned.delete();
   return placed;
 }
@@ -164,12 +164,11 @@ describe('keyed margin seam (issue #2866)', () => {
   it('makes the body wall female on cell boundaries instead of tonguing it', () => {
     const { nubs, holes } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
-      true
+      0
     );
     // A 3-wide wall has 2 interior boundaries — one groove each, no tongues.
     expect(nubs.length, 'no tongue under the key style').toBe(0);
@@ -184,12 +183,11 @@ describe('keyed margin seam (issue #2866)', () => {
     // both halves must stay flat rather than grow a lone unmatched groove.
     const { nubs, holes } = buildConnectors(
       baseParams({ width: 1, edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       1 * GU,
       DEPTH * GU,
       0,
-      0,
-      true
+      0
     );
     expect(nubs.length).toBe(0);
     expect(holes.length).toBe(0);
@@ -227,12 +225,11 @@ describe('keyed margin seam (issue #2866)', () => {
   it('seats a key across each body↔rail junction, engaging both halves', () => {
     const { holes } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
-      true
+      0
     );
     const bodyUnion = fuseAll(holes);
     const railUnion = fuseAll(railGrooves(frontRail()));
@@ -268,12 +265,11 @@ describe('keyed margin seam (issue #2866)', () => {
     const PL = 20;
     const { holes } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
-      true
+      0
     );
     const bodyUnion = fuseAll(holes);
     if (!bodyUnion) throw new Error('expected body grooves');

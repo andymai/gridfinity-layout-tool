@@ -43,7 +43,7 @@ export function effectiveCornerRadii(
   params: Pick<ResolvedBaseplateParams, 'cornerRadius' | 'cornerRadii' | 'edges'>
 ): Record<CornerKey, number> {
   const exterior = exteriorCorners(params.edges);
-  const uniform = params.cornerRadius ?? GRIDFINITY.SOCKET_CORNER_RADIUS;
+  const uniform = params.cornerRadius ?? GRIDFINITY.BASEPLATE_CORNER_RADIUS;
   const radius = (k: CornerKey): number => (exterior[k] ? (params.cornerRadii?.[k] ?? uniform) : 0);
   return { tl: radius('tl'), tr: radius('tr'), bl: radius('bl'), br: radius('br') };
 }

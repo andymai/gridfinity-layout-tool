@@ -190,7 +190,7 @@ export function BaseplatePage() {
   const stackPlan = useMemo(() => {
     if (!stackEnabled || !tiling) return [];
     const groups = stackGroupsFromTiling(tiling, fullParams, stackCopies);
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stackGapMm);
+    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.BASEPLATE_HEIGHT, stackGapMm);
     return planPhysicalStacks(groups, cap);
   }, [stackEnabled, tiling, fullParams, maxPrintHeightMm, stackGapMm, stackCopies]);
   const stackFileCount = stackPlan.length;

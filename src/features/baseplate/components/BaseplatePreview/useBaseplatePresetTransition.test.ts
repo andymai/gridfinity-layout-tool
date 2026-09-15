@@ -19,7 +19,7 @@ vi.mock('three', () => ({
 }));
 
 vi.mock('@/shared/printSettings/gridfinityGeometry', () => ({
-  GRIDFINITY_SPEC: { SOCKET_HEIGHT: 5 },
+  GRIDFINITY_SPEC: { BASEPLATE_HEIGHT: 5 },
 }));
 
 const { useBaseplatePresetTransition } = await import('./useBaseplatePresetTransition');

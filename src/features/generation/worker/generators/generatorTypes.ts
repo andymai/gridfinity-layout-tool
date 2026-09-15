@@ -21,6 +21,13 @@ export {
   SOCKET_BIG_TAPER,
   SOCKET_VERTICAL_PART,
   SOCKET_TAPER_WIDTH,
+  PLATE_PROFILE_HEIGHT,
+  PLATE_SMALL_TAPER,
+  PLATE_BIG_TAPER,
+  PLATE_VERTICAL_PART,
+  PLATE_TAPER_WIDTH,
+  FOOT_PROFILE,
+  POCKET_PROFILE,
   TOP_FILLET,
   LIP_SMALL_TAPER,
   LIP_VERTICAL_PART,
@@ -36,8 +43,10 @@ export {
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
   HOLE_OFFSET,
-  INSET_BOT,
+  POCKET_INSET_BOT,
+  FOOT_INSET_BOT,
   pocketCornerRadius,
+  footCornerRadius,
   safeSectionRect,
   capSectionRadius,
   resolveCornerRadii,
@@ -62,6 +71,7 @@ export {
   HOLE_DEPTH,
   NUB_CIRCLE_SEGMENTS,
 } from './generatorConstants';
+export type { TaperProfile } from './generatorConstants';
 export {
   decomposeCells,
   decomposeHalfCells,

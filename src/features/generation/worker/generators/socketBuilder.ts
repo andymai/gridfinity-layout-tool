@@ -26,14 +26,12 @@ import type { Shape3D, ValidSolid, Sketch, DisposalScope, BooleanPipelineStep } 
 import {
   SIZE,
   CLEARANCE,
-  CORNER_RADIUS,
   COPLANAR_MARGIN,
-  pocketCornerRadius,
+  footCornerRadius,
   safeSectionRect,
   SOCKET_HEIGHT,
-  SOCKET_BIG_TAPER,
-  SOCKET_VERTICAL_PART,
   SOCKET_TAPER_WIDTH,
+  FOOT_PROFILE,
   MIN_PRINTABLE_TILE_MM,
   forEachCell,
   frameCells,
@@ -320,13 +318,11 @@ export function filledSocketCells(
 /**
  * A prism of a cell socket's TOP face, rising `heightMm` from z=0.
  *
- * The socket's top 0.25mm is already vertical, so this continues that face
- * without a step. Lives here because the corner-radius clamp is the socket
- * profile's, and a second copy of it is a ledge inside every cup.
+ * Lives here because the corner-radius clamp is the socket profile's, and a
+ * second copy of it is a ledge inside every cup.
  */
 export function buildSocketTopPrism(cellW_mm: number, cellD_mm: number, heightMm: number): Shape3D {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
+  const cornerR = footCornerRadius(cellW_mm, cellD_mm);
   return (
     drawRoundedRectangle(cellW_mm, cellD_mm, Math.max(cornerR, 0.1)).sketchOnPlane(
       'XY',
@@ -342,8 +338,9 @@ export function buildSocketTopPrism(cellW_mm: number, cellD_mm: number, heightMm
  * the cell boundary only — the tool spans the whole cell, so the faces where a
  * foot was clipped out of one are not touched.
  *
- * The relief lands on the profile's own widest breakpoint, `-CLEARANCE / 2`, so
- * the widest section and every face a baseplate meets survive it untouched.
+ * The ramp is confined to the top `CLEARANCE / 2` of the foot. Everything a
+ * baseplate grips — the vertical band and the whole lower chamfer — sits below
+ * that, so the relief cannot eat into the fit.
  *
  * The tool continues above Z=0 rather than stopping on the foot's top plane, so
  * the intersection never has two coincident faces to resolve.
@@ -353,7 +350,7 @@ export function buildSocketRimReliefTool(
   cellD_mm: number,
   insetMm: number
 ): Shape3D {
-  const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
+  const cornerR = footCornerRadius(cellW_mm, cellD_mm);
   const sectionAt = (z: number, inset: number): Sketch =>
     drawRoundedRectangle(
       cellW_mm - 2 * inset,
@@ -373,22 +370,7 @@ export function buildSocketRimReliefTool(
 }
 
 export function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
-  // Clamp corner radius to fit within cell dimensions
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
-
-  // Profile insets from outer boundary at each Z breakpoint
-  // (derived from socketProfile after translate(CLEARANCE/2, 0))
-  const INSET_TOP = 0;
-  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2;
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
-
-  // Z positions of profile breakpoints
-  const Z1 = 0;
-  const Z2 = -(CLEARANCE / 2);
-  const Z3 = -SOCKET_BIG_TAPER;
-  const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART);
-  const Z5 = -SOCKET_HEIGHT;
+  const cornerR = footCornerRadius(cellW_mm, cellD_mm);
 
   // Helper to create a rounded rect sketch at a given Z with a given inset
   const sectionAt = (z: number, inset: number): Sketch => {
@@ -400,16 +382,10 @@ export function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape
     return drawRoundedRectangle(width, depth, radius).sketchOnPlane('XY', z) as Sketch;
   };
 
-  // Build 5 cross-sections matching the socket profile breakpoints
-  const s1 = sectionAt(Z1, INSET_TOP);
-  const s2 = sectionAt(Z2, INSET_TOP);
-  const s3 = sectionAt(Z3, INSET_MID);
-  const s4 = sectionAt(Z4, INSET_MID);
-  const s5 = sectionAt(Z5, INSET_BOT);
-
-  // Ruled loft through all sections -- straight-line connections between
-  // corresponding points, matching the angular profile exactly
-  return s1.loftWith([s2, s3, s4, s5], { ruled: true });
+  // Ruled loft -- straight-line connections between corresponding points,
+  // matching the angular profile exactly.
+  const [first, ...rest] = FOOT_PROFILE.map(([depth, inset]) => sectionAt(-depth, inset));
+  return first.loftWith(rest, { ruled: true });
 }
 
 /**
@@ -420,11 +396,10 @@ export function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape
  * preview updates. Export mode uses buildSingleCellSocket for full fidelity.
  */
 export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
-  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
-  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
+  const cornerR = footCornerRadius(cellW_mm, cellD_mm);
 
   const INSET_TOP = 0;
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
+  const INSET_BOT = SOCKET_TAPER_WIDTH;
 
   const Z1 = 0;
   const Z3 = -SOCKET_HEIGHT;

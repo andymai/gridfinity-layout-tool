@@ -41,10 +41,10 @@ import {
   SIZE,
   HEIGHT_UNIT,
   CLEARANCE,
-  CORNER_RADIUS,
   BOX_CORNER_RADIUS,
+  footCornerRadius,
   SOCKET_HEIGHT,
-  SOCKET_TAPER_WIDTH,
+  FOOT_PROFILE,
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
 } from './generatorConstants';
@@ -54,10 +54,6 @@ type Pt = readonly [number, number];
 /** Smallest ring half-dimension we keep; below this the rounded-rect sampler
  *  collapses to sharp corners and the top/bottom rings stop matching. */
 const MIN_RING_DIM = 0.5;
-
-/** Inset of the foot bottom ring from the cell edge — matches `socketBuilder`'s
- *  simplified (preview) profile so the draft lines up with the on-screen exact. */
-const FOOT_BOTTOM_INSET = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
 
 function abortIfCancelled(signal?: AbortSignal): void {
   if (signal?.aborted) throw new Error('Generation cancelled');
@@ -146,30 +142,43 @@ function addRingCap(
   }
 }
 
-/** Clamp a cell-socket corner radius to fit the cell and stay in the rounded
- *  sampler regime (so every ring has the same vertex count). */
-function footCornerRadius(cellW: number, cellD: number): number {
-  return Math.max(Math.min(CORNER_RADIUS, Math.min(cellW, cellD) / 2 - 0.1), 0.1);
+/** Keeps the shared clamp inside the rounded-rect sampler's regime, so every
+ *  ring of a foot has the same vertex count. */
+function footRingRadius(cellW: number, cellD: number): number {
+  return Math.max(footCornerRadius(cellW, cellD), 0.1);
 }
 
 /**
- * One gridfinity foot: a closed tapered frustum from the cell footprint at
- * Z=SOCKET_HEIGHT down to the inset bottom ring at Z=0. Built as its own closed
+ * One gridfinity foot: {@link FOOT_PROFILE} walked down from the cell footprint
+ * at Z=SOCKET_HEIGHT to the inset bottom ring at Z=0. Built as its own closed
  * solid; its top cap sits coincident with the body's bottom cap (an interior,
  * non-visible join) so the overlap never z-fights.
+ *
+ * Every breakpoint gets a ring. Lofting the footprint straight to the bottom
+ * ring instead draws a plain cone — the right silhouette from across the room,
+ * and the wrong part to judge a baseplate fit against.
  */
 function addBaseFoot(mb: MeshBuilder, cx: number, cy: number, cellW: number, cellD: number): void {
-  const cornerR = footCornerRadius(cellW, cellD);
-  const botW = Math.max(cellW - 2 * FOOT_BOTTOM_INSET, MIN_RING_DIM);
-  const botD = Math.max(cellD - 2 * FOOT_BOTTOM_INSET, MIN_RING_DIM);
-  const botR = Math.max(cornerR - FOOT_BOTTOM_INSET, 0.1);
+  const cornerR = footRingRadius(cellW, cellD);
+  const rings = FOOT_PROFILE.map(([depth, inset]) => ({
+    z: SOCKET_HEIGHT - depth,
+    pts: roundedRectPoints(
+      Math.max(cellW - 2 * inset, MIN_RING_DIM),
+      Math.max(cellD - 2 * inset, MIN_RING_DIM),
+      Math.max(cornerR - inset, 0.1),
+      CORNER_SEGMENTS
+    ),
+  }));
 
-  const topPts = roundedRectPoints(cellW, cellD, cornerR, CORNER_SEGMENTS);
-  const botPts = roundedRectPoints(botW, botD, botR, CORNER_SEGMENTS);
+  for (let b = 0; b + 1 < rings.length; b++) {
+    const upper = rings[b];
+    const lower = rings[b + 1];
+    addTaperedTube(mb, cx, cy, upper.pts, lower.pts, upper.z, lower.z, true);
+  }
 
-  addTaperedTube(mb, cx, cy, topPts, botPts, SOCKET_HEIGHT, 0, true);
-  addSolidCap(mb, cx, cy, botPts, 0, false); // underside
-  addSolidCap(mb, cx, cy, topPts, SOCKET_HEIGHT, true); // interface with body
+  const bot = rings[rings.length - 1];
+  addSolidCap(mb, cx, cy, bot.pts, bot.z, false); // underside
+  addSolidCap(mb, cx, cy, rings[0].pts, rings[0].z, true); // interface with body
 }
 
 interface BinBodyDims {

@@ -161,7 +161,7 @@ rail spines: both reported clean through 2.8mm of solid-on-solid overlap.
 
 Baseplate pockets are cut from a solid slab, so the material between two is a ridge:
 a knife edge at the top face, widening going down. A full 1u foot centred on a cell
-boundary bottoms out 0.25mm into a 5mm pocket and leaves the bin resting 4.75mm proud.
+boundary bottoms out 0.25mm into a 4.65mm pocket, leaving the bin resting proud.
 Half-bin mode places bins at 0.5u offsets independently per axis (`useGridCoords.ts`),
 so a layout applied to both at once perches on whichever one it got wrong.
 
@@ -176,7 +176,7 @@ so a layout applied to both at once perches on whichever one it got wrong.
 
 An analytic model of the profile is not verification; it is the arithmetic under test,
 restated. `__kernel-tests__/binSeating.ts` mates the bin to a generated plate and lets
-it fall: ~4.5-4.75mm seated against ~0-0.33mm perched.
+it fall: ~4.65mm seated against ~0-0.33mm perched.
 
 ### The top ~3.15mm of a bin's cavity belongs to the lid
 

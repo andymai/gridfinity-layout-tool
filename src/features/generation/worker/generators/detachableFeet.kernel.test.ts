@@ -30,7 +30,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { boundingBox, isSolidThrough, meshTopologyStats } from './__kernel-tests__/meshAssertions';
 import { seatDepth } from './__kernel-tests__/binSeating';
-import { SOCKET_HEIGHT } from './generatorTypes';
+import { FOOT_PROFILE, SOCKET_HEIGHT } from './generatorTypes';
 import {
   DETACHABLE_PIN_HOLE_DIAMETER_MM,
   DETACHABLE_PIN_LEAD_IN_MM,
@@ -79,13 +79,18 @@ const MAGNET_DEPTH = 2;
 const ARM = footArmMm({ magnetDiameterMm: MAGNET_D, magnetInsetFromEdgeMm: 8, pinDiameterMm: PIN });
 
 /**
- * Z of every socket-profile breakpoint at or below the foot's widest section,
- * measured from the foot's top. The loft's sections land exactly here, so a
- * vertex-level comparison at these depths is comparing the profile itself
- * rather than the tessellation. Everything a baseplate touches is in this
- * range: only the top 0.25mm, above the widest section, is relieved.
+ * Z of every socket-profile breakpoint below the foot's top face, measured from
+ * that face. The loft's sections land exactly here, so a vertex-level
+ * comparison at these depths compares the profile itself rather than the
+ * tessellation. The top face is excluded because it is what the relief sets
+ * back; everything a baseplate touches is in this range.
+ *
+ * Read off `FOOT_PROFILE` rather than written out. `extremeAt` returns
+ * -Infinity for a plane it finds no vertex on, and two -Infinities compare
+ * equal, so a hand-kept list that drifts off the profile stops asserting
+ * anything instead of failing.
  */
-const PROFILE_Z = [-(CLEARANCE / 2), -2.4, -4.2, -5];
+const PROFILE_Z = FOOT_PROFILE.slice(1).map(([depth]) => -depth);
 
 /** A single L foot on a cell centred at the origin, hugging its +X/+Y corner. */
 const CORNER_L: FootPlacement = {
@@ -167,10 +172,14 @@ describe('detachable foot geometry', () => {
         const integral = extremeAt(fullMesh, 0, axis);
         // The face the bin sits on, inset by the relief.
         expect(extremeAt(footMesh, 0, axis)).toBeCloseTo(integral - MATING_RIM_RELIEF_MM, 6);
-        // ...while the widest section, where the profile's top step ends, is
-        // untouched: a relief that narrowed the whole foot would be one that
-        // loosened it in a baseplate.
-        expect(extremeAt(footMesh, -(CLEARANCE / 2), axis)).toBeCloseTo(integral, 6);
+        // ...while the first breakpoint under the ramp is untouched: a relief
+        // that narrowed the whole foot would be one that loosened it in a
+        // baseplate. Pinned against a real reading, since a plane carrying no
+        // vertices would make this pass on two -Infinities.
+        const belowRamp = PROFILE_Z[0];
+        const intact = extremeAt(fullMesh, belowRamp, axis);
+        expect(intact).toBeGreaterThan(0);
+        expect(extremeAt(footMesh, belowRamp, axis)).toBeCloseTo(intact, 6);
       }
     } finally {
       feet.forEach((f) => f.delete());

@@ -54,10 +54,10 @@ describe('assembledHeight', () => {
       expect(seated.totalMm).toBeCloseTo(bare.totalMm, 6);
     });
 
-    it('still reports the plate as 5mm of printed material', () => {
+    it('still reports the plate as its own printed material', () => {
       const seated = assembledHeight(params({ height: 6 }), PLAIN_PLATE);
-      expect(seated.baseplatePrintedMm).toBe(GRIDFINITY.SOCKET_HEIGHT);
-      expect(seated.nestedMm).toBe(GRIDFINITY.SOCKET_HEIGHT);
+      expect(seated.baseplatePrintedMm).toBe(GRIDFINITY.BASEPLATE_HEIGHT);
+      expect(seated.nestedMm).toBe(GRIDFINITY.BASEPLATE_HEIGHT);
     });
 
     it('emits a zero-height plate band so the row can explain itself', () => {
@@ -78,7 +78,7 @@ describe('assembledHeight', () => {
       });
       // MAGNET_FLOOR (0.5) + magnetDepth (2) = 2.5mm below the sockets.
       expect(bandOf('baseplate', seated)).toBeCloseTo(2.5, 6);
-      expect(seated.baseplatePrintedMm).toBeCloseTo(GRIDFINITY.SOCKET_HEIGHT + 2.5, 6);
+      expect(seated.baseplatePrintedMm).toBeCloseTo(GRIDFINITY.BASEPLATE_HEIGHT + 2.5, 6);
     });
 
     it('adds the solid-floor thickness on top of the magnet floor', () => {

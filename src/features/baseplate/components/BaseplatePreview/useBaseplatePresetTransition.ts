@@ -14,7 +14,7 @@ import type { CameraPreset } from './cameraUtils';
 /**
  * Manages smooth camera preset transitions using spherical coordinate interpolation.
  * Adapted from the bin designer's usePresetTransition -- uses baseplate's
- * calculateIdealDistance (with padding params) and fixed SOCKET_HEIGHT center.
+ * calculateIdealDistance (with padding params) and fixed BASEPLATE_HEIGHT center.
  */
 export function useBaseplatePresetTransition(
   controlsRef: RefObject<OrbitControlsType | null>,
@@ -37,7 +37,7 @@ export function useBaseplatePresetTransition(
 
       const camera = controls.object;
       const fov = 45;
-      const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+      const totalH = GRIDFINITY_SPEC.BASEPLATE_HEIGHT;
       const binCenter = new THREE.Vector3(0, 0, totalH / 2);
       const aspect =
         camera instanceof THREE.PerspectiveCamera && camera.aspect > 0 ? camera.aspect : 1;

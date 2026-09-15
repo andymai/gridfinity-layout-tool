@@ -22,7 +22,7 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
 import { mm } from '@/core/types';
 import { screwPadThicknessMm } from '@/shared/generation/screwHolePlan';
-import { SOCKET_HEIGHT } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -80,8 +80,8 @@ describe('baseplate mount-down screw holes (#3425)', () => {
 
     const plainZ = boundingBox(plain.vertices);
     const screwedZ = boundingBox(screwed.vertices);
-    expect(plainZ.maxZ - plainZ.minZ).toBeCloseTo(SOCKET_HEIGHT, 1);
-    expect(screwedZ.maxZ - screwedZ.minZ).toBeCloseTo(SOCKET_HEIGHT + pad, 1);
+    expect(plainZ.maxZ - plainZ.minZ).toBeCloseTo(PLATE_PROFILE_HEIGHT, 1);
+    expect(screwedZ.maxZ - screwedZ.minZ).toBeCloseTo(PLATE_PROFILE_HEIGHT + pad, 1);
   });
 
   it('adds geometry rather than silently doing nothing', () => {
@@ -130,7 +130,7 @@ describe('baseplate mount-down screw holes (#3425)', () => {
     );
     assertStructurallyValid(result);
     const bb = boundingBox(result.vertices);
-    expect(bb.maxZ - bb.minZ).toBeCloseTo(SOCKET_HEIGHT, 1);
+    expect(bb.maxZ - bb.minZ).toBeCloseTo(PLATE_PROFILE_HEIGHT, 1);
   });
 
   it('cross-cuts a screw cell into corner boss pads instead of a full floor', () => {
@@ -153,7 +153,7 @@ describe('baseplate mount-down screw holes (#3425)', () => {
     // Bottom-left screw cell: the screw snaps to the magnet position nearest
     // the plate corner, cell-local (-13, -13). The pad band around it spans
     // |8..18.05| on both axes (offset 13 − head r 4 − margin 1, relief
-    // 21 − INSET_BOT). Probe just inside the pad, clear of the ø8 recess: the
+    // 21 − POCKET_INSET_BOT). Probe just inside the pad, clear of the ø8 recess: the
     // pad slab spans the bottom `pad` mm of the plate.
     const cellCx = bb.minX + 21;
     const cellCy = bb.minY + 21;
@@ -199,12 +199,12 @@ describe('baseplate mount-down screw holes (#3425)', () => {
   });
 
   it('never intrudes into the bin-seating volume (whole-footprint sweep)', () => {
-    // The top SOCKET_HEIGHT of the plate is where a bin's foot sits. Sweep the
+    // The top PLATE_PROFILE_HEIGHT of the plate is where a bin's foot sits. Sweep the
     // whole footprint and require the screwed plate to carry no more solid in
     // that band than an unscrewed one anywhere — an aimed probe at a suspected
     // spot is exactly the check taught us not to trust. Each mesh's band
     // is measured from its own top: the screwed plate is `pad` taller, but the
-    // socket is always its top SOCKET_HEIGHT.
+    // socket is always its top PLATE_PROFILE_HEIGHT.
     const pad = screwPadThicknessMm(SCREWS, 0);
     const plain = getGenerateBaseplate()(defaults({ lightweight: true }), NO_OP, true);
     const screwed = getGenerateBaseplate()(
@@ -213,7 +213,7 @@ describe('baseplate mount-down screw holes (#3425)', () => {
       true
     );
     const solidInSeatBand = (mesh: typeof plain, topZ: number, x: number, y: number): number => {
-      const bandLo = topZ - SOCKET_HEIGHT + 0.05;
+      const bandLo = topZ - PLATE_PROFILE_HEIGHT + 0.05;
       const bandHi = topZ - 0.05;
       return verticalSolidSpans(mesh, x, y).reduce(
         (sum, [lo, hi]) => sum + Math.max(0, Math.min(hi, bandHi) - Math.max(lo, bandLo)),
@@ -281,7 +281,7 @@ describe('baseplate mount-down screw holes (#3425)', () => {
     );
     assertStructurallyValid(result);
     const bb = boundingBox(result.vertices);
-    expect(bb.maxZ - bb.minZ).toBeCloseTo(SOCKET_HEIGHT + magnetFloor + pad, 1);
+    expect(bb.maxZ - bb.minZ).toBeCloseTo(PLATE_PROFILE_HEIGHT + magnetFloor + pad, 1);
   });
 });
 

@@ -66,14 +66,26 @@ export const GRIDFINITY_SPEC = {
   // Derived: SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SMALL_TAPER - BIG_TAPER = 1.8mm
   // Derived: SOCKET_TAPER_WIDTH = SMALL_TAPER + BIG_TAPER = 2.95mm (inset from outer edge)
 
-  // Corner radius for socket profile
-  SOCKET_CORNER_RADIUS: 4, // mm (r_base from spec)
+  // Baseplate pocket profile: the socket profile offset outward by TOLERANCE/2
+  // measured PERPENDICULAR to each face. On a 45deg chamfer that is 0.35mm
+  // horizontally, not 0.25 — which is why these are not the socket's numbers.
+  // Offsetting the socket 0.25mm HORIZONTALLY instead yields a 4.75mm pocket
+  // with a 0.8mm bottom chamfer, every face parallel to the one it receives:
+  // the foot then has nothing to land on and sinks the full clearance.
+  BASEPLATE_HEIGHT: 4.65, // mm total (2.15 + 1.8 + 0.7)
+  BASEPLATE_SMALL_TAPER: 0.7, // mm bottom 45deg chamfer
+  BASEPLATE_BIG_TAPER: 2.15, // mm upper 45deg chamfer
+  // Derived: BASEPLATE_VERTICAL_PART = HEIGHT - SMALL - BIG = 1.8mm
+  // Derived: BASEPLATE_TAPER_WIDTH = SMALL + BIG = 2.85mm (inset from cell edge)
 
-  // Corner radius for box body (outer wall profile)
-  // Per gridfinity.xyz spec: boxes use 3.75mm, baseplates use 4mm.
-  // The 0.25mm difference creates a slight interference fit so bins seat
-  // flush on the baseplate without magnets.
-  BOX_CORNER_RADIUS: 3.75, // mm (r_base - 0.25mm per original spec)
+  // Corner radius the pocket profile is swept around, at the full 42mm cell.
+  BASEPLATE_CORNER_RADIUS: 4, // mm
+
+  // Corner radius for the box body, and for the base socket swept around the
+  // 41.5mm cell. Concentric with BASEPLATE_CORNER_RADIUS's arc once the cell
+  // shrinks by TOLERANCE, so the 0.25mm radius difference is what carries the
+  // clearance around the corners.
+  BOX_CORNER_RADIUS: 3.75, // mm
 
   // Fillets (used for BREP generation)
   TOP_FILLET: 0, // mm — original spec has no fillet at stacking lip peak

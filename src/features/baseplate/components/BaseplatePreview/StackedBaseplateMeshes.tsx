@@ -121,7 +121,7 @@ export function StackedBaseplateMeshes({
       fullParams,
       stack.copies ?? STACK_PRINT_DEFAULT_COPIES
     );
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stack.gapMm);
+    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.BASEPLATE_HEIGHT, stack.gapMm);
     const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;
 

@@ -136,8 +136,7 @@ function relieveTongueForSockets(
   protrudeAxis: 'x' | 'y',
   boundaryCells: readonly CellSpan[],
   gridUnitMm: number,
-  magnetHoles: boolean,
-  forExport: boolean
+  magnetHoles: boolean
 ): Shape3D {
   // Widest tongue half-width (the puzzle head ≥ the legacy tip) plus groove
   // clearance and a small margin — the boundary-axis reach over which a neighbour
@@ -155,8 +154,8 @@ function relieveTongueForSockets(
     // along the boundary axis (the grid is continuous across the seam).
     const pocket =
       protrudeAxis === 'x'
-        ? getPocketTemplate(gridUnitMm, cell.size, forExport, throughCut)
-        : getPocketTemplate(cell.size, gridUnitMm, forExport, throughCut);
+        ? getPocketTemplate(gridUnitMm, cell.size, throughCut)
+        : getPocketTemplate(cell.size, gridUnitMm, throughCut);
     const pos: [number, number, number] =
       protrudeAxis === 'x'
         ? [neighborProtrude, cell.center, 0]
@@ -178,8 +177,7 @@ export function buildConnectors(
   totalW: number,
   totalD: number,
   slabOffsetX: number,
-  slabOffsetY: number,
-  forExport: boolean = true
+  slabOffsetY: number
 ): { nubs: Shape3D[]; holes: Shape3D[] } {
   const { edges, connectorNubs, invertDovetails, preferIdenticalPieces } = params;
   const tongues: Shape3D[] = [];
@@ -375,8 +373,7 @@ export function buildConnectors(
       def.protrudeAxis,
       def.boundaryCells,
       protrudePitch,
-      params.magnetHoles,
-      forExport
+      params.magnetHoles
     );
   };
 

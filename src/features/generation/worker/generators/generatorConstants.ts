@@ -15,7 +15,8 @@ export { baseplateFloorDepth } from '@/shared/printSettings/baseplateHeight';
 export const SIZE = GRIDFINITY.GRID_SIZE;
 export const HEIGHT_UNIT = GRIDFINITY.HEIGHT_UNIT;
 export const CLEARANCE = GRIDFINITY.TOLERANCE;
-export const CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
+/** Corner radius of the baseplate pocket. The bin's foot uses BOX_CORNER_RADIUS. */
+export const CORNER_RADIUS = GRIDFINITY.BASEPLATE_CORNER_RADIUS;
 export const BOX_CORNER_RADIUS = GRIDFINITY.BOX_CORNER_RADIUS;
 export const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
 /**
@@ -28,6 +29,11 @@ export const SOCKET_SMALL_TAPER = GRIDFINITY.SOCKET_SMALL_TAPER;
 export const SOCKET_BIG_TAPER = GRIDFINITY.SOCKET_BIG_TAPER;
 export const SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER;
 export const SOCKET_TAPER_WIDTH = SOCKET_SMALL_TAPER + SOCKET_BIG_TAPER;
+export const PLATE_PROFILE_HEIGHT = GRIDFINITY.BASEPLATE_HEIGHT;
+export const PLATE_SMALL_TAPER = GRIDFINITY.BASEPLATE_SMALL_TAPER;
+export const PLATE_BIG_TAPER = GRIDFINITY.BASEPLATE_BIG_TAPER;
+export const PLATE_VERTICAL_PART = PLATE_PROFILE_HEIGHT - PLATE_SMALL_TAPER - PLATE_BIG_TAPER;
+export const PLATE_TAPER_WIDTH = PLATE_SMALL_TAPER + PLATE_BIG_TAPER;
 export const TOP_FILLET = GRIDFINITY.TOP_FILLET;
 export const LIP_SMALL_TAPER = GRIDFINITY.LIP_SMALL_TAPER; // 0.7mm bottom chamfer
 export const LIP_VERTICAL_PART = GRIDFINITY.LIP_VERTICAL_PART; // 1.8mm vertical
@@ -51,7 +57,7 @@ export const LIP_SUPPORT_DROP = GRIDFINITY.LIP_SUPPORT_DROP; // 1.2mm to the sup
  */
 export const CUT_RIM_CLEARANCE = 2;
 
-/** Corner radius for baseplate outer perimeter (same as socket corner radius) */
+/** Corner radius for baseplate outer perimeter (same as the pocket's) */
 export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
 
 /**
@@ -77,8 +83,54 @@ export const COPLANAR_OVERLAP = 0.01;
 /** Distance from cell center to magnet position (Gridfinity spec, mm) */
 export const HOLE_OFFSET = MAGNET_HOLE_OFFSET_MM;
 
-/** Inset at pocket bottom (same taper profile as bin socket at full cell size) */
-export const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+/**
+ * Inset at the baseplate pocket's floor, per side (2.85mm).
+ *
+ * Named apart from {@link FOOT_INSET_BOT} because the two are 0.1mm different
+ * and interchangeable-looking: the pocket's bottom chamfer is shorter than the
+ * foot's. Size a hole in a FOOT by this and it exits 0.1mm inside the tapered
+ * flank the baseplate mates against, which no bounding-box or watertight check
+ * can see.
+ */
+export const POCKET_INSET_BOT = PLATE_TAPER_WIDTH;
+
+/** Inset at the bin foot's flat underside, per side (2.95mm). */
+export const FOOT_INSET_BOT = SOCKET_TAPER_WIDTH;
+
+/**
+ * A tapered profile as `[depth below its own top face, inset per side]` pairs,
+ * top-down.
+ *
+ * Both profiles below start at inset 0. The sweep rectangle each is paired with
+ * already carries the clearance, so taking it out of the insets as well applies
+ * it twice: the taper then starts below the top face instead of at it, and the
+ * two profiles come out parallel rather than offset.
+ */
+export type TaperProfile = readonly (readonly [depth: number, inset: number])[];
+
+/**
+ * Bin base socket, swept around `cell - CLEARANCE` with {@link BOX_CORNER_RADIUS}
+ * corners.
+ */
+export const FOOT_PROFILE: TaperProfile = [
+  [0, 0],
+  [SOCKET_BIG_TAPER, SOCKET_BIG_TAPER],
+  [SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART, SOCKET_BIG_TAPER],
+  [SOCKET_HEIGHT, SOCKET_TAPER_WIDTH],
+];
+
+/**
+ * Baseplate pocket, swept around the full cell with {@link CORNER_RADIUS}
+ * corners — {@link FOOT_PROFILE} offset outward by `CLEARANCE / 2`
+ * perpendicular. It bottoms out 0.1mm short of the foot, so a seated bin lands
+ * on the pocket floor with its tapers clear rather than wedging on them.
+ */
+export const POCKET_PROFILE: TaperProfile = [
+  [0, 0],
+  [PLATE_BIG_TAPER, PLATE_BIG_TAPER],
+  [PLATE_BIG_TAPER + PLATE_VERTICAL_PART, PLATE_BIG_TAPER],
+  [PLATE_PROFILE_HEIGHT, PLATE_TAPER_WIDTH],
+];
 
 /** Magnet position offsets relative to cell center (4 corners per cell) */
 export const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
@@ -92,6 +144,19 @@ export const MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
 export function pocketCornerRadius(cellW_mm: number, cellD_mm: number): number {
   const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
   return Math.min(CORNER_RADIUS, maxRadius);
+}
+
+/**
+ * The bin foot's corner radius for a given cell size (clamped to fit).
+ *
+ * A quarter millimetre under {@link pocketCornerRadius} at the same nominal
+ * cell, which is the only thing carrying the clearance around the corners: the
+ * foot's cell is already CLEARANCE narrower, so both arcs share a centre and a
+ * foot built at the pocket's radius would touch it along the whole arc.
+ */
+export function footCornerRadius(cellW_mm: number, cellD_mm: number): number {
+  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
+  return Math.min(BOX_CORNER_RADIUS, maxRadius);
 }
 
 /**

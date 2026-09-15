@@ -1,15 +1,15 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front + interior cutouts 1`] = `5194`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front + interior cutouts 1`] = `4810`;
 
-exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front cutout 1`] = `4840`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front cutout 1`] = `4456`;
 
-exports[`honeycomb junction > 2×2 bin, 2×1 compartments, cutouts on (sides off) 1`] = `4238`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments, cutouts on (sides off) 1`] = `3854`;
 
-exports[`honeycomb junction > 2×2 bin, 2×1 compartments, no cutouts 1`] = `4238`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments, no cutouts 1`] = `3854`;
 
-exports[`honeycomb junction > 2×2 bin, 2×2 compartments + interior cutouts 1`] = `4552`;
+exports[`honeycomb junction > 2×2 bin, 2×2 compartments + interior cutouts 1`] = `4168`;
 
-exports[`honeycomb junction > 2×2 bin, 2×2 compartments, no cutouts 1`] = `3892`;
+exports[`honeycomb junction > 2×2 bin, 2×2 compartments, no cutouts 1`] = `3508`;
 
-exports[`honeycomb junction > 2×2×4 honeycomb baseline (no dividers) 1`] = `3900`;
+exports[`honeycomb junction > 2×2×4 honeycomb baseline (no dividers) 1`] = `3516`;

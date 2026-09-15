@@ -65,7 +65,7 @@ function zBounds(vertices: Float32Array): { minZ: number; maxZ: number } {
   return { minZ, maxZ };
 }
 
-const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+const PLATE_HEIGHT = GRIDFINITY_SPEC.BASEPLATE_HEIGHT;
 const MAGNET_FLOOR = 0.5;
 
 describe('baseplateGenerator', () => {
@@ -164,7 +164,7 @@ describe('baseplateGenerator', () => {
   });
 
   // ─── Z-range verification ─────────────────────────────────────────────────
-  it('with magnets, slab extends from Z=0 to Z=SOCKET_HEIGHT+floor+depth', () => {
+  it('with magnets, slab extends from Z=0 to Z=PLATE_HEIGHT+floor+depth', () => {
     const magnetDepth = 2;
     const mesh = generateBaseplate(
       defaults({ width: 1, depth: 1, magnetHoles: true, magnetDepth }),
@@ -172,18 +172,18 @@ describe('baseplateGenerator', () => {
       false
     );
     const { minZ, maxZ } = zBounds(mesh.vertices);
-    const expectedHeight = SOCKET_HEIGHT + MAGNET_FLOOR + magnetDepth;
+    const expectedHeight = PLATE_HEIGHT + MAGNET_FLOOR + magnetDepth;
     // Bottom face at Z=0
     expect(minZ).toBeCloseTo(0, 0);
     // Top face at full height
     expect(maxZ).toBeCloseTo(expectedHeight, 0);
   });
 
-  it('without magnets, Z range is 0 to SOCKET_HEIGHT', () => {
+  it('without magnets, Z range is 0 to PLATE_HEIGHT', () => {
     const mesh = generateBaseplate(defaults(), noop, false);
     const { minZ, maxZ } = zBounds(mesh.vertices);
     expect(minZ).toBeCloseTo(0, 0);
-    expect(maxZ).toBeCloseTo(SOCKET_HEIGHT, 0);
+    expect(maxZ).toBeCloseTo(PLATE_HEIGHT, 0);
   });
 
   it('magnet depth affects total height', () => {
@@ -208,8 +208,8 @@ describe('baseplateGenerator', () => {
     const hollowZ = zBounds(hollow.vertices);
     const flooredZ = zBounds(floored.vertices);
     // Through-cut plate is exactly the socket height; the floor grows it downward.
-    expect(hollowZ.maxZ).toBeCloseTo(SOCKET_HEIGHT, 0);
-    expect(flooredZ.maxZ).toBeCloseTo(SOCKET_HEIGHT + thickness, 1);
+    expect(hollowZ.maxZ).toBeCloseTo(PLATE_HEIGHT, 0);
+    expect(flooredZ.maxZ).toBeCloseTo(PLATE_HEIGHT + thickness, 1);
   });
 
   it('solid floor thickness is customizable', () => {
@@ -228,7 +228,7 @@ describe('baseplateGenerator', () => {
 
   it('solid floor defaults to 0.8mm when thickness omitted', () => {
     const mesh = generateBaseplate(defaults({ solidFloor: true }), noop, true);
-    expect(zBounds(mesh.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT + 0.8, 1);
+    expect(zBounds(mesh.vertices).maxZ).toBeCloseTo(PLATE_HEIGHT + 0.8, 1);
   });
 
   it('solid floor stacks below the magnet layer, adding its thickness', () => {

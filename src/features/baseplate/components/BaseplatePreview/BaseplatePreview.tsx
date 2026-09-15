@@ -192,7 +192,7 @@ export function BaseplatePreview({
     [updateSetting]
   );
 
-  const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+  const totalH = GRIDFINITY_SPEC.BASEPLATE_HEIGHT;
 
   // Stack-print preview: replaces the assembled plate with flipped towers.
   const stackPrint = useLayoutStore((s) => s.layout.baseplateParams?.stackPrint);

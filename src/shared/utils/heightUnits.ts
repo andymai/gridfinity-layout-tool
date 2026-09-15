@@ -18,8 +18,8 @@ export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT;
  * The joint is the base's big chamfer resting flush on the lip's, both at 45
  * degrees, so the pair comes to rest when their full-width points meet — which
  * puts the upper bin's underside one base profile below the lip top. The base
- * reaches full width `TOLERANCE/2` under the top of its socket, so that profile
- * is `SOCKET_HEIGHT - TOLERANCE/2`.
+ * reaches full width at the very top of its socket, so that profile is the
+ * whole `SOCKET_HEIGHT`.
  *
  * It is the base profile that sets this, never the lip: the base profile is the
  * taller of the two, so the bin above settles just past the lip's base plane
@@ -29,7 +29,7 @@ export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT;
  * Measured on the mated solids rather than trusted from this arithmetic —
  * `binStackSeating.kernel.test.ts`.
  */
-export const STACK_JUNCTION_MM = GRIDFINITY_SPEC.SOCKET_HEIGHT - GRIDFINITY_SPEC.TOLERANCE / 2;
+export const STACK_JUNCTION_MM = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 
 /**
  * Vertical pitch a stacked bin adds, in mm: its printed height less the depth

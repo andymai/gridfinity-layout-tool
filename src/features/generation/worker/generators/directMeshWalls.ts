@@ -1,22 +1,33 @@
 /**
  * Vertical wall emitters for direct baseplate mesh.
  *
- * - addPocketWalls: tapered walls from Z=totalHeight (full cell size) down to
- *   Z=floorDepth (inset by INSET_BOT). Optionally caps the bottom at
- *   Z=floorDepth when magnets are enabled (otherwise the pocket is through-cut).
+ * - addPocketWalls: the baseplate pocket profile, walked down from
+ *   Z=totalHeight (full cell size) to the floor at Z=floorDepth (inset by
+ *   POCKET_INSET_BOT). Optionally caps the bottom when magnets are enabled (otherwise
+ *   the pocket is through-cut).
  *
  * - addOuterWalls: vertical walls following the outer slab profile from
  *   Z=totalHeight down to Z=0.
  *
- * Both share top + bottom perimeter rings across adjacent quads so
- * `computeVertexNormals` + `toCreasedNormals(35°)` produces smooth shading
- * across rounded corners while keeping crisp creases at arc→flat transitions.
+ * Both share perimeter rings across adjacent quads so `computeVertexNormals` +
+ * `toCreasedNormals(35°)` produces smooth shading across rounded corners while
+ * keeping crisp creases at arc→flat transitions and at each profile break.
  */
 
-import { INSET_BOT, pocketCornerRadius } from './generatorTypes';
+import { POCKET_INSET_BOT, POCKET_PROFILE, pocketCornerRadius } from './generatorTypes';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPoints } from './directMeshShapes';
+
+/**
+ * Floors for a pocket section's size and corner radius.
+ *
+ * `roundedRectPoints` drops to four square corners below a 0.01mm radius, so a
+ * section that falls through either floor would come back with a different
+ * vertex count than the ring above it and the wall quads would pair up wrong.
+ */
+const MIN_SECTION_MM = 0.2;
+const MIN_SECTION_RADIUS_MM = 0.1;
 
 export function addPocketWalls(
   mb: MeshBuilder,
@@ -28,34 +39,48 @@ export function addPocketWalls(
   floorDepth: number
 ): void {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
-  const botR = Math.max(cornerR - INSET_BOT, 0.1);
 
-  const topPts = roundedRectPoints(cellW_mm, cellD_mm, cornerR, CORNER_SEGMENTS);
-  const botW = cellW_mm - 2 * INSET_BOT;
-  const botD = cellD_mm - 2 * INSET_BOT;
-  const botPts = roundedRectPoints(botW, botD, botR, CORNER_SEGMENTS);
+  // One ring per profile breakpoint. Collapsing these to just the opening and
+  // the floor renders the pocket as a plain cone — no vertical band, no
+  // 45-degree seat — which is the shape a bin cannot drop into.
+  const rings = POCKET_PROFILE.map(([depth, inset]) => ({
+    z: totalHeight - depth,
+    pts: roundedRectPoints(
+      Math.max(cellW_mm - 2 * inset, MIN_SECTION_MM),
+      Math.max(cellD_mm - 2 * inset, MIN_SECTION_MM),
+      Math.max(cornerR - inset, MIN_SECTION_RADIUS_MM),
+      CORNER_SEGMENTS
+    ),
+  }));
 
-  const zTop = totalHeight;
-  const zBot = floorDepth;
+  const n = rings[0].pts.length;
 
-  const n = topPts.length;
+  // Build each perimeter ring once and share its vertex indices with the bands
+  // above and below. Normals are intentionally zeroed; they'll be overwritten
+  // by `computeVertexNormals` downstream.
+  const indices = rings.map(({ z, pts }) => {
+    const ring = new Array<number>(n);
+    for (let i = 0; i < n; i++) {
+      ring[i] = mb.pushVertex(pts[i][0] + cx, pts[i][1] + cy, z, 0, 0, 0);
+    }
+    return ring;
+  });
 
-  // Build top + bottom perimeter rings once and share vertex indices across
-  // the adjacent wall quads. Normals are intentionally zeroed; they'll be
-  // overwritten by `computeVertexNormals` downstream.
-  const topRing = new Array<number>(n);
-  const botRing = new Array<number>(n);
-  for (let i = 0; i < n; i++) {
-    topRing[i] = mb.pushVertex(topPts[i][0] + cx, topPts[i][1] + cy, zTop, 0, 0, 0);
-    botRing[i] = mb.pushVertex(botPts[i][0] + cx, botPts[i][1] + cy, zBot, 0, 0, 0);
-  }
-
-  // Tapered wall quads from top to bottom of pocket.
+  // Wall quads band by band.
   // Inward-facing winding from inside the pocket: top_{i+1}, top_i, bot_i, bot_{i+1}.
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    mb.pushQuad(topRing[j], topRing[i], botRing[i], botRing[j]);
+  for (let b = 0; b + 1 < indices.length; b++) {
+    const upper = indices[b];
+    const lower = indices[b + 1];
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      mb.pushQuad(upper[j], upper[i], lower[i], lower[j]);
+    }
   }
+
+  const botPts = rings[rings.length - 1].pts;
+  const botW = cellW_mm - 2 * POCKET_INSET_BOT;
+  const botD = cellD_mm - 2 * POCKET_INSET_BOT;
+  const zBot = floorDepth;
 
   // Pocket floor: when floorDepth > 0 (magnets enabled), cap the pocket bottom
   // with a solid face at Z=floorDepth facing UP into the pocket. Floor vertices

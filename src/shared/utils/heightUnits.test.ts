@@ -78,7 +78,7 @@ describe('isStandardStackHeight', () => {
   });
 });
 
-/** What each junction costs against the body height: 4.5 − 4.4. */
+/** What each junction costs against the body height: 4.75 − 4.4. */
 const SHORTFALL_MM = STACK_JUNCTION_MM - LIP_PROTRUSION_MM;
 
 describe('stackPitchMm', () => {
@@ -88,7 +88,7 @@ describe('stackPitchMm', () => {
   });
 
   it('the shortfall is the base profile standing proud of the lip', () => {
-    expect(SHORTFALL_MM).toBeCloseTo(0.1, 5);
+    expect(SHORTFALL_MM).toBeCloseTo(0.35, 5);
   });
 });
 

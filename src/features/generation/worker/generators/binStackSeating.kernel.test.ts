@@ -11,9 +11,9 @@
  * Mating the two solids says both were partly right. The junction IS one
  * constant, as the tool argued — it does not move with bin height, footprint or
  * height unit, so a per-configuration constant cannot be describing it. But the
- * constant is 4.5mm: the foot's flare and the lip's funnel are parallel 45
- * degree surfaces that mate face to face, so the bin above settles one BASE
- * profile (less the clearance step) below the lip top, not one lip.
+ * constant is 4.75mm: the foot's flare and the lip's funnel are parallel 45
+ * degree surfaces that mate face to face, so the bin above settles one whole
+ * BASE profile below the lip top, not one lip.
  *
  * The value is stated below as a measurement and never derived. Recomputing it
  * from the socket and lip profiles would only prove the arithmetic
@@ -46,7 +46,7 @@ beforeAll(async () => {
  * across every case below and unchanging; update it only from a fresh sweep,
  * never from `STACK_JUNCTION_MM` — the two agreeing is the assertion.
  */
-const JUNCTION_MM = 4.5;
+const JUNCTION_MM = 4.75;
 
 /**
  * Tessellation slack, in mm. The contact is taper-on-taper, so both faces are
