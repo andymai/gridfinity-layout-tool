@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.492.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.491.2...gridfinity-layout-tool-v4.492.0) (2026-09-15)
+
+
+### Features
+
+* **seo:** add crawlable About Gridfinity copy to the sidebar and mobile strip ([#4281](https://github.com/andymai/gridfinity-layout-tool/issues/4281)) ([38c8750](https://github.com/andymai/gridfinity-layout-tool/commit/38c87508e9f86e51d956b275c507d36aacb0fdf1))
+
 ## [4.491.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.491.1...gridfinity-layout-tool-v4.491.2) (2026-09-15)
 
 
