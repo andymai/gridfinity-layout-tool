@@ -1,0 +1,21 @@
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_3cb842cf8fd0b6::t_044f92e5528528 105-109,451-453,456-461,980
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.test.tsx
+  s_3cb842cf8fd0b6::t_044f92e5528528 42-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9971d1f0856aae2c42088d742790ad640e424151",
+  "prompts": {},
+  "sessions": {
+    "s_3cb842cf8fd0b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3c65c26-a24c-4c45-964f-1f824fc2a1b9",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
