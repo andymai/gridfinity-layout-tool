@@ -4,9 +4,13 @@ import {
   resetSessionCaptureCounts,
   shouldIgnoreError,
 } from './errorFilters';
+import type * as DetectWebGL from '@/shared/webgl/detectWebGL';
 
 const { detectWebGL } = vi.hoisted(() => ({ detectWebGL: vi.fn() }));
-vi.mock('@/shared/webgl/detectWebGL', () => ({ detectWebGL }));
+vi.mock('@/shared/webgl/detectWebGL', async (importOriginal) => ({
+  ...(await importOriginal<typeof DetectWebGL>()),
+  detectWebGL,
+}));
 
 beforeEach(() => {
   // Default to "available" so non-WebGL cases behave normally.
@@ -181,6 +185,49 @@ describe('filterExceptionForPosthog — WebGL context-creation dedupe', () => {
     expect(designer?.properties?.$exception_fingerprint).toBe(
       baseplate?.properties?.$exception_fingerprint
     );
+  });
+
+  it("groups the precision null read into the same issue, in every engine's wording", () => {
+    const wordings = [
+      "null is not an object (evaluating 'e.getShaderPrecisionFormat(e.VERTEX_SHADER,e.HIGH_FLOAT).precision')",
+      'e.getShaderPrecisionFormat(...) is null',
+    ];
+    for (const value of wordings) {
+      const result = filterExceptionForPosthog({
+        event: '$exception',
+        properties: { $exception_list: [{ type: 'TypeError', value }] },
+      });
+      expect(result?.properties?.$exception_fingerprint).toBe('webgl-context-creation-failed');
+    }
+    const v8 = filterExceptionForPosthog({
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            type: 'TypeError',
+            value: "Cannot read properties of null (reading 'precision')",
+            stacktrace: { frames: [{ filename: '/assets/three-render-CAmUYNoO.js' }] },
+          },
+        ],
+      },
+    });
+    expect(v8?.properties?.$exception_fingerprint).toBe('webgl-context-creation-failed');
+  });
+
+  it('leaves an unrelated precision null read with its own grouping', () => {
+    const result = filterExceptionForPosthog({
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            type: 'TypeError',
+            value: "Cannot read properties of null (reading 'precision')",
+            stacktrace: { frames: [{ filename: '/assets/index-abc.js' }] },
+          },
+        ],
+      },
+    });
+    expect(result?.properties?.$exception_fingerprint).toBeUndefined();
   });
 
   it('drops the burst once detection has been flipped to unavailable', () => {

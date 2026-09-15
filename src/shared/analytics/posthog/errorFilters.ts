@@ -1,6 +1,6 @@
 // Import the leaf module directly, not the `@/shared/webgl` barrel: the barrel
 // re-exports WebGLFallback, which imports this analytics package back — a cycle.
-import { detectWebGL } from '@/shared/webgl/detectWebGL';
+import { detectWebGL, webglFailureReason } from '@/shared/webgl/detectWebGL';
 
 /**
  * Browser-extension and platform noise we don't want in PostHog.
@@ -13,15 +13,11 @@ import { detectWebGL } from '@/shared/webgl/detectWebGL';
  */
 
 /**
- * Substring of the error three.js throws when it can't acquire a GL context.
- * The same message is thrown from every canvas mount site (designer, baseplate)
- * with a different stack, so without a pinned fingerprint PostHog splits it into
- * a separate issue per site. Keep in sync with `WEBGL_CONTEXT_ERROR` in
- * `WebGLErrorBoundary.tsx`.
+ * Stable fingerprint that collapses every unusable-GL-context variant into one
+ * issue: the same failure is thrown from every canvas mount site (designer,
+ * baseplate) with a different stack, and in two wordings (`webglFailureReason`),
+ * so message grouping would split it per site and per engine.
  */
-const WEBGL_CONTEXT_ERROR = 'Error creating WebGL context';
-
-/** Stable fingerprint that collapses every WebGL-context-creation variant into one issue. */
 const WEBGL_CONTEXT_FINGERPRINT = 'webgl-context-creation-failed';
 
 /**
@@ -277,7 +273,10 @@ export function filterExceptionForPosthog(
   if (primaryException && isCanvasTeardownRace(primaryException)) return null;
   if (primaryException && isNavigationAbort(primaryException)) return null;
 
-  if (primary?.includes(WEBGL_CONTEXT_ERROR)) {
+  const primarySource = (primaryException?.stacktrace?.frames ?? [])
+    .map((f) => f.filename ?? '')
+    .join('\n');
+  if (primary !== undefined && webglFailureReason(primary, primarySource) !== null) {
     // Detection already unavailable → the boundary handled this and we've
     // captured (or intentionally dropped) the first one; mute the rest.
     if (!detectWebGL().available) return null;
