@@ -209,7 +209,7 @@ export function assembledHeight(
       (params.base.style === 'lid' ? skirtMm : 0);
   const lipMm = params.base.stackingLip ? GRIDFINITY.LIP_HEIGHT : 0;
   const lidMm = hasSeatedLid(params) ? lidRiseMm(params) : 0;
-  // The stack grid is a SOCKET_HEIGHT slab above the lid's top face, whether it
+  // The stack grid is a LID_STACK_GRID_HEIGHT_MM slab above the lid's top face, whether it
   // is fused on or printed separately and glued. With nothing stacked on it, its
   // top is the assembly's highest point.
   const gridMm = lidMm > 0 && params.lid.stackableTop ? LID_STACK_GRID_HEIGHT_MM : 0;

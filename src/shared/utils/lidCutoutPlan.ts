@@ -69,8 +69,7 @@ export const LID_CUTOUT_WALL_MARGIN_MM = 0.8;
  * worker): the baseplate pocket's own floor inset. The lid's trim takes its
  * slice off the TOP of that profile, so the floor is untouched.
  */
-const STACK_INSET_BOT =
-  GRIDFINITY_SPEC.BASEPLATE_SMALL_TAPER + GRIDFINITY_SPEC.BASEPLATE_BIG_TAPER;
+const STACK_INSET_BOT = GRIDFINITY_SPEC.BASEPLATE_SMALL_TAPER + GRIDFINITY_SPEC.BASEPLATE_BIG_TAPER;
 
 /**
  * Extra radius (mm) added to a retention boss when it is subtracted from a

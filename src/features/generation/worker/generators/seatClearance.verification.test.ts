@@ -192,7 +192,9 @@ describe('lid stack grid / bin foot clearance', () => {
         const zBot = SOCKET_HEIGHT - FOOT_PROFILE[i + 1][0];
         if (z <= zTop + 1e-9 && z >= zBot - 1e-9) {
           const t = (z - zBot) / (zTop - zBot);
-          return cell / 2 - (FOOT_PROFILE[i + 1][1] + t * (FOOT_PROFILE[i][1] - FOOT_PROFILE[i + 1][1]));
+          return (
+            cell / 2 - (FOOT_PROFILE[i + 1][1] + t * (FOOT_PROFILE[i][1] - FOOT_PROFILE[i + 1][1]))
+          );
         }
       }
       return NaN;
