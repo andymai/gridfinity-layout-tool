@@ -386,7 +386,7 @@ export function computeExportTimeoutMs(params: BinParams): number {
  * Cost of one split piece per footprint cell, in ms. A piece is a boolean cut
  * of the whole export solid plus its own tessellation or STEP write, and both
  * scale with the solid's face count, which the socket grid ties to the
- * footprint. Reference-machine figure from a 13x11 socket bin cut six ways.
+ * footprint.
  */
 export const SPLIT_PIECE_MS_PER_CELL = 35;
 
