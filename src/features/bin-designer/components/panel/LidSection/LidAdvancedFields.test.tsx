@@ -30,9 +30,6 @@ describe('LidAdvancedFields', () => {
   });
 
   it('floors the plate thickness on a hinged lid and says why', () => {
-    // A design that stored the 0.8mm base is built at the floor, so the field
-    // shows the floor rather than a number the part does not use, and the
-    // stepper cannot go below it.
     seed({ attachment: 'hinge', topThicknessMm: 0.8 });
     render(<Harness />);
     fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));

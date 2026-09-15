@@ -812,14 +812,11 @@ export function hingeStopRadiusMm(params: HingeAxisSource): number {
 /**
  * Floor (mm) on a hinged lid's plate thickness.
  *
- * The barrel reaches its radius above the plate's underside and the stop lobe
- * reaches {@link hingeStopRadiusMm}, while a base plate reaches only 0.8mm: on
- * a stock bin the knuckles stood 1.4mm proud of the top face and the lobe
- * 2.1mm, and the export flips the lid onto that face, so the plate floated on
- * them and printed on supports throughout. A plate this thick keeps both under
- * the top face and the lid lies flat. Rounded up to the thickness step so the
- * stepper can land on it. Grows with the extra-height knob, because the axis
- * does and the corner the lobe reaches for does not.
+ * The export lays the lid on its top face, so the plate has to be the tallest
+ * thing on it: the stop lobe, which points up at rest, has to sit under that
+ * face or the plate balances on it and prints on supports. Grows with the
+ * extra-height knob, because the axis does and the corner the lobe reaches for
+ * does not. Rounded up to the thickness step so the stepper can land on it.
  */
 export function hingePlateFloorMm(params: HingeAxisSource): number {
   const need = hingeStopRadiusMm(params) + LID_HINGE_PLATE_CLEARANCE_MM;

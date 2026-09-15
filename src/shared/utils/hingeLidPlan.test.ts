@@ -248,10 +248,8 @@ describe('planHingeLid — the axis', () => {
   });
 
   it('keeps the plate above the stop lobe at every extra height', () => {
-    // The lobe points up at rest and the export lays the lid on its top face,
-    // so this is the one relation that decides whether a hinged lid prints
-    // flat. The floor and the lobe are sized from the same numbers; this pins
-    // that they stay in step as the axis climbs with the extra-height knob.
+    // The one relation that decides whether a hinged lid prints flat, pinned
+    // as the axis climbs with the extra-height knob.
     for (const extraHeightMm of [0, 0.6, 2, 5, 12]) {
       const p = params({ lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm } });
       const { geometry } = planHingeLid(p);
