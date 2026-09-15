@@ -35,6 +35,15 @@ describe('DevThumbnailRoute', () => {
     expect(useDesignerStore.getState().params.depth).toBe(example.params.depth);
   });
 
+  it('renders an example with feature colors off when colors=0 is set', () => {
+    const example = EXAMPLE_DESIGNS.find((e) => e.params.featureColors?.enabled);
+    if (!example) throw new Error('expected a colored gallery example');
+    setSearch(`?devThumbnails=1&example=${example.id}&colors=0`);
+    render(<DevThumbnailRoute />);
+    expect(useDesignerStore.getState().params.featureColors.enabled).toBe(false);
+    expect(useDesignerStore.getState().params.width).toBe(example.params.width);
+  });
+
   it('applies arbitrary partial params from the base64 params query', () => {
     const payload = btoa(JSON.stringify({ width: 5, depth: 4 }));
     setSearch(`?devThumbnails=1&params=${payload}`);

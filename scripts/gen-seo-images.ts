@@ -380,7 +380,7 @@ const OG_CARDS: OgCard[] = [
     title: 'Gridfinity Bin Designer',
     subtitle: 'Custom bins with compartments, cutouts & label tabs — free, in your browser',
     style: 'dark',
-    inset: 'multicolor-organizer-bin.png',
+    inset: 'multicolor-organizer-bin-app.png',
     insetPosition: 'center',
   },
   {
@@ -395,7 +395,7 @@ const OG_CARDS: OgCard[] = [
     title: 'Community Gridfinity Designs',
     subtitle: 'Designs shared by other makers — free to remix and print',
     style: 'dark',
-    inset: 'multicolor-organizer-bin.png',
+    inset: 'multicolor-organizer-bin-app.png',
     insetPosition: 'center',
   },
   {
@@ -403,7 +403,7 @@ const OG_CARDS: OgCard[] = [
     title: 'Gridfinity Generator',
     subtitle: 'Bins and baseplates, generated in your browser — STL, STEP & 3MF',
     style: 'dark',
-    inset: 'multicolor-organizer-bin.png',
+    inset: 'multicolor-organizer-bin-app.png',
     insetPosition: 'center',
   },
   {
@@ -411,7 +411,7 @@ const OG_CARDS: OgCard[] = [
     title: 'Gridfinity Bin Generator',
     subtitle: 'Parametric bins with a real-time 3D preview — free, no account',
     style: 'dark',
-    inset: 'honeycomb-caddy-bin.png',
+    inset: 'honeycomb-caddy-bin-app.png',
     insetPosition: 'center',
   },
   {
@@ -433,7 +433,7 @@ const OG_CARDS: OgCard[] = [
     title: 'What is Gridfinity?',
     subtitle: 'The 42mm modular storage system for 3D printing, explained',
     style: 'light',
-    inset: 'multicolor-organizer-bin.png',
+    inset: 'multicolor-organizer-bin-app.png',
     insetPosition: 'center',
   },
   {
@@ -441,7 +441,7 @@ const OG_CARDS: OgCard[] = [
     title: 'Gridfinity Sizes Reference',
     subtitle: 'Bin and baseplate dimensions on the 42mm grid',
     style: 'light',
-    inset: 'honeycomb-caddy-bin.png',
+    inset: 'honeycomb-caddy-bin-app.png',
     insetPosition: 'center',
   },
   {
@@ -477,7 +477,7 @@ const OG_CARDS: OgCard[] = [
     title: 'Gridfinity Software Compared',
     subtitle: 'Online generators vs OpenSCAD vs CAD plugins — what to use when',
     style: 'light',
-    inset: 'bit-organizer-bin.png',
+    inset: 'bit-organizer-bin-app.png',
     insetPosition: 'center',
   },
 ];
@@ -587,6 +587,28 @@ async function main(): Promise<void> {
         outFile: resolve(LANDING_OUT, 'bit-organizer-bin.png'),
         query: `params=${encodeURIComponent(Buffer.from(JSON.stringify(BIT_ORGANIZER_PARAMS)).toString('base64'))}`,
         theme: 'light',
+        zoomSteps: 5,
+      });
+      // The `-app` variants are the OG card insets: the same bins as the
+      // designer shows them, dark theme and plain preview color, so a shared
+      // link looks like the app rather than the gallery palette. The light
+      // renders above stay for the content pages, which are light.
+      await captureDesignerRender(browser, {
+        outFile: resolve(LANDING_OUT, 'multicolor-organizer-bin-app.png'),
+        query: 'example=hero-multicolor-organizer&colors=0',
+        theme: 'dark',
+        zoomSteps: 5,
+      });
+      await captureDesignerRender(browser, {
+        outFile: resolve(LANDING_OUT, 'honeycomb-caddy-bin-app.png'),
+        query: 'example=hero-honeycomb-caddy&colors=0',
+        theme: 'dark',
+        zoomSteps: 5,
+      });
+      await captureDesignerRender(browser, {
+        outFile: resolve(LANDING_OUT, 'bit-organizer-bin-app.png'),
+        query: `params=${encodeURIComponent(Buffer.from(JSON.stringify(BIT_ORGANIZER_PARAMS)).toString('base64'))}`,
+        theme: 'dark',
         zoomSteps: 5,
       });
     }
