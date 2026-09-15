@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_3cb842cf8fd0b6::t_1e0fc22b8fe538 141,157,172,186,221,246,296
+src/features/generation/worker/generators/baseplateMarginKey.scenario.test.ts
+  s_3cb842cf8fd0b6::t_1e0fc22b8fe538 171,190,232,272
+src/features/generation/worker/generators/baseplateMargin.scenario.test.ts
+  s_3cb842cf8fd0b6::t_1e0fc22b8fe538 114-117
+src/features/generation/worker/generators/baseplateGenerator.scenario.snapClip.test.ts
+  s_3cb842cf8fd0b6::t_1e0fc22b8fe538 176
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d1ecf618ea304168a2eb4d8140eda132fe772c07",
+  "prompts": {},
+  "sessions": {
+    "s_3cb842cf8fd0b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3c65c26-a24c-4c45-964f-1f824fc2a1b9",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
