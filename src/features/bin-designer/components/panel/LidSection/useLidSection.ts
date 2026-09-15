@@ -102,6 +102,11 @@ import type {
 import { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
 import { slideSagSafeThicknessMm } from '@/shared/utils/slideLidPlan';
 
+function ceilToThicknessStep(mm: number): number {
+  const steps = Math.ceil(mm / LID_TOP_THICKNESS_STEP_MM - 1e-9);
+  return Math.round(steps * LID_TOP_THICKNESS_STEP_MM * 10) / 10;
+}
+
 export { LID_TOP_SURFACES, lidValueSummary };
 export type { LidTopSurface };
 
@@ -443,13 +448,17 @@ export function useLidSection() {
   // With a tray the knob measures the floor under the recess, which the
   // geometry will not take below LID_TRAY_FLOOR. The input has to enforce the
   // same floor or the field would display a value the part never uses. A
-  // hinged lid's floor is the whole plate, so it applies to the knob directly.
+  // hinged lid's floor bounds the whole plate, so under a tray the knob's
+  // share of it is what is left after the recess, lifted onto the step.
+  const hingeFloor = isHinge ? hingePlateFloorMm(params) : 0;
   const topThicknessMin =
     topSurface === 'tray'
-      ? LID_TRAY_FLOOR
-      : isHinge
-        ? hingePlateFloorMm(params)
-        : LID_TOP_THICKNESS_MIN_MM;
+      ? Math.max(LID_TRAY_FLOOR, ceilToThicknessStep(hingeFloor - lid.tray.depthMm))
+      : Math.max(LID_TOP_THICKNESS_MIN_MM, hingeFloor);
+  // The persisted value stays within LID_TOP_THICKNESS_MAX_MM (the server
+  // bound); a hinge floor past it pins the stepper at the built value rather
+  // than handing it a minimum above its maximum.
+  const topThicknessMax = Math.max(LID_TOP_THICKNESS_MAX_MM, topThicknessMin);
 
   const setTopThickness = useCallback(
     (topThicknessMm: number) => {
@@ -968,7 +977,7 @@ export function useLidSection() {
       topThicknessMm: lid.topThicknessMm,
       topThicknessEffective: lidDimensions.topThickness,
       topThicknessMin,
-      topThicknessMax: LID_TOP_THICKNESS_MAX_MM,
+      topThicknessMax,
       topThicknessStep: LID_TOP_THICKNESS_STEP_MM,
       // On a tray lid the knob measures the floor under the recess, so the
       // plate and the value differ by the recess depth. Null for every other

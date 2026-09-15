@@ -39,6 +39,30 @@ describe('LidAdvancedFields', () => {
     expect(screen.getByText(/Hinged lids start at 3\.2 mm/)).toBeInTheDocument();
   });
 
+  it('pins the stepper at the floor when extra height lifts it past the persisted maximum', () => {
+    seed({ attachment: 'hinge', extraHeightMm: 20, topThicknessMm: 0.8 });
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));
+    const field = screen.getByLabelText('Lid top plate thickness in millimeters');
+    const min = Number(field.getAttribute('min'));
+    expect(min).toBeGreaterThan(10);
+    expect(Number(field.getAttribute('max'))).toBe(min);
+    expect(field).toHaveValue(min);
+  });
+
+  it('shares the hinge floor with a tray, so the floor knob cannot undercut the plate', () => {
+    seed({
+      attachment: 'hinge',
+      topThicknessMm: 0.8,
+      tray: { enabled: true, depthMm: 1, wallMm: 2 },
+    });
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));
+    const field = screen.getByLabelText('Material left under the tray recess, in millimeters');
+    expect(field).toHaveAttribute('min', '2.2');
+    expect(field).toHaveValue(2.2);
+  });
+
   it('shows the magnet fields only for a magnetic lid', () => {
     const { unmount } = render(<Harness />);
     fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));
