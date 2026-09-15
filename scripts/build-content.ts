@@ -168,6 +168,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: string;
     kitchen: string;
     calculator: string;
+    cutout: string;
     software: string;
     privacy: string;
     terms: string;
@@ -183,6 +184,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Tool Drawers',
     kitchen: 'Kitchen Drawers',
     calculator: 'Calculator',
+    cutout: 'Cutout Generator',
     software: 'Software Comparison',
     privacy: 'Privacy',
     terms: 'Terms',
@@ -197,6 +199,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Werkzeugschubladen',
     kitchen: 'Küchenschubladen',
     calculator: 'Rechner',
+    cutout: 'Ausschnitt-Generator',
     software: 'Software-Vergleich',
     privacy: 'Datenschutz',
     terms: 'Nutzungsbedingungen',
@@ -211,6 +214,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Tiroirs à outils',
     kitchen: 'Tiroirs de cuisine',
     calculator: 'Calculateur',
+    cutout: 'Générateur de découpes',
     software: 'Comparatif logiciels',
     privacy: 'Confidentialité',
     terms: 'Conditions',
@@ -225,6 +229,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Cajones de herramientas',
     kitchen: 'Cajones de cocina',
     calculator: 'Calculadora',
+    cutout: 'Generador de recortes',
     software: 'Comparativa de software',
     privacy: 'Privacidad',
     terms: 'Términos',
@@ -239,6 +244,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Gavetas de ferramentas',
     kitchen: 'Gavetas de cozinha',
     calculator: 'Calculadora',
+    cutout: 'Gerador de recortes',
     software: 'Comparativo de softwares',
     privacy: 'Privacidade',
     terms: 'Termos',
@@ -253,6 +259,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Gereedschapslades',
     kitchen: 'Keukenlades',
     calculator: 'Calculator',
+    cutout: 'Uitsparingsgenerator',
     software: 'Softwarevergelijking',
     privacy: 'Privacy',
     terms: 'Voorwaarden',
@@ -267,6 +274,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Verktygslådor',
     kitchen: 'Kökslådor',
     calculator: 'Kalkylator',
+    cutout: 'Urtagsgenerator',
     software: 'Programjämförelse',
     privacy: 'Integritet',
     terms: 'Villkor',
@@ -281,6 +289,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Verktøyskuffer',
     kitchen: 'Kjøkkenskuffer',
     calculator: 'Kalkulator',
+    cutout: 'Utskjæringsgenerator',
     software: 'Programvaresammenligning',
     privacy: 'Personvern',
     terms: 'Vilkår',
@@ -295,6 +304,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Шухляди для інструментів',
     kitchen: 'Кухонні шухляди',
     calculator: 'Калькулятор',
+    cutout: 'Генератор вирізів',
     software: 'Порівняння програм',
     privacy: 'Конфіденційність',
     terms: 'Умови',
@@ -309,6 +319,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Szuflady narzędziowe',
     kitchen: 'Szuflady kuchenne',
     calculator: 'Kalkulator',
+    cutout: 'Generator wycięć',
     software: 'Porównanie oprogramowania',
     privacy: 'Prywatność',
     terms: 'Regulamin',
@@ -323,6 +334,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: '工具抽屉',
     kitchen: '厨房抽屉',
     calculator: '计算器',
+    cutout: '切口生成器',
     software: '软件对比',
     privacy: '隐私',
     terms: '条款',
@@ -337,6 +349,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: 'Nářaďové zásuvky',
     kitchen: 'Kuchyňské zásuvky',
     calculator: 'Kalkulačka',
+    cutout: 'Generátor výřezů',
     software: 'Porovnání softwaru',
     privacy: 'Soukromí',
     terms: 'Podmínky',
@@ -351,6 +364,7 @@ const FOOTER_LINKS: Record<
     toolDrawer: '공구 서랍',
     kitchen: '주방 서랍',
     calculator: '계산기',
+    cutout: '컷아웃 생성기',
     software: '소프트웨어 비교',
     privacy: '개인정보처리방침',
     terms: '이용약관',
@@ -759,6 +773,7 @@ ${breadcrumbsHtml}${content}${faqsHtml}
         <a href="/gridfinity-tool-drawer">${escapeHtml(FOOTER_LINKS[locale].toolDrawer)}</a>
         <a href="/gridfinity-kitchen-drawer">${escapeHtml(FOOTER_LINKS[locale].kitchen)}</a>
         <a href="/gridfinity-calculator">${escapeHtml(FOOTER_LINKS[locale].calculator)}</a>
+        <a href="/gridfinity-cutout-generator">${escapeHtml(FOOTER_LINKS[locale].cutout)}</a>
         <a href="/gridfinity-software">${escapeHtml(FOOTER_LINKS[locale].software)}</a>
         <a href="/privacy">${escapeHtml(FOOTER_LINKS[locale].privacy)}</a>
         <a href="/terms">${escapeHtml(FOOTER_LINKS[locale].terms)}</a>
@@ -1013,7 +1028,7 @@ interface SitemapPage {
 // Bump CONTENT_LASTMOD when shipping a substantive content change so search
 // engines re-crawl the affected URLs. Hardcoded (not `new Date()`) to avoid
 // every build advertising the entire sitemap as updated.
-const CONTENT_LASTMOD = '2026-07-26';
+const CONTENT_LASTMOD = '2026-09-15';
 
 // SPA routes with their own static HTML entry (see scripts/build-route-entries.ts).
 // English-only, no locale variants.
