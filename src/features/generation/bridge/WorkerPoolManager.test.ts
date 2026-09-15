@@ -99,6 +99,34 @@ describe('WorkerPoolManager', () => {
     expect(pool).toBe(mockPoolInstances[0] as unknown as WorkerPool);
   });
 
+  it('joins the pool that replaced one retired by the idle timer mid-init', async () => {
+    vi.useFakeTimers();
+    try {
+      let rejectStalledInit: (error: Error) => void = () => {};
+      mockEnsureWorkers.mockReturnValueOnce(
+        new Promise<void>((_resolve, reject) => {
+          rejectStalledInit = reject;
+        })
+      );
+      const manager = new WorkerPoolManager();
+
+      const stalled = manager.acquire();
+      manager.release();
+      vi.advanceTimersByTime(30_000);
+      expect(mockPoolInstances[0].destroy).toHaveBeenCalledTimes(1);
+
+      const replacement = await manager.acquire();
+      expect(replacement).toBe(mockPoolInstances[1] as unknown as WorkerPool);
+
+      rejectStalledInit(new Error('Bridge destroyed'));
+      await expect(stalled).resolves.toBe(replacement);
+      expect(mockPoolInstances[1].destroy).not.toHaveBeenCalled();
+      expect(manager.get()).toBe(replacement);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('acquire rejects and cleans up when ensureWorkers fails', async () => {
     mockEnsureWorkers.mockRejectedValueOnce(new Error('WASM load failed'));
     const manager = new WorkerPoolManager();

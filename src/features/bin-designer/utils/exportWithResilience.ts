@@ -43,6 +43,10 @@ const RETRY_DELAYS_MS: readonly number[] = [200, 800];
 function defaultIsRetryable(err: Error): boolean {
   const code = extractErrorCode(err);
   if (code === 'INVALID_PARAMS' || code === 'EMPTY_GEOMETRY') return false;
+  // A newer export on the same slot replaced this one. Retrying would replace
+  // it right back, and two wrappers can trade supersessions until both give
+  // up and restart the worker under each other.
+  if (err.message === 'Export superseded') return false;
   return true;
 }
 

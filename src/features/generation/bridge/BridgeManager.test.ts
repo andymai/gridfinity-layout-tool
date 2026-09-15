@@ -147,6 +147,65 @@ describe('BridgeManager', () => {
   });
 
   // -------------------------------------------------------------------------
+  // acquire() whose bridge is retired while it is still initializing
+  // -------------------------------------------------------------------------
+
+  describe('acquire() racing a refresh()', () => {
+    let rejectStalledInit: (error: Error) => void = () => {};
+
+    /** Make the next constructed bridge's init() hang until the test settles it. */
+    async function stallNextBridgeInit(): Promise<void> {
+      const { GenerationBridge: MockCtor } = await import('./GenerationBridge');
+      vi.mocked(MockCtor).mockImplementationOnce(function StalledBridge() {
+        const instance = makeFreshInstance();
+        instance.init = vi.fn().mockReturnValue(
+          new Promise<void>((_resolve, reject) => {
+            rejectStalledInit = reject;
+          })
+        );
+        mockInstances.push(instance);
+        return instance as unknown as GenerationBridge;
+      });
+    }
+
+    it('joins the replacement bridge instead of destroying it', async () => {
+      await stallNextBridgeInit();
+
+      const stalled = manager.acquire();
+      manager.refresh();
+      const replacement = await manager.acquire();
+      expect(replacement).toBe(asBridge(mockInstances[1]));
+
+      rejectStalledInit(new Error('Bridge destroyed'));
+      await expect(stalled).resolves.toBe(replacement);
+
+      expect(mockInstances[1].destroy).not.toHaveBeenCalled();
+      expect(manager.get()).toBe(replacement);
+      expect(manager.engineReady).toBe(true);
+
+      // Both callers hold the replacement; it idles out only after both release.
+      manager.release();
+      vi.advanceTimersByTime(30_000);
+      expect(mockInstances[1].destroy).not.toHaveBeenCalled();
+      manager.release();
+      vi.advanceTimersByTime(30_000);
+      expect(mockInstances[1].destroy).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects without touching the slot when nothing replaced the retired bridge', async () => {
+      await stallNextBridgeInit();
+
+      const stalled = manager.acquire();
+      manager.refresh();
+      rejectStalledInit(new Error('Bridge destroyed'));
+
+      await expect(stalled).rejects.toThrow('Bridge destroyed');
+      expect(mockInstances[0].destroy).toHaveBeenCalledTimes(1);
+      expect(manager.get()).toBeNull();
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // -------------------------------------------------------------------------
 
   describe('release()', () => {

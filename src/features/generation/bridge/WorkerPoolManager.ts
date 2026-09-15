@@ -38,18 +38,25 @@ export class WorkerPoolManager {
       this.initPromise = this.pool.ensureWorkers();
     }
 
+    const pool = this.pool;
     try {
       await this.initPromise;
     } catch (error: unknown) {
       this.refCount--;
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- pool may be nulled by concurrent release() during await
-      if (this.pool) this.pool.destroy();
+      if (this.pool !== pool) {
+        // The idle timer retired the awaited pool mid-init; a pool that
+        // replaced it since is another caller's live set of workers.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- the narrowing from before the await does not survive release()
+        if (this.pool) return this.acquire();
+        throw error;
+      }
+      pool.destroy();
       this.pool = null;
       this.initPromise = null;
       throw error;
     }
 
-    return this.pool;
+    return pool;
   }
 
   /**
