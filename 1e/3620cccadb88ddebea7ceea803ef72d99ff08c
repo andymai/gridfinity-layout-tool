@@ -1,0 +1,23 @@
+src/shared/utils/hingeLidPlan.test.ts
+  s_3cb842cf8fd0b6::t_aa46b1e998720b 251-252
+src/features/bin-designer/README.md
+  s_3cb842cf8fd0b6::t_aa46b1e998720b 127
+src/features/bin-designer/types/lid.ts
+  s_3cb842cf8fd0b6::t_aa46b1e998720b 815-819
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1e3620cccadb88ddebea7ceea803ef72d99ff08c",
+  "prompts": {},
+  "sessions": {
+    "s_3cb842cf8fd0b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3c65c26-a24c-4c45-964f-1f824fc2a1b9",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
