@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_1ba1aaf77c517d::t_483f7ed868d1f5 274-280
+src/features/generation/worker/generators/lidSeatInterference.matrix.test.ts
+  s_1ba1aaf77c517d::t_a478ce02b5e520 77-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7cc90de55c8c8e22128ba1b41d036423017f76cb",
+  "prompts": {},
+  "sessions": {
+    "s_1ba1aaf77c517d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6b077c2c-af9f-4da8-840b-8b99b3ce1656",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
