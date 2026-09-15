@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.492.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.492.0...gridfinity-layout-tool-v4.492.1) (2026-09-15)
+
+
+### Bug Fixes
+
+* **generation:** rebuild the baseplate pocket and bin foot to the Gridfinity profile ([#4291](https://github.com/andymai/gridfinity-layout-tool/issues/4291)) ([491ca4b](https://github.com/andymai/gridfinity-layout-tool/commit/491ca4bfa1e5964e54cf396994d68427a2e4f6aa))
+* **lid:** floor a hinged lid's plate so the flipped export prints flat ([#4288](https://github.com/andymai/gridfinity-layout-tool/issues/4288)) ([a8ce832](https://github.com/andymai/gridfinity-layout-tool/commit/a8ce8321e3b5a81b652a4d05b2980776a653330b))
+* **lid:** keep the lid controls reachable while a blocker disables the toggle ([#4287](https://github.com/andymai/gridfinity-layout-tool/issues/4287)) ([4570645](https://github.com/andymai/gridfinity-layout-tool/commit/45706451ba30ea926d4b84f7341ba21e4e58c932))
+* **lid:** keep the thickness stepper's bounds consistent with the hinge floor ([#4290](https://github.com/andymai/gridfinity-layout-tool/issues/4290)) ([f2b6a16](https://github.com/andymai/gridfinity-layout-tool/commit/f2b6a1693f8bfbe4994301135d8e9f99d081e15f))
+* **lid:** rebuild the stack grid as a trimmed baseplate pocket ([#4294](https://github.com/andymai/gridfinity-layout-tool/issues/4294)) ([41342d6](https://github.com/andymai/gridfinity-layout-tool/commit/41342d6f089b24e3ad77deb6b433437d2f0a2c19))
+* **webgl:** route a context that broke after the probe to the WebGL fallback ([#4289](https://github.com/andymai/gridfinity-layout-tool/issues/4289)) ([6240ada](https://github.com/andymai/gridfinity-layout-tool/commit/6240adadf68d0592b6f3a7901e9ddf929d967b9c))
+
 ## [4.492.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.491.2...gridfinity-layout-tool-v4.492.0) (2026-09-15)
 
 
