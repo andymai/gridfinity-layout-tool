@@ -1,0 +1,25 @@
+src/features/generation/bridge/generationTimeout.ts
+  s_875c2bc7f31d06::t_cdf3919bfdb54d 250-253,266-268,385-407
+  s_875c2bc7f31d06::t_3e54bb2d366e9b 408
+src/features/generation/bridge/generationTimeout.test.ts
+  s_875c2bc7f31d06::t_cdf3919bfdb54d 31-32,640-667
+  s_875c2bc7f31d06::t_b9cfe8a27c756b 668-669
+src/features/generation/bridge/bridgeExports.ts
+  s_875c2bc7f31d06::t_cdf3919bfdb54d 29,164,251
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4b49b9236552250290d6e48a116642095dcfa746",
+  "prompts": {},
+  "sessions": {
+    "s_875c2bc7f31d06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e3418be2-8a04-4540-bfc8-89077058587c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
