@@ -1,4 +1,6 @@
 import { useLayoutStore } from '@/core/store/layout';
+import { Collapsible } from '@/design-system';
+import { AboutGridfinity } from '@/shared/components/AboutGridfinity';
 import { useTranslation, useLocale } from '@/i18n';
 import { learnHref } from '@/shell/Sidebar/learnLinks';
 
@@ -47,6 +49,14 @@ export function MobileAboutStrip() {
           {t('sidebar.learn.generator')}
         </a>
       </p>
+      <Collapsible
+        title={t('sidebar.about.heading')}
+        size="sm"
+        defaultExpanded={false}
+        className="mt-2"
+      >
+        <AboutGridfinity heading={false} />
+      </Collapsible>
     </aside>
   );
 }

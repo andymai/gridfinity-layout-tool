@@ -16,7 +16,7 @@ describe('MobileAboutStrip', () => {
 
   it('renders the about blurb and content links on an empty grid', () => {
     render(<MobileAboutStrip />);
-    expect(screen.getByText('sidebar.about', { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(/^sidebar\.about\s/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'sidebar.learn.whatIs' })).toHaveAttribute(
       'href',
       '/what-is-gridfinity'
@@ -29,6 +29,17 @@ describe('MobileAboutStrip', () => {
       'href',
       '/gridfinity-generator'
     );
+  });
+
+  it('keeps the definitional copy in the DOM behind a collapsed disclosure', () => {
+    render(<MobileAboutStrip />);
+    expect(screen.getByRole('button', { name: 'sidebar.about.heading' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    expect(screen.getByText('sidebar.about.definition')).toBeInTheDocument();
+    expect(screen.getByText('sidebar.about.spec')).toBeInTheDocument();
+    expect(screen.getByText('sidebar.about.origin')).toBeInTheDocument();
   });
 
   it('renders nothing once the grid has bins', () => {

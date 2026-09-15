@@ -1,0 +1,1 @@
+export { AboutGridfinity } from './AboutGridfinity';

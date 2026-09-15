@@ -13,11 +13,17 @@ export const LEARN_LINKS: ReadonlyArray<{ slug: string; labelKey: string; locali
     labelKey: 'sidebar.learn.baseplateGenerator',
     localized: true,
   },
+  {
+    slug: 'gridfinity-cutout-generator',
+    labelKey: 'sidebar.learn.cutoutGenerator',
+    localized: false,
+  },
   { slug: 'gridfinity-calculator', labelKey: 'sidebar.learn.calculator', localized: false },
   { slug: 'gridfinity-sizes', labelKey: 'sidebar.learn.sizes', localized: true },
   { slug: 'gridfinity-tool-drawer', labelKey: 'sidebar.learn.toolDrawer', localized: false },
   { slug: 'gridfinity-kitchen-drawer', labelKey: 'sidebar.learn.kitchenDrawer', localized: false },
   { slug: 'gridfinity-software', labelKey: 'sidebar.learn.software', localized: false },
+  { slug: 'community', labelKey: 'sidebar.learn.community', localized: false },
 ];
 
 // Locales with translated content pages (mirrors vercel.json's localized rewrite).
