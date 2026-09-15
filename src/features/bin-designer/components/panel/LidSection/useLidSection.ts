@@ -77,6 +77,7 @@ import {
 import {
   isSlideLid,
   isHingeLid,
+  hingePlateFloorMm,
   resolveLidHinge,
   hingeOppositeSide,
   LID_HINGE_CATCHES,
@@ -441,8 +442,14 @@ export function useLidSection() {
 
   // With a tray the knob measures the floor under the recess, which the
   // geometry will not take below LID_TRAY_FLOOR. The input has to enforce the
-  // same floor or the field would display a value the part never uses.
-  const topThicknessMin = topSurface === 'tray' ? LID_TRAY_FLOOR : LID_TOP_THICKNESS_MIN_MM;
+  // same floor or the field would display a value the part never uses. A
+  // hinged lid's floor is the whole plate, so it applies to the knob directly.
+  const topThicknessMin =
+    topSurface === 'tray'
+      ? LID_TRAY_FLOOR
+      : isHinge
+        ? hingePlateFloorMm(params)
+        : LID_TOP_THICKNESS_MIN_MM;
 
   const setTopThickness = useCallback(
     (topThicknessMm: number) => {

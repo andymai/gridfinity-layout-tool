@@ -38,6 +38,8 @@ export interface LidGeometrySource {
   readonly lid: LidConfig;
   readonly base: { readonly stackingLip: boolean; readonly magnetDepth: number };
   readonly cellMask?: CellMask;
+  /** Read by the hinged plate floor, whose axis height follows the seam anchor. */
+  readonly heightUnitMm: number;
 }
 
 /**
@@ -484,6 +486,26 @@ export const LID_HINGE_STOP_ANGLE_DEG = 105;
 export const LID_HINGE_STOP_MARGIN_MM = 0.15;
 
 /**
+ * Distance (mm) the hinge axis sits inboard of the wall's outer face: the
+ * barrel's radius plus the face relief. Stated once here because the plan
+ * places the barrel from it and {@link hingePlateFloorMm} sizes the plate from
+ * it; two copies would be two chances for the stop to miss its corner.
+ */
+export const LID_HINGE_AXIS_INSET_MM = LID_HINGE_BARREL_RADIUS_MM + LID_HINGE_FACE_RELIEF_MM;
+
+/**
+ * Material (mm) the lid's top face keeps above the crown of the stop lobe.
+ *
+ * The export lays the lid on its top face, so anything standing above that
+ * face is a foot the plate balances on and the whole plate then prints on
+ * supports. The lobe is the tallest thing on a hinged lid: at rest it points
+ * almost straight up, because the corner it has to reach after the swing is
+ * below and outboard of the axis. Past the lobe itself this is tangent
+ * avoidance, as {@link LID_HINGE_FACE_RELIEF_MM} is for the barrel.
+ */
+export const LID_HINGE_PLATE_CLEARANCE_MM = 0.3;
+
+/**
  * Angular width (deg) of the stop lobe on each lid knuckle.
  *
  * Wide enough to be a lug rather than a knife edge, narrow enough that the
@@ -736,16 +758,73 @@ export function resolveLidPlateThickness(params: LidGeometrySource): number {
   // thickness is therefore the knob alone, and every term below would be
   // reading a field the geometry does not build.
   if (isSlideLid(lid)) return Math.max(LID_SLIDE_PLATE_MIN_MM, lid.topThicknessMm);
+  // The hinge floor bounds the WHOLE plate, tray or not: it is the top face
+  // the stop lobe has to stay under, and a tray is cut into that face.
+  const hingeNeed = isHingeLid(lid) ? hingePlateFloorMm(params) : 0;
   if (lid.tray.enabled && !lid.stackableTop) {
     // A tray forces `stackableTop` off, so magnet pockets can't also apply.
     return Math.max(
       LID_TOP_THICKNESS_BASE,
+      hingeNeed,
       lid.tray.depthMm + Math.max(lid.topThicknessMm, LID_TRAY_FLOOR)
     );
   }
   const magnetNeed =
     lid.magnetHoles && lid.stackableTop ? base.magnetDepth + LID_MAGNET_CEILING : 0;
-  return Math.max(LID_TOP_THICKNESS_BASE, lid.topThicknessMm, magnetNeed);
+  return Math.max(LID_TOP_THICKNESS_BASE, hingeNeed, lid.topThicknessMm, magnetNeed);
+}
+
+/** The two inputs the hinge axis height depends on. */
+export type HingeAxisSource = Pick<LidGeometrySource, 'heightUnitMm'> & {
+  readonly lid: Pick<LidConfig, 'extraHeightMm'>;
+};
+
+/**
+ * Height (mm) of the hinge axis above the bin's lip top.
+ *
+ * The axis is the plate's underside, expressed in the bin's frame through the
+ * seam anchor. The plate's own growth is folded into the cavity extra
+ * ({@link resolveLidCavityExtraMm}), so it cancels out of the underside's
+ * height and only the height unit and the extra-height knob remain. That is
+ * what lets the plate floor below read this without first knowing the plate.
+ */
+export function hingeAxisAboveLipTopMm(params: HingeAxisSource): number {
+  return (
+    -LID_TOP_THICKNESS_BASE -
+    lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, params.lid.extraHeightMm)
+  );
+}
+
+/**
+ * Radius (mm) of the stop lobe, measured from the axis.
+ *
+ * The lid comes to rest when its trim face meets the bin's lip-top outer
+ * corner, `LID_HINGE_AXIS_INSET_MM` outboard of the axis and
+ * {@link hingeAxisAboveLipTopMm} below it. The lobe only has to REACH that
+ * corner: its angle is the trim plane's business.
+ */
+export function hingeStopRadiusMm(params: HingeAxisSource): number {
+  return (
+    Math.hypot(LID_HINGE_AXIS_INSET_MM, hingeAxisAboveLipTopMm(params)) + LID_HINGE_STOP_MARGIN_MM
+  );
+}
+
+/**
+ * Floor (mm) on a hinged lid's plate thickness.
+ *
+ * The barrel reaches its radius above the plate's underside and the stop lobe
+ * reaches {@link hingeStopRadiusMm}, while a base plate reaches only 0.8mm: on
+ * a stock bin the knuckles stood 1.4mm proud of the top face and the lobe
+ * 2.1mm, and the export flips the lid onto that face, so the plate floated on
+ * them and printed on supports throughout. A plate this thick keeps both under
+ * the top face and the lid lies flat. Rounded up to the thickness step so the
+ * stepper can land on it. Grows with the extra-height knob, because the axis
+ * does and the corner the lobe reaches for does not.
+ */
+export function hingePlateFloorMm(params: HingeAxisSource): number {
+  const need = hingeStopRadiusMm(params) + LID_HINGE_PLATE_CLEARANCE_MM;
+  const steps = Math.ceil(need / LID_TOP_THICKNESS_STEP_MM - 1e-9);
+  return Math.round(steps * LID_TOP_THICKNESS_STEP_MM * 10) / 10;
 }
 
 /**

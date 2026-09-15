@@ -36,8 +36,11 @@ export function LidAdvancedFields({
   // On a tray lid the geometry holds the floor at LID_TRAY_FLOOR even if the
   // design stored something thinner, so the field reads back from the resolver
   // rather than the raw param — otherwise it would sit directly above the
-  // breakdown showing a number the part does not use.
-  const shownThickness = state.trayBreakdown ? state.trayBreakdown.floorMm : state.topThicknessMm;
+  // breakdown showing a number the part does not use. A hinged lid's floor is
+  // the same story: a design that stored 0.8 is built at the floor.
+  const shownThickness = state.trayBreakdown
+    ? state.trayBreakdown.floorMm
+    : Math.max(state.topThicknessMm, state.topThicknessMin);
 
   return (
     <Collapsible
@@ -98,11 +101,15 @@ export function LidAdvancedFields({
           <Hint>
             {state.trayBreakdown
               ? t('binDesigner.lid.trayFloorThicknessHint')
-              : state.topThicknessEffective > state.topThicknessMm
-                ? t('binDesigner.lid.topThicknessRaisedHint', {
-                    thickness: state.topThicknessEffective.toFixed(1),
+              : state.isHinge
+                ? t('binDesigner.lid.hingePlateFloorHint', {
+                    min: state.topThicknessMin.toFixed(1),
                   })
-                : t('binDesigner.lid.topThicknessHint')}
+                : state.topThicknessEffective > state.topThicknessMm
+                  ? t('binDesigner.lid.topThicknessRaisedHint', {
+                      thickness: state.topThicknessEffective.toFixed(1),
+                    })
+                  : t('binDesigner.lid.topThicknessHint')}
           </Hint>
         </div>
 

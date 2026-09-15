@@ -320,6 +320,19 @@ describe('hinged lid', () => {
     }
   }, 600_000);
 
+  it('keeps every hinge part under the top face, so the flipped export lies flat', async () => {
+    // The export lays the lid on its top face. Anything above that face in
+    // lid-local Z becomes a foot the plate balances on, and the whole plate
+    // then prints on supports — which the knuckles (1.4mm) and the stop lobe
+    // (2.1mm) did on a base-thickness plate. Stated against the friction
+    // control, whose top face IS the plate top by construction.
+    const params = hingeParams({}, { side: 'back', catchMode: 'none' });
+    const hinged = await meshes(params);
+    const plain = await meshes(control(params));
+    const top = +boundingBox(plain.lid.vertices).maxZ.toFixed(3);
+    expect(+boundingBox(hinged.lid.vertices).maxZ.toFixed(3)).toBe(top);
+  }, 600_000);
+
   it('stays inside the Gridfinity footprint on every wall', async () => {
     // The reason the axis is inset rather than hung off the outside, and the
     // check that keeps it honest. A hinge that grew the footprint would still

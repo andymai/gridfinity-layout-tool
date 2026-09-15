@@ -137,6 +137,7 @@ function trayFloorZ(
       retentionMagnet: trayBottom.retentionMagnet,
     },
     base: { stackingLip: true, magnetDepth: 0 },
+    heightUnitMm,
   });
   const skirt = trayBottomSkirtDepth(
     heightUnitMm,

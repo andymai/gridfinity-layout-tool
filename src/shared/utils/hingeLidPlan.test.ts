@@ -8,7 +8,9 @@ import {
   LID_HINGE_FIT_MAX_MM,
   LID_HINGE_FIT_MIN_MM,
   LID_HINGE_KNUCKLE_MIN_MM,
+  LID_HINGE_PLATE_CLEARANCE_MM,
   LID_HINGE_STOP_ANGLE_DEG,
+  resolveLidPlateThickness,
 } from '@/features/bin-designer/types/lid';
 import { buildFullMask } from '@/shared/utils/cellMask';
 import type { BinParams, LidHingeConfig, LidRailSide } from '@/features/bin-designer/types';
@@ -243,6 +245,23 @@ describe('planHingeLid — the axis', () => {
       naive + (Math.atan2(-geometry.axisAboveLipTopMm, geometry.axisInsetMm) * 180) / Math.PI,
       6
     );
+  });
+
+  it('keeps the plate above the stop lobe at every extra height', () => {
+    // The lobe points up at rest and the export lays the lid on its top face,
+    // so this is the one relation that decides whether a hinged lid prints
+    // flat. The floor and the lobe are sized from the same numbers; this pins
+    // that they stay in step as the axis climbs with the extra-height knob.
+    for (const extraHeightMm of [0, 0.6, 2, 5, 12]) {
+      const p = params({ lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm } });
+      const { geometry } = planHingeLid(p);
+      if (!geometry) throw new Error('expected hinge geometry');
+      const plate = resolveLidPlateThickness(p);
+      expect(plate).toBeGreaterThanOrEqual(
+        geometry.stopRadiusMm + LID_HINGE_PLATE_CLEARANCE_MM - 1e-9
+      );
+      expect(plate).toBeGreaterThan(geometry.barrelRadiusMm);
+    }
   });
 
   it('sits the axis ABOVE the lip top — the plate underside, not the rim', () => {

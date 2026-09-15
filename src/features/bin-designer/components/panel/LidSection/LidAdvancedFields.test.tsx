@@ -29,6 +29,19 @@ describe('LidAdvancedFields', () => {
     expect(screen.getByText('Relieve interior at the lid seam')).toBeInTheDocument();
   });
 
+  it('floors the plate thickness on a hinged lid and says why', () => {
+    // A design that stored the 0.8mm base is built at the floor, so the field
+    // shows the floor rather than a number the part does not use, and the
+    // stepper cannot go below it.
+    seed({ attachment: 'hinge', topThicknessMm: 0.8 });
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));
+    const field = screen.getByLabelText('Lid top plate thickness in millimeters');
+    expect(field).toHaveValue(3.2);
+    expect(field).toHaveAttribute('min', '3.2');
+    expect(screen.getByText(/Hinged lids start at 3\.2 mm/)).toBeInTheDocument();
+  });
+
   it('shows the magnet fields only for a magnetic lid', () => {
     const { unmount } = render(<Harness />);
     fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));
