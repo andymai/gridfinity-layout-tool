@@ -22,6 +22,7 @@ import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
+import { AboutGridfinity } from '@/shared/components/AboutGridfinity';
 import { AppVersionRailButton } from '@/shared/components/AppVersionButton';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation, useLocale } from '@/i18n';
@@ -516,9 +517,10 @@ export function Sidebar() {
             <div className="border-t border-stroke-subtle">
               <div className="px-4 pt-4 pb-4">
                 <Collapsible title={t('sidebar.learn')} size="md" defaultExpanded={false}>
-                  <p className="text-xs text-content-tertiary leading-relaxed mb-2">
+                  <p className="text-xs text-content-tertiary leading-relaxed mb-3">
                     {t('sidebar.about')}
                   </p>
+                  <AboutGridfinity className="mb-3" />
                   <ul className="text-xs leading-relaxed space-y-1">
                     {LEARN_LINKS.map((link) => (
                       <li key={link.slug}>

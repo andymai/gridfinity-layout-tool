@@ -338,12 +338,21 @@ const en: Record<string, string> = {
   'sidebar.learn': 'Learn',
   'sidebar.about':
     'Gridfinity Layout Tool is a free Gridfinity planner with built-in bin and baseplate generators. Plan your drawer on the 42mm grid, generate custom bins, and export STL, STEP, or 3MF files ready to print.',
+  'sidebar.about.heading': 'About Gridfinity',
+  'sidebar.about.definition':
+    'Gridfinity is an open-source modular storage system for 3D printing. Bins sit on a baseplate with a 42 mm square grid, so any bin fits any drawer, tray, or shelf built on the same grid.',
+  'sidebar.about.spec':
+    'Bin footprints are whole grid units, so a 2×3 bin is 84 × 126 mm, and heights come in 7 mm units, so bins line up and stack. Magnet holes, labels, dividers, and finger scoops are optional.',
+  'sidebar.about.origin':
+    'Zack Freedman published the standard in 2022, and makers have since shared thousands of free bins, baseplates, and holders. This tool plans the layout and generates the print files, or you can browse designs shared by the community.',
   'sidebar.learn.whatIs': 'What is Gridfinity?',
   'sidebar.learn.guide': 'Planning Guide',
   'sidebar.learn.generator': 'Gridfinity Generator',
   'sidebar.learn.binGenerator': 'Bin Generator',
   'sidebar.learn.baseplateGenerator': 'Baseplate Generator',
   'sidebar.learn.calculator': 'Calculator',
+  'sidebar.learn.community': 'Community Designs',
+  'sidebar.learn.cutoutGenerator': 'Cutout Generator',
   'sidebar.learn.sizes': 'Sizes Reference',
   'sidebar.learn.toolDrawer': 'Tool Drawer Organizer',
   'sidebar.learn.kitchenDrawer': 'Kitchen Drawer Organizer',

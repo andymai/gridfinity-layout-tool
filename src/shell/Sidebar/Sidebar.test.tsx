@@ -437,12 +437,23 @@ describe('Sidebar', () => {
         '/gridfinity-sizes',
         '/gridfinity-tool-drawer',
         '/gridfinity-kitchen-drawer',
+        '/gridfinity-cutout-generator',
         '/gridfinity-software',
+        '/community',
       ];
       const hrefs = Array.from(document.querySelectorAll('a')).map((a) => a.getAttribute('href'));
       expectedHrefs.forEach((href) => {
         expect(hrefs).toContain(href);
       });
+    });
+
+    it('keeps the definitional copy in the DOM while the section is collapsed', () => {
+      render(<Sidebar />);
+
+      expect(
+        screen.getByText(/Gridfinity is an open-source modular storage system/)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/heights come in 7 mm units/)).toBeInTheDocument();
     });
   });
 

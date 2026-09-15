@@ -22,13 +22,15 @@ describe('learnHref', () => {
 });
 
 describe('LEARN_LINKS', () => {
-  it('marks only the four newest pages as English-only', () => {
+  it('marks the English-only pages and the community route as unlocalized', () => {
     const englishOnly = LEARN_LINKS.filter((l) => !l.localized).map((l) => l.slug);
     expect(englishOnly).toEqual([
+      'gridfinity-cutout-generator',
       'gridfinity-calculator',
       'gridfinity-tool-drawer',
       'gridfinity-kitchen-drawer',
       'gridfinity-software',
+      'community',
     ]);
   });
 });
