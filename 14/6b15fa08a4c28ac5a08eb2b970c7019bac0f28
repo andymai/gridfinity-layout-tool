@@ -1,0 +1,64 @@
+src/i18n/locales/nl.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/sv.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/de.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_3cb842cf8fd0b6::t_595114e60e3be2 226-233,749-753,770-778,865
+src/i18n/locales/nb.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_3cb842cf8fd0b6::t_595114e60e3be2 52-62,83,87,91
+src/i18n/locales/zh-CN.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/it.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/ja.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/uk.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_3cb842cf8fd0b6::t_595114e60e3be2 160-162
+src/features/bin-designer/components/panel/FeatureToggle/FeatureToggle.test.tsx
+  s_3cb842cf8fd0b6::t_c8fce7f9df562b 82
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_3cb842cf8fd0b6::t_595114e60e3be2 252
+src/i18n/locales/cs.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/fr.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/ka.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1928
+src/i18n/locales/pt-BR.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_3cb842cf8fd0b6::t_ac7e31b8e40fb8 640-689
+src/i18n/locales/es.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/shared/components/FeatureToggle/FeatureToggle.test.tsx
+  s_3cb842cf8fd0b6::t_595114e60e3be2 82,86-96
+  s_3cb842cf8fd0b6::t_5e26a5214fcd5b 97-98
+src/i18n/locales/pl.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/ko.json
+  s_3cb842cf8fd0b6::t_bc1259ba0cbd4d 1174
+src/i18n/locales/en.ts
+  s_3cb842cf8fd0b6::t_595114e60e3be2 2301
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "146b15fa08a4c28ac5a08eb2b970c7019bac0f28",
+  "prompts": {},
+  "sessions": {
+    "s_3cb842cf8fd0b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3c65c26-a24c-4c45-964f-1f824fc2a1b9",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
