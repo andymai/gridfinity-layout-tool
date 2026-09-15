@@ -28,6 +28,8 @@ import {
   computeBaseplateExportTimeoutMs,
   computeExportTimeoutMs,
   computeGenerationTimeoutMs,
+  computeSplitExportTimeoutMs,
+  SPLIT_PIECE_MS_PER_CELL,
 } from './generationTimeout';
 
 const HEX_ON = { enabled: true, pattern: 'honeycomb' } as const;
@@ -632,6 +634,36 @@ describe('computeExportTimeoutMs', () => {
       expect(t).toBeGreaterThanOrEqual(BASE_TIMEOUT_MS);
       expect(t).toBeLessThanOrEqual(EXPORT_MAX_TIMEOUT_MS);
     }
+  });
+});
+
+describe('computeSplitExportTimeoutMs', () => {
+  it('adds a per-piece, per-cell cut cost on top of the whole-bin export budget', () => {
+    const p = params({ width: 13, depth: 11, height: 3 });
+    expect(computeSplitExportTimeoutMs(p, 6)).toBe(
+      (BASE_TIMEOUT_MS + 6 * 13 * 11 * SPLIT_PIECE_MS_PER_CELL) * EXPORT_TIMEOUT_MULTIPLIER
+    );
+  });
+
+  it('matches the whole-bin export budget when no pieces are cut', () => {
+    const p = params({ width: 13, depth: 11, height: 3 });
+    expect(computeSplitExportTimeoutMs(p, 0)).toBe(computeExportTimeoutMs(p));
+  });
+
+  it('charges a pool worker only for its share of the pieces', () => {
+    const p = params({ width: 13, depth: 11, height: 3 });
+    expect(computeSplitExportTimeoutMs(p, 2)).toBeLessThan(computeSplitExportTimeoutMs(p, 6));
+  });
+
+  it('caps at the export ceiling', () => {
+    const p = params({ width: 20, depth: 20, height: 20, wallPattern: HEX_ON });
+    expect(computeSplitExportTimeoutMs(p, 16)).toBe(EXPORT_MAX_TIMEOUT_MS);
+  });
+
+  it('treats a non-finite piece count or dimension as no cut work', () => {
+    const p = params({ width: Number.NaN, depth: 11, height: 3 });
+    expect(computeSplitExportTimeoutMs(p, Number.NaN)).toBe(computeExportTimeoutMs(p));
+    expect(computeSplitExportTimeoutMs(p, 6)).toBe(computeExportTimeoutMs(p));
   });
 });
 
