@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.491.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.491.1...gridfinity-layout-tool-v4.491.2) (2026-09-15)
+
+
+### Bug Fixes
+
+* **bin-designer:** stop the shape grid clipping cells in half-grid mode ([#4276](https://github.com/andymai/gridfinity-layout-tool/issues/4276)) ([c59bd02](https://github.com/andymai/gridfinity-layout-tool/commit/c59bd02df67145f94517e5da4a50123bdc2cd701))
+* **scan:** reload prompt instead of a blank page when the scan chunk fails to load ([#4278](https://github.com/andymai/gridfinity-layout-tool/issues/4278)) ([b61af7c](https://github.com/andymai/gridfinity-layout-tool/commit/b61af7caa4bcc6d509b81f06dfa4e798ce15e89c))
+
 ## [4.491.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.491.0...gridfinity-layout-tool-v4.491.1) (2026-09-14)
 
 
