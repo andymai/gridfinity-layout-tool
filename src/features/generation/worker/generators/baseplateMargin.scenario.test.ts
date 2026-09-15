@@ -111,6 +111,9 @@ describe('margin rail geometry', () => {
     const b = bbox(md.vertices);
     // Assert the full height span (bottom at 0), not just the top.
     expect(b.minZ).toBeCloseTo(0, 1);
-    expect(b.maxZ - b.minZ).toBeCloseTo(PLATE_PROFILE_HEIGHT + MAGNET_FLOOR + params.magnetDepth, 1);
+    expect(b.maxZ - b.minZ).toBeCloseTo(
+      PLATE_PROFILE_HEIGHT + MAGNET_FLOOR + params.magnetDepth,
+      1
+    );
   });
 });

@@ -168,7 +168,7 @@ describe('keyed margin seam (issue #2866)', () => {
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     // A 3-wide wall has 2 interior boundaries — one groove each, no tongues.
     expect(nubs.length, 'no tongue under the key style').toBe(0);
@@ -187,7 +187,7 @@ describe('keyed margin seam (issue #2866)', () => {
       1 * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     expect(nubs.length).toBe(0);
     expect(holes.length).toBe(0);
@@ -229,7 +229,7 @@ describe('keyed margin seam (issue #2866)', () => {
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     const bodyUnion = fuseAll(holes);
     const railUnion = fuseAll(railGrooves(frontRail()));
@@ -269,7 +269,7 @@ describe('keyed margin seam (issue #2866)', () => {
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     const bodyUnion = fuseAll(holes);
     if (!bodyUnion) throw new Error('expected body grooves');

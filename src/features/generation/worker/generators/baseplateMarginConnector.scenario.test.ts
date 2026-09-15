@@ -138,7 +138,7 @@ describe('margin-seam connector geometry (#2414)', () => {
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     // A WIDTH-wide seam gets one tongue per cell.
     expect(nubs.length, 'one tongue per cell').toBe(WIDTH);
@@ -154,7 +154,7 @@ describe('margin-seam connector geometry (#2414)', () => {
       1 * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     expect(nubs.length).toBe(1);
     nubs.forEach((n) => n.delete());
@@ -169,7 +169,7 @@ describe('margin-seam connector geometry (#2414)', () => {
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     expect(nubs.length).toBe(0);
     nubs.forEach((n) => n.delete());
@@ -183,7 +183,7 @@ describe('margin-seam connector geometry (#2414)', () => {
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     expect(nubs.length).toBe(0);
     nubs.forEach((n) => n.delete());
@@ -218,7 +218,7 @@ describe('margin-seam connector geometry (#2414)', () => {
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     // The rail carves the same boundary set; every tongue must seat in the union.
     const grooveWorld = frontGrooveUnion(frontRail());
@@ -243,7 +243,7 @@ describe('margin-seam connector geometry (#2414)', () => {
       WIDTH * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     const cornerRail = frontRail({
       lengthMm: WIDTH * GU + PL, // extended over the left padding
@@ -293,7 +293,7 @@ describe('margin-seam connector geometry (#2414)', () => {
       FW * GU,
       DEPTH * GU,
       0,
-      0,
+      0
     );
     expect(nubs.length, 'one tongue per cell incl. the half-cell').toBe(frontCenters(FW).length);
     const grooveWorld = frontGrooveUnion(

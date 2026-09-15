@@ -173,7 +173,7 @@ describe('baseplateGenerator — snap-clip connectors (issue #1610)', () => {
   it(
     'clip prints bed-flat with top-bridge corners relieved for the edge sockets',
     () => {
-      // A 5mm slab. The FDM-balanced edge treatments (slot-root fillets, top
+      // A 4.65mm slab. The FDM-balanced edge treatments (slot-root fillets, top
       // chamfer, slot-mouth fillets) plus relieving the top-bridge corners
       // against the four neighbouring full-cell bin feet leave ~47.4mm³ (barb
       // trimmed to 0.3 and the lead-in stretched to 0.7 by the Insertability
