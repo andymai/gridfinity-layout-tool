@@ -157,6 +157,8 @@ export function LidSection() {
         />
       )}
 
+      {/* Persisted flag, not the buildable gate: the fix for a hinge blocker
+          lives in here. */}
       {state.enabled && (
         <>
           {/* Compatibility notes — features that conflict with click-lock

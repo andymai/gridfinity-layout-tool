@@ -1171,6 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Розв’яжіть конфлікт, щоб увімкнути кришку: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "вимкнути частину ручок",
   "binDesigner.lid.compat.fix.hingeStackableTop": "вимкнути верх для штабелювання",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "звільніть стінку завіси або виберіть інше кріплення",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "взяти більший контейнер або менший магніт",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "зменшити глибину утримувального магніту",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "вимкнути бортик штабелювання",

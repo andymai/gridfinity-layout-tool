@@ -637,6 +637,56 @@ describe('LidSection', () => {
   });
 
   describe('compatibility issues', () => {
+    it('keeps the lid controls reachable while a blocker disables the toggle', () => {
+      // A stackable top switched to hinged is a blocker, and the only place to
+      // undo either half of it is inside this panel. Hiding the body behind
+      // the buildable gate left the conflict with no way out.
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'hinge', stackableTop: true },
+      });
+      render(<LidSection />);
+      const toggle = screen.getByRole('switch', { name: ENABLE });
+      expect(toggle).toBeDisabled();
+      expect(toggle).toHaveAttribute('aria-checked', 'true');
+      expect(
+        screen.getByText('Resolve the conflict to enable lid: turn off the stackable top')
+      ).toBeInTheDocument();
+      expect(screen.getByRole('radiogroup', { name: 'Attachment' })).toBeInTheDocument();
+      expect(screen.getByRole('radiogroup', { name: 'Top surface' })).toBeInTheDocument();
+      expect(screen.getByText(/knuckles stand proud/)).toBeInTheDocument();
+    });
+
+    it('offers a one-click Fix that turns off the stackable top of a hinged lid', () => {
+      resetStore({
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          attachment: 'hinge',
+          stackableTop: true,
+          magnetHoles: true,
+        },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: /^Fix: The hinge knuckles/ }));
+      const { lid } = useDesignerStore.getState().params;
+      expect(lid.stackableTop).toBe(false);
+      expect(lid.magnetHoles).toBe(false);
+      expect(lid.enabled).toBe(true);
+      expect(screen.getByRole('switch', { name: ENABLE })).toBeEnabled();
+    });
+
+    it('lets the attachment be changed away from a blocked hinge', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'hinge', stackableTop: true },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Magnetic' }));
+      const { lid } = useDesignerStore.getState().params;
+      expect(lid.attachment).toBe('magnetic');
+      expect(lid.stackableTop).toBe(true);
+      expect(screen.getByRole('switch', { name: ENABLE })).toBeEnabled();
+    });
+
     it('offers no one-click Fix on the label-tabs warning', () => {
       // The button deleted every label on the bin. That was proportionate while
       // a tab cost the whole wall's rail; the rail is only

@@ -1171,6 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "蓋を有効にするには競合を解決してください：{detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "一部のハンドルを無効化",
   "binDesigner.lid.compat.fix.hingeStackableTop": "積み重ね対応の天面をオフにする",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "ヒンジ側の壁を空けるか、別の取り付け方法を選ぶ",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "大きいビンか小さいマグネットを使う",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "保持マグネットの深さを減らす",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "スタッキングリップをオフにする",

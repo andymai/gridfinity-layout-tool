@@ -2298,6 +2298,8 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.hingeStackableTop':
     'The hinge knuckles stand proud of the lid’s top, so a bin stacked on it would rock. Turn off the stackable top.',
   'binDesigner.lid.compat.fix.hingeStackableTop': 'turn off the stackable top',
+  'binDesigner.lid.compat.fix.hingeUnbuildable':
+    'free up the hinge wall or pick another attachment',
   'binDesigner.lid.compat.fixButton': 'Fix',
   'binDesigner.lid.compat.fixAriaLabel': 'Fix: {detail}',
   'binDesigner.lid.clickRailDisabledBySide':

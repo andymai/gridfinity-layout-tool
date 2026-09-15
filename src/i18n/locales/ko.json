@@ -1171,6 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "뚜껑을 사용하려면 충돌을 해결하세요: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "일부 손잡이 비활성화하기",
   "binDesigner.lid.compat.fix.hingeStackableTop": "쌓기용 상단 끄기",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "경첩 벽을 비우거나 다른 부착 방식 선택",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "더 큰 수납통이나 더 작은 자석 사용하기",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "고정 자석 깊이 줄이기",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "적층 립 끄기",

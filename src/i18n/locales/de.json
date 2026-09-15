@@ -1171,6 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Konflikt beheben, um Deckel zu aktivieren: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "einige Griffe deaktivieren",
   "binDesigner.lid.compat.fix.hingeStackableTop": "stapelbare Oberseite abschalten",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "die Scharnierwand freimachen oder eine andere Befestigung wählen",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "größeren Behälter oder kleineren Magneten verwenden",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "Rückhaltemagnet-Tiefe verringern",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "Stapellippe ausschalten",

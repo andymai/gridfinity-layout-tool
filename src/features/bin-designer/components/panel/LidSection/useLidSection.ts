@@ -63,7 +63,6 @@ import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import {
   checkLidCompatibility,
   computeDisabledRails,
-  hasLidBlocker,
 } from '@/features/bin-designer/utils/lidCompatibility';
 import type { LidCompatibilityId } from '@/features/bin-designer/utils/lidCompatibility';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
@@ -161,10 +160,7 @@ export function useLidSection() {
     }))
   );
 
-  // Compatibility issues (computed early so disabledReason and effective
-  // enabled gate can both reference them).
   const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
-  const blocked = hasLidBlocker(compatibilityIssues);
   // Per-side rail conflicts (label tabs, wall cutouts, intruding handles).
   // Derived from the already-memoized issue list — avoids running the
   // compatibility scan a second time per params change. The worker side
@@ -227,11 +223,8 @@ export function useLidSection() {
     ? t('binDesigner.lid.requiresStackingLip')
     : (blockerReason ?? undefined);
 
-  // Effective enabled: the lid only renders/exports when the persisted
-  // flag is set AND the bin has a stacking lip AND there are no blocker
-  // conflicts. Persisted state is preserved across all gating so the
-  // user's intent is retained when conflicts are resolved.
-  const effectiveEnabled = lid.enabled && (base.stackingLip || !needsStackingLip) && !blocked;
+  // The body renders on the persisted flag alone: the hinge blockers are
+  // resolved by controls inside it, so it cannot share the worker's gate.
 
   // Bin has magnets when its base style includes them. Used as the smart
   // default for lid magnetHoles each time the lid is enabled (and as a
@@ -747,6 +740,11 @@ export function useLidSection() {
         case 'slideFlushNeedsNoLip':
           updateBase({ stackingLip: false });
           return;
+        // Through the picker's own write so the grid-only options (magnet
+        // pockets, lip-only, separate plate) are cleared with the grid.
+        case 'hingeStackableTop':
+          setTopSurface('flat');
+          return;
         // Non-fixable issues fall through; LidSection hides the button.
         case 'shortBin':
         case 'tallLidShortBin':
@@ -763,7 +761,15 @@ export function useLidSection() {
           return;
       }
     },
-    [params.dividerPieces, setParam, updateBase, updateHandles, updateWalls, updateWallPattern]
+    [
+      params.dividerPieces,
+      setParam,
+      setTopSurface,
+      updateBase,
+      updateHandles,
+      updateWalls,
+      updateWallPattern,
+    ]
   );
 
   const setHingeSide = useCallback(
@@ -850,7 +856,7 @@ export function useLidSection() {
 
   return {
     state: {
-      enabled: effectiveEnabled,
+      enabled: lid.enabled,
       attachment: lid.attachment,
       topSurface,
       stackableTop: lid.stackableTop,
