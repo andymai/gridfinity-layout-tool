@@ -55,7 +55,7 @@ export function MobileAboutStrip() {
         defaultExpanded={false}
         className="mt-2"
       >
-        <AboutGridfinity />
+        <AboutGridfinity heading={false} />
       </Collapsible>
     </aside>
   );
