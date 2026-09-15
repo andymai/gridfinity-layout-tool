@@ -1,0 +1,19 @@
+src/features/generation/bridge/generationTimeout.ts
+  s_875c2bc7f31d06::t_9317ab23e8ea48 389
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fe69d66034e0d0bc198d25006ae2f0b70b123552",
+  "prompts": {},
+  "sessions": {
+    "s_875c2bc7f31d06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e3418be2-8a04-4540-bfc8-89077058587c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
