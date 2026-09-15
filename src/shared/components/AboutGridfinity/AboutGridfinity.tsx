@@ -3,7 +3,6 @@ import { useTranslation } from '@/i18n';
 
 interface AboutGridfinityProps {
   className?: string;
-  /** Omit the inner heading when the parent disclosure already shows the title. */
   heading?: boolean;
 }
 
