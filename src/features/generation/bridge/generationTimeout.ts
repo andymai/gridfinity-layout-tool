@@ -247,6 +247,10 @@ function hasAnyActiveCutoutSide(params: BinParams): boolean {
   );
 }
 
+function safeDimension(value: number): number {
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
 /**
  * Uncapped complexity budget for a bin, in milliseconds — the raw sum of the
  * base budget plus every applicable bonus, before any ceiling is applied. Kept
@@ -259,9 +263,9 @@ function binRawBudgetMs(params: BinParams): number {
   // cancel the request before the worker can run. Floor bad dims to 0 (no
   // footprint/height bonus); callers clamp to BASE below. Mirrors
   // baseplateRawBudgetMs.
-  const safeWidth = Number.isFinite(params.width) && params.width > 0 ? params.width : 0;
-  const safeDepth = Number.isFinite(params.depth) && params.depth > 0 ? params.depth : 0;
-  const safeHeight = Number.isFinite(params.height) && params.height > 0 ? params.height : 0;
+  const safeWidth = safeDimension(params.width);
+  const safeDepth = safeDimension(params.depth);
+  const safeHeight = safeDimension(params.height);
 
   let timeout = BASE_TIMEOUT_MS;
 
@@ -376,6 +380,30 @@ export function computeGenerationTimeoutMs(params: BinParams, minTimeoutMs = 0):
 export function computeExportTimeoutMs(params: BinParams): number {
   const scaled = binRawBudgetMs(params) * EXPORT_TIMEOUT_MULTIPLIER;
   return Math.max(BASE_TIMEOUT_MS, Math.min(EXPORT_MAX_TIMEOUT_MS, scaled));
+}
+
+/**
+ * Cost of one split piece per footprint cell, in ms. A piece is a boolean cut
+ * of the whole export solid plus its own tessellation or STEP write, and both
+ * scale with the solid's face count, which the socket grid ties to the
+ * footprint.
+ */
+export const SPLIT_PIECE_MS_PER_CELL = 35;
+
+/**
+ * Export budget for a worker request that cuts `pieceCount` pieces from the
+ * bin: {@link computeExportTimeoutMs} plus the cuts, which the whole-bin model
+ * has no term for. A pool worker passes its own share of the pieces; the
+ * single-bridge fallback passes all of them.
+ */
+export function computeSplitExportTimeoutMs(params: BinParams, pieceCount: number): number {
+  const cells = Math.ceil(safeDimension(params.width)) * Math.ceil(safeDimension(params.depth));
+  const pieces = Math.floor(safeDimension(pieceCount));
+  const raw = binRawBudgetMs(params) + pieces * cells * SPLIT_PIECE_MS_PER_CELL;
+  return Math.max(
+    BASE_TIMEOUT_MS,
+    Math.min(EXPORT_MAX_TIMEOUT_MS, raw * EXPORT_TIMEOUT_MULTIPLIER)
+  );
 }
 
 /** Per-cell cost of magnet-hole boolean subtractions, in ms. */

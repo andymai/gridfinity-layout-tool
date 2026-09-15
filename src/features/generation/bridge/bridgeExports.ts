@@ -26,6 +26,7 @@ import {
   computeBaseplateExportTimeoutMs,
   computeExportTimeoutMs,
   computeGenerationTimeoutMs,
+  computeSplitExportTimeoutMs,
   EXPORT_MAX_TIMEOUT_MS,
 } from './generationTimeout';
 import type {
@@ -160,7 +161,7 @@ export function exportSplitBin(
   return runExport<SplitExportResult>(
     ctx,
     'split',
-    computeExportTimeoutMs(params),
+    computeSplitExportTimeoutMs(params, (cutPlanesX.length + 1) * (cutPlanesY.length + 1)),
     (requestId) => ({
       type: 'EXPORT_SPLIT',
       payload: {
@@ -247,7 +248,7 @@ export function exportSplitBinRange(
   return runExport<SplitExportResult>(
     ctx,
     'split',
-    computeExportTimeoutMs(params),
+    computeSplitExportTimeoutMs(params, pieceIndices.length),
     (requestId) => ({
       type: 'EXPORT_SPLIT_RANGE',
       payload: {
