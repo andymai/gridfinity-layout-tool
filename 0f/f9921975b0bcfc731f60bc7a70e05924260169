@@ -1,0 +1,23 @@
+src/shared/components/AboutGridfinity/AboutGridfinity.test.tsx
+  s_9532a284b8d949::t_64fe8df0bba386 20-25
+src/shell/Mobile/MobileAboutStrip/MobileAboutStrip.tsx
+  s_9532a284b8d949::t_64fe8df0bba386 58
+src/shared/components/AboutGridfinity/AboutGridfinity.tsx
+  s_9532a284b8d949::t_64fe8df0bba386 6-7,16,24-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0ff9921975b0bcfc731f60bc7a70e05924260169",
+  "prompts": {},
+  "sessions": {
+    "s_9532a284b8d949": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b15e5215-cf51-4ae9-8ead-b848ecaa0329",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
