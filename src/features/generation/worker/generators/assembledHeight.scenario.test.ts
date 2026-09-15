@@ -19,7 +19,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { LID_STACK_GRID_HEIGHT_MM } from '@/shared/printSettings/gridfinityGeometry';
 import { assembledHeight } from '@/shared/printSettings/assembledHeight';
 import {
   LID_FIT_CLEARANCE,
@@ -105,11 +105,14 @@ describe('assembled height matches generated geometry', () => {
       expect(boundingBox(lid!.vertices).maxZ).toBeCloseTo(0, 1);
     });
 
-    it('rises by SOCKET_HEIGHT with a stack grid', async () => {
+    it('rises by the stack grid height, which is what the breakdown counts', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       const lid = generateLid(makeParams({}, { enabled: true, stackableTop: true }));
       expect(lid).not.toBeNull();
-      expect(boundingBox(lid!.vertices).maxZ).toBeCloseTo(GRIDFINITY_SPEC.SOCKET_HEIGHT, 1);
+      // Against the shared constant on purpose: `assembledHeight` bills the
+      // grid band from it without ever seeing a mesh, so this is the one place
+      // the number and the solid are made to agree.
+      expect(boundingBox(lid!.vertices).maxZ).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 1);
     });
   });
 

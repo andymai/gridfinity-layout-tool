@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { GRIDFINITY_SPEC as GRIDFINITY } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  GRIDFINITY_SPEC as GRIDFINITY,
+  LID_STACK_GRID_HEIGHT_MM,
+} from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { BaseplateHeightParams } from './baseplateHeight';
 import { assembledHeight, hasSeatedLid, type AssembledSegmentKind } from './assembledHeight';
@@ -237,9 +240,11 @@ describe('assembledHeight', () => {
     });
 
     describe('stack grid', () => {
-      it('adds a SOCKET_HEIGHT slab when the top is stackable', () => {
+      it('adds the stack grid slab when the top is stackable', () => {
         const result = assembledHeight(lidded({ stackableTop: true }));
-        expect(bandOf('lidStackGrid', result)).toBe(GRIDFINITY.SOCKET_HEIGHT);
+        // Shorter than a baseplate by the half-clearance the lid's own outline
+        // trims off the pocket's top.
+        expect(bandOf('lidStackGrid', result)).toBe(LID_STACK_GRID_HEIGHT_MM);
       });
 
       it('counts the same when the plate is printed separately and glued on', () => {
@@ -280,8 +285,8 @@ describe('assembledHeight', () => {
         'lid',
         'lidStackGrid',
       ]);
-      // 2.5 plate floor + 42 bin + 4.4 lip + ~2.093 lid + 4.75 grid
-      expect(result.totalMm).toBeCloseTo(55.743, 3);
+      // 2.5 plate floor + 42 bin + 4.4 lip + ~2.093 lid + 4.4 grid
+      expect(result.totalMm).toBeCloseTo(55.393, 3);
     });
   });
 });

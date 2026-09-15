@@ -1,15 +1,19 @@
 /**
- * Stack-grid pocket cutter for the lid's optional Gridfinity-spec top
- * surface.
+ * Stack-grid pocket cutter for the lid's optional Gridfinity top surface.
  *
- * Builds a `SOCKET_HEIGHT`-tall slab over the lid outline, then cuts a
- * baseplate-style tapered pocket per cell. The pocket tracks
- * `baseplatePockets.buildPocketCutter` (down to the same floor insets so an
- * upper bin's foot seats the full depth), except the top rim is pulled in by
- * `STACK_LAND_INSET`: that turns the divider between two pockets from a
- * zero-width knife edge into a real vertical-walled land that tops out flush
- * with the crossings at `SOCKET_HEIGHT`. The remaining slab material between
- * pockets forms the ring + dividers.
+ * A grid on a lid is not a Gridfinity feature, so there is no profile to quote.
+ * What it has to do is receive a bin's foot exactly as a baseplate does, and the
+ * only thing standing in the way is size: a lid is the BIN's footprint, i.e. the
+ * baseplate cell already offset inward by `CLEARANCE / 2` on every side, corners
+ * included. So this cuts the pocket at FULL size into a slab one half-clearance
+ * shorter, and lets the slab's own top face do the trimming.
+ *
+ * Trimming rather than re-deriving the breakpoints is the point: a cut cannot
+ * change a face angle, so every taper stays at 45 degrees and the foot mates
+ * face-to-face with `CLEARANCE / 2` of air perpendicular to each one. It also
+ * lands the rim at exactly the lid outline, leaves a `CLEARANCE`-wide flat land
+ * between adjacent pockets, and tops every divider, crossing and T-junction out
+ * at one height.
  *
  * `stackLipOnly` swaps the per-cell pockets for one footprint-wide
  * pocket, so only the perimeter ring survives — the same lip an upper bin
@@ -19,7 +23,8 @@
 import { drawRoundedRectangle, unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, Drawing, Sketch, ValidSolid } from 'brepjs';
 import { pocketCornerRadius, safeSectionRect } from './generatorConstants';
-import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT, POCKET_INSET_BOT, POCKET_PROFILE } from './generatorTypes';
+import { LID_STACK_GRID_HEIGHT_MM } from '@/shared/printSettings/gridfinityGeometry';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { isRegionFilled } from '@/shared/utils/cellMask';
 import { forEachCell, type CellInfo } from './cellDecomposition';
@@ -27,63 +32,64 @@ import { buildMaskDrawingAtInset } from './maskPolygon';
 import { buildOutlineDrawing } from './lidProfile';
 import type { LidInputs } from './lidInputs';
 
-/** Inset at the big taper's breakpoints — same value as `baseplateGenerator`. */
-const STACK_INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
 /**
- * Per-side inset of the pocket's top rim — the whole `CLEARANCE / 2` vertical
- * run from `SOCKET_HEIGHT` down to the big taper's start.
+ * Height of the grid above the lid's top face.
  *
- * A baseplate opens its pockets to the full cell (inset 0), so adjacent pockets
- * share coincident rim faces: the wall between them is a zero-width knife edge,
- * unmeshable and unprintable above the taper, which is what left the interior
- * dividers reading ~`CLEARANCE / 2` shy of the solid crossings. Insetting
- * the rim opens a `2 * STACK_LAND_INSET`-wide gap between every pair of pockets,
- * so the dividers become real vertical-walled lands that top out flush with the
- * crossings and T-junctions at `SOCKET_HEIGHT` — a genuinely flat top that also
- * survives the fuse into the lid body (a knife-thin land does not; the boolean's
- * heal collapses it). The inset also clears the edge-cell corner tangency that
- * used to need a pocket-growth fudge, and narrows the rim opening to ~the real
- * Gridfinity socket spec, snugging the stack a touch; the big taper below still
- * reaches the baseplate's floor insets, so an upper bin's foot seats the full
- * pocket depth (verified in `lidGenerator.scenario`).
+ * A half-clearance under the baseplate profile, because a lid is the BIN's
+ * footprint: `gridUnitMm - 2 * LID_FIT_CLEARANCE` with its corner radius
+ * reduced by the same, which is the nominal cell offset inward by exactly that
+ * — flats and corners alike. A pocket grid laid on the nominal lattice
+ * overhangs it by that much, and trimming the overhang off a 45-degree face
+ * lowers the face's high point by the same amount.
  */
-const STACK_LAND_INSET = CLEARANCE / 2; // 0.25mm
-/** Inset at the pocket floor, per side — on a lip-only top this is how far the
- *  lip's inner face sits inside the nominal socket grid. `lidTextBuilder` sizes
- *  the text fit box from it. */
-export const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+const STACK_HEIGHT = LID_STACK_GRID_HEIGHT_MM;
 
 /**
- * Z breakpoints of the pocket profile, paired with their per-side inset — the
- * baseplate socket profile walked top-down, with the top opening pulled in by
- * `STACK_LAND_INSET` (see above) and a coplanar cap at each end so the cut bites
- * cleanly through both slab faces.
+ * Inset at the pocket floor, per side — on a lip-only top this is how far the
+ * lip's inner face sits inside the nominal socket grid. `lidTextBuilder` sizes
+ * the text fit box from it, and `lidCutoutPlan` mirrors it.
+ *
+ * The floor is below the cut, so it is the baseplate's own floor inset
+ * untouched: an upper bin's foot lands on it exactly as it would in a plate.
  */
-const POCKET_PROFILE: readonly (readonly [z: number, inset: number])[] = [
-  [SOCKET_HEIGHT + LID_COPLANAR_MARGIN, STACK_LAND_INSET],
-  [SOCKET_HEIGHT, STACK_LAND_INSET],
-  [SOCKET_HEIGHT - CLEARANCE / 2, STACK_LAND_INSET],
-  [SOCKET_HEIGHT - SOCKET_BIG_TAPER, STACK_INSET_MID],
-  [SOCKET_HEIGHT - SOCKET_BIG_TAPER - (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH), STACK_INSET_MID],
-  [0, STACK_INSET_BOT],
-  [-LID_COPLANAR_MARGIN, STACK_INSET_BOT],
+export const STACK_INSET_BOT = POCKET_INSET_BOT;
+
+/**
+ * Z breakpoints of the pocket profile, paired with their per-side inset.
+ *
+ * The UNTRIMMED baseplate pocket, floor on the lid's top face (Z=0) and rim a
+ * half-clearance ABOVE the slab. The slab's own top face does the trimming, so
+ * the cutter overhangs it in both directions — a half-clearance past the lid's
+ * outer edge and a half-clearance above its top.
+ *
+ * Pre-trimming the profile to the slab instead lands the rim exactly on the lid
+ * outline, arcs and all. That is a tangency rather than a cut, and it sheds
+ * sliver triangles no watertight or triangle-count check reports
+ * (`lidGenerator.scenario` counts them). Overhanging keeps every cut transversal.
+ */
+export const POCKET_SECTIONS: readonly (readonly [z: number, inset: number])[] = [
+  [PLATE_PROFILE_HEIGHT + LID_COPLANAR_MARGIN, 0],
+  ...POCKET_PROFILE.map(([depth, inset]): readonly [number, number] => [
+    PLATE_PROFILE_HEIGHT - depth,
+    inset,
+  ]),
+  [-LID_COPLANAR_MARGIN, POCKET_INSET_BOT],
 ];
 
 /** `outlineAt` must return sections that share a vertex topology at every
  *  inset — a ruled loft can't bridge differing curve counts, which is why both
  *  callers size their sections through `safeSectionRect`. */
 function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
-  const [first, ...rest] = POCKET_PROFILE.map(
+  const [first, ...rest] = POCKET_SECTIONS.map(
     ([z, inset]) => outlineAt(inset).sketchOnPlane('XY', z) as Sketch
   );
   return first.loftWith(rest, { ruled: true });
 }
 
 /**
- * Build a single pocket cutter for one cell. Multi-section loft over the
- * baseplate socket profile (with the {@link STACK_LAND_INSET} top), placed so
- * the slab sits at Z ∈ [0, SOCKET_HEIGHT] rather than the baseplate's
- * Z ∈ [-SOCKET_HEIGHT, 0].
+ * Build a single pocket cutter for one cell. Multi-section loft over
+ * {@link POCKET_SECTIONS}, placed so the slab sits at Z ∈ [0, STACK_HEIGHT]
+ * rather than the baseplate's Z ∈ [-BASEPLATE_HEIGHT, 0].
  */
 function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
@@ -160,11 +166,11 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
   // mate with the (equally non-square) sockets of a bin stacked on top.
   const pitch = { x: gridUnitMm, y: gridUnitMmY };
 
-  // 1. Slab — lid's outer footprint extruded UP by SOCKET_HEIGHT (matching the
+  // 1. Slab — lid's outer footprint extruded UP by STACK_HEIGHT (the trimmed
   //    baseplate's slab depth). `buildOutlineDrawing(inputs, 0)` gives the full
   //    perimeter — rounded for plain bins, polygon for cellMask bins.
   const slabSketch = buildOutlineDrawing(inputs, 0).sketchOnPlane('XY', 0) as Sketch;
-  let slab: Shape3D = scope.register(slabSketch.extrude(SOCKET_HEIGHT));
+  let slab: Shape3D = scope.register(slabSketch.extrude(STACK_HEIGHT));
 
   // 2. Pocket cutters. Lip-only cuts a single footprint-wide pocket,
   //    leaving just the perimeter lip. Otherwise one per filled cell:

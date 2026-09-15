@@ -29,6 +29,8 @@ import {
   type TaperProfile,
 } from './generatorConstants';
 import { generateBaseplateDirect } from './baseplateDirectMesh';
+import { POCKET_SECTIONS } from './lidStackGrid';
+import { LID_STACK_GRID_HEIGHT_MM } from '@/shared/printSettings/gridfinityGeometry';
 
 /**
  * A profile's breakpoints as (height above the part's own underside,
@@ -124,5 +126,91 @@ describe('bin foot / baseplate pocket clearance', () => {
     for (const { z } of pocket) {
       expect([...levels], `pocket breakpoint z=${z}`).toContain(+z.toFixed(3));
     }
+  });
+});
+
+/**
+ * A lid's stack grid is the same mating pair, minus the spec.
+ *
+ * Gridfinity does not define a grid on a lid, so nothing external pins its
+ * shape — which is exactly why it needs pinning here. It is the baseplate
+ * pocket cut at full size into a shorter slab, and asserting on the sections
+ * the builder actually lofts is what makes that a claim about the geometry
+ * rather than about a number copied twice.
+ *
+ * The failure this guards is invisible to every mesh check: pull the rim in
+ * without moving the taper's far end and the funnel comes out at ~41 degrees
+ * against a 45-degree foot, meeting it on an edge instead of a face.
+ */
+describe('lid stack grid / bin foot clearance', () => {
+  // The lofted table carries a coplanar cap at each end; the profile is between.
+  const sections = POCKET_SECTIONS.slice(1, -1);
+
+  /** Per-side inset the cut has reached at height `z` above the lid's face. */
+  const insetAt = (z: number): number => {
+    for (let i = 0; i + 1 < sections.length; i++) {
+      const [zTop, insetTop] = sections[i];
+      const [zBot, insetBot] = sections[i + 1];
+      if (z <= zTop + 1e-9 && z >= zBot - 1e-9) {
+        return insetBot + ((z - zBot) / (zTop - zBot)) * (insetTop - insetBot);
+      }
+    }
+    return NaN;
+  };
+
+  it('keeps every taper at 45 degrees', () => {
+    for (let i = 0; i + 1 < sections.length; i++) {
+      const drop = sections[i][0] - sections[i + 1][0];
+      const run = sections[i + 1][1] - sections[i][1];
+      if (run > 0) expect(run / drop, `segment ${i}`).toBeCloseTo(1, 6);
+    }
+  });
+
+  it('opens exactly to the lid outline at the slab top', () => {
+    // The lid is `cell - 2 * LID_FIT_CLEARANCE` with its corner radius reduced
+    // by the same. Any less inset here and the pocket breaches the lid's side
+    // wall; any more and it leaves a ledge the trim was meant to remove.
+    expect(insetAt(LID_STACK_GRID_HEIGHT_MM)).toBeCloseTo(CLEARANCE / 2, 6);
+  });
+
+  it('overhangs the slab, so the trim is a cut and not a tangency', () => {
+    // The rim sits ABOVE the slab. Landing it on the slab's top face instead
+    // makes the pocket's arcs tangent to the lid outline's, which sheds sliver
+    // triangles (counted in `lidGenerator.scenario`).
+    expect(sections[0][0]).toBeGreaterThan(LID_STACK_GRID_HEIGHT_MM);
+    expect(sections[0][1]).toBe(0);
+  });
+
+  it('holds CLEARANCE/2 perpendicular to every mating face', () => {
+    const H = LID_STACK_GRID_HEIGHT_MM;
+    // Seated: the foot's underside rests on the pocket floor at Z=0.
+    const pocketR = (z: number): number => SIZE / 2 - insetAt(z);
+    const footR = (z: number): number => {
+      const cell = SIZE - CLEARANCE;
+      for (let i = 0; i + 1 < FOOT_PROFILE.length; i++) {
+        const zTop = SOCKET_HEIGHT - FOOT_PROFILE[i][0];
+        const zBot = SOCKET_HEIGHT - FOOT_PROFILE[i + 1][0];
+        if (z <= zTop + 1e-9 && z >= zBot - 1e-9) {
+          const t = (z - zBot) / (zTop - zBot);
+          return (
+            cell / 2 - (FOOT_PROFILE[i + 1][1] + t * (FOOT_PROFILE[i][1] - FOOT_PROFILE[i + 1][1]))
+          );
+        }
+      }
+      return NaN;
+    };
+    // Mid-face samples: the two 45-degree runs and the vertical band.
+    for (const [z, perpendicular] of [
+      [0.35, true],
+      [1.5, false],
+      [H - 0.5, true],
+    ] as const) {
+      const gap = pocketR(z) - footR(z);
+      expect(perpendicular ? gap / Math.SQRT2 : gap, `z=${z}`).toBeCloseTo(CLEARANCE / 2, 2);
+    }
+  });
+
+  it('stops short of the foot, so the foot lands on the grid floor', () => {
+    expect(LID_STACK_GRID_HEIGHT_MM).toBeLessThan(SOCKET_HEIGHT);
   });
 });

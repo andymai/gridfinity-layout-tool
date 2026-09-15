@@ -66,12 +66,10 @@ export const LID_CUTOUT_WALL_MARGIN_MM = 0.8;
  *
  * Mirrors `STACK_INSET_BOT` in the worker's `lidStackGrid`, derived from the same
  * spec numbers rather than importing it (a shared module cannot reach the
- * worker): the socket taper width less half the bin-to-plate clearance.
+ * worker): the baseplate pocket's own floor inset. The lid's trim takes its
+ * slice off the TOP of that profile, so the floor is untouched.
  */
-const STACK_INSET_BOT =
-  GRIDFINITY_SPEC.SOCKET_SMALL_TAPER +
-  GRIDFINITY_SPEC.SOCKET_BIG_TAPER -
-  GRIDFINITY_SPEC.TOLERANCE / 2;
+const STACK_INSET_BOT = GRIDFINITY_SPEC.BASEPLATE_SMALL_TAPER + GRIDFINITY_SPEC.BASEPLATE_BIG_TAPER;
 
 /**
  * Extra radius (mm) added to a retention boss when it is subtracted from a

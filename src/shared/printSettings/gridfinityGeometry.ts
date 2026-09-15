@@ -92,6 +92,20 @@ export const GRIDFINITY_SPEC = {
 } as const;
 
 /**
+ * Height of a lid's optional stack grid above the lid's top face (mm).
+ *
+ * Not a spec dimension — Gridfinity says nothing about a grid on a lid, so this
+ * is derived rather than quoted. A lid is the bin's own footprint, i.e. the
+ * baseplate cell already offset inward by TOLERANCE/2 on every side, so a true
+ * pocket grid overhangs it by exactly that much. Trimming the overhang off a
+ * 45-degree face lowers that face's high point by the same amount, which is why
+ * the grid ends up one half-clearance shorter than the baseplate profile it is
+ * otherwise identical to.
+ */
+export const LID_STACK_GRID_HEIGHT_MM =
+  GRIDFINITY_SPEC.BASEPLATE_HEIGHT - GRIDFINITY_SPEC.TOLERANCE / 2;
+
+/**
  * Thin floor under each magnet hole that retains the magnet (mm).
  * Canonical value — the worker generators and the baseplate preview/print-guide
  * math must all agree or preview heights drift from exported geometry.
