@@ -1,0 +1,35 @@
+src/features/bin-designer/utils/exportWithResilience.test.ts
+  s_875c2bc7f31d06::t_557c151903f0a8 160-167
+src/features/generation/bridge/WorkerPoolManager.test.ts
+  s_875c2bc7f31d06::t_0c3e11529374e3 102-129
+src/features/generation/bridge/GenerationBridge.ts
+  s_875c2bc7f31d06::t_554bf191a1cdce 122-123,204,208-211,407-411
+src/features/generation/bridge/BridgeManager.ts
+  s_875c2bc7f31d06::t_6e3b6f20ea8e2d 60,65-68,70-73,81,120,127,129-131,137
+  s_875c2bc7f31d06::t_c6bdecffac1382 69,128
+src/features/generation/bridge/WorkerPoolManager.ts
+  s_875c2bc7f31d06::t_c6bdecffac1382 49
+  s_875c2bc7f31d06::t_cc04894c223f37 41,46-48,50-53,59
+src/features/generation/bridge/GenerationBridge.test.ts
+  s_875c2bc7f31d06::t_8680682145300a 161-173
+src/features/generation/bridge/BridgeManager.test.ts
+  s_875c2bc7f31d06::t_e48b6faff4a293 149-207
+src/features/bin-designer/utils/exportWithResilience.ts
+  s_875c2bc7f31d06::t_557c151903f0a8 46-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "908950e1727311b4053a2854f882b54d78ea972c",
+  "prompts": {},
+  "sessions": {
+    "s_875c2bc7f31d06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e3418be2-8a04-4540-bfc8-89077058587c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
