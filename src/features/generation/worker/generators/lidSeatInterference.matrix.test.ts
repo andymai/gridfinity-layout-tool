@@ -74,7 +74,11 @@ const TOLERANCE_MM = 0.05;
  * Pinned as a count so both directions fail: a case that stops carrying it, and
  * a new one that starts.
  */
-const SCOOP_CASES_AT_FLUSH_FILL = 4;
+// Three, not four, since `columnCrossings` counts a column on a shared
+// triangle edge: the 1x2 footprint's scoop case read the narrow flush fill
+// only because its rail column sat on such an edge and the strict test
+// dropped that crossing, on the reference kernel as on brepkit.
+const SCOOP_CASES_AT_FLUSH_FILL = 3;
 
 const grid = (cols: number, rows: number): CompartmentConfig => ({
   cols,
