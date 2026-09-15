@@ -1,14 +1,14 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `3026`;
+exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `2642`;
 
-exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `3372`;
+exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `2988`;
 
-exports[`scoop > 2×2 scoop auto radius 1`] = `3026`;
+exports[`scoop > 2×2 scoop auto radius 1`] = `2642`;
 
-exports[`scoop > 2×2 scoop disabled 1`] = `2892`;
+exports[`scoop > 2×2 scoop disabled 1`] = `2508`;
 
-exports[`scoop > 2×2 scoop radius 10mm 1`] = `3030`;
+exports[`scoop > 2×2 scoop radius 10mm 1`] = `2646`;
 
 exports[`scoop flat base > 1×1 flat base scoop with lip 1`] = `1050`;
 
@@ -22,28 +22,28 @@ exports[`scoop flat base > 2×2 tray-bottom (lid) base scoop with lip 1`] = `168
 
 exports[`scoop multi-compartment > 2×2 grid front scoop (flat base) 1`] = `1394`;
 
-exports[`scoop multi-compartment > 2×2 grid front scoop (standard base + lip) 1`] = `3370`;
+exports[`scoop multi-compartment > 2×2 grid front scoop (standard base + lip) 1`] = `2986`;
 
-exports[`scoop multi-compartment > 2×2 grid left scoop (interior column span-ends) 1`] = `3378`;
+exports[`scoop multi-compartment > 2×2 grid left scoop (interior column span-ends) 1`] = `2994`;
 
-exports[`scoop multi-compartment > irregular grid (tall column + 2 stacked) front scoop 1`] = `3498`;
+exports[`scoop multi-compartment > irregular grid (tall column + 2 stacked) front scoop 1`] = `3114`;
 
-exports[`scoop side > 6×1 bin scooped on the long wall 1`] = `3326`;
+exports[`scoop side > 6×1 bin scooped on the long wall 1`] = `2942`;
 
-exports[`scoop side > left scoop across 2 columns (outer vs interior) 1`] = `3376`;
+exports[`scoop side > left scoop across 2 columns (outer vs interior) 1`] = `2992`;
 
-exports[`scoop side > scoop on the back wall 1`] = `3026`;
+exports[`scoop side > scoop on the back wall 1`] = `2642`;
 
-exports[`scoop side > scoop on the left wall 1`] = `3026`;
+exports[`scoop side > scoop on the left wall 1`] = `2642`;
 
-exports[`scoop side > scoop on the right wall 1`] = `3026`;
+exports[`scoop side > scoop on the right wall 1`] = `2642`;
 
-exports[`scoop side > side scoop with lip (outer-wall offset active) 1`] = `3026`;
+exports[`scoop side > side scoop with lip (outer-wall offset active) 1`] = `2642`;
 
-exports[`scoop two-variable > 2×2 shallow curved scoop (run > height) 1`] = `3010`;
+exports[`scoop two-variable > 2×2 shallow curved scoop (run > height) 1`] = `2626`;
 
-exports[`scoop two-variable > 2×2 steep curved scoop (run < height) 1`] = `3048`;
+exports[`scoop two-variable > 2×2 steep curved scoop (run < height) 1`] = `2664`;
 
-exports[`scoop two-variable > 2×2 steep straight scoop 1`] = `2812`;
+exports[`scoop two-variable > 2×2 steep straight scoop 1`] = `2428`;
 
-exports[`scoop two-variable > 2×2 straight scoop (chamfer) 1`] = `2864`;
+exports[`scoop two-variable > 2×2 straight scoop (chamfer) 1`] = `2480`;

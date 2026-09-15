@@ -10,7 +10,7 @@
 
 import { draw, drawRectangle, clone, unwrap, translate } from 'brepjs';
 import type { Shape3D, Drawing } from 'brepjs';
-import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN, INSET_BOT } from './generatorConstants';
+import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN, FOOT_INSET_BOT } from './generatorConstants';
 import { forEachCell } from './cellDecomposition';
 import type { ForEachCellOptions, CellInfo } from './cellDecomposition';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
@@ -122,8 +122,8 @@ export function buildLightweightFloorCutters(
         // through to the pad logic below, which leaves it solid rather than
         // stranding the magnet it just placed.
         if (!cellHostsAttachmentHoles(cell, magnetRadius, unitX, unitY)) {
-          const fhw = cellW_mm / 2 - INSET_BOT;
-          const fhd = cellD_mm / 2 - INSET_BOT;
+          const fhw = cellW_mm / 2 - FOOT_INSET_BOT;
+          const fhd = cellD_mm / 2 - FOOT_INSET_BOT;
           if (fhw <= 0 || fhd <= 0) return;
           const fractionalKey = `frac-${cell.widthUnits}x${cell.depthUnits}`;
           let fractionalTemplate = templates.get(fractionalKey);
@@ -142,10 +142,10 @@ export function buildLightweightFloorCutters(
           return;
         }
 
-        // Inset by INSET_BOT so the cutout stays within the flat pocket floor
+        // Inset by FOOT_INSET_BOT so the cutout stays within the flat pocket floor
         // and doesn't undercut the tapered pocket walls (which would create overhangs).
-        const hw = cellW_mm / 2 - INSET_BOT;
-        const hd = cellD_mm / 2 - INSET_BOT;
+        const hw = cellW_mm / 2 - FOOT_INSET_BOT;
+        const hd = cellD_mm / 2 - FOOT_INSET_BOT;
         // Keep the wider-nozzle outside pad attached to the pocket-bottom
         // perimeter. The magnet cutters themselves remain at the exact
         // Gridfinity positions; this only contracts the separate relief cut.
@@ -253,10 +253,10 @@ export function planPartialCellFloorCuts(
 
   const halfW = (cell.widthUnits * unitX) / 2;
   const halfD = (cell.depthUnits * unitY) / 2;
-  // Inset by INSET_BOT so the cut stays within the flat pocket floor and doesn't
+  // Inset by FOOT_INSET_BOT so the cut stays within the flat pocket floor and doesn't
   // undercut the tapered pocket walls (matches the full-cell cutter).
-  const hw = halfW - INSET_BOT;
-  const hd = halfD - INSET_BOT;
+  const hw = halfW - FOOT_INSET_BOT;
+  const hd = halfD - FOOT_INSET_BOT;
   const outerWallMargin = magnetOuterWallMarginForNozzle(nozzleSizeMm);
   const reliefHw = hw - outerWallMargin;
   const reliefHd = hd - outerWallMargin;

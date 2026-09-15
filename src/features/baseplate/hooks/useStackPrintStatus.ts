@@ -84,9 +84,9 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       gridShiftY
     );
     const groups = stackGroupsFromTiling(tiling, fullParams, copies);
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, gapMm);
+    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.BASEPLATE_HEIGHT, gapMm);
     return {
-      status: evaluateStackPrint(groups, cap, GRIDFINITY_SPEC.SOCKET_HEIGHT, maxPrintHeightMm),
+      status: evaluateStackPrint(groups, cap, GRIDFINITY_SPEC.BASEPLATE_HEIGHT, maxPrintHeightMm),
       plan: planPhysicalStacks(groups, cap),
     };
   }, [

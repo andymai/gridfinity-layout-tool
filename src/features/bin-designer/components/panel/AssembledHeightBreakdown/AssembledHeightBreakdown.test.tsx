@@ -73,7 +73,7 @@ describe('AssembledHeightBreakdown', () => {
   it('explains why a plain baseplate contributes nothing', () => {
     setExpanded(true);
     render(<AssembledHeightBreakdown />);
-    expect(screen.getByText('4.8mm plate, bin sinks 4.8mm into it')).toBeInTheDocument();
+    expect(screen.getByText('4.7mm plate, bin sinks 4.7mm into it')).toBeInTheDocument();
   });
 
   it('reports the magnet plate raising the bin', () => {
@@ -82,7 +82,7 @@ describe('AssembledHeightBreakdown', () => {
     render(<AssembledHeightBreakdown />);
     // MAGNET_FLOOR (0.5) + 2mm sits under the sockets, so the bin rises 2.5mm.
     expect(screen.getByText('48.9mm')).toBeInTheDocument();
-    expect(screen.getByText('7.3mm plate, bin sinks 4.8mm into it')).toBeInTheDocument();
+    expect(screen.getByText('7.2mm plate, bin sinks 4.7mm into it')).toBeInTheDocument();
   });
 
   it('falls back to a standard plate when the layout has none', () => {

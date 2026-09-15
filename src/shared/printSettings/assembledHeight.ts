@@ -40,6 +40,7 @@ import {
 import {
   baseplateFloorDepth,
   baseplateTotalHeight,
+  BASEPLATE_SEAT_DEPTH_MM,
   type BaseplateHeightParams,
 } from '@/shared/printSettings/baseplateHeight';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -79,9 +80,10 @@ export interface AssembledHeight {
   /** The baseplate's own printed height (mm) — what comes off the bed. */
   readonly baseplatePrintedMm: number;
   /**
-   * How far the bin's base sinks into the plate (mm). `SOCKET_HEIGHT` when the
-   * bin seats on one, 0 otherwise — a flat base has no socket and a bare bin
-   * has no plate to sink into.
+   * How far the bin's base sinks into the plate (mm). The pocket's full depth
+   * when the bin seats on one, 0 otherwise — a flat base has no socket and a
+   * bare bin has no plate to sink into. Short of the base's own 4.75mm by the
+   * 0.1mm the pocket stops above it.
    */
   readonly nestedMm: number;
 }
@@ -183,7 +185,7 @@ export function assembledHeight(
   // The bin drops its base into the pockets, so only the solid floor under them
   // lifts it — zero for the common no-magnet, no-solid-floor plate.
   const plateBandMm = seatedOnPlate ? baseplateFloorDepth(plate) : 0;
-  const nestedMm = seatedOnPlate ? GRIDFINITY.SOCKET_HEIGHT : 0;
+  const nestedMm = seatedOnPlate ? BASEPLATE_SEAT_DEPTH_MM : 0;
 
   // A tray's skirt is printed material below its floor, so it counts toward the
   // assembly's height. `extraHeightMm` is the whole point of the feature —

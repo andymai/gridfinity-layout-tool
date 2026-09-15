@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { INSET_BOT } from './generatorConstants';
+import { FOOT_INSET_BOT } from './generatorConstants';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -200,9 +200,9 @@ describe('planPartialCellFloorCuts (over-tile margin hollowing)', () => {
     expect(cross.kind).toBe('cross');
     if (cross.kind !== 'cross') throw new Error('expected cross');
 
-    // GRID/2 - INSET_BOT - outer margin(2.5 for the 0.8mm nozzle).
-    expect(cross.hw).toBeCloseTo(GRID / 2 - INSET_BOT - 2.5, 6);
-    expect(cross.hd).toBeCloseTo(GRID / 2 - INSET_BOT - 2.5, 6);
+    // GRID/2 - FOOT_INSET_BOT - outer margin(2.5 for the 0.8mm nozzle).
+    expect(cross.hw).toBeCloseTo(GRID / 2 - FOOT_INSET_BOT - 2.5, 6);
+    expect(cross.hd).toBeCloseTo(GRID / 2 - FOOT_INSET_BOT - 2.5, 6);
     expect(magnetPositionsForCell(c, MAGNET_R, GRID, GRID)).toEqual([
       [-13, -13],
       [13, -13],

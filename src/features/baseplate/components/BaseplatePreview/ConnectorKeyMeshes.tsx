@@ -275,7 +275,7 @@ export function ConnectorKeyMeshes() {
   );
 
   const totalHeight =
-    GRIDFINITY_SPEC.SOCKET_HEIGHT +
+    GRIDFINITY_SPEC.BASEPLATE_HEIGHT +
     (fullParams.magnetHoles ? MAGNET_FLOOR + fullParams.magnetDepth : 0);
 
   const isSnapClip = fullParams.connectorStyle === 'snapClip';

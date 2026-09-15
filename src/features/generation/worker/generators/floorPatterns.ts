@@ -6,7 +6,7 @@
  * The governing constraint is the base socket. A drainage hole has to leave the
  * bin, which means passing through the floor slab AND the foot under it — but
  * the foot's tapered flank is the baseplate-mating surface and must not be
- * touched. Its flat underside is inset {@link INSET_BOT} from the cell edge, so
+ * touched. Its flat underside is inset {@link FOOT_INSET_BOT} from the cell edge, so
  * every hole is confined to a per-foot WINDOW inset from that cell: the hole
  * enters the cavity floor and exits the foot's underside, never its taper.
  *
@@ -339,7 +339,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
   // An underside-relieved foot stops the cut at the floor. There is nothing
   // below to thread the hole through — the relief cavity is already open to the
   // outside, so the hole drains the moment it clears the slab — and reaching
-  // further would only eat the ring. The window is inset 1.5mm + INSET_BOT from
+  // further would only eat the ring. The window is inset 1.5mm + FOOT_INSET_BOT from
   // the foot's TOP edge, while the ring's bore narrows with the taper going
   // down, so the two cross about a third of the way up: a full-depth cut would
   // take up to 1.5mm off the inside of the ring's bottom face, exactly where the

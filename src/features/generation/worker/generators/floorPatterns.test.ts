@@ -6,7 +6,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { deriveDimensions } from './pipeline/context';
 import { floorPatternApplies, planFloorPattern } from './floorPatterns';
 import { floorWindowInset, nestingFloorWindowSpan } from './floorPatternWindow';
-import { CLEARANCE, INSET_BOT, SIZE, SOCKET_HEIGHT } from './generatorConstants';
+import { CLEARANCE, FOOT_INSET_BOT, SIZE, SOCKET_HEIGHT } from './generatorConstants';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return {
@@ -100,9 +100,9 @@ describe('planFloorPattern windows', () => {
 
   it('keeps every window inside the flat part of its foot', () => {
     const result = plan(makeParams());
-    // A foot's underside stops INSET_BOT in from the cell edge; anything past
+    // A foot's underside stops FOOT_INSET_BOT in from the cell edge; anything past
     // that would exit through the baseplate-mating taper.
-    const flatHalfSpan = (SIZE - CLEARANCE) / 2 - INSET_BOT;
+    const flatHalfSpan = (SIZE - CLEARANCE) / 2 - FOOT_INSET_BOT;
     for (const window of result?.windows ?? []) {
       const cellCenterX = Math.sign(window.x) * (SIZE / 2);
       expect(Math.abs(window.x - cellCenterX) + window.patternSpan / 2).toBeLessThanOrEqual(
@@ -140,7 +140,7 @@ describe('planFloorPattern windows', () => {
   });
 
   it('widens the inset when the wall is thicker than the foot taper', () => {
-    const thick = 2 * INSET_BOT;
+    const thick = 2 * FOOT_INSET_BOT;
     const params = makeParams({ wallThickness: thick });
     const result = plan(params);
     expect(result?.windows[0]?.patternSpan).toBeCloseTo(

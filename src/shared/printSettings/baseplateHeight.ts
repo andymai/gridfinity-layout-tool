@@ -66,10 +66,17 @@ export function baseplateFloorDepthBeforeScrews(params: BaseplateHeightParams): 
  * solid material sits under it.
  *
  * NB this is the plate's PRINTED height, not what it contributes to an assembled
- * stack. A socketed bin's base occupies the top {@link GRIDFINITY_SPEC.SOCKET_HEIGHT}
- * of the plate, so a seated bin only rises by {@link baseplateFloorDepth} — zero
- * for the common no-magnet, no-solid-floor plate.
+ * stack. A seated bin's foot drops the full {@link GRIDFINITY_SPEC.BASEPLATE_HEIGHT}
+ * into the pocket, so the bin rises by {@link baseplateFloorDepth} plus the
+ * 0.1mm its own base profile stands taller than the pocket receiving it.
  */
 export function baseplateTotalHeight(params: BaseplateHeightParams): number {
-  return GRIDFINITY_SPEC.SOCKET_HEIGHT + baseplateFloorDepth(params);
+  return GRIDFINITY_SPEC.BASEPLATE_HEIGHT + baseplateFloorDepth(params);
 }
+
+/**
+ * How far a bin's base sinks into a plate it is seated on (mm) — the pocket's
+ * full depth, since the foot lands on the pocket floor rather than wedging on
+ * its tapers.
+ */
+export const BASEPLATE_SEAT_DEPTH_MM = GRIDFINITY_SPEC.BASEPLATE_HEIGHT;

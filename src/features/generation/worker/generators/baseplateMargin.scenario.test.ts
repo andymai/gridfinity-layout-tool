@@ -11,7 +11,7 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { computeBaseplateTiling } from '@/features/baseplate/utils/splitPlanner';
 import type { MarginPiece } from '@/features/baseplate/types/tiling';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT, MAGNET_FLOOR } from './generatorTypes';
 
 let generateMargin: (
   p: ResolvedBaseplateParams,
@@ -91,7 +91,7 @@ describe('margin rail geometry', () => {
     expect(b.dx).toBeCloseTo(front.lengthMm, 0);
     expect(b.dy).toBeCloseTo(front.bandThicknessMm, 0);
     expect(b.minZ).toBeCloseTo(0, 1);
-    expect(b.maxZ).toBeCloseTo(SOCKET_HEIGHT, 1);
+    expect(b.maxZ).toBeCloseTo(PLATE_PROFILE_HEIGHT, 1);
   });
 
   it('meshes a short rail oriented along its long axis', () => {
@@ -111,6 +111,6 @@ describe('margin rail geometry', () => {
     const b = bbox(md.vertices);
     // Assert the full height span (bottom at 0), not just the top.
     expect(b.minZ).toBeCloseTo(0, 1);
-    expect(b.maxZ - b.minZ).toBeCloseTo(SOCKET_HEIGHT + MAGNET_FLOOR + params.magnetDepth, 1);
+    expect(b.maxZ - b.minZ).toBeCloseTo(PLATE_PROFILE_HEIGHT + MAGNET_FLOOR + params.magnetDepth, 1);
   });
 });

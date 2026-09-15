@@ -2,17 +2,16 @@
  * Baseplate geometry generation for Gridfinity baseplates.
  *
  * Builds a baseplate as a solid slab with pockets cut from the top surface.
- * Each pocket receives a bin's tapered socket profile. The pocket shape is
- * the bin socket profile at full grid size (no clearance reduction), so that
- * bin sockets (which are reduced by CLEARANCE) fit with the intended gap.
+ * Each pocket receives a bin's tapered socket profile, offset outward by
+ * CLEARANCE/2 perpendicular to every face (see `POCKET_PROFILE`).
  *
- * Without magnets: slab height = SOCKET_HEIGHT (5mm). Pockets are through-cut,
+ * Without magnets: slab height = PLATE_PROFILE_HEIGHT. Pockets are through-cut,
  * unless the standalone `solidFloor` option is on — then the slab grows by the
- * chosen floor thickness and pockets stop at SOCKET_HEIGHT, leaving a plain
+ * chosen floor thickness and pockets stop at PLATE_PROFILE_HEIGHT, leaving a plain
  * continuous floor (no magnet holes). See `baseplateFloorDepth`.
  *
- * With magnets (matching Gridfinity spec): slab height = SOCKET_HEIGHT +
- * MAGNET_FLOOR + magnetDepth. Pockets cut to SOCKET_HEIGHT depth only,
+ * With magnets (matching Gridfinity spec): slab height = PLATE_PROFILE_HEIGHT +
+ * MAGNET_FLOOR + magnetDepth. Pockets cut to PLATE_PROFILE_HEIGHT depth only,
  * leaving a solid continuous floor under each pocket. Magnet holes are blind
  * cylindrical pockets cut downward from the pocket floor into this solid
  * floor, leaving a thin retaining floor (MAGNET_FLOOR = 0.5mm) at the
@@ -45,7 +44,7 @@ import type { Shape3D, ValidSolid, BooleanPipelineStep } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat, ConnectorKeyMeshData } from '../../bridge/types';
 import {
-  SOCKET_HEIGHT,
+  PLATE_PROFILE_HEIGHT,
   forEachCell,
   frameCells,
   toIndexedMeshData,
@@ -228,7 +227,7 @@ function buildConnectorKeyMeshIfNeeded(
   const hasJoinEdge = params.edges ? Object.values(params.edges).some((e) => e === 'join') : false;
   if (!hasJoinEdge) return undefined;
 
-  const totalHeight = SOCKET_HEIGHT + baseplateFloorDepth(params);
+  const totalHeight = PLATE_PROFILE_HEIGHT + baseplateFloorDepth(params);
   if (!snapClipLevels(totalHeight, params.connectorFitOffset ?? 0, params.nozzleSizeMm).viable)
     return undefined;
 
@@ -286,7 +285,7 @@ export function buildBaseplateSolid(
   const floorDepth = baseplateFloorDepth(params);
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMmY + paddingFront + paddingBack;
-  const totalHeight = SOCKET_HEIGHT + floorDepth;
+  const totalHeight = PLATE_PROFILE_HEIGHT + floorDepth;
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
   // Material bound for the outline intersect: the nominal extent widened per
@@ -482,7 +481,6 @@ export function buildBaseplateSolid(
       const pocket = getPocketTemplate(
         cellW_mm,
         cellD_mm,
-        forExport,
         !keepsFloor,
         keepsFloor ? 0 : floorDepth
       );
@@ -712,8 +710,7 @@ export function buildBaseplateSolid(
     totalW,
     totalD,
     slabOffsetX,
-    slabOffsetY,
-    forExport
+    slabOffsetY
   );
 
   if (nubs.length > 0 || connHoles.length > 0) {
@@ -819,7 +816,7 @@ export async function exportConnectorKey(
   angularTolerance?: number
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
   const params = sanitizeParams(rawParams);
-  const totalHeight = SOCKET_HEIGHT + baseplateFloorDepth(params);
+  const totalHeight = PLATE_PROFILE_HEIGHT + baseplateFloorDepth(params);
   // Snap clip ships its own bed-flat part; dovetail key is the legacy default.
   const key =
     params.connectorStyle === 'snapClip'

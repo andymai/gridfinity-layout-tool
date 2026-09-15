@@ -506,7 +506,12 @@ describe('baseplate outline geometry', () => {
       expect(fixedBB.minX + fixedBB.maxX).toBeCloseTo(0, 0);
       expect(rawBB.minX + rawBB.maxX).toBeGreaterThan(1);
       // A whole-unit shift is a pure relabelling: same solid, translated.
-      expect(fixed.vertices.length).toBe(raw.vertices.length);
+      // Compared by triangle count, not by `vertices.length`: the drifted
+      // outline's right edge is flush with the plate perimeter and the re-based
+      // one is a unit inside it, so the two weld a different number of seam
+      // vertices onto an identical top face. The point SETS are congruent under
+      // the shift; only the duplicate count moves.
+      expect(fixed.triangleCount).toBe(raw.triangleCount);
       // A whole socket sits at the re-based plate's middle cell (mesh origin).
       expect(countVerticesIn(fixed.vertices, -20, -20, 20, 20)).toBeGreaterThan(0);
     }

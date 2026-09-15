@@ -216,7 +216,7 @@ export async function buildBaseplateExportPieces(
   const copies = Math.max(1, Math.floor(stack?.copies ?? STACK_PRINT_DEFAULT_COPIES));
   const stackCap = stackHeightCap(
     printSettings.maxPrintHeightMm,
-    GRIDFINITY_SPEC.SOCKET_HEIGHT,
+    GRIDFINITY_SPEC.BASEPLATE_HEIGHT,
     stack?.gapMm ?? 0.2
   );
 

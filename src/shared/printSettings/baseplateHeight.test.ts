@@ -3,7 +3,7 @@ import { baseplateFloorDepth, baseplateTotalHeight } from './baseplateHeight';
 import { GRIDFINITY_SPEC, MAGNET_FLOOR } from './gridfinityGeometry';
 import { SOLID_FLOOR_DEFAULT_MM } from '@/core/baseplateDefaults';
 
-const SOCKET = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+const POCKET = GRIDFINITY_SPEC.BASEPLATE_HEIGHT;
 
 describe('baseplateFloorDepth', () => {
   it('is zero for a plate whose pockets cut straight through', () => {
@@ -48,12 +48,12 @@ describe('baseplateFloorDepth', () => {
 });
 
 describe('baseplateTotalHeight', () => {
-  it('is one socket tall for a plain plate', () => {
-    expect(baseplateTotalHeight({ magnetHoles: false, magnetDepth: 2 })).toBe(SOCKET);
+  it('is one pocket profile tall for a plain plate', () => {
+    expect(baseplateTotalHeight({ magnetHoles: false, magnetDepth: 2 })).toBe(POCKET);
   });
 
   it('grows by exactly the floor depth', () => {
     const params = { magnetHoles: true, magnetDepth: 2, solidFloor: true, solidFloorThickness: 1 };
-    expect(baseplateTotalHeight(params)).toBe(SOCKET + baseplateFloorDepth(params));
+    expect(baseplateTotalHeight(params)).toBe(POCKET + baseplateFloorDepth(params));
   });
 });

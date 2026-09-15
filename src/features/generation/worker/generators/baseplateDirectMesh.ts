@@ -5,9 +5,9 @@
  * mathematically, without BREP boolean operations. This avoids the 2-15+ second
  * latency of the brepjs pipeline (solid modeling, boolean fuse/cut, tessellation).
  *
- * The output is geometrically equivalent to the simplified BREP version
- * (buildSimplifiedPocketCutter) — a waffle-grid slab with tapered pockets,
- * optional magnet holes, and a rounded outer perimeter.
+ * The output is geometrically equivalent to the BREP version — a waffle-grid
+ * slab carrying the same `POCKET_PROFILE`, optional magnet holes, and a rounded
+ * outer perimeter.
  *
  * Coordinate system (matches baseplateGenerator.ts):
  * - Z=0: bottom face of baseplate
@@ -15,7 +15,7 @@
  * - Without magnets: pockets through-cut (no floor), unless the solidFloor
  *   option leaves a plain floor of its own thickness below the sockets
  * - With magnets: slab is taller by (MAGNET_FLOOR + magnetDepth); pockets
- *   stop at SOCKET_HEIGHT depth, leaving a solid continuous floor. Magnet
+ *   stop at PLATE_PROFILE_HEIGHT depth, leaving a solid continuous floor. Magnet
  *   holes are blind cylindrical pockets cut downward from the pocket floor
  *   into the solid floor, leaving a thin retaining floor (MAGNET_FLOOR)
  *   at the bottom. Magnets are dropped in from the pocket side
@@ -35,7 +35,7 @@ import { resolveCornerRadii } from './generatorConstants';
 import { creaseEdges } from './utils';
 import type { MeshData } from '../../bridge/types';
 import {
-  SOCKET_HEIGHT,
+  PLATE_PROFILE_HEIGHT,
   forEachCell,
   frameCells,
   marginPocketDepthMm,
@@ -120,7 +120,7 @@ export function generateBaseplateDirect(
   // require one; the standalone solidFloor option adds one without magnet holes.
   const floorDepth = baseplateFloorDepth(params);
   const hasFloor = floorDepth > 0;
-  const totalHeight = SOCKET_HEIGHT + floorDepth;
+  const totalHeight = PLATE_PROFILE_HEIGHT + floorDepth;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMmY + paddingFront + paddingBack;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;

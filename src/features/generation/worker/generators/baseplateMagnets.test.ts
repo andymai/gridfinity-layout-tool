@@ -5,7 +5,7 @@ import {
   MAGNET_EDGE_CLEARANCE,
 } from './baseplateMagnets';
 import { MAGNET_OFFSETS } from './generatorConstants';
-import { CLEARANCE, HOLE_OFFSET, INSET_BOT } from './generatorTypes';
+import { CLEARANCE, HOLE_OFFSET, FOOT_INSET_BOT } from './generatorTypes';
 import type { CellInfo } from './cellDecomposition';
 
 const GRID = 42;
@@ -262,7 +262,7 @@ describe('half-cell magnet placement (#3778)', () => {
   it('keeps a printable wall on the half foot tapered face', () => {
     // The face the hole opens on is the socket bottom: nominal less the fit
     // clearance and the taper on each side.
-    const bottomHalf = (0.5 * GRID - CLEARANCE) / 2 - INSET_BOT;
+    const bottomHalf = (0.5 * GRID - CLEARANCE) / 2 - FOOT_INSET_BOT;
     for (const [x] of magnetPositionsForCell(cell(0.5, 0.5), MAGNET_R, GRID, GRID)) {
       expect(bottomHalf - Math.abs(x) - MAGNET_R).toBeGreaterThanOrEqual(MAGNET_EDGE_CLEARANCE);
     }

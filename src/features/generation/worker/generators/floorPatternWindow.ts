@@ -4,7 +4,7 @@
  *
  * A drainage hole must leave the bin through a foot's FLAT UNDERSIDE, never
  * through the tapered flank that mates with the baseplate. That underside is
- * inset {@link INSET_BOT} from the cell edge, so every hole is confined to a
+ * inset {@link FOOT_INSET_BOT} from the cell edge, so every hole is confined to a
  * window inset by at least that much — and, on an outermost cell, by enough to
  * leave the wall a solid rim to bond to.
  *
@@ -14,7 +14,7 @@
  */
 
 import { CUTOUT_BORDER_WIDTH } from './wallPatterns';
-import { CLEARANCE, INSET_BOT } from './generatorConstants';
+import { CLEARANCE, FOOT_INSET_BOT } from './generatorConstants';
 import { LID_CORNER_RADIUS } from './lidConstants';
 
 /**
@@ -35,7 +35,7 @@ export const FLOOR_PATTERN_BORDER = CUTOUT_BORDER_WIDTH;
  * on any cell, without tracking which cells are outermost.
  */
 export function floorWindowInset(wallThickness: number): number {
-  return FLOOR_PATTERN_BORDER + Math.max(INSET_BOT, wallThickness);
+  return FLOOR_PATTERN_BORDER + Math.max(FOOT_INSET_BOT, wallThickness);
 }
 
 /** Window extent (mm) on one axis of a socket cell `cellUnits` grid units wide. */

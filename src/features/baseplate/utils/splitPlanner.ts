@@ -60,7 +60,7 @@ function squaredBodyCornerRadii(
   det: { left: boolean; right: boolean; front: boolean; back: boolean }
 ): CornerRadii {
   const base = (corner: keyof CornerRadii): number =>
-    params.cornerRadii?.[corner] ?? params.cornerRadius ?? GRIDFINITY.SOCKET_CORNER_RADIUS;
+    params.cornerRadii?.[corner] ?? params.cornerRadius ?? GRIDFINITY.BASEPLATE_CORNER_RADIUS;
   return {
     tl: det.left || det.back ? 0 : base('tl'),
     tr: det.right || det.back ? 0 : base('tr'),
@@ -561,7 +561,7 @@ export function pieceToBaseplateParams(
     const det = detachedSides(parentParams);
     const e = piece.edges;
     const baseR = (corner: keyof CornerRadii): number =>
-      pr?.[corner] ?? parentParams.cornerRadius ?? GRIDFINITY.SOCKET_CORNER_RADIUS;
+      pr?.[corner] ?? parentParams.cornerRadius ?? GRIDFINITY.BASEPLATE_CORNER_RADIUS;
     const actual: CornerRadii = {
       tl:
         (isExteriorEdge(e.left) && det.left) || (isExteriorEdge(e.back) && det.back)

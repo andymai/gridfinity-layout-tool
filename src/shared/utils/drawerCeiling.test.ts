@@ -89,7 +89,7 @@ describe('drawerCeilingFit', () => {
     const magnet = fit([bin({ height: heightUnits(4) })], 200, MAGNET_PLATE);
     // A no-magnet plate contributes nothing: the socket sinks into its pockets.
     expect(magnet?.tallestMm ?? 0).toBeGreaterThan(plain?.tallestMm ?? 0);
-    // The rise is the retaining floor under the pockets, never SOCKET_HEIGHT.
+    // The rise is the retaining floor under the pockets, never the pocket depth.
     expect((magnet?.tallestMm ?? 0) - (plain?.tallestMm ?? 0)).toBeLessThan(5);
   });
 
@@ -127,8 +127,8 @@ describe('drawerCeilingFit', () => {
 
   // A flat or tray base has no foot to drop into the pockets, so it rests on
   // the plate's TOP FACE — the full printed height, not the drawer floor. On
-  // the default plate that is a SOCKET_HEIGHT (4.75mm) difference, larger than
-  // the 4.3mm lip overshoot this whole check exists to catch.
+  // the default plate that is a BASEPLATE_HEIGHT (4.65mm) difference, larger
+  // than the 4.3mm lip overshoot this whole check exists to catch.
   it('stands a socketless linked design on the plate top, not the drawer floor', () => {
     const linkedBin = bin({ id: binId('flat'), height: heightUnits(4) });
     const linkedRise = (): LinkedDesignRise => ({ riseMm: 50, socketless: true });
@@ -140,8 +140,8 @@ describe('drawerCeilingFit', () => {
       ceilingMm: 54,
       linkedRise,
     });
-    // Plain plate: SOCKET_HEIGHT tall, floor depth 0.
-    expect(result?.tallestMm).toBeCloseTo(50 + GRIDFINITY_SPEC.SOCKET_HEIGHT, 5);
+    // Plain plate: BASEPLATE_HEIGHT tall, floor depth 0.
+    expect(result?.tallestMm).toBeCloseTo(50 + GRIDFINITY_SPEC.BASEPLATE_HEIGHT, 5);
     expect(result?.fits).toBe(false);
   });
 

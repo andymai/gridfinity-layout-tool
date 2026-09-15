@@ -13,7 +13,7 @@ import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildConnectors, buildMarginSeamGroove } from './baseplateConnectors';
 import { computeCellCentersMm } from './cellDecomposition';
 import { generateMargin } from './baseplateMargin';
-import { SOCKET_HEIGHT } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
 
 const vol = (s: Parameters<typeof measureVolume>[0]): number => {
   const r = measureVolume(s);
@@ -103,7 +103,7 @@ function frontGrooveUnion(rail: MarginPiece): Shape3D {
       rail.side,
       railW,
       railD,
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       'dovetail',
       0,
       0.4,
@@ -134,12 +134,11 @@ describe('margin-seam connector geometry (#2414)', () => {
   it('builds one body tongue per mating grid cell, independent of connectorNubs', () => {
     const { nubs, holes } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       WIDTH * GU,
       DEPTH * GU,
       0,
       0,
-      true
     );
     // A WIDTH-wide seam gets one tongue per cell.
     expect(nubs.length, 'one tongue per cell').toBe(WIDTH);
@@ -151,12 +150,11 @@ describe('margin-seam connector geometry (#2414)', () => {
   it('places a single tongue on a single-cell wall', () => {
     const { nubs } = buildConnectors(
       baseParams({ width: 1, edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       1 * GU,
       DEPTH * GU,
       0,
       0,
-      true
     );
     expect(nubs.length).toBe(1);
     nubs.forEach((n) => n.delete());
@@ -167,12 +165,11 @@ describe('margin-seam connector geometry (#2414)', () => {
     // did, buildConnectors must not emit a mismatched dovetail tongue.
     const { nubs } = buildConnectors(
       baseParams({ edges: frontSeamEdges, connectorStyle: 'snapClip' }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       WIDTH * GU,
       DEPTH * GU,
       0,
       0,
-      true
     );
     expect(nubs.length).toBe(0);
     nubs.forEach((n) => n.delete());
@@ -182,12 +179,11 @@ describe('margin-seam connector geometry (#2414)', () => {
     const exterior: BaseplateEdges = { ...frontSeamEdges, front: 'exterior' };
     const { nubs } = buildConnectors(
       baseParams({ edges: exterior }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       WIDTH * GU,
       DEPTH * GU,
       0,
       0,
-      true
     );
     expect(nubs.length).toBe(0);
     nubs.forEach((n) => n.delete());
@@ -218,12 +214,11 @@ describe('margin-seam connector geometry (#2414)', () => {
     // Body tongues (body frame): front wall at y = -DEPTH*GU/2, one per boundary.
     const { nubs } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       WIDTH * GU,
       DEPTH * GU,
       0,
       0,
-      true
     );
     // The rail carves the same boundary set; every tongue must seat in the union.
     const grooveWorld = frontGrooveUnion(frontRail());
@@ -244,12 +239,11 @@ describe('margin-seam connector geometry (#2414)', () => {
     const PL = 20;
     const { nubs } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       WIDTH * GU,
       DEPTH * GU,
       0,
       0,
-      true
     );
     const cornerRail = frontRail({
       lengthMm: WIDTH * GU + PL, // extended over the left padding
@@ -295,12 +289,11 @@ describe('margin-seam connector geometry (#2414)', () => {
     const FW = 2.5;
     const { nubs } = buildConnectors(
       baseParams({ width: FW, fractionalEdgeX: 'end', edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
+      PLATE_PROFILE_HEIGHT,
       FW * GU,
       DEPTH * GU,
       0,
       0,
-      true
     );
     expect(nubs.length, 'one tongue per cell incl. the half-cell').toBe(frontCenters(FW).length);
     const grooveWorld = frontGrooveUnion(

@@ -4,7 +4,7 @@ import { mm } from '@/core/types';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
 import type { MeshData } from '../../bridge/types';
 import { MeshBuilder, CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
-import { SOCKET_HEIGHT } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
 import { screwHeadRecessDepth } from '@/shared/generation/screwHolePlan';
 import { addScrewHoleAt } from './directMeshScrews';
 
@@ -18,7 +18,7 @@ const COUNTERBORE: ScrewHoleParams = { ...COUNTERSINK, headStyle: 'counterbore' 
 
 /** Plate with the pad a floor-sited screw needs (recess 2.3 + retain 0.8). */
 const PAD = 3.1;
-const TOTAL_HEIGHT = SOCKET_HEIGHT + PAD;
+const TOTAL_HEIGHT = PLATE_PROFILE_HEIGHT + PAD;
 
 function build(
   params: ScrewHoleParams,
@@ -76,10 +76,10 @@ describe('addScrewHoleAt', () => {
   });
 
   it('enters a floor hole at the pocket floor, not the top face', () => {
-    // The pocket floor sits SOCKET_HEIGHT below the top; entering at the top
+    // The pocket floor sits PLATE_PROFILE_HEIGHT below the top; entering at the top
     // would carve a cone through the middle of the socket a bin seats in.
     const { min, max } = zRange(build(COUNTERSINK, 'floor'));
-    expect(max).toBeCloseTo(TOTAL_HEIGHT - SOCKET_HEIGHT, 6);
+    expect(max).toBeCloseTo(TOTAL_HEIGHT - PLATE_PROFILE_HEIGHT, 6);
     expect(min).toBeCloseTo(0, 6);
   });
 
@@ -131,13 +131,13 @@ describe('addScrewHoleAt', () => {
   it('emits nothing when the entry plane is already the underside', () => {
     // A through-cut plate has no floor to enter, and the BREP cut removes no
     // material there either.
-    expect(build(COUNTERSINK, 'floor', 0, 0, SOCKET_HEIGHT).triangleCount).toBe(0);
+    expect(build(COUNTERSINK, 'floor', 0, 0, PLATE_PROFILE_HEIGHT).triangleCount).toBe(0);
   });
 
   it('keeps the recess inside a plate whose pad falls short', () => {
     // 1mm of floor cannot host a 2.3mm cone. The draft truncates it rather than
     // hanging the cone below the plate.
-    const mesh = build(COUNTERSINK, 'floor', 0, 0, SOCKET_HEIGHT + 1);
+    const mesh = build(COUNTERSINK, 'floor', 0, 0, PLATE_PROFILE_HEIGHT + 1);
     const { min, max } = zRange(mesh);
     expect(min).toBeCloseTo(0, 6);
     expect(max).toBeCloseTo(1, 6);

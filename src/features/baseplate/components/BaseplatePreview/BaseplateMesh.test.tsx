@@ -36,7 +36,7 @@ vi.mock('./useMeshGeometry', () => ({
 }));
 
 vi.mock('@/shared/printSettings/gridfinityGeometry', () => ({
-  GRIDFINITY_SPEC: { SOCKET_HEIGHT: 5 },
+  GRIDFINITY_SPEC: { BASEPLATE_HEIGHT: 5 },
 }));
 
 const { BaseplateMesh } = await import('./BaseplateMesh');

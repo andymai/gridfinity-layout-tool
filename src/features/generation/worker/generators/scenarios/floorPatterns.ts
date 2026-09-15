@@ -13,7 +13,7 @@ import { meshVolume } from '../__kernel-tests__/meshAssertions';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import type { MeshData } from '@/features/generation/bridge/types';
 import type { BinParams, CompartmentConfig } from '@/shared/types/bin';
-import { CLEARANCE, INSET_BOT } from '../generatorConstants';
+import { CLEARANCE, FOOT_INSET_BOT } from '../generatorConstants';
 
 /** Tolerance for "on the foot underside plane" (Z = 0 after the socket lift). */
 const BOTTOM_EPS = 0.01;
@@ -57,7 +57,7 @@ function footprintOnBottom({ vertices }: MeshData): {
  */
 function assertFeetUnbreached(result: MeshData, params: BinParams): void {
   const half = (units: number, pitch: number): number =>
-    (units * pitch) / 2 - CLEARANCE / 2 - INSET_BOT;
+    (units * pitch) / 2 - CLEARANCE / 2 - FOOT_INSET_BOT;
   const expected = {
     x: half(params.width, params.gridUnitMm),
     y: half(params.depth, params.gridUnitMmY ?? params.gridUnitMm),

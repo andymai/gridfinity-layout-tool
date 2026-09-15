@@ -59,7 +59,7 @@ describe('useAssembledHeight', () => {
   it('falls back to a standard plate when the layout has none', () => {
     setPlate(undefined);
     const { result } = renderHook(() => useAssembledHeight());
-    expect(result.current.breakdown.baseplatePrintedMm).toBe(GRIDFINITY_SPEC.SOCKET_HEIGHT);
+    expect(result.current.breakdown.baseplatePrintedMm).toBe(GRIDFINITY_SPEC.BASEPLATE_HEIGHT);
     expect(result.current.breakdown.totalMm).toBeCloseTo(46.4, 6);
   });
 

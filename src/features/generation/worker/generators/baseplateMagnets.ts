@@ -23,11 +23,11 @@ import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import {
   SIZE,
-  SOCKET_HEIGHT,
+  PLATE_PROFILE_HEIGHT,
   COPLANAR_MARGIN,
   HOLE_OFFSET,
   CLEARANCE,
-  INSET_BOT,
+  SOCKET_TAPER_WIDTH,
   forEachCell,
   type ForEachCellOptions,
   type CellInfo,
@@ -54,7 +54,8 @@ export const MAGNET_EDGE_CLEARANCE = 1.5;
  * Whether a cell may carry attachment (magnet / screw) holes at all.
  *
  * {@link magnetPositionsForCell} measures its wall from the cell's NOMINAL edge,
- * which the tapered face the hole opens on falls short of by `INSET_BOT` a side.
+ * which the tapered face the hole opens on falls short of by `SOCKET_TAPER_WIDTH`
+ * a side — the foot's inset, which is the tighter of the mating pair.
  * A full cell absorbs that; a half cell only does from around spec pitch upward.
  *
  * Full cells bypass the span check rather than passing it: they carry holes at
@@ -68,7 +69,7 @@ export function cellHostsAttachmentHoles(
   pitchY: number
 ): boolean {
   if (cell.widthUnits >= 1 && cell.depthUnits >= 1) return true;
-  const minSpanMm = 2 * (holeRadius + MAGNET_EDGE_CLEARANCE + INSET_BOT) + CLEARANCE;
+  const minSpanMm = 2 * (holeRadius + MAGNET_EDGE_CLEARANCE + SOCKET_TAPER_WIDTH) + CLEARANCE;
   return cell.widthUnits * pitchX >= minSpanMm && cell.depthUnits * pitchY >= minSpanMm;
 }
 
@@ -79,9 +80,9 @@ function buildMagnetCutters(
   magnetDepth: number
 ): Shape3D[] {
   // Cutter starts above the pocket floor (COPLANAR_MARGIN avoids coplanar with
-  // pocket bottom at Z=-SOCKET_HEIGHT) and cuts downward by magnetDepth.
+  // pocket bottom at Z=-PLATE_PROFILE_HEIGHT) and cuts downward by magnetDepth.
   // Leaves MAGNET_FLOOR of solid material at the bottom of each hole.
-  const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
+  const cutterZ = -PLATE_PROFILE_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = magnetDepth + COPLANAR_MARGIN;
   const magnetTemplate = cylinder(magnetRadius, cutterDepth, {
     at: [0, 0, cutterZ],

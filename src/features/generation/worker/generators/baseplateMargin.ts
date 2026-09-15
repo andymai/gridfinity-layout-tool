@@ -23,7 +23,7 @@ import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
 import { isMarginSeamStyle } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
-  SOCKET_HEIGHT,
+  PLATE_PROFILE_HEIGHT,
   baseplateFloorDepth,
   frameCells,
   toIndexedMeshData,
@@ -58,7 +58,7 @@ function railDims(params: ResolvedBaseplateParams, margin: MarginPiece): RailDim
   return {
     railW: horizontal ? margin.lengthMm : margin.bandThicknessMm,
     railD: horizontal ? margin.bandThicknessMm : margin.lengthMm,
-    totalHeight: SOCKET_HEIGHT + floorDepth,
+    totalHeight: PLATE_PROFILE_HEIGHT + floorDepth,
   };
 }
 
@@ -95,11 +95,7 @@ function railCornerRadii(
 }
 
 /** Build a detached margin rail BREP solid, centered at the origin. */
-function buildMarginSolid(
-  params: ResolvedBaseplateParams,
-  margin: MarginPiece,
-  forExport: boolean = true
-): Shape3D {
+function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece): Shape3D {
   const { railW, railD, totalHeight } = railDims(params, margin);
   const floorDepth = baseplateFloorDepth(params);
   const cornerRadii = railCornerRadii(params, margin, railW, railD);
@@ -140,7 +136,7 @@ function buildMarginSolid(
       if (Math.abs(lx) > halfW + 1e-6 || Math.abs(ly) > halfD + 1e-6) continue;
       const cellW = cell.widthUnits * params.gridUnitMm;
       const cellD = cell.depthUnits * params.gridUnitMm;
-      const pocket = getPocketTemplate(cellW, cellD, forExport, throughCut, floorDepth);
+      const pocket = getPocketTemplate(cellW, cellD, throughCut, floorDepth);
       pockets.push(translate(pocket, [lx, ly, 0]));
       pocket.delete();
     }
@@ -212,7 +208,7 @@ export function generateMargin(
   margin: MarginPiece,
   forExport: boolean
 ): MeshData {
-  const rail = buildMarginSolid(params, margin, forExport);
+  const rail = buildMarginSolid(params, margin);
   try {
     const { railW, railD } = railDims(params, margin);
     const maxDimension = Math.max(railW, railD);
@@ -237,7 +233,7 @@ export async function exportMargin(
   tolerance?: number,
   angularTolerance?: number
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
-  const rail = buildMarginSolid(params, margin, false);
+  const rail = buildMarginSolid(params, margin);
   try {
     const name = `baseplate_${margin.id}_${Math.round(margin.lengthMm)}x${Math.round(margin.bandThicknessMm)}mm`;
     if (format === 'step') {

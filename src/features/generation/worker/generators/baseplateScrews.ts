@@ -30,7 +30,7 @@ import {
   type ScrewSite,
   type ScrewSlot,
 } from '@/shared/generation/screwHolePlan';
-import { SOCKET_HEIGHT, COPLANAR_MARGIN, forEachCell } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT, COPLANAR_MARGIN, forEachCell } from './generatorTypes';
 import type { ForEachCellOptions, CellInfo } from './generatorTypes';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { resolvePitch, type GridPitch, type GridUnitInput } from './gridPitch';
@@ -221,7 +221,7 @@ function buildScrewTemplate(
   const { entryBelowTop, recessDepth, throughDepth } = screwCutDepths(
     params,
     site,
-    SOCKET_HEIGHT,
+    PLATE_PROFILE_HEIGHT,
     totalHeightMm
   );
   const entryZ = -entryBelowTop;

@@ -53,7 +53,7 @@ export function GhostPaddingOutline({
 
   const gridW = width * gridUnitMm;
   const gridD = depth * gridUnitMmY;
-  const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+  const totalH = GRIDFINITY_SPEC.BASEPLATE_HEIGHT;
 
   // Slab edges: pockets centered at origin, slab offset by padding asymmetry
   const slabLeft = -gridW / 2 - paddingLeft;
