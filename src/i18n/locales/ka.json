@@ -1925,6 +1925,7 @@
   "binDesigner.lid.compat.hingeUnbuildable": "ამ ყუთს ანჯამიანი თავსახური ვერ ექნება: ანჯამის კედელი მეტისმეტად მოკლეა, ან ამონაჭრებმა და სახელურებმა რგოლებისთვის უწყვეტი კიდე აღარ დატოვა.",
   "binDesigner.lid.compat.hingeStackableTop": "ანჯამის რგოლები თავსახურის ზედაპირს სცდება, ამიტომ მასზე დაწყობილი ყუთი ირყევა. გამორთეთ დასაწყობი ზედაპირი.",
   "binDesigner.lid.compat.fix.hingeStackableTop": "დასაწყობი ზედაპირის გამორთვა",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "გადაიტანეთ ანჯამა კედელზე, რომლის კიდეც უწყვეტია",
   "binDesigner.lid.compat.fixButton": "გამოსწორება",
   "binDesigner.lid.compat.fixAriaLabel": "გამოსწორება: {detail}",
   "binDesigner.lid.clickRailDisabledBySide": "{side} მხარის რელსი ავტომატურად გამოირთო ფუნქციასთან კონფლიქტის გამო (იხ. თავსებადობის შენიშვნები)",

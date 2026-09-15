@@ -79,7 +79,7 @@ describe('FeatureToggle', () => {
       />
     );
     expect(screen.getByRole('switch')).toBeDisabled();
-    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByText('Not available for slotted bins')).toBeInTheDocument();
   });
 

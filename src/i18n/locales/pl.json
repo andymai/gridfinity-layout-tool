@@ -1171,6 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Rozwiąż konflikt, aby włączyć pokrywę: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "wyłącz niektóre uchwyty",
   "binDesigner.lid.compat.fix.hingeStackableTop": "wyłącz wierzch do sztaplowania",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "przenieś zawias na ścianę z nieprzerwaną krawędzią",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "użyj większego bina lub mniejszego magnesu",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "zmniejsz głębokość magnesu mocującego",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "wyłączyć kołnierz sztaplujący",

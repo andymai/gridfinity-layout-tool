@@ -49,6 +49,17 @@ export function FeatureToggle({
 
   const isDisabled = !!disabledReason || comingSoon;
   const isActive = checked && !isDisabled;
+  // The switch reports `checked` even while disabled: the stored value survives
+  // the gate, and a switch that read "off" would claim the setting had been
+  // cleared when it is only waiting on the reason below. Only the controls
+  // fold away, since nothing they set can apply until the gate lifts.
+  const switchTone = isDisabled
+    ? checked
+      ? 'cursor-not-allowed bg-accent opacity-50 hover:bg-accent'
+      : 'cursor-not-allowed bg-stroke-subtle opacity-50 hover:bg-stroke-subtle'
+    : checked
+      ? 'bg-accent hover:bg-accent'
+      : 'bg-stroke-subtle hover:bg-stroke-subtle';
 
   return (
     <div>
@@ -69,21 +80,15 @@ export function FeatureToggle({
           variant="ghost"
           type="button"
           role="switch"
-          aria-checked={isActive}
+          aria-checked={checked}
           aria-label={label}
           onClick={onChange}
           disabled={isDisabled}
-          className={`relative inline-flex h-7 w-12 items-center justify-start rounded-full px-0 py-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
-            isDisabled
-              ? 'cursor-not-allowed bg-stroke-subtle opacity-50 hover:bg-stroke-subtle'
-              : checked
-                ? 'bg-accent hover:bg-accent'
-                : 'bg-stroke-subtle hover:bg-stroke-subtle'
-          }`}
+          className={`relative inline-flex h-7 w-12 items-center justify-start rounded-full px-0 py-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${switchTone}`}
         >
           <span
             className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
-              isActive ? 'translate-x-6' : 'translate-x-0.5'
+              checked ? 'translate-x-6' : 'translate-x-0.5'
             }`}
           />
         </Button>

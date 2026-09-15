@@ -79,8 +79,21 @@ describe('FeatureToggle', () => {
       />
     );
     expect(screen.getByRole('switch')).toBeDisabled();
-    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByText('Not available for slotted bins')).toBeInTheDocument();
+  });
+
+  it('keeps a disabled switch unchecked when the stored value is off', () => {
+    render(
+      <FeatureToggle
+        label="Test Feature"
+        checked={false}
+        onChange={vi.fn()}
+        disabledReason="Not available for slotted bins"
+      />
+    );
+    expect(screen.getByRole('switch')).toBeDisabled();
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
   });
 
   it('uses customizeLabel prop when provided', () => {

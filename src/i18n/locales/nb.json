@@ -1171,6 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Løs konflikten for å aktivere lokket: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "deaktiver noen håndtak",
   "binDesigner.lid.compat.fix.hingeStackableTop": "slå av den stablbare oversiden",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "flytt hengselen til en vegg med ubrutt kant",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "bruk en større beholder eller mindre magnet",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reduser dybden på festemagneten",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "slå av stableleppen",

@@ -157,6 +157,9 @@ export function LidSection() {
         />
       )}
 
+      {/* The body follows the persisted flag, not the buildable gate: a blocker
+          disables the toggle above but has to leave the pickers and the fix
+          actions reachable, because for the hinge blockers they are the fix. */}
       {state.enabled && (
         <>
           {/* Compatibility notes — features that conflict with click-lock

@@ -1171,6 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "解决冲突以启用盖子：{detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "停用部分把手",
   "binDesigner.lid.compat.fix.hingeStackableTop": "关闭可堆叠顶面",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "将铰链移到边缘完整的墙面上",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "使用更大的收纳盒或更小的磁铁",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "减小固定磁铁深度",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "关闭堆叠唇口",

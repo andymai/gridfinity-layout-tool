@@ -249,4 +249,5 @@ export const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibi
   // is a single Base switch, and the placement the user just chose is what
   // makes it impossible.
   'slideFlushNeedsNoLip',
+  'hingeStackableTop',
 ]);

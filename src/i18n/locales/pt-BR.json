@@ -1171,6 +1171,7 @@
   "binDesigner.lid.compat.disabledOne": "Resolva o conflito para ativar a tampa: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "desativar algumas alças",
   "binDesigner.lid.compat.fix.hingeStackableTop": "desligar o topo empilhável",
+  "binDesigner.lid.compat.fix.hingeUnbuildable": "mover a dobradiça para uma parede com a borda contínua",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "use um compartimento maior ou um ímã menor",
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reduzir a profundidade do ímã de retenção",
   "binDesigner.lid.compat.fix.slideFlushNeedsNoLip": "desligar o lábio de empilhamento",
