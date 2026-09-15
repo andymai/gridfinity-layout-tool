@@ -11,6 +11,10 @@ import {
   LID_TOP_THICKNESS_MIN_MM,
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_STEP_MM,
+  LID_HINGE_BARREL_RADIUS_MM,
+  LID_HINGE_PLATE_CLEARANCE_MM,
+  hingePlateFloorMm,
+  hingeStopRadiusMm,
   resolveLidMateRelief,
   resolveLidPlateThickness,
   resolveLidTrayBreakdown,
@@ -255,6 +259,52 @@ describe('resolveLidPlateThickness', () => {
     expect(
       resolveLidPlateThickness(params({ tray: tray(4), stackableTop: true, topThicknessMm: 1.2 }))
     ).toBe(1.2);
+  });
+
+  describe('hinged', () => {
+    it('floors the plate above the stop lobe so the export lies flat', () => {
+      const hinged = params({ attachment: 'hinge', topThicknessMm: 0.8 });
+      const floor = hingePlateFloorMm(hinged);
+      expect(floor).toBeGreaterThan(
+        hingeStopRadiusMm(hinged) + LID_HINGE_PLATE_CLEARANCE_MM - 1e-9
+      );
+      expect(floor).toBeGreaterThan(LID_HINGE_BARREL_RADIUS_MM);
+      expect(resolveLidPlateThickness(hinged)).toBe(floor);
+      expect(floor).toBe(3.2);
+    });
+
+    it('lands on the thickness step, so the stepper can sit on it', () => {
+      const floor = hingePlateFloorMm(params({ attachment: 'hinge' }));
+      expect(Math.round(floor / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM).toBeCloseTo(
+        floor,
+        6
+      );
+    });
+
+    it('keeps a thicker plate the user asked for', () => {
+      expect(resolveLidPlateThickness(params({ attachment: 'hinge', topThicknessMm: 5 }))).toBe(5);
+    });
+
+    it('rises with the extra-height knob, because the axis does', () => {
+      const tall = params({ attachment: 'hinge', extraHeightMm: 3 });
+      expect(hingePlateFloorMm(tall)).toBeGreaterThan(
+        hingePlateFloorMm(params({ attachment: 'hinge' }))
+      );
+      expect(resolveLidPlateThickness(tall)).toBe(hingePlateFloorMm(tall));
+    });
+
+    it('bounds the whole plate under a tray, not just the floor beneath it', () => {
+      const plate = resolveLidPlateThickness(
+        params({ attachment: 'hinge', tray: tray(1), topThicknessMm: 0.8 })
+      );
+      expect(plate).toBeGreaterThanOrEqual(hingePlateFloorMm(params({ attachment: 'hinge' })));
+    });
+
+    it('does not apply to any other attachment', () => {
+      expect(
+        resolveLidPlateThickness(params({ attachment: 'friction', topThicknessMm: 0.8 }))
+      ).toBe(LID_TOP_THICKNESS_BASE);
+    });
   });
 });
 

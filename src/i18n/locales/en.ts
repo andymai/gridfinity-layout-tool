@@ -2124,6 +2124,8 @@ const en: Record<string, string> = {
     'Thickness of the lid’s flat top. Raise it for a stiffer, more opaque lid on large bins.',
   'binDesigner.lid.topThicknessRaisedHint':
     'Top is {thickness}mm here: magnet pockets need the extra material.',
+  'binDesigner.lid.hingePlateFloorHint':
+    'Hinged lids start at {min} mm, so the knuckles and the stop sit below the top face and the lid prints flat, without supports.',
   'binDesigner.lid.trayFloorThickness': 'Tray floor',
   'binDesigner.lid.trayFloorThicknessAria': 'Material left under the tray recess, in millimeters',
   'binDesigner.lid.trayFloorThicknessHint':
@@ -2296,7 +2298,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.hingeUnbuildable':
     'This bin can’t take a hinged lid: the hinge wall is too short, or cutouts and handles have left no unbroken stretch of rim for the knuckles.',
   'binDesigner.lid.compat.hingeStackableTop':
-    'The hinge knuckles stand proud of the lid’s top, so a bin stacked on it would rock. Turn off the stackable top.',
+    'A hinged lid can’t carry a stackable top. Turn off the stackable top.',
   'binDesigner.lid.compat.fix.hingeStackableTop': 'turn off the stackable top',
   'binDesigner.lid.compat.fix.hingeUnbuildable':
     'free up the hinge wall or pick another attachment',

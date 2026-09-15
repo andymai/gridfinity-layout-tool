@@ -653,11 +653,11 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     if (rejection !== null && rejection !== 'disabled') {
       issues.push({ id: 'hingeUnbuildable', severity: 'blocker' });
     } else {
-      // The barrel reaches its own radius above the plate's underside while
-      // the plate reaches only its thickness, so the knuckles stand ~1.4mm
-      // proud of the lid's top face. A bin stacked on that rests on two rows
-      // of cylinders and rocks. A blocker rather than a warning because the
-      // two features are simply incompatible, and the fix is one click.
+      // The plate floor (`hingePlateFloorMm`) keeps the knuckles and the stop
+      // lobe under the top face, so a stacked bin no longer rocks on them;
+      // what is unmeasured is the stack grid against the hinge's trim cut,
+      // which runs last and takes whatever lies outboard of the axis. A
+      // blocker rather than a warning until that is, and the fix is one click.
       if (params.lid.stackableTop) {
         issues.push({ id: 'hingeStackableTop', severity: 'blocker' });
       }

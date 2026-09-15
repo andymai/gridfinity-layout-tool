@@ -118,12 +118,11 @@
  */
 
 import {
-  LID_FIT_CLEARANCE,
+  LID_HINGE_AXIS_INSET_MM,
   LID_HINGE_BARREL_RADIUS_MM,
   LID_HINGE_BORE_MM,
   LID_HINGE_CORNER_INSET_MM,
   LID_HINGE_ENTRY_BORE_MM,
-  LID_HINGE_FACE_RELIEF_MM,
   LID_HINGE_FIT_DEFAULT_MM,
   LID_HINGE_FIT_MAX_MM,
   LID_HINGE_FIT_MIN_MM,
@@ -134,14 +133,12 @@ import {
   LID_HINGE_MIN_RUN_MM,
   LID_HINGE_SEAM_CHAMFER_MM,
   LID_HINGE_STOP_ANGLE_DEG,
-  LID_HINGE_STOP_MARGIN_MM,
   LID_HINGE_STOP_SECTOR_DEG,
+  hingeAxisAboveLipTopMm,
   hingeOppositeSide,
+  hingeStopRadiusMm,
   isHingeLid,
-  lidAnchorZ,
-  resolveLidCavityExtraMm,
   resolveLidHinge,
-  resolveLidPlateThickness,
 } from '@/features/bin-designer/types/lid';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { LidHingeCatch, LidRailSide } from '@/features/bin-designer/types/lid';
@@ -487,18 +484,13 @@ export function planHingeLid(params: BinParams): HingePlan {
 
   // Inboard of the OUTER face by the radius plus a relief, so the barrel stops
   // just short of the face instead of touching it along a tangent line.
-  const axisInsetMm = LID_HINGE_BARREL_RADIUS_MM + LID_HINGE_FACE_RELIEF_MM;
+  const axisInsetMm = LID_HINGE_AXIS_INSET_MM;
   const axisCrossMm = crossSpan / 2 + params.wallThickness - axisInsetMm;
 
-  // The plate's underside, expressed in the bin's frame. `lidAnchorZ` is where
-  // the bin's lip top lands in lid-local Z, so subtracting it converts.
-  const plateThickness = resolveLidPlateThickness(params);
-  const anchorZ = lidAnchorZ(
-    params.heightUnitMm,
-    LID_FIT_CLEARANCE,
-    resolveLidCavityExtraMm(params)
-  );
-  const axisAboveLipTopMm = -plateThickness - anchorZ;
+  // The plate's underside, expressed in the bin's frame; the plate's own
+  // thickness cancels out of it, which is what lets `hingePlateFloorMm` size
+  // the plate from the same number.
+  const axisAboveLipTopMm = hingeAxisAboveLipTopMm(params);
 
   return {
     rejection: null,
@@ -515,10 +507,10 @@ export function planHingeLid(params: BinParams): HingePlan {
         LID_HINGE_STOP_ANGLE_DEG -
         90 +
         (Math.atan2(-axisAboveLipTopMm, axisInsetMm) * 180) / Math.PI,
-      // Reach to the corner, plus margin. The corner's ANGLE sets the stop and
-      // is already folded into `trimTiltDeg`; its DISTANCE only says how far
-      // the lobe has to stick out to touch it.
-      stopRadiusMm: Math.hypot(axisInsetMm, axisAboveLipTopMm) + LID_HINGE_STOP_MARGIN_MM,
+      // The corner's ANGLE sets the stop and is already folded into
+      // `trimTiltDeg`; its DISTANCE only says how far the lobe has to stick out
+      // to touch it, and the plate floor is sized from the same reach.
+      stopRadiusMm: hingeStopRadiusMm(params),
       stopSectorDeg: LID_HINGE_STOP_SECTOR_DEG,
       boreMm: LID_HINGE_BORE_MM,
       entryBoreMm: LID_HINGE_ENTRY_BORE_MM,

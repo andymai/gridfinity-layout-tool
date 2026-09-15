@@ -653,7 +653,7 @@ describe('LidSection', () => {
       ).toBeInTheDocument();
       expect(screen.getByRole('radiogroup', { name: 'Attachment' })).toBeInTheDocument();
       expect(screen.getByRole('radiogroup', { name: 'Top surface' })).toBeInTheDocument();
-      expect(screen.getByText(/knuckles stand proud/)).toBeInTheDocument();
+      expect(screen.getByText(/can’t carry a stackable top/)).toBeInTheDocument();
     });
 
     it('offers a one-click Fix that turns off the stackable top of a hinged lid', () => {
@@ -667,7 +667,7 @@ describe('LidSection', () => {
         },
       });
       render(<LidSection />);
-      fireEvent.click(screen.getByRole('button', { name: /^Fix: The hinge knuckles/ }));
+      fireEvent.click(screen.getByRole('button', { name: /^Fix: A hinged lid/ }));
       const { lid } = useDesignerStore.getState().params;
       expect(lid.stackableTop).toBe(false);
       expect(lid.magnetHoles).toBe(false);
