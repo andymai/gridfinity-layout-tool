@@ -17,7 +17,7 @@ import {
   verticalSolidSpans,
   triangleArea,
 } from './__kernel-tests__/meshAssertions';
-import { SOCKET_HEIGHT, CLEARANCE } from './generatorTypes';
+import { LID_STACK_GRID_HEIGHT_MM } from '@/shared/printSettings/gridfinityGeometry';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import {
   LID_FIT_CLEARANCE,
@@ -339,14 +339,15 @@ describe('lid generation and export scenarios', () => {
   describe('stacking-lip-only top (#2930)', () => {
     const DIMS = { width: 3, depth: 2, height: 3 } as const;
     /**
-     * Z the perimeter lip tops out at. The pocket's rim is pulled in by
-     * `STACK_LAND_INSET` (= CLEARANCE/2), which equals the `LID_FIT_CLEARANCE` the
-     * lid outline already sits inside the nominal socket grid, so the rim's
-     * vertical land lands exactly on the slab edge and collapses. Lip material
-     * survives only from the big taper's start down — i.e. `SOCKET_HEIGHT −
-     * CLEARANCE/2`.
+     * Z the perimeter lip tops out at — the grid's own top face.
+     *
+     * The pocket is cut at full size and overhangs the slab, so at the slab's
+     * top the cut has reached exactly `LID_FIT_CLEARANCE`, which is where the
+     * lid outline already sits inside the nominal socket grid. The ring is a
+     * knife edge there and gains width going down, so the lip tops out flush
+     * with the lands rather than below them.
      */
-    const LIP_EDGE_Z = SOCKET_HEIGHT - CLEARANCE / 2;
+    const LIP_EDGE_Z = LID_STACK_GRID_HEIGHT_MM;
 
     /** Count vertices matching a predicate. Locates the pocket itself, which
      *  the bounding box can't: that only ever sees the slab. */
@@ -383,11 +384,11 @@ describe('lid generation and export scenarios', () => {
       expect(l.maxX - l.minX).toBeCloseTo(g.maxX - g.minX, 3);
       expect(l.maxY - l.minY).toBeCloseTo(g.maxY - g.minY, 3);
 
-      // The full grid tops out at SOCKET_HEIGHT (flat interior lands + ring).
-      // Lip-only keeps only the outer rim, which tops out one LIP_EDGE_Z lower
-      // (see its definition) — a lip ending anywhere else would not be the full
-      // socket profile.
-      expect(g.maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
+      // Both top out at the grid's height: lip-only is the SAME pocket grid
+      // with its interior dividers dropped, so its ring is the perimeter of
+      // that grid and ends where the lands do. The triangle-count assertion
+      // above is what distinguishes the two, not the height.
+      expect(g.maxZ).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 3);
       expect(l.maxZ).toBeCloseTo(LIP_EDGE_Z, 3);
     });
 
@@ -470,7 +471,7 @@ describe('lid generation and export scenarios', () => {
 
       // The +X strip beyond the socket grid is never reached by the pocket, so
       // it stays a full-height ledge — same as the per-cell path does today.
-      expect(boundingBox(shifted!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
+      expect(boundingBox(shifted!.vertices).maxZ).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 3);
     });
 
     it('spans a fractional footprint as one pocket', async () => {
@@ -499,8 +500,8 @@ describe('lid generation and export scenarios', () => {
       assertStructurallyValid(plate!, '3x2 lip-only baseplate');
       const bb = boundingBox(plate!.vertices);
       expect(bb.minZ).toBeGreaterThan(-0.5);
-      // The knife edge, not a 4..6 range — the full grid's plate tops out at
-      // SOCKET_HEIGHT, so a range would pass for either variant.
+      // Pinned exactly, not as a range: the plate is only as tall as the grid,
+      // so a loose bound would accept a slab that never got its pocket cut.
       expect(bb.maxZ).toBeCloseTo(LIP_EDGE_Z, 3);
     });
 
@@ -553,12 +554,12 @@ describe('lid generation and export scenarios', () => {
       return n;
     };
 
-    it('interior dividers, crossings and T-junctions all top out flush at SOCKET_HEIGHT', async () => {
+    it('interior dividers, crossings and T-junctions all top out flush at the grid height', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       // 3×3: pitch-42 grid, interior divider lines at x,y = ±21, interior
       // crossings at (±21, ±21), slab edge at 3·42/2 − LID_FIT_CLEARANCE = 62.75.
       // Dividers (mid-run), crossings and edge T-junctions must all read one
-      // height, and that height must be SOCKET_HEIGHT — a genuinely flat top.
+      // height, and that height must be the grid's — a genuinely flat top.
       const mesh = generateLid(
         makeParams({ stackableTop: true }, { width: 3, depth: 3, height: 3 })
       );
@@ -577,10 +578,10 @@ describe('lid generation and export scenarios', () => {
         [62, 21], // T-junction: Y divider into +X edge
         [62, -21],
       ] as const) {
-        expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
+        expect(crestNear(mesh!, x, y)).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 1);
       }
-      // The whole top's high-water mark is exactly SOCKET_HEIGHT.
-      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
+      // The whole top's high-water mark is exactly the grid height.
+      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 3);
     });
 
     it('keeps the flush top on a half-grid off the integer pitch', async () => {
@@ -596,18 +597,18 @@ describe('lid generation and export scenarios', () => {
       );
       expect(mesh).not.toBeNull();
       assertStructurallyValid(mesh!, '2.5x2.5 stackable lid');
-      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT, 3);
+      expect(boundingBox(mesh!.vertices).maxZ).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 3);
 
       // Sub-cell edges at pitch 42, centred: -52.5, -10.5, 31.5, 52.5 → interior
       // lines at -10.5 and 31.5. Divider mid-run and every crossing are flush.
-      expect(crestNear(mesh!, -10.5, 10.5)).toBeCloseTo(SOCKET_HEIGHT, 1);
+      expect(crestNear(mesh!, -10.5, 10.5)).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 1);
       for (const [x, y] of [
         [-10.5, -10.5],
         [-10.5, 31.5],
         [31.5, -10.5],
         [31.5, 31.5],
       ] as const) {
-        expect(crestNear(mesh!, x, y)).toBeCloseTo(SOCKET_HEIGHT, 1);
+        expect(crestNear(mesh!, x, y)).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 1);
       }
     });
 
@@ -626,9 +627,9 @@ describe('lid generation and export scenarios', () => {
       expect(plate).not.toBeNull();
       expect(sliverCount(plate!)).toBe(0);
       // The centre cell (0,0) is an open pocket: the probe finds no top there,
-      // where a divider or crossing reads SOCKET_HEIGHT.
+      // where a divider or crossing reads the grid height.
       expect(crestZ(plate!, 0, 0)).toBe(-Infinity);
-      expect(crestNear(plate!, 21, 0)).toBeCloseTo(SOCKET_HEIGHT, 1);
+      expect(crestNear(plate!, 21, 0)).toBeCloseTo(LID_STACK_GRID_HEIGHT_MM, 1);
     });
   });
 
@@ -662,7 +663,7 @@ describe('lid generation and export scenarios', () => {
       expect(plate).not.toBeNull();
       assertStructurallyValid(plate!, '2x2 separate baseplate');
       const bb = boundingBox(plate!.vertices);
-      // Built glue-face down: flat bottom at Z≈0, slab ~SOCKET_HEIGHT (4.75mm) tall,
+      // Built glue-face down: flat bottom at Z≈0, slab ~LID_STACK_GRID_HEIGHT_MM tall,
       // pockets opening upward — already its ideal print orientation.
       expect(bb.minZ).toBeGreaterThan(-0.5);
       expect(bb.minZ).toBeLessThan(0.5);

@@ -20,7 +20,10 @@
  * designer draws.
  */
 
-import { GRIDFINITY_SPEC as GRIDFINITY } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  GRIDFINITY_SPEC as GRIDFINITY,
+  LID_STACK_GRID_HEIGHT_MM,
+} from '@/shared/printSettings/gridfinityGeometry';
 import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import {
   isSocketlessBase,
@@ -209,7 +212,7 @@ export function assembledHeight(
   // The stack grid is a SOCKET_HEIGHT slab above the lid's top face, whether it
   // is fused on or printed separately and glued. With nothing stacked on it, its
   // top is the assembly's highest point.
-  const gridMm = lidMm > 0 && params.lid.stackableTop ? GRIDFINITY.SOCKET_HEIGHT : 0;
+  const gridMm = lidMm > 0 && params.lid.stackableTop ? LID_STACK_GRID_HEIGHT_MM : 0;
 
   const segments: AssembledSegment[] = [];
   let z = 0;
