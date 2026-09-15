@@ -16,6 +16,7 @@ import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import { recolorBody } from './recolorBody';
+import { disableFeatureColors } from './plainColors';
 import {
   captureThumbnailAtPreset,
   exportCommunityGlb,
@@ -40,14 +41,18 @@ export function DevThumbnailRoute() {
   // Load the requested example's params into the store once on mount.
   // `params=<base64 JSON>` renders an arbitrary partial-params design instead
   // (used by gen-seo-images for marketing renders with no gallery example).
-  // `body=<hex>` restyles an example's body color without forking it.
+  // `body=<hex>` restyles an example's body color without forking it, and
+  // `colors=0` renders it in the plain preview color the designer uses for a
+  // user's own bin.
   useEffect(() => {
     const search = new URLSearchParams(window.location.search);
     const id = search.get('example');
     const body = search.get('body');
+    const plain = search.get('colors') === '0';
     const example = EXAMPLE_DESIGNS.find((e) => e.id === id);
     if (example) {
-      setParams(body ? recolorBody(example.params, body) : example.params);
+      const styled = body ? recolorBody(example.params, body) : example.params;
+      setParams(plain ? disableFeatureColors(styled) : styled);
       return;
     }
     const rawParams = search.get('params');
