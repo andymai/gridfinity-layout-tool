@@ -1,0 +1,127 @@
+scripts/doc-budget.json
+  s_f2554c47160f60::t_f43e2fa5a36b60 9
+src/shared/utils/wallTextPlan.ts
+  s_f2554c47160f60::t_85614d69d4f300 153
+src/features/whats-new/latest.ts
+  s_f2554c47160f60::t_f41ef3539483ec 9
+src/features/generation/worker/generators/pipeline/context.ts
+  s_f2554c47160f60::t_4b2f9c52d2bb1e 19
+  s_f2554c47160f60::t_1d749248a586fe 201
+src/i18n/locales/sv.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/i18n/locales/es.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/features/bin-designer/components/preview/GhostHandles/GhostHandles.test.tsx
+  s_f2554c47160f60::t_1756ab71269e92 155,160-192
+src/i18n/locales/nb.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/i18n/locales/zh-CN.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/i18n/locales/it.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/features/generation/worker/generators/scenarios/handles.ts
+  s_f2554c47160f60::t_6a161a0ee698c3 59
+  s_f2554c47160f60::t_11392926e20d3e 279-316
+  s_f2554c47160f60::t_136e7a8d1cc825 1,7-9,11-12,17-58
+src/features/generation/worker/generators/handleBuilder.test.ts
+  s_f2554c47160f60::t_84d66386cc3220 157-294
+  s_f2554c47160f60::t_37892c9ffd7197 8
+.claude/skills/geometry-debugging/SKILL.md
+  s_f2554c47160f60::t_39cf47b4989a54 252
+src/i18n/locales/pt-BR.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/shared/utils/slotFreeWalls.ts
+  s_f2554c47160f60::t_4578d3abe51251 24,28,37
+  s_f2554c47160f60::t_1ae1a12a4ce02c 4-6,10,20-23,25-27,35-36,38-40
+src/i18n/locales/de.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/features/bin-designer/components/panel/HandleSection/useHandleSection.ts
+  s_f2554c47160f60::t_3692887aa9757e 38-48,50-51
+  s_f2554c47160f60::t_276db7ec8cc301 178
+  s_f2554c47160f60::t_fbeb4d01f12511 60
+  s_f2554c47160f60::t_30e0f45bd124d6 135-136,144
+  s_f2554c47160f60::t_55a379da87ac4c 70
+  s_f2554c47160f60::t_ca8738355ed3dd 9
+src/i18n/locales/ko.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/shared/utils/slotFreeWalls.test.ts
+  s_f2554c47160f60::t_acde6b4680c394 2-3
+  s_f2554c47160f60::t_235d35f8bd46f8 1,4-72
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_f2554c47160f60::t_a76cc26d7dcb96 118
+  s_f2554c47160f60::t_4c7d203b829309 215
+  s_f2554c47160f60::t_72ea728bc96d28 281
+  s_f2554c47160f60::t_c8de71c189266f 56-57
+src/features/whats-new/entries.ts
+  s_f2554c47160f60::t_3d6babe40131ec 17-25
+  s_f2554c47160f60::t_63d4148e94f570 16
+src/features/bin-designer/components/panel/HandleSection/useHandleSection.test.ts
+  s_f2554c47160f60::t_8d4cee3dd12689 129-134
+  s_f2554c47160f60::t_8002920a2aa803 168
+  s_f2554c47160f60::t_68482363cc07c2 119-128,135-167,169-191
+src/i18n/locales/cs.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_f2554c47160f60::t_e694a7ded90ef9 501-503
+src/shared/utils/lipGapPlan.test.ts
+  s_f2554c47160f60::t_b62ce0a688aa9b 423-425,430-440
+  s_f2554c47160f60::t_a1dc7925265717 235-239,241-257
+src/shared/constraints/rules.ts
+  s_f2554c47160f60::t_5ebbffe12d3ab4 433-442
+  s_f2554c47160f60::t_d6628ef4c06a5e 19
+src/i18n/locales/uk.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/shared/constraints/engine.test.ts
+  s_f2554c47160f60::t_4a1df91b8131a6 434-486
+src/i18n/locales/nl.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/i18n/locales/pl.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/i18n/locales/fr.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/features/generation/worker/generators/handleBuilder.ts
+  s_f2554c47160f60::t_5bf4596dcb5e8f 306
+  s_f2554c47160f60::t_da5c3cf979cc58 249-251
+  s_f2554c47160f60::t_eb61af995910e5 334-337
+  s_f2554c47160f60::t_196c35d7718d02 25
+  s_f2554c47160f60::t_c564cade542e93 183-188,193
+src/i18n/locales/en.ts
+  s_f2554c47160f60::t_183e8b07b0baad 3443,3446
+src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
+  s_f2554c47160f60::t_bdf6c2f67885fa 77,79-87,94-135
+  s_f2554c47160f60::t_90f12f6f89e7b5 136
+src/shared/utils/lipGapPlan.ts
+  s_f2554c47160f60::t_be2c5b2d0d5f6d 54
+  s_f2554c47160f60::t_e82972a43eb016 215
+  s_f2554c47160f60::t_b320492ebb0110 282,288-290
+  s_f2554c47160f60::t_f8ba181bd6922d 111-112
+src/i18n/locales/ja.json
+  s_f2554c47160f60::t_43d6a93032a417 1063,1067
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_f2554c47160f60::t_3298b80d9a320e 34,43-47,52-57
+  s_f2554c47160f60::t_f914b4a92632c1 201
+src/features/bin-designer/components/preview/GhostHandles/GhostHandles.tsx
+  s_f2554c47160f60::t_30b8ac92680fd3 75,82-83,89
+  s_f2554c47160f60::t_58ba6bb30ded78 182-184
+  s_f2554c47160f60::t_341bce27e98777 37
+  s_f2554c47160f60::t_7429e6b66ac22b 55
+  s_f2554c47160f60::t_101742d3256fa1 22
+src/i18n/locales/ka.json
+  s_f2554c47160f60::t_43d6a93032a417 2929,2941
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c55649d6f3602d9ba99b5f11a29d370d2a4ecbf9",
+  "prompts": {},
+  "sessions": {
+    "s_f2554c47160f60": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5bbe41db-53b7-408b-9a1e-7aa66e6e05be",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": null
+    }
+  }
+}
