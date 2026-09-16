@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.492.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.492.2...gridfinity-layout-tool-v4.492.3) (2026-09-16)
+
+
+### Bug Fixes
+
+* **generation:** clip finger scoops in the cavity frame under an asymmetric taper ([#4301](https://github.com/andymai/gridfinity-layout-tool/issues/4301)) ([5747840](https://github.com/andymai/gridfinity-layout-tool/commit/5747840db29e881bff18a49dc19e47f197942557)), closes [#4299](https://github.com/andymai/gridfinity-layout-tool/issues/4299)
+
 ## [4.492.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.492.1...gridfinity-layout-tool-v4.492.2) (2026-09-16)
 
 
