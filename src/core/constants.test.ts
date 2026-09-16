@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   calcBedCapacityForBin,
   calcMaxGridUnits,
-  orientBedCapacityForBin,
   pickBedOrientation,
   generateId,
   createDefaultLayout,
@@ -89,27 +88,24 @@ describe('calcMaxGridUnits', () => {
 
 describe('pickBedOrientation', () => {
   const bed = { width: 6, depth: 5 };
+  const turned = { width: 5, depth: 6 };
 
   it('keeps the given orientation when the bin fits as it lies', () => {
-    expect(orientBedCapacityForBin(6, 5, bed)).toEqual(bed);
-    expect(orientBedCapacityForBin(3, 3, bed)).toEqual(bed);
+    expect(pickBedOrientation(6, 5, bed, turned)).toEqual(bed);
+    expect(pickBedOrientation(3, 3, bed, turned)).toEqual(bed);
   });
 
   it('turns the bed when the bin only fits across it', () => {
-    expect(orientBedCapacityForBin(5, 6, bed)).toEqual({ width: 5, depth: 6 });
-  });
-
-  it('never turns a square bed', () => {
-    expect(orientBedCapacityForBin(7, 3, { width: 4, depth: 4 })).toEqual({ width: 4, depth: 4 });
+    expect(pickBedOrientation(5, 6, bed, turned)).toEqual(turned);
   });
 
   it('picks the orientation that cuts fewer pieces when neither fits', () => {
-    expect(orientBedCapacityForBin(10, 5, bed)).toEqual(bed);
-    expect(orientBedCapacityForBin(4, 12, bed)).toEqual({ width: 5, depth: 6 });
+    expect(pickBedOrientation(10, 5, bed, turned)).toEqual(bed);
+    expect(pickBedOrientation(4, 12, bed, turned)).toEqual(turned);
   });
 
   it('keeps the given orientation on a tie', () => {
-    expect(pickBedOrientation(7, 7, bed, { width: 5, depth: 6 })).toEqual(bed);
+    expect(pickBedOrientation(7, 7, bed, turned)).toEqual(bed);
   });
 });
 
@@ -122,6 +118,10 @@ describe('calcBedCapacityForBin', () => {
 
   it('keeps the bed as given when the bin fits that way', () => {
     expect(calcBedCapacityForBin(6, 5, 256, 42, 210)).toEqual({ width: 6, depth: 5 });
+  });
+
+  it('never turns a square bed', () => {
+    expect(calcBedCapacityForBin(7, 3, 168, 42)).toEqual({ width: 4, depth: 4 });
   });
 
   it('turns a non-square grid pitch with the bin, not with the bed', () => {

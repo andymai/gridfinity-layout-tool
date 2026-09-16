@@ -29,6 +29,7 @@ import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { Button } from '@/design-system';
 import type { Bin, GridUnits, LayerId } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 
 const BinContextMenuDesignSection = lazyWithRetry(() =>
   import('../BinContextMenuDesignSection').then(namedExport('BinContextMenuDesignSection'))
@@ -183,7 +184,8 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
     bin.depth,
     layout.printBedSize,
     layout.gridUnitMm,
-    layout.printBedDepth
+    layout.printBedDepth,
+    effectiveGridUnitMmY(layout)
   );
   const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 

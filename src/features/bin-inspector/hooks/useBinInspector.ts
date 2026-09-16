@@ -24,7 +24,12 @@ import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
 import { expandPairIds } from '@/shared/utils/binPairs';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { GridUnits, HeightUnits, Bin, LayerId } from '@/core/types';
-import { layerId as toLayerId, categoryId as toCategoryId, roundHeightUnits } from '@/core/types';
+import {
+  layerId as toLayerId,
+  categoryId as toCategoryId,
+  roundHeightUnits,
+  effectiveGridUnitMmY,
+} from '@/core/types';
 import { useTranslation } from '@/i18n';
 import {
   emitLinkedBinResize,
@@ -73,6 +78,7 @@ export function useBinInspector(): UseBinInspectorReturn {
   const category = bin ? (layout.categories.find((c) => c.id === bin.category) ?? null) : null;
   const layer = bin ? (layout.layers.find((l) => l.id === bin.layerId) ?? null) : null;
 
+  const gridUnitMmY = effectiveGridUnitMmY(layout);
   const constraints = useMemo<BinConstraints>(() => {
     if (!bin) {
       return {
@@ -92,7 +98,8 @@ export function useBinInspector(): UseBinInspectorReturn {
       bin.depth,
       layout.printBedSize,
       layout.gridUnitMm,
-      layout.printBedDepth
+      layout.printBedDepth,
+      gridUnitMmY
     );
     const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
@@ -139,6 +146,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     layout.printBedSize,
     layout.printBedDepth,
     layout.gridUnitMm,
+    gridUnitMmY,
   ]);
 
   // Collect all unique custom property keys from all bins in the layout (for suggestions)

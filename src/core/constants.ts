@@ -135,22 +135,14 @@ export function pickBedOrientation(
   return pieces(turned) < pieces(asIs) ? turned : asIs;
 }
 
-/** `pickBedOrientation` against a capacity and its transpose. */
-export function orientBedCapacityForBin(
-  binWidth: number,
-  binDepth: number,
-  capacity: BedCapacity
-): BedCapacity {
-  return pickBedOrientation(binWidth, binDepth, capacity, {
-    width: capacity.depth,
-    depth: capacity.width,
-  });
-}
-
 /**
  * Bed capacity oriented for one bin: `calcMaxGridUnits` fitted both ways round
  * via `pickBedOrientation`. Compare the bin's own width and depth against the
  * result; a bin that only fits the bed turned 90° reads as fitting.
+ *
+ * Both orientations are derived from the pitches, never by transposing one
+ * capacity: on a non-square grid the turned width still counts in the X pitch
+ * against the bed's depth, which a swap of `{width, depth}` gets wrong.
  */
 export function calcBedCapacityForBin(
   binWidth: number,
