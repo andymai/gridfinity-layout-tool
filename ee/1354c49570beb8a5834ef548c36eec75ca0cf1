@@ -1,0 +1,19 @@
+src/shared/utils/lipGapPlan.test.ts
+  s_f2554c47160f60::t_f236ee8f969f9a 236,253-257
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ee1354c49570beb8a5834ef548c36eec75ca0cf1",
+  "prompts": {},
+  "sessions": {
+    "s_f2554c47160f60": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5bbe41db-53b7-408b-9a1e-7aa66e6e05be",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
