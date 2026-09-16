@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useInteractionStore, useSettingsStore } from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
-import { calcMaxGridUnits, getCellSizeY, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { calcBedCapacityForBin, getCellSizeY, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { getBinTextColors, getBinPatternColor } from '@/shared/utils';
 import { isBinLocked } from '@/shared/utils/binLocation';
@@ -104,7 +104,14 @@ function BinComponent({
   const isMultiSelect = selectedBinIds.length > 1;
 
   // Calculate max grid units that fit on print bed (accounting for gaps)
-  const maxGrid = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth, gridUnitMmY);
+  const maxGrid = calcBedCapacityForBin(
+    bin.width,
+    bin.depth,
+    printBedSize,
+    gridUnitMm,
+    printBedDepth,
+    gridUnitMmY
+  );
   const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
   const isTall = layer && bin.height > layer.height;
 

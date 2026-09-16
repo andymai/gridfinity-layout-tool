@@ -290,6 +290,18 @@ describe('planMergedBin', () => {
       expect(plan.warnings.splitEnabled).toBe(false);
     });
 
+    it('lets the piece lie across a non-square bed', () => {
+      // 256 x 210: the 4 x 6 piece is 168 x 252mm, which only fits turned.
+      const bed = createTestLayout({
+        printBedSize: mm(256),
+        printBedDepth: mm(210),
+        drawer: { width: gridUnits(20), depth: gridUnits(20), height: heightUnits(12) },
+      });
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 4, 3), bin('b', 0, 3, 4, 3)], bed));
+
+      expect(plan.warnings.splitEnabled).toBe(false);
+    });
+
     it('checks depth against printBedDepth on a non-square bed', () => {
       const shallow = createTestLayout({
         printBedSize: mm(400),

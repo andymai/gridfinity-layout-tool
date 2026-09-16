@@ -172,6 +172,42 @@ describe('LinkDesignDialog', () => {
     expect(screen.getByLabelText('common.close')).toBeInTheDocument();
   });
 
+  it('lists a design whose footprint is the transpose, marked as rotated', async () => {
+    mockListDesigns.mockResolvedValue({
+      ok: true,
+      value: [
+        {
+          id: 'design-turned',
+          name: 'Knife Tray',
+          params: { width: 6, depth: 5, height: 7, compartments: { cells: [0] } },
+          thumbnail: null,
+        },
+        {
+          id: 'design-square',
+          name: 'Square Tray',
+          params: { width: 5, depth: 5, height: 7, compartments: { cells: [0] } },
+          thumbnail: null,
+        },
+      ],
+    });
+
+    vi.mocked(useLinkingStore).mockReturnValue({
+      pendingLinkDesign: {
+        binId: 'bin-1',
+        footprint: { width: 5, depth: 6 },
+        binHeight: 7,
+      },
+      hideLinkDesignDialog: vi.fn(),
+    });
+
+    render(<LinkDesignDialog />);
+
+    expect(await screen.findByText('Knife Tray')).toBeInTheDocument();
+    expect(screen.getByText('designLinking.linkDialog.rotated')).toBeInTheDocument();
+    expect(screen.queryByText('Square Tray')).not.toBeInTheDocument();
+    expect(screen.getByText(/designLinking.linkDialog.footprintRotatable/)).toBeInTheDocument();
+  });
+
   it('lists imported-mesh and assembly designs with a matching footprint, excludes tool racks', async () => {
     mockListDesigns.mockResolvedValue({
       ok: true,

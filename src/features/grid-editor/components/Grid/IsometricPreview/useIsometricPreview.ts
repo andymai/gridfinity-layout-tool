@@ -5,7 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
-import { calcMaxGridUnits } from '@/core/constants';
+import { calcMaxGridUnits, orientBedCapacityForBin } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 import { use3DPreviewKeyboard } from '@/shared/hooks/use3DPreviewKeyboard';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
@@ -192,8 +192,9 @@ export function useIsometricPreview({ inline = false }: IsometricPreviewProps) {
     // Overlays computed from all binsToRender (including animating) — positions are stable.
     for (const binData of binsToRender) {
       const needsClearance = binData.clearanceHeight > 0;
+      const bedForBin = orientBedCapacityForBin(binData.bin.width, binData.bin.depth, maxGridUnits);
       const needsSplitLines =
-        binData.bin.width > maxGridUnits.width || binData.bin.depth > maxGridUnits.depth;
+        binData.bin.width > bedForBin.width || binData.bin.depth > bedForBin.depth;
       if (needsClearance || needsSplitLines) {
         withOverlays.push(binData);
       }

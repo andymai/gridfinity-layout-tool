@@ -4,7 +4,12 @@
  */
 
 import type { Layout, CategoryId, OutlineAuthoringKind } from '@/core/types';
-import { DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions } from '@/core/constants';
+import {
+  DEFAULT_CATEGORIES,
+  calcMaxGridUnits,
+  hasFractionalDimensions,
+  orientBedCapacityForBin,
+} from '@/core/constants';
 import { useLabsStore } from '@/core/store/labs';
 import { getFeature } from '@/core/labs';
 import { splitBinsByLocation } from '@/shared/utils';
@@ -182,7 +187,10 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
 
   const printBedDepth = layout.printBedDepth ?? layout.printBedSize;
   const maxGrid = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm, printBedDepth);
-  const hasOversizedBins = maxWidth > maxGrid.width || maxDepth > maxGrid.depth;
+  const hasOversizedBins = gridBins.some((bin) => {
+    const bed = orientBedCapacityForBin(bin.width, bin.depth, maxGrid);
+    return bin.width > bed.width || bin.depth > bed.depth;
+  });
 
   // Drawer defaults check
   const isDefaultDrawer =

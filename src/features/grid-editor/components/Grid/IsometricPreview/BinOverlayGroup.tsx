@@ -1,4 +1,5 @@
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
+import { orientBedCapacityForBin } from '@/core/constants';
 import { SplitLineOverlay } from './SplitLineOverlay';
 
 interface BinOverlayGroupProps {
@@ -11,6 +12,7 @@ interface BinOverlayGroupProps {
  * and split line overlay for oversized bins.
  */
 export function BinOverlayGroup({ binData, maxGridUnits }: BinOverlayGroupProps) {
+  const bedForBin = orientBedCapacityForBin(binData.bin.width, binData.bin.depth, maxGridUnits);
   return (
     <group>
       {/* Clearance zone visualization - translucent box above bin */}
@@ -34,7 +36,7 @@ export function BinOverlayGroup({ binData, maxGridUnits }: BinOverlayGroupProps)
         </mesh>
       )}
       {/* Split lines for oversized bins */}
-      {(binData.bin.width > maxGridUnits.width || binData.bin.depth > maxGridUnits.depth) && (
+      {(binData.bin.width > bedForBin.width || binData.bin.depth > bedForBin.depth) && (
         <SplitLineOverlay
           x={binData.x}
           y={binData.y}
@@ -42,7 +44,7 @@ export function BinOverlayGroup({ binData, maxGridUnits }: BinOverlayGroupProps)
           width={binData.bin.width}
           depth={binData.bin.depth}
           height={binData.height}
-          maxGridUnits={maxGridUnits}
+          maxGridUnits={bedForBin}
           opacity={binData.opacity}
         />
       )}

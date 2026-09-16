@@ -149,6 +149,22 @@ describe('useBinInspector', () => {
       // If max grid units is small enough, needsSplit should be true
       expect(typeof result.current.constraints.needsSplit).toBe('boolean');
     });
+
+    it('does not ask for a split when the bin fits the bed turned 90°', () => {
+      const bin = { ...createBin('bin1', 'layer1'), width: gridUnits(5), depth: gridUnits(6) };
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [bin];
+      layout.printBedSize = mm(256);
+      layout.printBedDepth = mm(210);
+      layout.gridUnitMm = mm(42);
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      expect(result.current.constraints.needsSplit).toBe(false);
+      expect(result.current.constraints.maxGridUnits).toEqual({ width: 5, depth: 6 });
+    });
   });
 
   describe('updateField', () => {

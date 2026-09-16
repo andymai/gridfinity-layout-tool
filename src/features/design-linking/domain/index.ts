@@ -8,6 +8,7 @@
 export {
   dimensionsMatch,
   dimensionsFitAllowingRotation,
+  footprintFitsAllowingRotation,
   syncDeclineKey,
   compareDimensions,
   checkSyncEligibility,

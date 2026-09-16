@@ -15,7 +15,7 @@
  * in both cases over-splits every asymmetric overhang.
  */
 
-import { calcMaxGridUnitsForAxis } from '@/core/constants';
+import { calcMaxGridUnitsForAxis, pickBedOrientation } from '@/core/constants';
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
@@ -61,6 +61,10 @@ function axisChunkUnits(
  *
  * Overhang is suppressed for a partial cell mask, matching the geometry
  * pipeline: a custom shape defines its own footprint.
+ *
+ * The part can lie across the bed at 90°, so both orientations are charged and
+ * `pickBedOrientation` chooses; the overhang stays on the bin's own sides, so
+ * left/right are charged against whichever bed axis the width lies along.
  */
 export function binSplitChunkUnits(
   params: BinSplitFitParams,
@@ -71,8 +75,14 @@ export function binSplitChunkUnits(
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const bedDepthMm = printBedDepthMm ?? printBedWidthMm;
   const o = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
-  return {
-    width: axisChunkUnits(params.width, gridUnitMmX, printBedWidthMm, o.left, o.right),
-    depth: axisChunkUnits(params.depth, gridUnitMmY, bedDepthMm, o.front, o.back),
-  };
+  const along = (bedWidth: number, bedDepth: number): { width: number; depth: number } => ({
+    width: axisChunkUnits(params.width, gridUnitMmX, bedWidth, o.left, o.right),
+    depth: axisChunkUnits(params.depth, gridUnitMmY, bedDepth, o.front, o.back),
+  });
+  return pickBedOrientation(
+    params.width,
+    params.depth,
+    along(printBedWidthMm, bedDepthMm),
+    along(bedDepthMm, printBedWidthMm)
+  );
 }

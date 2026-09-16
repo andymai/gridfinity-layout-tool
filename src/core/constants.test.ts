@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
+  calcBedCapacityForBin,
   calcMaxGridUnits,
+  orientBedCapacityForBin,
+  pickBedOrientation,
   generateId,
   createDefaultLayout,
   createLayoutWithSettings,
@@ -81,6 +84,53 @@ describe('calcMaxGridUnits', () => {
     expect(calcMaxGridUnits(313, 25)).toEqual({ width: 12.5, depth: 12.5 });
     // A 13-unit bin = 325mm does NOT fit, so max should be 12.5
     expect(calcMaxGridUnits(313, 25).width).toBeLessThan(13);
+  });
+});
+
+describe('pickBedOrientation', () => {
+  const bed = { width: 6, depth: 5 };
+
+  it('keeps the given orientation when the bin fits as it lies', () => {
+    expect(orientBedCapacityForBin(6, 5, bed)).toEqual(bed);
+    expect(orientBedCapacityForBin(3, 3, bed)).toEqual(bed);
+  });
+
+  it('turns the bed when the bin only fits across it', () => {
+    expect(orientBedCapacityForBin(5, 6, bed)).toEqual({ width: 5, depth: 6 });
+  });
+
+  it('never turns a square bed', () => {
+    expect(orientBedCapacityForBin(7, 3, { width: 4, depth: 4 })).toEqual({ width: 4, depth: 4 });
+  });
+
+  it('picks the orientation that cuts fewer pieces when neither fits', () => {
+    // 10x5 as it lies: 2 x 1 pieces. Turned (5-wide, 6-deep capacity): 2 x 1 too.
+    expect(orientBedCapacityForBin(10, 5, bed)).toEqual(bed);
+    // 4x12 as it lies: 1 x 3. Turned: 1 x 2.
+    expect(orientBedCapacityForBin(4, 12, bed)).toEqual({ width: 5, depth: 6 });
+  });
+
+  it('keeps the given orientation on a tie', () => {
+    expect(pickBedOrientation(7, 7, bed, { width: 5, depth: 6 })).toEqual(bed);
+  });
+});
+
+describe('calcBedCapacityForBin', () => {
+  it('reads a bin that fits the bed turned as fitting', () => {
+    // 256 x 210 bed: 6 x 5 units. A 5 x 6 bin lies across it.
+    const cap = calcBedCapacityForBin(5, 6, 256, 42, 210);
+    expect(cap).toEqual({ width: 5, depth: 6 });
+    expect(5 > cap.width || 6 > cap.depth).toBe(false);
+  });
+
+  it('keeps the bed as given when the bin fits that way', () => {
+    expect(calcBedCapacityForBin(6, 5, 256, 42, 210)).toEqual({ width: 6, depth: 5 });
+  });
+
+  it('turns a non-square grid pitch with the bin, not with the bed', () => {
+    // 42mm along X, 21mm along Y. Turned, the width axis still counts in 42s
+    // against the 210mm bed depth (5), and the depth axis in 21s against 256 (12).
+    expect(calcBedCapacityForBin(5, 11, 256, 42, 210, 21)).toEqual({ width: 5, depth: 12 });
   });
 });
 

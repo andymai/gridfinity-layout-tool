@@ -114,3 +114,37 @@ describe('binSplitChunkUnits', () => {
     expect(p.width > binSplitChunkUnits(p, BED).width).toBe(false);
   });
 });
+
+describe('binSplitChunkUnits across a rectangular bed', () => {
+  // 256 x 210mm: 6 units along the bed, 5 across it.
+  const WIDE = 256;
+  const DEEP = 210;
+
+  it('fits a bin that lies across the bed without a split', () => {
+    const p = params({ width: 5, depth: 6 });
+    const max = binSplitChunkUnits(p, WIDE, DEEP);
+    expect(max).toEqual({ width: 5, depth: 6 });
+    expect(p.width > max.width || p.depth > max.depth).toBe(false);
+  });
+
+  it('keeps the bed as given when the bin fits that way', () => {
+    expect(binSplitChunkUnits(params({ width: 6, depth: 5 }), WIDE, DEEP)).toEqual({
+      width: 6,
+      depth: 5,
+    });
+  });
+
+  it('charges the overhang against the bed axis the bin lies along', () => {
+    // 5 x 42 = 210 plus 30mm on the left: too wide for the 210mm depth it
+    // would lie across, so the bin has to stay along the bed and be cut.
+    const p = params({ width: 5, depth: 6, overhang: overhang({ left: 30 }) });
+    const max = binSplitChunkUnits(p, WIDE, DEEP);
+    expect(p.width > max.width || p.depth > max.depth).toBe(true);
+  });
+
+  it('turns the bin to cut fewer pieces when it fits neither way', () => {
+    const p = params({ width: 4, depth: 12 });
+    const max = binSplitChunkUnits(p, WIDE, DEEP);
+    expect(getSplitPieceCount(p.width, p.depth, max.width, max.depth)).toBe(2);
+  });
+});

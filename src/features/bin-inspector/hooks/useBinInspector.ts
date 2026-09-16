@@ -15,7 +15,7 @@ import { batch } from '@/core/cqrs';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
-import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { calcBedCapacityForBin, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
@@ -87,7 +87,13 @@ export function useBinInspector(): UseBinInspectorReturn {
       };
     }
 
-    const maxGrid = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm, layout.printBedDepth);
+    const maxGrid = calcBedCapacityForBin(
+      bin.width,
+      bin.depth,
+      layout.printBedSize,
+      layout.gridUnitMm,
+      layout.printBedDepth
+    );
     const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
     // For bins in staging, use full drawer height range
