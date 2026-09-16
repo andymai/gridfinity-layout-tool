@@ -92,9 +92,12 @@ graph TB
   the socket separately and concatenates it, so a healthy draft bin reads χ = 10 and the
   count says nothing at all.
 - **Lip peak finish (`base.lipTip`, #4119)**: `'sharp'` (absent, the spec knife edge),
-  `'round'` or `'chamfer'`, taking `LIP_TIP_MM` off the peak so the top layer has a
-  perimeter instead of a sliver. `finishLipPeak` in `boxBuilder` applies it to both lip
-  paths and returns the untreated solid if the kernel refuses. Three things it must keep
+  `'round'` or `'chamfer'` taking `LIP_TIP_MM` off the peak, or `'flat'` planing
+  `LIP_TIP_FLAT_MM` off it, so the top layer has a perimeter instead of a sliver.
+  `finishLipPeak` in `boxTopShape` applies it to both lip paths and returns the untreated
+  solid if the kernel refuses; `'flat'` goes through `planeLipPeak`, a half-space cut
+  rather than an edge op, so one plane takes the hole rings of an O-shape with the outer
+  one. Three things it must keep
   doing: stay out of the `shellKey` for a sharp bin (appended only when non-sharp, so no
   cache churn), force the fuse path in `shellStage` (the integrated draft builder authors
   its own profile and would show a sharp tip against a rounded export), and leave the

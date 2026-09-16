@@ -3671,12 +3671,15 @@ const en: Record<string, string> = {
   'binDesigner.base.lipTip.sharp': 'Sharp',
   'binDesigner.base.lipTip.round': 'Rounded',
   'binDesigner.base.lipTip.chamfer': 'Chamfered',
+  'binDesigner.base.lipTip.flat': 'Flat',
   'binDesigner.base.lipTip.sharp.hint':
     'The standard profile: the lip comes to a point. Prints as a thin sliver on top, which can scar or lift.',
   'binDesigner.base.lipTip.round.hint':
     'Rounds the point off so the top layer has something solid under it. Bins stack exactly as before.',
   'binDesigner.base.lipTip.chamfer.hint':
     'Cuts a flat off the point so the top layer has something solid under it. Bins stack exactly as before.',
+  'binDesigner.base.lipTip.flat.hint':
+    'Planes the point off level, leaving a band wide enough for a full top perimeter. Takes more off the peak than the other two. Bins stack exactly as before.',
   'binDesigner.base.magnetHoles': 'Magnet holes',
   'binDesigner.base.magnetDiameter': 'Magnet diameter',
   'binDesigner.base.magnetDepth': 'Magnet depth',

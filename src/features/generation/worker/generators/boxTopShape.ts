@@ -31,7 +31,7 @@ import { getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
-import { DEFAULT_LIP_TIP, LIP_TIP_MM, type LipTipStyle } from '@/shared/types/bin';
+import { DEFAULT_LIP_TIP, LIP_TIP_MM, LIP_TIP_FLAT_MM, type LipTipStyle } from '@/shared/types/bin';
 import { hasOverhang, overhangExpansion, overhangKey, type ResolvedOverhang } from './overhang';
 import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from './maskPolygon';
 
@@ -40,19 +40,59 @@ export function translateDrawing(d: Drawing, offX: number, offY: number): Drawin
 }
 
 /**
+ * Plane the top {@link LIP_TIP_FLAT_MM} off the lip, leaving a flat band.
+ *
+ * The cutter spans the solid's own footprint with a margin, so it reaches every
+ * peak ring whatever the footprint is, and starts at the cut plane rather than
+ * below it so nothing under the band is touched. Because the inner chamfer runs
+ * at 45 degrees, the height taken off and the width of the band left behind are
+ * the same number.
+ */
+function planeLipPeak(scope: DisposalScope, solid: Shape3D, peakZ: number): Shape3D {
+  const zCut = peakZ - LIP_TIP_FLAT_MM;
+  const bounds = getBounds(solid);
+  if (bounds.zMax <= zCut) return solid;
+
+  const MARGIN = 1;
+  const width = bounds.xMax - bounds.xMin + 2 * MARGIN;
+  const depth = bounds.yMax - bounds.yMin + 2 * MARGIN;
+  const height = bounds.zMax - zCut + MARGIN;
+
+  try {
+    const cutter = scope.register(
+      (
+        drawRectangle(width, depth)
+          .translate((bounds.xMin + bounds.xMax) / 2, (bounds.yMin + bounds.yMax) / 2)
+          .sketchOnPlane('XY', zCut) as Sketch
+      ).extrude(height)
+    );
+    const next = unwrap(cut(solid, cutter));
+    scope.register(solid); // consumed by the cut above
+    return next;
+  } catch {
+    return solid;
+  }
+}
+
+/**
  * Take the requested finish off the lip's peak edge.
  *
  * The peak is where the vertical outer face meets the 45 degree inner chamfer,
  * so it comes out of the loft (or sweep) as a knife edge — a sliver the slicer
  * has to draw with nothing under it, which is what scars and lifts. Rounding or
- * chamfering it removes {@link LIP_TIP_MM} of that tip and nothing else: the
- * inner chamfer a stacked bin lands on and the vertical band a lid's plug meets
- * both sit well below the treated edge.
+ * chamfering it removes {@link LIP_TIP_MM} of that tip and nothing else; `flat`
+ * planes {@link LIP_TIP_FLAT_MM} off it instead. Either way the inner chamfer a
+ * stacked bin lands on and the vertical band a lid's plug meets both sit well
+ * below the treated edge.
  *
  * Selecting by Z band rather than by orientation is deliberate: an O-shaped or
  * polygon footprint has a peak ring per hole, and they all need the same
  * treatment. A kernel that refuses the operation returns the untreated solid —
  * a sharp lip prints, and losing the whole bin over a cosmetic edge does not.
+ *
+ * `flat` is a half-space cut rather than an edge operation for the same reason:
+ * one plane takes every peak ring at once, including the ones a hole
+ * contributes, and it cannot fail on an edge the finder picked up by accident.
  */
 function finishLipPeak(
   scope: DisposalScope,
@@ -61,6 +101,8 @@ function finishLipPeak(
   lipTip: LipTipStyle
 ): Shape3D {
   if (lipTip === 'sharp') return solid;
+
+  if (lipTip === 'flat') return planeLipPeak(scope, solid, peakZ);
 
   const lipEdges = edgeFinder()
     .when((e) => {

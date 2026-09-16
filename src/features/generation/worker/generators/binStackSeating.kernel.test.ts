@@ -142,8 +142,11 @@ describe('bin-on-bin stacking (#2374)', () => {
     }
   }, 600000);
 
-  // #4119 takes LIP_TIP_MM off the peak so the top layer has a real perimeter to
-  // print instead of a knife edge. PITCH is the claim, not junction: the foot's
+  // #4119 takes LIP_TIP_MM (or, for `flat`, LIP_TIP_FLAT_MM) off the peak so the
+  // top layer has a real perimeter to print instead of a knife edge. The mating
+  // faces are parallel 45 degree chamfers, so shortening the lip's cannot let
+  // the bin above settle lower — it only shortens the contact band.
+  // PITCH is the claim, not junction: the foot's
   // flare mates the funnel below the treated zone, so the bin above comes to
   // rest at the same absolute height and adds the same millimetres to a stack —
   // which is what the readouts quote and what lets a finished bin stack with
@@ -156,7 +159,7 @@ describe('bin-on-bin stacking (#2374)', () => {
   // mate and not for this.
   it('stacks at the same pitch whatever finish the lip peak carries', () => {
     const sharpPitch = stackSeat(bin(), bin()).pitchMm;
-    for (const lipTip of ['round', 'chamfer'] as const) {
+    for (const lipTip of ['round', 'chamfer', 'flat'] as const) {
       const mesh = bin({ lipTip });
       expect(stackSeat(mesh, mesh).pitchMm, lipTip).toBeCloseTo(sharpPitch, 1);
     }
