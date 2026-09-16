@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Côtés",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Les trous larges peuvent nécessiter des supports lors de l'impression",
-  "binDesigner.handles.unavailableSlotted": "Non disponible lorsque les deux directions de fentes sont activées",
+  "binDesigner.handles.unavailableSlotted": "Non disponible : les fentes des séparateurs occupent toutes les parois",
   "binDesigner.handles.verticalPosition": "Position verticale",
   "binDesigner.handles.verticalPositionAria": "Position verticale de la poignée",
   "binDesigner.handles.width": "Largeur",

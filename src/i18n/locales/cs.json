@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Strany",
   "binDesigner.handles.summary": "{shape} {sides}: {height} mm",
   "binDesigner.handles.supportNote": "Široké otvory mohou při tisku vyžadovat podpory",
-  "binDesigner.handles.unavailableSlotted": "Není dostupné, když jsou zapnuté oba směry drážek",
+  "binDesigner.handles.unavailableSlotted": "Není dostupné: drážky pro přepážky zabírají všechny stěny",
   "binDesigner.handles.verticalPosition": "Svislá poloha",
   "binDesigner.handles.verticalPositionAria": "Svislá poloha držadla",
   "binDesigner.handles.width": "Šířka",

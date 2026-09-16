@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Sider",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Brede hull kan kreve støttestrukturer ved utskrift",
-  "binDesigner.handles.unavailableSlotted": "Ikke tilgjengelig når begge sporretningene er på",
+  "binDesigner.handles.unavailableSlotted": "Ikke tilgjengelig: sporene for skillevegger opptar alle veggene",
   "binDesigner.handles.verticalPosition": "Vertikal posisjon",
   "binDesigner.handles.verticalPositionAria": "Vertikal posisjon for håndtak",
   "binDesigner.handles.width": "Bredde",

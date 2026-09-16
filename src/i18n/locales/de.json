@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Seiten",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Breite Löcher erfordern möglicherweise Stützstrukturen beim Drucken",
-  "binDesigner.handles.unavailableSlotted": "Nicht verfügbar, wenn beide Schlitzrichtungen aktiv sind",
+  "binDesigner.handles.unavailableSlotted": "Nicht verfügbar: Trennwandschlitze belegen jede Wand",
   "binDesigner.handles.verticalPosition": "Vertikale Position",
   "binDesigner.handles.verticalPositionAria": "Vertikale Position des Griffs",
   "binDesigner.handles.width": "Breite",

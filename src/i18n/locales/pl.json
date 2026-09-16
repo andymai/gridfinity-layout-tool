@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Boki",
   "binDesigner.handles.summary": "{shape} {sides}: {height} mm",
   "binDesigner.handles.supportNote": "Szerokie otwory mogą wymagać podpór przy druku",
-  "binDesigner.handles.unavailableSlotted": "Niedostępne, gdy włączone są oba kierunki szczelin",
+  "binDesigner.handles.unavailableSlotted": "Niedostępne: szczeliny na przegródki zajmują każdą ściankę",
   "binDesigner.handles.verticalPosition": "Położenie pionowe",
   "binDesigner.handles.verticalPositionAria": "Położenie pionowe uchwytu",
   "binDesigner.handles.width": "Szerokość",

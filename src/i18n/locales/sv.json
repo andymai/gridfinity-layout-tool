@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Sidor",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Breda hål kan kräva stöd vid utskrift",
-  "binDesigner.handles.unavailableSlotted": "Inte tillgängligt när båda spårriktningarna är på",
+  "binDesigner.handles.unavailableSlotted": "Inte tillgängligt: spåren för avdelare upptar varje vägg",
   "binDesigner.handles.verticalPosition": "Vertikal position",
   "binDesigner.handles.verticalPositionAria": "Handtagets vertikala position",
   "binDesigner.handles.width": "Bredd",

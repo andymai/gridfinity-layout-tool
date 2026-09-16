@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Zijden",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Brede gaten hebben mogelijk ondersteuning nodig bij het printen",
-  "binDesigner.handles.unavailableSlotted": "Niet beschikbaar wanneer beide sleufrichtingen aan staan",
+  "binDesigner.handles.unavailableSlotted": "Niet beschikbaar: sleuven voor scheidingswanden bezetten elke wand",
   "binDesigner.handles.verticalPosition": "Verticale positie",
   "binDesigner.handles.verticalPositionAria": "Verticale positie van handvat",
   "binDesigner.handles.width": "Breedte",

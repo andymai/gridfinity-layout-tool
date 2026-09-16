@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Lati",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "I fori larghi potrebbero richiedere supporti in stampa",
-  "binDesigner.handles.unavailableSlotted": "Non disponibile quando entrambe le direzioni delle fessure sono attive",
+  "binDesigner.handles.unavailableSlotted": "Non disponibile: le fessure dei divisori occupano tutte le pareti",
   "binDesigner.handles.verticalPosition": "Posizione verticale",
   "binDesigner.handles.verticalPositionAria": "Posizione verticale maniglia",
   "binDesigner.handles.width": "Larghezza",

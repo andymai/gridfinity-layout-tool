@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "辺",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "広い穴は印刷時にサポートが必要な場合があります",
-  "binDesigner.handles.unavailableSlotted": "両方のスロット方向が有効な場合は利用できません",
+  "binDesigner.handles.unavailableSlotted": "利用できません: 仕切り用スロットがすべての壁を占有しています",
   "binDesigner.handles.verticalPosition": "垂直位置",
   "binDesigner.handles.verticalPositionAria": "ハンドルの垂直位置",
   "binDesigner.handles.width": "幅",

@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "면",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "넓은 구멍은 인쇄 시 지지대가 필요할 수 있습니다",
-  "binDesigner.handles.unavailableSlotted": "슬롯 방향이 모두 켜져 있으면 사용할 수 없습니다",
+  "binDesigner.handles.unavailableSlotted": "사용할 수 없음: 칸막이 슬롯이 모든 벽을 차지합니다",
   "binDesigner.handles.verticalPosition": "세로 위치",
   "binDesigner.handles.verticalPositionAria": "손잡이 세로 위치",
   "binDesigner.handles.width": "너비",

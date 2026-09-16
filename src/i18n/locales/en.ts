@@ -3443,7 +3443,7 @@ const en: Record<string, string> = {
   'binDesigner.handles.sideSlotted': 'This wall carries divider slots',
   'binDesigner.handles.summary': '{shape} {sides}: {height}mm',
   'binDesigner.handles.supportNote': 'Wide holes may require supports when printing',
-  'binDesigner.handles.unavailableSlotted': 'Not available when both slot directions are enabled',
+  'binDesigner.handles.unavailableSlotted': 'Not available: divider slots claim every wall',
   'binDesigner.handles.shape': 'Shape',
   'binDesigner.handles.shape.rectangle': 'Rectangle',
   'binDesigner.handles.shape.oval': 'Oval',

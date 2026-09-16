@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Сторони",
   "binDesigner.handles.summary": "{shape} {sides}: {height}мм",
   "binDesigner.handles.supportNote": "Широкі отвори можуть потребувати підпор під час друку",
-  "binDesigner.handles.unavailableSlotted": "Недоступно, коли увімкнено обидва напрямки пазів",
+  "binDesigner.handles.unavailableSlotted": "Недоступно: пази для перегородок займають усі стінки",
   "binDesigner.handles.verticalPosition": "Вертикальна позиція",
   "binDesigner.handles.verticalPositionAria": "Вертикальне положення ручки",
   "binDesigner.handles.width": "Ширина",

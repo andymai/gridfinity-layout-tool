@@ -16,7 +16,7 @@ import {
   undersideReliefSelected,
 } from '@/features/bin-designer/types/base';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { hasSlotFreeWall } from '@/shared/utils/slotFreeWalls';
+import { hasSlotFreeWall, isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import type { ConstraintRule, ImplicationRule } from './types';
 
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
@@ -432,11 +432,13 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   },
   // X-axis slots claim the left and right walls, Y-axis slots the front and
   // back, so a single-axis bin still has an opposite pair to grip. Only a bin
-  // whose every wall is claimed has nowhere left to put a handle.
+  // whose every wall is claimed has nowhere left to put a handle. `isSlottedBody`
+  // keeps this in step with `handleBuilder`, which cuts every wall of a nesting
+  // base no matter what its slot config says.
   {
     description: 'Handles disabled when every wall has divider slots',
     source: 'slotConfig',
-    when: (p) => !hasSlotFreeWall(p),
+    when: (p) => isSlottedBody(p) && !hasSlotFreeWall(p),
     disables: ['handles'],
     reason: 'binDesigner.handles.unavailableSlotted',
   },

@@ -2938,7 +2938,7 @@
   "binDesigner.handles.backDisabledByLabelTab": "უკანა სახელური გამორთულია: ეტიკეტის ჩანართი აქტიურია",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "ფართო ხვრელებს დაბეჭდვისას შეიძლება საყრდენები დასჭირდეს",
-  "binDesigner.handles.unavailableSlotted": "მიუწვდომელია, როცა ორივე ჭრილის მიმართულება ჩართულია",
+  "binDesigner.handles.unavailableSlotted": "მიუწვდომელია: გამყოფის ჭრილები ყველა კედელს იკავებს",
   "binDesigner.handles.shape": "ფორმა",
   "binDesigner.handles.shape.rectangle": "მართკუთხედი",
   "binDesigner.handles.shape.oval": "ოვალური",

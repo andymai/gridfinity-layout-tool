@@ -469,6 +469,25 @@ describe('resolveConstraints — dynamic constraints', () => {
     expect(getFeatureStatus(yOnly, 'handles').available).toBe(true);
   });
 
+  it('handles available on a nesting base, which takes no slots at all', () => {
+    const params = makeParams({
+      style: 'slotted',
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+      },
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+      },
+    });
+
+    // `handleBuilder` cuts every wall here, so the panel must not claim otherwise.
+    expect(getFeatureStatus(params, 'handles').available).toBe(true);
+  });
+
   it('handles disabled on a custom slot grid, where any wall can hold slots', () => {
     const params = makeParams({
       style: 'slotted',

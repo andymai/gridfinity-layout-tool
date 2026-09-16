@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Lados",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Furos largos podem precisar de suportes na impressão",
-  "binDesigner.handles.unavailableSlotted": "Não disponível quando as duas direções de ranhura estão ativadas",
+  "binDesigner.handles.unavailableSlotted": "Não disponível: as ranhuras para divisórias ocupam todas as paredes",
   "binDesigner.handles.verticalPosition": "Posição vertical",
   "binDesigner.handles.verticalPositionAria": "Posição vertical da alça",
   "binDesigner.handles.width": "Largura",

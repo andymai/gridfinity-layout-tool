@@ -14,7 +14,6 @@ import { deriveDimensions } from '../pipeline/context';
 /** Shorthand for enabled handle side with nullable overrides */
 const ENABLED_SIDE = { ...DEFAULT_HANDLE_SIDE, enabled: true } as const;
 
-/** X-axis slots groove the left and right walls, leaving front and back free. */
 const X_SLOTTED_BIN = {
   width: 2,
   depth: 2,
@@ -39,10 +38,6 @@ const FRONT_BACK_HANDLES = {
   },
 } as const satisfies Partial<BinParams>;
 
-/**
- * Material a rounded-rectangle grip takes out of `wallCount` walls: the hole's
- * face area (rectangle less the four corner fillets) driven through the wall.
- */
 function expectedGripCutVolume(overrides: Partial<BinParams>, wallCount: number): number {
   const params = buildParams(overrides);
   const dim = deriveDimensions(params, false);
@@ -308,8 +303,6 @@ export const handles: ScenarioCase[] = [
     compareWith: {
       params: FRONT_BACK_HANDLES,
       assert: (allFourAsked, frontBackOnly) => {
-        // Asking for all four walls must build the same solid as asking for the
-        // two the slots leave alone.
         expect(meshVolume(allFourAsked)).toBeCloseTo(meshVolume(frontBackOnly), 3);
       },
     },

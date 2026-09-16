@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "Lados",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Los agujeros anchos pueden requerir soportes al imprimir",
-  "binDesigner.handles.unavailableSlotted": "No disponible cuando ambas direcciones de ranura están activadas",
+  "binDesigner.handles.unavailableSlotted": "No disponible: las ranuras para separadores ocupan todas las paredes",
   "binDesigner.handles.verticalPosition": "Posición vertical",
   "binDesigner.handles.verticalPositionAria": "Posición vertical del asa",
   "binDesigner.handles.width": "Anchura",

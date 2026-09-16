@@ -1064,7 +1064,7 @@
   "binDesigner.handles.sides": "边",
   "binDesigner.handles.summary": "{shape} {sides}：{height}mm",
   "binDesigner.handles.supportNote": "宽孔在打印时可能需要支撑",
-  "binDesigner.handles.unavailableSlotted": "两个插槽方向都启用时不可用",
+  "binDesigner.handles.unavailableSlotted": "不可用：隔板插槽已占用每一侧壁",
   "binDesigner.handles.verticalPosition": "垂直位置",
   "binDesigner.handles.verticalPositionAria": "把手垂直位置",
   "binDesigner.handles.width": "宽度",
