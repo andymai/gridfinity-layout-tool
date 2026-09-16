@@ -233,7 +233,7 @@ describe('lipGaps: handle holes', () => {
   });
 
   it('skips only the walls a slotted bin grooves, as `handleBuilder` does', () => {
-    const slotted = (
+    const gapsFor = (
       axes: { x: boolean; y: boolean },
       side: 'front' | 'left'
     ): ReturnType<typeof lipGaps> =>
@@ -250,11 +250,11 @@ describe('lipGaps: handle holes', () => {
       );
 
     // X-axis slots groove left and right, so a front grip still opens the lip.
-    expect(lipGapSides(slotted({ x: true, y: false }, 'front'), 'handle')).toEqual(['front']);
-    expect(slotted({ x: true, y: false }, 'left')).toEqual([]);
-    expect(lipGapSides(slotted({ x: false, y: true }, 'left'), 'handle')).toEqual(['left']);
-    expect(slotted({ x: false, y: true }, 'front')).toEqual([]);
-    expect(slotted({ x: true, y: true }, 'front')).toEqual([]);
+    expect(lipGapSides(gapsFor({ x: true, y: false }, 'front'), 'handle')).toEqual(['front']);
+    expect(gapsFor({ x: true, y: false }, 'left')).toEqual([]);
+    expect(lipGapSides(gapsFor({ x: false, y: true }, 'left'), 'handle')).toEqual(['left']);
+    expect(gapsFor({ x: false, y: true }, 'front')).toEqual([]);
+    expect(gapsFor({ x: true, y: true }, 'front')).toEqual([]);
   });
 
   it('skips a hole clamped under 1mm tall, which is never cut', () => {
