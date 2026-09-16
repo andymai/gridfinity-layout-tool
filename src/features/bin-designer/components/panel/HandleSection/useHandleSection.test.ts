@@ -172,8 +172,6 @@ describe('useHandleSection', () => {
 
     const { result } = renderHook(() => useHandleSection());
 
-    // Y-axis slots groove the front and back walls, so a front handle stored
-    // from an earlier configuration cannot be part of the active set.
     expect(result.current.state.activeSides).toEqual(['left']);
   });
 
