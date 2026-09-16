@@ -70,9 +70,7 @@ export function buildScoopRamps(
   wallThickness: number,
   floorZ: number,
   floorRaiseFor: (compartmentId: number) => number = () => 0,
-  taper: ResolvedTaper | null = null,
-  offX = 0,
-  offY = 0
+  taper: ResolvedTaper | null = null
 ): Shape3D | null {
   if (!params.scoop.enabled) return null;
   if (params.style !== 'standard') return null;
@@ -87,9 +85,7 @@ export function buildScoopRamps(
       wallThickness,
       floorZ,
       floorRaiseFor,
-      taper,
-      offX,
-      offY
+      taper
     );
     // Clone so scope can dispose the fused original on exit.
     return fused ? unwrap(clone(fused)) : null;
@@ -105,9 +101,7 @@ function buildScoopRampsInScope(
   wallThickness: number,
   floorZ: number,
   floorRaiseFor: (compartmentId: number) => number,
-  taper: ResolvedTaper | null,
-  offX: number,
-  offY: number
+  taper: ResolvedTaper | null
 ): Shape3D | null {
   const hasLip = params.base.stackingLip;
   // The profile is authored with its floor at local Z=0 and the solid lifted
@@ -292,6 +286,12 @@ function buildScoopRampsInScope(
   // prism. The ramp never dips below z=0 (its underside buries UP into the
   // floor), so the envelope's z=0 start contains it, and on untapered sides the
   // envelope is prismatic — so it subsumes the rounded-corner clip too.
+  //
+  // Built at the origin, like every other feature tool: the ramps above are
+  // placed in the cavity-local frame and the feature runner translates the
+  // finished shape by the asymmetric-overhang offset afterwards. Baking that
+  // offset into the envelope shifts the clip twice, and a left-tapered bin
+  // then carries its left ramp `offX` outside the wall.
   try {
     const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
     const clip = taper
@@ -302,8 +302,8 @@ function buildScoopRampsInScope(
           wallThickness,
           taper,
           wallHeight + 2,
-          offX,
-          offY,
+          0,
+          0,
           wallPenetration
         )
       : sketch(
@@ -346,7 +346,7 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v7',
+        'v8',
         dim.shellKey,
         stableSerialize(params.scoop),
         params.style,
@@ -383,11 +383,9 @@ export const scoopRampsFeature: FeatureBuilder = {
       ctx.dimensions.floorThickness,
       (id) => raises.get(id) ?? 0,
       // A tapered outer wall narrows toward the floor, so the ramp clips against
-      // the tapered inner envelope (recentred by the overhang asymmetry) rather
-      // than a prism, or it pokes through the tapered wall.
-      ctx.dimensions.overhang.taper,
-      ctx.dimensions.innerOffsetX,
-      ctx.dimensions.innerOffsetY
+      // the tapered inner envelope rather than a prism, or it pokes through the
+      // tapered wall.
+      ctx.dimensions.overhang.taper
     );
     return result ? [result] : null;
   },
