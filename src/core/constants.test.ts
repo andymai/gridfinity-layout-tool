@@ -104,9 +104,7 @@ describe('pickBedOrientation', () => {
   });
 
   it('picks the orientation that cuts fewer pieces when neither fits', () => {
-    // 10x5 as it lies: 2 x 1 pieces. Turned (5-wide, 6-deep capacity): 2 x 1 too.
     expect(orientBedCapacityForBin(10, 5, bed)).toEqual(bed);
-    // 4x12 as it lies: 1 x 3. Turned: 1 x 2.
     expect(orientBedCapacityForBin(4, 12, bed)).toEqual({ width: 5, depth: 6 });
   });
 
@@ -117,7 +115,6 @@ describe('pickBedOrientation', () => {
 
 describe('calcBedCapacityForBin', () => {
   it('reads a bin that fits the bed turned as fitting', () => {
-    // 256 x 210 bed: 6 x 5 units. A 5 x 6 bin lies across it.
     const cap = calcBedCapacityForBin(5, 6, 256, 42, 210);
     expect(cap).toEqual({ width: 5, depth: 6 });
     expect(5 > cap.width || 6 > cap.depth).toBe(false);

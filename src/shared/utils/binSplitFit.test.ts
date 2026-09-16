@@ -116,7 +116,6 @@ describe('binSplitChunkUnits', () => {
 });
 
 describe('binSplitChunkUnits across a rectangular bed', () => {
-  // 256 x 210mm: 6 units along the bed, 5 across it.
   const WIDE = 256;
   const DEEP = 210;
 
@@ -135,8 +134,8 @@ describe('binSplitChunkUnits across a rectangular bed', () => {
   });
 
   it('charges the overhang against the bed axis the bin lies along', () => {
-    // 5 x 42 = 210 plus 30mm on the left: too wide for the 210mm depth it
-    // would lie across, so the bin has to stay along the bed and be cut.
+    // The overhang belongs to the bin's side, not the bed's: turned, it is
+    // charged against the bed depth the width now lies along.
     const p = params({ width: 5, depth: 6, overhang: overhang({ left: 30 }) });
     const max = binSplitChunkUnits(p, WIDE, DEEP);
     expect(p.width > max.width || p.depth > max.depth).toBe(true);

@@ -922,7 +922,6 @@ describe('generatePrintList with overhang', () => {
   });
 
   it('does not split a bin that fits the bed turned 90°', () => {
-    // 6 x 5 units along the bed; a 5 x 6 bin lies across it.
     const fit: PrintSplitFit = {
       bedWidthMm: 256,
       bedDepthMm: 210,

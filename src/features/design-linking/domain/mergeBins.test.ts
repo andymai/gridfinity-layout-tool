@@ -291,7 +291,6 @@ describe('planMergedBin', () => {
     });
 
     it('lets the piece lie across a non-square bed', () => {
-      // 256 x 210: the 4 x 6 piece is 168 x 252mm, which only fits turned.
       const bed = createTestLayout({
         printBedSize: mm(256),
         printBedDepth: mm(210),
