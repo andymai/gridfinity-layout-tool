@@ -498,8 +498,9 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // 7. Handles. A handle hole cut high enough removes lip material along its
   //    own span — same impact as a wall cutout, and segmented the same way
   //. Sides where the hole sits clear of the lip don't conflict
-  //    and don't warn; nor do the sides `handleBuilder` skips (a slotted bin,
-  //    or the back wall of a bin with label tabs), which the plan mirrors.
+  //    and don't warn; nor do the sides `handleBuilder` skips (a slotted bin's
+  //    grooved walls, or the back wall of a bin with label tabs), which the
+  //    plan mirrors.
   //    Interior handles pierce compartment dividers, not the outer lip.
   if (lipHoldsLid) {
     const intrudingSides = isPolygon

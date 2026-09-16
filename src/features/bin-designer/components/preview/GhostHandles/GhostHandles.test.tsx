@@ -152,11 +152,44 @@ describe('GhostHandles', () => {
     expect(container.firstChild).not.toBeNull();
   });
 
-  it('renders nothing when style is slotted', () => {
+  it('renders on a slotted bin whose front and back walls are slot-free', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
         style: 'slotted',
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: false, pitch: 20 },
+        },
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+        },
+      },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'generating',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    const { container } = render(<GhostHandles />);
+    expect(container.firstChild).not.toBeNull();
+  });
+
+  it('renders nothing when both slot directions claim every wall', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        style: 'slotted',
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+        },
         handles: {
           ...DEFAULT_BIN_PARAMS.handles,
           enabled: true,

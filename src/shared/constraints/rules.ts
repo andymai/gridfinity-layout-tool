@@ -16,6 +16,7 @@ import {
   undersideReliefSelected,
 } from '@/features/bin-designer/types/base';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { hasSlotFreeWall, isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import type { ConstraintRule, ImplicationRule } from './types';
 
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
@@ -233,13 +234,6 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     disables: ['scoop'],
     reason: 'binDesigner.fingerScoopUnavailableSlotted',
   },
-  {
-    description: 'Slotted bins cannot have handles',
-    source: 'style.slotted',
-    when: (p) => p.style === 'slotted',
-    disables: ['handles'],
-    reason: 'binDesigner.handles.unavailableSlotted',
-  },
 
   // ── Base: spacer ─────────────────────────────────────────────────
   // A spacer is a floorless riser: the floor is punched through every cell so
@@ -435,6 +429,18 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     when: (p) => p.style === 'slotted' && p.slotConfig.x.enabled && p.slotConfig.y.enabled,
     disables: ['wallPattern'],
     reason: 'binDesigner.walls.pattern.allSlotted',
+  },
+  // X-axis slots claim the left and right walls, Y-axis slots the front and
+  // back, so a single-axis bin still has an opposite pair to grip. Only a bin
+  // whose every wall is claimed has nowhere left to put a handle. `isSlottedBody`
+  // keeps this in step with `handleBuilder`, which cuts every wall of a nesting
+  // base no matter what its slot config says.
+  {
+    description: 'Handles disabled when every wall has divider slots',
+    source: 'slotConfig',
+    when: (p) => isSlottedBody(p) && !hasSlotFreeWall(p),
+    disables: ['handles'],
+    reason: 'binDesigner.handles.unavailableSlotted',
   },
 
   // ── Style mutual exclusion: slotted ↔ solid ─────────────────────────────

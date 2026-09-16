@@ -431,6 +431,78 @@ describe('resolveConstraints — dynamic constraints', () => {
     // Only "all walls slotted" disables it, and style.solid disables it
     expect(status.available).toBe(true);
   });
+
+  it('handles disabled when both slot axes claim every wall', () => {
+    const params = makeParams({
+      style: 'slotted',
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+      },
+    });
+
+    const status = getFeatureStatus(params, 'handles');
+    expect(status.available).toBe(false);
+    expect(status.reason).toBe('binDesigner.handles.unavailableSlotted');
+  });
+
+  it('handles available when one slot axis leaves a wall pair free', () => {
+    const xOnly = makeParams({
+      style: 'slotted',
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: false, pitch: 20 },
+      },
+    });
+    const yOnly = makeParams({
+      style: 'slotted',
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: false, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+      },
+    });
+
+    expect(getFeatureStatus(xOnly, 'handles').available).toBe(true);
+    expect(getFeatureStatus(yOnly, 'handles').available).toBe(true);
+  });
+
+  it('handles available on a nesting base, which takes no slots at all', () => {
+    const params = makeParams({
+      style: 'slotted',
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+      },
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+      },
+    });
+
+    // `handleBuilder` cuts every wall here, so the panel must not claim otherwise.
+    expect(getFeatureStatus(params, 'handles').available).toBe(true);
+  });
+
+  it('handles disabled on a custom slot grid, where any wall can hold slots', () => {
+    const params = makeParams({
+      style: 'slotted',
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: false, pitch: 20 },
+        y: { enabled: false, pitch: 20 },
+        layout: 'custom',
+        customGrid: { cols: 2, rows: 1, cells: [0, 1] },
+      },
+    });
+
+    const status = getFeatureStatus(params, 'handles');
+    expect(status.available).toBe(false);
+  });
 });
 
 // =============================================================================

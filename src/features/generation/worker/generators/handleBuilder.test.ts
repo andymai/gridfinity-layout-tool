@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import type { BinParams, HandleConfig } from '@/shared/types/bin';
 import type { HandleSide } from '@/features/bin-designer/types/handles';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -151,6 +152,144 @@ describe('buildHandleHoles', () => {
     });
     const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).not.toBeNull();
+  });
+
+  describe('slotted bins', () => {
+    function slotted(
+      handles: PartialHandleConfig,
+      axes: { x: boolean; y: boolean },
+      overrides: Partial<BinParams> = {}
+    ): BinParams {
+      return {
+        ...makeParams(handles),
+        style: 'slotted',
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: axes.x, pitch: 20 },
+          y: { enabled: axes.y, pitch: 20 },
+        },
+        ...overrides,
+      };
+    }
+
+    const ONLY_FRONT = {
+      enabled: true,
+      front: { enabled: true },
+      back: { enabled: false },
+      left: { enabled: false },
+      right: { enabled: false },
+    } as const;
+    const ONLY_LEFT = {
+      enabled: true,
+      front: { enabled: false },
+      back: { enabled: false },
+      left: { enabled: true },
+      right: { enabled: false },
+    } as const;
+
+    it('keeps a front handle when only X-axis slots are cut', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const result = buildHandleHoles(
+        slotted(ONLY_FRONT, { x: true, y: false }),
+        40,
+        40,
+        20,
+        1.2,
+        false
+      );
+      expect(result).not.toBeNull();
+    });
+
+    it('drops a left handle when X-axis slots groove that wall', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const result = buildHandleHoles(
+        slotted(ONLY_LEFT, { x: true, y: false }),
+        40,
+        40,
+        20,
+        1.2,
+        false
+      );
+      expect(result).toBeNull();
+    });
+
+    it('keeps a left handle when only Y-axis slots are cut', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const result = buildHandleHoles(
+        slotted(ONLY_LEFT, { x: false, y: true }),
+        40,
+        40,
+        20,
+        1.2,
+        false
+      );
+      expect(result).not.toBeNull();
+    });
+
+    it('drops a front handle when Y-axis slots groove that wall', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const result = buildHandleHoles(
+        slotted(ONLY_FRONT, { x: false, y: true }),
+        40,
+        40,
+        20,
+        1.2,
+        false
+      );
+      expect(result).toBeNull();
+    });
+
+    it('drops every handle when both axes are cut', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const params = slotted(
+        { enabled: true, front: { enabled: true }, left: { enabled: true } },
+        { x: true, y: true }
+      );
+      const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
+      expect(result).toBeNull();
+    });
+
+    it('skips interior handles, whose dividers are removable pieces', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const params = slotted(
+        {
+          enabled: true,
+          interior: true,
+          front: { enabled: false },
+          back: { enabled: false },
+          left: { enabled: false },
+          right: { enabled: false },
+        },
+        { x: true, y: false },
+        {
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            cols: 2,
+            rows: 2,
+            cells: [0, 1, 2, 3],
+          },
+        }
+      );
+      const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
+      expect(result).toBeNull();
+    });
+
+    it('cuts every wall on a nesting base, which takes no slots', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const params = slotted(
+        ONLY_LEFT,
+        { x: true, y: false },
+        {
+          base: {
+            ...DEFAULT_BIN_PARAMS.base,
+            style: 'lid',
+            trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed: true },
+          },
+        }
+      );
+      const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
+      expect(result).not.toBeNull();
+    });
   });
 
   describe('polygon (cellMask) footprints', () => {

@@ -19,6 +19,7 @@ import {
   computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
+import { getSlotFreeWalls, isSlottedBody } from '@/shared/utils/slotFreeWalls';
 
 const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.4;
@@ -33,6 +34,7 @@ export function GhostHandles() {
     heightUnitMm,
     wallThickness,
     style,
+    slotConfig,
     handles,
     label,
     base,
@@ -50,6 +52,7 @@ export function GhostHandles() {
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
+      slotConfig: s.params.slotConfig,
       handles: s.params.handles,
       label: s.params.label,
       base: s.params.base,
@@ -69,22 +72,21 @@ export function GhostHandles() {
   const hasLip = base.stackingLip;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
 
-  const shouldShow =
-    handles.enabled &&
-    style !== 'slotted' &&
-    style !== 'solid' &&
-    generationStatus === 'generating';
+  const shouldShow = handles.enabled && style !== 'solid' && generationStatus === 'generating';
 
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
     const wallDefs = buildHandleWallDefs(innerW, innerD);
     const matrices: THREE.Matrix4[] = [];
+    const isSlotted = isSlottedBody({ style, base });
+    const slotFreeWalls = getSlotFreeWalls({ style, slotConfig });
 
     for (const wall of wallDefs) {
       const side = handles[wall.side];
       if (!side.enabled) continue;
       if (wall.side === 'back' && label.enabled) continue;
+      if (isSlotted && !slotFreeWalls[wall.side]) continue;
 
       // Resolve per-side overrides
       const sideWidth = side.width ?? handles.width;
@@ -177,6 +179,9 @@ export function GhostHandles() {
     label.enabled,
     wallConfig,
     interiorHeight,
+    style,
+    slotConfig,
+    base,
   ]);
 
   const material = useGhostMeshMaterial(geometry, { color: GHOST_COLOR, opacity: GHOST_OPACITY });

@@ -51,6 +51,7 @@ import {
   computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
+import { getSlotFreeWalls, isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import {
   labelTabInteriorDims,
   subtractSpan,
@@ -107,8 +108,8 @@ function lipBottomZ(interiorHeight: number): number {
  * Mirrors `wallCutoutBuilder` and `handleBuilder` gate for gate, because a gap
  * reported where no hole is cut costs a rail for nothing — the exact defect
  * Is about, in miniature. The gates that bite in practice: handles are
- * skipped entirely on a slotted bin and on the BACK wall of a bin with label
- * tabs, and a hole clamped under 1mm tall is not built at all.
+ * skipped on a slotted bin's grooved walls and on the BACK wall of a bin with
+ * label tabs, and a hole clamped under 1mm tall is not built at all.
  *
  * Rectangular footprints only. A polygon bin's cutouts and handles are cut
  * against resolved polygon edges rather than the interior AABB, and its rails
@@ -211,7 +212,7 @@ interface WallGap {
  * Wall-local rather than bin-centred so the rectangle and polygon paths share
  * it: they disagree only about where a wall IS and how long it is, never about
  * what a cutout or a handle does to it. Splitting on that boundary is what
- * keeps the builders' gates — the slotted skip, the back-wall-with-labels skip,
+ * keeps the builders' gates — the grooved-wall skip, the back-wall-with-labels skip,
  * the sub-1mm clamp, the end gaps a full-width handle cannot fit inside —
  * written once for both.
  */
@@ -278,12 +279,15 @@ function wallGaps(
   // Handle holes. Unlike a cutout these are windows in the middle of the wall,
   // so a hole low enough leaves the lip whole and takes nothing.
   const handles: HandleConfig = params.handles;
-  if (!handles.enabled || params.style === 'slotted' || handles.height <= 0) return out;
+  if (!handles.enabled || handles.height <= 0) return out;
   const sideCfg = handles[side];
   if (!sideCfg.enabled) return out;
   // A label tab owns the back wall's interior face, so the builder skips the
   // hole outright rather than cutting through the shelf.
   if (side === 'back' && params.label.enabled) return out;
+  // Divider slots own the walls they groove, so only the pair they leave alone
+  // carries a hole.
+  if (isSlottedBody(params) && !getSlotFreeWalls(params)[side]) return out;
 
   const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
     interiorHeight,

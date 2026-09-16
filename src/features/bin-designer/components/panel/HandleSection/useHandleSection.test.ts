@@ -116,6 +116,77 @@ describe('useHandleSection', () => {
     expect(useDesignerStore.getState().params.handles.back.enabled).toBe(false);
   });
 
+  it('reports the slotted wall pair and refuses to toggle it', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        style: 'slotted',
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: false, pitch: 20 },
+        },
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: false },
+          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: false },
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useHandleSection());
+
+    expect([...result.current.state.slottedSides].sort()).toEqual(['left', 'right']);
+
+    act(() => {
+      result.current.handlers.toggleSide('left');
+    });
+    expect(useDesignerStore.getState().params.handles.left.enabled).toBe(false);
+
+    act(() => {
+      result.current.handlers.toggleSide('front');
+    });
+    expect(useDesignerStore.getState().params.handles.front.enabled).toBe(true);
+  });
+
+  it('drops a stored slotted side from activeSides', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        style: 'slotted',
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: false, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+        },
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: false },
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useHandleSection());
+
+    expect(result.current.state.activeSides).toEqual(['left']);
+  });
+
+  it('leaves every side usable on a non-slotted bin', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        handles: { ...DEFAULT_BIN_PARAMS.handles, enabled: true },
+      },
+    });
+
+    const { result } = renderHook(() => useHandleSection());
+    expect(result.current.state.slottedSides.size).toBe(0);
+  });
+
   it('setWidth updates handle width', () => {
     const { result } = renderHook(() => useHandleSection());
 
