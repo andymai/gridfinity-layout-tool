@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'bed-fit-either-orientation',
+    date: '2026-09-16',
+    kind: 'improved',
+    title: { en: 'Bins fit the print bed in either orientation' },
+    body: {
+      en: 'A bin that only fits a rectangular bed turned 90 degrees no longer asks to be split, in the layout, the print list and the designer alike. Linking a design to a bin also accepts a design whose width and depth are swapped, since the preview already draws it turned.',
+    },
+    action: { kind: 'openTool', tool: 'layout' },
+  },
+  {
     id: 'scan-upload-photo',
     date: '2026-09-13',
     kind: 'improved',

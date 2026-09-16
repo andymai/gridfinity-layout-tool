@@ -6,6 +6,7 @@ import {
   checkBatchSyncEligibility,
   generateDefaultDesignName,
   dimensionsFitAllowingRotation,
+  footprintFitsAllowingRotation,
   syncDeclineKey,
 } from './linkingRules';
 import type { Bin, Layout } from '@/core/types';
@@ -371,6 +372,26 @@ describe('dimensionsFitAllowingRotation (#3040)', () => {
         { width: 11.5, depth: 1.5, height: 7 }
       )
     ).toBe(true);
+  });
+});
+
+describe('footprintFitsAllowingRotation', () => {
+  it('accepts the same footprint and its transpose', () => {
+    expect(footprintFitsAllowingRotation({ width: 5, depth: 6 }, { width: 5, depth: 6 })).toBe(
+      true
+    );
+    expect(footprintFitsAllowingRotation({ width: 6, depth: 5 }, { width: 5, depth: 6 })).toBe(
+      true
+    );
+  });
+
+  it('rejects any other footprint', () => {
+    expect(footprintFitsAllowingRotation({ width: 5, depth: 5 }, { width: 5, depth: 6 })).toBe(
+      false
+    );
+    expect(footprintFitsAllowingRotation({ width: 6, depth: 6 }, { width: 5, depth: 6 })).toBe(
+      false
+    );
   });
 });
 

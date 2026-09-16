@@ -5025,12 +5025,15 @@ const en: Record<string, string> = {
   // Link existing design dialog
   'designLinking.linkDialog.title': 'Link Existing Design',
   'designLinking.linkDialog.footprint': 'Showing designs with {width}×{depth} footprint',
+  'designLinking.linkDialog.footprintRotatable':
+    'Showing designs with {width}×{depth} or {depth}×{width} footprint',
   'designLinking.linkDialog.searchPlaceholder': 'Search designs...',
   'designLinking.linkDialog.heightMismatch': 'Different height',
   'designLinking.linkDialog.noCompatible': 'No compatible designs',
   'designLinking.linkDialog.noCompatibleHint':
     'Create a design with {width}×{depth} footprint to link it to this bin',
   'designLinking.linkDialog.noResults': 'No designs match your search',
+  'designLinking.linkDialog.rotated': 'Placed rotated 90°',
   'designLinking.linkDialog.loading': 'Loading designs...',
 
   // Create design dialog

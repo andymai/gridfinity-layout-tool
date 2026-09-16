@@ -15,7 +15,7 @@ import {
   getBinLocationContext,
   isBinLocked,
 } from '@/shared/utils/binLocation';
-import { calcMaxGridUnits } from '@/core/constants';
+import { calcBedCapacityForBin } from '@/core/constants';
 import {
   ContextMenuContainer,
   ContextMenuItem,
@@ -29,6 +29,7 @@ import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { Button } from '@/design-system';
 import type { Bin, GridUnits, LayerId } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 
 const BinContextMenuDesignSection = lazyWithRetry(() =>
   import('../BinContextMenuDesignSection').then(namedExport('BinContextMenuDesignSection'))
@@ -178,7 +179,14 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const showRotate = locationContext.canRotate && !(isInStash && isDesktop);
 
   // Check if bin needs splitting for STL search
-  const maxGrid = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm, layout.printBedDepth);
+  const maxGrid = calcBedCapacityForBin(
+    bin.width,
+    bin.depth,
+    layout.printBedSize,
+    layout.gridUnitMm,
+    layout.printBedDepth,
+    effectiveGridUnitMmY(layout)
+  );
   const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
   return (

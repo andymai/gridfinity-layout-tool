@@ -2,7 +2,8 @@
  * Dialog for linking an existing design to a bin.
  *
  * Shows compatible designs (matching footprint) and allows selection.
- * Footprint = same width and depth; height can differ (with warning).
+ * Footprint = same width and depth, or the transpose (the preview draws a
+ * transposed design turned 90°); height can differ (with warning).
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -16,6 +17,7 @@ import {
 } from '@/features/bin-designer';
 import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
+import { footprintFitsAllowingRotation } from '../../../domain';
 import { useBinLinking } from '../../../hooks';
 import { Button, IconButton, Input, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -51,11 +53,11 @@ export function LinkDesignDialog() {
   const compatibleDesigns = useMemo(() => {
     if (!pendingLinkDesign) return [];
     const { width, depth } = pendingLinkDesign.footprint;
-    return designs.filter((d) => {
-      if (!isLayoutPlaceableDesign(d)) return false;
-      const fp = designFootprint(d);
-      return fp.width === width && fp.depth === depth;
-    });
+    return designs.filter(
+      (d) =>
+        isLayoutPlaceableDesign(d) &&
+        footprintFitsAllowingRotation(designFootprint(d), { width, depth })
+    );
   }, [designs, pendingLinkDesign]);
 
   // Further filter by search query
@@ -150,7 +152,9 @@ export function LinkDesignDialog() {
               {t('designLinking.linkDialog.title')}
             </h2>
             <p className="text-xs text-content-secondary mt-0.5">
-              {t('designLinking.linkDialog.footprint', { width, depth })}
+              {width === depth
+                ? t('designLinking.linkDialog.footprint', { width, depth })
+                : t('designLinking.linkDialog.footprintRotatable', { width, depth })}
             </p>
           </div>
           <IconButton
@@ -305,6 +309,7 @@ export function LinkDesignDialog() {
                       ? t('binDesigner.itemKind.assembly')
                       : null;
                 const heightMismatch = dh !== binHeight;
+                const rotated = dw !== width;
 
                 return (
                   <li key={design.id}>
@@ -353,6 +358,11 @@ export function LinkDesignDialog() {
                           {heightMismatch && (
                             <span className="flex-shrink-0 px-1.5 py-0.5 text-micro font-medium rounded bg-warning/10 text-warning">
                               {t('designLinking.linkDialog.heightMismatch')}
+                            </span>
+                          )}
+                          {rotated && (
+                            <span className="flex-shrink-0 px-1.5 py-0.5 text-micro font-medium rounded bg-surface-elevated text-content-secondary">
+                              {t('designLinking.linkDialog.rotated')}
                             </span>
                           )}
                         </div>

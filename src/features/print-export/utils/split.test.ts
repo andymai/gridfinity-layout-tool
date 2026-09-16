@@ -921,6 +921,23 @@ describe('generatePrintList with overhang', () => {
     expect(rows.filter((r) => r.needsSplit)).toHaveLength(1);
   });
 
+  it('does not split a bin that fits the bed turned 90°', () => {
+    const fit: PrintSplitFit = {
+      bedWidthMm: 256,
+      bedDepthMm: 210,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+    };
+    const bin: Bin = {
+      ...binAt('1', 0),
+      width: gridUnits(5),
+      depth: gridUnits(6),
+    };
+    const rows = generatePrintList([bin], fit);
+    expect(rows[0].needsSplit).toBe(false);
+    expect(rows[0].pieces[0].count).toBe(1);
+  });
+
   it('merges placements that resolve to the same overhang', () => {
     const fit = fitAt(180 / 42, () => WIDE);
     const rows = generatePrintList([binAt('1', 0), binAt('2', 4)], fit);

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+  calcBedCapacityForBin,
   calcMaxGridUnits,
+  pickBedOrientation,
   generateId,
   createDefaultLayout,
   createLayoutWithSettings,
@@ -81,6 +83,51 @@ describe('calcMaxGridUnits', () => {
     expect(calcMaxGridUnits(313, 25)).toEqual({ width: 12.5, depth: 12.5 });
     // A 13-unit bin = 325mm does NOT fit, so max should be 12.5
     expect(calcMaxGridUnits(313, 25).width).toBeLessThan(13);
+  });
+});
+
+describe('pickBedOrientation', () => {
+  const bed = { width: 6, depth: 5 };
+  const turned = { width: 5, depth: 6 };
+
+  it('keeps the given orientation when the bin fits as it lies', () => {
+    expect(pickBedOrientation(6, 5, bed, turned)).toEqual(bed);
+    expect(pickBedOrientation(3, 3, bed, turned)).toEqual(bed);
+  });
+
+  it('turns the bed when the bin only fits across it', () => {
+    expect(pickBedOrientation(5, 6, bed, turned)).toEqual(turned);
+  });
+
+  it('picks the orientation that cuts fewer pieces when neither fits', () => {
+    expect(pickBedOrientation(10, 5, bed, turned)).toEqual(bed);
+    expect(pickBedOrientation(4, 12, bed, turned)).toEqual(turned);
+  });
+
+  it('keeps the given orientation on a tie', () => {
+    expect(pickBedOrientation(7, 7, bed, turned)).toEqual(bed);
+  });
+});
+
+describe('calcBedCapacityForBin', () => {
+  it('reads a bin that fits the bed turned as fitting', () => {
+    const cap = calcBedCapacityForBin(5, 6, 256, 42, 210);
+    expect(cap).toEqual({ width: 5, depth: 6 });
+    expect(5 > cap.width || 6 > cap.depth).toBe(false);
+  });
+
+  it('keeps the bed as given when the bin fits that way', () => {
+    expect(calcBedCapacityForBin(6, 5, 256, 42, 210)).toEqual({ width: 6, depth: 5 });
+  });
+
+  it('never turns a square bed', () => {
+    expect(calcBedCapacityForBin(7, 3, 168, 42)).toEqual({ width: 4, depth: 4 });
+  });
+
+  it('turns a non-square grid pitch with the bin, not with the bed', () => {
+    // 42mm along X, 21mm along Y. Turned, the width axis still counts in 42s
+    // against the 210mm bed depth (5), and the depth axis in 21s against 256 (12).
+    expect(calcBedCapacityForBin(5, 11, 256, 42, 210, 21)).toEqual({ width: 5, depth: 12 });
   });
 });
 

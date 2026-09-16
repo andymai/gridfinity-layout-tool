@@ -51,7 +51,7 @@ export function IsometricPreview(props: IsometricPreviewProps) {
     ceiling,
     heightToGridScale,
     previewSummaryText,
-    maxGridUnits,
+    bedCapacityFor,
     designGeometries,
     binsToRender,
     enteringBins,
@@ -203,7 +203,7 @@ export function IsometricPreview(props: IsometricPreviewProps) {
                 <BinOverlayGroup
                   key={`overlay-${binData.bin.id}`}
                   binData={binData}
-                  maxGridUnits={maxGridUnits}
+                  maxGridUnits={bedCapacityFor(binData.bin)}
                 />
               ))}
               <BatchedCornerMarkers

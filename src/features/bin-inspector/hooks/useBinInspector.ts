@@ -15,7 +15,7 @@ import { batch } from '@/core/cqrs';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
-import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { calcBedCapacityForBin, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
@@ -24,7 +24,12 @@ import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
 import { expandPairIds } from '@/shared/utils/binPairs';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { GridUnits, HeightUnits, Bin, LayerId } from '@/core/types';
-import { layerId as toLayerId, categoryId as toCategoryId, roundHeightUnits } from '@/core/types';
+import {
+  layerId as toLayerId,
+  categoryId as toCategoryId,
+  roundHeightUnits,
+  effectiveGridUnitMmY,
+} from '@/core/types';
 import { useTranslation } from '@/i18n';
 import {
   emitLinkedBinResize,
@@ -73,6 +78,7 @@ export function useBinInspector(): UseBinInspectorReturn {
   const category = bin ? (layout.categories.find((c) => c.id === bin.category) ?? null) : null;
   const layer = bin ? (layout.layers.find((l) => l.id === bin.layerId) ?? null) : null;
 
+  const gridUnitMmY = effectiveGridUnitMmY(layout);
   const constraints = useMemo<BinConstraints>(() => {
     if (!bin) {
       return {
@@ -87,7 +93,14 @@ export function useBinInspector(): UseBinInspectorReturn {
       };
     }
 
-    const maxGrid = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm, layout.printBedDepth);
+    const maxGrid = calcBedCapacityForBin(
+      bin.width,
+      bin.depth,
+      layout.printBedSize,
+      layout.gridUnitMm,
+      layout.printBedDepth,
+      gridUnitMmY
+    );
     const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
     // For bins in staging, use full drawer height range
@@ -133,6 +146,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     layout.printBedSize,
     layout.printBedDepth,
     layout.gridUnitMm,
+    gridUnitMmY,
   ]);
 
   // Collect all unique custom property keys from all bins in the layout (for suggestions)

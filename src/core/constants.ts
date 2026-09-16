@@ -107,6 +107,60 @@ export function calcMaxGridUnits(
   };
 }
 
+/** Bed capacity along each axis of a bin, in grid units. */
+export interface BedCapacity {
+  readonly width: number;
+  readonly depth: number;
+}
+
+/**
+ * A printed part lies either way round on the plate, so a bin is fitted in
+ * both orientations. `asIs` is the capacity along the bin's own axes; `turned`
+ * is the capacity when the bin lies across the bed at 90°. Returns the
+ * orientation to fit against: the given one when the bin fits that way, the
+ * turned one when it only fits turned, and whichever cuts fewer pieces when
+ * neither does. Ties keep the given orientation, so a square bed never turns.
+ */
+export function pickBedOrientation(
+  binWidth: number,
+  binDepth: number,
+  asIs: BedCapacity,
+  turned: BedCapacity
+): BedCapacity {
+  const fits = (c: BedCapacity): boolean => binWidth <= c.width && binDepth <= c.depth;
+  if (fits(asIs)) return asIs;
+  if (fits(turned)) return turned;
+  const pieces = (c: BedCapacity): number =>
+    Math.ceil(binWidth / c.width) * Math.ceil(binDepth / c.depth);
+  return pieces(turned) < pieces(asIs) ? turned : asIs;
+}
+
+/**
+ * Bed capacity oriented for one bin: `calcMaxGridUnits` fitted both ways round
+ * via `pickBedOrientation`. Compare the bin's own width and depth against the
+ * result; a bin that only fits the bed turned 90° reads as fitting.
+ *
+ * Both orientations are derived from the pitches, never by transposing one
+ * capacity: on a non-square grid the turned width still counts in the X pitch
+ * against the bed's depth, which a swap of `{width, depth}` gets wrong.
+ */
+export function calcBedCapacityForBin(
+  binWidth: number,
+  binDepth: number,
+  printBedWidthMm: number,
+  gridUnitMm: number,
+  printBedDepthMm?: number,
+  gridUnitMmY: number = gridUnitMm
+): BedCapacity {
+  const depthMm = printBedDepthMm ?? printBedWidthMm;
+  return pickBedOrientation(
+    binWidth,
+    binDepth,
+    calcMaxGridUnits(printBedWidthMm, gridUnitMm, depthMm, gridUnitMmY),
+    calcMaxGridUnits(depthMm, gridUnitMm, printBedWidthMm, gridUnitMmY)
+  );
+}
+
 export const STAGING_ID = '__staging__' as LayerId;
 /** Sentinel layout ID used when viewing a shared layout in preview mode. */
 export const SHARED_PREVIEW_ID = '__shared_preview__' as LayoutId;

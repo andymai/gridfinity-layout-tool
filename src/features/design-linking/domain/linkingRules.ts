@@ -48,9 +48,19 @@ export function dimensionsFitAllowingRotation(
   tolerance = DIMENSION_TOLERANCE
 ): boolean {
   return (
-    dimensionsMatch(a, b, tolerance) ||
-    dimensionsMatch(a, { width: b.depth, depth: b.width, height: b.height }, tolerance)
+    Math.abs(a.height - b.height) < tolerance && footprintFitsAllowingRotation(a, b, tolerance)
   );
+}
+
+/** The footprint half of `dimensionsFitAllowingRotation`, for callers without a height. */
+export function footprintFitsAllowingRotation(
+  a: { readonly width: number; readonly depth: number },
+  b: { readonly width: number; readonly depth: number },
+  tolerance = DIMENSION_TOLERANCE
+): boolean {
+  const same = Math.abs(a.width - b.width) < tolerance && Math.abs(a.depth - b.depth) < tolerance;
+  const turned = Math.abs(a.width - b.depth) < tolerance && Math.abs(a.depth - b.width) < tolerance;
+  return same || turned;
 }
 
 /** Stable key for a dimension triple, used to remember a declined sync. */

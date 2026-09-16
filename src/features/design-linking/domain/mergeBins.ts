@@ -287,7 +287,12 @@ export function planMergedBin(
   const gridUnitMmY = effectiveGridUnitMmY(layout);
   const bedWidth = layout.printBedSize;
   const bedDepth = layout.printBedDepth ?? layout.printBedSize;
-  const splitEnabled = widthUnits * gridUnitMm > bedWidth || depthUnits * gridUnitMmY > bedDepth;
+  const widthMm = widthUnits * gridUnitMm;
+  const depthMm = depthUnits * gridUnitMmY;
+  const splitEnabled = !(
+    (widthMm <= bedWidth && depthMm <= bedDepth) ||
+    (widthMm <= bedDepth && depthMm <= bedWidth)
+  );
 
   const params: BinParams = {
     ...DEFAULT_BIN_PARAMS,
