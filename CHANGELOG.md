@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.493.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.492.3...gridfinity-layout-tool-v4.493.0) (2026-09-16)
+
+
+### Features
+
+* **bin-designer:** allow handles on the unslotted walls of a slotted bin ([#4308](https://github.com/andymai/gridfinity-layout-tool/issues/4308)) ([1f49af5](https://github.com/andymai/gridfinity-layout-tool/commit/1f49af51777edc2e38f28aafac849ebf5360958f))
+* **print-export:** fit a bin to the print bed in either orientation ([#4307](https://github.com/andymai/gridfinity-layout-tool/issues/4307)) ([b3cef39](https://github.com/andymai/gridfinity-layout-tool/commit/b3cef39d68aaf66b707cedf4984f611340b0535f))
+
 ## [4.492.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.492.2...gridfinity-layout-tool-v4.492.3) (2026-09-16)
 
 
