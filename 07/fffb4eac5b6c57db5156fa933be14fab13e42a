@@ -1,0 +1,97 @@
+src/features/print-export/utils/split.test.ts
+  s_f2554c47160f60::t_db17503ea9da02 924-941
+src/i18n/locales/pt-BR.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/features/design-linking/domain/mergeBins.test.ts
+  s_f2554c47160f60::t_db17503ea9da02 293-304
+src/i18n/locales/fr.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.tsx
+  s_f2554c47160f60::t_69a28d9e5c2bd2 366-367
+  s_f2554c47160f60::t_a988f7c3db55c2 5-6,20,56-60,155-157,312,363-365
+src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.test.tsx
+  s_f2554c47160f60::t_db17503ea9da02 175-210
+src/features/design-linking/domain/linkingRules.ts
+  s_f2554c47160f60::t_d24e54d9d32e88 51,55-61,63
+  s_f2554c47160f60::t_654d0f99dd6c51 64-65
+  s_f2554c47160f60::t_db17503ea9da02 62
+src/shared/analytics/posthog/metrics.ts
+  s_f2554c47160f60::t_d24e54d9d32e88 7-12,190-193
+src/features/design-linking/domain/index.ts
+  s_f2554c47160f60::t_d24e54d9d32e88 11
+src/i18n/locales/pl.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/shared/utils/binSplitFit.ts
+  s_f2554c47160f60::t_ae1c51edac51de 18,64-67,78-87
+src/i18n/locales/de.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_f2554c47160f60::t_d24e54d9d32e88 18,90-96
+src/i18n/locales/nb.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/i18n/locales/cs.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/i18n/locales/it.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/features/design-linking/domain/linkingRules.test.ts
+  s_f2554c47160f60::t_a3b97d7d0fbd14 396-397
+  s_f2554c47160f60::t_db17503ea9da02 9,378-395
+src/i18n/locales/ja.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_f2554c47160f60::t_d24e54d9d32e88 18,181-187
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_f2554c47160f60::t_d24e54d9d32e88 6,107-114
+src/core/constants.test.ts
+  s_f2554c47160f60::t_4a81dcec55aba5 133
+  s_f2554c47160f60::t_4012d9897eed0a 136
+  s_f2554c47160f60::t_db17503ea9da02 3,5-6,90-132,134-135
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverlayGroup.tsx
+  s_f2554c47160f60::t_d24e54d9d32e88 2,15,39,47
+src/i18n/locales/es.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/i18n/locales/nl.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/i18n/locales/uk.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_f2554c47160f60::t_db17503ea9da02 152-167
+src/i18n/locales/ka.json
+  s_f2554c47160f60::t_d24e54d9d32e88 4216,4222
+src/i18n/locales/en.ts
+  s_f2554c47160f60::t_d24e54d9d32e88 5028-5029,5036
+src/i18n/locales/zh-CN.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/features/grid-editor/components/Grid/IsometricPreview/useIsometricPreview.ts
+  s_f2554c47160f60::t_d24e54d9d32e88 8,197
+  s_f2554c47160f60::t_db17503ea9da02 195
+src/shared/utils/binSplitFit.test.ts
+  s_f2554c47160f60::t_db17503ea9da02 117-150
+src/i18n/locales/ko.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/core/constants.ts
+  s_f2554c47160f60::t_ae1c51edac51de 110-137,150-171
+  s_f2554c47160f60::t_d24e54d9d32e88 138-149
+src/features/design-linking/domain/mergeBins.ts
+  s_f2554c47160f60::t_d24e54d9d32e88 290-295
+src/i18n/locales/sv.json
+  s_f2554c47160f60::t_d24e54d9d32e88 2797,2803
+src/features/whats-new/entries.ts
+  s_f2554c47160f60::t_6a7b8f732b4229 16-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "07fffb4eac5b6c57db5156fa933be14fab13e42a",
+  "prompts": {},
+  "sessions": {
+    "s_f2554c47160f60": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5bbe41db-53b7-408b-9a1e-7aa66e6e05be",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
