@@ -249,7 +249,7 @@ question: wherever the LID has rail, does the BIN still have lip (`ungrippedRail
 - `lid.relieveInterior` is no help: it carves back material that intrudes and cannot
   restore material that was removed. The blocks apply with it on.
 - A plan saying "no rail here" must mirror the builder gate for gate. `handleBuilder`
-  skips handles on a slotted bin, on the BACK wall of a bin with label tabs, and on any
+  skips handles on a slotted bin's grooved walls, on the BACK wall of a bin with label tabs, and on any
   hole clamped under 1mm; `computeMultiHandleOffsets` reserves 3mm at each end so a
   100%-wide handle is never cut at all. That also sets the bar for "no lip anywhere":
   a literal zero is unreachable for handles and far too generous for cutouts (98%

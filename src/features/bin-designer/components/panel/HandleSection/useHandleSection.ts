@@ -6,6 +6,7 @@ import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { getSlotFreeWalls, isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import { DEFAULT_HANDLE_SIDE } from '../../../constants/defaults';
 import type { HandleWallSide, HandleCutoutShape, HandleSide } from '@/features/bin-designer/types';
 import type { SectionMeta } from '../types';
@@ -34,13 +35,20 @@ export function useHandleSection() {
   const isUnavailable = !featureStatus.available;
   const isBackDisabled = params.label.enabled;
 
+  const slottedSides = useMemo<ReadonlySet<HandleWallSide>>(() => {
+    if (!isSlottedBody(params)) return new Set();
+    const slotFree = getSlotFreeWalls(params);
+    return new Set(HANDLE_SIDES.filter((side) => !slotFree[side]));
+  }, [params]);
+
+  const isSideBlocked = useCallback(
+    (side: HandleWallSide) => (side === 'back' && isBackDisabled) || slottedSides.has(side),
+    [isBackDisabled, slottedSides]
+  );
+
   const activeSides = useMemo(
-    () =>
-      HANDLE_SIDES.filter((side) => {
-        if (side === 'back' && isBackDisabled) return false;
-        return handles[side].enabled;
-      }),
-    [handles, isBackDisabled]
+    () => HANDLE_SIDES.filter((side) => !isSideBlocked(side) && handles[side].enabled),
+    [handles, isSideBlocked]
   );
 
   const toggleEnabled = useCallback(() => {
@@ -49,7 +57,7 @@ export function useHandleSection() {
 
   const toggleSide = useCallback(
     (side: HandleWallSide) => {
-      if (side === 'back' && isBackDisabled) return;
+      if (isSideBlocked(side)) return;
       if (handles[side].enabled) {
         updateHandleSide(side, { ...DEFAULT_HANDLE_SIDE, enabled: false });
       } else {
@@ -59,7 +67,7 @@ export function useHandleSection() {
         updateHandleSide(side, { ...source, enabled: true });
       }
     },
-    [handles, updateHandleSide, isBackDisabled, linked, activeSides]
+    [handles, updateHandleSide, isSideBlocked, linked, activeSides]
   );
 
   /** Apply a partial update to the target side, or all active sides when linked. */
@@ -124,8 +132,8 @@ export function useHandleSection() {
   const handleWidthMm = useMemo(() => {
     if (isCustomShape) return null;
     const { innerW, innerD } = binDimensions(params);
-    const fbEnabled = handles.front.enabled || (handles.back.enabled && !isBackDisabled);
-    const lrEnabled = handles.left.enabled || handles.right.enabled;
+    const fbEnabled = activeSides.includes('front') || activeSides.includes('back');
+    const lrEnabled = activeSides.includes('left') || activeSides.includes('right');
     let span = innerW;
     if (fbEnabled && lrEnabled) {
       span = Math.min(innerW, innerD);
@@ -133,7 +141,7 @@ export function useHandleSection() {
       span = innerD;
     }
     return Math.round(span * (handles.width / 100) * 10) / 10;
-  }, [params, handles, isBackDisabled, isCustomShape]);
+  }, [params, handles.width, activeSides, isCustomShape]);
 
   const summary = useMemo(() => {
     if (!handles.enabled || activeSides.length === 0) return undefined;
@@ -167,6 +175,7 @@ export function useHandleSection() {
     state: {
       handles,
       isBackDisabled,
+      slottedSides,
       handleWidthMm,
       linked,
       showCornerRadius,

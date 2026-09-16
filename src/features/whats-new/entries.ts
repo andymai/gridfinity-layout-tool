@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'slotted-bin-handles',
+    date: '2026-09-16',
+    kind: 'improved',
+    title: { en: 'Handles on a bin with removable dividers' },
+    body: {
+      en: 'Slots and handles no longer rule each other out. Slots running left to right groove the side walls, so the front and back are free to take a grip; slots running front to back do the opposite. Only a bin with both directions on has every wall grooved, and that is the one case handles still sit out.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'bed-fit-either-orientation',
     date: '2026-09-16',
     kind: 'improved',

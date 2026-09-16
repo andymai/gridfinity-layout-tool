@@ -232,12 +232,29 @@ describe('lipGaps: handle holes', () => {
     ]);
   });
 
-  it('skips a slotted bin, which the handle feature never builds on', () => {
-    expect(
+  it('skips only the walls a slotted bin grooves, as `handleBuilder` does', () => {
+    const slotted = (
+      axes: { x: boolean; y: boolean },
+      side: 'front' | 'left'
+    ): ReturnType<typeof lipGaps> =>
       lipGaps(
-        bin({ style: 'slotted', handles: handles({ front: { ...HANDLE_SIDE, enabled: true } }) })
-      )
-    ).toEqual([]);
+        bin({
+          style: 'slotted',
+          slotConfig: {
+            ...DEFAULT_BIN_PARAMS.slotConfig,
+            x: { enabled: axes.x, pitch: 20 },
+            y: { enabled: axes.y, pitch: 20 },
+          },
+          handles: handles({ [side]: { ...HANDLE_SIDE, enabled: true } }),
+        })
+      );
+
+    // X-axis slots groove left and right, so a front grip still opens the lip.
+    expect(lipGapSides(slotted({ x: true, y: false }, 'front'), 'handle')).toEqual(['front']);
+    expect(slotted({ x: true, y: false }, 'left')).toEqual([]);
+    expect(lipGapSides(slotted({ x: false, y: true }, 'left'), 'handle')).toEqual(['left']);
+    expect(slotted({ x: false, y: true }, 'front')).toEqual([]);
+    expect(slotted({ x: true, y: true }, 'front')).toEqual([]);
   });
 
   it('skips a hole clamped under 1mm tall, which is never cut', () => {
@@ -403,13 +420,24 @@ describe('polygonLipGaps', () => {
   });
 
   it('applies the same builder gates the rectangle path does', () => {
-    // Slotted bins build no handles at all; the shared `wallGaps` is what makes
-    // that true for a custom shape without restating it.
+    // A slotted bin builds no handle on a wall its slots groove; the shared
+    // `wallGaps` is what makes that true for a custom shape without restating
+    // it.
     const handled = withMask(L_MASK, {
       handles: handles({ front: { ...HANDLE_SIDE, enabled: true } }),
     });
     expect(polygonLipGaps(handled).length).toBeGreaterThan(0);
-    expect(polygonLipGaps({ ...handled, style: 'slotted' })).toEqual([]);
+    expect(
+      polygonLipGaps({
+        ...handled,
+        style: 'slotted',
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: false, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+        },
+      })
+    ).toEqual([]);
   });
 });
 

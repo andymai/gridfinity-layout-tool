@@ -13,10 +13,10 @@ import {
   isUndersideRelief,
   resolveLipTip,
   resolveTileFloorThickness,
-  isNestingBase,
 } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import { dividerGrooveDepth } from '@/shared/utils/slotMath';
+import { isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import { isFractional } from '@/core/constants';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import {
@@ -198,7 +198,7 @@ export function deriveDimensions(
   const innerD = outerD + (ovhExp?.addD ?? 0) - 2 * params.wallThickness;
   const innerOffsetX = ovhExp?.offsetX ?? 0;
   const innerOffsetY = ovhExp?.offsetY ?? 0;
-  const isSlotted = params.style === 'slotted' && !isNestingBase(params.base);
+  const isSlotted = isSlottedBody(params);
   const grooveDepth = liteFloorOpen ? 0 : dividerGrooveDepth(params);
 
   // A spacer has no floor for a magnet/screw boss to stand on — a pad inside a

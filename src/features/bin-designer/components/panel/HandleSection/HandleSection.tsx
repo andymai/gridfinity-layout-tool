@@ -31,6 +31,7 @@ export function HandleSection() {
   const {
     handles,
     isBackDisabled,
+    slottedSides,
     handleWidthMm,
     linked,
     showCornerRadius,
@@ -39,16 +40,21 @@ export function HandleSection() {
   } = state;
 
   const sideStates: SideState[] = HANDLE_SIDES.map((side) => {
-    // The back handle is blocked while a label tab occupies that wall.
-    // SideSelector renders a disabled side as off, so the stored `enabled`
-    // flag can pass through unchanged.
-    const isDisabled = side === 'back' && isBackDisabled;
+    // A wall is blocked while a label tab occupies it, or while divider slots
+    // are cut into it. SideSelector renders a disabled side as off, so the
+    // stored `enabled` flag can pass through unchanged.
+    const blockedByLabel = side === 'back' && isBackDisabled;
+    const blockedBySlots = slottedSides.has(side);
     return {
       side,
       label: t(`binDesigner.handles.${side}`),
       active: handles[side].enabled,
-      disabled: isDisabled,
-      title: isDisabled ? t('binDesigner.handles.backDisabledByLabelTab') : undefined,
+      disabled: blockedByLabel || blockedBySlots,
+      title: blockedByLabel
+        ? t('binDesigner.handles.backDisabledByLabelTab')
+        : blockedBySlots
+          ? t('binDesigner.handles.sideSlotted')
+          : undefined,
     };
   });
 
@@ -192,9 +198,7 @@ export function HandleSection() {
 
               {/* Per-side controls (independent mode) */}
               {!linked &&
-                HANDLE_SIDES.filter(
-                  (s) => handles[s].enabled && !(s === 'back' && isBackDisabled)
-                ).map((side) => (
+                activeSides.map((side) => (
                   <div key={side} className="space-y-2">
                     <label className="block text-xs font-medium text-content-secondary">
                       {t(`binDesigner.handles.${side}`)}

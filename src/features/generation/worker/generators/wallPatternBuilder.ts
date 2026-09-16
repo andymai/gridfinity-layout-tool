@@ -53,6 +53,8 @@ import {
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
+import { getSlotFreeWalls } from '@/shared/utils/slotFreeWalls';
+import type { SlotFreeWalls } from '@/shared/utils/slotFreeWalls';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import {
   resolveCutoutCornerRadii,
@@ -113,6 +115,7 @@ export interface WallClipContext {
   readonly isPolygon: boolean;
   readonly wallPatternInputs: WallPatternInputs | undefined;
   readonly handleWallDefForSide: ReadonlyMap<string, HandleWallDef>;
+  readonly slotFreeWalls: SlotFreeWalls;
   readonly wallTextBySide: ReadonlyMap<string, WallTextLayout>;
   readonly textWallDefForSide: ReadonlyMap<string, HandleWallDef>;
 }
@@ -209,6 +212,7 @@ export function computeWallClipContext(
     isPolygon,
     wallPatternInputs,
     handleWallDefForSide,
+    slotFreeWalls: getSlotFreeWalls(params),
     wallTextBySide,
     textWallDefForSide,
   };
@@ -274,7 +278,7 @@ export function computeWallClips(
   if (
     wall.allowClip &&
     params.handles.enabled &&
-    !dim.isSlotted &&
+    !(dim.isSlotted && !clipCtx.slotFreeWalls[wall.side]) &&
     handleWall &&
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Record<Side, HandleSide> is exhaustive in the type system, but legacy persisted configs may have missing keys
     params.handles[wall.side]?.enabled &&

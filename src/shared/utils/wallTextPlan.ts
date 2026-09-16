@@ -150,7 +150,7 @@ function obstacleRects(
   const handleSide = params.handles[side];
   if (
     params.handles.enabled &&
-    !isSlotted &&
+    !(isSlotted && !getSlotFreeWalls(params)[side]) &&
     handleSide.enabled &&
     !(side === 'back' && params.label.enabled)
   ) {

@@ -22,6 +22,7 @@ import {
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
+import { getSlotFreeWalls, isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import { buildHandleProfile } from './handleProfiles';
 import { LIP_TAPER_WIDTH } from './generatorConstants';
 import { resolvePolygonSideGeometry } from './maskPolygonEdges';
@@ -179,10 +180,17 @@ function buildHandleHolesInScope(
     : buildHandleWallDefs(innerW, innerD);
   const allHoles: Shape3D[] = [];
 
+  // X-axis slots groove the left and right walls, Y-axis slots the front and
+  // back. A grip hole through a grooved wall would breach the divider seat, so
+  // only the walls the slots leave alone can carry one.
+  const isSlotted = isSlottedBody(params);
+  const slotFreeWalls = getSlotFreeWalls(params);
+
   for (const wall of walls) {
     const side = params.handles[wall.side];
     if (!side.enabled) continue;
     if (wall.side === 'back' && params.label.enabled) continue;
+    if (isSlotted && !slotFreeWalls[wall.side]) continue;
 
     // Resolve per-side overrides
     const sideWidth = side.width ?? globalWidth;
@@ -238,8 +246,9 @@ function buildHandleHolesInScope(
   }
 
   // Interior wall handles — skipped on polygon bins (compartment walls are
-  // filtered out for custom shapes, so there's nothing to cut through).
-  if (interior && !isPolygon) {
+  // filtered out for custom shapes, so there's nothing to cut through) and on
+  // slotted bins, whose interior is removable dividers rather than built walls.
+  if (interior && !isPolygon && !isSlotted) {
     const { cols, rows } = params.compartments;
     if (cols > 1 || rows > 1) {
       const geom = computeHandleHoleGeometry(interiorHeight, globalHeight, verticalPosition);
@@ -294,7 +303,7 @@ export const handlesFeature: FeatureBuilder = {
   tag: FeatureTag.HANDLE,
   target: 'cut',
   supportsCellMask: true,
-  shouldBuild: (ctx) => ctx.params.handles.enabled && !ctx.dimensions.isSlotted,
+  shouldBuild: (ctx) => ctx.params.handles.enabled,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     const cutoutClipKey = params.walls.enabled
@@ -322,7 +331,10 @@ export const handlesFeature: FeatureBuilder = {
           ? `${params.compartments.cols}x${params.compartments.rows}:${params.compartments.cells.join(',')}`
           : '',
         // Tilted dividers move interior handle holes off the grid line.
-        params.handles.interior ? stableSerialize(params.compartments.dividerOverrides ?? []) : ''
+        params.handles.interior ? stableSerialize(params.compartments.dividerOverrides ?? []) : '',
+        // Which walls the slots claim decides which walls get a hole at all.
+        // Appended so every non-slotted bin keeps a byte-identical v4 key.
+        ...(dim.isSlotted ? [stableSerialize(getSlotFreeWalls(params))] : [])
       )
     );
   },
