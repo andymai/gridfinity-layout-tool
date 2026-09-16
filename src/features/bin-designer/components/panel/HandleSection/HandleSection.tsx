@@ -40,9 +40,8 @@ export function HandleSection() {
   } = state;
 
   const sideStates: SideState[] = HANDLE_SIDES.map((side) => {
-    // A wall is blocked while a label tab occupies it, or while divider slots
-    // are cut into it. SideSelector renders a disabled side as off, so the
-    // stored `enabled` flag can pass through unchanged.
+    // SideSelector renders a disabled side as off, so the stored `enabled`
+    // flag can pass through unchanged.
     const blockedByLabel = side === 'back' && isBackDisabled;
     const blockedBySlots = slottedSides.has(side);
     return {

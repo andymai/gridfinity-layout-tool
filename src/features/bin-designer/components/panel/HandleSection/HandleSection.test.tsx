@@ -106,7 +106,6 @@ describe('HandleSection', () => {
     });
 
     render(<HandleSection />);
-    // X-axis slots groove the left and right walls; front and back stay free.
     expect(screen.getByRole<HTMLInputElement>('switch', { name: 'Left' }).disabled).toBe(true);
     expect(screen.getByRole<HTMLInputElement>('switch', { name: 'Right' }).disabled).toBe(true);
     expect(screen.getByRole<HTMLInputElement>('switch', { name: 'Front' }).disabled).toBe(false);
