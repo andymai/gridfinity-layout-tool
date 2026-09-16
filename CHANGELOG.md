@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.492.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.492.1...gridfinity-layout-tool-v4.492.2) (2026-09-16)
+
+
+### Bug Fixes
+
+* **export:** budget a split export for its per-piece cuts ([#4297](https://github.com/andymai/gridfinity-layout-tool/issues/4297)) ([f120991](https://github.com/andymai/gridfinity-layout-tool/commit/f1209918f278ef78a9d284cf8f0a1b1227c08472))
+* **generation:** keep a retired bridge's init failure from tearing down its replacement ([#4296](https://github.com/andymai/gridfinity-layout-tool/issues/4296)) ([b31821b](https://github.com/andymai/gridfinity-layout-tool/commit/b31821b6704e305598500bb1ffa4f8bfa056ccc7))
+
 ## [4.492.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.492.0...gridfinity-layout-tool-v4.492.1) (2026-09-15)
 
 
