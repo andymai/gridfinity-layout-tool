@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_23739923090260::t_c6e61a9e1f88f1 73,88,104,289-294,305-306,349,386-388
+src/features/generation/worker/generators/binGenerator.scenario.scoopContainment.test.ts
+  s_23739923090260::t_c6e61a9e1f88f1 67-68,77,85,87-93,127-128,135,184-187,194
+  s_23739923090260::t_4e16467657a2f2 18,23,25,36-47,55-65,74,223-231
+  s_23739923090260::t_f4e1d7839402bc 188-193,195-203
+  s_23739923090260::t_cadcba118db32f 232-279
+  s_23739923090260::t_eb1ffa59ff9f98 66,69-73,280
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "eb7a74e770135e44616092d6ddb653e1598d6f93",
+  "prompts": {},
+  "sessions": {
+    "s_23739923090260": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7ab85f0b-65e4-4518-96ce-2771050b0967",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
