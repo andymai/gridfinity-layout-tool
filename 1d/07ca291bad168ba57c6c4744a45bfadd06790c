@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_f2554c47160f60::t_81b865a30f651d 43-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1d07ca291bad168ba57c6c4744a45bfadd06790c",
+  "prompts": {},
+  "sessions": {
+    "s_f2554c47160f60": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5bbe41db-53b7-408b-9a1e-7aa66e6e05be",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
