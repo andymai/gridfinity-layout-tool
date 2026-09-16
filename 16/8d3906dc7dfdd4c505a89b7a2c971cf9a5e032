@@ -1,0 +1,35 @@
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_f2554c47160f60::t_3608ca24a74a8d 32,187-188
+src/features/grid-editor/components/Grid/IsometricPreview/useIsometricPreview.ts
+  s_f2554c47160f60::t_3608ca24a74a8d 8,145-156,203,216,317
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_f2554c47160f60::t_3608ca24a74a8d 27-32,81,101-102
+  s_f2554c47160f60::t_49c7d2a451e982 149
+src/shared/analytics/posthog/metrics.ts
+  s_f2554c47160f60::t_3608ca24a74a8d 7,10,189,191-198
+src/core/constants.test.ts
+  s_f2554c47160f60::t_3608ca24a74a8d 91,94-95,99,103-104,108,123-124
+  s_f2554c47160f60::t_43b64f25c7b0bf 125-126
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverlayGroup.tsx
+  s_f2554c47160f60::t_3608ca24a74a8d 37,45
+src/core/constants.ts
+  s_f2554c47160f60::t_3608ca24a74a8d 142-145
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_f2554c47160f60::t_3608ca24a74a8d 54,206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "168d3906dc7dfdd4c505a89b7a2c971cf9a5e032",
+  "prompts": {},
+  "sessions": {
+    "s_f2554c47160f60": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5bbe41db-53b7-408b-9a1e-7aa66e6e05be",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
