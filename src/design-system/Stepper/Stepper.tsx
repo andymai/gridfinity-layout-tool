@@ -281,6 +281,14 @@ export interface StepperProps extends StepperVariantProps {
   step?: number;
 
   /**
+   * Lowest value the minus button may step down to when it lies below `min`.
+   * `min` stays the typed input's clamp and the native step base, so a
+   * control whose whole-unit steps must stay aligned can still offer one
+   * half step below its floor from the button. Defaults to `min`.
+   */
+  floor?: number;
+
+  /**
    * Decimal places used to render fractional values in the input.
    * @default 1
    */
@@ -404,6 +412,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
       min,
       max,
       step = 1,
+      floor,
       inputDecimals = 1,
       size = 'md',
       orientation = 'horizontal',
@@ -470,7 +479,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
       inputDecimals
     );
 
-    const isDecreaseDisabled = disabled || optimisticValue <= min;
+    const isDecreaseDisabled = disabled || optimisticValue <= Math.min(min, floor ?? min);
     const isIncreaseDisabled = disabled || optimisticValue >= max;
 
     // 12px is the smallest a stroked +/- glyph renders crisply — a 10px glyph

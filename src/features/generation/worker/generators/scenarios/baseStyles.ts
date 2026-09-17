@@ -90,6 +90,42 @@ export const baseStyles: ScenarioCase[] = [
       })
     ),
 
+  // Every base branch at the smallest footprint, which used to be rejected
+  // because it crashed the kernels: each one must still build a full-size,
+  // clean mesh rather than degenerate silently.
+  ...(
+    [
+      ['magnet', { style: 'magnet' }],
+      ['screw', { style: 'screw' }],
+      ['magnet+screw', { style: 'magnet_and_screw' }],
+      ['half sockets', { halfSockets: true }],
+      ['lightweight', { lightweight: true }],
+    ] as const
+  ).map(([label, base]) =>
+    defineScenario('base styles', `0.5×0.5 ${label} base (minimum half-bin)`, {
+      assert: 'structural',
+      params: { width: 0.5, depth: 0.5, base: { ...DEFAULT_BIN_PARAMS.base, ...base } },
+      customAssert: (result, params) => {
+        assertBoundingBoxMatchesParams(result, params, `0.5x0.5-${label}`);
+        assertNoDegenerateTriangles(result, `0.5x0.5-${label}`);
+      },
+    })
+  ),
+
+  defineScenario('base styles', '0.5×0.5 solid bin (minimum half-bin)', {
+    assert: 'structural',
+    params: {
+      width: 0.5,
+      depth: 0.5,
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+    },
+    customAssert: (result, params) => {
+      assertBoundingBoxMatchesParams(result, params, '0.5x0.5-solid');
+      assertNoDegenerateTriangles(result, '0.5x0.5-solid');
+    },
+  }),
+
   defineScenario('base styles', '0.5×0.5 standard base (minimum half-bin)', {
     assert: 'structural',
     params: {

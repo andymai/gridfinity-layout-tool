@@ -23,6 +23,33 @@ describe('Stepper', () => {
     });
   });
 
+  describe('floor', () => {
+    it('keeps the minus button live down to the floor while the input clamps at min', () => {
+      const onChange = vi.fn();
+      const onStep = vi.fn();
+      render(
+        <Stepper
+          {...defaultProps}
+          value={1}
+          min={1}
+          floor={0.5}
+          onChange={onChange}
+          onStep={onStep}
+        />
+      );
+      const minus = screen.getByRole('button', { name: /decrease|−|-/i });
+      expect(minus).toBeEnabled();
+      fireEvent.click(minus);
+      expect(onStep).toHaveBeenCalledWith(-1);
+      expect(screen.getByRole('spinbutton')).toHaveAttribute('min', '1');
+    });
+
+    it('disables the minus button at the floor', () => {
+      render(<Stepper {...defaultProps} value={0.5} min={1} floor={0.5} onStep={vi.fn()} />);
+      expect(screen.getByRole('button', { name: /decrease|−|-/i })).toBeDisabled();
+    });
+  });
+
   describe('input mode', () => {
     it('renders an input with the value', () => {
       render(<Stepper {...defaultProps} onChange={vi.fn()} />);

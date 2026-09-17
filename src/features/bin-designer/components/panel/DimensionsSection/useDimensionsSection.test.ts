@@ -67,7 +67,7 @@ describe('useDimensionsSection', () => {
     expect(result.current.state.minDepth).toBe(0.5);
   });
 
-  it('prevents 0.5×0.5 footprint in half-bin mode', () => {
+  it('keeps the half-unit floor on both axes, so 0.5×0.5 is reachable', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 0.5, depth: 2 },
       ui: { ...DEFAULT_UI_STATE, halfGridMode: true },
@@ -75,9 +75,34 @@ describe('useDimensionsSection', () => {
 
     const { result } = renderHook(() => useDimensionsSection());
 
-    // Width is 0.5, so depth min must be 1
     expect(result.current.state.minWidth).toBe(0.5);
-    expect(result.current.state.minDepth).toBe(1);
+    expect(result.current.state.minDepth).toBe(0.5);
+
+    for (const expected of [1.5, 1, 0.5, 0.5]) {
+      act(() => {
+        result.current.handlers.handleDepthStep(-1);
+      });
+      expect(useDesignerStore.getState().params.depth).toBe(expected);
+    }
+  });
+
+  it('steps down from 1 to 0.5 and switches half-grid mode on', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1 },
+      ui: { ...DEFAULT_UI_STATE, halfGridMode: false },
+    });
+
+    const { result } = renderHook(() => useDimensionsSection());
+    // The typed input keeps its whole-unit floor; the button reaches the half.
+    expect(result.current.state.minWidth).toBe(1);
+    expect(result.current.state.dimensionFloor).toBe(0.5);
+
+    act(() => {
+      result.current.handlers.handleWidthStep(-1);
+    });
+
+    expect(useDesignerStore.getState().params.width).toBe(0.5);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
   });
 
   it('clamps width to max dimension', () => {

@@ -108,15 +108,10 @@ describe('validateBinParams', () => {
       expect(error.code).toBe('DIMENSION_OUT_OF_RANGE');
     });
 
-    it('should reject 0.5×0.5 footprint', () => {
-      const result = validateBinParams(makeParams({ width: 0.5, depth: 0.5 }));
-      const error = expectErr(result);
-      expect(error.code).toBe('FOOTPRINT_TOO_SMALL');
-    });
-
-    it('should accept 0.5×1 and 1×0.5 footprints', () => {
+    it('should accept every half-unit footprint down to 0.5×0.5', () => {
       expectOk(validateBinParams(makeParams({ width: 0.5, depth: 1 })));
       expectOk(validateBinParams(makeParams({ width: 1, depth: 0.5 })));
+      expectOk(validateBinParams(makeParams({ width: 0.5, depth: 0.5 })));
     });
   });
 

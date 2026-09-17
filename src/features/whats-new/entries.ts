@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'half-unit-both-axes',
+    date: '2026-09-17',
+    kind: 'improved',
+    title: { en: 'Bins down to half a unit on both axes' },
+    body: {
+      en: 'The width and depth steppers now go straight from 1 to 0.5 and switch half-grid mode on for you, and a 0.5 by 0.5 bin is allowed. Every base style builds it, so the smallest Gridfinity footprint is one click away.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'magnet-press-fit',
     date: '2026-09-17',
     kind: 'new',

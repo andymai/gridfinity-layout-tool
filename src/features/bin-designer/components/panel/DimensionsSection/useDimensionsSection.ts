@@ -49,9 +49,14 @@ export function useDimensionsSection() {
   const t = useTranslation();
 
   const dimensionStep = halfGridMode ? 0.5 : 1;
-  // At least one dimension must be ≥ 1 — if the other is 0.5, this one can't go below 1
-  const minWidth = halfGridMode && depth >= 1 ? 0.5 : 1;
-  const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
+  // The typed-input floor follows the mode, which keeps the native step base
+  // whole in whole-unit mode. The minus button reaches `dimensionFloor` (0.5)
+  // on both axes regardless: stepping down from 1 lands on 0.5 and switches
+  // the mode on, so the smallest bin is reachable without knowing the
+  // checkbox exists.
+  const minWidth = halfGridMode ? DESIGNER_CONSTRAINTS.MIN_DIMENSION : 1;
+  const minDepth = halfGridMode ? DESIGNER_CONSTRAINTS.MIN_DIMENSION : 1;
+  const dimensionFloor = DESIGNER_CONSTRAINTS.MIN_DIMENSION;
   // A spacer is floorless, so it may go down to 1u — but only an
   // EFFECTIVE one, hence the style: the flag is inert on a flat base.
   const minHeight = minHeightUnits(
@@ -63,22 +68,27 @@ export function useDimensionsSection() {
   const depthMm = depth * (gridUnitMmY ?? gridUnitMm);
   const heightMm = height * heightUnitMm;
 
-  const handleWidthStep = useCallback(
-    (delta: number) => {
-      const next = width + delta * dimensionStep;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_DIMENSION, Math.max(minWidth, next));
-      setParam('width', clamped);
+  const stepDimension = useCallback(
+    (key: 'width' | 'depth', current: number, delta: number) => {
+      const next = current + delta * dimensionStep;
+      const clamped = Math.min(
+        DESIGNER_CONSTRAINTS.MAX_DIMENSION,
+        Math.max(DESIGNER_CONSTRAINTS.MIN_DIMENSION, next)
+      );
+      if (isFractional(clamped) && !halfGridMode) toggleHalfGridMode();
+      setParam(key, clamped);
     },
-    [width, dimensionStep, minWidth, setParam]
+    [dimensionStep, halfGridMode, toggleHalfGridMode, setParam]
+  );
+
+  const handleWidthStep = useCallback(
+    (delta: number) => stepDimension('width', width, delta),
+    [stepDimension, width]
   );
 
   const handleDepthStep = useCallback(
-    (delta: number) => {
-      const next = depth + delta * dimensionStep;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_DIMENSION, Math.max(minDepth, next));
-      setParam('depth', clamped);
-    },
-    [depth, dimensionStep, minDepth, setParam]
+    (delta: number) => stepDimension('depth', depth, delta),
+    [stepDimension, depth]
   );
 
   const handleHeightStep = useCallback(
@@ -147,6 +157,7 @@ export function useDimensionsSection() {
       heightMm,
       halfGridMode,
       dimensionStep,
+      dimensionFloor,
       minWidth,
       minDepth,
       minHeight,
