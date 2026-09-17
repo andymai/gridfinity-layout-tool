@@ -2,8 +2,8 @@
  * Merge stage — concatenates the deferred socket's mesh onto the body mesh.
  *
  * Runs LAST so the mesh imprint sees the body alone: see
- * `PipelineContext.deferredMesh`. Same `merge` name as the tessellate stage,
- * since this is the concatenation that used to live there.
+ * `PipelineContext.deferredMesh`. Shares the tessellate stage's `merge` name
+ * so progress and perf reporting see one merge bucket.
  */
 
 import type { PipelineContext, PipelineStage } from '../types';

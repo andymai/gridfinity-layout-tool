@@ -779,8 +779,8 @@ describe('mesh imprint on a socketed base (preview)', () => {
 
   it('keeps every socket foot in the preview mesh', async () => {
     // The preview meshes the base socket separately and the feet do not weld
-    // to the body, so an imprint that keeps only the largest component erased
-    // every foot the vertex weld happened to miss (2 of 16 survived).
+    // to the body, so an imprint that keeps only the largest component erases
+    // every foot the vertex weld happens to miss.
     for (const halfSockets of [true, false]) {
       const params = socketedParams(halfSockets, [meshCutout()]);
       clearMeshImprintCache();
