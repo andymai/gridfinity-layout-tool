@@ -102,6 +102,9 @@ export function flattenSegment(
   segmentIndex: number,
   steps = 20
 ): Array<{ x: number; y: number }> {
+  // A hover index outlives the vertex it pointed at when a point is deleted
+  // or undone from the keyboard; that frame draws nothing rather than throw.
+  if (segmentIndex < 0 || segmentIndex >= points.length) return [];
   const p0 = points[segmentIndex];
   const p1 = points[(segmentIndex + 1) % points.length];
   const hasCurve = p0.handleOut !== null || p1.handleIn !== null;

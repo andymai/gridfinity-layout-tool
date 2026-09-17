@@ -131,8 +131,10 @@ export function PathEditOverlay3D({
         );
       })}
 
-      {/* Segment hover: highlighted segment + ghost dot */}
-      {segmentHover && (
+      {/* Segment hover: highlighted segment + ghost dot. The hover only clears
+          on pointer events, so a vertex deleted or undone from the keyboard can
+          leave it pointing past the path's end for a frame. */}
+      {segmentHover && segmentHover.segmentIndex < path.length && (
         <SegmentHoverPreview
           path={path}
           hover={segmentHover}

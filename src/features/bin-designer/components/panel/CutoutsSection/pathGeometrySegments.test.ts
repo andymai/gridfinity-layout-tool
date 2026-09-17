@@ -115,6 +115,12 @@ describe('evaluateSegmentPoint', () => {
 // ─── flattenSegment ──────────────────────────────────────────────────────────
 
 describe('flattenSegment', () => {
+  it('returns no points for a segment index past the path, as a stale hover leaves', () => {
+    const pts = [corner(0, 0), corner(10, 0), corner(10, 10)];
+    expect(flattenSegment(pts, 3)).toEqual([]);
+    expect(flattenSegment([], 0)).toEqual([]);
+  });
+
   it('returns exactly 2 points for a straight segment', () => {
     const pts = [corner(0, 0), corner(30, 0), corner(30, 30)];
     expect(flattenSegment(pts, 0)).toHaveLength(2);
