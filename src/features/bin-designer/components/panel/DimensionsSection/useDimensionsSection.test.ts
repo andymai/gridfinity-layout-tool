@@ -93,7 +93,9 @@ describe('useDimensionsSection', () => {
     });
 
     const { result } = renderHook(() => useDimensionsSection());
-    expect(result.current.state.minWidth).toBe(0.5);
+    // The typed input keeps its whole-unit floor; the button reaches the half.
+    expect(result.current.state.minWidth).toBe(1);
+    expect(result.current.state.dimensionFloor).toBe(0.5);
 
     act(() => {
       result.current.handlers.handleWidthStep(-1);

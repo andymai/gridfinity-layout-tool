@@ -49,11 +49,14 @@ export function useDimensionsSection() {
   const t = useTranslation();
 
   const dimensionStep = halfGridMode ? 0.5 : 1;
-  // The floor is a half unit on both axes, in or out of half-grid mode:
-  // stepping down from 1 lands on 0.5 and switches the mode on, so the
-  // smallest bin is reachable without knowing the checkbox exists.
-  const minWidth = DESIGNER_CONSTRAINTS.MIN_DIMENSION;
-  const minDepth = DESIGNER_CONSTRAINTS.MIN_DIMENSION;
+  // The typed-input floor follows the mode, which keeps the native step base
+  // whole in whole-unit mode. The minus button reaches `dimensionFloor` (0.5)
+  // on both axes regardless: stepping down from 1 lands on 0.5 and switches
+  // the mode on, so the smallest bin is reachable without knowing the
+  // checkbox exists.
+  const minWidth = halfGridMode ? DESIGNER_CONSTRAINTS.MIN_DIMENSION : 1;
+  const minDepth = halfGridMode ? DESIGNER_CONSTRAINTS.MIN_DIMENSION : 1;
+  const dimensionFloor = DESIGNER_CONSTRAINTS.MIN_DIMENSION;
   // A spacer is floorless, so it may go down to 1u — but only an
   // EFFECTIVE one, hence the style: the flag is inert on a flat base.
   const minHeight = minHeightUnits(
@@ -154,6 +157,7 @@ export function useDimensionsSection() {
       heightMm,
       halfGridMode,
       dimensionStep,
+      dimensionFloor,
       minWidth,
       minDepth,
       minHeight,

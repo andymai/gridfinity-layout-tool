@@ -32,6 +32,7 @@ export function DimensionsSection() {
             onChange={(v) => handlers.setParam('width', v)}
             onStep={handlers.handleWidthStep}
             min={state.minWidth}
+            floor={state.dimensionFloor}
             max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
             step={state.dimensionStep}
             size={stepperSize}
@@ -61,6 +62,7 @@ export function DimensionsSection() {
             onChange={(v) => handlers.setParam('depth', v)}
             onStep={handlers.handleDepthStep}
             min={state.minDepth}
+            floor={state.dimensionFloor}
             max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
             step={state.dimensionStep}
             size={stepperSize}
