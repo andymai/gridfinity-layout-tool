@@ -3659,6 +3659,15 @@ const en: Record<string, string> = {
   'binDesigner.base.magnetDiameter': 'Magnet diameter',
   'binDesigner.base.magnetDepth': 'Magnet depth',
   'binDesigner.base.magnetSummary': 'ø{diameter}mm × {depth}mm deep',
+  'binDesigner.base.magnetCrushRibs': 'Crush ribs',
+  'binDesigner.base.magnetCrushRibsHint':
+    'Eight ridges inside each hole crush as the magnet presses in, so it holds without glue or a tight tolerance.',
+  'binDesigner.base.magnetChamfer': 'Chamfered mouth',
+  'binDesigner.base.magnetChamferHint':
+    'A 45° lead-in at the opening of each hole guides the magnet in straight.',
+  'binDesigner.base.magnetChamferLightweight':
+    'A lightweight base leaves too little wall around each hole for a lead-in.',
+  'binDesigner.base.magnetChamferNesting': 'Nesting magnets sit in bosses too thin for a lead-in.',
   'binDesigner.base.screwHoles': 'Screw holes',
   'binDesigner.base.screwDiameter': 'Screw diameter',
   'binDesigner.lightweight.useUnderside': 'Use underside relief',
@@ -3994,6 +4003,14 @@ const en: Record<string, string> = {
     "{pieces} won't fit the print bed (over by {mm}mm). Export is disabled.",
   'baseplate.magnetDiameterInfo': '6mm is standard for Gridfinity',
   'baseplate.magnetDepthInfo': '2mm for typical 6\u00d72mm magnets',
+  'baseplate.magnetCrushRibs': 'Crush ribs',
+  'baseplate.magnetCrushRibsHint':
+    'Eight ridges inside each hole crush as the magnet presses in, so it holds without glue or a tight tolerance.',
+  'baseplate.magnetChamfer': 'Chamfered mouth',
+  'baseplate.magnetChamferHint':
+    'A 45\u00b0 lead-in at the opening of each hole guides the magnet in straight.',
+  'baseplate.magnetChamferLightweight':
+    'A lightweight plate leaves too little wall around each hole for a lead-in.',
   'baseplate.solidFloor': 'Solid floor',
   'baseplate.solidFloorThickness': 'Floor thickness',
   'baseplate.solidFloorHeightNote':

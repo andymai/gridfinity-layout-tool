@@ -206,3 +206,28 @@ describe('validateBaseplateShare', () => {
     });
   });
 });
+
+describe('magnet press-fit options', () => {
+  it('keeps the two booleans when present and drops them when absent', () => {
+    const on = validate({ ...validParams, magnetCrushRibs: true, magnetChamfer: true });
+    expect(on.valid).toBe(true);
+    if (on.valid) {
+      expect(on.payload.params.magnetCrushRibs).toBe(true);
+      expect(on.payload.params.magnetChamfer).toBe(true);
+    }
+    const off = validate({ ...validParams });
+    expect(off.valid).toBe(true);
+    if (off.valid) {
+      expect(off.payload.params).not.toHaveProperty('magnetCrushRibs');
+      expect(off.payload.params).not.toHaveProperty('magnetChamfer');
+    }
+  });
+
+  it('rejects a non-boolean', () => {
+    for (const key of ['magnetCrushRibs', 'magnetChamfer']) {
+      const result = validate({ ...validParams, [key]: 'yes' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.error.message).toContain(key);
+    }
+  });
+});

@@ -22,6 +22,8 @@ export function attachmentFromBase(base: BaseConfig): AttachmentConfig {
     magnetHoles: hasMagnet,
     magnetDiameter: base.magnetDiameter,
     magnetDepth: base.magnetDepth,
+    ...(base.magnetCrushRibs === true ? { magnetCrushRibs: true } : {}),
+    ...(base.magnetChamfer === true ? { magnetChamfer: true } : {}),
     screwHoles: hasScrew,
     screwDiameter: base.screwDiameter,
   };

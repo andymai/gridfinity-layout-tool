@@ -14,6 +14,16 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'magnet-press-fit',
+    date: '2026-09-17',
+    kind: 'new',
+    title: { en: 'Magnet holes that hold without glue' },
+    body: {
+      en: 'Two options under Magnet holes, on bins and baseplates. Crush ribs put eight ridges inside each hole that crush as the magnet presses in, so it grips on any printer without a tight tolerance. A chamfered mouth adds a 45 degree lead-in that guides the magnet straight. Lids, feet and lightweight pads follow the bin’s setting.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'slotted-bin-handles',
     date: '2026-09-16',
     kind: 'improved',

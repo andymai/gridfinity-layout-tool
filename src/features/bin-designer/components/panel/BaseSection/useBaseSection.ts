@@ -51,6 +51,7 @@ import {
 } from '@/features/bin-designer/types/base';
 import { bodyTypeParams, deriveBodyType } from './bodyType';
 import type { BodyType } from './bodyType';
+import { useMagnetPressFit } from './useMagnetPressFit';
 
 /** Drop the `tile` key entirely — absent is the off state, never `false`. */
 function omitTile(base: BinParams['base']): BinParams['base'] {
@@ -106,6 +107,7 @@ export function useBaseSection() {
   const hasScrew = isScrewStyle(base.style);
   const trayBottom = resolveTrayBottomConfig(base.trayBottom, params.lid.retentionMagnet);
   const hasHalfSockets = base.halfSockets;
+  const pressFit = useMagnetPressFit(base, nestingBase, updateBase);
   // The foot lattice is inert in two cases, and the picker shows what the part
   // will actually be built with rather than the stored choice. The stored value
   // is left alone so it comes back when the blocker does.
@@ -591,6 +593,9 @@ export function useBaseSection() {
       detachableUnplaceable,
       detachableSavingPercent,
       hasMagnet,
+      magnetCrushRibs: pressFit.crushRibs,
+      magnetChamfer: pressFit.chamfer,
+      magnetChamferUnavailable: pressFit.chamferUnavailable,
       magnetDiameter: nestingBase ? trayBottom.retentionMagnet.diameter : base.magnetDiameter,
       magnetDepth: nestingBase ? trayBottom.retentionMagnet.depth : base.magnetDepth,
       magnetDiameterMin: nestingBase
@@ -689,6 +694,8 @@ export function useBaseSection() {
       setMagnetDiameter,
       setMagnetHeight,
       setMagnetEdgeCount,
+      setMagnetCrushRibs: pressFit.setCrushRibs,
+      setMagnetChamfer: pressFit.setChamfer,
       setScrewDiameter,
       toggleFloorPattern,
       setFloorPatternType,

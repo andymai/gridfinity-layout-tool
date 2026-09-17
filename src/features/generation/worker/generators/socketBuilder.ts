@@ -47,7 +47,14 @@ import {
 } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
-import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
+import {
+  cellHostsAttachmentHoles,
+  chamferFitsCell,
+  magnetPositionsForCell,
+} from './baseplateMagnets';
+import { buildMagnetHoleCutter } from './magnetHoleCutter';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { PLAIN_MAGNET_HOLE, magnetHoleStyleKey } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import {
@@ -487,7 +494,8 @@ export function baseSocketShapeKey(
   gridUnitMm: GridUnitInput,
   cellMask?: CellMask,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  holeStyle: MagnetHoleStyle = PLAIN_MAGNET_HOLE
 ): string {
   const usingMask = isPartialMask(cellMask);
   return socketCacheKey(
@@ -505,7 +513,8 @@ export function baseSocketShapeKey(
     usingMask ? hashMask(cellMask) : undefined,
     fractionalEdge.x,
     fractionalEdge.y,
-    anchor
+    anchor,
+    withMagnet ? magnetHoleStyleKey(holeStyle) : ''
   );
 }
 
@@ -522,7 +531,8 @@ export function buildBaseSocket(
   gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  holeStyle: MagnetHoleStyle = PLAIN_MAGNET_HOLE
 ): Shape3D {
   // Treat a fully-filled mask as a rectangle so the cache key and iteration
   // path match the existing rectangular code.
@@ -544,7 +554,8 @@ export function buildBaseSocket(
     gridUnitMm,
     cellMask,
     fractionalEdge,
-    anchor
+    anchor,
+    holeStyle
   );
   const cached = getSocketCache(key);
   if (cached) {
@@ -604,15 +615,31 @@ export function buildBaseSocket(
     // Build hole tools upfront so they can be included in the pipeline
     const holeTools: Shape3D[] = [];
     if (withScrew || withMagnet) {
-      const magnetCutout = withMagnet ? scope.register(cylinder(magnetRadius, magnetDepth)) : null;
-      const screwCutout = withScrew ? scope.register(cylinder(screwRadius, SOCKET_HEIGHT)) : null;
-
-      // When both exist, fuse creates a new shape (register it); when only one exists,
-      // it's already registered above — don't double-register
-      const cutout: Shape3D =
-        magnetCutout && screwCutout
-          ? scope.register(unwrap(fuse(magnetCutout, screwCutout)))
-          : ((magnetCutout || screwCutout) as Shape3D);
+      // One template per mouth: a cell too small to open the chamfer keeps the
+      // plain mouth on the same bore, so the magnet still seats where it should.
+      const templates = new Map<boolean, Shape3D>();
+      const cutoutFor = (chamfer: boolean): Shape3D => {
+        const cached = templates.get(chamfer);
+        if (cached) return cached;
+        const magnetCutout = withMagnet
+          ? scope.register(
+              buildMagnetHoleCutter({
+                radius: magnetRadius,
+                height: magnetDepth,
+                style: { crushRibs: holeStyle.crushRibs, chamfer },
+              })
+            )
+          : null;
+        const screwCutout = withScrew ? scope.register(cylinder(screwRadius, SOCKET_HEIGHT)) : null;
+        // When both exist, fuse creates a new shape (register it); when only one
+        // exists, it's already registered above — don't double-register
+        const cutout: Shape3D =
+          magnetCutout && screwCutout
+            ? scope.register(unwrap(fuse(magnetCutout, screwCutout)))
+            : ((magnetCutout || screwCutout) as Shape3D);
+        templates.set(chamfer, cutout);
+        return cutout;
+      };
 
       // Cutter bounding radius (magnet is wider than the screw; both concentric).
       const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
@@ -626,7 +653,13 @@ export function buildBaseSocket(
           // Standard ±13mm 4-corner pattern on a normal foot; a non-square/small
           // foot (e.g. a 25mm-wide cell) gets the corners that fit, else a single
           // centered hole — so magnet/screw holes never breach the foot's side.
-          for (const [x, y] of magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor)) {
+          const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
+          const chamfer =
+            withMagnet &&
+            holeStyle.chamfer &&
+            chamferFitsCell(cell, holeRadius, unitX, unitY, anchor, positions);
+          const cutout = cutoutFor(chamfer);
+          for (const [x, y] of positions) {
             holeTools.push(
               translate(scope.register(unwrap(clone(cutout))), [x, y, -SOCKET_HEIGHT])
             );

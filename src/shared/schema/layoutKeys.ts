@@ -122,6 +122,8 @@ export const BASEPLATE_PARAMS_KEYS = [
   'magnetHoles',
   'magnetDiameter',
   'magnetDepth',
+  'magnetCrushRibs',
+  'magnetChamfer',
   'paddingLeft',
   'paddingRight',
   'paddingFront',

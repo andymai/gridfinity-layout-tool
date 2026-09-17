@@ -68,6 +68,7 @@ function buildFeetSolids(
       ? {
           diameterMm: resolved.magnet.diameterMm,
           depthMm: resolved.magnet.depthMm,
+          style: resolved.magnet.style,
           positions: resolved.magnet.positions,
         }
       : undefined,

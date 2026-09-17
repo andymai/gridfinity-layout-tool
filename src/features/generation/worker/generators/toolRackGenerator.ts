@@ -33,6 +33,7 @@ import { SOCKET_HEIGHT, toIndexedMeshData, checkCancelled } from './generatorTyp
 import type { ProgressFn } from './generatorTypes';
 import { COPLANAR_OVERLAP } from './generatorConstants';
 import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from './socketBuilder';
+import { attachmentHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { sketch } from './meshUtils';
 import { creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
@@ -150,7 +151,11 @@ export function buildToolRackSolid(
       envelope.attachment.screwDiameter / 2,
       forExport,
       DEFAULT_SOCKET_CELL_PLAN,
-      envelope.gridUnitMm
+      envelope.gridUnitMm,
+      undefined,
+      undefined,
+      undefined,
+      attachmentHoleStyle(envelope.attachment)
     );
     const socketClone = scope.register(unwrap(clone(socket)));
     const fused = scope.register(

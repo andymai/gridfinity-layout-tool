@@ -53,3 +53,27 @@ describe('itemAdapter', () => {
     expect(() => itemToBinParams(rack)).toThrow(/expected kind 'bin'/);
   });
 });
+
+describe('itemAdapter magnet press-fit options', () => {
+  it('carries the flags into the attachment summary only when on', () => {
+    const plain = attachmentFromBase({ ...DEFAULT_BIN_PARAMS.base, style: 'magnet' });
+    expect('magnetCrushRibs' in plain).toBe(false);
+    expect('magnetChamfer' in plain).toBe(false);
+    const on = attachmentFromBase({
+      ...DEFAULT_BIN_PARAMS.base,
+      style: 'magnet',
+      magnetCrushRibs: true,
+      magnetChamfer: true,
+    });
+    expect(on.magnetCrushRibs).toBe(true);
+    expect(on.magnetChamfer).toBe(true);
+  });
+
+  it('round-trips a ribbed, chamfered magnet bin', () => {
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, magnetCrushRibs: true },
+    };
+    expect(itemToBinParams(binParamsToItem(params))).toEqual(params);
+  });
+});

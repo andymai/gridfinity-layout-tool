@@ -24,6 +24,9 @@ export interface AttachmentConfig {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
+  /** Absent means off, mirroring `BaseConfig`. */
+  readonly magnetCrushRibs?: boolean;
+  readonly magnetChamfer?: boolean;
   readonly screwHoles: boolean;
   readonly screwDiameter: number;
 }

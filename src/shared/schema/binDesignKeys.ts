@@ -108,6 +108,8 @@ export const BASE_CONFIG_KEYS = [
   'style',
   'magnetDiameter',
   'magnetDepth',
+  'magnetCrushRibs',
+  'magnetChamfer',
   'screwDiameter',
   'stackingLip',
   'lipTip',

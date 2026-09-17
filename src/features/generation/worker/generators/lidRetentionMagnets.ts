@@ -17,8 +17,11 @@
  * keeping the magnets coaxial and one seat gap apart.
  */
 
-import { cylinder, unwrap, fuse, cutAll } from 'brepjs';
+import { cylinder, unwrap, fuse, cutAll, translate } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
+import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
@@ -119,15 +122,23 @@ export function addLidRetentionMagnets(
   //    open (downward) face, and rises by the magnet depth (leaving the ceiling).
   const cutterZ = interfaceZ - LID_COPLANAR_MARGIN;
   const cutterHeight = retentionMagnetDepth + LID_COPLANAR_MARGIN;
+  // The boss wall is all the solid around this bore, so the chamfer only
+  // opens when it can leave that wall standing; the ribs always apply.
+  const style: MagnetHoleStyle = {
+    crushRibs: inputs.magnetHoleStyle.crushRibs,
+    chamfer: inputs.magnetHoleStyle.chamfer && magnetChamferFits(bossRadius - magnetRadius),
+  };
   const cutters: Shape3D[] = [];
   for (const { x: px, y: py } of positions) {
-    // Place the cutter directly at the magnet position — avoids a `translate`
-    // that would leave the pre-translation cylinder as an unreleased WASM handle.
-    cutters.push(
-      scope.register(
-        cylinder(magnetRadius, cutterHeight, { at: [px, py, cutterZ], axis: [0, 0, 1] })
-      )
+    const cutter = scope.register(
+      buildMagnetHoleCutter({
+        radius: magnetRadius,
+        height: cutterHeight,
+        style,
+        mouth: { end: 'bottom', inset: LID_COPLANAR_MARGIN },
+      })
     );
+    cutters.push(scope.register(translate(cutter, [px, py, cutterZ])));
   }
 
   scope.register(result);

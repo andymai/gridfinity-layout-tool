@@ -17,6 +17,33 @@ const baseStyleList: Array<{ style: BaseStyle; label: string }> = [
 ];
 
 export const baseStyles: ScenarioCase[] = [
+  defineScenario('base styles', 'magnet base with crush ribs', {
+    params: {
+      width: 1,
+      depth: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', magnetCrushRibs: true },
+    },
+  }),
+  defineScenario('base styles', 'magnet base with chamfered mouth', {
+    params: {
+      width: 1,
+      depth: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', magnetChamfer: true },
+    },
+  }),
+  defineScenario('base styles', 'magnet+screw base with crush ribs and chamfer at 2×2', {
+    assert: 'structural',
+    params: {
+      width: 2,
+      depth: 2,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet_and_screw',
+        magnetCrushRibs: true,
+        magnetChamfer: true,
+      },
+    },
+  }),
   ...baseStyleList.flatMap(({ style, label }) => [
     defineScenario('base styles', `${label} base with lip`, {
       params: {

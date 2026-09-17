@@ -37,6 +37,7 @@ import { collectOrigins } from '../collectOrigins';
 import { applyPinHoles, buildDetachableFeet } from '../../detachableFeetBuilder';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DETACHABLE_PIN_HOLE_DIAMETER_MM, resolveLipTip } from '@/shared/types/bin';
+import { magnetHoleStyleFrom } from '@/shared/generation/magnetHoleStyle';
 
 /**
  * Which way the lite cups open.
@@ -120,7 +121,8 @@ export const shellStage: PipelineStage = {
         openFloorDrawings,
         { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
         params.magnetAnchor,
-        dim.floorThickness
+        dim.floorThickness,
+        magnetHoleStyleFrom(params.base)
       );
       floorOpenings = liteBase.floorOpenings;
     }
@@ -431,7 +433,8 @@ export const shellStage: PipelineStage = {
           pitch,
           params.cellMask,
           { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
-          params.magnetAnchor
+          params.magnetAnchor,
+          magnetHoleStyleFrom(params.base)
         );
     // `withScope` can't wrap this section (it must yield TWO survivors — body
     // and socket — on the preview path), so dispose manually on any throw to
@@ -486,7 +489,8 @@ export const shellStage: PipelineStage = {
             pitch,
             params.cellMask,
             { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
-            params.magnetAnchor
+            params.magnetAnchor,
+            magnetHoleStyleFrom(params.base)
           )}|${feetFused ? overhangKey(dim.overhang) : 'nofeet'}`;
 
       return { ...ctx, solid: body, deferredSolid: socket, deferredSolidKey };

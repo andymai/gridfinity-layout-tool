@@ -37,6 +37,8 @@ import { lipGapRailBlocks, lipGaps, polygonLipGaps } from '@/shared/utils/lipGap
 import type { PolygonLipGap } from '@/shared/utils/lipGapPlan';
 import type { WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { magnetHoleStyleFrom } from '@/shared/generation/magnetHoleStyle';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
@@ -140,6 +142,11 @@ export interface LidInputs {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
+  /**
+   * Press-fit options every magnet hole in the lid follows, from the bin's
+   * base: the stack-top holes and the retention boss pockets alike.
+   */
+  readonly magnetHoleStyle: MagnetHoleStyle;
   /** Retention mode. Drives which retention geometry the builder emits. */
   readonly attachment: LidAttachment;
   /**
@@ -513,6 +520,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     magnetHoles: params.lid.magnetHoles && params.lid.stackableTop && !isSlide,
     magnetDiameter: params.base.magnetDiameter,
     magnetDepth: params.base.magnetDepth,
+    magnetHoleStyle: magnetHoleStyleFrom(params.base),
     magnetAnchor: params.magnetAnchor,
     attachment,
     retentionMagnets,

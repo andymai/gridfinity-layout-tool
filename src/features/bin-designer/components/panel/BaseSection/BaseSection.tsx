@@ -20,7 +20,7 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { Button, SegmentedControl, SliderInput } from '@/design-system';
+import { Button, Checkbox, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { Hint, SegmentGrid, SideSelector, SubHeader } from '../shared';
 import {
@@ -218,6 +218,25 @@ export function BaseSection() {
               step={state.magnetDepthStep}
               unit="mm"
             />
+            <div className="space-y-1">
+              <Checkbox
+                checked={state.magnetCrushRibs}
+                onChange={handlers.setMagnetCrushRibs}
+                label={t('binDesigner.base.magnetCrushRibs')}
+              />
+              <Hint>{t('binDesigner.base.magnetCrushRibsHint')}</Hint>
+            </div>
+            <div className="space-y-1">
+              <Checkbox
+                checked={state.magnetChamfer}
+                disabled={state.magnetChamferUnavailable !== undefined}
+                onChange={handlers.setMagnetChamfer}
+                label={t('binDesigner.base.magnetChamfer')}
+              />
+              <Hint>
+                {state.magnetChamferUnavailable ?? t('binDesigner.base.magnetChamferHint')}
+              </Hint>
+            </div>
             {state.bodyType === 'nesting' && (
               <>
                 <SliderInput
