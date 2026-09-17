@@ -90,29 +90,39 @@ export const baseStyles: ScenarioCase[] = [
       })
     ),
 
-  defineScenario('base styles', '0.5×0.5 magnet+screw base (minimum half-bin)', {
-    assert: 'structural',
-    params: {
-      width: 0.5,
-      depth: 0.5,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw' },
-    },
-    customAssert: (result, params) => {
-      assertBoundingBoxMatchesParams(result, params, '0.5x0.5-magnet-screw');
-      assertNoDegenerateTriangles(result, '0.5x0.5-magnet-screw');
-    },
-  }),
+  // Every base branch at the smallest footprint, which used to be rejected
+  // because it crashed the kernels: each one must still build a full-size,
+  // clean mesh rather than degenerate silently.
+  ...(
+    [
+      ['magnet', { style: 'magnet' }],
+      ['screw', { style: 'screw' }],
+      ['magnet+screw', { style: 'magnet_and_screw' }],
+      ['half sockets', { halfSockets: true }],
+      ['lightweight', { lightweight: true }],
+    ] as const
+  ).map(([label, base]) =>
+    defineScenario('base styles', `0.5×0.5 ${label} base (minimum half-bin)`, {
+      assert: 'structural',
+      params: { width: 0.5, depth: 0.5, base: { ...DEFAULT_BIN_PARAMS.base, ...base } },
+      customAssert: (result, params) => {
+        assertBoundingBoxMatchesParams(result, params, `0.5x0.5-${label}`);
+        assertNoDegenerateTriangles(result, `0.5x0.5-${label}`);
+      },
+    })
+  ),
 
-  defineScenario('base styles', '0.5×0.5 lightweight base (minimum half-bin)', {
+  defineScenario('base styles', '0.5×0.5 solid bin (minimum half-bin)', {
     assert: 'structural',
     params: {
       width: 0.5,
       depth: 0.5,
-      base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
     },
     customAssert: (result, params) => {
-      assertBoundingBoxMatchesParams(result, params, '0.5x0.5-lightweight');
-      assertNoDegenerateTriangles(result, '0.5x0.5-lightweight');
+      assertBoundingBoxMatchesParams(result, params, '0.5x0.5-solid');
+      assertNoDegenerateTriangles(result, '0.5x0.5-solid');
     },
   }),
 
