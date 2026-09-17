@@ -1,0 +1,51 @@
+src/features/generation/worker/generators/pipeline/stages/mergeBaseStage.ts
+  s_95932118759c83::t_eda8bc06c2c7a1 1-24
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.ts
+  s_95932118759c83::t_c356604db61aa1 13
+  s_95932118759c83::t_e8aadd77a667d4 14
+  s_95932118759c83::t_4475ffec54cc6e 121,130-137
+  s_95932118759c83::t_62ea21f50cfa67 81,88,94-97
+src/features/generation/worker/generators/pipeline/runner.test.ts
+  s_95932118759c83::t_7aa1cf86a84241 20
+src/features/generation/worker/generators/meshImprint.ts
+  s_95932118759c83::t_a797f2eb979452 289
+  s_95932118759c83::t_435ca2b78bd87a 356-357,361-369
+  s_95932118759c83::t_5535f2d4ca8199 181-205,217-218
+  s_95932118759c83::t_e7dcbd42dd755c 396
+src/features/generation/worker/generators/pipeline/context.ts
+  s_95932118759c83::t_1a1f7c35935a9c 484
+src/features/generation/worker/generators/utils/mesh.test.ts
+  s_95932118759c83::t_475350baf63e9c 2-3,5-6,10-13,17-21,23-27,30-31,34-41
+src/features/generation/worker/generators/pipeline/stages/meshImprintStage.ts
+  s_95932118759c83::t_e0f60a5326c008 11,27-37
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_95932118759c83::t_5ce8126cf56da2 736-823
+src/features/generation/README.md
+  s_95932118759c83::t_8db794328234db 80,82
+src/features/generation/worker/generators/utils/mesh.ts
+  s_95932118759c83::t_98d7c66d6ba207 31,33-37,39-45,47,50-53
+src/features/generation/worker/generators/pipeline/types.ts
+  s_95932118759c83::t_93dcb7c664f83f 299-304,307-308
+  s_95932118759c83::t_2493e45e57552f 305-306
+src/features/generation/worker/generators/socketMeshCache.ts
+  s_95932118759c83::t_1ec68dc7e5052e 13
+src/features/generation/worker/generators/binOrchestrator.ts
+  s_95932118759c83::t_db790d9ff401be 27
+  s_95932118759c83::t_b0d170267af268 68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a893dadd622dcb18f3d1b212b1598df31f99b156",
+  "prompts": {},
+  "sessions": {
+    "s_95932118759c83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "102698ab-80c3-4ea9-8488-71bcb9e62bbf",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
