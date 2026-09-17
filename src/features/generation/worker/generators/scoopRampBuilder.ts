@@ -178,19 +178,13 @@ function buildScoopRampsInScope(
         const { height, style } = scoopProfile;
 
         // The profile is authored against the rim-anchored cavity edge, but a
-        // tapered outer wall leans: its inner face sits `taperInsetAt` inboard of
-        // that edge, most at the floor and less at the ramp's top. An arc drawn
-        // from the rim edge has its whole top inside that wall, and the envelope
-        // clip below then keeps only the stub that clears the tapered face (a
-        // 13mm scoop against a 5mm chamfer came out 3mm tall). Starting the arc
-        // on the wall at the ramp's top is not enough either: a quarter-ellipse
-        // leaves the wall vertically, and the wall leans away faster than the
-        // arc curves, so its top quarter is still buried. So the arc rides the
-        // wall: each point is the wall's own inset at that height plus the arc's
-        // bulge, which leaves the wall tangentially, whatever its profile, and
-        // still meets the floor tangentially. The bulge is never negative, so
-        // the arc never re-enters the wall. Dividers are vertical, so an interior
-        // compartment never shifts.
+        // tapered outer wall leans inboard toward the floor, so the arc is drawn
+        // on the wall's own inset at each height plus its bulge. Anchoring it on
+        // the wall only at the top is not enough: a quarter-ellipse leaves the
+        // wall vertically and the wall leans away faster than the arc curves,
+        // which buries the top of the arc for the envelope clip below to shave
+        // off. The bulge is never negative, so the arc never re-enters the wall.
+        // Dividers are vertical, so an interior compartment never shifts.
         const wallAt = (zAboveFloor: number): number =>
           taper && isOuter
             ? taperInsetAt(taper, taper[side], compFloorZ + zAboveFloor, wallHeight)

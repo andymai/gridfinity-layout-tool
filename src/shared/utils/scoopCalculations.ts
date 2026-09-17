@@ -330,13 +330,10 @@ export function computeLipOffset(
 /**
  * Where a ramp's arc leaves its wall and where it reaches the floor, both in
  * mm inboard of the rim-anchored cavity edge the profile is authored against.
- *
- * Against a tapered outer wall the arc rides the wall's inset (`wallAtTop` at
- * the ramp's top, `wallAtFloor` at the floor; both 0 for a plain wall), so the
- * ramp's floor footprint is `run` in front of the wall where it actually stands,
- * not in front of the rim. The lip offset still wins at the top when it is the
- * larger. The builder and the pattern keep-outs both read this, so the floor
- * pattern cannot undercut a ramp's toe on a tapered side.
+ * `wallAtTop`/`wallAtFloor` are a tapered wall's inset at those heights (0 for
+ * a plain wall); the lip offset wins at the top when it is the larger. The
+ * builder and the pattern keep-outs both read this, so a floor hole cannot
+ * land under a ramp's toe on a tapered side.
  */
 export function scoopArcAnchors(
   lipOffset: number,
