@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/pipeline/stages/mergeBaseStage.ts
+  s_95932118759c83::t_bfd23555564336 5-6
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_95932118759c83::t_59422c0f0622b6 782-783
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "956be785a45536bead60c3fcf8e6593badf029d1",
+  "prompts": {},
+  "sessions": {
+    "s_95932118759c83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "102698ab-80c3-4ea9-8488-71bcb9e62bbf",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
