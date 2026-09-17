@@ -24,6 +24,7 @@ import { slideLidChannelStage } from './pipeline/stages/slideLidChannelStage';
 import { lidGripDipStage } from './pipeline/stages/lidGripDipStage';
 import { tessellateStage } from './pipeline/stages/tessellateStage';
 import { meshImprintStage } from './pipeline/stages/meshImprintStage';
+import { mergeBaseStage } from './pipeline/stages/mergeBaseStage';
 import type { PerfCollector } from './pipeline/perfCollector';
 
 /**
@@ -64,6 +65,7 @@ const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   lidHingeStage,
   tessellateStage,
   meshImprintStage,
+  mergeBaseStage,
 ];
 
 /**

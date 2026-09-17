@@ -178,6 +178,31 @@ export interface ImprintedArrays {
   readonly faceGroups: readonly FaceGroupData[] | undefined;
 }
 
+export interface ImprintOptions {
+  /**
+   * Keep every connected component of the result instead of the largest one.
+   * For a mesh that is legitimately many solids, such as the deferred socket
+   * base (one unwelded foot per grid cell), keep-largest would delete all
+   * but one foot.
+   */
+  readonly keepAllComponents?: boolean;
+}
+
+type ImprintDims = Pick<
+  BinDimensions,
+  'innerW' | 'innerD' | 'wallHeight' | 'innerOffsetX' | 'innerOffsetY' | 'baseOffsetZ' | 'solid'
+>;
+
+/**
+ * True when some visible imprint's pocket floor lies below the body, inside
+ * the deferred socket base. The cut depth is measured from the fill surface
+ * and clamps at the absolute bottom (see `buildInstanceTool`).
+ */
+export function meshImprintsReachBase(params: BinParams, dims: ImprintDims): boolean {
+  const { solidTopZ } = frameFromDimensions(params, dims);
+  return visibleMeshCutouts(params).some((c) => solidTopZ - c.cutDepth < dims.baseOffsetZ);
+}
+
 /**
  * Subtract every visible mesh imprint from an indexed mesh. Returns null when
  * nothing was subtracted (no applicable cutouts, module unavailable, or the
@@ -189,7 +214,8 @@ export function imprintArrays(
   faceGroups: readonly FaceGroupData[] | undefined,
   params: BinParams,
   frame: ImprintFrame,
-  clip?: Bounds2D
+  clip?: Bounds2D,
+  options: ImprintOptions = {}
 ): ImprintedArrays | null {
   const cutouts = visibleMeshCutouts(params);
   if (cutouts.length === 0) return null;
@@ -260,7 +286,7 @@ export function imprintArrays(
     // disconnected piece the shoulder fill missed, keep only the largest
     // component. decompose carries provenance runs through, so tags survive.
     let solid = result;
-    const components = result.decompose();
+    const components = options.keepAllComponents ? [] : result.decompose();
     if (components.length > 1) {
       components.forEach((c) => disposals.push(c));
       solid = components.reduce((largest, c) => (c.volume() > largest.volume() ? c : largest));
@@ -327,14 +353,20 @@ function stridePositions(vertProperties: Float32Array, numProp: number): Float32
 export function applyMeshImprints(
   mesh: MeshData,
   params: BinParams,
-  dims: Pick<
-    BinDimensions,
-    'innerW' | 'innerD' | 'wallHeight' | 'innerOffsetX' | 'innerOffsetY' | 'baseOffsetZ' | 'solid'
-  >
+  dims: ImprintDims,
+  options?: ImprintOptions
 ): MeshData {
   if (!dims.solid || !hasMeshImprints(params)) return mesh;
   const frame = frameFromDimensions(params, dims);
-  const result = imprintArrays(mesh.vertices, mesh.indices, mesh.faceGroups, params, frame);
+  const result = imprintArrays(
+    mesh.vertices,
+    mesh.indices,
+    mesh.faceGroups,
+    params,
+    frame,
+    undefined,
+    options
+  );
   if (!result) return mesh;
 
   const { coarseLOD: _coarseLOD, ...rest } = mesh;
@@ -361,10 +393,7 @@ export function imprintPieceArrays(
   positions: Float32Array,
   indices: Uint32Array,
   params: BinParams,
-  dims: Pick<
-    BinDimensions,
-    'innerW' | 'innerD' | 'wallHeight' | 'innerOffsetX' | 'innerOffsetY' | 'baseOffsetZ' | 'solid'
-  >,
+  dims: ImprintDims,
   pieceBounds: Bounds2D,
   frameShift?: { readonly x: number; readonly y: number }
 ): NormalizedMesh | null {

@@ -8,7 +8,7 @@
  */
 
 import type { PipelineContext, PipelineStage } from '../types';
-import { applyMeshImprints, hasMeshImprints } from '../../meshImprint';
+import { applyMeshImprints, hasMeshImprints, meshImprintsReachBase } from '../../meshImprint';
 import { checkCancelled } from '../../utils/abort';
 
 export const meshImprintStage: PipelineStage = {
@@ -24,6 +24,16 @@ export const meshImprintStage: PipelineStage = {
   execute(ctx: PipelineContext): PipelineContext {
     if (!ctx.mesh) return ctx;
     checkCancelled(ctx.signal);
-    return { ...ctx, mesh: applyMeshImprints(ctx.mesh, ctx.params, ctx.dimensions) };
+    const mesh = applyMeshImprints(ctx.mesh, ctx.params, ctx.dimensions);
+    // The deferred socket is carved on its own, and only when a pocket reaches
+    // below the body: the export path cuts the fused socket the same way, and
+    // an untouched base skips a Manifold build of every foot per preview.
+    const deferredMesh =
+      ctx.deferredMesh && meshImprintsReachBase(ctx.params, ctx.dimensions)
+        ? applyMeshImprints(ctx.deferredMesh, ctx.params, ctx.dimensions, {
+            keepAllComponents: true,
+          })
+        : ctx.deferredMesh;
+    return { ...ctx, mesh, deferredMesh };
   },
 };

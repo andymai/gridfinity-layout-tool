@@ -481,6 +481,7 @@ export function createInitialContext(
     deferredCutTargets: [],
     featuresKey: null,
     mesh: null,
+    deferredMesh: null,
     coarseMesh: null,
     perfCollector,
   };

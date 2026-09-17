@@ -733,3 +733,91 @@ describe('mesh imprint clearance and chamfer on curved tools', () => {
     }
   }, 240_000);
 });
+
+describe('mesh imprint on a socketed base (preview)', () => {
+  function socketedParams(halfSockets: boolean, cutouts: Cutout[]): BinParams {
+    return buildParams({
+      width: 1,
+      depth: 4,
+      height: 6,
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, halfSockets },
+      cutouts,
+      meshAssets: { 'asset-1': toolAsset },
+    });
+  }
+
+  /**
+   * Grid cells (of `pitch` mm) that own a triangle centroid on the bottom
+   * plane: one per socket foot that made it into the mesh. Optionally only
+   * centroids inside a world-XY window.
+   */
+  function bottomCells(
+    m: { vertices: Float32Array; indices: Uint32Array },
+    pitch: number,
+    within?: { minX: number; maxX: number; minY: number; maxY: number }
+  ): Set<string> {
+    const { vertices: v, indices } = m;
+    const cells = new Set<string>();
+    for (let t = 0; t < indices.length; t += 3) {
+      let cx = 0;
+      let cy = 0;
+      let cz = 0;
+      for (let k = 0; k < 3; k++) {
+        const i = indices[t + k];
+        cx += v[i * 3] / 3;
+        cy += v[i * 3 + 1] / 3;
+        cz += v[i * 3 + 2] / 3;
+      }
+      if (cz > 0.3) continue;
+      if (within && (cx < within.minX || cx > within.maxX || cy < within.minY || cy > within.maxY))
+        continue;
+      cells.add(`${Math.floor(cx / pitch)},${Math.floor(cy / pitch)}`);
+    }
+    return cells;
+  }
+
+  it('keeps every socket foot in the preview mesh', async () => {
+    // The preview meshes the base socket separately and the feet do not weld
+    // to the body, so an imprint that keeps only the largest component erases
+    // every foot the vertex weld happens to miss.
+    for (const halfSockets of [true, false]) {
+      const params = socketedParams(halfSockets, [meshCutout()]);
+      clearMeshImprintCache();
+      await prepareMeshImprints(params, module);
+      const generate = getGenerateBin();
+      const pitch = halfSockets ? 21 : 42;
+      const plain = bottomCells(generate(socketedParams(halfSockets, []), undefined, false), pitch);
+      const preview = bottomCells(generate(params, undefined, false), pitch);
+      const exported = bottomCells(generate(params, undefined, true), pitch);
+      expect(plain.size, `halfSockets=${halfSockets}`).toBe(halfSockets ? 16 : 8);
+      expect(preview, `halfSockets=${halfSockets} preview`).toEqual(plain);
+      expect(exported, `halfSockets=${halfSockets} export`).toEqual(plain);
+    }
+  }, 240_000);
+
+  it('carves the socket under a pocket deeper than the body, keeping the other feet', async () => {
+    const deep = meshCutout({ x: 5, y: 60, cutDepth: 1000 });
+    const params = socketedParams(true, [deep]);
+    clearMeshImprintCache();
+    await prepareMeshImprints(params, module);
+    const generate = getGenerateBin();
+    const preview = generate(params, undefined, false);
+    const exported = generate(params, undefined, true);
+
+    const { innerW, innerD, innerOffsetX, innerOffsetY } = deriveDimensions(params, false);
+    const footprint = {
+      minX: -innerW / 2 + innerOffsetX + deep.x + 1,
+      maxX: -innerW / 2 + innerOffsetX + deep.x + deep.width - 1,
+      minY: -innerD / 2 + innerOffsetY + deep.y + 1,
+      maxY: -innerD / 2 + innerOffsetY + deep.y + deep.depth - 1,
+    };
+    // Through-cut: nothing left on the bottom plane inside the footprint.
+    expect(bottomCells(preview, 21, footprint).size).toBe(0);
+    expect(bottomCells(exported, 21, footprint).size).toBe(0);
+    // The feet the pocket does not touch survive, and preview matches export.
+    const outside = bottomCells(preview, 21);
+    expect(outside.size).toBeGreaterThan(8);
+    expect(outside).toEqual(bottomCells(exported, 21));
+  }, 240_000);
+});
