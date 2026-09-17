@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/scenarios/baseStyles.ts
+  s_95932118759c83::t_ea700acfb0b114 93-113,115,120-121,124-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "110ffbe7ac93bad15633975d0875bc2d1a7a117d",
+  "prompts": {},
+  "sessions": {
+    "s_95932118759c83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "102698ab-80c3-4ea9-8488-71bcb9e62bbf",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
