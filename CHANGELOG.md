@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.494.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.493.0...gridfinity-layout-tool-v4.494.0) (2026-09-17)
+
+
+### Features
+
+* **generation:** crush ribs and a chamfered mouth for magnet holes ([#4316](https://github.com/andymai/gridfinity-layout-tool/issues/4316)) ([1964764](https://github.com/andymai/gridfinity-layout-tool/commit/1964764297ae46fcd3393fadd25472a00f8fdafe)), closes [#4312](https://github.com/andymai/gridfinity-layout-tool/issues/4312)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep a stale segment hover from crashing the path editor ([#4317](https://github.com/andymai/gridfinity-layout-tool/issues/4317)) ([cc69871](https://github.com/andymai/gridfinity-layout-tool/commit/cc69871f8e42e02da986eed6fbcfc8a83077ca14)), closes [#4311](https://github.com/andymai/gridfinity-layout-tool/issues/4311)
+* **bin-designer:** let width and depth step down to 0.5 on both axes ([#4319](https://github.com/andymai/gridfinity-layout-tool/issues/4319)) ([e807683](https://github.com/andymai/gridfinity-layout-tool/commit/e807683a06e431f2ea4b33381577253f423d88d0))
+* **generation:** keep a finger scoop's full rise against a tapered wall ([#4320](https://github.com/andymai/gridfinity-layout-tool/issues/4320)) ([8883d2a](https://github.com/andymai/gridfinity-layout-tool/commit/8883d2a03ff699abd2e46cafeaab259e36cb40ae)), closes [#4318](https://github.com/andymai/gridfinity-layout-tool/issues/4318)
+* **generation:** keep the base socket in the preview under an STL cutout ([#4314](https://github.com/andymai/gridfinity-layout-tool/issues/4314)) ([b76af71](https://github.com/andymai/gridfinity-layout-tool/commit/b76af71193746fdaa1a886aefd00834b1f0b90aa))
+
 ## [4.493.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.492.3...gridfinity-layout-tool-v4.493.0) (2026-09-16)
 
 
