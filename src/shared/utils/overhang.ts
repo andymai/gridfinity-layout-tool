@@ -112,6 +112,24 @@ export function hasTaper(o: ResolvedOverhang): boolean {
 }
 
 /**
+ * How far a tapered side's wall sits inboard of its rim position at height `z`
+ * above the body bottom: the full `side` inset at the base, zero at and above
+ * the band (clamped to the wall). Every loft cut from the taper and every
+ * feature that has to meet the tapered wall samples this same curve.
+ */
+export function taperInsetAt(
+  taper: ResolvedTaper,
+  side: number,
+  z: number,
+  wallHeight: number
+): number {
+  const band = Math.min(taper.bandHeight, wallHeight);
+  if (side <= 0 || z >= band) return 0;
+  const u = 1 - z / band; // 1 at base → 0 at band top
+  return taper.profile === 'chamfer' ? side * u : side * (1 - Math.sqrt(Math.max(0, 1 - u * u))); // concave quarter-ellipse
+}
+
+/**
  * Per-side overhang at the *base* rather than the rim: the taper's inset
  * removed. Anything that sits under the bin — overhang feet above all — has to
  * be framed from this, not from the rim values, or it protrudes past a tapered

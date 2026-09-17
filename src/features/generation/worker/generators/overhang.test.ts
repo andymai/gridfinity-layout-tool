@@ -6,6 +6,7 @@ import {
   overhangBaseSides,
   overhangExpansion,
   overhangKey,
+  taperInsetAt,
 } from './overhang';
 
 describe('resolveOverhang', () => {
@@ -216,5 +217,46 @@ describe('overhangKey', () => {
       resolveOverhang({ ...base, taper: { ...chamfer(10), profile: 'fillet' } })
     );
     expect(cham).not.toBe(fill);
+  });
+});
+
+describe('taperInsetAt', () => {
+  const taper = (profile: 'chamfer' | 'fillet', bandHeight = 40) => ({
+    profile,
+    bandHeight,
+    left: 10,
+    right: 0,
+    front: 0,
+    back: 0,
+  });
+
+  it('is the full side inset at the base and zero at and above the band', () => {
+    const t = taper('chamfer');
+    expect(taperInsetAt(t, t.left, 0, 50)).toBe(10);
+    expect(taperInsetAt(t, t.left, 40, 50)).toBe(0);
+    expect(taperInsetAt(t, t.left, 45, 50)).toBe(0);
+  });
+
+  it('is linear through the band for a chamfer', () => {
+    const t = taper('chamfer');
+    expect(taperInsetAt(t, t.left, 10, 50)).toBeCloseTo(7.5, 6);
+    expect(taperInsetAt(t, t.left, 30, 50)).toBeCloseTo(2.5, 6);
+  });
+
+  it('bulges inside the chamfer for a fillet', () => {
+    const t = taper('fillet');
+    // At mid band a concave quarter-ellipse has swept back less than a straight facet.
+    expect(taperInsetAt(t, t.left, 20, 50)).toBeLessThan(5);
+    expect(taperInsetAt(t, t.left, 20, 50)).toBeCloseTo(10 * (1 - Math.sqrt(0.75)), 6);
+  });
+
+  it('clamps the band to the wall height', () => {
+    const t = taper('chamfer', 100);
+    expect(taperInsetAt(t, t.left, 25, 50)).toBeCloseTo(5, 6);
+  });
+
+  it('is zero for an untapered side', () => {
+    const t = taper('chamfer');
+    expect(taperInsetAt(t, t.right, 0, 50)).toBe(0);
   });
 });

@@ -26,6 +26,7 @@ import {
   scoopFrameHeights,
   computeLipOffset,
   resolveScoopProfile,
+  scoopArcAnchors,
 } from '@/shared/utils/scoopCalculations';
 import { labelLipReservationMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
 import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
@@ -33,6 +34,7 @@ import { findCompartmentBounds, interiorDividerSegments } from './compartmentBui
 import type { InteriorDividerSegment } from './compartmentBuilder';
 import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPatterns';
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
+import { taperInsetAt } from './overhang';
 import type { BinDimensions } from './pipeline/types';
 
 /**
@@ -167,6 +169,7 @@ function projectFootprint(
 export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   if (!params.scoop.enabled) return [];
   const { innerW, innerD, wallHeight, hasLip, floorThickness } = dim;
+  const taper = dim.overhang.taper;
   const { cols, rows, cells } = params.compartments;
   const cellW = innerW / cols;
   const cellD = innerD / rows;
@@ -205,11 +208,20 @@ export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepO
     if (!profile) continue;
     const centerX = -innerW / 2 + (minCol + (maxCol - minCol + 1) / 2) * cellW;
     const frontY = -innerD / 2 + minRow * cellD;
+    // Against a tapered front wall the ramp rides the wall's inset, so its toe
+    // reaches further in than `lipOffset + run` from the rim edge.
+    const wallAt = (z: number): number =>
+      taper && isMinRow ? taperInsetAt(taper, taper.front, z, wallHeight) : 0;
+    const { floorStart } = scoopArcAnchors(
+      lipOffset,
+      wallAt(floorThickness + profile.height),
+      wallAt(floorThickness)
+    );
     out.push({
       xMin: centerX - compW / 2,
       xMax: centerX + compW / 2,
       yMin: frontY,
-      yMax: frontY + lipOffset + profile.run,
+      yMax: frontY + floorStart + profile.run,
       zMin: floorThickness,
       zMax: floorThickness + profile.height,
     });

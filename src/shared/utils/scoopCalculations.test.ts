@@ -11,6 +11,7 @@ import {
   resolveScoopSides,
   computeLipOffset,
   computeInteriorHeight,
+  scoopArcAnchors,
 } from './scoopCalculations';
 
 const scoop = (overrides: Partial<ScoopConfig> = {}): ScoopConfig => ({
@@ -246,6 +247,25 @@ describe('computeLipOffset', () => {
 
   it('returns 0 when wall is thicker than lip taper', () => {
     expect(computeLipOffset(true, true, 2.0, 3.0)).toBe(0);
+  });
+});
+
+describe('scoopArcAnchors', () => {
+  it('starts and lands at the lip offset on a plain wall', () => {
+    expect(scoopArcAnchors(1.4, 0, 0)).toEqual({ arcTop: 1.4, floorStart: 1.4 });
+    expect(scoopArcAnchors(0, 0, 0)).toEqual({ arcTop: 0, floorStart: 0 });
+  });
+
+  it('rides a tapered wall from its inset at the top to its inset at the floor', () => {
+    const { arcTop, floorStart } = scoopArcAnchors(0, 3.4, 4.8);
+    expect(arcTop).toBe(3.4);
+    expect(floorStart).toBeCloseTo(4.8, 6);
+  });
+
+  it('keeps the lip offset at the top when it is the larger, and still follows the lean', () => {
+    const { arcTop, floorStart } = scoopArcAnchors(1.4, 0.5, 2.0);
+    expect(arcTop).toBe(1.4);
+    expect(floorStart).toBeCloseTo(1.4 + 1.5, 6);
   });
 });
 
