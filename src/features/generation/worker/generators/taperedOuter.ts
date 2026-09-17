@@ -18,6 +18,7 @@
 import { drawRoundedRectangle, cut, unwrap } from 'brepjs';
 import type { Shape3D, Sketch, ValidSolid, DisposalScope } from 'brepjs';
 import { BOX_CORNER_RADIUS, COPLANAR_MARGIN, safeSectionRect } from './generatorTypes';
+import { taperInsetAt } from './overhang';
 import type { ResolvedTaper } from './overhang';
 
 const FILLET_SECTION_MM = 2.5;
@@ -75,12 +76,7 @@ function taperSampler(
 ): TaperSampler {
   const band = Math.min(taper.bandHeight, wallHeight);
 
-  // Per-side inset at height z: full at the base, zero at/above the band top.
-  const insetAt = (side: number, z: number): number => {
-    if (side <= 0 || z >= band) return 0;
-    const u = 1 - z / band; // 1 at base → 0 at band top
-    return taper.profile === 'chamfer' ? side * u : side * (1 - Math.sqrt(Math.max(0, 1 - u * u))); // concave quarter-ellipse
-  };
+  const insetAt = (side: number, z: number): number => taperInsetAt(taper, side, z, wallHeight);
 
   // A rounded-rect section at height z, shrunk uniformly by `shrink` (0 for the
   // outer body, `wallThickness` for the inner cavity).

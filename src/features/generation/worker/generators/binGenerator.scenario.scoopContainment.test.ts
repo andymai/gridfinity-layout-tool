@@ -1,14 +1,16 @@
 /**
- * Scenario test: finger scoop ramps stay inside the outer wall (#4033).
+ * Scenario test: finger scoop ramps stay inside the outer wall, and keep their
+ * full rise against a tapered one.
  *
  * The ramp is a square-cornered prism pushed into the surrounding walls to weld
- * it (#4014). At the bin's rounded outer corners a square corner driven
- * diagonally into the wall overshoots the outer arc and pokes out of the bin
- * ("scoops cut through outside"). scoopRampBuilder clips the ramp to the rounded
- * cavity footprint to prevent that; this proves nothing pokes past the true
- * outer footprint across a range of wall thicknesses, lips, sides and styles
- * (the default 1.2 mm wall used to breach because the clip only ran below
- * ~1.10 mm).
+ * it. At the bin's rounded outer corners a square corner driven diagonally into
+ * the wall overshoots the outer arc and pokes out of the bin ("scoops cut
+ * through outside"). scoopRampBuilder clips the ramp to the rounded cavity
+ * footprint to prevent that; this proves nothing pokes past the true outer
+ * footprint across a range of wall thicknesses, lips, sides and styles (the
+ * default 1.2 mm wall used to breach because the clip only ran below ~1.10 mm).
+ * The last block is the other direction: the same clip against a tapered wall
+ * must not shave the ramp itself down.
  *
  * Cross-kernel:
  *   BREPJS_KERNEL=brepkit pnpm exec vitest run --project=generators scoopContainment
@@ -19,10 +21,12 @@ import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { binFloorMm } from '@/shared/types/bin';
+import { resolveScoopProfile, scoopFrameHeights } from '@/shared/utils/scoopCalculations';
 import type { Shape3D } from 'brepjs';
 import { BOX_CORNER_RADIUS, CLEARANCE, SOCKET_HEIGHT } from './generatorConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 import { getLastSolid } from './shapeCache';
+import { boundingBox } from './__kernel-tests__/meshAssertions';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -276,5 +280,160 @@ describe('generated bin carries no scoop material outside a tapered wall', () =>
       return m.vertices.length / 3;
     });
     expect(outside).toBe(0);
+  }, 240_000);
+});
+
+/**
+ * The complement of containment: clipping the ramp to the tapered wall must
+ * not eat the ramp. The ramp is authored against the rim-anchored cavity edge,
+ * and on a tapered side the wall's inner face sits `taperInsetAt` inboard of
+ * that edge at every height in the band, so an arc that starts at the rim edge
+ * has its whole top buried in the wall and the clip leaves a stub: a 13mm
+ * scoop against a 5mm chamfer over 44mm came out ~4mm tall. Both checks here
+ * would have passed on the clip alone. Measured on the LEFT ramp, with the
+ * right ramp (untapered) as the control that the left must match.
+ */
+describe('scoop ramps keep their full rise against a tapered wall', () => {
+  // The reported design: 1x1x7, 1.6mm wall, 5mm chamfer flare over 44mm on the
+  // left, auto scoops (13mm) on left and right, no lip.
+  const reported = (): BinParams =>
+    scoop({
+      width: 1,
+      depth: 1,
+      height: 7,
+      wallThickness: 1.6,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      overhang: taperOverhang({ left: 5 }, 'chamfer', 44),
+      scoop: {
+        ...DEFAULT_BIN_PARAMS.scoop,
+        enabled: true,
+        autoMaxHeight: 13,
+        side: 'left',
+        sides: ['left', 'right'],
+      },
+    });
+
+  /**
+   * The rise the builder resolves for the reported design's outer-wall scoops
+   * (both sides share span, depth and frame, so one profile serves both).
+   */
+  function resolvedRise(
+    params: BinParams,
+    innerW: number,
+    innerD: number,
+    wallHeight: number
+  ): number {
+    const floorZ = binFloorMm(params.wallThickness);
+    const frame = scoopFrameHeights(wallHeight, wallHeight, floorZ);
+    const profile = resolveScoopProfile(
+      params.scoop,
+      innerD,
+      innerW,
+      true,
+      false,
+      frame.wallHeight,
+      frame.interiorHeight,
+      0
+    );
+    if (!profile) throw new Error('scoop profile did not resolve');
+    return profile.height;
+  }
+
+  /**
+   * Rise of the ramp material inside `envelope` on each side of `splitX`,
+   * measured from the floor top. The envelope is the exact cavity, so what
+   * survives inside it is the ramp a finger meets, not the weld in the wall.
+   * The polygonised arc's top segment is a chord, so each side is held to
+   * within 1mm of the resolved rise rather than to it exactly.
+   */
+  async function rampRiseBySide(
+    solid: Shape3D,
+    envelope: Shape3D,
+    splitX: number,
+    floorTopZ: number
+  ): Promise<{ left: number; right: number }> {
+    const { intersect, mesh, unwrap, withScope, isEmpty, box } = await import('brepjs');
+    return withScope((scope) => {
+      const ramps = scope.register(unwrap(intersect(solid as never, envelope as never)));
+      const rise = (sign: -1 | 1): number => {
+        const half = scope.register(box(200, 200, 200, { at: [splitX + sign * 100, 0, 100] }));
+        const part = scope.register(unwrap(intersect(ramps, half as never)));
+        if (isEmpty(part)) return 0;
+        const m = mesh(part, { tolerance: 0.02, angularTolerance: 8, cache: false });
+        return boundingBox(m.vertices).maxZ - floorTopZ;
+      };
+      return { left: rise(-1), right: rise(1) };
+    });
+  }
+
+  it('builder: the left ramp rises as far as the untapered right one', async () => {
+    const { buildScoopRamps } = await import('./scoopRampBuilder');
+    const { buildTaperedInnerEnvelope } = await import('./taperedOuter');
+    const params = reported();
+    const wt = params.wallThickness;
+    const { outerW, outerD, innerW, innerD, ov } = footprintOf(params);
+    const taper = ov.taper;
+    if (!taper) throw new Error('scenario lost its taper');
+    const wallHeight = params.height * params.heightUnitMm - SOCKET_HEIGHT;
+    const floorZ = binFloorMm(wt);
+    const built = buildScoopRamps(params, innerW, innerD, wallHeight, wt, floorZ, undefined, taper);
+    if (!built) throw new Error('no ramps built');
+    const envelope = buildTaperedInnerEnvelope(
+      outerW,
+      outerD,
+      wallHeight,
+      wt,
+      taper,
+      wallHeight,
+      0,
+      0
+    );
+    try {
+      const { left, right } = await rampRiseBySide(built, envelope, 0, floorZ);
+      const rise = resolvedRise(params, innerW, innerD, wallHeight);
+      expect(right).toBeGreaterThan(rise - 1);
+      expect(left).toBeGreaterThan(rise - 1);
+      expect(left).toBeLessThanOrEqual(rise + 0.05);
+    } finally {
+      envelope.delete();
+      built.delete();
+    }
+  }, 120_000);
+
+  it('pipeline: the generated bin carries a full-height left scoop', async () => {
+    const { translate } = await import('brepjs');
+    const { buildTaperedInnerEnvelope } = await import('./taperedOuter');
+    const params = reported();
+    const result = getGenerateBin()(params, undefined, false);
+    expect(result.triangleCount).toBeGreaterThan(0);
+    const solid = getLastSolid();
+    if (!solid) throw new Error('generateBin left no solid behind');
+    const { outerW, outerD, innerW, innerD, offX, offY, ov } = footprintOf(params);
+    const taper = ov.taper;
+    if (!taper) throw new Error('scenario lost its taper');
+    const wt = params.wallThickness;
+    const wallHeight = params.height * params.heightUnitMm - SOCKET_HEIGHT;
+    const floorZ = binFloorMm(wt);
+    const envelope = buildTaperedInnerEnvelope(
+      outerW,
+      outerD,
+      wallHeight,
+      wt,
+      taper,
+      wallHeight,
+      offX,
+      offY
+    );
+    const lifted = translate(envelope, [0, 0, SOCKET_HEIGHT]);
+    envelope.delete();
+    try {
+      const { left, right } = await rampRiseBySide(solid, lifted, offX, SOCKET_HEIGHT + floorZ);
+      const rise = resolvedRise(params, innerW, innerD, wallHeight);
+      expect(right).toBeGreaterThan(rise - 1);
+      expect(left).toBeGreaterThan(rise - 1);
+      expect(left).toBeLessThanOrEqual(rise + 0.05);
+    } finally {
+      lifted.delete();
+    }
   }, 240_000);
 });

@@ -3,7 +3,13 @@ import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin
 import { binFloorMm } from '@/shared/types/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { deriveDimensions } from './pipeline/context';
-import { dividerPatternsApply, planDividerPatterns, widestClearRun } from './dividerPatterns';
+import {
+  dividerPatternsApply,
+  planDividerPatterns,
+  scoopKeepOuts,
+  widestClearRun,
+} from './dividerPatterns';
+import { taperInsetAt } from './overhang';
 
 const FLOOR_TOP = binFloorMm(DEFAULT_BIN_PARAMS.wallThickness);
 
@@ -176,6 +182,62 @@ describe('planDividerPatterns', () => {
     const bandTop = (result?.bandZ0 ?? 0) + (result?.bandHeight ?? 0);
     const anyTopZone = result?.targets.some((t) => t.keepOuts.some((k) => k.zMax >= bandTop * 0.5));
     expect(anyTopZone).toBe(true);
+  });
+});
+
+describe('scoop keep-outs', () => {
+  it('reach further in against a tapered front wall, by the wall inset at the floor', () => {
+    const flat = makeParams({
+      compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+    });
+    const tapered = makeParams({
+      ...flat,
+      overhang: {
+        left: 0,
+        right: 0,
+        front: 6,
+        back: 0,
+        feet: false,
+        enabled: true,
+        taper: {
+          enabled: true,
+          profile: 'chamfer',
+          bandHeight: 30,
+          left: 0,
+          right: 0,
+          front: 6,
+          back: 0,
+        },
+      },
+    });
+    const flatDim = deriveDimensions(flat, false);
+    const taperedDim = deriveDimensions(tapered, false);
+    const [flatKeepOut] = scoopKeepOuts(flat, flatDim);
+    const [taperedKeepOut] = scoopKeepOuts(tapered, taperedDim);
+    const taper = taperedDim.overhang.taper;
+    if (!taper) throw new Error('scenario lost its taper');
+    // Same ramp (span, depth and rise agree), but the tapered one stands on the
+    // floor `taperInsetAt` inboard of the rim edge, so its toe ends that much
+    // further in.
+    const rise = taperedKeepOut.zMax - taperedKeepOut.zMin;
+    expect(rise).toBeCloseTo(flatKeepOut.zMax - flatKeepOut.zMin, 6);
+    const wallAtFloor = taperInsetAt(
+      taper,
+      taper.front,
+      taperedDim.floorThickness,
+      taperedDim.wallHeight
+    );
+    const wallAtTop = taperInsetAt(
+      taper,
+      taper.front,
+      taperedDim.floorThickness + rise,
+      taperedDim.wallHeight
+    );
+    expect(wallAtFloor).toBeGreaterThan(wallAtTop);
+    const reach = (k: { yMin: number; yMax: number }) => k.yMax - k.yMin;
+    expect(reach(taperedKeepOut) - reach(flatKeepOut)).toBeCloseTo(wallAtFloor, 6);
   });
 });
 
