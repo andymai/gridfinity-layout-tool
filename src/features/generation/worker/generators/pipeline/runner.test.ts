@@ -17,6 +17,7 @@ function createMockContext(overrides?: Partial<PipelineContext>): PipelineContex
     deferredCutTargets: [],
     featuresKey: null,
     mesh: null,
+    deferredMesh: null,
     coarseMesh: null,
     ...overrides,
   };

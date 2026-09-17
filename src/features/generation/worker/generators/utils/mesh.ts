@@ -28,23 +28,29 @@ export function concatFloat32(a: ArrayLike<number>, b: ArrayLike<number>): Float
  * body's index range, so the merged mesh draws (and colors) identically to a
  * fused shell. `faceGroups.start`/`count` index the triangle (index) array.
  */
-export function mergeShapeMeshes(body: ShapeMesh, socket: ShapeMesh): ShapeMesh {
+export function mergeMeshData(body: MeshData, socket: MeshData): MeshData {
   const bodyVertexCount = body.vertices.length / 3;
-  const bodyIndexCount = body.triangles.length;
-  const triangles = new Uint32Array(bodyIndexCount + socket.triangles.length);
-  triangles.set(body.triangles, 0);
-  for (let i = 0; i < socket.triangles.length; i++) {
-    triangles[bodyIndexCount + i] = socket.triangles[i] + bodyVertexCount;
+  const bodyIndexCount = body.indices.length;
+  const indices = new Uint32Array(bodyIndexCount + socket.indices.length);
+  indices.set(body.indices, 0);
+  for (let i = 0; i < socket.indices.length; i++) {
+    indices[bodyIndexCount + i] = socket.indices[i] + bodyVertexCount;
   }
+  const faceGroups =
+    body.faceGroups || socket.faceGroups
+      ? [
+          ...(body.faceGroups ?? []),
+          ...(socket.faceGroups ?? []).map((g) => ({ ...g, start: g.start + bodyIndexCount })),
+        ]
+      : undefined;
   return {
+    ...body,
     vertices: concatFloat32(body.vertices, socket.vertices),
     normals: concatFloat32(body.normals, socket.normals),
-    uvs: concatFloat32(body.uvs, socket.uvs),
-    triangles,
-    faceGroups: [
-      ...body.faceGroups,
-      ...socket.faceGroups.map((g) => ({ ...g, start: g.start + bodyIndexCount })),
-    ],
+    indices,
+    edgeVertices: concatFloat32(body.edgeVertices, socket.edgeVertices),
+    triangleCount: body.triangleCount + socket.triangleCount,
+    faceGroups,
   };
 }
 

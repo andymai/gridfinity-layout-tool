@@ -10,7 +10,7 @@
  * (compartments, labels, dividers, magnets…) reuses the prior socket mesh.
  *
  * Stored arrays are JS-owned (brepjs copies them out of the WASM heap) and the
- * tessellate stage only ever *reads* them — `mergeShapeMeshes`/`concatFloat32`
+ * tessellate stage only ever *reads* them — `toIndexedMeshData`/`mergeMeshData`
  * allocate fresh output — so a cached entry is safe to hand back repeatedly.
  */
 

@@ -10,7 +10,8 @@
 
 import { mesh, meshEdges, getKernelCapabilities, getShells, unwrap, fuse } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
-import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/mesh';
+import type { MeshData } from '../../../../bridge/types';
+import { toIndexedMeshData } from '../../utils/mesh';
 import { creaseEdges } from '../../utils';
 import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastExportShellCount, setLastSolid } from '../../shapeCache';
@@ -77,22 +78,23 @@ export const tessellateStage: PipelineStage = {
       dim.maxDimension
     );
 
-    let shapeMesh = mesh(solid, { tolerance, angularTolerance: angularToleranceRad });
+    const shapeMesh = mesh(solid, { tolerance, angularTolerance: angularToleranceRad });
 
     // Build-time kernels (manifold draft) have no B-rep topology, so their
     // meshEdges() returns the full triangle wireframe. Recover clean feature
     // edges from the mesh via dihedral crease detection. Extract-time kernels
     // (occt) keep their native analytic edge extractor.
     const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
-    let edgeLines: ArrayLike<number> = buildTime
+    const edgeLines: ArrayLike<number> = buildTime
       ? creaseEdges(shapeMesh)
       : meshEdges(solid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
 
     // Socket still deferred — the preview path (which skips the expensive
     // socket↔body fuse) or an export whose fuse failed above. Tessellate it
-    // separately and concatenate: the socket is never feature-cut and only
-    // meets the body at a hidden interface, so the merged mesh is visually
-    // identical to the fused shell (though not watertight at the seam).
+    // separately; `mergeBaseStage` concatenates it after the mesh imprint. The
+    // socket only meets the body at a hidden interface, so the merged mesh is
+    // visually identical to the fused shell (though not watertight at the seam).
+    let deferredMesh: MeshData | null = null;
     const { deferredSolid, deferredSolidKey } = ctx;
     if (deferredSolid) {
       try {
@@ -116,8 +118,7 @@ export const tessellateStage: PipelineStage = {
           cached = { mesh: socketMesh, edgeLines: socketEdges };
           if (cacheKey) setSocketMesh(cacheKey, cached);
         }
-        shapeMesh = mergeShapeMeshes(shapeMesh, cached.mesh);
-        edgeLines = concatFloat32(edgeLines, cached.edgeLines);
+        deferredMesh = toIndexedMeshData(cached.mesh, cached.edgeLines, ctx.originToTag);
       } finally {
         // Dispose even if mesh/meshEdges throws, so the WASM handle never leaks.
         deferredSolid.delete();
@@ -126,6 +127,13 @@ export const tessellateStage: PipelineStage = {
 
     ctx.onProgress?.('merge', 1.0);
     const meshData = toIndexedMeshData(shapeMesh, edgeLines, ctx.originToTag);
-    return { ...ctx, mesh: meshData, coarseMesh: null, solid: null, deferredSolid: null };
+    return {
+      ...ctx,
+      mesh: meshData,
+      deferredMesh,
+      coarseMesh: null,
+      solid: null,
+      deferredSolid: null,
+    };
   },
 };

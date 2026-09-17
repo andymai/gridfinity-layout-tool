@@ -296,6 +296,16 @@ export interface PipelineContext {
   readonly featuresKey: string | null;
   /** Final mesh output (set by tessellate stage) */
   readonly mesh: MeshData | null;
+  /**
+   * The still-deferred socket's mesh, tessellated separately from `mesh` and
+   * concatenated onto it by `mergeBaseStage`, the LAST stage. It stays apart
+   * through `meshImprintStage` because the Manifold subtraction keeps only its
+   * largest connected component: a socket base is many unwelded feet, and
+   * feeding them in with the body deletes every foot the vertex weld did not
+   * happen to attach. Null once merged, and on an export whose socket fused
+   * into `solid`.
+   */
+  readonly deferredMesh: MeshData | null;
   /** Coarse LOD mesh for distance-based rendering (preview only) */
   readonly coarseMesh: MeshData | null;
   /**
