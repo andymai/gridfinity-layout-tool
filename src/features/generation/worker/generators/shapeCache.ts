@@ -140,7 +140,8 @@ export function socketCacheKey(
   maskHash?: string,
   fractionalEdgeX: 'start' | 'end' = 'end',
   fractionalEdgeY: 'start' | 'end' = 'end',
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  holeStyleKey = ''
 ): string {
   // Only append when non-default so 'end'/'end' keys stay byte-identical to
   // pre-feature keys (no needless cache invalidation; existing tests stable).
@@ -188,7 +189,8 @@ export function socketCacheKey(
       ...(latticeKey ? [latticeKey] : []),
       maskHash ?? 'rect',
       ...fracSegments,
-      ...anchorSegments
+      ...anchorSegments,
+      ...(holeStyleKey ? [`hole:${holeStyleKey}`] : [])
     )
   );
 }

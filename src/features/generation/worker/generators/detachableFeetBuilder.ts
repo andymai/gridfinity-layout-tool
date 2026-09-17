@@ -45,6 +45,8 @@ import {
   type FootPlacement,
 } from '@/shared/utils/detachableFeetPlan';
 import { DETACHABLE_PIN_LEAD_IN_MM, detachablePinEngagementMm } from '@/shared/types/bin';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { buildMagnetHoleCutter } from './magnetHoleCutter';
 
 /** How far a clip box overshoots the cell it trims, so no face is coplanar. */
 const CLIP_MARGIN = 2;
@@ -89,6 +91,7 @@ export interface DetachableFeetOptions {
   readonly magnet?: {
     readonly diameterMm: number;
     readonly depthMm: number;
+    readonly style: MagnetHoleStyle;
     /** Corner positions in bin-centred mm, from the shared magnet placement. */
     readonly positions: ReadonlyArray<readonly [number, number]>;
   };
@@ -311,11 +314,16 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
         // seal it out rather than in.
         const drills = covered.map(([mx, my]) =>
           scope.register(
-            translate(scope.register(cylinder(magnet.diameterMm / 2, magnet.depthMm)), [
-              mx - centre.x,
-              my - centre.y,
-              -SOCKET_HEIGHT,
-            ])
+            translate(
+              scope.register(
+                buildMagnetHoleCutter({
+                  radius: magnet.diameterMm / 2,
+                  height: magnet.depthMm,
+                  style: magnet.style,
+                })
+              ),
+              [mx - centre.x, my - centre.y, -SOCKET_HEIGHT]
+            )
           )
         );
         if (drills.length > 0) {

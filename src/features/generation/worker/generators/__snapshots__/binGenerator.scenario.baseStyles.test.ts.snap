@@ -6,6 +6,10 @@ exports[`base styles > flat base with lip 1`] = `924`;
 
 exports[`base styles > magnet base no lip 1`] = `968`;
 
+exports[`base styles > magnet base with chamfered mouth 1`] = `2352`;
+
+exports[`base styles > magnet base with crush ribs 1`] = `5424`;
+
 exports[`base styles > magnet base with lip 1`] = `1848`;
 
 exports[`base styles > magnet+screw base no lip 1`] = `1400`;

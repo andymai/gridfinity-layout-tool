@@ -54,7 +54,13 @@ export function createScopedUpdaters(set: Set) {
         // floor-anchored cutout fill has to be carried across this too, not
         // only across the height controls.
         const heldFill = captureCutoutFill(state);
-        Object.assign(state.params.base, partial);
+        // An absent-by-default flag (`tile`, the magnet press-fit options) is
+        // switched off by removing it, so the params hash the same as a design
+        // that never touched it.
+        const merged: Record<string, unknown> = { ...state.params.base, ...partial };
+        state.params.base = Object.fromEntries(
+          Object.entries(merged).filter(([, v]) => v !== undefined)
+        ) as unknown as BaseConfig;
         applyCutoutFillAnchor(state, heldFill);
       });
     },

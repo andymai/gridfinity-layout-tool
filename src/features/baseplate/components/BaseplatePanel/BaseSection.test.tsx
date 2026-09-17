@@ -238,3 +238,35 @@ describe('BaseSection', () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe('BaseSection magnet press-fit options', () => {
+  beforeEach(() => {
+    resetAllStores();
+    useBaseplatePageStore.getState().setTiling(null);
+    useLayoutStore
+      .getState()
+      .setBaseplateParams({ ...DEFAULT_BASEPLATE_PARAMS, magnetHoles: true });
+  });
+
+  it('stores crush ribs as present-or-absent, never false', () => {
+    render(<BaseSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'common.customize' }));
+    const ribs = screen.getByRole('checkbox', { name: 'baseplate.magnetCrushRibs' });
+    fireEvent.click(ribs);
+    expect(useLayoutStore.getState().layout.baseplateParams?.magnetCrushRibs).toBe(true);
+    fireEvent.click(ribs);
+    expect(useLayoutStore.getState().layout.baseplateParams?.magnetCrushRibs).toBeUndefined();
+  });
+
+  it('disables the chamfer on a lightweight plate and says why', () => {
+    useLayoutStore.getState().setBaseplateParams({
+      ...DEFAULT_BASEPLATE_PARAMS,
+      magnetHoles: true,
+      lightweight: true,
+    });
+    render(<BaseSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'common.customize' }));
+    expect(screen.getByRole('checkbox', { name: 'baseplate.magnetChamfer' })).toBeDisabled();
+    expect(screen.getByText('baseplate.magnetChamferLightweight')).toBeInTheDocument();
+  });
+});

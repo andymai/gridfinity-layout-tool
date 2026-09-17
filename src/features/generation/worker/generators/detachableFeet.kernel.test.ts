@@ -41,6 +41,7 @@ import {
 } from '@/shared/types/bin';
 
 import type { DetachableFeetGeometry, DetachableFeetOptions } from './detachableFeetBuilder';
+import { PLAIN_MAGNET_HOLE } from '@/shared/generation/magnetHoleStyle';
 
 let MATING_RIM_RELIEF_MM: number;
 
@@ -323,7 +324,12 @@ describe('detachable foot geometry', () => {
 
   it('opens its magnet pocket at the underside, where the magnet goes in', () => {
     const withMagnet = feetOf({
-      magnet: { diameterMm: MAGNET_D, depthMm: MAGNET_DEPTH, positions: [[13, 13]] },
+      magnet: {
+        diameterMm: MAGNET_D,
+        depthMm: MAGNET_DEPTH,
+        style: PLAIN_MAGNET_HOLE,
+        positions: [[13, 13]],
+      },
     });
     try {
       const m = meshOf(withMagnet.feet[0]);
@@ -359,6 +365,7 @@ describe('detachable foot geometry', () => {
       magnet: {
         diameterMm: MAGNET_D,
         depthMm: MAGNET_DEPTH,
+        style: PLAIN_MAGNET_HOLE,
         positions: [
           [-13, 13],
           [13, 13],

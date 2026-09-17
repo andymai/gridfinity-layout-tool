@@ -54,6 +54,9 @@ import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
+import { buildMagnetHoleCutter } from './magnetHoleCutter';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { PLAIN_MAGNET_HOLE, magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import { sketch } from './meshUtils';
@@ -167,7 +170,8 @@ export function buildLightweightBase(
    * the opening tool has to reach the floor's top face to break through, and
    * that face is the floor's, not the wall's.
    */
-  floorThickness?: number
+  floorThickness?: number,
+  holeStyle: MagnetHoleStyle = PLAIN_MAGNET_HOLE
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
   // Per-axis pitch: unitX scales width/columns, unitY scales depth/rows.
@@ -396,11 +400,21 @@ export function buildLightweightBase(
           for (const [x, y] of positions) {
             if (withMagnet) {
               drills.push(
-                translate(scope.register(cylinder(magnetRadius, magnetDepth)), [
-                  x,
-                  y,
-                  -SOCKET_HEIGHT,
-                ])
+                translate(
+                  scope.register(
+                    buildMagnetHoleCutter({
+                      radius: magnetRadius,
+                      height: magnetDepth,
+                      // A pad is PAD_MARGIN of wall around the bore, too thin
+                      // for the chamfer to open into; the ribs still apply.
+                      style: {
+                        crushRibs: holeStyle.crushRibs,
+                        chamfer: holeStyle.chamfer && magnetChamferFits(PAD_MARGIN),
+                      },
+                    })
+                  ),
+                  [x, y, -SOCKET_HEIGHT]
+                )
               );
             }
             if (withScrew) {

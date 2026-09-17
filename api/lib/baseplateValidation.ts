@@ -80,6 +80,8 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'magnetHoles',
   'magnetDiameter',
   'magnetDepth',
+  'magnetCrushRibs',
+  'magnetChamfer',
   'paddingLeft',
   'paddingRight',
   'paddingFront',
@@ -172,6 +174,11 @@ export function validateBaseplateShare(
   }
   if (!isNumber(params.magnetDepth) || !inRange(params.magnetDepth, 0.5, 10)) {
     return validationError('INVALID_PARAMS', 'magnetDepth must be 0.5-10');
+  }
+  for (const key of ['magnetCrushRibs', 'magnetChamfer'] as const) {
+    if (params[key] !== undefined && !isBoolean(params[key])) {
+      return validationError('INVALID_PARAMS', `${key} must be a boolean`);
+    }
   }
   for (const side of ['paddingLeft', 'paddingRight', 'paddingFront', 'paddingBack'] as const) {
     const value = params[side];

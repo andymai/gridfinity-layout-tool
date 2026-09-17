@@ -31,8 +31,11 @@
  * the lid's bosses.
  */
 
-import { cylinder, draw, rotate, translate, unwrap, fuse, cut, cutAll } from 'brepjs';
+import { draw, rotate, translate, unwrap, fuse, cut, cutAll } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { magnetChamferFits, magnetHoleStyleFrom } from '@/shared/generation/magnetHoleStyle';
+import { buildMagnetHoleCutter } from '../../magnetHoleCutter';
 import type { PipelineContext, PipelineStage } from '../types';
 import { shouldGenerateLid } from '@/shared/types/bin';
 import { checkCancelled } from '../../utils/abort';
@@ -351,11 +354,23 @@ export const lidRetentionStage: PipelineStage = {
     //    face, leaving POST_FLOOR of pad material below the magnet.
     const cutterZ = magnetTopZ - pocketDepth;
     const cutterHeight = pocketDepth + LID_COPLANAR_MARGIN;
+    // The pad wall is all the solid around this bore, so the chamfer only
+    // opens when it can leave that wall standing; the ribs always apply.
+    const baseStyle = magnetHoleStyleFrom(params.base);
+    const style: MagnetHoleStyle = {
+      crushRibs: baseStyle.crushRibs,
+      chamfer: baseStyle.chamfer && magnetChamferFits(bossRadius - magnetRadius),
+    };
     const cutters: Shape3D[] = [];
     for (const { x: px, y: py } of positions) {
-      cutters.push(
-        cylinder(magnetRadius, cutterHeight, { at: [px, py, cutterZ], axis: [0, 0, 1] })
-      );
+      const cutter = buildMagnetHoleCutter({
+        radius: magnetRadius,
+        height: cutterHeight,
+        style,
+        mouth: { end: 'top', inset: LID_COPLANAR_MARGIN },
+      });
+      cutters.push(translate(cutter, [px, py, cutterZ]));
+      cutter.delete();
     }
 
     const pocketed = unwrap(cutAll(body as ValidSolid, cutters as ValidSolid[]));

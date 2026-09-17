@@ -10,11 +10,17 @@
  * bins use the mask to skip unfilled cells.
  */
 
-import { drawCircle, unwrap, translate, cutAll } from 'brepjs';
+import { unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { LID_COPLANAR_MARGIN, LID_MAGNET_CEILING } from './lidConstants';
 import { forEachCell } from './cellDecomposition';
-import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
+import {
+  cellHostsAttachmentHoles,
+  chamferFitsCell,
+  magnetPositionsForCell,
+} from './baseplateMagnets';
+import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { isLidCellFilled } from './lidStackGrid';
 import type { LidInputs } from './lidInputs';
 
@@ -28,6 +34,7 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
     gridUnitMmY,
     magnetDiameter,
     magnetDepth,
+    magnetHoleStyle,
     magnetAnchor,
     topThickness,
   } = inputs;
@@ -61,15 +68,23 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
       if (!isLidCellFilled(inputs, cell)) return;
       // Shared placement so the lid magnets land at exactly the positions the
       // bin base sockets use (same wall-distance clamp), letting them mate.
-      for (const [px, py] of magnetPositionsForCell(
-        cell,
-        radius,
-        gridUnitMm,
-        gridUnitMmY,
-        magnetAnchor
-      )) {
-        const cylinder = drawCircle(radius).sketchOnPlane('XY', holeZ).extrude(holeHeight);
-        cutters.push(scope.register(translate(cylinder, [px, py, 0])));
+      const positions = magnetPositionsForCell(cell, radius, gridUnitMm, gridUnitMmY, magnetAnchor);
+      const style: MagnetHoleStyle = {
+        crushRibs: magnetHoleStyle.crushRibs,
+        chamfer:
+          magnetHoleStyle.chamfer &&
+          chamferFitsCell(cell, radius, gridUnitMm, gridUnitMmY, magnetAnchor, positions),
+      };
+      for (const [px, py] of positions) {
+        const cutter = scope.register(
+          buildMagnetHoleCutter({
+            radius,
+            height: holeHeight,
+            style,
+            mouth: { end: 'top', inset: LID_COPLANAR_MARGIN },
+          })
+        );
+        cutters.push(scope.register(translate(cutter, [px, py, holeZ])));
       }
     },
     { gridUnitMm: pitch, fractionalEdgeX, fractionalEdgeY }

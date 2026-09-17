@@ -371,6 +371,8 @@ export function buildFullParams(
     magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
+    ...(stored.magnetCrushRibs === true ? { magnetCrushRibs: true } : {}),
+    ...(stored.magnetChamfer === true ? { magnetChamfer: true } : {}),
     magnetAnchor,
     paddingLeft: paddingOn ? stored.paddingLeft : 0,
     paddingRight: paddingOn ? stored.paddingRight : 0,

@@ -42,6 +42,8 @@ import {
 } from '@/features/bin-designer/types';
 import { isFractional } from '@/core/constants';
 import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
 import {
   GRIDFINITY_SPEC,
   magnetInsetFromCellEdgeMm,
@@ -458,6 +460,11 @@ export interface ResolvedDetachableFeet {
     readonly diameterMm: number;
     readonly depthMm: number;
     /**
+     * Press-fit options from the bin's base. The chamfer is already gated on
+     * the foot's embed margin here, so the builder drills what it is given.
+     */
+    readonly style: MagnetHoleStyle;
+    /**
      * Every STANDARD corner position the feet could cover, in bin-centred mm.
      * The builder keeps the ones a given foot's footprint actually contains.
      *
@@ -500,6 +507,8 @@ export interface DetachableFeetParams {
     readonly style: string;
     readonly magnetDiameter: number;
     readonly magnetDepth: number;
+    readonly magnetCrushRibs?: boolean;
+    readonly magnetChamfer?: boolean;
     readonly screwDiameter: number;
     readonly feetPinDiameter?: number;
     readonly footLatticeX?: FootLattice;
@@ -568,6 +577,10 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
       ? {
           diameterMm: params.base.magnetDiameter,
           depthMm: params.base.magnetDepth,
+          style: {
+            crushRibs: params.base.magnetCrushRibs === true,
+            chamfer: params.base.magnetChamfer === true && magnetChamferFits(FOOT_EMBED_MARGIN_MM),
+          },
           positions: standardMagnetCorners(placements, pitchX, pitchY, params.magnetAnchor),
         }
       : undefined,

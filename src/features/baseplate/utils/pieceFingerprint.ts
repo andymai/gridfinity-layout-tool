@@ -39,6 +39,9 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     `mh:${params.magnetHoles ? 1 : 0}`,
     `md:${params.magnetDiameter}`,
     `mz:${params.magnetDepth}`,
+    // Only emitted when on, so plain-bore plates keep their fingerprint.
+    ...(params.magnetCrushRibs === true ? ['mr:1'] : []),
+    ...(params.magnetChamfer === true ? ['mc:1'] : []),
     `pl:${params.paddingLeft}`,
     `pr:${params.paddingRight}`,
     `pf:${params.paddingFront}`,

@@ -39,6 +39,7 @@ import { SOCKET_HEIGHT, toIndexedMeshData, checkCancelled } from './generatorTyp
 import type { ProgressFn } from './generatorTypes';
 import { CLEARANCE, COPLANAR_OVERLAP } from './generatorConstants';
 import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from './socketBuilder';
+import { attachmentHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { creaseEdges } from './utils';
 import { computeTessellationTolerances, EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
@@ -289,7 +290,11 @@ export function buildAssemblySolid(
       envelope.attachment.screwDiameter / 2,
       forExport,
       DEFAULT_SOCKET_CELL_PLAN,
-      unitMm
+      unitMm,
+      undefined,
+      undefined,
+      undefined,
+      attachmentHoleStyle(envelope.attachment)
     );
     const socketClone = scope.register(unwrap(clone(socket)));
     const fused = unwrap(

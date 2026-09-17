@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BaseSection } from './BaseSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -252,5 +252,55 @@ describe('BaseSection', () => {
       expect(screen.queryByText(/Foot lattice/)).not.toBeInTheDocument();
       expect(screen.getByText(/A fractional axis keeps the on-grid lattice/)).toBeInTheDocument();
     });
+  });
+});
+
+/** The Customize disclosure whose folded summary reads `summary`. */
+function customizeNextTo(summary: string): HTMLElement {
+  const button = screen
+    .getAllByRole('button', { name: 'Customize' })
+    .find((b) => b.parentElement?.textContent?.includes(summary));
+  if (!button) throw new Error(`no Customize next to ${summary}`);
+  return button;
+}
+
+describe('BaseSection magnet press-fit options', () => {
+  beforeEach(() => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } },
+      ui: { ...DEFAULT_UI_STATE },
+    });
+  });
+
+  it('stores crush ribs as present-or-absent, never false', async () => {
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    await user.click(customizeNextTo('ø6.5mm × 2mm deep'));
+    const ribs = screen.getByRole('checkbox', { name: 'Crush ribs' });
+    expect(ribs).not.toBeChecked();
+
+    await user.click(ribs);
+    expect(useDesignerStore.getState().params.base.magnetCrushRibs).toBe(true);
+
+    await user.click(ribs);
+    expect(useDesignerStore.getState().params.base).not.toHaveProperty('magnetCrushRibs');
+  });
+
+  it('offers the chamfer, and explains why a lightweight base cannot take it', async () => {
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    await user.click(customizeNextTo('ø6.5mm × 2mm deep'));
+    const chamfer = screen.getByRole('checkbox', { name: 'Chamfered mouth' });
+    expect(chamfer).toBeEnabled();
+    await user.click(chamfer);
+    expect(useDesignerStore.getState().params.base.magnetChamfer).toBe(true);
+
+    act(() => {
+      useDesignerStore.setState((s) => ({
+        params: { ...s.params, base: { ...s.params.base, lightweight: true } },
+      }));
+    });
+    expect(screen.getByRole('checkbox', { name: 'Chamfered mouth' })).toBeDisabled();
+    expect(screen.getByText(/too little wall around each hole/)).toBeInTheDocument();
   });
 });

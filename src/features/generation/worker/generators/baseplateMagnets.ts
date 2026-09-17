@@ -17,10 +17,13 @@
  * for any corner, so the clipped padding tiles aren't left solid.
  */
 
-import { cylinder, unwrap, clone, translate } from 'brepjs';
+import { unwrap, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
+import { MAGNET_CHAMFER_MM, PLAIN_MAGNET_HOLE } from '@/shared/generation/magnetHoleStyle';
+import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import {
   SIZE,
   PLATE_PROFILE_HEIGHT,
@@ -73,21 +76,80 @@ export function cellHostsAttachmentHoles(
   return cell.widthUnits * pitchX >= minSpanMm && cell.depthUnits * pitchY >= minSpanMm;
 }
 
+/**
+ * True when every hole in `cell` can open its chamfer without breaching the
+ * foot or pocket edge: the widened mouth must still be hostable, and must not
+ * move the placement, or the chamfer would sit off-centre from the bore the
+ * plain radius placed. `positions` are the placements already resolved for
+ * the plain radius.
+ */
+export function chamferFitsCell(
+  cell: CellInfo,
+  holeRadius: number,
+  pitchX: number,
+  pitchY: number,
+  anchor: MagnetAnchor | undefined,
+  positions: ReadonlyArray<readonly [number, number]>
+): boolean {
+  const mouthRadius = holeRadius + MAGNET_CHAMFER_MM;
+  if (!cellHostsAttachmentHoles(cell, mouthRadius, pitchX, pitchY)) return false;
+  const widened = magnetPositionsForCell(cell, mouthRadius, pitchX, pitchY, anchor);
+  if (widened.length !== positions.length) return false;
+  return widened.every(
+    ([x, y], i) => Math.abs(x - positions[i][0]) < 1e-6 && Math.abs(y - positions[i][1]) < 1e-6
+  );
+}
+
+/** Magnet placements for one cell, split by whether their chamfer fits there. */
+function splitByChamferFit(
+  cell: CellInfo,
+  magnetRadius: number,
+  pitchX: number,
+  pitchY: number,
+  anchor: MagnetAnchor,
+  style: MagnetHoleStyle,
+  out: { readonly chamfered: Array<[number, number]>; readonly plain: Array<[number, number]> }
+): void {
+  const positions = magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY, anchor);
+  const chamfer =
+    style.chamfer && chamferFitsCell(cell, magnetRadius, pitchX, pitchY, anchor, positions);
+  (chamfer ? out.chamfered : out.plain).push(...positions);
+}
+
+/** Cutters for both placement groups; the plain group keeps the bore's ribs. */
+function buildSplitMagnetCutters(
+  groups: { readonly chamfered: Array<[number, number]>; readonly plain: Array<[number, number]> },
+  magnetRadius: number,
+  magnetDepth: number,
+  style: MagnetHoleStyle
+): Shape3D[] {
+  return [
+    ...buildMagnetCutters(groups.chamfered, magnetRadius, magnetDepth, style),
+    ...buildMagnetCutters(groups.plain, magnetRadius, magnetDepth, { ...style, chamfer: false }),
+  ];
+}
+
 /** Build magnet-hole cutter solids at the given XY positions (Z handled here). */
 function buildMagnetCutters(
   positions: ReadonlyArray<readonly [number, number]>,
   magnetRadius: number,
-  magnetDepth: number
+  magnetDepth: number,
+  style: MagnetHoleStyle
 ): Shape3D[] {
+  if (positions.length === 0) return [];
   // Cutter starts above the pocket floor (COPLANAR_MARGIN avoids coplanar with
   // pocket bottom at Z=-PLATE_PROFILE_HEIGHT) and cuts downward by magnetDepth.
   // Leaves MAGNET_FLOOR of solid material at the bottom of each hole.
   const cutterZ = -PLATE_PROFILE_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = magnetDepth + COPLANAR_MARGIN;
-  const magnetTemplate = cylinder(magnetRadius, cutterDepth, {
-    at: [0, 0, cutterZ],
-    axis: [0, 0, -1],
+  const atOrigin = buildMagnetHoleCutter({
+    radius: magnetRadius,
+    height: cutterDepth,
+    style,
+    mouth: { end: 'top', inset: COPLANAR_MARGIN },
   });
+  const magnetTemplate = translate(atOrigin, [0, 0, cutterZ - cutterDepth]);
+  atOrigin.delete();
 
   const holes: Shape3D[] = [];
   try {
@@ -115,10 +177,11 @@ export function buildMagnetHoles(
   magnetDepth: number,
   cellOpts?: ForEachCellOptions,
   cellFilter?: (cell: CellInfo) => boolean,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE
 ): Shape3D[] {
   const { x: pitchX, y: pitchY } = resolvePitch(cellOpts?.gridUnitMm);
-  const positions: Array<[number, number]> = [];
+  const groups = { chamfered: [] as Array<[number, number]>, plain: [] as Array<[number, number]> };
   forEachCell(
     gridW,
     gridD,
@@ -127,11 +190,11 @@ export function buildMagnetHoles(
       if (cellFilter !== undefined && !cellFilter(cell)) return;
       // Same shared placement (with the standard wall-distance clamp) as the bin
       // base and lid, so every magnet-bearing surface agrees.
-      positions.push(...magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY, anchor));
+      splitByChamferFit(cell, magnetRadius, pitchX, pitchY, anchor, style, groups);
     },
     cellOpts
   );
-  return buildMagnetCutters(positions, magnetRadius, magnetDepth);
+  return buildSplitMagnetCutters(groups, magnetRadius, magnetDepth, style);
 }
 
 /**
@@ -248,13 +311,14 @@ export function buildPartialCellMagnetHoles(
   magnetRadius: number,
   magnetDepth: number,
   gridUnitMm: GridUnitInput,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  style: MagnetHoleStyle = PLAIN_MAGNET_HOLE
 ): Shape3D[] {
   // `x` scales width, `y` scales depth (equal for a square grid).
   const { x: pitchX, y: pitchY } = resolvePitch(gridUnitMm);
-  const positions: Array<[number, number]> = [];
+  const groups = { chamfered: [] as Array<[number, number]>, plain: [] as Array<[number, number]> };
   for (const cell of cells) {
-    positions.push(...magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY, anchor));
+    splitByChamferFit(cell, magnetRadius, pitchX, pitchY, anchor, style, groups);
   }
-  return buildMagnetCutters(positions, magnetRadius, magnetDepth);
+  return buildSplitMagnetCutters(groups, magnetRadius, magnetDepth, style);
 }

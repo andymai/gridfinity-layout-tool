@@ -435,6 +435,19 @@ export interface BaseConfig {
   readonly style: BaseStyle;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
+  /**
+   * Crush ribs inside every magnet hole drilled to this spec (bin socket,
+   * lightweight pads, detachable feet, lid top, lid retention bosses): a wavy
+   * bore that grips a press-fit magnet without glue. Absent means off, for the
+   * same fingerprint reason `tile` is absent by default.
+   */
+  readonly magnetCrushRibs?: boolean;
+  /**
+   * 45 degree lead-in at the mouth of those magnet holes. Skipped on a hole
+   * whose surrounding wall is too thin to open (lightweight pads, retention
+   * bosses, feet), where the plain mouth stays. Absent means off.
+   */
+  readonly magnetChamfer?: boolean;
   readonly screwDiameter: number;
   readonly stackingLip: boolean;
   /**

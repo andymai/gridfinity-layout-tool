@@ -123,6 +123,13 @@ export interface StoredBaseplateParams {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: Mm;
   readonly magnetDepth: Mm;
+  /** Crush ribs in the magnet holes (press fit without glue). Absent means off. */
+  readonly magnetCrushRibs?: boolean;
+  /**
+   * 45 degree lead-in at each magnet hole's mouth. Skipped on a lightweight
+   * plate, whose magnet pads are too thin to open. Absent means off.
+   */
+  readonly magnetChamfer?: boolean;
   readonly paddingLeft: Mm;
   readonly paddingRight: Mm;
   readonly paddingFront: Mm;

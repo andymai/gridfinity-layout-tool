@@ -242,6 +242,29 @@ export function BaseSection() {
                   unit="mm"
                   info={t('baseplate.magnetDepthInfo')}
                 />
+                <div className="space-y-1">
+                  <Checkbox
+                    checked={baseplateParams.magnetCrushRibs === true}
+                    onChange={(checked) => updateParam('magnetCrushRibs', checked || undefined)}
+                    label={t('baseplate.magnetCrushRibs')}
+                  />
+                  <p className="text-label leading-relaxed text-content-tertiary pl-6">
+                    {t('baseplate.magnetCrushRibsHint')}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <Checkbox
+                    checked={baseplateParams.magnetChamfer === true}
+                    disabled={baseplateParams.lightweight === true}
+                    onChange={(checked) => updateParam('magnetChamfer', checked || undefined)}
+                    label={t('baseplate.magnetChamfer')}
+                  />
+                  <p className="text-label leading-relaxed text-content-tertiary pl-6">
+                    {baseplateParams.lightweight === true
+                      ? t('baseplate.magnetChamferLightweight')
+                      : t('baseplate.magnetChamferHint')}
+                  </p>
+                </div>
               </FeatureToggle>
             </div>
             <div className="border-t border-stroke-subtle pt-3">

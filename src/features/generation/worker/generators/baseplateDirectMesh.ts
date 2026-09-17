@@ -55,7 +55,12 @@ import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
 import { addMagnetHoleAt } from './directMeshMagnets';
 import { addScrewHoleAt } from './directMeshScrews';
-import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
+import {
+  cellHostsAttachmentHoles,
+  chamferFitsCell,
+  magnetPositionsForCell,
+} from './baseplateMagnets';
+import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { planBaseplateScrewHoles } from './baseplateScrews';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
 
@@ -96,6 +101,8 @@ export function generateBaseplateDirect(
     magnetDiameter,
     magnetDepth,
     magnetAnchor,
+    magnetCrushRibs,
+    magnetChamfer,
     paddingLeft,
     paddingRight,
     paddingFront,
@@ -256,21 +263,37 @@ export function generateBaseplateDirect(
 
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
+    // Same fit rule as the BREP plate: no chamfer on a lightweight pad, and none
+    // in a cell whose edge the widened mouth would breach.
+    const magnetStyle: MagnetHoleStyle = {
+      crushRibs: magnetCrushRibs === true,
+      chamfer: magnetChamfer === true && !params.lightweight,
+    };
+    const addCellHoles = (cell: CellInfo): void => {
+      const positions = magnetPositionsForCell(
+        cell,
+        magnetRadius,
+        gridUnitMm,
+        gridUnitMmY,
+        magnetAnchor
+      );
+      const style: MagnetHoleStyle = {
+        crushRibs: magnetStyle.crushRibs,
+        chamfer:
+          magnetStyle.chamfer &&
+          chamferFitsCell(cell, magnetRadius, gridUnitMm, gridUnitMmY, magnetAnchor, positions),
+      };
+      for (const [x, y] of positions) {
+        addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth, style);
+      }
+    };
     // Nominal grid: full cells get the standard 4 corners, half cells whatever
     // of that pattern their tapered floor holds — matching the BREP build.
     for (const cell of cells.slice(0, nominalCellCount)) {
       if (!cellHostsAttachmentHoles(cell, magnetRadius, gridUnitMm, gridUnitMmY)) continue;
       // Shared placement (wall-distance clamp) — identical to the BREP plate,
       // bin base, and lid so the draft preview and all mating surfaces agree.
-      for (const [x, y] of magnetPositionsForCell(
-        cell,
-        magnetRadius,
-        gridUnitMm,
-        gridUnitMmY,
-        magnetAnchor
-      )) {
-        addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);
-      }
+      addCellHoles(cell);
     }
     // Over-tile margin tiles: the corner magnets that fit, else a single
     // centered magnet — mirrors buildPartialCellMagnetHoles in the BREP build so
@@ -291,15 +314,7 @@ export function generateBaseplateDirect(
         overTileHalfGrid,
         overTileHalfGridSolidLeftover
       )) {
-        for (const [x, y] of magnetPositionsForCell(
-          cell,
-          magnetRadius,
-          gridUnitMm,
-          gridUnitMmY,
-          magnetAnchor
-        )) {
-          addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);
-        }
+        addCellHoles(cell);
       }
     }
   }

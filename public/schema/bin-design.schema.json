@@ -103,6 +103,14 @@
           },
           "description": "Magnet hole depth in mm."
         },
+        "magnetCrushRibs": {
+          "type": "boolean",
+          "description": "Crush ribs inside each magnet hole: a wavy bore that grips a press-fit magnet without glue. Absent means off."
+        },
+        "magnetChamfer": {
+          "type": "boolean",
+          "description": "45 degree lead-in at each magnet hole's mouth. Skipped where the surrounding wall is too thin. Absent means off."
+        },
         "screwDiameter": {
           "type": "number",
           "minimum": 2,
