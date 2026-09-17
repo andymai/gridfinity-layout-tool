@@ -90,6 +90,32 @@ export const baseStyles: ScenarioCase[] = [
       })
     ),
 
+  defineScenario('base styles', '0.5×0.5 magnet+screw base (minimum half-bin)', {
+    assert: 'structural',
+    params: {
+      width: 0.5,
+      depth: 0.5,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw' },
+    },
+    customAssert: (result, params) => {
+      assertBoundingBoxMatchesParams(result, params, '0.5x0.5-magnet-screw');
+      assertNoDegenerateTriangles(result, '0.5x0.5-magnet-screw');
+    },
+  }),
+
+  defineScenario('base styles', '0.5×0.5 lightweight base (minimum half-bin)', {
+    assert: 'structural',
+    params: {
+      width: 0.5,
+      depth: 0.5,
+      base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+    },
+    customAssert: (result, params) => {
+      assertBoundingBoxMatchesParams(result, params, '0.5x0.5-lightweight');
+      assertNoDegenerateTriangles(result, '0.5x0.5-lightweight');
+    },
+  }),
+
   defineScenario('base styles', '0.5×0.5 standard base (minimum half-bin)', {
     assert: 'structural',
     params: {
