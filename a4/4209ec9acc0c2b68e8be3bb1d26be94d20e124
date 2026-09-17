@@ -1,0 +1,23 @@
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.test.ts
+  s_95932118759c83::t_d6c2eb886aaebf 118-123
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.ts
+  s_95932118759c83::t_8ba862b1c4dc46 105-107
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PathEditOverlay3D.tsx
+  s_95932118759c83::t_42c2eb5308c8a9 134-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a44209ec9acc0c2b68e8be3bb1d26be94d20e124",
+  "prompts": {},
+  "sessions": {
+    "s_95932118759c83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "102698ab-80c3-4ea9-8488-71bcb9e62bbf",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
