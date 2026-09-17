@@ -285,12 +285,9 @@ describe('generated bin carries no scoop material outside a tapered wall', () =>
 
 /**
  * The complement of containment: clipping the ramp to the tapered wall must
- * not eat the ramp. The ramp is authored against the rim-anchored cavity edge,
- * and on a tapered side the wall's inner face sits `taperInsetAt` inboard of
- * that edge at every height in the band, so an arc that starts at the rim edge
- * has its whole top buried in the wall and the clip leaves a stub: a 13mm
- * scoop against a 5mm chamfer over 44mm came out ~4mm tall. Both checks here
- * would have passed on the clip alone. Measured on the LEFT ramp, with the
+ * not eat the ramp. An arc authored against the rim-anchored cavity edge has
+ * its top inside a tapered wall, and the clip then leaves only a stub, which
+ * the containment checks above cannot see. Measured on the LEFT ramp, with the
  * right ramp (untapered) as the control that the left must match.
  */
 describe('scoop ramps keep their full rise against a tapered wall', () => {
