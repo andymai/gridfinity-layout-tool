@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.494.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.494.0...gridfinity-layout-tool-v4.494.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **generation:** clear the lid's seating band on removable dividers ([#4327](https://github.com/andymai/gridfinity-layout-tool/issues/4327)) ([d308575](https://github.com/andymai/gridfinity-layout-tool/commit/d308575d95e52f1bb0435c8ea803696946199b62))
+* **sync:** carry the storage error cause when a remote apply fails ([#4326](https://github.com/andymai/gridfinity-layout-tool/issues/4326)) ([a5985b5](https://github.com/andymai/gridfinity-layout-tool/commit/a5985b553bcfdb483cbdae3bda515fbad699923f))
+
 ## [4.494.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.493.0...gridfinity-layout-tool-v4.494.0) (2026-09-17)
 
 
