@@ -1,15 +1,12 @@
 // @vitest-environment node
 /**
- * Removable divider pieces give up the lid's seating band at the wall.
+ * Removable divider pieces give up the lid's seating band.
  *
- * A slotted bin's dividers are separately-printed solids, so
- * `lidInteriorReliefStage` — which carves the keep-out ring out of the bin body
- * and clears the BAKED compartment dividers for free — never touches them. Left
- * full-height they rise the ~3.45mm the seated lid claims at the wall, and the
- * lid cannot close (issue #4324). No bounding-box, triangle-count or watertight
- * check sees it: a full-height piece and a notched one are both clean solids.
- * The only proof is to slice a piece across the keep-out band and read where its
- * material stops — full to the ends with no lid, cut back from them with one.
+ * A watertight full-height piece and a notched one both pass every bounding-box,
+ * triangle-count and watertight check, so the collision with a seated lid is
+ * only visible by slicing a piece across the band and reading where its material
+ * stops. A capping lid takes the corner at the wall ends; a sliding plate takes
+ * the whole top.
  *
  *   pnpm run test:run src/features/generation/worker/generators/dividerLidKeepout.scenario
  */
@@ -23,6 +20,7 @@ import {
   dividerGrooveDepth,
 } from '@/shared/utils/slotMath';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
 import type { BinParams } from '@/shared/types/bin';
 
 /** Just the fields these probes read off a brepjs mesh. */
@@ -68,9 +66,34 @@ function slottedParams(overrides: Partial<BinParams> = {}): BinParams {
   };
 }
 
-/** A lid that seats into the mouth — the case that claims the band. */
+/** A capping lid: claims a ring at the wall. */
 function withLid(params: BinParams): BinParams {
   return { ...params, lid: { ...params.lid, enabled: true, relieveInterior: true } };
+}
+
+/** A sliding lid: its plate sweeps the whole opening. */
+function withSlideLid(params: BinParams): BinParams {
+  return {
+    ...params,
+    lid: {
+      ...params.lid,
+      enabled: true,
+      relieveInterior: true,
+      attachment: 'slide',
+      slide: { ...DEFAULT_LID_SLIDE_CONFIG },
+    },
+  };
+}
+
+/** A custom-grid (authored) slotted bin — 2x1 is one full wall-to-wall divider. */
+function authoredParams(): BinParams {
+  return slottedParams({
+    slotConfig: {
+      ...DEFAULT_BIN_PARAMS.slotConfig,
+      layout: 'custom',
+      customGrid: { cols: 2, rows: 1, cells: [0, 1] },
+    },
+  });
 }
 
 async function firstPieceMesh(params: BinParams): Promise<PieceMesh> {
@@ -166,7 +189,7 @@ describe(`removable divider lid keep-out on ${getKernelName()}`, () => {
     expect(Math.abs(midLo - topLo)).toBeLessThan(0.5);
   });
 
-  it('removes only the corner band — a lid never costs more than the ends', async () => {
+  it('removes only the corner band — a capping lid never costs more than the ends', async () => {
     const both = {
       ...slottedParams(),
       slotConfig: {
@@ -177,9 +200,40 @@ describe(`removable divider lid keep-out on ${getKernelName()}`, () => {
     } satisfies BinParams;
     const relieved = await totalPieceVolume(withLid(both));
     const full = await totalPieceVolume(both);
-    // A lid costs some material (the wall-end corners) but a small fraction of
-    // the whole — it is a band at the ends, not a shortened piece.
+    // A capping lid costs some material (the wall-end corners) but a small
+    // fraction of the whole — a band at the ends, not a shortened piece.
     expect(relieved).toBeLessThan(full);
     expect(relieved).toBeGreaterThan(full * 0.8);
+  });
+
+  it('relieves the whole top span under a sliding lid, not just the ends', async () => {
+    const params = withSlideLid(slottedParams());
+    // A sliding plate claims a deeper band than a capping lid.
+    expect(labelShelfKeepoutMm(params)).toBeGreaterThan(
+      labelShelfKeepoutMm(withLid(slottedParams()))
+    );
+
+    const mesh = await firstPieceMesh(params);
+    const halfH = pieceHalfHeight(params);
+    // Inside the band: nothing survives, at the ends OR the middle.
+    const [topLo, topHi] = sectionXSpanAtY(mesh, halfH - 0.3);
+    expect(Number.isFinite(topHi) && topHi >= topLo).toBe(false);
+    // Below the band the piece is still a full-width wall.
+    const [midLo, midHi] = sectionXSpanAtY(mesh, 0);
+    expect(midHi - midLo).toBeGreaterThan(4);
+  });
+
+  it('relieves authored (custom-grid) pieces at the wall under a lid', async () => {
+    const params = withLid(authoredParams());
+    expect(labelShelfKeepoutMm(params)).toBeGreaterThan(1);
+
+    const mesh = await firstPieceMesh(params);
+    const halfH = pieceHalfHeight(params);
+    const [midLo, midHi] = sectionXSpanAtY(mesh, 0);
+    const [topLo, topHi] = sectionXSpanAtY(mesh, halfH - 0.3);
+    // Same end relief the parametric path gets.
+    expect(midHi - midLo - (topHi - topLo)).toBeGreaterThan(4);
+    expect(topHi).toBeLessThan(midHi - 2);
+    expect(topLo).toBeGreaterThan(midLo + 2);
   });
 });
