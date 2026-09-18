@@ -10,6 +10,7 @@ import {
   saveLibrary,
 } from '@/core/storage';
 import type { AdapterChange, AdapterChangeListener, LayoutAdapter, SyncableItem } from './types';
+import { syncPersistError } from './persistError';
 
 // Wider than `Bin` because legacy cloud blobs (pre-validator-fix) literally
 // omit `notes`/`label`. Without this the runtime guard below reads as
@@ -92,7 +93,7 @@ export const layoutAdapter: LayoutAdapter = {
     const layout: Layout = document;
     const saveResult = await saveLayoutAsync(item.id, layout);
     if (!saveResult.ok) {
-      throw new Error(`saveLayoutAsync failed for ${item.id}`);
+      throw syncPersistError('saveLayoutAsync', item.id, saveResult.error);
     }
 
     // Upsert the library entry so the user sees the updated metadata.
@@ -131,7 +132,7 @@ export const layoutAdapter: LayoutAdapter = {
     setLibrary(nextLibrary);
     const libraryResult = await saveLibrary(nextLibrary);
     if (isErr(libraryResult)) {
-      throw new Error(`saveLibrary failed for ${item.id}`);
+      throw syncPersistError('saveLibrary', item.id, libraryResult.error);
     }
 
     // If the user is viewing this layout right now, replace what the
@@ -161,7 +162,7 @@ export const layoutAdapter: LayoutAdapter = {
     setLibrary(nextLibrary);
     const libraryResult = await saveLibrary(nextLibrary);
     if (isErr(libraryResult)) {
-      throw new Error(`saveLibrary failed during remote-delete of ${id}`);
+      throw syncPersistError('saveLibrary (remote-delete)', id, libraryResult.error);
     }
 
     // If the user was viewing the deleted layout, switch them to
