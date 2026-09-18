@@ -1,0 +1,38 @@
+src/features/generation/worker/generators/dividerLidKeepout.scenario.test.ts
+  s_79892b3c451f02::t_18c0c3382e3b87 76,94,103
+  s_79892b3c451f02::t_3b595a29b265fb 27-48
+  s_79892b3c451f02::t_4f7b5d11228615 1-22,24-26,49-75,77-93,95-102,104-185
+  s_70666e95ec5557::t_79cd38c35cdfba 23
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_79892b3c451f02::t_14b2f37a4519d4 655-663
+  s_79892b3c451f02::t_f5ed0abaaf8b35 41-42
+  s_79892b3c451f02::t_ff81c218d38335 346-352,355-356
+  s_79892b3c451f02::t_835a82174d2b3b 408-410,412-422
+  s_79892b3c451f02::t_b8d1ee7c3ab06c 225,274-314
+  s_79892b3c451f02::t_d5e690b7e5b4ff 610-616,619-620
+  s_79892b3c451f02::t_25e48af048f117 226-273
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a3f220b443e6784bd35d05d261face610db066e7",
+  "prompts": {},
+  "sessions": {
+    "s_70666e95ec5557": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd50da92-0160-439b-9b43-6ec6b391b633",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_79892b3c451f02": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "814e9da0-0158-41ef-be28-36b356f798cc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
