@@ -16,6 +16,7 @@
 import { box, cut, fuseAll, translate, unwrap } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
+import { isSlideLid } from '@/shared/types/bin';
 import {
   calculateDividerHeight,
   calculateDividerLength,
@@ -38,6 +39,8 @@ import {
 import type { DividerLockPlan } from '@/shared/utils/slotMath';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
+import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
+import { lidKeepoutRing } from '@/shared/constants/lidKeepout';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { cutPiecePattern, resolvePiecePatternContext } from './dividerPiecePatternBuilder';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
@@ -221,6 +224,88 @@ function cutDividerNeckRelief(
 }
 
 /**
+ * Notch the lid's seating band out of a removable piece's top edge.
+ *
+ * `lidInteriorReliefStage` cuts this band out of the bin body, which clears the
+ * baked compartment dividers with it; a removable piece is a separate solid it
+ * never reaches, so the same cut has to happen here or the piece fouls the lid.
+ * A capping lid claims only a ring at the wall, so the notch is end-only and
+ * inert at an end that seats mid-cavity. A sliding plate sweeps the whole
+ * opening, so its band spans the entire piece.
+ */
+function cutLidKeepoutRelief(
+  piece: Shape3D,
+  length: number,
+  height: number,
+  thickness: number,
+  keepout: KeepoutRelief
+): Shape3D {
+  const yDepth = Math.min(keepout.notchY, height);
+  if (yDepth <= 0) return piece;
+
+  const cutY = yDepth + COPLANAR_OVERLAP;
+  const cutZ = thickness + 2 * COPLANAR_OVERLAP;
+  const bandCenterY = height / 2 - yDepth / 2 + COPLANAR_OVERLAP / 2;
+
+  if (keepout.fullSpan) {
+    const cutter = box(length + 2 * COPLANAR_OVERLAP, cutY, cutZ, {
+      at: [0, bandCenterY, thickness / 2],
+    });
+    return applyCuts(piece, [cutter]);
+  }
+
+  // Clamp so the two end notches can never meet and shear the whole top off.
+  const xExtent = Math.min(keepout.notchX, length / 2 - 0.05);
+  if (xExtent <= 0) return piece;
+  const cutters: Shape3D[] = [];
+  for (const sign of [-1, 1] as const) {
+    const outer = sign * (length / 2 + COPLANAR_OVERLAP);
+    const inner = sign * (length / 2 - xExtent);
+    const cx = (outer + inner) / 2;
+    const clen = Math.abs(outer - inner);
+    cutters.push(box(clen, cutY, cutZ, { at: [cx, bandCenterY, thickness / 2] }));
+  }
+  return applyCuts(piece, cutters);
+}
+
+interface KeepoutRelief {
+  /** Band below the piece's top edge a seated lid claims (mm); 0 when none does. */
+  readonly notchY: number;
+  /** Inboard reach of an end notch from a wall end (mm); unused when fullSpan. */
+  readonly notchX: number;
+  /** Sliding plate: relieve the whole top, not just the wall ends. */
+  readonly fullSpan: boolean;
+}
+
+/**
+ * `labelShelfKeepoutMm` gives the band a lid claims below the ceiling — the same
+ * value the label shelf sinks by, with the capping vs sliding depth folded in
+ * and 0 when `interiorReliefActive` is false, the gate the bin body's relief
+ * uses too. A piece topping out below the ceiling meets that much less of it.
+ */
+function resolveKeepoutRelief(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  hasLip: boolean,
+  seatZ: number,
+  dividerHeight: number,
+  tabDepth: number
+): KeepoutRelief {
+  const keepoutDepth = labelShelfKeepoutMm(params);
+  if (keepoutDepth <= 0) return { notchY: 0, notchX: 0, fullSpan: false };
+  const ceilingZ = calculateDividerHeight({ height: 'auto' }, wallHeight, hasLip);
+  const notchY = Math.max(0, keepoutDepth - (ceilingZ - (seatZ + dividerHeight)));
+  const ring = lidKeepoutRing(innerW, innerD, params.wallThickness);
+  // outerHalfX sits at the lip's inner face, inboard of the wall by the
+  // (negative) lip inset; the ring reaches `width` further in, and the tab
+  // spans from the piece end to that face.
+  const lipInset = ring.outerHalfX - innerW / 2;
+  return { notchY, notchX: tabDepth + ring.width - lipInset, fullSpan: isSlideLid(params.lid) };
+}
+
+/**
  * Build one divider piece per unique shape for a slotted bin.
  *
  * Single-axis bins get one piece. Both-axes bins get either two
@@ -251,12 +336,8 @@ export function buildUniqueDividerPieces(
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
 
-  const dividerHeight = calculateDividerPieceHeight(
-    dividerPieces,
-    wallHeight,
-    hasLip,
-    dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
-  );
+  const seatZ = dividerSeatZ(params.wallThickness, dividerGrooveDepth(params));
+  const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
 
   const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
   const { style: crossStyle, longAxis } = resolveCrossDividerMode(slotConfig, thickness);
@@ -307,10 +388,23 @@ export function buildUniqueDividerPieces(
   const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D =>
     patternCtx ? cutPiecePattern(piece, patternCtx, geometry) : piece;
   // Every wall tab seats past a retention throat, so relieve every piece's tab
-  // neck (inert at receptacle/free ends). Length varies per piece.
+  // neck (inert at receptacle/free ends). Length varies per piece. The lid
+  // keep-out notch rides on the same call, inert at an end that seats mid-cavity.
   const lock = getDividerLockPlan(thickness, clearance);
-  const relief = (piece: Shape3D, length: number): Shape3D =>
-    cutDividerNeckRelief(piece, length, dividerHeight, thickness, tabDepth, lock);
+  const keepout = resolveKeepoutRelief(
+    params,
+    innerW,
+    innerD,
+    wallHeight,
+    hasLip,
+    seatZ,
+    dividerHeight,
+    tabDepth
+  );
+  const relief = (piece: Shape3D, length: number): Shape3D => {
+    const necked = cutDividerNeckRelief(piece, length, dividerHeight, thickness, tabDepth, lock);
+    return cutLidKeepoutRelief(necked, length, dividerHeight, thickness, keepout);
+  };
 
   if (!bothAxes) {
     if (slotConfig.x.enabled)
@@ -498,12 +592,8 @@ export function buildAuthoredDividerPieces(
 
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
-  const dividerHeight = calculateDividerPieceHeight(
-    dividerPieces,
-    wallHeight,
-    hasLip,
-    dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
-  );
+  const seatZ = dividerSeatZ(params.wallThickness, dividerGrooveDepth(params));
+  const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
   const notchDepth = dividerHeight / 2 + clearance;
 
   const segments = deriveWallSegments(grid, innerW, innerD);
@@ -515,6 +605,16 @@ export function buildAuthoredDividerPieces(
   // a little extra solid margin, never a perforated tab.
   const tabDepth = tabEngagement(slotDepth, clearance);
   const lock = getDividerLockPlan(thickness, clearance);
+  const keepout = resolveKeepoutRelief(
+    params,
+    innerW,
+    innerD,
+    wallHeight,
+    hasLip,
+    seatZ,
+    dividerHeight,
+    tabDepth
+  );
 
   const pieces: LabeledDividerPiece[] = [];
   let yOffset = 0;
@@ -538,6 +638,9 @@ export function buildAuthoredDividerPieces(
     // Relieve the tab neck so a wall-anchored end's throat catches; inert at
     // abutting/T-junction ends that carry no tab.
     shape = cutDividerNeckRelief(shape, spec.length, dividerHeight, thickness, tabDepth, lock);
+    // Give up the lid's seating band (end-only under a capping lid, full-span
+    // under a sliding plate).
+    shape = cutLidKeepoutRelief(shape, spec.length, dividerHeight, thickness, keepout);
     if (yOffset > 0) {
       const translated = translate(shape, [0, yOffset, 0]);
       shape.delete();
