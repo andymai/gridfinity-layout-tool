@@ -1,0 +1,37 @@
+src/core/sync/adapters/layoutAdapter.ts
+  s_79892b3c451f02::t_627d06422d127c 13
+  s_79892b3c451f02::t_2e32d8be138eaa 135
+  s_79892b3c451f02::t_864adcd9a9fd22 165
+  s_79892b3c451f02::t_be2db212b9a04f 96
+src/core/sync/adapters/folderAdapter.ts
+  s_79892b3c451f02::t_08cc10cd77ab96 13
+  s_79892b3c451f02::t_30725ad97dea53 59
+src/features/bin-designer/sync/designAdapter.ts
+  s_79892b3c451f02::t_e02493a2977a79 288
+  s_79892b3c451f02::t_66a381c5619bf3 307
+  s_79892b3c451f02::t_2980c7c0d7c06d 23
+src/core/sync/adapters/persistError.ts
+  s_79892b3c451f02::t_b2738139d004e6 1-14
+src/core/sync/adapters/persistError.test.ts
+  s_79892b3c451f02::t_48ac3dbfee5819 1-18
+src/features/baseplate/sync/baseplateAdapter.ts
+  s_79892b3c451f02::t_ecc47f68e16111 154
+  s_79892b3c451f02::t_1046315fc6ffe2 136
+  s_79892b3c451f02::t_8447d1cdc9febe 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9ada3aa20722609543cb9c440485c1380a03e7cc",
+  "prompts": {},
+  "sessions": {
+    "s_79892b3c451f02": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "814e9da0-0158-41ef-be28-36b356f798cc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
