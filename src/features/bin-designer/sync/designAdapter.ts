@@ -20,6 +20,7 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { isBinDesign, isSyncableDesign } from '@/features/bin-designer/utils/designKind';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
+import { syncPersistError } from '@/core/sync/adapters/persistError';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
 
 // Lives in features/ because BinParams is feature-internal; core/ can't
@@ -284,7 +285,7 @@ export const designAdapter: DesignAdapter = {
               ...branch,
             });
       if (!isOk(result)) {
-        throw new Error(`saveDesign failed for ${item.id}`);
+        throw syncPersistError('saveDesign', item.id, result.error);
       }
       // `saveDesign` falls back to the STORED value for both variant fields, so
       // it cannot clear them; `detachVariant` writes through the store for
@@ -303,7 +304,7 @@ export const designAdapter: DesignAdapter = {
     try {
       const result = await deleteDesign(designId(id));
       if (!isOk(result) && result.error.code !== 'STORAGE_NOT_FOUND') {
-        throw new Error(`deleteDesign failed for ${id}`);
+        throw syncPersistError('deleteDesign', id, result.error);
       }
     } finally {
       suppressed.delete(id);

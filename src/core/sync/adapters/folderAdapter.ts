@@ -10,6 +10,7 @@ import type {
   LayoutFolderPayload,
   SyncableItem,
 } from './types';
+import { syncPersistError } from './persistError';
 
 /**
  * `FolderAdapter` over the library store's folder tree. Same shape as the
@@ -55,7 +56,7 @@ async function commit(nextLibrary: LayoutLibrary, id: string): Promise<void> {
   suppress(id);
   useLibraryStore.getState().setLibrary(nextLibrary);
   const result = await saveLibrary(nextLibrary);
-  if (isErr(result)) throw new Error(`saveLibrary failed for folder ${id}`);
+  if (isErr(result)) throw syncPersistError('saveLibrary', `folder ${id}`, result.error);
 }
 
 export const folderAdapter: FolderAdapter = {

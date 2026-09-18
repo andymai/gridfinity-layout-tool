@@ -18,6 +18,7 @@ import {
   upsertRegistryEntry,
   removeRegistryEntry,
 } from '@/features/baseplate/store/baseplateRegistry';
+import { syncPersistError } from '@/core/sync/adapters/persistError';
 import { subscribe as subscribeBaseplateEvents } from './baseplateEvents';
 
 // Lives in features/ because StoredBaseplateParams is feature-adjacent and
@@ -132,7 +133,7 @@ export const baseplateAdapter: BaseplateAdapter = {
         thumbnail: base?.thumbnail ?? null,
       });
       if (!isOk(result)) {
-        throw new Error(`saveDesign failed for ${item.id}`);
+        throw syncPersistError('saveDesign', item.id, result.error);
       }
       // Keep the selector's registry in step with the write we just made to
       // IndexedDB. Done here (not in the shared sync-boot component) so the
@@ -150,7 +151,7 @@ export const baseplateAdapter: BaseplateAdapter = {
     try {
       const result = await deleteDesign(baseplateDesignId(id));
       if (!isOk(result) && result.error.code !== 'STORAGE_NOT_FOUND') {
-        throw new Error(`deleteDesign failed for ${id}`);
+        throw syncPersistError('deleteDesign', id, result.error);
       }
       removeRegistryEntry(baseplateDesignId(id));
     } finally {
