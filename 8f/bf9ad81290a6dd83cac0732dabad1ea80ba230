@@ -1,0 +1,32 @@
+src/shared/spacemouse/constants.ts
+  s_79892b3c451f02::t_1c25ce91985b9e 53-61
+src/shared/spacemouse/navlib/navlibClient.ts
+  s_79892b3c451f02::t_bee6fe780f054b 219
+src/shared/spacemouse/navlib/types.ts
+  s_79892b3c451f02::t_58b4ccd17846a4 21-22
+src/shared/spacemouse/navlib/viewAccessors.test.ts
+  s_79892b3c451f02::t_ef83f029423a2f 18
+  s_79892b3c451f02::t_21621fe385ae6f 19
+  s_79892b3c451f02::t_02ef165a92694a 143-156
+  s_79892b3c451f02::t_5a121810ee56bc 416,430-433
+src/shared/spacemouse/navlib/viewAccessors.ts
+  s_79892b3c451f02::t_813dba5bd7f6cb 128-134
+  s_79892b3c451f02::t_b3ae2a964ecc09 219-232
+  s_79892b3c451f02::t_637226b206d719 12,22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8fbf9ad81290a6dd83cac0732dabad1ea80ba230",
+  "prompts": {},
+  "sessions": {
+    "s_79892b3c451f02": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "814e9da0-0158-41ef-be28-36b356f798cc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
