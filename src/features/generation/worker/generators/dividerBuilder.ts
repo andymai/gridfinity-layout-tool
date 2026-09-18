@@ -38,6 +38,8 @@ import {
 import type { DividerLockPlan } from '@/shared/utils/slotMath';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
+import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
+import { lidKeepoutRing } from '@/shared/constants/lidKeepout';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { cutPiecePattern, resolvePiecePatternContext } from './dividerPiecePatternBuilder';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
@@ -221,6 +223,96 @@ function cutDividerNeckRelief(
 }
 
 /**
+ * Notch the lid's seating envelope out of a piece's top edge at both ends.
+ *
+ * A removable piece is a separate solid, so `lidInteriorReliefStage` — which
+ * carves the keep-out ring out of the bin body and thereby clears the BAKED
+ * compartment dividers for free — never touches it. Left alone, a piece built
+ * to the interior ceiling rises the same `~3.45mm` into the ring the seated lid
+ * claims at the wall, and the lid cannot close (issue #4324). This removes that
+ * corner, the same band and depth the bin body gives up, so a lid seats over
+ * removable dividers exactly as it does over compartment ones.
+ *
+ * Applied at both ends of every wall-tabbed piece. A notch at an end that seats
+ * mid-cavity (a receptacle end, a partial-segment break) sits outside the ring
+ * the lid actually occupies, so it only shaves a corner no lid touches — the
+ * same "inert at a free end" bargain `cutDividerNeckRelief` makes, kept because
+ * tracking which end lands in a wall per piece would cost far more than the
+ * corner.
+ */
+function cutLidKeepoutEndRelief(
+  piece: Shape3D,
+  length: number,
+  height: number,
+  thickness: number,
+  notchXExtent: number,
+  notchYDepth: number
+): Shape3D {
+  // Never let the two end notches meet: that would shear the whole top off a
+  // piece barely longer than the band, splitting it in two.
+  const xExtent = Math.min(notchXExtent, length / 2 - 0.05);
+  const yDepth = Math.min(notchYDepth, height);
+  if (xExtent <= 0 || yDepth <= 0) return piece;
+
+  const cutY = yDepth + COPLANAR_OVERLAP;
+  const cutZ = thickness + 2 * COPLANAR_OVERLAP;
+  // Centred so the box spans from the top edge (installed ceiling) down by
+  // yDepth, overrunning the edge so no coplanar face survives.
+  const bandCenterY = height / 2 - yDepth / 2 + COPLANAR_OVERLAP / 2;
+
+  const cutters: Shape3D[] = [];
+  for (const sign of [-1, 1] as const) {
+    const outer = sign * (length / 2 + COPLANAR_OVERLAP);
+    const inner = sign * (length / 2 - xExtent);
+    const cx = (outer + inner) / 2;
+    const clen = Math.abs(outer - inner);
+    cutters.push(box(clen, cutY, cutZ, { at: [cx, bandCenterY, thickness / 2] }));
+  }
+  return applyCuts(piece, cutters);
+}
+
+/** The lid keep-out band a removable piece's top edge must give up at the wall. */
+interface KeepoutRelief {
+  /** How far below the piece's top edge the seated lid reaches (mm); 0 when no lid claims it. */
+  readonly notchY: number;
+  /** How far inboard of the wall's inner face the keep-out ring reaches (mm). */
+  readonly ringReach: number;
+}
+
+/**
+ * Size the lid keep-out notch for this bin's removable pieces, or nothing.
+ *
+ * `labelShelfKeepoutMm` is the same depth the label shelf sinks to clear the
+ * lid — it already folds in the click-rail vs sliding-plate difference and
+ * returns 0 unless a lid actually claims the interior (`interiorReliefActive`),
+ * which is exactly the gate the bin body's own relief uses. Reusing it keeps a
+ * removable divider and a baked one giving up the identical band.
+ */
+function resolveKeepoutRelief(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  hasLip: boolean,
+  seatZ: number,
+  dividerHeight: number
+): KeepoutRelief {
+  const keepoutDepth = labelShelfKeepoutMm(params);
+  if (keepoutDepth <= 0) return { notchY: 0, ringReach: 0 };
+  const ceilingZ = calculateDividerHeight({ height: 'auto' }, wallHeight, hasLip);
+  const pieceTopZ = seatZ + dividerHeight;
+  // The band hangs `keepoutDepth` below the ceiling; a piece topping out below
+  // the ceiling meets that much less of it. A taller-than-auto piece is a
+  // separate blocker and keeps protruding above the band, as it should.
+  const notchY = Math.max(0, keepoutDepth - (ceilingZ - pieceTopZ));
+  const ring = lidKeepoutRing(innerW, innerD, params.wallThickness);
+  // `outerHalfX` sits at the lip's inner face, inboard of the wall face by the
+  // (negative) lip inset; the ring then reaches `width` further in.
+  const lipInset = ring.outerHalfX - innerW / 2;
+  return { notchY, ringReach: ring.width - lipInset };
+}
+
+/**
  * Build one divider piece per unique shape for a slotted bin.
  *
  * Single-axis bins get one piece. Both-axes bins get either two
@@ -251,11 +343,17 @@ export function buildUniqueDividerPieces(
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
 
-  const dividerHeight = calculateDividerPieceHeight(
-    dividerPieces,
+  const seatZ = dividerSeatZ(params.wallThickness, dividerGrooveDepth(params));
+  const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
+
+  const keepout = resolveKeepoutRelief(
+    params,
+    innerW,
+    innerD,
     wallHeight,
     hasLip,
-    dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+    seatZ,
+    dividerHeight
   );
 
   const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
@@ -307,10 +405,21 @@ export function buildUniqueDividerPieces(
   const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D =>
     patternCtx ? cutPiecePattern(piece, patternCtx, geometry) : piece;
   // Every wall tab seats past a retention throat, so relieve every piece's tab
-  // neck (inert at receptacle/free ends). Length varies per piece.
+  // neck (inert at receptacle/free ends). Length varies per piece. The lid
+  // keep-out notch rides on the same call: both act at the wall ends, and both
+  // are inert at an end that seats mid-cavity.
   const lock = getDividerLockPlan(thickness, clearance);
-  const relief = (piece: Shape3D, length: number): Shape3D =>
-    cutDividerNeckRelief(piece, length, dividerHeight, thickness, tabDepth, lock);
+  const relief = (piece: Shape3D, length: number): Shape3D => {
+    const necked = cutDividerNeckRelief(piece, length, dividerHeight, thickness, tabDepth, lock);
+    return cutLidKeepoutEndRelief(
+      necked,
+      length,
+      dividerHeight,
+      thickness,
+      tabDepth + keepout.ringReach,
+      keepout.notchY
+    );
+  };
 
   if (!bothAxes) {
     if (slotConfig.x.enabled)
@@ -498,13 +607,18 @@ export function buildAuthoredDividerPieces(
 
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
-  const dividerHeight = calculateDividerPieceHeight(
-    dividerPieces,
+  const seatZ = dividerSeatZ(params.wallThickness, dividerGrooveDepth(params));
+  const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
+  const notchDepth = dividerHeight / 2 + clearance;
+  const keepout = resolveKeepoutRelief(
+    params,
+    innerW,
+    innerD,
     wallHeight,
     hasLip,
-    dividerSeatZ(params.wallThickness, dividerGrooveDepth(params))
+    seatZ,
+    dividerHeight
   );
-  const notchDepth = dividerHeight / 2 + clearance;
 
   const segments = deriveWallSegments(grid, innerW, innerD);
   const specs = computeAuthoredDividers(segments, innerW, innerD, thickness, slotDepth, clearance);
@@ -538,6 +652,15 @@ export function buildAuthoredDividerPieces(
     // Relieve the tab neck so a wall-anchored end's throat catches; inert at
     // abutting/T-junction ends that carry no tab.
     shape = cutDividerNeckRelief(shape, spec.length, dividerHeight, thickness, tabDepth, lock);
+    // Give up the lid's seating band at the wall ends (inert mid-cavity).
+    shape = cutLidKeepoutEndRelief(
+      shape,
+      spec.length,
+      dividerHeight,
+      thickness,
+      tabDepth + keepout.ringReach,
+      keepout.notchY
+    );
     if (yOffset > 0) {
       const translated = translate(shape, [0, yOffset, 0]);
       shape.delete();
