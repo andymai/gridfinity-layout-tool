@@ -216,7 +216,7 @@ export function buildClient(acc: () => NavlibViewAccessors | null): NavlibClient
     getFloorPlane: guardRead('model.floorPlane', [0, 0, 1, 0], () => acc()?.getFloorPlane()),
     getPointerPosition: guardRead('pointer.position', null, () => acc()?.getPointerPosition()),
     getLookAt: guardRead('hit.lookat', null, () => acc()?.getLookAt()),
-    getUnitsToMeters: guardRead('model.unitsToMeters', 1, () => 1),
+    getUnitsToMeters: guardRead('model.unitsToMeters', 1, () => acc()?.getUnitsToMeters()),
 
     setViewMatrix: guardCall('view.affine', (data: number[]) => acc()?.setViewMatrix(data)),
     setViewExtents: guardCall('view.extents', (data: number[]) => acc()?.setViewExtents(data)),

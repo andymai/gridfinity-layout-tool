@@ -9,9 +9,9 @@ import {
   Vector3,
 } from 'three';
 import {
+  boundingSphere,
   canvasPolarLimits,
   clampElevation,
-  clampPan,
   computeContentBox,
   createContentBoxCache,
   isLevelPose,
@@ -19,6 +19,7 @@ import {
   type OrbitLike,
   polarLimits,
 } from '../cameraCommands';
+import { TARGET_MODEL_METERS } from '../constants';
 import { LEVEL_ROLL_TOLERANCE } from '../constants';
 import type { NavlibViewAccessors } from './types';
 
@@ -124,11 +125,14 @@ export function createNavlibViewAccessors(
       d.controls.target
         .copy(d.camera.position)
         .addScaledVector(tmpForward, depth > 1e-3 ? depth : prevDist);
-      // The driver owns the pose: the horizon, the pole, roll. What it cannot
-      // know is this canvas's own limits, applied as tilts and slides that keep
-      // its heading, and it reads the result back next frame.
+      // The driver keeps the model framed itself from `getModelExtents` and the
+      // frustum, the way the SDK sample and other web apps rely on it to. A
+      // second, post-hoc pan clamp here only cancelled the motion the driver had
+      // already committed — the stall-then-lurch of #4041 — so framing is left
+      // to the driver. Elevation still is clamped: a canvas that forbids part of
+      // the sphere (an explicit polar limit) is a fact the driver cannot know,
+      // and the clamp is a no-op on a canvas that sets none.
       clampElevation(d.camera, d.controls, up, canvasPolarLimits(d.controls));
-      if (d.controls.enablePan !== false && !box.isEmpty()) clampPan(d.camera, d.controls, box);
       // OrbitControls re-aims the camera at the target every frame with whatever
       // up the camera carries; only the pose's own up reproduces the pose.
       d.camera.up.set(0, 1, 0).applyQuaternion(d.camera.quaternion);
@@ -211,6 +215,20 @@ export function createNavlibViewAccessors(
       const box = computeContentBox(d.scene);
       if (box.isEmpty()) return null;
       return [box.min.x, box.min.y, box.min.z, box.max.x, box.max.y, box.max.z];
+    },
+    getUnitsToMeters() {
+      // The driver scales its motion (and its keep-in-view) to the model's
+      // PHYSICAL size, so the unit factor has to place the model at a plausible
+      // metre scale. Canvases here draw in different units — millimetres in the
+      // bin/baseplate previews, grid cells in the layout — so rather than a
+      // per-canvas constant, size the model itself to a fixed hand scale: a
+      // whole bin reads as ~a hand's width whatever it is modelled in.
+      const d = getDeps();
+      if (!d) return 1;
+      const box = computeContentBox(d.scene);
+      if (box.isEmpty()) return 1;
+      const radius = boundingSphere(box).radius;
+      return radius > 1e-6 ? TARGET_MODEL_METERS / radius : 1;
     },
     getPivotPosition() {
       const d = getDeps();

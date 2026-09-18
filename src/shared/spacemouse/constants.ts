@@ -50,6 +50,15 @@ export const LEVEL_ROLL_TOLERANCE = 0.01;
 export const PAN_LEASH_RADII = 0.5;
 export const PAN_LEASH_VIEWPORT_FRACTION = 0.5;
 
+/**
+ * The physical half-size (metres) the driver should believe a whole model spans.
+ * `getUnitsToMeters` sizes any model's bounding sphere to this, so the driver's
+ * motion and its keep-in-view behave the same whether a canvas draws in
+ * millimetres or grid cells. A hand's-width object: fast enough to fly around,
+ * slow enough to place.
+ */
+export const TARGET_MODEL_METERS = 0.1;
+
 export const DEFAULT_SETTINGS: SpaceMouseSettings = {
   sensitivity: 1,
   translateSpeed: 1,

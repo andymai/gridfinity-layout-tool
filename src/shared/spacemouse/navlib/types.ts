@@ -18,6 +18,8 @@ export interface NavlibViewAccessors {
   getFov(): number;
   getViewFrustum(): number[];
   getModelExtents(): number[] | null;
+  /** Scene-unit → metre factor, so the driver sizes its motion to the model. */
+  getUnitsToMeters(): number;
   getPivotPosition(): number[] | null;
   getCoordinateSystem(): number[];
   getFrontView(): number[];

@@ -1,7 +1,6 @@
 import {
   BoxGeometry,
   type Camera,
-  Frustum,
   type Intersection,
   Matrix4,
   Mesh,
@@ -16,8 +15,8 @@ import {
 } from 'three';
 import { Line2, LineGeometry, LineMaterial } from 'three-stdlib';
 import { describe, expect, it } from 'vitest';
-import { computeContentBox, type OrbitLike } from '../cameraCommands';
-import { MIN_POLAR } from '../constants';
+import { type OrbitLike } from '../cameraCommands';
+import { MIN_POLAR, TARGET_MODEL_METERS } from '../constants';
 import { createNavlibViewAccessors, type NavlibViewDeps } from './viewAccessors';
 
 function makeControls(): OrbitLike {
@@ -139,6 +138,20 @@ describe('createNavlibViewAccessors', () => {
     expect(withModel.getModelExtents()).toEqual([-1, -1, -1, 1, 1, 1]);
     const empty = createNavlibViewAccessors(() => deps(camera, makeScene(false)));
     expect(empty.getModelExtents()).toBeNull();
+  });
+
+  it('sizes the model to a fixed physical scale, whatever the canvas units', () => {
+    const camera = new PerspectiveCamera();
+    const acc = createNavlibViewAccessors(() => deps(camera, makeScene(true)));
+    // makeScene(true) is a 2-unit cube, half-diagonal sqrt(3); the factor maps
+    // that radius to the target metre scale, so a bigger model reports a smaller
+    // factor and the driver sees every model at the same physical size.
+    expect(acc.getUnitsToMeters()).toBeCloseTo(TARGET_MODEL_METERS / Math.sqrt(3), 6);
+    // An empty scene, or no active canvas, falls back to identity — never 0.
+    expect(createNavlibViewAccessors(() => deps(camera, makeScene(false))).getUnitsToMeters()).toBe(
+      1
+    );
+    expect(createNavlibViewAccessors(() => null).getUnitsToMeters()).toBe(1);
   });
 
   it('hit-tests solid meshes only, and survives drei fat lines in the scene', () => {
@@ -400,7 +413,7 @@ describe('driver-written poses', () => {
     expect(camera.position.distanceTo(centre)).toBeLessThan(150);
   });
 
-  it('keeps the model in frame while the driver keeps panning', () => {
+  it("applies the driver's pan faithfully, leaving framing to the driver", () => {
     const camera = new PerspectiveCamera(50, 1, 0.1, 4000);
     camera.up.set(0, 0, 1);
     camera.position.set(0, -300, 200);
@@ -414,13 +427,10 @@ describe('driver-written poses', () => {
       d.controls.update();
       pose = acc.getViewMatrix();
     }
-    camera.updateMatrixWorld(true);
-    const frustum = new Frustum().setFromProjectionMatrix(
-      new Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
-    );
-    expect(frustum.intersectsBox(computeContentBox(scene))).toBe(true);
-    // The drive asked for 1600 units of travel; the leash stopped it far short.
-    expect(camera.position.x).toBeLessThan(400);
+    // No app-side leash: the driver keeps the model in view from getModelExtents
+    // and the frustum, so the full driven travel lands on the camera rather than
+    // being pulled back (which is what cancelled motion mid-gesture in #4041).
+    expect(camera.position.x).toBeGreaterThan(1000);
   });
 
   it('hands a level pose to the mouse on world up, just off the pole', () => {
