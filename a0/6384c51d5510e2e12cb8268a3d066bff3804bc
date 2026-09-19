@@ -1,0 +1,60 @@
+src/i18n/locales/it.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/ja.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/es.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.test.tsx
+  s_e56a2f2aca30d6::t_6e69179b18ec15 77-83
+src/i18n/locales/fr.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/shared/utils/cutoutOpenSides.ts
+  s_e56a2f2aca30d6::t_6e69179b18ec15 42-45
+src/features/whats-new/entries.ts
+  s_e56a2f2aca30d6::t_e09bafb3d86f48 20
+src/i18n/locales/en.ts
+  s_e56a2f2aca30d6::t_6e69179b18ec15 2983
+  s_e56a2f2aca30d6::t_e199d41612337a 2984
+src/i18n/locales/nb.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/ko.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/nl.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/uk.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/zh-CN.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/de.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/shared/utils/cutoutOpenSides.test.ts
+  s_e56a2f2aca30d6::t_6e69179b18ec15 52-69
+src/i18n/locales/cs.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/pt-BR.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/sv.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.tsx
+  s_e56a2f2aca30d6::t_6e69179b18ec15 30,32
+src/i18n/locales/pl.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 869
+src/i18n/locales/ka.json
+  s_e56a2f2aca30d6::t_6e69179b18ec15 2544
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a06384c51d5510e2e12cb8268a3d066bff3804bc",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
