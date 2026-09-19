@@ -1,129 +1,129 @@
-src/features/bin-designer/constants/paramMigrationCutouts.ts
-  s_e56a2f2aca30d6::t_66bad631b88abf 13
-  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 118-134
-api/lib/communityExampleParamHashes.ts
-  s_e56a2f2aca30d6::t_8da34df8fee329 27
-src/shared/utils/lipGapPlan.test.ts
-  s_e56a2f2aca30d6::t_d7d99a6539d87e 476-507
-  s_e56a2f2aca30d6::t_2165a42114df5d 508-516
-src/i18n/locales/pl.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/features/bin-designer/components/panel/CutoutsSection/renderer/OpenSideOverlay.test.tsx
-  s_e56a2f2aca30d6::t_026796ebfcf4cd 1-8
-src/i18n/locales/zh-CN.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/features/bin-designer/constants/paramMigration.test.ts
-  s_e56a2f2aca30d6::t_d7d99a6539d87e 1556-1578
-src/features/bin-designer/README.md
-  s_e56a2f2aca30d6::t_578f033cf5a9eb 161
-  s_e56a2f2aca30d6::t_bbb92d0ea64cfe 158-160,162-164
-src/shared/types/bin.ts
-  s_e56a2f2aca30d6::t_dd42f78a2b6dae 57,242
-src/i18n/locales/uk.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/shared/utils/lipGapPlan.ts
+  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 39,79,278-282
+  s_e56a2f2aca30d6::t_a7c4e8601fcb03 283
 src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.tsx
   s_e56a2f2aca30d6::t_ef049f54c62a52 1-96
+src/i18n/locales/de.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/features/bin-designer/components/panel/CutoutsSection/renderer/openSideOverlayGeometry.test.ts
+  s_e56a2f2aca30d6::t_c7ff8570def695 27,34-40,60
+  s_e56a2f2aca30d6::t_a79334de1670f3 30-31
+  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 49-53
+  s_e56a2f2aca30d6::t_fd5a59e016c14a 1-26,28-29,32-33,41-48,54-59,61-62
 src/i18n/locales/ko.json
   s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/features/generation/worker/generators/scenarios/openSides.ts
-  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 41-83,100-103,123-129,264-272,277-278
-  s_e56a2f2aca30d6::t_cb780d73f8da62 116-118,134,215
-  s_e56a2f2aca30d6::t_c94cfd474508e6 1-40,84-99,104-115,119-122,130-133,135-214,216-263,273-276,279-297
-src/i18n/locales/es.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/features/generation/worker/generators/cutoutBuilder.ts
-  s_e56a2f2aca30d6::t_bf08a392a5efc8 38-43,1176,1327-1329,1348-1427,1429-1439,1454,1457,1474
-  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 1428
-public/schema/bin-design.schema.json
-  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 697-706
-src/i18n/locales/nl.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/features/bin-designer/utils/lidCompatibility.ts
-  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 81,422-433,780
-src/i18n/locales/pt-BR.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/features/generation/worker/generators/scenarios/index.ts
-  s_e56a2f2aca30d6::t_c94cfd474508e6 63,123
-src/i18n/locales/fr.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/i18n/locales/ka.json
-  s_e56a2f2aca30d6::t_3ae39fd2401a0a 1888,2533-2546,3752-3753
-src/features/generation/worker/generators/binGenerator.export.openSides.test.ts
-  s_e56a2f2aca30d6::t_c94cfd474508e6 1-5
-src/features/bin-designer/components/panel/CutoutsSection/renderer/openSideOverlayGeometry.ts
-  s_e56a2f2aca30d6::t_026796ebfcf4cd 1-3,9-15,19-39,41-48,50-51,53-54,56-57,59-73
-  s_e56a2f2aca30d6::t_c7ff8570def695 4-8,16-18,40,49,52,55,58
-src/features/bin-designer/types/cutout.ts
-  s_e56a2f2aca30d6::t_dd42f78a2b6dae 311-319,475-481
-  s_e56a2f2aca30d6::t_21c061e5ead71f 482
-api/lib/designerValidation.test.ts
-  s_e56a2f2aca30d6::t_d7d99a6539d87e 1532-1552
-src/features/bin-designer/components/panel/CutoutsSection/renderer/OpenSideOverlay.tsx
-  s_e56a2f2aca30d6::t_026796ebfcf4cd 1-103
-scripts/schema/bounds.test.ts
-  s_e56a2f2aca30d6::t_25cac1ae31e5ed 55,124
-src/features/whats-new/latest.ts
-  s_e56a2f2aca30d6::t_bbb92d0ea64cfe 9
-src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.test.tsx
-  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 64-95
-  s_e56a2f2aca30d6::t_57cf1c0be7b356 1-63,96-102
-src/shared/utils/cutoutOpenSides.ts
-  s_e56a2f2aca30d6::t_70598a6692d177 1-136
-src/i18n/locales/ja.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/features/bin-designer/types/index.ts
-  s_e56a2f2aca30d6::t_dd42f78a2b6dae 219,239
-src/features/generation/worker/generators/binGenerator.scenario.openSides.test.ts
-  s_e56a2f2aca30d6::t_c94cfd474508e6 1-5
-docs/schemas/constraints.md
-  s_e56a2f2aca30d6::t_25cac1ae31e5ed 112
-src/features/bin-designer/data/examples/indexBlock.ts
-  s_e56a2f2aca30d6::t_c94cfd474508e6 1-67
-src/i18n/locales/en.ts
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 2971-2979,2982,2985-2986,4474
-  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 2233-2234,2980-2981,2983-2984,4475-4476
-src/shared/schema/binContentKeys.ts
-  s_e56a2f2aca30d6::t_dd42f78a2b6dae 181
-src/i18n/locales/cs.json
+src/i18n/locales/it.json
   s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
 src/shared/utils/cutoutOpenSides.test.ts
   s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 54,66-193
-  s_e56a2f2aca30d6::t_3387f6fd4552dd 1-53,55-65,194-195
-api/lib/designerCutoutValidation.ts
-  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 13-14,90-101
-  s_e56a2f2aca30d6::t_42fcd8e9d8e7ec 102
-src/i18n/locales/nb.json
+  s_e56a2f2aca30d6::t_6e8c26ba7332fc 1-53,55-65,194-195
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e56a2f2aca30d6::t_bf08a392a5efc8 38-43,1176,1327-1329,1348-1427,1429-1439,1454,1457,1474
+  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 1428
+src/shared/utils/cutoutOpenSides.ts
+  s_e56a2f2aca30d6::t_70598a6692d177 1-136
+src/i18n/locales/uk.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/features/bin-designer/components/panel/CutoutsSection/renderer/OpenSideOverlay.test.tsx
+  s_e56a2f2aca30d6::t_026796ebfcf4cd 1-8
+src/features/bin-designer/types/cutout.ts
+  s_e56a2f2aca30d6::t_21c061e5ead71f 482
+  s_e56a2f2aca30d6::t_dd42f78a2b6dae 311-319,475-481
+src/i18n/locales/ka.json
+  s_e56a2f2aca30d6::t_3ae39fd2401a0a 1888,2533-2546,3752-3753
+src/i18n/locales/cs.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/i18n/locales/es.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/i18n/locales/pt-BR.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/shared/schema/binContentKeys.ts
+  s_e56a2f2aca30d6::t_dd42f78a2b6dae 181
+src/i18n/locales/fr.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+docs/schemas/constraints.md
+  s_e56a2f2aca30d6::t_25cac1ae31e5ed 112
+src/features/bin-designer/components/panel/CutoutsSection/renderer/openSideOverlayGeometry.ts
+  s_e56a2f2aca30d6::t_c7ff8570def695 4-8,16-18,40,49,52,55,58
+  s_e56a2f2aca30d6::t_026796ebfcf4cd 1-3,9-15,19-39,41-48,50-51,53-54,56-57,59-73
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_e56a2f2aca30d6::t_2712da565b3e0b 17,454
+  s_e56a2f2aca30d6::t_026796ebfcf4cd 455
+  s_e56a2f2aca30d6::t_b166096527e08f 456
+src/features/whats-new/latest.ts
+  s_e56a2f2aca30d6::t_bbb92d0ea64cfe 9
+scripts/schema/bounds.test.ts
+  s_e56a2f2aca30d6::t_25cac1ae31e5ed 55,124
+src/features/generation/worker/generators/binGenerator.export.openSides.test.ts
+  s_e56a2f2aca30d6::t_c94cfd474508e6 1-5
+src/i18n/locales/en.ts
+  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 2233-2234,2980-2981,2983-2984,4475-4476
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 2971-2979,2982,2985-2986,4474
+src/features/whats-new/entries.ts
+  s_e56a2f2aca30d6::t_bbb92d0ea64cfe 17-25
+  s_e56a2f2aca30d6::t_752d0569afbdc5 16
+src/i18n/locales/sv.json
   s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
 src/features/bin-designer/data/examples/index.ts
   s_e56a2f2aca30d6::t_c94cfd474508e6 10,20
-src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
-  s_e56a2f2aca30d6::t_026796ebfcf4cd 455
-  s_e56a2f2aca30d6::t_2712da565b3e0b 17,454
-  s_e56a2f2aca30d6::t_39e75b6e69cc30 456
-src/i18n/locales/de.json
+api/lib/designerValidation.test.ts
+  s_e56a2f2aca30d6::t_d7d99a6539d87e 1532-1552
+src/i18n/locales/nl.json
   s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/i18n/locales/sv.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
-src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
-  s_e56a2f2aca30d6::t_2712da565b3e0b 28,281-284
-  s_e56a2f2aca30d6::t_10ec7a3baafcce 285-288
-src/i18n/locales/it.json
-  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/features/generation/worker/generators/binGenerator.scenario.openSides.test.ts
+  s_e56a2f2aca30d6::t_c94cfd474508e6 1-5
+src/features/bin-designer/data/examples/indexBlock.ts
+  s_e56a2f2aca30d6::t_c94cfd474508e6 1-67
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.test.tsx
+  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 64-95
+  s_e56a2f2aca30d6::t_022b3749439904 1-63,96-102
 docs/schemas/bin-design.md
   s_e56a2f2aca30d6::t_25cac1ae31e5ed 479-520
-src/features/whats-new/entries.ts
-  s_e56a2f2aca30d6::t_bbb92d0ea64cfe 17-25
-  s_e56a2f2aca30d6::t_211ac4d6f5375a 16
-src/features/bin-designer/components/panel/CutoutsSection/renderer/openSideOverlayGeometry.test.ts
-  s_e56a2f2aca30d6::t_a79334de1670f3 30-31
-  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 49-53
-  s_e56a2f2aca30d6::t_c7ff8570def695 27,34-40,60
-  s_e56a2f2aca30d6::t_bb4e7b02a88f59 1-26,28-29,32-33,41-48,54-59,61-62
-src/shared/utils/lipGapPlan.ts
-  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 39,79,278-282
-  s_e56a2f2aca30d6::t_d4779faec955c4 283
+src/shared/utils/lipGapPlan.test.ts
+  s_e56a2f2aca30d6::t_d7d99a6539d87e 476-507
+  s_e56a2f2aca30d6::t_aa6fd27f6de6b0 508-516
+src/shared/types/bin.ts
+  s_e56a2f2aca30d6::t_dd42f78a2b6dae 57,242
+src/features/bin-designer/constants/paramMigrationCutouts.ts
+  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 118-134
+  s_e56a2f2aca30d6::t_66bad631b88abf 13
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_e56a2f2aca30d6::t_2712da565b3e0b 28,281-284
+  s_e56a2f2aca30d6::t_6fb79fee1d4cbf 285-288
+api/lib/designerCutoutValidation.ts
+  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 13-14,90-101
+  s_e56a2f2aca30d6::t_ff0b39af16c53d 102
+src/features/bin-designer/components/panel/CutoutsSection/renderer/OpenSideOverlay.tsx
+  s_e56a2f2aca30d6::t_026796ebfcf4cd 1-103
+src/features/generation/worker/generators/scenarios/openSides.ts
+  s_e56a2f2aca30d6::t_cb780d73f8da62 116-118,134,215
+  s_e56a2f2aca30d6::t_c94cfd474508e6 1-40,84-99,104-115,119-122,130-133,135-214,216-263,273-276,279-297
+  s_e56a2f2aca30d6::t_0b5cf60f4bb3f2 41-83,100-103,123-129,264-272,277-278
+public/schema/bin-design.schema.json
+  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 697-706
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_e56a2f2aca30d6::t_94a5ad0f78fb5e 81,422-433,780
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_e56a2f2aca30d6::t_d7d99a6539d87e 1556-1578
+src/features/bin-designer/README.md
+  s_e56a2f2aca30d6::t_bbb92d0ea64cfe 158-160,162-164
+  s_e56a2f2aca30d6::t_578f033cf5a9eb 161
+src/features/generation/worker/generators/scenarios/index.ts
+  s_e56a2f2aca30d6::t_c94cfd474508e6 63,123
+src/features/bin-designer/types/index.ts
+  s_e56a2f2aca30d6::t_dd42f78a2b6dae 219,239
+src/i18n/locales/zh-CN.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/i18n/locales/ja.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/i18n/locales/nb.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+src/i18n/locales/pl.json
+  s_e56a2f2aca30d6::t_d2c71e8e3579bf 858-871,1214,2086-2087
+api/lib/communityExampleParamHashes.ts
+  s_e56a2f2aca30d6::t_8da34df8fee329 27
 src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.openSides.test.ts.snap
-  s_e56a2f2aca30d6::t_f00cead05180c6 1-21
+  s_e56a2f2aca30d6::t_a28826ad25bf08 1-21
 ---
 {
   "schema_version": "authorship/3.0.0",
