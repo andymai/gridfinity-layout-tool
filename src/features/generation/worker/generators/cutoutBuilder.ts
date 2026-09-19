@@ -35,7 +35,12 @@ import {
 import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, CutoutArrayConfig, PathPoint, GroupOp } from '@/shared/types/bin';
-import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
+import { DEFAULT_KNIFE_SPEC, DEFAULT_SCOOP_EDGES } from '@/shared/types/bin';
+import {
+  effectiveOpenSides,
+  localEdgeFacing,
+  rectangleWorldHalfExtents,
+} from '@/shared/utils/cutoutOpenSides';
 import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
 import {
@@ -1168,7 +1173,7 @@ export function buildCutoutCuts(
       labelledInstances(c).some((i) => i.label.trim() !== '')
   );
   if (buildable.length === 0 && !hasMeshLabel) return { cutTools: [], fuseTools: [] };
-  params = { ...params, cutouts: buildable };
+  params = { ...params, cutouts: buildable.map((c) => withOpenSideScoopsOff(c, params)) };
 
   // Cutout x,y are relative to interior bottom-left corner (0,0).
   // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
@@ -1319,18 +1324,9 @@ export function buildCutoutCuts(
   // an interior-height box would shear it off.
   const cutTools = clipToInterior(rawShapes, innerW, innerD, solidSurfaceZ, rawTags, interiorTaper);
   if (!interiorTaper) {
-    cutTools.push(
-      ...buildKnifeBreachChannels(
-        params,
-        innerW,
-        innerD,
-        solidSurfaceZ,
-        wallHeight,
-        originX,
-        originY,
-        cavityTag
-      )
-    );
+    const frame = { innerW, innerD, solidSurfaceZ, wallHeight, originX, originY };
+    cutTools.push(...buildKnifeBreachChannels(params, frame, cavityTag));
+    cutTools.push(...buildOpenSideChannels(params, frame, cavityTag));
   }
   const fuseTools =
     rawFuseShapes.length > 0
@@ -1350,6 +1346,98 @@ export function buildCutoutCuts(
 const KNIFE_BREACH_REACH_MARGIN = 50;
 
 /**
+ * How far a square-cornered channel reaches back into its pocket so the union
+ * has a shared volume rather than a coincident face (mm). A rounded pocket
+ * overlaps by its corner radius instead, which the channel's square end covers.
+ */
+const OPEN_SIDE_OVERLAP_MM = 0.5;
+
+/** The body frame every breach channel is positioned in. */
+interface BreachFrame {
+  readonly innerW: number;
+  readonly innerD: number;
+  readonly solidSurfaceZ: number;
+  readonly wallHeight: number;
+  readonly originX: number;
+  readonly originY: number;
+}
+
+/**
+ * A breach runs floor to rim: the pocket's own depth, the fill-to-top offset,
+ * the collar and the stacking lip, plus the rim clearance so the cut clears the
+ * lip's top face rather than grazing it.
+ */
+function breachHeight(params: BinParams, frame: BreachFrame, effectiveDepth: number): number {
+  const collar = params.extraWallHeightMm ?? 0;
+  return (
+    effectiveDepth +
+    (frame.wallHeight - frame.solidSurfaceZ) +
+    collar +
+    LIP_HEIGHT +
+    CUT_RIM_CLEARANCE
+  );
+}
+
+/**
+ * A rectangle with an open side keeps its scoop everywhere except the edge that
+ * leaves through the wall: a fillet there would raise the pocket floor into a
+ * hump just before the channel drops it back to floor level at the wall.
+ */
+function withOpenSideScoopsOff(cutout: Cutout, params: BinParams): Cutout {
+  const sides = effectiveOpenSides(cutout, params);
+  if (sides.length === 0) return cutout;
+  const edges = { ...(cutout.scoopEdges ?? DEFAULT_SCOOP_EDGES) };
+  for (const side of sides) edges[localEdgeFacing(side, cutout.rotation)] = false;
+  return { ...cutout, scoopEdges: edges };
+}
+
+/**
+ * Open-side channels for rectangle cutouts: the pocket's own cross-section,
+ * continued straight out through each wall it opens onto, floor-level up
+ * through the rim, collar and stacking lip, so a part slides in from the side.
+ *
+ * Deliberately NOT passed through `clipToInterior` — breaching the wall is the
+ * point. Gated by `effectiveOpenSides`, which the lip-gap plan reads too, so a
+ * rail never yields to a notch that was not cut. The tapered host is refused
+ * at the call site, where the knife breach is refused for the same reason.
+ */
+function buildOpenSideChannels(
+  params: BinParams,
+  frame: BreachFrame,
+  cavityTag: (cutout: Cutout) => number
+): Shape3D[] {
+  const channels: Shape3D[] = [];
+  const reach = frame.innerW + frame.innerD + KNIFE_BREACH_REACH_MARGIN;
+  for (const master of params.cutouts) {
+    const sides = effectiveOpenSides(master, params);
+    if (sides.length === 0) continue;
+    for (const cutout of master.array ? expandCutoutArray(master) : [master]) {
+      const effectiveDepth = Math.min(cutout.cutDepth, frame.solidSurfaceZ);
+      if (effectiveDepth <= 0) continue;
+      const { halfX, halfY } = rectangleWorldHalfExtents(cutout);
+      const cx = frame.originX + cutout.x + cutout.width / 2;
+      const cy = frame.originY + cutout.y + cutout.depth / 2;
+      const overlap = Math.max(cutout.cornerRadius, OPEN_SIDE_OVERLAP_MM);
+      const height = breachHeight(params, frame, effectiveDepth);
+      const z = frame.solidSurfaceZ - effectiveDepth + height / 2;
+      for (const side of sides) {
+        const alongX = side === 'left' || side === 'right';
+        const near = (alongX ? halfX : halfY) - overlap;
+        const sign = side === 'right' || side === 'back' ? 1 : -1;
+        const offset = sign * (near + reach / 2);
+        const at: [number, number, number] = alongX ? [cx + offset, cy, z] : [cx, cy + offset, z];
+        const channel = alongX
+          ? box(reach, 2 * halfY, height, { at })
+          : box(2 * halfX, reach, height, { at });
+        setShapeOrigin(channel, cavityTag(master));
+        channels.push(channel);
+      }
+    }
+  }
+  return channels;
+}
+
+/**
  * Open-end channels for `knifeSlot` cutouts: a straight continuation of the
  * slot from its open end out through the perimeter wall, floor-level up
  * through the rim, collar and stacking lip, so the bolster stops at the block
@@ -1363,16 +1451,11 @@ const KNIFE_BREACH_REACH_MARGIN = 50;
  */
 function buildKnifeBreachChannels(
   params: BinParams,
-  innerW: number,
-  innerD: number,
-  solidSurfaceZ: number,
-  wallHeight: number,
-  originX: number,
-  originY: number,
+  frame: BreachFrame,
   cavityTag: (cutout: Cutout) => number
 ): Shape3D[] {
+  const { innerW, innerD, solidSurfaceZ, originX, originY } = frame;
   const channels: Shape3D[] = [];
-  const collar = params.extraWallHeightMm ?? 0;
   for (const master of params.cutouts) {
     if (master.shape !== 'knifeSlot' || master.groupId !== null) continue;
     const openEnd = (master.knife ?? DEFAULT_KNIFE_SPEC).openEnd;
@@ -1388,8 +1471,7 @@ function buildKnifeBreachChannels(
       // no seam; the cap's semicircle lies inside the channel's square end.
       const nearEdge = cutout.width / 2 - r;
       const centerX = (nearEdge + reach / 2) * (openEnd === 'end' ? 1 : -1);
-      const height =
-        effectiveDepth + (wallHeight - solidSurfaceZ) + collar + LIP_HEIGHT + CUT_RIM_CLEARANCE;
+      const height = breachHeight(params, frame, effectiveDepth);
       let shape: Shape3D = box(reach, cutout.depth, height, { at: [centerX, 0, height / 2] });
       if (cutout.rotation !== 0) {
         const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });

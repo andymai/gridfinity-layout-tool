@@ -78,6 +78,7 @@ export type LidCompatibilityId =
   | 'wallCutouts'
   | 'wallCutoutsAllSides'
   | 'knifeSlots'
+  | 'openSides'
   | 'wallPattern'
   | 'shortBin'
   | 'tallLidShortBin'
@@ -415,6 +416,18 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     const knifeSides = lipGapSides(gaps, 'knifeSlot');
     if (knifeSides.length > 0) {
       issues.push({ id: 'knifeSlots', severity: 'warning', sides: knifeSides });
+    }
+  }
+
+  // 1c. Open-sided pockets. A rectangle that runs out through a wall takes
+  //    its whole span out of that wall's lip, floor to rim; the rails segment
+  //    around the opening as they do for a cutout window. Never a blocker on
+  //    its own: a pocket as wide as the wall is the cutout blocker's case
+  //    (`lipClearedSides`), which reads every source.
+  if (lipHoldsLid && !isPolygon) {
+    const openSides = lipGapSides(gaps, 'openSide');
+    if (openSides.length > 0) {
+      issues.push({ id: 'openSides', severity: 'warning', sides: openSides });
     }
   }
 
@@ -764,6 +777,7 @@ const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set([
   'compartmentDividers',
   'wallCutouts',
   'knifeSlots',
+  'openSides',
   'handles',
   // The entry wall is where the plate goes IN, not a wall to switch anything
   // off on. A sliding lid has no rails for this set to govern, so listing it is

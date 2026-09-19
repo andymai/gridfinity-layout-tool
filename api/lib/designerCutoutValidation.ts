@@ -10,6 +10,8 @@ import { HEX_COLOR_REGEX } from './designerColorValidation.js';
 import { validateTextStyleOverride, LABEL_TEXT_MAX_LENGTH } from './designerTextValidation.js';
 
 const VALID_CUTOUT_COLOR_SCOPES = ['floor', 'floorAndWalls'] as const;
+/** Mirrors the client `CUTOUT_OPEN_SIDES`. */
+const VALID_CUTOUT_OPEN_SIDES = ['front', 'back', 'left', 'right'] as const;
 
 export const VALID_CUTOUT_FILL_REFERENCES = ['rim', 'floor'] as const;
 
@@ -84,6 +86,19 @@ export function validateCutouts(value: unknown): string | null {
       )
     ) {
       return `cutouts[${i}].leanDeg must be a number within ±${CONSTRAINTS.MAX_CUTOUT_LEAN_DEG}`;
+    }
+    // Open sides name walls the worker breaches, so an unknown entry must stop
+    // here rather than ride into storage as an inert string.
+    if (c.openSides !== undefined) {
+      if (!Array.isArray(c.openSides) || c.openSides.length > VALID_CUTOUT_OPEN_SIDES.length) {
+        return `cutouts[${i}].openSides must be an array of at most ${VALID_CUTOUT_OPEN_SIDES.length} sides`;
+      }
+      for (let k = 0; k < c.openSides.length; k++) {
+        const entry = (c.openSides as unknown[])[k];
+        if (!VALID_CUTOUT_OPEN_SIDES.includes(entry as (typeof VALID_CUTOUT_OPEN_SIDES)[number])) {
+          return `cutouts[${i}].openSides[${k}] must be one of: ${VALID_CUTOUT_OPEN_SIDES.join(', ')}`;
+        }
+      }
     }
     // Socket fields drive geometry the client regenerates, but `labelIcon`
     // also selects a silhouette by name, so it is checked against the same

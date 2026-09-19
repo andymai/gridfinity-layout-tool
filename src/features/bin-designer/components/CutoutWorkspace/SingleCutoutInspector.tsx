@@ -25,6 +25,7 @@ import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutKnifeControls } from './CutoutKnifeControls';
+import { CutoutOpenSidesControls } from './CutoutOpenSidesControls';
 import { CutoutEngraveLabelControls } from './CutoutEngraveLabelControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { Collapsible, SliderInput, NumberField } from '@/design-system';
@@ -273,6 +274,14 @@ export function SingleCutoutInspector({
                   key={cutout.id}
                   cutout={cutout}
                   preview={preview.get(cutout.id)}
+                  disabled={disabled}
+                  onUpdate={(patch) => onUpdate(cutout.id, patch)}
+                />
+              )}
+              {/* A lid's plate cuts clean through, so it has no wall to open. */}
+              {cutout.shape === 'rectangle' && !throughOnly && (
+                <CutoutOpenSidesControls
+                  cutout={cutout}
                   disabled={disabled}
                   onUpdate={(patch) => onUpdate(cutout.id, patch)}
                 />

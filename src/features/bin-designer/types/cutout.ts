@@ -308,6 +308,15 @@ export const MAX_GROUP_NAME_LENGTH = 60;
  */
 export const MAX_CUTOUT_GROUP_NAMES = 1000;
 
+/**
+ * A perimeter wall a rectangle pocket runs out through. Named in the BIN's
+ * frame, not the cutout's: the canvas shows the bin's walls, and a rotated
+ * rectangle keeps opening through the wall the user pointed at.
+ */
+export type CutoutOpenSide = 'front' | 'back' | 'left' | 'right';
+
+export const CUTOUT_OPEN_SIDES = ['front', 'back', 'left', 'right'] as const;
+
 /** Per-edge enable flags for split-axis cutout scoops, in the cutout's local frame. */
 export interface CutoutScoopEdges {
   readonly left: boolean;
@@ -463,6 +472,14 @@ export interface Cutout {
    * Applies only to ungrouped rectangle cutouts; ignored for circles/paths and grouped cutouts.
    */
   readonly scoopEdges?: CutoutScoopEdges;
+  /**
+   * Bin walls the pocket opens through, floor to rim, so a part slides in from
+   * the side (an index block for a framing square, a ruler channel). Rectangles
+   * on a solid, untapered host only, ungrouped, upright, rotated in 90° steps;
+   * anywhere else the pocket stays enclosed and the editor says why
+   * (`openSideBlocker`). Absent or empty = enclosed on every side.
+   */
+  readonly openSides?: CutoutOpenSide[];
   /**
    * Editor-only display name shown in the shape list. Optional —
    * unset rows fall back to a label derived from the shape and its size, so
