@@ -694,6 +694,16 @@
         "scoopEdges": {
           "$ref": "#/$defs/CutoutScoopEdges"
         },
+        "openSides": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 4,
+          "items": {
+            "enum": ["front", "back", "left", "right"],
+            "x-constant": { "enum": "CUTOUT_OPEN_SIDES" }
+          },
+          "description": "Bin walls a rectangle pocket opens through, floor to rim, so a part slides in from the side. Only built on a solid, untapered bin for an ungrouped upright rectangle rotated in 90° steps; otherwise the pocket stays enclosed. Omit for enclosed."
+        },
         "name": {
           "type": "string",
           "description": "Display name in the cutout list."

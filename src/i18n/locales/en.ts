@@ -2230,6 +2230,8 @@ const en: Record<string, string> = {
     'The wall cutouts leave no lip on any wall, so the lid has nothing to mate with. Narrow them, or turn some off.',
   'binDesigner.lid.compat.knifeSlots':
     'Each knife exit notches the lip where the blade leaves the block. The click rail on {sides} goes around every notch and takes the wall that is left.',
+  'binDesigner.lid.compat.openSides':
+    'An open-sided pocket takes its whole span out of the lip where it leaves the bin. The click rail on {sides} goes around every opening and takes the wall that is left.',
   'binDesigner.lid.compat.wallPattern':
     'Wall pattern can perforate the lip, so the lid may sit loosely.',
   'binDesigner.lid.compat.shortBin':
@@ -2966,6 +2968,22 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.scoopEdgeRightAria': 'Toggle scoop on right wall',
   'binDesigner.cutouts.scoopEdgeFrontAria': 'Toggle scoop on front wall',
   'binDesigner.cutouts.scoopEdgeBackAria': 'Toggle scoop on back wall',
+  'binDesigner.cutouts.openSides': 'Open through wall',
+  'binDesigner.cutouts.openSide.front': 'Front',
+  'binDesigner.cutouts.openSide.back': 'Back',
+  'binDesigner.cutouts.openSide.left': 'Left',
+  'binDesigner.cutouts.openSide.right': 'Right',
+  'binDesigner.cutouts.openSide.frontAria': 'Open the pocket through the front wall',
+  'binDesigner.cutouts.openSide.backAria': 'Open the pocket through the back wall',
+  'binDesigner.cutouts.openSide.leftAria': 'Open the pocket through the left wall',
+  'binDesigner.cutouts.openSide.rightAria': 'Open the pocket through the right wall',
+  'binDesigner.cutouts.openSidesHint':
+    'The pocket runs out through each open wall, floor to rim, so a part slides in from the side.',
+  'binDesigner.cutouts.openSidesBlocked.grouped': 'Ungroup the shape to open a side.',
+  'binDesigner.cutouts.openSidesBlocked.rotation':
+    'Open sides need a rotation of 0, 90, 180 or 270 degrees.',
+  'binDesigner.cutouts.openSidesBlocked.lean': 'A leaned pocket cannot open through a wall.',
+  'binDesigner.cutouts.openSidesBlocked.taper': 'Not available on a tapered bin.',
   'binDesigner.cutouts.rotation': 'Rotation',
   'binDesigner.cutouts.alignLeft': 'Align left',
   'binDesigner.cutouts.alignRight': 'Align right',
@@ -4453,6 +4471,9 @@ const en: Record<string, string> = {
   'binExamples.knifeBlockChefTrio.name': 'Knife Block',
   'binExamples.knifeBlockChefTrio.description':
     'A 6×1 in-drawer knife block holding a chef, santoku, and paring knife, with a matching handle rest generated alongside.',
+  'binExamples.cornerIndexBlock.name': 'Corner Index Block',
+  'binExamples.cornerIndexBlock.description':
+    "A solid 2x2 block with two pockets that run out through adjacent walls, so a framing square's corner drops in and both arms lie flat past the block. Print one per corner.",
 
   // Bin example presets — hero showcases
   'binExamples.heroMulticolorOrganizer.name': 'Multicolor Organizer',

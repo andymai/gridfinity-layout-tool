@@ -14,6 +14,7 @@ import { TaperBand3D } from './TaperBand3D';
 import { ReferenceOutline3D } from './ReferenceOutline3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
 import { KnifeSlotOverlay } from './KnifeSlotOverlay';
+import { OpenSideOverlay } from './OpenSideOverlay';
 import { dimmedBinColor } from './dimmedBinColor';
 import { isWithin } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
@@ -449,6 +450,9 @@ export function SceneContent({
 
       {/* Knife silhouettes: the handle each open-ended knife slot lets past the wall. */}
       <KnifeSlotOverlay cutouts={cutouts} />
+
+      {/* Open-side channels: each pocket that runs out through a wall, drawn to the wall's outer face. */}
+      {!lidWindow && <OpenSideOverlay cutouts={cutouts} binWidth={binWidth} binDepth={binDepth} />}
 
       {/* Drawing preview (corner-to-corner) */}
       {drawingPreview && (

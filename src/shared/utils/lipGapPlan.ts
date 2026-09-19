@@ -36,6 +36,7 @@
 import type { BinParams, HandleConfig, KnifeSpec, LidCompatibilitySide } from '@/shared/types/bin';
 import { LID_MIN_RAIL_LENGTH, DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { openSideWallExits } from '@/shared/utils/cutoutOpenSides';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import {
@@ -75,7 +76,7 @@ const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
 export const LIP_GAP_RAIL_MARGIN = 1;
 
 /** What removed the lip. The compatibility panel reports each separately. */
-export type LipGapSource = 'cutout' | 'handle' | 'knifeSlot';
+export type LipGapSource = 'cutout' | 'handle' | 'knifeSlot' | 'openSide';
 
 /** One stretch of one wall where the stacking lip has been cut away. */
 export interface LipGap {
@@ -273,6 +274,12 @@ function wallGaps(
     for (const exit of knifeSlotWallExits(params, dims.innerW, dims.innerD)) {
       if (exit.side !== side) continue;
       out.push({ source: 'knifeSlot', centre: exit.centre, width: exit.width });
+    }
+    // Open-sided rectangles breach the same way: straight sides through the
+    // lip, so the opening at the lip is the pocket's own span across the wall.
+    for (const exit of openSideWallExits(params, dims.innerW, dims.innerD)) {
+      if (exit.side !== side) continue;
+      out.push({ source: 'openSide', centre: exit.centre, width: exit.width });
     }
   }
 

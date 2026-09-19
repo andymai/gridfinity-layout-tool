@@ -1553,6 +1553,29 @@ describe('migrateParams', () => {
       expect(knife && 'handleDiameterMm' in knife).toBe(false);
     });
 
+    it('canonicalizes open sides and drops an empty or unknown set', () => {
+      const rect = (openSides: unknown) =>
+        ({
+          id: 'r',
+          shape: 'rectangle',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          cutDepth: 5,
+          rotation: 0,
+          cornerRadius: 0,
+          label: '',
+          groupId: null,
+          openSides,
+        }) as unknown as BinParams['cutouts'][number];
+      expect(
+        migrateParams({ cutouts: [rect(['right', 'front', 'right', 'up'])] }).cutouts[0].openSides
+      ).toEqual(['front', 'right']);
+      expect('openSides' in migrateParams({ cutouts: [rect([])] }).cutouts[0]).toBe(false);
+      expect('openSides' in migrateParams({ cutouts: [rect('right')] }).cutouts[0]).toBe(false);
+    });
+
     it('leaves a knife already carrying width and height untouched', () => {
       const knife = {
         bladeLengthMm: 205,

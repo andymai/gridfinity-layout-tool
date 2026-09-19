@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`open sides > 2x1x4 open pocket drops the scoop on the opened edge only 1`] = `2816`;
+
+exports[`open sides > 2x1x4 open side is ignored inside a boolean group 1`] = `1460`;
+
+exports[`open sides > 2x1x4 open side is ignored off the 90° grid 1`] = `1556`;
+
+exports[`open sides > 2x1x4 open side is ignored under a tapered wall 1`] = `1740`;
+
+exports[`open sides > 2x1x4 pocket open on two adjacent walls breaches both 1`] = `1574`;
+
+exports[`open sides > 2x1x4 pocket open right breaches the +X wall and lip 1`] = `1556`;
+
+exports[`open sides > 2x1x4 pocket rotated 90° opens through the front wall 1`] = `1556`;
+
+exports[`open sides > 2x1x4 repeat array opens every copy 1`] = `1812`;
+
+exports[`open sides > 2x1x4 solid with an enclosed pocket 1`] = `1556`;
+
+exports[`open sides > corner index block holds a framing square 1`] = `2436`;

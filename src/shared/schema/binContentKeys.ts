@@ -178,6 +178,7 @@ export const CUTOUT_KEYS = [
   'scoopRadiusW',
   'scoopRadiusD',
   'scoopEdges',
+  'openSides',
   'name',
   'locked',
   'hidden',

@@ -473,6 +473,47 @@ describe('railSegmentsClearOfPolygonGaps', () => {
   });
 });
 
+describe('lipGaps: open-side rectangles', () => {
+  function openRect(overrides: Partial<Cutout> = {}): Cutout {
+    return {
+      id: 'o1',
+      shape: 'rectangle',
+      x: 20,
+      y: 30,
+      width: 24,
+      depth: 10,
+      cutDepth: 8,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+      openSides: ['right'],
+      ...overrides,
+    };
+  }
+
+  it('registers an openSide gap the width of the pocket on the wall it leaves through', () => {
+    const gaps = lipGaps(
+      bin({ base: { ...DEFAULT_BIN_PARAMS.base, solid: true }, cutouts: [openRect()] })
+    );
+    const open = gaps.filter((g) => g.source === 'openSide');
+    expect(open).toHaveLength(1);
+    expect(open[0].side).toBe('right');
+    expect(open[0].hi - open[0].lo).toBeCloseTo(10, 5);
+    expect((open[0].lo + open[0].hi) / 2).toBeCloseTo(30 + 5 - INNER / 2, 5);
+  });
+
+  it('registers nothing for a pocket the builder leaves enclosed', () => {
+    const gaps = lipGaps(
+      bin({
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [openRect({ rotation: 45 })],
+      })
+    );
+    expect(gaps.filter((g) => g.source === 'openSide')).toEqual([]);
+  });
+});
+
 describe('knifeSlotWallExits', () => {
   const CHEF = {
     bladeLengthMm: 205,

@@ -1529,6 +1529,27 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('cutout open sides validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+
+    it('accepts any set of the four wall names', () => {
+      expect(withCutouts([{ id: 'a', openSides: ['front', 'right'] }]).valid).toBe(true);
+      expect(withCutouts([{ id: 'a', openSides: [] }]).valid).toBe(true);
+    });
+
+    it('rejects an unknown wall, a non-array, or an over-long list', () => {
+      expect(withCutouts([{ id: 'a', openSides: ['up'] }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', openSides: 'right' }]).valid).toBe(false);
+      expect(
+        withCutouts([{ id: 'a', openSides: ['front', 'front', 'front', 'front', 'front'] }]).valid
+      ).toBe(false);
+    });
+  });
+
   describe('cutout lean validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();

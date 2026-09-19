@@ -60,6 +60,7 @@ import { kumikoWrapping } from './kumikoWrapping';
 import { dividerPatterns } from './dividerPatterns';
 import { floorPatterns } from './floorPatterns';
 import { knifeBlock } from './knifeBlock';
+import { openSides } from './openSides';
 import { cutoutRepeatOverlap } from './cutoutRepeatOverlap';
 import { cutoutLean } from './cutoutLean';
 import { variantOverrides } from './variantOverrides';
@@ -119,6 +120,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...trayBottom,
   ...slideTray,
   ...knifeBlock,
+  ...openSides,
   ...cutoutRepeatOverlap,
   ...cutoutLean,
   ...variantOverrides,

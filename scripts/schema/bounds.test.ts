@@ -52,6 +52,7 @@ import { FLOOR_PATTERN_TYPES } from '@/features/bin-designer/types/floor';
 import { SLIDE_RAIL_MOUNTS } from '@/features/bin-designer/types/slide';
 import {
   CUTOUT_ARRAY_MODES,
+  CUTOUT_OPEN_SIDES,
   CUTOUT_LABEL_MODES,
   GROUP_OPS,
   DEFAULT_CUTOUT_CLEARANCE,
@@ -120,6 +121,7 @@ const SOURCES: Record<string, unknown> = {
   BIN_STYLES,
   CROSS_DIVIDER_STYLES,
   CUTOUT_ARRAY_MODES,
+  CUTOUT_OPEN_SIDES,
   CUTOUT_LABEL_MODES,
   FEET_MODES,
   FLOOR_PATTERN_TYPES,
