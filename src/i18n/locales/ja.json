@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "右の壁を貫通してポケットを開く",
   "binDesigner.cutouts.openSidesHint": "ポケットは開いた各壁を底から縁まで貫通するので、部品を横からスライドして入れられます。",
   "binDesigner.cutouts.openSidesBlocked.grouped": "側面を開くには図形のグループ化を解除してください。",
+  "binDesigner.cutouts.openSidesBlocked.host": "ソリッドの bin だけがポケットを壁を貫通して開けます。",
   "binDesigner.cutouts.openSidesBlocked.rotation": "開いた側面には 0、90、180、270 度のいずれかの回転が必要です。",
   "binDesigner.cutouts.openSidesBlocked.lean": "傾いたポケットは壁を貫通して開けません。",
   "binDesigner.cutouts.openSidesBlocked.taper": "テーパー付きの bin では使用できません。",

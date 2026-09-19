@@ -39,6 +39,10 @@ export function openSideBlocker(cutout: Cutout, host: OpenSideHost): OpenSideBlo
   if (cutout.shape !== 'rectangle') return 'shape';
   if (cutout.groupId !== null) return 'grouped';
   if (cutout.rotation % 90 !== 0) return 'rotation';
+  // A rotate-to-centre radial repeat turns each copy by its own angle, so the
+  // copies do not share a wall-facing edge; the array builder fillets one
+  // master and copies it, which is why this is refused rather than gated per copy.
+  if (cutout.array?.mode === 'radial' && cutout.array.rotateToCenter) return 'rotation';
   if (resolveCutoutLeanDeg(cutout) !== 0) return 'lean';
   if (!host.base.solid) return 'host';
   if (resolveOverhang(isPartialMask(host.cellMask) ? undefined : host.overhang).taper) {

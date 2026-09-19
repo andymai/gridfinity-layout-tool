@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Öppna fickan genom höger vägg",
   "binDesigner.cutouts.openSidesHint": "Fickan går ut genom varje öppen vägg, från botten till kant, så att en del kan skjutas in från sidan.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Dela upp gruppen för att öppna en sida.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Bara en massiv bin kan öppna en ficka genom väggen.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Öppna sidor kräver en rotation på 0, 90, 180 eller 270 grader.",
   "binDesigner.cutouts.openSidesBlocked.lean": "En lutad ficka kan inte öppnas genom en vägg.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Inte tillgängligt på en konisk bin.",

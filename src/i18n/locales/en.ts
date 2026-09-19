@@ -2980,6 +2980,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.openSidesHint':
     'The pocket runs out through each open wall, floor to rim, so a part slides in from the side.',
   'binDesigner.cutouts.openSidesBlocked.grouped': 'Ungroup the shape to open a side.',
+  'binDesigner.cutouts.openSidesBlocked.host':
+    'Only a solid bin can open a pocket through its wall.',
   'binDesigner.cutouts.openSidesBlocked.rotation':
     'Open sides need a rotation of 0, 90, 180 or 270 degrees.',
   'binDesigner.cutouts.openSidesBlocked.lean': 'A leaned pocket cannot open through a wall.',

@@ -74,6 +74,13 @@ describe('CutoutOpenSidesControls', () => {
     expect(screen.getByText('binDesigner.cutouts.openSidesBlocked.rotation')).toBeInTheDocument();
   });
 
+  it('names the host as the reason on a cavity bin', () => {
+    useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS });
+    render(<CutoutOpenSidesControls cutout={rect()} onUpdate={vi.fn()} />);
+    expect(screen.getByLabelText('binDesigner.cutouts.openSide.leftAria')).toBeDisabled();
+    expect(screen.getByText('binDesigner.cutouts.openSidesBlocked.host')).toBeInTheDocument();
+  });
+
   it('names the taper as the reason on a tapered host', () => {
     useDesignerStore.setState((s) => ({
       params: {

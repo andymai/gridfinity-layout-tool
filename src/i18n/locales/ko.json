@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "오른쪽 벽을 관통해 포켓 열기",
   "binDesigner.cutouts.openSidesHint": "포켓이 열린 각 벽을 바닥에서 테두리까지 관통하므로 부품을 옆에서 밀어 넣을 수 있습니다.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "측면을 열려면 도형의 그룹을 해제하세요.",
+  "binDesigner.cutouts.openSidesBlocked.host": "솔리드 bin만 포켓을 벽을 관통해 열 수 있습니다.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "열린 측면은 0, 90, 180, 270도 회전이 필요합니다.",
   "binDesigner.cutouts.openSidesBlocked.lean": "기울어진 포켓은 벽을 관통해 열 수 없습니다.",
   "binDesigner.cutouts.openSidesBlocked.taper": "테이퍼가 있는 bin에서는 사용할 수 없습니다.",

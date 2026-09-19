@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Otwórz kieszeń przez prawą ścianę",
   "binDesigner.cutouts.openSidesHint": "Kieszeń wychodzi przez każdą otwartą ścianę, od dna po krawędź, więc element wsuwa się z boku.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Rozgrupuj kształt, aby otworzyć bok.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Tylko pełny bin może otworzyć kieszeń przez ścianę.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Otwarte boki wymagają obrotu o 0, 90, 180 lub 270 stopni.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Pochylona kieszeń nie może otwierać się przez ścianę.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Niedostępne w binie ze zwężanymi ścianami.",

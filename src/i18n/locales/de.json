@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Tasche durch die rechte Wand öffnen",
   "binDesigner.cutouts.openSidesHint": "Die Tasche läuft durch jede geöffnete Wand vom Boden bis zum Rand hinaus, sodass ein Teil seitlich eingeschoben werden kann.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Gruppierung der Form aufheben, um eine Seite zu öffnen.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Nur ein massiver Bin kann eine Tasche durch die Wand öffnen.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Offene Seiten brauchen eine Drehung von 0, 90, 180 oder 270 Grad.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Eine geneigte Tasche kann sich nicht durch eine Wand öffnen.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Bei einem konischen Bin nicht verfügbar.",

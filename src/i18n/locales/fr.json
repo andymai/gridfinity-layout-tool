@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Ouvrir la poche à travers la paroi droite",
   "binDesigner.cutouts.openSidesHint": "La poche traverse chaque paroi ouverte, du fond au rebord, pour qu’une pièce se glisse par le côté.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Dissociez la forme pour ouvrir un côté.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Seul un bin plein peut ouvrir une poche à travers la paroi.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Les côtés ouverts exigent une rotation de 0, 90, 180 ou 270 degrés.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Une poche inclinée ne peut pas s’ouvrir à travers une paroi.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Indisponible sur un bin conique.",

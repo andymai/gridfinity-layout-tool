@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Apri la tasca attraverso la parete destra",
   "binDesigner.cutouts.openSidesHint": "La tasca esce attraverso ogni parete aperta, dal fondo al bordo, così un pezzo si infila di lato.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Separa la forma dal gruppo per aprire un lato.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Solo un bin pieno può aprire una tasca attraverso la parete.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "I lati aperti richiedono una rotazione di 0, 90, 180 o 270 gradi.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Una tasca inclinata non può aprirsi attraverso una parete.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Non disponibile su un bin rastremato.",

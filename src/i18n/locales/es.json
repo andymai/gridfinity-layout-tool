@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Abrir el hueco a través de la pared derecha",
   "binDesigner.cutouts.openSidesHint": "El hueco sale a través de cada pared abierta, del suelo al borde, para que una pieza entre deslizándose por el lateral.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Desagrupa la forma para abrir un lado.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Solo un bin macizo puede abrir un hueco a través de la pared.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Los lados abiertos requieren una rotación de 0, 90, 180 o 270 grados.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Un hueco inclinado no puede abrirse a través de una pared.",
   "binDesigner.cutouts.openSidesBlocked.taper": "No disponible en un bin cónico.",

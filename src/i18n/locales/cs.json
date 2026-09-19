@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Otevřít kapsu skrz pravou stěnu",
   "binDesigner.cutouts.openSidesHint": "Kapsa vybíhá skrz každou otevřenou stěnu od dna po okraj, takže díl lze zasunout z boku.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Pro otevření strany zrušte seskupení tvaru.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Kapsu skrz stěnu může otevřít jen plný bin.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Otevřené strany vyžadují otočení o 0, 90, 180 nebo 270 stupňů.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Nakloněná kapsa se nemůže otevřít skrz stěnu.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Není k dispozici u zkoseného binu.",

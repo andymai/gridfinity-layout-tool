@@ -49,6 +49,24 @@ describe('openSideBlocker', () => {
     expect(openSideBlocker(rect({ groupId: 'g' }), solid())).toBe('grouped');
     expect(openSideBlocker(rect({ rotation: 45 }), solid())).toBe('rotation');
     expect(openSideBlocker(rect({ leanDeg: 10 }), solid())).toBe('lean');
+    expect(
+      openSideBlocker(
+        rect({
+          array: {
+            mode: 'radial',
+            cols: 1,
+            rows: 1,
+            pitchX: 12,
+            pitchY: 12,
+            count: 6,
+            radius: 20,
+            startAngle: 0,
+            rotateToCenter: true,
+          },
+        }),
+        solid()
+      )
+    ).toBe('rotation');
     expect(openSideBlocker(rect({ rotation: 45, groupId: 'g' }), DEFAULT_BIN_PARAMS)).toBe(
       'grouped'
     );

@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Abrir o rebaixo através da parede direita",
   "binDesigner.cutouts.openSidesHint": "O rebaixo sai por cada parede aberta, do fundo à borda, para que uma peça entre deslizando pela lateral.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Desagrupe a forma para abrir um lado.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Somente um bin maciço pode abrir um rebaixo através da parede.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Lados abertos exigem rotação de 0, 90, 180 ou 270 graus.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Um rebaixo inclinado não pode abrir através de uma parede.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Indisponível em um bin cônico.",

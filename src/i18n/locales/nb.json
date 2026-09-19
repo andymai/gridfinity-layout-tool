@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Åpne lommen gjennom høyre vegg",
   "binDesigner.cutouts.openSidesHint": "Lommen går ut gjennom hver åpne vegg, fra bunn til kant, slik at en del kan skyves inn fra siden.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Opphev grupperingen av formen for å åpne en side.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Bare en massiv bin kan åpne en lomme gjennom veggen.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Åpne sider krever en rotasjon på 0, 90, 180 eller 270 grader.",
   "binDesigner.cutouts.openSidesBlocked.lean": "En skrå lomme kan ikke åpnes gjennom en vegg.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Ikke tilgjengelig på en konisk bin.",

@@ -27,12 +27,9 @@ const SIDE_ARIA_KEY: Record<CutoutOpenSide, string> = {
   right: 'binDesigner.cutouts.openSide.rightAria',
 };
 
-/**
- * The reasons a rectangle can carry. `shape` never reaches the row (it is only
- * rendered for rectangles) and `host` is the solid-style gate that hides the
- * whole cutout editor, so neither needs copy.
- */
+/** `shape` never reaches the row: it is only rendered for rectangles. */
 const BLOCKER_HINT_KEY: Partial<Record<OpenSideBlocker, string>> = {
+  host: 'binDesigner.cutouts.openSidesBlocked.host',
   grouped: 'binDesigner.cutouts.openSidesBlocked.grouped',
   rotation: 'binDesigner.cutouts.openSidesBlocked.rotation',
   lean: 'binDesigner.cutouts.openSidesBlocked.lean',

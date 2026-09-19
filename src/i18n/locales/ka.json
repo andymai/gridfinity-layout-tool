@@ -2541,6 +2541,7 @@
   "binDesigner.cutouts.openSide.rightAria": "ჯიბის გახსნა მარჯვენა კედლის გავლით",
   "binDesigner.cutouts.openSidesHint": "ჯიბე გადის თითოეულ გახსნილ კედელში ფსკერიდან კიდემდე, ასე რომ დეტალი გვერდიდან ჩაცურდება.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "გვერდის გასახსნელად გააუქმეთ ფიგურის დაჯგუფება.",
+  "binDesigner.cutouts.openSidesBlocked.host": "მხოლოდ მყარ bin-ს შეუძლია ჯიბე კედლის გავლით გახსნას.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "გახსნილ გვერდებს სჭირდება ბრუნვა 0, 90, 180 ან 270 გრადუსით.",
   "binDesigner.cutouts.openSidesBlocked.lean": "დახრილი ჯიბე კედლის გავლით ვერ გაიხსნება.",
   "binDesigner.cutouts.openSidesBlocked.taper": "მიუწვდომელია კონუსური bin-ისთვის.",

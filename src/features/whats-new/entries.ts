@@ -17,6 +17,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     id: 'cutout-open-sides',
     date: '2026-09-19',
     kind: 'new',
+    featured: true,
     title: { en: 'Pockets that open through the wall' },
     body: {
       en: 'A rectangle cutout on a solid bin can now run out through any of its walls, floor to rim, so a ruler, blade or framing square slides in from the side. Pick the walls under Open through wall in the shape settings. Try the new Corner Index Block example.',

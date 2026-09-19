@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "让凹槽穿过右壁开口",
   "binDesigner.cutouts.openSidesHint": "凹槽会从底部到边缘穿过每一面已开口的壁，零件可以从侧面滑入。",
   "binDesigner.cutouts.openSidesBlocked.grouped": "取消图形分组后才能开口。",
+  "binDesigner.cutouts.openSidesBlocked.host": "只有实心 bin 才能让凹槽穿透壁面开口。",
   "binDesigner.cutouts.openSidesBlocked.rotation": "开口侧需要 0、90、180 或 270 度的旋转。",
   "binDesigner.cutouts.openSidesBlocked.lean": "倾斜的凹槽无法穿透壁面开口。",
   "binDesigner.cutouts.openSidesBlocked.taper": "锥形 bin 不可用。",

@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "De uitsparing door de rechterwand openen",
   "binDesigner.cutouts.openSidesHint": "De uitsparing loopt door elke geopende wand, van bodem tot rand, zodat een onderdeel er van opzij in schuift.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Hef de groepering van de vorm op om een zijde te openen.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Alleen een massieve bin kan een uitsparing door de wand openen.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Open zijden vereisen een rotatie van 0, 90, 180 of 270 graden.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Een schuine uitsparing kan niet door een wand openen.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Niet beschikbaar op een taps toelopende bin.",

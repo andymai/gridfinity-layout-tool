@@ -866,6 +866,7 @@
   "binDesigner.cutouts.openSide.rightAria": "Відкрити кишеню крізь праву стінку",
   "binDesigner.cutouts.openSidesHint": "Кишеня виходить крізь кожну відкриту стінку від дна до краю, тож деталь можна вставити збоку.",
   "binDesigner.cutouts.openSidesBlocked.grouped": "Розгрупуйте фігуру, щоб відкрити сторону.",
+  "binDesigner.cutouts.openSidesBlocked.host": "Лише суцільний bin може відкрити кишеню крізь стінку.",
   "binDesigner.cutouts.openSidesBlocked.rotation": "Відкриті сторони потребують повороту на 0, 90, 180 або 270 градусів.",
   "binDesigner.cutouts.openSidesBlocked.lean": "Нахилена кишеня не може відкриватися крізь стінку.",
   "binDesigner.cutouts.openSidesBlocked.taper": "Недоступно для bin зі звуженими стінками.",
