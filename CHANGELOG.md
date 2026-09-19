@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.495.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.494.1...gridfinity-layout-tool-v4.495.0) (2026-09-19)
+
+
+### Features
+
+* **bin-designer:** open rectangle pockets through the wall on solid bins ([#4331](https://github.com/andymai/gridfinity-layout-tool/issues/4331)) ([37eef75](https://github.com/andymai/gridfinity-layout-tool/commit/37eef755eba2d903f9d76bc333f6f449b76ab36d))
+
 ## [4.494.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.494.0...gridfinity-layout-tool-v4.494.1) (2026-09-18)
 
 
