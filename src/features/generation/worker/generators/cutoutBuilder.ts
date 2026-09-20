@@ -36,8 +36,11 @@ import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, CutoutArrayConfig, PathPoint, GroupOp } from '@/shared/types/bin';
 import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
-import { effectiveOpenSides, openSideChannels } from '@/shared/utils/cutoutOpenSides';
-import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
+import {
+  effectiveOpenSides,
+  openSideChannelOutline,
+  openSideChannels,
+} from '@/shared/utils/cutoutOpenSides';
 import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
 import {
@@ -1347,9 +1350,6 @@ export function buildCutoutCuts(
 /** Extra reach past any wall so a breach channel always exits the body (mm). */
 const KNIFE_BREACH_REACH_MARGIN = 50;
 
-/** How far past the wall's outer face an open-side channel runs (mm). */
-const OPEN_SIDE_REACH_PAST_FACE_MM = 6;
-
 /** The body frame every breach channel is positioned in. */
 interface BreachFrame {
   readonly innerW: number;
@@ -1395,60 +1395,6 @@ function withOpenSideScoopsOff(cutout: Cutout, params: BinParams): Cutout {
 }
 
 /**
- * The channel's plan outline in the body frame: from the shape's centre out
- * past the wall, `lo..hi` wide, with the pocket's entry chamfer as a flare
- * where the channel meets the wall's outer face so the part does not catch on
- * the corner going in. Built in an (along, across) frame and mapped onto the
- * exit axis, then wound counter-clockwise for the sketch.
- */
-function openSideChannelOutline(
-  ch: OpenSideChannel,
-  frame: BreachFrame,
-  wallThickness: number
-): [number, number][] {
-  const alongX = ch.side === 'left' || ch.side === 'right';
-  const dir = ch.side === 'right' || ch.side === 'back' ? 1 : -1;
-  const originAlong = alongX ? frame.originX : frame.originY;
-  const originAcross = alongX ? frame.originY : frame.originX;
-  const half = alongX ? frame.innerW / 2 : frame.innerD / 2;
-  const start = originAlong + ch.start;
-  // A custom shape names the wall its ray meets first; a rectangle's is the
-  // interior's edge plus the wall. Past the face there is only air and the
-  // stacking lip, whose outer face is the wall's, so a short reach clears it.
-  const face = ch.faceMm === undefined ? dir * (half + wallThickness) : originAlong + ch.faceMm;
-  const far = face + dir * OPEN_SIDE_REACH_PAST_FACE_MM;
-  const lo = originAcross + ch.lo;
-  const hi = originAcross + ch.hi;
-  const chamfer = Math.min(ch.chamferMm, wallThickness, (hi - lo) / 2);
-  const pts: [number, number][] =
-    chamfer > 0.05
-      ? [
-          [start, lo],
-          [face - dir * chamfer, lo],
-          [face, lo - chamfer],
-          [far, lo - chamfer],
-          [far, hi + chamfer],
-          [face, hi + chamfer],
-          [face - dir * chamfer, hi],
-          [start, hi],
-        ]
-      : [
-          [start, lo],
-          [far, lo],
-          [far, hi],
-          [start, hi],
-        ];
-  const xy: [number, number][] = pts.map(([a, c]) => (alongX ? [a, c] : [c, a]));
-  let area = 0;
-  for (let i = 0; i < xy.length; i++) {
-    const [x1, y1] = xy[i];
-    const [x2, y2] = xy[(i + 1) % xy.length];
-    area += x1 * y2 - x2 * y1;
-  }
-  return area < 0 ? xy.reverse() : xy;
-}
-
-/**
  * Open-side channels: each opening pocket's cross-section at the wall it
  * names, continued straight out through that wall. Open to the top, the
  * channel runs from the pocket floor up through the rim, collar and stacking
@@ -1473,11 +1419,16 @@ function buildOpenSideChannels(
   for (const ch of openSideChannels(params, emptyOwners)) {
     if (onlyThroughTop && ch.tunnel) continue;
     const owner = byId.get(ch.ownerId);
-    if (!owner) continue;
+    // A mesh imprint's channel is cut with the imprint, in the mesh domain.
+    if (!owner || owner.shape === 'mesh') continue;
     const effectiveDepth = Math.min(ch.cutDepth, frame.solidSurfaceZ);
     if (effectiveDepth <= 0) continue;
     const height = ch.tunnel ? effectiveDepth : breachHeight(params, frame, effectiveDepth);
-    const outline = openSideChannelOutline(ch, frame, params.wallThickness);
+    const outline = openSideChannelOutline(ch, {
+      innerW: frame.innerW,
+      innerD: frame.innerD,
+      wallThickness: params.wallThickness,
+    }).map(([x, y]): [number, number] => [frame.originX + x, frame.originY + y]);
     let pen = draw(outline[0]);
     for (let i = 1; i < outline.length; i++) pen = pen.lineTo(outline[i]);
     const prism = sketch(pen.close(), 'XY').extrude(height);
