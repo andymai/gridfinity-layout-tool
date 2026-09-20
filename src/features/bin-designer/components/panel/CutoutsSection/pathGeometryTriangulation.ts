@@ -7,7 +7,7 @@
  * `isSelfIntersecting`).
  */
 
-import type { Point2D } from './pathGeometryBezier';
+import type { Point2D } from '@/shared/utils/pathGeometryBezier';
 
 /**
  * Triangulate a closed polygon using the ear-clipping algorithm.

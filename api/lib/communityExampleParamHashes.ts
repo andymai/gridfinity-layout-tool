@@ -20,9 +20,10 @@ export const COMMUNITY_EXAMPLE_PARAM_HASHES: ReadonlySet<string> = new Set<strin
   '8c5fb2e5cf6bb5e60b7d11812758a252',
   '92647368e2a80820a30d513d6f1ab8e3',
   '9681dfc923e20308d78468efdfa2c8e6',
+  'a6fb1bbefbec7c6e755521ef2202f0aa',
   'ac25de9a9a4a13e9123d2ce275f4d997',
   'b5859d9f1a655e86f097f560ccc32298',
   'c93011cf9a3a893096deef922075628e',
+  'c98b8738c3992f086c2310607404ebd5',
   'd0e9a93e732ca9d2694d17048e76c233',
-  'fa9f60366f5310fb959da274c9725bc5',
 ]);

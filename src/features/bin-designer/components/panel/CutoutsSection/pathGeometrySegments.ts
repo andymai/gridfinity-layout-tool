@@ -9,7 +9,7 @@
  */
 
 import type { PathPoint } from '@/features/bin-designer/types';
-import { cubicBezier, flattenPath, type Point2D } from './pathGeometryBezier';
+import { cubicBezier, flattenPath, type Point2D } from '@/shared/utils/pathGeometryBezier';
 
 /**
  * Find the nearest segment of a path to a given point.

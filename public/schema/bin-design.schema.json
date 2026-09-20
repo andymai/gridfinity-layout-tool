@@ -696,13 +696,20 @@
         },
         "openSides": {
           "type": "array",
-          "uniqueItems": true,
           "maxItems": 4,
           "items": {
-            "enum": ["front", "back", "left", "right"],
-            "x-constant": { "enum": "CUTOUT_OPEN_SIDES" }
+            "anyOf": [
+              {
+                "$ref": "#/$defs/CutoutOpenSideSpec"
+              },
+              {
+                "enum": ["front", "back", "left", "right"],
+                "x-constant": { "enum": "CUTOUT_OPEN_SIDES" },
+                "description": "A bare wall name, as the first release wrote it: the same as a spec with no width and no tunnel."
+              }
+            ]
           },
-          "description": "Bin walls a rectangle pocket opens through, floor to rim, so a part slides in from the side. Only built on a solid, untapered bin for an ungrouped upright rectangle rotated in 90° steps; otherwise the pocket stays enclosed. Omit for enclosed."
+          "description": "Bin walls the pocket opens through so a part slides in from the side. Any profile shape on a solid, untapered bin; a leaned pocket or a repeated group stays enclosed. Omit for enclosed."
         },
         "name": {
           "type": "string",
@@ -932,6 +939,28 @@
           "enum": ["rim", "floor"],
           "default": "rim",
           "description": "Which end topOffset is held against when the bin's wall height changes."
+        }
+      }
+    },
+    "CutoutOpenSideSpec": {
+      "type": "object",
+      "description": "One wall a pocket opens through, and how.",
+      "required": ["side"],
+      "properties": {
+        "side": {
+          "enum": ["front", "back", "left", "right"],
+          "x-constant": { "enum": "CUTOUT_OPEN_SIDES" },
+          "description": "The bin wall, in the bin's frame."
+        },
+        "widthMm": {
+          "type": "number",
+          "minimum": 1,
+          "x-constant": { "minimum": "MIN_OPEN_SIDE_WIDTH_MM" },
+          "description": "Channel width across the exit in mm. Absent means the pocket's own width at that wall."
+        },
+        "tunnel": {
+          "type": "boolean",
+          "description": "Keep the wall above the pocket, so the channel stops at the fill surface and the stacking lip stays whole. Absent means open to the top."
         }
       }
     },

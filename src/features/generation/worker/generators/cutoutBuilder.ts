@@ -35,12 +35,9 @@ import {
 import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, CutoutArrayConfig, PathPoint, GroupOp } from '@/shared/types/bin';
-import { DEFAULT_KNIFE_SPEC, DEFAULT_SCOOP_EDGES } from '@/shared/types/bin';
-import {
-  effectiveOpenSides,
-  localEdgeFacing,
-  rectangleWorldHalfExtents,
-} from '@/shared/utils/cutoutOpenSides';
+import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
+import { effectiveOpenSides, openSideChannels } from '@/shared/utils/cutoutOpenSides';
+import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
 import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
 import {
@@ -1238,6 +1235,9 @@ export function buildCutoutCuts(
     }
   }
 
+  // Groups whose boolean built nothing: their open sides must not cut a
+  // channel out of a cavity that does not exist.
+  const emptyGroupOwners = new Set<string>();
   for (const [, groupMembers] of groups) {
     // One entry per copy of a repeated group; a plain group yields one.
     const indices: number[] = [];
@@ -1251,6 +1251,8 @@ export function buildCutoutCuts(
     // bounds), exactly as an ungrouped repeat's instances already do.
     if (indices.length > 0) {
       for (const m of groupMembers) cavityIndices.set(m.id, indices);
+    } else {
+      for (const m of groupMembers) emptyGroupOwners.add(m.id);
     }
   }
 
@@ -1326,7 +1328,7 @@ export function buildCutoutCuts(
   if (!interiorTaper) {
     const frame = { innerW, innerD, solidSurfaceZ, wallHeight, originX, originY };
     cutTools.push(...buildKnifeBreachChannels(params, frame, cavityTag));
-    cutTools.push(...buildOpenSideChannels(params, frame, cavityTag));
+    cutTools.push(...buildOpenSideChannels(params, frame, cavityTag, emptyGroupOwners));
   }
   const fuseTools =
     rawFuseShapes.length > 0
@@ -1344,13 +1346,6 @@ export function buildCutoutCuts(
 
 /** Extra reach past any wall so a breach channel always exits the body (mm). */
 const KNIFE_BREACH_REACH_MARGIN = 50;
-
-/**
- * How far a square-cornered channel reaches back into its pocket so the union
- * has a shared volume rather than a coincident face (mm). A rounded pocket
- * overlaps by its corner radius instead, which the channel's square end covers.
- */
-const OPEN_SIDE_OVERLAP_MM = 0.5;
 
 /** The body frame every breach channel is positioned in. */
 interface BreachFrame {
@@ -1379,62 +1374,163 @@ function breachHeight(params: BinParams, frame: BreachFrame, effectiveDepth: num
 }
 
 /**
- * A rectangle with an open side keeps its scoop everywhere except the edge that
- * leaves through the wall: a fillet there would raise the pocket floor into a
- * hump just before the channel drops it back to floor level at the wall.
+ * A pocket that opens a wall loses its scoop: the channel carries the floor
+ * out flat from the shape's centre, so a fillet on any edge would leave a hump
+ * where the flat floor meets the curve. Every member of an open group loses
+ * it too, since the group's cavity is one fused solid.
  */
 function withOpenSideScoopsOff(cutout: Cutout, params: BinParams): Cutout {
-  const sides = effectiveOpenSides(cutout, params);
-  if (sides.length === 0) return cutout;
-  const edges = { ...(cutout.scoopEdges ?? DEFAULT_SCOOP_EDGES) };
-  for (const side of sides) edges[localEdgeFacing(side, cutout.rotation)] = false;
-  return { ...cutout, scoopEdges: edges };
+  const open =
+    cutout.groupId === null
+      ? effectiveOpenSides(cutout, params).length > 0
+      : params.cutouts.some(
+          (c) => c.groupId === cutout.groupId && effectiveOpenSides(c, params).length > 0
+        );
+  if (!open) return cutout;
+  const { scoopRadiusW: _w, scoopRadiusD: _d, scoopEdges: _e, ...rest } = cutout;
+  return rest;
 }
 
 /**
- * Open-side channels for rectangle cutouts: the pocket's own cross-section,
- * continued straight out through each wall it opens onto, floor-level up
- * through the rim, collar and stacking lip, so a part slides in from the side.
+ * The channel's plan outline in the body frame: from the shape's centre out
+ * past the wall, `lo..hi` wide, with the pocket's entry chamfer as a flare
+ * where the channel meets the wall's outer face so the part does not catch on
+ * the corner going in. Built in an (along, across) frame and mapped onto the
+ * exit axis, then wound counter-clockwise for the sketch.
+ */
+function openSideChannelOutline(
+  ch: OpenSideChannel,
+  frame: BreachFrame,
+  wallThickness: number
+): [number, number][] {
+  const alongX = ch.side === 'left' || ch.side === 'right';
+  const dir = ch.side === 'right' || ch.side === 'back' ? 1 : -1;
+  const originAlong = alongX ? frame.originX : frame.originY;
+  const originAcross = alongX ? frame.originY : frame.originX;
+  const half = alongX ? frame.innerW / 2 : frame.innerD / 2;
+  const reach = frame.innerW + frame.innerD + KNIFE_BREACH_REACH_MARGIN;
+  const start = originAlong + ch.start;
+  const face = dir * (half + wallThickness);
+  const far = face + dir * reach;
+  const lo = originAcross + ch.lo;
+  const hi = originAcross + ch.hi;
+  const chamfer = Math.min(ch.chamferMm, wallThickness, (hi - lo) / 2);
+  const pts: [number, number][] =
+    chamfer > 0.05
+      ? [
+          [start, lo],
+          [face - dir * chamfer, lo],
+          [face, lo - chamfer],
+          [far, lo - chamfer],
+          [far, hi + chamfer],
+          [face, hi + chamfer],
+          [face - dir * chamfer, hi],
+          [start, hi],
+        ]
+      : [
+          [start, lo],
+          [far, lo],
+          [far, hi],
+          [start, hi],
+        ];
+  const xy: [number, number][] = pts.map(([a, c]) => (alongX ? [a, c] : [c, a]));
+  let area = 0;
+  for (let i = 0; i < xy.length; i++) {
+    const [x1, y1] = xy[i];
+    const [x2, y2] = xy[(i + 1) % xy.length];
+    area += x1 * y2 - x2 * y1;
+  }
+  return area < 0 ? xy.reverse() : xy;
+}
+
+/**
+ * Open-side channels: each opening pocket's cross-section at the wall it
+ * names, continued straight out through that wall. Open to the top, the
+ * channel runs from the pocket floor up through the rim, collar and stacking
+ * lip so a part drops in and slides out; as a tunnel it stops at the fill
+ * surface, so the wall above holds the part captive and the lip stays whole.
  *
- * Deliberately NOT passed through `clipToInterior` — breaching the wall is the
- * point. Gated by `effectiveOpenSides`, which the lip-gap plan reads too, so a
- * rail never yields to a notch that was not cut. The tapered host is refused
- * at the call site, where the knife breach is refused for the same reason.
+ * Deliberately NOT passed through `clipToInterior`, since breaching the wall
+ * is the point. Planned by `openSideChannels`, which the lip-gap plan and the
+ * overlay read too, so a rail never yields to a notch that was not cut. The
+ * tapered host is refused at the call site, where the knife breach is refused
+ * for the same reason.
  */
 function buildOpenSideChannels(
   params: BinParams,
   frame: BreachFrame,
-  cavityTag: (cutout: Cutout) => number
+  cavityTag: (cutout: Cutout) => number,
+  emptyOwners: ReadonlySet<string> = new Set(),
+  onlyThroughTop = false
 ): Shape3D[] {
   const channels: Shape3D[] = [];
-  const reach = frame.innerW + frame.innerD + KNIFE_BREACH_REACH_MARGIN;
-  for (const master of params.cutouts) {
-    const sides = effectiveOpenSides(master, params);
-    if (sides.length === 0) continue;
-    for (const cutout of master.array ? expandCutoutArray(master) : [master]) {
-      const effectiveDepth = Math.min(cutout.cutDepth, frame.solidSurfaceZ);
-      if (effectiveDepth <= 0) continue;
-      const { halfX, halfY } = rectangleWorldHalfExtents(cutout);
-      const cx = frame.originX + cutout.x + cutout.width / 2;
-      const cy = frame.originY + cutout.y + cutout.depth / 2;
-      const overlap = Math.max(cutout.cornerRadius, OPEN_SIDE_OVERLAP_MM);
-      const height = breachHeight(params, frame, effectiveDepth);
-      const z = frame.solidSurfaceZ - effectiveDepth + height / 2;
-      for (const side of sides) {
-        const alongX = side === 'left' || side === 'right';
-        const near = (alongX ? halfX : halfY) - overlap;
-        const sign = side === 'right' || side === 'back' ? 1 : -1;
-        const offset = sign * (near + reach / 2);
-        const at: [number, number, number] = alongX ? [cx + offset, cy, z] : [cx, cy + offset, z];
-        const channel = alongX
-          ? box(reach, 2 * halfY, height, { at })
-          : box(2 * halfX, reach, height, { at });
-        setShapeOrigin(channel, cavityTag(master));
-        channels.push(channel);
-      }
-    }
+  const byId = new Map(params.cutouts.map((c) => [c.id, c]));
+  for (const ch of openSideChannels(params, emptyOwners)) {
+    if (onlyThroughTop && ch.tunnel) continue;
+    const owner = byId.get(ch.ownerId);
+    if (!owner) continue;
+    const effectiveDepth = Math.min(ch.cutDepth, frame.solidSurfaceZ);
+    if (effectiveDepth <= 0) continue;
+    const height = ch.tunnel ? effectiveDepth : breachHeight(params, frame, effectiveDepth);
+    const outline = openSideChannelOutline(ch, frame, params.wallThickness);
+    let pen = draw(outline[0]);
+    for (let i = 1; i < outline.length; i++) pen = pen.lineTo(outline[i]);
+    const prism = sketch(pen.close(), 'XY').extrude(height);
+    const positioned = translate(prism, [0, 0, frame.solidSurfaceZ - effectiveDepth]);
+    prism.delete();
+    setShapeOrigin(positioned, cavityTag(owner));
+    channels.push(positioned);
   }
   return channels;
+}
+
+/**
+ * The breach channels a split bin's freshly built lip has to be cut with: the
+ * body already carries its half from the pipeline, and a lip fused on
+ * afterwards would seal every open-top channel and knife exit back up. Same
+ * tools, same body-local frame, so `splitBinBuilder` shifts them exactly as it
+ * shifts the wall-cutout tools. Tunnels stop below the lip and are left out.
+ */
+export function buildLipBreachChannels(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): Shape3D[] {
+  if (!params.base.solid) return [];
+  const solidSurfaceZ = wallHeight - params.cutoutConfig.topOffset;
+  if (solidSurfaceZ <= 0) return [];
+  const frame: BreachFrame = {
+    innerW,
+    innerD,
+    solidSurfaceZ,
+    wallHeight,
+    originX: -innerW / 2,
+    originY: -innerD / 2,
+  };
+  const tag = (): number => 0;
+  const visible = {
+    ...params,
+    cutouts: params.cutouts.filter((c) => c.hidden !== true && c.shape !== 'mesh'),
+  };
+  // The body learned which groups' booleans built nothing while cutting its
+  // cavities; the lip has to find out the same way, or it would breach over a
+  // cavity that is not there. Only groups that open a wall are rebuilt.
+  const emptyOwners = new Set<string>();
+  const seen = new Set<string>();
+  for (const c of visible.cutouts) {
+    if (c.groupId === null || seen.has(c.groupId)) continue;
+    seen.add(c.groupId);
+    const members = visible.cutouts.filter((m) => m.groupId === c.groupId);
+    if (!members.some((m) => effectiveOpenSides(m, visible).length > 0)) continue;
+    const built = buildGroupedCutouts(members, solidSurfaceZ, frame.originX, frame.originY);
+    if (built.length === 0) for (const m of members) emptyOwners.add(m.id);
+    for (const shape of built) shape.delete();
+  }
+  return [
+    ...buildKnifeBreachChannels(visible, frame, tag),
+    ...buildOpenSideChannels(visible, frame, tag, emptyOwners, true),
+  ];
 }
 
 /**

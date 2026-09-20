@@ -2978,14 +2978,16 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.openSide.leftAria': 'Open the pocket through the left wall',
   'binDesigner.cutouts.openSide.rightAria': 'Open the pocket through the right wall',
   'binDesigner.cutouts.openSidesHint':
-    'The pocket runs out through each open wall, floor to rim, so a part slides in from the side.',
-  'binDesigner.cutouts.openSidesBlocked.grouped': 'Ungroup the shape to open a side.',
+    'The pocket runs out through each open wall so a part slides in from the side.',
+  'binDesigner.cutouts.openSidesBlocked.grouped': 'A repeated group cannot open a side.',
   'binDesigner.cutouts.openSidesBlocked.host':
     'Only a solid bin can open a pocket through its wall.',
-  'binDesigner.cutouts.openSidesBlocked.rotation':
-    'Open sides need a rotation of 0, 90, 180 or 270 degrees.',
   'binDesigner.cutouts.openSidesBlocked.lean': 'A leaned pocket cannot open through a wall.',
   'binDesigner.cutouts.openSidesBlocked.taper': 'Not available on a tapered bin.',
+  'binDesigner.cutouts.openSideWidth': 'Channel width',
+  'binDesigner.cutouts.openSideForm': 'Opening',
+  'binDesigner.cutouts.openSideForm.open': 'Open top',
+  'binDesigner.cutouts.openSideForm.tunnel': 'Tunnel',
   'binDesigner.cutouts.rotation': 'Rotation',
   'binDesigner.cutouts.alignLeft': 'Align left',
   'binDesigner.cutouts.alignRight': 'Align right',
@@ -4476,6 +4478,9 @@ const en: Record<string, string> = {
   'binExamples.cornerIndexBlock.name': 'Corner Index Block',
   'binExamples.cornerIndexBlock.description':
     "A solid 2x2 block with two pockets that run out through adjacent walls, so a framing square's corner drops in and both arms lie flat past the block. Print one per corner.",
+  'binExamples.keyholeToolBlock.name': 'Keyhole Tool Block',
+  'binExamples.keyholeToolBlock.description':
+    'A solid block that holds a screwdriver by its handle. The handle drops into a wide pocket and the shank leaves through a narrow channel in the wall, so the tool lifts straight out.',
 
   // Bin example presets — hero showcases
   'binExamples.heroMulticolorOrganizer.name': 'Multicolor Organizer',

@@ -23,7 +23,7 @@ import { slotCornerRadius } from '@/shared/utils/cutoutPolygon';
 import { cutoutToPolygon } from '../booleanGeometry';
 import { getPathBounds } from '../pathGeometry';
 import { rotatePoint } from '../geometryCore';
-import { flattenPath, type Point2D } from '../pathGeometryBezier';
+import { flattenPath, type Point2D } from '@/shared/utils/pathGeometryBezier';
 
 /** Emitted coordinate precision. 3 dp is micron-scale — below any print resolution. */
 const DECIMALS = 3;

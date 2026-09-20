@@ -64,7 +64,7 @@ function cornerIndexBlock(): Partial<BinParams> {
         depth: body,
         cutDepth: 6,
         cornerRadius: 1,
-        openSides: ['right'],
+        openSides: [{ side: 'right' }],
       }),
       makeCutout({
         id: 'tongue',
@@ -75,7 +75,7 @@ function cornerIndexBlock(): Partial<BinParams> {
         depth: inner - inset,
         cutDepth: 6,
         cornerRadius: 1,
-        openSides: ['front'],
+        openSides: [{ side: 'front' }],
       }),
     ],
   };
@@ -113,6 +113,9 @@ function expectWallIntact(mesh: MeshData): void {
   }
 }
 
+/** Past the outer corner radius, so a face-hugging scan always has wall under it. */
+const CORNER_CLEAR_MM = 5;
+
 /** Deeper than the stacking lip, so a lowered wall top is a breach and not a lip cut. */
 const BREACH_DROP_MM = 8;
 
@@ -128,7 +131,17 @@ function expectBreach(
   hi: number
 ): void {
   const bb = boundingBox(mesh.vertices);
-  const tops = scanTops(mesh, axis, fixed, lo - 6, hi + 6, 0.5);
+  // Stay inside the bin's own footprint and clear of its rounded corners,
+  // where a column just inside the face finds no wall to read.
+  const [min, max] = axis === 'y' ? [bb.minY, bb.maxY] : [bb.minX, bb.maxX];
+  const tops = scanTops(
+    mesh,
+    axis,
+    fixed,
+    Math.max(lo - 6, min + CORNER_CLEAR_MM),
+    Math.min(hi + 6, max - CORNER_CLEAR_MM),
+    0.5
+  );
   for (const { at, top } of tops) {
     if (at > lo + 0.5 && at < hi - 0.5) {
       expect(top, `breached at ${at}`).toBeLessThan(bb.maxZ - BREACH_DROP_MM);
@@ -142,7 +155,7 @@ function expectBreach(
 export const openSides: ScenarioCase[] = [
   defineScenario('open sides', '2x1x4 solid with an enclosed pocket', { params: block() }),
   defineScenario('open sides', '2x1x4 pocket open right breaches the +X wall and lip', {
-    params: block({ openSides: ['right'] }),
+    params: block({ openSides: [{ side: 'right' }] }),
     compareWith: {
       params: block(),
       assert: (open, enclosed) => {
@@ -157,7 +170,7 @@ export const openSides: ScenarioCase[] = [
     },
   }),
   defineScenario('open sides', '2x1x4 pocket rotated 90° opens through the front wall', {
-    params: block({ rotation: 90, openSides: ['front'] }),
+    params: block({ rotation: 90, openSides: [{ side: 'front' }] }),
     customAssert: (result) => {
       const bb = boundingBox(result.vertices);
       // Rotated a quarter turn the 30-wide pocket spans 20 along X, centred
@@ -167,7 +180,7 @@ export const openSides: ScenarioCase[] = [
     },
   }),
   defineScenario('open sides', '2x1x4 pocket open on two adjacent walls breaches both', {
-    params: block({ openSides: ['right', 'front'] }),
+    params: block({ openSides: [{ side: 'right' }, { side: 'front' }] }),
     customAssert: (result) => {
       const bb = boundingBox(result.vertices);
       expectBreach(result, 'y', bb.maxX - 0.6, -10, 10);
@@ -175,8 +188,8 @@ export const openSides: ScenarioCase[] = [
       expectBreach(result, 'x', bb.minY + 0.6, cx - 15, cx + 15);
     },
   }),
-  defineScenario('open sides', '2x1x4 open pocket drops the scoop on the opened edge only', {
-    params: block({ openSides: ['right'], scoopRadiusW: 6, scoopRadiusD: 6 }),
+  defineScenario('open sides', '2x1x4 open pocket loses its scoop', {
+    params: block({ openSides: [{ side: 'right' }], scoopRadiusW: 6, scoopRadiusD: 6 }),
     compareWith: {
       params: block({ scoopRadiusW: 6, scoopRadiusD: 6 }),
       assert: (open, enclosed) => {
@@ -186,9 +199,10 @@ export const openSides: ScenarioCase[] = [
         // Enclosed: the fillet lifts the floor 1mm in from both side walls.
         expect(columnTopZ(enclosed, rightEdge - 1, 0)).toBeGreaterThan(floor + 1);
         expect(columnTopZ(enclosed, leftEdge + 1, 0)).toBeGreaterThan(floor + 1);
-        // Open right: flat out to the wall, still scooped on the closed side.
+        // Open: flat right out to the wall, and flat on the closed side too,
+        // since the channel floor starts at the pocket's centre.
         expect(columnTopZ(open, rightEdge - 1, 0)).toBeCloseTo(floor, 1);
-        expect(columnTopZ(open, leftEdge + 1, 0)).toBeGreaterThan(floor + 1);
+        expect(columnTopZ(open, leftEdge + 1, 0)).toBeCloseTo(floor, 1);
       },
     },
   }),
@@ -196,7 +210,7 @@ export const openSides: ScenarioCase[] = [
     params: block({
       depth: 8,
       y: 4,
-      openSides: ['right'],
+      openSides: [{ side: 'right' }],
       array: {
         mode: 'grid',
         cols: 1,
@@ -217,44 +231,9 @@ export const openSides: ScenarioCase[] = [
       expect(runs).toBe(3);
     },
   }),
-  defineScenario('open sides', '2x1x4 open side is ignored off the 90° grid', {
-    params: block({ rotation: 45, openSides: ['right'] }),
-    customAssert: expectWallIntact,
-  }),
-  defineScenario('open sides', '2x1x4 open side is ignored inside a boolean group', {
-    params: {
-      ...block(),
-      cutouts: [
-        makeCutout({
-          id: 'a',
-          shape: 'rectangle',
-          x: 30,
-          y: 9.55,
-          width: 30,
-          depth: 20,
-          cutDepth: 10,
-          groupId: 'g',
-          groupOp: 'union',
-          openSides: ['right'],
-        }),
-        makeCutout({
-          id: 'b',
-          shape: 'rectangle',
-          x: 20,
-          y: 12,
-          width: 20,
-          depth: 10,
-          cutDepth: 8,
-          groupId: 'g',
-          groupOp: 'union',
-        }),
-      ],
-    },
-    customAssert: expectWallIntact,
-  }),
   defineScenario('open sides', '2x1x4 open side is ignored under a tapered wall', {
     params: {
-      ...block({ openSides: ['right'] }),
+      ...block({ openSides: [{ side: 'right' }] }),
       overhang: {
         enabled: true,
         left: 3,
@@ -273,6 +252,136 @@ export const openSides: ScenarioCase[] = [
       },
     },
     customAssert: expectWallIntact,
+  }),
+  defineScenario('open sides', '2x1x4 leaned pocket keeps its wall', {
+    params: block({ leanDeg: 15, openSides: [{ side: 'right' }] }),
+    customAssert: expectWallIntact,
+  }),
+  defineScenario('open sides', '2x1x4 pocket turned 30° still leaves through the +X wall', {
+    params: block({ rotation: 30, openSides: [{ side: 'right' }] }),
+    customAssert: (result) => {
+      const bb = boundingBox(result.vertices);
+      // A 30×20 rectangle turned 30° spans 30·sin30 + 20·cos30 ≈ 32.3 along Y.
+      const half = (30 * Math.sin(Math.PI / 6) + 20 * Math.cos(Math.PI / 6)) / 2;
+      expectBreach(result, 'y', bb.maxX - 0.6, -half, half);
+    },
+  }),
+  defineScenario('open sides', '2x1x4 circle leaves a half-round notch through the +X wall', {
+    params: block({ shape: 'circle', width: 20, depth: 20, x: 35, openSides: [{ side: 'right' }] }),
+    customAssert: (result) => {
+      const bb = boundingBox(result.vertices);
+      expectBreach(result, 'y', bb.maxX - 0.6, -10, 10);
+      // Inside the pocket the far half stays round: 8mm off centre the floor
+      // is still there, 9.9mm off centre (past the circle) the fill is.
+      const cx = 45 - INNER_W / 2;
+      const floor = columnTopZ(result, cx, 0);
+      expect(columnTopZ(result, cx - 8, 0)).toBeCloseTo(floor, 1);
+      expect(columnTopZ(result, cx - 9.9, 9.9)).toBeGreaterThan(floor + 5);
+      // Toward the wall the channel is flat and full width.
+      expect(columnTopZ(result, cx + 12, 9)).toBeCloseTo(floor, 1);
+    },
+  }),
+  defineScenario('open sides', '2x1x4 keyhole: 6mm channel out of a 20mm pocket', {
+    params: block({ openSides: [{ side: 'right', widthMm: 6 }] }),
+    customAssert: (result) => {
+      const bb = boundingBox(result.vertices);
+      expectBreach(result, 'y', bb.maxX - 0.6, -3, 3);
+    },
+  }),
+  defineScenario('open sides', '2x1x4 tunnel keeps the wall and lip above the pocket', {
+    params: block({ openSides: [{ side: 'right', tunnel: true }] }),
+    compareWith: {
+      params: block(),
+      assert: (open, enclosed) => {
+        // Rim intact along the whole wall, exactly as the enclosed twin.
+        expectWallIntact(open);
+        // But the wall column at the pocket's centre now has a gap: the
+        // crossings pair into more solid spans than the enclosed wall's.
+        const bb = boundingBox(open.vertices);
+        const px = bb.maxX - 0.6;
+        expect(columnCrossings(open, px, 0).length).toBeGreaterThan(
+          columnCrossings(enclosed, px, 0).length
+        );
+        // And the fill between pocket and wall is gone at floor level.
+        const floor = columnTopZ(open, 60 - INNER_W / 2 - 5, 0);
+        const spans = columnCrossings(open, bb.maxX - 6, 0);
+        expect(spans.some((z) => Math.abs(z - floor) < 0.3)).toBe(true);
+      },
+    },
+  }),
+  defineScenario('open sides', '2x1x4 entry chamfer flares the channel mouth', {
+    params: block({ chamferWidth: 1, openSides: [{ side: 'right' }] }),
+    compareWith: {
+      params: block({ openSides: [{ side: 'right' }] }),
+      assert: (flared, square) => {
+        const bb = boundingBox(flared.vertices);
+        // Just inside the outer face the flared opening is a chamfer wider on
+        // each side; the square one is not.
+        const px = bb.maxX - 0.2;
+        expect(columnTopZ(flared, px, 10.5)).toBeLessThan(bb.maxZ - BREACH_DROP_MM);
+        expect(columnTopZ(square, px, 10.5)).toBeGreaterThan(bb.maxZ - 1.5);
+      },
+    },
+  }),
+  defineScenario('open sides', '2x1x4 union group leaves at its combined width', {
+    params: {
+      ...block(),
+      cutouts: [
+        makeCutout({
+          id: 'a',
+          shape: 'rectangle',
+          x: 30,
+          y: 9.55,
+          width: 30,
+          depth: 20,
+          cutDepth: 10,
+          groupId: 'g',
+          groupOp: 'union',
+          openSides: [{ side: 'right' }],
+        }),
+        makeCutout({
+          id: 'b',
+          shape: 'rectangle',
+          x: 45,
+          y: 3,
+          width: 10,
+          depth: 12,
+          cutDepth: 8,
+          groupId: 'g',
+          groupOp: 'union',
+        }),
+      ],
+    },
+    customAssert: (result) => {
+      const bb = boundingBox(result.vertices);
+      // Hull across Y: 3 .. 29.55 in the interior frame.
+      expectBreach(result, 'y', bb.maxX - 0.6, 3 - INNER_D / 2, 29.55 - INNER_D / 2);
+    },
+  }),
+  defineScenario('open sides', '2x1x4 rotate-to-centre repeat opens each turned copy', {
+    params: block({
+      x: 5,
+      y: 14.55,
+      width: 12,
+      depth: 10,
+      openSides: [{ side: 'right' }],
+      array: {
+        mode: 'radial',
+        cols: 1,
+        rows: 1,
+        pitchX: 12,
+        pitchY: 12,
+        count: 3,
+        radius: 9,
+        startAngle: 0,
+        rotateToCenter: true,
+      },
+    }),
+    customAssert: (result) => {
+      const bb = boundingBox(result.vertices);
+      const tops = scanTops(result, 'y', bb.maxX - 0.6, -18, 18, 0.25);
+      expect(tops.some(({ top }) => top < bb.maxZ - BREACH_DROP_MM)).toBe(true);
+    },
   }),
   defineScenario('open sides', 'corner index block holds a framing square', {
     params: cornerIndexBlock(),

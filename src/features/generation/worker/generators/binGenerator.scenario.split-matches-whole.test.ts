@@ -243,3 +243,50 @@ describe('a wall pattern is not plugged by the lip fused on after it', () => {
     expect(result.worst, `worst column at ${result.worstAt}`).toBeLessThanOrEqual(WALL_TOLERANCE);
   }, 120000);
 });
+
+describe('an open-side channel is not sealed by the lip fused on after it', () => {
+  // A solid 3x4 with a pocket that leaves through the +X wall, split along
+  // Y=0 so the channel lands on one piece's freshly built lip.
+  const params: BinParams = {
+    ...BASE,
+    style: 'solid',
+    base: { ...BASE.base, solid: true },
+    cutouts: [
+      {
+        id: 'ruler',
+        shape: 'rectangle',
+        x: 60,
+        y: 100,
+        width: 40,
+        depth: 20,
+        cutDepth: 8,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+        openSides: [{ side: 'right' }],
+      },
+    ],
+  };
+
+  it('keeps the channel open through the split piece', () => {
+    const whole = getGenerateBin()(params, undefined, true);
+    const split = getGenerateSplitPreview()(params, [], [0], NO_CONNECTORS);
+    expect(split.pieces).toHaveLength(2);
+
+    const outerW = params.width * GRID_UNIT - 0.5;
+    const outerD = params.depth * GRID_UNIT - 0.5;
+    const innerD = outerD - 2 * WALL_THICKNESS;
+    // The channel spans y = 100..120 in the interior frame; walk its centre
+    // line along the wall's thickness.
+    const points: Array<readonly [number, number]> = [];
+    for (let y = 100 + 2; y <= 120 - 2; y += 1) {
+      const wy = y - innerD / 2;
+      points.push([outerW / 2 - WALL_THICKNESS / 2, wy] as const);
+      points.push([outerW / 2 - WALL_THICKNESS - 2, wy] as const);
+    }
+    const result = sweep(whole, pieceFrames(split.pieces, params), points, topSurface);
+    expect(result.sampled).toBeGreaterThan(20);
+    expect(result.worst, `worst column at ${result.worstAt}`).toBeLessThanOrEqual(RIM_TOLERANCE);
+  }, 120000);
+});

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import { isOk } from '@/core/result';
 import { parseSvgString } from '../svgImport/svgParser';
-import { flattenPath } from '../pathGeometryBezier';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
 import { cutoutsToSvg } from './cutoutsToSvg';
 
 const baseCutout = (overrides: Partial<Cutout> = {}): Cutout => ({

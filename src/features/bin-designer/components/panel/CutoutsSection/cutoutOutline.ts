@@ -26,7 +26,7 @@ import {
 } from '@/shared/utils/cutoutPolygon';
 import { rotatePoint } from './geometryCore';
 import { getPathBounds, flattenPath } from './pathGeometry';
-import type { Point2D } from './pathGeometryBezier';
+import type { Point2D } from '@/shared/utils/pathGeometryBezier';
 
 /** Samples per full turn for curved spans. Corner arcs use a quarter of these,
  *  so both share one angular step — and therefore one inflation factor. */

@@ -10,7 +10,7 @@ import {
 } from '../types';
 import { sameChain } from '../utils/cutoutHierarchy';
 import { groupRepeatConfig } from '@/shared/utils/cutoutArray';
-import { normalizeOpenSides } from '@/shared/utils/cutoutOpenSides';
+import { normalizeOpenSides, sameOpenSides } from '@/shared/utils/cutoutOpenSides';
 import {
   KNIFE_REST_DEFAULT_GAP_MM,
   KNIFE_REST_GROOVE_DEPTH_MM,
@@ -119,9 +119,10 @@ export function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
 }
 
 /**
- * Keep only real sides, once each, and drop the field when nothing is left so
- * a design that never opened a wall serializes as it did before the field
- * existed. An already-canonical list comes back by reference.
+ * Lift the first release's bare wall names into specs, keep only real sides
+ * once each, and drop the field when nothing is left so a design that never
+ * opened a wall serializes as it did before the field existed. An
+ * already-canonical list comes back by reference.
  */
 function withOpenSides(cutout: Cutout): Cutout {
   if (cutout.openSides === undefined) return cutout;
@@ -130,7 +131,7 @@ function withOpenSides(cutout: Cutout): Cutout {
     const { openSides: _drop, ...rest } = cutout;
     return rest;
   }
-  if (sameChain(sides, cutout.openSides)) return cutout;
+  if (sameOpenSides(sides, cutout.openSides)) return cutout;
   return { ...cutout, openSides: sides };
 }
 

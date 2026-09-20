@@ -10,7 +10,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { ACCENT_COLOR_HEX, RENDER_ORDER } from './constants';
 import { loopToSegmentPositions } from './knifeSlotOverlayGeometry';
-import { openSideOverlayLoops } from './openSideOverlayGeometry';
+import { openSideOverlayStrips } from './openSideOverlayGeometry';
 
 const OUTLINE_OPACITY = 0.8;
 const FILL_OPACITY = 0.18;
@@ -32,15 +32,14 @@ export function OpenSideOverlay({ cutouts, binWidth, binDepth }: OpenSideOverlay
   const geometries = useMemo(() => {
     const outline: number[] = [];
     const fill: number[] = [];
-    const host = { base, overhang, cellMask };
+    const host = { base, overhang, cellMask, cutouts };
     const frame = { binWidth, binDepth, wallThickness };
-    for (const cutout of cutouts) {
-      for (const loop of openSideOverlayLoops(cutout, host, frame)) {
-        outline.push(...loopToSegmentPositions(loop, OVERLAY_Z));
-        const [a, b, c, d] = loop;
-        fill.push(...a, OVERLAY_Z, ...b, OVERLAY_Z, ...c, OVERLAY_Z);
-        fill.push(...a, OVERLAY_Z, ...c, OVERLAY_Z, ...d, OVERLAY_Z);
-      }
+    for (const { loop, tunnel } of openSideOverlayStrips(host, frame)) {
+      outline.push(...loopToSegmentPositions(loop, OVERLAY_Z));
+      if (tunnel) continue;
+      const [a, b, c, d] = loop;
+      fill.push(...a, OVERLAY_Z, ...b, OVERLAY_Z, ...c, OVERLAY_Z);
+      fill.push(...a, OVERLAY_Z, ...c, OVERLAY_Z, ...d, OVERLAY_Z);
     }
     if (outline.length === 0) return null;
     const lines = new THREE.BufferGeometry();

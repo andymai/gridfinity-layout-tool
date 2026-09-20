@@ -342,7 +342,9 @@
     "workshop.view.orthographic",
     "workshop.view.perspective",
     "workshop.view.side",
-    "workshop.view.top"
+    "workshop.view.top",
+    "binDesigner.cutouts.openSideForm",
+    "binDesigner.cutouts.openSideForm.tunnel"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",
