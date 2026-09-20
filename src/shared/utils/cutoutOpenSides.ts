@@ -33,7 +33,12 @@ import {
   groupRepeatConfig,
 } from '@/shared/utils/cutoutArray';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { cutoutOutlineRing, ringBounds, type OutlineBounds } from '@/shared/utils/cutoutOutline';
+import {
+  cutoutOutlineRing,
+  meshOutlineRings,
+  ringBounds,
+  type OutlineBounds,
+} from '@/shared/utils/cutoutOutline';
 import { maskEdgesMm, type MaskEdgeMm } from '@/shared/utils/maskEdgeGeometry';
 import { resolveOverhang } from '@/shared/utils/overhang';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -51,6 +56,7 @@ export type OpenSideHost = Pick<
   | 'gridUnitMm'
   | 'gridUnitMmY'
   | 'wallThickness'
+  | 'meshAssets'
 > & {
   readonly cutouts: readonly Cutout[];
 };
@@ -61,7 +67,7 @@ export type OpenSideHost = Pick<
  * change on the shape before the thing they would have to change on the bin.
  */
 export function openSideBlocker(cutout: Cutout, host: OpenSideHost): OpenSideBlocker | null {
-  if (cutout.shape === 'text' || cutout.shape === 'mesh') return 'shape';
+  if (cutout.shape === 'text') return 'shape';
   // A repeated group copies one fused solid; its channels would have to be
   // planned per copy of the group, which nothing else in the pipeline does. A
   // repeat of one copy is the plain group the builder emits, so it passes.
@@ -244,6 +250,20 @@ function groupBounds(members: readonly Cutout[]): OutlineBounds | null {
   return hull(bs);
 }
 
+/**
+ * The extent an instance's channels measure from: its outline, or for a mesh
+ * imprint the silhouette of its asset, which is what the imprint stage cuts.
+ */
+function instanceBounds(inst: Cutout, params: OpenSideHost): OutlineBounds | null {
+  if (inst.shape === 'mesh') {
+    const rings = meshOutlineRings(inst, params.meshAssets?.[inst.meshId ?? '']);
+    if (rings.length === 0) return null;
+    return hull(rings.map(ringBounds));
+  }
+  const ring = cutoutOutlineRing(inst);
+  return ring ? ringBounds(ring) : null;
+}
+
 /** Every pocket that opens a wall, with the outline extent its channels measure from. */
 function openings(params: OpenSideHost): Opening[] {
   const out: Opening[] = [];
@@ -253,11 +273,11 @@ function openings(params: OpenSideHost): Opening[] {
       const specs = effectiveOpenSides(master, params);
       if (specs.length === 0) continue;
       for (const inst of master.array ? expandCutoutArray(master) : [master]) {
-        const ring = cutoutOutlineRing(inst);
-        if (!ring) continue;
+        const bounds = instanceBounds(inst, params);
+        if (!bounds) continue;
         out.push({
           ownerId: master.id,
-          bounds: ringBounds(ring),
+          bounds,
           specs,
           chamferMm: chamferOf(inst),
           cutDepth: inst.cutDepth,
@@ -399,6 +419,70 @@ export interface OpenSideExit {
   readonly centre: number;
   /** Opening width along the wall (mm). */
   readonly width: number;
+}
+
+/** The interior-frame span the channel's outline is built against. */
+export interface ChannelFrame {
+  readonly innerW: number;
+  readonly innerD: number;
+  readonly wallThickness: number;
+}
+
+/** How far past the wall's outer face an open-side channel runs (mm). */
+export const OPEN_SIDE_REACH_PAST_FACE_MM = 6;
+
+/**
+ * The channel's plan outline in the interior frame: from the shape's centre
+ * out past the wall, `lo..hi` wide, with the pocket's entry chamfer as a
+ * flare where the channel meets the wall's outer face so the part does not
+ * catch on the corner going in. A custom shape names the wall its ray meets
+ * first; a rectangle's is the interior's edge plus the wall. Past the face
+ * there is only air and the stacking lip, whose outer face is the wall's, so
+ * a short reach clears it. Wound counter-clockwise, which both the BREP
+ * sketch and the mesh cross-section want.
+ */
+export function openSideChannelOutline(
+  ch: OpenSideChannel,
+  frame: ChannelFrame
+): [number, number][] {
+  const alongX = ch.side === 'left' || ch.side === 'right';
+  const dir = ch.side === 'right' || ch.side === 'back' ? 1 : -1;
+  const inner = alongX ? frame.innerW : frame.innerD;
+  const face =
+    ch.faceMm === undefined
+      ? dir > 0
+        ? inner + frame.wallThickness
+        : -frame.wallThickness
+      : ch.faceMm;
+  const far = face + dir * OPEN_SIDE_REACH_PAST_FACE_MM;
+  const chamfer = Math.min(ch.chamferMm, frame.wallThickness, (ch.hi - ch.lo) / 2);
+  const { start, lo, hi } = ch;
+  const pts: [number, number][] =
+    chamfer > 0.05
+      ? [
+          [start, lo],
+          [face - dir * chamfer, lo],
+          [face, lo - chamfer],
+          [far, lo - chamfer],
+          [far, hi + chamfer],
+          [face, hi + chamfer],
+          [face - dir * chamfer, hi],
+          [start, hi],
+        ]
+      : [
+          [start, lo],
+          [far, lo],
+          [far, hi],
+          [start, hi],
+        ];
+  const xy: [number, number][] = pts.map(([a, c]) => (alongX ? [a, c] : [c, a]));
+  let area = 0;
+  for (let i = 0; i < xy.length; i++) {
+    const [x1, y1] = xy[i];
+    const [x2, y2] = xy[(i + 1) % xy.length];
+    area += x1 * y2 - x2 * y1;
+  }
+  return area < 0 ? xy.reverse() : xy;
 }
 
 /** An exit on a custom-shape bin, on the edge it actually leaves through. */

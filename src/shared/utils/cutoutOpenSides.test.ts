@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
 import {
   effectiveOpenSides,
   normalizeOpenSides,
@@ -62,9 +63,9 @@ describe('openSideBlocker', () => {
     ).toBeNull();
   });
 
-  it('refuses text and mesh, a repeated group, and a leaned pocket, in that order', () => {
+  it('refuses text, a repeated group, and a leaned pocket, in that order', () => {
     expect(openSideBlocker(rect({ shape: 'text' }), solid())).toBe('shape');
-    expect(openSideBlocker(rect({ shape: 'mesh' }), solid())).toBe('shape');
+    expect(openSideBlocker(rect({ shape: 'mesh' }), solid())).toBeNull();
     const repeated = rect({ groupId: 'g', array: REPEAT });
     expect(openSideBlocker(repeated, solid({ cutouts: [repeated] }))).toBe('grouped');
     expect(openSideBlocker(rect({ leanDeg: 10 }), solid())).toBe('lean');
@@ -270,6 +271,56 @@ describe('openSideChannels', () => {
 
   it('drops channels for owners the worker reports as empty', () => {
     expect(openSideChannels(solid({ cutouts: [rect()] }), new Set(['r1']))).toEqual([]);
+  });
+});
+
+describe('mesh imprints', () => {
+  // A 20×10×5 box asset whose silhouette is its footprint; rings live in the
+  // asset's own [0..20]×[0..10] frame.
+  const asset: MeshAsset = {
+    name: 'tool',
+    data: '',
+    triangleCount: 12,
+    sizeMm: { x: 20, y: 10, z: 5 },
+    outlines: [
+      [
+        { x: 0, y: 0 },
+        { x: 20, y: 0 },
+        { x: 20, y: 10 },
+        { x: 0, y: 10 },
+      ],
+    ],
+  };
+  function meshCutout(overrides: Partial<Cutout> = {}): Cutout {
+    return rect({
+      id: 'm1',
+      shape: 'mesh',
+      meshId: 'asset-1',
+      x: 10,
+      y: 20,
+      width: 20,
+      depth: 10,
+      cutDepth: 5,
+      ...overrides,
+    });
+  }
+
+  it('measures a mesh pocket by its asset silhouette, following the rotation', () => {
+    const [ch] = openSideChannels(
+      solid({ cutouts: [meshCutout()], meshAssets: { 'asset-1': asset } })
+    );
+    expect(ch.lo).toBeCloseTo(20, 5);
+    expect(ch.hi).toBeCloseTo(30, 5);
+    expect(ch.start).toBeCloseTo(20, 5);
+    expect(ch.edge).toBeCloseTo(30, 5);
+    const [turned] = openSideChannels(
+      solid({ cutouts: [meshCutout({ rotation: 90 })], meshAssets: { 'asset-1': asset } })
+    );
+    expect(turned.hi - turned.lo).toBeCloseTo(20, 5);
+  });
+
+  it('plans nothing for a mesh cutout whose asset is missing', () => {
+    expect(openSideChannels(solid({ cutouts: [meshCutout()], meshAssets: {} }))).toEqual([]);
   });
 });
 

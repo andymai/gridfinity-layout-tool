@@ -141,6 +141,57 @@ function minZInRegion(
   return minZ;
 }
 
+describe('mesh imprint open sides', () => {
+  it('runs the imprint out through the wall it names, and keeps it for a tunnel', async () => {
+    // The 20×10×5 box sits 10mm in from the left wall; open it to the left.
+    const open = solidBinParams([meshCutout({ openSides: [{ side: 'left' }] })]);
+    const tunnel = solidBinParams([meshCutout({ openSides: [{ side: 'left', tunnel: true }] })]);
+    const closed = solidBinParams([meshCutout()]);
+    await prepareMeshImprints(open, module);
+    const generate = getGenerateBin();
+    const opened = generate(open, undefined, true);
+    const tunnelled = generate(tunnel, undefined, true);
+    const enclosed = generate(closed, undefined, true);
+
+    const { innerW, innerD, wallHeight } = deriveDimensions(open, true);
+    const solidTop = SOCKET_HEIGHT + wallHeight;
+    // The wall and the fill between it and the pocket, across the pocket's 10mm span.
+    const wall = {
+      minX: -innerW / 2 - DEFAULT_BIN_PARAMS.wallThickness,
+      maxX: -innerW / 2 + 10 - 1,
+      minY: -innerD / 2 + 10 + 2,
+      maxY: -innerD / 2 + 10 + toolAsset.sizeMm.y - 2,
+    };
+    // Enclosed: nothing below the fill surface in that strip.
+    expect(minZInRegion(enclosed, wall, SOCKET_HEIGHT + 1)).toBeGreaterThan(solidTop - 0.5);
+    // Open: the channel floor sits at the pocket floor all the way out.
+    const floor = solidTop - toolAsset.sizeMm.z;
+    expect(minZInRegion(opened, wall, SOCKET_HEIGHT + 1)).toBeLessThan(floor + 0.5);
+    expect(minZInRegion(tunnelled, wall, SOCKET_HEIGHT + 1)).toBeLessThan(floor + 0.5);
+    // Tunnel: the wall's top face survives above the channel; open top: it does not.
+    const rim = { ...wall, maxX: -innerW / 2 - 0.2 };
+    const topOf = (mesh: { vertices: Float32Array; indices: Uint32Array }): number => {
+      let maxZ = -Infinity;
+      for (let t = 0; t < mesh.indices.length; t += 3) {
+        let cx = 0;
+        let cy = 0;
+        let cz = 0;
+        for (let k = 0; k < 3; k++) {
+          const v = mesh.indices[t + k];
+          cx += mesh.vertices[v * 3] / 3;
+          cy += mesh.vertices[v * 3 + 1] / 3;
+          cz += mesh.vertices[v * 3 + 2] / 3;
+        }
+        if (cx > rim.minX && cx < rim.maxX && cy > rim.minY && cy < rim.maxY)
+          maxZ = Math.max(maxZ, cz);
+      }
+      return maxZ;
+    };
+    expect(topOf(tunnelled)).toBeGreaterThan(solidTop - 0.5);
+    expect(topOf(opened)).toBeLessThan(solidTop - 0.5);
+  }, 120_000);
+});
+
 describe('mesh imprint generation (occt + manifold)', () => {
   it('carves a contoured pocket into a solid bin end-to-end', async () => {
     const params = solidBinParams([meshCutout()]);

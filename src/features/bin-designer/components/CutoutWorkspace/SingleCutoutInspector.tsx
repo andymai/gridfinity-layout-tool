@@ -279,7 +279,7 @@ export function SingleCutoutInspector({
                 />
               )}
               {/* A lid's plate cuts clean through, so it has no wall to open. */}
-              {cutout.shape !== 'mesh' && !throughOnly && (
+              {!throughOnly && (
                 <CutoutOpenSidesControls
                   cutout={cutout}
                   disabled={disabled}

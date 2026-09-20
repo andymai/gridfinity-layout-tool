@@ -16,6 +16,7 @@
  * feature-color tags carry through and tool-carved faces are identifiable.
  */
 
+import { openSideChannels } from '@/shared/utils/cutoutOpenSides';
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import type { BinParams } from '@/shared/types/bin';
 import {
@@ -42,6 +43,8 @@ import {
   boundsOverlap,
   minTopShoulder,
   buildInstanceTool,
+  buildChannelTool,
+  channelBounds,
 } from './meshImprintTools';
 import type { PreparedTool, ImprintFrame, Bounds2D } from './meshImprintTools';
 
@@ -225,6 +228,9 @@ export function imprintArrays(
   // Cavity color: the same tag contract as 2D cutouts. Ordinals come from the
   // FULL cutout list (matching the paint layer and cutoutBuilder).
   const colorOrdinal = new Map(enumerateCutoutColorUnits(params.cutouts).map((u, i) => [u.key, i]));
+  // Planned once for the design: the same channels the lip plan and the
+  // overlay read, of which only the mesh imprints' are cut here.
+  const channels = openSideChannels(params);
 
   const tools: Manifold[] = [];
   /** Provenance id → face tag for tool-carved cavity faces. */
@@ -239,6 +245,11 @@ export function imprintArrays(
       for (const instance of expandCutoutArray(cutout)) {
         if (clip && !boundsOverlap(instanceBounds(instance, frame), clip)) continue;
         const placed = buildInstanceTool(module, prepared, asset, instance, frame);
+        if (placed) cutoutParts.push(placed);
+      }
+      for (const ch of channels.filter((c) => c.ownerId === cutout.id)) {
+        if (clip && !boundsOverlap(channelBounds(ch, frame), clip)) continue;
+        const placed = buildChannelTool(module, ch, frame);
         if (placed) cutoutParts.push(placed);
       }
       if (cutoutParts.length === 0) continue;

@@ -16,6 +16,9 @@
  * feature-color tags carry through and tool-carved faces are identifiable.
  */
 
+import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
+import { openSideChannelOutline } from '@/shared/utils/cutoutOpenSides';
+import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
 import type { CrossSection, Manifold, ManifoldToplevel, Vec2, Vec3 } from 'manifold-3d';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
@@ -88,6 +91,12 @@ export interface ImprintFrame {
   readonly originY: number;
   /** World Z of the solid fill surface the pocket sinks from. */
   readonly solidTopZ: number;
+  /** Interior span and wall, for the open-side channels' outline. */
+  readonly innerW: number;
+  readonly innerD: number;
+  readonly wallThickness: number;
+  /** World Z an open-top channel is cut up to: above the rim, collar and lip. */
+  readonly breachTopZ: number;
 }
 
 export interface Bounds2D {
@@ -108,6 +117,58 @@ export function frameFromDimensions(
     originX: -dims.innerW / 2 + dims.innerOffsetX,
     originY: -dims.innerD / 2 + dims.innerOffsetY,
     solidTopZ: dims.baseOffsetZ + dims.wallHeight - params.cutoutConfig.topOffset,
+    innerW: dims.innerW,
+    innerD: dims.innerD,
+    wallThickness: params.wallThickness,
+    breachTopZ:
+      dims.baseOffsetZ +
+      dims.wallHeight +
+      (params.extraWallHeightMm ?? 0) +
+      LIP_HEIGHT +
+      CUT_RIM_CLEARANCE,
+  };
+}
+
+/**
+ * The open-side channel of a mesh imprint, in the mesh domain: the shared
+ * outline the BREP channels are cut from, extruded from the pocket floor up
+ * to the fill surface for a tunnel or through the rim and lip for an
+ * open-top channel. Unioned into the imprint's tool so it carries the same
+ * colour tag and subtracts in the same pass.
+ */
+export function buildChannelTool(
+  module: ManifoldToplevel,
+  ch: OpenSideChannel,
+  frame: ImprintFrame
+): Manifold | null {
+  const cutDepth = Math.min(Math.max(0, ch.cutDepth), frame.solidTopZ);
+  if (cutDepth <= 0) return null;
+  const zBottom = frame.solidTopZ - cutDepth;
+  const top = ch.tunnel ? frame.solidTopZ : frame.breachTopZ;
+  if (top <= zBottom) return null;
+  const outline = openSideChannelOutline(ch, frame).map(([x, y]): [number, number] => [
+    frame.originX + x,
+    frame.originY + y,
+  ]);
+  const section = new module.CrossSection([outline], 'Positive');
+  try {
+    const prism = module.Manifold.extrude(section, top - zBottom);
+    const placed = prism.translate([0, 0, zBottom]);
+    prism.delete();
+    return placed;
+  } finally {
+    section.delete();
+  }
+}
+
+/** Plan bounds of a channel outline, for the split-piece clip test. */
+export function channelBounds(ch: OpenSideChannel, frame: ImprintFrame): Bounds2D {
+  const pts = openSideChannelOutline(ch, frame);
+  return {
+    minX: frame.originX + Math.min(...pts.map(([x]) => x)),
+    maxX: frame.originX + Math.max(...pts.map(([x]) => x)),
+    minY: frame.originY + Math.min(...pts.map(([, y]) => y)),
+    maxY: frame.originY + Math.max(...pts.map(([, y]) => y)),
   };
 }
 

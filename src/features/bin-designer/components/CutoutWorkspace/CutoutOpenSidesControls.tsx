@@ -11,7 +11,7 @@ import {
 } from '@/shared/components/segmentedControlClasses';
 import { normalizeOpenSides, openSideBlocker } from '@/shared/utils/cutoutOpenSides';
 import type { OpenSideBlocker } from '@/shared/utils/cutoutOpenSides';
-import { cutoutOutlineRing, ringBounds } from '@/shared/utils/cutoutOutline';
+import { cutoutOutlineRing, meshOutlineRings, ringBounds } from '@/shared/utils/cutoutOutline';
 
 interface CutoutOpenSidesControlsProps {
   readonly cutout: Cutout;
@@ -66,8 +66,19 @@ export function CutoutOpenSidesControls({
   const blocker = openSideBlocker(cutout, params);
   const hintKey = blocker ? BLOCKER_HINT_KEY[blocker] : undefined;
   const specs = normalizeOpenSides(cutout.openSides) ?? [];
-  const ring = cutoutOutlineRing(cutout);
-  const bounds = ring ? ringBounds(ring) : null;
+  const rings =
+    cutout.shape === 'mesh'
+      ? meshOutlineRings(cutout, params.meshAssets?.[cutout.meshId ?? ''])
+      : [cutoutOutlineRing(cutout)].filter((r) => r !== null);
+  const bounds =
+    rings.length === 0
+      ? null
+      : rings.map(ringBounds).reduce((a, b) => ({
+          minX: Math.min(a.minX, b.minX),
+          minY: Math.min(a.minY, b.minY),
+          maxX: Math.max(a.maxX, b.maxX),
+          maxY: Math.max(a.maxY, b.maxY),
+        }));
 
   const commit = (next: readonly CutoutOpenSideSpec[]): void => {
     onUpdate({ openSides: normalizeOpenSides(next) });
