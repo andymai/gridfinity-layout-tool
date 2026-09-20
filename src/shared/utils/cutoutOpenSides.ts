@@ -27,7 +27,11 @@ import {
   MIN_OPEN_SIDE_WIDTH_MM,
   resolveCutoutLeanDeg,
 } from '@/shared/types/bin';
-import { expandCutoutArray, groupRepeatConfig } from '@/shared/utils/cutoutArray';
+import {
+  arrayInstanceCount,
+  expandCutoutArray,
+  groupRepeatConfig,
+} from '@/shared/utils/cutoutArray';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { cutoutOutlineRing, ringBounds, type OutlineBounds } from '@/shared/utils/cutoutOutline';
 import { resolveOverhang } from '@/shared/utils/overhang';
@@ -47,9 +51,11 @@ export type OpenSideHost = Pick<BinParams, 'base' | 'overhang' | 'cellMask'> & {
 export function openSideBlocker(cutout: Cutout, host: OpenSideHost): OpenSideBlocker | null {
   if (cutout.shape === 'text' || cutout.shape === 'mesh') return 'shape';
   // A repeated group copies one fused solid; its channels would have to be
-  // planned per copy of the group, which nothing else in the pipeline does.
-  if (cutout.groupId !== null && groupRepeatConfig(groupMembers(host, cutout.groupId))) {
-    return 'grouped';
+  // planned per copy of the group, which nothing else in the pipeline does. A
+  // repeat of one copy is the plain group the builder emits, so it passes.
+  if (cutout.groupId !== null) {
+    const repeat = groupRepeatConfig(groupMembers(host, cutout.groupId));
+    if (repeat && arrayInstanceCount(repeat) > 1) return 'grouped';
   }
   if (resolveCutoutLeanDeg(cutout) !== 0) return 'lean';
   if (!host.base.solid) return 'host';
@@ -160,10 +166,24 @@ function hull(bs: readonly OutlineBounds[]): OutlineBounds {
   };
 }
 
+/** True when `inner` lies entirely within `outer`. */
+function contains(outer: OutlineBounds, inner: OutlineBounds): boolean {
+  return (
+    inner.minX >= outer.minX &&
+    inner.maxX <= outer.maxX &&
+    inner.minY >= outer.minY &&
+    inner.maxY <= outer.maxY
+  );
+}
+
 /**
- * Combine member extents under the group's op. Union and exclude take the
- * hull; intersect the common interval; subtract the hull of everything but the
- * top z-indexed cutter, which mirrors `applyGroupOp`'s reading of the members.
+ * The result the group's op leaves, as the interval its members combine to:
+ * union and exclude take the hull; intersect the common interval; subtract the
+ * hull of everything but the top z-indexed cutter, which mirrors
+ * `applyGroupOp`'s reading of the members. An interval cannot tell an empty
+ * boolean from a full one, so the cases it can see are refused here (a cutter
+ * that swallows its base, an exclude of identical extents) and the worker
+ * skips any group whose boolean built nothing; the rest is an upper bound.
  */
 function groupBounds(members: readonly Cutout[]): OutlineBounds | null {
   const outlined: { c: Cutout; i: number; b: OutlineBounds }[] = [];
@@ -181,8 +201,16 @@ function groupBounds(members: readonly Cutout[]): OutlineBounds | null {
       return za !== zb ? zb - za : b.i - a.i;
     });
     pool = sorted.slice(1);
+    if (contains(sorted[0].b, hull(pool.map((e) => e.b)))) return null;
   }
   const bs = pool.map((e) => e.b);
+  if (
+    op === 'exclude' &&
+    bs.length > 1 &&
+    bs.every((b) => contains(b, bs[0]) && contains(bs[0], b))
+  ) {
+    return null;
+  }
   if (op === 'intersect') {
     const b = {
       minX: Math.max(...bs.map((x) => x.minX)),
@@ -231,21 +259,33 @@ function openings(params: OpenSideHost): Opening[] {
     if (ownerId === null) continue;
     const bounds = groupBounds(members);
     if (!bounds) continue;
+    // An intersected cavity stops at its shallowest member; every other op
+    // reaches its deepest.
+    const depths = members.map((m) => m.cutDepth);
+    const op = members[0].groupOp ?? DEFAULT_GROUP_OP;
     out.push({
       ownerId,
       bounds,
       specs: CUTOUT_OPEN_SIDES.flatMap((s) => bySide.get(s) ?? []),
       chamferMm: Math.max(...members.map(chamferOf)),
-      cutDepth: Math.max(...members.map((m) => m.cutDepth)),
+      cutDepth: op === 'intersect' ? Math.min(...depths) : Math.max(...depths),
     });
   }
   return out;
 }
 
-/** Every channel the design's open sides cut, gated exactly as the builder gates them. */
-export function openSideChannels(params: OpenSideHost): readonly OpenSideChannel[] {
+/**
+ * Every channel the design's open sides cut, gated exactly as the builder
+ * gates them. `emptyOwners` names cutouts whose cavity boolean built nothing
+ * (the worker knows, the plan cannot), so their channels are dropped too.
+ */
+export function openSideChannels(
+  params: OpenSideHost,
+  emptyOwners: ReadonlySet<string> = new Set()
+): readonly OpenSideChannel[] {
   const out: OpenSideChannel[] = [];
   for (const o of openings(params)) {
+    if (emptyOwners.has(o.ownerId)) continue;
     const b = o.bounds;
     for (const spec of o.specs) {
       const alongX = spec.side === 'left' || spec.side === 'right';

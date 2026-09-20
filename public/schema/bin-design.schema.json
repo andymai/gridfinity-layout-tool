@@ -698,7 +698,16 @@
           "type": "array",
           "maxItems": 4,
           "items": {
-            "$ref": "#/$defs/CutoutOpenSideSpec"
+            "anyOf": [
+              {
+                "$ref": "#/$defs/CutoutOpenSideSpec"
+              },
+              {
+                "enum": ["front", "back", "left", "right"],
+                "x-constant": { "enum": "CUTOUT_OPEN_SIDES" },
+                "description": "A bare wall name, as the first release wrote it: the same as a spec with no width and no tunnel."
+              }
+            ]
           },
           "description": "Bin walls the pocket opens through so a part slides in from the side. Any profile shape on a solid, untapered bin; a leaned pocket or a repeated group stays enclosed. Omit for enclosed."
         },

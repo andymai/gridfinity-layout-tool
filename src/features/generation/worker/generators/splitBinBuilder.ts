@@ -21,6 +21,7 @@ import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
 import type { BinGeometryContext } from './splitConnectorBuilder';
 import { buildLipSlotCuts } from './slotBuilder';
 import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
+import { buildLipBreachChannels } from './cutoutBuilder';
 import { isAbortError } from './utils/abort';
 import { resolveOverhang } from './overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -329,6 +330,25 @@ function splitSolidIntoPieces(
     // the opening back up, so cut it with the same tool the body got: same
     // `hasLip=true` cutter, shifted up by floorZ to convert body-local Z (floor
     // at Z=0) into absolute bin Z (socket bottom at Z=0).
+    // A solid bin's open-top channels and knife exits pass through the lip
+    // too, and they are refused under a taper exactly as the body's are.
+    if (params.base.solid && !overhang.taper) {
+      let lip: Shape3D = lipSolid;
+      for (const tool of buildLipBreachChannels(params, innerW, innerD, wallHeight)) {
+        const positioned = shiftToInterior(tool, floorZ);
+        try {
+          const newLip: Shape3D = unwrap(cut(lip as ValidSolid, positioned as ValidSolid));
+          lip.delete();
+          lip = newLip;
+        } catch {
+          /* one failed channel leaves the lip whole there, as an unsplit bin's cutAllBisect would */
+        } finally {
+          positioned.delete();
+        }
+      }
+      lipSolid = lip;
+    }
+
     if (params.walls.enabled) {
       const wallCuts = buildWallCutoutCuts(
         params,

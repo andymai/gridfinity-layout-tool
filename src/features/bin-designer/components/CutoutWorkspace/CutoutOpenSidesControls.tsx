@@ -167,7 +167,7 @@ export function CutoutOpenSidesControls({
                 </div>
               </div>
               <NumberField
-                label={t('binDesigner.cutouts.openSideWidth')}
+                label={`${t('binDesigner.cutouts.openSideWidth')} · ${t(SIDE_LABEL_KEY[spec.side])}`}
                 value={spec.widthMm ?? Number(full.toFixed(1))}
                 onChange={(widthMm) =>
                   patch(spec.side, { widthMm: widthMm >= full ? undefined : widthMm })

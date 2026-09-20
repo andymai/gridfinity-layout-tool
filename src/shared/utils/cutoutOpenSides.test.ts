@@ -69,6 +69,13 @@ describe('openSideBlocker', () => {
     expect(openSideBlocker(rect({ leanDeg: 10 }), DEFAULT_BIN_PARAMS)).toBe('lean');
   });
 
+  it('lets a one-copy repeat through and refuses a real repeat', () => {
+    const one = rect({ groupId: 'g', array: { ...REPEAT, rows: 1 } });
+    expect(openSideBlocker(one, solid({ cutouts: [one] }))).toBeNull();
+    const three = rect({ groupId: 'g', array: REPEAT });
+    expect(openSideBlocker(three, solid({ cutouts: [three] }))).toBe('grouped');
+  });
+
   it('refuses a cavity host and a tapered wall', () => {
     expect(openSideBlocker(rect(), DEFAULT_BIN_PARAMS)).toBe('host');
     const tapered = solid({
@@ -194,7 +201,7 @@ describe('openSideChannels', () => {
     expect(right?.ownerId).toBe('a');
   });
 
-  it('takes the common interval for an intersect group', () => {
+  it('takes the common interval and the shallowest depth for an intersect group', () => {
     const a = rect({ id: 'a', groupId: 'g', groupOp: 'intersect', openSides: [{ side: 'right' }] });
     const b = rect({
       id: 'b',
@@ -204,10 +211,44 @@ describe('openSideChannels', () => {
       y: 26,
       width: 30,
       depth: 12,
+      cutDepth: 4,
     });
     const [ch] = openSideChannels(solid({ cutouts: [a, b] }));
     expect(ch.lo).toBeCloseTo(26, 5);
     expect(ch.hi).toBeCloseTo(32, 5);
+    expect(ch.cutDepth).toBe(4);
+  });
+
+  it('plans nothing for a group whose op visibly empties it', () => {
+    const base = rect({
+      id: 'a',
+      groupId: 'g',
+      groupOp: 'subtract',
+      openSides: [{ side: 'right' }],
+    });
+    const cutter = rect({
+      id: 'b',
+      groupId: 'g',
+      groupOp: 'subtract',
+      x: 5,
+      y: 15,
+      width: 40,
+      depth: 22,
+      zIndex: 1,
+    });
+    expect(openSideChannels(solid({ cutouts: [base, cutter] }))).toEqual([]);
+    const twin = rect({
+      id: 'c',
+      groupId: 'x',
+      groupOp: 'exclude',
+      openSides: [{ side: 'right' }],
+    });
+    const twin2 = rect({ id: 'd', groupId: 'x', groupOp: 'exclude' });
+    expect(openSideChannels(solid({ cutouts: [twin, twin2] }))).toEqual([]);
+  });
+
+  it('drops channels for owners the worker reports as empty', () => {
+    expect(openSideChannels(solid({ cutouts: [rect()] }), new Set(['r1']))).toEqual([]);
   });
 });
 

@@ -90,8 +90,16 @@ describe('CutoutOpenSidesControls', () => {
       />
     );
     expect(screen.getByTestId('open-side-row-right')).toBeInTheDocument();
-    const rows = screen.getAllByTestId('compact-input-binDesigner.cutouts.openSideWidth');
-    // Front first (canonical order): its explicit 8mm; right shows the full 12mm depth.
+    // Each field's label names its side, so two openings never read alike.
+    const rows = [
+      screen.getByTestId(
+        'compact-input-binDesigner.cutouts.openSideWidth · binDesigner.cutouts.openSide.front'
+      ),
+      screen.getByTestId(
+        'compact-input-binDesigner.cutouts.openSideWidth · binDesigner.cutouts.openSide.right'
+      ),
+    ];
+    // Front carries its explicit 8mm; right shows the full 12mm depth.
     expect(rows[0]).toHaveValue('8');
     expect(rows[1]).toHaveValue('12');
     fireEvent.change(rows[1], { target: { value: '5' } });

@@ -1235,6 +1235,9 @@ export function buildCutoutCuts(
     }
   }
 
+  // Groups whose boolean built nothing: their open sides must not cut a
+  // channel out of a cavity that does not exist.
+  const emptyGroupOwners = new Set<string>();
   for (const [, groupMembers] of groups) {
     // One entry per copy of a repeated group; a plain group yields one.
     const indices: number[] = [];
@@ -1248,6 +1251,8 @@ export function buildCutoutCuts(
     // bounds), exactly as an ungrouped repeat's instances already do.
     if (indices.length > 0) {
       for (const m of groupMembers) cavityIndices.set(m.id, indices);
+    } else {
+      for (const m of groupMembers) emptyGroupOwners.add(m.id);
     }
   }
 
@@ -1323,7 +1328,7 @@ export function buildCutoutCuts(
   if (!interiorTaper) {
     const frame = { innerW, innerD, solidSurfaceZ, wallHeight, originX, originY };
     cutTools.push(...buildKnifeBreachChannels(params, frame, cavityTag));
-    cutTools.push(...buildOpenSideChannels(params, frame, cavityTag));
+    cutTools.push(...buildOpenSideChannels(params, frame, cavityTag, emptyGroupOwners));
   }
   const fuseTools =
     rawFuseShapes.length > 0
@@ -1454,11 +1459,14 @@ function openSideChannelOutline(
 function buildOpenSideChannels(
   params: BinParams,
   frame: BreachFrame,
-  cavityTag: (cutout: Cutout) => number
+  cavityTag: (cutout: Cutout) => number,
+  emptyOwners: ReadonlySet<string> = new Set(),
+  onlyThroughTop = false
 ): Shape3D[] {
   const channels: Shape3D[] = [];
   const byId = new Map(params.cutouts.map((c) => [c.id, c]));
-  for (const ch of openSideChannels(params)) {
+  for (const ch of openSideChannels(params, emptyOwners)) {
+    if (onlyThroughTop && ch.tunnel) continue;
     const owner = byId.get(ch.ownerId);
     if (!owner) continue;
     const effectiveDepth = Math.min(ch.cutDepth, frame.solidSurfaceZ);
@@ -1474,6 +1482,38 @@ function buildOpenSideChannels(
     channels.push(positioned);
   }
   return channels;
+}
+
+/**
+ * The breach channels a split bin's freshly built lip has to be cut with: the
+ * body already carries its half from the pipeline, and a lip fused on
+ * afterwards would seal every open-top channel and knife exit back up. Same
+ * tools, same body-local frame, so `splitBinBuilder` shifts them exactly as it
+ * shifts the wall-cutout tools. Tunnels stop below the lip and are left out.
+ */
+export function buildLipBreachChannels(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): Shape3D[] {
+  if (!params.base.solid) return [];
+  const solidSurfaceZ = wallHeight - params.cutoutConfig.topOffset;
+  if (solidSurfaceZ <= 0) return [];
+  const frame: BreachFrame = {
+    innerW,
+    innerD,
+    solidSurfaceZ,
+    wallHeight,
+    originX: -innerW / 2,
+    originY: -innerD / 2,
+  };
+  const tag = (): number => 0;
+  const visible = { ...params, cutouts: params.cutouts.filter((c) => c.hidden !== true) };
+  return [
+    ...buildKnifeBreachChannels(visible, frame, tag),
+    ...buildOpenSideChannels(visible, frame, tag, new Set(), true),
+  ];
 }
 
 /**
