@@ -17,6 +17,7 @@
  */
 
 import { openSideChannels } from '@/shared/utils/cutoutOpenSides';
+import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import type { BinParams } from '@/shared/types/bin';
 import {
@@ -230,7 +231,12 @@ export function imprintArrays(
   const colorOrdinal = new Map(enumerateCutoutColorUnits(params.cutouts).map((u, i) => [u.key, i]));
   // Planned once for the design: the same channels the lip plan and the
   // overlay read, of which only the mesh imprints' are cut here.
-  const channels = openSideChannels(params);
+  const channelsByOwner = new Map<string, OpenSideChannel[]>();
+  for (const ch of openSideChannels(params)) {
+    const list = channelsByOwner.get(ch.ownerId);
+    if (list) list.push(ch);
+    else channelsByOwner.set(ch.ownerId, [ch]);
+  }
 
   const tools: Manifold[] = [];
   /** Provenance id → face tag for tool-carved cavity faces. */
@@ -247,7 +253,7 @@ export function imprintArrays(
         const placed = buildInstanceTool(module, prepared, asset, instance, frame);
         if (placed) cutoutParts.push(placed);
       }
-      for (const ch of channels.filter((c) => c.ownerId === cutout.id)) {
+      for (const ch of channelsByOwner.get(cutout.id) ?? []) {
         if (clip && !boundsOverlap(channelBounds(ch, frame), clip)) continue;
         const placed = buildChannelTool(module, ch, frame);
         if (placed) cutoutParts.push(placed);

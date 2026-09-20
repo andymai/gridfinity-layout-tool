@@ -66,10 +66,18 @@ export function CutoutOpenSidesControls({
   const blocker = openSideBlocker(cutout, params);
   const hintKey = blocker ? BLOCKER_HINT_KEY[blocker] : undefined;
   const specs = normalizeOpenSides(cutout.openSides) ?? [];
-  const rings =
+  // A mesh whose asset is missing still has the footprint the editor drew,
+  // so its rows keep a real width rather than a zero.
+  const meshRings =
     cutout.shape === 'mesh'
       ? meshOutlineRings(cutout, params.meshAssets?.[cutout.meshId ?? ''])
-      : [cutoutOutlineRing(cutout)].filter((r) => r !== null);
+      : [];
+  const rings =
+    meshRings.length > 0
+      ? meshRings
+      : [
+          cutoutOutlineRing(cutout.shape === 'mesh' ? { ...cutout, shape: 'rectangle' } : cutout),
+        ].filter((r) => r !== null);
   const bounds =
     rings.length === 0
       ? null

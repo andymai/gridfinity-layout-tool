@@ -275,8 +275,6 @@ describe('openSideChannels', () => {
 });
 
 describe('mesh imprints', () => {
-  // A 20×10×5 box asset whose silhouette is its footprint; rings live in the
-  // asset's own [0..20]×[0..10] frame.
   const asset: MeshAsset = {
     name: 'tool',
     data: '',

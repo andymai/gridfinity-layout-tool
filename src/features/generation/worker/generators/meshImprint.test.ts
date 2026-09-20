@@ -143,7 +143,6 @@ function minZInRegion(
 
 describe('mesh imprint open sides', () => {
   it('runs the imprint out through the wall it names, and keeps it for a tunnel', async () => {
-    // The 20×10×5 box sits 10mm in from the left wall; open it to the left.
     const open = solidBinParams([meshCutout({ openSides: [{ side: 'left' }] })]);
     const tunnel = solidBinParams([meshCutout({ openSides: [{ side: 'left', tunnel: true }] })]);
     const closed = solidBinParams([meshCutout()]);
@@ -155,20 +154,16 @@ describe('mesh imprint open sides', () => {
 
     const { innerW, innerD, wallHeight } = deriveDimensions(open, true);
     const solidTop = SOCKET_HEIGHT + wallHeight;
-    // The wall and the fill between it and the pocket, across the pocket's 10mm span.
     const wall = {
       minX: -innerW / 2 - DEFAULT_BIN_PARAMS.wallThickness,
       maxX: -innerW / 2 + 10 - 1,
       minY: -innerD / 2 + 10 + 2,
       maxY: -innerD / 2 + 10 + toolAsset.sizeMm.y - 2,
     };
-    // Enclosed: nothing below the fill surface in that strip.
     expect(minZInRegion(enclosed, wall, SOCKET_HEIGHT + 1)).toBeGreaterThan(solidTop - 0.5);
-    // Open: the channel floor sits at the pocket floor all the way out.
     const floor = solidTop - toolAsset.sizeMm.z;
     expect(minZInRegion(opened, wall, SOCKET_HEIGHT + 1)).toBeLessThan(floor + 0.5);
     expect(minZInRegion(tunnelled, wall, SOCKET_HEIGHT + 1)).toBeLessThan(floor + 0.5);
-    // Tunnel: the wall's top face survives above the channel; open top: it does not.
     const rim = { ...wall, maxX: -innerW / 2 - 0.2 };
     const topOf = (mesh: { vertices: Float32Array; indices: Uint32Array }): number => {
       let maxZ = -Infinity;
