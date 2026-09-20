@@ -1,0 +1,23 @@
+src/shared/utils/cutoutOpenSides.ts
+  s_e56a2f2aca30d6::t_65b44d51599ad5 249-254
+src/shared/utils/cutoutOpenSides.test.ts
+  s_e56a2f2aca30d6::t_65b44d51599ad5 250-268
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e56a2f2aca30d6::t_65b44d51599ad5 1512-1529,1532
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ac5bf291242e60b926ab39d55246c8c07a63b4f7",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
