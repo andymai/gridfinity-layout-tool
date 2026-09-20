@@ -8,6 +8,7 @@ import { SHOWCASE_EXAMPLES } from './showcase';
 import { HERO_EXAMPLES } from './heroes';
 import { KNIFE_BLOCK_EXAMPLES } from './knifeBlock';
 import { INDEX_BLOCK_EXAMPLES } from './indexBlock';
+import { KEYHOLE_BLOCK_EXAMPLES } from './keyholeBlock';
 
 export const EXAMPLE_DESIGNS: readonly ExampleDesign[] = [
   ...WALL_CUTOUT_EXAMPLES,
@@ -18,6 +19,7 @@ export const EXAMPLE_DESIGNS: readonly ExampleDesign[] = [
   ...HERO_EXAMPLES,
   ...KNIFE_BLOCK_EXAMPLES,
   ...INDEX_BLOCK_EXAMPLES,
+  ...KEYHOLE_BLOCK_EXAMPLES,
 ];
 
 export function getExamplesByTechnique(technique: ExampleTechnique): ExampleDesign[] {

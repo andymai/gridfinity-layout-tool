@@ -317,6 +317,25 @@ export type CutoutOpenSide = 'front' | 'back' | 'left' | 'right';
 
 export const CUTOUT_OPEN_SIDES = ['front', 'back', 'left', 'right'] as const;
 
+/** One wall a pocket opens through, and how. */
+export interface CutoutOpenSideSpec {
+  readonly side: CutoutOpenSide;
+  /**
+   * Channel width across the exit (mm). Absent = the pocket's own width at
+   * that wall, so a keyhole is a wide pocket with a narrower exit.
+   */
+  readonly widthMm?: number;
+  /**
+   * Keep the wall above the pocket: the channel stops at the fill surface
+   * instead of running up through the rim and lip, so the part is held
+   * captive and the stacking lip stays whole. Absent = open to the top.
+   */
+  readonly tunnel?: boolean;
+}
+
+/** Narrowest channel the editor lets a side take (mm). */
+export const MIN_OPEN_SIDE_WIDTH_MM = 1;
+
 /** Per-edge enable flags for split-axis cutout scoops, in the cutout's local frame. */
 export interface CutoutScoopEdges {
   readonly left: boolean;
@@ -473,13 +492,13 @@ export interface Cutout {
    */
   readonly scoopEdges?: CutoutScoopEdges;
   /**
-   * Bin walls the pocket opens through, floor to rim, so a part slides in from
-   * the side (an index block for a framing square, a ruler channel). Rectangles
-   * on a solid, untapered host only, ungrouped, upright, rotated in 90° steps;
-   * anywhere else the pocket stays enclosed and the editor says why
-   * (`openSideBlocker`). Absent or empty = enclosed on every side.
+   * Bin walls the pocket opens through so a part slides in from the side (an
+   * index block for a framing square, a ruler channel, a keyhole for a tool
+   * handle). Sides are named in the bin's frame. Any profile shape on a solid,
+   * untapered host; a leaned pocket and a repeated group stay enclosed and the
+   * editor says why (`openSideBlocker`). Absent or empty = enclosed.
    */
-  readonly openSides?: CutoutOpenSide[];
+  readonly openSides?: CutoutOpenSideSpec[];
   /**
    * Editor-only display name shown in the shape list. Optional —
    * unset rows fall back to a label derived from the shape and its size, so

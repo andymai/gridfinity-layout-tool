@@ -155,13 +155,15 @@ The exported design JSON format is documented in `docs/schemas/bin-design.md`
 (field reference, recipes, and the traps), and hand-written files can be checked
 with `pnpm run validate:json`.
 
-- **Open-sided pockets** — a rectangle cutout on a solid bin can name the walls it runs out
-  through (`Cutout.openSides`, bin frame), floor to rim, so flat stock slides in from the side
-  (index blocks for a framing square). One gate, `effectiveOpenSides` in
-  `src/shared/utils/cutoutOpenSides.ts`, serves the worker's `buildOpenSideChannels`, the
-  `openSide` lip gaps, the canvas overlay and the inspector's chips, so no reader can report a
-  breach another skips; the scoop on the opened local edge is dropped or the floor humps before
-  the wall.
+- **Open-sided pockets** — a cutout on a solid bin can name the walls it runs out through
+  (`Cutout.openSides`, bin frame, one spec per wall with an optional narrower channel width and a
+  tunnel form that keeps the wall above the pocket), so flat stock slides in from the side or a
+  tool hangs by its handle. One plan, `openSideChannels` in `src/shared/utils/cutoutOpenSides.ts`,
+  serves the worker's `buildOpenSideChannels`, the `openSide` lip gaps, the canvas overlay and the
+  inspector's chips, so no reader can report a breach another skips; it measures the shape's
+  outline (`src/shared/utils/cutoutOutline.ts`, shared with the Pathfinder preview), so a turned
+  slot exits at its true width. An open shape loses its scoop or the flat channel floor humps
+  against the fillet; a group is measured by its members' combined extent.
 - **Epoch pattern**: `store.setParam()` increments epoch → triggers regeneration. Only properties the worker reads bump it, so cutout toggles split three ways. `locked` is editor state the worker never sees, so it calls `pushHistoryEntry(state, { affectsGeometry: false })` and undo works without a rebuild. `hidden` IS geometry: `buildCutoutCuts` filters hidden cutouts out of the cavity, group and label loops alike (a hidden group member stops contributing to its boolean), so hide, show and `showAllCutouts` all regenerate. `zIndex` is geometry only when the design has a group, since ordering's only geometric role is sequencing boolean ops inside one
 - **Spacer / riser (`base.spacer`)**: a floorless bin used as a riser so bins of different heights finish flush. Deliberately NOT a new `BinStyle` but a base property, so it composes with wall features and doesn't ripple through the ~20 `style` consumers.
   - Derives `dimensions.lightweight = true` and asks `lightweightBaseBuilder` for the `'through'` open direction: **zShift 0**, so the cup opens at BOTH ends. The floor-opening slug punches the body floor over each cup, making the whole cell a through-hole.

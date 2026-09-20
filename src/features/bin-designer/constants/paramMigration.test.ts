@@ -1553,7 +1553,7 @@ describe('migrateParams', () => {
       expect(knife && 'handleDiameterMm' in knife).toBe(false);
     });
 
-    it('canonicalizes open sides and drops an empty or unknown set', () => {
+    it('lifts bare wall names into specs, canonicalizes them, and drops an empty or unknown set', () => {
       const rect = (openSides: unknown) =>
         ({
           id: 'r',
@@ -1571,7 +1571,17 @@ describe('migrateParams', () => {
         }) as unknown as BinParams['cutouts'][number];
       expect(
         migrateParams({ cutouts: [rect(['right', 'front', 'right', 'up'])] }).cutouts[0].openSides
-      ).toEqual(['front', 'right']);
+      ).toEqual([{ side: 'front' }, { side: 'right' }]);
+      expect(
+        migrateParams({
+          cutouts: [
+            rect([
+              { side: 'left', widthMm: 6, tunnel: true },
+              { side: 'left', widthMm: 0 },
+            ]),
+          ],
+        }).cutouts[0].openSides
+      ).toEqual([{ side: 'left', widthMm: 6, tunnel: true }]);
       expect('openSides' in migrateParams({ cutouts: [rect([])] }).cutouts[0]).toBe(false);
       expect('openSides' in migrateParams({ cutouts: [rect('right')] }).cutouts[0]).toBe(false);
     });

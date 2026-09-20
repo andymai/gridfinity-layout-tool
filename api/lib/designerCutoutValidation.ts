@@ -12,6 +12,8 @@ import { validateTextStyleOverride, LABEL_TEXT_MAX_LENGTH } from './designerText
 const VALID_CUTOUT_COLOR_SCOPES = ['floor', 'floorAndWalls'] as const;
 /** Mirrors the client `CUTOUT_OPEN_SIDES`. */
 const VALID_CUTOUT_OPEN_SIDES = ['front', 'back', 'left', 'right'] as const;
+/** Mirrors the client `MIN_OPEN_SIDE_WIDTH_MM`. */
+const MIN_OPEN_SIDE_WIDTH_MM = 1;
 
 export const VALID_CUTOUT_FILL_REFERENCES = ['rim', 'floor'] as const;
 
@@ -88,15 +90,29 @@ export function validateCutouts(value: unknown): string | null {
       return `cutouts[${i}].leanDeg must be a number within ±${CONSTRAINTS.MAX_CUTOUT_LEAN_DEG}`;
     }
     // Open sides name walls the worker breaches, so an unknown entry must stop
-    // here rather than ride into storage as an inert string.
+    // here rather than ride into storage as an inert string. Each entry is a
+    // spec object; a bare wall name is the form the first release wrote and
+    // the client migrates it up.
     if (c.openSides !== undefined) {
       if (!Array.isArray(c.openSides) || c.openSides.length > VALID_CUTOUT_OPEN_SIDES.length) {
         return `cutouts[${i}].openSides must be an array of at most ${VALID_CUTOUT_OPEN_SIDES.length} sides`;
       }
       for (let k = 0; k < c.openSides.length; k++) {
         const entry = (c.openSides as unknown[])[k];
-        if (!VALID_CUTOUT_OPEN_SIDES.includes(entry as (typeof VALID_CUTOUT_OPEN_SIDES)[number])) {
-          return `cutouts[${i}].openSides[${k}] must be one of: ${VALID_CUTOUT_OPEN_SIDES.join(', ')}`;
+        const side = isObject(entry) ? entry.side : entry;
+        if (!VALID_CUTOUT_OPEN_SIDES.includes(side as (typeof VALID_CUTOUT_OPEN_SIDES)[number])) {
+          return `cutouts[${i}].openSides[${k}].side must be one of: ${VALID_CUTOUT_OPEN_SIDES.join(', ')}`;
+        }
+        if (isObject(entry)) {
+          if (
+            entry.widthMm !== undefined &&
+            !(isNumber(entry.widthMm) && entry.widthMm >= MIN_OPEN_SIDE_WIDTH_MM)
+          ) {
+            return `cutouts[${i}].openSides[${k}].widthMm must be a number of at least ${MIN_OPEN_SIDE_WIDTH_MM}`;
+          }
+          if (entry.tunnel !== undefined && typeof entry.tunnel !== 'boolean') {
+            return `cutouts[${i}].openSides[${k}].tunnel must be boolean`;
+          }
         }
       }
     }

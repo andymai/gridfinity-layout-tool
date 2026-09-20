@@ -15,163 +15,19 @@
 
 import polygonClipping, { type MultiPolygon, type Polygon, type Ring } from 'polygon-clipping';
 import type { Cutout, GroupOp } from '@/features/bin-designer/types';
-import {
-  DEFAULT_GROUP_OP,
-  MIN_PATH_POINTS,
-  DEFAULT_POLYGON_SIDES,
-} from '@/features/bin-designer/types';
-import {
-  regularPolygonPoints,
-  slotCornerRadius,
-  clampPolygonSides,
-} from '@/shared/utils/cutoutPolygon';
-import { flattenPath, type Point2D } from './pathGeometryBezier';
-
-/** Number of segments used to flatten a circular cutout outline. */
-const CIRCLE_SEGMENTS = 64;
-
-/** Number of segments per 90° of arc for a rounded rectangle corner. */
-const CORNER_SEGMENTS_PER_QUADRANT = 8;
-
-/**
- * Rotate a point `[x, y]` around `(cx, cy)` by a cutout's `rotation`.
- *
- * `Cutout.rotation` is clockwise-positive — `CutoutShapeMesh` renders at
- * `-rotation` and `cutoutBuilder` extrudes at `rotate(shape, -rotation)` — so
- * the CCW math below is fed the negated angle. Rotating CCW here mirrors every
- * non-symmetric member, which shows up as a Pathfinder preview (and an
- * empty-result check) that disagrees with the mesh the worker cuts.
- */
-function rotatePair(
-  x: number,
-  y: number,
-  cx: number,
-  cy: number,
-  rotationDeg: number
-): [number, number] {
-  if (rotationDeg === 0) return [x, y];
-  const a = (-rotationDeg * Math.PI) / 180;
-  const cos = Math.cos(a);
-  const sin = Math.sin(a);
-  const dx = x - cx;
-  const dy = y - cy;
-  return [cx + dx * cos - dy * sin, cy + dx * sin + dy * cos];
-}
-
-/**
- * Build the outline ring for a rectangle cutout (with optional rounded corners),
- * already rotated around its center.
- */
-function rectangleRing(c: Cutout): Ring {
-  const cx = c.x + c.width / 2;
-  const cy = c.y + c.depth / 2;
-  const r = Math.max(0, Math.min(c.cornerRadius, c.width / 2, c.depth / 2));
-  const ring: Ring = [];
-
-  const push = (x: number, y: number): void => {
-    ring.push(rotatePair(x, y, cx, cy, c.rotation));
-  };
-
-  if (r === 0) {
-    push(c.x, c.y);
-    push(c.x + c.width, c.y);
-    push(c.x + c.width, c.y + c.depth);
-    push(c.x, c.y + c.depth);
-    return ring;
-  }
-
-  // Arc helper: sample CORNER_SEGMENTS_PER_QUADRANT points along a 90° arc
-  // from startAngle (in radians) to startAngle + 90°, centered at (acx, acy).
-  const arc = (acx: number, acy: number, startAngle: number): void => {
-    const step = Math.PI / 2 / CORNER_SEGMENTS_PER_QUADRANT;
-    for (let i = 0; i <= CORNER_SEGMENTS_PER_QUADRANT; i++) {
-      const a = startAngle + step * i;
-      push(acx + r * Math.cos(a), acy + r * Math.sin(a));
-    }
-  };
-
-  // Walk CCW starting from bottom-left arc center.
-  arc(c.x + r, c.y + r, Math.PI); // bottom-left (180° → 270°)
-  arc(c.x + c.width - r, c.y + r, -Math.PI / 2); // bottom-right (270° → 360°)
-  arc(c.x + c.width - r, c.y + c.depth - r, 0); // top-right
-  arc(c.x + r, c.y + c.depth - r, Math.PI / 2); // top-left
-  return ring;
-}
-
-/**
- * Build the outline ring for a circle cutout (width/depth = the two diameters).
- * Circles carry independent width and depth and the worker cuts the true
- * ellipse (`ellipsePolygonDrawing`), so the preview must sample the same one or
- * a grouped ellipse's boolean preview diverges from the mesh along its long axis.
- */
-function circleRing(c: Cutout): Ring {
-  const cx = c.x + c.width / 2;
-  const cy = c.y + c.depth / 2;
-  const rx = c.width / 2;
-  const ry = c.depth / 2;
-  const ring: Ring = [];
-  for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
-    const a = (i / CIRCLE_SEGMENTS) * Math.PI * 2;
-    ring.push(rotatePair(cx + rx * Math.cos(a), cy + ry * Math.sin(a), cx, cy, c.rotation));
-  }
-  return ring;
-}
-
-/** Build the outline ring for a regular-polygon cutout, rotated around center. */
-function polygonRing(c: Cutout): Ring | null {
-  const cx = c.x + c.width / 2;
-  const cy = c.y + c.depth / 2;
-  const pts = regularPolygonPoints(
-    clampPolygonSides(c.sides ?? DEFAULT_POLYGON_SIDES),
-    c.width,
-    c.depth
-  );
-  if (pts.length < 3) return null;
-  // Points are centered at origin; offset to the cutout center, then rotate.
-  return pts.map((p): [number, number] => rotatePair(cx + p.x, cy + p.y, cx, cy, c.rotation));
-}
-
-/** Build the outline ring for a bezier path cutout (vertices are absolute mm). */
-function pathRing(c: Cutout): Ring | null {
-  if (!c.path || c.path.length < MIN_PATH_POINTS) return null;
-  const flat: Point2D[] = flattenPath(c.path);
-  if (flat.length < 3) return null;
-  const cx = c.x + c.width / 2;
-  const cy = c.y + c.depth / 2;
-  return flat.map((p): [number, number] => rotatePair(p.x, p.y, cx, cy, c.rotation));
-}
+import { DEFAULT_GROUP_OP } from '@/features/bin-designer/types';
+import { cutoutOutlineRing } from '@/shared/utils/cutoutOutline';
 
 /**
  * Convert a cutout to a polygon-clipping `Polygon` (single outer ring,
  * no holes). Returns `null` for cutouts that are too degenerate to outline.
- *
- * Insertion `clearance` is intentionally NOT applied here: the editor shows the
- * nominal size the user typed, while the worker expands by clearance at cut
- * time. For grouped Pathfinder previews this means two insert shapes can read
- * as touching-but-separate in the preview yet merge in the exported mesh — a
- * sub-millimetre discrepancy we accept so the on-screen outline matches the
- * entered dimensions. Don't "fix" this by adding clearance without revisiting
- * that trade-off.
+ * The ring itself comes from `@/shared/utils/cutoutOutline`, which the worker
+ * and the lip-gap plan sample too, so a group's preview and its open-side
+ * channels measure the same shape.
  */
 export function cutoutToPolygon(c: Cutout): Polygon | null {
-  // A text element contributes nothing to a group's boolean (the worker skips
-  // it), so giving it a footprint here would preview a merge that never cuts.
-  if (c.shape === 'text') return null;
-  if (c.shape === 'path') {
-    const ring = pathRing(c);
-    return ring ? [ring] : null;
-  }
-  if (c.width <= 0 || c.depth <= 0) return null;
-  if (c.shape === 'circle') return [circleRing(c)];
-  if (c.shape === 'polygon') {
-    const ring = polygonRing(c);
-    return ring ? [ring] : null;
-  }
-  if (c.shape === 'slot' || c.shape === 'knifeSlot') {
-    // Stadium = rounded rect with fully-rounded ends (radius = half short side).
-    return [rectangleRing({ ...c, cornerRadius: slotCornerRadius(c.width, c.depth) })];
-  }
-  return [rectangleRing(c)];
+  const ring = cutoutOutlineRing(c);
+  return ring ? [ring] : null;
 }
 
 /**

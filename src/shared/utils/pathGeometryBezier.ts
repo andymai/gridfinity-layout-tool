@@ -8,7 +8,7 @@
  * curve's local flatness.
  */
 
-import type { PathPoint } from '@/features/bin-designer/types';
+import type { PathPoint } from '@/shared/types/bin';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
 
 /** Default bezier flattening tolerance in mm */

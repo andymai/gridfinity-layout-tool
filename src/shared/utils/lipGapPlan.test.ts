@@ -487,7 +487,7 @@ describe('lipGaps: open-side rectangles', () => {
       cornerRadius: 0,
       label: '',
       groupId: null,
-      openSides: ['right'],
+      openSides: [{ side: 'right' }],
       ...overrides,
     };
   }
@@ -503,14 +503,18 @@ describe('lipGaps: open-side rectangles', () => {
     expect((open[0].lo + open[0].hi) / 2).toBeCloseTo(30 + 5 - INNER / 2, 5);
   });
 
-  it('registers nothing for a pocket the builder leaves enclosed', () => {
-    const gaps = lipGaps(
-      bin({
-        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
-        cutouts: [openRect({ rotation: 45 })],
-      })
-    );
-    expect(gaps.filter((g) => g.source === 'openSide')).toEqual([]);
+  it('registers nothing for a tunnel or a pocket the builder leaves enclosed', () => {
+    const solid = { ...DEFAULT_BIN_PARAMS.base, solid: true };
+    expect(
+      lipGaps(bin({ base: solid, cutouts: [openRect({ leanDeg: 10 })] })).filter(
+        (g) => g.source === 'openSide'
+      )
+    ).toEqual([]);
+    expect(
+      lipGaps(
+        bin({ base: solid, cutouts: [openRect({ openSides: [{ side: 'right', tunnel: true }] })] })
+      ).filter((g) => g.source === 'openSide')
+    ).toEqual([]);
   });
 });
 

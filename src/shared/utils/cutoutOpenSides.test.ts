@@ -3,11 +3,10 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import {
   effectiveOpenSides,
-  localEdgeFacing,
   normalizeOpenSides,
   openSideBlocker,
+  openSideChannels,
   openSideWallExits,
-  rectangleWorldHalfExtents,
 } from './cutoutOpenSides';
 
 const INNER = 81.1;
@@ -25,7 +24,7 @@ function rect(overrides: Partial<Cutout> = {}): Cutout {
     cornerRadius: 0,
     label: '',
     groupId: null,
-    openSides: ['right'],
+    openSides: [{ side: 'right' }],
     ...overrides,
   };
 }
@@ -38,38 +37,36 @@ function solid(overrides: Partial<BinParams> = {}): BinParams {
   };
 }
 
+const REPEAT = {
+  mode: 'grid' as const,
+  cols: 1,
+  rows: 3,
+  pitchX: 12,
+  pitchY: 15,
+  count: 1,
+  radius: 20,
+  startAngle: 0,
+  rotateToCenter: false,
+};
+
 describe('openSideBlocker', () => {
-  it('passes an upright, ungrouped, square-rotated rectangle on a solid host', () => {
+  it('passes any profile shape at any rotation on a solid host', () => {
     expect(openSideBlocker(rect(), solid())).toBeNull();
-    expect(openSideBlocker(rect({ rotation: 270 }), solid())).toBeNull();
+    expect(openSideBlocker(rect({ rotation: 37 }), solid())).toBeNull();
+    expect(openSideBlocker(rect({ shape: 'circle' }), solid())).toBeNull();
+    expect(openSideBlocker(rect({ shape: 'slot' }), solid())).toBeNull();
+    expect(
+      openSideBlocker(rect({ groupId: 'g' }), solid({ cutouts: [rect({ groupId: 'g' })] }))
+    ).toBeNull();
   });
 
-  it('names the cutout-side reason before the host-side one', () => {
-    expect(openSideBlocker(rect({ shape: 'circle' }), solid())).toBe('shape');
-    expect(openSideBlocker(rect({ groupId: 'g' }), solid())).toBe('grouped');
-    expect(openSideBlocker(rect({ rotation: 45 }), solid())).toBe('rotation');
+  it('refuses text and mesh, a repeated group, and a leaned pocket, in that order', () => {
+    expect(openSideBlocker(rect({ shape: 'text' }), solid())).toBe('shape');
+    expect(openSideBlocker(rect({ shape: 'mesh' }), solid())).toBe('shape');
+    const repeated = rect({ groupId: 'g', array: REPEAT });
+    expect(openSideBlocker(repeated, solid({ cutouts: [repeated] }))).toBe('grouped');
     expect(openSideBlocker(rect({ leanDeg: 10 }), solid())).toBe('lean');
-    expect(
-      openSideBlocker(
-        rect({
-          array: {
-            mode: 'radial',
-            cols: 1,
-            rows: 1,
-            pitchX: 12,
-            pitchY: 12,
-            count: 6,
-            radius: 20,
-            startAngle: 0,
-            rotateToCenter: true,
-          },
-        }),
-        solid()
-      )
-    ).toBe('rotation');
-    expect(openSideBlocker(rect({ rotation: 45, groupId: 'g' }), DEFAULT_BIN_PARAMS)).toBe(
-      'grouped'
-    );
+    expect(openSideBlocker(rect({ leanDeg: 10 }), DEFAULT_BIN_PARAMS)).toBe('lean');
   });
 
   it('refuses a cavity host and a tapered wall', () => {
@@ -97,112 +94,136 @@ describe('openSideBlocker', () => {
 });
 
 describe('normalizeOpenSides', () => {
-  it('keeps real sides once each in canonical order, and drops an empty set', () => {
-    expect(normalizeOpenSides(['right', 'front', 'right', 'up'])).toEqual(['front', 'right']);
+  it('lifts bare wall names into specs and keeps one per side in canonical order', () => {
+    expect(normalizeOpenSides(['right', 'front', 'right', 'up'])).toEqual([
+      { side: 'front' },
+      { side: 'right' },
+    ]);
     expect(normalizeOpenSides([])).toBeUndefined();
     expect(normalizeOpenSides('right')).toBeUndefined();
+  });
+
+  it('keeps a valid width and a true tunnel, and drops anything else', () => {
+    expect(
+      normalizeOpenSides([
+        { side: 'right', widthMm: 8, tunnel: true },
+        { side: 'left', widthMm: 0.2, tunnel: false },
+        { side: 'back', widthMm: 'wide' },
+      ])
+    ).toEqual([{ side: 'back' }, { side: 'left' }, { side: 'right', widthMm: 8, tunnel: true }]);
   });
 });
 
 describe('effectiveOpenSides', () => {
   it('is empty for a hidden or gated cutout and the stored set otherwise', () => {
     expect(effectiveOpenSides(rect({ hidden: true }), solid())).toEqual([]);
-    expect(effectiveOpenSides(rect({ rotation: 30 }), solid())).toEqual([]);
-    expect(effectiveOpenSides(rect({ openSides: ['back', 'left'] }), solid())).toEqual([
-      'back',
-      'left',
+    expect(effectiveOpenSides(rect({ leanDeg: 5 }), solid())).toEqual([]);
+    expect(
+      effectiveOpenSides(rect({ openSides: [{ side: 'back' }, { side: 'left' }] }), solid())
+    ).toEqual([{ side: 'back' }, { side: 'left' }]);
+  });
+});
+
+describe('openSideChannels', () => {
+  it('runs from the shape centre at its full extent across the exit', () => {
+    const [ch] = openSideChannels(solid({ cutouts: [rect()] }));
+    expect(ch).toMatchObject({ ownerId: 'r1', side: 'right', tunnel: false, cutDepth: 8 });
+    expect(ch.lo).toBeCloseTo(20, 5);
+    expect(ch.hi).toBeCloseTo(32, 5);
+    expect(ch.start).toBeCloseTo(25, 5);
+    expect(ch.edge).toBeCloseTo(40, 5);
+  });
+
+  it('measures a turned slot at its true width, not its bounding rectangle', () => {
+    const [ch] = openSideChannels(
+      solid({ cutouts: [rect({ shape: 'slot', rotation: 90, openSides: [{ side: 'front' }] })] })
+    );
+    // A 30×12 stadium turned a quarter spans 12 along X.
+    expect(ch.hi - ch.lo).toBeCloseTo(12, 5);
+    expect(ch.edge).toBeCloseTo(26 - 15, 5);
+  });
+
+  it('narrows to an explicit width centred on the shape, never wider than the shape', () => {
+    const [ch] = openSideChannels(
+      solid({ cutouts: [rect({ openSides: [{ side: 'right', widthMm: 4, tunnel: true }] })] })
+    );
+    expect(ch.lo).toBeCloseTo(24, 5);
+    expect(ch.hi).toBeCloseTo(28, 5);
+    expect(ch.tunnel).toBe(true);
+    const [wide] = openSideChannels(
+      solid({ cutouts: [rect({ openSides: [{ side: 'right', widthMm: 40 }] })] })
+    );
+    expect(wide.hi - wide.lo).toBeCloseTo(12, 5);
+  });
+
+  it('carries the entry chamfer, never negative', () => {
+    const [ch] = openSideChannels(solid({ cutouts: [rect({ chamferWidth: 1.5 })] }));
+    expect(ch.chamferMm).toBe(1.5);
+    const [none] = openSideChannels(solid({ cutouts: [rect({ chamferWidth: -2 })] }));
+    expect(none.chamferMm).toBe(0);
+  });
+
+  it('plans one channel per repeat copy', () => {
+    const chs = openSideChannels(solid({ cutouts: [rect({ array: REPEAT })] }));
+    expect(chs.map((c) => (c.lo + c.hi) / 2)).toEqual([
+      expect.closeTo(26, 5),
+      expect.closeTo(41, 5),
+      expect.closeTo(56, 5),
     ]);
   });
-});
 
-describe('rectangleWorldHalfExtents', () => {
-  it('swaps the axes on a quarter turn only', () => {
-    expect(rectangleWorldHalfExtents({ width: 30, depth: 12, rotation: 0 })).toEqual({
-      halfX: 15,
-      halfY: 6,
+  it('measures a group by its combined extent and opens it once per side', () => {
+    const a = rect({ id: 'a', groupId: 'g', groupOp: 'union', openSides: [{ side: 'right' }] });
+    const b = rect({
+      id: 'b',
+      groupId: 'g',
+      groupOp: 'union',
+      x: 30,
+      y: 26,
+      width: 20,
+      depth: 20,
+      cutDepth: 12,
+      openSides: [{ side: 'right' }, { side: 'back' }],
     });
-    expect(rectangleWorldHalfExtents({ width: 30, depth: 12, rotation: 90 })).toEqual({
-      halfX: 6,
-      halfY: 15,
-    });
-    expect(rectangleWorldHalfExtents({ width: 30, depth: 12, rotation: 180 })).toEqual({
-      halfX: 15,
-      halfY: 6,
-    });
-    expect(rectangleWorldHalfExtents({ width: 30, depth: 12, rotation: -90 })).toEqual({
-      halfX: 6,
-      halfY: 15,
-    });
+    const chs = openSideChannels(solid({ cutouts: [a, b] }));
+    expect(chs.map((c) => c.side)).toEqual(['back', 'right']);
+    const right = chs.find((c) => c.side === 'right');
+    expect(right?.lo).toBeCloseTo(20, 5);
+    expect(right?.hi).toBeCloseTo(46, 5);
+    expect(right?.cutDepth).toBe(12);
+    expect(right?.ownerId).toBe('a');
   });
-});
 
-describe('localEdgeFacing', () => {
-  it('is the identity unrotated and follows the knife exit table when turned', () => {
-    expect(localEdgeFacing('right', 0)).toBe('right');
-    expect(localEdgeFacing('front', 0)).toBe('front');
-    // Local +X sweeps right → front → left → back through 0/90/180/270.
-    expect(localEdgeFacing('front', 90)).toBe('right');
-    expect(localEdgeFacing('left', 180)).toBe('right');
-    expect(localEdgeFacing('back', 270)).toBe('right');
-    expect(localEdgeFacing('right', 90)).toBe('back');
+  it('takes the common interval for an intersect group', () => {
+    const a = rect({ id: 'a', groupId: 'g', groupOp: 'intersect', openSides: [{ side: 'right' }] });
+    const b = rect({
+      id: 'b',
+      groupId: 'g',
+      groupOp: 'intersect',
+      x: 20,
+      y: 26,
+      width: 30,
+      depth: 12,
+    });
+    const [ch] = openSideChannels(solid({ cutouts: [a, b] }));
+    expect(ch.lo).toBeCloseTo(26, 5);
+    expect(ch.hi).toBeCloseTo(32, 5);
   });
 });
 
 describe('openSideWallExits', () => {
-  it('centres each exit on the pocket and reports its span across the wall', () => {
-    const exits = openSideWallExits(
-      solid({ cutouts: [rect({ openSides: ['right', 'front'] })] }),
-      INNER,
-      INNER
-    );
-    expect(exits).toHaveLength(2);
-    const right = exits.find((e) => e.side === 'right');
-    const front = exits.find((e) => e.side === 'front');
-    expect(right?.centre).toBeCloseTo(20 + 6 - INNER / 2, 5);
-    expect(right?.width).toBe(12);
-    expect(front?.centre).toBeCloseTo(10 + 15 - INNER / 2, 5);
-    expect(front?.width).toBe(30);
-  });
-
-  it('measures a quarter-turned pocket across its swapped axis', () => {
-    const [exit] = openSideWallExits(
-      solid({ cutouts: [rect({ rotation: 90, openSides: ['front'] })] }),
-      INNER,
-      INNER
-    );
-    expect(exit.side).toBe('front');
-    expect(exit.width).toBe(12);
-    expect(exit.centre).toBeCloseTo(10 + 15 - INNER / 2, 5);
-  });
-
-  it('expands repeat arrays into one exit per copy and skips gated cutouts', () => {
+  it('reports open-top channels in the centred frame and skips tunnels', () => {
     const exits = openSideWallExits(
       solid({
-        cutouts: [
-          rect({
-            array: {
-              mode: 'grid',
-              cols: 1,
-              rows: 3,
-              pitchX: 12,
-              pitchY: 15,
-              count: 1,
-              radius: 20,
-              startAngle: 0,
-              rotateToCenter: false,
-            },
-          }),
-          rect({ id: 'gated', rotation: 30 }),
-        ],
+        cutouts: [rect({ openSides: [{ side: 'right' }, { side: 'front', tunnel: true }] })],
       }),
       INNER,
       INNER
     );
-    expect(exits.map((e) => e.centre)).toEqual([
-      expect.closeTo(26 - INNER / 2, 5),
-      expect.closeTo(41 - INNER / 2, 5),
-      expect.closeTo(56 - INNER / 2, 5),
-    ]);
+    expect(exits).toHaveLength(1);
+    expect(exits[0].side).toBe('right');
+    expect(exits[0].centre).toBeCloseTo(26 - INNER / 2, 5);
+    expect(exits[0].width).toBeCloseTo(12, 5);
   });
 
   it('reports nothing on a cavity bin', () => {

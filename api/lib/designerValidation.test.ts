@@ -1536,13 +1536,31 @@ describe('validateDesignerShare', () => {
       return validateDesignerShare(payload, JSON.stringify(payload).length);
     };
 
-    it('accepts any set of the four wall names', () => {
+    it('accepts specs for any of the four walls, and the bare names the first release wrote', () => {
       expect(withCutouts([{ id: 'a', openSides: ['front', 'right'] }]).valid).toBe(true);
+      expect(
+        withCutouts([
+          { id: 'a', openSides: [{ side: 'front' }, { side: 'right', widthMm: 6, tunnel: true }] },
+        ]).valid
+      ).toBe(true);
       expect(withCutouts([{ id: 'a', openSides: [] }]).valid).toBe(true);
+    });
+
+    it('rejects a bad width or tunnel flag', () => {
+      expect(withCutouts([{ id: 'a', openSides: [{ side: 'front', widthMm: 0.5 }] }]).valid).toBe(
+        false
+      );
+      expect(
+        withCutouts([{ id: 'a', openSides: [{ side: 'front', widthMm: 'wide' }] }]).valid
+      ).toBe(false);
+      expect(withCutouts([{ id: 'a', openSides: [{ side: 'front', tunnel: 'yes' }] }]).valid).toBe(
+        false
+      );
     });
 
     it('rejects an unknown wall, a non-array, or an over-long list', () => {
       expect(withCutouts([{ id: 'a', openSides: ['up'] }]).valid).toBe(false);
+      expect(withCutouts([{ id: 'a', openSides: [{ side: 'up' }] }]).valid).toBe(false);
       expect(withCutouts([{ id: 'a', openSides: 'right' }]).valid).toBe(false);
       expect(
         withCutouts([{ id: 'a', openSides: ['front', 'front', 'front', 'front', 'front'] }]).valid

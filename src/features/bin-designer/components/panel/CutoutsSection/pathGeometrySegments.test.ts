@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { PathPoint } from '@/features/bin-designer/types';
-import { cubicBezier } from './pathGeometryBezier';
+import { cubicBezier } from '@/shared/utils/pathGeometryBezier';
 import {
   findNearestSegment,
   evaluateSegmentPoint,
