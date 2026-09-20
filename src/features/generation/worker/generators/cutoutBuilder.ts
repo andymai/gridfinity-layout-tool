@@ -1509,10 +1509,27 @@ export function buildLipBreachChannels(
     originY: -innerD / 2,
   };
   const tag = (): number => 0;
-  const visible = { ...params, cutouts: params.cutouts.filter((c) => c.hidden !== true) };
+  const visible = {
+    ...params,
+    cutouts: params.cutouts.filter((c) => c.hidden !== true && c.shape !== 'mesh'),
+  };
+  // The body learned which groups' booleans built nothing while cutting its
+  // cavities; the lip has to find out the same way, or it would breach over a
+  // cavity that is not there. Only groups that open a wall are rebuilt.
+  const emptyOwners = new Set<string>();
+  const seen = new Set<string>();
+  for (const c of visible.cutouts) {
+    if (c.groupId === null || seen.has(c.groupId)) continue;
+    seen.add(c.groupId);
+    const members = visible.cutouts.filter((m) => m.groupId === c.groupId);
+    if (!members.some((m) => effectiveOpenSides(m, visible).length > 0)) continue;
+    const built = buildGroupedCutouts(members, solidSurfaceZ, frame.originX, frame.originY);
+    if (built.length === 0) for (const m of members) emptyOwners.add(m.id);
+    for (const shape of built) shape.delete();
+  }
   return [
     ...buildKnifeBreachChannels(visible, frame, tag),
-    ...buildOpenSideChannels(visible, frame, tag, new Set(), true),
+    ...buildOpenSideChannels(visible, frame, tag, emptyOwners, true),
   ];
 }
 

@@ -247,6 +247,25 @@ describe('openSideChannels', () => {
     expect(openSideChannels(solid({ cutouts: [twin, twin2] }))).toEqual([]);
   });
 
+  it('measures a group only by the members the worker extrudes', () => {
+    const a = rect({ id: 'a', groupId: 'g', groupOp: 'union', openSides: [{ side: 'right' }] });
+    const caption = rect({
+      id: 't',
+      groupId: 'g',
+      groupOp: 'union',
+      shape: 'text',
+      x: 0,
+      y: 0,
+      width: 60,
+      depth: 60,
+      cutDepth: 30,
+    });
+    const [ch] = openSideChannels(solid({ cutouts: [a, caption] }));
+    expect(ch.cutDepth).toBe(8);
+    expect(ch.lo).toBeCloseTo(20, 5);
+    expect(ch.hi).toBeCloseTo(32, 5);
+  });
+
   it('drops channels for owners the worker reports as empty', () => {
     expect(openSideChannels(solid({ cutouts: [rect()] }), new Set(['r1']))).toEqual([]);
   });

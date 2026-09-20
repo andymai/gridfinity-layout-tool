@@ -246,7 +246,12 @@ function openings(params: OpenSideHost): Opening[] {
     }
     if (seenGroups.has(master.groupId)) continue;
     seenGroups.add(master.groupId);
-    const members = groupMembers(params, master.groupId).filter((c) => c.hidden !== true);
+    // The same members the worker extrudes into the group's cavity: text and
+    // mesh members add no profile solid, and a depthless member adds nothing.
+    const members = groupMembers(params, master.groupId).filter(
+      (c) => c.hidden !== true && c.shape !== 'text' && c.shape !== 'mesh' && c.cutDepth > 0
+    );
+    if (members.length === 0) continue;
     const bySide = new Map<CutoutOpenSide, CutoutOpenSideSpec>();
     let ownerId: string | null = null;
     for (const m of members) {
