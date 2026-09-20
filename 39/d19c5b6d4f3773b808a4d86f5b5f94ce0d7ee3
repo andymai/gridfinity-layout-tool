@@ -1,0 +1,29 @@
+src/features/baseplate/utils/stackPrint.ts
+  s_2bff3c3ca1039a::t_4e039799e8bc5d 164-168,172,179-182,193-199,201-207,209-216,218,222-223,226-233,237-238,241-254,258-259,270-275,288
+  s_2bff3c3ca1039a::t_aeaad010ea5a21 260
+  s_2bff3c3ca1039a::t_417bf2b815d175 217
+src/features/baseplate/README.md
+  s_2bff3c3ca1039a::t_eb257f94d79b53 39,62
+src/features/baseplate/utils/stackPrint.test.ts
+  s_2bff3c3ca1039a::t_aeaad010ea5a21 368-371,730-733
+  s_2bff3c3ca1039a::t_41f1b37f41c788 2,224,236-237,252-253,262,264-266,300,316-318,326,336-337,346-349,351-354,356,360-362,365-367,372-376,379,389-390,415,642,644,654,661-729,734-745
+  s_2bff3c3ca1039a::t_37cbdf34ef3237 746-748
+src/features/baseplate/utils/stackExport.ts
+  s_2bff3c3ca1039a::t_eb257f94d79b53 25-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "39d19c5b6d4f3773b808a4d86f5b5f94ce0d7ee3",
+  "prompts": {},
+  "sessions": {
+    "s_2bff3c3ca1039a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34b7750a-633a-45df-bd0f-d3888fe3ffb7",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
