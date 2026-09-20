@@ -1,0 +1,19 @@
+src/features/whats-new/entries.ts
+  s_e56a2f2aca30d6::t_c46706f27d2295 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "989fbd240289350f85456cfb353788f17b0646fa",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
