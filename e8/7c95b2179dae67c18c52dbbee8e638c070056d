@@ -1,0 +1,51 @@
+src/features/generation/worker/generators/scenarios/openSides.ts
+  s_e56a2f2aca30d6::t_d773e22fb3feb4 4,42-55,58-60,64,71,77,79,89,405-410,412-454
+api/lib/communityExampleParamHashes.ts
+  s_e56a2f2aca30d6::t_eb39809edba7c5 15
+src/features/bin-designer/components/panel/CutoutsSection/renderer/openSideOverlayGeometry.test.ts
+  s_e56a2f2aca30d6::t_82214e72981e10 64-82
+src/shared/utils/cutoutOpenSides.ts
+  s_e56a2f2aca30d6::t_a09502129a2da4 37,39,44-54,158-166,303-329,340-347,357-369,383,388,404-433,435-437,444
+src/shared/utils/cutoutOpenSides.test.ts
+  s_e56a2f2aca30d6::t_d773e22fb3feb4 309-315
+  s_e56a2f2aca30d6::t_82214e72981e10 4,10,276-308,316-324
+  s_e56a2f2aca30d6::t_88bd3adc7b3659 325-326
+src/shared/utils/lipGapPlan.test.ts
+  s_e56a2f2aca30d6::t_82214e72981e10 521-559
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e56a2f2aca30d6::t_0415ec120b2e96 1350-1352,1415-1419
+src/features/bin-designer/components/panel/CutoutsSection/renderer/openSideOverlayGeometry.ts
+  s_e56a2f2aca30d6::t_0415ec120b2e96 43-46,49-52,54,56-59,61
+src/shared/utils/lipGapPlan.ts
+  s_e56a2f2aca30d6::t_0415ec120b2e96 39,460-464
+  s_e56a2f2aca30d6::t_7d883a4fed5983 465-466
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_e56a2f2aca30d6::t_0415ec120b2e96 427-428
+src/features/bin-designer/components/panel/CutoutsSection/renderer/OpenSideOverlay.tsx
+  s_e56a2f2aca30d6::t_0415ec120b2e96 27,32-33,47
+src/features/bin-designer/data/examples/indexBlock.ts
+  s_e56a2f2aca30d6::t_d773e22fb3feb4 63
+  s_e56a2f2aca30d6::t_82214e72981e10 4-11,15-16,22-23,39-41,48,59,62,64,69,72
+src/features/bin-designer/README.md
+  s_e56a2f2aca30d6::t_b2509bfa174d3e 166-169
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.tsx
+  s_e56a2f2aca30d6::t_0415ec120b2e96 65-66
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.openSides.test.ts.snap
+  s_e56a2f2aca30d6::t_a3a5f9998fe17a 33-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e87c95b2179dae67c18c52dbbee8e638c070056d",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
