@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.496.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.495.0...gridfinity-layout-tool-v4.496.0) (2026-09-20)
+
+
+### Features
+
+* **bin-designer:** open any pocket shape through the wall, as a channel or a tunnel ([#4336](https://github.com/andymai/gridfinity-layout-tool/issues/4336)) ([f09e2b1](https://github.com/andymai/gridfinity-layout-tool/commit/f09e2b18cf790cf4d7c5a5f83d9c75f8fca3849a))
+* **bin-designer:** open mesh imprints through the wall ([#4338](https://github.com/andymai/gridfinity-layout-tool/issues/4338)) ([1e0ac9f](https://github.com/andymai/gridfinity-layout-tool/commit/1e0ac9f7554692f8839f82ea30301dd8ec618e46))
+* **bin-designer:** open pockets through the walls of custom-shape bins ([#4337](https://github.com/andymai/gridfinity-layout-tool/issues/4337)) ([51e1e04](https://github.com/andymai/gridfinity-layout-tool/commit/51e1e04c69731985b0c27a18432730a67a358a2a))
+
+
+### Bug Fixes
+
+* **whats-new:** say plainly what open sides do ([#4335](https://github.com/andymai/gridfinity-layout-tool/issues/4335)) ([60415c3](https://github.com/andymai/gridfinity-layout-tool/commit/60415c3ee0f85cf8e422da935c1afda48c269e72))
+
 ## [4.495.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.494.1...gridfinity-layout-tool-v4.495.0) (2026-09-19)
 
 
