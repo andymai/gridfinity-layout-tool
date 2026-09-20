@@ -1,0 +1,170 @@
+src/shared/utils/pathGeometryBezier.test.ts
+  s_e56a2f2aca30d6::t_056fb3de6a5ef8 2
+src/features/bin-designer/constants/paramMigrationCutouts.ts
+  s_e56a2f2aca30d6::t_2dbc5bd6160c2e 13,122-125,134
+src/features/bin-designer/components/panel/CutoutsSection/renderer/OpenSideOverlay.tsx
+  s_e56a2f2aca30d6::t_0806c9e5dec276 13,35,37-42
+src/features/bin-designer/data/examples/indexBlock.ts
+  s_e56a2f2aca30d6::t_2def95d966db4e 54,61
+src/shared/utils/lipGapPlan.test.ts
+  s_e56a2f2aca30d6::t_2def95d966db4e 490,506-517
+src/features/generation/worker/generators/scenarios/openSides.ts
+  s_e56a2f2aca30d6::t_2def95d966db4e 67,78,158,173,183,192,213,340
+  s_e56a2f2aca30d6::t_4338498f94bfc6 136-140,143-144,191,202-203,205,320-322
+  s_e56a2f2aca30d6::t_6c4282cb9dfcf2 116-118,134-135,141-142
+  s_e56a2f2aca30d6::t_e419ed50c1c6f5 234-257,260-319,323-326,345-348,355-359,361-377,379-383
+src/i18n/locales/nb.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+src/i18n/locales/nl.json
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+src/i18n/locales/pl.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+src/shared/types/bin.ts
+  s_e56a2f2aca30d6::t_fade530edf34dd 58,244
+src/i18n/locales/sv.json
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+src/shared/utils/cutoutOpenSides.test.ts
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 159,162-163
+  s_e56a2f2aca30d6::t_723603e08bc152 58-60,199-207,218
+  s_e56a2f2aca30d6::t_f42e61d893d5b9 8,27,40-51,53,55-57,63-67,69,97-101,105-114,120-123,127-134,137-143,146-154,156,160-161,164-172,175-198,208-215,223-226
+api/lib/designerValidation.test.ts
+  s_e56a2f2aca30d6::t_723603e08bc152 1542-1544,1550-1558
+  s_e56a2f2aca30d6::t_2def95d966db4e 1539,1541,1545,1549,1559-1560,1563
+scripts/schema/bounds.test.ts
+  s_e56a2f2aca30d6::t_2dbc5bd6160c2e 56,126
+src/features/bin-designer/data/examples/index.ts
+  s_e56a2f2aca30d6::t_e419ed50c1c6f5 11,22
+scripts/doc-budget.json
+  s_e56a2f2aca30d6::t_c86cce6b14aae4 32
+  s_e56a2f2aca30d6::t_7f36d112234094 3
+src/i18n/locales/it.json
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+src/shared/schema/binContentKeys.ts
+  s_e56a2f2aca30d6::t_2dbc5bd6160c2e 14
+  s_e56a2f2aca30d6::t_fade530edf34dd 259-261
+  s_e56a2f2aca30d6::t_ee1d549a1b1caf 262-263
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometryTriangulation.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 10
+src/shared/schema/keys.ts
+  s_e56a2f2aca30d6::t_2dbc5bd6160c2e 73,145,210
+src/features/bin-designer/types/index.ts
+  s_e56a2f2aca30d6::t_fade530edf34dd 220,241
+src/i18n/locales/en.ts
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 4481-4483
+  s_e56a2f2aca30d6::t_83cb059af21795 2981-2982,2987-2990
+src/features/bin-designer/components/panel/CutoutsSection/renderer/openSideOverlayGeometry.test.ts
+  s_e56a2f2aca30d6::t_f42e61d893d5b9 4,25-33,35-42,48-54,58,64-71
+  s_e56a2f2aca30d6::t_723603e08bc152 59-61
+src/features/bin-designer/data/examples/keyholeBlock.ts
+  s_e56a2f2aca30d6::t_e419ed50c1c6f5 1-45
+src/i18n/locales/pt-BR.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+src/features/bin-designer/components/panel/CutoutsSection/svgExport/cutoutsToSvg.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 26
+src/shared/utils/cutoutOpenSides.ts
+  s_e56a2f2aca30d6::t_590b3ac67f389a 2,4-7,11-17,22-28,30,32,36,48-53,63-74,76-94,98-112,114-117,123-160,164-166,168-193,195,198-243,245-280,282,290-291,294,298-304
+  s_e56a2f2aca30d6::t_00d039a1bcc940 38-40,62
+src/i18n/locales/de.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+src/i18n/locales/uk.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+src/i18n/locales/ko.json
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 29
+api/lib/designerCutoutValidation.ts
+  s_e56a2f2aca30d6::t_2dbc5bd6160c2e 15-16,93-95,102-115
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_e56a2f2aca30d6::t_00d039a1bcc940 282
+src/features/bin-designer/types/cutout.ts
+  s_e56a2f2aca30d6::t_fade530edf34dd 320-338,495-499,501
+src/i18n/locales/es.json
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+src/i18n/locales/ka.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 3758-3759
+  s_e56a2f2aca30d6::t_83cb059af21795 2542-2543,2547-2550
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.test.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 3
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_e56a2f2aca30d6::t_2def95d966db4e 1556,1574-1576,1583-1584
+  s_e56a2f2aca30d6::t_723603e08bc152 1577-1582
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_e56a2f2aca30d6::t_fade530edf34dd 18-19,24-26,29-30
+src/i18n/locales/ja.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+src/features/bin-designer/README.md
+  s_e56a2f2aca30d6::t_723603e08bc152 158-166
+src/i18n/locales/fr.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+src/features/bin-designer/components/panel/CutoutsSection/renderer/openSideOverlayGeometry.ts
+  s_e56a2f2aca30d6::t_0806c9e5dec276 2-8,11,20-25,33-35,37,40,42-51,53
+src/i18n/locales/zh-CN.json
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+src/i18n/locales/cs.json
+  s_e56a2f2aca30d6::t_83cb059af21795 867-868,872-875
+  s_e56a2f2aca30d6::t_dbe0a2945ea8f3 2092-2093
+src/shared/utils/cutoutOutline.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 1-142
+docs/schemas/constraints.md
+  s_e56a2f2aca30d6::t_2dbc5bd6160c2e 112,152
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 12
+public/schema/bin-design.schema.json
+  s_e56a2f2aca30d6::t_2dbc5bd6160c2e 701,703,936-954
+  s_e56a2f2aca30d6::t_6881dcc4cc09f3 955-957
+api/lib/communityExampleParamHashes.ts
+  s_e56a2f2aca30d6::t_723603e08bc152 23,27
+src/shared/utils/pathGeometryBezier.ts
+  s_e56a2f2aca30d6::t_056fb3de6a5ef8 11
+src/features/bin-designer/components/panel/CutoutsSection/svgExport/cutoutsToSvg.test.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 5
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.tsx
+  s_e56a2f2aca30d6::t_0806c9e5dec276 1-2,5-11,14,36,49-51,53-57,68-69,71-73,75,78-104,113,123,133-138,140-141,169-183
+  s_e56a2f2aca30d6::t_0e8b6179d31ebf 44-48,151
+  s_e56a2f2aca30d6::t_c01a55572b5717 139,142-150,152-168
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometry.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 21,26
+docs/schemas/bin-design.md
+  s_e56a2f2aca30d6::t_21eaee3a4663e0 534
+  s_e56a2f2aca30d6::t_2dbc5bd6160c2e 479-520,524-532
+  s_e56a2f2aca30d6::t_d6e00babcda2d9 533,535
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.test.tsx
+  s_e56a2f2aca30d6::t_723603e08bc152 69-72,75-77,86-88,99-102,114-117,124-129,144
+  s_e56a2f2aca30d6::t_2def95d966db4e 1,9-30,52-59,61-64,68,73,82-85,89-98,103-113,118-120,153-154,158
+  s_e56a2f2aca30d6::t_95c5ee50d52d0b 121-122
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e56a2f2aca30d6::t_3e23d6943203f0 38-40,1372-1375,1378-1438,1442-1446,1448-1452,1460-1474
+scripts/i18n-values-allowlist.json
+  s_e56a2f2aca30d6::t_f42e61d893d5b9 345-347
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.openSides.test.ts.snap
+  s_e56a2f2aca30d6::t_dffc6e0241a6b9 3,5,7-11,15-17,19,21,23-25,29-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e65008dad50680eb0689cea9f000d2424a1129d0",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": null
+    }
+  }
+}
