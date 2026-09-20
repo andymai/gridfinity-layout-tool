@@ -22,9 +22,8 @@ export interface StackExportSoup {
  * Build a vertical stack of `copies` plates from one plate's triangle soup. The
  * bottom plate is upright; the rest are flipped upside down, each separated by
  * `stack.gapMm` so the printed tower snaps apart. `flip` comes from
- * `planPlateFlip`: it picks the turn axis that lands the flipped plates' sockets
- * on the upright one's, and re-seats them so a protruding connector tongue can't
- * drag the body off-axis.
+ * `planPlateFlip`: it picks the turn axis and seat that land the flipped plates'
+ * socket walls on the upright one's.
  */
 export function buildStackExportSoup(
   baseVertices: Float32Array,
