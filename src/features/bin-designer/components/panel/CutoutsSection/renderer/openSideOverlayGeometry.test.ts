@@ -61,6 +61,25 @@ describe('openSideOverlayStrips', () => {
     ).toEqual([]);
   });
 
+  it('stops a custom-shape strip a spill past the wall its channel meets', () => {
+    const U_MASK = {
+      cols: 6,
+      rows: 4,
+      cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1] as (0 | 1)[],
+    };
+    const [strip] = openSideOverlayStrips(
+      {
+        ...host([rect({ x: 8, y: 50, width: 22, depth: 20, openSides: [{ side: 'right' }] })]),
+        width: 3,
+        depth: 2,
+        cellMask: U_MASK,
+      },
+      { binWidth: 123.1, binDepth: 81.1, wallThickness: 1.2 }
+    );
+    // Face at interior x = 40.3, then 6mm of spill.
+    expect(strip.loop[1][0]).toBeCloseTo(40.3 + 6, 5);
+  });
+
   it('narrows to the channel width and follows a turn', () => {
     const [strip] = openSideOverlayStrips(
       host([rect({ openSides: [{ side: 'back', widthMm: 10 }], rotation: 90 })]),

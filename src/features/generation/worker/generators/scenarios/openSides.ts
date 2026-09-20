@@ -1,6 +1,7 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, Cutout } from '@/shared/types/bin';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { defineScenario, makeCutout } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import { boundingBox, columnCrossings } from '../__kernel-tests__/meshAssertions';
@@ -38,30 +39,40 @@ function block(extra: Partial<Cutout> = {}): Partial<BinParams> {
   };
 }
 
+const CORNER_MASK: CellMask = {
+  cols: 4,
+  rows: 4,
+  cells: [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+};
+
+const U_MASK: CellMask = {
+  cols: 6,
+  rows: 4,
+  cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1],
+};
+
 /**
  * The Corner Index Block example (`data/examples/indexBlock.ts`), restated here
- * because a generator scenario cannot import a feature's data. Body arm exits
- * right, tongue exits front; the two meet at the square's corner.
+ * because a generator scenario cannot import a feature's data.
  */
 function cornerIndexBlock(): Partial<BinParams> {
   const inner = 81.1;
-  const inset = 14;
-  const body = 38.7;
-  const tongue = 26;
+  const inset = 6.55;
   return {
     style: 'solid',
     width: 2,
     depth: 2,
     height: 3,
     base: SOLID_BASE,
+    cellMask: CORNER_MASK,
     cutouts: [
       makeCutout({
         id: 'body',
         shape: 'rectangle',
         x: inset,
-        y: inner - inset - body,
+        y: 42,
         width: inner - inset,
-        depth: body,
+        depth: 38.7,
         cutDepth: 6,
         cornerRadius: 1,
         openSides: [{ side: 'right' }],
@@ -71,7 +82,7 @@ function cornerIndexBlock(): Partial<BinParams> {
         shape: 'rectangle',
         x: inset,
         y: 0,
-        width: tongue,
+        width: 26,
         depth: inner - inset,
         cutDepth: 6,
         cornerRadius: 1,
@@ -387,19 +398,56 @@ export const openSides: ScenarioCase[] = [
     params: cornerIndexBlock(),
     customAssert: (result) => {
       const bb = boundingBox(result.vertices);
-      const inner = 81.1;
-      // Body arm leaves through the right wall across its 38.7mm width.
-      const bodyLo = inner - 14 - 38.7 - inner / 2;
-      expectBreach(result, 'y', bb.maxX - 0.6, bodyLo, bodyLo + 38.7);
-      // Tongue leaves through the front wall across its 26mm width.
-      const tongueLo = 14 - inner / 2;
-      expectBreach(result, 'x', bb.minY + 0.6, tongueLo, tongueLo + 26);
-      // The two walls the square does not exit stay whole.
-      for (const { top } of scanTops(result, 'y', bb.minX + 0.6, -35, 35, 1)) {
-        expect(top).toBeGreaterThan(bb.maxZ - 1.5);
+      const half = 81.1 / 2;
+      // Body leaves through the top arm's right end across its 38.7mm width.
+      for (let y = 42 + 2; y <= 80.7 - 2; y += 2) {
+        expect(columnTopZ(result, bb.maxX - 0.6, y - half), `body breach at ${y}`).toBeLessThan(
+          bb.maxZ - BREACH_DROP_MM
+        );
       }
-      for (const { top } of scanTops(result, 'x', bb.maxY - 0.6, -35, 35, 1)) {
-        expect(top).toBeGreaterThan(bb.maxZ - 1.5);
+      // Tongue leaves through the left arm's bottom end across its 26mm width.
+      for (let x = 6.55 + 2; x <= 32.55 - 2; x += 2) {
+        expect(columnTopZ(result, x - half, bb.minY + 0.6), `tongue breach at ${x}`).toBeLessThan(
+          bb.maxZ - BREACH_DROP_MM
+        );
+      }
+      // The left arm's bottom wall beside the tongue, and the top wall, stay whole.
+      expect(columnTopZ(result, 36 - half, bb.minY + 0.6)).toBeGreaterThan(bb.maxZ - 1.5);
+      expect(columnTopZ(result, 20 - half, bb.maxY - 0.6)).toBeGreaterThan(bb.maxZ - 1.5);
+    },
+  }),
+  defineScenario('open sides', 'U block: a channel stops at the arm it leaves, not the far arm', {
+    params: {
+      style: 'solid',
+      width: 3,
+      depth: 2,
+      height: 3,
+      base: SOLID_BASE,
+      cellMask: U_MASK,
+      cutouts: [
+        makeCutout({
+          shape: 'rectangle',
+          x: 8,
+          y: 50,
+          width: 22,
+          depth: 20,
+          cutDepth: 8,
+          openSides: [{ side: 'right' }],
+        }),
+      ],
+    },
+    customAssert: (result) => {
+      const bb = boundingBox(result.vertices);
+      const halfD = 81.1 / 2;
+      // The left arm's inner wall sits at nominal x = -21 (its face 0.25 in).
+      for (let y = 52; y <= 68; y += 4) {
+        const wy = y - halfD;
+        expect(columnTopZ(result, -21.25 - 0.6, wy), `left arm breached at ${y}`).toBeLessThan(
+          bb.maxZ - BREACH_DROP_MM
+        );
+        expect(columnTopZ(result, 21.25 + 0.6, wy), `right arm whole at ${y}`).toBeGreaterThan(
+          bb.maxZ - 1.5
+        );
       }
     },
   }),

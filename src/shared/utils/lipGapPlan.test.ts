@@ -518,6 +518,45 @@ describe('lipGaps: open-side rectangles', () => {
   });
 });
 
+describe('polygonLipGaps: open-side exits', () => {
+  it('puts the exit on the edge its ray met, with the edge coordinate a rail plan matches on', () => {
+    const mask: CellMask = {
+      cols: 6,
+      rows: 4,
+      cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1],
+    };
+    const gaps = polygonLipGaps(
+      bin({
+        width: 3,
+        depth: 2,
+        cellMask: mask,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          {
+            id: 'o',
+            shape: 'rectangle',
+            x: 8,
+            y: 50,
+            width: 22,
+            depth: 20,
+            cutDepth: 8,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+            openSides: [{ side: 'right' }],
+          },
+        ],
+      })
+    );
+    const open = gaps.filter((g) => g.source === 'openSide');
+    expect(open).toHaveLength(1);
+    expect(open[0].side).toBe('right');
+    expect(open[0].edgeCross).toBeCloseTo(-21, 5);
+    expect(open[0].hi - open[0].lo).toBeCloseTo(20, 5);
+  });
+});
+
 describe('knifeSlotWallExits', () => {
   const CHEF = {
     bladeLengthMm: 205,

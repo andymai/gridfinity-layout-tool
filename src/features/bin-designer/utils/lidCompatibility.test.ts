@@ -155,6 +155,41 @@ describe('checkLidCompatibility', () => {
       expect(issue?.sides).toEqual(['left']);
     });
 
+    it('warns about an open-sided pocket on a polygon bin, on the wall its channel leaves through', () => {
+      // A 3x2 U: the top row's middle unit removed. A pocket in the top-left
+      // arm opening right leaves through that arm's inner wall, a right wall.
+      const params = withOverrides({
+        width: 3,
+        depth: 2,
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cellMask: {
+          cols: 6,
+          rows: 4,
+          cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1],
+        },
+        cutouts: [
+          {
+            id: 'o',
+            shape: 'rectangle',
+            x: 8,
+            y: 50,
+            width: 22,
+            depth: 20,
+            cutDepth: 8,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+            openSides: [{ side: 'right' }, { side: 'back', tunnel: true }],
+          },
+        ],
+      });
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'openSides');
+      expect(issue?.severity).toBe('warning');
+      expect(issue?.sides).toEqual(['right']);
+    });
+
     it('never blocks a polygon bin, whose walls are not four sides', () => {
       // "All four sides" does not describe a shape with six walls, and a custom
       // shape's rails are clipped per edge, so it warns and keeps what is left.

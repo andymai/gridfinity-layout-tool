@@ -40,15 +40,25 @@ export function openSideOverlayStrips(
 ): readonly OpenSideOverlayStrip[] {
   const past = frame.wallThickness + OPEN_SIDE_SPILL_MM;
   return openSideChannels(host).map((ch) => {
+    // A custom shape's wall face comes with the channel; a rectangle's is the
+    // board's edge plus the wall.
+    const end = (fallback: number, sign: 1 | -1): number =>
+      ch.faceMm === undefined ? fallback : ch.faceMm + sign * OPEN_SIDE_SPILL_MM;
     switch (ch.side) {
       case 'right':
-        return { tunnel: ch.tunnel, loop: strip(ch.edge, frame.binWidth + past, ch.lo, ch.hi) };
+        return {
+          tunnel: ch.tunnel,
+          loop: strip(ch.edge, end(frame.binWidth + past, 1), ch.lo, ch.hi),
+        };
       case 'left':
-        return { tunnel: ch.tunnel, loop: strip(-past, ch.edge, ch.lo, ch.hi) };
+        return { tunnel: ch.tunnel, loop: strip(end(-past, -1), ch.edge, ch.lo, ch.hi) };
       case 'back':
-        return { tunnel: ch.tunnel, loop: strip(ch.lo, ch.hi, ch.edge, frame.binDepth + past) };
+        return {
+          tunnel: ch.tunnel,
+          loop: strip(ch.lo, ch.hi, ch.edge, end(frame.binDepth + past, 1)),
+        };
       case 'front':
-        return { tunnel: ch.tunnel, loop: strip(ch.lo, ch.hi, -past, ch.edge) };
+        return { tunnel: ch.tunnel, loop: strip(ch.lo, ch.hi, end(-past, -1), ch.edge) };
     }
   });
 }

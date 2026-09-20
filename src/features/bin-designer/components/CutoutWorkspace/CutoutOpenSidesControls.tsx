@@ -62,11 +62,8 @@ export function CutoutOpenSidesControls({
   onUpdate,
 }: CutoutOpenSidesControlsProps) {
   const t = useTranslation();
-  const base = useDesignerStore((s) => s.params.base);
-  const overhang = useDesignerStore((s) => s.params.overhang);
-  const cellMask = useDesignerStore((s) => s.params.cellMask);
-  const cutouts = useDesignerStore((s) => s.params.cutouts);
-  const blocker = openSideBlocker(cutout, { base, overhang, cellMask, cutouts });
+  const params = useDesignerStore((s) => s.params);
+  const blocker = openSideBlocker(cutout, params);
   const hintKey = blocker ? BLOCKER_HINT_KEY[blocker] : undefined;
   const specs = normalizeOpenSides(cutout.openSides) ?? [];
   const ring = cutoutOutlineRing(cutout);
