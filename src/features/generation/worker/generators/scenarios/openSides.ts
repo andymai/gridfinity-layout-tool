@@ -39,14 +39,12 @@ function block(extra: Partial<Cutout> = {}): Partial<BinParams> {
   };
 }
 
-/** 2×2 units with the bottom-right unit removed. */
 const CORNER_MASK: CellMask = {
   cols: 4,
   rows: 4,
   cells: [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
 };
 
-/** 3×2 units, U shaped: the top row's middle unit removed. */
 const U_MASK: CellMask = {
   cols: 6,
   rows: 4,
@@ -55,9 +53,7 @@ const U_MASK: CellMask = {
 
 /**
  * The Corner Index Block example (`data/examples/indexBlock.ts`), restated here
- * because a generator scenario cannot import a feature's data. An L: the body
- * runs along the top arm and exits its right end, the tongue down the left arm
- * and exits its bottom end.
+ * because a generator scenario cannot import a feature's data.
  */
 function cornerIndexBlock(): Partial<BinParams> {
   const inner = 81.1;
