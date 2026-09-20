@@ -553,6 +553,40 @@ describe('WebKit navigation aborts', () => {
   });
 });
 
+describe('posthog-js transport timeouts', () => {
+  it('drops the abort posthog-js raises when its own request times out', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            value: 'AbortError: PostHog request timed out after 3000ms',
+            stacktrace: {
+              frames: [{ function: 'fetchWithRetry', filename: '/assets/posthog.js' }],
+            },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('keeps an app request that timed out', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            value: 'AbortError: Request timed out after 3000ms',
+            stacktrace: { frames: [{ function: 'loadSharedLayout' }] },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+});
+
 describe('extension-sourced exceptions', () => {
   it('drops a throw whose frames come from an extension script', () => {
     const e = {
