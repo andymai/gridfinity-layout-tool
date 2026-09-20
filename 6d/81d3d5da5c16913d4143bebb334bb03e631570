@@ -1,0 +1,40 @@
+public/schema/bin-design.schema.json
+  s_e56a2f2aca30d6::t_bc996b4a14a392 701-710
+docs/schemas/constraints.md
+  s_e56a2f2aca30d6::t_1810a926072961 112
+src/shared/utils/cutoutOpenSides.ts
+  s_e56a2f2aca30d6::t_1810a926072961 207-211
+  s_e56a2f2aca30d6::t_bc996b4a14a392 30-34,54-58,169-178,180-186,204,212-213,262-265,271,277-285,288
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.tsx
+  s_e56a2f2aca30d6::t_bc996b4a14a392 170
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e56a2f2aca30d6::t_bc996b4a14a392 1238-1240,1254-1255,1331,1462-1464,1468-1469,1487-1516
+  s_e56a2f2aca30d6::t_3331f7fa239afc 1517-1518
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.test.tsx
+  s_e56a2f2aca30d6::t_bc996b4a14a392 93-102
+src/shared/utils/cutoutOpenSides.test.ts
+  s_e56a2f2aca30d6::t_adecaa97e93594 72-78,204,214,219-251
+src/features/generation/worker/generators/binGenerator.scenario.split-matches-whole.test.ts
+  s_e56a2f2aca30d6::t_1810a926072961 246-292
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_e56a2f2aca30d6::t_bc996b4a14a392 24,333-335,337-339,343-348,350-351
+  s_e56a2f2aca30d6::t_adecaa97e93594 336,340-342,349
+docs/schemas/bin-design.md
+  s_e56a2f2aca30d6::t_1810a926072961 497
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6d81d3d5da5c16913d4143bebb334bb03e631570",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
