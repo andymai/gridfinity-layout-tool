@@ -20,7 +20,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     featured: true,
     title: { en: 'Cutouts can open through the wall' },
     body: {
-      en: 'On a solid bin, a rectangle cutout can now open through any of its walls, so a ruler or square slides in from the side. Find it under Open through wall in the cutout settings.',
+      en: 'On a solid bin, a cutout can now open through any of its walls, so a ruler, a square or a tool handle slides in from the side. Find it under Open through wall in the cutout settings.',
     },
     action: { kind: 'openTool', tool: 'designer' },
   },
