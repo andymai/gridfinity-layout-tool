@@ -1,0 +1,19 @@
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_e56a2f2aca30d6::t_3cac33fdfab037 158-192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1e36bcaa3178d739dc98a42247568847eb499710",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
