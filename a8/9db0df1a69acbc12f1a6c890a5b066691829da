@@ -1,0 +1,14 @@
+src/features/whats-new/entries.ts
+  h_b755e1950659f4 21,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a89db0df1a69acbc12f1a6c890a5b066691829da",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
