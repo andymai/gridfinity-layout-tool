@@ -1,0 +1,41 @@
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_e56a2f2aca30d6::t_2e91ea2c97f0c5 282
+src/features/bin-designer/README.md
+  s_e56a2f2aca30d6::t_c3b5b7bd0cfde0 169-171
+src/features/generation/worker/generators/meshImprintTools.ts
+  s_e56a2f2aca30d6::t_2e91ea2c97f0c5 19-21,94-99,120-171
+src/shared/utils/cutoutOpenSides.ts
+  s_e56a2f2aca30d6::t_87a12995b7008d 487
+  s_e56a2f2aca30d6::t_2e91ea2c97f0c5 36-41,59,70,253-266,276-277,280,424-486
+src/features/generation/worker/generators/meshImprint.ts
+  s_e56a2f2aca30d6::t_2e91ea2c97f0c5 19,46-47,231-233,250-252
+  s_e56a2f2aca30d6::t_c46ea3f249aed5 253-254
+src/features/bin-designer/components/CutoutWorkspace/CutoutOpenSidesControls.tsx
+  s_e56a2f2aca30d6::t_2e91ea2c97f0c5 14,69-81
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_e56a2f2aca30d6::t_863ea6792aeeed 144-194
+src/shared/utils/cutoutOpenSides.test.ts
+  s_e56a2f2aca30d6::t_80d6a843e80db6 5,66,68,277-324
+  s_e56a2f2aca30d6::t_098038f302304c 325-326
+src/shared/utils/cutoutOutline.ts
+  s_e56a2f2aca30d6::t_8e582ddfad588f 140-141
+  s_e56a2f2aca30d6::t_1ff1209000357b 11,124-139
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e56a2f2aca30d6::t_2e91ea2c97f0c5 39-43,1422-1423,1427-1431
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "dec358a69d90adb189f03b2125ef0cc347815592",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": null
+    }
+  }
+}
