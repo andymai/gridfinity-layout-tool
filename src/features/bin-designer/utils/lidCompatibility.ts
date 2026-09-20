@@ -424,8 +424,8 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    around the opening as they do for a cutout window. Never a blocker on
   //    its own: a pocket as wide as the wall is the cutout blocker's case
   //    (`lipClearedSides`), which reads every source.
-  if (lipHoldsLid && !isPolygon) {
-    const openSides = lipGapSides(gaps, 'openSide');
+  if (lipHoldsLid) {
+    const openSides = isPolygon ? lipGapSides(polyGaps, 'openSide') : lipGapSides(gaps, 'openSide');
     if (openSides.length > 0) {
       issues.push({ id: 'openSides', severity: 'warning', sides: openSides });
     }

@@ -34,12 +34,24 @@ import {
 } from '@/shared/utils/cutoutArray';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { cutoutOutlineRing, ringBounds, type OutlineBounds } from '@/shared/utils/cutoutOutline';
+import { maskEdgesMm, type MaskEdgeMm } from '@/shared/utils/maskEdgeGeometry';
 import { resolveOverhang } from '@/shared/utils/overhang';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 /** Why a cutout's open sides stay enclosed. */
 export type OpenSideBlocker = 'shape' | 'grouped' | 'lean' | 'host' | 'taper';
 
-export type OpenSideHost = Pick<BinParams, 'base' | 'overhang' | 'cellMask'> & {
+export type OpenSideHost = Pick<
+  BinParams,
+  | 'base'
+  | 'overhang'
+  | 'cellMask'
+  | 'width'
+  | 'depth'
+  | 'gridUnitMm'
+  | 'gridUnitMmY'
+  | 'wallThickness'
+> & {
   readonly cutouts: readonly Cutout[];
 };
 
@@ -143,6 +155,15 @@ export interface OpenSideChannel {
   readonly chamferMm: number;
   /** Nominal pocket depth; the worker clamps it to the fill height. */
   readonly cutDepth: number;
+  /**
+   * On a custom-shape bin, the outer face of the wall the channel leaves
+   * through, along the exit axis in the interior frame: the first wall the
+   * exit ray meets, which on an L or U is not the bounding box's. Absent on a
+   * rectangular bin, where the face is the interior's edge plus the wall.
+   */
+  readonly faceMm?: number;
+  /** That wall's nominal mask coordinate across the exit, centred mm, for the polygon lip plan. */
+  readonly edgeCrossMm?: number;
 }
 
 interface Opening {
@@ -279,6 +300,33 @@ function openings(params: OpenSideHost): Opening[] {
   return out;
 }
 
+/** The wall edge an exit ray from `startC` at `acrossC` meets first, or null. */
+function firstWallFacing(
+  edges: readonly MaskEdgeMm[],
+  side: CutoutOpenSide,
+  startC: number,
+  acrossC: number
+): MaskEdgeMm | null {
+  const alongX = side === 'left' || side === 'right';
+  const sign = side === 'right' || side === 'back' ? 1 : -1;
+  let best: MaskEdgeMm | null = null;
+  let bestDist = Infinity;
+  for (const e of edges) {
+    // Material sits on an edge's left, so an edge running +Y has material to
+    // its left (-X) and is a right wall; the same table `outermostEdgeForSide` reads.
+    const facing = alongX ? Math.sign(e.dirY) === sign : Math.sign(e.dirX) === -sign;
+    if (!facing) continue;
+    const perp = alongX ? e.midX : e.midY;
+    const dist = sign * (perp - startC);
+    if (dist <= 0 || dist >= bestDist) continue;
+    const [a, b] = alongX ? [e.fromY, e.toY] : [e.fromX, e.toX];
+    if (acrossC < Math.min(a, b) - 1e-6 || acrossC > Math.max(a, b) + 1e-6) continue;
+    best = e;
+    bestDist = dist;
+  }
+  return best;
+}
+
 /**
  * Every channel the design's open sides cut, gated exactly as the builder
  * gates them. `emptyOwners` names cutouts whose cavity boolean built nothing
@@ -289,6 +337,14 @@ export function openSideChannels(
   emptyOwners: ReadonlySet<string> = new Set()
 ): readonly OpenSideChannel[] {
   const out: OpenSideChannel[] = [];
+  // A custom shape's walls are its mask edges, in centred nominal mm (the
+  // mask spans the full grid pitch, half a tolerance outside the real face).
+  const mask = isPartialMask(params.cellMask) ? params.cellMask : null;
+  const unitX = params.gridUnitMm;
+  const unitY = params.gridUnitMmY ?? params.gridUnitMm;
+  const edges = mask ? maskEdgesMm(mask, unitX, unitY) : [];
+  const innerW = params.width * unitX - GRIDFINITY_SPEC.TOLERANCE - 2 * params.wallThickness;
+  const innerD = params.depth * unitY - GRIDFINITY_SPEC.TOLERANCE - 2 * params.wallThickness;
   for (const o of openings(params)) {
     if (emptyOwners.has(o.ownerId)) continue;
     const b = o.bounds;
@@ -298,6 +354,19 @@ export function openSideChannels(
       const centre = alongX ? (b.minY + b.maxY) / 2 : (b.minX + b.maxX) / 2;
       const width = spec.widthMm === undefined ? full : Math.min(spec.widthMm, full);
       if (width <= 0) continue;
+      const start = alongX ? (b.minX + b.maxX) / 2 : (b.minY + b.maxY) / 2;
+      let faceMm: number | undefined;
+      let edgeCrossMm: number | undefined;
+      if (mask) {
+        const alongHalf = alongX ? innerW / 2 : innerD / 2;
+        const acrossHalf = alongX ? innerD / 2 : innerW / 2;
+        const wall = firstWallFacing(edges, spec.side, start - alongHalf, centre - acrossHalf);
+        if (!wall) continue;
+        const sign = spec.side === 'right' || spec.side === 'back' ? 1 : -1;
+        const perp = alongX ? wall.midX : wall.midY;
+        faceMm = perp - (sign * GRIDFINITY_SPEC.TOLERANCE) / 2 + alongHalf;
+        edgeCrossMm = perp;
+      }
       const edge =
         spec.side === 'right'
           ? b.maxX
@@ -311,11 +380,12 @@ export function openSideChannels(
         side: spec.side,
         lo: centre - width / 2,
         hi: centre + width / 2,
-        start: alongX ? (b.minX + b.maxX) / 2 : (b.minY + b.maxY) / 2,
+        start,
         edge,
         tunnel: spec.tunnel === true,
         chamferMm: o.chamferMm,
         cutDepth: o.cutDepth,
+        ...(faceMm === undefined ? {} : { faceMm, edgeCrossMm }),
       });
     }
   }
@@ -331,15 +401,47 @@ export interface OpenSideExit {
   readonly width: number;
 }
 
+/** An exit on a custom-shape bin, on the edge it actually leaves through. */
+export interface OpenSidePolygonExit {
+  readonly side: CutoutOpenSide;
+  /** The edge's nominal mask coordinate across the exit, centred mm. */
+  readonly edgeCross: number;
+  /** Along-edge extent, centred mm. */
+  readonly lo: number;
+  readonly hi: number;
+}
+
 /**
- * Every wall opening that reaches the lip. A tunnel keeps the wall above the
- * pocket, so it takes nothing from the lip and is not an exit here.
+ * The lip openings on a custom-shape bin, each on its own edge, so a U's two
+ * arms keep their own rails when only one carries an exit. Tunnels are left
+ * out for the same reason as below.
+ */
+export function openSidePolygonExits(params: OpenSideHost): readonly OpenSidePolygonExit[] {
+  const unitX = params.gridUnitMm;
+  const unitY = params.gridUnitMmY ?? params.gridUnitMm;
+  const innerW = params.width * unitX - GRIDFINITY_SPEC.TOLERANCE - 2 * params.wallThickness;
+  const innerD = params.depth * unitY - GRIDFINITY_SPEC.TOLERANCE - 2 * params.wallThickness;
+  const out: OpenSidePolygonExit[] = [];
+  for (const c of openSideChannels(params)) {
+    if (c.tunnel || c.edgeCrossMm === undefined) continue;
+    const alongX = c.side === 'left' || c.side === 'right';
+    const half = alongX ? innerD / 2 : innerW / 2;
+    out.push({ side: c.side, edgeCross: c.edgeCrossMm, lo: c.lo - half, hi: c.hi - half });
+  }
+  return out;
+}
+
+/**
+ * Every wall opening that reaches the lip on a rectangular bin. A tunnel
+ * keeps the wall above the pocket, so it takes nothing from the lip and is
+ * not an exit here; a custom shape's exits come from `openSidePolygonExits`.
  */
 export function openSideWallExits(
   params: OpenSideHost,
   innerW: number,
   innerD: number
 ): readonly OpenSideExit[] {
+  if (isPartialMask(params.cellMask)) return [];
   return openSideChannels(params)
     .filter((c) => !c.tunnel)
     .map((c) => {

@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import {
   effectiveOpenSides,
   normalizeOpenSides,
   openSideBlocker,
   openSideChannels,
+  openSidePolygonExits,
   openSideWallExits,
 } from './cutoutOpenSides';
 
@@ -268,6 +270,57 @@ describe('openSideChannels', () => {
 
   it('drops channels for owners the worker reports as empty', () => {
     expect(openSideChannels(solid({ cutouts: [rect()] }), new Set(['r1']))).toEqual([]);
+  });
+});
+
+describe('custom-shape bins', () => {
+  // 3x2 units, U shaped: both top quadrants' inner halves missing.
+  const U_MASK: CellMask = {
+    cols: 6,
+    rows: 4,
+    cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1],
+  };
+  function uBin(cutouts: Cutout[]): BinParams {
+    return solid({ width: 3, depth: 2, cellMask: U_MASK, cutouts });
+  }
+  // 3x2 interior at the default wall: 126 - 0.5 - 2.4 by 84 - 0.5 - 2.4.
+  const INNER_W = 123.1;
+
+  it('ends a channel at the first wall its ray meets, not the bounding box', () => {
+    // A pocket in the top-left arm opening right: the arm's inner wall sits
+    // at nominal x = -21 (centred), so the face is a quarter tolerance in.
+    const [ch] = openSideChannels(
+      uBin([rect({ x: 8, y: 50, width: 22, depth: 20, openSides: [{ side: 'right' }] })])
+    );
+    expect(ch.faceMm).toBeCloseTo(-21 - 0.25 + INNER_W / 2, 5);
+    expect(ch.edgeCrossMm).toBeCloseTo(-21, 5);
+  });
+
+  it('uses the bounding box face where the arm reaches it', () => {
+    const [ch] = openSideChannels(
+      uBin([rect({ x: 8, y: 50, width: 22, depth: 20, openSides: [{ side: 'left' }] })])
+    );
+    expect(ch.faceMm).toBeCloseTo(-1.2, 5);
+    expect(ch.edgeCrossMm).toBeCloseTo(-63, 5);
+  });
+
+  it('reports polygon exits on their own edge and none through the rectangular path', () => {
+    const params = uBin([
+      rect({
+        x: 8,
+        y: 50,
+        width: 22,
+        depth: 20,
+        openSides: [{ side: 'right' }, { side: 'back', tunnel: true }],
+      }),
+    ]);
+    const exits = openSidePolygonExits(params);
+    expect(exits).toHaveLength(1);
+    expect(exits[0].side).toBe('right');
+    expect(exits[0].edgeCross).toBeCloseTo(-21, 5);
+    expect(exits[0].lo).toBeCloseTo(50 - 81.1 / 2, 5);
+    expect(exits[0].hi).toBeCloseTo(70 - 81.1 / 2, 5);
+    expect(openSideWallExits(params, INNER_W, 81.1)).toEqual([]);
   });
 });
 

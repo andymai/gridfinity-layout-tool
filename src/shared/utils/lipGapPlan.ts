@@ -36,7 +36,7 @@
 import type { BinParams, HandleConfig, KnifeSpec, LidCompatibilitySide } from '@/shared/types/bin';
 import { LID_MIN_RAIL_LENGTH, DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
-import { openSideWallExits } from '@/shared/utils/cutoutOpenSides';
+import { openSidePolygonExits, openSideWallExits } from '@/shared/utils/cutoutOpenSides';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import {
@@ -455,6 +455,13 @@ export function polygonLipGaps(params: BinParams): readonly PolygonLipGap[] {
         lo: alongMid + g.centre - g.width / 2,
         hi: alongMid + g.centre + g.width / 2,
       });
+    }
+  }
+  // Open-side exits sit on whichever edge their ray met, not the outermost
+  // one per side, so they arrive with their own edge coordinate.
+  if (dims.wallHeight - params.cutoutConfig.topOffset > 0) {
+    for (const exit of openSidePolygonExits(params)) {
+      out.push({ source: 'openSide', ...exit });
     }
   }
   return out;

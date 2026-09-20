@@ -1347,6 +1347,9 @@ export function buildCutoutCuts(
 /** Extra reach past any wall so a breach channel always exits the body (mm). */
 const KNIFE_BREACH_REACH_MARGIN = 50;
 
+/** How far past the wall's outer face an open-side channel runs (mm). */
+const OPEN_SIDE_REACH_PAST_FACE_MM = 6;
+
 /** The body frame every breach channel is positioned in. */
 interface BreachFrame {
   readonly innerW: number;
@@ -1408,10 +1411,12 @@ function openSideChannelOutline(
   const originAlong = alongX ? frame.originX : frame.originY;
   const originAcross = alongX ? frame.originY : frame.originX;
   const half = alongX ? frame.innerW / 2 : frame.innerD / 2;
-  const reach = frame.innerW + frame.innerD + KNIFE_BREACH_REACH_MARGIN;
   const start = originAlong + ch.start;
-  const face = dir * (half + wallThickness);
-  const far = face + dir * reach;
+  // A custom shape names the wall its ray meets first; a rectangle's is the
+  // interior's edge plus the wall. Past the face there is only air and the
+  // stacking lip, whose outer face is the wall's, so a short reach clears it.
+  const face = ch.faceMm === undefined ? dir * (half + wallThickness) : originAlong + ch.faceMm;
+  const far = face + dir * OPEN_SIDE_REACH_PAST_FACE_MM;
   const lo = originAcross + ch.lo;
   const hi = originAcross + ch.hi;
   const chamfer = Math.min(ch.chamferMm, wallThickness, (hi - lo) / 2);

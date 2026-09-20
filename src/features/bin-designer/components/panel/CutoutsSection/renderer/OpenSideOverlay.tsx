@@ -24,16 +24,13 @@ interface OpenSideOverlayProps {
 }
 
 export function OpenSideOverlay({ cutouts, binWidth, binDepth }: OpenSideOverlayProps) {
-  const base = useDesignerStore((s) => s.params.base);
-  const overhang = useDesignerStore((s) => s.params.overhang);
-  const cellMask = useDesignerStore((s) => s.params.cellMask);
-  const wallThickness = useDesignerStore((s) => s.params.wallThickness);
+  const params = useDesignerStore((s) => s.params);
 
   const geometries = useMemo(() => {
     const outline: number[] = [];
     const fill: number[] = [];
-    const host = { base, overhang, cellMask, cutouts };
-    const frame = { binWidth, binDepth, wallThickness };
+    const host = { ...params, cutouts };
+    const frame = { binWidth, binDepth, wallThickness: params.wallThickness };
     for (const { loop, tunnel } of openSideOverlayStrips(host, frame)) {
       outline.push(...loopToSegmentPositions(loop, OVERLAY_Z));
       if (tunnel) continue;
@@ -47,7 +44,7 @@ export function OpenSideOverlay({ cutouts, binWidth, binDepth }: OpenSideOverlay
     const faces = new THREE.BufferGeometry();
     faces.setAttribute('position', new THREE.Float32BufferAttribute(fill, 3));
     return { lines, faces };
-  }, [cutouts, base, overhang, cellMask, binWidth, binDepth, wallThickness]);
+  }, [cutouts, params, binWidth, binDepth]);
 
   const materials = useMemo(
     () => ({

@@ -30,4 +30,6 @@ exports[`open sides > 2x1x4 tunnel keeps the wall and lip above the pocket 1`] =
 
 exports[`open sides > 2x1x4 union group leaves at its combined width 1`] = `1490`;
 
-exports[`open sides > corner index block holds a framing square 1`] = `2434`;
+exports[`open sides > U block: a channel stops at the arm it leaves, not the far arm 1`] = `3458`;
+
+exports[`open sides > corner index block holds a framing square 1`] = `2300`;

@@ -12,6 +12,7 @@
  * the values it reports.
  */
 export const COMMUNITY_EXAMPLE_PARAM_HASHES: ReadonlySet<string> = new Set<string>([
+  '020e790e9d48e4e6d41ba13d164372b9',
   '1683be0c51d49f0b79582e0a24f96768',
   '216fa5337ad5cce7af1afe58e19a073c',
   '2f6f4e2e866e48e956c6bc7ab4cefb36',
@@ -24,6 +25,5 @@ export const COMMUNITY_EXAMPLE_PARAM_HASHES: ReadonlySet<string> = new Set<strin
   'ac25de9a9a4a13e9123d2ce275f4d997',
   'b5859d9f1a655e86f097f560ccc32298',
   'c93011cf9a3a893096deef922075628e',
-  'c98b8738c3992f086c2310607404ebd5',
   'd0e9a93e732ca9d2694d17048e76c233',
 ]);
