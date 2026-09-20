@@ -18,9 +18,9 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     date: '2026-09-19',
     kind: 'new',
     featured: true,
-    title: { en: 'Pockets that open through the wall' },
+    title: { en: 'Cutouts can open through the wall' },
     body: {
-      en: 'A rectangle cutout on a solid bin can now run out through any of its walls, floor to rim, so a ruler, blade or framing square slides in from the side. Pick the walls under Open through wall in the shape settings. Try the new Corner Index Block example.',
+      en: 'On a solid bin, a rectangle cutout can now open through any of its walls, so a ruler or square slides in from the side. Find it under Open through wall in the cutout settings.',
     },
     action: { kind: 'openTool', tool: 'designer' },
   },
