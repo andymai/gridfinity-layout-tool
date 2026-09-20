@@ -1,0 +1,21 @@
+src/shared/utils/pathGeometryBezier.test.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 1-153
+src/shared/utils/pathGeometryBezier.ts
+  s_e56a2f2aca30d6::t_99028a01962cb7 1-156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9e77f665c905bbeadead22ffb59f576e8d1da9b7",
+  "prompts": {},
+  "sessions": {
+    "s_e56a2f2aca30d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7eb6d87-a8e1-465f-9680-c8fcc8f08a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
