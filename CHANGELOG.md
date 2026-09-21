@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.496.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.496.0...gridfinity-layout-tool-v4.496.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* **analytics:** filter posthog transport timeout exceptions ([#4342](https://github.com/andymai/gridfinity-layout-tool/issues/4342)) ([b4a0e31](https://github.com/andymai/gridfinity-layout-tool/commit/b4a0e31ada7943e4d6577ff1feac6c036d985053))
+* **baseplate:** seat stacked plates by the socket lattice ([#4341](https://github.com/andymai/gridfinity-layout-tool/issues/4341)) ([39ed4ba](https://github.com/andymai/gridfinity-layout-tool/commit/39ed4bafc3b2a54f26253213506cfb906d80ffd3))
+
 ## [4.496.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.495.0...gridfinity-layout-tool-v4.496.0) (2026-09-20)
 
 
