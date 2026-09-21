@@ -571,6 +571,14 @@ describe('posthog-js transport timeouts', () => {
     expect(filterExceptionForPosthog(e)).toBeNull();
   });
 
+  it('drops it from the $exception_values fallback shape as well', () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_values: ['AbortError: PostHog request timed out after 3000ms'] },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
   it('keeps an app request that timed out', () => {
     const e = {
       event: '$exception',
