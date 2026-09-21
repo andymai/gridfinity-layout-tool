@@ -19,7 +19,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     kind: 'fixed',
     title: { en: 'Stacked corner plates sit on the plate below' },
     body: {
-      en: 'In a vertical stack, the corner pieces of a split drawer had their second plate shifted off the sockets of the first, so its first layers printed in mid-air. Every plate in a tower now lands its socket walls on the one below; a corner piece hangs only its narrower padding strip past the bottom plate. Re-export any stacked baseplate you printed before today.',
+      en: 'In a vertical stack, the corner pieces of a split drawer had their second plate shifted off the sockets of the first, so its first layers printed in mid-air. Every plate in a tower now lands its socket walls on the one below; a corner piece hangs only its narrower padding strip past the bottom plate. Re-export any stacked baseplate you printed before this fix.',
     },
     action: { kind: 'openTool', tool: 'baseplate' },
   },

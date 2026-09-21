@@ -264,8 +264,8 @@ export function planPlateFlip(params: PlateFlipInput): PlateFlip {
  * Build the meshes for one printed tower of `copies` plates. The bottom plate
  * stays upright (best bed adhesion, no overhang); every plate above it is
  * flipped upside down — community practice that minimizes overhangs while the
- * air gap lets the tower snap apart (see the baseplate README). All copies share
- * the same body footprint and the bottom sits at Z=0.
+ * air gap lets the tower snap apart (see the baseplate README). Every copy's
+ * socket lattice lands on the one below it, and the bottom sits at Z=0.
  *
  * `flip` comes from {@link planPlateFlip}: the turn negates one lateral axis
  * about 0, where the socket lattice is centred, and `flip.offsetMm` seats a
