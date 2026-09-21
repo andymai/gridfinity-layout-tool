@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.496.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.496.1...gridfinity-layout-tool-v4.496.2) (2026-09-21)
+
+
+### Bug Fixes
+
+* **deps:** dedupe @napi-rs/wasm-runtime in lockfile ([#4353](https://github.com/andymai/gridfinity-layout-tool/issues/4353)) ([542a8de](https://github.com/andymai/gridfinity-layout-tool/commit/542a8de3e8b18f74f95aaeb688ee2f9214453297))
+
 ## [4.496.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.496.0...gridfinity-layout-tool-v4.496.1) (2026-09-21)
 
 
