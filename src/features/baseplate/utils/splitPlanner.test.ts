@@ -6,7 +6,6 @@ import {
   colToLetter,
   bodyParamsForDetach,
 } from './splitPlanner';
-import { bodyCenterYMm } from './stackPrint';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
 import { CONSTRAINTS } from '@/core/constants';
@@ -981,10 +980,6 @@ describe('pieceToBaseplateParams', () => {
     const gen = pieceToBaseplateParams(rotated, parent);
     expect(gen.paddingFront).toBe(rotated.paddingBack);
     expect(gen.paddingBack).toBe(rotated.paddingFront);
-    expect(bodyCenterYMm(gen.paddingFront, gen.paddingBack)).toBeCloseTo(
-      -bodyCenterYMm(rotated.paddingFront, rotated.paddingBack),
-      5
-    );
   });
 
   it('defaults fractionalEdge to end when piece has none', () => {

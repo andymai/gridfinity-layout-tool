@@ -155,40 +155,31 @@ export function stackStrideMm(plateHeightMm: number, stack: StackPrintParams): n
   return plateHeightMm + Math.max(0, stack.gapMm);
 }
 
-/**
- * Connector-free body-centre Y (mm) of a baseplate mesh in its own vertex frame.
- * The generator draws the slab centred at the origin then shifts it only by
- * `(paddingBack − paddingFront) / 2` — connector tongues, overTile, and
- * fractional edges never move the body centre — so this tracks the body, not the
- * bounding box (which a protruding tongue skews). Used to re-seat a flipped plate
- * onto the upright one below it without dragging the body off-axis.
- */
-export function bodyCenterYMm(paddingFrontMm: number, paddingBackMm: number): number {
-  return (paddingBackMm - paddingFrontMm) / 2;
-}
-
-/** Connector-free body-centre X (mm) — the X-axis twin of {@link bodyCenterYMm}. */
-function bodyCenterXMm(paddingLeftMm: number, paddingRightMm: number): number {
-  return (paddingRightMm - paddingLeftMm) / 2;
-}
-
 /** Horizontal axis a plate is turned 180° about to print it upside down. */
 export type PlateFlipAxis = 'x' | 'y';
 
 /** How the flipped copies in a tower are turned over. See {@link planPlateFlip}. */
 export interface PlateFlip {
   readonly axis: PlateFlipAxis;
-  /** Re-seat translation (mm) along the axis the turn negates (2 × body centre). */
+  /**
+   * Seat translation (mm) along the axis the turn negates, landing the flipped
+   * copy's full-cell socket walls on the upright plate's: zero for a whole-unit
+   * extent, the sliver for a fractional one.
+   */
   readonly offsetMm: number;
 }
 
-/** Turn about X with no re-seat — correct for any plate padded symmetrically. */
+/** Turn about X with no seat — correct for any whole-unit plate. */
 export const DEFAULT_PLATE_FLIP: PlateFlip = { axis: 'x', offsetMm: 0 };
 
 export type PlateFlipInput = Pick<
   ResolvedBaseplateParams,
   | 'width'
   | 'depth'
+  | 'gridUnitMm'
+  | 'gridUnitMmY'
+  | 'fractionalEdgeX'
+  | 'fractionalEdgeY'
   | 'paddingLeft'
   | 'paddingRight'
   | 'paddingFront'
@@ -199,66 +190,89 @@ export type PlateFlipInput = Pick<
   | 'edges'
 >;
 
-/**
- * Whether turning about one axis maps the socket lattice back onto itself. The
- * lattice is centred on the origin while the slab is centred on the padding
- * asymmetry, so the re-seat that lands the slab back on the upright plate drags
- * the lattice off by the same asymmetry — congruent means there is none. A
- * fractional cell disqualifies the axis outright: mirroring moves the sliver to
- * the opposite end, which no translation can undo.
- */
-function turnsOntoItself(padA: number, padB: number, extentUnits: number): boolean {
-  return padA === padB && Number.isInteger(extentUnits);
+interface TurnCost {
+  /** Seat (mm) that lands the negated lattice's full-cell walls on the upright's. */
+  readonly seatMm: number;
+  /** Slab overhang (mm) left past one edge of the upright plate once seated. */
+  readonly overhangMm: number;
 }
 
 /**
- * Pick the axis to turn a plate about when flipping it for the stack.
+ * What turning about one axis costs at the bottom seam. The socket lattice is
+ * centred on the origin, so negating an axis maps a whole-unit extent's cell
+ * walls onto themselves; a fractional extent lands them a sliver off, and
+ * seating by that sliver realigns every full wall while the sliver itself hangs
+ * past the upright plate. The slab is centred on the padding asymmetry instead,
+ * so once the lattice is seated the slab overhangs by that asymmetry (plus any
+ * sliver seat) at one edge.
+ */
+function turnCost(
+  padStartMm: number,
+  padEndMm: number,
+  extentUnits: number,
+  pitchMm: number,
+  fractionalEdge: 'start' | 'end'
+): TurnCost {
+  const sliverMm = (extentUnits - Math.floor(extentUnits)) * pitchMm;
+  const seatMm = sliverMm === 0 ? 0 : fractionalEdge === 'end' ? -sliverMm : sliverMm;
+  return { seatMm, overhangMm: Math.abs(padStartMm - padEndMm + seatMm) };
+}
+
+/**
+ * Pick the axis to turn a plate about when flipping it for the stack, and the
+ * seat that lands its socket walls on the upright plate's.
  *
  * Both axes describe the same physical flip — they differ by a 180° turn in the
- * plate's own plane — so the choice is free, and we spend it on landing the
- * flipped copy's sockets on the upright plate's. A plate padded on one side only
- * (every outer piece of a split drawer,) is congruent about exactly one
- * axis; turning about the other shifts its lattice by the full padding, leaving
- * the bottom plate visibly out of step with the rest of the tower even though
- * the outer footprints still line up.
+ * plate's own plane — so the choice is free, and we spend it on the seam. The
+ * flipped copy's knife-edge socket walls print onto the upright plate's, so the
+ * lattice is what must line up and the slab lands wherever that leaves it. A
+ * plate padded on one side only (every outer piece of a split drawer) turns
+ * onto itself about one axis and overhangs by its padding about the other; a
+ * corner piece overhangs either way, so the turn with the narrower padding
+ * wins. Seating the slab instead would drag the whole lattice off the pockets
+ * below and every wall would print over a void.
  *
  * Rounded corners only break a tie the padding leaves open: a full-width row
  * rounds its two outer corners, which the Y turn swaps with each other and the
- * X turn carries to the far edge. Rounding never overrides the lattice, because
- * a corner tile's lone rounded corner is congruent about neither axis and a few
- * millimetres of corner overhang at one seam costs less than sockets landing
- * over voids.
- *
- * A custom perimeter is never assumed congruent (its mirror symmetry isn't
- * derivable from padding), so shaped plates keep the X-axis turn.
+ * X turn carries to the far edge. A custom perimeter's mirror symmetry isn't
+ * derivable, so a shaped plate is judged on its padding like any other.
  */
 export function planPlateFlip(params: PlateFlipInput): PlateFlip {
-  const plain = params.outline === undefined;
-  const latticeX = plain && turnsOntoItself(params.paddingFront, params.paddingBack, params.depth);
-  const latticeY = plain && turnsOntoItself(params.paddingLeft, params.paddingRight, params.width);
+  const aboutX = turnCost(
+    params.paddingFront,
+    params.paddingBack,
+    params.depth,
+    params.gridUnitMmY ?? params.gridUnitMm,
+    params.fractionalEdgeY
+  );
+  const aboutY = turnCost(
+    params.paddingLeft,
+    params.paddingRight,
+    params.width,
+    params.gridUnitMm,
+    params.fractionalEdgeX
+  );
   const r = effectiveCornerRadii(params);
   const roundingX = r.tl === r.bl && r.tr === r.br;
   const roundingY = r.tl === r.tr && r.bl === r.br;
-  if (latticeY && (!latticeX || (roundingY && !roundingX))) {
-    return { axis: 'y', offsetMm: 2 * bodyCenterXMm(params.paddingLeft, params.paddingRight) };
-  }
-  return { axis: 'x', offsetMm: 2 * bodyCenterYMm(params.paddingFront, params.paddingBack) };
+  const tie = Math.abs(aboutY.overhangMm - aboutX.overhangMm) < 1e-9;
+  const preferY = tie ? roundingY && !roundingX : aboutY.overhangMm < aboutX.overhangMm;
+  return preferY ? { axis: 'y', offsetMm: aboutY.seatMm } : { axis: 'x', offsetMm: aboutX.seatMm };
 }
 
 /**
  * Build the meshes for one printed tower of `copies` plates. The bottom plate
  * stays upright (best bed adhesion, no overhang); every plate above it is
  * flipped upside down — community practice that minimizes overhangs while the
- * air gap lets the tower snap apart (see the baseplate README). All copies share
- * the same body footprint and the bottom sits at Z=0.
+ * air gap lets the tower snap apart (see the baseplate README). Every copy's
+ * socket lattice lands on the one below it, and the bottom sits at Z=0.
  *
- * `flip` comes from {@link planPlateFlip}. The turn negates the lateral axis
- * about 0, landing a body centred at `c` at `−c`; `flip.offsetMm` (`2c`) seats
- * the flipped body back onto the upright one. The protruding dovetail/puzzle
- * tongue then mirrors to the opposite edge instead of dragging the body off-axis
- * — the previous full-bbox re-centring offset every plate by the tongue
- * protrusion (~1.5mm), so the socket grids never lined up and the tongue
- * overhung the plate below.
+ * `flip` comes from {@link planPlateFlip}: the turn negates one lateral axis
+ * about 0, where the socket lattice is centred, and `flip.offsetMm` seats a
+ * fractional plate's full-cell walls back onto the upright one's. The slab
+ * lands wherever the lattice puts it, so an asymmetric padding rim or a
+ * protruding dovetail tongue mirrors to the opposite edge rather than the
+ * sockets being dragged off the pockets below.
  */
 export function buildTowerLayers(
   base: StackMeshArrays,
@@ -271,7 +285,7 @@ export function buildTowerLayers(
   const midZ = (b.minZ + b.maxZ) / 2;
   // Upright, floored to Z=0.
   const upright = translateMesh(base, 0, 0, -b.minZ);
-  // Flipped about its own mid-plane, re-seated on the upright body, floored to Z=0.
+  // Flipped about its own mid-plane, lattice seated on the upright plate, floored to Z=0.
   const flipped = translateMesh(
     flipMeshUpsideDown(base, midZ, flip.axis),
     flip.axis === 'y' ? flip.offsetMm : 0,
