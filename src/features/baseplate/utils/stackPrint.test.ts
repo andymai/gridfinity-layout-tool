@@ -358,18 +358,15 @@ describe('planPlateFlip', () => {
   });
 
   it('avoids a fractional axis, or seats it by its sliver when both are fractional', () => {
-    // Mirroring moves the sliver to the opposite end, landing every full-cell
-    // wall a sliver off; the other axis is free, so it wins outright.
+    // Mirroring moves the sliver to the opposite end, so every full-cell wall
+    // lands a sliver off.
     expect(planPlateFlip(plate({ width: 3.5 }))).toEqual({ axis: 'x', offsetMm: 0 });
     expect(planPlateFlip(plate({ depth: 3.5 }))).toEqual({ axis: 'y', offsetMm: 0 });
-    // Both fractional: the seat pulls the full walls back onto the upright
-    // plate's, toward the end the sliver came from.
     expect(planPlateFlip(plate({ width: 3.5, depth: 3.5 }))).toEqual({ axis: 'x', offsetMm: -21 });
     expect(planPlateFlip(plate({ width: 3.5, depth: 3.5, fractionalEdgeY: 'start' }))).toEqual({
       axis: 'x',
       offsetMm: 21,
     });
-    // The depth axis seats on its own pitch, and its shorter sliver wins the tie.
     expect(planPlateFlip(plate({ width: 3.5, depth: 3.5, gridUnitMmY: 40 }))).toEqual({
       axis: 'x',
       offsetMm: -20,
@@ -686,11 +683,8 @@ describe('corner pieces under stacking (#4339)', () => {
   }
 
   it('lands every socket wall on the plate below, hanging only the narrower padding', async () => {
-    // The reported drawer: 900×304mm at defaults fits 21×7 with 9mm side and
-    // 5mm front/back padding, which the split hands to the corner pieces one
-    // side of each axis at a time. No turn maps a corner piece onto itself, and
-    // seating its slab printed the whole second-plate lattice 5mm off the
-    // pockets below.
+    // A corner piece is padded on one side of each axis, so no turn maps it
+    // onto itself.
     const { generateBaseplateDirect } =
       await import('@/features/generation/worker/generators/baseplateDirectMesh');
     const parent = buildFullParams(
