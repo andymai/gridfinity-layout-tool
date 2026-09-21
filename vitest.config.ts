@@ -189,6 +189,9 @@ export default defineConfig({
           // the default the way the `it`-level ones are. This covers the 24 that
           // were never given one.
           hookTimeout: GENERATOR_HOOK_TIMEOUT_MS,
+          benchmark: {
+            include: ['**/*.bench.ts'],
+          },
         },
       },
       {
@@ -220,8 +223,11 @@ export default defineConfig({
         },
       },
     ],
+    // Vitest 5 gives every project a benchmark twin. Discovery is off here so
+    // only the generators project below (the one with the WASM kernel and the
+    // 120s budget) runs the bench files, instead of all five projects re-running them.
     benchmark: {
-      include: ['**/*.bench.ts'],
+      include: [],
       exclude: ['node_modules/**', '.worktrees/**'],
     },
   },

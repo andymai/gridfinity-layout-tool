@@ -7,9 +7,7 @@ import * as matchers from 'vitest-axe/matchers';
 // Extend vitest matchers with axe matchers
 declare module 'vitest' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
-  interface Assertion<T> extends AxeMatchers {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface AsymmetricMatchersContaining extends AxeMatchers {}
+  interface Matchers<R, T> extends AxeMatchers {}
 }
 import { Header } from '@/shell/Header';
 import { Sidebar } from '@/shell/Sidebar';
