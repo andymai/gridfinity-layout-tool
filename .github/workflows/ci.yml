@@ -170,7 +170,7 @@ jobs:
         if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
         with:
           name: blob-${{ matrix.idx }}
-          path: .vitest-reports/
+          path: .vitest/blob/
           include-hidden-files: true
           retention-days: 1
 
@@ -324,7 +324,7 @@ jobs:
         with:
           pattern: blob-*
           merge-multiple: true
-          path: .vitest-reports
+          path: .vitest/blob
 
       - name: Merge reports and enforce coverage thresholds
         run: pnpm vitest --mergeReports --coverage

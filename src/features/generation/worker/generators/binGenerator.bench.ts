@@ -8,7 +8,8 @@
  *   pnpm exec vitest bench binGenerator
  *   BREPJS_KERNEL=wasm pnpm exec vitest bench binGenerator
  */
-import { bench, describe, beforeAll } from 'vitest';
+import { describe, beforeAll } from 'vitest';
+import { benchCase } from './__kernel-tests__/benchCase';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams as params, makeInsert, makeCutout } from './__kernel-tests__/scenarioTypes';
@@ -22,7 +23,7 @@ beforeAll(async () => {
 // ─── Core dimensions ──────────────────────────────────────────────────────────
 
 describe('core dimensions', () => {
-  bench(
+  benchCase(
     '0.5×0.5 with lip',
     () => {
       getGenerateBin()(params({ width: 0.5, depth: 0.5, height: 3 }));
@@ -30,7 +31,7 @@ describe('core dimensions', () => {
     { iterations: 10, warmupIterations: 2 }
   );
 
-  bench(
+  benchCase(
     '1×1 with lip',
     () => {
       getGenerateBin()(params({ width: 1, depth: 1, height: 3 }));
@@ -38,7 +39,7 @@ describe('core dimensions', () => {
     { iterations: 10, warmupIterations: 2 }
   );
 
-  bench(
+  benchCase(
     '1×1 no lip',
     () => {
       getGenerateBin()(
@@ -53,7 +54,7 @@ describe('core dimensions', () => {
     { iterations: 10, warmupIterations: 2 }
   );
 
-  bench(
+  benchCase(
     '2×2 with lip',
     () => {
       getGenerateBin()(params({ width: 2, depth: 2, height: 3 }));
@@ -61,7 +62,7 @@ describe('core dimensions', () => {
     { iterations: 10, warmupIterations: 2 }
   );
 
-  bench(
+  benchCase(
     '4×4 with lip',
     () => {
       getGenerateBin()(params({ width: 4, depth: 4, height: 6 }));
@@ -73,7 +74,7 @@ describe('core dimensions', () => {
 // ─── Hollow + features ────────────────────────────────────────────────────────
 
 describe('hollow + features', () => {
-  bench(
+  benchCase(
     '2×2 hollow + scoop',
     () => {
       getGenerateBin()(
@@ -88,7 +89,7 @@ describe('hollow + features', () => {
     { iterations: 5, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '2×2 with insert',
     () => {
       getGenerateBin()(
@@ -103,7 +104,7 @@ describe('hollow + features', () => {
     { iterations: 5, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '2×2 with cutout',
     () => {
       getGenerateBin()(
@@ -118,7 +119,7 @@ describe('hollow + features', () => {
     { iterations: 5, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '3×3 2×2 compartments + scoop',
     () => {
       getGenerateBin()(
@@ -138,7 +139,7 @@ describe('hollow + features', () => {
 // ─── Half-bin mode ────────────────────────────────────────────────────────────
 
 describe('half-bin mode', () => {
-  bench(
+  benchCase(
     '1.5×2.5 with lip',
     () => {
       getGenerateBin()(params({ width: 1.5, depth: 2.5, height: 3 }));
@@ -146,7 +147,7 @@ describe('half-bin mode', () => {
     { iterations: 5, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '0.5×1.5 with lip',
     () => {
       getGenerateBin()(params({ width: 0.5, depth: 1.5, height: 2 }));
@@ -178,7 +179,7 @@ describe('wall pattern + cutout cache reuse', () => {
     },
   });
 
-  bench(
+  benchCase(
     'first build (cold): 4×2×6 honeycomb + cutouts',
     () => {
       getGenerateBin()(HONEYCOMB_4X2X6);
@@ -186,7 +187,7 @@ describe('wall pattern + cutout cache reuse', () => {
     { iterations: 3, warmupIterations: 0 }
   );
 
-  bench(
+  benchCase(
     'cutout-width nudge (warm): base compound should hit cache',
     () => {
       // Warm the base compound cache, then nudge the cutout widths.
@@ -254,7 +255,7 @@ describe('dense compartments + cutouts (wall pattern cold cache)', () => {
     walls: fourCutouts(70, 50),
   });
 
-  bench(
+  benchCase(
     'dense_wide_with_cutouts (cold): 6×4×6, 12×8 compartments, 4 cutouts',
     () => {
       getGenerateBin()(DENSE_WIDE);
@@ -262,7 +263,7 @@ describe('dense compartments + cutouts (wall pattern cold cache)', () => {
     { iterations: 3, warmupIterations: 0 }
   );
 
-  bench(
+  benchCase(
     'tall_with_cutouts (cold): 4×4×6, 6×6 compartments, 4 cutouts',
     () => {
       getGenerateBin()(TALL_DENSE);
@@ -270,7 +271,7 @@ describe('dense compartments + cutouts (wall pattern cold cache)', () => {
     { iterations: 3, warmupIterations: 0 }
   );
 
-  bench(
+  benchCase(
     'cache_warm_cutout_iter: dense_wide repeated with cutout width nudges',
     () => {
       // Warm the base + clipped caches, then iterate cutout widths so
@@ -297,7 +298,7 @@ describe('dense compartments + cutouts (wall pattern cold cache)', () => {
 // ─── Export paths ─────────────────────────────────────────────────────────────
 
 describe('export (forExport=true)', () => {
-  bench(
+  benchCase(
     '1×1 export fidelity',
     () => {
       getGenerateBin()(params({ width: 1, depth: 1, height: 3 }), undefined, true);
@@ -305,7 +306,7 @@ describe('export (forExport=true)', () => {
     { iterations: 5, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '2×2 export fidelity',
     () => {
       getGenerateBin()(params({ width: 2, depth: 2, height: 3 }), undefined, true);
@@ -313,7 +314,7 @@ describe('export (forExport=true)', () => {
     { iterations: 3, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '2×2 export + scoop + insert',
     () => {
       getGenerateBin()(
@@ -348,9 +349,9 @@ describe('socket grid (cold cache)', () => {
     buildBaseSocket(gridW, gridD, magnet, false, 3.1, 2, 1.25, forExport);
   };
 
-  bench('4×4 preview', cold(4, 4, false, false), { iterations: 10, warmupIterations: 2 });
-  bench('6×6 preview', cold(6, 6, false, false), { iterations: 10, warmupIterations: 2 });
-  bench('7×7 preview', cold(7, 7, false, false), { iterations: 8, warmupIterations: 2 });
-  bench('6×6 export', cold(6, 6, false, true), { iterations: 6, warmupIterations: 1 });
-  bench('6×6 export + magnets', cold(6, 6, true, true), { iterations: 4, warmupIterations: 1 });
+  benchCase('4×4 preview', cold(4, 4, false, false), { iterations: 10, warmupIterations: 2 });
+  benchCase('6×6 preview', cold(6, 6, false, false), { iterations: 10, warmupIterations: 2 });
+  benchCase('7×7 preview', cold(7, 7, false, false), { iterations: 8, warmupIterations: 2 });
+  benchCase('6×6 export', cold(6, 6, false, true), { iterations: 6, warmupIterations: 1 });
+  benchCase('6×6 export + magnets', cold(6, 6, true, true), { iterations: 4, warmupIterations: 1 });
 });

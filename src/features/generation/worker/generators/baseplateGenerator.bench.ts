@@ -12,7 +12,8 @@
  * call uses a unique paddingLeft value to ensure a full cache miss and
  * real BREP + tessellation work on every iteration.
  */
-import { bench, describe, beforeAll } from 'vitest';
+import { describe, beforeAll } from 'vitest';
+import { benchCase } from './__kernel-tests__/benchCase';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBaseplate } from './__kernel-tests__/wasmInit';
 import { clearBaseplateCaches } from './baseplateCaches';
@@ -45,7 +46,7 @@ beforeAll(async () => {
 }, 30_000);
 
 describe('baseplate generation', () => {
-  bench(
+  benchCase(
     '2×2 no magnets',
     () => {
       getGenerateBaseplate()(defaults(), noop, false);
@@ -53,7 +54,7 @@ describe('baseplate generation', () => {
     { iterations: 5, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '4×4 no magnets',
     () => {
       getGenerateBaseplate()(defaults({ width: 4, depth: 4 }), noop, false);
@@ -61,7 +62,7 @@ describe('baseplate generation', () => {
     { iterations: 5, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '4×4 with magnets',
     () => {
       getGenerateBaseplate()(defaults({ width: 4, depth: 4, magnetHoles: true }), noop, false);
@@ -69,7 +70,7 @@ describe('baseplate generation', () => {
     { iterations: 3, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '6×4 magnets (stress)',
     () => {
       getGenerateBaseplate()(defaults({ width: 6, depth: 4, magnetHoles: true }), noop, false);
@@ -77,7 +78,7 @@ describe('baseplate generation', () => {
     { iterations: 3, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '6×6 magnets (split-piece)',
     () => {
       getGenerateBaseplate()(defaults({ width: 6, depth: 6, magnetHoles: true }), noop, false);
@@ -85,7 +86,7 @@ describe('baseplate generation', () => {
     { iterations: 3, warmupIterations: 1 }
   );
 
-  bench(
+  benchCase(
     '3×3 magnets + connectors',
     () => {
       getGenerateBaseplate()(
@@ -114,11 +115,17 @@ describe('baseplate generation', () => {
     getGenerateBaseplate()(defaults({ width: w, depth: d }), noop, forExport);
   };
 
-  bench('6×6 no magnets (cold)', coldPlate(6, 6, false), { iterations: 4, warmupIterations: 1 });
-  bench('8×8 no magnets (cold)', coldPlate(8, 8, false), { iterations: 3, warmupIterations: 1 });
-  bench('12×12 no magnets (cold)', coldPlate(12, 12, false), {
+  benchCase('6×6 no magnets (cold)', coldPlate(6, 6, false), {
+    iterations: 4,
+    warmupIterations: 1,
+  });
+  benchCase('8×8 no magnets (cold)', coldPlate(8, 8, false), {
+    iterations: 3,
+    warmupIterations: 1,
+  });
+  benchCase('12×12 no magnets (cold)', coldPlate(12, 12, false), {
     iterations: 2,
     warmupIterations: 1,
   });
-  bench('8×8 export (cold)', coldPlate(8, 8, true), { iterations: 2, warmupIterations: 1 });
+  benchCase('8×8 export (cold)', coldPlate(8, 8, true), { iterations: 2, warmupIterations: 1 });
 });

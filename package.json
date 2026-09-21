@@ -65,7 +65,7 @@
     "backfill-ml-ttls": "tsx scripts/backfill-ml-ttls.ts",
     "gen:example-thumbnails": "tsx --tsconfig tsconfig.app.json scripts/gen-example-thumbnails.ts",
     "bench": "vitest bench",
-    "bench:json": "vitest bench --outputJson benchmarks/latest.json",
+    "bench:json": "vitest bench --reporter=default --reporter=json --outputFile.json=benchmarks/latest.json",
     "profile:matrix": "vitest run --config vitest.profile.config.ts matrixProfile.perf",
     "knip": "knip",
     "knip:fix": "knip --fix",

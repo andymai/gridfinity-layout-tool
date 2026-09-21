@@ -9,14 +9,14 @@ import { GlbViewer } from './GlbViewer';
 interface GltfTestState {
   impl: () => { scene: Object3D };
   calls: string[];
-  setDecoderPath: ReturnType<typeof vi.fn>;
+  decoderPaths: string[];
   orbitProps: Record<string, unknown>;
 }
 
 const gltfState = vi.hoisted((): GltfTestState => ({
   impl: () => ({ scene: new Group() }),
   calls: [],
-  setDecoderPath: vi.fn(),
+  decoderPaths: [],
   orbitProps: {},
 }));
 
@@ -37,7 +37,11 @@ vi.mock('@react-three/drei', () => ({
       gltfState.calls.push(url);
       return gltfState.impl();
     },
-    { setDecoderPath: gltfState.setDecoderPath }
+    {
+      setDecoderPath: (path: string) => {
+        gltfState.decoderPaths.push(path);
+      },
+    }
   ),
   Bounds: ({ children }: { children?: ReactNode }) => <>{children}</>,
   Center: ({ children }: { children?: ReactNode }) => <>{children}</>,
@@ -83,7 +87,7 @@ describe('GlbViewer', () => {
   });
 
   it('registers the self-hosted draco decoder path once at module scope', () => {
-    expect(gltfState.setDecoderPath).toHaveBeenCalledWith('/draco/');
+    expect(gltfState.decoderPaths).toEqual(['/draco/']);
   });
 
   it('shows the poster at full opacity with loading progress before the model resolves', () => {

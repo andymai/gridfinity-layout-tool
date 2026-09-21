@@ -2,7 +2,7 @@
 // DOM-specific test setup — used by the "dom" vitest workspace project.
 // Base setup (i18n mock) is loaded separately via vitest.workspace.ts setupFiles.
 
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { afterEach } from 'vitest';
 import { cleanup, configure } from '@testing-library/react';
 import { resetWebGLDetectionCacheForTests } from '@/shared/webgl/detectWebGL';
