@@ -230,7 +230,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
       '@gridfinity/branded-types': path.resolve(__dirname, 'packages/branded-types/src/index.ts'),
       'virtual:pwa-register/react': path.resolve(__dirname, 'src/test/mocks/pwa-register.ts'),
-      three: path.resolve(__dirname, 'node_modules/three'),
     },
     dedupe: ['three'],
   },
