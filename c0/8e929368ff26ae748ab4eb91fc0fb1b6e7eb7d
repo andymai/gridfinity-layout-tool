@@ -1,0 +1,19 @@
+src/features/baseplate/utils/stackPrint.test.ts
+  s_2bff3c3ca1039a::t_40a6557d83897a 361-362,686-687
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c08e929368ff26ae748ab4eb91fc0fb1b6e7eb7d",
+  "prompts": {},
+  "sessions": {
+    "s_2bff3c3ca1039a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "34b7750a-633a-45df-bd0f-d3888fe3ffb7",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
