@@ -1,0 +1,42 @@
+src/shell/AppShell.scenario.accessibility.test.tsx
+  s_5b914a3f91644a::t_dc798a8c962652 10
+.gitignore
+  s_5b914a3f91644a::t_f6b1153d8c4b6f 39
+src/test/jest-dom-vitest.d.ts
+  s_5b914a3f91644a::t_7702eb670068ed 1-10
+.github/workflows/ci.yml
+  s_5b914a3f91644a::t_f6b1153d8c4b6f 173,327
+package.json
+  s_5b914a3f91644a::t_1e5d176e4c842b 68
+src/shared/components/GlbViewer/GlbViewer.test.tsx
+  s_5b914a3f91644a::t_a8b34ad4c0fb68 12,19,40-44,90
+vitest.config.ts
+  s_5b914a3f91644a::t_b887e9d7d1a802 192-194,226-228,230
+src/features/generation/worker/generators/binGenerator.bench.ts
+  s_5b914a3f91644a::t_0e7834d1d002ce 11-12,26,34,42,57,65,77,92,107,122,142,150,182,190,258,266,274,301,309,317,352-356
+benchmarks/compare.ts
+  s_5b914a3f91644a::t_1e5d176e4c842b 7-10,13,34-47,50-64,66-73
+src/test/setup-dom.ts
+  s_5b914a3f91644a::t_7702eb670068ed 5
+src/features/generation/worker/generators/baseplateGenerator.bench.ts
+  s_5b914a3f91644a::t_0e7834d1d002ce 15-16,49,57,65,73,81,89,126,130
+  s_5b914a3f91644a::t_6711358941f726 118-125
+src/features/generation/worker/generators/__kernel-tests__/benchCase.ts
+  s_5b914a3f91644a::t_0e7834d1d002ce 1-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b551fcd1f5542ba8f0a836aff11aca93ce787e01",
+  "prompts": {},
+  "sessions": {
+    "s_5b914a3f91644a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a5d801d-38f0-4124-9ae6-0120f4e2506e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
