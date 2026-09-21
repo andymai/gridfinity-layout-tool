@@ -235,9 +235,18 @@ function isNavigationAbort(exception: ExceptionLike): boolean {
 }
 
 /**
+ * posthog-js's own transport: its fetch aborts after `request_timeout` with an
+ * `AbortError` whose message it prefixes itself, and `capture_exceptions`
+ * catches that rejection like any other. An analytics request that timed out is
+ * not an app failure, and the library retries it anyway.
+ */
+const POSTHOG_TRANSPORT_TIMEOUT = /^AbortError: PostHog request timed out/;
+
+/**
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
  * exception matches the extension/noise filters, a deliberate bridge
- * cancellation, the R3F canvas teardown race, or a stackless navigation abort;
+ * cancellation, the R3F canvas teardown race, a stackless navigation abort, or
+ * posthog-js's own request timeout;
  * dedupes the WebGL context-creation
  * burst, pins chunk-load failures to one fingerprint and captures them once
  * per session, caps every exception identity's captures per session, and
@@ -272,6 +281,7 @@ export function filterExceptionForPosthog(
   if (primaryException && isExtensionSourced(primaryException)) return null;
   if (primaryException && isCanvasTeardownRace(primaryException)) return null;
   if (primaryException && isNavigationAbort(primaryException)) return null;
+  if (primary !== undefined && POSTHOG_TRANSPORT_TIMEOUT.test(primary)) return null;
 
   const primarySource = (primaryException?.stacktrace?.frames ?? [])
     .map((f) => f.filename ?? '')
