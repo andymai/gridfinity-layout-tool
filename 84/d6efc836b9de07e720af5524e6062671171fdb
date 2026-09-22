@@ -1,0 +1,28 @@
+src/shared/utils/slideLidPlan.test.ts
+  s_1114d546af730e::t_46d271dcccdace 510
+  s_1114d546af730e::t_81c7f8c35a7499 572-573,589-591,600-603
+src/features/generation/worker/generators/slideLidSeating.scenario.test.ts
+  s_1114d546af730e::t_81c7f8c35a7499 354,489-491,493-495
+src/shared/utils/slideLidPlan.ts
+  s_1114d546af730e::t_81c7f8c35a7499 443,682-686,692
+src/features/generation/worker/generators/__kernel-tests__/slideLidSeating.ts
+  s_1114d546af730e::t_81c7f8c35a7499 74,462-465
+src/shared/generation/meshPersistence.ts
+  s_1114d546af730e::t_b09bb2b5e28f94 45-46,76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "84d6efc836b9de07e720af5524e6062671171fdb",
+  "prompts": {},
+  "sessions": {
+    "s_1114d546af730e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9f3aaf0-7fdd-4562-96a8-e18ed007512e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
