@@ -51,6 +51,61 @@ describe('createShare', () => {
     expect(value.deleteToken).toBe('token123');
   });
 
+  describe('when the layout id is already taken by a share this device cannot manage', () => {
+    const postedBody = (init: RequestInit | undefined): { layoutId: string; permission: string } =>
+      JSON.parse(init?.body as string) as { layoutId: string; permission: string };
+
+    const conflict = {
+      ok: false,
+      status: 409,
+      json: () =>
+        Promise.resolve({
+          error: 'A share with this ID already exists.',
+          code: 'VALIDATION_ERROR',
+        }),
+    } as Response;
+
+    const postedIds = (): string[] =>
+      vi.mocked(fetch).mock.calls.map(([, init]) => postedBody(init).layoutId);
+
+    it('re-shares under a fresh share id', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(conflict)
+        .mockImplementationOnce((_input, init) => {
+          const { layoutId, permission } = postedBody(init);
+          return Promise.resolve({
+            ok: true,
+            status: 201,
+            json: () =>
+              Promise.resolve({
+                id: layoutId,
+                url: `/l/${layoutId}`,
+                deleteToken: 't',
+                permission,
+              }),
+          } as Response);
+        });
+
+      const value = expectOk(await createShare('stranded0001', mockLayout, 'edit'));
+
+      const [first, second] = postedIds();
+      expect(first).toBe('stranded0001');
+      expect(second).toMatch(/^[a-zA-Z0-9]{12}$/);
+      expect(second).not.toBe(first);
+      expect(value.id).toBe(second);
+      expect(value.deleteToken).toBe('t');
+    });
+
+    it('gives up after one fresh id rather than looping', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(conflict).mockResolvedValueOnce(conflict);
+
+      const error = expectErr(await createShare('stranded0001', mockLayout, 'view'));
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(error.code).toBe('API_VALIDATION_ERROR');
+    });
+  });
+
   it('returns Err with ApiRateLimitedError on rate limit', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,

@@ -7,12 +7,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useLayoutRouting } from '@/features/layout-library/hooks/useLayoutRouting';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import * as url from '@/shared/utils/url';
+import { loadLayoutAsync } from '@/core/storage';
 import { gridUnits, heightUnits, mm, layerId, categoryId, layoutId } from '@/core/types';
 import type { LayoutPreview } from '@/core/types';
 
@@ -328,6 +329,50 @@ describe('useLayoutRouting with cloud share URLs', () => {
       renderHook(() => useLayoutRouting());
       // Local layout exists, no redirect needed, URL should be managed normally
       // (in this case, slug is correct so no setLayoutURL needed)
+    });
+  });
+
+  describe('a layout that re-shared under a fresh share id', () => {
+    const healedLayoutId = 'healedLayout';
+    const freshShareId = 'freshShare01';
+
+    beforeEach(() => {
+      const { library } = useLibraryStore.getState();
+      useLibraryStore.setState({
+        library: {
+          ...library,
+          entries: [
+            ...library.entries,
+            {
+              ...library.entries[0],
+              id: layoutId(healedLayoutId),
+              name: 'Healed',
+              cloudShare: {
+                id: freshShareId,
+                deleteToken: 'token',
+                sharedAt: Date.now(),
+                permission: 'edit',
+              },
+            },
+          ],
+        },
+      });
+      vi.mocked(loadLayoutAsync).mockResolvedValue({
+        ...useLayoutStore.getState().layout,
+        name: 'Healed',
+      });
+    });
+
+    it('opens the owning layout when the URL carries its share id', async () => {
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: freshShareId, slug: 'healed' });
+
+      renderHook(() => useLayoutRouting());
+
+      await waitFor(() => {
+        expect(useLayoutStore.getState().activeLayoutId).toBe(healedLayoutId);
+      });
+      expect(loadLayoutAsync).toHaveBeenCalledWith(healedLayoutId);
+      expect(url.setLayoutURL).toHaveBeenCalledWith(healedLayoutId, 'Healed', false);
     });
   });
 });
