@@ -45,7 +45,7 @@ Delete token: random secret, hashed server-side, required for mutations.
 
 ## Gotchas
 
-1. **Share ID = Layout UUID** - URL uses layout's own ID
+1. **Share ID starts as the layout's ID** - a create that 409s re-shares under a fresh ID, kept in `entry.cloudShare.id`
 2. **Shares are permanent** - no expiration, only explicit delete
 3. **Staging bins never sync** - filtered from fingerprint
 4. **Owner can't see own share in "Shared with me"**
