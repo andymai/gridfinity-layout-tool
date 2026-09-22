@@ -1,0 +1,29 @@
+src/core/api/share.ts
+  s_42de73efe82376::t_157730ec19d57c 263-266
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_42de73efe82376::t_801344510a321b 18,58,60
+src/features/cloud-share/utils/cloudShare.test.ts
+  s_42de73efe82376::t_b19329c8ab604c 2,4-5,32-57
+src/features/cloud-share/utils/cloudShare.ts
+  s_42de73efe82376::t_664f21c6d4b51c 1,34-41
+src/features/cloud-share/utils/index.ts
+  s_42de73efe82376::t_ad11b8abbb9100 1
+src/shell/Collab/CollabProvider/CollabProvider.test.tsx
+  s_42de73efe82376::t_e5dc4582b72e02 5-8,89-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "42fdb166dfee0e1735f3a9a53142091ab6f0744e",
+  "prompts": {},
+  "sessions": {
+    "s_42de73efe82376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7df64418-fa80-4406-a828-0c466b3df589",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
