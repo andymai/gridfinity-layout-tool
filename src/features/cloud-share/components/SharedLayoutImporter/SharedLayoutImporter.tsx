@@ -15,6 +15,7 @@ import type { Layout, SharePermission, LayoutPreview } from '@/core/types';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { useLayoutActivation } from '@/shared/hooks/useLayoutActivation';
+import { isOwnedShare } from '@/features/cloud-share/utils';
 
 // Check for shared layout once at module load time (URL-encoded shares)
 const initialShareResult = getSharedLayoutFromURL();
@@ -54,17 +55,9 @@ export function SharedLayoutImporter() {
     (state) => state.sharedPreview?.cloudShareId ?? null
   );
 
-  /**
-   * Check if a share ID belongs to the current user (i.e., they are the owner).
-   * Owners shouldn't see their own layouts in "Shared with me". A share id is
-   * usually the layout's id, but a layout that re-shared carries a fresh one.
-   */
+  /** Owners shouldn't see their own layouts in "Shared with me". */
   const isOwnShare = useCallback(
-    (shareId: string) => {
-      return libraryEntries.some(
-        (entry) => entry.id === shareId || entry.cloudShare?.id === shareId
-      );
-    },
+    (shareId: string) => isOwnedShare(libraryEntries, shareId),
     [libraryEntries]
   );
 

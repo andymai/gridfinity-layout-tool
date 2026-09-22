@@ -260,9 +260,10 @@ export async function createShare(
       );
 
     let response = await post(layoutId);
-    // Only a layout with no local share record POSTs, so a 409 means a share
-    // this device holds no delete token for already occupies the layout's id,
-    // and it never will. A fresh id gives the layout a share it can manage.
+    // Only a layout with no local share record POSTs. A 409 therefore means
+    // the layout's id is already taken by a share whose delete token this
+    // device does not have, so that share can never be updated from here.
+    // Retrying under a fresh id gives the layout a share it can manage.
     if (response.status === 409) {
       response = await post(generateLayoutId());
     }
