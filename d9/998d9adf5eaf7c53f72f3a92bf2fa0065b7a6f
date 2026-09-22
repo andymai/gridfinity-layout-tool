@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/binStackSeating.kernel.test.ts
+  s_1114d546af730e::t_4a946dc94d388b 145,147
+src/features/bin-designer/types/base.ts
+  s_1114d546af730e::t_4a946dc94d388b 398
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d9998d9adf5eaf7c53f72f3a92bf2fa0065b7a6f",
+  "prompts": {},
+  "sessions": {
+    "s_1114d546af730e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9f3aaf0-7fdd-4562-96a8-e18ed007512e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
