@@ -17,6 +17,7 @@ import {
 } from '@/core/result';
 import { isApiErrorResponse, mapApiErrorResponse } from './mapApiError';
 import { validateImport } from '@/shared/utils/validation';
+import { generateLayoutId } from '@/shared/utils/uuid';
 
 // API Response types
 export interface ShareResponse {
@@ -197,8 +198,7 @@ async function withNetworkErrors<T, E>(
   }
 }
 
-async function requestJson(input: string, init?: RequestInit): Promise<Result<unknown, ApiError>> {
-  const response = await fetch(input, init);
+async function readJson(response: Response): Promise<Result<unknown, ApiError>> {
   const data: unknown = await response.json();
   if (!response.ok) {
     return err(isApiErrorResponse(data) ? mapApiErrorResponse(data) : apiServerError());
@@ -206,20 +206,31 @@ async function requestJson(input: string, init?: RequestInit): Promise<Result<un
   return ok(data);
 }
 
+async function requestJson(input: string, init?: RequestInit): Promise<Result<unknown, ApiError>> {
+  return readJson(await fetch(input, init));
+}
+
+async function readShare<T>(
+  response: Response,
+  isValid: (data: unknown) => data is T
+): Promise<Result<T, ApiError>> {
+  const result = await readJson(response);
+  if (isErr(result)) return result;
+  return isValid(result.value) ? ok(result.value) : err(apiServerError());
+}
+
 async function requestShare<T>(
   input: string,
   init: RequestInit | undefined,
   isValid: (data: unknown) => data is T
 ): Promise<Result<T, ApiError>> {
-  const result = await requestJson(input, init);
-  if (isErr(result)) return result;
-  return isValid(result.value) ? ok(result.value) : err(apiServerError());
+  return readShare(await fetch(input, init), isValid);
 }
 
 /**
  * Create a new cloud share.
  *
- * @param layoutId - The layout's unique ID (used as the share ID for URL consistency)
+ * @param layoutId - The layout's unique ID, used as the share ID unless a share already holds it
  * @param layout - The layout data to share
  * @param permission - 'view' or 'edit'
  * @param authorName - Optional author name to display
@@ -242,11 +253,21 @@ export async function createShare(
 ): Promise<Result<ShareResponse, ApiError>> {
   return withNetworkErrors(async () => {
     const linkedDesigns = await collectDesignsForShare(layout);
-    return requestShare(
-      '/api/share',
-      jsonInit('POST', { layoutId, layout, permission, authorName, linkedDesigns }),
-      isShareResponse
-    );
+    const post = (shareId: string): Promise<Response> =>
+      fetch(
+        '/api/share',
+        jsonInit('POST', { layoutId: shareId, layout, permission, authorName, linkedDesigns })
+      );
+
+    let response = await post(layoutId);
+    // Only a layout with no local share record POSTs. A 409 therefore means
+    // the layout's id is already taken by a share whose delete token this
+    // device does not have, so that share can never be updated from here.
+    // Retrying under a fresh id gives the layout a share it can manage.
+    if (response.status === 409) {
+      response = await post(generateLayoutId());
+    }
+    return readShare(response, isShareResponse);
   });
 }
 

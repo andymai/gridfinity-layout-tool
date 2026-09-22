@@ -1,4 +1,4 @@
-import type { Layout } from '@/core/types';
+import type { Layout, LayoutEntry } from '@/core/types';
 import { getGridBins } from '@/shared/utils';
 
 /**
@@ -30,4 +30,12 @@ export function createLayoutFingerprint(layout: Layout): string {
     heightUnitMm: layout.heightUnitMm,
     magnetAnchor: layout.magnetAnchor,
   });
+}
+
+/**
+ * A share id is usually its layout's id, but a layout that re-shared under a
+ * fresh id holds the share's id in `cloudShare.id`.
+ */
+export function isOwnedShare(entries: readonly LayoutEntry[], shareId: string): boolean {
+  return entries.some((entry) => entry.id === shareId || entry.cloudShare?.id === shareId);
 }

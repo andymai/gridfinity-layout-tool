@@ -113,11 +113,12 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
     trackEvent('ui.featureUsed', { feature: 'collab_session' });
   }, []);
 
-  // Check if user is owner (layout exists in their library with matching ID)
-  // Since share IDs equal layout UUIDs, we check entry.id directly
+  // Match on the share's own id: a layout that re-shared under a fresh id
+  // still has its old id, and that old share's room must never be handed the
+  // new share's delete token.
   const entries = useLibraryStore((state) => state.library.entries);
   const cloudShare = useMemo(
-    () => entries.find((e) => e.id === shareId)?.cloudShare ?? null,
+    () => entries.find((e) => e.cloudShare?.id === shareId)?.cloudShare ?? null,
     [entries, shareId]
   );
 

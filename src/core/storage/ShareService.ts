@@ -669,6 +669,15 @@ export function getCloudShareIdFromURL(): string | null {
 }
 
 /**
+ * Whether the page opened on a share link: a legacy `#share=` hash or a
+ * `/l/{id}` path, with or without the slug the share popover appends.
+ */
+export function isShareURL(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.location.hash.includes('share=') || getCloudShareIdFromURL() !== null;
+}
+
+/**
  * Clear the layout ID from URL.
  * Called after loading a shared layout to reset the URL to root.
  */

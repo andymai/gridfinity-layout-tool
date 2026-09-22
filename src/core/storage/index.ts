@@ -94,6 +94,7 @@ export {
   getSharedLayoutResult,
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
+  isShareURL,
   clearCloudShareFromURL,
 } from './ShareService';
 

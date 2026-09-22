@@ -61,6 +61,15 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
 
   const sharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview?.layout ?? null);
 
+  // A URL id is a layout id, or the share id of a layout that re-shared under
+  // a fresh id because another share already held its own.
+  const findEntry = useCallback(
+    (urlId: string) =>
+      getEntry(toLayoutId(urlId)) ??
+      useLibraryStore.getState().library.entries.find((e) => e.cloudShare?.id === urlId),
+    [getEntry]
+  );
+
   const { setActiveLayer, setActiveCategory, clearSelection } = useSelectionStore(
     useShallow((state) => ({
       setActiveLayer: state.setActiveLayer,
@@ -82,11 +91,11 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
       if (options.skip || sharedLayoutPreview) return true;
       if (checkUrl) {
         const urlInfo = parseLayoutFromURL();
-        if (urlInfo && !getEntry(toLayoutId(urlInfo.layoutId))) return true;
+        if (urlInfo && !findEntry(urlInfo.layoutId)) return true;
       }
       return false;
     },
-    [options.skip, sharedLayoutPreview, getEntry]
+    [options.skip, sharedLayoutPreview, findEntry]
   );
 
   /**
@@ -102,12 +111,11 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
    */
   const navigateToLayout = useCallback(
     async (rawId: string, addToHistory = false): Promise<boolean> => {
-      const layoutId: LayoutId = toLayoutId(rawId);
-      // Check if layout exists in library
-      const entry = getEntry(layoutId);
+      const entry = findEntry(rawId);
       if (!entry) {
         return false;
       }
+      const layoutId: LayoutId = entry.id;
 
       // Load layout data from IndexedDB (with localStorage fallback)
       const loadedLayout = await loadLayoutAsync(layoutId);
@@ -138,7 +146,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
       return true;
     },
     [
-      getEntry,
+      findEntry,
       importLayout,
       setActiveLayoutId,
       clearSelection,
@@ -181,8 +189,8 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
       return;
     }
 
-    const layoutId = toLayoutId(urlInfo.layoutId);
-    const localEntry = getEntry(layoutId);
+    const localEntry = findEntry(urlInfo.layoutId);
+    const layoutId = localEntry?.id ?? toLayoutId(urlInfo.layoutId);
 
     if (layoutId === activeLayoutId) {
       // Already on this layout - check if slug needs redirect
@@ -219,7 +227,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
     isLoaded,
     activeLayoutId,
     navigateToLayout,
-    getEntry,
+    findEntry,
     shouldSkipRouting,
     syncUrlToActiveLayout,
   ]);

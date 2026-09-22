@@ -28,7 +28,7 @@ import {
 import { useKeyboard } from '@/shell/keyboard';
 import { useLayoutRouting } from '@/features/layout-library';
 import { useOwnedShareSync } from '@/features/cloud-share/hooks/useOwnedShareSync';
-import { reconcileLibraryAsync } from '@/core/storage';
+import { reconcileLibraryAsync, isShareURL } from '@/core/storage';
 import {
   LazySyncSessionMount,
   CommandPalette,
@@ -146,11 +146,7 @@ export default function App() {
   const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
   const hasSharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview !== null);
 
-  const [hasShareUrl] = useState(() => {
-    const hash = window.location.hash;
-    const pathname = window.location.pathname;
-    return hash.includes('share=') || /^\/l\/[a-zA-Z0-9]{12}$/.test(pathname);
-  });
+  const [hasShareUrl] = useState(isShareURL);
 
   usePlaceBinFromURL();
   useOwnedShareSync();

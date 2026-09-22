@@ -2,6 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CollabProvider } from './CollabProvider';
 import { resetAllStores } from '@/test/testUtils';
+import { useLibraryStore } from '@/core/store/library';
+import { useCloudShareAutoSync } from '@/features/cloud-share/hooks/useCloudShareAutoSync';
+import { layoutId } from '@/core/types';
+import type { LayoutEntry } from '@/core/types';
 
 vi.mock('@/liveblocks.config', () => ({
   RoomProvider: ({ children }: { children: React.ReactNode }) => (
@@ -81,5 +85,43 @@ describe('CollabProvider', () => {
       </CollabProvider>
     );
     expect(screen.getByTestId('child')).toBeInTheDocument();
+  });
+
+  describe('owner delete token', () => {
+    beforeEach(() => {
+      const { library } = useLibraryStore.getState();
+      const healed: LayoutEntry = {
+        id: layoutId('staleLayout1'),
+        name: 'Healed',
+        createdAt: 0,
+        modifiedAt: 0,
+        preview: { drawerWidth: 1, drawerDepth: 1, drawerHeight: 1, binCount: 0, layerCount: 1 },
+        cloudShare: {
+          id: 'freshShare01',
+          deleteToken: 'fresh-token',
+          sharedAt: 0,
+          permission: 'edit',
+        },
+      } as LayoutEntry;
+      useLibraryStore.setState({ library: { ...library, entries: [healed] } });
+    });
+
+    it("hands the owner's token to the room of the share it belongs to", () => {
+      render(
+        <CollabProvider shareId="freshShare01">
+          <div />
+        </CollabProvider>
+      );
+      expect(useCloudShareAutoSync).toHaveBeenLastCalledWith('freshShare01', 'fresh-token');
+    });
+
+    it("never hands a re-shared layout's new token to its old share's room", () => {
+      render(
+        <CollabProvider shareId="staleLayout1">
+          <div />
+        </CollabProvider>
+      );
+      expect(useCloudShareAutoSync).toHaveBeenLastCalledWith('staleLayout1', undefined);
+    });
   });
 });

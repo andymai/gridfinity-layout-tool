@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getCloudShareIdFromURL, clearCloudShareFromURL } from '@/core/storage';
+import { getCloudShareIdFromURL, clearCloudShareFromURL, isShareURL } from '@/core/storage';
 
 describe('getCloudShareIdFromURL', () => {
   const originalLocation = window.location;
@@ -303,5 +303,45 @@ describe('clearCloudShareFromURL', () => {
     clearCloudShareFromURL();
 
     expect(window.history.replaceState).toHaveBeenCalledWith(null, '', '/');
+  });
+});
+
+describe('isShareURL', () => {
+  const originalLocation = window.location;
+
+  const at = (pathname: string, hash = ''): void => {
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, { pathname, hash }),
+      writable: true,
+      configurable: true,
+    });
+  };
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it('recognises the slugged link the share popover copies', () => {
+    at('/l/abc123xyz789/my-layout-name');
+    expect(isShareURL()).toBe(true);
+  });
+
+  it('recognises a bare share link', () => {
+    at('/l/abc123xyz789');
+    expect(isShareURL()).toBe(true);
+  });
+
+  it('recognises a legacy hash share', () => {
+    at('/', '#share=abc');
+    expect(isShareURL()).toBe(true);
+  });
+
+  it('ignores the app root', () => {
+    at('/');
+    expect(isShareURL()).toBe(false);
   });
 });

@@ -1,1 +1,1 @@
-export { formatShareDate, createLayoutFingerprint } from './cloudShare';
+export { formatShareDate, createLayoutFingerprint, isOwnedShare } from './cloudShare';
