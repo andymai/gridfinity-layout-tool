@@ -567,19 +567,99 @@ describe('slideWallThicknessMm', () => {
     isTile: false,
   };
 
+  /**
+   * Overhang as the real adapters apply it: the body AND the cavity both grow
+   * by the per-axis total, and both shift by half the asymmetry. Written out
+   * here because the version this test used to assert — an outer left centred
+   * while only the inner moved — is a shape neither adapter can produce, and
+   * asserting on it is what let the real case ship broken.
+   */
+  const withOverhang = (front: number, back: number): typeof dims => ({
+    ...dims,
+    outerD: dims.outerD + front + back,
+    innerD: dims.innerD + front + back,
+    innerOffsetY: (back - front) / 2,
+  });
+
   it('reports the nominal wall on a symmetric bin', () => {
     for (const side of ['front', 'back', 'left', 'right'] as LidRailSide[]) {
       expect(slideWallThicknessMm(side, dims)).toBeCloseTo(5, 9);
     }
   });
 
-  it('reports each side separately once overhang shifts the cavity', () => {
-    // Asymmetric overhang moves the cavity off the bin's origin, so the two
-    // walls on one axis are no longer the same thickness — and the plate has to
-    // reach the face it actually finishes at.
-    const shifted = { ...dims, innerOffsetX: 3 };
-    expect(slideWallThicknessMm('right', shifted)).toBeCloseTo(2, 9);
-    expect(slideWallThicknessMm('left', shifted)).toBeCloseTo(8, 9);
+  it('stays even however asymmetric the overhang is', () => {
+    // The invariant, and the bug it replaces. Overhang moves the body and the
+    // cavity together, so the offset is common to both and cancels; subtract it
+    // once, as though only the cavity had moved, and this reports `front / 2`
+    // less on the very wall the lid enters through. At the default 1.2mm wall
+    // that crosses zero at 2.4mm of overhang and drags `trailingX` and the
+    // entry notch down with it, until the notch inverts and the entry wall is
+    // never opened at all.
+    for (const [front, back] of [
+      [10, 0],
+      [0, 10],
+      [6, 6],
+      [3, 1],
+    ] as const) {
+      const shifted = withOverhang(front, back);
+      for (const side of ['front', 'back', 'left', 'right'] as LidRailSide[]) {
+        expect(slideWallThicknessMm(side, shifted), `front=${front} back=${back} ${side}`).toBeCloseTo(
+          5,
+          9
+        );
+      }
+    }
+  });
+});
+
+describe('overhang on the entry wall', () => {
+  /**
+   * The plan input an overhung bin produces, with the entry wall's thickness
+   * derived the way `slideLidPlanInput` derives it rather than hand-set — so
+   * this exercises the resolver against the number the adapters actually pass.
+   */
+  function overhungInput(front: number): SlideLidPlanInput {
+    const dims = {
+      outerW: SPAN_INNER + 2 * 1.2,
+      outerD: TRAVEL_INNER + 2 * 1.2 + front,
+      innerW: SPAN_INNER,
+      innerD: TRAVEL_INNER + front,
+      innerOffsetX: 0,
+      innerOffsetY: -front / 2,
+      wallHeight: 6 * 7 - 5,
+      hasLip: true,
+      isSolid: false,
+      isSlotted: false,
+      isTile: false,
+    };
+    return input({
+      innerD: dims.innerD,
+      entryWallThicknessMm: slideWallThicknessMm('front', dims),
+    });
+  }
+
+  it('finishes the plate flush with the face it actually has', () => {
+    // `trailingX` is the entry wall's OUTER face, so a wrong wall thickness
+    // puts the closed plate proud of the bin or sunk inside it — and carries
+    // the entry notch, which is measured off it, to the same wrong place.
+    for (const front of [0, 3, 5, 10]) {
+      const g = geometryOf(overhungInput(front));
+      const cavityFace = (TRAVEL_INNER + front) / 2;
+      expect(g.plate.trailingX - cavityFace, `front=${front}`).toBeCloseTo(1.2, 9);
+    }
+  });
+
+  it('keeps the entry notch reaching past that face, whatever the overhang', () => {
+    // The failure this is here for: the notch is `trailingX + 1`, so once the
+    // wall thickness goes negative the notch stops short of the outer face and
+    // then inverts — `xMax` below `xMin` — and the cutter removes nothing. The
+    // bin ships with rails, a lid, and no opening between them.
+    for (const front of [0, 3, 5, 10]) {
+      const g = geometryOf(overhungInput(front));
+      const outerFace = (TRAVEL_INNER + front) / 2 + 1.2;
+      expect(g.entryNotch.xMax, `front=${front}`).toBeGreaterThan(outerFace);
+      expect(g.entryNotch.xMax, `front=${front}`).toBeGreaterThan(g.entryNotch.xMin);
+    }
   });
 });
 

@@ -68,22 +68,33 @@ export function slideLidZOffset(p: BinParams, geometry: SlideLidGeometry): numbe
  * they ended up sampling a mirrored footprint on two of the four entry sides —
  * which is the same mistake the canonical frame exists to prevent in the
  * builder, and has to be prevented in the test too.
+ *
+ * `innerOffset` is the CAVITY's centre, and the plan's origin is the cavity,
+ * not the bin — so an overhung bin needs it passed or every sample lands off by
+ * half the asymmetry. It defaults to zero because most designs have no
+ * overhang, and that default is exactly how an entry-wall overhang defect hid:
+ * probes built on it read a wall they were never pointed at.
  */
 export function canonicalToBin(
   geometry: SlideLidGeometry,
   along: number,
-  across: number
+  across: number,
+  innerOffsetX = 0,
+  innerOffsetY = 0
 ): readonly [number, number] {
-  switch (geometry.entrySide) {
-    case 'right':
-      return [along, across];
-    case 'back':
-      return [-across, along];
-    case 'left':
-      return [-along, -across];
-    case 'front':
-      return [across, -along];
-  }
+  const [x, y] = ((): readonly [number, number] => {
+    switch (geometry.entrySide) {
+      case 'right':
+        return [along, across];
+      case 'back':
+        return [-across, along];
+      case 'left':
+        return [-along, -across];
+      case 'front':
+        return [across, -along];
+    }
+  })();
+  return [x + innerOffsetX, y + innerOffsetY];
 }
 
 /** Unit vector the plate withdraws along, in the bin's XY frame. */

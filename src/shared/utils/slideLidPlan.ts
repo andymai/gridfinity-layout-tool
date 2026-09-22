@@ -415,7 +415,14 @@ export interface SlideLidBinDims {
   /** Cavity extents, overhang folded in. */
   readonly innerW: number;
   readonly innerD: number;
-  /** Cavity centre relative to the bin origin. Zero without asymmetric overhang. */
+  /**
+   * Cavity centre relative to the bin origin. Zero without asymmetric overhang.
+   *
+   * The BODY is off-centre by exactly this much too, since overhang moves both
+   * together — which is why {@link slideWallThicknessMm} must not subtract it.
+   * It is here for placement: the builder translates the channel by it after
+   * rotating, so the joint follows the cavity rather than the bin's origin.
+   */
   readonly innerOffsetX: number;
   readonly innerOffsetY: number;
   /** Floor bottom to wall top. */
@@ -427,23 +434,32 @@ export interface SlideLidBinDims {
 }
 
 /**
- * Thickness (mm) of one wall, which asymmetric overhang makes uneven.
+ * Thickness (mm) of one wall: half the difference between the body and the
+ * cavity on that wall's axis.
  *
- * The outer body spans `±outer/2` about the bin origin while the cavity spans
- * `±inner/2` about `innerOffset`, so each side's wall is whatever is left
- * between them — not `params.wallThickness`, which describes the nominal case
- * only.
+ * `innerOffset` must NOT enter this. Overhang moves the BODY and the cavity
+ * together — the shell "expands in lockstep", as `deriveDimensions` puts it —
+ * and both extents here already have the expansion folded in, so the offset is
+ * common to the two and cancels. Subtracting it once, as though only the cavity
+ * had moved, charges the whole asymmetry to this one wall: with an overhang on
+ * the entry wall's own side the answer comes out `overhang / 2` short, crosses
+ * zero at twice the wall thickness, and takes `trailingX` and the entry notch
+ * with it — the notch stops short of the outer face, then inverts, and the wall
+ * is never opened at all. Measured on a 1x1: 5mm of front overhang leaves the
+ * entry wall completely intact, rails and all, with no way to insert the plate.
+ *
+ * So the walls are even, and the per-side signature is kept for the callers
+ * rather than for the arithmetic: it says which wall is being asked about at
+ * every call site, and it is the seam a future asymmetric body would reopen.
  */
 export function slideWallThicknessMm(side: LidRailSide, dims: SlideLidBinDims): number {
   switch (side) {
     case 'right':
-      return dims.outerW / 2 - (dims.innerOffsetX + dims.innerW / 2);
     case 'left':
-      return dims.innerOffsetX - dims.innerW / 2 + dims.outerW / 2;
+      return (dims.outerW - dims.innerW) / 2;
     case 'back':
-      return dims.outerD / 2 - (dims.innerOffsetY + dims.innerD / 2);
     case 'front':
-      return dims.innerOffsetY - dims.innerD / 2 + dims.outerD / 2;
+      return (dims.outerD - dims.innerD) / 2;
   }
 }
 

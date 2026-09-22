@@ -484,4 +484,58 @@ describe('sliding lid seating', () => {
     expect(whole).toBeGreaterThan(1);
     expect(kept).toBeGreaterThan(whole * 0.9);
   }, 300000);
+  it('opens the entry wall on a bin with an overhang on that very side', async () => {
+    // Overhang moves the body and the cavity together, so every wall keeps its
+    // nominal thickness — but the entry wall's thickness used to be derived by
+    // subtracting the cavity's offset, which charges the whole asymmetry to
+    // this one wall. It reads `front / 2` short, crosses zero at twice the wall
+    // thickness, and carries `trailingX` and the entry notch with it: the notch
+    // stops short of the outer face, then inverts, and nothing is cut. The bin
+    // ships with rails, a lid, and no opening between them.
+    //
+    // Asked of the wall itself rather than of the plan's numbers, and swept
+    // across a range that straddles the point the old formula went negative.
+    // The probe takes the cavity offset, without which it samples the wrong
+    // wall entirely — which is how this survived a suite that already had four
+    // entry-side cases.
+    const { getLastSolid } = await import('./shapeCache');
+    const results: Array<{ front: number; open: boolean }> = [];
+    for (const front of [0, 3, 5, 10]) {
+      const params = slideParams({
+        width: 1,
+        depth: 1,
+        height: 3,
+        overhang: { left: 0, right: 0, front, back: 0, feet: false },
+      });
+      const { geometry } = slideLidPlanForParams(params);
+      if (!geometry) throw new Error(`expected geometry for front=${front}`);
+      const base = binDimensions(params);
+      const innerD = base.innerD + front;
+      const outerD = base.outerD + front;
+      const offsetY = -front / 2;
+      getGenerateBin()(params, undefined, true);
+      const bin = getLastSolid();
+      if (!bin) throw new Error('expected a cached bin solid');
+      // The tunnel the plate has to pass through the wall: cavity face to just
+      // past the outer face, in the plate's own straight-sided band.
+      const cavityFace = innerD / 2;
+      const outerFace = outerD / 2;
+      const blocked = await straightSectionObstructionMm3(
+        bin,
+        geometry,
+        slideLidZOffset(params, geometry),
+        cavityFace,
+        outerFace,
+        0,
+        offsetY
+      );
+      results.push({ front, open: blocked < 0.01 });
+    }
+    expect(results).toEqual([
+      { front: 0, open: true },
+      { front: 3, open: true },
+      { front: 5, open: true },
+      { front: 10, open: true },
+    ]);
+  }, 900000);
 });
