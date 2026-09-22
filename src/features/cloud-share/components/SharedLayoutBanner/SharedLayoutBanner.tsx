@@ -84,6 +84,7 @@ export function SharedLayoutBanner() {
     const result = await createLayoutEntry(savedLayout, useLibraryStore.getState().library, {
       name: savedLayout.name,
       forkedFrom: { name: sharedLayoutOriginalName || layout.name },
+      activate: true,
     });
 
     if (isErr(result)) {
@@ -96,9 +97,6 @@ export function SharedLayoutBanner() {
 
     // Update the layout store with the proper ID (not SHARED_PREVIEW_ID)
     importLayout(savedLayout, brandedLayoutId, 'init');
-    setActiveLayoutId(brandedLayoutId);
-
-    // Sync library store with updated library from atomic operation
     setLibrary(updatedLibrary);
 
     clearSharedLayoutPreview();

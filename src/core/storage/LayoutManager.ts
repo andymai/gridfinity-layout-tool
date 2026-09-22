@@ -74,6 +74,8 @@ export interface CreateLayoutOptions extends SaveLayoutOptions {
   author?: string;
   /** ForkedFrom info for imports */
   forkedFrom?: { name: string; author?: string };
+  /** Make the new layout the library's active layout (callers that open it right away). */
+  activate?: boolean;
 }
 
 /** Result of creating a new layout */
@@ -327,6 +329,7 @@ export async function createLayoutEntry(
   const updatedLibrary: LayoutLibrary = {
     ...library,
     entries: [...library.entries, entry],
+    ...(options.activate ? { activeLayoutId: layoutId } : {}),
   };
 
   const librarySaveResult = await saveLibraryAsync(updatedLibrary);

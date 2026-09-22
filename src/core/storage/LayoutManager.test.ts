@@ -377,6 +377,27 @@ describe('createLayoutEntry', () => {
     expect(value.library.entries[1].name).toBe('New Layout');
   });
 
+  it('keeps the previous active layout by default', async () => {
+    const library = createTestLibrary([createTestEntry('existing', 'Existing')]);
+
+    const value = expectOk(await createLayoutEntry(createTestLayout(), library));
+
+    expect(value.library.activeLayoutId).toBe('existing');
+  });
+
+  it('makes the new layout active, in memory and on disk, when asked to activate', async () => {
+    const library = createTestLibrary([createTestEntry('existing', 'Existing')]);
+
+    const value = expectOk(
+      await createLayoutEntry(createTestLayout(), library, { activate: true })
+    );
+
+    expect(value.library.activeLayoutId).toBe('generated-id-123');
+    expect(indexedDBBackend.saveLibraryIndex).toHaveBeenLastCalledWith(
+      expect.objectContaining({ activeLayoutId: 'generated-id-123' })
+    );
+  });
+
   it('sets createdAt and modifiedAt to current time', async () => {
     const layout = createTestLayout();
     const library = createTestLibrary([]);

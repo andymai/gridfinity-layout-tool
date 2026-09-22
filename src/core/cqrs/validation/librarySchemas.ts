@@ -31,9 +31,17 @@ export const libraryUpdateEntrySchema = z.object({
 
 export const librarySetAuthorNameSchema = z.object({ name: nameStr });
 
+const cloudShareInfoSchema = z.object({
+  id: z.string(),
+  deleteToken: z.string(),
+  sharedAt: z.number(),
+  permission: z.enum(['view', 'edit']),
+  lastUpdatedAt: z.number().optional(),
+});
+
 export const librarySetCloudShareSchema = z.object({
   layoutId: layoutIdSchema,
-  shareInfo: z.object({ id: z.string(), url: z.string() }).loose(),
+  shareInfo: cloudShareInfoSchema,
 });
 
 export const libraryClearCloudShareSchema = z.object({ layoutId: layoutIdSchema });

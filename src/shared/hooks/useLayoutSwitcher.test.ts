@@ -465,6 +465,20 @@ describe('useLayoutSwitcher', () => {
       );
     });
 
+    it('creates the entry as the active layout, so library-keyed features follow the switch', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.createNewLayout('New');
+      });
+
+      expect(storage.createLayoutEntry).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+        expect.objectContaining({ activate: true })
+      );
+    });
+
     it('adds entry to library', async () => {
       const entriesBefore = useLibraryStore.getState().library.entries.length;
 
