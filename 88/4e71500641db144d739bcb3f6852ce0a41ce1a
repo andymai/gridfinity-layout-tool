@@ -1,0 +1,25 @@
+src/App.tsx
+  s_42de73efe82376::t_59db89ba89f2d1 31,149
+src/core/storage/ShareService.scenario.url.test.ts
+  s_42de73efe82376::t_96c21bde3ff8b2 8,308-347
+src/core/storage/ShareService.ts
+  s_42de73efe82376::t_511efb783fd523 671-679
+src/core/storage/index.ts
+  s_42de73efe82376::t_89a6adde9a145d 97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "884e71500641db144d739bcb3f6852ce0a41ce1a",
+  "prompts": {},
+  "sessions": {
+    "s_42de73efe82376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7df64418-fa80-4406-a828-0c466b3df589",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
