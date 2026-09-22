@@ -16,7 +16,7 @@ Read `api/README.md` first — it accurately documents the share lifecycle, Redi
 ## Mental model
 
 - Shares are anonymous: payload lives in a Vercel Blob at `shares/{id}.json`, served via **public CDN URL**. Never put `deleteTokenHash`, `reportCount`, or `lastAccessedAt` in blob payloads — everything in `ShareData` is world-readable. Secrets live in Redis via builders in `api/lib/redisKeys.ts` (`share:hash:{id}` etc.).
-- Share ID === layout UUID, supplied by the client. The `/l/{id}` URL, the Liveblocks room `gridfinity-{id}`, and the library `entry.id` must all agree — owner detection (`CollabProvider.tsx`) and "Shared with me" dedup (`SharedLayoutImporter.tsx`) depend on it.
+- The client supplies the share ID: the layout's id, or a fresh one when a POST 409s (a share it holds no token for owns that id). The share's id lives in `entry.cloudShare.id`; routing, owner detection (`CollabProvider.tsx`, matches `cloudShare.id` only) and "Shared with me" dedup accept either.
 - `blob put({allowOverwrite: false})` in `api/share.ts` is THE atomic creation lock; Redis hash write follows, with blob rollback on failure (see `git show 7920a7d58` — the MED-1 race fix). `allowOverwrite` must stay `false`.
 - `hashToken()` in `api/lib/shared.ts` computes SHA-256(TOKEN_SALT + token). The salt is effectively part of the stored data: rotating it makes every existing share permanently un-updatable and un-deletable. It throws if TOKEN_SALT is unset.
 - Room permission comes solely from the share blob's `metadata.permission` (`'view'|'edit'`) — `api/liveblocks-auth.ts` maps edit→`['*:write']`, view→`['*:read']`. The client-supplied `userId` is NOT a privilege boundary. Scopes replaced deprecated `session.FULL_ACCESS`/`READ_ACCESS` (`git show 6cfb2160d`).
