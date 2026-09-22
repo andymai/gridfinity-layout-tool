@@ -1,0 +1,21 @@
+.claude/skills/share-api-collab/SKILL.md
+  s_42de73efe82376::t_6a36cdda9274a5 86
+src/features/cloud-share/README.md
+  s_42de73efe82376::t_0b9c819e948553 48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b5464390613b04d1b6e9f209099d6df9e1522c80",
+  "prompts": {},
+  "sessions": {
+    "s_42de73efe82376": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7df64418-fa80-4406-a828-0c466b3df589",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
