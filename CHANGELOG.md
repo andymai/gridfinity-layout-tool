@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.496.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.496.2...gridfinity-layout-tool-v4.496.3) (2026-09-22)
+
+
+### Bug Fixes
+
+* **cloud-share:** re-share layouts whose old share can't be managed ([#4358](https://github.com/andymai/gridfinity-layout-tool/issues/4358)) ([d403098](https://github.com/andymai/gridfinity-layout-tool/commit/d40309870997d915bb22ba9779615b87d61bcfaf))
+* **cloud-share:** record created shares and activate new layouts ([#4357](https://github.com/andymai/gridfinity-layout-tool/issues/4357)) ([54a0ee9](https://github.com/andymai/gridfinity-layout-tool/commit/54a0ee92c4ebe48df099c2b68229265228e9de89))
+
 ## [4.496.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.496.1...gridfinity-layout-tool-v4.496.2) (2026-09-21)
 
 
