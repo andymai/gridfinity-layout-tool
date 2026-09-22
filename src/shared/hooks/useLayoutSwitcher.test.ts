@@ -68,7 +68,8 @@ vi.mock('@/core/storage', () => {
           layers: Array<{ id: string }>;
           categories: Array<{ id: string }>;
         },
-        library: { entries: unknown[] }
+        library: { entries: unknown[] },
+        options?: { activate?: boolean }
       ) => {
         const layoutId = 'new-layout-id';
         const entry = {
@@ -83,7 +84,11 @@ vi.mock('@/core/storage', () => {
           value: {
             layoutId,
             entry,
-            library: { ...library, entries: [...library.entries, entry] },
+            library: {
+              ...library,
+              entries: [...library.entries, entry],
+              ...(options?.activate ? { activeLayoutId: layoutId } : {}),
+            },
             layout,
           },
         });
@@ -477,6 +482,7 @@ describe('useLayoutSwitcher', () => {
         expect.any(Object),
         expect.objectContaining({ activate: true })
       );
+      expect(useLibraryStore.getState().library.activeLayoutId).toBe('new-layout-id');
     });
 
     it('adds entry to library', async () => {
