@@ -174,6 +174,7 @@ export function useLayoutSwitcher() {
         const result = await createLayoutEntry(newLayout, currentLibrary, {
           name: newLayout.name,
           author: currentLibrary.settings.authorName,
+          activate: true,
         });
 
         if (isErr(result)) {

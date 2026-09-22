@@ -6,30 +6,17 @@
  * No-ops silently when the layout id isn't in entries.
  */
 
-import { z } from 'zod';
 import { ok } from '@/core/result';
 import { layoutId as toLayoutId } from '@/core/types';
 import type { CloudShareInfo } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
-
-const cloudShareInfoSchema = z.object({
-  id: z.string(),
-  deleteToken: z.string(),
-  sharedAt: z.number(),
-  permission: z.enum(['view', 'edit']),
-  lastUpdatedAt: z.number().optional(),
-});
-
-const payloadSchema = z.object({
-  layoutId: z.string().min(1),
-  shareInfo: cloudShareInfoSchema,
-});
+import { librarySetCloudShareSchema } from '../../../validation/librarySchemas';
 
 export const setCloudShare = defineCommand({
   type: 'library.setCloudShare',
   aggregate: 'library',
   aggregateId: () => 'library',
-  payload: payloadSchema,
+  payload: librarySetCloudShareSchema,
   emitted: 'library.cloudShareUpdated',
   schemaVersion: 1,
   middleware: { undoCapture: false, validate: true, analytics: true },

@@ -109,18 +109,40 @@ describe('library validation schemas', () => {
   });
 
   describe('librarySetCloudShareSchema', () => {
-    it('accepts valid share info', () => {
+    const shareInfo = {
+      id: 'share-1',
+      deleteToken: 'token-1',
+      sharedAt: 1_700_000_000_000,
+      permission: 'edit',
+    };
+
+    it('accepts the CloudShareInfo that useCloudShare dispatches', () => {
+      const result = librarySetCloudShareSchema.safeParse({ layoutId: 'abc', shareInfo });
+      expect(result.success).toBe(true);
+    });
+
+    it('accepts an updated share carrying lastUpdatedAt', () => {
       const result = librarySetCloudShareSchema.safeParse({
         layoutId: 'abc',
-        shareInfo: { id: 'share-1', url: 'https://example.com/s/abc' },
+        shareInfo: { ...shareInfo, lastUpdatedAt: 1_700_000_000_001 },
       });
       expect(result.success).toBe(true);
     });
 
-    it('rejects missing share id', () => {
+    it('rejects share info without a delete token', () => {
+      const { deleteToken: _deleteToken, ...withoutToken } = shareInfo;
       const result = librarySetCloudShareSchema.safeParse({
         layoutId: 'abc',
-        shareInfo: { url: 'https://example.com' },
+        shareInfo: withoutToken,
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects missing share id', () => {
+      const { id: _id, ...withoutId } = shareInfo;
+      const result = librarySetCloudShareSchema.safeParse({
+        layoutId: 'abc',
+        shareInfo: withoutId,
       });
       expect(result.success).toBe(false);
     });

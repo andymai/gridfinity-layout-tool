@@ -30,46 +30,47 @@ const { mockComputePreview } = vi.hoisted(() => ({
 
 // Mock storage functions
 vi.mock('@/core/storage', () => ({
-  createLayoutEntry: vi.fn(() =>
-    Promise.resolve({
-      ok: true,
-      value: {
-        layoutId: 'newid123test',
-        entry: {
-          id: 'newid123test',
-          name: 'Original Name (imported)',
-          createdAt: Date.now(),
-          modifiedAt: Date.now(),
-          preview: {
-            drawerWidth: 10,
-            drawerDepth: 8,
-            drawerHeight: 12,
-            binCount: 0,
-            layerCount: 1,
+  createLayoutEntry: vi.fn(
+    (_layout: unknown, _library: unknown, options?: { activate?: boolean }) =>
+      Promise.resolve({
+        ok: true,
+        value: {
+          layoutId: 'newid123test',
+          entry: {
+            id: 'newid123test',
+            name: 'Original Name (imported)',
+            createdAt: Date.now(),
+            modifiedAt: Date.now(),
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
+          },
+          library: {
+            version: '1.0',
+            activeLayoutId: options?.activate ? 'newid123test' : 'existing-layout',
+            entries: [
+              { id: 'existing-layout', name: 'Existing Layout' },
+              { id: 'newid123test', name: 'Original Name (imported)' },
+            ],
+            settings: { authorName: '' },
+          },
+          layout: {
+            version: '1.0',
+            name: 'Original Name (imported)',
+            drawer: { width: 10, depth: 8, height: 12 },
+            printBedSize: 256,
+            gridUnitMm: 42,
+            heightUnitMm: 7,
+            categories: [{ id: 'cat1', name: 'Category', color: '#ff0000' }],
+            layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+            bins: [],
           },
         },
-        library: {
-          version: '1.0',
-          activeLayoutId: 'existing-layout',
-          entries: [
-            { id: 'existing-layout', name: 'Existing Layout' },
-            { id: 'newid123test', name: 'Original Name (imported)' },
-          ],
-          settings: { authorName: '' },
-        },
-        layout: {
-          version: '1.0',
-          name: 'Original Name (imported)',
-          drawer: { width: 10, depth: 8, height: 12 },
-          printBedSize: 256,
-          gridUnitMm: 42,
-          heightUnitMm: 7,
-          categories: [{ id: 'cat1', name: 'Category', color: '#ff0000' }],
-          layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
-          bins: [],
-        },
-      },
-    })
+      })
   ),
   computePreview: mockComputePreview,
   initializeLayoutLibrary: vi.fn(() => ({
@@ -277,6 +278,16 @@ describe('SharedLayoutBanner', () => {
       await waitFor(() => {
         const newCount = useLibraryStore.getState().library.entries.length;
         expect(newCount).toBe(initialCount + 1);
+      });
+    });
+
+    it("makes the saved layout the library's active layout", async () => {
+      render(<SharedLayoutBanner />);
+
+      fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
+
+      await waitFor(() => {
+        expect(useLibraryStore.getState().library.activeLayoutId).toBe('newid123test');
       });
     });
 
