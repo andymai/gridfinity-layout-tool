@@ -377,6 +377,22 @@ describe('resolveSlideLidPlan', () => {
       );
     });
 
+    it('floors flush with the shelf, taking no clearance under the plate', () => {
+      // The one face of this window that gets no clearance, and the reason is
+      // what the face is FOR. The sides and the top are sliding gaps the plate
+      // must not touch, so they take `c`. The floor is the shelf's own bearing
+      // plane — the surface the plate rests on and gravity holds it against —
+      // so a clearance there buys nothing and costs two things: the plate is
+      // left cantilevered off the shelf ends across the wall, which is exactly
+      // the span a thumb pushes on while inserting it, and the opening gains a
+      // visible step at the height the eye reads as its floor.
+      const g = geometryOf();
+      expect(g.entryNotch.zMin).toBeCloseTo(-g.plate.thicknessMm, 9);
+      // Stated against the sides, which DO take the clearance, so the contrast
+      // is the assertion rather than the number.
+      expect(g.entryNotch.yMax).toBeCloseTo(g.plate.spanMm / 2 + g.clearanceMm, 9);
+    });
+
     it('cuts clear through the rim AND the lip above it', () => {
       // Anything left above the window bridges the whole opening with nothing
       // under it. Stopping just past the wall top is the version that looks
@@ -437,6 +453,102 @@ describe('the stored config stays absent until it says something', () => {
   it('keeps a config the user did change', () => {
     const custom = { ...DEFAULT_LID_SLIDE_CONFIG, placement: 'flush' as const };
     expect(resolveLidSlide({ slide: custom })).toBe(custom);
+  });
+});
+
+describe('entry mouth relief', () => {
+  const halfSpan = SPAN_INNER / 2;
+  const zsOf = (r: { section: readonly (readonly [number, number])[] }): number[] =>
+    r.section.map(([, z]) => z);
+
+  it('is one cut per channel wall, anchored on that wall', () => {
+    const g = geometryOf({});
+    expect(g.mouthReliefs.map((r) => r.wall)).toEqual(['yMin', 'yMax']);
+    for (const relief of g.mouthReliefs) {
+      const sign = relief.wall === 'yMin' ? -1 : 1;
+      const ys = relief.section.map(([y]) => y);
+      // Reaches the wall exactly, and only ever inboard of it.
+      expect(Math.max(...ys.map((y) => y * sign))).toBeCloseTo(halfSpan, 9);
+    }
+  });
+
+  it('reaches back exactly the cavity’s corner radius, and meets the notch', () => {
+    const g = geometryOf({});
+    for (const relief of g.mouthReliefs) {
+      // Back to where the arcs become tangent to the channel walls and the
+      // cavity is full width again.
+      expect(g.travelEnvelope.xMax - relief.xMin).toBeCloseTo(g.plate.cornerRadiusMm, 9);
+      // Overlaps the notch, so the two cutters leave no coplanar seam between
+      // them for the boolean to trip on.
+      expect(relief.xMax).toBeGreaterThan(g.entryNotch.xMin);
+    }
+  });
+
+  it('stops at the cavity face, never inside the entry wall', () => {
+    // An overshoot past the face reads as harmless — the notch is about to open
+    // that wall anyway — but the notch's floor sits a clearance ABOVE this
+    // cut's, so everywhere between the two the overshoot is a clean bite out of
+    // the wall that nothing fills back: a rectangular pocket in the entry wall
+    // exactly where the rail meets it. The notch reaches back past this face
+    // instead, which is what keeps the two cutters overlapping without either
+    // of them working on the wrong side of it.
+    const g = geometryOf({});
+    for (const relief of g.mouthReliefs) {
+      expect(relief.xMax).toBeCloseTo(g.travelEnvelope.xMax, 9);
+      expect(relief.xMax).toBeGreaterThan(g.entryNotch.xMin);
+    }
+  });
+
+  it('never cuts above the rail’s own top', () => {
+    // The rule that keeps the corner intact, and it is a LOOK as much as a
+    // structure. The arc is a curved face, so wherever the cut crosses it the
+    // cut's face is left showing; held at the rail's top that face is flush
+    // with the rail and reads as part of it. A ceiling tipped up to make the
+    // arc above self-supporting reaches over the rail instead and carves a
+    // plainly visible triangle out of the corner. It is also what keeps the
+    // cut out of the lip's band, since the envelope tops out a lip-taper below
+    // the wall (CLAUDE.md gotcha #10).
+    const g = geometryOf({});
+    for (const relief of g.mouthReliefs) {
+      expect(Math.max(...zsOf(relief))).toBeCloseTo(g.travelEnvelope.zMax, 9);
+    }
+  });
+
+  it('never cuts below the shelf’s own root', () => {
+    // The other half of "the cut is the channel": one millimetre deeper and it
+    // is taking floor the channel never asked for.
+    const g = geometryOf({});
+    const shelf = g.bars.find((b) => b.kind === 'shelf' && b.wall === 'yMax');
+    if (!shelf) throw new Error('expected a shelf');
+    const shelfFloor = Math.min(...shelf.section.map(([, z]) => z));
+    for (const relief of g.mouthReliefs) {
+      expect(Math.min(...zsOf(relief))).toBeCloseTo(shelfFloor, 9);
+    }
+  });
+
+  it('runs its 45° end out past the arc, where it cuts nothing', () => {
+    // The run-out has to exist — a vertical inboard face would step straight
+    // down through the plate's plane — but it must not land ON the arc, or its
+    // face shows in the corner as a loose-looking triangle. Placed past
+    // `cornerR` it only ever crosses open cavity.
+    const g = geometryOf({});
+    for (const relief of g.mouthReliefs) {
+      const sign = relief.wall === 'yMin' ? -1 : 1;
+      const inboard = relief.section.map(([y, z]) => [halfSpan - y * sign, z] as const);
+      const ceiling = inboard.filter(([, z]) => z >= 0).sort((a, b) => a[0] - b[0]);
+      const [flatEnd, runOutEnd] = [ceiling[ceiling.length - 2], ceiling[ceiling.length - 1]];
+      // 45°, and it starts no closer in than the arc's own reach.
+      expect(Math.abs(runOutEnd[1] - flatEnd[1])).toBeCloseTo(runOutEnd[0] - flatEnd[0], 9);
+      expect(flatEnd[0]).toBeGreaterThanOrEqual(g.plate.cornerRadiusMm - 1e-9);
+    }
+  });
+
+  it('collapses when a thick wall leaves the cavity no corner arc at all', () => {
+    // `cornerR` is `BOX_CORNER_RADIUS - wallThickness`, so past that the cavity
+    // corner is already square and there is nothing to relieve.
+    const g = geometryOf({ wallThickness: GRIDFINITY_SPEC.BOX_CORNER_RADIUS + 1 });
+    expect(g.plate.cornerRadiusMm).toBe(0);
+    expect(g.mouthReliefs).toHaveLength(0);
   });
 });
 

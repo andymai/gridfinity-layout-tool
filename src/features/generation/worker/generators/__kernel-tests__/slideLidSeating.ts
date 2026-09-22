@@ -36,7 +36,7 @@
  * a surface that was always there cannot be mistaken for one the channel added.
  */
 
-import { columnCrossings } from './meshAssertions';
+import { columnCrossings, triangleArea, triangleNormalZ } from './meshAssertions';
 import { slideLidPlanForParams } from '@/shared/types/bin';
 import type { SlideLidGeometry } from '@/shared/utils/slideLidPlan';
 import type { BinParams } from '@/shared/types/bin';
@@ -292,4 +292,206 @@ export function entryOpeningMm(pair: SlidePair, samples = 7): number {
     worst = Math.min(worst, Math.max(0, Math.min(dz - bandLo, dz - Math.max(top, bandLo))));
   }
   return worst === Infinity ? 0 : worst;
+}
+
+/**
+ * Volume (mm³) of bin material standing inside the plate's STRAIGHT-SIDED
+ * section, over a run of the travel axis measured inward from the entry face.
+ *
+ * The question `entryOpeningMm` cannot ask. That probe samples columns within
+ * the entry WALL, where the notch really does open the full width — while the
+ * obstruction that stops the plate sits just behind the wall plane, inside the
+ * cavity: its two corner arcs are tangent to the entry face, so the mouth is
+ * `2·cornerR` narrower than the channel the plate runs in. A plate whose edges
+ * are straight for its whole length cannot pass that, and every measurement
+ * taken within the wall reads clear.
+ *
+ * Measured with a boolean rather than columns for the reason this file's
+ * preamble gives, and because a solid pillar filling the probed band has no
+ * surface INSIDE it — a column probe reads it as empty.
+ *
+ * The band is `z ∈ [−t, −wedge]`: the part of the plate that is full width at
+ * every `u`. The retainer's underside is the plane `u − wedge` and so never
+ * reaches below `−wedge` at any `u`, which is what keeps a legitimate dovetail
+ * out of the number. Zero is the only correct answer, at the mouth and
+ * anywhere else along the travel.
+ */
+export async function straightSectionObstructionMm3(
+  binSolid: Shape3D,
+  geometry: SlideLidGeometry,
+  plateTopZ: number,
+  fromX: number,
+  toX: number,
+  innerOffsetX = 0,
+  innerOffsetY = 0
+): Promise<number> {
+  const { draw, intersect, mesh, rotate, translate } = await import('brepjs');
+  const { meshVolume } = await import('./meshAssertions');
+  const { plate } = geometry;
+  const hs = plate.spanMm / 2;
+  const section = draw([-hs, -plate.thicknessMm])
+    .lineTo([hs, -plate.thicknessMm])
+    .lineTo([hs, -plate.wedgeMm])
+    .lineTo([-hs, -plate.wedgeMm])
+    .close();
+  // Canonical (travel along +X), then rotated onto the entry wall and dropped
+  // onto the cavity — the same three transforms `buildSlideLidChannel` places
+  // with, so the probe cannot disagree with the builder about which wall is the
+  // entry or where the cavity's centre is.
+  const swept = section.sketchOnPlane('YZ').extrude(toX - fromX);
+  const atX = translate(swept, [fromX, 0, 0]);
+  const oriented =
+    geometry.rotationDeg === 0 ? atX : rotate(atX, geometry.rotationDeg, { axis: [0, 0, 1] });
+  const probe = translate(oriented, [innerOffsetX, innerOffsetY, plateTopZ]);
+  try {
+    const result = intersect(binSolid as ValidSolid, probe as ValidSolid);
+    if (!result.ok) return 0;
+    const m = mesh(result.value, { tolerance: 0.02, angularTolerance: 8 });
+    try {
+      if (m.vertices.length === 0) return 0;
+      return Math.abs(
+        meshVolume({ vertices: m.vertices, indices: m.triangles } as unknown as MeshData)
+      );
+    } finally {
+      result.value.delete();
+    }
+  } finally {
+    probe.delete();
+    if (oriented !== atX) oriented.delete();
+    atX.delete();
+    swept.delete();
+  }
+}
+
+/**
+ * Area (mm²) of unsupported roof in the channel: downward-facing surface
+ * steeper than 45° off vertical, within a run of the travel axis.
+ *
+ * The whole joint is shaped so neither part needs support — the shelf's gusset
+ * and the retainer's underside are both 45° planes — so any face here that a
+ * printer would have to bridge is a defect, whatever else measures clean. It is
+ * also the failure mode that leaves the plate sliding perfectly: a retainer
+ * sawn off square still holds the lid and still clears it, and every fit,
+ * travel and watertightness check passes on it.
+ *
+ * Bounded to the channel's own band, up to the retainer's top, so the bin's
+ * other features cannot leak into the number. `45°` is the threshold the
+ * sections are drawn to, so the comparison is against the design's own rule
+ * rather than a number chosen to pass.
+ */
+export function unsupportedRoofAreaMm2(
+  bin: MeshData,
+  geometry: SlideLidGeometry,
+  plateTopZ: number,
+  fromX: number,
+  toX: number,
+  innerOffsetX = 0,
+  innerOffsetY = 0
+): number {
+  const { vertices, indices } = bin;
+  const lo = plateTopZ - geometry.plate.thicknessMm - 0.05;
+  const hi = plateTopZ + geometry.travelEnvelope.zMax + 0.05;
+  let area = 0;
+  for (let i = 0; i < indices.length; i += 3) {
+    const a = indices[i];
+    const b = indices[i + 1];
+    const c = indices[i + 2];
+    // Downward-facing and within 45° of horizontal — the faces a printer has
+    // nothing to lay the first bead of on.
+    if (triangleNormalZ(vertices, a, b, c) > -Math.SQRT1_2) continue;
+    let inside = true;
+    for (const v of [a, b, c]) {
+      const [along] = binToCanonical(
+        geometry,
+        vertices[v * 3] - innerOffsetX,
+        vertices[v * 3 + 1] - innerOffsetY
+      );
+      const z = vertices[v * 3 + 2];
+      if (along < fromX || along > toX || z < lo || z > hi) inside = false;
+    }
+    if (inside) area += triangleArea(vertices, a, b, c);
+  }
+  return area;
+}
+
+/**
+ * Volume (mm³) of bin material at one entry corner, above the channel's own
+ * ceiling — how much CORNER the mouth relief left behind.
+ *
+ * The counterweight to {@link unsupportedRoofAreaMm2}: that one fails if the
+ * relief leaves too much, this one if it takes too much. Widen the cut past the
+ * channel's profile and the corner goes with the arc, because the body's OUTER
+ * radius does not move — a squared inner face leaves the wall tapering to 0.2mm
+ * over the bin's whole height. Nothing else in this file can see it: the bin is
+ * still solid, still manifold, and the lid still slides.
+ *
+ * Read as a SURPLUS — this window at the corner minus the same window on a
+ * plain stretch of the same wall — and that surplus compared with the lid off.
+ * A corner holds more than a wall because of the arc, so the surplus IS the
+ * arc; and taking the difference cancels everything else the lid does to this
+ * band, which on a recessed placement includes the divider-crown cut above the
+ * travel envelope. Comparing the raw volumes instead charges that cut to the
+ * relief.
+ *
+ * The caller also keeps `toX` clear of `entryNotch.xMin`: past that the notch
+ * removes the wall outright, and the lidless control still has it.
+ */
+export async function entryCornerMm3(
+  binSolid: Shape3D,
+  geometry: SlideLidGeometry,
+  plateTopZ: number,
+  fromX: number,
+  toX: number,
+  innerOffsetX = 0,
+  innerOffsetY = 0
+): Promise<number> {
+  const { draw, intersect, mesh, rotate, translate } = await import('brepjs');
+  const { meshVolume } = await import('./meshAssertions');
+  const r = geometry.plate.cornerRadiusMm;
+  const hs = geometry.plate.spanMm / 2 + geometry.clearanceMm;
+  const base = geometry.travelEnvelope.zMax;
+  const outline = draw([hs - r, fromX])
+    .lineTo([hs, fromX])
+    .lineTo([hs, toX])
+    .lineTo([hs - r, toX])
+    .close();
+  const prism = outline.sketchOnPlane('XY', base).extrude(geometry.entryNotch.zMax - base);
+  const oriented =
+    geometry.rotationDeg === 0 ? prism : rotate(prism, geometry.rotationDeg, { axis: [0, 0, 1] });
+  const probe = translate(oriented, [innerOffsetX, innerOffsetY, plateTopZ]);
+  try {
+    const result = intersect(binSolid as ValidSolid, probe as ValidSolid);
+    if (!result.ok) return 0;
+    const m = mesh(result.value, { tolerance: 0.02, angularTolerance: 8 });
+    try {
+      if (m.vertices.length === 0) return 0;
+      return Math.abs(
+        meshVolume({ vertices: m.vertices, indices: m.triangles } as unknown as MeshData)
+      );
+    } finally {
+      result.value.delete();
+    }
+  } finally {
+    probe.delete();
+    if (oriented !== prism) oriented.delete();
+    prism.delete();
+  }
+}
+
+/** Inverse of {@link canonicalToBin}, for reading a vertex back into the plan. */
+function binToCanonical(
+  geometry: SlideLidGeometry,
+  x: number,
+  y: number
+): readonly [number, number] {
+  switch (geometry.entrySide) {
+    case 'right':
+      return [x, y];
+    case 'back':
+      return [y, -x];
+    case 'left':
+      return [-x, -y];
+    case 'front':
+      return [-y, x];
+  }
 }
