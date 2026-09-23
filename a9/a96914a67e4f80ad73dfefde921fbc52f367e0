@@ -1,0 +1,24 @@
+src/shared/hooks/usePresence.test.ts
+  s_7f992b73744c79::t_daf71ee41fbe3a 2-23,159-168
+  s_7f992b73744c79::t_c10665a1b598fd 169-170
+src/shared/hooks/usePresence.ts
+  s_7f992b73744c79::t_57758360bec81f 112-113,121,132
+src/liveblocks.config.ts
+  s_7f992b73744c79::t_57758360bec81f 32-38,171-172,226,237
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a9a96914a67e4f80ad73dfefde921fbc52f367e0",
+  "prompts": {},
+  "sessions": {
+    "s_7f992b73744c79": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "433d4054-fd07-4fab-844b-4f56c6a51d90",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
