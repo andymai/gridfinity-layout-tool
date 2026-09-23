@@ -26,6 +26,7 @@ import {
   methodNotAllowed,
   getBaseUrl,
   shareHashKey,
+  recordSharePermission,
   type ShareData,
   rateLimited,
   serviceUnavailable,
@@ -264,6 +265,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         throw redisErr;
       }
     }
+
+    await recordSharePermission(redis, shareId, permission);
 
     // Return success response
     const shareUrl = `${getBaseUrl()}/${type === 'designer' ? 'd' : 'l'}/${shareId}`;
