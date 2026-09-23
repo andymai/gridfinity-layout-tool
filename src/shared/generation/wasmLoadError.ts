@@ -58,8 +58,14 @@ export function isStaleAssetError(error: unknown): boolean {
  * The kernel is built with SIMD, so a browser without it rejects the binary
  * outright. JSC names the raw byte: 253 is 0xfd, the SIMD prefix, which is how
  * every Safari below 16.4 reports the kernel. V8 names the feature instead.
+ * SpiderMonkey names the bytes in hex (`fd c`), and reaches it on current
+ * Firefox too when the CPU lacks SSE4.1 or SIMD is switched off in about:config.
  */
-const UNSUPPORTED_INSTRUCTION_SIGNATURES = ['invalid opcode', 'Wasm SIMD unsupported'] as const;
+const UNSUPPORTED_INSTRUCTION_SIGNATURES = [
+  'invalid opcode',
+  'Wasm SIMD unsupported',
+  'unrecognized opcode',
+] as const;
 
 /**
  * True when the browser itself cannot run the kernel, whatever build it fetches.

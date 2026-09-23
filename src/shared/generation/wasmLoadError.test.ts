@@ -98,6 +98,11 @@ describe('isUnsupportedWasmError', () => {
       'Kernel init failed: Aborted(CompileError: WebAssembly.instantiate(): Compiling function ' +
         '#72 failed: Wasm SIMD unsupported @+86123)',
     ],
+    [
+      'SpiderMonkey, which names the prefix and sub-opcode in hex (fd c is v128.const)',
+      'Kernel init failed: Aborted(CompileError: wasm validation error: at offset 86165: ' +
+        'unrecognized opcode: fd c). Build with -sASSERTIONS for more info.',
+    ],
   ])('flags %s', (_name, message) => {
     expect(isUnsupportedWasmError(new Error(message))).toBe(true);
   });
