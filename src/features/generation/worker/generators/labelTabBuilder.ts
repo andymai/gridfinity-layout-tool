@@ -16,7 +16,7 @@ import {
   intersect,
   translate,
   withScope,
-  clone,
+  setShapeOrigin,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import { BOX_CORNER_RADIUS, COPLANAR_OVERLAP } from './generatorConstants';
@@ -107,7 +107,8 @@ export function buildLabelTabs(
 
   return withScope((scope: DisposalScope): Shape3D | null => {
     const fused = buildLabelTabsInScope(scope, params, innerW, innerD, wallHeight, wallThickness);
-    return fused ? unwrap(clone(fused)) : null;
+    // `translate`, not `clone`: it carries the LABEL_TAB/TEXT face tags.
+    return fused ? translate(fused, [0, 0, 0]) : null;
   });
 }
 
@@ -513,6 +514,11 @@ function buildTabsAtRow(
       }
     }
 
+    // Every tab is tagged before its glyph boolean. An untagged face would be
+    // matched geometrically onto a neighbouring tab's TEXT faces when the tabs
+    // are fused, printing a plain shelf in the text colour.
+    setShapeOrigin(tabSolid, FeatureTag.LABEL_TAB);
+
     if (socket) {
       // Swappable-label socket on the shelf top. Compartments whose
       // tab can't host a standard plate keep a plain shelf — the UI surfaces
@@ -580,6 +586,7 @@ function buildTabsAtRow(
           // Best-effort cosmetic clip; keep the un-clipped rim rather than fail.
         }
       }
+      setShapeOrigin(rim, FeatureTag.LABEL_TAB);
       tabSolid = scope.register(unwrap(fuse(tabSolid as ValidSolid, rim as ValidSolid)));
     }
 
@@ -639,6 +646,7 @@ function applyTabText(
   });
   if (!result) return tabSolid;
 
+  setShapeOrigin(result.solid, FeatureTag.TEXT);
   try {
     const op = result.op === 'cut' ? cut : fuse;
     return scope.register(unwrap(op(tabSolid as ValidSolid, result.solid as ValidSolid)));
@@ -656,6 +664,7 @@ import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKey
 export const labelTabsFeature: FeatureBuilder = {
   name: 'labelTabs',
   tag: FeatureTag.LABEL_TAB,
+  tagsOwnFaces: true,
   target: 'fuse',
   shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
   cacheKey: (ctx) => {

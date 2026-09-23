@@ -104,6 +104,13 @@ export function buildProjectSettingsConfig(palette: readonly string[]): string {
 
       filament_colour: palette,
 
+      // BambuStudio 2.8.2's `check_project_config` rejects a project config
+      // with no `nozzle_diameter`, dropping the palette and warning "invalid
+      // config, load geometry data only". One entry passes its per-extruder
+      // size check, and 0.4 is the FullPrintConfig default every other
+      // version already fills the missing key with.
+      nozzle_diameter: ['0.4'],
+
       // Multi-material printing on non-Bambu Marlin-based printers
       // (OrcaSlicer's `is_BBL_printer() == false` branch in Print.cpp:1679)
       // imposes two coupled requirements that the user hits as validation
