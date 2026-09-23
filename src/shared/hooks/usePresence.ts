@@ -86,7 +86,7 @@ export function usePresence(): PresenceState {
   const others = useOthers();
   const self = useSelf();
   const liveblocksStatus = useStatus();
-  const ownerId = useStorage((root) => root.metadata.ownerId);
+  const ownerId = useStorage((root) => root.metadata?.ownerId);
 
   // Map Liveblocks status to our connection status
   const status: ConnectionStatus = useMemo(() => {

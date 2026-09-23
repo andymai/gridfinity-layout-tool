@@ -47,8 +47,11 @@ export type InteractionHint =
 export interface LiveblocksStorage {
   /** The shared layout data */
   layout: Layout;
-  /** Metadata about the collaborative session */
-  metadata: {
+  /**
+   * Optional because rooms persist per share id and `initialStorage` only seeds a
+   * new room, so rooms created before this field existed have no `metadata`.
+   */
+  metadata?: {
     /** Owner's browser fingerprint ID */
     ownerId: string;
     /** Current permission level for non-owner users */

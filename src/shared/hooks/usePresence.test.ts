@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getInitials } from '@/shared/hooks/usePresence';
+import { renderHook } from '@testing-library/react';
+import { getInitials, usePresence } from '@/shared/hooks/usePresence';
+import * as collabModeModule from './useCollabMode';
+import * as liveblocksModule from '@/liveblocks.config';
+import type { LiveblocksStorage, UserPresence } from '@/liveblocks.config';
+
+vi.mock('./useCollabMode');
+vi.mock('@/liveblocks.config');
 
 // Note: Full hook testing requires mocking Liveblocks hooks which is complex.
 // We focus on testing the utility functions and behavior that doesn't require Liveblocks.
@@ -133,5 +140,51 @@ describe('usePresence integration (mock-based)', () => {
       expect(statuses).toContain('connected');
       expect(statuses).toContain('reconnecting');
     });
+  });
+});
+
+describe('usePresence with Liveblocks storage', () => {
+  const selfPresence: UserPresence = {
+    cursor: null,
+    name: 'Owner',
+    color: '#3B82F6',
+  };
+
+  function mockStorageRoot(root: Partial<LiveblocksStorage>): void {
+    vi.mocked(liveblocksModule.useStorage).mockImplementation(
+      <T>(selector: (r: LiveblocksStorage) => T) => selector(root as LiveblocksStorage)
+    );
+  }
+
+  beforeEach(() => {
+    vi.mocked(collabModeModule.useCollabMode).mockReturnValue({
+      isCollaborative: true,
+      canEdit: true,
+      shareId: 'share-abc',
+    });
+    vi.mocked(liveblocksModule.useOthers).mockReturnValue([]);
+    vi.mocked(liveblocksModule.useSelf).mockReturnValue({
+      connectionId: 7,
+      presence: selfPresence,
+    });
+    vi.mocked(liveblocksModule.useStatus).mockReturnValue('connected');
+  });
+
+  it('treats a room root without metadata as having no owner', () => {
+    mockStorageRoot({});
+
+    const { result } = renderHook(() => usePresence());
+
+    expect(result.current.participants).toEqual([
+      expect.objectContaining({ id: '7', isOwner: false, isSelf: true }),
+    ]);
+  });
+
+  it('marks the participant whose id matches metadata.ownerId as owner', () => {
+    mockStorageRoot({ metadata: { ownerId: '7', permission: 'edit', version: 1 } });
+
+    const { result } = renderHook(() => usePresence());
+
+    expect(result.current.participants[0]?.isOwner).toBe(true);
   });
 });
