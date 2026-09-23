@@ -1,6 +1,7 @@
 src/shared/hooks/usePresence.test.ts
   s_7f992b73744c79::t_daf71ee41fbe3a 2-4,14-15,18,20-24,160,179,185-191
   s_7f992b73744c79::t_c10665a1b598fd 192-193
+  s_7f992b73744c79::t_02335e3d8ce4d4 5-12,16-17,163-164,169,178,180-184
 src/shared/hooks/usePresence.ts
   s_7f992b73744c79::t_57758360bec81f 112-113,121,132
 src/liveblocks.config.ts
