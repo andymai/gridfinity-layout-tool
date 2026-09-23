@@ -29,6 +29,13 @@ export interface UserPresence {
   selectedBinIds?: string[];
 }
 
+export interface RoomUser {
+  connectionId: number;
+  /** The userId /api/liveblocks-auth signed into the room token; what metadata.ownerId holds. */
+  id?: string;
+  presence: UserPresence;
+}
+
 /**
  * Hints about what interaction a remote user is performing.
  * Used to show visual previews of other users' in-progress operations.
@@ -166,8 +173,8 @@ const createUnconfiguredHook = (hookName: string) => () => {
  * These can be called unconditionally without throwing.
  */
 const safeStubHooks = {
-  useOthers: () => [] as readonly { connectionId: number; presence: UserPresence }[],
-  useSelf: () => null as { connectionId: number; presence: UserPresence } | null,
+  useOthers: () => [] as readonly RoomUser[],
+  useSelf: () => null as RoomUser | null,
   useStatus: () => 'initial' as string,
   useStorage: <T>(_selector: (root: LiveblocksStorageRoot) => T) => null as T | null,
 };
@@ -221,8 +228,7 @@ export const useUpdateMyPresence = (context?.useUpdateMyPresence ??
 // Safe hooks that return defaults when not configured OR when called outside RoomProvider
 // These can be called unconditionally - they catch RoomProvider errors and return safe defaults
 export const useOthers = createSafeHook(
-  context?.useOthers as
-    (() => readonly { connectionId: number; presence: UserPresence }[]) | undefined,
+  context?.useOthers as (() => readonly RoomUser[]) | undefined,
   safeStubHooks.useOthers
 );
 
@@ -233,7 +239,7 @@ export const useOthersConnectionIds =
 export const useOther = context?.useOther ?? createUnconfiguredHook('useOther');
 
 export const useSelf = createSafeHook(
-  context?.useSelf as (() => { connectionId: number; presence: UserPresence } | null) | undefined,
+  context?.useSelf as (() => RoomUser | null) | undefined,
   safeStubHooks.useSelf
 );
 

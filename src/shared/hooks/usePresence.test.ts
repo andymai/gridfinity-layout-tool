@@ -2,11 +2,19 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { getInitials, usePresence } from '@/shared/hooks/usePresence';
 
+interface MockRoomUser {
+  connectionId: number;
+  id?: string;
+  presence: { name: string; color: string };
+}
+
+let others: MockRoomUser[] = [];
+let self: MockRoomUser | null = null;
 let storageRoot: Record<string, unknown> = {};
 
 vi.mock('@/liveblocks.config', () => ({
-  useOthers: () => [],
-  useSelf: () => ({ connectionId: 7, presence: { name: 'Owner', color: '#123456' } }),
+  useOthers: () => others,
+  useSelf: () => self,
   useStatus: () => 'connected',
   useStorage: <T>(selector: (root: Record<string, unknown>) => T) => selector(storageRoot),
 }));
@@ -152,10 +160,13 @@ describe('usePresence integration (mock-based)', () => {
 
 describe('usePresence with room storage', () => {
   afterEach(() => {
+    others = [];
+    self = null;
     storageRoot = {};
   });
 
   it('lists participants when a read-only client joins a room whose storage was never initialized', () => {
+    self = { connectionId: 7, presence: { name: 'Owner', color: '#123456' } };
     storageRoot = {};
 
     const { result } = renderHook(() => usePresence());
@@ -163,5 +174,20 @@ describe('usePresence with room storage', () => {
     expect(result.current.participants).toEqual([
       { id: '7', name: 'Owner', color: '#123456', isOwner: false, isSelf: true },
     ]);
+  });
+
+  it('marks the participant whose Liveblocks user id is the stored owner id', () => {
+    const ownerUserId = '7f3c2a10-5b1e-4c8d-9a2f-0e6d4b8c1a33';
+    others = [{ connectionId: 3, id: ownerUserId, presence: { name: 'Owner', color: '#111111' } }];
+    self = { connectionId: 7, id: 'guest-user-id', presence: { name: 'Guest', color: '#222222' } };
+    storageRoot = { metadata: { ownerId: ownerUserId, permission: 'edit', version: 1 } };
+
+    const { result } = renderHook(() => usePresence());
+
+    const owner = result.current.participants.find((p) => p.name === 'Owner');
+    const guest = result.current.participants.find((p) => p.name === 'Guest');
+    expect(owner?.isOwner).toBe(true);
+    expect(guest?.isOwner).toBe(false);
+    expect(result.current.participants[0]?.name).toBe('Owner');
   });
 });
