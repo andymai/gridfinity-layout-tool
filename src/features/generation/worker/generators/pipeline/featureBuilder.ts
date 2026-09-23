@@ -42,6 +42,12 @@ export interface FeatureBuilder {
    * Opt in per feature as polygon-awareness is added.
    */
   readonly supportsCellMask?: boolean;
+  /**
+   * The built shape already tags some of its faces (label-tab glyphs as
+   * TEXT). The runner then keeps those tags through the feature cache and
+   * applies `tag` only to faces left untagged.
+   */
+  readonly tagsOwnFaces?: boolean;
   /** Fast check — return false to skip cache lookup and build entirely. */
   shouldBuild(ctx: PipelineContext): boolean;
   /** Deterministic cache key for this feature's current parameters. */

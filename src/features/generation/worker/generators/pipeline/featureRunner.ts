@@ -19,8 +19,8 @@ import type { Shape3D } from 'brepjs';
 import type { PipelineContext } from './types';
 import type { FeatureBuilder } from './featureBuilder';
 import { checkCancelled } from '../utils/abort';
-import { getFeatureCache, setFeatureCache } from '../shapeCache';
-import { collectOrigins } from './collectOrigins';
+import { getFeatureCache, getFeatureCacheWithOrigins, setFeatureCache } from '../shapeCache';
+import { collectOrigins, tagUntaggedFaces } from './collectOrigins';
 
 export interface FeatureTargets {
   fuseTargets: Shape3D[];
@@ -86,14 +86,17 @@ export function runFeatureBuilders(
     // (same key, different op) still re-keys.
     keyParts.push([builder.name, builder.target, key]);
 
+    const keepTags = builder.tagsOwnFaces === true;
     // getFeatureCache returns a clone (caller owns it), or null on miss.
-    let shape = getFeatureCache(builder.name, key);
+    let shape = keepTags
+      ? getFeatureCacheWithOrigins(builder.name, key)
+      : getFeatureCache(builder.name, key);
     if (!shape) {
       const built = builder.build(ctx);
       if (built && built.length > 0) {
         // Cache owns original, caller gets a clone
         setFeatureCache(builder.name, key, built[0]);
-        shape = unwrap(clone(built[0]));
+        shape = keepTags ? translate(built[0], [0, 0, 0]) : unwrap(clone(built[0]));
         // Only built[0] is applied — a builder producing several pieces MUST fuse
         // them itself. The extras are disposed so they can't leak WASM handles.
         for (let i = 1; i < built.length; i++) built[i].delete();
@@ -114,7 +117,8 @@ export function runFeatureBuilders(
       // `collectOrigins` re-tags the freshly cloned shape on every
       // iteration — including cache hits. Don't move this call out of
       // the loop or feature colors will silently collapse.
-      collectOrigins(shape, builder.tag, ctx.originToTag);
+      if (keepTags) tagUntaggedFaces(shape, builder.tag);
+      else collectOrigins(shape, builder.tag, ctx.originToTag);
       bucketMap[builder.target].push(shape);
     }
 

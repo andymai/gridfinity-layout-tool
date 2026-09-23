@@ -10,10 +10,26 @@
  * doesn't have to change. Removing it from `PipelineContext` is a follow-up.
  */
 
-import { setShapeOrigin } from 'brepjs';
+import { getFaceOrigins, setShapeOrigin } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { FeatureTag } from '../featureTags';
 
 export function collectOrigins(shape: Shape3D, tag: FeatureTag, _map: Map<number, number>): void {
   setShapeOrigin(shape, tag);
+}
+
+/**
+ * Like {@link collectOrigins}, but a face that already carries a tag keeps it.
+ * For a feature that tags a sub-part itself (label-tab glyphs as TEXT) while
+ * the rest of its faces take the feature's own tag.
+ */
+export function tagUntaggedFaces(shape: Shape3D, tag: FeatureTag): void {
+  const existing = getFaceOrigins(shape);
+  const kept = existing ? new Map(existing) : undefined;
+  setShapeOrigin(shape, tag);
+  const map = getFaceOrigins(shape);
+  if (!kept || !map) return;
+  for (const [hash, origin] of kept) {
+    if (map.has(hash)) map.set(hash, origin);
+  }
 }

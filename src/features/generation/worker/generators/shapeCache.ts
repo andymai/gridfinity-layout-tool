@@ -333,6 +333,12 @@ export function getFeatureCache(feature: string, key: string): Shape3D | null {
   return cloneFromCache(getOrCreateFeatureCache(feature), key);
 }
 
+/** {@link getFeatureCache} through `translate([0,0,0])`, keeping face-origin tags. */
+export function getFeatureCacheWithOrigins(feature: string, key: string): Shape3D | null {
+  const cached = getOrCreateFeatureCache(feature).get(key);
+  return cached === undefined ? null : translate(cached, [0, 0, 0]);
+}
+
 export function setFeatureCache(feature: string, key: string, shape: Shape3D): void {
   getOrCreateFeatureCache(feature).set(key, shape);
 }

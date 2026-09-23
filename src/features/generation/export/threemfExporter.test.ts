@@ -635,6 +635,23 @@ describe('threemfExporter', () => {
       expect(config.layer_change_gcode).toMatch(/^\s*G92\s*E0\b/);
     });
 
+    // BambuStudio 2.8.2 `check_project_config` treats a missing
+    // nozzle_diameter as invalid and loads geometry only: no palette, so the
+    // text and lip zones open in arbitrary filament colours.
+    it('declares one nozzle_diameter so BambuStudio 2.8.2 accepts the config', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'nozzle',
+        colorConfig: {
+          materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }, { color: '#00ff00' }],
+          triangleMaterialIndices: [0, 2],
+        },
+      });
+      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
+      expect(config.nozzle_diameter).toEqual(['0.4']);
+      expect(config.extruder_type).toBeUndefined();
+    });
+
     // Regression: pinning acceleration hid the user's tuned profile
     // and inflated multi-color print time (see buildProjectSettingsConfig).
     it('does not pin acceleration (would strip the user profile and slow the print)', () => {
