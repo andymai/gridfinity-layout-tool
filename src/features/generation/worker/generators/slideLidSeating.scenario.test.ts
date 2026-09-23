@@ -20,8 +20,11 @@ import {
   binWallTopZ,
   entryLipRemnantMm,
   entryOpeningMm,
+  entryCornerMm3,
   newCrossingsAbovePlate,
   seatSlideLid,
+  straightSectionObstructionMm3,
+  unsupportedRoofAreaMm2,
   slideLidZOffset,
   travelInterferenceMm3,
   type SlidePair,
@@ -46,6 +49,13 @@ import type { MeshData } from '@/features/generation/bridge/types';
  * magnitude above it.
  */
 const CONTACT_FLOOR_MM3 = 5;
+
+/**
+ * Nozzle width (mm), for the one place a threshold here is a physical fact
+ * rather than a tolerance: whether a ceiling is small enough to be laid down as
+ * perimeter instead of bridged.
+ */
+const NOZZLE_MM = 0.4;
 
 function slideParams(
   over: Partial<BinParams> = {},
@@ -335,4 +345,194 @@ describe('sliding lid seating', () => {
       expect(inBand, `column (${x.toFixed(1)}, ${y.toFixed(1)})`).toHaveLength(0);
     }
   }, 600000);
+  it('the entry mouth is as wide as the channel, so the plate can be pushed in', async () => {
+    // The defect this exists for: the cavity is a ROUNDED rectangle, so each
+    // corner arc is tangent to the entry wall's inner face and the mouth is
+    // `2·cornerR` narrower than the channel behind it — 4.6mm at the default
+    // wall. The plate's running edges are straight for its whole length, so it
+    // meets those two arcs `cornerR − c` deep and stops, on every bin size,
+    // whatever the notch does.
+    //
+    // Invisible to every probe already here: the notch really does open the
+    // entry WALL full width, the seated plate really does fit, and the travel
+    // sweep's shared volume is ~1.4mm³ — a thin wedge, under the coincident-
+    // face floor those measures need.
+    //
+    // Stated as an ABSENCE of material in the plate's own straight-sided
+    // section, and compared against the same probe mid-travel: the mouth must
+    // be no more obstructed than the middle of the channel, which is zero.
+    const params = slideParams({ width: 1, depth: 1, height: 3 });
+    const { getLastSolid } = await import('./shapeCache');
+    const { geometry } = slideLidPlanForParams(params);
+    if (!geometry) throw new Error('expected slide geometry');
+    getGenerateBin()(params, undefined, false);
+    const bin = getLastSolid();
+    if (!bin) throw new Error('expected a cached bin solid');
+    const dz = slideLidZOffset(params, geometry);
+    // The last `cornerR` before the entry face, which is exactly the run the
+    // arcs occupy, against an equal run taken from the middle of the travel.
+    const r = geometry.plate.cornerRadiusMm;
+    const face = geometry.travelEnvelope.xMax;
+    const mouth = await straightSectionObstructionMm3(bin, geometry, dz, face - r, face);
+    const middle = await straightSectionObstructionMm3(bin, geometry, dz, -r / 2, r / 2);
+    expect(middle).toBeCloseTo(0, 3);
+    expect(mouth).toBeCloseTo(middle, 3);
+  }, 300000);
+
+  it('opens the mouth on every entry wall', async () => {
+    // Same reason the travel check is repeated per side: the relief is built in
+    // the canonical frame and rotated, so a sign error breaks one or two walls
+    // and a test written for the default entry would share it.
+    const { getLastSolid } = await import('./shapeCache');
+    const results: Array<{ side: string; clear: boolean }> = [];
+    for (const entrySide of ['front', 'back', 'left', 'right'] as const) {
+      const params = slideParams({ width: 1, depth: 1, height: 3 }, { entrySide });
+      const { geometry } = slideLidPlanForParams(params);
+      if (!geometry) throw new Error(`expected geometry for ${entrySide}`);
+      getGenerateBin()(params, undefined, false);
+      const bin = getLastSolid();
+      if (!bin) throw new Error('expected a cached bin solid');
+      const r = geometry.plate.cornerRadiusMm;
+      const face = geometry.travelEnvelope.xMax;
+      const mm3 = await straightSectionObstructionMm3(
+        bin,
+        geometry,
+        slideLidZOffset(params, geometry),
+        face - r,
+        face
+      );
+      results.push({ side: entrySide, clear: mm3 < 0.01 });
+    }
+    expect(results).toEqual([
+      { side: 'front', clear: true },
+      { side: 'back', clear: true },
+      { side: 'left', clear: true },
+      { side: 'right', clear: true },
+    ]);
+  }, 900000);
+
+  it('leaves the rail no roof worth bridging where it meets the wall', async () => {
+    // The relief's own failure mode, and it is invisible to every other probe
+    // here: cut it as a BOX and it saws the retainer's underside flat over the
+    // whole run, leaving a horizontal roof with nothing under it right where
+    // the rail meets the wall — about 5mm², and the lid still slides, still
+    // holds, still measures watertight. Cutting the channel's own profile
+    // instead takes nothing the channel does not own, and cutting it before the
+    // bars fuse puts them back across the relieved arc.
+    //
+    // What survives is the sliver of arc left over the rail's top past the
+    // retainer's own reach. It is bounded by ONE EXTRUSION's footprint, which
+    // is the physical question — a ceiling smaller than a single bead is laid
+    // down as perimeter, not bridged — rather than by a fraction of the damage
+    // the box did. Held to zero instead, the only shapes that pass are ones
+    // that tip the cut above the rail and carve the corner out to get there.
+    const params = slideParams({ width: 1, depth: 1, height: 3 });
+    const { geometry } = slideLidPlanForParams(params);
+    if (!geometry) throw new Error('expected slide geometry');
+    const bin = getGenerateBin()(params, undefined, true);
+    if (!bin) throw new Error('expected the bin to build');
+    const dz = slideLidZOffset(params, geometry);
+    const cornerR = geometry.plate.cornerRadiusMm;
+    const face = geometry.travelEnvelope.xMax;
+    const roofAt = (from: number, to: number): number =>
+      unsupportedRoofAreaMm2(bin, geometry, dz, from, to);
+
+    // The middle of the channel has never had anything to bridge, at all.
+    expect(roofAt(-cornerR / 2, cornerR / 2)).toBeCloseTo(0, 6);
+    // Both corners together, against one 0.4mm bead's footprint.
+    expect(roofAt(face - cornerR, face)).toBeLessThan(NOZZLE_MM * NOZZLE_MM);
+  }, 300000);
+
+  it('opens the corner arc without taking the corner away', async () => {
+    // The relief's third failure mode, and the one every other measure here
+    // rewards. The arc has to be opened so the plate can pass; widen the cut
+    // past the channel's profile and the corner goes with the arc, because the
+    // body's OUTER radius stays where it is — a squared inner face leaves the
+    // wall tapering to 0.2mm over the bin's whole height. The lid still
+    // slides, the mesh is still solid and manifold, and nothing else notices.
+    //
+    // Measured above the channel's own ceiling, as the SURPLUS a corner holds
+    // over a plain stretch of the same wall — which is the arc — and compared
+    // with the lid off. The surplus cancels every other cut this band sees, so
+    // what is left is what the relief took.
+    const params = slideParams({ width: 1, depth: 1, height: 3 });
+    const { getLastSolid } = await import('./shapeCache');
+    const { geometry } = slideLidPlanForParams(params);
+    if (!geometry) throw new Error('expected slide geometry');
+    const dz = slideLidZOffset(params, geometry);
+    const r = geometry.plate.cornerRadiusMm;
+    const from = geometry.travelEnvelope.xMax - r;
+    // Stopped short of the notch, which removes the entry wall outright and is
+    // still present on the lidless control.
+    const to = geometry.entryNotch.xMin;
+    const arcSurplus = async (solid: Parameters<typeof entryCornerMm3>[0]): Promise<number> =>
+      (await entryCornerMm3(solid, geometry, dz, from, to)) -
+      (await entryCornerMm3(solid, geometry, dz, -r / 2, -r / 2 + (to - from)));
+
+    getGenerateBin()(params, undefined, true);
+    const withChannel = getLastSolid();
+    if (!withChannel) throw new Error('expected a cached bin solid');
+    const kept = await arcSurplus(withChannel);
+
+    getGenerateBin()({ ...params, lid: { ...params.lid, enabled: false } }, undefined, true);
+    const bare = getLastSolid();
+    if (!bare) throw new Error('expected the lidless bin solid');
+    const whole = await arcSurplus(bare);
+
+    // The comparison needs a corner to be worth measurably more than a wall,
+    // or the bound below would hold vacuously.
+    expect(whole).toBeGreaterThan(1);
+    expect(kept).toBeGreaterThan(whole * 0.9);
+  }, 300000);
+  it('opens the entry wall on a bin with an overhang on that very side', async () => {
+    // Overhang moves the body and the cavity together, so every wall keeps its
+    // nominal thickness. Charge the asymmetry to this one wall instead and it
+    // reads `front / 2` short, crosses zero at twice the wall thickness, and
+    // carries `trailingX` and the entry notch with it: the notch stops short of
+    // the outer face, then inverts, and nothing is cut.
+    //
+    // Asked of the wall itself rather than of the plan's numbers, and swept
+    // across a range that straddles the point the thickness would go negative.
+    // The probe takes the cavity offset, without which it samples the wrong
+    // wall entirely.
+    const { getLastSolid } = await import('./shapeCache');
+    const results: Array<{ front: number; open: boolean }> = [];
+    for (const front of [0, 3, 5, 10]) {
+      const params = slideParams({
+        width: 1,
+        depth: 1,
+        height: 3,
+        overhang: { left: 0, right: 0, front, back: 0, feet: false },
+      });
+      const { geometry } = slideLidPlanForParams(params);
+      if (!geometry) throw new Error(`expected geometry for front=${front}`);
+      const base = binDimensions(params);
+      const innerD = base.innerD + front;
+      const outerD = base.outerD + front;
+      const offsetY = -front / 2;
+      getGenerateBin()(params, undefined, true);
+      const bin = getLastSolid();
+      if (!bin) throw new Error('expected a cached bin solid');
+      // The tunnel the plate has to pass through the wall: cavity face to just
+      // past the outer face, in the plate's own straight-sided band.
+      const cavityFace = innerD / 2;
+      const outerFace = outerD / 2;
+      const blocked = await straightSectionObstructionMm3(
+        bin,
+        geometry,
+        slideLidZOffset(params, geometry),
+        cavityFace,
+        outerFace,
+        0,
+        offsetY
+      );
+      results.push({ front, open: blocked < 0.01 });
+    }
+    expect(results).toEqual([
+      { front: 0, open: true },
+      { front: 3, open: true },
+      { front: 5, open: true },
+      { front: 10, open: true },
+    ]);
+  }, 900000);
 });

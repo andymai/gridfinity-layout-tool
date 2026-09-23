@@ -218,6 +218,19 @@ export interface SlideLidBar {
   readonly kind: 'shelf' | 'retainer';
 }
 
+/**
+ * The cut that carries one channel wall's profile THROUGH the cavity's entry
+ * corner arc. A YZ cross-section swept along canonical X, exactly as a bar is.
+ * See {@link SlideLidGeometry.mouthReliefs}.
+ */
+export interface SlideLidMouthRelief {
+  readonly xMin: number;
+  readonly xMax: number;
+  /** Closed polygon of [y, z] points, canonical frame. */
+  readonly section: readonly (readonly [number, number])[];
+  readonly wall: 'yMin' | 'yMax';
+}
+
 /** The ramped bump that holds the plate closed, on one shelf. */
 export interface SlideLidDetent {
   /** Canonical X of the ramp's peak. */
@@ -301,6 +314,33 @@ export interface SlideLidGeometry {
   /** Window cut through the entry wall, in canonical coords. */
   readonly entryNotch: SlideLidBox;
   /**
+   * The channel's own profile, carried through the cavity's two ENTRY corner
+   * arcs — without it the plate cannot be inserted at all.
+   *
+   * The cavity is a ROUNDED rectangle, so each corner arc is tangent to the
+   * entry wall's inner face: at that face the cavity is only
+   * `2·(halfSpan − cornerR)` wide, against a plate of `2·(halfSpan − c)` whose
+   * running edges are straight for its whole length. The plate meets those two
+   * arcs `cornerR − c` deep — 2.3mm per side at the default wall — and stops.
+   * Notching the wall does not help: the obstruction sits INSIDE the cavity,
+   * behind the wall plane, which is why every measurement taken within the
+   * wall reads the opening as fully clear.
+   *
+   * The cutter is the channel's section rather than a box, and that is what
+   * makes it safe. It reaches exactly as high as the retainer's own top — the
+   * travel envelope's ceiling — so the arc above it, the corner, and the
+   * stacking lip are all untouched, and the arc simply rests on the retainer
+   * that goes back in underneath it. A box instead takes one of two wrong
+   * shapes: stop it at the plate and the arc is left standing on a flat ledge
+   * the printer has to bridge; run it full height and the corner goes with the
+   * arc, because the body's OUTER radius does not move and a squared inner
+   * face leaves the wall tapering to 0.2mm.
+   *
+   * Cut BEFORE the bars fuse. Cut after, it would take the shelf and retainer
+   * with the arc they run into.
+   */
+  readonly mouthReliefs: readonly SlideLidMouthRelief[];
+  /**
    * The volume the plate sweeps, plus clearance — what `relieveInterior` cuts
    * out of the cavity, and what a compatibility check measures features
    * against. Its top is the retainer's top plane, deliberately NOT the wall
@@ -375,7 +415,14 @@ export interface SlideLidBinDims {
   /** Cavity extents, overhang folded in. */
   readonly innerW: number;
   readonly innerD: number;
-  /** Cavity centre relative to the bin origin. Zero without asymmetric overhang. */
+  /**
+   * Cavity centre relative to the bin origin. Zero without asymmetric overhang.
+   *
+   * The BODY is off-centre by exactly this much too, since overhang moves both
+   * together — which is why {@link slideWallThicknessMm} must not subtract it.
+   * It is here for placement: the builder translates the channel by it after
+   * rotating, so the joint follows the cavity rather than the bin's origin.
+   */
   readonly innerOffsetX: number;
   readonly innerOffsetY: number;
   /** Floor bottom to wall top. */
@@ -387,23 +434,26 @@ export interface SlideLidBinDims {
 }
 
 /**
- * Thickness (mm) of one wall, which asymmetric overhang makes uneven.
+ * Thickness (mm) of one wall: half the difference between the body and the
+ * cavity on that wall's axis.
  *
- * The outer body spans `±outer/2` about the bin origin while the cavity spans
- * `±inner/2` about `innerOffset`, so each side's wall is whatever is left
- * between them — not `params.wallThickness`, which describes the nominal case
- * only.
+ * `innerOffset` must NOT enter this. Overhang moves the BODY and the cavity
+ * together — the shell "expands in lockstep", as `deriveDimensions` puts it —
+ * and both extents here already have the expansion folded in, so the offset is
+ * common to the two and cancels.
+ *
+ * So the walls are even, and the per-side signature is kept for the callers
+ * rather than for the arithmetic: it says which wall is being asked about at
+ * every call site, and it is the seam a future asymmetric body would reopen.
  */
 export function slideWallThicknessMm(side: LidRailSide, dims: SlideLidBinDims): number {
   switch (side) {
     case 'right':
-      return dims.outerW / 2 - (dims.innerOffsetX + dims.innerW / 2);
     case 'left':
-      return dims.innerOffsetX - dims.innerW / 2 + dims.outerW / 2;
+      return (dims.outerW - dims.innerW) / 2;
     case 'back':
-      return dims.outerD / 2 - (dims.innerOffsetY + dims.innerD / 2);
     case 'front':
-      return dims.innerOffsetY - dims.innerD / 2 + dims.outerD / 2;
+      return (dims.outerD - dims.innerD) / 2;
   }
 }
 
@@ -560,7 +610,16 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   const barXMin = -travelInner / 2;
   const barXMax = travelInner / 2;
 
+  // MOUTH RELIEF geometry, shared by both walls. `roofTop` is the retainer's
+  // own top plane and the travel envelope's ceiling, so the cut provably never
+  // enters the lip's band. `reach` is how far inboard the cut has to clear:
+  // the arc runs `cornerR` in, which can be past the shelf's own tip, and the
+  // run-out needs room to come down at 45° from the retainer's tip.
+  const roofTop = c + SLIDE_ROOF_TIP_MM;
+  const reliefReach = Math.max(shelfReach, cornerR, roofReach) + roofTop;
+
   const bars: SlideLidBar[] = [];
+  const mouthReliefs: SlideLidMouthRelief[] = [];
   for (const wall of ['yMin', 'yMax'] as const) {
     // `inward` points from this wall toward the cavity centre.
     const wallY = wall === 'yMin' ? -halfSpan : halfSpan;
@@ -596,9 +655,52 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
         [at(0), -wedge],
         [at(roofReach), roofReach - wedge],
         [at(roofReach), roofReach - wedge + SLIDE_ROOF_TIP_MM],
-        [at(0), c + SLIDE_ROOF_TIP_MM],
+        [at(0), roofTop],
       ],
     });
+
+    // MOUTH RELIEF. The channel's own outline — both bars and the slot between
+    // them — swept through the cavity's entry corner arc. Same `at(u)` frame as
+    // the bars themselves, which is the point: the cut is the channel, so
+    // whatever the channel needs clear is clear, and nothing else is.
+    //
+    // Its ceiling is the retainer's top plane, and NEVER above it. That plane
+    // is also the travel envelope's, so the cut provably stays out of the lip's
+    // band — but the reason that matters here is visual as much as structural:
+    // the corner arc is a curved face, so wherever the cut crosses it the cut's
+    // own face is left exposed. Held at the rail's top the exposed face is flush
+    // with the rail's top and reads as part of it. Tip the ceiling UP to make
+    // the arc above it self-supporting and the cut reaches a millimetre over the
+    // rail instead, carving a plainly visible triangle out of the corner.
+    //
+    // The 45° run-out at the inboard end is therefore placed past `cornerR`,
+    // clear of the arc, where it cuts nothing but open cavity.
+    if (cornerR > 0) {
+      mouthReliefs.push({
+        wall,
+        xMin: travelInner / 2 - cornerR,
+        // Stops AT the cavity face, never past it. This cut's floor at the
+        // wall is `-t - SLIDE_SHELF_TIP_MM - shelfReach`, well below the
+        // notch's `-t`, and the shelf bars END at this face — so an overshoot
+        // carves a pocket under the notch that nothing refills. The notch
+        // reaches back 0.1 past this face, so the two still overlap and
+        // neither boolean sees a coplanar seam.
+        xMax: travelInner / 2,
+        section: [
+          // Down the wall, then out along the shelf's own 45° gusset.
+          [at(0), -t - SLIDE_SHELF_TIP_MM - shelfReach],
+          [at(shelfReach), -t - SLIDE_SHELF_TIP_MM],
+          // `reliefReach` is at least `shelfReach + roofTop` and `roofTop` is
+          // positive, so this point is always outboard of the one above it.
+          [at(reliefReach), -t - SLIDE_SHELF_TIP_MM],
+          // Up the inboard end, past the plate's slab to its top plane.
+          [at(reliefReach), 0],
+          // 45° up to the retainer's top plane, then flat back to the wall.
+          [at(reliefReach - roofTop), roofTop],
+          [at(0), roofTop],
+        ],
+      });
+    }
   }
 
   const detents: SlideLidDetent[] = [];
@@ -653,13 +755,22 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
   // So the stacking lip really is interrupted on this one wall. That is the
   // trade `grip.binDip` already makes, `slideRimInterrupted` reports it, and
   // the bin still stacks on its other three walls and its corners.
+  //
+  // The FLOOR is the one face that gets no clearance, and deliberately. Every
+  // other face here is a sliding gap the plate must not touch, so it takes `c`.
+  // The floor is the opposite: it is the shelf's own bearing plane, the surface
+  // the plate rests on and gravity holds it against. Dropping it a clearance
+  // leaves the plate cantilevered off the shelf ends across the wall — which is
+  // exactly the span a thumb pushes on while inserting it — and leaves a step
+  // in the opening at the height the eye reads as its floor. Held flush, the
+  // bearing plane simply runs through the wall.
   const notchTopAboveWallTop = input.hasLip ? GRIDFINITY_SPEC.LIP_HEIGHT + 1 : 1;
   const entryNotch: SlideLidBox = {
     xMin: travelInner / 2 - 0.1,
     xMax: trailingX + 1,
     yMin: -plateHalfSpan - c,
     yMax: plateHalfSpan + c,
-    zMin: -t - c,
+    zMin: -t,
     zMax: plateTopBelowWallTop + notchTopAboveWallTop,
   };
 
@@ -703,6 +814,7 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
       bars,
       detents,
       entryNotch,
+      mouthReliefs,
       travelEnvelope,
       plate: {
         spanMm: plateSpan,

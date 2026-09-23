@@ -23,6 +23,7 @@ import type {
   SlideLidBox,
   SlideLidDetent,
   SlideLidGeometry,
+  SlideLidMouthRelief,
 } from '@/shared/utils/slideLidPlan';
 import type { BinDimensions } from './pipeline/types';
 
@@ -56,8 +57,8 @@ const NOTCH_RIM_RAMP_MM = 2.5;
 /** Coplanar bite (mm) so a fused bump has real volume to merge, not a face. */
 const DETENT_BITE_MM = 0.2;
 
-/** Sweep a bar's YZ section along X. */
-function barSolid(scope: DisposalScope, bar: SlideLidBar): Shape3D {
+/** Sweep a YZ section along X — every bar, and every mouth relief. */
+function barSolid(scope: DisposalScope, bar: SlideLidBar | SlideLidMouthRelief): Shape3D {
   const [first, ...rest] = bar.section;
   let pen = draw([first[0], first[1]]);
   for (const [y, z] of rest) pen = pen.lineTo([y, z]);
@@ -124,6 +125,12 @@ function place(
 
 /** The channel's additive and subtractive halves, ready to apply to the bin. */
 export interface SlideLidChannelSolids {
+  /**
+   * The cavity's entry corner arcs — cut BEFORE the additions fuse, so the
+   * bars land back in the space this opens instead of being sawn off inside
+   * the arcs they run into.
+   */
+  readonly mouthCuts: readonly Shape3D[];
   /** Shelves, retainers and detents — fused onto the bin. */
   readonly additions: readonly Shape3D[];
   /** The entry window — cut from the bin, after the additions fuse. */
@@ -133,10 +140,12 @@ export interface SlideLidChannelSolids {
 /**
  * Build the channel in world coordinates.
  *
- * The caller owns every returned solid. Returned as two lists rather than
- * applied here because the order matters and belongs to the stage: the notch
- * has to be cut AFTER the bars fuse, or a bar reaching into the entry wall
- * would be left standing across the opening it is supposed to clear.
+ * The caller owns every returned solid. Returned as three lists rather than
+ * applied here because the ORDER matters and belongs to the stage, and the two
+ * cuts want opposite sides of the fuse: the notch has to come AFTER, or a bar
+ * reaching into the entry wall would be left standing across the opening it is
+ * supposed to clear, while the mouth relief has to come BEFORE, or it takes the
+ * shelf and retainer away with the corner arc they run into.
  */
 export function buildSlideLidChannel(
   geometry: SlideLidGeometry,
@@ -144,6 +153,7 @@ export function buildSlideLidChannel(
   innerOffsetX: number,
   innerOffsetY: number
 ): SlideLidChannelSolids {
+  const mouthCuts: Shape3D[] = [];
   const additions: Shape3D[] = [];
   const subtractions: Shape3D[] = [];
 
@@ -162,11 +172,12 @@ export function buildSlideLidChannel(
       into.push(unwrap(clone(positioned)));
     };
 
+    for (const relief of geometry.mouthReliefs) put(barSolid(scope, relief), mouthCuts);
     for (const bar of geometry.bars) put(barSolid(scope, bar), additions);
     for (const detent of geometry.detents) put(detentSolid(scope, detent), additions);
     put(notchSolid(scope, geometry.entryNotch, geometry.clearanceMm), subtractions);
     return null;
   });
 
-  return { additions, subtractions };
+  return { mouthCuts, additions, subtractions };
 }
