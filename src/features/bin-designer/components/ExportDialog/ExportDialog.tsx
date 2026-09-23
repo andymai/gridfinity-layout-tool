@@ -15,6 +15,8 @@ import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import { zoneLabel } from '@/features/bin-designer/utils/zoneLabels';
+import { anyCompartmentColored } from '@/features/bin-designer/utils/compartmentColorUnits';
+import { anyCutoutColored } from '@/shared/generation/cutoutColorUnits';
 import { SlicerHandoffPreview } from './SlicerHandoffPreview';
 import { hingePinLengths } from '@/shared/utils/hingeLidPlan';
 import { LID_HINGE_PIN_MM } from '@/features/bin-designer/types/lid';
@@ -107,10 +109,11 @@ export function ExportDialog() {
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
   const useSplitExport = needsSplit && splitEnabled;
 
-  // A design is multi-color when the per-design toggle is on AND its currently
-  // active zones do not all share the body color. STL and STEP silently drop
-  // this color data, so we steer the user toward 3MF.
+  // Colored cutouts and compartments are multi-color on their own; zone colors
+  // count only with the toggle on and a zone that differs from the body. STL
+  // and STEP silently drop this color data, so we steer the user toward 3MF.
   const isMultiColor = useMemo(() => {
+    if (anyCutoutColored(params.cutouts) || anyCompartmentColored(params)) return true;
     if (!params.featureColors.enabled) return false;
     return !isSingleColor(params.featureColors, computeActiveZones(params));
   }, [params]);
