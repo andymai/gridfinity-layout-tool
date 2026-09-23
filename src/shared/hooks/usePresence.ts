@@ -109,6 +109,8 @@ export function usePresence(): PresenceState {
     if (!isCollaborative) return [];
 
     const result: Participant[] = [];
+    const isOwnerUser = (userId: string | undefined): boolean =>
+      Boolean(ownerId) && userId === ownerId;
 
     for (const other of others) {
       const id = String(other.connectionId);
@@ -116,7 +118,7 @@ export function usePresence(): PresenceState {
         id,
         name: other.presence.name || generateGuestName(other.connectionId),
         color: other.presence.color || generateGuestColor(other.connectionId),
-        isOwner: ownerId ? id === ownerId : false,
+        isOwner: isOwnerUser(other.id),
         isSelf: false,
       });
     }
@@ -127,7 +129,7 @@ export function usePresence(): PresenceState {
         id,
         name: self.presence.name || generateGuestName(self.connectionId),
         color: self.presence.color || generateGuestColor(self.connectionId),
-        isOwner: ownerId ? id === ownerId : false,
+        isOwner: isOwnerUser(self.id),
         isSelf: true,
       });
     }
