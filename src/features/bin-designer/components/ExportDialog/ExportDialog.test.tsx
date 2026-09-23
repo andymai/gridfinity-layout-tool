@@ -433,6 +433,20 @@ describe('ExportDialog', () => {
       expect(screen.getByRole('radio', { name: '3MF' })).not.toHaveAttribute('aria-disabled');
     });
 
+    it('disables STL and STEP for a colored compartment with feature colors off', () => {
+      setupStore({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          compartments: { ...DEFAULT_BIN_PARAMS.compartments, compartmentColors: ['#ef4444'] },
+        },
+        exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: '3mf' },
+        ui: { ...DEFAULT_UI_STATE, exportDialogOpen: true },
+      });
+      render(<ExportDialog />);
+      expect(screen.getByRole('radio', { name: 'STL' })).toHaveAttribute('aria-disabled', 'true');
+      expect(screen.getByRole('radio', { name: 'STEP' })).toHaveAttribute('aria-disabled', 'true');
+    });
+
     it('does not auto-switch when multi-color is disabled on the design with diverged colors', () => {
       // Critical case: zone colors are diverged (red lip, green labelTab) but
       // featureColors.enabled is false. The toggle alone must suppress the

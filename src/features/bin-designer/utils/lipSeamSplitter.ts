@@ -2,10 +2,10 @@
  * Split lip triangles along the active color-grid seam planes so every
  * color boundary is geometrically exact (no triangle-quantized zigzag).
  *
- * The lip is partitioned by XY corner quadrant × Z height band. Each lip
- * triangle is clipped against the active planes (`y=cy` front/back, `x=cx`
- * left/right, and the band `z` planes) into sub-triangles that each lie
- * wholly in one cell; non-lip triangles pass through unchanged. The result
+ * The lip is partitioned by XY corner quadrant × Z height band. Every
+ * triangle that straddles an active plane (`y=cy` front/back, `x=cx`
+ * left/right, and the band `z` planes) is clipped into sub-triangles that each
+ * lie wholly on one side; only lip pieces take a cell color. The result
  * is a flat (non-indexed) position buffer plus a per-output-triangle zone
  * array — the single source of truth shared by the 3D preview and the 3MF
  * exporter, so they color identically.
@@ -95,6 +95,12 @@ function buildTriTags(faceGroups: readonly FaceGroupData[], triangleCount: numbe
   return tags;
 }
 
+function lexLess(p: Vec3, q: Vec3): boolean {
+  if (p[0] !== q[0]) return p[0] < q[0];
+  if (p[1] !== q[1]) return p[1] < q[1];
+  return p[2] < q[2];
+}
+
 /** Clip a convex polygon to one side of an axis-aligned plane (Sutherland-Hodgman). */
 function clipHalfspace(
   poly: readonly Vec3[],
@@ -115,15 +121,16 @@ function clipHalfspace(
     const nextIn = inside(next);
     if (curIn) out.push(cur);
     if (curIn !== nextIn) {
-      const denom = next[axis] - cur[axis];
+      // Interpolate from the lexicographically smaller endpoint. The triangle
+      // across a shared edge walks it the other way, and interpolating from
+      // `cur` there gives a point a few ulps off, which float32 storage and
+      // the exporter's vertex weld can then keep as two vertices (open edge).
+      const [a, b] = lexLess(cur, next) ? [cur, next] : [next, cur];
+      const denom = b[axis] - a[axis];
       // Parallel-to-plane edge can't cross; skip (denom≈0 only when both ~on plane).
       if (Math.abs(denom) > EPS) {
-        const t = (c - cur[axis]) / denom;
-        out.push([
-          cur[0] + (next[0] - cur[0]) * t,
-          cur[1] + (next[1] - cur[1]) * t,
-          cur[2] + (next[2] - cur[2]) * t,
-        ]);
+        const t = (c - a[axis]) / denom;
+        out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
       }
     }
   }
@@ -156,6 +163,14 @@ function fanTriangulate(poly: readonly Vec3[], out: number[][]): void {
 function splitByPlane(tris: readonly number[][], axis: 0 | 1 | 2, c: number): number[][] {
   const out: number[][] = [];
   for (const t of tris) {
+    const a = t[axis];
+    const b = t[axis + 3];
+    const d = t[axis + 6];
+    const hi = c + EPS;
+    if ((a <= hi && b <= hi && d <= hi) || (a > hi && b > hi && d > hi)) {
+      out.push(t);
+      continue;
+    }
     const poly: Vec3[] = [
       [t[0], t[1], t[2]],
       [t[3], t[4], t[5]],
@@ -201,8 +216,8 @@ function lipCutPlanes(
 }
 
 /**
- * Build the split mesh. Lip triangles are clipped along the seam planes; when an
- * accent cut is active, every triangle is additionally clipped at that Z plane.
+ * Build the split mesh. Every triangle is clipped along the seam planes and,
+ * when an accent cut is active, at that Z plane.
  * Each sub-triangle is classified by its centroid: past an accent plane → that
  * accent (wins over all zones), otherwise its lip cell (lip triangles) or
  * feature-tag zone. Returns a flat position buffer + per-output triangle zones.
@@ -228,12 +243,13 @@ export function splitLipMesh(input: LipSplitInput): LipSplitResult {
     const tag = tags[i];
     const isLip = tag === FeatureTag.LIP && geom !== null;
 
-    // Clip through the applicable planes: lip seams (lip triangles only) plus
-    // the accent Z planes (every triangle). A triangle wholly on one side of
-    // a plane passes through as a single piece, so non-straddling geometry is
-    // not fragmented.
+    // Every plane clips every triangle, lip or not. A non-lip neighbor that
+    // shares a cut edge with a lip triangle must get the same new vertex, or
+    // the export keeps a T-junction there and slicers report open edges. A
+    // triangle wholly on one side of a plane passes through as a single piece,
+    // so non-straddling geometry is not fragmented.
     let pieces: number[][] = [Array.from(getTriangle(i))];
-    if (isLip) for (const p of lipPlanes) pieces = splitByPlane(pieces, p.axis, p.c);
+    for (const p of lipPlanes) pieces = splitByPlane(pieces, p.axis, p.c);
     if (cutZ !== null) pieces = splitByPlane(pieces, 2, cutZ);
     if (bottomPlane !== null) pieces = splitByPlane(pieces, 2, bottomPlane);
 

@@ -27,6 +27,8 @@ export interface BinExportProperties {
   has_dividers: boolean;
   has_lid: boolean;
   needs_split: boolean;
+  /** Feature colors, a colored cutout, or a colored compartment is on. */
+  multi_color_enabled: boolean;
 }
 
 /**
@@ -48,6 +50,7 @@ export function trackBinExportSucceeded(props: BinExportProperties): void {
       has_dividers: props.has_dividers,
       has_lid: props.has_lid,
       needs_split: props.needs_split,
+      multi_color_enabled: props.multi_color_enabled,
     });
     trackToolConverted('designer', { format: props.format, split: props.needs_split });
   } catch {
@@ -80,6 +83,7 @@ export function trackBinExportFailure(
       has_dividers: props.has_dividers,
       has_lid: props.has_lid,
       needs_split: props.needs_split,
+      multi_color_enabled: props.multi_color_enabled,
       error_code: props.error_code,
       error_message: props.error_message,
       error_stack: props.error_stack,

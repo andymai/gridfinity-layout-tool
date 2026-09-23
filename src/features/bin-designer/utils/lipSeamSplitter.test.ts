@@ -80,16 +80,79 @@ describe('lipSeamSplitter', () => {
     expect(unique).toContain('lip:backRight:1');
   });
 
-  it('passes non-lip triangles through unchanged with their tag zone', () => {
+  it('passes a non-lip triangle clear of every seam through unchanged', () => {
     const res = splitLipMesh({
       triangleCount: 1,
       faceGroups: [{ start: 0, count: 3, tag: FeatureTag.SCOOP }],
-      getTriangle: () => [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      getTriangle: () => [1, 1, 0, 2, 1, 0, 1, 2, 0],
       geom: GEOM,
       counts: { corners: 4, bands: 4 },
     });
     expect(res.triZones).toEqual(['scoop']);
-    expect(Array.from(res.positions)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    expect(Array.from(res.positions)).toEqual([1, 1, 0, 2, 1, 0, 1, 2, 0]);
+  });
+
+  // The welded export mesh keeps an open edge wherever the two triangles on a
+  // shared edge get different cut vertices there.
+  function seamVertices(
+    res: ReturnType<typeof splitLipMesh>,
+    tag: number,
+    onSeam: (x: number, z: number) => boolean
+  ): Set<string> {
+    const keys = new Set<string>();
+    for (let i = 0; i < res.triTags.length; i++) {
+      if (res.triTags[i] !== tag) continue;
+      for (let v = 0; v < 3; v++) {
+        const b = i * 9 + v * 3;
+        const [x, y, z] = [res.positions[b], res.positions[b + 1], res.positions[b + 2]];
+        if (onSeam(x, z)) keys.add(`${x},${y},${z}`);
+      }
+    }
+    return keys;
+  }
+
+  it('cuts a non-lip neighbor at the same seam vertex as the lip triangle', () => {
+    const lip = [-10, 5, 0, 10, 5, 10, -10, 5, 10];
+    const body = [10, 5, 10, -10, 5, 0, 10, 5, 0];
+    const res = splitLipMesh({
+      triangleCount: 2,
+      faceGroups: [
+        { start: 0, count: 3, tag: FeatureTag.LIP },
+        { start: 3, count: 3, tag: FeatureTag.SCOOP },
+      ],
+      getTriangle: (i) => (i === 0 ? lip : body),
+      geom: GEOM,
+      counts: { corners: 1, bands: 2 },
+    });
+    const onSeam = (x: number, z: number): boolean => z === 5 && Math.abs(x) < 10;
+    expect(res.triZones.filter((z) => z === 'scoop').length).toBeGreaterThan(1);
+    expect(seamVertices(res, FeatureTag.SCOOP, onSeam)).toEqual(
+      seamVertices(res, FeatureTag.LIP, onSeam)
+    );
+    expect(seamVertices(res, FeatureTag.LIP, onSeam).size).toBe(1);
+  });
+
+  it('cuts a shared edge at a bit-identical vertex whichever way it is walked', () => {
+    // Interpolating this edge from P and from Q lands on different float32 values.
+    const p = [2.875, 8.5, 2.5];
+    const q = [-9, 8.875, 5];
+    const cutZ = 3.3315041065216064;
+    const res = splitLipMesh({
+      triangleCount: 2,
+      faceGroups: [
+        { start: 0, count: 3, tag: FeatureTag.BASE },
+        { start: 3, count: 3, tag: FeatureTag.SCOOP },
+      ],
+      getTriangle: (i) => (i === 0 ? [...p, ...q, 20, 20, 2.5] : [...q, ...p, -20, -20, 2.5]),
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      topAccentCutZ: cutZ,
+    });
+    const onCut = (_x: number, z: number): boolean => Math.abs(z - cutZ) < 1e-4;
+    const shared = [...seamVertices(res, FeatureTag.BASE, onCut)].filter((k) =>
+      seamVertices(res, FeatureTag.SCOOP, onCut).has(k)
+    );
+    expect(shared).toHaveLength(1);
   });
 
   it('does not duplicate a triangle lying on a seam plane', () => {
