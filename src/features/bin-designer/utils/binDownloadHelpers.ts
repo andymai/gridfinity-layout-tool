@@ -25,11 +25,9 @@ import type {
 } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
-import { enumerateCutoutColorUnits, anyCutoutColored } from '@/shared/generation/cutoutColorUnits';
-import {
-  anyCompartmentColored,
-  planCompartmentColors,
-} from '@/features/bin-designer/utils/compartmentColorUnits';
+import { enumerateCutoutColorUnits } from '@/shared/generation/cutoutColorUnits';
+import { planCompartmentColors } from '@/features/bin-designer/utils/compartmentColorUnits';
+import { isMultiColorDesign } from '@/features/bin-designer/utils/multiColorDesign';
 import {
   collapseLidLipCell,
   computeActiveZones,
@@ -101,15 +99,7 @@ export function buildSinglePiece3MFObject(
   let { vertices, normals } = parseResult.value;
 
   let colorConfig: ThreeMFColorConfig | undefined;
-  /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard is intentional belt-and-suspenders against shape drift in the generation pipeline */
-  if (
-    applyMultiColor &&
-    (params.featureColors?.enabled ||
-      anyCutoutColored(params.cutouts) ||
-      anyCompartmentColored(params)) &&
-    faceGroups
-  ) {
-    /* eslint-enable @typescript-eslint/no-unnecessary-condition */
+  if (applyMultiColor && isMultiColorDesign(params) && faceGroups) {
     const triangleCount = vertices.length / 9;
     const mapping = buildTriangleMaterialIndices(
       faceGroups,
@@ -336,12 +326,7 @@ export function buildMultiObject3MFObjects(
   lidFaceGroups?: CombinedExportResult['lidFaceGroups']
 ): ThreeMFObject[] {
   const objects: ThreeMFObject[] = [];
-  const featureColorsEnabled: boolean = params.featureColors.enabled;
-  // A colored cutout makes the design multi-color even with every featureColors
-  // zone at body — mirror the single-piece path so bin+lid/divider exports paint
-  // cutouts too.
-  const multiColorEnabled: boolean =
-    featureColorsEnabled || anyCutoutColored(params.cutouts) || anyCompartmentColored(params);
+  const multiColorEnabled = isMultiColorDesign(params);
   let binBBox: FlatBBox | null = null;
   // Running right edge for side-laid-out pieces (lid, baseplate), so multiple
   // ancillary pieces form a row instead of stacking on the bin.

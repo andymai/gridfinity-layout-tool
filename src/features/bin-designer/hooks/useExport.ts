@@ -58,6 +58,7 @@ import {
   captureException,
 } from '@/shared/analytics/posthog';
 import { recordCommunityExport } from '@/shared/api/communityAttribution';
+import { isMultiColorDesign } from '@/features/bin-designer/utils/multiColorDesign';
 import { useTranslation } from '@/i18n';
 import { usePlannerBridge } from './usePlannerBridge';
 
@@ -225,6 +226,7 @@ export function useExport(): UseExportReturn {
       has_dividers: hasDividers,
       has_lid: hasLid,
       needs_split: isSplit,
+      multi_color_enabled: isMultiColorDesign(params),
     }),
     [params, hasDividers, hasLid]
   );
