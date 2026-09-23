@@ -210,15 +210,20 @@ export const setLipCache = lip.set;
 export const getCellSocketTemplateCache = cellSocketTemplate.get;
 export const setCellSocketTemplateCache = cellSocketTemplate.set;
 
+/**
+ * `clone()` rewraps the topology in a new JS Shape, but the face-origin
+ * WeakMap is keyed by `.wrapped` and does not follow. A zero-vector
+ * `translate` goes through `translateWithHistory` and calls
+ * `propagateAllMetadata`, giving us a metadata-preserving clone — without
+ * this the multi-color preview collapses to a single material.
+ */
+function translateFromCache(cache: LRUCache<Shape3D>, key: string): Shape3D | null {
+  const shape = cache.get(key);
+  return shape !== undefined ? translate(shape, [0, 0, 0]) : null;
+}
+
 export function getShellCache(key: string): Shape3D | null {
-  const cached = shellCache.get(key);
-  if (cached === undefined) return null;
-  // `clone()` rewraps the topology in a new JS Shape, but the face-origin
-  // WeakMap is keyed by `.wrapped` and does not follow. A zero-vector
-  // `translate` goes through `translateWithHistory` and calls
-  // `propagateAllMetadata`, giving us a metadata-preserving clone — without
-  // this the multi-color preview collapses to a single material.
-  return translate(cached, [0, 0, 0]);
+  return translateFromCache(shellCache, key);
 }
 
 export function setShellCache(key: string, shape: Shape3D): void {
@@ -232,9 +237,7 @@ export function setShellCache(key: string, shape: Shape3D): void {
  * Returns null on miss. The cache owns the stored shape; callers own the clone.
  */
 export function getBinBodyCache(key: string): Shape3D | null {
-  const cached = binBodyCache.get(key);
-  if (cached === undefined) return null;
-  return translate(cached, [0, 0, 0]);
+  return translateFromCache(binBodyCache, key);
 }
 
 export function setBinBodyCache(key: string, shape: Shape3D): void {
@@ -335,8 +338,7 @@ export function getFeatureCache(feature: string, key: string): Shape3D | null {
 
 /** Like {@link getFeatureCache}, but the copy keeps the face-origin tags. */
 export function getTaggedFeatureCache(feature: string, key: string): Shape3D | null {
-  const shape = getOrCreateFeatureCache(feature).get(key);
-  return shape !== undefined ? translate(shape, [0, 0, 0]) : null;
+  return translateFromCache(getOrCreateFeatureCache(feature), key);
 }
 
 export function setFeatureCache(feature: string, key: string, shape: Shape3D): void {

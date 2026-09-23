@@ -163,6 +163,14 @@ function fanTriangulate(poly: readonly Vec3[], out: number[][]): void {
 function splitByPlane(tris: readonly number[][], axis: 0 | 1 | 2, c: number): number[][] {
   const out: number[][] = [];
   for (const t of tris) {
+    const a = t[axis];
+    const b = t[axis + 3];
+    const d = t[axis + 6];
+    const hi = c + EPS;
+    if ((a <= hi && b <= hi && d <= hi) || (a > hi && b > hi && d > hi)) {
+      out.push(t);
+      continue;
+    }
     const poly: Vec3[] = [
       [t[0], t[1], t[2]],
       [t[3], t[4], t[5]],

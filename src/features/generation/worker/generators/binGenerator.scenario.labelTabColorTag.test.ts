@@ -8,6 +8,8 @@
  */
 import { describe, it, beforeAll, expect } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
+import { boundingBox } from './__kernel-tests__/meshAssertions';
+import type { BoundingBox } from './__kernel-tests__/meshAssertions';
 import { loadTestFonts } from '@/test/loadTestFonts';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { FeatureTag } from './featureTags';
@@ -61,31 +63,17 @@ describe('label tab shelf-top color tag (#1654)', () => {
   }, 90_000);
 });
 
-type Box = { minX: number; minY: number; minZ: number; maxX: number; maxY: number; maxZ: number };
-
-function tagBoxes(m: MeshData): Map<number, Box> {
-  const boxes = new Map<number, Box>();
+function tagBoxes(m: MeshData): Map<number, BoundingBox> {
+  const coords = new Map<number, number[]>();
   for (const fg of m.faceGroups ?? []) {
-    const box = boxes.get(fg.tag) ?? {
-      minX: Infinity,
-      minY: Infinity,
-      minZ: Infinity,
-      maxX: -Infinity,
-      maxY: -Infinity,
-      maxZ: -Infinity,
-    };
+    const out = coords.get(fg.tag) ?? [];
     for (let k = fg.start; k < fg.start + fg.count; k++) {
       const v = m.indices[k] * 3;
-      box.minX = Math.min(box.minX, m.vertices[v]);
-      box.minY = Math.min(box.minY, m.vertices[v + 1]);
-      box.minZ = Math.min(box.minZ, m.vertices[v + 2]);
-      box.maxX = Math.max(box.maxX, m.vertices[v]);
-      box.maxY = Math.max(box.maxY, m.vertices[v + 1]);
-      box.maxZ = Math.max(box.maxZ, m.vertices[v + 2]);
+      out.push(m.vertices[v], m.vertices[v + 1], m.vertices[v + 2]);
     }
-    boxes.set(fg.tag, box);
+    coords.set(fg.tag, out);
   }
-  return boxes;
+  return new Map([...coords].map(([tag, xyz]) => [tag, boundingBox(new Float32Array(xyz))]));
 }
 
 // The tab builder used to stamp LABEL_TAB on the whole tab, glyphs included,

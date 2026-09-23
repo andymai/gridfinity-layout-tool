@@ -15,32 +15,12 @@ import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors
 import type { LipAxisCount } from '@/features/bin-designer/types/featureColors';
 import { buildSinglePiece3MF } from '@/features/bin-designer/utils/binDownloadHelpers';
 import type { BinParams } from '@/shared/types/bin';
-import type { MeshData } from '@/shared/types/generation';
+import { buildSTLBufferFromIndexed } from '@/shared/generation/export';
 
 beforeAll(async () => {
   await initBrepjs();
   await loadTestFonts();
 }, 60_000);
-
-function toBinarySTL({ vertices, indices }: MeshData): ArrayBuffer {
-  const count = indices.length / 3;
-  const buf = new ArrayBuffer(84 + count * 50);
-  const view = new DataView(buf);
-  view.setUint32(80, count, true);
-  let offset = 84;
-  for (let t = 0; t < count; t++) {
-    offset += 12;
-    for (let k = 0; k < 3; k++) {
-      const b = indices[t * 3 + k] * 3;
-      view.setFloat32(offset, vertices[b], true);
-      view.setFloat32(offset + 4, vertices[b + 1], true);
-      view.setFloat32(offset + 8, vertices[b + 2], true);
-      offset += 12;
-    }
-    offset += 2;
-  }
-  return buf;
-}
 
 async function edgeStats(blob: Blob): Promise<{ open: number; nonManifold: number }> {
   const files = unzipSync(new Uint8Array(await blob.arrayBuffer()));
@@ -99,7 +79,7 @@ describe('colored 3MF export stays closed', () => {
     async ({ corners, bands, accent }) => {
       const params = coloredParams(corners, bands, accent);
       const mesh = getGenerateBin()(params, undefined, true);
-      const stl = toBinarySTL(mesh);
+      const stl = buildSTLBufferFromIndexed(mesh.vertices, mesh.normals, mesh.indices);
       const faceGroups = mesh.faceGroups ?? [];
 
       const plain = await edgeStats(buildSinglePiece3MF(stl, faceGroups, params, 'x', {}, false));
