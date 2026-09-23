@@ -9,6 +9,7 @@
  *   share:hash:{id}                 → delete-token hash for an anonymous share
  *   share:reports:{id}              → abuse-report counter for a share
  *   share:lastAccessed:{id}         → ISO timestamp of last GET for a share
+ *   share:permission:{id}           → permission set by the last update, short TTL (outlives blob CDN propagation)
  *   ratelimit:{action}:{scope}      → sliding-window rate-limit counter
  *   session:{token}                 → user session record (sync feature)
  *   scan:session:{token}            → ephemeral phone-scan handoff (traced SVG)
@@ -65,6 +66,11 @@ export function shareReportKey(shareId: string): string {
 /** ISO timestamp of the last GET for a share (cheap view-tracking, no blob write). */
 export function shareLastAccessedKey(shareId: string): string {
   return `share:lastAccessed:${shareId}`;
+}
+
+/** Permission written by the last share update, read ahead of the CDN-cached blob. */
+export function sharePermissionKey(shareId: string): string {
+  return `share:permission:${shareId}`;
 }
 
 /** Sliding-window rate-limit counter. `scope` is hashedIP for anonymous, userId for authed. */

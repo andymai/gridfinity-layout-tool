@@ -3,6 +3,7 @@ import {
   shareHashKey,
   shareReportKey,
   shareLastAccessedKey,
+  sharePermissionKey,
   rateLimitKey,
   sessionKey,
   userSessionsKey,
@@ -36,6 +37,10 @@ describe('redisKeys', () => {
 
     it('shareLastAccessedKey produces share:lastAccessed:{id}', () => {
       expect(shareLastAccessedKey('abc123')).toBe('share:lastAccessed:abc123');
+    });
+
+    it('sharePermissionKey produces share:permission:{id}', () => {
+      expect(sharePermissionKey('abc123')).toBe('share:permission:abc123');
     });
   });
 
@@ -145,7 +150,12 @@ describe('redisKeys', () => {
 
   describe('namespace separation', () => {
     it('share keys never collide with sync keys', () => {
-      const shareKeys = [shareHashKey('a'), shareReportKey('a'), shareLastAccessedKey('a')];
+      const shareKeys = [
+        shareHashKey('a'),
+        shareReportKey('a'),
+        shareLastAccessedKey('a'),
+        sharePermissionKey('a'),
+      ];
       const syncKeys = [
         sessionKey('a'),
         userSessionsKey('a'),

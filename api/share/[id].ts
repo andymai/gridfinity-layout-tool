@@ -20,7 +20,10 @@ import {
   shareHashKey,
   shareReportKey,
   shareLastAccessedKey,
+  sharePermissionKey,
   SHARE_LAST_ACCESSED_TTL_SECONDS,
+  resolveSharePermission,
+  recordSharePermission,
   type ShareData,
   rateLimited,
   sendError,
@@ -96,7 +99,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
       metadata: {
         createdAt: shareData.metadata.createdAt,
         lastUpdatedAt: shareData.metadata.lastUpdatedAt,
-        permission: shareData.metadata.permission,
+        permission: await resolveSharePermission(getRedis(), _id, shareData),
         authorName: shareData.metadata.authorName,
       },
     });
@@ -143,7 +146,8 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     // Validate permission if provided
-    const newPermission = permission ?? existingData.metadata.permission;
+    const newPermission =
+      permission ?? (await resolveSharePermission(getRedis(), id, existingData));
     if (newPermission !== 'view' && newPermission !== 'edit') {
       return sendError(
         res,
@@ -286,7 +290,12 @@ async function handleDelete(
     await del(blobPath);
     const redis = getRedis();
     if (redis) {
-      await redis.del(shareHashKey(_id), shareReportKey(_id), shareLastAccessedKey(_id));
+      await redis.del(
+        shareHashKey(_id),
+        shareReportKey(_id),
+        shareLastAccessedKey(_id),
+        sharePermissionKey(_id)
+      );
     }
 
     return res.status(200).json({
@@ -328,5 +337,6 @@ async function writeShareAndRespond(
     addRandomSuffix: false,
     allowOverwrite: true,
   });
+  await recordSharePermission(getRedis(), id, permission);
   return res.status(200).json({ id, url: `${getBaseUrl()}/l/${id}`, permission });
 }

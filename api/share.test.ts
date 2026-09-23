@@ -217,7 +217,18 @@ describe('share (create)', () => {
     // The delete token never lands in the blob — only its hash goes to Redis.
     const blobJson = mocks.put.mock.calls[0][1] as string;
     expect(blobJson).not.toContain(body.deleteToken);
-    expect(mocks.redisSet).toHaveBeenCalledTimes(1);
+    expect(mocks.redisSet).toHaveBeenCalledWith(`share:hash:${VALID_ID}`, expect.any(String));
+  });
+
+  it('records the new permission so a reused id cannot inherit a deleted share', async () => {
+    const res = await handle(layoutBody({ permission: 'view' }));
+    expect(res._status).toBe(201);
+    expect(mocks.redisSet).toHaveBeenCalledWith(
+      `share:permission:${VALID_ID}`,
+      'view',
+      'EX',
+      expect.any(Number)
+    );
   });
 
   it('uses the /d/ url shape for designer shares', async () => {

@@ -1,6 +1,6 @@
 import { Liveblocks } from '@liveblocks/node';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import {
   rateLimited,
   ErrorCode,
@@ -8,6 +8,7 @@ import {
   methodNotAllowed,
   sendError,
   loadShare,
+  resolveSharePermission,
 } from './lib/shared.js';
 import { logger } from './lib/logger.js';
 
@@ -15,7 +16,7 @@ import { logger } from './lib/logger.js';
  * Liveblocks authentication endpoint.
  *
  * This endpoint authenticates users for Liveblocks room access.
- * Permission is enforced by fetching share metadata from Vercel Blob:
+ * Permission comes from `resolveSharePermission` (Redis, then the share blob):
  * - 'edit' permission grants write access (`['*:write']`)
  * - 'view' permission grants read-only access (`['*:read']`)
  *
@@ -127,7 +128,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!shareData) {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-    const permission = shareData.metadata.permission;
+    const permission = await resolveSharePermission(getRedis(), shareId, shareData);
 
     const session = getLiveblocks().prepareSession(userId, {
       userInfo: {
