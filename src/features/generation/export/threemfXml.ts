@@ -18,7 +18,11 @@ const CORE_NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
 // name a namespace declared on <model>. This is the URI BambuStudio writes.
 const BAMBU_NS = 'http://schemas.bambulab.com/package/2021';
 
-function openModelElement(flags: { bambuCompat: boolean }): string {
+interface ModelFlags {
+  bambuCompat: boolean;
+}
+
+function openModelElement(flags: ModelFlags): string {
   const bambuNs = flags.bambuCompat ? ` xmlns:BambuStudio="${BAMBU_NS}"` : '';
   return `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="${CORE_NS}"${bambuNs}>\n`;
 }
@@ -32,7 +36,7 @@ export function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): strin
   const objectId = 1;
   const offset = centeringTranslation(computeBBox(mesh.vertices));
 
-  const flags = { bambuCompat: !!colorConfig };
+  const flags: ModelFlags = { bambuCompat: !!colorConfig };
   let xml = openModelElement(flags);
   xml += buildMetadataXml(options, flags);
   xml += '  <resources>\n';
@@ -99,7 +103,7 @@ export function buildMultiObjectModelXML(
   const combinedBBox = mergeBBoxes(resolved.map((obj) => computeBBox(obj.mesh.vertices)));
   const offset = centeringTranslation(combinedBBox);
 
-  const flags = { bambuCompat: anyHasColors };
+  const flags: ModelFlags = { bambuCompat: anyHasColors };
   let xml = openModelElement(flags);
   xml += buildMetadataXml(options, flags);
   xml += '  <resources>\n';
@@ -148,7 +152,7 @@ function placedTranslation(obj: { mesh: IndexedMesh; placement?: ThreeMFPlacemen
   return `${formatFloat(x)} ${formatFloat(y)} ${formatFloat(-bbox.min.z)}`;
 }
 
-function buildMetadataXml(options: ThreeMFOptions, flags: { bambuCompat: boolean }): string {
+function buildMetadataXml(options: ThreeMFOptions, flags: ModelFlags): string {
   let xml = `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
   xml += '  <metadata name="Designer">Gridfinity Layout Tool</metadata>\n';
   xml += `  <metadata name="CreationDate">${new Date().toISOString().split('T')[0]}</metadata>\n`;

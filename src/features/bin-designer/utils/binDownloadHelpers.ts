@@ -326,7 +326,7 @@ export function buildMultiObject3MFObjects(
   lidFaceGroups?: CombinedExportResult['lidFaceGroups']
 ): ThreeMFObject[] {
   const objects: ThreeMFObject[] = [];
-  const multiColorEnabled = isMultiColorDesign(params);
+  const multiColorEnabled: boolean = isMultiColorDesign(params);
   let binBBox: FlatBBox | null = null;
   // Running right edge for side-laid-out pieces (lid, baseplate), so multiple
   // ancillary pieces form a row instead of stacking on the bin.
