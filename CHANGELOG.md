@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.497.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.496.3...gridfinity-layout-tool-v4.497.0) (2026-09-23)
+
+
+### Features
+
+* **bin-designer:** add a flat finish for the stacking lip peak ([#4360](https://github.com/andymai/gridfinity-layout-tool/issues/4360)) ([4d922e1](https://github.com/andymai/gridfinity-layout-tool/commit/4d922e166bfb8a3a1d9fe1f733fa6eccde2247fe))
+
+
+### Bug Fixes
+
+* **analytics:** drop injected-script throws with no resolvable frame ([#4364](https://github.com/andymai/gridfinity-layout-tool/issues/4364)) ([aee1c16](https://github.com/andymai/gridfinity-layout-tool/commit/aee1c166f8b4d831301a9c0cdbfbfe7a49fa78ef))
+* **analytics:** group errors from browsers below the runtime floor ([#4372](https://github.com/andymai/gridfinity-layout-tool/issues/4372)) ([59103d9](https://github.com/andymai/gridfinity-layout-tool/commit/59103d959418bf88d97d4021fe1735f895222111))
+* **collab:** detect the room owner by Liveblocks user id ([#4375](https://github.com/andymai/gridfinity-layout-tool/issues/4375)) ([c69f599](https://github.com/andymai/gridfinity-layout-tool/commit/c69f59986b827c1c94ff254b6b73bab12a177c38))
+* **collab:** tolerate a room with no metadata in presence ([#4370](https://github.com/andymai/gridfinity-layout-tool/issues/4370)) ([f1fb948](https://github.com/andymai/gridfinity-layout-tool/commit/f1fb9480277edf73d3af872814ab07efcfa42b9a))
+* **export:** load multi-color 3MFs cleanly in Bambu and color tab text ([#4374](https://github.com/andymai/gridfinity-layout-tool/issues/4374)) ([18109ca](https://github.com/andymai/gridfinity-layout-tool/commit/18109cac18b73705e8801b12f8bd20b1d1f92d89)), closes [#4368](https://github.com/andymai/gridfinity-layout-tool/issues/4368)
+* **generation:** open the sliding lid's entry so the plate can be inserted ([#4359](https://github.com/andymai/gridfinity-layout-tool/issues/4359)) ([50a6aeb](https://github.com/andymai/gridfinity-layout-tool/commit/50a6aebaf1e34721b58e5808e6daa02524ef6f63))
+* **generation:** recognise Firefox's wording for a kernel it cannot compile ([#4371](https://github.com/andymai/gridfinity-layout-tool/issues/4371)) ([d48a295](https://github.com/andymai/gridfinity-layout-tool/commit/d48a29509a40fdc997918f92fef710b791779c0d))
+* **print-export:** close open edges in colored lip exports and declare the Bambu namespace ([#4376](https://github.com/andymai/gridfinity-layout-tool/issues/4376)) ([11b8877](https://github.com/andymai/gridfinity-layout-tool/commit/11b88773fde2694a1094805b0d3ae24685baaeb6))
+* **share:** read a just-changed permission ahead of the blob CDN ([#4373](https://github.com/andymai/gridfinity-layout-tool/issues/4373)) ([d1e91b1](https://github.com/andymai/gridfinity-layout-tool/commit/d1e91b16770ad9518805ced84d15395848da7336))
+
 ## [4.496.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.496.2...gridfinity-layout-tool-v4.496.3) (2026-09-22)
 
 
