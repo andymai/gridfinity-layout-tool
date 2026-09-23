@@ -390,12 +390,16 @@ export const MAX_FOOT_SPAN_MM = 140;
  * a slicer draws up there is a sliver with nothing under it, which is why it
  * scars, curls, or lifts away from the layer below.
  *
- * `'round'` and `'chamfer'` take {@link LIP_TIP_MM} off that edge. Both cut
- * material only from the tip, so the lip's seating surfaces are untouched: a
- * bin stacked on top still lands on the same inner chamfer, and a lid's plug
- * still meets the same vertical band. `'sharp'` is the spec profile.
+ * `'round'` and `'chamfer'` take {@link LIP_TIP_MM} off that edge; `'flat'`
+ * takes {@link LIP_TIP_FLAT_MM} off it as a horizontal cut, leaving a band the
+ * slicer can lay a full perimeter on rather than a treated corner it still has
+ * to taper into. All three cut material only from the tip, so the lip's seating
+ * surfaces are untouched: a bin stacked on top still lands flush on the same 45
+ * degree inner chamfer — the two faces stay parallel, so shortening the lip
+ * does not let the bin above settle any lower — and a lid's plug still meets
+ * the same vertical band. `'sharp'` is the spec profile.
  */
-export const LIP_TIP_STYLES = ['sharp', 'round', 'chamfer'] as const;
+export const LIP_TIP_STYLES = ['sharp', 'round', 'chamfer', 'flat'] as const;
 
 /** Finish applied to the stacking lip's peak. See {@link LIP_TIP_STYLES}. */
 export type LipTipStyle = (typeof LIP_TIP_STYLES)[number];
@@ -417,6 +421,18 @@ export const DEFAULT_LIP_TIP: LipTipStyle = 'sharp';
  * value it could take that still mates is visually indistinguishable.
  */
 export const LIP_TIP_MM = 0.4;
+
+/**
+ * How much the peak loses to a flat tip, in mm — and, because the inner chamfer
+ * runs at 45 degrees, the width of the flat band the cut leaves behind.
+ *
+ * Deliberately wider than {@link LIP_TIP_MM}. A fillet or chamfer still hands
+ * the slicer a narrowing top; a flat is a full-width surface, and 0.7mm is
+ * about the narrowest one a 0.4mm nozzle can lay a perimeter on and have it
+ * stay put. Still well inside `LIP_BIG_TAPER` (1.9mm), leaving 1.2mm of the
+ * seating chamfer in contact with the bin above.
+ */
+export const LIP_TIP_FLAT_MM = 0.7;
 
 /** The lip tip finish this base actually builds. */
 export function resolveLipTip(base: Pick<BaseConfig, 'lipTip'>): LipTipStyle {

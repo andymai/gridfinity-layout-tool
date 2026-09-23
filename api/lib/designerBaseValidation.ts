@@ -21,7 +21,7 @@ export const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
 export const VALID_LIGHTWEIGHT_MODES = ['interior', 'underside'] as const;
 
 // Mirrors `LIP_TIP_STYLES` in the same file.
-export const VALID_LIP_TIPS = ['sharp', 'round', 'chamfer'] as const;
+export const VALID_LIP_TIPS = ['sharp', 'round', 'chamfer', 'flat'] as const;
 
 // Mirrors `FEET_MODES` and `DETACHABLE_PIN_DIAMETERS_MM` in the same file.
 export const VALID_FEET_MODES = ['integral', 'detachable'] as const;

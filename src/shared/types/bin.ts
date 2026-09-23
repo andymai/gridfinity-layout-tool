@@ -309,6 +309,7 @@ export {
   // the print-quality note beside the control quotes the same millimetre.
   LIP_TIP_STYLES,
   LIP_TIP_MM,
+  LIP_TIP_FLAT_MM,
   DEFAULT_LIP_TIP,
   resolveLipTip,
   DETACHABLE_PIN_DIAMETERS_MM,
