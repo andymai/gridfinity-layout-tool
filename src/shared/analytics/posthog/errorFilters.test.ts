@@ -389,6 +389,36 @@ describe('filterExceptionForPosthog — troika SDF instancing dedupe', () => {
   });
 });
 
+describe('filterExceptionForPosthog — runtime below the support floor', () => {
+  const make = (value: string): Parameters<typeof filterExceptionForPosthog>[0] => ({
+    event: '$exception',
+    properties: { $exception_list: [{ type: 'TypeError', value }] },
+  });
+
+  function withoutObjectHasOwn(run: () => void): void {
+    const descriptor = Object.getOwnPropertyDescriptor(Object, 'hasOwn');
+    Reflect.deleteProperty(Object, 'hasOwn');
+    try {
+      run();
+    } finally {
+      if (descriptor) Object.defineProperty(Object, 'hasOwn', descriptor);
+    }
+  }
+
+  it('collapses every error from a browser missing Object.hasOwn into one issue per session', () => {
+    withoutObjectHasOwn(() => {
+      const first = filterExceptionForPosthog(make('Object.hasOwn is not a function'));
+      expect(first?.properties?.$exception_fingerprint).toBe('unsupported-browser-runtime');
+      expect(filterExceptionForPosthog(make('e.at is not a function'))).toBeNull();
+    });
+  });
+
+  it('leaves errors from a supported runtime on their own fingerprint', () => {
+    const result = filterExceptionForPosthog(make('e.at is not a function'));
+    expect(result?.properties?.$exception_fingerprint).toBeUndefined();
+  });
+});
+
 describe('filterExceptionForPosthog — per-session capture cap', () => {
   const appError = (value: string): Parameters<typeof filterExceptionForPosthog>[0] => ({
     event: '$exception',

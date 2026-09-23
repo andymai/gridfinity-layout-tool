@@ -81,6 +81,19 @@ const TROIKA_SDF_INSTANCING_ERROR = 'ANGLE_instanced_arrays not supported';
 const TROIKA_SDF_INSTANCING_FINGERPRINT = 'troika-sdf-instancing-unsupported';
 
 /**
+ * The build target down-levels syntax only, so app code calls ES2022 built-ins
+ * (`Object.hasOwn`, `Array.prototype.at`) that browsers from before Chrome 93,
+ * Safari 15.4 and Firefox 92 lack. Every exception from such a runtime is the
+ * missing built-in wherever it first runs, one issue per call site, so they
+ * share one fingerprint and one capture per session.
+ */
+const UNSUPPORTED_RUNTIME_FINGERPRINT = 'unsupported-browser-runtime';
+
+function isBelowRuntimeFloor(): boolean {
+  return !('hasOwn' in Object) || !('at' in Array.prototype);
+}
+
+/**
  * Per-session capture ceilings.
  *
  * Error tracking has its own monthly exception quota, and one looping client
@@ -98,6 +111,7 @@ const sessionCaptureCounts = new Map<string, number>();
 let chunkLoadCaptured = false;
 let troikaWorkerInitCaptured = false;
 let troikaSdfInstancingCaptured = false;
+let unsupportedRuntimeCaptured = false;
 
 /** Test seam: clears the per-session capture counters. */
 export function resetSessionCaptureCounts(): void {
@@ -105,6 +119,7 @@ export function resetSessionCaptureCounts(): void {
   chunkLoadCaptured = false;
   troikaWorkerInitCaptured = false;
   troikaSdfInstancingCaptured = false;
+  unsupportedRuntimeCaptured = false;
 }
 
 /**
@@ -246,8 +261,8 @@ const POSTHOG_TRANSPORT_TIMEOUT = /^AbortError: PostHog request timed out/;
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
  * exception matches the extension/noise filters, a deliberate bridge
  * cancellation, the R3F canvas teardown race, a stackless navigation abort, or
- * posthog-js's own request timeout;
- * dedupes the WebGL context-creation
+ * posthog-js's own request timeout; collapses a below-floor runtime's errors
+ * into one capture per session; dedupes the WebGL context-creation
  * burst, pins chunk-load failures to one fingerprint and captures them once
  * per session, caps every exception identity's captures per session, and
  * passes everything else through unchanged.
@@ -282,6 +297,16 @@ export function filterExceptionForPosthog(
   if (primaryException && isCanvasTeardownRace(primaryException)) return null;
   if (primaryException && isNavigationAbort(primaryException)) return null;
   if (primary !== undefined && POSTHOG_TRANSPORT_TIMEOUT.test(primary)) return null;
+
+  if (isBelowRuntimeFloor()) {
+    if (unsupportedRuntimeCaptured) return null;
+    unsupportedRuntimeCaptured = true;
+    event.properties = {
+      ...event.properties,
+      $exception_fingerprint: UNSUPPORTED_RUNTIME_FINGERPRINT,
+    };
+    return event;
+  }
 
   const primarySource = (primaryException?.stacktrace?.frames ?? [])
     .map((f) => f.filename ?? '')
