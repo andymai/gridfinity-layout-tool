@@ -184,7 +184,9 @@ export function shouldIgnoreError(
 interface ExceptionLike {
   type?: string;
   value?: string;
-  stacktrace?: { frames?: Array<{ function?: string; filename?: string }> };
+  stacktrace?: {
+    frames?: Array<{ function?: string; filename?: string; in_app?: boolean }>;
+  };
 }
 
 interface ExceptionEventLike {
@@ -250,6 +252,22 @@ function isNavigationAbort(exception: ExceptionLike): boolean {
 }
 
 /**
+ * A script injected into the page with no file of its own (extensions and
+ * in-app browser hosts run code this way) that throws. posthog-js marks its
+ * only frame `in_app: false`, and the scheme checks in `isExtensionSourced`
+ * have no filename to match.
+ *
+ * Gated on a single frame: an app throw that runs through an anonymous callback
+ * still carries its bundle frames, and that one we want to hear about.
+ */
+function isInjectedScriptThrow(exception: ExceptionLike): boolean {
+  const frames = exception.stacktrace?.frames ?? [];
+  if (frames.length !== 1 || frames[0]?.in_app !== false) return false;
+  const filename = frames[0].filename;
+  return filename === undefined || filename === '' || filename === '<anonymous>';
+}
+
+/**
  * posthog-js's own transport: its fetch aborts after `request_timeout` with an
  * `AbortError` whose message it prefixes itself, and `capture_exceptions`
  * catches that rejection like any other. An analytics request that timed out is
@@ -260,9 +278,10 @@ const POSTHOG_TRANSPORT_TIMEOUT = /^AbortError: PostHog request timed out/;
 /**
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
  * exception matches the extension/noise filters, a deliberate bridge
- * cancellation, the R3F canvas teardown race, a stackless navigation abort, or
- * posthog-js's own request timeout; collapses a below-floor runtime's errors
- * into one capture per session; dedupes the WebGL context-creation
+ * cancellation, the R3F canvas teardown race, a stackless navigation abort, a
+ * frameless injected-script throw, or posthog-js's own request timeout;
+ * collapses a below-floor runtime's errors into one capture per session;
+ * dedupes the WebGL context-creation
  * burst, pins chunk-load failures to one fingerprint and captures them once
  * per session, caps every exception identity's captures per session, and
  * passes everything else through unchanged.
@@ -296,6 +315,7 @@ export function filterExceptionForPosthog(
   if (primaryException && isExtensionSourced(primaryException)) return null;
   if (primaryException && isCanvasTeardownRace(primaryException)) return null;
   if (primaryException && isNavigationAbort(primaryException)) return null;
+  if (primaryException && isInjectedScriptThrow(primaryException)) return null;
   if (primary !== undefined && POSTHOG_TRANSPORT_TIMEOUT.test(primary)) return null;
 
   if (isBelowRuntimeFloor()) {
