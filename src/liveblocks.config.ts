@@ -58,6 +58,11 @@ export interface LiveblocksStorage {
   };
 }
 
+// Liveblocks only fills a missing top-level key from initialStorage when the
+// joining client can write, so a read-only client in a never-populated room
+// sees neither key.
+export type LiveblocksStorageRoot = Partial<LiveblocksStorage>;
+
 /**
  * Check if Liveblocks is configured.
  * Collaborative features are disabled when the public key is not set.
@@ -164,7 +169,7 @@ const safeStubHooks = {
   useOthers: () => [] as readonly { connectionId: number; presence: UserPresence }[],
   useSelf: () => null as { connectionId: number; presence: UserPresence } | null,
   useStatus: () => 'initial' as string,
-  useStorage: <T>(_selector: (root: LiveblocksStorage) => T) => null as T | null,
+  useStorage: <T>(_selector: (root: LiveblocksStorageRoot) => T) => null as T | null,
 };
 
 /**
@@ -233,9 +238,10 @@ export const useSelf = createSafeHook(
 );
 
 export const useStorage = createSafeHook(
-  context?.useStorage as (<T>(selector: (root: LiveblocksStorage) => T) => T | null) | undefined,
+  context?.useStorage as
+    (<T>(selector: (root: LiveblocksStorageRoot) => T) => T | null) | undefined,
   safeStubHooks.useStorage
-) as <T>(selector: (root: LiveblocksStorage) => T) => T | null;
+) as <T>(selector: (root: LiveblocksStorageRoot) => T) => T | null;
 export const useMutation = context?.useMutation ?? createUnconfiguredHook('useMutation');
 export const useRoom = context?.useRoom ?? createUnconfiguredHook('useRoom');
 export const useBroadcastEvent =

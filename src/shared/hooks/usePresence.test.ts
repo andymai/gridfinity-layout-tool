@@ -1,5 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getInitials } from '@/shared/hooks/usePresence';
+import { renderHook } from '@testing-library/react';
+import { getInitials, usePresence } from '@/shared/hooks/usePresence';
+
+let storageRoot: Record<string, unknown> = {};
+
+vi.mock('@/liveblocks.config', () => ({
+  useOthers: () => [],
+  useSelf: () => ({ connectionId: 7, presence: { name: 'Owner', color: '#123456' } }),
+  useStatus: () => 'connected',
+  useStorage: <T>(selector: (root: Record<string, unknown>) => T) => selector(storageRoot),
+}));
+
+vi.mock('./useCollabMode', () => ({
+  useCollabMode: () => ({ isCollaborative: true, canEdit: true, shareId: 'share-abc' }),
+}));
 
 // Note: Full hook testing requires mocking Liveblocks hooks which is complex.
 // We focus on testing the utility functions and behavior that doesn't require Liveblocks.
@@ -133,5 +147,21 @@ describe('usePresence integration (mock-based)', () => {
       expect(statuses).toContain('connected');
       expect(statuses).toContain('reconnecting');
     });
+  });
+});
+
+describe('usePresence with room storage', () => {
+  afterEach(() => {
+    storageRoot = {};
+  });
+
+  it('lists participants when a read-only client joins a room whose storage was never initialized', () => {
+    storageRoot = {};
+
+    const { result } = renderHook(() => usePresence());
+
+    expect(result.current.participants).toEqual([
+      { id: '7', name: 'Owner', color: '#123456', isOwner: false, isSelf: true },
+    ]);
   });
 });
