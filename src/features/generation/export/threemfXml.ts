@@ -14,9 +14,13 @@ import {
 } from './threemfColor';
 
 const CORE_NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
+// 3MF Core requires a prefixed metadata name (`BambuStudio:3mfVersion`) to
+// name a namespace declared on <model>. This is the URI BambuStudio writes.
+const BAMBU_NS = 'http://schemas.bambulab.com/package/2021';
 
-function openModelElement(): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="${CORE_NS}">\n`;
+function openModelElement(flags: { bambuCompat: boolean }): string {
+  const bambuNs = flags.bambuCompat ? ` xmlns:BambuStudio="${BAMBU_NS}"` : '';
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="${CORE_NS}"${bambuNs}>\n`;
 }
 
 export function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
@@ -28,8 +32,9 @@ export function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): strin
   const objectId = 1;
   const offset = centeringTranslation(computeBBox(mesh.vertices));
 
-  let xml = openModelElement();
-  xml += buildMetadataXml(options, { bambuCompat: !!colorConfig });
+  const flags = { bambuCompat: !!colorConfig };
+  let xml = openModelElement(flags);
+  xml += buildMetadataXml(options, flags);
   xml += '  <resources>\n';
   xml += buildObjectXml(objectId, options.name, mesh, colorConfig?.triangleMaterialIndices);
   xml += '  </resources>\n';
@@ -94,8 +99,9 @@ export function buildMultiObjectModelXML(
   const combinedBBox = mergeBBoxes(resolved.map((obj) => computeBBox(obj.mesh.vertices)));
   const offset = centeringTranslation(combinedBBox);
 
-  let xml = openModelElement();
-  xml += buildMetadataXml(options, { bambuCompat: anyHasColors });
+  const flags = { bambuCompat: anyHasColors };
+  let xml = openModelElement(flags);
+  xml += buildMetadataXml(options, flags);
   xml += '  <resources>\n';
 
   const objectIds: number[] = [];
