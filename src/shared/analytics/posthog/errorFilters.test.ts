@@ -591,6 +591,52 @@ describe('WebKit navigation aborts', () => {
   });
 });
 
+describe('injected-script throws', () => {
+  const NULL_CLICK = "TypeError: Cannot read properties of null (reading 'click')";
+  const withFrames = (frames: Array<Record<string, unknown>>) => ({
+    event: '$exception',
+    properties: { $exception_list: [{ value: NULL_CLICK, stacktrace: { frames } }] },
+  });
+
+  it.each([
+    ['an <anonymous> filename', { filename: '<anonymous>' }],
+    ['an empty filename', { filename: '' }],
+    ['no filename', {}],
+  ])('drops a lone non-app frame with %s', (_shape, frame) => {
+    const e = withFrames([{ function: 'window.x7Kq2', in_app: false, ...frame }]);
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('keeps a lone <anonymous> frame that posthog-js marks in_app', () => {
+    const e = withFrames([{ function: 'onClick', filename: '<anonymous>', in_app: true }]);
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+
+  it('keeps a lone <anonymous> frame with no in_app flag', () => {
+    const e = withFrames([{ function: 'onClick', filename: '<anonymous>' }]);
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+
+  it('keeps a lone non-app frame that names a file', () => {
+    const e = withFrames([
+      { function: 'x', filename: 'https://cdn.example.com/widget.js', in_app: false },
+    ]);
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+
+  it('keeps an <anonymous> frame that app frames surround', () => {
+    const e = withFrames([
+      { function: 'handler', filename: '<anonymous>', in_app: false },
+      {
+        function: 'dismissBadge',
+        filename: 'https://gridfinitylayouttool.com/assets/main.js',
+        in_app: true,
+      },
+    ]);
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+});
+
 describe('posthog-js transport timeouts', () => {
   it('drops the abort posthog-js raises when its own request times out', () => {
     const e = {
