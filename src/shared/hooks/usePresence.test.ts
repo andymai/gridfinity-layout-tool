@@ -8,9 +8,6 @@ import type { LiveblocksStorage, UserPresence } from '@/liveblocks.config';
 vi.mock('./useCollabMode');
 vi.mock('@/liveblocks.config');
 
-// Note: Full hook testing requires mocking Liveblocks hooks which is complex.
-// We focus on testing the utility functions and behavior that doesn't require Liveblocks.
-
 describe('usePresence utilities', () => {
   describe('getInitials', () => {
     it('returns first two characters for single word', () => {
