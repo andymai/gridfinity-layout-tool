@@ -395,21 +395,29 @@ describe('filterExceptionForPosthog — runtime below the support floor', () => 
     properties: { $exception_list: [{ type: 'TypeError', value }] },
   });
 
-  function withoutObjectHasOwn(run: () => void): void {
-    const descriptor = Object.getOwnPropertyDescriptor(Object, 'hasOwn');
-    Reflect.deleteProperty(Object, 'hasOwn');
+  function withoutBuiltin(target: object, key: string, run: () => void): void {
+    const descriptor = Object.getOwnPropertyDescriptor(target, key);
+    Reflect.deleteProperty(target, key);
     try {
       run();
     } finally {
-      if (descriptor) Object.defineProperty(Object, 'hasOwn', descriptor);
+      if (descriptor) Object.defineProperty(target, key, descriptor);
     }
   }
 
   it('collapses every error from a browser missing Object.hasOwn into one issue per session', () => {
-    withoutObjectHasOwn(() => {
+    withoutBuiltin(Object, 'hasOwn', () => {
       const first = filterExceptionForPosthog(make('Object.hasOwn is not a function'));
       expect(first?.properties?.$exception_fingerprint).toBe('unsupported-browser-runtime');
       expect(filterExceptionForPosthog(make('e.at is not a function'))).toBeNull();
+    });
+  });
+
+  it('collapses errors from a browser missing Array.prototype.at the same way', () => {
+    withoutBuiltin(Array.prototype, 'at', () => {
+      const first = filterExceptionForPosthog(make('e.at is not a function'));
+      expect(first?.properties?.$exception_fingerprint).toBe('unsupported-browser-runtime');
+      expect(filterExceptionForPosthog(make('Object.hasOwn is not a function'))).toBeNull();
     });
   });
 
