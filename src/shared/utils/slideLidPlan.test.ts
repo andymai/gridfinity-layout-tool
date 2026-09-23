@@ -587,9 +587,7 @@ describe('slideWallThicknessMm', () => {
 
   it('stays even however asymmetric the overhang is', () => {
     // Overhang moves the body and the cavity together, so the offset is common
-    // to both and cancels. Subtracting it once, as though only the cavity had
-    // moved, charges the whole asymmetry to the very wall the lid enters
-    // through.
+    // to both and cancels.
     for (const [front, back] of [
       [10, 0],
       [0, 10],
