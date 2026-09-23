@@ -1,6 +1,8 @@
 import { head } from '@vercel/blob';
 import { timingSafeEqual as nodeTimingSafeEqual } from 'node:crypto';
 import type { VercelResponse } from '@vercel/node';
+import type { Redis } from 'ioredis';
+import { sharePermissionKey } from './redisKeys.js';
 
 /**
  * Shared utilities for API endpoints.
@@ -141,10 +143,47 @@ export interface ShareMetadata {
 
 // Redis key builders live in `./redisKeys.ts` (single source of truth).
 // Re-exported here to preserve existing import paths from share endpoints.
-export { shareHashKey, shareReportKey, shareLastAccessedKey } from './redisKeys.js';
+export {
+  shareHashKey,
+  shareReportKey,
+  shareLastAccessedKey,
+  sharePermissionKey,
+} from './redisKeys.js';
 
 /** TTL for share:lastAccessed keys (1 year — matches the report-counter TTL). */
 export const SHARE_LAST_ACCESSED_TTL_SECONDS = 365 * 24 * 60 * 60;
+
+// Vercel Blob takes up to 60s to propagate an overwrite through its CDN, and a
+// public store has no read that bypasses it, so a share read right after an
+// update can return the previous permission. The Redis copy only has to
+// outlive that window.
+export const SHARE_PERMISSION_TTL_SECONDS = 120;
+
+export async function resolveSharePermission(
+  redis: Pick<Redis, 'get'> | null,
+  shareId: string,
+  share: ShareData
+): Promise<ShareMetadata['permission']> {
+  if (redis) {
+    const recent = await redis.get(sharePermissionKey(shareId)).catch(() => null);
+    if (recent === 'view' || recent === 'edit') return recent;
+  }
+  return share.metadata.permission;
+}
+
+export async function recordSharePermission(
+  redis: Pick<Redis, 'set' | 'del'> | null,
+  shareId: string,
+  permission: ShareMetadata['permission']
+): Promise<void> {
+  if (!redis) return;
+  const key = sharePermissionKey(shareId);
+  try {
+    await redis.set(key, permission, 'EX', SHARE_PERMISSION_TTL_SECONDS);
+  } catch {
+    await redis.del(key).catch(() => undefined);
+  }
+}
 
 /**
  * Shared data structure for stored shares.

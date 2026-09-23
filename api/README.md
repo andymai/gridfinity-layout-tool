@@ -192,12 +192,13 @@ against the same person signing in again.
 
 **Redis key namespaces (see `lib/redisKeys.ts`):**
 
-| Key                       | Purpose                                              |
-| ------------------------- | ---------------------------------------------------- |
-| `share:hash:{id}`         | Delete-token hash (acquired AFTER blob put succeeds) |
-| `share:reports:{id}`      | Abuse-report counter (1-year TTL)                    |
-| `share:lastAccessed:{id}` | ISO timestamp of last GET (1-year TTL)               |
-| `ratelimit:{action}:{ip}` | Sliding-window rate-limit counter                    |
+| Key                       | Purpose                                                         |
+| ------------------------- | --------------------------------------------------------------- |
+| `share:hash:{id}`         | Delete-token hash (acquired AFTER blob put succeeds)            |
+| `share:reports:{id}`      | Abuse-report counter (1-year TTL)                               |
+| `share:lastAccessed:{id}` | ISO timestamp of last GET (1-year TTL)                          |
+| `share:permission:{id}`   | Permission from the last update (120s TTL, covers blob CDN lag) |
+| `ratelimit:{action}:{ip}` | Sliding-window rate-limit counter                               |
 
 Share creation uses `put({ allowOverwrite: false })` as an atomic CAS lock — concurrent POSTs racing on the same shareId produce exactly one winner.
 

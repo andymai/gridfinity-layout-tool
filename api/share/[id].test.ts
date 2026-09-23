@@ -179,6 +179,15 @@ describe('share/[id]', () => {
       expect(body.metadata.permission).toBe('view');
     });
 
+    it('reports a permission change the blob CDN has not caught up with yet', async () => {
+      primeBlobFetch(shareBlob({ permission: 'view' }));
+      mocks.redisGet.mockImplementation((key: string) =>
+        Promise.resolve(key === `share:permission:${VALID_ID}` ? 'edit' : null)
+      );
+      const res = await handle('GET');
+      expect((res._body as { metadata: { permission: string } }).metadata.permission).toBe('edit');
+    });
+
     it('records lastAccessedAt in Redis fire-and-forget (a failure never breaks the GET)', async () => {
       primeBlobFetch(shareBlob());
       mocks.redisSet.mockRejectedValue(new Error('redis down'));
@@ -244,6 +253,47 @@ describe('share/[id]', () => {
       expect(written.metadata.permission).toBe('edit');
     });
 
+    it('records the new permission in Redis so reads inside the CDN propagation window see it', async () => {
+      primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }));
+      const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
+      expect(res._status).toBe(200);
+      expect(mocks.redisSet).toHaveBeenCalledWith(
+        `share:permission:${VALID_ID}`,
+        'edit',
+        'EX',
+        expect.any(Number)
+      );
+    });
+
+    it('a layout update keeps a permission change the blob CDN still serves stale', async () => {
+      primeBlobFetch(shareBlob({ permission: 'view' }));
+      mocks.redisGet.mockImplementation((key: string) =>
+        Promise.resolve(
+          key === `share:permission:${VALID_ID}`
+            ? 'edit'
+            : key === `share:hash:${VALID_ID}`
+              ? correctHash
+              : null
+        )
+      );
+      const res = await handle('PUT', {
+        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+      });
+      expect(res._status).toBe(200);
+      const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as {
+        metadata: Record<string, unknown>;
+      };
+      expect(written.metadata.permission).toBe('edit');
+    });
+
+    it('drops the Redis permission when recording it fails, so an older value cannot outlive the blob', async () => {
+      primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }));
+      mocks.redisSet.mockRejectedValue(new Error('redis down'));
+      const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'view' } });
+      expect(res._status).toBe(200);
+      expect(mocks.redisDel).toHaveBeenCalledWith(`share:permission:${VALID_ID}`);
+    });
+
     it('stores a full update without the library folder placement', async () => {
       primeBlobFetch(shareBlob());
       mocks.redisGet.mockResolvedValue(correctHash);
@@ -280,9 +330,9 @@ describe('share/[id]', () => {
       const res = await handle('DELETE', { headers: { 'x-delete-token': TOKEN } });
       expect(res._status).toBe(200);
       expect(mocks.del).toHaveBeenCalledWith(`shares/${VALID_ID}.json`);
-      // All three Redis keys cleaned up alongside the blob.
       expect(mocks.redisDel).toHaveBeenCalledTimes(1);
-      expect(mocks.redisDel.mock.calls[0]).toHaveLength(3);
+      expect(mocks.redisDel.mock.calls[0]).toContain(`share:permission:${VALID_ID}`);
+      expect(mocks.redisDel.mock.calls[0]).toHaveLength(4);
     });
 
     it('accepts the token from the body', async () => {

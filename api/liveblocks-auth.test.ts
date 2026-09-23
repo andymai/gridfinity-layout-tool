@@ -12,6 +12,7 @@ const mockSession = {
 };
 
 const mockPrepareSession = vi.fn().mockReturnValue(mockSession);
+const mockRedisGet = vi.fn();
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
@@ -95,7 +96,10 @@ describe('liveblocks-auth handler', () => {
     vi.doMock('./lib/rateLimit.js', () => ({
       checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
       getClientIP: vi.fn().mockReturnValue('127.0.0.1'),
+      getRedis: vi.fn().mockReturnValue({ get: mockRedisGet }),
     }));
+    mockRedisGet.mockReset();
+    mockRedisGet.mockResolvedValue(null);
 
     const mod = await import('./liveblocks-auth.js');
     handler = mod.default;
@@ -194,6 +198,42 @@ describe('liveblocks-auth handler', () => {
     const req = createMockRequest();
     const res = createMockResponse();
 
+    mockHead.mockResolvedValueOnce({ url: 'https://blob.example.com/test' });
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(createShareData('edit')),
+    } as Response);
+
+    await handler(req, res);
+
+    expect(res._status).toBe(200);
+    expect(mockSession.allow).toHaveBeenCalledWith('gridfinity-abc123xyz789', ['*:write']);
+  });
+
+  it('grants write access when a permission change has not yet reached the blob CDN', async () => {
+    const req = createMockRequest();
+    const res = createMockResponse();
+
+    mockRedisGet.mockImplementation((key: string) =>
+      Promise.resolve(key === 'share:permission:abc123xyz789' ? 'edit' : null)
+    );
+    mockHead.mockResolvedValueOnce({ url: 'https://blob.example.com/test' });
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(createShareData('view')),
+    } as Response);
+
+    await handler(req, res);
+
+    expect(res._status).toBe(200);
+    expect(mockSession.allow).toHaveBeenCalledWith('gridfinity-abc123xyz789', ['*:write']);
+  });
+
+  it('falls back to the blob permission when Redis is unreachable', async () => {
+    const req = createMockRequest();
+    const res = createMockResponse();
+
+    mockRedisGet.mockRejectedValue(new Error('redis down'));
     mockHead.mockResolvedValueOnce({ url: 'https://blob.example.com/test' });
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
