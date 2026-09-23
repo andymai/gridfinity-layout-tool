@@ -64,7 +64,7 @@ export function isStaleAssetError(error: unknown): boolean {
 const UNSUPPORTED_INSTRUCTION_SIGNATURES = [
   'invalid opcode',
   'Wasm SIMD unsupported',
-  'unrecognized opcode',
+  'unrecognized opcode: fd',
 ] as const;
 
 /**

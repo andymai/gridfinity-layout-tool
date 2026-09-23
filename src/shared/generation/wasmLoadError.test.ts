@@ -107,6 +107,17 @@ describe('isUnsupportedWasmError', () => {
     expect(isUnsupportedWasmError(new Error(message))).toBe(true);
   });
 
+  it('declines a SpiderMonkey opcode outside the SIMD prefix, which a corrupt download can produce', () => {
+    expect(
+      isUnsupportedWasmError(
+        new Error(
+          'Kernel init failed: Aborted(CompileError: wasm validation error: at offset 86165: ' +
+            'unrecognized opcode: ff 3).'
+        )
+      )
+    ).toBe(false);
+  });
+
   it('declines a stale-asset failure, which a reload does fix', () => {
     // Relaxed SIMD is the overlap case: it reads as an unsupported instruction
     // but current builds no longer emit it, so seeing it means stale cached code.
