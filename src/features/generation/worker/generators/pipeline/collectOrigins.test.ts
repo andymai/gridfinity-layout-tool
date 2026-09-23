@@ -110,3 +110,46 @@ describe('shell cache preserves face origins', () => {
     expect(unwrap(measureVolume(copy))).toBeCloseTo(unwrap(measureVolume(source)), 3);
   });
 });
+
+describe('pruneStaleOrigins', () => {
+  // A builder that tags its own faces hands the runner a propagated origin map,
+  // and propagation keeps hashes of faces its internal booleans consumed. A
+  // freed face's hash can be reused by a live bin face, which the stale entry
+  // then overwrites on the next fuse. Only live faces may keep an entry.
+  it('keeps exactly the live faces of a self-tagged label tab', async () => {
+    const brepjs = await import('brepjs');
+    const { loadTestFonts } = await import('@/test/loadTestFonts');
+    const { DEFAULT_BIN_PARAMS } = await import('@/features/bin-designer/constants/defaults');
+    const { buildLabelTabs } = await import('../labelTabBuilder');
+    const { pruneStaleOrigins } = await import('./collectOrigins');
+    await loadTestFonts();
+
+    const built = buildLabelTabs(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 1,
+        height: 3,
+        textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'emboss' },
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, compartmentTexts: ['SCREWS'] },
+      },
+      80,
+      38,
+      18.4,
+      1.2
+    );
+    expect(built).not.toBeNull();
+    if (!built) return;
+    const live = new Set(brepjs.getFaces(built).map((face) => brepjs.getHashCode(face)));
+    const before = [...(getFaceOrigins(built)?.keys() ?? [])];
+    expect(before.some((hash) => !live.has(hash))).toBe(true);
+
+    pruneStaleOrigins(built);
+
+    const after = getFaceOrigins(built);
+    expect(new Set(after?.keys())).toEqual(live);
+    expect(new Set(after?.values())).toEqual(new Set([FeatureTag.LABEL_TAB, FeatureTag.TEXT]));
+    built.delete();
+  });
+});

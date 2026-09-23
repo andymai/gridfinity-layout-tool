@@ -16,7 +16,7 @@ import {
   intersect,
   translate,
   withScope,
-  clone,
+  setShapeOrigin,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import { BOX_CORNER_RADIUS, COPLANAR_OVERLAP } from './generatorConstants';
@@ -107,7 +107,8 @@ export function buildLabelTabs(
 
   return withScope((scope: DisposalScope): Shape3D | null => {
     const fused = buildLabelTabsInScope(scope, params, innerW, innerD, wallHeight, wallThickness);
-    return fused ? unwrap(clone(fused)) : null;
+    // `translate` rather than `clone`: the copy has to keep the face tags.
+    return fused ? translate(fused, [0, 0, 0]) : null;
   });
 }
 
@@ -513,6 +514,8 @@ function buildTabsAtRow(
       }
     }
 
+    setShapeOrigin(tabSolid, FeatureTag.LABEL_TAB);
+
     if (socket) {
       // Swappable-label socket on the shelf top. Compartments whose
       // tab can't host a standard plate keep a plain shelf — the UI surfaces
@@ -580,6 +583,7 @@ function buildTabsAtRow(
           // Best-effort cosmetic clip; keep the un-clipped rim rather than fail.
         }
       }
+      setShapeOrigin(rim, FeatureTag.LABEL_TAB);
       tabSolid = scope.register(unwrap(fuse(tabSolid as ValidSolid, rim as ValidSolid)));
     }
 
@@ -639,6 +643,9 @@ function applyTabText(
   });
   if (!result) return tabSolid;
 
+  // The glyph faces must reach the exporter as TEXT, not LABEL_TAB, or the
+  // text zone color never lands on tab text.
+  setShapeOrigin(result.solid, FeatureTag.TEXT);
   try {
     const op = result.op === 'cut' ? cut : fuse;
     return scope.register(unwrap(op(tabSolid as ValidSolid, result.solid as ValidSolid)));
@@ -656,6 +663,7 @@ import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKey
 export const labelTabsFeature: FeatureBuilder = {
   name: 'labelTabs',
   tag: FeatureTag.LABEL_TAB,
+  tagsOwnFaces: true,
   target: 'fuse',
   shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
   cacheKey: (ctx) => {
@@ -674,6 +682,7 @@ export const labelTabsFeature: FeatureBuilder = {
         : 'text';
     return compactKey(
       buildCacheKey(
+        // `v13`: tab text faces carry TEXT instead of LABEL_TAB.
         // `v12`: the shelf datum follows the lid — `labelShelfKeepoutMm`
         // sinks it under an interior-relieving or sliding lid — so the key
         // carries that keepout. Without it, toggling the lid served a shelf
@@ -691,7 +700,7 @@ export const labelTabsFeature: FeatureBuilder = {
         // `v5`: extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
         // `v4`: added `edges` + `inset` to LabelTabConfig.
-        'v12',
+        'v13',
         socketKeyPart,
         dim.shellKey,
         // The one lid-derived number the shelf geometry consumes.

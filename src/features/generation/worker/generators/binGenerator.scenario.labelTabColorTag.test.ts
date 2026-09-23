@@ -8,12 +8,15 @@
  */
 import { describe, it, beforeAll, expect } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { FeatureTag } from './featureTags';
 import type { BinParams } from '@/shared/types/bin';
+import type { MeshData } from '@/shared/types/generation';
 
 beforeAll(async () => {
   await initBrepjs();
+  await loadTestFonts();
 }, 30_000);
 
 describe('label tab shelf-top color tag (#1654)', () => {
@@ -56,4 +59,79 @@ describe('label tab shelf-top color tag (#1654)', () => {
     expect(labelTop).toBeGreaterThan(0);
     expect(bodyTop).toBe(0);
   }, 90_000);
+});
+
+type Box = { minX: number; minY: number; minZ: number; maxX: number; maxY: number; maxZ: number };
+
+function tagBoxes(m: MeshData): Map<number, Box> {
+  const boxes = new Map<number, Box>();
+  for (const fg of m.faceGroups ?? []) {
+    const box = boxes.get(fg.tag) ?? {
+      minX: Infinity,
+      minY: Infinity,
+      minZ: Infinity,
+      maxX: -Infinity,
+      maxY: -Infinity,
+      maxZ: -Infinity,
+    };
+    for (let k = fg.start; k < fg.start + fg.count; k++) {
+      const v = m.indices[k] * 3;
+      box.minX = Math.min(box.minX, m.vertices[v]);
+      box.minY = Math.min(box.minY, m.vertices[v + 1]);
+      box.minZ = Math.min(box.minZ, m.vertices[v + 2]);
+      box.maxX = Math.max(box.maxX, m.vertices[v]);
+      box.maxY = Math.max(box.maxY, m.vertices[v + 1]);
+      box.maxZ = Math.max(box.maxZ, m.vertices[v + 2]);
+    }
+    boxes.set(fg.tag, box);
+  }
+  return boxes;
+}
+
+// The tab builder used to stamp LABEL_TAB on the whole tab, glyphs included,
+// so the text zone color never reached tab text in the preview or the 3MF.
+describe('label tab text color tag', () => {
+  it.each(['emboss', 'engrave'] as const)(
+    '%s tab text carries TEXT in preview and export, inside the tab',
+    (mode) => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 1,
+        height: 3,
+        textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode },
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+        compartments: {
+          cols: 1,
+          rows: 1,
+          cells: [0],
+          thickness: 1.2,
+          compartmentTexts: ['SCREWS'],
+        },
+      };
+      const preview = tagBoxes(getGenerateBin()(params, undefined, false));
+      const exported = tagBoxes(getGenerateBin()(params, undefined, true));
+
+      for (const boxes of [preview, exported]) {
+        const tab = boxes.get(FeatureTag.LABEL_TAB);
+        const text = boxes.get(FeatureTag.TEXT);
+        expect(tab).toBeDefined();
+        expect(text).toBeDefined();
+        if (!tab || !text) return;
+        expect(text.minX).toBeGreaterThanOrEqual(tab.minX - 0.01);
+        expect(text.maxX).toBeLessThanOrEqual(tab.maxX + 0.01);
+        expect(text.minY).toBeGreaterThanOrEqual(tab.minY - 0.01);
+        expect(text.maxY).toBeLessThanOrEqual(tab.maxY + 0.01);
+      }
+
+      // The tab keeps its own tags, so a stale origin entry from its internal
+      // booleans can land on an unrelated bin face. Pin the tab's footprint:
+      // export must tag the same region the preview does, not the stacking lip.
+      const previewTab = preview.get(FeatureTag.LABEL_TAB);
+      const exportTab = exported.get(FeatureTag.LABEL_TAB);
+      expect(exportTab?.minY).toBeCloseTo(previewTab?.minY ?? NaN, 2);
+      expect(exportTab?.maxZ).toBeCloseTo(previewTab?.maxZ ?? NaN, 2);
+    },
+    180_000
+  );
 });

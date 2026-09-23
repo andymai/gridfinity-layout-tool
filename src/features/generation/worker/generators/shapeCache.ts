@@ -333,6 +333,12 @@ export function getFeatureCache(feature: string, key: string): Shape3D | null {
   return cloneFromCache(getOrCreateFeatureCache(feature), key);
 }
 
+/** Like {@link getFeatureCache}, but the copy keeps the face-origin tags. */
+export function getTaggedFeatureCache(feature: string, key: string): Shape3D | null {
+  const shape = getOrCreateFeatureCache(feature).get(key);
+  return shape !== undefined ? translate(shape, [0, 0, 0]) : null;
+}
+
 export function setFeatureCache(feature: string, key: string, shape: Shape3D): void {
   getOrCreateFeatureCache(feature).set(key, shape);
 }

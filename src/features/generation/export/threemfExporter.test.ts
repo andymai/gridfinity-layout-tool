@@ -859,6 +859,17 @@ describe('threemfExporter', () => {
     // 02.06.x.x+ → rejected, 02.00.00.00 → accepted by both. See the
     // BAMBU_COMPAT_APPLICATION docstring in threemfExporter.ts for the
     // full failure modes I ruled out.
+    // 3MF Core: a prefixed metadata name must name a namespace declared on
+    // <model>, or strict readers report the package as invalid.
+    function expectPrefixedMetadataDeclared(model: string): void {
+      const modelTag = /<model\b[^>]*>/.exec(model)?.[0] ?? '';
+      const prefixes = [...model.matchAll(/<metadata name="([A-Za-z]\w*):/g)].map((m) => m[1]);
+      expect(prefixes.length).toBeGreaterThan(0);
+      for (const prefix of prefixes) {
+        expect(modelTag).toContain(`xmlns:${prefix}="`);
+      }
+    }
+
     it('claims BambuStudio identity for multi-color exports', () => {
       const { vertices, normals } = createTwoTriangles();
       const model = strFromU8(
@@ -879,6 +890,7 @@ describe('threemfExporter', () => {
       );
       expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
       expect(model).toContain('<metadata name="Designer">Gridfinity Layout Tool</metadata>');
+      expectPrefixedMetadataDeclared(model);
     });
 
     it('does NOT claim BambuStudio identity for single-color exports', () => {
@@ -890,6 +902,7 @@ describe('threemfExporter', () => {
       );
       expect(model).not.toContain('<metadata name="Application">');
       expect(model).not.toContain('BambuStudio:3mfVersion');
+      expect(model).not.toContain('xmlns:BambuStudio');
     });
 
     it('multi-object: claims BambuStudio identity when any object has colorConfig', () => {
@@ -916,6 +929,7 @@ describe('threemfExporter', () => {
         /<metadata name="Application">BambuStudio-02\.00\.\d+\.\d+<\/metadata>/
       );
       expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
+      expectPrefixedMetadataDeclared(model);
     });
 
     it('multi-object: skips BambuStudio identity when no object has colorConfig', () => {
@@ -933,6 +947,7 @@ describe('threemfExporter', () => {
       );
       expect(model).not.toContain('<metadata name="Application">');
       expect(model).not.toContain('BambuStudio:3mfVersion');
+      expect(model).not.toContain('xmlns:BambuStudio');
     });
   });
 

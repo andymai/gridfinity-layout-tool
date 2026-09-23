@@ -34,6 +34,12 @@ export interface FeatureBuilder {
   readonly name: string;
   /** Face provenance tag for multi-color export. */
   readonly tag: FeatureTag;
+  /**
+   * The build tags its own faces with `setShapeOrigin`, so the runner keeps
+   * those tags instead of stamping `tag` on every face. Use it when one
+   * feature carries more than one color zone (label tab + its text).
+   */
+  readonly tagsOwnFaces?: boolean;
   /** Which boolean pass this feature's shapes participate in. */
   readonly target: FeatureTarget;
   /**

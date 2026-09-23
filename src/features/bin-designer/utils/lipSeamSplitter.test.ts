@@ -80,16 +80,50 @@ describe('lipSeamSplitter', () => {
     expect(unique).toContain('lip:backRight:1');
   });
 
-  it('passes non-lip triangles through unchanged with their tag zone', () => {
+  it('passes a non-lip triangle clear of every seam through unchanged', () => {
     const res = splitLipMesh({
       triangleCount: 1,
       faceGroups: [{ start: 0, count: 3, tag: FeatureTag.SCOOP }],
-      getTriangle: () => [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      getTriangle: () => [1, 1, 0, 2, 1, 0, 1, 2, 0],
       geom: GEOM,
       counts: { corners: 4, bands: 4 },
     });
     expect(res.triZones).toEqual(['scoop']);
-    expect(Array.from(res.positions)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    expect(Array.from(res.positions)).toEqual([1, 1, 0, 2, 1, 0, 1, 2, 0]);
+  });
+
+  // A lip triangle and a non-lip triangle share the edge x∈[-10,10] at z=0..10
+  // diagonal; the band seam at z=5 cuts it. Both sides must get the same new
+  // vertex, bit for bit, or the welded export mesh keeps an open edge there.
+  it('cuts both sides of a shared edge at a bit-identical vertex', () => {
+    const lip = [-10, 5, 0, 10, 5, 10, -10, 5, 10];
+    const body = [10, 5, 10, -10, 5, 0, 10, 5, 0];
+    const res = splitLipMesh({
+      triangleCount: 2,
+      faceGroups: [
+        { start: 0, count: 3, tag: FeatureTag.LIP },
+        { start: 3, count: 3, tag: FeatureTag.SCOOP },
+      ],
+      getTriangle: (i) => (i === 0 ? lip : body),
+      geom: GEOM,
+      counts: { corners: 1, bands: 2 },
+    });
+    const onSeam = (tag: number): Set<string> => {
+      const keys = new Set<string>();
+      for (let i = 0; i < res.triTags.length; i++) {
+        if (res.triTags[i] !== tag) continue;
+        for (let v = 0; v < 3; v++) {
+          const b = i * 9 + v * 3;
+          const x = res.positions[b];
+          const z = res.positions[b + 2];
+          if (z === 5 && Math.abs(x) < 10) keys.add(`${x},${res.positions[b + 1]},${z}`);
+        }
+      }
+      return keys;
+    };
+    expect(res.triZones.filter((z) => z === 'scoop').length).toBeGreaterThan(1);
+    expect(onSeam(FeatureTag.SCOOP)).toEqual(onSeam(FeatureTag.LIP));
+    expect(onSeam(FeatureTag.LIP).size).toBe(1);
   });
 
   it('does not duplicate a triangle lying on a seam plane', () => {
