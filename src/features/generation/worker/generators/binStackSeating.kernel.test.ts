@@ -142,17 +142,18 @@ describe('bin-on-bin stacking (#2374)', () => {
     }
   }, 600000);
 
-  // #4119 takes LIP_TIP_MM (or, for `flat`, LIP_TIP_FLAT_MM) off the peak so the
-  // top layer has a real perimeter to print instead of a knife edge. The mating
-  // faces are parallel 45 degree chamfers, so shortening the lip's cannot let
-  // the bin above settle lower — it only shortens the contact band.
-  // PITCH is the claim, not junction: the foot's
-  // flare mates the funnel below the treated zone, so the bin above comes to
-  // rest at the same absolute height and adds the same millimetres to a stack —
-  // which is what the readouts quote and what lets a finished bin stack with
-  // anyone else's. `junctionMm` necessarily moves, because it is measured from a
-  // peak this feature deliberately lowers; asserting it here would be asserting
-  // the treatment did not happen.
+  // The tip treatment takes LIP_TIP_MM (or, for `flat`, LIP_TIP_FLAT_MM) off the
+  // peak so the top layer has a real perimeter to print instead of a knife edge.
+  // The mating faces are parallel 45 degree chamfers, so shortening the lip
+  // cannot let the bin above settle lower — it only shortens the contact band.
+  //
+  // PITCH is the claim, not junction: the foot's flare mates the funnel below
+  // the treated zone, so the bin above comes to rest at the same absolute height
+  // and adds the same millimetres to a stack — which is what the readouts quote
+  // and what lets a finished bin stack with anyone else's. `junctionMm`
+  // necessarily moves, because it is measured from a peak the treatment
+  // deliberately lowers; asserting it here would be asserting the treatment did
+  // not happen.
   //
   // Fine step on purpose. The coarse grid lands columns on the rounded corner
   // and reads a junction a millimetre off, which is harmless for a full-face

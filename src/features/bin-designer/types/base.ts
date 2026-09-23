@@ -395,7 +395,7 @@ export const MAX_FOOT_SPAN_MM = 140;
  * slicer can lay a full perimeter on rather than a treated corner it still has
  * to taper into. All three cut material only from the tip, so the lip's seating
  * surfaces are untouched: a bin stacked on top still lands flush on the same 45
- * degree inner chamfer — the two faces stay parallel, so shortening the lip's
+ * degree inner chamfer — the two faces stay parallel, so shortening the lip
  * does not let the bin above settle any lower — and a lid's plug still meets
  * the same vertical band. `'sharp'` is the spec profile.
  */
