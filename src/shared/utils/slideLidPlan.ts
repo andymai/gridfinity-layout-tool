@@ -440,13 +440,7 @@ export interface SlideLidBinDims {
  * `innerOffset` must NOT enter this. Overhang moves the BODY and the cavity
  * together — the shell "expands in lockstep", as `deriveDimensions` puts it —
  * and both extents here already have the expansion folded in, so the offset is
- * common to the two and cancels. Subtracting it once, as though only the cavity
- * had moved, charges the whole asymmetry to this one wall: with an overhang on
- * the entry wall's own side the answer comes out `overhang / 2` short, crosses
- * zero at twice the wall thickness, and takes `trailingX` and the entry notch
- * with it — the notch stops short of the outer face, then inverts, and the wall
- * is never opened at all. Measured on a 1x1: 5mm of front overhang leaves the
- * entry wall completely intact, rails and all, with no way to insert the plate.
+ * common to the two and cancels.
  *
  * So the walls are even, and the per-side signature is kept for the callers
  * rather than for the arithmetic: it says which wall is being asked about at
@@ -685,20 +679,20 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
       mouthReliefs.push({
         wall,
         xMin: travelInner / 2 - cornerR,
-        // Stops AT the cavity face, never past it. An overshoot into the wall
-        // would be a clean 0.1mm bite everywhere the notch does not reach —
-        // and the notch's floor is a clearance above this cut's — leaving a
-        // rectangular pocket in the entry wall exactly where the rail meets
-        // it. The notch reaches back 0.1 past this face, so the two still
-        // overlap and neither boolean sees a coplanar seam.
+        // Stops AT the cavity face, never past it. This cut's floor at the
+        // wall is `-t - SLIDE_SHELF_TIP_MM - shelfReach`, well below the
+        // notch's `-t`, and the shelf bars END at this face — so an overshoot
+        // carves a pocket under the notch that nothing refills. The notch
+        // reaches back 0.1 past this face, so the two still overlap and
+        // neither boolean sees a coplanar seam.
         xMax: travelInner / 2,
         section: [
           // Down the wall, then out along the shelf's own 45° gusset.
           [at(0), -t - SLIDE_SHELF_TIP_MM - shelfReach],
           [at(shelfReach), -t - SLIDE_SHELF_TIP_MM],
-          ...(reliefReach > shelfReach
-            ? ([[at(reliefReach), -t - SLIDE_SHELF_TIP_MM]] as const)
-            : []),
+          // `reliefReach` is at least `shelfReach + roofTop` and `roofTop` is
+          // positive, so this point is always outboard of the one above it.
+          [at(reliefReach), -t - SLIDE_SHELF_TIP_MM],
           // Up the inboard end, past the plate's slab to its top plane.
           [at(reliefReach), 0],
           // 45° up to the retainer's top plane, then flat back to the wall.

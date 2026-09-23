@@ -72,8 +72,8 @@ export function slideLidZOffset(p: BinParams, geometry: SlideLidGeometry): numbe
  * `innerOffset` is the CAVITY's centre, and the plan's origin is the cavity,
  * not the bin — so an overhung bin needs it passed or every sample lands off by
  * half the asymmetry. It defaults to zero because most designs have no
- * overhang, and that default is exactly how an entry-wall overhang defect hid:
- * probes built on it read a wall they were never pointed at.
+ * overhang; a probe that leaves it out on an overhung bin reads a wall it was
+ * never pointed at.
  */
 export function canonicalToBin(
   geometry: SlideLidGeometry,
@@ -461,10 +461,10 @@ export async function entryCornerMm3(
   const r = geometry.plate.cornerRadiusMm;
   const hs = geometry.plate.spanMm / 2 + geometry.clearanceMm;
   const base = geometry.travelEnvelope.zMax;
-  const outline = draw([hs - r, fromX])
-    .lineTo([hs, fromX])
-    .lineTo([hs, toX])
-    .lineTo([hs - r, toX])
+  const outline = draw([fromX, hs - r])
+    .lineTo([toX, hs - r])
+    .lineTo([toX, hs])
+    .lineTo([fromX, hs])
     .close();
   const prism = outline.sketchOnPlane('XY', base).extrude(geometry.entryNotch.zMax - base);
   const oriented =

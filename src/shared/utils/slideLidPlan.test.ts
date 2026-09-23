@@ -507,7 +507,7 @@ describe('entry mouth relief', () => {
     // arc above self-supporting reaches over the rail instead and carves a
     // plainly visible triangle out of the corner. It is also what keeps the
     // cut out of the lip's band, since the envelope tops out a lip-taper below
-    // the wall (CLAUDE.md gotcha #10).
+    // the wall — see the geometry-debugging skill.
     const g = geometryOf({});
     for (const relief of g.mouthReliefs) {
       expect(Math.max(...zsOf(relief))).toBeCloseTo(g.travelEnvelope.zMax, 9);
@@ -569,10 +569,8 @@ describe('slideWallThicknessMm', () => {
 
   /**
    * Overhang as the real adapters apply it: the body AND the cavity both grow
-   * by the per-axis total, and both shift by half the asymmetry. Written out
-   * here because the version this test used to assert — an outer left centred
-   * while only the inner moved — is a shape neither adapter can produce, and
-   * asserting on it is what let the real case ship broken.
+   * by the per-axis total, and both shift by half the asymmetry. An outer left
+   * centred while only the inner moves is a shape neither adapter can produce.
    */
   const withOverhang = (front: number, back: number): typeof dims => ({
     ...dims,
@@ -588,13 +586,10 @@ describe('slideWallThicknessMm', () => {
   });
 
   it('stays even however asymmetric the overhang is', () => {
-    // The invariant, and the bug it replaces. Overhang moves the body and the
-    // cavity together, so the offset is common to both and cancels; subtract it
-    // once, as though only the cavity had moved, and this reports `front / 2`
-    // less on the very wall the lid enters through. At the default 1.2mm wall
-    // that crosses zero at 2.4mm of overhang and drags `trailingX` and the
-    // entry notch down with it, until the notch inverts and the entry wall is
-    // never opened at all.
+    // Overhang moves the body and the cavity together, so the offset is common
+    // to both and cancels. Subtracting it once, as though only the cavity had
+    // moved, charges the whole asymmetry to the very wall the lid enters
+    // through.
     for (const [front, back] of [
       [10, 0],
       [0, 10],
@@ -603,10 +598,10 @@ describe('slideWallThicknessMm', () => {
     ] as const) {
       const shifted = withOverhang(front, back);
       for (const side of ['front', 'back', 'left', 'right'] as LidRailSide[]) {
-        expect(slideWallThicknessMm(side, shifted), `front=${front} back=${back} ${side}`).toBeCloseTo(
-          5,
-          9
-        );
+        expect(
+          slideWallThicknessMm(side, shifted),
+          `front=${front} back=${back} ${side}`
+        ).toBeCloseTo(5, 9);
       }
     }
   });

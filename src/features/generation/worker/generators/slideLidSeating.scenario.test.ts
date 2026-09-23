@@ -351,7 +351,7 @@ describe('sliding lid seating', () => {
     // `2·cornerR` narrower than the channel behind it — 4.6mm at the default
     // wall. The plate's running edges are straight for its whole length, so it
     // meets those two arcs `cornerR − c` deep and stops, on every bin size,
-    // whatever the notch does. Reported as "no way to force the plate in".
+    // whatever the notch does.
     //
     // Invisible to every probe already here: the notch really does open the
     // entry WALL full width, the seated plate really does fit, and the travel
@@ -486,18 +486,15 @@ describe('sliding lid seating', () => {
   }, 300000);
   it('opens the entry wall on a bin with an overhang on that very side', async () => {
     // Overhang moves the body and the cavity together, so every wall keeps its
-    // nominal thickness — but the entry wall's thickness used to be derived by
-    // subtracting the cavity's offset, which charges the whole asymmetry to
-    // this one wall. It reads `front / 2` short, crosses zero at twice the wall
-    // thickness, and carries `trailingX` and the entry notch with it: the notch
-    // stops short of the outer face, then inverts, and nothing is cut. The bin
-    // ships with rails, a lid, and no opening between them.
+    // nominal thickness. Charge the asymmetry to this one wall instead and it
+    // reads `front / 2` short, crosses zero at twice the wall thickness, and
+    // carries `trailingX` and the entry notch with it: the notch stops short of
+    // the outer face, then inverts, and nothing is cut.
     //
     // Asked of the wall itself rather than of the plan's numbers, and swept
-    // across a range that straddles the point the old formula went negative.
+    // across a range that straddles the point the thickness would go negative.
     // The probe takes the cavity offset, without which it samples the wrong
-    // wall entirely — which is how this survived a suite that already had four
-    // entry-side cases.
+    // wall entirely.
     const { getLastSolid } = await import('./shapeCache');
     const results: Array<{ front: number; open: boolean }> = [];
     for (const front of [0, 3, 5, 10]) {
