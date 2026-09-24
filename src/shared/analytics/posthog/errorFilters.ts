@@ -254,17 +254,22 @@ function isNavigationAbort(exception: ExceptionLike): boolean {
 /**
  * A script injected into the page with no file of its own (extensions and
  * in-app browser hosts run code this way) that throws. posthog-js marks its
- * only frame `in_app: false`, and the scheme checks in `isExtensionSourced`
- * have no filename to match.
+ * frames `in_app: false`, and the scheme checks in `isExtensionSourced` have no
+ * filename to match. A monkey patch that recurses into itself fills a whole
+ * stack this way, so the frame count is not a signal.
  *
- * Gated on a single frame: an app throw that runs through an anonymous callback
- * still carries its bundle frames, and that one we want to hear about.
+ * Gated on every frame being fileless: an app throw that runs through an
+ * anonymous callback still carries its bundle frames, and that one we want to
+ * hear about.
  */
 function isInjectedScriptThrow(exception: ExceptionLike): boolean {
   const frames = exception.stacktrace?.frames ?? [];
-  if (frames.length !== 1 || frames[0]?.in_app !== false) return false;
-  const filename = frames[0].filename;
-  return filename === undefined || filename === '' || filename === '<anonymous>';
+  if (frames.length === 0) return false;
+  return frames.every(
+    (f) =>
+      f.in_app === false &&
+      (f.filename === undefined || f.filename === '' || f.filename === '<anonymous>')
+  );
 }
 
 /**
@@ -279,7 +284,7 @@ const POSTHOG_TRANSPORT_TIMEOUT = /^AbortError: PostHog request timed out/;
  * PostHog `before_send` hook. Drops `$exception` events whose **primary**
  * exception matches the extension/noise filters, a deliberate bridge
  * cancellation, the R3F canvas teardown race, a stackless navigation abort, a
- * frameless injected-script throw, or posthog-js's own request timeout;
+ * fileless injected-script throw, or posthog-js's own request timeout;
  * collapses a below-floor runtime's errors into one capture per session;
  * dedupes the WebGL context-creation
  * burst, pins chunk-load failures to one fingerprint and captures them once

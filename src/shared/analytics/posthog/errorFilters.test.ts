@@ -624,6 +624,45 @@ describe('injected-script throws', () => {
     expect(filterExceptionForPosthog(e)).toBe(e);
   });
 
+  it('drops a multi-frame stack where every frame is non-app and fileless', () => {
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            type: 'RangeError',
+            value: 'RangeError: Maximum call stack size exceeded',
+            stacktrace: {
+              frames: [
+                {
+                  function: 'Object.getOwnPropertyDescriptor',
+                  filename: '<anonymous>',
+                  in_app: false,
+                },
+                {
+                  function: 'Object._getOwnPropertyDescriptor',
+                  filename: '<anonymous>',
+                  in_app: false,
+                },
+                { function: 'Object.getOwnPropertyDescriptor', filename: '', in_app: false },
+                { function: 'x', in_app: false },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('keeps a multi-frame fileless stack when one frame lacks the in_app flag', () => {
+    const e = withFrames([
+      { function: 'a', filename: '<anonymous>', in_app: false },
+      { function: 'b', filename: '<anonymous>' },
+    ]);
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+
   it('keeps an <anonymous> frame that app frames surround', () => {
     const e = withFrames([
       { function: 'handler', filename: '<anonymous>', in_app: false },
