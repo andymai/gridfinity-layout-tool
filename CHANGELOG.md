@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.497.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.497.0...gridfinity-layout-tool-v4.497.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* **analytics:** drop multi-frame injected-script throws ([#4379](https://github.com/andymai/gridfinity-layout-tool/issues/4379)) ([d599ac2](https://github.com/andymai/gridfinity-layout-tool/commit/d599ac203127c43effaeacdab638845eef66541f))
+
 ## [4.497.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.496.3...gridfinity-layout-tool-v4.497.0) (2026-09-23)
 
 
