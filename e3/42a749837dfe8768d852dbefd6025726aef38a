@@ -1,0 +1,24 @@
+src/shell/Mobile/BottomSheet/BottomSheet.tsx
+  s_edbb6361b64812::t_0f40631d4cf289 41,119-120,135-140
+  s_edbb6361b64812::t_b70b62d415da81 141
+src/shell/Mobile/BottomSheet/BottomSheet.test.tsx
+  s_edbb6361b64812::t_22cd7a3ab3ef94 181-182,199-203,217-220,222-258
+  s_edbb6361b64812::t_0db68208e8497c 339
+  s_edbb6361b64812::t_e766e34945c254 300,319-322
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e342a749837dfe8768d852dbefd6025726aef38a",
+  "prompts": {},
+  "sessions": {
+    "s_edbb6361b64812": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "42717118-5d9d-4500-b7da-94d9a1a1e1cf",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
