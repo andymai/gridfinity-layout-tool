@@ -132,11 +132,15 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
     velocityRef.current = 0;
   }, [isDragging, dismissThreshold, closeMobilePanel, viewportHeight]);
 
+  // A breakpoint change can unmount the whole mobile layout mid-dismiss, so the
+  // close is finished here rather than dropped with the timer.
   useEffect(
     () => () => {
-      if (dismissTimerRef.current !== null) clearTimeout(dismissTimerRef.current);
+      if (dismissTimerRef.current === null) return;
+      clearTimeout(dismissTimerRef.current);
+      closeMobilePanel();
     },
-    []
+    [closeMobilePanel]
   );
 
   // Close on escape key

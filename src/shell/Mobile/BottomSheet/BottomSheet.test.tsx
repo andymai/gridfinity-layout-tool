@@ -196,8 +196,7 @@ describe('BottomSheet', () => {
         });
       });
 
-      // 50px over 200ms is 0.25 px/ms, under the flick threshold. On the real
-      // clock the gap between events is near zero, which reads as a flick.
+      // On the real clock the gap between events is near zero, which reads as a flick.
       act(() => {
         vi.advanceTimersByTime(200);
       });
@@ -223,7 +222,7 @@ describe('BottomSheet', () => {
       vi.useRealTimers();
     });
 
-    it('cancels a pending dismiss when unmounted mid-animation', () => {
+    it('finishes a pending dismiss on unmount without leaving its timer running', () => {
       vi.useFakeTimers();
 
       const { container, unmount } = render(
@@ -246,6 +245,8 @@ describe('BottomSheet', () => {
       });
 
       unmount();
+      expect(useMobileStore.getState().activeMobilePanel).toBeNull();
+
       act(() => {
         useMobileStore.setState({ activeMobilePanel: 'print' });
       });
@@ -316,7 +317,6 @@ describe('BottomSheet', () => {
         });
       });
 
-      // 20px in 10ms is 2 px/ms: under the distance threshold, over the flick one.
       act(() => {
         vi.advanceTimersByTime(10);
       });
