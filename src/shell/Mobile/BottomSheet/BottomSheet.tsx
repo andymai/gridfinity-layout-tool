@@ -38,6 +38,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
   // Velocity tracking: store last two move timestamps/positions
   const lastMoveRef = useRef<{ y: number; time: number } | null>(null);
   const velocityRef = useRef(0);
+  const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Adaptive dismiss threshold: 15% of viewport height, capped at 80px
   // Smaller screens get smaller thresholds for easier dismissal
@@ -115,7 +116,8 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
       setIsDismissing(true);
       setDragY(viewportHeight);
       // Wait for the slide-out animation to complete
-      setTimeout(() => {
+      dismissTimerRef.current = setTimeout(() => {
+        dismissTimerRef.current = null;
         closeMobilePanel();
         setIsDismissing(false);
         setDragY(0);
@@ -129,6 +131,13 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
     lastMoveRef.current = null;
     velocityRef.current = 0;
   }, [isDragging, dismissThreshold, closeMobilePanel, viewportHeight]);
+
+  useEffect(
+    () => () => {
+      if (dismissTimerRef.current !== null) clearTimeout(dismissTimerRef.current);
+    },
+    []
+  );
 
   // Close on escape key
   useEffect(() => {

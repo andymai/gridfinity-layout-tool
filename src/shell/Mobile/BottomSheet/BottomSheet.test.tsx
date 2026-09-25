@@ -178,6 +178,8 @@ describe('BottomSheet', () => {
     });
 
     it('stays open when swiped down less than 80px', () => {
+      vi.useFakeTimers();
+
       const { container } = render(
         <BottomSheet title="Test Panel">
           <div>Panel content</div>
@@ -187,7 +189,6 @@ describe('BottomSheet', () => {
       const header = container.querySelector('[data-sheet-header]');
       const sheet = container.querySelector('[role="dialog"]');
 
-      // Start drag
       act(() => {
         fireEvent.pointerDown(header!, {
           clientY: 100,
@@ -195,7 +196,11 @@ describe('BottomSheet', () => {
         });
       });
 
-      // Swipe down less than 80px
+      // 50px over 200ms is 0.25 px/ms, under the flick threshold. On the real
+      // clock the gap between events is near zero, which reads as a flick.
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
       act(() => {
         fireEvent.pointerMove(sheet!, {
           clientY: 150,
@@ -203,15 +208,54 @@ describe('BottomSheet', () => {
         });
       });
 
-      // Release
       act(() => {
         fireEvent.pointerUp(sheet!, {
           pointerId: 1,
         });
       });
 
-      // Should still be open
+      act(() => {
+        vi.advanceTimersByTime(250);
+      });
+
       expect(useMobileStore.getState().activeMobilePanel).toBe('layers');
+
+      vi.useRealTimers();
+    });
+
+    it('cancels a pending dismiss when unmounted mid-animation', () => {
+      vi.useFakeTimers();
+
+      const { container, unmount } = render(
+        <BottomSheet title="Test Panel">
+          <div>Panel content</div>
+        </BottomSheet>
+      );
+
+      const header = container.querySelector('[data-sheet-header]');
+      const sheet = container.querySelector('[role="dialog"]');
+
+      act(() => {
+        fireEvent.pointerDown(header!, { clientY: 100, pointerId: 1 });
+      });
+      act(() => {
+        fireEvent.pointerMove(sheet!, { clientY: 200, pointerId: 1 });
+      });
+      act(() => {
+        fireEvent.pointerUp(sheet!, { pointerId: 1 });
+      });
+
+      unmount();
+      act(() => {
+        useMobileStore.setState({ activeMobilePanel: 'print' });
+      });
+      act(() => {
+        vi.advanceTimersByTime(250);
+      });
+
+      expect(useMobileStore.getState().activeMobilePanel).toBe('print');
+
+      vi.useRealTimers();
     });
 
     it('applies rubber-band effect when swiping up (negative drag)', () => {
@@ -253,7 +297,7 @@ describe('BottomSheet', () => {
       expect(useMobileStore.getState().activeMobilePanel).toBe('layers');
     });
 
-    it('dismisses on fast downward flick even with small distance', async () => {
+    it('dismisses on fast downward flick even with small distance', () => {
       vi.useFakeTimers();
 
       const { container } = render(
@@ -265,7 +309,6 @@ describe('BottomSheet', () => {
       const header = container.querySelector('[data-sheet-header]');
       const sheet = container.querySelector('[role="dialog"]');
 
-      // Start drag
       act(() => {
         fireEvent.pointerDown(header!, {
           clientY: 100,
@@ -273,8 +316,10 @@ describe('BottomSheet', () => {
         });
       });
 
-      // Quick flick: move just 20px down (below 80px threshold)
-      // but very fast (simulated by close timestamps via performance.now)
+      // 20px in 10ms is 2 px/ms: under the distance threshold, over the flick one.
+      act(() => {
+        vi.advanceTimersByTime(10);
+      });
       act(() => {
         fireEvent.pointerMove(sheet!, {
           clientY: 120,
@@ -287,14 +332,11 @@ describe('BottomSheet', () => {
         fireEvent.pointerUp(sheet!, { pointerId: 1 });
       });
 
-      // The dismiss animation has a 200ms timeout before closeMobilePanel
       act(() => {
         vi.advanceTimersByTime(250);
       });
 
-      // Note: velocity in jsdom depends on performance.now() granularity
-      // This test verifies the dismiss path is exercised without error
-      // Full velocity testing needs real browser (covered by E2E tests)
+      expect(useMobileStore.getState().activeMobilePanel).toBeNull();
 
       vi.useRealTimers();
     });
