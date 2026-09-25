@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.497.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.497.1...gridfinity-layout-tool-v4.497.2) (2026-09-25)
+
+
+### Bug Fixes
+
+* **mobile:** cancel the bottom sheet's dismiss timer on unmount ([#4381](https://github.com/andymai/gridfinity-layout-tool/issues/4381)) ([dff3a99](https://github.com/andymai/gridfinity-layout-tool/commit/dff3a99e571782f4a98028981a765d408db5e196))
+
 ## [4.497.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.497.0...gridfinity-layout-tool-v4.497.1) (2026-09-24)
 
 
