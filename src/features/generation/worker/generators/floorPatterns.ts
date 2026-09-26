@@ -29,6 +29,8 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PatternPanelSpec } from './dividerPatterns';
 import type { WorldKeepOut } from './dividerPatterns';
 import { scoopKeepOuts } from './dividerPatterns';
+import { interiorFilletApplies, interiorFilletFloorFootprints } from './interiorFilletBuilder';
+import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { interiorDividerSegments } from './compartmentBuilder';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { filledSocketCells } from './socketBuilder';
@@ -197,7 +199,7 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
 
 /**
  * Footprints of everything that stands on the floor and would be left bridging
- * a hole: compartment dividers and scoop ramps.
+ * a hole: compartment dividers, scoop ramps and the interior fillet.
  *
  * A tilted divider contributes its axis-aligned bounding box, which clears more
  * than the wall strictly covers — the safe direction, and the same convention
@@ -207,8 +209,16 @@ function standingFeatureKeepOuts(params: BinParams, dim: BinDimensions): WorldKe
   const { innerW, innerD, innerOffsetX, innerOffsetY } = dim;
   const out: WorldKeepOut[] = [];
 
+  if (interiorFilletApplies(params, dim)) {
+    const radius = interiorFilletRadiusMm(params);
+    for (const band of interiorFilletFloorFootprints({ params, dimensions: dim, radius })) {
+      out.push({ ...band, zMin: 0, zMax: 0 });
+    }
+  }
+
   // Polygon footprints have dividers and scoops filtered out of the feature
-  // pipeline entirely (see `featuresStage`), so nothing stands on their floor.
+  // pipeline entirely (see `featuresStage`), so nothing else stands on their
+  // floor.
   if (isPartialMask(params.cellMask)) return out;
 
   if (!dim.isSlotted && params.compartments.thickness > 0) {

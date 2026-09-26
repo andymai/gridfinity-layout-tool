@@ -20,6 +20,7 @@ import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { fuseAllOrNull } from './utils/shapeOps';
 import { COPLANAR_MARGIN } from './generatorConstants';
+import { interiorFilletCornerMm } from '@/shared/utils/interiorFillet';
 import {
   type RampZone,
   MIN_DIM,
@@ -262,7 +263,8 @@ export function computeDividerJunctionZones(
 
     zones.push({
       offsetAlongWall: divider.posAlongPerp,
-      width: divider.thickness + 2 * COPLANAR_MARGIN,
+      // An interior fillet rounds the corner either side of the junction.
+      width: divider.thickness + 2 * (COPLANAR_MARGIN + interiorFilletCornerMm(params)),
       height: wallHeight,
     });
   }

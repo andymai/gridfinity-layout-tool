@@ -450,6 +450,16 @@
             "maximum": "DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT"
           },
           "description": "Extra exterior wall height in mm ABOVE the nominal bin height. Outer walls and stacking lip rise; the interior floor, cutouts, dividers, scoops and label tabs stay anchored at the original top plane. A collar of dead headroom. 0 reproduces the standard bin exactly."
+        },
+        "interiorFilletMm": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 15,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_INTERIOR_FILLET",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_INTERIOR_FILLET"
+          },
+          "description": "Radius in mm rounding each compartment's wall-to-floor edges; its vertical corners round to at least the same. Omit for sharp junctions. Standard style only. Each compartment is clamped to half its narrowest span and to its height, so a large value turns a small compartment into a bowl."
         }
       }
     },

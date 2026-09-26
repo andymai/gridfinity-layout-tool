@@ -22,4 +22,28 @@ export const SCOOP_EXAMPLES: ExampleDesign[] = [
     },
     metrics: { width: 2, depth: 3, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
+  {
+    id: 'fillet-2x2-bowls',
+    nameKey: 'binExamples.fillet2x2Bowls.name',
+    descriptionKey: 'binExamples.fillet2x2Bowls.description',
+    techniques: ['interiorFillet', 'compartments'],
+    tier: 'technique',
+    tags: ['fillet', 'bowls', 'hardware', '2x2'],
+    complexity: 1,
+    colored: false,
+    params: {
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      depth: 2,
+      height: 3,
+      interiorFilletMm: 12,
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols: 3,
+        rows: 3,
+        cells: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      },
+    },
+    metrics: { width: 2, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
+  },
 ];

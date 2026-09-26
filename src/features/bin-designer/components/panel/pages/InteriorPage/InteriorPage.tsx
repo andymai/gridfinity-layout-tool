@@ -9,9 +9,10 @@ import { DependencyHint } from '../../shared';
 import { InteriorSection } from '../../InteriorSection';
 import { LabelTabsSection } from '../../LabelTabsSection';
 import { ScoopSection } from '../../ScoopSection';
+import { InteriorFilletSection } from '../../InteriorFilletSection';
 import { KnifeRestSection } from '../../KnifeRestSection';
 
-/** Interior layout: compartment modes, label tabs, scoop, knife rest. */
+/** Interior layout: compartment modes, label tabs, interior fillet, scoop, knife rest. */
 export function InteriorPage() {
   const t = useTranslation();
   const { showLabelTabs, isCustomShape } = useDesignerStore(
@@ -44,6 +45,9 @@ export function InteriorPage() {
           </FeatureGate>
         </PanelSection>
       )}
+      <PanelSection helpTarget="bd-interior-fillet">
+        <InteriorFilletSection />
+      </PanelSection>
       <PanelSection helpTarget="bd-scoop">
         {footprintFix}
         <FeatureGate disabled={isCustomShape} reason={customShapeReason}>

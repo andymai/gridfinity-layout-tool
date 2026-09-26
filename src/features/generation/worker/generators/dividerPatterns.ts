@@ -33,6 +33,7 @@ import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { findCompartmentBounds, interiorDividerSegments } from './compartmentBuilder';
 import type { InteriorDividerSegment } from './compartmentBuilder';
 import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPatterns';
+import { interiorFilletCornerMm, interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 import { taperInsetAt } from './overhang';
 import type { BinDimensions } from './pipeline/types';
@@ -357,7 +358,7 @@ export function planDividerPatterns(
   // and BOTTOM_SOLID_SKIRT is the band the lowest element row anchors to.
   // Re-fitted to the divider's own height, so a shortened divider keeps whole
   // elements instead of a sliced top row.
-  const bandZ0 = params.wallThickness + BOTTOM_SOLID_SKIRT;
+  const bandZ0 = params.wallThickness + BOTTOM_SOLID_SKIRT + interiorFilletRiseMm(params);
   const bandHeight = dividerHeight - TOP_KEEP_OUT - bandZ0;
   if (bandHeight <= 0) return null;
   const bandTop = bandZ0 + bandHeight;
@@ -374,12 +375,20 @@ export function planDividerPatterns(
     params.walls.enabled && params.walls.interior.enabled ? params.walls.interior : null;
   const interiorCutHeight = dim.wallHeight - params.wallThickness;
 
+  // A rounded vertical corner at each junction widens it along the divider.
+  const junction = border + interiorFilletCornerMm(params);
   const targets: DividerPatternTarget[] = [];
   for (const seg of segments) {
-    const patternSpan = seg.wallLen - 2 * border;
+    const patternSpan = seg.wallLen - 2 * junction;
     if (patternSpan <= 0) continue;
 
-    const keepOuts: DividerKeepOut[] = crossingKeepOuts(seg, segments, thickness, border, bandTop);
+    const keepOuts: DividerKeepOut[] = crossingKeepOuts(
+      seg,
+      segments,
+      thickness,
+      junction,
+      bandTop
+    );
 
     for (const box of worldKeepOuts) {
       const hit = projectFootprint(seg, box);

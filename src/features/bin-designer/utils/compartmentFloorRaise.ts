@@ -4,6 +4,7 @@ import { binFloorMm } from '../types/base';
 import { GRIDFINITY } from '../constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import { binDimensions } from './binDimensions';
+import { compartmentHasTiltedEdge } from './compartments';
 
 /**
  * Highest floor raise the panel offers: what leaves {@link MIN_RAISED_CAVITY_MM}
@@ -20,4 +21,26 @@ export function maxCompartmentFloorRaiseMm(params: BinParams): number {
   );
   const room = interiorHeight - binFloorMm(params.wallThickness) - MIN_RAISED_CAVITY_MM;
   return Math.max(0, Math.min(MAX_COMPARTMENT_FLOOR_RAISE_MM, Math.floor(room)));
+}
+
+/**
+ * The raise the generator actually builds under one compartment, clamped the
+ * way `resolveFloorRaises` clamps it (unrounded, unlike the slider's ceiling).
+ * Zero for a compartment with a tilted edge, which the generator skips.
+ */
+export function builtCompartmentFloorRaiseMm(params: BinParams, id: number): number {
+  const raise = params.compartments.floorRaises?.[id];
+  if (typeof raise !== 'number' || !Number.isFinite(raise) || raise <= 0) return 0;
+  if (compartmentHasTiltedEdge(params.compartments, id)) return 0;
+  const { wallHeight } = binDimensions(params);
+  const interiorHeight = computeInteriorHeight(
+    wallHeight,
+    params.base.stackingLip,
+    GRIDFINITY.LIP_SMALL_TAPER
+  );
+  const ceiling = Math.min(
+    MAX_COMPARTMENT_FLOOR_RAISE_MM,
+    interiorHeight - binFloorMm(params.wallThickness) - MIN_RAISED_CAVITY_MM
+  );
+  return ceiling > 0 ? Math.min(raise, ceiling) : 0;
 }

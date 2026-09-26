@@ -51,6 +51,7 @@ import {
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { cutoutDisplacementMm3 } from '@/shared/utils/fitTestPlan';
 import { computeLabelTabVolume, rampAreaWithin, lipSupportArea } from './printLabelTabVolume';
+import { computeInteriorFilletVolume } from './printInteriorFilletVolume';
 import {
   computeWallPatternReduction,
   computeFloorPatternReduction,
@@ -143,6 +144,7 @@ export function formatFilament(meters: number): string {
  *   + Divider walls
  *   + Label tabs
  *   + Scoop ramps (fill the wall-floor corner of each compartment)
+ *   + Interior fillet (rounds every compartment's floor edges and corners)
  *   − Honeycomb wall reduction
  *
  * (The previous local hollow-box model treated the bottom 7mm as a solid slab,
@@ -255,6 +257,10 @@ function computeBinVolume(params: BinParams): number {
   // Scoop ramps are fused into the wall-floor corner of each compartment.
   if (isFeatureActive(params, 'scoop')) {
     volume += computeScoopVolume(params, outerW, outerD);
+  }
+
+  if (isFeatureActive(params, 'interiorFillet')) {
+    volume += computeInteriorFilletVolume(params, outerW, outerD);
   }
 
   // Wall pattern: perforation reduces wall material (all pattern types).

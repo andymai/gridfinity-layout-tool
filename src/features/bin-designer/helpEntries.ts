@@ -93,6 +93,16 @@ export const helpEntries: FeatureHelpEntry[] = [
   // either need conditional entries (runtime predicate) or to always mount
   // the marker. Re-add when we ship runtime-conditional entry support.
   {
+    id: 'feature/bin-designer/interior-fillet',
+    kind: 'feature',
+    titleKey: 'help.target.binDesigner.interiorFillet.title',
+    descriptionKey: 'help.target.binDesigner.interiorFillet.description',
+    keywordsKey: 'help.target.binDesigner.interiorFillet.keywords',
+    category: 'interior',
+    routes: ['designer'],
+    target: { surface: 'binDesigner:interior', controlId: 'bd-interior-fillet' },
+  },
+  {
     id: 'feature/bin-designer/scoop',
     kind: 'feature',
     titleKey: 'help.target.binDesigner.scoop.title',

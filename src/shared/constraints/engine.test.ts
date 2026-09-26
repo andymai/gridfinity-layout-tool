@@ -854,3 +854,58 @@ describe('detachable feet', () => {
     expect(getFeatureStatus(makeParams({}), 'base.detachableFeet').enabled).toBe(false);
   });
 });
+
+// =============================================================================
+// Interior fillet: an absent key is off
+// =============================================================================
+
+describe('resolveConstraints — interior fillet', () => {
+  it('turning it on writes the default radius for the wall', () => {
+    const result = resolveConstraints(makeParams(), { feature: 'interiorFillet', enabled: true });
+    expect(result.params.interiorFilletMm).toBe(2.5);
+  });
+
+  it('turning it off clears the key rather than writing 0', () => {
+    const result = resolveConstraints(makeParams({ interiorFilletMm: 3 }), {
+      feature: 'interiorFillet',
+      enabled: false,
+    });
+    expect(result.params.interiorFilletMm).toBeUndefined();
+    expect(JSON.stringify(result.params)).not.toContain('interiorFilletMm');
+  });
+
+  it('switching to slotted clears it', () => {
+    const result = resolveConstraints(makeParams({ interiorFilletMm: 3 }), {
+      feature: 'style.slotted',
+      enabled: true,
+    });
+    expect(result.autoDisabled).toContain('interiorFillet');
+    expect(result.params.interiorFilletMm).toBeUndefined();
+  });
+
+  it('is unavailable on a slotted bin', () => {
+    const status = getFeatureStatus(makeParams({ style: 'slotted' }), 'interiorFillet');
+    expect(status.available).toBe(false);
+    expect(status.reason).toBe('binDesigner.interiorFilletUnavailableSlotted');
+  });
+
+  it('an interior lightweight floor clears it, and it blocks that floor in turn', () => {
+    const lite = resolveConstraints(makeParams({ interiorFilletMm: 3 }), {
+      feature: 'base.lightweight',
+      enabled: true,
+    });
+    expect(lite.params.interiorFilletMm).toBeUndefined();
+
+    const blocked = getFeatureStatus(makeParams({ interiorFilletMm: 3 }), 'base.lightweight');
+    expect(blocked.available).toBe(false);
+  });
+
+  it('leaves the underside relief alone', () => {
+    const params = makeParams({
+      interiorFilletMm: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, lightweightMode: 'underside' },
+    });
+    const result = resolveConstraints(params, { feature: 'base.lightweight', enabled: true });
+    expect(result.params.interiorFilletMm).toBe(3);
+  });
+});

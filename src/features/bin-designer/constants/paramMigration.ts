@@ -86,7 +86,10 @@ import {
 } from './paramMigrationCutouts';
 import type { LegacyCutoutFields } from './paramMigrationCutouts';
 import { migrateSurfaceText, migrateWallLabelSlots } from './paramMigrationText';
-import { migrateBentoCompartmentFields } from './paramMigrationCompartments';
+import {
+  migrateBentoCompartmentFields,
+  migrateInteriorFilletMm,
+} from './paramMigrationCompartments';
 export { migrateWalls } from './paramMigrationWalls';
 export type { LegacyWallConfig } from './paramMigrationWalls';
 
@@ -372,6 +375,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     eco: _legacyEco,
     handles: _handlesHandled,
     slide: _slideHandled,
+    interiorFilletMm: rawInteriorFillet,
     ...rest
   } = params as Record<string, unknown>;
 
@@ -541,7 +545,14 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     extraWallHeightMm: migrateExtraWallHeightMm(
       (rest as Record<string, unknown>).extraWallHeightMm
     ),
+    // Spread rather than assigned: an absent radius must stay an absent key.
+    ...optionalInteriorFillet(rawInteriorFillet),
   };
+}
+
+function optionalInteriorFillet(raw: unknown): Pick<BinParams, 'interiorFilletMm'> {
+  const interiorFilletMm = migrateInteriorFilletMm(raw);
+  return interiorFilletMm === undefined ? {} : { interiorFilletMm };
 }
 
 /**

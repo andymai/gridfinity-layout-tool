@@ -1136,6 +1136,11 @@ const en: Record<string, string> = {
   'help.target.binDesigner.scoop.description':
     'Add a curved scoop cutout at the front of the bin so contents can be easily scooped or grabbed.',
   'help.target.binDesigner.scoop.keywords': 'scoop|finger scoop|fillet|grab|grip|access',
+  'help.target.binDesigner.interiorFillet.title': 'Interior fillet',
+  'help.target.binDesigner.interiorFillet.description':
+    'Round the edges where compartment walls meet the floor, and the corners between walls, so parts slide out and the bin wipes clean.',
+  'help.target.binDesigner.interiorFillet.keywords':
+    'fillet|bevel|rounded corners|round bottom|radius|interior|cup|bowl|cleaning',
   'help.target.binDesigner.knifeBlock.title': 'Knife block',
   'help.target.binDesigner.knifeBlock.description':
     'Hold kitchen knives lying flat: knife slots sized from blade measurements cut through a solid bin, and a handle rest carries each knife at the right height. Add slots with the knife tool in the cutout editor.',
@@ -2519,6 +2524,14 @@ const en: Record<string, string> = {
   'binDesigner.rack.exportStl': 'Export STL',
   'binDesigner.rack.exportStep': 'STEP',
   'binDesigner.fingerScoop': 'Finger scoop',
+  'binDesigner.interiorFillet.label': 'Interior fillet',
+  'binDesigner.interiorFillet.help':
+    'Rounds the edges where walls meet the floor, and the corners where they meet each other.',
+  'binDesigner.interiorFillet.radius': 'Radius',
+  'binDesigner.interiorFillet.clamped':
+    'Compartments too small for this radius round as far as they fit.',
+  'binDesigner.interiorFilletUnavailableSlotted':
+    'Not available for slotted bins: the fillet would fill the divider slots',
   'binDesigner.fingerScoopUnavailableSlotted': 'Not available for slotted or solid bins',
   'binDesigner.scoopRadius': 'Radius',
   'binDesigner.scoopRadiusAutoLabel': 'Auto',
@@ -2605,6 +2618,10 @@ const en: Record<string, string> = {
     'An interior lightweight floor has no solid floor for a scoop ramp',
   'binDesigner.scoopDisablesLightweight':
     'A finger scoop needs a solid floor: switch the mode to Underside to keep both',
+  'binDesigner.lightweightDisablesInteriorFillet':
+    'An interior lightweight floor has no solid floor for the fillet to round into',
+  'binDesigner.interiorFilletDisablesLightweight':
+    'An interior fillet needs a solid floor: switch the mode to Underside to keep both',
   'binDesigner.lightweightDisablesCutouts':
     'Cutouts are not available with an interior lightweight floor',
   'binDesigner.cutoutsDisableLightweight':
@@ -4437,6 +4454,7 @@ const en: Record<string, string> = {
   'binExamples.technique.compartments': 'Compartments',
   'binExamples.technique.wallCutouts': 'Wall cutouts',
   'binExamples.technique.scoop': 'Scoop',
+  'binExamples.technique.interiorFillet': 'Interior fillet',
   'binExamples.technique.labelTab': 'Label tab',
   'binExamples.technique.slotted': 'Slotted',
   'binExamples.technique.lid': 'Lid',
@@ -4455,6 +4473,9 @@ const en: Record<string, string> = {
   'binExamples.scoop2x3Ramp.name': '2×3 Scoop Bin',
   'binExamples.scoop2x3Ramp.description':
     'A 2×3 bin with a scoop ramp for grabbing hardware out of a larger pile.',
+  'binExamples.fillet2x2Bowls.name': '2×2 Small-Parts Bowls',
+  'binExamples.fillet2x2Bowls.description':
+    'A 2×2 bin split into nine compartments, each rounded into a bowl so screws and washers slide out with one finger.',
 
   // Bin example presets — lids
   'binExamples.lid2x2.name': '2×2 Lidded Bin',

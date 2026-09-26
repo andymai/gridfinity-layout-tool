@@ -24,6 +24,10 @@ import type { BinParams } from '@/shared/types/bin';
 import { binDimensions, cutoutInterior } from './binDimensions';
 import { buildOverrideLookup, findPairAwareRuns, overrideKey } from './compartments';
 import { DEFAULT_COMPARTMENT_COLOR_SCOPE } from '../types/compartments';
+import { binFloorMm } from '../types/base';
+import { isPartialMask } from '@/shared/utils/cellMask';
+import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
+import { builtCompartmentFloorRaiseMm } from './compartmentFloorRaise';
 import type { CompartmentColorScope } from '../types/compartments';
 
 /**
@@ -48,6 +52,13 @@ const PROBE_NUDGE_MM = 0.05;
 
 /** Slack on the cavity Z band, so a floor triangle exactly on the plane counts. */
 const Z_BAND_EPSILON_MM = 0.01;
+
+/**
+ * How far above its floor a face may sit and still read as floor under an
+ * interior fillet: the fillet's first facet off the floor is hundredths of a
+ * millimetre tall, so the colour boundary lands where the curve starts.
+ */
+const FILLET_FLOOR_BAND_MM = 0.02;
 
 export interface CompartmentColorUnit {
   readonly id: number;
@@ -78,6 +89,13 @@ export interface CompartmentColorPlan {
   /** Interior ceiling; anything above is the rim and the stacking lip. */
   readonly zMax: number;
   readonly byId: ReadonlyMap<number, CompartmentColorUnit>;
+  /**
+   * Each coloured compartment's floor top, present only when the design has an
+   * interior fillet. The fillet's lowest facets face up as steeply as the floor
+   * does, so without the floor's own plane they would take the floor's colour
+   * and move its edge partway up the curve.
+   */
+  readonly floorTopById?: ReadonlyMap<number, number>;
 }
 
 /** One entry per compartment id, in reading order over the cell array. */
@@ -191,7 +209,20 @@ export function planCompartmentColors(params: BinParams): CompartmentColorPlan |
   }
   if (cells.length === 0) return null;
 
+  // The custom-shape hollow keeps the shell's floor; every other body carries
+  // the spec floor slab (see the fillet builder, which reads the same floor).
+  const floorTop =
+    floorZ +
+    (isPartialMask(params.cellMask) ? params.wallThickness : binFloorMm(params.wallThickness));
+  const floorTopById =
+    interiorFilletRadiusMm(params) > 0
+      ? new Map(
+          [...byId.keys()].map((id) => [id, floorTop + builtCompartmentFloorRaiseMm(params, id)])
+        )
+      : undefined;
+
   return {
+    ...(floorTopById ? { floorTopById } : {}),
     cells,
     zMin: floorZ - Z_BAND_EPSILON_MM,
     // `floorZ + wallHeight` IS the rim: `wallHeight` already has the socket
@@ -243,7 +274,7 @@ export function resolveCompartmentTriColor(
 ): string | null {
   if (tri.cz < plan.zMin || tri.cz > plan.zMax) return null;
 
-  const isFloor = Math.abs(tri.nz) > COMPARTMENT_FLOOR_NORMAL_THRESHOLD;
+  const facesUpOrDown = Math.abs(tri.nz) > COMPARTMENT_FLOOR_NORMAL_THRESHOLD;
 
   // Step off the face into whatever is in front of it. A floor's normal is +Z,
   // so this is a pure Z step and the XY test is unchanged; a wall's is
@@ -255,6 +286,9 @@ export function resolveCompartmentTriColor(
     if (px < cell.x0 || px > cell.x1 || py < cell.y0 || py > cell.y1) continue;
     const unit = plan.byId.get(cell.id);
     if (!unit?.color) return null;
+    const floorTop = plan.floorTopById?.get(cell.id);
+    const isFloor =
+      facesUpOrDown && (floorTop === undefined || tri.cz <= floorTop + FILLET_FLOOR_BAND_MM);
     if (!isFloor && unit.colorScope === 'floor') return null;
     return unit.color;
   }

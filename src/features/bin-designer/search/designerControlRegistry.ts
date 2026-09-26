@@ -68,6 +68,12 @@ export const DESIGNER_CONTROL_SEARCH: readonly DesignerControlSearchEntry[] = [
     keywordsKey: 'help.target.binDesigner.labelTabs.keywords',
   },
   {
+    controlId: 'bd-interior-fillet',
+    titleKey: 'help.target.binDesigner.interiorFillet.title',
+    descriptionKey: 'help.target.binDesigner.interiorFillet.description',
+    keywordsKey: 'help.target.binDesigner.interiorFillet.keywords',
+  },
+  {
     controlId: 'bd-scoop',
     titleKey: 'help.target.binDesigner.scoop.title',
     descriptionKey: 'help.target.binDesigner.scoop.description',

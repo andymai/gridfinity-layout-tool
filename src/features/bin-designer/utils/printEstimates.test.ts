@@ -214,6 +214,20 @@ describe('printEstimates', () => {
       expect(withScoop.volumeMm3).toBeGreaterThan(withoutScoop.volumeMm3);
     });
 
+    it('interior fillet adds volume, and nothing where it cannot build', () => {
+      const plain = estimatePrint({ ...DEFAULT_BIN_PARAMS });
+      const rounded = estimatePrint({ ...DEFAULT_BIN_PARAMS, interiorFilletMm: 3 });
+      expect(rounded.volumeMm3).toBeGreaterThan(plain.volumeMm3);
+
+      const slotted = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'slotted' });
+      const slottedRounded = estimatePrint({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'slotted',
+        interiorFilletMm: 3,
+      });
+      expect(slottedRounded.volumeMm3).toBe(slotted.volumeMm3);
+    });
+
     it('a straight scoop adds more material than a curved one of the same size', () => {
       // Under a straight bevel the whole triangle (½·run·height) is filled;
       // under a curved arc only the wedge outside the quarter-ellipse

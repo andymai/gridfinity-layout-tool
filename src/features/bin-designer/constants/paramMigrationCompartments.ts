@@ -94,3 +94,15 @@ export function migrateBentoCompartmentFields(config: CompartmentConfig): Compar
     ...(cleanBackground.length > 0 ? { backgroundIds: cleanBackground } : {}),
   };
 }
+
+/**
+ * A persisted interior fillet radius, clamped to the control's range, or
+ * undefined (the key's absence, which means off) for anything unusable.
+ */
+export function migrateInteriorFilletMm(raw: unknown): number | undefined {
+  if (typeof raw !== 'number' || !Number.isFinite(raw) || raw <= 0) return undefined;
+  return Math.min(
+    DESIGNER_CONSTRAINTS.MAX_INTERIOR_FILLET,
+    Math.max(DESIGNER_CONSTRAINTS.MIN_INTERIOR_FILLET, raw)
+  );
+}

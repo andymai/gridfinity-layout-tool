@@ -78,6 +78,7 @@ export const BIN_PARAMS_KEYS = [
   'style',
   'compartments',
   'scoop',
+  'interiorFilletMm',
   'label',
   'walls',
   'slide',

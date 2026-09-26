@@ -265,6 +265,7 @@ describe('binDirectMesh — canBinUseDirectMesh gate', () => {
       { compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, cells: [0, 1] } },
     ],
     ['scoop', { scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } }],
+    ['interior fillet', { interiorFilletMm: 2.5 }],
     ['label', { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } }],
     ['wall cutouts', { walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true } }],
     ['handles', { handles: { ...DEFAULT_BIN_PARAMS.handles, enabled: true } }],

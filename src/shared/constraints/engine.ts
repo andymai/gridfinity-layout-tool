@@ -12,12 +12,29 @@ import type { FeatureKey, FeatureChange, ConstraintResolution, FeatureStatus } f
 import { FEATURE_MANIFESTS } from './features';
 import { CONSTRAINT_RULES, IMPLICATION_RULES } from './rules';
 
+/**
+ * Top-level keys a feature switches off by clearing, so a design that never used
+ * it and one that turned it off hash the same. A patch carrying one of these as
+ * `undefined` writes the `undefined` through, which serialisation drops and
+ * which `setParams`' `Object.assign` needs to see: a key merely absent from the
+ * resolved params would leave the store's stale value in place. Every other
+ * `undefined` still means "no change".
+ */
+const ABSENT_WHEN_OFF: ReadonlySet<keyof BinParams> = new Set<keyof BinParams>([
+  'interiorFilletMm',
+]);
+
 function mergeParams(base: BinParams, partial: Partial<BinParams>): BinParams {
   const result = { ...base };
 
   for (const [key, value] of Object.entries(partial)) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Object.entries can yield undefined at runtime for Partial<T>
-    if (value === undefined) continue;
+    if (value === undefined) {
+      if (ABSENT_WHEN_OFF.has(key as keyof BinParams)) {
+        (result as Record<string, unknown>)[key] = undefined;
+      }
+      continue;
+    }
 
     const k = key as keyof BinParams;
     if (k === 'base' && typeof value === 'object') {

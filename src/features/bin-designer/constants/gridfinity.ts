@@ -140,6 +140,11 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_SCOOP_RADIUS: 5, // mm — floor for both the height (rise) and run inputs
   MAX_SCOOP_RADIUS: 25, // mm — default auto-height ceiling; also the legacy manual cap
   SCOOP_RADIUS_STEP: 1, // mm
+  // Interior fillet: the build clamps each compartment to half its narrowest
+  // span and its height, so the ceiling only bounds the control.
+  MIN_INTERIOR_FILLET: 0.5, // mm
+  MAX_INTERIOR_FILLET: 15, // mm
+  INTERIOR_FILLET_STEP: 0.1, // mm
   // Two-variable custom scoop: height (rise) and run (length along the floor)
   // are steppable up to these generous ceilings; the geometry then clamps each
   // to the real interior height / compartment depth, so these only bound the UI.
