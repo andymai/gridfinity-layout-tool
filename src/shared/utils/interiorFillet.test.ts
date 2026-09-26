@@ -4,6 +4,7 @@ import {
   interiorFilletCornerMm,
   interiorFilletRadiusMm,
   interiorFilletRiseMm,
+  narrowestCavitySpansMm,
 } from './interiorFillet';
 
 describe('interior fillet reach', () => {
@@ -32,5 +33,32 @@ describe('interior fillet reach', () => {
     );
     expect(interiorFilletCornerMm({ interiorFilletMm: 6, wallThickness: 1.2 })).toBe(6);
     expect(interiorFilletCornerMm({ wallThickness: 1.2 })).toBe(0);
+  });
+});
+
+describe('narrowestCavitySpansMm', () => {
+  const base = {
+    width: 2,
+    depth: 2,
+    gridUnitMm: 42,
+    wallThickness: 1.2,
+  };
+
+  it('measures a merged L by its thinner arm, not its bounding box', () => {
+    const spans = narrowestCavitySpansMm({
+      ...base,
+      compartments: { cols: 2, rows: 2, cells: [0, 0, 0, 1], thickness: 1.2 },
+    });
+    const cell = (84 - 0.5 - 2.4) / 2;
+    expect(spans.get(0)).toBeCloseTo(cell - 0.6, 6);
+  });
+
+  it('measures a custom shape across its own mask cells', () => {
+    const spans = narrowestCavitySpansMm({
+      ...base,
+      compartments: { cols: 1, rows: 1, cells: [0], thickness: 1.2 },
+      cellMask: { cols: 4, rows: 4, cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0] },
+    });
+    expect(spans.get(0)).toBeCloseTo(42 - 2.4 - 0.5, 6);
   });
 });

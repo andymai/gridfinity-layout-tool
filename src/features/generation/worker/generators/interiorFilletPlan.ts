@@ -501,6 +501,11 @@ function projectOnto(g: FilletPt, p: FilletPt, d: FilletPt): FilletPt {
  * wall when they coincide; when they do not (neighbouring dividers tilted
  * differently along one grid line) the step between them is taken at the grid
  * vertex they share.
+ *
+ * Two dividers meeting at a corner are separate finite segments that end at
+ * their grid vertex. Tilted or leaned far enough that their faces meet more than
+ * a divider's thickness from it, the body itself leaves a gap there, and no
+ * corner drawn from the lines would match it: the compartment is skipped.
  */
 interface Corner extends FilletPt {
   /** Both sides are the bin's own wall, so the shell has rounded it. */
@@ -520,17 +525,21 @@ function intersectSides(
   for (let i = 0; i < n; i++) {
     const s = sides[i];
     const t = sides[(i + 1) % n];
-    const hit = lineIntersection(s[at], s.dir, t[at], t.dir);
-    if (hit) {
-      const betweenWalls = runs[i].across < 0 && runs[(i + 1) % n].across < 0;
-      out.push({ ...hit, betweenWalls });
-      continue;
-    }
     const gv = runs[i].b;
     const g = {
       x: -innerW / 2 + (gv[0] * innerW) / cols,
       y: -innerD / 2 + (gv[1] * innerD) / rows,
     };
+    const hit = lineIntersection(s[at], s.dir, t[at], t.dir);
+    if (hit) {
+      const bothDividers = runs[i].across >= 0 && runs[(i + 1) % n].across >= 0;
+      if (bothDividers && Math.hypot(hit.x - g.x, hit.y - g.y) > params.compartments.thickness) {
+        return null;
+      }
+      const betweenWalls = runs[i].across < 0 && runs[(i + 1) % n].across < 0;
+      out.push({ ...hit, betweenWalls });
+      continue;
+    }
     const u = projectOnto(g, s[at], s.dir);
     const v = projectOnto(g, t[at], t.dir);
     if (Math.hypot(u.x - v.x, u.y - v.y) < EPS) continue;

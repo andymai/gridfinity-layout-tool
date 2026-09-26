@@ -3,36 +3,11 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
-import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
-import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import { clamp } from '@/shared/utils/math';
-import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
+import { interiorFilletRadiusMm, narrowestCavitySpansMm } from '@/shared/utils/interiorFillet';
 import { getFeatureStatus, resolveConstraints } from '@/shared/constraints';
-import type { BinParams } from '@/shared/types/bin';
 
 const { MIN_INTERIOR_FILLET, MAX_INTERIOR_FILLET } = DESIGNER_CONSTRAINTS;
-
-/**
- * Half the narrowest compartment's shorter side: past it, that compartment
- * rounds as far as it fits rather than to the radius asked for.
- */
-function narrowestHalfSpan(params: BinParams): number {
-  const { innerW, innerD } = binDimensions(params);
-  const { cols, rows, cells, thickness } = params.compartments;
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
-  let narrowest = Infinity;
-  for (const id of new Set(cells)) {
-    const b = getCompartmentBounds(params.compartments, id);
-    if (!b) continue;
-    const dividers = (n: number, lo: number, hi: number): number =>
-      ((lo > 0 ? 1 : 0) + (hi < n - 1 ? 1 : 0)) * (thickness / 2);
-    const w = (b.maxCol - b.minCol + 1) * cellW - dividers(cols, b.minCol, b.maxCol);
-    const d = (b.maxRow - b.minRow + 1) * cellD - dividers(rows, b.minRow, b.maxRow);
-    narrowest = Math.min(narrowest, w, d);
-  }
-  return narrowest / 2;
-}
 
 export function useInteriorFilletSection() {
   const { params, setParams, setParam } = useDesignerStore(
@@ -43,8 +18,10 @@ export function useInteriorFilletSection() {
   const status = getFeatureStatus(params, 'interiorFillet');
   const radius = interiorFilletRadiusMm(params);
   const enabled = radius > 0;
+  // Past half the narrowest cavity span, that cavity rounds as far as it fits
+  // rather than to the radius asked for.
   const clamped = useMemo(
-    () => enabled && radius >= narrowestHalfSpan(params),
+    () => enabled && radius >= Math.min(...narrowestCavitySpansMm(params).values()) / 2,
     [enabled, radius, params]
   );
 

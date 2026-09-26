@@ -80,8 +80,9 @@ export function planBinInteriorFillets(input: InteriorFilletBuild): CompartmentF
 }
 
 /**
- * The floor each fillet covers, as boxes along every side: a floor pattern
- * hole reaching into one would leave a half-hole in the curve.
+ * The floor each fillet covers, as boxes along every side and a box around
+ * every rounded corner (whose radius can be wider than the floor fillet's): a
+ * floor pattern hole reaching into one would leave a half-hole in the curve.
  */
 export function interiorFilletFloorFootprints(
   input: InteriorFilletBuild
@@ -103,6 +104,10 @@ export function interiorFilletFloorFootprints(
         yMin: Math.min(...ys),
         yMax: Math.max(...ys),
       });
+      if (a.convex) {
+        const c = plan.cornerRadius;
+        out.push({ xMin: a.x - c, xMax: a.x + c, yMin: a.y - c, yMax: a.y + c });
+      }
     }
   }
   return out;

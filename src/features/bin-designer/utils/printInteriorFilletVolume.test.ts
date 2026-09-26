@@ -54,3 +54,22 @@ describe('computeInteriorFilletVolume', () => {
     expect(at(15)).toBe(at(12));
   });
 });
+
+describe('computeInteriorFilletVolume on a custom shape', () => {
+  const lShape = {
+    cols: 4,
+    rows: 4,
+    cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0] as (0 | 1)[],
+  };
+
+  it('prices the mask outline, at the shell corners it already has', () => {
+    const l = computeInteriorFilletVolume(
+      bin({ width: 2, depth: 2, interiorFilletMm: 2.5, cellMask: lShape }),
+      83.5,
+      83.5
+    );
+    // An L cut from the corner of an 84mm square keeps the square's perimeter.
+    const perimeter = 4 * 84;
+    expect(l).toBeCloseTo(CROSS_SECTION * 2.5 * 2.5 * perimeter, 6);
+  });
+});

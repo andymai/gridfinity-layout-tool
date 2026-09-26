@@ -125,6 +125,19 @@ describe('planInteriorFillets', () => {
     for (const plan of plans) expect(plan.zTop).toBe(12);
   });
 
+  it('skips a compartment whose dividers are tilted apart at their shared corner', () => {
+    const plans = planInteriorFillets(
+      input({
+        compartments: {
+          ...quartered,
+          dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 6 }],
+        },
+      })
+    );
+    expect(plans.find((p) => p.id === 0)).toBeUndefined();
+    expect(plans.find((p) => p.id === 3)).toBeDefined();
+  });
+
   it('builds nothing where no fillet fits', () => {
     const plans = planInteriorFillets(input({}, { interiorHeight: 2.5 }));
     expect(plans).toHaveLength(0);
