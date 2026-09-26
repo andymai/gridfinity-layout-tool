@@ -6,9 +6,10 @@
  * export watertight, so each case measures the rounding itself: the floor's
  * height a fraction of a radius in from a wall (a quarter circle there rises
  * by a known amount), and the volume it adds over the same bin without it.
- * The export solid must still be ONE closed shell (χ = 2), because the fillet
- * fuses in as a separate solid per compartment and a fuse that kept them as
- * overlapping shells would pass every other check.
+ * The export solid must keep the sharp bin's Euler characteristic (2 for one
+ * closed shell, 0 for a ring), because the fillet fuses in as a separate solid
+ * per compartment and a fuse that kept them as overlapping shells would pass
+ * every other check.
  */
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
@@ -58,11 +59,10 @@ function cavity(params: BinParams): Cavity {
   };
 }
 
-function expectOneShell(mesh: MeshData): void {
-  const { boundaryEdges, nonManifoldEdges, eulerCharacteristic } = meshTopologyStats(mesh);
+function expectClosedManifold(mesh: MeshData): void {
+  const { boundaryEdges, nonManifoldEdges } = meshTopologyStats(mesh);
   expect(boundaryEdges).toBe(0);
   expect(nonManifoldEdges).toBe(0);
-  expect(eulerCharacteristic).toBe(2);
 }
 
 /**
@@ -92,13 +92,16 @@ function filletCase(
     forExport: true,
     params,
     customAssert: (mesh, full) => {
-      expectOneShell(mesh);
+      expectClosedManifold(mesh);
       extra?.(mesh, full);
     },
     compareWith: {
       params: sharpSibling(params),
       forExport: true,
       assert: (rounded, sharp) => {
+        expect(meshTopologyStats(rounded).eulerCharacteristic).toBe(
+          meshTopologyStats(sharp).eulerCharacteristic
+        );
         expect(meshVolume(rounded)).toBeGreaterThan(meshVolume(sharp) + 1);
         const a = boundingBox(rounded.vertices);
         const b = boundingBox(sharp.vertices);
@@ -295,6 +298,36 @@ export const interiorFillet: ScenarioCase[] = [
     width: 2,
     depth: 2,
     height: 3,
+    interiorFilletMm: 2.55,
+    cellMask: { cols: 4, rows: 4, cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0] },
+  }),
+  filletCase(
+    'a ring-shaped custom bin keeps its hole open',
+    {
+      width: 3,
+      depth: 3,
+      height: 3,
+      interiorFilletMm: 2.55,
+      cellMask: {
+        cols: 6,
+        rows: 6,
+        cells: [
+          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+          1, 1, 1, 1, 1, 1,
+        ],
+      },
+    },
+    (mesh, params) => {
+      // Straight down through the hole: nothing at all, not even a skin.
+      const dim = deriveDimensions(params, true);
+      expect(columnCrossings(mesh, dim.innerOffsetX, dim.innerOffsetY)).toHaveLength(0);
+    }
+  ),
+  filletCase('a custom shape on a non-square pitch stays inside its walls', {
+    width: 2,
+    depth: 2,
+    height: 3,
+    gridUnitMmY: 36,
     interiorFilletMm: 2.55,
     cellMask: { cols: 4, rows: 4, cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0] },
   }),

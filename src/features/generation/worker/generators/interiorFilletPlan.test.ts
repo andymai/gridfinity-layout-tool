@@ -20,6 +20,7 @@ function input(
     bakedCavities: false,
     floorRaise: () => 0,
     radius: 2,
+    pitch: { x: 42, y: 42 },
     ...extra,
   };
 }

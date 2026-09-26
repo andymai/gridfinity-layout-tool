@@ -64,6 +64,8 @@ export interface InteriorFilletInput {
   readonly bakedCavities: boolean;
   readonly floorRaise: (id: number) => number;
   readonly radius: number;
+  /** Grid pitch the shell was built with; a custom shape's outline scales by it. */
+  readonly pitch: { readonly x: number; readonly y: number };
 }
 
 /** Below this a compartment keeps its sharp junctions. */
@@ -290,7 +292,7 @@ function planMaskCavity(input: InteriorFilletInput): CompartmentFilletPlan | nul
   // `buildMaskDrawingInset`'s radius, so reflex corners match the body.
   const { vertices, radius } = maskOuterLoopAtInset(
     mask,
-    params.gridUnitMm,
+    input.pitch,
     CLEARANCE / 2 + inset,
     Math.max(BOX_CORNER_RADIUS - inset, 0)
   );

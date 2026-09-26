@@ -29,9 +29,21 @@ export function interiorFilletRadiusMm(params: Pick<BinParams, 'interiorFilletMm
   return typeof r === 'number' && Number.isFinite(r) && r > 0 ? r : 0;
 }
 
-/** Height the fillet climbs every wall and divider, above the floor. */
-export function interiorFilletRiseMm(params: Pick<BinParams, 'interiorFilletMm'>): number {
-  return interiorFilletRadiusMm(params);
+/**
+ * Height above the base floor the fillet can climb a wall or divider: its
+ * radius, standing on the highest raised compartment floor.
+ */
+export function interiorFilletRiseMm(
+  params: Pick<BinParams, 'interiorFilletMm'> & {
+    readonly compartments: Pick<BinParams['compartments'], 'floorRaises'>;
+  }
+): number {
+  const r = interiorFilletRadiusMm(params);
+  if (r === 0) return 0;
+  const raises = (params.compartments.floorRaises ?? []).filter(
+    (raise): raise is number => typeof raise === 'number' && Number.isFinite(raise) && raise > 0
+  );
+  return r + Math.max(0, ...raises);
 }
 
 /**

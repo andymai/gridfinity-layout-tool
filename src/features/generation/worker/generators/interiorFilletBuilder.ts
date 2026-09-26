@@ -33,6 +33,7 @@ import { COPLANAR_MARGIN } from './generatorConstants';
 import { planInteriorFillets } from './interiorFilletPlan';
 import type { CompartmentFilletPlan, FilletPt, FilletVertex } from './interiorFilletPlan';
 import { resolveFloorRaises } from './floorRaiseBuilder';
+import { buildMaskHoleDrawings, maskHasHoles } from './maskPolygon';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';
 import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
@@ -74,6 +75,7 @@ export function planBinInteriorFillets(input: InteriorFilletBuild): CompartmentF
     bakedCavities: dim.compartmentsBakedIntoShell,
     floorRaise: (id) => raises.get(id) ?? 0,
     radius: input.radius,
+    pitch: { x: dim.gridUnitMmX, y: dim.gridUnitMmY },
   });
 }
 
@@ -127,6 +129,7 @@ export function buildInteriorFillet(input: InteriorFilletBuild): Shape3D | null 
     let fused =
       pieces.length === 1 ? pieces[0] : scope.register(unwrap(fuseAll(pieces as ValidSolid[])));
     fused = clipToTaper(scope, fused, params, dim, pen);
+    fused = clearMaskHoles(scope, fused, params, dim);
     fused = trimDoorways(scope, fused, params, dim, plans);
     return unwrap(clone(fused));
   });
@@ -320,6 +323,31 @@ function clipToTaper(
   } catch {
     return solid;
   }
+}
+
+/**
+ * The traced outline is a custom shape's outer loop alone, so the grown air
+ * spans any hole through the bin, and its floor skin would close the hole with a
+ * membrane. Cut the holes back out, at the clearance the shell cuts them with.
+ */
+function clearMaskHoles(
+  scope: DisposalScope,
+  solid: Shape3D,
+  params: BinParams,
+  dim: BinDimensions
+): Shape3D {
+  const mask = params.cellMask;
+  if (!mask || !isPartialMask(mask) || !maskHasHoles(mask)) return solid;
+  let result = solid;
+  for (const hole of buildMaskHoleDrawings(mask, { x: dim.gridUnitMmX, y: dim.gridUnitMmY })) {
+    const tool = scope.register(hole.sketchOnPlane('XY', -1).extrude(dim.wallHeight + 2));
+    try {
+      result = scope.register(unwrap(cut(result as ValidSolid, tool as ValidSolid)));
+    } catch {
+      return result;
+    }
+  }
+  return result;
 }
 
 /**

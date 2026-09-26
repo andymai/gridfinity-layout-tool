@@ -16,7 +16,13 @@ describe('interior fillet reach', () => {
   it('reads an absent or unusable radius as off', () => {
     expect(interiorFilletRadiusMm({})).toBe(0);
     expect(interiorFilletRadiusMm({ interiorFilletMm: Number.NaN })).toBe(0);
-    expect(interiorFilletRiseMm({ interiorFilletMm: 4 })).toBe(4);
+    expect(interiorFilletRiseMm({ interiorFilletMm: 4, compartments: {} })).toBe(4);
+  });
+
+  it('rises from the highest raised compartment floor', () => {
+    const compartments = { floorRaises: [null, 6, 2] };
+    expect(interiorFilletRiseMm({ interiorFilletMm: 3, compartments })).toBe(9);
+    expect(interiorFilletRiseMm({ compartments })).toBe(0);
   });
 
   it('never reports a corner narrower than the shell already rounds', () => {

@@ -1,8 +1,3 @@
-/**
- * Interior fillet: rounds every compartment's wall-to-floor edges and its
- * vertical corners to one radius, the look of a cup rather than a box.
- */
-
 import { SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
