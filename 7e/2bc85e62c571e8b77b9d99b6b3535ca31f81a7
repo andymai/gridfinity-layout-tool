@@ -1,0 +1,37 @@
+src/features/bin-designer/components/panel/InteriorFilletSection/useInteriorFilletSection.ts
+  s_6231a44d9b968c::t_0e1caad729e3f3 7,21-22,24
+src/features/generation/worker/generators/interiorFilletPlan.ts
+  s_6231a44d9b968c::t_b035ab24dfd012 504-508,528-532,535-538
+src/shared/utils/interiorFillet.test.ts
+  s_6231a44d9b968c::t_77608020cb2fed 7,38-63
+  s_6231a44d9b968c::t_b41e2004424381 64
+src/features/bin-designer/utils/printInteriorFilletVolume.ts
+  s_6231a44d9b968c::t_6e2b86b00e1c1b 17,55-57
+  s_6231a44d9b968c::t_d252dd803a6833 5-9,18-22,43-54,58-73,79-81,83-89,101
+src/shared/utils/interiorFillet.ts
+  s_6231a44d9b968c::t_9ff265f26a6b2a 12,61-137
+src/features/generation/worker/generators/interiorFilletPlan.test.ts
+  s_6231a44d9b968c::t_b035ab24dfd012 128-140
+src/features/bin-designer/utils/printInteriorFilletVolume.test.ts
+  s_6231a44d9b968c::t_4a0c694af8381f 65,73
+  s_6231a44d9b968c::t_6e2b86b00e1c1b 71-72
+  s_6231a44d9b968c::t_77608020cb2fed 57-64,66-70,74-75
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_6231a44d9b968c::t_016adbb4e6bbe5 83-85,107-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7e2bc85e62c571e8b77b9d99b6b3535ca31f81a7",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
