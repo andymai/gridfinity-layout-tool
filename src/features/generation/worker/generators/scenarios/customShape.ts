@@ -16,6 +16,7 @@ import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_HANDLE_SIDE,
   DISABLED_WALL_CUTOUT,
+  GRIDFINITY,
 } from '@/shared/constants/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { BinParams } from '@/shared/types/bin';
@@ -124,7 +125,8 @@ const O_SHAPE_MASK: CellMask = buildMask([
 
 /** Probe coordinates of grid cell (col, row) counted from the bin's bottom-left. */
 function cellCentre(params: BinParams, col: number, row: number): [number, number] {
-  return [(col + 0.5 - params.width / 2) * 42, (row + 0.5 - params.depth / 2) * 42];
+  const pitch = GRIDFINITY.GRID_SIZE;
+  return [(col + 0.5 - params.width / 2) * pitch, (row + 0.5 - params.depth / 2) * pitch];
 }
 
 function expectStandardFloor(mesh: MeshData, params: BinParams, col: number, row: number): void {
