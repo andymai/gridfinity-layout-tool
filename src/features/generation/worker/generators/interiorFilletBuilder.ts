@@ -32,8 +32,9 @@ import {
 } from './interiorFilletGeometry';
 import { buildScoopedCompartmentFillet, climbedRamps, rampCap } from './interiorFilletScoop';
 import type { CompartmentRamps } from './interiorFilletScoop';
-import { filletClimbsRamps, fuseScoopRamps, scoopRampsApply } from './scoopRampBuilder';
-import { resolveFloorRaises } from './floorRaiseBuilder';
+import { filletClimbsRamps, fuseScoopRamps } from './scoopRampBuilder';
+import { scoopRampsApply } from './scoopRampPlan';
+import { resolveFloorRaises } from './floorRaisePlan';
 import { buildMaskHoleDrawings, maskHasHoles } from './maskPolygon';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
 import type { ResolvedTaper } from './overhang';

@@ -8,11 +8,12 @@
  */
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
-import { defineScenario } from '../__kernel-tests__/scenarioTypes';
-import { meshVolume } from '../__kernel-tests__/meshAssertions';
+import { buildParams, defineScenario } from '../__kernel-tests__/scenarioTypes';
+import { compareRaisedColumns, meshVolume } from '../__kernel-tests__/meshAssertions';
+import { deriveDimensions } from '../pipeline/context';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import type { MeshData } from '@/features/generation/bridge/types';
-import type { CompartmentConfig } from '@/shared/types/bin';
+import type { BinParams, CompartmentConfig } from '@/shared/types/bin';
 
 /**
  * Assert the divider option actually perforated the dividers.
@@ -48,6 +49,16 @@ const ALL_SIDES_OFF = {
 } as const;
 
 const TWO_BY_TWO: CompartmentConfig = { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 };
+
+const SCOOPED_ON_DIVIDERS: Partial<BinParams> = {
+  width: 2,
+  depth: 2,
+  height: 6,
+  wallPattern: { enabled: true, pattern: 'honeycomb', dividers: false },
+  compartments: TWO_BY_TWO,
+  scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['back', 'left'] },
+  walls: ALL_SIDES_OFF,
+};
 
 export const dividerPatterns: ScenarioCase[] = [
   // ── The core promise: dividers carry the pattern ──────────────────────────
@@ -113,13 +124,37 @@ export const dividerPatterns: ScenarioCase[] = [
 
   defineScenario('divider patterns', 'dividers + back and side scoops keep their footings solid', {
     params: {
-      width: 2,
-      depth: 2,
-      height: 6,
+      ...SCOOPED_ON_DIVIDERS,
       wallPattern: { enabled: true, pattern: 'honeycomb', dividers: true },
-      compartments: TWO_BY_TWO,
-      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, sides: ['back', 'left'] },
-      walls: ALL_SIDES_OFF,
+    },
+    compareWith: {
+      params: SCOOPED_ON_DIVIDERS,
+      assert: (patterned, plain) => {
+        const dim = deriveDimensions(buildParams(SCOOPED_ON_DIVIDERS), false);
+        const [cx, cy] = [dim.innerOffsetX, dim.innerOffsetY];
+        // A divider cut overshoots each face by a millimetre, so a hole beside
+        // a ramp shows in the columns just off the face; the divider itself is
+        // meant to be cut.
+        const face = TWO_BY_TWO.thickness / 2 + 0.05;
+        const { mismatched, raised, differingElsewhere } = compareRaisedColumns(
+          patterned,
+          plain,
+          {
+            xMin: cx - dim.innerW / 2,
+            xMax: cx + dim.innerW / 2,
+            yMin: cy - dim.innerD / 2,
+            yMax: cy + dim.innerD / 2,
+          },
+          dim.baseOffsetZ + dim.floorThickness,
+          (x, y) => Math.abs(x - cx) < face || Math.abs(y - cy) < face
+        );
+        expect(mismatched, 'a divider hole cut into a ramp').toEqual([]);
+        expect(differingElsewhere, 'the dividers were not perforated').toBeGreaterThan(0);
+        // The ramps the divider keep-outs protect: a front compartment's back
+        // ramp and a right compartment's left ramp, each starting on a divider.
+        expect(raised.some(([, y]) => y < cy - face && y > cy - face - 1)).toBe(true);
+        expect(raised.some(([x]) => x > cx + face && x < cx + face + 1)).toBe(true);
+      },
     },
   }),
 

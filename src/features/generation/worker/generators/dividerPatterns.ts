@@ -17,28 +17,17 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { compartmentHasTiltedEdge, isRectangularCompartment } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
-import {
-  computeInteriorHeight,
-  scoopFrameHeights,
-  computeLipOffset,
-  resolveScoopProfile,
-  resolveScoopPlacement,
-  resolveScoopSides,
-  scoopArcAnchors,
-  scoopFaceOffset,
-} from '@/shared/utils/scoopCalculations';
 import { labelLipReservationMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
 import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { findCompartmentBounds, interiorDividerSegments } from './compartmentBuilder';
 import type { InteriorDividerSegment } from './compartmentBuilder';
 import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPatterns';
 import { interiorFilletCornerMm, interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
-import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
-import { taperInsetAt } from './overhang';
+import { resolveFloorRaises } from './floorRaisePlan';
+import { planScoopRamps, scoopRampsApply } from './scoopRampPlan';
 import type { BinDimensions } from './pipeline/types';
 
 /**
@@ -143,7 +132,9 @@ function projectFootprint(
     // scoop footprint starts exactly ON the compartment boundary, i.e. on the
     // divider line) into a garbage finite ratio that truncates the keep-out.
     if (Math.abs(p) < PARALLEL_EPSILON) {
-      if (q < 0) return null;
+      // The same dust puts a column divider's line a hair to one side of a
+      // box edge laid exactly on it, which a strict `q < 0` reads as disjoint.
+      if (q < -PARALLEL_EPSILON) return null;
       continue;
     }
     const r = q / p;
@@ -160,78 +151,41 @@ function projectFootprint(
 }
 
 /**
- * Scoop ramp footprints in world space.
- *
- * Mirrors `scoopRampBuilder`: one ramp per compartment for each scooped wall,
- * spanning the compartment along that wall and reaching `floorStart + run` in
- * from it, up to the profile height.
+ * Scoop ramp footprints in world space: the ramps `planScoopRamps` places for
+ * the builder, each reaching `floorStart + run` in from its wall and standing
+ * on its own compartment's floor.
  *
  * Coordinates are in the INTERIOR frame (centred on the cavity), so a caller
  * working in bin coordinates must add `innerOffsetX/Y`. Shared with the floor
  * pattern, whose holes must not undercut a ramp's foot either.
  */
 export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
-  if (!params.scoop.enabled) return [];
-  const { innerW, innerD, wallHeight, hasLip, floorThickness } = dim;
-  const taper = dim.overhang.taper;
-  const { cols, rows, cells } = params.compartments;
-  const frame = scoopFrameHeights(
-    wallHeight,
-    computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER),
-    floorThickness
+  if (!scoopRampsApply(params, dim)) return [];
+  const raises = resolveFloorRaises(params, dim.floorThickness, dim.interiorHeight);
+  const ramps = planScoopRamps(
+    params,
+    dim.innerW,
+    dim.innerD,
+    dim.wallHeight,
+    params.wallThickness,
+    dim.floorThickness,
+    (id) => raises.get(id) ?? 0,
+    dim.overhang.taper
   );
-  const sides = resolveScoopSides(params.scoop);
-
-  const out: WorldKeepOut[] = [];
-  const seen = new Set<number>();
-  for (const compId of cells) {
-    if (seen.has(compId)) continue;
-    seen.add(compId);
-    if (compartmentHasTiltedEdge(params.compartments, compId)) continue;
-    // Same two gates the ramp builder applies, or this reserves space for a
-    // scoop that is never built.
-    if (!isRectangularCompartment(params.compartments, compId)) continue;
-    const bounds = findCompartmentBounds(compId, cols, rows, cells);
-    if (!bounds) continue;
-    for (const side of sides) {
-      const { span, depth, isOuter, alongCenter, edge, runsAlongY, runSign } =
-        resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
-      const lipOffset = computeLipOffset(hasLip, isOuter, LIP_TAPER_WIDTH, params.wallThickness);
-      const profile = resolveScoopProfile(
-        params.scoop,
-        span,
-        depth,
-        isOuter,
-        hasLip,
-        frame.wallHeight,
-        frame.interiorHeight,
-        lipOffset
-      );
-      if (!profile) continue;
-      // Against a tapered outer wall the ramp rides the wall's inset, so its toe
-      // reaches further in than `lipOffset + run` from the rim edge.
-      const wallAt = (z: number): number =>
-        taper && isOuter ? taperInsetAt(taper, taper[side], z, wallHeight) : 0;
-      const { floorStart } = scoopArcAnchors(
-        lipOffset,
-        wallAt(floorThickness + profile.height),
-        wallAt(floorThickness),
-        scoopFaceOffset(isOuter, params.compartments.thickness)
-      );
-      const toe = edge + runSign * (floorStart + profile.run);
-      const [runLo, runHi] = [Math.min(edge, toe), Math.max(edge, toe)];
-      const [acrossLo, acrossHi] = [alongCenter - span / 2, alongCenter + span / 2];
-      out.push({
-        xMin: runsAlongY ? acrossLo : runLo,
-        xMax: runsAlongY ? acrossHi : runHi,
-        yMin: runsAlongY ? runLo : acrossLo,
-        yMax: runsAlongY ? runHi : acrossHi,
-        zMin: floorThickness,
-        zMax: floorThickness + profile.height,
-      });
-    }
-  }
-  return out;
+  return ramps.map(({ placement, floorZ, height, floorStart, run }) => {
+    const { span, alongCenter, edge, runsAlongY, runSign } = placement;
+    const toe = edge + runSign * (floorStart + run);
+    const [runLo, runHi] = [Math.min(edge, toe), Math.max(edge, toe)];
+    const [acrossLo, acrossHi] = [alongCenter - span / 2, alongCenter + span / 2];
+    return {
+      xMin: runsAlongY ? acrossLo : runLo,
+      xMax: runsAlongY ? acrossHi : runHi,
+      yMin: runsAlongY ? runLo : acrossLo,
+      yMax: runsAlongY ? runHi : acrossHi,
+      zMin: floorZ,
+      zMax: floorZ + height,
+    };
+  });
 }
 
 /**
