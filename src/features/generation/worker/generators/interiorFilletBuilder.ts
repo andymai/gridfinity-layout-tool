@@ -60,9 +60,7 @@ export function planBinInteriorFillets(input: InteriorFilletBuild): CompartmentF
     params,
     innerW: dim.innerW,
     innerD: dim.innerD,
-    // The custom-shape hollow never gets the spec floor slab `buildBinBox`
-    // fuses onto every other body, so its cavity floor is still the shell's.
-    floorZ: isPartialMask(params.cellMask) ? params.wallThickness : dim.floorThickness,
+    floorZ: dim.floorThickness,
     interiorHeight: dim.interiorHeight,
     dividerHeight: dim.compartmentsBakedIntoShell
       ? dim.wallHeight

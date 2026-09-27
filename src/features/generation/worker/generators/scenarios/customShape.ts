@@ -18,8 +18,13 @@ import {
   DISABLED_WALL_CUTOUT,
 } from '@/shared/constants/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { BinParams } from '@/shared/types/bin';
+import type { MeshData } from '@/features/generation/bridge/types';
+import { expect } from 'vitest';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
+import { columnCrossings } from '../__kernel-tests__/meshAssertions';
+import { deriveDimensions } from '../pipeline/context';
 
 /**
  * Build a cellMask at half-bin resolution from a 2D array where row 0 is
@@ -117,7 +122,49 @@ const O_SHAPE_MASK: CellMask = buildMask([
   [1, 1, 1, 1, 1, 1],
 ]);
 
+/** Probe coordinates of grid cell (col, row) counted from the bin's bottom-left. */
+function cellCentre(params: BinParams, col: number, row: number): [number, number] {
+  return [(col + 0.5 - params.width / 2) * 42, (row + 0.5 - params.depth / 2) * 42];
+}
+
+function expectStandardFloor(mesh: MeshData, params: BinParams, col: number, row: number): void {
+  const dim = deriveDimensions(params, false);
+  const [x, y] = cellCentre(params, col, row);
+  expect(Math.max(...columnCrossings(mesh, x, y))).toBeCloseTo(
+    dim.baseOffsetZ + dim.floorThickness,
+    1
+  );
+}
+
 export const customShapes: ScenarioCase[] = [
+  defineScenario('custom-shape', '3×3 L floor stands at the standard floor height', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: L_SHAPE_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    },
+    customAssert: (mesh, params) => {
+      expectStandardFloor(mesh, params, 0, 0);
+      expectStandardFloor(mesh, params, 1, 1);
+      expect(columnCrossings(mesh, ...cellCentre(params, 2, 0))).toEqual([]);
+    },
+  }),
+  defineScenario('custom-shape', '3×3 O-shape floor stands at the standard floor height', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: O_SHAPE_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    },
+    customAssert: (mesh, params) => {
+      expectStandardFloor(mesh, params, 0, 0);
+      expectStandardFloor(mesh, params, 2, 2);
+      expect(columnCrossings(mesh, ...cellCentre(params, 1, 1))).toEqual([]);
+    },
+  }),
   defineScenario('custom-shape', '3×3 L with lip', {
     params: {
       width: 3,
