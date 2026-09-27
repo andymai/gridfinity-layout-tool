@@ -1,0 +1,32 @@
+src/shared/utils/interiorFillet.ts
+  s_6231a44d9b968c::t_7bc543a3136bd2 71-79,117,122-137
+  s_6231a44d9b968c::t_21cd92acd8addc 138-139
+src/shared/utils/interiorFillet.test.ts
+  s_6231a44d9b968c::t_7bc543a3136bd2 43-44,58-74
+  s_6231a44d9b968c::t_b47cdb64d2f17b 75-76
+src/features/bin-designer/utils/printInteriorFilletVolume.ts
+  s_6231a44d9b968c::t_7bc543a3136bd2 36-38,41
+src/features/bin-designer/utils/printInteriorFilletVolume.test.ts
+  s_6231a44d9b968c::t_c7a1bdba5a4e4c 5-7,78-89
+  s_6231a44d9b968c::t_d0c947b43ef0b1 90
+src/features/generation/worker/generators/dividerBlendBuilder.cacheKey.test.ts
+  s_6231a44d9b968c::t_aa9b3cb42a50a7 1-30
+src/features/generation/worker/generators/dividerBlendBuilder.ts
+  s_6231a44d9b968c::t_7bc543a3136bd2 302-303
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "395090409a42f70f8ad0649095c620e729371489",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
