@@ -299,7 +299,8 @@ export const dividerBlendFeature: FeatureBuilder = {
         dim.hasLip,
         // Tilted dividers are excluded from blends, so a tilt change alters
         // which junctions blend and must invalidate the cached cut.
-        stableSerialize(params.compartments.dividerOverrides ?? [])
+        stableSerialize(params.compartments.dividerOverrides ?? []),
+        quantize(interiorFilletCornerMm(params))
       )
     );
   },

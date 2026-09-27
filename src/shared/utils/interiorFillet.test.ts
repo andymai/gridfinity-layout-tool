@@ -40,6 +40,8 @@ describe('narrowestCavitySpansMm', () => {
   const base = {
     width: 2,
     depth: 2,
+    height: 4,
+    heightUnitMm: 7,
     gridUnitMm: 42,
     wallThickness: 1.2,
   };
@@ -51,6 +53,25 @@ describe('narrowestCavitySpansMm', () => {
     });
     const cell = (84 - 0.5 - 2.4) / 2;
     expect(spans.get(0)).toBeCloseTo(cell - 0.6, 6);
+  });
+
+  it('narrows a compartment beside a shifted or leaning divider', () => {
+    const cell = (84 - 0.5 - 2.4) / 2;
+    const spans = narrowestCavitySpansMm({
+      ...base,
+      compartments: {
+        cols: 2,
+        rows: 1,
+        cells: [0, 1],
+        thickness: 1.2,
+        dividerOverrides: [
+          { compartmentA: 0, compartmentB: 1, offsetStart: -3, offsetEnd: 1, rakeDeg: 5 },
+        ],
+      },
+    });
+    const lean = Math.tan((5 * Math.PI) / 180) * 28;
+    expect(spans.get(0)).toBeCloseTo(cell - 0.6 - 3 - lean, 6);
+    expect(spans.get(1)).toBeCloseTo(cell - 0.6 - 3 - lean, 6);
   });
 
   it('measures a custom shape across its own mask cells', () => {

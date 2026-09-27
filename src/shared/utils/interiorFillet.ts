@@ -68,7 +68,15 @@ export function interiorFilletCornerMm(
 export function narrowestCavitySpansMm(
   params: Pick<
     BinParams,
-    'width' | 'depth' | 'gridUnitMm' | 'gridUnitMmY' | 'wallThickness' | 'cellMask' | 'compartments'
+    | 'width'
+    | 'depth'
+    | 'height'
+    | 'heightUnitMm'
+    | 'gridUnitMm'
+    | 'gridUnitMmY'
+    | 'wallThickness'
+    | 'cellMask'
+    | 'compartments'
   >
 ): Map<number, number> {
   const pitchX = params.gridUnitMm;
@@ -106,9 +114,27 @@ export function narrowestCavitySpansMm(
         narrowest = Math.min(narrowest, length * (alongX ? cellW : cellD) - dividers);
       }
     );
-    out.set(id, narrowest);
+    out.set(id, narrowest - overrideNarrowingMm(params, id));
   }
   return out;
+}
+
+/**
+ * The most a shifted or leaning divider can narrow compartment `id` beside
+ * it: its larger endpoint shift, plus the whole bin height's worth of lean.
+ */
+function overrideNarrowingMm(
+  params: Pick<BinParams, 'height' | 'heightUnitMm' | 'compartments'>,
+  id: number
+): number {
+  const height = params.height * params.heightUnitMm;
+  let most = 0;
+  for (const o of params.compartments.dividerOverrides ?? []) {
+    if (o.compartmentA !== id && o.compartmentB !== id) continue;
+    const lean = o.rakeDeg ? Math.abs(Math.tan((o.rakeDeg * Math.PI) / 180)) * height : 0;
+    most = Math.max(most, Math.max(Math.abs(o.offsetStart), Math.abs(o.offsetEnd)) + lean);
+  }
+  return most;
 }
 
 /** Every maximal run of cells passing `inside`, along rows then along columns. */
