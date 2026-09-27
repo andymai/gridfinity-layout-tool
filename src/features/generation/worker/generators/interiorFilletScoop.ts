@@ -34,6 +34,7 @@ import {
   CUTTER_OVERSHOOT_MM,
   EDGE_TOL_MM,
   filletWithRetry,
+  leans,
   roundingMaterial,
 } from './interiorFilletGeometry';
 import type { InteriorFilletBuild } from './interiorFilletBuilder';
@@ -98,7 +99,9 @@ export function buildScoopedCompartmentFillet(
   ramps: CompartmentRamps,
   wallHeight: number
 ): Shape3D | null {
-  if (plan.floor.length !== 4 || plan.holes.length > 0) return null;
+  // The air is a vertical box, so a compartment whose walls lean (a tapered
+  // outer wall beside the scooped one) is left to the plain fillet.
+  if (plan.floor.length !== 4 || plan.holes.length > 0 || leans(plan.floor, plan.top)) return null;
   const sidesAt = rectangleSides(plan.floor);
   const keepsArc = plan.floor.map(
     (_, i) => sidesAt[i].filter((side) => ramps.sides.has(side)).length !== 1

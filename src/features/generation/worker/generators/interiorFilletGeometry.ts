@@ -81,7 +81,7 @@ function loopAt(
   }));
 }
 
-function leans(floor: readonly FilletVertex[], top: readonly FilletVertex[]): boolean {
+export function leans(floor: readonly FilletVertex[], top: readonly FilletVertex[]): boolean {
   return floor.some((f, i) => Math.abs(f.x - top[i].x) > 1e-9 || Math.abs(f.y - top[i].y) > 1e-9);
 }
 

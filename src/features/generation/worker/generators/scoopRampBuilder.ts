@@ -282,7 +282,8 @@ export function buildScoopRampSolids(
         // kinks OCCT builds a body whose volume integral disagrees with its own
         // mesh. A leaning wall warps the arc point by point, so it keeps the
         // chords, and the fillet leaves that ramp alone.
-        const smoothArc = climbs && style === 'curved' && wallAt(0) === wallAtTop;
+        const leans = wallAt(0) !== wallAtTop;
+        const smoothArc = climbs && style === 'curved' && !leans;
         // A smooth arc leaves the wall face itself, tangent to it, where the
         // chords start from inside the wall.
         if (arcTop > lipOffset || (smoothArc && lipOffset === 0)) {
@@ -350,7 +351,7 @@ export function buildScoopRampSolids(
           compId,
           side,
           solid: scope.register(translate(oriented, offset)),
-          climbed: climbs && (style !== 'curved' || smoothArc),
+          climbed: climbs && !leans,
         });
       }
     }
