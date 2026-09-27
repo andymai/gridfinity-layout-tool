@@ -198,6 +198,18 @@ export const interiorFilletScoops: ScenarioCase[] = [
       },
     },
   }),
+  filletCase(
+    'a half-grid bin climbs its ramps like a whole one',
+    {
+      width: 1.5,
+      depth: 2,
+      height: 4,
+      interiorFilletMm: 2.45,
+      scoop: FRONT_SCOOP,
+      compartments: { cols: 1, rows: 2, cells: [0, 1], thickness: 1.2 },
+    },
+    expectBothRowsRounded
+  ),
   filletCase('a scoop on a raised floor blends from its own floor', {
     width: 2,
     depth: 1,
