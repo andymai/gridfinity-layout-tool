@@ -131,12 +131,14 @@ export function buildInteriorFillet(input: InteriorFilletBuild): Shape3D | null 
       if (piece) pieces.push(piece);
     }
     if (pieces.length === 0) return null;
-    let fused =
+    const fused =
       pieces.length === 1 ? pieces[0] : scope.register(unwrap(fuseAll(pieces as ValidSolid[])));
-    fused = clipToTaper(scope, fused, params, dim, pen);
-    fused = clearMaskHoles(scope, fused, params, dim);
-    fused = trimDoorways(scope, fused, params, dim, plans);
-    return unwrap(clone(fused));
+    // Each trim keeps the fillet out of somewhere it must not reach, so a
+    // fillet one of them fails on is left out rather than built through it.
+    const tapered = clipToTaper(scope, fused, params, dim, pen);
+    const holed = tapered && clearMaskHoles(scope, tapered, params, dim);
+    const trimmed = holed && trimDoorways(scope, holed, params, dim, plans);
+    return trimmed ? unwrap(clone(trimmed)) : null;
   });
 }
 
@@ -299,7 +301,8 @@ function filletAir(
 /**
  * A bottom-band taper leans the outer wall in toward the floor, so the grown air
  * drawn on the rim-level wall line would push out through it. Trim to the
- * tapered cavity grown by the same skin, as the scoop does.
+ * tapered cavity grown by the same skin, as the scoop does, or null when the
+ * trim fails.
  */
 function clipToTaper(
   scope: DisposalScope,
@@ -307,7 +310,7 @@ function clipToTaper(
   params: BinParams,
   dim: BinDimensions,
   pen: number
-): Shape3D {
+): Shape3D | null {
   const taper: ResolvedTaper | null = dim.overhang.taper;
   if (!taper) return solid;
   try {
@@ -326,21 +329,22 @@ function clipToTaper(
     );
     return scope.register(unwrap(intersect(solid as ValidSolid, envelope as ValidSolid)));
   } catch {
-    return solid;
+    return null;
   }
 }
 
 /**
  * The traced outline is a custom shape's outer loop alone, so the grown air
  * spans any hole through the bin, and its floor skin would close the hole with a
- * membrane. Cut the holes back out, at the clearance the shell cuts them with.
+ * membrane. Cut the holes back out, at the clearance the shell cuts them with,
+ * or null when a cut fails.
  */
 function clearMaskHoles(
   scope: DisposalScope,
   solid: Shape3D,
   params: BinParams,
   dim: BinDimensions
-): Shape3D {
+): Shape3D | null {
   const mask = params.cellMask;
   if (!mask || !isPartialMask(mask) || !maskHasHoles(mask)) return solid;
   let result = solid;
@@ -349,7 +353,7 @@ function clearMaskHoles(
     try {
       result = scope.register(unwrap(cut(result as ValidSolid, tool as ValidSolid)));
     } catch {
-      return result;
+      return null;
     }
   }
   return result;
@@ -358,7 +362,8 @@ function clearMaskHoles(
 /**
  * Wall cutouts are cut after every fuse, through the wall and only a little
  * past it. A fillet standing in the doorway would survive that as a curb, so
- * the same profiles, reaching past the widest rounding, are cut here first.
+ * the same profiles, reaching past the widest rounding, are cut here first, or
+ * null when the cut fails.
  */
 function trimDoorways(
   scope: DisposalScope,
@@ -366,7 +371,7 @@ function trimDoorways(
   params: BinParams,
   dim: BinDimensions,
   plans: readonly CompartmentFilletPlan[]
-): Shape3D {
+): Shape3D | null {
   if (!params.walls.enabled) return solid;
   const reach = Math.max(...plans.map((p) => p.cornerRadius)) + COPLANAR_MARGIN;
   try {
@@ -383,7 +388,7 @@ function trimDoorways(
     scope.register(tools);
     return scope.register(unwrap(cut(solid as ValidSolid, tools as ValidSolid)));
   } catch {
-    return solid;
+    return null;
   }
 }
 
