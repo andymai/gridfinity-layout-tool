@@ -50,9 +50,8 @@ import {
 } from '@/shared/utils/scoopCalculations';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { cutoutDisplacementMm3 } from '@/shared/utils/fitTestPlan';
-import { computeLabelTabVolume, rampAreaWithin, lipSupportArea } from './printLabelTabVolume';
+import { computeLabelTabVolume, lipSupportArea } from './printLabelTabVolume';
 import { computeInteriorFilletVolume } from './printInteriorFilletVolume';
-import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import {
   computeWallPatternReduction,
   computeFloorPatternReduction,
@@ -397,10 +396,9 @@ function computeDividerVolume(
  * leaves (1 − π/4)·run·height under it, a straight bevel half the rectangle;
  * against a lipped outer wall the profile also climbs to the wall top across
  * `lipOffset`, less the lip support it lands inside. A ramp on an interior
- * side starts on the divider's centreline (on its face under an interior
- * fillet) and its span ends on the side dividers' centrelines, so the
- * half-thickness it shares with each divider is already priced there and comes
- * off here.
+ * side starts on the divider's face, and its span ends on the side dividers'
+ * centrelines, so the half-thickness it shares with each end divider is
+ * already priced there and comes off here.
  */
 function computeScoopVolume(params: BinParams, outerW: number, outerD: number): number {
   if (params.style !== 'standard') return 0;
@@ -421,7 +419,6 @@ function computeScoopVolume(params: BinParams, outerW: number, outerD: number): 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const sides = resolveScoopSides(params.scoop);
   const grid = { cols, rows, innerW, innerD };
-  const filleted = interiorFilletRadiusMm(params) > 0;
 
   let volume = 0;
   const seen = new Set<number>();
@@ -456,14 +453,13 @@ function computeScoopVolume(params: BinParams, outerW: number, outerD: number): 
         profile.style === 'curved'
           ? (1 - Math.PI / 4) * profile.run * profile.height
           : 0.5 * profile.run * profile.height;
-      const buriedBack = isOuter || filleted ? 0 : rampAreaWithin(profile, thickness / 2);
       const lipStrip = lipOffset > 0 ? lipOffset * frame.wallHeight - lipSupportArea(wall) : 0;
       const dividerEnds =
         side === 'front' || side === 'back'
           ? (bounds.minCol > 0 ? 1 : 0) + (bounds.maxCol < cols - 1 ? 1 : 0)
           : (bounds.minRow > 0 ? 1 : 0) + (bounds.maxRow < rows - 1 ? 1 : 0);
       const exposedSpan = Math.max(0, span - (thickness / 2) * dividerEnds);
-      volume += (wedge - buriedBack + lipStrip) * exposedSpan;
+      volume += (wedge + lipStrip) * exposedSpan;
     }
   }
   return volume;

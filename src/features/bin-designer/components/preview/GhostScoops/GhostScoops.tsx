@@ -22,6 +22,7 @@ import {
   resolveScoopSides,
   computeLipOffset,
   computeInteriorHeight,
+  scoopFaceOffset,
   scoopFrameHeights,
 } from '@/shared/utils/scoopCalculations';
 import { binFloorMm } from '@/features/bin-designer/types/base';
@@ -126,28 +127,31 @@ export function GhostScoops() {
             lipOffset
           );
           if (!profile) continue;
-          const { run, height, style } = profile;
+          const { height, style } = profile;
+          const arcTop = Math.max(lipOffset, scoopFaceOffset(isOuter, compartments.thickness));
+          const run = Math.min(profile.run, depth - 0.5 - arcTop);
+          if (run < 1) continue;
 
           // Build the ramp surface as a triangle strip: two rows of vertices, one
           // at each end of the compartment along the scooped wall.
           const alongMin = alongCenter - span / 2;
           const alongMax = alongCenter + span / 2;
 
-          // Ramp profile points (offset by lipOffset so the scoop top meets the
-          // lip): a concave quarter-ellipse for 'curved', a single bevel edge for
-          // 'straight'. Runs from the wall top (dz = height) down to the floor.
+          // Ramp profile points, from where the arc leaves its wall (the lip
+          // face, or a divider's face) down to the floor: a concave
+          // quarter-ellipse for 'curved', a single bevel edge for 'straight'.
           const profilePoints: [number, number][] = [];
           if (style === 'curved') {
             for (let i = 0; i <= ARC_SEGMENTS; i++) {
               const angle = (Math.PI / 2) * (i / ARC_SEGMENTS);
               profilePoints.push([
-                lipOffset + run * (1 - Math.cos(angle)),
+                arcTop + run * (1 - Math.cos(angle)),
                 height * (1 - Math.sin(angle)),
               ]);
             }
           } else {
-            profilePoints.push([lipOffset, height]);
-            profilePoints.push([lipOffset + run, 0]);
+            profilePoints.push([arcTop, height]);
+            profilePoints.push([arcTop + run, 0]);
           }
 
           for (const [dRun, dz] of profilePoints) {

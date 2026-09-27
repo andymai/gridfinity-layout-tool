@@ -12,6 +12,7 @@ import {
   computeLipOffset,
   computeInteriorHeight,
   scoopArcAnchors,
+  scoopFaceOffset,
 } from './scoopCalculations';
 
 const scoop = (overrides: Partial<ScoopConfig> = {}): ScoopConfig => ({
@@ -266,6 +267,20 @@ describe('scoopArcAnchors', () => {
     const { arcTop, floorStart } = scoopArcAnchors(1.4, 0.5, 2.0);
     expect(arcTop).toBe(1.4);
     expect(floorStart).toBeCloseTo(1.4 + 1.5, 6);
+  });
+
+  it("starts a divider's ramp on the divider's face", () => {
+    expect(scoopArcAnchors(0, 0, 0, scoopFaceOffset(false, 1.2))).toEqual({
+      arcTop: 0.6,
+      floorStart: 0.6,
+    });
+  });
+});
+
+describe('scoopFaceOffset', () => {
+  it('is half the divider on a divider and nothing on an outer wall', () => {
+    expect(scoopFaceOffset(false, 1.6)).toBeCloseTo(0.8, 9);
+    expect(scoopFaceOffset(true, 1.6)).toBe(0);
   });
 });
 
