@@ -140,9 +140,14 @@ export function buildInteriorFillet(input: InteriorFilletBuild): Shape3D | null 
       const rounded = ramps
         ? buildScoopedCompartmentFillet(scope, plan, pen, ramps, dim.wallHeight)
         : null;
-      if (ramps && rounded) {
+      // The ramp above the fillet's top can only come back as a cap: the whole
+      // ramp would overlap the part the rounded solid already carries. Without
+      // a cap, the compartment takes the plain fillet instead.
+      const needsCap = ramps !== undefined && ramps.top > plan.zTop;
+      const cap = ramps && rounded && needsCap ? rampCap(scope, plan, ramps) : null;
+      if (ramps && rounded && (cap || !needsCap)) {
         pieces.push(rounded);
-        if (ramps.top > plan.zTop) asBuilt.push(rampCap(scope, plan, ramps) ?? ramps.solid);
+        if (cap) asBuilt.push(cap);
         continue;
       }
       if (ramps) asBuilt.push(ramps.solid);
