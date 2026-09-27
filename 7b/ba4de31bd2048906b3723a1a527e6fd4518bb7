@@ -1,0 +1,47 @@
+src/features/generation/worker/generators/binGenerator.export.interiorFilletScoops.test.ts
+  s_6231a44d9b968c::t_77ba2784158ba3 1-5
+src/features/generation/worker/generators/binGenerator.scenario.scoopColorTag.test.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 62-66,82,85,134-142
+src/shared/generation/meshPersistence.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 45-46,78
+src/shared/utils/scoopCalculations.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 341-342,344,348-360
+src/features/generation/worker/generators/scenarios/interiorFillet.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 88-89,106-107,368-564
+src/features/generation/worker/generators/interiorFilletGeometry.ts
+  s_6231a44d9b968c::t_24cd372d930b05 3,50,68-74,77-81,84-85,88,90-91,98,101,106-131
+  s_6231a44d9b968c::t_77ba2784158ba3 1-2,4-49,51-67,75-76,82-83,86-87,89,92-97,99-100,102-105,132-189
+src/features/generation/worker/generators/interiorFilletScoop.ts
+  s_6231a44d9b968c::t_24cd372d930b05 101
+  s_6231a44d9b968c::t_77ba2784158ba3 1-100,102-273
+src/features/generation/worker/generators/scenarios/index.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 52,132
+src/features/generation/worker/generators/binGenerator.scenario.interiorFilletScoops.test.ts
+  s_6231a44d9b968c::t_77ba2784158ba3 1-5
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 12-13,16-17,24-35,111-114,118-119,127-132,134-136,138-150,152-163,168-169,172-185,201,224,301,345,351,369-372
+src/features/bin-designer/utils/printEstimates.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 55,400-403,424,459
+.claude/skills/geometry-generation/SKILL.md
+  s_6231a44d9b968c::t_c7dcceb7c581e2 90-105
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 9-10,23,33,100-140,150,163-164,168-169,172,231-236,280-288,291-292,313-320,349-354,358-408,476,479-496,501-503,526-528
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 30,37-41,224-225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7bba4de31bd2048906b3723a1a527e6fd4518bb7",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
