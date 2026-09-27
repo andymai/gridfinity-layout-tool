@@ -1,0 +1,92 @@
+src/features/generation/worker/generators/interiorFilletScoop.ts
+  s_6231a44d9b968c::t_0eb338c0462e7b 11,18,22,115,154-157,160,166-167,175-180,182-184,186-187
+  s_6231a44d9b968c::t_8d7a5a3a65f749 221
+  s_6231a44d9b968c::t_90327b2b4c5233 85-87,101,120-122,125-149
+  s_6231a44d9b968c::t_c838cae9778da7 110
+  s_6231a44d9b968c::t_36bab04390387c 112,124,158-159
+  s_6231a44d9b968c::t_54eac82fed04bb 29,113-114
+  s_6231a44d9b968c::t_0d616774065c39 174,181
+  s_6231a44d9b968c::t_06f2863edde842 109,161-165,168-173,185,194-199,266-270
+  s_6231a44d9b968c::t_9dd5ccf7dd20bc 6-7,24,31-32,44,47-51,55,57-58,67-81
+  s_6231a44d9b968c::t_144a6e7400f316 99
+  s_6231a44d9b968c::t_3bfb8c086f8746 119
+  s_6231a44d9b968c::t_835f153c301bfb 103-105
+  s_6231a44d9b968c::t_bfddbc2c0b803b 1-5,8-10,12-17,19-21,23,25-28,30,33-43,45-46,52-54,56,59-66,82-84,88-91,93-98,100,102,106-108,111,116-118,151-153,188-193,200-215,217-220,222-232,247-265,271-273
+  s_6231a44d9b968c::t_7d1cee7be58fae 123
+  s_6231a44d9b968c::t_1bf9b5ba411d3c 216,233-246
+  s_6231a44d9b968c::t_e120b3f795de86 150
+  s_6231a44d9b968c::t_6b038d3a9f6df1 92
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_6231a44d9b968c::t_554b3b35421c4c 30,37-41,224-225
+src/shared/generation/meshPersistence.ts
+  s_6231a44d9b968c::t_0f63d89865bd2d 45-46,78
+src/shared/utils/scoopCalculations.ts
+  s_6231a44d9b968c::t_554b3b35421c4c 341-342,344,348-360
+  s_6231a44d9b968c::t_dac01f1fbd5769 361-362
+src/features/generation/worker/generators/binGenerator.scenario.interiorFilletScoops.test.ts
+  s_6231a44d9b968c::t_1aa9b8e7d12e67 1-5
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_6231a44d9b968c::t_8410c9c4956796 108-112,285,353,382-384,395-407,527-528
+  s_6231a44d9b968c::t_6b038d3a9f6df1 168,235,526
+  s_6231a44d9b968c::t_2c49643dbbb86f 23,103-107,113-114,130-140,150,164,172,358-381,408
+  s_6231a44d9b968c::t_0d616774065c39 349-352,354
+  s_6231a44d9b968c::t_321fa2074136d2 9,476,501-502
+  s_6231a44d9b968c::t_88d9e5c8dc62ba 10
+  s_6231a44d9b968c::t_144a6e7400f316 100-102,281-284,286-288,291-292,313-320
+  s_6231a44d9b968c::t_4e998da7acbf20 163
+  s_6231a44d9b968c::t_95d05afe8caa1c 280
+  s_6231a44d9b968c::t_ae60e4cbe228b0 385-394
+  s_6231a44d9b968c::t_897717608812e1 479-496
+  s_6231a44d9b968c::t_e950c2166634cf 115-129,169
+  s_6231a44d9b968c::t_c838cae9778da7 503
+  s_6231a44d9b968c::t_554b3b35421c4c 33,231-234,236
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_6231a44d9b968c::t_e76d635b7c4b1e 13,17,24-32
+  s_6231a44d9b968c::t_0f63d89865bd2d 369
+  s_6231a44d9b968c::t_01f63e0ef42ca0 200,223
+  s_6231a44d9b968c::t_ae60e4cbe228b0 139-141,300
+  s_6231a44d9b968c::t_bc9b862f73b395 12,126
+  s_6231a44d9b968c::t_e950c2166634cf 35,127-130
+  s_6231a44d9b968c::t_11699d67f585fd 350,368,370-371
+  s_6231a44d9b968c::t_e71caf2b05514e 16,33-34,110-113,117-118,133-135,137-138,142-149,151-162,183,344
+  s_6231a44d9b968c::t_cc2cb0514a90be 167-168,171-182,184
+  s_6231a44d9b968c::t_f6127d836ccbc8 131
+src/features/generation/worker/generators/scenarios/interiorFillet.ts
+  s_6231a44d9b968c::t_e4db51822ca54a 88-89,106-107,350-351,353,356,365,370,372-373,434-445,478-480,482-490
+  s_6231a44d9b968c::t_06f2863edde842 406-413
+  s_6231a44d9b968c::t_dcd7999c3e5132 382-403,481,491,508-532
+  s_6231a44d9b968c::t_e87170ba5c7cc0 363-364,366-369,371,405
+  s_6231a44d9b968c::t_1aa9b8e7d12e67 344-349,352,354-355,357-362,374-381,404,414-433,446-477,492,533-541
+  s_6231a44d9b968c::t_b5a4ca7e263bac 493-507
+src/features/bin-designer/utils/printEstimates.ts
+  s_6231a44d9b968c::t_c780f261384d39 55,400-403,424,459
+src/features/generation/worker/generators/interiorFilletGeometry.ts
+  s_6231a44d9b968c::t_0e9c0c2d218d3f 45-46,50
+  s_6231a44d9b968c::t_bfddbc2c0b803b 1-28,30-44,47-49,51-159
+  s_6231a44d9b968c::t_1040244ed7cb40 29
+src/features/generation/worker/generators/scenarios/index.ts
+  s_6231a44d9b968c::t_1aa9b8e7d12e67 52,132
+.claude/skills/geometry-generation/SKILL.md
+  s_6231a44d9b968c::t_b886dfef972b34 90-105
+src/features/generation/worker/generators/binGenerator.export.interiorFilletScoops.test.ts
+  s_6231a44d9b968c::t_1aa9b8e7d12e67 1-5
+src/features/generation/worker/generators/binGenerator.scenario.scoopColorTag.test.ts
+  s_6231a44d9b968c::t_f8eae3bfebc516 62-66,82,85,135-137,139,141
+  s_6231a44d9b968c::t_52186c4b65e74c 134,138,140,142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5351bd86d4ed1464f98116a91db81b0cbc701009",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
