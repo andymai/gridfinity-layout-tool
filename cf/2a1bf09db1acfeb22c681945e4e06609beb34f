@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/scenarios/customShape.ts
+  s_6231a44d9b968c::t_198645defc8d50 19,128-129
+src/features/generation/worker/generators/boxBuilder.ts
+  s_6231a44d9b968c::t_000a47b7301f38 299-300,305-312,575,577-584,589
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cf2a1bf09db1acfeb22c681945e4e06609beb34f",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
