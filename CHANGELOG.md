@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.498.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.497.2...gridfinity-layout-tool-v4.498.0) (2026-09-27)
+
+
+### Features
+
+* **bins:** carry the interior fillet up a scoop's sides ([#4385](https://github.com/andymai/gridfinity-layout-tool/issues/4385)) ([b7bfd60](https://github.com/andymai/gridfinity-layout-tool/commit/b7bfd600a552995f112d8fc79f8d661a3769fe0e))
+* **bins:** round every compartment's interior with an interior fillet ([#4384](https://github.com/andymai/gridfinity-layout-tool/issues/4384)) ([ea32209](https://github.com/andymai/gridfinity-layout-tool/commit/ea3220939b3ab5c3faff65ff3ce5ed335b3fd609))
+
+
+### Bug Fixes
+
+* **bins:** start a divider's scoop on the divider's face ([#4386](https://github.com/andymai/gridfinity-layout-tool/issues/4386)) ([c7183a0](https://github.com/andymai/gridfinity-layout-tool/commit/c7183a0492b1b99da2e83d64389033695bd80395))
+
 ## [4.497.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.497.1...gridfinity-layout-tool-v4.497.2) (2026-09-25)
 
 
