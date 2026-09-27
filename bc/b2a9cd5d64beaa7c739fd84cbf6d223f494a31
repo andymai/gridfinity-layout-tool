@@ -1,0 +1,30 @@
+src/features/generation/worker/generators/interiorFilletPlan.ts
+  s_6231a44d9b968c::t_cbe836d7798425 53-62,115,124,136,139,143-146,151-160,168,207-222,320,339,371-390,410-417,444-445,456-458,460
+src/features/generation/worker/generators/scenarios/interiorFillet.ts
+  s_6231a44d9b968c::t_64d9d6d6f1ffb9 313-314
+  s_6231a44d9b968c::t_3ac0fcf8265635 291-312
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_6231a44d9b968c::t_2d523ff0d84a05 17,97-103,186-187,190-192,197-198,203,219,224-244
+  s_6231a44d9b968c::t_016adbb4e6bbe5 104
+  s_6231a44d9b968c::t_47707c7f789c2f 158
+  s_6231a44d9b968c::t_60f80a45e71b6a 105-112
+  s_6231a44d9b968c::t_b46779fc14ce5f 113-115,164,188-189,195-196,199,202,206,208-209,216,245-249
+src/features/generation/worker/generators/interiorFilletPlan.test.ts
+  s_6231a44d9b968c::t_3ac0fcf8265635 59,62-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bcb2a9cd5d64beaa7c739fd84cbf6d223f494a31",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
