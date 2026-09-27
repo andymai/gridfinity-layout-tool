@@ -74,6 +74,27 @@ describe('narrowestCavitySpansMm', () => {
     expect(spans.get(1)).toBeCloseTo(cell - 0.6 - 3 - lean, 6);
   });
 
+  it('adds up the dividers closing in on a compartment from both sides', () => {
+    const third = (126 - 0.5 - 2.4) / 3;
+    const spans = narrowestCavitySpansMm({
+      ...base,
+      width: 3,
+      depth: 1,
+      compartments: {
+        cols: 3,
+        rows: 1,
+        cells: [0, 1, 2],
+        thickness: 1.2,
+        dividerOverrides: [
+          { compartmentA: 0, compartmentB: 1, offsetStart: 2, offsetEnd: 2 },
+          { compartmentA: 1, compartmentB: 2, offsetStart: -2, offsetEnd: -2 },
+        ],
+      },
+    });
+    expect(spans.get(1)).toBeCloseTo(third - 1.2 - 4, 6);
+    expect(spans.get(0)).toBeCloseTo(third - 0.6 - 2, 6);
+  });
+
   it('measures a custom shape across its own mask cells', () => {
     const spans = narrowestCavitySpansMm({
       ...base,

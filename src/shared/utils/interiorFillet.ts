@@ -102,6 +102,7 @@ export function narrowestCavitySpansMm(
     c < 0 || c >= cols || r < 0 || r >= rows ? -1 : cells[r * cols + c];
   const out = new Map<number, number>();
   for (const id of new Set(cells)) {
+    const shifted = overrideNarrowingMm(params, id, at);
     let narrowest = Infinity;
     forEachRun(
       cols,
@@ -111,30 +112,47 @@ export function narrowestCavitySpansMm(
         const end = start + length - 1;
         const count = alongX ? cols : rows;
         const dividers = ((start > 0 ? 1 : 0) + (end < count - 1 ? 1 : 0)) * (thickness / 2);
-        narrowest = Math.min(narrowest, length * (alongX ? cellW : cellD) - dividers);
+        const span = length * (alongX ? cellW : cellD) - dividers;
+        narrowest = Math.min(narrowest, span - (alongX ? shifted.x : shifted.y));
       }
     );
-    out.set(id, narrowest - overrideNarrowingMm(params, id));
+    out.set(id, narrowest);
   }
   return out;
 }
 
 /**
- * The most a shifted or leaning divider can narrow compartment `id` beside
- * it: its larger endpoint shift, plus the whole bin height's worth of lean.
+ * How far shifted or leaning dividers can narrow compartment `id` along each
+ * axis: every divider beside it by its larger endpoint shift plus a full bin
+ * height's worth of its lean, summed over the dividers across that axis.
  */
 function overrideNarrowingMm(
   params: Pick<BinParams, 'height' | 'heightUnitMm' | 'compartments'>,
-  id: number
-): number {
+  id: number,
+  at: (c: number, r: number) => number
+): { readonly x: number; readonly y: number } {
+  const { cols, rows } = params.compartments;
   const height = params.height * params.heightUnitMm;
-  let most = 0;
+  let x = 0;
+  let y = 0;
   for (const o of params.compartments.dividerOverrides ?? []) {
     if (o.compartmentA !== id && o.compartmentB !== id) continue;
+    const other = o.compartmentA === id ? o.compartmentB : o.compartmentA;
     const lean = o.rakeDeg ? Math.abs(Math.tan((o.rakeDeg * Math.PI) / 180)) * height : 0;
-    most = Math.max(most, Math.max(Math.abs(o.offsetStart), Math.abs(o.offsetEnd)) + lean);
+    const shift = Math.max(Math.abs(o.offsetStart), Math.abs(o.offsetEnd)) + lean;
+    let acrossX = false;
+    let acrossY = false;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (at(c, r) !== id) continue;
+        if (at(c - 1, r) === other || at(c + 1, r) === other) acrossX = true;
+        if (at(c, r - 1) === other || at(c, r + 1) === other) acrossY = true;
+      }
+    }
+    if (acrossX) x += shift;
+    if (acrossY) y += shift;
   }
-  return most;
+  return { x, y };
 }
 
 /** Every maximal run of cells passing `inside`, along rows then along columns. */
