@@ -42,8 +42,6 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
- * `v18`: the interior fillet climbs a scoop's ramps and builds them itself, so
- * a bin with both generates different bytes for params it already has.
  * `v17`: a sliding lid's channel is cut through the cavity's entry corner arcs,
  * and the entry wall no longer thins under an overhang on its own side.
  * `v16`: the stacking lip's base plane seats on the wall top rather than
