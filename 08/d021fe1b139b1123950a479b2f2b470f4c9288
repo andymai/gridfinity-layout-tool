@@ -1,0 +1,35 @@
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_6231a44d9b968c::t_69a33f1c05a39f 37,221
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_6231a44d9b968c::t_69a33f1c05a39f 234
+src/shared/utils/scoopCalculations.test.ts
+  s_6231a44d9b968c::t_4d0e822d10946a 15,271-284
+src/features/bin-designer/utils/printEstimates.ts
+  s_6231a44d9b968c::t_69a33f1c05a39f 53,399-401,462
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.tsx
+  s_6231a44d9b968c::t_69a33f1c05a39f 25,130-133,140-142,148,153-154
+src/shared/generation/meshPersistence.ts
+  s_6231a44d9b968c::t_a79676a00f5f6f 45-46,80
+src/shared/utils/scoopCalculations.ts
+  s_6231a44d9b968c::t_69a33f1c05a39f 349-352,354-355
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.snap
+  s_6231a44d9b968c::t_8421904326b1cb 9
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_6231a44d9b968c::t_ee8cf6e1cea7bf 5,23,25,27,29,33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "08d021fe1b139b1123950a479b2f2b470f4c9288",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
