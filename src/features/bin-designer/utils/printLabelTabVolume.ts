@@ -213,24 +213,6 @@ function findCollidingFrontIds(
 }
 
 /**
- * Material under one ramp's profile between the wall and `a` mm out along the
- * run: the part a divider's near half swallows when the ramp starts on its
- * centreline. Curved: the quarter-ellipse arc y = run(1 − cos θ),
- * z = height(1 − sin θ), so ∫z dy = run·height·[(1 − cos θa) − (θa/2 − sin 2θa/4)].
- */
-export function rampAreaWithin(
-  profile: { run: number; height: number; style: string },
-  a: number
-): number {
-  const reach = Math.min(Math.max(0, a), profile.run);
-  if (profile.style !== 'curved') return profile.height * reach * (1 - reach / (2 * profile.run));
-  const theta = Math.acos(1 - reach / profile.run);
-  return (
-    profile.run * profile.height * (1 - Math.cos(theta) - (theta / 2 - Math.sin(2 * theta) / 4))
-  );
-}
-
-/**
  * Cross-section (mm²) of the stacking lip's angled support below the wall top:
  * the integrated lip's inner loft steps in from the wall face 2.65mm under the
  * top to the full overhang inset 1.2mm under it, then runs vertical. A lipped

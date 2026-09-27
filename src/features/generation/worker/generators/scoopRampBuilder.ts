@@ -165,7 +165,6 @@ export function buildScoopRampSolids(
 
   const { cols, rows, cells } = params.compartments;
   const sides = resolveScoopSides(params.scoop);
-  const filleted = interiorFilletRadiusMm(params) > 0;
   const climbs = filletClimbsRamps(params);
 
   const processedCompartments = new Set<number>();
@@ -232,7 +231,7 @@ export function buildScoopRampSolids(
           lipOffset,
           wallAtTop,
           wallAt(0),
-          scoopFaceOffset(isOuter, params.compartments.thickness, filleted)
+          scoopFaceOffset(isOuter, params.compartments.thickness)
         );
         // The resolved run was clamped to the compartment depth from `lipOffset`;
         // re-clamp from where the arc reaches the floor so its end still stops
