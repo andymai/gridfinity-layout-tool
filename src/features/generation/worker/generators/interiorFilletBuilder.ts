@@ -60,7 +60,11 @@ export interface InteriorFilletBuild {
 /** Each compartment's clamped fillet, in the cavity frame. */
 export function planBinInteriorFillets(input: InteriorFilletBuild): CompartmentFilletPlan[] {
   const { params, dimensions: dim } = input;
-  const raises = resolveFloorRaises(params, dim.floorThickness, dim.interiorHeight);
+  // Floor raises are not built on a custom shape, so its fillet stays on the
+  // shell's floor whatever raises the design still carries.
+  const raises = isPartialMask(params.cellMask)
+    ? new Map<number, number>()
+    : resolveFloorRaises(params, dim.floorThickness, dim.interiorHeight);
   return planInteriorFillets({
     params,
     innerW: dim.innerW,

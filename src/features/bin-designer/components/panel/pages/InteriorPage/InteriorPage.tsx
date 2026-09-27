@@ -12,7 +12,6 @@ import { ScoopSection } from '../../ScoopSection';
 import { InteriorFilletSection } from '../../InteriorFilletSection';
 import { KnifeRestSection } from '../../KnifeRestSection';
 
-/** Interior layout: compartment modes, label tabs, interior fillet, scoop, knife rest. */
 export function InteriorPage() {
   const t = useTranslation();
   const { showLabelTabs, isCustomShape } = useDesignerStore(
