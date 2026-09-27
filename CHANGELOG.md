@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.498.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.498.0...gridfinity-layout-tool-v4.498.1) (2026-09-27)
+
+
+### Bug Fixes
+
+* **bins:** give a custom shape the standard floor height ([#4390](https://github.com/andymai/gridfinity-layout-tool/issues/4390)) ([301bdd2](https://github.com/andymai/gridfinity-layout-tool/commit/301bdd23f428fb5c6403712e41525ce7defe483a))
+* **bins:** keep patterns clear of scoops on every wall ([#4389](https://github.com/andymai/gridfinity-layout-tool/issues/4389)) ([11f8364](https://github.com/andymai/gridfinity-layout-tool/commit/11f8364f0ec4f84c9b3c8bc795f1372b10423147))
+
 ## [4.498.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.497.2...gridfinity-layout-tool-v4.498.0) (2026-09-27)
 
 
