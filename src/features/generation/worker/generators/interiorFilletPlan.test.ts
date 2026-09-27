@@ -56,6 +56,12 @@ describe('planInteriorFillets', () => {
     expect(junction?.bodyRadius).toBe(0);
   });
 
+  it('leaves a compartment wrapped round another sharp, and rounds the one inside', () => {
+    const ring = { cols: 3, rows: 3, cells: [0, 0, 0, 0, 1, 0, 0, 0, 0], thickness: 1.2 };
+    const plans = planInteriorFillets(input({ width: 3, depth: 3, compartments: ring }));
+    expect(plans.map((p) => p.id)).toEqual([1]);
+  });
+
   it('traces a merged L with one reflex corner the fillet leaves alone', () => {
     const plans = planInteriorFillets(
       input({ compartments: { cols: 2, rows: 2, cells: [0, 0, 0, 1], thickness: 1.2 } })

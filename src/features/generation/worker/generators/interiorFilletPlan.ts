@@ -378,8 +378,10 @@ function outerLoop(params: BinParams, id: number): GridEdge[] | null {
   const used = new Set<GridEdge>();
   let best: GridEdge[] | null = null;
   let bestArea = 0;
+  let loops = 0;
   for (const start of edges) {
     if (used.has(start)) continue;
+    loops++;
     const loop: GridEdge[] = [];
     let e: GridEdge | undefined = start;
     while (e && !used.has(e)) {
@@ -393,7 +395,10 @@ function outerLoop(params: BinParams, id: number): GridEdge[] | null {
       best = loop;
     }
   }
-  return best;
+  // A compartment wrapped round another has an inner boundary too, which one
+  // outline cannot carry: built from the outer loop alone, the fillet would
+  // fill the compartment inside it.
+  return loops === 1 ? best : null;
 }
 
 function edgeDir(e: { a: readonly [number, number]; b: readonly [number, number] }): string {

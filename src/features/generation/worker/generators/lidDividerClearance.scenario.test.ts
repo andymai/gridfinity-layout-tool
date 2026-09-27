@@ -187,6 +187,29 @@ const CASES: readonly Case[] = [
     expectFrontRails: 1,
   },
   {
+    // The interior fillet rounds each divider's junction with the wall up to
+    // the divider top, inside the rail band; the rails must still seat.
+    name: 'an interior fillet rounding each junction',
+    width: 3,
+    depth: 2,
+    coverage: 100,
+    compartments: grid(3, 2),
+    overrides: { interiorFilletMm: 2.5 },
+    expectFrontRails: 3,
+  },
+  {
+    // Past the shell's own corner arc, the fillet rounds the cavity's outer
+    // corners further along the wall than a rail's end stops; the rails must
+    // still seat.
+    name: 'an interior fillet wider than the shell corner',
+    width: 2,
+    depth: 2,
+    coverage: 100,
+    compartments: ONE,
+    overrides: { interiorFilletMm: 6 },
+    expectFrontRails: 1,
+  },
+  {
     name: 'a non-square grid pitch',
     width: 2,
     depth: 2,
