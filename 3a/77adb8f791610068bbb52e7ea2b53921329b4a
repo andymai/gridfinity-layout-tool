@@ -1,0 +1,24 @@
+src/features/bin-designer/utils/interiorFilletFit.ts
+  s_6231a44d9b968c::t_c6dd2c37113008 28-31,34-35
+src/features/bin-designer/utils/compartmentFloorRaise.test.ts
+  s_6231a44d9b968c::t_c6dd2c37113008 5,41-59
+  s_6231a44d9b968c::t_482f15ffd5ddd6 60
+src/features/bin-designer/utils/compartmentFloorRaise.ts
+  s_6231a44d9b968c::t_c6dd2c37113008 8,30-31,34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3a77adb8f791610068bbb52e7ea2b53921329b4a",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
