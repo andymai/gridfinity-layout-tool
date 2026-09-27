@@ -3,6 +3,7 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { deriveDimensions } from './pipeline/context';
 import { planScoopRamps } from './scoopRampPlan';
+import type { ScoopRampPlan } from './scoopRampPlan';
 
 const TWO_ROWS = { cols: 1, rows: 2, cells: [0, 1], thickness: 1.2 };
 
@@ -10,7 +11,7 @@ function params(overrides: Partial<BinParams>): BinParams {
   return { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 6, ...overrides };
 }
 
-function planFor(p: BinParams, floorRaiseFor: (id: number) => number = () => 0) {
+function planFor(p: BinParams, floorRaiseFor: (id: number) => number = () => 0): ScoopRampPlan[] {
   const dim = deriveDimensions(p, false);
   return planScoopRamps(
     p,
