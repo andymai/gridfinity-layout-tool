@@ -9,30 +9,30 @@
  * face to face. Everything the fillet must not add to (a doorway cut into a
  * wall, the air above a short divider) is kept out of the grown air or cut from
  * the result, because this solid only ever adds material.
+ *
+ * Compartments with finger scoops are rounded in `interiorFilletScoop.ts`.
  */
 
-import {
-  clone,
-  cut,
-  cutAll,
-  draw,
-  fillet,
-  fuseAll,
-  getBounds,
-  getEdges,
-  intersect,
-  isOk,
-  unwrap,
-  withScope,
-} from 'brepjs';
-import type { DisposalScope, Drawing, Edge, Shape3D, Sketch, ValidSolid } from 'brepjs';
+import { cut, fuseAll, getBounds, getEdges, intersect, translate, unwrap, withScope } from 'brepjs';
+import type { DisposalScope, Edge, Shape3D, ValidSolid } from 'brepjs';
 import { isNestingBase } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import type { BinParams } from '@/shared/types/bin';
 import { COPLANAR_MARGIN } from './generatorConstants';
 import { planInteriorFillets } from './interiorFilletPlan';
-import type { CompartmentFilletPlan, FilletPt, FilletVertex } from './interiorFilletPlan';
+import type { CompartmentFilletPlan } from './interiorFilletPlan';
+import {
+  CUTTER_OVERSHOOT_MM,
+  EDGE_TOL_MM,
+  airCorner,
+  filletWithRetry,
+  prismBetween,
+  roundingMaterial,
+} from './interiorFilletGeometry';
+import { buildScoopedCompartmentFillet, climbedRamps, rampCap } from './interiorFilletScoop';
+import type { CompartmentRamps } from './interiorFilletScoop';
+import { filletClimbsRamps, fuseScoopRamps, scoopRampsApply } from './scoopRampBuilder';
 import { resolveFloorRaises } from './floorRaiseBuilder';
 import { buildMaskHoleDrawings, maskHasHoles } from './maskPolygon';
 import { buildTaperedInnerEnvelope } from './taperedOuter';
@@ -40,17 +40,6 @@ import type { ResolvedTaper } from './overhang';
 import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import type { BinDimensions } from './pipeline/types';
-
-/** How far the cutter's top clears the grown air's, so no two faces coincide. */
-const CUTTER_OVERSHOOT_MM = 1;
-
-/** Factors the fillet is retried at when OCCT rejects the full radius. */
-const RETRY_FACTORS = [1, 0.8, 0.6] as const;
-
-/** An edge within this of the floor plane is a floor edge. */
-const EDGE_TOL_MM = 1e-3;
-
-const MIN_ARC_MM = 0.05;
 
 export interface InteriorFilletBuild {
   readonly params: BinParams;
@@ -119,11 +108,15 @@ export function interiorFilletFloorFootprints(
   return out;
 }
 
-/** The fillet solid for every compartment, fused, or null when none was built. */
+/**
+ * The fillet solid for every compartment, fused with the scoop ramps it climbs,
+ * or null when there is neither.
+ */
 export function buildInteriorFillet(input: InteriorFilletBuild): Shape3D | null {
   const { params, dimensions: dim } = input;
   const plans = planBinInteriorFillets(input);
-  if (plans.length === 0) return null;
+  const withScoops = scoopRampsApply(params, dim);
+  if (plans.length === 0 && !withScoops) return null;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
     const pen = Math.min(
@@ -131,20 +124,65 @@ export function buildInteriorFillet(input: InteriorFilletBuild): Shape3D | null 
       params.wallThickness * 0.6,
       params.compartments.thickness * 0.4
     );
+    const raises = resolveFloorRaises(params, dim.floorThickness, dim.interiorHeight);
+    const climbed =
+      withScoops && filletClimbsRamps(params)
+        ? climbedRamps(scope, input, raises)
+        : new Map<number, CompartmentRamps>();
+    const owned = [...climbed.values()].map((r) => r.solid);
     const pieces: Shape3D[] = [];
+    // Ramps this feature took over but does not round, built as the scoop
+    // feature would have.
+    const asBuilt: Shape3D[] = [];
     for (const plan of plans) {
-      const piece = buildCompartmentFillet(scope, plan, pen);
-      if (piece) pieces.push(piece);
+      const ramps = climbed.get(plan.id);
+      climbed.delete(plan.id);
+      const rounded = ramps
+        ? buildScoopedCompartmentFillet(scope, plan, pen, ramps, dim.wallHeight)
+        : null;
+      if (ramps && rounded) {
+        pieces.push(rounded);
+        if (ramps.top > plan.zTop) asBuilt.push(rampCap(scope, plan, ramps) ?? ramps.solid);
+        continue;
+      }
+      if (ramps) asBuilt.push(ramps.solid);
+      const plain = buildCompartmentFillet(scope, plan, pen);
+      if (plain) pieces.push(plain);
     }
+    for (const ramps of climbed.values()) asBuilt.push(ramps.solid);
+    const ramps = fuseScoopRamps(
+      scope,
+      params,
+      asBuilt,
+      dim.innerW,
+      dim.innerD,
+      dim.wallHeight,
+      params.wallThickness,
+      dim.overhang.taper
+    );
+    if (ramps) pieces.push(ramps);
     if (pieces.length === 0) return null;
     const fused =
       pieces.length === 1 ? pieces[0] : scope.register(unwrap(fuseAll(pieces as ValidSolid[])));
     // Each trim keeps the fillet out of somewhere it must not reach, so a
-    // fillet one of them fails on is left out rather than built through it.
+    // fillet one of them fails on is left out rather than built through it,
+    // keeping only the ramps it took over from the scoop feature.
     const tapered = clipToTaper(scope, fused, params, dim, pen);
     const holed = tapered && clearMaskHoles(scope, tapered, params, dim);
-    const trimmed = holed && trimDoorways(scope, holed, params, dim, plans);
-    return trimmed ? unwrap(clone(trimmed)) : null;
+    const trimmed =
+      (holed && trimDoorways(scope, holed, params, dim, plans)) ??
+      fuseScoopRamps(
+        scope,
+        params,
+        owned,
+        dim.innerW,
+        dim.innerD,
+        dim.wallHeight,
+        params.wallThickness,
+        dim.overhang.taper
+      );
+    // `translate`, not `clone`: it carries the ramps' scoop tags.
+    return trimmed ? translate(trimmed, [0, 0, 0]) : null;
   });
 }
 
@@ -159,151 +197,11 @@ function buildCompartmentFillet(
   );
   const rounded = filletAir(scope, air, plan);
   if (!rounded) return null;
-  const floorPen = Math.min(COPLANAR_MARGIN, plan.zFloor * 0.5);
-  const grown = scope.register(
-    prismBetween(scope, plan, plan.zFloor - floorPen, plan.zTop, pen, grownCorner(pen))
-  );
   try {
-    return scope.register(unwrap(cut(grown as ValidSolid, rounded as ValidSolid)));
+    return roundingMaterial(scope, plan, pen, rounded);
   } catch {
     return null;
   }
-}
-
-/** The air's outline: convex corners at `convexRadius`, reflex ones as the body drew them. */
-function airCorner(convexRadius: number): (v: FilletVertex) => number {
-  return (v) => (v.convex ? convexRadius : v.bodyRadius);
-}
-
-/** The grown air stays concentric with every arc the body already has. */
-function grownCorner(pen: number): (v: FilletVertex) => number {
-  return (v) => {
-    if (v.bodyRadius <= 0) return 0;
-    return v.convex ? v.bodyRadius + pen : Math.max(v.bodyRadius - pen, 0);
-  };
-}
-
-/** A loop's vertices at height `z`, which move linearly between floor and top. */
-function loopAt(
-  plan: CompartmentFilletPlan,
-  floor: readonly FilletVertex[],
-  top: readonly FilletVertex[],
-  z: number
-): FilletVertex[] {
-  const span = plan.zTop - plan.zFloor;
-  const t = span > 0 ? (z - plan.zFloor) / span : 0;
-  return floor.map((f, i) => ({
-    ...f,
-    x: f.x + (top[i].x - f.x) * t,
-    y: f.y + (top[i].y - f.y) * t,
-  }));
-}
-
-function leans(floor: readonly FilletVertex[], top: readonly FilletVertex[]): boolean {
-  return floor.some((f, i) => Math.abs(f.x - top[i].x) > 1e-9 || Math.abs(f.y - top[i].y) > 1e-9);
-}
-
-function loopPrism(
-  plan: CompartmentFilletPlan,
-  floor: readonly FilletVertex[],
-  top: readonly FilletVertex[],
-  z0: number,
-  z1: number,
-  grow: number,
-  corner: (v: FilletVertex) => number
-): Shape3D {
-  const drawingAt = (z: number): Drawing => {
-    const loop = loopAt(plan, floor, top, z);
-    return loopDrawing(grow > 0 ? offsetLoop(loop, grow) : loop, loop.map(corner));
-  };
-  if (!leans(floor, top))
-    return drawingAt(z0)
-      .sketchOnPlane('XY', z0)
-      .extrude(z1 - z0);
-  const bottom = drawingAt(z0).sketchOnPlane('XY', z0) as Sketch;
-  const upper = drawingAt(z1).sketchOnPlane('XY', z1) as Sketch;
-  return bottom.loftWith([upper], { ruled: true });
-}
-
-/**
- * The plan's outline as a prism between two heights, its holes cut through. A
- * hole runs clockwise, so the offset that grows the outline shrinks a hole,
- * pushing the skin into the dividers round it the same way.
- */
-function prismBetween(
-  scope: DisposalScope,
-  plan: CompartmentFilletPlan,
-  z0: number,
-  z1: number,
-  grow: number,
-  corner: (v: FilletVertex) => number
-): Shape3D {
-  const solid = loopPrism(plan, plan.floor, plan.top, z0, z1, grow, corner);
-  if (plan.holes.length === 0) return solid;
-  scope.register(solid);
-  const cutters = plan.holes.map((h) =>
-    scope.register(
-      loopPrism(plan, h.floor, h.top, z0 - COPLANAR_MARGIN, z1 + COPLANAR_MARGIN, grow, corner)
-    )
-  );
-  return unwrap(cutAll(solid as ValidSolid, cutters as ValidSolid[]));
-}
-
-/** Each side pushed `d` to its right, which is outward for a CCW loop. */
-function offsetLoop(loop: readonly FilletVertex[], d: number): FilletVertex[] {
-  const n = loop.length;
-  const shifted = loop.map((a, i) => {
-    const b = loop[(i + 1) % n];
-    const len = Math.hypot(b.x - a.x, b.y - a.y);
-    const nx = (b.y - a.y) / len;
-    const ny = -(b.x - a.x) / len;
-    return {
-      p: { x: a.x + nx * d, y: a.y + ny * d },
-      dir: { x: (b.x - a.x) / len, y: (b.y - a.y) / len },
-    };
-  });
-  return loop.map((v, i) => {
-    const prev = shifted[(i - 1 + n) % n];
-    const next = shifted[i];
-    const hit = intersect2d(prev.p, prev.dir, next.p, next.dir);
-    return { ...v, ...(hit ?? { x: next.p.x, y: next.p.y }) };
-  });
-}
-
-function intersect2d(p: FilletPt, d: FilletPt, q: FilletPt, e: FilletPt): FilletPt | null {
-  const den = d.x * e.y - d.y * e.x;
-  if (Math.abs(den) < 1e-9) return null;
-  const t = ((q.x - p.x) * e.y - (q.y - p.y) * e.x) / den;
-  return { x: p.x + t * d.x, y: p.y + t * d.y };
-}
-
-/** A closed outline with a tangent arc of `radii[i]` at each vertex that has one. */
-function loopDrawing(loop: readonly FilletPt[], radii: readonly number[]): Drawing {
-  const n = loop.length;
-  const tangents = loop.map((v, i) => {
-    const r = radii[i];
-    if (r < MIN_ARC_MM) return null;
-    const prev = loop[(i - 1 + n) % n];
-    const next = loop[(i + 1) % n];
-    const inLen = Math.hypot(v.x - prev.x, v.y - prev.y);
-    const outLen = Math.hypot(next.x - v.x, next.y - v.y);
-    const din = { x: (v.x - prev.x) / inLen, y: (v.y - prev.y) / inLen };
-    const dout = { x: (next.x - v.x) / outLen, y: (next.y - v.y) / outLen };
-    const turn = Math.acos(Math.max(-1, Math.min(1, din.x * dout.x + din.y * dout.y)));
-    const reach = r * Math.tan(turn / 2);
-    return {
-      from: [v.x - din.x * reach, v.y - din.y * reach] as [number, number],
-      to: [v.x + dout.x * reach, v.y + dout.y * reach] as [number, number],
-    };
-  });
-  const last = tangents[n - 1];
-  let pen = draw(last ? last.to : [loop[n - 1].x, loop[n - 1].y]);
-  for (let i = 0; i < n - 1; i++) {
-    const t = tangents[i];
-    pen = t ? pen.lineTo(t.from).tangentArcTo(t.to) : pen.lineTo([loop[i].x, loop[i].y]);
-  }
-  if (last) pen = pen.lineTo(last.from).tangentArcTo(last.to);
-  return pen.close();
 }
 
 /**
@@ -323,15 +221,7 @@ function filletAir(
     return b.zMax - b.zMin < EDGE_TOL_MM && Math.abs(b.zMin - plan.zFloor) < EDGE_TOL_MM;
   });
   if (edges.length === 0) return null;
-  for (const factor of RETRY_FACTORS) {
-    try {
-      const result = fillet(air as ValidSolid, edges, plan.radius * factor);
-      if (isOk(result)) return scope.register(unwrap(result));
-    } catch {
-      // next factor
-    }
-  }
-  return null;
+  return filletWithRetry(scope, air, edges, plan.radius);
 }
 
 /**
@@ -408,7 +298,7 @@ function trimDoorways(
   dim: BinDimensions,
   plans: readonly CompartmentFilletPlan[]
 ): Shape3D | null {
-  if (!params.walls.enabled) return solid;
+  if (!params.walls.enabled || plans.length === 0) return solid;
   const reach = Math.max(...plans.map((p) => p.cornerRadius)) + COPLANAR_MARGIN;
   try {
     const tools = buildWallCutoutCuts(
@@ -452,12 +342,13 @@ export const interiorFilletFeature: FeatureBuilder = {
   tag: FeatureTag.BASE,
   target: 'fuse',
   supportsCellMask: true,
+  tagsOwnFaces: true,
   shouldBuild: (ctx) => interiorFilletApplies(ctx.params, ctx.dimensions),
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v1',
+        'v2',
         dim.shellKey,
         quantize(interiorFilletRadiusMm(params)),
         quantize(dim.innerW),
@@ -475,7 +366,10 @@ export const interiorFilletFeature: FeatureBuilder = {
         stableSerialize(params.compartments.dividerOverrides ?? []),
         stableSerialize(params.compartments.dividerHeight ?? 'auto'),
         stableSerialize(params.compartments.floorRaises ?? []),
-        stableSerialize(params.walls)
+        stableSerialize(params.walls),
+        // The fillet builds the scoop ramps it climbs.
+        stableSerialize(params.scoop),
+        params.style
       )
     );
   },

@@ -49,7 +49,7 @@ import { lightweight } from './lightweight';
 import { spacer } from './spacer';
 import { wallLabelSlots } from './wallLabelSlots';
 import { floorRaise } from './floorRaise';
-import { interiorFillet } from './interiorFillet';
+import { interiorFillet, interiorFilletScoops } from './interiorFillet';
 import { tile } from './tile';
 import { trayBottom } from './trayBottom';
 import { slideTray } from './slideTray';
@@ -129,4 +129,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...wallLabelSlots,
   ...floorRaise,
   ...interiorFillet,
+  ...interiorFilletScoops,
 ];

@@ -59,8 +59,11 @@ interface ArcCensus {
   nonScoopSubLip: number;
 }
 
-/** Tag census of the scoop ramp's curved arc surface (front, up-and-back faces). */
-function scoopArcAttribution(params: BinParams): ArcCensus {
+/**
+ * Tag census of the scoop ramp's curved arc surface (front, up-and-back faces),
+ * within `maxAbsX` of the bin's centre when given.
+ */
+function scoopArcAttribution(params: BinParams, maxAbsX = Infinity): ArcCensus {
   const m = getGenerateBin()(params);
   const verts = m.vertices;
   const idx = m.indices;
@@ -76,8 +79,10 @@ function scoopArcAttribution(params: BinParams): ArcCensus {
       const a = idx[fg.start + t * 3];
       const b = idx[fg.start + t * 3 + 1];
       const c = idx[fg.start + t * 3 + 2];
+      const cx = (verts[a * 3] + verts[b * 3] + verts[c * 3]) / 3;
       const cy = (verts[a * 3 + 1] + verts[b * 3 + 1] + verts[c * 3 + 1]) / 3;
       const cz = (verts[a * 3 + 2] + verts[b * 3 + 2] + verts[c * 3 + 2]) / 3;
+      if (Math.abs(cx) > maxAbsX) continue;
       // Front region, above the lower ramp; up-and-back normal isolates the
       // curved arc surface from the vertical wall (nz~0) and the floor (nz~1).
       if (cy >= -20 || cz < 8) continue;
@@ -126,4 +131,13 @@ describe('scoop arc keeps the SCOOP tag through the body fuse (#1654)', () => {
     },
     120_000
   );
+
+  // The interior fillet builds the ramp it climbs into its own solid, tagged as
+  // the body. Clear of the side walls, where its blends are body faces, the arc
+  // must still come out as the scoop.
+  it('scoop arc is tagged SCOOP when the interior fillet carries the ramp', () => {
+    const { scoop, nonScoopSubLip } = scoopArcAttribution({ ...base, interiorFilletMm: 2.5 }, 36);
+    expect(scoop).toBeGreaterThan(0);
+    expect(nonScoopSubLip).toBe(0);
+  }, 120_000);
 });
