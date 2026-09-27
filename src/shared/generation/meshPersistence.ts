@@ -73,7 +73,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v20';
+const MESH_CACHE_VERSION = 'v21';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
