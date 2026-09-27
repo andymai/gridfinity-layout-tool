@@ -1,0 +1,388 @@
+src/features/generation/worker/generators/compartmentCavities.ts
+  s_6231a44d9b968c::t_a06b5a19a42fbb 125
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_6231a44d9b968c::t_a1911396dc0e2e 37,363,380-381,384,387-393
+  s_6231a44d9b968c::t_c7dcceb7c581e2 30,220
+  s_6231a44d9b968c::t_554b3b35421c4c 30,220
+  s_6231a44d9b968c::t_69a33f1c05a39f 37,221
+src/features/bin-designer/components/ParameterPanel/groupModified.ts
+  s_6231a44d9b968c::t_a57e97bf8c16f2 32
+src/features/whats-new/latest.ts
+  s_6231a44d9b968c::t_f8baf884a9e63f 9
+src/features/bin-designer/components/panel/InteriorFilletSection/useInteriorFilletSection.test.ts
+  s_6231a44d9b968c::t_bc49146786bf67 1-81
+src/i18n/locales/es.json
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+src/features/bin-designer/utils/compartmentFloorRaise.ts
+  s_6231a44d9b968c::t_1554c2474d9963 7,26-29,32-33,35-48
+  s_6231a44d9b968c::t_82f0627657bfec 49
+  s_6231a44d9b968c::t_c6dd2c37113008 8,30-31,34
+src/i18n/locales/ka.json
+  s_6231a44d9b968c::t_6e93aeb967954b 3746,3759-3760
+  s_6231a44d9b968c::t_1e291985440466 964-966,2143-2147,2222-2223
+public/schema/bin-design.schema.json
+  s_6231a44d9b968c::t_e1c8393dae6485 453-462
+src/features/bin-designer/types/binParams.ts
+  s_6231a44d9b968c::t_93e2e3cb3f95c1 65-71
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_6231a44d9b968c::t_02f62d71156765 38,196-198
+src/i18n/locales/en.ts
+  s_6231a44d9b968c::t_83552fdcc1fbf9 1139-1143,2527-2534,2621-2624
+  s_6231a44d9b968c::t_81e3288670c853 4457,4476-4478
+src/i18n/locales/fr.json
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+src/i18n/locales/nb.json
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+src/i18n/locales/cs.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+docs/schemas/constraints.md
+  s_6231a44d9b968c::t_f909ce7c8b21d6 56,85
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_6231a44d9b968c::t_bcf66ff96fdf4d 408
+src/features/generation/worker/generators/interiorFilletPlan.ts
+  s_6231a44d9b968c::t_02b039d913f235 49,85-90,150,161-164,166
+  s_6231a44d9b968c::t_c4b83c98d7f2a6 171-187,192,194-201
+  s_6231a44d9b968c::t_0e42ffd6f24dc8 1-11,21-22,24-26,28-38,41-48,50-52,63-77,80-84,91-94,95-114,116-123,125-135,137-138,140-142,147-149,167,169-170,188-191,193,202-206,223-277,282-287,289-291,298-307,321-332,334-336,338,340-370,391-394,396-398,407-409,418-443,446-455,459,461-480,483-492,494-515,517-565,571,577-581,583-584,586-589,595-596,603-604,605-607,609-611
+  s_6231a44d9b968c::t_e50099c46120c4 12-20,27,39-40,278-281,288,292-297,308-319,337,399-406,572-576,582,585,601-602,608
+  s_6231a44d9b968c::t_89bee7b88a4fa7 395,493,516
+  s_6231a44d9b968c::t_07d089da34a881 481-482
+  s_6231a44d9b968c::t_c7b8038cc80b0a 78-79,333
+  s_6231a44d9b968c::t_b035ab24dfd012 566-570,590-594,597-600
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 23,165
+  s_6231a44d9b968c::t_cbe836d7798425 53-62,115,124,136,139,143-146,151-160,168,207-222,320,339,371-390,410-417,444-445,456-458,460
+src/features/bin-designer/utils/dividerPatternFit.ts
+  s_6231a44d9b968c::t_03ee1adb3767a6 39,154,156-160
+src/features/bin-designer/components/panel/InteriorFilletSection/InteriorFilletSection.tsx
+  s_6231a44d9b968c::t_08c76bd37262ca 1-39
+src/features/generation/worker/generators/wallPatterns.ts
+  s_6231a44d9b968c::t_3dcc534c6e216a 110-112,151-155
+  s_6231a44d9b968c::t_e6bf03e37eb7e6 20
+src/i18n/locales/de.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/shared/schema/binDesignKeys.ts
+  s_6231a44d9b968c::t_e1c8393dae6485 81
+scripts/schema/bounds.test.ts
+  s_6231a44d9b968c::t_f909ce7c8b21d6 242
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_6231a44d9b968c::t_a1911396dc0e2e 37,160
+src/i18n/locales/zh-CN.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/features/whats-new/entries.ts
+  s_6231a44d9b968c::t_1e674e13d1cbd2 17-22,24-26
+  s_6231a44d9b968c::t_6e999a42051d19 16
+  s_6231a44d9b968c::t_86a4ee3cf38004 23
+src/features/bin-designer/constants/gridfinity.ts
+  s_6231a44d9b968c::t_e7b74f76c03c41 143-147
+api/lib/designerValidation.ts
+  s_6231a44d9b968c::t_e7b74f76c03c41 144,437-448
+  s_6231a44d9b968c::t_59acb8fa406621 449-451
+api/lib/designerValidationConstants.ts
+  s_6231a44d9b968c::t_e7b74f76c03c41 93-95
+src/features/generation/worker/generators/dividerBlendBuilder.ts
+  s_6231a44d9b968c::t_081f0287bc0b4f 23
+  s_6231a44d9b968c::t_79de0fb3aa7b36 266-267
+  s_6231a44d9b968c::t_7bc543a3136bd2 302-303
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_6231a44d9b968c::t_a57e97bf8c16f2 71-75
+  s_6231a44d9b968c::t_bb250c1d80084f 70
+src/i18n/locales/ko.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/features/bin-designer/settingsManifest.ts
+  s_6231a44d9b968c::t_a57e97bf8c16f2 27
+src/shared/utils/communityTechniques.ts
+  s_6231a44d9b968c::t_81e3288670c853 19,32
+src/shared/utils/communityTechniques.test.ts
+  s_6231a44d9b968c::t_e04df06830775c 53-58
+src/shared/constraints/features.ts
+  s_6231a44d9b968c::t_3edd4213d3b1fb 16,167-175
+  s_6231a44d9b968c::t_6185740fe53dee 176-177
+src/shared/constraints/rules.ts
+  s_6231a44d9b968c::t_3edd4213d3b1fb 35,156-170,253-259,269-277,349-356
+  s_6231a44d9b968c::t_58cd84265051f0 20
+  s_6231a44d9b968c::t_ea5a74ab9296f9 357,432
+src/features/generation/worker/generators/interiorFilletPlan.test.ts
+  s_6231a44d9b968c::t_c2dee9fc429243 1-22,24-58,74-142,156-160
+  s_6231a44d9b968c::t_4f96cf4b0f35ab 23
+  s_6231a44d9b968c::t_b035ab24dfd012 143-155
+  s_6231a44d9b968c::t_83b12382ac4ed4 60-61,72-73
+  s_6231a44d9b968c::t_3ac0fcf8265635 59,62-71
+src/features/bin-designer/components/panel/pages/InteriorPage/InteriorPage.tsx
+  s_6231a44d9b968c::t_02f62d71156765 12,47-49
+src/features/generation/worker/generators/maskPolygon.ts
+  s_6231a44d9b968c::t_77e330a45ca02c 227-246
+  s_6231a44d9b968c::t_0898cf2863fc2c 226
+src/i18n/locales/it.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/i18n/locales/sv.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/shared/utils/interiorFillet.ts
+  s_6231a44d9b968c::t_3edd4213d3b1fb 10,13-25
+  s_6231a44d9b968c::t_71ff034080174c 1-9,11,26,30-35,51-63
+  s_6231a44d9b968c::t_c7b8038cc80b0a 36-50
+  s_6231a44d9b968c::t_9ff265f26a6b2a 12,64-73,83-107,109-117,120-126,161-184
+  s_6231a44d9b968c::t_7bc543a3136bd2 74-82,127,131-133,138,141-142,144,157
+  s_6231a44d9b968c::t_21cd92acd8addc 159-160
+  s_6231a44d9b968c::t_3c17583b7a7c48 108,118-119,122,128-130,134-137,139-140,143,145-156,158
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 27-29
+src/features/bin-designer/constants/paramMigrationCompartments.ts
+  s_6231a44d9b968c::t_bc0f796b0c1043 97-108
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/groupControls.ts
+  s_6231a44d9b968c::t_02f62d71156765 33
+src/features/generation/worker/generators/binGenerator.export.interiorFillet.test.ts
+  s_6231a44d9b968c::t_4a4b6c2001208b 1-5
+src/features/bin-designer/components/panel/InteriorFilletSection/useInteriorFilletSection.ts
+  s_6231a44d9b968c::t_08c76bd37262ca 1-5,6-7,9,10-12,13-22,24-47,49-52
+  s_6231a44d9b968c::t_83552fdcc1fbf9 48
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 7-8,23
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_6231a44d9b968c::t_1c4dfdc7a4b3bb 19,62-64,205-206,221
+  s_6231a44d9b968c::t_02b039d913f235 195,207,212,214,216-217
+  s_6231a44d9b968c::t_47707c7f789c2f 196,199
+  s_6231a44d9b968c::t_4724534589d919 322-334,340
+  s_6231a44d9b968c::t_60f80a45e71b6a 20,50-51,58,74-76,80-85,94-101,106-110,115-117,348,373
+  s_6231a44d9b968c::t_b46779fc14ce5f 1-11,14-15,18,21-23,36,38-43,44-49,52,59-61,65-71,73,102-104,120-126,133,137,151,164,166,186-194,197-198,200,202-204,208-211,213,215,218-220,222-223,225-229,232-238,240-257,259-261,288-290,293-299,302-316,318-321,335-339,341-344,346-347,349-350,352-368,374-381
+  s_6231a44d9b968c::t_3a06d56a0a17ee 382-386
+  s_6231a44d9b968c::t_c7b8038cc80b0a 37,72,262-264,267-272,274-281,283-285
+  s_6231a44d9b968c::t_3d8a0ad809ea57 286-287
+  s_6231a44d9b968c::t_016adbb4e6bbe5 77-79,93,105
+  s_6231a44d9b968c::t_b41d9d5f9cab77 167,170-171,230-231,239,258,265-266,273,282,291-292,300,317
+  s_6231a44d9b968c::t_f3f527e8918325 165
+  s_6231a44d9b968c::t_f5df5150101861 53-57
+  s_6231a44d9b968c::t_2d523ff0d84a05 86-92
+  s_6231a44d9b968c::t_c7dcceb7c581e2 12-13,16-17,24-35,111-114,118-119,127-132,134-136,138-150,152-163,168-169,172-185,201,224,301,345,351,369-372
+  s_6231a44d9b968c::t_e76d635b7c4b1e 13,17,24-32
+  s_6231a44d9b968c::t_0f63d89865bd2d 370
+  s_6231a44d9b968c::t_01f63e0ef42ca0 201,224
+  s_6231a44d9b968c::t_ae60e4cbe228b0 140-142,301
+  s_6231a44d9b968c::t_bc9b862f73b395 12,127
+  s_6231a44d9b968c::t_e950c2166634cf 35,128-131
+  s_6231a44d9b968c::t_11699d67f585fd 351,369,371-372
+  s_6231a44d9b968c::t_e71caf2b05514e 16,33-34,111-114,118-119,134-136,138-139,143-150,152-163,184,345
+  s_6231a44d9b968c::t_cc2cb0514a90be 168-169,172-183,185
+  s_6231a44d9b968c::t_f6127d836ccbc8 132
+src/features/bin-designer/components/panel/InteriorFilletSection/InteriorFilletSection.test.tsx
+  s_6231a44d9b968c::t_bc49146786bf67 1-39
+scripts/i18n-values-allowlist.json
+  s_6231a44d9b968c::t_212bbc5d206d27 118
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_6231a44d9b968c::t_275636fe26b714 217-230
+src/features/generation/worker/generators/floorPatterns.ts
+  s_6231a44d9b968c::t_60f80a45e71b6a 202
+  s_6231a44d9b968c::t_4724534589d919 212-218,220-221
+  s_6231a44d9b968c::t_5bf809b8bba1c9 32-33
+src/features/bin-designer/utils/printPatternSavings.ts
+  s_6231a44d9b968c::t_03ee1adb3767a6 15,69,172-175
+src/shared/utils/interiorFillet.test.ts
+  s_6231a44d9b968c::t_c2dee9fc429243 1-6,8-19,27-34
+  s_6231a44d9b968c::t_977be45922321f 35-37
+  s_6231a44d9b968c::t_4f96cf4b0f35ab 20-26
+  s_6231a44d9b968c::t_77608020cb2fed 7,38-42,45-57,98-105
+  s_6231a44d9b968c::t_b41e2004424381 106
+  s_6231a44d9b968c::t_7bc543a3136bd2 43-44,58-74
+  s_6231a44d9b968c::t_b47cdb64d2f17b 75-76
+  s_6231a44d9b968c::t_3c17583b7a7c48 77-97
+src/i18n/locales/nl.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/features/bin-designer/utils/printInteriorFilletVolume.test.ts
+  s_6231a44d9b968c::t_2f7bba1aaf6631 48-53
+  s_6231a44d9b968c::t_275636fe26b714 1-4,8-47,54-55
+  s_6231a44d9b968c::t_869f281577f265 56-59
+  s_6231a44d9b968c::t_4a0c694af8381f 68,76
+  s_6231a44d9b968c::t_6e2b86b00e1c1b 74-75
+  s_6231a44d9b968c::t_77608020cb2fed 60-67,69-73,77,91
+  s_6231a44d9b968c::t_c7a1bdba5a4e4c 5-7,78-89
+  s_6231a44d9b968c::t_d0c947b43ef0b1 90
+api/lib/communityExampleParamHashes.ts
+  s_6231a44d9b968c::t_aa789e6f48569f 19
+src/features/bin-designer/components/panel/InteriorFilletSection/index.ts
+  s_6231a44d9b968c::t_08c76bd37262ca 1
+docs/schemas/bin-design.md
+  s_6231a44d9b968c::t_f909ce7c8b21d6 71-113
+src/features/bin-designer/data/examples/scoops.ts
+  s_6231a44d9b968c::t_81e3288670c853 25-48
+src/i18n/locales/pl.json
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+src/i18n/locales/pt-BR.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/features/generation/worker/generators/scenarios/interiorFillet.ts
+  s_6231a44d9b968c::t_5e271fc4a6be63 274-291,298
+  s_6231a44d9b968c::t_ccb675aab10928 21,148-150,156
+  s_6231a44d9b968c::t_efe13dbc365e8d 292-297
+  s_6231a44d9b968c::t_1091a685f80f41 126-131,134,136,147
+  s_6231a44d9b968c::t_4a1a966d5536ed 74-77,81
+  s_6231a44d9b968c::t_64d9d6d6f1ffb9 1-8,13-20,22-29,37-43,45-56,58-67,70-71,72-73,78-80,82-90,92-93,96-101,103-108,114-123,125,132-133,135,137-146,151-155,157-273,321-322,323-335,366-373
+  s_6231a44d9b968c::t_4f96cf4b0f35ab 9-12,68-69,102,109-111,336-362
+  s_6231a44d9b968c::t_6a749381ebfb36 363-365
+  s_6231a44d9b968c::t_3ac0fcf8265635 299-320
+  s_6231a44d9b968c::t_c7dcceb7c581e2 94-95,112-113
+  s_6231a44d9b968c::t_e4db51822ca54a 94-95,112-113
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_6231a44d9b968c::t_ee98571dc3e220 259-261,273-274,365-366,374
+src/shared/constraints/types.ts
+  s_6231a44d9b968c::t_3edd4213d3b1fb 18
+src/features/generation/worker/generators/pipeline/featureComposition.ts
+  s_6231a44d9b968c::t_47707c7f789c2f 20,36
+src/features/generation/worker/generators/binGenerator.scenario.interiorFillet.test.ts
+  s_6231a44d9b968c::t_b8c9b427e861a9 1-5
+src/features/generation/worker/generators/binDirectMesh.test.ts
+  s_6231a44d9b968c::t_8d5e2b874a07ff 268
+src/features/bin-designer/utils/printEstimates.ts
+  s_6231a44d9b968c::t_05980e52673592 54,147,262-263
+  s_6231a44d9b968c::t_ca889d7163dff0 264-265
+  s_6231a44d9b968c::t_69a33f1c05a39f 53,399-401,462
+src/features/bin-designer/utils/compartmentColorUnits.ts
+  s_6231a44d9b968c::t_1554c2474d9963 27-30,56-62,92-98,212-223,225,277,289-290
+  s_6231a44d9b968c::t_ec96b052930b3e 291
+src/features/bin-designer/utils/compartmentColorUnits.test.ts
+  s_6231a44d9b968c::t_ad8580d3a7c438 194-229
+src/shared/constraints/engine.ts
+  s_6231a44d9b968c::t_a013c445daa8b4 16,18-21,34
+  s_6231a44d9b968c::t_0de4eed3f94e4c 15,17,22-26,32-33,35-37
+src/features/bin-designer/helpEntries.ts
+  s_6231a44d9b968c::t_a57e97bf8c16f2 96-104
+  s_6231a44d9b968c::t_a2e4a7ee7c13ca 95
+src/features/bin-designer/utils/printInteriorFilletVolume.ts
+  s_6231a44d9b968c::t_05980e52673592 1-4,10-16,23-33,34-35,39-40,42-45,77-81,85,93-94,95,96-103,105-109
+  s_6231a44d9b968c::t_6e2b86b00e1c1b 17,58-60
+  s_6231a44d9b968c::t_d252dd803a6833 5-9,18-22,46-57,61-76,82-84,86-92,104
+  s_6231a44d9b968c::t_7bc543a3136bd2 36-38,41
+src/i18n/locales/ja.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/shared/types/exampleTechniques.ts
+  s_6231a44d9b968c::t_81e3288670c853 14,28
+src/features/generation/worker/generators/scenarios/index.ts
+  s_6231a44d9b968c::t_b8c9b427e861a9 132
+  s_6231a44d9b968c::t_c7dcceb7c581e2 133
+  s_6231a44d9b968c::t_1aa9b8e7d12e67 133
+src/features/bin-designer/constants/paramMigration.ts
+  s_6231a44d9b968c::t_bc0f796b0c1043 89-92,548,553-555
+  s_6231a44d9b968c::t_1beb5828a19b20 378,549
+  s_6231a44d9b968c::t_b9d0e7dc24b94c 556-557
+src/i18n/locales/uk.json
+  s_6231a44d9b968c::t_1e291985440466 1026-1030,1599-1600,3268-3270
+  s_6231a44d9b968c::t_6e93aeb967954b 2107-2108,2124
+src/shared/constraints/engine.test.ts
+  s_6231a44d9b968c::t_a013c445daa8b4 868,873-874,877,883,892,897
+  s_6231a44d9b968c::t_015c28a01e7bf9 857-867,869-872,875-876,878-882,884-891,893-896,898-911
+src/features/bin-designer/components/ParameterPanel/categoryModified.ts
+  s_6231a44d9b968c::t_a57e97bf8c16f2 27
+src/shared/types/exampleTechniques.test.ts
+  s_6231a44d9b968c::t_1fda5aa9c01945 10,34
+package.json
+  s_6231a44d9b968c::t_33bc0f62be013a 118
+src/features/generation/worker/generators/dividerBlendBuilder.cacheKey.test.ts
+  s_6231a44d9b968c::t_aa9b3cb42a50a7 1-30
+src/features/bin-designer/utils/interiorFilletFit.ts
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 1-39
+  s_6231a44d9b968c::t_c6dd2c37113008 28-31,34-35
+src/features/bin-designer/utils/interiorFilletFit.test.ts
+  s_6231a44d9b968c::t_cce0f54bb5b5f3 1-41
+src/features/generation/worker/generators/interiorFilletBuilder.plan.test.ts
+  s_6231a44d9b968c::t_f5df5150101861 1-28
+src/features/bin-designer/utils/compartmentFloorRaise.test.ts
+  s_6231a44d9b968c::t_c6dd2c37113008 5,41-59
+  s_6231a44d9b968c::t_482f15ffd5ddd6 60
+src/features/generation/worker/generators/lidDividerClearance.scenario.test.ts
+  s_6231a44d9b968c::t_42cbe71f4f3039 189-190,192-201,204-211
+  s_6231a44d9b968c::t_59dfa793261f4b 191,202-203
+src/features/generation/worker/generators/binGenerator.export.interiorFilletScoops.test.ts
+  s_6231a44d9b968c::t_77ba2784158ba3 1-2,4-5
+  s_6231a44d9b968c::t_1aa9b8e7d12e67 1-2,4-5
+src/features/generation/worker/generators/binGenerator.scenario.scoopColorTag.test.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 62-66,82,85,134-142
+  s_6231a44d9b968c::t_f8eae3bfebc516 62-66,82,85,135-137,139,141
+  s_6231a44d9b968c::t_52186c4b65e74c 134,138,140,142
+src/shared/utils/scoopCalculations.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 341-342,344,348,353
+  s_6231a44d9b968c::t_554b3b35421c4c 341-342,344,348,353
+  s_6231a44d9b968c::t_dac01f1fbd5769 356-357
+  s_6231a44d9b968c::t_69a33f1c05a39f 349-352,354-355
+src/features/generation/worker/generators/interiorFilletGeometry.ts
+  s_6231a44d9b968c::t_24cd372d930b05 3,50,68-74,77-81,84-85,88,90-91,98,101,106-131
+  s_6231a44d9b968c::t_77ba2784158ba3 1-2,4-49,51-67,75-76,82-83,86-87,89,92-97,99-100,102-105,132-189
+  s_6231a44d9b968c::t_0e9c0c2d218d3f 45-46
+  s_6231a44d9b968c::t_bfddbc2c0b803b 1-2,4-28,30-44,47-49,51-67,75-76,82-83,86-87,89,92-97,99-100,102-105,132-189
+  s_6231a44d9b968c::t_1040244ed7cb40 29
+src/features/generation/worker/generators/interiorFilletScoop.ts
+  s_6231a44d9b968c::t_24cd372d930b05 101
+  s_6231a44d9b968c::t_77ba2784158ba3 1-100,102-273
+  s_6231a44d9b968c::t_0eb338c0462e7b 11,18,22,115,154-157,160,166-167,175-180,182-184,186-187
+  s_6231a44d9b968c::t_8d7a5a3a65f749 221
+  s_6231a44d9b968c::t_90327b2b4c5233 85-87,120-122,125-149
+  s_6231a44d9b968c::t_c838cae9778da7 110
+  s_6231a44d9b968c::t_36bab04390387c 112,124,158-159
+  s_6231a44d9b968c::t_54eac82fed04bb 29,113-114
+  s_6231a44d9b968c::t_0d616774065c39 174,181
+  s_6231a44d9b968c::t_06f2863edde842 109,161-165,168-173,185,194-199,266-270
+  s_6231a44d9b968c::t_9dd5ccf7dd20bc 6-7,24,31-32,44,47-51,55,57-58,67-81
+  s_6231a44d9b968c::t_144a6e7400f316 99
+  s_6231a44d9b968c::t_3bfb8c086f8746 119
+  s_6231a44d9b968c::t_835f153c301bfb 103-105
+  s_6231a44d9b968c::t_bfddbc2c0b803b 1-5,8-10,12-17,19-21,23,25-28,30,33-43,45-46,52-54,56,59-66,82-84,88-91,93-98,100,102,106-108,111,116-118,151-153,188-193,200-215,217-220,222-232,247-265,271-273
+  s_6231a44d9b968c::t_7d1cee7be58fae 123
+  s_6231a44d9b968c::t_1bf9b5ba411d3c 216,233-246
+  s_6231a44d9b968c::t_e120b3f795de86 150
+  s_6231a44d9b968c::t_6b038d3a9f6df1 92
+src/features/generation/worker/generators/binGenerator.scenario.interiorFilletScoops.test.ts
+  s_6231a44d9b968c::t_77ba2784158ba3 1-2,4-5
+  s_6231a44d9b968c::t_1aa9b8e7d12e67 1-2,4-5
+.claude/skills/geometry-generation/SKILL.md
+  s_6231a44d9b968c::t_c7dcceb7c581e2 90-105
+  s_6231a44d9b968c::t_b886dfef972b34 90-105
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_6231a44d9b968c::t_c7dcceb7c581e2 9-10,23,33,100-140,150,163-164,168,171,230-233,235,279-287,290-291,312-319,348-353,357-407,475,478-495,500-502,525-527
+  s_6231a44d9b968c::t_8410c9c4956796 108-112,284,352,381-383,394-406,526-527
+  s_6231a44d9b968c::t_6b038d3a9f6df1 525
+  s_6231a44d9b968c::t_2c49643dbbb86f 23,103-107,113-114,130-140,150,164,171,357-380,407
+  s_6231a44d9b968c::t_0d616774065c39 348-351,353
+  s_6231a44d9b968c::t_321fa2074136d2 9,475,500-501
+  s_6231a44d9b968c::t_88d9e5c8dc62ba 10
+  s_6231a44d9b968c::t_144a6e7400f316 100-102,280-283,285-287,290-291,312-319
+  s_6231a44d9b968c::t_4e998da7acbf20 163
+  s_6231a44d9b968c::t_95d05afe8caa1c 279
+  s_6231a44d9b968c::t_ae60e4cbe228b0 384-393
+  s_6231a44d9b968c::t_897717608812e1 478-495
+  s_6231a44d9b968c::t_e950c2166634cf 115-129,168
+  s_6231a44d9b968c::t_c838cae9778da7 502
+  s_6231a44d9b968c::t_554b3b35421c4c 33,230-233,235
+  s_6231a44d9b968c::t_69a33f1c05a39f 234
+src/shared/generation/meshPersistence.ts
+  s_6231a44d9b968c::t_a79676a00f5f6f 76
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.combinedFeatures.test.ts.snap
+  s_6231a44d9b968c::t_8421904326b1cb 9
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_6231a44d9b968c::t_ee8cf6e1cea7bf 5,23,25,27,29,33
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.tsx
+  s_6231a44d9b968c::t_69a33f1c05a39f 25,130-133,140-142,148,153-154
+src/shared/utils/scoopCalculations.test.ts
+  s_6231a44d9b968c::t_4d0e822d10946a 15,271-284
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "00c76c655dab8b513c889f90cf89cfff9d7f31ec",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
