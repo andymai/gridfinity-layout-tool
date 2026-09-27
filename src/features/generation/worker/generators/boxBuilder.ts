@@ -296,9 +296,19 @@ export function buildBinBox(
      */
     const finish = (shape: Shape3D, taper?: ResolvedTaper | null): Shape3D => {
       if (!raisesFloor) return setBoxCache(boxKey, shape);
+      const solidSlab = sketch(makeInnerFootprint(), 'XY', wallThickness - COPLANAR_MARGIN).extrude(
+        floorThickness - wallThickness + COPLANAR_MARGIN
+      );
+      // A custom shape's inner footprint is its outer loop alone; the slab
+      // would close each hole through the bin.
+      const holeFloor = wallThickness - 2 * COPLANAR_MARGIN;
       const rawSlab = scope.register(
-        sketch(makeInnerFootprint(), 'XY', wallThickness - COPLANAR_MARGIN).extrude(
-          floorThickness - wallThickness + COPLANAR_MARGIN
+        subtractHolesFromSolid(
+          scope,
+          solidSlab,
+          innerHoleDrawings,
+          floorThickness - holeFloor,
+          holeFloor
         )
       );
       const slab = taper
@@ -562,22 +572,21 @@ export function buildBinBox(
       // concave perimeters. Caught error still falls back to solid so a
       // pathological narrow-feature mask never crashes generation.
       scope.register(box); // not consumed; dispose via scope
+      let hollow: Shape3D;
       try {
-        return setBoxCache(
-          boxKey,
-          buildHollowPolygon(
-            scope,
-            makeFootprint(),
-            makeInnerFootprint(),
-            wallHeight,
-            wallThickness,
-            outerHoleDrawings,
-            innerHoleDrawings
-          )
+        hollow = buildHollowPolygon(
+          scope,
+          makeFootprint(),
+          makeInnerFootprint(),
+          wallHeight,
+          wallThickness,
+          outerHoleDrawings,
+          innerHoleDrawings
         );
       } catch {
         return finish(box);
       }
+      return finish(hollow);
     }
 
     // Tapered bins build the hollow body directly (outer − cavity loft,

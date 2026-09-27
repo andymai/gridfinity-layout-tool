@@ -4,6 +4,7 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
+import { binFloorMm } from '@/features/bin-designer/types/base';
 import { baseWallHeight } from './binDimensions';
 
 const OUTER = 41.5;
@@ -76,13 +77,13 @@ describe('computeInteriorFilletVolume on a custom shape', () => {
     expect(l).toBeCloseTo(CROSS_SECTION * 2.5 * 2.5 * perimeter, 6);
   });
 
-  it("stands its corner columns on the custom shape's own wall-thickness floor", () => {
+  it('stands its corner columns on the standard floor', () => {
     const params = bin({ width: 2, depth: 2, interiorFilletMm: 4, cellMask: lShape });
     const l = computeInteriorFilletVolume(params, 83.5, 83.5);
     const wallTop = baseWallHeight(params.base, params.height * params.heightUnitMm);
     const floorToTop =
       computeInteriorHeight(wallTop, params.base.stackingLip, GRIDFINITY.LIP_SMALL_TAPER) -
-      params.wallThickness;
+      binFloorMm(params.wallThickness);
     const shellCorner = GRIDFINITY.BOX_CORNER_RADIUS - params.wallThickness;
     // The L has five convex corners, every one of them a shell corner.
     const columns = 5 * CROSS_SECTION * (4 * 4 - shellCorner * shellCorner) * floorToTop;

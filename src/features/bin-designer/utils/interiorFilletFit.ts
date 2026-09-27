@@ -2,7 +2,6 @@ import type { BinParams } from '../types';
 import { binFloorMm } from '../types/base';
 import { GRIDFINITY } from '../constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
-import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { INTERIOR_FILLET_HEADROOM_MM, narrowestCavitySpansMm } from '@/shared/utils/interiorFillet';
 import { binDimensions } from './binDimensions';
@@ -24,11 +23,7 @@ export function interiorFilletFitMm(params: BinParams): number {
   const { cells, dividerHeight } = params.compartments;
   const top =
     new Set(cells).size > 1 ? resolveCompartmentDividerHeight(dividerHeight, interior) : interior;
-  // A custom shape's cavity floor is its wall thickness: the polygon hollow
-  // has no spec floor slab.
-  const floor = isPartialMask(params.cellMask)
-    ? params.wallThickness
-    : binFloorMm(params.wallThickness);
+  const floor = binFloorMm(params.wallThickness);
   let fit = Infinity;
   for (const [id, span] of narrowestCavitySpansMm(params)) {
     const height =

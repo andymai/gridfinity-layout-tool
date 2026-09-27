@@ -33,12 +33,9 @@ export function computeInteriorFilletVolume(
   const wall = params.wallThickness;
   const totalH = params.height * params.heightUnitMm;
   const boxWallHeight = baseWallHeight(params.base, totalH);
-  // A custom shape's cavity floor is its wall thickness: the polygon hollow
-  // has no spec floor slab.
-  const floor = isPartialMask(params.cellMask) ? wall : binFloorMm(wall);
   const height =
     computeInteriorHeight(boxWallHeight, params.base.stackingLip, GRIDFINITY.LIP_SMALL_TAPER) -
-    floor;
+    binFloorMm(wall);
   if (height <= 0) return 0;
 
   const corner = interiorFilletCornerMm(params);

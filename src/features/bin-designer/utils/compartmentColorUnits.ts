@@ -25,7 +25,6 @@ import { binDimensions, cutoutInterior } from './binDimensions';
 import { buildOverrideLookup, findPairAwareRuns, overrideKey } from './compartments';
 import { DEFAULT_COMPARTMENT_COLOR_SCOPE } from '../types/compartments';
 import { binFloorMm } from '../types/base';
-import { isPartialMask } from '@/shared/utils/cellMask';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import { builtCompartmentFloorRaiseMm } from './compartmentFloorRaise';
 import type { CompartmentColorScope } from '../types/compartments';
@@ -209,11 +208,7 @@ export function planCompartmentColors(params: BinParams): CompartmentColorPlan |
   }
   if (cells.length === 0) return null;
 
-  // The custom-shape hollow keeps the shell's floor; every other body carries
-  // the spec floor slab (see the fillet builder, which reads the same floor).
-  const floorTop =
-    floorZ +
-    (isPartialMask(params.cellMask) ? params.wallThickness : binFloorMm(params.wallThickness));
+  const floorTop = floorZ + binFloorMm(params.wallThickness);
   const floorTopById =
     interiorFilletRadiusMm(params) > 0
       ? new Map(
