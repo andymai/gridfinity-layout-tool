@@ -14,6 +14,7 @@
 import {
   clone,
   cut,
+  cutAll,
   draw,
   fillet,
   fuseAll,
@@ -93,24 +94,25 @@ export function interiorFilletFloorFootprints(
 ): { xMin: number; xMax: number; yMin: number; yMax: number }[] {
   const out: { xMin: number; xMax: number; yMin: number; yMax: number }[] = [];
   for (const plan of planBinInteriorFillets(input)) {
-    const loop = plan.floor;
-    for (let i = 0; i < loop.length; i++) {
-      const a = loop[i];
-      const b = loop[(i + 1) % loop.length];
-      const len = Math.hypot(b.x - a.x, b.y - a.y);
-      const nx = (-(b.y - a.y) / len) * plan.radius;
-      const ny = ((b.x - a.x) / len) * plan.radius;
-      const xs = [a.x, b.x, a.x + nx, b.x + nx];
-      const ys = [a.y, b.y, a.y + ny, b.y + ny];
-      out.push({
-        xMin: Math.min(...xs),
-        xMax: Math.max(...xs),
-        yMin: Math.min(...ys),
-        yMax: Math.max(...ys),
-      });
-      if (a.convex) {
-        const c = plan.cornerRadius;
-        out.push({ xMin: a.x - c, xMax: a.x + c, yMin: a.y - c, yMax: a.y + c });
+    for (const loop of [plan.floor, ...plan.holes.map((h) => h.floor)]) {
+      for (let i = 0; i < loop.length; i++) {
+        const a = loop[i];
+        const b = loop[(i + 1) % loop.length];
+        const len = Math.hypot(b.x - a.x, b.y - a.y);
+        const nx = (-(b.y - a.y) / len) * plan.radius;
+        const ny = ((b.x - a.x) / len) * plan.radius;
+        const xs = [a.x, b.x, a.x + nx, b.x + nx];
+        const ys = [a.y, b.y, a.y + ny, b.y + ny];
+        out.push({
+          xMin: Math.min(...xs),
+          xMax: Math.max(...xs),
+          yMin: Math.min(...ys),
+          yMax: Math.max(...ys),
+        });
+        if (a.convex) {
+          const c = plan.cornerRadius;
+          out.push({ xMin: a.x - c, xMax: a.x + c, yMin: a.y - c, yMax: a.y + c });
+        }
       }
     }
   }
@@ -153,13 +155,13 @@ function buildCompartmentFillet(
 ): Shape3D | null {
   const zCut = plan.zTop + CUTTER_OVERSHOOT_MM;
   const air = scope.register(
-    prismBetween(plan, plan.zFloor, zCut, 0, airCorner(plan.cornerRadius))
+    prismBetween(scope, plan, plan.zFloor, zCut, 0, airCorner(plan.cornerRadius))
   );
   const rounded = filletAir(scope, air, plan);
   if (!rounded) return null;
   const floorPen = Math.min(COPLANAR_MARGIN, plan.zFloor * 0.5);
   const grown = scope.register(
-    prismBetween(plan, plan.zFloor - floorPen, plan.zTop, pen, grownCorner(pen))
+    prismBetween(scope, plan, plan.zFloor - floorPen, plan.zTop, pen, grownCorner(pen))
   );
   try {
     return scope.register(unwrap(cut(grown as ValidSolid, rounded as ValidSolid)));
@@ -181,40 +183,70 @@ function grownCorner(pen: number): (v: FilletVertex) => number {
   };
 }
 
-/** Plan vertices at height `z`, which move linearly between floor and top. */
-function loopAt(plan: CompartmentFilletPlan, z: number): FilletVertex[] {
+/** A loop's vertices at height `z`, which move linearly between floor and top. */
+function loopAt(
+  plan: CompartmentFilletPlan,
+  floor: readonly FilletVertex[],
+  top: readonly FilletVertex[],
+  z: number
+): FilletVertex[] {
   const span = plan.zTop - plan.zFloor;
   const t = span > 0 ? (z - plan.zFloor) / span : 0;
-  return plan.floor.map((f, i) => {
-    const top = plan.top[i];
-    return { ...f, x: f.x + (top.x - f.x) * t, y: f.y + (top.y - f.y) * t };
-  });
+  return floor.map((f, i) => ({
+    ...f,
+    x: f.x + (top[i].x - f.x) * t,
+    y: f.y + (top[i].y - f.y) * t,
+  }));
 }
 
-function leans(plan: CompartmentFilletPlan): boolean {
-  return plan.floor.some(
-    (f, i) => Math.abs(f.x - plan.top[i].x) > 1e-9 || Math.abs(f.y - plan.top[i].y) > 1e-9
-  );
+function leans(floor: readonly FilletVertex[], top: readonly FilletVertex[]): boolean {
+  return floor.some((f, i) => Math.abs(f.x - top[i].x) > 1e-9 || Math.abs(f.y - top[i].y) > 1e-9);
 }
 
-function prismBetween(
+function loopPrism(
   plan: CompartmentFilletPlan,
+  floor: readonly FilletVertex[],
+  top: readonly FilletVertex[],
   z0: number,
   z1: number,
   grow: number,
   corner: (v: FilletVertex) => number
 ): Shape3D {
   const drawingAt = (z: number): Drawing => {
-    const loop = loopAt(plan, z);
+    const loop = loopAt(plan, floor, top, z);
     return loopDrawing(grow > 0 ? offsetLoop(loop, grow) : loop, loop.map(corner));
   };
-  if (!leans(plan))
+  if (!leans(floor, top))
     return drawingAt(z0)
       .sketchOnPlane('XY', z0)
       .extrude(z1 - z0);
   const bottom = drawingAt(z0).sketchOnPlane('XY', z0) as Sketch;
-  const top = drawingAt(z1).sketchOnPlane('XY', z1) as Sketch;
-  return bottom.loftWith([top], { ruled: true });
+  const upper = drawingAt(z1).sketchOnPlane('XY', z1) as Sketch;
+  return bottom.loftWith([upper], { ruled: true });
+}
+
+/**
+ * The plan's outline as a prism between two heights, its holes cut through. A
+ * hole runs clockwise, so the offset that grows the outline shrinks a hole,
+ * pushing the skin into the dividers round it the same way.
+ */
+function prismBetween(
+  scope: DisposalScope,
+  plan: CompartmentFilletPlan,
+  z0: number,
+  z1: number,
+  grow: number,
+  corner: (v: FilletVertex) => number
+): Shape3D {
+  const solid = loopPrism(plan, plan.floor, plan.top, z0, z1, grow, corner);
+  if (plan.holes.length === 0) return solid;
+  scope.register(solid);
+  const cutters = plan.holes.map((h) =>
+    scope.register(
+      loopPrism(plan, h.floor, h.top, z0 - COPLANAR_MARGIN, z1 + COPLANAR_MARGIN, grow, corner)
+    )
+  );
+  return unwrap(cutAll(solid as ValidSolid, cutters as ValidSolid[]));
 }
 
 /** Each side pushed `d` to its right, which is outward for a CCW loop. */

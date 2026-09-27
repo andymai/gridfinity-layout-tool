@@ -50,6 +50,16 @@ export interface CompartmentFilletPlan {
   readonly cornerRadius: number;
   readonly floor: readonly FilletVertex[];
   readonly top: readonly FilletVertex[];
+  /**
+   * Inner boundaries, clockwise, of a compartment wrapped round another: the
+   * air leaves each one out and the fillet runs along it too.
+   */
+  readonly holes: readonly FilletHole[];
+}
+
+export interface FilletHole {
+  readonly floor: readonly FilletVertex[];
+  readonly top: readonly FilletVertex[];
 }
 
 export interface InteriorFilletInput {
@@ -102,7 +112,7 @@ export function planInteriorFillets(input: InteriorFilletInput): CompartmentFill
       ? bakedOutline(input, id, lookup)
       : tracedOutline(input, id, lookup);
     if (!outline) continue;
-    const plan = finishPlan(input, id, outline.floor, outline.top, outline.interior);
+    const plan = finishPlan(input, id, outline, outline.interior);
     if (plan) out.push(plan);
   }
   return out;
@@ -111,6 +121,7 @@ export function planInteriorFillets(input: InteriorFilletInput): CompartmentFill
 interface Outline {
   readonly floor: readonly FilletVertex[];
   readonly top: readonly FilletVertex[];
+  readonly holes: readonly FilletHole[];
   /** Whether any side is a divider, which caps the top at the divider height. */
   readonly interior: boolean;
 }
@@ -122,18 +133,31 @@ function zTopFor(input: InteriorFilletInput, interior: boolean): number {
 function finishPlan(
   input: InteriorFilletInput,
   id: number,
-  floor: readonly FilletVertex[],
-  top: readonly FilletVertex[],
+  outline: Pick<Outline, 'floor' | 'top' | 'holes'>,
   interior: boolean
 ): CompartmentFilletPlan | null {
+  const { floor, top, holes } = outline;
   const zFloor = input.floorZ + input.floorRaise(id);
   const zTop = zTopFor(input, interior);
   if (!isSimplePolygon(floor) || !isSimplePolygon(top)) return null;
+  // A hole runs clockwise, which reversed is a simple polygon of its own.
+  const reversed = (loop: readonly FilletPt[]): FilletPt[] => [...loop].reverse();
+  if (holes.some((h) => !isSimplePolygon(reversed(h.floor)) || !isSimplePolygon(reversed(h.top))))
+    return null;
 
   const cavityR = Math.max(BOX_CORNER_RADIUS - input.params.wallThickness, 0);
   const cornerLimit = Math.min(cornerRadiusLimit(floor), cornerRadiusLimit(top));
   const cornerRadius = Math.min(Math.max(input.radius, cavityR), cornerLimit);
-  const gapLimit = Math.min(minGap(floor), minGap(top)) / 2 - FACE_RESERVE_MM / 2;
+  const gaps = [minGap(floor), minGap(top)];
+  for (const h of holes) {
+    gaps.push(minGap(h.floor), minGap(h.top), gapBetween(floor, h.floor), gapBetween(top, h.top));
+  }
+  for (let i = 0; i < holes.length; i++) {
+    for (let j = i + 1; j < holes.length; j++) {
+      gaps.push(gapBetween(holes[i].floor, holes[j].floor), gapBetween(holes[i].top, holes[j].top));
+    }
+  }
+  const gapLimit = Math.min(...gaps) / 2 - FACE_RESERVE_MM / 2;
   const radius = Math.min(
     input.radius,
     cornerRadius - CORNER_OVER_FLOOR_MM,
@@ -141,7 +165,7 @@ function finishPlan(
     zTop - zFloor - INTERIOR_FILLET_HEADROOM_MM
   );
   if (!(radius >= MIN_BUILT_FILLET_MM)) return null;
-  return { id, zFloor, zTop, radius, cornerRadius, floor, top };
+  return { id, zFloor, zTop, radius, cornerRadius, floor, top, holes };
 }
 
 /**
@@ -180,6 +204,22 @@ function cornerRadiusLimit(loop: readonly FilletVertex[]): number {
 }
 
 /** Narrowest distance from any vertex to a side it is not on. */
+/** Closest any corner of one loop comes to a side of the other. */
+function gapBetween(a: readonly FilletPt[], b: readonly FilletPt[]): number {
+  let gap = Infinity;
+  for (const [from, to] of [
+    [a, b],
+    [b, a],
+  ] as const) {
+    for (const p of from) {
+      for (let j = 0; j < to.length; j++) {
+        gap = Math.min(gap, pointSegmentDistance(p, to[j], to[(j + 1) % to.length]));
+      }
+    }
+  }
+  return gap;
+}
+
 function minGap(loop: readonly FilletVertex[]): number {
   const n = loop.length;
   let gap = Infinity;
@@ -277,7 +317,7 @@ function bakedOutline(
     (i) => (onPerimeter[i] ? rounded : 0)
   );
   const interior = !onPerimeter.every(Boolean);
-  return { floor: quad, top: quad, interior };
+  return { floor: quad, top: quad, holes: [], interior };
 }
 
 // --- Custom-shape bins: the mask's inner loop ---
@@ -296,7 +336,7 @@ function planMaskCavity(input: InteriorFilletInput): CompartmentFilletPlan | nul
   );
   const loop = withConvexity(vertices, () => radius);
   const id = params.compartments.cells[0] ?? 0;
-  return finishPlan(input, id, loop, loop, false);
+  return finishPlan(input, id, { floor: loop, top: loop, holes: [] }, false);
 }
 
 // --- Additive path: trace the cells, then place each side on its wall ---
@@ -328,8 +368,26 @@ function tracedOutline(
   id: number,
   lookup: Map<string, DividerOverride>
 ): Outline | null {
-  const loop = outerLoop(input.params, id);
-  if (!loop) return null;
+  const loops = boundaryLoops(input.params, id);
+  if (!loops) return null;
+  const outer = tracedLoop(input, id, loops.outer, lookup);
+  if (!outer) return null;
+  const holes: FilletHole[] = [];
+  for (const hole of loops.holes) {
+    const traced = tracedLoop(input, id, hole, lookup);
+    if (!traced) return null;
+    holes.push({ floor: traced.floor, top: traced.top });
+  }
+  return { ...outer, holes, interior: outer.interior || holes.length > 0 };
+}
+
+/** One boundary loop traced onto the wall and divider faces around it. */
+function tracedLoop(
+  input: InteriorFilletInput,
+  id: number,
+  loop: readonly GridEdge[],
+  lookup: Map<string, DividerOverride>
+): Omit<Outline, 'holes'> | null {
   const runs = mergeRuns(loop);
   const interior = runs.some((r) => r.across >= 0);
   const zFloor = input.floorZ + input.floorRaise(id);
@@ -349,7 +407,14 @@ function tracedOutline(
 }
 
 /** The compartment's boundary as grid edges with it on the left, outer loop only. */
-function outerLoop(params: BinParams, id: number): GridEdge[] | null {
+/**
+ * A compartment's boundary as closed loops over the grid edges, the outer one
+ * counter-clockwise and any hole, round a compartment it wraps, clockwise.
+ */
+function boundaryLoops(
+  params: BinParams,
+  id: number
+): { readonly outer: GridEdge[]; readonly holes: GridEdge[][] } | null {
   const { cols, rows, cells } = params.compartments;
   const at = (c: number, r: number): number =>
     c < 0 || c >= cols || r < 0 || r >= rows ? -1 : cells[r * cols + c];
@@ -376,12 +441,10 @@ function outerLoop(params: BinParams, id: number): GridEdge[] | null {
   for (const list of byStart.values()) if (list.length > 1) return null;
 
   const used = new Set<GridEdge>();
-  let best: GridEdge[] | null = null;
-  let bestArea = 0;
-  let loops = 0;
+  let outer: GridEdge[] | null = null;
+  const holes: GridEdge[][] = [];
   for (const start of edges) {
     if (used.has(start)) continue;
-    loops++;
     const loop: GridEdge[] = [];
     let e: GridEdge | undefined = start;
     while (e && !used.has(e)) {
@@ -390,15 +453,11 @@ function outerLoop(params: BinParams, id: number): GridEdge[] | null {
       e = byStart.get(`${e.b[0]},${e.b[1]}`)?.[0];
     }
     const area = signedArea(loop.map((g) => ({ x: g.a[0], y: g.a[1] })));
-    if (area > bestArea) {
-      bestArea = area;
-      best = loop;
-    }
+    if (area > 0 && !outer) outer = loop;
+    else if (area < 0) holes.push(loop);
+    else return null;
   }
-  // A compartment wrapped round another has an inner boundary too, which one
-  // outline cannot carry: built from the outer loop alone, the fillet would
-  // fill the compartment inside it.
-  return loops === 1 ? best : null;
+  return outer ? { outer, holes } : null;
 }
 
 function edgeDir(e: { a: readonly [number, number]; b: readonly [number, number] }): string {

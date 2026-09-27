@@ -288,6 +288,30 @@ export const interiorFillet: ScenarioCase[] = [
       },
     },
   }),
+  filletCase(
+    'a compartment wrapped round another rounds along both its boundaries',
+    {
+      width: 3,
+      depth: 3,
+      height: 4,
+      interiorFilletMm: 2.5,
+      compartments: { cols: 3, rows: 3, cells: [0, 0, 0, 0, 1, 0, 0, 0, 0], thickness: 1.2 },
+    },
+    (mesh, params) => {
+      const c = cavity(params);
+      const cell = c.innerW / 3;
+      const centreX = c.left + c.innerW / 2;
+      const centreY = c.front + c.innerD / 2;
+      // The middle of the inner compartment is open floor, not filled.
+      expect(floorSurfaceAt(mesh, centreX, centreY, c.floorTop, 3) - c.floorTop).toBeLessThan(0.05);
+      // A quarter radius out from the divider round it, on the ring's side,
+      // the ring's floor rises into its fillet.
+      const face = c.front + cell - 0.6;
+      const r = 2.5;
+      const near = floorSurfaceAt(mesh, centreX, face - r / 4, c.floorTop, r + 1);
+      expect(near - c.floorTop).toBeGreaterThan(quarterRise(r, r / 4) / 2);
+    }
+  ),
   filletCase('a half-grid bin rounds like a whole one', {
     width: 1.5,
     depth: 1,

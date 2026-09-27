@@ -56,10 +56,19 @@ describe('planInteriorFillets', () => {
     expect(junction?.bodyRadius).toBe(0);
   });
 
-  it('leaves a compartment wrapped round another sharp, and rounds the one inside', () => {
+  it('traces a compartment wrapped round another with the inner one as a hole', () => {
     const ring = { cols: 3, rows: 3, cells: [0, 0, 0, 0, 1, 0, 0, 0, 0], thickness: 1.2 };
     const plans = planInteriorFillets(input({ width: 3, depth: 3, compartments: ring }));
-    expect(plans.map((p) => p.id)).toEqual([1]);
+    expect(plans.map((p) => p.id).sort()).toEqual([0, 1]);
+    const outer = plans.find((p) => p.id === 0);
+    const inner = plans.find((p) => p.id === 1);
+    expect(outer?.holes).toHaveLength(1);
+    expect(inner?.holes).toHaveLength(0);
+    // The hole is the inner compartment grown by the divider around it.
+    const holeXs = outer?.holes[0].floor.map((v) => v.x) ?? [];
+    const innerXs = inner?.floor.map((v) => v.x) ?? [];
+    expect(Math.max(...holeXs) - Math.max(...innerXs)).toBeCloseTo(1.2, 6);
+    expect(outer?.holes[0].floor.every((v) => !v.convex)).toBe(true);
   });
 
   it('traces a merged L with one reflex corner the fillet leaves alone', () => {
