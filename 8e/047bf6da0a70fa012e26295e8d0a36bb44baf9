@@ -1,0 +1,47 @@
+src/features/generation/worker/generators/scoopRampPlan.ts
+  s_6231a44d9b968c::t_2f233edc78b4d1 30-47
+  s_6231a44d9b968c::t_d4972af871a318 1-29,48-166
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_6231a44d9b968c::t_64145ac0758792 144-191,193-195,197-272
+  s_6231a44d9b968c::t_10844ed8347d12 23-26
+src/features/generation/worker/generators/floorRaiseBuilder.ts
+  s_6231a44d9b968c::t_94150624484e46 16,20
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_6231a44d9b968c::t_fe3f6b8502f7d5 135-137
+  s_6231a44d9b968c::t_58321804e236f3 29-30
+  s_6231a44d9b968c::t_49e255ea6f5cfd 154-156,163-173,175-188
+src/features/generation/worker/generators/scoopRampPlan.test.ts
+  s_6231a44d9b968c::t_3a36dab72f8edf 1-60
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_6231a44d9b968c::t_856956703bb01e 298-317,324-334,336-347
+  s_6231a44d9b968c::t_c22b706aa1dc6e 318-323,335
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_6231a44d9b968c::t_10844ed8347d12 35-37
+src/features/generation/worker/generators/floorRaisePlan.ts
+  s_6231a44d9b968c::t_94150624484e46 1-32
+src/features/generation/worker/generators/scenarios/dividerPatterns.ts
+  s_6231a44d9b968c::t_b38ddc03c7c77e 11-13,16,53-62,127,129-157
+src/features/generation/worker/generators/dividerPatterns.test.ts
+  s_6231a44d9b968c::t_c22b706aa1dc6e 279-290
+  s_6231a44d9b968c::t_fe3f6b8502f7d5 142-155
+src/features/generation/worker/generators/scenarios/floorPatterns.ts
+  s_6231a44d9b968c::t_b38ddc03c7c77e 11-13,100-106,163-185
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dividerPatterns.test.ts.snap
+  s_6231a44d9b968c::t_6800607e51fb78 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8e047bf6da0a70fa012e26295e8d0a36bb44baf9",
+  "prompts": {},
+  "sessions": {
+    "s_6231a44d9b968c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fec2226-cc08-48b6-ae40-734b2c169a27",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
