@@ -27,13 +27,18 @@ import {
   computeLipOffset,
   resolveScoopProfile,
   scoopArcAnchors,
+  scoopFaceOffset,
 } from '@/shared/utils/scoopCalculations';
 import { labelLipReservationMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
 import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { findCompartmentBounds, interiorDividerSegments } from './compartmentBuilder';
 import type { InteriorDividerSegment } from './compartmentBuilder';
 import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPatterns';
-import { interiorFilletCornerMm, interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
+import {
+  interiorFilletCornerMm,
+  interiorFilletRadiusMm,
+  interiorFilletRiseMm,
+} from '@/shared/utils/interiorFillet';
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 import { taperInsetAt } from './overhang';
 import type { BinDimensions } from './pipeline/types';
@@ -216,7 +221,8 @@ export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepO
     const { floorStart } = scoopArcAnchors(
       lipOffset,
       wallAt(floorThickness + profile.height),
-      wallAt(floorThickness)
+      wallAt(floorThickness),
+      scoopFaceOffset(isMinRow, params.compartments.thickness, interiorFilletRadiusMm(params) > 0)
     );
     out.push({
       xMin: centerX - compW / 2,

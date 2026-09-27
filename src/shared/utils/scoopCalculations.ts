@@ -338,10 +338,26 @@ export function computeLipOffset(
 export function scoopArcAnchors(
   lipOffset: number,
   wallAtTop: number,
-  wallAtFloor: number
+  wallAtFloor: number,
+  faceOffset = 0
 ): { readonly arcTop: number; readonly floorStart: number } {
-  const arcTop = Math.max(lipOffset, wallAtTop);
+  const arcTop = Math.max(lipOffset, wallAtTop, faceOffset);
   return { arcTop, floorStart: arcTop + wallAtFloor - wallAtTop };
+}
+
+/**
+ * How far in from its grid line a ramp's arc starts on a divider. A ramp is
+ * placed on the grid line, so its arc is buried half the divider and breaks
+ * out of the face at a crease. Under an interior fillet it starts on the face
+ * instead, meeting it tangentially the way it meets an outer wall, or the
+ * fillet climbing the side wall has that crease to turn.
+ */
+export function scoopFaceOffset(
+  isOuter: boolean,
+  dividerThickness: number,
+  filleted: boolean
+): number {
+  return filleted && !isOuter ? dividerThickness / 2 : 0;
 }
 
 /**

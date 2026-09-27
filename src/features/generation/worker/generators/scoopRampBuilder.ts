@@ -6,6 +6,8 @@
  */
 
 import { isNestingBase } from '@/shared/types/bin';
+import { isPartialMask } from '@/shared/utils/cellMask';
+import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
 import {
   draw,
   drawRoundedRectangle,
@@ -18,7 +20,7 @@ import {
   intersect,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, ScoopSide } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import {
   resolveScoopProfile,
@@ -28,6 +30,7 @@ import {
   computeInteriorHeight,
   scoopFrameHeights,
   scoopArcAnchors,
+  scoopFaceOffset,
 } from '@/shared/utils/scoopCalculations';
 import {
   LIP_SMALL_TAPER,
@@ -94,7 +97,47 @@ export function buildScoopRamps(
   });
 }
 
-function buildScoopRampsInScope(
+/** Control-point reach, as a fraction of each radius, of the cubic Bézier nearest a quarter ellipse. */
+const QUARTER_ELLIPSE_K = (4 / 3) * (Math.SQRT2 - 1);
+
+export interface ScoopRampSolid {
+  readonly compId: number;
+  readonly side: ScoopSide;
+  /** Positioned in the cavity frame, reaching into the walls around it and unclipped. */
+  readonly solid: Shape3D;
+  /**
+   * Built into the interior fillet's own solid, which rounds up its sides,
+   * instead of by the scoop feature.
+   */
+  readonly climbed: boolean;
+}
+
+/** Whether the interior fillet climbs this bin's ramps, building them itself. */
+export function filletClimbsRamps(params: BinParams): boolean {
+  const sides = resolveScoopSides(params.scoop);
+  // Ramps on adjacent walls cross in the corner between them, down to where
+  // both arcs lie tangent to the floor. Drawn smooth, `fuseAll` hands the pair
+  // back overlapping with their shared volume counted twice; chords cross
+  // cleanly.
+  const crossing =
+    sides.some((s) => s === 'front' || s === 'back') &&
+    sides.some((s) => s === 'left' || s === 'right');
+  // A wall cutout trims the fillet around its doorway, which would notch a ramp
+  // carried inside it.
+  return interiorFilletRadiusMm(params) > 0 && !crossing && !params.walls.enabled;
+}
+
+/**
+ * How far a ramp's back and ends are pushed into the walls and dividers around
+ * it: below the outer wall thickness (never breach it) and below 0.4x the
+ * divider thickness, so two neighbouring compartments penetrating a shared
+ * divider from opposite sides cannot meet through it.
+ */
+export function scoopWallPenetration(params: BinParams, wallThickness: number): number {
+  return Math.min(COPLANAR_MARGIN, wallThickness * 0.6, params.compartments.thickness * 0.4);
+}
+
+export function buildScoopRampSolids(
   scope: DisposalScope,
   params: BinParams,
   innerW: number,
@@ -104,7 +147,7 @@ function buildScoopRampsInScope(
   floorZ: number,
   floorRaiseFor: (compartmentId: number) => number,
   taper: ResolvedTaper | null
-): Shape3D | null {
+): ScoopRampSolid[] {
   const hasLip = params.base.stackingLip;
   // The profile is authored with its floor at local Z=0 and the solid lifted
   // onto the interior floor, so every height here is measured from that floor,
@@ -117,21 +160,16 @@ function buildScoopRampsInScope(
   // surface as degenerate slivers where the ramp arc meets a side wall). Push
   // the contact faces INTO the surrounding material so the fuse overlaps
   // instead, following the COPLANAR_MARGIN pattern used throughout the
-  // pipeline. Clamp
-  // below the outer wall thickness (never breach it) AND below 0.4× the divider
-  // thickness so two neighbouring compartments penetrating a shared divider from
-  // opposite sides still cannot meet through it.
-  const wallPenetration = Math.min(
-    COPLANAR_MARGIN,
-    wallThickness * 0.6,
-    params.compartments.thickness * 0.4
-  );
+  // pipeline.
+  const wallPenetration = scoopWallPenetration(params, wallThickness);
 
   const { cols, rows, cells } = params.compartments;
   const sides = resolveScoopSides(params.scoop);
+  const filleted = interiorFilletRadiusMm(params) > 0;
+  const climbs = filletClimbsRamps(params);
 
   const processedCompartments = new Set<number>();
-  const scoopShapes: Shape3D[] = [];
+  const ramps: ScoopRampSolid[] = [];
 
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -190,7 +228,12 @@ function buildScoopRampsInScope(
             ? taperInsetAt(taper, taper[side], compFloorZ + zAboveFloor, wallHeight)
             : 0;
         const wallAtTop = wallAt(height);
-        const { arcTop, floorStart } = scoopArcAnchors(lipOffset, wallAtTop, wallAt(0));
+        const { arcTop, floorStart } = scoopArcAnchors(
+          lipOffset,
+          wallAtTop,
+          wallAt(0),
+          scoopFaceOffset(isOuter, params.compartments.thickness, filleted)
+        );
         // The resolved run was clamped to the compartment depth from `lipOffset`;
         // re-clamp from where the arc reaches the floor so its end still stops
         // short of the opposite wall or divider.
@@ -234,10 +277,20 @@ function buildScoopRampsInScope(
           // Standard: up the wall to scoop height
           points.push([backY, height]);
         }
-        if (arcTop > lipOffset) {
+        // A curved ramp the interior fillet climbs is one smooth quarter-ellipse
+        // rather than chords, since the fillet rolls along it: over the chords'
+        // kinks OCCT builds a body whose volume integral disagrees with its own
+        // mesh. A leaning wall warps the arc point by point, so it keeps the
+        // chords, and the fillet leaves that ramp alone.
+        const leans = wallAt(0) !== wallAtTop;
+        const smoothArc = climbs && style === 'curved' && !leans;
+        // A smooth arc leaves the wall face itself, tangent to it, where the
+        // chords start from inside the wall.
+        if (arcTop > lipOffset || (smoothArc && lipOffset === 0)) {
           points.push([arcTop, height]);
         }
-        if (style === 'curved') {
+        const arcFrom = points.length - 1;
+        if (style === 'curved' && !smoothArc) {
           // Concave quarter-ellipse from (arcTop, height) to (floorStart+run, 0),
           // each point pushed inboard by however far the wall has leaned in by
           // that point's height.
@@ -258,7 +311,14 @@ function buildScoopRampsInScope(
         // Draw the profile (will be sketched on YZ and extruded along X)
         let pen = draw(points[0]);
         for (let i = 1; i < points.length; i++) {
-          pen = pen.lineTo(points[i]);
+          pen =
+            smoothArc && i === arcFrom + 1
+              ? pen.cubicBezierCurveTo(
+                  points[i],
+                  [arcTop, height * (1 - QUARTER_ELLIPSE_K)],
+                  [points[i][0] - run * QUARTER_ELLIPSE_K, 0]
+                )
+              : pen.lineTo(points[i]);
         }
         const profile = pen.close();
 
@@ -287,10 +347,66 @@ function buildScoopRampsInScope(
           ? [placement.alongCenter, placement.edge, compFloorZ]
           : [placement.edge, placement.alongCenter, compFloorZ];
 
-        scoopShapes.push(scope.register(translate(oriented, offset)));
+        ramps.push({
+          compId,
+          side,
+          solid: scope.register(translate(oriented, offset)),
+          climbed: climbs && !leans,
+        });
       }
     }
   }
+  return ramps;
+}
+
+function buildScoopRampsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number,
+  floorZ: number,
+  floorRaiseFor: (compartmentId: number) => number,
+  taper: ResolvedTaper | null
+): Shape3D | null {
+  const scoopShapes = buildScoopRampSolids(
+    scope,
+    params,
+    innerW,
+    innerD,
+    wallHeight,
+    wallThickness,
+    floorZ,
+    floorRaiseFor,
+    taper
+  )
+    .filter((r) => !r.climbed)
+    .map((r) => r.solid);
+  return fuseScoopRamps(
+    scope,
+    params,
+    scoopShapes,
+    innerW,
+    innerD,
+    wallHeight,
+    wallThickness,
+    taper
+  );
+}
+
+/** Ramp solids fused into one and clipped to the cavity, as the scoop feature fuses them. */
+export function fuseScoopRamps(
+  scope: DisposalScope,
+  params: BinParams,
+  scoopShapes: readonly Shape3D[],
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number,
+  taper: ResolvedTaper | null
+): Shape3D | null {
+  const wallPenetration = scoopWallPenetration(params, wallThickness);
 
   // Inline fuse so the fused handle is registered in scope.
   if (scoopShapes.length === 0) return null;
@@ -358,19 +474,34 @@ function buildScoopRampsInScope(
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
+import type { BinDimensions } from './pipeline/types';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
+
+/**
+ * Whether ramps are built for this bin at all. A ramp needs solid material to
+ * rest on. `liteFloorOpen`, not `lightweight`: the interior mode and a spacer
+ * leave nothing under the ramp but cup recesses, while the underside relief
+ * keeps the floor a standard bin has. The scoop does not declare
+ * `supportsCellMask`, so a custom shape never takes one either.
+ */
+export function scoopRampsApply(params: BinParams, dim: BinDimensions): boolean {
+  return (
+    params.scoop.enabled &&
+    params.style === 'standard' &&
+    !isPartialMask(params.cellMask) &&
+    !isNestingBase(params.base) &&
+    !dim.isSlotted &&
+    !dim.liteFloorOpen
+  );
+}
 
 export const scoopRampsFeature: FeatureBuilder = {
   name: 'scoopRamps',
   tag: FeatureTag.SCOOP,
   target: 'fuse',
-  // A ramp needs solid material to rest on. `liteFloorOpen`, not `lightweight`:
-  // the interior mode and a spacer leave nothing under the ramp but cup
-  // recesses, while the underside relief keeps the floor a standard bin has, so
-  // the ramp lands on solid material exactly as it always did. Mirrors the
-  // constraint rule; suppressed here too for any legacy design carrying both.
-  shouldBuild: (ctx) =>
-    !isNestingBase(ctx.params.base) && !ctx.dimensions.isSlotted && !ctx.dimensions.liteFloorOpen,
+  // Mirrors the constraint rules; suppressed here too for any legacy design
+  // carrying both.
+  shouldBuild: (ctx) => scoopRampsApply(ctx.params, ctx.dimensions),
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(
@@ -393,7 +524,9 @@ export const scoopRampsFeature: FeatureBuilder = {
         params.compartments.cells.join(','),
         stableSerialize(params.compartments.dividerOverrides ?? []),
         quantize(dim.interiorHeight),
-        stableSerialize(params.compartments.floorRaises ?? [])
+        stableSerialize(params.compartments.floorRaises ?? []),
+        interiorFilletRadiusMm(params) > 0,
+        params.walls.enabled
       )
     );
   },

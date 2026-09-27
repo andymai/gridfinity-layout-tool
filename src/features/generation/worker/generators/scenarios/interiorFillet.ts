@@ -27,7 +27,13 @@ import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import { deriveDimensions } from '../pipeline/context';
 
 /** Height of the solid surface at `(x, y)` within reach of the floor. */
-function floorSurfaceAt(mesh: MeshData, x: number, y: number, floorTop: number, reach: number) {
+export function floorSurfaceAt(
+  mesh: MeshData,
+  x: number,
+  y: number,
+  floorTop: number,
+  reach: number
+) {
   const near = columnCrossings(mesh, x, y).filter(
     (z) => z > floorTop - 0.05 && z < floorTop + reach + 0.5
   );
@@ -35,7 +41,7 @@ function floorSurfaceAt(mesh: MeshData, x: number, y: number, floorTop: number, 
 }
 
 /** How far a quarter circle of radius `r` stands above its floor `d` in from its wall. */
-function quarterRise(r: number, d: number): number {
+export function quarterRise(r: number, d: number): number {
   return r - Math.sqrt(r * r - (r - d) * (r - d));
 }
 
@@ -48,7 +54,7 @@ interface Cavity {
   readonly innerD: number;
 }
 
-function cavity(params: BinParams): Cavity {
+export function cavity(params: BinParams): Cavity {
   const dim = deriveDimensions(params, true);
   return {
     floorTop: dim.baseOffsetZ + dim.floorThickness,
@@ -82,10 +88,11 @@ function sharpSibling(params: Partial<BinParams>): Partial<BinParams> {
 }
 
 /** Adds material, never reaches outside the bin, and stays one solid. */
-function filletCase(
+export function filletCase(
   name: string,
   params: Partial<BinParams>,
-  extra?: (mesh: MeshData, full: BinParams) => void
+  extra?: (mesh: MeshData, full: BinParams) => void,
+  addsMaterial = true
 ): ScenarioCase {
   return defineScenario('interior fillet #4382', name, {
     assert: 'structural',
@@ -102,7 +109,8 @@ function filletCase(
         expect(meshTopologyStats(rounded).eulerCharacteristic).toBe(
           meshTopologyStats(sharp).eulerCharacteristic
         );
-        expect(meshVolume(rounded)).toBeGreaterThan(meshVolume(sharp) + 1);
+        if (addsMaterial) expect(meshVolume(rounded)).toBeGreaterThan(meshVolume(sharp) + 1);
+        else expect(Math.abs(meshVolume(rounded) - meshVolume(sharp))).toBeLessThan(1);
         const a = boundingBox(rounded.vertices);
         const b = boundingBox(sharp.vertices);
         for (const k of ['minX', 'maxX', 'minY', 'maxY', 'minZ', 'maxZ'] as const) {
@@ -113,7 +121,7 @@ function filletCase(
   });
 }
 
-const TWO_BY_TWO = { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 };
+export const TWO_BY_TWO = { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 };
 
 /**
  * What a request at the 2.55mm corner radius builds on the floor: the floor

@@ -20,7 +20,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     featured: true,
     title: { en: 'Round the inside of every compartment' },
     body: {
-      en: 'Interior fillet rounds each compartment where its walls meet the floor, and the corners where the walls meet each other, so small parts slide out and the bin wipes clean. Find it on the Interior page and pick a radius. A compartment too small for the radius rounds as far as it fits, which turns a tray of small compartments into a set of bowls.',
+      en: 'Interior fillet rounds each compartment where its walls meet the floor, and the corners where the walls meet each other, so small parts slide out and the bin wipes clean. Where a finger scoop meets a side wall, the rounding carries on up the ramp. Find it on the Interior page and pick a radius. A compartment too small for the radius rounds as far as it fits, which turns a tray of small compartments into a set of bowls.',
     },
     action: { kind: 'openTool', tool: 'designer' },
   },
