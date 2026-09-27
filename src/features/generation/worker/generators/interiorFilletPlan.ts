@@ -20,6 +20,7 @@
  * standing in open air.
  */
 
+import { INTERIOR_FILLET_HEADROOM_MM } from '@/shared/utils/interiorFillet';
 import type { BinParams, DividerOverride } from '@/shared/types/bin';
 import { buildOverrideLookup, dividerFootDrift, overrideKey } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -81,9 +82,6 @@ const CORNER_OVER_FLOOR_MM = 0.1;
 /** Flat left between two fillets that would otherwise meet on one face. */
 const FACE_RESERVE_MM = 0.2;
 
-/** Headroom kept between the fillet and the top of its reach. */
-const HEIGHT_RESERVE_MM = 0.5;
-
 const EPS = 1e-6;
 
 /**
@@ -140,7 +138,7 @@ function finishPlan(
     input.radius,
     cornerRadius - CORNER_OVER_FLOOR_MM,
     gapLimit,
-    zTop - zFloor - HEIGHT_RESERVE_MM
+    zTop - zFloor - INTERIOR_FILLET_HEADROOM_MM
   );
   if (!(radius >= MIN_BUILT_FILLET_MM)) return null;
   return { id, zFloor, zTop, radius, cornerRadius, floor, top };

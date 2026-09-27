@@ -24,6 +24,9 @@ export function defaultInteriorFilletMm(wallThickness: number): number {
   );
 }
 
+/** Headroom the fillet keeps between itself and the top of the walls it climbs. */
+export const INTERIOR_FILLET_HEADROOM_MM = 0.5;
+
 /** The radius a design asks for, or 0 when it has no fillet. */
 export function interiorFilletRadiusMm(params: Pick<BinParams, 'interiorFilletMm'>): number {
   const r = params.interiorFilletMm;

@@ -4,7 +4,8 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import { clamp } from '@/shared/utils/math';
-import { interiorFilletRadiusMm, narrowestCavitySpansMm } from '@/shared/utils/interiorFillet';
+import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
+import { interiorFilletFitMm } from '@/features/bin-designer/utils/interiorFilletFit';
 import { getFeatureStatus, resolveConstraints } from '@/shared/constraints';
 
 const { MIN_INTERIOR_FILLET, MAX_INTERIOR_FILLET } = DESIGNER_CONSTRAINTS;
@@ -18,10 +19,8 @@ export function useInteriorFilletSection() {
   const status = getFeatureStatus(params, 'interiorFillet');
   const radius = interiorFilletRadiusMm(params);
   const enabled = radius > 0;
-  // Past half the narrowest cavity span, that cavity rounds as far as it fits
-  // rather than to the radius asked for.
   const clamped = useMemo(
-    () => enabled && radius >= Math.min(...narrowestCavitySpansMm(params).values()) / 2,
+    () => enabled && radius >= interiorFilletFitMm(params),
     [enabled, radius, params]
   );
 
