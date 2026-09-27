@@ -5,6 +5,7 @@ import { GRIDFINITY } from '../constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import { binDimensions } from './binDimensions';
 import { compartmentHasTiltedEdge } from './compartments';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 /**
  * Highest floor raise the panel offers: what leaves {@link MIN_RAISED_CAVITY_MM}
@@ -26,9 +27,11 @@ export function maxCompartmentFloorRaiseMm(params: BinParams): number {
 /**
  * The raise the generator actually builds under one compartment, clamped the
  * way `resolveFloorRaises` clamps it (unrounded, unlike the slider's ceiling).
- * Zero for a compartment with a tilted edge, which the generator skips.
+ * Zero for a compartment with a tilted edge, which the generator skips, and
+ * on a custom shape, where the floor raise feature does not build.
  */
 export function builtCompartmentFloorRaiseMm(params: BinParams, id: number): number {
+  if (isPartialMask(params.cellMask)) return 0;
   const raise = params.compartments.floorRaises?.[id];
   if (typeof raise !== 'number' || !Number.isFinite(raise) || raise <= 0) return 0;
   if (compartmentHasTiltedEdge(params.compartments, id)) return 0;

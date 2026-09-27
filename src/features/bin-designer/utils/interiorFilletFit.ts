@@ -25,13 +25,14 @@ export function interiorFilletFitMm(params: BinParams): number {
   const top =
     new Set(cells).size > 1 ? resolveCompartmentDividerHeight(dividerHeight, interior) : interior;
   // A custom shape's cavity floor is its wall thickness: the polygon hollow
-  // has no spec floor slab, and floor raises are not built on it.
-  const custom = isPartialMask(params.cellMask);
-  const floor = custom ? params.wallThickness : binFloorMm(params.wallThickness);
+  // has no spec floor slab.
+  const floor = isPartialMask(params.cellMask)
+    ? params.wallThickness
+    : binFloorMm(params.wallThickness);
   let fit = Infinity;
   for (const [id, span] of narrowestCavitySpansMm(params)) {
-    const raise = custom ? 0 : builtCompartmentFloorRaiseMm(params, id);
-    const height = top - floor - raise - INTERIOR_FILLET_HEADROOM_MM;
+    const height =
+      top - floor - builtCompartmentFloorRaiseMm(params, id) - INTERIOR_FILLET_HEADROOM_MM;
     fit = Math.min(fit, span / 2, height);
   }
   return fit;
